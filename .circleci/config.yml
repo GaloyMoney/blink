@@ -18,7 +18,7 @@ jobs:
 
     steps:
       - checkout:
-        path: ~/GaloyApp
+          path: ~/GaloyApp
 
       # Download and cache dependencies
       - restore_cache:
