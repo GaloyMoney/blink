@@ -14,10 +14,11 @@ jobs:
       # documented at https://circleci.com/docs/2.0/circleci-images/
       # - image: circleci/mongo:3.4.4
 
-    working_directory: ~/mobile
+    working_directory: ~/GaloyApp/mobile
 
     steps:
-      - checkout
+      - checkout:
+        path: ~/GaloyApp
 
       # Download and cache dependencies
       - restore_cache:
