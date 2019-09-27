@@ -5,7 +5,8 @@ jobs:
     docker:
       - image: circleci/node:8
     steps:
-      - checkout
+      - checkout:
+          path: ~/GaloyApp
 
       - restore_cache:
           key: yarn-v1-{{ checksum "yarn.lock" }}-{{ arch }}
