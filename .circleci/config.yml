@@ -14,6 +14,8 @@ jobs:
       - restore_cache:
           key: node-v1-{{ checksum "package.json" }}-{{ arch }}
 
+      - solidarity: solidarity --version
+      - react: yarn install react-native-cli
       - run: yarn install
 
       - save_cache:
