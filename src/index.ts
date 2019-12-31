@@ -7,28 +7,55 @@ const lnService = require('ln-service');
 const validate = require("validate.js");
 const assert = require('assert');
 
+
 admin.initializeApp();
 const firestore = admin.firestore()
-
-// TODO replace testnet with NETWORK env
-if (process.env.TLS === undefined && functions.config().lnd.testnet.TLS === undefined) {
-    throw new Error('tls env is needed')
+ 
+interface Auth {
+    macaroon: string,
+    cert: string,
+    socket: string,
 }
 
-if (process.env.MACAROON === undefined && functions.config().lnd.testnet.MACAROON === undefined) {
-    throw new Error('macaroon env is needed')
+// TODO, this should be shared with the mobile app
+interface QuoteBackendInit {
+    side: "buy" | "sell", 
+    satPrice: number, 
+    validUntil: number, 
+    satAmount: number,
+    address?: string,
 }
 
-if (process.env.LNDADDR === undefined && functions.config().lnd.testnet.LNDADDR === undefined) {
-    throw new Error('lndaddr env is needed')
+interface QuoteBackendReceive {
+    quote: QuoteBackendInit,
+    btcAddress?: string, // buy
+    onchain_tx?: string // sell
 }
 
-const cert = process.env.TLS || functions.config().lnd.testnet.TLS
-const macaroon = process.env.MACAROON || functions.config().lnd.testnet.MACAROON
-const lndaddr = process.env.LNDADDR || functions.config().lnd.testnet.LNDADDR
+interface FiatTransaction {
+    amount: number, 
+    date: number,
+    icon: string,
+    name: string,
+    onchain_tx: string, // should be HEX?
+}
 
-const socket = `${lndaddr}:10009`
-const auth_lnd = {macaroon, cert, socket}
+
+let auth_lnd: Auth
+let network: string
+
+try {
+    network = process.env.network ?? functions.config().NETWORK
+    const cert = process.env.TLS ?? functions.config().lnd[network].TLS
+    const macaroon = process.env.MACAROON ?? functions.config().lnd[network].MACAROON
+    const lndaddr = process.env.LNDADDR ?? functions.config().lnd[network].LNDADDR
+
+    const socket = `${lndaddr}:10009`
+    auth_lnd = {macaroon, cert, socket}
+} catch (err) {
+    console.error(`neither env nor functions.config() are set`)
+}
+
 
 const getBalance = async (uid: string) => {
     const reduce = (txs: {amount: number}[]) => {
@@ -39,7 +66,7 @@ const getBalance = async (uid: string) => {
     
     return firestore.doc(`/users/${uid}`).get().then(function(doc) {
         if (doc.exists) {
-            return reduce((doc.data() as any).transactions) // FIXME type
+            return reduce(doc.data()!.transactions) // FIXME type
         } else {
             return "No such document!"
         }
@@ -78,6 +105,51 @@ const priceBTC = async () => {
 exports.getFiatBalances = functions.https.onCall((data, context) => {
     if (context.auth === undefined) return 'no context'
     return getBalance(context.auth.uid)
+})
+
+
+exports.onUserWalletCreation = functions.https.onCall(async (data, context) => {
+    if (context.auth === undefined) return 'no context'
+
+    return firestore.doc(`/users/${context.auth.uid}`).update({
+        lightning: {
+            pubkey: data.pubkey,
+            network: data.network,
+            initTimestamp: admin.firestore.FieldValue.serverTimestamp(),
+        }
+    }).then(writeResult => {
+        return {result: `Transaction succesfully added ${writeResult}`}
+    })
+    .catch((err) => {
+        console.error(err)
+        return err
+    })
+})
+
+exports.openChannel = functions.https.onCall(async (data, context) => {
+    if (context.auth === undefined) return 'no context'
+
+    const local_tokens = 1000000;
+    const lnd = initLnd()
+
+    return firestore.doc(`/users/${context.auth.uid}`).get()
+    .then(async doc => {
+        if (doc.exists) {
+            const pubkey = doc.data()!.lightning.pubkey
+    
+            const isprivate = network === "mainnet"
+
+            const funding_tx = await lnService.openChannel({lnd, local_tokens, partner_public_key: pubkey, isprivate})
+    
+            return funding_tx
+        } else {
+            return 'missing document'
+        }
+    })
+    .catch((err) => {
+        console.error(err)
+        return err
+    })
 })
 
 const initLnd = () => {
@@ -134,8 +206,8 @@ exports.quoteBTC = functions.https.onCall(async (data, context) => {
     const side = data.side
     const satPrice = multiplier * spot
     const validUntil = Date.now() + QUOTE_VALIDITY // 30 sec
-    
-    const message_object: any = {side, satPrice, validUntil, satAmount}  // FIXME type
+
+    const message: QuoteBackendInit = {side, satPrice, validUntil, satAmount}  // FIXME type
 
     if (data.side === "sell") {
         const lnd = initLnd()
@@ -146,8 +218,8 @@ exports.quoteBTC = functions.https.onCall(async (data, context) => {
             throw new Error('error getting on chain address')
         }
 
-        message_object.address = address
-        await firestore.collection("sellquotes").doc(address).set({...message_object, uid: context.auth.uid})
+        message.address = address
+        await firestore.collection("sellquotes").doc(address).set({...message, uid: context.auth.uid})
         // TODO: cleanup quote that are older than 1 day?
     }
 
@@ -155,14 +227,14 @@ exports.quoteBTC = functions.https.onCall(async (data, context) => {
     // we could use a database of quote instead 
     // but we would need to recycle them once they expire
     // and this would also require multiple database call
-    const signedMessage = await sign({... message_object})
+    const signedMessage = await sign({... message})
     
     console.log(`${data.side} quote request from ${context.auth.uid}`)
     console.log(signedMessage)
     return signedMessage
 })
 
-const commonBuySell = ( data: any,
+const commonBuySell = ( data: QuoteBackendReceive,
                         now: number, 
                         context: functions.https.CallableContext) => {
     // TODO verify auth
@@ -203,15 +275,7 @@ const commonBuySell = ( data: any,
     }
 }
 
-interface FiatTransaction {
-    amount: number, 
-    date: number,
-    icon: string,
-    name: string,
-    onchain_tx: string, // should be HEX?
-}
-
-exports.buyBTC = functions.https.onCall(async (data, context) => {
+exports.buyBTC = functions.https.onCall(async (data: QuoteBackendReceive, context) => {
     if (context.auth === undefined) throw new Error('no context')
     
     const now = Date.now()    
@@ -268,7 +332,7 @@ exports.buyBTC = functions.https.onCall(async (data, context) => {
     }
 })
 
-exports.sellBTC = functions.https.onCall(async (data, context) => {
+exports.sellBTC = functions.https.onCall(async (data: QuoteBackendReceive, context) => {
     if (context.auth === undefined) throw new Error('no context')
 
     const now = Date.now()    
@@ -292,7 +356,7 @@ exports.sellBTC = functions.https.onCall(async (data, context) => {
         throw err 
     }
 
-    await firestore.collection("sellquotes").doc(quote.address).update({
+    await firestore.collection("sellquotes").doc(quote.address!).update({
         client_validation: true,
         client_onchain_tx: data.onchain_tx,
     })
@@ -366,7 +430,18 @@ exports.onUserCreation = functions.auth.user().onCreate((user) => {
 })
 
 
-exports.deleteAllUser = functions.https.onCall((data, context) => {
+exports.setGlobalInfo = functions.https.onCall(async (data, context) => {
+    const lnd = initLnd()
+    const wallet = await lnService.getWalletInfo({lnd});
+
+    return firestore.doc(`/global/info`).set({
+        lightning: {
+            uris: wallet.uris
+    }})
+})
+
+
+exports.deleteAllUsers = functions.https.onCall(async (data, context) => {
     return admin.auth().listUsers()
     .then(listUsers => {
         for (const user of listUsers.users) {
