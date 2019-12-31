@@ -10,9 +10,24 @@ const assert = require('assert');
 admin.initializeApp();
 const firestore = admin.firestore()
 
-const macaroon = functions.config().lnd.testnet.macaroon
-const cert = functions.config().lnd.testnet.tls
-const socket = "127.0.0.1:10009"
+// TODO replace testnet with NETWORK env
+if (process.env.TLS === undefined && functions.config().lnd.testnet.TLS === undefined) {
+    throw new Error('tls env is needed')
+}
+
+if (process.env.MACAROON === undefined && functions.config().lnd.testnet.MACAROON === undefined) {
+    throw new Error('macaroon env is needed')
+}
+
+if (process.env.LNDADDR === undefined && functions.config().lnd.testnet.LNDADDR === undefined) {
+    throw new Error('lndaddr env is needed')
+}
+
+const cert = process.env.TLS || functions.config().lnd.testnet.TLS
+const macaroon = process.env.MACAROON || functions.config().lnd.testnet.MACAROON
+const lndaddr = process.env.LNDADDR || functions.config().lnd.testnet.LNDADDR
+
+const socket = `${lndaddr}:10009`
 const auth_lnd = {macaroon, cert, socket}
 
 const getBalance = async (uid: string) => {
@@ -68,7 +83,7 @@ exports.getFiatBalances = functions.https.onCall((data, context) => {
 const initLnd = () => {
     // TODO verify unlock?
 
-    console.log("lnd auth")
+    console.log("lnd auth", auth_lnd)
     const {lnd} = lnService.authenticatedLndGrpc(auth_lnd);
     return lnd
 }
