@@ -129,7 +129,7 @@ exports.onUserWalletCreation = functions.https.onCall(async (data, context) => {
 exports.openChannel = functions.https.onCall(async (data, context) => {
     if (context.auth === undefined) return 'no context'
 
-    const local_tokens = 1000000;
+    const local_tokens = 20000;
     const lnd = initLnd()
 
     return firestore.doc(`/users/${context.auth.uid}`).get()
