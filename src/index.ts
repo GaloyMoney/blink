@@ -40,23 +40,6 @@ interface FiatTransaction {
     onchain_tx: string, // should be HEX?
 }
 
-
-let auth_lnd: Auth
-let network: string
-
-try {
-    network = process.env.network ?? functions.config().NETWORK
-    const cert = process.env.TLS ?? functions.config().lnd[network].TLS
-    const macaroon = process.env.MACAROON ?? functions.config().lnd[network].MACAROON
-    const lndaddr = process.env.LNDADDR ?? functions.config().lnd[network].LNDADDR
-
-    const socket = `${lndaddr}:10009`
-    auth_lnd = {macaroon, cert, socket}
-} catch (err) {
-    console.error(`neither env nor functions.config() are set`)
-}
-
-
 const getBalance = async (uid: string) => {
     const reduce = (txs: {amount: number}[]) => {
         const amounts = txs.map(tx => tx.amount)
@@ -76,7 +59,10 @@ const getBalance = async (uid: string) => {
     })
 }
 
-const priceBTC = async () => {
+/**
+ * @returns      Price of BTC in sat.
+ */
+const priceBTC = async (): Promise<number> => {
     const COINBASE_API= 'https://api.coinbase.com/'
     const TIMEOUT= 5000
     
@@ -93,13 +79,23 @@ const priceBTC = async () => {
     }
     
     try {
-        const price: number = response.data.data.amount * Math.pow(10, -8)
-        console.log(`spot price is ${price}`)
-        return price
+        const sat_price: number = response.data.data.amount * Math.pow(10, -8)
+        console.log(`sat spot price is ${sat_price}`)
+        return sat_price
     } catch {
         throw Error("bad-data")
     }
 }
+
+exports.updatePrice = functions.pubsub.schedule('every 5 mins').onRun(async (context) => {
+    try {
+        const spot = await priceBTC()
+        console.log(`updating price, new price: ${spot}`);
+        await firestore.doc('global/price').set({BTC: spot})
+    } catch (err) {
+        return err
+    }
+});
 
 // this could be run in the frontend?
 exports.getFiatBalances = functions.https.onCall((data, context) => {
@@ -137,7 +133,8 @@ exports.openChannel = functions.https.onCall(async (data, context) => {
         if (doc.exists) {
             const pubkey = doc.data()!.lightning.pubkey
     
-            const isprivate = network === "mainnet"
+            // const isprivate = network === "mainnet"
+            const isprivate = true
 
             const funding_tx = await lnService.openChannel({lnd, local_tokens, partner_public_key: pubkey, isprivate})
     
@@ -153,7 +150,22 @@ exports.openChannel = functions.https.onCall(async (data, context) => {
 })
 
 const initLnd = () => {
-    // TODO verify unlock?
+    // TODO verify wallet is unlock?
+
+    let auth_lnd: Auth
+    let network: string
+    
+    try {
+        network = process.env.network ?? functions.config().network
+        const cert = process.env.TLS ?? functions.config().lnd[network].tls
+        const macaroon = process.env.MACAROON ?? functions.config().lnd[network].macaroon
+        const lndaddr = process.env.LNDADDR ?? functions.config().lnd[network].lndaddr
+    
+        const socket = `${lndaddr}:10009`
+        auth_lnd = {macaroon, cert, socket}
+    } catch (err) {
+        throw new Error(`neither env nor functions.config() are set` + err)
+    }
 
     console.log("lnd auth", auth_lnd)
     const {lnd} = lnService.authenticatedLndGrpc(auth_lnd);
@@ -181,7 +193,7 @@ exports.quoteBTC = functions.https.onCall(async (data, context) => {
     }
 
     const err = validate(data, constraints)
-    if (err != undefined) {
+    if (err !== undefined) {
         return err 
     }
     
@@ -262,7 +274,7 @@ const commonBuySell = ( data: QuoteBackendReceive,
     }
 
     const err = validate(data.quote, constraints)
-    if (err != undefined) {
+    if (err !== undefined) {
         throw err // FIXME is err string or Error?
     }
 
@@ -291,7 +303,7 @@ exports.buyBTC = functions.https.onCall(async (data: QuoteBackendReceive, contex
     }}}
 
     const err = validate(data, constraints)
-    if (err != undefined) {
+    if (err !== undefined) {
         throw err 
     }
 
@@ -352,7 +364,7 @@ exports.sellBTC = functions.https.onCall(async (data: QuoteBackendReceive, conte
     }}}
 
     const err = validate(data, constraints)
-    if (err != undefined) {
+    if (err !== undefined) {
         throw err 
     }
 

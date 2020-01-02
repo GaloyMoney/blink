@@ -4,4 +4,4 @@ MACAROON=$(docker exec -t lnd_btc base64 /root/.lnd/data/chain/bitcoin/testnet/a
 LNDADDR="set_ip_address"
 NETWORK="testnet"
 
-firebase functions:config:set lnd.NETWORK="$NETWORK" lnd."$NETWORK".TLS="$TLS" lnd."$NETWORK".MACAROON="$MACAROON" lnd."$NETWORK".LNDADDR="$LNDADDR"
+firebase functions:config:set lnd.network="$NETWORK" lnd."$NETWORK".tls="$TLS" lnd."$NETWORK".macaroon="$MACAROON" lnd."$NETWORK".lndaddr="$LNDADDR"
