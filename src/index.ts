@@ -87,7 +87,7 @@ const priceBTC = async (): Promise<number> => {
     }
 }
 
-exports.updatePrice = functions.pubsub.schedule('every 5 mins').onRun(async (context) => {
+exports.updatePrice = functions.pubsub.schedule('every 15 mins').onRun(async (context) => {
     try {
         const spot = await priceBTC()
         console.log(`updating price, new price: ${spot}`);
