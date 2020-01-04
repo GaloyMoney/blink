@@ -448,10 +448,10 @@ exports.setGlobalInfo = functions.https.onCall(async (data, context) => {
 
     return firestore.doc(`/global/info`).set({
         lightning: {
-            uris: wallet.uris
+            pubkey: wallet.public_key,
+            host: functions.config().lnd[functions.config().lnd.network].lndaddr
     }})
 })
-
 
 exports.deleteAllUsers = functions.https.onCall(async (data, context) => {
     return admin.auth().listUsers()
