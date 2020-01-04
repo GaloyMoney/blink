@@ -494,7 +494,7 @@ exports.initPhoneNumber = functions.https.onCall(async (data: PhoneInit, context
 })
 
 exports.verifyPhoneNumber = functions.https.onCall(async (data: PhoneVerif, context) => {
-    console.log("verifyPhoneNumber")
+    console.log("verifyPhoneNumber", data)
 
     const clientPhoneNumber = data.phone
     const doc = await firestore.doc(`/texts/${clientPhoneNumber}`).get()
