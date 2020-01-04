@@ -441,6 +441,84 @@ exports.onUserCreation = functions.auth.user().onCreate((user) => {
     })
 })
 
+interface PhoneInit {
+    phone: string
+}
+interface PhoneVerif {
+    phone: string,
+    code: number
+}
+
+exports.initPhoneNumber = functions.https.onCall(async (data: PhoneInit, context) => {
+    
+    const accountSID = "***REMOVED***"
+    const authToken = "***REMOVED***"
+    const twilioPhoneNumber = "***REMOVED***"
+
+    const client = require('twilio')(
+        accountSID,
+        authToken
+      );
+
+    const clientPhoneNumber = data.phone
+    const code = Math.floor(100000 + Math.random() * 900000)
+    
+    console.log(`sending message to ${clientPhoneNumber} with code ${code}`)
+    
+    try {
+        await client.messages.create({
+            from: twilioPhoneNumber,
+            to: clientPhoneNumber,
+            body: `${code} Chancellor on brink of second bailout for banks`
+        })
+    } catch (err) {
+        console.error(`impossible to send twilio request`, err)
+        // return { success: false };
+    }
+
+    console.log("saving in db")
+
+    try {
+        const entry:any = {
+            code,
+            timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        }
+         
+        await firestore.doc(`/texts/${clientPhoneNumber}`).set(entry, {merge: true})
+    } catch (err) {
+        console.error(`impossible to save code`, err)
+        return { success: false };
+    }
+
+    return { success: true };
+})
+
+exports.verifyPhoneNumber = functions.https.onCall(async (data: PhoneVerif, context) => {
+    console.log("verifyPhoneNumber")
+
+    const clientPhoneNumber = data.phone
+    const doc = await firestore.doc(`/texts/${clientPhoneNumber}`).get()
+
+    try {
+        if (!doc.exists) {
+            console.log('No such document!');
+            return { success: false };
+          } else {
+            const { code } = doc.data()!
+            console.log('code:', code);
+            
+            if ( code === data.code ) { 
+                // FIXME do something
+                return { success: true };
+            } else {
+                return { success: false, reason: 'wrong code' };
+            }
+          }
+    } catch (err) {
+        console.error(`issue with verifyPhoneNumber`, err)
+        return { success: false };
+    }
+})
 
 exports.setGlobalInfo = functions.https.onCall(async (data, context) => {
     const lnd = initLnd()
