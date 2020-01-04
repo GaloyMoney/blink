@@ -156,7 +156,7 @@ const initLnd = () => {
     let network: string
     
     try {
-        network = process.env.network ?? functions.config().network
+        network = process.env.network ?? functions.config().lnd.network
         const cert = process.env.TLS ?? functions.config().lnd[network].tls
         const macaroon = process.env.MACAROON ?? functions.config().lnd[network].macaroon
         const lndaddr = process.env.LNDADDR ?? functions.config().lnd[network].lndaddr
