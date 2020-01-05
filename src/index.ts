@@ -104,16 +104,17 @@ exports.getFiatBalances = functions.https.onCall((data, context) => {
 })
 
 
-exports.onUserWalletCreation = functions.https.onCall(async (data, context) => {
+exports.sendPubKey = functions.https.onCall(async (data, context) => {
+    console.log(context.auth)
     if (context.auth === undefined) return 'no context'
 
-    return firestore.doc(`/users/${context.auth.uid}`).update({
+    return firestore.doc(`/users/${context.auth.uid}`).set({
         lightning: {
             pubkey: data.pubkey,
             network: data.network,
             initTimestamp: admin.firestore.FieldValue.serverTimestamp(),
-        }
-    }).then(writeResult => {
+        }}, { merge: true }
+    ).then(writeResult => {
         return {result: `Transaction succesfully added ${writeResult}`}
     })
     .catch((err) => {
@@ -123,7 +124,7 @@ exports.onUserWalletCreation = functions.https.onCall(async (data, context) => {
 })
 
 exports.openChannel = functions.https.onCall(async (data, context) => {
-    if (context.auth === undefined) return 'no context'
+    if (context.auth === undefined) return 'no auth'
 
     const local_tokens = 20000;
     const lnd = initLnd()
@@ -156,7 +157,7 @@ const initLnd = () => {
     let network: string
     
     try {
-        network = process.env.network ?? functions.config().lnd.network
+        network = process.env.NETWORK ?? functions.config().lnd.network
         const cert = process.env.TLS ?? functions.config().lnd[network].tls
         const macaroon = process.env.MACAROON ?? functions.config().lnd[network].macaroon
         const lndaddr = process.env.LNDADDR ?? functions.config().lnd[network].lndaddr
@@ -505,10 +506,11 @@ exports.verifyPhoneNumber = functions.https.onCall(async (data: PhoneVerif, cont
             return { success: false };
           } else {
             const { code } = doc.data()!
-            console.log('code:', code);
+            console.log(`code stored: ${code}, code received by user: ${data.code}`);
+            console.log(`typeof: ${typeof code}, code received by user: ${typeof data.code}`);
             
-            if ( code === data.code ) { 
-                // FIXME do something
+            if ( code === Number(data.code) ) { // FIXME correct type on the mobile side
+                // FIXME do proper verification in the backend
                 return { success: true };
             } else {
                 return { success: false, reason: 'wrong code' };
