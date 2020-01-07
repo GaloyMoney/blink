@@ -470,7 +470,7 @@ exports.initPhoneNumber = functions.https.onCall(async (data: PhoneInit, context
         await client.messages.create({
             from: twilioPhoneNumber,
             to: clientPhoneNumber,
-            body: `${code} Chancellor on brink of second bailout for banks`
+            body: `code ${code} Chancellor on brink of second bailout for banks`
         })
     } catch (err) {
         console.error(`impossible to send twilio request`, err)
