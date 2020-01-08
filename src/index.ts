@@ -7,10 +7,6 @@ const lnService = require('ln-service');
 const validate = require("validate.js");
 const assert = require('assert');
 
-
-admin.initializeApp();
-const firestore = admin.firestore()
- 
 interface Auth {
     macaroon: string,
     cert: string,
@@ -39,6 +35,19 @@ interface FiatTransaction {
     name: string,
     onchain_tx: string, // should be HEX?
 }
+
+interface PhoneInit {
+    phone: string
+}
+interface PhoneVerif {
+    phone: string,
+    code: number
+}
+
+
+admin.initializeApp();
+const firestore = admin.firestore()
+
 
 const getBalance = async (uid: string) => {
     const reduce = (txs: {amount: number}[]) => {
@@ -378,8 +387,22 @@ exports.sellBTC = functions.https.onCall(async (data: QuoteBackendReceive, conte
 
 })
 
+exports.payInvoice = functions.https.onCall(async (data, context) => {
+    if (context.auth === undefined) throw new Error('no context')
+    // FIXME unsecure
+
+    const lnd = initLnd()
+
+    const invoice = data.invoice
+    console.log(invoice)
+
+    const result = await lnService.pay({lnd, request: invoice})
+    console.log(result)
+})
+
+
 // TODO use onCall instead
-exports.incomingTransaction = functions.https.onRequest(async (req, res) => {
+exports.incomingOnChainTransaction = functions.https.onRequest(async (req, res) => {
     // TODO only authorize by admin-like
     // should just validate previous transaction
 
@@ -441,14 +464,6 @@ exports.onUserCreation = functions.auth.user().onCreate((user) => {
         return err
     })
 })
-
-interface PhoneInit {
-    phone: string
-}
-interface PhoneVerif {
-    phone: string,
-    code: number
-}
 
 exports.initPhoneNumber = functions.https.onCall(async (data: PhoneInit, context) => {
     
