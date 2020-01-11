@@ -36,14 +36,6 @@ interface FiatTransaction {
     onchain_tx: string, // should be HEX?
 }
 
-interface PhoneInit {
-    phone: string
-}
-interface PhoneVerif {
-    phone: string,
-    code: number
-}
-
 
 admin.initializeApp();
 const firestore = admin.firestore()
@@ -148,7 +140,7 @@ exports.openChannel = functions.https.onCall(async (data, context) => {
 
             const funding_tx = await lnService.openChannel({lnd, local_tokens, partner_public_key: pubkey, is_private})
     
-            return funding_tx
+            return {funding_tx}
         } else {
             return 'missing document'
         }
@@ -398,6 +390,8 @@ exports.payInvoice = functions.https.onCall(async (data, context) => {
 
     const result = await lnService.pay({lnd, request: invoice})
     console.log(result)
+
+    return 'success'
 })
 
 
@@ -451,22 +445,34 @@ exports.incomingOnChainTransaction = functions.https.onRequest(async (req, res) 
     return res.status(404).send({response: 'nothing to do'})
 });
 
-exports.onUserCreation = functions.auth.user().onCreate((user) => {
+// TODO use onCall instead
+exports.incomingChannel = functions.https.onRequest(async (req, res) => {
+    // TODO only authorize by admin-like
+    // should just validate previous transaction
 
-    const randomTxs = transactions_template.filter((item) => Math.random() > 0.5 )
+    const channel = req.body
+    console.log(channel)
 
-    return firestore.doc(`/users/${user.uid}`).set({transactions: randomTxs})
-    .then(writeResult => {
-        return {result: `Transaction succesfully added ${writeResult}`}
-    })
-    .catch((err) => {
-        console.error(err)
-        return err
-    })
-})
 
-exports.initPhoneNumber = functions.https.onCall(async (data: PhoneInit, context) => {
+    const users = firestore.collection("users");
+    const querySnapshot = await users.where("lightning.pubkey", "==", channel.partner_public_key).get();
     
+    assert(querySnapshot.size === 1)
+
+    const userPath = querySnapshot.docs[0].ref.path
+    const uid = userPath.split('/')[1]
+
+    console.log(uid)
+
+    const phoneNumber = (await admin.auth().getUser(uid)).phoneNumber
+
+    if (phoneNumber === undefined) {
+        return { success: false, reason: 'phone number undefined' };
+    }
+
+    console.log(phoneNumber)
+
+    /// FIXME
     const accountSID = "***REMOVED***"
     const authToken = "***REMOVED***"
     const twilioPhoneNumber = "***REMOVED***"
@@ -475,66 +481,41 @@ exports.initPhoneNumber = functions.https.onCall(async (data: PhoneInit, context
         accountSID,
         authToken
       );
-
-    const clientPhoneNumber = data.phone
-    const code = Math.floor(100000 + Math.random() * 900000)
     
-    console.log(`sending message to ${clientPhoneNumber} with code ${code}`)
+    console.log(`sending message to ${phoneNumber} for channel creation`)
     
     try {
         await client.messages.create({
             from: twilioPhoneNumber,
-            to: clientPhoneNumber,
-            body: `code ${code} Chancellor on brink of second bailout for banks`
+            to: phoneNumber,
+            body: `your channel is ready! open Galoy app to get and spend your micro reward`
         })
     } catch (err) {
         console.error(`impossible to send twilio request`, err)
-        // return { success: false };
-    }
-
-    console.log("saving in db")
-
-    try {
-        const entry:any = {
-            code,
-            timestamp: admin.firestore.FieldValue.serverTimestamp(),
-        }
-         
-        await firestore.doc(`/texts/${clientPhoneNumber}`).set(entry, {merge: true})
-    } catch (err) {
-        console.error(`impossible to save code`, err)
         return { success: false };
     }
 
-    return { success: true };
-})
+    return res.status(200).send({response: 'ok', phoneNumber})
+});
 
-exports.verifyPhoneNumber = functions.https.onCall(async (data: PhoneVerif, context) => {
-    console.log("verifyPhoneNumber", data)
+exports.onUserCreation = functions.auth.user().onCreate((user) => {
 
-    const clientPhoneNumber = data.phone
-    const doc = await firestore.doc(`/texts/${clientPhoneNumber}`).get()
+    const prepopulate = false
 
-    try {
-        if (!doc.exists) {
-            console.log('No such document!');
-            return { success: false };
-          } else {
-            const { code } = doc.data()!
-            console.log(`code stored: ${code}, code received by user: ${data.code}`);
-            console.log(`typeof: ${typeof code}, code received by user: ${typeof data.code}`);
-            
-            if ( code === Number(data.code) ) { // FIXME correct type on the mobile side
-                // FIXME do proper verification in the backend
-                return { success: true };
-            } else {
-                return { success: false, reason: 'wrong code' };
-            }
-          }
-    } catch (err) {
-        console.error(`issue with verifyPhoneNumber`, err)
-        return { success: false };
+    if (prepopulate) {
+        const randomTxs = transactions_template.filter((item) => Math.random() > 0.5 )
+    
+        return firestore.doc(`/users/${user.uid}`).set({transactions: randomTxs})
+        .then(writeResult => {
+            return {result: `Transaction succesfully added ${writeResult}`}
+        })
+        .catch((err) => {
+            console.error(err)
+            return err
+        })
     }
+
+    return 'no prepopulation'
 })
 
 exports.setGlobalInfo = functions.https.onCall(async (data, context) => {
