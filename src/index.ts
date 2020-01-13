@@ -386,12 +386,19 @@ exports.payInvoice = functions.https.onCall(async (data, context) => {
     const lnd = initLnd()
 
     const invoice = data.invoice
-    console.log(invoice)
+    console.log(`invoice: ${invoice}`)
 
-    const result = await lnService.pay({lnd, request: invoice})
-    console.log(result)
+    try {
+        const result = await lnService.pay({lnd, request: invoice})
+        console.log(result)
 
-    return 'success'
+        return 'success'
+    } catch (err) {
+        console.log(err)
+        return Promise.reject(new functions.https.HttpsError(
+            'internal', 
+            `${err[0]}, ${err[1]}, ${err[2].message}` ));
+    }
 })
 
 
