@@ -100,14 +100,25 @@ exports.updatePrice = functions.pubsub.schedule('every 15 mins').onRun(async (co
 
 // this could be run in the frontend?
 exports.getFiatBalances = functions.https.onCall((data, context) => {
-    if (context.auth === undefined) return 'no context'
+    if (!context.auth) {
+        throw new functions.https.HttpsError('failed-precondition', 
+            'The function must be called while authenticated.')};
+
     return getBalance(context.auth.uid)
 })
 
 
 exports.sendPubKey = functions.https.onCall(async (data, context) => {
-    console.log(context.auth)
-    if (context.auth === undefined) return 'no context'
+    if (!context.auth) {
+        throw new functions.https.HttpsError('failed-precondition', 
+            'The function must be called while authenticated.')};
+
+    // TODO check attributed, eg:
+    // if (!(typeof text === 'string') || text.length === 0) {
+    //     // Throwing an HttpsError so that the client gets the error details.
+    //     throw new functions.https.HttpsError('invalid-argument', 'The function must be called with ' +
+    //         'one arguments "text" containing the message text to add.');
+    //     }
 
     return firestore.doc(`/users/${context.auth.uid}`).set({
         lightning: {
@@ -124,8 +135,27 @@ exports.sendPubKey = functions.https.onCall(async (data, context) => {
     })
 })
 
+
+exports.sendDeviceToken = functions.https.onCall(async (data, context) => {
+    if (!context.auth) {
+        throw new functions.https.HttpsError('failed-precondition', 
+            'The function must be called while authenticated.')};
+
+    return firestore.doc(`/users/${context.auth.uid}`).set({
+        deviceToken: data.deviceToken}, { merge: true }
+    ).then(writeResult => {
+        return {result: `Transaction succesfully added ${writeResult}`}
+    })
+    .catch((err) => {
+        console.error(err)
+        return err
+    })
+})
+
 exports.openChannel = functions.https.onCall(async (data, context) => {
-    if (context.auth === undefined) return 'no auth'
+    if (!context.auth) {
+        throw new functions.https.HttpsError('failed-precondition', 
+            'The function must be called while authenticated.')};
 
     const local_tokens = 20000;
     const lnd = initLnd()
@@ -175,7 +205,9 @@ const initLnd = () => {
 }
 
 exports.quoteBTC = functions.https.onCall(async (data, context) => {
-    if (context.auth === undefined) return 'no context'
+    if (!context.auth) {
+        throw new functions.https.HttpsError('failed-precondition', 
+            'The function must be called while authenticated.')};
 
     const SPREAD = 0.015 //1.5%
     const QUOTE_VALIDITY = 30 * 1000
@@ -290,7 +322,9 @@ const commonBuySell = ( data: QuoteBackendReceive,
 }
 
 exports.buyBTC = functions.https.onCall(async (data: QuoteBackendReceive, context) => {
-    if (context.auth === undefined) throw new Error('no context')
+    if (!context.auth) {
+        throw new functions.https.HttpsError('failed-precondition', 
+            'The function must be called while authenticated.')};
     
     const now = Date.now()    
     commonBuySell(data, now, context)
@@ -347,7 +381,9 @@ exports.buyBTC = functions.https.onCall(async (data: QuoteBackendReceive, contex
 })
 
 exports.sellBTC = functions.https.onCall(async (data: QuoteBackendReceive, context) => {
-    if (context.auth === undefined) throw new Error('no context')
+    if (!context.auth) {
+        throw new functions.https.HttpsError('failed-precondition', 
+            'The function must be called while authenticated.')};
 
     const now = Date.now()    
     commonBuySell(data, now, context)
@@ -380,7 +416,10 @@ exports.sellBTC = functions.https.onCall(async (data: QuoteBackendReceive, conte
 })
 
 exports.payInvoice = functions.https.onCall(async (data, context) => {
-    if (context.auth === undefined) throw new Error('no context')
+    if (!context.auth) {
+        throw new functions.https.HttpsError('failed-precondition', 
+            'The function must be called while authenticated.')};
+
     // FIXME unsecure
 
     const lnd = initLnd()
@@ -391,7 +430,6 @@ exports.payInvoice = functions.https.onCall(async (data, context) => {
     try {
         const result = await lnService.pay({lnd, request: invoice})
         console.log(result)
-
         return 'success'
     } catch (err) {
         console.log(err)
