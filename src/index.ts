@@ -172,12 +172,14 @@ exports.openChannel = functions.https.onCall(async (data, context) => {
     
             return {funding_tx}
         } else {
-            return 'missing document'
+            throw new functions.https.HttpsError('not-found', 
+            `Can't find associated user`);
         }
     })
     .catch((err) => {
         console.error(err)
-        return err
+        throw new functions.https.HttpsError('internal', 
+        err.toString());
     })
 })
 
