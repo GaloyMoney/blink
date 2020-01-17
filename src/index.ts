@@ -536,7 +536,7 @@ exports.incomingChannel = functions.https.onRequest(async (req, res) => {
         await getTwilioClient().messages.create({
             from: twilioPhoneNumber,
             to: phoneNumber,
-            body: `your channel is ready! open Galoy app to get and spend your micro reward`
+            body: `Your channel is ready! open your galoy://app to get and spend your micro reward`
         })
     } catch (err) {
         console.error(`impossible to send twilio request`, err)
