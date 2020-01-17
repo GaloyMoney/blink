@@ -552,17 +552,20 @@ exports.onUserCreation = functions.auth.user().onCreate(async (user) => {
     const prepopulate = false
     const lookup = true
 
+    let transactions: any[] // FIXME
+
     if (prepopulate) {
-        const randomTxs = transactions_template.filter((item) => Math.random() > 0.5 )
-    
-        return firestore.doc(`/users/${user.uid}`).set({transactions: randomTxs})
-        .then(writeResult => {
-            return {result: `Transaction succesfully added ${writeResult}`}
-        })
-        .catch((err) => {
-            console.error(err)
-            return err
-        })
+        transactions = transactions_template.filter((item) => Math.random() > 0.5 )
+    } else {
+        transactions = []
+    }
+
+    try {
+        const result = await firestore.doc(`/users/${user.uid}`).set({transactions})
+        console.log(`Transaction succesfully added ${result}`)
+    } catch (err) {
+        console.error(err)
+        return err
     }
 
     if (lookup) {
@@ -573,8 +576,9 @@ exports.onUserCreation = functions.auth.user().onCreate(async (user) => {
         const callerInfo = await getTwilioClient().lookups.phoneNumbers(phoneNumber)
                                 .fetch({type: ['caller-name', 'carrier']})
 
-        return firestore.doc(`/users/${user.uid}`).set({
-            callerInfo}, { merge: true }
+        const twilio = JSON.parse(JSON.stringify(callerInfo)) // FIXME hacky?
+
+        return firestore.doc(`/users/${user.uid}`).set({ twilio }, { merge: true }
         ).then(writeResult => {
             return {result: `Transaction succesfully added ${writeResult}`}
         })
