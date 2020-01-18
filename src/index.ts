@@ -544,7 +544,33 @@ exports.incomingChannel = functions.https.onRequest(async (req, res) => {
     }
 
     return res.status(200).send({response: 'ok', phoneNumber})
-});
+})
+
+
+// exports.haveHodlInvoice = functions.pubsub.schedule('every 1 mins').onRun(async (context) => {
+
+//     const lnd = initLnd()
+
+//     const { channels } = await lnService.getChannels({lnd})
+
+//     const found = channels.find((item:any) => {return item.pending_payments.length > 0});
+//     console.log(found)
+
+    // return result
+
+    // {
+    //     "partner_public_key": "0361925516266d7bbc17c1af086aaf1d5f25d584ee4d2b1187d9ab57a3aa48e288",
+    //     "pending_payments": [
+    //         {
+    //             "is_outgoing": false,
+    //             "tokens": "1",
+    //             "id": "PzMYKCclCidisQzDyk0sJoHTwRlIW4WQDheck8Wnyts=",
+    //             "timeout": 376
+    //         }
+    //     ],
+    // }
+
+})
 
 exports.onUserCreation = functions.auth.user().onCreate(async (user) => {
     //TODO clean up returns
