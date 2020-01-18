@@ -570,7 +570,7 @@ exports.incomingChannel = functions.https.onRequest(async (req, res) => {
     //     ],
     // }
 
-})
+// })
 
 exports.onUserCreation = functions.auth.user().onCreate(async (user) => {
     //TODO clean up returns
