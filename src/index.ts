@@ -3,6 +3,7 @@ import * as admin from 'firebase-admin'
 import { transactions_template } from "./const"
 import { create, ApiResponse } from "apisauce"
 import { sign, verify } from "./crypto"
+import * as moment from 'moment';
 const lnService = require('ln-service');
 const validate = require("validate.js");
 const assert = require('assert');
@@ -35,6 +36,21 @@ interface FiatTransaction {
     name: string,
     onchain_tx: string, // should be HEX?
 }
+
+
+validate.extend(validate.validators.datetime, {
+    // The value is guaranteed not to be null or undefined but otherwise it
+    // could be anything.
+    parse: function(value: any, options: any) {
+        return +moment.utc(value);
+    },
+    // Input is a unix timestamp
+    format: function(value: any, options: any) {
+        var format = options.dateOnly ? "YYYY-MM-DD" : "YYYY-MM-DD hh:mm:ss";
+        return moment.utc(value).format(format);
+    }
+});
+
 
 
 admin.initializeApp();
@@ -243,7 +259,7 @@ exports.quoteBTC = functions.https.onCall(async (data, context) => {
 
     const err = validate(data, constraints)
     if (err !== undefined) {
-        return err 
+        return new functions.https.HttpsError('invalid-argument', err)
     }
     
     let spot
@@ -251,7 +267,7 @@ exports.quoteBTC = functions.https.onCall(async (data, context) => {
     try {
         spot = await priceBTC()
     } catch (err) {
-        return err
+        return new functions.https.HttpsError('unavailable', err)
     }
 
     const satAmount = data.satAmount
@@ -276,7 +292,7 @@ exports.quoteBTC = functions.https.onCall(async (data, context) => {
         const { address } = await lnService.createChainAddress({format, lnd});
 
         if (address === undefined) {
-            throw new Error('error getting on chain address')
+            return new functions.https.HttpsError('unavailable', 'error getting on chain address')
         }
 
         message.address = address
@@ -295,10 +311,9 @@ exports.quoteBTC = functions.https.onCall(async (data, context) => {
     return signedMessage
 })
 
-const commonBuySell = ( data: QuoteBackendReceive,
+const commonBuySellValidation = ( data: QuoteBackendReceive,
                         now: number, 
                         context: functions.https.CallableContext) => {
-    // TODO verify auth
 
     const constraints = {
         "satAmount": { 
@@ -315,25 +330,24 @@ const commonBuySell = ( data: QuoteBackendReceive,
             presence: true, 
         },
         "validUntil": {
-            presence: true,
-            numericality: { // use datetime?
-                onlyInteger: true,
-                greaterThan: 0
-        }}
+            datetime: true
+        }
     }
 
     const err = validate(data.quote, constraints)
     if (err !== undefined) {
-        throw err // FIXME is err string or Error?
+        return new functions.https.HttpsError('invalid-argument', err)
     }
 
     if (now >= data.quote.validUntil) {
-        throw new Error('quote expired')
+        throw new functions.https.HttpsError('deadline-exceeded', 'quote expired')
     }
     
     if (!verify(data.quote)) {
-        throw new Error('signature is not valid')
+        throw new functions.https.HttpsError('failed-precondition', 'signature is not valid')
     }
+
+    return true
 }
 
 exports.buyBTC = functions.https.onCall(async (data: QuoteBackendReceive, context) => {
@@ -342,7 +356,7 @@ exports.buyBTC = functions.https.onCall(async (data: QuoteBackendReceive, contex
             'The function must be called while authenticated.')};
     
     const now = Date.now()    
-    commonBuySell(data, now, context)
+    commonBuySellValidation(data, now, context)
 
     const quote = data.quote
 
@@ -355,14 +369,14 @@ exports.buyBTC = functions.https.onCall(async (data: QuoteBackendReceive, contex
 
     const err = validate(data, constraints)
     if (err !== undefined) {
-        throw err 
+        throw new functions.https.HttpsError('invalid-argument', err)
     }
 
     const fiatAmount = quote.satAmount  * quote.satPrice
     const remote_address = data.btcAddress
 
     if (await getBalance(context.auth.uid) < fiatAmount) {
-        throw new Error('not enough fiat to proceed')
+        throw new functions.https.HttpsError('permission-denied', 'not enough fiat to proceed')
     }
 
     const lnd = initLnd()
@@ -371,7 +385,7 @@ exports.buyBTC = functions.https.onCall(async (data: QuoteBackendReceive, contex
     console.log("lnd get onchain balance")
     const localBalance = (await lnService.getChainBalance({lnd})).chain_balance;
     if (localBalance < quote.satAmount ) {
-        return 'sat balance too low to proceed'
+        throw new functions.https.HttpsError('internal', 'Galoy sat balance too low to proceed')
     }
 
     const onchain_tx = await lnService.sendToChainAddress({address: remote_address, lnd, tokens: quote.satAmount })
@@ -391,7 +405,7 @@ exports.buyBTC = functions.https.onCall(async (data: QuoteBackendReceive, contex
     if (result) {
         return onchain_tx.id
     } else {
-        return 'issue' //TODO
+        throw new functions.https.HttpsError('internal', 'issue updating transaction on the database')
     }
 })
 
@@ -401,7 +415,7 @@ exports.sellBTC = functions.https.onCall(async (data: QuoteBackendReceive, conte
             'The function must be called while authenticated.')};
 
     const now = Date.now()    
-    commonBuySell(data, now, context)
+    commonBuySellValidation(data, now, context)
     
     const quote = data.quote
 
@@ -418,7 +432,7 @@ exports.sellBTC = functions.https.onCall(async (data: QuoteBackendReceive, conte
 
     const err = validate(data, constraints)
     if (err !== undefined) {
-        throw err 
+        return new functions.https.HttpsError('invalid-argument', err)
     }
 
     await firestore.collection("sellquotes").doc(quote.address!).update({
@@ -452,6 +466,45 @@ exports.payInvoice = functions.https.onCall(async (data, context) => {
             'internal', 
             `${err[0]}, ${err[1]}, ${err[2].message}` ));
     }
+})
+
+exports.onBankAccountOpening = functions.https.onCall(async (data, context) => {
+    if (!context.auth) {
+        throw new functions.https.HttpsError('failed-precondition', 
+            'The function must be called while authenticated.')};
+
+    const constraints = {
+        dateOfBirth: {
+            datetime: true,
+            // latest: moment.utc().subtract(18, 'years'),
+            // message: "^You need to be at least 18 years old"
+        },
+        firstName: {
+            presence: true, 
+        },
+        lastName: {
+            presence: true, 
+        },
+        email: {
+            email: true
+        },
+    }
+
+    const err = validate(data, constraints)
+    if (err !== undefined) {
+        return new functions.https.HttpsError('invalid-argument', err.toString())
+    }
+
+    return firestore.doc(`/users/${context.auth.uid}`).set({ userInfo: data }, { merge: true }
+    ).then(writeResult => {
+        return {result: `Transaction succesfully added ${writeResult}`}
+    })
+    .catch((err) => {
+        console.error(err)
+        throw new functions.https.HttpsError('internal', err.toString())
+    })
+
+
 })
 
 
@@ -501,7 +554,7 @@ exports.incomingOnChainTransaction = functions.https.onRequest(async (req, res) 
         return res.status(200).send({response: `transaction ${tx.id} updated succesfully`});
     }
 
-    // manage other cases
+    // TODO manage other cases
     return res.status(404).send({response: 'nothing to do'})
 });
 
