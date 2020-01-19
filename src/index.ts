@@ -139,9 +139,11 @@ exports.sendPubKey = functions.https.onCall(async (data, context) => {
         }}
     }
 
-    const err = validate(data, constraints)
-    if (err !== undefined) {
-        return new functions.https.HttpsError('invalid-argument', err)
+    {
+        const err = validate(data, constraints)
+        if (err !== undefined) {
+            return new functions.https.HttpsError('invalid-argument', err)
+        }
     }
 
     return firestore.doc(`/users/${context.auth.uid}`).set({
@@ -498,9 +500,11 @@ exports.onBankAccountOpening = functions.https.onCall(async (data, context) => {
         },
     }
 
-    const err = validate(data, constraints)
-    if (err !== undefined) {
-        return new functions.https.HttpsError('invalid-argument', err.toString())
+    {
+        const err = validate(data, constraints)
+        if (err !== undefined) {
+            return new functions.https.HttpsError('invalid-argument', err.toString())
+        }
     }
 
     return firestore.doc(`/users/${context.auth.uid}`).set({ userInfo: data }, { merge: true }
