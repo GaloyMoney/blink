@@ -131,7 +131,7 @@ exports.sendPubKey = functions.https.onCall(async (data, context) => {
 
     const constraints = {
         pubkey: {
-            length: {is: 64}
+            length: {is: 66} // why 66 and not 64?
         },
         network: {
             inclusion: {
@@ -142,7 +142,7 @@ exports.sendPubKey = functions.https.onCall(async (data, context) => {
     {
         const err = validate(data, constraints)
         if (err !== undefined) {
-            return new functions.https.HttpsError('invalid-argument', err)
+            throw new functions.https.HttpsError('invalid-argument', JSON.stringify(err))
         }
     }
 
@@ -157,7 +157,7 @@ exports.sendPubKey = functions.https.onCall(async (data, context) => {
     })
     .catch((err) => {
         console.error(err)
-        return new functions.https.HttpsError('internal', err)
+        throw new functions.https.HttpsError('internal', err)
     })
 })
 
@@ -173,7 +173,7 @@ exports.sendDeviceToken = functions.https.onCall(async (data, context) => {
     })
     .catch((err) => {
         console.error(err)
-        return new functions.https.HttpsError('internal', err)
+        throw new functions.https.HttpsError('internal', err)
     })
 })
 
@@ -203,8 +203,9 @@ exports.openChannel = functions.https.onCall(async (data, context) => {
     })
     .catch((err) => {
         console.error(err)
-        throw new functions.https.HttpsError('internal', 
-        `${err[0]}, ${err[1]}, ${err[2].details}`);
+        let message = `${err[0]}, ${err[1]}, `
+        message += err[2] ? err[2].details : '' // FIXME verify details it the property we want
+        throw new functions.https.HttpsError('internal', message)
     })
 })
 
@@ -269,7 +270,7 @@ exports.quoteBTC = functions.https.onCall(async (data, context) => {
 
     const err = validate(data, constraints)
     if (err !== undefined) {
-        return new functions.https.HttpsError('invalid-argument', err)
+        throw new functions.https.HttpsError('invalid-argument', err)
     }
     
     let spot
@@ -277,7 +278,7 @@ exports.quoteBTC = functions.https.onCall(async (data, context) => {
     try {
         spot = await priceBTC()
     } catch (err) {
-        return new functions.https.HttpsError('unavailable', err)
+        throw new functions.https.HttpsError('unavailable', err)
     }
 
     const satAmount = data.satAmount
@@ -302,7 +303,7 @@ exports.quoteBTC = functions.https.onCall(async (data, context) => {
         const { address } = await lnService.createChainAddress({format, lnd});
 
         if (address === undefined) {
-            return new functions.https.HttpsError('unavailable', 'error getting on chain address')
+            throw new functions.https.HttpsError('unavailable', 'error getting on chain address')
         }
 
         message.address = address
@@ -346,7 +347,7 @@ const commonBuySellValidation = ( data: QuoteBackendReceive,
 
     const err = validate(data.quote, constraints)
     if (err !== undefined) {
-        return new functions.https.HttpsError('invalid-argument', err)
+        throw new functions.https.HttpsError('invalid-argument', err)
     }
 
     if (now >= data.quote.validUntil) {
@@ -442,7 +443,7 @@ exports.sellBTC = functions.https.onCall(async (data: QuoteBackendReceive, conte
 
     const err = validate(data, constraints)
     if (err !== undefined) {
-        return new functions.https.HttpsError('invalid-argument', err)
+        throw new functions.https.HttpsError('invalid-argument', err)
     }
 
     await firestore.collection("sellquotes").doc(quote.address!).update({
@@ -503,7 +504,7 @@ exports.onBankAccountOpening = functions.https.onCall(async (data, context) => {
     {
         const err = validate(data, constraints)
         if (err !== undefined) {
-            return new functions.https.HttpsError('invalid-argument', err.toString())
+            throw new functions.https.HttpsError('invalid-argument', err.toString())
         }
     }
 
@@ -655,7 +656,7 @@ exports.onUserCreation = functions.auth.user().onCreate(async (user) => {
         console.log(`Transaction succesfully added ${result}`)
     } catch (err) {
         console.error(err)
-        return new functions.https.HttpsError('internal', err)
+        throw new functions.https.HttpsError('internal', err)
     }
 
     if (lookup) {
@@ -674,7 +675,7 @@ exports.onUserCreation = functions.auth.user().onCreate(async (user) => {
         })
         .catch((err) => {
             console.error(err)
-            return new functions.https.HttpsError('internal', err)
+            throw new functions.https.HttpsError('internal', err)
         })
     }
 
@@ -703,6 +704,6 @@ exports.deleteAllUsers = functions.https.onCall(async (data, context) => {
         return {userDeleted: listUsers.users}
     })
     .catch(err => {
-        return new functions.https.HttpsError('internal', err)
+        throw new functions.https.HttpsError('internal', err)
     })
 })
