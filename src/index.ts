@@ -46,7 +46,7 @@ validate.extend(validate.validators.datetime, {
     },
     // Input is a unix timestamp
     format: function(value: any, options: any) {
-        var format = options.dateOnly ? "YYYY-MM-DD" : "YYYY-MM-DD hh:mm:ss";
+        const format = options.dateOnly ? "YYYY-MM-DD" : "YYYY-MM-DD hh:mm:ss";
         return moment.utc(value).format(format);
     }
 });
@@ -68,11 +68,11 @@ const getBalance = async (uid: string) => {
         if (doc.exists) {
             return reduce(doc.data()!.transactions) // FIXME type
         } else {
-            return "No such document!"
+            throw new functions.https.HttpsError('unavailable', "document is not available")
         }
     }).catch(err => {
         console.log('err', err)
-        return err
+        throw new functions.https.HttpsError('internal', "document is not available")
     })
 }
 
@@ -87,12 +87,12 @@ const priceBTC = async (): Promise<number> => {
         baseURL: COINBASE_API,
         timeout: TIMEOUT,
         headers: { Accept: "application/json" },
-    })    
+    })
       
     const response: ApiResponse<any> = await apisauce.get(`/v2/prices/spot?currency=USD`)
     
     if (!response.ok) {
-        throw Error("ref price server is down")
+        throw new functions.https.HttpsError('resource-exhausted', "ref price server is down")
     }
     
     try {
@@ -100,7 +100,7 @@ const priceBTC = async (): Promise<number> => {
         console.log(`sat spot price is ${sat_price}`)
         return sat_price
     } catch {
-        throw Error("bad-data")
+        throw new functions.https.HttpsError('internal', "bad response from ref price server")
     }
 }
 
@@ -110,7 +110,7 @@ exports.updatePrice = functions.pubsub.schedule('every 15 mins').onRun(async (co
         console.log(`updating price, new price: ${spot}`);
         await firestore.doc('global/price').set({BTC: spot})
     } catch (err) {
-        return err
+        throw new functions.https.HttpsError('internal', err.toString())
     }
 });
 
@@ -129,12 +129,20 @@ exports.sendPubKey = functions.https.onCall(async (data, context) => {
         throw new functions.https.HttpsError('failed-precondition', 
             'The function must be called while authenticated.')};
 
-    // TODO check attributed, eg:
-    // if (!(typeof text === 'string') || text.length === 0) {
-    //     // Throwing an HttpsError so that the client gets the error details.
-    //     throw new functions.https.HttpsError('invalid-argument', 'The function must be called with ' +
-    //         'one arguments "text" containing the message text to add.');
-    //     }
+    const constraints = {
+        pubkey: {
+            length: {is: 64}
+        },
+        network: {
+            inclusion: {
+                within: {"testnet": "mainnet"}
+        }}
+    }
+
+    const err = validate(data, constraints)
+    if (err !== undefined) {
+        return new functions.https.HttpsError('invalid-argument', err)
+    }
 
     return firestore.doc(`/users/${context.auth.uid}`).set({
         lightning: {
@@ -147,7 +155,7 @@ exports.sendPubKey = functions.https.onCall(async (data, context) => {
     })
     .catch((err) => {
         console.error(err)
-        return err
+        return new functions.https.HttpsError('internal', err)
     })
 })
 
@@ -163,7 +171,7 @@ exports.sendDeviceToken = functions.https.onCall(async (data, context) => {
     })
     .catch((err) => {
         console.error(err)
-        return err
+        return new functions.https.HttpsError('internal', err)
     })
 })
 
@@ -643,7 +651,7 @@ exports.onUserCreation = functions.auth.user().onCreate(async (user) => {
         console.log(`Transaction succesfully added ${result}`)
     } catch (err) {
         console.error(err)
-        return err
+        return new functions.https.HttpsError('internal', err)
     }
 
     if (lookup) {
@@ -662,10 +670,11 @@ exports.onUserCreation = functions.auth.user().onCreate(async (user) => {
         })
         .catch((err) => {
             console.error(err)
-            return err
+            return new functions.https.HttpsError('internal', err)
         })
-
     }
+
+    return
 })
 
 exports.setGlobalInfo = functions.https.onCall(async (data, context) => {
@@ -689,5 +698,7 @@ exports.deleteAllUsers = functions.https.onCall(async (data, context) => {
 
         return {userDeleted: listUsers.users}
     })
-    .catch(err => {return {err}})
+    .catch(err => {
+        return new functions.https.HttpsError('internal', err)
+    })
 })
