@@ -204,7 +204,7 @@ exports.openChannel = functions.https.onCall(async (data, context) => {
     .catch((err) => {
         console.error(err)
         throw new functions.https.HttpsError('internal', 
-        err.toString());
+        `${err[0]}, ${err[1]}, ${err[2].details}`);
     })
 })
 
