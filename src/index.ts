@@ -1,12 +1,13 @@
-import * as functions from 'firebase-functions';
+import * as functions from 'firebase-functions'
 import * as admin from 'firebase-admin'
 import { transactions_template } from "./const"
 import { create, ApiResponse } from "apisauce"
 import { sign, verify } from "./crypto"
-import * as moment from 'moment';
-const lnService = require('ln-service');
-const validate = require("validate.js");
-const assert = require('assert');
+import * as moment from 'moment'
+import { IQuoteRequest } from "./type"
+const lnService = require('ln-service')
+const validate = require("validate.js")
+const assert = require('assert')
 
 interface Auth {
     macaroon: string,
@@ -243,6 +244,96 @@ const getTwilioClient = () => {
     return client
 }
 
+exports.quoteLNDBTC = functions.https.onCall(async (data, context) => {
+    console.log('executing quoteLNDBTC')
+
+    if (!context.auth) {
+        throw new functions.https.HttpsError('failed-precondition', 
+            'The function must be called while authenticated.')};
+
+    const SPREAD = 0.015 //1.5%
+    const QUOTE_VALIDITY = 30 * 1000
+
+    // const constraints = {
+    //     // side is from the customer side.
+    //     // eg: buy side means customer is buying, we are selling.
+    //     side: {
+    //         inclusion: ["buy", "sell"]
+    //     },
+    //     quote: function(value: any, attributes: any) {
+    //         if (attributes.side === "sell") return null;
+    //         return {
+    //           presence: {message: "is required for buy order"},
+    //           length: {minimum: 6} // what should be the minimum invoice length?
+    //         };
+    //     }, // we can derive satAmount for sell order with the invoice
+    //     satAmount: function(value: any, attributes: any) {
+    //         if (attributes.side === "buy") return null;
+    //         return {
+    //             presence: {message: "is required for sell order"},
+    //             numericality: {
+    //                 onlyInteger: true,
+    //                 greaterThan: 0
+    //         }}
+    //     }}
+
+    console.log(data)
+
+    // const err = validate(data, constraints)
+    // if (err !== undefined) {
+    //     throw new functions.https.HttpsError('invalid-argument', JSON.stringify(err))
+    // }
+    
+    let spot
+    
+    try {
+        spot = await priceBTC()
+    } catch (err) {
+        throw new functions.https.HttpsError('unavailable', err)
+    }
+
+    const satAmount = data.satAmount
+    // TODO: buy
+
+    let multiplier = NaN
+
+    if (data.side === "buy") {
+        multiplier = 1 + SPREAD
+    } else if (data.side === "sell") {
+        multiplier = 1 - SPREAD
+    }
+
+    const side = data.side
+    const satPrice = multiplier * spot
+    const validUntil = Date.now() + QUOTE_VALIDITY // 30 sec
+
+    const message: IQuoteRequest = {side, satPrice, validUntil, satAmount}  // FIXME type
+
+    if (data.side === "sell") {
+        const lnd = initLnd()
+
+        const invoice = await lnService.createInvoice({lnd, tokens: satAmount});
+
+        if (invoice === undefined) {
+            throw new functions.https.HttpsError('unavailable', 'error creating invoice')
+        }
+
+        message.invoice = invoice.request
+        await firestore.collection("sellquotes").doc(invoice.request).set({...message, uid: context.auth.uid})
+        // TODO: cleanup quote that are older than 1 day?
+    }
+
+    // we sign the message to have stateless quote.
+    // we could use a database of quote instead 
+    // but we would need to recycle them once they expire
+    // and this would also require multiple database call
+    const signedMessage = await sign({... message})
+    
+    console.log(`${data.side} quote request from ${context.auth.uid}`)
+    console.log(signedMessage)
+    return signedMessage
+})
+
 
 exports.quoteBTC = functions.https.onCall(async (data, context) => {
     if (!context.auth) {
@@ -301,7 +392,7 @@ exports.quoteBTC = functions.https.onCall(async (data, context) => {
         const { address } = await lnService.createChainAddress({format, lnd});
 
         if (address === undefined) {
-            throw new functions.https.HttpsError('unavailable', 'error getting on chain address')
+            throw new functions.https.HttpsError('unavailable', 'error getting an onchain address')
         }
 
         message.address = address
@@ -678,7 +769,7 @@ exports.onUserCreation = functions.auth.user().onCreate(async (user) => {
         })
     }
 
-    return
+    return true
 })
 
 exports.setGlobalInfo = functions.https.onCall(async (data, context) => {
