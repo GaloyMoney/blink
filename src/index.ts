@@ -182,7 +182,7 @@ exports.openChannel = functions.https.onCall(async (data, context) => {
         throw new functions.https.HttpsError('failed-precondition', 
             'The function must be called while authenticated.')};
 
-    const local_tokens = 20000;
+    const local_tokens = 120000;
     const lnd = initLnd()
 
     return firestore.doc(`/users/${context.auth.uid}`).get()
@@ -193,10 +193,7 @@ exports.openChannel = functions.https.onCall(async (data, context) => {
         }
 
         const pubkey = doc.data()!.lightning.pubkey
-
-        // const is_private = network === "mainnet"
         const is_private = true
-
         const funding_tx = await lnService.openChannel({lnd, local_tokens, partner_public_key: pubkey, is_private})
 
         return {funding_tx}
@@ -224,7 +221,8 @@ const initLnd = () => {
         const socket = `${lndaddr}:10009`
         auth_lnd = {macaroon, cert, socket}
     } catch (err) {
-        throw new Error(`neither env nor functions.config() are set` + err)
+        throw new functions.https.HttpsError('failed-precondition', 
+            `neither env nor functions.config() are set` + err)
     }
 
     console.log("lnd auth", auth_lnd)
