@@ -268,7 +268,7 @@ exports.quoteBTC = functions.https.onCall(async (data, context) => {
 
     const err = validate(data, constraints)
     if (err !== undefined) {
-        throw new functions.https.HttpsError('invalid-argument', err)
+        throw new functions.https.HttpsError('invalid-argument', JSON.stringify(err))
     }
     
     let spot
@@ -345,7 +345,7 @@ const commonBuySellValidation = ( data: QuoteBackendReceive,
 
     const err = validate(data.quote, constraints)
     if (err !== undefined) {
-        throw new functions.https.HttpsError('invalid-argument', err)
+        throw new functions.https.HttpsError('invalid-argument', JSON.stringify(err))
     }
 
     if (now >= data.quote.validUntil) {
@@ -378,7 +378,7 @@ exports.buyBTC = functions.https.onCall(async (data: QuoteBackendReceive, contex
 
     const err = validate(data, constraints)
     if (err !== undefined) {
-        throw new functions.https.HttpsError('invalid-argument', err)
+        throw new functions.https.HttpsError('invalid-argument', JSON.stringify(err))
     }
 
     const fiatAmount = quote.satAmount  * quote.satPrice
@@ -441,7 +441,7 @@ exports.sellBTC = functions.https.onCall(async (data: QuoteBackendReceive, conte
 
     const err = validate(data, constraints)
     if (err !== undefined) {
-        throw new functions.https.HttpsError('invalid-argument', err)
+        throw new functions.https.HttpsError('invalid-argument', JSON.stringify(err))
     }
 
     await firestore.collection("sellquotes").doc(quote.address!).update({
@@ -502,7 +502,8 @@ exports.onBankAccountOpening = functions.https.onCall(async (data, context) => {
     {
         const err = validate(data, constraints)
         if (err !== undefined) {
-            throw new functions.https.HttpsError('invalid-argument', err.toString())
+            console.log(err)
+            throw new functions.https.HttpsError('invalid-argument', JSON.stringify(err))
         }
     }
 
