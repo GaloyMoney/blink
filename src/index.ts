@@ -278,7 +278,6 @@ exports.quoteLNDBTC = functions.https.onCall(async (data: IQuoteRequest, context
     }
 
     const satAmount = data.satAmount
-    // TODO: buy
 
     let multiplier = NaN
 
@@ -341,7 +340,6 @@ exports.buyLNDBTC = functions.https.onCall(async (data: IBuyRequest, context) =>
         throw new functions.https.HttpsError('failed-precondition', 
             'The function must be called while authenticated.')};
 
-    // additional constraints just for buy
     const constraints = {
         side: {
             inclusion: ["buy"]
