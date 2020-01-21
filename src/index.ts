@@ -4,7 +4,7 @@ import { transactions_template } from "./const"
 import { create, ApiResponse } from "apisauce"
 import { sign, verify } from "./crypto"
 import * as moment from 'moment'
-import { IQuoteRequest } from "./type"
+import { IQuoteResponse, IQuoteRequest, IBuyRequest } from "./type"
 const lnService = require('ln-service')
 const validate = require("validate.js")
 const assert = require('assert')
@@ -15,27 +15,12 @@ interface Auth {
     socket: string,
 }
 
-// TODO, this should be shared with the mobile app
-interface QuoteBackendInit {
-    side: "buy" | "sell", 
-    satPrice: number, 
-    validUntil: number, 
-    satAmount: number,
-    address?: string,
-}
-
-interface QuoteBackendReceive {
-    quote: QuoteBackendInit,
-    btcAddress?: string, // buy
-    onchain_tx?: string // sell
-}
-
 interface FiatTransaction {
     amount: number, 
     date: number,
     icon: string,
     name: string,
-    onchain_tx: string, // should be HEX?
+    onchain_tx?: string, // should be HEX?
 }
 
 
@@ -69,11 +54,11 @@ const getBalance = async (uid: string) => {
         if (doc.exists) {
             return reduce(doc.data()!.transactions) // FIXME type
         } else {
-            throw new functions.https.HttpsError('unavailable', "document is not available")
+            return 0 // no bank account yet
         }
     }).catch(err => {
         console.log('err', err)
-        throw new functions.https.HttpsError('internal', "document is not available")
+        throw new functions.https.HttpsError('internal', `issue with fetching balance ${err}`)
     })
 }
 
@@ -226,7 +211,7 @@ const initLnd = () => {
             `neither env nor functions.config() are set` + err)
     }
 
-    console.log("lnd auth", auth_lnd)
+    // console.log("lnd auth", auth_lnd)
     const {lnd} = lnService.authenticatedLndGrpc(auth_lnd);
     return lnd
 }
@@ -244,7 +229,7 @@ const getTwilioClient = () => {
     return client
 }
 
-exports.quoteLNDBTC = functions.https.onCall(async (data, context) => {
+exports.quoteLNDBTC = functions.https.onCall(async (data: IQuoteRequest, context) => {
     console.log('executing quoteLNDBTC')
 
     if (!context.auth) {
@@ -252,38 +237,38 @@ exports.quoteLNDBTC = functions.https.onCall(async (data, context) => {
             'The function must be called while authenticated.')};
 
     const SPREAD = 0.015 //1.5%
-    const QUOTE_VALIDITY = 30 * 1000
+    const QUOTE_VALIDITY = {seconds: 30}
 
-    // const constraints = {
-    //     // side is from the customer side.
-    //     // eg: buy side means customer is buying, we are selling.
-    //     side: {
-    //         inclusion: ["buy", "sell"]
-    //     },
-    //     quote: function(value: any, attributes: any) {
-    //         if (attributes.side === "sell") return null;
-    //         return {
-    //           presence: {message: "is required for buy order"},
-    //           length: {minimum: 6} // what should be the minimum invoice length?
-    //         };
-    //     }, // we can derive satAmount for sell order with the invoice
-    //     satAmount: function(value: any, attributes: any) {
-    //         if (attributes.side === "buy") return null;
-    //         return {
-    //             presence: {message: "is required for sell order"},
-    //             numericality: {
-    //                 onlyInteger: true,
-    //                 greaterThan: 0
-    //         }}
-    //     }}
+    const constraints = {
+        // side is from the customer side.
+        // eg: buy side means customer is buying, we are selling.
+        side: {
+            inclusion: ["buy", "sell"]
+        },
+        invoice: function(value: any, attributes: any) {
+            if (attributes.side === "sell") return null;
+            return {
+              presence: {message: "is required for buy order"},
+              length: {minimum: 6} // what should be the minimum invoice length?
+            };
+        }, // we can derive satAmount for sell order with the invoice
+        satAmount: function(value: any, attributes: any) {
+            if (attributes.side === "buy") return null;
+            return {
+                presence: {message: "is required for sell order"},
+                numericality: {
+                    onlyInteger: true,
+                    greaterThan: 0
+            }}
+    }}
 
-    console.log(data)
-
-    // const err = validate(data, constraints)
-    // if (err !== undefined) {
-    //     throw new functions.https.HttpsError('invalid-argument', JSON.stringify(err))
-    // }
+    const err = validate(data, constraints)
+    if (err !== undefined) {
+        throw new functions.https.HttpsError('invalid-argument', JSON.stringify(err))
+    }
     
+    console.log(`${data.side} quote request from ${context.auth.uid}, request: ${data}`)
+
     let spot
     
     try {
@@ -305,242 +290,171 @@ exports.quoteLNDBTC = functions.https.onCall(async (data, context) => {
 
     const side = data.side
     const satPrice = multiplier * spot
-    const validUntil = Date.now() + QUOTE_VALIDITY // 30 sec
+    const validUntil = moment().add(QUOTE_VALIDITY)
 
-    const message: IQuoteRequest = {side, satPrice, validUntil, satAmount}  // FIXME type
+    const lnd = initLnd()
 
     if (data.side === "sell") {
-        const lnd = initLnd()
+        const {request} = await lnService.createInvoice(
+            {lnd, 
+            tokens: satAmount,
+            description: `satPrice:${satPrice}`,
+            expires_at: validUntil.toISOString(),
+        });
 
-        const invoice = await lnService.createInvoice({lnd, tokens: satAmount});
-
-        if (invoice === undefined) {
+        if (request === undefined) {
             throw new functions.https.HttpsError('unavailable', 'error creating invoice')
         }
 
-        message.invoice = invoice.request
-        await firestore.collection("sellquotes").doc(invoice.request).set({...message, uid: context.auth.uid})
-        // TODO: cleanup quote that are older than 1 day?
-    }
+        return {side, invoice: request} as IQuoteResponse
+        
+    } else if (data.side === "buy") {
 
-    // we sign the message to have stateless quote.
-    // we could use a database of quote instead 
-    // but we would need to recycle them once they expire
-    // and this would also require multiple database call
-    const signedMessage = await sign({... message})
-    
-    console.log(`${data.side} quote request from ${context.auth.uid}`)
-    console.log(signedMessage)
-    return signedMessage
-})
+        const invoiceJson = await lnService.decodePaymentRequest({lnd, request: data.invoice})
 
-
-exports.quoteBTC = functions.https.onCall(async (data, context) => {
-    if (!context.auth) {
-        throw new functions.https.HttpsError('failed-precondition', 
-            'The function must be called while authenticated.')};
-
-    const SPREAD = 0.015 //1.5%
-    const QUOTE_VALIDITY = 30 * 1000
-
-    const constraints = {
-        satAmount: {
-            presence: true,
-            numericality: {
-                onlyInteger: true,
-                greaterThan: 0
-        }},
-        // side is from the customer side.
-        // eg: buy side means customer is buying, we are selling.
-        side: {
-            inclusion: ["buy", "sell"]
-        }
-    }
-
-    const err = validate(data, constraints)
-    if (err !== undefined) {
-        throw new functions.https.HttpsError('invalid-argument', JSON.stringify(err))
-    }
-    
-    let spot
-    
-    try {
-        spot = await priceBTC()
-    } catch (err) {
-        throw new functions.https.HttpsError('unavailable', err)
-    }
-
-    const satAmount = data.satAmount
-
-    let multiplier = NaN
-
-    if (data.side === "buy") {
-        multiplier = 1 + SPREAD
-    } else if (data.side === "sell") {
-        multiplier = 1 - SPREAD
-    }
-
-    const side = data.side
-    const satPrice = multiplier * spot
-    const validUntil = Date.now() + QUOTE_VALIDITY // 30 sec
-
-    const message: QuoteBackendInit = {side, satPrice, validUntil, satAmount}  // FIXME type
-
-    if (data.side === "sell") {
-        const lnd = initLnd()
-        const format = 'p2wpkh';
-        const { address } = await lnService.createChainAddress({format, lnd});
-
-        if (address === undefined) {
-            throw new functions.https.HttpsError('unavailable', 'error getting an onchain address')
+        if (moment.utc() < moment.utc(invoiceJson.expires_at).subtract(QUOTE_VALIDITY)) { 
+            throw new functions.https.HttpsError('failed-precondition', 'invoice should expiry within 30 seconds')
         }
 
-        message.address = address
-        await firestore.collection("sellquotes").doc(address).set({...message, uid: context.auth.uid})
-        // TODO: cleanup quote that are older than 1 day?
-    }
-
-    // we sign the message to have stateless quote.
-    // we could use a database of quote instead 
-    // but we would need to recycle them once they expire
-    // and this would also require multiple database call
-    const signedMessage = await sign({... message})
-    
-    console.log(`${data.side} quote request from ${context.auth.uid}`)
-    console.log(signedMessage)
-    return signedMessage
-})
-
-const commonBuySellValidation = ( data: QuoteBackendReceive,
-                        now: number, 
-                        context: functions.https.CallableContext) => {
-
-    const constraints = {
-        "satAmount": { 
-            presence: true,
-            numericality: {
-                onlyInteger: true,
-                greaterThan: 0
-        }},
-        "satPrice": { 
-            numericality: {
-                greaterThan: 0 // maybe only allow int?
-        }},
-        "signature": {
-            presence: true, 
-        },
-        "validUntil": {
-            datetime: true
+        if (moment.utc() > moment.utc(invoiceJson.expires_at)) {
+            throw new functions.https.HttpsError('failed-precondition', 'invoice already expired')
         }
-    }
 
-    const err = validate(data.quote, constraints)
-    if (err !== undefined) {
-        throw new functions.https.HttpsError('invalid-argument', JSON.stringify(err))
-    }
+        const message: IQuoteResponse = {
+            side, 
+            satPrice, 
+            invoice: data.invoice!,
+        }
 
-    if (now >= data.quote.validUntil) {
-        throw new functions.https.HttpsError('deadline-exceeded', 'quote expired')
-    }
-    
-    if (!verify(data.quote)) {
-        throw new functions.https.HttpsError('failed-precondition', 'signature is not valid')
+        const signedMessage = await sign({... message})
+
+        console.log(signedMessage)
+        return signedMessage
     }
 
     return true
-}
+})
 
-exports.buyBTC = functions.https.onCall(async (data: QuoteBackendReceive, context) => {
+
+exports.buyLNDBTC = functions.https.onCall(async (data: IBuyRequest, context) => {
     if (!context.auth) {
         throw new functions.https.HttpsError('failed-precondition', 
             'The function must be called while authenticated.')};
-    
-    const now = Date.now()    
-    commonBuySellValidation(data, now, context)
-
-    const quote = data.quote
 
     // additional constraints just for buy
     const constraints = {
-        btcAddress: {
-            presence: {
-               allowEmpty: false, // TODO: do proper address verification
-    }}}
+        side: {
+            inclusion: ["buy"]
+        },
+        invoice: {
+            presence: true,
+            length: {minimum: 6} // what should be the minimum invoice length?
+        },
+        satPrice: {
+            presence: true,
+            numericality: {
+                greaterThan: 0
+        }},
+        signature: {
+            presence: true,
+            length: {minimum: 6} // FIXME set correct signature length
+        }
+    }
 
     const err = validate(data, constraints)
     if (err !== undefined) {
         throw new functions.https.HttpsError('invalid-argument', JSON.stringify(err))
     }
 
-    const fiatAmount = quote.satAmount  * quote.satPrice
-    const remote_address = data.btcAddress
-
-    if (await getBalance(context.auth.uid) < fiatAmount) {
-        throw new functions.https.HttpsError('permission-denied', 'not enough fiat to proceed')
+    if (!verify(data)) {
+        throw new functions.https.HttpsError('failed-precondition', 'signature is not valid')
     }
 
     const lnd = initLnd()
-    console.log(`lnd auth: ${lnd}`)
+    const invoiceJson = await lnService.decodePaymentRequest({lnd, request: data.invoice})
 
-    console.log("lnd get onchain balance")
-    const localBalance = (await lnService.getChainBalance({lnd})).chain_balance;
-    if (localBalance < quote.satAmount ) {
-        throw new functions.https.HttpsError('internal', 'Galoy sat balance too low to proceed')
+    const satAmount = invoiceJson.tokens
+    const destination = invoiceJson.destination
+
+    const fiatAmount = satAmount * data.satPrice
+
+    if (await getBalance(context.auth.uid) < fiatAmount) {
+        throw new functions.https.HttpsError('permission-denied', 'not enough dollar to proceed')
     }
 
-    const onchain_tx = await lnService.sendToChainAddress({address: remote_address, lnd, tokens: quote.satAmount })
+    const {route} = await lnService.probeForRoute({lnd, tokens: satAmount, destination})
+    
+    if (route?.length === 0) {
+        throw new functions.https.HttpsError('internal', `Can't probe payment. Not enough liquidity?`)
+    }
+
+    try {
+        await lnService.pay({lnd, request: data.invoice})
+    } catch (err) {
+        throw new functions.https.HttpsError('internal', `Error paying invoice ${err}`)
+    }
 
     const fiat_tx: FiatTransaction = {
         amount: - fiatAmount, 
-        date: now,
+        date: moment().unix(),
         icon: "logo-bitcoin",
         name: "Bought Bitcoin",
-        onchain_tx: onchain_tx.id
+        // onchain_tx: onchain_tx.id
     }
 
-    const result = firestore.doc(`/users/${context.auth.uid}`).update({
+    try {
+        const result = await firestore.doc(`/users/${context.auth.uid}`).update({
+            transactions: admin.firestore.FieldValue.arrayUnion(fiat_tx)
+        })
+
+        console.log(result)
+    } catch(err) {
+        throw new functions.https.HttpsError('internal', 'issue updating transaction on the database')
+    }
+
+    console.log("success")
+    return {success: "success"}
+})
+
+// sellBTC
+exports.incomingInvoice = functions.https.onRequest(async (req, res) => {
+    // TODO only authorize by admin-like
+    // should just validate previous transaction
+
+    const lnd = initLnd()
+
+    const invoice = req.body
+    console.log(invoice)
+
+    const request = invoice.request
+    const channel = invoice.payments[0].in_channel
+
+    const invoiceJson = await lnService.decodePaymentRequest({lnd, request})
+
+    const { channels } = await lnService.getChannels({lnd})
+    const channelJson = channels.filter((item: any) => item.id === channel)
+    const partner_public_key = channelJson[0].partner_public_key
+
+    const users = firestore.collection("users");
+    const querySnapshot = await users.where("lightning.pubkey", "==", partner_public_key).get();
+    const uid = (querySnapshot.docs[0].ref as any)._path.segments[1] // FIXME use path?
+
+    const satAmount = invoiceJson.tokens
+    const satPrice = parseFloat(invoiceJson.description.split(":")[1])
+    const fiatAmount = satAmount * satPrice
+
+    const fiat_tx: FiatTransaction = {
+        amount: fiatAmount,
+        date: Date.parse(invoiceJson.expires_at) / 1000,
+        icon: "logo-bitcoin",
+        name: "Sold Bitcoin",
+    }
+
+    await firestore.doc(`/users/${uid}`).update({
         transactions: admin.firestore.FieldValue.arrayUnion(fiat_tx)
     })
 
-    if (result) {
-        return onchain_tx.id
-    } else {
-        throw new functions.https.HttpsError('internal', 'issue updating transaction on the database')
-    }
-})
-
-exports.sellBTC = functions.https.onCall(async (data: QuoteBackendReceive, context) => {
-    if (!context.auth) {
-        throw new functions.https.HttpsError('failed-precondition', 
-            'The function must be called while authenticated.')};
-
-    const now = Date.now()    
-    commonBuySellValidation(data, now, context)
-    
-    const quote = data.quote
-
-    // additional constraints just for buy
-    const constraints = {
-        "quote.address": {
-            presence: {
-               allowEmpty: false, // TODO: do proper address verification
-        }},
-        onchain_tx: {
-            presence: {
-               allowEmpty: false, // TODO: do proper address verification
-    }}}
-
-    const err = validate(data, constraints)
-    if (err !== undefined) {
-        throw new functions.https.HttpsError('invalid-argument', JSON.stringify(err))
-    }
-
-    await firestore.collection("sellquotes").doc(quote.address!).update({
-        client_validation: true,
-        client_onchain_tx: data.onchain_tx,
-    })
-
-    return 'success'
+    return res.status(200).send({response: `invoice ${request} accounted succesfully`});
 
 })
 
@@ -621,43 +535,6 @@ exports.incomingOnChainTransaction = functions.https.onRequest(async (req, res) 
     const tx = req.body
     console.log(tx)
 
-    // this should be a onchain transaction
-    if (tx.is_confirmed && tx.is_outgoing === false) {
-        const sellQuotes = firestore.collection("sellquotes");
-        const querySnapshot = await sellQuotes.where("client_onchain_tx", "==", tx.id).get();
-        
-        assert(querySnapshot.size === 1)
-        const doc_ref = querySnapshot.docs[0].ref
-
-        const quote = querySnapshot.docs[0].data()
-
-        assert (quote.client_onchain_tx === tx.id)
-
-        if (quote.blockchain_validation) {
-            return res.status(200).send({response: `transaction ${tx.id} already processed`});    
-        }
-
-        await doc_ref.update({
-            blockchain_validation: true
-        })
-
-        const fiat_tx: FiatTransaction = {
-            amount: quote.satAmount * quote.satPrice, // should be on satAmount taken from on chain
-            date: Date.parse(tx.created_at),
-            icon: "logo-bitcoin",
-            name: "Sold Bitcoin",
-            onchain_tx: tx.id
-        }
-
-        await firestore.doc(`/users/${quote.uid}`).update({
-            transactions: admin.firestore.FieldValue.arrayUnion(fiat_tx)
-        })
-        
-        return res.status(200).send({response: `transaction ${tx.id} updated succesfully`});
-    }
-
-    // TODO manage other cases
-    return res.status(404).send({response: 'nothing to do'})
 });
 
 // TODO use onCall instead
