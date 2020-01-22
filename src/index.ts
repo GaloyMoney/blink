@@ -389,7 +389,8 @@ exports.buyLNDBTC = functions.https.onCall(async (data: IBuyRequest, context) =>
     try {
         await lnService.pay({lnd, request: data.invoice})
     } catch (err) {
-        throw new functions.https.HttpsError('internal', `Error paying invoice ${err}`)
+        console.error(err)
+        throw new functions.https.HttpsError('internal', `Error paying invoice ${err[0]}, ${err[1]}, ${err[2]?.details}`)
     }
 
     const fiat_tx: FiatTransaction = {
