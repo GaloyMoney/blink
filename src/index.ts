@@ -57,8 +57,8 @@ const getBalance = async (uid: string) => {
             return 0 // no bank account yet
         }
     }).catch(err => {
-        console.log('err', err)
-        throw new functions.https.HttpsError('internal', `issue with fetching balance ${err}`)
+        console.log('err', err) 
+        return 0 // FIXME: currently error on reduce when there is no transactions
     })
 }
 
@@ -667,9 +667,52 @@ exports.deleteAllUsers = functions.https.onCall(async (data, context) => {
             .catch(err => err)
         }
 
-        return {userDeleted: listUsers.users}
+        const collectionDeleted = deleteCollection(firestore, 'users', 50)
+        
+        return {userDeleted: listUsers.users, collectionDeleted}
     })
     .catch(err => {
         throw new functions.https.HttpsError('internal', err)
     })
 })
+
+const deleteCollection = async (db: any, collectionPath: any, batchSize: any) => {
+    let collectionRef = db.collection(collectionPath);
+    let query = collectionRef.orderBy('__name__').limit(batchSize);
+  
+    return new Promise((resolve, reject) => {
+      deleteQueryBatch(db, query, batchSize, resolve, reject);
+    });
+  }
+  
+function deleteQueryBatch(db: any, query: any, batchSize: any, resolve: any, reject: any) {
+query.get()
+    .then((snapshot: any) => {
+    // When there are no documents left, we are done
+    if (snapshot.size == 0) {
+        return 0;
+    }
+
+    // Delete documents in a batch
+    let batch = db.batch();
+    snapshot.docs.forEach((doc: any) => {
+        batch.delete(doc.ref);
+    });
+
+    return batch.commit().then(() => {
+        return snapshot.size;
+    });
+    }).then((numDeleted: any) => {
+    if (numDeleted === 0) {
+        resolve();
+        return;
+    }
+
+    // Recurse on the next process tick, to avoid
+    // exploding the stack.
+    process.nextTick(() => {
+        deleteQueryBatch(db, query, batchSize, resolve, reject);
+    });
+    })
+    .catch(reject);
+}
