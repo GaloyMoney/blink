@@ -168,7 +168,7 @@ exports.openChannel = functions.https.onCall(async (data, context) => {
         throw new functions.https.HttpsError('failed-precondition', 
             'The function must be called while authenticated.')};
 
-    const local_tokens = 120000;
+    const local_tokens = 50000;
     const lnd = initLnd()
 
     return firestore.doc(`/users/${context.auth.uid}`).get()
