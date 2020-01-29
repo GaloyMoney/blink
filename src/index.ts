@@ -4,7 +4,7 @@ import { transactions_template } from "./const"
 import { create, ApiResponse } from "apisauce"
 import { sign, verify } from "./crypto"
 import * as moment from 'moment'
-import { IQuoteResponse, IQuoteRequest, IBuyRequest } from "./type"
+import { IQuoteResponse, IQuoteRequest, IBuyRequest, OnboardingRewards } from "../../../../common/types"
 const lnService = require('ln-service')
 const validate = require("validate.js")
 const assert = require('assert')
@@ -89,6 +89,25 @@ const priceBTC = async (): Promise<number> => {
         throw new functions.https.HttpsError('internal', "bad response from ref price server")
     }
 }
+
+const UidToPubKey = async (uid: string) => {
+    const doc = await firestore.doc(`/users/${uid}`).get()
+    const pubKey = doc.data()?.lightning?.pubkey
+    return pubKey
+}
+
+const pubKeyToUid = async (pubKey: string) => {
+    const users = firestore.collection("users");
+    const querySnapshot = await users.where("lightning.pubkey", "==", pubKey).get();
+    
+    assert(querySnapshot.size === 1)
+
+    const userPath = querySnapshot.docs[0].ref.path
+    const uid = userPath.split('/')[1]
+
+    return uid
+}
+
 
 exports.updatePrice = functions.pubsub.schedule('every 15 mins').onRun(async (context) => {
     try {
@@ -481,6 +500,71 @@ exports.payInvoice = functions.https.onCall(async (data, context) => {
     }
 })
 
+const keySend = async (pubKey: number, amount: number) => {
+    const {randomBytes} = require('crypto')
+    const {createHash} = require('crypto')
+    const preimageByteLength = 32
+    const preimage = randomBytes(preimageByteLength);
+    const secret = preimage.toString('hex');
+    const keySendPreimageType = '5482373484';
+    const id = createHash('sha256').update(preimage).digest().toString('hex');
+    
+    const lnd = initLnd()
+
+    const request = {
+        id,
+        destination: pubKey,
+        lnd,
+        messages: [{type: keySendPreimageType, value: secret}],
+        tokens: amount,
+    }
+
+    const payment = await lnService.payViaPaymentDetails(request)
+
+    console.log(payment)
+}
+
+// exports.testKeySend = functions.https.onCall(async (data, context) => {
+//     const uid = "unTo6KEFXKQMYIXldrMSfFbBF063"
+//     const pubKey = await UidToPubKey(uid)
+//     console.log(pubKey)
+//     await keySend(pubKey, 1000)
+// })
+
+
+exports.useWildcard = functions.firestore
+    .document('users/{uid}/collection/stage')
+    .onWrite(async (change, context) => {
+
+        // console.log('change', change)
+        // console.log('after', change.after.data()) 
+        // console.log('before', change.before.data()) 
+
+        try {
+            const uid = context.params.uid
+            const { stage } = change.after.data() as any // FIXME type
+    
+            console.log(stage)
+
+            const paid:string[] | undefined = (await firestore.doc(`users/${uid}/collection/paid`).get())?.data() as string[]
+    
+            const toPay = stage?.filter((x:string) => !new Set(paid).has(x))
+    
+            const pubKey = await UidToPubKey(uid)
+    
+            toPay.forEach(async (item: string) => {
+                const amount: number = (<any>OnboardingRewards)[item]
+                await keySend(pubKey, amount)
+            })
+
+            await firestore.doc(`users/${uid}/collection/paid`).set(stage)
+
+        } catch (err) {
+            console.error(err)
+        }
+});
+
+
 exports.onBankAccountOpening = functions.https.onCall(async (data, context) => {
     if (!context.auth) {
         throw new functions.https.HttpsError('failed-precondition', 
@@ -536,6 +620,7 @@ exports.incomingOnChainTransaction = functions.https.onRequest(async (req, res) 
 
 });
 
+
 // TODO use onCall instead
 exports.incomingChannel = functions.https.onRequest(async (req, res) => {
     // TODO only authorize by admin-like
@@ -544,15 +629,7 @@ exports.incomingChannel = functions.https.onRequest(async (req, res) => {
     const channel = req.body
     console.log(channel)
 
-
-    const users = firestore.collection("users");
-    const querySnapshot = await users.where("lightning.pubkey", "==", channel.partner_public_key).get();
-    
-    assert(querySnapshot.size === 1)
-
-    const userPath = querySnapshot.docs[0].ref.path
-    const uid = userPath.split('/')[1]
-
+    const uid = await pubKeyToUid(channel.partner_public_key)
     console.log(uid)
 
     const phoneNumber = (await admin.auth().getUser(uid)).phoneNumber
@@ -686,7 +763,7 @@ const deleteCollection = async (db: any, collectionPath: any, batchSize: any) =>
   }
   
 function deleteQueryBatch(db: any, query: any, batchSize: any, resolve: any, reject: any) {
-query.get()
+    query.get()
     .then((snapshot: any) => {
     // When there are no documents left, we are done
     if (snapshot.size == 0) {
