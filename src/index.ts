@@ -7,7 +7,6 @@ import * as moment from 'moment'
 import { IQuoteResponse, IQuoteRequest, IBuyRequest, OnboardingRewards } from "../../../../common/types"
 const lnService = require('ln-service')
 const validate = require("validate.js")
-const assert = require('assert')
 
 interface Auth {
     macaroon: string,
@@ -90,17 +89,20 @@ const priceBTC = async (): Promise<number> => {
     }
 }
 
-const UidToPubKey = async (uid: string) => {
+const UidToPubKey = async (uid: string): Promise<string | undefined> => {
     const doc = await firestore.doc(`/users/${uid}`).get()
     const pubKey = doc.data()?.lightning?.pubkey
     return pubKey
 }
 
-const pubKeyToUid = async (pubKey: string) => {
+const pubKeyToUid = async (pubKey: string): Promise<string | undefined> => {
     const users = firestore.collection("users");
     const querySnapshot = await users.where("lightning.pubkey", "==", pubKey).get();
     
-    assert(querySnapshot.size === 1)
+    if(querySnapshot.size === 0) {
+        console.warn(`no UID associated with ${pubKey}`)
+        return undefined
+    }
 
     const userPath = querySnapshot.docs[0].ref.path
     const uid = userPath.split('/')[1]
@@ -500,7 +502,7 @@ exports.payInvoice = functions.https.onCall(async (data, context) => {
     }
 })
 
-const keySend = async (pubKey: number, amount: number) => {
+const keySend = async (pubKey: string, amount: number) => {
     const {randomBytes} = require('crypto')
     const {createHash} = require('crypto')
     const preimageByteLength = 32
@@ -524,15 +526,8 @@ const keySend = async (pubKey: number, amount: number) => {
     console.log(payment)
 }
 
-// exports.testKeySend = functions.https.onCall(async (data, context) => {
-//     const uid = "unTo6KEFXKQMYIXldrMSfFbBF063"
-//     const pubKey = await UidToPubKey(uid)
-//     console.log(pubKey)
-//     await keySend(pubKey, 1000)
-// })
 
-
-exports.useWildcard = functions.firestore
+exports.giveRewards = functions.firestore
     .document('users/{uid}/collection/stage')
     .onWrite(async (change, context) => {
 
@@ -544,20 +539,36 @@ exports.useWildcard = functions.firestore
             const uid = context.params.uid
             const { stage } = change.after.data() as any // FIXME type
     
-            console.log(stage)
-
-            const paid:string[] | undefined = (await firestore.doc(`users/${uid}/collection/paid`).get())?.data() as string[]
-    
+            console.log('stage', stage)
+            
+            // TODO rely on the invoice instead to know what is paid. need better invoice filtering.
+            const paid: string[] | undefined = (await firestore.doc(`users/${uid}/collection/paid`).get())?.data()?.stage as string[]
+            console.log('paid', paid)
+            
+            
             const toPay = stage?.filter((x:string) => !new Set(paid).has(x))
-    
+            console.log('toPay', toPay)
+            
             const pubKey = await UidToPubKey(uid)
     
+            if (!pubKey) {
+                console.error('no PubKey')
+                return
+            }
+
             toPay.forEach(async (item: string) => {
                 const amount: number = (<any>OnboardingRewards)[item]
+                console.log('forEach', item, amount)
                 await keySend(pubKey, amount)
-            })
 
-            await firestore.doc(`users/${uid}/collection/paid`).set(stage)
+                await firestore.doc(`/users/${uid}/collection/paid`).set({
+                    stage: admin.firestore.FieldValue.arrayUnion(item)
+                }, { 
+                    merge: true
+                })
+
+                console.log(`paid rewards ${item} to ${uid}`)
+            })
 
         } catch (err) {
             console.error(err)
@@ -632,10 +643,14 @@ exports.incomingChannel = functions.https.onRequest(async (req, res) => {
     const uid = await pubKeyToUid(channel.partner_public_key)
     console.log(uid)
 
+    if (!uid) {
+        throw new functions.https.HttpsError('internal', `${channel.partner_public_key} doesn't have a corresponding uid`)
+    }
+
     const phoneNumber = (await admin.auth().getUser(uid)).phoneNumber
 
     if (phoneNumber === undefined) {
-        return { success: false, reason: 'phone number undefined' };
+        throw new functions.https.HttpsError('internal', `${phoneNumber} undefined`)
     }
 
     console.log(`sending message to ${phoneNumber} for channel creation`)
@@ -648,7 +663,7 @@ exports.incomingChannel = functions.https.onRequest(async (req, res) => {
         })
     } catch (err) {
         console.error(`impossible to send twilio request`, err)
-        return { success: false };
+        throw new functions.https.HttpsError('internal', `impossible to send twilio request ${err}`)
     }
 
     return res.status(200).send({response: 'ok', phoneNumber})
