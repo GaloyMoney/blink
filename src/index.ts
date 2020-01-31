@@ -314,11 +314,16 @@ exports.quoteLNDBTC = functions.https.onCall(async (data: IQuoteRequest, context
 
     const lnd = initLnd()
 
+    const description = {
+        satPrice,
+        memo: "Sell BTC"
+    }
+
     if (data.side === "sell") {
         const {request} = await lnService.createInvoice(
             {lnd, 
             tokens: satAmount,
-            description: `satPrice:${satPrice}`,
+            description: JSON.stringify(description),
             expires_at: validUntil.toISOString(),
         });
 
@@ -460,7 +465,7 @@ exports.incomingInvoice = functions.https.onRequest(async (req, res) => {
     const uid = (querySnapshot.docs[0].ref as any)._path.segments[1] // FIXME use path?
 
     const satAmount = invoiceJson.tokens
-    const satPrice = parseFloat(invoiceJson.description.split(":")[1])
+    const satPrice = parseFloat(JSON.parse(invoiceJson.description)['satPrice'])
     const fiatAmount = satAmount * satPrice
 
     const fiat_tx: FiatTransaction = {
@@ -502,22 +507,36 @@ exports.payInvoice = functions.https.onCall(async (data, context) => {
     }
 })
 
-const keySend = async (pubKey: string, amount: number) => {
+const keySend = async (pubKey: string, amount: number, message?: string) => {
+    // , customRecords: [number, string][]
+
     const {randomBytes} = require('crypto')
     const {createHash} = require('crypto')
     const preimageByteLength = 32
     const preimage = randomBytes(preimageByteLength);
     const secret = preimage.toString('hex');
     const keySendPreimageType = '5482373484';
+    const messageTmpId = '123123';
     const id = createHash('sha256').update(preimage).digest().toString('hex');
     
     const lnd = initLnd()
+
+    const messages = [
+        {type: keySendPreimageType, value: secret},
+    ]
+
+    if (message) {
+        messages.push({
+            type: messageTmpId, 
+            value: Buffer.from(message).toString('hex'),
+        })
+    }
 
     const request = {
         id,
         destination: pubKey,
         lnd,
-        messages: [{type: keySendPreimageType, value: secret}],
+        messages,
         tokens: amount,
     }
 
@@ -527,48 +546,47 @@ const keySend = async (pubKey: string, amount: number) => {
 }
 
 
-exports.giveRewards = functions.firestore
+const giveRewards = async (stage: string[], uid: string) => {
+    // TODO rely on the invoice instead to know what is paid. need better invoice filtering.
+    const paid: string[] | undefined = (await firestore.doc(`users/${uid}/collection/paid`).get())?.data()?.stage as string[]
+    console.log('paid', paid)
+
+    // TODO move to loadash to clean this up. 
+    const toPay = stage?.filter((x:string) => !new Set(paid).has(x))
+    console.log('toPay', toPay)
+
+    const pubKey = await UidToPubKey(uid)
+
+    if (!pubKey) {
+        console.error('no PubKey')
+        return
+    }
+
+    toPay.forEach(async (item: string) => {
+        const amount: number = (<any>OnboardingRewards)[item]
+        console.log('forEach', item, amount)
+        await keySend(pubKey, amount, item)
+
+        await firestore.doc(`/users/${uid}/collection/paid`).set({
+            stage: admin.firestore.FieldValue.arrayUnion(item)
+        }, { 
+            merge: true
+        })
+
+        console.log(`paid rewards ${item} to ${uid}`)
+    })
+}
+
+exports.onStageUpdated = functions.firestore
     .document('users/{uid}/collection/stage')
     .onWrite(async (change, context) => {
-
-        // console.log('change', change)
-        // console.log('after', change.after.data()) 
-        // console.log('before', change.before.data()) 
 
         try {
             const uid = context.params.uid
             const { stage } = change.after.data() as any // FIXME type
-    
             console.log('stage', stage)
             
-            // TODO rely on the invoice instead to know what is paid. need better invoice filtering.
-            const paid: string[] | undefined = (await firestore.doc(`users/${uid}/collection/paid`).get())?.data()?.stage as string[]
-            console.log('paid', paid)
-            
-            
-            const toPay = stage?.filter((x:string) => !new Set(paid).has(x))
-            console.log('toPay', toPay)
-            
-            const pubKey = await UidToPubKey(uid)
-    
-            if (!pubKey) {
-                console.error('no PubKey')
-                return
-            }
-
-            toPay.forEach(async (item: string) => {
-                const amount: number = (<any>OnboardingRewards)[item]
-                console.log('forEach', item, amount)
-                await keySend(pubKey, amount)
-
-                await firestore.doc(`/users/${uid}/collection/paid`).set({
-                    stage: admin.firestore.FieldValue.arrayUnion(item)
-                }, { 
-                    merge: true
-                })
-
-                console.log(`paid rewards ${item} to ${uid}`)
-            })
+            await giveRewards(stage, uid)
 
         } catch (err) {
             console.error(err)
@@ -664,6 +682,13 @@ exports.incomingChannel = functions.https.onRequest(async (req, res) => {
     } catch (err) {
         console.error(`impossible to send twilio request`, err)
         throw new functions.https.HttpsError('internal', `impossible to send twilio request ${err}`)
+    }
+
+    try {
+        const { stage } = (await firestore.doc(`users/${uid}/collection/stage`).get()).data()!
+        await giveRewards(stage, uid)
+    } catch (err) {
+        console.error(`can't give the rewards`, err)
     }
 
     return res.status(200).send({response: 'ok', phoneNumber})
