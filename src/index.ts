@@ -452,7 +452,7 @@ exports.incomingInvoice = functions.https.onRequest(async (req, res) => {
     console.log(invoice)
 
     const request = invoice.request
-    const channel = invoice.payments[0].in_channel
+    const channel = invoice.payments[0].in_channel // should it be htlcs[0] now?
 
     const invoiceJson = await lnService.decodePaymentRequest({lnd, request})
 
@@ -695,36 +695,11 @@ exports.incomingChannel = functions.https.onRequest(async (req, res) => {
 })
 
 
-// exports.haveHodlInvoice = functions.pubsub.schedule('every 1 mins').onRun(async (context) => {
-
-//     const lnd = initLnd()
-
-//     const { channels } = await lnService.getChannels({lnd})
-
-//     const found = channels.find((item:any) => {return item.pending_payments.length > 0});
-//     console.log(found)
-
-    // return result
-
-    // {
-    //     "partner_public_key": "0361925516266d7bbc17c1af086aaf1d5f25d584ee4d2b1187d9ab57a3aa48e288",
-    //     "pending_payments": [
-    //         {
-    //             "is_outgoing": false,
-    //             "tokens": "1",
-    //             "id": "PzMYKCclCidisQzDyk0sJoHTwRlIW4WQDheck8Wnyts=",
-    //             "timeout": 376
-    //         }
-    //     ],
-    // }
-
-// })
-
 exports.onUserCreation = functions.auth.user().onCreate(async (user) => {
     //TODO clean up returns
 
     const prepopulate = false
-    const lookup = true
+    const lookup = false
 
     let transactions: any[] // FIXME
 
@@ -774,6 +749,15 @@ exports.setGlobalInfo = functions.https.onCall(async (data, context) => {
             pubkey: wallet.public_key,
             host: functions.config().lnd[functions.config().lnd.network].lndaddr
     }})
+})
+
+exports.deleteCurrentUser = functions.https.onCall(async (data, context) => {
+    try {
+        await admin.auth().deleteUser(context.auth!.uid)
+        return
+    } catch(err) {
+        throw new functions.https.HttpsError('internal', err)
+    }
 })
 
 exports.deleteAllUsers = functions.https.onCall(async (data, context) => {
