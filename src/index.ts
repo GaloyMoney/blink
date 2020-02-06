@@ -201,7 +201,11 @@ exports.openChannel = functions.https.onCall(async (data, context) => {
 
         const pubkey = doc.data()!.lightning.pubkey
         const is_private = true
-        const funding_tx = await lnService.openChannel({lnd, local_tokens, partner_public_key: pubkey, is_private})
+        const min_confirmations = 0 // FIXME
+        const chain_fee_tokens_per_vbyte = 10 // FIXME 
+        const funding_tx = await lnService.openChannel(
+            {lnd, local_tokens, partner_public_key: pubkey, is_private, min_confirmations, chain_fee_tokens_per_vbyte}
+        )
 
         return {funding_tx}
     })
