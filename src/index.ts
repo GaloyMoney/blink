@@ -571,13 +571,15 @@ const giveRewards = async (stage: string[], uid: string) => {
         console.log('forEach', item, amount)
         await keySend(pubKey, amount, item)
 
+        console.log(`paid rewards ${item} to ${uid}`)
+
         await firestore.doc(`/users/${uid}/collection/paid`).set({
             stage: admin.firestore.FieldValue.arrayUnion(item)
         }, { 
             merge: true
         })
 
-        console.log(`paid rewards ${item} to ${uid}`)
+        console.log(`payment for ${item} stored in db`)
     })
 }
 
@@ -651,6 +653,7 @@ exports.incomingOnChainTransaction = functions.https.onRequest(async (req, res) 
     const tx = req.body
     console.log(tx)
 
+    return true
 });
 
 
@@ -681,7 +684,7 @@ exports.incomingChannel = functions.https.onRequest(async (req, res) => {
         await getTwilioClient().messages.create({
             from: twilioPhoneNumber,
             to: phoneNumber,
-            body: `Your channel is ready! open your galoy://app to get and spend your micro reward`
+            body: `Your wallet is ready! open your galoy://app to get and spend your micro reward`
         })
     } catch (err) {
         console.error(`impossible to send twilio request`, err)
