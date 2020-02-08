@@ -50,7 +50,7 @@ const getBalance = async (uid: string) => {
     }
     
     return firestore.doc(`/users/${uid}`).get().then(function(doc) {
-        if (doc.exists) {
+        if (doc.exists && doc.data()!.transactions.length > 0) {
             return reduce(doc.data()!.transactions) // FIXME type
         } else {
             return 0 // no bank account yet
@@ -59,6 +59,43 @@ const getBalance = async (uid: string) => {
         console.log('err', err) 
         return 0 // FIXME: currently error on reduce when there is no transactions
     })
+}
+
+const initLnd = () => {
+    // TODO verify wallet is unlock?
+
+    let auth_lnd: Auth
+    let network: string
+    
+    try {
+        network = process.env.NETWORK ?? functions.config().lnd.network
+        const cert = process.env.TLS ?? functions.config().lnd[network].tls
+        const macaroon = process.env.MACAROON ?? functions.config().lnd[network].macaroon
+        const lndaddr = process.env.LNDADDR ?? functions.config().lnd[network].lndaddr
+    
+        const socket = `${lndaddr}:10009`
+        auth_lnd = {macaroon, cert, socket}
+    } catch (err) {
+        throw new functions.https.HttpsError('failed-precondition', 
+            `neither env nor functions.config() are set` + err)
+    }
+
+    // console.log("lnd auth", auth_lnd)
+    const {lnd} = lnService.authenticatedLndGrpc(auth_lnd);
+    return lnd
+}
+
+const twilioPhoneNumber = "***REMOVED***"
+const getTwilioClient = () => {
+    const accountSID = "***REMOVED***"
+    const authToken = "***REMOVED***"
+    
+    const client = require('twilio')(
+        accountSID,
+        authToken
+    );
+
+    return client
 }
 
 /**
@@ -121,20 +158,35 @@ exports.updatePrice = functions.pubsub.schedule('every 15 mins').onRun(async (co
     }
 });
 
-// this could be run in the frontend?
-exports.getFiatBalances = functions.https.onCall((data, context) => {
+
+const checkAuth = (context: any) => { // FIXME any
     if (!context.auth) {
         throw new functions.https.HttpsError('failed-precondition', 
-            'The function must be called while authenticated.')};
+            'The function must be called while authenticated.')
+    }
+}
 
-    return getBalance(context.auth.uid)
+const checkNonAnonymous = (context: any) => { // FIXME any
+    checkAuth(context)
+
+    if (context.auth.token.provider_id === "anonymous") {
+        throw new functions.https.HttpsError('failed-precondition', 
+            `Can't be register with anonymous provider_id`)
+    }
+}
+
+const checkBankingEnabled = checkNonAnonymous // TODO
+
+// this could be run in the frontend?
+exports.getFiatBalances = functions.https.onCall((data, context) => {
+    checkBankingEnabled(context)
+
+    return getBalance(context.auth!.uid)
 })
 
 
 exports.sendPubKey = functions.https.onCall(async (data, context) => {
-    if (!context.auth) {
-        throw new functions.https.HttpsError('failed-precondition', 
-            'The function must be called while authenticated.')};
+    checkNonAnonymous(context)
 
     const constraints = {
         pubkey: {
@@ -153,7 +205,7 @@ exports.sendPubKey = functions.https.onCall(async (data, context) => {
         }
     }
 
-    return firestore.doc(`/users/${context.auth.uid}`).set({
+    return firestore.doc(`/users/${context.auth!.uid}`).set({
         lightning: {
             pubkey: data.pubkey,
             network: data.network,
@@ -169,11 +221,9 @@ exports.sendPubKey = functions.https.onCall(async (data, context) => {
 })
 
 exports.sendDeviceToken = functions.https.onCall(async (data, context) => {
-    if (!context.auth) {
-        throw new functions.https.HttpsError('failed-precondition', 
-            'The function must be called while authenticated.')};
+    checkAuth(context)
 
-    return firestore.doc(`/users/${context.auth.uid}`).set({
+    return firestore.doc(`/users/${context.auth!.uid}`).set({
         deviceToken: data.deviceToken}, { merge: true }
     ).then(writeResult => {
         return {result: `Transaction succesfully added ${writeResult}`}
@@ -185,14 +235,12 @@ exports.sendDeviceToken = functions.https.onCall(async (data, context) => {
 })
 
 exports.openChannel = functions.https.onCall(async (data, context) => {
-    if (!context.auth) {
-        throw new functions.https.HttpsError('failed-precondition', 
-            'The function must be called while authenticated.')};
+    checkNonAnonymous(context)
 
     const local_tokens = 50000;
     const lnd = initLnd()
 
-    return firestore.doc(`/users/${context.auth.uid}`).get()
+    return firestore.doc(`/users/${context.auth!.uid}`).get()
     .then(async doc => {
         if (!doc.exists) {
             throw new functions.https.HttpsError('not-found', 
@@ -201,8 +249,8 @@ exports.openChannel = functions.https.onCall(async (data, context) => {
 
         const pubkey = doc.data()!.lightning.pubkey
         const is_private = true
-        const min_confirmations = 0 // FIXME
-        const chain_fee_tokens_per_vbyte = 10 // FIXME 
+        const min_confirmations = 0 // to allow unconfirmed UTXOS
+        const chain_fee_tokens_per_vbyte = 1
         const funding_tx = await lnService.openChannel(
             {lnd, local_tokens, partner_public_key: pubkey, is_private, min_confirmations, chain_fee_tokens_per_vbyte}
         )
@@ -217,49 +265,8 @@ exports.openChannel = functions.https.onCall(async (data, context) => {
     })
 })
 
-const initLnd = () => {
-    // TODO verify wallet is unlock?
-
-    let auth_lnd: Auth
-    let network: string
-    
-    try {
-        network = process.env.NETWORK ?? functions.config().lnd.network
-        const cert = process.env.TLS ?? functions.config().lnd[network].tls
-        const macaroon = process.env.MACAROON ?? functions.config().lnd[network].macaroon
-        const lndaddr = process.env.LNDADDR ?? functions.config().lnd[network].lndaddr
-    
-        const socket = `${lndaddr}:10009`
-        auth_lnd = {macaroon, cert, socket}
-    } catch (err) {
-        throw new functions.https.HttpsError('failed-precondition', 
-            `neither env nor functions.config() are set` + err)
-    }
-
-    // console.log("lnd auth", auth_lnd)
-    const {lnd} = lnService.authenticatedLndGrpc(auth_lnd);
-    return lnd
-}
-
-const twilioPhoneNumber = "***REMOVED***"
-const getTwilioClient = () => {
-    const accountSID = "***REMOVED***"
-    const authToken = "***REMOVED***"
-    
-    const client = require('twilio')(
-        accountSID,
-        authToken
-    );
-
-    return client
-}
-
 exports.quoteLNDBTC = functions.https.onCall(async (data: IQuoteRequest, context) => {
-    console.log('executing quoteLNDBTC')
-
-    if (!context.auth) {
-        throw new functions.https.HttpsError('failed-precondition', 
-            'The function must be called while authenticated.')};
+    checkBankingEnabled(context)
 
     const SPREAD = 0.015 //1.5%
     const QUOTE_VALIDITY = {seconds: 30}
@@ -292,7 +299,7 @@ exports.quoteLNDBTC = functions.https.onCall(async (data: IQuoteRequest, context
         throw new functions.https.HttpsError('invalid-argument', JSON.stringify(err))
     }
     
-    console.log(`${data.side} quote request from ${context.auth.uid}, request: ${data}`)
+    console.log(`${data.side} quote request from ${context.auth!.uid}, request: ${data}`)
 
     let spot
     
@@ -366,9 +373,7 @@ exports.quoteLNDBTC = functions.https.onCall(async (data: IQuoteRequest, context
 
 
 exports.buyLNDBTC = functions.https.onCall(async (data: IBuyRequest, context) => {
-    if (!context.auth) {
-        throw new functions.https.HttpsError('failed-precondition', 
-            'The function must be called while authenticated.')};
+    checkBankingEnabled(context)
 
     const constraints = {
         side: {
@@ -406,7 +411,7 @@ exports.buyLNDBTC = functions.https.onCall(async (data: IBuyRequest, context) =>
 
     const fiatAmount = satAmount * data.satPrice
 
-    if (await getBalance(context.auth.uid) < fiatAmount) {
+    if (await getBalance(context.auth!.uid) < fiatAmount) {
         throw new functions.https.HttpsError('permission-denied', 'not enough dollar to proceed')
     }
 
@@ -432,7 +437,7 @@ exports.buyLNDBTC = functions.https.onCall(async (data: IBuyRequest, context) =>
     }
 
     try {
-        const result = await firestore.doc(`/users/${context.auth.uid}`).update({
+        const result = await firestore.doc(`/users/${context.auth!.uid}`).update({
             transactions: admin.firestore.FieldValue.arrayUnion(fiat_tx)
         })
 
@@ -487,6 +492,7 @@ exports.incomingInvoice = functions.https.onRequest(async (req, res) => {
 
 })
 
+// DEPRECATED
 exports.payInvoice = functions.https.onCall(async (data, context) => {
     if (!context.auth) {
         throw new functions.https.HttpsError('failed-precondition', 
@@ -550,7 +556,10 @@ const keySend = async (pubKey: string, amount: number, message?: string) => {
 }
 
 
-const giveRewards = async (stage: string[], uid: string) => {
+const giveRewards = async (uid: string, _stage: string[] | undefined = undefined) => {
+
+    const stage = _stage || (await firestore.doc(`users/${uid}/collection/stage`).get()).data()!.stage
+    
     // TODO rely on the invoice instead to know what is paid. need better invoice filtering.
     const paid: string[] | undefined = (await firestore.doc(`users/${uid}/collection/paid`).get())?.data()?.stage as string[]
     console.log('paid', paid)
@@ -588,11 +597,13 @@ exports.onStageUpdated = functions.firestore
     .onWrite(async (change, context) => {
 
         try {
+            checkNonAnonymous(context)
+
             const uid = context.params.uid
             const { stage } = change.after.data() as any // FIXME type
             console.log('stage', stage)
             
-            await giveRewards(stage, uid)
+            await giveRewards(uid, stage)
 
         } catch (err) {
             console.error(err)
@@ -600,10 +611,14 @@ exports.onStageUpdated = functions.firestore
 });
 
 
+exports.requestRewards = functions.https.onCall(async (data, context) => {
+    checkNonAnonymous(context)
+    
+    await giveRewards(context.auth!.uid)
+})
+
 exports.onBankAccountOpening = functions.https.onCall(async (data, context) => {
-    if (!context.auth) {
-        throw new functions.https.HttpsError('failed-precondition', 
-            'The function must be called while authenticated.')};
+    checkNonAnonymous(context)
 
     const constraints = {
         dateOfBirth: {
@@ -630,7 +645,7 @@ exports.onBankAccountOpening = functions.https.onCall(async (data, context) => {
         }
     }
 
-    return firestore.doc(`/users/${context.auth.uid}`).set({ userInfo: data }, { merge: true }
+    return firestore.doc(`/users/${context.auth!.uid}`).set({ userInfo: data }, { merge: true }
     ).then(writeResult => {
         return {result: `Transaction succesfully added ${writeResult}`}
     })
@@ -692,8 +707,7 @@ exports.incomingChannel = functions.https.onRequest(async (req, res) => {
     }
 
     try {
-        const { stage } = (await firestore.doc(`users/${uid}/collection/stage`).get()).data()!
-        await giveRewards(stage, uid)
+        await giveRewards(uid)
     } catch (err) {
         console.error(`can't give the rewards`, err)
     }
@@ -745,6 +759,10 @@ exports.onUserCreation = functions.auth.user().onCreate(async (user) => {
     }
 
     return true
+})
+
+exports.test = functions.https.onCall(async (data, context) => {
+    console.log(context)
 })
 
 exports.setGlobalInfo = functions.https.onCall(async (data, context) => {
