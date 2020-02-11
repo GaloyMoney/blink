@@ -3,8 +3,8 @@
   "scripts": {
     "lint": "tslint --project tsconfig.json",
     "build": "tsc",
-    "serve": "export GOOGLE_APPLICATION_CREDENTIALS='../keys.json' && npm run build && firebase serve --only functions",
-    "shell": "export GOOGLE_APPLICATION_CREDENTIALS='../keys.json' && npm run build && firebase functions:shell",
+    "serve": "export GOOGLE_APPLICATION_CREDENTIALS='../keys.json' && source '../../deploy/exportlnd.sh' && npm run build && firebase serve --only functions",
+    "shell": "export GOOGLE_APPLICATION_CREDENTIALS='../keys.json' && source '../../deploy/exportlnd.sh' && npm run build && firebase functions:shell",
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log"
