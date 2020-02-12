@@ -171,7 +171,7 @@ const checkNonAnonymous = (context: any) => { // FIXME any
 
     if (context.auth.token.provider_id === "anonymous") {
         throw new functions.https.HttpsError('failed-precondition', 
-            `Can't be register with anonymous provider_id`)
+            `This function must be while authenticate and not anonymous`)
     }
 }
 
@@ -498,9 +498,7 @@ exports.incomingInvoice = functions.https.onRequest(async (req, res) => {
 
 // DEPRECATED
 exports.payInvoice = functions.https.onCall(async (data, context) => {
-    if (!context.auth) {
-        throw new functions.https.HttpsError('failed-precondition', 
-            'The function must be called while authenticated.')};
+    checkAuth(context)
 
     // FIXME unsecure
 
@@ -606,8 +604,6 @@ exports.onStageUpdated = functions.firestore
     .onWrite(async (change, context) => {
 
         try {
-            checkNonAnonymous(context)
-
             const uid = context.params.uid
             const { stage } = change.after.data() as any // FIXME type
             console.log('stage', stage)
