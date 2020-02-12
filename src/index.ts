@@ -575,10 +575,15 @@ const giveRewards = async (uid: string, _stage: string[] | undefined = undefined
         return
     }
 
-    toPay.forEach(async (item: string) => {
+    for (const item of toPay) {
         const amount: number = (<any>OnboardingRewards)[item]
-        console.log('forEach', item, amount)
-        await keySend(pubKey, amount, item)
+        console.log(`trying to pay ${item} fpr ${amount}`)
+
+        try {
+            await keySend(pubKey, amount, item)
+        } catch (err) {
+            throw new functions.https.HttpsError('internal', err.toString())
+        }
 
         console.log(`paid rewards ${item} to ${uid}`)
 
@@ -589,7 +594,7 @@ const giveRewards = async (uid: string, _stage: string[] | undefined = undefined
         })
 
         console.log(`payment for ${item} stored in db`)
-    })
+    }
 }
 
 exports.onStageUpdated = functions.firestore
@@ -613,8 +618,10 @@ exports.onStageUpdated = functions.firestore
 
 exports.requestRewards = functions.https.onCall(async (data, context) => {
     checkNonAnonymous(context)
-    
+
     await giveRewards(context.auth!.uid)
+
+    return true
 })
 
 exports.onBankAccountOpening = functions.https.onCall(async (data, context) => {
