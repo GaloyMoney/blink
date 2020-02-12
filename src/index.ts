@@ -205,19 +205,21 @@ exports.sendPubKey = functions.https.onCall(async (data, context) => {
         }
     }
 
-    return firestore.doc(`/users/${context.auth!.uid}`).set({
-        lightning: {
-            pubkey: data.pubkey,
-            network: data.network,
-            initTimestamp: admin.firestore.FieldValue.serverTimestamp(),
-        }}, { merge: true }
-    ).then(writeResult => {
-        return {result: `Transaction succesfully added ${writeResult}`}
-    })
-    .catch((err) => {
+    try {
+        const writeResult = await firestore.doc(`/users/${context.auth!.uid}`).set({
+            lightning: {
+                pubkey: data.pubkey,
+                network: data.network,
+                initTimestamp: admin.firestore.FieldValue.serverTimestamp(),
+            }}, { merge: true })
+        
+        console.log(writeResult)
+        return {result: `Transaction succesfully added, uid: ${context.auth!.uid}, pubkey: ${data.pubkey}`}
+
+    } catch (err) {
         console.error(err)
         throw new functions.https.HttpsError('internal', err)
-    })
+    }
 })
 
 exports.sendDeviceToken = functions.https.onCall(async (data, context) => {
@@ -251,9 +253,11 @@ exports.openChannel = functions.https.onCall(async (data, context) => {
         const is_private = true
         const min_confirmations = 0 // to allow unconfirmed UTXOS
         const chain_fee_tokens_per_vbyte = 1
-        const funding_tx = await lnService.openChannel(
-            {lnd, local_tokens, partner_public_key: pubkey, is_private, min_confirmations, chain_fee_tokens_per_vbyte}
-        )
+        const input = {lnd, local_tokens, partner_public_key: pubkey, is_private, min_confirmations, chain_fee_tokens_per_vbyte}
+
+        console.log('trying to open a channel with:', input)
+
+        const funding_tx = await lnService.openChannel(input)
 
         return {funding_tx}
     })
@@ -738,7 +742,10 @@ exports.onUserCreation = functions.auth.user().onCreate(async (user) => {
     }
 
     try {
-        const result = await firestore.doc(`/users/${user.uid}`).set({transactions})
+        const result = await firestore.doc(`/users/${user.uid}`).set(
+            { transactions },
+            { merge: true }
+        )
         console.log(`Transaction succesfully added ${result}`)
     } catch (err) {
         console.error(err)
