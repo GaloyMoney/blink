@@ -372,7 +372,7 @@ exports.quoteLNDBTC = functions.https.onCall(async (data: IQuoteRequest, context
         return signedMessage
     }
 
-    return true
+    return {'result': 'success'}
 })
 
 
@@ -510,7 +510,7 @@ exports.payInvoice = functions.https.onCall(async (data, context) => {
     try {
         const result = await lnService.pay({lnd, request: invoice})
         console.log(result)
-        return 'success'
+        return {'result': 'success'}
     } catch (err) {
         console.log(err)
         return Promise.reject(new functions.https.HttpsError(
@@ -573,13 +573,12 @@ const giveRewards = async (uid: string, _stage: string[] | undefined = undefined
     const pubKey = await UidToPubKey(uid)
 
     if (!pubKey) {
-        console.error('no PubKey')
-        return
+        throw new functions.https.HttpsError('failed-precondition', 'no PubKey')
     }
 
     for (const item of toPay) {
         const amount: number = (<any>OnboardingRewards)[item]
-        console.log(`trying to pay ${item} fpr ${amount}`)
+        console.log(`trying to pay ${item} for ${amount}`)
 
         try {
             await keySend(pubKey, amount, item)
@@ -621,7 +620,7 @@ exports.requestRewards = functions.https.onCall(async (data, context) => {
 
     await giveRewards(context.auth!.uid)
 
-    return true
+    return {'result': 'success'}
 })
 
 exports.onBankAccountOpening = functions.https.onCall(async (data, context) => {
@@ -675,7 +674,7 @@ exports.incomingOnChainTransaction = functions.https.onRequest(async (req, res) 
     const tx = req.body
     console.log(tx)
 
-    return true
+    return {'result': 'success'}
 });
 
 
@@ -716,7 +715,7 @@ exports.incomingChannel = functions.https.onRequest(async (req, res) => {
     try {
         await giveRewards(uid)
     } catch (err) {
-        console.error(`can't give the rewards`, err)
+        throw new functions.https.HttpsError('internal', `can't give the rewards ${err}`)
     }
 
     return res.status(200).send({response: 'ok', phoneNumber})
@@ -768,7 +767,7 @@ exports.onUserCreation = functions.auth.user().onCreate(async (user) => {
         })
     }
 
-    return true
+    return {'result': 'success'}
 })
 
 exports.test = functions.https.onCall(async (data, context) => {
@@ -789,7 +788,7 @@ exports.setGlobalInfo = functions.https.onCall(async (data, context) => {
 exports.deleteCurrentUser = functions.https.onCall(async (data, context) => {
     try {
         await admin.auth().deleteUser(context.auth!.uid)
-        return
+        return {'result': 'success'}
     } catch(err) {
         throw new functions.https.HttpsError('internal', err)
     }
