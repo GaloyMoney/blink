@@ -261,7 +261,7 @@ const openChannel = async (lnd: any, pubkey: string, give_tokens = 0) => {
     try {
         return await lnService.openChannel(input)
     } catch (err) {
-        throw new functions.https.HttpsError('internal', `can't open channel, error: ${err}`)
+        throw new functions.https.HttpsError('internal', `can't open channel, error: ${err} ${err[2] ? err[2]: ""}`)
     }
 }
 
@@ -272,6 +272,7 @@ exports.openFirstChannel = functions.https.onCall(async (data, context) => {
     const pubkey = await UidToPubKey(context.auth!.uid)
 
     try {
+        console.log(`openFirstChannel with pubkey ${pubkey}`)
         const funding_tx = await openChannel(lnd, pubkey)
         return {funding_tx}
     } catch (err) {
@@ -548,6 +549,7 @@ const keySend = async (pubKey: string, amount: number, message?: string) => {
         if (err[1] === 'FailedToFindPayableRouteToDestination') {
             // TODO: understand what trigger this string
     
+            console.log(`fallback channel open with pubkey ${pubKey}`)
             await openChannel(lnd, pubKey, amount);
         }
     }
