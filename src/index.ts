@@ -126,19 +126,27 @@ const priceBTC = async (): Promise<number> => {
     }
 }
 
-const UidToPubKey = async (uid: string): Promise<string | undefined> => {
-    const doc = await firestore.doc(`/users/${uid}`).get()
-    const pubKey = doc.data()?.lightning?.pubkey
-    return pubKey
+const UidToPubKey = async (uid: string): Promise<string> => {
+    try {
+        const doc = await firestore.doc(`/users/${uid}`).get()
+        const pubkey = doc.data()?.lightning?.pubkey
+
+        if (pubkey === undefined) {
+            throw new functions.https.HttpsError('not-found', `can't get pubkey for user ${uid}`)    
+        }
+
+        return pubkey
+    } catch (err) {
+        throw new functions.https.HttpsError('internal', `can't get pubkey for user ${uid}: error: ${err}`)
+    }
 }
 
-const pubKeyToUid = async (pubKey: string): Promise<string | undefined> => {
+const pubKeyToUid = async (pubKey: string): Promise<string> => {
     const users = firestore.collection("users");
     const querySnapshot = await users.where("lightning.pubkey", "==", pubKey).get();
     
     if(querySnapshot.size === 0) {
-        console.warn(`no UID associated with ${pubKey}`)
-        return undefined
+        throw new functions.https.HttpsError('internal', `no UID associated with ${pubKey}`)
     }
 
     const userPath = querySnapshot.docs[0].ref.path
@@ -236,37 +244,42 @@ exports.sendDeviceToken = functions.https.onCall(async (data, context) => {
     })
 })
 
-exports.openChannel = functions.https.onCall(async (data, context) => {
+const openChannel = async (lnd: any, pubkey: string, give_tokens = 0) => {
+
+    const local_tokens = 50000
+    const is_private = true
+    const min_confirmations = 0 // to allow unconfirmed UTXOS
+    const chain_fee_tokens_per_vbyte = 1
+    const input: any = {lnd, local_tokens, partner_public_key: pubkey, is_private, min_confirmations, chain_fee_tokens_per_vbyte}
+
+    if (give_tokens) {
+        input['give_tokens'] = give_tokens
+    }
+
+    console.log('trying to open a channel with:', input)
+
+    try {
+        return await lnService.openChannel(input)
+    } catch (err) {
+        throw new functions.https.HttpsError('internal', `can't open channel, error: ${err}`)
+    }
+}
+
+exports.openFirstChannel = functions.https.onCall(async (data, context) => {
     checkNonAnonymous(context)
 
-    const local_tokens = 50000;
     const lnd = initLnd()
+    const pubkey = await UidToPubKey(context.auth!.uid)
 
-    return firestore.doc(`/users/${context.auth!.uid}`).get()
-    .then(async doc => {
-        if (!doc.exists) {
-            throw new functions.https.HttpsError('not-found', 
-            `Can't find associated user`);
-        }
-
-        const pubkey = doc.data()!.lightning.pubkey
-        const is_private = true
-        const min_confirmations = 0 // to allow unconfirmed UTXOS
-        const chain_fee_tokens_per_vbyte = 1
-        const input = {lnd, local_tokens, partner_public_key: pubkey, is_private, min_confirmations, chain_fee_tokens_per_vbyte}
-
-        console.log('trying to open a channel with:', input)
-
-        const funding_tx = await lnService.openChannel(input)
-
+    try {
+        const funding_tx = await openChannel(lnd, pubkey)
         return {funding_tx}
-    })
-    .catch((err) => {
+    } catch (err) {
         console.error(err)
         let message = `${err[0]}, ${err[1]}, `
         message += err[2] ? err[2].details : '' // FIXME verify details it the property we want
         throw new functions.https.HttpsError('internal', message)
-    })
+    }
 })
 
 exports.quoteLNDBTC = functions.https.onCall(async (data: IQuoteRequest, context) => {
@@ -496,34 +509,10 @@ exports.incomingInvoice = functions.https.onRequest(async (req, res) => {
 
 })
 
-// DEPRECATED
-exports.payInvoice = functions.https.onCall(async (data, context) => {
-    checkAuth(context)
-
-    // FIXME unsecure
-
-    const lnd = initLnd()
-
-    const invoice = data.invoice
-    console.log(`invoice: ${invoice}`)
-
-    try {
-        const result = await lnService.pay({lnd, request: invoice})
-        console.log(result)
-        return {'result': 'success'}
-    } catch (err) {
-        console.log(err)
-        return Promise.reject(new functions.https.HttpsError(
-            'internal', 
-            `${err[0]}, ${err[1]}, ${err[2].message}` ));
-    }
-})
-
 const keySend = async (pubKey: string, amount: number, message?: string) => {
     // , customRecords: [number, string][]
 
-    const {randomBytes} = require('crypto')
-    const {createHash} = require('crypto')
+    const {randomBytes, createHash} = require('crypto')
     const preimageByteLength = 32
     const preimage = randomBytes(preimageByteLength);
     const secret = preimage.toString('hex');
@@ -552,9 +541,18 @@ const keySend = async (pubKey: string, amount: number, message?: string) => {
         tokens: amount,
     }
 
-    const payment = await lnService.payViaPaymentDetails(request)
+    let result
+    try {
+        result = await lnService.payViaPaymentDetails(request)
+    } catch (err) {
+        if (err[1] === 'FailedToFindPayableRouteToDestination') {
+            // TODO: understand what trigger this string
+    
+            await openChannel(lnd, pubKey, amount);
+        }
+    }
 
-    console.log(payment)
+    console.log(result)
 }
 
 
@@ -571,10 +569,6 @@ const giveRewards = async (uid: string, _stage: string[] | undefined = undefined
     console.log('toPay', toPay)
 
     const pubKey = await UidToPubKey(uid)
-
-    if (!pubKey) {
-        throw new functions.https.HttpsError('failed-precondition', 'no PubKey')
-    }
 
     for (const item of toPay) {
         const amount: number = (<any>OnboardingRewards)[item]
@@ -621,6 +615,21 @@ exports.requestRewards = functions.https.onCall(async (data, context) => {
     await giveRewards(context.auth!.uid)
 
     return {'result': 'success'}
+})
+
+exports.dollarFaucet = functions.https.onCall(async (data, context) => {
+    checkBankingEnabled(context)
+
+    const fiat_tx: FiatTransaction = {
+        amount: data.amount,
+        date: moment().unix(),
+        icon: "ios-print",
+        name: "Dollar Faucet",
+    }
+
+    await firestore.doc(`/users/${context.auth!.uid}`).update({
+        transactions: admin.firestore.FieldValue.arrayUnion(fiat_tx)
+    })
 })
 
 exports.onBankAccountOpening = functions.https.onCall(async (data, context) => {
@@ -687,11 +696,7 @@ exports.incomingChannel = functions.https.onRequest(async (req, res) => {
     console.log(channel)
 
     const uid = await pubKeyToUid(channel.partner_public_key)
-    console.log(uid)
-
-    if (!uid) {
-        throw new functions.https.HttpsError('internal', `${channel.partner_public_key} doesn't have a corresponding uid`)
-    }
+    console.log('uid: ', uid)
 
     const phoneNumber = (await admin.auth().getUser(uid)).phoneNumber
 
