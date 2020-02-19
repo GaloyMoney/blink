@@ -156,7 +156,7 @@ const pubKeyToUid = async (pubKey: string): Promise<string> => {
 }
 
 
-exports.updatePrice = functions.pubsub.schedule('every 15 mins').onRun(async (context) => {
+exports.updatePrice = functions.pubsub.schedule('every 4 hours').onRun(async (context) => {
     try {
         const spot = await priceBTC()
         console.log(`updating price, new price: ${spot}`);
