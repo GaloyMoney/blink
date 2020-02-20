@@ -246,7 +246,7 @@ exports.sendDeviceToken = functions.https.onCall(async (data, context) => {
 
 const openChannel = async (lnd: any, pubkey: string, give_tokens = 0) => {
 
-    const local_tokens = 50000
+    const local_tokens = 50000 + give_tokens
     const is_private = true
     const min_confirmations = 0 // to allow unconfirmed UTXOS
     const chain_fee_tokens_per_vbyte = 1
@@ -699,6 +699,17 @@ exports.incomingChannel = functions.https.onRequest(async (req, res) => {
 
     const uid = await pubKeyToUid(channel.partner_public_key)
     console.log('uid: ', uid)
+
+    const lnd = initLnd()
+
+    // only send when first channel is being opened
+    const channels = await lnService.getChannels({lnd})
+    const num_channels = channels.filter((item: any) => item.partner_public_key === channel.partner_public_key).length
+
+    if (num_channels > 1) {
+        console.log(`not the first channel for ${channel.partner_public_key}, not sending a text`)
+        return res.status(200).send({response: 'no-text'})
+    }
 
     const phoneNumber = (await admin.auth().getUser(uid)).phoneNumber
 
