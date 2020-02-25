@@ -604,7 +604,7 @@ body-parser@1.19.0:
     raw-body "2.4.0"
     type-is "~1.6.17"
 
-bolt07@1.4.4:
+bolt07@1.4.4, bolt07@^1.4.4:
   version "1.4.4"
   resolved "https://registry.yarnpkg.com/bolt07/-/bolt07-1.4.4.tgz#d4c875b507b795e2525d3d9804a24acd4c772ec6"
   integrity sha512-1jn3ef9lhhcd4uC9JcOHQXtFgOMuN8AEBMRnWNO/zTVOOkl0zLKEkv30PrBfwdr0i/OAIEbhTHIR/2PCGLVfxQ==
