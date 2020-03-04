@@ -93,7 +93,7 @@ const getTwilioClient = () => {
     const client = require('twilio')(
         accountSID,
         authToken
-    );
+    )
 
     return client
 }
@@ -141,18 +141,29 @@ const UidToPubKey = async (uid: string): Promise<string> => {
     }
 }
 
-const pubKeyToUid = async (pubKey: string): Promise<string> => {
+const pubkeyToUid = async (pubkey: string): Promise<string> => {
     const users = firestore.collection("users");
-    const querySnapshot = await users.where("lightning.pubkey", "==", pubKey).get();
+    const querySnapshot = await users.where("lightning.pubkey", "==", pubkey).get();
     
     if(querySnapshot.size === 0) {
-        throw new functions.https.HttpsError('internal', `no UID associated with ${pubKey}`)
+        throw new functions.https.HttpsError('internal', `no UID associated with ${pubkey}`)
     }
 
     const userPath = querySnapshot.docs[0].ref.path
     const uid = userPath.split('/')[1]
 
     return uid
+}
+
+/**
+ * @param lnd 
+ * @param partner_public_key 
+ * @returns array of channels
+ */
+const getChannelsWithPublicKey = async (lnd: any, partner_public_key: string): Promise<Array<Object>> => {
+    // only send when first channel is being opened
+    const { channels } = await lnService.getChannels({lnd})
+    return channels.filter((item: any) => item.partner_public_key === partner_public_key)
 }
 
 
@@ -244,17 +255,28 @@ exports.sendDeviceToken = functions.https.onCall(async (data, context) => {
     })
 })
 
-const openChannel = async (lnd: any, pubkey: string, give_tokens = 0) => {
+const openChannel = async (lnd: any, pubkey: string, attempt_amount: number = NaN) => {
+    
+    const BACKOFF_LIQUIDITY = [50000, 1000000, 5000000, 16000000]
 
-    const local_tokens = 50000 + give_tokens
+    const channels = await getChannelsWithPublicKey(lnd, pubkey)
+    const capacity = channels.reduce((total, current: any) => total + current['capacity'], 0) as number
+
+    const min_channel = Math.max(capacity, attempt_amount)
+
+    let index = BACKOFF_LIQUIDITY.findIndex(item => item > min_channel)
+    if (index === -1) {
+        index = BACKOFF_LIQUIDITY.length - 1
+    }
+
+    const local_tokens = BACKOFF_LIQUIDITY[index]
+
+    console.log({capacity, min_channel, local_tokens})
+
     const is_private = true
     const min_confirmations = 0 // to allow unconfirmed UTXOS
     const chain_fee_tokens_per_vbyte = 1
     const input: any = {lnd, local_tokens, partner_public_key: pubkey, is_private, min_confirmations, chain_fee_tokens_per_vbyte}
-
-    if (give_tokens) {
-        input['give_tokens'] = give_tokens
-    }
 
     console.log('trying to open a channel with:', input)
 
@@ -266,10 +288,17 @@ const openChannel = async (lnd: any, pubkey: string, give_tokens = 0) => {
 }
 
 exports.openFirstChannel = functions.https.onCall(async (data, context) => {
-    checkNonAnonymous(context)
+    checkNonAnonymous(context) // move to decorator @checkanonymous
 
     const lnd = initLnd()
     const pubkey = await UidToPubKey(context.auth!.uid)
+
+    const channels = await getChannelsWithPublicKey(lnd, pubkey)
+
+    if (channels.length > 1) {
+        console.log(`not the first channel for ${pubkey}, not sending a text`)
+        return {response: 'first-channel-already-opened'}
+    }
 
     try {
         console.log(`openFirstChannel with pubkey ${pubkey}`)
@@ -439,8 +468,10 @@ exports.buyLNDBTC = functions.https.onCall(async (data: IBuyRequest, context) =>
         throw new functions.https.HttpsError('internal', `Can't probe payment. Not enough liquidity?`)
     }
 
+    const request = {lnd, ...invoiceJson}
+
     try {
-        await lnService.pay({lnd, request: data.invoice})
+        await lnService.payViaPaymentDetails({request}) // TODO move to pay to unified payment to our light client
     } catch (err) {
         console.error(err)
         throw new functions.https.HttpsError('internal', `Error paying invoice ${err[0]}, ${err[1]}, ${err[2]?.details}`)
@@ -483,6 +514,7 @@ exports.incomingInvoice = functions.https.onRequest(async (req, res) => {
 
     const invoiceJson = await lnService.decodePaymentRequest({lnd, request})
 
+    // get a list of all the channels
     const { channels } = await lnService.getChannels({lnd})
     const channelJson = channels.filter((item: any) => item.id === channel)
     const partner_public_key = channelJson[0].partner_public_key
@@ -510,17 +542,29 @@ exports.incomingInvoice = functions.https.onRequest(async (req, res) => {
 
 })
 
-const keySend = async (pubKey: string, amount: number, message?: string) => {
-    // , customRecords: [number, string][]
+interface IPaymentRequest {
+    pubkey?: string;
+    amount?: number;
+    message?: string;
+    // or:
+    invoice?: string
+}
+
+const pay = async (obj: IPaymentRequest) => {
+    const {pubkey, amount, message} = obj
+
+    if (pubkey === undefined) {
+        throw new functions.https.HttpsError('internal', `pubkey ${pubkey} in pay function`)
+    }
 
     const {randomBytes, createHash} = require('crypto')
     const preimageByteLength = 32
     const preimage = randomBytes(preimageByteLength);
     const secret = preimage.toString('hex');
-    const keySendPreimageType = '5482373484';
-    const messageTmpId = '123123';
+    const keySendPreimageType = '5482373484'; // key to use representing 'amount'
+    const messageTmpId = '123123'; // random number, internal to Galoy for now
+
     const id = createHash('sha256').update(preimage).digest().toString('hex');
-    
     const lnd = initLnd()
 
     const messages = [
@@ -536,7 +580,7 @@ const keySend = async (pubKey: string, amount: number, message?: string) => {
 
     const request = {
         id,
-        destination: pubKey,
+        destination: pubkey,
         lnd,
         messages,
         tokens: amount,
@@ -547,10 +591,10 @@ const keySend = async (pubKey: string, amount: number, message?: string) => {
         result = await lnService.payViaPaymentDetails(request)
     } catch (err) {
         if (err[1] === 'FailedToFindPayableRouteToDestination') {
-            // TODO: understand what trigger this string
+            // TODO: understand what trigger this error more specifically
     
-            console.log(`fallback channel open with pubkey ${pubKey}`)
-            await openChannel(lnd, pubKey, amount);
+            console.log(`no liquidity with pubkey ${pubkey}, opening new channel`)
+            await openChannel(lnd, pubkey, amount);
         }
     }
 
@@ -570,14 +614,14 @@ const giveRewards = async (uid: string, _stage: string[] | undefined = undefined
     const toPay = stage?.filter((x:string) => !new Set(paid).has(x))
     console.log('toPay', toPay)
 
-    const pubKey = await UidToPubKey(uid)
+    const pubkey = await UidToPubKey(uid)
 
     for (const item of toPay) {
         const amount: number = (<any>OnboardingRewards)[item]
         console.log(`trying to pay ${item} for ${amount}`)
 
         try {
-            await keySend(pubKey, amount, item)
+            await pay({pubkey, amount, message: item})
         } catch (err) {
             throw new functions.https.HttpsError('internal', err.toString())
         }
@@ -688,46 +732,43 @@ exports.incomingOnChainTransaction = functions.https.onRequest(async (req, res) 
     return {'result': 'success'}
 });
 
-
-// TODO use onCall instead
+/**
+ * This function is used to send a text message after the first channel is being opened
+ */
 exports.incomingChannel = functions.https.onRequest(async (req, res) => {
+    // TODO use onCall instead
     // TODO only authorize by admin-like
     // should just validate previous transaction
 
     const channel = req.body
     console.log(channel)
 
-    const uid = await pubKeyToUid(channel.partner_public_key)
-    console.log('uid: ', uid)
-
     const lnd = initLnd()
 
-    // only send when first channel is being opened
-    const channels = await lnService.getChannels({lnd})
-    const num_channels = channels.filter((item: any) => item.partner_public_key === channel.partner_public_key).length
+    const channels = await getChannelsWithPublicKey(lnd, channel.partner_public_key)
 
-    if (num_channels > 1) {
-        console.log(`not the first channel for ${channel.partner_public_key}, not sending a text`)
-        return res.status(200).send({response: 'no-text'})
-    }
+    const uid = await pubkeyToUid(channel.partner_public_key)
+    console.log('uid: ', uid)
 
-    const phoneNumber = (await admin.auth().getUser(uid)).phoneNumber
+    if (channels.length === 1) {
+        const phoneNumber = (await admin.auth().getUser(uid)).phoneNumber
 
-    if (phoneNumber === undefined) {
-        throw new functions.https.HttpsError('internal', `${phoneNumber} undefined`)
-    }
-
-    console.log(`sending message to ${phoneNumber} for channel creation`)
+        if (phoneNumber === undefined) {
+            throw new functions.https.HttpsError('internal', `${phoneNumber} undefined`)
+        }
     
-    try {
-        await getTwilioClient().messages.create({
-            from: twilioPhoneNumber,
-            to: phoneNumber,
-            body: `Your wallet is ready! open your galoy://app to get and spend your micro reward`
-        })
-    } catch (err) {
-        console.error(`impossible to send twilio request`, err)
-        throw new functions.https.HttpsError('internal', `impossible to send twilio request ${err}`)
+        console.log(`sending message to ${phoneNumber} for channel creation`)
+        
+        try {
+            await getTwilioClient().messages.create({
+                from: twilioPhoneNumber,
+                to: phoneNumber,
+                body: `Your wallet is ready! open your galoy://app to get and spend your micro reward`
+            })
+        } catch (err) {
+            console.error(`impossible to send twilio request`, err)
+            throw new functions.https.HttpsError('internal', `impossible to send twilio request ${err}`)
+        }            
     }
 
     try {
@@ -736,7 +777,7 @@ exports.incomingChannel = functions.https.onRequest(async (req, res) => {
         throw new functions.https.HttpsError('internal', `can't give the rewards ${err}`)
     }
 
-    return res.status(200).send({response: 'ok', phoneNumber})
+    return res.status(200).send({response: 'ok'})
 })
 
 
