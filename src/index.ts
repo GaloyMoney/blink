@@ -255,7 +255,7 @@ exports.sendDeviceToken = functions.https.onCall(async (data, context) => {
     })
 })
 
-const openChannel = async (lnd: any, pubkey: string, attempt_amount: number = NaN) => {
+const openChannel = async (lnd: any, pubkey: string, attempt_amount: number = 0) => {
     
     const BACKOFF_LIQUIDITY = [50000, 1000000, 5000000, 16000000]
 
@@ -396,7 +396,7 @@ exports.quoteLNDBTC = functions.https.onCall(async (data: IQuoteRequest, context
         const invoiceJson = await lnService.decodePaymentRequest({lnd, request: data.invoice})
 
         if (moment.utc() < moment.utc(invoiceJson.expires_at).subtract(QUOTE_VALIDITY)) { 
-            throw new functions.https.HttpsError('failed-precondition', 'invoice should expiry within 30 seconds')
+            throw new functions.https.HttpsError('failed-precondition', 'invoice expire within 30 seconds')
         }
 
         if (moment.utc() > moment.utc(invoiceJson.expires_at)) {
