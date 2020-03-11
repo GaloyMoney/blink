@@ -283,7 +283,7 @@ const openChannel = async (lnd: any, pubkey: string, attempt_amount: number = 0)
     try {
         return await lnService.openChannel(input)
     } catch (err) {
-        throw new functions.https.HttpsError('internal', `can't open channel, error: ${err} ${err[2] ? err[2]: ""}`)
+        throw new functions.https.HttpsError('internal', `can't open channel, error: ${err[0]} ${err[1]} ${err[2] ? JSON.stringify(err[2], null, 4): ""}`)
     }
 }
 
