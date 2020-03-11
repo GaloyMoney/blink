@@ -17,7 +17,7 @@
     "apisauce": "^1.1.1",
     "firebase-admin": "^8.6.0",
     "firebase-functions": "^3.3.0",
-    "ln-service": "latest",
+    "ln-service": "^47.15.3",
     "moment": "^2.24.0",
     "twilio": "^3.39.1",
     "validate.js": "^0.13.1"

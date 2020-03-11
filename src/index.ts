@@ -346,7 +346,7 @@ exports.quoteLNDBTC = functions.https.onCall(async (data: IQuoteRequest, context
         throw new functions.https.HttpsError('invalid-argument', JSON.stringify(err))
     }
     
-    console.log(`${data.side} quote request from ${context.auth!.uid}, request: ${data}`)
+    console.log(`${data.side} quote request from ${context.auth!.uid}, request: ${JSON.stringify(data, null, 4)}`)
 
     let spot
     
@@ -469,9 +469,10 @@ exports.buyLNDBTC = functions.https.onCall(async (data: IBuyRequest, context) =>
     }
 
     const request = {lnd, ...invoiceJson}
+    console.log({request})
 
     try {
-        await lnService.payViaPaymentDetails({request}) // TODO move to pay to unified payment to our light client
+        await lnService.payViaPaymentDetails(request) // TODO move to pay to unified payment to our light client
     } catch (err) {
         console.error(err)
         throw new functions.https.HttpsError('internal', `Error paying invoice ${err[0]}, ${err[1]}, ${err[2]?.details}`)
