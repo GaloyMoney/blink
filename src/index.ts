@@ -5,8 +5,10 @@ import { create, ApiResponse } from "apisauce"
 import { sign, verify } from "./crypto"
 import * as moment from 'moment'
 import { IQuoteResponse, IQuoteRequest, IBuyRequest, OnboardingRewards } from "../../../../common/types"
-const lnService = require('ln-service')
+import { getFiatBalance } from "./fiat"
+import { channelsWithPubkey, uidToPubkey, pubkeyToUid } from "./utils"
 const validate = require("validate.js")
+const lnService = require('ln-service')
 
 interface Auth {
     macaroon: string,
@@ -23,6 +25,8 @@ interface FiatTransaction {
 }
 
 
+// we are extending validate so that we can validate dates
+// which are not supported date by default
 validate.extend(validate.validators.datetime, {
     // The value is guaranteed not to be null or undefined but otherwise it
     // could be anything.
@@ -37,29 +41,9 @@ validate.extend(validate.validators.datetime, {
 });
 
 
-
 admin.initializeApp();
 const firestore = admin.firestore()
 
-
-const getBalance = async (uid: string) => {
-    const reduce = (txs: {amount: number}[]) => {
-        const amounts = txs.map(tx => tx.amount)
-        const reducer = (accumulator: number, currentValue: number) => accumulator + currentValue
-        return amounts.reduce(reducer)
-    }
-    
-    return firestore.doc(`/users/${uid}`).get().then(function(doc) {
-        if (doc.exists && doc.data()!.transactions.length > 0) {
-            return reduce(doc.data()!.transactions) // FIXME type
-        } else {
-            return 0 // no bank account yet
-        }
-    }).catch(err => {
-        console.log('err', err) 
-        return 0 // FIXME: currently error on reduce when there is no transactions
-    })
-}
 
 const initLnd = () => {
     // TODO verify wallet is unlock?
@@ -83,19 +67,6 @@ const initLnd = () => {
     // console.log("lnd auth", auth_lnd)
     const {lnd} = lnService.authenticatedLndGrpc(auth_lnd);
     return lnd
-}
-
-const twilioPhoneNumber = "***REMOVED***"
-const getTwilioClient = () => {
-    const accountSID = "***REMOVED***"
-    const authToken = "***REMOVED***"
-    
-    const client = require('twilio')(
-        accountSID,
-        authToken
-    )
-
-    return client
 }
 
 /**
@@ -125,47 +96,6 @@ const priceBTC = async (): Promise<number> => {
         throw new functions.https.HttpsError('internal', "bad response from ref price server")
     }
 }
-
-const UidToPubKey = async (uid: string): Promise<string> => {
-    try {
-        const doc = await firestore.doc(`/users/${uid}`).get()
-        const pubkey = doc.data()?.lightning?.pubkey
-
-        if (pubkey === undefined) {
-            throw new functions.https.HttpsError('not-found', `can't get pubkey for user ${uid}`)    
-        }
-
-        return pubkey
-    } catch (err) {
-        throw new functions.https.HttpsError('internal', `can't get pubkey for user ${uid}: error: ${err}`)
-    }
-}
-
-const pubkeyToUid = async (pubkey: string): Promise<string> => {
-    const users = firestore.collection("users");
-    const querySnapshot = await users.where("lightning.pubkey", "==", pubkey).get();
-    
-    if(querySnapshot.size === 0) {
-        throw new functions.https.HttpsError('internal', `no UID associated with ${pubkey}`)
-    }
-
-    const userPath = querySnapshot.docs[0].ref.path
-    const uid = userPath.split('/')[1]
-
-    return uid
-}
-
-/**
- * @param lnd 
- * @param partner_public_key 
- * @returns array of channels
- */
-const getChannelsWithPublicKey = async (lnd: any, partner_public_key: string): Promise<Array<Object>> => {
-    // only send when first channel is being opened
-    const { channels } = await lnService.getChannels({lnd})
-    return channels.filter((item: any) => item.partner_public_key === partner_public_key)
-}
-
 
 exports.updatePrice = functions.pubsub.schedule('every 4 hours').onRun(async (context) => {
     try {
@@ -200,11 +130,11 @@ const checkBankingEnabled = checkNonAnonymous // TODO
 exports.getFiatBalances = functions.https.onCall((data, context) => {
     checkBankingEnabled(context)
 
-    return getBalance(context.auth!.uid)
+    return getFiatBalance(context.auth!.uid)
 })
 
 
-exports.sendPubKey = functions.https.onCall(async (data, context) => {
+exports.sendPubkey = functions.https.onCall(async (data, context) => {
     checkNonAnonymous(context)
 
     const constraints = {
@@ -259,7 +189,7 @@ const openChannel = async (lnd: any, pubkey: string, attempt_amount: number = 0)
     
     const BACKOFF_LIQUIDITY = [50000, 1000000, 5000000, 16000000]
 
-    const channels = await getChannelsWithPublicKey(lnd, pubkey)
+    const channels = await channelsWithPubkey(lnd, pubkey)
     const capacity = channels.reduce((total, current: any) => total + current['capacity'], 0) as number
 
     const min_channel = Math.max(capacity, attempt_amount)
@@ -291,9 +221,9 @@ exports.openFirstChannel = functions.https.onCall(async (data, context) => {
     checkNonAnonymous(context) // move to decorator @checkanonymous
 
     const lnd = initLnd()
-    const pubkey = await UidToPubKey(context.auth!.uid)
+    const pubkey = await uidToPubkey(context.auth!.uid)
 
-    const channels = await getChannelsWithPublicKey(lnd, pubkey)
+    const channels = await channelsWithPubkey(lnd, pubkey)
 
     if (channels.length > 1) {
         console.log(`not the first channel for ${pubkey}, not sending a text`)
@@ -458,7 +388,7 @@ exports.buyLNDBTC = functions.https.onCall(async (data: IBuyRequest, context) =>
 
     const fiatAmount = satAmount * data.satPrice
 
-    if (await getBalance(context.auth!.uid) < fiatAmount) {
+    if (await getFiatBalance(context.auth!.uid) < fiatAmount) {
         throw new functions.https.HttpsError('permission-denied', 'not enough dollar to proceed')
     }
 
@@ -615,7 +545,7 @@ const giveRewards = async (uid: string, _stage: string[] | undefined = undefined
     const toPay = stage?.filter((x:string) => !new Set(paid).has(x))
     console.log('toPay', toPay)
 
-    const pubkey = await UidToPubKey(uid)
+    const pubkey = await uidToPubkey(uid)
 
     for (const item of toPay) {
         const amount: number = (<any>OnboardingRewards)[item]
@@ -737,6 +667,8 @@ exports.incomingOnChainTransaction = functions.https.onRequest(async (req, res) 
  * This function is used to send a text message after the first channel is being opened
  */
 exports.incomingChannel = functions.https.onRequest(async (req, res) => {
+    const { sendText } = require("./text")
+
     // TODO use onCall instead
     // TODO only authorize by admin-like
     // should just validate previous transaction
@@ -746,7 +678,7 @@ exports.incomingChannel = functions.https.onRequest(async (req, res) => {
 
     const lnd = initLnd()
 
-    const channels = await getChannelsWithPublicKey(lnd, channel.partner_public_key)
+    const channels = await channelsWithPubkey(lnd, channel.partner_public_key)
 
     const uid = await pubkeyToUid(channel.partner_public_key)
     console.log('uid: ', uid)
@@ -761,8 +693,7 @@ exports.incomingChannel = functions.https.onRequest(async (req, res) => {
         console.log(`sending message to ${phoneNumber} for channel creation`)
         
         try {
-            await getTwilioClient().messages.create({
-                from: twilioPhoneNumber,
+            await sendText({
                 to: phoneNumber,
                 body: `Your wallet is ready! open your galoy://app to get and spend your micro reward`
             })
@@ -808,6 +739,8 @@ exports.onUserCreation = functions.auth.user().onCreate(async (user) => {
     }
 
     if (lookup) {
+
+        const { getTwilioClient } = require("./text")
 
         const phoneNumber = (await admin.auth().getUser(user.uid)).phoneNumber
         console.log(phoneNumber)
