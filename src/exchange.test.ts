@@ -2,7 +2,7 @@
 import { priceBTC } from "./exchange"
 
 
-it('a + b', async () => {
+it('test getting price', async () => {
     const p = await priceBTC()
     console.log(p)
     expect(p).toBeTruthy()

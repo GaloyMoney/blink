@@ -1,28 +1,42 @@
-import { create, ApiResponse } from "apisauce"
 import * as functions from 'firebase-functions'
+const ccxt = require ('ccxt');
 
 
 /**
  * @returns      Price of BTC in sat.
  */
 export const priceBTC = async (): Promise<number> => {
-    const COINBASE_API= 'https://api.coinbase.com/'
-    const TIMEOUT= 5000
+
+    let kraken = new ccxt.kraken()
+    // let coinbase = new ccxt.coinbase()
+    // let bitfinex = new ccxt.bitfinex()
     
-    const apisauce = create({
-        baseURL: COINBASE_API,
-        timeout: TIMEOUT,
-        headers: { Accept: "application/json" },
-    })
-      
-    const response: ApiResponse<any> = await apisauce.get(`/v2/prices/spot?currency=USD`)
-    
-    if (!response.ok) {
-        throw new functions.https.HttpsError('resource-exhausted', "ref price server is down")
-    }
-    
+    let ticker
+
     try {
-        const sat_price: number = response.data.data.amount * Math.pow(10, -8)
+        ticker = await kraken.fetchTicker('BTC/USD')
+    } catch (e) {
+        // if the exception is thrown, it is "caught" and can be handled here
+        // the handling reaction depends on the type of the exception
+        // and on the purpose or business logic of your application
+        if (e instanceof ccxt.NetworkError) {
+            console.log ('fetchTicker failed due to a network error:', e.message)
+            // retry or whatever
+            // ...
+        } else if (e instanceof ccxt.ExchangeError) {
+            console.log ('fetchTicker failed due to exchange error:', e.message)
+            // retry or whatever
+            // ...
+        } else {
+            console.log ('fetchTicker failed with:', e.message)
+            // retry or whatever
+            // ...
+        }
+        throw new functions.https.HttpsError('resource-exhausted', "issue with ref exchanges")
+    }
+
+    try {
+        const sat_price = (ticker.ask + ticker.bid) / 2 * Math.pow(10, -8)
         console.log(`sat spot price is ${sat_price}`)
         return sat_price
     } catch {
