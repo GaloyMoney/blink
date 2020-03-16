@@ -7,7 +7,8 @@
     "shell": "export GOOGLE_APPLICATION_CREDENTIALS='../keys.json' && source '../../deploy/exportlnd.sh' && npm run build && firebase functions:shell",
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
-    "logs": "firebase functions:log"
+    "logs": "firebase functions:log",
+    "test": "jest"
   },
   "engines": {
     "node": "10"
@@ -15,6 +16,7 @@
   "main": "lib/backend/firebase/functions/src/index.js",
   "dependencies": {
     "apisauce": "^1.1.1",
+    "ccxt": "^1.24.34",
     "firebase-admin": "^8.6.0",
     "firebase-functions": "^3.3.0",
     "ln-service": "^47.15.3",
@@ -23,8 +25,11 @@
     "validate.js": "^0.13.1"
   },
   "devDependencies": {
+    "@types/jest": "^25.1.4",
     "bolt07": "^1.4.4",
     "firebase-functions-test": "^0.1.6",
+    "jest": "^25.1.0",
+    "ts-jest": "^25.2.1",
     "tslint": "^5.12.0",
     "typescript": "^3.8.0-dev.20191231"
   },

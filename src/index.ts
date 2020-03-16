@@ -1,12 +1,12 @@
 import * as functions from 'firebase-functions'
 import * as admin from 'firebase-admin'
 import { transactions_template } from "./const"
-import { create, ApiResponse } from "apisauce"
 import { sign, verify } from "./crypto"
 import * as moment from 'moment'
 import { IQuoteResponse, IQuoteRequest, IBuyRequest, OnboardingRewards } from "../../../../common/types"
 import { getFiatBalance } from "./fiat"
 import { channelsWithPubkey, uidToPubkey, pubkeyToUid } from "./utils"
+import { priceBTC } from "./exchange"
 const validate = require("validate.js")
 const lnService = require('ln-service')
 
@@ -69,33 +69,6 @@ const initLnd = () => {
     return lnd
 }
 
-/**
- * @returns      Price of BTC in sat.
- */
-const priceBTC = async (): Promise<number> => {
-    const COINBASE_API= 'https://api.coinbase.com/'
-    const TIMEOUT= 5000
-    
-    const apisauce = create({
-        baseURL: COINBASE_API,
-        timeout: TIMEOUT,
-        headers: { Accept: "application/json" },
-    })
-      
-    const response: ApiResponse<any> = await apisauce.get(`/v2/prices/spot?currency=USD`)
-    
-    if (!response.ok) {
-        throw new functions.https.HttpsError('resource-exhausted', "ref price server is down")
-    }
-    
-    try {
-        const sat_price: number = response.data.data.amount * Math.pow(10, -8)
-        console.log(`sat spot price is ${sat_price}`)
-        return sat_price
-    } catch {
-        throw new functions.https.HttpsError('internal', "bad response from ref price server")
-    }
-}
 
 exports.updatePrice = functions.pubsub.schedule('every 4 hours').onRun(async (context) => {
     try {

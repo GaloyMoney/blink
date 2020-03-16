@@ -3,6 +3,8 @@ import * as admin from 'firebase-admin'
 const firestore = admin.firestore()
 
 
+// TODO: User Class?
+
 export const getFiatBalance = async (uid: string) => {
     const reduce = (txs: {amount: number}[]) => {
         const amounts = txs.map(tx => tx.amount)
