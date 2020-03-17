@@ -14,6 +14,10 @@ export const btc2sat = (btc: number) => {
     return btc * Math.pow(10, 8)
 }
 
+export const sat2btc = (btc: number) => {
+    return btc / Math.pow(10, 8)
+}
+
 /**
  * @returns      Price of BTC in sat.
  */
@@ -56,31 +60,46 @@ export const priceBTC = async (): Promise<number> => {
     }
 }
 
-export const getBalance = async (): Promise<Object> => {
-    const balance = {
-        USD: 0,
-        BTC: 0,
-    }
+type Balance = {
+    BTC: {
+        total: number,
+        exchange: number,
+        onchain: number,
+        offchain: number,
+    },
+    USD: {
+       total: number,
+       exchange: number,
+    },
+}
 
-    const kraken = new ccxt.kraken({
-        apiKey,
-        secret,
-    })
+export const getBalance = async (): Promise<Balance> => {
+    
+    const balance: Balance = {
+        BTC: {
+            total: 0,
+            exchange: 0,
+            onchain: 0,
+            offchain: 0,
+        },
+        USD: {
+            total: 0,
+            exchange: 0,
+    }}
+
+    const kraken = new ccxt.kraken({ apiKey, secret })
 
     const balanceKraken = await kraken.fetchBalance()
     console.log({balanceKraken})
-    balance.BTC += btc2sat(balanceKraken.BTC.total) // TODO manage free and used
-    balance.USD += balanceKraken.USD.total 
-
-    console.log({balance})
-
+    balance.BTC.exchange = btc2sat(balanceKraken.BTC.total) // TODO manage free and used
+    balance.USD.exchange = balanceKraken.USD.total 
 
     const lnd = initLnd()
 
     try {
         const chainBalance = (await getChainBalance({lnd})).chain_balance;
         console.log({chainBalance})
-        balance.BTC += chainBalance
+        balance.BTC.onchain = chainBalance
     } catch(err) {
         console.log(`error getting chainBalance ${err}`)
     }
@@ -88,10 +107,60 @@ export const getBalance = async (): Promise<Object> => {
     try {
         const balanceInChannels = (await getChannelBalance({lnd})).channel_balance;
         console.log({balanceInChannels})
-        balance.BTC += balanceInChannels
+        balance.BTC.offchain = balanceInChannels
     } catch(err) {
         console.error(`error getting balanceInChannels ${err}`)
     }
 
+    balance.BTC.total = Object.values(balance.BTC).reduce((acc, value) => acc + value, 0)
+    balance.USD.total = Object.values(balance.USD).reduce((acc, value) => acc + value, 0)
+
+    console.log({balance})
     return balance
 }
+
+export const withdrawExchange = () => {
+
+    // const address = lnd.
+
+    const kraken = new ccxt.kraken({ apiKey, secret })
+
+    const key = 'lnd' // key has to be set from the user interface  
+    const code = 'BTC'
+    const amount = 0.01
+
+     // not sure if this have to match key? I guess it should
+    const address = 'bc1qs08semyyerehc0604typuvg777lygep4lkjuya'
+    kraken.withdraw (code, amount, address, undefined, {key})
+}
+
+/**
+ * very, very crude "hedging", probably not the right word
+ * look at future contract for better hedging
+ * untested
+ */
+export const hedging = async () => {
+
+    const kraken = new ccxt.kraken({ apiKey, secret })
+
+    const minWalletBTC = 1 // TODO --> find right number
+    const maxWalletBTC = 2 // TODO
+    const midWalletBTC = (minWalletBTC + maxWalletBTC) / 2
+
+    const balance = await getBalance()
+
+    const symbol = "BTC/USD"
+
+    if (balance.USD.total > maxWalletBTC) {
+        const amount = balance.USD.total - maxWalletBTC - midWalletBTC
+        let result = kraken.createMarketSellOrder(symbol, amount)
+        console.log({result})
+    } else if (balance.USD.total < minWalletBTC) {
+        const amount = minWalletBTC - balance.USD.total + midWalletBTC
+        let result = kraken.createMarketBuyOrder(symbol, amount)
+        console.log({result})
+    }
+}
+
+// TODO: move money from / to exchange / wallet
+
