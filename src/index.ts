@@ -1,5 +1,12 @@
-import * as functions from 'firebase-functions'
 import * as admin from 'firebase-admin'
+import * as functions from 'firebase-functions'
+
+// FIXME: figure out the way to do Just in time initializing with firebase
+// Line below is needed before loading other file that may invoque admin.firestore()
+// in the header
+admin.initializeApp()
+const firestore = admin.firestore()
+
 import { transactions_template } from "./const"
 import { sign, verify } from "./crypto"
 import * as moment from 'moment'
@@ -19,7 +26,6 @@ interface FiatTransaction {
     onchain_tx?: string, // should be HEX?
 }
 
-
 // we are extending validate so that we can validate dates
 // which are not supported date by default
 validate.extend(validate.validators.datetime, {
@@ -33,12 +39,7 @@ validate.extend(validate.validators.datetime, {
         const format = options.dateOnly ? "YYYY-MM-DD" : "YYYY-MM-DD hh:mm:ss";
         return moment.utc(value).format(format);
     }
-});
-
-
-admin.initializeApp();
-const firestore = admin.firestore()
-
+})
 
 exports.updatePrice = functions.pubsub.schedule('every 4 hours').onRun(async (context) => {
     try {

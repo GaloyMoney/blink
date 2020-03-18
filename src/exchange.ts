@@ -7,6 +7,7 @@ const {getChannelBalance} = require('ln-service');
 
 const ccxt = require ('ccxt');
 
+// unsecured //
 const apiKey = "***REMOVED***"
 const secret = "***REMOVED***"
 
