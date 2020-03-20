@@ -15,12 +15,12 @@ export const btc2sat = (btc: number) => {
     return btc * Math.pow(10, 8)
 }
 
-export const sat2btc = (btc: number) => {
-    return btc / Math.pow(10, 8)
+export const sat2btc = (sat: number) => {
+    return sat / Math.pow(10, 8)
 }
 
 /**
- * @returns      Price of BTC in sat.
+ * @returns  Price of SAT/USD
  */
 export const priceBTC = async (): Promise<number> => {
 
@@ -53,7 +53,7 @@ export const priceBTC = async (): Promise<number> => {
     }
 
     try {
-        const satPrice = btc2sat((ticker.ask + ticker.bid) / 2)
+        const satPrice = sat2btc((ticker.ask + ticker.bid) / 2)
         console.log(`sat spot price is ${satPrice}`)
         return satPrice
     } catch {

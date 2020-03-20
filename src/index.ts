@@ -41,7 +41,7 @@ validate.extend(validate.validators.datetime, {
     }
 })
 
-exports.updatePrice = functions.pubsub.schedule('every 4 hours').onRun(async (context) => {
+exports.updatePrice = functions.pubsub.schedule('every 1 minutes').onRun(async (context) => {
     try {
         const spot = await priceBTC()
         console.log(`updating price, new price: ${spot}`);
@@ -49,8 +49,7 @@ exports.updatePrice = functions.pubsub.schedule('every 4 hours').onRun(async (co
     } catch (err) {
         throw new functions.https.HttpsError('internal', err.toString())
     }
-});
-
+})
 
 const checkAuth = (context: any) => { // FIXME any
     if (!context.auth) {
