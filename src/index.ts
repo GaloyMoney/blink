@@ -7,14 +7,21 @@ import * as functions from 'firebase-functions'
 admin.initializeApp()
 const firestore = admin.firestore()
 
+
+import * as moment from 'moment'
+import { IBuyRequest, IQuoteRequest, IQuoteResponse, OnboardingRewards } from "../../../../common/types"
 import { transactions_template } from "./const"
 import { sign, verify } from "./crypto"
-import * as moment from 'moment'
-import { IQuoteResponse, IQuoteRequest, IBuyRequest, OnboardingRewards } from "../../../../common/types"
-import { getFiatBalance } from "./fiat"
-import { channelsWithPubkey, uidToPubkey, pubkeyToUid } from "./utils"
 import { priceBTC } from "./exchange"
+import { getFiatBalance } from "./fiat"
 import { initLnd } from "./lightning"
+import { uidToPubkey } from "./utils"
+
+
+
+
+
+
 const validate = require("validate.js")
 const lnService = require('ln-service')
 
@@ -89,6 +96,24 @@ exports.sendDeviceToken = functions.https.onCall(async (data, context) => {
         console.error(err)
         throw new functions.https.HttpsError('internal', err)
     })
+})
+
+
+exports.addInvoice = functions.https.onCall(async (data, context) => {
+    checkAuth(context)
+
+    const lnd = initLnd()
+
+    const {request} = await lnService.createInvoice(
+        {lnd, 
+        tokens: data.value,
+        description: data.memo,
+        // expires_at: validUntil.toISOString(),
+    });
+
+    console.log({request})
+
+    return {request}
 })
 
 
@@ -372,12 +397,7 @@ const pay = async (obj: IPaymentRequest) => {
     try {
         result = await lnService.payViaPaymentDetails(request)
     } catch (err) {
-        if (err[1] === 'FailedToFindPayableRouteToDestination') {
-            // TODO: understand what trigger this error more specifically
-    
-            console.log(`no liquidity with pubkey ${pubkey}, opening new channel`)
-            await openChannel(lnd, pubkey, amount);
-        }
+        console.log({err})
     }
 
     console.log(result)
