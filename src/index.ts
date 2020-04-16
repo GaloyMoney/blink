@@ -7,7 +7,6 @@ import * as functions from 'firebase-functions'
 admin.initializeApp()
 const firestore = admin.firestore()
 
-
 import * as moment from 'moment'
 import { IBuyRequest, IQuoteRequest, IQuoteResponse, OnboardingRewards } from "../../../../common/types"
 import { transactions_template } from "./const"
@@ -16,10 +15,6 @@ import { priceBTC } from "./exchange"
 import { getFiatBalance } from "./fiat"
 import { initLnd } from "./lightning"
 import { uidToPubkey } from "./utils"
-
-
-
-
 
 
 const validate = require("validate.js")
