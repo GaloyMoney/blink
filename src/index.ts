@@ -76,44 +76,7 @@ exports.getFiatBalances = functions.https.onCall((data, context) => {
     return getFiatBalance(context.auth!.uid)
 })
 
-
-exports.sendPubkey = functions.https.onCall(async (data, context) => {
-    checkNonAnonymous(context)
-
-    const constraints = {
-        pubkey: {
-            length: {is: 66} // why 66 and not 64?
-        },
-        network: {
-            inclusion: {
-                within: {"testnet": "mainnet"}
-        }}
-    }
-
-    {
-        const err = validate(data, constraints)
-        if (err !== undefined) {
-            throw new functions.https.HttpsError('invalid-argument', JSON.stringify(err))
-        }
-    }
-
-    try {
-        const writeResult = await firestore.doc(`/users/${context.auth!.uid}`).set({
-            lightning: {
-                pubkey: data.pubkey,
-                network: data.network,
-                initTimestamp: admin.firestore.FieldValue.serverTimestamp(),
-            }}, { merge: true })
-        
-        console.log(writeResult)
-        return {result: `Transaction succesfully added, uid: ${context.auth!.uid}, pubkey: ${data.pubkey}`}
-
-    } catch (err) {
-        console.error(err)
-        throw new functions.https.HttpsError('internal', err)
-    }
-})
-
+// for notification
 exports.sendDeviceToken = functions.https.onCall(async (data, context) => {
     checkAuth(context)
 
@@ -128,62 +91,6 @@ exports.sendDeviceToken = functions.https.onCall(async (data, context) => {
     })
 })
 
-const openChannel = async (lnd: any, pubkey: string, attempt_amount: number = 0) => {
-    
-    const BACKOFF_LIQUIDITY = [50000, 1000000, 5000000, 16000000]
-
-    const channels = await channelsWithPubkey(lnd, pubkey)
-    const capacity = channels.reduce((total, current: any) => total + current['capacity'], 0) as number
-
-    const min_channel = Math.max(capacity, attempt_amount)
-
-    let index = BACKOFF_LIQUIDITY.findIndex(item => item > min_channel)
-    if (index === -1) {
-        index = BACKOFF_LIQUIDITY.length - 1
-    }
-
-    const local_tokens = BACKOFF_LIQUIDITY[index]
-
-    console.log({capacity, min_channel, local_tokens})
-
-    const is_private = true
-    const min_confirmations = 0 // to allow unconfirmed UTXOS
-    const chain_fee_tokens_per_vbyte = 1
-    const input: any = {lnd, local_tokens, partner_public_key: pubkey, is_private, min_confirmations, chain_fee_tokens_per_vbyte}
-
-    console.log('trying to open a channel with:', input)
-
-    try {
-        return await lnService.openChannel(input)
-    } catch (err) {
-        throw new functions.https.HttpsError('internal', `can't open channel, error: ${err[0]} ${err[1]} ${err[2] ? JSON.stringify(err[2], null, 4): ""}`)
-    }
-}
-
-exports.openFirstChannel = functions.https.onCall(async (data, context) => {
-    checkNonAnonymous(context) // move to decorator @checkanonymous
-
-    const lnd = initLnd()
-    const pubkey = await uidToPubkey(context.auth!.uid)
-
-    const channels = await channelsWithPubkey(lnd, pubkey)
-
-    if (channels.length > 1) {
-        console.log(`not the first channel for ${pubkey}, not sending a text`)
-        return {response: 'first-channel-already-opened'}
-    }
-
-    try {
-        console.log(`openFirstChannel with pubkey ${pubkey}`)
-        const funding_tx = await openChannel(lnd, pubkey)
-        return {funding_tx}
-    } catch (err) {
-        console.error(err)
-        let message = `${err[0]}, ${err[1]}, `
-        message += err[2] ? err[2].details : '' // FIXME verify details it the property we want
-        throw new functions.https.HttpsError('internal', message)
-    }
-})
 
 exports.quoteLNDBTC = functions.https.onCall(async (data: IQuoteRequest, context) => {
     checkBankingEnabled(context)
@@ -372,6 +279,7 @@ exports.buyLNDBTC = functions.https.onCall(async (data: IBuyRequest, context) =>
     console.log("success")
     return {success: "success"}
 })
+
 
 // sellBTC
 exports.incomingInvoice = functions.https.onRequest(async (req, res) => {
@@ -606,54 +514,12 @@ exports.incomingOnChainTransaction = functions.https.onRequest(async (req, res) 
     return {'result': 'success'}
 });
 
-/**
- * This function is used to send a text message after the first channel is being opened
- */
-exports.incomingChannel = functions.https.onRequest(async (req, res) => {
-    const { sendText } = require("./text")
 
-    // TODO use onCall instead
-    // TODO only authorize by admin-like
-    // should just validate previous transaction
 
-    const channel = req.body
-    console.log(channel)
-
-    const lnd = initLnd()
-
-    const channels = await channelsWithPubkey(lnd, channel.partner_public_key)
-
-    const uid = await pubkeyToUid(channel.partner_public_key)
-    console.log('uid: ', uid)
-
-    if (channels.length === 1) {
-        const phoneNumber = (await admin.auth().getUser(uid)).phoneNumber
-
-        if (phoneNumber === undefined) {
-            throw new functions.https.HttpsError('internal', `${phoneNumber} undefined`)
-        }
-    
-        console.log(`sending message to ${phoneNumber} for channel creation`)
-        
-        try {
-            await sendText({
-                to: phoneNumber,
-                body: `Your wallet is ready! open your galoy://app to get and spend your micro reward`
-            })
-        } catch (err) {
-            console.error(`impossible to send twilio request`, err)
-            throw new functions.https.HttpsError('internal', `impossible to send twilio request ${err}`)
-        }            
-    }
-
-    try {
-        await giveRewards(uid)
-    } catch (err) {
-        throw new functions.https.HttpsError('internal', `can't give the rewards ${err}`)
-    }
-
-    return res.status(200).send({response: 'ok'})
-})
+// await sendText({
+//     to: phoneNumber,
+//     body: `Your wallet is ready! open your galoy://app to get and spend your micro reward`
+// })
 
 
 exports.onUserCreation = functions.auth.user().onCreate(async (user) => {
