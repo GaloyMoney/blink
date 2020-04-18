@@ -1,6 +1,9 @@
 import * as functions from 'firebase-functions'
 // import { CurrencyType } from "../../../../common/types"
 import { initLnd } from "./lightning"
+import { getFiatBalance } from "./fiat";
+import moment from "moment";
+import { checkBankingEnabled } from "./utils";
 
 const {getChainBalance} = require('ln-service')
 const {getChannelBalance} = require('ln-service');
@@ -11,55 +14,6 @@ const ccxt = require ('ccxt');
 const apiKey = "***REMOVED***"
 const secret = "***REMOVED***"
 
-export const btc2sat = (btc: number) => {
-    return btc * Math.pow(10, 8)
-}
-
-export const sat2btc = (sat: number) => {
-    return sat / Math.pow(10, 8)
-}
-
-/**
- * @returns  Price of SAT/USD
- */
-export const priceBTC = async (): Promise<number> => {
-
-    const kraken = new ccxt.kraken()
-    // let coinbase = new ccxt.coinbase()
-    // let bitfinex = new ccxt.bitfinex()
-    
-    let ticker
-
-    try {
-        ticker = await kraken.fetchTicker('BTC/USD')
-    } catch (e) {
-        // if the exception is thrown, it is "caught" and can be handled here
-        // the handling reaction depends on the type of the exception
-        // and on the purpose or business logic of your application
-        if (e instanceof ccxt.NetworkError) {
-            console.log ('fetchTicker failed due to a network error:', e.message)
-            // retry or whatever
-            // ...
-        } else if (e instanceof ccxt.ExchangeError) {
-            console.log ('fetchTicker failed due to exchange error:', e.message)
-            // retry or whatever
-            // ...
-        } else {
-            console.log ('fetchTicker failed with:', e.message)
-            // retry or whatever
-            // ...
-        }
-        throw new functions.https.HttpsError('resource-exhausted', "issue with ref exchanges")
-    }
-
-    try {
-        const satPrice = sat2btc((ticker.ask + ticker.bid) / 2)
-        console.log(`sat spot price is ${satPrice}`)
-        return satPrice
-    } catch {
-        throw new functions.https.HttpsError('internal', "bad response from ref price server")
-    }
-}
 
 type Balance = {
     BTC: {
@@ -134,6 +88,195 @@ export const withdrawExchange = () => {
     const address = 'bc1qs08semyyerehc0604typuvg777lygep4lkjuya'
     kraken.withdraw (code, amount, address, undefined, {key})
 }
+
+
+exports.quoteLNDBTC = functions.https.onCall(async (data: IQuoteRequest, context) => {
+    checkBankingEnabled(context)
+
+    const SPREAD = 0.015 //1.5%
+    const QUOTE_VALIDITY = {seconds: 30}
+
+    const constraints = {
+        // side is from the customer side.
+        // eg: buy side means customer is buying, we are selling.
+        side: {
+            inclusion: ["buy", "sell"]
+        },
+        invoice: function(value: any, attributes: any) {
+            if (attributes.side === "sell") return null;
+            return {
+              presence: {message: "is required for buy order"},
+              length: {minimum: 6} // what should be the minimum invoice length?
+            };
+        }, // we can derive satAmount for sell order with the invoice
+        satAmount: function(value: any, attributes: any) {
+            if (attributes.side === "buy") return null;
+            return {
+                presence: {message: "is required for sell order"},
+                numericality: {
+                    onlyInteger: true,
+                    greaterThan: 0
+            }}
+    }}
+
+    const err = validate(data, constraints)
+    if (err !== undefined) {
+        throw new functions.https.HttpsError('invalid-argument', JSON.stringify(err))
+    }
+    
+    console.log(`${data.side} quote request from ${context.auth!.uid}, request: ${JSON.stringify(data, null, 4)}`)
+
+    let spot
+    
+    try {
+        spot = await priceBTC()
+    } catch (err) {
+        throw new functions.https.HttpsError('unavailable', err)
+    }
+
+    const satAmount = data.satAmount
+
+    let multiplier = NaN
+
+    if (data.side === "buy") {
+        multiplier = 1 + SPREAD
+    } else if (data.side === "sell") {
+        multiplier = 1 - SPREAD
+    }
+
+    const side = data.side
+    const satPrice = multiplier * spot
+    const validUntil = moment().add(QUOTE_VALIDITY)
+
+    const lnd = initLnd()
+
+    const description = {
+        satPrice,
+        memo: "Sell BTC"
+    }
+
+    if (data.side === "sell") {
+        const {request} = await lnService.createInvoice(
+            {lnd, 
+            tokens: satAmount,
+            description: JSON.stringify(description),
+            expires_at: validUntil.toISOString(),
+        });
+
+        if (request === undefined) {
+            throw new functions.https.HttpsError('unavailable', 'error creating invoice')
+        }
+
+        return {side, invoice: request} as IQuoteResponse
+        
+    } else if (data.side === "buy") {
+
+        const invoiceJson = await lnService.decodePaymentRequest({lnd, request: data.invoice})
+
+        if (moment.utc() < moment.utc(invoiceJson.expires_at).subtract(QUOTE_VALIDITY)) { 
+            throw new functions.https.HttpsError('failed-precondition', 'invoice expire within 30 seconds')
+        }
+
+        if (moment.utc() > moment.utc(invoiceJson.expires_at)) {
+            throw new functions.https.HttpsError('failed-precondition', 'invoice already expired')
+        }
+
+        const message: IQuoteResponse = {
+            side, 
+            satPrice, 
+            invoice: data.invoice!,
+        }
+
+        const signedMessage = await sign({... message})
+
+        console.log(signedMessage)
+        return signedMessage
+    }
+
+    return {'result': 'success'}
+})
+
+
+exports.buyLNDBTC = functions.https.onCall(async (data: IBuyRequest, context) => {
+    checkBankingEnabled(context)
+
+    const constraints = {
+        side: {
+            inclusion: ["buy"]
+        },
+        invoice: {
+            presence: true,
+            length: {minimum: 6} // what should be the minimum invoice length?
+        },
+        satPrice: {
+            presence: true,
+            numericality: {
+                greaterThan: 0
+        }},
+        signature: {
+            presence: true,
+            length: {minimum: 6} // FIXME set correct signature length
+        }
+    }
+
+    const err = validate(data, constraints)
+    if (err !== undefined) {
+        throw new functions.https.HttpsError('invalid-argument', JSON.stringify(err))
+    }
+
+    if (!verify(data)) {
+        throw new functions.https.HttpsError('failed-precondition', 'signature is not valid')
+    }
+
+    const lnd = initLnd()
+    const invoiceJson = await lnService.decodePaymentRequest({lnd, request: data.invoice})
+
+    const satAmount = invoiceJson.tokens
+    const destination = invoiceJson.destination
+
+    const fiatAmount = satAmount * data.satPrice
+
+    if (await getFiatBalance(context.auth!.uid) < fiatAmount) {
+        throw new functions.https.HttpsError('permission-denied', 'not enough dollar to proceed')
+    }
+
+    const {route} = await lnService.probeForRoute({lnd, tokens: satAmount, destination})
+    
+    if (route?.length === 0) {
+        throw new functions.https.HttpsError('internal', `Can't probe payment. Not enough liquidity?`)
+    }
+
+    const request = {lnd, ...invoiceJson}
+    console.log({request})
+
+    try {
+        await lnService.payViaPaymentDetails(request) // TODO move to pay to unified payment to our light client
+    } catch (err) {
+        console.error(err)
+        throw new functions.https.HttpsError('internal', `Error paying invoice ${err[0]}, ${err[1]}, ${err[2]?.details}`)
+    }
+
+    const fiat_tx: FiatTransaction = {
+        amount: - fiatAmount, 
+        date: moment().unix(),
+        icon: "logo-bitcoin",
+        name: "Bought Bitcoin",
+        // onchain_tx: onchain_tx.id
+    }
+
+    try {
+        const result = await firestore.doc(`/users/${context.auth!.uid}`).update({
+            transactions: admin.firestore.FieldValue.arrayUnion(fiat_tx)
+        })
+
+        console.log(result)
+    } catch(err) {
+        throw new functions.https.HttpsError('internal', 'issue updating transaction on the database')
+    }
+
+    console.log("success")
+    return {success: "success"}
+})
 
 /**
  * very, very crude "hedging", probably not the right word

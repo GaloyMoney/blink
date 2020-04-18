@@ -49,3 +49,30 @@ export const channelsWithPubkey = async (lnd: any, partner_public_key: string): 
     const { channels } = await lnService.getChannels({lnd})
     return channels.filter((item: any) => item.partner_public_key === partner_public_key)
 }
+
+export const btc2sat = (btc: number) => {
+    return btc * Math.pow(10, 8)
+}
+
+export const sat2btc = (sat: number) => {
+    return sat / Math.pow(10, 8)
+}
+
+
+export const checkAuth = (context: any) => { // FIXME any
+    if (!context.auth) {
+        throw new functions.https.HttpsError('failed-precondition', 
+            'The function must be called while authenticated.')
+    }
+}
+
+export const checkNonAnonymous = (context: any) => { // FIXME any
+    checkAuth(context)
+
+    if (context.auth.token.provider_id === "anonymous") {
+        throw new functions.https.HttpsError('failed-precondition', 
+            `This function must be while authenticate and not anonymous`)
+    }
+}
+
+export const checkBankingEnabled = checkNonAnonymous // TODO
