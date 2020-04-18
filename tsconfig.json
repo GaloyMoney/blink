@@ -7,6 +7,7 @@
     "sourceMap": true,
     "strict": true,
     "target": "es2017",
+    "noImplicitAny": false,
     "rootDirs": [
       "src",
       "../../../common",
@@ -14,6 +15,11 @@
   },
   "compileOnSave": true,
   "include": [
-    "src/index.ts"
+    "src/index.ts",
+    "src/fiat.ts",
+    "src/exchange.ts",
+    "src/lightning.ts",
+    "src/user.ts",
+    "src/globalSettings.ts",
   ]
 }

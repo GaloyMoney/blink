@@ -3,7 +3,7 @@ import { checkNonAnonymous, checkAuth, uidToPubkey } from "./utils"
 const lnService = require('ln-service')
 import * as admin from 'firebase-admin'
 const firestore = admin.firestore()
-import { OnboardingRewards } from "./types"
+import { OnboardingRewards } from "../../../../common/types"
 import { FiatTransaction } from "./interface" 
 
 interface Auth {

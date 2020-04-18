@@ -2,13 +2,21 @@ import * as functions from 'firebase-functions'
 // import { CurrencyType } from "../../../../common/types"
 import { initLnd } from "./lightning"
 import { getFiatBalance } from "./fiat";
-import moment from "moment";
-import { checkBankingEnabled } from "./utils";
+import { checkBankingEnabled, btc2sat, validate } from "./utils";
 
 const {getChainBalance} = require('ln-service')
 const {getChannelBalance} = require('ln-service');
+const lnService = require('ln-service')
+import {priceBTC} from "./price"
+import { verify, sign } from "./crypto";
+import moment = require("moment")
+import { FiatTransaction } from "./interface"
+import * as admin from 'firebase-admin'
+import { IBuyRequest, IQuoteResponse, IQuoteRequest } from "../../../../common/types";
+const firestore = admin.firestore()
 
 const ccxt = require ('ccxt');
+
 
 // unsecured //
 const apiKey = "***REMOVED***"

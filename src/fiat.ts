@@ -1,7 +1,8 @@
 const functions = require("firebase-functions")
 import * as admin from 'firebase-admin'
-import { checkBankingEnabled, checkNonAnonymous } from "./utils"
+import { checkBankingEnabled, checkNonAnonymous, validate } from "./utils"
 import moment = require("moment")
+import { FiatTransaction } from "./interface"
 const firestore = admin.firestore()
 
 
