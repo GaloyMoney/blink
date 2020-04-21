@@ -1,8 +1,8 @@
 import * as admin from 'firebase-admin'
 import * as functions from 'firebase-functions'
-import { OnboardingRewards, IAddInvoiceRequest, IAddInvoiceResponse, IPayInvoice } from "../../../../common/types"
+import { IAddInvoiceRequest, IAddInvoiceResponse, IPayInvoice } from "../../../../common/types"
 import { FiatTransaction, ILightningWallet } from "./interface"
-import { checkAuth, checkNonAnonymous, uidToPubkey } from "./utils"
+import { checkAuth, checkNonAnonymous } from "./utils"
 const lnService = require('ln-service')
 const firestore = admin.firestore()
 
@@ -230,67 +230,67 @@ const pay = async (obj: IPaymentRequest) => {
 }
 
 
-const giveRewards = async (uid: string, _stage: string[] | undefined = undefined) => {
+// const giveRewards = async (uid: string, _stage: string[] | undefined = undefined) => {
 
-    const stage = _stage || (await firestore.doc(`users/${uid}/collection/stage`).get()).data()!.stage
+//     const stage = _stage || (await firestore.doc(`users/${uid}/collection/stage`).get()).data()!.stage
     
-    // TODO rely on the invoice instead to know what is paid. need better invoice filtering.
-    const paid: string[] | undefined = (await firestore.doc(`users/${uid}/collection/paid`).get())?.data()?.stage as string[]
-    console.log('paid', paid)
+//     // TODO rely on the invoice instead to know what is paid. need better invoice filtering.
+//     const paid: string[] | undefined = (await firestore.doc(`users/${uid}/collection/paid`).get())?.data()?.stage as string[]
+//     console.log('paid', paid)
 
-    // TODO move to loadash to clean this up. 
-    const toPay = stage?.filter((x:string) => !new Set(paid).has(x))
-    console.log('toPay', toPay)
+//     // TODO move to loadash to clean this up. 
+//     const toPay = stage?.filter((x:string) => !new Set(paid).has(x))
+//     console.log('toPay', toPay)
 
-    const pubkey = await uidToPubkey(uid)
+//     const pubkey = await uidToPubkey(uid)
 
-    for (const item of toPay) {
-        const amount: number = (<any>OnboardingRewards)[item]
-        console.log(`trying to pay ${item} for ${amount}`)
+//     for (const item of toPay) {
+//         const amount: number = (<any>OnboardingRewards)[item]
+//         console.log(`trying to pay ${item} for ${amount}`)
 
-        try {
-            await pay({pubkey, amount, message: item})
-        } catch (err) {
-            throw new functions.https.HttpsError('internal', err.toString())
-        }
+//         try {
+//             await pay({pubkey, amount, message: item})
+//         } catch (err) {
+//             throw new functions.https.HttpsError('internal', err.toString())
+//         }
 
-        console.log(`paid rewards ${item} to ${uid}`)
+//         console.log(`paid rewards ${item} to ${uid}`)
 
-        await firestore.doc(`/users/${uid}/collection/paid`).set({
-            stage: admin.firestore.FieldValue.arrayUnion(item)
-        }, { 
-            merge: true
-        })
+//         await firestore.doc(`/users/${uid}/collection/paid`).set({
+//             stage: admin.firestore.FieldValue.arrayUnion(item)
+//         }, { 
+//             merge: true
+//         })
 
-        console.log(`payment for ${item} stored in db`)
-    }
-}
+//         console.log(`payment for ${item} stored in db`)
+//     }
+// }
 
 
-exports.onStageUpdated = functions.firestore
-    .document('users/{uid}/collection/stage')
-    .onWrite(async (change, context) => {
+// exports.onStageUpdated = functions.firestore
+//     .document('users/{uid}/collection/stage')
+//     .onWrite(async (change, context) => {
 
-        try {
-            const uid = context.params.uid
-            const { stage } = change.after.data() as any // FIXME type
-            console.log('stage', stage)
+//         try {
+//             const uid = context.params.uid
+//             const { stage } = change.after.data() as any // FIXME type
+//             console.log('stage', stage)
             
-            await giveRewards(uid, stage)
+//             await giveRewards(uid, stage)
 
-        } catch (err) {
-            console.error(err)
-        }
-});
+//         } catch (err) {
+//             console.error(err)
+//         }
+// });
 
 
-exports.requestRewards = functions.https.onCall(async (data, context) => {
-    checkNonAnonymous(context)
+// exports.requestRewards = functions.https.onCall(async (data, context) => {
+//     checkNonAnonymous(context)
 
-    await giveRewards(context.auth!.uid)
+//     await giveRewards(context.auth!.uid)
 
-    return {'result': 'success'}
-})
+//     return {'result': 'success'}
+// })
 
 
 // TODO use onCall instead

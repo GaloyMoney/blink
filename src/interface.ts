@@ -12,6 +12,12 @@ export interface ILightningWallet extends IWallet {
   addInvoice(IAddInvoiceRequest): Promise<any> // TODO
 }
 
+export interface IFiatWallet extends IWallet {
+  // pay(): Promise<any> // TODO
+  // withdraw(): Promise<any> // TODO
+  addFunds({amount: number})
+}
+
 export interface FiatTransaction {
   amount: number, 
   date: number,

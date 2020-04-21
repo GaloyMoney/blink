@@ -1,7 +1,6 @@
 import * as functions from 'firebase-functions'
 // import { CurrencyType } from "../../../../common/types"
 import { initLnd } from "./lightning"
-import { getFiatBalance } from "./fiat";
 import { checkBankingEnabled, btc2sat, validate } from "./utils";
 
 const {getChainBalance} = require('ln-service')
@@ -13,6 +12,7 @@ import moment = require("moment")
 import { FiatTransaction } from "./interface"
 import * as admin from 'firebase-admin'
 import { IBuyRequest, IQuoteResponse, IQuoteRequest } from "../../../../common/types";
+import { FiatWallet } from "./fiatImpl";
 const firestore = admin.firestore()
 
 const ccxt = require ('ccxt');
@@ -244,7 +244,7 @@ exports.buyLNDBTC = functions.https.onCall(async (data: IBuyRequest, context) =>
 
     const fiatAmount = satAmount * data.satPrice
 
-    if (await getFiatBalance(context.auth!.uid) < fiatAmount) {
+    if (await new FiatWallet(context.auth!.uid).getBalance() < fiatAmount) {
         throw new functions.https.HttpsError('permission-denied', 'not enough dollar to proceed')
     }
 
