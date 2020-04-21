@@ -34,10 +34,25 @@ export class FiatWallet implements IFiatWallet {
   }
 
   async addFunds({amount}) {
+      if (amount < 0) {
+          throw Error(`amount has to be positive, is: ${amount}`)
+      }
+
       await (await this.getMainBook()).entry('Add funds')
       .credit('Assets:Reserve', amount, {currency: "USD"})
       .debit(this.customerPath, amount, {currency: "USD"})
       .commit()
+  }
+
+  async widthdrawFunds({amount}) {
+    if (amount < 0) {
+        throw Error(`amount has to be positive, is: ${amount}`)
+    }
+
+    await (await this.getMainBook()).entry('Add funds')
+    .debit('Assets:Reserve', amount, {currency: "USD"})
+    .credit(this.customerPath, amount, {currency: "USD"})
+    .commit()
   }
 
   async getTransactions() {

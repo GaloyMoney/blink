@@ -1,11 +1,9 @@
-import * as admin from 'firebase-admin'
 import * as functions from 'firebase-functions'
 import { IAddInvoiceRequest, IAddInvoiceResponse, IPayInvoice } from "../../../../common/types"
 import { FiatTransaction } from "./interface"
 import { checkAuth, checkNonAnonymous } from "./utils"
 import { LightningWalletAuthed } from "./LightningImpl"
 const lnService = require('ln-service')
-const firestore = admin.firestore()
 
 export interface Auth {
     macaroon: string,
@@ -86,24 +84,28 @@ exports.incomingInvoice = functions.https.onRequest(async (req, res) => {
     const channelJson = channels.filter((item: any) => item.id === channel)
     const partner_public_key = channelJson[0].partner_public_key
 
-    const users = firestore.collection("users");
-    const querySnapshot = await users.where("lightning.pubkey", "==", partner_public_key).get();
-    const uid = (querySnapshot.docs[0].ref as any)._path.segments[1] // FIXME use path?
+    // FIXME: 
+    // remove firestore
+    // move the logic for a custodial wallet
 
-    const satAmount = invoiceJson.tokens
-    const satPrice = parseFloat(JSON.parse(invoiceJson.description)['satPrice'])
-    const fiatAmount = satAmount * satPrice
+    // const users = firestore.collection("users");
+    // const querySnapshot = await users.where("lightning.pubkey", "==", partner_public_key).get();
+    // const uid = (querySnapshot.docs[0].ref as any)._path.segments[1] // FIXME use path?
 
-    const fiat_tx: FiatTransaction = {
-        amount: fiatAmount,
-        date: Date.parse(invoiceJson.expires_at) / 1000,
-        icon: "logo-bitcoin",
-        name: "Sold Bitcoin",
-    }
+    // const satAmount = invoiceJson.tokens
+    // const satPrice = parseFloat(JSON.parse(invoiceJson.description)['satPrice'])
+    // const fiatAmount = satAmount * satPrice
 
-    await firestore.doc(`/users/${uid}`).update({
-        transactions: admin.firestore.FieldValue.arrayUnion(fiat_tx)
-    })
+    // const fiat_tx: FiatTransaction = {
+    //     amount: fiatAmount,
+    //     date: Date.parse(invoiceJson.expires_at) / 1000,
+    //     icon: "logo-bitcoin",
+    //     name: "Sold Bitcoin",
+    // }
+
+    // await firestore.doc(`/users/${uid}`).update({
+    //     transactions: admin.firestore.FieldValue.arrayUnion(fiat_tx)
+    // })
 
     return res.status(200).send({response: `invoice ${request} accounted succesfully`});
 

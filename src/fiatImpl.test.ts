@@ -5,20 +5,34 @@ const mongoose = require("mongoose");
 
 const default_uid = "abcdef" // FIXME
 
+let fiatWallet
+
 beforeAll(async () => {
   await setupMongoose()
-  await mongoose.connection.dropDatabase()
+  return await mongoose.connection.dropDatabase()
+});
+
+beforeEach(async () => {
+  fiatWallet = new FiatWallet(default_uid)
+})
+
+afterAll(async () => {
+  return await mongoose.connection.close()
 });
 
 it('balanceStartAtZero', async () => {
-  const fiatWallet = new FiatWallet(default_uid)
   const result = await fiatWallet.getBalance()
   expect(result === 0).toBeTruthy()
 })
 
 it('addFunds', async () => {
-  const fiatWallet = new FiatWallet(default_uid)
   await fiatWallet.addFunds({amount: 1000})
   const result = await fiatWallet.getBalance()
   expect(result).toEqual(1000)
+})
+
+it('withdrawFunds', async () => {
+  await fiatWallet.widthdrawFunds({amount: 250})
+  const result = await fiatWallet.getBalance()
+  expect(result).toEqual(750)
 })

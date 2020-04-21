@@ -1,7 +1,6 @@
 import * as functions from 'firebase-functions'
 import { sat2btc } from "./utils"
-import * as admin from 'firebase-admin'
-const firestore = admin.firestore()
+const mongoose = require("mongoose")
 
 
 /**
@@ -9,7 +8,6 @@ const firestore = admin.firestore()
  */
 export const priceBTC = async (): Promise<number> => {
   const ccxt = require ('ccxt')
-
   
   const kraken = new ccxt.kraken()
   // let coinbase = new ccxt.coinbase()
@@ -48,12 +46,25 @@ export const priceBTC = async (): Promise<number> => {
   }
 }
 
+export const recordPrice = async () => {
+    try {
+        const price = await priceBTC()
+        console.log(`updating price, new price: ${price}`);
+  
+        const PriceHistoryModel = mongoose.model("PriceHistory")
+        const priceDb = new PriceHistoryModel({ price: price });
+  
+        try {
+          await priceDb.save()
+        } catch (err) {
+          throw new functions.https.HttpsError('internal', 'cannot save to db: ' + err.toString())
+        }
+  
+    } catch (err) {
+        throw new functions.https.HttpsError('internal', err.toString())
+    }
+}
+
 exports.updatePrice = functions.pubsub.schedule('every 1 minutes').onRun(async (context) => {
-  try {
-      const spot = await priceBTC()
-      console.log(`updating price, new price: ${spot}`);
-      await firestore.doc('global/price').set({BTC: spot})
-  } catch (err) {
-      throw new functions.https.HttpsError('internal', err.toString())
-  }
+    await recordPrice()
 })

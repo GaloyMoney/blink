@@ -10,10 +10,8 @@ import {priceBTC} from "./price"
 import { verify, sign } from "./crypto";
 import moment = require("moment")
 import { FiatTransaction } from "./interface"
-import * as admin from 'firebase-admin'
 import { IBuyRequest, IQuoteResponse, IQuoteRequest } from "../../../../common/types";
 import { FiatWallet } from "./fiatImpl";
-const firestore = admin.firestore()
 
 const ccxt = require ('ccxt');
 
@@ -273,11 +271,12 @@ exports.buyLNDBTC = functions.https.onCall(async (data: IBuyRequest, context) =>
     }
 
     try {
-        const result = await firestore.doc(`/users/${context.auth!.uid}`).update({
-            transactions: admin.firestore.FieldValue.arrayUnion(fiat_tx)
-        })
+        // FIXME move to mongoose
+        // const result = await firestore.doc(`/users/${context.auth!.uid}`).update({
+        //     transactions: admin.firestore.FieldValue.arrayUnion(fiat_tx)
+        // })
 
-        console.log(result)
+        // console.log(result)
     } catch(err) {
         throw new functions.https.HttpsError('internal', 'issue updating transaction on the database')
     }
@@ -305,11 +304,11 @@ export const hedging = async () => {
 
     if (balance.USD.total > maxWalletBTC) {
         const amount = balance.USD.total - maxWalletBTC - midWalletBTC
-        let result = kraken.createMarketSellOrder(symbol, amount)
+        const result = kraken.createMarketSellOrder(symbol, amount)
         console.log({result})
     } else if (balance.USD.total < minWalletBTC) {
         const amount = minWalletBTC - balance.USD.total + midWalletBTC
-        let result = kraken.createMarketBuyOrder(symbol, amount)
+        const result = kraken.createMarketBuyOrder(symbol, amount)
         console.log({result})
     }
 }

@@ -6,7 +6,13 @@ const user = process.env.MONGODB_USER
 const password = process.env.MONGODB_ROOT_PASSWORD
 const db = process.env.MONGODB_DATABASE ?? "galoy"
 
+const Schema = mongoose.Schema;
+
+let init = false
+
 export const setupMongoose = async () => {
+  if (init) return
+
   const path = `mongodb://${user}:${password}@${address}/${db}`
 
   // await mongoose.connect(`mongodb://root:${password}@${address}/admin`, {
@@ -16,16 +22,12 @@ export const setupMongoose = async () => {
     useCreateIndex: true,
     useFindAndModify: false
   })
-}
 
-export const createMainBook = async () => {
-  await setupMongoose()
-
-  const Schema = mongoose.Schema;
   const transactionSchema = new Schema({
-    currency: String, 
-      // typing possible? only "USD", "BTC"
-      // use https://mongoosejs.com/docs/api.html#schematype_SchemaType-set ?
+    currency: {
+      type: String,
+      enum: ["USD", "BTC"] 
+    },
     credit: Number,
     debit: Number,
     meta: Schema.Types.Mixed,
@@ -56,12 +58,28 @@ export const createMainBook = async () => {
   })
   
   // TODO indexes, see https://github.com/koresar/medici/blob/master/src/index.js#L39
-  try {
-    mongoose.model("Medici_Transaction", transactionSchema);
-  } catch (error) {
-    console.log('OverwriteModelError: Cannot overwrite `Medici_Transaction` model once compiled.')
-    console.log('should happen only during testing')
-  }
+  mongoose.model("Medici_Transaction", transactionSchema);
+  
+  const priceHistorySchema = new Schema({
+    currency: {
+      type: String,
+      enum: ["BTC"],
+      default: "BTC"
+    },
+    timestamp: {
+      type: Date,
+      default: Date.now
+    },
+    price: Number
+  })
+
+  mongoose.model("PriceHistory", priceHistorySchema);
+
+  init = true
+}
+
+export const createMainBook = async () => {
+  await setupMongoose()
 
   // should be done after previous line?
   const { book } = require("medici")

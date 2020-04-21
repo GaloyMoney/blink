@@ -16,6 +16,7 @@ export interface IFiatWallet extends IWallet {
   // pay(): Promise<any> // TODO
   // withdraw(): Promise<any> // TODO
   addFunds({amount: number})
+  widthdrawFunds({amount: number})
 }
 
 export interface FiatTransaction {
