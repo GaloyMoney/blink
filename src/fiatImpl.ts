@@ -3,7 +3,7 @@ import { createMainBook } from "./db"
 
 export class FiatWallet implements IFiatWallet {
   protected _mainBook
-  protected uid: String
+  protected readonly uid: String
 
   get customerPath(): string {
       return `Liabilities:Customer:${this.uid}`
@@ -49,17 +49,25 @@ export class FiatWallet implements IFiatWallet {
         throw Error(`amount has to be positive, is: ${amount}`)
     }
 
-    await (await this.getMainBook()).entry('Add funds')
+    return (await this.getMainBook()).entry('Withdraw funds')
     .debit('Assets:Reserve', amount, {currency: "USD"})
     .credit(this.customerPath, amount, {currency: "USD"})
     .commit()
   }
 
   async getTransactions() {
-      return await (await this.getMainBook()).ledger({
-          account: 'Liabilities:Customer:A',
-          currency: "USD" // TODO check if currency works here
-      })
+      // TODO paging
+        const {results} = await (await this.getMainBook()).ledger({
+            account: this.customerPath,
+            currency: "USD" // TODO check if currency works here
+        })
+
+        return results.map((value) => ({
+            amount: value.debit === 0 ? - value.credit : value.debit,
+            memo: value.memo,
+            datetime: value.datetime,
+            currency: value.currency,
+    }))
   }
 
   async getInfo() {

@@ -35,31 +35,23 @@ export const initLnd = () => {
     return lnd
 }
 
-
 exports.addInvoice = functions.https.onCall(async (data: IAddInvoiceRequest, context): Promise<IAddInvoiceResponse> => {
-    // checkAuth(context)
+    checkAuth(context)
     const wallet = new LightningWalletAuthed()
     return await wallet.addInvoice(data)
 })
 
 exports.getLightningInfo = functions.https.onCall(async (data, context) => {
-    // checkAuth(context)
+    checkAuth(context)
     const wallet = new LightningWalletAuthed()
     return await wallet.getInfo()
 })
 
 exports.payInvoice = functions.https.onCall(async (data: IPayInvoice, context) => {
     checkAuth(context)
-
-    const lnd = initLnd()
-
-    const {response} = await lnService.payInvoice(
-        {lnd, 
-        request: data.invoice,
-    });
-
+    const wallet = new LightningWalletAuthed()
+    const response = wallet.payInvoice({invoice: data.invoice})
     console.log({response})
-
     return {response}
 })
 
@@ -110,60 +102,6 @@ exports.incomingInvoice = functions.https.onRequest(async (req, res) => {
     return res.status(200).send({response: `invoice ${request} accounted succesfully`});
 
 })
-
-interface IPaymentRequest {
-    pubkey?: string;
-    amount?: number;
-    message?: string;
-    // or:
-    invoice?: string
-}
-
-const pay = async (obj: IPaymentRequest) => {
-    const {pubkey, amount, message} = obj
-
-    if (pubkey === undefined) {
-        throw new functions.https.HttpsError('internal', `pubkey ${pubkey} in pay function`)
-    }
-
-    const {randomBytes, createHash} = require('crypto')
-    const preimageByteLength = 32
-    const preimage = randomBytes(preimageByteLength);
-    const secret = preimage.toString('hex');
-    const keySendPreimageType = '5482373484'; // key to use representing 'amount'
-    const messageTmpId = '123123'; // random number, internal to Galoy for now
-
-    const id = createHash('sha256').update(preimage).digest().toString('hex');
-    const lnd = initLnd()
-
-    const messages = [
-        {type: keySendPreimageType, value: secret},
-    ]
-
-    if (message) {
-        messages.push({
-            type: messageTmpId, 
-            value: Buffer.from(message).toString('hex'),
-        })
-    }
-
-    const request = {
-        id,
-        destination: pubkey,
-        lnd,
-        messages,
-        tokens: amount,
-    }
-
-    let result
-    try {
-        result = await lnService.payViaPaymentDetails(request)
-    } catch (err) {
-        console.log({err})
-    }
-
-    console.log(result)
-}
 
 
 // const giveRewards = async (uid: string, _stage: string[] | undefined = undefined) => {

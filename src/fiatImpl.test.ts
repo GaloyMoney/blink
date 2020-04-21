@@ -9,6 +9,8 @@ let fiatWallet
 
 beforeAll(async () => {
   await setupMongoose()
+
+  // FIXME: this might cause issue when running test in parrallel?
   return await mongoose.connection.dropDatabase()
 });
 
@@ -35,4 +37,9 @@ it('withdrawFunds', async () => {
   await fiatWallet.widthdrawFunds({amount: 250})
   const result = await fiatWallet.getBalance()
   expect(result).toEqual(750)
+})
+
+it('listTransactions', async () => {
+  const transactions = await fiatWallet.getTransactions()
+  expect(transactions.length).toEqual(2)
 })

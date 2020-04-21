@@ -12,7 +12,7 @@ it('fetchBalance', async () => {
             onchain: expect.any(Number),
             offchain: expect.any(Number),
         }),
-      })
+    })
 
     const result = await getBalance()
     expect(result).toEqual(balance)

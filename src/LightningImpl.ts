@@ -4,6 +4,15 @@ import { Auth } from "./lightning";
 const lnService = require('ln-service');
 import * as functions from 'firebase-functions'
 
+
+interface IPaymentRequest {
+    pubkey: string;
+    amount: number;
+    message?: string;
+    hash?: string;
+}
+
+
 export class LightningWallet implements ILightningWallet {
     protected lnd: object;
     constructor(auth: Auth) {
@@ -14,19 +23,24 @@ export class LightningWallet implements ILightningWallet {
         const balanceInChannels = (await lnService.getChannelBalance({ lnd: this.lnd })).channel_balance;
         return balanceInChannels;
     }
+
     async getTransactions() {
         const { payments } = await lnService.getPayments({ lnd: this.lnd });
         const { invoices } = await lnService.getInvoices({ lnd: this.lnd });
         console.log({ payments, invoices });
         // TODO
     }
+
     async payInvoice({ invoice }) {
-        const { response } = await lnService.pay({
-            lnd: this.lnd,
-            request: invoice,
-        });
-        return { response };
+        const details = lnService.decodePaymentRequest({lnd: this.lnd, request: invoice})
+
+        return this.payDetail({
+            pubkey: details.pubkey,
+            hash: details.id,
+            amount: details.tokens,
+        })
     }
+    
     async addInvoice(invoiceRequest: IAddInvoiceRequest) {
         const { request } = await lnService.createInvoice({
             lnd: this.lnd,
@@ -35,6 +49,63 @@ export class LightningWallet implements ILightningWallet {
         });
         return { request };
     }
+
+    /**
+     * Advanced payment method to use keySend (new features from lnd 0.9)
+     * Needs to be tested.
+     * 
+     * @param obj invoice detail
+     */
+    async payDetail(obj: IPaymentRequest) {
+        const {pubkey, amount, message} = obj
+
+        // TODO use validate()
+        if (pubkey === undefined) {
+            throw new functions.https.HttpsError('internal', `pubkey ${pubkey} in pay function`)
+        }
+    
+        const {randomBytes, createHash} = require('crypto')
+        const preimageByteLength = 32
+        const preimage = randomBytes(preimageByteLength);
+        const secret = preimage.toString('hex');
+        const keySendPreimageType = '5482373484'; // key to use representing 'amount'
+        const messageTmpId = '123123'; // random number, internal to Galoy for now
+    
+        const hash = obj.hash ?? createHash('sha256').update(preimage).digest().toString('hex');
+    
+        const messages = [
+            {type: keySendPreimageType, value: secret},
+        ]
+    
+        if (message) {
+            messages.push({
+                type: messageTmpId, 
+                value: Buffer.from(message).toString('hex'),
+            })
+        }
+    
+        const request = {
+            id: hash,
+            destination: pubkey,
+            lnd: this.lnd,
+            messages,
+            tokens: amount,
+        }
+    
+        // TODO manage self payment
+
+        let result
+        try {
+            result = await lnService.payViaPaymentDetails(request)
+            console.log(result)
+        } catch (err) {
+            console.log({err})
+            throw new functions.https.HttpsError('internal', 'error paying invoice' + err.toString())
+        }
+    
+        return result
+    }
+
     async getInfo() {
         return await lnService.getWalletInfo({ lnd: this.lnd });
     }
