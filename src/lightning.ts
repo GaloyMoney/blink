@@ -37,19 +37,19 @@ export const initLnd = () => {
 
 exports.addInvoice = functions.https.onCall(async (data: IAddInvoiceRequest, context): Promise<IAddInvoiceResponse> => {
     checkAuth(context)
-    const wallet = new LightningWalletAuthed()
+    const wallet = new LightningWalletAuthed({uid: context.auth?.uid})
     return await wallet.addInvoice(data)
 })
 
 exports.getLightningInfo = functions.https.onCall(async (data, context) => {
     checkAuth(context)
-    const wallet = new LightningWalletAuthed()
+    const wallet = new LightningWalletAuthed({uid: context.auth?.uid})
     return await wallet.getInfo()
 })
 
 exports.payInvoice = functions.https.onCall(async (data: IPayInvoice, context) => {
     checkAuth(context)
-    const wallet = new LightningWalletAuthed()
+    const wallet = new LightningWalletAuthed({uid: context.auth?.uid})
     const response = wallet.payInvoice({invoice: data.invoice})
     console.log({response})
     return {response}

@@ -1,9 +1,12 @@
-import { IFiatWallet } from "./interface"
+import { IFiatWallet, Wallet } from "./interface"
 import { createMainBook } from "./db"
 
-export class FiatWallet implements IFiatWallet {
+export class FiatWallet extends Wallet implements IFiatWallet {
   protected _mainBook
-  protected readonly uid: String
+
+  constructor({uid}) {
+    super({uid})
+  }
 
   get customerPath(): string {
       return `Liabilities:Customer:${this.uid}`
@@ -16,10 +19,6 @@ export class FiatWallet implements IFiatWallet {
 
     this._mainBook = await createMainBook()
     return this._mainBook
-  }
-
-  constructor(uid) {
-      this.uid = uid
   }
 
   getCurrency() { return "USD" }

@@ -242,7 +242,7 @@ exports.buyLNDBTC = functions.https.onCall(async (data: IBuyRequest, context) =>
 
     const fiatAmount = satAmount * data.satPrice
 
-    if (await new FiatWallet(context.auth!.uid).getBalance() < fiatAmount) {
+    if (await new FiatWallet({uid: context.auth!.uid}).getBalance() < fiatAmount) {
         throw new functions.https.HttpsError('permission-denied', 'not enough dollar to proceed')
     }
 

@@ -3,8 +3,7 @@ import { setupMongoose } from "./db";
 const mongoose = require("mongoose");
 
 
-const default_uid = "abcdef" // FIXME
-
+const uid = "abc123" // FIXME
 let fiatWallet
 
 beforeAll(async () => {
@@ -15,7 +14,7 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  fiatWallet = new FiatWallet(default_uid)
+  fiatWallet = new FiatWallet({uid})
 })
 
 afterAll(async () => {

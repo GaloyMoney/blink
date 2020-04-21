@@ -26,3 +26,11 @@ export interface FiatTransaction {
   name: string,
   onchain_tx?: string, // should be HEX?
 }
+
+export class Wallet {
+  protected readonly uid: string
+
+  constructor({uid}) {
+    this.uid = uid
+  }
+}

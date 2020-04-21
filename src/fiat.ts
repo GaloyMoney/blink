@@ -6,13 +6,13 @@ const default_uid = "abcdef" // FIXME
 
 exports.getFiatBalances = functions.https.onCall((data, context) => {
     // checkBankingEnabled(context)
-    const fiatWallet = new FiatWallet(default_uid)
+    const fiatWallet = new FiatWallet({uid: default_uid})
     return fiatWallet.getBalance()
 })
 
 exports.dollarFaucet = functions.https.onCall(async (data, context) => {
     // checkBankingEnabled(context)
-    const fiatWallet = new FiatWallet(default_uid)
+    const fiatWallet = new FiatWallet({uid: default_uid})
     return fiatWallet.addFunds({amount: 1000})
 })
 

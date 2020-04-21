@@ -1,5 +1,5 @@
 import { IAddInvoiceRequest } from "../../../../common/types";
-import { ILightningWallet } from "./interface";
+import { ILightningWallet, Wallet } from "./interface";
 import { Auth } from "./lightning";
 const lnService = require('ln-service');
 import * as functions from 'firebase-functions'
@@ -13,11 +13,14 @@ interface IPaymentRequest {
 }
 
 
-export class LightningWallet implements ILightningWallet {
-    protected lnd: object;
-    constructor(auth: Auth) {
+export class LightningWallet extends Wallet implements ILightningWallet {
+    protected readonly lnd: object;
+    
+    constructor({auth, uid}: {auth: Auth, uid: string}) {
+        super({uid})
         this.lnd = lnService.authenticatedLndGrpc(auth).lnd;
     }
+
     getCurrency() { return "BTC"; }
     async getBalance() {
         const balanceInChannels = (await lnService.getChannelBalance({ lnd: this.lnd })).channel_balance;
@@ -27,8 +30,7 @@ export class LightningWallet implements ILightningWallet {
     async getTransactions() {
         const { payments } = await lnService.getPayments({ lnd: this.lnd });
         const { invoices } = await lnService.getInvoices({ lnd: this.lnd });
-        console.log({ payments, invoices });
-        // TODO
+        return {payments, invoices}
     }
 
     async payInvoice({ invoice }) {
@@ -41,11 +43,11 @@ export class LightningWallet implements ILightningWallet {
         })
     }
     
-    async addInvoice(invoiceRequest: IAddInvoiceRequest) {
+    async addInvoice({value, memo}: IAddInvoiceRequest) {
         const { request } = await lnService.createInvoice({
             lnd: this.lnd,
-            tokens: invoiceRequest.value,
-            description: invoiceRequest.memo,
+            tokens: value,
+            description: memo,
         });
         return { request };
     }
@@ -112,8 +114,8 @@ export class LightningWallet implements ILightningWallet {
 }
 
 export class LightningWalletAuthed extends LightningWallet {
-    constructor() {
-        let auth_lnd: Auth;
+    constructor(uid) {
+        let auth: Auth;
         let network: string;
         try {
             network = process.env.NETWORK ?? functions.config().lnd.network;
@@ -121,11 +123,11 @@ export class LightningWalletAuthed extends LightningWallet {
             const macaroon = process.env.MACAROON ?? functions.config().lnd[network].macaroon;
             const lndaddr = process.env.LNDADDR ?? functions.config().lnd[network].lndaddr;
             const socket = `${lndaddr}:10009`;
-            auth_lnd = { macaroon, cert, socket };
+            auth = { macaroon, cert, socket };
         }
         catch (err) {
             throw new functions.https.HttpsError('failed-precondition', `neither env nor functions.config() are set` + err);
         }
-        super(auth_lnd);
+        super({uid, auth});
     }
 }
