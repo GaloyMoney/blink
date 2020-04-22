@@ -3,7 +3,7 @@ jobs:
   node:
     working_directory: ~/GaloyApp/mobile
     docker:
-      - image: circleci/node:8
+      - image: circleci/node:10
     steps:
       - checkout:
           path: ~/GaloyApp
