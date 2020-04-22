@@ -55,6 +55,13 @@ exports.payInvoice = functions.https.onCall(async (data: IPayInvoice, context) =
     return {response}
 })
 
+exports.getTransactions = functions.https.onCall(async (data, context) => {
+    checkAuth(context)
+    const wallet = new LightningWalletAuthed({uid: context.auth?.uid})
+    const response = wallet.getTransactions()
+    return {response}
+})
+
 
 // sellBTC
 exports.incomingInvoice = functions.https.onRequest(async (req, res) => {

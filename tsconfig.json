@@ -8,6 +8,7 @@
     "strict": true,
     "target": "es2017",
     "noImplicitAny": false,
+    "esModuleInterop": true,
     "rootDirs": [
       "src",
       "../../../common",

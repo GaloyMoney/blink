@@ -5,6 +5,16 @@ const lnService = require('ln-service');
 import * as functions from 'firebase-functions'
 
 
+interface ILightningTransaction {
+    amount: number
+    description?: string
+    created_at: Date
+    confirmed: boolean
+    hash: string
+    preimage?: string
+    destination?: string
+}
+
 interface IPaymentRequest {
     pubkey: string;
     amount: number;
@@ -12,7 +22,9 @@ interface IPaymentRequest {
     hash?: string;
 }
 
-
+/**
+ * this represents a user wallet
+ */
 export class LightningWallet extends Wallet implements ILightningWallet {
     protected readonly lnd: object;
     
@@ -27,10 +39,40 @@ export class LightningWallet extends Wallet implements ILightningWallet {
         return balanceInChannels;
     }
 
-    async getTransactions() {
-        const { payments } = await lnService.getPayments({ lnd: this.lnd });
-        const { invoices } = await lnService.getInvoices({ lnd: this.lnd });
-        return {payments, invoices}
+    async getTransactions(): Promise<Array<ILightningTransaction>> {
+        const { payments } = await lnService.getPayments({ lnd: this.lnd })
+        const { invoices } = await lnService.getInvoices({ lnd: this.lnd })
+
+        const paymentProcessed: Array<ILightningTransaction> = payments.map(input => ({
+            amount: - input.tokens,
+            description: input.description,
+            created_at: input.created_at,
+            confirmed: input.is_confirmed !== undefined,
+            hash: input.id,
+            preimage: input.secret,
+            destination: input.destination,
+        }))
+
+        const invoiceProcessed: Array<ILightningTransaction> = invoices.map(input => ({
+            amount: input.tokens,
+            description: input.description,
+            created_at: input.created_at,
+            confirmed: input.confirmed !== undefined,
+            hash: input.id,
+            
+            // FIXME is preimage useful for invoices?
+            // I think for security reason we might not want to share it
+            // ie: a customer could share the secret for a hold invoice, 
+            // and the payment would not reach the destinataire but would 
+            // still be out of the money
+            // preimage: input.secret, 
+        }))
+        
+        const all_txs = [...paymentProcessed, ...invoiceProcessed].sort(
+            (a, b) => a.created_at > b.created_at ? -1 : 1
+        )
+
+        return all_txs
     }
 
     async payInvoice({ invoice }) {
