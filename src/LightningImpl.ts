@@ -86,10 +86,10 @@ export class LightningWallet extends Wallet implements ILightningWallet {
     }
 
     async payInvoice({ invoice }) {
-        const details = lnService.decodePaymentRequest({lnd: this.lnd, request: invoice})
+        const details = await lnService.decodePaymentRequest({lnd: this.lnd, request: invoice})
 
         return this.payDetail({
-            pubkey: details.pubkey,
+            pubkey: details.destination,
             hash: details.id,
             amount: details.tokens,
         })
