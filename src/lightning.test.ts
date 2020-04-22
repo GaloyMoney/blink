@@ -36,8 +36,8 @@ it('list transactions', async () => {
 })
 
 it('get balance', async () => {
-  const result = await lightningWallet.getBalance()
-  console.log({result})
+  const balance = await lightningWallet.getBalance()
+  console.log({balance})
 })
 
 it('add invoice', async () => {
