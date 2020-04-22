@@ -1,26 +1,34 @@
-import { IAddInvoiceRequest } from "../../../../common/types";
+import { IAddInvoiceRequest, ILightningTransaction, IPaymentRequest } from "../../../../common/types";
+import { shortenHash } from "../../../../common/utils";
 import { ILightningWallet, Wallet } from "./interface";
 import { Auth } from "./lightning";
 const lnService = require('ln-service');
 import * as functions from 'firebase-functions'
 
 
-interface ILightningTransaction {
-    amount: number
-    description?: string
-    created_at: Date
-    confirmed: boolean
-    hash: string
-    preimage?: string
-    destination?: string
+const formatInvoice = (invoice) => {
+  if (invoice.settled) {
+    if (invoice.memo) {
+      return invoice.memo
+    } else if (invoice.htlcs[0].customRecords) {
+      // TODO for lnd keysend 
+    } else {
+      return `Payment received`
+    }
+  } else {
+    return `Waiting for payment`
+  }
 }
 
-interface IPaymentRequest {
-    pubkey: string;
-    amount: number;
-    message?: string;
-    hash?: string;
+const formatPayment = (payment) => {
+  if (payment.description) {
+      return payment.description
+  } else {
+    return `Paid invoice ${shortenHash(payment.id, 2)}`
+  }
 }
+
+
 
 /**
  * this represents a user wallet
@@ -43,29 +51,31 @@ export class LightningWallet extends Wallet implements ILightningWallet {
         const { payments } = await lnService.getPayments({ lnd: this.lnd })
         const { invoices } = await lnService.getInvoices({ lnd: this.lnd })
 
-        const paymentProcessed: Array<ILightningTransaction> = payments.map(input => ({
-            amount: - input.tokens,
-            description: input.description,
-            created_at: input.created_at,
-            confirmed: input.is_confirmed !== undefined,
-            hash: input.id,
-            preimage: input.secret,
-            destination: input.destination,
+        const paymentProcessed: Array<ILightningTransaction> = payments.map(payment => ({
+            amount: - payment.tokens,
+            description: formatPayment(payment),
+            created_at: payment.created_at,
+            type: payment.is_confirmed !== undefined ? "payment" : "inflight-payment",
+            hash: payment.id,
+            preimage: payment.secret,
+            destination: payment.destination,
         }))
 
-        const invoiceProcessed: Array<ILightningTransaction> = invoices.map(input => ({
-            amount: input.tokens,
-            description: input.description,
-            created_at: input.created_at,
-            confirmed: input.confirmed !== undefined,
-            hash: input.id,
-            
+        const invoiceProcessed: Array<ILightningTransaction> = invoices.map(invoice => ({
+            amount: invoice.tokens,
+            description: formatInvoice(invoice),
+            created_at: invoice.created_at,
+
+            // TODO manage inflight payment
+            type: invoice.confirmed !== undefined ? "paid-invoice" : "unconfirmed-invoice",
+            hash: invoice.id,
+
             // FIXME is preimage useful for invoices?
             // I think for security reason we might not want to share it
             // ie: a customer could share the secret for a hold invoice, 
             // and the payment would not reach the destinataire but would 
             // still be out of the money
-            // preimage: input.secret, 
+            // preimage: invoice.secret, 
         }))
         
         const all_txs = [...paymentProcessed, ...invoiceProcessed].sort(
