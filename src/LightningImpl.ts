@@ -110,7 +110,7 @@ export class LightningWallet extends Wallet implements ILightningWallet {
      * 
      * @param obj invoice detail
      */
-    async payDetail(obj: IPaymentRequest) {
+    private async payDetail(obj: IPaymentRequest) {
         const {pubkey, amount, message} = obj
 
         // TODO use validate()
@@ -150,13 +150,17 @@ export class LightningWallet extends Wallet implements ILightningWallet {
 
         let result
         try {
+            // TODO check what happens here for holdinvoice
             result = await lnService.payViaPaymentDetails(request)
             console.log(result)
         } catch (err) {
             console.log({err})
             throw new functions.https.HttpsError('internal', 'error paying invoice' + err.toString())
         }
-    
+
+        // TODO add fees for accounting based of result.fee
+        // FIXME: maybe we shouldn't return all information from result?
+
         return result
     }
 
