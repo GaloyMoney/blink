@@ -1,25 +1,58 @@
+const functions = require("firebase-functions")
+import { checkBankingEnabled, checkNonAnonymous } from "./utils"
+import { FiatWallet } from "./fiatImpl"
 
-import * as admin from 'firebase-admin'
-const firestore = admin.firestore()
+const default_uid = "abcdef" // FIXME
 
+exports.getFiatBalances = functions.https.onCall((data, context) => {
+    // checkBankingEnabled(context)
+    const fiatWallet = new FiatWallet({uid: default_uid})
+    return fiatWallet.getBalance()
+})
 
-// TODO: User Class?
+exports.dollarFaucet = functions.https.onCall(async (data, context) => {
+    // checkBankingEnabled(context)
+    const fiatWallet = new FiatWallet({uid: default_uid})
+    return fiatWallet.addFunds({amount: 1000})
+})
 
-export const getFiatBalance = async (uid: string) => {
-    const reduce = (txs: {amount: number}[]) => {
-        const amounts = txs.map(tx => tx.amount)
-        const reducer = (accumulator: number, currentValue: number) => accumulator + currentValue
-        return amounts.reduce(reducer)
+exports.onBankAccountOpening = functions.https.onCall(async (data, context) => {
+    checkNonAnonymous(context)
+    checkBankingEnabled(context)
+
+    const constraints = {
+        dateOfBirth: {
+            datetime: true,
+            // latest: moment.utc().subtract(18, 'years'),
+            // message: "^You need to be at least 18 years old"
+        },
+        firstName: {
+            presence: true, 
+        },
+        lastName: {
+            presence: true, 
+        },
+        email: {
+            email: true
+        },
     }
-    
-    return firestore.doc(`/users/${uid}`).get().then(function(doc) {
-        if (doc.exists && doc.data()!.transactions.length > 0) {
-            return reduce(doc.data()!.transactions) // FIXME type
-        } else {
-            return 0 // no bank account yet
-        }
-    }).catch(err => {
-        console.log('err', err) 
-        return 0 // FIXME: currently error on reduce when there is no transactions
-    })
-}
+
+    // {
+    //     const err = validate(data, constraints)
+    //     if (err !== undefined) {
+    //         console.log(err)
+    //         throw new functions.https.HttpsError('invalid-argument', JSON.stringify(err))
+    //     }
+    // }
+
+    // return firestore.doc(`/users/${context.auth!.uid}`).set({ userInfo: data }, { merge: true }
+    // ).then(writeResult => {
+    //     return {result: `Transaction succesfully added ${writeResult}`}
+    // })
+    // .catch((err) => {
+    //     console.error(err)
+    //     throw new functions.https.HttpsError('internal', err.toString())
+    // })
+
+})
+

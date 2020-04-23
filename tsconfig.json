@@ -2,11 +2,13 @@
   "compilerOptions": {
     "module": "commonjs",
     "noImplicitReturns": true,
-    "noUnusedLocals": true,
+    "noUnusedLocals": false, // FIXME
     "outDir": "lib",
     "sourceMap": true,
     "strict": true,
     "target": "es2017",
+    "noImplicitAny": false,
+    "esModuleInterop": true,
     "rootDirs": [
       "src",
       "../../../common",
@@ -14,6 +16,12 @@
   },
   "compileOnSave": true,
   "include": [
-    "src/index.ts"
+    "src/index.ts",
+    "src/fiat.ts",
+    "src/exchange.ts",
+    "src/lightning.ts",
+    "src/user.ts",
+    "src/globalSettings.ts",
+    "src/price.ts",
   ]
 }
