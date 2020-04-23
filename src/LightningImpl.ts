@@ -29,7 +29,6 @@ const formatPayment = (payment) => {
 }
 
 
-
 /**
  * this represents a user wallet
  */

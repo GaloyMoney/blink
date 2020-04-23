@@ -1,17 +1,13 @@
-import * as functions from 'firebase-functions'
-// import { CurrencyType } from "../../../../common/types"
-import { initLnd } from "./lightning"
-import { checkBankingEnabled, btc2sat, validate } from "./utils";
-
-const {getChainBalance} = require('ln-service')
-const {getChannelBalance} = require('ln-service');
-const lnService = require('ln-service')
-import {priceBTC} from "./price"
-import { verify, sign } from "./crypto";
-import moment = require("moment")
-import { FiatTransaction } from "./interface"
-import { IBuyRequest, IQuoteResponse, IQuoteRequest } from "../../../../common/types";
+import * as functions from 'firebase-functions';
+import { IBuyRequest, IQuoteRequest, IQuoteResponse } from "../../../../common/types";
+import { sign, verify } from "./crypto";
 import { FiatWallet } from "./fiatImpl";
+import { FiatTransaction } from "./interface";
+import { initLnd } from "./lightning";
+import { Price } from "./priceImpl";
+import { btc2sat, checkBankingEnabled, validate } from "./utils";
+const lnService = require('ln-service')
+import moment = require("moment")
 
 const ccxt = require ('ccxt');
 
@@ -58,7 +54,7 @@ export const getBalance = async (): Promise<Balance> => {
     const lnd = initLnd()
 
     try {
-        const chainBalance = (await getChainBalance({lnd})).chain_balance;
+        const chainBalance = (await lnService.getChainBalance({lnd})).chain_balance;
         console.log({chainBalance})
         balance.BTC.onchain = chainBalance
     } catch(err) {
@@ -66,7 +62,7 @@ export const getBalance = async (): Promise<Balance> => {
     }
 
     try {
-        const balanceInChannels = (await getChannelBalance({lnd})).channel_balance;
+        const balanceInChannels = (await lnService.getChannelBalance({lnd})).channel_balance;
         console.log({balanceInChannels})
         balance.BTC.offchain = balanceInChannels
     } catch(err) {
@@ -135,7 +131,8 @@ exports.quoteLNDBTC = functions.https.onCall(async (data: IQuoteRequest, context
     let spot
     
     try {
-        spot = await priceBTC()
+        const price = new Price()
+        spot = await price.lastCached()
     } catch (err) {
         throw new functions.https.HttpsError('unavailable', err)
     }

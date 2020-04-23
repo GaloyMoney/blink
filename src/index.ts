@@ -7,4 +7,5 @@ module.exports = {
     ...require("./lightning"),
     ...require("./user"),
     ...require("./globalSettings"),
+    ...require("./price"),
 }

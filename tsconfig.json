@@ -22,5 +22,6 @@
     "src/lightning.ts",
     "src/user.ts",
     "src/globalSettings.ts",
+    "src/price.ts",
   ]
 }
