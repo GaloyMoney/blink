@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  node:
+  react-native:
     working_directory: ~/GaloyApp/mobile
     docker:
       - image: circleci/node:10
@@ -147,7 +147,7 @@ workflows:
   version: 2
   node-android-ios:
     jobs:
-      - node
+      - react-native
       # - android:
       #     requires:
       #       - node
