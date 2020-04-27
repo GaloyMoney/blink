@@ -119,7 +119,7 @@ exports.incomingInvoice = functions.https.onRequest(async (req, res) => {
 })
 
 
-// const giveRewards = async (uid: string, _stage: string[] | undefined = undefined) => {
+// const giveEarn = async (uid: string, _stage: string[] | undefined = undefined) => {
 
 //     const stage = _stage || (await firestore.doc(`users/${uid}/collection/stage`).get()).data()!.stage
     
@@ -134,7 +134,7 @@ exports.incomingInvoice = functions.https.onRequest(async (req, res) => {
 //     const pubkey = await uidToPubkey(uid)
 
 //     for (const item of toPay) {
-//         const amount: number = (<any>OnboardingRewards)[item]
+//         const amount: number = (<any>OnboardingEarn)[item]
 //         console.log(`trying to pay ${item} for ${amount}`)
 
 //         try {
@@ -143,7 +143,7 @@ exports.incomingInvoice = functions.https.onRequest(async (req, res) => {
 //             throw new functions.https.HttpsError('internal', err.toString())
 //         }
 
-//         console.log(`paid rewards ${item} to ${uid}`)
+//         console.log(`paid earns ${item} to ${uid}`)
 
 //         await firestore.doc(`/users/${uid}/collection/paid`).set({
 //             stage: admin.firestore.FieldValue.arrayUnion(item)
@@ -165,7 +165,7 @@ exports.incomingInvoice = functions.https.onRequest(async (req, res) => {
 //             const { stage } = change.after.data() as any // FIXME type
 //             console.log('stage', stage)
             
-//             await giveRewards(uid, stage)
+//             await giveEarn(uid, stage)
 
 //         } catch (err) {
 //             console.error(err)
@@ -173,10 +173,10 @@ exports.incomingInvoice = functions.https.onRequest(async (req, res) => {
 // });
 
 
-// exports.requestRewards = functions.https.onCall(async (data, context) => {
+// exports.requestEarn = functions.https.onCall(async (data, context) => {
 //     checkNonAnonymous(context)
 
-//     await giveRewards(context.auth!.uid)
+//     await giveEarn(context.auth!.uid)
 
 //     return {'result': 'success'}
 // })
