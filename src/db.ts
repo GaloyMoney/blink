@@ -83,6 +83,10 @@ export const setupMongoose = async () => {
   const invoiceUserSchema = new Schema({
     _id: String, //invoice
     user: String,
+    type: {
+      type: String,
+      enum: ["invoice", "payment"]
+    }
   })
 
   // TOOD create indexes

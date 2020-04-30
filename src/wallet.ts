@@ -5,7 +5,6 @@ export class Wallet {
   protected _mainBook
 
   constructor({uid}) {
-    console.log("uid:", uid)
     this.uid = uid
   }
 
