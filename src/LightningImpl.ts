@@ -8,18 +8,22 @@ import { Wallet } from "./wallet"
 import { createHashUser } from "./db";
 
 const formatInvoice = (invoice) => {
-  if (invoice.settled) {
-    if (invoice.memo) {
-      return invoice.memo
-    } else if (invoice.htlcs[0].customRecords) {
+  if (invoice.is_confirmed) {
+    if (invoice.description) {
+      return invoice.description
+    } 
+    // else if (invoice.htlcs[0].customRecords) {
+      // FIXME above syntax from lnd, not lnService script "overlay"
       // TODO for lnd keysend 
-    } else {
+    // } 
+    else {
       return `Payment received`
     }
   } else {
     return `Waiting for payment`
   }
 }
+
 
 const formatPayment = (payment) => {
   if (payment.description) {
@@ -61,12 +65,12 @@ export class LightningWallet extends Wallet implements ILightningWallet {
         const HashUser = await createHashUser()
         // TODO: optimize query
         const invoiceUser = await HashUser.find({user: this.uid})
-        return invoiceUser.map(invoice => invoice.id)
+        return invoiceUser.filter(invoice => invoice.id)
     }
 
     protected async getHashesSet() {
         const invoiceArray = await this.getHashes()
-        return new Set(invoiceArray)
+        return new Set(invoiceArray.map(item => item.id))
     }
 
     protected async addHash({id, type}) {
@@ -89,17 +93,17 @@ export class LightningWallet extends Wallet implements ILightningWallet {
     async getBalance() {
 
         let balance = 0
+        const hashArray = await this.getHashes()
 
-        const hashSet = await this.getHashes()
-        for (const hash of hashSet) {
+        for (const hash of hashArray) {
             if (hash.type === "invoice") {
-                const invoice = lnService.getInvoice({lnd: this.lnd, id: hash.id})
+                const invoice = await lnService.getInvoice({lnd: this.lnd, id: hash.id})
                 if (invoice.is_confirmed) {
                     balance += invoice.tokens
                     continue
                 }
             } else if (hash.type === "payment") {
-                const payment = lnService.getPayment({lnd: this.lnd, id: hash.id})
+                const payment = await lnService.getPayment({lnd: this.lnd, id: hash.id})
                 if (payment.is_failed) {
                     continue
                 } else if (payment.is_pending) {
@@ -142,7 +146,7 @@ export class LightningWallet extends Wallet implements ILightningWallet {
                 created_at: invoice.created_at,
 
                 // TODO manage inflight payment
-                type: invoice.confirmed !== undefined ? "paid-invoice" : "unconfirmed-invoice",
+                type: invoice.is_confirmed ? "paid-invoice" : "unconfirmed-invoice",
                 hash: invoice.id,
 
                 // FIXME is preimage useful for invoices?
@@ -158,19 +162,34 @@ export class LightningWallet extends Wallet implements ILightningWallet {
             (a, b) => a.created_at > b.created_at ? -1 : 1
         )
 
+        console.log({all_txs})
         return all_txs
     }
 
     async payInvoice({ invoice }) {
         const details = await lnService.decodePaymentRequest({lnd: this.lnd, request: invoice})
 
+        // TODO manage is the user is trying to pay an invoice twice
+        // { MongoError: E11000 duplicate key error collection ... }
         await this.addHash({type: "payment", id: details.id})
 
-        return this.payDetail({
-            pubkey: details.destination,
-            hash: details.id,
-            amount: details.tokens,
-        })
+        const util = require('util')
+        console.log(util.inspect({details}, {showHidden: false, depth: null}))
+
+        try {
+            await lnService.pay({lnd: this.lnd, request: invoice})
+            return {result: true}
+        } catch (err) {
+            throw new functions.https.HttpsError('internal', `error paying invoice ${util.inspect({err})}`)
+        }
+        
+        // FIXME
+        // return this.payDetail({
+        //     pubkey: details.destination,
+        //     hash: details.id,
+        //     amount: details.tokens,
+        //     routes: details.routes
+        // })
     }
     
     async addInvoice({value, memo}: IAddInvoiceRequest) {
@@ -191,8 +210,11 @@ export class LightningWallet extends Wallet implements ILightningWallet {
      * 
      * @param obj invoice detail
      */
-    private async payDetail(obj: IPaymentRequest) {
-        const {pubkey, amount, message} = obj
+    private async payDetail({pubkey, amount, message, hash, routes}: IPaymentRequest) {
+        console.log({pubkey, amount, message, hash, routes})
+
+        const util = require('util')
+        console.log(util.inspect({routes}, {showHidden: false, depth: null}))
 
         // TODO use validate()
         if (pubkey === undefined) {
@@ -206,7 +228,7 @@ export class LightningWallet extends Wallet implements ILightningWallet {
         const keySendPreimageType = '5482373484'; // key to use representing 'amount'
         const messageTmpId = '123123'; // random number, internal to Galoy for now
         
-        const hash = obj.hash 
+        // const hash = obj.hash 
         // TODO manage keysend case.
         // const hash = obj.hash ?? createHash('sha256').update(preimage).digest().toString('hex');
     
@@ -227,6 +249,7 @@ export class LightningWallet extends Wallet implements ILightningWallet {
             lnd: this.lnd,
             messages,
             tokens: amount,
+            routes
         }
     
         // TODO manage self payment
