@@ -1,6 +1,6 @@
 import { LightningWalletAuthed } from "./lightningImpl"
 import moment from "moment"
-import { createInvoiceUser, setupMongoose } from "./db"
+import { createHashUser, setupMongoose } from "./db"
 var lightningPayReq = require('bolt11')
 const mongoose = require("mongoose");
 
@@ -38,8 +38,8 @@ it('add invoice', async () => {
   const decoded = lightningPayReq.decode(request)
   const decodedHash = decoded.tags.filter(item => item.tagName === "payment_hash")[0].data
 
-  const InvoiceUser = await createInvoiceUser()
-  const {user} = await InvoiceUser.findById(decodedHash)
+  const HashUser = await createHashUser()
+  const {user} = await HashUser.findById(decodedHash)
 
   expect(user).toBe(user1)
 })
@@ -52,8 +52,8 @@ it('add invoice to different user', async () => {
   const decoded = lightningPayReq.decode(request)
   const decodedHash = decoded.tags.filter(item => item.tagName === "payment_hash")[0].data
 
-  const InvoiceUser = await createInvoiceUser()
-  const {user} = await InvoiceUser.findById(decodedHash)
+  const HashUser = await createHashUser()
+  const {user} = await HashUser.findById(decodedHash)
 
   expect(user).toBe(user2)
 })
@@ -83,7 +83,7 @@ it('list transactions', async () => {
 
 it('get balance', async () => {
   const balance = await lightningWallet.getBalance()
-  console.log({balance})
+  expect(balance).toBe(0)
 })
 
 

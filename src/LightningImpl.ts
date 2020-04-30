@@ -5,7 +5,7 @@ import { Auth } from "./lightning";
 const lnService = require('ln-service');
 import * as functions from 'firebase-functions'
 import { Wallet } from "./wallet"
-import { createInvoiceUser } from "./db";
+import { createHashUser } from "./db";
 
 const formatInvoice = (invoice) => {
   if (invoice.settled) {
@@ -30,6 +30,22 @@ const formatPayment = (payment) => {
 }
 
 
+// TODO refactor with User wallet
+// export class LightningGlobalWallet extends Wallet implements ILightningWallet {
+//     protected readonly lnd: object;
+    
+//     constructor({auth}: {auth: Auth}) {
+//         super({uid: null})
+//         this.lnd = lnService.authenticatedLndGrpc(auth).lnd;
+//     }
+    
+//     async getBalance() {
+//         const balanceInChannels = (await lnService.getChannelBalance({ lnd: this.lnd })).channel_balance;
+//         return balanceInChannels;
+//     }
+// }
+
+
 /**
  * this represents a user wallet
  */
@@ -41,24 +57,73 @@ export class LightningWallet extends Wallet implements ILightningWallet {
         this.lnd = lnService.authenticatedLndGrpc(auth).lnd;
     }
 
+    protected async getHashes() {
+        const HashUser = await createHashUser()
+        // TODO: optimize query
+        const invoiceUser = await HashUser.find({user: this.uid})
+        return invoiceUser.map(invoice => invoice.id)
+    }
+
+    protected async getHashesSet() {
+        const invoiceArray = await this.getHashes()
+        return new Set(invoiceArray)
+    }
+
+    protected async addHash({id, type}) {
+        const HashUser = await createHashUser() 
+
+        try {
+            await new HashUser({
+                _id: id,
+                type,
+                user: this.uid,
+            }).save()
+        } catch (err) {
+            // TODO
+            throw err
+        }
+    }
+
     getCurrency() { return "BTC"; }
+    
     async getBalance() {
-        const balanceInChannels = (await lnService.getChannelBalance({ lnd: this.lnd })).channel_balance;
-        return balanceInChannels;
+
+        let balance = 0
+
+        const hashSet = await this.getHashes()
+        for (const hash of hashSet) {
+            if (hash.type === "invoice") {
+                const invoice = lnService.getInvoice({lnd: this.lnd, id: hash.id})
+                if (invoice.is_confirmed) {
+                    balance += invoice.tokens
+                    continue
+                }
+            } else if (hash.type === "payment") {
+                const payment = lnService.getPayment({lnd: this.lnd, id: hash.id})
+                if (payment.is_failed) {
+                    continue
+                } else if (payment.is_pending) {
+                    balance -= payment.tokens
+                    // TODO used unconfirmed balance
+                } else if (payment.is_confirmed) {
+                    balance -= payment.tokens
+                } else {
+                    throw Error("weird payment case")
+                }
+            }
+        }
+
+        return balance
     }
 
     async getTransactions(): Promise<Array<ILightningTransaction>> {
         const { payments } = await lnService.getPayments({ lnd: this.lnd })
         const { invoices } = await lnService.getInvoices({ lnd: this.lnd })
 
-        const InvoiceUser = await createInvoiceUser()
-        // TODO: optimize query
-        const invoiceUser = await InvoiceUser.find({user: this.uid})
-        const invoiceArray = invoiceUser.map(invoice => invoice.id)
-        const invoiceSet = new Set(invoiceArray)
+        const hashSet = await this.getHashesSet()
 
         const paymentProcessed: Array<ILightningTransaction> = payments
-            .filter(payment => invoiceSet.has(payment.id))
+            .filter(payment => hashSet.has(payment.id))
             .map(payment => ({
                 amount: - payment.tokens,
                 description: formatPayment(payment),
@@ -70,7 +135,7 @@ export class LightningWallet extends Wallet implements ILightningWallet {
             }))
 
         const invoiceProcessed: Array<ILightningTransaction> = invoices
-            .filter(invoice => invoiceSet.has(invoice.id))
+            .filter(invoice => hashSet.has(invoice.id))
             .map(invoice => ({
                 amount: invoice.tokens,
                 description: formatInvoice(invoice),
@@ -99,6 +164,8 @@ export class LightningWallet extends Wallet implements ILightningWallet {
     async payInvoice({ invoice }) {
         const details = await lnService.decodePaymentRequest({lnd: this.lnd, request: invoice})
 
+        await this.addHash({type: "payment", id: details.id})
+
         return this.payDetail({
             pubkey: details.destination,
             hash: details.id,
@@ -113,18 +180,7 @@ export class LightningWallet extends Wallet implements ILightningWallet {
             description: memo,
         })
 
-        const InvoiceUser = await createInvoiceUser() 
-
-        try {
-            await new InvoiceUser({
-                _id: id,
-                user: this.uid,
-                type: "invoice",
-            }).save()
-        } catch (err) {
-            // TODO
-            throw err
-        }
+        await this.addHash({type: "invoice", id})
 
         return { request }
     }
@@ -149,8 +205,10 @@ export class LightningWallet extends Wallet implements ILightningWallet {
         const secret = preimage.toString('hex');
         const keySendPreimageType = '5482373484'; // key to use representing 'amount'
         const messageTmpId = '123123'; // random number, internal to Galoy for now
-    
-        const hash = obj.hash ?? createHash('sha256').update(preimage).digest().toString('hex');
+        
+        const hash = obj.hash 
+        // TODO manage keysend case.
+        // const hash = obj.hash ?? createHash('sha256').update(preimage).digest().toString('hex');
     
         const messages = [
             {type: keySendPreimageType, value: secret},
