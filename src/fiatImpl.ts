@@ -1,8 +1,7 @@
-import { IFiatWallet, Wallet } from "./interface"
-import { createMainBook } from "./db"
+import { IFiatWallet } from "./interface"
+import { Wallet } from "./wallet"
 
 export class FiatWallet extends Wallet implements IFiatWallet {
-  protected _mainBook
 
   constructor({uid}) {
     super({uid})
@@ -10,15 +9,6 @@ export class FiatWallet extends Wallet implements IFiatWallet {
 
   get customerPath(): string {
       return `Liabilities:Customer:${this.uid}`
-  }
-
-  async getMainBook () {
-    if (this._mainBook) {
-        return this._mainBook
-    }
-
-    this._mainBook = await createMainBook()
-    return this._mainBook
   }
 
   getCurrency() { return "USD" }

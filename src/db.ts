@@ -61,6 +61,8 @@ export const setupMongoose = async () => {
   // TODO indexes, see https://github.com/koresar/medici/blob/master/src/index.js#L39
   mongoose.model("Medici_Transaction", transactionSchema);
   
+
+  // price History
   const priceHistorySchema = new Schema({
     currency: {
       type: String,
@@ -76,6 +78,18 @@ export const setupMongoose = async () => {
 
   mongoose.model("PriceHistory", priceHistorySchema);
 
+
+
+  const invoiceUserSchema = new Schema({
+    _id: String, //invoice
+    user: String,
+  })
+
+  // TOOD create indexes
+
+  mongoose.model("InvoiceUser", invoiceUserSchema)
+
+
   init = true
 }
 
@@ -85,4 +99,10 @@ export const createMainBook = async () => {
   // should be done after previous line?
   const { book } = require("medici")
   return new book("MainBook")
+}
+
+export const createInvoiceUser = async () => {
+  await setupMongoose()
+
+  return mongoose.model("InvoiceUser")
 }

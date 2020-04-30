@@ -1,4 +1,5 @@
 import { IAddInvoiceRequest } from "../../../../common/types"
+import { createMainBook } from "./db"
 
 export interface IWallet {
   getCurrency(): string
@@ -25,12 +26,4 @@ export interface FiatTransaction {
   icon: string,
   name: string,
   onchain_tx?: string, // should be HEX?
-}
-
-export class Wallet {
-  protected readonly uid: string
-
-  constructor({uid}) {
-    this.uid = uid
-  }
 }
