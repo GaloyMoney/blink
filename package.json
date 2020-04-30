@@ -8,6 +8,7 @@
     "serve": "export GOOGLE_APPLICATION_CREDENTIALS='../keys.json' && source '../../deploy/exportlnd.sh' && npm run build && firebase serve --only functions",
     "shell-hot-reload": "export GOOGLE_APPLICATION_CREDENTIALS='../keys.json' && source '../../deploy/exportlnd.sh' && firebase functions:shell",
     "shell": "export GOOGLE_APPLICATION_CREDENTIALS='../keys.json' && source '../../deploy/exportlnd.sh' && npm run build && firebase functions:shell",
+    "ts-node": "export GOOGLE_APPLICATION_CREDENTIALS='../keys.json' && source '../../deploy/exportlnd.sh' && ts-node",
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
