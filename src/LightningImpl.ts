@@ -1,10 +1,11 @@
 import { IAddInvoiceRequest, ILightningTransaction, IPaymentRequest } from "../../../../common/types";
 import { shortenHash } from "../../../../common/utils";
-import { ILightningWallet, Wallet } from "./interface";
+import { ILightningWallet } from "./interface";
 import { Auth } from "./lightning";
 const lnService = require('ln-service');
 import * as functions from 'firebase-functions'
-
+import { Wallet } from "./wallet"
+import { createInvoiceUser } from "./db";
 
 const formatInvoice = (invoice) => {
   if (invoice.settled) {
@@ -95,12 +96,25 @@ export class LightningWallet extends Wallet implements ILightningWallet {
     }
     
     async addInvoice({value, memo}: IAddInvoiceRequest) {
-        const { request } = await lnService.createInvoice({
+        const { request, id } = await lnService.createInvoice({
             lnd: this.lnd,
             tokens: value,
             description: memo,
-        });
-        return { request };
+        })
+
+        const InvoiceUser = await createInvoiceUser() 
+
+        try {
+            await new InvoiceUser({
+                _id: id,
+                user: this.uid,
+            }).save()
+        } catch (err) {
+            // TODO
+            throw err
+        }
+
+        return { request }
     }
 
     /**
@@ -169,7 +183,7 @@ export class LightningWallet extends Wallet implements ILightningWallet {
 }
 
 export class LightningWalletAuthed extends LightningWallet {
-    constructor(uid) {
+    constructor({uid}) {
         let auth: Auth;
         let network: string;
         try {

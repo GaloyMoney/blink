@@ -33,6 +33,7 @@
     "@types/jest": "^25.2.1",
     "@types/node": "^13.13.1",
     "bolt07": "^1.5.0",
+    "bolt11": "^1.2.7",
     "firebase-functions-test": "^0.2.1",
     "jest": "^25.4.0",
     "ts-jest": "^25.4.0",

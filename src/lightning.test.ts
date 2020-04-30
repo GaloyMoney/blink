@@ -1,5 +1,8 @@
 import { LightningWalletAuthed } from "./lightningImpl"
 import moment from "moment"
+import { createInvoiceUser } from "./db"
+var lightningPayReq = require('bolt11')
+
 
 let lightningWallet
 
@@ -43,22 +46,29 @@ it('get balance', async () => {
 it('add invoice', async () => {
   const { request } = await lightningWallet.addInvoice({value: 1000, memo: "tx 1"})
   expect(request.startsWith("lntb10")).toBeTruthy()
-  // TODO lntb is for testnet. 
+
+  const decoded = lightningPayReq.decode(request)
+  const decodedHash = decoded.tags.filter(item => item.tagName === "payment_hash")[0].data
+
+  const InvoiceUser = await createInvoiceUser()
+  const {user} = await InvoiceUser.findById(decodedHash)
+
+  expect(user).toBe(default_uid)
 })
 
-it('payInvoice', async () => {
-  // TODO need a way to generate an invoice from another node
-})
+// it('payInvoice', async () => {
+//   // TODO need a way to generate an invoice from another node
+// })
 
-it('payInvoiceToAnotherGaloyUser', async () => {
-  // TODO Manage on us transaction from 2 users of our network
-})
+// it('payInvoiceToAnotherGaloyUser', async () => {
+//   // TODO Manage on us transaction from 2 users of our network
+// })
 
-it('payInvoiceToSelf', async () => {
-  // TODO should fail
-})
+// it('payInvoiceToSelf', async () => {
+//   // TODO should fail
+// })
 
-it('pushPayment', async () => {
-  // payment without invoice, lnd 0.9+
-})
+// it('pushPayment', async () => {
+//   // payment without invoice, lnd 0.9+
+// })
 
