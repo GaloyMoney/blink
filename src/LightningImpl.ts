@@ -51,31 +51,42 @@ export class LightningWallet extends Wallet implements ILightningWallet {
         const { payments } = await lnService.getPayments({ lnd: this.lnd })
         const { invoices } = await lnService.getInvoices({ lnd: this.lnd })
 
-        const paymentProcessed: Array<ILightningTransaction> = payments.map(payment => ({
-            amount: - payment.tokens,
-            description: formatPayment(payment),
-            created_at: payment.created_at,
-            type: payment.is_confirmed !== undefined ? "payment" : "inflight-payment",
-            hash: payment.id,
-            preimage: payment.secret,
-            destination: payment.destination,
-        }))
+        const InvoiceUser = await createInvoiceUser()
+        // TODO: optimize query
+        const invoiceUser = await InvoiceUser.find({user: this.uid})
+        const invoiceArray = invoiceUser.map(invoice => invoice.id)
+        const invoiceSet = new Set(invoiceArray)
 
-        const invoiceProcessed: Array<ILightningTransaction> = invoices.map(invoice => ({
-            amount: invoice.tokens,
-            description: formatInvoice(invoice),
-            created_at: invoice.created_at,
+        const paymentProcessed: Array<ILightningTransaction> = payments
+            .filter(payment => invoiceSet.has(payment.id))
+            .map(payment => ({
+                amount: - payment.tokens,
+                description: formatPayment(payment),
+                created_at: payment.created_at,
+                type: payment.is_confirmed !== undefined ? "payment" : "inflight-payment",
+                hash: payment.id,
+                preimage: payment.secret,
+                destination: payment.destination,
+            }))
 
-            // TODO manage inflight payment
-            type: invoice.confirmed !== undefined ? "paid-invoice" : "unconfirmed-invoice",
-            hash: invoice.id,
+        const invoiceProcessed: Array<ILightningTransaction> = invoices
+            .filter(invoice => invoiceSet.has(invoice.id))
+            .map(invoice => ({
+                amount: invoice.tokens,
+                description: formatInvoice(invoice),
+                created_at: invoice.created_at,
 
-            // FIXME is preimage useful for invoices?
-            // I think for security reason we might not want to share it
-            // ie: a customer could share the secret for a hold invoice, 
-            // and the payment would not reach the destinataire but would 
-            // still be out of the money
-            // preimage: invoice.secret, 
+                // TODO manage inflight payment
+                type: invoice.confirmed !== undefined ? "paid-invoice" : "unconfirmed-invoice",
+                hash: invoice.id,
+
+                // FIXME is preimage useful for invoices?
+                // I think for security reason we might not want to share it
+                // ie: a customer could share the secret for a hold invoice, 
+                // and the payment would not reach the destinataire but would 
+                // still be out of the money
+                // preimage: invoice.secret
+                // note: blue wallet doesn't show the hash/preimage
         }))
         
         const all_txs = [...paymentProcessed, ...invoiceProcessed].sort(
@@ -108,6 +119,7 @@ export class LightningWallet extends Wallet implements ILightningWallet {
             await new InvoiceUser({
                 _id: id,
                 user: this.uid,
+                type: "invoice",
             }).save()
         } catch (err) {
             // TODO
