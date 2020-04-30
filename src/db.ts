@@ -80,7 +80,7 @@ export const setupMongoose = async () => {
 
 
 
-  const invoiceUserSchema = new Schema({
+  const hashUserSchema = new Schema({
     _id: String, //invoice
     user: String,
     type: {
@@ -91,7 +91,7 @@ export const setupMongoose = async () => {
 
   // TOOD create indexes
 
-  mongoose.model("InvoiceUser", invoiceUserSchema)
+  mongoose.model("HashUser", hashUserSchema)
 
 
   init = true
@@ -105,8 +105,8 @@ export const createMainBook = async () => {
   return new book("MainBook")
 }
 
-export const createInvoiceUser = async () => {
+export const createHashUser = async () => {
   await setupMongoose()
 
-  return mongoose.model("InvoiceUser")
+  return mongoose.model("HashUser")
 }
