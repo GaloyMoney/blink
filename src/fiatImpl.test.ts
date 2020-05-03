@@ -23,7 +23,7 @@ afterAll(async () => {
 
 it('balanceStartAtZero', async () => {
   const result = await fiatWallet.getBalance()
-  expect(result === 0).toBeTruthy()
+  expect(result).toBe(0)
 })
 
 it('addFunds', async () => {

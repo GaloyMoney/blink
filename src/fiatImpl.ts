@@ -2,24 +2,10 @@ import { IFiatWallet } from "./interface"
 import { Wallet } from "./wallet"
 
 export class FiatWallet extends Wallet implements IFiatWallet {
+  protected _currency = "USD"
 
   constructor({uid}) {
     super({uid})
-  }
-
-  get customerPath(): string {
-      return `Liabilities:Customer:${this.uid}`
-  }
-
-  getCurrency() { return "USD" }
-
-  async getBalance() {
-      const { balance } = await (await this.getMainBook()).balance({
-          account: this.customerPath,
-          currency: "USD"
-      })
-
-      return - balance // TODO verify the - sign
   }
 
   async addFunds({amount}) {
@@ -27,9 +13,11 @@ export class FiatWallet extends Wallet implements IFiatWallet {
           throw Error(`amount has to be positive, is: ${amount}`)
       }
 
-      await (await this.getMainBook()).entry('Add funds')
-      .credit('Assets:Reserve', amount, {currency: "USD"})
-      .debit(this.customerPath, amount, {currency: "USD"})
+      const MainBook = await this.getMainBook()
+
+      await MainBook.entry('Add funds')
+      .credit('Assets:Reserve', amount, {currency: this.currency})
+      .debit(this.customerPath, amount, {currency: this.currency})
       .commit()
   }
 
@@ -38,15 +26,19 @@ export class FiatWallet extends Wallet implements IFiatWallet {
         throw Error(`amount has to be positive, is: ${amount}`)
     }
 
-    return (await this.getMainBook()).entry('Withdraw funds')
-    .debit('Assets:Reserve', amount, {currency: "USD"})
-    .credit(this.customerPath, amount, {currency: "USD"})
+    const MainBook = await this.getMainBook()
+
+    return MainBook.entry('Withdraw funds')
+    .debit('Assets:Reserve', amount, {currency: this.currency})
+    .credit(this.customerPath, amount, {currency: this.currency})
     .commit()
   }
 
   async getTransactions() {
+    const MainBook = await this.getMainBook()
+
       // TODO paging
-        const {results} = await (await this.getMainBook()).ledger({
+        const {results} = await MainBook.ledger({
             account: this.customerPath,
             currency: "USD" // TODO check if currency works here
         })
