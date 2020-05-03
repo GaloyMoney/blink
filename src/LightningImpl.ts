@@ -6,6 +6,8 @@ const lnService = require('ln-service');
 import * as functions from 'firebase-functions'
 import { Wallet } from "./wallet"
 import { createHashUser } from "./db";
+const util = require('util')
+import Timeout from 'await-timeout';
 
 const formatInvoice = (invoice) => {
   if (invoice.is_confirmed) {
@@ -55,7 +57,8 @@ const formatPayment = (payment) => {
  */
 export class LightningWallet extends Wallet implements ILightningWallet {
     protected readonly lnd: object;
-    
+    protected _currency = "BTC"
+
     constructor({auth, uid}: {auth: Auth, uid: string}) {
         super({uid})
         this.lnd = lnService.authenticatedLndGrpc(auth).lnd;
@@ -81,6 +84,7 @@ export class LightningWallet extends Wallet implements ILightningWallet {
                 _id: id,
                 type,
                 user: this.uid,
+                settled: false, 
             }).save()
         } catch (err) {
             // TODO
@@ -88,108 +92,139 @@ export class LightningWallet extends Wallet implements ILightningWallet {
         }
     }
 
-    getCurrency() { return "BTC"; }
-    
-    async getBalance() {
-
-        let balance = 0
-        const hashArray = await this.getHashes()
-
-        for (const hash of hashArray) {
-            if (hash.type === "invoice") {
-                const invoice = await lnService.getInvoice({lnd: this.lnd, id: hash.id})
-                if (invoice.is_confirmed) {
-                    balance += invoice.tokens
-                    continue
-                }
-            } else if (hash.type === "payment") {
-                const payment = await lnService.getPayment({lnd: this.lnd, id: hash.id})
-                if (payment.is_failed) {
-                    continue
-                } else if (payment.is_pending) {
-                    balance -= payment.tokens
-                    // TODO used unconfirmed balance
-                } else if (payment.is_confirmed) {
-                    balance -= payment.tokens
-                } else {
-                    throw Error("weird payment case")
-                }
-            }
-        }
-
-        return balance
-    }
-
     async getTransactions(): Promise<Array<ILightningTransaction>> {
-        const { payments } = await lnService.getPayments({ lnd: this.lnd })
-        const { invoices } = await lnService.getInvoices({ lnd: this.lnd })
+        // await this.getHashes()
 
-        const hashSet = await this.getHashesSet()
+        // const { payments } = await lnService.getPayments({ lnd: this.lnd })
+        // const { invoices } = await lnService.getInvoices({ lnd: this.lnd })
 
-        const paymentProcessed: Array<ILightningTransaction> = payments
-            .filter(payment => hashSet.has(payment.id))
-            .map(payment => ({
-                amount: - payment.tokens,
-                description: formatPayment(payment),
-                created_at: payment.created_at,
-                type: payment.is_confirmed !== undefined ? "payment" : "inflight-payment",
-                hash: payment.id,
-                preimage: payment.secret,
-                destination: payment.destination,
-            }))
+        // const hashSet = await this.getHashesSet()
 
-        const invoiceProcessed: Array<ILightningTransaction> = invoices
-            .filter(invoice => hashSet.has(invoice.id))
-            .map(invoice => ({
-                amount: invoice.tokens,
-                description: formatInvoice(invoice),
-                created_at: invoice.created_at,
+        // const paymentProcessed: Array<ILightningTransaction> = payments
+        //     .filter(payment => hashSet.has(payment.id))
+        //     .map(payment => ({
+        //         amount: - payment.tokens,
+        //         description: formatPayment(payment),
+        //         created_at: payment.created_at,
+        //         type: payment.is_confirmed !== undefined ? "payment" : "inflight-payment",
+        //         hash: payment.id,
+        //         destination: payment.destination,
+        //     }))
 
-                // TODO manage inflight payment
-                type: invoice.is_confirmed ? "paid-invoice" : "unconfirmed-invoice",
-                hash: invoice.id,
+        // const invoiceProcessed: Array<ILightningTransaction> = invoices
+        //     .filter(invoice => hashSet.has(invoice.id))
+        //     .map(invoice => ({
+        //         amount: invoice.tokens,
+        //         description: formatInvoice(invoice),
+        //         created_at: invoice.created_at,
 
-                // FIXME is preimage useful for invoices?
-                // I think for security reason we might not want to share it
-                // ie: a customer could share the secret for a hold invoice, 
-                // and the payment would not reach the destinataire but would 
-                // still be out of the money
-                // preimage: invoice.secret
-                // note: blue wallet doesn't show the hash/preimage
-        }))
+        //         // TODO manage inflight payment
+        //         type: invoice.is_confirmed ? "paid-invoice" : "unconfirmed-invoice",
+        //         hash: invoice.id,
+
+        //         // FIXME is preimage useful for invoices?
+        //         // I think for security reason we might not want to share it
+        //         // ie: a customer could share the secret for a hold invoice, 
+        //         // and the payment would not reach the destinataire but would 
+        //         // still be out of the money
+        //         // preimage: invoice.secret
+        //         // note: blue wallet doesn't show the hash/preimage
+        // }))
         
-        const all_txs = [...paymentProcessed, ...invoiceProcessed].sort(
-            (a, b) => a.created_at > b.created_at ? -1 : 1
-        )
+        // const all_txs = [...paymentProcessed, ...invoiceProcessed].sort(
+        //     (a, b) => a.created_at > b.created_at ? -1 : 1
+        // )
+        
+        // console.log({all_txs})
+        // return all_txs
 
-        console.log({all_txs})
-        return all_txs
+        const MainBook = await this.getMainBook()
+
+        const { results } = await MainBook.ledger({
+            account: this.customerPath,
+            currency: this.currency,
+            // start_date: startDate,
+            // end_date: endDate
+          })
+
+          console.log({results})
+
+          return results
+
     }
 
     async payInvoice({ invoice }) {
-        const details = await lnService.decodePaymentRequest({lnd: this.lnd, request: invoice})
+        const { id, tokens, destination } = await lnService.decodePaymentRequest({lnd: this.lnd, request: invoice})
+
+        // TODO probe for payment first. 
+        // like in `bos probe "payment_request/public_key"`
+        // from https://github.com/alexbosworth/balanceofsatoshis
+
+        const MainBook = await this.getMainBook()
+        const HashUser = await createHashUser()
+
+        // TODO: if balance > 0
+
+        console.log({destination})
+        
+        // probe for Route
+        const {route} = await lnService.probeForRoute({destination, lnd: this.lnd, tokens});
+        console.log(util.inspect({route}, {showHidden: false, depth: null}))
+
+        if (route.length === 0) {
+            throw new functions.https.HttpsError('internal', `there is no route for this payment`)
+        }        
 
         // TODO manage is the user is trying to pay an invoice twice
         // { MongoError: E11000 duplicate key error collection ... }
-        await this.addHash({type: "payment", id: details.id})
+        // await this.addHash({type: "payment", id})
 
-        const util = require('util')
-        console.log(util.inspect({details}, {showHidden: false, depth: null}))
+
+        const entry = await MainBook.entry('Payment paid')
+        .debit('Assets:Reserve', tokens, {currency: this.currency})
+        .credit(this.customerPath, tokens, {currency: this.currency})
+        .commit()
 
         try {
-            await lnService.pay({lnd: this.lnd, request: invoice})
-            return {result: true}
+
+            const promise = lnService.payViaRoutes({lnd: this.lnd, routes: [route], id})
+            await Timeout.wrap(promise, 5000, 'Timeout');
+
+            // FIXME
+            // return this.payDetail({
+            //     pubkey: details.destination,
+            //     hash: details.id,
+            //     amount: details.tokens,
+            //     routes: details.routes
+            // })
+
+            // console.log({result})
+
         } catch (err) {
+
+            console.log({err, message: err.message, errorCode: err[1]})
+
+            if (err.message === "Timeout") {
+                return {result: "pending"}
+                // TODO processed in-flight payment in separate loop
+            }
+
+            console.log(typeof entry._id)
+
+            try {
+                // TODO transaction
+                await MainBook.void(entry._id, err[1])
+                await HashUser.findOneAndUpdate({_id: id}, {settled: true, error: err[1]})
+            } catch (err_db) {
+                throw new functions.https.HttpsError('internal', `error canceling payment entry ${util.inspect({err_db})}`)
+            }
+
             throw new functions.https.HttpsError('internal', `error paying invoice ${util.inspect({err})}`)
         }
         
-        // FIXME
-        // return this.payDetail({
-        //     pubkey: details.destination,
-        //     hash: details.id,
-        //     amount: details.tokens,
-        //     routes: details.routes
-        // })
+        // success
+        await HashUser.findOneAndUpdate({_id: id}, {settled: true})
+        return {result: true}
     }
     
     async addInvoice({value, memo}: IAddInvoiceRequest) {
@@ -204,6 +239,50 @@ export class LightningWallet extends Wallet implements ILightningWallet {
         return { request }
     }
 
+    async updateSettledInvoices() {
+    
+        const hashArray = await this.getHashes()
+        const MainBook = await this.getMainBook()
+
+        const HashUser = await createHashUser()
+            
+        for (const hash of hashArray) {
+            if (hash.settled) {
+                continue // TODO filter at the getHashes mongodb request level instead
+            }
+            
+            let result
+            try {
+                result = await lnService.getInvoice({ lnd: this.lnd, id: hash.id })
+            } catch (err) {
+                throw Error('issue fetching invoice: ' + err)
+            }
+
+            if (result.is_confirmed) {
+
+                // TODO: use a transaction here
+                // const session = await HashUser.startSession()
+                // session.withTransaction(
+
+                try {
+
+                    await HashUser.findOneAndUpdate({_id: hash.id}, {settled: true})
+
+                    await MainBook.entry('Invoice paid') // TODO replace by invoice memo
+                    .credit('Assets:Reserve', result.tokens, {currency: "BTC", hash: hash.id }) 
+                    .debit(this.customerPath, result.tokens, {currency: "BTC", hash: hash.id })
+                    .commit()
+
+                } catch (err) {
+                    console.log(err)
+                }
+
+                // session.commitTransaction()
+                // session.endSession()
+            }
+        }
+    }
+
     /**
      * Advanced payment method to use keySend (new features from lnd 0.9)
      * Needs to be tested.
@@ -213,8 +292,6 @@ export class LightningWallet extends Wallet implements ILightningWallet {
     private async payDetail({pubkey, amount, message, hash, routes}: IPaymentRequest) {
         console.log({pubkey, amount, message, hash, routes})
 
-        const util = require('util')
-        console.log(util.inspect({routes}, {showHidden: false, depth: null}))
 
         // TODO use validate()
         if (pubkey === undefined) {

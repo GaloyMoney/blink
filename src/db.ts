@@ -16,7 +16,28 @@ export const setupMongoose = async () => {
 
   const path = `mongodb://${user}:${password}@${address}/${db}`
 
-  // await mongoose.connect(`mongodb://root:${password}@${address}/admin`, {
+
+  // could be capped after X months.
+  // as this could be reconstructure from the ledger
+  // and old non settled transaction would not really matters
+  const hashUserSchema = new Schema({
+    _id: String, // hash of invoice
+    user: String,
+    type: {
+      type: String,
+      enum: ["invoice", "payment"]
+    },
+    settled: Boolean,
+    error: String,
+  })
+
+  // TOOD create indexes
+
+  mongoose.model("HashUser", hashUserSchema)
+
+
+
+
   await mongoose.connect(path, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
@@ -27,7 +48,15 @@ export const setupMongoose = async () => {
   const transactionSchema = new Schema({
     currency: {
       type: String,
-      enum: ["USD", "BTC"] 
+      enum: ["USD", "BTC"],
+      required: true
+    },
+    hash: {
+      type: Schema.Types.String,
+      ref: 'HashUser'
+      // required: function() {
+      //   return this.currency === "BTC";
+      // }
     },
     credit: Number,
     debit: Number,
@@ -52,10 +81,10 @@ export const setupMongoose = async () => {
     void_reason: String,
     // The journal that this is voiding, if any
     _original_journal: Schema.Types.ObjectId,
-    approved: {
-      type: Boolean,
-      default: true
-    }
+    // approved: {
+    //   type: Boolean,
+    //   default: true
+    // }
   })
   
   // TODO indexes, see https://github.com/koresar/medici/blob/master/src/index.js#L39
@@ -78,20 +107,6 @@ export const setupMongoose = async () => {
 
   mongoose.model("PriceHistory", priceHistorySchema);
 
-
-
-  const hashUserSchema = new Schema({
-    _id: String, //invoice
-    user: String,
-    type: {
-      type: String,
-      enum: ["invoice", "payment"]
-    }
-  })
-
-  // TOOD create indexes
-
-  mongoose.model("HashUser", hashUserSchema)
 
 
   init = true

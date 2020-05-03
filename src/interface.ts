@@ -2,7 +2,6 @@ import { IAddInvoiceRequest } from "../../../../common/types"
 import { createMainBook } from "./db"
 
 export interface IWallet {
-  getCurrency(): string
   getBalance(): Promise<number>
   getTransactions(): any // TODO
   getInfo(): Promise<object>
