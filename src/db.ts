@@ -85,10 +85,10 @@ export const setupMongoose = async () => {
     void_reason: String,
     // The journal that this is voiding, if any
     _original_journal: Schema.Types.ObjectId,
-    // approved: {
-    //   type: Boolean,
-    //   default: true
-    // }
+    approved: {
+      type: Boolean,
+      default: true
+    }
   })
   
   // TODO indexes, see https://github.com/koresar/medici/blob/master/src/index.js#L39
