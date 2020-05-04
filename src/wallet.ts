@@ -23,7 +23,7 @@ export class Wallet {
         currency: this.currency
     })
 
-    return balance
+    return - balance
   }
 
 }
