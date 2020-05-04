@@ -5,7 +5,7 @@ import { Auth } from "./lightning";
 const lnService = require('ln-service');
 import * as functions from 'firebase-functions'
 import { Wallet } from "./wallet"
-import { createHashUser } from "./db";
+import { createHashUser, createMainBook } from "./db";
 const util = require('util')
 import Timeout from 'await-timeout';
 
@@ -138,7 +138,7 @@ export class LightningWallet extends Wallet implements ILightningWallet {
         // console.log({all_txs})
         // return all_txs
 
-        const MainBook = await this.getMainBook()
+        const MainBook = await createMainBook()
 
         const { results } = await MainBook.ledger({
             account: this.customerPath,
@@ -160,13 +160,16 @@ export class LightningWallet extends Wallet implements ILightningWallet {
         // like in `bos probe "payment_request/public_key"`
         // from https://github.com/alexbosworth/balanceofsatoshis
 
-        const MainBook = await this.getMainBook()
+        const MainBook = await createMainBook()
         const HashUser = await createHashUser()
 
-        // TODO: if balance > 0
+        // TODO: continue only if user.balance > 0
 
+
+        // TODO: handle on-us transaction
         console.log({destination})
         
+
         // probe for Route
         // TODO add private route from invoice
         const {route} = await lnService.probeForRoute({destination, lnd: this.lnd, tokens});
@@ -270,7 +273,7 @@ export class LightningWallet extends Wallet implements ILightningWallet {
 
             if (result.is_failed) {
                 try {
-                    const MainBook = await this.getMainBook()
+                    const MainBook = await createMainBook()
                     // TODO mongodb transaction
                     await MainBook.void(hash.id, result.failed)
                     await HashUser.findOneAndUpdate({_id: hash.id}, {pending: false, error: result.failed})
@@ -297,7 +300,7 @@ export class LightningWallet extends Wallet implements ILightningWallet {
     // TODO: move to an "admin/ops" wallet
     async updatePendingInvoices() {
     
-        const MainBook = await this.getMainBook()
+        const MainBook = await createMainBook()
 
         const HashUser = await createHashUser()
         const hashArray = await HashUser.find({user: this.uid, type: "invoice", pending: true})
