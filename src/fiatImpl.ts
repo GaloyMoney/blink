@@ -1,5 +1,6 @@
 import { IFiatWallet } from "./interface"
 import { Wallet } from "./wallet"
+import { createMainBook } from "./db"
 
 export class FiatWallet extends Wallet implements IFiatWallet {
   protected _currency = "USD"
@@ -13,7 +14,7 @@ export class FiatWallet extends Wallet implements IFiatWallet {
           throw Error(`amount has to be positive, is: ${amount}`)
       }
 
-      const MainBook = await this.getMainBook()
+      const MainBook = await createMainBook()
 
       await MainBook.entry('Add funds')
       .credit('Assets:Reserve', amount, {currency: this.currency})
@@ -26,7 +27,7 @@ export class FiatWallet extends Wallet implements IFiatWallet {
         throw Error(`amount has to be positive, is: ${amount}`)
     }
 
-    const MainBook = await this.getMainBook()
+    const MainBook = await createMainBook()
 
     return MainBook.entry('Withdraw funds')
     .debit('Assets:Reserve', amount, {currency: this.currency})
@@ -35,7 +36,7 @@ export class FiatWallet extends Wallet implements IFiatWallet {
   }
 
   async getTransactions() {
-    const MainBook = await this.getMainBook()
+    const MainBook = await createMainBook()
 
       // TODO paging
         const {results} = await MainBook.ledger({
