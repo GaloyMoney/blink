@@ -22,6 +22,18 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   lightningWallet = new LightningWalletAuthed({uid: user1})
+
+
+  // // example for @kartik
+  // const {lnd2} = lnService.authenticatedLndGrpc({
+  //   cert: 'base64 encoded tls.cert',
+  //   macaroon: 'base64 encoded admin.macaroon',
+  //   socket: 'lnd-container-devnet1:10009',
+  // });
+
+  // lnService.createInvoice({lnd: lnd2, amoint... })
+  // lnService.pay({lnd: lnd2, amoint... })
+
 })
 
 it('Lightning Wallet Get Info works', async () => {
