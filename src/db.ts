@@ -19,7 +19,7 @@ export const setupMongoose = async () => {
 
   // could be capped after X months.
   // as this could be reconstructure from the ledger
-  // and old non settled transaction would not really matters
+  // and old non pending transaction would not really matters
   const hashUserSchema = new Schema({
     _id: String, // hash of invoice
     user: String,
@@ -27,8 +27,12 @@ export const setupMongoose = async () => {
       type: String,
       enum: ["invoice", "payment"]
     },
-    settled: Boolean,
+    pending: Boolean,
     error: String,
+    timestamp: {
+      type: Date,
+      default: Date.now
+    },
   })
 
   // TOOD create indexes
