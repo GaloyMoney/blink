@@ -76,16 +76,11 @@ export class LightningWallet extends Wallet implements ILightningWallet {
         this.lnd = lnService.authenticatedLndGrpc(auth).lnd;
     }
 
-    protected async getHashes() {
-        const HashUser = await createHashUser()
-        // TODO: optimize query
-        const invoiceUser = await HashUser.find({user: this.uid})
-        return invoiceUser.filter(invoice => invoice.id)
-    }
+    async getBalance() {
+        await this.updatePendingInvoices()
+        await this.updatePendingPayment()
 
-    protected async getHashesSet() {
-        const invoiceArray = await this.getHashes()
-        return new Set(invoiceArray.map(item => item.id))
+        return super.getBalance()
     }
 
     protected async addHash({id, type}) {
@@ -105,50 +100,9 @@ export class LightningWallet extends Wallet implements ILightningWallet {
     }
 
     async getTransactions(): Promise<Array<ILightningTransaction>> {
-        // await this.getHashes()
 
-        // const { payments } = await lnService.getPayments({ lnd: this.lnd })
-        // const { invoices } = await lnService.getInvoices({ lnd: this.lnd })
-
-        // const hashSet = await this.getHashesSet()
-
-        // const paymentProcessed: Array<ILightningTransaction> = payments
-        //     .filter(payment => hashSet.has(payment.id))
-        //     .map(payment => ({
-        //         amount: - payment.tokens,
-        //         description: formatPayment(payment),
-        //         created_at: payment.created_at,
-        //         type: payment.is_confirmed !== undefined ? "payment" : "inflight-payment",
-        //         hash: payment.id,
-        //         destination: payment.destination,
-        //     }))
-
-        // const invoiceProcessed: Array<ILightningTransaction> = invoices
-        //     .filter(invoice => hashSet.has(invoice.id))
-        //     .map(invoice => ({
-        //         amount: invoice.tokens,
-        //         description: formatInvoice(invoice),
-        //         created_at: invoice.created_at,
-
-        //         // TODO manage inflight payment
-        //         type: invoice.is_confirmed ? "paid-invoice" : "unconfirmed-invoice",
-        //         hash: invoice.id,
-
-        //         // FIXME is preimage useful for invoices?
-        //         // I think for security reason we might not want to share it
-        //         // ie: a customer could share the secret for a hold invoice, 
-        //         // and the payment would not reach the destinataire but would 
-        //         // still be out of the money
-        //         // preimage: invoice.secret
-        //         // note: blue wallet doesn't show the hash/preimage
-        // }))
-        
-        // const all_txs = [...paymentProcessed, ...invoiceProcessed].sort(
-        //     (a, b) => a.created_at > b.created_at ? -1 : 1
-        // )
-        
-        // console.log({all_txs})
-        // return all_txs
+        await this.updatePendingInvoices()
+        await this.updatePendingPayment()
 
         const MainBook = await createMainBook()
 
@@ -289,15 +243,16 @@ export class LightningWallet extends Wallet implements ILightningWallet {
 
             if (result.is_confirmed) {
                 // success
-                await HashUser.findOneAndUpdate({_id: hash.id }, {pending: false})
+                hash.pending = false
+                hash.save()
             }
 
             if (result.is_failed) {
                 try {
                     const MainBook = await createMainBook()
                     // TODO mongodb transaction
-                    await MainBook.void(hash.id, result.failed)
                     await HashUser.findOneAndUpdate({_id: hash.id}, {pending: false, error: result.failed})
+                    await MainBook.void(hash.id, result.failed)
                 } catch (err) {
                     throw new functions.https.HttpsError('internal', `error canceling payment entry ${util.inspect({err})}`)
                 }
@@ -340,12 +295,15 @@ export class LightningWallet extends Wallet implements ILightningWallet {
                 // TODO: use a transaction here
                 // const session = await HashUser.startSession()
                 // session.withTransaction(
+                
+                // OR: use a an unique index account / hash / voided
+                // may still not avoid issue from discrenpency between hash and the books
 
                 try {
+                    hash.pending = false
+                    hash.save()
 
-                    await HashUser.findOneAndUpdate({_id: hash.id}, {pending: false})
-
-                    await MainBook.entry('Invoice paid') // TODO replace by invoice memo
+                    await MainBook.entry()
                     .credit('Assets:Reserve', result.tokens, {currency: "BTC", hash: hash.id }) 
                     .debit(this.customerPath, result.tokens, {currency: "BTC", hash: hash.id })
                     .commit()
