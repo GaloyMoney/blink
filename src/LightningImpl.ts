@@ -1,4 +1,4 @@
-import { IAddInvoiceRequest, ILightningTransaction, IPaymentRequest } from "../../../../common/types";
+import { IAddInvoiceRequest, ILightningTransaction, IPaymentRequest, TransactionType } from "../../../../common/types";
 import { shortenHash } from "../../../../common/utils";
 import { ILightningWallet } from "./interface";
 import { Auth } from "./lightning";
@@ -9,21 +9,33 @@ import { createHashUser, createMainBook } from "./db";
 const util = require('util')
 import Timeout from 'await-timeout';
 
-const formatInvoice = (invoice) => {
-  if (invoice.is_confirmed) {
-    if (invoice.description) {
-      return invoice.description
+const formatInvoice = (type: "invoice" | "payment", memo: String | undefined, pending: Boolean): String => {
+  if (pending) {
+    return `Waiting for payment`
+  } else {
+    if (memo) {
+      return memo
     } 
     // else if (invoice.htlcs[0].customRecords) {
       // FIXME above syntax from lnd, not lnService script "overlay"
       // TODO for lnd keysend 
     // } 
     else {
-      return `Payment received`
+      return type === "payment" ? `Payment sent` : `Payment received`
     }
-  } else {
-    return `Waiting for payment`
   }
+}
+
+const formatType = (type: "invoice" | "payment", pending: Boolean): TransactionType | Error => {
+    if (type === "invoice") {
+        return pending ? "unconfirmed-invoice" : "paid-invoice"
+    } 
+    
+    if (type === "payment") {
+        return pending ? "inflight-payment" : "payment"
+    }
+
+    throw Error("incorrect type for formatType")
 }
 
 
@@ -145,16 +157,24 @@ export class LightningWallet extends Wallet implements ILightningWallet {
             currency: this.currency,
             // start_date: startDate,
             // end_date: endDate
-          })
+          }, ["hash"])
+          // TODO we could duplicated pending/type to transaction,
+          // this would avoid to fetch the data from hash collection and speed up query
 
-          console.log({results})
+        const results_processed = results.map((item) => ({
+            created_at: item.timestamp,
+            amount: item.debit - item.credit,
+            description: formatInvoice(item.hash.type, item.memo, item.hash.pending),
+            hash: item.hash.id,
+            // destination: TODO
+            type: formatType(item.hash.type, item.hash.pending)
+        }))
 
-          return results
-
+        return results_processed
     }
 
     async payInvoice({ invoice }) {
-        const { id, tokens, destination } = await lnService.decodePaymentRequest({lnd: this.lnd, request: invoice})
+        const { id, tokens, destination, description } = await lnService.decodePaymentRequest({lnd: this.lnd, request: invoice})
 
         // TODO probe for payment first. 
         // like in `bos probe "payment_request/public_key"`
@@ -194,9 +214,10 @@ export class LightningWallet extends Wallet implements ILightningWallet {
         // reduce balance from customer first
         // TODO this should use a reference from balance computed above
         // and fail is balance has changed in the meantime to prevent race condition
-        const entry = await MainBook.entry('Payment paid')
-        .debit('Assets:Reserve', tokens, {currency: this.currency})
-        .credit(this.customerPath, tokens, {currency: this.currency})
+        
+        const entry = await MainBook.entry(description) 
+        .debit('Assets:Reserve', tokens, {currency: this.currency, hash: id})
+        .credit(this.customerPath, tokens, {currency: this.currency, hash: id})
         .commit()
 
         // there is 3 scenarios for a payment.
