@@ -20,15 +20,10 @@ export const setupMongoose = async () => {
   // could be capped after X months.
   // as this could be reconstructure from the ledger
   // and old non pending transaction would not really matters
-  const hashUserSchema = new Schema({
+  const invoiceUserSchema = new Schema({
     _id: String, // hash of invoice
     uid: String,
-    type: {
-      type: String,
-      enum: ["invoice", "payment"]
-    },
     pending: Boolean,
-    error: String,
     timestamp: {
       type: Date,
       default: Date.now
@@ -37,7 +32,7 @@ export const setupMongoose = async () => {
 
   // TOOD create indexes
 
-  mongoose.model("HashUser", hashUserSchema)
+  mongoose.model("InvoiceUser", invoiceUserSchema)
 
 
   const UserSchema = new Schema({
@@ -69,6 +64,7 @@ export const setupMongoose = async () => {
   })
 
   const transactionSchema = new Schema({
+    // custom property
     currency: {
       type: String,
       enum: ["USD", "BTC"],
@@ -76,15 +72,20 @@ export const setupMongoose = async () => {
     },
     hash: {
       type: Schema.Types.String,
-      ref: 'HashUser'
+      ref: 'InvoiceUser'
       // required: function() {
-      //   return this.currency === "BTC";
+      //   return this.currency === "BTC"
+      //   a ref only for Invoice. otherwise the hash is not linked
       // }
     },
     type: {
       type: String,
       enum: ["invoice", "payment", "earn"]
     },
+    pending: Boolean, // duplicated with InvoiceUser for invoices
+    err: String,
+
+    // original property from medici
     credit: Number,
     debit: Number,
     meta: Schema.Types.Mixed,
@@ -147,8 +148,8 @@ export const createMainBook = async () => {
   return new book("MainBook")
 }
 
-export const createHashUser = async () => {
+export const createInvoiceUser = async () => {
   await setupMongoose()
 
-  return mongoose.model("HashUser")
+  return mongoose.model("InvoiceUser")
 }

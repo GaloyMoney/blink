@@ -5,7 +5,7 @@ import { Auth } from "./lightning";
 const lnService = require('ln-service');
 import * as functions from 'firebase-functions'
 import { UserWallet } from "./wallet"
-import { createHashUser, createMainBook } from "./db";
+import { createInvoiceUser, createMainBook } from "./db";
 const util = require('util')
 import Timeout from 'await-timeout';
 
@@ -84,6 +84,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
 
     constructor({auth, uid}: {auth: Auth, uid: string}) {
         super({uid})
+        this.lnd = lnService.authenticatedLndGrpc(auth).lnd;
     }
 
     async getBalance() {
@@ -94,10 +95,10 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
     }
 
     protected async addHash({id, type}) {
-        const HashUser = await createHashUser() 
+        const InvoiceUser = await createInvoiceUser() 
 
         try {
-            await new HashUser({
+            await new InvoiceUser({
                 _id: id,
                 type,
                 uid: this.uid,
@@ -121,17 +122,17 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
             currency: this.currency,
             // start_date: startDate,
             // end_date: endDate
-          }, ["hash"])
+          })
           // TODO we could duplicated pending/type to transaction,
           // this would avoid to fetch the data from hash collection and speed up query
 
         const results_processed = results.map((item) => ({
             created_at: item.timestamp,
             amount: item.debit - item.credit,
-            description: formatInvoice(item.type, item.memo, item.hash?.pending),
-            hash: item.hash?.id,
+            description: formatInvoice(item.type, item.memo, item.hash),
+            hash: item.hash,
             // destination: TODO
-            type: formatType(item.type, item.hash?.pending)
+            type: formatType(item.type, item.pending)
         }))
 
         return results_processed
@@ -145,7 +146,6 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
         // from https://github.com/alexbosworth/balanceofsatoshis
 
         const MainBook = await createMainBook()
-        const HashUser = await createHashUser()
 
         // TODO: continue only if user.balance > 0
 
@@ -176,12 +176,14 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
         }
 
         // reduce balance from customer first
-        // TODO this should use a reference from balance computed above
+        // TODO this should use a reference (using db transactions) from balance computed above
         // and fail is balance has changed in the meantime to prevent race condition
         
+        const obj = {currency: this.currency, hash: id, type: "payment", pending: true}
+
         const entry = await MainBook.entry(description) 
-        .debit('Assets:Reserve', tokens, {currency: this.currency, hash: id, type: "payment"})
-        .credit(this.accountPath, tokens, {currency: this.currency, hash: id, type: "payment"})
+        .debit('Assets:Reserve', tokens, obj)
+        .credit(this.accountPath, tokens, obj)
         .commit()
 
         // there is 3 scenarios for a payment.
@@ -218,9 +220,8 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
             console.log(typeof entry._id)
 
             try {
-                // TODO transaction
                 await MainBook.void(entry._id, err[1])
-                await HashUser.findOneAndUpdate({_id: id}, {pending: false, error: err[1]})
+                await MainBook.findOneAndUpdate({hash: id}, {pending: false, error: err[1]})
             } catch (err_db) {
                 const err_message = `error canceling payment entry ${util.inspect({err_db})}`
                 console.error(err_message)
@@ -231,7 +232,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
         }
         
         // success
-        await HashUser.findOneAndUpdate({_id: id}, {pending: false})
+        await MainBook.findOneAndUpdate({hash: id}, {pending: false})
         return {result: true}
     }
     
@@ -239,30 +240,29 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
     // TODO: move to an "admin/ops" wallet
     async updatePendingPayment() {
         
-        const HashUser = await createHashUser()
-        const hashArray = await HashUser.find({user: this.uid, type: "payment", pending: true})
+        const MainBook = await createMainBook()
+        const payments = await MainBook.find({user: this.uid, type: "payment", pending: true})
 
-        for (const hash of hashArray) {
+        for (const payment of payments) {
 
             let result
             try {
-                result = await lnService.getPayment({ lnd: this.lnd, id: hash.id })
+                result = await lnService.getPayment({ lnd: this.lnd, id: payment.id })
             } catch (err) {
                 throw Error('issue fetching payment: ' + err.toString())
             }
 
             if (result.is_confirmed) {
                 // success
-                hash.pending = false
-                hash.save()
+                payment.pending = false
+                payment.save()
             }
 
             if (result.is_failed) {
                 try {
-                    const MainBook = await createMainBook()
-                    // TODO mongodb transaction
-                    await HashUser.findOneAndUpdate({_id: hash.id}, {pending: false, error: result.failed})
-                    await MainBook.void(hash.id, result.failed)
+                    await MainBook.void(payment._id, result.failed)
+                    payment.pending = false
+                    payment.save()
                 } catch (err) {
                     throw new functions.https.HttpsError('internal', `error canceling payment entry ${util.inspect({err})}`)
                 }
@@ -288,8 +288,8 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
     
         const MainBook = await createMainBook()
 
-        const HashUser = await createHashUser()
-        const hashArray = await HashUser.find({user: this.uid, type: "invoice", pending: true})
+        const InvoiceUser = await createInvoiceUser()
+        const hashArray = await InvoiceUser.find({user: this.uid, type: "invoice", pending: true})
             
         for (const hash of hashArray) {
             
@@ -303,7 +303,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
             if (result.is_confirmed) {
 
                 // TODO: use a transaction here
-                // const session = await HashUser.startSession()
+                // const session = await InvoiceUser.startSession()
                 // session.withTransaction(
                 
                 // OR: use a an unique index account / hash / voided
