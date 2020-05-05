@@ -84,7 +84,6 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
 
     constructor({auth, uid}: {auth: Auth, uid: string}) {
         super({uid})
-        this.lnd = lnService.authenticatedLndGrpc(auth).lnd;
     }
 
     async getBalance() {
@@ -101,7 +100,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
             await new HashUser({
                 _id: id,
                 type,
-                user: this.uid,
+                uid: this.uid,
                 pending: true, 
             }).save()
         } catch (err) {

@@ -22,7 +22,7 @@ export const setupMongoose = async () => {
   // and old non pending transaction would not really matters
   const hashUserSchema = new Schema({
     _id: String, // hash of invoice
-    user: String,
+    uid: String,
     type: {
       type: String,
       enum: ["invoice", "payment"]

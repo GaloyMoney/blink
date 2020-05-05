@@ -51,9 +51,9 @@ it('add invoice', async () => {
   const decodedHash = decoded.tags.filter(item => item.tagName === "payment_hash")[0].data
 
   const HashUser = await createHashUser()
-  const {user} = await HashUser.findById(decodedHash)
+  const {uid} = await HashUser.findById(decodedHash)
 
-  expect(user).toBe(user1)
+  expect(uid).toBe(user1)
 })
 
 
@@ -65,9 +65,9 @@ it('add invoice to different user', async () => {
   const decodedHash = decoded.tags.filter(item => item.tagName === "payment_hash")[0].data
 
   const HashUser = await createHashUser()
-  const {user} = await HashUser.findById(decodedHash)
+  const {uid} = await HashUser.findById(decodedHash)
 
-  expect(user).toBe(user2)
+  expect(uid).toBe(user2)
 })
 
 
