@@ -1,19 +1,20 @@
 const functions = require("firebase-functions")
 import { checkBankingEnabled, checkNonAnonymous } from "./utils"
-import { FiatWallet } from "./fiatImpl"
+import { FiatUserWallet } from "./FiatUserWallet"
+import { FiatAdminWallet } from "./FiatAdminWallet"
 
 const default_uid = "abcdef" // FIXME
 
 exports.getFiatBalances = functions.https.onCall((data, context) => {
     // checkBankingEnabled(context)
-    const fiatWallet = new FiatWallet({uid: default_uid})
+    const fiatWallet = new FiatUserWallet({uid: default_uid})
     return fiatWallet.getBalance()
 })
 
 exports.dollarFaucet = functions.https.onCall(async (data, context) => {
     // checkBankingEnabled(context)
-    const fiatWallet = new FiatWallet({uid: default_uid})
-    return fiatWallet.addFunds({amount: 1000})
+    const fiatAdminWallet = new FiatAdminWallet()
+    return fiatAdminWallet.addFunds({amount: 1000, uid: default_uid})
 })
 
 exports.onBankAccountOpening = functions.https.onCall(async (data, context) => {
