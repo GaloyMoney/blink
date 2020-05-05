@@ -37,6 +37,10 @@ export class UserWallet extends Wallet {
     return customerPath(this.uid)
   }
 
+  get accountPathMedici(): Array<string> {
+    return this.accountPath.split(":")
+  }
+
 }
 
 export class AdminWallet extends Wallet {

@@ -8,6 +8,8 @@ import { UserWallet } from "./wallet"
 import { createInvoiceUser, createMainBook } from "./db";
 const util = require('util')
 import Timeout from 'await-timeout';
+const mongoose = require("mongoose");
+
 
 type IType = "invoice" | "payment" | "earn"
 
@@ -221,7 +223,8 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
 
             try {
                 await MainBook.void(entry._id, err[1])
-                await MainBook.findOneAndUpdate({hash: id}, {pending: false, error: err[1]})
+                const Transaction = await mongoose.model("Medici_Transaction")
+                await Transaction.updateMany({hash: id}, {pending: false, error: err[1]})
             } catch (err_db) {
                 const err_message = `error canceling payment entry ${util.inspect({err_db})}`
                 console.error(err_message)
@@ -232,7 +235,9 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
         }
         
         // success
-        await MainBook.findOneAndUpdate({hash: id}, {pending: false})
+        const Transaction = await mongoose.model("Medici_Transaction")
+        await Transaction.updateMany({hash: id}, {pending: false})
+
         return {result: true}
     }
     
@@ -241,7 +246,9 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
     async updatePendingPayment() {
         
         const MainBook = await createMainBook()
-        const payments = await MainBook.find({user: this.uid, type: "payment", pending: true})
+
+        const Transaction = await mongoose.model("Medici_Transaction")
+        const payments = await Transaction.find({account_path: this.accountPathMedici, type: "payment", pending: true})
 
         for (const payment of payments) {
 
