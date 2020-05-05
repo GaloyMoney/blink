@@ -4,12 +4,14 @@ import { ILightningWallet } from "./interface";
 import { Auth } from "./lightning";
 const lnService = require('ln-service');
 import * as functions from 'firebase-functions'
-import { Wallet } from "./wallet"
+import { UserWallet } from "./wallet"
 import { createHashUser, createMainBook } from "./db";
 const util = require('util')
 import Timeout from 'await-timeout';
 
-const formatInvoice = (type: "invoice" | "payment", memo: String | undefined, pending: Boolean): String => {
+type IType = "invoice" | "payment" | "earn"
+
+const formatInvoice = (type: IType, memo: String | undefined, pending: Boolean | undefined): String => {
   if (pending) {
     return `Waiting for payment`
   } else {
@@ -21,18 +23,27 @@ const formatInvoice = (type: "invoice" | "payment", memo: String | undefined, pe
       // TODO for lnd keysend 
     // } 
     else {
-      return type === "payment" ? `Payment sent` : `Payment received`
+      return type === "payment" ? 
+          `Payment sent` 
+        : type === "invoice" ? 
+            `Payment received`
+          : "Earn"
     }
   }
 }
 
-const formatType = (type: "invoice" | "payment", pending: Boolean): TransactionType | Error => {
+const formatType = (type: IType, pending: Boolean | undefined): TransactionType | Error => {
     if (type === "invoice") {
         return pending ? "unconfirmed-invoice" : "paid-invoice"
     } 
     
     if (type === "payment") {
         return pending ? "inflight-payment" : "payment"
+    }
+
+    if (type === "earn") {
+        return "paid-invoice"
+        // TODO
     }
 
     throw Error("incorrect type for formatType")
@@ -67,7 +78,7 @@ const formatPayment = (payment) => {
 /**
  * this represents a user wallet
  */
-export class LightningWallet extends Wallet implements ILightningWallet {
+export class LightningUserWallet extends UserWallet implements ILightningWallet {
     protected readonly lnd: object;
     protected _currency = "BTC"
 
@@ -107,7 +118,7 @@ export class LightningWallet extends Wallet implements ILightningWallet {
         const MainBook = await createMainBook()
 
         const { results } = await MainBook.ledger({
-            account: this.customerPath,
+            account: this.accountPath,
             currency: this.currency,
             // start_date: startDate,
             // end_date: endDate
@@ -118,10 +129,10 @@ export class LightningWallet extends Wallet implements ILightningWallet {
         const results_processed = results.map((item) => ({
             created_at: item.timestamp,
             amount: item.debit - item.credit,
-            description: formatInvoice(item.hash.type, item.memo, item.hash.pending),
-            hash: item.hash.id,
+            description: formatInvoice(item.type, item.memo, item.hash?.pending),
+            hash: item.hash?.id,
             // destination: TODO
-            type: formatType(item.hash.type, item.hash.pending)
+            type: formatType(item.type, item.hash?.pending)
         }))
 
         return results_processed
@@ -170,8 +181,8 @@ export class LightningWallet extends Wallet implements ILightningWallet {
         // and fail is balance has changed in the meantime to prevent race condition
         
         const entry = await MainBook.entry(description) 
-        .debit('Assets:Reserve', tokens, {currency: this.currency, hash: id})
-        .credit(this.customerPath, tokens, {currency: this.currency, hash: id})
+        .debit('Assets:Reserve', tokens, {currency: this.currency, hash: id, type: "payment"})
+        .credit(this.accountPath, tokens, {currency: this.currency, hash: id, type: "payment"})
         .commit()
 
         // there is 3 scenarios for a payment.
@@ -304,8 +315,8 @@ export class LightningWallet extends Wallet implements ILightningWallet {
                     hash.save()
 
                     await MainBook.entry()
-                    .credit('Assets:Reserve', result.tokens, {currency: "BTC", hash: hash.id }) 
-                    .debit(this.customerPath, result.tokens, {currency: "BTC", hash: hash.id })
+                    .credit('Assets:Reserve', result.tokens, {currency: "BTC", hash: hash.id, type: "invoice" }) 
+                    .debit(this.accountPath, result.tokens, {currency: "BTC", hash: hash.id, type: "invoice" })
                     .commit()
 
                 } catch (err) {
@@ -387,7 +398,7 @@ export class LightningWallet extends Wallet implements ILightningWallet {
     }
 }
 
-export class LightningWalletAuthed extends LightningWallet {
+export class LightningWalletAuthed extends LightningUserWallet {
     constructor({uid}) {
         let auth: Auth;
         let network: string;

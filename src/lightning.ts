@@ -2,7 +2,7 @@ import * as functions from 'firebase-functions'
 import { IAddInvoiceRequest, IAddInvoiceResponse, IPayInvoice } from "../../../../common/types"
 import { FiatTransaction } from "./interface"
 import { checkAuth, checkNonAnonymous } from "./utils"
-import { LightningWalletAuthed } from "./LightningImpl"
+import { LightningWalletAuthed } from "./LightningUserWallet"
 const lnService = require('ln-service')
 
 export interface Auth {

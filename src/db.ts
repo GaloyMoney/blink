@@ -40,6 +40,25 @@ export const setupMongoose = async () => {
   mongoose.model("HashUser", hashUserSchema)
 
 
+  const UserSchema = new Schema({
+    _id: String, 
+    created_at: {
+      type: Date,
+      default: Date.now
+    },
+    earn: [String]
+    // firstName,
+    // lastName,
+    // activated,
+    // deviceToken
+    // etc
+  })
+
+  // TOOD create indexes
+
+  mongoose.model("User", UserSchema)
+  
+
 
 
   await mongoose.connect(path, {
@@ -61,6 +80,10 @@ export const setupMongoose = async () => {
       // required: function() {
       //   return this.currency === "BTC";
       // }
+    },
+    type: {
+      type: String,
+      enum: ["invoice", "payment", "earn"]
     },
     credit: Number,
     debit: Number,
