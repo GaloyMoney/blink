@@ -204,6 +204,11 @@ workflows:
     jobs:
       - gcp-gke/create-cluster:
           cluster: devnet
+          additional-args: '--num-nodes=1'
+      - gcp-gke/create-node-pool:
+          cluster: devnet
+          additional-args: '--num-nodes=1 --machine-type=g1-small --disk-size=10Gi'
+
 
 
 
