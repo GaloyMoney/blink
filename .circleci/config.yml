@@ -202,13 +202,15 @@ workflows:
   #     - firebase-functions
   kube:
     jobs:
-      - gcp-gke/create-cluster:
+      # - gcp-gke/create-cluster:
+      #     cluster: devnet-cluster
+      #     additional-args: '--num-nodes=1'
+      # - gcp-gke/create-node-pool:
+      #     cluster: devnet-cluster
+      #     additional-args: '--num-nodes=1 --machine-type=n1-standard-1 --disk-size=10Gi'
+      #     node-pool: devnet-nodepool
+      - gcp-gke/delete-cluster:
           cluster: devnet-cluster
-          additional-args: '--num-nodes=1'
-      - gcp-gke/create-node-pool:
-          cluster: devnet-cluster
-          additional-args: '--num-nodes=1 --machine-type=n1-standard-1 --disk-size=10Gi'
-          node-pool: devnet-nodepool
 
 
 
