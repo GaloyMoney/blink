@@ -121,10 +121,11 @@ export const setupMongoose = async () => {
 
 
   const priceSchema = new Schema({
-    t: Date,
+    _id: {
+      type: Date, // TODO does _id would prevent having several key (ie: Date) for other exchanges?
+      unique: true
+    },
     o: Number, // opening price
-  }, {
-    _id: false
   })
 
   // price History
@@ -143,10 +144,7 @@ export const setupMongoose = async () => {
       }
     }
   })
-  console.log({priceHistorySchema})
   mongoose.model("PriceHistory", priceHistorySchema);
-
-
 
   init = true
 }

@@ -2,6 +2,7 @@ import * as functions from 'firebase-functions'
 import { sat2btc } from "./utils"
 import { setupMongoose } from "./db"
 const mongoose = require("mongoose")
+import moment = require("moment")
 
 export class Price {
     readonly pair
@@ -27,11 +28,13 @@ export class Price {
     async getFromExchange(): Promise<Array<object>> {
         const ccxt = require('ccxt');
         const kraken = new ccxt.kraken();
-        // let coinbase = new ccxt.coinbase()
-        // let bitfinex = new ccxt.bitfinex()
+        // const coinbase = new ccxt.coinbase()
+        // const bitfinex = new ccxt.bitfinex()
         let ohlcv;
         try {
             ohlcv = await kraken.fetchOHLCV(this.pair, "1h");
+            // ohlcv = await coinbase.fetchOHLCV(this.pair, "1h");
+            // ohlcv = await bitfinex.fetchOHLCV(this.pair, "1h"); // start in 2013
         }
         catch (e) {
             if (e instanceof ccxt.NetworkError) {
@@ -48,11 +51,17 @@ export class Price {
         return ohlcv
     }
 
-    async lastCached() { //: Promise<number | Error> {
+    async lastCached(): Promise<Array<Object>> {
         const PriceHistory = await this.getPriceHistory()
         const ohlcv = await PriceHistory.findOne(this.path)
-        const data = ohlcv.pair.exchange.price.slice(-25)
-        return data
+        // TODO use sort + only request the last 25 data points at the db level for optimization
+        // assuming we can do this on subquery in MongoDB
+        const data = ohlcv.pair.exchange.price
+        const result = data.map(value => ({
+            t: moment(value._id).unix(),
+            o: value.o
+        })).sort((a, b) => a.t - b.t).slice(-25)
+        return result
     }
 
     async update(): Promise<void> {
@@ -72,10 +81,10 @@ export class Price {
             const doc = await PriceHistory.findOneAndUpdate(this.path, {}, options)
 
             for (const value of ohlcv) {
-                doc.pair.exchange.price.addToSet({t: value[0], o: sat2btc(value[1])})
+                doc.pair.exchange.price.addToSet({_id: value[0], o: sat2btc(value[1])})
             }
 
-            doc.save()
+            await doc.save()
         }
         catch (err) {
             throw new functions.https.HttpsError('internal', 'cannot save to db: ' + err.toString())
