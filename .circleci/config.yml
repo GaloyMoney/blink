@@ -202,7 +202,7 @@ workflows:
   #     - firebase-functions
   kube:
     jobs:
-      - gke/create-cluster:
+      - gcp-gke/create-cluster:
           cluster: devnet
 
 
