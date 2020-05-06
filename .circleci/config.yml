@@ -203,11 +203,12 @@ workflows:
   kube:
     jobs:
       - gcp-gke/create-cluster:
-          cluster: devnet
+          cluster: devnet-cluster
           additional-args: '--num-nodes=1'
       - gcp-gke/create-node-pool:
-          cluster: devnet
+          cluster: devnet-cluster
           additional-args: '--num-nodes=1 --machine-type=g1-small --disk-size=10Gi'
+          node-pool: devnet-nodepool
 
 
 
