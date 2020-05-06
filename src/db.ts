@@ -119,20 +119,31 @@ export const setupMongoose = async () => {
   mongoose.model("Medici_Transaction", transactionSchema);
   
 
-  // price History
-  const priceHistorySchema = new Schema({
-    currency: {
-      type: String,
-      enum: ["BTC"],
-      default: "BTC"
-    },
-    timestamp: {
-      type: Date,
-      default: Date.now
-    },
-    price: Number
+
+  const priceSchema = new Schema({
+    t: Date,
+    o: Number, // opening price
+  }, {
+    _id: false
   })
 
+  // price History
+  const priceHistorySchema = new Schema({
+    pair: { // FIXME should be pair
+      name: {
+        type: String,
+        enum: ["BTC/USD"]
+      },
+      exchange: {
+        name: {
+          type: String,
+          // enum: ["kraken"], // others
+        },
+        price: [priceSchema],
+      }
+    }
+  })
+  console.log({priceHistorySchema})
   mongoose.model("PriceHistory", priceHistorySchema);
 
 
