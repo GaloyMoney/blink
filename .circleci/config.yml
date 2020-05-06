@@ -1,4 +1,6 @@
 version: 2
+orbs:
+    gcp-gke: circleci/gcp-gke@0.1.0
 jobs:
   react-native:
     working_directory: ~/GaloyApp/mobile
@@ -199,6 +201,10 @@ workflows:
           requires:
             - react-native
       - firebase-functions
+  kube:
+    jobs:
+      - gke/create-cluster:
+          cluster: devnet
 
 
 
