@@ -1,6 +1,6 @@
 version: 2
 orbs:
-    gcp-gke: circleci/gcp-gke@0.1.0
+  gcp-gke: circleci/gcp-gke@0.1.0
 jobs:
   react-native:
     working_directory: ~/GaloyApp/mobile
@@ -190,17 +190,19 @@ jobs:
       #     path: test-results
 
 workflows:
-  version: 2
-  build-and-test:
-    jobs:
-      - react-native
-      - android:
-          requires:
-            - react-native
-      - ios:
-          requires:
-            - react-native
-      - firebase-functions
+  version: 2.1
+  orbs:
+    gcp-gke: circleci/gcp-gke@0.1.0
+  # build-and-test:
+  #   jobs:
+  #     - react-native
+  #     - android:
+  #         requires:
+  #           - react-native
+  #     - ios:
+  #         requires:
+  #           - react-native
+  #     - firebase-functions
   kube:
     jobs:
       - gke/create-cluster:
