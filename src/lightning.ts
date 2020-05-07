@@ -11,30 +11,6 @@ export interface Auth {
     socket: string,
 }
 
-export const initLnd = () => {
-    // TODO verify wallet is unlock?
-
-    let auth_lnd: Auth
-    let network: string
-    
-    try {
-        network = process.env.NETWORK ?? functions.config().lnd.network
-        const cert = process.env.TLS ?? functions.config().lnd[network].tls
-        const macaroon = process.env.MACAROON ?? functions.config().lnd[network].macaroon
-        const lndaddr = process.env.LNDADDR ?? functions.config().lnd[network].lndaddr
-    
-        const socket = `${lndaddr}:10009`
-        auth_lnd = {macaroon, cert, socket}
-    } catch (err) {
-        throw new functions.https.HttpsError('failed-precondition', 
-            `neither env nor functions.config() are set` + err)
-    }
-
-    // console.log("lnd auth", auth_lnd)
-    const {lnd} = lnService.authenticatedLndGrpc(auth_lnd);
-    return lnd
-}
-
 exports.addInvoice = functions.https.onCall(async (data: IAddInvoiceRequest, context): Promise<IAddInvoiceResponse> => {
     checkNonAnonymous(context)
     const wallet = new LightningWalletAuthed({uid: context.auth?.uid})
@@ -76,20 +52,20 @@ exports.incomingInvoice = functions.https.onRequest(async (req, res) => {
     // TODO only authorize by admin-like
     // should just validate previous transaction
 
-    const lnd = initLnd()
+    // const lnd = initLnd()
 
-    const invoice = req.body
-    console.log(invoice)
+    // const invoice = req.body
+    // console.log(invoice)
 
-    const request = invoice.request
-    const channel = invoice.payments[0].in_channel // should it be htlcs[0] now?
+    // const request = invoice.request
+    // const channel = invoice.payments[0].in_channel // should it be htlcs[0] now?
 
-    const invoiceJson = await lnService.decodePaymentRequest({lnd, request})
+    // const invoiceJson = await lnService.decodePaymentRequest({lnd, request})
 
-    // get a list of all the channels
-    const { channels } = await lnService.getChannels({lnd})
-    const channelJson = channels.filter((item: any) => item.id === channel)
-    const partner_public_key = channelJson[0].partner_public_key
+    // // get a list of all the channels
+    // const { channels } = await lnService.getChannels({lnd})
+    // const channelJson = channels.filter((item: any) => item.id === channel)
+    // const partner_public_key = channelJson[0].partner_public_key
 
     // FIXME: 
     // remove firestore
@@ -114,7 +90,7 @@ exports.incomingInvoice = functions.https.onRequest(async (req, res) => {
     //     transactions: admin.firestore.FieldValue.arrayUnion(fiat_tx)
     // })
 
-    return res.status(200).send({response: `invoice ${request} accounted succesfully`});
+    // return res.status(200).send({response: `invoice ${request} accounted succesfully`});
 
 })
 
