@@ -36,15 +36,15 @@ workflows:
       # - gcp-gke/create-cluster:
       #     cluster: devnet-cluster
       #     additional-args: '--num-nodes=1'
-      - gcp-gke/create-node-pool:
-          cluster: devnet-cluster
-          additional-args: '--num-nodes=1 --machine-type=n1-standard-1 --disk-size=10Gi'
-          node-pool: devnet-nodepool
+      # - gcp-gke/create-node-pool:
+      #     cluster: devnet-cluster
+      #     additional-args: '--num-nodes=1 --machine-type=n1-standard-1 --disk-size=10Gi'
+      #     node-pool: devnet-nodepool
           # requires:
           #   - gcp-gke/create-cluster
       - k8s_deploy:
-          requires:
-            - gcp-gke/create-node-pool
+          # requires:
+          #   - gcp-gke/create-node-pool
 
 
 
