@@ -11,6 +11,5 @@ exports.getPrice = functions.https.onCall(async (data, context) => {
     checkAuth(context)
     const price = new Price()
     const response = await price.lastCached()
-    console.log({response})
     return response
 })

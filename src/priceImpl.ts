@@ -2,33 +2,39 @@ import * as functions from 'firebase-functions'
 import { sat2btc } from "./utils"
 import { setupMongoose } from "./db"
 const mongoose = require("mongoose")
+import moment = require("moment")
 
 export class Price {
-    readonly currency
-    protected PriceHistoryModel
+    readonly pair
+    readonly path
 
-    constructor(currency = "BTC/USD") {
-        this.currency = currency;
+    constructor(pair = "BTC/USD") {
+        this.pair = pair
+        this.path = {
+            "pair.name": this.pair,
+            "pair.exchange.name": "kraken"
+        }
     }
 
-    protected async initDb() {
+    protected async getPriceHistory() {
         await setupMongoose()
-
-        this.PriceHistoryModel = mongoose.model("PriceHistory")
+        return mongoose.model("PriceHistory")
     }
 
     /**
      * favor lastCached
      * only used for unit test
      */
-    async getFromExchange(): Promise<number | Error> {
+    async getFromExchange(): Promise<Array<object>> {
         const ccxt = require('ccxt');
         const kraken = new ccxt.kraken();
-        // let coinbase = new ccxt.coinbase()
-        // let bitfinex = new ccxt.bitfinex()
-        let ticker;
+        // const coinbase = new ccxt.coinbase()
+        // const bitfinex = new ccxt.bitfinex()
+        let ohlcv;
         try {
-            ticker = await kraken.fetchTicker(this.currency);
+            ohlcv = await kraken.fetchOHLCV(this.pair, "1h");
+            // ohlcv = await coinbase.fetchOHLCV(this.pair, "1h");
+            // ohlcv = await bitfinex.fetchOHLCV(this.pair, "1h"); // start in 2013
         }
         catch (e) {
             if (e instanceof ccxt.NetworkError) {
@@ -41,31 +47,60 @@ export class Price {
                 throw new functions.https.HttpsError('internal', `issue with ref exchanges: ${e}`);
             }
         }
-        try {
-            const satPrice = sat2btc((ticker.ask + ticker.bid) / 2);
-            return satPrice;
-        }
-        catch {
-            throw new functions.https.HttpsError('internal', "bad response from ref price server");
-        }
+
+        return ohlcv
     }
 
-    async lastCached(): Promise<number | Error> {
-        await this.initDb()
-        const {price} = await this.PriceHistoryModel.findOne({}).sort({ created_at: -1 })
-        return price
+    async lastCached(): Promise<Array<Object>> {
+        const PriceHistory = await this.getPriceHistory()
+        const ohlcv = await PriceHistory.findOne(this.path)
+        // TODO use sort + only request the last 25 data points at the db level for optimization
+        // assuming we can do this on subquery in MongoDB
+        const data = ohlcv.pair.exchange.price
+        const result = data.map(value => ({
+            t: moment(value._id).unix(),
+            o: value.o
+        })).sort((a, b) => a.t - b.t).slice(-25)
+        return result
     }
 
     async update(): Promise<void> {
-        await this.initDb()
+        const PriceHistory = await this.getPriceHistory()
+        const ohlcv = await this.getFromExchange()
 
-        const price = await this.getFromExchange();
-        const priceDb = new this.PriceHistoryModel({ price: price });
+        const default_obj = {
+            pair: {
+                name: this.pair,
+                exchange: {
+                    name: "kraken"
+        }}}
+
+        const options = { upsert: true, new: true }
+
         try {
-            await priceDb.save();
+            const doc = await PriceHistory.findOneAndUpdate(this.path, {}, options)
+
+            for (const value of ohlcv) {
+                doc.pair.exchange.price.addToSet({_id: value[0], o: sat2btc(value[1])})
+            }
+
+            await doc.save()
         }
         catch (err) {
-            throw new functions.https.HttpsError('internal', 'cannot save to db: ' + err.toString());
+            throw new functions.https.HttpsError('internal', 'cannot save to db: ' + err.toString())
         }
     }
+
+    // async updateSpot(): Promise<void> {
+    //     await this.initDb()
+
+    //     const price = await this.getFromExchange();
+    //     const priceDb = new this.PriceHistoryModel({ price }); // FIXME
+    //     try {
+    //         await priceDb.save();
+    //     }
+    //     catch (err) {
+    //         throw new functions.https.HttpsError('internal', 'cannot save to db: ' + err.toString());
+    //     }
+    // }
 }

@@ -1,7 +1,7 @@
 import { IAddInvoiceRequest } from "../../../../common/types"
+import { createMainBook } from "./db"
 
 export interface IWallet {
-  getCurrency(): string
   getBalance(): Promise<number>
   getTransactions(): any // TODO
   getInfo(): Promise<object>
@@ -15,8 +15,8 @@ export interface ILightningWallet extends IWallet {
 export interface IFiatWallet extends IWallet {
   // pay(): Promise<any> // TODO
   // withdraw(): Promise<any> // TODO
-  addFunds({amount: number})
-  widthdrawFunds({amount: number})
+  // addFunds({amount: number})
+  // widthdrawFunds({amount: number})
 }
 
 export interface FiatTransaction {
@@ -25,12 +25,4 @@ export interface FiatTransaction {
   icon: string,
   name: string,
   onchain_tx?: string, // should be HEX?
-}
-
-export class Wallet {
-  protected readonly uid: string
-
-  constructor({uid}) {
-    this.uid = uid
-  }
 }

@@ -2,7 +2,7 @@ import * as functions from 'firebase-functions'
 import { IAddInvoiceRequest, IAddInvoiceResponse, IPayInvoice } from "../../../../common/types"
 import { FiatTransaction } from "./interface"
 import { checkAuth, checkNonAnonymous } from "./utils"
-import { LightningWalletAuthed } from "./LightningImpl"
+import { LightningWalletAuthed } from "./LightningUserWallet"
 const lnService = require('ln-service')
 
 export interface Auth {
@@ -36,19 +36,19 @@ export const initLnd = () => {
 }
 
 exports.addInvoice = functions.https.onCall(async (data: IAddInvoiceRequest, context): Promise<IAddInvoiceResponse> => {
-    checkAuth(context)
+    checkNonAnonymous(context)
     const wallet = new LightningWalletAuthed({uid: context.auth?.uid})
     return await wallet.addInvoice(data)
 })
 
 exports.getLightningInfo = functions.https.onCall(async (data, context) => {
-    checkAuth(context)
+    checkNonAnonymous(context)
     const wallet = new LightningWalletAuthed({uid: context.auth?.uid})
     return await wallet.getInfo()
 })
 
 exports.payInvoice = functions.https.onCall(async (data: IPayInvoice, context) => {
-    checkAuth(context)
+    checkNonAnonymous(context)
     const wallet = new LightningWalletAuthed({uid: context.auth?.uid})
     const response = await wallet.payInvoice({invoice: data.invoice})
     console.log({response})
@@ -56,14 +56,14 @@ exports.payInvoice = functions.https.onCall(async (data: IPayInvoice, context) =
 })
 
 exports.getLightningTransactions = functions.https.onCall(async (data, context) => {
-    checkAuth(context)
+    checkNonAnonymous(context)
     const wallet = new LightningWalletAuthed({uid: context.auth?.uid})
     const response = await wallet.getTransactions()
     return {response}
 })
 
 exports.getLightningBalance = functions.https.onCall(async (data, context) => {
-    checkAuth(context)
+    checkNonAnonymous(context)
     const wallet = new LightningWalletAuthed({uid: context.auth?.uid})
     const response = await wallet.getBalance()
     console.log({response})

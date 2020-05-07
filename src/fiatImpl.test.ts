@@ -1,4 +1,4 @@
-import { FiatWallet } from "./fiatImpl"
+import { FiatAdminWallet } from "./FiatAdminWallet"
 import { setupMongoose } from "./db";
 const mongoose = require("mongoose");
 
@@ -14,7 +14,7 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  fiatWallet = new FiatWallet({uid})
+  fiatWallet = new FiatAdminWallet()
 })
 
 afterAll(async () => {
@@ -23,22 +23,23 @@ afterAll(async () => {
 
 it('balanceStartAtZero', async () => {
   const result = await fiatWallet.getBalance()
-  expect(result === 0).toBeTruthy()
+  expect(result).toBe(-0)
 })
 
 it('addFunds', async () => {
-  await fiatWallet.addFunds({amount: 1000})
+  await fiatWallet.addFunds({amount: 1000, uid, type: "earn"})
   const result = await fiatWallet.getBalance()
-  expect(result).toEqual(1000)
+  expect(result).toEqual(-1000)
 })
 
 it('withdrawFunds', async () => {
-  await fiatWallet.widthdrawFunds({amount: 250})
+  await fiatWallet.widthdrawFunds({amount: 250, uid, type: "earn"})
   const result = await fiatWallet.getBalance()
-  expect(result).toEqual(750)
+  expect(result).toEqual(-750)
 })
 
-it('listTransactions', async () => {
-  const transactions = await fiatWallet.getTransactions()
-  expect(transactions.length).toEqual(2)
-})
+// TODO
+// it('listTransactions', async () => {
+//   const transactions = await fiatWallet.getTransactions()
+//   expect(transactions.length).toEqual(2)
+// })
