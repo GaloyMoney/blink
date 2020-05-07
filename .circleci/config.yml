@@ -33,6 +33,7 @@ jobs:
 workflows:
   kube:
     jobs:
+      - k8s_deploy
       # - gcp-gke/create-cluster:
       #     cluster: devnet-cluster
       #     additional-args: '--num-nodes=1'
@@ -42,7 +43,6 @@ workflows:
       #     node-pool: devnet-nodepool
           # requires:
           #   - gcp-gke/create-cluster
-      - k8s_deploy:
           # requires:
           #   - gcp-gke/create-node-pool
 
