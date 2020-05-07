@@ -9,6 +9,8 @@ jobs:
     docker:
       - image: kiwigrid/gcloud-kubectl-helm:latest
     steps:
+      - checkout:
+          path: ~/GaloyApp
       - run:
           name: authorize gloud on gke
           command: |
