@@ -1,6 +1,7 @@
 version: 2.1
 orbs:
   gcp-gke: circleci/gcp-gke@1.0.4
+  helm: circleci/helm@0.2.3
 jobs:
   react-native:
     working_directory: ~/GaloyApp/mobile
@@ -209,8 +210,11 @@ workflows:
           cluster: devnet-cluster
           additional-args: '--num-nodes=1 --machine-type=n1-standard-1 --disk-size=10Gi'
           node-pool: devnet-nodepool
-      - gcp-gke/delete-cluster:
+      - gcp-gke/update-kubeconfig-with-credentials:
           cluster: devnet-cluster
+          install-kubectl: true
+      # - gcp-gke/delete-cluster:
+      #     cluster: devnet-cluster
 
 
 
