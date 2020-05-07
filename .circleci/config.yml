@@ -209,9 +209,13 @@ workflows:
           cluster: devnet-cluster
           additional-args: '--num-nodes=1 --machine-type=n1-standard-1 --disk-size=10Gi'
           node-pool: devnet-nodepool
+          requires:
+            - gcp-gke/create-cluster
       - gcp-gke/update-kubeconfig-with-credentials:
           cluster: devnet-cluster
           install-kubectl: true
+          requires:
+            - gcp-gke/create-node-pool
       # - gcp-gke/delete-cluster:
       #     cluster: devnet-cluster
 
