@@ -286,7 +286,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
 
         await this.addHash({type: "invoice", id})
 
-        return { request }
+        return request
     }
 
     // should be run regularly with a cronjob

@@ -52,14 +52,14 @@ exports.payInvoice = functions.https.onCall(async (data: IPayInvoice, context) =
     const wallet = new LightningWalletAuthed({uid: context.auth?.uid})
     const response = await wallet.payInvoice({invoice: data.invoice})
     console.log({response})
-    return {response}
+    return response
 })
 
 exports.getLightningTransactions = functions.https.onCall(async (data, context) => {
     checkNonAnonymous(context)
     const wallet = new LightningWalletAuthed({uid: context.auth?.uid})
     const response = await wallet.getTransactions()
-    return {response}
+    return response
 })
 
 exports.getLightningBalance = functions.https.onCall(async (data, context) => {
@@ -67,7 +67,7 @@ exports.getLightningBalance = functions.https.onCall(async (data, context) => {
     const wallet = new LightningWalletAuthed({uid: context.auth?.uid})
     const response = await wallet.getBalance()
     console.log({response})
-    return {response}
+    return response
 })
 
 
