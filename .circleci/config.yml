@@ -17,7 +17,7 @@ jobs:
             gcloud container clusters get-credentials devnet-cluster --zone ${GOOGLE_COMPUTE_ZONE} --project ${GOOGLE_PROJECT_ID}
       - run:
           name: wait for k8s worker nodes
-          command: echo $(pwd) && sleep 30 # It’s a place for improvement
+          command: echo $(ls) && sleep 30 # It’s a place for improvement
       - run:
           name: helm install
           command: |
