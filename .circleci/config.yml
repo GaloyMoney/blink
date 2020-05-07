@@ -17,13 +17,13 @@ jobs:
             gcloud container clusters get-credentials devnet-cluster --zone ${GOOGLE_COMPUTE_ZONE} --project ${GOOGLE_PROJECT_ID}
       - run:
           name: wait for k8s worker nodes
-          command: sleep 30 # It’s a place for improvement
+          command: echo $(pwd) && sleep 30 # It’s a place for improvement
       - run:
           name: helm install
           command: |
             helm install bitcoind-chart \
-            -f ./bitcoind-chart/regtest-values.yaml \
-            ./bitcoind-chart
+            -f ~/GaloyApp/backend/bitcoind-chart/regtest-values.yaml \
+            ~/GaloyApp/backend/bitcoind-chart
       - run:
           name: Check Helm release status
           command: helm list --all-namespaces --all
