@@ -3,6 +3,7 @@ import { sat2btc } from "./utils"
 import { setupMongoose } from "./db"
 const mongoose = require("mongoose")
 import moment = require("moment")
+const util = require('util')
 
 export class Price {
     readonly pair
@@ -32,7 +33,11 @@ export class Price {
         // const bitfinex = new ccxt.bitfinex()
         let ohlcv;
         try {
-            ohlcv = await kraken.fetchOHLCV(this.pair, "1h");
+            ohlcv = await kraken.fetchOHLCV(
+                this.pair,
+                "1h",
+                new Date().valueOf() - 3600 * 25 * 1000, // since
+                25); // limit
             // ohlcv = await coinbase.fetchOHLCV(this.pair, "1h");
             // ohlcv = await bitfinex.fetchOHLCV(this.pair, "1h"); // start in 2013
         }
@@ -80,8 +85,15 @@ export class Price {
         try {
             const doc = await PriceHistory.findOneAndUpdate(this.path, {}, options)
 
+            console.log(util.inspect({doc}, {showHidden: false, depth: null}))
+
             for (const value of ohlcv) {
-                doc.pair.exchange.price.addToSet({_id: value[0], o: sat2btc(value[1])})
+                // FIXME inefficient
+                if(doc.pair.exchange.price.find(obj => obj._id.getTime() === value[0])) {
+                    continue
+                }
+
+                doc.pair.exchange.price.push({_id: value[0], o: sat2btc(value[1])})
             }
 
             await doc.save()
