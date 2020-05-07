@@ -23,13 +23,13 @@ jobs:
       - run:
           name: helm install bitcoind-chart
           command: |
-            helm install bitcoind-chart \
+            helm upgrade bitcoind-chart -i \
             -f ~/GaloyApp/backend/bitcoind-chart/regtest-values.yaml \
             ~/GaloyApp/backend/bitcoind-chart
       - run:
           name: helm install lnd-chart
           command: |
-            helm install lnd-chart \
+            helm upgrade lnd-chart -i \
             -f ~/GaloyApp/backend/lnd-chart/regtest-values.yaml \
             ~/GaloyApp/backend/lnd-chart
       - run:
@@ -37,17 +37,21 @@ jobs:
           command: helm list --all-namespaces --all
       - run:
           name: wait for pod to come alive
-          command: echo $(ls) && sleep 80 # It’s a place for improvement
+          command: echo $(ls) && sleep 50 # It’s a place for improvement
       - run:
-          name: Copy tls and macaroon
+          name: Copy tls and macaroon for pod0
           command: |
-            kubectl exec lnd-container-0 -- base64 /root/.lnd/tls.cert | tr -d '\n\r' > tls
-            kubectl exec lnd-container-0 -- base64 /root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon \ 
-            | tr -d '\n\r' > macaroon
+            kubectl cp lnd-container-0:/root/.lnd/data/chain/bitcoin/regtest/admin.macaroon admin0.macaroon \
+            && kubectl cp lnd-container-0:/root/.lnd/tls.cert tls0.cert \
       - run:
-          name: list files
+          name: Copy tls and macaroon for pod1
           command: |
-            cat tls && echo '\n' && cat macaroon
+            kubectl cp lnd-container-1:/root/.lnd/data/chain/bitcoin/regtest/admin.macaroon admin1.macaroon \
+            && kubectl cp lnd-container-1:/root/.lnd/tls.cert tls1.cert \
+      - run:
+          name: output tls and macaroon
+          command: |
+            echo $(cat admin1.macaroon) && echo $(cat admin2.macaroon) && echo $(cat tls2.cert)
 
 
 workflows:
