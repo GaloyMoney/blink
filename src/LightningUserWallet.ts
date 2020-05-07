@@ -169,16 +169,6 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
 
         // we are confident enough that there is a possible payment route. let's move forward
 
-        try {
-            // we associated the hash to the user.
-            // and we used this table to known whether a payment is still pending
-            await this.addHash({type: "payment", id})
-        } catch (err) {
-            // TODO manage is the user is trying to pay an invoice twice
-            // { MongoError: E11000 duplicate key error collection ... }
-            throw new functions.https.HttpsError('internal', err.message)
-        }
-
         // reduce balance from customer first
         // TODO this should use a reference (using db transactions) from balance computed above
         // and fail is balance has changed in the meantime to prevent race condition
@@ -284,7 +274,17 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
             description: memo,
         })
 
-        await this.addHash({type: "invoice", id})
+        const InvoiceUser = await createInvoiceUser() 
+
+        try {
+            await new InvoiceUser({
+                _id: id,
+                uid: this.uid,
+                pending: true, 
+            }).save()
+        } catch (err) {
+            throw new functions.https.HttpsError('internal', `error storing invoice to db ${util.inspect({err})}`)
+        }
 
         return request
     }
@@ -296,8 +296,8 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
         const MainBook = await createMainBook()
 
         const InvoiceUser = await createInvoiceUser()
-        const hashArray = await InvoiceUser.find({user: this.uid, type: "invoice", pending: true})
-            
+        const hashArray = await InvoiceUser.find({uid: this.uid, pending: true})
+        
         for (const hash of hashArray) {
             
             let result
