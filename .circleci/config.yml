@@ -1,7 +1,6 @@
 version: 2.1
 orbs:
   gcp-gke: circleci/gcp-gke@1.0.4
-  helm: circleci/helm@0.2.3
 jobs:
   react-native:
     working_directory: ~/GaloyApp/mobile
