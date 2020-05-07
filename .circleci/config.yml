@@ -21,14 +21,31 @@ jobs:
           name: wait for k8s worker nodes
           command: echo $(ls) && sleep 30 # It’s a place for improvement
       - run:
-          name: helm install
+          name: helm install bitcoind-chart
           command: |
             helm install bitcoind-chart \
             -f ~/GaloyApp/backend/bitcoind-chart/regtest-values.yaml \
             ~/GaloyApp/backend/bitcoind-chart
       - run:
+          name: helm install lnd-chart
+          command: |
+            helm install lnd-chart \
+            -f ~/GaloyApp/backend/lnd-chart/regtest-values.yaml \
+            ~/GaloyApp/backend/lnd-chart
+      - run:
           name: Check Helm release status
           command: helm list --all-namespaces --all
+      - run:
+          name: Copy tls and macaroon
+          command: |
+            kubectl exec lnd-container-0 -- base64 /root/.lnd/tls.cert | tr -d '\n\r' > tls
+            kubectl exec lnd-container-0 -- base64 /root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon \ 
+            | tr -d '\n\r' > macaroon
+      - run:
+          name: list files
+          command: |
+            cat tls && echo '\n' && cat macaroon
+
 
 
 
