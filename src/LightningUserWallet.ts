@@ -289,25 +289,36 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
         return request
     }
 
-    // should be run regularly with a cronjob
-    // TODO: move to an "admin/ops" wallet
-    async updatePendingInvoices() {
-    
-        const MainBook = await createMainBook()
+    async updatePendingInvoice({hash}) {
+        // TODO we should have "streaming" / use Notifications for android/iOs to have
+        // a push system and not a pull system
 
-        const InvoiceUser = await createInvoiceUser()
-        const hashArray = await InvoiceUser.find({uid: this.uid, pending: true})
-        
-        for (const hash of hashArray) {
-            
-            let result
+        let result
+
+        try {
+            // FIXME we should only be able to look at User invoice, 
+            // but might not be a strong problem anyway
+            // at least return same error if invoice not from user
+            // or invoice doesn't exist. to preserve privacy reason and DDOS attack.
+
+            console.log({hash})
+
+            result = await lnService.getInvoice({ lnd: this.lnd, id: hash })
+        } catch (err) {
+            throw new Error(`issue fetching invoice: ${err}`)
+        }
+
+        if (result.is_confirmed) {
+
+            const MainBook = await createMainBook()
+            const InvoiceUser = await createInvoiceUser()        
+
             try {
-                result = await lnService.getInvoice({ lnd: this.lnd, id: hash.id })
-            } catch (err) {
-                throw Error('issue fetching invoice: ' + err)
-            }
+                const invoice = await InvoiceUser.findOne({_id: hash, pending: true, uid: this.uid})
 
-            if (result.is_confirmed) {
+                if (!invoice) {
+                    return false
+                }
 
                 // TODO: use a transaction here
                 // const session = await InvoiceUser.startSession()
@@ -316,22 +327,36 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
                 // OR: use a an unique index account / hash / voided
                 // may still not avoid issue from discrenpency between hash and the books
 
-                try {
-                    hash.pending = false
-                    hash.save()
+                invoice.pending = false
+                invoice.save()
 
-                    await MainBook.entry()
-                    .credit('Assets:Reserve', result.tokens, {currency: "BTC", hash: hash.id, type: "invoice" }) 
-                    .debit(this.accountPath, result.tokens, {currency: "BTC", hash: hash.id, type: "invoice" })
-                    .commit()
-
-                } catch (err) {
-                    console.log(err)
-                }
+                await MainBook.entry()
+                .credit('Assets:Reserve', result.tokens, {currency: "BTC", hash, type: "invoice" }) 
+                .debit(this.accountPath, result.tokens, {currency: "BTC", hash, type: "invoice" })
+                .commit()
 
                 // session.commitTransaction()
                 // session.endSession()
+
+                return true
+
+            } catch (err) {
+                console.error(err)
+                throw new Error(`issue updating invoice: ${err}`)
             }
+        }
+
+        return false
+    }
+
+    // should be run regularly with a cronjob
+    // TODO: move to an "admin/ops" wallet
+    async updatePendingInvoices() {
+        const InvoiceUser = await createInvoiceUser()
+        const invoices = await InvoiceUser.find({uid: this.uid, pending: true})
+        
+        for (const invoice of invoices) {
+            await this.updatePendingInvoice({hash: invoice._id})
         }
     }
 

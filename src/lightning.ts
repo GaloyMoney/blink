@@ -17,6 +17,13 @@ exports.addInvoice = functions.https.onCall(async (data: IAddInvoiceRequest, con
     return await wallet.addInvoice(data)
 })
 
+exports.updatePendingInvoice = functions.https.onCall(async (data, context): Promise<Boolean | Error> => {
+    checkNonAnonymous(context)
+    const wallet = new LightningWalletAuthed({uid: context.auth?.uid})
+    return await wallet.updatePendingInvoice({hash: data})
+})
+
+// FIXME should be from an Admin wallet
 exports.getLightningInfo = functions.https.onCall(async (data, context) => {
     checkNonAnonymous(context)
     const wallet = new LightningWalletAuthed({uid: context.auth?.uid})
