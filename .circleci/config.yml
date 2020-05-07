@@ -36,6 +36,9 @@ jobs:
           name: Check Helm release status
           command: helm list --all-namespaces --all
       - run:
+          name: wait for pod to come alive
+          command: echo $(ls) && sleep 80 # It’s a place for improvement
+      - run:
           name: Copy tls and macaroon
           command: |
             kubectl exec lnd-container-0 -- base64 /root/.lnd/tls.cert | tr -d '\n\r' > tls
@@ -45,8 +48,6 @@ jobs:
           name: list files
           command: |
             cat tls && echo '\n' && cat macaroon
-
-
 
 
 workflows:
