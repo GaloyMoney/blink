@@ -8,6 +8,7 @@ import { UserWallet } from "./wallet"
 import { createInvoiceUser, createMainBook } from "./db";
 const util = require('util')
 import Timeout from 'await-timeout';
+import moment from "moment";
 const mongoose = require("mongoose");
 
 
@@ -129,7 +130,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
           // this would avoid to fetch the data from hash collection and speed up query
 
         const results_processed = results.map((item) => ({
-            created_at: item.timestamp,
+            created_at: moment(item.timestamp).valueOf(),
             amount: item.debit - item.credit,
             description: formatInvoice(item.type, item.memo, item.hash),
             hash: item.hash,
@@ -148,6 +149,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
         // from https://github.com/alexbosworth/balanceofsatoshis
 
         const MainBook = await createMainBook()
+        const Transaction = await mongoose.model("Medici_Transaction")
 
         // TODO: continue only if user.balance > 0
 
@@ -223,7 +225,6 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
 
             try {
                 await MainBook.void(entry._id, err[1])
-                const Transaction = await mongoose.model("Medici_Transaction")
                 await Transaction.updateMany({hash: id}, {pending: false, error: err[1]})
             } catch (err_db) {
                 const err_message = `error canceling payment entry ${util.inspect({err_db})}`
@@ -235,7 +236,6 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
         }
         
         // success
-        const Transaction = await mongoose.model("Medici_Transaction")
         await Transaction.updateMany({hash: id}, {pending: false})
 
         return {result: true}
