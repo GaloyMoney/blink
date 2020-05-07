@@ -211,11 +211,11 @@ workflows:
           node-pool: devnet-nodepool
           requires:
             - gcp-gke/create-cluster
-      - gcp-gke/update-kubeconfig-with-credentials:
-          cluster: devnet-cluster
-          install-kubectl: true
-          requires:
-            - gcp-gke/create-node-pool
+      # - gcp-gke/update-kubeconfig-with-credentials:
+      #     cluster: devnet-cluster
+      #     install-kubectl: true
+      #     requires:
+      #       - gcp-gke/create-node-pool
       # - gcp-gke/delete-cluster:
       #     cluster: devnet-cluster
 
