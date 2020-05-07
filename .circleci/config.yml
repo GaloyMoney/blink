@@ -51,7 +51,7 @@ jobs:
       - run:
           name: output tls and macaroon
           command: |
-            echo $(cat admin1.macaroon) && echo $(cat admin2.macaroon) && echo $(cat tls2.cert)
+            echo $(cat admin0.macaroon) && echo $(cat admin1.macaroon) && echo $(cat tls1.cert)
 
 
 workflows:
