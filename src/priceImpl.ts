@@ -85,8 +85,6 @@ export class Price {
         try {
             const doc = await PriceHistory.findOneAndUpdate(this.path, {}, options)
 
-            console.log(util.inspect({doc}, {showHidden: false, depth: null}))
-
             for (const value of ohlcv) {
                 // FIXME inefficient
                 if(doc.pair.exchange.price.find(obj => obj._id.getTime() === value[0])) {
