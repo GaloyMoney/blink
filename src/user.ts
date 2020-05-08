@@ -1,4 +1,4 @@
-import { checkAuth } from "./utils";
+import { checkAuth, checkNonAnonymous } from "./utils";
 import * as functions from 'firebase-functions'
 import { transactions_template } from "./const"
 import * as admin from 'firebase-admin'
@@ -9,7 +9,7 @@ import { LightningAdminWallet } from "./LightningAdminImpl"
 import { OnboardingEarn } from "../../../../common/types";
 
 exports.addEarn = functions.https.onCall(async (data, context) => {
-    checkAuth(context)
+    checkNonAnonymous(context)
   
     await setupMongoose()
 
