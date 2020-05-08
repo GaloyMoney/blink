@@ -13,6 +13,9 @@ exports.addEarn = functions.https.onCall(async (data, context) => {
   
     await setupMongoose()
 
+    // TODO FIXME XXX: this function is succeptible to race condition.
+    // add a lock or db-level transaction to prevent this
+
     const User = mongoose.model("User")
 
     const _id = context.auth?.uid as string
@@ -34,7 +37,7 @@ exports.addEarn = functions.https.onCall(async (data, context) => {
         try {
             const amount = OnboardingEarn[earn]
 
-            if (amount !== 0 || amount !== null) {
+            if (amount !== 0 && amount !== null) {
                 await lightningAdminWallet.addFunds({amount, uid: _id, memo: earn, type: "earn"})
             }
         } catch (err) {
