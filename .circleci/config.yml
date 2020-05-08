@@ -66,7 +66,7 @@ workflows:
           node-pool: devnet-nodepool
           requires:
             - gcp-gke/create-cluster
-      - k8s_deploy
+      - k8s_deploy:
           requires:
             - gcp-gke/create-node-pool
 
