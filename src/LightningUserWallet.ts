@@ -300,12 +300,11 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
             // but might not be a strong problem anyway
             // at least return same error if invoice not from user
             // or invoice doesn't exist. to preserve privacy reason and DDOS attack.
-
-            console.log({hash})
-
             result = await lnService.getInvoice({ lnd: this.lnd, id: hash })
         } catch (err) {
-            throw new Error(`issue fetching invoice: ${err}`)
+            throw new Error(`issue fetching invoice: ${
+                util.inspect({err}, {showHidden: false, depth: null})
+            })`)
         }
 
         if (result.is_confirmed) {
