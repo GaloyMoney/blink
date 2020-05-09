@@ -12,7 +12,10 @@
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
-    "test": "jest"
+    "test": "jest",
+    "test-with-env": "source '../../deploy/exportlnd.sh' && jest",
+    "watch": "source '../../deploy/exportlnd.sh' && nodemon -e ts -w ./src -x yarn run watch:serve",
+    "watch:serve": "ts-node src/graphql_testing.ts"
   },
   "engines": {
     "node": "10"
@@ -24,8 +27,11 @@
     "apisauce": "^1.1.1",
     "await-timeout": "^1.1.1",
     "ccxt": "^1.26.54",
+    "express": "^4.17.1",
+    "express-graphql": "^0.9.0",
     "firebase-admin": "^8.10.0",
     "firebase-functions": "^3.6.0",
+    "graphql": "^15.0.0",
     "ln-service": "^47.16.0",
     "medici": "^4.0.1",
     "moment": "^2.24.0",
