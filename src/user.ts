@@ -1,4 +1,4 @@
-import { checkAuth } from "./utils";
+import { checkAuth, checkNonAnonymous } from "./utils";
 import * as functions from 'firebase-functions'
 import { transactions_template } from "./const"
 import * as admin from 'firebase-admin'
@@ -9,9 +9,13 @@ import { LightningAdminWallet } from "./LightningAdminImpl"
 import { OnboardingEarn } from "../../../../common/types";
 
 exports.addEarn = functions.https.onCall(async (data, context) => {
-    checkAuth(context)
+    checkNonAnonymous(context)
   
     await setupMongoose()
+
+    // TODO FIXME XXX: this function is succeptible to race condition.
+    // add a lock or db-level transaction to prevent this
+    // we could use something like this: https://github.com/chilts/mongodb-lock
 
     const User = mongoose.model("User")
 
@@ -34,7 +38,7 @@ exports.addEarn = functions.https.onCall(async (data, context) => {
         try {
             const amount = OnboardingEarn[earn]
 
-            if (amount !== 0 || amount !== null) {
+            if (amount !== 0 && amount !== null) {
                 await lightningAdminWallet.addFunds({amount, uid: _id, memo: earn, type: "earn"})
             }
         } catch (err) {

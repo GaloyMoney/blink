@@ -3,7 +3,6 @@ import { IBuyRequest, IQuoteRequest, IQuoteResponse } from "../../../../common/t
 import { sign, verify } from "./crypto";
 import { FiatUserWallet } from "./FiatUserWallet";
 import { FiatTransaction } from "./interface";
-import { initLnd } from "./lightning";
 import { Price } from "./priceImpl";
 import { btc2sat, checkBankingEnabled, validate } from "./utils";
 const lnService = require('ln-service')
@@ -30,50 +29,50 @@ type Balance = {
     },
 }
 
-export const getBalance = async (): Promise<Balance> => {
+export const getBalance = async () => { //: Promise<Balance>
     
-    const balance: Balance = {
-        BTC: {
-            total: 0,
-            exchange: 0,
-            onchain: 0,
-            offchain: 0,
-        },
-        USD: {
-            total: 0,
-            exchange: 0,
-    }}
+    // const balance: Balance = {
+    //     BTC: {
+    //         total: 0,
+    //         exchange: 0,
+    //         onchain: 0,
+    //         offchain: 0,
+    //     },
+    //     USD: {
+    //         total: 0,
+    //         exchange: 0,
+    // }}
 
-    const kraken = new ccxt.kraken({ apiKey, secret })
+    // const kraken = new ccxt.kraken({ apiKey, secret })
 
-    const balanceKraken = await kraken.fetchBalance()
-    console.log({balanceKraken})
-    balance.BTC.exchange = btc2sat(balanceKraken.BTC.total) // TODO manage free and used
-    balance.USD.exchange = balanceKraken.USD.total 
+    // const balanceKraken = await kraken.fetchBalance()
+    // console.log({balanceKraken})
+    // balance.BTC.exchange = btc2sat(balanceKraken.BTC.total) // TODO manage free and used
+    // balance.USD.exchange = balanceKraken.USD.total 
 
-    const lnd = initLnd()
+    // const lnd = initLnd()
 
-    try {
-        const chainBalance = (await lnService.getChainBalance({lnd})).chain_balance;
-        console.log({chainBalance})
-        balance.BTC.onchain = chainBalance
-    } catch(err) {
-        console.log(`error getting chainBalance ${err}`)
-    }
+    // try {
+    //     const chainBalance = (await lnService.getChainBalance({lnd})).chain_balance;
+    //     console.log({chainBalance})
+    //     balance.BTC.onchain = chainBalance
+    // } catch(err) {
+    //     console.log(`error getting chainBalance ${err}`)
+    // }
 
-    try {
-        const balanceInChannels = (await lnService.getChannelBalance({lnd})).channel_balance;
-        console.log({balanceInChannels})
-        balance.BTC.offchain = balanceInChannels
-    } catch(err) {
-        console.error(`error getting balanceInChannels ${err}`)
-    }
+    // try {
+    //     const balanceInChannels = (await lnService.getChannelBalance({lnd})).channel_balance;
+    //     console.log({balanceInChannels})
+    //     balance.BTC.offchain = balanceInChannels
+    // } catch(err) {
+    //     console.error(`error getting balanceInChannels ${err}`)
+    // }
 
-    balance.BTC.total = Object.values(balance.BTC).reduce((acc, value) => acc + value, 0)
-    balance.USD.total = Object.values(balance.USD).reduce((acc, value) => acc + value, 0)
+    // balance.BTC.total = Object.values(balance.BTC).reduce((acc, value) => acc + value, 0)
+    // balance.USD.total = Object.values(balance.USD).reduce((acc, value) => acc + value, 0)
 
-    console.log({balance})
-    return balance
+    // console.log({balance})
+    // return balance
 }
 
 export const withdrawExchange = () => {
@@ -151,52 +150,52 @@ exports.quoteLNDBTC = functions.https.onCall(async (data: IQuoteRequest, context
     const satPrice = multiplier * spot
     const validUntil = moment().add(QUOTE_VALIDITY)
 
-    const lnd = initLnd()
+    // const lnd = initLnd()
 
-    const description = {
-        satPrice,
-        memo: "Sell BTC"
-    }
+    // const description = {
+    //     satPrice,
+    //     memo: "Sell BTC"
+    // }
 
-    if (data.side === "sell") {
-        const {request} = await lnService.createInvoice(
-            {lnd, 
-            tokens: satAmount,
-            description: JSON.stringify(description),
-            expires_at: validUntil.toISOString(),
-        });
+    // if (data.side === "sell") {
+    //     const {request} = await lnService.createInvoice(
+    //         {lnd, 
+    //         tokens: satAmount,
+    //         description: JSON.stringify(description),
+    //         expires_at: validUntil.toISOString(),
+    //     });
 
-        if (request === undefined) {
-            throw new functions.https.HttpsError('unavailable', 'error creating invoice')
-        }
+    //     if (request === undefined) {
+    //         throw new functions.https.HttpsError('unavailable', 'error creating invoice')
+    //     }
 
-        return {side, invoice: request} as IQuoteResponse
+    //     return {side, invoice: request} as IQuoteResponse
         
-    } else if (data.side === "buy") {
+    // } else if (data.side === "buy") {
 
-        const invoiceJson = await lnService.decodePaymentRequest({lnd, request: data.invoice})
+    //     const invoiceJson = await lnService.decodePaymentRequest({lnd, request: data.invoice})
 
-        if (moment.utc() < moment.utc(invoiceJson.expires_at).subtract(QUOTE_VALIDITY)) { 
-            throw new functions.https.HttpsError('failed-precondition', 'invoice expire within 30 seconds')
-        }
+    //     if (moment.utc() < moment.utc(invoiceJson.expires_at).subtract(QUOTE_VALIDITY)) { 
+    //         throw new functions.https.HttpsError('failed-precondition', 'invoice expire within 30 seconds')
+    //     }
 
-        if (moment.utc() > moment.utc(invoiceJson.expires_at)) {
-            throw new functions.https.HttpsError('failed-precondition', 'invoice already expired')
-        }
+    //     if (moment.utc() > moment.utc(invoiceJson.expires_at)) {
+    //         throw new functions.https.HttpsError('failed-precondition', 'invoice already expired')
+    //     }
 
-        const message: IQuoteResponse = {
-            side, 
-            satPrice, 
-            invoice: data.invoice!,
-        }
+    //     const message: IQuoteResponse = {
+    //         side, 
+    //         satPrice, 
+    //         invoice: data.invoice!,
+    //     }
 
-        const signedMessage = await sign({... message})
+    //     const signedMessage = await sign({... message})
 
-        console.log(signedMessage)
-        return signedMessage
-    }
+    //     console.log(signedMessage)
+    //     return signedMessage
+    // }
 
-    return {'result': 'success'}
+    // return {'result': 'success'}
 })
 
 
@@ -231,55 +230,55 @@ exports.buyLNDBTC = functions.https.onCall(async (data: IBuyRequest, context) =>
         throw new functions.https.HttpsError('failed-precondition', 'signature is not valid')
     }
 
-    const lnd = initLnd()
-    const invoiceJson = await lnService.decodePaymentRequest({lnd, request: data.invoice})
+    // const lnd = initLnd()
+    // const invoiceJson = await lnService.decodePaymentRequest({lnd, request: data.invoice})
 
-    const satAmount = invoiceJson.tokens
-    const destination = invoiceJson.destination
+    // const satAmount = invoiceJson.tokens
+    // const destination = invoiceJson.destination
 
-    const fiatAmount = satAmount * data.satPrice
+    // const fiatAmount = satAmount * data.satPrice
 
-    if (await new FiatUserWallet({uid: context.auth!.uid}).getBalance() < fiatAmount) {
-        throw new functions.https.HttpsError('permission-denied', 'not enough dollar to proceed')
-    }
+    // if (await new FiatUserWallet({uid: context.auth!.uid}).getBalance() < fiatAmount) {
+    //     throw new functions.https.HttpsError('permission-denied', 'not enough dollar to proceed')
+    // }
 
-    const {route} = await lnService.probeForRoute({lnd, tokens: satAmount, destination})
+    // const {route} = await lnService.probeForRoute({lnd, tokens: satAmount, destination})
     
-    if (route?.length === 0) {
-        throw new functions.https.HttpsError('internal', `Can't probe payment. Not enough liquidity?`)
-    }
+    // if (route?.length === 0) {
+    //     throw new functions.https.HttpsError('internal', `Can't probe payment. Not enough liquidity?`)
+    // }
 
-    const request = {lnd, ...invoiceJson}
-    console.log({request})
+    // const request = {lnd, ...invoiceJson}
+    // console.log({request})
 
-    try {
-        await lnService.payViaPaymentDetails(request) // TODO move to pay to unified payment to our light client
-    } catch (err) {
-        console.error(err)
-        throw new functions.https.HttpsError('internal', `Error paying invoice ${err[0]}, ${err[1]}, ${err[2]?.details}`)
-    }
+    // try {
+    //     await lnService.payViaPaymentDetails(request) // TODO move to pay to unified payment to our light client
+    // } catch (err) {
+    //     console.error(err)
+    //     throw new functions.https.HttpsError('internal', `Error paying invoice ${err[0]}, ${err[1]}, ${err[2]?.details}`)
+    // }
 
-    const fiat_tx: FiatTransaction = {
-        amount: - fiatAmount, 
-        date: moment().unix(),
-        icon: "logo-bitcoin",
-        name: "Bought Bitcoin",
-        // onchain_tx: onchain_tx.id
-    }
+    // const fiat_tx: FiatTransaction = {
+    //     amount: - fiatAmount, 
+    //     date: moment().unix(),
+    //     icon: "logo-bitcoin",
+    //     name: "Bought Bitcoin",
+    //     // onchain_tx: onchain_tx.id
+    // }
 
-    try {
-        // FIXME move to mongoose
-        // const result = await firestore.doc(`/users/${context.auth!.uid}`).update({
-        //     transactions: admin.firestore.FieldValue.arrayUnion(fiat_tx)
-        // })
+    // try {
+    //     // FIXME move to mongoose
+    //     // const result = await firestore.doc(`/users/${context.auth!.uid}`).update({
+    //     //     transactions: admin.firestore.FieldValue.arrayUnion(fiat_tx)
+    //     // })
 
-        // console.log(result)
-    } catch(err) {
-        throw new functions.https.HttpsError('internal', 'issue updating transaction on the database')
-    }
+    //     // console.log(result)
+    // } catch(err) {
+    //     throw new functions.https.HttpsError('internal', 'issue updating transaction on the database')
+    // }
 
-    console.log("success")
-    return {success: "success"}
+    // console.log("success")
+    // return {success: "success"}
 })
 
 /**
@@ -289,25 +288,25 @@ exports.buyLNDBTC = functions.https.onCall(async (data: IBuyRequest, context) =>
  */
 export const hedging = async () => {
 
-    const kraken = new ccxt.kraken({ apiKey, secret })
+//     const kraken = new ccxt.kraken({ apiKey, secret })
 
-    const minWalletBTC = 1 // TODO --> find right number
-    const maxWalletBTC = 2 // TODO
-    const midWalletBTC = (minWalletBTC + maxWalletBTC) / 2
+//     const minWalletBTC = 1 // TODO --> find right number
+//     const maxWalletBTC = 2 // TODO
+//     const midWalletBTC = (minWalletBTC + maxWalletBTC) / 2
 
-    const balance = await getBalance()
+//     const balance = await getBalance()
 
-    const symbol = "BTC/USD"
+//     const symbol = "BTC/USD"
 
-    if (balance.USD.total > maxWalletBTC) {
-        const amount = balance.USD.total - maxWalletBTC - midWalletBTC
-        const result = kraken.createMarketSellOrder(symbol, amount)
-        console.log({result})
-    } else if (balance.USD.total < minWalletBTC) {
-        const amount = minWalletBTC - balance.USD.total + midWalletBTC
-        const result = kraken.createMarketBuyOrder(symbol, amount)
-        console.log({result})
-    }
+//     if (balance.USD.total > maxWalletBTC) {
+//         const amount = balance.USD.total - maxWalletBTC - midWalletBTC
+//         const result = kraken.createMarketSellOrder(symbol, amount)
+//         console.log({result})
+//     } else if (balance.USD.total < minWalletBTC) {
+//         const amount = minWalletBTC - balance.USD.total + midWalletBTC
+//         const result = kraken.createMarketBuyOrder(symbol, amount)
+//         console.log({result})
+//     }
 }
 
 // TODO: move money from / to exchange / wallet

@@ -8,6 +8,7 @@ import { UserWallet } from "./wallet"
 import { createInvoiceUser, createMainBook } from "./db";
 const util = require('util')
 import Timeout from 'await-timeout';
+import moment from "moment";
 const mongoose = require("mongoose");
 
 
@@ -44,8 +45,7 @@ const formatType = (type: IType, pending: Boolean | undefined): TransactionType 
     }
 
     if (type === "earn") {
-        return "paid-invoice"
-        // TODO
+        return "earn"
     }
 
     throw Error("incorrect type for formatType")
@@ -129,7 +129,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
           // this would avoid to fetch the data from hash collection and speed up query
 
         const results_processed = results.map((item) => ({
-            created_at: item.timestamp,
+            created_at: moment(item.timestamp).valueOf(),
             amount: item.debit - item.credit,
             description: formatInvoice(item.type, item.memo, item.hash),
             hash: item.hash,
@@ -148,6 +148,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
         // from https://github.com/alexbosworth/balanceofsatoshis
 
         const MainBook = await createMainBook()
+        const Transaction = await mongoose.model("Medici_Transaction")
 
         // TODO: continue only if user.balance > 0
 
@@ -166,16 +167,6 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
         }
 
         // we are confident enough that there is a possible payment route. let's move forward
-
-        try {
-            // we associated the hash to the user.
-            // and we used this table to known whether a payment is still pending
-            await this.addHash({type: "payment", id})
-        } catch (err) {
-            // TODO manage is the user is trying to pay an invoice twice
-            // { MongoError: E11000 duplicate key error collection ... }
-            throw new functions.https.HttpsError('internal', err.message)
-        }
 
         // reduce balance from customer first
         // TODO this should use a reference (using db transactions) from balance computed above
@@ -223,7 +214,6 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
 
             try {
                 await MainBook.void(entry._id, err[1])
-                const Transaction = await mongoose.model("Medici_Transaction")
                 await Transaction.updateMany({hash: id}, {pending: false, error: err[1]})
             } catch (err_db) {
                 const err_message = `error canceling payment entry ${util.inspect({err_db})}`
@@ -235,7 +225,6 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
         }
         
         // success
-        const Transaction = await mongoose.model("Medici_Transaction")
         await Transaction.updateMany({hash: id}, {pending: false})
 
         return {result: true}
@@ -284,30 +273,50 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
             description: memo,
         })
 
-        await this.addHash({type: "invoice", id})
+        const InvoiceUser = await createInvoiceUser() 
 
-        return { request }
+        try {
+            await new InvoiceUser({
+                _id: id,
+                uid: this.uid,
+                pending: true, 
+            }).save()
+        } catch (err) {
+            throw new functions.https.HttpsError('internal', `error storing invoice to db ${util.inspect({err})}`)
+        }
+
+        return request
     }
 
-    // should be run regularly with a cronjob
-    // TODO: move to an "admin/ops" wallet
-    async updatePendingInvoices() {
-    
-        const MainBook = await createMainBook()
+    async updatePendingInvoice({hash}) {
+        // TODO we should have "streaming" / use Notifications for android/iOs to have
+        // a push system and not a pull system
 
-        const InvoiceUser = await createInvoiceUser()
-        const hashArray = await InvoiceUser.find({user: this.uid, type: "invoice", pending: true})
-            
-        for (const hash of hashArray) {
-            
-            let result
+        let result
+
+        try {
+            // FIXME we should only be able to look at User invoice, 
+            // but might not be a strong problem anyway
+            // at least return same error if invoice not from user
+            // or invoice doesn't exist. to preserve privacy reason and DDOS attack.
+            result = await lnService.getInvoice({ lnd: this.lnd, id: hash })
+        } catch (err) {
+            throw new Error(`issue fetching invoice: ${
+                util.inspect({err}, {showHidden: false, depth: null})
+            })`)
+        }
+
+        if (result.is_confirmed) {
+
+            const MainBook = await createMainBook()
+            const InvoiceUser = await createInvoiceUser()        
+
             try {
-                result = await lnService.getInvoice({ lnd: this.lnd, id: hash.id })
-            } catch (err) {
-                throw Error('issue fetching invoice: ' + err)
-            }
+                const invoice = await InvoiceUser.findOne({_id: hash, pending: true, uid: this.uid})
 
-            if (result.is_confirmed) {
+                if (!invoice) {
+                    return false
+                }
 
                 // TODO: use a transaction here
                 // const session = await InvoiceUser.startSession()
@@ -316,22 +325,36 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
                 // OR: use a an unique index account / hash / voided
                 // may still not avoid issue from discrenpency between hash and the books
 
-                try {
-                    hash.pending = false
-                    hash.save()
+                invoice.pending = false
+                invoice.save()
 
-                    await MainBook.entry()
-                    .credit('Assets:Reserve', result.tokens, {currency: "BTC", hash: hash.id, type: "invoice" }) 
-                    .debit(this.accountPath, result.tokens, {currency: "BTC", hash: hash.id, type: "invoice" })
-                    .commit()
-
-                } catch (err) {
-                    console.log(err)
-                }
+                await MainBook.entry()
+                .credit('Assets:Reserve', result.tokens, {currency: "BTC", hash, type: "invoice" }) 
+                .debit(this.accountPath, result.tokens, {currency: "BTC", hash, type: "invoice" })
+                .commit()
 
                 // session.commitTransaction()
                 // session.endSession()
+
+                return true
+
+            } catch (err) {
+                console.error(err)
+                throw new Error(`issue updating invoice: ${err}`)
             }
+        }
+
+        return false
+    }
+
+    // should be run regularly with a cronjob
+    // TODO: move to an "admin/ops" wallet
+    async updatePendingInvoices() {
+        const InvoiceUser = await createInvoiceUser()
+        const invoices = await InvoiceUser.find({uid: this.uid, pending: true})
+        
+        for (const invoice of invoices) {
+            await this.updatePendingInvoice({hash: invoice._id})
         }
     }
 
@@ -412,8 +435,8 @@ export class LightningWalletAuthed extends LightningUserWallet {
             network = process.env.NETWORK ?? functions.config().lnd.network;
             const cert = process.env.TLS ?? functions.config().lnd[network].tls;
             const macaroon = process.env.MACAROON ?? functions.config().lnd[network].macaroon;
-            const lndaddr = process.env.LNDADDR ?? functions.config().lnd[network].lndaddr;
-            const socket = `${lndaddr}:10009`;
+            const lndip = process.env.LNDIP ?? functions.config().lnd[network].lndip;
+            const socket = `${lndip}:10009`;
             auth = { macaroon, cert, socket };
         }
         catch (err) {
