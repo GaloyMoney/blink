@@ -45,8 +45,7 @@ const formatType = (type: IType, pending: Boolean | undefined): TransactionType 
     }
 
     if (type === "earn") {
-        return "paid-invoice"
-        // TODO
+        return "earn"
     }
 
     throw Error("incorrect type for formatType")

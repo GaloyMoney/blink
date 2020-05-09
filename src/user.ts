@@ -15,6 +15,7 @@ exports.addEarn = functions.https.onCall(async (data, context) => {
 
     // TODO FIXME XXX: this function is succeptible to race condition.
     // add a lock or db-level transaction to prevent this
+    // we could use something like this: https://github.com/chilts/mongodb-lock
 
     const User = mongoose.model("User")
 
