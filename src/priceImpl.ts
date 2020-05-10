@@ -13,7 +13,7 @@ export class Price {
         this.pair = pair
         this.path = {
             "pair.name": this.pair,
-            "pair.exchange.name": "kraken"
+            "pair.exchange.name": "bitfinex"
         }
     }
 
@@ -26,20 +26,30 @@ export class Price {
      * favor lastCached
      * only used for unit test
      */
-    async getFromExchange(): Promise<Array<object>> {
+    async getFromExchange({since, limit}: {since: number, limit: number}): Promise<Array<object>> {
         const ccxt = require('ccxt');
-        const kraken = new ccxt.kraken();
-        // const coinbase = new ccxt.coinbase()
-        // const bitfinex = new ccxt.bitfinex()
+        // const exchange = new ccxt.kraken({
+        //     'enableRateLimit': true,
+        // });
+        // const exchange = new ccxt.coinbase({
+        //     'enableRateLimit': true,
+        // })
+        const exchange = new ccxt.bitfinex({
+            'enableRateLimit': true,
+            'rateLimit': 60000,
+            'timeout': 5000,
+        })
+        console.log("start")
         let ohlcv;
         try {
-            ohlcv = await kraken.fetchOHLCV(
+            ohlcv = await exchange.fetchOHLCV(
                 this.pair,
                 "1h",
-                new Date().valueOf() - 3600 * 25 * 1000, // since
-                25); // limit
+                since, // since
+                limit); // limit
             // ohlcv = await coinbase.fetchOHLCV(this.pair, "1h");
             // ohlcv = await bitfinex.fetchOHLCV(this.pair, "1h"); // start in 2013
+            console.log("complete")
         }
         catch (e) {
             if (e instanceof ccxt.NetworkError) {
@@ -69,35 +79,49 @@ export class Price {
         return result
     }
 
-    async update(): Promise<void> {
+    async update(init = false): Promise<void> {
         const PriceHistory = await this.getPriceHistory()
-        const ohlcv = await this.getFromExchange()
 
-        const default_obj = {
-            pair: {
-                name: this.pair,
-                exchange: {
-                    name: "kraken"
-        }}}
+        const increment = 720 // how many candles
+        const increment_ms = increment * 3600 * 1000
+        const endDate = new Date().valueOf() - 3600 * 1000
+
+        const startDate = init ? 
+            new Date().valueOf() - 1000 * 3600 * 24 * 366
+          : new Date().valueOf() - 1000 * 3600 * 25
+
+        const limit = init ? increment : 25
+
+        let currDate = startDate
 
         const options = { upsert: true, new: true }
+        const doc = await PriceHistory.findOneAndUpdate(this.path, {}, options)
 
-        try {
-            const doc = await PriceHistory.findOneAndUpdate(this.path, {}, options)
+        console.log(util.inspect({doc}, {showHidden: false, depth: null}))
 
-            for (const value of ohlcv) {
-                // FIXME inefficient
-                if(doc.pair.exchange.price.find(obj => obj._id.getTime() === value[0])) {
-                    continue
+        while (currDate < endDate) {
+            console.log({currDate, endDate})
+            const ohlcv = await this.getFromExchange({since: currDate, limit})
+
+            try {
+    
+                for (const value of ohlcv) {
+                    // FIXME inefficient
+                    if(doc.pair.exchange.price.find(obj => obj._id.getTime() === value[0])) {
+                        console.log("continue")
+                        continue
+                    }
+    
+                    doc.pair.exchange.price.push({_id: value[0], o: sat2btc(value[1])})
                 }
-
-                doc.pair.exchange.price.push({_id: value[0], o: sat2btc(value[1])})
+    
+                await doc.save()
+            }
+            catch (err) {
+                throw new functions.https.HttpsError('internal', 'cannot save to db: ' + err.toString())
             }
 
-            await doc.save()
-        }
-        catch (err) {
-            throw new functions.https.HttpsError('internal', 'cannot save to db: ' + err.toString())
+            currDate += increment_ms
         }
     }
 
