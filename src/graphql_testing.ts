@@ -33,7 +33,7 @@ const root = {
   },
   transactions: ({uid}) => {
     lightningWallet = new LightningWalletAuthed({uid})
-    return lightningWallet.getBalance()
+    return lightningWallet.getTransactions()
   },
   prices: () => {
     const price = new Price()
