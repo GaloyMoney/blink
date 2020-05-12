@@ -8,12 +8,14 @@ const util = require('util')
 export class Price {
     readonly pair
     readonly path
+    readonly exchange
 
     constructor(pair = "BTC/USD") {
         this.pair = pair
+        this.exchange = "bitfinex"
         this.path = {
             "pair.name": this.pair,
-            "pair.exchange.name": "bitfinex"
+            "pair.exchange.name": this.exchange
         }
     }
 
@@ -28,37 +30,23 @@ export class Price {
      */
     async getFromExchange({since, limit}: {since: number, limit: number}): Promise<Array<object>> {
         const ccxt = require('ccxt');
-        // const exchange = new ccxt.kraken({
-        //     'enableRateLimit': true,
-        // });
-        // const exchange = new ccxt.coinbase({
-        //     'enableRateLimit': true,
-        // })
-        const exchange = new ccxt.bitfinex({
+        const exchange = new ccxt[this.exchange]({
             'enableRateLimit': true,
-            'rateLimit': 60000,
+            'rateLimit': 30000,
             'timeout': 5000,
         })
         console.log("start")
         let ohlcv;
         try {
-            ohlcv = await exchange.fetchOHLCV(
-                this.pair,
-                "1h",
-                since, // since
-                limit); // limit
-            // ohlcv = await coinbase.fetchOHLCV(this.pair, "1h");
-            // ohlcv = await bitfinex.fetchOHLCV(this.pair, "1h"); // start in 2013
+            ohlcv = await exchange.fetchOHLCV(this.pair, "1h", since, limit); 
             console.log("complete")
         }
         catch (e) {
             if (e instanceof ccxt.NetworkError) {
                 throw new functions.https.HttpsError('resource-exhausted', `fetchTicker failed due to a network error: ${e.message}`);
-            }
-            else if (e instanceof ccxt.ExchangeError) {
+            } else if (e instanceof ccxt.ExchangeError) {
                 throw new functions.https.HttpsError('resource-exhausted', `fetchTicker failed due to exchange error: ${e.message}`);
-            }
-            else {
+            } else {
                 throw new functions.https.HttpsError('internal', `issue with ref exchanges: ${e}`);
             }
         }
@@ -75,7 +63,15 @@ export class Price {
         const result = data.map(value => ({
             t: moment(value._id).unix(),
             o: value.o
-        })).sort((a, b) => a.t - b.t).slice(-25)
+        })).sort((a, b) => a.t - b.t).slice(- (24 * 366 + 1)) // 1y of hourly candles / FIXME use date instead.
+
+        var fs = require('fs');
+        fs.writeFile("test.txt", JSON.stringify(result, null, 4), function(err) {
+            if (err) {
+                console.log(err);
+            }
+        });
+
         return result
     }
 
@@ -94,10 +90,17 @@ export class Price {
 
         let currDate = startDate
 
-        const options = { upsert: true, new: true }
-        const doc = await PriceHistory.findOneAndUpdate(this.path, {}, options)
+        const default_object = {
+            pair: {
+                name: "BTC/USD",
+                exchange: {
+                    name: this.exchange
+                }
+            }
+        }
 
-        console.log(util.inspect({doc}, {showHidden: false, depth: null}))
+        const options = { upsert: true, new: true }
+        const doc = await PriceHistory.findOneAndUpdate(this.path, default_object, options)
 
         while (currDate < endDate) {
             console.log({currDate, endDate})
