@@ -65,12 +65,14 @@ export class Price {
             o: value.o
         })).sort((a, b) => a.t - b.t).slice(- (24 * 366 + 1)) // 1y of hourly candles / FIXME use date instead.
 
-        var fs = require('fs');
-        fs.writeFile("test.txt", JSON.stringify(result, null, 4), function(err) {
-            if (err) {
-                console.log(err);
-            }
-        });
+        const DEBUG = false
+        if (DEBUG) {
+            var fs = require('fs');
+            fs.writeFile("test.txt", JSON.stringify(result, null, 4), function(err) {
+                if (err) {
+                    console.log(err);
+                }
+        })}
 
         return result
     }
