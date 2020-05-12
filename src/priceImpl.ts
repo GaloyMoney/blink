@@ -92,17 +92,18 @@ export class Price {
 
         let currDate = startDate
 
-        const default_object = {
-            pair: {
-                name: "BTC/USD",
-                exchange: {
-                    name: this.exchange
-                }
-            }
-        }
+        let doc = await PriceHistory.findOne(this.path)
 
-        const options = { upsert: true, new: true }
-        const doc = await PriceHistory.findOneAndUpdate(this.path, default_object, options)
+        if (doc === null) {
+            doc = new PriceHistory({
+                pair: {
+                    name: "BTC/USD",
+                    exchange: {
+                        name: this.exchange
+                    }
+                }
+            })
+        }
 
         while (currDate < endDate) {
             console.log({currDate, endDate})
