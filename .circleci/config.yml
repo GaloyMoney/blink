@@ -2,7 +2,7 @@ version: 2.1
 orbs:
   gcp-gke: circleci/gcp-gke@1.0.3
   helm: circleci/helm@0.2.3
-
+  gcp-gcr: circleci/gcp-gcr@0.7.1
 jobs:
   k8s_deploy:
     working_directory: ~/GaloyApp/backend
@@ -33,6 +33,14 @@ jobs:
             -f ~/GaloyApp/backend/lnd-chart/regtest-values.yaml \
             ~/GaloyApp/backend/lnd-chart
       - run:
+          name: helm add repo bitnami
+          command: helm repo add bitnami https://charts.bitnami.com/bitnami
+      - run:
+          name: helm install mongodb
+          command: |
+            helm install mongodb --set \
+            mongodbUsername=testGaloy,mongodbPassword=testGaloy,mongodbDatabase=galoy bitnami/mongodb
+      - run:
           name: Check Helm release status
           command: helm list --all-namespaces --all
       - run:
@@ -52,6 +60,15 @@ jobs:
           name: output tls and macaroon
           command: |
             echo $(cat admin0.macaroon) && echo $(cat admin1.macaroon) && echo $(cat tls1.cert)
+  build_test_image:
+    working_directory: ~/GaloyApp/backend/firebase
+    steps:
+      - checkout:
+          path: ~/GaloyApp
+      - run:
+          name: list directories
+          command: echo $(ls)
+
 
 
 workflows:
@@ -66,7 +83,8 @@ workflows:
       #     node-pool: devnet-nodepool
       #     requires:
       #       - gcp-gke/create-cluster
-      - k8s_deploy
+      # - k8s_deploy
+      - build_test_image
           # requires:
           #   - gcp-gke/create-node-pool
 
