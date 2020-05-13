@@ -141,6 +141,9 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
     }
 
     async payInvoice({ invoice }) {
+        // TODO add fees accounting
+
+        // TODO replace this with bolt11 utils library
         const { id, tokens, destination, description } = await lnService.decodePaymentRequest({lnd: this.lnd, request: invoice})
 
         // TODO probe for payment first. 
