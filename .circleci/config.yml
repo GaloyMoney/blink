@@ -69,6 +69,13 @@ jobs:
       - run:
           name: list directories
           command: echo $(ls)
+      - gcp-gcr/build-image:
+          image: test-image
+      - run:
+          name: list docker images
+          command: docker images
+      - gcp-gcr/push-image:
+          image: test-image
 
 
 
