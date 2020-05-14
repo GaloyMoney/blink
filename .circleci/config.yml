@@ -62,6 +62,7 @@ jobs:
             echo $(cat admin0.macaroon) && echo $(cat admin1.macaroon) && echo $(cat tls1.cert)
   build_test_image:
     working_directory: ~/GaloyApp/backend/firebase
+    machine: true
     steps:
       - checkout:
           path: ~/GaloyApp
