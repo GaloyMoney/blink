@@ -131,7 +131,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
         const results_processed = results.map((item) => ({
             created_at: moment(item.timestamp).valueOf(),
             amount: item.debit - item.credit,
-            description: formatInvoice(item.type, item.memo, item.hash),
+            description: formatInvoice(item.type, item.memo, item.pending),
             hash: item.hash,
             // destination: TODO
             type: formatType(item.type, item.pending)
