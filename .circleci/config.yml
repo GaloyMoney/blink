@@ -74,6 +74,7 @@ jobs:
       - run:
           name: list docker images
           command: docker images
+      - gcp-gcr/gcr-auth
       - gcp-gcr/push-image:
           image: test-image
 
