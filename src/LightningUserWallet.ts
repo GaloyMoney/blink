@@ -153,8 +153,10 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
         const MainBook = await createMainBook()
         const Transaction = await mongoose.model("Medici_Transaction")
 
-        // TODO: continue only if user.balance > 0
-
+        const balance = this.getBalance()
+        if (balance < tokens) {
+            throw new functions.https.HttpsError('cancelled', `the balance is too low. have: ${balance} sats, need ${tokens}`)
+        }
 
         // TODO: handle on-us transaction
         console.log({destination})
