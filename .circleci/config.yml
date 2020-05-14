@@ -48,7 +48,7 @@ jobs:
           command: echo $(ls) && sleep 50 # It’s a place for improvement
       - run:
           name: deploy test-image
-          command: kubectl apply -f ./deploy/test.yml
+          command: kubectl apply -f ./deploy/test-image.yml
   build_test_image:
     working_directory: ~/GaloyApp/backend/firebase
     machine: true
