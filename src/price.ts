@@ -7,6 +7,11 @@ exports.updatePrice = functions.pubsub.schedule('every 10 minutes').onRun(async 
     await price.update()
 })
 
+exports.manualUpdatePrice = functions.https.onCall(async (data, context) => {
+    const price = new Price()
+    await price.update()
+})
+
 exports.getPrice = functions.https.onCall(async (data, context) => {
     checkAuth(context)
     const price = new Price()
