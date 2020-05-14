@@ -12,13 +12,15 @@
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
-    "test": "source '../../deploy/exportlnd.sh' && jest"
+    "test": "jest"
   },
   "engines": {
     "node": "10"
   },
   "main": "lib/backend/firebase/functions/src/index.js",
   "dependencies": {
+    "@babel/core": "^7.9.6",
+    "@babel/preset-env": "^7.9.6",
     "apisauce": "^1.1.1",
     "await-timeout": "^1.1.1",
     "ccxt": "^1.26.54",
