@@ -246,7 +246,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
 
             let result
             try {
-                result = await lnService.getPayment({ lnd: this.lnd, id: payment.id })
+                result = await lnService.getPayment({ lnd: this.lnd, id: payment.hash })
             } catch (err) {
                 throw Error('issue fetching payment: ' + err.toString())
             }
