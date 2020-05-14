@@ -16,7 +16,7 @@ type IType = "invoice" | "payment" | "earn"
 
 const formatInvoice = (type: IType, memo: String | undefined, pending: Boolean | undefined): String => {
   if (pending) {
-    return `Waiting for payment`
+    return `Waiting for payment confirmation`
   } else {
     if (memo) {
       return memo
@@ -263,7 +263,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
                 try {
                     payment.pending = false
                     await payment.save()
-                    await MainBook.void(payment._journal, JSON.stringify(result.failed)) // FIXME 
+                    await MainBook.void(payment._journal, "Payment canceled") // JSON.stringify(result.failed
                 } catch (err) {
                     throw new functions.https.HttpsError('internal', `error canceling payment entry ${util.inspect({err})}`)
                 }
