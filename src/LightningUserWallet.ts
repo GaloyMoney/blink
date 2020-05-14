@@ -165,7 +165,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
         const {route} = await lnService.probeForRoute({destination, lnd: this.lnd, tokens});
         console.log(util.inspect({route}, {showHidden: false, depth: null}))
 
-        if (route.length === 0) {
+        if (route?.length === 0 || true) {
             throw new functions.https.HttpsError('internal', `there is no route for this payment`)
         }
 
