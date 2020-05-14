@@ -55,14 +55,8 @@ jobs:
     steps:
       - checkout:
           path: ~/GaloyApp
-      - run:
-          name: list directories
-          command: echo $(ls)
       - gcp-gcr/build-image:
           image: test-image
-      - run:
-          name: list docker images
-          command: docker images
       - gcp-gcr/gcr-auth
       - gcp-gcr/push-image:
           image: test-image
