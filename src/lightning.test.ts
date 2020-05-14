@@ -16,7 +16,8 @@ beforeAll(async () => {
   await setupMongoose()
 
   // FIXME: this might cause issue when running test in parrallel?
-  return await mongoose.connection.dropDatabase()
+  //this also fails the test due to user authentication issue
+  // return await mongoose.connection.dropDatabase()
 });
 
 
