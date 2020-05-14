@@ -28,10 +28,11 @@ export class Price {
      * favor lastCached
      * only used for unit test
      */
-    async getFromExchange({since, limit}: {since: number, limit: number}): Promise<Array<object>> {
+    async getFromExchange({since, limit, init}: 
+        {since: number, limit: number, init: Boolean}): Promise<Array<object>> {
         const ccxt = require('ccxt');
         const exchange = new ccxt[this.exchange]({
-            'enableRateLimit': true,
+            'enableRateLimit': init,
             'rateLimit': 30000,
             'timeout': 5000,
         })
@@ -77,7 +78,7 @@ export class Price {
         return result
     }
 
-    async update(init = false): Promise<void> {
+    async update(init = false): Promise<Boolean | Error> {
         const PriceHistory = await this.getPriceHistory()
 
         const increment = 720 // how many candles
@@ -107,11 +108,12 @@ export class Price {
 
         while (currDate < endDate) {
             console.log({currDate, endDate})
-            const ohlcv = await this.getFromExchange({since: currDate, limit})
+            const ohlcv = await this.getFromExchange({since: currDate, limit, init})
 
             try {
     
                 for (const value of ohlcv) {
+
                     // FIXME inefficient
                     if(doc.pair.exchange.price.find(obj => obj._id.getTime() === value[0])) {
                         console.log("continue")
@@ -129,6 +131,8 @@ export class Price {
 
             currDate += increment_ms
         }
+
+        return true
     }
 
     // async updateSpot(): Promise<void> {
