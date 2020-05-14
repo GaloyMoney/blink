@@ -259,9 +259,9 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
 
             if (result.is_failed) {
                 try {
-                    await MainBook.void(payment._id, result.failed)
                     payment.pending = false
-                    payment.save()
+                    await payment.save()
+                    await MainBook.void(payment._journal, JSON.stringify(result.failed)) // FIXME 
                 } catch (err) {
                     throw new functions.https.HttpsError('internal', `error canceling payment entry ${util.inspect({err})}`)
                 }
