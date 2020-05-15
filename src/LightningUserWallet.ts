@@ -96,22 +96,6 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
         return super.getBalance()
     }
 
-    protected async addHash({id, type}) {
-        const InvoiceUser = await createInvoiceUser() 
-
-        try {
-            await new InvoiceUser({
-                _id: id,
-                type,
-                uid: this.uid,
-                pending: true, 
-            }).save()
-        } catch (err) {
-            // TODO
-            throw err
-        }
-    }
-
     async getTransactions(): Promise<Array<ILightningTransaction>> {
 
         await this.updatePendingInvoices()
