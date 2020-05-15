@@ -133,6 +133,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
             amount: item.debit - item.credit,
             description: formatInvoice(item.type, item.memo, item.pending),
             hash: item.hash,
+            fee: item.fee,
             // destination: TODO
             type: formatType(item.type, item.pending)
         }))
@@ -153,10 +154,6 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
         const MainBook = await createMainBook()
         const Transaction = await mongoose.model("Medici_Transaction")
 
-        const balance = this.getBalance()
-        if (balance < tokens) {
-            throw new functions.https.HttpsError('cancelled', `the balance is too low. have: ${balance} sats, need ${tokens}`)
-        }
 
         // TODO: handle on-us transaction
         console.log({destination})
@@ -171,18 +168,24 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
             throw new functions.https.HttpsError('internal', `there is no route for this payment`)
         }
 
+        const balance = this.getBalance()
+        if (balance < tokens + route.safe_fee) {
+            throw new functions.https.HttpsError('cancelled', `the balance is too low. have: ${balance} sats, need ${tokens}`)
+        }
+
+
         // we are confident enough that there is a possible payment route. let's move forward
 
         // reduce balance from customer first
         // TODO this should use a reference (using db transactions) from balance computed above
         // and fail is balance has changed in the meantime to prevent race condition
         
-        const obj = {currency: this.currency, hash: id, type: "payment", pending: true}
+        const obj = {currency: this.currency, hash: id, type: "payment", pending: true, fee: route.safe_fee}
 
         const entry = await MainBook.entry(description) 
-        .debit('Assets:Reserve', tokens, obj)
-        .credit(this.accountPath, tokens, obj)
-        .commit()
+            .debit('Assets:Reserve', tokens + route.safe_fee, obj)
+            .credit(this.accountPath, tokens + route.safe_fee, obj)
+            .commit()
 
         // there is 3 scenarios for a payment.
         // 1/ payment succeed is less than TIMEOUT_PAYMENT
@@ -334,9 +337,9 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
                 invoice.save()
 
                 await MainBook.entry()
-                .credit('Assets:Reserve', result.tokens, {currency: "BTC", hash, type: "invoice" }) 
-                .debit(this.accountPath, result.tokens, {currency: "BTC", hash, type: "invoice" })
-                .commit()
+                    .credit('Assets:Reserve', result.tokens, {currency: "BTC", hash, type: "invoice" }) 
+                    .debit(this.accountPath, result.tokens, {currency: "BTC", hash, type: "invoice" })
+                    .commit()
 
                 // session.commitTransaction()
                 // session.endSession()
