@@ -19,7 +19,6 @@
   },
   "main": "lib/backend/firebase/functions/src/index.js",
   "dependencies": {
-    "apisauce": "^1.1.1",
     "await-timeout": "^1.1.1",
     "ccxt": "^1.26.54",
     "firebase-admin": "^8.10.0",

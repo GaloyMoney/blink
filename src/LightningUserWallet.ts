@@ -16,7 +16,7 @@ type IType = "invoice" | "payment" | "earn"
 
 const formatInvoice = (type: IType, memo: String | undefined, pending: Boolean | undefined): String => {
   if (pending) {
-    return `Waiting for payment`
+    return `Waiting for payment confirmation`
   } else {
     if (memo) {
       return memo
@@ -96,22 +96,6 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
         return super.getBalance()
     }
 
-    protected async addHash({id, type}) {
-        const InvoiceUser = await createInvoiceUser() 
-
-        try {
-            await new InvoiceUser({
-                _id: id,
-                type,
-                uid: this.uid,
-                pending: true, 
-            }).save()
-        } catch (err) {
-            // TODO
-            throw err
-        }
-    }
-
     async getTransactions(): Promise<Array<ILightningTransaction>> {
 
         await this.updatePendingInvoices()
@@ -131,8 +115,9 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
         const results_processed = results.map((item) => ({
             created_at: moment(item.timestamp).valueOf(),
             amount: item.debit - item.credit,
-            description: formatInvoice(item.type, item.memo, item.hash),
+            description: formatInvoice(item.type, item.memo, item.pending),
             hash: item.hash,
+            fee: item.fee,
             // destination: TODO
             type: formatType(item.type, item.pending)
         }))
@@ -141,6 +126,9 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
     }
 
     async payInvoice({ invoice }) {
+        // TODO add fees accounting
+
+        // TODO replace this with bolt11 utils library
         const { id, tokens, destination, description } = await lnService.decodePaymentRequest({lnd: this.lnd, request: invoice})
 
         // TODO probe for payment first. 
@@ -149,8 +137,6 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
 
         const MainBook = await createMainBook()
         const Transaction = await mongoose.model("Medici_Transaction")
-
-        // TODO: continue only if user.balance > 0
 
 
         // TODO: handle on-us transaction
@@ -162,9 +148,15 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
         const {route} = await lnService.probeForRoute({destination, lnd: this.lnd, tokens});
         console.log(util.inspect({route}, {showHidden: false, depth: null}))
 
-        if (route.length === 0) {
+        if (!route) {
             throw new functions.https.HttpsError('internal', `there is no route for this payment`)
         }
+
+        const balance = this.getBalance()
+        if (balance < tokens + route.safe_fee) {
+            throw new functions.https.HttpsError('cancelled', `the balance is too low. have: ${balance} sats, need ${tokens}`)
+        }
+
 
         // we are confident enough that there is a possible payment route. let's move forward
 
@@ -172,12 +164,12 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
         // TODO this should use a reference (using db transactions) from balance computed above
         // and fail is balance has changed in the meantime to prevent race condition
         
-        const obj = {currency: this.currency, hash: id, type: "payment", pending: true}
+        const obj = {currency: this.currency, hash: id, type: "payment", pending: true, fee: route.safe_fee}
 
         const entry = await MainBook.entry(description) 
-        .debit('Assets:Reserve', tokens, obj)
-        .credit(this.accountPath, tokens, obj)
-        .commit()
+            .debit('Assets:Reserve', tokens + route.safe_fee, obj)
+            .credit(this.accountPath, tokens + route.safe_fee, obj)
+            .commit()
 
         // there is 3 scenarios for a payment.
         // 1/ payment succeed is less than TIMEOUT_PAYMENT
@@ -243,7 +235,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
 
             let result
             try {
-                result = await lnService.getPayment({ lnd: this.lnd, id: payment.id })
+                result = await lnService.getPayment({ lnd: this.lnd, id: payment.hash })
             } catch (err) {
                 throw Error('issue fetching payment: ' + err.toString())
             }
@@ -256,9 +248,9 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
 
             if (result.is_failed) {
                 try {
-                    await MainBook.void(payment._id, result.failed)
                     payment.pending = false
-                    payment.save()
+                    await payment.save()
+                    await MainBook.void(payment._journal, "Payment canceled") // JSON.stringify(result.failed
                 } catch (err) {
                     throw new functions.https.HttpsError('internal', `error canceling payment entry ${util.inspect({err})}`)
                 }
@@ -329,9 +321,9 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
                 invoice.save()
 
                 await MainBook.entry()
-                .credit('Assets:Reserve', result.tokens, {currency: "BTC", hash, type: "invoice" }) 
-                .debit(this.accountPath, result.tokens, {currency: "BTC", hash, type: "invoice" })
-                .commit()
+                    .credit('Assets:Reserve', result.tokens, {currency: "BTC", hash, type: "invoice" }) 
+                    .debit(this.accountPath, result.tokens, {currency: "BTC", hash, type: "invoice" })
+                    .commit()
 
                 // session.commitTransaction()
                 // session.endSession()
