@@ -1,5 +1,5 @@
-import { IAddInvoiceRequest, ILightningTransaction, IPaymentRequest, TransactionType } from "../../../../common/types";
-import { shortenHash } from "../../../../common/utils";
+import { IAddInvoiceRequest, ILightningTransaction, IPaymentRequest, TransactionType } from "./types";
+import { shortenHash } from "./utils";
 import { ILightningWallet } from "./interface";
 import { Auth } from "./lightning";
 const lnService = require('ln-service');
