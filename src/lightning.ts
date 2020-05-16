@@ -53,6 +53,23 @@ exports.getLightningBalance = functions.https.onCall(async (data, context) => {
     return response
 })
 
+// move to bitcoin.ts
+exports.getOnChainAddress = functions.https.onCall(async (data, context) => {
+    checkNonAnonymous(context)
+    const wallet = new LightningWalletAuthed({uid: context.auth?.uid})
+    const response = await wallet.getOnChainAddress()
+    console.log({response})
+    return response
+})
+
+exports.updateOnchainPayment = functions.https.onCall(async (data, context) => {
+    checkNonAnonymous(context)
+    const wallet = new LightningWalletAuthed({uid: context.auth?.uid})
+    const response = await wallet.updateOnchainPayment()
+    console.log({response})
+    return response
+})
+
 
 // sellBTC
 exports.incomingInvoice = functions.https.onRequest(async (req, res) => {

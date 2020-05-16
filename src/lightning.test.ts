@@ -1,5 +1,5 @@
 import moment from "moment"
-import { LightningWalletAuthed } from "./LightningUserWallet"
+import { LightningWalletAuthed, match_transactions } from "./LightningUserWallet"
 import { createInvoiceUser, setupMongoose } from "./db"
 var lightningPayReq = require('bolt11')
 const mongoose = require("mongoose");
@@ -85,6 +85,19 @@ it('get balance', async () => {
   const balance = await lightningWallet.getBalance()
   expect(balance).toBe(-0)
 })
+
+it('test matching transaction', async () => {
+
+  const output_addresses_tx1 = ["a", "b", "c"]
+  const output_addresses_tx2 = ["a", "b"]
+  const onchain_addresses = ["c", "d", "e"]
+  const onchain_addresses_empty = []
+
+  expect(match_transactions({output_addresses: output_addresses_tx1, onchain_addresses})).toBeTruthy()
+  expect(match_transactions({output_addresses: output_addresses_tx2, onchain_addresses})).toBeFalsy()
+  expect(match_transactions({output_addresses: output_addresses_tx2, onchain_addresses: onchain_addresses_empty})).toBeFalsy()
+})
+
 
 
 // it('payInvoice', async () => {
