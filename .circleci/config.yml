@@ -53,8 +53,8 @@ jobs:
             echo $MACAROON
       - run:
           name: deploy test-image
-          # command: kubectl apply -f ./deploy/test-image.yml -o yaml --dry-run=true | kubectl set \
-            # env -f - MACAROON=$MACAROON -o yaml | kubectl create -f -
+          command: kubectl apply -f ./deploy/test-image.yml -o yaml --dry-run=true | kubectl set \
+            env --local=true -f - MACAROON=$MACAROON -o yaml | kubectl create -f -
           command: echo $(kubectl version) && echo $(kubectl set env -h)
   build_test_image:
     working_directory: ~/GaloyApp/backend/firebase
