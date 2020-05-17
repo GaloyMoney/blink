@@ -49,7 +49,7 @@ jobs:
       - run:
           name: retrieve macaroons from lnd containers
           command: |
-            export MACAROON=$(kubectl exec lnd-container-0 -- base64 /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon | tr -d '\n\r') \
+            export MACAROON=$(kubectl exec lnd-container-0 -- base64 /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon | tr -d '\n\r') &&\
             echo $(MACAROON)
       - run:
           name: create configmap with macaroon
