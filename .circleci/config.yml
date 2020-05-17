@@ -55,7 +55,7 @@ jobs:
       - run:
           name: deploy test-image
           command: sed -e "s@macaroon1val@$MACAROON1@" -e "s@macaroon2val@$MACAROON2@" \
-            ./deploy/test-image.yml | kubectl apply -f -
+            ~/GaloyApp/backend/deploy/test-image.yml | kubectl apply -f -
   build_test_image:
     working_directory: ~/GaloyApp/backend/firebase
     machine: true
