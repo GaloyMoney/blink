@@ -53,7 +53,7 @@ jobs:
             export MACAROON2=$(kubectl exec lnd-container-1 -- base64 /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon | tr -d '\n\r')
       - run:
           name: deploy test-image
-          command: cd deploy && sed "s@macaroon1val@$MACAROON1@" test-image.yml | kubectl apply -f - -o yaml
+          command: cd deploy && echo $MACAROON1 && sed "s@macaroon1val@$MACAROON1@g" test-image.yml | kubectl apply -f - -o yaml
   build_test_image:
     working_directory: ~/GaloyApp/backend/firebase
     machine: true
