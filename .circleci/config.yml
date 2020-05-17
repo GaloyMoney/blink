@@ -49,12 +49,13 @@ jobs:
       - run:
           name: retrieve macaroons from lnd containers
           command: |
-            export MACAROON=$(kubectl exec lnd-container-0 -- base64 /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon | tr -d '\n\r') &&\
-            echo $MACAROON
+            export MACAROON1=$(kubectl exec lnd-container-0 -- base64 /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon | tr -d '\n\r') &&\
+            export MACAROON2=$(kubectl exec lnd-container-1 -- base64 /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon | tr -d '\n\r') &&\
+            echo $MACAROON2
       - run:
           name: deploy test-image
-          command: kubectl apply -f ./deploy/test-image.yml -o yaml --dry-run=true | kubectl set \
-            env --local=true -f - MACAROON=$MACAROON -o yaml | kubectl create -f -
+          command: sed -e "s@macaroon1val@$MACAROON1@" -e "s@macaroon2val@$MACAROON2@" \
+            ./deploy/test-image.yml | kubectl apply -f -
   build_test_image:
     working_directory: ~/GaloyApp/backend/firebase
     machine: true
