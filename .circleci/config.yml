@@ -47,6 +47,15 @@ jobs:
           name: wait for pod to come alive
           command: echo $(ls) && sleep 50 # It’s a place for improvement
       - run:
+          name: retrieve macaroons from lnd containers
+          command: |
+            export MACAROON=$(kubectl exec lnd-container-0 -- base64 /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon | tr -d '\n\r') \
+            echo $(MACAROON)
+      - run:
+          name: create configmap with macaroon
+          command: |
+            kubectl create configmap lnd-macaroon --from-literal=MACAROON=$MACAROON
+      - run:
           name: deploy test-image
           command: kubectl apply -f ./deploy/test-image.yml
   build_test_image:
@@ -66,12 +75,12 @@ jobs:
 workflows:
   kube:
     jobs:
-      - gcp-gke/create-cluster:
-          cluster: devnet-cluster
-          additional-args: '--num-nodes=1 --machine-type=n1-standard-2 --disk-size=10Gi'
-      - build_test_image:
-          requires:
-            - gcp-gke/create-cluster
+      # - gcp-gke/create-cluster:
+      #     cluster: devnet-cluster
+      #     additional-args: '--num-nodes=1 --machine-type=n1-standard-2 --disk-size=10Gi'
+      - build_test_image
+          # requires:
+          #   - gcp-gke/create-cluster
       - k8s_deploy:
           requires:
             - build_test_image
