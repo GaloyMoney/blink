@@ -17,35 +17,35 @@ jobs:
             echo ${GCLOUD_SERVICE_KEY} > gcloud-service-key.json
             gcloud auth activate-service-account --key-file=gcloud-service-key.json
             gcloud container clusters get-credentials devnet-cluster --zone ${GOOGLE_COMPUTE_ZONE} --project ${GOOGLE_PROJECT_ID}
-      - run:
-          name: wait for k8s worker nodes
-          command: echo $(ls) && sleep 30 # It’s a place for improvement
-      - run:
-          name: helm install bitcoind-chart
-          command: |
-            helm upgrade bitcoind-chart -i \
-            -f ~/GaloyApp/backend/bitcoind-chart/regtest-values.yaml \
-            ~/GaloyApp/backend/bitcoind-chart
-      - run:
-          name: helm install lnd-chart
-          command: |
-            helm upgrade lnd-chart -i \
-            -f ~/GaloyApp/backend/lnd-chart/regtest-values.yaml \
-            ~/GaloyApp/backend/lnd-chart
-      - run:
-          name: helm add repo bitnami
-          command: helm repo add bitnami https://charts.bitnami.com/bitnami
-      - run:
-          name: helm install mongodb
-          command: |
-            helm install mongodb --set \
-            mongodbUsername=testGaloy,mongodbPassword=testGaloy,mongodbDatabase=galoy bitnami/mongodb
-      - run:
-          name: Check Helm release status
-          command: helm list --all-namespaces --all
-      - run:
-          name: wait for pod to come alive
-          command: echo $(ls) && sleep 50 # It’s a place for improvement
+      # - run:
+      #     name: wait for k8s worker nodes
+      #     command: echo $(ls) && sleep 30 # It’s a place for improvement
+      # - run:
+      #     name: helm install bitcoind-chart
+      #     command: |
+      #       helm upgrade bitcoind-chart -i \
+      #       -f ~/GaloyApp/backend/bitcoind-chart/regtest-values.yaml \
+      #       ~/GaloyApp/backend/bitcoind-chart
+      # - run:
+      #     name: helm install lnd-chart
+      #     command: |
+      #       helm upgrade lnd-chart -i \
+      #       -f ~/GaloyApp/backend/lnd-chart/regtest-values.yaml \
+      #       ~/GaloyApp/backend/lnd-chart
+      # - run:
+      #     name: helm add repo bitnami
+      #     command: helm repo add bitnami https://charts.bitnami.com/bitnami
+      # - run:
+      #     name: helm install mongodb
+      #     command: |
+      #       helm install mongodb --set \
+      #       mongodbUsername=testGaloy,mongodbPassword=testGaloy,mongodbDatabase=galoy bitnami/mongodb
+      # - run:
+      #     name: Check Helm release status
+      #     command: helm list --all-namespaces --all
+      # - run:
+      #     name: wait for pod to come alive
+      #     command: echo $(ls) && sleep 50 # It’s a place for improvement
       - run:
           name: retrieve macaroons from lnd containers
           command: |
