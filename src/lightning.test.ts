@@ -32,10 +32,7 @@ beforeEach(async () => {
     macaroon: process.env.MACAROON2,
     socket: 'lnd-service-1:10009',
   }).lnd;
-  console.log(lightningWallet2)
-  console.log("w2",lightningWallet)
-  const nodePublicKey = (await lnService.getWalletInfo({lnd:lightningWallet2})).public_key;
-  console.log("Second node pub key", nodePublicKey)
+
   // lnService.createInvoice({lnd: lnd2, amoint... })
   // lnService.pay({lnd: lnd2, amoint... })
 
