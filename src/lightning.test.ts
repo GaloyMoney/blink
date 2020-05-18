@@ -1,4 +1,5 @@
 import moment from "moment"
+const lnService = require('ln-service')
 import { LightningWalletAuthed } from "./LightningUserWallet"
 import { createInvoiceUser, setupMongoose } from "./db"
 var lightningPayReq = require('bolt11')
@@ -6,7 +7,7 @@ const mongoose = require("mongoose");
 
 
 let lightningWallet
-
+let lightningWallet2
 
 const user1 = "user1"
 const user2 = "user2"
@@ -26,11 +27,12 @@ beforeEach(async () => {
 
 
   // // example for @kartik
-  // const {lnd2} = lnService.authenticatedLndGrpc({
-  //   cert: 'base64 encoded tls.cert',
-  //   macaroon: 'base64 encoded admin.macaroon',
-  //   socket: 'lnd-container-devnet1:10009',
-  // });
+  const {lnd2} = lnService.authenticatedLndGrpc({
+    cert: process.env.TLS,
+    macaroon: process.env.MACAROON2,
+    socket: 'lnd-service-1:10009',
+  });
+  lightningWallet2=lnd2
 
   // lnService.createInvoice({lnd: lnd2, amoint... })
   // lnService.pay({lnd: lnd2, amoint... })
@@ -40,7 +42,9 @@ beforeEach(async () => {
 it('Lightning Wallet Get Info works', async () => {
   const result = await lightningWallet.getInfo()
   console.log({result})
+  const nodePublicKey = (await lnService.getWalletInfo({lightningWallet2})).public_key;
   // expect(result === 0).toBeTruthy()
+  console.log("Second node pub key", nodePublicKey)
 })
 
 
