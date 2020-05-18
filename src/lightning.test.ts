@@ -27,12 +27,11 @@ beforeEach(async () => {
 
 
   // // example for @kartik
-  const {lnd2} = lnService.authenticatedLndGrpc({
+  lightningWallet2 = lnService.authenticatedLndGrpc({
     cert: process.env.TLS,
     macaroon: process.env.MACAROON2,
     socket: 'lnd-service-1:10009',
-  });
-  lightningWallet2=lnd2
+  }).lnd;
 
   // lnService.createInvoice({lnd: lnd2, amoint... })
   // lnService.pay({lnd: lnd2, amoint... })
