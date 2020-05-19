@@ -3,28 +3,14 @@ import { LightningWalletAuthed } from "./LightningUserWallet";
 const express = require("express")
 const graphqlHTTP = require("express-graphql")
 import { Price } from "./priceImpl";
+let fs = require("fs-extra");
+let path = require("path");
+
 
 // Construct a schema, using GraphQL schema language
-const schema = buildSchema(`
-  type Transaction {
-    amount: Int!,
-    description: String!,
-    created_at: String!,
-    hash: String,
-    type: String!,
-  }
+const schema_string = fs.readFileSync(path.join(__dirname, "schema.graphql"), "utf8");
+const schema = buildSchema(schema_string);
 
-  type Price {
-    t: Int
-    o: Float
-  }
-
-  type Query {
-    prices: [Price]
-    balance(uid: String): String
-    transactions(uid: String): [Transaction]
-  }
-`);
 
 let lightningWallet
 
@@ -52,7 +38,21 @@ const root = {
       console.warn(err)
       throw err
     }
-  }
+  },
+  addInvoice: async ({value, memo, uid}) => {
+    try {
+      lightningWallet = new LightningWalletAuthed({uid})
+      const {request} = await lightningWallet.addInvoice({value, memo})
+      return request
+    } catch (err) {
+      console.warn(err)
+      throw err
+    }
+  },
+  getinfo: () => {
+    lightningWallet = new LightningWalletAuthed({uid: "1234"})
+    return lightningWallet.getInfo()
+  },
 };
 
 const app = express()
