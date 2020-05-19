@@ -14,7 +14,7 @@
     "logs": "firebase functions:log",
     "test": "source '../../deploy/exportlnd.sh' && jest",
     "watch": "source '../../deploy/exportlnd.sh' && nodemon -e ts -w ./src -x yarn run watch:serve",
-    "watch:serve": "source '../../deploy/exportlnd.sh' && ts-node src/graphql_testing.ts"
+    "watch:serve": "ts-node src/graphql_testing.ts"
   },
   "engines": {
     "node": "10"
