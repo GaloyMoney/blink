@@ -64,6 +64,20 @@ jobs:
       - gcp-gcr/gcr-auth
       - gcp-gcr/push-image:
           image: test-image
+  create-cluster:
+    working_directory: ~/GaloyApp/backend
+    machine: true
+    steps:
+      - run:
+          name: Generate cluster name
+          command: echo $RANDOM > clustername
+      - persist_to_workspace:
+          root: ~/GaloyApp/backend
+          paths:
+            - clustername
+      - run:
+          name: output clustername
+          command: echo $(cat ./clustername)
 
 
 
@@ -73,12 +87,13 @@ workflows:
       # - gcp-gke/create-cluster:
       #     cluster: devnet-cluster
       #     additional-args: '--num-nodes=1 --machine-type=n1-standard-2 --disk-size=10Gi'
-      - build_test_image
+      # - build_test_image
       #     requires:
       #       - gcp-gke/create-cluster
-      - k8s_deploy:
-          requires:
-            - build_test_image
+      # - k8s_deploy
+      #     requires:
+      #       - build_test_image
+      - create-cluster
 
 
 
