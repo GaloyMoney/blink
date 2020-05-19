@@ -12,6 +12,8 @@ type Price {
 }
 
 type Query {
+  # TODO add: version
+  
   prices: [Price]
   balance(uid: String): String
   transactions(uid: String): [Transaction]
