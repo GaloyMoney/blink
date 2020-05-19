@@ -7,8 +7,11 @@ import { Price } from "./priceImpl";
 // Construct a schema, using GraphQL schema language
 const schema = buildSchema(`
   type Transaction {
-    t: Int
-    v: Float
+    amount: Int!,
+    description: String!,
+    created_at: String!,
+    hash: String,
+    type: String!,
   }
 
   type Price {
@@ -31,13 +34,24 @@ const root = {
     lightningWallet = new LightningWalletAuthed({uid})
     return lightningWallet.getBalance()
   },
-  transactions: ({uid}) => {
-    lightningWallet = new LightningWalletAuthed({uid})
-    return lightningWallet.getTransactions()
+  transactions: async ({uid}) => {
+    try {
+      lightningWallet = new LightningWalletAuthed({uid})
+      return lightningWallet.getTransactions()
+    } catch (err) {
+      console.warn(err)
+    }
   },
-  prices: () => {
-    const price = new Price()
-    return price.lastCached()
+  prices: async () => {
+    try {
+      const price = new Price()
+      const lastPrices = await price.lastCached()
+      console.log({lastPrices})
+      return lastPrices
+    } catch (err) {
+      console.warn(err)
+      throw err
+    }
   }
 };
 
