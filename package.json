@@ -14,7 +14,7 @@
     "logs": "firebase functions:log",
     "test": "source '../../deploy/exportlnd.sh' && jest",
     "watch": "source '../../deploy/exportlnd.sh' && nodemon -e ts -w ./src -x yarn run watch:serve",
-    "watch:serve": "ts-node src/graphql_testing.ts"
+    "watch:serve": "source '../../deploy/exportlnd.sh' && ts-node src/graphql_testing.ts"
   },
   "engines": {
     "node": "10"
@@ -27,6 +27,7 @@
     "express-graphql": "^0.9.0",
     "firebase-admin": "^8.10.0",
     "firebase-functions": "^3.6.0",
+    "fs-extra": "^9.0.0",
     "graphql": "^15.0.0",
     "ln-service": "^47.16.0",
     "medici": "^4.0.1",

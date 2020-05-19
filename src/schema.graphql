@@ -1,0 +1,29 @@
+type Transaction {
+  amount: Int!,
+  description: String!,
+  created_at: String!,
+  hash: String,
+  type: String!,
+}
+
+type Price {
+  t: Int
+  o: Float
+}
+
+type Query {
+  prices: [Price]
+  balance(uid: String): String
+  transactions(uid: String): [Transaction]
+
+  # test
+  getinfo: String
+}
+
+type Mutation {
+  addInvoice(value: Int, memo: String, uid: String): String
+}
+
+# functions().httpsCallable("addEarn")(snapshot)
+# functions().httpsCallable("updatePendingInvoice")(hash)
+# functions().httpsCallable("payInvoice")({invoice})
