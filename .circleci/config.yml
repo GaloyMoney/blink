@@ -15,24 +15,25 @@ jobs:
           name: generate cluster name
           command: |
             echo "devnet-cluster-"$RANDOM > clustername
+            cat clustername
       - run:
           name: authorize gcloud and kubectl on circleci and create cluster
           command: |
             echo ${GCLOUD_SERVICE_KEY} > gcloud-service-key.json
             gcloud auth activate-service-account --key-file=gcloud-service-key.json
             export clustername=$(cat )
-            gcloud container clusters create devnet-cluster --num-nodes=1 \
+            gcloud container clusters create $(cat clustername | tr -d '\n\r') --num-nodes=1 \
             --machine-type=n1-standard-2 --disk-size=10Gi
             gcloud container clusters get-credentials devnet-cluster --zone ${GOOGLE_COMPUTE_ZONE} --project ${GOOGLE_PROJECT_ID}
-      # - run:
-      #     name: wait for k8s worker nodes
-      #     command: echo $(ls) && sleep 30 # TODO: try to improve approach if possible
-      # - run:
-      #     name: helm install bitcoind-chart
-      #     command: |
-      #       helm install bitcoind-chart \
-      #       -f ~/GaloyApp/backend/bitcoind-chart/regtest-values.yaml \
-      #       ~/GaloyApp/backend/bitcoind-chart
+      - run:
+          name: wait for k8s worker nodes
+          command: echo $(ls) && sleep 30 # TODO: try to improve approach if possible
+      - run:
+          name: helm install bitcoind-chart
+          command: |
+            helm install bitcoind-chart \
+            -f ~/GaloyApp/backend/bitcoind-chart/regtest-values.yaml \
+            ~/GaloyApp/backend/bitcoind-chart
       # - run:
       #     name: helm install lnd-chart
       #     command: |
@@ -47,19 +48,19 @@ jobs:
       #     command: |
       #       helm install mongodb --set \
       #       mongodbUsername=testGaloy,mongodbPassword=testGaloy,mongodbDatabase=galoy bitnami/mongodb
-      # - run:
-      #     name: Check Helm release status
-      #     command: helm list --all-namespaces --all
+      - run:
+          name: Check Helm release status
+          command: helm list --all-namespaces --all
       # - run:
       #     name: wait for pod to come alive
       #     command: sleep 50 # TODO: try to improve approach if possible
-      - run:
-          name: retrieve macaroons from lnd containers
-          command: |
-            cd deploy &&\
-            export MACAROON1=$(kubectl exec lnd-container-0 -- base64 /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon | tr -d '\n\r') &&\
-            export MACAROON2=$(kubectl exec lnd-container-1 -- base64 /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon | tr -d '\n\r') &&\
-            sed -e "s@macaroon1val@$MACAROON1@g" -e "s@macaroon2val@$MACAROON2@g" test-image.yml | kubectl apply -f - -o yaml
+      # - run:
+      #     name: retrieve macaroons from lnd containers
+      #     command: |
+      #       cd deploy &&\
+      #       export MACAROON1=$(kubectl exec lnd-container-0 -- base64 /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon | tr -d '\n\r') &&\
+      #       export MACAROON2=$(kubectl exec lnd-container-1 -- base64 /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon | tr -d '\n\r') &&\
+      #       sed -e "s@macaroon1val@$MACAROON1@g" -e "s@macaroon2val@$MACAROON2@g" test-image.yml | kubectl apply -f - -o yaml
   build_test_image:
     working_directory: ~/GaloyApp/backend/firebase
     machine: true
@@ -97,10 +98,10 @@ workflows:
       # - build_test_image
       #     requires:
       #       - gcp-gke/create-cluster
-      # - k8s_deploy
+      - k8s_deploy
       #     requires:
       #       - build_test_image
-      - create-cluster
+      # - create-cluster
 
 
 
