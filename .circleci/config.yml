@@ -22,7 +22,7 @@ jobs:
             echo ${GCLOUD_SERVICE_KEY} > gcloud-service-key.json
             gcloud auth activate-service-account --key-file=gcloud-service-key.json
             export clustername=$(cat )
-            gcloud container clusters create $(cat clustername | tr -d '\n\r') --num-nodes=1 \
+            gcloud container clusters create $(cat clustername | tr -d '\n\r') --zone ${GOOGLE_COMPUTE_ZONE} --num-nodes=1 \
             --machine-type=n1-standard-2 --disk-size=10Gi
             gcloud container clusters get-credentials devnet-cluster --zone ${GOOGLE_COMPUTE_ZONE} --project ${GOOGLE_PROJECT_ID}
       - run:
