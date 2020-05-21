@@ -3,51 +3,13 @@ import * as functions from 'firebase-functions'
 import { transactions_template } from "./const"
 import * as admin from 'firebase-admin'
 import { setupMongoose } from "./db"
+import { LightningWalletAuthed } from "./LightningUserWallet";
 const firestore = admin.firestore()
-const mongoose = require("mongoose");
-import { LightningAdminWallet } from "./LightningAdminImpl"
-import { OnboardingEarn } from "../../../../common/types";
 
 exports.addEarn = functions.https.onCall(async (data, context) => {
     checkNonAnonymous(context)
-  
-    await setupMongoose()
-
-    // TODO FIXME XXX: this function is succeptible to race condition.
-    // add a lock or db-level transaction to prevent this
-    // we could use something like this: https://github.com/chilts/mongodb-lock
-
-    const User = mongoose.model("User")
-
-    const _id = context.auth?.uid as string
-    const user = await User.findOne({_id}) ?? await new User({_id})
-
-    const existing = new Set([...user.earn])
-    const received = new Set(data)
-    const newEarn = new Set([...received].filter(x => !existing.has(x)));
-
-    console.log({existing, received, newEarn})
-
-    const lightningAdminWallet = new LightningAdminWallet()
-    for (const earn of newEarn) {
-        if (!(typeof earn === 'string')) { //  || earn instanceof String
-            console.warn(`${typeof earn} is not string`)
-            continue
-        }
-
-        try {
-            const amount = OnboardingEarn[earn]
-
-            if (amount !== 0 && amount !== null) {
-                await lightningAdminWallet.addFunds({amount, uid: _id, memo: earn, type: "earn"})
-            }
-        } catch (err) {
-            console.warn(err.toString())
-        }
-    }
-
-    user.earn = [... new Set([...existing, ...received])]
-    await user.save()
+    const wallet = new LightningWalletAuthed({uid: context.auth?.uid})
+    await wallet.addEarn({hash: data})
 })
 
 // for notification

@@ -1,17 +1,19 @@
-import { IAddInvoiceRequest, ILightningTransaction, IPaymentRequest, TransactionType } from "./types";
-import { shortenHash } from "./utils";
+import Timeout from 'await-timeout';
+import * as functions from 'firebase-functions';
+import moment from "moment";
+import { createInvoiceUser, createMainBook, createUser } from "./db";
 import { ILightningWallet } from "./interface";
 import { Auth } from "./lightning";
+import { LightningAdminWallet } from "./LightningAdminImpl";
+import { IAddInvoiceRequest, ILightningTransaction, IPaymentRequest, OnboardingEarn, TransactionType } from "./types";
+import { shortenHash } from "./utils";
+import { UserWallet } from "./wallet";
 const lnService = require('ln-service');
-import * as functions from 'firebase-functions'
-import { UserWallet } from "./wallet"
-import { createInvoiceUser, createMainBook } from "./db";
 const util = require('util')
-import Timeout from 'await-timeout';
-import moment from "moment";
 const mongoose = require("mongoose");
 
 
+type payInvoiceResult = "success" | "failed" | "pending"
 type IType = "invoice" | "payment" | "earn"
 
 const formatInvoice = (type: IType, memo: String | undefined, pending: Boolean | undefined): String => {
@@ -129,7 +131,9 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
         return results_processed
     }
 
-    async payInvoice({ invoice }) {
+    // TODO manage the error case properly. right now there is a mix of string being return
+    // or error being thrown. Not sure how this is handled by GraphQL
+    async payInvoice({ invoice }): Promise<payInvoiceResult | Error> {
         // TODO add fees accounting
 
         // TODO replace this with bolt11 utils library
@@ -202,7 +206,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
             console.log({err, message: err.message, errorCode: err[1]})
 
             if (err.message === "Timeout") {
-                return {result: "pending"}
+                return "pending"
                 // TODO processed in-flight payment in separate loop
             }
 
@@ -223,7 +227,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
         // success
         await Transaction.updateMany({hash: id}, {pending: false})
 
-        return {result: true}
+        return "success"
     }
     
     // should be run regularly with a cronjob
@@ -353,6 +357,46 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
             await this.updatePendingInvoice({hash: invoice._id})
         }
     }
+
+    async addEarn(snapshot) {
+        // TODO FIXME XXX: this function is succeptible to race condition.
+        // add a lock or db-level transaction to prevent this
+        // we could use something like this: https://github.com/chilts/mongodb-lock
+
+        const User = await createUser()
+        const user = await User.findOneAndUpdate({_id: this.uid}, {}, {new: true, upsert: true} )
+
+        const existing = new Set([...user.earn])
+        const received = new Set(snapshot)
+        const newEarn = new Set([...received].filter(x => !existing.has(x)));
+
+        console.log({existing, received, newEarn})
+
+        const lightningAdminWallet = new LightningAdminWallet()
+        for (const earn of newEarn) {
+            if (!(typeof earn === 'string')) { //  || earn instanceof String
+                console.warn(`${typeof earn} is not string`)
+                continue
+            }
+
+            try {
+                const amount = OnboardingEarn[earn]
+
+                if (amount !== 0 && amount !== null) {
+                    await lightningAdminWallet.addFunds({amount, uid: this.uid, memo: earn, type: "earn"})
+                }
+            } catch (err) {
+                console.warn(err.toString())
+                return false
+            }
+        }
+
+        user.earn = [... new Set([...existing, ...received])]
+        await user.save()
+
+        return true
+    }
+
 
     /**
      * Advanced payment method to use keySend (new features from lnd 0.9)

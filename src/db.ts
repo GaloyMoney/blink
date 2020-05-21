@@ -162,3 +162,9 @@ export const createInvoiceUser = async () => {
 
   return mongoose.model("InvoiceUser")
 }
+
+export const createUser = async () => {
+  await setupMongoose()
+
+  return mongoose.model("User")
+}

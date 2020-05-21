@@ -39,16 +39,50 @@ const root = {
       throw err
     }
   },
+
   addInvoice: async ({value, memo, uid}) => {
     try {
       lightningWallet = new LightningWalletAuthed({uid})
-      const {request} = await lightningWallet.addInvoice({value, memo})
-      return request
+      const result = await lightningWallet.addInvoice({value, memo})
+      console.log({result})
+      return result
     } catch (err) {
       console.warn(err)
       throw err
     }
   },
+  updatePendingInvoice: async ({hash, uid}) => {
+    try {
+      const wallet = new LightningWalletAuthed({uid})
+      return await wallet.updatePendingInvoice({hash})
+    } catch (err) {
+      console.warn(err)
+      throw err
+    }
+  },
+  payInvoice: async ({invoice, uid}) => {
+    try {
+      const wallet = new LightningWalletAuthed({uid})
+      const success = await wallet.payInvoice({invoice})
+      console.log({success})
+      return success
+    } catch (err) {
+      console.warn(err)
+      throw err
+    }
+  },
+  addEarn: async ({snapshot, uid}) => {
+    try {
+      lightningWallet = new LightningWalletAuthed({uid})
+      const success = await lightningWallet.addEarn(snapshot)
+      return success
+    } catch (err) {
+      console.warn(err)
+      throw err
+    }
+  },
+
+  // debug
   getinfo: () => {
     lightningWallet = new LightningWalletAuthed({uid: "1234"})
     return lightningWallet.getInfo()
@@ -62,4 +96,4 @@ app.use('/graphql', graphqlHTTP({
   graphiql: true
 }))
 app.listen(4000)
-console.log("now running... http://localhost:4000 ")
+console.log("now running... http://localhost:4000/graphql ")
