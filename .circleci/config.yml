@@ -12,24 +12,31 @@ jobs:
       - checkout:
           path: ~/GaloyApp
       - run:
-          name: authorize gloud on gke
+          name: generate cluster name
+          command: |
+            echo "devnet-cluster-"$RANDOM > clustername
+      - run:
+          name: authorize gcloud and kubectl on circleci and create cluster
           command: |
             echo ${GCLOUD_SERVICE_KEY} > gcloud-service-key.json
             gcloud auth activate-service-account --key-file=gcloud-service-key.json
+            export clustername=$(cat )
+            gcloud container clusters create devnet-cluster --num-nodes=1 \
+            --machine-type=n1-standard-2 --disk-size=10Gi
             gcloud container clusters get-credentials devnet-cluster --zone ${GOOGLE_COMPUTE_ZONE} --project ${GOOGLE_PROJECT_ID}
       # - run:
       #     name: wait for k8s worker nodes
-      #     command: echo $(ls) && sleep 30 # It’s a place for improvement
+      #     command: echo $(ls) && sleep 30 # TODO: try to improve approach if possible
       # - run:
       #     name: helm install bitcoind-chart
       #     command: |
-      #       helm upgrade bitcoind-chart -i \
+      #       helm install bitcoind-chart \
       #       -f ~/GaloyApp/backend/bitcoind-chart/regtest-values.yaml \
       #       ~/GaloyApp/backend/bitcoind-chart
       # - run:
       #     name: helm install lnd-chart
       #     command: |
-      #       helm upgrade lnd-chart -i \
+      #       helm install lnd-chart \
       #       -f ~/GaloyApp/backend/lnd-chart/regtest-values.yaml \
       #       ~/GaloyApp/backend/lnd-chart
       # - run:
@@ -45,7 +52,7 @@ jobs:
       #     command: helm list --all-namespaces --all
       # - run:
       #     name: wait for pod to come alive
-      #     command: echo $(ls) && sleep 50 # It’s a place for improvement
+      #     command: sleep 50 # TODO: try to improve approach if possible
       - run:
           name: retrieve macaroons from lnd containers
           command: |
@@ -71,13 +78,13 @@ jobs:
       - run:
           name: Generate cluster name
           command: echo $RANDOM > clustername
-      - persist_to_workspace:
-          root: ~/GaloyApp/backend
-          paths:
-            - clustername
+      # - persist_to_workspace:
+      #     root: ~/GaloyApp/backend
+      #     paths:
+      #       - clustername
       - run:
           name: output clustername
-          command: echo $(cat ./clustername)
+          command: echo $(ls) && cat ./clustername
 
 
 
