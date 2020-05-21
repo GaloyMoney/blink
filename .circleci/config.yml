@@ -21,6 +21,7 @@ jobs:
           command: |
             echo ${GCLOUD_SERVICE_KEY} > gcloud-service-key.json
             gcloud auth activate-service-account --key-file=gcloud-service-key.json
+            gcloud config set project ${GOOGLE_PROJECT_ID}
             export clustername=$(cat )
             gcloud container clusters create $(cat clustername | tr -d '\n\r') --zone ${GOOGLE_COMPUTE_ZONE} --num-nodes=1 \
             --machine-type=n1-standard-2 --disk-size=10Gi
