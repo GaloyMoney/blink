@@ -62,4 +62,4 @@ app.use('/graphql', graphqlHTTP({
   graphiql: true
 }))
 app.listen(4000)
-console.log("now running...")
+console.log("now running... http://localhost:4000 ")
