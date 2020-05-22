@@ -16,26 +16,28 @@ type Earn {
   """
   the earn reward for the app to display their associated amount
   """
-  id: String
+  id: ID!
   value: Int
 }
 
-type Query {
-  # TODO add: version
-  
+type BtcWallet {
+  balance: String
+  transactions: [Transaction]
+}
+
+type Invoice {
+  addInvoice(value: Int, memo: String): String
+  updatePendingInvoice(hash: String): Boolean
+  payInvoice(invoice: String): String
+}
+
+type Query {  
   prices: [Price]
-  balance(uid: String): String
-  transactions(uid: String): [Transaction]
-
-  earns: [Earn] # TODO
-
-  # test
-  getinfo: String
+  btcWallet(uid: String): BtcWallet
+  earnList: [Earn]
 }
 
 type Mutation {
-  addInvoice(value: Int, memo: String, uid: String): String
-  addEarn(snapshot: [String], uid: String): Boolean
-  updatePendingInvoice(hash: String, uid: String): Boolean
-  payInvoice(invoice: String, uid: String): String
+  invoice(uid: String): Invoice
+  addEarn(earn: [Earn]): Boolean
 }

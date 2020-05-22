@@ -16,17 +16,21 @@ let lightningWallet
 
 // The root provides a resolver function for each API endpoint
 const root = {
-  balance: ({uid}) => {
+  btcWallet: async ({uid}) => {
     lightningWallet = new LightningWalletAuthed({uid})
-    return lightningWallet.getBalance()
-  },
-  transactions: async ({uid}) => {
-    try {
-      lightningWallet = new LightningWalletAuthed({uid})
-      return lightningWallet.getTransactions()
-    } catch (err) {
-      console.warn(err)
-    }
+    return ({
+      balance: () => {
+        return lightningWallet.getBalance()
+      },
+      transactions: async () => {
+        try {
+          lightningWallet = new LightningWalletAuthed({uid})
+          return lightningWallet.getTransactions()
+        } catch (err) {
+          console.warn(err)
+        }
+      },
+    })
   },
   prices: async () => {
     try {
@@ -40,53 +44,56 @@ const root = {
     }
   },
 
-  addInvoice: async ({value, memo, uid}) => {
-    try {
-      lightningWallet = new LightningWalletAuthed({uid})
-      const result = await lightningWallet.addInvoice({value, memo})
-      console.log({result})
-      return result
-    } catch (err) {
-      console.warn(err)
-      throw err
-    }
-  },
-  updatePendingInvoice: async ({hash, uid}) => {
-    try {
-      const wallet = new LightningWalletAuthed({uid})
-      return await wallet.updatePendingInvoice({hash})
-    } catch (err) {
-      console.warn(err)
-      throw err
-    }
-  },
-  payInvoice: async ({invoice, uid}) => {
-    try {
-      const wallet = new LightningWalletAuthed({uid})
-      const success = await wallet.payInvoice({invoice})
-      console.log({success})
-      return success
-    } catch (err) {
-      console.warn(err)
-      throw err
-    }
-  },
-  addEarn: async ({snapshot, uid}) => {
-    try {
-      lightningWallet = new LightningWalletAuthed({uid})
-      const success = await lightningWallet.addEarn(snapshot)
-      return success
-    } catch (err) {
-      console.warn(err)
-      throw err
-    }
-  },
+  invoice: async ({uid}) => {
+    lightningWallet = new LightningWalletAuthed({uid})
+    return ({
 
-  // debug
-  getinfo: () => {
-    lightningWallet = new LightningWalletAuthed({uid: "1234"})
-    return lightningWallet.getInfo()
+      addInvoice: async ({value, memo, uid}) => {
+        try {
+          const result = await lightningWallet.addInvoice({value, memo})
+          console.log({result})
+          return result
+        } catch (err) {
+          console.warn(err)
+          throw err
+        }
+      },
+      updatePendingInvoice: async ({hash, uid}) => {
+        try {
+          return await lightningWallet.updatePendingInvoice({hash})
+        } catch (err) {
+          console.warn(err)
+          throw err
+        }
+      },
+      payInvoice: async ({invoice, uid}) => {
+        try {
+          const success = await lightningWallet.payInvoice({invoice})
+          console.log({success})
+          return success
+        } catch (err) {
+          console.warn(err)
+          throw err
+        }
+      },
+  })},
+
+  earnList: async () => {
+    // TODO
   },
+  earnMutation: async ({uid}) => {
+    return ({
+      add: async ({snapshot}) => {
+        try {
+          lightningWallet = new LightningWalletAuthed({uid})
+          const success = await lightningWallet.addEarn(snapshot)
+          return success
+        } catch (err) {
+          console.warn(err)
+          throw err
+        }
+      }
+  })}
 };
 
 const app = express()
