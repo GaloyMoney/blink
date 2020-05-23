@@ -63,7 +63,7 @@ jobs:
             sed -e "s@macaroon1val@$MACAROON1@g" -e "s@macaroon2val@$MACAROON2@g" test-image.yml | kubectl apply -f - -o yaml
       - run:
           name: wait for test-pod to come alive
-          command: echo $(kubectl get pods) && sleep 40 # TODO: try to improve approach if possible
+          command: echo $(kubectl get pods) && sleep 60 # TODO: try to improve approach if possible
       - run:
           name: Run tests
           command: |
