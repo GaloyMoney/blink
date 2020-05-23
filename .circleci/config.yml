@@ -63,7 +63,8 @@ jobs:
             sed -e "s@macaroon1val@$MACAROON1@g" -e "s@macaroon2val@$MACAROON2@g" test-image.yml | kubectl apply -f - -o yaml
   build_test_image:
     working_directory: ~/GaloyApp/backend/firebase
-    machine: true
+    docker:
+      image: cimg/base:2020.01
     steps:
       - checkout:
           path: ~/GaloyApp
