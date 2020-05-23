@@ -62,6 +62,9 @@ jobs:
             export MACAROON2=$(kubectl exec lnd-container-1 -- base64 /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon | tr -d '\n\r') &&\
             sed -e "s@macaroon1val@$MACAROON1@g" -e "s@macaroon2val@$MACAROON2@g" test-image.yml | kubectl apply -f - -o yaml
       - run:
+          name: wait for test-pod to come alive
+          command: echo $(ls) && sleep 30 # TODO: try to improve approach if possible
+      - run:
           name: Run tests
           command: |
             kubectl exec test-pod -- bash -c "cd functions && yarn jest"
