@@ -22,9 +22,9 @@ jobs:
             echo ${GCLOUD_SERVICE_KEY} > gcloud-service-key.json
             gcloud auth activate-service-account --key-file=gcloud-service-key.json
             gcloud config set project ${GOOGLE_PROJECT_ID}
-            gcloud container clusters create $(cat clustername | tr -d '\n\r') --zone ${GOOGLE_COMPUTE_ZONE} --num-nodes=1 \
+            gcloud container clusters create $(cat clustername | tr -d '\n\r') --region us-central1-b --num-nodes=1 \
             --machine-type=n1-standard-2 --disk-size=10Gi
-            gcloud container clusters get-credentials $(cat clustername | tr -d '\n\r') --zone ${GOOGLE_COMPUTE_ZONE} --project ${GOOGLE_PROJECT_ID}
+            gcloud container clusters get-credentials $(cat clustername | tr -d '\n\r') --region us-central1-b --project ${GOOGLE_PROJECT_ID}
       - run:
           name: wait for k8s worker nodes
           command: echo $(ls) && sleep 30 # TODO: try to improve approach if possible
@@ -63,10 +63,11 @@ jobs:
             sed -e "s@macaroon1val@$MACAROON1@g" -e "s@macaroon2val@$MACAROON2@g" test-image.yml | kubectl apply -f - -o yaml
       - run:
           name: wait for test-pod to come alive
-          command: echo $(ls) && sleep 30 # TODO: try to improve approach if possible
+          command: echo $(kubectl get pods) && sleep 40 # TODO: try to improve approach if possible
       - run:
           name: Run tests
           command: |
+            kubectl get pods
             kubectl exec test-pod -- bash -c "cd functions && yarn jest"
   build_test_image:
     working_directory: ~/GaloyApp/backend/firebase
