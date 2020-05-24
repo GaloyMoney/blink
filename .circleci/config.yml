@@ -68,7 +68,11 @@ jobs:
           name: Run tests
           command: |
             kubectl get pods
-            kubectl exec test-pod -- bash -c "cd functions && yarn jest"
+            bash -c "kubectl exec test-pod -- bash -c \"cd functions && yarn jest\"; \ 
+            echo \$? > testresult"
+      - run:
+          name: Check test result
+          command: echo $(cat testresult)
   build_test_image:
     working_directory: ~/GaloyApp/backend/firebase
     machine: true
