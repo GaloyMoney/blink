@@ -19,7 +19,6 @@
   },
   "main": "lib/backend/firebase/functions/src/index.js",
   "dependencies": {
-    "@babel/core": "^7.9.6",
     "@babel/preset-env": "^7.9.6",
     "apisauce": "^1.1.1",
     "await-timeout": "^1.1.1",
@@ -34,6 +33,7 @@
     "validate.js": "^0.13.1"
   },
   "devDependencies": {
+    "@babel/core": "^7.9.6",
     "@types/jest": "^25.2.1",
     "@types/node": "^13.13.1",
     "bolt07": "^1.5.0",
