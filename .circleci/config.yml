@@ -223,10 +223,11 @@ jobs:
           name: Run tests
           command: |
             kubectl get pods
-            bash -c "kubectl exec test-pod -- bash -c \"cd functions && yarn test\"; \ 
-            echo \$? > testresult"
+            bash -c "kubectl exec test-pod -- bash -c \"cd functions && yarn test\""
+            echo $? > testresult
             kubectl cp test-pod:/functions/artifacts/junit.xml ./reports/junit.xml
-            echo $(ls) && echo $(ls reports)
+            echo $(cat testresult)
+
       - store_test_results:
           path: ./reports
       - store_artifacts:
