@@ -263,9 +263,6 @@ jobs:
           path: ./reports
       - store_artifacts:
           path: ./reports
-
-      - run:
-          name: 
       - run:
           name: Delete devnet cluster
           command: |
