@@ -147,50 +147,18 @@ jobs:
       - store_artifacts:
           path: ios/test-results
 
-  firebase-functions:
-    working_directory: ~/GaloyApp/backend/firebase/functions
-    docker:
-      - image: circleci/node:10
+  build_test_image:
+    working_directory: ~/GaloyApp/backend/firebase
+    machine: true
     steps:
       - checkout:
           path: ~/GaloyApp
-
-      - restore_cache:
-          key: yarn-v1-{{ checksum "yarn.lock" }}-{{ arch }}
-
-      - restore_cache:
-          key: node-v1-{{ checksum "package.json" }}-{{ arch }}
-
-      - run: yarn install
-
-      - save_cache:
-          key: yarn-v1-{{ checksum "yarn.lock" }}-{{ arch }}
-          paths:
-            - ~/.cache/yarn
-
-      - save_cache:
-          key: node-v1-{{ checksum "package.json" }}-{{ arch }}
-          paths:
-            - node_modules
-
-      - run:
-          name: yarn test
-          command: yarn run test
-          # mkdir -p test-results/jest            
-          # environment:
-          #   JEST_JUNIT_OUTPUT: test-results/jest/junit.xml
-
-      # - persist_to_workspace:
-      #     root: ~/GaloyApp/mobile
-      #     paths:
-      #       - node_modules
-
-      # - store_test_results:
-      #     path: test-results
-
-      # - store_artifacts:
-      #     path: test-results
-
+      - gcp-gcr/build-image:
+          image: test-image
+      - gcp-gcr/gcr-auth
+      - gcp-gcr/push-image:
+          image: test-image
+          
   k8s_deploy:
     working_directory: ~/GaloyApp/backend
     docker:
@@ -271,25 +239,10 @@ jobs:
           name: Check test result
           command: bash -c "if(( $(<testresult)==0 )); then exit 0 ; else exit 1 ; fi"
 
-  build_test_image:
-    working_directory: ~/GaloyApp/backend/firebase
-    machine: true
-    steps:
-      - checkout:
-          path: ~/GaloyApp
-      - gcp-gcr/build-image:
-          image: test-image
-      - gcp-gcr/gcr-auth
-      - gcp-gcr/push-image:
-          image: test-image
-
-
-
 workflows:
   kube:
     jobs:
       - build_test_image
-      # - k8s_deploy
       - k8s_deploy:
           requires:
             - build_test_image
