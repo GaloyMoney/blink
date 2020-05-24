@@ -72,8 +72,8 @@ jobs:
             echo \$? > testresult"
       - run:
           name: Delete devnet cluster
-          command: gcloud container clusters --region us-central1-b delete \
-            $(cat clustername | tr -d '\n\r')
+          command: |
+            gcloud container clusters delete $(cat clustername | tr -d '\n\r') --region us-central1-b
       - run:
           name: Check test result
           command: bash -c "if(( $(<testresult)==0 )); then exit 0 ; else exit 1 ; fi"
