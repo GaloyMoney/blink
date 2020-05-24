@@ -255,8 +255,17 @@ jobs:
           name: Run tests
           command: |
             kubectl get pods
-            bash -c "kubectl exec test-pod -- bash -c \"cd functions && yarn jest\"; \ 
+            bash -c "kubectl exec test-pod -- bash -c \"cd functions && yarn test\"; \ 
             echo \$? > testresult"
+            kubectl cp test-pod:/functions/artifacts/junit.xml ./reports/junit.xml
+            echo $(ls) && echo $(ls reports)
+      - store_test_results:
+          path: ./reports
+      - store_artifacts:
+          path: ./reports
+
+      - run:
+          name: 
       - run:
           name: Delete devnet cluster
           command: |

@@ -12,7 +12,7 @@
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
-    "test": "jest"
+    "test": "export JEST_JUNIT_OUTPUT_DIR=\"./artifacts\" && jest --ci --reporters=default --reporters=jest-junit"
   },
   "engines": {
     "node": "10"
@@ -25,6 +25,7 @@
     "ccxt": "^1.26.54",
     "firebase-admin": "^8.10.0",
     "firebase-functions": "^3.6.0",
+    "jest-junit": "^10.0.0",
     "ln-service": "^47.16.0",
     "medici": "^4.0.1",
     "moment": "^2.24.0",
