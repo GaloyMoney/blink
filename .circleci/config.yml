@@ -47,7 +47,7 @@ jobs:
           name: helm install mongodb
           command: |
             helm install mongodb --set \
-            mongodbUsername=testGaloy,mongodbPassword=testGaloy,mongodbDatabase=galoy bitnami/mongodb
+            mongodbUsername=testGaloy,mongodbPassword=testGaloy,mongodbDatabase=galoy,persistence.enabled=false bitnami/mongodb
       - run:
           name: Check Helm release status
           command: helm list --all-namespaces --all
