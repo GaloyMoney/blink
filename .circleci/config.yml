@@ -90,11 +90,11 @@ jobs:
 workflows:
   kube:
     jobs:
-      - build_test_image
-      # - k8s_deploy
-      - k8s_deploy:
-          requires:
-            - build_test_image
+      # - build_test_image
+      - k8s_deploy
+      # - k8s_deploy:
+      #     requires:
+      #       - build_test_image
 
 
 
