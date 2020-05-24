@@ -6,6 +6,5 @@ module.exports = {
     ...require("./exchange"),
     ...require("./lightning"),
     ...require("./user"),
-    ...require("./globalSettings"),
     ...require("./price"),
 }
