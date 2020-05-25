@@ -228,9 +228,9 @@ jobs:
             kubectl cp test-pod:/functions/artifacts/junit.xml ./reports/junit.xml
             echo $(cat testresult)
       - store_test_results:
-          path: .firebase/functions/reports
+          path: firebase/functions/reports
       - store_artifacts:
-          path: .firebase/functions/reports
+          path: firebase/functions/reports
       - run:
           name: Delete devnet cluster
           command: |
