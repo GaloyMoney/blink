@@ -225,8 +225,11 @@ jobs:
             kubectl get pods
             kubectl exec test-pod -- bash -c "cd functions && yarn test"
             echo $? > testresult
-            kubectl cp test-pod:/functions/artifacts/junit.xml ./reports/junit.xml
             echo $(cat testresult)
+      - run:
+          name: Fetch test results
+          command: kubectl cp test-pod:/functions/artifacts/junit.xml ./reports/junit.xml
+          when: always
       - store_test_results:
           path: firebase/functions/reports
       - store_artifacts:
