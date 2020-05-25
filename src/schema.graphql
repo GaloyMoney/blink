@@ -39,5 +39,5 @@ type Query {
 
 type Mutation {
   invoice(uid: String): Invoice
-  addEarn(earn: [Earn]): Boolean
+  addEarn(earn: [ID]): Boolean
 }
