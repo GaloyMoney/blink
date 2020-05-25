@@ -223,11 +223,10 @@ jobs:
           name: Run tests
           command: |
             kubectl get pods
-            bash -c "kubectl exec test-pod -- bash -c \"cd functions && yarn test\""
+            kubectl exec test-pod -- bash -c "cd functions && yarn test"
             echo $? > testresult
             kubectl cp test-pod:/functions/artifacts/junit.xml ./reports/junit.xml
             echo $(cat testresult)
-
       - store_test_results:
           path: ./reports
       - store_artifacts:
@@ -236,14 +235,15 @@ jobs:
           name: Delete devnet cluster
           command: |
             gcloud container clusters delete $(cat clustername | tr -d '\n\r') --quiet --region us-central1-b
-      - run:
-          name: Check test result
-          command: bash -c "if(( $(<testresult)==0 )); then exit 0 ; else exit 1 ; fi"
+          when: always
+      # - run:
+      #     name: Check test result
+      #     command: bash -c "if(( $(<testresult)==0 )); then exit 0 ; else exit 1 ; fi"
 
 workflows:
   kube:
     jobs:
-      - build_test_image
-      - test:
-          requires:
-            - build_test_image
+      # - build_test_image
+      - test
+          # requires:
+          #   - build_test_image
