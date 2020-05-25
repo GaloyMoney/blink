@@ -159,7 +159,7 @@ jobs:
       - gcp-gcr/push-image:
           image: test-image
           
-  k8s_deploy:
+  test:
     working_directory: ~/GaloyApp/backend
     docker:
       - image: kiwigrid/gcloud-kubectl-helm:latest
@@ -244,6 +244,6 @@ workflows:
   kube:
     jobs:
       - build_test_image
-      - k8s_deploy:
+      - test:
           requires:
             - build_test_image
