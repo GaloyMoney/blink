@@ -1,4 +1,8 @@
-version: 2
+version: 2.1
+orbs:
+  gcp-gke: circleci/gcp-gke@1.0.3
+  helm: circleci/helm@0.2.3
+  gcp-gcr: circleci/gcp-gcr@0.7.1
 jobs:
   react-native:
     working_directory: ~/GaloyApp/mobile
@@ -143,102 +147,103 @@ jobs:
       - store_artifacts:
           path: ios/test-results
 
-  firebase-functions:
-    working_directory: ~/GaloyApp/backend/firebase/functions
-    docker:
-      - image: circleci/node:10
+  build_test_image:
+    working_directory: ~/GaloyApp/backend/firebase
+    machine: true
     steps:
       - checkout:
           path: ~/GaloyApp
-
-      - restore_cache:
-          key: yarn-v1-{{ checksum "yarn.lock" }}-{{ arch }}
-
-      - restore_cache:
-          key: node-v1-{{ checksum "package.json" }}-{{ arch }}
-
-      - run: yarn install
-
-      - save_cache:
-          key: yarn-v1-{{ checksum "yarn.lock" }}-{{ arch }}
-          paths:
-            - ~/.cache/yarn
-
-      - save_cache:
-          key: node-v1-{{ checksum "package.json" }}-{{ arch }}
-          paths:
-            - node_modules
-
+      - gcp-gcr/build-image:
+          image: test-image
+      - gcp-gcr/gcr-auth
+      - gcp-gcr/push-image:
+          image: test-image
+          
+  test:
+    working_directory: ~/GaloyApp/backend
+    docker:
+      - image: kiwigrid/gcloud-kubectl-helm:latest
+    steps:
+      - checkout:
+          path: ~/GaloyApp
       - run:
-          name: yarn test
-          command: yarn run test
-          # mkdir -p test-results/jest            
-          # environment:
-          #   JEST_JUNIT_OUTPUT: test-results/jest/junit.xml
-
-      # - persist_to_workspace:
-      #     root: ~/GaloyApp/mobile
-      #     paths:
-      #       - node_modules
-
-      # - store_test_results:
-      #     path: test-results
-
-      # - store_artifacts:
-      #     path: test-results
+          name: generate cluster name
+          command: |
+            echo "devnet-cluster-"$RANDOM > clustername
+            cat clustername
+      - run:
+          name: authorize gcloud and kubectl on circleci and create cluster
+          command: |
+            echo ${GCLOUD_SERVICE_KEY} > gcloud-service-key.json
+            gcloud auth activate-service-account --key-file=gcloud-service-key.json
+            gcloud config set project ${GOOGLE_PROJECT_ID}
+            gcloud container clusters create $(cat clustername | tr -d '\n\r') --region us-central1-b --num-nodes=1 \
+            --machine-type=n1-standard-2 --disk-size=10Gi
+            gcloud container clusters get-credentials $(cat clustername | tr -d '\n\r') --region us-central1-b --project ${GOOGLE_PROJECT_ID}
+      - run:
+          name: wait for k8s worker nodes
+          command: echo $(ls) && sleep 30 # TODO: try to improve approach if possible
+      - run:
+          name: helm install bitcoind-chart
+          command: |
+            helm install bitcoind-chart \
+            -f ~/GaloyApp/backend/bitcoind-chart/regtest-values.yaml \
+            ~/GaloyApp/backend/bitcoind-chart
+      - run:
+          name: helm install lnd-chart
+          command: |
+            helm install lnd-chart \
+            -f ~/GaloyApp/backend/lnd-chart/regtest-values.yaml \
+            ~/GaloyApp/backend/lnd-chart
+      - run:
+          name: helm add repo bitnami
+          command: helm repo add bitnami https://charts.bitnami.com/bitnami
+      - run:
+          name: helm install mongodb
+          command: |
+            helm install mongodb --set \
+            mongodbUsername=testGaloy,mongodbPassword=testGaloy,mongodbDatabase=galoy,persistence.enabled=false bitnami/mongodb
+      - run:
+          name: Check Helm release status
+          command: helm list --all-namespaces --all
+      - run:
+          name: wait for pod to come alive
+          command: sleep 50 # TODO: try to improve approach if possible
+      - run:
+          name: retrieve macaroons from lnd containers and install test image
+          command: |
+            cd deploy &&\
+            export MACAROON1=$(kubectl exec lnd-container-0 -- base64 /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon | tr -d '\n\r') &&\
+            export MACAROON2=$(kubectl exec lnd-container-1 -- base64 /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon | tr -d '\n\r') &&\
+            sed -e "s@macaroon1val@$MACAROON1@g" -e "s@macaroon2val@$MACAROON2@g" test-image.yml | kubectl apply -f - -o yaml
+      - run:
+          name: wait for test-pod to come alive
+          command: echo $(kubectl get pods) && sleep 70 # TODO: try to improve approach if possible
+      - run:
+          name: Run tests
+          command: |
+            kubectl get pods
+            kubectl exec test-pod -- bash -c "cd functions && yarn test"
+            echo $? > testresult
+            echo $(cat testresult)
+      - run:
+          name: Fetch test results
+          command: kubectl cp test-pod:/functions/artifacts/junit.xml ./reports/junit.xml
+          when: always
+      - store_test_results:
+          path: ./reports
+      - store_artifacts:
+          path: ./reports
+      - run:
+          name: Delete devnet cluster
+          command: |
+            gcloud container clusters delete $(cat clustername | tr -d '\n\r') --quiet --region us-central1-b
+          when: always
 
 workflows:
-  version: 2
-  build-and-test:
+  kube:
     jobs:
-      - react-native
-      - android:
-          requires:
-            - react-native
-      - ios:
-          requires:
-            - react-native
-      - firebase-functions
-
-
-
-
-# # Javascript Node CircleCI 2.0 configuration file
-# #
-# # Check https://circleci.com/docs/2.0/language-javascript/ for more details
-# #
-# version: 2
-# jobs:
-#   build:
-#     docker:
-#       # specify the version you desire here
-#       - image: circleci/node:8
-
-#       # Specify service dependencies here if necessary
-#       # CircleCI maintains a library of pre-built images
-#       # documented at https://circleci.com/docs/2.0/circleci-images/
-#       # - image: circleci/mongo:3.4.4
-
-#     working_directory: ~/GaloyApp/mobile
-
-#     steps:
-#       - checkout:
-#           path: ~/GaloyApp
-
-#       # Download and cache dependencies
-#       - restore_cache:
-#           keys:
-#             - v1-dependencies-{{ checksum "package.json" }}
-#             # fallback to using the latest cache if no exact match is found
-#             - v1-dependencies-
-
-#       - run: yarn install
-
-#       - save_cache:
-#           paths:
-#             - node_modules
-#           key: v1-dependencies-{{ checksum "package.json" }}
-
-#       # run tests!
-#       - run: ls
-#       - run: cd yarn test
+      # - build_test_image
+      - test
+          # requires:
+          #   - build_test_image

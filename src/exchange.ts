@@ -1,5 +1,5 @@
 import * as functions from 'firebase-functions';
-import { IBuyRequest, IQuoteRequest, IQuoteResponse } from "../../../../common/types";
+import { IBuyRequest, IQuoteRequest, IQuoteResponse } from "./types";
 import { sign, verify } from "./crypto";
 import { FiatUserWallet } from "./FiatUserWallet";
 import { FiatTransaction } from "./interface";

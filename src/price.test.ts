@@ -13,6 +13,10 @@ beforeAll(async () => {
   price = new Price()
 })
 
+afterAll(async () => {
+  return await mongoose.connection.close()
+});
+
 it('test updating price', async () => {
   await price.update()
   // test it doesn't throw an error
