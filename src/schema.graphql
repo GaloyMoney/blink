@@ -1,5 +1,5 @@
 type Transaction {
-  # TODO add ID for caching purpose
+  id: ID!
   amount: Int!,
   description: String!,
   created_at: String!,
@@ -8,7 +8,7 @@ type Transaction {
 }
 
 type Price {
-  t: Int
+  id: ID!
   o: Float
 }
 
@@ -20,8 +20,10 @@ type Earn {
   value: Int
 }
 
-type BtcWallet {
-  balance: String
+type Wallet {
+  id: ID
+  currency: String # enum?
+  balance: Int
   transactions: [Transaction]
 }
 
@@ -31,13 +33,26 @@ type Invoice {
   payInvoice(invoice: String): String
 }
 
+type User {
+  id: ID
+  name: String!
+  level: Int!
+}
+
+input InputUser {
+  id: ID
+  level: Int
+}
+
 type Query {  
   prices: [Price]
-  btcWallet(uid: String): BtcWallet
+  wallet(uid: String): [Wallet]
   earnList: [Earn]
+  me(uid: String): User
 }
 
 type Mutation {
   invoice(uid: String): Invoice
   addEarn(earn: [ID]): Boolean
+  updateUser(user: InputUser): User
 }

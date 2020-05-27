@@ -359,6 +359,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
     }
 
     async addEarn(snapshot) {
+        // TODO move out lightningUser
         // TODO FIXME XXX: this function is succeptible to race condition.
         // add a lock or db-level transaction to prevent this
         // we could use something like this: https://github.com/chilts/mongodb-lock
@@ -397,6 +398,11 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
         return true
     }
 
+    async setLevel({level}) {
+        // FIXME this should be in User and not tight to Lightning // use Mixins instead
+        const User = await createUser()
+        return await User.findOneAndUpdate({_id: this.uid}, {level}, {new: true, upsert: true} )
+    }
 
     /**
      * Advanced payment method to use keySend (new features from lnd 0.9)

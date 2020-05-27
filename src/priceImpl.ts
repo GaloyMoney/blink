@@ -62,7 +62,7 @@ export class Price {
         // assuming we can do this on subquery in MongoDB
         const data = ohlcv.pair.exchange.price
         const result = data.map(value => ({
-            t: moment(value._id).unix(),
+            id: moment(value._id).unix(),
             o: value.o
         })).sort((a, b) => a.t - b.t).slice(- (24 * 366 + 1)) // 1y of hourly candles / FIXME use date instead.
 

@@ -5,6 +5,7 @@ const graphqlHTTP = require("express-graphql")
 import { Price } from "./priceImpl";
 let fs = require("fs-extra");
 let path = require("path");
+import { createUser } from "./db"
 
 
 // Construct a schema, using GraphQL schema language
@@ -14,29 +15,57 @@ const schema = buildSchema(schema_string);
 
 let lightningWallet
 
+const DEFAULT_USD = {
+  currency: "USD",
+  balance: 0,
+  transactions: [],
+  id: "USD",
+}
+
 // The root provides a resolver function for each API endpoint
 const root = {
-  btcWallet: async ({uid}) => {
+  me: async ({uid}) => {
+    const User = await createUser()
+    const user = await User.findOne({_id: uid})
+    console.log({user})
+    console.log("me")
+    return {
+      id: uid,
+      level: 1,
+    }
+  },
+  updateUser: async ({user}) => {
+    // TODO only level for now
+    lightningWallet = new LightningWalletAuthed({uid: user._id})
+    const result = await lightningWallet.setLevel({level: 1})
+    return {
+      id: user._id,
+      level: result.level,
+    }
+  },
+  wallet: async ({uid}) => {
     lightningWallet = new LightningWalletAuthed({uid})
-    return ({
+    return ([{
+      id: "BTC",
+      currency: "BTC",
       balance: () => {
         return lightningWallet.getBalance()
       },
       transactions: async () => {
         try {
-          lightningWallet = new LightningWalletAuthed({uid})
           return lightningWallet.getTransactions()
         } catch (err) {
           console.warn(err)
         }
       },
-    })
+    },
+      DEFAULT_USD]
+    )
   },
   prices: async () => {
     try {
       const price = new Price()
       const lastPrices = await price.lastCached()
-      console.log({lastPrices})
       return lastPrices
     } catch (err) {
       console.warn(err)

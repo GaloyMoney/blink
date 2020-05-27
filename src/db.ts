@@ -41,7 +41,8 @@ export const setupMongoose = async () => {
       type: Date,
       default: Date.now
     },
-    earn: [String]
+    earn: [String],
+    level: Number,
     // firstName,
     // lastName,
     // activated,
