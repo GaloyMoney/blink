@@ -125,7 +125,8 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
             hash: item.hash,
             fee: item.fee,
             // destination: TODO
-            type: formatType(item.type, item.pending)
+            type: formatType(item.type, item.pending),
+            id: item._id,
         }))
 
         return results_processed
