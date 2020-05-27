@@ -42,6 +42,7 @@ type User {
 input InputUser {
   id: ID
   level: Int
+  deviceToken: String
 }
 
 type Query {  
@@ -55,4 +56,5 @@ type Mutation {
   invoice(uid: String): Invoice
   addEarn(earn: [ID]): Boolean
   updateUser(user: InputUser): User
+  deleteUser(uid: String): Boolean # TODO
 }
