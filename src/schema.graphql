@@ -18,6 +18,7 @@ type Earn {
   """
   id: ID!
   value: Int
+  completed: Boolean
 }
 
 type Wallet {
@@ -48,13 +49,13 @@ input InputUser {
 type Query {  
   prices: [Price]
   wallet(uid: String): [Wallet]
-  earnList: [Earn]
+  earnList(uid: String): [Earn]
   me(uid: String): User
 }
 
 type Mutation {
   invoice(uid: String): Invoice
-  addEarn(earn: [ID]): Boolean
+  addEarn(earn: [ID]): [Earn]
   updateUser(user: InputUser): User
   deleteUser(uid: String): Boolean # TODO
 }

@@ -6,6 +6,7 @@ import { Price } from "./priceImpl";
 let fs = require("fs-extra");
 let path = require("path");
 import { createUser } from "./db"
+import { OnboardingEarn } from "../../../../common/types";
 
 
 // Construct a schema, using GraphQL schema language
@@ -107,8 +108,22 @@ const root = {
       },
   })},
 
-  earnList: async () => {
-    // TODO
+  earnList: async ({uid}) => {
+    let response: Object[] = []
+
+    const User = await createUser()
+    const user = await User.findOne({_id: uid})
+    const earned = user?.earn || [] 
+
+    for (const [id, value] of Object.entries(OnboardingEarn)) {
+      response.push({
+        id,
+        value,
+        completed: earned.findIndex(item => item === id) !== -1,
+      })
+    }
+
+    return response
   },
   earnMutation: async ({uid}) => {
     return ({
