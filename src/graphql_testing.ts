@@ -78,7 +78,7 @@ const root = {
     lightningWallet = new LightningWalletAuthed({uid})
     return ({
 
-      addInvoice: async ({value, memo, uid}) => {
+      addInvoice: async ({value, memo}) => {
         try {
           const result = await lightningWallet.addInvoice({value, memo})
           console.log({result})
@@ -88,7 +88,7 @@ const root = {
           throw err
         }
       },
-      updatePendingInvoice: async ({hash, uid}) => {
+      updatePendingInvoice: async ({hash}) => {
         try {
           return await lightningWallet.updatePendingInvoice({hash})
         } catch (err) {
@@ -96,7 +96,7 @@ const root = {
           throw err
         }
       },
-      payInvoice: async ({invoice, uid}) => {
+      payInvoice: async ({invoice}) => {
         try {
           const success = await lightningWallet.payInvoice({invoice})
           console.log({success})
@@ -107,7 +107,6 @@ const root = {
         }
       },
   })},
-
   earnList: async ({uid}) => {
     let response: Object[] = []
 
@@ -125,20 +124,16 @@ const root = {
 
     return response
   },
-  earnMutation: async ({uid}) => {
-    return ({
-      add: async ({snapshot}) => {
-        try {
-          lightningWallet = new LightningWalletAuthed({uid})
-          const success = await lightningWallet.addEarn(snapshot)
-          return success
-        } catch (err) {
-          console.warn(err)
-          throw err
-        }
-      }
-  })}
-};
+  earnCompleted: async ({uid, id}) => {
+    try {
+      lightningWallet = new LightningWalletAuthed({uid})
+      const success = await lightningWallet.addEarn(id)
+      return success
+    } catch (err) {
+      console.warn(err)
+      throw err
+    }
+}}
 
 const app = express()
 app.use('/graphql', graphqlHTTP({

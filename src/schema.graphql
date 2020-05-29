@@ -55,7 +55,7 @@ type Query {
 
 type Mutation {
   invoice(uid: String): Invoice
-  addEarn(earn: [ID]): [Earn]
+  earnCompleted(id: ID, uid: String): Earn
   updateUser(user: InputUser): User
   deleteUser(uid: String): Boolean # TODO
 }
