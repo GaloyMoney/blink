@@ -372,10 +372,10 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
         const userPastState = await User.findOneAndUpdate(
             {_id: this.uid}, 
             { $push: { earn: id } },
-            {new: true, upsert: true} 
+            {upsert: true} 
         )
 
-        if (userPastState.earn.findIndex(item => item == id) === -1) {
+        if (userPastState.earn.findIndex(item => item === id) === -1) {
             await lightningAdminWallet.addFunds({amount, uid: this.uid, memo: id, type: "earn"})
         }
 
