@@ -10,20 +10,19 @@ let macaroon1 = process.env.MACAROON1
 let macaroon2 = process.env.MACAROON2
 let macaroon3 = process.env.MACAROON3
 let lnd1
-let lnd2
-let lnd3
+let lndOutside1
+let lndOutside2
 
 let lnd1_wallet_addr
-let lnd2_wallet_addr
+let lndOutside1_wallet_addr
 
 let lnd_addr = '172.17.0.2'
 let lnd_outside_1_addr = '172.17.0.2'
 let lnd_outside_2_addr = '172.17.0.2'
 let bitcoind_addr = '172.17.0.2'
 let bitcoind_port = process.env.BITCOINDPORT
-let lnd_p2p_port = process.env.LNDP2PPORT //maybe not needed
-let lnd_outside_1_p2p_port = process.env.LND2P2PPORT
-let lnd_outside_2_p2p_port = process.env.LND3P2PPORT
+let lnd_outside_1_p2p_port = process.env.lndOutside1P2PPORT
+let lnd_outside_2_p2p_port = process.env.lndOutside2P2PPORT
 let lnd_rpc_port = process.env.LNDRPCPORT
 let lnd_outside_1_rpc_port = process.env.LNDOUTSIDERPCPORT
 let lnd_outside_2_rpc_port = process.env.LNDOUTSIDE2RPCPORT
@@ -32,7 +31,7 @@ let lnd_outside_2_rpc_port = process.env.LNDOUTSIDE2RPCPORT
 // let lnd_outside_2_addr = 'lnd-outside-2'
 // let bitcoind_addr = 'bitcoind-service'
 // let bitcoind_port = 18443
-// let lnd_p2p_port, lnd_outside_1_p2p_port, lnd_outside_2_p2p_port = 9735, 9735, 9735
+// let lnd_outside_1_p2p_port, lnd_outside_2_p2p_port = 9735, 9735
 // let lnd_rpc_port, lnd_outside_1_rpc_port  = 10009, 10009
 
 
@@ -40,9 +39,8 @@ let bitcoindClient
 
 beforeAll(async () => {
 	bitcoind_port = process.env.BITCOINDPORT
-	let lnd_p2p_port = process.env.LNDP2PPORT //maybe not needed
-	let lnd_outside_1_p2p_port = process.env.LND2P2PPORT
-	let lnd_outside_2_p2p_port = process.env.LND3P2PPORT
+	let lnd_outside_1_p2p_port = process.env.lndOutside1P2PPORT
+	let lnd_outside_2_p2p_port = process.env.lndOutside2P2PPORT
 	let lnd_rpc_port = process.env.LNDRPCPORT
 	let lnd_outside_1_rpc_port = process.env.LNDOUTSIDERPCPORT
 })
@@ -54,13 +52,13 @@ beforeAll(async () => {
 		socket: `${lnd_addr}:${lnd_rpc_port}`,
 	}).lnd;
 
-	lnd2 = lnService.authenticatedLndGrpc({
+	lndOutside1 = lnService.authenticatedLndGrpc({
 		cert,
 		macaroon: macaroon2,
 		socket: `${lnd_outside_1_addr}:${lnd_outside_1_rpc_port}`,
 	}).lnd;
 
-	lnd3 = lnService.authenticatedLndGrpc({
+	lndOutside2 = lnService.authenticatedLndGrpc({
 		cert,
 		macaroon: macaroon3,
 		socket: `${lnd_outside_2_addr}:${lnd_outside_2_rpc_port}`,
@@ -68,8 +66,8 @@ beforeAll(async () => {
 
 	lnd1_wallet_addr = (await lnService.createChainAddress({ format: 'np2wpkh', lnd: lnd1 })).address
 	console.log("addr1", lnd1_wallet_addr)
-	lnd2_wallet_addr = (await lnService.createChainAddress({ format: 'np2wpkh', lnd: lnd2 })).address
-	console.log("addr2", lnd2_wallet_addr)
+	lndOutside1_wallet_addr = (await lnService.createChainAddress({ format: 'np2wpkh', lnd: lndOutside1 })).address
+	console.log("addr2", lndOutside1_wallet_addr)
 	return
 })
 
@@ -82,12 +80,13 @@ it('is a useless test', async () => {
 	expect(1).toEqual(1)
 })
 
-it('funds lnd1 and lnd2', async () => {
+it('funds lnd1 and lndOutside1', async () => {
 	try {
 		let result = await bitcoindClient.generateToAddress(1, lnd1_wallet_addr)
 		expect(result[0].length).toEqual(64)
-		result = await bitcoindClient.generateToAddress(101, lnd2_wallet_addr)
+		result = await bitcoindClient.generateToAddress(1, lndOutside1_wallet_addr)
 		expect(result[0].length).toEqual(64)
+		await bitcoindClient.generateToAddress(99, '2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo')
 	} catch (error) {
 		console.log(error)
 	}
@@ -97,26 +96,32 @@ function sleep(ms) {
 	return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-it('opens channel from lnd1 to lnd2', async () => {
-	let { public_key, is_synced_to_chain } = await lnService.getWalletInfo({ lnd: lnd2 })
-	console.log("is_synced_to_chain", is_synced_to_chain)
-	await sleep(60000)
-	console.log("is_synced_to_chain", is_synced_to_chain)
+it('opens channel from lnd1 to lndOutside1', async () => {
+	let { public_key, is_synced_to_chain } = await lnService.getWalletInfo({ lnd: lndOutside1 })
 
-	let res = await lnService.addPeer({ lnd: lnd1, public_key, socket: `lnd-outside-1:9735` })
-	// console.log("connect channel res", res)
-	res = await lnService.openChannel({ lnd: lnd1, local_tokens: 100000, partner_public_key: public_key, partner_socket: `lnd-outside-1:9735` })
-	// console.log("open channel res", res)
-}, 65000)
-
-it('opens channel from lnd1 to lnd2', async () => {
-	let { public_key, is_synced_to_chain } = await lnService.getWalletInfo({ lnd: lnd3 })
 	console.log("is_synced_to_chain", is_synced_to_chain)
-	await sleep(65000)
+	await sleep(25000)
 	console.log("is_synced_to_chain", is_synced_to_chain)
+	
+	await lnService.addPeer({ lnd: lnd1, public_key, socket: `lnd-outside-1:9735` })
+	
+	let res = await lnService.openChannel({ lnd: lnd1, local_tokens: 100000, partner_public_key: public_key, partner_socket: `lnd-outside-1:9735`, give_tokens:30000 })
+	console.log("open channel res", res)
+}, 40000)
 
-	let res = await lnService.addPeer({ lnd: lnd2, public_key, socket: `lnd-outside-2:9735` })
-	// console.log("connect channel res", res)
-	res = await lnService.openChannel({ lnd: lnd2, local_tokens: 100000, partner_public_key: public_key, partner_socket: `lnd-outside-2:9735` })
-	// console.log("open channel res", res)
-}, 75000)
+it('opens channel from lndOutside1 to lndOutside2', async () => {
+	let { public_key } = await lnService.getWalletInfo({ lnd: lndOutside2 })
+	
+	console.log('synced lnd1', (await lnService.getWalletInfo({ lnd: lndOutside1 })).is_synced_to_chain)
+	await sleep(10000)
+	console.log('synced lnd1', (await lnService.getWalletInfo({ lnd: lndOutside1 })).is_synced_to_chain)
+
+	await lnService.addPeer({ lnd: lndOutside1, public_key, socket: `lnd-outside-2:9735` })
+	
+	let res = await lnService.openChannel({ lnd: lndOutside1, local_tokens: 100000, partner_public_key: public_key, partner_socket: `lnd-outside-2:9735`, give_tokens:30000 })
+	console.log("open channel res", res)
+}, 25000)
+
+it('checks for payment route', async () => {
+
+})
