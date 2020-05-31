@@ -1,4 +1,3 @@
-import * as functions from 'firebase-functions'
 import { sat2btc } from "./utils"
 import { setupMongoose } from "./db"
 const mongoose = require("mongoose")
@@ -44,11 +43,11 @@ export class Price {
         }
         catch (e) {
             if (e instanceof ccxt.NetworkError) {
-                throw new functions.https.HttpsError('resource-exhausted', `fetchTicker failed due to a network error: ${e.message}`);
+                throw new Error(`fetchTicker failed due to a network error: ${e.message}`);
             } else if (e instanceof ccxt.ExchangeError) {
-                throw new functions.https.HttpsError('resource-exhausted', `fetchTicker failed due to exchange error: ${e.message}`);
+                throw new Error(`fetchTicker failed due to exchange error: ${e.message}`);
             } else {
-                throw new functions.https.HttpsError('internal', `issue with ref exchanges: ${e}`);
+                throw new Error(`issue with ref exchanges: ${e}`);
             }
         }
 
@@ -68,7 +67,7 @@ export class Price {
 
         const DEBUG = false
         if (DEBUG) {
-            var fs = require('fs');
+            const fs = require('fs');
             fs.writeFile("test.txt", JSON.stringify(result, null, 4), function(err) {
                 if (err) {
                     console.log(err);
@@ -126,7 +125,7 @@ export class Price {
                 await doc.save()
             }
             catch (err) {
-                throw new functions.https.HttpsError('internal', 'cannot save to db: ' + err.toString())
+                throw new Error('cannot save to db: ' + err.toString())
             }
 
             currDate += increment_ms

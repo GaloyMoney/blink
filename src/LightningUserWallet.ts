@@ -1,9 +1,7 @@
 import Timeout from 'await-timeout';
-import * as functions from 'firebase-functions';
 import moment from "moment";
 import { createInvoiceUser, createMainBook, createUser } from "./db";
-import { ILightningWallet } from "./interface";
-import { Auth } from "./lightning";
+import { Auth, ILightningWallet } from "./interface";
 import { LightningAdminWallet } from "./LightningAdminImpl";
 import { IAddInvoiceRequest, ILightningTransaction, IPaymentRequest, OnboardingEarn, TransactionType } from "./types";
 import { shortenHash } from "./utils";
@@ -158,16 +156,16 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
         console.log(util.inspect({route}, {showHidden: false, depth: null}))
 
         if (!route) {
-            throw new functions.https.HttpsError('internal', `there is no route for this payment`)
+            throw String(`internal: there is no route for this payment`)
         }
 
         const balance = this.getBalance()
         if (balance < tokens + route.safe_fee) {
-            throw new functions.https.HttpsError('cancelled', `the balance is too low. have: ${balance} sats, need ${tokens}`)
+            throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${tokens}`)
         }
 
 
-        // we are confident enough that there is a possible payment route. let's move forward
+        // we are`confide nough that there is a possible payment route. let's move forward
 
         // reduce balance from customer first
         // TODO this should use a reference (using db transactions) from balance computed above
@@ -219,10 +217,10 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
             } catch (err_db) {
                 const err_message = `error canceling payment entry ${util.inspect({err_db})}`
                 console.error(err_message)
-                throw new functions.https.HttpsError('internal', err_message)
+                throw Error(`internal ${err_message}`)
             }
 
-            throw new functions.https.HttpsError('internal', `error paying invoice ${util.inspect({err})}`)
+            throw String(`internal error paying invoice ${util.inspect({err})}`)
         }
         
         // success
@@ -261,7 +259,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
                     await payment.save()
                     await MainBook.void(payment._journal, "Payment canceled") // JSON.stringify(result.failed
                 } catch (err) {
-                    throw new functions.https.HttpsError('internal', `error canceling payment entry ${util.inspect({err})}`)
+                    throw String(`internal: error canceling payment entry ${util.inspect({err})}`)
                 }
             }
         }
@@ -283,7 +281,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
                 pending: true, 
             }).save()
         } catch (err) {
-            throw new functions.https.HttpsError('internal', `error storing invoice to db ${util.inspect({err})}`)
+            throw String(`internal: error storing invoice to db ${util.inspect({err})}`)
         }
 
         return request
@@ -427,7 +425,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
 
         // TODO use validate()
         if (pubkey === undefined) {
-            throw new functions.https.HttpsError('internal', `pubkey ${pubkey} in pay function`)
+            throw String(`internal pubkey ${pubkey} in pay function`)
         }
     
         const {randomBytes, createHash} = require('crypto')
@@ -470,7 +468,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
             console.log(result)
         } catch (err) {
             console.log({err})
-            throw new functions.https.HttpsError('internal', 'error paying invoice' + err.toString())
+            throw String('internal: error paying invoice' + err.toString())
         }
 
         // TODO add fees for accounting based of result.fee
@@ -487,17 +485,20 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
 export class LightningWalletAuthed extends LightningUserWallet {
     constructor({uid}) {
         let auth: Auth;
-        let network: string;
+        // let network: string;
         try {
-            network = process.env.NETWORK ?? functions.config().lnd.network;
-            const cert = process.env.TLS ?? functions.config().lnd[network].tls;
-            const macaroon = process.env.MACAROON ?? functions.config().lnd[network].macaroon;
-            const lndip = process.env.LNDIP ?? functions.config().lnd[network].lndip;
+            // network = process.env.NETWORK // TODO
+            const cert = process.env.TLS
+            const macaroon = process.env.MACAROON 
+            const lndip = process.env.LNDIP
             const socket = `${lndip}:10009`;
+            if (!cert || !macaroon || !lndip) {
+                throw new Error('TLS is not set')
+            }
             auth = { macaroon, cert, socket };
         }
         catch (err) {
-            throw new functions.https.HttpsError('failed-precondition', `neither env nor functions.config() are set` + err);
+            throw String(`failed-precondition: ` + err);
         }
         super({uid, auth});
     }

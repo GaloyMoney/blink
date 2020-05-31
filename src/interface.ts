@@ -26,3 +26,9 @@ export interface FiatTransaction {
   name: string,
   onchain_tx?: string, // should be HEX?
 }
+
+export interface Auth {
+  macaroon: string,
+  cert: string,
+  socket: string,
+}
