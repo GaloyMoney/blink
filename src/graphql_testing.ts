@@ -1,20 +1,10 @@
-import { graphql, buildSchema } from "graphql"
+import { GraphQLServer } from 'graphql-yoga';
+import { createUser } from "./db";
 import { LightningWalletAuthed } from "./LightningUserWallet";
-const express = require("express")
-const graphqlHTTP = require("express-graphql")
 import { Price } from "./priceImpl";
-let fs = require("fs-extra");
+import { OnboardingEarn } from "./types";
 let path = require("path");
-import { createUser } from "./db"
-import { OnboardingEarn } from "../../../../common/types";
 
-
-// Construct a schema, using GraphQL schema language
-const schema_string = fs.readFileSync(path.join(__dirname, "schema.graphql"), "utf8");
-const schema = buildSchema(schema_string);
-
-
-let lightningWallet
 
 const DEFAULT_USD = {
   currency: "USD",
@@ -23,123 +13,131 @@ const DEFAULT_USD = {
   id: "USD",
 }
 
-// The root provides a resolver function for each API endpoint
-const root = {
-  me: async ({uid}) => {
-    const User = await createUser()
-    const user = await User.findOne({_id: uid})
-    console.log({user})
-    console.log("me")
-    return {
-      id: uid,
-      level: 1,
-    }
-  },
-  updateUser: async ({user}) => {
-    // TODO only level for now
-    lightningWallet = new LightningWalletAuthed({uid: user._id})
-    const result = await lightningWallet.setLevel({level: 1})
-    return {
-      id: user._id,
-      level: result.level,
-    }
-  },
-  wallet: async ({uid}) => {
-    lightningWallet = new LightningWalletAuthed({uid})
-    return ([{
-      id: "BTC",
-      currency: "BTC",
-      balance: () => {
-        return lightningWallet.getBalance()
-      },
-      transactions: async () => {
-        try {
-          return lightningWallet.getTransactions()
-        } catch (err) {
-          console.warn(err)
-        }
-      },
+const resolvers = {
+  Query: {
+    me: async (_, {uid}) => {
+      const User = await createUser()
+      const user = await User.findOne({_id: uid})
+      console.log({user})
+      console.log("me")
+      return {
+        id: uid,
+        level: 1,
+      }
     },
-      DEFAULT_USD]
-    )
+    wallet: async (_, {uid}) => {
+      console.log("is this executed 0?")
+      const lightningWallet = new LightningWalletAuthed({uid})
+
+      const btw_wallet = {
+        id: "BTC",
+        currency: "BTC",
+        balance: lightningWallet.getBalance(), // FIXME why a function and not a callback?
+        transactions:  lightningWallet.getTransactions()
+      }
+
+      return ([btw_wallet,
+        DEFAULT_USD]
+      )
+    },
+    prices: async () => {
+      try {
+        const price = new Price()
+        const lastPrices = await price.lastCached()
+        return lastPrices
+      } catch (err) {
+        console.warn(err)
+        throw err
+      }
+    },
+    earnList: async (_, {uid}) => {
+      const response: Object[] = []
+  
+      const User = await createUser()
+      const user = await User.findOne({_id: uid})
+      const earned = user?.earn || [] 
+  
+      for (const [id, value] of Object.entries(OnboardingEarn)) {
+        response.push({
+          id,
+          value,
+          completed: earned.findIndex(item => item === id) !== -1,
+        })
+      }
+  
+      return response
+    },
   },
-  prices: async () => {
-    try {
-      const price = new Price()
-      const lastPrices = await price.lastCached()
-      return lastPrices
-    } catch (err) {
-      console.warn(err)
-      throw err
-    }
-  },
-
-  invoice: async ({uid}) => {
-    lightningWallet = new LightningWalletAuthed({uid})
-    return ({
-
-      addInvoice: async ({value, memo}) => {
-        try {
-          const result = await lightningWallet.addInvoice({value, memo})
-          console.log({result})
-          return result
-        } catch (err) {
-          console.warn(err)
-          throw err
-        }
-      },
-      updatePendingInvoice: async ({hash}) => {
-        try {
-          return await lightningWallet.updatePendingInvoice({hash})
-        } catch (err) {
-          console.warn(err)
-          throw err
-        }
-      },
-      payInvoice: async ({invoice}) => {
-        try {
-          const success = await lightningWallet.payInvoice({invoice})
-          console.log({success})
-          return success
-        } catch (err) {
-          console.warn(err)
-          throw err
-        }
-      },
-  })},
-  earnList: async ({uid}) => {
-    let response: Object[] = []
-
-    const User = await createUser()
-    const user = await User.findOne({_id: uid})
-    const earned = user?.earn || [] 
-
-    for (const [id, value] of Object.entries(OnboardingEarn)) {
-      response.push({
-        id,
-        value,
-        completed: earned.findIndex(item => item === id) !== -1,
-      })
-    }
-
-    return response
-  },
-  earnCompleted: async ({uid, id}) => {
-    try {
-      lightningWallet = new LightningWalletAuthed({uid})
-      const success = await lightningWallet.addEarn(id)
-      return success
-    } catch (err) {
-      console.warn(err)
-      throw err
+  Mutation: {
+    updateUser: async (_, {user}) => {
+      // TODO only level for now
+      const lightningWallet = new LightningWalletAuthed({uid: user._id})
+      const result = await lightningWallet.setLevel({level: 1})
+      return {
+        id: user._id,
+        level: result.level,
+      }
+    },
+    invoice: async (_, {uid}) => {
+      const lightningWallet = new LightningWalletAuthed({uid})
+      return ({
+  
+        addInvoice: async ({value, memo}) => {
+          try {
+            const result = await lightningWallet.addInvoice({value, memo})
+            console.log({result})
+            return result
+          } catch (err) {
+            console.warn(err)
+            throw err
+          }
+        },
+        updatePendingInvoice: async ({hash}) => {
+          try {
+            return await lightningWallet.updatePendingInvoice({hash})
+          } catch (err) {
+            console.warn(err)
+            throw err
+          }
+        },
+        payInvoice: async ({invoice}) => {
+          try {
+            const success = await lightningWallet.payInvoice({invoice})
+            console.log({success})
+            return success
+          } catch (err) {
+            console.warn(err)
+            throw err
+          }
+        },
+    })},
+    earnCompleted: async (_, {uid, id}) => {
+      try {
+        const lightningWallet = new LightningWalletAuthed({uid})
+        const success = await lightningWallet.addEarn(id)
+        return success
+      } catch (err) {
+        console.warn(err)
+        throw err
+      }
+    },
+    deleteUser: () => {
+      // TODO
     }
 }}
 
-const app = express()
-app.use('/graphql', graphqlHTTP({
-  schema: schema,
-  rootValue: root,
-  graphiql: true
-}))
-app.listen(4000)
-console.log("now running... http://localhost:4000/graphql ")
+
+const server = new GraphQLServer({
+  typeDefs: path.join(__dirname, "schema.graphql"), 
+  resolvers }
+)
+
+const options = {
+  endpoint: '/graphql',
+}
+
+server.start(options, ({ port }) =>
+  console.log(
+    `Server started, listening on port ${port} for incoming requests.`,
+  ),
+)
