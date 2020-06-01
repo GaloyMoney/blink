@@ -3,6 +3,7 @@ orbs:
   gcp-gke: circleci/gcp-gke@1.0.3
   helm: circleci/helm@0.2.3
   gcp-gcr: circleci/gcp-gcr@0.7.1
+  slack: circleci/slack@3.4.2
 jobs:
   react-native:
     working_directory: ~/GaloyApp/mobile
@@ -239,6 +240,11 @@ jobs:
           command: |
             gcloud container clusters delete $(cat clustername | tr -d '\n\r') --quiet --region us-central1-b
           when: always
+      - slack/status:
+          fail_only: true
+          mentions: 'Kartik Shah,nicolas'
+          only_for_branches: only_for_branches
+          webhook: webhook
 
 workflows:
   kube:
