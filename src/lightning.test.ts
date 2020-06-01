@@ -21,6 +21,9 @@ beforeAll(async () => {
   // return await mongoose.connection.dropDatabase()
 });
 
+afterAll(async () => {
+  return await mongoose.connection.close()
+});
 
 beforeEach(async () => {
   lightningWallet = new LightningWalletAuthed({uid: user1})

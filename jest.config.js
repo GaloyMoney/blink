@@ -3,10 +3,14 @@ module.exports = {
     "<rootDir>/src"
   ],
   "testMatch": [
-    "**/__tests__/**/*.+(ts|tsx|js)",
-    "**/?(*.)+(spec|test).+(ts|tsx|js)"
+    "**/?(*.)+(spec|test).+(ts)"
   ],
   "transform": {
-    "^.+\\.(ts|tsx)$": "ts-jest"
+    "^.+\\.(ts)$": "ts-jest"
   },
+  "testPathIgnorePatterns": [
+    // FIXME
+    "lightning",
+    // "exchange"
+  ]
 }
