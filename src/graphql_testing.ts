@@ -4,6 +4,8 @@ import { LightningWalletAuthed } from "./LightningUserWallet";
 import { Price } from "./priceImpl";
 import { OnboardingEarn } from "./types";
 import { requestPhoneCode, login } from "./text"
+import { rule, shield, and, or, not } from 'graphql-shield'
+import { ContextParameters } from 'graphql-yoga/dist/types'
 let path = require("path");
 
 
@@ -133,11 +135,55 @@ const resolvers = {
     }
 }}
 
+function getUser(ctx: ContextParameters) {
+  const auth = ctx.request.get('Authorization')
+  if (!auth) {
+    return null
+  }
+
+  if (auth.split(" ")[0] !== "Bearer") {
+    throw Error("not a bearer token")
+  }
+
+  const raw_token = auth.split(" ")[1]
+  console.log(raw_token)
+
+  return {uid: "1234"}
+}
+
+const isAuthenticated = rule({ cache: 'contextual' })(
+  async (parent, args, ctx, info) => {
+    return ctx.uid !== null
+  },
+)
+
+const permissions = shield({
+  Query: {
+    prices: not(isAuthenticated),
+    wallet: isAuthenticated,
+    earnList: isAuthenticated,
+    me: isAuthenticated,
+  },
+  Mutation: {
+    requestPhoneCode: not(isAuthenticated),
+    login: not(isAuthenticated),
+  
+    invoice: isAuthenticated,
+    earnCompleted: isAuthenticated,
+    updateUser: isAuthenticated,
+    deleteUser: isAuthenticated,
+  },
+})
 
 const server = new GraphQLServer({
   typeDefs: path.join(__dirname, "schema.graphql"), 
-  resolvers }
-)
+  resolvers,
+  middlewares: [permissions],
+  context: (req) => ({
+    ...req,
+    user: getUser(req),
+  }),
+ })
 
 const options = {
   endpoint: '/graphql',

@@ -46,19 +46,19 @@ input InputUser {
   deviceToken: String
 }
 
-type Query { 
-  prices: [Price]
-  wallet(uid: String): [Wallet]
-  earnList(uid: String): [Earn]
-  me(uid: String): User
-}
-
 type Success {
   success: Boolean
 }
 
 type Token {
   token: String
+}
+
+type Query { 
+  prices: [Price]
+  wallet(uid: String): [Wallet]
+  earnList(uid: String): [Earn]
+  me(uid: String): User
 }
 
 type Mutation {
