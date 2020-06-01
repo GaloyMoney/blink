@@ -24,6 +24,7 @@
     "fs-extra": "^9.0.0",
     "graphql-request": "^1.8.2",
     "graphql-yoga": "^1.18.3",
+    "jsonwebtoken": "^8.5.1",
     "ln-service": "^47.16.0",
     "medici": "^4.0.1",
     "moment": "^2.24.0",

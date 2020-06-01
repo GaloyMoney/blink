@@ -3,6 +3,7 @@ import { createUser } from "./db";
 import { LightningWalletAuthed } from "./LightningUserWallet";
 import { Price } from "./priceImpl";
 import { OnboardingEarn } from "./types";
+import { requestPhoneCode, login } from "./text"
 let path = require("path");
 
 
@@ -69,6 +70,12 @@ const resolvers = {
     },
   },
   Mutation: {
+    requestPhoneCode: async (_, {phone}) => {
+      return {success: requestPhoneCode({phone})}
+    },
+    login: async (_, {phone, code}) => {
+      return {token: login({phone, code})}
+    },
     updateUser: async (_, {user}) => {
       // TODO only level for now
       const lightningWallet = new LightningWalletAuthed({uid: user._id})

@@ -42,6 +42,7 @@ export const setupMongoose = async () => {
     },
     earn: [String],
     level: Number,
+    phone: Number,
     // firstName,
     // lastName,
     // activated,
@@ -52,6 +53,19 @@ export const setupMongoose = async () => {
   // TOOD create indexes
 
   mongoose.model("User", UserSchema)
+
+
+  // TODO: this DB should be capped.
+  const PhoneCodeSchema = new Schema({
+    created_at: {
+      type: Date,
+      default: Date.now
+    },
+    phone: Number,
+    code: Number,
+  })
+  
+  mongoose.model("PhoneCode", PhoneCodeSchema)
   
 
 
@@ -167,4 +181,10 @@ export const createUser = async () => {
   await setupMongoose()
 
   return mongoose.model("User")
+}
+
+export const createPhoneCode = async () => {
+  await setupMongoose()
+
+  return mongoose.model("PhoneCode")
 }
