@@ -1,13 +1,13 @@
+import { rule, shield } from 'graphql-shield';
 import { GraphQLServer } from 'graphql-yoga';
-import { createUser } from "./db";
+import { ContextParameters } from 'graphql-yoga/dist/types';
+import * as jwt from 'jsonwebtoken';
+import { JWT_SECRET } from "./const";
+import { createUser, setupMongoose } from "./db";
 import { LightningWalletAuthed } from "./LightningUserWallet";
 import { Price } from "./priceImpl";
+import { login, requestPhoneCode } from "./text";
 import { OnboardingEarn } from "./types";
-import { requestPhoneCode, login } from "./text"
-import { rule, shield, and, or, not } from 'graphql-shield'
-import { ContextParameters } from 'graphql-yoga/dist/types'
-import { JWT_SECRET } from "./const";
-import * as jwt from 'jsonwebtoken'
 let path = require("path");
 
 
@@ -193,10 +193,14 @@ const server = new GraphQLServer({
   typeDefs: path.join(__dirname, "schema.graphql"), 
   resolvers,
   middlewares: [permissions],
-  context: (req) => ({
-    ...req,
-    uid: getUid(req),
-  }),
+  context: async (req) => {
+    await setupMongoose() // workaround on the issue of `verwriteModelError: Cannot overwrite `InvoiceUser` model once compiled`
+    const result = {
+      ...req,
+      uid: getUid(req)
+    }
+    return result
+  }
  })
 
 const options = {
