@@ -29,3 +29,6 @@ export const transactions_template = [
     { name: "Jet Blue", icon: "ios-airplane", amount: -219.45, cashback: 23042, date: new Date('2019-08-16T03:24:00').getTime()},
     { name: "Counter Cafe", icon: "ios-restaurant", amount: -55, cashback: 5775, date: new Date('2019-08-15T03:24:00').getTime()},
 ]
+
+
+export const JWT_SECRET = 'secret' // FIXME

@@ -6,6 +6,8 @@ import { OnboardingEarn } from "./types";
 import { requestPhoneCode, login } from "./text"
 import { rule, shield, and, or, not } from 'graphql-shield'
 import { ContextParameters } from 'graphql-yoga/dist/types'
+import { JWT_SECRET } from "./const";
+import * as jwt from 'jsonwebtoken'
 let path = require("path");
 
 
@@ -18,7 +20,7 @@ const DEFAULT_USD = {
 
 const resolvers = {
   Query: {
-    me: async (_, {uid}) => {
+    me: async (_, __, {uid}) => {
       const User = await createUser()
       const user = await User.findOne({_id: uid})
       console.log({user})
@@ -28,8 +30,7 @@ const resolvers = {
         level: 1,
       }
     },
-    wallet: async (_, {uid}) => {
-      console.log("is this executed 0?")
+    wallet: async (_, __, {uid}) => {
       const lightningWallet = new LightningWalletAuthed({uid})
 
       const btw_wallet = {
@@ -53,7 +54,7 @@ const resolvers = {
         throw err
       }
     },
-    earnList: async (_, {uid}) => {
+    earnList: async (_, __, {uid}) => {
       const response: Object[] = []
   
       const User = await createUser()
@@ -79,6 +80,7 @@ const resolvers = {
       return {token: login({phone, code})}
     },
     updateUser: async (_, {user}) => {
+      // FIXME manage uid
       // TODO only level for now
       const lightningWallet = new LightningWalletAuthed({uid: user._id})
       const result = await lightningWallet.setLevel({level: 1})
@@ -87,7 +89,7 @@ const resolvers = {
         level: result.level,
       }
     },
-    invoice: async (_, {uid}) => {
+    invoice: async (_, __, {uid}) => {
       const lightningWallet = new LightningWalletAuthed({uid})
       return ({
   
@@ -120,7 +122,7 @@ const resolvers = {
           }
         },
     })},
-    earnCompleted: async (_, {uid, id}) => {
+    earnCompleted: async (_, {id}, {uid}) => {
       try {
         const lightningWallet = new LightningWalletAuthed({uid})
         const success = await lightningWallet.addEarn(id)
@@ -135,20 +137,32 @@ const resolvers = {
     }
 }}
 
-function getUser(ctx: ContextParameters) {
-  const auth = ctx.request.get('Authorization')
-  if (!auth) {
+function getUid(ctx: ContextParameters) {
+  
+  let token
+  try {
+    const auth = ctx.request.get('Authorization')
+
+    if (!auth) {
+      return null
+    }
+
+    if (auth.split(" ")[0] !== "Bearer") {
+      throw Error("not a bearer token")
+    }
+  
+    const raw_token = auth.split(" ")[1]
+    console.log(raw_token)
+
+    token = jwt.verify(raw_token, JWT_SECRET);
+  } catch (err) {
     return null
+    // TODO return new AuthenticationError("Not authorised"); ?
+    // ie: differenciate between non authenticated, and not authorized
   }
 
-  if (auth.split(" ")[0] !== "Bearer") {
-    throw Error("not a bearer token")
-  }
-
-  const raw_token = auth.split(" ")[1]
-  console.log(raw_token)
-
-  return {uid: "1234"}
+  console.log(token.uid)
+  return token.uid
 }
 
 const isAuthenticated = rule({ cache: 'contextual' })(
@@ -159,14 +173,14 @@ const isAuthenticated = rule({ cache: 'contextual' })(
 
 const permissions = shield({
   Query: {
-    prices: not(isAuthenticated),
+    // prices: not(isAuthenticated),
     wallet: isAuthenticated,
     earnList: isAuthenticated,
     me: isAuthenticated,
   },
   Mutation: {
-    requestPhoneCode: not(isAuthenticated),
-    login: not(isAuthenticated),
+    // requestPhoneCode: not(isAuthenticated),
+    // login: not(isAuthenticated),
   
     invoice: isAuthenticated,
     earnCompleted: isAuthenticated,
@@ -181,7 +195,7 @@ const server = new GraphQLServer({
   middlewares: [permissions],
   context: (req) => ({
     ...req,
-    user: getUser(req),
+    uid: getUid(req),
   }),
  })
 

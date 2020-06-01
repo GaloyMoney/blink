@@ -56,17 +56,17 @@ type Token {
 
 type Query { 
   prices: [Price]
-  wallet(uid: String): [Wallet]
-  earnList(uid: String): [Earn]
-  me(uid: String): User
+  wallet: [Wallet]
+  earnList: [Earn]
+  me: User
 }
 
 type Mutation {
   requestPhoneCode(phone: String): Success
   login(phone: String, code: Int): Token
 
-  invoice(uid: String): Invoice
-  earnCompleted(id: ID, uid: String): Earn
+  invoice: Invoice
+  earnCompleted(id: ID): Earn
   updateUser(user: InputUser): User
-  deleteUser(uid: String): Boolean # TODO
+  deleteUser: Boolean # TODO
 }

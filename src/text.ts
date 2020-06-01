@@ -2,7 +2,7 @@ const twilioPhoneNumber = "***REMOVED***"
 import { createPhoneCode } from "./db"
 import moment from "moment"
 import * as jwt from 'jsonwebtoken'
-
+import { JWT_SECRET } from "./const"
 
 const getTwilioClient = () => {
     const accountSID = "***REMOVED***"
@@ -57,7 +57,7 @@ export const requestPhoneCode = async ({phone}) => {
     return true
 }
 
-const createToken = ({id}) => jwt.sign({ sub: id }, 'secret', {
+const createToken = ({uid}) => jwt.sign({ uid }, JWT_SECRET, {
     algorithm: 'HS256',
 })
 
@@ -66,7 +66,7 @@ export const login = async ({phone, code}) => {
     // make it possible to bypass the auth for testing purpose
     if (TEST_NUMBER.findIndex(item => item.phone === phone) !== -1) {
         if (TEST_NUMBER.filter(item => item.phone === phone)[0].code === code) {
-            return createToken({id: phone})
+            return createToken({uid: phone})
         }
     }
 
@@ -83,8 +83,8 @@ export const login = async ({phone, code}) => {
             return false
         }
 
-        // TODO manage id properly
-        return createToken({id: phone})
+        // TODO FIXME manage id properly
+        return createToken({uid: phone})
     } catch (err) {
         console.error(err)
         throw err
