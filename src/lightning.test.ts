@@ -47,11 +47,6 @@ beforeEach(async () => {
 
 
   // // example for @kartik
-  lightningWallet2 = lnService.authenticatedLndGrpc({
-    cert: process.env.TLS,
-    macaroon: process.env.MACAROON2,
-    socket: 'lnd-service-1:10009',
-  }).lnd;
 
   // lnService.createInvoice({lnd: lnd2, amoint... })
   // lnService.pay({lnd: lnd2, amoint... })
@@ -61,9 +56,11 @@ beforeEach(async () => {
 it('Lightning Wallet Get Info works', async () => {
   const result = await lightningWallet.getInfo()
   console.log({result})
-  const nodePublicKey = (await lnService.getWalletInfo({lnd:lightningWallet2})).public_key;
+  const outside1PubKey = (await lnService.getWalletInfo({lnd:lightningWalletOutside1})).public_key;
+  const outside2PubKey = (await lnService.getWalletInfo({lnd:lightningWalletOutside2})).public_key;
   // expect(result === 0).toBeTruthy()
-  console.log("Second node pub key", nodePublicKey)
+  console.log("Outside node 1 pub key", outside1PubKey)
+  console.log("Second node 2 pub key", outside2PubKey)
 })
 
 
