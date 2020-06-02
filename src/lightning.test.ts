@@ -7,11 +7,16 @@ const mongoose = require("mongoose");
 
 
 let lightningWallet
-let lightningWallet2
+let lightningWalletOutside1
+let lightningWalletOutside2
 
 const user1 = "user1"
 const user2 = "user2"
 
+const lndOutside1Addr = 'lnd-outside-1'
+const lndOutside1Port = process.env.LNDOUTSIDERPCPORT || '10009'
+const lndOutside2Addr = 'lnd-outside-2'
+const lndOutside2Port = process.env.LNDOUTSIDE2RPCPORT || '10009'
 
 beforeAll(async () => {
   await setupMongoose()
@@ -19,6 +24,18 @@ beforeAll(async () => {
   // FIXME: this might cause issue when running test in parrallel?
   //this also fails the test due to user authentication issue
   // return await mongoose.connection.dropDatabase()
+  lightningWalletOutside1 = lnService.authenticatedLndGrpc({
+    cert: process.env.TLS,
+    macaroon: process.env.MACAROONOUTSIDE1,
+    socket: `${lndOutside1Addr}:${lndOutside1Port}`,
+  }).lnd;
+
+  lightningWalletOutside2 = lnService.authenticatedLndGrpc({
+    cert: process.env.TLS,
+    macaroon: process.env.MACAROONOUTSIDE2,
+    socket: `${lndOutside2Addr}:${lndOutside2Port}`,
+  }).lnd;
+
 });
 
 afterAll(async () => {
