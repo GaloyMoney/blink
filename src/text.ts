@@ -28,7 +28,7 @@ function randomIntFromInterval(min, max) { // min and max included
     return Math.floor(Math.random() * (max - min + 1) + min);
   }
 
-const TEST_NUMBER = [{phone: "6505554321", code: 321321}]
+const TEST_NUMBER = [{phone: "+16505554321", code: 321321}]
 
 export const requestPhoneCode = async ({phone}) => {
 
@@ -65,7 +65,9 @@ export const login = async ({phone, code}) => {
 
     // make it possible to bypass the auth for testing purpose
     if (TEST_NUMBER.findIndex(item => item.phone === phone) !== -1) {
+        console.log("loop1")
         if (TEST_NUMBER.filter(item => item.phone === phone)[0].code === code) {
+            console.log("loop2")
             return createToken({uid: phone})
         }
     }
@@ -80,10 +82,11 @@ export const login = async ({phone, code}) => {
         })
 
         if (codes.findIndex(item => item.code === code) === -1) {
-            return false
+            return null
         }
 
         // TODO FIXME manage id properly
+        // TODO add network
         return createToken({uid: phone})
     } catch (err) {
         console.error(err)

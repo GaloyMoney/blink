@@ -155,13 +155,15 @@ function getUid(ctx: ContextParameters) {
     console.log(raw_token)
 
     token = jwt.verify(raw_token, JWT_SECRET);
+    console.log({token})
+
+    // TODO assert bitcoin network
   } catch (err) {
     return null
     // TODO return new AuthenticationError("Not authorised"); ?
     // ie: differenciate between non authenticated, and not authorized
   }
 
-  console.log(token.uid)
   return token.uid
 }
 
@@ -174,8 +176,8 @@ const isAuthenticated = rule({ cache: 'contextual' })(
 const permissions = shield({
   Query: {
     // prices: not(isAuthenticated),
+    // earnList: isAuthenticated,
     wallet: isAuthenticated,
-    earnList: isAuthenticated,
     me: isAuthenticated,
   },
   Mutation: {
