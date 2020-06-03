@@ -1,3 +1,6 @@
+/**
+ * @jest-environment node
+ */
 import moment from "moment"
 const lnService = require('ln-service')
 import { LightningWalletAuthed } from "./LightningUserWallet"
