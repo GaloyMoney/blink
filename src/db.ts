@@ -2,10 +2,10 @@ import * as functions from 'firebase-functions'
 const mongoose = require("mongoose");
 // mongoose.set("debug", true);
 
-const address = process.env.MONGODB_ADDRESS ?? functions.config().mongodb.address
-const user = process.env.MONGODB_USER ?? functions.config().mongodb.user
-const password = process.env.MONGODB_ROOT_PASSWORD ?? functions.config().mongodb.password
-const db = process.env.MONGODB_DATABASE ?? "galoy"
+const address = process.env.MONGODB_ADDRESS ?? 'mongodb'
+const user = process.env.MONGODB_USER ?? 'testGaloy'
+const password = process.env.MONGODB_ROOT_PASSWORD ?? 'testGaloy'
+const db = process.env.MONGODB_DATABASE ?? 'galoy'
 
 const Schema = mongoose.Schema;
 
