@@ -54,6 +54,11 @@ type Token {
   token: String
 }
 
+enum Network {
+  testnet
+  mainnet
+}
+
 type Query { 
   prices: [Price]
   wallet: [Wallet]
@@ -63,7 +68,7 @@ type Query {
 
 type Mutation {
   requestPhoneCode(phone: String): Success
-  login(phone: String, code: Int): Token
+  login(phone: String, code: Int, network: Network): Token
 
   invoice: Invoice
   earnCompleted(id: ID): Earn

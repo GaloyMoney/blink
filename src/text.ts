@@ -1,5 +1,5 @@
 const twilioPhoneNumber = "***REMOVED***"
-import { createPhoneCode } from "./db"
+import { createPhoneCode, createUser } from "./db"
 import moment from "moment"
 import * as jwt from 'jsonwebtoken'
 import { JWT_SECRET } from "./const"
@@ -57,20 +57,12 @@ export const requestPhoneCode = async ({phone}) => {
     return true
 }
 
-const createToken = ({uid}) => jwt.sign({ uid }, JWT_SECRET, {
+const createToken = ({uid, network}) => jwt.sign({ uid, network }, JWT_SECRET, {
     algorithm: 'HS256',
 })
 
-export const login = async ({phone, code}) => {
-
-    // make it possible to bypass the auth for testing purpose
-    if (TEST_NUMBER.findIndex(item => item.phone === phone) !== -1) {
-        console.log("loop1")
-        if (TEST_NUMBER.filter(item => item.phone === phone)[0].code === code) {
-            console.log("loop2")
-            return createToken({uid: phone})
-        }
-    }
+export const login = async ({phone, code, network}) => {
+    // TODO assert network == process.env.network
 
     try {
         const PhoneCode = await createPhoneCode()
@@ -81,13 +73,26 @@ export const login = async ({phone, code}) => {
             }
         })
 
-        if (codes.findIndex(item => item.code === code) === -1) {
+        let test_account = false
+
+        // make it possible to bypass the auth for testing purpose
+        if (TEST_NUMBER.findIndex(item => item.phone === phone) !== -1) {
+            if (TEST_NUMBER.filter(item => item.phone === phone)[0].code === code) {
+                test_account = true
+            }
+        }
+
+        if (!test_account && codes.findIndex(item => item.code === code) === -1) {
             return null
         }
 
-        // TODO FIXME manage id properly
-        // TODO add network
-        return createToken({uid: phone})
+        // code is correct
+        const User = await createUser()
+
+        // get User 
+        const user = await User.findOneAndUpdate({phone}, {level: 1}, {upsert: true})
+
+        return createToken({uid: user._id, network})
     } catch (err) {
         console.error(err)
         throw err
