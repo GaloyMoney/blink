@@ -117,9 +117,10 @@ it('opens channel from lndOutside1 to lndOutside2', async () => {
 
 it('checks for channel existence', async () => {
 	await waitForNodeSync(lnd1)
+	await waitForNodeSync(lndOutside1)
 	await waitForNodeSync(lndOutside2)
 	let { channels } = await lnService.getChannels({ lnd: lnd1 })
 	expect(channels.length).toEqual(1)
 	channels = (await lnService.getChannels({ lnd: lndOutside2 })).channels
 	expect(channels.length).toEqual(1)
-})
+}, 50000)
