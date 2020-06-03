@@ -426,8 +426,8 @@ export class LightningWalletAuthed extends LightningUserWallet {
         try {
             network = process.env.NETWORK ?? functions.config().lnd.network;
             const cert = process.env.TLS ?? functions.config().lnd[network].tls;
-            const macaroon = process.env.MACAROON ?? functions.config().lnd[network].macaroon;
-            const lndip = process.env.LNDIP ?? functions.config().lnd[network].lndip;
+            const macaroon = process.env.MACAROON1 ?? functions.config().lnd[network].macaroon;
+            const lndip = process.env.LNDIP ?? 'lnd-service'
             const lndport = process.env.LNDRPCPORT ?? '10009'
             const socket = `${lndip}:${lndport}`;
             auth = { macaroon, cert, socket };
