@@ -1,4 +1,4 @@
-import { IAddInvoiceRequest } from "../../../../common/types"
+import { IAddInvoiceRequest } from "./types"
 import { createMainBook } from "./db"
 
 export interface IWallet {

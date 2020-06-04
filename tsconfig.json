@@ -10,8 +10,7 @@
     "noImplicitAny": false,
     "esModuleInterop": true,
     "rootDirs": [
-      "src",
-      "../../../common",
+      "src"
     ]
   },
   "compileOnSave": true,
