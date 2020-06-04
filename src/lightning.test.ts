@@ -1,3 +1,6 @@
+/**
+ * @jest-environment node
+ */
 import moment from "moment"
 const lnService = require('ln-service')
 import { LightningWalletAuthed } from "./LightningUserWallet"
@@ -7,11 +10,16 @@ const mongoose = require("mongoose");
 
 
 let lightningWallet
-let lightningWallet2
+let lightningWalletOutside1
+let lightningWalletOutside2
 
 const user1 = "user1"
 const user2 = "user2"
 
+const lndOutside1Addr = process.env.LNDOUTSIDE1ADDR ?? 'lnd-outside-1'
+const lndOutside1Port = process.env.LNDOUTSIDERPCPORT ?? '10009'
+const lndOutside2Addr = process.env.LNDOUTSIDE2ADDR ?? 'lnd-outside-2'
+const lndOutside2Port = process.env.LNDOUTSIDE2RPCPORT ?? '10009'
 
 beforeAll(async () => {
   await setupMongoose()
@@ -19,6 +27,18 @@ beforeAll(async () => {
   // FIXME: this might cause issue when running test in parrallel?
   //this also fails the test due to user authentication issue
   // return await mongoose.connection.dropDatabase()
+  lightningWalletOutside1 = lnService.authenticatedLndGrpc({
+    cert: process.env.TLS,
+    macaroon: process.env.MACAROONOUTSIDE1,
+    socket: `${lndOutside1Addr}:${lndOutside1Port}`,
+  }).lnd;
+
+  lightningWalletOutside2 = lnService.authenticatedLndGrpc({
+    cert: process.env.TLS,
+    macaroon: process.env.MACAROONOUTSIDE2,
+    socket: `${lndOutside2Addr}:${lndOutside2Port}`,
+  }).lnd;
+
 });
 
 afterAll(async () => {
@@ -30,11 +50,6 @@ beforeEach(async () => {
 
 
   // // example for @kartik
-  lightningWallet2 = lnService.authenticatedLndGrpc({
-    cert: process.env.TLS,
-    macaroon: process.env.MACAROON2,
-    socket: 'lnd-service-1:10009',
-  }).lnd;
 
   // lnService.createInvoice({lnd: lnd2, amoint... })
   // lnService.pay({lnd: lnd2, amoint... })
@@ -44,9 +59,11 @@ beforeEach(async () => {
 it('Lightning Wallet Get Info works', async () => {
   const result = await lightningWallet.getInfo()
   console.log({result})
-  const nodePublicKey = (await lnService.getWalletInfo({lnd:lightningWallet2})).public_key;
+  const outside1PubKey = (await lnService.getWalletInfo({lnd:lightningWalletOutside1})).public_key;
+  const outside2PubKey = (await lnService.getWalletInfo({lnd:lightningWalletOutside2})).public_key;
   // expect(result === 0).toBeTruthy()
-  console.log("Second node pub key", nodePublicKey)
+  console.log("Outside node 1 pub key", outside1PubKey)
+  console.log("Second node 2 pub key", outside2PubKey)
 })
 
 

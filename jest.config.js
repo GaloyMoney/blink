@@ -10,7 +10,7 @@ module.exports = {
   },
   "testPathIgnorePatterns": [
     // FIXME
-    "lightning",
+    // "lightning",
     // "exchange"
   ]
 }
