@@ -220,7 +220,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
                 throw Error(`internal ${err_message}`)
             }
 
-            throw String(`internal error paying invoice ${util.inspect({err})}`)
+            throw Error(`internal error paying invoice ${util.inspect({err}, false, Infinity)}`)
         }
         
         // success
