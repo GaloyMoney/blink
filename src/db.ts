@@ -1,11 +1,10 @@
-import * as functions from 'firebase-functions'
 const mongoose = require("mongoose");
 // mongoose.set("debug", true);
 
-const address = process.env.MONGODB_ADDRESS ?? 'mongodb'
-const user = process.env.MONGODB_USER ?? 'testGaloy'
-const password = process.env.MONGODB_ROOT_PASSWORD ?? 'testGaloy'
-const db = process.env.MONGODB_DATABASE ?? 'galoy'
+const address = process.env.MONGODB_ADDRESS
+const user = process.env.MONGODB_USER
+const password = process.env.MONGODB_ROOT_PASSWORD
+const db = process.env.MONGODB_DATABASE ?? "galoy"
 
 const Schema = mongoose.Schema;
 
@@ -41,7 +40,9 @@ export const setupMongoose = async () => {
       type: Date,
       default: Date.now
     },
-    earn: [String]
+    earn: [String],
+    level: Number,
+    phone: Number,
     // firstName,
     // lastName,
     // activated,
@@ -52,6 +53,19 @@ export const setupMongoose = async () => {
   // TOOD create indexes
 
   mongoose.model("User", UserSchema)
+
+
+  // TODO: this DB should be capped.
+  const PhoneCodeSchema = new Schema({
+    created_at: {
+      type: Date,
+      default: Date.now
+    },
+    phone: Number,
+    code: Number,
+  })
+  
+  mongoose.model("PhoneCode", PhoneCodeSchema)
   
 
 
@@ -161,4 +175,16 @@ export const createInvoiceUser = async () => {
   await setupMongoose()
 
   return mongoose.model("InvoiceUser")
+}
+
+export const createUser = async () => {
+  await setupMongoose()
+
+  return mongoose.model("User")
+}
+
+export const createPhoneCode = async () => {
+  await setupMongoose()
+
+  return mongoose.model("PhoneCode")
 }
