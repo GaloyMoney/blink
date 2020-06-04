@@ -1,18 +1,7 @@
-import * as functions from 'firebase-functions'
-const lnService = require('ln-service')
 import * as moment from 'moment'
-
-
-/**
- * @param lnd 
- * @param partner_public_key 
- * @returns array of channels
- */
-export const channelsWithPubkey = async (lnd: any, partner_public_key: string): Promise<Array<Object>> => {
-    // only send when first channel is being opened
-    const { channels } = await lnService.getChannels({lnd})
-    return channels.filter((item: any) => item.partner_public_key === partner_public_key)
-}
+export const validate = require("validate.js")
+import * as jwt from 'jsonwebtoken'
+import { JWT_SECRET } from "./const"
 
 export const btc2sat = (btc: number) => {
     return btc * Math.pow(10, 8)
@@ -22,27 +11,13 @@ export const sat2btc = (sat: number) => {
     return sat / Math.pow(10, 8)
 }
 
-
-export const checkAuth = (context: any) => { // FIXME any
-    if (!context.auth) {
-        throw new functions.https.HttpsError('failed-precondition', 
-            'The function must be called while authenticated.')
-    }
-}
-
-export const checkNonAnonymous = (context: any) => { // FIXME any
-    checkAuth(context)
-
-    if (context.auth.token.provider_id === "anonymous") {
-        throw new functions.https.HttpsError('failed-precondition', 
-            `This function must be while authenticate and not anonymous`)
-    }
-}
-
-export const checkBankingEnabled = checkNonAnonymous // TODO
+export const randomIntFromInterval = (min, max) => 
+    Math.floor(Math.random() * (max - min + 1) + min)
 
 
-export const validate = require("validate.js")
+export const createToken = ({uid, network}) => jwt.sign({ uid, network }, JWT_SECRET, {
+    algorithm: 'HS256',
+})
 
 // we are extending validate so that we can validate dates
 // which are not supported date by default

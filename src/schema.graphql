@@ -1,0 +1,77 @@
+type Transaction {
+  id: ID!
+  amount: Int!,
+  description: String!,
+  created_at: String!,
+  hash: String,
+  type: String!,
+}
+
+type Price {
+  id: ID!
+  o: Float
+}
+
+type Earn {
+  """
+  the earn reward for the app to display their associated amount
+  """
+  id: ID!
+  value: Int
+  completed: Boolean
+}
+
+type Wallet {
+  id: ID
+  currency: String # enum?
+  balance: Int
+  transactions: [Transaction]
+}
+
+type Invoice {
+  addInvoice(value: Int, memo: String): String
+  updatePendingInvoice(hash: String): Boolean
+  payInvoice(invoice: String): String
+}
+
+type User {
+  id: ID
+  name: String!
+  level: Int!
+}
+
+input InputUser {
+  id: ID
+  level: Int
+  deviceToken: String
+}
+
+type Success {
+  success: Boolean
+}
+
+type Token {
+  token: String
+}
+
+enum Network {
+  testnet
+  mainnet
+}
+
+type Query { 
+  prices: [Price]
+  wallet: [Wallet]
+  earnList: [Earn]
+  me: User
+}
+
+type Mutation {
+  requestPhoneCode(phone: String): Success
+  login(phone: String, code: Int, network: Network): Token
+
+  invoice: Invoice
+  earnCompleted(id: ID): Earn
+  updateUser(user: InputUser): User
+  deleteUser: Boolean # TODO
+}
