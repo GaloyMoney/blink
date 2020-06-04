@@ -1,8 +1,8 @@
 const twilioPhoneNumber = "***REMOVED***"
 import { createPhoneCode, createUser } from "./db"
 import moment from "moment"
-import * as jwt from 'jsonwebtoken'
-import { JWT_SECRET } from "./const"
+
+import { randomIntFromInterval } from "./utils"
 
 const getTwilioClient = () => {
     const accountSID = "***REMOVED***"
@@ -23,10 +23,6 @@ const sendText = async ({body, to}) => {
         body,
     })
 }
-
-function randomIntFromInterval(min, max) { // min and max included 
-    return Math.floor(Math.random() * (max - min + 1) + min);
-  }
 
 const TEST_NUMBER = [{phone: "+16505554321", code: 321321}]
 
@@ -56,10 +52,6 @@ export const requestPhoneCode = async ({phone}) => {
 
     return true
 }
-
-const createToken = ({uid, network}) => jwt.sign({ uid, network }, JWT_SECRET, {
-    algorithm: 'HS256',
-})
 
 export const login = async ({phone, code, network}) => {
     // TODO assert network == process.env.network

@@ -156,7 +156,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
         console.log(util.inspect({route}, {showHidden: false, depth: null}))
 
         if (!route) {
-            throw String(`internal: there is no route for this payment`)
+            throw Error(`internal: there is no route for this payment`)
         }
 
         const balance = this.getBalance()
@@ -165,7 +165,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
         }
 
 
-        // we are`confide nough that there is a possible payment route. let's move forward
+        // we are confident nough that there is a possible payment route. let's move forward
 
         // reduce balance from customer first
         // TODO this should use a reference (using db transactions) from balance computed above
@@ -259,7 +259,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
                     await payment.save()
                     await MainBook.void(payment._journal, "Payment canceled") // JSON.stringify(result.failed
                 } catch (err) {
-                    throw String(`internal: error canceling payment entry ${util.inspect({err})}`)
+                    throw Error(`internal: error canceling payment entry ${util.inspect({err})}`)
                 }
             }
         }
@@ -281,7 +281,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
                 pending: true, 
             }).save()
         } catch (err) {
-            throw String(`internal: error storing invoice to db ${util.inspect({err})}`)
+            throw Error(`internal: error storing invoice to db ${util.inspect({err})}`)
         }
 
         return request
@@ -425,7 +425,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
 
         // TODO use validate()
         if (pubkey === undefined) {
-            throw String(`internal pubkey ${pubkey} in pay function`)
+            throw Error(`internal pubkey ${pubkey} in pay function`)
         }
     
         const {randomBytes, createHash} = require('crypto')
@@ -468,7 +468,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
             console.log(result)
         } catch (err) {
             console.log({err})
-            throw String('internal: error paying invoice' + err.toString())
+            throw Error('internal: error paying invoice' + err.toString())
         }
 
         // TODO add fees for accounting based of result.fee
@@ -498,7 +498,7 @@ export class LightningWalletAuthed extends LightningUserWallet {
             auth = { macaroon, cert, socket };
         }
         catch (err) {
-            throw String(`failed-precondition: ` + err);
+            throw Error(`failed-precondition: ` + err);
         }
         super({uid, auth});
     }

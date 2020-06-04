@@ -1,6 +1,7 @@
-const lnService = require('ln-service')
 import * as moment from 'moment'
-
+export const validate = require("validate.js")
+import * as jwt from 'jsonwebtoken'
+import { JWT_SECRET } from "./const"
 
 export const btc2sat = (btc: number) => {
     return btc * Math.pow(10, 8)
@@ -10,8 +11,13 @@ export const sat2btc = (sat: number) => {
     return sat / Math.pow(10, 8)
 }
 
+export const randomIntFromInterval = (min, max) => 
+    Math.floor(Math.random() * (max - min + 1) + min)
 
-export const validate = require("validate.js")
+
+export const createToken = ({uid, network}) => jwt.sign({ uid, network }, JWT_SECRET, {
+    algorithm: 'HS256',
+})
 
 // we are extending validate so that we can validate dates
 // which are not supported date by default
