@@ -2,7 +2,8 @@ type Transaction {
   id: ID!
   amount: Int!,
   description: String!,
-  created_at: String!,
+  created_at: Int!, # TODO create a Date scalar
+  # https://www.apollographql.com/docs/graphql-tools/scalars/
   hash: String,
   type: String!,
 }
