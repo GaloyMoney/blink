@@ -47,8 +47,8 @@ export interface IQuoteRequest {
 export const OnboardingEarn = {
     walletDownloaded: 1,
     walletActivated: 1,
-    sat: 1,
     whatIsBitcoin: 1,
+    sat: 2,
     whereBitcoinExist: 5,
     whoControlsBitcoin: 5,
     copyBitcoin: 5,

@@ -117,7 +117,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
           // this would avoid to fetch the data from hash collection and speed up query
 
         const results_processed = results.map((item) => ({
-            created_at: moment(item.timestamp).valueOf(),
+            created_at: moment(item.timestamp).unix(),
             amount: item.debit - item.credit,
             description: formatInvoice(item.type, item.memo, item.pending),
             hash: item.hash,
@@ -373,7 +373,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
             {upsert: true} 
         )
 
-        if (userPastState.earn.findIndex(item => item === id) === -1) {
+        if ((userPastState.earn?.findIndex(item => item === id) ?? -1 ) === -1) {
             await lightningAdminWallet.addFunds({amount, uid: this.uid, memo: id, type: "earn"})
         }
 
