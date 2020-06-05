@@ -2,7 +2,7 @@ const twilioPhoneNumber = "***REMOVED***"
 import { createPhoneCode, createUser } from "./db"
 import moment from "moment"
 
-import { randomIntFromInterval } from "./utils"
+import { randomIntFromInterval, createToken } from "./utils"
 
 const getTwilioClient = () => {
     const accountSID = "***REMOVED***"
