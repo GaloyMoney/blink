@@ -72,7 +72,7 @@ type Mutation {
   login(phone: String, code: Int, network: Network): Token
 
   invoice: Invoice
-  earnCompleted(id: ID): Earn
+  earnCompleted(ids: [ID]): [Earn]
   updateUser(user: InputUser): User
   deleteUser: Boolean # TODO
 }

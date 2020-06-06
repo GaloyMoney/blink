@@ -122,10 +122,11 @@ const resolvers = {
           }
         },
     })},
-    earnCompleted: async (_, {id}, {uid}) => {
+    earnCompleted: async (_, {ids}, {uid}) => {
+      console.log({ids})
       try {
         const lightningWallet = new LightningWalletAuthed({uid})
-        const success = await lightningWallet.addEarn(id)
+        const success = await lightningWallet.addEarn(ids)
         return success
       } catch (err) {
         console.warn(err)
@@ -152,10 +153,7 @@ function getUid(ctx: ContextParameters) {
     }
   
     const raw_token = auth.split(" ")[1]
-    console.log(raw_token)
-
     token = jwt.verify(raw_token, JWT_SECRET);
-    console.log({token})
 
     // TODO assert bitcoin network
   } catch (err) {
