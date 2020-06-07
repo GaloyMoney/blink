@@ -143,6 +143,7 @@ function getUid(ctx: ContextParameters) {
   let token
   try {
     const auth = ctx.request.get('Authorization')
+    console.log({auth})
 
     if (!auth) {
       return null
@@ -167,8 +168,6 @@ function getUid(ctx: ContextParameters) {
 
 const isAuthenticated = rule({ cache: 'contextual' })(
   async (parent, args, ctx, info) => {
-    console.log({ctx})
-
     return ctx.uid !== null
   },
 )
