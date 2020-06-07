@@ -4,9 +4,9 @@
 //TODO: Choose between camel case or underscores for variable naming
 const BitcoindClient = require('bitcoin-core')
 const lnService = require('ln-service')
-const cert = 'LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNZekNDQWdpZ0F3SUJBZ0lSQVBWWEFaSXQ1UEVrQXF2ZVQwN3BDL3N3Q2dZSUtvWkl6ajBFQXdJd01ERWYKTUIwR0ExVUVDaE1XYkc1a0lHRjFkRzluWlc1bGNtRjBaV1FnWTJWeWRERU5NQXNHQTFVRUF4TUVhM0owYXpBZQpGdzB5TURBMU1UY3hORFF4TXpSYUZ3MHlNVEEzTVRJeE5EUXhNelJhTURBeEh6QWRCZ05WQkFvVEZteHVaQ0JoCmRYUnZaMlZ1WlhKaGRHVmtJR05sY25ReERUQUxCZ05WQkFNVEJHdHlkR3N3V1RBVEJnY3Foa2pPUFFJQkJnZ3EKaGtqT1BRTUJCd05DQUFSYTIwRXZvcmZXbEVkNjRkamFIbVJnVHJRYVhVSTRCWnJ6YlVXTEtKVnlxcXZKN1Q1eQpMU1N5a2NBU2VHcHkrMTJWb2k5WHR2MWdsQUwwYWdnZ2VBNFRvNElCQVRDQi9qQU9CZ05WSFE4QkFmOEVCQU1DCkFxUXdFd1lEVlIwbEJBd3dDZ1lJS3dZQkJRVUhBd0V3RHdZRFZSMFRBUUgvQkFVd0F3RUIvekNCeFFZRFZSMFIKQklHOU1JRzZnZ1JyY25ScmdnbHNiMk5oYkdodmMzU0NDMnh1WkMxelpYSjJhV05sZ2cxc2JtUXRjMlZ5ZG1sagpaUzB4Z2dSMWJtbDRnZ3AxYm1sNGNHRmphMlYwZ2dkaWRXWmpiMjV1aHdSL0FBQUJoeEFBQUFBQUFBQUFBQUFBCkFBQUFBQUFCaHdUQXFHUUtod1RBcUhvQmh3U3NFd0FCaHdTc0VRQUJod1NzRWdBQmh4RCtnQUFBQUFBQUFNdmwKUVZEK1M5QUhoeEQrZ0FBQUFBQUFBQUJDSC8vK2tOakZoeEQrZ0FBQUFBQUFBTlRNQ2YvK2tnSWlod1NzRVFBQwpNQW9HQ0NxR1NNNDlCQU1DQTBrQU1FWUNJUUNtd0RTZGl6eU5aVnRGeXg1dkpHUXFsRFVzU0hhUWhhYkdSUmU3CjdSckpDUUloQUkxVDJTSE1HZVBIaEpUem1YU2JUTTFZZlFlWjROQU02YWNIelhxdFZZOGQKLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo='
+const cert = process.env.TLS
 
-let macaroon1 = process.env.MACAROON1
+let macaroon1 = process.env.MACAROON
 let macaroon2 = process.env.MACAROONOUTSIDE1
 let macaroon3 = process.env.MACAROONOUTSIDE2
 let lnd1
@@ -16,11 +16,13 @@ let lndOutside2
 let lnd1_wallet_addr
 let lndOutside1_wallet_addr
 
-let lnd_addr = '172.17.0.2'
-let lnd_outside_1_addr = '172.17.0.2'
-let lnd_outside_2_addr = '172.17.0.2'
-let bitcoind_addr = '172.17.0.2'
+let lnd_addr = process.env.LNDIP
+let lnd_outside_1_addr = process.env.LNDOUTSIDE1ADDR
+let lnd_outside_2_addr = process.env.LNDOUTSIDE2ADDR
+
+let bitcoind_addr = process.env.BITCOINDADDR
 let bitcoind_port = process.env.BITCOINDPORT
+
 let lnd_rpc_port = process.env.LNDRPCPORT
 let lnd_outside_1_rpc_port = process.env.LNDOUTSIDE1RPCPORT
 let lnd_outside_2_rpc_port = process.env.LNDOUTSIDE2RPCPORT

@@ -111,9 +111,12 @@ it('get balance', async () => {
 })
 
 
-// it('payInvoice', async () => {
-//   // TODO need a way to generate an invoice from another node
-// })
+it('payInvoice', async () => {
+  // TODO need a way to generate an invoice from another node
+  var { request } = await lnService.createInvoice({ lnd: lightningWalletOutside1, tokens: 10000 })
+  var result = await lightningWallet.payInvoice({ invoice: request })
+  expect(result.result).toBe(true)
+})
 
 // it('payInvoiceToAnotherGaloyUser', async () => {
 //   // TODO Manage on us transaction from 2 users of our network
