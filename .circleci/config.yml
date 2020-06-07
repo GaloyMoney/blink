@@ -213,10 +213,12 @@ jobs:
       - run:
           name: retrieve macaroons from lnd containers and install test image
           command: |
-            cd deploy &&\
-            export MACAROON1=$(kubectl exec lnd-container-0 -- base64 /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon | tr -d '\n\r') &&\
-            export MACAROON2=$(kubectl exec lnd-container-1 -- base64 /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon | tr -d '\n\r') &&\
-            sed -e "s@macaroon1val@$MACAROON1@g" -e "s@macaroon2val@$MACAROON2@g" test-image.yml | kubectl apply -f - -o yaml
+            export MACAROON=$(kubectl exec lnd-container-0 -- base64 /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon | tr -d '\n\r') &&\
+            export MACAROONOUTSIDE1=$(kubectl exec lnd-container-1 -- base64 /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon | tr -d '\n\r') &&\
+            export MACAROONOUTSIDE2=$(kubectl exec lnd-container-2 -- base64 /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon | tr -d '\n\r') &&\
+            helm install test-chart -f ~/GaloyApp/backend/test-chart/values.yaml --set \
+            macaroon=$MACAROON,macaroonoutside1=$MACAROONOUTSIDE1,macaroonoutside2=$MACAROONOUTSIDE2 \
+            ~/GaloyApp/backend/test-chart/
       - run:
           name: wait for test-pod to come alive
           command: echo $(kubectl get pods) && sleep 70 # TODO: try to improve approach if possible
@@ -225,8 +227,6 @@ jobs:
           command: |
             kubectl get pods
             kubectl exec test-pod -- bash -c "cd functions && yarn test"
-            echo $? > testresult
-            echo $(cat testresult)
       - run:
           name: Fetch test results
           command: kubectl cp test-pod:/functions/artifacts/junit.xml ./reports/junit.xml
@@ -245,6 +245,12 @@ jobs:
           mentions: 'Kartik Shah,nicolas'
           only_for_branches: only_for_branches
           webhook: webhook
+      - run:
+          name: Update graphql-server on testnet cluster
+          command: |
+            gcloud container clusters get-credentials testnet-cluster
+            export MACAROON=$(kubectl exec lnd-container-0 -- base64 /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon | tr -d '\n\r') &&\
+            helm update -i graphql-chart -f ~/GaloyApp/backend/graphql-chart/values.yaml
 
 workflows:
   kube:
