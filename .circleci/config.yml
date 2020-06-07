@@ -235,11 +235,11 @@ jobs:
           path: ./reports
       - store_artifacts:
           path: ./reports
-      # - run:
-      #     name: Delete devnet cluster
-      #     command: |
-      #       gcloud container clusters delete $(cat clustername | tr -d '\n\r') --quiet --region us-central1-b
-      #     when: always
+      - run:
+          name: Delete devnet cluster
+          command: |
+            gcloud container clusters delete $(cat clustername | tr -d '\n\r') --quiet --region us-central1-b
+          when: always
       - slack/status:
           fail_only: true
           mentions: 'Kartik Shah,nicolas'
@@ -255,7 +255,7 @@ jobs:
 workflows:
   kube:
     jobs:
-      # - build_test_image
-      - test
-          # requires:
-          #   - build_test_image
+      - build_test_image
+      - test:
+          requires:
+            - build_test_image
