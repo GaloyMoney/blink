@@ -284,7 +284,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
             throw Error(`internal: error storing invoice to db ${util.inspect({err})}`)
         }
 
-        return request
+        return { request }
     }
 
     async updatePendingInvoice({hash}) {
