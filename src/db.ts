@@ -35,14 +35,13 @@ export const setupMongoose = async () => {
 
 
   const UserSchema = new Schema({
-    _id: String, 
     created_at: {
       type: Date,
       default: Date.now
     },
     earn: [String],
     level: Number,
-    phone: Number,
+    phone: String, // TODO we may want to store country as a separate string
     // firstName,
     // lastName,
     // activated,

@@ -2,7 +2,8 @@ type Transaction {
   id: ID!
   amount: Int!,
   description: String!,
-  created_at: String!,
+  created_at: Int!, # TODO create a Date scalar
+  # https://www.apollographql.com/docs/graphql-tools/scalars/
   hash: String,
   type: String!,
 }
@@ -71,7 +72,7 @@ type Mutation {
   login(phone: String, code: Int, network: Network): Token
 
   invoice: Invoice
-  earnCompleted(id: ID): Earn
+  earnCompleted(ids: [ID]): [Earn]
   updateUser(user: InputUser): User
   deleteUser: Boolean # TODO
 }

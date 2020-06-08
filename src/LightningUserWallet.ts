@@ -117,7 +117,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
           // this would avoid to fetch the data from hash collection and speed up query
 
         const results_processed = results.map((item) => ({
-            created_at: moment(item.timestamp).valueOf(),
+            created_at: moment(item.timestamp).unix(),
             amount: item.debit - item.credit,
             description: formatInvoice(item.type, item.memo, item.pending),
             hash: item.hash,
@@ -357,54 +357,34 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
         }
     }
 
-    async addEarn(id) {
+    async addEarn(ids) {
         // TODO move out lightningUser
         // TODO FIXME XXX: this function is succeptible to race condition.
         // add a lock or db-level transaction to prevent this
         // we could use something like this: https://github.com/chilts/mongodb-lock
         
         const lightningAdminWallet = new LightningAdminWallet()
-        const amount = OnboardingEarn[id]
-
         const User = await createUser()
-        const userPastState = await User.findOneAndUpdate(
-            {_id: this.uid}, 
-            { $push: { earn: id } },
-            {upsert: true} 
-        )
 
-        if (userPastState.earn.findIndex(item => item === id) === -1) {
-            await lightningAdminWallet.addFunds({amount, uid: this.uid, memo: id, type: "earn"})
+        const result: object[] = []
+
+        for (const id of ids) {
+            const amount = OnboardingEarn[id]
+
+            const userPastState = await User.findOneAndUpdate(
+                {_id: this.uid}, 
+                { $push: { earn: id } },
+                { upsert: true} 
+            )
+    
+            if ((userPastState.earn?.findIndex(item => item === id) ?? -1 ) === -1) {
+                await lightningAdminWallet.addFunds({amount, uid: this.uid, memo: id, type: "earn"})
+            }
+    
+            result.push({id, completed: true})
         }
 
-        return {id, completed: true}
-
-        // const existing = new Set([...user.earn])
-        // const received = new Set(snapshot)
-        // const newEarn = new Set([...received].filter(x => !existing.has(x)));
-
-        // console.log({existing, received, newEarn})
-
-        // for (const earn of newEarn) {
-        //     if (!(typeof earn === 'string')) { //  || earn instanceof String
-        //         console.warn(`${typeof earn} is not string`)
-        //         continue
-        //     }
-
-        //     try {
-        //         const amount = OnboardingEarn[earn]
-
-        //         if (amount !== 0 && amount !== null) {
-        //             await lightningAdminWallet.addFunds({amount, uid: this.uid, memo: earn, type: "earn"})
-        //         }
-        //     } catch (err) {
-        //         console.warn(err.toString())
-        //         return false
-        //     }
-        // }
-
-        // user.earn = [... new Set([...existing, ...received])]
-        // await user.save()
+        return result
     }
 
     async setLevel({level}) {
