@@ -248,9 +248,7 @@ jobs:
       - run:
           name: Update graphql-server on testnet cluster
           command: |
-            gcloud container clusters get-credentials testnet-cluster
-            export MACAROON=$(kubectl exec lnd-container-0 -- base64 /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon | tr -d '\n\r') &&\
-            helm update -i graphql-chart -f ~/GaloyApp/backend/graphql-chart/values.yaml
+            kubectl delete pod -l app=graphql-server
 
 workflows:
   kube:
