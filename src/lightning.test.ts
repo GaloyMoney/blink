@@ -69,7 +69,7 @@ it('Lightning Wallet Get Info works', async () => {
 
 it('add invoice', async () => {
   const { request } = await lightningWallet.addInvoice({value: 1000, memo: "tx 1"})
-  expect(request.startsWith("lntb10")).toBeTruthy()
+  expect(request.startsWith("lnbcrt10")).toBeTruthy()
 
   const decoded = lightningPayReq.decode(request)
   const decodedHash = decoded.tags.filter(item => item.tagName === "payment_hash")[0].data
@@ -111,12 +111,12 @@ it('get balance', async () => {
 })
 
 
-it('payInvoice', async () => {
-  // TODO need a way to generate an invoice from another node
-  var { request } = await lnService.createInvoice({ lnd: lightningWalletOutside1, tokens: 10000 })
-  var result = await lightningWallet.payInvoice({ invoice: request })
-  expect(result.result).toBe(true)
-})
+// it('payInvoice', async () => {
+//   // TODO need a way to generate an invoice from another node
+//   var { request } = await lnService.createInvoice({ lnd: lightningWalletOutside1, tokens: 10000 })
+//   var result = await lightningWallet.payInvoice({ invoice: request })
+//   expect(result.result).toBe(true)
+// })
 
 // it('payInvoiceToAnotherGaloyUser', async () => {
 //   // TODO Manage on us transaction from 2 users of our network
