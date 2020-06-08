@@ -245,10 +245,13 @@ jobs:
           mentions: 'Kartik Shah,nicolas'
           only_for_branches: only_for_branches
           webhook: webhook
-      - run:
-          name: Update graphql-server on testnet cluster
-          command: |
-            kubectl delete pod -l app=graphql-server
+      - when:
+          condition:
+            equal: [ master, << pipeline.git.branch >> ]
+          steps:
+            - run: |
+                gcloud container clusters get-credentials testnet-cluster
+                kubectl delete pod -l app=graphql-server
 
 workflows:
   kube:
