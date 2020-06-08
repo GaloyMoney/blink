@@ -245,6 +245,11 @@ jobs:
           mentions: 'Kartik Shah,nicolas'
           only_for_branches: only_for_branches
           webhook: webhook
+      - gcp-gcr/gcr-auth
+      - gcp-gcr/tag-image:
+          image: test-image
+          source-tag: latest
+          target-tag: approved
       - when:
           condition:
             equal: [ master, << pipeline.git.branch >> ]
