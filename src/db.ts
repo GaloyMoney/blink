@@ -1,10 +1,9 @@
-import * as functions from 'firebase-functions'
 const mongoose = require("mongoose");
 // mongoose.set("debug", true);
 
-const address = process.env.MONGODB_ADDRESS ?? functions.config().mongodb.address
-const user = process.env.MONGODB_USER ?? functions.config().mongodb.user
-const password = process.env.MONGODB_ROOT_PASSWORD ?? functions.config().mongodb.password
+const address = process.env.MONGODB_ADDRESS
+const user = process.env.MONGODB_USER
+const password = process.env.MONGODB_ROOT_PASSWORD
 const db = process.env.MONGODB_DATABASE ?? "galoy"
 
 const Schema = mongoose.Schema;
@@ -36,13 +35,14 @@ export const setupMongoose = async () => {
 
 
   const UserSchema = new Schema({
-    _id: String, 
     created_at: {
       type: Date,
       default: Date.now
     },
     earn: [String],
-    onchain_addresses: [String]
+    onchain_addresses: [String],
+    level: Number,
+    phone: String, // TODO we may want to store country as a separate string
     // firstName,
     // lastName,
     // activated,
@@ -53,6 +53,19 @@ export const setupMongoose = async () => {
   // TOOD create indexes
 
   mongoose.model("User", UserSchema)
+
+
+  // TODO: this DB should be capped.
+  const PhoneCodeSchema = new Schema({
+    created_at: {
+      type: Date,
+      default: Date.now
+    },
+    phone: Number,
+    code: Number,
+  })
+  
+  mongoose.model("PhoneCode", PhoneCodeSchema)
   
 
 
@@ -171,4 +184,10 @@ export const createUser = async () => {
   await setupMongoose()
 
   return mongoose.model("User")
+}
+
+export const createPhoneCode = async () => {
+  await setupMongoose()
+
+  return mongoose.model("PhoneCode")
 }

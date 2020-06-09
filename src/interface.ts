@@ -1,4 +1,4 @@
-import { IAddInvoiceRequest } from "../../../../common/types"
+import { IAddInvoiceRequest } from "./types"
 import { createMainBook } from "./db"
 
 export interface IWallet {
@@ -25,4 +25,10 @@ export interface FiatTransaction {
   icon: string,
   name: string,
   onchain_tx?: string, // should be HEX?
+}
+
+export interface Auth {
+  macaroon: string,
+  cert: string,
+  socket: string,
 }

@@ -1,17 +1,17 @@
-import { IAddInvoiceRequest, ILightningTransaction, IPaymentRequest, TransactionType } from "../../../../common/types";
-import { shortenHash } from "../../../../common/utils";
-import { ILightningWallet } from "./interface";
-import { Auth } from "./lightning";
-const lnService = require('ln-service');
-import * as functions from 'firebase-functions'
-import { UserWallet } from "./wallet"
-import { createInvoiceUser, createMainBook, createUser } from "./db";
-const util = require('util')
 import Timeout from 'await-timeout';
 import moment from "moment";
+import { createInvoiceUser, createMainBook, createUser } from "./db";
+import { Auth, ILightningWallet } from "./interface";
+import { LightningAdminWallet } from "./LightningAdminImpl";
+import { IAddInvoiceRequest, ILightningTransaction, IPaymentRequest, OnboardingEarn, TransactionType } from "./types";
+import { shortenHash } from "./utils";
+import { UserWallet } from "./wallet";
+const lnService = require('ln-service');
+const util = require('util')
 const mongoose = require("mongoose");
 
 
+type payInvoiceResult = "success" | "failed" | "pending"
 type IType = "invoice" | "payment" | "earn"
 
 const formatInvoice = (type: IType, memo: String | undefined, pending: Boolean | undefined): String => {
@@ -47,6 +47,10 @@ const formatType = (type: IType, pending: Boolean | undefined): TransactionType 
     if (type === "earn") {
         return "earn"
     }
+
+    // if (type === "onchain_receipt") {
+    //     return "onchain_receipt"
+    // }
 
     throw Error("incorrect type for formatType")
 }
@@ -121,19 +125,22 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
           // this would avoid to fetch the data from hash collection and speed up query
 
         const results_processed = results.map((item) => ({
-            created_at: moment(item.timestamp).valueOf(),
+            created_at: moment(item.timestamp).unix(),
             amount: item.debit - item.credit,
             description: formatInvoice(item.type, item.memo, item.pending),
             hash: item.hash,
             fee: item.fee,
             // destination: TODO
-            type: formatType(item.type, item.pending)
+            type: formatType(item.type, item.pending),
+            id: item._id,
         }))
 
         return results_processed
     }
 
-    async payInvoice({ invoice }) {
+    // TODO manage the error case properly. right now there is a mix of string being return
+    // or error being thrown. Not sure how this is handled by GraphQL
+    async payInvoice({ invoice }): Promise<payInvoiceResult | Error> {
         // TODO add fees accounting
 
         // TODO replace this with bolt11 utils library
@@ -157,16 +164,16 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
         console.log(util.inspect({route}, {showHidden: false, depth: null}))
 
         if (!route) {
-            throw new functions.https.HttpsError('internal', `there is no route for this payment`)
+            throw Error(`internal: there is no route for this payment`)
         }
 
         const balance = this.getBalance()
         if (balance < tokens + route.safe_fee) {
-            throw new functions.https.HttpsError('cancelled', `the balance is too low. have: ${balance} sats, need ${tokens}`)
+            throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${tokens}`)
         }
 
 
-        // we are confident enough that there is a possible payment route. let's move forward
+        // we are confident nough that there is a possible payment route. let's move forward
 
         // reduce balance from customer first
         // TODO this should use a reference (using db transactions) from balance computed above
@@ -242,7 +249,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
             console.log({err, message: err.message, errorCode: err[1]})
 
             if (err.message === "Timeout") {
-                return {result: "pending"}
+                return "pending"
                 // TODO processed in-flight payment in separate loop
             }
 
@@ -255,16 +262,16 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
             } catch (err_db) {
                 const err_message = `error canceling payment entry ${util.inspect({err_db})}`
                 console.error(err_message)
-                throw new functions.https.HttpsError('internal', err_message)
+                throw Error(`internal ${err_message}`)
             }
 
-            throw new functions.https.HttpsError('internal', `error paying invoice ${util.inspect({err})}`)
+            throw Error(`internal error paying invoice ${util.inspect({err}, false, Infinity)}`)
         }
         
         // success
         await Transaction.updateMany({hash: id}, {pending: false})
 
-        return {result: true}
+        return "success"
     }
     
     // should be run regularly with a cronjob
@@ -297,7 +304,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
                     await payment.save()
                     await MainBook.void(payment._journal, "Payment canceled") // JSON.stringify(result.failed
                 } catch (err) {
-                    throw new functions.https.HttpsError('internal', `error canceling payment entry ${util.inspect({err})}`)
+                    throw Error(`internal: error canceling payment entry ${util.inspect({err})}`)
                 }
             }
         }
@@ -319,7 +326,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
                 pending: true, 
             }).save()
         } catch (err) {
-            throw new functions.https.HttpsError('internal', `error storing invoice to db ${util.inspect({err})}`)
+            throw Error(`internal: error storing invoice to db ${util.inspect({err})}`)
         }
 
         return request
@@ -424,6 +431,42 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
         }
     }
 
+    async addEarn(ids) {
+        // TODO move out lightningUser
+        // TODO FIXME XXX: this function is succeptible to race condition.
+        // add a lock or db-level transaction to prevent this
+        // we could use something like this: https://github.com/chilts/mongodb-lock
+        
+        const lightningAdminWallet = new LightningAdminWallet()
+        const User = await createUser()
+
+        const result: object[] = []
+
+        for (const id of ids) {
+            const amount = OnboardingEarn[id]
+
+            const userPastState = await User.findOneAndUpdate(
+                {_id: this.uid}, 
+                { $push: { earn: id } },
+                { upsert: true} 
+            )
+    
+            if ((userPastState.earn?.findIndex(item => item === id) ?? -1 ) === -1) {
+                await lightningAdminWallet.addFunds({amount, uid: this.uid, memo: id, type: "earn"})
+            }
+    
+            result.push({id, completed: true})
+        }
+
+        return result
+    }
+
+    async setLevel({level}) {
+        // FIXME this should be in User and not tight to Lightning // use Mixins instead
+        const User = await createUser()
+        return await User.findOneAndUpdate({_id: this.uid}, {level}, {new: true, upsert: true} )
+    }
+
     async updateOnchainPayment() {
         const MainBook = await createMainBook()
         const User = await createUser()
@@ -474,6 +517,71 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
         }
     }
 
+    // /**
+    //  * Advanced payment method to use keySend (new features from lnd 0.9)
+    //  * Needs to be tested.
+    //  * 
+    //  * @param obj invoice detail
+    //  */
+    // private async payDetail({pubkey, amount, message, hash, routes}: IPaymentRequest) {
+    //     console.log({pubkey, amount, message, hash, routes})
+
+
+    //     // TODO use validate()
+    //     if (pubkey === undefined) {
+    //         throw Error(`internal pubkey ${pubkey} in pay function`)
+    //     }
+    
+    //     const {randomBytes, createHash} = require('crypto')
+    //     const preimageByteLength = 32
+    //     const preimage = randomBytes(preimageByteLength);
+    //     const secret = preimage.toString('hex');
+    //     const keySendPreimageType = '5482373484'; // key to use representing 'amount'
+    //     const messageTmpId = '123123'; // random number, internal to Galoy for now
+        
+    //     let result
+    //     try {
+    //         result = await lnService.getChainTransactions({ lnd: this.lnd })
+    //     } catch (err) {
+    //         console.log({err})
+    //         throw Error('internal: error paying invoice' + err.toString())
+    //     }
+
+    //     // TODO manage non confirmed transaction
+    //     const incoming_txs = result.transactions.filter(item => !item.is_outgoing && item.is_confirmed)
+
+    //     //        { block_id: '0000000000000b1fa86d936adb8dea741a9ecd5f6a58fc075a1894795007bdbc',
+    //     //          confirmation_count: 712,
+    //     //          confirmation_height: 1744148,
+    //     //          created_at: '2020-05-14T01:47:22.000Z',
+    //     //          fee: undefined,
+    //     //          id: '5e3d3f679bbe703131b028056e37aee35a193f28c38d337a4aeb6600e5767feb',
+    //     //          is_confirmed: true,
+    //     //          is_outgoing: false,
+    //     //          output_addresses: [Array],
+    //     //          tokens: 10775,
+    //     //          transaction: '020000000001.....' } ] }
+
+    //     // TODO FIXME XXX: this could lead to an issue for many output transaction.
+    //     // ie: if an attacker send 10 to user A at Galoy, and 10 to user B at galoy
+    //     // in a sinle transaction, both would be credited 20.
+
+    //     // FIXME O(n) ^ 2. bad.
+    //     const matched_txs = incoming_txs
+    //         .filter(tx => match_transactions({output_addresses: tx.output_addresses, onchain_addresses}))
+
+    //     for (const matched_tx of matched_txs) {
+    //         const mongotx = await Transaction.findOne({account_path: this.accountPathMedici, type: "onchain_receipt", hash: matched_tx.id})
+    //         console.log({matched_tx, mongotx})
+    //         if (!mongotx) {
+    //             await MainBook.entry()
+    //                 .credit('Assets:Reserve', matched_tx.tokens, {currency: "BTC", hash: matched_tx.id, type: "onchain_receipt" }) 
+    //                 .debit(this.accountPath, matched_tx.tokens, {currency: "BTC", hash: matched_tx.id, type: "onchain_receipt" })
+    //                 .commit()
+    //         }
+    //     }
+    // }
+
     async getInfo() {
         return await lnService.getWalletInfo({ lnd: this.lnd });
     }
@@ -482,17 +590,20 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
 export class LightningWalletAuthed extends LightningUserWallet {
     constructor({uid}) {
         let auth: Auth;
-        let network: string;
+        // let network: string;
         try {
-            network = process.env.NETWORK ?? functions.config().lnd.network;
-            const cert = process.env.TLS ?? functions.config().lnd[network].tls;
-            const macaroon = process.env.MACAROON ?? functions.config().lnd[network].macaroon;
-            const lndip = process.env.LNDIP ?? functions.config().lnd[network].lndip;
+            // network = process.env.NETWORK // TODO
+            const cert = process.env.TLS
+            const macaroon = process.env.MACAROON 
+            const lndip = process.env.LNDIP
             const socket = `${lndip}:10009`;
+            if (!cert || !macaroon || !lndip) {
+                throw new Error('TLS is not set')
+            }
             auth = { macaroon, cert, socket };
         }
         catch (err) {
-            throw new functions.https.HttpsError('failed-precondition', `neither env nor functions.config() are set` + err);
+            throw Error(`failed-precondition: ` + err);
         }
         super({uid, auth});
     }

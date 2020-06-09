@@ -1,10 +1,7 @@
-import * as functions from 'firebase-functions';
-import { IBuyRequest, IQuoteRequest, IQuoteResponse } from "../../../../common/types";
-import { sign, verify } from "./crypto";
-import { FiatUserWallet } from "./FiatUserWallet";
-import { FiatTransaction } from "./interface";
+import { verify } from "./crypto";
 import { Price } from "./priceImpl";
-import { btc2sat, checkBankingEnabled, validate } from "./utils";
+import { IBuyRequest, IQuoteRequest } from "./types";
+import { validate } from "./utils";
 const lnService = require('ln-service')
 import moment = require("moment")
 
@@ -91,64 +88,64 @@ export const withdrawExchange = () => {
 }
 
 
-exports.quoteLNDBTC = functions.https.onCall(async (data: IQuoteRequest, context) => {
-    checkBankingEnabled(context)
+// exports.quoteLNDBTC = functions.https.onCall(async (data: IQuoteRequest, context) => {
+//     checkBankingEnabled(context)
 
-    const SPREAD = 0.015 //1.5%
-    const QUOTE_VALIDITY = {seconds: 30}
+//     const SPREAD = 0.015 //1.5%
+//     const QUOTE_VALIDITY = {seconds: 30}
 
-    const constraints = {
-        // side is from the customer side.
-        // eg: buy side means customer is buying, we are selling.
-        side: {
-            inclusion: ["buy", "sell"]
-        },
-        invoice: function(value: any, attributes: any) {
-            if (attributes.side === "sell") return null;
-            return {
-              presence: {message: "is required for buy order"},
-              length: {minimum: 6} // what should be the minimum invoice length?
-            };
-        }, // we can derive satAmount for sell order with the invoice
-        satAmount: function(value: any, attributes: any) {
-            if (attributes.side === "buy") return null;
-            return {
-                presence: {message: "is required for sell order"},
-                numericality: {
-                    onlyInteger: true,
-                    greaterThan: 0
-            }}
-    }}
+//     const constraints = {
+//         // side is from the customer side.
+//         // eg: buy side means customer is buying, we are selling.
+//         side: {
+//             inclusion: ["buy", "sell"]
+//         },
+//         invoice: function(value: any, attributes: any) {
+//             if (attributes.side === "sell") return null;
+//             return {
+//               presence: {message: "is required for buy order"},
+//               length: {minimum: 6} // what should be the minimum invoice length?
+//             };
+//         }, // we can derive satAmount for sell order with the invoice
+//         satAmount: function(value: any, attributes: any) {
+//             if (attributes.side === "buy") return null;
+//             return {
+//                 presence: {message: "is required for sell order"},
+//                 numericality: {
+//                     onlyInteger: true,
+//                     greaterThan: 0
+//             }}
+//     }}
 
-    const err = validate(data, constraints)
-    if (err !== undefined) {
-        throw new functions.https.HttpsError('invalid-argument', JSON.stringify(err))
-    }
+//     const err = validate(data, constraints)
+//     if (err !== undefined) {
+//         throw new functions.https.HttpsError('invalid-argument', JSON.stringify(err))
+//     }
     
-    console.log(`${data.side} quote request from ${context.auth!.uid}, request: ${JSON.stringify(data, null, 4)}`)
+//     console.log(`${data.side} quote request from ${context.auth!.uid}, request: ${JSON.stringify(data, null, 4)}`)
 
-    let spot
+//     let spot
     
-    try {
-        const price = new Price()
-        spot = await price.lastCached()
-    } catch (err) {
-        throw new functions.https.HttpsError('unavailable', err)
-    }
+//     try {
+//         const price = new Price()
+//         spot = await price.lastCached()
+//     } catch (err) {
+//         throw new functions.https.HttpsError('unavailable', err)
+//     }
 
-    const satAmount = data.satAmount
+//     const satAmount = data.satAmount
 
-    let multiplier = NaN
+//     let multiplier = NaN
 
-    if (data.side === "buy") {
-        multiplier = 1 + SPREAD
-    } else if (data.side === "sell") {
-        multiplier = 1 - SPREAD
-    }
+//     if (data.side === "buy") {
+//         multiplier = 1 + SPREAD
+//     } else if (data.side === "sell") {
+//         multiplier = 1 - SPREAD
+//     }
 
-    const side = data.side
-    const satPrice = multiplier * spot
-    const validUntil = moment().add(QUOTE_VALIDITY)
+//     const side = data.side
+//     const satPrice = multiplier * spot
+//     const validUntil = moment().add(QUOTE_VALIDITY)
 
     // const lnd = initLnd()
 
@@ -196,39 +193,39 @@ exports.quoteLNDBTC = functions.https.onCall(async (data: IQuoteRequest, context
     // }
 
     // return {'result': 'success'}
-})
+// })
 
 
-exports.buyLNDBTC = functions.https.onCall(async (data: IBuyRequest, context) => {
-    checkBankingEnabled(context)
+// exports.buyLNDBTC = functions.https.onCall(async (data: IBuyRequest, context) => {
+//     checkBankingEnabled(context)
 
-    const constraints = {
-        side: {
-            inclusion: ["buy"]
-        },
-        invoice: {
-            presence: true,
-            length: {minimum: 6} // what should be the minimum invoice length?
-        },
-        satPrice: {
-            presence: true,
-            numericality: {
-                greaterThan: 0
-        }},
-        signature: {
-            presence: true,
-            length: {minimum: 6} // FIXME set correct signature length
-        }
-    }
+//     const constraints = {
+//         side: {
+//             inclusion: ["buy"]
+//         },
+//         invoice: {
+//             presence: true,
+//             length: {minimum: 6} // what should be the minimum invoice length?
+//         },
+//         satPrice: {
+//             presence: true,
+//             numericality: {
+//                 greaterThan: 0
+//         }},
+//         signature: {
+//             presence: true,
+//             length: {minimum: 6} // FIXME set correct signature length
+//         }
+//     }
 
-    const err = validate(data, constraints)
-    if (err !== undefined) {
-        throw new functions.https.HttpsError('invalid-argument', JSON.stringify(err))
-    }
+//     const err = validate(data, constraints)
+//     if (err !== undefined) {
+//         throw new functions.https.HttpsError('invalid-argument', JSON.stringify(err))
+//     }
 
-    if (!verify(data)) {
-        throw new functions.https.HttpsError('failed-precondition', 'signature is not valid')
-    }
+//     if (!verify(data)) {
+//         throw new functions.https.HttpsError('failed-precondition', 'signature is not valid')
+//     }
 
     // const lnd = initLnd()
     // const invoiceJson = await lnService.decodePaymentRequest({lnd, request: data.invoice})
@@ -279,7 +276,7 @@ exports.buyLNDBTC = functions.https.onCall(async (data: IBuyRequest, context) =>
 
     // console.log("success")
     // return {success: "success"}
-})
+// })
 
 /**
  * very, very crude "hedging", probably not the right word
