@@ -16,6 +16,7 @@
   "dependencies": {
     "@babel/core": "^7.9.6",
     "@babel/preset-env": "^7.9.6",
+    "@types/lodash": "^4.14.155",
     "await-timeout": "^1.1.1",
     "bitcoin-core": "^3.0.0",
     "ccxt": "^1.26.54",
@@ -27,6 +28,7 @@
     "jest-junit": "^10.0.0",
     "jsonwebtoken": "^8.5.1",
     "ln-service": "^48.3.1",
+    "lodash": "^4.17.15",
     "medici": "^4.0.1",
     "moment": "^2.24.0",
     "mongoose": "^5.9.10",

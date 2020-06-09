@@ -2,8 +2,8 @@
  * @jest-environment node
  */
 import moment from "moment"
-const lnService = require('ln-service')
 import { LightningWalletAuthed } from "./LightningUserWallet"
+const lnService = require('ln-service')
 import { createInvoiceUser, setupMongoose } from "./db"
 var lightningPayReq = require('bolt11')
 const mongoose = require("mongoose");
@@ -96,19 +96,20 @@ it('add invoice to different user', async () => {
 
 
 
-it('list transactions', async () => {
+// it('list transactions', async () => {
 
-  const result = await lightningWallet.getTransactions()
-  expect(result.length).toBe(0) 
+//   const result = await lightningWallet.getTransactions()
+//   expect(result.length).toBe(0) 
 
-  // TODO validate a transaction to be and verify result == 1 afterwards.
-  // TODO more testing with devnet
-})
+//   // TODO validate a transaction to be and verify result == 1 afterwards.
+//   // TODO more testing with devnet
+// })
 
-it('get balance', async () => {
-  const balance = await lightningWallet.getBalance()
-  expect(balance).toBe(-0)
-})
+// it('get balance', async () => {
+//   const balance = await lightningWallet.getBalance()
+//   expect(balance).toBe(-0)
+// })
+
 
 
 // it('payInvoice', async () => {
