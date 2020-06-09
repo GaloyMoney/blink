@@ -68,7 +68,7 @@ it('Lightning Wallet Get Info works', async () => {
 
 
 it('add invoice', async () => {
-  const { request } = await lightningWallet.addInvoice({value: 1000, memo: "tx 1"})
+  const request = await lightningWallet.addInvoice({value: 1000, memo: "tx 1"})
   expect(request.startsWith("lnbcrt10")).toBeTruthy()
 
   const decoded = lightningPayReq.decode(request)
@@ -83,7 +83,7 @@ it('add invoice', async () => {
 
 it('add invoice to different user', async () => {
   lightningWallet = new LightningWalletAuthed({uid: user2})
-  const { request } = await lightningWallet.addInvoice({value: 1000000, memo: "tx 2"})
+  const request = await lightningWallet.addInvoice({value: 1000000, memo: "tx 2"})
 
   const decoded = lightningPayReq.decode(request)
   const decodedHash = decoded.tags.filter(item => item.tagName === "payment_hash")[0].data
