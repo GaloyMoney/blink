@@ -3,13 +3,12 @@ import moment from "moment";
 import { createInvoiceUser, createMainBook, createUser } from "./db";
 import { Auth, ILightningWallet } from "./interface";
 import { LightningAdminWallet } from "./LightningAdminImpl";
-import { IAddInvoiceRequest, ILightningTransaction, IPaymentRequest, OnboardingEarn, TransactionType } from "./types";
-import { shortenHash } from "./utils";
+import { IAddInvoiceRequest, ILightningTransaction, OnboardingEarn, TransactionType } from "./types";
 import { UserWallet } from "./wallet";
+import { intersection } from "lodash"
 const lnService = require('ln-service');
 const util = require('util')
 const mongoose = require("mongoose");
-
 
 type payInvoiceResult = "success" | "failed" | "pending"
 type IType = "invoice" | "payment" | "earn"
@@ -48,20 +47,11 @@ const formatType = (type: IType, pending: Boolean | undefined): TransactionType 
         return "earn"
     }
 
-    // if (type === "onchain_receipt") {
-    //     return "onchain_receipt"
-    // }
+    if (type === "onchain_receipt") {
+        return "onchain_receipt"
+    }
 
     throw Error("incorrect type for formatType")
-}
-
-
-const formatPayment = (payment) => {
-  if (payment.description) {
-      return payment.description
-  } else {
-    return `Paid invoice ${shortenHash(payment.id, 2)}`
-  }
 }
 
 
@@ -79,14 +69,6 @@ const formatPayment = (payment) => {
 //         return balanceInChannels;
 //     }
 // }
-
-
-export const match_transactions = ({output_addresses, onchain_addresses}) => {
-    return output_addresses.filter(
-        item => onchain_addresses.findIndex(item_user => item_user === item) !== -1
-    ).length > 0
-}
-
 
 
 /**
@@ -469,7 +451,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
 
         // FIXME O(n) ^ 2. bad.
         const matched_txs = incoming_txs
-            .filter(tx => match_transactions({output_addresses: tx.output_addresses, onchain_addresses}))
+            .filter(tx => intersection(tx.output_addresses, onchain_addresses).length > 0)
 
         for (const matched_tx of matched_txs) {
             const mongotx = await Transaction.findOne({account_path: this.accountPathMedici, type: "onchain_receipt", hash: matched_tx.id})

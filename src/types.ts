@@ -14,7 +14,7 @@ export type IAddInvoiceResponse = {
 }
 
 export type TransactionType = "payment" | "inflight-payment" | 
-    "paid-invoice" | "unconfirmed-invoice" | "earn"
+    "paid-invoice" | "unconfirmed-invoice" | "earn" | "onchain_receipt"
 
 export interface ILightningTransaction {
     amount: number
