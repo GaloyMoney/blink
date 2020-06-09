@@ -221,7 +221,7 @@ jobs:
             ~/GaloyApp/backend/test-chart/
       - run:
           name: wait for test-pod to come alive
-          command: echo $(kubectl get pods) && sleep 70 # TODO: try to improve approach if possible
+          command: echo $(kubectl get pods) && sleep 100 # TODO: try to improve approach if possible
       - run:
           name: Run tests
           command: |
