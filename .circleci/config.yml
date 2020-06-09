@@ -261,6 +261,6 @@ workflows:
   kube:
     jobs:
       - build_test_image
-      - test
+      - test:
           requires:
             - build_test_image
