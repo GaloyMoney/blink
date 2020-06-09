@@ -101,17 +101,19 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
         this.lnd = lnService.authenticatedLndGrpc(auth).lnd;
     }
 
-    async getBalance() {
+    async updatePending() {
         await this.updatePendingInvoices()
         await this.updatePendingPayment()
+        await this.updateOnchainPayment()
+    }
 
+    async getBalance() {
+        await this.updatePending()
         return super.getBalance()
     }
 
     async getTransactions(): Promise<Array<ILightningTransaction>> {
-
-        await this.updatePendingInvoices()
-        await this.updatePendingPayment()
+        await this.updatePending()
 
         const MainBook = await createMainBook()
 
