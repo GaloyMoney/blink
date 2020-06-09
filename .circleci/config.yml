@@ -223,7 +223,7 @@ jobs:
           name: wait for test-pod to come alive
           command: |
             echo $(kubectl get pods)
-            ctr=15;status="";while [ "$status" != "Running" ] && [ $ctr -gt 0 ];do echo "counter=$ctr" && sleep 5 ;status=$(kubectl get pod test-pod | awk 'FNR == 2 {print $3}') ; ((ctr=ctr-1)); done
+            ctr=25;status="";while [ "$status" != "Running" ] && [ $ctr -gt 0 ];do echo "counter=$ctr" && sleep 5 ;status=$(kubectl get pod test-pod | awk 'FNR == 2 {print $3}') ; ((ctr=ctr-1)); done
 
       - run:
           name: Run tests
@@ -257,7 +257,8 @@ jobs:
             equal: [ master, << pipeline.git.branch >> ]
           steps:
             - run: |
-                gcloud container clusters get-credentials testnet-cluster
+                gcloud container clusters get-credentials 
+                gcloud container clusters get-credentials testnet-cluster --region us-central1-a --project ${GOOGLE_PROJECT_ID}
                 kubectl delete pod -l app=graphql-server
 
 workflows:
