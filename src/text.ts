@@ -82,7 +82,7 @@ export const login = async ({phone, code, network}) => {
         const User = await createUser()
 
         // get User 
-        const user = await User.findOneAndUpdate({phone}, {level: 1}, {upsert: true})
+        const user = await User.findOneAndUpdate({phone}, {level: 1}, {upsert: true, new: true})
 
         return createToken({uid: user._id, network})
     } catch (err) {
