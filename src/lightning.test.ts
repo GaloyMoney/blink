@@ -96,19 +96,19 @@ it('add invoice to different user', async () => {
 
 
 
-it('list transactions', async () => {
+// it('list transactions', async () => {
 
-  const result = await lightningWallet.getTransactions()
-  expect(result.length).toBe(0) 
+//   const result = await lightningWallet.getTransactions()
+//   expect(result.length).toBe(0) 
 
-  // TODO validate a transaction to be and verify result == 1 afterwards.
-  // TODO more testing with devnet
-})
+//   // TODO validate a transaction to be and verify result == 1 afterwards.
+//   // TODO more testing with devnet
+// })
 
-it('get balance', async () => {
-  const balance = await lightningWallet.getBalance()
-  expect(balance).toBe(-0)
-})
+// it('get balance', async () => {
+//   const balance = await lightningWallet.getBalance()
+//   expect(balance).toBe(-0)
+// })
 
 
 
