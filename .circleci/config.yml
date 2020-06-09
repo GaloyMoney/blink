@@ -254,8 +254,7 @@ jobs:
       - run:
           name: tag passed image as approved
           command: |
-            gcloud container images add-tag gcr.io/${GOOGLE_PROJECT_ID}/test-image:latest /
-            gcr.io/${GOOGLE_PROJECT_ID}/test-image:approved --quiet
+            gcloud container images add-tag gcr.io/${GOOGLE_PROJECT_ID}/test-image:latest gcr.io/${GOOGLE_PROJECT_ID}/test-image:approved --quiet
       - when:
           condition:
             equal: [ master, << pipeline.git.branch >> ]
