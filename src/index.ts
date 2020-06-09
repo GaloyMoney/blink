@@ -135,6 +135,11 @@ const resolvers = {
     },
     deleteUser: () => {
       // TODO
+    },
+    onchain: async (_, __, {uid}) => {
+      const lightningWallet = new LightningWalletAuthed({uid})
+      const getNewAddress = await lightningWallet.getOnChainAddress()
+      return {getNewAddress}
     }
 }}
 
@@ -163,6 +168,7 @@ function getUid(ctx: ContextParameters) {
     // ie: differenciate between non authenticated, and not authorized
   }
 
+  console.log("uid: " + token.uid)
   return token.uid
 }
 
@@ -183,6 +189,7 @@ const permissions = shield({
     // requestPhoneCode: not(isAuthenticated),
     // login: not(isAuthenticated),
   
+    onchain: isAuthenticated,
     invoice: isAuthenticated,
     earnCompleted: isAuthenticated,
     updateUser: isAuthenticated,
