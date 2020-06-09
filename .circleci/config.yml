@@ -222,8 +222,8 @@ jobs:
       - run:
           name: wait for test-pod to come alive
           command: |
-          echo $(kubectl get pods)
-          ctr=15;status="";while [ "$status" != "Running" ] && [ $ctr -gt 0 ];do echo "counter=$ctr" && sleep 5 ;status=$(kubectl get pod lnd-container-0 | awk 'FNR == 2 {print $3}') ; ((ctr=ctr-1)); done
+            echo $(kubectl get pods)
+            ctr=15;status="";while [ "$status" != "Running" ] && [ $ctr -gt 0 ];do echo "counter=$ctr" && sleep 5 ;status=$(kubectl get pod lnd-container-0 | awk 'FNR == 2 {print $3}') ; ((ctr=ctr-1)); done
 
       - run:
           name: Run tests
