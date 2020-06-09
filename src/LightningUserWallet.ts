@@ -345,7 +345,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
             })
             address = response.address
         } catch (err) {
-            throw new functions.https.HttpsError('internal', `error getting address ${util.inspect({err})}`)
+            throw new Error(`internal error getting address ${util.inspect({err})}`)
         }
 
         try {
@@ -355,7 +355,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
             await user.save()
 
         } catch (err) {
-            throw new functions.https.HttpsError('internal', `error storing invoice to db ${util.inspect({err})}`)
+            throw new Error(`internal error storing invoice to db ${util.inspect({err})}`)
         }
 
         return address
