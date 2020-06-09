@@ -167,85 +167,79 @@ jobs:
     steps:
       - checkout:
           path: ~/GaloyApp
-      # - run:
-      #     name: generate cluster name
-      #     command: |
-      #       echo "devnet-cluster-"$RANDOM > clustername
-      #       cat clustername
+      - run:
+          name: generate cluster name
+          command: |
+            echo "devnet-cluster-"$RANDOM > clustername
+            cat clustername
       - run:
           name: authorize gcloud and kubectl on circleci and create cluster
           command: |
             echo ${GCLOUD_SERVICE_KEY} > gcloud-service-key.json
             gcloud auth activate-service-account --key-file=gcloud-service-key.json
             gcloud config set project ${GOOGLE_PROJECT_ID}
-      # - run:
-      #     name: authorize gcloud and kubectl on circleci and create cluster
-      #     command: |
-      #       echo ${GCLOUD_SERVICE_KEY} > gcloud-service-key.json
-      #       gcloud auth activate-service-account --key-file=gcloud-service-key.json
-      #       gcloud config set project ${GOOGLE_PROJECT_ID}
-      #       gcloud container clusters create $(cat clustername | tr -d '\n\r') --region us-central1-b --num-nodes=1 \
-      #       --machine-type=n1-standard-2 --disk-size=10Gi
-      #       gcloud container clusters get-credentials $(cat clustername | tr -d '\n\r') --region us-central1-b --project ${GOOGLE_PROJECT_ID}
-      # - run:
-      #     name: wait for k8s worker nodes
-      #     command: echo $(ls) && sleep 30 # TODO: try to improve approach if possible
-      # - run:
-      #     name: helm install bitcoind-chart
-      #     command: |
-      #       helm install bitcoind-chart \
-      #       -f ~/GaloyApp/backend/bitcoind-chart/regtest-values.yaml \
-      #       ~/GaloyApp/backend/bitcoind-chart
-      # - run:
-      #     name: helm install lnd-chart
-      #     command: |
-      #       helm install lnd-chart \
-      #       -f ~/GaloyApp/backend/lnd-chart/regtest-values.yaml \
-      #       ~/GaloyApp/backend/lnd-chart
-      # - run:
-      #     name: helm add repo bitnami
-      #     command: helm repo add bitnami https://charts.bitnami.com/bitnami
-      # - run:
-      #     name: helm install mongodb
-      #     command: |
-      #       helm install mongodb --set \
-      #       mongodbUsername=testGaloy,mongodbPassword=testGaloy,mongodbDatabase=galoy,persistence.enabled=false bitnami/mongodb
-      # - run:
-      #     name: Check Helm release status
-      #     command: helm list --all-namespaces --all
-      # - run:
-      #     name: wait for pod to come alive
-      #     command: sleep 50 # TODO: try to improve approach if possible
-      # - run:
-      #     name: retrieve macaroons from lnd containers and install test image
-      #     command: |
-      #       export MACAROON=$(kubectl exec lnd-container-0 -- base64 /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon | tr -d '\n\r') &&\
-      #       export MACAROONOUTSIDE1=$(kubectl exec lnd-container-1 -- base64 /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon | tr -d '\n\r') &&\
-      #       export MACAROONOUTSIDE2=$(kubectl exec lnd-container-2 -- base64 /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon | tr -d '\n\r') &&\
-      #       helm install test-chart -f ~/GaloyApp/backend/test-chart/values.yaml --set \
-      #       macaroon=$MACAROON,macaroonoutside1=$MACAROONOUTSIDE1,macaroonoutside2=$MACAROONOUTSIDE2 \
-      #       ~/GaloyApp/backend/test-chart/
-      # - run:
-      #     name: wait for test-pod to come alive
-      #     command: echo $(kubectl get pods) && sleep 70 # TODO: try to improve approach if possible
-      # - run:
-      #     name: Run tests
-      #     command: |
-      #       kubectl get pods
-      #       kubectl exec test-pod -- bash -c "cd functions && yarn test"
-      # - run:
-      #     name: Fetch test results
-      #     command: kubectl cp test-pod:/functions/artifacts/junit.xml ./reports/junit.xml
-      #     when: always
-      # - store_test_results:
-      #     path: ./reports
-      # - store_artifacts:
-      #     path: ./reports
-      # - run:
-      #     name: Delete devnet cluster
-      #     command: |
-      #       gcloud container clusters delete $(cat clustername | tr -d '\n\r') --quiet --region us-central1-b
-      #     when: always
+            gcloud container clusters create $(cat clustername | tr -d '\n\r') --region us-central1-b --num-nodes=1 \
+            --machine-type=n1-standard-2 --disk-size=10Gi
+            gcloud container clusters get-credentials $(cat clustername | tr -d '\n\r') --region us-central1-b --project ${GOOGLE_PROJECT_ID}
+      - run:
+          name: wait for k8s worker nodes
+          command: echo $(ls) && sleep 30 # TODO: try to improve approach if possible
+      - run:
+          name: helm install bitcoind-chart
+          command: |
+            helm install bitcoind-chart \
+            -f ~/GaloyApp/backend/bitcoind-chart/regtest-values.yaml \
+            ~/GaloyApp/backend/bitcoind-chart
+      - run:
+          name: helm install lnd-chart
+          command: |
+            helm install lnd-chart \
+            -f ~/GaloyApp/backend/lnd-chart/regtest-values.yaml \
+            ~/GaloyApp/backend/lnd-chart
+      - run:
+          name: helm add repo bitnami
+          command: helm repo add bitnami https://charts.bitnami.com/bitnami
+      - run:
+          name: helm install mongodb
+          command: |
+            helm install mongodb --set \
+            mongodbUsername=testGaloy,mongodbPassword=testGaloy,mongodbDatabase=galoy,persistence.enabled=false bitnami/mongodb
+      - run:
+          name: Check Helm release status
+          command: helm list --all-namespaces --all
+      - run:
+          name: wait for pod to come alive
+          command: sleep 50 # TODO: try to improve approach if possible
+      - run:
+          name: retrieve macaroons from lnd containers and install test image
+          command: |
+            export MACAROON=$(kubectl exec lnd-container-0 -- base64 /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon | tr -d '\n\r') &&\
+            export MACAROONOUTSIDE1=$(kubectl exec lnd-container-1 -- base64 /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon | tr -d '\n\r') &&\
+            export MACAROONOUTSIDE2=$(kubectl exec lnd-container-2 -- base64 /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon | tr -d '\n\r') &&\
+            helm install test-chart -f ~/GaloyApp/backend/test-chart/values.yaml --set \
+            macaroon=$MACAROON,macaroonoutside1=$MACAROONOUTSIDE1,macaroonoutside2=$MACAROONOUTSIDE2 \
+            ~/GaloyApp/backend/test-chart/
+      - run:
+          name: wait for test-pod to come alive
+          command: echo $(kubectl get pods) && sleep 70 # TODO: try to improve approach if possible
+      - run:
+          name: Run tests
+          command: |
+            kubectl get pods
+            kubectl exec test-pod -- bash -c "cd functions && yarn test"
+      - run:
+          name: Fetch test results
+          command: kubectl cp test-pod:/functions/artifacts/junit.xml ./reports/junit.xml
+          when: always
+      - store_test_results:
+          path: ./reports
+      - store_artifacts:
+          path: ./reports
+      - run:
+          name: Delete devnet cluster
+          command: |
+            gcloud container clusters delete $(cat clustername | tr -d '\n\r') --quiet --region us-central1-b
+          when: always
       - slack/status:
           fail_only: true
           mentions: 'Kartik Shah,nicolas'
@@ -266,7 +260,7 @@ jobs:
 workflows:
   kube:
     jobs:
-      # - build_test_image
+      - build_test_image
       - test
-          # requires:
-            # - build_test_image
+          requires:
+            - build_test_image
