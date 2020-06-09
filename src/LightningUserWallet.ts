@@ -204,7 +204,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
             console.log(typeof entry._id)
 
             try {
-                // FIXME we should also send pending to false for the other associated transactions
+                // FIXME we should also set pending to false for the other associated transactions
                 await Transaction.updateMany({hash: id}, {pending: false, error: err[1]})
                 await MainBook.void(entry._id, err[1])
             } catch (err_db) {
@@ -297,8 +297,12 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
         }
 
         try {
-            // FIXME use upsert instead?
-            const user = await User.findOne({_id: this.uid}) ?? await new User({_id: this.uid})
+            const user = await User.findOne({_id: this.uid})
+            if (!user) { // this should not happen. is test that relevant?
+                console.error("no user is associated with this address")
+                throw new Error(`internal no user`)
+            }
+
             user.onchain_addresses.push(address)
             await user.save()
 
