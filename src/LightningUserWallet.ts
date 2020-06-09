@@ -196,42 +196,6 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
         // even if the payment is still ongoing from lnd.
         // to clean pending payments, another cron-job loop will run in the background.
         try {
-
-            // TODO :
-            // keySend
-
-            // const {randomBytes, createHash} = require('crypto')
-            // const preimageByteLength = 32
-            // const preimage = randomBytes(preimageByteLength);
-            // const secret = preimage.toString('hex');
-            // const keySendPreimageType = '5482373484'; // key to use representing 'amount'
-            // const messageTmpId = '123123'; // random number, internal to Galoy for now
-            
-            // // const hash = obj.hash 
-            // // TODO manage keysend case.
-            // // const hash = obj.hash ?? createHash('sha256').update(preimage).digest().toString('hex');
-        
-            // const messages = [
-            //     {type: keySendPreimageType, value: secret},
-            // ]
-        
-            // if (message) {
-            //     messages.push({
-            //         type: messageTmpId, 
-            //         value: Buffer.from(message).toString('hex'),
-            //     })
-            // }
-        
-            // const request = {
-            //     id: hash,
-            //     destination: pubkey,
-            //     lnd: this.lnd,
-            //     messages,
-            //     tokens: amount,
-            //     routes
-            // }
-
-
             const TIMEOUT_PAYMENT = 5000
             const promise = lnService.payViaRoutes({lnd: this.lnd, routes: [route], id})
             await Timeout.wrap(promise, TIMEOUT_PAYMENT, 'Timeout');
