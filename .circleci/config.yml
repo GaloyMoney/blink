@@ -257,7 +257,6 @@ jobs:
             equal: [ master, << pipeline.git.branch >> ]
           steps:
             - run: |
-                gcloud container clusters get-credentials 
                 gcloud container clusters get-credentials testnet-cluster --region us-central1-a --project ${GOOGLE_PROJECT_ID}
                 kubectl delete pod -l app=graphql-server
 
