@@ -3,13 +3,12 @@ import moment from "moment";
 import { createInvoiceUser, createMainBook, createUser } from "./db";
 import { Auth, ILightningWallet } from "./interface";
 import { LightningAdminWallet } from "./LightningAdminImpl";
-import { IAddInvoiceRequest, ILightningTransaction, IPaymentRequest, OnboardingEarn, TransactionType } from "./types";
-import { shortenHash } from "./utils";
+import { IAddInvoiceRequest, ILightningTransaction, OnboardingEarn, TransactionType } from "./types";
 import { UserWallet } from "./wallet";
+import { intersection } from "lodash"
 const lnService = require('ln-service');
 const util = require('util')
 const mongoose = require("mongoose");
-
 
 type payInvoiceResult = "success" | "failed" | "pending"
 type IType = "invoice" | "payment" | "earn"
@@ -48,20 +47,11 @@ const formatType = (type: IType, pending: Boolean | undefined): TransactionType 
         return "earn"
     }
 
-    // if (type === "onchain_receipt") {
-    //     return "onchain_receipt"
-    // }
+    if (type === "onchain_receipt") {
+        return "onchain_receipt"
+    }
 
     throw Error("incorrect type for formatType")
-}
-
-
-const formatPayment = (payment) => {
-  if (payment.description) {
-      return payment.description
-  } else {
-    return `Paid invoice ${shortenHash(payment.id, 2)}`
-  }
 }
 
 
@@ -93,17 +83,19 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
         this.lnd = lnService.authenticatedLndGrpc(auth).lnd;
     }
 
-    async getBalance() {
+    async updatePending() {
         await this.updatePendingInvoices()
         await this.updatePendingPayment()
+        await this.updateOnchainPayment()
+    }
 
+    async getBalance() {
+        await this.updatePending()
         return super.getBalance()
     }
 
     async getTransactions(): Promise<Array<ILightningTransaction>> {
-
-        await this.updatePendingInvoices()
-        await this.updatePendingPayment()
+        await this.updatePending()
 
         const MainBook = await createMainBook()
 
@@ -212,8 +204,9 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
             console.log(typeof entry._id)
 
             try {
-                await MainBook.void(entry._id, err[1])
+                // FIXME we should also set pending to false for the other associated transactions
                 await Transaction.updateMany({hash: id}, {pending: false, error: err[1]})
+                await MainBook.void(entry._id, err[1])
             } catch (err_db) {
                 const err_message = `error canceling payment entry ${util.inspect({err_db})}`
                 console.error(err_message)
@@ -285,6 +278,39 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
         }
 
         return request
+    }
+
+    async getOnChainAddress(): Promise<String | Error> {
+
+        let address
+        const User = await createUser()
+
+        try {
+            const format = 'p2wpkh';
+            const response = await lnService.createChainAddress({
+                lnd: this.lnd,
+                format,
+            })
+            address = response.address
+        } catch (err) {
+            throw new Error(`internal error getting address ${util.inspect({err})}`)
+        }
+
+        try {
+            const user = await User.findOne({_id: this.uid})
+            if (!user) { // this should not happen. is test that relevant?
+                console.error("no user is associated with this address")
+                throw new Error(`internal no user`)
+            }
+
+            user.onchain_addresses.push(address)
+            await user.save()
+
+        } catch (err) {
+            throw new Error(`internal error storing invoice to db ${util.inspect({err})}`)
+        }
+
+        return address
     }
 
     async updatePendingInvoice({hash}) {
@@ -393,68 +419,54 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
         return await User.findOneAndUpdate({_id: this.uid}, {level}, {new: true, upsert: true} )
     }
 
-    /**
-     * Advanced payment method to use keySend (new features from lnd 0.9)
-     * Needs to be tested.
-     * 
-     * @param obj invoice detail
-     */
-    private async payDetail({pubkey, amount, message, hash, routes}: IPaymentRequest) {
-        console.log({pubkey, amount, message, hash, routes})
+    async updateOnchainPayment() {
+        const MainBook = await createMainBook()
+        const User = await createUser()
+        const Transaction = await mongoose.model("Medici_Transaction")
 
-
-        // TODO use validate()
-        if (pubkey === undefined) {
-            throw Error(`internal pubkey ${pubkey} in pay function`)
-        }
-    
-        const {randomBytes, createHash} = require('crypto')
-        const preimageByteLength = 32
-        const preimage = randomBytes(preimageByteLength);
-        const secret = preimage.toString('hex');
-        const keySendPreimageType = '5482373484'; // key to use representing 'amount'
-        const messageTmpId = '123123'; // random number, internal to Galoy for now
+        const {onchain_addresses} = await User.findOne({_id: this.uid})
         
-        // const hash = obj.hash 
-        // TODO manage keysend case.
-        // const hash = obj.hash ?? createHash('sha256').update(preimage).digest().toString('hex');
-    
-        const messages = [
-            {type: keySendPreimageType, value: secret},
-        ]
-    
-        if (message) {
-            messages.push({
-                type: messageTmpId, 
-                value: Buffer.from(message).toString('hex'),
-            })
-        }
-    
-        const request = {
-            id: hash,
-            destination: pubkey,
-            lnd: this.lnd,
-            messages,
-            tokens: amount,
-            routes
-        }
-    
-        // TODO manage self payment
-
         let result
         try {
-            // TODO check what happens here for holdinvoice
-            result = await lnService.payViaPaymentDetails(request)
-            console.log(result)
+            result = await lnService.getChainTransactions({ lnd: this.lnd })
         } catch (err) {
-            console.log({err})
-            throw Error('internal: error paying invoice' + err.toString())
+            const err_string = `${util.inspect({err}, {showHidden: false, depth: null})}`
+            throw new Error(`issue fetching transaction: ${err_string})`)
         }
 
-        // TODO add fees for accounting based of result.fee
-        // FIXME: maybe we shouldn't return all information from result?
+        // TODO manage non confirmed transaction
+        const incoming_txs = result.transactions.filter(item => !item.is_outgoing && item.is_confirmed)
 
-        return result
+        //        { block_id: '0000000000000b1fa86d936adb8dea741a9ecd5f6a58fc075a1894795007bdbc',
+        //          confirmation_count: 712,
+        //          confirmation_height: 1744148,
+        //          created_at: '2020-05-14T01:47:22.000Z',
+        //          fee: undefined,
+        //          id: '5e3d3f679bbe703131b028056e37aee35a193f28c38d337a4aeb6600e5767feb',
+        //          is_confirmed: true,
+        //          is_outgoing: false,
+        //          output_addresses: [Array],
+        //          tokens: 10775,
+        //          transaction: '020000000001.....' } ] }
+
+        // TODO FIXME XXX: this could lead to an issue for many output transaction.
+        // ie: if an attacker send 10 to user A at Galoy, and 10 to user B at galoy
+        // in a sinle transaction, both would be credited 20.
+
+        // FIXME O(n) ^ 2. bad.
+        const matched_txs = incoming_txs
+            .filter(tx => intersection(tx.output_addresses, onchain_addresses).length > 0)
+
+        for (const matched_tx of matched_txs) {
+            const mongotx = await Transaction.findOne({account_path: this.accountPathMedici, type: "onchain_receipt", hash: matched_tx.id})
+            console.log({matched_tx, mongotx})
+            if (!mongotx) {
+                await MainBook.entry()
+                    .credit('Assets:Reserve', matched_tx.tokens, {currency: "BTC", hash: matched_tx.id, type: "onchain_receipt" }) 
+                    .debit(this.accountPath, matched_tx.tokens, {currency: "BTC", hash: matched_tx.id, type: "onchain_receipt" })
+                    .commit()
+            }
+        }
     }
 
     async getInfo() {

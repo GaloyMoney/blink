@@ -40,6 +40,7 @@ export const setupMongoose = async () => {
       default: Date.now
     },
     earn: [String],
+    onchain_addresses: [String],
     level: Number,
     phone: String, // TODO we may want to store country as a separate string
     // firstName,
@@ -86,6 +87,8 @@ export const setupMongoose = async () => {
     hash: {
       type: Schema.Types.String,
       ref: 'InvoiceUser'
+      // TODO: not always, use another hashOnchain?
+
       // required: function() {
       //   return this.currency === "BTC"
       //   a ref only for Invoice. otherwise the hash is not linked
@@ -93,7 +96,7 @@ export const setupMongoose = async () => {
     },
     type: {
       type: String,
-      enum: ["invoice", "payment", "earn"]
+      enum: ["invoice", "payment", "earn", "onchain_receipt"]
     },
     pending: Boolean, // duplicated with InvoiceUser for invoices
     err: String,
@@ -176,6 +179,7 @@ export const createInvoiceUser = async () => {
   return mongoose.model("InvoiceUser")
 }
 
+// FIXME name function is bad
 export const createUser = async () => {
   await setupMongoose()
 

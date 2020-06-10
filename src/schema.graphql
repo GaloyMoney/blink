@@ -35,6 +35,10 @@ type Invoice {
   payInvoice(invoice: String): String
 }
 
+type OnChain {
+  getNewAddress: String
+}
+
 type User {
   id: ID
   name: String!
@@ -71,6 +75,7 @@ type Mutation {
   requestPhoneCode(phone: String): Success
   login(phone: String, code: Int, network: Network): Token
 
+  onchain: OnChain
   invoice: Invoice
   earnCompleted(ids: [ID]): [Earn]
   updateUser(user: InputUser): User
