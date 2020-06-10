@@ -5,7 +5,7 @@ import { setupModel } from "./db"
 setupModel()
 
 import moment from "moment"
-import { LightningWalletAuthed } from "./LightningUserWallet"
+import { LightningUserWallet } from "./LightningUserWallet"
 const lnService = require('ln-service')
 var lightningPayReq = require('bolt11')
 const mongoose = require("mongoose")
@@ -48,7 +48,7 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
-  lightningWallet = new LightningWalletAuthed({uid: user1})
+  lightningWallet = new LightningUserWallet({uid: user1})
 
 
   // // example for @kartik
@@ -84,7 +84,7 @@ it('add invoice', async () => {
 
 
 it('add invoice to different user', async () => {
-  lightningWallet = new LightningWalletAuthed({uid: user2})
+  lightningWallet = new LightningUserWallet({uid: user2})
   const request = await lightningWallet.addInvoice({value: 1000000, memo: "tx 2"})
 
   const decoded = lightningPayReq.decode(request)

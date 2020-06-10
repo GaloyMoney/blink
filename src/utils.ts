@@ -37,3 +37,20 @@ validate.extend(validate.validators.datetime, {
 export const shortenHash = (hash: string, length = 4) => {
   return `${hash.substring(0, length)}...${hash.substring(hash.length - length)}`
 }
+
+export const getAuth = () => {
+    try {
+        // network = process.env.NETWORK // TODO
+        const cert = process.env.TLS
+        const macaroon = process.env.MACAROON 
+        const lndip = process.env.LNDIP
+        const socket = `${lndip}:10009`;
+        if (!cert || !macaroon || !lndip) {
+            throw new Error('missing environment variable for lnd')
+        }
+        return { macaroon, cert, socket };
+    }
+    catch (err) {
+        throw Error(`failed-precondition: ${err}`);
+    }
+}

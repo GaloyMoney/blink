@@ -1,8 +1,8 @@
 import { book } from "medici"
-import { getAuth, LightningWalletAuthed } from "./LightningUserWallet"
+import { LightningUserWallet } from "./LightningUserWallet"
 import { AdminWallet } from "./wallet"
+import { getAuth } from "./utils";
 const lnService = require('ln-service')
-const util = require('util')
 const mongoose = require("mongoose");
 
 
@@ -24,7 +24,7 @@ export class LightningAdminWallet extends AdminWallet {
       // Admin should have it's own auth that it's passing to LightningUserWallet
 
       // A better approach would be to just loop over pending: true invoice/payment
-      userWallet = new LightningWalletAuthed({uid: user._id})
+      userWallet = new LightningUserWallet({uid: user._id})
       await userWallet.updatePending()
     }
   }

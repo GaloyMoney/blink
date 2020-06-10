@@ -2,9 +2,10 @@ import Timeout from 'await-timeout';
 import { intersection } from "lodash";
 import { book } from "medici";
 import moment from "moment";
-import { Auth, ILightningWallet } from "./interface";
+import { ILightningWallet } from "./interface";
 import { LightningAdminWallet } from "./LightningAdminImpl";
 import { IAddInvoiceRequest, ILightningTransaction, OnboardingEarn, TransactionType } from "./types";
+import { getAuth } from "./utils";
 import { UserWallet } from "./wallet";
 const lnService = require('ln-service');
 const util = require('util')
@@ -54,23 +55,6 @@ const formatType = (type: IType, pending: Boolean | undefined): TransactionType 
     throw Error("incorrect type for formatType")
 }
 
-
-// TODO refactor with User wallet
-// export class LightningGlobalWallet extends Wallet implements ILightningWallet {
-//     protected readonly lnd: object;
-    
-//     constructor({auth}: {auth: Auth}) {
-//         super({uid: null})
-//         this.lnd = lnService.authenticatedLndGrpc(auth).lnd;
-//     }
-    
-//     async getBalance() {
-//         const balanceInChannels = (await lnService.getChannelBalance({ lnd: this.lnd })).channel_balance;
-//         return balanceInChannels;
-//     }
-// }
-
-
 /**
  * this represents a user wallet
  */
@@ -78,9 +62,9 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
     protected readonly lnd: object;
     protected _currency = "BTC"
 
-    constructor({auth, uid}: {auth: Auth, uid: string}) {
+    constructor({uid}: {uid: string}) {
         super({uid})
-        this.lnd = lnService.authenticatedLndGrpc(auth).lnd
+        this.lnd = lnService.authenticatedLndGrpc({auth: getAuth()}).lnd
     }
 
     async updatePending() {
@@ -471,28 +455,5 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
 
     async getInfo() {
         return await lnService.getWalletInfo({ lnd: this.lnd });
-    }
-}
-
-export const getAuth = () => {
-    try {
-        // network = process.env.NETWORK // TODO
-        const cert = process.env.TLS
-        const macaroon = process.env.MACAROON 
-        const lndip = process.env.LNDIP
-        const socket = `${lndip}:10009`;
-        if (!cert || !macaroon || !lndip) {
-            throw new Error('TLS is not set')
-        }
-        return { macaroon, cert, socket };
-    }
-    catch (err) {
-        throw Error(`failed-precondition: ${err}`);
-    }
-}
-
-export class LightningWalletAuthed extends LightningUserWallet {
-    constructor({uid}) {
-        super({uid, auth: getAuth()});
     }
 }
