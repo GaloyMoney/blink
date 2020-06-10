@@ -1,15 +1,17 @@
+import { setupModel, setupMongoConnection } from "./db"
+setupModel()
+
 import { rule, shield } from 'graphql-shield';
 import { GraphQLServer } from 'graphql-yoga';
 import { ContextParameters } from 'graphql-yoga/dist/types';
 import * as jwt from 'jsonwebtoken';
 import { JWT_SECRET } from "./const";
-import { createUser, setupMongoose } from "./db";
 import { LightningWalletAuthed } from "./LightningUserWallet";
 import { Price } from "./priceImpl";
 import { login, requestPhoneCode } from "./text";
 import { OnboardingEarn } from "./types";
-import { LightningAdminWallet } from "./LightningAdminImpl";
-let path = require("path");
+const path = require("path");
+const mongoose = require("mongoose");
 
 
 const DEFAULT_USD = {
@@ -22,7 +24,7 @@ const DEFAULT_USD = {
 const resolvers = {
   Query: {
     me: async (_, __, {uid}) => {
-      const User = await createUser()
+      const User = mongoose.model("User")
       const user = await User.findOne({_id: uid})
       console.log({user})
       console.log("me")
@@ -58,7 +60,7 @@ const resolvers = {
     earnList: async (_, __, {uid}) => {
       const response: Object[] = []
   
-      const User = await createUser()
+      const User = mongoose.model("User")
       const user = await User.findOne({_id: uid})
       const earned = user?.earn || [] 
   
@@ -205,7 +207,6 @@ const server = new GraphQLServer({
   resolvers,
   middlewares: [permissions],
   context: async (req) => {
-    await setupMongoose() // FIXME workaround on the issue of `verwriteModelError: Cannot overwrite `InvoiceUser` model once compiled`
     const result = {
       ...req,
       uid: getUid(req)
@@ -218,8 +219,12 @@ const options = {
   endpoint: '/graphql',
 }
 
-server.start(options, ({ port }) =>
+setupMongoConnection()
+.then(() => {
+  server.start(options, ({ port }) =>
   console.log(
     `Server started, listening on port ${port} for incoming requests.`,
   ),
 )
+}).catch((err) => console.log(err))
+

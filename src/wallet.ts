@@ -1,4 +1,4 @@
-import { createMainBook } from "./db"
+import { book } from "medici"
 
 const customerPath = (uid) => `Liabilities:Customer:${uid}`
 
@@ -13,7 +13,7 @@ export class Wallet {
 
   async getBalance() {
 
-    const MainBook = await createMainBook()
+    const MainBook = new book("MainBook")
 
     const { balance } = await MainBook.balance({
         account: this.accountPath,
@@ -50,7 +50,7 @@ export class AdminWallet extends Wallet {
         throw Error(`amount has to be positive, is: ${amount}`)
     }
 
-    const MainBook = await createMainBook()
+    const MainBook = new book("MainBook")
 
     await MainBook.entry(memo ?? 'Add funds')
     .credit('Assets:Reserve', amount, {currency: this.currency, type})
@@ -63,7 +63,7 @@ export class AdminWallet extends Wallet {
         throw Error(`amount has to be positive, is: ${amount}`)
     }
 
-    const MainBook = await createMainBook()
+    const MainBook = new book("MainBook")
 
     return MainBook.entry(memo ?? 'Withdraw funds')
     .debit('Assets:Reserve', amount, {currency: this.currency, type})

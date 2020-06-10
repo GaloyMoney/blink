@@ -6,6 +6,8 @@
     "start": "npm run shell",
     "test": "export JEST_JUNIT_OUTPUT_DIR=\"./artifacts\" && jest --ci --reporters=default --reporters=jest-junit",
     "test-with-env": "source '../../deploy/exportlnd.sh' && jest",
+    "watch:cron": "source '../../deploy/exportlnd.sh' && nodemon -e ts -w ./src -x yarn run cron",
+    "cron": "source '../../deploy/exportlnd.sh' && ts-node src/cron.ts",
     "watch": "source '../../deploy/exportlnd.sh' && nodemon -e ts -w ./src -x yarn run watch:serve",
     "watch:serve": "source '../../deploy/exportlnd.sh' && ts-node src/index.ts"
   },

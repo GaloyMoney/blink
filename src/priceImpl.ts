@@ -1,5 +1,4 @@
 import { sat2btc } from "./utils"
-import { setupMongoose } from "./db"
 const mongoose = require("mongoose")
 import moment = require("moment")
 const util = require('util')
@@ -19,7 +18,6 @@ export class Price {
     }
 
     protected async getPriceHistory() {
-        await setupMongoose()
         return mongoose.model("PriceHistory")
     }
 

@@ -1,11 +1,11 @@
 import Timeout from 'await-timeout';
+import { intersection } from "lodash";
+import { book } from "medici";
 import moment from "moment";
-import { createInvoiceUser, createMainBook, createUser } from "./db";
 import { Auth, ILightningWallet } from "./interface";
 import { LightningAdminWallet } from "./LightningAdminImpl";
 import { IAddInvoiceRequest, ILightningTransaction, OnboardingEarn, TransactionType } from "./types";
 import { UserWallet } from "./wallet";
-import { intersection } from "lodash"
 const lnService = require('ln-service');
 const util = require('util')
 const mongoose = require("mongoose");
@@ -97,7 +97,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
     async getTransactions(): Promise<Array<ILightningTransaction>> {
         await this.updatePending()
 
-        const MainBook = await createMainBook()
+        const MainBook = new book("MainBook")
 
         const { results } = await MainBook.ledger({
             account: this.accountPath,
@@ -134,7 +134,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
         // like in `bos probe "payment_request/public_key"`
         // from https://github.com/alexbosworth/balanceofsatoshis
 
-        const MainBook = await createMainBook()
+        const MainBook = new book("MainBook")
         const Transaction = await mongoose.model("Medici_Transaction")
 
 
@@ -226,7 +226,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
     // TODO: move to an "admin/ops" wallet
     async updatePendingPayment() {
         
-        const MainBook = await createMainBook()
+        const MainBook = new book("MainBook")
 
         const Transaction = await mongoose.model("Medici_Transaction")
         const payments = await Transaction.find({account_path: this.accountPathMedici, type: "payment", pending: true})
@@ -265,7 +265,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
             description: memo,
         })
 
-        const InvoiceUser = await createInvoiceUser() 
+        const InvoiceUser = mongoose.model("InvoiceUser") 
 
         try {
             await new InvoiceUser({
@@ -283,7 +283,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
     async getOnChainAddress(): Promise<String | Error> {
 
         let address
-        const User = await createUser()
+        const User = mongoose.model("User")
 
         try {
             const format = 'p2wpkh';
@@ -333,8 +333,8 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
 
         if (result.is_confirmed) {
 
-            const MainBook = await createMainBook()
-            const InvoiceUser = await createInvoiceUser()        
+            const MainBook = new book("MainBook")
+            const InvoiceUser = mongoose.model("InvoiceUser")        
 
             try {
                 const invoice = await InvoiceUser.findOne({_id: hash, pending: true, uid: this.uid})
@@ -375,7 +375,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
     // should be run regularly with a cronjob
     // TODO: move to an "admin/ops" wallet
     async updatePendingInvoices() {
-        const InvoiceUser = await createInvoiceUser()
+        const InvoiceUser = mongoose.model("InvoiceUser")
         const invoices = await InvoiceUser.find({uid: this.uid, pending: true})
         
         for (const invoice of invoices) {
@@ -390,7 +390,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
         // we could use something like this: https://github.com/chilts/mongodb-lock
         
         const lightningAdminWallet = new LightningAdminWallet()
-        const User = await createUser()
+        const User = mongoose.model("User")
 
         const result: object[] = []
 
@@ -415,13 +415,13 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
 
     async setLevel({level}) {
         // FIXME this should be in User and not tight to Lightning // use Mixins instead
-        const User = await createUser()
+        const User = mongoose.model("User")
         return await User.findOneAndUpdate({_id: this.uid}, {level}, {new: true, upsert: true} )
     }
 
     async updateOnchainPayment() {
-        const MainBook = await createMainBook()
-        const User = await createUser()
+        const MainBook = new book("MainBook")
+        const User = mongoose.model("User")
         const Transaction = await mongoose.model("Medici_Transaction")
 
         const {onchain_addresses} = await User.findOne({_id: this.uid})
@@ -478,8 +478,6 @@ export const getAuth = () => {
     try {
         // network = process.env.NETWORK // TODO
         const cert = process.env.TLS
-        const macaroon = process.env.MACAROON 
-            const macaroon = process.env.MACAROON 
         const macaroon = process.env.MACAROON 
         const lndip = process.env.LNDIP
         const socket = `${lndip}:10009`;

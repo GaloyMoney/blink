@@ -1,5 +1,7 @@
+import { setupModel, setupMongoConnection } from "./db";
+setupModel()
+
 import { FiatAdminWallet } from "./FiatAdminWallet"
-import { setupMongoose } from "./db";
 const mongoose = require("mongoose");
 
 
@@ -7,7 +9,7 @@ const uid = "abc123" // FIXME
 let fiatWallet
 
 beforeAll(async () => {
-  await setupMongoose()
+  await setupMongoConnection()
 
   // FIXME: this might cause issue when running test in parrallel?
   //this also fails the test due to user authentication issue

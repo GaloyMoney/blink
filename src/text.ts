@@ -1,6 +1,6 @@
 const twilioPhoneNumber = "***REMOVED***"
-import { createPhoneCode, createUser } from "./db"
 import moment from "moment"
+const mongoose = require("mongoose");
 
 import { randomIntFromInterval, createToken } from "./utils"
 
@@ -41,7 +41,7 @@ export const requestPhoneCode = async ({phone}) => {
         // otherwise an attack would be to call this enough time
         // in a row and ultimately randomly find a code
 
-        const PhoneCode = await createPhoneCode()
+        const PhoneCode = mongoose.model("PhoneCode")
         await PhoneCode.create({phone, code})
 
         await sendText({body, to: phone})
@@ -57,7 +57,7 @@ export const login = async ({phone, code, network}) => {
     // TODO assert network == process.env.network
 
     try {
-        const PhoneCode = await createPhoneCode()
+        const PhoneCode = mongoose.model("PhoneCode")
         const codes = await PhoneCode.find({
             phone,
             created_at: {
@@ -79,7 +79,7 @@ export const login = async ({phone, code, network}) => {
         }
 
         // code is correct
-        const User = await createUser()
+        const User = mongoose.model("User")
 
         // get User 
         const user = await User.findOneAndUpdate({phone}, {level: 1}, {upsert: true, new: true})

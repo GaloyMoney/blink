@@ -1,12 +1,14 @@
 /**
  * @jest-environment node
  */
+import { setupModel } from "./db"
+setupModel()
+
 import moment from "moment"
 import { LightningWalletAuthed } from "./LightningUserWallet"
 const lnService = require('ln-service')
-import { createInvoiceUser, setupMongoose } from "./db"
 var lightningPayReq = require('bolt11')
-const mongoose = require("mongoose");
+const mongoose = require("mongoose")
 
 
 let lightningWallet
@@ -22,7 +24,7 @@ const lndOutside2Addr = process.env.LNDOUTSIDE2ADDR ?? 'lnd-outside-2'
 const lndOutside2Port = process.env.LNDOUTSIDE2RPCPORT ?? '10009'
 
 beforeAll(async () => {
-  await setupMongoose()
+  await setupMongoConnection()
 
   // FIXME: this might cause issue when running test in parrallel?
   //this also fails the test due to user authentication issue
@@ -74,7 +76,7 @@ it('add invoice', async () => {
   const decoded = lightningPayReq.decode(request)
   const decodedHash = decoded.tags.filter(item => item.tagName === "payment_hash")[0].data
 
-  const InvoiceUser = await createInvoiceUser()
+  const InvoiceUser = mongoose.model("InvoiceUser")
   const {uid} = await InvoiceUser.findById(decodedHash)
 
   expect(uid).toBe(user1)
@@ -88,7 +90,7 @@ it('add invoice to different user', async () => {
   const decoded = lightningPayReq.decode(request)
   const decodedHash = decoded.tags.filter(item => item.tagName === "payment_hash")[0].data
 
-  const InvoiceUser = await createInvoiceUser()
+  const InvoiceUser = mongoose.model("InvoiceUser")
   const {uid} = await InvoiceUser.findById(decodedHash)
 
   expect(uid).toBe(user2)

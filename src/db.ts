@@ -3,20 +3,18 @@ import { exit } from "process"
 const mongoose = require("mongoose");
 // mongoose.set("debug", true);
 
-const address = process.env.MONGODB_ADDRESS
-const user = process.env.MONGODB_USER
-const password = process.env.MONGODB_ROOT_PASSWORD
-const db = process.env.MONGODB_DATABASE ?? "galoy"
 
-const Schema = mongoose.Schema;
+// TODO add an event listenever if we got disconnecter from MongoDb
+// after a first succesful connection
 
-let init = false
-
-export const setupMongoose = async () => {
-  if (init) return
-
+export const setupMongoConnection = async () => {
+  const address = process.env.MONGODB_ADDRESS
+  const user = process.env.MONGODB_USER
+  const password = process.env.MONGODB_ROOT_PASSWORD
+  const db = process.env.MONGODB_DATABASE ?? "galoy"
+  
   const path = `mongodb://${user}:${password}@${address}/${db}`
-
+  
   try {
     await mongoose.connect(path, {
       useNewUrlParser: true,
@@ -28,6 +26,12 @@ export const setupMongoose = async () => {
     console.error(`error connecting to mongodb ${err}`)
     exit(1)
   }
+}
+
+export const setupModel = () => {
+  const Schema = mongoose.Schema;
+
+  console.log("setupModel")
 
   // could be capped after X months.
   // as this could be reconstructure from the ledger
@@ -165,34 +169,4 @@ export const setupMongoose = async () => {
     }
   })
   mongoose.model("PriceHistory", priceHistorySchema);
-
-  init = true
 }
-
-export const createMainBook = async () => {
-  await setupMongoose()
-
-  // should be done after previous line?
-  const { book } = require("medici")
-  return new book("MainBook")
-}
-
-export const createInvoiceUser = async () => {
-  await setupMongoose()
-
-  return mongoose.model("InvoiceUser")
-}
-
-// FIXME name function is bad
-export const createUser = async () => {
-  await setupMongoose()
-
-  return mongoose.model("User")
-}
-
-export const createPhoneCode = async () => {
-  await setupMongoose()
-
-  return mongoose.model("PhoneCode")
-}
-

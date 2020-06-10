@@ -1,8 +1,9 @@
-import { createMainBook, createUser } from "./db"
-import { LightningWalletAuthed, getAuth } from "./LightningUserWallet"
+import { book } from "medici"
+import { getAuth, LightningWalletAuthed } from "./LightningUserWallet"
 import { AdminWallet } from "./wallet"
 const lnService = require('ln-service')
 const util = require('util')
+const mongoose = require("mongoose");
 
 
 export class LightningAdminWallet extends AdminWallet {
@@ -14,7 +15,7 @@ export class LightningAdminWallet extends AdminWallet {
   }
 
   async updateUsersPendingPayment() {
-    const User = await createUser()
+    const User = mongoose.model("User")
     let userWallet
 
     for await (const user of User.find({}, { _id: 1})) {
@@ -31,7 +32,7 @@ export class LightningAdminWallet extends AdminWallet {
   async breakdownBalance() {
     const companyBalance = await this.getBalance()
 
-    const MainBook = await createMainBook()
+    const MainBook =  new book("MainBook")
 
     const { balance } = await MainBook.balance({
       account: "Liabilities:Customer",

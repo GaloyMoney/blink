@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "module": "esnext",
+    "module": "CommonJS",
     "noImplicitReturns": true,
     "noUnusedLocals": false, // FIXME
     "outDir": "lib",
