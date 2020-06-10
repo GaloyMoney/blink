@@ -20,6 +20,7 @@
     "await-timeout": "^1.1.1",
     "bitcoin-core": "^3.0.0",
     "ccxt": "^1.26.54",
+    "cron": "^1.8.2",
     "express": "^4.17.1",
     "express-graphql": "^0.9.0",
     "graphql-request": "^1.8.2",

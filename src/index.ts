@@ -143,6 +143,21 @@ const resolvers = {
     }
 }}
 
+
+const price = new Price()
+
+var CronJob = require('cron').CronJob;
+var job = new CronJob(
+	'5 * * * * *',
+	async function() {
+    console.log('You will see this message every minute');
+    await price.update()
+	},
+	null,
+	true,
+	'America/Los_Angeles'
+);
+
 function getUid(ctx: ContextParameters) {
   
   let token
