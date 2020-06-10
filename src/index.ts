@@ -8,6 +8,7 @@ import { LightningWalletAuthed } from "./LightningUserWallet";
 import { Price } from "./priceImpl";
 import { login, requestPhoneCode } from "./text";
 import { OnboardingEarn } from "./types";
+import { LightningAdminWallet } from "./LightningAdminImpl";
 let path = require("path");
 
 
@@ -145,13 +146,15 @@ const resolvers = {
 
 
 const price = new Price()
+const adminWallet = new LightningAdminWallet()
 
 // TODO this should be done in another pod
 const CronJob = require('cron').CronJob;
 new CronJob(
-	'0 * * * * *',
+	'* 1 * * * *', // run every hour, at minute 1 to fetch candle of prior hour
 	async function() {
     await price.update()
+    await adminWallet.updateUsersPendingPayment()
 	},
 	null,
 	true,
