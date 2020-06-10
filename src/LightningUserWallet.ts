@@ -80,7 +80,7 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
 
     constructor({auth, uid}: {auth: Auth, uid: string}) {
         super({uid})
-        this.lnd = lnService.authenticatedLndGrpc(auth).lnd;
+        this.lnd = lnService.authenticatedLndGrpc(auth).lnd
     }
 
     async updatePending() {
@@ -474,24 +474,27 @@ export class LightningUserWallet extends UserWallet implements ILightningWallet 
     }
 }
 
+export const getAuth = () => {
+    try {
+        // network = process.env.NETWORK // TODO
+        const cert = process.env.TLS
+        const macaroon = process.env.MACAROON 
+            const macaroon = process.env.MACAROON 
+        const macaroon = process.env.MACAROON 
+        const lndip = process.env.LNDIP
+        const socket = `${lndip}:10009`;
+        if (!cert || !macaroon || !lndip) {
+            throw new Error('TLS is not set')
+        }
+        return { macaroon, cert, socket };
+    }
+    catch (err) {
+        throw Error(`failed-precondition: ${err}`);
+    }
+}
+
 export class LightningWalletAuthed extends LightningUserWallet {
     constructor({uid}) {
-        let auth: Auth;
-        // let network: string;
-        try {
-            // network = process.env.NETWORK // TODO
-            const cert = process.env.TLS
-            const macaroon = process.env.MACAROON 
-            const lndip = process.env.LNDIP
-            const socket = `${lndip}:10009`;
-            if (!cert || !macaroon || !lndip) {
-                throw new Error('TLS is not set')
-            }
-            auth = { macaroon, cert, socket };
-        }
-        catch (err) {
-            throw Error(`failed-precondition: ` + err);
-        }
-        super({uid, auth});
+        super({uid, auth: getAuth()});
     }
 }

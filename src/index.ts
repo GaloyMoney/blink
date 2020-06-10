@@ -145,21 +145,6 @@ const resolvers = {
 }}
 
 
-const price = new Price()
-const adminWallet = new LightningAdminWallet()
-
-// TODO this should be done in another pod
-const CronJob = require('cron').CronJob;
-new CronJob(
-	'* 1 * * * *', // run every hour, at minute 1 to fetch candle of prior hour
-	async function() {
-    await price.update()
-    await adminWallet.updateUsersPendingPayment()
-	},
-	null,
-	true,
-	'America/Los_Angeles'
-)
 
 function getUid(ctx: ContextParameters) {
   
@@ -220,7 +205,7 @@ const server = new GraphQLServer({
   resolvers,
   middlewares: [permissions],
   context: async (req) => {
-    await setupMongoose() // workaround on the issue of `verwriteModelError: Cannot overwrite `InvoiceUser` model once compiled`
+    await setupMongoose() // FIXME workaround on the issue of `verwriteModelError: Cannot overwrite `InvoiceUser` model once compiled`
     const result = {
       ...req,
       uid: getUid(req)
