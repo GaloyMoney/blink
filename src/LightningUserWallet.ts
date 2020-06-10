@@ -470,8 +470,9 @@ export class LightningWalletAuthed extends LightningUserWallet {
             // network = process.env.NETWORK // TODO
             const cert = process.env.TLS
             const macaroon = process.env.MACAROON 
-            const lndip = process.env.LNDIP
-            const socket = `${lndip}:10009`;
+            const lndip = process.env.LNDIP ?? "lnd-service"
+            const port = process.env.LNDRPCPORT ?? "10009"
+            const socket = `${lndip}:${port}`;
             if (!cert || !macaroon || !lndip) {
                 throw new Error('TLS is not set')
             }
