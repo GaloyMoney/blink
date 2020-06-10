@@ -1,3 +1,5 @@
+import { exit } from "process"
+
 const mongoose = require("mongoose");
 // mongoose.set("debug", true);
 
@@ -15,6 +17,17 @@ export const setupMongoose = async () => {
 
   const path = `mongodb://${user}:${password}@${address}/${db}`
 
+  try {
+    await mongoose.connect(path, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      useCreateIndex: true,
+      useFindAndModify: false
+    })
+  } catch (err) {
+    console.error(`error connecting to mongodb ${err}`)
+    exit(1)
+  }
 
   // could be capped after X months.
   // as this could be reconstructure from the ledger
@@ -67,15 +80,6 @@ export const setupMongoose = async () => {
   
   mongoose.model("PhoneCode", PhoneCodeSchema)
   
-
-
-
-  await mongoose.connect(path, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useCreateIndex: true,
-    useFindAndModify: false
-  })
 
   const transactionSchema = new Schema({
     // custom property
