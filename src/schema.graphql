@@ -55,6 +55,11 @@ type Token {
   token: String
 }
 
+type BuildParameter {
+  commitHash: String
+  buildTime: String
+}
+
 enum Network {
   testnet
   mainnet
@@ -65,6 +70,7 @@ type Query {
   wallet: [Wallet]
   earnList: [Earn]
   me: User
+  buildParameters: [BuildParameter]
 }
 
 type Mutation {
