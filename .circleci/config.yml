@@ -243,11 +243,6 @@ jobs:
           command: |
             gcloud container clusters delete $(cat clustername | tr -d '\n\r') --quiet --region us-central1-b
           when: always
-      - slack/status:
-          fail_only: true
-          mentions: 'Kartik Shah,nicolas'
-          only_for_branches: only_for_branches
-          webhook: webhook
       - run:
           name: tag passed image as approved
           command: |
@@ -259,6 +254,9 @@ jobs:
             - run: |
                 gcloud container clusters get-credentials testnet-cluster
                 kubectl delete pod -l app=graphql-server
+      - slack/status:
+          fail_only: true
+          mentions: 'U011J7RCEFQ,U011KKL1L4B'
 
 workflows:
   kube:
