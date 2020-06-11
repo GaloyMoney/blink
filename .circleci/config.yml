@@ -154,6 +154,11 @@ jobs:
     steps:
       - checkout:
           path: ~/GaloyApp
+      - run:
+          name: Write build params to docker image source
+          command: |
+            echo "COMMITHASH=$CIRCLE_SHA1" >> ./functions/src/.env
+            echo "BUILDTIME=$(date -u '+%F-%T')" >> ./functions/src/.env
       - gcp-gcr/build-image:
           image: test-image
       - gcp-gcr/gcr-auth
@@ -223,8 +228,7 @@ jobs:
           name: wait for test-pod to come alive
           command: |
             echo $(kubectl get pods)
-            ctr=25;status="";while [ "$status" != "Running" ] && [ $ctr -gt 0 ];do echo "counter=$ctr" && sleep 5 ;status=$(kubectl get pod test-pod | awk 'FNR == 2 {print $3}') ; ((ctr=ctr-1)); done
-
+            kubectl wait --for=condition=ready pod/test-pod --timeout=200s
       - run:
           name: Run tests
           command: |
@@ -243,22 +247,17 @@ jobs:
           command: |
             gcloud container clusters delete $(cat clustername | tr -d '\n\r') --quiet --region us-central1-b
           when: always
-      - slack/status:
-          fail_only: true
-          mentions: 'Kartik Shah,nicolas'
-          only_for_branches: only_for_branches
-          webhook: webhook
-      - run:
-          name: tag passed image as approved
-          command: |
-            gcloud container images add-tag gcr.io/${GOOGLE_PROJECT_ID}/test-image:latest gcr.io/${GOOGLE_PROJECT_ID}/test-image:approved --quiet
       - when:
           condition:
             equal: [ master, << pipeline.git.branch >> ]
           steps:
             - run: |
+                gcloud container images add-tag gcr.io/${GOOGLE_PROJECT_ID}/test-image:latest gcr.io/${GOOGLE_PROJECT_ID}/test-image:approved --quiet
                 gcloud container clusters get-credentials testnet-cluster --region us-central1-a --project ${GOOGLE_PROJECT_ID}
                 kubectl delete pod -l app=graphql-server
+      - slack/status:
+          fail_only: true
+          mentions: 'U011J7RCEFQ,U011KKL1L4B'
 
 workflows:
   kube:

@@ -20,7 +20,7 @@ const user1 = "user1"
 const user2 = "user2"
 
 const lndOutside1Addr = process.env.LNDOUTSIDE1ADDR ?? 'lnd-outside-1'
-const lndOutside1Port = process.env.LNDOUTSIDERPCPORT ?? '10009'
+const lndOutside1Port = process.env.LNDOUTSIDE1RPCPORT ?? '10009'
 const lndOutside2Addr = process.env.LNDOUTSIDE2ADDR ?? 'lnd-outside-2'
 const lndOutside2Port = process.env.LNDOUTSIDE2RPCPORT ?? '10009'
 
