@@ -154,13 +154,14 @@ jobs:
     steps:
       - checkout:
           path: ~/GaloyApp
-      - run:
-          name: Write build params to docker image source
-          command: |
-            echo "COMMITHASH=$CIRCLE_SHA1" >> ./functions/src/.env
-            echo "BUILDTIME=$(date -u '+%F-%T')" >> ./functions/src/.env
+      # - run:
+      #     name: Write build params to docker image source
+      #     command: |
+      #       echo "COMMITHASH=$CIRCLE_SHA1" >> ./functions/src/.env
+      #       echo "BUILDTIME=$(date -u '+%F-%T')" >> ./functions/src/.env
       - gcp-gcr/build-image:
           image: test-image
+          extra_build_args: "--build-arg COMMITHASHARG=$CIRCLE_SHA1 --build-arg BUILDTIMEARG=$(date -u '+%F-%T')"
       - gcp-gcr/gcr-auth
       - gcp-gcr/push-image:
           image: test-image
