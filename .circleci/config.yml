@@ -253,14 +253,7 @@ jobs:
           steps:
             - run: |
                 gcloud container images add-tag gcr.io/${GOOGLE_PROJECT_ID}/test-image:latest gcr.io/${GOOGLE_PROJECT_ID}/test-image:approved --quiet
-      - when:
-          condition:
-            equal: [ master, << pipeline.git.branch >> ]
-          steps:
-            - run: |
                 gcloud container clusters get-credentials testnet-cluster --region us-central1-a --project ${GOOGLE_PROJECT_ID}
-                kubectl create configmap graphql-build-params --from-literal COMMITHASH=$CIRCLE_SHA1 \
-                --from-literal BUILDTIME=$(date -u '+%F-%T')
                 kubectl delete pod -l app=graphql-server
       - slack/status:
           fail_only: true
