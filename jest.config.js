@@ -12,5 +12,6 @@ module.exports = {
     // FIXME
     // "lightning",
     "exchange"
-  ]
+  ],
+  "testSequencer":"./jestTestSequencer.js"
 }

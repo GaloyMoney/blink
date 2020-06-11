@@ -16,6 +16,7 @@
   "dependencies": {
     "@babel/core": "^7.9.6",
     "@babel/preset-env": "^7.9.6",
+    "@jest/test-sequencer": "^26.0.1",
     "@types/lodash": "^4.14.155",
     "await-timeout": "^1.1.1",
     "bitcoin-core": "^3.0.0",

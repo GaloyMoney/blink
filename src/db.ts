@@ -1,9 +1,9 @@
 const mongoose = require("mongoose");
 // mongoose.set("debug", true);
 
-const address = process.env.MONGODB_ADDRESS
-const user = process.env.MONGODB_USER
-const password = process.env.MONGODB_ROOT_PASSWORD
+const address = process.env.MONGODB_ADDRESS ?? "mongodb"
+const user = process.env.MONGODB_USER ?? "testGaloy"
+const password = process.env.MONGODB_ROOT_PASSWORD ?? "testGaloy"
 const db = process.env.MONGODB_DATABASE ?? "galoy"
 
 const Schema = mongoose.Schema;
