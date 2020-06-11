@@ -74,7 +74,7 @@ type Query {
   wallet: [Wallet]
   earnList: [Earn]
   me: User
-  buildParameters: [BuildParameter]
+  buildParameters: BuildParameter
 }
 
 type Mutation {

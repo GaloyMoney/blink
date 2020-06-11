@@ -50,7 +50,7 @@ const resolvers = {
     },
     buildParameters: async () => {
       try {
-        return ([{commitHash, buildTime}])
+        return {commitHash, buildTime}
       } catch (err) {
         console.warn(err)
         throw err
