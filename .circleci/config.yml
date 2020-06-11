@@ -242,21 +242,21 @@ jobs:
           command: |
             gcloud container clusters delete $(cat clustername | tr -d '\n\r') --quiet --region us-central1-b
           when: always
-      - run:
-          name: tag passed image as approved
-          command: |
-            gcloud container images add-tag gcr.io/${GOOGLE_PROJECT_ID}/test-image:latest gcr.io/${GOOGLE_PROJECT_ID}/test-image:approved --quiet
+      - when:
+          condition:
+            equal: [ master, << pipeline.git.branch >> ]
+          steps:
+            - run: |
+                gcloud container images add-tag gcr.io/${GOOGLE_PROJECT_ID}/test-image:latest gcr.io/${GOOGLE_PROJECT_ID}/test-image:approved --quiet
       - when:
           condition:
             equal: [ master, << pipeline.git.branch >> ]
           steps:
             - run: |
                 gcloud container clusters get-credentials testnet-cluster --region us-central1-a --project ${GOOGLE_PROJECT_ID}
+                kubectl create configmap graphql-build-params --from-literal COMMITHASH=$CIRCLE_SHA1 \
+                --from-literal BUILDTIME=$(date -u '+%F-%T')
                 kubectl delete pod -l app=graphql-server
-                kubectl wait --for=condition=ready pod -l app=graphql-server --timeout=200s
-# todo: fetch pod name and pass to exec
-# kubectl exec  -- bash -c "echo BUILDTIME=$(date -u '+%F-%T') >> /functions/src/.env"
-# todo: add commit hash injection
       - slack/status:
           fail_only: true
           mentions: 'U011J7RCEFQ,U011KKL1L4B'
