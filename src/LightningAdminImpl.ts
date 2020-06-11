@@ -2,16 +2,14 @@ import { book } from "medici"
 import { LightningUserWallet } from "./LightningUserWallet"
 import { AdminWallet } from "./wallet"
 import { getAuth } from "./utils";
+import { LightningMixin } from "./Lightning";
 const lnService = require('ln-service')
 const mongoose = require("mongoose");
 
 
-export class LightningAdminWallet extends AdminWallet {
-  // protected readonly lnd: object;
-  protected _currency = "BTC"
-
-  get accountPath(): string {
-    return `Assets:Capital`
+export class LightningAdminWallet extends LightningMixin(AdminWallet) {
+  constructor({uid}: {uid: string}) {
+    super({uid})
   }
 
   async updateUsersPendingPayment() {
@@ -48,5 +46,9 @@ export class LightningAdminWallet extends AdminWallet {
     const balanceInChannels = (await lnService.getChannelBalance({lnd})).channel_balance;
 
     console.log({companyBalance, userBalance, chainBalance, balanceInChannels})
+  }
+
+  async getInfo() {
+    return await lnService.getWalletInfo({ lnd: this.lnd });
   }
 }

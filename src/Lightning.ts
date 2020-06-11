@@ -1,26 +1,103 @@
 const lnService = require('ln-service');
 export type payInvoiceResult = "success" | "failed" | "pending"
 import { getAuth } from "./utils";
-import { IAddInvoiceRequest } from "./types";
+import { IAddInvoiceRequest, TransactionType, ILightningTransaction } from "./types";
 const mongoose = require("mongoose");
 const util = require('util')
 import { book } from "medici";
 import Timeout from 'await-timeout';
 import { intersection } from "lodash";
+import moment from "moment";
 
+export type IType = "invoice" | "payment" | "earn"
+
+const formatInvoice = (type: IType, memo: String | undefined, pending: Boolean | undefined): String => {
+  if (pending) {
+    return `Waiting for payment confirmation`
+  } else {
+    if (memo) {
+      return memo
+    }
+    // else if (invoice.htlcs[0].customRecords) {
+    // FIXME above syntax from lnd, not lnService script "overlay"
+    // TODO for lnd keysend 
+    // } 
+    else {
+      return type === "payment" ?
+        `Payment sent`
+        : type === "invoice" ?
+          `Payment received`
+          : "Earn"
+    }
+  }
+}
+
+const formatType = (type: IType, pending: Boolean | undefined): TransactionType | Error => {
+  if (type === "invoice") {
+    return pending ? "unconfirmed-invoice" : "paid-invoice"
+  }
+
+  if (type === "payment") {
+    return pending ? "inflight-payment" : "payment"
+  }
+
+  if (type === "earn") {
+    return "earn"
+  }
+
+  if (type === "onchain_receipt") {
+    return "onchain_receipt"
+  }
+
+  throw Error("incorrect type for formatType")
+}
 
 export const LightningMixin = (superclass) => class extends superclass {
-  // lnd: any
+  protected _currency = "BTC"
+  lnd: any
 
   constructor(...args) {
     super(...args)
-    // this.lnd = lnService.authenticatedLndGrpc(getAuth()).lnd
+    this.lnd = lnService.authenticatedLndGrpc(getAuth()).lnd
   }
 
   async updatePending() {
     await this.updatePendingInvoices()
     await this.updatePendingPayment()
     await this.updateOnchainPayment()
+  }
+
+  async getBalance() {
+    await this.updatePending()
+    return super.getBalance()
+  }
+
+  async getTransactions(): Promise<Array<ILightningTransaction>> {
+    await this.updatePending()
+
+    const MainBook = new book("MainBook")
+
+    const { results } = await MainBook.ledger({
+      account: this.accountPath,
+      currency: this.currency,
+      // start_date: startDate,
+      // end_date: endDate
+    })
+    // TODO we could duplicated pending/type to transaction,
+    // this would avoid to fetch the data from hash collection and speed up query
+
+    const results_processed = results.map((item) => ({
+      created_at: moment(item.timestamp).unix(),
+      amount: item.debit - item.credit,
+      description: formatInvoice(item.type, item.memo, item.pending),
+      hash: item.hash,
+      fee: item.fee,
+      // destination: TODO
+      type: formatType(item.type, item.pending),
+      id: item._id,
+    }))
+
+    return results_processed
   }
 
   async addInvoice({ value, memo }: IAddInvoiceRequest): Promise<String> {

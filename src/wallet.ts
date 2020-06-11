@@ -1,8 +1,18 @@
 import { book } from "medici"
 
-const customerPath = (uid) => `Liabilities:Customer:${uid}`
-
 export class Wallet {
+
+  // FIXME should not be here
+  customerPath(uid) { 
+    return `Liabilities:Customer:${uid}`
+  }
+
+  protected readonly uid: string
+
+  constructor({uid}) {
+    this.uid = uid
+  }
+
   protected _currency
 
   get accountPath(): string {
@@ -26,15 +36,9 @@ export class Wallet {
 }
 
 export class UserWallet extends Wallet {
-  protected readonly uid: string
-
-  constructor({uid}) {
-    super()
-    this.uid = uid
-  }
 
   get accountPath(): string {
-    return customerPath(this.uid)
+    return this.customerPath(this.uid)
   }
 
   get accountPathMedici(): Array<string> {
@@ -45,6 +49,11 @@ export class UserWallet extends Wallet {
 
 export class AdminWallet extends Wallet {
 
+  get accountPath(): string {
+    return `Assets:Capital`
+  }
+
+  // TODO refactor using pay function
   async addFunds({amount, uid, memo, type}: {amount: number, uid: string, memo?: string, type?: string}) {
     if (amount < 0) {
         throw Error(`amount has to be positive, is: ${amount}`)
@@ -54,10 +63,11 @@ export class AdminWallet extends Wallet {
 
     await MainBook.entry(memo ?? 'Add funds')
     .credit('Assets:Reserve', amount, {currency: this.currency, type})
-    .debit(customerPath(uid), amount, {currency: this.currency, type})
+    .debit(this.customerPath(uid), amount, {currency: this.currency, type})
     .commit()
-}
+  }
 
+  // TODO refactor using pay function
   async widthdrawFunds({amount, uid, memo, type}) {
     if (amount < 0) {
         throw Error(`amount has to be positive, is: ${amount}`)
@@ -67,7 +77,7 @@ export class AdminWallet extends Wallet {
 
     return MainBook.entry(memo ?? 'Withdraw funds')
     .debit('Assets:Reserve', amount, {currency: this.currency, type})
-    .credit(customerPath(uid), amount, {currency: this.currency, type})
+    .credit(this.customerPath(uid), amount, {currency: this.currency, type})
     .commit()
   }
 }
