@@ -10,7 +10,7 @@ export MACAROONOUTSIDE2=$(kubectl exec lnd-container-2 -- base64 /root/.lnd/data
 # workaround: https://stackoverflow.com/questions/16658333/grep-p-no-longer-works-how-can-i-rewrite-my-searches
 export BITCOINDPORT=$(kubectl get services | awk '/bitcoind-service/ {print $5}' | grep -Po '18443:\K[0-9]+')
 
-export MINIKUBEIP='172.17.0.2'
+export MINIKUBEIP=$(minikube ip)
 export BITCOINDADDR=$MINIKUBEIP
 
 export LNDIP=$MINIKUBEIP
@@ -23,4 +23,4 @@ export LNDOUTSIDE2ADDR=$MINIKUBEIP
 export LNDOUTSIDE2RPCPORT=$(kubectl get services | awk '/lnd-outside-2/ {print $5}' | grep -Po '10009:\K[0-9]+')
 export NETWORK=regtest
 
-export MONGODB_ADDRESS="$MINIKUBEIP:"$(kubectl get services | awk '/mongodb/ {print $5}' | grep -Po '27017:\K[0-9]+')
+export MONGODB_ADDRESS=$MINIKUBEIP
