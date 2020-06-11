@@ -17,7 +17,7 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  fiatWallet = new FiatAdminWallet()
+  fiatWallet = new FiatAdminWallet({uid: "admin"})
 })
 
 afterAll(async () => {

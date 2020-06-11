@@ -153,13 +153,14 @@ mongoose.model("PriceHistory", priceHistorySchema);
 // after a first succesful connection
 
 export const setupMongoConnection = async () => {
-  const address = process.env.MONGODB_ADDRESS ?? "mongodb"
   const user = process.env.MONGODB_USER ?? "testGaloy"
   const password = process.env.MONGODB_ROOT_PASSWORD ?? "testGaloy"
+  const address = process.env.MONGODB_ADDRESS ?? "mongodb"
   const db = process.env.MONGODB_DATABASE ?? "galoy"
   
   const path = `mongodb://${user}:${password}@${address}/${db}`
-  
+  // console.log({path})
+
   try {
     await mongoose.connect(path, {
       useNewUrlParser: true,
