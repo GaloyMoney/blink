@@ -1,9 +1,8 @@
-import { IFiatWallet } from "./interface"
-import { UserWallet } from "./wallet"
 import { book } from "medici"
+import { UserWallet } from "./wallet"
 
 
-export class FiatUserWallet extends UserWallet implements IFiatWallet {
+export class FiatUserWallet extends UserWallet {
   protected _currency = "USD"
 
   constructor({uid}) {

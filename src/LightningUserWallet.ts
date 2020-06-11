@@ -25,7 +25,7 @@ export class LightningUserWallet extends LightningMixin(UserWallet) {
         // add a lock or db-level transaction to prevent this
         // we could use something like this: https://github.com/chilts/mongodb-lock
         
-        const lightningAdminWallet = new LightningAdminWallet()
+        const lightningAdminWallet = new LightningAdminWallet({uid: "admin"})
         const User = mongoose.model("User")
 
         const result: object[] = []

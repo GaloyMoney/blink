@@ -1,10 +1,18 @@
 /**
  * @jest-environment node
  */
+import { setupMongoConnection } from "./db"
+// this import needs to be before medici
+
+import { LightningAdminWallet } from "./LightningAdminImpl"
+import { sleep } from "./utils"
+
 //TODO: Choose between camel case or underscores for variable naming
 const BitcoindClient = require('bitcoin-core')
 const lnService = require('ln-service')
 const cert = process.env.TLS
+
+const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
 
 let macaroon1 = process.env.MACAROON
 let macaroon2 = process.env.MACAROONOUTSIDE1
@@ -35,9 +43,6 @@ let lnd_outside_2_rpc_port = process.env.LNDOUTSIDE2RPCPORT
 
 let bitcoindClient
 
-async function sleep(ms) {
-	return new Promise(resolve => setTimeout(resolve, ms));
-}
 
 async function waitForNodeSync(lnd) {
 	let is_synced_to_chain = false
@@ -70,8 +75,13 @@ beforeAll(async () => {
 		socket: `${lnd_outside_2_addr}:${lnd_outside_2_rpc_port}`,
 	}).lnd;
 
-	lnd1_wallet_addr = (await lnService.createChainAddress({ format: 'np2wpkh', lnd: lnd1 })).address
+	await setupMongoConnection()
+
+	// funding the bank
+	const adminWallet = new LightningAdminWallet({uid: "admin"})
+	lnd1_wallet_addr = adminWallet.getOnChainAddress()
 	console.log("addr1", lnd1_wallet_addr)
+	
 	lndOutside1_wallet_addr = (await lnService.createChainAddress({ format: 'np2wpkh', lnd: lndOutside1 })).address
 	console.log("addr2", lndOutside1_wallet_addr)
 	return
@@ -88,7 +98,7 @@ it('funds lnd1 and lndOutside1', async () => {
 		expect(result[0].length).toEqual(64)
 		result = await bitcoindClient.generateToAddress(1, lndOutside1_wallet_addr)
 		expect(result[0].length).toEqual(64)
-		await bitcoindClient.generateToAddress(99, '2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo')
+		await bitcoindClient.generateToAddress(99, RANDOM_ADDRESS)
 	} catch (error) {
 		console.log(error)
 	}
@@ -113,7 +123,7 @@ it('opens channel from lndOutside1 to lndOutside2', async () => {
 	await waitForNodeSync(lndOutside1)
 
 	let res = await lnService.openChannel({ lnd: lndOutside1, local_tokens: 100000, partner_public_key: public_key, partner_socket: `lnd-outside-2:9735`, give_tokens: 30000 })
-	await bitcoindClient.generateToAddress(5, '2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo')
+	await bitcoindClient.generateToAddress(5, RANDOM_ADDRESS)
 	console.log("open channel res", res)
 }, 50000)
 
