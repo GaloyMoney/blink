@@ -14,6 +14,8 @@ dotenv.config()
 
 const commitHash = process.env.COMMITHASH
 const buildTime = process.env.BUILDTIME
+console.log("commithash", commitHash)
+console.log("buitltme", buildTime)
 
 const DEFAULT_USD = {
   currency: "USD",
