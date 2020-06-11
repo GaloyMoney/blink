@@ -76,20 +76,34 @@ beforeAll(async () => {
 	}).lnd;
 
 	await setupMongoConnection()
+})
 
+it('I can connect to bitcoind', async () => {
+	const connection_obj = { 
+		network: 'regtest', username: 'rpcuser', password: 'rpcpass',
+		host: bitcoind_addr, port: bitcoind_port }
+	console.log({connection_obj})
+	bitcoindClient = new BitcoindClient(connection_obj)
+	expect(await bitcoindClient.getBlockchainInfo().chain).toEqual('regtest')
+})
+
+it('I can connect to lnds', async () => {
+	console.log({lnd1})
+	const walletinfo = await lnService.getWalletInfo({ lnd: lnd1 })
+	console.log({walletinfo})
+	// expect(await bitcoindClient.getBlockchainInfo().chain).toEqual('regtest')
+})
+
+it('funding the bank', async () => {
 	// funding the bank
 	const adminWallet = new LightningAdminWallet({uid: "admin"})
 	lnd1_wallet_addr = adminWallet.getOnChainAddress()
-	console.log("addr1", lnd1_wallet_addr)
-	
-	lndOutside1_wallet_addr = (await lnService.createChainAddress({ format: 'np2wpkh', lnd: lndOutside1 })).address
-	console.log("addr2", lndOutside1_wallet_addr)
-	return
+	console.log({lnd1_wallet_addr})
 })
 
-beforeAll(async () => {
-	bitcoindClient = new BitcoindClient({ network: 'regtest', username: 'rpcuser', password: 'rpcpass', host: `${bitcoind_addr}`, port: `${bitcoind_port}` })
-	expect((await bitcoindClient.getBlockchainInfo()).chain).toEqual('regtest')
+it('funding lndOutside 1', async () => {
+	lndOutside1_wallet_addr = (await lnService.createChainAddress({ format: 'np2wpkh', lnd: lndOutside1 })).address
+	console.log({lndOutside1_wallet_addr})
 })
 
 it('funds lnd1 and lndOutside1', async () => {
