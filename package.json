@@ -10,7 +10,7 @@
     "cron": "source '../../deploy/exportlnd.sh' && ts-node src/cron.ts",
     "watch": "source '../../deploy/exportlnd.sh' && nodemon -e ts -w ./src -x yarn run watch:serve",
     "watch:serve": "source '../../deploy/exportlnd.sh' && ts-node src/index.ts",
-    "test-local": "source exportLocal.sh && yarn jest",
+    "test-local": "source exportLocal.sh && yarn jest --runInBand",
     "test-dev": "nodemon -e ts -w ./src -x yarn run test-dev-2",
     "test-dev-2": "source '../../deploy/exportlnd.sh' && ts-node src/test.ts"
   },
