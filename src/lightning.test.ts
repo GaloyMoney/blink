@@ -1,8 +1,9 @@
 /**
  * @jest-environment node
  */
-import { setupModel } from "./db"
-setupModel()
+import { setupMongoConnection } from "./db"
+// this import needs to be before medici
+
 
 import moment from "moment"
 import { LightningUserWallet } from "./LightningUserWallet"

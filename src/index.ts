@@ -1,5 +1,5 @@
-import { setupModel, setupMongoConnection } from "./db"
-setupModel()
+import { setupMongoConnection } from "./db"
+// this import needs to be before medici
 
 import { rule, shield } from 'graphql-shield';
 import { GraphQLServer } from 'graphql-yoga';

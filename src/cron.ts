@@ -1,5 +1,5 @@
-import { setupModel, setupMongoConnection } from "./db"
-setupModel()
+import { setupMongoConnection } from "./db"
+// this import needs to be before medici
 
 import { Price } from "./priceImpl"
 import { LightningAdminWallet } from "./LightningAdminImpl"
