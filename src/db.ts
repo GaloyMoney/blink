@@ -29,6 +29,12 @@ const UserSchema = new Schema({
     default: Date.now
   },
   earn: [String],
+  role: {
+    type: String,
+    enum: ["user", "admin"],
+    required: true,
+    default: "user"
+  },
   onchain_addresses: [String],
   level: Number,
   phone: String, // TODO we may want to store country as a separate string
