@@ -57,7 +57,9 @@ export const getAuth = () => {
         const cert = process.env.TLS
         const macaroon = process.env.MACAROON 
         const lndip = process.env.LNDIP
-        const socket = `${lndip}:10009`;
+        const port = process.env.LNDRPCPORT ?? 10009
+        
+        const socket = `${lndip}:${port}`
         if (!cert || !macaroon || !lndip) {
             throw new Error('missing environment variable for lnd')
         }

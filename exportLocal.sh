@@ -23,4 +23,4 @@ export LNDOUTSIDE2ADDR=$MINIKUBEIP
 export LNDOUTSIDE2RPCPORT=$(kubectl get services | awk '/lnd-outside-2/ {print $5}' | grep -Po '10009:\K[0-9]+')
 export NETWORK=regtest
 
-export MONGODB_ADDRESS=$MINIKUBEIP
+export MONGODB_ADDRESS="$MINIKUBEIP:"$(kubectl get services | awk '/mongodb/ {print $5}' | grep -Po '27017:\K[0-9]+')
