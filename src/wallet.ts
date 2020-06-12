@@ -50,7 +50,7 @@ export class UserWallet extends Wallet {
 export class AdminWallet extends Wallet {
 
   get accountPath(): string {
-    return `Assets:Capital`
+    return `Liabilities:ShareholderValue`
   }
 
   // TODO refactor using pay function
@@ -62,7 +62,7 @@ export class AdminWallet extends Wallet {
     const MainBook = new book("MainBook")
 
     await MainBook.entry(memo ?? 'Add funds')
-    .credit('Assets:Reserve', amount, {currency: this.currency, type})
+    .credit('Assets:Reserve:Lightning', amount, {currency: this.currency, type})
     .debit(this.customerPath(uid), amount, {currency: this.currency, type})
     .commit()
   }
@@ -76,7 +76,7 @@ export class AdminWallet extends Wallet {
     const MainBook = new book("MainBook")
 
     return MainBook.entry(memo ?? 'Withdraw funds')
-    .debit('Assets:Reserve', amount, {currency: this.currency, type})
+    .debit('Assets:Reserve:Lightning', amount, {currency: this.currency, type})
     .credit(this.customerPath(uid), amount, {currency: this.currency, type})
     .commit()
   }

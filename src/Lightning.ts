@@ -176,7 +176,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     const obj = { currency: this.currency, hash: id, type: "payment", pending: true, fee: route.safe_fee }
 
     const entry = await MainBook.entry(description)
-      .debit('Assets:Reserve', tokens + route.safe_fee, obj)
+      .debit('Assets:Reserve:Lightning', tokens + route.safe_fee, obj)
       .credit(this.accountPath, tokens + route.safe_fee, obj)
       .commit()
 
@@ -347,7 +347,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         invoice.save()
 
         await MainBook.entry()
-          .credit('Assets:Reserve', result.tokens, { currency: "BTC", hash, type: "invoice" })
+          .credit('Assets:Reserve:Lightning', result.tokens, { currency: "BTC", hash, type: "invoice" })
           .debit(this.accountPath, result.tokens, { currency: "BTC", hash, type: "invoice" })
           .commit()
 
@@ -420,7 +420,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       console.log({ matched_tx, mongotx })
       if (!mongotx) {
         await MainBook.entry()
-          .credit('Assets:Reserve', matched_tx.tokens, { currency: "BTC", hash: matched_tx.id, type: "onchain_receipt" })
+          .credit('Assets:Reserve:Lightning', matched_tx.tokens, { currency: "BTC", hash: matched_tx.id, type: "onchain_receipt" })
           .debit(this.accountPath, matched_tx.tokens, { currency: "BTC", hash: matched_tx.id, type: "onchain_receipt" })
           .commit()
       }
