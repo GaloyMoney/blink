@@ -1,4 +1,4 @@
-// import dotenv from "dotenv";
+import dotenv from "dotenv";
 import { rule, shield } from 'graphql-shield';
 import { GraphQLServer } from 'graphql-yoga';
 import { ContextParameters } from 'graphql-yoga/dist/types';
@@ -10,12 +10,12 @@ import { Price } from "./priceImpl";
 import { login, requestPhoneCode } from "./text";
 import { OnboardingEarn } from "./types";
 let path = require("path");
-// dotenv.config()
+
+dotenv.config()
+
 
 const commitHash = process.env.COMMITHASH
 const buildTime = process.env.BUILDTIME
-console.log("commithash", commitHash)
-console.log("buitltme", buildTime)
 
 const DEFAULT_USD = {
   currency: "USD",
