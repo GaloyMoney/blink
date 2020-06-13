@@ -120,12 +120,12 @@ it('getting bank address', async () => {
 	expect(bank_address.substr(0, 4)).toBe("bcrt")
 })
 
-it('funding lndOutside 1', async () => {
+it('getting lndOutside1 address', async () => {
 	lndOutside1_wallet_addr = (await lnService.createChainAddress({ format: 'p2wpkh', lnd: lndOutside1 })).address
 	expect(lndOutside1_wallet_addr.substr(0, 4)).toBe("bcrt")
 })
 
-it('funds lnd1 and lndOutside1', async () => {
+it('funds lnd1, lndOutside1 and mined 99 blocks to make mined coins accessible', async () => {
 	let result = await bitcoindClient.generateToAddress(1, bank_address)
 	expect(result[0].length).toEqual(64)
 	result = await bitcoindClient.generateToAddress(1, lndOutside1_wallet_addr)
