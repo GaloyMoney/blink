@@ -146,7 +146,7 @@ it('opens channel from lnd1 to lndOutside1', async () => {
 	await waitForNodeSync(lnd)
 	
 	const res = await lnService.openChannel({ lnd, local_tokens: 100000, partner_public_key: public_key, 
-		partner_socket: `lnd-outside-1:9735`, give_tokens: 30000 })
+		partner_socket: `lnd-outside-1:9735` })
 	console.log("open channel res", res)
 }, 50000)
 
@@ -157,7 +157,7 @@ it('opens channel from lndOutside1 to lndOutside2', async () => {
 
 	await waitForNodeSync(lndOutside1)
 
-	const res = await lnService.openChannel({ lnd: lndOutside1, local_tokens: 100000, partner_public_key: public_key, partner_socket: `lnd-outside-2:9735`, give_tokens: 30000 })
+	const res = await lnService.openChannel({ lnd: lndOutside1, local_tokens: 100000, partner_public_key: public_key, partner_socket: `lnd-outside-2:9735`})
 	await bitcoindClient.generateToAddress(5, RANDOM_ADDRESS)
 	console.log("open channel res", res)
 }, 50000)
