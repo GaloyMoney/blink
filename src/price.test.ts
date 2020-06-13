@@ -1,4 +1,7 @@
-import { setupMongoose } from "./db";
+import { setupMongoConnection } from "./db"
+// this import needs to be before medici
+
+
 import { Price } from "./priceImpl";
 const mongoose = require("mongoose");
 
@@ -8,7 +11,7 @@ let price
 jest.setTimeout(timeout)
 
 beforeAll(async () => {
-  await setupMongoose()
+  await setupMongoConnection()
   // await mongoose.connection.dropDatabase()
   price = new Price()
 })

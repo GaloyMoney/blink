@@ -6,11 +6,18 @@
     "start": "npm run shell",
     "test": "export JEST_JUNIT_OUTPUT_DIR=\"./artifacts\" && jest --ci --reporters=default --reporters=jest-junit",
     "test-with-env": "source '../../deploy/exportlnd.sh' && jest",
+    "watch:cron": "source '../../deploy/exportlnd.sh' && nodemon -e ts -w ./src -x yarn run cron",
+    "cron": "source '../../deploy/exportlnd.sh' && ts-node src/cron.ts",
     "watch": "source '../../deploy/exportlnd.sh' && nodemon -e ts -w ./src -x yarn run watch:serve",
-    "watch:serve": "source '../../deploy/exportlnd.sh' && ts-node src/index.ts"
+    "watch:serve": "source '../../deploy/exportlnd.sh' && ts-node src/index.ts",
+    "init-local-test": "./initLocalTest.sh",
+    "restart-test-env": "kubectl delete pods bitcoind-container-0 && kubectl delete pods lnd-container-0 lnd-container-1 lnd-container-2 && kubectl wait --for=condition=ready pod -l app=lnd-container",
+    "test-local": "source exportLocal.sh && yarn jest --runInBand",
+    "test-dev": "nodemon -e ts -w ./src -x yarn run test-dev-2",
+    "test-dev-2": "source '../../deploy/exportlnd.sh' && ts-node src/test.ts"
   },
   "engines": {
-    "node": "10"
+    "node": "12"
   },
   "main": "src/index.js",
   "dependencies": {
@@ -21,6 +28,7 @@
     "await-timeout": "^1.1.1",
     "bitcoin-core": "^3.0.0",
     "ccxt": "^1.26.54",
+    "cron": "^1.8.2",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "express-graphql": "^0.9.0",

@@ -1,12 +1,15 @@
 /**
  * @jest-environment node
  */
+import { setupMongoConnection } from "./db"
+// this import needs to be before medici
+
+
 import moment from "moment"
-import { LightningWalletAuthed } from "./LightningUserWallet"
+import { LightningUserWallet } from "./LightningUserWallet"
 const lnService = require('ln-service')
-import { createInvoiceUser, setupMongoose } from "./db"
 var lightningPayReq = require('bolt11')
-const mongoose = require("mongoose");
+const mongoose = require("mongoose")
 
 
 let lightningWallet
@@ -22,7 +25,7 @@ const lndOutside2Addr = process.env.LNDOUTSIDE2ADDR ?? 'lnd-outside-2'
 const lndOutside2Port = process.env.LNDOUTSIDE2RPCPORT ?? '10009'
 
 beforeAll(async () => {
-  await setupMongoose()
+  await setupMongoConnection()
 
   // FIXME: this might cause issue when running test in parrallel?
   //this also fails the test due to user authentication issue
@@ -46,7 +49,7 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
-  lightningWallet = new LightningWalletAuthed({uid: user1})
+  lightningWallet = new LightningUserWallet({uid: user1})
 
 
   // // example for @kartik
@@ -57,8 +60,8 @@ beforeEach(async () => {
 })
 
 it('Lightning Wallet Get Info works', async () => {
-  const result = await lightningWallet.getInfo()
-  console.log({result})
+  // const result = await lightningWallet.getInfo()
+  // console.log({result})
   const outside1PubKey = (await lnService.getWalletInfo({lnd:lightningWalletOutside1})).public_key;
   const outside2PubKey = (await lnService.getWalletInfo({lnd:lightningWalletOutside2})).public_key;
   // expect(result === 0).toBeTruthy()
@@ -74,7 +77,7 @@ it('add invoice', async () => {
   const decoded = lightningPayReq.decode(request)
   const decodedHash = decoded.tags.filter(item => item.tagName === "payment_hash")[0].data
 
-  const InvoiceUser = await createInvoiceUser()
+  const InvoiceUser = mongoose.model("InvoiceUser")
   const {uid} = await InvoiceUser.findById(decodedHash)
 
   expect(uid).toBe(user1)
@@ -82,13 +85,13 @@ it('add invoice', async () => {
 
 
 it('add invoice to different user', async () => {
-  lightningWallet = new LightningWalletAuthed({uid: user2})
+  lightningWallet = new LightningUserWallet({uid: user2})
   const request = await lightningWallet.addInvoice({value: 1000000, memo: "tx 2"})
 
   const decoded = lightningPayReq.decode(request)
   const decodedHash = decoded.tags.filter(item => item.tagName === "payment_hash")[0].data
 
-  const InvoiceUser = await createInvoiceUser()
+  const InvoiceUser = mongoose.model("InvoiceUser")
   const {uid} = await InvoiceUser.findById(decodedHash)
 
   expect(uid).toBe(user2)

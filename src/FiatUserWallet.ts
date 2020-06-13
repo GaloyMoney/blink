@@ -1,8 +1,8 @@
-import { IFiatWallet } from "./interface"
+import { book } from "medici"
 import { UserWallet } from "./wallet"
-import { createMainBook } from "./db"
 
-export class FiatUserWallet extends UserWallet implements IFiatWallet {
+
+export class FiatUserWallet extends UserWallet {
   protected _currency = "USD"
 
   constructor({uid}) {
@@ -10,7 +10,7 @@ export class FiatUserWallet extends UserWallet implements IFiatWallet {
   }
 
   async getTransactions() {
-    const MainBook = await createMainBook()
+    const MainBook = new book("MainBook")
 
     // TODO paging
       const {results} = await MainBook.ledger({

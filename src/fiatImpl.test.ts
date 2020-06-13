@@ -1,5 +1,7 @@
+import { setupMongoConnection } from "./db"
+// this import needs to be before medici
+
 import { FiatAdminWallet } from "./FiatAdminWallet"
-import { setupMongoose } from "./db";
 const mongoose = require("mongoose");
 
 
@@ -7,7 +9,7 @@ const uid = "abc123" // FIXME
 let fiatWallet
 
 beforeAll(async () => {
-  await setupMongoose()
+  await setupMongoConnection()
 
   // FIXME: this might cause issue when running test in parrallel?
   //this also fails the test due to user authentication issue
@@ -15,7 +17,7 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  fiatWallet = new FiatAdminWallet()
+  fiatWallet = new FiatAdminWallet({uid: "admin"})
 })
 
 afterAll(async () => {

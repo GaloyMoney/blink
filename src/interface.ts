@@ -1,5 +1,3 @@
-import { IAddInvoiceRequest } from "./types"
-import { createMainBook } from "./db"
 
 export interface IWallet {
   getBalance(): Promise<number>
@@ -10,13 +8,6 @@ export interface IWallet {
 export interface ILightningWallet extends IWallet {
   payInvoice({invoice: string}): Promise<any> // TODO
   addInvoice(IAddInvoiceRequest): Promise<any> // TODO
-}
-
-export interface IFiatWallet extends IWallet {
-  // pay(): Promise<any> // TODO
-  // withdraw(): Promise<any> // TODO
-  // addFunds({amount: number})
-  // widthdrawFunds({amount: number})
 }
 
 export interface FiatTransaction {

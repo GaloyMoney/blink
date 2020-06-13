@@ -1,8 +1,18 @@
-import { createMainBook } from "./db"
-
-const customerPath = (uid) => `Liabilities:Customer:${uid}`
+import { book } from "medici"
 
 export class Wallet {
+
+  // FIXME should not be here
+  customerPath(uid) { 
+    return `Liabilities:Customer:${uid}`
+  }
+
+  protected readonly uid: string
+
+  constructor({uid}) {
+    this.uid = uid
+  }
+
   protected _currency
 
   get accountPath(): string {
@@ -13,7 +23,7 @@ export class Wallet {
 
   async getBalance() {
 
-    const MainBook = await createMainBook()
+    const MainBook = new book("MainBook")
 
     const { balance } = await MainBook.balance({
         account: this.accountPath,
@@ -26,15 +36,9 @@ export class Wallet {
 }
 
 export class UserWallet extends Wallet {
-  protected readonly uid: string
-
-  constructor({uid}) {
-    super()
-    this.uid = uid
-  }
 
   get accountPath(): string {
-    return customerPath(this.uid)
+    return this.customerPath(this.uid)
   }
 
   get accountPathMedici(): Array<string> {
@@ -45,29 +49,35 @@ export class UserWallet extends Wallet {
 
 export class AdminWallet extends Wallet {
 
+  get accountPath(): string {
+    return `Liabilities:ShareholderValue`
+  }
+
+  // TODO refactor using pay function
   async addFunds({amount, uid, memo, type}: {amount: number, uid: string, memo?: string, type?: string}) {
     if (amount < 0) {
         throw Error(`amount has to be positive, is: ${amount}`)
     }
 
-    const MainBook = await createMainBook()
+    const MainBook = new book("MainBook")
 
     await MainBook.entry(memo ?? 'Add funds')
-    .credit('Assets:Reserve', amount, {currency: this.currency, type})
-    .debit(customerPath(uid), amount, {currency: this.currency, type})
+    .credit('Assets:Reserve:Lightning', amount, {currency: this.currency, type})
+    .debit(this.customerPath(uid), amount, {currency: this.currency, type})
     .commit()
-}
+  }
 
+  // TODO refactor using pay function
   async widthdrawFunds({amount, uid, memo, type}) {
     if (amount < 0) {
         throw Error(`amount has to be positive, is: ${amount}`)
     }
 
-    const MainBook = await createMainBook()
+    const MainBook = new book("MainBook")
 
     return MainBook.entry(memo ?? 'Withdraw funds')
-    .debit('Assets:Reserve', amount, {currency: this.currency, type})
-    .credit(customerPath(uid), amount, {currency: this.currency, type})
+    .debit('Assets:Reserve:Lightning', amount, {currency: this.currency, type})
+    .credit(this.customerPath(uid), amount, {currency: this.currency, type})
     .commit()
   }
 }
