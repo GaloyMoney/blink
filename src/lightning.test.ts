@@ -61,7 +61,7 @@ beforeEach(async () => {
 
 it('Lightning Wallet Get Info works', async () => {
   // const result = await lightningWallet.getInfo()
-  console.log({result})
+  // console.log({result})
   const outside1PubKey = (await lnService.getWalletInfo({lnd:lightningWalletOutside1})).public_key;
   const outside2PubKey = (await lnService.getWalletInfo({lnd:lightningWalletOutside2})).public_key;
   // expect(result === 0).toBeTruthy()
