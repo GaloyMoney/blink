@@ -43,7 +43,8 @@ let bank_address
 let lndOutside1_wallet_addr
 
 let admin_uid
-let User
+
+const User = mongoose.model("User")
 
 
 async function waitForNodeSync(lnd) {
@@ -72,8 +73,16 @@ beforeAll(async () => {
 	}).lnd;
 
 	await setupMongoConnection()
-	await mongoose.connection.dropCollection('users')
-	User = mongoose.model("User")
+
+	try {
+		await mongoose.connection.dropCollection('users')
+	} catch (err) {
+		console.log(err)
+	}
+})
+
+afterAll(async () => {
+  return await mongoose.connection.close()
 })
 
 it('I can connect to bitcoind', async () => {
@@ -133,37 +142,42 @@ it('funds lnd1, lndOutside1 and mined 99 blocks to make mined coins accessible',
 	await bitcoindClient.generateToAddress(99, RANDOM_ADDRESS)
 }, 10000)
 
-it('opens channel from lnd1 to lndOutside1', async () => {
-	const { public_key } = await lnService.getWalletInfo({ lnd: lndOutside1 })
+const openChannel = async ({lnd, local_tokens, other_lnd, other_public_key, other_socket}) => {
+	await lnService.addPeer({ lnd, public_key: other_public_key, socket: other_socket })
 	
-	const { lnd } = lnService.authenticatedLndGrpc(getAuth())
-	
-	console.log({lnd})
+	const res = await lnService.openChannel({ lnd, local_tokens, 
+		partner_public_key: other_public_key, partner_socket: other_socket })
 
-	// TODO: adminWallet should have an API for that
-	await lnService.addPeer({ lnd, public_key, socket: `lnd-outside-1:9735` })
+	console.log({res})
+
+	await bitcoindClient.generateToAddress(3, RANDOM_ADDRESS)
 
 	await waitForNodeSync(lnd)
-	
-	const res = await lnService.openChannel({ lnd, local_tokens: 100000, partner_public_key: public_key, 
-		partner_socket: `lnd-outside-1:9735` })
-	console.log("open channel res", res)
+	await waitForNodeSync(other_lnd)
+}
+
+it('opens channel from lnd1 to lndOutside1', async () => {
+	const { public_key } = await lnService.getWalletInfo({ lnd: lndOutside1 })
+	const { lnd } = lnService.authenticatedLndGrpc(getAuth())
+	const other_socket = `lnd-outside-1:9735`
+	const local_tokens = 1000000
+
+	// TODO: adminWallet should have an API for opening channel
+	await openChannel({lnd, other_lnd: lndOutside1, other_public_key: public_key, other_socket, local_tokens})
+
+	const { channels } = await lnService.getChannels({ lnd })
+	expect(channels.length).toEqual(1)
+
 }, 50000)
 
 it('opens channel from lndOutside1 to lndOutside2', async () => {
 	const { public_key } = await lnService.getWalletInfo({ lnd: lndOutside2 })
-	
-	await lnService.addPeer({ lnd: lndOutside1, public_key, socket: `lnd-outside-2:9735` })
+	const lnd = lndOutside1
+	const other_socket = `lnd-outside-2:9735`
+	const local_tokens = 1000000
 
-	await waitForNodeSync(lndOutside1)
+	await openChannel({lnd, other_lnd: lndOutside2, other_public_key: public_key, other_socket, local_tokens})
 
-	const res = await lnService.openChannel({ lnd: lndOutside1, local_tokens: 100000, partner_public_key: public_key, partner_socket: `lnd-outside-2:9735`})
-	await bitcoindClient.generateToAddress(5, RANDOM_ADDRESS)
-	console.log("open channel res", res)
-}, 50000)
-
-it('checks for channel existence', async () => {
-	await waitForNodeSync(lndOutside1)
 	const { channels } = await lnService.getChannels({ lnd: lndOutside1 })
 	expect(channels.length).toEqual(2)
 }, 50000)
