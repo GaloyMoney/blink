@@ -144,6 +144,9 @@ it('funds lnd1, lndOutside1 and mined 99 blocks to make mined coins accessible',
 
 const openChannel = async ({lnd, local_tokens, other_lnd, other_public_key, other_socket}) => {
 	await lnService.addPeer({ lnd, public_key: other_public_key, socket: other_socket })
+
+	await waitForNodeSync(lnd)
+	await waitForNodeSync(other_lnd)
 	
 	const res = await lnService.openChannel({ lnd, local_tokens, 
 		partner_public_key: other_public_key, partner_socket: other_socket })
