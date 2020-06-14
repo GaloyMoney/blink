@@ -161,9 +161,10 @@ export const LightningMixin = (superclass) => class extends superclass {
       throw Error(`internal: there is no route for this payment`)
     }
 
-    const balance = this.getBalance()
+    const balance = await this.getBalance()
+    
     if (balance < tokens + route.safe_fee) {
-      throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${tokens}`)
+      throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${tokens + route.safe_fee}`)
     }
 
 
