@@ -67,14 +67,13 @@ export const login = async ({phone, code, network}) => {
 
         let test_account = false
 
-        // make it possible to bypass the auth for testing purpose
-        if (TEST_NUMBER.findIndex(item => item.phone === phone) !== -1) {
-            if (TEST_NUMBER.filter(item => item.phone === phone)[0].code === code) {
-                test_account = true
-            }
-        }
-
-        if (!test_account && codes.findIndex(item => item.code === code) === -1) {
+        // is it a test account?
+        if (TEST_NUMBER.findIndex(item => item.phone === phone) !== -1 &&
+            TEST_NUMBER.filter(item => item.phone === phone)[0].code === code) {
+            test_account = true
+        // return null is the code is not correct
+        } else if(codes.findIndex(item => item.code === code) === -1) {
+            console.warn(`code is not correct: ${code} with ${phone}`)
             return null
         }
 
