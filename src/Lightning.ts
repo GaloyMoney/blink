@@ -161,6 +161,10 @@ export const LightningMixin = (superclass) => class extends superclass {
       throw Error(`internal: there is no route for this payment`)
     }
 
+    if (route.safe_fee > 0.1 * tokens) {
+      throw Error('cancelled: fee exceeds 1 percent of token amount')
+    }
+
     const balance = await this.getBalance()
     
     if (balance < tokens + route.safe_fee) {
