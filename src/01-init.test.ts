@@ -5,7 +5,7 @@ import { setupMongoConnection } from "./db"
 // this import needs to be before medici
 
 import { LightningAdminWallet } from "./LightningAdminImpl"
-import { sleep, getAuth } from "./utils"
+import { sleep, getAuth, waitForNodeSync } from "./utils"
 const mongoose = require("mongoose");
 
 //TODO: Choose between camel case or underscores for variable naming
@@ -45,19 +45,6 @@ let lndOutside1_wallet_addr
 let admin_uid
 
 const User = mongoose.model("User")
-
-
-async function waitForNodeSync(lnd) {
-	let is_synced_to_chain = false
-	let time = 0
-	while (!is_synced_to_chain) {
-		await sleep(1000)
-		is_synced_to_chain = (await lnService.getWalletInfo({ lnd })).is_synced_to_chain
-		time++
-	}
-	console.log('Seconds to sync ', time)
-	return
-}
 
 beforeAll(async () => {
 	lndOutside1 = lnService.authenticatedLndGrpc({

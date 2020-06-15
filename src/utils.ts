@@ -2,7 +2,7 @@ import * as moment from 'moment'
 export const validate = require("validate.js")
 import * as jwt from 'jsonwebtoken'
 import { JWT_SECRET } from "./const"
-
+import * as lnService from "ln-service"
 export const btc2sat = (btc: number) => {
     return btc * Math.pow(10, 8)
 }
@@ -68,4 +68,16 @@ export const getAuth = () => {
     catch (err) {
         throw Error(`failed-precondition: ${err}`);
     }
+}
+
+export async function waitForNodeSync(lnd) {
+  let is_synced_to_chain = false
+  let time = 0
+  while (!is_synced_to_chain) {
+    await sleep(1000)
+    is_synced_to_chain = (await lnService.getWalletInfo({ lnd })).is_synced_to_chain
+    time++
+  }
+  console.log('Seconds to sync ', time)
+  return
 }
