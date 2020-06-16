@@ -145,9 +145,12 @@ it('receives external funding correctly', async () => {
 it('payInvoice', async () => {
   // TODO need a way to generate an invoice from another node
   let { request } = await lnService.createInvoice({ lnd: lightningWalletOutside1, tokens: 10000 })
-  let currentBalance = await lightningWallet.getBalance()
-  let result = await lightningWallet.payInvoice({ invoice: request })
+  await lightningWallet.addEarn(onBoardingEarnIds)
+  let currentBalance: number = await lightningWallet.getBalance()
+  let result: string = await lightningWallet.payInvoice({ invoice: request })
   expect(result).toBe("success")
+  let finalBalance: number = await lightningWallet.getBalance()
+  expect(finalBalance).toBe(currentBalance - 10000)
 })
 
 // it('payInvoiceToAnotherGaloyUser', async () => {
