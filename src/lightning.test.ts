@@ -18,8 +18,8 @@ let lightningWallet
 let lightningWalletOutside1
 let lightningWalletOutside2
 
-let user1
-const user2 = "user2"
+let user1: string
+const user2: string = "user2"
 
 const lndOutside1Addr = process.env.LNDOUTSIDE1ADDR ?? 'lnd-outside-1'
 const lndOutside1Port = process.env.LNDOUTSIDE1RPCPORT ?? '10009'
@@ -27,6 +27,9 @@ const lndOutside2Addr = process.env.LNDOUTSIDE2ADDR ?? 'lnd-outside-2'
 const lndOutside2Port = process.env.LNDOUTSIDE2RPCPORT ?? '10009'
 
 const testAccount = { phone: "+16505554321", code: 321321, network: "regtest" }
+
+const onBoardingEarnAmt: number = Object.values(OnboardingEarn).reduce((a, b) => a + b, 0)
+const onBoardingEarnIds: string[] = Object.keys(OnboardingEarn)
 
 beforeAll(async () => {
   await setupMongoConnection()
@@ -117,8 +120,7 @@ it('get balance', async () => {
 
 it('add earn adds balance correctly', async () => {
   let currentBalance: number = await lightningWallet.getBalance()
-  let onBoardingEarnAmt: number = Object.values(OnboardingEarn).reduce((a, b) => a + b, 0)
-  await lightningWallet.addEarn(Object.keys(OnboardingEarn))
+  await lightningWallet.addEarn(onBoardingEarnIds)
   let finalBalance: number = await lightningWallet.getBalance()
   expect(finalBalance).toBe(currentBalance + onBoardingEarnAmt)
 })
