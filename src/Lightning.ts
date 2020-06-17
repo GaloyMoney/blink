@@ -8,7 +8,7 @@ import { book } from "medici";
 import Timeout from 'await-timeout';
 import { intersection } from "lodash";
 import moment from "moment";
-
+import { randomBytes, createHash } from "crypto"
 export type IType = "invoice" | "payment" | "earn"
 
 const formatInvoice = (type: IType, memo: String | undefined, pending: Boolean | undefined): String => {
@@ -132,29 +132,47 @@ export const LightningMixin = (superclass) => class extends superclass {
     return request
   }
 
-  // TODO manage the error case properly. right now there is a mix of string being return
-  // or error being thrown. Not sure how this is handled by GraphQL
-  async payInvoice({ invoice }): Promise<payInvoiceResult | Error> {
-    // TODO add fees accounting
+  // TODO: add types
+  async pay(params: { destination?: string, tokens?: number, invoice?: string }): Promise<payInvoiceResult | Error> {
 
-    // TODO replace this with bolt11 utils library
-    const { id, tokens, destination, description } = await lnService.decodePaymentRequest({ lnd: this.lnd, request: invoice })
+    const keySendPreimageType: string = '5482373484';
+    const preimageByteLength: number = 32;
 
-    // TODO probe for payment first. 
-    // like in `bos probe "payment_request/public_key"`
-    // from https://github.com/alexbosworth/balanceofsatoshis
+    //todo: should we assume pushPayment false by default?
+    let pushPayment: boolean = false;
+    //todo: adding types here leads to errors further down below
+    let destination, tokens, id, description
+    let messages: Object[] = []
 
-    const MainBook = new book("MainBook")
-    const Transaction = await mongoose.model("Medici_Transaction")
+    if (!params.invoice) {
+      if (!params.tokens || !params.destination) {
+        throw Error('Pay requires either invoice or destination and amount to be specified')
+      } else {
 
+        if (this.destination == (await lnService.getWalletInfo({ lnd: this.lnd })).public_key) {
+          //TODO: either fail for trying to pay self or execute on-us txn
+        } else {
+          pushPayment = true
+          destination = params.destination
+          tokens = params.tokens
 
-    // TODO: handle on-us transaction
-    console.log({ destination })
+          const preimage = randomBytes(preimageByteLength);
+          id = createHash('sha256').update(preimage).digest().toString('hex');
+          const secret = preimage.toString('hex');
+          messages = [{ type: keySendPreimageType, value: secret }]
+        }
+      }
+    } else {
+      // TODO replace this with bolt11 utils library
+      ({ id, tokens, destination, description } = await lnService.decodePaymentRequest({ lnd: this.lnd, request: params.invoice }))
+      // return await this.payInvoice({ invoice: params.invoice })
+    }
 
+    console.log(destination)
 
     // probe for Route
     // TODO add private route from invoice
-    const { route } = await lnService.probeForRoute({ destination, lnd: this.lnd, tokens });
+    let { route } = await lnService.probeForRoute({ destination, lnd: this.lnd, tokens });
     console.log(util.inspect({ route }, { showHidden: false, depth: null }))
 
     if (!route) {
@@ -166,12 +184,15 @@ export const LightningMixin = (superclass) => class extends superclass {
     }
 
     const balance = await this.getBalance()
-    
+
     if (balance < tokens + route.safe_fee) {
       throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${tokens + route.safe_fee}`)
     }
 
-
+    if(pushPayment) {
+      route.messages = messages
+    }
+    console.log("route msg", route.messages)
     // we are confident nough that there is a possible payment route. let's move forward
 
     // reduce balance from customer first
@@ -179,7 +200,8 @@ export const LightningMixin = (superclass) => class extends superclass {
     // and fail is balance has changed in the meantime to prevent race condition
 
     const obj = { currency: this.currency, hash: id, type: "payment", pending: true, fee: route.safe_fee }
-
+    const MainBook = new book("MainBook")
+    const Transaction = await mongoose.model("Medici_Transaction")
     const entry = await MainBook.entry(description)
       .debit('Assets:Reserve:Lightning', tokens + route.safe_fee, obj)
       .credit(this.accountPath, tokens + route.safe_fee, obj)
@@ -236,6 +258,29 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     return "success"
   }
+
+  // TODO manage the error case properly. right now there is a mix of string being return
+  // or error being thrown. Not sure how this is handled by GraphQL
+  // private async payInvoice({ invoice }): Promise<payInvoiceResult | Error> {
+  //   // TODO add fees accounting
+
+
+
+
+  //   // TODO probe for payment first. 
+  //   // like in `bos probe "payment_request/public_key"`
+  //   // from https://github.com/alexbosworth/balanceofsatoshis
+
+
+
+
+  //   // TODO: handle on-us transaction
+
+
+
+
+
+  // }
 
   // should be run regularly with a cronjob
   // TODO: move to an "admin/ops" wallet
