@@ -143,13 +143,12 @@ it('receives external funding correctly', async () => {
 })
 
 it('payInvoice', async () => {
-  // TODO need a way to generate an invoice from another node
-  let { request } = await lnService.createInvoice({ lnd: lightningWalletOutside1, tokens: 10000 })
+  const { request } = await lnService.createInvoice({ lnd: lightningWalletOutside1, tokens: 10000 })
   await lightningWallet.addEarn(onBoardingEarnIds)
-  let currentBalance: number = await lightningWallet.getBalance()
-  let result: string = await lightningWallet.payInvoice({ invoice: request })
+  const currentBalance: number = await lightningWallet.getBalance()
+  const result: string = await lightningWallet.pay({ invoice: request })
   expect(result).toBe("success")
-  let finalBalance: number = await lightningWallet.getBalance()
+  const finalBalance: number = await lightningWallet.getBalance()
   expect(finalBalance).toBe(currentBalance - 10000)
 })
 
@@ -161,9 +160,16 @@ it('payInvoice', async () => {
 //   // TODO should fail
 // })
 
-// it('pushPayment', async () => {
-//   // payment without invoice, lnd 0.9+
-// })
+it('pushPayment', async () => {
+  const destination = (await lnService.getWalletInfo({ lnd: lightningWalletOutside1 })).public_key;
+  const tokens = 1000
+  await lightningWallet.addEarn(onBoardingEarnIds)
+  const currentBalance: number = await lightningWallet.getBalance()
+  const res = await lightningWallet.pay({ destination, tokens })
+  const finalBalance: number = await lightningWallet.getBalance()
+  expect(res).toBe("success")
+  expect(finalBalance).toBe(currentBalance - 1000)
+})
 
 // it('testDbTransaction', async () => {
 //   //TODO try to fetch simulataneously (ie: with Premise.all[])
