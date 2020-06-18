@@ -26,7 +26,7 @@ const lndOutside1Port = process.env.LNDOUTSIDE1RPCPORT ?? '10009'
 const lndOutside2Addr = process.env.LNDOUTSIDE2ADDR ?? 'lnd-outside-2'
 const lndOutside2Port = process.env.LNDOUTSIDE2RPCPORT ?? '10009'
 
-const testAccount = { phone: "+16505554321", code: 321321, network: "regtest" }
+const testAccounts = [{ phone: "+16505554321", code: 321321, network: "regtest" }, { phone: "+16505554322", code: 321321, network: "regtest" }]
 
 const onBoardingEarnAmt: number = Object.values(OnboardingEarn).reduce((a, b) => a + b, 0)
 const onBoardingEarnIds: string[] = Object.keys(OnboardingEarn)
@@ -58,7 +58,7 @@ afterAll(async () => {
 beforeEach(async () => {
   const collections: any[] = await mongoose.connection.db.collections()
   collections.forEach(async collection => await collection.deleteMany())
-  await login(testAccount)
+  await login(testAccounts[0])
   let Users = mongoose.model("User")
   user1 = (await Users.find({}))[0]._id
   lightningWallet = new LightningUserWallet({ uid: user1 })
@@ -67,47 +67,17 @@ beforeEach(async () => {
 it('Lightning Wallet Get Info works', async () => {
   // const result = await lightningWallet.getInfo()
   // console.log({result})
-  const outside1PubKey = (await lnService.getWalletInfo({lnd:lightningWalletOutside1})).public_key;
-  const outside2PubKey = (await lnService.getWalletInfo({lnd:lightningWalletOutside2})).public_key;
+  const outside1PubKey = (await lnService.getWalletInfo({ lnd: lightningWalletOutside1 })).public_key;
+  const outside2PubKey = (await lnService.getWalletInfo({ lnd: lightningWalletOutside2 })).public_key;
   // expect(result === 0).toBeTruthy()
   console.log("Outside node 1 pub key", outside1PubKey)
   console.log("Second node 2 pub key", outside2PubKey)
 })
 
-
-it('add invoice', async () => {
-  const request = await lightningWallet.addInvoice({value: 1000, memo: "tx 1"})
-  expect(request.startsWith("lnbcrt10")).toBeTruthy()
-
-  const decoded = lightningPayReq.decode(request)
-  const decodedHash = decoded.tags.filter(item => item.tagName === "payment_hash")[0].data
-
-  const InvoiceUser = mongoose.model("InvoiceUser")
-  const {uid} = await InvoiceUser.findById(decodedHash)
-  //expect(uid).toBe(user1) does not work
-  expect(uid == user1).toBe(true)
-})
-
-
-it('add invoice to different user', async () => {
-  lightningWallet = new LightningUserWallet({uid: user2})
-  const request = await lightningWallet.addInvoice({value: 1000000, memo: "tx 2"})
-
-  const decoded = lightningPayReq.decode(request)
-  const decodedHash = decoded.tags.filter(item => item.tagName === "payment_hash")[0].data
-
-  const InvoiceUser = mongoose.model("InvoiceUser")
-  const {uid} = await InvoiceUser.findById(decodedHash)
-
-  expect(uid).toBe(user2)
-})
-
-
-
 it('list transactions', async () => {
 
   const result = await lightningWallet.getTransactions()
-  expect(result.length).toBe(0) 
+  expect(result.length).toBe(0)
 
   // TODO validate a transaction to be and verify result == 1 afterwards.
   // TODO more testing with devnet
@@ -116,6 +86,34 @@ it('list transactions', async () => {
 it('get balance', async () => {
   const balance = await lightningWallet.getBalance()
   expect(balance).toBe(-0)
+})
+
+
+it('add invoice', async () => {
+  const request = await lightningWallet.addInvoice({ value: 1000, memo: "tx 1" })
+  expect(request.startsWith("lnbcrt10")).toBeTruthy()
+
+  const decoded = lightningPayReq.decode(request)
+  const decodedHash = decoded.tags.filter(item => item.tagName === "payment_hash")[0].data
+
+  const InvoiceUser = mongoose.model("InvoiceUser")
+  const { uid } = await InvoiceUser.findById(decodedHash)
+  //expect(uid).toBe(user1) does not work
+  expect(uid == user1).toBe(true)
+})
+
+
+it('add invoice to different user', async () => {
+  lightningWallet = new LightningUserWallet({ uid: user2 })
+  const request = await lightningWallet.addInvoice({ value: 1000000, memo: "tx 2" })
+
+  const decoded = lightningPayReq.decode(request)
+  const decodedHash = decoded.tags.filter(item => item.tagName === "payment_hash")[0].data
+
+  const InvoiceUser = mongoose.model("InvoiceUser")
+  const { uid } = await InvoiceUser.findById(decodedHash)
+
+  expect(uid).toBe(user2)
 })
 
 it('add earn adds balance correctly', async () => {
@@ -152,9 +150,20 @@ it('payInvoice', async () => {
   expect(finalBalance).toBe(currentBalance - 10000)
 })
 
-// it('payInvoiceToAnotherGaloyUser', async () => {
-//   // TODO Manage on us transaction from 2 users of our network
-// })
+it('payInvoiceToAnotherGaloyUser', async () => {
+  await login(testAccounts[1])
+  const Users = mongoose.model("User")
+  const galoyUser2 = (await Users.find({}))[1]._id
+  const lightningWallet2 = new LightningUserWallet({ uid: galoyUser2 })
+  const user2CurrentBalance = await lightningWallet2.getBalance()
+  const user1CurrentBalance = await lightningWallet.getBalance()
+  const request = await lightningWallet2.addInvoice({ value: 1000, memo: "on us txn" })
+  await lightningWallet.pay({invoice: request})
+  const user2FinalBalance = await lightningWallet2.getBalance()
+  const user1FinalBalance = await lightningWallet.getBalance()
+  expect(user1FinalBalance).toBe(user1CurrentBalance - 1000)
+  expect(user2FinalBalance).toBe(user2CurrentBalance + 1000)
+})
 
 // it('payInvoiceToSelf', async () => {
 //   // TODO should fail

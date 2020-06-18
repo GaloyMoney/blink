@@ -24,7 +24,7 @@ const sendText = async ({body, to}) => {
     })
 }
 
-const TEST_NUMBER = [{phone: "+16505554321", code: 321321}]
+const TEST_NUMBER = [{phone: "+16505554321", code: 321321},{phone: "+16505554322", code: 321321}]
 
 export const requestPhoneCode = async ({phone}) => {
 
