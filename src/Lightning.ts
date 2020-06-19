@@ -197,7 +197,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       }
       fee = route.safe_fee
 
-      if (fee > 0.1 * tokens) {
+      if (fee > 0.01 * tokens) {
         throw Error('cancelled: fee exceeds 1 percent of token amount')
       }
 
