@@ -92,7 +92,7 @@ beforeAll(async () => {
 })
 
 afterAll(async () => {
-  // return await mongoose.connection.close()
+  return await mongoose.connection.close()
 })
 
 it('I can connect to bitcoind', async () => {
@@ -166,7 +166,7 @@ const openChannel = async ({lnd, local_tokens, other_lnd, other_public_key, othe
 	await waitForNodeSync(lnd)
 	await waitForNodeSync(other_lnd)
 
-	
+
 	const admin = await User.findOne({role: "admin"})
 	const adminWallet = new LightningAdminWallet({uid: admin._id})
 	await adminWallet.balanceSheetIsBalanced()
