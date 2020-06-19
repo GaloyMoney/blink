@@ -60,10 +60,13 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
 
   async balanceSheetIsBalanced() {
     const {assets, liabilities, lightning} = await this.getBalanceSheet()
-    const lndBalance = this.totalLndBalance()
+    const lndBalance = await this.totalLndBalance()
 
-    assert (assets === - liabilities)
-    assert (lightning === lndBalance)
+    const assetsEqualLiabilities = assets === - liabilities
+    const lndBalanceSheetAreSynced = lightning === lndBalance
+
+    console.log({assets, liabilities, lightning, lndBalance})
+    return { assetsEqualLiabilities, lndBalanceSheetAreSynced }
   }
 
   async totalLndBalance () {

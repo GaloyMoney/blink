@@ -47,6 +47,8 @@ let admin_uid
 
 const User = mongoose.model("User")
 
+const local_tokens = 1000000
+
 
 async function waitForNodeSync(lnd) {
 	let is_synced_to_chain = false
@@ -58,6 +60,14 @@ async function waitForNodeSync(lnd) {
 	}
 	console.log('Seconds to sync ', time)
 	return
+}
+
+const checkIsBalanced = async () => {
+	const admin = await User.findOne({role: "admin"})
+	const adminWallet = new LightningAdminWallet({uid: admin._id})
+	const { assetsEqualLiabilities, lndBalanceSheetAreSynced } = await adminWallet.balanceSheetIsBalanced()
+	expect(assetsEqualLiabilities).toBeTruthy()
+	expect(lndBalanceSheetAreSynced).toBeTruthy()
 }
 
 beforeAll(async () => {
@@ -139,7 +149,7 @@ it('funding bank with onchain tx', async () => {
 	const balance = await adminWallet.getBalance()
 	expect(balance).toBe(BLOCK_SUBSIDY)
 
-	await adminWallet.balanceSheetIsBalanced()
+	await checkIsBalanced()
 })
 
 it('getting lndOutside1 address', async () => {
@@ -153,7 +163,7 @@ it('funds lndOutside1 and mined 99 blocks to make mined coins accessible', async
 	await bitcoindClient.generateToAddress(99, RANDOM_ADDRESS)
 }, 10000)
 
-const openChannel = async ({lnd, local_tokens, other_lnd, other_public_key, other_socket}) => {
+const openChannel = async ({lnd, other_lnd, other_public_key, other_socket}) => {
 	await lnService.addPeer({ lnd, public_key: other_public_key, socket: other_socket })
 	
 	const res = await lnService.openChannel({ lnd, local_tokens, 
@@ -166,20 +176,16 @@ const openChannel = async ({lnd, local_tokens, other_lnd, other_public_key, othe
 	await waitForNodeSync(lnd)
 	await waitForNodeSync(other_lnd)
 
-
-	const admin = await User.findOne({role: "admin"})
-	const adminWallet = new LightningAdminWallet({uid: admin._id})
-	await adminWallet.balanceSheetIsBalanced()
+	await checkIsBalanced()
 }
 
 it('opens channel from lnd1 to lndOutside1', async () => {
 	const { public_key } = await lnService.getWalletInfo({ lnd: lndOutside1 })
 	const { lnd } = lnService.authenticatedLndGrpc(getAuth())
 	const other_socket = `lnd-outside-1:9735`
-	const local_tokens = 1000000
 
 	// TODO: adminWallet should have an API for opening channel
-	await openChannel({lnd, other_lnd: lndOutside1, other_public_key: public_key, other_socket, local_tokens})
+	await openChannel({lnd, other_lnd: lndOutside1, other_public_key: public_key, other_socket})
 
 	const { channels } = await lnService.getChannels({ lnd })
 	expect(channels.length).toEqual(1)
@@ -190,9 +196,8 @@ it('opens channel from lndOutside1 to lndOutside2', async () => {
 	const { public_key } = await lnService.getWalletInfo({ lnd: lndOutside2 })
 	const lnd = lndOutside1
 	const other_socket = `lnd-outside-2:9735`
-	const local_tokens = 1000000
 
-	await openChannel({lnd, other_lnd: lndOutside2, other_public_key: public_key, other_socket, local_tokens})
+	await openChannel({lnd, other_lnd: lndOutside2, other_public_key: public_key, other_socket})
 
 	const { channels } = await lnService.getChannels({ lnd: lndOutside1 })
 	expect(channels.length).toEqual(2)
