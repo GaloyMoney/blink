@@ -173,7 +173,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       ({ id, tokens, destination, description } = await lnService.decodePaymentRequest({ lnd: this.lnd, request: params.invoice }))
       if (destination === nodePubKey) {
         const InvoiceUser = mongoose.model("InvoiceUser")
-        let existingInvoice = await InvoiceUser.findOne({ _id: id, pending: true})
+        let existingInvoice = await InvoiceUser.findOne({ _id: id, pending: true })
         if (!existingInvoice) {
           throw Error('Invoice not found')
         } else if (existingInvoice.uid === this.uid) {
@@ -189,7 +189,6 @@ export const LightningMixin = (superclass) => class extends superclass {
 
 
     if (!onUs) {
-      // probe for Route
       // TODO add private route from invoice
       ({ route } = await lnService.probeForRoute({ destination, lnd: this.lnd, tokens }));
       console.log(util.inspect({ route }, { showHidden: false, depth: null }))
@@ -199,7 +198,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       }
       fee = route.safe_fee
 
-      if (fee > feeCap * tokens) {  
+      if (fee > feeCap * tokens) {
         throw Error('cancelled: fee exceeds 1 percent of token amount')
       }
 
@@ -212,9 +211,21 @@ export const LightningMixin = (superclass) => class extends superclass {
       if (pushPayment) {
         route.messages = messages
       }
+    } else {
+      const payeeAccountPath = await this.customerPath(payeeUid)
+      const MainBook = new book("MainBook")
+      const obj = { currency: this.currency, hash: id, type: "payment", pending: false, fee }
+      await MainBook.entry()
+        .credit(this.accountPath, tokens, obj)
+        .debit(payeeAccountPath, tokens, obj)
+        .commit()
+
+      const InvoiceUser = mongoose.model("InvoiceUser")
+      const existingInvoice = await InvoiceUser.findOne({_id: id})
+      existingInvoice.pending = false
+      await existingInvoice.save()
+      return "success"
     }
-
-
 
     // we are confident nough that there is a possible payment route. let's move forward
 
