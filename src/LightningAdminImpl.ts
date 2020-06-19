@@ -31,6 +31,7 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
     const MainBook =  new book("MainBook")
     const accounts = await MainBook.listAccounts()
     
+    // used for debugging
     for (const account of accounts) {
       const { balance } = await MainBook.balance({
         account: "Assets",
@@ -54,8 +55,18 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
       currency: this.currency
     })).balance
 
-    console.log({assets, liabilities, lightning})
-    return {assets, liabilities, lightning}
+    const shareholder = (await MainBook.balance({
+      account: "Liabilities:Shareholder",
+      currency: this.currency
+    })).balance
+
+    const customers = (await MainBook.balance({
+      account: "Liabilities:Customer",
+      currency: this.currency
+    })).balance
+
+    console.log({assets, liabilities, lightning, shareholder, customers})
+    return {assets, liabilities, lightning, shareholder, customers}
   }
 
   async balanceSheetIsBalanced() {
