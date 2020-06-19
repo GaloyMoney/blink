@@ -248,51 +248,44 @@ export const LightningMixin = (superclass) => class extends superclass {
     // we are timing out the request for UX purpose, so that the client can show the payment is pending
     // even if the payment is still ongoing from lnd.
     // to clean pending payments, another cron-job loop will run in the background.
-    if (!onUs) {
-      try {
-        const TIMEOUT_PAYMENT = 5000
-        const promise = lnService.payViaRoutes({ lnd: this.lnd, routes: [route], id })
-        await Timeout.wrap(promise, TIMEOUT_PAYMENT, 'Timeout');
 
-        // FIXME
-        // return this.payDetail({
-        //     pubkey: details.destination,
-        //     hash: details.id,
-        //     amount: details.tokens,
-        //     routes: details.routes
-        // })
+    try {
+      const TIMEOUT_PAYMENT = 5000
+      const promise = lnService.payViaRoutes({ lnd: this.lnd, routes: [route], id })
+      await Timeout.wrap(promise, TIMEOUT_PAYMENT, 'Timeout');
 
-        // console.log({result})
+      // FIXME
+      // return this.payDetail({
+      //     pubkey: details.destination,
+      //     hash: details.id,
+      //     amount: details.tokens,
+      //     routes: details.routes
+      // })
 
-      } catch (err) {
+      // console.log({result})
 
-        console.log({ err, message: err.message, errorCode: err[1] })
+    } catch (err) {
 
-        if (err.message === "Timeout") {
-          return "pending"
-          // TODO processed in-flight payment in separate loop
-        }
+      console.log({ err, message: err.message, errorCode: err[1] })
 
-        console.log(typeof entry._id)
-
-        try {
-          // FIXME we should also set pending to false for the other associated transactions
-          await Transaction.updateMany({ hash: id }, { pending: false, error: err[1] })
-          await MainBook.void(entry._id, err[1])
-        } catch (err_db) {
-          const err_message = `error canceling payment entry ${util.inspect({ err_db })}`
-          console.error(err_message)
-          throw Error(`internal ${err_message}`)
-        }
-
-        throw Error(`internal error paying invoice ${util.inspect({ err }, false, Infinity)}`)
+      if (err.message === "Timeout") {
+        return "pending"
+        // TODO processed in-flight payment in separate loop
       }
-    } else {
-      const payeeAccountPath = await this.customerPath(payeeUid)
-      await MainBook.entry()
-        .credit('Assets:Reserve:Lightning', tokens, { currency: "BTC", hash: id, type: "invoice" })
-        .debit(payeeAccountPath, tokens, { currency: "BTC", hash: id, type: "invoice" })
-        .commit()
+
+      console.log(typeof entry._id)
+
+      try {
+        // FIXME we should also set pending to false for the other associated transactions
+        await Transaction.updateMany({ hash: id }, { pending: false, error: err[1] })
+        await MainBook.void(entry._id, err[1])
+      } catch (err_db) {
+        const err_message = `error canceling payment entry ${util.inspect({ err_db })}`
+        console.error(err_message)
+        throw Error(`internal ${err_message}`)
+      }
+
+      throw Error(`internal error paying invoice ${util.inspect({ err }, false, Infinity)}`)
     }
 
 
@@ -313,17 +306,6 @@ export const LightningMixin = (superclass) => class extends superclass {
   //   // TODO probe for payment first. 
   //   // like in `bos probe "payment_request/public_key"`
   //   // from https://github.com/alexbosworth/balanceofsatoshis
-
-
-
-
-  //   // TODO: handle on-us transaction
-
-
-
-
-
-  // }
 
   // should be run regularly with a cronjob
   // TODO: move to an "admin/ops" wallet
