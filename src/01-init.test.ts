@@ -138,6 +138,8 @@ it('funding bank with onchain tx', async () => {
 
 	const balance = await adminWallet.getBalance()
 	expect(balance).toBe(BLOCK_SUBSIDY)
+
+	await adminWallet.balanceSheetIsBalanced()
 })
 
 it('getting lndOutside1 address', async () => {
@@ -163,6 +165,11 @@ const openChannel = async ({lnd, local_tokens, other_lnd, other_public_key, othe
 
 	await waitForNodeSync(lnd)
 	await waitForNodeSync(other_lnd)
+
+	
+	const admin = await User.findOne({role: "admin"})
+	const adminWallet = new LightningAdminWallet({uid: admin._id})
+	await adminWallet.balanceSheetIsBalanced()
 }
 
 it('opens channel from lnd1 to lndOutside1', async () => {
