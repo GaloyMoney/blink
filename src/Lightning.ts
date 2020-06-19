@@ -1,7 +1,6 @@
 const lnService = require('ln-service');
-export type payInvoiceResult = "success" | "failed" | "pending"
 import { getAuth } from "./utils";
-import { IAddInvoiceRequest, TransactionType, ILightningTransaction } from "./types";
+import { IAddInvoiceRequest, TransactionType, ILightningTransaction, IPaymentRequest } from "./types";
 const mongoose = require("mongoose");
 const util = require('util')
 import { book } from "medici";
@@ -10,6 +9,7 @@ import { intersection } from "lodash";
 import moment from "moment";
 import { randomBytes, createHash } from "crypto"
 export type IType = "invoice" | "payment" | "earn"
+export type payInvoiceResult = "success" | "failed" | "pending"
 const feeCap: number = 0.01
 
 const formatInvoice = (type: IType, memo: String | undefined, pending: Boolean | undefined): String => {
@@ -134,7 +134,7 @@ export const LightningMixin = (superclass) => class extends superclass {
   }
 
   // TODO: add types
-  async pay(params: { destination?: string, tokens?: number, invoice?: string }): Promise<payInvoiceResult | Error> {
+  async pay(params: IPaymentRequest): Promise<payInvoiceResult | Error> {
 
     const keySendPreimageType: string = '5482373484';
     const preimageByteLength: number = 32;
@@ -143,7 +143,8 @@ export const LightningMixin = (superclass) => class extends superclass {
     let pushPayment: boolean = false;
     let onUs: boolean = false;
     //todo: adding types here leads to errors further down below
-    let destination, tokens, id, description, route, fee: number = 0
+    let tokens, fee: number = 0
+    let destination, id, description, route
     let payeeUid
     let messages: Object[] = []
     let nodePubKey = (await lnService.getWalletInfo({ lnd: this.lnd })).public_key
