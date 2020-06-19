@@ -10,6 +10,7 @@ import { intersection } from "lodash";
 import moment from "moment";
 import { randomBytes, createHash } from "crypto"
 export type IType = "invoice" | "payment" | "earn"
+const feeCap: number = 0.01
 
 const formatInvoice = (type: IType, memo: String | undefined, pending: Boolean | undefined): String => {
   if (pending) {
@@ -152,7 +153,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         throw Error('Pay requires either invoice or destination and amount to be specified')
       } else {
 
-        if (params.destination == nodePubKey) {
+        if (params.destination === nodePubKey) {
           //TODO: either fail for trying to pay self or execute on-us txn
           onUs = true
         } else {
@@ -169,12 +170,12 @@ export const LightningMixin = (superclass) => class extends superclass {
     } else {
       // TODO replace this with bolt11 utils library
       ({ id, tokens, destination, description } = await lnService.decodePaymentRequest({ lnd: this.lnd, request: params.invoice }))
-      if (destination == nodePubKey) {
+      if (destination === nodePubKey) {
         const InvoiceUser = mongoose.model("InvoiceUser")
         let existingInvoice = await InvoiceUser.findOne({ _id: id, pending: true})
         if (!existingInvoice) {
           throw Error('Invoice not found')
-        } else if (existingInvoice.uid == this.uid) {
+        } else if (existingInvoice.uid === this.uid) {
           throw Error('User tried to pay their own invoice')
         }
         onUs = true
@@ -197,7 +198,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       }
       fee = route.safe_fee
 
-      if (fee > 0.01 * tokens) {
+      if (fee > feeCap * tokens) {  
         throw Error('cancelled: fee exceeds 1 percent of token amount')
       }
 
