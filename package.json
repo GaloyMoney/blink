@@ -9,10 +9,11 @@
     "cron": "source '../../deploy/exportlnd.sh' && ts-node src/cron.ts",
     "watch": "source '../../deploy/exportlnd.sh' && nodemon -e ts -w ./src -x yarn run watch:serve",
     "watch:serve": "source '../../deploy/exportlnd.sh' && ts-node src/index.ts",
-    "init-local-test": "./initLocalTest.sh",
-    "restart-test-env": "kubectl delete pods bitcoind-container-0 && kubectl delete pods lnd-container-0 lnd-container-1 lnd-container-2 && kubectl wait --for=condition=ready pod -l app=lnd-container",
     "remove-charts": "helm uninstall mongodb & helm uninstall lnd & helm uninstall bitcoind",
+    "add-charts": "./initLocalTest.sh",
+    "restart-charts": "yarn run remove-charts && yarn run add-charts",
     "test-local": "source exportLocal.sh && yarn jest --runInBand",
+    "test-local-clean-start": "yarn run restart-charts && source exportLocal.sh && yarn jest --runInBand",
     "test-dev": "nodemon -e ts -w ./src -x yarn run test-dev-2",
     "test-dev-2": "source exportLocal.sh && ts-node src/test.ts"
   },

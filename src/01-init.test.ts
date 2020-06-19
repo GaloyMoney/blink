@@ -14,6 +14,7 @@ const lnService = require('ln-service')
 const cert = process.env.TLS
 
 const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
+const BLOCK_SUBSIDY = 50 * 10 ** 8
 
 let macaroon2 = process.env.MACAROONOUTSIDE1
 let macaroon3 = process.env.MACAROONOUTSIDE2
@@ -60,6 +61,7 @@ async function waitForNodeSync(lnd) {
 }
 
 beforeAll(async () => {
+
 	lndOutside1 = lnService.authenticatedLndGrpc({
 		cert,
 		macaroon: macaroon2,
@@ -73,23 +75,27 @@ beforeAll(async () => {
 	}).lnd;
 
 	await setupMongoConnection()
-
+	
 	try {
 		await mongoose.connection.dropCollection('users')
 	} catch (err) {
+		// console.log("can't drop the collection, probably because it doesn't exist")
 		console.log(err)
 	}
-})
 
-afterAll(async () => {
-  return await mongoose.connection.close()
-})
-
-it('I can connect to bitcoind', async () => {
 	const connection_obj = { 
 		network: 'regtest', username: 'rpcuser', password: 'rpcpass',
 		host: bitcoind_addr, port: bitcoind_port }
+
 	bitcoindClient = new BitcoindClient(connection_obj)
+
+})
+
+afterAll(async () => {
+  // return await mongoose.connection.close()
+})
+
+it('I can connect to bitcoind', async () => {
 	const { chain } = await bitcoindClient.getBlockchainInfo()
 	expect(chain).toEqual('regtest')
 })
@@ -107,26 +113,31 @@ it('I can connect to outside lnds', async () => {
 })
 
 it('I can connect to mongodb', async () => {
-	const users = await User.find({})
+	const users = await User.find()
 	expect(users).toStrictEqual([])
 })
 
 it('creating bank "admin" user', async () => {
 	// FIXME there should be an API for this
-	await new User({}).save()
+	await new User({role: "admin"}).save()
 	const users = await User.find({})
 	expect(users.length).toBe(1)
 
 	admin_uid = users[0]._id
 })
 
-it('getting bank address', async () => {
-	const users = await User.find({})
-	admin_uid = users[0]._id
-
-	const adminWallet = new LightningAdminWallet({uid: admin_uid})
+it('funding bank with onchain tx', async () => {
+	const admin = await User.findOne({role: "admin"})
+	const adminWallet = new LightningAdminWallet({uid: admin._id})
 	bank_address = await adminWallet.getOnChainAddress()
 	expect(bank_address.substr(0, 4)).toBe("bcrt")
+
+	const [blockhashes] = await bitcoindClient.generateToAddress(1, bank_address)
+	expect(blockhashes.length).toEqual(64)
+	await bitcoindClient.generateToAddress(3, RANDOM_ADDRESS)
+
+	const balance = await adminWallet.getBalance()
+	expect(balance).toBe(BLOCK_SUBSIDY)
 })
 
 it('getting lndOutside1 address', async () => {
@@ -134,10 +145,8 @@ it('getting lndOutside1 address', async () => {
 	expect(lndOutside1_wallet_addr.substr(0, 4)).toBe("bcrt")
 })
 
-it('funds lnd1, lndOutside1 and mined 99 blocks to make mined coins accessible', async () => {
-	let result = await bitcoindClient.generateToAddress(1, bank_address)
-	expect(result[0].length).toEqual(64)
-	result = await bitcoindClient.generateToAddress(1, lndOutside1_wallet_addr)
+it('funds lndOutside1 and mined 99 blocks to make mined coins accessible', async () => {
+	const result = await bitcoindClient.generateToAddress(1, lndOutside1_wallet_addr)
 	expect(result[0].length).toEqual(64)
 	await bitcoindClient.generateToAddress(99, RANDOM_ADDRESS)
 }, 10000)
