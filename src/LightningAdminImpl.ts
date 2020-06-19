@@ -27,27 +27,6 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
     }
   }
 
-  async breakdownBalance() {
-    const companyBalance = await this.getBalance()
-
-    const MainBook =  new book("MainBook")
-
-    const { balance } = await MainBook.balance({
-      account: "Liabilities:Customer",
-      currency: this.currency
-    })
-
-    const userBalance = balance
-
-    const auth = getAuth() // FIXME
-    const lnd = lnService.authenticatedLndGrpc(auth).lnd // FIXME
-
-    const chainBalance = (await lnService.getChainBalance({lnd})).chain_balance
-    const balanceInChannels = (await lnService.getChannelBalance({lnd})).channel_balance;
-
-    console.log({companyBalance, userBalance, chainBalance, balanceInChannels})
-  }
-
   async getBalanceSheet() {
     const MainBook =  new book("MainBook")
     const accounts = await MainBook.listAccounts()
@@ -81,15 +60,20 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
 
   async balanceSheetIsBalanced() {
     const {assets, liabilities, lightning} = await this.getBalanceSheet()
-    assert (assets === liabilities)
+    const lndBalance = this.totalLndBalance()
 
+    assert (assets === - liabilities)
+    assert (lightning === lndBalance)
+  }
+
+  async totalLndBalance () {
     const auth = getAuth() // FIXME
     const lnd = lnService.authenticatedLndGrpc(auth).lnd // FIXME
 
     const chainBalance = (await lnService.getChainBalance({lnd})).chain_balance
     const balanceInChannels = (await lnService.getChannelBalance({lnd})).channel_balance;
 
-    assert (lightning === chainBalance + balanceInChannels)
+    return chainBalance + balanceInChannels
   }
 
   async getInfo() {
