@@ -1,11 +1,11 @@
-import { book } from "medici"
-import { LightningUserWallet } from "./LightningUserWallet"
-import { AdminWallet } from "./wallet"
-import { getAuth } from "./utils";
+import { book } from "medici";
 import { LightningMixin } from "./Lightning";
+import { LightningUserWallet } from "./LightningUserWallet";
+import { getAuth } from "./utils";
+import { AdminWallet } from "./wallet";
+import { assert } from "console";
 const lnService = require('ln-service')
 const mongoose = require("mongoose");
-
 
 export class LightningAdminWallet extends LightningMixin(AdminWallet) {
   constructor({uid}: {uid: string}) {
@@ -46,6 +46,50 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
     const balanceInChannels = (await lnService.getChannelBalance({lnd})).channel_balance;
 
     console.log({companyBalance, userBalance, chainBalance, balanceInChannels})
+  }
+
+  async getBalanceSheet() {
+    const MainBook =  new book("MainBook")
+    const accounts = await MainBook.listAccounts()
+    
+    for (const account of accounts) {
+      const { balance } = await MainBook.balance({
+        account: "Assets",
+        currency: this.currency
+      })
+      console.log(account + ": " + balance)
+    }
+
+    const assets = (await MainBook.balance({
+      account: "Assets",
+      currency: this.currency
+    })).balance
+
+    const liabilities = (await MainBook.balance({
+      account: "Liabilities",
+      currency: this.currency
+    })).balance
+
+    const lightning = (await MainBook.balance({
+      account: "Assets:Reserve:Lightning",
+      currency: this.currency
+    })).balance
+
+    console.log({assets, liabilities, lightning})
+    return {assets, liabilities, lightning}
+  }
+
+  async balanceSheetIsBalanced() {
+    const {assets, liabilities, lightning} = await this.getBalanceSheet()
+    assert (assets === liabilities)
+
+    const auth = getAuth() // FIXME
+    const lnd = lnService.authenticatedLndGrpc(auth).lnd // FIXME
+
+    const chainBalance = (await lnService.getChainBalance({lnd})).chain_balance
+    const balanceInChannels = (await lnService.getChannelBalance({lnd})).channel_balance;
+
+    assert (lightning === chainBalance + balanceInChannels)
   }
 
   async getInfo() {
