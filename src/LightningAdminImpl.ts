@@ -3,9 +3,9 @@ import { LightningMixin } from "./Lightning";
 import { LightningUserWallet } from "./LightningUserWallet";
 import { getAuth } from "./utils";
 import { AdminWallet } from "./wallet";
-import { assert } from "console";
 const lnService = require('ln-service')
 const mongoose = require("mongoose");
+const BitcoindClient = require('bitcoin-core')
 
 export class LightningAdminWallet extends LightningMixin(AdminWallet) {
   constructor({uid}: {uid: string}) {
@@ -54,7 +54,6 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
       currency: this.currency
     })).balance
 
-    console.log({assets, liabilities, lightning})
     return {assets, liabilities, lightning}
   }
 
@@ -81,5 +80,36 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
 
   async getInfo() {
     return await lnService.getWalletInfo({ lnd: this.lnd });
+  }
+
+  async openChannel({local_tokens, other_public_key, other_socket}) {
+    const auth = getAuth() // FIXME
+    const lnd = lnService.authenticatedLndGrpc(auth).lnd // FIXME
+
+    await lnService.addPeer({ lnd, public_key: other_public_key, socket: other_socket })
+
+    const {transaction_id, transaction_vout} = await lnService.openChannel({ lnd, local_tokens,
+      partner_public_key: other_public_key, partner_socket: other_socket
+    })
+
+    const connection_obj = { 
+      // FIXME
+      network: 'regtest', username: 'rpcuser', password: 'rpcpass',
+      host: process.env.BITCOINDADDR, port: process.env.BITCOINDPORT
+    } 
+
+    console.log({transaction_id})
+
+    const bitcoindClient = new BitcoindClient(connection_obj)
+
+    const {once} = require('events');
+    const sub = lnService.subscribeToChannels({lnd});
+    const [openedChannel] = await once(sub, 'channel_opened');
+
+    console.log({openedChannel})
+
+    // const info = await bitcoindClient.getInfo()
+    // const tx = await bitcoindClient.getTransactionByHash(transaction_id, { extension: 'json', summary: false })
+    // console.log({info})
   }
 }
