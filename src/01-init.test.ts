@@ -177,26 +177,30 @@ it('funds lndOutside1 and mined 99 blocks to make mined coins accessible', async
 
 const openChannel = async ({lnd, other_lnd, other_public_key, other_socket}) => {
 	await lnService.addPeer({ lnd, public_key: other_public_key, socket: other_socket })
-	
-	let promise 
 
-	await waitForNodeSync(lnd)
-	await waitForNodeSync(other_lnd)
+	let openChannelPromise
 
 	if (lnd === lnd1) {
 		// TODO: dedupe
 		const admin = await User.findOne({role: "admin"})
 		const adminWallet = new LightningAdminWallet({uid: admin._id})
-		promise = adminWallet.openChannel({ local_tokens, other_public_key, other_socket })
+		openChannelPromise = adminWallet.openChannel({ local_tokens, other_public_key, other_socket })
 
 	} else {
-		promise = lnService.openChannel({ lnd, local_tokens, 
+		openChannelPromise = lnService.openChannel({ lnd, local_tokens, 
 			partner_public_key: other_public_key, partner_socket: other_socket })
 	}
-
-	await bitcoindClient.generateToAddress(3, RANDOM_ADDRESS)
-	await promise
-
+	
+	await Promise.all([
+		openChannelPromise,
+		(async () => {
+			// making sure the channel open creation has started before generating new address
+			// otherwise lnd might complain it's not in sync
+			await sleep(1000)
+			await bitcoindClient.generateToAddress(6, RANDOM_ADDRESS)
+		})()
+	])
+	
 	await waitForNodeSync(lnd)
 	await waitForNodeSync(other_lnd)
 
@@ -213,7 +217,7 @@ it('opens channel from lnd1 to lndOutside1', async () => {
 	const { channels } = await lnService.getChannels({ lnd: lnd1 })
 	expect(channels.length).toEqual(1)
 
-}, 50000)
+})
 
 it('opens channel from lndOutside1 to lndOutside2', async () => {
 	const { public_key } = await lnService.getWalletInfo({ lnd: lndOutside2 })
@@ -224,4 +228,4 @@ it('opens channel from lndOutside1 to lndOutside2', async () => {
 
 	const { channels } = await lnService.getChannels({ lnd: lndOutside1 })
 	expect(channels.length).toEqual(2)
-}, 50000)
+})

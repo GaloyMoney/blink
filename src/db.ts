@@ -80,9 +80,10 @@ const transactionSchema = new Schema({
     //   a ref only for Invoice. otherwise the hash is not linked
     // }
   },
+  txid: String,
   type: {
     type: String,
-    enum: ["invoice", "payment", "earn", "onchain_receipt"]
+    enum: ["invoice", "payment", "earn", "onchain_receipt", "fee", "escrow"]
   },
   pending: Boolean, // duplicated with InvoiceUser for invoices
   err: String,
