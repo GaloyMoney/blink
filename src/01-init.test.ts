@@ -178,20 +178,24 @@ it('funds lndOutside1 and mined 99 blocks to make mined coins accessible', async
 const openChannel = async ({lnd, other_lnd, other_public_key, other_socket}) => {
 	await lnService.addPeer({ lnd, public_key: other_public_key, socket: other_socket })
 	
+	let promise 
+
+	await waitForNodeSync(lnd)
+	await waitForNodeSync(other_lnd)
+
 	if (lnd === lnd1) {
 		// TODO: dedupe
 		const admin = await User.findOne({role: "admin"})
 		const adminWallet = new LightningAdminWallet({uid: admin._id})
-		await adminWallet.openChannel({ local_tokens, other_public_key, other_socket })
+		promise = adminWallet.openChannel({ local_tokens, other_public_key, other_socket })
 
 	} else {
-		const res = await lnService.openChannel({ lnd, local_tokens, 
+		promise = lnService.openChannel({ lnd, local_tokens, 
 			partner_public_key: other_public_key, partner_socket: other_socket })
-
-		console.log({res})
 	}
 
 	await bitcoindClient.generateToAddress(3, RANDOM_ADDRESS)
+	await promise
 
 	await waitForNodeSync(lnd)
 	await waitForNodeSync(other_lnd)
