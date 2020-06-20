@@ -217,7 +217,7 @@ it('opens channel from lnd1 to lndOutside1', async () => {
 	const { channels } = await lnService.getChannels({ lnd: lnd1 })
 	expect(channels.length).toEqual(1)
 
-})
+}, 10000)
 
 it('opens channel from lndOutside1 to lndOutside2', async () => {
 	const { public_key } = await lnService.getWalletInfo({ lnd: lndOutside2 })
