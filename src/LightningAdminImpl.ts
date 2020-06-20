@@ -3,9 +3,11 @@ import { LightningMixin } from "./Lightning";
 import { LightningUserWallet } from "./LightningUserWallet";
 import { getAuth } from "./utils";
 import { AdminWallet } from "./wallet";
-import { assert } from "console";
+import { find } from "lodash";
 const lnService = require('ln-service')
 const mongoose = require("mongoose");
+const BitcoindClient = require('bitcoin-core')
+const util = require('util')
 
 export class LightningAdminWallet extends LightningMixin(AdminWallet) {
   constructor({uid}: {uid: string}) {
@@ -39,31 +41,30 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
       console.log(account + ": " + balance)
     }
 
-    const assets = (await MainBook.balance({
-      account: "Assets",
-      currency: this.currency
-    })).balance
+    const getBalanceOf = async (account) => {
+      return (await MainBook.balance({
+        account,
+        currency: this.currency
+      })).balance
+    }
 
-    const liabilities = (await MainBook.balance({
-      account: "Liabilities",
-      currency: this.currency
-    })).balance
+    const assets = await getBalanceOf("Assets") 
+    const liabilities = await getBalanceOf("Liabilities") 
+    const lightning = await getBalanceOf("Assets:Reserve:Lightning") 
+    const expenses = await getBalanceOf("Expenses") 
 
-    const lightning = (await MainBook.balance({
-      account: "Assets:Reserve:Lightning",
-      currency: this.currency
-    })).balance
-
-    console.log({assets, liabilities, lightning})
-    return {assets, liabilities, lightning}
+    return {assets, liabilities, lightning, expenses}
   }
 
   async balanceSheetIsBalanced() {
-    const {assets, liabilities, lightning} = await this.getBalanceSheet()
-    const lndBalance = this.totalLndBalance()
+    const {assets, liabilities, lightning, expenses} = await this.getBalanceSheet()
+    const lndBalance = await this.totalLndBalance()
 
-    assert (assets === - liabilities)
-    assert (lightning === lndBalance)
+    const assetsEqualLiabilities = assets === - liabilities - expenses
+    const lndBalanceSheetAreSynced = lightning === lndBalance
+
+    console.log({assets, liabilities, lightning, lndBalance, expenses})
+    return { assetsEqualLiabilities, lndBalanceSheetAreSynced }
   }
 
   async totalLndBalance () {
@@ -78,5 +79,50 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
 
   async getInfo() {
     return await lnService.getWalletInfo({ lnd: this.lnd });
+  }
+
+  async openChannel({local_tokens, other_public_key, other_socket}) {
+    const {once} = require('events');
+
+    const auth = getAuth() // FIXME
+    const lnd = lnService.authenticatedLndGrpc(auth).lnd // FIXME
+
+    await lnService.addPeer({ lnd, public_key: other_public_key, socket: other_socket })
+
+    const sub = lnService.subscribeToChannels({lnd});
+    
+    const openChannelPromise = lnService.openChannel({ lnd, local_tokens,
+      partner_public_key: other_public_key, partner_socket: other_socket
+    })
+
+    // block until channel is opened
+    const [openedChannel] = await once(sub, 'channel_opened')
+
+    // FIXME: this change over time. 
+    const escrow = openedChannel.commit_transaction_fee
+
+    const {transaction_id} = await openChannelPromise
+
+    // FIXME: O(n), not great
+    const { transactions } = await lnService.getChainTransactions({lnd})
+
+    console.log({transactions})
+
+    const fee = find(transactions, {id: transaction_id}).fee
+
+    const MainBook = new book("MainBook")
+
+    const metadata = { currency: this.currency, txid: transaction_id }
+
+    await MainBook.entry("on chain fees")
+    .debit('Assets:Reserve:Lightning', fee, {...metadata, type: "fee"})
+    .credit('Expenses:Bitcoin:Fees', fee, {...metadata, type: "fee"})
+    .commit()
+
+    await MainBook.entry("escrow")
+    .debit('Assets:Reserve:Lightning', escrow, {...metadata, type: "escrow"})
+    .credit('Assets:Reserve:Escrow', escrow, {...metadata, type: "escrow"})
+    .commit()
+
   }
 }
