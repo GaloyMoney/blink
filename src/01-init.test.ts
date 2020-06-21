@@ -172,7 +172,7 @@ it('funding bank with onchain tx', async () => {
 		checkBalance(),
 		generateAddress()
 	])
-})
+}, 30000)
 
 
 it('funds lndOutside1 and mined 99 blocks to make mined coins accessible', async () => {
@@ -185,7 +185,6 @@ it('funds lndOutside1 and mined 99 blocks to make mined coins accessible', async
 }, 10000)
 
 const openChannel = async ({lnd, other_lnd, other_public_key, other_socket}) => {
-
 	let openChannelPromise
 	let adminWallet
 
@@ -208,7 +207,7 @@ const openChannel = async ({lnd, other_lnd, other_public_key, other_socket}) => 
 		(async () => {
 			// making sure the channel open creation has started before generating new address
 			// otherwise lnd might complain it's not in sync
-			await sleep(1000)
+			await sleep(5000)
 			await bitcoindClient.generateToAddress(6, RANDOM_ADDRESS)
 		})()
 	])
@@ -233,7 +232,7 @@ it('opens channel from lnd1 to lndOutside1', async () => {
 	const { channels } = await lnService.getChannels({ lnd: lnd1 })
 	expect(channels.length).toEqual(1)
 
-}, 10000)
+}, 50000)
 
 it('opens channel from lndOutside1 to lndOutside2', async () => {
 	const { public_key } = await lnService.getWalletInfo({ lnd: lndOutside2 })
@@ -242,9 +241,9 @@ it('opens channel from lndOutside1 to lndOutside2', async () => {
 
 	await openChannel({lnd, other_lnd: lndOutside2, other_public_key: public_key, other_socket})
 
-	const { channelsOutside1 } = await lnService.getChannels({ lnd: lndOutside1 })
+	const channelsOutside1 = (await lnService.getChannels({ lnd: lndOutside1 })).channels
 	expect(channelsOutside1.length).toEqual(2)
 
-	const { channelsOutside2 } = await lnService.getChannels({ lnd: lndOutside2 })
+	const channelsOutside2 = (await lnService.getChannels({ lnd: lndOutside2 })).channels
 	expect(channelsOutside2.length).toEqual(1)
-}, 300000)
+}, 30000)
