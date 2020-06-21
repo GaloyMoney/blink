@@ -175,7 +175,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         const InvoiceUser = mongoose.model("InvoiceUser")
         let existingInvoice = await InvoiceUser.findOne({ _id: id, pending: true })
         if (!existingInvoice) {
-          throw Error('Invoice not found')
+          throw Error('User tried to pay invoice destined to us, but it was already paid or does not exist')
         } else if (existingInvoice.uid === this.uid) {
           throw Error('User tried to pay their own invoice')
         }
