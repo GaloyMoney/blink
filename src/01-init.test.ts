@@ -226,6 +226,9 @@ it('opens channel from lndOutside1 to lndOutside2', async () => {
 
 	await openChannel({lnd, other_lnd: lndOutside2, other_public_key: public_key, other_socket})
 
-	const { channels } = await lnService.getChannels({ lnd: lndOutside1 })
-	expect(channels.length).toEqual(2)
-})
+	const { channelsOutside1 } = await lnService.getChannels({ lnd: lndOutside1 })
+	expect(channelsOutside1.length).toEqual(2)
+
+	const { channelsOutside2 } = await lnService.getChannels({ lnd: lndOutside2 })
+	expect(channelsOutside2.length).toEqual(1)
+}, 300000)
