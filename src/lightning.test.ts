@@ -6,6 +6,7 @@ import { setupMongoConnection } from "./db"
 
 import moment from "moment"
 import { LightningUserWallet } from "./LightningUserWallet"
+import { LightningAdminWallet } from "./LightningAdminImpl"
 import { btc2sat, waitForNodeSync, getAuth } from "./utils";
 import { login } from "./text";
 import { OnboardingEarn } from "./types"
@@ -116,11 +117,23 @@ it('add invoice to different user', async () => {
   expect(uid).toBe(user2)
 })
 
+const checkIsBalanced = async () => {
+  const User = mongoose.model("User")
+  const admin = await new User({ role: "admin" }).save()
+  const adminWallet = new LightningAdminWallet({ uid: admin._id })
+  const { assetsEqualLiabilities, lndBalanceSheetAreSynced } = await adminWallet.balanceSheetIsBalanced()
+  expect(assetsEqualLiabilities).toBeTruthy()
+
+  // FIXME add this back
+  // expect(lndBalanceSheetAreSynced).toBeTruthy()
+}
+
 it('add earn adds balance correctly', async () => {
   let currentBalance: number = await lightningWallet.getBalance()
   await lightningWallet.addEarn(onBoardingEarnIds)
   let finalBalance: number = await lightningWallet.getBalance()
   expect(finalBalance).toBe(currentBalance + onBoardingEarnAmt)
+  await checkIsBalanced()
 })
 
 it('receives external funding correctly', async () => {
@@ -138,6 +151,7 @@ it('receives external funding correctly', async () => {
   await waitForNodeSync(lnd)
   let finalBalance: number = await lightningWallet.getBalance()
   expect(finalBalance).toBe(currentBalance + btc2sat(50))
+  await checkIsBalanced()
 })
 
 it('payInvoice', async () => {
@@ -148,6 +162,7 @@ it('payInvoice', async () => {
   expect(result).toBe("success")
   const finalBalance: number = await lightningWallet.getBalance()
   expect(finalBalance).toBe(currentBalance - 10000)
+  await checkIsBalanced()
 })
 
 it('payInvoiceToAnotherGaloyUser', async () => {
@@ -158,11 +173,12 @@ it('payInvoiceToAnotherGaloyUser', async () => {
   const user2CurrentBalance = await lightningWallet2.getBalance()
   const user1CurrentBalance = await lightningWallet.getBalance()
   const request = await lightningWallet2.addInvoice({ value: 1000, memo: "on us txn" })
-  await lightningWallet.pay({invoice: request})
+  await lightningWallet.pay({ invoice: request })
   const user2FinalBalance = await lightningWallet2.getBalance()
   const user1FinalBalance = await lightningWallet.getBalance()
   expect(user1FinalBalance).toBe(user1CurrentBalance - 1000)
   expect(user2FinalBalance).toBe(user2CurrentBalance + 1000)
+  await checkIsBalanced()
 })
 
 // it('payInvoiceToSelf', async () => {
@@ -178,6 +194,7 @@ it('pushPayment', async () => {
   const finalBalance: number = await lightningWallet.getBalance()
   expect(res).toBe("success")
   expect(finalBalance).toBe(currentBalance - 1000)
+  await checkIsBalanced()
 })
 
 // it('testDbTransaction', async () => {
