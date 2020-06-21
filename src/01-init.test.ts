@@ -5,7 +5,7 @@ import { setupMongoConnection } from "./db"
 // this import needs to be before medici
 
 import { LightningAdminWallet } from "./LightningAdminImpl"
-import { sleep, getAuth, waitForNodeSync } from "./utils"
+import { sleep, getAuth } from "./utils"
 const mongoose = require("mongoose");
 
 //TODO: Choose between camel case or underscores for variable naming
