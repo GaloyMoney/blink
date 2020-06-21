@@ -3,9 +3,11 @@ import { LightningMixin } from "./Lightning";
 import { LightningUserWallet } from "./LightningUserWallet";
 import { getAuth } from "./utils";
 import { AdminWallet } from "./wallet";
-import { assert } from "console";
+import { find, filter } from "lodash";
 const lnService = require('ln-service')
 const mongoose = require("mongoose");
+const BitcoindClient = require('bitcoin-core')
+const util = require('util')
 
 export class LightningAdminWallet extends LightningMixin(AdminWallet) {
   constructor({uid}: {uid: string}) {
@@ -34,47 +36,40 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
     // used for debugging
     for (const account of accounts) {
       const { balance } = await MainBook.balance({
-        account: "Assets",
+        account: account,
         currency: this.currency
       })
       console.log(account + ": " + balance)
     }
 
-    const assets = (await MainBook.balance({
-      account: "Assets",
-      currency: this.currency
-    })).balance
+    const getBalanceOf = async (account) => {
+      return (await MainBook.balance({
+        account,
+        currency: this.currency
+      })).balance
+    }
 
-    const liabilities = (await MainBook.balance({
-      account: "Liabilities",
-      currency: this.currency
-    })).balance
+    const assets = await getBalanceOf("Assets") 
+    const liabilities = await getBalanceOf("Liabilities") 
+    const lightning = await getBalanceOf("Assets:Reserve:Lightning") 
+    const expenses = await getBalanceOf("Expenses") 
+    const customers = await getBalanceOf("Liabilities:Customer") 
 
-    const lightning = (await MainBook.balance({
-      account: "Assets:Reserve:Lightning",
-      currency: this.currency
-    })).balance
+    // FIXME: have a way to generate a PNL
+    const equity = await getBalanceOf("Liabilities:ShareholderValue") - expenses
 
-    const shareholder = (await MainBook.balance({
-      account: "Liabilities:Shareholder",
-      currency: this.currency
-    })).balance
-
-    const customers = (await MainBook.balance({
-      account: "Liabilities:Customer",
-      currency: this.currency
-    })).balance
-
-    console.log({assets, liabilities, lightning, shareholder, customers})
-    return {assets, liabilities, lightning, shareholder, customers}
+    return {assets, liabilities, lightning, expenses, customers, equity}
   }
 
   async balanceSheetIsBalanced() {
-    const {assets, liabilities, lightning} = await this.getBalanceSheet()
-    const lndBalance = this.totalLndBalance()
+    const {assets, liabilities, lightning, expenses} = await this.getBalanceSheet()
+    const lndBalance = await this.totalLndBalance()
 
-    assert (assets === - liabilities)
-    assert (lightning === lndBalance)
+    const assetsEqualLiabilities = assets === - liabilities - expenses
+    const lndBalanceSheetAreSynced = lightning === lndBalance
+
+    console.log({assets, liabilities, lightning, lndBalance, expenses})
+    return { assetsEqualLiabilities, lndBalanceSheetAreSynced }
   }
 
   async totalLndBalance () {
@@ -89,5 +84,61 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
 
   async getInfo() {
     return await lnService.getWalletInfo({ lnd: this.lnd });
+  }
+
+  async openChannel({local_tokens, other_public_key, other_socket}) {
+    const auth = getAuth() // FIXME
+    const lnd = lnService.authenticatedLndGrpc(auth).lnd // FIXME
+
+    const {transaction_id} = await lnService.openChannel({ lnd, local_tokens,
+      partner_public_key: other_public_key, partner_socket: other_socket
+    })
+
+    // FIXME: O(n), not great
+    const { transactions } = await lnService.getChainTransactions({lnd})
+
+    const fee = find(transactions, {id: transaction_id}).fee
+
+    const MainBook = new book("MainBook")
+
+    const metadata = { currency: this.currency, txid: transaction_id }
+
+    await MainBook.entry("on chain fees")
+    .debit('Assets:Reserve:Lightning', fee, {...metadata, type: "fee"})
+    .credit('Expenses:Bitcoin:Fees', fee, {...metadata, type: "fee"})
+    .commit()
+  }
+
+  async updateEscrows() {
+    const auth = getAuth() // FIXME
+    const lnd = lnService.authenticatedLndGrpc(auth).lnd // FIXME
+
+    const Transaction = await mongoose.model("Medici_Transaction")
+    const MainBook = new book("MainBook")
+
+    const metadata = { currency: this.currency, type: "escrow" }
+
+    const { channels } = await lnService.getChannels({lnd})
+    const selfInitated = filter(channels, {is_partner_initiated: true, is_active: true})
+    // TODO remove the inactive channel from escrow
+
+    for (const channel of selfInitated) {
+
+      const txid = `${channel.transaction_id}:${channel.transaction_vout}`
+      
+      // TODO
+      // const mongotx = Transaction.findOne({ type: "escrow", txid })
+      // if mongotx.debit === channel.commit_transaction_fee,
+      // continue
+      // else
+      // void
+      // + 
+      await MainBook.entry("escrow")
+      .debit('Assets:Reserve:Lightning', channel.commit_transaction_fee, {...metadata, txid})
+      .credit('Assets:Reserve:Escrow', channel.commit_transaction_fee, {...metadata, txid})
+      .commit()
+
+    }
+
   }
 }

@@ -12,7 +12,7 @@ const client = require('prom-client');
 const register = require('prom-client').register
 const mongoose = require("mongoose");
 
-const shareholder_g = new client.Gauge({ name: 'shareholder', help: 'value of shareholder' })
+const equity_g = new client.Gauge({ name: 'shareholder', help: 'value of shareholder' })
 const customers_g = new client.Gauge({ name: 'customers', help: 'how much money customers has' })
 const lightning_g = new client.Gauge({ name: 'lightning', help: 'how much money there is on lnd' })
 // const price_g = new client.Gauge({ name: 'price', help: 'BTC/USD price' })
@@ -35,12 +35,12 @@ const main = async () => {
     await adminWallet.updateUsersPendingPayment()
     await adminWallet.updatePending()
     
-    const {customers, shareholder, lightning} = await adminWallet.getBalanceSheet()
+    const {customers, equity, lightning} = await adminWallet.getBalanceSheet()
 
-    shareholder_g.set(shareholder)
+    equity_g.set(equity)
     customers_g.set(customers)
     lightning_g.set(lightning)
-    // price_g.set(lightning)
+    // price_g.set(price)
 
     res.set('Content-Type', register.contentType);
     res.end(register.metrics());
