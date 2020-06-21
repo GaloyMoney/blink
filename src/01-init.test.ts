@@ -7,6 +7,7 @@ import { setupMongoConnection } from "./db"
 import { LightningAdminWallet } from "./LightningAdminImpl"
 import { sleep, getAuth } from "./utils"
 const mongoose = require("mongoose");
+const {once} = require('events');
 
 //TODO: Choose between camel case or underscores for variable naming
 const BitcoindClient = require('bitcoin-core')
@@ -93,12 +94,12 @@ beforeAll(async () => {
 
 	await setupMongoConnection()
 	
-	try {
-		await mongoose.connection.dropCollection('users')
-	} catch (err) {
-		// console.log("can't drop the collection, probably because it doesn't exist")
-		console.log(err)
-	}
+	// try {
+	// 	await mongoose.connection.dropCollection('users')
+	// } catch (err) {
+	// 	// console.log("can't drop the collection, probably because it doesn't exist")
+	// 	console.log(err)
+	// }
 
 	const connection_obj = { 
 		network: 'regtest', username: 'rpcuser', password: 'rpcpass',
@@ -149,41 +150,52 @@ it('funding bank with onchain tx', async () => {
 	bank_address = await adminWallet.getOnChainAddress()
 	expect(bank_address.substr(0, 4)).toBe("bcrt")
 
-	const min_height = 1
-	const sub = lnService.subscribeToChainAddress({lnd: lnd1, bech32_address: bank_address, min_height})
+	const generateAddress = async () => {
+		const [blockhashes] = await bitcoindClient.generateToAddress(1, bank_address)
+		expect(blockhashes.length).toEqual(64)
+		await bitcoindClient.generateToAddress(3, RANDOM_ADDRESS)
+	}
 
-	sub.on('confirmation', async ({block}) => {
+	const checkBalance = async () => {
+		const min_height = 1
+		// FIXME: https://github.com/alexbosworth/ln-service/issues/122
+		// let sub = lnService.subscribeToChainAddress({lnd: lnd1, bech32_address: bank_address, min_height})
+		// await once(sub, 'confirmation')
+		await sleep(3000)
+		
 		const balance = await adminWallet.getBalance()
 		expect(balance).toBe(BLOCK_SUBSIDY)
 		await checkIsBalanced()
-	})
+	}
 
-	const [blockhashes] = await bitcoindClient.generateToAddress(1, bank_address)
-	expect(blockhashes.length).toEqual(64)
-	await bitcoindClient.generateToAddress(3, RANDOM_ADDRESS)
-
+	await Promise.all([
+		checkBalance(),
+		generateAddress()
+	])
 })
 
-it('getting lndOutside1 address', async () => {
-	lndOutside1_wallet_addr = (await lnService.createChainAddress({ format: 'p2wpkh', lnd: lndOutside1 })).address
-	expect(lndOutside1_wallet_addr.substr(0, 4)).toBe("bcrt")
-})
 
 it('funds lndOutside1 and mined 99 blocks to make mined coins accessible', async () => {
+	lndOutside1_wallet_addr = (await lnService.createChainAddress({ format: 'p2wpkh', lnd: lndOutside1 })).address
+	expect(lndOutside1_wallet_addr.substr(0, 4)).toBe("bcrt")
+
 	const result = await bitcoindClient.generateToAddress(1, lndOutside1_wallet_addr)
 	expect(result[0].length).toEqual(64)
 	await bitcoindClient.generateToAddress(99, RANDOM_ADDRESS)
 }, 10000)
 
 const openChannel = async ({lnd, other_lnd, other_public_key, other_socket}) => {
-	await lnService.addPeer({ lnd, public_key: other_public_key, socket: other_socket })
 
 	let openChannelPromise
+	let adminWallet
+
+	await waitForNodeSync(lnd)
+	await waitForNodeSync(other_lnd)
 
 	if (lnd === lnd1) {
 		// TODO: dedupe
 		const admin = await User.findOne({role: "admin"})
-		const adminWallet = new LightningAdminWallet({uid: admin._id})
+		adminWallet = new LightningAdminWallet({uid: admin._id})
 		openChannelPromise = adminWallet.openChannel({ local_tokens, other_public_key, other_socket })
 
 	} else {
@@ -203,6 +215,10 @@ const openChannel = async ({lnd, other_lnd, other_public_key, other_socket}) => 
 	
 	await waitForNodeSync(lnd)
 	await waitForNodeSync(other_lnd)
+
+	if (lnd === lnd1) {
+		await adminWallet.updateEscrows()
+	}
 
 	await checkIsBalanced()
 }

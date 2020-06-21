@@ -3,7 +3,7 @@ import { LightningMixin } from "./Lightning";
 import { LightningUserWallet } from "./LightningUserWallet";
 import { getAuth } from "./utils";
 import { AdminWallet } from "./wallet";
-import { find } from "lodash";
+import { find, filter } from "lodash";
 const lnService = require('ln-service')
 const mongoose = require("mongoose");
 const BitcoindClient = require('bitcoin-core')
@@ -35,7 +35,7 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
     
     for (const account of accounts) {
       const { balance } = await MainBook.balance({
-        account: "Assets",
+        account: account,
         currency: this.currency
       })
       console.log(account + ": " + balance)
@@ -53,7 +53,10 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
     const lightning = await getBalanceOf("Assets:Reserve:Lightning") 
     const expenses = await getBalanceOf("Expenses") 
 
-    return {assets, liabilities, lightning, expenses}
+    // FIXME: have a way to generate a PNL
+    const equity = await getBalanceOf("Liabilities:ShareholderValue") - expenses
+
+    return {assets, liabilities, lightning, expenses, equity}
   }
 
   async balanceSheetIsBalanced() {
@@ -82,31 +85,15 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
   }
 
   async openChannel({local_tokens, other_public_key, other_socket}) {
-    const {once} = require('events');
-
     const auth = getAuth() // FIXME
     const lnd = lnService.authenticatedLndGrpc(auth).lnd // FIXME
 
-    await lnService.addPeer({ lnd, public_key: other_public_key, socket: other_socket })
-
-    const sub = lnService.subscribeToChannels({lnd});
-    
-    const openChannelPromise = lnService.openChannel({ lnd, local_tokens,
+    const {transaction_id} = await lnService.openChannel({ lnd, local_tokens,
       partner_public_key: other_public_key, partner_socket: other_socket
     })
 
-    // block until channel is opened
-    const [openedChannel] = await once(sub, 'channel_opened')
-
-    // FIXME: this change over time. 
-    const escrow = openedChannel.commit_transaction_fee
-
-    const {transaction_id} = await openChannelPromise
-
     // FIXME: O(n), not great
     const { transactions } = await lnService.getChainTransactions({lnd})
-
-    console.log({transactions})
 
     const fee = find(transactions, {id: transaction_id}).fee
 
@@ -118,11 +105,38 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
     .debit('Assets:Reserve:Lightning', fee, {...metadata, type: "fee"})
     .credit('Expenses:Bitcoin:Fees', fee, {...metadata, type: "fee"})
     .commit()
+  }
 
-    await MainBook.entry("escrow")
-    .debit('Assets:Reserve:Lightning', escrow, {...metadata, type: "escrow"})
-    .credit('Assets:Reserve:Escrow', escrow, {...metadata, type: "escrow"})
-    .commit()
+  async updateEscrows() {
+    const auth = getAuth() // FIXME
+    const lnd = lnService.authenticatedLndGrpc(auth).lnd // FIXME
+
+    const Transaction = await mongoose.model("Medici_Transaction")
+    const MainBook = new book("MainBook")
+
+    const metadata = { currency: this.currency, type: "escrow" }
+
+    const { channels } = await lnService.getChannels({lnd})
+    const selfInitated = filter(channels, {is_partner_initiated: true, is_active: true})
+    // TODO remove the inactive channel from escrow
+
+    for (const channel of selfInitated) {
+
+      const txid = `${channel.transaction_id}:${channel.transaction_vout}`
+      
+      // TODO
+      // const mongotx = Transaction.findOne({ type: "escrow", txid })
+      // if mongotx.debit === channel.commit_transaction_fee,
+      // continue
+      // else
+      // void
+      // + 
+      await MainBook.entry("escrow")
+      .debit('Assets:Reserve:Lightning', channel.commit_transaction_fee, {...metadata, txid})
+      .credit('Assets:Reserve:Escrow', channel.commit_transaction_fee, {...metadata, txid})
+      .commit()
+
+    }
 
   }
 }

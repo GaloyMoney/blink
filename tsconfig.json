@@ -16,11 +16,6 @@
   "compileOnSave": true,
   "include": [
     "src/index.ts",
-    "src/fiat.ts",
-    "src/exchange.ts",
-    "src/lightning.ts",
-    "src/user.ts",
-    "src/globalSettings.ts",
-    "src/price.ts",
+    "src/cron.ts"
   ]
 }
