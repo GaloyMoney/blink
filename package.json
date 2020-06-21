@@ -15,7 +15,7 @@
     "test-local-clean": "yarn run restart-charts && yarn run test-local",
     "test-local": "source exportLocal.sh && yarn jest --runInBand",
     "test-dev": "nodemon -e ts -w ./src -x yarn run test-dev-2",
-    "test-dev-2": "source exportLocal.sh && ts-node src/test.ts"
+    "test-dev-2": "source exportLocal.sh && ts-node src/dev.ts"
   },
   "engines": {
     "node": "12"

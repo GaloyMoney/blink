@@ -152,7 +152,7 @@ it('funding bank with onchain tx', async () => {
 	const min_height = 1
 	const sub = lnService.subscribeToChainAddress({lnd: lnd1, bech32_address: bank_address, min_height})
 
-	sub.on('confirmation', async ({block}) => {
+	sub.once('confirmation', async ({block}) => {
 		const balance = await adminWallet.getBalance()
 		expect(balance).toBe(BLOCK_SUBSIDY)
 		await checkIsBalanced()
@@ -176,14 +176,17 @@ it('funds lndOutside1 and mined 99 blocks to make mined coins accessible', async
 }, 10000)
 
 const openChannel = async ({lnd, other_lnd, other_public_key, other_socket}) => {
-	await lnService.addPeer({ lnd, public_key: other_public_key, socket: other_socket })
 
 	let openChannelPromise
+	let adminWallet
+
+	await waitForNodeSync(lnd)
+	await waitForNodeSync(other_lnd)
 
 	if (lnd === lnd1) {
 		// TODO: dedupe
 		const admin = await User.findOne({role: "admin"})
-		const adminWallet = new LightningAdminWallet({uid: admin._id})
+		adminWallet = new LightningAdminWallet({uid: admin._id})
 		openChannelPromise = adminWallet.openChannel({ local_tokens, other_public_key, other_socket })
 
 	} else {
@@ -203,6 +206,10 @@ const openChannel = async ({lnd, other_lnd, other_public_key, other_socket}) => 
 	
 	await waitForNodeSync(lnd)
 	await waitForNodeSync(other_lnd)
+
+	if (lnd === lnd1) {
+		await adminWallet.updateEscrows()
+	}
 
 	await checkIsBalanced()
 }
@@ -228,4 +235,4 @@ it('opens channel from lndOutside1 to lndOutside2', async () => {
 
 	const { channels } = await lnService.getChannels({ lnd: lndOutside1 })
 	expect(channels.length).toEqual(2)
-})
+}, 10000)
