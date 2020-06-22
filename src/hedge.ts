@@ -1,17 +1,63 @@
-import { verify } from "./crypto";
-import { Price } from "./priceImpl";
-import { IBuyRequest, IQuoteRequest } from "./types";
-import { validate } from "./utils";
 const lnService = require('ln-service')
-import moment = require("moment")
-
-const ccxt = require ('ccxt');
-
+const ccxt = require ('ccxt')
+import { find } from "lodash";
+import { LightningAdminWallet } from "./LightningAdminImpl";
+import { Price } from "./PriceImpl";
+import { btc2sat } from "./utils";
+const util = require('util')
 
 // unsecured //
-const apiKey = "***REMOVED***"
-const secret = "***REMOVED***"
+const apiKey = process.env.FTX_KEY
+const secret = process.env.FTX_SECRET
 
+const LOW_BOUND = 0.8
+const LOW_SAFEBOUND = 0.9
+const HIGH_SAFEBOUND = 1.1
+const HIGH_BOUND = 1.2
+
+
+export class Hedging {
+    adminWallet
+    
+    constructor() {
+        this.adminWallet = new LightningAdminWallet({uid: "admin"})
+    }
+
+    async position() {
+        const { equity } = await this.adminWallet.getBalanceSheet()
+        
+        const price = new Price()
+        // TODO refactor price.lastCached()
+        const lastBTCPrice = (await price.lastCached())[0]['o']
+        
+        
+        const ftx = new ccxt.ftx({ apiKey, secret })
+        // const ftx_balance = await ftx.fetchBalance()
+
+        // const orders = await ftx.fetchOpenOrders()
+        // const tradingFees = await ftx.fetchTradingFees()
+        const {result} = await ftx.privateGetPositions()
+
+        console.log(util.inspect({result}, false, Infinity))
+
+        // const {netSize} = find(result, {future: 'BTC-1225'})
+        const netSize = - 600
+
+        const netSizeSats = btc2sat(netSize)
+
+        const absoluteExposureBTC = (- equity) + netSizeSats
+        const absoluteExposureUSD = lastBTCPrice * absoluteExposureBTC
+
+        // this would move when equity would change / payment being made/received
+        const deltaExposure = equity / netSizeSats
+
+        const outside_safebound = deltaExposure < LOW_SAFEBOUND || deltaExposure > HIGH_SAFEBOUND
+        const outside_bound = deltaExposure < LOW_BOUND || deltaExposure > HIGH_BOUND
+
+        // console.log({netSizeSats, equity, lastBTCPrice, absoluteExposureUSD, absoluteExposureBTC, deltaExposure, outside_safebound, outside_bound})
+
+    }
+}
 
 type Balance = {
     BTC: {
@@ -28,20 +74,6 @@ type Balance = {
 
 export const getBalance = async () => { //: Promise<Balance>
     
-    // const balance: Balance = {
-    //     BTC: {
-    //         total: 0,
-    //         exchange: 0,
-    //         onchain: 0,
-    //         offchain: 0,
-    //     },
-    //     USD: {
-    //         total: 0,
-    //         exchange: 0,
-    // }}
-
-    // const kraken = new ccxt.kraken({ apiKey, secret })
-
     // const balanceKraken = await kraken.fetchBalance()
     // console.log({balanceKraken})
     // balance.BTC.exchange = btc2sat(balanceKraken.BTC.total) // TODO manage free and used
