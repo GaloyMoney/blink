@@ -157,25 +157,29 @@ export const LightningMixin = (superclass) => class extends superclass {
       if (!params.tokens || !params.destination) {
         throw Error('Pay requires either invoice or destination and amount to be specified')
       } else {
+        pushPayment = true
+        destination = params.destination
+        tokens = params.tokens
 
-        if (params.destination === nodePubKey) {
-          //TODO: either fail for trying to pay self or execute on-us txn
-          onUs = true
-        } else {
-          pushPayment = true
-          destination = params.destination
-          tokens = params.tokens
-
-          const preimage = randomBytes(preimageByteLength);
-          id = createHash('sha256').update(preimage).digest().toString('hex');
-          const secret = preimage.toString('hex');
-          messages = [{ type: keySendPreimageType, value: secret }]
-        }
+        const preimage = randomBytes(preimageByteLength);
+        id = createHash('sha256').update(preimage).digest().toString('hex');
+        const secret = preimage.toString('hex');
+        messages = [{ type: keySendPreimageType, value: secret }]
+        // }
       }
     } else {
       // TODO replace this with bolt11 utils library
       ({ id, tokens, destination, description } = await lnService.decodePaymentRequest({ lnd: this.lnd, request: params.invoice }))
-      if (destination === nodePubKey) {
+    }
+
+    console.log(destination)
+
+    if (destination === nodePubKey) {
+      if (pushPayment) {
+        // todo: if (dest == user) throw error
+
+        //todo: push payment on-us use case implementation
+      } else {
         const InvoiceUser = mongoose.model("InvoiceUser")
         let existingInvoice = await InvoiceUser.findOne({ _id: id, pending: true })
         if (!existingInvoice) {
@@ -186,36 +190,6 @@ export const LightningMixin = (superclass) => class extends superclass {
         onUs = true
         payeeUid = existingInvoice.uid
       }
-      // return await this.payInvoice({ invoice: params.invoice })
-    }
-
-    console.log(destination)
-
-
-    if (!onUs) {
-      // TODO add private route from invoice
-      ({ route } = await lnService.probeForRoute({ destination, lnd: this.lnd, tokens }));
-      console.log(util.inspect({ route }, { showHidden: false, depth: null }))
-
-      if (!route) {
-        throw Error(`internal: there is no route for this payment`)
-      }
-      fee = route.safe_fee
-
-      if (fee > feeCap * tokens) {
-        throw Error('cancelled: fee exceeds 1 percent of token amount')
-      }
-
-      const balance = await this.getBalance()
-
-      if (balance < tokens + fee) {
-        throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${tokens + fee}`)
-      }
-
-      if (pushPayment) {
-        route.messages = messages
-      }
-    } else {
       const payeeAccountPath = await this.customerPath(payeeUid)
       const MainBook = new book("MainBook")
       const obj = { currency: this.currency, hash: id, type: "payment", pending: false, fee }
@@ -225,10 +199,34 @@ export const LightningMixin = (superclass) => class extends superclass {
         .commit()
 
       const InvoiceUser = mongoose.model("InvoiceUser")
-      const existingInvoice = await InvoiceUser.findOne({_id: id})
-      existingInvoice.pending = false
-      await existingInvoice.save()
+      await InvoiceUser.findOneAndUpdate({ _id: id }, { pending: false })
+      await lnService.cancelHodlInvoice({lnd: this.lnd, id})
       return "success"
+    }
+
+
+    // if (!onUs) {
+    // TODO add private route from invoice
+    ({ route } = await lnService.probeForRoute({ destination, lnd: this.lnd, tokens }));
+    console.log(util.inspect({ route }, { showHidden: false, depth: null }))
+
+    if (!route) {
+      throw Error(`internal: there is no route for this payment`)
+    }
+    fee = route.safe_fee
+
+    if (fee > feeCap * tokens) {
+      throw Error('cancelled: fee exceeds 1 percent of token amount')
+    }
+
+    const balance = await this.getBalance()
+
+    if (balance < tokens + fee) {
+      throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${tokens + fee}`)
+    }
+
+    if (pushPayment) {
+      route.messages = messages
     }
 
     // we are confident nough that there is a possible payment route. let's move forward
