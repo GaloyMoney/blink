@@ -11,10 +11,7 @@ import { randomBytes, createHash } from "crypto"
 export type IType = "invoice" | "payment" | "earn"
 export type payInvoiceResult = "success" | "failed" | "pending"
 const feeCap: number = 0.01;
-// let nodePubKey
-// (async () => {
-  // nodePubKey = (await lnService.getWalletInfo({ lnd: this.lnd })).public_key  
-// })()
+
 
 const formatInvoice = (type: IType, memo: String | undefined, pending: Boolean | undefined): String => {
   if (pending) {
@@ -60,10 +57,17 @@ const formatType = (type: IType, pending: Boolean | undefined): TransactionType 
 export const LightningMixin = (superclass) => class extends superclass {
   protected _currency = "BTC"
   lnd: any
+  nodePubKey
 
   constructor(...args) {
     super(...args)
     this.lnd = lnService.authenticatedLndGrpc(getAuth()).lnd
+  }
+
+  async getNodePubkey() {
+    console.log("this.nodePubKey", this.nodePubKey)
+    this.nodePubKey = this.nodePubKey ?? (await lnService.getWalletInfo({ lnd: this.lnd })).public_key
+    return this.nodePubKey
   }
 
   async updatePending() {
@@ -151,7 +155,6 @@ export const LightningMixin = (superclass) => class extends superclass {
     let destination, id, description, route
     let payeeUid
     let messages: Object[] = []
-    let nodePubKey = (await lnService.getWalletInfo({ lnd: this.lnd })).public_key
 
     if (!params.invoice) {
       if (!params.tokens || !params.destination) {
@@ -174,7 +177,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     console.log(destination)
 
-    if (destination === nodePubKey) {
+    if (destination === await this.getNodePubkey()) {
       if (pushPayment) {
         // todo: if (dest == user) throw error
 
