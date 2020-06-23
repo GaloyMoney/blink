@@ -7,7 +7,7 @@ import { setupMongoConnection } from "./db"
 import moment from "moment"
 import { LightningUserWallet } from "./LightningUserWallet"
 import { LightningAdminWallet } from "./LightningAdminImpl"
-import { btc2sat, waitForNodeSync, getAuth } from "./utils";
+import { btc2sat, waitForNodeSync, getAuth, sleep } from "./utils";
 import { login } from "./text";
 import { OnboardingEarn } from "./types"
 const lnService = require('ln-service')
@@ -61,6 +61,8 @@ beforeEach(async () => {
   collections.forEach(async collection => await collection.deleteMany())
   await login(testAccounts[0])
   let Users = mongoose.model("User")
+  sleep(2000)
+  console.log("current users", await Users.find({}))
   user1 = (await Users.findOne({}))._id
   lightningWallet = new LightningUserWallet({ uid: user1 })
 })
@@ -193,11 +195,11 @@ it('pushPayment', async () => {
   await checkIsBalanced()
 })
 
-// it('receives payment from outside', async () => {
-//   const request = await lightningWallet.addInvoice({ value: 1000, memo: "receive from outside" })
-//   await lnService.payInvoice({lnd: lightningWalletOutside1, request})
-//   const finalBalance = await lightningWallet.getBalance()
-//   expect(finalBalance).toBe(1000)
+it('receives payment from outside', async () => {
+  const request = await lightningWallet.addInvoice({ value: 1000, memo: "receive from outside" })
+  await lnService.pay({lnd: lightningWalletOutside1, request})
+  const finalBalance = await lightningWallet.getBalance()
+  expect(finalBalance).toBe(1000)
 })
 
 // it('testDbTransaction', async () => {
