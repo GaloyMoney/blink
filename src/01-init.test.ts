@@ -238,6 +238,15 @@ it('opens channel from lnd1 to lndOutside1', async () => {
 
 }, 50000)
 
+it('opens a channel from lndOutside1 to lnd1', async () => {
+	const { public_key } = await lnService.getWalletInfo({ lnd: lnd1 })
+	const other_socket = 'lnd-service:9735'
+	await openChannel({ lnd: lndOutside1, other_lnd: lnd1, other_public_key: public_key, other_socket })
+
+	const { channels } = await lnService.getChannels({ lnd: lndOutside1 })
+	expect(channels.length).toEqual(2)
+}, 50000)
+
 it('opens channel from lndOutside1 to lndOutside2', async () => {
 	const { public_key } = await lnService.getWalletInfo({ lnd: lndOutside2 })
 	const lnd = lndOutside1
@@ -246,8 +255,8 @@ it('opens channel from lndOutside1 to lndOutside2', async () => {
 	await openChannel({ lnd, other_lnd: lndOutside2, other_public_key: public_key, other_socket })
 
 	const channelsOutside1 = (await lnService.getChannels({ lnd: lndOutside1 })).channels
-	expect(channelsOutside1.length).toEqual(2)
+	expect(channelsOutside1.length).toEqual(3)
 
 	const channelsOutside2 = (await lnService.getChannels({ lnd: lndOutside2 })).channels
-	expect(channelsOutside2.length).toEqual(1)
+	expect(channelsOutside2.length).toEqual(2)
 }, 30000)
