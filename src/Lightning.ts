@@ -65,7 +65,6 @@ export const LightningMixin = (superclass) => class extends superclass {
   }
 
   async getNodePubkey() {
-    console.log("this.nodePubKey", this.nodePubKey)
     this.nodePubKey = this.nodePubKey ?? (await lnService.getWalletInfo({ lnd: this.lnd })).public_key
     return this.nodePubKey
   }
@@ -191,6 +190,11 @@ export const LightningMixin = (superclass) => class extends superclass {
         }
         payeeUid = existingInvoice.uid
       }
+      const balance = await this.getBalance()
+
+      if (balance < tokens + fee) {
+        throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${tokens + fee}`)
+      }
       const payeeAccountPath = await this.customerPath(payeeUid)
       const MainBook = new book("MainBook")
       const obj = { currency: this.currency, hash: id, type: "on_us", pending: false, fee }
@@ -201,7 +205,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
       const InvoiceUser = mongoose.model("InvoiceUser")
       await InvoiceUser.findOneAndUpdate({ _id: id }, { pending: false })
-      await lnService.cancelHodlInvoice({lnd: this.lnd, id})
+      await lnService.cancelHodlInvoice({ lnd: this.lnd, id })
       return "success"
     }
 
