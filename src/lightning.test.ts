@@ -187,11 +187,10 @@ it('pushPayment', async () => {
   const destination = (await lnService.getWalletInfo({ lnd: lightningWalletOutside1 })).public_key;
   const tokens = 1000
   await lightningWallet.addEarn(onBoardingEarnIds)
-  const currentBalance = await lightningWallet.getBalance()
   const res = await lightningWallet.pay({ destination, tokens })
   const finalBalance = await lightningWallet.getBalance()
   expect(res).toBe("success")
-  expect(finalBalance).toBe(currentBalance - tokens)
+  expect(finalBalance).toBe(onBoardingEarnAmt - tokens)
   await checkIsBalanced()
 })
 
