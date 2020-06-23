@@ -7,7 +7,7 @@ import { setupMongoConnection } from "./db"
 import { LightningAdminWallet } from "./LightningAdminImpl"
 import { sleep, getAuth } from "./utils"
 const mongoose = require("mongoose");
-const {once} = require('events');
+const { once } = require('events');
 
 //TODO: Choose between camel case or underscores for variable naming
 const BitcoindClient = require('bitcoin-core')
@@ -67,8 +67,8 @@ async function waitForNodeSync(lnd) {
 }
 
 const checkIsBalanced = async () => {
-	const admin = await User.findOne({role: "admin"})
-	const adminWallet = new LightningAdminWallet({uid: admin._id})
+	const admin = await User.findOne({ role: "admin" })
+	const adminWallet = new LightningAdminWallet({ uid: admin._id })
 	const { assetsEqualLiabilities, lndBalanceSheetAreSynced } = await adminWallet.balanceSheetIsBalanced()
 	expect(assetsEqualLiabilities).toBeTruthy()
 
@@ -93,7 +93,7 @@ beforeAll(async () => {
 	lnd1 = lnService.authenticatedLndGrpc(getAuth()).lnd
 
 	await setupMongoConnection()
-	
+
 	// try {
 	// 	await mongoose.connection.dropCollection('users')
 	// } catch (err) {
@@ -101,16 +101,17 @@ beforeAll(async () => {
 	// 	console.log(err)
 	// }
 
-	const connection_obj = { 
+	const connection_obj = {
 		network: 'regtest', username: 'rpcuser', password: 'rpcpass',
-		host: bitcoind_addr, port: bitcoind_port }
+		host: bitcoind_addr, port: bitcoind_port
+	}
 
 	bitcoindClient = new BitcoindClient(connection_obj)
 
 })
 
 afterAll(async () => {
-  return await mongoose.connection.close()
+	return await mongoose.connection.close()
 })
 
 it('I can connect to bitcoind', async () => {
@@ -125,7 +126,7 @@ it('I can connect to bank lnd', async () => {
 it('I can connect to outside lnds', async () => {
 	const lnds = [lndOutside1, lndOutside2]
 	for (const lnd of lnds) {
-		const {current_block_height} = await lnService.getWalletInfo({ lnd })
+		const { current_block_height } = await lnService.getWalletInfo({ lnd })
 		expect(current_block_height).toBe(0)
 	}
 })
@@ -137,7 +138,7 @@ it('I can connect to mongodb', async () => {
 
 it('creating bank "admin" user', async () => {
 	// FIXME there should be an API for this
-	await new User({role: "admin"}).save()
+	await new User({ role: "admin" }).save()
 	const users = await User.find({})
 	expect(users.length).toBe(1)
 
@@ -145,8 +146,8 @@ it('creating bank "admin" user', async () => {
 })
 
 it('funding bank with onchain tx', async () => {
-	const admin = await User.findOne({role: "admin"})
-	const adminWallet = new LightningAdminWallet({uid: admin._id})
+	const admin = await User.findOne({ role: "admin" })
+	const adminWallet = new LightningAdminWallet({ uid: admin._id })
 	bank_address = await adminWallet.getOnChainAddress()
 	expect(bank_address.substr(0, 4)).toBe("bcrt")
 
@@ -162,7 +163,7 @@ it('funding bank with onchain tx', async () => {
 		// let sub = lnService.subscribeToChainAddress({lnd: lnd1, bech32_address: bank_address, min_height})
 		// await once(sub, 'confirmation')
 		await sleep(3000)
-		
+
 		const balance = await adminWallet.getBalance()
 		expect(balance).toBe(BLOCK_SUBSIDY)
 		await checkIsBalanced()
@@ -184,7 +185,7 @@ it('funds lndOutside1 and mined 99 blocks to make mined coins accessible', async
 	await bitcoindClient.generateToAddress(99, RANDOM_ADDRESS)
 }, 10000)
 
-const openChannel = async ({lnd, other_lnd, other_public_key, other_socket}) => {
+const openChannel = async ({ lnd, other_lnd, other_public_key, other_socket }) => {
 	let openChannelPromise
 	let adminWallet
 
@@ -193,25 +194,28 @@ const openChannel = async ({lnd, other_lnd, other_public_key, other_socket}) => 
 
 	if (lnd === lnd1) {
 		// TODO: dedupe
-		const admin = await User.findOne({role: "admin"})
-		adminWallet = new LightningAdminWallet({uid: admin._id})
+		const admin = await User.findOne({ role: "admin" })
+		adminWallet = new LightningAdminWallet({ uid: admin._id })
 		openChannelPromise = adminWallet.openChannel({ local_tokens, other_public_key, other_socket })
 
 	} else {
-		openChannelPromise = lnService.openChannel({ lnd, local_tokens, 
-			partner_public_key: other_public_key, partner_socket: other_socket })
+		openChannelPromise = lnService.openChannel({
+			lnd, local_tokens,
+			partner_public_key: other_public_key, partner_socket: other_socket
+		})
 	}
-	
+
 	await Promise.all([
 		openChannelPromise,
 		(async () => {
 			// making sure the channel open creation has started before generating new address
 			// otherwise lnd might complain it's not in sync
-			await sleep(5000)
+			await waitForNodeSync(lnd)
+			await waitForNodeSync(other_lnd)
 			await bitcoindClient.generateToAddress(6, RANDOM_ADDRESS)
 		})()
 	])
-	
+
 	await waitForNodeSync(lnd)
 	await waitForNodeSync(other_lnd)
 
@@ -227,7 +231,7 @@ it('opens channel from lnd1 to lndOutside1', async () => {
 	const other_socket = `lnd-outside-1:9735`
 
 	// TODO: adminWallet should have an API for opening channel
-	await openChannel({lnd: lnd1, other_lnd: lndOutside1, other_public_key: public_key, other_socket})
+	await openChannel({ lnd: lnd1, other_lnd: lndOutside1, other_public_key: public_key, other_socket })
 
 	const { channels } = await lnService.getChannels({ lnd: lnd1 })
 	expect(channels.length).toEqual(1)
@@ -239,7 +243,7 @@ it('opens channel from lndOutside1 to lndOutside2', async () => {
 	const lnd = lndOutside1
 	const other_socket = `lnd-outside-2:9735`
 
-	await openChannel({lnd, other_lnd: lndOutside2, other_public_key: public_key, other_socket})
+	await openChannel({ lnd, other_lnd: lndOutside2, other_public_key: public_key, other_socket })
 
 	const channelsOutside1 = (await lnService.getChannels({ lnd: lndOutside1 })).channels
 	expect(channelsOutside1.length).toEqual(2)
