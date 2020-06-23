@@ -129,9 +129,9 @@ const checkIsBalanced = async () => {
 }
 
 it('add earn adds balance correctly', async () => {
-  let currentBalance: number = await lightningWallet.getBalance()
+  let currentBalance = await lightningWallet.getBalance()
   await lightningWallet.addEarn(onBoardingEarnIds)
-  let finalBalance: number = await lightningWallet.getBalance()
+  let finalBalance = await lightningWallet.getBalance()
   expect(finalBalance).toBe(currentBalance + onBoardingEarnAmt)
   await checkIsBalanced()
 })
@@ -145,11 +145,11 @@ it('receives external funding correctly', async () => {
 
   const { lnd } = lnService.authenticatedLndGrpc(getAuth())
 
-  let currentBalance: number = await lightningWallet.getBalance()
+  let currentBalance = await lightningWallet.getBalance()
   let onChainAddress: string = await lightningWallet.getOnChainAddress()
   let result = await bitcoindClient.generateToAddress(1, onChainAddress)
   await waitForNodeSync(lnd)
-  let finalBalance: number = await lightningWallet.getBalance()
+  let finalBalance = await lightningWallet.getBalance()
   expect(finalBalance).toBe(currentBalance + btc2sat(50))
   await checkIsBalanced()
 })
@@ -157,10 +157,10 @@ it('receives external funding correctly', async () => {
 it('payInvoice', async () => {
   const { request } = await lnService.createInvoice({ lnd: lightningWalletOutside1, tokens: 10000 })
   await lightningWallet.addEarn(onBoardingEarnIds)
-  const currentBalance: number = await lightningWallet.getBalance()
+  const currentBalance = await lightningWallet.getBalance()
   const result: string = await lightningWallet.pay({ invoice: request })
   expect(result).toBe("success")
-  const finalBalance: number = await lightningWallet.getBalance()
+  const finalBalance = await lightningWallet.getBalance()
   expect(finalBalance).toBe(currentBalance - 10000)
   await checkIsBalanced()
 }, 20000)
@@ -189,12 +189,19 @@ it('pushPayment', async () => {
   const destination = (await lnService.getWalletInfo({ lnd: lightningWalletOutside1 })).public_key;
   const tokens = 1000
   await lightningWallet.addEarn(onBoardingEarnIds)
-  const currentBalance: number = await lightningWallet.getBalance()
+  const currentBalance = await lightningWallet.getBalance()
   const res = await lightningWallet.pay({ destination, tokens })
-  const finalBalance: number = await lightningWallet.getBalance()
+  const finalBalance = await lightningWallet.getBalance()
   expect(res).toBe("success")
-  expect(finalBalance).toBe(currentBalance - 1000)
+  expect(finalBalance).toBe(currentBalance - tokens)
   await checkIsBalanced()
+})
+
+// it('receives payment from outside', async () => {
+//   const request = await lightningWallet.addInvoice({ value: 1000, memo: "receive from outside" })
+//   await lnService.payInvoice({lnd: lightningWalletOutside1, request})
+//   const finalBalance = await lightningWallet.getBalance()
+//   expect(finalBalance).toBe(1000)
 })
 
 // it('testDbTransaction', async () => {
