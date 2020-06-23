@@ -149,7 +149,6 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     //todo: should we assume pushPayment false by default?
     let pushPayment: boolean = false;
-    let onUs: boolean = false;
     //todo: adding types here leads to errors further down below
     let tokens, fee: number = 0
     let destination, id, description, route
@@ -190,7 +189,6 @@ export const LightningMixin = (superclass) => class extends superclass {
         } else if (existingInvoice.uid === this.uid) {
           throw Error('User tried to pay their own invoice')
         }
-        onUs = true
         payeeUid = existingInvoice.uid
       }
       const payeeAccountPath = await this.customerPath(payeeUid)
@@ -207,8 +205,6 @@ export const LightningMixin = (superclass) => class extends superclass {
       return "success"
     }
 
-
-    // if (!onUs) {
     // TODO add private route from invoice
     ({ route } = await lnService.probeForRoute({ destination, lnd: this.lnd, tokens }));
     console.log(util.inspect({ route }, { showHidden: false, depth: null }))
