@@ -193,7 +193,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       }
       const payeeAccountPath = await this.customerPath(payeeUid)
       const MainBook = new book("MainBook")
-      const obj = { currency: this.currency, hash: id, type: "payment", pending: false, fee }
+      const obj = { currency: this.currency, hash: id, type: "on_us", pending: false, fee }
       await MainBook.entry()
         .credit(this.accountPath, tokens, obj)
         .debit(payeeAccountPath, tokens, obj)
