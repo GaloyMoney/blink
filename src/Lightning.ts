@@ -10,7 +10,11 @@ import moment from "moment";
 import { randomBytes, createHash } from "crypto"
 export type IType = "invoice" | "payment" | "earn"
 export type payInvoiceResult = "success" | "failed" | "pending"
-const feeCap: number = 0.01
+const feeCap: number = 0.01;
+// let nodePubKey
+// (async () => {
+  // nodePubKey = (await lnService.getWalletInfo({ lnd: this.lnd })).public_key  
+// })()
 
 const formatInvoice = (type: IType, memo: String | undefined, pending: Boolean | undefined): String => {
   if (pending) {
