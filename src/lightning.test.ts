@@ -163,7 +163,7 @@ it('payInvoice', async () => {
   const finalBalance: number = await lightningWallet.getBalance()
   expect(finalBalance).toBe(currentBalance - 10000)
   await checkIsBalanced()
-})
+}, 20000)
 
 it('payInvoiceToAnotherGaloyUser', async () => {
   await login(testAccounts[1])
