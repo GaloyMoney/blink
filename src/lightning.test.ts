@@ -61,7 +61,7 @@ beforeEach(async () => {
   collections.forEach(async collection => await collection.deleteMany())
   await login(testAccounts[0])
   let Users = mongoose.model("User")
-  user1 = (await Users.find({}))[0]._id
+  user1 = (await Users.findOne({}))._id
   lightningWallet = new LightningUserWallet({ uid: user1 })
 })
 
