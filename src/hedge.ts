@@ -3,8 +3,9 @@ const ccxt = require ('ccxt')
 import { find } from "lodash";
 import { LightningAdminWallet } from "./LightningAdminImpl";
 import { Price } from "./PriceImpl";
-import { btc2sat } from "./utils";
+import { btc2sat, sleep } from "./utils";
 const util = require('util')
+const assert = require('assert')
 
 // unsecured //
 const apiKey = process.env.FTX_KEY
@@ -15,6 +16,8 @@ const LOW_SAFEBOUND = 0.9
 const HIGH_SAFEBOUND = 1.1
 const HIGH_BOUND = 1.2
 
+const symbol = 'BTC-PERP'
+
 
 export class Hedging {
     adminWallet
@@ -23,9 +26,78 @@ export class Hedging {
         this.adminWallet = new LightningAdminWallet({uid: "admin"})
     }
 
+    calculate({equity, lastBTCPrice, netSizeSats}) {
+
+        const absoluteExposureBTC = equity + netSizeSats
+        const absoluteExposureUSD = lastBTCPrice * absoluteExposureBTC
+
+        // this would move when equity change / payment being made/received
+        // TODO: find a better name. Delta seems to be used mainly for options?
+        const exposureRatio = (- netSizeSats) / equity
+
+        let needHedging = false
+        let amount, direction
+
+        try {     
+            // undercovered (ie: have BTC not covered)
+            // long  
+            // will loose money if BTCUSD price drops
+            if(exposureRatio < LOW_BOUND) {
+                const target = equity * LOW_SAFEBOUND
+                amount = target + netSizeSats
+                assert(amount > 0)
+                assert(amount < equity)
+                direction = "sell"
+                needHedging = true
+            }
+            
+            // overexposed
+            // short
+            // will loose money if BTCUSD price increase
+            else if(exposureRatio > HIGH_BOUND) {
+                const target = equity * HIGH_SAFEBOUND
+                amount = - (target + netSizeSats)
+                assert(amount > 0)
+                assert(amount < equity)
+                direction = "buy"
+                needHedging = true
+            }
+
+        } catch (err) {
+            throw Error("can't calculate hedging value")
+        }
+
+        return {needHedging, amount, direction}
+    }
+
+    async executeOrder({direction, amount, ftx}) {
+
+        // let orderId = 6103637365
+        let orderId
+
+        // TODO add: try
+        const order = await ftx.createOrder(symbol, 'market', direction, amount)
+
+        // FIXME: have a better way to manage latency
+        await sleep(1000)
+
+        const result = await ftx.fetchOrder(order.id)
+
+        if (result.status !== "closed") {
+            console.warn("market order has not been fullfilled")
+            // Pager
+        }
+
+        // TODO: check we are back to low_safebound
+
+    }
+
     async position() {
-        const { equity } = await this.adminWallet.getBalanceSheet()
+        let { equity } = await this.adminWallet.getBalanceSheet()
         
+        // FIXME maybe not the best way to do things
+        equity = - equity
+
         const price = new Price()
         // TODO refactor price.lastCached()
         const lastBTCPrice = (await price.lastCached())[0]['o']
@@ -40,21 +112,21 @@ export class Hedging {
 
         console.log(util.inspect({result}, false, Infinity))
 
-        // const {netSize} = find(result, {future: 'BTC-1225'})
-        const netSize = - 600
-
+        // TODO: might return an error if there is no position yet
+        const {netSize} = find(result, {future: 'BTC-PERP'})
         const netSizeSats = btc2sat(netSize)
 
-        const absoluteExposureBTC = (- equity) + netSizeSats
-        const absoluteExposureUSD = lastBTCPrice * absoluteExposureBTC
+        const {needHedging, amount, direction} = this.calculate({equity, netSizeSats, lastBTCPrice})
 
-        // this would move when equity would change / payment being made/received
-        const deltaExposure = equity / netSizeSats
+        if (!needHedging) {
+            return 
+        } 
 
-        const outside_safebound = deltaExposure < LOW_SAFEBOUND || deltaExposure > HIGH_SAFEBOUND
-        const outside_bound = deltaExposure < LOW_BOUND || deltaExposure > HIGH_BOUND
+        await this.executeOrder({amount, direction, ftx})
 
-        // console.log({netSizeSats, equity, lastBTCPrice, absoluteExposureUSD, absoluteExposureBTC, deltaExposure, outside_safebound, outside_bound})
+        // console.log({netSizeSats, equity, lastBTCPrice, absoluteExposureUSD, absoluteExposureBTC, exposureRatio, outside_safebound, outside_bound})
+
+        // TODO: look at liquidation ratio
 
     }
 }
