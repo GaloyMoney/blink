@@ -56,9 +56,17 @@ afterAll(async () => {
   return await mongoose.connection.close()
 });
 
+//Does not seem to be best approach
+// const initTestUserWallet = async (i) => {
+//   await login(testAccounts[i])
+//   const Users = mongoose.model("User")
+//   sleep(2000)
+//   user1 = (await Users.findOne({}))._id
+//   lightningWallet = new LightningUserWallet({ uid: user1 })
+// }
+
 beforeEach(async () => {
-  const collections: any[] = await mongoose.connection.db.collections()
-  collections.forEach(async collection => await collection.deleteMany())
+  await mongoose.connection.db.dropCollection('users')
   await login(testAccounts[0])
   let Users = mongoose.model("User")
   sleep(2000)
