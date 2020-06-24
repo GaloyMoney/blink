@@ -249,11 +249,11 @@ jobs:
           path: ./reports
       - store_artifacts:
           path: ./reports
-      - run:
-          name: Delete devnet namespace
-          command: |
-            kubectl delete namespaces $NAMESPACE
-          when: always
+      # - run:
+      #     name: Delete devnet namespace
+      #     command: |
+      #       kubectl delete namespaces $NAMESPACE
+      #     when: always
       - when:
           condition:
             equal: [ master, << pipeline.git.branch >> ]
