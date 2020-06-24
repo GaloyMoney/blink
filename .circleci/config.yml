@@ -228,7 +228,7 @@ jobs:
             export MACAROONOUTSIDE1=$(kubectl exec --namespace=$NAMESPACE lnd-container-1 -- base64 /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon | tr -d '\n\r')
             export MACAROONOUTSIDE2=$(kubectl exec --namespace=$NAMESPACE lnd-container-2 -- base64 /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon | tr -d '\n\r')
             echo "$MACAROON" "$MACAROONOUTSIDE1" "$MACAROONOUTSIDE2"
-            helm install --namespace=$NAMESPACE test-chart -f ~/GaloyApp/backend/test-chart/values.yaml --set\ 
+            helm install --namespace=$NAMESPACE test-chart -f ~/GaloyApp/backend/test-chart/values.yaml --set \
             macaroon=$MACAROON,macaroonoutside1=$MACAROONOUTSIDE1,macaroonoutside2=$MACAROONOUTSIDE2 \
             ~/GaloyApp/backend/test-chart/
       - run:
