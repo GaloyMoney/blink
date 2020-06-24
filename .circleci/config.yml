@@ -169,36 +169,38 @@ jobs:
     working_directory: ~/GaloyApp/backend
     docker:
       - image: kiwigrid/gcloud-kubectl-helm:latest
+    environment:
+      NAMESPACE: devnet
     steps:
       - checkout:
           path: ~/GaloyApp
-      - run:
-          name: generate cluster name
-          command: |
-            echo "devnet-cluster-"$RANDOM > clustername
-            cat clustername
+      # - run:
+      #     name: generate cluster name
+      #     command: |
+      #       echo "devnet-cluster-"$RANDOM > clustername
+      #       cat clustername
       - run:
           name: authorize gcloud and kubectl on circleci and create cluster
           command: |
             echo ${GCLOUD_SERVICE_KEY} > gcloud-service-key.json
             gcloud auth activate-service-account --key-file=gcloud-service-key.json
             gcloud config set project ${GOOGLE_PROJECT_ID}
-            gcloud container clusters create $(cat clustername | tr -d '\n\r') --region us-central1-b --num-nodes=1 \
             --machine-type=n1-standard-2 --disk-size=10Gi
-            gcloud container clusters get-credentials $(cat clustername | tr -d '\n\r') --region us-central1-b --project ${GOOGLE_PROJECT_ID}
+            gcloud container clusters get-credentials testnet-cluster --region us-central1-b --project ${GOOGLE_PROJECT_ID}
+# gcloud container clusters create $(cat clustername | tr -d '\n\r') --region us-central1-b --num-nodes=1 \
       - run:
           name: wait for k8s worker nodes
           command: echo $(ls) && sleep 30 # TODO: try to improve approach if possible
       - run:
           name: helm install bitcoind-chart
           command: |
-            helm install bitcoind-chart \
+            helm install --namespace=$NAMESPACE bitcoind-chart \
             -f ~/GaloyApp/backend/bitcoind-chart/regtest-values.yaml \
             ~/GaloyApp/backend/bitcoind-chart
       - run:
           name: helm install lnd-chart
           command: |
-            helm install lnd-chart \
+            helm install --namespace=$NAMESPACE lnd-chart \
             -f ~/GaloyApp/backend/lnd-chart/regtest-values.yaml \
             ~/GaloyApp/backend/lnd-chart
       - run:
@@ -207,49 +209,49 @@ jobs:
       - run:
           name: helm install mongodb
           command: |
-            helm install mongodb --set \
+            helm install --namespace=$NAMESPACE mongodb --set \
             mongodbUsername=testGaloy,mongodbPassword=testGaloy,mongodbDatabase=galoy,persistence.enabled=false bitnami/mongodb
       - run:
           name: Check Helm release status
-          command: helm list --all-namespaces --all
+          command: helm list  --namespace=$NAMESPACE --all
       - run:
           name: wait for pod to come alive
           command: |
-            kubectl wait --for=condition=ready pod -l app=bitcoind-container --timeout=200s
-            kubectl wait --for=condition=ready pod -l app=lnd-container --timeout=200s
-            kubectl wait --for=condition=ready pod -l app=mongodb --timeout=200s
+            kubectl wait --namespace=$NAMESPACE --for=condition=ready pod -l app=bitcoind-container --timeout=200s
+            kubectl wait --namespace=$NAMESPACE --for=condition=ready pod -l app=lnd-container --timeout=200s
+            kubectl wait --namespace=$NAMESPACE --for=condition=ready pod -l app=mongodb --timeout=200s
       - run:
           name: retrieve macaroons from lnd containers and install test image
           command: |
-            export MACAROON=$(kubectl exec lnd-container-0 -- base64 /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon | tr -d '\n\r') &&\
-            export MACAROONOUTSIDE1=$(kubectl exec lnd-container-1 -- base64 /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon | tr -d '\n\r') &&\
-            export MACAROONOUTSIDE2=$(kubectl exec lnd-container-2 -- base64 /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon | tr -d '\n\r') &&\
-            helm install test-chart -f ~/GaloyApp/backend/test-chart/values.yaml --set \
+            export MACAROON=$(kubectl exec --namespace=$NAMESPACE -- lnd-container-0 -- base64 /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon | tr -d '\n\r') &&\
+            export MACAROONOUTSIDE1=$(kubectl exec --namespace=$NAMESPACE lnd-container-1 -- base64 /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon | tr -d '\n\r') &&\
+            export MACAROONOUTSIDE2=$(kubectl exec --namespace=$NAMESPACE lnd-container-2 -- base64 /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon | tr -d '\n\r') &&\
+            helm install --namespace=$NAMESPACE test-chart -f ~/GaloyApp/backend/test-chart/values.yaml --set \
             macaroon=$MACAROON,macaroonoutside1=$MACAROONOUTSIDE1,macaroonoutside2=$MACAROONOUTSIDE2 \
             ~/GaloyApp/backend/test-chart/
       - run:
           name: wait for test-pod to come alive
           command: |
-            echo $(kubectl get pods)
-            kubectl wait --for=condition=ready pod/test-pod --timeout=200s
+            echo $(kubectl get --namespace=$NAMESPACE pods)
+            kubectl wait --namespace=$NAMESPACE --for=condition=ready pod/test-pod --timeout=200s
       - run:
           name: Run tests
           command: |
-            kubectl get pods
-            kubectl exec test-pod -- bash -c "cd functions && yarn test"
+            kubectl get --namespace=$NAMESPACE pods
+            kubectl exec --namespace=$NAMESPACE test-pod -- bash -c "cd functions && yarn test"
       - run:
           name: Fetch test results
-          command: kubectl cp test-pod:/functions/artifacts/junit.xml ./reports/junit.xml
+          command: kubectl cp --namespace=$NAMESPACE test-pod:/functions/artifacts/junit.xml ./reports/junit.xml
           when: always
       - store_test_results:
           path: ./reports
       - store_artifacts:
           path: ./reports
-      - run:
-          name: Delete devnet cluster
-          command: |
-            gcloud container clusters delete $(cat clustername | tr -d '\n\r') --quiet --region us-central1-b
-          when: always
+      # - run:
+      #     name: Delete devnet cluster
+      #     command: |
+      #       gcloud container clusters delete $(cat clustername | tr -d '\n\r') --quiet --region us-central1-b
+      #     when: always
       - when:
           condition:
             equal: [ master, << pipeline.git.branch >> ]
