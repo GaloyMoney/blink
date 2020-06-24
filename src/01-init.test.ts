@@ -258,5 +258,5 @@ it('opens channel from lndOutside1 to lndOutside2', async () => {
 	expect(channelsOutside1.length).toEqual(3)
 
 	const channelsOutside2 = (await lnService.getChannels({ lnd: lndOutside2 })).channels
-	expect(channelsOutside2.length).toEqual(2)
+	expect(channelsOutside2.length).toEqual(1)
 }, 30000)
