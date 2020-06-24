@@ -185,9 +185,9 @@ jobs:
             echo ${GCLOUD_SERVICE_KEY} > gcloud-service-key.json
             gcloud auth activate-service-account --key-file=gcloud-service-key.json
             gcloud config set project ${GOOGLE_PROJECT_ID}
-            --machine-type=n1-standard-2 --disk-size=10Gi
             gcloud container clusters get-credentials testnet-cluster --region us-central1-b --project ${GOOGLE_PROJECT_ID}
 # gcloud container clusters create $(cat clustername | tr -d '\n\r') --region us-central1-b --num-nodes=1 \
+            # --machine-type=n1-standard-2 --disk-size=10Gi
       - run:
           name: wait for k8s worker nodes
           command: echo $(ls) && sleep 30 # TODO: try to improve approach if possible
