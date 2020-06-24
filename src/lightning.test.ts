@@ -199,6 +199,7 @@ it('receives payment from outside', async () => {
   await lnService.pay({lnd: lightningWalletOutside1, request})
   const finalBalance = await lightningWallet.getBalance()
   expect(finalBalance).toBe(1000)
+  await checkIsBalanced()
 })
 
 // it('testDbTransaction', async () => {
