@@ -214,7 +214,10 @@ jobs:
           command: helm list --all-namespaces --all
       - run:
           name: wait for pod to come alive
-          command: sleep 50 # TODO: try to improve approach if possible
+          command: |
+            kubectl wait --for=condition=ready pod -l app=bitcoind-container --timeout=200s
+            kubectl wait --for=condition=ready pod -l app=lnd-container --timeout=200s
+            kubectl wait --for=condition=ready pod -l app=mongodb --timeout=200s
       - run:
           name: retrieve macaroons from lnd containers and install test image
           command: |
