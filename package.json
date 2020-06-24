@@ -37,7 +37,7 @@
     "graphql-yoga": "^1.18.3",
     "jest-junit": "^10.0.0",
     "jsonwebtoken": "^8.5.1",
-    "ln-service": "^48.3.1",
+    "ln-service": "^49.1.0",
     "lodash": "^4.17.15",
     "medici": "^4.0.1",
     "moment": "^2.24.0",
