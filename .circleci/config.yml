@@ -186,6 +186,7 @@ jobs:
             gcloud auth activate-service-account --key-file=gcloud-service-key.json
             gcloud config set project ${GOOGLE_PROJECT_ID}
             gcloud container clusters get-credentials testnet-cluster --region us-central1-a --project ${GOOGLE_PROJECT_ID}
+            kubectl create namespace $NAMESPACE
 # gcloud container clusters create $(cat clustername | tr -d '\n\r') --region us-central1-b --num-nodes=1 \
             # --machine-type=n1-standard-2 --disk-size=10Gi
       - run:
@@ -247,11 +248,11 @@ jobs:
           path: ./reports
       - store_artifacts:
           path: ./reports
-      # - run:
-      #     name: Delete devnet cluster
-      #     command: |
-      #       gcloud container clusters delete $(cat clustername | tr -d '\n\r') --quiet --region us-central1-b
-      #     when: always
+      - run:
+          name: Delete devnet namespace
+          command: |
+            kubectl delete namespaces $NAMESPACE
+          when: always
       - when:
           condition:
             equal: [ master, << pipeline.git.branch >> ]
