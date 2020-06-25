@@ -33,6 +33,7 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
     const MainBook =  new book("MainBook")
     const accounts = await MainBook.listAccounts()
     
+    // used for debugging
     for (const account of accounts) {
       const { balance } = await MainBook.balance({
         account: account,
@@ -52,11 +53,12 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
     const liabilities = await getBalanceOf("Liabilities") 
     const lightning = await getBalanceOf("Assets:Reserve:Lightning") 
     const expenses = await getBalanceOf("Expenses") 
+    const customers = await getBalanceOf("Liabilities:Customer") 
 
     // FIXME: have a way to generate a PNL
     const equity = await getBalanceOf("Liabilities:ShareholderValue") - expenses
 
-    return {assets, liabilities, lightning, expenses, equity}
+    return {assets, liabilities, lightning, expenses, customers, equity}
   }
 
   async balanceSheetIsBalanced() {
