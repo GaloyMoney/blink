@@ -2573,31 +2573,10 @@ bitcoin-ops@^1.3.0, bitcoin-ops@^1.4.0:
   resolved "https://registry.yarnpkg.com/bitcoin-ops/-/bitcoin-ops-1.4.1.tgz#e45de620398e22fd4ca6023de43974ff42240278"
   integrity sha512-pef6gxZFztEhaE9RY9HmWVmiIHqCb2OyS4HPKkpc6CIiiOa3Qmuoylxc5P2EkU3w+5eTSifI9SEZC88idAIGow==
 
-bitcoinjs-lib@5.1.7:
-  version "5.1.7"
-  resolved "https://registry.yarnpkg.com/bitcoinjs-lib/-/bitcoinjs-lib-5.1.7.tgz#dfa023d6ad887eaef8249513d708c9ecd2673a08"
-  integrity sha512-sNlTQuvhaoIjOdIdyENsX74Dlikv7l6AzO0/uZQscuvfBID6aMANoCz1rooCTH5upTV5rKCj4z3BXBmXJxq23g==
-  dependencies:
-    bech32 "^1.1.2"
-    bip174 "^1.0.1"
-    bip32 "^2.0.4"
-    bip66 "^1.1.0"
-    bitcoin-ops "^1.4.0"
-    bs58check "^2.0.0"
-    create-hash "^1.1.0"
-    create-hmac "^1.1.3"
-    merkle-lib "^2.0.10"
-    pushdata-bitcoin "^1.0.1"
-    randombytes "^2.0.1"
-    tiny-secp256k1 "^1.1.1"
-    typeforce "^1.11.3"
-    varuint-bitcoin "^1.0.4"
-    wif "^2.0.1"
-
-bitcoinjs-lib@5.1.9:
-  version "5.1.9"
-  resolved "https://registry.yarnpkg.com/bitcoinjs-lib/-/bitcoinjs-lib-5.1.9.tgz#1b2ee3d38be15134e012079ce294f84e35e75842"
-  integrity sha512-jrmlaofoXtTSfRWAxiGJjgEaeyW/wjh8yIt511Lgg58bGh+Hemtt6PPby+FVT2D3Dfw3E8REIlU+lJg5s4PEPQ==
+bitcoinjs-lib@5.1.10:
+  version "5.1.10"
+  resolved "https://registry.yarnpkg.com/bitcoinjs-lib/-/bitcoinjs-lib-5.1.10.tgz#91ec7cde308007008b22ed9117c5f26970cbad54"
+  integrity sha512-CesUqtBtnYc+SOMsYN9jWQWhdohW1MpklUkF7Ukn4HiAyN6yxykG+cIJogfRt6x5xcgH87K1Q+Mnoe/B+du1Iw==
   dependencies:
     bech32 "^1.1.2"
     bip174 "^1.0.1"
@@ -2687,17 +2666,24 @@ body-parser@1.19.0, body-parser@^1.18.2:
     raw-body "2.4.0"
     type-is "~1.6.17"
 
-bolt07@1.5.0, bolt07@^1.5.0:
+bolt07@1.5.1:
+  version "1.5.1"
+  resolved "https://registry.yarnpkg.com/bolt07/-/bolt07-1.5.1.tgz#e3a88b594d0740e745f65c4593d1e8870b027cc2"
+  integrity sha512-pNFpkyu5zW0NUKErTjRNcHsmTjEghvx02t/lscnke9xbJgxE2ZnLMDZFBhgl5xBPCeGGouIuEWd3MXsBLSd6Cg==
+  dependencies:
+    bn.js "5.1.2"
+
+bolt07@^1.5.0:
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/bolt07/-/bolt07-1.5.0.tgz#4200e574226c7d540a36e6cce42a35c9f4ac0213"
   integrity sha512-56MzzIej8xP5Ksl+8AwOSMkbFWX9HG3/3qG+2lwxpvkoUQJVUSjyj/JKx+6qaJdarv1XcpNbtGfpixCKIlI+sg==
   dependencies:
     bn.js "5.1.1"
 
-bolt09@0.0.2:
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/bolt09/-/bolt09-0.0.2.tgz#1820c0737731d5301233fd8b39ef6b5033ea8063"
-  integrity sha512-dBbcpDbSZPlOzityAKnEz3nFIwFHFYvqcKqqQOPbdszecR7JxIvTKqNt44MKyI253ZGvbHzt7GZYhL+Vq4/mLg==
+bolt09@0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/bolt09/-/bolt09-0.1.0.tgz#c4b97addb3defd449b796ca59004b54332deb858"
+  integrity sha512-n1jBGRip56E3SXQ+4KdzV/EcJ3Ls4R8Qyd0KTgNzCaSV+2SyNVsr0w0lKYzTBzwoctEBKHsytGjZ3qNxnt02nw==
 
 bolt11@^1.2.7:
   version "1.2.7"
@@ -4519,16 +4505,16 @@ growly@^1.3.0:
   resolved "https://registry.yarnpkg.com/growly/-/growly-1.3.0.tgz#f10748cbe76af964b7c96c93c6bcc28af120c081"
   integrity sha1-8QdIy+dq+WS3yWyTxrzCivEgwIE=
 
-grpc@1.24.2:
-  version "1.24.2"
-  resolved "https://registry.yarnpkg.com/grpc/-/grpc-1.24.2.tgz#76d047bfa7b05b607cbbe3abb99065dcefe0c099"
-  integrity sha512-EG3WH6AWMVvAiV15d+lr+K77HJ/KV/3FvMpjKjulXHbTwgDZkhkcWbwhxFAoTdxTkQvy0WFcO3Nog50QBbHZWw==
+grpc@1.24.3:
+  version "1.24.3"
+  resolved "https://registry.yarnpkg.com/grpc/-/grpc-1.24.3.tgz#92efe28dfc1250dca179b8133e40b4f2341473d9"
+  integrity sha512-EDemzuZTfhM0hgrXqC4PtR76O3t+hTIYJYR5vgiW0yt2WJqo4mhxUqZUirzUQz34Psz7dbLp38C6Cl7Ij2vXRQ==
   dependencies:
     "@types/bytebuffer" "^5.0.40"
     lodash.camelcase "^4.3.0"
     lodash.clone "^4.5.0"
     nan "^2.13.2"
-    node-pre-gyp "^0.14.0"
+    node-pre-gyp "^0.15.0"
     protobufjs "^5.0.3"
 
 har-schema@^2.0.0:
@@ -4823,17 +4809,17 @@ invert-kv@^1.0.0:
   resolved "https://registry.yarnpkg.com/invert-kv/-/invert-kv-1.0.0.tgz#104a8e4aaca6d3d8cd157a8ef8bfab2d7a3ffdb6"
   integrity sha1-EEqOSqym09jNFXqO+L+rLXo//bY=
 
-invoices@1.0.2:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/invoices/-/invoices-1.0.2.tgz#0ba6826ed7ebcb2d55828b71ffbc956c48d2aeea"
-  integrity sha512-C7a+IsZmDQUCFvYtk3KhCZaB5pfFD4fNL1K/nsFUQskxjTSBZyiazrmIz5LWcLy1LysqJDZW5XHgIk65KMhiig==
+invoices@1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/invoices/-/invoices-1.1.0.tgz#20386a3f19b8e98f184da52aae143bc262ccffb8"
+  integrity sha512-Ma9FlCTTbeyWs4LFtH5kn7CSyux55KEyZuB+vs5Yx8QaQKfJ25pANVsw9vxmiHQqZxf3wY68y+RGfxHkXTPMyQ==
   dependencies:
     bech32 "1.1.4"
-    bitcoinjs-lib "5.1.7"
-    bn.js "5.1.1"
-    bolt07 "1.5.0"
-    bolt09 "0.0.2"
-    secp256k1 "4.0.0"
+    bitcoinjs-lib "5.1.10"
+    bn.js "5.1.2"
+    bolt07 "1.5.1"
+    bolt09 "0.1.0"
+    secp256k1 "4.0.1"
 
 ip-regex@^2.1.0:
   version "2.1.0"
@@ -6070,23 +6056,23 @@ levn@~0.3.0:
     prelude-ls "~1.1.2"
     type-check "~0.3.2"
 
-lightning@2.0.7:
-  version "2.0.7"
-  resolved "https://registry.yarnpkg.com/lightning/-/lightning-2.0.7.tgz#894eaa45e85feae74be17d6f5566825491b976bf"
-  integrity sha512-83+2DaUOczIVUFCmJpMDDY7WjLt3c+u5C6VzXSypubyvrp4fGX3GbtCOvUoYUpgo4SXyUdauaB6rge/kv2VuKQ==
+lightning@2.0.17:
+  version "2.0.17"
+  resolved "https://registry.yarnpkg.com/lightning/-/lightning-2.0.17.tgz#39f983b53b3d65ccc22b6f89b85116b723574cf2"
+  integrity sha512-6T/9GBaF86DeLz8GP81GwpmWeiwqSwtE3IR+SngkRzwLXUbL2O3aGRDirYJOfOHu1JFQe2Pic9/7vbO6wCoK2w==
   dependencies:
     "@grpc/proto-loader" "0.5.4"
     async "3.2.0"
     asyncjs-util "1.2.2"
-    bitcoinjs-lib "5.1.9"
+    bitcoinjs-lib "5.1.10"
     bn.js "5.1.2"
     body-parser "1.19.0"
-    bolt07 "1.5.0"
-    bolt09 "0.0.2"
+    bolt07 "1.5.1"
+    bolt09 "0.1.0"
     cbor "5.0.2"
     express "4.17.1"
-    grpc "1.24.2"
-    invoices "1.0.2"
+    grpc "1.24.3"
+    invoices "1.1.0"
 
 lines-and-columns@^1.1.6:
   version "1.1.6"
@@ -6137,23 +6123,23 @@ listr@0.14.3:
     p-map "^2.0.0"
     rxjs "^6.3.3"
 
-ln-service@^48.3.1:
-  version "48.3.1"
-  resolved "https://registry.yarnpkg.com/ln-service/-/ln-service-48.3.1.tgz#609327b54382cf8b320d555e51620250f26c8c58"
-  integrity sha512-72ot0UcC1bDZML2iQ2uJ5dxyVFvpA9K27una22nMQWF/R+pqFtBmeWDgnfP7VUUNzFSHf7tr50DXX9scGFS2Cg==
+ln-service@^49.1.0:
+  version "49.1.0"
+  resolved "https://registry.yarnpkg.com/ln-service/-/ln-service-49.1.0.tgz#adeb33bc410016742542f1edb1f6b981120fc0ec"
+  integrity sha512-ap+gw1vY+ll5Pqza4Z8bRv5DUqwilJBKa1R+5ZgOwS0i0ZNe+SRkOEZcdlAkIXg79FEb87TqF4ggH2MvF7kDfw==
   dependencies:
     "@datastructures-js/priority-queue" "4.1.1"
     async "3.2.0"
     asyncjs-util "1.2.2"
-    bitcoinjs-lib "5.1.9"
+    bitcoinjs-lib "5.1.10"
     bn.js "5.1.2"
-    bolt07 "1.5.0"
-    bolt09 "0.0.2"
+    bolt07 "1.5.1"
+    bolt09 "0.1.0"
     cors "2.8.5"
     express "4.17.1"
-    invoices "1.0.2"
+    invoices "1.1.0"
     is-base64 "1.1.0"
-    lightning "2.0.7"
+    lightning "2.0.17"
     macaroon "3.0.4"
     morgan "1.10.0"
     ws "7.3.0"
@@ -6727,7 +6713,7 @@ ncp@~2.0.0:
   resolved "https://registry.yarnpkg.com/ncp/-/ncp-2.0.0.tgz#195a21d6c46e361d2fb1281ba38b91e9df7bdbb3"
   integrity sha1-GVoh1sRuNh0vsSgbo4uR6d9727M=
 
-needle@^2.2.1:
+needle@^2.5.0:
   version "2.5.0"
   resolved "https://registry.yarnpkg.com/needle/-/needle-2.5.0.tgz#e6fc4b3cc6c25caed7554bd613a5cf0bac8c31c0"
   integrity sha512-o/qITSDR0JCyCKEQ1/1bnUXMmznxabbwi/Y4WwJElf+evwJNFNwIDMCCt5IigFVxgeGBJESLohGtIS9gEzo1fA==
@@ -6794,14 +6780,14 @@ node-notifier@^6.0.0:
     shellwords "^0.1.1"
     which "^1.3.1"
 
-node-pre-gyp@^0.14.0:
-  version "0.14.0"
-  resolved "https://registry.yarnpkg.com/node-pre-gyp/-/node-pre-gyp-0.14.0.tgz#9a0596533b877289bcad4e143982ca3d904ddc83"
-  integrity sha512-+CvDC7ZttU/sSt9rFjix/P05iS43qHCOOGzcr3Ry99bXG7VX953+vFyEuph/tfqoYu8dttBkE86JSKBO2OzcxA==
+node-pre-gyp@^0.15.0:
+  version "0.15.0"
+  resolved "https://registry.yarnpkg.com/node-pre-gyp/-/node-pre-gyp-0.15.0.tgz#c2fc383276b74c7ffa842925241553e8b40f1087"
+  integrity sha512-7QcZa8/fpaU/BKenjcaeFF9hLz2+7S9AqyXFhlH/rilsQ/hPZKK32RtR5EQHJElgu+q5RfbJ34KriI79UWaorA==
   dependencies:
     detect-libc "^1.0.2"
-    mkdirp "^0.5.1"
-    needle "^2.2.1"
+    mkdirp "^0.5.3"
+    needle "^2.5.0"
     nopt "^4.0.1"
     npm-packlist "^1.1.6"
     npmlog "^4.0.2"
@@ -7893,10 +7879,10 @@ scmp@^2.1.0:
   resolved "https://registry.yarnpkg.com/scmp/-/scmp-2.1.0.tgz#37b8e197c425bdeb570ab91cc356b311a11f9c9a"
   integrity sha512-o/mRQGk9Rcer/jEEw/yw4mwo3EU/NvYvp577/Btqrym9Qy5/MdWGBqipbALgd2lrdWTJ5/gqDusxfnQBxOxT2Q==
 
-secp256k1@4.0.0:
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/secp256k1/-/secp256k1-4.0.0.tgz#1c5def3be9f86c679839110fd6be30d53f34f1a9"
-  integrity sha512-0w0zse+Iku13O58SVE9/DhyCKWNsKb+n/vMqLOGICgSqxWuXZs+eajBf9uVOgk5QfNvTY/mx0QSqYxkcz802dw==
+secp256k1@4.0.1:
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/secp256k1/-/secp256k1-4.0.1.tgz#b9570ca26ace9e74c3171512bba253da9c0b6d60"
+  integrity sha512-iGRjbGAKfXMqhtdkkuNxsgJQfJO8Oo78Rm7DAvsG3XKngq+nJIOGqrCSXcQqIVsmCj0wFanE5uTKFxV3T9j2wg==
   dependencies:
     elliptic "^6.5.2"
     node-addon-api "^2.0.0"
