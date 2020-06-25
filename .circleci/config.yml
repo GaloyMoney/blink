@@ -221,13 +221,16 @@ jobs:
             kubectl wait --namespace=$NAMESPACE --for=condition=ready pod -l app=bitcoind-container --timeout=200s
             kubectl wait --namespace=$NAMESPACE --for=condition=ready pod -l app=lnd-container --timeout=200s
             kubectl wait --namespace=$NAMESPACE --for=condition=ready pod -l app=mongodb --timeout=200s
+            sleep 30
       - run:
           name: retrieve macaroons from lnd containers and install test image
           command: |
             export MACAROON=$(kubectl exec --namespace=$NAMESPACE lnd-container-0 -- base64 /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon | tr -d '\n\r')
             export MACAROONOUTSIDE1=$(kubectl exec --namespace=$NAMESPACE lnd-container-1 -- base64 /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon | tr -d '\n\r')
             export MACAROONOUTSIDE2=$(kubectl exec --namespace=$NAMESPACE lnd-container-2 -- base64 /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon | tr -d '\n\r')
-            echo "$MACAROON" "$MACAROONOUTSIDE1" "$MACAROONOUTSIDE2"
+            echo "$MACAROON"
+            echo "$MACAROONOUTSIDE1"
+            echo "$MACAROONOUTSIDE2"
             helm install --namespace=$NAMESPACE test-chart -f ~/GaloyApp/backend/test-chart/values.yaml --set \
             macaroon=$MACAROON,macaroonoutside1=$MACAROONOUTSIDE1,macaroonoutside2=$MACAROONOUTSIDE2 \
             ~/GaloyApp/backend/test-chart/
