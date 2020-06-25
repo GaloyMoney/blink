@@ -86,26 +86,26 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
     return await lnService.getWalletInfo({ lnd: this.lnd });
   }
 
-  async openChannel({local_tokens, other_public_key, other_socket}) {
+  async openChannel({local_tokens, public_key, socket}) {
     const auth = getAuth() // FIXME
     const lnd = lnService.authenticatedLndGrpc(auth).lnd // FIXME
 
     const {transaction_id} = await lnService.openChannel({ lnd, local_tokens,
-      partner_public_key: other_public_key, partner_socket: other_socket
+      partner_public_key: public_key, partner_socket: socket
     })
 
     // FIXME: O(n), not great
     const { transactions } = await lnService.getChainTransactions({lnd})
 
-    const fee = find(transactions, {id: transaction_id}).fee
+    const { fee } = find(transactions, {id: transaction_id})
 
     const MainBook = new book("MainBook")
 
-    const metadata = { currency: this.currency, txid: transaction_id }
+    const metadata = { currency: this.currency, txid: transaction_id, type: "fee" }
 
     await MainBook.entry("on chain fees")
-    .debit('Assets:Reserve:Lightning', fee, {...metadata, type: "fee"})
-    .credit('Expenses:Bitcoin:Fees', fee, {...metadata, type: "fee"})
+    .debit('Assets:Reserve:Lightning', fee, {...metadata,})
+    .credit('Expenses:Bitcoin:Fees', fee, {...metadata})
     .commit()
   }
 
@@ -119,7 +119,7 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
     const metadata = { currency: this.currency, type: "escrow" }
 
     const { channels } = await lnService.getChannels({lnd})
-    const selfInitated = filter(channels, {is_partner_initiated: true, is_active: true})
+    const selfInitated = filter(channels, {is_partner_initiated: false, is_active: true})
     // TODO remove the inactive channel from escrow
 
     for (const channel of selfInitated) {

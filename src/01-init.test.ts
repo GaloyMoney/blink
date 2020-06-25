@@ -51,18 +51,19 @@ const User = mongoose.model("User")
 const local_tokens = 1000000
 
 
-// FIXME this test doesn't seem that efficient
-// even if is_sync_to_chain is to true
-// the balance doesn't always shows up
-async function waitForNodeSync(lnd) {
-	let is_synced_to_chain = false
+async function waitUntilBlockHeight({lnd, blockHeight}) {
+	let current_block_height, is_synced_to_chain
+	({ current_block_height, is_synced_to_chain } = await lnService.getWalletInfo({ lnd }))
+	console.log({ current_block_height, is_synced_to_chain})
+	
 	let time = 0
-	while (!is_synced_to_chain) {
-		await sleep(1000)
-		is_synced_to_chain = (await lnService.getWalletInfo({ lnd })).is_synced_to_chain
+	while (current_block_height < blockHeight || !is_synced_to_chain) {
+		await sleep(50);
+		({ current_block_height, is_synced_to_chain } = await lnService.getWalletInfo({ lnd }))
+		console.log({ current_block_height, is_synced_to_chain})
 		time++
 	}
-	console.log('Seconds to sync ', time)
+	console.log(`Seconds to sync blockheight ${blockHeight}: ${time / 20}`)
 	return
 }
 
@@ -71,9 +72,7 @@ const checkIsBalanced = async () => {
 	const adminWallet = new LightningAdminWallet({uid: admin._id})
 	const { assetsEqualLiabilities, lndBalanceSheetAreSynced } = await adminWallet.balanceSheetIsBalanced()
 	expect(assetsEqualLiabilities).toBeTruthy()
-
-	// FIXME add this back
-	// expect(lndBalanceSheetAreSynced).toBeTruthy()
+	expect(lndBalanceSheetAreSynced).toBeTruthy()
 }
 
 beforeAll(async () => {
@@ -151,18 +150,23 @@ it('funding bank with onchain tx', async () => {
 	expect(bank_address.substr(0, 4)).toBe("bcrt")
 
 	const generateAddress = async () => {
+		console.log("generateToAddress 1")
+		
 		const [blockhashes] = await bitcoindClient.generateToAddress(1, bank_address)
 		expect(blockhashes.length).toEqual(64)
-		await bitcoindClient.generateToAddress(3, RANDOM_ADDRESS)
+
+		console.log("generateToAddress 99")
+		await bitcoindClient.generateToAddress(99, RANDOM_ADDRESS)
 	}
 
 	const checkBalance = async () => {
 		const min_height = 1
-		// FIXME: https://github.com/alexbosworth/ln-service/issues/122
-		// let sub = lnService.subscribeToChainAddress({lnd: lnd1, bech32_address: bank_address, min_height})
-		// await once(sub, 'confirmation')
-		await sleep(3000)
+		let sub = lnService.subscribeToChainAddress({lnd: lnd1, bech32_address: bank_address, min_height})
 		
+		await once(sub, 'confirmation')
+		sub.removeAllListeners();
+
+		await waitUntilBlockHeight({lnd: lnd1, blockHeight: 100})
 		const balance = await adminWallet.getBalance()
 		expect(balance).toBe(BLOCK_SUBSIDY)
 		await checkIsBalanced()
@@ -182,39 +186,49 @@ it('funds lndOutside1 and mined 99 blocks to make mined coins accessible', async
 	const result = await bitcoindClient.generateToAddress(1, lndOutside1_wallet_addr)
 	expect(result[0].length).toEqual(64)
 	await bitcoindClient.generateToAddress(99, RANDOM_ADDRESS)
-}, 10000)
 
-const openChannel = async ({lnd, other_lnd, other_public_key, other_socket}) => {
+	await waitUntilBlockHeight({lnd: lnd1, blockHeight: 200})
+	await waitUntilBlockHeight({lnd: lndOutside1, blockHeight: 200})
+	await waitUntilBlockHeight({lnd: lndOutside2, blockHeight: 200})
+}, 20000)
+
+const newBlock = 6
+
+const openChannel = async ({lnd, other_lnd, socket, blockHeight}) => {
+
+	await waitUntilBlockHeight({lnd: lnd1, blockHeight})
+	await waitUntilBlockHeight({lnd: other_lnd, blockHeight})
+
+	const { public_key } = await lnService.getWalletInfo({ lnd: other_lnd })
+	console.log({public_key})
 
 	let openChannelPromise
 	let adminWallet
-
-	await waitForNodeSync(lnd)
-	await waitForNodeSync(other_lnd)
 
 	if (lnd === lnd1) {
 		// TODO: dedupe
 		const admin = await User.findOne({role: "admin"})
 		adminWallet = new LightningAdminWallet({uid: admin._id})
-		openChannelPromise = adminWallet.openChannel({ local_tokens, other_public_key, other_socket })
+		openChannelPromise = adminWallet.openChannel({ local_tokens, public_key, socket })
 
 	} else {
 		openChannelPromise = lnService.openChannel({ lnd, local_tokens, 
-			partner_public_key: other_public_key, partner_socket: other_socket })
+			partner_public_key: public_key, partner_socket: socket })
 	}
 	
 	await Promise.all([
 		openChannelPromise,
 		(async () => {
-			// making sure the channel open creation has started before generating new address
-			// otherwise lnd might complain it's not in sync
+
 			await sleep(1000)
-			await bitcoindClient.generateToAddress(6, RANDOM_ADDRESS)
+			await bitcoindClient.generateToAddress(newBlock, RANDOM_ADDRESS)
+			await waitUntilBlockHeight({lnd: lnd1, blockHeight: blockHeight + newBlock})
+			await waitUntilBlockHeight({lnd: other_lnd, blockHeight: blockHeight + newBlock})
+			// TODO: use event instead, to know when channel opening has been confirmed
+			await sleep(2000)
+
 		})()
 	])
-	
-	await waitForNodeSync(lnd)
-	await waitForNodeSync(other_lnd)
 
 	if (lnd === lnd1) {
 		await adminWallet.updateEscrows()
@@ -224,11 +238,9 @@ const openChannel = async ({lnd, other_lnd, other_public_key, other_socket}) => 
 }
 
 it('opens channel from lnd1 to lndOutside1', async () => {
-	const { public_key } = await lnService.getWalletInfo({ lnd: lndOutside1 })
-	const other_socket = `lnd-outside-1:9735`
+	const socket = `lnd-outside-1:9735`
 
-	// TODO: adminWallet should have an API for opening channel
-	await openChannel({lnd: lnd1, other_lnd: lndOutside1, other_public_key: public_key, other_socket})
+	await openChannel({lnd: lnd1, other_lnd: lndOutside1, socket, blockHeight: 200})
 
 	const { channels } = await lnService.getChannels({ lnd: lnd1 })
 	expect(channels.length).toEqual(1)
@@ -236,11 +248,10 @@ it('opens channel from lnd1 to lndOutside1', async () => {
 }, 10000)
 
 it('opens channel from lndOutside1 to lndOutside2', async () => {
-	const { public_key } = await lnService.getWalletInfo({ lnd: lndOutside2 })
 	const lnd = lndOutside1
-	const other_socket = `lnd-outside-2:9735`
+	const socket = `lnd-outside-2:9735`
 
-	await openChannel({lnd, other_lnd: lndOutside2, other_public_key: public_key, other_socket})
+	await openChannel({lnd, other_lnd: lndOutside2, socket, blockHeight: 206})
 
 	const { channels } = await lnService.getChannels({ lnd: lndOutside1 })
 	expect(channels.length).toEqual(2)
