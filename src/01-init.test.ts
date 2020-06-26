@@ -216,19 +216,26 @@ const openChannel = async ({lnd, other_lnd, socket, blockHeight}) => {
 			partner_public_key: public_key, partner_socket: socket })
 	}
 	
+	const sub = lnService.subscribeToChannels({lnd});
+
+	console.log("channel opening")
+	await once(sub, 'channel_opening');
+
+	const mineBlock = async () => {
+		await bitcoindClient.generateToAddress(newBlock, RANDOM_ADDRESS)
+		await waitUntilBlockHeight({lnd: lnd1, blockHeight: blockHeight + newBlock})
+		await waitUntilBlockHeight({lnd: other_lnd, blockHeight: blockHeight + newBlock})
+	}
+
+	console.log("mining blocks and waiting for channel being opened")
+
 	await Promise.all([
 		openChannelPromise,
-		(async () => {
-
-			await sleep(1000)
-			await bitcoindClient.generateToAddress(newBlock, RANDOM_ADDRESS)
-			await waitUntilBlockHeight({lnd: lnd1, blockHeight: blockHeight + newBlock})
-			await waitUntilBlockHeight({lnd: other_lnd, blockHeight: blockHeight + newBlock})
-			// TODO: use event instead, to know when channel opening has been confirmed
-			await sleep(2000)
-
-		})()
+		once(sub, 'channel_opened'),
+		mineBlock(),
 	])
+
+	sub.removeAllListeners();
 
 	if (lnd === lnd1) {
 		await adminWallet.updateEscrows()
@@ -245,7 +252,7 @@ it('opens channel from lnd1 to lndOutside1', async () => {
 	const { channels } = await lnService.getChannels({ lnd: lnd1 })
 	expect(channels.length).toEqual(1)
 
-}, 10000)
+}, 30000)
 
 it('opens channel from lndOutside1 to lndOutside2', async () => {
 	const lnd = lndOutside1
@@ -255,4 +262,4 @@ it('opens channel from lndOutside1 to lndOutside2', async () => {
 
 	const { channels } = await lnService.getChannels({ lnd: lndOutside1 })
 	expect(channels.length).toEqual(2)
-}, 10000)
+}, 30000)
