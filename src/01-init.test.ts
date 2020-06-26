@@ -216,20 +216,30 @@ const openChannel = async ({lnd, other_lnd, socket, blockHeight}) => {
 		openChannelPromise = lnService.openChannel({ lnd, local_tokens, 
 			partner_public_key: public_key, partner_socket: socket })
 	}
+	
+	const sub = lnService.subscribeToChannels({lnd})
+
+	console.log("channel opening")
+	await once(sub, 'channel_opening');
+
+	const mineBlock = async () => {
+		await bitcoindClient.generateToAddress(newBlock, RANDOM_ADDRESS)
+		await waitUntilBlockHeight({lnd: lnd1, blockHeight: blockHeight + newBlock})
+		await waitUntilBlockHeight({lnd: other_lnd, blockHeight: blockHeight + newBlock})
+	}
+
+	console.log("mining blocks and waiting for channel being opened")
 
 	await Promise.all([
 		openChannelPromise,
-		(async () => {
-
-			await sleep(1000)
-			await bitcoindClient.generateToAddress(newBlock, RANDOM_ADDRESS)
-			await waitUntilBlockHeight({lnd: lnd1, blockHeight: blockHeight + newBlock})
-			await waitUntilBlockHeight({lnd: other_lnd, blockHeight: blockHeight + newBlock})
-			// TODO: use event instead, to know when channel opening has been confirmed
-			await sleep(2000)
-
-		})()
+		// error: https://github.com/alexbosworth/ln-service/issues/122
+		// need to investigate.
+		// once(sub, 'channel_opened'),
+		sleep(5000),
+		mineBlock(),
 	])
+
+	sub.removeAllListeners();
 
 	if (lnd === lnd1) {
 		await adminWallet.updateEscrows()
@@ -246,16 +256,7 @@ it('opens channel from lnd1 to lndOutside1', async () => {
 	const { channels } = await lnService.getChannels({ lnd: lnd1 })
 	expect(channels.length).toEqual(1)
 
-}, 50000)
-
-it('opens a channel from lndOutside1 to lnd1', async () => {
-	const { public_key } = await lnService.getWalletInfo({ lnd: lnd1 })
-	const other_socket = 'lnd-service:9735'
-	await openChannel({ lnd: lndOutside1, other_lnd: lnd1, other_public_key: public_key, other_socket })
-
-	const { channels } = await lnService.getChannels({ lnd: lndOutside1 })
-	expect(channels.length).toEqual(2)
-}, 50000)
+}, 30000)
 
 it('opens channel from lndOutside1 to lndOutside2', async () => {
 	const lnd = lndOutside1
@@ -263,9 +264,6 @@ it('opens channel from lndOutside1 to lndOutside2', async () => {
 
 	await openChannel({lnd, other_lnd: lndOutside2, socket, blockHeight: 206})
 
-	const channelsOutside1 = (await lnService.getChannels({ lnd: lndOutside1 })).channels
-	expect(channelsOutside1.length).toEqual(3)
-
-	const channelsOutside2 = (await lnService.getChannels({ lnd: lndOutside2 })).channels
-	expect(channelsOutside2.length).toEqual(1)
+	const { channels } = await lnService.getChannels({ lnd: lndOutside1 })
+	expect(channels.length).toEqual(2)
 }, 30000)

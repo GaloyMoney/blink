@@ -50,7 +50,7 @@ export class UserWallet extends Wallet {
 export class AdminWallet extends Wallet {
 
   get accountPath(): string {
-    return `Liabilities:ShareholderValue`
+    return `Liabilities:Shareholder`
   }
 
   // TODO refactor using pay function

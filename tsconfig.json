@@ -16,6 +16,6 @@
   "compileOnSave": true,
   "include": [
     "src/index.ts",
-    "src/cron.ts"
+    "src/prometheus.ts"
   ]
 }
