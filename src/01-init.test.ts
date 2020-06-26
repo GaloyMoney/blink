@@ -216,7 +216,7 @@ const openChannel = async ({lnd, other_lnd, socket, blockHeight}) => {
 			partner_public_key: public_key, partner_socket: socket })
 	}
 	
-	const sub = lnService.subscribeToChannels({lnd});
+	const sub = lnService.subscribeToChannels({lnd})
 
 	console.log("channel opening")
 	await once(sub, 'channel_opening');
@@ -231,7 +231,10 @@ const openChannel = async ({lnd, other_lnd, socket, blockHeight}) => {
 
 	await Promise.all([
 		openChannelPromise,
-		once(sub, 'channel_opened'),
+		// error: https://github.com/alexbosworth/ln-service/issues/122
+		// need to investigate.
+		// once(sub, 'channel_opened'),
+		sleep(5000),
 		mineBlock(),
 	])
 
