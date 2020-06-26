@@ -60,7 +60,7 @@ async function waitUntilBlockHeight({lnd, blockHeight}) {
 	while (current_block_height < blockHeight || !is_synced_to_chain) {
 		await sleep(50);
 		({ current_block_height, is_synced_to_chain } = await lnService.getWalletInfo({ lnd }))
-		console.log({ current_block_height, is_synced_to_chain})
+		// console.log({ current_block_height, is_synced_to_chain})
 		time++
 	}
 	console.log(`Seconds to sync blockheight ${blockHeight}: ${time / 20}`)
@@ -177,7 +177,7 @@ it('funding bank with onchain tx', async () => {
 		checkBalance(),
 		generateAddress()
 	])
-}, 30000)
+}, 100000)
 
 
 it('funds lndOutside1 and mined 99 blocks to make mined coins accessible', async () => {
@@ -191,7 +191,7 @@ it('funds lndOutside1 and mined 99 blocks to make mined coins accessible', async
 	await waitUntilBlockHeight({lnd: lnd1, blockHeight: 200})
 	await waitUntilBlockHeight({lnd: lndOutside1, blockHeight: 200})
 	await waitUntilBlockHeight({lnd: lndOutside2, blockHeight: 200})
-}, 20000)
+}, 100000)
 
 const newBlock = 6
 
@@ -256,7 +256,7 @@ it('opens channel from lnd1 to lndOutside1', async () => {
 	const { channels } = await lnService.getChannels({ lnd: lnd1 })
 	expect(channels.length).toEqual(1)
 
-}, 30000)
+}, 100000)
 
 it('opens channel from lndOutside1 to lndOutside2', async () => {
 	const lnd = lndOutside1
@@ -266,4 +266,4 @@ it('opens channel from lndOutside1 to lndOutside2', async () => {
 
 	const { channels } = await lnService.getChannels({ lnd: lndOutside1 })
 	expect(channels.length).toEqual(2)
-}, 30000)
+}, 100000)
