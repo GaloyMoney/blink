@@ -158,7 +158,7 @@ it('receives external funding correctly', async () => {
   let result = await bitcoindClient.generateToAddress(1, onChainAddress)
   await waitForNodeSync(lnd)
   let finalBalance = await lightningWallet.getBalance()
-  expect(finalBalance).toBe(btc2sat(50))
+  expect(finalBalance).toBe(btc2sat(25))
   await checkIsBalanced()
 })
 
