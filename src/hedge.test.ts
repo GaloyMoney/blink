@@ -7,7 +7,8 @@ const mongoose = require("mongoose");
 import { Hedging } from "./hedge"
 // this import needs to be before medici
 
-// jest.mock('ccxt');
+
+jest.mock('./LightningAdminImpl')
 
 const lastBTCPrice = 0.000096006
 
@@ -18,11 +19,6 @@ beforeAll(async () => {
 
 afterAll(async () => {
   return await mongoose.connection.close()
-})
-
-it('Lightning Wallet Get Info works', async () => {
-  const hedge = new Hedging()
-  await hedge.position()
 })
 
 it('calculate hedging amount when under exposed', async () => {
@@ -55,4 +51,11 @@ it('no need for hedging', async () => {
   expect(result).toEqual({needHedging: false})
 })
 
+
+
+it('getting physical/future position', async () => {
+  const hedge = new Hedging()
+  const result = await hedge.getPosition()
+  console.log(result)
+})
 

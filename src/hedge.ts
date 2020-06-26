@@ -7,7 +7,6 @@ import { btc2sat, sleep } from "./utils";
 const util = require('util')
 const assert = require('assert')
 
-// unsecured //
 const apiKey = process.env.FTX_KEY
 const secret = process.env.FTX_SECRET
 
@@ -21,9 +20,11 @@ const symbol = 'BTC-PERP'
 
 export class Hedging {
     adminWallet
-    
+    ftx
+
     constructor() {
         this.adminWallet = new LightningAdminWallet({uid: "admin"})
+        this.ftx = new ccxt.ftx({ apiKey, secret })
     }
 
     calculate({equity, lastBTCPrice, netSizeSats}) {
@@ -70,18 +71,20 @@ export class Hedging {
         return {needHedging, amount, direction}
     }
 
-    async executeOrder({direction, amount, ftx}) {
+    async executeOrder({direction, amount}) {
 
         // let orderId = 6103637365
         let orderId
 
-        // TODO add: try
-        const order = await ftx.createOrder(symbol, 'market', direction, amount)
+        // TODO add: try/catch
+        const order = await this.ftx.createOrder(symbol, 'market', direction, amount)
 
         // FIXME: have a better way to manage latency
+        // ie: use a while loop and check condition for a couple of seconds.
+        // or rely on a websocket
         await sleep(1000)
 
-        const result = await ftx.fetchOrder(order.id)
+        const result = await this.ftx.fetchOrder(order.id)
 
         if (result.status !== "closed") {
             console.warn("market order has not been fullfilled")
@@ -92,9 +95,11 @@ export class Hedging {
 
     }
 
-    async position() {
+    async getPosition() {
         let { equity } = await this.adminWallet.getBalanceSheet()
         
+        console.log({equity})
+
         // FIXME maybe not the best way to do things
         equity = - equity
 
@@ -102,13 +107,11 @@ export class Hedging {
         // TODO refactor price.lastCached()
         const lastBTCPrice = (await price.lastCached())[0]['o']
         
-        
-        const ftx = new ccxt.ftx({ apiKey, secret })
         // const ftx_balance = await ftx.fetchBalance()
 
         // const orders = await ftx.fetchOpenOrders()
         // const tradingFees = await ftx.fetchTradingFees()
-        const {result} = await ftx.privateGetPositions()
+        const {result} = await this.ftx.privateGetPositions()
 
         console.log(util.inspect({result}, false, Infinity))
 
@@ -118,77 +121,19 @@ export class Hedging {
 
         const {needHedging, amount, direction} = this.calculate({equity, netSizeSats, lastBTCPrice})
 
+        return {needHedging, amount, direction, equity, netSizeSats}
+    }
+
+    async updatePosition() {
+        const {needHedging, amount, direction} = await this.getPosition()
+
         if (!needHedging) {
             return 
         } 
 
-        await this.executeOrder({amount, direction, ftx})
-
-        // console.log({netSizeSats, equity, lastBTCPrice, absoluteExposureUSD, absoluteExposureBTC, exposureRatio, outside_safebound, outside_bound})
-
+        await this.executeOrder({amount, direction})
         // TODO: look at liquidation ratio
-
     }
-}
-
-type Balance = {
-    BTC: {
-        total: number,
-        exchange: number,
-        onchain: number,
-        offchain: number,
-    },
-    USD: {
-       total: number,
-       exchange: number,
-    },
-}
-
-export const getBalance = async () => { //: Promise<Balance>
-    
-    // const balanceKraken = await kraken.fetchBalance()
-    // console.log({balanceKraken})
-    // balance.BTC.exchange = btc2sat(balanceKraken.BTC.total) // TODO manage free and used
-    // balance.USD.exchange = balanceKraken.USD.total 
-
-    // const lnd = initLnd()
-
-    // try {
-    //     const chainBalance = (await lnService.getChainBalance({lnd})).chain_balance;
-    //     console.log({chainBalance})
-    //     balance.BTC.onchain = chainBalance
-    // } catch(err) {
-    //     console.log(`error getting chainBalance ${err}`)
-    // }
-
-    // try {
-    //     const balanceInChannels = (await lnService.getChannelBalance({lnd})).channel_balance;
-    //     console.log({balanceInChannels})
-    //     balance.BTC.offchain = balanceInChannels
-    // } catch(err) {
-    //     console.error(`error getting balanceInChannels ${err}`)
-    // }
-
-    // balance.BTC.total = Object.values(balance.BTC).reduce((acc, value) => acc + value, 0)
-    // balance.USD.total = Object.values(balance.USD).reduce((acc, value) => acc + value, 0)
-
-    // console.log({balance})
-    // return balance
-}
-
-export const withdrawExchange = () => {
-
-    // const address = lnd.
-
-    const kraken = new ccxt.kraken({ apiKey, secret })
-
-    const key = 'lnd' // key has to be set from the user interface  
-    const code = 'BTC'
-    const amount = 0.01
-
-     // not sure if this have to match key? I guess it should
-    const address = 'bc1qs08semyyerehc0604typuvg777lygep4lkjuya'
-    kraken.withdraw (code, amount, address, undefined, {key})
 }
 
 
@@ -381,34 +326,3 @@ export const withdrawExchange = () => {
     // console.log("success")
     // return {success: "success"}
 // })
-
-/**
- * very, very crude "hedging", probably not the right word
- * look at future contract for better hedging
- * untested
- */
-export const hedging = async () => {
-
-//     const kraken = new ccxt.kraken({ apiKey, secret })
-
-//     const minWalletBTC = 1 // TODO --> find right number
-//     const maxWalletBTC = 2 // TODO
-//     const midWalletBTC = (minWalletBTC + maxWalletBTC) / 2
-
-//     const balance = await getBalance()
-
-//     const symbol = "BTC/USD"
-
-//     if (balance.USD.total > maxWalletBTC) {
-//         const amount = balance.USD.total - maxWalletBTC - midWalletBTC
-//         const result = kraken.createMarketSellOrder(symbol, amount)
-//         console.log({result})
-//     } else if (balance.USD.total < minWalletBTC) {
-//         const amount = minWalletBTC - balance.USD.total + midWalletBTC
-//         const result = kraken.createMarketBuyOrder(symbol, amount)
-//         console.log({result})
-//     }
-}
-
-// TODO: move money from / to exchange / wallet
-
