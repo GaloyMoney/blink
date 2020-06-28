@@ -7,7 +7,7 @@ import { setupMongoConnection } from "./db"
 import moment from "moment"
 import { LightningUserWallet } from "./LightningUserWallet"
 import { LightningAdminWallet } from "./LightningAdminImpl"
-import { btc2sat, waitForNodeSync, getAuth, sleep } from "./utils";
+import { btc2sat, waitForNodeSync, getAuth, sleep, waitUntilBlockHeight } from "./utils";
 import { login } from "./text";
 import { OnboardingEarn } from "./types"
 const lnService = require('ln-service')

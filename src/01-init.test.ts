@@ -5,7 +5,7 @@ import { setupMongoConnection } from "./db"
 // this import needs to be before medici
 
 import { LightningAdminWallet } from "./LightningAdminImpl"
-import { sleep, getAuth } from "./utils"
+import { sleep, getAuth, waitUntilBlockHeight } from "./utils"
 const mongoose = require("mongoose");
 const { once } = require('events');
 
@@ -49,23 +49,6 @@ let admin_uid
 const User = mongoose.model("User")
 
 const local_tokens = 1000000
-
-
-async function waitUntilBlockHeight({lnd, blockHeight}) {
-	let current_block_height, is_synced_to_chain
-	({ current_block_height, is_synced_to_chain } = await lnService.getWalletInfo({ lnd }))
-	console.log({ current_block_height, is_synced_to_chain})
-	
-	let time = 0
-	while (current_block_height < blockHeight || !is_synced_to_chain) {
-		await sleep(50);
-		({ current_block_height, is_synced_to_chain } = await lnService.getWalletInfo({ lnd }))
-		// console.log({ current_block_height, is_synced_to_chain})
-		time++
-	}
-	console.log(`Seconds to sync blockheight ${blockHeight}: ${time / 20}`)
-	return
-}
 
 const checkIsBalanced = async () => {
 	const admin = await User.findOne({ role: "admin" })
