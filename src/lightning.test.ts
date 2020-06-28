@@ -22,12 +22,14 @@ let lightningWalletOutside2
 let user1: string
 const user2: string = "user2"
 
+const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
+
 const lndOutside1Addr = process.env.LNDOUTSIDE1ADDR ?? 'lnd-outside-1'
 const lndOutside1Port = process.env.LNDOUTSIDE1RPCPORT ?? '10009'
 const lndOutside2Addr = process.env.LNDOUTSIDE2ADDR ?? 'lnd-outside-2'
 const lndOutside2Port = process.env.LNDOUTSIDE2RPCPORT ?? '10009'
 
-const testAccounts = [{ phone: "+16505554321", code: 321321, network: "regtest" }, { phone: "+16505554322", code: 321321, network: "regtest" }]
+const TESTACCOUNTS = [{ phone: "+16505554321", code: 321321, network: "regtest" }, { phone: "+16505554322", code: 321321, network: "regtest" }]
 
 const onBoardingEarnAmt: number = Object.values(OnboardingEarn).reduce((a, b) => a + b, 0)
 const onBoardingEarnIds: string[] = Object.keys(OnboardingEarn)
@@ -58,7 +60,7 @@ afterAll(async () => {
 
 //Does not seem to be best approach
 // const initTestUserWallet = async (i) => {
-//   await login(testAccounts[i])
+//   await login(TESTACCOUNTS[i])
 //   const Users = mongoose.model("User")
 //   sleep(2000)
 //   user1 = (await Users.findOne({}))._id
@@ -67,7 +69,7 @@ afterAll(async () => {
 
 beforeEach(async () => {
   await mongoose.connection.db.dropCollection('users')
-  await login(testAccounts[0])
+  await login(TESTACCOUNTS[0])
   let Users = mongoose.model("User")
   sleep(2000)
   console.log("current users", await Users.find({}))
@@ -170,10 +172,10 @@ it('payInvoice', async () => {
   const finalBalance = await lightningWallet.getBalance()
   expect(finalBalance).toBe(onBoardingEarnAmt - 10000)
   await checkIsBalanced()
-}, 20000)
+}, 50000)
 
 it('payInvoiceToAnotherGaloyUser', async () => {
-  await login(testAccounts[1])
+  await login(TESTACCOUNTS[1])
   const Users = mongoose.model("User")
   const galoyUser2 = (await Users.find({}))[1]._id
   const lightningWallet2 = new LightningUserWallet({ uid: galoyUser2 })
