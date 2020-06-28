@@ -137,7 +137,7 @@ const checkIsBalanced = async () => {
   expect(assetsEqualLiabilities).toBeTruthy()
 
   // FIXME add this back
-  // expect(lndBalanceSheetAreSynced).toBeTruthy()
+  expect(lndBalanceSheetAreSynced).toBeTruthy()
 }
 
 it('add earn adds balance correctly', async () => {
@@ -157,12 +157,16 @@ it('receives external funding correctly', async () => {
   const { lnd } = lnService.authenticatedLndGrpc(getAuth())
 
   let onChainAddress: string = await lightningWallet.getOnChainAddress()
-  let result = await bitcoindClient.generateToAddress(1, onChainAddress)
-  await waitForNodeSync(lnd)
+  await bitcoindClient.generateToAddress(1, onChainAddress)
+
+  let { blocks } = await bitcoindClient.getBlockchainInfo()
+
+  await bitcoindClient.generateToAddress(100, RANDOM_ADDRESS)
+  await waitUntilBlockHeight({ lnd, blockHeight: blocks})
   let finalBalance = await lightningWallet.getBalance()
   expect(finalBalance).toBe(btc2sat(25))
   await checkIsBalanced()
-})
+}, 50000)
 
 it('payInvoice', async () => {
   const { request } = await lnService.createInvoice({ lnd: lightningWalletOutside1, tokens: 10000 })
@@ -187,11 +191,11 @@ it('payInvoiceToAnotherGaloyUser', async () => {
   expect(user1FinalBalance).toBe(onBoardingEarnAmt - 1000)
   expect(user2FinalBalance).toBe(1000)
   await checkIsBalanced()
-})
+}, 50000)
 
-// it('payInvoiceToSelf', async () => {
-//   // TODO should fail
-// })
+// // it('payInvoiceToSelf', async () => {
+// //   // TODO should fail
+// // })
 
 it('pushPayment', async () => {
   const destination = (await lnService.getWalletInfo({ lnd: lightningWalletOutside1 })).public_key;
@@ -202,7 +206,7 @@ it('pushPayment', async () => {
   expect(res).toBe("success")
   expect(finalBalance).toBe(onBoardingEarnAmt - tokens)
   await checkIsBalanced()
-})
+}, 50000)
 
 it('receives payment from outside', async () => {
   const request = await lightningWallet.addInvoice({ value: 1000, memo: "receive from outside" })
@@ -210,7 +214,7 @@ it('receives payment from outside', async () => {
   const finalBalance = await lightningWallet.getBalance()
   expect(finalBalance).toBe(1000)
   await checkIsBalanced()
-})
+}, 50000)
 
 // it('testDbTransaction', async () => {
 //   //TODO try to fetch simulataneously (ie: with Premise.all[])
