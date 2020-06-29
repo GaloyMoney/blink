@@ -178,6 +178,11 @@ it('payInvoice', async () => {
   await checkIsBalanced()
 }, 50000)
 
+it('fails to pay when insufficient balance', async () => {
+  const { request } = await lnService.createInvoice({ lnd: lightningWalletOutside1, tokens: 10000 })
+  await expect(lightningWallet.pay({ invoice: request })).rejects.toThrow('cancelled: balance is too low. have: 0 sats, need 10000')
+})
+
 it('payInvoiceToAnotherGaloyUser', async () => {
   await login(TESTACCOUNTS[1])
   const Users = mongoose.model("User")
