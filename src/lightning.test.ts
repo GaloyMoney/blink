@@ -162,7 +162,7 @@ it('receives external funding correctly', async () => {
   let { blocks } = await bitcoindClient.getBlockchainInfo()
 
   await bitcoindClient.generateToAddress(100, RANDOM_ADDRESS)
-  await waitUntilBlockHeight({ lnd, blockHeight: blocks})
+  await waitUntilBlockHeight({ lnd, blockHeight: blocks })
   let finalBalance = await lightningWallet.getBalance()
   expect(finalBalance).toBe(btc2sat(25))
   await checkIsBalanced()
@@ -193,9 +193,10 @@ it('payInvoiceToAnotherGaloyUser', async () => {
   await checkIsBalanced()
 }, 50000)
 
-// // it('payInvoiceToSelf', async () => {
-// //   // TODO should fail
-// // })
+it('payInvoiceToSelf', async () => {
+  const invoice = await lightningWallet.addInvoice({ value: 1000, memo: "self payment" })
+  await expect(lightningWallet.pay({ invoice })).rejects.toThrow()
+}, 50000)
 
 it('pushPayment', async () => {
   const destination = (await lnService.getWalletInfo({ lnd: lightningWalletOutside1 })).public_key;
@@ -210,7 +211,7 @@ it('pushPayment', async () => {
 
 it('receives payment from outside', async () => {
   const request = await lightningWallet.addInvoice({ value: 1000, memo: "receive from outside" })
-  await lnService.pay({lnd: lightningWalletOutside1, request})
+  await lnService.pay({ lnd: lightningWalletOutside1, request })
   const finalBalance = await lightningWallet.getBalance()
   expect(finalBalance).toBe(1000)
   await checkIsBalanced()
