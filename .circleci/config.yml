@@ -221,6 +221,7 @@ jobs:
             kubectl wait --namespace=$NAMESPACE --for=condition=ready pod -l app=bitcoind-container --timeout=200s
             kubectl wait --namespace=$NAMESPACE --for=condition=ready pod -l app=lnd-container --timeout=200s
             sleep 20
+            kubectl get --namespace=$NAMESPACE pods
             kubectl wait --namespace=$NAMESPACE --for=condition=ready pod -l app=mongodb --timeout=200s
       - run:
           name: retrieve macaroons from lnd containers and install test image
@@ -272,7 +273,7 @@ jobs:
 workflows:
   kube:
     jobs:
-      - build_test_image
-      - test:
-          requires:
-            - build_test_image
+      # - build_test_image
+      - test
+          # requires:
+            # - build_test_image
