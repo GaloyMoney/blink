@@ -223,6 +223,15 @@ it('receives payment from outside', async () => {
   await checkIsBalanced()
 }, 50000)
 
+it('fails to pay when channel capacity exceeded', async () => {
+  const { request } = await lnService.createInvoice({ lnd: lightningWalletOutside1, tokens: 10000000 })
+  const User = mongoose.model("User")
+  const admin = await new User({ role: "admin" }).save()
+  const adminWallet = new LightningAdminWallet({ uid: admin._id })
+  await adminWallet.addFunds({amount: 10000005, uid: user1})
+  await expect(lightningWallet.pay({ invoice: request })).rejects.toThrowError()
+}, 50000)
+
 // it('testDbTransaction', async () => {
 //   //TODO try to fetch simulataneously (ie: with Premise.all[])
 //   // balances with pending but settled transaction to see if 
