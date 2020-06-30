@@ -199,12 +199,6 @@ jobs:
             -f ~/GaloyApp/backend/bitcoind-chart/regtest-values.yaml \
             ~/GaloyApp/backend/bitcoind-chart
       - run:
-          name: helm install lnd-chart
-          command: |
-            helm install --namespace=$NAMESPACE lnd-chart \
-            -f ~/GaloyApp/backend/lnd-chart/regtest-values.yaml \
-            ~/GaloyApp/backend/lnd-chart
-      - run:
           name: helm add repo bitnami
           command: helm repo add bitnami https://charts.bitnami.com/bitnami
       - run:
@@ -212,6 +206,12 @@ jobs:
           command: |
             helm install --namespace=$NAMESPACE mongodb --set \
             mongodbUsername=testGaloy,mongodbPassword=testGaloy,mongodbDatabase=galoy,persistence.enabled=false bitnami/mongodb
+      - run:
+          name: helm install lnd-chart
+          command: |
+            helm install --namespace=$NAMESPACE lnd-chart \
+            -f ~/GaloyApp/backend/lnd-chart/regtest-values.yaml \
+            ~/GaloyApp/backend/lnd-chart
       - run:
           name: Check Helm release status
           command: helm list  --namespace=$NAMESPACE --all
