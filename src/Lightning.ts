@@ -141,6 +141,7 @@ export const LightningMixin = (superclass) => class extends superclass {
   }
 
   // TODO: add types
+  //FIXME: Susceptible to double spend
   async pay(params: IPaymentRequest): Promise<payInvoiceResult | Error> {
 
     const keySendPreimageType: string = '5482373484';
