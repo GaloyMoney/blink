@@ -223,10 +223,10 @@ it('receives payment from outside', async () => {
 }, 50000)
 
 it('fails to pay when channel capacity exceeded', async () => {
-  const { request } = await lnService.createInvoice({ lnd: lightningWalletOutside1, tokens: 10000000 })
+  const { request } = await lnService.createInvoice({ lnd: lightningWalletOutside1, tokens: 2000000 })
   const admin = await new Users({ role: "admin" }).save()
   const adminWallet = new LightningAdminWallet({ uid: admin._id })
-  await adminWallet.addFunds({amount: 10000005, uid: user1})
+  await adminWallet.addFunds({amount: 2000005, uid: user1})
   // await expect(lightningWallet.pay({ invoice: request })).rejects.toThrowError()
   await lightningWallet.pay({ invoice: request })
 }, 50000)
