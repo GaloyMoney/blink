@@ -13,6 +13,7 @@ import { OnboardingEarn } from "./types"
 const lnService = require('ln-service')
 const lightningPayReq = require('bolt11')
 const mongoose = require("mongoose")
+const Users = mongoose.model("User")
 const BitcoindClient = require('bitcoin-core')
 
 let lightningWallet
@@ -130,8 +131,7 @@ it('add invoice to different user', async () => {
 })
 
 const checkIsBalanced = async () => {
-  const User = mongoose.model("User")
-  const admin = await new User({ role: "admin" }).save()
+  const admin = await new Users({ role: "admin" }).save()
   const adminWallet = new LightningAdminWallet({ uid: admin._id })
   const { assetsEqualLiabilities, lndBalanceSheetAreSynced } = await adminWallet.balanceSheetIsBalanced()
   expect(assetsEqualLiabilities).toBeTruthy()
@@ -186,7 +186,6 @@ it('fails to pay when insufficient balance', async () => {
 
 it('payInvoiceToAnotherGaloyUser', async () => {
   await login(TESTACCOUNTS[1])
-  const Users = mongoose.model("User")
   const galoyUser2 = (await Users.find({}))[1]._id
   const lightningWallet2 = new LightningUserWallet({ uid: galoyUser2 })
   await lightningWallet.addEarn(onBoardingEarnIds)
@@ -225,8 +224,7 @@ it('receives payment from outside', async () => {
 
 it('fails to pay when channel capacity exceeded', async () => {
   const { request } = await lnService.createInvoice({ lnd: lightningWalletOutside1, tokens: 10000000 })
-  const User = mongoose.model("User")
-  const admin = await new User({ role: "admin" }).save()
+  const admin = await new Users({ role: "admin" }).save()
   const adminWallet = new LightningAdminWallet({ uid: admin._id })
   await adminWallet.addFunds({amount: 10000005, uid: user1})
   await expect(lightningWallet.pay({ invoice: request })).rejects.toThrowError()
