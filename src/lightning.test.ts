@@ -226,9 +226,15 @@ it('fails to pay when channel capacity exceeded', async () => {
   const { request } = await lnService.createInvoice({ lnd: lightningWalletOutside1, tokens: 2000000 })
   const admin = await new Users({ role: "admin" }).save()
   const adminWallet = new LightningAdminWallet({ uid: admin._id })
-  await adminWallet.addFunds({amount: 2000005, uid: user1})
-  await expect(lightningWallet.pay({ invoice: request })).rejects.toThrow()
-  // await lightningWallet.pay({ invoice: request })
+  await adminWallet.addFunds({ amount: 2000005, uid: user1 })
+  let didThrow: boolean = false
+  try {
+    // await expect(lightningWallet.pay({ invoice: request })).rejects.toThrow()
+    await lightningWallet.pay({ invoice: request })
+  } catch (error) {
+    didThrow = true
+  }
+  if (!didThrow) fail('Function did not fail')
 }, 50000)
 
 // it('testDbTransaction', async () => {
