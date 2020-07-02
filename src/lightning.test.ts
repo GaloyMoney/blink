@@ -228,13 +228,17 @@ it('fails to pay when channel capacity exceeded', async () => {
   const adminWallet = new LightningAdminWallet({ uid: admin._id })
   await adminWallet.addFunds({ amount: 2000005, uid: user1 })
   let didThrow: boolean = false
+
+  // FIXME: below statement fails due to some reason, so using try catch for now
+  // await expect(lightningWallet.pay({ invoice: request })).rejects.toThrow()
   try {
-    // await expect(lightningWallet.pay({ invoice: request })).rejects.toThrow()
     await lightningWallet.pay({ invoice: request })
   } catch (error) {
     didThrow = true
   }
+  //FIXME: Are single line if bad design?
   if (!didThrow) fail('Function did not fail')
+  await checkIsBalanced()
 }, 50000)
 
 // it('testDbTransaction', async () => {
