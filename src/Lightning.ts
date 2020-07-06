@@ -10,7 +10,7 @@ import moment from "moment";
 import { randomBytes, createHash } from "crypto"
 export type IType = "invoice" | "payment" | "earn"
 export type payInvoiceResult = "success" | "failed" | "pending"
-const feeCap: number = 0.01;
+const FEECAP: number = 0.01;
 
 
 const formatInvoice = (type: IType, memo: String | undefined, pending: Boolean | undefined): String => {
@@ -220,7 +220,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     }
     fee = route.safe_fee
 
-    if (fee > feeCap * tokens) {
+    if (fee > FEECAP * tokens) {
       throw Error('cancelled: fee exceeds 1 percent of token amount')
     }
 
