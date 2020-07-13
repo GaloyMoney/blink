@@ -148,7 +148,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     const preimageByteLength: number = 32;
 
     //todo: should we assume pushPayment false by default?
-    let pushPayment: boolean = false;
+    let pushPayment = false;
     //todo: adding types here leads to errors further down below
     let tokens, fee: number = 0
     let destination, id, description, route
