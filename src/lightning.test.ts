@@ -186,7 +186,7 @@ it('fails to pay when insufficient balance', async () => {
 
 it('payInvoiceToAnotherGaloyUser', async () => {
   await login(TEST_NUMBER[1])
-  const galoyUser2 = (await Users.find({}))[1]._id
+  const galoyUser2 = (await Users.findOne({phone: TEST_NUMBER[1].phone}))._id
   const lightningWallet2 = new LightningUserWallet({ uid: galoyUser2 })
   await lightningWallet.addEarn(onBoardingEarnIds)
   const request = await lightningWallet2.addInvoice({ value: 1000, memo: "on us txn" })
