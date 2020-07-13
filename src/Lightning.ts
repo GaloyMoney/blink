@@ -147,9 +147,9 @@ export const LightningMixin = (superclass) => class extends superclass {
     const keySendPreimageType: string = '5482373484';
     const preimageByteLength: number = 32;
 
-    //todo: should we assume pushPayment false by default?
+    //TODO: should we assume pushPayment false by default?
     let pushPayment = false;
-    //todo: adding types here leads to errors further down below
+    //TODO: adding types here leads to errors further down below
     let tokens, fee: number = 0
     let destination, id, description, route
     let payeeUid
@@ -178,9 +178,9 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     if (destination === await this.getNodePubkey()) {
       if (pushPayment) {
-        // todo: if (dest == user) throw error
+        // TODO: if (dest == user) throw error
 
-        //todo: push payment on-us use case implementation
+        //TODO: push payment on-us use case implementation
       } else {
         const InvoiceUser = mongoose.model("InvoiceUser")
         let existingInvoice = await InvoiceUser.findOne({ _id: id, pending: true })

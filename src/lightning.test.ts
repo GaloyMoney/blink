@@ -7,9 +7,10 @@ import { setupMongoConnection } from "./db"
 import moment from "moment"
 import { LightningUserWallet } from "./LightningUserWallet"
 import { LightningAdminWallet } from "./LightningAdminImpl"
-import { btc2sat, waitForNodeSync, getAuth, sleep, waitUntilBlockHeight } from "./utils";
+import { btc2sat, getAuth, sleep, waitUntilBlockHeight } from "./utils";
 import { login } from "./text";
 import { OnboardingEarn } from "./types"
+import { TEST_NUMBER } from './text'
 const lnService = require('ln-service')
 const lightningPayReq = require('bolt11')
 const mongoose = require("mongoose")
@@ -30,7 +31,6 @@ const lndOutside1Port = process.env.LNDOUTSIDE1RPCPORT ?? '10009'
 const lndOutside2Addr = process.env.LNDOUTSIDE2ADDR ?? 'lnd-outside-2'
 const lndOutside2Port = process.env.LNDOUTSIDE2RPCPORT ?? '10009'
 
-const TESTACCOUNTS = [{ phone: "+16505554321", code: 321321, network: "regtest" }, { phone: "+16505554322", code: 321321, network: "regtest" }]
 
 const onBoardingEarnAmt: number = Object.values(OnboardingEarn).reduce((a, b) => a + b, 0)
 const onBoardingEarnIds: string[] = Object.keys(OnboardingEarn)
@@ -61,7 +61,7 @@ afterAll(async () => {
 
 //Does not seem to be best approach
 // const initTestUserWallet = async (i) => {
-//   await login(TESTACCOUNTS[i])
+//   await login(TEST_NUMBER[i])
 //   const Users = mongoose.model("User")
 //   sleep(2000)
 //   user1 = (await Users.findOne({}))._id
@@ -70,7 +70,7 @@ afterAll(async () => {
 
 beforeEach(async () => {
   await mongoose.connection.db.dropCollection('users')
-  await login(TESTACCOUNTS[0])
+  await login(TEST_NUMBER[0])
   let Users = mongoose.model("User")
   sleep(2000)
   console.log("current users", await Users.find({}))
@@ -185,7 +185,7 @@ it('fails to pay when insufficient balance', async () => {
 })
 
 it('payInvoiceToAnotherGaloyUser', async () => {
-  await login(TESTACCOUNTS[1])
+  await login(TEST_NUMBER[1])
   const galoyUser2 = (await Users.find({}))[1]._id
   const lightningWallet2 = new LightningUserWallet({ uid: galoyUser2 })
   await lightningWallet.addEarn(onBoardingEarnIds)
