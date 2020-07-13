@@ -70,18 +70,6 @@ export const getAuth = () => {
     }
 }
 
-export async function waitForNodeSync(lnd) {
-  let is_synced_to_chain = false
-  let time = 0
-  while (!is_synced_to_chain) {
-    await sleep(1000)
-    is_synced_to_chain = (await lnService.getWalletInfo({ lnd })).is_synced_to_chain
-    time++
-  }
-  console.log('Seconds to sync ', time)
-  return
-}
-
 export async function waitUntilBlockHeight({lnd, blockHeight}) {
     let current_block_height, is_synced_to_chain
     ({ current_block_height, is_synced_to_chain } = await lnService.getWalletInfo({ lnd }))
