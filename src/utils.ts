@@ -18,6 +18,14 @@ export async function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+export function timeout(t, msg) {
+    return new Promise(function(resolve, reject) {
+        setTimeout(function() {
+            reject(new Error(msg));
+        }, t);
+    });
+}
+
 export const createToken = ({uid, network}) => jwt.sign({ uid, network }, JWT_SECRET, {
     // TODO use asymetric signature
     // and verify the signature from the client

@@ -1,5 +1,5 @@
 const lnService = require('ln-service');
-import { getAuth } from "./utils";
+import { getAuth, timeout } from "./utils";
 import { IAddInvoiceRequest, TransactionType, ILightningTransaction, IPaymentRequest } from "./types";
 const mongoose = require("mongoose");
 const util = require('util')
@@ -259,8 +259,8 @@ export const LightningMixin = (superclass) => class extends superclass {
     try {
       const TIMEOUT_PAYMENT = 5000
       const promise = lnService.payViaRoutes({ lnd: this.lnd, routes: [route], id })
-      await Timeout.wrap(promise, TIMEOUT_PAYMENT, 'Timeout');
-
+      // await Timeout.wrap(promise, TIMEOUT_PAYMENT, 'Timeout');
+      await Promise.race([promise, timeout(TIMEOUT_PAYMENT, 'Timeout')])
       // FIXME
       // return this.payDetail({
       //     pubkey: details.destination,
