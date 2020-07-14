@@ -241,18 +241,17 @@ it('fails to pay when channel capacity exceeded', async () => {
   await checkIsBalanced()
 }, 50000)
 
-it('pay hodl invoice', async () => {
-  const randomSecret = () => randomBytes(32);
-  const sha256 = buffer => createHash('sha256').update(buffer).digest('hex');
-  const secret = randomSecret();
-  const id = sha256(secret);
+// it('pay hodl invoice', async () => {
+//   const randomSecret = () => randomBytes(32);
+//   const sha256 = buffer => createHash('sha256').update(buffer).digest('hex');
+//   const secret = randomSecret();
+//   const id = sha256(secret);
 
-  const { request } = await lnService.createHodlInvoice({ id, lnd: lightningWalletOutside1, tokens: 1000 });
-  await lightningWallet.addEarn(onBoardingEarnIds)
-  console.log(await lightningWallet.pay({ invoice: request }))
-  console.log(await lightningWallet.getBalance())
-  await checkIsBalanced()
-}, 15000)
+//   const { request } = await lnService.createHodlInvoice({ id, lnd: lightningWalletOutside1, tokens: 1000 });
+//   await lightningWallet.addEarn(onBoardingEarnIds)
+//   expect(await lightningWallet.pay({ invoice: request })).toBe("pending")
+//   await checkIsBalanced()
+// }, 25000)
 
 // it('testDbTransaction', async () => {
 //   //TODO try to fetch simulataneously (ie: with Premise.all[])
