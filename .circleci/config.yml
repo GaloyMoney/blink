@@ -198,7 +198,7 @@ jobs:
       - run:
           name: install helm charts
           command: |
-            ~/GaloyApp/backend/firebase/functions/initLocal.sh
+            ~/GaloyApp/backend/firebase/functions/initLocalTest.sh
       - run:
           name: Check Helm release status
           command: helm list  --namespace=$NAMESPACE --all
