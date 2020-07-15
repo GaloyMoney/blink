@@ -198,7 +198,10 @@ jobs:
       - run:
           name: install helm charts
           command: |
-            ~/GaloyApp/backend/firebase/functions/initLocalTest.sh
+            cd ~/GaloyApp/backend/firebase/functions/ && initLocalTest.sh
+      - run:
+          name: reset directory?
+          command: pwd
       - run:
           name: Check Helm release status
           command: helm list  --namespace=$NAMESPACE --all
