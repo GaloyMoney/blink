@@ -4,7 +4,6 @@ import { IAddInvoiceRequest, TransactionType, ILightningTransaction, IPaymentReq
 const mongoose = require("mongoose");
 const util = require('util')
 import { book } from "medici";
-import Timeout from 'await-timeout';
 import { intersection } from "lodash";
 import moment from "moment";
 import { randomBytes, createHash } from "crypto"
