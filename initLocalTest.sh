@@ -6,4 +6,4 @@ kubectl wait --namespace=$NAMESPACE --for=condition=ready pod -l app=bitcoind-co
 helm install --namespace=$NAMESPACE lnd -f ../../lnd-chart/regtest-values.yaml ../../lnd-chart/
 
 kubectl wait --namespace=$NAMESPACE --for=condition=ready pod -l app=lnd-container
-# kubectl wait --for=condition=ready pod -l app.kubernetes.io/component=mongodb
+kubectl wait --namespace=$NAMESPACE --for=condition=ready pod -l app.kubernetes.io/component=mongodb
