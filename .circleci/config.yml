@@ -193,36 +193,15 @@ jobs:
           name: wait for k8s worker nodes
           command: echo $(ls) && sleep 30 # TODO: try to improve approach if possible
       - run:
-          name: helm install bitcoind-chart
-          command: |
-            helm install --namespace=$NAMESPACE bitcoind-chart \
-            -f ~/GaloyApp/backend/bitcoind-chart/regtest-values.yaml \
-            ~/GaloyApp/backend/bitcoind-chart
-      - run:
           name: helm add repo bitnami
           command: helm repo add bitnami https://charts.bitnami.com/bitnami
       - run:
-          name: helm install mongodb
+          name: install helm charts
           command: |
-            helm install --namespace=$NAMESPACE mongodb --set \
-            auth.username=testGaloy,auth.password=testGaloy,auth.database=galoy,persistence.enabled=false bitnami/mongodb
-      - run:
-          name: helm install lnd-chart
-          command: |
-            helm install --namespace=$NAMESPACE lnd-chart \
-            -f ~/GaloyApp/backend/lnd-chart/regtest-values.yaml \
-            ~/GaloyApp/backend/lnd-chart
+            cd ~/GaloyApp/backend/firebase/functions/ && ./initLocalTest.sh
       - run:
           name: Check Helm release status
           command: helm list  --namespace=$NAMESPACE --all
-      - run:
-          name: wait for pod to come alive
-          command: |
-            kubectl wait --namespace=$NAMESPACE --for=condition=ready pod -l app=bitcoind-container --timeout=200s
-            kubectl wait --namespace=$NAMESPACE --for=condition=ready pod -l app=lnd-container --timeout=200s
-            sleep 20
-            kubectl get --namespace=$NAMESPACE pods
-  # kubectl wait --namespace=$NAMESPACE --for=condition=ready pod -l app=mongodb --timeout=200s
       - run:
           name: retrieve macaroons from lnd containers and install test image
           command: |
