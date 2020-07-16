@@ -31,7 +31,7 @@ const lndOutside1Port = process.env.LNDOUTSIDE1RPCPORT ?? '10009'
 const lndOutside2Addr = process.env.LNDOUTSIDE2ADDR ?? 'lnd-outside-2'
 const lndOutside2Port = process.env.LNDOUTSIDE2RPCPORT ?? '10009'
 
-
+//FIXME: Maybe switch to using single reward
 const onBoardingEarnAmt: number = Object.values(OnboardingEarn).reduce((a, b) => a + b, 0)
 const onBoardingEarnIds: string[] = Object.keys(OnboardingEarn)
 
