@@ -5,9 +5,9 @@ import { setupMongoConnection } from "./db"
 // this import needs to be before medici
 
 import { LightningAdminWallet } from "./LightningAdminImpl"
-import { sleep, getAuth } from "./utils"
+import { sleep, getAuth, waitUntilBlockHeight } from "./utils"
 const mongoose = require("mongoose");
-const {once} = require('events');
+const { once } = require('events');
 
 //TODO: Choose between camel case or underscores for variable naming
 const BitcoindClient = require('bitcoin-core')
@@ -50,26 +50,9 @@ const User = mongoose.model("User")
 
 const local_tokens = 1000000
 
-
-async function waitUntilBlockHeight({lnd, blockHeight}) {
-	let current_block_height, is_synced_to_chain
-	({ current_block_height, is_synced_to_chain } = await lnService.getWalletInfo({ lnd }))
-	console.log({ current_block_height, is_synced_to_chain})
-	
-	let time = 0
-	while (current_block_height < blockHeight || !is_synced_to_chain) {
-		await sleep(50);
-		({ current_block_height, is_synced_to_chain } = await lnService.getWalletInfo({ lnd }))
-		console.log({ current_block_height, is_synced_to_chain})
-		time++
-	}
-	console.log(`Seconds to sync blockheight ${blockHeight}: ${time / 20}`)
-	return
-}
-
 const checkIsBalanced = async () => {
-	const admin = await User.findOne({role: "admin"})
-	const adminWallet = new LightningAdminWallet({uid: admin._id})
+	const admin = await User.findOne({ role: "admin" })
+	const adminWallet = new LightningAdminWallet({ uid: admin._id })
 	const { assetsEqualLiabilities, lndBalanceSheetAreSynced } = await adminWallet.balanceSheetIsBalanced()
 	expect(assetsEqualLiabilities).toBeTruthy()
 	expect(lndBalanceSheetAreSynced).toBeTruthy()
@@ -92,7 +75,7 @@ beforeAll(async () => {
 	lnd1 = lnService.authenticatedLndGrpc(getAuth()).lnd
 
 	await setupMongoConnection()
-	
+
 	// try {
 	// 	await mongoose.connection.dropCollection('users')
 	// } catch (err) {
@@ -100,16 +83,17 @@ beforeAll(async () => {
 	// 	console.log(err)
 	// }
 
-	const connection_obj = { 
+	const connection_obj = {
 		network: 'regtest', username: 'rpcuser', password: 'rpcpass',
-		host: bitcoind_addr, port: bitcoind_port }
+		host: bitcoind_addr, port: bitcoind_port
+	}
 
 	bitcoindClient = new BitcoindClient(connection_obj)
 
 })
 
 afterAll(async () => {
-  return await mongoose.connection.close()
+	return await mongoose.connection.close()
 })
 
 it('I can connect to bitcoind', async () => {
@@ -124,7 +108,7 @@ it('I can connect to bank lnd', async () => {
 it('I can connect to outside lnds', async () => {
 	const lnds = [lndOutside1, lndOutside2]
 	for (const lnd of lnds) {
-		const {current_block_height} = await lnService.getWalletInfo({ lnd })
+		const { current_block_height } = await lnService.getWalletInfo({ lnd })
 		expect(current_block_height).toBe(0)
 	}
 })
@@ -136,7 +120,7 @@ it('I can connect to mongodb', async () => {
 
 it('creating bank "admin" user', async () => {
 	// FIXME there should be an API for this
-	await new User({role: "admin"}).save()
+	await new User({ role: "admin" }).save()
 	const users = await User.find({})
 	expect(users.length).toBe(1)
 
@@ -144,8 +128,8 @@ it('creating bank "admin" user', async () => {
 })
 
 it('funding bank with onchain tx', async () => {
-	const admin = await User.findOne({role: "admin"})
-	const adminWallet = new LightningAdminWallet({uid: admin._id})
+	const admin = await User.findOne({ role: "admin" })
+	const adminWallet = new LightningAdminWallet({ uid: admin._id })
 	bank_address = await adminWallet.getOnChainAddress()
 	expect(bank_address.substr(0, 4)).toBe("bcrt")
 
@@ -176,7 +160,7 @@ it('funding bank with onchain tx', async () => {
 		checkBalance(),
 		generateAddress()
 	])
-})
+}, 100000)
 
 
 it('funds lndOutside1 and mined 99 blocks to make mined coins accessible', async () => {
@@ -190,7 +174,7 @@ it('funds lndOutside1 and mined 99 blocks to make mined coins accessible', async
 	await waitUntilBlockHeight({lnd: lnd1, blockHeight: 200})
 	await waitUntilBlockHeight({lnd: lndOutside1, blockHeight: 200})
 	await waitUntilBlockHeight({lnd: lndOutside2, blockHeight: 200})
-}, 20000)
+}, 100000)
 
 const newBlock = 6
 
@@ -255,7 +239,7 @@ it('opens channel from lnd1 to lndOutside1', async () => {
 	const { channels } = await lnService.getChannels({ lnd: lnd1 })
 	expect(channels.length).toEqual(1)
 
-}, 30000)
+}, 100000)
 
 it('opens channel from lndOutside1 to lndOutside2', async () => {
 	const lnd = lndOutside1
@@ -265,4 +249,4 @@ it('opens channel from lndOutside1 to lndOutside2', async () => {
 
 	const { channels } = await lnService.getChannels({ lnd: lndOutside1 })
 	expect(channels.length).toEqual(2)
-}, 30000)
+}, 100000)

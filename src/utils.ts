@@ -2,7 +2,7 @@ import * as moment from 'moment'
 export const validate = require("validate.js")
 import * as jwt from 'jsonwebtoken'
 import { JWT_SECRET } from "./const"
-
+import * as lnService from "ln-service"
 export const btc2sat = (btc: number) => {
     return btc * Math.pow(10, 8)
 }
@@ -16,6 +16,14 @@ export const randomIntFromInterval = (min, max) =>
 
 export async function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+export function timeout(t, msg) {
+    return new Promise(function(resolve, reject) {
+        setTimeout(function() {
+            reject(new Error(msg));
+        }, t);
+    });
 }
 
 export const createToken = ({uid, network}) => jwt.sign({ uid, network }, JWT_SECRET, {
@@ -68,4 +76,20 @@ export const getAuth = () => {
     catch (err) {
         throw Error(`failed-precondition: ${err}`);
     }
+}
+
+export async function waitUntilBlockHeight({lnd, blockHeight}) {
+    let current_block_height, is_synced_to_chain
+    ({ current_block_height, is_synced_to_chain } = await lnService.getWalletInfo({ lnd }))
+    console.log({ current_block_height, is_synced_to_chain})
+    
+    let time = 0
+    while (current_block_height < blockHeight || !is_synced_to_chain) {
+        await sleep(50);
+        ({ current_block_height, is_synced_to_chain } = await lnService.getWalletInfo({ lnd }))
+        // console.log({ current_block_height, is_synced_to_chain})
+        time++
+    }
+    console.log(`Seconds to sync blockheight ${blockHeight}: ${time / 20}`)
+    return
 }

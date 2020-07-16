@@ -67,6 +67,7 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
 
     const assetsEqualLiabilities = assets === - liabilities - expenses
     const lndBalanceSheetAreSynced = lightning === lndBalance
+    if(!lndBalanceSheetAreSynced) console.log(`not balanced, lndBal:${lndBalance}, lightning:${lightning}`)
 
     console.log({assets, liabilities, lightning, lndBalance, expenses})
     return { assetsEqualLiabilities, lndBalanceSheetAreSynced }

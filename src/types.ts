@@ -26,11 +26,9 @@ export interface ILightningTransaction {
 }
 
 export interface IPaymentRequest {
-    pubkey: string;
-    amount: number;
-    message?: string;
-    hash?: string;
-    routes?: object[]; // FIXME
+  destination?: string,
+  tokens?: number,
+  invoice?: string
 }
 
 export type IPayInvoice = {
