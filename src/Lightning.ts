@@ -1,15 +1,16 @@
 const lnService = require('ln-service');
-export type payInvoiceResult = "success" | "failed" | "pending"
-import { getAuth } from "./utils";
-import { IAddInvoiceRequest, TransactionType, ILightningTransaction } from "./types";
+import { getAuth, timeout } from "./utils";
+import { IAddInvoiceRequest, TransactionType, ILightningTransaction, IPaymentRequest } from "./types";
 const mongoose = require("mongoose");
 const util = require('util')
 import { book } from "medici";
-import Timeout from 'await-timeout';
 import { intersection } from "lodash";
 import moment from "moment";
-
+import { randomBytes, createHash } from "crypto"
 export type IType = "invoice" | "payment" | "earn"
+export type payInvoiceResult = "success" | "failed" | "pending"
+const FEECAP: number = 0.01;
+
 
 const formatInvoice = (type: IType, memo: String | undefined, pending: Boolean | undefined): String => {
   if (pending) {
@@ -55,10 +56,16 @@ const formatType = (type: IType, pending: Boolean | undefined): TransactionType 
 export const LightningMixin = (superclass) => class extends superclass {
   protected _currency = "BTC"
   lnd: any
+  nodePubKey
 
   constructor(...args) {
     super(...args)
     this.lnd = lnService.authenticatedLndGrpc(getAuth()).lnd
+  }
+
+  async getNodePubkey() {
+    this.nodePubKey = this.nodePubKey ?? (await lnService.getWalletInfo({ lnd: this.lnd })).public_key
+    return this.nodePubKey
   }
 
   async updatePending() {
@@ -132,40 +139,99 @@ export const LightningMixin = (superclass) => class extends superclass {
     return request
   }
 
-  // TODO manage the error case properly. right now there is a mix of string being return
-  // or error being thrown. Not sure how this is handled by GraphQL
-  async payInvoice({ invoice }): Promise<payInvoiceResult | Error> {
-    // TODO add fees accounting
+  // TODO: add types
+  //FIXME: Susceptible to double spend
+  async pay(params: IPaymentRequest): Promise<payInvoiceResult | Error> {
 
-    // TODO replace this with bolt11 utils library
-    const { id, tokens, destination, description } = await lnService.decodePaymentRequest({ lnd: this.lnd, request: invoice })
+    const keySendPreimageType: string = '5482373484';
+    const preimageByteLength: number = 32;
 
-    // TODO probe for payment first. 
-    // like in `bos probe "payment_request/public_key"`
-    // from https://github.com/alexbosworth/balanceofsatoshis
+    //TODO: should we assume pushPayment false by default?
+    let pushPayment = false;
+    //TODO: adding types here leads to errors further down below
+    let tokens, fee: number = 0
+    let destination, id, description, route
+    let payeeUid
+    let messages: Object[] = []
 
-    const MainBook = new book("MainBook")
-    const Transaction = await mongoose.model("Medici_Transaction")
+    if (!params.invoice) {
+      if (!params.tokens || !params.destination) {
+        throw Error('Pay requires either invoice or destination and amount to be specified')
+      } else {
+        pushPayment = true
+        destination = params.destination
+        tokens = params.tokens
 
+        const preimage = randomBytes(preimageByteLength);
+        id = createHash('sha256').update(preimage).digest().toString('hex');
+        const secret = preimage.toString('hex');
+        messages = [{ type: keySendPreimageType, value: secret }]
+        // }
+      }
+    } else {
+      // TODO replace this with bolt11 utils library
+      ({ id, tokens, destination, description } = await lnService.decodePaymentRequest({ lnd: this.lnd, request: params.invoice }))
+    }
 
-    // TODO: handle on-us transaction
-    console.log({ destination })
+    console.log(destination)
 
+    if (destination === await this.getNodePubkey()) {
+      if (pushPayment) {
+        // TODO: if (dest == user) throw error
 
-    // probe for Route
+        //TODO: push payment on-us use case implementation
+      } else {
+        const InvoiceUser = mongoose.model("InvoiceUser")
+        let existingInvoice = await InvoiceUser.findOne({ _id: id, pending: true })
+        if (!existingInvoice) {
+          throw Error('User tried to pay invoice destined to us, but it was already paid or does not exist')
+          // FIXME: Using == here because === returns false even for same uids
+        } else if (existingInvoice.uid == this.uid) {
+          throw Error('User tried to pay their own invoice')
+        }
+        payeeUid = existingInvoice.uid
+      }
+      const balance = await this.getBalance()
+
+      if (balance < tokens + fee) {
+        throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${tokens + fee}`)
+      }
+      const payeeAccountPath = await this.customerPath(payeeUid)
+      const MainBook = new book("MainBook")
+      const obj = { currency: this.currency, hash: id, type: "on_us", pending: false, fee }
+      await MainBook.entry()
+        .credit(this.accountPath, tokens, obj)
+        .debit(payeeAccountPath, tokens, obj)
+        .commit()
+
+      const InvoiceUser = mongoose.model("InvoiceUser")
+      await InvoiceUser.findOneAndUpdate({ _id: id }, { pending: false })
+      await lnService.cancelHodlInvoice({ lnd: this.lnd, id })
+      return "success"
+    }
+
     // TODO add private route from invoice
-    const { route } = await lnService.probeForRoute({ destination, lnd: this.lnd, tokens });
+    ({ route } = await lnService.probeForRoute({ destination, lnd: this.lnd, tokens }));
     console.log(util.inspect({ route }, { showHidden: false, depth: null }))
 
     if (!route) {
       throw Error(`internal: there is no route for this payment`)
     }
+    fee = route.safe_fee
 
-    const balance = this.getBalance()
-    if (balance < tokens + route.safe_fee) {
-      throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${tokens}`)
+    if (fee > FEECAP * tokens) {
+      throw Error('cancelled: fee exceeds 1 percent of token amount')
     }
 
+    const balance = await this.getBalance()
+
+    if (balance < tokens + fee) {
+      throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${tokens + fee}`)
+    }
+
+    if (pushPayment) {
+      route.messages = messages
+    }
 
     // we are confident nough that there is a possible payment route. let's move forward
 
@@ -173,11 +239,12 @@ export const LightningMixin = (superclass) => class extends superclass {
     // TODO this should use a reference (using db transactions) from balance computed above
     // and fail is balance has changed in the meantime to prevent race condition
 
-    const obj = { currency: this.currency, hash: id, type: "payment", pending: true, fee: route.safe_fee }
-
+    const obj = { currency: this.currency, hash: id, type: "payment", pending: true, fee }
+    const MainBook = new book("MainBook")
+    const Transaction = await mongoose.model("Medici_Transaction")
     const entry = await MainBook.entry(description)
-      .debit('Assets:Reserve:Lightning', tokens + route.safe_fee, obj)
-      .credit(this.accountPath, tokens + route.safe_fee, obj)
+      .debit('Assets:Reserve:Lightning', tokens + fee, obj)
+      .credit(this.accountPath, tokens + fee, obj)
       .commit()
 
     // there is 3 scenarios for a payment.
@@ -187,11 +254,12 @@ export const LightningMixin = (superclass) => class extends superclass {
     // we are timing out the request for UX purpose, so that the client can show the payment is pending
     // even if the payment is still ongoing from lnd.
     // to clean pending payments, another cron-job loop will run in the background.
+
     try {
       const TIMEOUT_PAYMENT = 5000
       const promise = lnService.payViaRoutes({ lnd: this.lnd, routes: [route], id })
-      await Timeout.wrap(promise, TIMEOUT_PAYMENT, 'Timeout');
-
+      // await Timeout.wrap(promise, TIMEOUT_PAYMENT, 'Timeout');
+      await Promise.race([promise, timeout(TIMEOUT_PAYMENT, 'Timeout')])
       // FIXME
       // return this.payDetail({
       //     pubkey: details.destination,
@@ -226,11 +294,24 @@ export const LightningMixin = (superclass) => class extends superclass {
       throw Error(`internal error paying invoice ${util.inspect({ err }, false, Infinity)}`)
     }
 
+
     // success
     await Transaction.updateMany({ hash: id }, { pending: false })
 
     return "success"
   }
+
+  // TODO manage the error case properly. right now there is a mix of string being return
+  // or error being thrown. Not sure how this is handled by GraphQL
+  // private async payInvoice({ invoice }): Promise<payInvoiceResult | Error> {
+  //   // TODO add fees accounting
+
+
+
+
+  //   // TODO probe for payment first. 
+  //   // like in `bos probe "payment_request/public_key"`
+  //   // from https://github.com/alexbosworth/balanceofsatoshis
 
   // should be run regularly with a cronjob
   // TODO: move to an "admin/ops" wallet

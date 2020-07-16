@@ -83,7 +83,7 @@ const transactionSchema = new Schema({
   txid: String,
   type: {
     type: String,
-    enum: ["invoice", "payment", "earn", "onchain_receipt", "fee", "escrow"]
+    enum: ["invoice", "payment", "earn", "onchain_receipt", "fee", "escrow", "on_us"]
   },
   pending: Boolean, // duplicated with InvoiceUser for invoices
   err: String,
