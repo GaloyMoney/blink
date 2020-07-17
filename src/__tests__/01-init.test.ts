@@ -1,11 +1,11 @@
 /**
  * @jest-environment node
  */
-import { setupMongoConnection } from "./db"
+import { setupMongoConnection } from "../db"
 // this import needs to be before medici
 
-import { LightningAdminWallet } from "./LightningAdminImpl"
-import { sleep, getAuth, waitUntilBlockHeight } from "./utils"
+import { LightningAdminWallet } from "../LightningAdminImpl"
+import { sleep, getAuth, waitUntilBlockHeight } from "../utils"
 const mongoose = require("mongoose");
 const { once } = require('events');
 

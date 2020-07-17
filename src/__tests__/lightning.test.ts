@@ -1,16 +1,16 @@
 /**
  * @jest-environment node
  */
-import { setupMongoConnection } from "./db"
+import { setupMongoConnection } from "../db"
 // this import needs to be before medici
 import { randomBytes, createHash } from 'crypto'
 import moment from "moment"
-import { LightningUserWallet } from "./LightningUserWallet"
-import { LightningAdminWallet } from "./LightningAdminImpl"
-import { btc2sat, getAuth, sleep, waitUntilBlockHeight } from "./utils";
-import { login } from "./text";
-import { OnboardingEarn } from "./types"
-import { TEST_NUMBER } from './text'
+import { LightningUserWallet } from "../LightningUserWallet"
+import { LightningAdminWallet } from "../LightningAdminImpl"
+import { btc2sat, getAuth, sleep, waitUntilBlockHeight } from "../utils";
+import { login } from "../text";
+import { OnboardingEarn } from "../types"
+import { TEST_NUMBER } from '../text'
 const lnService = require('ln-service')
 const lightningPayReq = require('bolt11')
 const mongoose = require("mongoose")
