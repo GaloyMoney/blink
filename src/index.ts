@@ -88,8 +88,8 @@ const resolvers = {
     requestPhoneCode: async (_, {phone}) => {
       return {success: requestPhoneCode({phone})}
     },
-    login: async (_, {phone, code, network}) => {
-      return {token: login({phone, code, network})}
+    login: async (_, {phone, code}) => {
+      return {token: login({phone, code})}
     },
     updateUser: async (_, {user}) => {
       // FIXME manage uid
