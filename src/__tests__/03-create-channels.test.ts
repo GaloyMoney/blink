@@ -42,11 +42,6 @@ let lnd1
 let lndOutside1
 let lndOutside2
 
-let bank_address
-let lndOutside1_wallet_addr
-
-let admin_uid
-
 const User = mongoose.model("User")
 
 const local_tokens = 1000000

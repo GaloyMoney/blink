@@ -139,23 +139,22 @@ it('add earn adds balance correctly', async () => {
 })
 
 it('receives external funding correctly', async () => {
+  const amount_BTC = 1
+
   const connection_obj = {
     network: 'regtest', username: 'rpcuser', password: 'rpcpass',
     host: process.env.BITCOINDADDR, port: process.env.BITCOINDPORT
   }
   const bitcoindClient = new BitcoindClient(connection_obj)
-
   const { lnd } = lnService.authenticatedLndGrpc(getAuth())
 
-  let onChainAddress: string = await lightningWallet.getOnChainAddress()
-  await bitcoindClient.generateToAddress(1, onChainAddress)
+  let onChainAddress = await lightningWallet.getOnChainAddress()
+  bitcoindClient.sendToAddress(onChainAddress, amount_BTC)
 
-  let { blocks } = await bitcoindClient.getBlockchainInfo()
-
-  await bitcoindClient.generateToAddress(100, RANDOM_ADDRESS)
-  await waitUntilBlockHeight({ lnd, blockHeight: blocks })
+  await bitcoindClient.generateToAddress(6, RANDOM_ADDRESS)
+  await waitUntilBlockHeight({ lnd, blockHeight: 1 }) // TODO set block height properly?
   let finalBalance = await lightningWallet.getBalance()
-  expect(finalBalance).toBe(btc2sat(25))
+  expect(finalBalance).toBe(btc2sat(amount_BTC))
   await checkIsBalanced()
 }, 50000)
 
