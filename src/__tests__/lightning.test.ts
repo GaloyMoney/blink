@@ -11,7 +11,7 @@ import { btc2sat, getAuth, sleep, waitUntilBlockHeight } from "../utils";
 import { login } from "../text";
 import { OnboardingEarn } from "../types"
 import { TEST_NUMBER } from '../text'
-import { checkIsBalanced } from "./utils_for_tests"
+import { checkIsBalanced } from "./utils_for_tst"
 const lnService = require('ln-service')
 const lightningPayReq = require('bolt11')
 const mongoose = require("mongoose")

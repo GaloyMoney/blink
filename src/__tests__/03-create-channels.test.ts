@@ -6,7 +6,7 @@ import { setupMongoConnection } from "../db"
 
 import { LightningAdminWallet } from "../LightningAdminImpl"
 import { sleep, getAuth, waitUntilBlockHeight } from "../utils"
-import { checkIsBalanced } from "./utils_for_tests";
+import { checkIsBalanced } from "./utils_for_tst";
 const mongoose = require("mongoose");
 const { once } = require('events');
 
