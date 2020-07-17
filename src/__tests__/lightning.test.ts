@@ -11,6 +11,7 @@ import { btc2sat, getAuth, sleep, waitUntilBlockHeight } from "../utils";
 import { login } from "../text";
 import { OnboardingEarn } from "../types"
 import { TEST_NUMBER } from '../text'
+import { checkIsBalanced } from "./utils_for_tests"
 const lnService = require('ln-service')
 const lightningPayReq = require('bolt11')
 const mongoose = require("mongoose")
@@ -129,16 +130,6 @@ it('add invoice to different user', async () => {
 
   expect(uid).toBe(user2)
 })
-
-const checkIsBalanced = async () => {
-  const admin = await new Users({ role: "admin" }).save()
-  const adminWallet = new LightningAdminWallet({ uid: admin._id })
-  const { assetsEqualLiabilities, lndBalanceSheetAreSynced } = await adminWallet.balanceSheetIsBalanced()
-  expect(assetsEqualLiabilities).toBeTruthy()
-
-  // FIXME add this back
-  expect(lndBalanceSheetAreSynced).toBeTruthy()
-}
 
 it('add earn adds balance correctly', async () => {
   await lightningWallet.addEarn(onBoardingEarnIds)

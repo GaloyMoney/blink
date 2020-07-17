@@ -6,6 +6,7 @@ import { setupMongoConnection } from "../db"
 
 import { LightningAdminWallet } from "../LightningAdminImpl"
 import { sleep, getAuth, waitUntilBlockHeight } from "../utils"
+import { checkIsBalanced } from "./utils_for_tests";
 const mongoose = require("mongoose");
 const { once } = require('events');
 
@@ -49,14 +50,6 @@ let admin_uid
 const User = mongoose.model("User")
 
 const local_tokens = 1000000
-
-const checkIsBalanced = async () => {
-	const admin = await User.findOne({ role: "admin" })
-	const adminWallet = new LightningAdminWallet({ uid: admin._id })
-	const { assetsEqualLiabilities, lndBalanceSheetAreSynced } = await adminWallet.balanceSheetIsBalanced()
-	expect(assetsEqualLiabilities).toBeTruthy()
-	expect(lndBalanceSheetAreSynced).toBeTruthy()
-}
 
 beforeAll(async () => {
 
