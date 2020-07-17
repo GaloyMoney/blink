@@ -39,7 +39,6 @@
     "medici": "^4.0.1",
     "moment": "^2.24.0",
     "mongoose": "^5.9.10",
-    "mst-gql": "^0.11.3",
     "prom-client": "^12.0.0",
     "twilio": "^3.42.2",
     "validate.js": "^0.13.1"
