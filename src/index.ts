@@ -1,6 +1,7 @@
 import { setupMongoConnection } from "./db"
 // this import needs to be before medici
 
+import dotenv from "dotenv";
 import { rule, shield } from 'graphql-shield';
 import { GraphQLServer } from 'graphql-yoga';
 import { ContextParameters } from 'graphql-yoga/dist/types';
@@ -11,6 +12,8 @@ import { login, requestPhoneCode } from "./text";
 import { OnboardingEarn } from "./types";
 const path = require("path");
 const mongoose = require("mongoose");
+dotenv.config()
+
 
 const commitHash = process.env.COMMITHASH
 const buildTime = process.env.BUILDTIME
