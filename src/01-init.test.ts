@@ -53,6 +53,7 @@ const local_tokens = 1000000
 const checkIsBalanced = async () => {
 	const admin = await User.findOne({ role: "admin" })
 	const adminWallet = new LightningAdminWallet({ uid: admin._id })
+	await adminWallet.updateEscrows()
 	const { assetsEqualLiabilities, lndBalanceSheetAreSynced } = await adminWallet.balanceSheetIsBalanced()
 	expect(assetsEqualLiabilities).toBeTruthy()
 	expect(lndBalanceSheetAreSynced).toBeTruthy()
@@ -223,10 +224,6 @@ const openChannel = async ({lnd, other_lnd, socket, blockHeight}) => {
 	])
 
 	sub.removeAllListeners();
-
-	if (lnd === lnd1) {
-		await adminWallet.updateEscrows()
-	}
 
 	await checkIsBalanced()
 }
