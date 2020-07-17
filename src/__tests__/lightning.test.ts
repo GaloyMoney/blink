@@ -70,7 +70,7 @@ afterAll(async () => {
 // }
 
 beforeEach(async () => {
-  await mongoose.connection.db.dropCollection('users')
+  // await mongoose.connection.db.dropCollection('users')
   await login(TEST_NUMBER[0])
   let Users = mongoose.model("User")
   sleep(2000)
