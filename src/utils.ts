@@ -26,7 +26,7 @@ export function timeout(t, msg) {
     });
 }
 
-export const createToken = ({uid, network}) => jwt.sign({ uid, network }, JWT_SECRET, {
+export const createToken = ({uid}) => jwt.sign({ uid, network: process.env.NETWORK }, JWT_SECRET, {
     // TODO use asymetric signature
     // and verify the signature from the client
     // otherwise we could get subject to DDos attack

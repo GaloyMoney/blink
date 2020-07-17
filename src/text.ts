@@ -53,8 +53,7 @@ export const requestPhoneCode = async ({ phone }) => {
     return true
 }
 
-export const login = async ({ phone, code, network }) => {
-    // TODO assert network == process.env.network
+export const login = async ({ phone, code }) => {
 
     try {
         const PhoneCode = mongoose.model("PhoneCode")
@@ -83,7 +82,7 @@ export const login = async ({ phone, code, network }) => {
         // get User 
         const user = await User.findOneAndUpdate({ phone }, { level: 1 }, { upsert: true, new: true })
 
-        return createToken({ uid: user._id, network })
+        return createToken({ uid: user._id })
     } catch (err) {
         console.error(err)
         throw err
