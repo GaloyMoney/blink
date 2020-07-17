@@ -244,7 +244,7 @@ jobs:
             - run: |
                 gcloud container images add-tag gcr.io/${GOOGLE_PROJECT_ID}/test-image:latest gcr.io/${GOOGLE_PROJECT_ID}/test-image:${CIRCLE_SHA1} --quiet
                 gcloud container clusters get-credentials testnet-cluster --region us-central1-a --project ${GOOGLE_PROJECT_ID}
-                helm upgrade graphql-chart -f ~/GaloyApp/backend/graphql-chart/values.yaml \
+                helm upgrade graphql-chart -f ~/GaloyApp/backend/graphql-chart/testnet-values.yaml \
                 --set tag=$CIRCLE_SHA1 ~/GaloyApp/backend/graphql-chart/
       - slack/status:
           fail_only: true
