@@ -251,6 +251,27 @@ jobs:
       - slack/status:
           fail_only: true
           mentions: 'U011J7RCEFQ,U011KKL1L4B'
+  mainnet_deploy:
+    working_directory: ~/GaloyApp/backend
+    docker:
+      - image: kiwigrid/gcloud-kubectl-helm:latest
+    environment:
+      NAMESPACE: devnet
+    steps:
+      - checkout:
+          path: ~/GaloyApp
+      - when:
+          condition:
+            equal: [ master, master ]
+          steps:
+            - run: |
+                gcloud container clusters get-credentials mainnet --region us-central1-a --project ${GOOGLE_PROJECT_ID}
+                export MACAROON=$(kubectl exec lnd-container-0 -- base64 /root/.lnd/data/chain/bitcoin/mainnet/admin.macaroon | tr -d '\n\r')
+                export TLS=$(kubectl exec lnd-container-0 -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
+                helm upgrade -i graphql-chart -f ~/GaloyApp/backend/graphql-chart/mainnet-values.yaml \
+                --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/graphql-chart/
+                helm upgrade -i prometheus -f ~/GaloyApp/backend/graphql-chart/prometheus-testnet-values.yaml \
+                --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/graphql-chart/
 
 workflows:
   kube:
@@ -259,3 +280,10 @@ workflows:
       - test:
           requires:
             - build_test_image
+      - approve_mainnet_deploy:
+          type: approval
+          requires: test
+      - mainnet_deploy:
+          requires: approve_mainnet_deploy
+      - slack/approval-notification:
+          mentions: 'U011J7RCEFQ,U011KKL1L4B'
