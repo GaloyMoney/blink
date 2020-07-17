@@ -239,12 +239,13 @@ jobs:
           when: always
       - when:
           condition:
-            equal: [ master, << pipeline.git.branch >> ]
+            equal: [ master, master ]
           steps:
             - run: |
-                gcloud container images add-tag gcr.io/${GOOGLE_PROJECT_ID}/test-image:latest gcr.io/${GOOGLE_PROJECT_ID}/test-image:approved --quiet
+                gcloud container images add-tag gcr.io/${GOOGLE_PROJECT_ID}/test-image:latest gcr.io/${GOOGLE_PROJECT_ID}/test-image:${CIRCLE_SHA1} --quiet
                 gcloud container clusters get-credentials testnet-cluster --region us-central1-a --project ${GOOGLE_PROJECT_ID}
-                kubectl delete pod -l app=graphql-server
+                helm upgrade graphql-chart -f ~/GaloyApp/backend/graphql-chart/values.yaml \
+                --set tag=$CIRCLE_SHA1
       - slack/status:
           fail_only: true
           mentions: 'U011J7RCEFQ,U011KKL1L4B'
