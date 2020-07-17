@@ -89,86 +89,6 @@ afterAll(async () => {
 	return await mongoose.connection.close()
 })
 
-it('I can connect to bitcoind', async () => {
-	const { chain } = await bitcoindClient.getBlockchainInfo()
-	expect(chain).toEqual('regtest')
-})
-
-it('I can connect to bank lnd', async () => {
-	// TODO
-})
-
-it('I can connect to outside lnds', async () => {
-	const lnds = [lndOutside1, lndOutside2]
-	for (const lnd of lnds) {
-		const { current_block_height } = await lnService.getWalletInfo({ lnd })
-		expect(current_block_height).toBe(0)
-	}
-})
-
-it('I can connect to mongodb', async () => {
-	const users = await User.find()
-	expect(users).toStrictEqual([])
-})
-
-it('creating bank "admin" user', async () => {
-	// FIXME there should be an API for this
-	await new User({ role: "admin" }).save()
-	const users = await User.find({})
-	expect(users.length).toBe(1)
-
-	admin_uid = users[0]._id
-})
-
-it('funding bank with onchain tx', async () => {
-	const admin = await User.findOne({ role: "admin" })
-	const adminWallet = new LightningAdminWallet({ uid: admin._id })
-	bank_address = await adminWallet.getOnChainAddress()
-	expect(bank_address.substr(0, 4)).toBe("bcrt")
-
-	const generateAddress = async () => {
-		console.log("generateToAddress 1")
-		
-		const [blockhashes] = await bitcoindClient.generateToAddress(1, bank_address)
-		expect(blockhashes.length).toEqual(64)
-
-		console.log("generateToAddress 99")
-		await bitcoindClient.generateToAddress(99, RANDOM_ADDRESS)
-	}
-
-	const checkBalance = async () => {
-		const min_height = 1
-		let sub = lnService.subscribeToChainAddress({lnd: lnd1, bech32_address: bank_address, min_height})
-		
-		await once(sub, 'confirmation')
-		sub.removeAllListeners();
-
-		await waitUntilBlockHeight({lnd: lnd1, blockHeight: 100})
-		const balance = await adminWallet.getBalance()
-		expect(balance).toBe(BLOCK_SUBSIDY)
-		await checkIsBalanced()
-	}
-
-	await Promise.all([
-		checkBalance(),
-		generateAddress()
-	])
-}, 100000)
-
-
-it('funds lndOutside1 and mined 99 blocks to make mined coins accessible', async () => {
-	lndOutside1_wallet_addr = (await lnService.createChainAddress({ format: 'p2wpkh', lnd: lndOutside1 })).address
-	expect(lndOutside1_wallet_addr.substr(0, 4)).toBe("bcrt")
-
-	const result = await bitcoindClient.generateToAddress(1, lndOutside1_wallet_addr)
-	expect(result[0].length).toEqual(64)
-	await bitcoindClient.generateToAddress(99, RANDOM_ADDRESS)
-
-	await waitUntilBlockHeight({lnd: lnd1, blockHeight: 200})
-	await waitUntilBlockHeight({lnd: lndOutside1, blockHeight: 200})
-	await waitUntilBlockHeight({lnd: lndOutside2, blockHeight: 200})
-}, 100000)
-
 const newBlock = 6
 
 const openChannel = async ({lnd, other_lnd, socket, blockHeight}) => {
@@ -227,7 +147,7 @@ const openChannel = async ({lnd, other_lnd, socket, blockHeight}) => {
 it('opens channel from lnd1 to lndOutside1', async () => {
 	const socket = `lnd-outside-1:9735`
 
-	await openChannel({lnd: lnd1, other_lnd: lndOutside1, socket, blockHeight: 200})
+	await openChannel({lnd: lnd1, other_lnd: lndOutside1, socket, blockHeight: 120})
 
 	const { channels } = await lnService.getChannels({ lnd: lnd1 })
 	expect(channels.length).toEqual(1)
@@ -238,7 +158,7 @@ it('opens channel from lndOutside1 to lndOutside2', async () => {
 	const lnd = lndOutside1
 	const socket = `lnd-outside-2:9735`
 
-	await openChannel({lnd, other_lnd: lndOutside2, socket, blockHeight: 206})
+	await openChannel({lnd, other_lnd: lndOutside2, socket, blockHeight: 126})
 
 	const { channels } = await lnService.getChannels({ lnd: lndOutside1 })
 	expect(channels.length).toEqual(2)

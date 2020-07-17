@@ -119,8 +119,8 @@ it('add invoice', async () => {
 
 
 it('add invoice to different user', async () => {
-  lightningWallet = new LightningUserWallet({ uid: user2 })
-  const request = await lightningWallet.addInvoice({ value: 1000000, memo: "tx 2" })
+  const lightningWalletUser2 = new LightningUserWallet({ uid: user2 })
+  const request = await lightningWalletUser2.addInvoice({ value: 1000000, memo: "tx 2" })
 
   const decoded = lightningPayReq.decode(request)
   const decodedHash = decoded.tags.filter(item => item.tagName === "payment_hash")[0].data
