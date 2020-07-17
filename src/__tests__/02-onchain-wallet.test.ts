@@ -111,7 +111,7 @@ it('funding bank with onchain tx', async () => {
 	bank_address = await adminWallet.getOnChainAddress()
 	expect(bank_address.substr(0, 4)).toBe("bcrt")
 
-	const generateAddress = async () => {
+	const fundLndWallet = async () => {
 		bitcoindClient.sendToAddress(bank_address, amount_BTC)
 		await sleep(100)
 		await bitcoindClient.generateToAddress(6, RANDOM_ADDRESS)
@@ -132,7 +132,7 @@ it('funding bank with onchain tx', async () => {
 
 	await Promise.all([
 		checkBalance(),
-		generateAddress()
+		fundLndWallet()
 	])
 }, 100000)
 
