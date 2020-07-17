@@ -239,15 +239,39 @@ jobs:
           when: always
       - when:
           condition:
-            equal: [ master, << pipeline.git.branch >> ]
+            equal: [ master, master ]
           steps:
             - run: |
-                gcloud container images add-tag gcr.io/${GOOGLE_PROJECT_ID}/test-image:latest gcr.io/${GOOGLE_PROJECT_ID}/test-image:approved --quiet
+                gcloud container images add-tag gcr.io/${GOOGLE_PROJECT_ID}/test-image:latest gcr.io/${GOOGLE_PROJECT_ID}/test-image:${CIRCLE_SHA1} --quiet
                 gcloud container clusters get-credentials testnet-cluster --region us-central1-a --project ${GOOGLE_PROJECT_ID}
-                kubectl delete pod -l app=graphql-server
+                helm upgrade graphql-chart -f ~/GaloyApp/backend/graphql-chart/testnet-values.yaml \
+                --set tag=$CIRCLE_SHA1 ~/GaloyApp/backend/graphql-chart/
+                helm upgrade -i prometheus -f ~/GaloyApp/backend/graphql-chart/prometheus-testnet-values.yaml \
+                --set tag=$CIRCLE_SHA1 ~/GaloyApp/backend/graphql-chart/
       - slack/status:
           fail_only: true
           mentions: 'U011J7RCEFQ,U011KKL1L4B'
+  mainnet_deploy:
+    working_directory: ~/GaloyApp/backend
+    docker:
+      - image: kiwigrid/gcloud-kubectl-helm:latest
+    environment:
+      NAMESPACE: devnet
+    steps:
+      - checkout:
+          path: ~/GaloyApp
+      - when:
+          condition:
+            equal: [ master, master ]
+          steps:
+            - run: |
+                gcloud container clusters get-credentials mainnet --region us-central1-a --project ${GOOGLE_PROJECT_ID}
+                export MACAROON=$(kubectl exec lnd-container-0 -- base64 /root/.lnd/data/chain/bitcoin/mainnet/admin.macaroon | tr -d '\n\r')
+                export TLS=$(kubectl exec lnd-container-0 -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
+                helm upgrade -i graphql-chart -f ~/GaloyApp/backend/graphql-chart/mainnet-values.yaml \
+                --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/graphql-chart/
+                helm upgrade -i prometheus -f ~/GaloyApp/backend/graphql-chart/prometheus-testnet-values.yaml \
+                --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/graphql-chart/
 
 workflows:
   kube:
@@ -256,3 +280,12 @@ workflows:
       - test:
           requires:
             - build_test_image
+      - approve_mainnet_deploy:
+          type: approval
+          requires:
+            - test
+      - slack/approval-notification:
+          mentions: 'U011J7RCEFQ,U011KKL1L4B'
+      - mainnet_deploy:
+          requires:
+            - approve_mainnet_deploy
