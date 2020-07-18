@@ -10,6 +10,7 @@ import { LightningUserWallet } from "./LightningUserWallet";
 import { Price } from "./priceImpl";
 import { login, requestPhoneCode } from "./text";
 import { OnboardingEarn } from "./types";
+import { LightningAdminWallet } from "./LightningAdminImpl";
 const path = require("path");
 const mongoose = require("mongoose");
 dotenv.config()
@@ -103,6 +104,10 @@ const resolvers = {
         id: user._id,
         level: result.level,
       }
+    },
+    openChannel: async (_, {local_tokens, public_key, socket}, {uid}) => {
+      const lightningAdminWallet = new LightningAdminWallet({uid})
+      return {tx: lightningAdminWallet.openChannel({local_tokens, public_key, socket})}
     },
     invoice: async (_, __, {uid}) => {
       const lightningWallet = new LightningUserWallet({uid})
@@ -206,6 +211,8 @@ const permissions = shield({
     // requestPhoneCode: not(isAuthenticated),
     // login: not(isAuthenticated),
   
+    openChannel: isAuthenticated, // FIXME: this should be isAuthenticated && isAdmin
+
     onchain: isAuthenticated,
     invoice: isAuthenticated,
     earnCompleted: isAuthenticated,

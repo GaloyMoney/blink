@@ -39,6 +39,10 @@ type OnChain {
   getNewAddress: String
 }
 
+type OnchainTransaction {
+  tx: String
+}
+
 type User {
   id: ID
   name: String!
@@ -80,6 +84,7 @@ type Query {
 type Mutation {
   requestPhoneCode(phone: String): Success
   login(phone: String, code: Int, network: Network): Token
+  openChannel(local_tokens: Int, public_key: String, socket: String): OnchainTransaction
 
   onchain: OnChain
   invoice: Invoice

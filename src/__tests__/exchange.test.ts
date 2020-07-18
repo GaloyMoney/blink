@@ -1,4 +1,4 @@
-import { getBalance } from "./exchange"
+import { getBalance } from "../exchange"
 
 it('fetchBalance', async () => {
     const balance = expect.objectContaining({

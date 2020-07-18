@@ -1,7 +1,7 @@
-import { setupMongoConnection } from "./db"
+import { setupMongoConnection } from "../db"
 // this import needs to be before medici
 
-import { FiatAdminWallet } from "./FiatAdminWallet"
+import { FiatAdminWallet } from "../FiatAdminWallet"
 const mongoose = require("mongoose");
 
 

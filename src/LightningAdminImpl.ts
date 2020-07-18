@@ -34,13 +34,15 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
     const accounts = await MainBook.listAccounts()
     
     // used for debugging
+    let books = ""
     for (const account of accounts) {
       const { balance } = await MainBook.balance({
         account: account,
         currency: this.currency
       })
-      console.log(account + ": " + balance)
+      books += account + ": " + balance + "\n"
     }
+    console.log(books)
 
     const getBalanceOf = async (account) => {
       return (await MainBook.balance({
