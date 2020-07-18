@@ -142,7 +142,7 @@ const openChannel = async ({lnd, other_lnd, socket, blockHeight}) => {
 it('opens channel from lnd1 to lndOutside1', async () => {
 	const socket = `lnd-outside-1:9735`
 
-	await openChannel({lnd: lnd1, other_lnd: lndOutside1, socket, blockHeight: 120})
+	await openChannel({lnd: lnd1, other_lnd: lndOutside1, socket, blockHeight: 116})
 
 	const { channels } = await lnService.getChannels({ lnd: lnd1 })
 	expect(channels.length).toEqual(1)
@@ -153,7 +153,7 @@ it('opens channel from lndOutside1 to lndOutside2', async () => {
 	const lnd = lndOutside1
 	const socket = `lnd-outside-2:9735`
 
-	await openChannel({lnd, other_lnd: lndOutside2, socket, blockHeight: 126})
+	await openChannel({lnd, other_lnd: lndOutside2, socket, blockHeight: 122})
 
 	const { channels } = await lnService.getChannels({ lnd: lndOutside1 })
 	expect(channels.length).toEqual(2)

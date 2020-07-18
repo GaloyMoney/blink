@@ -1,16 +1,15 @@
 /**
  * @jest-environment node
  */
-import { setupMongoConnection } from "../db"
 // this import needs to be before medici
-import { randomBytes, createHash } from 'crypto'
-import { LightningUserWallet } from "../LightningUserWallet"
-import { LightningAdminWallet } from "../LightningAdminImpl"
-import { btc2sat, getAuth, sleep, waitUntilBlockHeight } from "../utils";
-import { login } from "../text";
-import { OnboardingEarn } from "../types"
-import { TEST_NUMBER } from '../text'
-import { checkIsBalanced } from "./utils_for_tst"
+import { createHash, randomBytes } from 'crypto';
+import { setupMongoConnection } from "../db";
+import { LightningAdminWallet } from "../LightningAdminImpl";
+import { LightningUserWallet } from "../LightningUserWallet";
+import { login, TEST_NUMBER } from "../text";
+import { OnboardingEarn } from "../types";
+import { sleep } from "../utils";
+import { checkIsBalanced } from "./utils_for_tst";
 const lnService = require('ln-service')
 const lightningPayReq = require('bolt11')
 const mongoose = require("mongoose")
@@ -18,13 +17,11 @@ const Users = mongoose.model("User")
 const BitcoindClient = require('bitcoin-core')
 
 let lightningWallet
-let lightningWalletOutside1
-let lightningWalletOutside2
+let lndOutside1
+let lndOutside2
 
 let user1: string
-const user2: string = "user2"
-
-const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
+const user2 = "user2"
 
 const lndOutside1Addr = process.env.LNDOUTSIDE1ADDR ?? 'lnd-outside-1'
 const lndOutside1Port = process.env.LNDOUTSIDE1RPCPORT ?? '10009'
@@ -41,13 +38,13 @@ beforeAll(async () => {
   // FIXME: this might cause issue when running test in parrallel?
   //this also fails the test due to user authentication issue
   // return await mongoose.connection.dropDatabase()
-  lightningWalletOutside1 = lnService.authenticatedLndGrpc({
+  lndOutside1 = lnService.authenticatedLndGrpc({
     cert: process.env.TLS,
     macaroon: process.env.MACAROONOUTSIDE1,
     socket: `${lndOutside1Addr}:${lndOutside1Port}`,
   }).lnd;
 
-  lightningWalletOutside2 = lnService.authenticatedLndGrpc({
+  lndOutside2 = lnService.authenticatedLndGrpc({
     cert: process.env.TLS,
     macaroon: process.env.MACAROONOUTSIDE2,
     socket: `${lndOutside2Addr}:${lndOutside2Port}`,
@@ -72,7 +69,7 @@ beforeEach(async () => {
   // await mongoose.connection.db.dropCollection('users')
   await login(TEST_NUMBER[0])
   let Users = mongoose.model("User")
-  sleep(2000)
+  sleep(2000) // FIXME
   console.log("current users", await Users.find({}))
   user1 = (await Users.findOne({}))._id
   lightningWallet = new LightningUserWallet({ uid: user1 })
@@ -127,28 +124,8 @@ it('add earn adds balance correctly', async () => {
   await checkIsBalanced()
 })
 
-it('receives external funding correctly', async () => {
-  const amount_BTC = 1
-
-  const connection_obj = {
-    network: 'regtest', username: 'rpcuser', password: 'rpcpass',
-    host: process.env.BITCOINDADDR, port: process.env.BITCOINDPORT
-  }
-  const bitcoindClient = new BitcoindClient(connection_obj)
-  const { lnd } = lnService.authenticatedLndGrpc(getAuth())
-
-  let onChainAddress = await lightningWallet.getOnChainAddress()
-  bitcoindClient.sendToAddress(onChainAddress, amount_BTC)
-
-  await bitcoindClient.generateToAddress(6, RANDOM_ADDRESS)
-  await waitUntilBlockHeight({ lnd, blockHeight: 1 }) // TODO set block height properly?
-  let finalBalance = await lightningWallet.getBalance()
-  expect(finalBalance).toBe(btc2sat(amount_BTC))
-  await checkIsBalanced()
-}, 50000)
-
 it('payInvoice', async () => {
-  const { request } = await lnService.createInvoice({ lnd: lightningWalletOutside1, tokens: 10000 })
+  const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: 10000 })
   await lightningWallet.addEarn(onBoardingEarnIds)
   const result: string = await lightningWallet.pay({ invoice: request })
   expect(result).toBe("success")
@@ -158,7 +135,7 @@ it('payInvoice', async () => {
 }, 50000)
 
 it('fails to pay when insufficient balance', async () => {
-  const { request } = await lnService.createInvoice({ lnd: lightningWalletOutside1, tokens: 10000 })
+  const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: 10000 })
   //FIXME: Check exact error message also
   await expect(lightningWallet.pay({ invoice: request })).rejects.toThrow()
 })
@@ -183,7 +160,7 @@ it('payInvoiceToSelf', async () => {
 }, 50000)
 
 it('pushPayment', async () => {
-  const destination = (await lnService.getWalletInfo({ lnd: lightningWalletOutside1 })).public_key;
+  const destination = (await lnService.getWalletInfo({ lnd: lndOutside1 })).public_key;
   const tokens = 1000
   await lightningWallet.addEarn(onBoardingEarnIds)
   const res = await lightningWallet.pay({ destination, tokens })
@@ -195,14 +172,14 @@ it('pushPayment', async () => {
 
 it('receives payment from outside', async () => {
   const request = await lightningWallet.addInvoice({ value: 1000, memo: "receive from outside" })
-  await lnService.pay({ lnd: lightningWalletOutside1, request })
+  await lnService.pay({ lnd: lndOutside1, request })
   const finalBalance = await lightningWallet.getBalance()
   expect(finalBalance).toBe(1000)
   await checkIsBalanced()
 }, 50000)
 
 it('fails to pay when channel capacity exceeded', async () => {
-  const { request } = await lnService.createInvoice({ lnd: lightningWalletOutside1, tokens: 2000000 })
+  const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: 2000000 })
   const admin = await new Users({ role: "admin" }).save()
   const adminWallet = new LightningAdminWallet({ uid: admin._id })
   await adminWallet.addFunds({ amount: 2000005, uid: user1 })
@@ -226,7 +203,7 @@ it('pay hodl invoice', async () => {
   const secret = randomSecret();
   const id = sha256(secret);
 
-  const { request } = await lnService.createHodlInvoice({ id, lnd: lightningWalletOutside1, tokens: 1000 });
+  const { request } = await lnService.createHodlInvoice({ id, lnd: lndOutside1, tokens: 1000 });
   await lightningWallet.addEarn(onBoardingEarnIds)
   expect(await lightningWallet.pay({ invoice: request })).toBe("pending")
   await checkIsBalanced()
