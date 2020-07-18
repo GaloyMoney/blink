@@ -180,7 +180,7 @@ jobs:
       #       echo "devnet-cluster-"$RANDOM > clustername
       #       cat clustername
       - run:
-          name: authorize gcloud and kubectl on circleci and create cluster
+          name: authorize gcloud and kubectl on circleci and create namespace
           command: |
             echo ${GCLOUD_SERVICE_KEY} > gcloud-service-key.json
             gcloud auth activate-service-account --key-file=gcloud-service-key.json
