@@ -32,6 +32,7 @@ const main = async () => {
       console.error(`issue getting price: ${err}`)
     }
 
+    await adminWallet.updateEscrows()
     await adminWallet.updateUsersPendingPayment()
     await adminWallet.updatePending()
     
