@@ -13,9 +13,6 @@ const BitcoindClient = require('bitcoin-core')
 const lnService = require('ln-service')
 const cert = process.env.TLS
 
-const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
-const BLOCK_SUBSIDY = 50 * 10 ** 8
-
 let macaroon2 = process.env.MACAROONOUTSIDE1
 let macaroon3 = process.env.MACAROONOUTSIDE2
 

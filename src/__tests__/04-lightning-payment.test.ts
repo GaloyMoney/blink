@@ -1,9 +1,9 @@
 /**
  * @jest-environment node
  */
+import { setupMongoConnection } from "../db";
 // this import needs to be before medici
 import { createHash, randomBytes } from 'crypto';
-import { setupMongoConnection } from "../db";
 import { LightningAdminWallet } from "../LightningAdminImpl";
 import { LightningUserWallet } from "../LightningUserWallet";
 import { login, TEST_NUMBER } from "../text";
@@ -14,7 +14,6 @@ const lnService = require('ln-service')
 const lightningPayReq = require('bolt11')
 const mongoose = require("mongoose")
 const Users = mongoose.model("User")
-const BitcoindClient = require('bitcoin-core')
 
 let lightningWallet
 let lndOutside1
