@@ -4,7 +4,6 @@
 import { setupMongoConnection } from "../db"
 // this import needs to be before medici
 import { randomBytes, createHash } from 'crypto'
-import moment from "moment"
 import { LightningUserWallet } from "../LightningUserWallet"
 import { LightningAdminWallet } from "../LightningAdminImpl"
 import { btc2sat, getAuth, sleep, waitUntilBlockHeight } from "../utils";
@@ -77,16 +76,6 @@ beforeEach(async () => {
   console.log("current users", await Users.find({}))
   user1 = (await Users.findOne({}))._id
   lightningWallet = new LightningUserWallet({ uid: user1 })
-})
-
-it('Lightning Wallet Get Info works', async () => {
-  // const result = await lightningWallet.getInfo()
-  // console.log({result})
-  const outside1PubKey = (await lnService.getWalletInfo({ lnd: lightningWalletOutside1 })).public_key;
-  const outside2PubKey = (await lnService.getWalletInfo({ lnd: lightningWalletOutside2 })).public_key;
-  // expect(result === 0).toBeTruthy()
-  console.log("Outside node 1 pub key", outside1PubKey)
-  console.log("Second node 2 pub key", outside2PubKey)
 })
 
 it('list transactions', async () => {
