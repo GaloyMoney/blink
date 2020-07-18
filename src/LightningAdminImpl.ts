@@ -107,9 +107,9 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
     const metadata = { currency: this.currency, txid: transaction_id, type: "fee" }
 
     await MainBook.entry("on chain fees")
-    .debit('Assets:Reserve:Lightning', fee, {...metadata,})
-    .credit('Expenses:Bitcoin:Fees', fee, {...metadata})
-    .commit()
+      .debit('Assets:Reserve:Lightning', fee, {...metadata,})
+      .credit('Expenses:Bitcoin:Fees', fee, {...metadata})
+      .commit()
   }
 
   async updateEscrows() {
@@ -119,28 +119,31 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
     const Transaction = await mongoose.model("Medici_Transaction")
     const MainBook = new book("MainBook")
 
-    const metadata = { currency: this.currency, type: "escrow" }
+    const type = "escrow"
+
+    const metadata = { currency: this.currency, type }
 
     const { channels } = await lnService.getChannels({lnd})
     const selfInitated = filter(channels, {is_partner_initiated: false, is_active: true})
-    // TODO remove the inactive channel from escrow
+
+    // TODO remove the inactive channel from escrow (??)
 
     for (const channel of selfInitated) {
 
       const txid = `${channel.transaction_id}:${channel.transaction_vout}`
       
-      // TODO
-      // const mongotx = Transaction.findOne({ type: "escrow", txid })
-      // if mongotx.debit === channel.commit_transaction_fee,
-      // continue
-      // else
-      // void
-      // + 
-      await MainBook.entry("escrow")
-      .debit('Assets:Reserve:Lightning', channel.commit_transaction_fee, {...metadata, txid})
-      .credit('Assets:Reserve:Escrow', channel.commit_transaction_fee, {...metadata, txid})
-      .commit()
+      const mongotx = await Transaction.findOne({ type, txid })
 
+      if (mongotx?.debit === channel.commit_transaction_fee) {
+        continue
+      }
+      
+      const diff = channel.commit_transaction_fee - (mongotx?.debit ?? 0)
+
+      await MainBook.entry("escrow")
+        .debit('Assets:Reserve:Lightning', diff, {...metadata, txid})
+        .credit('Assets:Reserve:Escrow', diff, {...metadata, txid})
+        .commit()
     }
 
   }
