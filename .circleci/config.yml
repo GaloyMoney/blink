@@ -246,7 +246,7 @@ jobs:
                 gcloud container clusters get-credentials testnet-cluster --region us-central1-a --project ${GOOGLE_PROJECT_ID}
                 helm upgrade graphql-chart -f ~/GaloyApp/backend/graphql-chart/testnet-values.yaml \
                 --set tag=$CIRCLE_SHA1 ~/GaloyApp/backend/graphql-chart/
-                helm upgrade -i prometheus -f ~/GaloyApp/backend/graphql-chart/prometheus-testnet-values.yaml \
+                helm upgrade -i prometheus -f ~/GaloyApp/backend/graphql-chart/prometheus-values.yaml \
                 --set tag=$CIRCLE_SHA1 ~/GaloyApp/backend/graphql-chart/
       - slack/status:
           fail_only: true
