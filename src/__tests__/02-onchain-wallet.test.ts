@@ -5,45 +5,14 @@ import { setupMongoConnection } from "../db"
 // this import needs to be before medici
 
 import { LightningAdminWallet } from "../LightningAdminImpl"
-import { sleep, getAuth, waitUntilBlockHeight, btc2sat } from "../utils"
+import { sleep, waitUntilBlockHeight, btc2sat } from "../utils"
 import { checkIsBalanced } from "../utils_for_tst";
-import { TEST_NUMBER, login } from "../text";
-import { LightningUserWallet } from "../LightningUserWallet";
-import * as jwt from 'jsonwebtoken';
+const lnService = require('ln-service')
 
 const mongoose = require("mongoose");
 const { once } = require('events');
 
-//TODO: Choose between camel case or underscores for variable naming
-const BitcoindClient = require('bitcoin-core')
-const lnService = require('ln-service')
-const cert = process.env.TLS
-
-const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
-
-let macaroon2 = process.env.MACAROONOUTSIDE1
-let macaroon3 = process.env.MACAROONOUTSIDE2
-
-let lnd_outside_1_addr = process.env.LNDOUTSIDE1ADDR
-let lnd_outside_2_addr = process.env.LNDOUTSIDE2ADDR
-
-let bitcoind_addr = process.env.BITCOINDADDR
-let bitcoind_port = process.env.BITCOINDPORT
-
-let lnd_outside_1_rpc_port = process.env.LNDOUTSIDE1RPCPORT
-let lnd_outside_2_rpc_port = process.env.LNDOUTSIDE2RPCPORT
-// let lnd_addr = 'lnd-service'
-// let lnd_outside_1_addr = 'lnd-outside-1'
-// let lnd_outside_2_addr = 'lnd-outside-2'
-// let bitcoind_addr = 'bitcoind-service'
-// let bitcoind_port = 18443
-// let lnd_rpc_port, lnd_outside_1_rpc_port  = 10009, 10009
-
-let bitcoindClient
-
-let lnd1
-let lndOutside1
-let lndOutside2
+import {lndMain, lndOutside1, lndOutside2, bitcoindClient, RANDOM_ADDRESS, getUserWallet} from "./import"
 
 let bank_address
 let lndOutside1_wallet_addr
@@ -51,42 +20,11 @@ let lndOutside1_wallet_addr
 let admin_uid
 
 const User = mongoose.model("User")
-
 const amount_BTC = 1
 
 
 beforeAll(async () => {
-
-	lndOutside1 = lnService.authenticatedLndGrpc({
-		cert,
-		macaroon: macaroon2,
-		socket: `${lnd_outside_1_addr}:${lnd_outside_1_rpc_port}`,
-	}).lnd;
-
-	lndOutside2 = lnService.authenticatedLndGrpc({
-		cert,
-		macaroon: macaroon3,
-		socket: `${lnd_outside_2_addr}:${lnd_outside_2_rpc_port}`,
-	}).lnd;
-
-	lnd1 = lnService.authenticatedLndGrpc(getAuth()).lnd
-
 	await setupMongoConnection()
-
-	// try {
-	// 	await mongoose.connection.dropCollection('users')
-	// } catch (err) {
-	// 	// console.log("can't drop the collection, probably because it doesn't exist")
-	// 	console.log(err)
-	// }
-
-	const connection_obj = {
-		network: 'regtest', username: 'rpcuser', password: 'rpcpass',
-		host: bitcoind_addr, port: bitcoind_port
-	}
-
-	bitcoindClient = new BitcoindClient(connection_obj)
-
 })
 
 afterAll(async () => {
@@ -108,7 +46,6 @@ it('funds bitcoind wallet', async () => {
 	expect(await bitcoindClient.getBalance()).toBe(50)
 })
 
-
 const onchain_funding = async ({address, wallet, blockHeight}) => {
 	const fundLndWallet = async () => {
 		await bitcoindClient.sendToAddress(address, amount_BTC)
@@ -118,12 +55,12 @@ const onchain_funding = async ({address, wallet, blockHeight}) => {
 
 	const checkBalance = async () => {
 		const min_height = 1
-		let sub = lnService.subscribeToChainAddress({lnd: lnd1, bech32_address: address, min_height})
+		let sub = lnService.subscribeToChainAddress({lnd: lndMain, bech32_address: address, min_height})
 		
 		await once(sub, 'confirmation')
 		sub.removeAllListeners();
 
-		await waitUntilBlockHeight({lnd: lnd1, blockHeight})
+		await waitUntilBlockHeight({lnd: lndMain, blockHeight})
 		const balance = await wallet.getBalance()
 		expect(balance).toBe(btc2sat(amount_BTC))
 		await checkIsBalanced()
@@ -134,6 +71,15 @@ const onchain_funding = async ({address, wallet, blockHeight}) => {
 		fundLndWallet()
 	])
 }
+
+it('list transactions', async () => {
+	const wallet = await getUserWallet(0)
+  const result = await wallet.getTransactions()
+  expect(result.length).toBe(0)
+
+  // TODO validate a transaction to be and verify result == 1 afterwards.
+  // TODO more testing with devnet
+})
 
 it('funding bank with onchain tx', async () => {
 	const admin = await User.findOne({ role: "admin" })
@@ -146,14 +92,12 @@ it('funding bank with onchain tx', async () => {
 }, 10000)
 
 it('user are credited for on chain transaction', async () => {
-		
-	const raw_token = await login(TEST_NUMBER[0])
-	const token = jwt.verify(raw_token, process.env.JWT_SECRET);
-	const userWallet = new LightningUserWallet({ uid: token.uid })
-	const address = await userWallet.getOnChainAddress()
+	const wallet = await getUserWallet(0)
+	const address = await wallet.getOnChainAddress()
+
 	expect((<string>address).substr(0, 4)).toBe("bcrt")
 
-	await onchain_funding({address, wallet: userWallet, blockHeight: 113})
+	await onchain_funding({address, wallet, blockHeight: 113})
 
 }, 10000)
 
@@ -166,7 +110,7 @@ it('funds lndOutside1', async () => {
 
 	await bitcoindClient.generateToAddress(7, RANDOM_ADDRESS)
 
-	await waitUntilBlockHeight({lnd: lnd1, blockHeight: 120})
+	await waitUntilBlockHeight({lnd: lndMain, blockHeight: 120})
 	await waitUntilBlockHeight({lnd: lndOutside1, blockHeight: 120})
 	await waitUntilBlockHeight({lnd: lndOutside2, blockHeight: 120})
 }, 10000)

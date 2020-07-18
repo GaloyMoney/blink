@@ -5,42 +5,15 @@ import { setupMongoConnection } from "../db"
 // this import needs to be before medici
 
 import { LightningAdminWallet } from "../LightningAdminImpl"
-import { sleep, getAuth, waitUntilBlockHeight } from "../utils"
+import { sleep, waitUntilBlockHeight } from "../utils"
 import { checkIsBalanced } from "../utils_for_tst";
 const mongoose = require("mongoose");
 const { once } = require('events');
 
-//TODO: Choose between camel case or underscores for variable naming
-const BitcoindClient = require('bitcoin-core')
 const lnService = require('ln-service')
-const cert = process.env.TLS
 
-const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
-const BLOCK_SUBSIDY = 50 * 10 ** 8
+import {lndMain, lndOutside1, lndOutside2, bitcoindClient, RANDOM_ADDRESS} from "./import"
 
-let macaroon2 = process.env.MACAROONOUTSIDE1
-let macaroon3 = process.env.MACAROONOUTSIDE2
-
-let lnd_outside_1_addr = process.env.LNDOUTSIDE1ADDR
-let lnd_outside_2_addr = process.env.LNDOUTSIDE2ADDR
-
-let bitcoind_addr = process.env.BITCOINDADDR
-let bitcoind_port = process.env.BITCOINDPORT
-
-let lnd_outside_1_rpc_port = process.env.LNDOUTSIDE1RPCPORT
-let lnd_outside_2_rpc_port = process.env.LNDOUTSIDE2RPCPORT
-// let lnd_addr = 'lnd-service'
-// let lnd_outside_1_addr = 'lnd-outside-1'
-// let lnd_outside_2_addr = 'lnd-outside-2'
-// let bitcoind_addr = 'bitcoind-service'
-// let bitcoind_port = 18443
-// let lnd_rpc_port, lnd_outside_1_rpc_port  = 10009, 10009
-
-let bitcoindClient
-
-let lnd1
-let lndOutside1
-let lndOutside2
 
 const User = mongoose.model("User")
 
@@ -49,37 +22,7 @@ const local_tokens = 10000000
 const blockHeightInit = 120
 
 beforeAll(async () => {
-
-	lndOutside1 = lnService.authenticatedLndGrpc({
-		cert,
-		macaroon: macaroon2,
-		socket: `${lnd_outside_1_addr}:${lnd_outside_1_rpc_port}`,
-	}).lnd;
-
-	lndOutside2 = lnService.authenticatedLndGrpc({
-		cert,
-		macaroon: macaroon3,
-		socket: `${lnd_outside_2_addr}:${lnd_outside_2_rpc_port}`,
-	}).lnd;
-
-	lnd1 = lnService.authenticatedLndGrpc(getAuth()).lnd
-
 	await setupMongoConnection()
-
-	// try {
-	// 	await mongoose.connection.dropCollection('users')
-	// } catch (err) {
-	// 	// console.log("can't drop the collection, probably because it doesn't exist")
-	// 	console.log(err)
-	// }
-
-	const connection_obj = {
-		network: 'regtest', username: 'rpcuser', password: 'rpcpass',
-		host: bitcoind_addr, port: bitcoind_port
-	}
-
-	bitcoindClient = new BitcoindClient(connection_obj)
-
 })
 
 afterAll(async () => {
@@ -90,7 +33,7 @@ const newBlock = 6
 
 const openChannel = async ({lnd, other_lnd, socket, blockHeight}) => {
 
-	await waitUntilBlockHeight({lnd: lnd1, blockHeight})
+	await waitUntilBlockHeight({lnd: lndMain, blockHeight})
 	await waitUntilBlockHeight({lnd: other_lnd, blockHeight})
 
 	const { public_key } = await lnService.getWalletInfo({ lnd: other_lnd })
@@ -99,7 +42,7 @@ const openChannel = async ({lnd, other_lnd, socket, blockHeight}) => {
 	let openChannelPromise
 	let adminWallet
 
-	if (lnd === lnd1) {
+	if (lnd === lndMain) {
 		// TODO: dedupe
 		const admin = await User.findOne({role: "admin"})
 		adminWallet = new LightningAdminWallet({uid: admin._id})
@@ -117,7 +60,7 @@ const openChannel = async ({lnd, other_lnd, socket, blockHeight}) => {
 
 	const mineBlock = async () => {
 		await bitcoindClient.generateToAddress(newBlock, RANDOM_ADDRESS)
-		await waitUntilBlockHeight({lnd: lnd1, blockHeight: blockHeight + newBlock})
+		await waitUntilBlockHeight({lnd: lndMain, blockHeight: blockHeight + newBlock})
 		await waitUntilBlockHeight({lnd: other_lnd, blockHeight: blockHeight + newBlock})
 	}
 
@@ -134,7 +77,7 @@ const openChannel = async ({lnd, other_lnd, socket, blockHeight}) => {
 
 	sub.removeAllListeners();
 
-	if (lnd === lnd1) {
+	if (lnd === lndMain) {
 		await adminWallet.updateEscrows()
 	}
 
@@ -144,9 +87,9 @@ const openChannel = async ({lnd, other_lnd, socket, blockHeight}) => {
 it('opens channel from lnd1 to lndOutside1', async () => {
 	const socket = `lnd-outside-1:9735`
 
-	await openChannel({lnd: lnd1, other_lnd: lndOutside1, socket, blockHeight: blockHeightInit})
+	await openChannel({lnd: lndMain, other_lnd: lndOutside1, socket, blockHeight: blockHeightInit})
 
-	const { channels } = await lnService.getChannels({ lnd: lnd1 })
+	const { channels } = await lnService.getChannels({ lnd: lndMain })
 	expect(channels.length).toEqual(1)
 
 }, 100000)
