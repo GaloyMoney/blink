@@ -7,7 +7,6 @@ import { createHash, randomBytes } from 'crypto';
 import { LightningAdminWallet } from "../LightningAdminImpl";
 import { LightningUserWallet } from "../LightningUserWallet";
 import { OnboardingEarn } from "../types";
-import { checkIsBalanced } from "../utils_for_tst";
 const lnService = require('ln-service')
 const lightningPayReq = require('bolt11')
 const mongoose = require("mongoose")
@@ -17,7 +16,7 @@ let userWallet1, userWallet2
 let uidFromToken1, uidFromToken2
 
 
-import {lndOutside1, getUidFromToken, getUserWallet} from "./import"
+import {lndOutside1, getUidFromToken, getUserWallet, checkIsBalanced} from "../tests_utils/import"
 
 
 //FIXME: Maybe switch to using single reward

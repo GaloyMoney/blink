@@ -6,13 +6,12 @@ import { setupMongoConnection } from "../db"
 
 import { LightningAdminWallet } from "../LightningAdminImpl"
 import { sleep, waitUntilBlockHeight, btc2sat } from "../utils"
-import { checkIsBalanced } from "../utils_for_tst";
 const lnService = require('ln-service')
 
 const mongoose = require("mongoose");
 const { once } = require('events');
 
-import {lndMain, lndOutside1, lndOutside2, bitcoindClient, RANDOM_ADDRESS, getUserWallet} from "./import"
+import {lndMain, lndOutside1, lndOutside2, bitcoindClient, RANDOM_ADDRESS, getUserWallet, checkIsBalanced} from "../tests_utils/import"
 
 let bank_address
 let lndOutside1_wallet_addr

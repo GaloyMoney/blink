@@ -6,13 +6,12 @@ import { setupMongoConnection } from "../db"
 
 import { LightningAdminWallet } from "../LightningAdminImpl"
 import { sleep, waitUntilBlockHeight } from "../utils"
-import { checkIsBalanced } from "../utils_for_tst";
 const mongoose = require("mongoose");
 const { once } = require('events');
 
 const lnService = require('ln-service')
 
-import {lndMain, lndOutside1, lndOutside2, bitcoindClient, RANDOM_ADDRESS} from "./import"
+import {lndMain, lndOutside1, lndOutside2, bitcoindClient, RANDOM_ADDRESS, checkIsBalanced} from "../tests_utils/import"
 
 
 const User = mongoose.model("User")
@@ -114,5 +113,5 @@ it('opens channel from lndOutside1 to lnd1', async () => {
 		const { channels } = await lnService.getChannels({ lnd: lndOutside1 })
 		expect(channels.length).toEqual(3)
 	}
-	
+
 }, 100000)

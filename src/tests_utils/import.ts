@@ -3,6 +3,9 @@ import { LightningUserWallet } from "../LightningUserWallet";
 const BitcoindClient = require('bitcoin-core')
 import * as jwt from 'jsonwebtoken';
 import { TEST_NUMBER, login } from "../text";
+import { LightningAdminWallet } from "../LightningAdminImpl"
+const mongoose = require("mongoose")
+const User = mongoose.model("User")
 
 const lnService = require('ln-service')
 const cert = process.env.TLS
@@ -40,4 +43,12 @@ export const getUserWallet = async userNumber => {
   const uid = await getUidFromToken(userNumber)
   const userWallet = new LightningUserWallet({ uid })
   return userWallet
+}
+
+export const checkIsBalanced = async () => {
+	const admin = await User.findOne({ role: "admin" })
+	const adminWallet = new LightningAdminWallet({ uid: admin._id })
+	const { assetsEqualLiabilities, lndBalanceSheetAreSynced } = await adminWallet.balanceSheetIsBalanced()
+	expect(assetsEqualLiabilities).toBeTruthy()
+	expect(lndBalanceSheetAreSynced).toBeTruthy()
 }

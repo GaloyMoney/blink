@@ -3,7 +3,7 @@
  */
 import { setupMongoConnection } from "../db";
 // this import needs to be before medici
-import {lndMain, lndOutside1, lndOutside2, bitcoindClient} from "./import"
+import {lndMain, lndOutside1, lndOutside2, bitcoindClient} from "../tests_utils/import"
 const mongoose = require("mongoose");
 
 //TODO: Choose between camel case or underscores for variable naming
