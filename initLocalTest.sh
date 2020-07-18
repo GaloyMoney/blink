@@ -1,5 +1,7 @@
 helm install --namespace=$NAMESPACE bitcoind -f ../../bitcoind-chart/regtest-values.yaml ../../bitcoind-chart/
-helm install --namespace=$NAMESPACE mongodb --set auth.username=testGaloy,auth.password=testGaloy,auth.database=galoy,persistence.enabled=false bitnami/mongodb
+
+if [ -z ${LOCAL+x} ]; then SERVICETYPE=ClusterIP; else SERVICETYPE=LoadBalancer; fi
+helm install --namespace=$NAMESPACE mongodb --set auth.username=testGaloy,auth.password=testGaloy,auth.database=galoy,persistence.enabled=false,service.type=$SERVICETYPE bitnami/mongodb
 
 kubectl wait --namespace=$NAMESPACE --for=condition=ready pod -l app=bitcoind-container
 
