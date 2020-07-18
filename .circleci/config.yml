@@ -289,6 +289,8 @@ workflows:
             - test
       - slack/approval-notification:
           mentions: 'U011J7RCEFQ,U011KKL1L4B'
+          requires:
+            - test
       - mainnet_deploy:
           requires:
             - approve_mainnet_deploy
