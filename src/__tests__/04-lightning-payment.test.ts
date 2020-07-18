@@ -24,6 +24,8 @@ import {lndOutside1, getUidFromToken, getUserWallet} from "./import"
 const onBoardingEarnAmt: number = Object.values(OnboardingEarn).reduce((a, b) => a + b, 0)
 const onBoardingEarnIds: string[] = Object.keys(OnboardingEarn)
 
+console.log({onBoardingEarnAmt})
+
 beforeAll(async () => {
   await setupMongoConnection()
   uidFromToken1 = await getUidFromToken(1)
@@ -96,8 +98,16 @@ it('payInvoice', async () => {
   await checkIsBalanced()
 }, 50000)
 
-it('fails to pay when insufficient balance', async () => {
-  const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: 10000000 })
+it('receives payment from outside', async () => {
+  const request = await userWallet1.addInvoice({ value: amountInvoice, memo: "receive from outside" })
+  await lnService.pay({ lnd: lndOutside1, request })
+  const finalBalance = await userWallet1.getBalance()
+  expect(finalBalance).toBe(onBoardingEarnAmt)
+  await checkIsBalanced()
+}, 50000)
+
+it('fails to pay when user has insufficient balance', async () => {
+  const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: onBoardingEarnAmt + 100000 })
   //FIXME: Check exact error message also
   await expect(userWallet1.pay({ invoice: request })).rejects.toThrow()
 })
@@ -107,9 +117,7 @@ it('payInvoiceToAnotherGaloyUser', async () => {
   await userWallet1.pay({ invoice: request })
   const user1FinalBalance = await userWallet1.getBalance()
   const user2FinalBalance = await userWallet2.getBalance()
-  expect(user1FinalBalance).toBe(onBoardingEarnAmt - 2 * amountInvoice) 
-  // FIXME 2* is not great design.
-  // here to account for "payInvoice payment"
+  expect(user1FinalBalance).toBe(onBoardingEarnAmt - amountInvoice) 
   expect(user2FinalBalance).toBe(1000)
   await checkIsBalanced()
 }, 50000)
@@ -121,27 +129,17 @@ it('payInvoiceToSelf', async () => {
 
 it('pushPayment', async () => {
   const destination = (await lnService.getWalletInfo({ lnd: lndOutside1 })).public_key;
-  const res = await userWallet1.pay({ destination, amountInvoice })
+  const res = await userWallet1.pay({ destination, tokens: amountInvoice })
   const finalBalance = await userWallet1.getBalance()
   expect(res).toBe("success")
-  expect(finalBalance).toBe(onBoardingEarnAmt - 3 * amountInvoice)
-  await checkIsBalanced()
-}, 50000)
-
-it('receives payment from outside', async () => {
-  const request = await userWallet1.addInvoice({ value: amountInvoice, memo: "receive from outside" })
-  await lnService.pay({ lnd: lndOutside1, request })
-  const finalBalance = await userWallet1.getBalance()
   expect(finalBalance).toBe(onBoardingEarnAmt - 2 * amountInvoice)
   await checkIsBalanced()
 }, 50000)
 
 it('fails to pay when channel capacity exceeded', async () => {
-  const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: 2000000 })
-  const admin = await new Users({ role: "admin" }).save()
-  const adminWallet = new LightningAdminWallet({ uid: admin._id })
-  await adminWallet.addFunds({ amount: 2000005, uid: uidFromToken1 })
-  let didThrow: boolean = false
+  const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: 15000000 })
+
+  let didThrow = false
 
   // FIXME: below statement fails due to some reason, so using try catch for now
   // await expect(userWallet1.pay({ invoice: request })).rejects.toThrow()

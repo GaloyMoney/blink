@@ -56,7 +56,7 @@ const formatType = (type: IType, pending: Boolean | undefined): TransactionType 
 export const LightningMixin = (superclass) => class extends superclass {
   protected _currency = "BTC"
   lnd: any
-  nodePubKey
+  nodePubKey: string | null = null
 
   constructor(...args) {
     super(...args)

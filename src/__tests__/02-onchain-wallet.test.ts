@@ -91,7 +91,7 @@ it('funding bank with onchain tx', async () => {
 
 }, 10000)
 
-it('user are credited for on chain transaction', async () => {
+it('user0 is credited for on chain transaction', async () => {
 	const wallet = await getUserWallet(0)
 	const address = await wallet.getOnChainAddress()
 
