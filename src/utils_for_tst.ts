@@ -1,4 +1,4 @@
-import { LightningAdminWallet } from "../LightningAdminImpl"
+import { LightningAdminWallet } from "./LightningAdminImpl"
 const mongoose = require("mongoose")
 const User = mongoose.model("User")
 

@@ -9,7 +9,7 @@ import { LightningUserWallet } from "../LightningUserWallet";
 import { login, TEST_NUMBER } from "../text";
 import { OnboardingEarn } from "../types";
 import { sleep } from "../utils";
-import { checkIsBalanced } from "./utils_for_tst";
+import { checkIsBalanced } from "../utils_for_tst";
 const lnService = require('ln-service')
 const lightningPayReq = require('bolt11')
 const mongoose = require("mongoose")
