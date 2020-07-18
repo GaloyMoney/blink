@@ -9,6 +9,8 @@ import { sleep, getAuth, waitUntilBlockHeight, btc2sat } from "../utils"
 import { checkIsBalanced } from "../utils_for_tst";
 import { TEST_NUMBER, login } from "../text";
 import { LightningUserWallet } from "../LightningUserWallet";
+import * as jwt from 'jsonwebtoken';
+
 const mongoose = require("mongoose");
 const { once } = require('events');
 
@@ -107,27 +109,22 @@ it('funds bitcoind wallet', async () => {
 })
 
 
-it('funding bank with onchain tx', async () => {
-	const admin = await User.findOne({ role: "admin" })
-	const adminWallet = new LightningAdminWallet({ uid: admin._id })
-	bank_address = await adminWallet.getOnChainAddress()
-	expect(bank_address.substr(0, 4)).toBe("bcrt")
-
+const onchain_funding = async ({address, wallet, blockHeight}) => {
 	const fundLndWallet = async () => {
-		bitcoindClient.sendToAddress(bank_address, amount_BTC)
+		await bitcoindClient.sendToAddress(address, amount_BTC)
 		await sleep(100)
 		await bitcoindClient.generateToAddress(6, RANDOM_ADDRESS)
 	}
 
 	const checkBalance = async () => {
 		const min_height = 1
-		let sub = lnService.subscribeToChainAddress({lnd: lnd1, bech32_address: bank_address, min_height})
+		let sub = lnService.subscribeToChainAddress({lnd: lnd1, bech32_address: address, min_height})
 		
 		await once(sub, 'confirmation')
 		sub.removeAllListeners();
 
-		await waitUntilBlockHeight({lnd: lnd1, blockHeight: 107})
-		const balance = await adminWallet.getBalance()
+		await waitUntilBlockHeight({lnd: lnd1, blockHeight})
+		const balance = await wallet.getBalance()
 		expect(balance).toBe(btc2sat(amount_BTC))
 		await checkIsBalanced()
 	}
@@ -136,43 +133,40 @@ it('funding bank with onchain tx', async () => {
 		checkBalance(),
 		fundLndWallet()
 	])
-}, 100000)
+}
+
+it('funding bank with onchain tx', async () => {
+	const admin = await User.findOne({ role: "admin" })
+	const adminWallet = new LightningAdminWallet({ uid: admin._id })
+	bank_address = await adminWallet.getOnChainAddress()
+	expect(bank_address.substr(0, 4)).toBe("bcrt")
+
+	await onchain_funding({address: bank_address, wallet: adminWallet, blockHeight: 107})
+
+}, 10000)
 
 it('user are credited for on chain transaction', async () => {
-  const amount_BTC = 1
+		
+	const raw_token = await login(TEST_NUMBER[0])
+	const token = jwt.verify(raw_token, process.env.JWT_SECRET);
+	const userWallet = new LightningUserWallet({ uid: token.uid })
+	const address = await userWallet.getOnChainAddress()
+	expect((<string>address).substr(0, 4)).toBe("bcrt")
 
-  const { lnd } = lnService.authenticatedLndGrpc(getAuth())
+	await onchain_funding({address, wallet: userWallet, blockHeight: 113})
 
-	
-	await login(TEST_NUMBER[0])
-  let Users = mongoose.model("User")
-  sleep(2000) // FIXME
-  console.log("current users", await Users.find({}))
-  const user0 = (await Users.findOne({}))._id
-	const lightningWallet = new LightningUserWallet({ uid: user0 })
-	
-
-  let onChainAddress = await lightningWallet.getOnChainAddress()
-  bitcoindClient.sendToAddress(onChainAddress, amount_BTC)
-
-  await bitcoindClient.generateToAddress(3, RANDOM_ADDRESS)
-  await waitUntilBlockHeight({ lnd, blockHeight: 110 }) // TODO set block height properly?
-  let finalBalance = await lightningWallet.getBalance()
-  expect(finalBalance).toBe(btc2sat(amount_BTC))
-  await checkIsBalanced()
-}, 50000)
-
+}, 10000)
 
 
 it('funds lndOutside1', async () => {
 	lndOutside1_wallet_addr = (await lnService.createChainAddress({ format: 'p2wpkh', lnd: lndOutside1 })).address
 	expect(lndOutside1_wallet_addr.substr(0, 4)).toBe("bcrt")
 
-	bitcoindClient.sendToAddress(lndOutside1_wallet_addr, amount_BTC)
+	await bitcoindClient.sendToAddress(lndOutside1_wallet_addr, amount_BTC)
 
-	await bitcoindClient.generateToAddress(6, RANDOM_ADDRESS)
+	await bitcoindClient.generateToAddress(7, RANDOM_ADDRESS)
 
-	await waitUntilBlockHeight({lnd: lnd1, blockHeight: 116})
-	await waitUntilBlockHeight({lnd: lndOutside1, blockHeight: 116})
-	await waitUntilBlockHeight({lnd: lndOutside2, blockHeight: 116})
-}, 100000)
+	await waitUntilBlockHeight({lnd: lnd1, blockHeight: 120})
+	await waitUntilBlockHeight({lnd: lndOutside1, blockHeight: 120})
+	await waitUntilBlockHeight({lnd: lndOutside2, blockHeight: 120})
+}, 10000)
