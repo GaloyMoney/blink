@@ -1,1 +1,0 @@
-export const JWT_SECRET = "secret" // FIXME // should be env variable

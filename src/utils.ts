@@ -1,7 +1,6 @@
 import * as moment from 'moment'
 export const validate = require("validate.js")
 import * as jwt from 'jsonwebtoken'
-import { JWT_SECRET } from "./const"
 import * as lnService from "ln-service"
 export const btc2sat = (btc: number) => {
     return btc * Math.pow(10, 8)
@@ -26,7 +25,8 @@ export function timeout(t, msg) {
     });
 }
 
-export const createToken = ({uid}) => jwt.sign({ uid, network: process.env.NETWORK }, JWT_SECRET, {
+export const createToken = ({uid}) => jwt.sign(
+    { uid, network: process.env.NETWORK }, process.env.JWT_SECRET, {
     // TODO use asymetric signature
     // and verify the signature from the client
     // otherwise we could get subject to DDos attack
