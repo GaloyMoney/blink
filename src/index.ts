@@ -6,7 +6,6 @@ import { rule, shield } from 'graphql-shield';
 import { GraphQLServer } from 'graphql-yoga';
 import { ContextParameters } from 'graphql-yoga/dist/types';
 import * as jwt from 'jsonwebtoken';
-import { JWT_SECRET } from "./const";
 import { LightningUserWallet } from "./LightningUserWallet";
 import { Price } from "./priceImpl";
 import { login, requestPhoneCode } from "./text";
@@ -182,7 +181,7 @@ function getUid(ctx: ContextParameters) {
     }
   
     const raw_token = auth.split(" ")[1]
-    token = jwt.verify(raw_token, JWT_SECRET);
+    token = jwt.verify(raw_token, process.env.JWT_SECRET);
 
     // TODO assert bitcoin network
   } catch (err) {

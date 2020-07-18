@@ -133,7 +133,7 @@ const priceSchema = new Schema({
 
 // price History
 const priceHistorySchema = new Schema({
-  pair: { // FIXME should be pair
+  pair: {
     name: {
       type: String,
       enum: ["BTC/USD"]
