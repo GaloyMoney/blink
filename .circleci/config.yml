@@ -244,12 +244,12 @@ jobs:
             - run: |
                 gcloud container images add-tag gcr.io/${GOOGLE_PROJECT_ID}/test-image:latest gcr.io/${GOOGLE_PROJECT_ID}/test-image:${CIRCLE_SHA1} --quiet
                 gcloud container clusters get-credentials testnet-cluster --region us-central1-a --project ${GOOGLE_PROJECT_ID}
-                helm upgrade graphql-chart -f ~/GaloyApp/backend/graphql-chart/values.yaml\
+                helm upgrade -f ~/GaloyApp/backend/graphql-chart/values.yaml\
                 -f ~/GaloyApp/backend/graphql-chart/testnet-values.yaml \
-                --set tag=$CIRCLE_SHA1 ~/GaloyApp/backend/graphql-chart/
-                helm upgrade -i prometheus -f ~/GaloyApp/backend/graphql-chart/values.yaml\
+                --set tag=$CIRCLE_SHA1 graphql-chart ~/GaloyApp/backend/graphql-chart/
+                helm upgrade -i -f ~/GaloyApp/backend/graphql-chart/values.yaml\
                 -f ~/GaloyApp/backend/graphql-chart/prometheus-values.yaml \
-                --set tag=$CIRCLE_SHA1 ~/GaloyApp/backend/graphql-chart/
+                --set tag=$CIRCLE_SHA1 prometheus ~/GaloyApp/backend/graphql-chart/
   mainnet_deploy:
     working_directory: ~/GaloyApp/backend
     docker:
