@@ -83,7 +83,7 @@ type Query {
 
 type Mutation {
   requestPhoneCode(phone: String): Success
-  login(phone: String, code: Int, network: Network): Token
+  login(phone: String, code: Int): Token
   openChannel(local_tokens: Int, public_key: String, socket: String): OnchainTransaction
 
   onchain: OnChain
