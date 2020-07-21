@@ -68,12 +68,9 @@ export const login = async ({ phone, code }) => {
             }
         })
 
-        let test_account = false
-
         // is it a test account?
         if (TEST_NUMBER.findIndex(item => item.phone === phone) !== -1 &&
             TEST_NUMBER.filter(item => item.phone === phone)[0].code === code) {
-            test_account = true
             // return null is the code is not correct
         } else if (codes.findIndex(item => item.code === code) === -1) {
             console.warn(`code is not correct: ${code} with ${phone}`)
