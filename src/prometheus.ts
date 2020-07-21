@@ -46,6 +46,10 @@ const main = async () => {
     res.set('Content-Type', register.contentType);
     res.end(register.metrics());
   })
+
+  server.get('/healthz', async (req, res) => {
+    res.status(200).end()
+  })
     
   const port = process.env.PORT || 3000;
   console.log(
