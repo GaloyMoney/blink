@@ -133,7 +133,7 @@ const resolvers = {
         },
         payInvoice: async ({invoice}) => {
           try {
-            const success = await lightningWallet.payInvoice({invoice})
+            const success = await lightningWallet.pay({invoice})
             console.log({success})
             return success
           } catch (err) {
