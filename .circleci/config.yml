@@ -169,16 +169,13 @@ jobs:
     working_directory: ~/GaloyApp/backend
     docker:
       - image: kiwigrid/gcloud-kubectl-helm:latest
-    environment:
-      NAMESPACE: devnet
     steps:
       - checkout:
           path: ~/GaloyApp
-      # - run:
-      #     name: generate cluster name
-      #     command: |
-      #       echo "devnet-cluster-"$RANDOM > clustername
-      #       cat clustername
+      - run:
+          name: generate and export namespace name
+          command: |
+            echo "export NAMESPACE=devnet-$CIRCLE_SHA1" >> $BASH_ENV
       - run:
           name: authorize gcloud and kubectl on circleci and create namespace
           command: |
@@ -189,9 +186,6 @@ jobs:
             kubectl create namespace $NAMESPACE
 # gcloud container clusters create $(cat clustername | tr -d '\n\r') --region us-central1-b --num-nodes=1 \
             # --machine-type=n1-standard-2 --disk-size=10Gi
-      - run:
-          name: wait for k8s worker nodes
-          command: echo $(ls) && sleep 30 # TODO: try to improve approach if possible
       - run:
           name: helm add repo bitnami
           command: helm repo add bitnami https://charts.bitnami.com/bitnami
