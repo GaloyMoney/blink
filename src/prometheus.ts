@@ -48,7 +48,7 @@ const main = async () => {
   })
 
   server.get('/healthz', async (req, res) => {
-    res.status(200).end()
+    res.send('OK')
   })
     
   const port = process.env.PORT || 3000;
