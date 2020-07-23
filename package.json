@@ -15,7 +15,8 @@
     "dev": "nodemon -e ts -w ./src -x yarn run dev-2",
     "dev-2": "source exportLocal.sh && ts-node src/dev.ts",
     "prometheus": "source exportLocal.sh && ts-node src/prometheus.ts",
-    "postman": "yarn run newman run src/postman/graphql.postman_collection.json -e src/postman/mainnet.postman_environment.json ",
+    "postman": "yarn run newman run src/postman/graphql.postman_collection.json -e src/postman/devnet.postman_environment.json ",
+    "postman-local": "source exportLocal.sh && yarn run postman",
     "update-postman": "curl --location --request GET \"https://api.getpostman.com/collections/845c604c-7253-4f9d-acec-2693ef28be20\" --header \"X-Api-Key: $POSTMANAPIKEY\" > src/postman/graphql.postman_collection.json"
   },
   "engines": {
