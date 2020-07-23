@@ -219,7 +219,7 @@ const permissions = shield({
     updateUser: isAuthenticated,
     deleteUser: isAuthenticated,
   },
-})
+}, { allowExternalErrors: true }) // TODO remove to not expose internal error
 
 const server = new GraphQLServer({
   typeDefs: path.join(__dirname, "schema.graphql"), 
