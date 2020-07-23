@@ -39,5 +39,5 @@ it('I can connect to outside lnds', async () => {
 
 it('I can connect to mongodb', async () => {
 	const users = await User.find()
-	expect(users).toStrictEqual([])
+	expect(users).toEqual(expect.arrayContaining([]))
 })
