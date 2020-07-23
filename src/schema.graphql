@@ -68,11 +68,6 @@ type BuildParameter {
   buildTime: String
 }
 
-enum Network {
-  testnet
-  mainnet
-}
-
 type Query { 
   prices: [Price]
   wallet: [Wallet]
