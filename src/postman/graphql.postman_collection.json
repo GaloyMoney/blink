@@ -7,372 +7,392 @@
     },
     "item": [
       {
-        "name": "notoken",
+        "name": "active",
         "item": [
           {
-            "name": "queries",
+            "name": "notoken",
             "item": [
               {
-                "name": "prices",
-                "_postman_id": "35da0298-478f-4f52-b764-8b053592522a",
-                "protocolProfileBehavior": { "disableBodyPruning": true },
-                "request": {
-                  "method": "POST",
-                  "header": [],
-                  "body": {
-                    "mode": "graphql",
-                    "graphql": {
-                      "query": "query prices {\n    prices {\n        id\n        o\n    }\n}",
-                      "variables": "{}"
-                    },
-                    "options": { "graphql": {} }
-                  },
-                  "url": { "raw": "{{url}}", "host": ["{{url}}"] }
-                },
-                "response": []
-              },
-              {
-                "name": "buildParameters",
-                "event": [
+                "name": "queries",
+                "item": [
                   {
-                    "listen": "test",
-                    "script": {
-                      "id": "947a14eb-d0cd-41d1-94cd-749a81e28a35",
-                      "exec": [
-                        "var moment = require('moment')",
-                        "",
-                        "pm.test(\"requesting a token\", function () {",
-                        "    const jsonData = pm.response.json();",
-                        "    const {commitHash, buildTime} = jsonData.data.buildParameters",
-                        "    pm.expect(commitHash.length).to.eql(40);",
-                        "    pm.expect(buildTime).to.have(2020)",
-                        "});"
-                      ],
-                      "type": "text/javascript"
-                    }
+                    "name": "prices",
+                    "_postman_id": "35da0298-478f-4f52-b764-8b053592522a",
+                    "protocolProfileBehavior": { "disableBodyPruning": true },
+                    "request": {
+                      "method": "POST",
+                      "header": [],
+                      "body": {
+                        "mode": "graphql",
+                        "graphql": {
+                          "query": "query prices {\n    prices {\n        id\n        o\n    }\n}",
+                          "variables": "{}"
+                        },
+                        "options": { "graphql": {} }
+                      },
+                      "url": { "raw": "{{url}}", "host": ["{{url}}"] }
+                    },
+                    "response": []
+                  },
+                  {
+                    "name": "buildParameters",
+                    "event": [
+                      {
+                        "listen": "test",
+                        "script": {
+                          "id": "947a14eb-d0cd-41d1-94cd-749a81e28a35",
+                          "exec": [
+                            "var moment = require('moment')",
+                            "",
+                            "pm.test(\"validate build parameters are set\", function () {",
+                            "    if (pm.environment.name != \"devnet\") {",
+                            "        const jsonData = pm.response.json();",
+                            "        const {commitHash, buildTime} = jsonData.data.buildParameters",
+                            "        pm.expect(commitHash.length).to.eql(40);",
+                            "        pm.expect(buildTime.substring(0,4)).to.eql(\"2020\")",
+                            "    }",
+                            "});",
+                            ""
+                          ],
+                          "type": "text/javascript"
+                        }
+                      }
+                    ],
+                    "_postman_id": "0be1fed1-3f48-4d46-a1b1-9bba3e6e27a5",
+                    "protocolProfileBehavior": { "disableBodyPruning": true },
+                    "request": {
+                      "method": "POST",
+                      "header": [],
+                      "body": {
+                        "mode": "graphql",
+                        "graphql": {
+                          "query": "query buildParameters {\n    buildParameters {\n        commitHash\n        buildTime\n    }\n}",
+                          "variables": "{}"
+                        },
+                        "options": { "graphql": {} }
+                      },
+                      "url": { "raw": "{{url}}", "host": ["{{url}}"] }
+                    },
+                    "response": []
+                  },
+                  {
+                    "name": "earnList",
+                    "_postman_id": "97eebf7a-e9c6-4374-8d5e-2cdcf80feb26",
+                    "protocolProfileBehavior": { "disableBodyPruning": true },
+                    "request": {
+                      "method": "POST",
+                      "header": [],
+                      "body": {
+                        "mode": "graphql",
+                        "graphql": {
+                          "query": "query earnList {\n    earnList {\n        id\n        value\n        completed\n    }\n}",
+                          "variables": "{}"
+                        },
+                        "options": { "graphql": {} }
+                      },
+                      "url": { "raw": "{{url}}", "host": ["{{url}}"] }
+                    },
+                    "response": []
                   }
                 ],
-                "_postman_id": "0be1fed1-3f48-4d46-a1b1-9bba3e6e27a5",
-                "protocolProfileBehavior": { "disableBodyPruning": true },
-                "request": {
-                  "method": "POST",
-                  "header": [],
-                  "body": {
-                    "mode": "graphql",
-                    "graphql": {
-                      "query": "query buildParameters {\n    buildParameters {\n        commitHash\n        buildTime\n    }\n}",
-                      "variables": "{}"
-                    },
-                    "options": { "graphql": {} }
-                  },
-                  "url": { "raw": "{{url}}", "host": ["{{url}}"] }
-                },
-                "response": []
+                "_postman_id": "784a2165-be46-4fd1-a567-4bd3973201e8",
+                "_postman_isSubFolder": true
               },
               {
-                "name": "earnList",
-                "_postman_id": "97eebf7a-e9c6-4374-8d5e-2cdcf80feb26",
-                "protocolProfileBehavior": { "disableBodyPruning": true },
-                "request": {
-                  "method": "POST",
-                  "header": [],
-                  "body": {
-                    "mode": "graphql",
-                    "graphql": {
-                      "query": "query earnList {\n    earnList {\n        id\n        value\n        completed\n    }\n}",
-                      "variables": "{}"
+                "name": "mutations",
+                "item": [
+                  {
+                    "name": "requestPhoneCode",
+                    "event": [
+                      {
+                        "listen": "test",
+                        "script": {
+                          "id": "db3fd5b3-98cc-471b-a24b-ded81b695363",
+                          "exec": [
+                            "pm.test(\"requesting a code\", function () {",
+                            "    var jsonData = pm.response.json();",
+                            "    pm.expect(jsonData.data.requestPhoneCode.success).to.eql(true);",
+                            "});",
+                            "",
+                            ""
+                          ],
+                          "type": "text/javascript"
+                        }
+                      }
+                    ],
+                    "_postman_id": "34f39120-4ba8-49d4-8c8d-8ca5b07376cb",
+                    "protocolProfileBehavior": { "disableBodyPruning": true },
+                    "request": {
+                      "method": "POST",
+                      "header": [],
+                      "body": {
+                        "mode": "graphql",
+                        "graphql": {
+                          "query": "mutation requestPhoneCode ($phone: String) {\n    requestPhoneCode (phone: $phone) {\n        success\n    }\n}",
+                          "variables": "{\n  \"phone\": \"{{phone}}\"\n}"
+                        },
+                        "options": { "graphql": {} }
+                      },
+                      "url": { "raw": "{{url}}", "host": ["{{url}}"] }
                     },
-                    "options": { "graphql": {} }
+                    "response": []
                   },
-                  "url": { "raw": "{{url}}", "host": ["{{url}}"] }
-                },
-                "response": []
+                  {
+                    "name": "login",
+                    "event": [
+                      {
+                        "listen": "test",
+                        "script": {
+                          "id": "a9b5872b-59c5-438d-a8e4-7b1e04f4856e",
+                          "exec": [
+                            "pm.test(\"requesting a token\", function () {",
+                            "    const jsonData = pm.response.json();",
+                            "    const token = jsonData.data.login.token",
+                            "    // token should have two dot \".\"",
+                            "    const parts = token.split(\".\")",
+                            "    pm.expect(parts.length).to.eql(3);",
+                            "    pm.environment.set(\"token\", token)",
+                            "});"
+                          ],
+                          "type": "text/javascript"
+                        }
+                      }
+                    ],
+                    "_postman_id": "96386033-e608-4d81-b29e-22424b8219a1",
+                    "protocolProfileBehavior": { "disableBodyPruning": true },
+                    "request": {
+                      "method": "POST",
+                      "header": [],
+                      "body": {
+                        "mode": "graphql",
+                        "graphql": {
+                          "query": "mutation login ($phone: String, $code: Int) {\n    login (phone: $phone, code: $code) {\n        token\n    }\n}",
+                          "variables": "{\n  \"phone\": \"{{phone}}\",\n  \"code\": {{code}}\n}"
+                        },
+                        "options": { "graphql": {} }
+                      },
+                      "url": { "raw": "{{url}}", "host": ["{{url}}"] }
+                    },
+                    "response": []
+                  }
+                ],
+                "_postman_id": "bbd92f23-2a96-40f6-a075-68791dd9f5d0",
+                "_postman_isSubFolder": true
               }
             ],
-            "_postman_id": "784a2165-be46-4fd1-a567-4bd3973201e8",
+            "_postman_id": "1b021856-d62b-4ad2-979b-d32c3db9e033",
             "_postman_isSubFolder": true
           },
           {
-            "name": "mutations",
+            "name": "token",
             "item": [
               {
-                "name": "requestPhoneCode",
+                "name": "queries",
+                "item": [
+                  {
+                    "name": "wallet",
+                    "_postman_id": "f25b7aaa-b24b-4163-9d81-4b185cf1de6d",
+                    "protocolProfileBehavior": { "disableBodyPruning": true },
+                    "request": {
+                      "method": "POST",
+                      "header": [],
+                      "body": {
+                        "mode": "graphql",
+                        "graphql": {
+                          "query": "query wallet {\n    wallet {\n        id\n        currency\n        balance\n        transactions {\n            id\n            amount\n            description\n            created_at\n            hash\n            type\n        }\n    }\n}",
+                          "variables": "{}"
+                        },
+                        "options": { "graphql": {} }
+                      },
+                      "url": { "raw": "{{url}}", "host": ["{{url}}"] }
+                    },
+                    "response": []
+                  },
+                  {
+                    "name": "earnList",
+                    "_postman_id": "a4898a6c-46c4-4b1c-98c1-d0baacac1e81",
+                    "protocolProfileBehavior": { "disableBodyPruning": true },
+                    "request": {
+                      "method": "POST",
+                      "header": [],
+                      "body": {
+                        "mode": "graphql",
+                        "graphql": {
+                          "query": "query earnList {\n    earnList {\n        id\n        value\n        completed\n    }\n}",
+                          "variables": "{}"
+                        },
+                        "options": { "graphql": {} }
+                      },
+                      "url": { "raw": "{{url}}", "host": ["{{url}}"] }
+                    },
+                    "response": []
+                  },
+                  {
+                    "name": "me",
+                    "_postman_id": "1c39a3fa-6785-4fc1-aa85-e0c803628e22",
+                    "protocolProfileBehavior": { "disableBodyPruning": true },
+                    "request": {
+                      "method": "POST",
+                      "header": [],
+                      "body": {
+                        "mode": "graphql",
+                        "graphql": {
+                          "query": "query me {\n    me {\n        id\n        name\n        level\n    }\n}",
+                          "variables": "{}"
+                        },
+                        "options": { "graphql": {} }
+                      },
+                      "url": { "raw": "{{url}}", "host": ["{{url}}"] }
+                    },
+                    "response": []
+                  }
+                ],
+                "_postman_id": "6249a253-14d0-490d-b826-b1a1946b9af3",
+                "_postman_isSubFolder": true
+              },
+              {
+                "name": "mutations",
+                "item": [
+                  {
+                    "name": "onchain",
+                    "_postman_id": "851fc452-0cd9-4d6b-a5e9-d28e0eea519a",
+                    "protocolProfileBehavior": { "disableBodyPruning": true },
+                    "request": {
+                      "auth": {
+                        "type": "bearer",
+                        "bearer": [
+                          {
+                            "key": "token",
+                            "value": "{{token}}",
+                            "type": "string"
+                          }
+                        ]
+                      },
+                      "method": "POST",
+                      "header": [],
+                      "body": {
+                        "mode": "graphql",
+                        "graphql": {
+                          "query": "mutation onchain {\n    onchain {\n        getNewAddress\n    }\n}",
+                          "variables": "{}"
+                        },
+                        "options": { "graphql": {} }
+                      },
+                      "url": { "raw": "{{url}}", "host": ["{{url}}"] }
+                    },
+                    "response": []
+                  },
+                  {
+                    "name": "invoice",
+                    "_postman_id": "3a1df68f-1b65-4412-b114-b18d6e478ee1",
+                    "protocolProfileBehavior": { "disableBodyPruning": true },
+                    "request": {
+                      "method": "POST",
+                      "header": [],
+                      "body": {
+                        "mode": "graphql",
+                        "graphql": {
+                          "query": "mutation invoice ($value: Int, $memo: String, $hash: String, $invoice: String) {\n    invoice {\n        addInvoice (value: $value, memo: $memo)\n        updatePendingInvoice (hash: $hash)\n        payInvoice (invoice: $invoice)\n    }\n}",
+                          "variables": "{\n  \"value\": 0,\n  \"memo\": \"\",\n  \"hash\": \"\",\n  \"invoice\": \"\"\n}"
+                        },
+                        "options": { "graphql": {} }
+                      },
+                      "url": { "raw": "{{url}}", "host": ["{{url}}"] }
+                    },
+                    "response": []
+                  },
+                  {
+                    "name": "earnCompleted",
+                    "_postman_id": "22d380a9-7974-464c-a8a4-9a592b7a7ce5",
+                    "protocolProfileBehavior": { "disableBodyPruning": true },
+                    "request": {
+                      "method": "POST",
+                      "header": [],
+                      "body": {
+                        "mode": "graphql",
+                        "graphql": {
+                          "query": "mutation earnCompleted ($ids: [ID]) {\n    earnCompleted (ids: $ids) {\n        id\n        value\n        completed\n    }\n}",
+                          "variables": "{\n  \"ids\": [\n    0\n  ]\n}"
+                        },
+                        "options": { "graphql": {} }
+                      },
+                      "url": { "raw": "{{url}}", "host": ["{{url}}"] }
+                    },
+                    "response": []
+                  },
+                  {
+                    "name": "updateUser",
+                    "_postman_id": "bb03e2d4-4545-4f48-8732-7f0ee2f45ba9",
+                    "protocolProfileBehavior": { "disableBodyPruning": true },
+                    "request": {
+                      "method": "POST",
+                      "header": [],
+                      "body": {
+                        "mode": "graphql",
+                        "graphql": {
+                          "query": "mutation updateUser ($user: InputUser) {\n    updateUser (user: $user) {\n        id\n        name\n        level\n    }\n}",
+                          "variables": "{\n  \"user\": {\n    \"id\": 0,\n    \"level\": 0,\n    \"deviceToken\": \"\"\n  }\n}"
+                        },
+                        "options": { "graphql": {} }
+                      },
+                      "url": { "raw": "{{url}}", "host": ["{{url}}"] }
+                    },
+                    "response": []
+                  },
+                  {
+                    "name": "deleteUser",
+                    "_postman_id": "aab82bfd-9b2a-41cb-899e-7d3ff99611f5",
+                    "protocolProfileBehavior": { "disableBodyPruning": true },
+                    "request": {
+                      "method": "POST",
+                      "header": [],
+                      "body": {
+                        "mode": "graphql",
+                        "graphql": {
+                          "query": "mutation deleteUser {\n    deleteUser\n}",
+                          "variables": "{}"
+                        },
+                        "options": { "graphql": {} }
+                      },
+                      "url": { "raw": "{{url}}", "host": ["{{url}}"] }
+                    },
+                    "response": []
+                  }
+                ],
+                "_postman_id": "f603777c-8048-466a-a433-54738fc9c64a",
                 "event": [
+                  {
+                    "listen": "prerequest",
+                    "script": {
+                      "id": "ada6e3a7-2871-48cd-a6d1-1dc81304b38a",
+                      "type": "text/javascript",
+                      "exec": [""]
+                    }
+                  },
                   {
                     "listen": "test",
                     "script": {
-                      "id": "db3fd5b3-98cc-471b-a24b-ded81b695363",
-                      "exec": [
-                        "pm.test(\"requesting a code\", function () {",
-                        "    var jsonData = pm.response.json();",
-                        "    pm.expect(jsonData.data.requestPhoneCode.success).to.eql(true);",
-                        "});",
-                        "",
-                        ""
-                      ],
-                      "type": "text/javascript"
+                      "id": "4b390398-4e3f-404f-9b2c-fd3caa54a296",
+                      "type": "text/javascript",
+                      "exec": [""]
                     }
                   }
                 ],
-                "_postman_id": "34f39120-4ba8-49d4-8c8d-8ca5b07376cb",
-                "protocolProfileBehavior": { "disableBodyPruning": true },
-                "request": {
-                  "method": "POST",
-                  "header": [],
-                  "body": {
-                    "mode": "graphql",
-                    "graphql": {
-                      "query": "mutation requestPhoneCode ($phone: String) {\n    requestPhoneCode (phone: $phone) {\n        success\n    }\n}",
-                      "variables": "{\n  \"phone\": \"{{phone}}\"\n}"
-                    },
-                    "options": { "graphql": {} }
-                  },
-                  "url": { "raw": "{{url}}", "host": ["{{url}}"] }
-                },
-                "response": []
-              },
-              {
-                "name": "login",
-                "event": [
-                  {
-                    "listen": "test",
-                    "script": {
-                      "id": "a9b5872b-59c5-438d-a8e4-7b1e04f4856e",
-                      "exec": [
-                        "pm.test(\"requesting a token\", function () {",
-                        "    const jsonData = pm.response.json();",
-                        "    const token = jsonData.data.login.token",
-                        "    // token should have two dot \".\"",
-                        "    const parts = token.split(\".\")",
-                        "    pm.expect(parts.length).to.eql(3);",
-                        "    pm.environment.set(\"token\", token)",
-                        "});"
-                      ],
-                      "type": "text/javascript"
-                    }
-                  }
-                ],
-                "_postman_id": "96386033-e608-4d81-b29e-22424b8219a1",
-                "protocolProfileBehavior": { "disableBodyPruning": true },
-                "request": {
-                  "method": "POST",
-                  "header": [],
-                  "body": {
-                    "mode": "graphql",
-                    "graphql": {
-                      "query": "mutation login ($phone: String, $code: Int) {\n    login (phone: $phone, code: $code) {\n        token\n    }\n}",
-                      "variables": "{\n  \"phone\": \"{{phone}}\",\n  \"code\": {{code}}\n}"
-                    },
-                    "options": { "graphql": {} }
-                  },
-                  "url": { "raw": "{{url}}", "host": ["{{url}}"] }
-                },
-                "response": []
+                "_postman_isSubFolder": true
               }
             ],
-            "_postman_id": "bbd92f23-2a96-40f6-a075-68791dd9f5d0",
-            "_postman_isSubFolder": true
-          }
-        ],
-        "_postman_id": "1b021856-d62b-4ad2-979b-d32c3db9e033"
-      },
-      {
-        "name": "token",
-        "item": [
-          {
-            "name": "queries",
-            "item": [
-              {
-                "name": "wallet",
-                "_postman_id": "f25b7aaa-b24b-4163-9d81-4b185cf1de6d",
-                "protocolProfileBehavior": { "disableBodyPruning": true },
-                "request": {
-                  "method": "POST",
-                  "header": [],
-                  "body": {
-                    "mode": "graphql",
-                    "graphql": {
-                      "query": "query wallet {\n    wallet {\n        id\n        currency\n        balance\n        transactions {\n            id\n            amount\n            description\n            created_at\n            hash\n            type\n        }\n    }\n}",
-                      "variables": "{}"
-                    },
-                    "options": { "graphql": {} }
-                  },
-                  "url": { "raw": "{{url}}", "host": ["{{url}}"] }
-                },
-                "response": []
-              },
-              {
-                "name": "earnList",
-                "_postman_id": "a4898a6c-46c4-4b1c-98c1-d0baacac1e81",
-                "protocolProfileBehavior": { "disableBodyPruning": true },
-                "request": {
-                  "method": "POST",
-                  "header": [],
-                  "body": {
-                    "mode": "graphql",
-                    "graphql": {
-                      "query": "query earnList {\n    earnList {\n        id\n        value\n        completed\n    }\n}",
-                      "variables": "{}"
-                    },
-                    "options": { "graphql": {} }
-                  },
-                  "url": { "raw": "{{url}}", "host": ["{{url}}"] }
-                },
-                "response": []
-              },
-              {
-                "name": "me",
-                "_postman_id": "1c39a3fa-6785-4fc1-aa85-e0c803628e22",
-                "protocolProfileBehavior": { "disableBodyPruning": true },
-                "request": {
-                  "method": "POST",
-                  "header": [],
-                  "body": {
-                    "mode": "graphql",
-                    "graphql": {
-                      "query": "query me {\n    me {\n        id\n        name\n        level\n    }\n}",
-                      "variables": "{}"
-                    },
-                    "options": { "graphql": {} }
-                  },
-                  "url": { "raw": "{{url}}", "host": ["{{url}}"] }
-                },
-                "response": []
-              }
-            ],
-            "_postman_id": "6249a253-14d0-490d-b826-b1a1946b9af3",
-            "_postman_isSubFolder": true
-          },
-          {
-            "name": "mutations",
-            "item": [
-              {
-                "name": "openChannel",
-                "_postman_id": "efcc07fa-7102-421e-8833-8177f16614d2",
-                "protocolProfileBehavior": { "disableBodyPruning": true },
-                "request": {
-                  "method": "POST",
-                  "header": [],
-                  "body": {
-                    "mode": "graphql",
-                    "graphql": {
-                      "query": "mutation openChannel ($local_tokens: Int, $public_key: String, $socket: String) {\n    openChannel (local_tokens: $local_tokens, public_key: $public_key, socket: $socket) {\n        tx\n    }\n}",
-                      "variables": "{\n  \"local_tokens\": 0,\n  \"public_key\": \"\",\n  \"socket\": \"\"\n}"
-                    },
-                    "options": { "graphql": {} }
-                  },
-                  "url": { "raw": "{{url}}", "host": ["{{url}}"] }
-                },
-                "response": []
-              },
-              {
-                "name": "onchain",
-                "_postman_id": "851fc452-0cd9-4d6b-a5e9-d28e0eea519a",
-                "protocolProfileBehavior": { "disableBodyPruning": true },
-                "request": {
-                  "auth": {
-                    "type": "bearer",
-                    "bearer": [
-                      { "key": "token", "value": "{{token}}", "type": "string" }
-                    ]
-                  },
-                  "method": "POST",
-                  "header": [],
-                  "body": {
-                    "mode": "graphql",
-                    "graphql": {
-                      "query": "mutation onchain {\n    onchain {\n        getNewAddress\n    }\n}",
-                      "variables": "{}"
-                    },
-                    "options": { "graphql": {} }
-                  },
-                  "url": { "raw": "{{url}}", "host": ["{{url}}"] }
-                },
-                "response": []
-              },
-              {
-                "name": "invoice",
-                "_postman_id": "3a1df68f-1b65-4412-b114-b18d6e478ee1",
-                "protocolProfileBehavior": { "disableBodyPruning": true },
-                "request": {
-                  "method": "POST",
-                  "header": [],
-                  "body": {
-                    "mode": "graphql",
-                    "graphql": {
-                      "query": "mutation invoice ($value: Int, $memo: String, $hash: String, $invoice: String) {\n    invoice {\n        addInvoice (value: $value, memo: $memo)\n        updatePendingInvoice (hash: $hash)\n        payInvoice (invoice: $invoice)\n    }\n}",
-                      "variables": "{\n  \"value\": 0,\n  \"memo\": \"\",\n  \"hash\": \"\",\n  \"invoice\": \"\"\n}"
-                    },
-                    "options": { "graphql": {} }
-                  },
-                  "url": { "raw": "{{url}}", "host": ["{{url}}"] }
-                },
-                "response": []
-              },
-              {
-                "name": "earnCompleted",
-                "_postman_id": "22d380a9-7974-464c-a8a4-9a592b7a7ce5",
-                "protocolProfileBehavior": { "disableBodyPruning": true },
-                "request": {
-                  "method": "POST",
-                  "header": [],
-                  "body": {
-                    "mode": "graphql",
-                    "graphql": {
-                      "query": "mutation earnCompleted ($ids: [ID]) {\n    earnCompleted (ids: $ids) {\n        id\n        value\n        completed\n    }\n}",
-                      "variables": "{\n  \"ids\": [\n    0\n  ]\n}"
-                    },
-                    "options": { "graphql": {} }
-                  },
-                  "url": { "raw": "{{url}}", "host": ["{{url}}"] }
-                },
-                "response": []
-              },
-              {
-                "name": "updateUser",
-                "_postman_id": "bb03e2d4-4545-4f48-8732-7f0ee2f45ba9",
-                "protocolProfileBehavior": { "disableBodyPruning": true },
-                "request": {
-                  "method": "POST",
-                  "header": [],
-                  "body": {
-                    "mode": "graphql",
-                    "graphql": {
-                      "query": "mutation updateUser ($user: InputUser) {\n    updateUser (user: $user) {\n        id\n        name\n        level\n    }\n}",
-                      "variables": "{\n  \"user\": {\n    \"id\": 0,\n    \"level\": 0,\n    \"deviceToken\": \"\"\n  }\n}"
-                    },
-                    "options": { "graphql": {} }
-                  },
-                  "url": { "raw": "{{url}}", "host": ["{{url}}"] }
-                },
-                "response": []
-              },
-              {
-                "name": "deleteUser",
-                "_postman_id": "aab82bfd-9b2a-41cb-899e-7d3ff99611f5",
-                "protocolProfileBehavior": { "disableBodyPruning": true },
-                "request": {
-                  "method": "POST",
-                  "header": [],
-                  "body": {
-                    "mode": "graphql",
-                    "graphql": {
-                      "query": "mutation deleteUser {\n    deleteUser\n}",
-                      "variables": "{}"
-                    },
-                    "options": { "graphql": {} }
-                  },
-                  "url": { "raw": "{{url}}", "host": ["{{url}}"] }
-                },
-                "response": []
-              }
-            ],
-            "_postman_id": "f603777c-8048-466a-a433-54738fc9c64a",
+            "_postman_id": "6ae6f1cf-2d54-471b-b7ef-cf4bb0d5179e",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{token}}", "type": "string" }
+              ]
+            },
             "event": [
               {
                 "listen": "prerequest",
                 "script": {
-                  "id": "ada6e3a7-2871-48cd-a6d1-1dc81304b38a",
+                  "id": "92636d72-e28c-4500-b62c-5b48c304e369",
                   "type": "text/javascript",
                   "exec": [""]
                 }
@@ -380,7 +400,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "4b390398-4e3f-404f-9b2c-fd3caa54a296",
+                  "id": "de689ea0-2651-4a1f-8767-a3bc2b072635",
                   "type": "text/javascript",
                   "exec": [""]
                 }
@@ -389,16 +409,12 @@
             "_postman_isSubFolder": true
           }
         ],
-        "_postman_id": "6ae6f1cf-2d54-471b-b7ef-cf4bb0d5179e",
-        "auth": {
-          "type": "bearer",
-          "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
-        },
+        "_postman_id": "3adae57e-ff29-4b8e-81a6-3c561414afb4",
         "event": [
           {
             "listen": "prerequest",
             "script": {
-              "id": "92636d72-e28c-4500-b62c-5b48c304e369",
+              "id": "f4db6e79-0c94-4f64-98ff-b913afeab91a",
               "type": "text/javascript",
               "exec": [""]
             }
@@ -406,12 +422,46 @@
           {
             "listen": "test",
             "script": {
-              "id": "de689ea0-2651-4a1f-8767-a3bc2b072635",
+              "id": "2c48f965-1ad7-47d6-9276-1a49f8158bae",
               "type": "text/javascript",
-              "exec": [""]
+              "exec": [
+                "pm.test(\"Status code is 200\", function () {",
+                "    pm.response.to.have.status(200);",
+                "});",
+                "",
+                "pm.test(\"has no error\", function () {",
+                "    const jsonData = pm.response.json();",
+                "    pm.expect(jsonData.errors).to.be.undefined",
+                "})"
+              ]
             }
           }
         ]
+      },
+      {
+        "name": "todo",
+        "item": [
+          {
+            "name": "openChannel",
+            "_postman_id": "efcc07fa-7102-421e-8833-8177f16614d2",
+            "protocolProfileBehavior": { "disableBodyPruning": true },
+            "request": {
+              "method": "POST",
+              "header": [],
+              "body": {
+                "mode": "graphql",
+                "graphql": {
+                  "query": "mutation openChannel ($local_tokens: Int, $public_key: String, $socket: String) {\n    openChannel (local_tokens: $local_tokens, public_key: $public_key, socket: $socket) {\n        tx\n    }\n}",
+                  "variables": "{\n  \"local_tokens\": 0,\n  \"public_key\": \"\",\n  \"socket\": \"\"\n}"
+                },
+                "options": { "graphql": {} }
+              },
+              "url": { "raw": "{{url}}", "host": ["{{url}}"] }
+            },
+            "response": []
+          }
+        ],
+        "_postman_id": "2eb73afe-c6fb-4ffc-be61-42233162e801"
       }
     ],
     "event": [
@@ -428,16 +478,7 @@
         "script": {
           "id": "a8b6c263-6000-4ecc-89a2-6218e866b155",
           "type": "text/javascript",
-          "exec": [
-            "pm.test(\"Status code is 200\", function () {",
-            "    pm.response.to.have.status(200);",
-            "});",
-            "",
-            "pm.test(\"has no error\", function () {",
-            "    const jsonData = pm.response.json();",
-            "    pm.expect(jsonData.errors).to.be.undefined",
-            "})"
-          ]
+          "exec": [""]
         }
       }
     ]
