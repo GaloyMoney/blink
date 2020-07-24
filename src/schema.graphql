@@ -18,7 +18,7 @@ type Earn {
   the earn reward for the app to display their associated amount
   """
   id: ID!
-  value: Int
+  value: Int!
   completed: Boolean
 }
 
@@ -45,7 +45,7 @@ type OnchainTransaction {
 
 type User {
   id: ID
-  name: String!
+  name: String
   level: Int!
 }
 
@@ -66,11 +66,6 @@ type Token {
 type BuildParameter {
   commitHash: String
   buildTime: String
-}
-
-enum Network {
-  testnet
-  mainnet
 }
 
 type Query { 

@@ -164,6 +164,11 @@ it('pay hodl invoice', async () => {
   await checkIsBalanced()
 }, 25000)
 
+it('if fee are too high, payment is cancelled', async () => {
+  // TODO
+})
+
+
 // it('testDbTransaction', async () => {
 //   //TODO try to fetch simulataneously (ie: with Premise.all[])
 //   // balances with pending but settled transaction to see if 

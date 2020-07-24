@@ -1,14 +1,10 @@
 import { setupMongoConnection } from "../db"
 // this import needs to be before medici
 
-
 import { Price } from "../priceImpl";
 const mongoose = require("mongoose");
 
-const timeout = 10000
-
 let price
-jest.setTimeout(timeout)
 
 beforeAll(async () => {
   await setupMongoConnection()
