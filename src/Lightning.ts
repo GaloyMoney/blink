@@ -308,15 +308,6 @@ export const LightningMixin = (superclass) => class extends superclass {
   // private async payInvoice({ invoice }): Promise<payInvoiceResult | Error> {
   //   // TODO add fees accounting
 
-
-
-
-  //   // TODO probe for payment first. 
-  //   // like in `bos probe "payment_request/public_key"`
-  //   // from https://github.com/alexbosworth/balanceofsatoshis
-
-  // should be run regularly with a cronjob
-  // TODO: move to an "admin/ops" wallet
   async updatePendingPayment() {
 
     const MainBook = new book("MainBook")
