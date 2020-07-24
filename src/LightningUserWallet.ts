@@ -43,7 +43,7 @@ export class LightningUserWallet extends LightningMixin(UserWallet) {
                 await lightningAdminWallet.addFunds({amount, uid: this.uid, memo: id, type: "earn"})
             }
     
-            result.push({id, completed: true})
+            result.push({id, value: amount, completed: true})
         }
 
         return result

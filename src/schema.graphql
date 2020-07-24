@@ -18,7 +18,7 @@ type Earn {
   the earn reward for the app to display their associated amount
   """
   id: ID!
-  value: Int
+  value: Int!
   completed: Boolean
 }
 
