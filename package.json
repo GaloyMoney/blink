@@ -5,7 +5,6 @@
     "build": "tsc",
     "start": "source exportLocal.sh && ts-node src/index.ts",
     "test": "export JEST_JUNIT_OUTPUT_DIR=\"./artifacts\" && jest --ci --reporters=default --reporters=jest-junit --forceExit",
-    "watch:cron": "source exportLocal.sh && nodemon -e ts -w ./src -x yarn run cron",
     "watch": "source exportLocal.sh && nodemon -e ts -w ./src -x yarn run start",
     "remove-charts": "helm uninstall mongodb && helm uninstall lnd && helm uninstall bitcoind",
     "add-charts": "set LOCAL=true && ./initLocalTest.sh",
@@ -16,7 +15,6 @@
     "dev-2": "source exportLocal.sh && ts-node src/dev.ts",
     "prometheus": "source exportLocal.sh && ts-node src/prometheus.ts",
     "postman": "yarn run newman run src/postman/graphql.postman_collection.json -e src/postman/devnet.postman_environment.json ",
-    "postman-local": "source exportLocal.sh && yarn run postman",
     "update-postman": "curl --location --request GET \"https://api.getpostman.com/collections/845c604c-7253-4f9d-acec-2693ef28be20\" --header \"X-Api-Key: $POSTMANAPIKEY\" > src/postman/graphql.postman_collection.json"
   },
   "engines": {
