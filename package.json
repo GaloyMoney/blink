@@ -6,7 +6,7 @@
     "start": "source exportLocal.sh && ts-node src/index.ts",
     "test": "export JEST_JUNIT_OUTPUT_DIR=\"./artifacts\" && jest --ci --reporters=default --reporters=jest-junit --forceExit",
     "watch": "source exportLocal.sh && nodemon -e ts -w ./src -x yarn run start",
-    "remove-charts": "helm uninstall mongodb && helm uninstall lnd && helm uninstall bitcoind",
+    "remove-charts": "helm uninstall mongodb && helm uninstall redis && helm uninstall lnd && helm uninstall bitcoind",
     "add-charts": "set LOCAL=true && ./initLocalTest.sh",
     "restart-charts": "yarn run remove-charts && yarn run add-charts",
     "test-local-clean": "yarn run restart-charts && yarn run test-local",
@@ -40,6 +40,8 @@
     "moment": "^2.24.0",
     "mongoose": "^5.9.10",
     "prom-client": "^12.0.0",
+    "redis": "^3.0.2",
+    "redlock": "^4.1.0",
     "twilio": "^3.42.2",
     "validate.js": "^0.13.1"
   },

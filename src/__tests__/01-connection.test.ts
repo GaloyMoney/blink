@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-import { setupMongoConnection } from "../db";
+import { setupMongoConnection } from "../mongodb";
 // this import needs to be before medici
 import {lndMain, lndOutside1, lndOutside2, bitcoindClient} from "../tests_utils/import"
 const mongoose = require("mongoose");
