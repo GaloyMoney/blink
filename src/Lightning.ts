@@ -179,6 +179,8 @@ export const LightningMixin = (superclass) => class extends superclass {
       ({ id, tokens, destination, description } = await lnService.decodePaymentRequest({ lnd: this.lnd, request: params.invoice }))
     }
 
+    const balance = await this.getBalance()
+
     if (destination === await this.getNodePubkey()) {
       if (pushPayment) {
         // TODO: if (dest == user) throw error
@@ -193,13 +195,12 @@ export const LightningMixin = (superclass) => class extends superclass {
         }
         payeeUid = existingInvoice.uid
       }
-      const balance = await this.getBalance()
 
-      if (balance < tokens + fee) {
-        throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${tokens + fee}`)
+      if (balance < tokens) {
+        throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${tokens}`)
       }
       const payeeAccountPath = await this.customerPath(payeeUid)
-      const obj = { currency: this.currency, hash: id, type: "on_us", pending: false, fee }
+      const obj = { currency: this.currency, hash: id, type: "on_us", pending: false }
       await MainBook.entry()
         .credit(this.accountPath, tokens, obj)
         .debit(payeeAccountPath, tokens, obj)
@@ -222,8 +223,6 @@ export const LightningMixin = (superclass) => class extends superclass {
     if (fee > FEECAP * tokens && fee > FEEMIN) {
       throw Error('cancelled: fee exceeds 1 percent of token amount')
     }
-
-    const balance = await this.getBalance()
 
     if (balance < tokens + fee) {
       throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${tokens + fee}`)
