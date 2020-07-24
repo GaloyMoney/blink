@@ -34,7 +34,6 @@ const main = async () => {
 
     await adminWallet.updateEscrows()
     await adminWallet.updateUsersPendingPayment()
-    await adminWallet.updatePending()
     
     const {customers, equity, lightning} = await adminWallet.getBalanceSheet()
 
