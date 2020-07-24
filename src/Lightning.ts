@@ -200,10 +200,10 @@ export const LightningMixin = (superclass) => class extends superclass {
         throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${tokens}`)
       }
       const payeeAccountPath = await this.customerPath(payeeUid)
-      const obj = { currency: this.currency, hash: id, type: "on_us", pending: false }
+      const metadata = { currency: this.currency, hash: id, type: "on_us", pending: false }
       await MainBook.entry()
-        .credit(this.accountPath, tokens, obj)
-        .debit(payeeAccountPath, tokens, obj)
+        .credit(this.accountPath, tokens, metadata)
+        .debit(payeeAccountPath, tokens, metadata)
         .commit()
 
       await InvoiceUser.findOneAndUpdate({ _id: id }, { pending: false })
@@ -221,7 +221,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     fee = route.safe_fee
 
     if (fee > FEECAP * tokens && fee > FEEMIN) {
-      throw Error('cancelled: fee exceeds 1 percent of token amount')
+      throw Error(`cancelled: fee exceeds ${FEECAP * 100} percent of token amount`)
     }
 
     if (balance < tokens + fee) {
@@ -238,10 +238,10 @@ export const LightningMixin = (superclass) => class extends superclass {
     // TODO this should use a reference (using db transactions) from balance computed above
     // and fail is balance has changed in the meantime to prevent race condition
 
-    const obj = { currency: this.currency, hash: id, type: "payment", pending: true, fee }
+    const metadata = { currency: this.currency, hash: id, type: "payment", pending: true, fee }
     const entry = await MainBook.entry(description)
-      .debit('Assets:Reserve:Lightning', tokens + fee, obj)
-      .credit(this.accountPath, tokens + fee, obj)
+      .debit('Assets:Reserve:Lightning', tokens + fee, metadata)
+      .credit(this.accountPath, tokens + fee, metadata)
       .commit()
 
     // there is 3 scenarios for a payment.
@@ -273,13 +273,10 @@ export const LightningMixin = (superclass) => class extends superclass {
 
       if (err.message === "Timeout") {
         return "pending"
-        // TODO processed in-flight payment in separate loop
+        // pending in-flight payment are being handled in a separate loop
       }
 
-      console.log(typeof entry._id)
-
       try {
-        // FIXME we should also set pending to false for the other associated transactions
         await Transaction.updateMany({ hash: id }, { pending: false, error: err[1] })
         await MainBook.void(entry._id, err[1])
       } catch (err_db) {
