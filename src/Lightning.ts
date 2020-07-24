@@ -151,10 +151,14 @@ export const LightningMixin = (superclass) => class extends superclass {
     //TODO: should we assume pushPayment false by default?
     let pushPayment = false;
     //TODO: adding types here leads to errors further down below
-    let tokens, fee: number = 0
+    let tokens, fee = 0
     let destination, id, description, route
     let payeeUid
     let messages: Object[] = []
+
+    const MainBook = new book("MainBook")
+    const Transaction = mongoose.model("Medici_Transaction")
+    const InvoiceUser = mongoose.model("InvoiceUser")
 
     if (!params.invoice) {
       if (!params.tokens || !params.destination) {
@@ -175,15 +179,11 @@ export const LightningMixin = (superclass) => class extends superclass {
       ({ id, tokens, destination, description } = await lnService.decodePaymentRequest({ lnd: this.lnd, request: params.invoice }))
     }
 
-    console.log(destination)
-
     if (destination === await this.getNodePubkey()) {
       if (pushPayment) {
         // TODO: if (dest == user) throw error
-
         //TODO: push payment on-us use case implementation
       } else {
-        const InvoiceUser = mongoose.model("InvoiceUser")
         let existingInvoice = await InvoiceUser.findOne({ _id: id, pending: true })
         if (!existingInvoice) {
           throw Error('User tried to pay invoice destined to us, but it was already paid or does not exist')
@@ -199,14 +199,12 @@ export const LightningMixin = (superclass) => class extends superclass {
         throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${tokens + fee}`)
       }
       const payeeAccountPath = await this.customerPath(payeeUid)
-      const MainBook = new book("MainBook")
       const obj = { currency: this.currency, hash: id, type: "on_us", pending: false, fee }
       await MainBook.entry()
         .credit(this.accountPath, tokens, obj)
         .debit(payeeAccountPath, tokens, obj)
         .commit()
 
-      const InvoiceUser = mongoose.model("InvoiceUser")
       await InvoiceUser.findOneAndUpdate({ _id: id }, { pending: false })
       await lnService.cancelHodlInvoice({ lnd: this.lnd, id })
       return "success"
@@ -242,8 +240,6 @@ export const LightningMixin = (superclass) => class extends superclass {
     // and fail is balance has changed in the meantime to prevent race condition
 
     const obj = { currency: this.currency, hash: id, type: "payment", pending: true, fee }
-    const MainBook = new book("MainBook")
-    const Transaction = await mongoose.model("Medici_Transaction")
     const entry = await MainBook.entry(description)
       .debit('Assets:Reserve:Lightning', tokens + fee, obj)
       .credit(this.accountPath, tokens + fee, obj)
@@ -296,10 +292,8 @@ export const LightningMixin = (superclass) => class extends superclass {
       throw Error(`internal error paying invoice ${util.inspect({ err }, false, Infinity)}`)
     }
 
-
     // success
     await Transaction.updateMany({ hash: id }, { pending: false })
-
     return "success"
   }
 
@@ -314,6 +308,12 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     const Transaction = await mongoose.model("Medici_Transaction")
     const payments = await Transaction.find({ account_path: this.accountPathMedici, type: "payment", pending: true })
+
+    if (payments === []) {
+      return
+    }
+
+    // LOCK NEEDED
 
     for (const payment of payments) {
 
@@ -340,6 +340,9 @@ export const LightningMixin = (superclass) => class extends superclass {
         }
       }
     }
+
+    // END LOCK 
+
   }
 
   async getOnChainAddress(): Promise<String | Error> {
@@ -368,7 +371,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       const user = await User.findOne({ _id: this.uid })
       if (!user) { // this should not happen. is test that relevant?
         console.error("no user is associated with this address")
-        throw new Error(`internal no user`)
+        throw new Error(`no user with this uid`)
       }
 
       user.onchain_addresses.push(address)
@@ -404,10 +407,13 @@ export const LightningMixin = (superclass) => class extends superclass {
       const InvoiceUser = mongoose.model("InvoiceUser")
 
       try {
+
+        // LOCK NEEDED
+
         const invoice = await InvoiceUser.findOne({ _id: hash, pending: true, uid: this.uid })
 
         if (!invoice) {
-          return false
+          throw Error("no mongodb entry is associated with this invoice")
         }
 
         // TODO: use a transaction here
@@ -429,6 +435,8 @@ export const LightningMixin = (superclass) => class extends superclass {
         // session.endSession()
 
         return true
+
+        // END LOCK
 
       } catch (err) {
         console.error(err)
@@ -489,15 +497,25 @@ export const LightningMixin = (superclass) => class extends superclass {
     const matched_txs = incoming_txs
       .filter(tx => intersection(tx.output_addresses, onchain_addresses).length > 0)
 
+    const type = "onchain_receipt"
+
+    // LOCK NEEDED
+
     for (const matched_tx of matched_txs) {
-      const mongotx = await Transaction.findOne({ account_path: this.accountPathMedici, type: "onchain_receipt", hash: matched_tx.id })
+
+      // has the transaction has not been added yet to the user account?
+      const mongotx = await Transaction.findOne({ account_path: this.accountPathMedici, type, hash: matched_tx.id })
       console.log({ matched_tx, mongotx })
+
       if (!mongotx) {
         await MainBook.entry()
-          .credit('Assets:Reserve:Lightning', matched_tx.tokens, { currency: "BTC", hash: matched_tx.id, type: "onchain_receipt" })
-          .debit(this.accountPath, matched_tx.tokens, { currency: "BTC", hash: matched_tx.id, type: "onchain_receipt" })
+          .credit('Assets:Reserve:Lightning', matched_tx.tokens, { currency: "BTC", type, hash: matched_tx.id })
+          .debit(this.accountPath, matched_tx.tokens, { currency: "BTC", type, hash: matched_tx.id,  })
           .commit()
       }
     }
+
+    // END LOCK
+
   }
 };
