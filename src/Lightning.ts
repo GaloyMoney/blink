@@ -181,6 +181,9 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     const balance = await this.getBalance()
 
+    // LOCK NEEDED
+
+
     if (destination === await this.getNodePubkey()) {
       if (pushPayment) {
         // TODO: if (dest == user) throw error
@@ -291,6 +294,9 @@ export const LightningMixin = (superclass) => class extends superclass {
     // success
     await Transaction.updateMany({ hash: id }, { pending: false })
     return "success"
+
+    // END LOCK
+
   }
 
   // TODO manage the error case properly. right now there is a mix of string being return

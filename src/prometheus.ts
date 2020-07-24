@@ -1,4 +1,4 @@
-import { setupMongoConnection } from "./db"
+import { setupMongoConnection } from "./mongodb"
 // this import before medici
 
 
