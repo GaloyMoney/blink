@@ -248,9 +248,7 @@ jobs:
   mainnet_deploy:
     working_directory: ~/GaloyApp/backend
     docker:
-      - image: kiwigrid/gcloud-kubectl-helm:latest
-    environment:
-      NAMESPACE: devnet
+      - image: kiwigrid/gcloud-kubectl-helm:latest     
     steps:
       - checkout:
           path: ~/GaloyApp
@@ -267,7 +265,7 @@ jobs:
             export MACAROON=$(kubectl -n mainnet exec lnd-container-0 -- base64 /root/.lnd/data/chain/bitcoin/mainnet/admin.macaroon | tr -d '\n\r')
             export TLS=$(kubectl -n mainnet exec lnd-container-0 -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
             helm upgrade -n mainnet -i graphql-server -f ~/GaloyApp/backend/graphql-chart/values.yaml -f ~/GaloyApp/backend/graphql-chart/mainnet-values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/graphql-chart/
-            helm upgrade -n mainnet -i prometheus -f ~/GaloyApp/backend/graphql-chart/values.yaml -f ~/GaloyApp/backend/graphql-chart/prometheus-values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/graphql-chart/
+            helm upgrade -n mainnet -i prometheus-client -f ~/GaloyApp/backend/graphql-chart/values.yaml -f ~/GaloyApp/backend/graphql-chart/prometheus-values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/graphql-chart/
                
 workflows:
   kube:
