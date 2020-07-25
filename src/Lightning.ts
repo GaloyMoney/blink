@@ -10,6 +10,9 @@ import { randomBytes, createHash } from "crypto"
 export type IType = "invoice" | "payment" | "earn"
 export type payInvoiceResult = "success" | "failed" | "pending"
 
+import {disposer} from "./lock"
+const using = require('bluebird').using
+
 const FEECAP = 0.02 // %
 const FEEMIN = 10 // sats
 
@@ -141,8 +144,6 @@ export const LightningMixin = (superclass) => class extends superclass {
     return request
   }
 
-  // TODO: add types
-  //FIXME: Susceptible to double spend
   async pay(params: IPaymentRequest): Promise<payInvoiceResult | Error> {
 
     const keySendPreimageType: string = '5482373484';
@@ -181,121 +182,121 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     const balance = await this.getBalance()
 
-    // LOCK NEEDED
+    return await using(disposer(this.uid), async (lock) => {
 
-
-    if (destination === await this.getNodePubkey()) {
-      if (pushPayment) {
-        // TODO: if (dest == user) throw error
-        //TODO: push payment on-us use case implementation
-      } else {
-        let existingInvoice = await InvoiceUser.findOne({ _id: id, pending: true })
-        if (!existingInvoice) {
-          throw Error('User tried to pay invoice destined to us, but it was already paid or does not exist')
-          // FIXME: Using == here because === returns false even for same uids
-        } else if (existingInvoice.uid == this.uid) {
-          throw Error('User tried to pay their own invoice')
+      if (destination === await this.getNodePubkey()) {
+        if (pushPayment) {
+          // TODO: if (dest == user) throw error
+          //TODO: push payment on-us use case implementation
+        } else {
+          const existingInvoice = await InvoiceUser.findOne({ _id: id, pending: true })
+          if (!existingInvoice) {
+            throw Error('User tried to pay invoice destined to us, but it was already paid or does not exist')
+            // FIXME: Using == here because === returns false even for same uids
+          } else if (existingInvoice.uid == this.uid) {
+            throw Error('User tried to pay their own invoice')
+          }
+          payeeUid = existingInvoice.uid
         }
-        payeeUid = existingInvoice.uid
+
+        if (balance < tokens) {
+          throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${tokens}`)
+        }
+        const payeeAccountPath = await this.customerPath(payeeUid)
+        const metadata = { currency: this.currency, hash: id, type: "on_us", pending: false }
+        await MainBook.entry()
+          .credit(this.accountPath, tokens, metadata)
+          .debit(payeeAccountPath, tokens, metadata)
+          .commit()
+
+        await InvoiceUser.findOneAndUpdate({ _id: id }, { pending: false })
+        await lnService.cancelHodlInvoice({ lnd: this.lnd, id })
+        return "success"
       }
 
-      if (balance < tokens) {
-        throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${tokens}`)
+      // TODO add private route from invoice
+      ({ route } = await lnService.probeForRoute({ destination, lnd: this.lnd, tokens }));
+      console.log(util.inspect({ route }, { showHidden: false, depth: null }))
+
+      if (!route) {
+        throw Error(`internal: there is no route for this payment`)
       }
-      const payeeAccountPath = await this.customerPath(payeeUid)
-      const metadata = { currency: this.currency, hash: id, type: "on_us", pending: false }
-      await MainBook.entry()
-        .credit(this.accountPath, tokens, metadata)
-        .debit(payeeAccountPath, tokens, metadata)
+
+      // we are confident enough that there is a possible payment route. let's move forward
+
+      fee = route.safe_fee
+
+      if (fee > FEECAP * tokens && fee > FEEMIN) {
+        throw Error(`cancelled: fee exceeds ${FEECAP * 100} percent of token amount`)
+      }
+
+      if (balance < tokens + fee) {
+        throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${tokens + fee}`)
+      }
+
+      if (pushPayment) {
+        route.messages = messages
+      }
+
+      // reduce balance from customer first
+
+      const metadata = { currency: this.currency, hash: id, type: "payment", pending: true, fee }
+      const entry = await MainBook.entry(description)
+        .debit('Assets:Reserve:Lightning', tokens + fee, metadata)
+        .credit(this.accountPath, tokens + fee, metadata)
         .commit()
 
-      await InvoiceUser.findOneAndUpdate({ _id: id }, { pending: false })
-      await lnService.cancelHodlInvoice({ lnd: this.lnd, id })
-      return "success"
-    }
-
-    // TODO add private route from invoice
-    ({ route } = await lnService.probeForRoute({ destination, lnd: this.lnd, tokens }));
-    console.log(util.inspect({ route }, { showHidden: false, depth: null }))
-
-    if (!route) {
-      throw Error(`internal: there is no route for this payment`)
-    }
-    fee = route.safe_fee
-
-    if (fee > FEECAP * tokens && fee > FEEMIN) {
-      throw Error(`cancelled: fee exceeds ${FEECAP * 100} percent of token amount`)
-    }
-
-    if (balance < tokens + fee) {
-      throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${tokens + fee}`)
-    }
-
-    if (pushPayment) {
-      route.messages = messages
-    }
-
-    // we are confident nough that there is a possible payment route. let's move forward
-
-    // reduce balance from customer first
-    // TODO this should use a reference (using db transactions) from balance computed above
-    // and fail is balance has changed in the meantime to prevent race condition
-
-    const metadata = { currency: this.currency, hash: id, type: "payment", pending: true, fee }
-    const entry = await MainBook.entry(description)
-      .debit('Assets:Reserve:Lightning', tokens + fee, metadata)
-      .credit(this.accountPath, tokens + fee, metadata)
-      .commit()
-
-    // there is 3 scenarios for a payment.
-    // 1/ payment succeed is less than TIMEOUT_PAYMENT
-    // 2/ the payment fails. we are reverting it. this including voiding prior transaction
-    // 3/ payment is still pending after TIMEOUT_PAYMENT.
-    // we are timing out the request for UX purpose, so that the client can show the payment is pending
-    // even if the payment is still ongoing from lnd.
-    // to clean pending payments, another cron-job loop will run in the background.
-
-    try {
-      const TIMEOUT_PAYMENT = 5000
-      const promise = lnService.payViaRoutes({ lnd: this.lnd, routes: [route], id })
-      // await Timeout.wrap(promise, TIMEOUT_PAYMENT, 'Timeout');
-      await Promise.race([promise, timeout(TIMEOUT_PAYMENT, 'Timeout')])
-      // FIXME
-      // return this.payDetail({
-      //     pubkey: details.destination,
-      //     hash: details.id,
-      //     amount: details.tokens,
-      //     routes: details.routes
-      // })
-
-      // console.log({result})
-
-    } catch (err) {
-
-      console.log({ err, message: err.message, errorCode: err[1] })
-
-      if (err.message === "Timeout") {
-        return "pending"
-        // pending in-flight payment are being handled in a separate loop
-      }
+      // there is 3 scenarios for a payment.
+      // 1/ payment succeed is less than TIMEOUT_PAYMENT
+      // 2/ the payment fails. we are reverting it. this including voiding prior transaction
+      // 3/ payment is still pending after TIMEOUT_PAYMENT.
+      // we are timing out the request for UX purpose, so that the client can show the payment is pending
+      // even if the payment is still ongoing from lnd.
+      // to clean pending payments, another cron-job loop will run in the background.
 
       try {
-        await Transaction.updateMany({ hash: id }, { pending: false, error: err[1] })
-        await MainBook.void(entry._id, err[1])
-      } catch (err_db) {
-        const err_message = `error canceling payment entry ${util.inspect({ err_db })}`
-        console.error(err_message)
-        throw Error(`internal ${err_message}`)
+        const TIMEOUT_PAYMENT = 5000
+
+        // Fixme: seems to be leaking if it timeout.
+        const promise = lnService.payViaRoutes({ lnd: this.lnd, routes: [route], id })
+
+        await Promise.race([promise, timeout(TIMEOUT_PAYMENT, 'Timeout')])
+        // FIXME
+        // return this.payDetail({
+        //     pubkey: details.destination,
+        //     hash: details.id,
+        //     amount: details.tokens,
+        //     routes: details.routes
+        // })
+
+        // console.log({result})
+
+      } catch (err) {
+
+        console.log({ err, message: err.message, errorCode: err[1] })
+
+        if (err.message === "Timeout") {
+          return "pending"
+          // pending in-flight payment are being handled in a cron-like job
+        }
+
+        try {
+          await Transaction.updateMany({ hash: id }, { pending: false, error: err[1] })
+          await MainBook.void(entry._id, err[1])
+        } catch (err_db) {
+          const err_message = `error canceling payment entry ${util.inspect({ err_db })}`
+          console.error(err_message)
+          throw Error(`internal ${err_message}`)
+        }
+
+        throw Error(`internal error paying invoice ${util.inspect({ err }, false, Infinity)}`)
       }
 
-      throw Error(`internal error paying invoice ${util.inspect({ err }, false, Infinity)}`)
-    }
+      // success
+      await Transaction.updateMany({ hash: id }, { pending: false })
+      return "success"
 
-    // success
-    await Transaction.updateMany({ hash: id }, { pending: false })
-    return "success"
-
-    // END LOCK
+    })
 
   }
 
@@ -315,36 +316,36 @@ export const LightningMixin = (superclass) => class extends superclass {
       return
     }
 
-    // LOCK NEEDED
+    return await using(disposer(this.uid), async (lock) => {
 
-    for (const payment of payments) {
+      for (const payment of payments) {
 
-      let result
-      try {
-        result = await lnService.getPayment({ lnd: this.lnd, id: payment.hash })
-      } catch (err) {
-        throw Error('issue fetching payment: ' + err.toString())
-      }
-
-      if (result.is_confirmed) {
-        // success
-        payment.pending = false
-        payment.save()
-      }
-
-      if (result.is_failed) {
+        let result
         try {
-          payment.pending = false
-          await payment.save()
-          await MainBook.void(payment._journal, "Payment canceled") // JSON.stringify(result.failed
+          result = await lnService.getPayment({ lnd: this.lnd, id: payment.hash })
         } catch (err) {
-          throw Error(`internal: error canceling payment entry ${util.inspect({ err })}`)
+          throw Error('issue fetching payment: ' + err.toString())
+        }
+
+        if (result.is_confirmed) {
+          // success
+          payment.pending = false
+          payment.save()
+        }
+
+        if (result.is_failed) {
+          try {
+            payment.pending = false
+            await payment.save()
+            await MainBook.void(payment._journal, "Payment canceled") // JSON.stringify(result.failed
+          } catch (err) {
+            throw Error(`internal: error canceling payment entry ${util.inspect({ err })}`)
+          }
         }
       }
-    }
 
-    // END LOCK 
-
+    })
+      
   }
 
   async getOnChainAddress(): Promise<String | Error> {
@@ -410,35 +411,35 @@ export const LightningMixin = (superclass) => class extends superclass {
 
       try {
 
-        // LOCK NEEDED
+        return await using(disposer(this.uid), async (lock) => {
 
-        const invoice = await InvoiceUser.findOne({ _id: hash, pending: true, uid: this.uid })
+          const invoice = await InvoiceUser.findOne({ _id: hash, pending: true, uid: this.uid })
 
-        if (!invoice) {
-          throw Error("no mongodb entry is associated with this invoice")
-        }
+          if (!invoice) {
+            throw Error("no mongodb entry is associated with this invoice")
+          }
 
-        // TODO: use a transaction here
-        // const session = await InvoiceUser.startSession()
-        // session.withTransaction(
+          // TODO: use a transaction here
+          // const session = await InvoiceUser.startSession()
+          // session.withTransaction(
 
-        // OR: use a an unique index account / hash / voided
-        // may still not avoid issue from discrenpency between hash and the books
+          // OR: use a an unique index account / hash / voided
+          // may still not avoid issue from discrenpency between hash and the books
 
-        invoice.pending = false
-        invoice.save()
+          invoice.pending = false
+          invoice.save()
 
-        await MainBook.entry()
-          .credit('Assets:Reserve:Lightning', result.tokens, { currency: "BTC", hash, type: "invoice" })
-          .debit(this.accountPath, result.tokens, { currency: "BTC", hash, type: "invoice" })
-          .commit()
+          await MainBook.entry()
+            .credit('Assets:Reserve:Lightning', result.tokens, { currency: "BTC", hash, type: "invoice" })
+            .debit(this.accountPath, result.tokens, { currency: "BTC", hash, type: "invoice" })
+            .commit()
 
-        // session.commitTransaction()
-        // session.endSession()
+          // session.commitTransaction()
+          // session.endSession()
 
-        return true
+          return true
 
-        // END LOCK
+        })
 
       } catch (err) {
         console.error(err)
@@ -501,23 +502,22 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     const type = "onchain_receipt"
 
-    // LOCK NEEDED
+    return await using(disposer(this.uid), async (lock) => {
 
-    for (const matched_tx of matched_txs) {
+      for (const matched_tx of matched_txs) {
 
-      // has the transaction has not been added yet to the user account?
-      const mongotx = await Transaction.findOne({ account_path: this.accountPathMedici, type, hash: matched_tx.id })
-      console.log({ matched_tx, mongotx })
+        // has the transaction has not been added yet to the user account?
+        const mongotx = await Transaction.findOne({ account_path: this.accountPathMedici, type, hash: matched_tx.id })
+        console.log({ matched_tx, mongotx })
 
-      if (!mongotx) {
-        await MainBook.entry()
-          .credit('Assets:Reserve:Lightning', matched_tx.tokens, { currency: "BTC", type, hash: matched_tx.id })
-          .debit(this.accountPath, matched_tx.tokens, { currency: "BTC", type, hash: matched_tx.id,  })
-          .commit()
+        if (!mongotx) {
+          await MainBook.entry()
+            .credit('Assets:Reserve:Lightning', matched_tx.tokens, { currency: "BTC", type, hash: matched_tx.id })
+            .debit(this.accountPath, matched_tx.tokens, { currency: "BTC", type, hash: matched_tx.id,  })
+            .commit()
+        }
       }
-    }
 
-    // END LOCK
-
+    })
   }
 };

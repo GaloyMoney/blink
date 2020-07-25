@@ -15,17 +15,22 @@ function unlockErrorHandler(err) {
   console.error(err);
 }
 
-let client
+let redlock, client
 
-const getRedisClient = () => {
+const getClient = () => {
   client = client ?? redis.createClient(process.env.REDIS_PORT, process.env.REDIS_IP)
   return client
 }
 
-const redlock = new Redlock(
+const getRedLock = () => {
+  if (redlock) { 
+    return redlock
+  } 
+  
+  redlock = new Redlock(
   // you should have one client for each independent redis node
   // or cluster
-  [getRedisClient()],
+  [getClient()],
   {
     // the expected clock drift; for more details
     // see http://redis.io/topics/distlock
@@ -42,12 +47,16 @@ const redlock = new Redlock(
     // to improve performance under high contention
     // see https://www.awsarchitectureblog.com/2015/03/backoff.html
     retryJitter:  200 // time in ms
-  }
-)
+  })
+
+  return redlock
+}
 
 export const disposer = (path) => {
   const resource = `locks:account:${path}`;
-  return redlock.disposer(resource, ttl, unlockErrorHandler)
+  return getRedLock().disposer(resource, ttl, unlockErrorHandler)
 }
 
-export const quit = () => client.quit()
+// export const quit = async () => await getRedLock().quit()
+// TODO see why above function doesn't work
+export const quit = async () => getClient().quit()

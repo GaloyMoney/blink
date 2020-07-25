@@ -1,9 +1,6 @@
-import { book } from "medici";
-import moment from "moment";
 import { LightningMixin } from "./Lightning";
 import { LightningAdminWallet } from "./LightningAdminImpl";
-import { ILightningTransaction, OnboardingEarn, TransactionType } from "./types";
-import { getAuth } from "./utils";
+import { OnboardingEarn } from "./types";
 import { UserWallet } from "./wallet";
 const lnService = require('ln-service');
 const util = require('util')
