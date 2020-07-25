@@ -218,14 +218,23 @@ jobs:
           command: |
             kubectl get --namespace=$NAMESPACE pods
             kubectl exec --namespace=$NAMESPACE test-pod -- bash -c "cd functions && yarn test"
-      # temp quick fix
-      # - run:
-      #     name: Run postman test
-      #     command: |
-      #       kubectl exec --namespace=$NAMESPACE test-pod -- bash -c "cd functions && yarn run postman"
+      - run:
+          name: Launch graphql
+          command: |
+            echo "$MACAROON"
+            helm install --namespace=$NAMESPACE ~/GaloyApp/backend/graphql-chart/regtest-values.yaml \ 
+              --set macaroon=$MACAROON graphql-chart ~/GaloyApp/backend/graphql-chart/
+      - run:
+          name: Run postman test
+          command: |
+            kubectl exec --namespace=$NAMESPACE test-pod -- bash -c "cd functions && yarn run postman"
       - run:
           name: Fetch test results
           command: kubectl cp --namespace=$NAMESPACE test-pod:/functions/artifacts/junit.xml ./reports/junit.xml
+          when: always
+      - run:
+          name: sleep (debug)
+          command: sleep 1800
           when: always
       - store_test_results:
           path: ./reports
