@@ -47,7 +47,7 @@ export class LightningUserWallet extends LightningMixin(UserWallet) {
             }
 
             return result
-        }
+        })
     }
 
     async setLevel({level}) {
