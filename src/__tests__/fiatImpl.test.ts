@@ -1,4 +1,4 @@
-import { setupMongoConnection } from "../db"
+import { setupMongoConnection } from "../mongodb"
 // this import needs to be before medici
 
 import { FiatAdminWallet } from "../FiatAdminWallet"
