@@ -224,7 +224,7 @@ jobs:
             export MACAROON=$(kubectl exec --namespace=$NAMESPACE lnd-container-0 -- base64 /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon | tr -d '\n\r')
             echo "$MACAROON"
             helm install --namespace=$NAMESPACE graphql-chart -f ~/GaloyApp/backend/graphql-chart/regtest-values.yaml \ 
-              --set macaroon=$MACAROON ~/GaloyApp/backend/graphql-chart/
+            --set macaroon=$MACAROON ~/GaloyApp/backend/graphql-chart/
       - run:
           name: Run postman test
           command: |
