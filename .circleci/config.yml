@@ -222,7 +222,7 @@ jobs:
           name: Launch graphql
           command: |
             echo "$MACAROON"
-            helm install --namespace=$NAMESPACE ~/GaloyApp/backend/graphql-chart/regtest-values.yaml \ 
+            helm install --namespace=$NAMESPACE -f ~/GaloyApp/backend/graphql-chart/regtest-values.yaml \ 
               --set macaroon=$MACAROON graphql-chart ~/GaloyApp/backend/graphql-chart/
       - run:
           name: Run postman test
