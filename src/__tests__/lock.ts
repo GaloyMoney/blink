@@ -1,3 +1,7 @@
+/**
+ * @jest-environment node
+ */
+
 import {disposer, quit} from "../lock"
 const using = require('bluebird').using;
 import { sleep } from "../utils"

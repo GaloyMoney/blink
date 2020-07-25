@@ -1,3 +1,6 @@
+/**
+ * @jest-environment node
+ */
 import { setupMongoConnection } from "../mongodb"
 // this import needs to be before medici
 
@@ -10,15 +13,11 @@ let fiatWallet
 beforeAll(async () => {
   await setupMongoConnection()
   fiatWallet = new FiatAdminWallet({uid: "admin"})
-
-  // FIXME: this might cause issue when running test in parrallel?
-  //this also fails the test due to user authentication issue
-  // return await mongoose.connection.dropDatabase()
-});
+})
 
 afterAll(async () => {
-  return await mongoose.connection.close()
-});
+	return await mongoose.connection.close()
+})
 
 it('balanceStartAtZero', async () => {
   const result = await fiatWallet.getBalance()
