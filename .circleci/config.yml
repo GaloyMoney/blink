@@ -226,6 +226,7 @@ jobs:
             echo "$MACAROON"
             helm install --namespace=$NAMESPACE graphql-chart -f ~/GaloyApp/backend/graphql-chart/regtest-values.yaml --set macaroon=$MACAROON,tag=$CIRCLE_SHA1 ~/GaloyApp/backend/graphql-chart/
             kubectl wait --namespace=$NAMESPACE --for=condition=ready pod -l app=graphql-server  --timeout=200s
+            sleep 10
       - run:
           name: Run postman test
           command: |
