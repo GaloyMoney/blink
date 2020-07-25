@@ -234,7 +234,7 @@ jobs:
           when: always
       - run:
           name: sleep (debug)
-          command: sleep 1800
+          command: sleep 599 && echo "10 min" && sleep 599 && "echo 20 min"
           when: always
       - store_test_results:
           path: ./reports

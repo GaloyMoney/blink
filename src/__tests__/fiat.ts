@@ -4,21 +4,17 @@ import { setupMongoConnection } from "../mongodb"
 import { FiatAdminWallet } from "../FiatAdminWallet"
 const mongoose = require("mongoose");
 
-
 const uid = "abc123" // FIXME
 let fiatWallet
 
 beforeAll(async () => {
   await setupMongoConnection()
+  fiatWallet = new FiatAdminWallet({uid: "admin"})
 
   // FIXME: this might cause issue when running test in parrallel?
   //this also fails the test due to user authentication issue
   // return await mongoose.connection.dropDatabase()
 });
-
-beforeEach(async () => {
-  fiatWallet = new FiatAdminWallet({uid: "admin"})
-})
 
 afterAll(async () => {
   return await mongoose.connection.close()
