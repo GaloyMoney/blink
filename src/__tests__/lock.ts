@@ -12,21 +12,21 @@ afterAll(async () => {
   quit()
 });
 
-it('I can acquiere a lock', async () => {
+it('I can acquired a lock', async () => {
   await using(disposer(uid), function(lock) {
-    console.log("lock acquiere")
+    console.log("lock acquired")
   });
 })
 
 it('second loop start after first loop has ended', async () => {
   await Promise.all([
     using(disposer(uid), async function(lock) {
-      console.log("loop 1, locked acquiere")
+      console.log("loop 1, locked acquired")
       await sleep(1000)
       console.log("loop 1 end")
     }),
     using(disposer(uid), async function(lock) {
-      console.log("loop 2, locked acquiere")
+      console.log("loop 2, locked acquired")
       await sleep(1000)
       console.log("loop 2 end")
     })  
