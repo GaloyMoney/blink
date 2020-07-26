@@ -1,28 +1,23 @@
-import { setupMongoConnection } from "../db"
+/**
+ * @jest-environment node
+ */
+import { setupMongoConnection } from "../mongodb"
 // this import needs to be before medici
 
 import { FiatAdminWallet } from "../FiatAdminWallet"
 const mongoose = require("mongoose");
-
 
 const uid = "abc123" // FIXME
 let fiatWallet
 
 beforeAll(async () => {
   await setupMongoConnection()
-
-  // FIXME: this might cause issue when running test in parrallel?
-  //this also fails the test due to user authentication issue
-  // return await mongoose.connection.dropDatabase()
-});
-
-beforeEach(async () => {
   fiatWallet = new FiatAdminWallet({uid: "admin"})
 })
 
 afterAll(async () => {
-  return await mongoose.connection.close()
-});
+	return await mongoose.connection.close()
+})
 
 it('balanceStartAtZero', async () => {
   const result = await fiatWallet.getBalance()

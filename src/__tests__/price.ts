@@ -1,4 +1,8 @@
-import { setupMongoConnection } from "../db"
+/**
+ * @jest-environment node
+ */
+
+import { setupMongoConnection } from "../mongodb"
 // this import needs to be before medici
 
 import { Price } from "../priceImpl";
