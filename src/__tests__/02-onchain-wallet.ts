@@ -62,6 +62,12 @@ const onchain_funding = async ({address, wallet, blockHeight}) => {
 		sub.removeAllListeners();
 
 		await waitUntilBlockHeight({lnd: lndMain, blockHeight})
+
+		// TODO: refactor
+		const admin = await User.findOne({ role: "admin" })
+		const adminWallet = new LightningAdminWallet({ uid: admin._id })
+		await adminWallet.updateUsersPendingPayment()
+
 		const balance = await wallet.getBalance()
 		expect(balance).toBe(btc2sat(amount_BTC))
 		await checkIsBalanced()
@@ -98,7 +104,7 @@ it('user0 is credited for on chain transaction', async () => {
 
 	expect((<string>address).substr(0, 4)).toBe("bcrt")
 
-	await onchain_funding({address, wallet, blockHeight: 113})
+	await onchain_funding({address, wallet, blockHeight: 107})
 
 }, 10000)
 
