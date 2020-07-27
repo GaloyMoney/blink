@@ -1,13 +1,11 @@
+import { filter, find } from "lodash";
 import { book } from "medici";
 import { LightningMixin } from "./Lightning";
 import { LightningUserWallet } from "./LightningUserWallet";
 import { getAuth } from "./utils";
 import { AdminWallet } from "./wallet";
-import { find, filter } from "lodash";
 const lnService = require('ln-service')
 const mongoose = require("mongoose");
-const BitcoindClient = require('bitcoin-core')
-const util = require('util')
 
 export class LightningAdminWallet extends LightningMixin(AdminWallet) {
   constructor({uid}: {uid: string}) {

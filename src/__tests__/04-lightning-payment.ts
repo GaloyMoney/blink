@@ -4,8 +4,9 @@
 import { setupMongoConnection } from "../mongodb";
 // this import needs to be before medici
 import { createHash, randomBytes } from 'crypto';
-import { LightningAdminWallet } from "../LightningAdminImpl";
 import { LightningUserWallet } from "../LightningUserWallet";
+import { quit } from "../lock";
+import { checkIsBalanced, getUidFromToken, getUserWallet, lndOutside1 } from "../tests_utils/import";
 import { OnboardingEarn } from "../types";
 const lnService = require('ln-service')
 const lightningPayReq = require('bolt11')
@@ -16,7 +17,6 @@ let userWallet1, userWallet2
 let uidFromToken1, uidFromToken2
 
 
-import {lndOutside1, getUidFromToken, getUserWallet, checkIsBalanced} from "../tests_utils/import"
 
 
 //FIXME: Maybe switch to using single reward
@@ -34,7 +34,8 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  return await mongoose.connection.close()
+  await mongoose.connection.close()
+  await quit()
 });
 
 //Does not seem to be best approach
@@ -89,7 +90,6 @@ const amountInvoice = 1000
 
 it('payInvoice', async () => {
   const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: amountInvoice })
-  await userWallet1.addEarn(onBoardingEarnIds)
   const result = await userWallet1.pay({ invoice: request })
   expect(result).toBe("success")
   const finalBalance = await userWallet1.getBalance()
@@ -159,8 +159,14 @@ it('pay hodl invoice', async () => {
   const id = sha256(secret);
 
   const { request } = await lnService.createHodlInvoice({ id, lnd: lndOutside1, tokens: 1000 });
-  await userWallet1.addEarn(onBoardingEarnIds)
-  expect(await userWallet1.pay({ invoice: request })).toBe("pending")
+  const result = await userWallet1.pay({ invoice: request })
+
+  expect(result).toBe("pending")
+
+  // FIXME: necessary to not have openHandler ?
+  // https://github.com/alexbosworth/ln-service/issues/122
+  await lnService.settleHodlInvoice({lnd: lndOutside1, secret: secret.toString('hex')});
+
   await checkIsBalanced()
 }, 25000)
 

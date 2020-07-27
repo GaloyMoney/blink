@@ -28,6 +28,7 @@
     "@jest/test-sequencer": "^26.0.1",
     "@types/lodash": "^4.14.155",
     "bitcoin-core": "^3.0.0",
+    "bluebird": "^3.7.2",
     "ccxt": "^1.26.54",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",

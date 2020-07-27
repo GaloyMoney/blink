@@ -12,6 +12,7 @@ const mongoose = require("mongoose");
 const { once } = require('events');
 
 import {lndMain, lndOutside1, lndOutside2, bitcoindClient, RANDOM_ADDRESS, getUserWallet, checkIsBalanced} from "../tests_utils/import"
+import { quit } from "../lock";
 
 let bank_address
 let lndOutside1_wallet_addr
@@ -27,7 +28,8 @@ beforeAll(async () => {
 })
 
 afterAll(async () => {
-	return await mongoose.connection.close()
+	await mongoose.connection.close()
+	await quit()
 })
 
 it('creating bank "admin" user', async () => {

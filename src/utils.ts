@@ -17,11 +17,11 @@ export async function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-export function timeout(t, msg) {
+export function timeout(delay, msg) {
     return new Promise(function(resolve, reject) {
         setTimeout(function() {
             reject(new Error(msg));
-        }, t);
+        }, delay);
     });
 }
 

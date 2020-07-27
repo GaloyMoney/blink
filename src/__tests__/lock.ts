@@ -9,26 +9,33 @@ import { sleep } from "../utils"
 const uid = "1234"
 
 afterAll(async () => {
-  quit()
+  await quit()
 });
 
-it('I can acquired a lock', async () => {
-  await using(disposer(uid), function(lock) {
-    console.log("lock acquired")
+
+it('return value from using are passed with a promise', async () => {
+  const result = await using(disposer(uid), function(lock) {
+    return "r"
   });
+
+  expect (result).toBe("r")
 })
 
 it('second loop start after first loop has ended', async () => {
+  let order: number[] = []
+
   await Promise.all([
     using(disposer(uid), async function(lock) {
-      console.log("loop 1, locked acquired")
+      order.push(1)
       await sleep(1000)
-      console.log("loop 1 end")
+      order.push(2)
     }),
     using(disposer(uid), async function(lock) {
-      console.log("loop 2, locked acquired")
+      order.push(3)
       await sleep(1000)
-      console.log("loop 2 end")
-    })  
+      order.push(4)
+    })
   ])
+
+  expect(order).toStrictEqual([1, 2, 3, 4])
 })
