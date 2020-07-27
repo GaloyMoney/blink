@@ -14,7 +14,8 @@ const mongoose = require("mongoose");
 
 const equity_g = new client.Gauge({ name: 'shareholder', help: 'value of shareholder' })
 const customers_g = new client.Gauge({ name: 'customers', help: 'how much money customers has' })
-const lightning_g = new client.Gauge({ name: 'lightning', help: 'how much money there is on lnd' })
+const lightning_g = new client.Gauge({ name: 'lightning', help: 'how much money there is our books for lnd' })
+const lnd_g = new client.Gauge({ name: 'lnd', help: 'how much money in our node' })
 const assetsEqualLiabilities_g = new client.Gauge({ name: 'assetsEqLiabilities', help: 'do we have a balanced book' })
 const lndBalanceSheetAreSynced_g = new client.Gauge({ name: 'lndBalanceSync', help: 'are lnd in syncs with our books' })
 // const price_g = new client.Gauge({ name: 'price', help: 'BTC/USD price' })
@@ -39,10 +40,12 @@ const main = async () => {
     
     const {customers, equity, lightning} = await adminWallet.getBalanceSheet()
     const { assetsEqualLiabilities, lndBalanceSheetAreSynced } = await adminWallet.balanceSheetIsBalanced()
+    const lndBalance = await adminWallet.totalLndBalance()
 
     equity_g.set(equity)
     customers_g.set(customers)
     lightning_g.set(lightning)
+    lnd_g.set(lndBalance)
     assetsEqualLiabilities_g.set(assetsEqualLiabilities ? 1 : 0)
     lndBalanceSheetAreSynced_g.set(lndBalanceSheetAreSynced ? 1 : 0)
     // price_g.set(price)
