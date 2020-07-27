@@ -234,6 +234,11 @@ const server = new GraphQLServer({
   }
  })
 
+// Health check
+server.express.get('/healthz', function(req, res) {
+  res.send('OK');
+});
+
 const options = {
   endpoint: '/graphql',
 }
