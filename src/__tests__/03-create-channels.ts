@@ -13,15 +13,18 @@ const lnService = require('ln-service')
 
 import {lndMain, lndOutside1, lndOutside2, bitcoindClient, RANDOM_ADDRESS, checkIsBalanced} from "../tests_utils/import"
 
-
 const User = mongoose.model("User")
 
 const local_tokens = 10000000
 
 const blockHeightInit = 120
 
+let adminWallet
+
 beforeAll(async () => {
 	await setupMongoConnection()
+	const admin = await User.findOne({role: "admin"})
+	adminWallet = new LightningAdminWallet({uid: admin._id})
 })
 
 afterAll(async () => {
@@ -39,12 +42,8 @@ const openChannel = async ({lnd, other_lnd, socket, blockHeight}) => {
 	console.log({public_key})
 
 	let openChannelPromise
-	let adminWallet
 
 	if (lnd === lndMain) {
-		// TODO: dedupe
-		const admin = await User.findOne({role: "admin"})
-		adminWallet = new LightningAdminWallet({uid: admin._id})
 		openChannelPromise = adminWallet.openChannel({ local_tokens, public_key, socket })
 
 	} else {
@@ -75,11 +74,7 @@ const openChannel = async ({lnd, other_lnd, socket, blockHeight}) => {
 	])
 
 	sub.removeAllListeners();
-
-	if (lnd === lndMain) {
-		await adminWallet.updateEscrows()
-	}
-
+	await adminWallet.updateEscrows()
 	await checkIsBalanced()
 }
 
