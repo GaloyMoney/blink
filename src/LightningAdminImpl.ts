@@ -130,7 +130,11 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
 
       const txid = `${channel.transaction_id}:${channel.transaction_vout}`
       
-      const mongotx = await Transaction.findOne({ type, txid })
+      const mongotx = await Transaction.findOne(
+        { type, txid, accounts: "Assets:Reserve:Lightning" }, 
+        null,
+        {sort: {datetime: -1 }}
+      )
 
       if (mongotx?.debit === channel.commit_transaction_fee) {
         continue
