@@ -104,7 +104,7 @@ it('user0 is credited for on chain transaction', async () => {
 
 	expect((<string>address).substr(0, 4)).toBe("bcrt")
 
-	await onchain_funding({address, wallet, blockHeight: 107})
+	await onchain_funding({address, wallet, blockHeight: 113})
 
 }, 10000)
 
