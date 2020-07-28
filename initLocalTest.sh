@@ -1,6 +1,6 @@
 set -e
 
-if [ -z ${LOCAL} ]; then SERVICETYPE=LoadBalancer; else SERVICETYPE=ClusterIP; fi
+if [ ${LOCAL} ]; then SERVICETYPE=LoadBalancer; else SERVICETYPE=ClusterIP; fi
 
 helm install --namespace=$NAMESPACE bitcoind -f ../../bitcoind-chart/values.yaml -f ../../bitcoind-chart/regtest-values.yaml --set serviceType=$SERVICETYPE ../../bitcoind-chart/
 helm install --namespace=$NAMESPACE mongodb --set auth.username=testGaloy,auth.password=testGaloy,auth.database=galoy,persistence.enabled=false,service.type=$SERVICETYPE bitnami/mongodb

@@ -5287,10 +5287,10 @@ levn@~0.3.0:
     prelude-ls "~1.1.2"
     type-check "~0.3.2"
 
-lightning@2.0.27:
-  version "2.0.27"
-  resolved "https://registry.yarnpkg.com/lightning/-/lightning-2.0.27.tgz#a08f14584651e36b86b5abc750af172dadbff254"
-  integrity sha512-PvWwLcYbo4xw6HgnZZ6PGaxiRAuHwsHCBNmoSWyBnyxFcO5uXJfBa3Zso+DzdeP71s7SUIirGAP9gBsPxmqkzw==
+lightning@2.0.30:
+  version "2.0.30"
+  resolved "https://registry.yarnpkg.com/lightning/-/lightning-2.0.30.tgz#ef7319ae9b9abe47dd50305f755527f9b40ff6ad"
+  integrity sha512-XZFefXdOE4kPa/C533MwnTpgfidwM6M9s0Mtg7U0jmDA5dRB9VmMU8zssBAeo+cZ46fXEx7fz4lXLGQ6V7opUw==
   dependencies:
     "@grpc/proto-loader" "0.5.5"
     async "3.2.0"
@@ -5315,10 +5315,10 @@ liquid-json@0.3.1:
   resolved "https://registry.yarnpkg.com/liquid-json/-/liquid-json-0.3.1.tgz#9155a18136d8a6b2615e5f16f9a2448ab6b50eea"
   integrity sha1-kVWhgTbYprJhXl8W+aJEira1Duo=
 
-ln-service@^49.3.5:
-  version "49.3.5"
-  resolved "https://registry.yarnpkg.com/ln-service/-/ln-service-49.3.5.tgz#f4115ef2165604f0093f38b9acb83e72dad7ecf8"
-  integrity sha512-7IFR00AJWW5ZhIQNVXXLum6ZQgeBjWsaGM2xphxw6JF0shDErLr/qN9SOvbKrsASyyoZT1ICgihlCWNungUC1A==
+ln-service@^49.3.6:
+  version "49.4.1"
+  resolved "https://registry.yarnpkg.com/ln-service/-/ln-service-49.4.1.tgz#35e084d3b5cf637ff2d9d5e17c381f4b359b4b0c"
+  integrity sha512-u3Ej2xVQGkkH98XfVmk8utjJVtpuZ0QtpZMFey8XwQqdopFpBjpgRGeSrGSrx52TxblCTEUznhB4Ou9+8bRtPg==
   dependencies:
     "@datastructures-js/priority-queue" "4.1.1"
     async "3.2.0"
@@ -5331,7 +5331,7 @@ ln-service@^49.3.5:
     express "4.17.1"
     invoices "1.1.1"
     is-base64 "1.1.0"
-    lightning "2.0.27"
+    lightning "2.0.30"
     macaroon "3.0.4"
     morgan "1.10.0"
     ws "7.3.1"

@@ -4,9 +4,10 @@
 import { setupMongoConnection } from "../mongodb";
 // this import needs to be before medici
 import { createHash, randomBytes } from 'crypto';
+import {book} from "medici"
 import { LightningUserWallet } from "../LightningUserWallet";
 import { quit } from "../lock";
-import { checkIsBalanced, getUidFromToken, getUserWallet, lndOutside1 } from "../tests_utils/import";
+import { checkIsBalanced, getUidFromToken, getUserWallet, lndOutside1, lndOutside2 } from "../tests_utils/import";
 import { OnboardingEarn } from "../types";
 const lnService = require('ln-service')
 const lightningPayReq = require('bolt11')
@@ -158,17 +159,28 @@ it('pay hodl invoice', async () => {
   const secret = randomSecret();
   const id = sha256(secret);
 
-  const { request } = await lnService.createHodlInvoice({ id, lnd: lndOutside1, tokens: 1000 });
+  const { request } = await lnService.createHodlInvoice({ id, lnd: lndOutside1, tokens: amountInvoice });
   const result = await userWallet1.pay({ invoice: request })
 
   expect(result).toBe("pending")
-
+  const finalBalance = await userWallet1.getBalance()
   // FIXME: necessary to not have openHandler ?
   // https://github.com/alexbosworth/ln-service/issues/122
   await lnService.settleHodlInvoice({lnd: lndOutside1, secret: secret.toString('hex')});
-
+  expect(finalBalance).toBe(onBoardingEarnAmt - 3 * amountInvoice)
   await checkIsBalanced()
 }, 25000)
+
+it('payInvoice to lnd outside 2', async () => {
+  const { request } = await lnService.createInvoice({ lnd: lndOutside2, tokens: amountInvoice })
+  const result = await userWallet1.pay({ invoice: request })
+  expect(result).toBe("success")
+  const finalBalance = await userWallet1.getBalance()
+  const MainBook = new book("MainBook")
+  const fee = (await MainBook.ledger({account:userWallet1.accountPath, meta: {$exists: true}})).results[0].meta.fee
+  expect(finalBalance).toBe(onBoardingEarnAmt - 4 * amountInvoice - fee)
+  await checkIsBalanced()
+}, 100000)
 
 it('if fee are too high, payment is cancelled', async () => {
   // TODO
