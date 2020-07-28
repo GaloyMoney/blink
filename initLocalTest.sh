@@ -10,6 +10,6 @@ kubectl wait --namespace=$NAMESPACE --for=condition=ready pod -l app=bitcoind-co
 
 helm install --namespace=$NAMESPACE lnd -f ../../lnd-chart/values.yaml -f ../../lnd-chart/regtest-values.yaml --set lndService.serviceType=$SERVICETYPE ../../lnd-chart/
 
-kubectl wait --namespace=$NAMESPACE --for=condition=ready pod -l app=lnd-container --timeout=60s
+kubectl wait --namespace=$NAMESPACE --for=condition=ready pod -l app=lnd-container --timeout=120s
 kubectl wait --namespace=$NAMESPACE --for=condition=ready pod -l app=redis
 kubectl wait --namespace=$NAMESPACE --for=condition=ready pod -l app.kubernetes.io/component=mongodb
