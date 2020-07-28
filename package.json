@@ -36,7 +36,7 @@
     "graphql-shield": "^7.3.0",
     "graphql-yoga": "^1.18.3",
     "jsonwebtoken": "^8.5.1",
-    "ln-service": "^49.3.5",
+    "ln-service": "^49.3.6",
     "lodash": "^4.17.15",
     "medici": "^4.0.1",
     "moment": "^2.24.0",
