@@ -62,6 +62,12 @@ const onchain_funding = async ({address, wallet, blockHeight}) => {
 		sub.removeAllListeners();
 
 		await waitUntilBlockHeight({lnd: lndMain, blockHeight})
+
+		// TODO: refactor
+		const admin = await User.findOne({ role: "admin" })
+		const adminWallet = new LightningAdminWallet({ uid: admin._id })
+		await adminWallet.updateUsersPendingPayment()
+
 		const balance = await wallet.getBalance()
 		expect(balance).toBe(btc2sat(amount_BTC))
 		await checkIsBalanced()

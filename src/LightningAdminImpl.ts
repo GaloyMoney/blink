@@ -16,7 +16,7 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
     const User = mongoose.model("User")
     let userWallet
 
-    for await (const user of User.find({}, { _id: 1})) {
+    for await (const user of User.find({"role": "user"}, { _id: 1})) {
       console.log(user)
       // TODO there is no reason to fetch the Auth wallet here.
       // Admin should have it's own auth that it's passing to LightningUserWallet
