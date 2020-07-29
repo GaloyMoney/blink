@@ -101,7 +101,7 @@ it('opens channel from lndOutside1 to lndOutside2', async () => {
 
 	const { channels } = await lnService.getChannels({ lnd: lndOutside1 })
 	expect(channels.length).toEqual(2)
-}, 100000)
+}, 240000)
 
 it('opens channel from lndOutside1 to lnd1', async () => {
 	const socket = `lnd-service:9735`
