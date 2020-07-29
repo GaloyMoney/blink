@@ -92,11 +92,12 @@ it('opens channel from lndOutside1 to lndOutside2', async () => {
 
 	// const {subscribeToGraph} = require('ln-service');
 	const subscription = lnService.subscribeToGraph({lnd:lndMain});
-	const {public_key} = await lnService.getWalletInfo({lnd:lndOutside2})
 	
-	await openChannel({lnd: lndOutside1, other_lnd: lndOutside2, socket, blockHeight: blockHeightInit + 6})
+	await Promise.all([
+		openChannel({lnd: lndOutside1, other_lnd: lndOutside2, socket, blockHeight: blockHeightInit + 6}),
+		once(subscription, 'channel_updated')
+	])
 
-	await once(subscription, 'channel_updated')
 	subscription.removeAllListeners();
 
 	const { channels } = await lnService.getChannels({ lnd: lndOutside1 })
