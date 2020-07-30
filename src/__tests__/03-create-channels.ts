@@ -39,7 +39,6 @@ const openChannel = async ({lnd, other_lnd, socket, blockHeight}) => {
 	await waitUntilBlockHeight({lnd: other_lnd, blockHeight})
 
 	const { public_key } = await lnService.getWalletInfo({ lnd: other_lnd })
-	console.log({public_key})
 
 	let openChannelPromise
 
@@ -52,9 +51,8 @@ const openChannel = async ({lnd, other_lnd, socket, blockHeight}) => {
 	}
 	
 	const sub = lnService.subscribeToChannels({lnd})
-
-	console.log("channel opening")
-	await once(sub, 'channel_opening');
+	await once(sub, 'channel_opening')
+	sub.removeAllListeners()
 
 	const mineBlock = async () => {
 		await bitcoindClient.generateToAddress(newBlock, RANDOM_ADDRESS)
@@ -73,7 +71,6 @@ const openChannel = async ({lnd, other_lnd, socket, blockHeight}) => {
 		mineBlock(),
 	])
 
-	sub.removeAllListeners();
 	await adminWallet.updateEscrows()
 	await checkIsBalanced()
 }

@@ -84,12 +84,13 @@ export async function waitUntilBlockHeight({lnd, blockHeight}) {
     console.log({ current_block_height, is_synced_to_chain})
     
     let time = 0
+    const ms = 50
     while (current_block_height < blockHeight || !is_synced_to_chain) {
-        await sleep(50);
+        await sleep(ms);
         ({ current_block_height, is_synced_to_chain } = await lnService.getWalletInfo({ lnd }))
         // console.log({ current_block_height, is_synced_to_chain})
         time++
     }
-    console.log(`Seconds to sync blockheight ${blockHeight}: ${time / 20}`)
+    console.log(`Seconds to sync blockheight ${blockHeight}: ${time / (1000/ ms)}`)
     return
 }
