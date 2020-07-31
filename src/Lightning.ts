@@ -10,7 +10,11 @@ import { randomBytes, createHash } from "crypto"
 export type IType = "invoice" | "payment" | "earn"
 export type payInvoiceResult = "success" | "failed" | "pending"
 
-import { logger } from './index' // FIXME is that the right way to import logger?
+// import { logger } from './index'
+// FIXME seems it is not the right way to import the logger?
+// lead to an issue where `Lightning_1 can't be found`
+const logger = require('pino')({ level: "debug" })
+
 
 import {disposer} from "./lock"
 const using = require('bluebird').using
