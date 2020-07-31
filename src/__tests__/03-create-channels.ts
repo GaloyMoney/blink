@@ -11,7 +11,10 @@ const { once } = require('events');
 
 const lnService = require('ln-service')
 
-import {lndMain, lndOutside1, lndOutside2, bitcoindClient, RANDOM_ADDRESS, checkIsBalanced} from "../tests_utils/import"
+import {lndMain, lndOutside1, lndOutside2, bitcoindClient, RANDOM_ADDRESS, checkIsBalanced} from "../tests/helper"
+
+export const logger = require('pino')({ level: "debug" })
+
 
 const User = mongoose.model("User")
 
@@ -60,7 +63,7 @@ const openChannel = async ({lnd, other_lnd, socket, blockHeight}) => {
 		await waitUntilBlockHeight({lnd: other_lnd, blockHeight: blockHeight + newBlock})
 	}
 
-	console.log("mining blocks and waiting for channel being opened")
+	logger.debug("mining blocks and waiting for channel being opened")
 
 	await Promise.all([
 		openChannelPromise,
