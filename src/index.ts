@@ -15,7 +15,7 @@ const path = require("path");
 const mongoose = require("mongoose");
 dotenv.config()
 
-export const logger = require('pino')({ level: "debug" })
+import { logger } from "./utils"
 const pino = require('pino-http')({
   logger,
   // TODO: get uid and other information from the request.

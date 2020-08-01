@@ -1,22 +1,18 @@
 const lnService = require('ln-service');
-import { getAuth, timeout } from "./utils";
-import { IAddInvoiceRequest, TransactionType, ILightningTransaction, IPaymentRequest } from "./types";
+import { createHash, randomBytes } from "crypto";
+import { intersection } from "lodash";
+import { book } from "medici";
+import moment from "moment";
+import { disposer } from "./lock";
+import { IAddInvoiceRequest, ILightningTransaction, IPaymentRequest, TransactionType } from "./types";
+import { getAuth, logger, timeout } from "./utils";
 const mongoose = require("mongoose");
 const util = require('util')
-import { book } from "medici";
-import { intersection } from "lodash";
-import moment from "moment";
-import { randomBytes, createHash } from "crypto"
 export type IType = "invoice" | "payment" | "earn"
 export type payInvoiceResult = "success" | "failed" | "pending"
 
-// import { logger } from './index'
-// FIXME seems it is not the right way to import the logger?
-// lead to an issue where `Lightning_1 can't be found`
-const logger = require('pino')({ level: "debug" })
 
 
-import {disposer} from "./lock"
 const using = require('bluebird').using
 
 
