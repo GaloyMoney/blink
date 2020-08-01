@@ -11,7 +11,10 @@ const { once } = require('events');
 
 const lnService = require('ln-service')
 
-import {lndMain, lndOutside1, lndOutside2, bitcoindClient, RANDOM_ADDRESS, checkIsBalanced} from "../tests_utils/import"
+import {lndMain, lndOutside1, lndOutside2, bitcoindClient, RANDOM_ADDRESS, checkIsBalanced} from "../tests/helper"
+
+export const logger = require('pino')({ level: "debug" })
+
 
 const User = mongoose.model("User")
 
@@ -39,7 +42,6 @@ const openChannel = async ({lnd, other_lnd, socket, blockHeight}) => {
 	await waitUntilBlockHeight({lnd: other_lnd, blockHeight})
 
 	const { public_key } = await lnService.getWalletInfo({ lnd: other_lnd })
-	console.log({public_key})
 
 	let openChannelPromise
 
@@ -52,9 +54,8 @@ const openChannel = async ({lnd, other_lnd, socket, blockHeight}) => {
 	}
 	
 	const sub = lnService.subscribeToChannels({lnd})
-
-	console.log("channel opening")
-	await once(sub, 'channel_opening');
+	await once(sub, 'channel_opening')
+	sub.removeAllListeners()
 
 	const mineBlock = async () => {
 		await bitcoindClient.generateToAddress(newBlock, RANDOM_ADDRESS)
@@ -62,7 +63,7 @@ const openChannel = async ({lnd, other_lnd, socket, blockHeight}) => {
 		await waitUntilBlockHeight({lnd: other_lnd, blockHeight: blockHeight + newBlock})
 	}
 
-	console.log("mining blocks and waiting for channel being opened")
+	logger.debug("mining blocks and waiting for channel being opened")
 
 	await Promise.all([
 		openChannelPromise,
@@ -73,7 +74,6 @@ const openChannel = async ({lnd, other_lnd, socket, blockHeight}) => {
 		mineBlock(),
 	])
 
-	sub.removeAllListeners();
 	await adminWallet.updateEscrows()
 	await checkIsBalanced()
 }

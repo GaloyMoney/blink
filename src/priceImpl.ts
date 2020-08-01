@@ -3,6 +3,9 @@ const mongoose = require("mongoose")
 import moment = require("moment")
 const util = require('util')
 
+import { logger } from './index'
+
+
 export class Price {
     readonly pair
     readonly path
@@ -33,11 +36,11 @@ export class Price {
             'rateLimit': 30000,
             'timeout': 5000,
         })
-        console.log("start")
+        logger.info("start fetching data from exchange")
         let ohlcv;
         try {
             ohlcv = await exchange.fetchOHLCV(this.pair, "1h", since, limit); 
-            console.log("complete")
+            logger.info("data fetched from exchange")
         }
         catch (e) {
             if (e instanceof ccxt.NetworkError) {
@@ -68,7 +71,7 @@ export class Price {
             const fs = require('fs');
             fs.writeFile("test.txt", JSON.stringify(result, null, 4), function(err) {
                 if (err) {
-                    console.log(err);
+                    logger.error({err}, "error writing test file (useless log?)")
                 }
         })}
 
@@ -104,7 +107,7 @@ export class Price {
         }
 
         while (currDate < endDate) {
-            console.log({currDate, endDate})
+            logger.debug({currDate, endDate}, "loop to fetch data from exchange")
             const ohlcv = await this.getFromExchange({since: currDate, limit, init})
 
             try {
@@ -113,7 +116,7 @@ export class Price {
 
                     // FIXME inefficient
                     if(doc.pair.exchange.price.find(obj => obj._id.getTime() === value[0])) {
-                        console.log("continue")
+                        logger.debug("we already have those price datas in our database... continue")
                         continue
                     }
     
