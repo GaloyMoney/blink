@@ -8,7 +8,7 @@
     "watch": "source exportLocal.sh && nodemon -e ts -w ./src -x yarn run start | pino-pretty -c -l",
     "remove-charts": "helm uninstall mongodb | helm uninstall redis | helm uninstall lnd | helm uninstall bitcoind",
     "add-charts": "export LOCAL=true && ./initLocalTest.sh",
-    "restart-charts": "yarn run remove-charts || yarn run add-charts",
+    "restart-charts": "yarn run remove-charts || : && yarn run add-charts",
     "test-local-clean": "yarn run restart-charts && yarn run test-local",
     "test-local": "source exportLocal.sh && yarn jest --runInBand | pino-pretty -c -l",
     "dev": "nodemon -e ts -w ./src -x yarn run dev-2",
