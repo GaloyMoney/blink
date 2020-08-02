@@ -39,6 +39,10 @@ type OnChain {
   getNewAddress: String
 }
 
+type LastOnChainAddress {
+  id: ID
+}
+
 type OnchainTransaction {
   tx: String
 }
@@ -74,6 +78,7 @@ type Query {
   earnList: [Earn]
   me: User
   buildParameters: BuildParameter
+  getLastOnChainAddress: LastOnChainAddress
 }
 
 type Mutation {

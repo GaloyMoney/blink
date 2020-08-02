@@ -4,7 +4,7 @@ import { IAddInvoiceRequest, TransactionType, ILightningTransaction, IPaymentReq
 const mongoose = require("mongoose");
 const util = require('util')
 import { book } from "medici";
-import { intersection } from "lodash";
+import { intersection, last } from "lodash";
 import moment from "moment";
 import { randomBytes, createHash } from "crypto"
 export type IType = "invoice" | "payment" | "earn"
@@ -357,6 +357,25 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     })
       
+  }
+
+  async getLastOnChainAddress(): Promise<String | Error | undefined> {
+    const User = mongoose.model("User")
+
+    let user = await User.findOne({ _id: this.uid })
+    if (!user) { // this should not happen. is test that relevant?
+      console.error("no user is associated with this address")
+      throw new Error(`no user with this uid`)
+    }
+
+    if (!user?.length) {
+      // TODO create one address when a user is created instead?
+      // FIXME this shold not be done in a query but only in a mutation?
+      await this.getOnChainAddress()
+      user = await User.findOne({ _id: this.uid })
+    }
+
+    return last(user.onchain_addresses)
   }
 
   async getOnChainAddress(): Promise<String | Error> {
