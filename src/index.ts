@@ -263,7 +263,6 @@ const options = {
 }
 
 setupMongoConnection()
-
 .then(() => {
   server.start(options, ({ port }) =>
   logger.info(
