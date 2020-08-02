@@ -11,7 +11,6 @@ const util = require('util')
 export type IType = "invoice" | "payment" | "earn"
 export type payInvoiceResult = "success" | "failed" | "pending"
 
-import { disposer } from "./lock"
 const using = require('bluebird').using
 
 
