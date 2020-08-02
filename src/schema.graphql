@@ -35,8 +35,14 @@ type Invoice {
   payInvoice(invoice: String): String
 }
 
+type PendingOnchainPayment {
+  txId: String
+  amount: Int
+}
+
 type OnChain {
   getNewAddress: String
+  getPendingIncomingPayments: [PendingOnchainPayment]
 }
 
 type OnchainTransaction {
