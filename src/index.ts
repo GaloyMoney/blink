@@ -15,6 +15,19 @@ const path = require("path");
 const mongoose = require("mongoose");
 dotenv.config()
 
+import { logger } from "./utils"
+const pino = require('pino-http')({
+  logger,
+  // TODO: get uid and other information from the request.
+  // tried https://github.com/addityasingh/graphql-pino-middleware without success
+  // Define additional custom request properties
+  // reqCustomProps: function (req) {
+  //   console.log({req})
+  //   return {
+  //     // uid: req.uid
+  //   }
+  // }
+})
 
 const commitHash = process.env.COMMITHASH
 const buildTime = process.env.BUILDTIME
@@ -30,9 +43,8 @@ const resolvers = {
   Query: {
     me: async (_, __, { uid }) => {
       const User = mongoose.model("User")
-      const user = await User.findOne({ _id: uid })
-      console.log({ user })
-      console.log("me")
+      const user = await User.findOne({_id: uid})
+
       return {
         id: uid,
         level: 1,
@@ -116,10 +128,9 @@ const resolvers = {
         addInvoice: async ({ value, memo }) => {
           try {
             const result = await lightningWallet.addInvoice({ value, memo })
-            console.log({ result })
             return result
           } catch (err) {
-            console.warn(err)
+            logger.error(err)
             throw err
           }
         },
@@ -127,26 +138,26 @@ const resolvers = {
           try {
             return await lightningWallet.updatePendingInvoice({ hash })
           } catch (err) {
-            console.warn(err)
+            logger.error(err)
             throw err
           }
         },
         payInvoice: async ({ invoice }) => {
           try {
             const success = await lightningWallet.pay({ invoice })
-            console.log({ success })
+            logger.debug({success}, "succesful payment for user %o", {uid})
             return success
           } catch (err) {
-            console.warn(err)
+            logger.error({err}, "lightning payment error")
             throw err
           }
         },
-      })
-    },
-    earnCompleted: async (_, { ids }, { uid }) => {
-      console.log({ ids })
+
+    })},
+    earnCompleted: async (_, {ids}, {uid}) => {
       try {
-        const lightningWallet = new LightningUserWallet({ uid })
+        logger.debug({uid}, "request earnComplete for user %o", {uid})
+        const lightningWallet = new LightningUserWallet({uid})
         const success = await lightningWallet.addEarn(ids)
         return success
       } catch (err) {
@@ -172,13 +183,11 @@ const resolvers = {
 }
 
 
-
 function getUid(ctx: ContextParameters) {
 
   let token
   try {
     const auth = ctx.request.get('Authorization')
-    console.log({ auth })
 
     if (!auth) {
       return null
@@ -197,8 +206,6 @@ function getUid(ctx: ContextParameters) {
     // TODO return new AuthenticationError("Not authorised"); ?
     // ie: differenciate between non authenticated, and not authorized
   }
-
-  console.log("uid: " + token.uid)
   return token.uid
 }
 
@@ -229,6 +236,7 @@ const permissions = shield({
   },
 }, { allowExternalErrors: true }) // TODO remove to not expose internal error
 
+
 const server = new GraphQLServer({
   typeDefs: path.join(__dirname, "schema.graphql"),
   resolvers,
@@ -242,6 +250,9 @@ const server = new GraphQLServer({
   }
 })
 
+server.express.use(pino)
+
+
 // Health check
 server.express.get('/healthz', function(req, res) {
   res.send('OK');
@@ -252,11 +263,12 @@ const options = {
 }
 
 setupMongoConnection()
-  .then(() => {
-    server.start(options, ({ port }) =>
-      console.log(
-        `Server started, listening on port ${port} for incoming requests.`,
-      ),
-    )
-  }).catch((err) => console.log(err))
+
+.then(() => {
+  server.start(options, ({ port }) =>
+  logger.info(
+    `Server started, listening on port ${port} for incoming requests.`,
+  ),
+)
+}).catch((err) => logger.error(err, "server error"))
 

@@ -11,7 +11,7 @@ const lnService = require('ln-service')
 const mongoose = require("mongoose");
 const { once } = require('events');
 
-import {lndMain, lndOutside1, lndOutside2, bitcoindClient, RANDOM_ADDRESS, getUserWallet, checkIsBalanced} from "../tests_utils/import"
+import {lndMain, lndOutside1, lndOutside2, bitcoindClient, RANDOM_ADDRESS, getUserWallet, checkIsBalanced} from "../tests/helper"
 import { quit } from "../lock";
 
 let bank_address

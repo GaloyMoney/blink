@@ -164,7 +164,6 @@ export const setupMongoConnection = async () => {
   const db = process.env.MONGODB_DATABASE ?? "galoy"
   
   const path = `mongodb://${user}:${password}@${address}/${db}`
-  // console.log({path})
 
   try {
     await mongoose.connect(path, {

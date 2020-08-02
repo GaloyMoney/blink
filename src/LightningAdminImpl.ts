@@ -2,10 +2,12 @@ import { filter, find } from "lodash";
 import { book } from "medici";
 import { LightningMixin } from "./Lightning";
 import { LightningUserWallet } from "./LightningUserWallet";
-import { getAuth } from "./utils";
+import { getAuth, logger } from "./utils";
 import { AdminWallet } from "./wallet";
 const lnService = require('ln-service')
 const mongoose = require("mongoose");
+
+
 
 export class LightningAdminWallet extends LightningMixin(AdminWallet) {
   constructor({uid}: {uid: string}) {
@@ -17,7 +19,8 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
     let userWallet
 
     for await (const user of User.find({"role": "user"}, { _id: 1})) {
-      console.log(user)
+      logger.debug("updating user %o from admin wallet", user._id)
+
       // TODO there is no reason to fetch the Auth wallet here.
       // Admin should have it's own auth that it's passing to LightningUserWallet
 
@@ -32,15 +35,15 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
     const accounts = await MainBook.listAccounts()
     
     // used for debugging
-    let books = ""
+    let books = {}
     for (const account of accounts) {
       const { balance } = await MainBook.balance({
         account: account,
         currency: this.currency
       })
-      books += account + ": " + balance + "\n"
+      books[account] = balance
     }
-    console.log(books)
+    logger.debug(books, "status of our bookeeping")
 
     const getBalanceOf = async (account) => {
       return (await MainBook.balance({
@@ -67,9 +70,11 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
 
     const assetsEqualLiabilities = assets === - liabilities - expenses
     const lndBalanceSheetAreSynced = lightning === lndBalance
-    if(!lndBalanceSheetAreSynced) console.log(`not balanced, lndBal:${lndBalance}, lightning:${lightning}`)
+    if(!lndBalanceSheetAreSynced) {
+      logger.debug(`not balanced, lndBal:${lndBalance}, lightning:${lightning}`)
+    }
 
-    console.log({assets, liabilities, lightning, lndBalance, expenses})
+    logger.debug({assets, liabilities, lightning, lndBalance, expenses})
     return { assetsEqualLiabilities, lndBalanceSheetAreSynced }
   }
 

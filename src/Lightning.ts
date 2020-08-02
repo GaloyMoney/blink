@@ -1,17 +1,20 @@
 const lnService = require('ln-service');
-import { getAuth, timeout } from "./utils";
-import { IAddInvoiceRequest, TransactionType, ILightningTransaction, IPaymentRequest } from "./types";
+import { createHash, randomBytes } from "crypto";
+import { intersection } from "lodash";
+import { book } from "medici";
+import moment from "moment";
+import { disposer } from "./lock";
+import { IAddInvoiceRequest, ILightningTransaction, IPaymentRequest, TransactionType } from "./types";
+import { getAuth, logger, timeout } from "./utils";
 const mongoose = require("mongoose");
 const util = require('util')
-import { book } from "medici";
-import { intersection } from "lodash";
-import moment from "moment";
-import { randomBytes, createHash } from "crypto"
 export type IType = "invoice" | "payment" | "earn"
 export type payInvoiceResult = "success" | "failed" | "pending"
 
-import {disposer} from "./lock"
+
+
 const using = require('bluebird').using
+
 
 const FEECAP = 0.02 // %
 const FEEMIN = 10 // sats
@@ -115,6 +118,8 @@ export const LightningMixin = (superclass) => class extends superclass {
   async addInvoice({ value, memo }: IAddInvoiceRequest): Promise<String> {
     let request, id
 
+    logger.error(request)
+
     try {
       const result = await lnService.createInvoice({
         lnd: this.lnd,
@@ -124,7 +129,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       request = result.request
       id = result.id
     } catch (err) {
-      console.error("impossible to create the invoice")
+      logger.error("impossible to create the invoice")
     }
 
     try {
@@ -137,7 +142,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     } catch (err) {
       // FIXME if the mongodb connection has not been instanciated
       // this fails silently
-      console.log(err)
+      logger.error(err)
       throw Error(`internal: error storing invoice to db ${util.inspect({ err })}`)
     }
 
@@ -216,10 +221,11 @@ export const LightningMixin = (superclass) => class extends superclass {
 
       // TODO add private route from invoice
       ({ route } = await lnService.probeForRoute({ destination, lnd: this.lnd, tokens }));
-      console.log(util.inspect({ route }, { showHidden: false, depth: null }))
+      logger.info({ route }, "succesfully found a route for payment to %o from user %o", destination, this.uid)
 
       if (!route) {
-        throw Error(`internal: there is no route for this payment`)
+        logger.warn("there is no route for payment to %o from user %o", destination, this.uid)
+        throw Error(`there is no route for this payment`)
       }
 
       // we are confident enough that there is a possible payment route. let's move forward
@@ -273,7 +279,8 @@ export const LightningMixin = (superclass) => class extends superclass {
 
       } catch (err) {
 
-        console.log({ err, message: err.message, errorCode: err[1] })
+        logger.warn({ err, message: err.message, errorCode: err[1] }, 
+          `payment "error" to %o from user %o`, destination, this.uid)
 
         if (err.message === "Timeout") {
           return "pending"
@@ -508,7 +515,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         // has the transaction has not been added yet to the user account?
         const mongotx = await Transaction.findOne({ account_path: this.accountPathMedici, type, hash: matched_tx.id })
-        console.log({ matched_tx, mongotx })
+        logger.info({ matched_tx, mongotx }, "updateOnchainPayment with user %o", this.uid)
 
         if (!mongotx) {
           await MainBook.entry()
