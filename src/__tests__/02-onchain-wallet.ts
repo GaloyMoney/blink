@@ -96,7 +96,7 @@ it('funding bank with onchain tx', async () => {
 
 	await onchain_funding({address: bank_address, wallet: adminWallet, blockHeight: 107})
 
-}, 10000)
+}, 100000)
 
 it('user0 is credited for on chain transaction', async () => {
 	const wallet = await getUserWallet(0)
@@ -106,7 +106,7 @@ it('user0 is credited for on chain transaction', async () => {
 
 	await onchain_funding({address, wallet, blockHeight: 113})
 
-}, 10000)
+}, 100000)
 
 
 it('funds lndOutside1', async () => {
