@@ -277,7 +277,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
       } catch (err) {
 
-        logger.warn({ err, message: err.message, errorCode: err[1] }, 
+        logger.warn({ err, message: err.message, errorCode: err[1] },
           `payment "error" to %o from user %o`, destination, this.uid)
 
         if (err.message === "Timeout") {
@@ -469,7 +469,7 @@ export const LightningMixin = (superclass) => class extends superclass {
   async getIncomingOnchainPayments(confirmed: boolean) {
     let result
     try {
-      result = await lnService.getChainTransactions({ lnd: this.lnd })
+      result = (await lnService.getChainTransactions({ lnd: this.lnd })).transactions.filter(tx => !tx.is_outgoing)
     } catch (err) {
       const err_string = `${util.inspect({ err }, { showHidden: false, depth: null })}`
       throw new Error(`issue fetching transaction: ${err_string})`)
@@ -477,9 +477,9 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     let incoming_txs
     if (confirmed) {
-      incoming_txs = result.transactions.filter(item => !item.is_outgoing && item.is_confirmed)
+      incoming_txs = result.filter(tx => tx.is_confirmed)
     } else {
-      incoming_txs = result.transactions.filter(item => !item.is_outgoing && !item.is_confirmed)
+      incoming_txs = result.filter(tx => !tx.is_confirmed)
     }
 
     const User = mongoose.model("User")
