@@ -48,7 +48,6 @@ export const getUserWallet = async userNumber => {
 export const checkIsBalanced = async () => {
 	const admin = await User.findOne({ role: "admin" })
 	const adminWallet = new LightningAdminWallet({ uid: admin._id })
-  await adminWallet.updateUsersPendingPayment()
 	const { assetsEqualLiabilities, lndBalanceSheetAreSynced } = await adminWallet.balanceSheetIsBalanced()
 	expect(assetsEqualLiabilities).toBeTruthy()
 	expect(lndBalanceSheetAreSynced).toBeTruthy()
