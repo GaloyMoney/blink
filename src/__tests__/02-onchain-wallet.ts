@@ -131,7 +131,7 @@ it('identifies unconfirmed incoming on chain txn', async () => {
 	await bitcoindClient.sendToAddress(address, amount_BTC)
 	const pendingTxn = await wallet.getPendingIncomingOnchainPayments()
 	expect(pendingTxn.length).toBe(1)
-	expect(pendingTxn[0].tokens).toBe(btc2sat(1))
+	expect(pendingTxn[0].amount).toBe(btc2sat(1))
 
 	await bitcoindClient.generateToAddress(1, RANDOM_ADDRESS)
 }, 100000)
