@@ -120,4 +120,16 @@ it('funds lndOutside1', async () => {
 	await waitUntilBlockHeight({lnd: lndMain, blockHeight: 120})
 	await waitUntilBlockHeight({lnd: lndOutside1, blockHeight: 120})
 	await waitUntilBlockHeight({lnd: lndOutside2, blockHeight: 120})
-}, 10000)
+}, 100000)
+
+it('identifies unconfirmed incoming on chain txn', async () => {
+	const wallet = await getUserWallet(0)
+	const address = await wallet.getOnChainAddress()
+
+	expect((<string>address).substr(0, 4)).toBe("bcrt")
+
+	await bitcoindClient.sendToAddress(address, amount_BTC)
+	const pendingTxn = await wallet.getPendingIncomingOnchainPayments()
+	expect(pendingTxn.length).toBe(1)
+	expect(pendingTxn[0].tokens).toBe(btc2sat(1))
+}, 100000)
