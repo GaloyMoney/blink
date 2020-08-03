@@ -467,19 +467,19 @@ export const LightningMixin = (superclass) => class extends superclass {
   }
 
   async getIncomingOnchainPayments(confirmed: boolean) {
-    let result
+    let onchainTransactions
     try {
-      result = (await lnService.getChainTransactions({ lnd: this.lnd })).transactions.filter(tx => !tx.is_outgoing)
+      onchainTransactions = await lnService.getChainTransactions({ lnd: this.lnd })
     } catch (err) {
       const err_string = `${util.inspect({ err }, { showHidden: false, depth: null })}`
       throw new Error(`issue fetching transaction: ${err_string})`)
     }
 
-    let incoming_txs
+    let incoming_txs = onchainTransactions.transactions.filter(tx => !tx.is_outgoing)
     if (confirmed) {
-      incoming_txs = result.filter(tx => tx.is_confirmed)
+      incoming_txs = incoming_txs.filter(tx => tx.is_confirmed)
     } else {
-      incoming_txs = result.filter(tx => !tx.is_confirmed)
+      incoming_txs = incoming_txs.filter(tx => !tx.is_confirmed)
     }
 
     const User = mongoose.model("User")
