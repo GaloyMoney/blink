@@ -13,19 +13,25 @@ import { sendText } from './text'
 import { setupMongoConnection } from "./mongodb"
 const { lnd } = lnService.authenticatedLndGrpc(getAuth())
 
+
+import { logger } from "./utils"
+const pino = require('pino-http')({ logger })
+
 const main = async () => {
 	const User = mongoose.model("User")
-	// lnService.getWalletInfo({ lnd }, (err, result) => {
-	// 	console.log(err, result)
-	// });
+
+	lnService.getWalletInfo({ lnd }, (err, result) => {
+		logger.debug(err, result)
+	});
+	
 	const result = await lnService.getChainTransactions({ lnd })
 
 	const subTransactions = subscribeToTransactions({ lnd });
 	subTransactions.on('chain_transaction', async tx => {
-		console.log({ tx })
+		logger.debug({ tx })
 		if (!tx.is_outgoing) {
 			const { phone } = await User.findOne({ onchain_addresses: { $in: tx.output_addresses } }, { phone: 1 })
-			console.log(phone)
+
 			//FIXME: Maybe USD instead of sats?
 			const body = `You have a pending incoming txn of ${tx.tokens} sats`
 			await sendText({ body, to: phone })
@@ -34,13 +40,13 @@ const main = async () => {
 
 	const subInvoices = subscribeToInvoices({ lnd });
 	subInvoices.on('invoice_updated', invoice => {
-		console.log(invoice)
+		logger.debug(invoice)
 	})
 
 
 	const subChannels = subscribeToChannels({ lnd });
 	subChannels.on('channel_opened', channel => {
-		console.log(channel)
+		logger.debug(channel)
 	})
 
 	const app = express()
@@ -54,7 +60,7 @@ const main = async () => {
 			}
 		});
 	})
-	app.listen(port, () => console.log(`Health check listening on port ${port}!`))
+	app.listen(port, () => logger.debug(`Health check listening on port ${port}!`))
 }
 
-setupMongoConnection().then(() => main()).catch((err) => console.log(err))
+setupMongoConnection().then(() => main()).catch((err) => logger.error(err))
