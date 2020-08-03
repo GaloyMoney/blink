@@ -23,7 +23,7 @@ const main = async () => {
 	lnService.getWalletInfo({ lnd }, (err, result) => {
 		logger.debug(err, result)
 	});
-	
+
 	const result = await lnService.getChainTransactions({ lnd })
 
 	const subTransactions = subscribeToTransactions({ lnd });
@@ -31,7 +31,14 @@ const main = async () => {
 		logger.debug({ tx })
 		if (!tx.is_outgoing) {
 			const { phone } = await User.findOne({ onchain_addresses: { $in: tx.output_addresses } }, { phone: 1 })
-
+			if(!phone) {
+				//FIXME: Log the onchain address, need to first find which of the tx.output_addresses
+				// belongs to us
+				const error = `No phone number associated with the onchain address`
+				logger.error(error)
+				throw new Error(error);
+				
+			}
 			//FIXME: Maybe USD instead of sats?
 			const body = `You have a pending incoming txn of ${tx.tokens} sats`
 			await sendText({ body, to: phone })
