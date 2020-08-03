@@ -42,7 +42,6 @@ type PendingOnchainPayment {
 
 type OnChain {
   getNewAddress: String
-  getPendingIncomingPayments: [PendingOnchainPayment]
 }
 
 type OnchainTransaction {
@@ -80,6 +79,7 @@ type Query {
   earnList: [Earn]
   me: User
   buildParameters: BuildParameter
+  pendingOnChainPayment: [PendingOnchainPayment]
 }
 
 type Mutation {

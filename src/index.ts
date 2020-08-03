@@ -43,7 +43,7 @@ const resolvers = {
   Query: {
     me: async (_, __, { uid }) => {
       const User = mongoose.model("User")
-      const user = await User.findOne({_id: uid})
+      const user = await User.findOne({ _id: uid })
 
       return {
         id: uid,
@@ -71,6 +71,10 @@ const resolvers = {
         console.warn(err)
         throw err
       }
+    },
+    pendingOnChainPayment: async (_, __, { uid }) => {
+      const lightningWallet = new LightningUserWallet({ uid })
+      return await lightningWallet.getPendingIncomingOnchainPayments()
     },
     prices: async () => {
       try {
@@ -145,19 +149,20 @@ const resolvers = {
         payInvoice: async ({ invoice }) => {
           try {
             const success = await lightningWallet.pay({ invoice })
-            logger.debug({success}, "succesful payment for user %o", {uid})
+            logger.debug({ success }, "succesful payment for user %o", { uid })
             return success
           } catch (err) {
-            logger.error({err}, "lightning payment error")
+            logger.error({ err }, "lightning payment error")
             throw err
           }
         },
 
-    })},
-    earnCompleted: async (_, {ids}, {uid}) => {
+      })
+    },
+    earnCompleted: async (_, { ids }, { uid }) => {
       try {
-        logger.debug({uid}, "request earnComplete for user %o", {uid})
-        const lightningWallet = new LightningUserWallet({uid})
+        logger.debug({ uid }, "request earnComplete for user %o", { uid })
+        const lightningWallet = new LightningUserWallet({ uid })
         const success = await lightningWallet.addEarn(ids)
         return success
       } catch (err) {
@@ -170,14 +175,7 @@ const resolvers = {
     },
     onchain: async (_, __, { uid }) => {
       const lightningWallet = new LightningUserWallet({ uid })
-      return ({
-        getNewAddress: async () => {
-          return await lightningWallet.getOnChainAddress()
-        },
-        getPendingIncomingPayments: async () => {
-          return await lightningWallet.getPendingIncomingOnchainPayments()
-        }
-      })
+      return await lightningWallet.getOnChainAddress()
     }
   }
 }
@@ -221,6 +219,7 @@ const permissions = shield({
     // earnList: isAuthenticated,
     wallet: isAuthenticated,
     me: isAuthenticated,
+    pendingOnChainPayment: isAuthenticated
   },
   Mutation: {
     // requestPhoneCode: not(isAuthenticated),
@@ -263,11 +262,11 @@ const options = {
 }
 
 setupMongoConnection()
-.then(() => {
-  server.start(options, ({ port }) =>
-  logger.info(
-    `Server started, listening on port ${port} for incoming requests.`,
-  ),
-)
-}).catch((err) => logger.error(err, "server error"))
+  .then(() => {
+    server.start(options, ({ port }) =>
+      logger.info(
+        `Server started, listening on port ${port} for incoming requests.`,
+      ),
+    )
+  }).catch((err) => logger.error(err, "server error"))
 
