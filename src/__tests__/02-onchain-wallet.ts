@@ -129,6 +129,7 @@ it('identifies unconfirmed incoming on chain txn', async () => {
 	expect((<string>address).substr(0, 4)).toBe("bcrt")
 
 	await bitcoindClient.sendToAddress(address, amount_BTC)
+	await waitUntilBlockHeight({lnd:lndMain, blockHeight:120})
 	const pendingTxn = await wallet.getPendingIncomingOnchainPayments()
 	expect(pendingTxn.length).toBe(1)
 	expect(pendingTxn[0].amount).toBe(btc2sat(1))
