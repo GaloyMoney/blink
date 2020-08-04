@@ -11,8 +11,6 @@ const util = require('util')
 export type IType = "invoice" | "payment" | "earn"
 export type payInvoiceResult = "success" | "failed" | "pending"
 
-
-
 const using = require('bluebird').using
 
 
@@ -284,7 +282,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
       } catch (err) {
 
-        logger.warn({ err, message: err.message, errorCode: err[1] }, 
+        logger.warn({ err, message: err.message, errorCode: err[1] },
           `payment "error" to %o from user %o`, destination, this.uid)
 
         if (err.message === "Timeout") {
@@ -357,7 +355,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       }
 
     })
-      
+
   }
 
   async getOnChainAddress(): Promise<String | Error> {
@@ -473,24 +471,39 @@ export const LightningMixin = (superclass) => class extends superclass {
     }
   }
 
-
-  async updateOnchainPayment() {
-    const MainBook = new book("MainBook")
-    const User = mongoose.model("User")
-    const Transaction = await mongoose.model("Medici_Transaction")
-
-    const { onchain_addresses } = await User.findOne({ _id: this.uid })
-
-    let result
+  async getIncomingOnchainPayments(confirmed: boolean) {
+    let onchainTransactions
     try {
-      result = await lnService.getChainTransactions({ lnd: this.lnd })
+      onchainTransactions = await lnService.getChainTransactions({ lnd: this.lnd })
     } catch (err) {
       const err_string = `${util.inspect({ err }, { showHidden: false, depth: null })}`
       throw new Error(`issue fetching transaction: ${err_string})`)
     }
 
-    // TODO manage non confirmed transaction
-    const incoming_txs = result.transactions.filter(item => !item.is_outgoing && item.is_confirmed)
+    let incoming_txs = onchainTransactions.transactions.filter(tx => !tx.is_outgoing)
+    if (confirmed) {
+      incoming_txs = incoming_txs.filter(tx => tx.is_confirmed)
+    } else {
+      incoming_txs = incoming_txs.filter(tx => !tx.is_confirmed)
+    }
+
+    const User = mongoose.model("User")
+    const { onchain_addresses } = await User.findOne({ _id: this.uid })
+    const matched_txs = incoming_txs
+      .filter(tx => intersection(tx.output_addresses, onchain_addresses).length > 0)
+
+    return matched_txs
+  }
+
+  async getPendingIncomingOnchainPayments() {
+    return (await this.getIncomingOnchainPayments(false)).map(({ tokens, id }) => ({ txId: id, amount: tokens }))
+  }
+
+  async updateOnchainPayment() {
+    const MainBook = new book("MainBook")
+    const Transaction = await mongoose.model("Medici_Transaction")
+
+    const matched_txs = await this.getIncomingOnchainPayments(true)
 
     //        { block_id: '0000000000000b1fa86d936adb8dea741a9ecd5f6a58fc075a1894795007bdbc',
     //          confirmation_count: 712,
@@ -509,8 +522,6 @@ export const LightningMixin = (superclass) => class extends superclass {
     // in a sinle transaction, both would be credited 20.
 
     // FIXME O(n) ^ 2. bad.
-    const matched_txs = incoming_txs
-      .filter(tx => intersection(tx.output_addresses, onchain_addresses).length > 0)
 
     const type = "onchain_receipt"
 
@@ -525,7 +536,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         if (!mongotx) {
           await MainBook.entry()
             .credit('Assets:Reserve:Lightning', matched_tx.tokens, { currency: "BTC", type, hash: matched_tx.id })
-            .debit(this.accountPath, matched_tx.tokens, { currency: "BTC", type, hash: matched_tx.id,  })
+            .debit(this.accountPath, matched_tx.tokens, { currency: "BTC", type, hash: matched_tx.id, })
             .commit()
         }
       }
