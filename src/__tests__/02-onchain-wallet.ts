@@ -136,5 +136,6 @@ it('identifies unconfirmed incoming on chain txn', async () => {
 	const sub = await lnService.subscribeToTransactions({lnd: lndMain})
 	await bitcoindClient.generateToAddress(1, RANDOM_ADDRESS)
 	const event = await once(sub, 'chain_transaction')
+	console.log("event", event)
 	expect(event.id).toBe(pendingTxn[0].txId)
 }, 100000)
