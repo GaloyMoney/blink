@@ -2,12 +2,11 @@ import { filter, find } from "lodash";
 import { book } from "medici";
 import { LightningMixin } from "./Lightning";
 import { LightningUserWallet } from "./LightningUserWallet";
-import { getAuth } from "./utils";
+import { getAuth, logger } from "./utils";
 import { AdminWallet } from "./wallet";
 const lnService = require('ln-service')
 const mongoose = require("mongoose");
 
-import { logger } from './index'
 
 
 export class LightningAdminWallet extends LightningMixin(AdminWallet) {
@@ -66,6 +65,7 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
   }
 
   async balanceSheetIsBalanced() {
+    await this.updateUsersPendingPayment()
     const {assets, liabilities, lightning, expenses} = await this.getBalanceSheet()
     const lndBalance = await this.totalLndBalance()
 

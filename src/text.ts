@@ -16,7 +16,7 @@ const getTwilioClient = () => {
     return client
 }
 
-const sendText = async ({ body, to }) => {
+export const sendText = async ({ body, to }) => {
     await getTwilioClient().messages.create({
         from: twilioPhoneNumber,
         to,

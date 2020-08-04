@@ -35,6 +35,11 @@ type Invoice {
   payInvoice(invoice: String): String
 }
 
+type PendingOnchainPayment {
+  txId: ID
+  amount: Int
+}
+
 type OnChain {
   getNewAddress: String
 }
@@ -79,6 +84,7 @@ type Query {
   me: User
   buildParameters: BuildParameter
   getLastOnChainAddress: LastOnChainAddress
+  pendingOnChainPayment: [PendingOnchainPayment]
 }
 
 type Mutation {

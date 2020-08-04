@@ -1,10 +1,6 @@
-import { sat2btc } from "./utils"
+import { logger, sat2btc } from "./utils"
 const mongoose = require("mongoose")
 import moment = require("moment")
-const util = require('util')
-
-import { logger } from './index'
-
 
 export class Price {
     readonly pair

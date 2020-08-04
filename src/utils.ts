@@ -2,6 +2,9 @@ import * as moment from 'moment'
 export const validate = require("validate.js")
 import * as jwt from 'jsonwebtoken'
 import * as lnService from "ln-service"
+
+export const logger = require('pino')({ level: "debug" })
+
 export const btc2sat = (btc: number) => {
     return btc * Math.pow(10, 8)
 }
@@ -79,8 +82,6 @@ export const getAuth = () => {
 }
 
 export async function waitUntilBlockHeight({lnd, blockHeight}) {
-    const logger = require('pino')({ level: "debug" })
-
     let current_block_height, is_synced_to_chain
     ({ current_block_height, is_synced_to_chain } = await lnService.getWalletInfo({ lnd }))
     logger.debug({ current_block_height, is_synced_to_chain})

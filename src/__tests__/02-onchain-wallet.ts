@@ -96,7 +96,7 @@ it('funding bank with onchain tx', async () => {
 
 	await onchain_funding({address: bank_address, wallet: adminWallet, blockHeight: 107})
 
-}, 10000)
+}, 100000)
 
 it('user0 is credited for on chain transaction', async () => {
 	const wallet = await getUserWallet(0)
@@ -106,7 +106,7 @@ it('user0 is credited for on chain transaction', async () => {
 
 	await onchain_funding({address, wallet, blockHeight: 113})
 
-}, 10000)
+}, 100000)
 
 
 it('funds lndOutside1', async () => {
@@ -120,4 +120,21 @@ it('funds lndOutside1', async () => {
 	await waitUntilBlockHeight({lnd: lndMain, blockHeight: 120})
 	await waitUntilBlockHeight({lnd: lndOutside1, blockHeight: 120})
 	await waitUntilBlockHeight({lnd: lndOutside2, blockHeight: 120})
-}, 10000)
+}, 100000)
+
+it('identifies unconfirmed incoming on chain txn', async () => {
+	const wallet = await getUserWallet(0)
+	const address = await wallet.getOnChainAddress()
+
+	expect((<string>address).substr(0, 4)).toBe("bcrt")
+
+	await bitcoindClient.sendToAddress(address, amount_BTC)
+	const pendingTxn = await wallet.getPendingIncomingOnchainPayments()
+	expect(pendingTxn.length).toBe(1)
+	expect(pendingTxn[0].amount).toBe(btc2sat(1))
+
+	const sub = await lnService.subscribeToTransactions({lnd: lndMain})
+	await bitcoindClient.generateToAddress(1, RANDOM_ADDRESS)
+	const event = await once(sub, 'chain_transaction')
+	expect(event[0].id).toBe(pendingTxn[0].txId)
+}, 100000)
