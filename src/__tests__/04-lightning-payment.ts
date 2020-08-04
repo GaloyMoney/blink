@@ -186,6 +186,16 @@ it('if fee are too high, payment is cancelled', async () => {
   // TODO
 })
 
+it('pays zero amount invoice', async () => {
+  const { request } = await lnService.createInvoice({ lnd: lndOutside1 })
+  console.log("req", request)
+  const result = await userWallet1.pay({invoice: request, tokens: amountInvoice})
+  expect(result).toBe("success")
+  const finalBalance = await userWallet1.getBalance()
+  expect(finalBalance).toBe(onBoardingEarnAmt - 5 * amountInvoice)
+  await checkIsBalanced()
+}, 100000)
+
 
 // it('testDbTransaction', async () => {
 //   //TODO try to fetch simulataneously (ie: with Premise.all[])

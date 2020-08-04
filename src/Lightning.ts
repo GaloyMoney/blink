@@ -183,6 +183,11 @@ export const LightningMixin = (superclass) => class extends superclass {
     } else {
       // TODO replace this with bolt11 utils library
       ({ id, tokens, destination, description } = await lnService.decodePaymentRequest({ lnd: this.lnd, request: params.invoice }))
+
+      // TODO: Also check if tokens==0 before overwriting the value?
+      if(params.tokens) {
+        tokens = params.tokens
+      }
     }
 
     const balance = await this.getBalance()
