@@ -65,6 +65,7 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
   }
 
   async balanceSheetIsBalanced() {
+    await this.updateUsersPendingPayment()
     const {assets, liabilities, lightning, expenses} = await this.getBalanceSheet()
     const lndBalance = await this.totalLndBalance()
 
