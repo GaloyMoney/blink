@@ -189,10 +189,11 @@ it('if fee are too high, payment is cancelled', async () => {
 it('pays zero amount invoice', async () => {
   const { request } = await lnService.createInvoice({ lnd: lndOutside1 })
   console.log("req", request)
+  const initialBalance = await userWallet1.getBalance()
   const result = await userWallet1.pay({invoice: request, tokens: amountInvoice})
   expect(result).toBe("success")
   const finalBalance = await userWallet1.getBalance()
-  expect(finalBalance).toBe(onBoardingEarnAmt - 5 * amountInvoice)
+  expect(finalBalance).toBe(initialBalance - amountInvoice)
   await checkIsBalanced()
 }, 100000)
 
