@@ -253,8 +253,11 @@ jobs:
           steps:
             - run: |
                 gcloud container clusters get-credentials testnet-cluster --region us-central1-a --project ${GOOGLE_PROJECT_ID}
-                helm upgrade -n testnet -f ~/GaloyApp/backend/graphql-chart/values.yaml -f ~/GaloyApp/backend/graphql-chart/testnet-values.yaml --set tag=$CIRCLE_SHA1 graphql-server ~/GaloyApp/backend/graphql-chart/
-                helm upgrade -i -n testnet -f ~/GaloyApp/backend/graphql-chart/values.yaml -f ~/GaloyApp/backend/graphql-chart/prometheus-values.yaml --set tag=$CIRCLE_SHA1 prometheus-client ~/GaloyApp/backend/graphql-chart/
+                export MACAROON=$(kubectl -n testnet exec lnd-container-0 -- base64 /root/.lnd/data/chain/bitcoin/testnet/admin.macaroon | tr -d '\n\r')
+                export TLS=$(kubectl -n testnet exec lnd-container-0 -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
+                helm upgrade -n testnet -f ~/GaloyApp/backend/graphql-chart/values.yaml -f ~/GaloyApp/backend/graphql-chart/testnet-values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON graphql-server ~/GaloyApp/backend/graphql-chart/
+                helm upgrade -i -n testnet -f ~/GaloyApp/backend/graphql-chart/values.yaml -f ~/GaloyApp/backend/graphql-chart/prometheus-values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON prometheus-client ~/GaloyApp/backend/graphql-chart/
+                helm upgrade -n testnet -i trigger -f ~/GaloyApp/backend/trigger-chart/values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/trigger-chart/
   mainnet_deploy:
     working_directory: ~/GaloyApp/backend
     docker:
@@ -276,6 +279,7 @@ jobs:
             export TLS=$(kubectl -n mainnet exec lnd-container-0 -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
             helm upgrade -n mainnet -i graphql-server -f ~/GaloyApp/backend/graphql-chart/values.yaml -f ~/GaloyApp/backend/graphql-chart/mainnet-values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/graphql-chart/
             helm upgrade -n mainnet -i prometheus-client -f ~/GaloyApp/backend/graphql-chart/values.yaml -f ~/GaloyApp/backend/graphql-chart/prometheus-values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/graphql-chart/
+            helm upgrade -n mainnet -i trigger -f ~/GaloyApp/backend/trigger-chart/values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/trigger-chart/
                
 workflows:
   kube:
