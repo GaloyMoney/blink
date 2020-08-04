@@ -32,7 +32,7 @@ type Wallet {
 type Invoice {
   addInvoice(value: Int, memo: String): String
   updatePendingInvoice(hash: String): Boolean
-  payInvoice(invoice!: String, amount: Int): String
+  payInvoice(invoice: String!, amount: Int): String
 }
 
 type PendingOnchainPayment {
