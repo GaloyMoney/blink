@@ -172,10 +172,10 @@ jobs:
             - ios/vendor
       - run: cd ios && ls
       - restore_cache:
-          key: 1-yarn-{{ checksum "yarn.lock" }}-pod-{{ checksum "ios/Podfile.lock" }}
+          key: 1-yarn-{{ checksum "yarn.lock" }}-podlock-{{ checksum "ios/Podfile.lock" }}
       - run: yarn install
       - save_cache:
-          key: 1-yarn-{{ checksum "yarn.lock" }}-pod-{{ checksum "ios/Podfile.lock" }}
+          key: 1-yarn-{{ checksum "yarn.lock" }}-podlock-{{ checksum "ios/Podfile.lock" }}
           paths:
             - node_modules
             - ios/Pods
