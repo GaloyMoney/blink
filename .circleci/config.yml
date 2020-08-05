@@ -151,7 +151,7 @@ jobs:
   build_ios:
     macos:
       xcode: 11.3.0
-    working_directory: ~/GaloyApp/mobile/ios
+    working_directory: ~/GaloyApp/mobile
     environment:
       FL_OUTPUT_DIR: output
       FASTLANE_LANE: beta
@@ -161,20 +161,20 @@ jobs:
           path: ~/GaloyApp
       - restore_cache:
           key: 1-gems-{{ checksum "Gemfile.lock" }}
-      - run: ls
-      - run: bundle check || bundle install --deployment
+      - run: cd ios && ls
+      - run: cd ios && bundle check || bundle install --deployment
       - save_cache:
           key: 1-gems-{{ checksum "Gemfile.lock" }}
           paths:
-            - vendor/bundle
-      - run: pod install
+            - ios/vendor/bundle
+      - run: yarn install
       - run:
-          name: fastlane
+          name: cd ios && fastlane
           command: bundle exec fastlane $FASTLANE_LANE
       - store_artifacts:
-          path: output
+          path: ios/output
       - store_test_results:
-          path: output/scan
+          path: ios/output/scan
 
   build_test_image:
     working_directory: ~/GaloyApp/backend/firebase
