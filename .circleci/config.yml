@@ -159,8 +159,8 @@ jobs:
     steps:
       - checkout:
           path: ~/GaloyApp
-      # - restore_cache:
-      #     key: 1-gems-{{ checksum "Gemfile.lock" }}
+      - restore_cache:
+          key: 1-gems-{{ checksum "Gemfile.lock" }}
       - run: ls
       - run: bundle check || bundle install
       - save_cache:
