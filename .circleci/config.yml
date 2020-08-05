@@ -159,6 +159,9 @@ jobs:
     steps:
       - checkout:
           path: ~/GaloyApp
+      - add_ssh_keys:
+          fingerprints:
+            - "f6:4b:18:f4:33:f0:8f:46:47:42:9b:16:44:15:98:67"
       - restore_cache:
           key: 1-gems-{{ checksum "ios/Gemfile.lock" }}
       - run: cd ios && ls
