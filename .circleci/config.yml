@@ -188,7 +188,7 @@ jobs:
       - run: xcversion installed
       - run: xcversion install 11.6
       - run: xcversion select 11.6
-      - run: xcversion selected    
+      - run: xcversion selected
       - run:
           name: fastlane
           command: cd ios && bundle exec fastlane build
