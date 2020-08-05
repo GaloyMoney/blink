@@ -172,17 +172,12 @@ jobs:
             - ios/vendor
       - run: cd ios && ls
       - restore_cache:
-          key: 1-yarn-{{ checksum "yarn.lock" }}
-      - restore_cache:
-          key: 1-pod-{{ checksum "ios/Podfile.lock" }}
+          key: 1-yarn-{{ checksum "yarn.lock" }}-pod-{{ checksum "ios/Podfile.lock" }}
       - run: yarn install
       - save_cache:
-          key: 1-gems-{{ checksum "ios/Gemfile.lock" }}
+          key: 1-gems-{{ checksum "yarn.lock" }}-pod-{{ checksum "ios/Podfile.lock" }}
           paths:
             - node_modules
-      - save_cache:
-          key: 1-pod-{{ checksum "ios/Podfile.lock" }}
-          paths:
             - ios/Pods
       - run:
           name: fastlane
