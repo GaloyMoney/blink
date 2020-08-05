@@ -362,7 +362,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       throw new Error(`no user with this uid`)
     }
 
-    if (!user?.length) {
+    if (user.onchain_addresses?.length === 0) {
       // TODO create one address when a user is created instead?
       // FIXME this shold not be done in a query but only in a mutation?
       await this.getOnChainAddress()
