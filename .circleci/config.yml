@@ -189,7 +189,7 @@ jobs:
       - run:
           name: fastlane
           command: cd ios && bundle exec fastlane build
-#      - run:
+#      - run: 
 #          name: fastlane
 #          command: cd ios && bundle exec fastlane beta # if master
       - store_artifacts:
