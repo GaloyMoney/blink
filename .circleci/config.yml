@@ -167,6 +167,7 @@ jobs:
           key: 1-gems-{{ checksum "Gemfile.lock" }}
           paths:
             - vendor/bundle
+      - run: pod install
       - run:
           name: fastlane
           command: bundle exec fastlane $FASTLANE_LANE
