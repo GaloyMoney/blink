@@ -157,7 +157,8 @@ jobs:
       FASTLANE_LANE: beta
     shell: /bin/bash --login -o pipefail
     steps:
-      - checkout
+      - checkout:
+          path: ~/GaloyApp
       # - restore_cache:
       #     key: 1-gems-{{ checksum "Gemfile.lock" }}
       - run: ls
