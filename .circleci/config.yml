@@ -161,6 +161,7 @@ jobs:
           path: ~/GaloyApp
       - restore_cache:
           key: 1-gems-{{ checksum "ios/Gemfile.lock" }}
+      - run: nvm current node -v
       - run: cd ios && ls
       - run: cd ios && bundle check || bundle install --deployment
       - save_cache:
