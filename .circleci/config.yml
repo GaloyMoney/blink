@@ -151,7 +151,7 @@ jobs:
   build_ios:
     macos:
       xcode: 11.3.0
-    working_directory: ~/GaloyApp/backend/mobile/ios
+    working_directory: ~/GaloyApp/mobile/ios
     environment:
       FL_OUTPUT_DIR: output
       FASTLANE_LANE: beta
