@@ -154,7 +154,6 @@ jobs:
     working_directory: ~/GaloyApp/mobile
     environment:
       FL_OUTPUT_DIR: output
-      FASTLANE_LANE: beta
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout:
@@ -187,7 +186,10 @@ jobs:
             - ios/Pods
       - run:
           name: fastlane
-          command: cd ios && bundle exec fastlane $FASTLANE_LANE
+          command: cd ios && bundle exec fastlane build
+#      - run:
+#          name: fastlane
+#          command: cd ios && bundle exec fastlane beta # if master
       - store_artifacts:
           path: ios/output
       - store_test_results:
