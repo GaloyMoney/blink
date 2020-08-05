@@ -164,7 +164,9 @@ jobs:
       - restore_cache:
           key: 1-gems-{{ checksum "ios/Gemfile.lock" }}
       - run: cd ios && ls
-      - run: brew list
+      - run: xcversion install 11.6
+      - run: xcversion select 11.6
+      - run: xcversion selected
       - run: cd ios && bundle check || bundle install --deployment
       - save_cache:
           key: 1-gems-{{ checksum "ios/Gemfile.lock" }}
@@ -172,20 +174,16 @@ jobs:
             - ios/vendor
       - run: cd ios && ls
       - restore_cache:
-          key: 1-yarn-{{ checksum "yarn.lock" }}-podlock-{{ checksum "ios/Podfile.lock" }}
+          key: 1-yarn-{{ checksum "yarn.lock" }}-pod1-{{ checksum "ios/Podfile.lock" }}
       - run: yarn install
       - save_cache:
-          key: 1-yarn-{{ checksum "yarn.lock" }}-podlock-{{ checksum "ios/Podfile.lock" }}
+          key: 1-yarn-{{ checksum "yarn.lock" }}-pod1-{{ checksum "ios/Podfile.lock" }}
           paths:
             - node_modules
             - ios/Pods
       - run:
           name: fastlane 
           command: cd ios && bundle exec fastlane cert
-      - run: xcversion installed
-      - run: xcversion install 11.6
-      - run: xcversion select 11.6
-      - run: xcversion selected
       - run:
           name: fastlane
           command: cd ios && bundle exec fastlane build
