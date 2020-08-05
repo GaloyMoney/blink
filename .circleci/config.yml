@@ -167,6 +167,8 @@ jobs:
       - run: 
           name: Delete Simulators
           command: sudo rm -rf /Library/Developer/CoreSimulator/Profiles/Runtimes/
+      # TODO: remove once CircleCI has sync up with my version of Xcode
+      # also remove associated credential, those won't be needed any longer
       - run: xcversion install 11.6
       - run: xcversion select 11.6
       - run: xcversion selected
