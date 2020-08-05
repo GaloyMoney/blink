@@ -1,6 +1,6 @@
 const lnService = require('ln-service');
+import { intersection, last } from "lodash";
 import { createHash, randomBytes } from "crypto";
-import { intersection } from "lodash";
 import { book } from "medici";
 import moment from "moment";
 import { disposer } from "./lock";
@@ -351,6 +351,25 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     })
 
+  }
+
+  async getLastOnChainAddress(): Promise<String | Error | undefined> {
+    const User = mongoose.model("User")
+
+    let user = await User.findOne({ _id: this.uid })
+    if (!user) { // this should not happen. is test that relevant?
+      console.error("no user is associated with this address")
+      throw new Error(`no user with this uid`)
+    }
+
+    if (user.onchain_addresses?.length === 0) {
+      // TODO create one address when a user is created instead?
+      // FIXME this shold not be done in a query but only in a mutation?
+      await this.getOnChainAddress()
+      user = await User.findOne({ _id: this.uid })
+    }
+
+    return last(user.onchain_addresses)
   }
 
   async getOnChainAddress(): Promise<String | Error> {

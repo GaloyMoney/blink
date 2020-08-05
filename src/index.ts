@@ -103,6 +103,11 @@ const resolvers = {
 
       return response
     },
+    getLastOnChainAddress: async (_, __, {uid}) => {
+      const lightningWallet = new LightningUserWallet({uid})
+      const getLastAddress = await lightningWallet.getLastOnChainAddress()
+      return {id: getLastAddress}
+    }
   },
   Mutation: {
     requestPhoneCode: async (_, { phone }) => {
