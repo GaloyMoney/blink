@@ -165,6 +165,9 @@ jobs:
           key: 1-gems-{{ checksum "ios/Gemfile.lock" }}
       - run: cd ios && ls
       - run: xcversion installed
+      - run: xcversion install 11.6
+      - run: xcversion select 11.6
+      - run: xcversion selected
       - run: brew list
       - run: cd ios && bundle check || bundle install --deployment
       - save_cache:
