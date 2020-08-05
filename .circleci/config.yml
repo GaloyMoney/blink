@@ -168,10 +168,11 @@ jobs:
           key: 1-gems-{{ checksum "ios/Gemfile.lock" }}
           paths:
             - ios/vendor/bundle
+      - run: cd ios && ls
       - run: yarn install
       - run:
-          name: cd ios && fastlane
-          command: bundle exec fastlane $FASTLANE_LANE
+          name: fastlane
+          command: cd ios && bundle exec fastlane $FASTLANE_LANE
       - store_artifacts:
           path: ios/output
       - store_test_results:
