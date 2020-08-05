@@ -179,8 +179,9 @@ const resolvers = {
       // TODO
     },
     onchain: async (_, __, { uid }) => {
-      const lightningWallet = new LightningUserWallet({ uid })
-      return await lightningWallet.getOnChainAddress()
+      const lightningWallet = new LightningUserWallet({uid})
+      const getNewAddress = await lightningWallet.getOnChainAddress()
+      return {getNewAddress}
     }
   }
 }
