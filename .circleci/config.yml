@@ -175,13 +175,13 @@ jobs:
           key: 1-yarn-{{ checksum "yarn.lock" }}-pod-{{ checksum "ios/Podfile.lock" }}
       - run: yarn install
       - save_cache:
-          key: 1-gems-{{ checksum "yarn.lock" }}-pod-{{ checksum "ios/Podfile.lock" }}
+          key: 1-yarn-{{ checksum "yarn.lock" }}-pod-{{ checksum "ios/Podfile.lock" }}
           paths:
             - node_modules
             - ios/Pods
       - run:
           name: fastlane
-          command: cd ios && bundle exec fastlane build
+          command: cd ios && bundle exec fastlane cert
       - run:
           name: fastlane
           command: cd ios && bundle exec fastlane cert
