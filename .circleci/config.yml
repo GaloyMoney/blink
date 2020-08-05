@@ -180,7 +180,7 @@ jobs:
             - node_modules
             - ios/Pods
       - run:
-          name: fastlane
+          name: fastlane 
           command: cd ios && bundle exec fastlane cert
       - run: xcversion installed
       - run: xcversion install 11.6
