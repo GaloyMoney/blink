@@ -228,15 +228,31 @@ export const LightningMixin = (superclass) => class extends superclass {
       }
 
       // TODO add private route from invoice
-      ({ route } = await lnService.probeForRoute({ destination, lnd: this.lnd, tokens }));
-      logger.info({ route }, "succesfully found a route for payment to %o from user %o", destination, this.uid)
 
-      if (!route) {
-        logger.warn("there is no route for payment to %o from user %o", destination, this.uid)
-        throw Error(`there is no route for this payment`)
+      try {
+        ({ route } = await lnService.probeForRoute({ destination, lnd: this.lnd, tokens }));
+        logger.info({ route }, "succesfully found a route for payment to %o from user %o", destination, this.uid)
+
+        if (!route) {
+          logger.warn("there is no route for payment to %o from user %o", destination, this.uid)
+          throw Error(`there is no route for this payment`)
+        }
+
+        // we are confident enough that there is a possible payment route. let's move forward
+
+
+        // there is 3 scenarios for a payment.
+        // 1/ payment succeed is less than TIMEOUT_PAYMENT
+        // 2/ the payment fails. we are reverting it. this including voiding prior transaction
+        // 3/ payment is still pending after TIMEOUT_PAYMENT.
+        // we are timing out the request for UX purpose, so that the client can show the payment is pending
+        // even if the payment is still ongoing from lnd.
+        // to clean pending payments, another cron-job loop will run in the background.
+
+      } catch (error) {
+        logger.error(error)
+        throw new Error(error)
       }
-
-      // we are confident enough that there is a possible payment route. let's move forward
 
       fee = route.safe_fee
 
@@ -259,14 +275,6 @@ export const LightningMixin = (superclass) => class extends superclass {
         .debit('Assets:Reserve:Lightning', tokens + fee, metadata)
         .credit(this.accountPath, tokens + fee, metadata)
         .commit()
-
-      // there is 3 scenarios for a payment.
-      // 1/ payment succeed is less than TIMEOUT_PAYMENT
-      // 2/ the payment fails. we are reverting it. this including voiding prior transaction
-      // 3/ payment is still pending after TIMEOUT_PAYMENT.
-      // we are timing out the request for UX purpose, so that the client can show the payment is pending
-      // even if the payment is still ongoing from lnd.
-      // to clean pending payments, another cron-job loop will run in the background.
 
       try {
         const TIMEOUT_PAYMENT = 5000
