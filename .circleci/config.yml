@@ -167,7 +167,7 @@ jobs:
       - save_cache:
           key: 1-gems-{{ checksum "ios/Gemfile.lock" }}
           paths:
-            - ios/vendor/bundle
+            - ios/vendor
       - run: cd ios && ls
       - run: yarn install
       - run:
