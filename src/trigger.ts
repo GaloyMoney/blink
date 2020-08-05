@@ -33,8 +33,14 @@ const main = async () => {
 			let phone
 			try {
 				({ phone } = await User.findOne({ onchain_addresses: { $in: tx.output_addresses } }, { phone: 1 }))
-
-			} catch(error) {
+				if (!phone) {
+					//FIXME: Log the onchain address, need to first find which of the tx.output_addresses
+					// belongs to us
+					const error = `No phone number associated with the onchain address`
+					logger.error(error)
+					throw new Error(error)
+				}
+			} catch (error) {
 				logger.error(error)
 				throw error
 			}
