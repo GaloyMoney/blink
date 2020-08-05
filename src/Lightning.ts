@@ -152,7 +152,6 @@ export const LightningMixin = (superclass) => class extends superclass {
     const keySendPreimageType: string = '5482373484';
     const preimageByteLength: number = 32;
 
-    //TODO: should we assume pushPayment false by default?
     let pushPayment = false;
     //TODO: adding types here leads to errors further down below
     let tokens, fee = 0
@@ -181,6 +180,17 @@ export const LightningMixin = (superclass) => class extends superclass {
     } else {
       // TODO replace this with bolt11 utils library
       ({ id, tokens, destination, description } = await lnService.decodePaymentRequest({ lnd: this.lnd, request: params.invoice }))
+
+      if (params.tokens) {
+        if (tokens == 0) {
+          tokens = params.tokens
+        } else {
+          throw Error('Invoice contains non-zero amount, but amount was also passed separately')
+        }
+      } else if(tokens == 0) {
+        throw Error('Invoice is a zero-amount invoice, but no amount was passed separately')
+      }
+
     }
 
     const balance = await this.getBalance()
@@ -307,8 +317,6 @@ export const LightningMixin = (superclass) => class extends superclass {
 
   // TODO manage the error case properly. right now there is a mix of string being return
   // or error being thrown. Not sure how this is handled by GraphQL
-  // private async payInvoice({ invoice }): Promise<payInvoiceResult | Error> {
-  //   // TODO add fees accounting
 
   async updatePendingPayment() {
 
