@@ -158,8 +158,8 @@ jobs:
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
-      - restore_cache:
-          key: 1-gems-{{ checksum "Gemfile.lock" }}
+      # - restore_cache:
+      #     key: 1-gems-{{ checksum "Gemfile.lock" }}
       - run: bundle check || bundle install --path vendor/bundle
       - save_cache:
           key: 1-gems-{{ checksum "Gemfile.lock" }}
