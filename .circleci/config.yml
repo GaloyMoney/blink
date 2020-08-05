@@ -164,6 +164,9 @@ jobs:
       - restore_cache:
           key: 1-gems-{{ checksum "ios/Gemfile.lock" }}
       - run: cd ios && ls
+      - run: 
+          name: Delete Simulators
+          command: sudo rm -rf /Library/Developer/CoreSimulator/Profiles/Runtimes/
       - run: xcversion install 11.6
       - run: xcversion select 11.6
       - run: xcversion selected
@@ -188,9 +191,11 @@ jobs:
       - run:
           name: fastlane
           command: cd ios && bundle exec fastlane build
-#      - run: 
-#          name: fastlane
-#          command: cd ios && bundle exec fastlane beta # if master
+      - run: 
+         name: fastlane
+         command: cd ios && bundle exec fastlane beta # if master
+      - run: git commit -m -a "new build"
+      - run: git push
       - store_artifacts:
           path: ios/output
       - store_test_results:
