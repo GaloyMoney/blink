@@ -188,9 +188,6 @@ jobs:
             - node_modules
             - ios/Pods
       - run:
-          name: fastlane 
-          command: cd ios && bundle exec fastlane cert
-      - run:
           name: fastlane
           command: cd ios && bundle exec fastlane build
       - run: 
