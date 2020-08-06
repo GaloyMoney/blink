@@ -150,7 +150,7 @@ jobs:
 
   build_ios:
     macos:
-      xcode: 11.4.0
+      xcode: 10.15.5
     working_directory: ~/GaloyApp/mobile
     environment:
       FL_OUTPUT_DIR: output
@@ -164,16 +164,6 @@ jobs:
       - restore_cache:
           key: 1-gems-{{ checksum "ios/Gemfile.lock" }}
       - run: cd ios && ls
-      - run: 
-          name: Delete Simulators
-          command: sudo rm -rf /Library/Developer/CoreSimulator/Profiles/Runtimes/
-      # TODO: remove once CircleCI has sync up with my version of Xcode
-      # also remove associated credential, those won't be needed any longer
-      - run: 
-          command: xcversion install 11.6
-          no_output_timeout: 30m
-      - run: xcversion select 11.6
-      - run: xcversion selected
       - run: cd ios && bundle check || bundle install --deployment
       - save_cache:
           key: 1-gems-{{ checksum "ios/Gemfile.lock" }}
