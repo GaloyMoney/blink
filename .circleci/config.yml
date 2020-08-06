@@ -163,7 +163,8 @@ jobs:
             - "f6:4b:18:f4:33:f0:8f:46:47:42:9b:16:44:15:98:67"
       - restore_cache:
           key: 1-gems-{{ checksum "ios/Gemfile.lock" }}
-      - run: cd ios && bundle check || bundle install --deployment
+      - run: cd ios && bundle config set deployment 'true'
+      - run: cd ios && bundle check || bundle install 
       - save_cache:
           key: 1-gems-{{ checksum "ios/Gemfile.lock" }}
           paths:
