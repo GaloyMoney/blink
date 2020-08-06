@@ -180,7 +180,7 @@ jobs:
       - run: 
          name: fastlane
          command: cd ios && bundle exec fastlane beta # if master
-      - run: git commit -m -a "new build"
+      - run: git commit -a -m "new build"
       - run: git push
       - store_artifacts:
           path: ios/output
