@@ -150,7 +150,7 @@ jobs:
 
   build_ios:
     macos:
-      xcode: 10.15.5
+      xcode: 11.6.0
     working_directory: ~/GaloyApp/mobile
     environment:
       FL_OUTPUT_DIR: output
