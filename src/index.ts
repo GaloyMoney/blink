@@ -27,6 +27,9 @@ const pino = require('pino-http')({
   //     // uid: req.uid
   //   }
   // }
+  autoLogging: {
+    ignorePaths: ["/healthz"]
+  }
 })
 
 const commitHash = process.env.COMMITHASH
@@ -179,8 +182,9 @@ const resolvers = {
       // TODO
     },
     onchain: async (_, __, { uid }) => {
-      const lightningWallet = new LightningUserWallet({ uid })
-      return await lightningWallet.getOnChainAddress()
+      const lightningWallet = new LightningUserWallet({uid})
+      const getNewAddress = await lightningWallet.getOnChainAddress()
+      return {getNewAddress}
     }
   }
 }
@@ -264,6 +268,7 @@ server.express.get('/healthz', function(req, res) {
 
 const options = {
   endpoint: '/graphql',
+  // playground: process.env.NETWORK === 'mainnet' ? 'false': '/'
 }
 
 setupMongoConnection()
