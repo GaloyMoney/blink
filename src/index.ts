@@ -27,6 +27,9 @@ const pino = require('pino-http')({
   //     // uid: req.uid
   //   }
   // }
+  autoLogging: {
+    ignorePaths: ["/healthz"]
+  }
 })
 
 const commitHash = process.env.COMMITHASH
