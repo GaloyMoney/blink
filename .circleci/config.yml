@@ -148,6 +148,50 @@ jobs:
       - store_artifacts:
           path: ios/test-results
 
+  build_ios:
+    macos:
+      xcode: 11.6.0
+    working_directory: ~/GaloyApp/mobile
+    environment:
+      FL_OUTPUT_DIR: output
+    shell: /bin/bash --login -o pipefail
+    steps:
+      - checkout:
+          path: ~/GaloyApp
+      - add_ssh_keys:
+          fingerprints:
+            - "f6:4b:18:f4:33:f0:8f:46:47:42:9b:16:44:15:98:67"
+      - restore_cache:
+          key: 1-gem-{{ checksum "ios/Gemfile.lock" }}
+      - run: cd ios && bundle config set deployment 'true'
+      - run: cd ios && bundle check || bundle install 
+      - save_cache:
+          key: 1-gem-{{ checksum "ios/Gemfile.lock" }}
+          paths:
+            - ios/vendor
+      - restore_cache:
+          key: 1-yarn-{{ checksum "yarn.lock" }}-pod1-{{ checksum "ios/Podfile.lock" }}
+      - run: yarn install
+      - run: git diff "ios/Podfile.lock" | cat
+      - save_cache:
+          key: 1-yarn-{{ checksum "yarn.lock" }}-pod1-{{ checksum "ios/Podfile.lock" }}
+          paths:
+            - node_modules
+            - ios/Pods
+      - run: 
+         name: fastlane
+         command: cd ios && bundle exec fastlane beta
+         no_output_timeout: 30m
+      - run: git config credential.helper 'cache --timeout=120'
+      - run: git config --global user.name "circleci-bot"
+      - run: git config --global user.email "bot@circleci.com"
+      - run: git commit -a -m "new ios build [ci skip]"
+      - run: git push -q https://${GITHUB_TOKEN}@github.com/nicolasburtey/galoy-app.git $CIRCLE_BRANCH
+      - store_artifacts:
+          path: ios/output
+      - store_test_results:
+          path: ios/output/scan
+
   build_test_image:
     working_directory: ~/GaloyApp/backend/firebase
     machine: true
@@ -169,6 +213,7 @@ jobs:
     working_directory: ~/GaloyApp/backend
     docker:
       - image: kiwigrid/gcloud-kubectl-helm:latest
+    resource_class: small
     steps:
       - checkout:
           path: ~/GaloyApp
@@ -258,10 +303,12 @@ jobs:
                 helm upgrade -n testnet -f ~/GaloyApp/backend/graphql-chart/values.yaml -f ~/GaloyApp/backend/graphql-chart/testnet-values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON graphql-server ~/GaloyApp/backend/graphql-chart/
                 helm upgrade -i -n testnet -f ~/GaloyApp/backend/graphql-chart/values.yaml -f ~/GaloyApp/backend/graphql-chart/prometheus-values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON prometheus-client ~/GaloyApp/backend/graphql-chart/
                 helm upgrade -n testnet -i trigger -f ~/GaloyApp/backend/trigger-chart/values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/trigger-chart/
+
   mainnet_deploy:
     working_directory: ~/GaloyApp/backend
     docker:
       - image: kiwigrid/gcloud-kubectl-helm:latest     
+    resource_class: small
     steps:
       - checkout:
           path: ~/GaloyApp
@@ -311,3 +358,9 @@ workflows:
             branches:
               only:
                 - master
+  mobile:
+    jobs:
+      - build_ios:
+          filters:
+            tags:
+              only: /^v.*/
