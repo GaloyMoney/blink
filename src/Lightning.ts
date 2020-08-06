@@ -155,7 +155,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     let pushPayment = false;
     //TODO: adding types here leads to errors further down below
     let tokens, fee = 0
-    let destination, id, description, route
+    let destination, id, description, route, routes
     let payeeUid
     let messages: Object[] = []
 
@@ -230,12 +230,19 @@ export const LightningMixin = (superclass) => class extends superclass {
       // TODO add private route from invoice
 
       try {
-        ({ route } = await lnService.probeForRoute({ destination, lnd: this.lnd, tokens }));
-        logger.info({ route }, "succesfully found a route for payment to %o from user %o", destination, this.uid)
+        ({ routes } = await lnService.getRoutes({ destination, lnd: this.lnd, tokens }));
+        logger.info({ routes }, "succesfully found routes for payment to %o from user %o", destination, this.uid)
+
+        if (!routes) {
+          logger.warn("there is no potential route for payment to %o from user %o", destination, this.uid)
+          throw Error(`there is no potential route for this payment`)
+        }
+
+        ({route} = await lnService.probe({lnd:this.lnd, routes}))
 
         if (!route) {
-          logger.warn("there is no route for payment to %o from user %o", destination, this.uid)
-          throw Error(`there is no route for this payment`)
+          logger.warn("there is no payable route for payment to %o from user %o", destination, this.uid)
+          throw Error(`there is no payable route for this payment`)
         }
 
         // we are confident enough that there is a possible payment route. let's move forward
