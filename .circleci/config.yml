@@ -193,9 +193,7 @@ jobs:
 
   build_test_image:
     working_directory: ~/GaloyApp/backend/firebase
-    docker: 
-      - image: "circleci/node:lts"
-    resource_class: small
+    machine: true
     steps:
       - checkout:
           path: ~/GaloyApp
