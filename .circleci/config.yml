@@ -183,7 +183,7 @@ jobs:
       - restore_cache:
           key: 1-yarn-{{ checksum "yarn.lock" }}-pod1-{{ checksum "ios/Podfile.lock" }}
       - run: yarn install
-      - run: git diff "ios/Podfile.lock"
+      - run: git diff "ios/Podfile.lock" | cat
       - save_cache:
           key: 1-yarn-{{ checksum "yarn.lock" }}-pod1-{{ checksum "ios/Podfile.lock" }}
           paths:
