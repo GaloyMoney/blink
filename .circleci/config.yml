@@ -360,7 +360,8 @@ workflows:
                 - master
   mobile:
     jobs:
+      - hold_build_ios:
+          type: approval
       - build_ios:
-          filters:
-            tags:
-              only: /^v.*/
+          requires:
+            - hold_build_ios
