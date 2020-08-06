@@ -231,14 +231,12 @@ export const LightningMixin = (superclass) => class extends superclass {
 
       try {
         ({ routes } = await lnService.getRoutes({ destination, lnd: this.lnd, tokens }));
-        logger.info({ routes }, "succesfully found routes for payment to %o from user %o", destination, this.uid)
 
         if (!routes) {
           logger.warn("there is no potential route for payment to %o from user %o", destination, this.uid)
           throw Error(`there is no potential route for this payment`)
         }
-
-        logger.debug({routes})
+        logger.info({ routes }, "successfully found routes for payment to %o from user %o", destination, this.uid)
 
         ({route} = await lnService.probe({lnd:this.lnd, routes}))
 
@@ -247,7 +245,7 @@ export const LightningMixin = (superclass) => class extends superclass {
           throw Error(`there is no payable route for this payment`)
         }
 
-        logger.debug({route})
+        logger.info({ routes }, "successfully found payable route for payment to %o from user %o", destination, this.uid)
 
         // we are confident enough that there is a possible payment route. let's move forward
 
