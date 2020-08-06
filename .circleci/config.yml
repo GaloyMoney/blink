@@ -321,33 +321,38 @@ jobs:
             helm upgrade -n mainnet -i trigger -f ~/GaloyApp/backend/trigger-chart/values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/trigger-chart/
                
 workflows:
-  kube:
+  untagged-build:
     jobs:
-      - build_ios
-      # - build_test_image
-      # - test:
-      #     requires:
-      #       - build_test_image
-      # - approve_mainnet_deploy:
-      #     type: approval
-      #     requires:
-      #       - test
-      #     filters:
-      #       branches:
-      #         only:
-      #           - master
-      # - slack/approval-notification:
-      #     mentions: 'U011J7RCEFQ,U011KKL1L4B'
-      #     requires:
-      #       - test
-      #     filters:
-      #       branches:
-      #         only:
-      #           - master
-      # - mainnet_deploy:
-      #     requires:
-      #       - approve_mainnet_deploy
-      #     filters:
-      #       branches:
-      #         only:
-      #           - master
+      - build_test_image
+      - test:
+          requires:
+            - build_test_image
+      - approve_mainnet_deploy:
+          type: approval
+          requires:
+            - test
+          filters:
+            branches:
+              only:
+                - master
+      - slack/approval-notification:
+          mentions: 'U011J7RCEFQ,U011KKL1L4B'
+          requires:
+            - test
+          filters:
+            branches:
+              only:
+                - master
+      - mainnet_deploy:
+          requires:
+            - approve_mainnet_deploy
+          filters:
+            branches:
+              only:
+                - master
+  tagged-build:
+    jobs:
+      - build_ios:
+          filters:
+            tags:
+              only: /^v.*/
