@@ -321,7 +321,7 @@ jobs:
             helm upgrade -n mainnet -i trigger -f ~/GaloyApp/backend/trigger-chart/values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/trigger-chart/
                
 workflows:
-  untagged-build:
+  kube:
     jobs:
       - build_test_image
       - test:
@@ -350,7 +350,7 @@ workflows:
             branches:
               only:
                 - master
-  tagged-build:
+  mobile:
     jobs:
       - build_ios:
           filters:
