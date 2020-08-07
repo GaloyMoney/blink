@@ -39,7 +39,7 @@ export class LightningUserWallet extends LightningMixin(UserWallet) {
                     { upsert: true} 
                 )
         
-                if ((userPastState.earn?.findIndex(item => item === id) ?? -1 ) === -1) {
+                if (userPastState.earn.findIndex(item => item === id) === -1) {
                     await lightningAdminWallet.addFunds({amount, uid: this.uid, memo: id, type: "earn"})
                 }
         
