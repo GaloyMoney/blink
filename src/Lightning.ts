@@ -8,7 +8,7 @@ import { IAddInvoiceRequest, ILightningTransaction, IPaymentRequest, Transaction
 import { getAuth, logger, timeout } from "./utils";
 const mongoose = require("mongoose");
 const util = require('util')
-export type IType = "invoice" | "payment" | "earn"
+export type IType = "invoice" | "payment" | "earn" | "onchain_receipt"
 export type payInvoiceResult = "success" | "failed" | "pending"
 
 const using = require('bluebird').using
@@ -31,12 +31,13 @@ const formatInvoice = (type: IType, memo: Imemo, pending: boolean): String => {
     // FIXME above syntax from lnd, not lnService script "overlay"
     // TODO for lnd keysend 
     // } 
-    else {
-      return type === "payment" ?
-        `Payment sent`
-        : type === "invoice" ?
-          `Payment received`
-          : "Earn"
+
+    // FIXME: this could be done in the frontend?
+    switch (type) {
+      case "payment": return `Payment sent`
+      case "invoice": return `Payment received`
+      case "onchain_receipt": return `Onchain payment received`
+      case "earn": return `Earn`
     }
   }
 }
