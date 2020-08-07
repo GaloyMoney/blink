@@ -27,7 +27,7 @@ export interface ILightningTransaction {
 
 export interface IPaymentRequest {
   destination?: string,
-  tokens?: number,
+  amount?: number,
   invoice?: string
 }
 
