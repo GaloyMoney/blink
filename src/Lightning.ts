@@ -18,7 +18,9 @@ const FEECAP = 0.02 // %
 const FEEMIN = 10 // sats
 
 
-const formatInvoice = (type: IType, memo: String | undefined, pending: Boolean | undefined): String => {
+type Imemo = string | undefined
+
+const formatInvoice = (type: IType, memo: Imemo, pending: boolean): String => {
   if (pending) {
     return `Waiting for payment confirmation`
   } else {
