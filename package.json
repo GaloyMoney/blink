@@ -10,7 +10,7 @@
     "add-charts": "export LOCAL=true && ./initLocalTest.sh",
     "restart-charts": "yarn run remove-charts || : && yarn run add-charts",
     "test-local-clean": "yarn run restart-charts && yarn run test-local",
-    "test-local": "source exportLocal.sh && yarn jest --runInBand | pino-pretty -c -l",
+    "test-local": "source exportLocal.sh && yarn jest --runInBand $TEST | pino-pretty -c -l",
     "dev": "nodemon -e ts -w ./src -x yarn run dev-2",
     "dev-2": "source exportLocal.sh && ts-node src/dev.ts",
     "prometheus": "source exportLocal.sh && ts-node src/prometheus.ts",
