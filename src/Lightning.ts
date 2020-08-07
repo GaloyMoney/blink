@@ -187,7 +187,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         } else {
           throw Error('Invoice contains non-zero amount, but amount was also passed separately')
         }
-      } else if(tokens == 0) {
+      } else if (tokens == 0) {
         throw Error('Invoice is a zero-amount invoice, but no amount was passed separately')
       }
 
@@ -237,44 +237,50 @@ export const LightningMixin = (superclass) => class extends superclass {
           throw Error(`there is no potential route for this payment`)
         }
         logger.info({ routes }, "successfully found routes for payment to %o from user %o", destination, this.uid)
-
-        let probeResult
-        routes.every(async (potentialRoute, i) => {
-          logger.info("potential route", {potentialRoute})
-          probeResult = (await lnService.probe({lnd: this.lnd, routes: [potentialRoute]})).route
-          logger.info("probeRes", probeResult)
-          if(probeResult) {
-            route = potentialRoute
-            return false
-          }
-
-          else return true
-        })
-
-        // ({route} = await lnService.probe({lnd:this.lnd, routes}))
-
-        if (!route) {
-          logger.warn("there is no payable route for payment to %o from user %o", destination, this.uid)
-          throw Error(`there is no payable route for this payment`)
-        }
-
-        logger.info({ route }, "successfully found payable route for payment to %o from user %o", destination, this.uid)
-
-        // we are confident enough that there is a possible payment route. let's move forward
-
-
-        // there is 3 scenarios for a payment.
-        // 1/ payment succeed is less than TIMEOUT_PAYMENT
-        // 2/ the payment fails. we are reverting it. this including voiding prior transaction
-        // 3/ payment is still pending after TIMEOUT_PAYMENT.
-        // we are timing out the request for UX purpose, so that the client can show the payment is pending
-        // even if the payment is still ongoing from lnd.
-        // to clean pending payments, another cron-job loop will run in the background.
-
       } catch (error) {
         logger.error(error)
         throw new Error(error)
       }
+
+
+
+
+      let probeResult = null
+      routes.every(async (potentialRoute, i) => {
+        try {
+          logger.info("potential route", { potentialRoute })
+          probeResult = (await lnService.probe({ lnd: this.lnd, routes: [potentialRoute] })).route
+          logger.info("probeRes", probeResult)
+
+        } catch (error) {
+          logger.error(error)
+        }
+
+        if (probeResult) {
+          route = potentialRoute
+          return false
+        } else return true
+      })
+
+      // ({route} = await lnService.probe({lnd:this.lnd, routes}))
+
+      if (!route) {
+        logger.warn("there is no payable route for payment to %o from user %o", destination, this.uid)
+        throw Error(`there is no payable route for this payment`)
+      }
+
+      logger.info({ route }, "successfully found payable route for payment to %o from user %o", destination, this.uid)
+
+      // we are confident enough that there is a possible payment route. let's move forward
+
+
+      // there is 3 scenarios for a payment.
+      // 1/ payment succeed is less than TIMEOUT_PAYMENT
+      // 2/ the payment fails. we are reverting it. this including voiding prior transaction
+      // 3/ payment is still pending after TIMEOUT_PAYMENT.
+      // we are timing out the request for UX purpose, so that the client can show the payment is pending
+      // even if the payment is still ongoing from lnd.
+      // to clean pending payments, another cron-job loop will run in the background.
 
       fee = route.safe_fee
 
