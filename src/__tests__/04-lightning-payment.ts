@@ -189,7 +189,7 @@ it('if fee are too high, payment is cancelled', async () => {
 it('pays zero amount invoice', async () => {
   const { request } = await lnService.createInvoice({ lnd: lndOutside1 })
   const initialBalance = await userWallet1.getBalance()
-  const result = await userWallet1.pay({invoice: request, tokens: amountInvoice})
+  const result = await userWallet1.pay({invoice: request, amount: amountInvoice})
   expect(result).toBe("success")
   const finalBalance = await userWallet1.getBalance()
   expect(finalBalance).toBe(initialBalance - amountInvoice)
@@ -202,9 +202,10 @@ it('fails to pay zero amt invoice without separate amt', async () => {
 })
 
 it('fails to pay regular invoice with separate amt', async () => {
-  const {request} = await lnService.createInvoice({lnd:lndOutside1, tokens: amountInvoice})
-  await expect(userWallet1.pay({ invoice: request, tokens: amountInvoice })).rejects.toThrow()
+  const {request} = await lnService.createInvoice({lnd:lndOutside1, amount: amountInvoice})
+  await expect(userWallet1.pay({ invoice: request, amount: amountInvoice })).rejects.toThrow()
 })
+
 // it('testDbTransaction', async () => {
 //   //TODO try to fetch simulataneously (ie: with Premise.all[])
 //   // balances with pending but settled transaction to see if 
