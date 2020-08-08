@@ -8,8 +8,6 @@ import { IAddInvoiceRequest, ILightningTransaction, IPaymentRequest, Transaction
 import { getAuth, logger, timeout } from "./utils";
 const mongoose = require("mongoose");
 const util = require('util')
-export type IType = "invoice" | "payment" | "earn" | "onchain_receipt"
-export type payInvoiceResult = "success" | "failed" | "pending"
 
 const using = require('bluebird').using
 
@@ -17,10 +15,11 @@ const using = require('bluebird').using
 const FEECAP = 0.02 // %
 const FEEMIN = 10 // sats
 
+export type ITxType = "invoice" | "payment" | "earn" | "onchain_receipt"
+export type payInvoiceResult = "success" | "failed" | "pending"
+type IMemo = string | undefined
 
-type Imemo = string | undefined
-
-const formatInvoice = (type: IType, memo: Imemo, pending: boolean): String => {
+const formatInvoice = (type: ITxType, memo: IMemo, pending: boolean): String => {
   if (pending) {
     return `Waiting for payment confirmation`
   } else {
@@ -42,7 +41,7 @@ const formatInvoice = (type: IType, memo: Imemo, pending: boolean): String => {
   }
 }
 
-const formatType = (type: IType, pending: Boolean | undefined): TransactionType | Error => {
+const formatType = (type: ITxType, pending: Boolean | undefined): TransactionType | Error => {
   if (type === "invoice") {
     return pending ? "unconfirmed-invoice" : "paid-invoice"
   }
@@ -177,7 +176,6 @@ export const LightningMixin = (superclass) => class extends superclass {
         id = createHash('sha256').update(preimage).digest().toString('hex');
         const secret = preimage.toString('hex');
         messages = [{ type: keySendPreimageType, value: secret }]
-        // }
       }
     } else {
       // TODO replace this with bolt11 utils library
