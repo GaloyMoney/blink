@@ -61,6 +61,8 @@ const formatType = (type: ITxType, pending: Boolean | undefined): TransactionTyp
   throw Error("incorrect type for formatType")
 }
 
+const zeroOrUndefined = (value) => value === 0 || value == null
+
 export const LightningMixin = (superclass) => class extends superclass {
   protected _currency = "BTC"
   lnd: any
@@ -181,13 +183,13 @@ export const LightningMixin = (superclass) => class extends superclass {
       // TODO replace this with bolt11 utils library
       ({ id, tokens, destination, description } = await lnService.decodePaymentRequest({ lnd: this.lnd, request: params.invoice }))
 
-      if (params.amount !== undefined && tokens !== 0) {
+      if (!zeroOrUndefined(params.amount) && tokens !== 0) {
         throw Error('Invoice contains non-zero amount, but amount was also passed separately')
-      } 
+      }
       
-      if(params.amount === undefined && tokens === 0) {
+      if(zeroOrUndefined(params.amount) && tokens === 0) {
         throw Error('Invoice is a zero-amount invoice, but no amount was passed separately')
-      } 
+      }
     }
 
     tokens = tokens !== 0 ? tokens : params.amount
