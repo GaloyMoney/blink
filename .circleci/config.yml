@@ -206,7 +206,7 @@ jobs:
       - checkout:
           path: ~/GaloyApp
       - run: sudo apt-get update
-      - run: sudo apt-get install pgp2
+      - run: sudo apt-get install gpg2
       # - run: sudo apt-get install software-properties-common
       # - run: sudo apt-add-repository ppa:brightbox/ruby-ng
       # - run: sudo apt-get update
