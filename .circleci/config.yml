@@ -207,9 +207,10 @@ jobs:
           path: ~/GaloyApp
       - run: sudo apt-get update
       - run: sudo apt-get install software-properties-common
-      - run: sudo apt-add-repository ppa:brightbox/ruby-ng
+      # - run: sudo apt-add-repository ppa:brightbox/ruby-ng
       - run: sudo apt-get update
-      - run: sudo apt-get install ruby2.4
+      - run: sudo apt-get install ruby-full
+      # - run: sudo apt-get install ruby2.4
       - run: ruby -v
       - run: sudo apt-get install ruby2.4-dev rubygems
       - run: sudo gem install fastlane -NV
