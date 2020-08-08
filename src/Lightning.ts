@@ -236,33 +236,26 @@ export const LightningMixin = (superclass) => class extends superclass {
           logger.warn("there is no potential route for payment to %o from user %o", destination, this.uid)
           throw Error(`there is no potential route for this payment`)
         }
+
         logger.info({ routes }, "successfully found routes for payment to %o from user %o", destination, this.uid)
       } catch (error) {
         logger.error(error)
         throw new Error(error)
       }
 
-
-
-
-      let probeResult = null
-      routes.every(async (potentialRoute, i) => {
-        try {
-          logger.info("potential route", { potentialRoute })
-          probeResult = (await lnService.probe({ lnd: this.lnd, routes: [potentialRoute] })).route
-          logger.info("probeRes", probeResult)
-
-        } catch (error) {
-          logger.error(error)
+      for (const potentialRoute of routes) {
+        const probeResult = await lnService.probe({ lnd: this.lnd, routes: [potentialRoute] })
+        logger.info({ probeResult }, "probe res")
+        if (
+          probeResult.generic_failures.length == 0 &&
+          probeResult.stuck.length == 0 &&
+          probeResult.temporary_failures.length == 0 &&
+          probeResult.successes.length > 0
+        ) {
+          route = probeResult.route
+          break
         }
-
-        if (probeResult) {
-          route = potentialRoute
-          return false
-        } else return true
-      })
-
-      // ({route} = await lnService.probe({lnd:this.lnd, routes}))
+      }
 
       if (!route) {
         logger.warn("there is no payable route for payment to %o from user %o", destination, this.uid)
