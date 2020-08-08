@@ -217,6 +217,8 @@ jobs:
       - run: fastlane -v
       - run: cd android && bundle config set deployment 'true'
       - run: cd android && bundle check || bundle install 
+
+      - run: yarn install
       - run: 
          name: fastlane
          command: cd android && fastlane beta
