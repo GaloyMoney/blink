@@ -217,6 +217,7 @@ jobs:
       - run: fastlane -v
       - run: cd android && bundle config set deployment 'true'
       - run: cd android && bundle check || bundle install 
+      - run: curl -o- -L https://yarnpkg.com/install.sh | bash
 
       - run: yarn install
       - run: 
