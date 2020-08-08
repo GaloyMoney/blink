@@ -8,7 +8,7 @@ helm install --namespace=$NAMESPACE redis --set=cluster.enabled=false,usePasswor
 
 sleep 2
 
-kubectl wait --namespace=$NAMESPACE --for=condition=ready pod -l app=bitcoind-container
+kubectl wait --namespace=$NAMESPACE --for=condition=ready pod -l app=bitcoind-container --timeout=180s
 
 helm install --namespace=$NAMESPACE lnd -f ../../lnd-chart/values.yaml -f ../../lnd-chart/regtest-values.yaml --set lndService.serviceType=$SERVICETYPE ../../lnd-chart/
 
