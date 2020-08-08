@@ -226,7 +226,6 @@ jobs:
 
       - run: ls
       - run: yarn -v
-      - run: sudo apt remove cmdtest
       - run: yarn install
       - run: cd android && fastlane beta
 
