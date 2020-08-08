@@ -208,7 +208,7 @@ jobs:
       - run: sudo apt-get update
       - run: sudo apt-get install software-properties-common
       - run: sudo apt-add-repository ppa:brightbox/ruby-ng
-      - run: sudo apt-get update
+      - run: sudo apt-get update --allow-unauthenticated
       - run: sudo apt-get install rubygems ruby2.4
       - run: sudo gem install fastlane -NV
       - run: 
