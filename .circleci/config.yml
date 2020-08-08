@@ -215,9 +215,13 @@ jobs:
       - run: ruby -v
       - run: gem install fastlane -NV
       - run: fastlane -v
+      - run: cd android && bundle config set deployment 'true'
+      - run: cd android && bundle check || bundle install 
       - run: 
          name: fastlane
          command: cd android && fastlane beta
+
+
       - run: git config credential.helper 'cache --timeout=120'
       - run: git config --global user.name "circleci-bot"
       - run: git config --global user.email "bot@circleci.com"
