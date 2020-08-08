@@ -185,12 +185,35 @@ jobs:
       - run: git config credential.helper 'cache --timeout=120'
       - run: git config --global user.name "circleci-bot"
       - run: git config --global user.email "bot@circleci.com"
+      - run: git pull
       - run: git commit -a -m "new ios build [ci skip]"
       - run: git push -q https://${GITHUB_TOKEN}@github.com/nicolasburtey/galoy-app.git $CIRCLE_BRANCH
       - store_artifacts:
           path: ios/output
       - store_test_results:
           path: ios/output/scan
+
+  build_android:
+    docker:
+      - image: circleci/android:api-27-alpha
+    environment:
+      TERM: dumb
+      _JAVA_OPTIONS: "-Xmx2048m -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
+      GRADLE_OPTS: '-Dorg.gradle.jvmargs="-Xmx2048m"'
+    working_directory: ~/GaloyApp/mobile
+    shell: /bin/bash --login -o pipefail
+    steps:
+      - checkout:
+          path: ~/GaloyApp
+      - run: 
+         name: fastlane
+         command: cd android && bundle exec fastlane beta
+      - run: git config credential.helper 'cache --timeout=120'
+      - run: git config --global user.name "circleci-bot"
+      - run: git config --global user.email "bot@circleci.com"
+      - run: git pull
+      - run: git commit -a -m "new ios build [ci skip]"
+      - run: git push -q https://${GITHUB_TOKEN}@github.com/nicolasburtey/galoy-app.git $CIRCLE_BRANCH
 
   build_test_image:
     working_directory: ~/GaloyApp/backend/firebase
@@ -331,37 +354,38 @@ jobs:
 workflows:
   kube:
     jobs:
-      - build_test_image
-      - test:
-          requires:
-            - build_test_image
-      - approve_mainnet_deploy:
-          type: approval
-          requires:
-            - test
-          filters:
-            branches:
-              only:
-                - master
-      - slack/approval-notification:
-          mentions: 'U011J7RCEFQ,U011KKL1L4B'
-          requires:
-            - test
-          filters:
-            branches:
-              only:
-                - master
-      - mainnet_deploy:
-          requires:
-            - approve_mainnet_deploy
-          filters:
-            branches:
-              only:
-                - master
-  mobile:
-    jobs:
-      - hold_build_ios:
-          type: approval
-      - build_ios:
-          requires:
-            - hold_build_ios
+      - build_android
+  #     - build_test_image
+  #     - test:
+  #         requires:
+  #           - build_test_image
+  #     - approve_mainnet_deploy:
+  #         type: approval
+  #         requires:
+  #           - test
+  #         filters:
+  #           branches:
+  #             only:
+  #               - master
+  #     - slack/approval-notification:
+  #         mentions: 'U011J7RCEFQ,U011KKL1L4B'
+  #         requires:
+  #           - test
+  #         filters:
+  #           branches:
+  #             only:
+  #               - master
+  #     - mainnet_deploy:
+  #         requires:
+  #           - approve_mainnet_deploy
+  #         filters:
+  #           branches:
+  #             only:
+  #               - master
+  # mobile:
+  #   jobs:
+  #     - hold_build_ios:
+  #         type: approval
+  #     - build_ios:
+  #         requires:
+  #           - hold_build_ios
