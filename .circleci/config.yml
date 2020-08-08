@@ -206,7 +206,7 @@ jobs:
       - checkout:
           path: ~/GaloyApp
       - run: sudo apt-get update
-      - run: sudo apt-get install rubygems
+      - run: sudo apt-get install rubygems ruby-dev
       - run: sudo gem install fastlane -NV
       - run: 
          name: fastlane
