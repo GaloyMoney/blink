@@ -205,7 +205,8 @@ jobs:
     steps:
       - checkout:
           path: ~/GaloyApp
-      - run: yes | sdkmanager --licenses
+      - run: yes | sdkmanager --licenses || exit 0
+      - run: yes | sdkmanager --update || exit 0
       - run: sudo apt-get update
       - run: sudo apt-get install gnupg2
       - run: curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
