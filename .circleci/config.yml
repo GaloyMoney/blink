@@ -213,9 +213,8 @@ jobs:
       - run: rvm install 2.4.1
       - run: rvm use 2.4.1 --default
       - run: ruby -v
-      - run: bundle
-      # - run: sudo apt-get install rubygems
       - run: gem install fastlane -NV
+      - run: fastlane -v
       - run: 
          name: fastlane
          command: cd android && fastlane beta
