@@ -232,7 +232,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       try {
         ({ routes } = await lnService.getRoutes({ destination, lnd: this.lnd, tokens }));
 
-        if (!routes) {
+        if (routes.length === 0) {
           logger.warn("there is no potential route for payment to %o from user %o", destination, this.uid)
           throw Error(`there is no potential route for this payment`)
         }
