@@ -258,14 +258,14 @@ const server = new GraphQLServer({
   }
 })
 
-server.express.use((req, res, next) => {
-  const userAgent = req.get('User-Agent')
-  if (userAgent?.split('/')[0] == 'GoogleHC') {
-    next()
-  } else {
-    return
-  }
-})
+// server.express.use((req, res, next) => {
+//   const userAgent = req.get('User-Agent')
+//   if (userAgent?.split('/')[0] == 'GoogleHC') {
+//     next()
+//   } else {
+//     return
+//   }
+// })
 
 server.express.use(pino)
 
