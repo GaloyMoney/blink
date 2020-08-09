@@ -5,7 +5,7 @@ import { book } from "medici";
 import moment from "moment";
 import { disposer } from "./lock";
 import { IAddInvoiceRequest, ILightningTransaction, IPaymentRequest, TransactionType } from "./types";
-import { getAuth, logger, timeout } from "./utils";
+import { getAuth, logger, timeout, measureTime } from "./utils";
 const mongoose = require("mongoose");
 const util = require('util')
 export type IType = "invoice" | "payment" | "earn"
@@ -244,8 +244,9 @@ export const LightningMixin = (superclass) => class extends superclass {
       }
 
       for (const potentialRoute of routes) {
-        const probeResult = await lnService.probe({ lnd: this.lnd, routes: [potentialRoute] })
-        logger.info({ probeResult }, "probe res")
+        const probePromise = lnService.probe({ lnd: this.lnd, routes: [potentialRoute] })
+        const [probeResult, timeElapsedms] = await measureTime(probePromise)
+        logger.info({ probeResult }, `probe took ${timeElapsedms} ms`)
         if (
           probeResult.generic_failures.length == 0 &&
           probeResult.stuck.length == 0 &&
