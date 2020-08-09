@@ -108,7 +108,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       amount: item.debit - item.credit,
       description: formatInvoice(item.type, item.memo, item.pending),
       hash: item.hash,
-      fee: item.fee,
+      fee: item.meta?.fee,
       // destination: TODO
       type: formatType(item.type, item.pending),
       id: item._id,
