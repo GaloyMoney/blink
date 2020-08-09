@@ -56,6 +56,10 @@ const formatType = (type: IType, pending: Boolean | undefined): TransactionType 
     return "onchain_receipt"
   }
 
+  if (type === "on_us") {
+    return "on_us"
+  }
+
   throw Error("incorrect type for formatType")
 }
 
