@@ -268,7 +268,7 @@ server.express.get('/healthz', function(req, res) {
 
 const options = {
   endpoint: '/graphql',
-  // playground: process.env.NETWORK === 'mainnet' ? 'false': '/'
+  playground: process.env.NETWORK === 'mainnet' ? 'false': '/'
 }
 
 setupMongoConnection()
