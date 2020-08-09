@@ -258,6 +258,8 @@ const server = new GraphQLServer({
   }
 })
 
+//TODO: set logger level instead of not calling next
+// https://github.com/pinojs/pino/issues/713
 // server.express.use((req, res, next) => {
 //   const userAgent = req.get('User-Agent')
 //   if (userAgent?.split('/')[0] == 'GoogleHC') {
