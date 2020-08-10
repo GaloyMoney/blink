@@ -93,7 +93,7 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
     return await lnService.getWalletInfo({ lnd: this.lnd });
   }
 
-  async openChannel({local_tokens, public_key, socket}) {
+  async openChannel({local_tokens, public_key, socket}): Promise<string> {
     const auth = getAuth() // FIXME
     const lnd = lnService.authenticatedLndGrpc(auth).lnd // FIXME
 
@@ -114,6 +114,8 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
       .debit('Assets:Reserve:Lightning', fee, {...metadata,})
       .credit('Expenses:Bitcoin:Fees', fee, {...metadata})
       .commit()
+
+    return transaction_id
   }
 
   async updateEscrows() {
