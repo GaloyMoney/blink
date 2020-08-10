@@ -221,6 +221,8 @@ jobs:
       - run: cd android && bundle config set deployment 'true'
       - run: cd android && bundle check || bundle install 
 
+      - run: echo $ANDROID_SERVICE_ACCOUNT_UPLOAD | base64 -d > android/api-8350101450647692243-59029-b9bec84a7e5a.json
+
       - run: node -v
       - run: npm -v
       - run: ruby -v
