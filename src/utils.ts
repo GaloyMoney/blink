@@ -97,3 +97,11 @@ export async function waitUntilBlockHeight({lnd, blockHeight}) {
     logger.debug(`Seconds to sync blockheight ${blockHeight}: ${time / (1000/ ms)}`)
     return
 }
+
+export async function measureTime(operation: Promise<any>): Promise<[any, number]> {
+    const startTime = process.hrtime()
+    const result = await operation
+    const timeElapsed = process.hrtime(startTime)
+    const timeElapsedms = timeElapsed[0] * 1000 + timeElapsed[1] / 1000000
+    return [result, timeElapsedms]
+}

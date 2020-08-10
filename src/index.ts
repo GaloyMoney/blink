@@ -258,6 +258,17 @@ const server = new GraphQLServer({
   }
 })
 
+//TODO: set logger level instead of not calling next
+// https://github.com/pinojs/pino/issues/713
+// server.express.use((req, res, next) => {
+//   const userAgent = req.get('User-Agent')
+//   if (userAgent?.split('/')[0] == 'GoogleHC') {
+//     next()
+//   } else {
+//     return
+//   }
+// })
+
 server.express.use(pino)
 
 
@@ -268,7 +279,7 @@ server.express.get('/healthz', function(req, res) {
 
 const options = {
   endpoint: '/graphql',
-  // playground: process.env.NETWORK === 'mainnet' ? 'false': '/'
+  playground: process.env.NETWORK === 'mainnet' ? 'false': '/'
 }
 
 setupMongoConnection()
