@@ -165,7 +165,18 @@ export const LightningMixin = (superclass) => class extends superclass {
     const Transaction = mongoose.model("Medici_Transaction")
     const InvoiceUser = mongoose.model("InvoiceUser")
 
-    if (!params.invoice) {
+    if (params.invoice) {
+      // TODO replace this with bolt11 utils library
+      ({ id, tokens, destination, description } = await lnService.decodePaymentRequest({ lnd: this.lnd, request: params.invoice }))
+
+      if (!!params.amount && tokens !== 0) {
+        throw Error('Invoice contains non-zero amount, but amount was also passed separately')
+      }
+      
+      if(!params.amount && tokens === 0) {
+        throw Error('Invoice is a zero-amount invoice, but no amount was passed separately')
+      }
+    } else {
       if (!params.amount || !params.destination) {
         throw Error('Pay requires either invoice or destination and amount to be specified')
       } else {
@@ -177,20 +188,9 @@ export const LightningMixin = (superclass) => class extends superclass {
         const secret = preimage.toString('hex');
         messages = [{ type: keySendPreimageType, value: secret }]
       }
-    } else {
-      // TODO replace this with bolt11 utils library
-      ({ id, tokens, destination, description } = await lnService.decodePaymentRequest({ lnd: this.lnd, request: params.invoice }))
-
-      if (!params.amount && tokens !== 0) {
-        throw Error('Invoice contains non-zero amount, but amount was also passed separately')
-      }
-      
-      if(!!params.amount && tokens === 0) {
-        throw Error('Invoice is a zero-amount invoice, but no amount was passed separately')
-      }
     }
 
-    tokens = tokens !== 0 ? tokens : params.amount
+    tokens = !!tokens ? tokens : params.amount
 
     const balance = await this.getBalance()
 

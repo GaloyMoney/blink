@@ -202,7 +202,7 @@ it('fails to pay zero amt invoice without separate amt', async () => {
 })
 
 it('fails to pay regular invoice with separate amt', async () => {
-  const {request} = await lnService.createInvoice({lnd:lndOutside1, amount: amountInvoice})
+  const {request} = await lnService.createInvoice({lnd:lndOutside1, tokens: amountInvoice})
   await expect(userWallet1.pay({ invoice: request, amount: amountInvoice })).rejects.toThrow()
 })
 
