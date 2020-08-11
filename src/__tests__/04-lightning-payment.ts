@@ -119,6 +119,8 @@ it('payInvoiceToAnotherGaloyUser', async () => {
   const user2FinalBalance = await userWallet2.getBalance()
   expect(user1FinalBalance).toBe(onBoardingEarnAmt - amountInvoice) 
   expect(user2FinalBalance).toBe(1000)
+  const onUsTxn = (await userWallet1.getTransactions()).filter(txn => txn.type == 'on_us')
+  expect(onUsTxn.length).toBe(1)
   await checkIsBalanced()
 }, 50000)
 
