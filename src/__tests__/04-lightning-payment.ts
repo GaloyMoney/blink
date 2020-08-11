@@ -129,7 +129,7 @@ it('payInvoiceToSelf', async () => {
 
 it('pushPayment', async () => {
   const destination = (await lnService.getWalletInfo({ lnd: lndOutside1 })).public_key;
-  const res = await userWallet1.pay({ destination, tokens: amountInvoice })
+  const res = await userWallet1.pay({ destination, amount: amountInvoice })
   const finalBalance = await userWallet1.getBalance()
   expect(res).toBe("success")
   expect(finalBalance).toBe(onBoardingEarnAmt - 2 * amountInvoice)
@@ -202,7 +202,7 @@ it('fails to pay zero amt invoice without separate amt', async () => {
 })
 
 it('fails to pay regular invoice with separate amt', async () => {
-  const {request} = await lnService.createInvoice({lnd:lndOutside1, amount: amountInvoice})
+  const {request} = await lnService.createInvoice({lnd:lndOutside1, tokens: amountInvoice})
   await expect(userWallet1.pay({ invoice: request, amount: amountInvoice })).rejects.toThrow()
 })
 
