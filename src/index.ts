@@ -154,9 +154,9 @@ const resolvers = {
             throw err
           }
         },
-        payInvoice: async ({ invoice, tokens }) => {
+        payInvoice: async ({ invoice, amount }) => {
           try {
-            const success = await lightningWallet.pay({ invoice, tokens })
+            const success = await lightningWallet.pay({ invoice, amount })
             logger.debug({ success }, "succesful payment for user %o", { uid })
             return success
           } catch (err) {

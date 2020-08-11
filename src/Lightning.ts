@@ -8,8 +8,6 @@ import { IAddInvoiceRequest, ILightningTransaction, IPaymentRequest, Transaction
 import { getAuth, logger, timeout, measureTime } from "./utils";
 const mongoose = require("mongoose");
 const util = require('util')
-export type IType = "invoice" | "payment" | "earn"
-export type payInvoiceResult = "success" | "failed" | "pending"
 
 const using = require('bluebird').using
 
@@ -17,8 +15,11 @@ const using = require('bluebird').using
 const FEECAP = 0.02 // %
 const FEEMIN = 10 // sats
 
+export type ITxType = "invoice" | "payment" | "earn" | "onchain_receipt"
+export type payInvoiceResult = "success" | "failed" | "pending"
+type IMemo = string | undefined
 
-const formatInvoice = (type: IType, memo: String | undefined, pending: Boolean | undefined): String => {
+const formatInvoice = (type: ITxType, memo: IMemo, pending: boolean): String => {
   if (pending) {
     return `Waiting for payment confirmation`
   } else {
@@ -29,17 +30,18 @@ const formatInvoice = (type: IType, memo: String | undefined, pending: Boolean |
     // FIXME above syntax from lnd, not lnService script "overlay"
     // TODO for lnd keysend 
     // } 
-    else {
-      return type === "payment" ?
-        `Payment sent`
-        : type === "invoice" ?
-          `Payment received`
-          : "Earn"
+
+    // FIXME: this could be done in the frontend?
+    switch (type) {
+      case "payment": return `Payment sent`
+      case "invoice": return `Payment received`
+      case "onchain_receipt": return `Onchain payment received`
+      case "earn": return `Earn`
     }
   }
 }
 
-const formatType = (type: IType, pending: Boolean | undefined): TransactionType | Error => {
+const formatType = (type: ITxType, pending: Boolean | undefined): TransactionType | Error => {
   if (type === "invoice") {
     return pending ? "unconfirmed-invoice" : "paid-invoice"
   }
@@ -167,35 +169,32 @@ export const LightningMixin = (superclass) => class extends superclass {
     const Transaction = mongoose.model("Medici_Transaction")
     const InvoiceUser = mongoose.model("InvoiceUser")
 
-    if (!params.invoice) {
-      if (!params.tokens || !params.destination) {
+    if (params.invoice) {
+      // TODO replace this with bolt11 utils library
+      ({ id, tokens, destination, description } = await lnService.decodePaymentRequest({ lnd: this.lnd, request: params.invoice }))
+
+      if (!!params.amount && tokens !== 0) {
+        throw Error('Invoice contains non-zero amount, but amount was also passed separately')
+      }
+      
+      if(!params.amount && tokens === 0) {
+        throw Error('Invoice is a zero-amount invoice, but no amount was passed separately')
+      }
+    } else {
+      if (!params.amount || !params.destination) {
         throw Error('Pay requires either invoice or destination and amount to be specified')
       } else {
         pushPayment = true
         destination = params.destination
-        tokens = params.tokens
 
         const preimage = randomBytes(preimageByteLength);
         id = createHash('sha256').update(preimage).digest().toString('hex');
         const secret = preimage.toString('hex');
         messages = [{ type: keySendPreimageType, value: secret }]
-        // }
       }
-    } else {
-      // TODO replace this with bolt11 utils library
-      ({ id, tokens, destination, description } = await lnService.decodePaymentRequest({ lnd: this.lnd, request: params.invoice }))
-
-      if (params.tokens) {
-        if (tokens == 0) {
-          tokens = params.tokens
-        } else {
-          throw Error('Invoice contains non-zero amount, but amount was also passed separately')
-        }
-      } else if (tokens == 0) {
-        throw Error('Invoice is a zero-amount invoice, but no amount was passed separately')
-      }
-
     }
+
+    tokens = !!tokens ? tokens : params.amount
 
     const balance = await this.getBalance()
 
@@ -243,7 +242,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         logger.info({ routes }, "successfully found routes for payment to %o from user %o", destination, this.uid)
       } catch (error) {
-        logger.error(error)
+        logger.error(error, "error getting route")
         throw new Error(error)
       }
 
@@ -271,15 +270,6 @@ export const LightningMixin = (superclass) => class extends superclass {
 
       // we are confident enough that there is a possible payment route. let's move forward
 
-
-      // there is 3 scenarios for a payment.
-      // 1/ payment succeed is less than TIMEOUT_PAYMENT
-      // 2/ the payment fails. we are reverting it. this including voiding prior transaction
-      // 3/ payment is still pending after TIMEOUT_PAYMENT.
-      // we are timing out the request for UX purpose, so that the client can show the payment is pending
-      // even if the payment is still ongoing from lnd.
-      // to clean pending payments, another cron-job loop will run in the background.
-
       fee = route.safe_fee
 
       if (fee > FEECAP * tokens && fee > FEEMIN) {
@@ -301,6 +291,14 @@ export const LightningMixin = (superclass) => class extends superclass {
         .debit('Assets:Reserve:Lightning', tokens + fee, metadata)
         .credit(this.accountPath, tokens + fee, metadata)
         .commit()
+
+        // there is 3 scenarios for a payment.
+        // 1/ payment succeed is less than TIMEOUT_PAYMENT
+        // 2/ the payment fails. we are reverting it. this including voiding prior transaction
+        // 3/ payment is still pending after TIMEOUT_PAYMENT.
+        // we are timing out the request for UX purpose, so that the client can show the payment is pending
+        // even if the payment is still ongoing from lnd.
+        // to clean pending payments, another cron-job loop will run in the background.
 
       try {
         const TIMEOUT_PAYMENT = 5000

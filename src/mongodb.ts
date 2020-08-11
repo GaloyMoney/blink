@@ -28,14 +28,20 @@ const UserSchema = new Schema({
     type: Date,
     default: Date.now
   },
-  earn: [String],
+  earn: {
+    type: [String],
+    default: []
+  },
   role: {
     type: String,
     enum: ["user", "admin"],
     required: true,
     default: "user"
   },
-  onchain_addresses: [String],
+  onchain_addresses: {
+    type: [String],
+    default: []
+  },
   level: Number,
   phone: String, // TODO we may want to store country as a separate string
   // firstName,
