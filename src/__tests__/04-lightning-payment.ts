@@ -179,7 +179,7 @@ it('payInvoice to lnd outside 2', async () => {
   expect(result).toBe("success")
   const finalBalance = await userWallet1.getBalance()
   const MainBook = new book("MainBook")
-  const fee = (await MainBook.ledger({account:userWallet1.accountPath, meta: {$exists: true}})).results[0].fee
+  const fee = (await MainBook.ledger({account:userWallet1.accountPath, fee: {$gt: 0}})).results[0].fee
   expect(finalBalance).toBe(onBoardingEarnAmt - 4 * amountInvoice - fee)
   await checkIsBalanced()
 }, 100000)
