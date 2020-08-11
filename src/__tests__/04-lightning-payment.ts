@@ -113,14 +113,21 @@ it('fails to pay when user has insufficient balance', async () => {
 })
 
 it('payInvoiceToAnotherGaloyUser', async () => {
-  const request = await userWallet2.addInvoice({ value: amountInvoice, memo: "on us txn" })
+  const request = await userWallet2.addInvoice({ value: amountInvoice })
   await userWallet1.pay({ invoice: request })
   const user1FinalBalance = await userWallet1.getBalance()
   const user2FinalBalance = await userWallet2.getBalance()
   expect(user1FinalBalance).toBe(onBoardingEarnAmt - amountInvoice) 
   expect(user2FinalBalance).toBe(1000)
-  const onUsTxn = (await userWallet1.getTransactions()).filter(txn => txn.type == 'on_us')
-  expect(onUsTxn.length).toBe(1)
+  const user1Txn = await userWallet1.getTransactions()
+  const user1OnUsTxn = user1Txn.filter(txn => txn.type == 'on_us')
+  expect(user1OnUsTxn.description).toBe('Payment sent')
+  expect(user1OnUsTxn.length).toBe(1)
+
+  const user2Txn = await userWallet2.getTransactions()
+  const user2OnUsTxn = user2Txn.filter(txn => txn.type == 'on_us')
+  expect(user2OnUsTxn.description).toBe('Payment received')
+  expect(user2OnUsTxn.length).toBe(1)
   await checkIsBalanced()
 }, 50000)
 
