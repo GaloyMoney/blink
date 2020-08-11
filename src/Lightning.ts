@@ -19,7 +19,7 @@ export type ITxType = "invoice" | "payment" | "earn" | "onchain_receipt" | "on_u
 export type payInvoiceResult = "success" | "failed" | "pending"
 type IMemo = string | undefined
 
-const formatInvoice = (type: ITxType, memo: IMemo, pending: boolean, credit?: number): String => {
+const formatInvoice = (type: ITxType, memo: IMemo, pending: boolean, credit?: boolean): String => {
   if (pending) {
     return `Waiting for payment confirmation`
   } else {
@@ -109,7 +109,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     const results_processed = results.map((item) => ({
       created_at: moment(item.timestamp).unix(),
       amount: item.debit - item.credit,
-      description: formatInvoice(item.type, item.memo, item.pending, item.credit),
+      description: formatInvoice(item.type, item.memo, item.pending, item.credit > 0 ? true: false),
       hash: item.hash,
       fee: item.fee,
       // destination: TODO
