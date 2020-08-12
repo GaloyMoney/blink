@@ -5,7 +5,7 @@ const Redlock = require('redlock');
 // the maximum amount of time you want the resource locked,
 // keeping in mind that you can extend the lock up until
 // the point when it expires
-const ttl = 25000;
+const ttl = 60000;
 
 // if we weren't able to reach redis, your lock will eventually
 // expire, but you probably want to do something like log that

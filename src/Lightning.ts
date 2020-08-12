@@ -302,7 +302,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         // to clean pending payments, another cron-job loop will run in the background.
 
       try {
-        const TIMEOUT_PAYMENT = 5000
+        const TIMEOUT_PAYMENT = 45000
 
         // Fixme: seems to be leaking if it timeout.
         const promise = lnService.payViaRoutes({ lnd: this.lnd, routes: [route], id })
