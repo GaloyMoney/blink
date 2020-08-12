@@ -4,7 +4,7 @@ import { createHash, randomBytes } from "crypto";
 import { book } from "medici";
 import moment from "moment";
 import { disposer } from "./lock";
-import { IAddInvoiceRequest, ILightningTransaction, IPaymentRequest, TransactionType } from "./types";
+import { IAddInvoiceRequest, ILightningTransaction, IPaymentRequest, TransactionType, IOnChainPayment } from "./types";
 import { getAuth, logger, timeout, measureTime } from "./utils";
 const mongoose = require("mongoose");
 const util = require('util')
@@ -15,7 +15,7 @@ const using = require('bluebird').using
 const FEECAP = 0.02 // %
 const FEEMIN = 10 // sats
 
-export type ITxType = "invoice" | "payment" | "earn" | "onchain_receipt"
+export type ITxType = "invoice" | "payment" | "earn" | "onchain_receipt" | "onchain_payment"
 export type payInvoiceResult = "success" | "failed" | "pending"
 type IMemo = string | undefined
 
@@ -36,6 +36,7 @@ const formatInvoice = (type: ITxType, memo: IMemo, pending: boolean): String => 
       case "payment": return `Payment sent`
       case "invoice": return `Payment received`
       case "onchain_receipt": return `Onchain payment received`
+      case "onchain_payment": return `Onchain payment sent`
       case "earn": return `Earn`
     }
   }
@@ -60,6 +61,10 @@ const formatType = (type: ITxType, pending: Boolean | undefined): TransactionTyp
 
   if (type === "on_us") {
     return "on_us"
+  }
+
+  if (type === "onchain_payment") {
+    return "onchain_payment"
   }
 
   throw Error("incorrect type for formatType")
