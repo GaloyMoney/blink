@@ -481,7 +481,7 @@ export const LightningMixin = (superclass) => class extends superclass {
           const invoice = await InvoiceUser.findOne({ _id: hash, pending: true, uid: this.uid })
 
           if (!invoice) {
-            throw Error("no mongodb entry is associated with this invoice")
+            throw Error(`no mongodb entry is associated with this invoice ${result}`)
           }
 
           // TODO: use a transaction here
