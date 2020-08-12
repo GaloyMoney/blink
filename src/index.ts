@@ -71,7 +71,7 @@ const resolvers = {
       try {
         return { commitHash, buildTime }
       } catch (err) {
-        console.warn(err)
+        logger.warn(err)
         throw err
       }
     },
@@ -85,7 +85,7 @@ const resolvers = {
         const lastPrices = await price.lastCached()
         return lastPrices
       } catch (err) {
-        console.warn(err)
+        logger.warn(err)
         throw err
       }
     },
@@ -174,7 +174,7 @@ const resolvers = {
         const success = await lightningWallet.addEarn(ids)
         return success
       } catch (err) {
-        console.warn(err)
+        logger.warn(err)
         throw err
       }
     },

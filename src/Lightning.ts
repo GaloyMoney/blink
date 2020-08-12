@@ -15,11 +15,11 @@ const using = require('bluebird').using
 const FEECAP = 0.02 // %
 const FEEMIN = 10 // sats
 
-export type ITxType = "invoice" | "payment" | "earn" | "onchain_receipt" | "onchain_payment"
+export type ITxType = "invoice" | "payment" | "earn" | "onchain_receipt" | "onchain_payment" | "on_us"
 export type payInvoiceResult = "success" | "failed" | "pending"
 type IMemo = string | undefined
 
-const formatInvoice = (type: ITxType, memo: IMemo, pending: boolean): String => {
+const formatInvoice = (type: ITxType, memo: IMemo, pending: boolean, credit?: boolean): String => {
   if (pending) {
     return `Waiting for payment confirmation`
   } else {
@@ -33,6 +33,7 @@ const formatInvoice = (type: ITxType, memo: IMemo, pending: boolean): String => 
 
     // FIXME: this could be done in the frontend?
     switch (type) {
+      case "on_us": return (credit ? 'Payment sent' : 'Payment received')
       case "payment": return `Payment sent`
       case "invoice": return `Payment received`
       case "onchain_receipt": return `Onchain payment received`
@@ -113,9 +114,9 @@ export const LightningMixin = (superclass) => class extends superclass {
     const results_processed = results.map((item) => ({
       created_at: moment(item.timestamp).unix(),
       amount: item.debit - item.credit,
-      description: formatInvoice(item.type, item.memo, item.pending),
+      description: formatInvoice(item.type, item.memo, item.pending, item.credit > 0 ? true: false),
       hash: item.hash,
-      fee: item.meta?.fee,
+      fee: item.fee,
       // destination: TODO
       type: formatType(item.type, item.pending),
       id: item._id,
@@ -512,7 +513,7 @@ export const LightningMixin = (superclass) => class extends superclass {
           const invoice = await InvoiceUser.findOne({ _id: hash, pending: true, uid: this.uid })
 
           if (!invoice) {
-            throw Error("no mongodb entry is associated with this invoice")
+            throw Error(`no mongodb entry is associated with this invoice ${result}`)
           }
 
           // TODO: use a transaction here

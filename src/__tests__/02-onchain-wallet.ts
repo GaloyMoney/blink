@@ -129,6 +129,7 @@ it('identifies unconfirmed incoming on chain txn', async () => {
 	expect((<string>address).substr(0, 4)).toBe("bcrt")
 
 	await bitcoindClient.sendToAddress(address, amount_BTC)
+	//FIXME: Use something deterministic instead of sleep
 	await sleep(2000)
 	const pendingTxn = await wallet.getPendingIncomingOnchainPayments()
 	expect(pendingTxn.length).toBe(1)

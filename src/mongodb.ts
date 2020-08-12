@@ -87,6 +87,7 @@ const transactionSchema = new Schema({
     // }
   },
   txid: String,
+  fee: Number,
   type: {
     type: String,
     enum: ["invoice", "payment", "earn", "onchain_receipt", "fee", "escrow", "on_us"]
