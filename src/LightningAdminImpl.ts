@@ -2,6 +2,7 @@ import { filter, find } from "lodash";
 import { book } from "medici";
 import { LightningMixin } from "./Lightning";
 import { LightningUserWallet } from "./LightningUserWallet";
+import { Transaction, User } from "./mongodb";
 import { getAuth, logger } from "./utils";
 import { AdminWallet } from "./wallet";
 const lnService = require('ln-service')
@@ -15,7 +16,6 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
   }
 
   async updateUsersPendingPayment() {
-    const User = mongoose.model("User")
     let userWallet
 
     for await (const user of User.find({"role": "user"}, { _id: 1})) {
@@ -122,7 +122,6 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
     const auth = getAuth() // FIXME
     const lnd = lnService.authenticatedLndGrpc(auth).lnd // FIXME
 
-    const Transaction = await mongoose.model("Medici_Transaction")
     const MainBook = new book("MainBook")
 
     const type = "escrow"
