@@ -113,12 +113,21 @@ it('fails to pay when user has insufficient balance', async () => {
 })
 
 it('payInvoiceToAnotherGaloyUser', async () => {
-  const request = await userWallet2.addInvoice({ value: amountInvoice, memo: "on us txn" })
+  const request = await userWallet2.addInvoice({ value: amountInvoice })
   await userWallet1.pay({ invoice: request })
   const user1FinalBalance = await userWallet1.getBalance()
   const user2FinalBalance = await userWallet2.getBalance()
   expect(user1FinalBalance).toBe(onBoardingEarnAmt - amountInvoice) 
   expect(user2FinalBalance).toBe(1000)
+  const user1Txn = await userWallet1.getTransactions()
+  const user1OnUsTxn = user1Txn.filter(txn => txn.type == 'on_us')
+  expect(user1OnUsTxn.length).toBe(1)
+  expect(user1OnUsTxn[0].description).toBe('Payment sent')
+
+  const user2Txn = await userWallet2.getTransactions()
+  const user2OnUsTxn = user2Txn.filter(txn => txn.type == 'on_us')
+  expect(user2OnUsTxn.length).toBe(1)
+  expect(user2OnUsTxn[0].description).toBe('Payment received')
   await checkIsBalanced()
 }, 50000)
 
@@ -173,11 +182,12 @@ it('pay hodl invoice', async () => {
 
 it('payInvoice to lnd outside 2', async () => {
   const { request } = await lnService.createInvoice({ lnd: lndOutside2, tokens: amountInvoice })
+  const { id } = await lnService.decodePaymentRequest({ lnd: lndOutside2, request })
   const result = await userWallet1.pay({ invoice: request })
   expect(result).toBe("success")
   const finalBalance = await userWallet1.getBalance()
   const MainBook = new book("MainBook")
-  const fee = (await MainBook.ledger({account:userWallet1.accountPath, meta: {$exists: true}})).results[0].meta.fee
+  const fee = (await MainBook.ledger({account:userWallet1.accountPath, hash: id})).results[0].fee
   expect(finalBalance).toBe(onBoardingEarnAmt - 4 * amountInvoice - fee)
   await checkIsBalanced()
 }, 100000)

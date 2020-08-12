@@ -45,7 +45,7 @@ const main = async () => {
 				throw error
 			}
 			//FIXME: Maybe USD instead of sats?
-			const body = `You have a pending incoming txn of ${tx.tokens} sats`
+			let body = tx.is_confirmed ? `Your wallet has been credited with ${tx.tokens} sats` : `You have a pending incoming txn of ${tx.tokens} sats`
 			await sendText({ body, to: phone })
 		}
 	});
