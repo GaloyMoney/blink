@@ -185,12 +185,63 @@ jobs:
       - run: git config credential.helper 'cache --timeout=120'
       - run: git config --global user.name "circleci-bot"
       - run: git config --global user.email "bot@circleci.com"
+      - run: git config pull.rebase false
+      - run: git pull origin $CIRCLE_BRANCH
       - run: git commit -a -m "new ios build [ci skip]"
       - run: git push -q https://${GITHUB_TOKEN}@github.com/nicolasburtey/galoy-app.git $CIRCLE_BRANCH
       - store_artifacts:
           path: ios/output
       - store_test_results:
           path: ios/output/scan
+
+  build_android:
+    docker:
+      - image: circleci/android:api-29
+    environment:
+      TERM: dumb
+      _JAVA_OPTIONS: "-Xmx2048m -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
+      GRADLE_OPTS: '-Dorg.gradle.jvmargs="-Xmx2048m"'
+    working_directory: ~/GaloyApp/mobile
+    shell: /bin/bash --login -o pipefail
+    steps:
+      - checkout:
+          path: ~/GaloyApp
+      - run: sudo apt-get update
+      - run: sudo apt-get install gnupg2
+      - run: curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
+      - run: sudo apt-get install -y nodejs
+      - run: sudo apt-get install gcc g++ make
+      - run: sudo npm install -g yarn
+      - run: gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB
+      - run: curl -sL https://get.rvm.io | bash -s stable --ruby
+      - run: source /home/circleci/.rvm/scripts/rvm
+      - run: rvm install 2.4.1
+      - run: rvm use 2.4.1 --default
+      - run: gem install fastlane -NV
+      
+      - run: cd android && bundle config set deployment 'true'
+      - run: cd android && bundle check || bundle install 
+
+      - run: echo $ANDROID_SERVICE_ACCOUNT_UPLOAD | base64 -d > android/api-8350101450647692243-59029-b9bec84a7e5a.json
+      - run: echo $RELEASE_KEYSTORE | base64 -d > android/release.keystore
+      - run: echo $RELEASE_KEYSTORE | base64 -d > android/app/release.keystore
+
+      - run: node -v
+      - run: npm -v
+      - run: ruby -v
+      - run: fastlane -v
+      - run: yarn -v
+      
+      - run: yarn install
+      - run: cd android && fastlane android beta
+
+      - run: git config credential.helper 'cache --timeout=120'
+      - run: git config --global user.name "circleci-bot"
+      - run: git config --global user.email "bot@circleci.com"
+      - run: git config pull.rebase false
+      - run: git pull origin $CIRCLE_BRANCH
+      - run: git commit -a -m "new android build [ci skip]"
+      - run: git push -q https://${GITHUB_TOKEN}@github.com/nicolasburtey/galoy-app.git $CIRCLE_BRANCH
 
   build_test_image:
     working_directory: ~/GaloyApp/backend/firebase
@@ -360,8 +411,11 @@ workflows:
                 - master
   mobile:
     jobs:
-      - hold_build_ios:
+      - hold_build_mobile:
           type: approval
       - build_ios:
           requires:
-            - hold_build_ios
+            - hold_build_mobile
+      - build_android:
+          requires:
+            - hold_build_mobile
