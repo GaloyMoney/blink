@@ -182,11 +182,13 @@ it('pay hodl invoice', async () => {
 
 it('payInvoice to lnd outside 2', async () => {
   const { request } = await lnService.createInvoice({ lnd: lndOutside2, tokens: amountInvoice })
+  const { id } = await lnService.decodePaymentRequest({ lnd: lndOutside2, request })
   const result = await userWallet1.pay({ invoice: request })
   expect(result).toBe("success")
   const finalBalance = await userWallet1.getBalance()
   const MainBook = new book("MainBook")
-  const fee = (await MainBook.ledger({account:userWallet1.accountPath, fee: {$gt: 0}})).results[0].fee
+  const fee = (await MainBook.ledger({account:userWallet1.accountPath, hash: id)).results[0].fee
+  console.log("fee", fee)
   expect(finalBalance).toBe(onBoardingEarnAmt - 4 * amountInvoice - fee)
   await checkIsBalanced()
 }, 100000)
