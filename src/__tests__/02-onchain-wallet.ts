@@ -139,3 +139,14 @@ it('identifies unconfirmed incoming on chain txn', async () => {
 	const event = await once(sub, 'chain_transaction')
 	expect(event[0].id).toBe(pendingTxn[0].txId)
 }, 100000)
+
+it('Sends onchain payment', async () => {
+	const {address} = await lnService.createChainAddress({ format: 'p2wpkh', lnd: lndOutside1 })
+	const amount = 10000
+	const payResult = await userWallet1.onChainPay({address, amount, description: "onchainpayment"})
+	await bitcoindClient.generateToAddress(6, RANDOM_ADDRESS)
+	await waitUntilBlockHeight({lnd: lndMain, blockHeight: 127})
+	const MainBook = new book("MainBook")
+	const pending = (await MainBook.ledger({account:userWallet1.accountPath, description:"onchainpayment")).results[0].pending
+	expect(pending).toBe(false)
+})
