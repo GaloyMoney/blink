@@ -158,6 +158,33 @@ export const LightningMixin = (superclass) => class extends superclass {
     return request
   }
 
+  async onChainPay(params: IOnChainPayment): Promise<payInvoiceResult | Error> {
+    const MainBook = new book("MainBook")
+    const balance = await this.getBalance()
+
+    const {address, amount, description} = params
+    //TODO: Add fee system
+    if(balance < amount) {
+      throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${amount}`)
+    }
+
+    let id, is_confirmed
+    try {
+      ({id, is_confirmed} = await lnService.sendToChainAddress({address, lnd: this.lnd, tokens: amount, description}))
+    } catch(error) {
+      logger.error(error)
+      throw new Error(`Unable to send on-chain transaction: ${error}`)
+    }
+
+    const metadata = { currency: this.currency, hash: id, type: "onchain_payment", pending: true}
+    const entry = await MainBook.entry(description)
+      .debit('Assets:Reserve:Lightning', amount, metadata)
+      .credit(this.accountPath, amount, metadata)
+      .commit()
+
+    return is_confirmed ? "success" : "pending"
+  }
+
   async pay(params: IPaymentRequest): Promise<payInvoiceResult | Error> {
 
     const keySendPreimageType: string = '5482373484';
