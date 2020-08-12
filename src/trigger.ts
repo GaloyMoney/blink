@@ -47,6 +47,15 @@ const main = async () => {
 			//FIXME: Maybe USD instead of sats?
 			const body = `You have a pending incoming txn of ${tx.tokens} sats`
 			await sendText({ body, to: phone })
+		} else {
+			//for outgoing onchain payment
+			const Transaction = mongoose.model("Medici_Transaction")
+			const fee = tx.fee
+			if(!tx.is_confirmed) {
+				await Transaction.updateMany({hash:tx.id, fee})
+			} else {
+				await Transaction.updateMany({hash:tx.id, fee, pending: false})
+			}
 		}
 	});
 
