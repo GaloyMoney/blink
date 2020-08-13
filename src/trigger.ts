@@ -10,7 +10,7 @@ import express from 'express'
 const mongoose = require("mongoose");
 import { getAuth } from './utils'
 import { sendText } from './text'
-import { setupMongoConnection } from "./mongodb"
+import { setupMongoConnection, User } from "./mongodb"
 const { lnd } = lnService.authenticatedLndGrpc(getAuth())
 
 
@@ -18,8 +18,6 @@ import { logger } from "./utils"
 const pino = require('pino-http')({ logger })
 
 const main = async () => {
-	const User = mongoose.model("User")
-
 	lnService.getWalletInfo({ lnd }, (err, result) => {
 		logger.debug(err, result)
 	});

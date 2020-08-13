@@ -6,6 +6,7 @@ import moment from "moment";
 import { disposer } from "./lock";
 import { IAddInvoiceRequest, ILightningTransaction, IPaymentRequest, TransactionType } from "./types";
 import { getAuth, logger, timeout, measureTime } from "./utils";
+import { InvoiceUser, Transaction, User } from "./mongodb";
 const mongoose = require("mongoose");
 const util = require('util')
 
@@ -138,7 +139,6 @@ export const LightningMixin = (superclass) => class extends superclass {
     }
 
     try {
-      const InvoiceUser = mongoose.model("InvoiceUser")
       const result = await new InvoiceUser({
         _id: id,
         uid: this.uid,
@@ -167,8 +167,6 @@ export const LightningMixin = (superclass) => class extends superclass {
     let messages: Object[] = []
 
     const MainBook = new book("MainBook")
-    const Transaction = mongoose.model("Medici_Transaction")
-    const InvoiceUser = mongoose.model("InvoiceUser")
 
     if (params.invoice) {
       // TODO replace this with bolt11 utils library
@@ -354,8 +352,6 @@ export const LightningMixin = (superclass) => class extends superclass {
   async updatePendingPayment() {
 
     const MainBook = new book("MainBook")
-
-    const Transaction = await mongoose.model("Medici_Transaction")
     const payments = await Transaction.find({ account_path: this.accountPathMedici, type: "payment", pending: true })
 
     if (payments === []) {
@@ -395,8 +391,6 @@ export const LightningMixin = (superclass) => class extends superclass {
   }
 
   async getLastOnChainAddress(): Promise<String | Error | undefined> {
-    const User = mongoose.model("User")
-
     let user = await User.findOne({ _id: this.uid })
     if (!user) { // this should not happen. is test that relevant?
       console.error("no user is associated with this address")
@@ -422,7 +416,6 @@ export const LightningMixin = (superclass) => class extends superclass {
     // every time you want to show a QR code.
 
     let address
-    const User = mongoose.model("User")
 
     try {
       const format = 'p2wpkh';
@@ -472,7 +465,6 @@ export const LightningMixin = (superclass) => class extends superclass {
     if (result.is_confirmed) {
 
       const MainBook = new book("MainBook")
-      const InvoiceUser = mongoose.model("InvoiceUser")
 
       try {
 
@@ -518,7 +510,7 @@ export const LightningMixin = (superclass) => class extends superclass {
   // should be run regularly with a cronjob
   // TODO: move to an "admin/ops" wallet
   async updatePendingInvoices() {
-    const InvoiceUser = mongoose.model("InvoiceUser")
+    
     const invoices = await InvoiceUser.find({ uid: this.uid, pending: true })
 
     for (const invoice of invoices) {
@@ -542,7 +534,6 @@ export const LightningMixin = (superclass) => class extends superclass {
       incoming_txs = incoming_txs.filter(tx => !tx.is_confirmed)
     }
 
-    const User = mongoose.model("User")
     const { onchain_addresses } = await User.findOne({ _id: this.uid })
     const matched_txs = incoming_txs
       .filter(tx => intersection(tx.output_addresses, onchain_addresses).length > 0)

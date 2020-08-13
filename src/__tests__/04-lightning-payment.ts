@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-import { setupMongoConnection } from "../mongodb";
+import { InvoiceUser, setupMongoConnection } from "../mongodb";
 // this import needs to be before medici
 import { createHash, randomBytes } from 'crypto';
 import {book} from "medici"
@@ -60,7 +60,7 @@ it('add invoice', async () => {
   const decoded = lightningPayReq.decode(request)
   const decodedHash = decoded.tags.filter(item => item.tagName === "payment_hash")[0].data
 
-  const InvoiceUser = mongoose.model("InvoiceUser")
+  
   const { uid } = await InvoiceUser.findById(decodedHash)
   //expect(uid).toBe(user1) does not work
   expect(uid).toBe(uidFromToken1)
@@ -74,7 +74,7 @@ it('add invoice to different user', async () => {
   const decoded = lightningPayReq.decode(request)
   const decodedHash = decoded.tags.filter(item => item.tagName === "payment_hash")[0].data
 
-  const InvoiceUser = mongoose.model("InvoiceUser")
+  
   const { uid } = await InvoiceUser.findById(decodedHash)
 
   expect(uid).toBe(uidFromToken2)
