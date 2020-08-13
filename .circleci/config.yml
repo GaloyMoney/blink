@@ -186,7 +186,7 @@ jobs:
       - run: git config --global user.name "circleci-bot"
       - run: git config --global user.email "bot@circleci.com"
       - run: git config pull.rebase false
-      - run: git pull -q https://${GITHUB_TOKEN}@github.com/nicolasburtey/galoy-app.git
+      - run: git pull --all -q https://${GITHUB_TOKEN}@github.com/nicolasburtey/galoy-app.git
       - run: git commit -a -m "new ios build [ci skip]"
       - run: git push -q https://${GITHUB_TOKEN}@github.com/nicolasburtey/galoy-app.git $CIRCLE_BRANCH
       - store_artifacts:
