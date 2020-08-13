@@ -1,4 +1,4 @@
-import { setupMongoConnection } from "./mongodb"
+import { setupMongoConnection, User } from "./mongodb"
 // this import needs to be before medici
 
 import dotenv from "dotenv";
@@ -45,7 +45,6 @@ const DEFAULT_USD = {
 const resolvers = {
   Query: {
     me: async (_, __, { uid }) => {
-      const User = mongoose.model("User")
       const user = await User.findOne({ _id: uid })
 
       return {
@@ -92,7 +91,6 @@ const resolvers = {
     earnList: async (_, __, { uid }) => {
       const response: Object[] = []
 
-      const User = mongoose.model("User")
       const user = await User.findOne({ _id: uid })
       const earned = user?.earn || []
 

@@ -1,6 +1,7 @@
 import { logger, sat2btc } from "./utils"
 const mongoose = require("mongoose")
 import moment = require("moment")
+import { PriceHistory } from "./mongodb"
 
 export class Price {
     readonly pair
@@ -14,10 +15,6 @@ export class Price {
             "pair.name": this.pair,
             "pair.exchange.name": this.exchange
         }
-    }
-
-    protected async getPriceHistory() {
-        return mongoose.model("PriceHistory")
     }
 
     /**
@@ -52,7 +49,6 @@ export class Price {
     }
 
     async lastCached(): Promise<Array<Object>> {
-        const PriceHistory = await this.getPriceHistory()
         const ohlcv = await PriceHistory.findOne(this.path)
         // TODO use sort + only request the last 25 data points at the db level for optimization
         // assuming we can do this on subquery in MongoDB
@@ -75,8 +71,6 @@ export class Price {
     }
 
     async update(init = false): Promise<Boolean | Error> {
-        const PriceHistory = await this.getPriceHistory()
-
         const increment = 720 // how many candles
         const increment_ms = increment * 3600 * 1000
         const endDate = new Date().valueOf() - 3600 * 1000

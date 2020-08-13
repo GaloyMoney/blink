@@ -20,8 +20,7 @@ const invoiceUserSchema = new Schema({
 
 // TOOD create indexes
 
-mongoose.model("InvoiceUser", invoiceUserSchema)
-
+export const InvoiceUser = mongoose.model("InvoiceUser", invoiceUserSchema)
 
 const UserSchema = new Schema({
   created_at: {
@@ -53,7 +52,7 @@ const UserSchema = new Schema({
 
 // TOOD create indexes
 
-mongoose.model("User", UserSchema)
+export const User = mongoose.model("User", UserSchema)
 
 
 // TODO: this DB should be capped.
@@ -66,7 +65,7 @@ const PhoneCodeSchema = new Schema({
   code: Number,
 })
 
-mongoose.model("PhoneCode", PhoneCodeSchema)
+export const PhoneCode = mongoose.model("PhoneCode", PhoneCodeSchema)
 
 
 const transactionSchema = new Schema({
@@ -126,7 +125,7 @@ const transactionSchema = new Schema({
 })
 
 // TODO indexes, see https://github.com/koresar/medici/blob/master/src/index.js#L39
-mongoose.model("Medici_Transaction", transactionSchema);
+export const Transaction = mongoose.model("Medici_Transaction", transactionSchema);
 
 
 
@@ -158,7 +157,7 @@ const priceHistorySchema = new Schema({
     }
   }
 })
-mongoose.model("PriceHistory", priceHistorySchema);
+export const PriceHistory = mongoose.model("PriceHistory", priceHistorySchema);
 
 
 // TODO add an event listenever if we got disconnecter from MongoDb

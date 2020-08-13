@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-import { setupMongoConnection } from "../mongodb";
+import { setupMongoConnection, User } from "../mongodb";
 const redis = require('redis')
 
 // this import needs to be before medici
@@ -10,8 +10,6 @@ const mongoose = require("mongoose");
 
 //TODO: Choose between camel case or underscores for variable naming
 const lnService = require('ln-service')
-
-const User = mongoose.model("User")
 
 beforeAll(async () => {
 	await setupMongoConnection()
