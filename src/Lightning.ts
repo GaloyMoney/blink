@@ -159,11 +159,10 @@ export const LightningMixin = (superclass) => class extends superclass {
     return request
   }
 
-  async onChainPay(params: IOnChainPayment): Promise<payInvoiceResult | Error> {
+  async onChainPay({address, amount, description}: IOnChainPayment): Promise<payInvoiceResult | Error> {
     const MainBook = new book("MainBook")
     const balance = await this.getBalance()
 
-    const {address, amount, description} = params
     //TODO: Add fee system
     if(balance < amount) {
       throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${amount}`)
