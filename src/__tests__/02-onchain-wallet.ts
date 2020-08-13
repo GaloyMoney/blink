@@ -3,7 +3,7 @@
  */
 import { setupMongoConnection } from "../mongodb"
 // this import needs to be before medici
-
+import {book} from "medici"
 import { LightningAdminWallet } from "../LightningAdminImpl"
 import { sleep, waitUntilBlockHeight, btc2sat } from "../utils"
 const lnService = require('ln-service')

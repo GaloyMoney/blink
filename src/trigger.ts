@@ -48,6 +48,7 @@ const main = async () => {
 			let body = tx.is_confirmed ? `Your wallet has been credited with ${tx.tokens} sats` : `You have a pending incoming txn of ${tx.tokens} sats`
 			await sendText({ body, to: phone })
 		} else {
+			//TODO: sms for onchain payments also
 			//for outgoing onchain payment
 			const Transaction = mongoose.model("Medici_Transaction")
 			const fee = tx.fee

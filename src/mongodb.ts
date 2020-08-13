@@ -90,7 +90,7 @@ const transactionSchema = new Schema({
   fee: Number,
   type: {
     type: String,
-    enum: ["invoice", "payment", "earn", "onchain_receipt", "fee", "escrow", "on_us"]
+    enum: ["invoice", "payment", "earn", "onchain_receipt", "fee", "escrow", "on_us", "onchain_payment"]
   },
   pending: Boolean, // duplicated with InvoiceUser for invoices
   err: String,
