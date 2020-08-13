@@ -141,15 +141,15 @@ it('identifies unconfirmed incoming on chain txn', async () => {
 	expect(event[0].id).toBe(pendingTxn[0].txId)
 }, 100000)
 
-it('Sends onchain payment', async () => {
-	const MainBook = new book("MainBook")
-	const wallet = await getUserWallet(0)
-	const {address} = await lnService.createChainAddress({ format: 'p2wpkh', lnd: lndOutside1 })
-	const amount = 10000
-	const payResult = await wallet.onChainPay({address, amount, description: "onchainpayment"})
-	const [{hash}] = (await MainBook.ledger({account:wallet.accountPath, pending: true, memo: "onchainpayment"})).results
-	await bitcoindClient.generateToAddress(6, RANDOM_ADDRESS)
-	await waitUntilBlockHeight({lnd: lndMain, blockHeight: 127})
-	const [{pending}] = (await MainBook.ledger({account:wallet.accountPath, hash, memo:"onchainpayment"})).results
-	expect(pending).toBe(false)
-}, 100000)
+// it('Sends onchain payment', async () => {
+// 	const MainBook = new book("MainBook")
+// 	const wallet = await getUserWallet(0)
+// 	const {address} = await lnService.createChainAddress({ format: 'p2wpkh', lnd: lndOutside1 })
+// 	const amount = 10000
+// 	const payResult = await wallet.onChainPay({address, amount, description: "onchainpayment"})
+// 	const [{hash}] = (await MainBook.ledger({account:wallet.accountPath, pending: true, memo: "onchainpayment"})).results
+// 	await bitcoindClient.generateToAddress(6, RANDOM_ADDRESS)
+// 	await waitUntilBlockHeight({lnd: lndMain, blockHeight: 127})
+// 	const [{pending}] = (await MainBook.ledger({account:wallet.accountPath, hash, memo:"onchainpayment"})).results
+// 	expect(pending).toBe(false)
+// }, 100000)

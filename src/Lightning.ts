@@ -52,23 +52,7 @@ const formatType = (type: ITxType, pending: Boolean | undefined): TransactionTyp
     return pending ? "inflight-payment" : "payment"
   }
 
-  if (type === "earn") {
-    return "earn"
-  }
-
-  if (type === "onchain_receipt") {
-    return "onchain_receipt"
-  }
-
-  if (type === "on_us") {
-    return "on_us"
-  }
-
-  if (type === "onchain_payment") {
-    return "onchain_payment"
-  }
-
-  throw Error("incorrect type for formatType")
+  return type
 }
 
 export const LightningMixin = (superclass) => class extends superclass {
