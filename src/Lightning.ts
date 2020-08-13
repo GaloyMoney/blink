@@ -300,6 +300,8 @@ export const LightningMixin = (superclass) => class extends superclass {
         // to clean pending payments, another cron-job loop will run in the background.
 
       try {
+        // TODO: we should have a way to set this with environment variable
+        // as it doens't make sense to wait for 45 seconds for regtest
         const TIMEOUT_PAYMENT = 45000
 
         // Fixme: seems to be leaking if it timeout.
