@@ -146,12 +146,15 @@ it('Sends onchain payment', async () => {
 	const wallet = await getUserWallet(0)
 	const {address} = await lnService.createChainAddress({ format: 'p2wpkh', lnd: lndOutside1 })
 	const amount = 10000
+	const initialBalance = await wallet.getBalance()
 	const payResult = await wallet.onChainPay({address, amount, description: "onchainpayment"})
+	const finalBalance = await wallet.getBalance()
 	const [{hash}] = (await MainBook.ledger({account:wallet.accountPath, pending: true, memo: "onchainpayment"})).results
 	await bitcoindClient.generateToAddress(6, RANDOM_ADDRESS)
 	await waitUntilBlockHeight({lnd: lndMain, blockHeight: 127})
-	const [{pending}] = (await MainBook.ledger({account:wallet.accountPath, hash, memo:"onchainpayment"})).results
+	const [{pending, fee}] = (await MainBook.ledger({account:wallet.accountPath, hash, memo:"onchainpayment"})).results
 	// FIXME: need to have trigger in regtest to listen for confirmation of txn and update mongodb
 	// expect(pending).toBe(false)
+	expect(finalBalance).toBe(initialBalance - amount - fee)
 	await checkIsBalanced()
 }, 100000)
