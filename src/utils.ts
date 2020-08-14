@@ -4,6 +4,7 @@ import * as jwt from 'jsonwebtoken'
 import * as lnService from "ln-service"
 
 export const logger = require('pino')({ level: "debug" })
+const util = require('util')
 
 export const btc2sat = (btc: number) => {
     return btc * Math.pow(10, 8)
@@ -105,3 +106,13 @@ export async function measureTime(operation: Promise<any>): Promise<[any, number
     const timeElapsedms = timeElapsed[0] * 1000 + timeElapsed[1] / 1000000
     return [result, timeElapsedms]
 }
+
+export async function getOnChainTransactions({lnd, incoming}: {lnd: any, incoming: boolean}) {
+    try {
+      let onchainTransactions = await lnService.getChainTransactions({ lnd })
+      return onchainTransactions.transactions.filter(tx => incoming ? !tx.is_outgoing : tx.is_outgoing)
+    } catch (err) {
+      const err_string = `${util.inspect({ err }, { showHidden: false, depth: null })}`
+      throw new Error(`issue fetching transaction: ${err_string})`)
+    }
+  }

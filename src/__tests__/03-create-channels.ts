@@ -20,7 +20,7 @@ const User = mongoose.model("User")
 
 const local_tokens = 10000000
 
-const blockHeightInit = 121
+const blockHeightInit = 127
 
 let adminWallet
 
