@@ -549,8 +549,6 @@ export const LightningMixin = (superclass) => class extends superclass {
 
   async updateOnchainPayment() {
     const MainBook = new book("MainBook")
-    const Transaction = await mongoose.model("Medici_Transaction")
-
     const matched_txs = await this.getIncomingOnchainPayments(true)
 
     //        { block_id: '0000000000000b1fa86d936adb8dea741a9ecd5f6a58fc075a1894795007bdbc',

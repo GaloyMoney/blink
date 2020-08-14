@@ -43,10 +43,13 @@ const UserSchema = new Schema({
   },
   level: Number,
   phone: String, // TODO we may want to store country as a separate string
+  deviceToken: {
+    type: [String],
+    default: []
+  },
   // firstName,
   // lastName,
   // activated,
-  // deviceToken
   // etc
 })
 
