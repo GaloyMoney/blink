@@ -5,7 +5,7 @@ import { book } from "medici";
 import moment from "moment";
 import { disposer } from "./lock";
 import { IAddInvoiceRequest, ILightningTransaction, IPaymentRequest, TransactionType, IOnChainPayment } from "./types";
-import { getAuth, logger, timeout, measureTime } from "./utils";
+import { getAuth, logger, timeout, measureTime, getOnChainTransactions } from "./utils";
 const mongoose = require("mongoose");
 const util = require('util')
 
@@ -146,27 +146,39 @@ export const LightningMixin = (superclass) => class extends superclass {
   async onChainPay({address, amount, description}: IOnChainPayment): Promise<payInvoiceResult | Error> {
     const MainBook = new book("MainBook")
     const balance = await this.getBalance()
+    let estimatedFee, id
+    
+    const sendTo = [{address, tokens: amount}]
 
-    //TODO: Add fee system
-    if(balance < amount) {
-      throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${amount}`)
+    try {
+      estimatedFee = (await lnService.getChainFeeEstimate({lnd:this.lnd, send_to: sendTo})).fee
+    } catch(error) {
+      logger.error(error)
+      throw new Error(`Unable to estimate fee for on-chain transaction: ${error}`)
+    }
+    
+    if(balance < amount + estimatedFee) {
+      throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${amount + estimatedFee}`)
     }
 
-    let id, is_confirmed
     try {
-      ({id, is_confirmed} = await lnService.sendToChainAddress({address, lnd: this.lnd, tokens: amount, description}))
+      ({id} = await lnService.sendToChainAddress({address, lnd: this.lnd, tokens: amount, description}))
     } catch(error) {
       logger.error(error)
       throw new Error(`Unable to send on-chain transaction: ${error}`)
     }
 
-    const metadata = { currency: this.currency, hash: id, type: "onchain_payment", pending: true}
+    let outgoingOnchainTxns = await getOnChainTransactions({lnd: this.lnd, incoming: false})
+
+    let [{fee}] = outgoingOnchainTxns.filter(tx => tx.id === id)
+
+    const metadata = { currency: this.currency, hash: id, type: "onchain_payment", pending: true, fee}
     const entry = await MainBook.entry(description)
-      .debit('Assets:Reserve:Lightning', amount, metadata)
-      .credit(this.accountPath, amount, metadata)
+      .debit('Assets:Reserve:Lightning', amount + fee, metadata)
+      .credit(this.accountPath, amount + fee, metadata)
       .commit()
 
-    return is_confirmed ? "success" : "pending"
+    return "pending"
   }
 
   async pay(params: IPaymentRequest): Promise<payInvoiceResult | Error> {
@@ -542,15 +554,8 @@ export const LightningMixin = (superclass) => class extends superclass {
   }
 
   async getIncomingOnchainPayments(confirmed: boolean) {
-    let onchainTransactions
-    try {
-      onchainTransactions = await lnService.getChainTransactions({ lnd: this.lnd })
-    } catch (err) {
-      const err_string = `${util.inspect({ err }, { showHidden: false, depth: null })}`
-      throw new Error(`issue fetching transaction: ${err_string})`)
-    }
 
-    let incoming_txs = onchainTransactions.transactions.filter(tx => !tx.is_outgoing)
+    let incoming_txs = await getOnChainTransactions({lnd: this.lnd, incoming: true})
     if (confirmed) {
       incoming_txs = incoming_txs.filter(tx => tx.is_confirmed)
     } else {
