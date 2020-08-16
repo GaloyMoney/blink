@@ -156,7 +156,7 @@ it('Sends onchain payment', async () => {
 
 	await bitcoindClient.generateToAddress(6, RANDOM_ADDRESS)
 	await waitUntilBlockHeight({lnd: lndMain, blockHeight: 127})
-	const [{pending, fee}] = (await MainBook.ledger({account:wallet.accountPath, pendingTxn.hash, memo:"onchainpayment"})).results
+	const [{pending, fee}] = (await MainBook.ledger({account:wallet.accountPath, hash: pendingTxn.hash, memo:"onchainpayment"})).results
 	// FIXME: need to have trigger in regtest to listen for confirmation of txn and update mongodb
 	// expect(pending).toBe(false)
 	const finalBalance = await wallet.getBalance()
