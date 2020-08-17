@@ -5,7 +5,7 @@ import { setupMongoConnection, User } from "../mongodb"
 // this import needs to be before medici
 import {book} from "medici"
 import { LightningAdminWallet } from "../LightningAdminImpl"
-import { sleep, waitUntilBlockHeight, btc2sat } from "../utils"
+import { sleep, waitUntilBlockHeight, btc2sat, onchainTransactionEventHandler } from "../utils"
 const lnService = require('ln-service')
 
 const mongoose = require("mongoose");
@@ -152,12 +152,14 @@ it('Sends onchain payment', async () => {
 	const interimBalance = await wallet.getBalance()
 	expect(interimBalance).toBe(initialBalance - amount - pendingTxn.fee)
 	await checkIsBalanced()
+	const sub = lnService.subscribeToTransactions({lnd:lndMain})
 
 	await bitcoindClient.generateToAddress(6, RANDOM_ADDRESS)
 	await waitUntilBlockHeight({lnd: lndMain, blockHeight: 127})
 	const [{pending, fee}] = (await MainBook.ledger({account:wallet.accountPath, hash: pendingTxn.hash, memo:"onchainpayment"})).results
+	sub.once('chain_transaction', async tx => await onchainTransactionEventHandler(tx))
 	// FIXME: need to have trigger in regtest to listen for confirmation of txn and update mongodb
-	// expect(pending).toBe(false)
+	expect(pending).toBe(false)
 	const finalBalance = await wallet.getBalance()
 	expect(finalBalance).toBe(initialBalance - amount - fee)
 	await checkIsBalanced()

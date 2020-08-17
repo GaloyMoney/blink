@@ -8,7 +8,7 @@ import {
 import fetch from "node-fetch";
 import express from 'express'
 const mongoose = require("mongoose");
-import { getAuth } from './utils'
+import { getAuth, onchainTransactionEventHandler } from './utils'
 import { sendText } from './text'
 import { setupMongoConnection, User } from "./mongodb"
 const { lnd } = lnService.authenticatedLndGrpc(getAuth())
@@ -25,38 +25,7 @@ const main = async () => {
 	const result = await lnService.getChainTransactions({ lnd })
 
 	const subTransactions = subscribeToTransactions({ lnd });
-	subTransactions.on('chain_transaction', async tx => {
-		logger.debug({ tx })
-		if (!tx.is_outgoing) {
-			let phone
-			try {
-				({ phone } = await User.findOne({ onchain_addresses: { $in: tx.output_addresses } }, { phone: 1 }))
-				if (!phone) {
-					//FIXME: Log the onchain address, need to first find which of the tx.output_addresses
-					// belongs to us
-					const error = `No phone number associated with the onchain address`
-					logger.error(error)
-					throw new Error(error)
-				}
-			} catch (error) {
-				logger.error(error)
-				throw error
-			}
-			//FIXME: Maybe USD instead of sats?
-			let body = tx.is_confirmed ? `Your wallet has been credited with ${tx.tokens} sats` : `You have a pending incoming txn of ${tx.tokens} sats`
-			await sendText({ body, to: phone })
-		} else {
-			//TODO: sms for onchain payments also
-			//for outgoing onchain payment
-			const Transaction = mongoose.model("Medici_Transaction")
-			const fee = tx.fee
-			if(!tx.is_confirmed) {
-				await Transaction.updateMany({hash:tx.id, fee})
-			} else {
-				await Transaction.updateMany({hash:tx.id, fee, pending: false})
-			}
-		}
-	});
+	subTransactions.on('chain_transaction', async tx => await onchainTransactionEventHandler(tx));
 
 	const subInvoices = subscribeToInvoices({ lnd });
 	subInvoices.on('invoice_updated', invoice => {
