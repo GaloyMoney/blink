@@ -4,8 +4,8 @@ const BitcoindClient = require('bitcoin-core')
 import * as jwt from 'jsonwebtoken';
 import { TEST_NUMBER, login } from "../text";
 import { LightningAdminWallet } from "../LightningAdminImpl"
+import { User } from "../mongodb";
 const mongoose = require("mongoose")
-const User = mongoose.model("User")
 
 const lnService = require('ln-service')
 const cert = process.env.TLS

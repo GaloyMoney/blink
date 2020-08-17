@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-import { setupMongoConnection } from "../mongodb"
+import { setupMongoConnection, User } from "../mongodb"
 // this import needs to be before medici
 
 import { LightningAdminWallet } from "../LightningAdminImpl"
@@ -14,9 +14,6 @@ const lnService = require('ln-service')
 import {lndMain, lndOutside1, lndOutside2, bitcoindClient, RANDOM_ADDRESS, checkIsBalanced} from "../tests/helper"
 
 export const logger = require('pino')({ level: "debug" })
-
-
-const User = mongoose.model("User")
 
 const local_tokens = 10000000
 

@@ -1,4 +1,4 @@
-import { setupMongoConnection } from "./mongodb"
+import { setupMongoConnection, User } from "./mongodb"
 // this import needs to be before medici
 
 import dotenv from "dotenv";
@@ -45,7 +45,6 @@ const DEFAULT_USD = {
 const resolvers = {
   Query: {
     me: async (_, __, { uid }) => {
-      const User = mongoose.model("User")
       const user = await User.findOne({ _id: uid })
 
       return {
@@ -92,7 +91,6 @@ const resolvers = {
     earnList: async (_, __, { uid }) => {
       const response: Object[] = []
 
-      const User = mongoose.model("User")
       const user = await User.findOne({ _id: uid })
       const earned = user?.earn || []
 
@@ -185,7 +183,15 @@ const resolvers = {
       const lightningWallet = new LightningUserWallet({uid})
       const getNewAddress = await lightningWallet.getOnChainAddress()
       return {getNewAddress}
-    }
+    },
+    addDeviceToken: async (_, { deviceToken }, { uid }) => {
+      // TODO: refactor to a higher level User class
+      const user = await User.findOne({ _id: uid })
+      user.deviceToken.push(deviceToken)
+      await user.save()
+      return {success: true}
+    },
+
   }
 }
 
@@ -241,6 +247,7 @@ const permissions = shield({
     earnCompleted: isAuthenticated,
     updateUser: isAuthenticated,
     deleteUser: isAuthenticated,
+    addDeviceToken: isAuthenticated,
   },
 }, { allowExternalErrors: true }) // TODO remove to not expose internal error
 

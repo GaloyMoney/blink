@@ -1,6 +1,7 @@
 import { LightningMixin } from "./Lightning";
 import { LightningAdminWallet } from "./LightningAdminImpl";
 import { disposer } from "./lock";
+import { User } from "./mongodb";
 import { OnboardingEarn } from "./types";
 import { UserWallet } from "./wallet";
 const lnService = require('ln-service');
@@ -24,7 +25,6 @@ export class LightningUserWallet extends LightningMixin(UserWallet) {
         // we could use something like this: https://github.com/chilts/mongodb-lock
         
         const lightningAdminWallet = new LightningAdminWallet({uid: "admin"})
-        const User = mongoose.model("User")
 
         const result: object[] = []
 
@@ -52,7 +52,6 @@ export class LightningUserWallet extends LightningMixin(UserWallet) {
 
     async setLevel({level}) {
         // FIXME this should be in User and not tight to Lightning // use Mixins instead
-        const User = mongoose.model("User")
         return await User.findOneAndUpdate({_id: this.uid}, {level}, {new: true, upsert: true} )
     }
 }

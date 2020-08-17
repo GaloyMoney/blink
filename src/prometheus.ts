@@ -1,4 +1,4 @@
-import { setupMongoConnection } from "./mongodb"
+import { setupMongoConnection, User } from "./mongodb"
 // this import before medici
 
 
@@ -22,7 +22,6 @@ const lndBalanceSheetDifference_g = new client.Gauge({ name: 'lndBalanceSync', h
 
 const main = async () => {
 
-  const User = mongoose.model("User")
   const admin = await User.findOne({role: "admin"})
 	const adminWallet = new LightningAdminWallet({uid: admin._id})
 

@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-import { setupMongoConnection } from "../mongodb";
+import { InvoiceUser, setupMongoConnection } from "../mongodb";
 // this import needs to be before medici
 import { createHash, randomBytes } from 'crypto';
 import {book} from "medici"
@@ -12,7 +12,6 @@ import { OnboardingEarn } from "../types";
 const lnService = require('ln-service')
 const lightningPayReq = require('bolt11')
 const mongoose = require("mongoose")
-const Users = mongoose.model("User")
 
 let userWallet1, userWallet2
 let uidFromToken1, uidFromToken2
@@ -39,15 +38,6 @@ afterAll(async () => {
   await quit()
 });
 
-//Does not seem to be best approach
-// const initTestUserWallet = async (i) => {
-//   await login(TEST_NUMBER[i])
-//   const Users = mongoose.model("User")
-//   sleep(2000)
-//   user1 = (await Users.findOne({}))._id
-//   lightningWallet = new LightningUserWallet({ uid: user1 })
-// }
-
 it('get balance', async () => {
   const balance = await userWallet1.getBalance()
   expect(balance).toBe(-0)
@@ -60,7 +50,7 @@ it('add invoice', async () => {
   const decoded = lightningPayReq.decode(request)
   const decodedHash = decoded.tags.filter(item => item.tagName === "payment_hash")[0].data
 
-  const InvoiceUser = mongoose.model("InvoiceUser")
+  
   const { uid } = await InvoiceUser.findById(decodedHash)
   //expect(uid).toBe(user1) does not work
   expect(uid).toBe(uidFromToken1)
@@ -74,7 +64,7 @@ it('add invoice to different user', async () => {
   const decoded = lightningPayReq.decode(request)
   const decodedHash = decoded.tags.filter(item => item.tagName === "payment_hash")[0].data
 
-  const InvoiceUser = mongoose.model("InvoiceUser")
+  
   const { uid } = await InvoiceUser.findById(decodedHash)
 
   expect(uid).toBe(uidFromToken2)
@@ -178,7 +168,7 @@ it('pay hodl invoice', async () => {
   await lnService.settleHodlInvoice({lnd: lndOutside1, secret: secret.toString('hex')});
   expect(finalBalance).toBe(onBoardingEarnAmt - 3 * amountInvoice)
   await checkIsBalanced()
-}, 25000)
+}, 50000)
 
 it('payInvoice to lnd outside 2', async () => {
   const { request } = await lnService.createInvoice({ lnd: lndOutside2, tokens: amountInvoice })

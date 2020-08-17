@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-import { setupMongoConnection } from "../mongodb"
+import { setupMongoConnection, User } from "../mongodb"
 // this import needs to be before medici
 import {book} from "medici"
 import { LightningAdminWallet } from "../LightningAdminImpl"
@@ -19,7 +19,6 @@ let lndOutside1_wallet_addr
 
 let admin_uid
 
-const User = mongoose.model("User")
 const amount_BTC = 1
 
 
