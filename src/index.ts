@@ -187,7 +187,7 @@ const resolvers = {
     addDeviceToken: async (_, { deviceToken }, { uid }) => {
       // TODO: refactor to a higher level User class
       const user = await User.findOne({ _id: uid })
-      user.deviceToken.push(deviceToken)
+      user.deviceToken.addToSet(deviceToken)
       await user.save()
       return {success: true}
     },
