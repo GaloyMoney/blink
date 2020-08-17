@@ -183,7 +183,15 @@ const resolvers = {
       const lightningWallet = new LightningUserWallet({uid})
       const getNewAddress = await lightningWallet.getOnChainAddress()
       return {getNewAddress}
-    }
+    },
+    addDeviceToken: async (_, { deviceToken }, { uid }) => {
+      // TODO: refactor to a higher level User class
+      const user = await User.findOne({ _id: uid })
+      user.deviceToken.push(deviceToken)
+      await user.save()
+      return {success: true}
+    },
+
   }
 }
 
@@ -239,6 +247,7 @@ const permissions = shield({
     earnCompleted: isAuthenticated,
     updateUser: isAuthenticated,
     deleteUser: isAuthenticated,
+    addDeviceToken: isAuthenticated,
   },
 }, { allowExternalErrors: true }) // TODO remove to not expose internal error
 

@@ -300,7 +300,9 @@ export const LightningMixin = (superclass) => class extends superclass {
         // to clean pending payments, another cron-job loop will run in the background.
 
       try {
-        const TIMEOUT_PAYMENT = 5000
+        // TODO: we should have a way to set this with environment variable
+        // as it doens't make sense to wait for 45 seconds for regtest
+        const TIMEOUT_PAYMENT = 45000
 
         // Fixme: seems to be leaking if it timeout.
         const promise = lnService.payViaRoutes({ lnd: this.lnd, routes: [route], id })
@@ -547,8 +549,6 @@ export const LightningMixin = (superclass) => class extends superclass {
 
   async updateOnchainPayment() {
     const MainBook = new book("MainBook")
-    const Transaction = await mongoose.model("Medici_Transaction")
-
     const matched_txs = await this.getIncomingOnchainPayments(true)
 
     //        { block_id: '0000000000000b1fa86d936adb8dea741a9ecd5f6a58fc075a1894795007bdbc',
