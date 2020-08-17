@@ -15,6 +15,14 @@ const path = require("path");
 const mongoose = require("mongoose");
 dotenv.config()
 
+import * as admin from 'firebase-admin';
+const serviceAccount = require("./galoyapp-firebase-adminsdk-7xyhj-91b00c924f.json");
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+
+
 import { logger } from "./utils"
 const pino = require('pino-http')({
   logger,
@@ -192,6 +200,22 @@ const resolvers = {
       return {success: true}
     },
 
+    // FIXME test
+    sendMessage: async (_, __, { uid }) => {
+      var defaultMessaging = admin.messaging();
+
+      const user = await User.findOne({ _id: uid })
+
+      const message = {
+        data: {score: '850', time: '2:45'},
+        tokens: user.deviceToken,
+      }
+      
+      const response = await admin.messaging().sendMulticast(message)  
+      console.log(response.successCount + ' messages were sent successfully');
+
+      return {success: true}
+    },
   }
 }
 
