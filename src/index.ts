@@ -16,7 +16,7 @@ const mongoose = require("mongoose");
 dotenv.config()
 
 import * as admin from 'firebase-admin';
-const serviceAccount = require("./galoyapp-firebase-adminsdk-7xyhj-91b00c924f.json");
+const serviceAccount = require("./galoyapp-firebase-serviceaccont.json");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -202,17 +202,44 @@ const resolvers = {
 
     // FIXME test
     sendMessage: async (_, __, { uid }) => {
-      var defaultMessaging = admin.messaging();
-
       const user = await User.findOne({ _id: uid })
-
-      const message = {
-        data: {score: '850', time: '2:45'},
-        tokens: user.deviceToken,
-      }
       
-      const response = await admin.messaging().sendMulticast(message)  
-      console.log(response.successCount + ' messages were sent successfully');
+      for (const token of user.deviceToken) {
+        const message = {
+          // data: {score: '850', time: '2:45'},
+          notification:{
+            title: "Portugal vs. Denmark",
+            body: "great match!"
+          },
+          token
+          // tokens: user.deviceToken,
+        }
+
+        const response = await admin.messaging().send(message)  
+        // const response = await admin.messaging().sendMulticast(message)  
+        // console.log(response.successCount + ' messages were sent successfully');
+        console.log({response})
+
+        // admin.messaging().sendToDevice(
+        //   [], // device fcm tokens...
+        //   {
+        //     data: {
+        //       owner: JSON.stringify(owner),
+        //       user: JSON.stringify(user),
+        //       picture: JSON.stringify(picture),
+        //     },
+        //   },
+        //   {
+        //     // Required for background/quit data-only messages on iOS
+        //     contentAvailable: true,
+        //     // Required for background/quit data-only messages on Android
+        //     priority: 'high',
+        //   },
+        // );
+
+      }
+
+
 
       return {success: true}
     },
