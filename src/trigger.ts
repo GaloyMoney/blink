@@ -1,20 +1,11 @@
 const lnService = require('ln-service');
-import {
-	subscribeToTransactions,
-	subscribeToInvoices,
-	subscribeToChannels,
-} from 'ln-service'
+import express from 'express';
+import { subscribeToChannels, subscribeToInvoices, subscribeToTransactions } from 'ln-service';
+import { setupMongoConnection, User } from "./mongodb";
+import { sendNotification } from "./notification";
+import { getAuth, logger } from './utils';
 
-import fetch from "node-fetch";
-import express from 'express'
-const mongoose = require("mongoose");
-import { getAuth } from './utils'
-import { sendText } from './text'
-import { setupMongoConnection, User } from "./mongodb"
 const { lnd } = lnService.authenticatedLndGrpc(getAuth())
-
-
-import { logger } from "./utils"
 const pino = require('pino-http')({ logger })
 
 const main = async () => {
@@ -28,13 +19,14 @@ const main = async () => {
 	subTransactions.on('chain_transaction', async tx => {
 		logger.debug({ tx })
 		if (!tx.is_outgoing) {
-			let phone
+			
+			let _id
 			try {
-				({ phone } = await User.findOne({ onchain_addresses: { $in: tx.output_addresses } }, { phone: 1 }))
-				if (!phone) {
+				({ _id } = await User.findOne({ onchain_addresses: { $in: tx.output_addresses } }, { _id: 1 }))
+				if (!_id) {
 					//FIXME: Log the onchain address, need to first find which of the tx.output_addresses
 					// belongs to us
-					const error = `No phone number associated with the onchain address`
+					const error = `No user associated with the onchain address`
 					logger.error(error)
 					throw new Error(error)
 				}
@@ -43,8 +35,11 @@ const main = async () => {
 				throw error
 			}
 			//FIXME: Maybe USD instead of sats?
-			let body = tx.is_confirmed ? `Your wallet has been credited with ${tx.tokens} sats` : `You have a pending incoming txn of ${tx.tokens} sats`
-			await sendText({ body, to: phone })
+			let body = tx.is_confirmed ? 
+				`Your wallet has been credited with ${tx.tokens} sats` :
+				`You have a pending incoming transaction of ${tx.tokens} sats`
+			
+			await sendNotification({ title: "New transaction", body, uid: _id })
 		}
 	});
 

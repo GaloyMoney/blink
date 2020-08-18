@@ -99,5 +99,5 @@ type Mutation {
   updateUser(user: InputUser): User
   deleteUser: Boolean # TODO
   addDeviceToken(deviceToken: String): Success # to refactor with User?
-  sendMessage: Success # FIXME test
+  testMessage: Success # FIXME remove test
 }
