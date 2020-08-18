@@ -181,7 +181,7 @@ jobs:
       - run: 
          name: fastlane
          command: cd ios && bundle exec fastlane beta
-         no_output_timeout: 30m
+         no_output_timeout: 15m
       - run: git config credential.helper 'cache --timeout=120'
       - run: git config --global user.name "circleci-bot"
       - run: git config --global user.email "bot@circleci.com"
@@ -199,7 +199,7 @@ jobs:
       - image: circleci/android:api-29
     environment:
       TERM: dumb
-      _JAVA_OPTIONS: "-Xmx2048m -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
+      _JAVA_OPTIONS: "-Xmx2048m -XX:+UnlockExperimentalVMOptions"
       GRADLE_OPTS: '-Dorg.gradle.jvmargs="-Xmx2048m"'
     working_directory: ~/GaloyApp/mobile
     shell: /bin/bash --login -o pipefail
