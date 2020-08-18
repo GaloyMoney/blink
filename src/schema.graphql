@@ -31,7 +31,7 @@ type Wallet {
 }
 
 type Invoice {
-  addInvoice(value: Int!, memo: String!): String
+  addInvoice(value: Int, memo: String): String
   updatePendingInvoice(hash: String!): Boolean
   payInvoice(invoice: String!, amount: Int): String
 }
