@@ -175,22 +175,22 @@ export const LightningMixin = (superclass) => class extends superclass {
       if (!!params.amount && tokens !== 0) {
         throw Error('Invoice contains non-zero amount, but amount was also passed separately')
       }
-      
-      if(!params.amount && tokens === 0) {
-        throw Error('Invoice is a zero-amount invoice, but no amount was passed separately')
-      }
     } else {
-      if (!params.amount || !params.destination) {
-        throw Error('Pay requires either invoice or destination and amount to be specified')
-      } else {
-        pushPayment = true
-        destination = params.destination
-
-        const preimage = randomBytes(preimageByteLength);
-        id = createHash('sha256').update(preimage).digest().toString('hex');
-        const secret = preimage.toString('hex');
-        messages = [{ type: keySendPreimageType, value: secret }]
+      if (!params.destination) {
+        throw Error('Pay requires either invoice or destination to be specified')
       }
+
+      pushPayment = true
+      destination = params.destination
+
+      const preimage = randomBytes(preimageByteLength);
+      id = createHash('sha256').update(preimage).digest().toString('hex');
+      const secret = preimage.toString('hex');
+      messages = [{ type: keySendPreimageType, value: secret }]
+    }
+    
+    if(!params.amount && tokens === 0) {
+      throw Error('Invoice is a zero-amount invoice, or pushPayment is being used, but no amount was passed separately')
     }
 
     tokens = !!tokens ? tokens : params.amount
@@ -457,11 +457,10 @@ export const LightningMixin = (superclass) => class extends superclass {
       // FIXME we should only be able to look at User invoice, 
       // but might not be a strong problem anyway
       // at least return same error if invoice not from user
-      // or invoice doesn't exist. to preserve privacy reason and DDOS attack.
+      // or invoice doesn't exist. to preserve privacy and prevent DDOS attack.
       result = await lnService.getInvoice({ lnd: this.lnd, id: hash })
     } catch (err) {
-      throw new Error(`issue fetching invoice: ${util.inspect({ err }, { showHidden: false, depth: null })
-        })`)
+      throw new Error(`issue fetching invoice: ${util.inspect({ err }, { showHidden: false, depth: null })})`)
     }
 
     if (result.is_confirmed) {
