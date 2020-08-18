@@ -1,10 +1,9 @@
 import * as admin from 'firebase-admin';
 import { User } from "./mongodb";
 import { logger } from "./utils";
-const serviceAccount = require("./galoyapp-firebase-serviceaccont.json");
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
+  credential: admin.credential.applicationDefault(),
 });
 
 export const sendNotification = async ({uid, title, body}) => {
