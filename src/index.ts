@@ -14,7 +14,6 @@ import { LightningAdminWallet } from "./LightningAdminImpl";
 import { sendNotification } from "./notification"
 
 const path = require("path");
-const mongoose = require("mongoose");
 dotenv.config()
 
 
@@ -156,6 +155,7 @@ const resolvers = {
           }
         },
         payInvoice: async ({ invoice, amount }) => {
+          console.log({ invoice, amount })
           try {
             const success = await lightningWallet.pay({ invoice, amount })
             logger.debug({ success }, "succesful payment for user %o", { uid })

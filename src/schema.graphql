@@ -31,10 +31,9 @@ type Wallet {
 }
 
 type Invoice {
-  addInvoice(value: Int, memo: String): String
-  updatePendingInvoice(hash: String): Boolean
-  #TODO: make invoice mandatory field
-  payInvoice(invoice: String, amount: Int): String
+  addInvoice(value: Int!, memo: String!): String
+  updatePendingInvoice(hash: String!): Boolean
+  payInvoice(invoice: String!, amount: Int): String
 }
 
 type PendingOnchainPayment {
