@@ -8,13 +8,13 @@ helm install --namespace=$NAMESPACE redis --set=cluster.enabled=false,usePasswor
 
 sleep 2
 
-kubectl wait --namespace=$NAMESPACE --for=condition=ready pod -l app=bitcoind-container --timeout=300s
+kubectl wait --namespace=$NAMESPACE --for=condition=ready pod -l app=bitcoind-container --timeout=1200s
 
 helm install --namespace=$NAMESPACE lnd -f ../../lnd-chart/values.yaml -f ../../lnd-chart/regtest-values.yaml --set lndService.serviceType=$SERVICETYPE ../../lnd-chart/
 
-kubectl wait --namespace=$NAMESPACE --for=condition=ready pod -l app=redis --timeout=300s
-kubectl wait --namespace=$NAMESPACE --for=condition=ready pod -l app.kubernetes.io/component=mongodb --timeout=300s
+kubectl wait --namespace=$NAMESPACE --for=condition=ready pod -l app=redis --timeout=1200s
+kubectl wait --namespace=$NAMESPACE --for=condition=ready pod -l app.kubernetes.io/component=mongodb --timeout=1200s
 
 sleep 2
 
-kubectl wait --namespace=$NAMESPACE --for=condition=ready pod -l app=lnd-container --timeout=300s
+kubectl wait --namespace=$NAMESPACE --for=condition=ready pod -l app=lnd-container --timeout=1200s
