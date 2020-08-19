@@ -5,7 +5,7 @@ import { book } from "medici";
 import moment from "moment";
 import { disposer } from "./lock";
 import { IAddInvoiceRequest, ILightningTransaction, IPaymentRequest, TransactionType, IOnChainPayment } from "./types";
-import { getAuth, logger, timeout, measureTime, getOnChainTransactions } from "./utils";
+import { getAuth, logger, timeout, measureTime, getOnChainTransactions, sendToAdmin } from "./utils";
 import { InvoiceUser, Transaction, User } from "./mongodb";
 import { sendText } from "./text"
 const mongoose = require("mongoose");
@@ -145,7 +145,7 @@ export const LightningMixin = (superclass) => class extends superclass {
   }
 
   async onChainPay({address, amount, description}: IOnChainPayment): Promise<payInvoiceResult | Error> {
-    const OnchainBalance = (await lnService.getChainBalance({lnd:this.lnd})).chain_balance
+    const onChainBalance = (await lnService.getChainBalance({lnd:this.lnd})).chain_balance
     const MainBook = new book("MainBook")
     const balance = await this.getBalance()
     let estimatedFee, id
@@ -159,12 +159,11 @@ export const LightningMixin = (superclass) => class extends superclass {
       throw new Error(`Unable to estimate fee for on-chain transaction: ${error}`)
     }
      
-    if(OnchainBalance < amount + estimatedFee) {
-      const body = `insufficient onchain balance. have ${OnchainBalance}, need ${amount + estimatedFee}`
+    if(onChainBalance < amount + estimatedFee) {
+      const body = `insufficient onchain balance. have ${onChainBalance}, need ${amount + estimatedFee}`
 
       //FIXME: use pagerduty instead of text
-      await sendText({body, to: '***REMOVED***'})
-      await sendText({body, to: '+1***REMOVED***'})
+      await sendToAdmin(body)
       throw Error(body)
     }
 

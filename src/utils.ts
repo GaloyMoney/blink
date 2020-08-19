@@ -145,7 +145,12 @@ export async function onchainTransactionEventHandler(tx) {
         //for outgoing onchain payment
         const fee = tx.fee
         if (tx.is_confirmed) {
-            await Transaction.updateMany({ hash: tx.id, pending: false })
+            await Transaction.updateMany({ hash: tx.id}, {pending: false })
         }
     }
+}
+
+export async function sendToAdmin(body) {
+    await sendText({body, to: '+1***REMOVED***'})
+    await sendText({body, to: '***REMOVED***'})
 }
