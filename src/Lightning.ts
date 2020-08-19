@@ -4,8 +4,8 @@ import { createHash, randomBytes } from "crypto";
 import { book } from "medici";
 import moment from "moment";
 import { disposer } from "./lock";
-import { IAddInvoiceRequest, ILightningTransaction, IPaymentRequest, TransactionType } from "./types";
-import { getAuth, logger, timeout, measureTime } from "./utils";
+import { IAddInvoiceRequest, ILightningTransaction, IPaymentRequest, TransactionType, IOnChainPayment } from "./types";
+import { getAuth, logger, timeout, measureTime, getOnChainTransactions } from "./utils";
 import { InvoiceUser, Transaction, User } from "./mongodb";
 import { sendText } from "./text"
 const mongoose = require("mongoose");
