@@ -3,9 +3,11 @@
   "scripts": {
     "lint": "tslint --project tsconfig.json",
     "build": "tsc",
-    "start": "source exportLocal.sh && ts-node src/index.ts",
+    "start": "source exportLocal.sh && ts-node src/index.ts | pino-pretty -c -l",
+    "trigger": "source exportLocal.sh && ts-node src/trigger.ts | pino-pretty -c -l",
     "test": "export JEST_JUNIT_OUTPUT_DIR=\"./artifacts\" && jest --ci --reporters=default --reporters=jest-junit --forceExit",
-    "watch": "source exportLocal.sh && nodemon -V -e ts,graphql -w ./src -x yarn run start | pino-pretty -c -l",
+    "watch": "source exportLocal.sh && nodemon -V -e ts,graphql -w ./src -x yarn run start",
+    "watch-trigger": "source exportLocal.sh && nodemon -V -e ts,graphql -w ./src -x yarn trigger",
     "kill": "kill $(lsof -t -i:4000)",
     "remove-charts": "helm uninstall lnd | helm uninstall mongodb | helm uninstall redis | helm uninstall bitcoind",
     "add-charts": "export LOCAL=true && ./initLocalTest.sh",
