@@ -186,7 +186,6 @@ jobs:
       - run: git config --global user.name "circleci-bot"
       - run: git config --global user.email "bot@circleci.com"
       - run: git config pull.rebase false
-#      - run: git pull origin $CIRCLE_BRANCH:remotes/origin/$CIRCLE_BRANCH
       - run: git commit -a -m "new ios build [ci skip]"
       - run: git push -q https://${GITHUB_TOKEN}@github.com/nicolasburtey/galoy-app.git $CIRCLE_BRANCH
       - store_artifacts:
@@ -380,43 +379,42 @@ jobs:
             helm upgrade -n mainnet -i trigger -f ~/GaloyApp/backend/trigger-chart/values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/trigger-chart/
                
 workflows:
-  # kube:
-  #   jobs:
-  #     - build_test_image
-  #     - test:
-  #         requires:
-  #           - build_test_image
-  #     - approve_mainnet_deploy:
-  #         type: approval
-  #         requires:
-  #           - test
-  #         filters:
-  #           branches:
-  #             only:
-  #               - master
-  #     - slack/approval-notification:
-  #         mentions: 'U011J7RCEFQ,U011KKL1L4B'
-  #         requires:
-  #           - test
-  #         filters:
-  #           branches:
-  #             only:
-  #               - master
-  #     - mainnet_deploy:
-  #         requires:
-  #           - approve_mainnet_deploy
-  #         filters:
-  #           branches:
-  #             only:
-  #               - master
+  kube:
+    jobs:
+      - build_test_image
+      - test:
+          requires:
+            - build_test_image
+      - approve_mainnet_deploy:
+          type: approval
+          requires:
+            - test
+          filters:
+            branches:
+              only:
+                - master
+      - slack/approval-notification:
+          mentions: 'U011J7RCEFQ,U011KKL1L4B'
+          requires:
+            - test
+          filters:
+            branches:
+              only:
+                - master
+      - mainnet_deploy:
+          requires:
+            - approve_mainnet_deploy
+          filters:
+            branches:
+              only:
+                - master
   mobile:
     jobs:
       - hold_build_mobile:
           type: approval
-      - build_ios
-      # - build_ios:
-      #     requires:
-      #       - hold_build_mobile
+      - build_ios:
+          requires:
+            - hold_build_mobile
       - build_android:
           requires:
             - hold_build_mobile
