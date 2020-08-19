@@ -122,7 +122,14 @@ export async function getOnChainTransactions({ lnd, incoming }: { lnd: any, inco
 
 export async function onchainTransactionEventHandler(tx) {
     logger.debug({ tx })
-    if (!tx.is_outgoing) {
+    if (tx.is_outgoing) {
+        //TODO: sms for onchain payments also
+        //for outgoing onchain payment
+        const fee = tx.fee
+        if (tx.is_confirmed) {
+            await Transaction.updateMany({ hash: tx.id}, {pending: false })
+        }
+    } else {
         let _id
         try {
             ({ _id } = await User.findOne({ onchain_addresses: { $in: tx.output_addresses } }, { _id: 1 }))
@@ -143,13 +150,6 @@ export async function onchainTransactionEventHandler(tx) {
             `You have a pending incoming transaction of ${tx.tokens} sats`
         
         await sendNotification({ title: "New transaction", body, uid: _id })
-    } else {
-        //TODO: sms for onchain payments also
-        //for outgoing onchain payment
-        const fee = tx.fee
-        if (tx.is_confirmed) {
-            await Transaction.updateMany({ hash: tx.id}, {pending: false })
-        }
     }
 }
 
