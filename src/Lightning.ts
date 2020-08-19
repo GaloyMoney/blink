@@ -556,12 +556,8 @@ export const LightningMixin = (superclass) => class extends superclass {
 
   async getIncomingOnchainPayments(confirmed: boolean) {
 
-    let incoming_txs = await getOnChainTransactions({lnd: this.lnd, incoming: true})
-    if (confirmed) {
-      incoming_txs = incoming_txs.filter(tx => tx.is_confirmed)
-    } else {
-      incoming_txs = incoming_txs.filter(tx => !tx.is_confirmed)
-    }
+    let incoming_txs = (await getOnChainTransactions({lnd: this.lnd, incoming: true}))
+      .filter(tx => tx.is_confirmed === confirmed)
 
     const { onchain_addresses } = await User.findOne({ _id: this.uid })
     const matched_txs = incoming_txs
