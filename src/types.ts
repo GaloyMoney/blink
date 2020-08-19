@@ -4,9 +4,9 @@ export type Currency = "USD" | "BTC"
 
 // Lightning
 
-export type IAddInvoiceRequest = {
-    value: number,
-    memo: string
+export interface IAddInvoiceRequest {
+    value: number | undefined,
+    memo: string | undefined
 }
 
 export type IAddInvoiceResponse = {
