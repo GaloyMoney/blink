@@ -196,6 +196,15 @@ it('pays zero amount invoice', async () => {
   await checkIsBalanced()
 }, 100000)
 
+it('receive zero amount invoice', async () => {
+  const initialBalance = await userWallet1.getBalance()
+  const invoice = await userWallet1.addInvoice()
+  await lnService.pay({ lnd: lndOutside1, request: invoice, tokens: amountInvoice })
+  const finalBalance = await userWallet1.getBalance()
+  expect(finalBalance).toBe(initialBalance + amountInvoice)
+  await checkIsBalanced()
+}, 100000)
+
 it('fails to pay zero amt invoice without separate amt', async () => {
   const {request} = await lnService.createInvoice({lnd:lndOutside1})
   await expect(userWallet1.pay({ invoice: request })).rejects.toThrow()
