@@ -2,8 +2,12 @@ import * as moment from 'moment'
 export const validate = require("validate.js")
 import * as jwt from 'jsonwebtoken'
 import * as lnService from "ln-service"
+import { sendText } from './text'
+const mongoose = require("mongoose");
+import { Transaction, User } from "./mongodb";
 
 export const logger = require('pino')({ level: "debug" })
+const util = require('util')
 
 export const btc2sat = (btc: number) => {
     return btc * Math.pow(10, 8)
@@ -104,4 +108,49 @@ export async function measureTime(operation: Promise<any>): Promise<[any, number
     const timeElapsed = process.hrtime(startTime)
     const timeElapsedms = timeElapsed[0] * 1000 + timeElapsed[1] / 1000000
     return [result, timeElapsedms]
+}
+
+export async function getOnChainTransactions({ lnd, incoming }: { lnd: any, incoming: boolean }) {
+    try {
+        let onchainTransactions = await lnService.getChainTransactions({ lnd })
+        return onchainTransactions.transactions.filter(tx => incoming ? !tx.is_outgoing : tx.is_outgoing)
+    } catch (err) {
+        const err_string = `${util.inspect({ err }, { showHidden: false, depth: null })}`
+        throw new Error(`issue fetching transaction: ${err_string})`)
+    }
+}
+
+export async function onchainTransactionEventHandler(tx) {
+    logger.debug({ tx })
+    if (!tx.is_outgoing) {
+        let phone
+        try {
+            ({ phone } = await User.findOne({ onchain_addresses: { $in: tx.output_addresses } }, { phone: 1 }))
+            if (!phone) {
+                //FIXME: Log the onchain address, need to first find which of the tx.output_addresses
+                // belongs to us
+                const error = `No phone number associated with the onchain address`
+                logger.error(error)
+                throw new Error(error)
+            }
+        } catch (error) {
+            logger.error(error)
+            throw error
+        }
+        //FIXME: Maybe USD instead of sats?
+        let body = tx.is_confirmed ? `Your wallet has been credited with ${tx.tokens} sats` : `You have a pending incoming txn of ${tx.tokens} sats`
+        await sendText({ body, to: phone })
+    } else {
+        //TODO: sms for onchain payments also
+        //for outgoing onchain payment
+        const fee = tx.fee
+        if (tx.is_confirmed) {
+            await Transaction.updateMany({ hash: tx.id}, {pending: false })
+        }
+    }
+}
+
+export async function sendToAdmin(body) {
+    await sendText({body, to: '+1***REMOVED***'})
+    await sendText({body, to: '***REMOVED***'})
 }

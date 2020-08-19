@@ -86,7 +86,10 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
     const chainBalance = (await lnService.getChainBalance({lnd})).chain_balance
     const balanceInChannels = (await lnService.getChannelBalance({lnd})).channel_balance;
 
-    return chainBalance + balanceInChannels
+    //FIXME: This can cause incorrect balance to be reported in case an unconfirmed txn is later cancelled/double spent
+    const pendingChainBalance = (await lnService.getPendingChainBalance({lnd})).pending_chain_balance;
+
+    return chainBalance + balanceInChannels + pendingChainBalance
   }
 
   async getInfo() {

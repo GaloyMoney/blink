@@ -3,9 +3,9 @@
  */
 import { setupMongoConnection, User } from "../mongodb"
 // this import needs to be before medici
-
+import {book} from "medici"
 import { LightningAdminWallet } from "../LightningAdminImpl"
-import { sleep, waitUntilBlockHeight, btc2sat } from "../utils"
+import { sleep, waitUntilBlockHeight, btc2sat, onchainTransactionEventHandler } from "../utils"
 const lnService = require('ln-service')
 
 const mongoose = require("mongoose");
@@ -138,4 +138,35 @@ it('identifies unconfirmed incoming on chain txn', async () => {
 	await bitcoindClient.generateToAddress(1, RANDOM_ADDRESS)
 	const event = await once(sub, 'chain_transaction')
 	expect(event[0].id).toBe(pendingTxn[0].txId)
+}, 100000)
+
+it('Sends onchain payment', async () => {
+	const MainBook = new book("MainBook")
+	const wallet = await getUserWallet(0)
+	const {address} = await lnService.createChainAddress({ format: 'p2wpkh', lnd: lndOutside1 })
+	const amount = 10000
+	const initialBalance = await wallet.getBalance()
+	const payResult = await wallet.onChainPay({address, amount, description: "onchainpayment"})
+	expect(payResult).toBe('pending')
+	let [pendingTxn] = (await MainBook.ledger({account:wallet.accountPath, pending: true, memo: "onchainpayment"})).results
+	const interimBalance = await wallet.getBalance()
+	expect(interimBalance).toBe(initialBalance - amount - pendingTxn.fee)
+	await checkIsBalanced()
+	
+	const sub = lnService.subscribeToTransactions({lnd:lndMain})
+	sub.once('chain_transaction', onchainTransactionEventHandler)
+
+	await bitcoindClient.generateToAddress(6, RANDOM_ADDRESS)
+	await waitUntilBlockHeight({lnd: lndMain, blockHeight: 127})
+	const [{pending, fee}] = (await MainBook.ledger({account:wallet.accountPath, hash: pendingTxn.hash, memo:"onchainpayment"})).results
+
+	const [txn] = (await wallet.getTransactions()).filter(tx => tx.hash === pendingTxn.hash)
+	expect(txn.amount).toBe(- amount - fee)
+	expect(txn.type).toBe('onchain_payment')
+
+	// FIXME: need to have trigger in regtest to listen for confirmation of txn and update mongodb
+	expect(pending).toBe(false)
+	const finalBalance = await wallet.getBalance()
+	expect(finalBalance).toBe(initialBalance - amount - fee)
+	await checkIsBalanced()
 }, 100000)

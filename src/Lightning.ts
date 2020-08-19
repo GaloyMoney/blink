@@ -4,9 +4,10 @@ import { createHash, randomBytes } from "crypto";
 import { book } from "medici";
 import moment from "moment";
 import { disposer } from "./lock";
-import { IAddInvoiceRequest, ILightningTransaction, IPaymentRequest, TransactionType } from "./types";
-import { getAuth, logger, timeout, measureTime } from "./utils";
+import { IAddInvoiceRequest, ILightningTransaction, IPaymentRequest, TransactionType, IOnChainPayment } from "./types";
+import { getAuth, logger, timeout, measureTime, getOnChainTransactions, sendToAdmin } from "./utils";
 import { InvoiceUser, Transaction, User } from "./mongodb";
+import { sendText } from "./text"
 const mongoose = require("mongoose");
 const util = require('util')
 
@@ -16,7 +17,7 @@ const using = require('bluebird').using
 const FEECAP = 0.02 // %
 const FEEMIN = 10 // sats
 
-export type ITxType = "invoice" | "payment" | "earn" | "onchain_receipt" | "on_us"
+export type ITxType = "invoice" | "payment" | "earn" | "onchain_receipt" | "onchain_payment" | "on_us"
 export type payInvoiceResult = "success" | "failed" | "pending"
 type IMemo = string | undefined
 
@@ -38,6 +39,7 @@ const formatInvoice = (type: ITxType, memo: IMemo, pending: boolean, credit?: bo
       case "payment": return `Payment sent`
       case "invoice": return `Payment received`
       case "onchain_receipt": return `Onchain payment received`
+      case "onchain_payment": return `Onchain payment sent`
       case "earn": return `Earn`
     }
   }
@@ -52,19 +54,7 @@ const formatType = (type: ITxType, pending: Boolean | undefined): TransactionTyp
     return pending ? "inflight-payment" : "payment"
   }
 
-  if (type === "earn") {
-    return "earn"
-  }
-
-  if (type === "onchain_receipt") {
-    return "onchain_receipt"
-  }
-
-  if (type === "on_us") {
-    return "on_us"
-  }
-
-  throw Error("incorrect type for formatType")
+  return type
 }
 
 export const LightningMixin = (superclass) => class extends superclass {
@@ -152,6 +142,53 @@ export const LightningMixin = (superclass) => class extends superclass {
     }
 
     return request
+  }
+
+  async onChainPay({address, amount, description}: IOnChainPayment): Promise<payInvoiceResult | Error> {
+    const onChainBalance = (await lnService.getChainBalance({lnd:this.lnd})).chain_balance
+    const MainBook = new book("MainBook")
+    const balance = await this.getBalance()
+    let estimatedFee, id
+    
+    const sendTo = [{address, tokens: amount}]
+
+    try {
+      estimatedFee = (await lnService.getChainFeeEstimate({lnd:this.lnd, send_to: sendTo})).fee
+    } catch(error) {
+      logger.error(error)
+      throw new Error(`Unable to estimate fee for on-chain transaction: ${error}`)
+    }
+     
+    if(onChainBalance < amount + estimatedFee) {
+      const body = `insufficient onchain balance. have ${onChainBalance}, need ${amount + estimatedFee}`
+
+      //FIXME: use pagerduty instead of text
+      await sendToAdmin(body)
+      throw Error(body)
+    }
+
+    if(balance < amount + estimatedFee) {
+      throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${amount + estimatedFee}`)
+    }
+
+    try {
+      ({id} = await lnService.sendToChainAddress({address, lnd: this.lnd, tokens: amount, description}))
+    } catch(error) {
+      logger.error(error)
+      throw new Error(`Unable to send on-chain transaction: ${error}`)
+    }
+
+    let outgoingOnchainTxns = await getOnChainTransactions({lnd: this.lnd, incoming: false})
+
+    let [{fee}] = outgoingOnchainTxns.filter(tx => tx.id === id)
+
+    const metadata = { currency: this.currency, hash: id, type: "onchain_payment", pending: true, fee}
+    const entry = await MainBook.entry(description)
+      .debit('Assets:Reserve:Lightning', amount + fee, metadata)
+      .credit(this.accountPath, amount + fee, metadata)
+      .commit()
+
+    return "pending"
   }
 
   async pay(params: IPaymentRequest): Promise<payInvoiceResult | Error> {
@@ -521,15 +558,8 @@ export const LightningMixin = (superclass) => class extends superclass {
   }
 
   async getIncomingOnchainPayments(confirmed: boolean) {
-    let onchainTransactions
-    try {
-      onchainTransactions = await lnService.getChainTransactions({ lnd: this.lnd })
-    } catch (err) {
-      const err_string = `${util.inspect({ err }, { showHidden: false, depth: null })}`
-      throw new Error(`issue fetching transaction: ${err_string})`)
-    }
 
-    let incoming_txs = onchainTransactions.transactions.filter(tx => !tx.is_outgoing)
+    let incoming_txs = await getOnChainTransactions({lnd: this.lnd, incoming: true})
     if (confirmed) {
       incoming_txs = incoming_txs.filter(tx => tx.is_confirmed)
     } else {
