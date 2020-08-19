@@ -143,7 +143,6 @@ export async function onchainTransactionEventHandler(tx) {
             `You have a pending incoming transaction of ${tx.tokens} sats`
         
         await sendNotification({ title: "New transaction", body, uid: _id })
-    }
     } else {
         //TODO: sms for onchain payments also
         //for outgoing onchain payment
