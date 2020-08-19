@@ -25,7 +25,7 @@ const main = async () => {
 	const result = await lnService.getChainTransactions({ lnd })
 
 	const subTransactions = subscribeToTransactions({ lnd });
-	subTransactions.on('chain_transaction', async tx => await onchainTransactionEventHandler(tx));
+	subTransactions.on('chain_transaction', onchainTransactionEventHandler);
 
 	const subInvoices = subscribeToInvoices({ lnd });
 	subInvoices.on('invoice_updated', invoice => {

@@ -152,12 +152,18 @@ it('Sends onchain payment', async () => {
 	const interimBalance = await wallet.getBalance()
 	expect(interimBalance).toBe(initialBalance - amount - pendingTxn.fee)
 	await checkIsBalanced()
+	
 	const sub = lnService.subscribeToTransactions({lnd:lndMain})
+	sub.once('chain_transaction', onchainTransactionEventHandler)
 
 	await bitcoindClient.generateToAddress(6, RANDOM_ADDRESS)
 	await waitUntilBlockHeight({lnd: lndMain, blockHeight: 127})
 	const [{pending, fee}] = (await MainBook.ledger({account:wallet.accountPath, hash: pendingTxn.hash, memo:"onchainpayment"})).results
-	sub.once('chain_transaction', async tx => await onchainTransactionEventHandler(tx))
+
+	const [txn] = (await wallet.getTransactions()).filter(tx => tx.hash === pendingTxn.hash)
+	expect(txn.amount).toBe(- amount - fee)
+	expect(txn.type).toBe('onchain_payment')
+
 	// FIXME: need to have trigger in regtest to listen for confirmation of txn and update mongodb
 	expect(pending).toBe(false)
 	const finalBalance = await wallet.getBalance()
