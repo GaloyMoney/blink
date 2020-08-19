@@ -7,8 +7,6 @@ import { disposer } from "./lock";
 import { IAddInvoiceRequest, ILightningTransaction, IPaymentRequest, TransactionType, IOnChainPayment } from "./types";
 import { getAuth, logger, timeout, measureTime, getOnChainTransactions, sendToAdmin } from "./utils";
 import { InvoiceUser, Transaction, User } from "./mongodb";
-import { sendText } from "./text"
-const mongoose = require("mongoose");
 const util = require('util')
 
 const using = require('bluebird').using
@@ -178,9 +176,9 @@ export const LightningMixin = (superclass) => class extends superclass {
       throw new Error(`Unable to send on-chain transaction: ${error}`)
     }
 
-    let outgoingOnchainTxns = await getOnChainTransactions({lnd: this.lnd, incoming: false})
+    const outgoingOnchainTxns = await getOnChainTransactions({lnd: this.lnd, incoming: false})
 
-    let [{fee}] = outgoingOnchainTxns.filter(tx => tx.id === id)
+    const [{fee}] = outgoingOnchainTxns.filter(tx => tx.id === id)
 
     const metadata = { currency: this.currency, hash: id, type: "onchain_payment", pending: true, fee}
     const entry = await MainBook.entry(description)
@@ -488,19 +486,19 @@ export const LightningMixin = (superclass) => class extends superclass {
     // TODO we should have "streaming" / use Notifications for android/iOs to have
     // a push system and not a pull system
 
-    let result
+    let invoice
 
     try {
       // FIXME we should only be able to look at User invoice, 
       // but might not be a strong problem anyway
       // at least return same error if invoice not from user
       // or invoice doesn't exist. to preserve privacy and prevent DDOS attack.
-      result = await lnService.getInvoice({ lnd: this.lnd, id: hash })
+      invoice = await lnService.getInvoice({ lnd: this.lnd, id: hash })
     } catch (err) {
       throw new Error(`issue fetching invoice: ${util.inspect({ err }, { showHidden: false, depth: null })})`)
     }
 
-    if (result.is_confirmed) {
+    if (invoice.is_confirmed) {
 
       const MainBook = new book("MainBook")
 
@@ -508,10 +506,10 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         return await using(disposer(this.uid), async (lock) => {
 
-          const invoice = await InvoiceUser.findOne({ _id: hash, pending: true, uid: this.uid })
+          const invoiceUser = await InvoiceUser.findOne({ _id: hash, pending: true, uid: this.uid })
 
-          if (!invoice) {
-            throw Error(`no mongodb entry is associated with this invoice ${result}`)
+          if (!invoiceUser) {
+            throw Error(`no mongodb entry is associated with this invoice ${invoice}`)
           }
 
           // TODO: use a transaction here
@@ -521,12 +519,12 @@ export const LightningMixin = (superclass) => class extends superclass {
           // OR: use a an unique index account / hash / voided
           // may still not avoid issue from discrenpency between hash and the books
 
-          invoice.pending = false
-          invoice.save()
+          invoiceUser.pending = false
+          invoiceUser.save()
 
           await MainBook.entry()
-            .credit('Assets:Reserve:Lightning', result.tokens, { currency: "BTC", hash, type: "invoice" })
-            .debit(this.accountPath, result.tokens, { currency: "BTC", hash, type: "invoice" })
+            .credit('Assets:Reserve:Lightning', invoice.received, { currency: "BTC", hash, type: "invoice" })
+            .debit(this.accountPath, invoice.received, { currency: "BTC", hash, type: "invoice" })
             .commit()
 
           // session.commitTransaction()
