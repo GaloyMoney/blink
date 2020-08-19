@@ -26,19 +26,19 @@ const main = async () => {
 	subChannels.on('channel_opened', channel => {
 		logger.debug(channel)
 	})
-
-	const app = express()
-	const port = 8888
-	app.get('/health', (req, res) => {
-		lnService.getWalletInfo({ lnd }, (err, result) => {
-			if (err === null) {
-				return res.sendStatus(200)
-			} else {
-				return res.sendStatus(500)
-			}
-		});
-	})
-	app.listen(port, () => logger.debug(`Health check listening on port ${port}!`))
 }
+
+const app = express()
+const port = 8888
+app.get('/health', (req, res) => {
+	lnService.getWalletInfo({ lnd }, (err, result) => {
+		if (err === null) {
+			return res.sendStatus(200)
+		} else {
+			return res.sendStatus(500)
+		}
+	});
+})
+app.listen(port, () => logger.debug(`Health check listening on port ${port}!`))
 
 setupMongoConnection().then(() => main()).catch((err) => logger.error(err))
