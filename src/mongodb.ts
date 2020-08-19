@@ -92,9 +92,9 @@ const transactionSchema = new Schema({
   fee: Number,
   type: {
     type: String,
-    enum: ["invoice", "payment", "earn", "onchain_receipt", "fee", "escrow", "on_us"]
+    enum: ["invoice", "payment", "earn", "onchain_receipt", "fee", "escrow", "on_us", "onchain_payment"]
   },
-  pending: Boolean, // duplicated with InvoiceUser for invoices
+  pending: Boolean, // used to denote confirmation status of on and off chain txn
   err: String,
 
   // original property from medici
