@@ -1,6 +1,7 @@
 import * as admin from 'firebase-admin';
 import { User } from "./mongodb";
 import { logger } from "./utils";
+import { INotification } from "./types"
 
 // the key GOOGLE_APPLICATION_CREDENTIALS should be set in production to the path of the credentials
 // to use this class in a dev enviroment, set GOOGLE_APPLICATION_CREDENTIALS
@@ -11,11 +12,11 @@ if(process.env.GOOGLE_APPLICATION_CREDENTIALS) {
   })
 }
 
-export const sendNotification = async ({uid, title, body}) => {
+export const sendNotification = async ({uid, title, body, data}: INotification) => {
 
   const user = await User.findOne({ _id: uid })
   const message = {
-    // data: {score: '850', time: '2:45'},
+    data,
     // fcmOptions: {}
     // apns: {}
     notification:{

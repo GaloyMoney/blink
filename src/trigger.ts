@@ -5,6 +5,8 @@ import express from 'express';
 import { subscribeToChannels, subscribeToInvoices, subscribeToTransactions } from 'ln-service';
 import { getAuth, logger, onchainTransactionEventHandler } from './utils';
 import { LightningUserWallet } from "./LightningUserWallet";
+import { sendNotification } from "./notification";
+import { TransactionType } from "./types";
 
 const { lnd } = lnService.authenticatedLndGrpc(getAuth())
 
@@ -24,15 +26,24 @@ const main = async () => {
 		// FIXME: we're making 2x the request to Invoice User here. One in trigger, one in lighning.
 		const invoiceUser = await InvoiceUser.findOne({ _id: invoice.id, pending: true })
 		if (invoiceUser) {
-			const lightningAdminWallet = new LightningUserWallet({ uid: invoiceUser.uid })
-			await lightningAdminWallet.updatePendingInvoice({hash: invoice.id})
+      const uid = invoiceUser.uid
+      const hash = invoice.id as string
+
+			const lightningAdminWallet = new LightningUserWallet({ uid })
+      await lightningAdminWallet.updatePendingInvoice({ hash })
+      const data = {
+        type: "paid-invoice" as TransactionType,
+        hash
+      }
+      await sendNotification({uid, title: `You receive a payment of ${invoice.received} sats`, data})
 		} else {
 			logger.warn({invoice}, "we received an invoice but had no user attached to it")
 		}
 	})
 
 	const subTransactions = subscribeToTransactions({ lnd });
-	subTransactions.on('chain_transaction', onchainTransactionEventHandler);
+  subTransactions.on('chain_transaction', onchainTransactionEventHandler);
+  
 	const subChannels = subscribeToChannels({ lnd });
 	subChannels.on('channel_opened', channel => {
 		logger.info(channel)
