@@ -1,55 +1,66 @@
-const lnService = require('ln-service');
-import {
-	subscribeToTransactions,
-	subscribeToInvoices,
-	subscribeToChannels,
-} from 'ln-service'
+import { InvoiceUser, setupMongoConnection } from "./mongodb";
 
-import fetch from "node-fetch";
-import express from 'express'
-const mongoose = require("mongoose");
-import { getAuth, onchainTransactionEventHandler } from './utils'
-import { sendText } from './text'
-import { setupMongoConnection, User } from "./mongodb"
+const lnService = require('ln-service');
+import express from 'express';
+import { subscribeToChannels, subscribeToInvoices, subscribeToTransactions } from 'ln-service';
+import { getAuth, logger, onchainTransactionEventHandler } from './utils';
+import { LightningUserWallet } from "./LightningUserWallet";
+import { sendNotification } from "./notification";
+import { TransactionType } from "./types";
+
 const { lnd } = lnService.authenticatedLndGrpc(getAuth())
 
+const main = async () => {	
+  lnService.getWalletInfo({ lnd }, (err, result) => {
+    logger.debug(err, result)
+  });
 
-import { logger } from "./utils"
-const pino = require('pino-http')({ logger })
+  const subInvoices = subscribeToInvoices({ lnd });
+  subInvoices.on('invoice_updated', async invoice => {
+    logger.debug(invoice)
 
-const main = async () => {
-	lnService.getWalletInfo({ lnd }, (err, result) => {
-		logger.debug(err, result)
-	});
+    if (!invoice.is_confirmed) {
+      return
+    }
 
-	const result = await lnService.getChainTransactions({ lnd })
+    // FIXME: we're making 2x the request to Invoice User here. One in trigger, one in lighning.
+    const invoiceUser = await InvoiceUser.findOne({ _id: invoice.id, pending: true })
+    if (invoiceUser) {
+      const uid = invoiceUser.uid
+      const hash = invoice.id as string
 
-	const subTransactions = subscribeToTransactions({ lnd });
-	subTransactions.on('chain_transaction', onchainTransactionEventHandler);
+      const lightningAdminWallet = new LightningUserWallet({ uid })
+      await lightningAdminWallet.updatePendingInvoice({ hash })
+      const data = {
+        type: "paid-invoice" as TransactionType,
+        hash
+      }
+      await sendNotification({uid, title: `You receive a payment of ${invoice.received} sats`, data})
+    } else {
+      logger.warn({invoice}, "we received an invoice but had no user attached to it")
+    }
+  })
 
-	const subInvoices = subscribeToInvoices({ lnd });
-	subInvoices.on('invoice_updated', invoice => {
-		logger.debug(invoice)
-	})
-
-
-	const subChannels = subscribeToChannels({ lnd });
-	subChannels.on('channel_opened', channel => {
-		logger.debug(channel)
-	})
-
-	const app = express()
-	const port = 8888
-	app.get('/health', (req, res) => {
-		lnService.getWalletInfo({ lnd }, (err, result) => {
-			if (err === null) {
-				return res.sendStatus(200)
-			} else {
-				return res.sendStatus(500)
-			}
-		});
-	})
-	app.listen(port, () => logger.debug(`Health check listening on port ${port}!`))
+  const subTransactions = subscribeToTransactions({ lnd });
+  subTransactions.on('chain_transaction', onchainTransactionEventHandler);
+  
+  const subChannels = subscribeToChannels({ lnd });
+  subChannels.on('channel_opened', channel => {
+    logger.info(channel)
+  })
 }
 
-setupMongoConnection().then(() => main()).catch((err) => logger.error(err))
+const app = express()
+const port = 8888
+app.get('/health', (req, res) => {
+  lnService.getWalletInfo({ lnd }, (err, result) => {
+    if (err === null) {
+      return res.sendStatus(200)
+    } else {
+      return res.sendStatus(500)
+    }
+  });
+})
+app.listen(port, () => logger.debug(`Health check listening on port ${port}!`))
+
+setupMongoConnection().then(main).catch((err) => logger.error(err))

@@ -1,11 +1,12 @@
 const twilioPhoneNumber = "***REMOVED***"
 import moment from "moment"
 import { PhoneCode, User } from "./mongodb";
-const mongoose = require("mongoose");
 
 import { randomIntFromInterval, createToken } from "./utils"
 
 const getTwilioClient = () => {
+    // FIXME: replace with env variable
+    // and revoke credentials here
     const accountSID = "***REMOVED***"
     const authToken = "***REMOVED***"
 

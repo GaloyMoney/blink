@@ -11,9 +11,11 @@ import { Price } from "./priceImpl";
 import { login, requestPhoneCode } from "./text";
 import { OnboardingEarn } from "./types";
 import { LightningAdminWallet } from "./LightningAdminImpl";
+import { sendNotification } from "./notification"
+
 const path = require("path");
-const mongoose = require("mongoose");
 dotenv.config()
+
 
 import { logger } from "./utils"
 const pino = require('pino-http')({
@@ -153,6 +155,7 @@ const resolvers = {
           }
         },
         payInvoice: async ({ invoice, amount }) => {
+          console.log({ invoice, amount })
           try {
             const success = await lightningWallet.pay({ invoice, amount })
             logger.debug({ success }, "succesful payment for user %o", { uid })
@@ -187,11 +190,16 @@ const resolvers = {
     addDeviceToken: async (_, { deviceToken }, { uid }) => {
       // TODO: refactor to a higher level User class
       const user = await User.findOne({ _id: uid })
-      user.deviceToken.push(deviceToken)
+      user.deviceToken.addToSet(deviceToken)
       await user.save()
       return {success: true}
     },
 
+    // FIXME test
+    testMessage: async (_, __, { uid }) => {
+      sendNotification({uid, title: "new title", body: "new MEssage"})
+      return {success: true}
+    },
   }
 }
 

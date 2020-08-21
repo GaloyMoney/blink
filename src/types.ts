@@ -47,6 +47,16 @@ export interface IQuoteRequest {
     invoice?: string,   // buy
 }
 
+export interface INotification {
+  uid: string,
+  title: string,
+  body?: string,
+  data?: {
+    type: TransactionType,
+    hash: string,
+  }
+}
+
 // onboarding
 export const OnboardingEarn = {
     walletDownloaded: 1,
