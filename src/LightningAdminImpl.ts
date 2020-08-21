@@ -2,7 +2,7 @@ import { filter, find } from "lodash";
 import { book } from "medici";
 import { LightningMixin } from "./Lightning";
 import { LightningUserWallet } from "./LightningUserWallet";
-import { Transaction, User } from "./mongodb";
+import { MainBook, Transaction, User } from "./mongodb";
 import { getAuth, logger } from "./utils";
 import { AdminWallet } from "./wallet";
 const lnService = require('ln-service')
@@ -109,7 +109,7 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
 
     const { fee } = find(transactions, {id: transaction_id})
 
-    const MainBook = new book("MainBook")
+    
 
     const metadata = { currency: this.currency, txid: transaction_id, type: "fee" }
 
@@ -125,7 +125,7 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
     const auth = getAuth() // FIXME
     const lnd = lnService.authenticatedLndGrpc(auth).lnd // FIXME
 
-    const MainBook = new book("MainBook")
+    
 
     const type = "escrow"
 

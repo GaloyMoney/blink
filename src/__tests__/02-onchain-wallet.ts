@@ -1,9 +1,8 @@
 /**
  * @jest-environment node
  */
-import { setupMongoConnection, User } from "../mongodb"
+import { MainBook, setupMongoConnection, User } from "../mongodb"
 // this import needs to be before medici
-import {book} from "medici"
 import { LightningAdminWallet } from "../LightningAdminImpl"
 import { sleep, waitUntilBlockHeight, btc2sat, onchainTransactionEventHandler } from "../utils"
 const lnService = require('ln-service')
@@ -141,7 +140,7 @@ it('identifies unconfirmed incoming on chain txn', async () => {
 }, 100000)
 
 it('Sends onchain payment', async () => {
-	const MainBook = new book("MainBook")
+	
 	const wallet = await getUserWallet(0)
 	const {address} = await lnService.createChainAddress({ format: 'p2wpkh', lnd: lndOutside1 })
 	const amount = 10000

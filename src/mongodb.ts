@@ -186,3 +186,6 @@ export const setupMongoConnection = async () => {
     exit(1)
   }
 }
+
+import { book } from "medici";
+export const MainBook = new book("MainBook")

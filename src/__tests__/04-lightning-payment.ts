@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-import { InvoiceUser, setupMongoConnection } from "../mongodb";
+import { InvoiceUser, MainBook, setupMongoConnection } from "../mongodb";
 // this import needs to be before medici
 import { createHash, randomBytes } from 'crypto';
 import {book} from "medici"
@@ -176,7 +176,7 @@ it('payInvoice to lnd outside 2', async () => {
   const result = await userWallet1.pay({ invoice: request })
   expect(result).toBe("success")
   const finalBalance = await userWallet1.getBalance()
-  const MainBook = new book("MainBook")
+  
   const fee = (await MainBook.ledger({account:userWallet1.accountPath, hash: id})).results[0].fee
   expect(finalBalance).toBe(onBoardingEarnAmt - 4 * amountInvoice - fee)
   await checkIsBalanced()
