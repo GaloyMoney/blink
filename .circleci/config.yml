@@ -437,10 +437,12 @@ workflows:
     jobs:
       - hold_build_mobile:
           type: approval
-      - update_locale
+      - update_locale:
+          requires:
+            - hold_build_mobile
       - build_ios:
           requires:
-            - hold_build_mobile
+            - update_locale
       - build_android:
           requires:
-            - hold_build_mobile
+            - update_locale
