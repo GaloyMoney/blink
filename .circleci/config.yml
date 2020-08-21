@@ -396,7 +396,7 @@ jobs:
       - run: git config --global user.email "bot@circleci.com"
       - run: git config pull.rebase false
       - run: |
-          if [[ $(ls -A) ]]; then
+          if [[ $(git diff) ]]; then
             git commit -a -m "update translation file [ci skip]"
             git push -q https://${GITHUB_TOKEN}@github.com/nicolasburtey/galoy-app.git $CIRCLE_BRANCH
           else
