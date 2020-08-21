@@ -388,6 +388,7 @@ jobs:
           path: ~/GaloyApp
       - run: echo $PHRASE_CONFIG | base64 -d > .phrase.yml
       - run: wget https://github.com/phrase/phrase-cli/releases/download/2.0.13/phrase_linux_amd64
+      - run: chmod +x ./phrase_linux_amd64
       - run: ./phrase_linux_amd64 push
       - run: ./phrase_linux_amd64 pull
       - run: git commit -a -m "new android build [ci skip]"
