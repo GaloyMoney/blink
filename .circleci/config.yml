@@ -378,6 +378,21 @@ jobs:
             helm upgrade -n mainnet -i prometheus-client -f ~/GaloyApp/backend/graphql-chart/values.yaml -f ~/GaloyApp/backend/graphql-chart/prometheus-values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/graphql-chart/
             helm upgrade -n mainnet -i trigger -f ~/GaloyApp/backend/trigger-chart/values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/trigger-chart/
                
+  update_locale:
+    working_directory: ~/GaloyApp/mobile
+    docker:
+      - image: cimg/base:2020.01    
+    resource_class: small
+    steps:
+      - checkout:
+          path: ~/GaloyApp
+      - run: echo $PHRASE_CONFIG | base64 -d > .phrase.yml
+      - run: wget https://github.com/phrase/phrase-cli/releases/download/2.0.13/phrase_linux_amd64
+      - run: ./phrase_linux_amd64 push
+      - run: ./phrase_linux_amd64 pull
+      - run: git commit -a -m "new android build [ci skip]"
+      - run: git push -q https://${GITHUB_TOKEN}@github.com/nicolasburtey/galoy-app.git $CIRCLE_BRANCH
+               
 workflows:
   kube:
     jobs:
@@ -412,9 +427,12 @@ workflows:
     jobs:
       - hold_build_mobile:
           type: approval
+      - update_locale:
+          requires:
+            - hold_build_mobile
       - build_ios:
           requires:
-            - hold_build_mobile
+            - approval
       - build_android:
           requires:
-            - hold_build_mobile
+            - approval
