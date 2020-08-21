@@ -430,7 +430,7 @@ workflows:
       - update_locale
       - build_ios:
           requires:
-            - approval
+            - hold_build_mobile
       - build_android:
           requires:
-            - approval
+            - hold_build_mobile
