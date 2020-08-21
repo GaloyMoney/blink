@@ -150,7 +150,7 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
         continue
       }
 
-      logger.debug('in update escrow with channel', channel)
+      logger.debug('in update escrow with channel', {channel})
       
       const diff = channel.commit_transaction_fee - (mongotx?.debit ?? 0)
 
