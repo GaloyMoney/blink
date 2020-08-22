@@ -17,6 +17,7 @@ const FEEMIN = 10 // sats
 export type ITxType = "invoice" | "payment" | "earn" | "onchain_receipt" | "onchain_payment" | "on_us"
 export type payInvoiceResult = "success" | "failed" | "pending"
 type IMemo = string | undefined
+type ISuccess = boolean
 
 const formatInvoice = (type: ITxType, memo: IMemo, pending: boolean, credit?: boolean): String => {
   if (pending) {
@@ -83,8 +84,6 @@ export const LightningMixin = (superclass) => class extends superclass {
   async getTransactions(): Promise<Array<ILightningTransaction>> {
     await this.updatePending()
 
-    
-
     const { results } = await MainBook.ledger({
       account: this.accountPath,
       currency: this.currency,
@@ -141,7 +140,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     return request
   }
 
-  async onChainPay({address, amount, description}: IOnChainPayment): Promise<payInvoiceResult | Error> {
+  async onChainPay({address, amount, description}: IOnChainPayment): Promise<ISuccess | Error> {
     const onChainBalance = (await lnService.getChainBalance({lnd:this.lnd})).chain_balance
     
     const balance = await this.getBalance()
@@ -166,13 +165,14 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     if(balance < amount + estimatedFee) {
       throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${amount + estimatedFee}`)
+      // TODO: report error in a way this can be handled propertly in React Native
     }
 
     try {
       ({id} = await lnService.sendToChainAddress({address, lnd: this.lnd, tokens: amount, description}))
     } catch(error) {
       logger.error(error)
-      throw new Error(`Unable to send on-chain transaction: ${error}`)
+      return false
     }
 
     const outgoingOnchainTxns = await getOnChainTransactions({lnd: this.lnd, incoming: false})
@@ -185,7 +185,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       .credit(this.accountPath, amount + fee, metadata)
       .commit()
 
-    return "pending"
+    return true
   }
 
   async pay(params: IPaymentRequest): Promise<payInvoiceResult | Error> {
