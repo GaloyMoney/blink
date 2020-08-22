@@ -4,7 +4,6 @@
 import { InvoiceUser, MainBook, setupMongoConnection } from "../mongodb";
 // this import needs to be before medici
 import { createHash, randomBytes } from 'crypto';
-import {book} from "medici"
 import { LightningUserWallet } from "../LightningUserWallet";
 import { quit } from "../lock";
 import { checkIsBalanced, getUidFromToken, getUserWallet, lndOutside1, lndOutside2 } from "../tests/helper";
