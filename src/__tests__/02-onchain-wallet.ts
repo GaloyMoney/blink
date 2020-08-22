@@ -146,7 +146,7 @@ it('Sends onchain payment', async () => {
 	const amount = 10000
 	const initialBalance = await wallet.getBalance()
 	const payResult = await wallet.onChainPay({address, amount, description: "onchainpayment"})
-	expect(payResult).toBe('pending')
+  expect(payResult).toBeTruthy()
 	let [pendingTxn] = (await MainBook.ledger({account:wallet.accountPath, pending: true, memo: "onchainpayment"})).results
 	const interimBalance = await wallet.getBalance()
 	expect(interimBalance).toBe(initialBalance - amount - pendingTxn.fee)
