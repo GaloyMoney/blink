@@ -62,10 +62,6 @@ validate.extend(validate.validators.datetime, {
     }
 })
 
-export const shortenHash = (hash: string, length = 4) => {
-    return `${hash.substring(0, length)}...${hash.substring(hash.length - length)}`
-}
-
 export const getAuth = () => {
     try {
         // network = process.env.NETWORK // TODO
@@ -112,7 +108,7 @@ export async function measureTime(operation: Promise<any>): Promise<[any, number
 
 export async function getOnChainTransactions({ lnd, incoming }: { lnd: any, incoming: boolean }) {
     try {
-        let onchainTransactions = await lnService.getChainTransactions({ lnd })
+        const onchainTransactions = await lnService.getChainTransactions({ lnd })
         return onchainTransactions.transactions.filter(tx => incoming ? !tx.is_outgoing : tx.is_outgoing)
     } catch (err) {
         const err_string = `${util.inspect({ err }, { showHidden: false, depth: null })}`
