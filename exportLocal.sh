@@ -29,4 +29,4 @@ export REDIS_IP=$MINIKUBEIP
 
 export JWT_SECRET="jwt_secret"
 
-export GOOGLE_APPLICATION_CREDENTIALS="./src/galoyapp-firebase-serviceaccont.json"
+export GOOGLE_APPLICATION_CREDENTIALS="./galoyapp-firebase-serviceaccont.json"

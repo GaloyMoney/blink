@@ -155,7 +155,6 @@ const resolvers = {
           }
         },
         payInvoice: async ({ invoice, amount }) => {
-          console.log({ invoice, amount })
           try {
             const success = await lightningWallet.pay({ invoice, amount })
             logger.debug({ success }, "succesful payment for user %o", { uid })
@@ -169,23 +168,18 @@ const resolvers = {
       })
     },
     earnCompleted: async (_, { ids }, { uid }) => {
-      try {
-        logger.debug({ uid }, "request earnComplete for user %o", { uid })
-        const lightningWallet = new LightningUserWallet({ uid })
-        const success = await lightningWallet.addEarn(ids)
-        return success
-      } catch (err) {
-        logger.warn(err)
-        throw err
-      }
+      const lightningWallet = new LightningUserWallet({ uid })
+      return lightningWallet.addEarn(ids)
     },
     deleteUser: () => {
       // TODO
     },
     onchain: async (_, __, { uid }) => {
       const lightningWallet = new LightningUserWallet({uid})
-      const getNewAddress = await lightningWallet.getOnChainAddress()
-      return {getNewAddress}
+      return {
+        getNewAddress: () => lightningWallet.getOnChainAddress(),
+        pay: ({address, amount}) => ({success: lightningWallet.onChainPay({address, amount})}),
+      }
     },
     addDeviceToken: async (_, { deviceToken }, { uid }) => {
       // TODO: refactor to a higher level User class
@@ -197,7 +191,7 @@ const resolvers = {
 
     // FIXME test
     testMessage: async (_, __, { uid }) => {
-      sendNotification({uid, title: "new title", body: "new MEssage"})
+      sendNotification({uid, title: "new title", body: "new Message"})
       return {success: true}
     },
   }

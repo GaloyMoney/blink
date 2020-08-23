@@ -1,4 +1,4 @@
-import { book } from "medici"
+import { MainBook } from "./mongodb"
 import { UserWallet } from "./wallet"
 
 
@@ -10,8 +10,6 @@ export class FiatUserWallet extends UserWallet {
   }
 
   async getTransactions() {
-    const MainBook = new book("MainBook")
-
     // TODO paging
       const {results} = await MainBook.ledger({
           account: this.accountPath,

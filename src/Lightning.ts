@@ -1,12 +1,11 @@
 const lnService = require('ln-service');
 import { intersection, last } from "lodash";
 import { createHash, randomBytes } from "crypto";
-import { book } from "medici";
 import moment from "moment";
 import { disposer } from "./lock";
 import { IAddInvoiceRequest, ILightningTransaction, IPaymentRequest, TransactionType, IOnChainPayment } from "./types";
 import { getAuth, logger, timeout, measureTime, getOnChainTransactions, sendToAdmin } from "./utils";
-import { InvoiceUser, Transaction, User } from "./mongodb";
+import { InvoiceUser, MainBook, Transaction, User } from "./mongodb";
 const util = require('util')
 
 const using = require('bluebird').using
@@ -18,6 +17,7 @@ const FEEMIN = 10 // sats
 export type ITxType = "invoice" | "payment" | "earn" | "onchain_receipt" | "onchain_payment" | "on_us"
 export type payInvoiceResult = "success" | "failed" | "pending"
 type IMemo = string | undefined
+type ISuccess = boolean
 
 const formatInvoice = (type: ITxType, memo: IMemo, pending: boolean, credit?: boolean): String => {
   if (pending) {
@@ -84,8 +84,6 @@ export const LightningMixin = (superclass) => class extends superclass {
   async getTransactions(): Promise<Array<ILightningTransaction>> {
     await this.updatePending()
 
-    const MainBook = new book("MainBook")
-
     const { results } = await MainBook.ledger({
       account: this.accountPath,
       currency: this.currency,
@@ -142,9 +140,9 @@ export const LightningMixin = (superclass) => class extends superclass {
     return request
   }
 
-  async onChainPay({address, amount, description}: IOnChainPayment): Promise<payInvoiceResult | Error> {
+  async onChainPay({address, amount, description}: IOnChainPayment): Promise<ISuccess | Error> {
     const onChainBalance = (await lnService.getChainBalance({lnd:this.lnd})).chain_balance
-    const MainBook = new book("MainBook")
+    
     const balance = await this.getBalance()
     let estimatedFee, id
     
@@ -167,13 +165,14 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     if(balance < amount + estimatedFee) {
       throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${amount + estimatedFee}`)
+      // TODO: report error in a way this can be handled propertly in React Native
     }
 
     try {
       ({id} = await lnService.sendToChainAddress({address, lnd: this.lnd, tokens: amount, description}))
     } catch(error) {
       logger.error(error)
-      throw new Error(`Unable to send on-chain transaction: ${error}`)
+      return false
     }
 
     const outgoingOnchainTxns = await getOnChainTransactions({lnd: this.lnd, incoming: false})
@@ -186,7 +185,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       .credit(this.accountPath, amount + fee, metadata)
       .commit()
 
-    return "pending"
+    return true
   }
 
   async pay(params: IPaymentRequest): Promise<payInvoiceResult | Error> {
@@ -201,7 +200,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     let payeeUid
     let messages: Object[] = []
 
-    const MainBook = new book("MainBook")
+    
 
     if (params.invoice) {
       // TODO replace this with bolt11 utils library
@@ -388,7 +387,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
   async updatePendingPayment() {
 
-    const MainBook = new book("MainBook")
+    
     const payments = await Transaction.find({ account_path: this.accountPathMedici, type: "payment", pending: true })
 
     if (payments === []) {
@@ -500,7 +499,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     if (invoice.is_confirmed) {
 
-      const MainBook = new book("MainBook")
+      
 
       try {
 
@@ -571,7 +570,7 @@ export const LightningMixin = (superclass) => class extends superclass {
   }
 
   async updateOnchainPayment() {
-    const MainBook = new book("MainBook")
+    
     const matched_txs = await this.getIncomingOnchainPayments(true)
 
     //        { block_id: '0000000000000b1fa86d936adb8dea741a9ecd5f6a58fc075a1894795007bdbc',
