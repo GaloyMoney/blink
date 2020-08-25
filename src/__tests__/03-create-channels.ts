@@ -18,13 +18,17 @@ export const logger = require('pino')({ level: "debug" })
 const local_tokens = 10000000
 
 let initBlockCount
-
 let adminWallet
+let initChannelMain, initChannelOutside1
+
 
 beforeAll(async () => {
 	await setupMongoConnection()
 	const admin = await User.findOne({role: "admin"})
-	adminWallet = new LightningAdminWallet({uid: admin._id})
+  adminWallet = new LightningAdminWallet({uid: admin._id})
+  
+  initChannelMain = (await lnService.getChannels({ lnd: lndMain })).channels.length
+  initChannelOutside1 = (await lnService.getChannels({ lnd: lndOutside1 })).channels.length
 })
 
 beforeEach(async () => {
@@ -84,7 +88,7 @@ it('opens channel from lnd1 to lndOutside1', async () => {
 	await openChannel({lnd: lndMain, other_lnd: lndOutside1, socket})
 
 	const { channels } = await lnService.getChannels({ lnd: lndMain })
-	expect(channels.length).toEqual(1)
+	expect(channels.length).toEqual(initChannelMain + 1)
 
 }, 100000)
 
@@ -102,7 +106,7 @@ it('opens channel from lndOutside1 to lndOutside2', async () => {
 	subscription.removeAllListeners();
 
 	const { channels } = await lnService.getChannels({ lnd: lndOutside1 })
-	expect(channels.length).toEqual(2)
+	expect(channels.length).toEqual(initChannelOutside1 + 2)
 }, 240000)
 
 it('opens channel from lndOutside1 to lnd1', async () => {
@@ -111,12 +115,7 @@ it('opens channel from lndOutside1 to lnd1', async () => {
 
 	{
 		const { channels } = await lnService.getChannels({ lnd: lndMain })
-		expect(channels.length).toEqual(2)
-	}
-
-	{
-		const { channels } = await lnService.getChannels({ lnd: lndOutside1 })
-		expect(channels.length).toEqual(3)
+		expect(channels.length).toEqual(initChannelMain + 2)
 	}
 
 }, 100000)
