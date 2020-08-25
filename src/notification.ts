@@ -20,7 +20,7 @@ export const sendNotification = async ({uid, title, body, data}: INotification) 
     data,
     // fcmOptions: {}
     // apns: {}
-    notification:{
+    notification: {
       title,
       body
     },

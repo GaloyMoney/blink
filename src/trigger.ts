@@ -8,7 +8,7 @@ import { sendNotification } from "./notification";
 import { IDataNotification } from "./types";
 
 export async function onchainTransactionEventHandler(tx) {
-  logger.info({tx})
+  logger.debug({tx})
 
   if (tx.is_outgoing) {
     if (tx.is_confirmed) {
@@ -21,7 +21,6 @@ export async function onchainTransactionEventHandler(tx) {
       hash: tx.id,
       amount: tx.tokens,
     }
-    console.log({entry})
     await sendNotification({uid: entry.account_path[2], title, data})
   } else {
     let _id

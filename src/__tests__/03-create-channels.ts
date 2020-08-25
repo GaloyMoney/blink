@@ -17,7 +17,7 @@ export const logger = require('pino')({ level: "debug" })
 
 const local_tokens = 10000000
 
-const blockHeightInit = 127
+let initBlockCount
 
 let adminWallet
 
@@ -27,16 +27,20 @@ beforeAll(async () => {
 	adminWallet = new LightningAdminWallet({uid: admin._id})
 })
 
+beforeEach(async () => {
+  initBlockCount = await bitcoindClient.getBlockCount()
+})
+
 afterAll(async () => {
 	return await mongoose.connection.close()
 })
 
 const newBlock = 6
 
-const openChannel = async ({lnd, other_lnd, socket, blockHeight}) => {
+const openChannel = async ({lnd, other_lnd, socket}) => {
 
-	await waitUntilBlockHeight({lnd: lndMain, blockHeight})
-	await waitUntilBlockHeight({lnd: other_lnd, blockHeight})
+	await waitUntilBlockHeight({lnd: lndMain, blockHeight: initBlockCount})
+	await waitUntilBlockHeight({lnd: other_lnd, blockHeight: initBlockCount})
 
 	const { public_key } = await lnService.getWalletInfo({ lnd: other_lnd })
 
@@ -56,8 +60,8 @@ const openChannel = async ({lnd, other_lnd, socket, blockHeight}) => {
 
 	const mineBlock = async () => {
 		await bitcoindClient.generateToAddress(newBlock, RANDOM_ADDRESS)
-		await waitUntilBlockHeight({lnd: lndMain, blockHeight: blockHeight + newBlock})
-		await waitUntilBlockHeight({lnd: other_lnd, blockHeight: blockHeight + newBlock})
+		await waitUntilBlockHeight({lnd: lndMain, blockHeight: initBlockCount + newBlock})
+		await waitUntilBlockHeight({lnd: other_lnd, blockHeight: initBlockCount + newBlock})
 	}
 
 	logger.debug("mining blocks and waiting for channel being opened")
@@ -77,7 +81,7 @@ const openChannel = async ({lnd, other_lnd, socket, blockHeight}) => {
 
 it('opens channel from lnd1 to lndOutside1', async () => {
 	const socket = `lnd-outside-1:9735`
-	await openChannel({lnd: lndMain, other_lnd: lndOutside1, socket, blockHeight: blockHeightInit})
+	await openChannel({lnd: lndMain, other_lnd: lndOutside1, socket})
 
 	const { channels } = await lnService.getChannels({ lnd: lndMain })
 	expect(channels.length).toEqual(1)
@@ -91,7 +95,7 @@ it('opens channel from lndOutside1 to lndOutside2', async () => {
 	const subscription = lnService.subscribeToGraph({lnd:lndMain});
 	
 	await Promise.all([
-		openChannel({lnd: lndOutside1, other_lnd: lndOutside2, socket, blockHeight: blockHeightInit + 6}),
+		openChannel({lnd: lndOutside1, other_lnd: lndOutside2, socket}),
 		once(subscription, 'channel_updated')
 	])
 
@@ -103,7 +107,7 @@ it('opens channel from lndOutside1 to lndOutside2', async () => {
 
 it('opens channel from lndOutside1 to lnd1', async () => {
 	const socket = `lnd-service:9735`
-	await openChannel({lnd: lndOutside1, other_lnd: lndMain, socket, blockHeight: blockHeightInit + 12})
+	await openChannel({lnd: lndOutside1, other_lnd: lndMain, socket})
 
 	{
 		const { channels } = await lnService.getChannels({ lnd: lndMain })
