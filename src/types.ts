@@ -47,14 +47,18 @@ export interface IQuoteRequest {
     invoice?: string,   // buy
 }
 
+export interface IDataNotification {
+  type: TransactionType,
+  amount: number
+  hash?: string,
+  txid?: string, // FIXME in mongodb, there is no differenciation between hash and txid?
+}
+
 export interface INotification {
   uid: string,
   title: string,
   body?: string,
-  data?: {
-    type: TransactionType,
-    hash: string,
-  }
+  data?: IDataNotification
 }
 
 // onboarding

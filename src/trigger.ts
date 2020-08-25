@@ -6,7 +6,7 @@ import { subscribeToChannels, subscribeToInvoices, subscribeToTransactions } fro
 import { getAuth, logger, onchainTransactionEventHandler } from './utils';
 import { LightningUserWallet } from "./LightningUserWallet";
 import { sendNotification } from "./notification";
-import { TransactionType } from "./types";
+import { IDataNotification } from "./types";
 
 const { lnd } = lnService.authenticatedLndGrpc(getAuth())
 
@@ -31,9 +31,10 @@ const main = async () => {
 
       const lightningAdminWallet = new LightningUserWallet({ uid })
       await lightningAdminWallet.updatePendingInvoice({ hash })
-      const data = {
-        type: "paid-invoice" as TransactionType,
-        hash
+      const data: IDataNotification = {
+        type: "paid-invoice",
+        hash,
+        amount: invoice.received
       }
       await sendNotification({uid, title: `You receive a payment of ${invoice.received} sats`, data})
     } else {

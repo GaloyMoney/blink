@@ -192,7 +192,7 @@ const resolvers = {
 
     // FIXME test
     testMessage: async (_, __, { uid }) => {
-      await sendNotification({uid, title: "new title", body: `New message sent at ${moment.utc().format('YYYY-MM-DD HH:mm:ss')}`})
+      await sendNotification({uid, title: "Title", body: `New message sent at ${moment.utc().format('YYYY-MM-DD HH:mm:ss')}`})
       return {success: true}
     },
   }
