@@ -7,7 +7,6 @@ import { getAuth, logger } from './utils';
 import { LightningUserWallet } from "./LightningUserWallet";
 import { sendNotification } from "./notification";
 import { IDataNotification } from "./types";
-
 const { lnd } = lnService.authenticatedLndGrpc(getAuth())
 
 
@@ -91,19 +90,24 @@ const main = async () => {
   subChannels.on('channel_opened', channel => {
     logger.info(channel)
   })
+
+  healthCheck()
 }
 
-const app = express()
-const port = 8888
-app.get('/health', (req, res) => {
-  lnService.getWalletInfo({ lnd }, (err, result) => {
-    if (err === null) {
-      return res.sendStatus(200)
-    } else {
-      return res.sendStatus(500)
-    }
-  });
-})
-app.listen(port, () => logger.debug(`Health check listening on port ${port}!`))
+const healthCheck = () => {
+  const app = express()
+  const port = 8888
+  app.get('/health', (req, res) => {
+    lnService.getWalletInfo({ lnd }, (err, result) => {
+      if (err === null) {
+        return res.sendStatus(200)
+      } else {
+        return res.sendStatus(500)
+      }
+    });
+  })
+  app.listen(port, () => logger.debug(`Health check listening on port ${port}!`))
+  return app
+}
 
 setupMongoConnection().then(main).catch((err) => logger.error(err))
