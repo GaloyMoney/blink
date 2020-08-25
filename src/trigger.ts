@@ -1,5 +1,4 @@
 import { InvoiceUser, setupMongoConnection, Transaction, User } from "./mongodb";
-
 const lnService = require('ln-service');
 import express from 'express';
 import { subscribeToChannels, subscribeToInvoices, subscribeToTransactions } from 'ln-service';
@@ -7,8 +6,6 @@ import { getAuth, logger } from './utils';
 import { LightningUserWallet } from "./LightningUserWallet";
 import { sendNotification } from "./notification";
 import { IDataNotification } from "./types";
-const { lnd } = lnService.authenticatedLndGrpc(getAuth())
-
 
 export async function onchainTransactionEventHandler(tx) {
   if (tx.is_outgoing) {
@@ -52,6 +49,8 @@ export async function onchainTransactionEventHandler(tx) {
 
 
 const main = async () => {	
+  const { lnd } = lnService.authenticatedLndGrpc(getAuth())
+
   lnService.getWalletInfo({ lnd }, (err, result) => {
     logger.debug(err, result)
   });
@@ -90,11 +89,11 @@ const main = async () => {
   subChannels.on('channel_opened', channel => {
     logger.info(channel)
   })
-
-  healthCheck()
 }
 
 const healthCheck = () => {
+  const { lnd } = lnService.authenticatedLndGrpc(getAuth())
+
   const app = express()
   const port = 8888
   app.get('/health', (req, res) => {
@@ -107,7 +106,10 @@ const healthCheck = () => {
     });
   })
   app.listen(port, () => logger.debug(`Health check listening on port ${port}!`))
-  return app
 }
 
-setupMongoConnection().then(main).catch((err) => logger.error(err))
+// only execute it is the main module
+if (require.main === module) {
+  healthCheck()
+  setupMongoConnection().then(main).catch((err) => logger.error(err))
+}

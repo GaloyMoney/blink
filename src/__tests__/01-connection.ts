@@ -25,15 +25,15 @@ it('I can connect to bitcoind', async () => {
 })
 
 it('I can connect to bank lnd', async () => {
-	const { current_block_height } = await lnService.getWalletInfo({ lnd: lndMain })
-	expect(current_block_height).toBe(0)
+	const { public_key } = await lnService.getWalletInfo({ lnd: lndMain })
+	expect(public_key.length).toBe(64 + 2)
 })
 
 it('I can connect to outside lnds', async () => {
 	const lnds = [lndOutside1, lndOutside2]
 	for (const lnd of lnds) {
-		const { current_block_height } = await lnService.getWalletInfo({ lnd })
-		expect(current_block_height).toBe(0)
+		const { public_key } = await lnService.getWalletInfo({ lnd })
+    expect(public_key.length).toBe(64 + 2)
 	}
 })
 

@@ -5,13 +5,13 @@ import { setupMongoConnection, User } from "../mongodb"
 // this import needs to be before medici
 
 import { LightningAdminWallet } from "../LightningAdminImpl"
-import { sleep, waitUntilBlockHeight } from "../utils"
+import { sleep } from "../utils"
 const mongoose = require("mongoose");
 const { once } = require('events');
 
 const lnService = require('ln-service')
 
-import {lndMain, lndOutside1, lndOutside2, bitcoindClient, RANDOM_ADDRESS, checkIsBalanced} from "../tests/helper"
+import {lndMain, lndOutside1, lndOutside2, bitcoindClient, RANDOM_ADDRESS, checkIsBalanced, waitUntilBlockHeight} from "../tests/helper"
 
 export const logger = require('pino')({ level: "debug" })
 

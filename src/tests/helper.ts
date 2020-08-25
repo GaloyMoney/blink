@@ -1,4 +1,4 @@
-import { getAuth } from "../utils";
+import { getAuth, logger, sleep } from "../utils";
 import { LightningUserWallet } from "../LightningUserWallet";
 const BitcoindClient = require('bitcoin-core')
 import * as jwt from 'jsonwebtoken';
@@ -51,4 +51,21 @@ export const checkIsBalanced = async () => {
 	const { assetsLiabilitiesDifference, lndBalanceSheetDifference } = await adminWallet.balanceSheetIsBalanced()
 	expect(assetsLiabilitiesDifference).toBeFalsy() // should be 0
 	expect(lndBalanceSheetDifference).toBeFalsy() // should be 0
+}
+
+export async function waitUntilBlockHeight({ lnd, blockHeight }) {
+  let current_block_height, is_synced_to_chain
+  ({ current_block_height, is_synced_to_chain } = await lnService.getWalletInfo({ lnd }))
+  logger.debug({ current_block_height, is_synced_to_chain })
+
+  let time = 0
+  const ms = 50
+  while (current_block_height < blockHeight || !is_synced_to_chain) {
+      await sleep(ms);
+      ({ current_block_height, is_synced_to_chain } = await lnService.getWalletInfo({ lnd }))
+      // logger.debug({ current_block_height, is_synced_to_chain})
+      time++
+  }
+  logger.debug(`Seconds to sync blockheight ${blockHeight}: ${time / (1000 / ms)}`)
+  return
 }

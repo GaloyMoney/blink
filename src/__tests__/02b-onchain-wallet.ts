@@ -1,29 +1,43 @@
 /**
  * @jest-environment node
  */
-import { MainBook, setupMongoConnection, User } from "../mongodb"
+import { MainBook, setupMongoConnection, Transaction, User } from "../mongodb"
 // this import needs to be before medici
 import { LightningAdminWallet } from "../LightningAdminImpl"
-import { sleep, waitUntilBlockHeight, btc2sat } from "../utils"
+import { sleep, btc2sat } from "../utils"
 const lnService = require('ln-service')
 
 const mongoose = require("mongoose");
 const { once } = require('events');
 
-import {lndMain, lndOutside1, lndOutside2, bitcoindClient, RANDOM_ADDRESS, getUserWallet, checkIsBalanced} from "../tests/helper"
+import {lndMain, lndOutside1, bitcoindClient, RANDOM_ADDRESS, getUserWallet, checkIsBalanced, waitUntilBlockHeight} from "../tests/helper"
 import { quit } from "../lock";
 import { onchainTransactionEventHandler } from "../trigger";
 
-let bank_address
-let lndOutside1_wallet_addr
+let adminWallet
+let initBlockCount
+let initialBalanceUser0, initialBalanceAdmin
+let wallet
 
-let admin_uid
 
 const amount_BTC = 1
 
 
 beforeAll(async () => {
-	await setupMongoConnection()
+  await setupMongoConnection()
+
+  initBlockCount = await bitcoindClient.getBlockCount()
+
+  wallet = await getUserWallet(0)
+  initialBalanceUser0 = await wallet.getBalance()
+
+  // FIXME there should be an API for this
+	await new User({ role: "admin" }).save()
+  const admin = await User.findOne({ role: "admin" })
+  adminWallet = new LightningAdminWallet({ uid: admin._id })
+  initialBalanceAdmin = await adminWallet.getBalance()
+
+  console.log({initBlockCount, initialBalanceUser0, initialBalanceAdmin})
 })
 
 afterAll(async () => {
@@ -31,27 +45,12 @@ afterAll(async () => {
 	await quit()
 })
 
-it('creating bank "admin" user', async () => {
-	// FIXME there should be an API for this
-	await new User({ role: "admin" }).save()
-	const users = await User.find({})
-	expect(users.length).toBe(1)
+const onchain_funding = async ({walletDestination, blockHeight}) => {
+  const initialBalance = await walletDestination.getBalance()
+  const address = await walletDestination.getOnChainAddress()
+  const initTransations = await wallet.getTransactions()
 
-	admin_uid = users[0]._id
-})
-
-it('funds bitcoind wallet', async () => {
-	const bitcoindAddress = await bitcoindClient.getNewAddress()
-	await bitcoindClient.generateToAddress(100 + 1, bitcoindAddress)
-	expect(await bitcoindClient.getBalance()).toBe(50)
-})
-
-const onchain_funding = async ({address, wallet, blockHeight}) => {
-	const fundLndWallet = async () => {
-		await bitcoindClient.sendToAddress(address, amount_BTC)
-		await sleep(100)
-		await bitcoindClient.generateToAddress(6, RANDOM_ADDRESS)
-	}
+	expect((<string>address).substr(0, 4)).toBe("bcrt")
 
 	const checkBalance = async () => {
 		const min_height = 1
@@ -61,15 +60,23 @@ const onchain_funding = async ({address, wallet, blockHeight}) => {
 		sub.removeAllListeners();
 
 		await waitUntilBlockHeight({lnd: lndMain, blockHeight})
-
-		// TODO: refactor
-		const admin = await User.findOne({ role: "admin" })
-		const adminWallet = new LightningAdminWallet({ uid: admin._id })
 		await adminWallet.updateUsersPendingPayment()
 
-		const balance = await wallet.getBalance()
-		expect(balance).toBe(btc2sat(amount_BTC))
-		await checkIsBalanced()
+		const balance = await walletDestination.getBalance()
+    expect(balance).toBe(initialBalance + btc2sat(amount_BTC))
+    
+    const transations = await wallet.getTransactions()
+    expect(transations.length).toBe(initTransations.length + 1)
+    expect(transations[Transaction.length - 1].type).toBe("onchain_receipt")
+    expect(transations[Transaction.length - 1].amount).toBe(btc2sat(amount_BTC))
+
+    await checkIsBalanced()    
+	}
+
+  const fundLndWallet = async () => {
+		await bitcoindClient.sendToAddress(address, amount_BTC)
+		await sleep(100)
+		await bitcoindClient.generateToAddress(6, RANDOM_ADDRESS)
 	}
 
 	await Promise.all([
@@ -78,51 +85,15 @@ const onchain_funding = async ({address, wallet, blockHeight}) => {
 	])
 }
 
-it('list transactions', async () => {
-	const wallet = await getUserWallet(0)
-  const result = await wallet.getTransactions()
-  expect(result.length).toBe(0)
-
-  // TODO validate a transaction to be and verify result == 1 afterwards.
-  // TODO more testing with devnet
-})
-
-it('funding bank with onchain tx', async () => {
-	const admin = await User.findOne({ role: "admin" })
-	const adminWallet = new LightningAdminWallet({ uid: admin._id })
-	bank_address = await adminWallet.getOnChainAddress()
-	expect(bank_address.substr(0, 4)).toBe("bcrt")
-
-	await onchain_funding({address: bank_address, wallet: adminWallet, blockHeight: 107})
-
-}, 100000)
-
 it('user0 is credited for on chain transaction', async () => {
-	const wallet = await getUserWallet(0)
-	const address = await wallet.getOnChainAddress()
-
-	expect((<string>address).substr(0, 4)).toBe("bcrt")
-
-	await onchain_funding({address, wallet, blockHeight: 113})
-
+  await onchain_funding({walletDestination: wallet, blockHeight: initBlockCount + 6})
 }, 100000)
 
-
-it('funds lndOutside1', async () => {
-	lndOutside1_wallet_addr = (await lnService.createChainAddress({ format: 'p2wpkh', lnd: lndOutside1 })).address
-	expect(lndOutside1_wallet_addr.substr(0, 4)).toBe("bcrt")
-
-	await bitcoindClient.sendToAddress(lndOutside1_wallet_addr, amount_BTC)
-
-	await bitcoindClient.generateToAddress(7, RANDOM_ADDRESS)
-
-	await waitUntilBlockHeight({lnd: lndMain, blockHeight: 120})
-	await waitUntilBlockHeight({lnd: lndOutside1, blockHeight: 120})
-	await waitUntilBlockHeight({lnd: lndOutside2, blockHeight: 120})
+it('funding bank/admin with onchain tx from bitcoind', async () => {
+	await onchain_funding({walletDestination: adminWallet, blockHeight: initBlockCount + 6})
 }, 100000)
 
 it('identifies unconfirmed incoming on chain txn', async () => {
-	const wallet = await getUserWallet(0)
 	const address = await wallet.getOnChainAddress()
 
 	expect((<string>address).substr(0, 4)).toBe("bcrt")
@@ -141,8 +112,6 @@ it('identifies unconfirmed incoming on chain txn', async () => {
 }, 100000)
 
 it('Sends onchain payment', async () => {
-	
-	const wallet = await getUserWallet(0)
 	const {address} = await lnService.createChainAddress({ format: 'p2wpkh', lnd: lndOutside1 })
 	const amount = 10000
 	const initialBalance = await wallet.getBalance()
@@ -157,7 +126,7 @@ it('Sends onchain payment', async () => {
 	sub.once('chain_transaction', onchainTransactionEventHandler)
 
 	await bitcoindClient.generateToAddress(6, RANDOM_ADDRESS)
-	await waitUntilBlockHeight({lnd: lndMain, blockHeight: 127})
+	await waitUntilBlockHeight({lnd: lndMain, blockHeight: initBlockCount + 19})
 	const [{pending, fee}] = (await MainBook.ledger({account:wallet.accountPath, hash: pendingTxn.hash, memo:"onchainpayment"})).results
 
 	const [txn] = (await wallet.getTransactions()).filter(tx => tx.hash === pendingTxn.hash)
