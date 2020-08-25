@@ -11,6 +11,7 @@
     "kill": "kill $(lsof -t -i:4000)",
     "remove-charts": "helm uninstall lnd | helm uninstall mongodb | helm uninstall redis | helm uninstall bitcoind",
     "add-charts": "export LOCAL=true && ./initLocalTest.sh",
+    "forward-mongodb": "kubectl port-forward $(kubectl get pods -l app.kubernetes.io/name=mongodb | awk '/mongo/ {print $1}') 27017",
     "restart-charts": "yarn run remove-charts || : && yarn run add-charts",
     "test-local-clean": "yarn run restart-charts && yarn run test-local",
     "test-local": "source exportLocal.sh && yarn jest --runInBand $TEST | pino-pretty -c -l",
