@@ -8,17 +8,20 @@ import { sendNotification } from "./notification";
 import { IDataNotification } from "./types";
 
 export async function onchainTransactionEventHandler(tx) {
+  logger.info({tx})
+
   if (tx.is_outgoing) {
     if (tx.is_confirmed) {
       await Transaction.updateMany({ hash: tx.id }, { pending: false })
     }
-    const entry = await Transaction.findOne({ account_path: { $all : ["Liabilities", "Customers"] }, hash: tx.id })
-    const title = `You on-chain transaction has been confirmed`
+    const entry = await Transaction.findOne({ account_path: { $all : ["Liabilities", "Customer"] }, hash: tx.id })
+    const title = `Your on-chain transaction has been confirmed`
     const data: IDataNotification = {
       type: "onchain_payment",
       hash: tx.id,
       amount: tx.tokens,
     }
+    console.log({entry})
     await sendNotification({uid: entry.account_path[2], title, data})
   } else {
     let _id

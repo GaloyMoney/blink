@@ -2,9 +2,11 @@
  * @jest-environment node
  */
 const lnService = require('ln-service')
+import { setupMongoConnection, User } from "../mongodb"
 import { bitcoindClient, lndMain, lndOutside1, lndOutside2, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper"
+const mongoose = require("mongoose");
 
-let initialBitcoinWalletBalance = 0
+const initialBitcoinWalletBalance = 0
 
 const blockReward = 50
 const numOfBlock = 10
@@ -13,11 +15,21 @@ const numOfBlock = 10
 // However, a block must have 100 confirmations before that reward can be spent, 
 // so we generate 101 blocks to get access to the coinbase transaction from block #1.
 
-// FIXME: this test is no re-entrant
+
+// !!! this test is no re-entrant !!!
 
 const amount_BTC = 1
 let lndOutside1_wallet_addr
 
+
+it('add admin', async () => {
+  // FIXME there should be an API for this
+  // FIXME XXX if several admin users are created there is an accounting issue, transaction are created several times
+  
+  await setupMongoConnection()
+  await new User({ role: "admin" }).save()
+	await mongoose.connection.close()
+})
 
 it('funds bitcoind wallet', async () => {
 	const bitcoindAddress = await bitcoindClient.getNewAddress()

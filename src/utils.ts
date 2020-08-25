@@ -1,13 +1,10 @@
-import * as moment from 'moment'
-export const validate = require("validate.js")
 import * as jwt from 'jsonwebtoken'
 import * as lnService from "ln-service"
+import * as moment from 'moment'
 import { sendText } from './text'
-import { Transaction, User } from "./mongodb";
-import { sendNotification } from "./notification";
-import { IDataNotification } from "./types"
+export const validate = require("validate.js")
 
-export const logger = require('pino')({ level: "debug" })
+export const logger = require('pino')({ level: "info" })
 const util = require('util')
 
 export const btc2sat = (btc: number) => {
@@ -77,23 +74,6 @@ export const getAuth = () => {
   const socket = `${lndip}:${port}`
 
   return { macaroon, cert, socket };
-}
-
-export async function waitUntilBlockHeight({ lnd, blockHeight }) {
-  let current_block_height, is_synced_to_chain
-  ({ current_block_height, is_synced_to_chain } = await lnService.getWalletInfo({ lnd }))
-  logger.debug({ current_block_height, is_synced_to_chain })
-
-  let time = 0
-  const ms = 50
-  while (current_block_height < blockHeight || !is_synced_to_chain) {
-      await sleep(ms);
-      ({ current_block_height, is_synced_to_chain } = await lnService.getWalletInfo({ lnd }))
-      // logger.debug({ current_block_height, is_synced_to_chain})
-      time++
-  }
-  logger.debug(`Seconds to sync blockheight ${blockHeight}: ${time / (1000 / ms)}`)
-  return
 }
 
 export async function measureTime(operation: Promise<any>): Promise<[any, number]> {
