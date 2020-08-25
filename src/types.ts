@@ -57,8 +57,8 @@ export interface IDataNotification {
 export interface INotification {
   uid: string,
   title: string,
-  body?: string,
   data?: IDataNotification
+  body?: string,
 }
 
 // onboarding

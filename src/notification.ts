@@ -27,7 +27,9 @@ export const sendNotification = async ({uid, title, body, data}: INotification) 
     tokens: user.deviceToken
   }
 
-  const response = await admin.messaging().sendMulticast(message)  
+  const response = await admin.messaging().sendMulticast(message as any)
+  // FIXME: any as a workaround to https://github.com/Microsoft/TypeScript/issues/15300
+
   logger.info(response.successCount + ' messages were sent successfully');
 
 }

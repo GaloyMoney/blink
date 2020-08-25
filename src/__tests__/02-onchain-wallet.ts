@@ -4,7 +4,7 @@
 import { MainBook, setupMongoConnection, User } from "../mongodb"
 // this import needs to be before medici
 import { LightningAdminWallet } from "../LightningAdminImpl"
-import { sleep, waitUntilBlockHeight, btc2sat, onchainTransactionEventHandler } from "../utils"
+import { sleep, waitUntilBlockHeight, btc2sat } from "../utils"
 const lnService = require('ln-service')
 
 const mongoose = require("mongoose");
@@ -12,6 +12,7 @@ const { once } = require('events');
 
 import {lndMain, lndOutside1, lndOutside2, bitcoindClient, RANDOM_ADDRESS, getUserWallet, checkIsBalanced} from "../tests/helper"
 import { quit } from "../lock";
+import { onchainTransactionEventHandler } from "../trigger";
 
 let bank_address
 let lndOutside1_wallet_addr

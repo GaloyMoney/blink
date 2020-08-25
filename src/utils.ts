@@ -114,42 +114,7 @@ export async function getOnChainTransactions({ lnd, incoming }: { lnd: any, inco
   }
 }
 
-export async function onchainTransactionEventHandler(tx) {
-  if (tx.is_outgoing) {
-    //TODO: sms for onchain payments also
-    //for outgoing onchain payment
-    const fee = tx.fee
-    if (tx.is_confirmed) {
-        await Transaction.updateMany({ hash: tx.id }, { pending: false })
-    }
-  } else {
-    let _id
-    try {
-        ({ _id } = await User.findOne({ onchain_addresses: { $in: tx.output_addresses } }, { _id: 1 }))
-        if (!_id) {
-            //FIXME: Log the onchain address, need to first find which of the tx.output_addresses
-            // belongs to us
-            const error = `No user associated with the onchain address`
-            logger.warn(error)
-            return
-        }
-    } catch (error) {
-        logger.error(error)
-        throw error
-    }
-    const data: IDataNotification = {
-      type: "onchain_receipt",
-      amount: Number(tx.tokens),
-      txid: tx.id
-    }
-    const title = tx.is_confirmed ?
-      `Your wallet has been credited with ${tx.tokens} sats` :
-      `You have a pending incoming transaction of ${tx.tokens} sats`
-    await sendNotification({ title, uid: _id, data })
-  }
-}
-
 export async function sendToAdmin(body) {
-    await sendText({ body, to: '+1***REMOVED***' })
-    await sendText({ body, to: '***REMOVED***' })
+  await sendText({ body, to: '+1***REMOVED***' })
+  await sendText({ body, to: '***REMOVED***' })
 }

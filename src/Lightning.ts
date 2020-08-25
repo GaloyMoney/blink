@@ -180,7 +180,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     const [{fee}] = outgoingOnchainTxns.filter(tx => tx.id === id)
 
     const metadata = { currency: this.currency, hash: id, type: "onchain_payment", pending: true, fee}
-    const entry = await MainBook.entry(description)
+    await MainBook.entry(description)
       .debit('Assets:Reserve:Lightning', amount + fee, metadata)
       .credit(this.accountPath, amount + fee, metadata)
       .commit()
