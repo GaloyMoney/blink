@@ -2,7 +2,6 @@
  * @jest-environment node
  */
 // this import needs to be before medici
-import { LightningAdminWallet } from "../LightningAdminImpl";
 import { quit } from "../lock";
 import { MainBook, setupMongoConnection, User } from "../mongodb";
 import { bitcoindClient, checkIsBalanced, getUserWallet, lndMain, lndOutside1, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
@@ -48,15 +47,17 @@ it('Sends onchain payment', async () => {
   expect(payResult).toBeTruthy()
 
   const [pendingTxn] = (await MainBook.ledger({account:wallet.accountPath, pending: true, memo: "onchainpayment"})).results
-  console.log({pendingTxn})
 
 	const interimBalance = await wallet.getBalance()
 	expect(interimBalance).toBe(initialBalanceUser0 - amount - pendingTxn.fee)
-	await checkIsBalanced()
+	// await checkIsBalanced()
 	
-	const sub = lnService.subscribeToTransactions({lnd:lndMain})
-  
+  const sub = lnService.subscribeToTransactions({lnd:lndMain})
+
+	const subSpend = lnService.subscribeToChainSpend({lnd:lndMain, bech32_address: address, min_height: 1})
+
   await Promise.all([
+    subSpend.once('confirmation', ({height}) => console.log({height})),
     sub.once('chain_transaction', onchainTransactionEventHandler),
     bitcoindClient.generateToAddress(6, RANDOM_ADDRESS),
     waitUntilBlockHeight({lnd: lndMain, blockHeight: initBlockCount + 6}),
