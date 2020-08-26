@@ -154,7 +154,8 @@ export const LightningMixin = (superclass) => class extends superclass {
       logger.error(error)
       throw new Error(`Unable to estimate fee for on-chain transaction: ${error}`)
     }
-     
+    
+    // case where there is not enough money available within lnd on-chain wallet
     if(onChainBalance < amount + estimatedFee) {
       const body = `insufficient onchain balance. have ${onChainBalance}, need ${amount + estimatedFee}`
 
@@ -163,6 +164,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       throw Error(body)
     }
 
+    // case where the user doesn't have enough money
     if(balance < amount + estimatedFee) {
       throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${amount + estimatedFee}`)
       // TODO: report error in a way this can be handled propertly in React Native
