@@ -63,6 +63,9 @@ it('Sends onchain payment', async () => {
     waitUntilBlockHeight({lnd: lndMain, blockHeight: initBlockCount + 6}),
   ])
 
+  // FIXME why sleep is needed here?
+  await sleep(2000)
+
   expect(notification.sendNotification.mock.calls.length).toBe(1)
   expect(notification.sendNotification.mock.calls[0][0].data.type).toBe("onchain_payment")
 
