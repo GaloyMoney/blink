@@ -19,19 +19,38 @@ export const sendNotification = async ({uid, title, body, data}: INotification) 
   const user = await User.findOne({ _id: uid })
   const message = {
     // only string can be sent to notifications
-    data: mapValues(data, v => String(v)), 
-    // fcmOptions: {}
-    // apns: {}
+    data: {
+      ...mapValues(data, v => String(v)),
+      // title,
+      // body,
+    }, 
+
+    // if we set notification, it will appears on both background and quit stage for iOS. 
+    // if we don't set notidications, this will appear for background but not quit stage
+    // we may be able to use data only, but this should be implemented first:
+    // https://rnfirebase.io/messaging/usage#background-application-state
+    // 
     notification: {
       title,
-      body
     },
-    tokens: user.deviceToken
   }
 
+  if (body) {
+    message['notification']['body'] = body
+  }
+  
   console.log({message})
 
-  const response = await admin.messaging().sendMulticast(message as any)
+  const response = await admin.messaging().sendToDevice(
+    user.deviceToken,
+    message as any,
+    {
+      // Required for background/quit data-only messages on iOS
+      // contentAvailable: true,
+      // Required for background/quit data-only messages on Android
+      // priority: 'high',
+    },
+    )
   // FIXME: any as a workaround to https://github.com/Microsoft/TypeScript/issues/15300
 
   logger.info(response.successCount + ' messages were sent successfully');
