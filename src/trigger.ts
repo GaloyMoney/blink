@@ -107,7 +107,7 @@ const healthCheck = () => {
       }
     });
   })
-  app.listen(port, () => logger.debug(`Health check listening on port ${port}!`))
+  app.listen(port, () => logger.info(`Health check listening on port ${port}!`))
 }
 
 // only execute it is the main module
