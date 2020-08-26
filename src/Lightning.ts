@@ -501,17 +501,20 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     if (invoice.is_confirmed) {
 
-      
-
       try {
 
+        const invoiceUser = await InvoiceUser.findOne({ _id: hash, uid: this.uid })
+
+        if (!invoiceUser.pending) {
+          // invoice has already been processed
+          return true
+        }
+
+        if (!invoiceUser) {
+          throw Error(`no mongodb entry is associated with this invoice ${invoice}`)
+        }
+
         return await using(disposer(this.uid), async (lock) => {
-
-          const invoiceUser = await InvoiceUser.findOne({ _id: hash, pending: true, uid: this.uid })
-
-          if (!invoiceUser) {
-            throw Error(`no mongodb entry is associated with this invoice ${invoice}`)
-          }
 
           // TODO: use a transaction here
           // const session = await InvoiceUser.startSession()
@@ -532,7 +535,6 @@ export const LightningMixin = (superclass) => class extends superclass {
           // session.endSession()
 
           return true
-
         })
 
       } catch (err) {
