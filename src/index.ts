@@ -18,6 +18,7 @@ dotenv.config()
 
 
 import { logger } from "./utils"
+import moment from "moment";
 const pino = require('pino-http')({
   logger,
   // TODO: get uid and other information from the request.
@@ -191,7 +192,7 @@ const resolvers = {
 
     // FIXME test
     testMessage: async (_, __, { uid }) => {
-      sendNotification({uid, title: "new title", body: "new Message"})
+      await sendNotification({uid, title: "Title", body: `New message sent at ${moment.utc().format('YYYY-MM-DD HH:mm:ss')}`})
       return {success: true}
     },
   }

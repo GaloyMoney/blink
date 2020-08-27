@@ -154,7 +154,8 @@ export const LightningMixin = (superclass) => class extends superclass {
       logger.error(error)
       throw new Error(`Unable to estimate fee for on-chain transaction: ${error}`)
     }
-     
+    
+    // case where there is not enough money available within lnd on-chain wallet
     if(onChainBalance < amount + estimatedFee) {
       const body = `insufficient onchain balance. have ${onChainBalance}, need ${amount + estimatedFee}`
 
@@ -163,6 +164,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       throw Error(body)
     }
 
+    // case where the user doesn't have enough money
     if(balance < amount + estimatedFee) {
       throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${amount + estimatedFee}`)
       // TODO: report error in a way this can be handled propertly in React Native
@@ -180,7 +182,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     const [{fee}] = outgoingOnchainTxns.filter(tx => tx.id === id)
 
     const metadata = { currency: this.currency, hash: id, type: "onchain_payment", pending: true, fee}
-    const entry = await MainBook.entry(description)
+    await MainBook.entry(description)
       .debit('Assets:Reserve:Lightning', amount + fee, metadata)
       .credit(this.accountPath, amount + fee, metadata)
       .commit()
@@ -499,17 +501,20 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     if (invoice.is_confirmed) {
 
-      
-
       try {
 
+        const invoiceUser = await InvoiceUser.findOne({ _id: hash, uid: this.uid })
+
+        if (!invoiceUser.pending) {
+          // invoice has already been processed
+          return true
+        }
+
+        if (!invoiceUser) {
+          throw Error(`no mongodb entry is associated with this invoice ${invoice}`)
+        }
+
         return await using(disposer(this.uid), async (lock) => {
-
-          const invoiceUser = await InvoiceUser.findOne({ _id: hash, pending: true, uid: this.uid })
-
-          if (!invoiceUser) {
-            throw Error(`no mongodb entry is associated with this invoice ${invoice}`)
-          }
 
           // TODO: use a transaction here
           // const session = await InvoiceUser.startSession()
@@ -530,7 +535,6 @@ export const LightningMixin = (superclass) => class extends superclass {
           // session.endSession()
 
           return true
-
         })
 
       } catch (err) {
@@ -599,7 +603,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         // has the transaction has not been added yet to the user account?
         const mongotx = await Transaction.findOne({ account_path: this.accountPathMedici, type, hash: matched_tx.id })
-        logger.info({ matched_tx, mongotx }, "updateOnchainPayment with user %o", this.uid)
+        logger.debug({ matched_tx, mongotx }, "updateOnchainPayment with user %o", this.uid)
 
         if (!mongotx) {
           await MainBook.entry()

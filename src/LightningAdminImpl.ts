@@ -18,6 +18,7 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
   async updateUsersPendingPayment() {
     let userWallet
 
+    // FIXME: looping on user only here should be expanded to admin
     for await (const user of User.find({"role": "user"}, { _id: 1})) {
       logger.debug("updating user %o from admin wallet", user._id)
 
@@ -31,7 +32,6 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
   }
 
   async getBalanceSheet() {
-    const MainBook =  new book("MainBook")
     const accounts = await MainBook.listAccounts()
     
     // used for debugging

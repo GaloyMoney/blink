@@ -74,8 +74,6 @@ export class AdminWallet extends Wallet {
         throw Error(`amount has to be positive, is: ${amount}`)
     }
 
-    
-
     return MainBook.entry(memo ?? 'Withdraw funds')
     .debit(this.accountPath, amount, {currency: this.currency, type})
     .credit(this.customerPath(uid), amount, {currency: this.currency, type})
