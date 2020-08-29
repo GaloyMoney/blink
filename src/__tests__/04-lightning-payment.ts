@@ -214,6 +214,17 @@ it('fails to pay regular invoice with separate amt', async () => {
   await expect(userWallet1.pay({ invoice: request, amount: amountInvoice })).rejects.toThrow()
 })
 
+// it('pays invoice with route hint', async () => {
+//   const {request} = await lnService.createInvoice({lnd:lndOutside2, tokens: amountInvoice})
+// })
+
+it('makes onchain on-us transaction', async () => {
+  //TODO: WIP
+    const user2Address = await userWallet2.getOnChainAddress()
+    const paymentResult = await userWallet1.onChainPay({address: user2Address, amount: amountInvoice})
+    expect(paymentResult).toBe(true)
+})
+
 // it('testDbTransaction', async () => {
 //   //TODO try to fetch simulataneously (ie: with Premise.all[])
 //   // balances with pending but settled transaction to see if 
