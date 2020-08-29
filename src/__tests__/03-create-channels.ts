@@ -127,7 +127,6 @@ it('opens private channel from lndOutside1 to lndOutside2', async () => {
 
 	await Promise.all([
 		openChannel({ lnd: lndOutside1, other_lnd: lndOutside2, socket, is_private: true }),
-		once(subscription, 'channel_updated')
 	])
 
 	subscription.removeAllListeners();
