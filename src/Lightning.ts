@@ -200,13 +200,12 @@ export const LightningMixin = (superclass) => class extends superclass {
     let tokens, fee = 0
     let destination, id, description, route, routes
     let payeeUid
+    let routeHint = []
     let messages: Object[] = []
-
-    
 
     if (params.invoice) {
       // TODO replace this with bolt11 utils library
-      ({ id, tokens, destination, description } = await lnService.decodePaymentRequest({ lnd: this.lnd, request: params.invoice }))
+      ({ id, tokens, destination, description, routes: routeHint } = await lnService.decodePaymentRequest({ lnd: this.lnd, request: params.invoice }))
 
       if (!!params.amount && tokens !== 0) {
         throw Error('Invoice contains non-zero amount, but amount was also passed separately')
@@ -268,7 +267,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       // TODO add private route from invoice
 
       try {
-        ({ routes } = await lnService.getRoutes({ destination, lnd: this.lnd, tokens }));
+        ({ routes } = await lnService.getRoutes({ destination, lnd: this.lnd, tokens, routes: routeHint }));
 
         if (routes.length === 0) {
           logger.warn("there is no potential route for payment to %o from user %o", destination, this.uid)
