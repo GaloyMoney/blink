@@ -123,13 +123,9 @@ it('opens channel from lndOutside1 to lnd1', async () => {
 it('opens private channel from lndOutside1 to lndOutside2', async () => {
 	const socket = `lnd-outside-2:9735`
 
-	const subscription = lnService.subscribeToGraph({ lnd: lndMain });
-
 	await Promise.all([
 		openChannel({ lnd: lndOutside1, other_lnd: lndOutside2, socket, is_private: true }),
 	])
-
-	subscription.removeAllListeners();
 
 	const { channels } = await lnService.getChannels({ lnd: lndOutside1 })
 	expect(channels.length).toEqual(initChannelOutside1 + 4)
