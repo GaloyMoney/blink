@@ -96,7 +96,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     const results_processed = results.map((item) => ({
       created_at: moment(item.timestamp).unix(),
       amount: item.debit - item.credit,
-      description: formatInvoice(item.type, item.memo, item.pending, item.credit > 0 ? true: false),
+      description: formatInvoice(item.type, item.memo, item.pending, item.credit > 0 ? true : false),
       hash: item.hash,
       fee: item.fee,
       // destination: TODO
@@ -107,7 +107,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     return results_processed
   }
 
-  async addInvoice({ value, memo }: IAddInvoiceRequest = {value: undefined, memo: undefined}): Promise<String> {
+  async addInvoice({ value, memo }: IAddInvoiceRequest = { value: undefined, memo: undefined }): Promise<String> {
     let request, id
 
     logger.error(request)

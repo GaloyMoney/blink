@@ -51,11 +51,10 @@ const openChannel = async ({ lnd, other_lnd, socket, is_private = false }) => {
 	let openChannelPromise
 
 	if (lnd === lndMain) {
-		openChannelPromise = adminWallet.openChannel({ local_tokens, public_key, socket, is_private })
+		openChannelPromise = adminWallet.openChannel({ local_tokens, public_key, socket })
 	} else {
 		openChannelPromise = lnService.openChannel({
-			lnd, local_tokens,
-			partner_public_key: public_key, partner_socket: socket
+			lnd, local_tokens, is_private, partner_public_key: public_key, partner_socket: socket
 		})
 	}
 
@@ -134,5 +133,5 @@ it('opens private channel from lndOutside1 to lndOutside2', async () => {
 	subscription.removeAllListeners();
 
 	const { channels } = await lnService.getChannels({ lnd: lndOutside1 })
-	expect(channels.length).toEqual(initChannelOutside1 + 3)
+	expect(channels.length).toEqual(initChannelOutside1 + 4)
 }, 240000)
