@@ -88,7 +88,6 @@ it('makes onchain on-us transaction', async () => {
 
   const user2Address = await userWallet2.getOnChainAddress()
 
-  const user1InitialBalance = await userWallet1.getBalance()
   const user2InitialBalance = await userWallet2.getBalance()
 
   const paymentResult = await userWallet1.onChainPay({ address: user2Address as string, amount })
@@ -97,6 +96,6 @@ it('makes onchain on-us transaction', async () => {
   const user2FinalBalance = await userWallet2.getBalance()
 
   expect(paymentResult).toBe(true)
-  expect(user1FinalBalance).toBe(user1InitialBalance - amount)
+  expect(user1FinalBalance).toBe(initialBalanceUser0 - amount)
   expect(user2FinalBalance).toBe(user2InitialBalance + amount)
 })
