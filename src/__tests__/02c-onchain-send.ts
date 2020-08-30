@@ -4,7 +4,7 @@
 // this import needs to be before medici
 import { quit } from "../lock";
 import { MainBook, setupMongoConnection, User } from "../mongodb";
-import { bitcoindClient, checkIsBalanced, getUserWallet, lndMain, lndOutside1, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
+import { bitcoindClient, checkIsBalanced, getUserWallet, lndMain, lndOutside1, RANDOM_ADDRESS, waitUntilBlockHeight, onBoardingEarnIds } from "../tests/helper";
 import { onchainTransactionEventHandler } from "../trigger";
 import { sleep } from "../utils";
 const lnService = require('ln-service')
@@ -85,6 +85,8 @@ it('makes onchain on-us transaction', async () => {
   //TODO: WIP
   const userWallet2 = await getUserWallet(2)
   const userWallet1 = await getUserWallet(1)
+  await userWallet1.addEarn(onBoardingEarnIds)
+  initialBalanceUser0 = await wallet.getBalance()
 
   const user2Address = await userWallet2.getOnChainAddress()
 

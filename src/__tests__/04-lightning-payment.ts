@@ -6,7 +6,7 @@ import { InvoiceUser, MainBook, setupMongoConnection } from "../mongodb";
 import { createHash, randomBytes } from 'crypto';
 import { LightningUserWallet } from "../LightningUserWallet";
 import { quit } from "../lock";
-import { checkIsBalanced, getUidFromToken, getUserWallet, lndOutside1, lndOutside2 } from "../tests/helper";
+import { checkIsBalanced, getUidFromToken, getUserWallet, lndOutside1, lndOutside2, onBoardingEarnAmt, onBoardingEarnIds } from "../tests/helper";
 const lnService = require('ln-service')
 const lightningPayReq = require('bolt11')
 const mongoose = require("mongoose")
