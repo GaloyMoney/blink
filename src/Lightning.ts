@@ -148,7 +148,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
       if (user) {
         // FIXME: Using == here because === returns false even for same uids
-        if (user.uid == this.uid) {
+        if (user._id == this.uid) {
           throw Error('User tried to pay themselves')
         }
 
@@ -157,8 +157,8 @@ export const LightningMixin = (superclass) => class extends superclass {
           throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${amount}`)
         }
 
-        const payeeAccountPath = await this.customerPath(user.uid)
-        const metadata = { currency: this.currency, hash: "", type: "on_us", pending: false }
+        const payeeAccountPath = await this.customerPath(user._id)
+        const metadata = { currency: this.currency, type: "on_us", pending: false }
         await MainBook.entry()
           .credit(this.accountPath, amount, metadata)
           .debit(payeeAccountPath, amount, metadata)
