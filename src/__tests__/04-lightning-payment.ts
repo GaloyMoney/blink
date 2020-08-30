@@ -215,15 +215,8 @@ it('fails to pay regular invoice with separate amt', async () => {
 })
 
 // it('pays invoice with route hint', async () => {
-//   const {request} = await lnService.createInvoice({lnd:lndOutside2, tokens: amountInvoice})
+//   const {request} = await lnService.createInvoice({lnd:lndOutside2, tokens: amountInvoice, is_including_private_channels: true})
 // })
-
-it('makes onchain on-us transaction', async () => {
-  //TODO: WIP
-    const user2Address = await userWallet2.getOnChainAddress()
-    const paymentResult = await userWallet1.onChainPay({address: user2Address, amount: amountInvoice})
-    expect(paymentResult).toBe(true)
-})
 
 // it('testDbTransaction', async () => {
 //   //TODO try to fetch simulataneously (ie: with Premise.all[])
