@@ -23,19 +23,19 @@ let lndOutside1_wallet_addr
 
 
 it('add admin', async () => {
-  // FIXME there should be an API for this
-  // FIXME XXX if several admin users are created there is an accounting issue, transaction are created several times
-  
-  await setupMongoConnection()
-  await new User({ role: "admin" }).save()
+	// FIXME there should be an API for this
+	// FIXME XXX if several admin users are created there is an accounting issue, transaction are created several times
+
+	await setupMongoConnection()
+	await new User({ role: "admin" }).save()
 	await mongoose.connection.close()
 })
 
 it('funds bitcoind wallet', async () => {
 	const bitcoindAddress = await bitcoindClient.getNewAddress()
-  await bitcoindClient.generateToAddress(numOfBlock, bitcoindAddress)
-  await bitcoindClient.generateToAddress(100, RANDOM_ADDRESS)
-  const balance = await bitcoindClient.getBalance()
+	await bitcoindClient.generateToAddress(numOfBlock, bitcoindAddress)
+	await bitcoindClient.generateToAddress(100, RANDOM_ADDRESS)
+	const balance = await bitcoindClient.getBalance()
 	expect(balance).toBe(initialBitcoinWalletBalance + blockReward * numOfBlock)
 })
 
@@ -46,7 +46,7 @@ it('funds outside lnd node', async () => {
 	await bitcoindClient.sendToAddress(lndOutside1_wallet_addr, amount_BTC)
 	await bitcoindClient.generateToAddress(6, RANDOM_ADDRESS)
 
-	await waitUntilBlockHeight({lnd: lndMain, blockHeight: 100 + numOfBlock + 6})
-	await waitUntilBlockHeight({lnd: lndOutside1, blockHeight: 100 + numOfBlock + 6})
-	await waitUntilBlockHeight({lnd: lndOutside2, blockHeight: 100 + numOfBlock + 6})
+	await waitUntilBlockHeight({ lnd: lndMain, blockHeight: 100 + numOfBlock + 6 })
+	await waitUntilBlockHeight({ lnd: lndOutside1, blockHeight: 100 + numOfBlock + 6 })
+	await waitUntilBlockHeight({ lnd: lndOutside2, blockHeight: 100 + numOfBlock + 6 })
 }, 100000)
