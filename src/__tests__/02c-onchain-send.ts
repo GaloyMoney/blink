@@ -84,20 +84,20 @@ it('Sends onchain payment', async () => {
 it('makes onchain on-us transaction', async () => {
   //TODO: WIP
   const userWallet2 = await getUserWallet(2)
-  const userWallet1 = await getUserWallet(1)
-  await userWallet1.addEarn(onBoardingEarnIds)
-  initialBalanceUser0 = await wallet.getBalance()
+  const userWallet3 = await getUserWallet(3)
+  await userWallet3.addEarn(onBoardingEarnIds)
 
   const user2Address = await userWallet2.getOnChainAddress()
 
   const user2InitialBalance = await userWallet2.getBalance()
+  const user3InitialBalance = await userWallet3.getBalance()
 
-  const paymentResult = await userWallet1.onChainPay({ address: user2Address as string, amount })
+  const paymentResult = await userWallet3.onChainPay({ address: user2Address as string, amount })
 
-  const user1FinalBalance = await userWallet1.getBalance()
+  const user3FinalBalance = await userWallet3.getBalance()
   const user2FinalBalance = await userWallet2.getBalance()
 
   expect(paymentResult).toBe(true)
-  expect(user1FinalBalance).toBe(initialBalanceUser0 - amount)
+  expect(user3FinalBalance).toBe(user3InitialBalance - amount)
   expect(user2FinalBalance).toBe(user2InitialBalance + amount)
 })
