@@ -7,7 +7,6 @@ import { createHash, randomBytes } from 'crypto';
 import { LightningUserWallet } from "../LightningUserWallet";
 import { quit } from "../lock";
 import { checkIsBalanced, getUidFromToken, getUserWallet, lndOutside1, lndOutside2 } from "../tests/helper";
-import { OnboardingEarn } from "../types";
 const lnService = require('ln-service')
 const lightningPayReq = require('bolt11')
 const mongoose = require("mongoose")
@@ -16,13 +15,6 @@ let userWallet1, userWallet2
 let uidFromToken1, uidFromToken2
 
 const logger = require('pino')({ level: "debug" })
-
-
-//FIXME: Maybe switch to using single reward
-const onBoardingEarnAmt: number = Object.values(OnboardingEarn).reduce((a, b) => a + b, 0)
-const onBoardingEarnIds: string[] = Object.keys(OnboardingEarn)
-
-logger.info({onBoardingEarnAmt})
 
 beforeAll(async () => {
   await setupMongoConnection()
