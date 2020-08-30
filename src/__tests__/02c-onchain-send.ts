@@ -96,3 +96,8 @@ it('makes onchain on-us transaction', async () => {
   expect(finalBalanceUser0).toBe(initialBalanceUser0 - amount)
   expect(finalBalanceUser3).toBe(initialBalanceUser3 + amount)
 })
+
+it('fails to make onchain payment to self', async () => {
+  const address = await wallet.getOnChainAddress()
+  await expect(wallet.onChainPay({ address, amount })).rejects.toThrow()
+})
