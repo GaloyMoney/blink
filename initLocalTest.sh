@@ -6,7 +6,7 @@ if [ ${LOCAL} ]; then
   # setting up short term token so that lnd can be pulled from gcr.io
   SECRETNAME=galoyapp.secret.com
 
-  kubectl delete secret/$SECRETNAME
+  kubectl delete secret/$SECRETNAME || :
 
   kubectl create secret docker-registry $SECRETNAME \
     --docker-server=https://gcr.io \
