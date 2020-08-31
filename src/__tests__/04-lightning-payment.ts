@@ -16,6 +16,8 @@ let uidFromToken1, uidFromToken2
 
 const logger = require('pino')({ level: "debug" })
 
+const amountInvoice = 1000
+
 beforeAll(async () => {
   await setupMongoConnection()
   uidFromToken1 = await getUidFromToken(1)
@@ -41,7 +43,7 @@ it('add invoice', async () => {
   const decoded = lightningPayReq.decode(request)
   const decodedHash = decoded.tags.filter(item => item.tagName === "payment_hash")[0].data
 
-  
+
   const { uid } = await InvoiceUser.findById(decodedHash)
   //expect(uid).toBe(user1) does not work
   expect(uid).toBe(uidFromToken1)
@@ -55,7 +57,7 @@ it('add invoice to different user', async () => {
   const decoded = lightningPayReq.decode(request)
   const decodedHash = decoded.tags.filter(item => item.tagName === "payment_hash")[0].data
 
-  
+
   const { uid } = await InvoiceUser.findById(decodedHash)
 
   expect(uid).toBe(uidFromToken2)
@@ -67,8 +69,6 @@ it('add earn adds balance correctly', async () => {
   expect(finalBalance).toBe(onBoardingEarnAmt)
   await checkIsBalanced()
 })
-
-const amountInvoice = 1000
 
 it('payInvoice', async () => {
   const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: amountInvoice })
@@ -98,7 +98,7 @@ it('payInvoiceToAnotherGaloyUser', async () => {
   await userWallet1.pay({ invoice: request })
   const user1FinalBalance = await userWallet1.getBalance()
   const user2FinalBalance = await userWallet2.getBalance()
-  expect(user1FinalBalance).toBe(onBoardingEarnAmt - amountInvoice) 
+  expect(user1FinalBalance).toBe(onBoardingEarnAmt - amountInvoice)
   expect(user2FinalBalance).toBe(1000)
   const user1Txn = await userWallet1.getTransactions()
   const user1OnUsTxn = user1Txn.filter(txn => txn.type == 'on_us')
@@ -156,7 +156,7 @@ it('pay hodl invoice', async () => {
   const finalBalance = await userWallet1.getBalance()
   // FIXME: necessary to not have openHandler ?
   // https://github.com/alexbosworth/ln-service/issues/122
-  await lnService.settleHodlInvoice({lnd: lndOutside1, secret: secret.toString('hex')});
+  await lnService.settleHodlInvoice({ lnd: lndOutside1, secret: secret.toString('hex') });
   expect(finalBalance).toBe(onBoardingEarnAmt - 3 * amountInvoice)
   await checkIsBalanced()
 }, 50000)
@@ -167,8 +167,8 @@ it('payInvoice to lnd outside 2', async () => {
   const result = await userWallet1.pay({ invoice: request })
   expect(result).toBe("success")
   const finalBalance = await userWallet1.getBalance()
-  
-  const fee = (await MainBook.ledger({account:userWallet1.accountPath, hash: id})).results[0].fee
+
+  const { results: [{ fee }] } = await MainBook.ledger({ account: userWallet1.accountPath, hash: id })
   expect(finalBalance).toBe(onBoardingEarnAmt - 4 * amountInvoice - fee)
   await checkIsBalanced()
 }, 100000)
@@ -180,7 +180,7 @@ it('if fee are too high, payment is cancelled', async () => {
 it('pays zero amount invoice', async () => {
   const { request } = await lnService.createInvoice({ lnd: lndOutside1 })
   const initialBalance = await userWallet1.getBalance()
-  const result = await userWallet1.pay({invoice: request, amount: amountInvoice})
+  const result = await userWallet1.pay({ invoice: request, amount: amountInvoice })
   expect(result).toBe("success")
   const finalBalance = await userWallet1.getBalance()
   expect(finalBalance).toBe(initialBalance - amountInvoice)
