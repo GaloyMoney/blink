@@ -13,7 +13,7 @@ const mongoose = require("mongoose");
 
 let initBlockCount
 let initialBalanceUser0
-let wallet
+let wallet, userWallet3
 
 
 jest.mock('../notification')
@@ -23,6 +23,7 @@ const notification = require("../notification");
 beforeAll(async () => {
   await setupMongoConnection()
   wallet = await getUserWallet(0)
+  userWallet3 = await getUserWallet(3)
 })
 
 beforeEach(async () => {
@@ -83,7 +84,6 @@ it('Sends onchain payment', async () => {
 
 it('makes onchain on-us transaction', async () => {
   //TODO: WIP
-  const userWallet3 = await getUserWallet(3)
   const user3Address = await userWallet3.getOnChainAddress()
   const initialBalanceUser3 = await userWallet3.getBalance()
 
@@ -100,4 +100,19 @@ it('makes onchain on-us transaction', async () => {
 it('fails to make onchain payment to self', async () => {
   const address = await wallet.getOnChainAddress()
   await expect(wallet.onChainPay({ address, amount })).rejects.toThrow()
+})
+
+it('fails to make on-us onchain payment when insufficient balance', async () => {
+  const address = await userWallet3.getOnChainAddress()
+  await expect(wallet.onChainPay({ address, amount: initialBalanceUser0 + 1 })).rejects.toThrow()
+})
+
+it('fails to make onchain payment when insufficient balance', async () => {
+  const { address } = await lnService.createChainAddress({
+    lnd: lndOutside1,
+    format: 'p2wpkh',
+  })
+  const initialBalanceUser3 = await userWallet3.getBalance()
+  //should fail because user does not have balance to pay for on-chain fee
+  await expect(userWallet3.onChainPay({ address: address as string, amount: initialBalanceUser3 })).rejects.toThrow()
 })
