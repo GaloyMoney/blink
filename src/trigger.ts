@@ -110,7 +110,7 @@ const healthCheck = () => {
   app.listen(port, () => logger.info(`Health check listening on port ${port}!`))
 }
 
-// only execute it is the main module
+// only execute if it is the main module
 if (require.main === module) {
   healthCheck()
   setupMongoConnection().then(main).catch((err) => logger.error(err))
