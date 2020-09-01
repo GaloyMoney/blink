@@ -153,7 +153,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       estimatedFee = (await lnService.getChainFeeEstimate({lnd:this.lnd, send_to: sendTo})).fee
     } catch(error) {
       logger.error(error)
-      throw new Error(`Unable to estimate fee for on-chain transaction: ${error}`)
+      throw new Error(`Unable to estimate fee for on-chain transaction: ${util.inspect({ error }, false, Infinity)}`)
     }
     
     // case where there is not enough money available within lnd on-chain wallet
