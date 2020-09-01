@@ -262,6 +262,7 @@ jobs:
       - gcp-gcr/gcr-auth
       - gcp-gcr/push-image:
           image: test-image
+          tag: $CIRCLE_SHA1
           
   test:
     working_directory: ~/GaloyApp/backend
