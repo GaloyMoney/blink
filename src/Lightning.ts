@@ -6,6 +6,7 @@ import { disposer } from "./lock";
 import { IAddInvoiceRequest, ILightningTransaction, IPaymentRequest, TransactionType, IOnChainPayment } from "./types";
 import { getAuth, logger, timeout, measureTime, getOnChainTransactions, sendToAdmin } from "./utils";
 import { InvoiceUser, MainBook, Transaction, User } from "./mongodb";
+import { sendLightningNotification } from "./trigger"
 const util = require('util')
 
 const using = require('bluebird').using
@@ -253,13 +254,16 @@ export const LightningMixin = (superclass) => class extends superclass {
         if (balance < tokens) {
           throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${tokens}`)
         }
+
         const payeeAccountPath = await this.customerPath(payeeUid)
         const metadata = { currency: this.currency, hash: id, type: "on_us", pending: false }
+        
         await MainBook.entry()
           .credit(this.accountPath, tokens, metadata)
           .debit(payeeAccountPath, tokens, metadata)
           .commit()
 
+        await sendLightningNotification({amount: tokens, uid: payeeUid, hash: id})
         await InvoiceUser.findOneAndUpdate({ _id: id }, { pending: false })
         await lnService.cancelHodlInvoice({ lnd: this.lnd, id })
         return "success"
@@ -495,11 +499,18 @@ export const LightningMixin = (superclass) => class extends superclass {
       // at least return same error if invoice not from user
       // or invoice doesn't exist. to preserve privacy and prevent DDOS attack.
       invoice = await lnService.getInvoice({ lnd: this.lnd, id: hash })
+      console.log({invoice})
+
     } catch (err) {
       throw new Error(`issue fetching invoice: ${util.inspect({ err }, { showHidden: false, depth: null })})`)
     }
 
-    if (invoice.is_confirmed) {
+    if (invoice.is_canceled) {
+      // TODO: proper testing
+      const result = Transaction.findOne({currency: this.currency, id: hash, type: "on_us", pending: false})
+      return !!result
+
+    } else if (invoice.is_confirmed) {
 
       try {
 
@@ -559,7 +570,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
   async getIncomingOnchainPayments(confirmed: boolean) {
 
-    let incoming_txs = (await getOnChainTransactions({lnd: this.lnd, incoming: true}))
+    const incoming_txs = (await getOnChainTransactions({lnd: this.lnd, incoming: true}))
       .filter(tx => tx.is_confirmed === confirmed)
 
     const { onchain_addresses } = await User.findOne({ _id: this.uid })
