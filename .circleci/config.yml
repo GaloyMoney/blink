@@ -258,6 +258,7 @@ jobs:
             echo "BUILDTIME=$(date -u '+%F-%T')" >> ./functions/.env
       - gcp-gcr/build-image:
           image: test-image
+          tag: $CIRCLE_SHA1
       - gcp-gcr/gcr-auth
       - gcp-gcr/push-image:
           image: test-image
