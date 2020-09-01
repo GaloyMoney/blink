@@ -1,7 +1,5 @@
 set -e
 
-NAMESPACE=$1
-
 if [ "$NAMESPACE" == "testnet" ] || [ "$NAMESPACE" == "mainnet" ];
 then
   NETWORK=$NAMESPACE
@@ -53,6 +51,11 @@ kubectlWait app=redis
 kubectlWait app.kubernetes.io/component=mongodb
 sleep 8
 kubectlWait app=lnd-container
+
+if [ ${LOCAL} ]
+then
+  exit 0
+fi
 
 export MACAROON=$(kubectl exec --namespace=$NAMESPACE lnd-container-0 -- base64 /root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
 
