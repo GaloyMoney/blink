@@ -338,7 +338,7 @@ jobs:
             gcloud config set project ${GOOGLE_PROJECT_ID}
             gcloud container clusters get-credentials testnet-cluster --region us-central1-a --project ${GOOGLE_PROJECT_ID}
       - run:
-          name: Upgrade prometheus and graphql servers
+          name: Upgrade mainnet deployments
           command: |
             export NAMESPACE=mainnet && ./initLocalTest.sh
                
