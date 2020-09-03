@@ -51,7 +51,7 @@ it('Sends onchain payment', async () => {
 
 	const interimBalance = await wallet.getBalance()
 	expect(interimBalance).toBe(initialBalanceUser0 - amount - pendingTxn.fee)
-	// await checkIsBalanced()
+	await checkIsBalanced()
 
   const sub = lnService.subscribeToTransactions({ lnd: lndMain })
 
@@ -79,11 +79,10 @@ it('Sends onchain payment', async () => {
 
 	const finalBalance = await wallet.getBalance()
 	expect(finalBalance).toBe(initialBalanceUser0 - amount - fee)
-	// await checkIsBalanced()
+	await checkIsBalanced()
 }, 100000)
 
 it('makes onchain on-us transaction', async () => {
-  //TODO: WIP
   const user3Address = await userWallet3.getOnChainAddress()
   const initialBalanceUser3 = await userWallet3.getBalance()
 
@@ -95,6 +94,7 @@ it('makes onchain on-us transaction', async () => {
   expect(paymentResult).toBe(true)
   expect(finalBalanceUser0).toBe(initialBalanceUser0 - amount)
   expect(finalBalanceUser3).toBe(initialBalanceUser3 + amount)
+  await checkIsBalanced()
 })
 
 it('fails to make onchain payment to self', async () => {
