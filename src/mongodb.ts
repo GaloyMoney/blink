@@ -42,7 +42,10 @@ const UserSchema = new Schema({
     default: []
   },
   level: Number,
-  phone: String, // TODO we should store country as a separate string
+  phone: { // TODO we should store country as a separate string
+    type: String,
+    unique : true,
+  }, 
   deviceToken: {
     type: [String],
     default: []
