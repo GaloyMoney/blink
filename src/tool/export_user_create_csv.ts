@@ -21,8 +21,8 @@ const main = async () => {
     path: 'records.csv',
     header: [
         {id: 'phone', title: 'Phone'},
-        {id: 'amount', title: 'Amount (in sats)'},
-        {id: 'memo', title: 'Memo (optional)'},
+        {id: 'amount', title: 'Amount'},
+        {id: 'memo', title: 'Memo'},
     ]
   });
 
