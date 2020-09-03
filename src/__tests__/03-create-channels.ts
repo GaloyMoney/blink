@@ -99,7 +99,7 @@ it('opens channel from lndOutside1 to lndOutside2', async () => {
 	const subscription = lnService.subscribeToGraph({ lnd: lndMain });
 
 	await Promise.all([
-		openChannel({ lnd: lndOutside1, other_lnd: lndOutside2, socket }),
+		openChannel({ lnd: lndOutside1, other_lnd: lndOutside2, socket, is_private: true }),
 		once(subscription, 'channel_updated')
 	])
 
@@ -119,17 +119,3 @@ it('opens channel from lndOutside1 to lnd1', async () => {
 	}
 
 }, 100000)
-
-it('opens private channel from lndOutside1 to lndOutside2', async () => {
-	const socket = `lnd-outside-2:9735`
-
-	await Promise.all([
-		openChannel({ lnd: lndOutside1, other_lnd: lndOutside2, socket, is_private: true }),
-	])
-
-
-	const { channels } = await lnService.getChannels({ lnd: lndOutside1 })
-	expect(channels.length).toEqual(initChannelOutside1 + 4)
-	//FIXME: Is the below check really needed?
-	expect(channels.some(e => e.is_private))
-}, 240000)

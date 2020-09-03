@@ -162,14 +162,17 @@ it('pay hodl invoice', async () => {
 }, 50000)
 
 it('payInvoice to lnd outside 2', async () => {
-  const { request } = await lnService.createInvoice({ lnd: lndOutside2, tokens: amountInvoice })
+  const { request } = await lnService.createInvoice({ lnd: lndOutside2, tokens: amountInvoice, is_including_private_channels: true })
   const { id } = await lnService.decodePaymentRequest({ lnd: lndOutside2, request })
+
+  const initialBalance = await userWallet1.getBalance()
+
   const result = await userWallet1.pay({ invoice: request })
   expect(result).toBe("success")
   const finalBalance = await userWallet1.getBalance()
 
   const { results: [{ fee }] } = await MainBook.ledger({ account: userWallet1.accountPath, hash: id })
-  expect(finalBalance).toBe(onBoardingEarnAmt - 4 * amountInvoice - fee)
+  expect(finalBalance).toBe(initialBalance - amountInvoice - fee)
   await checkIsBalanced()
 }, 100000)
 
@@ -204,29 +207,6 @@ it('fails to pay zero amt invoice without separate amt', async () => {
 it('fails to pay regular invoice with separate amt', async () => {
   const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: amountInvoice })
   await expect(userWallet1.pay({ invoice: request, amount: amountInvoice })).rejects.toThrow()
-})
-
-
-
-//Keep this test as the last one always, because it closes a channel between lndOutside1 and lndOutside2
-it('pays invoice with route hint', async () => {
-  //close public channel between lndOutside1 and lndOutside2
-  const partner_public_key = (await lnService.getWalletInfo({ lnd: lndOutside2 })).public_key
-  const { channels: [{ transaction_id, transaction_vout }] } = await lnService.getChannels({ lnd: lndOutside1, is_private: false, partner_public_key })
-  await lnService.closeChannel({ lnd: lndOutside1, transaction_id, transaction_vout })
-
-  const initialBalance = await userWallet1.getBalance()
-
-  const { request } = await lnService.createInvoice({ lnd: lndOutside2, tokens: amountInvoice, is_including_private_channels: true })
-  const { id } = await lnService.decodePaymentRequest({ lnd: lndOutside2, request })
-
-  const result = await userWallet1.pay({ invoice: request })
-
-  const finalBalance = await userWallet1.getBalance()
-  const { results: [{ fee }] } = await MainBook.ledger({ account: userWallet1.accountPath, hash: id })
-
-  expect(result).toBe("success")
-  expect(finalBalance).toBe(initialBalance - amountInvoice - fee)
 })
 
 // it('testDbTransaction', async () => {
