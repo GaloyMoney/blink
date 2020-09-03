@@ -4,11 +4,11 @@ if [ "$NAMESPACE" == "testnet" ] || [ "$NAMESPACE" == "mainnet" ];
 then
   NETWORK=$NAMESPACE
 else
-  NAMESPACE="default"
   NETWORK="regtest"
 fi
 
 if [ ${LOCAL} ]; then 
+  NAMESPACE="default"
   SERVICETYPE=LoadBalancer; 
 
   # setting up short term token so that lnd can be pulled from gcr.io
