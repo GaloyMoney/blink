@@ -46,8 +46,8 @@ kubectlWait app=redis
 sleep 8
 kubectlWait app=lnd-container
 
-export MACAROON=$(kubectl exec -n=$NAMESPACE lnd-container-0 -- base64 /root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
-export TLS=$(kubectl -n $NAMESPACE exec lnd-container-0 -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
+export MACAROON=$(kubectl exec -n=$NAMESPACE lnd-container-0 -c lnd-container -- base64 /root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
+export TLS=$(kubectl -n $NAMESPACE exec lnd-container-0 -c lnd-container -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
 
 if [ "$NETWORK" == "regtest" ]
 then
