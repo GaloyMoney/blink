@@ -34,6 +34,10 @@ kubectlWait () {
   command kubectl wait -n=$NAMESPACE --for=condition=ready --timeout=1200s pod -l "$@"
 }
 
+exportMacaroon() {
+  export "$2"=$(kubectl exec -n=$NAMESPACE lnd-container-"$1" -c lnd-container -- base64 /root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
+}
+
 # bug with --wait: https://github.com/helm/helm/issues/7139 ?
 helmUpgrade bitcoind -f ../../bitcoind-chart/values.yaml -f ../../bitcoind-chart/$NETWORK-values.yaml --set serviceType=$SERVICETYPE ../../bitcoind-chart/
 helmUpgrade redis --set=cluster.enabled=false,usePassword=false,master.service.type=$SERVICETYPE,master.persistence.enabled=false bitnami/redis
@@ -46,7 +50,7 @@ kubectlWait app=redis
 sleep 8
 kubectlWait app=lnd-container
 
-export MACAROON=$(kubectl exec -n=$NAMESPACE lnd-container-0 -c lnd-container -- base64 /root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
+exportMacaroon 0 MACAROON
 export TLS=$(kubectl -n $NAMESPACE exec lnd-container-0 -c lnd-container -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
 
 if [ "$NETWORK" == "regtest" ]
@@ -60,8 +64,8 @@ then
     exit 0
   fi
 
-  export MACAROONOUTSIDE1=$(kubectl exec -n=$NAMESPACE lnd-container-1 -- base64 /root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
-  export MACAROONOUTSIDE2=$(kubectl exec -n=$NAMESPACE lnd-container-2 -- base64 /root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
+  exportMacaroon 1 MACAROONOUTSIDE1
+  exportMacaroon 2 MACAROONOUTSIDE2
   
   helmUpgrade test-chart -f ~/GaloyApp/backend/test-chart/values.yaml --set \
   macaroon=$MACAROON,macaroonoutside1=$MACAROONOUTSIDE1,macaroonoutside2=$MACAROONOUTSIDE2 \
