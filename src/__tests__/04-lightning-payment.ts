@@ -6,8 +6,7 @@ import { InvoiceUser, MainBook, setupMongoConnection } from "../mongodb";
 import { createHash, randomBytes } from 'crypto';
 import { LightningUserWallet } from "../LightningUserWallet";
 import { quit } from "../lock";
-import { checkIsBalanced, getUidFromToken, getUserWallet, lndOutside1, lndOutside2 } from "../tests/helper";
-import { OnboardingEarn } from "../types";
+import { checkIsBalanced, getUidFromToken, getUserWallet, lndOutside1, lndOutside2, onBoardingEarnAmt, onBoardingEarnIds } from "../tests/helper";
 const lnService = require('ln-service')
 const lightningPayReq = require('bolt11')
 const mongoose = require("mongoose")
@@ -17,12 +16,7 @@ let uidFromToken1, uidFromToken2
 
 const logger = require('pino')({ level: "debug" })
 
-
-//FIXME: Maybe switch to using single reward
-const onBoardingEarnAmt: number = Object.values(OnboardingEarn).reduce((a, b) => a + b, 0)
-const onBoardingEarnIds: string[] = Object.keys(OnboardingEarn)
-
-logger.info({onBoardingEarnAmt})
+const amountInvoice = 1000
 
 beforeAll(async () => {
   await setupMongoConnection()
@@ -49,7 +43,7 @@ it('add invoice', async () => {
   const decoded = lightningPayReq.decode(request)
   const decodedHash = decoded.tags.filter(item => item.tagName === "payment_hash")[0].data
 
-  
+
   const { uid } = await InvoiceUser.findById(decodedHash)
   //expect(uid).toBe(user1) does not work
   expect(uid).toBe(uidFromToken1)
@@ -63,7 +57,7 @@ it('add invoice to different user', async () => {
   const decoded = lightningPayReq.decode(request)
   const decodedHash = decoded.tags.filter(item => item.tagName === "payment_hash")[0].data
 
-  
+
   const { uid } = await InvoiceUser.findById(decodedHash)
 
   expect(uid).toBe(uidFromToken2)
@@ -75,8 +69,6 @@ it('add earn adds balance correctly', async () => {
   expect(finalBalance).toBe(onBoardingEarnAmt)
   await checkIsBalanced()
 })
-
-const amountInvoice = 1000
 
 it('payInvoice', async () => {
   const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: amountInvoice })
@@ -106,7 +98,7 @@ it('payInvoiceToAnotherGaloyUser', async () => {
   await userWallet1.pay({ invoice: request })
   const user1FinalBalance = await userWallet1.getBalance()
   const user2FinalBalance = await userWallet2.getBalance()
-  expect(user1FinalBalance).toBe(onBoardingEarnAmt - amountInvoice) 
+  expect(user1FinalBalance).toBe(onBoardingEarnAmt - amountInvoice)
   expect(user2FinalBalance).toBe(1000)
   const user1Txn = await userWallet1.getTransactions()
   const user1OnUsTxn = user1Txn.filter(txn => txn.type == 'on_us')
@@ -164,20 +156,23 @@ it('pay hodl invoice', async () => {
   const finalBalance = await userWallet1.getBalance()
   // FIXME: necessary to not have openHandler ?
   // https://github.com/alexbosworth/ln-service/issues/122
-  await lnService.settleHodlInvoice({lnd: lndOutside1, secret: secret.toString('hex')});
+  await lnService.settleHodlInvoice({ lnd: lndOutside1, secret: secret.toString('hex') });
   expect(finalBalance).toBe(onBoardingEarnAmt - 3 * amountInvoice)
   await checkIsBalanced()
 }, 50000)
 
 it('payInvoice to lnd outside 2', async () => {
-  const { request } = await lnService.createInvoice({ lnd: lndOutside2, tokens: amountInvoice })
+  const { request } = await lnService.createInvoice({ lnd: lndOutside2, tokens: amountInvoice, is_including_private_channels: true })
   const { id } = await lnService.decodePaymentRequest({ lnd: lndOutside2, request })
+
+  const initialBalance = await userWallet1.getBalance()
+
   const result = await userWallet1.pay({ invoice: request })
   expect(result).toBe("success")
   const finalBalance = await userWallet1.getBalance()
-  
-  const fee = (await MainBook.ledger({account:userWallet1.accountPath, hash: id})).results[0].fee
-  expect(finalBalance).toBe(onBoardingEarnAmt - 4 * amountInvoice - fee)
+
+  const { results: [{ fee }] } = await MainBook.ledger({ account: userWallet1.accountPath, hash: id })
+  expect(finalBalance).toBe(initialBalance - amountInvoice - fee)
   await checkIsBalanced()
 }, 100000)
 
@@ -188,7 +183,7 @@ it('if fee are too high, payment is cancelled', async () => {
 it('pays zero amount invoice', async () => {
   const { request } = await lnService.createInvoice({ lnd: lndOutside1 })
   const initialBalance = await userWallet1.getBalance()
-  const result = await userWallet1.pay({invoice: request, amount: amountInvoice})
+  const result = await userWallet1.pay({ invoice: request, amount: amountInvoice })
   expect(result).toBe("success")
   const finalBalance = await userWallet1.getBalance()
   expect(finalBalance).toBe(initialBalance - amountInvoice)
@@ -205,12 +200,12 @@ it('receive zero amount invoice', async () => {
 }, 100000)
 
 it('fails to pay zero amt invoice without separate amt', async () => {
-  const {request} = await lnService.createInvoice({lnd:lndOutside1})
+  const { request } = await lnService.createInvoice({ lnd: lndOutside1 })
   await expect(userWallet1.pay({ invoice: request })).rejects.toThrow()
 })
 
 it('fails to pay regular invoice with separate amt', async () => {
-  const {request} = await lnService.createInvoice({lnd:lndOutside1, tokens: amountInvoice})
+  const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: amountInvoice })
   await expect(userWallet1.pay({ invoice: request, amount: amountInvoice })).rejects.toThrow()
 })
 

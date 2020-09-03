@@ -5,10 +5,15 @@ import * as jwt from 'jsonwebtoken';
 import { TEST_NUMBER, login } from "../text";
 import { LightningAdminWallet } from "../LightningAdminImpl"
 import { User } from "../mongodb";
+import { OnboardingEarn } from "../types";
 const mongoose = require("mongoose")
 
 const lnService = require('ln-service')
 const cert = process.env.TLS
+
+//FIXME: Maybe switch to using single reward
+export const onBoardingEarnAmt: number = Object.values(OnboardingEarn).reduce((a, b) => a + b, 0)
+export const onBoardingEarnIds: string[] = Object.keys(OnboardingEarn)
 
 export const lndMain = lnService.authenticatedLndGrpc(getAuth()).lnd
 
