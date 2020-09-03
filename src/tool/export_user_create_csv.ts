@@ -1,7 +1,8 @@
 import {User, setupMongoConnection} from "../mongodb"
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 
-// need to set MONGODB_ADDRESS to call it
+// need to set MONGODB_ADDRESS to call the script
+// ie: MONGODB_ADDRESS=localhost ts-node export_user_create_csv.ts
 
 const main = async () => {
   await setupMongoConnection()
