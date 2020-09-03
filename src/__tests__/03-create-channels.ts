@@ -96,7 +96,7 @@ it('opens channel from lndOutside1 to lndOutside2', async () => {
 	const socket = `lnd-outside-2:9735`
 
 	// const {subscribeToGraph} = require('ln-service');
-	const subscription = lnService.subscribeToGraph({ lnd: lndMain });
+	const subscription = lnService.subscribeToGraph({ lnd: lndOutside1 });
 
 	await Promise.all([
 		openChannel({ lnd: lndOutside1, other_lnd: lndOutside2, socket, is_private: true }),
