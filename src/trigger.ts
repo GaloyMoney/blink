@@ -49,7 +49,7 @@ export async function onchainTransactionEventHandler(tx) {
   }
 }
 
-export const sendLightningNotification = async ({hash, amount, uid}) => {
+export const sendInvoicePaidNotification = async ({hash, amount, uid}) => {
   const data: IDataNotification = {
     type: "paid-invoice",
     hash,
@@ -73,7 +73,7 @@ export const onInvoiceUpdate = async invoice => {
 
     const wallet = new LightningUserWallet({ uid })
     await wallet.updatePendingInvoice({ hash })
-    await sendLightningNotification({amount: invoice.received, hash, uid})
+    await sendInvoicePaidNotification({amount: invoice.received, hash, uid})
   } else {
     logger.warn({invoice}, "we received an invoice but had no user attached to it")
   }
