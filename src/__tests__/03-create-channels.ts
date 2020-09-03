@@ -105,8 +105,9 @@ it('opens channel from lndOutside1 to lndOutside2', async () => {
 
 	subscription.removeAllListeners();
 
-	const { channels } = await lnService.getChannels({ lnd: lndOutside1 })
+	const { channels } = await lnService.getChannels({ lnd: lndOutside1 })	
 	expect(channels.length).toEqual(initChannelOutside1 + 2)
+	expect(channels.some(e => e.is_private))
 }, 240000)
 
 it('opens channel from lndOutside1 to lnd1', async () => {
