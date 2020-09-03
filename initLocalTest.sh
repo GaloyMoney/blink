@@ -1,5 +1,12 @@
 set -e
 
+if [ "$NAMESPACE" == "testnet" ] || [ "$NAMESPACE" == "mainnet" ];
+then
+  NETWORK=$NAMESPACE
+else
+  NETWORK="regtest"
+fi
+
 if [ ${LOCAL} ]; then 
   SERVICETYPE=LoadBalancer; 
 
@@ -19,19 +26,72 @@ else
   SERVICETYPE=ClusterIP; 
 fi
 
+helmUpgrade () {
+  command helm upgrade -i -n $NAMESPACE "$@"
+}
+
+kubectlWait () {
+  command kubectl wait -n=$NAMESPACE --for=condition=ready --timeout=1200s pod -l "$@"
+}
+
+exportMacaroon() {
+  export "$2"=$(kubectl exec -n=$NAMESPACE lnd-container-"$1" -c lnd-container -- base64 /root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
+}
+
 # bug with --wait: https://github.com/helm/helm/issues/7139 ?
-helm install --namespace=$NAMESPACE bitcoind -f ../../bitcoind-chart/values.yaml -f ../../bitcoind-chart/regtest-values.yaml --set serviceType=$SERVICETYPE ../../bitcoind-chart/
-helm install --namespace=$NAMESPACE mongodb --set auth.username=testGaloy,auth.password=testGaloy,auth.database=galoy,persistence.enabled=false,service.type=$SERVICETYPE bitnami/mongodb
-helm install --namespace=$NAMESPACE redis --set=cluster.enabled=false,usePassword=false,master.service.type=$SERVICETYPE,master.persistence.enabled=false	 bitnami/redis
-
+helmUpgrade bitcoind -f ../../bitcoind-chart/values.yaml -f ../../bitcoind-chart/$NETWORK-values.yaml --set serviceType=$SERVICETYPE ../../bitcoind-chart/
+helmUpgrade redis --set=cluster.enabled=false,usePassword=false,master.service.type=$SERVICETYPE,master.persistence.enabled=false bitnami/redis
 sleep 8
+kubectlWait app=bitcoind-container
 
-kubectl wait --namespace=$NAMESPACE --for=condition=ready pod -l app=bitcoind-container --timeout=1200s
-helm install --namespace=$NAMESPACE lnd -f ../../lnd-chart/values.yaml -f ../../lnd-chart/regtest-values.yaml --set lndService.serviceType=$SERVICETYPE ../../lnd-chart/
+helmUpgrade lnd -f ../../lnd-chart/values.yaml -f ../../lnd-chart/$NETWORK-values.yaml --set lndService.serviceType=$SERVICETYPE ../../lnd-chart/
 
-kubectl wait --namespace=$NAMESPACE --for=condition=ready pod -l app=redis --timeout=1200s
-kubectl wait --namespace=$NAMESPACE --for=condition=ready pod -l app.kubernetes.io/component=mongodb --timeout=1200s
-
+kubectlWait app=redis
 sleep 8
+kubectlWait app=lnd-container
 
-kubectl wait --namespace=$NAMESPACE --for=condition=ready pod -l app=lnd-container --timeout=1200s
+exportMacaroon 0 MACAROON
+export TLS=$(kubectl -n $NAMESPACE exec lnd-container-0 -c lnd-container -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
+
+if [ "$NETWORK" == "regtest" ]
+then
+  helmUpgrade mongodb --set auth.username=testGaloy,auth.password=testGaloy,auth.database=galoy,persistence.enabled=false,service.type=$SERVICETYPE bitnami/mongodb
+
+  kubectlWait app.kubernetes.io/component=mongodb
+
+  if [ ${LOCAL} ]
+  then
+    exit 0
+  fi
+
+  exportMacaroon 1 MACAROONOUTSIDE1
+  exportMacaroon 2 MACAROONOUTSIDE2
+  
+  helmUpgrade test-chart -f ~/GaloyApp/backend/test-chart/values.yaml --set \
+  macaroon=$MACAROON,macaroonoutside1=$MACAROONOUTSIDE1,macaroonoutside2=$MACAROONOUTSIDE2 \
+  ~/GaloyApp/backend/test-chart/
+
+  echo $(kubectl get -n=$NAMESPACE pods)
+
+  echo "Waiting for test-pod and graphql-server to come alive"
+
+  kubectlWait app=test-chart
+  
+else
+  export MONGODB_ROOT_PASSWORD=$(kubectl get secret -n $NAMESPACE mongodb -o jsonpath="{.data.mongodb-root-password}" | base64 --decode)
+  export MONGODB_REPLICA_SET_KEY=$(kubectl get secret -n $NAMESPACE mongodb -o jsonpath="{.data.mongodb-replica-set-key}" | base64 --decode)
+  helmUpgrade mongodb -f ~/GaloyApp/backend/mongo-chart/custom-values.yaml bitnami/mongodb --set auth.rootPassword=$MONGODB_ROOT_PASSWORD,auth.replicaSetKey=$MONGODB_REPLICA_SET_KEY
+  kubectlWait app.kubernetes.io/component=mongodb
+
+  kubectl exec -n $NAMESPACE mongodb-0 -- bash -c "mongo admin -u root -p "$MONGODB_ROOT_PASSWORD" --eval \"db.adminCommand({setDefaultRWConcern:1,defaultWriteConcern:{'w':'majority'}})\""
+  
+  kubectl exec -n $NAMESPACE mongodb-0 -- bash -c "mongo admin -u root -p "$MONGODB_ROOT_PASSWORD" --eval \"c=rs.conf();c.writeConcernMajorityJournalDefault=false;rs.reconfig(c)\""
+  
+  helmUpgrade graphql-server -f ~/GaloyApp/backend/graphql-chart/$NETWORK-values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/graphql-chart/
+  helmUpgrade prometheus-client -f ~/GaloyApp/backend/graphql-chart/prometheus-values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/graphql-chart/
+  helmUpgrade trigger --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/trigger-chart/
+
+fi
+
+helmUpgrade graphql-server -f ~/GaloyApp/backend/graphql-chart/$NETWORK-values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/graphql-chart/
+kubectlWait app=graphql-server
