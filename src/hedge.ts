@@ -1,5 +1,5 @@
 const lnService = require('ln-service')
-const ccxt = require ('ccxt')
+const ccxt = require('ccxt')
 import { find } from "lodash";
 import { LightningAdminWallet } from "./LightningAdminImpl";
 import { Price } from "./PriceImpl";
@@ -19,121 +19,121 @@ const symbol = 'BTC-PERP'
 
 
 export class Hedging {
-    adminWallet
-    ftx
+  adminWallet
+  ftx
 
-    constructor() {
-        this.adminWallet = new LightningAdminWallet({uid: "admin"})
-        this.ftx = new ccxt.ftx({ apiKey, secret })
+  constructor() {
+    this.adminWallet = new LightningAdminWallet({ uid: "admin" })
+    this.ftx = new ccxt.ftx({ apiKey, secret })
+  }
+
+  calculate({ equity, lastBTCPrice, netSizeSats }) {
+
+    const absoluteExposureBTC = equity + netSizeSats
+    const absoluteExposureUSD = lastBTCPrice * absoluteExposureBTC
+
+    // this would move when equity change / payment being made/received
+    // TODO: find a better name. Delta seems to be used mainly for options?
+    const exposureRatio = (- netSizeSats) / equity
+
+    let needHedging = false
+    let amount, direction
+
+    try {
+      // undercovered (ie: have BTC not covered)
+      // long
+      // will loose money if BTCUSD price drops
+      if (exposureRatio < LOW_BOUND) {
+        const target = equity * LOW_SAFEBOUND
+        amount = target + netSizeSats
+        assert(amount > 0)
+        assert(amount < equity)
+        direction = "sell"
+        needHedging = true
+      }
+
+      // overexposed
+      // short
+      // will loose money if BTCUSD price increase
+      else if (exposureRatio > HIGH_BOUND) {
+        const target = equity * HIGH_SAFEBOUND
+        amount = - (target + netSizeSats)
+        assert(amount > 0)
+        assert(amount < equity)
+        direction = "buy"
+        needHedging = true
+      }
+
+    } catch (err) {
+      throw Error("can't calculate hedging value")
     }
 
-    calculate({equity, lastBTCPrice, netSizeSats}) {
+    return { needHedging, amount, direction }
+  }
 
-        const absoluteExposureBTC = equity + netSizeSats
-        const absoluteExposureUSD = lastBTCPrice * absoluteExposureBTC
+  async executeOrder({ direction, amount }) {
 
-        // this would move when equity change / payment being made/received
-        // TODO: find a better name. Delta seems to be used mainly for options?
-        const exposureRatio = (- netSizeSats) / equity
+    // let orderId = 6103637365
+    let orderId
 
-        let needHedging = false
-        let amount, direction
+    // TODO add: try/catch
+    const order = await this.ftx.createOrder(symbol, 'market', direction, amount)
 
-        try {     
-            // undercovered (ie: have BTC not covered)
-            // long  
-            // will loose money if BTCUSD price drops
-            if(exposureRatio < LOW_BOUND) {
-                const target = equity * LOW_SAFEBOUND
-                amount = target + netSizeSats
-                assert(amount > 0)
-                assert(amount < equity)
-                direction = "sell"
-                needHedging = true
-            }
-            
-            // overexposed
-            // short
-            // will loose money if BTCUSD price increase
-            else if(exposureRatio > HIGH_BOUND) {
-                const target = equity * HIGH_SAFEBOUND
-                amount = - (target + netSizeSats)
-                assert(amount > 0)
-                assert(amount < equity)
-                direction = "buy"
-                needHedging = true
-            }
+    // FIXME: have a better way to manage latency
+    // ie: use a while loop and check condition for a couple of seconds.
+    // or rely on a websocket
+    await sleep(1000)
 
-        } catch (err) {
-            throw Error("can't calculate hedging value")
-        }
+    const result = await this.ftx.fetchOrder(order.id)
 
-        return {needHedging, amount, direction}
+    if (result.status !== "closed") {
+      console.warn("market order has not been fullfilled")
+      // Pager
     }
 
-    async executeOrder({direction, amount}) {
+    // TODO: check we are back to low_safebound
 
-        // let orderId = 6103637365
-        let orderId
+  }
 
-        // TODO add: try/catch
-        const order = await this.ftx.createOrder(symbol, 'market', direction, amount)
+  async getPosition() {
+    let { equity } = await this.adminWallet.getBalanceSheet()
 
-        // FIXME: have a better way to manage latency
-        // ie: use a while loop and check condition for a couple of seconds.
-        // or rely on a websocket
-        await sleep(1000)
+    console.log({ equity })
 
-        const result = await this.ftx.fetchOrder(order.id)
+    // FIXME maybe not the best way to do things
+    equity = - equity
 
-        if (result.status !== "closed") {
-            console.warn("market order has not been fullfilled")
-            // Pager
-        }
+    const price = new Price()
+    // TODO refactor price.lastCached()
+    const lastBTCPrice = (await price.lastCached())[0]['o']
 
-        // TODO: check we are back to low_safebound
+    // const ftx_balance = await ftx.fetchBalance()
 
+    // const orders = await ftx.fetchOpenOrders()
+    // const tradingFees = await ftx.fetchTradingFees()
+    const { result } = await this.ftx.privateGetPositions()
+
+    console.log(util.inspect({ result }, false, Infinity))
+
+    // TODO: might return an error if there is no position yet
+    const { netSize } = find(result, { future: 'BTC-PERP' })
+    const netSizeSats = btc2sat(netSize)
+
+    const { needHedging, amount, direction } = this.calculate({ equity, netSizeSats, lastBTCPrice })
+
+    return { needHedging, amount, direction, equity, netSizeSats }
+  }
+
+  async updatePosition() {
+    const { needHedging, amount, direction } = await this.getPosition()
+
+    if (!needHedging) {
+      return
     }
 
-    async getPosition() {
-        let { equity } = await this.adminWallet.getBalanceSheet()
-        
-        console.log({equity})
-
-        // FIXME maybe not the best way to do things
-        equity = - equity
-
-        const price = new Price()
-        // TODO refactor price.lastCached()
-        const lastBTCPrice = (await price.lastCached())[0]['o']
-        
-        // const ftx_balance = await ftx.fetchBalance()
-
-        // const orders = await ftx.fetchOpenOrders()
-        // const tradingFees = await ftx.fetchTradingFees()
-        const {result} = await this.ftx.privateGetPositions()
-
-        console.log(util.inspect({result}, false, Infinity))
-
-        // TODO: might return an error if there is no position yet
-        const {netSize} = find(result, {future: 'BTC-PERP'})
-        const netSizeSats = btc2sat(netSize)
-
-        const {needHedging, amount, direction} = this.calculate({equity, netSizeSats, lastBTCPrice})
-
-        return {needHedging, amount, direction, equity, netSizeSats}
-    }
-
-    async updatePosition() {
-        const {needHedging, amount, direction} = await this.getPosition()
-
-        if (!needHedging) {
-            return 
-        } 
-
-        await this.executeOrder({amount, direction})
-        // TODO: look at liquidation ratio
-    }
+    await this.executeOrder({ amount, direction })
+    // TODO: look at liquidation ratio
+  }
 }
 
 
@@ -170,11 +170,11 @@ export class Hedging {
 //     if (err !== undefined) {
 //         throw new functions.https.HttpsError('invalid-argument', JSON.stringify(err))
 //     }
-    
+
 //     console.log(`${data.side} quote request from ${context.auth!.uid}, request: ${JSON.stringify(data, null, 4)}`)
 
 //     let spot
-    
+
 //     try {
 //         const price = new Price()
 //         spot = await price.lastCached()
@@ -216,7 +216,7 @@ export class Hedging {
     //     }
 
     //     return {side, invoice: request} as IQuoteResponse
-        
+
     // } else if (data.side === "buy") {
 
     //     const invoiceJson = await lnService.decodePaymentRequest({lnd, request: data.invoice})
@@ -289,7 +289,7 @@ export class Hedging {
     // }
 
     // const {route} = await lnService.probeForRoute({lnd, tokens: satAmount, destination})
-    
+
     // if (route?.length === 0) {
     //     throw new functions.https.HttpsError('internal', `Can't probe payment. Not enough liquidity?`)
     // }

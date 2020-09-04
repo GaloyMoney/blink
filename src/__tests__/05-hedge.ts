@@ -4,7 +4,7 @@
 import { setupMongoConnection } from "./db"
 
 const mongoose = require("mongoose");
-import { Hedging } from "./hedge"
+import { Hedging } from "../hedge"
 // this import needs to be before medici
 
 
