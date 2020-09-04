@@ -65,7 +65,7 @@ it('Sends onchain payment', async () => {
   ])
 
   // FIXME why sleep is needed here?
-  await sleep(5000)
+  await sleep(10000)
 
   // expect(notification.sendNotification.mock.calls.length).toBe(1)
   // expect(notification.sendNotification.mock.calls[0][0].data.type).toBe("onchain_payment")

@@ -1,8 +1,9 @@
 set -e
 
-if [ "$NAMESPACE" == "testnet" ] || [ "$NAMESPACE" == "mainnet" ];
+if [ "$1" == "testnet" ] || [ "$1" == "mainnet" ];
 then
-  NETWORK=$NAMESPACE
+  NETWORK="$1"
+  NAMESPACE="$1"
 else
   NETWORK="regtest"
 fi
@@ -28,7 +29,7 @@ else
 fi
 
 helmUpgrade () {
-  echo "upgrading: $@"
+  echo "executing upgrade: helm upgrade -i -n=$NAMESPACE $@"
   command helm upgrade -i -n=$NAMESPACE "$@"
 }
 
@@ -42,7 +43,14 @@ exportMacaroon() {
 
 # bug with --wait: https://github.com/helm/helm/issues/7139 ?
 helmUpgrade bitcoind ../../bitcoind-chart/ -f ../../bitcoind-chart/values.yaml -f ../../bitcoind-chart/$NETWORK-values.yaml --set serviceType=$SERVICETYPE  
-helmUpgrade redis --set=cluster.enabled=false,usePassword=false,master.service.type=$SERVICETYPE,master.persistence.enabled=false bitnami/redis
+
+REDISPERSISTENCE="true"
+if [ "$NETWORK" == "regtest" ]
+then
+  REDISPERSISTENCE="false"
+fi
+
+helmUpgrade redis --set=cluster.enabled=false,usePassword=false,master.service.type=$SERVICETYPE,master.persistence.enabled=$REDISPERSISTENCE bitnami/redis
 sleep 8
 kubectlWait app=bitcoind-container
 
@@ -80,8 +88,8 @@ then
   kubectlWait app=test-chart
   
 else
-  export MONGODB_ROOT_PASSWORD=$(kubectl get secret -n $NAMESPACE mongodb -o jsonpath="{.data.mongodb-root-password}" | base64 --decode)
-  export MONGODB_REPLICA_SET_KEY=$(kubectl get secret -n $NAMESPACE mongodb -o jsonpath="{.data.mongodb-replica-set-key}" | base64 --decode)
+  export MONGODB_ROOT_PASSWORD=$(kubectl get secret -n $NAMESPACE mongodb -o jsonpath="{.data.mongodb-root-password}" | base64 -d)
+  export MONGODB_REPLICA_SET_KEY=$(kubectl get secret -n $NAMESPACE mongodb -o jsonpath="{.data.mongodb-replica-set-key}" | base64 -d)
   helmUpgrade mongodb -f ~/GaloyApp/backend/mongo-chart/custom-values.yaml bitnami/mongodb --set auth.rootPassword=$MONGODB_ROOT_PASSWORD,auth.replicaSetKey=$MONGODB_REPLICA_SET_KEY
   kubectlWait app.kubernetes.io/component=mongodb
 

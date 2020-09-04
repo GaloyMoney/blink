@@ -322,7 +322,7 @@ jobs:
           steps:
             - run: |
                 gcloud container clusters get-credentials testnet-cluster --region us-central1-a --project ${GOOGLE_PROJECT_ID}
-                cd ~/GaloyApp/backend/firebase/functions/ && NAMESPACE=testnet && ./initLocalTest.sh            
+                cd ~/GaloyApp/backend/firebase/functions/ && ./initLocalTest.sh testnet            
 
   mainnet_deploy:
     working_directory: ~/GaloyApp/backend
@@ -342,7 +342,7 @@ jobs:
       - run:
           name: Upgrade mainnet deployments
           command: |
-            cd ~/GaloyApp/backend/firebase/functions/ && NAMESPACE=mainnet && ./initLocalTest.sh
+            cd ~/GaloyApp/backend/firebase/functions/ && ./initLocalTest.sh mainnet
                
   update_locale:
     working_directory: ~/GaloyApp/mobile

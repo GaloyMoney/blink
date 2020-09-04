@@ -14,8 +14,6 @@ const mongoose = require("mongoose")
 let userWallet1, userWallet2
 let uidFromToken1, uidFromToken2
 
-const logger = require('pino')({ level: "debug" })
-
 const amountInvoice = 1000
 
 beforeAll(async () => {
@@ -68,7 +66,7 @@ it('add earn adds balance correctly', async () => {
   let finalBalance = await userWallet1.getBalance()
   expect(finalBalance).toBe(onBoardingEarnAmt)
   await checkIsBalanced()
-})
+}, 15000)
 
 it('payInvoice', async () => {
   const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: amountInvoice })

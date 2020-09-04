@@ -10,7 +10,6 @@ const server = express();
 
 const client = require('prom-client');
 const register = require('prom-client').register
-const mongoose = require("mongoose");
 
 const equity_g = new client.Gauge({ name: 'shareholder', help: 'value of shareholder' })
 const customers_g = new client.Gauge({ name: 'customers', help: 'how much money customers has' })
