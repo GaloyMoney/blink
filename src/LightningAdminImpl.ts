@@ -1,13 +1,10 @@
 import { filter, find } from "lodash";
-import { book } from "medici";
 import { LightningMixin } from "./Lightning";
 import { LightningUserWallet } from "./LightningUserWallet";
 import { MainBook, Transaction, User } from "./mongodb";
 import { getAuth, logger } from "./utils";
 import { AdminWallet } from "./wallet";
 const lnService = require('ln-service')
-const mongoose = require("mongoose");
-
 
 
 export class LightningAdminWallet extends LightningMixin(AdminWallet) {
@@ -153,7 +150,7 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
       //log can be located by searching for 'update escrow' in gke logs
       //FIXME: Remove once escrow bug is fixed
       const diff = channel.commit_transaction_fee - (mongotx?.debit ?? 0)
-      logger.info({channel, diff}, `in update escrow, mongotx ${mongotx}`)
+      logger.debug({channel, diff}, `in update escrow, mongotx ${mongotx}`)
 
       await MainBook.entry("escrow")
         .debit('Assets:Reserve:Lightning', diff, {...metadata, txid})

@@ -4,7 +4,7 @@ import * as moment from 'moment'
 import { sendText } from './text'
 export const validate = require("validate.js")
 
-export const logger = require('pino')({ level: "info" })
+export const logger = require('pino')({ level: process.env.LOGLEVEL || "info" })
 const util = require('util')
 
 export const btc2sat = (btc: number) => {
