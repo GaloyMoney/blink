@@ -8,6 +8,7 @@ else
 fi
 
 if [ ${LOCAL} ]; then 
+  NAMESPACE="default"
   SERVICETYPE=LoadBalancer; 
 
   # setting up short term token so that lnd can be pulled from gcr.io
@@ -27,7 +28,8 @@ else
 fi
 
 helmUpgrade () {
-  command helm upgrade -i -n $NAMESPACE "$@"
+  echo "upgrading: $@"
+  command helm upgrade -i -n=$NAMESPACE "$@"
 }
 
 kubectlWait () {
@@ -39,7 +41,7 @@ exportMacaroon() {
 }
 
 # bug with --wait: https://github.com/helm/helm/issues/7139 ?
-helmUpgrade bitcoind -f ../../bitcoind-chart/values.yaml -f ../../bitcoind-chart/$NETWORK-values.yaml --set serviceType=$SERVICETYPE ../../bitcoind-chart/
+helmUpgrade bitcoind ../../bitcoind-chart/ -f ../../bitcoind-chart/values.yaml -f ../../bitcoind-chart/$NETWORK-values.yaml --set serviceType=$SERVICETYPE  
 helmUpgrade redis --set=cluster.enabled=false,usePassword=false,master.service.type=$SERVICETYPE,master.persistence.enabled=false bitnami/redis
 sleep 8
 kubectlWait app=bitcoind-container

@@ -107,7 +107,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     return results_processed
   }
 
-  async addInvoice({ value, memo }: IAddInvoiceRequest = { value: undefined, memo: undefined }): Promise<String> {
+  async addInvoice({ value, memo }: IAddInvoiceRequest = { value: undefined, memo: undefined }): Promise<string> {
     let request, id
 
     logger.error(request)

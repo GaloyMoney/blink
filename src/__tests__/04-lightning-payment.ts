@@ -6,7 +6,7 @@ import { InvoiceUser, MainBook, setupMongoConnection } from "../mongodb";
 import { createHash, randomBytes } from 'crypto';
 import { LightningUserWallet } from "../LightningUserWallet";
 import { quit } from "../lock";
-import { checkIsBalanced, getUidFromToken, getUserWallet, lndOutside1, lndOutside2, onBoardingEarnAmt, onBoardingEarnIds } from "../tests/helper";
+import { checkIsBalanced, getTestUserUid, getUserWallet, lndOutside1, lndOutside2, onBoardingEarnAmt, onBoardingEarnIds } from "../tests/helper";
 const lnService = require('ln-service')
 const lightningPayReq = require('bolt11')
 const mongoose = require("mongoose")
@@ -20,9 +20,9 @@ const amountInvoice = 1000
 
 beforeAll(async () => {
   await setupMongoConnection()
-  uidFromToken1 = await getUidFromToken(1)
+  uidFromToken1 = await getTestUserUid(1)
   userWallet1 = await getUserWallet(1)
-  uidFromToken2 = await getUidFromToken(2)
+  uidFromToken2 = await getTestUserUid(2)
   userWallet2 = await getUserWallet(2)
 });
 

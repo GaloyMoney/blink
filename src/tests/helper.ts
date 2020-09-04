@@ -38,14 +38,14 @@ export const bitcoindClient = new BitcoindClient(connection_obj)
 
 export const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
 
-export const getUidFromToken = async userNumber => {
+export const getTestUserUid = async userNumber => {
   const raw_token = await login(TEST_NUMBER[userNumber])
   const token = jwt.verify(raw_token, process.env.JWT_SECRET);
   return token.uid
 }
 
 export const getUserWallet = async userNumber => {
-  const uid = await getUidFromToken(userNumber)
+  const uid = await getTestUserUid(userNumber)
   const userWallet = new LightningUserWallet({ uid })
   return userWallet
 }
