@@ -153,7 +153,7 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
       //log can be located by searching for 'update escrow' in gke logs
       //FIXME: Remove once escrow bug is fixed
       const diff = channel.commit_transaction_fee - (mongotx?.debit ?? 0)
-      logger.debug({channel, diff}, `in update escrow, mongotx ${mongotx}`)
+      logger.info({channel, diff}, `in update escrow, mongotx ${mongotx}`)
 
       await MainBook.entry("escrow")
         .debit('Assets:Reserve:Lightning', diff, {...metadata, txid})
