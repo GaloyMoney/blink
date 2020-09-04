@@ -1,8 +1,9 @@
 set -e
 
-if [ "$NAMESPACE" == "testnet" ] || [ "$NAMESPACE" == "mainnet" ];
+if [ "$1" == "testnet" ] || [ "$1" == "mainnet" ];
 then
-  NETWORK=$NAMESPACE
+  NETWORK="$1"
+  NAMESPACE="$1"
 else
   NETWORK="regtest"
 fi
