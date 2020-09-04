@@ -29,7 +29,7 @@ else
 fi
 
 helmUpgrade () {
-  echo "upgrading: $@"
+  echo "executing upgrade: helm upgrade -i -n=$NAMESPACE $@"
   command helm upgrade -i -n=$NAMESPACE "$@"
 }
 
@@ -43,7 +43,14 @@ exportMacaroon() {
 
 # bug with --wait: https://github.com/helm/helm/issues/7139 ?
 helmUpgrade bitcoind ../../bitcoind-chart/ -f ../../bitcoind-chart/values.yaml -f ../../bitcoind-chart/$NETWORK-values.yaml --set serviceType=$SERVICETYPE  
-helmUpgrade redis --set=cluster.enabled=false,usePassword=false,master.service.type=$SERVICETYPE,master.persistence.enabled=false bitnami/redis
+
+REDISPERSISTENCE="true"
+if [ "$NETWORK" == "regtest" ]
+then
+  REDISPERSISTENCE="false"
+fi
+
+helmUpgrade redis --set=cluster.enabled=false,usePassword=false,master.service.type=$SERVICETYPE,master.persistence.enabled=$REDISPERSISTENCE bitnami/redis
 sleep 8
 kubectlWait app=bitcoind-container
 
