@@ -68,7 +68,7 @@ it('add earn adds balance correctly', async () => {
   let finalBalance = await userWallet1.getBalance()
   expect(finalBalance).toBe(onBoardingEarnAmt)
   await checkIsBalanced()
-})
+}, 15000)
 
 it('payInvoice', async () => {
   const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: amountInvoice })
