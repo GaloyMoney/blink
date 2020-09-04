@@ -131,25 +131,26 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
     const { channels } = await lnService.getChannels({lnd})
     const selfInitated = filter(channels, {is_partner_initiated: false, is_active: true})
 
+    const mongotxs = await Transaction.aggregate([
+      { $match: { type: "escrow", accounts: "Assets:Reserve:Lightning" }}, 
+      { $group: {_id: "$txid", total: { "$sum": "$debit" } }},
+    ])
+
     // TODO remove the inactive channel from escrow (??)
 
     for (const channel of selfInitated) {
 
       const txid = `${channel.transaction_id}:${channel.transaction_vout}`
       
-      const mongotx = await Transaction.findOne(
-        { type, txid, accounts: "Assets:Reserve:Lightning" }, 
-        null,
-        {sort: {datetime: -1 }}
-      )
+      const mongotx = filter(mongotxs, {_id: txid})[0] ?? { total: 0 }
 
-      if (mongotx?.debit === channel.commit_transaction_fee) {
+      if (mongotx?.total === channel.commit_transaction_fee) {
         continue
       }
 
       //log can be located by searching for 'update escrow' in gke logs
       //FIXME: Remove once escrow bug is fixed
-      const diff = channel.commit_transaction_fee - (mongotx?.debit ?? 0)
+      const diff = channel.commit_transaction_fee - (mongotx?.total)
       logger.debug({channel, diff}, `in update escrow, mongotx ${mongotx}`)
 
       await MainBook.entry("escrow")
