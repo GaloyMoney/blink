@@ -320,14 +320,9 @@ jobs:
           condition:
             equal: [ master, << pipeline.git.branch >> ]
           steps:
-            - run:
-                name: Upgrade testnet deployments
-                command: |
-                  gcloud container clusters get-credentials testnet-cluster --region us-central1-a --project ${GOOGLE_PROJECT_ID}
-                  cd ~/GaloyApp/backend/firebase/functions/ && ./initLocalTest.sh
-                environment:
-                  NAMESPACE: testnet
-
+            - run: |
+                gcloud container clusters get-credentials testnet-cluster --region us-central1-a --project ${GOOGLE_PROJECT_ID}
+                cd ~/GaloyApp/backend/firebase/functions/ && NAMESPACE=testnet && ./initLocalTest.sh            
 
   mainnet_deploy:
     working_directory: ~/GaloyApp/backend
@@ -347,9 +342,7 @@ jobs:
       - run:
           name: Upgrade mainnet deployments
           command: |
-            cd ~/GaloyApp/backend/firebase/functions/ && ./initLocalTest.sh
-          environment:
-            NAMESPACE: mainnet
+            cd ~/GaloyApp/backend/firebase/functions/ && NAMESPACE=mainnet && ./initLocalTest.sh
                
   update_locale:
     working_directory: ~/GaloyApp/mobile
