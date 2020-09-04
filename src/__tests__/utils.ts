@@ -1,4 +1,4 @@
-import { btc2sat, sat2btc } from "./utils"
+import { btc2sat, sat2btc } from "../utils"
 
 it('btc2sat', async () => {
     const BTC = 1.2

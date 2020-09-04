@@ -1,13 +1,15 @@
 const twilioPhoneNumber = "***REMOVED***"
 import moment from "moment"
-const mongoose = require("mongoose");
+import { PhoneCode, User } from "./mongodb";
 
 import { randomIntFromInterval, createToken } from "./utils"
 
 const getTwilioClient = () => {
+    // FIXME: replace with env variable
+    // and revoke credentials here
     const accountSID = "***REMOVED***"
     const authToken = "***REMOVED***"
-    
+
     const client = require('twilio')(
         accountSID,
         authToken
@@ -16,7 +18,7 @@ const getTwilioClient = () => {
     return client
 }
 
-const sendText = async ({body, to}) => {
+export const sendText = async ({ body, to }) => {
     await getTwilioClient().messages.create({
         from: twilioPhoneNumber,
         to,
@@ -24,9 +26,14 @@ const sendText = async ({body, to}) => {
     })
 }
 
-const TEST_NUMBER = [{phone: "+16505554321", code: 321321}]
+export const TEST_NUMBER = [
+    { phone: "+16505554321", code: 321321 },
+    { phone: "+16505554322", code: 321321 },
+    { phone: "+16505554323", code: 321321 },
+    { phone: "+16505554324", code: 321321 },
+]
 
-export const requestPhoneCode = async ({phone}) => {
+export const requestPhoneCode = async ({ phone }) => {
 
     // make it possible to bypass the auth for testing purpose
     if (TEST_NUMBER.findIndex(item => item.phone === phone) !== -1) {
@@ -41,10 +48,9 @@ export const requestPhoneCode = async ({phone}) => {
         // otherwise an attack would be to call this enough time
         // in a row and ultimately randomly find a code
 
-        const PhoneCode = mongoose.model("PhoneCode")
-        await PhoneCode.create({phone, code})
+        await PhoneCode.create({ phone, code })
 
-        await sendText({body, to: phone})
+        await sendText({ body, to: phone })
     } catch (err) {
         console.error(err)
         return false
@@ -53,11 +59,9 @@ export const requestPhoneCode = async ({phone}) => {
     return true
 }
 
-export const login = async ({phone, code, network}) => {
-    // TODO assert network == process.env.network
+export const login = async ({ phone, code }) => {
 
     try {
-        const PhoneCode = mongoose.model("PhoneCode")
         const codes = await PhoneCode.find({
             phone,
             created_at: {
@@ -65,25 +69,20 @@ export const login = async ({phone, code, network}) => {
             }
         })
 
-        let test_account = false
-
         // is it a test account?
         if (TEST_NUMBER.findIndex(item => item.phone === phone) !== -1 &&
             TEST_NUMBER.filter(item => item.phone === phone)[0].code === code) {
-            test_account = true
-        // return null is the code is not correct
-        } else if(codes.findIndex(item => item.code === code) === -1) {
+            // return null is the code is not correct
+        } else if (codes.findIndex(item => item.code === code) === -1) {
             console.warn(`code is not correct: ${code} with ${phone}`)
             return null
         }
 
         // code is correct
-        const User = mongoose.model("User")
-
         // get User 
-        const user = await User.findOneAndUpdate({phone}, {level: 1}, {upsert: true, new: true})
+        const user = await User.findOneAndUpdate({ phone }, { level: 1 }, { upsert: true, new: true })
 
-        return createToken({uid: user._id, network})
+        return createToken({ uid: user._id })
     } catch (err) {
         console.error(err)
         throw err

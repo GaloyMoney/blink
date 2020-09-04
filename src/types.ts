@@ -4,9 +4,9 @@ export type Currency = "USD" | "BTC"
 
 // Lightning
 
-export type IAddInvoiceRequest = {
-    value: number,
-    memo: string
+export interface IAddInvoiceRequest {
+    value: number | undefined,
+    memo: string | undefined
 }
 
 export type IAddInvoiceResponse = {
@@ -14,7 +14,13 @@ export type IAddInvoiceResponse = {
 }
 
 export type TransactionType = "payment" | "inflight-payment" | 
-    "paid-invoice" | "unconfirmed-invoice" | "earn" | "onchain_receipt"
+    "paid-invoice" | "unconfirmed-invoice" | "earn" | "onchain_receipt" | "on_us" | "onchain_payment"
+
+export interface IOnChainPayment {
+    address: string,
+    amount: number,
+    description?: string
+}
 
 export interface ILightningTransaction {
     amount: number
@@ -26,11 +32,9 @@ export interface ILightningTransaction {
 }
 
 export interface IPaymentRequest {
-    pubkey: string;
-    amount: number;
-    message?: string;
-    hash?: string;
-    routes?: object[]; // FIXME
+  destination?: string,
+  amount?: number,
+  invoice?: string
 }
 
 export type IPayInvoice = {
@@ -41,6 +45,20 @@ export interface IQuoteRequest {
     side: Side, 
     satAmount?: number, // sell
     invoice?: string,   // buy
+}
+
+export interface IDataNotification {
+  type: TransactionType,
+  amount: number
+  hash?: string,
+  txid?: string, // FIXME in mongodb, there is no differenciation between hash and txid?
+}
+
+export interface INotification {
+  uid: string,
+  title: string,
+  data?: IDataNotification
+  body?: string,
 }
 
 // onboarding

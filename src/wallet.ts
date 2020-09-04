@@ -1,4 +1,5 @@
 import { book } from "medici"
+import { MainBook } from "./mongodb"
 
 export class Wallet {
 
@@ -23,7 +24,7 @@ export class Wallet {
 
   async getBalance() {
 
-    const MainBook = new book("MainBook")
+    
 
     const { balance } = await MainBook.balance({
         account: this.accountPath,
@@ -59,7 +60,7 @@ export class AdminWallet extends Wallet {
         throw Error(`amount has to be positive, is: ${amount}`)
     }
 
-    const MainBook = new book("MainBook")
+    
 
     await MainBook.entry(memo ?? 'Add funds')
     .credit(this.accountPath, amount, {currency: this.currency, type})
@@ -72,8 +73,6 @@ export class AdminWallet extends Wallet {
     if (amount < 0) {
         throw Error(`amount has to be positive, is: ${amount}`)
     }
-
-    const MainBook = new book("MainBook")
 
     return MainBook.entry(memo ?? 'Withdraw funds')
     .debit(this.accountPath, amount, {currency: this.currency, type})

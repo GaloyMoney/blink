@@ -1,13 +1,14 @@
+import { filter, find } from "lodash";
 import { book } from "medici";
 import { LightningMixin } from "./Lightning";
 import { LightningUserWallet } from "./LightningUserWallet";
-import { getAuth } from "./utils";
+import { MainBook, Transaction, User } from "./mongodb";
+import { getAuth, logger } from "./utils";
 import { AdminWallet } from "./wallet";
-import { find, filter } from "lodash";
 const lnService = require('ln-service')
 const mongoose = require("mongoose");
-const BitcoindClient = require('bitcoin-core')
-const util = require('util')
+
+
 
 export class LightningAdminWallet extends LightningMixin(AdminWallet) {
   constructor({uid}: {uid: string}) {
@@ -15,11 +16,12 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
   }
 
   async updateUsersPendingPayment() {
-    const User = mongoose.model("User")
     let userWallet
 
-    for await (const user of User.find({}, { _id: 1})) {
-      console.log(user)
+    // FIXME: looping on user only here should be expanded to admin
+    for await (const user of User.find({"role": "user"}, { _id: 1})) {
+      logger.debug("updating user %o from admin wallet", user._id)
+
       // TODO there is no reason to fetch the Auth wallet here.
       // Admin should have it's own auth that it's passing to LightningUserWallet
 
@@ -30,17 +32,18 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
   }
 
   async getBalanceSheet() {
-    const MainBook =  new book("MainBook")
     const accounts = await MainBook.listAccounts()
     
     // used for debugging
+    let books = {}
     for (const account of accounts) {
       const { balance } = await MainBook.balance({
         account: account,
         currency: this.currency
       })
-      console.log(account + ": " + balance)
+      books[account] = balance
     }
+    logger.debug(books, "status of our bookeeping")
 
     const getBalanceOf = async (account) => {
       return (await MainBook.balance({
@@ -62,14 +65,18 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
   }
 
   async balanceSheetIsBalanced() {
+    await this.updateUsersPendingPayment()
     const {assets, liabilities, lightning, expenses} = await this.getBalanceSheet()
     const lndBalance = await this.totalLndBalance()
 
-    const assetsEqualLiabilities = assets === - liabilities - expenses
-    const lndBalanceSheetAreSynced = lightning === lndBalance
+    const assetsLiabilitiesDifference = assets + liabilities + expenses
+    const lndBalanceSheetDifference = lndBalance - lightning
+    if(!lndBalanceSheetDifference) {
+      logger.debug(`not balanced, lndBal:${lndBalance}, lightning:${lightning}`)
+    }
 
-    console.log({assets, liabilities, lightning, lndBalance, expenses})
-    return { assetsEqualLiabilities, lndBalanceSheetAreSynced }
+    logger.debug({assets, liabilities, lightning, lndBalance, expenses})
+    return { assetsLiabilitiesDifference, lndBalanceSheetDifference }
   }
 
   async totalLndBalance () {
@@ -79,14 +86,17 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
     const chainBalance = (await lnService.getChainBalance({lnd})).chain_balance
     const balanceInChannels = (await lnService.getChannelBalance({lnd})).channel_balance;
 
-    return chainBalance + balanceInChannels
+    //FIXME: This can cause incorrect balance to be reported in case an unconfirmed txn is later cancelled/double spent
+    const pendingChainBalance = (await lnService.getPendingChainBalance({lnd})).pending_chain_balance;
+
+    return chainBalance + balanceInChannels + pendingChainBalance
   }
 
   async getInfo() {
     return await lnService.getWalletInfo({ lnd: this.lnd });
   }
 
-  async openChannel({local_tokens, public_key, socket}) {
+  async openChannel({local_tokens, public_key, socket}): Promise<string> {
     const auth = getAuth() // FIXME
     const lnd = lnService.authenticatedLndGrpc(auth).lnd // FIXME
 
@@ -99,45 +109,56 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
 
     const { fee } = find(transactions, {id: transaction_id})
 
-    const MainBook = new book("MainBook")
+    
 
     const metadata = { currency: this.currency, txid: transaction_id, type: "fee" }
 
     await MainBook.entry("on chain fees")
-    .debit('Assets:Reserve:Lightning', fee, {...metadata,})
-    .credit('Expenses:Bitcoin:Fees', fee, {...metadata})
-    .commit()
+      .debit('Assets:Reserve:Lightning', fee, {...metadata,})
+      .credit('Expenses:Bitcoin:Fees', fee, {...metadata})
+      .commit()
+
+    return transaction_id
   }
 
   async updateEscrows() {
     const auth = getAuth() // FIXME
     const lnd = lnService.authenticatedLndGrpc(auth).lnd // FIXME
 
-    const Transaction = await mongoose.model("Medici_Transaction")
-    const MainBook = new book("MainBook")
+    
 
-    const metadata = { currency: this.currency, type: "escrow" }
+    const type = "escrow"
+
+    const metadata = { currency: this.currency, type }
 
     const { channels } = await lnService.getChannels({lnd})
     const selfInitated = filter(channels, {is_partner_initiated: false, is_active: true})
-    // TODO remove the inactive channel from escrow
+
+    // TODO remove the inactive channel from escrow (??)
 
     for (const channel of selfInitated) {
 
       const txid = `${channel.transaction_id}:${channel.transaction_vout}`
       
-      // TODO
-      // const mongotx = Transaction.findOne({ type: "escrow", txid })
-      // if mongotx.debit === channel.commit_transaction_fee,
-      // continue
-      // else
-      // void
-      // + 
-      await MainBook.entry("escrow")
-      .debit('Assets:Reserve:Lightning', channel.commit_transaction_fee, {...metadata, txid})
-      .credit('Assets:Reserve:Escrow', channel.commit_transaction_fee, {...metadata, txid})
-      .commit()
+      const mongotx = await Transaction.findOne(
+        { type, txid, accounts: "Assets:Reserve:Lightning" }, 
+        null,
+        {sort: {datetime: -1 }}
+      )
 
+      if (mongotx?.debit === channel.commit_transaction_fee) {
+        continue
+      }
+
+      //log can be located by searching for 'update escrow' in gke logs
+      //FIXME: Remove once escrow bug is fixed
+      const diff = channel.commit_transaction_fee - (mongotx?.debit ?? 0)
+      logger.debug({channel, diff}, `in update escrow, mongotx ${mongotx}`)
+
+      await MainBook.entry("escrow")
+        .debit('Assets:Reserve:Lightning', diff, {...metadata, txid})
+        .credit('Assets:Reserve:Escrow', diff, {...metadata, txid})
+        .commit()
     }
 
   }

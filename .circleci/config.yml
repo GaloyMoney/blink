@@ -148,6 +148,103 @@ jobs:
       - store_artifacts:
           path: ios/test-results
 
+  build_ios:
+    macos:
+      xcode: 11.6.0
+    working_directory: ~/GaloyApp/mobile
+    environment:
+      FL_OUTPUT_DIR: output
+    shell: /bin/bash --login -o pipefail
+    steps:
+      - checkout:
+          path: ~/GaloyApp
+      - add_ssh_keys:
+          fingerprints:
+            - "f6:4b:18:f4:33:f0:8f:46:47:42:9b:16:44:15:98:67"
+      - restore_cache:
+          key: 1-gem-{{ checksum "ios/Gemfile.lock" }}
+      - run: cd ios && bundle config set deployment 'true'
+      - run: cd ios && bundle check || bundle install 
+      - save_cache:
+          key: 1-gem-{{ checksum "ios/Gemfile.lock" }}
+          paths:
+            - ios/vendor
+      - restore_cache:
+          key: 1-yarn-{{ checksum "yarn.lock" }}-pod1-{{ checksum "ios/Podfile.lock" }}
+      - run: yarn install
+      - run: git diff "ios/Podfile.lock" | cat
+      - save_cache:
+          key: 1-yarn-{{ checksum "yarn.lock" }}-pod1-{{ checksum "ios/Podfile.lock" }}
+          paths:
+            - node_modules
+            - ios/Pods
+      - run: yarn jest
+      - run: 
+         name: fastlane
+         command: cd ios && bundle exec fastlane beta
+         no_output_timeout: 15m
+      - run: git config credential.helper 'cache --timeout=120'
+      - run: git config --global user.name "circleci-bot"
+      - run: git config --global user.email "bot@circleci.com"
+      - run: git config pull.rebase false
+      - run: git pull https://${GITHUB_TOKEN}@github.com/nicolasburtey/galoy-app.git $CIRCLE_BRANCH
+      - run: git commit -a -m "new ios build [ci skip]"
+      - run: git push -q https://${GITHUB_TOKEN}@github.com/nicolasburtey/galoy-app.git $CIRCLE_BRANCH
+      - store_artifacts:
+          path: ios/output
+      - store_test_results:
+          path: ios/output/scan
+
+  build_android:
+    docker:
+      - image: circleci/android:api-29
+    environment:
+      TERM: dumb
+      _JAVA_OPTIONS: "-Xmx2048m -XX:+UnlockExperimentalVMOptions"
+      GRADLE_OPTS: '-Dorg.gradle.jvmargs="-Xmx2048m"'
+    working_directory: ~/GaloyApp/mobile
+    shell: /bin/bash --login -o pipefail
+    steps:
+      - checkout:
+          path: ~/GaloyApp
+      - run: sudo apt-get update
+      - run: sudo apt-get install gnupg2
+      - run: curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
+      - run: sudo apt-get install -y nodejs
+      - run: sudo apt-get install gcc g++ make
+      - run: sudo npm install -g yarn
+      - run: gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB
+      - run: curl -sL https://get.rvm.io | bash -s stable --ruby
+      - run: source /home/circleci/.rvm/scripts/rvm
+      - run: rvm install 2.4.1
+      - run: rvm use 2.4.1 --default
+      - run: gem install fastlane -NV
+      
+      - run: cd android && bundle config set deployment 'true'
+      - run: cd android && bundle check || bundle install 
+
+      - run: echo $ANDROID_SERVICE_ACCOUNT_UPLOAD | base64 -d > android/api-8350101450647692243-59029-b9bec84a7e5a.json
+      - run: echo $RELEASE_KEYSTORE | base64 -d > android/release.keystore
+      - run: echo $RELEASE_KEYSTORE | base64 -d > android/app/release.keystore
+
+      - run: node -v
+      - run: npm -v
+      - run: ruby -v
+      - run: fastlane -v
+      - run: yarn -v
+      
+      - run: yarn install
+      - run: yarn jest
+      - run: cd android && fastlane android beta
+
+      - run: git config credential.helper 'cache --timeout=120'
+      - run: git config --global user.name "circleci-bot"
+      - run: git config --global user.email "bot@circleci.com"
+      - run: git config pull.rebase false
+      - run: git pull origin $CIRCLE_BRANCH
+      - run: git commit -a -m "new android build [ci skip]"
+      - run: git push -q https://${GITHUB_TOKEN}@github.com/nicolasburtey/galoy-app.git $CIRCLE_BRANCH
+
   build_test_image:
     working_directory: ~/GaloyApp/backend/firebase
     machine: true
@@ -161,92 +258,55 @@ jobs:
             echo "BUILDTIME=$(date -u '+%F-%T')" >> ./functions/.env
       - gcp-gcr/build-image:
           image: test-image
+          tag: $CIRCLE_SHA1
       - gcp-gcr/gcr-auth
       - gcp-gcr/push-image:
           image: test-image
+          tag: $CIRCLE_SHA1
           
   test:
     working_directory: ~/GaloyApp/backend
     docker:
       - image: kiwigrid/gcloud-kubectl-helm:latest
-    environment:
-      NAMESPACE: devnet
+    resource_class: small
     steps:
       - checkout:
           path: ~/GaloyApp
-      # - run:
-      #     name: generate cluster name
-      #     command: |
-      #       echo "devnet-cluster-"$RANDOM > clustername
-      #       cat clustername
       - run:
-          name: authorize gcloud and kubectl on circleci and create cluster
+          name: generate and export namespace name
+          command: |
+            echo "export NAMESPACE=devnet-$CIRCLE_SHA1" >> $BASH_ENV
+      - run:
+          name: authorize gcloud and kubectl on circleci and create namespace
           command: |
             echo ${GCLOUD_SERVICE_KEY} > gcloud-service-key.json
             gcloud auth activate-service-account --key-file=gcloud-service-key.json
             gcloud config set project ${GOOGLE_PROJECT_ID}
             gcloud container clusters get-credentials testnet-cluster --region us-central1-a --project ${GOOGLE_PROJECT_ID}
             kubectl create namespace $NAMESPACE
-# gcloud container clusters create $(cat clustername | tr -d '\n\r') --region us-central1-b --num-nodes=1 \
-            # --machine-type=n1-standard-2 --disk-size=10Gi
-      - run:
-          name: wait for k8s worker nodes
-          command: echo $(ls) && sleep 30 # TODO: try to improve approach if possible
-      - run:
-          name: helm install bitcoind-chart
-          command: |
-            helm install --namespace=$NAMESPACE bitcoind-chart \
-            -f ~/GaloyApp/backend/bitcoind-chart/regtest-values.yaml \
-            ~/GaloyApp/backend/bitcoind-chart
-      - run:
-          name: helm install lnd-chart
-          command: |
-            helm install --namespace=$NAMESPACE lnd-chart \
-            -f ~/GaloyApp/backend/lnd-chart/regtest-values.yaml \
-            ~/GaloyApp/backend/lnd-chart
       - run:
           name: helm add repo bitnami
           command: helm repo add bitnami https://charts.bitnami.com/bitnami
       - run:
-          name: helm install mongodb
+          name: install helm charts
           command: |
-            helm install --namespace=$NAMESPACE mongodb --set \
-            mongodbUsername=testGaloy,mongodbPassword=testGaloy,mongodbDatabase=galoy,persistence.enabled=false bitnami/mongodb
+            cd ~/GaloyApp/backend/firebase/functions/ && ./initLocalTest.sh            
       - run:
-          name: Check Helm release status
-          command: helm list  --namespace=$NAMESPACE --all
-      - run:
-          name: wait for pod to come alive
+          name: Run jest test
           command: |
-            kubectl wait --namespace=$NAMESPACE --for=condition=ready pod -l app=bitcoind-container --timeout=200s
-            kubectl wait --namespace=$NAMESPACE --for=condition=ready pod -l app=lnd-container --timeout=200s
-            kubectl wait --namespace=$NAMESPACE --for=condition=ready pod -l app=mongodb --timeout=200s
-      - run:
-          name: retrieve macaroons from lnd containers and install test image
-          command: |
-            export MACAROON=$(kubectl exec --namespace=$NAMESPACE lnd-container-0 -- base64 /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon | tr -d '\n\r')
-            export MACAROONOUTSIDE1=$(kubectl exec --namespace=$NAMESPACE lnd-container-1 -- base64 /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon | tr -d '\n\r')
-            export MACAROONOUTSIDE2=$(kubectl exec --namespace=$NAMESPACE lnd-container-2 -- base64 /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon | tr -d '\n\r')
-            echo "$MACAROON"
-            echo "$MACAROONOUTSIDE1"
-            echo "$MACAROONOUTSIDE2"
-            helm install --namespace=$NAMESPACE test-chart -f ~/GaloyApp/backend/test-chart/values.yaml --set \
-            macaroon=$MACAROON,macaroonoutside1=$MACAROONOUTSIDE1,macaroonoutside2=$MACAROONOUTSIDE2 \
-            ~/GaloyApp/backend/test-chart/
-      - run:
-          name: wait for test-pod to come alive
-          command: |
-            echo $(kubectl get --namespace=$NAMESPACE pods)
-            kubectl wait --namespace=$NAMESPACE --for=condition=ready pod/test-pod --timeout=200s
-      - run:
-          name: Run tests
-          command: |
-            kubectl get --namespace=$NAMESPACE pods
             kubectl exec --namespace=$NAMESPACE test-pod -- bash -c "cd functions && yarn test"
+      - run:
+          name: Run postman test
+          command: |
+            kubectl exec --namespace=$NAMESPACE test-pod -- bash -c "cd functions && yarn run postman"
       - run:
           name: Fetch test results
           command: kubectl cp --namespace=$NAMESPACE test-pod:/functions/artifacts/junit.xml ./reports/junit.xml
           when: always
+      # - run:
+      #     name: sleep
+      #     command: sleep 590 && echo "10 min" && sleep 590 && echo "20 min" && sleep 590 && echo "30 min"
+      #     when: always
       - store_test_results:
           path: ./reports
       - store_artifacts:
@@ -261,12 +321,53 @@ jobs:
             equal: [ master, << pipeline.git.branch >> ]
           steps:
             - run: |
-                gcloud container images add-tag gcr.io/${GOOGLE_PROJECT_ID}/test-image:latest gcr.io/${GOOGLE_PROJECT_ID}/test-image:approved --quiet
                 gcloud container clusters get-credentials testnet-cluster --region us-central1-a --project ${GOOGLE_PROJECT_ID}
-                kubectl delete pod -l app=graphql-server
-      - slack/status:
-          fail_only: true
-          mentions: 'U011J7RCEFQ,U011KKL1L4B'
+                cd ~/GaloyApp/backend/firebase/functions/ && NAMESPACE=testnet && ./initLocalTest.sh            
+
+  mainnet_deploy:
+    working_directory: ~/GaloyApp/backend
+    docker:
+      - image: kiwigrid/gcloud-kubectl-helm:latest     
+    resource_class: small
+    steps:
+      - checkout:
+          path: ~/GaloyApp
+      - run:
+          name: Authenticate on gcloud
+          command: |
+            echo ${GCLOUD_SERVICE_KEY} > gcloud-service-key.json
+            gcloud auth activate-service-account --key-file=gcloud-service-key.json
+            gcloud config set project ${GOOGLE_PROJECT_ID}
+            gcloud container clusters get-credentials testnet-cluster --region us-central1-a --project ${GOOGLE_PROJECT_ID}
+      - run:
+          name: Upgrade mainnet deployments
+          command: |
+            cd ~/GaloyApp/backend/firebase/functions/ && NAMESPACE=mainnet && ./initLocalTest.sh
+               
+  update_locale:
+    working_directory: ~/GaloyApp/mobile
+    docker:
+      - image: cimg/base:2020.01    
+    resource_class: small
+    steps:
+      - checkout:
+          path: ~/GaloyApp
+      - run: echo $PHRASE_CONFIG | base64 -d > .phrase.yml
+      - run: wget https://github.com/phrase/phrase-cli/releases/download/2.0.13/phrase_linux_amd64
+      - run: chmod +x ./phrase_linux_amd64
+      - run: ./phrase_linux_amd64 push
+      - run: ./phrase_linux_amd64 pull
+      - run: git config credential.helper 'cache --timeout=120'
+      - run: git config --global user.name "circleci-bot"
+      - run: git config --global user.email "bot@circleci.com"
+      - run: git config pull.rebase false
+      - run: |
+          if [[ $(git diff) ]]; then
+            git commit -a -m "update translation file [ci skip]"
+            git push -q https://${GITHUB_TOKEN}@github.com/nicolasburtey/galoy-app.git $CIRCLE_BRANCH
+          else
+            echo "nothing to commit"
+          fi
 
 workflows:
   kube:
@@ -275,3 +376,39 @@ workflows:
       - test:
           requires:
             - build_test_image
+      - approve_mainnet_deploy:
+          type: approval
+          requires:
+            - test
+          filters:
+            branches:
+              only:
+                - master
+      - slack/approval-notification:
+          mentions: 'U011J7RCEFQ,U011KKL1L4B'
+          requires:
+            - test
+          filters:
+            branches:
+              only:
+                - master
+      - mainnet_deploy:
+          requires:
+            - approve_mainnet_deploy
+          filters:
+            branches:
+              only:
+                - master
+  mobile:
+    jobs:
+      - hold_build_mobile:
+          type: approval
+      - update_locale:
+          requires:
+            - hold_build_mobile
+      - build_ios:
+          requires:
+            - update_locale
+      - build_android:
+          requires:
+            - update_locale

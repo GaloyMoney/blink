@@ -1,7 +1,7 @@
-import { sat2btc } from "./utils"
+import { logger, sat2btc } from "./utils"
 const mongoose = require("mongoose")
 import moment = require("moment")
-const util = require('util')
+import { PriceHistory } from "./mongodb"
 
 export class Price {
     readonly pair
@@ -17,10 +17,6 @@ export class Price {
         }
     }
 
-    protected async getPriceHistory() {
-        return mongoose.model("PriceHistory")
-    }
-
     /**
      * favor lastCached
      * only used for unit test
@@ -33,11 +29,11 @@ export class Price {
             'rateLimit': 30000,
             'timeout': 5000,
         })
-        console.log("start")
+        logger.info("start fetching data from exchange")
         let ohlcv;
         try {
             ohlcv = await exchange.fetchOHLCV(this.pair, "1h", since, limit); 
-            console.log("complete")
+            logger.info("data fetched from exchange")
         }
         catch (e) {
             if (e instanceof ccxt.NetworkError) {
@@ -53,7 +49,6 @@ export class Price {
     }
 
     async lastCached(): Promise<Array<Object>> {
-        const PriceHistory = await this.getPriceHistory()
         const ohlcv = await PriceHistory.findOne(this.path)
         // TODO use sort + only request the last 25 data points at the db level for optimization
         // assuming we can do this on subquery in MongoDB
@@ -68,7 +63,7 @@ export class Price {
             const fs = require('fs');
             fs.writeFile("test.txt", JSON.stringify(result, null, 4), function(err) {
                 if (err) {
-                    console.log(err);
+                    logger.error({err}, "error writing test file (useless log?)")
                 }
         })}
 
@@ -76,8 +71,6 @@ export class Price {
     }
 
     async update(init = false): Promise<Boolean | Error> {
-        const PriceHistory = await this.getPriceHistory()
-
         const increment = 720 // how many candles
         const increment_ms = increment * 3600 * 1000
         const endDate = new Date().valueOf() - 3600 * 1000
@@ -104,7 +97,7 @@ export class Price {
         }
 
         while (currDate < endDate) {
-            console.log({currDate, endDate})
+            logger.debug({currDate, endDate}, "loop to fetch data from exchange")
             const ohlcv = await this.getFromExchange({since: currDate, limit, init})
 
             try {
@@ -113,7 +106,7 @@ export class Price {
 
                     // FIXME inefficient
                     if(doc.pair.exchange.price.find(obj => obj._id.getTime() === value[0])) {
-                        console.log("continue")
+                        logger.debug("we already have those price datas in our database... continue")
                         continue
                     }
     

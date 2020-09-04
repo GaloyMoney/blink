@@ -2,6 +2,7 @@ type Transaction {
   id: ID!
   amount: Int!,
   description: String!,
+  fee: Int
   created_at: Int!, # TODO create a Date scalar
   # https://www.apollographql.com/docs/graphql-tools/scalars/
   hash: String,
@@ -18,7 +19,7 @@ type Earn {
   the earn reward for the app to display their associated amount
   """
   id: ID!
-  value: Int
+  value: Int!
   completed: Boolean
 }
 
@@ -31,24 +32,37 @@ type Wallet {
 
 type Invoice {
   addInvoice(value: Int, memo: String): String
-  updatePendingInvoice(hash: String): Boolean
-  payInvoice(invoice: String): String
+  updatePendingInvoice(hash: String!): Boolean
+  payInvoice(invoice: String!, amount: Int): String #FIXME: use a more precise type
+}
+
+type PendingOnchainPayment {
+  txId: ID
+  amount: Int
 }
 
 type OnChain {
   getNewAddress: String
+  pay(address: String!, amount: Int!): Success
+}
+
+type LastOnChainAddress {
+  id: ID
+}
+
+type OnchainTransaction {
+  tx: String
 }
 
 type User {
   id: ID
-  name: String!
+  name: String
   level: Int!
 }
 
 input InputUser {
   id: ID
   level: Int
-  deviceToken: String
 }
 
 type Success {
@@ -64,26 +78,26 @@ type BuildParameter {
   buildTime: String
 }
 
-enum Network {
-  testnet
-  mainnet
-}
-
 type Query { 
   prices: [Price]
   wallet: [Wallet]
   earnList: [Earn]
   me: User
   buildParameters: BuildParameter
+  getLastOnChainAddress: LastOnChainAddress
+  pendingOnChainPayment: [PendingOnchainPayment]
 }
 
 type Mutation {
   requestPhoneCode(phone: String): Success
-  login(phone: String, code: Int, network: Network): Token
+  login(phone: String, code: Int): Token
+  openChannel(local_tokens: Int, public_key: String, socket: String): OnchainTransaction
 
   onchain: OnChain
   invoice: Invoice
   earnCompleted(ids: [ID]): [Earn]
   updateUser(user: InputUser): User
   deleteUser: Boolean # TODO
+  addDeviceToken(deviceToken: String): Success # to refactor with User?
+  testMessage: Success # FIXME remove test
 }
