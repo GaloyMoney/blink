@@ -1,11 +1,11 @@
 /**
  * @jest-environment node
  */
-import { setupMongoConnection, User } from "../mongodb"
+import { setupMongoConnection, Transaction, User } from "../mongodb"
 // this import needs to be before medici
 
 import { LightningAdminWallet } from "../LightningAdminImpl"
-import { sleep } from "../utils"
+import { sleep, logger } from "../utils"
 const mongoose = require("mongoose");
 const { once } = require('events');
 
@@ -13,13 +13,12 @@ const lnService = require('ln-service')
 
 import { lndMain, lndOutside1, lndOutside2, bitcoindClient, RANDOM_ADDRESS, checkIsBalanced, waitUntilBlockHeight } from "../tests/helper"
 
-export const logger = require('pino')({ level: "debug" })
 
 const local_tokens = 10000000
 
 let initBlockCount
 let adminWallet
-let initChannelMain, initChannelOutside1
+let channelLengthMain, channelLengthOutside1
 
 
 beforeAll(async () => {
@@ -27,8 +26,8 @@ beforeAll(async () => {
 	const admin = await User.findOne({ role: "admin" })
 	adminWallet = new LightningAdminWallet({ uid: admin._id })
 
-	initChannelMain = (await lnService.getChannels({ lnd: lndMain })).channels.length
-	initChannelOutside1 = (await lnService.getChannels({ lnd: lndOutside1 })).channels.length
+	channelLengthMain = (await lnService.getChannels({ lnd: lndMain })).channels.length
+	channelLengthOutside1 = (await lnService.getChannels({ lnd: lndOutside1 })).channels.length
 })
 
 beforeEach(async () => {
@@ -88,11 +87,11 @@ it('opens channel from lnd1 to lndOutside1', async () => {
 	await openChannel({ lnd: lndMain, other_lnd: lndOutside1, socket })
 
 	const { channels } = await lnService.getChannels({ lnd: lndMain })
-	expect(channels.length).toEqual(initChannelMain + 1)
+	expect(channels.length).toEqual(channelLengthMain + 1)
 
 }, 100000)
 
-it('opens channel from lndOutside1 to lndOutside2', async () => {
+it('opens private channel from lndOutside1 to lndOutside2', async () => {
 	const socket = `lnd-outside-2:9735`
 
 	// const {subscribeToGraph} = require('ln-service');
@@ -106,7 +105,7 @@ it('opens channel from lndOutside1 to lndOutside2', async () => {
 	subscription.removeAllListeners();
 
 	const { channels } = await lnService.getChannels({ lnd: lndOutside1 })	
-	expect(channels.length).toEqual(initChannelOutside1 + 2)
+	expect(channels.length).toEqual(channelLengthOutside1 + 2)
 	expect(channels.some(e => e.is_private))
 }, 240000)
 
@@ -116,7 +115,17 @@ it('opens channel from lndOutside1 to lnd1', async () => {
 
 	{
 		const { channels } = await lnService.getChannels({ lnd: lndMain })
-		expect(channels.length).toEqual(initChannelMain + 2)
+		expect(channels.length).toEqual(channelLengthMain + 2)
 	}
 
+}, 100000)
+
+it('escrow update 1', async () => {
+  await adminWallet.updateEscrows()
+  await checkIsBalanced()
+}, 100000)
+
+it('escrow update 2', async () => {
+  await adminWallet.updateEscrows()
+  await checkIsBalanced()
 }, 100000)
