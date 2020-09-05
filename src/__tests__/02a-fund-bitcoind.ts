@@ -22,12 +22,6 @@ const amount_BTC = 1
 let lndOutside1_wallet_addr
 
 
-// change role to admin
-// FIXME there should be an API for this
-export async function promoteToAdmin(uid) {
-  await User.findOneAndUpdate({_id: uid}, {role: "admin"})
-}
-
 beforeAll(async () => {
   await setupMongoConnection()
 })

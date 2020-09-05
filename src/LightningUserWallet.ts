@@ -21,8 +21,8 @@ export class LightningUserWallet extends LightningMixin(UserWallet) {
   async addEarn(ids) {
 
     // TODO: there should be a "funding" role, instead of admin
-    const admin = await User.findOne({ role: "admin" })
-    const lightningFundingWallet = new LightningUserWallet({ uid: admin._id })
+    const funder = await User.findOne({ role: "funder" })
+    const lightningFundingWallet = new LightningUserWallet({ uid: funder._id })
 
     const result: object[] = []
 

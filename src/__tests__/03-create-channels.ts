@@ -23,8 +23,7 @@ let channelLengthMain, channelLengthOutside1
 
 beforeAll(async () => {
 	await setupMongoConnection()
-	const admin = await User.findOne({ role: "admin" })
-	adminWallet = new LightningAdminWallet({ uid: admin._id })
+	adminWallet = new LightningAdminWallet()
 
 	channelLengthMain = (await lnService.getChannels({ lnd: lndMain })).channels.length
 	channelLengthOutside1 = (await lnService.getChannels({ lnd: lndOutside1 })).channels.length

@@ -10,8 +10,8 @@ const mongoose = require("mongoose");
 
 // change role to admin
 // FIXME there should be an API for this
-export async function promoteToAdmin(uid) {
-  await User.findOneAndUpdate({_id: uid}, {role: "admin"})
+export async function promoteToFunder(uid) {
+  await User.findOneAndUpdate({_id: uid}, {role: "funder"})
 }
 
 beforeAll(async () => {
@@ -33,9 +33,9 @@ it('add user0 without currency (old account)', async () => {
 })
 
 
-it('add admin', async () => {  
+it('add Funder', async () => {  
   const {uid} = await getTestUserToken(4)
-  await promoteToAdmin(uid)
+  await promoteToFunder(uid)
 })
 
 

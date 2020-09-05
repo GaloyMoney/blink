@@ -5,20 +5,15 @@ import { getAuth, logger } from "./utils";
 const lnService = require('ln-service')
 
 
-export class LightningAdminWallet extends LightningUserWallet {
-  constructor({uid}: {uid: string}) {
-    super({uid})
-  }
+export class LightningAdminWallet {
+  readonly currency = "BTC" // add USD as well
+  readonly lnd = lnService.authenticatedLndGrpc(getAuth()).lnd
 
   async updateUsersPendingPayment() {
     let userWallet
 
-    // FIXME: looping on user only here should be expanded to admin
     for await (const user of User.find({}, { _id: 1})) {
-      logger.debug("updating user %o from admin wallet %o", user._id, this.uid)
-
-      // TODO there is no reason to fetch the Auth wallet here.
-      // Admin should have it's own auth that it's passing to LightningUserWallet
+      logger.debug("updating user %o", user._id)
 
       // A better approach would be to just loop over pending: true invoice/payment
       userWallet = new LightningUserWallet({uid: user._id})
@@ -34,15 +29,19 @@ export class LightningAdminWallet extends LightningUserWallet {
     for (const account of accounts) {
       const { balance } = await MainBook.balance({
         account: account,
+        currency: this.currency,
       })
       books[account] = balance
     }
     logger.debug(books, "status of our bookeeping")
 
     const getBalanceOf = async (account) => {
-      return (await MainBook.balance({
+      const { balance } = await MainBook.balance({
         account,
-      })).balance
+        currency: this.currency
+      })
+
+      return balance
     }
 
     const assets = await getBalanceOf("Assets") 
@@ -100,7 +99,7 @@ export class LightningAdminWallet extends LightningUserWallet {
 
     const { fee } = find(transactions, {id: transaction_id})
 
-    const metadata = { txid: transaction_id, type: "fee" }
+    const metadata = { currency: this.currency, txid: transaction_id, type: "fee" }
 
     await MainBook.entry("on chain fees")
       .debit('Assets:Reserve:Lightning', fee, {...metadata,})
@@ -111,16 +110,11 @@ export class LightningAdminWallet extends LightningUserWallet {
   }
 
   async updateEscrows() {
-    const auth = getAuth() // FIXME
-    const lnd = lnService.authenticatedLndGrpc(auth).lnd // FIXME
-
-    
-
     const type = "escrow"
 
-    const metadata = { type }
+    const metadata = { type, currency: this.currency }
 
-    const { channels } = await lnService.getChannels({lnd})
+    const { channels } = await lnService.getChannels({lnd: this.lnd})
     const selfInitated = filter(channels, {is_partner_initiated: false, is_active: true})
 
     const mongotxs = await Transaction.aggregate([

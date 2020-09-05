@@ -3,6 +3,7 @@
  */
 // this import needs to be before medici
 import { LightningAdminWallet } from "../LightningAdminImpl";
+import { LightningUserWallet } from "../LightningUserWallet";
 import { quit } from "../lock";
 import { setupMongoConnection, User } from "../mongodb";
 import { bitcoindClient, checkIsBalanced, getUserWallet, lndMain, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
@@ -14,10 +15,10 @@ const mongoose = require("mongoose");
 const { once } = require('events');
 
 
-let adminWallet
+let funderWallet
 let initBlockCount
-let initialBalanceUser0, initialBalanceAdmin
-let wallet
+let initialBalanceUser0
+let walletUser0
 const min_height = 1
 
 
@@ -30,16 +31,15 @@ const notification = require("../notification");
 beforeAll(async () => {
   await setupMongoConnection()
 
-  wallet = await getUserWallet(0)
+  walletUser0 = await getUserWallet(0)
 
-  const admin = await User.findOne({ role: "admin" })
-  adminWallet = new LightningAdminWallet({ uid: admin._id })
+  const funder = await User.findOne({role: "funder"})
+  funderWallet = new LightningUserWallet({uid: funder._id})
 })
 
 beforeEach(async () => {
   initBlockCount = await bitcoindClient.getBlockCount()
-  initialBalanceUser0 = await wallet.getBalance()
-  initialBalanceAdmin = await adminWallet.getBalance()
+  initialBalanceUser0 = await walletUser0.getBalance()
 })
 
 afterAll(async () => {
@@ -52,7 +52,7 @@ afterAll(async () => {
 
 const onchain_funding = async ({walletDestination}) => {
   const initialBalance = await walletDestination.getBalance()
-  const initTransations = await wallet.getTransactions()
+  const initTransations = await walletDestination.getTransactions()
   
   const address = await walletDestination.getOnChainAddress()
 	expect(address.substr(0, 4)).toBe("bcrt")
@@ -69,7 +69,7 @@ const onchain_funding = async ({walletDestination}) => {
 		const balance = await walletDestination.getBalance()
     expect(balance).toBe(initialBalance + btc2sat(amount_BTC))
     
-    const transations = await wallet.getTransactions()
+    const transations = await walletDestination.getTransactions()
     expect(transations.length).toBe(initTransations.length + 1)
     expect(transations[transations.length - 1].type).toBe("onchain_receipt")
     expect(transations[transations.length - 1].amount).toBe(btc2sat(amount_BTC))
@@ -88,15 +88,19 @@ const onchain_funding = async ({walletDestination}) => {
 }
 
 it('user0 is credited for on chain transaction', async () => {
-  await onchain_funding({walletDestination: wallet})
+  await onchain_funding({walletDestination: walletUser0})
 }, 100000)
 
-it('funding bank/admin with onchain tx from bitcoind', async () => {
-	await onchain_funding({walletDestination: adminWallet})
+it('showtx', async () => {
+  console.log(await funderWallet.getTransactions())
+}, 100000)
+
+it('funding funder with onchain tx from bitcoind', async () => {
+	await onchain_funding({walletDestination: funderWallet})
 }, 100000)
 
 it('identifies unconfirmed incoming on chain txn', async () => {
-	const address = await wallet.getOnChainAddress()
+	const address = await walletUser0.getOnChainAddress()
 	expect(address.substr(0, 4)).toBe("bcrt")
 
   const sub = await lnService.subscribeToTransactions({lnd: lndMain})
@@ -107,7 +111,7 @@ it('identifies unconfirmed incoming on chain txn', async () => {
   //FIXME: Use something deterministic instead of sleep
   await sleep(2000)
   
-	const pendingTxn = await wallet.getPendingIncomingOnchainPayments()
+	const pendingTxn = await walletUser0.getPendingIncomingOnchainPayments()
 	expect(pendingTxn.length).toBe(1)
 	expect(pendingTxn[0].amount).toBe(btc2sat(1))
 

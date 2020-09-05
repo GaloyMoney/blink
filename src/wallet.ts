@@ -1,6 +1,6 @@
 import { MainBook } from "./mongodb"
 
-export class Wallet {
+export class UserWallet {
 
   // FIXME should not be here
   customerPath(uid) { 
@@ -8,27 +8,12 @@ export class Wallet {
   }
 
   readonly uid: string
+  readonly currency: string
 
-  constructor({uid}) {
+  constructor({uid, currency = "BTC"}) {
     this.uid = uid
+    this.currency = currency
   }
-
-  get accountPath(): string {
-    throw new Error("AbstractMethod not implemented");
-  }
-
-  async getBalance() {
-
-    const { balance } = await MainBook.balance({
-        account: this.accountPath,
-    })
-
-    return - balance
-  }
-
-}
-
-export class UserWallet extends Wallet {
 
   get accountPath(): string {
     return this.customerPath(this.uid)
@@ -36,5 +21,15 @@ export class UserWallet extends Wallet {
 
   get accountPathMedici(): Array<string> {
     return this.accountPath.split(":")
+  }
+
+  async getBalance() {
+
+    const { balance } = await MainBook.balance({
+      account: this.accountPath,
+      currency: this.currency, 
+    })
+
+    return - balance
   }
 }

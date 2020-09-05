@@ -56,6 +56,8 @@ const formatType = (type: ITxType, pending: Boolean | undefined): TransactionTyp
 }
 
 export const LightningMixin = (superclass) => class extends superclass {
+  protected _currency = "BTC"
+
   lnd: any
   nodePubKey: string | null = null
 
@@ -84,6 +86,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     await this.updatePending()
 
     const { results } = await MainBook.ledger({
+      currency: this.currency,
       account: this.accountPath,
       // start_date: startDate,
       // end_date: endDate
@@ -156,7 +159,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         }
 
         const payeeAccountPath = await this.customerPath(user._id)
-        const metadata = { type: "on_us", pending: false }
+        const metadata = { currency: this.currency, type: "on_us", pending: false }
         await MainBook.entry()
           .credit(this.accountPath, amount, metadata)
           .debit(payeeAccountPath, amount, metadata)
@@ -204,7 +207,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
       const [{ fee }] = outgoingOnchainTxns.filter(tx => tx.id === id)
 
-      const metadata = { hash: id, type: "onchain_payment", pending: true, fee }
+      const metadata = { currency: this.currency, hash: id, type: "onchain_payment", pending: true, fee }
       await MainBook.entry(description)
         .debit('Assets:Reserve:Lightning', amount + fee, metadata)
         .credit(this.accountPath, amount + fee, metadata)
@@ -279,7 +282,7 @@ export const LightningMixin = (superclass) => class extends superclass {
           throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${tokens}`)
         }
         const payeeAccountPath = await this.customerPath(payeeUid)
-        const metadata = { hash: id, type: "on_us", pending: false }
+        const metadata = { currency: this.currency, hash: id, type: "on_us", pending: false }
         await MainBook.entry()
           .credit(this.accountPath, tokens, metadata)
           .debit(payeeAccountPath, tokens, metadata)
@@ -346,7 +349,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
       // reduce balance from customer first
 
-      const metadata = { hash: id, type: "payment", pending: true, fee }
+      const metadata = { currency: this.currency, hash: id, type: "payment", pending: true, fee }
       const entry = await MainBook.entry(description)
         .debit('Assets:Reserve:Lightning', tokens + fee, metadata)
         .credit(this.accountPath, tokens + fee, metadata)
@@ -548,9 +551,11 @@ export const LightningMixin = (superclass) => class extends superclass {
           invoiceUser.pending = false
           invoiceUser.save()
 
+          const metadata =  { currency: this.currency, hash, type: "invoice" }
+
           await MainBook.entry(invoice.description)
-            .credit('Assets:Reserve:Lightning', invoice.received, { hash, type: "invoice" })
-            .debit(this.accountPath, invoice.received, { hash, type: "invoice" })
+            .credit('Assets:Reserve:Lightning', invoice.received, metadata)
+            .debit(this.accountPath, invoice.received, metadata)
             .commit()
 
           // session.commitTransaction()
@@ -627,10 +632,12 @@ export const LightningMixin = (superclass) => class extends superclass {
         const mongotx = await Transaction.findOne({ account_path: this.accountPathMedici, type, hash: matched_tx.id })
         logger.debug({ matched_tx, mongotx }, "updateOnchainPayment with user %o", this.uid)
 
+        const metadata = { currency: this.currency, type, hash: matched_tx.id }
+
         if (!mongotx) {
           await MainBook.entry()
-            .credit('Assets:Reserve:Lightning', matched_tx.tokens, { type, hash: matched_tx.id })
-            .debit(this.accountPath, matched_tx.tokens, { type, hash: matched_tx.id, })
+            .credit('Assets:Reserve:Lightning', matched_tx.tokens, metadata)
+            .debit(this.accountPath, matched_tx.tokens, metadata)
             .commit()
         }
       }

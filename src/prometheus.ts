@@ -20,9 +20,7 @@ const lndBalanceSheetDifference_g = new client.Gauge({ name: 'lndBalanceSync', h
 // const price_g = new client.Gauge({ name: 'price', help: 'BTC/USD price' })
 
 const main = async () => {
-
-  const admin = await User.findOne({role: "admin"})
-	const adminWallet = new LightningAdminWallet({uid: admin._id})
+	const adminWallet = new LightningAdminWallet()
 
   server.get('/metrics', async (req, res) => {
     
