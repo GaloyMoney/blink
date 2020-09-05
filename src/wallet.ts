@@ -1,4 +1,3 @@
-import { book } from "medici"
 import { MainBook } from "./mongodb"
 
 export class Wallet {
@@ -14,21 +13,14 @@ export class Wallet {
     this.uid = uid
   }
 
-  protected _currency
-
   get accountPath(): string {
     throw new Error("AbstractMethod not implemented");
   }
 
-  get currency() { return this._currency }
-
   async getBalance() {
-
-    
 
     const { balance } = await MainBook.balance({
         account: this.accountPath,
-        currency: this.currency
     })
 
     return - balance
@@ -63,8 +55,8 @@ export class AdminWallet extends Wallet {
     
 
     await MainBook.entry(memo ?? 'Add funds')
-    .credit(this.accountPath, amount, {currency: this.currency, type})
-    .debit(this.customerPath(uid), amount, {currency: this.currency, type})
+    .credit(this.accountPath, amount, {type})
+    .debit(this.customerPath(uid), amount, {type})
     .commit()
   }
 
@@ -75,8 +67,8 @@ export class AdminWallet extends Wallet {
     }
 
     return MainBook.entry(memo ?? 'Withdraw funds')
-    .debit(this.accountPath, amount, {currency: this.currency, type})
-    .credit(this.customerPath(uid), amount, {currency: this.currency, type})
+    .debit(this.accountPath, amount, {type})
+    .credit(this.customerPath(uid), amount, {type})
     .commit()
   }
 }

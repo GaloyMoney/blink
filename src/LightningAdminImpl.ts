@@ -36,7 +36,6 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
     for (const account of accounts) {
       const { balance } = await MainBook.balance({
         account: account,
-        currency: this.currency
       })
       books[account] = balance
     }
@@ -45,7 +44,6 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
     const getBalanceOf = async (account) => {
       return (await MainBook.balance({
         account,
-        currency: this.currency
       })).balance
     }
 
@@ -106,7 +104,7 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
 
     
 
-    const metadata = { currency: this.currency, txid: transaction_id, type: "fee" }
+    const metadata = { txid: transaction_id, type: "fee" }
 
     await MainBook.entry("on chain fees")
       .debit('Assets:Reserve:Lightning', fee, {...metadata,})
@@ -124,7 +122,7 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
 
     const type = "escrow"
 
-    const metadata = { currency: this.currency, type }
+    const metadata = { type }
 
     const { channels } = await lnService.getChannels({lnd})
     const selfInitated = filter(channels, {is_partner_initiated: false, is_active: true})

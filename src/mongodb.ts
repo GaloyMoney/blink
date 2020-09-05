@@ -5,13 +5,15 @@ const mongoose = require("mongoose");
 
 const Schema = mongoose.Schema;
 
-// could be capped after X months.
-// as this could be reconstructure from the ledger
-// and old non pending transaction would not really matters
+// expired invoice should be removed from the collection
 const invoiceUserSchema = new Schema({
   _id: String, // hash of invoice
   uid: String,
   pending: Boolean,
+
+  // for invoice that are denominated in usd. this is the sats equivalent
+  usd: Number, 
+  
   timestamp: {
     type: Date,
     default: Date.now
@@ -51,6 +53,12 @@ const UserSchema = new Schema({
     default: []
   },
 
+  currency: {
+    type: String,
+    enum: ["USD", "BTC"],
+    default: "BTC"
+  },
+
   // firstName,
   // lastName,
   // activated,
@@ -76,12 +84,7 @@ export const PhoneCode = mongoose.model("PhoneCode", PhoneCodeSchema)
 
 
 const transactionSchema = new Schema({
-  // custom property
-  currency: {
-    type: String,
-    enum: ["USD", "BTC"],
-    required: true
-  },
+
   hash: {
     type: Schema.Types.String,
     ref: 'InvoiceUser'

@@ -11,7 +11,7 @@ const util = require('util')
 const using = require('bluebird').using
 
 
-const FEECAP = 0.02 // %
+const FEECAP = 0.02 // = 2%
 const FEEMIN = 10 // sats
 
 export type ITxType = "invoice" | "payment" | "earn" | "onchain_receipt" | "onchain_payment" | "on_us"
@@ -56,7 +56,6 @@ const formatType = (type: ITxType, pending: Boolean | undefined): TransactionTyp
 }
 
 export const LightningMixin = (superclass) => class extends superclass {
-  protected _currency = "BTC"
   lnd: any
   nodePubKey: string | null = null
 
@@ -86,7 +85,6 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     const { results } = await MainBook.ledger({
       account: this.accountPath,
-      currency: this.currency,
       // start_date: startDate,
       // end_date: endDate
     })
@@ -158,7 +156,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         }
 
         const payeeAccountPath = await this.customerPath(user._id)
-        const metadata = { currency: this.currency, type: "on_us", pending: false }
+        const metadata = { type: "on_us", pending: false }
         await MainBook.entry()
           .credit(this.accountPath, amount, metadata)
           .debit(payeeAccountPath, amount, metadata)
@@ -206,7 +204,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
       const [{ fee }] = outgoingOnchainTxns.filter(tx => tx.id === id)
 
-      const metadata = { currency: this.currency, hash: id, type: "onchain_payment", pending: true, fee }
+      const metadata = { hash: id, type: "onchain_payment", pending: true, fee }
       await MainBook.entry(description)
         .debit('Assets:Reserve:Lightning', amount + fee, metadata)
         .credit(this.accountPath, amount + fee, metadata)
@@ -281,7 +279,7 @@ export const LightningMixin = (superclass) => class extends superclass {
           throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${tokens}`)
         }
         const payeeAccountPath = await this.customerPath(payeeUid)
-        const metadata = { currency: this.currency, hash: id, type: "on_us", pending: false }
+        const metadata = { hash: id, type: "on_us", pending: false }
         await MainBook.entry()
           .credit(this.accountPath, tokens, metadata)
           .debit(payeeAccountPath, tokens, metadata)
@@ -348,7 +346,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
       // reduce balance from customer first
 
-      const metadata = { currency: this.currency, hash: id, type: "payment", pending: true, fee }
+      const metadata = { hash: id, type: "payment", pending: true, fee }
       const entry = await MainBook.entry(description)
         .debit('Assets:Reserve:Lightning', tokens + fee, metadata)
         .credit(this.accountPath, tokens + fee, metadata)
@@ -554,8 +552,8 @@ export const LightningMixin = (superclass) => class extends superclass {
           invoiceUser.save()
 
           await MainBook.entry()
-            .credit('Assets:Reserve:Lightning', invoice.received, { currency: "BTC", hash, type: "invoice" })
-            .debit(this.accountPath, invoice.received, { currency: "BTC", hash, type: "invoice" })
+            .credit('Assets:Reserve:Lightning', invoice.received, { hash, type: "invoice" })
+            .debit(this.accountPath, invoice.received, { hash, type: "invoice" })
             .commit()
 
           // session.commitTransaction()
@@ -634,8 +632,8 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         if (!mongotx) {
           await MainBook.entry()
-            .credit('Assets:Reserve:Lightning', matched_tx.tokens, { currency: "BTC", type, hash: matched_tx.id })
-            .debit(this.accountPath, matched_tx.tokens, { currency: "BTC", type, hash: matched_tx.id, })
+            .credit('Assets:Reserve:Lightning', matched_tx.tokens, { type, hash: matched_tx.id })
+            .debit(this.accountPath, matched_tx.tokens, { type, hash: matched_tx.id, })
             .commit()
         }
       }
