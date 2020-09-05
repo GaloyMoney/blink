@@ -51,13 +51,6 @@ const UserSchema = new Schema({
     default: []
   },
 
-  // 0 means no hedge
-  // 1 means fully hedge
-  // currently only hedging in USD
-  hedgeRatio: {
-    type: Number,
-    default: 0
-  },
   // firstName,
   // lastName,
   // activated,

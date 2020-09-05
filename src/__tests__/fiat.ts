@@ -12,7 +12,7 @@ let fiatWallet
 
 beforeAll(async () => {
   await setupMongoConnection()
-  fiatWallet = new FiatAdminWallet({uid: "admin"})
+  // fiatWallet = new FiatAdminWallet({uid: "admin"})
 })
 
 afterAll(async () => {

@@ -16,7 +16,7 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
     let userWallet
 
     // FIXME: looping on user only here should be expanded to admin
-    for await (const user of User.find({"role": "user"}, { _id: 1})) {
+    for await (const user of User.find({}, { _id: 1})) {
       logger.debug("updating user %o from admin wallet", user._id)
 
       // TODO there is no reason to fetch the Auth wallet here.
@@ -53,12 +53,11 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
     const liabilities = await getBalanceOf("Liabilities") 
     const lightning = await getBalanceOf("Assets:Reserve:Lightning") 
     const expenses = await getBalanceOf("Expenses") 
-    const customers = await getBalanceOf("Liabilities:Customer") 
 
     // FIXME: have a way to generate a PNL
-    const equity = await getBalanceOf("Liabilities:ShareholderValue") - expenses
+    const equity = - expenses
 
-    return {assets, liabilities, lightning, expenses, customers, equity}
+    return {assets, liabilities, lightning, expenses, equity}
   }
 
   async balanceSheetIsBalanced() {
@@ -68,11 +67,10 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
 
     const assetsLiabilitiesDifference = assets + liabilities + expenses
     const lndBalanceSheetDifference = lndBalance - lightning
-    if(!lndBalanceSheetDifference) {
-      logger.debug(`not balanced, lndBal:${lndBalance}, lightning:${lightning}`)
+    if(!!lndBalanceSheetDifference) {
+      logger.debug({lndBalance, lightning, lndBalanceSheetDifference, assets, liabilities, expenses}, `not balanced`)
     }
 
-    logger.debug({assets, liabilities, lightning, lndBalance, expenses})
     return { assetsLiabilitiesDifference, lndBalanceSheetDifference }
   }
 
