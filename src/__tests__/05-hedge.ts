@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-import { setupMongoConnection } from "./db"
+import { setupMongoConnection } from "../mongodb"
 
 const mongoose = require("mongoose");
 import { Hedging } from "../hedge"

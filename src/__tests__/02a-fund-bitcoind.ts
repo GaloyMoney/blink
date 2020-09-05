@@ -3,7 +3,7 @@
  */
 const lnService = require('ln-service')
 import { setupMongoConnection, User } from "../mongodb";
-import { bitcoindClient, getTestUserUid, lndMain, lndOutside1, lndOutside2, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
+import { bitcoindClient, lndMain, lndOutside1, lndOutside2, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
 const mongoose = require("mongoose");
 
 const initialBitcoinWalletBalance = 0
@@ -34,11 +34,6 @@ beforeAll(async () => {
 
 afterAll(async () => {
 	await mongoose.connection.close()
-})
-
-it('add admin', async () => {  
-  const uid = await getTestUserUid(4)
-  await promoteToAdmin(uid)
 })
 
 it('funds bitcoind wallet', async () => {

@@ -1,13 +1,11 @@
 import { filter, find } from "lodash";
-import { LightningMixin } from "./Lightning";
 import { LightningUserWallet } from "./LightningUserWallet";
 import { MainBook, Transaction, User } from "./mongodb";
 import { getAuth, logger } from "./utils";
-import { AdminWallet } from "./wallet";
 const lnService = require('ln-service')
 
 
-export class LightningAdminWallet extends LightningMixin(AdminWallet) {
+export class LightningAdminWallet extends LightningUserWallet {
   constructor({uid}: {uid: string}) {
     super({uid})
   }
@@ -17,7 +15,7 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
 
     // FIXME: looping on user only here should be expanded to admin
     for await (const user of User.find({}, { _id: 1})) {
-      logger.debug("updating user %o from admin wallet", user._id)
+      logger.debug("updating user %o from admin wallet %o", user._id, this.uid)
 
       // TODO there is no reason to fetch the Auth wallet here.
       // Admin should have it's own auth that it's passing to LightningUserWallet
@@ -101,8 +99,6 @@ export class LightningAdminWallet extends LightningMixin(AdminWallet) {
     const { transactions } = await lnService.getChainTransactions({lnd})
 
     const { fee } = find(transactions, {id: transaction_id})
-
-    
 
     const metadata = { txid: transaction_id, type: "fee" }
 

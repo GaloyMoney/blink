@@ -131,6 +131,7 @@ const resolvers = {
       }
     },
     openChannel: async (_, { local_tokens, public_key, socket }, { uid }) => {
+      // FIXME: security risk. remove openChannel from graphql
       const lightningAdminWallet = new LightningAdminWallet({ uid })
       return { tx: lightningAdminWallet.openChannel({ local_tokens, public_key, socket }) }
     },

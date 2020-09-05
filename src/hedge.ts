@@ -23,6 +23,7 @@ export class Hedging {
   ftx
 
   constructor() {
+    // FIXME: role: admin
     this.adminWallet = new LightningAdminWallet({ uid: "admin" })
     this.ftx = new ccxt.ftx({ apiKey, secret })
   }

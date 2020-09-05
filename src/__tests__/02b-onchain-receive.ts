@@ -1,18 +1,18 @@
 /**
  * @jest-environment node
  */
-import { MainBook, setupMongoConnection, Transaction, User } from "../mongodb"
 // this import needs to be before medici
-import { LightningAdminWallet } from "../LightningAdminImpl"
-import { sleep, btc2sat } from "../utils"
+import { LightningAdminWallet } from "../LightningAdminImpl";
+import { quit } from "../lock";
+import { setupMongoConnection, User } from "../mongodb";
+import { bitcoindClient, checkIsBalanced, getUserWallet, lndMain, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
+import { onchainTransactionEventHandler } from "../trigger";
+import { btc2sat, sleep } from "../utils";
 const lnService = require('ln-service')
 
 const mongoose = require("mongoose");
 const { once } = require('events');
 
-import {lndMain, lndOutside1, bitcoindClient, RANDOM_ADDRESS, getUserWallet, checkIsBalanced, waitUntilBlockHeight} from "../tests/helper"
-import { quit } from "../lock";
-import { onchainTransactionEventHandler } from "../trigger";
 
 let adminWallet
 let initBlockCount
@@ -91,12 +91,9 @@ it('user0 is credited for on chain transaction', async () => {
   await onchain_funding({walletDestination: wallet})
 }, 100000)
 
-// XXX FIXME TODO issue with this call
-// transactions are credited several times for admins
-//
-// it('funding bank/admin with onchain tx from bitcoind', async () => {
-// 	await onchain_funding({walletDestination: adminWallet})
-// }, 100000)
+it('funding bank/admin with onchain tx from bitcoind', async () => {
+	await onchain_funding({walletDestination: adminWallet})
+}, 100000)
 
 it('identifies unconfirmed incoming on chain txn', async () => {
 	const address = await wallet.getOnChainAddress()

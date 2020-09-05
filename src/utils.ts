@@ -30,8 +30,8 @@ export function timeout(delay, msg) {
   });
 }
 
-export const createToken = ({ uid }) => jwt.sign(
-  { uid, network: process.env.NETWORK }, process.env.JWT_SECRET, {
+export const createToken = ({ uid, currency }) => jwt.sign(
+  { uid, network: process.env.NETWORK, currency }, process.env.JWT_SECRET, {
   // TODO use asymetric signature
   // and verify the signature from the client
   // otherwise we could get subject to DDos attack

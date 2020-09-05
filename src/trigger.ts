@@ -8,8 +8,6 @@ import { sendNotification } from "./notification";
 import { IDataNotification } from "./types";
 
 export async function onchainTransactionEventHandler(tx) {
-  logger.debug({tx})
-
   if (tx.is_outgoing) {
     if (tx.is_confirmed) {
       await Transaction.updateMany({ hash: tx.id }, { pending: false })
@@ -71,8 +69,8 @@ const main = async () => {
       const uid = invoiceUser.uid
       const hash = invoice.id as string
 
-      const lightningAdminWallet = new LightningUserWallet({ uid })
-      await lightningAdminWallet.updatePendingInvoice({ hash })
+      const lightningUserWallet = new LightningUserWallet({ uid })
+      await lightningUserWallet.updatePendingInvoice({ hash })
       const data: IDataNotification = {
         type: "paid-invoice",
         hash,

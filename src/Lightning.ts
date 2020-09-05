@@ -38,7 +38,7 @@ const formatInvoice = (type: ITxType, memo: IMemo, pending: boolean, credit?: bo
       case "invoice": return `Payment received`
       case "onchain_receipt": return `Onchain payment received`
       case "onchain_payment": return `Onchain payment sent`
-      case "earn": return `Earn`
+      case "earn": return `Earn` // TODO: deprecated, should be on_us
     }
   }
 }
@@ -509,9 +509,6 @@ export const LightningMixin = (superclass) => class extends superclass {
   }
 
   async updatePendingInvoice({ hash }) {
-    // TODO we should have "streaming" / use Notifications for android/iOs to have
-    // a push system and not a pull system
-
     let invoice
 
     try {
@@ -551,7 +548,7 @@ export const LightningMixin = (superclass) => class extends superclass {
           invoiceUser.pending = false
           invoiceUser.save()
 
-          await MainBook.entry()
+          await MainBook.entry(invoice.description)
             .credit('Assets:Reserve:Lightning', invoice.received, { hash, type: "invoice" })
             .debit(this.accountPath, invoice.received, { hash, type: "invoice" })
             .commit()
@@ -587,7 +584,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     let incoming_txs = (await getOnChainTransactions({ lnd: this.lnd, incoming: true }))
       .filter(tx => tx.is_confirmed === confirmed)
 
-    const { onchain_addresses } = await User.findOne({ _id: this.uid })
+    const { onchain_addresses } = await User.findOne({ _id: this.uid }, {onchain_addresses: 1})
     const matched_txs = incoming_txs
       .filter(tx => intersection(tx.output_addresses, onchain_addresses).length > 0)
 

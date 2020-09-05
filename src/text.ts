@@ -27,11 +27,14 @@ export const sendText = async ({ body, to }) => {
 }
 
 export const TEST_NUMBER = [
-  { phone: "+16505554321", code: 321321 },
-  { phone: "+16505554322", code: 321321 },
-  { phone: "+16505554323", code: 321321 },
-  { phone: "+16505554324", code: 321321 },
-  { phone: "+16505554325", code: 321321 },
+  { phone: "+16505554321", code: 321321, currency: "BTC" },
+  { phone: "+16505554322", code: 321321, currency: "BTC" },
+  { phone: "+16505554323", code: 321321, currency: "BTC" },
+  { phone: "+16505554324", code: 321321, currency: "BTC" },
+  { phone: "+16505554325", code: 321321, currency: "BTC" }, // admin
+
+  { phone: "+16505554326", code: 321321, currency: "USD" }, // usd
+  { phone: "+16505554326", code: 321321, currency: "BTC" }, // btc
 ]
 
 export const requestPhoneCode = async ({ phone }) => {
@@ -60,7 +63,13 @@ export const requestPhoneCode = async ({ phone }) => {
   return true
 }
 
-export const login = async ({ phone, code }) => {
+interface ILogin {
+  phone: string
+  code: number
+  currency?: string
+}
+
+export const login = async ({ phone, code, currency = "BTC" }: ILogin) => {
 
   try {
     const codes = await PhoneCode.find({
@@ -83,9 +92,9 @@ export const login = async ({ phone, code }) => {
 
     // code is correct
     // get User 
-    const user = await User.findOneAndUpdate({ phone }, { level: 1 }, { upsert: true, new: true })
-
-    return createToken({ uid: user._id })
+    const user = await User.findOneAndUpdate({ phone, currency }, { level: 1 }, { upsert: true, new: true })
+    return createToken({ uid: user._id, currency })
+    
   } catch (err) {
     console.error(err)
     throw err

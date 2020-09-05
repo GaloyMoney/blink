@@ -46,7 +46,7 @@ const UserSchema = new Schema({
   level: Number,
   phone: { // TODO we should store country as a separate string
     type: String,
-    unique : true,
+    required: true,
   }, 
   deviceToken: {
     type: [String],
@@ -56,14 +56,21 @@ const UserSchema = new Schema({
   currency: {
     type: String,
     enum: ["USD", "BTC"],
-    default: "BTC"
+    default: "BTC",
+    required: true,
   },
-
   // firstName,
   // lastName,
   // activated,
   // etc
 })
+
+UserSchema.index({
+  phone: 1,
+  currency: 1,
+}, {
+  unique: true,
+});
 
 // TOOD create indexes
 
@@ -99,7 +106,7 @@ const transactionSchema = new Schema({
   fee: Number,
   type: {
     type: String,
-    enum: ["invoice", "payment", "earn", "onchain_receipt", "fee", "escrow", "on_us", "onchain_payment"]
+    enum: ["invoice", "payment", "onchain_receipt", "fee", "escrow", "on_us", "onchain_payment"]
   },
   pending: Boolean, // used to denote confirmation status of on and off chain txn
   err: String,

@@ -12,7 +12,7 @@ const client = require('prom-client');
 const register = require('prom-client').register
 
 const equity_g = new client.Gauge({ name: 'shareholder', help: 'value of shareholder' })
-const customers_g = new client.Gauge({ name: 'customers', help: 'how much money customers has' })
+const liabilities_g = new client.Gauge({ name: 'liabilities', help: 'how much money customers has' })
 const lightning_g = new client.Gauge({ name: 'lightning', help: 'how much money there is our books for lnd' })
 const lnd_g = new client.Gauge({ name: 'lnd', help: 'how much money in our node' })
 const assetsLiabilitiesDifference_g = new client.Gauge({ name: 'assetsEqLiabilities', help: 'do we have a balanced book' })
@@ -36,12 +36,12 @@ const main = async () => {
     await adminWallet.updateEscrows()
     await adminWallet.updateUsersPendingPayment()
     
-    const {customers, equity, lightning} = await adminWallet.getBalanceSheet()
+    const {equity, lightning, liabilities} = await adminWallet.getBalanceSheet()
     const { assetsLiabilitiesDifference, lndBalanceSheetDifference } = await adminWallet.balanceSheetIsBalanced()
     const lndBalance = await adminWallet.totalLndBalance()
 
     equity_g.set(equity)
-    customers_g.set(customers)
+    liabilities_g.set(liabilities)
     lightning_g.set(lightning)
     lnd_g.set(lndBalance)
     assetsLiabilitiesDifference_g.set(assetsLiabilitiesDifference)

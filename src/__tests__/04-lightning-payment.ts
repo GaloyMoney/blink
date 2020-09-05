@@ -4,13 +4,14 @@
 // this import needs to be before medici
 import { createHash, randomBytes } from 'crypto';
 import { quit } from "../lock";
-import { InvoiceUser, MainBook, setupMongoConnection } from "../mongodb";
+import { InvoiceUser, MainBook, setupMongoConnection, Transaction } from "../mongodb";
 import { checkIsBalanced, getUserWallet, lndOutside1, lndOutside2, onBoardingEarnAmt, onBoardingEarnIds } from "../tests/helper";
 const lnService = require('ln-service')
 const lightningPayReq = require('bolt11')
 const mongoose = require("mongoose")
 
 let userWallet1, userWallet2
+let initBalance1, initBalance2
 
 const amountInvoice = 1000
 
@@ -20,47 +21,54 @@ beforeAll(async () => {
   userWallet2 = await getUserWallet(2)
 });
 
+beforeEach(async () => {
+  initBalance1 = await userWallet1.getBalance()
+  initBalance2 = await userWallet2.getBalance()
+})
+
 afterAll(async () => {
   await mongoose.connection.close()
   await quit()
 });
 
-it('get balance', async () => {
-  const balance = await userWallet1.getBalance()
-  expect(balance).toBe(-0)
-})
+
+const getHash = (request) => {
+  const decoded = lightningPayReq.decode(request)
+  return decoded.tags.filter(item => item.tagName === "payment_hash")[0].data
+}
 
 it('add invoice', async () => {
-  const request = await userWallet1.addInvoice({ value: 1000, memo: "tx 1" })
+  const request = await userWallet1.addInvoice({ value: 1000 })
   expect(request.startsWith("lnbcrt10")).toBeTruthy()
-
-  const decoded = lightningPayReq.decode(request)
-  const decodedHash = decoded.tags.filter(item => item.tagName === "payment_hash")[0].data
-
-
-  const { uid } = await InvoiceUser.findById(decodedHash)
-  //expect(uid).toBe(user1) does not work
+  const { uid } = await InvoiceUser.findById(getHash(request))
   expect(uid).toBe(userWallet1.uid)
 })
 
-
 it('add invoice to different user', async () => {
-  const request = await userWallet2.addInvoice({ value: 1000000, memo: "tx 2" })
+  const request = await userWallet2.addInvoice({ value: 1000000 })
+  const { uid } = await InvoiceUser.findById(getHash(request))
+  expect(uid).toBe(userWallet2.uid)
+})
 
-  const decoded = lightningPayReq.decode(request)
-  const decodedHash = decoded.tags.filter(item => item.tagName === "payment_hash")[0].data
-
-
-  const { uid } = await InvoiceUser.findById(decodedHash)
-
+it('add invoice with no amount', async () => {
+  const request = await userWallet2.addInvoice({})
+  const { uid } = await InvoiceUser.findById(getHash(request))
   expect(uid).toBe(userWallet2.uid)
 })
 
 it('add earn adds balance correctly', async () => {
-  await userWallet1.addEarn(onBoardingEarnIds)
-  let finalBalance = await userWallet1.getBalance()
-  expect(finalBalance).toBe(onBoardingEarnAmt)
-  await checkIsBalanced()
+  const getAndVerifyRewards = async () => {
+    await userWallet1.addEarn(onBoardingEarnIds)
+    const finalBalance = await userWallet1.getBalance()
+    expect(finalBalance).toBe(onBoardingEarnAmt)
+    await checkIsBalanced()
+  }
+
+  await getAndVerifyRewards()
+  
+  // yet, if we do it another time, the balance should not increase, 
+  // because all the rewards has already been been consumed:
+  await getAndVerifyRewards()
 }, 15000)
 
 it('payInvoice', async () => {
@@ -68,20 +76,25 @@ it('payInvoice', async () => {
   const result = await userWallet1.pay({ invoice: request })
   expect(result).toBe("success")
   const finalBalance = await userWallet1.getBalance()
-  expect(finalBalance).toBe(onBoardingEarnAmt - amountInvoice)
+  expect(finalBalance).toBe(initBalance1 - amountInvoice)
   await checkIsBalanced()
 }, 50000)
 
 it('receives payment from outside', async () => {
-  const request = await userWallet1.addInvoice({ value: amountInvoice, memo: "receive from outside" })
+  const memo = "myMemo"
+
+  const request = await userWallet1.addInvoice({ value: amountInvoice, memo })
   await lnService.pay({ lnd: lndOutside1, request })
   const finalBalance = await userWallet1.getBalance()
-  expect(finalBalance).toBe(onBoardingEarnAmt)
+  expect(finalBalance).toBe(initBalance1 + amountInvoice)
+
+  const mongotx = await Transaction.findOne({hash: getHash(request)})
+  expect(mongotx.memo).toBe(memo)
   await checkIsBalanced()
 }, 50000)
 
 it('fails to pay when user has insufficient balance', async () => {
-  const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: onBoardingEarnAmt + 100000 })
+  const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: initBalance1 + 1000000 })
   //FIXME: Check exact error message also
   await expect(userWallet1.pay({ invoice: request })).rejects.toThrow()
 })
@@ -89,18 +102,21 @@ it('fails to pay when user has insufficient balance', async () => {
 it('payInvoiceToAnotherGaloyUser', async () => {
   const request = await userWallet2.addInvoice({ value: amountInvoice })
   await userWallet1.pay({ invoice: request })
+
   const user1FinalBalance = await userWallet1.getBalance()
   const user2FinalBalance = await userWallet2.getBalance()
-  expect(user1FinalBalance).toBe(onBoardingEarnAmt - amountInvoice)
-  expect(user2FinalBalance).toBe(1000)
+  
+  expect(user1FinalBalance).toBe(initBalance1 - amountInvoice)
+  expect(user2FinalBalance).toBe(initBalance2 + amountInvoice)
+  
+  const matchTx = tx => tx.type === 'on_us' && tx.hash === getHash(request)
+
   const user1Txn = await userWallet1.getTransactions()
-  const user1OnUsTxn = user1Txn.filter(txn => txn.type == 'on_us')
-  expect(user1OnUsTxn.length).toBe(1)
+  const user1OnUsTxn = user1Txn.filter(matchTx)
   expect(user1OnUsTxn[0].description).toBe('Payment sent')
 
   const user2Txn = await userWallet2.getTransactions()
-  const user2OnUsTxn = user2Txn.filter(txn => txn.type == 'on_us')
-  expect(user2OnUsTxn.length).toBe(1)
+  const user2OnUsTxn = user2Txn.filter(matchTx)
   expect(user2OnUsTxn[0].description).toBe('Payment received')
   await checkIsBalanced()
 }, 50000)
@@ -115,7 +131,7 @@ it('pushPayment', async () => {
   const res = await userWallet1.pay({ destination, amount: amountInvoice })
   const finalBalance = await userWallet1.getBalance()
   expect(res).toBe("success")
-  expect(finalBalance).toBe(onBoardingEarnAmt - 2 * amountInvoice)
+  expect(finalBalance).toBe(initBalance1 - amountInvoice)
   await checkIsBalanced()
 }, 50000)
 
@@ -150,7 +166,7 @@ it('pay hodl invoice', async () => {
   // FIXME: necessary to not have openHandler ?
   // https://github.com/alexbosworth/ln-service/issues/122
   await lnService.settleHodlInvoice({ lnd: lndOutside1, secret: secret.toString('hex') });
-  expect(finalBalance).toBe(onBoardingEarnAmt - 3 * amountInvoice)
+  expect(finalBalance).toBe(initBalance1 - amountInvoice)
   await checkIsBalanced()
 }, 50000)
 
