@@ -7,7 +7,7 @@ export class Wallet {
     return `Liabilities:Customer:${uid}`
   }
 
-  protected readonly uid: string
+  readonly uid: string
 
   constructor({uid}) {
     this.uid = uid

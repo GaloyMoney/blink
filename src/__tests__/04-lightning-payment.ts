@@ -1,26 +1,22 @@
 /**
  * @jest-environment node
  */
-import { InvoiceUser, MainBook, setupMongoConnection } from "../mongodb";
 // this import needs to be before medici
 import { createHash, randomBytes } from 'crypto';
-import { LightningUserWallet } from "../LightningUserWallet";
 import { quit } from "../lock";
-import { checkIsBalanced, getTestUserUid, getUserWallet, lndOutside1, lndOutside2, onBoardingEarnAmt, onBoardingEarnIds } from "../tests/helper";
+import { InvoiceUser, MainBook, setupMongoConnection } from "../mongodb";
+import { checkIsBalanced, getUserWallet, lndOutside1, lndOutside2, onBoardingEarnAmt, onBoardingEarnIds } from "../tests/helper";
 const lnService = require('ln-service')
 const lightningPayReq = require('bolt11')
 const mongoose = require("mongoose")
 
 let userWallet1, userWallet2
-let uidFromToken1, uidFromToken2
 
 const amountInvoice = 1000
 
 beforeAll(async () => {
   await setupMongoConnection()
-  uidFromToken1 = await getTestUserUid(1)
   userWallet1 = await getUserWallet(1)
-  uidFromToken2 = await getTestUserUid(2)
   userWallet2 = await getUserWallet(2)
 });
 
@@ -44,13 +40,12 @@ it('add invoice', async () => {
 
   const { uid } = await InvoiceUser.findById(decodedHash)
   //expect(uid).toBe(user1) does not work
-  expect(uid).toBe(uidFromToken1)
+  expect(uid).toBe(userWallet1.uid)
 })
 
 
 it('add invoice to different user', async () => {
-  const lightningWalletUser2 = new LightningUserWallet({ uid: uidFromToken2 })
-  const request = await lightningWalletUser2.addInvoice({ value: 1000000, memo: "tx 2" })
+  const request = await userWallet2.addInvoice({ value: 1000000, memo: "tx 2" })
 
   const decoded = lightningPayReq.decode(request)
   const decodedHash = decoded.tags.filter(item => item.tagName === "payment_hash")[0].data
@@ -58,7 +53,7 @@ it('add invoice to different user', async () => {
 
   const { uid } = await InvoiceUser.findById(decodedHash)
 
-  expect(uid).toBe(uidFromToken2)
+  expect(uid).toBe(userWallet2.uid)
 })
 
 it('add earn adds balance correctly', async () => {
