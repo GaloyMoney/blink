@@ -342,6 +342,7 @@ jobs:
       - run:
           name: Upgrade mainnet deployments
           command: |
+            helm repo add bitnami https://charts.bitnami.com/bitnami
             cd ~/GaloyApp/backend/firebase/functions/ && ./initLocalTest.sh mainnet
                
   update_locale:
