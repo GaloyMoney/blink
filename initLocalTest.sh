@@ -53,7 +53,7 @@ then
   REDISPERSISTENCE="false"
 fi
 
-helmUpgrade redis --set=cluster.enabled=false,usePassword=false,master.service.type=$SERVICETYPE,master.persistence.enabled=$REDISPERSISTENCE bitnami/redis
+helmUpgrade redis bitnami/redis -f ../../redis-chart/custom-values.yaml --set=master.service.type=$SERVICETYPE,master.persistence.enabled=$REDISPERSISTENCE 
 sleep 8
 kubectlWait app=bitcoind-container
 
