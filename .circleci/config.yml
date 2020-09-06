@@ -285,9 +285,6 @@ jobs:
             gcloud container clusters get-credentials testnet-cluster --region us-central1-a --project ${GOOGLE_PROJECT_ID}
             kubectl create namespace $NAMESPACE
       - run:
-          name: helm add repo bitnami
-          command: helm repo add bitnami https://charts.bitnami.com/bitnami
-      - run:
           name: install helm charts
           command: |
             cd ~/GaloyApp/backend/firebase/functions/ && ./initLocalTest.sh            
@@ -342,7 +339,6 @@ jobs:
       - run:
           name: Upgrade mainnet deployments
           command: |
-            helm repo add bitnami https://charts.bitnami.com/bitnami
             cd ~/GaloyApp/backend/firebase/functions/ && ./initLocalTest.sh mainnet
                
   update_locale:

@@ -1,5 +1,6 @@
 set -e
 
+helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update
 
 if [ "$1" == "testnet" ] || [ "$1" == "mainnet" ];
@@ -52,7 +53,7 @@ then
   REDISPERSISTENCE="false"
 fi
 
-helmUpgrade redis --set=cluster.enabled=false,usePassword=false,master.service.type=$SERVICETYPE,master.persistence.enabled=$REDISPERSISTENCE bitnami/redis
+helmUpgrade redis bitnami/redis -f ../../redis-chart/custom-values.yaml --set=master.service.type=$SERVICETYPE,master.persistence.enabled=$REDISPERSISTENCE 
 sleep 8
 kubectlWait app=bitcoind-container
 
@@ -80,7 +81,7 @@ then
   exportMacaroon 2 MACAROONOUTSIDE2
   
   helmUpgrade test-chart -f ~/GaloyApp/backend/test-chart/values.yaml --set \
-  macaroon=$MACAROON,macaroonoutside1=$MACAROONOUTSIDE1,macaroonoutside2=$MACAROONOUTSIDE2 \
+  macaroon=$MACAROON,macaroonoutside1=$MACAROONOUTSIDE1,macaroonoutside2=$MACAROONOUTSIDE2,image.tag=$CIRCLE_SHA1 \
   ~/GaloyApp/backend/test-chart/
 
   echo $(kubectl get -n=$NAMESPACE pods)
