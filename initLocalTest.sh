@@ -1,5 +1,6 @@
 set -e
 
+helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update
 
 if [ "$1" == "testnet" ] || [ "$1" == "mainnet" ];
