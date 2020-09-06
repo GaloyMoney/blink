@@ -1,17 +1,15 @@
 /**
  * @jest-environment node
  */
-import { setupMongoConnection, Transaction, User } from "../mongodb"
-// this import needs to be before medici
-
-import { LightningAdminWallet } from "../LightningAdminImpl"
-import { sleep, logger } from "../utils"
+import { setupMongoConnection } from "../mongodb";
+import { AdminWallet } from "../LightningAdminImpl";
+import { bitcoindClient, checkIsBalanced, lndMain, lndOutside1, lndOutside2, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
+import { logger, sleep } from "../utils";
 const mongoose = require("mongoose");
 const { once } = require('events');
 
 const lnService = require('ln-service')
 
-import { lndMain, lndOutside1, lndOutside2, bitcoindClient, RANDOM_ADDRESS, checkIsBalanced, waitUntilBlockHeight } from "../tests/helper"
 
 
 const local_tokens = 10000000
@@ -23,7 +21,7 @@ let channelLengthMain, channelLengthOutside1
 
 beforeAll(async () => {
 	await setupMongoConnection()
-	adminWallet = new LightningAdminWallet()
+	adminWallet = new AdminWallet()
 
 	channelLengthMain = (await lnService.getChannels({ lnd: lndMain })).channels.length
 	channelLengthOutside1 = (await lnService.getChannels({ lnd: lndOutside1 })).channels.length

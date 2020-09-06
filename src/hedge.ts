@@ -1,7 +1,7 @@
 const lnService = require('ln-service')
 const ccxt = require('ccxt')
 import { find } from "lodash";
-import { LightningAdminWallet } from "./LightningAdminImpl";
+import { AdminWallet } from "./LightningAdminImpl";
 import { Price } from "./PriceImpl";
 import { btc2sat, sleep } from "./utils";
 const util = require('util')
@@ -24,7 +24,7 @@ export class Hedging {
 
   constructor() {
     // FIXME: role: admin
-    this.adminWallet = new LightningAdminWallet()
+    this.adminWallet = new AdminWallet()
     this.ftx = new ccxt.ftx({ apiKey, secret })
   }
 

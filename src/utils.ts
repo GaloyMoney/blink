@@ -3,9 +3,15 @@ import * as lnService from "ln-service"
 import * as moment from 'moment'
 import { sendText } from './text'
 export const validate = require("validate.js")
+const lightningPayReq = require('bolt11')
 
 export const logger = require('pino')({ level: process.env.LOGLEVEL || "info" })
 const util = require('util')
+
+export const getHash = (request) => {
+  const decoded = lightningPayReq.decode(request)
+  return decoded.tags.filter(item => item.tagName === "payment_hash")[0].data
+}
 
 export const btc2sat = (btc: number) => {
   return btc * Math.pow(10, 8)

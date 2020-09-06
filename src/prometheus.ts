@@ -1,8 +1,5 @@
-import { setupMongoConnection, User } from "./mongodb"
-// this import before medici
-
-
-import { LightningAdminWallet } from "./LightningAdminImpl";
+import { AdminWallet } from "./LightningAdminImpl";
+import { setupMongoConnection } from "./mongodb";
 import { Price } from "./priceImpl";
 
 const express = require('express');
@@ -20,7 +17,7 @@ const lndBalanceSheetDifference_g = new client.Gauge({ name: 'lndBalanceSync', h
 // const price_g = new client.Gauge({ name: 'price', help: 'BTC/USD price' })
 
 const main = async () => {
-	const adminWallet = new LightningAdminWallet()
+	const adminWallet = new AdminWallet()
 
   server.get('/metrics', async (req, res) => {
     

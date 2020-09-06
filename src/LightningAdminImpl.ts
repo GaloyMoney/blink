@@ -1,11 +1,11 @@
 import { filter, find } from "lodash";
-import { LightningUserWallet } from "./LightningUserWallet";
+import { LightningBtcWallet } from "./LightningBtcWallet";
 import { MainBook, Transaction, User } from "./mongodb";
 import { getAuth, logger } from "./utils";
 const lnService = require('ln-service')
 
 
-export class LightningAdminWallet {
+export class AdminWallet {
   readonly currency = "BTC" // add USD as well
   readonly lnd = lnService.authenticatedLndGrpc(getAuth()).lnd
 
@@ -16,8 +16,10 @@ export class LightningAdminWallet {
       logger.debug("updating user %o", user._id)
 
       // A better approach would be to just loop over pending: true invoice/payment
-      userWallet = new LightningUserWallet({uid: user._id})
+      userWallet = new LightningBtcWallet({uid: user._id})
       await userWallet.updatePending()
+
+      // TODO: usd as well
     }
   }
 

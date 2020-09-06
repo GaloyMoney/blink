@@ -1,16 +1,15 @@
 import { setupMongoConnection, User } from "./mongodb"
-// this import needs to be before medici
 
 import dotenv from "dotenv";
 import { rule, shield } from 'graphql-shield';
 import { GraphQLServer } from 'graphql-yoga';
 import { ContextParameters } from 'graphql-yoga/dist/types';
 import * as jwt from 'jsonwebtoken';
-import { LightningUserWallet } from "./LightningUserWallet";
+import { LightningBtcWallet } from "./LightningBtcWallet";
 import { Price } from "./priceImpl";
 import { login, requestPhoneCode } from "./text";
 import { OnboardingEarn } from "./types";
-import { LightningAdminWallet } from "./LightningAdminImpl";
+import { AdminWallet } from "./LightningAdminImpl";
 import { sendNotification } from "./notification"
 
 const path = require("path");
@@ -56,7 +55,7 @@ const resolvers = {
       }
     },
     wallet: async (_, __, { uid }) => {
-      const lightningWallet = new LightningUserWallet({ uid })
+      const lightningWallet = new LightningBtcWallet({ uid })
 
       const btw_wallet = {
         id: "BTC",
@@ -78,7 +77,7 @@ const resolvers = {
       }
     },
     pendingOnChainPayment: async (_, __, { uid }) => {
-      const lightningWallet = new LightningUserWallet({ uid })
+      const lightningWallet = new LightningBtcWallet({ uid })
       return await lightningWallet.getPendingIncomingOnchainPayments()
     },
     prices: async () => {
@@ -108,7 +107,7 @@ const resolvers = {
       return response
     },
     getLastOnChainAddress: async (_, __, {uid}) => {
-      const lightningWallet = new LightningUserWallet({uid})
+      const lightningWallet = new LightningBtcWallet({uid})
       const getLastAddress = await lightningWallet.getLastOnChainAddress()
       return {id: getLastAddress}
     }
@@ -123,7 +122,7 @@ const resolvers = {
     updateUser: async (_, { user }) => {
       // FIXME manage uid
       // TODO only level for now
-      const lightningWallet = new LightningUserWallet({ uid: user._id })
+      const lightningWallet = new LightningBtcWallet({ uid: user._id })
       const result = await lightningWallet.setLevel({ level: 1 })
       return {
         id: user._id,
@@ -132,11 +131,11 @@ const resolvers = {
     },
     openChannel: async (_, { local_tokens, public_key, socket }, { uid }) => {
       // FIXME: security risk. remove openChannel from graphql
-      const lightningAdminWallet = new LightningAdminWallet({ uid })
+      const lightningAdminWallet = new AdminWallet({ uid })
       return { tx: lightningAdminWallet.openChannel({ local_tokens, public_key, socket }) }
     },
     invoice: async (_, __, { uid }) => {
-      const lightningWallet = new LightningUserWallet({ uid })
+      const lightningWallet = new LightningBtcWallet({ uid })
       return ({
 
         addInvoice: async ({ value, memo }) => {
@@ -170,14 +169,14 @@ const resolvers = {
       })
     },
     earnCompleted: async (_, { ids }, { uid }) => {
-      const lightningWallet = new LightningUserWallet({ uid })
+      const lightningWallet = new LightningBtcWallet({ uid })
       return lightningWallet.addEarn(ids)
     },
     deleteUser: () => {
       // TODO
     },
     onchain: async (_, __, { uid }) => {
-      const lightningWallet = new LightningUserWallet({uid})
+      const lightningWallet = new LightningBtcWallet({uid})
       return {
         getNewAddress: () => lightningWallet.getOnChainAddress(),
         pay: ({address, amount}) => ({success: lightningWallet.onChainPay({address, amount})}),

@@ -1,14 +1,14 @@
 /**
  * @jest-environment node
  */
-// this import needs to be before medici
-import { LightningAdminWallet } from "../LightningAdminImpl";
-import { LightningUserWallet } from "../LightningUserWallet";
-import { quit } from "../lock";
 import { setupMongoConnection, User } from "../mongodb";
+
+import { LightningBtcWallet } from "../LightningBtcWallet";
+import { quit } from "../lock";
 import { bitcoindClient, checkIsBalanced, getUserWallet, lndMain, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
 import { onchainTransactionEventHandler } from "../trigger";
 import { btc2sat, sleep } from "../utils";
+
 const lnService = require('ln-service')
 
 const mongoose = require("mongoose");
@@ -30,97 +30,95 @@ const notification = require("../notification");
 
 beforeAll(async () => {
   await setupMongoConnection()
-
-  walletUser0 = await getUserWallet(0)
-
-  const funder = await User.findOne({role: "funder"})
-  funderWallet = new LightningUserWallet({uid: funder._id})
 })
 
 beforeEach(async () => {
+  walletUser0 = await getUserWallet(0)
+
+  const funder = await User.findOne({ role: "funder" })
+  funderWallet = new LightningBtcWallet({ uid: funder._id })
+
   initBlockCount = await bitcoindClient.getBlockCount()
   initialBalanceUser0 = await walletUser0.getBalance()
 })
 
-afterAll(async () => {
+afterEach(async () => {
   await bitcoindClient.generateToAddress(3, RANDOM_ADDRESS)
   await sleep(100)
-
-	await mongoose.connection.close()
-	await quit()
 })
 
-const onchain_funding = async ({walletDestination}) => {
+afterAll(async () => {
+  await mongoose.connection.close()
+  await quit()
+})
+
+const onchain_funding = async ({ walletDestination }) => {
   const initialBalance = await walletDestination.getBalance()
   const initTransations = await walletDestination.getTransactions()
-  
+
   const address = await walletDestination.getOnChainAddress()
-	expect(address.substr(0, 4)).toBe("bcrt")
+  expect(address.substr(0, 4)).toBe("bcrt")
 
-	const checkBalance = async () => {
-		let sub = lnService.subscribeToChainAddress({lnd: lndMain, bech32_address: address, min_height})
-		
-		await once(sub, 'confirmation')
-		sub.removeAllListeners();
+  const checkBalance = async () => {
+    let sub = lnService.subscribeToChainAddress({ lnd: lndMain, bech32_address: address, min_height })
 
-		await waitUntilBlockHeight({lnd: lndMain, blockHeight: initBlockCount + 6})
+    await once(sub, 'confirmation')
+    sub.removeAllListeners();
+
+    await waitUntilBlockHeight({ lnd: lndMain, blockHeight: initBlockCount + 6 })
     await checkIsBalanced()
 
-		const balance = await walletDestination.getBalance()
+    const balance = await walletDestination.getBalance()
     expect(balance).toBe(initialBalance + btc2sat(amount_BTC))
-    
+
     const transations = await walletDestination.getTransactions()
     expect(transations.length).toBe(initTransations.length + 1)
     expect(transations[transations.length - 1].type).toBe("onchain_receipt")
     expect(transations[transations.length - 1].amount).toBe(btc2sat(amount_BTC))
-	}
+  }
 
   const fundLndWallet = async () => {
-		await bitcoindClient.sendToAddress(address, amount_BTC)
-		await sleep(100)
-		await bitcoindClient.generateToAddress(6, RANDOM_ADDRESS)
-	}
+    await bitcoindClient.sendToAddress(address, amount_BTC)
+    await sleep(100)
+    await bitcoindClient.generateToAddress(6, RANDOM_ADDRESS)
+  }
 
-	await Promise.all([
-		checkBalance(),
-		fundLndWallet()
-	])
+  await Promise.all([
+    checkBalance(),
+    fundLndWallet()
+  ])
 }
 
 it('user0 is credited for on chain transaction', async () => {
-  await onchain_funding({walletDestination: walletUser0})
-}, 100000)
-
-it('showtx', async () => {
-  console.log(await funderWallet.getTransactions())
+  await onchain_funding({ walletDestination: walletUser0 })
 }, 100000)
 
 it('funding funder with onchain tx from bitcoind', async () => {
-	await onchain_funding({walletDestination: funderWallet})
+  await onchain_funding({ walletDestination: funderWallet })
 }, 100000)
 
 it('identifies unconfirmed incoming on chain txn', async () => {
-	const address = await walletUser0.getOnChainAddress()
-	expect(address.substr(0, 4)).toBe("bcrt")
+  const address = await walletUser0.getOnChainAddress()
+  expect(address.substr(0, 4)).toBe("bcrt")
 
-  const sub = await lnService.subscribeToTransactions({lnd: lndMain})
+  const sub = await lnService.subscribeToTransactions({ lnd: lndMain })
 
   sub.on('chain_transaction', onchainTransactionEventHandler)
-	await bitcoindClient.sendToAddress(address, amount_BTC)
-  
+  await bitcoindClient.sendToAddress(address, amount_BTC)
+
   //FIXME: Use something deterministic instead of sleep
   await sleep(2000)
-  
-	const pendingTxn = await walletUser0.getPendingIncomingOnchainPayments()
-	expect(pendingTxn.length).toBe(1)
-	expect(pendingTxn[0].amount).toBe(btc2sat(1))
+
+  const pendingTxn = await walletUser0.getPendingIncomingOnchainPayments()
+  expect(pendingTxn.length).toBe(1)
+  expect(pendingTxn[0].amount).toBe(btc2sat(1))
 
   expect(notification.sendNotification.mock.calls.length).toBe(1)
   expect(notification.sendNotification.mock.calls[0][0].data.type).toBe("onchain_receipt")
   expect(notification.sendNotification.mock.calls[0][0].title).toBe(
     `You have a pending incoming transaction of ${btc2sat(amount_BTC)} sats`)
-  
-  const subChain = lnService.subscribeToChainAddress({lnd: lndMain, bech32_address: address, min_height})
+
+  const subChain = lnService.subscribeToChainAddress({ lnd: lndMain, bech32_address: address, min_height })
   bitcoindClient.generateToAddress(1, RANDOM_ADDRESS)
 
   await once(subChain, 'confirmation')

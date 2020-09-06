@@ -1,13 +1,12 @@
 /**
  * @jest-environment node
  */
-// this import needs to be before medici
 import { createHash, randomBytes } from 'crypto';
 import { quit } from "../lock";
 import { InvoiceUser, MainBook, setupMongoConnection, Transaction } from "../mongodb";
 import { checkIsBalanced, getUserWallet, lndOutside1, lndOutside2, onBoardingEarnAmt, onBoardingEarnIds } from "../tests/helper";
+import { getHash } from "../utils";
 const lnService = require('ln-service')
-const lightningPayReq = require('bolt11')
 const mongoose = require("mongoose")
 
 let userWallet1, userWallet2
@@ -31,11 +30,6 @@ afterAll(async () => {
   await quit()
 });
 
-
-const getHash = (request) => {
-  const decoded = lightningPayReq.decode(request)
-  return decoded.tags.filter(item => item.tagName === "payment_hash")[0].data
-}
 
 it('add invoice', async () => {
   const request = await userWallet1.addInvoice({ value: 1000 })

@@ -1,7 +1,6 @@
 /**
  * @jest-environment node
  */
-// this import needs to be before medici
 import { quit } from "../lock";
 import { MainBook, setupMongoConnection, User } from "../mongodb";
 import { bitcoindClient, checkIsBalanced, getUserWallet, lndMain, lndOutside1, RANDOM_ADDRESS, waitUntilBlockHeight, onBoardingEarnIds } from "../tests/helper";

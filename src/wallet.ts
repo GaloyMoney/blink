@@ -1,4 +1,4 @@
-import { MainBook } from "./mongodb"
+import { MainBook, User } from "./mongodb"
 
 export class UserWallet {
 
@@ -10,7 +10,7 @@ export class UserWallet {
   readonly uid: string
   readonly currency: string
 
-  constructor({uid, currency = "BTC"}) {
+  constructor({uid, currency}) {
     this.uid = uid
     this.currency = currency
   }
@@ -31,5 +31,10 @@ export class UserWallet {
     })
 
     return - balance
+  }
+
+  async setLevel({ level }) {
+    // FIXME this should be in User and not tight to Lightning // use Mixins instead
+    return await User.findOneAndUpdate({ _id: this.uid }, { level }, { new: true, upsert: true })
   }
 }

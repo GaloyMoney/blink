@@ -3,6 +3,7 @@ import { disposer } from "./lock";
 import { User } from "./mongodb";
 import { Currency, OnboardingEarn } from "./types";
 import { UserWallet } from "./wallet";
+import { OnChainMixin } from "./OnChain";
 const using = require('bluebird').using
 
 interface ILightningWalletUser {
@@ -13,7 +14,7 @@ interface ILightningWalletUser {
 /**
  * this represents a user wallet
  */
-export class LightningUserWallet extends LightningMixin(UserWallet) {
+export class LightningBtcWallet extends OnChainMixin(LightningMixin(UserWallet)) {
   constructor({ uid, currency = "BTC" }: ILightningWalletUser) {
     super({ uid, currency })
   }
@@ -22,7 +23,7 @@ export class LightningUserWallet extends LightningMixin(UserWallet) {
 
     // TODO: there should be a "funding" role, instead of admin
     const funder = await User.findOne({ role: "funder" })
-    const lightningFundingWallet = new LightningUserWallet({ uid: funder._id })
+    const lightningFundingWallet = new LightningBtcWallet({ uid: funder._id })
 
     const result: object[] = []
 

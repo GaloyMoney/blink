@@ -3,7 +3,6 @@
  */
 
 import { setupMongoConnection } from "../mongodb"
-// this import needs to be before medici
 
 import { Price } from "../priceImpl";
 const mongoose = require("mongoose");

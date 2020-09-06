@@ -2,6 +2,9 @@ export type Side = "buy" | "sell"
 export type Currency = "USD" | "BTC"
 
 
+export type ISuccess = boolean
+
+
 // Lightning
 
 export interface IAddInvoiceRequest {

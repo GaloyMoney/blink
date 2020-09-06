@@ -1,5 +1,5 @@
 
-export class LightningAdminWallet {
+export class AdminWallet {
 
   constructor() {}
 

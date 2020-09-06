@@ -3,7 +3,7 @@ const lnService = require('ln-service');
 import express from 'express';
 import { subscribeToChannels, subscribeToInvoices, subscribeToTransactions } from 'ln-service';
 import { getAuth, logger } from './utils';
-import { LightningUserWallet } from "./LightningUserWallet";
+import { LightningBtcWallet } from "./LightningBtcWallet";
 import { sendNotification } from "./notification";
 import { IDataNotification } from "./types";
 
@@ -69,7 +69,7 @@ const main = async () => {
       const uid = invoiceUser.uid
       const hash = invoice.id as string
 
-      const lightningUserWallet = new LightningUserWallet({ uid })
+      const lightningUserWallet = new LightningBtcWallet({ uid })
       await lightningUserWallet.updatePendingInvoice({ hash })
       const data: IDataNotification = {
         type: "paid-invoice",

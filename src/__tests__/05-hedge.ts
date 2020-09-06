@@ -5,7 +5,6 @@ import { setupMongoConnection } from "../mongodb"
 
 const mongoose = require("mongoose");
 import { Hedging } from "../hedge"
-// this import needs to be before medici
 
 
 jest.mock('./LightningAdminImpl')

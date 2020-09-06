@@ -1,8 +1,9 @@
 /**
  * @jest-environment node
  */
+import { setupMongoConnection } from "../mongodb";
+
 const lnService = require('ln-service')
-import { setupMongoConnection, User } from "../mongodb";
 import { bitcoindClient, lndMain, lndOutside1, lndOutside2, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
 const mongoose = require("mongoose");
 
@@ -48,4 +49,4 @@ it('funds outside lnd node', async () => {
 	await waitUntilBlockHeight({ lnd: lndMain, blockHeight: 100 + numOfBlock + 6 })
 	await waitUntilBlockHeight({ lnd: lndOutside1, blockHeight: 100 + numOfBlock + 6 })
 	await waitUntilBlockHeight({ lnd: lndOutside2, blockHeight: 100 + numOfBlock + 6 })
-}, 100000)
+}, 10000)

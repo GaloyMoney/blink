@@ -1,12 +1,10 @@
-import { getAuth, logger, sleep } from "../utils";
-import { LightningUserWallet } from "../LightningUserWallet";
-const BitcoindClient = require('bitcoin-core')
 import * as jwt from 'jsonwebtoken';
-import { TEST_NUMBER, login } from "../text";
-import { LightningAdminWallet } from "../LightningAdminImpl"
-import { User } from "../mongodb";
+import { AdminWallet } from "../LightningAdminImpl";
+import { login, TEST_NUMBER } from "../text";
 import { OnboardingEarn } from "../types";
-const mongoose = require("mongoose")
+import { getAuth, logger, sleep } from "../utils";
+import { WalletFactory } from "../walletFactory";
+const BitcoindClient = require('bitcoin-core')
 
 const lnService = require('ln-service')
 const cert = process.env.TLS
@@ -45,13 +43,13 @@ export const getTestUserToken = async (userNumber) => {
 }
 
 export const getUserWallet = async userNumber => {
-  const {uid} = await getTestUserToken(userNumber)
-  const userWallet = new LightningUserWallet({ uid })
+  const token = await getTestUserToken(userNumber)
+  const userWallet = WalletFactory(token)
   return userWallet
 }
 
 export const checkIsBalanced = async () => {
-	const adminWallet = new LightningAdminWallet()
+	const adminWallet = new AdminWallet()
 	const { assetsLiabilitiesDifference, lndBalanceSheetDifference } = await adminWallet.balanceSheetIsBalanced()
 	expect(assetsLiabilitiesDifference).toBeFalsy() // should be 0
 	expect(lndBalanceSheetDifference).toBeFalsy() // should be 0
@@ -60,7 +58,6 @@ export const checkIsBalanced = async () => {
 export async function waitUntilBlockHeight({ lnd, blockHeight }) {
   let current_block_height, is_synced_to_chain
   ({ current_block_height, is_synced_to_chain } = await lnService.getWalletInfo({ lnd }))
-  logger.debug({ current_block_height, is_synced_to_chain })
 
   let time = 0
   const ms = 50
@@ -70,6 +67,6 @@ export async function waitUntilBlockHeight({ lnd, blockHeight }) {
       // logger.debug({ current_block_height, is_synced_to_chain})
       time++
   }
-  logger.debug(`Seconds to sync blockheight ${blockHeight}: ${time / (1000 / ms)}`)
-  return
+
+  logger.debug({ current_block_height, is_synced_to_chain }, `Seconds to sync blockheight ${blockHeight}: ${time / (1000 / ms)}`)
 }
