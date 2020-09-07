@@ -15,6 +15,10 @@ let initBalance1, initBalance2
 
 const amountInvoice = 1000
 
+jest.mock('../notification')
+const { sendNotification } = require("../notification");
+
+
 beforeAll(async () => {
   await setupMongoConnection()
   userWallet1 = await getUserWallet(1)
@@ -31,7 +35,7 @@ afterAll(async () => {
   const finalBalance = await userWallet1.getBalance()
   const funderWallet = await getFunderWallet()
   const request = await funderWallet.addInvoice({value: finalBalance})
-  await userWallet1.pay({request})
+  await userWallet1.pay({invoice: request})
   await User.findOneAndRemove({_id: userWallet1.uid})
 
   await mongoose.connection.close()

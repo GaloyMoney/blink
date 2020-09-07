@@ -122,7 +122,7 @@ it('identifies unconfirmed incoming on chain txn', async () => {
     once(sub, 'chain_transaction'),
   ])
 
-  await sleep(1000)
+  await sleep(3000)
 
   // const util = require('util')
   // console.log(util.inspect(sendNotification.mock.calls, false, Infinity))
