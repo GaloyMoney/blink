@@ -1,5 +1,5 @@
 import { filter, find } from "lodash";
-import { LightningBtcWallet } from "./LightningBtcWallet";
+import { WalletFactory } from "./walletFactory";
 import { MainBook, Transaction, User } from "./mongodb";
 import { getAuth, logger } from "./utils";
 const lnService = require('ln-service')
@@ -16,10 +16,8 @@ export class AdminWallet {
       logger.debug("updating user %o", user._id)
 
       // A better approach would be to just loop over pending: true invoice/payment
-      userWallet = new LightningBtcWallet({uid: user._id})
+      userWallet = WalletFactory({uid: user._id, currency: user.currency})
       await userWallet.updatePending()
-
-      // TODO: usd as well
     }
   }
 
@@ -27,13 +25,17 @@ export class AdminWallet {
     const accounts = await MainBook.listAccounts()
     
     // used for debugging
-    let books = {}
+    const books = {}
     for (const account of accounts) {
-      const { balance } = await MainBook.balance({
-        account: account,
-        currency: this.currency,
-      })
-      books[account] = balance
+      for (const currency of ["USD", "BTC"]) {
+        const { balance } = await MainBook.balance({
+          account: account,
+          currency,
+        })
+        if (!!balance) {
+          books[`${currency}:${account}`] = balance
+        }
+      }
     }
     logger.debug(books, "status of our bookeeping")
 
@@ -72,14 +74,11 @@ export class AdminWallet {
   }
 
   async totalLndBalance () {
-    const auth = getAuth() // FIXME
-    const lnd = lnService.authenticatedLndGrpc(auth).lnd // FIXME
-
-    const { chain_balance } = await lnService.getChainBalance({lnd})
-    const { channel_balance } = await lnService.getChannelBalance({lnd})
+    const { chain_balance } = await lnService.getChainBalance({lnd: this.lnd})
+    const { channel_balance } = await lnService.getChannelBalance({lnd: this.lnd})
 
     //FIXME: This can cause incorrect balance to be reported in case an unconfirmed txn is later cancelled/double spent
-    const { pending_chain_balance } = await lnService.getPendingChainBalance({lnd})
+    const { pending_chain_balance } = await lnService.getPendingChainBalance({lnd: this.lnd})
 
     return chain_balance + channel_balance + pending_chain_balance
   }
@@ -89,15 +88,12 @@ export class AdminWallet {
   }
 
   async openChannel({local_tokens, public_key, socket}): Promise<string> {
-    const auth = getAuth() // FIXME
-    const lnd = lnService.authenticatedLndGrpc(auth).lnd // FIXME
-
-    const {transaction_id} = await lnService.openChannel({ lnd, local_tokens,
+    const {transaction_id} = await lnService.openChannel({ lnd: this.lnd, local_tokens,
       partner_public_key: public_key, partner_socket: socket
     })
 
     // FIXME: O(n), not great
-    const { transactions } = await lnService.getChainTransactions({lnd})
+    const { transactions } = await lnService.getChainTransactions({lnd: this.lnd})
 
     const { fee } = find(transactions, {id: transaction_id})
 

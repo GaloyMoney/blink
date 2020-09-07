@@ -3,9 +3,9 @@ const lnService = require('ln-service');
 import express from 'express';
 import { subscribeToChannels, subscribeToInvoices, subscribeToTransactions } from 'ln-service';
 import { getAuth, logger } from './utils';
-import { LightningBtcWallet } from "./LightningBtcWallet";
 import { sendNotification } from "./notification";
 import { IDataNotification } from "./types";
+import { WalletFactory } from "./walletFactory";
 
 export async function onchainTransactionEventHandler(tx) {
   if (tx.is_outgoing) {
@@ -69,8 +69,8 @@ const main = async () => {
       const uid = invoiceUser.uid
       const hash = invoice.id as string
 
-      const lightningUserWallet = new LightningBtcWallet({ uid })
-      await lightningUserWallet.updatePendingInvoice({ hash })
+      const lightningWallet = await WalletFactory({ uid })
+      await lightningWallet.updatePendingInvoice({ hash })
       const data: IDataNotification = {
         type: "paid-invoice",
         hash,
