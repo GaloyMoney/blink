@@ -71,7 +71,7 @@ it('receives payment from outside', async () => {
   expect(balanceUSD).toBeTruthy()
   expect(balanceBTC).toBeFalsy()
 
-  // await checkIsBalanced()
+  await checkIsBalanced()
 }, 50000)
 
 

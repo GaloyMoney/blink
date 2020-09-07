@@ -411,15 +411,27 @@ export const LightningMixin = (superclass) => class extends superclass {
           invoiceUser.pending = false
           invoiceUser.save()
 
-          const currency = !!invoiceUser.usd ? "USD" : "BTC"
-          const metadata =  { currency, hash, type: "invoice" }
+          
+          const metadata = { hash, type: "invoice" }
+          
+          const sats = invoice.received
 
-          const amount = !!invoiceUser.usd ? invoiceUser.usd : invoice.received
+          const isUSD = !!invoiceUser.usd
+          const usd = invoiceUser.usd
+          // TODO: refactor with the hedging class?
+          const brokerAccount = 'Liabilities:Broker'
 
-          await MainBook.entry(invoice.description)
-            .credit('Assets:Reserve:Lightning', amount, metadata)
-            .debit(this.accountPath, amount, metadata)
-            .commit()
+          const entry = MainBook.entry(invoice.description)
+            .credit('Assets:Reserve:Lightning', sats, {...metadata, currency: "BTC"})
+            .debit(isUSD ? brokerAccount : this.accountPath, sats, {...metadata, currency: "BTC"})
+          
+          if(isUSD) {
+            entry
+              .credit(brokerAccount, usd, {...metadata, currency: "USD"})
+              .debit(this.accountPath, usd, {...metadata, currency: "USD"})
+          }
+
+          await entry.commit()
 
           // session.commitTransaction()
           // session.endSession()
