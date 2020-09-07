@@ -252,6 +252,7 @@ const server = new GraphQLServer({
   resolvers,
   middlewares: [permissions],
   context: async (req) => {
+    logger.info(req.request.body, 'body')
     const token = verifyToken(req)
     const lightningWallet = await WalletFactory(token)
     const result = {
@@ -262,17 +263,6 @@ const server = new GraphQLServer({
     return result
   }
 })
-
-//TODO: set logger level instead of not calling next
-// https://github.com/pinojs/pino/issues/713
-// server.express.use((req, res, next) => {
-//   const userAgent = req.get('User-Agent')
-//   if (userAgent?.split('/')[0] == 'GoogleHC') {
-//     next()
-//   } else {
-//     return
-//   }
-// })
 
 server.express.use(pino)
 

@@ -6,7 +6,9 @@ import { disposer } from "./lock";
 import { InvoiceUser, MainBook, Transaction, User } from "./mongodb";
 import { IAddInvoiceRequest, ILightningTransaction, IPaymentRequest, TransactionType } from "./types";
 import { getAuth, getOnChainTransactions, logger, measureTime, timeout } from "./utils";
-import { customerPath } from "./wallet";
+import { customerPath } from "./wallet"
+import { sendInvoicePaidNotification } from "./trigger"
+
 const util = require('util')
 
 const using = require('bluebird').using
@@ -205,6 +207,7 @@ export const LightningMixin = (superclass) => class extends superclass {
           .debit(customerPath(payeeUid), tokens, metadata)
           .commit()
 
+        await sendInvoicePaidNotification({amount: tokens, uid: payeeUid, hash: id})
         await InvoiceUser.findOneAndUpdate({ _id: id }, { pending: false })
         await lnService.cancelHodlInvoice({ lnd: this.lnd, id })
         return "success"
@@ -379,10 +382,18 @@ export const LightningMixin = (superclass) => class extends superclass {
       // or invoice doesn't exist. to preserve privacy and prevent DDOS attack.
       invoice = await lnService.getInvoice({ lnd: this.lnd, id: hash })
     } catch (err) {
-      throw new Error(`issue fetching invoice: ${util.inspect({ err }, { showHidden: false, depth: null })})`)
+      throw new Error(`issue fetching invoice: ${util.inspect({ err }, { showHidden: false, depth: Infinity })})`)
     }
 
-    if (invoice.is_confirmed) {
+    // invoice that are onUs will be cancelled but not confirmied
+    // so we need a branch to return true in case the payment 
+    // has been managed off lnd.
+    if (invoice.is_canceled) {
+      // TODO: proper testing
+      const result = Transaction.findOne({currency: this.currency, id: hash, type: "on_us", pending: false})
+      return !!result
+
+    } else if (invoice.is_confirmed) {
 
       try {
 

@@ -13,7 +13,7 @@ export async function onchainTransactionEventHandler(tx) {
       await Transaction.updateMany({ hash: tx.id }, { pending: false })
     }
     const entry = await Transaction.findOne({ account_path: { $all : ["Liabilities", "Customer"] }, hash: tx.id })
-    const title = `Your on-chain transaction has been confirmed`
+    const title = tx.is_confirmed ? `Your on-chain transaction has been confirmed` : `Your transaction has been sent. It may takes some time before it is confirmed`
     const data: IDataNotification = {
       type: "onchain_payment",
       hash: tx.id,
@@ -47,6 +47,35 @@ export async function onchainTransactionEventHandler(tx) {
   }
 }
 
+export const sendInvoicePaidNotification = async ({hash, amount, uid}) => {
+  const data: IDataNotification = {
+    type: "paid-invoice",
+    hash,
+    amount,
+  }
+  await sendNotification({uid, title: `You receive a payment of ${amount} sats`, data})
+}
+
+export const onInvoiceUpdate = async invoice => {
+  logger.debug(invoice)
+
+  if (!invoice.is_confirmed) {
+    return
+  }
+
+  // FIXME: we're making 2x the request to Invoice User here. One in trigger, one in lighning.
+  const invoiceUser = await InvoiceUser.findOne({ _id: invoice.id, pending: true })
+  if (invoiceUser) {
+    const uid = invoiceUser.uid
+    const hash = invoice.id as string
+
+    const wallet = await WalletFactory({ uid })
+    await wallet.updatePendingInvoice({ hash })
+    await sendInvoicePaidNotification({amount: invoice.received, hash, uid})
+  } else {
+    logger.warn({invoice}, "we received an invoice but had no user attached to it")
+  }
+}
 
 const main = async () => {	
   const { lnd } = lnService.authenticatedLndGrpc(getAuth())
@@ -56,31 +85,7 @@ const main = async () => {
   });
 
   const subInvoices = subscribeToInvoices({ lnd });
-  subInvoices.on('invoice_updated', async invoice => {
-    logger.debug(invoice)
-
-    if (!invoice.is_confirmed) {
-      return
-    }
-
-    // FIXME: we're making 2x the request to Invoice User here. One in trigger, one in lighning.ts
-    const invoiceUser = await InvoiceUser.findOne({ _id: invoice.id, pending: true })
-    if (invoiceUser) {
-      const uid = invoiceUser.uid
-      const hash = invoice.id as string
-
-      const lightningWallet = await WalletFactory({ uid })
-      await lightningWallet.updatePendingInvoice({ hash })
-      const data: IDataNotification = {
-        type: "paid-invoice",
-        hash,
-        amount: invoice.received
-      }
-      await sendNotification({uid, title: `You receive a payment of ${invoice.received} sats`, data})
-    } else {
-      logger.warn({invoice}, "we received an invoice but had no user attached to it")
-    }
-  })
+  subInvoices.on('invoice_updated', onInvoiceUpdate)
 
   const subTransactions = subscribeToTransactions({ lnd });
   subTransactions.on('chain_transaction', onchainTransactionEventHandler);
