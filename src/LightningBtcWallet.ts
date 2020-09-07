@@ -1,23 +1,18 @@
 import { LightningMixin } from "./Lightning";
 import { disposer } from "./lock";
 import { User } from "./mongodb";
-import { Currency, OnboardingEarn } from "./types";
-import { UserWallet } from "./wallet";
 import { OnChainMixin } from "./OnChain";
-import { getFunderWallet } from "./utils";
+import { ILightningWalletUser, OnboardingEarn } from "./types";
+import { UserWallet } from "./wallet";
+import { getFunderWallet } from "./walletFactory";
 const using = require('bluebird').using
-
-interface ILightningWalletUser {
-  uid: string,
-  currency?: Currency
-}
 
 /**
  * this represents a user wallet
  */
 export class LightningBtcWallet extends OnChainMixin(LightningMixin(UserWallet)) {
-  constructor({ uid, currency = "BTC" }: ILightningWalletUser) {
-    super({ uid, currency })
+  constructor({ uid }: ILightningWalletUser) {
+    super({ uid, currency: "BTC" })
   }
 
   async addEarn(ids) {

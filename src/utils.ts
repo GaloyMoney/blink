@@ -1,9 +1,9 @@
 import * as jwt from 'jsonwebtoken'
 import * as lnService from "ln-service"
 import * as moment from 'moment'
-import { LightningBtcWallet } from "./LightningBtcWallet"
 import { User } from "./mongodb"
 import { sendText } from './text'
+import { WalletFactory } from "./walletFactory"
 export const validate = require("validate.js")
 const lightningPayReq = require('bolt11')
 
@@ -18,11 +18,6 @@ export const getHash = (request) => {
 export const getAmount = (request): number | undefined => {
   const decoded = lightningPayReq.decode(request)
   return decoded.satoshis
-}
-
-export const getFunderWallet = async () => {
-  const funder = await User.findOne({ role: "funder" })
-  return new LightningBtcWallet({ uid: funder._id })
 }
 
 export const btc2sat = (btc: number) => {

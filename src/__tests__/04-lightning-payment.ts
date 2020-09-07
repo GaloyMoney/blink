@@ -5,7 +5,8 @@ import { createHash, randomBytes } from 'crypto';
 import { quit } from "../lock";
 import { InvoiceUser, MainBook, setupMongoConnection, Transaction, User } from "../mongodb";
 import { checkIsBalanced, getUserWallet, lndOutside1, lndOutside2, onBoardingEarnAmt, onBoardingEarnIds } from "../tests/helper";
-import { getFunderWallet, getHash } from "../utils";
+import { getHash } from "../utils";
+import { getFunderWallet } from "../walletFactory";
 const lnService = require('ln-service')
 const mongoose = require("mongoose")
 

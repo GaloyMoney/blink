@@ -59,6 +59,9 @@ it('Sends onchain payment', async () => {
 
 	const subSpend = lnService.subscribeToChainSpend({ lnd: lndMain, bech32_address: address, min_height: 1 })
 
+  expect(notification.sendNotification.mock.calls.length).toBe(1)
+  expect(notification.sendNotification.mock.calls[0][0].data.type).toBe("onchain_payment")
+
   const resultPromises = await Promise.all([
     once(subSpend, 'confirmation'),
     waitUntilBlockHeight({ lnd: lndMain, blockHeight: initBlockCount + 6 }),
@@ -67,8 +70,8 @@ it('Sends onchain payment', async () => {
 
   console.log({resultPromises})
 
-  // expect(notification.sendNotification.mock.calls.length).toBe(1)
-  // expect(notification.sendNotification.mock.calls[0][0].data.type).toBe("onchain_payment")
+  expect(notification.sendNotification.mock.calls.length).toBe(2)
+  expect(notification.sendNotification.mock.calls[1][0].data.type).toBe("onchain_payment")
 
   const [{ pending, fee }] = (await MainBook.ledger({ account: wallet.accountPath, hash: pendingTxn.hash, memo: "onchainpayment" })).results
 	expect(pending).toBe(false)

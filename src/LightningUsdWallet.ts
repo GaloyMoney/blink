@@ -1,22 +1,17 @@
-import { UserWallet } from "./wallet";
 import { LightningMixin } from "./Lightning";
 import { InvoiceUser } from "./mongodb";
 import { Price } from "./priceImpl";
-import { Currency, IAddUSDInvoiceRequest } from "./types";
+import { IAddUSDInvoiceRequest, ILightningWalletUser } from "./types";
 import { getHash } from "./utils";
+import { UserWallet } from "./wallet";
 const using = require('bluebird').using
-
-interface ILightningWalletUser {
-  uid: string,
-  currency?: Currency
-}
 
 /**
  * this represents a user wallet
  */
 export class LightningUsdWallet extends LightningMixin(UserWallet) {
-  constructor({ uid, currency = "USD" }: ILightningWalletUser) {
-    super({ uid, currency })
+  constructor({ uid }: ILightningWalletUser) {
+    super({ uid, currency: "USD" })
   }
 
   async addInvoice({ value, memo }: IAddUSDInvoiceRequest): Promise<string> {

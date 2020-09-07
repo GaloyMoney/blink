@@ -4,10 +4,10 @@ import { intersection } from "lodash";
 import moment from "moment";
 import { disposer } from "./lock";
 import { InvoiceUser, MainBook, Transaction, User } from "./mongodb";
+import { sendInvoicePaidNotification } from "./notification";
 import { IAddInvoiceRequest, ILightningTransaction, IPaymentRequest, TransactionType } from "./types";
 import { getAuth, getOnChainTransactions, logger, measureTime, timeout } from "./utils";
 import { customerPath } from "./wallet"
-import { sendInvoicePaidNotification } from "./trigger"
 
 const util = require('util')
 

@@ -1,11 +1,11 @@
-import { InvoiceUser, setupMongoConnection, Transaction, User } from "./mongodb";
-const lnService = require('ln-service');
 import express from 'express';
 import { subscribeToChannels, subscribeToInvoices, subscribeToTransactions } from 'ln-service';
-import { getAuth, logger } from './utils';
-import { sendNotification } from "./notification";
+import { InvoiceUser, setupMongoConnection, Transaction, User } from "./mongodb";
+import { sendInvoicePaidNotification, sendNotification } from "./notification";
 import { IDataNotification } from "./types";
+import { getAuth, logger } from './utils';
 import { WalletFactory } from "./walletFactory";
+const lnService = require('ln-service');
 
 export async function onchainTransactionEventHandler(tx) {
   if (tx.is_outgoing) {
@@ -45,15 +45,6 @@ export async function onchainTransactionEventHandler(tx) {
       `You have a pending incoming transaction of ${tx.tokens} sats`
     await sendNotification({ title, uid: _id, data })
   }
-}
-
-export const sendInvoicePaidNotification = async ({hash, amount, uid}) => {
-  const data: IDataNotification = {
-    type: "paid-invoice",
-    hash,
-    amount,
-  }
-  await sendNotification({uid, title: `You receive a payment of ${amount} sats`, data})
 }
 
 export const onInvoiceUpdate = async invoice => {
