@@ -25,7 +25,7 @@ const min_height = 1
 const amount_BTC = 1
 
 jest.mock('../notification')
-const notification = require("../notification");
+const { sendNotification } = require("../notification");
 
 
 beforeAll(async () => {
@@ -44,7 +44,7 @@ beforeEach(async () => {
 
 afterEach(async () => {
   await bitcoindClient.generateToAddress(3, RANDOM_ADDRESS)
-  await sleep(100)
+  await sleep(250)
 })
 
 afterAll(async () => {
@@ -60,8 +60,7 @@ const onchain_funding = async ({ walletDestination }) => {
   expect(address.substr(0, 4)).toBe("bcrt")
 
   const checkBalance = async () => {
-    let sub = lnService.subscribeToChainAddress({ lnd: lndMain, bech32_address: address, min_height })
-
+    const sub = lnService.subscribeToChainAddress({ lnd: lndMain, bech32_address: address, min_height })
     await once(sub, 'confirmation')
     sub.removeAllListeners();
 
@@ -78,8 +77,8 @@ const onchain_funding = async ({ walletDestination }) => {
   }
 
   const fundLndWallet = async () => {
-    await bitcoindClient.sendToAddress(address, amount_BTC)
     await sleep(100)
+    await bitcoindClient.sendToAddress(address, amount_BTC)
     await bitcoindClient.generateToAddress(6, RANDOM_ADDRESS)
   }
 
@@ -102,42 +101,43 @@ it('identifies unconfirmed incoming on chain txn', async () => {
   expect(address.substr(0, 4)).toBe("bcrt")
 
   const sub = await lnService.subscribeToTransactions({ lnd: lndMain })
-
   sub.on('chain_transaction', onchainTransactionEventHandler)
   await bitcoindClient.sendToAddress(address, amount_BTC)
 
-  //FIXME: Use something deterministic instead of sleep
-  await sleep(2000)
-
+  await once(sub, 'chain_transaction')
+  
   const pendingTxn = await walletUser0.getPendingIncomingOnchainPayments()
   expect(pendingTxn.length).toBe(1)
   expect(pendingTxn[0].amount).toBe(btc2sat(1))
 
-  expect(notification.sendNotification.mock.calls.length).toBe(1)
-  expect(notification.sendNotification.mock.calls[0][0].data.type).toBe("onchain_receipt")
-  expect(notification.sendNotification.mock.calls[0][0].title).toBe(
+  await sleep(1000)
+
+  expect(sendNotification.mock.calls.length).toBe(1)
+  expect(sendNotification.mock.calls[0][0].data.type).toBe("onchain_receipt")
+  expect(sendNotification.mock.calls[0][0].title).toBe(
     `You have a pending incoming transaction of ${btc2sat(amount_BTC)} sats`)
 
-  const subChain = lnService.subscribeToChainAddress({ lnd: lndMain, bech32_address: address, min_height })
-  bitcoindClient.generateToAddress(1, RANDOM_ADDRESS)
+  await Promise.all([
+    bitcoindClient.generateToAddress(1, RANDOM_ADDRESS),
+    once(sub, 'chain_transaction'),
+  ])
 
-  await once(subChain, 'confirmation')
-  sub.removeAllListeners();
-  subChain.removeAllListeners();
+  await sleep(1000)
 
-  const util = require('util')
-  console.log(util.inspect(notification.sendNotification.mock.calls, false, Infinity))
-
+  // const util = require('util')
+  // console.log(util.inspect(sendNotification.mock.calls, false, Infinity))
   // FIXME: the event is actually fired twice.
   // is it a lnd issue?
   // a workaround: use a hash of the event and store in redis 
   // to not replay if it has already been handled?
   //
-  // expect(notification.sendNotification.mock.calls.length).toBe(2)
+  // expect(sendNotification.mock.calls.length).toBe(2)
 
-  expect(notification.sendNotification.mock.calls[1][0].data.type).toBe("onchain_receipt")
-  expect(notification.sendNotification.mock.calls[1][0].title).toBe(
+  expect(sendNotification.mock.calls[1][0].data.type).toBe("onchain_receipt")
+  expect(sendNotification.mock.calls[1][0].title).toBe(
     `Your wallet has been credited with ${btc2sat(amount_BTC)} sats`)
+
+  sub.removeAllListeners();
 
 
 }, 100000)

@@ -1,3 +1,4 @@
+import { triggerAsyncId } from "async_hooks";
 import express from 'express';
 import { subscribeToChannels, subscribeToInvoices, subscribeToTransactions } from 'ln-service';
 import { InvoiceUser, setupMongoConnection, Transaction, User } from "./mongodb";
@@ -8,11 +9,21 @@ import { WalletFactory } from "./walletFactory";
 const lnService = require('ln-service');
 
 export async function onchainTransactionEventHandler(tx) {
+  logger.debug({tx})
+
   if (tx.is_outgoing) {
-    if (tx.is_confirmed) {
-      await Transaction.updateMany({ hash: tx.id }, { pending: false })
+
+    if (!tx.is_confirmed) {
+      return
+      // FIXME 
+      // we have to return here because we will not know the whose user the the txid belond to
+      // this is because of limitation for lnd onchain wallet. we only know the txid after the 
+      // transaction has been sent. and this events is trigger before
     }
+
+    await Transaction.updateMany({ hash: tx.id }, { pending: false })
     const entry = await Transaction.findOne({ account_path: { $all : ["Liabilities", "Customer"] }, hash: tx.id })
+
     const title = tx.is_confirmed ? `Your on-chain transaction has been confirmed` : `Your transaction has been sent. It may takes some time before it is confirmed`
     const data: IDataNotification = {
       type: "onchain_payment",
@@ -32,8 +43,8 @@ export async function onchainTransactionEventHandler(tx) {
         return
       }
     } catch (error) {
-        logger.error(error)
-        throw error
+      logger.error(error)
+      throw error
     }
     const data: IDataNotification = {
       type: "onchain_receipt",

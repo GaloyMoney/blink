@@ -22,14 +22,14 @@ export const OnChainMixin = (superclass) => class extends superclass {
   }
 
   async onChainPay({ address, amount, description }: IOnChainPayment): Promise<ISuccess | Error> {
-    const user = await User.findOne({ onchain_addresses: { $in: address } })
+    const payeeUser = await User.findOne({ onchain_addresses: { $in: address } })
     const balance = await this.getBalance()
 
     return await using(disposer(this.uid), async (lock) => {
 
-      if (user) {
+      if (payeeUser) {
         // FIXME: Using == here because === returns false even for same uids
-        if (user._id == this.uid) {
+        if (payeeUser._id == this.uid) {
           throw Error('User tried to pay themselves')
         }
 
@@ -41,7 +41,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
         const metadata = { currency: this.currency, type: "on_us", pending: false }
         await MainBook.entry()
           .credit(this.accountPath, amount, metadata)
-          .debit(customerPath(user._id), amount, metadata)
+          .debit(customerPath(payeeUser._id), amount, metadata)
           .commit()
 
         return true
