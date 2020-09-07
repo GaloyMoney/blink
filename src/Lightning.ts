@@ -138,19 +138,17 @@ export const LightningMixin = (superclass) => class extends superclass {
     return request
   }
 
-  async pay(params: IPaymentRequest): Promise<payInvoiceResult | Error> {
+  async validate(params: IPaymentRequest) {
 
     const keySendPreimageType = '5482373484';
     const preimageByteLength = 32;
 
-    let pushPayment = false;
-    //TODO: adding types here leads to errors further down below
-    let tokens, fee = 0
-    let destination, id, description, route, routes
-    let payeeUid
+    let pushPayment = false
+    let tokens
+    let destination, id, description
     let routeHint = []
     let messages: Object[] = []
-
+    
     if (params.invoice) {
       // TODO replace this with bolt11 utils library
       ({ id, tokens, destination, description, routes: routeHint } = await lnService.decodePaymentRequest({ lnd: this.lnd, request: params.invoice }))
@@ -177,6 +175,17 @@ export const LightningMixin = (superclass) => class extends superclass {
     }
 
     tokens = !!tokens ? tokens : params.amount
+
+    return { tokens, destination, pushPayment, id, routeHint, description, messages}
+  }
+
+  async pay(params: IPaymentRequest): Promise<payInvoiceResult | Error> {
+
+    const { tokens, destination, pushPayment, id, routeHint, description, messages } = await this.validate(params)
+
+    let fee
+    let route, routes
+    let payeeUid
 
     const balance = await this.getBalance()
 
