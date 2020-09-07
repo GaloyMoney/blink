@@ -63,7 +63,7 @@ const main = async () => {
       return
     }
 
-    // FIXME: we're making 2x the request to Invoice User here. One in trigger, one in lighning.
+    // FIXME: we're making 2x the request to Invoice User here. One in trigger, one in lighning.ts
     const invoiceUser = await InvoiceUser.findOne({ _id: invoice.id, pending: true })
     if (invoiceUser) {
       const uid = invoiceUser.uid

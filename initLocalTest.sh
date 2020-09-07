@@ -32,7 +32,7 @@ else
 fi
 
 helmUpgrade () {
-  echo "executing upgrade: helm upgrade -i -n=$NAMESPACE $@"
+  echo "\n\n---\nexecuting upgrade: helm upgrade -i -n=$NAMESPACE $@"
   command helm upgrade -i -n=$NAMESPACE "$@"
 }
 
@@ -85,7 +85,6 @@ then
   ~/GaloyApp/backend/test-chart/
 
   echo $(kubectl get -n=$NAMESPACE pods)
-
   echo "Waiting for test-pod and graphql-server to come alive"
 
   kubectlWait app=test-chart

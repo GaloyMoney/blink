@@ -44,7 +44,7 @@ export const getTestUserToken = async (userNumber) => {
 
 export const getUserWallet = async userNumber => {
   const token = await getTestUserToken(userNumber)
-  const userWallet = WalletFactory(token)
+  const userWallet = await WalletFactory(token)
   return userWallet
 }
 

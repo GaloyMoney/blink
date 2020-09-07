@@ -16,7 +16,7 @@ export class AdminWallet {
       logger.debug("updating user %o", user._id)
 
       // A better approach would be to just loop over pending: true invoice/payment
-      userWallet = WalletFactory({uid: user._id, currency: user.currency})
+      userWallet = await WalletFactory({uid: user._id, currency: user.currency})
       await userWallet.updatePending()
     }
   }
