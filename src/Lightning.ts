@@ -11,6 +11,7 @@ const util = require('util')
 
 const using = require('bluebird').using
 
+const TIMEOUT_PAYMENT = process.env.NETWORK ? 45000 : 3000
 
 const FEECAP = 0.02 // = 2%
 const FEEMIN = 10 // sats
@@ -137,8 +138,8 @@ export const LightningMixin = (superclass) => class extends superclass {
 
   async pay(params: IPaymentRequest): Promise<payInvoiceResult | Error> {
 
-    const keySendPreimageType: string = '5482373484';
-    const preimageByteLength: number = 32;
+    const keySendPreimageType = '5482373484';
+    const preimageByteLength = 32;
 
     let pushPayment = false;
     //TODO: adding types here leads to errors further down below
@@ -280,9 +281,6 @@ export const LightningMixin = (superclass) => class extends superclass {
       // to clean pending payments, another cron-job loop will run in the background.
 
       try {
-        // TODO: we should have a way to set this with environment variable
-        // as it doens't make sense to wait for 45 seconds for regtest
-        const TIMEOUT_PAYMENT = 45000
 
         // Fixme: seems to be leaking if it timeout.
         const promise = lnService.payViaRoutes({ lnd: this.lnd, routes: [route], id })

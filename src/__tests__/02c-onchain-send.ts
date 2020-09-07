@@ -6,6 +6,8 @@ import { MainBook, setupMongoConnection, User } from "../mongodb";
 import { bitcoindClient, checkIsBalanced, getUserWallet, lndMain, lndOutside1, RANDOM_ADDRESS, waitUntilBlockHeight, onBoardingEarnIds } from "../tests/helper";
 import { onchainTransactionEventHandler } from "../trigger";
 import { sleep } from "../utils";
+const {once} = require('events');
+
 const lnService = require('ln-service')
 
 const mongoose = require("mongoose");
@@ -43,6 +45,9 @@ const amount = 10000 // sats
 it('Sends onchain payment', async () => {
   const { address } = await lnService.createChainAddress({ format: 'p2wpkh', lnd: lndOutside1 })
 
+  const sub = lnService.subscribeToTransactions({ lnd: lndMain })
+  sub.on('chain_transaction', onchainTransactionEventHandler)
+
 	const payResult = await wallet.onChainPay({ address, amount, description: "onchainpayment" })
   expect(payResult).toBeTruthy()
 
@@ -52,19 +57,15 @@ it('Sends onchain payment', async () => {
 	expect(interimBalance).toBe(initialBalanceUser0 - amount - pendingTxn.fee)
 	await checkIsBalanced()
 
-  const sub = lnService.subscribeToTransactions({ lnd: lndMain })
-
 	const subSpend = lnService.subscribeToChainSpend({ lnd: lndMain, bech32_address: address, min_height: 1 })
 
-  await Promise.all([
-    subSpend.once('confirmation', ({ height }) => console.log({ height })),
-    sub.once('chain_transaction', onchainTransactionEventHandler),
-    bitcoindClient.generateToAddress(6, RANDOM_ADDRESS),
+  const resultPromises = await Promise.all([
+    once(subSpend, 'confirmation'),
     waitUntilBlockHeight({ lnd: lndMain, blockHeight: initBlockCount + 6 }),
+    bitcoindClient.generateToAddress(6, RANDOM_ADDRESS),
   ])
 
-  // FIXME why sleep is needed here?
-  await sleep(10000)
+  console.log({resultPromises})
 
   // expect(notification.sendNotification.mock.calls.length).toBe(1)
   // expect(notification.sendNotification.mock.calls[0][0].data.type).toBe("onchain_payment")
@@ -79,7 +80,7 @@ it('Sends onchain payment', async () => {
 	const finalBalance = await wallet.getBalance()
 	expect(finalBalance).toBe(initialBalanceUser0 - amount - fee)
 	await checkIsBalanced()
-}, 100000)
+}, 10000)
 
 it('makes onchain on-us transaction', async () => {
   const user3Address = await userWallet3.getOnChainAddress()

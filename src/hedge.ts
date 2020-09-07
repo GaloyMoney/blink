@@ -2,7 +2,7 @@ const lnService = require('ln-service')
 const ccxt = require('ccxt')
 import { find } from "lodash";
 import { AdminWallet } from "./LightningAdminImpl";
-import { Price } from "./PriceImpl";
+import { Price } from "./priceImpl";
 import { btc2sat, sleep } from "./utils";
 const util = require('util')
 const assert = require('assert')

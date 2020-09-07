@@ -199,7 +199,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
         // has the transaction has not been added yet to the user account?
         const mongotx = await Transaction.findOne({ account_path: this.accountPathMedici, type, hash: matched_tx.id })
-        logger.debug({ matched_tx, mongotx }, "updateOnchainPayment with user %o", this.uid)
+        // logger.debug({ matched_tx, mongotx }, "updateOnchainPayment with user %o", this.uid)
 
         const metadata = { currency: this.currency, type, hash: matched_tx.id }
 

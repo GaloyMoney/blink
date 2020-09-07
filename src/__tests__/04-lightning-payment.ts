@@ -3,9 +3,9 @@
  */
 import { createHash, randomBytes } from 'crypto';
 import { quit } from "../lock";
-import { InvoiceUser, MainBook, setupMongoConnection, Transaction } from "../mongodb";
+import { InvoiceUser, MainBook, setupMongoConnection, Transaction, User } from "../mongodb";
 import { checkIsBalanced, getUserWallet, lndOutside1, lndOutside2, onBoardingEarnAmt, onBoardingEarnIds } from "../tests/helper";
-import { getHash } from "../utils";
+import { getFunderWallet, getHash } from "../utils";
 const lnService = require('ln-service')
 const mongoose = require("mongoose")
 
@@ -26,6 +26,13 @@ beforeEach(async () => {
 })
 
 afterAll(async () => {
+  // to make this test re-entrant, we need to remove the fund from userWallet1 and delete the user
+  const finalBalance = await userWallet1.getBalance()
+  const funderWallet = await getFunderWallet()
+  const request = await funderWallet.addInvoice({value: finalBalance})
+  await userWallet1.pay({request})
+  await User.findOneAndRemove({_id: userWallet1.uid})
+
   await mongoose.connection.close()
   await quit()
 });
@@ -211,6 +218,8 @@ it('fails to pay regular invoice with separate amt', async () => {
   const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: amountInvoice })
   await expect(userWallet1.pay({ invoice: request, amount: amountInvoice })).rejects.toThrow()
 })
+
+
 
 // it('testDbTransaction', async () => {
 //   //TODO try to fetch simulataneously (ie: with Premise.all[])
