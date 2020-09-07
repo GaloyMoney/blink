@@ -4,6 +4,7 @@ import { disposer } from "./lock";
 import { MainBook, Transaction, User } from "./mongodb";
 import { IOnChainPayment, ISuccess } from "./types";
 import { getAuth, getOnChainTransactions, logger, sendToAdmin } from "./utils";
+import { customerPath } from "./wallet";
 const util = require('util')
 
 const using = require('bluebird').using
@@ -37,24 +38,23 @@ export const OnChainMixin = (superclass) => class extends superclass {
           throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${amount}`)
         }
 
-        const payeeAccountPath = await this.customerPath(user._id)
         const metadata = { currency: this.currency, type: "on_us", pending: false }
         await MainBook.entry()
           .credit(this.accountPath, amount, metadata)
-          .debit(payeeAccountPath, amount, metadata)
+          .debit(customerPath(user._id), amount, metadata)
           .commit()
 
         return true
       }
 
-      const onChainBalance = (await lnService.getChainBalance({ lnd: this.lnd })).chain_balance
+      const { chain_balance: onChainBalance } = await lnService.getChainBalance({ lnd: this.lnd })
 
       let estimatedFee, id
 
       const sendTo = [{ address, tokens: amount }]
 
       try {
-        estimatedFee = (await lnService.getChainFeeEstimate({ lnd: this.lnd, send_to: sendTo })).fee
+        ({fee: estimatedFee} = await lnService.getChainFeeEstimate({ lnd: this.lnd, send_to: sendTo }))
       } catch (error) {
         logger.error(error)
         throw new Error(`Unable to estimate fee for on-chain transaction: ${error}`)
@@ -155,7 +155,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
   async getIncomingOnchainPayments(confirmed: boolean) {
 
-    let incoming_txs = (await getOnChainTransactions({ lnd: this.lnd, incoming: true }))
+    const incoming_txs = (await getOnChainTransactions({ lnd: this.lnd, incoming: true }))
       .filter(tx => tx.is_confirmed === confirmed)
 
     const { onchain_addresses } = await User.findOne({ _id: this.uid }, {onchain_addresses: 1})
@@ -166,7 +166,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
   }
 
   async getPendingIncomingOnchainPayments() {
-    return (await this.getIncomingOnchainPayments(false)).map(({ tokens, id }) => ({ txId: id, amount: tokens }))
+    return (await this.getIncomingOnchainPayments(false)).map(({ tokens, id }) => ({ amount: tokens, txId: id }))
   }
 
   async updateOnchainPayment() {

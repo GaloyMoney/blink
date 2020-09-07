@@ -12,6 +12,11 @@ export interface IAddInvoiceRequest {
     memo: string | undefined
 }
 
+export interface IAddUSDInvoiceRequest {
+    value: number,
+    memo: string | undefined
+}
+
 export type IAddInvoiceResponse = {
     request: string
 }

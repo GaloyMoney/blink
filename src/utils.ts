@@ -13,6 +13,11 @@ export const getHash = (request) => {
   return decoded.tags.filter(item => item.tagName === "payment_hash")[0].data
 }
 
+export const getAmount = (request): number | undefined => {
+  const decoded = lightningPayReq.decode(request)
+  return decoded.satoshis
+}
+
 export const btc2sat = (btc: number) => {
   return btc * Math.pow(10, 8)
 }

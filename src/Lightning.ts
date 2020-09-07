@@ -6,6 +6,7 @@ import { disposer } from "./lock";
 import { InvoiceUser, MainBook, Transaction, User } from "./mongodb";
 import { IAddInvoiceRequest, ILightningTransaction, IPaymentRequest, TransactionType } from "./types";
 import { getAuth, getOnChainTransactions, logger, measureTime, timeout } from "./utils";
+import { customerPath } from "./wallet";
 const util = require('util')
 
 const using = require('bluebird').using
@@ -196,11 +197,11 @@ export const LightningMixin = (superclass) => class extends superclass {
         if (balance < tokens) {
           throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${tokens}`)
         }
-        const payeeAccountPath = await this.customerPath(payeeUid)
+
         const metadata = { currency: this.currency, hash: id, type: "on_us", pending: false }
         await MainBook.entry()
           .credit(this.accountPath, tokens, metadata)
-          .debit(payeeAccountPath, tokens, metadata)
+          .debit(customerPath(payeeUid), tokens, metadata)
           .commit()
 
         await InvoiceUser.findOneAndUpdate({ _id: id }, { pending: false })

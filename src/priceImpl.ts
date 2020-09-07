@@ -2,6 +2,14 @@ import { logger, sat2btc } from "./utils"
 const mongoose = require("mongoose")
 import moment = require("moment")
 import { PriceHistory } from "./mongodb"
+import { last } from "lodash"
+
+
+interface ITick {
+  id: number // timestamp
+  o: number // opening price
+}
+
 
 export class Price {
   readonly pair
@@ -48,7 +56,7 @@ export class Price {
     return ohlcv
   }
 
-  async lastCached(): Promise<Array<Object>> {
+  async lastCached(): Promise<Array<ITick>> {
     const ohlcv = await PriceHistory.findOne(this.path)
     // TODO use sort + only request the last 25 data points at the db level for optimization
     // assuming we can do this on subquery in MongoDB
@@ -69,6 +77,11 @@ export class Price {
     }
 
     return result
+  }
+
+  async lastPrice(): Promise<number> {
+    const lastCached = await this.lastCached()
+    return (last(lastCached) as ITick).o
   }
 
   async update(init = false): Promise<Boolean | Error> {

@@ -75,13 +75,13 @@ export class AdminWallet {
     const auth = getAuth() // FIXME
     const lnd = lnService.authenticatedLndGrpc(auth).lnd // FIXME
 
-    const chainBalance = (await lnService.getChainBalance({lnd})).chain_balance
-    const balanceInChannels = (await lnService.getChannelBalance({lnd})).channel_balance;
+    const { chain_balance } = await lnService.getChainBalance({lnd})
+    const { channel_balance } = await lnService.getChannelBalance({lnd})
 
     //FIXME: This can cause incorrect balance to be reported in case an unconfirmed txn is later cancelled/double spent
-    const pendingChainBalance = (await lnService.getPendingChainBalance({lnd})).pending_chain_balance;
+    const { pending_chain_balance } = await lnService.getPendingChainBalance({lnd})
 
-    return chainBalance + balanceInChannels + pendingChainBalance
+    return chain_balance + channel_balance + pending_chain_balance
   }
 
   async getInfo() {

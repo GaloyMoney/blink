@@ -105,8 +105,7 @@ export class Hedging {
     equity = - equity
 
     const price = new Price()
-    // TODO refactor price.lastCached()
-    const lastBTCPrice = (await price.lastCached())[0]['o']
+    const lastBTCPrice = await price.lastPrice()
 
     // const ftx_balance = await ftx.fetchBalance()
 

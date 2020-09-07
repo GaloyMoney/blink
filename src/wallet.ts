@@ -1,11 +1,10 @@
 import { MainBook, User } from "./mongodb"
 
-export class UserWallet {
+export const customerPath = (uid) => { 
+  return `Liabilities:Customer:${uid}`
+}
 
-  // FIXME should not be here
-  customerPath(uid) { 
-    return `Liabilities:Customer:${uid}`
-  }
+export class UserWallet {
 
   readonly uid: string
   readonly currency: string
@@ -16,7 +15,7 @@ export class UserWallet {
   }
 
   get accountPath(): string {
-    return this.customerPath(this.uid)
+    return customerPath(this.uid)
   }
 
   get accountPathMedici(): Array<string> {
