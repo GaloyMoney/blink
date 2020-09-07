@@ -12,31 +12,24 @@ import { login, requestPhoneCode } from "./text";
 import { OnboardingEarn } from "./types";
 import { LightningAdminWallet } from "./LightningAdminImpl";
 import { sendNotification } from "./notification"
-import moment from "moment";
 
 const path = require("path");
 dotenv.config()
 
+
 import { logger } from "./utils"
+import moment from "moment";
 const pino = require('pino-http')({
   logger,
-  // wrapSerializers: false,
   // TODO: get uid and other information from the request.
   // tried https://github.com/addityasingh/graphql-pino-middleware without success
   // Define additional custom request properties
   // reqCustomProps: function (req) {
-  //   console.log(req.body)
+  //   console.log({req})
   //   return {
   //     // uid: req.uid
   //   }
-  // },
-  // serializers: {
-  //   req(req) {
-  //     console.log(req)
-  //     req.body = req.raw.body;
-  //     return req;
-  //   },
-  // },
+  // }
   autoLogging: {
     ignorePaths: ["/healthz"]
   }
@@ -267,7 +260,6 @@ const server = new GraphQLServer({
   resolvers,
   middlewares: [permissions],
   context: async (req) => {
-    logger.info(req.request.body, 'body')
     const result = {
       ...req,
       uid: getUid(req)
@@ -275,6 +267,17 @@ const server = new GraphQLServer({
     return result
   }
 })
+
+//TODO: set logger level instead of not calling next
+// https://github.com/pinojs/pino/issues/713
+// server.express.use((req, res, next) => {
+//   const userAgent = req.get('User-Agent')
+//   if (userAgent?.split('/')[0] == 'GoogleHC') {
+//     next()
+//   } else {
+//     return
+//   }
+// })
 
 server.express.use(pino)
 

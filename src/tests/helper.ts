@@ -5,10 +5,15 @@ import * as jwt from 'jsonwebtoken';
 import { TEST_NUMBER, login } from "../text";
 import { LightningAdminWallet } from "../LightningAdminImpl"
 import { User } from "../mongodb";
+import { OnboardingEarn } from "../types";
 const mongoose = require("mongoose")
 
 const lnService = require('ln-service')
 const cert = process.env.TLS
+
+//FIXME: Maybe switch to using single reward
+export const onBoardingEarnAmt: number = Object.values(OnboardingEarn).reduce((a, b) => a + b, 0)
+export const onBoardingEarnIds: string[] = Object.keys(OnboardingEarn)
 
 export const lndMain = lnService.authenticatedLndGrpc(getAuth()).lnd
 
@@ -33,14 +38,14 @@ export const bitcoindClient = new BitcoindClient(connection_obj)
 
 export const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
 
-export const getUidFromToken = async userNumber => {
+export const getTestUserUid = async userNumber => {
   const raw_token = await login(TEST_NUMBER[userNumber])
   const token = jwt.verify(raw_token, process.env.JWT_SECRET);
   return token.uid
 }
 
 export const getUserWallet = async userNumber => {
-  const uid = await getUidFromToken(userNumber)
+  const uid = await getTestUserUid(userNumber)
   const userWallet = new LightningUserWallet({ uid })
   return userWallet
 }

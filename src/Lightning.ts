@@ -6,7 +6,6 @@ import { disposer } from "./lock";
 import { IAddInvoiceRequest, ILightningTransaction, IPaymentRequest, TransactionType, IOnChainPayment } from "./types";
 import { getAuth, logger, timeout, measureTime, getOnChainTransactions, sendToAdmin } from "./utils";
 import { InvoiceUser, MainBook, Transaction, User } from "./mongodb";
-import { sendInvoicePaidNotification } from "./trigger"
 const util = require('util')
 
 const using = require('bluebird').using
@@ -97,7 +96,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     const results_processed = results.map((item) => ({
       created_at: moment(item.timestamp).unix(),
       amount: item.debit - item.credit,
-      description: formatInvoice(item.type, item.memo, item.pending, item.credit > 0 ? true: false),
+      description: formatInvoice(item.type, item.memo, item.pending, item.credit > 0 ? true : false),
       hash: item.hash,
       fee: item.fee,
       // destination: TODO
@@ -108,7 +107,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     return results_processed
   }
 
-  async addInvoice({ value, memo }: IAddInvoiceRequest = {value: undefined, memo: undefined}): Promise<String> {
+  async addInvoice({ value, memo }: IAddInvoiceRequest = { value: undefined, memo: undefined }): Promise<string> {
     let request, id
 
     logger.error(request)
@@ -141,54 +140,82 @@ export const LightningMixin = (superclass) => class extends superclass {
     return request
   }
 
-  async onChainPay({address, amount, description}: IOnChainPayment): Promise<ISuccess | Error> {
-    const onChainBalance = (await lnService.getChainBalance({lnd:this.lnd})).chain_balance
-    
+  async onChainPay({ address, amount, description }: IOnChainPayment): Promise<ISuccess | Error> {
+    const user = await User.findOne({ onchain_addresses: { $in: address } })
     const balance = await this.getBalance()
-    let estimatedFee, id
-    
-    const sendTo = [{address, tokens: amount}]
 
-    try {
-      estimatedFee = (await lnService.getChainFeeEstimate({lnd:this.lnd, send_to: sendTo})).fee
-    } catch(error) {
-      logger.error(error)
-      throw new Error(`Unable to estimate fee for on-chain transaction: ${util.inspect({ error }, false, Infinity)}`)
-    }
-    
-    // case where there is not enough money available within lnd on-chain wallet
-    if(onChainBalance < amount + estimatedFee) {
-      const body = `insufficient onchain balance. have ${onChainBalance}, need ${amount + estimatedFee}`
+    return await using(disposer(this.uid), async (lock) => {
 
-      //FIXME: use pagerduty instead of text
-      await sendToAdmin(body)
-      throw Error(body)
-    }
+      if (user) {
+        // FIXME: Using == here because === returns false even for same uids
+        if (user._id == this.uid) {
+          throw Error('User tried to pay themselves')
+        }
 
-    // case where the user doesn't have enough money
-    if(balance < amount + estimatedFee) {
-      throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${amount + estimatedFee}`)
-      // TODO: report error in a way this can be handled propertly in React Native
-    }
+        //case where user doesn't have enough money
+        if (balance < amount) {
+          throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${amount}`)
+        }
 
-    try {
-      ({id} = await lnService.sendToChainAddress({address, lnd: this.lnd, tokens: amount, description}))
-    } catch(error) {
-      logger.error(error)
-      return false
-    }
+        const payeeAccountPath = await this.customerPath(user._id)
+        const metadata = { currency: this.currency, type: "on_us", pending: false }
+        await MainBook.entry()
+          .credit(this.accountPath, amount, metadata)
+          .debit(payeeAccountPath, amount, metadata)
+          .commit()
 
-    const outgoingOnchainTxns = await getOnChainTransactions({lnd: this.lnd, incoming: false})
+        return true
+      }
 
-    const [{fee}] = outgoingOnchainTxns.filter(tx => tx.id === id)
+      const onChainBalance = (await lnService.getChainBalance({ lnd: this.lnd })).chain_balance
 
-    const metadata = { currency: this.currency, hash: id, type: "onchain_payment", pending: true, fee}
-    await MainBook.entry(description)
-      .debit('Assets:Reserve:Lightning', amount + fee, metadata)
-      .credit(this.accountPath, amount + fee, metadata)
-      .commit()
+      let estimatedFee, id
 
-    return true
+      const sendTo = [{ address, tokens: amount }]
+
+      try {
+        estimatedFee = (await lnService.getChainFeeEstimate({ lnd: this.lnd, send_to: sendTo })).fee
+      } catch (error) {
+        logger.error(error)
+        throw new Error(`Unable to estimate fee for on-chain transaction: ${error}`)
+      }
+
+      // case where there is not enough money available within lnd on-chain wallet
+      if (onChainBalance < amount + estimatedFee) {
+        const body = `insufficient onchain balance. have ${onChainBalance}, need ${amount + estimatedFee}`
+
+        //FIXME: use pagerduty instead of text
+        await sendToAdmin(body)
+        throw Error(body)
+      }
+
+      // case where the user doesn't have enough money
+      if (balance < amount + estimatedFee) {
+        throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${amount + estimatedFee}`)
+        // TODO: report error in a way this can be handled propertly in React Native
+      }
+
+      try {
+        ({ id } = await lnService.sendToChainAddress({ address, lnd: this.lnd, tokens: amount, description }))
+      } catch (error) {
+        logger.error(error)
+        return false
+      }
+
+      const outgoingOnchainTxns = await getOnChainTransactions({ lnd: this.lnd, incoming: false })
+
+      const [{ fee }] = outgoingOnchainTxns.filter(tx => tx.id === id)
+
+      const metadata = { currency: this.currency, hash: id, type: "onchain_payment", pending: true, fee }
+      await MainBook.entry(description)
+        .debit('Assets:Reserve:Lightning', amount + fee, metadata)
+        .credit(this.accountPath, amount + fee, metadata)
+        .commit()
+
+      return true
+
+    })
+
   }
 
   async pay(params: IPaymentRequest): Promise<payInvoiceResult | Error> {
@@ -201,13 +228,12 @@ export const LightningMixin = (superclass) => class extends superclass {
     let tokens, fee = 0
     let destination, id, description, route, routes
     let payeeUid
+    let routeHint = []
     let messages: Object[] = []
-
-    
 
     if (params.invoice) {
       // TODO replace this with bolt11 utils library
-      ({ id, tokens, destination, description } = await lnService.decodePaymentRequest({ lnd: this.lnd, request: params.invoice }))
+      ({ id, tokens, destination, description, routes: routeHint } = await lnService.decodePaymentRequest({ lnd: this.lnd, request: params.invoice }))
 
       if (!!params.amount && tokens !== 0) {
         throw Error('Invoice contains non-zero amount, but amount was also passed separately')
@@ -225,8 +251,8 @@ export const LightningMixin = (superclass) => class extends superclass {
       const secret = preimage.toString('hex');
       messages = [{ type: keySendPreimageType, value: secret }]
     }
-    
-    if(!params.amount && tokens === 0) {
+
+    if (!params.amount && tokens === 0) {
       throw Error('Invoice is a zero-amount invoice, or pushPayment is being used, but no amount was passed separately')
     }
 
@@ -254,16 +280,13 @@ export const LightningMixin = (superclass) => class extends superclass {
         if (balance < tokens) {
           throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${tokens}`)
         }
-
         const payeeAccountPath = await this.customerPath(payeeUid)
         const metadata = { currency: this.currency, hash: id, type: "on_us", pending: false }
-        
         await MainBook.entry()
           .credit(this.accountPath, tokens, metadata)
           .debit(payeeAccountPath, tokens, metadata)
           .commit()
 
-        await sendInvoicePaidNotification({amount: tokens, uid: payeeUid, hash: id})
         await InvoiceUser.findOneAndUpdate({ _id: id }, { pending: false })
         await lnService.cancelHodlInvoice({ lnd: this.lnd, id })
         return "success"
@@ -272,7 +295,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       // TODO add private route from invoice
 
       try {
-        ({ routes } = await lnService.getRoutes({ destination, lnd: this.lnd, tokens }));
+        ({ routes } = await lnService.getRoutes({ destination, lnd: this.lnd, tokens, routes: routeHint }));
 
         if (routes.length === 0) {
           logger.warn("there is no potential route for payment to %o from user %o", destination, this.uid)
@@ -331,13 +354,13 @@ export const LightningMixin = (superclass) => class extends superclass {
         .credit(this.accountPath, tokens + fee, metadata)
         .commit()
 
-        // there is 3 scenarios for a payment.
-        // 1/ payment succeed is less than TIMEOUT_PAYMENT
-        // 2/ the payment fails. we are reverting it. this including voiding prior transaction
-        // 3/ payment is still pending after TIMEOUT_PAYMENT.
-        // we are timing out the request for UX purpose, so that the client can show the payment is pending
-        // even if the payment is still ongoing from lnd.
-        // to clean pending payments, another cron-job loop will run in the background.
+      // there is 3 scenarios for a payment.
+      // 1/ payment succeed is less than TIMEOUT_PAYMENT
+      // 2/ the payment fails. we are reverting it. this including voiding prior transaction
+      // 3/ payment is still pending after TIMEOUT_PAYMENT.
+      // we are timing out the request for UX purpose, so that the client can show the payment is pending
+      // even if the payment is still ongoing from lnd.
+      // to clean pending payments, another cron-job loop will run in the background.
 
       try {
         // TODO: we should have a way to set this with environment variable
@@ -393,7 +416,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
   async updatePendingPayment() {
 
-    
+
     const payments = await Transaction.find({ account_path: this.accountPathMedici, type: "payment", pending: true })
 
     if (payments === []) {
@@ -499,20 +522,11 @@ export const LightningMixin = (superclass) => class extends superclass {
       // at least return same error if invoice not from user
       // or invoice doesn't exist. to preserve privacy and prevent DDOS attack.
       invoice = await lnService.getInvoice({ lnd: this.lnd, id: hash })
-
     } catch (err) {
-      throw new Error(`issue fetching invoice: ${util.inspect({ err }, { showHidden: false, depth: Infinity })})`)
+      throw new Error(`issue fetching invoice: ${util.inspect({ err }, { showHidden: false, depth: null })})`)
     }
 
-    // invoice that are onUs will be cancelled but not confirmied
-    // so we need a branch to return true in case the payment 
-    // has been managed off lnd.
-    if (invoice.is_canceled) {
-      // TODO: proper testing
-      const result = Transaction.findOne({currency: this.currency, id: hash, type: "on_us", pending: false})
-      return !!result
-
-    } else if (invoice.is_confirmed) {
+    if (invoice.is_confirmed) {
 
       try {
 
@@ -562,7 +576,7 @@ export const LightningMixin = (superclass) => class extends superclass {
   // should be run regularly with a cronjob
   // TODO: move to an "admin/ops" wallet
   async updatePendingInvoices() {
-    
+
     const invoices = await InvoiceUser.find({ uid: this.uid, pending: true })
 
     for (const invoice of invoices) {
@@ -572,7 +586,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
   async getIncomingOnchainPayments(confirmed: boolean) {
 
-    const incoming_txs = (await getOnChainTransactions({lnd: this.lnd, incoming: true}))
+    let incoming_txs = (await getOnChainTransactions({ lnd: this.lnd, incoming: true }))
       .filter(tx => tx.is_confirmed === confirmed)
 
     const { onchain_addresses } = await User.findOne({ _id: this.uid })
@@ -587,7 +601,7 @@ export const LightningMixin = (superclass) => class extends superclass {
   }
 
   async updateOnchainPayment() {
-    
+
     const matched_txs = await this.getIncomingOnchainPayments(true)
 
     //        { block_id: '0000000000000b1fa86d936adb8dea741a9ecd5f6a58fc075a1894795007bdbc',
