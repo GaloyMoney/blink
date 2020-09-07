@@ -32,7 +32,10 @@ else
 fi
 
 helmUpgrade () {
-  echo "\n\n---\nexecuting upgrade: helm upgrade -i -n=$NAMESPACE $@"
+  echo ""
+  echo ""
+  echo "---"
+  echo "executing upgrade: helm upgrade -i -n=$NAMESPACE $@"
   command helm upgrade -i -n=$NAMESPACE "$@"
 }
 

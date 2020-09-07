@@ -14,6 +14,7 @@ const util = require('util')
 const using = require('bluebird').using
 
 const TIMEOUT_PAYMENT = process.env.NETWORK ? 45000 : 3000
+console.log({TIMEOUT_PAYMENT})
 
 const FEECAP = 0.02 // = 2%
 const FEEMIN = 10 // sats

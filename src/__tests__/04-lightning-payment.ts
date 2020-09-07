@@ -75,7 +75,7 @@ it('add earn adds balance correctly', async () => {
   // yet, if we do it another time, the balance should not increase, 
   // because all the rewards has already been been consumed:
   await getAndVerifyRewards()
-}, 15000)
+}, 30000)
 
 it('payInvoice', async () => {
   const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: amountInvoice })
@@ -174,7 +174,7 @@ it('pay hodl invoice', async () => {
   await lnService.settleHodlInvoice({ lnd: lndOutside1, secret: secret.toString('hex') });
   expect(finalBalance).toBe(initBalance1 - amountInvoice)
   await checkIsBalanced()
-}, 50000)
+}, 60000)
 
 it('payInvoice to lnd outside 2', async () => {
   const { request } = await lnService.createInvoice({ lnd: lndOutside2, tokens: amountInvoice, is_including_private_channels: true })

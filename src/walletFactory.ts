@@ -18,5 +18,5 @@ export const WalletFactory = async ({uid, currency}: {uid: string, currency?: st
 
 export const getFunderWallet = async () => {
   const funder = await User.findOne({ role: "funder" })
-  return WalletFactory({ uid: funder._id })
+  return new LightningBtcWallet({ uid: funder._id })
 }
