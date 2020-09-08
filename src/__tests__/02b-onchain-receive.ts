@@ -1,144 +1,143 @@
 /**
  * @jest-environment node
  */
-import { MainBook, setupMongoConnection, Transaction, User } from "../mongodb"
-// this import needs to be before medici
-import { LightningAdminWallet } from "../LightningAdminImpl"
-import { sleep, btc2sat } from "../utils"
+import { setupMongoConnection, User } from "../mongodb";
+
+import { LightningBtcWallet } from "../LightningBtcWallet";
+import { quit } from "../lock";
+import { bitcoindClient, checkIsBalanced, getUserWallet, lndMain, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
+import { onchainTransactionEventHandler } from "../trigger";
+import { btc2sat, sleep } from "../utils";
+
 const lnService = require('ln-service')
 
 const mongoose = require("mongoose");
 const { once } = require('events');
 
-import {lndMain, lndOutside1, bitcoindClient, RANDOM_ADDRESS, getUserWallet, checkIsBalanced, waitUntilBlockHeight} from "../tests/helper"
-import { quit } from "../lock";
-import { onchainTransactionEventHandler } from "../trigger";
 
-let adminWallet
+let funderWallet
 let initBlockCount
-let initialBalanceUser0, initialBalanceAdmin
-let wallet
+let initialBalanceUser0
+let walletUser0
 const min_height = 1
 
 
 const amount_BTC = 1
 
 jest.mock('../notification')
-const notification = require("../notification");
+const { sendNotification } = require("../notification");
 
 
 beforeAll(async () => {
   await setupMongoConnection()
-
-  wallet = await getUserWallet(0)
-
-  const admin = await User.findOne({ role: "admin" })
-  adminWallet = new LightningAdminWallet({ uid: admin._id })
 })
 
 beforeEach(async () => {
+  walletUser0 = await getUserWallet(0)
+
+  const funder = await User.findOne({ role: "funder" })
+  funderWallet = new LightningBtcWallet({ uid: funder._id })
+
   initBlockCount = await bitcoindClient.getBlockCount()
-  initialBalanceUser0 = await wallet.getBalance()
-  initialBalanceAdmin = await adminWallet.getBalance()
+  initialBalanceUser0 = await walletUser0.getBalance()
+})
+
+afterEach(async () => {
+  await bitcoindClient.generateToAddress(3, RANDOM_ADDRESS)
+  await sleep(250)
 })
 
 afterAll(async () => {
-  await bitcoindClient.generateToAddress(3, RANDOM_ADDRESS)
-  await sleep(100)
-
-	await mongoose.connection.close()
-	await quit()
+  await mongoose.connection.close()
+  await quit()
 })
 
-const onchain_funding = async ({walletDestination}) => {
+const onchain_funding = async ({ walletDestination }) => {
   const initialBalance = await walletDestination.getBalance()
-  const initTransations = await wallet.getTransactions()
-  
+  const initTransations = await walletDestination.getTransactions()
+
   const address = await walletDestination.getOnChainAddress()
-	expect(address.substr(0, 4)).toBe("bcrt")
+  expect(address.substr(0, 4)).toBe("bcrt")
 
-	const checkBalance = async () => {
-		let sub = lnService.subscribeToChainAddress({lnd: lndMain, bech32_address: address, min_height})
-		
-		await once(sub, 'confirmation')
-		sub.removeAllListeners();
+  const checkBalance = async () => {
+    const sub = lnService.subscribeToChainAddress({ lnd: lndMain, bech32_address: address, min_height })
+    await once(sub, 'confirmation')
+    sub.removeAllListeners();
 
-		await waitUntilBlockHeight({lnd: lndMain, blockHeight: initBlockCount + 6})
+    await waitUntilBlockHeight({ lnd: lndMain, blockHeight: initBlockCount + 6 })
     await checkIsBalanced()
 
-		const balance = await walletDestination.getBalance()
+    const balance = await walletDestination.getBalance()
     expect(balance).toBe(initialBalance + btc2sat(amount_BTC))
-    
-    const transations = await wallet.getTransactions()
+
+    const transations = await walletDestination.getTransactions()
     expect(transations.length).toBe(initTransations.length + 1)
     expect(transations[transations.length - 1].type).toBe("onchain_receipt")
     expect(transations[transations.length - 1].amount).toBe(btc2sat(amount_BTC))
-	}
+  }
 
   const fundLndWallet = async () => {
-		await bitcoindClient.sendToAddress(address, amount_BTC)
-		await sleep(100)
-		await bitcoindClient.generateToAddress(6, RANDOM_ADDRESS)
-	}
+    await sleep(100)
+    await bitcoindClient.sendToAddress(address, amount_BTC)
+    await bitcoindClient.generateToAddress(6, RANDOM_ADDRESS)
+  }
 
-	await Promise.all([
-		checkBalance(),
-		fundLndWallet()
-	])
+  await Promise.all([
+    checkBalance(),
+    fundLndWallet()
+  ])
 }
 
 it('user0 is credited for on chain transaction', async () => {
-  await onchain_funding({walletDestination: wallet})
+  await onchain_funding({ walletDestination: walletUser0 })
 }, 100000)
 
-// XXX FIXME TODO issue with this call
-// transactions are credited several times for admins
-//
-// it('funding bank/admin with onchain tx from bitcoind', async () => {
-// 	await onchain_funding({walletDestination: adminWallet})
-// }, 100000)
+it('funding funder with onchain tx from bitcoind', async () => {
+  await onchain_funding({ walletDestination: funderWallet })
+}, 100000)
 
 it('identifies unconfirmed incoming on chain txn', async () => {
-	const address = await wallet.getOnChainAddress()
-	expect(address.substr(0, 4)).toBe("bcrt")
+  const address = await walletUser0.getOnChainAddress()
+  expect(address.substr(0, 4)).toBe("bcrt")
 
-  const sub = await lnService.subscribeToTransactions({lnd: lndMain})
-
+  const sub = await lnService.subscribeToTransactions({ lnd: lndMain })
   sub.on('chain_transaction', onchainTransactionEventHandler)
-	await bitcoindClient.sendToAddress(address, amount_BTC)
-  
-  //FIXME: Use something deterministic instead of sleep
-  await sleep(2000)
-  
-	const pendingTxn = await wallet.getPendingIncomingOnchainPayments()
-	expect(pendingTxn.length).toBe(1)
-	expect(pendingTxn[0].amount).toBe(btc2sat(1))
+  await bitcoindClient.sendToAddress(address, amount_BTC)
 
-  expect(notification.sendNotification.mock.calls.length).toBe(1)
-  expect(notification.sendNotification.mock.calls[0][0].data.type).toBe("onchain_receipt")
-  expect(notification.sendNotification.mock.calls[0][0].title).toBe(
+  await once(sub, 'chain_transaction')
+  
+  const pendingTxn = await walletUser0.getPendingIncomingOnchainPayments()
+  expect(pendingTxn.length).toBe(1)
+  expect(pendingTxn[0].amount).toBe(btc2sat(1))
+
+  await sleep(1000)
+
+  expect(sendNotification.mock.calls.length).toBe(1)
+  expect(sendNotification.mock.calls[0][0].data.type).toBe("onchain_receipt")
+  expect(sendNotification.mock.calls[0][0].title).toBe(
     `You have a pending incoming transaction of ${btc2sat(amount_BTC)} sats`)
-  
-  const subChain = lnService.subscribeToChainAddress({lnd: lndMain, bech32_address: address, min_height})
-  bitcoindClient.generateToAddress(1, RANDOM_ADDRESS)
 
-  await once(subChain, 'confirmation')
-  sub.removeAllListeners();
-  subChain.removeAllListeners();
+  await Promise.all([
+    bitcoindClient.generateToAddress(1, RANDOM_ADDRESS),
+    once(sub, 'chain_transaction'),
+  ])
 
-  const util = require('util')
-  console.log(util.inspect(notification.sendNotification.mock.calls, false, Infinity))
+  await sleep(3000)
 
+  // const util = require('util')
+  // console.log(util.inspect(sendNotification.mock.calls, false, Infinity))
   // FIXME: the event is actually fired twice.
   // is it a lnd issue?
   // a workaround: use a hash of the event and store in redis 
   // to not replay if it has already been handled?
   //
-  // expect(notification.sendNotification.mock.calls.length).toBe(2)
+  // expect(sendNotification.mock.calls.length).toBe(2)
 
-  expect(notification.sendNotification.mock.calls[1][0].data.type).toBe("onchain_receipt")
-  expect(notification.sendNotification.mock.calls[1][0].title).toBe(
+  expect(sendNotification.mock.calls[1][0].data.type).toBe("onchain_receipt")
+  expect(sendNotification.mock.calls[1][0].title).toBe(
     `Your wallet has been credited with ${btc2sat(amount_BTC)} sats`)
+
+  sub.removeAllListeners();
 
 
 }, 100000)

@@ -1,4 +1,4 @@
-import { LightningUserWallet } from "../LightningUserWallet"
+import { LightningBtcWallet } from "../LightningBtcWallet"
 import { setupMongoConnection, User } from "../mongodb"
 
 const csv = require('csv-parser')
@@ -7,7 +7,12 @@ const fs = require('fs')
 const getUserWallet = async ({phone}) => {
   console.log({phone})
   const user = await User.findOne({ phone })
-  return new LightningUserWallet({ uid: user._id })
+
+  if (user.currency === "BTC") {
+    return new LightningBtcWallet({ uid: user._id })
+  } else {
+    throw Error(`user ${user._id} doesnt have a BTC wallet`)
+  }
 }
 
 const payer = "+16505554321"

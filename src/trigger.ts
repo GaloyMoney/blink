@@ -1,21 +1,30 @@
-import { InvoiceUser, setupMongoConnection, Transaction, User } from "./mongodb";
-const lnService = require('ln-service');
+import { triggerAsyncId } from "async_hooks";
 import express from 'express';
 import { subscribeToChannels, subscribeToInvoices, subscribeToTransactions } from 'ln-service';
-import { getAuth, logger } from './utils';
-import { LightningUserWallet } from "./LightningUserWallet";
-import { sendNotification } from "./notification";
+import { InvoiceUser, setupMongoConnection, Transaction, User } from "./mongodb";
+import { sendInvoicePaidNotification, sendNotification } from "./notification";
 import { IDataNotification } from "./types";
+import { getAuth, logger } from './utils';
+import { AsyncWalletFactory } from "./walletFactory";
+const lnService = require('ln-service');
 
 export async function onchainTransactionEventHandler(tx) {
   logger.debug({tx})
 
   if (tx.is_outgoing) {
-    if (tx.is_confirmed) {
-      await Transaction.updateMany({ hash: tx.id }, { pending: false })
+
+    if (!tx.is_confirmed) {
+      return
+      // FIXME 
+      // we have to return here because we will not know the whose user the the txid belond to
+      // this is because of limitation for lnd onchain wallet. we only know the txid after the 
+      // transaction has been sent. and this events is trigger before
     }
+
+    await Transaction.updateMany({ hash: tx.id }, { pending: false })
     const entry = await Transaction.findOne({ account_path: { $all : ["Liabilities", "Customer"] }, hash: tx.id })
-    const title = `Your on-chain transaction has been confirmed`
+
+    const title = tx.is_confirmed ? `Your on-chain transaction has been confirmed` : `Your transaction has been sent. It may takes some time before it is confirmed`
     const data: IDataNotification = {
       type: "onchain_payment",
       hash: tx.id,
@@ -34,8 +43,8 @@ export async function onchainTransactionEventHandler(tx) {
         return
       }
     } catch (error) {
-        logger.error(error)
-        throw error
+      logger.error(error, "issue in onchainTransactionEventHandler to get User id attached to output_addresses")
+      throw error
     }
     const data: IDataNotification = {
       type: "onchain_receipt",
@@ -49,6 +58,26 @@ export async function onchainTransactionEventHandler(tx) {
   }
 }
 
+export const onInvoiceUpdate = async invoice => {
+  logger.debug(invoice)
+
+  if (!invoice.is_confirmed) {
+    return
+  }
+
+  // FIXME: we're making 2x the request to Invoice User here. One in trigger, one in lighning.
+  const invoiceUser = await InvoiceUser.findOne({ _id: invoice.id, pending: true })
+  if (invoiceUser) {
+    const uid = invoiceUser.uid
+    const hash = invoice.id as string
+
+    const wallet = await AsyncWalletFactory({ uid })
+    await wallet.updatePendingInvoice({ hash })
+    await sendInvoicePaidNotification({amount: invoice.received, hash, uid})
+  } else {
+    logger.warn({invoice}, "we received an invoice but had no user attached to it")
+  }
+}
 
 const main = async () => {	
   const { lnd } = lnService.authenticatedLndGrpc(getAuth())
@@ -58,31 +87,7 @@ const main = async () => {
   });
 
   const subInvoices = subscribeToInvoices({ lnd });
-  subInvoices.on('invoice_updated', async invoice => {
-    logger.debug(invoice)
-
-    if (!invoice.is_confirmed) {
-      return
-    }
-
-    // FIXME: we're making 2x the request to Invoice User here. One in trigger, one in lighning.
-    const invoiceUser = await InvoiceUser.findOne({ _id: invoice.id, pending: true })
-    if (invoiceUser) {
-      const uid = invoiceUser.uid
-      const hash = invoice.id as string
-
-      const lightningAdminWallet = new LightningUserWallet({ uid })
-      await lightningAdminWallet.updatePendingInvoice({ hash })
-      const data: IDataNotification = {
-        type: "paid-invoice",
-        hash,
-        amount: invoice.received
-      }
-      await sendNotification({uid, title: `You receive a payment of ${invoice.received} sats`, data})
-    } else {
-      logger.warn({invoice}, "we received an invoice but had no user attached to it")
-    }
-  })
+  subInvoices.on('invoice_updated', onInvoiceUpdate)
 
   const subTransactions = subscribeToTransactions({ lnd });
   subTransactions.on('chain_transaction', onchainTransactionEventHandler);

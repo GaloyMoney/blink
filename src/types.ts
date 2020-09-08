@@ -2,10 +2,21 @@ export type Side = "buy" | "sell"
 export type Currency = "USD" | "BTC"
 
 
+export type ISuccess = boolean
+
+export interface ILightningWalletUser {
+  uid: string
+}
+
 // Lightning
 
 export interface IAddInvoiceRequest {
     value: number | undefined,
+    memo: string | undefined
+}
+
+export interface IAddUSDInvoiceRequest {
+    value: number,
     memo: string | undefined
 }
 

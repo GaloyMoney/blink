@@ -1,7 +1,7 @@
 import * as admin from 'firebase-admin';
 import { User } from "./mongodb";
 import { logger } from "./utils";
-import { INotification } from "./types"
+import { IDataNotification, INotification } from "./types"
 import { mapValues } from "lodash";
 
 // The key GOOGLE_APPLICATION_CREDENTIALS should be set in production
@@ -13,6 +13,17 @@ if(process.env.GOOGLE_APPLICATION_CREDENTIALS) {
     credential: admin.credential.applicationDefault(),
   })
 }
+
+
+export const sendInvoicePaidNotification = async ({hash, amount, uid}) => {
+  const data: IDataNotification = {
+    type: "paid-invoice",
+    hash,
+    amount,
+  }
+  await sendNotification({uid, title: `You receive a payment of ${amount} sats`, data})
+}
+
 
 export const sendNotification = async ({uid, title, body, data}: INotification) => {
 

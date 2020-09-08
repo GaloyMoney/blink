@@ -1,90 +1,139 @@
-import { verify } from "./crypto";
-import { Price } from "./priceImpl";
-import { IBuyRequest, IQuoteRequest } from "./types";
-import { validate } from "./utils";
 const lnService = require('ln-service')
-import moment = require("moment")
+const ccxt = require('ccxt')
+import { find } from "lodash";
+import { AdminWallet } from "./LightningAdminImpl";
+import { Price } from "./priceImpl";
+import { btc2sat, sleep } from "./utils";
+const util = require('util')
+const assert = require('assert')
 
-const ccxt = require ('ccxt');
+const apiKey = process.env.FTX_KEY
+const secret = process.env.FTX_SECRET
+
+const LOW_BOUND = 0.8
+const LOW_SAFEBOUND = 0.9
+const HIGH_SAFEBOUND = 1.1
+const HIGH_BOUND = 1.2
+
+const symbol = 'BTC-PERP'
 
 
-// unsecured //
-const apiKey = "***REMOVED***"
-const secret = "***REMOVED***"
+export class Hedging {
+  adminWallet
+  ftx
 
+  constructor() {
+    // FIXME: role: admin
+    this.adminWallet = new AdminWallet()
+    this.ftx = new ccxt.ftx({ apiKey, secret })
+  }
 
-type Balance = {
-    BTC: {
-        total: number,
-        exchange: number,
-        onchain: number,
-        offchain: number,
-    },
-    USD: {
-       total: number,
-       exchange: number,
-    },
-}
+  calculate({ equity, lastBTCPrice, netSizeSats }) {
 
-export const getBalance = async () => { //: Promise<Balance>
-    
-    // const balance: Balance = {
-    //     BTC: {
-    //         total: 0,
-    //         exchange: 0,
-    //         onchain: 0,
-    //         offchain: 0,
-    //     },
-    //     USD: {
-    //         total: 0,
-    //         exchange: 0,
-    // }}
+    const absoluteExposureBTC = equity + netSizeSats
+    const absoluteExposureUSD = lastBTCPrice * absoluteExposureBTC
 
-    // const kraken = new ccxt.kraken({ apiKey, secret })
+    // this would move when equity change / payment being made/received
+    // TODO: find a better name. Delta seems to be used mainly for options?
+    const exposureRatio = (- netSizeSats) / equity
 
-    // const balanceKraken = await kraken.fetchBalance()
-    // console.log({balanceKraken})
-    // balance.BTC.exchange = btc2sat(balanceKraken.BTC.total) // TODO manage free and used
-    // balance.USD.exchange = balanceKraken.USD.total 
+    let needHedging = false
+    let amount, direction
 
-    // const lnd = initLnd()
+    try {
+      // undercovered (ie: have BTC not covered)
+      // long
+      // will loose money if BTCUSD price drops
+      if (exposureRatio < LOW_BOUND) {
+        const target = equity * LOW_SAFEBOUND
+        amount = target + netSizeSats
+        assert(amount > 0)
+        assert(amount < equity)
+        direction = "sell"
+        needHedging = true
+      }
 
-    // try {
-    //     const chainBalance = (await lnService.getChainBalance({lnd})).chain_balance;
-    //     console.log({chainBalance})
-    //     balance.BTC.onchain = chainBalance
-    // } catch(err) {
-    //     console.log(`error getting chainBalance ${err}`)
-    // }
+      // overexposed
+      // short
+      // will loose money if BTCUSD price increase
+      else if (exposureRatio > HIGH_BOUND) {
+        const target = equity * HIGH_SAFEBOUND
+        amount = - (target + netSizeSats)
+        assert(amount > 0)
+        assert(amount < equity)
+        direction = "buy"
+        needHedging = true
+      }
 
-    // try {
-    //     const balanceInChannels = (await lnService.getChannelBalance({lnd})).channel_balance;
-    //     console.log({balanceInChannels})
-    //     balance.BTC.offchain = balanceInChannels
-    // } catch(err) {
-    //     console.error(`error getting balanceInChannels ${err}`)
-    // }
+    } catch (err) {
+      throw Error("can't calculate hedging value")
+    }
 
-    // balance.BTC.total = Object.values(balance.BTC).reduce((acc, value) => acc + value, 0)
-    // balance.USD.total = Object.values(balance.USD).reduce((acc, value) => acc + value, 0)
+    return { needHedging, amount, direction }
+  }
 
-    // console.log({balance})
-    // return balance
-}
+  async executeOrder({ direction, amount }) {
 
-export const withdrawExchange = () => {
+    // let orderId = 6103637365
+    let orderId
 
-    // const address = lnd.
+    // TODO add: try/catch
+    const order = await this.ftx.createOrder(symbol, 'market', direction, amount)
 
-    const kraken = new ccxt.kraken({ apiKey, secret })
+    // FIXME: have a better way to manage latency
+    // ie: use a while loop and check condition for a couple of seconds.
+    // or rely on a websocket
+    await sleep(1000)
 
-    const key = 'lnd' // key has to be set from the user interface  
-    const code = 'BTC'
-    const amount = 0.01
+    const result = await this.ftx.fetchOrder(order.id)
 
-     // not sure if this have to match key? I guess it should
-    const address = 'bc1qs08semyyerehc0604typuvg777lygep4lkjuya'
-    kraken.withdraw (code, amount, address, undefined, {key})
+    if (result.status !== "closed") {
+      console.warn("market order has not been fullfilled")
+      // Pager
+    }
+
+    // TODO: check we are back to low_safebound
+
+  }
+
+  async getPosition() {
+    let { equity } = await this.adminWallet.getBalanceSheet()
+
+    console.log({ equity })
+
+    // FIXME maybe not the best way to do things
+    equity = - equity
+
+    const price = new Price()
+    const lastBTCPrice = await price.lastPrice()
+
+    // const ftx_balance = await ftx.fetchBalance()
+
+    // const orders = await ftx.fetchOpenOrders()
+    // const tradingFees = await ftx.fetchTradingFees()
+    const { result } = await this.ftx.privateGetPositions()
+
+    console.log(util.inspect({ result }, false, Infinity))
+
+    // TODO: might return an error if there is no position yet
+    const { netSize } = find(result, { future: 'BTC-PERP' })
+    const netSizeSats = btc2sat(netSize)
+
+    const { needHedging, amount, direction } = this.calculate({ equity, netSizeSats, lastBTCPrice })
+
+    return { needHedging, amount, direction, equity, netSizeSats }
+  }
+
+  async updatePosition() {
+    const { needHedging, amount, direction } = await this.getPosition()
+
+    if (!needHedging) {
+      return
+    }
+
+    await this.executeOrder({ amount, direction })
+    // TODO: look at liquidation ratio
+  }
 }
 
 
@@ -121,11 +170,11 @@ export const withdrawExchange = () => {
 //     if (err !== undefined) {
 //         throw new functions.https.HttpsError('invalid-argument', JSON.stringify(err))
 //     }
-    
+
 //     console.log(`${data.side} quote request from ${context.auth!.uid}, request: ${JSON.stringify(data, null, 4)}`)
 
 //     let spot
-    
+
 //     try {
 //         const price = new Price()
 //         spot = await price.lastCached()
@@ -167,7 +216,7 @@ export const withdrawExchange = () => {
     //     }
 
     //     return {side, invoice: request} as IQuoteResponse
-        
+
     // } else if (data.side === "buy") {
 
     //     const invoiceJson = await lnService.decodePaymentRequest({lnd, request: data.invoice})
@@ -240,7 +289,7 @@ export const withdrawExchange = () => {
     // }
 
     // const {route} = await lnService.probeForRoute({lnd, tokens: satAmount, destination})
-    
+
     // if (route?.length === 0) {
     //     throw new functions.https.HttpsError('internal', `Can't probe payment. Not enough liquidity?`)
     // }
@@ -277,34 +326,3 @@ export const withdrawExchange = () => {
     // console.log("success")
     // return {success: "success"}
 // })
-
-/**
- * very, very crude "hedging", probably not the right word
- * look at future contract for better hedging
- * untested
- */
-export const hedging = async () => {
-
-//     const kraken = new ccxt.kraken({ apiKey, secret })
-
-//     const minWalletBTC = 1 // TODO --> find right number
-//     const maxWalletBTC = 2 // TODO
-//     const midWalletBTC = (minWalletBTC + maxWalletBTC) / 2
-
-//     const balance = await getBalance()
-
-//     const symbol = "BTC/USD"
-
-//     if (balance.USD.total > maxWalletBTC) {
-//         const amount = balance.USD.total - maxWalletBTC - midWalletBTC
-//         const result = kraken.createMarketSellOrder(symbol, amount)
-//         console.log({result})
-//     } else if (balance.USD.total < minWalletBTC) {
-//         const amount = minWalletBTC - balance.USD.total + midWalletBTC
-//         const result = kraken.createMarketBuyOrder(symbol, amount)
-//         console.log({result})
-//     }
-}
-
-// TODO: move money from / to exchange / wallet
-

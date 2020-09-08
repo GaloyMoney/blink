@@ -4,7 +4,6 @@
 import { setupMongoConnection, User } from "../mongodb";
 const redis = require('redis')
 
-// this import needs to be before medici
 import {lndMain, lndOutside1, lndOutside2, bitcoindClient} from "../tests/helper"
 const mongoose = require("mongoose");
 

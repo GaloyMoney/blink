@@ -5,7 +5,9 @@ const Redlock = require('redlock');
 // the maximum amount of time you want the resource locked,
 // keeping in mind that you can extend the lock up until
 // the point when it expires
-const ttl = 60000;
+// TODO: use TIMEOUTs env variable 
+const ttl = process.env.NETWORK ? 60000 : 4000
+console.log({ttl})
 
 // if we weren't able to reach redis, your lock will eventually
 // expire, but you probably want to do something like log that
