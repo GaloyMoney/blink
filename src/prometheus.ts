@@ -12,6 +12,8 @@ const equity_g = new client.Gauge({ name: 'shareholder', help: 'value of shareho
 const liabilities_g = new client.Gauge({ name: 'liabilities', help: 'how much money customers has' })
 const lightning_g = new client.Gauge({ name: 'lightning', help: 'how much money there is our books for lnd' })
 const lnd_g = new client.Gauge({ name: 'lnd', help: 'how much money in our node' })
+const lndOnChain_g = new client.Gauge({ name: 'lnd_onchain', help: 'how much fund is onChain in lnd' })
+const lndOffChain_g = new client.Gauge({ name: 'lnd_offchain', help: 'how much fund is offChain in our node' })
 const assetsLiabilitiesDifference_g = new client.Gauge({ name: 'assetsEqLiabilities', help: 'do we have a balanced book' })
 const lndBalanceSheetDifference_g = new client.Gauge({ name: 'lndBalanceSync', help: 'are lnd in syncs with our books' })
 // const price_g = new client.Gauge({ name: 'price', help: 'BTC/USD price' })
@@ -33,14 +35,16 @@ const main = async () => {
     
     const {equity, lightning, liabilities} = await adminWallet.getBalanceSheet()
     const { assetsLiabilitiesDifference, lndBalanceSheetDifference } = await adminWallet.balanceSheetIsBalanced()
-    const lndBalance = await adminWallet.totalLndBalance()
-
     equity_g.set(equity)
     liabilities_g.set(liabilities)
     lightning_g.set(lightning)
-    lnd_g.set(lndBalance)
     assetsLiabilitiesDifference_g.set(assetsLiabilitiesDifference)
     lndBalanceSheetDifference_g.set(lndBalanceSheetDifference)
+    
+    const { total, onChain, offChain } = await adminWallet.lndBalances()
+    lnd_g.set(total)
+    lndOnChain_g.set(onChain)
+    lndOffChain_g.set(offChain)
     // price_g.set(price)
 
     res.set('Content-Type', register.contentType);

@@ -62,25 +62,27 @@ export class AdminWallet {
   async balanceSheetIsBalanced() {
     await this.updateUsersPendingPayment()
     const {assets, liabilities, lightning, expenses} = await this.getBalanceSheet()
-    const lndBalance = await this.totalLndBalance()
+    const { total } = await this.lndBalances()
 
     const assetsLiabilitiesDifference = assets + liabilities + expenses
-    const lndBalanceSheetDifference = lndBalance - lightning
+    const lndBalanceSheetDifference = total - lightning
     if(!!lndBalanceSheetDifference) {
-      logger.debug({lndBalance, lightning, lndBalanceSheetDifference, assets, liabilities, expenses}, `not balanced`)
+      logger.debug({total, lightning, lndBalanceSheetDifference, assets, liabilities, expenses}, `not balanced`)
     }
 
     return { assetsLiabilitiesDifference, lndBalanceSheetDifference }
   }
 
-  async totalLndBalance () {
+  async lndBalances () {
     const { chain_balance } = await lnService.getChainBalance({lnd: this.lnd})
     const { channel_balance } = await lnService.getChannelBalance({lnd: this.lnd})
 
     //FIXME: This can cause incorrect balance to be reported in case an unconfirmed txn is later cancelled/double spent
     const { pending_chain_balance } = await lnService.getPendingChainBalance({lnd: this.lnd})
 
-    return chain_balance + channel_balance + pending_chain_balance
+    const total = chain_balance + channel_balance + pending_chain_balance
+
+    return { total, onChain: chain_balance , offChain: channel_balance } 
   }
 
   async getInfo() {
