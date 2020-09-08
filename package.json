@@ -16,6 +16,7 @@
     "test-local-clean": "yarn run restart-charts && yarn run test-local",
     "test-local": "source exportLocal.sh && yarn jest --runInBand $TEST | pino-pretty -c -l",
     "prometheus": "source exportLocal.sh && ts-node src/prometheus.ts",
+    "lnd-connection": "source exportLocal.sh && echo $MACAROON | base64 -d > ./macaroon && echo $TLS | base64 -d > ./tls.cert && lncli --network regtest --macaroonpath=./macaroon --tlscertpath=./tls.cert --rpcserver=${LNDIP}:${LNDRPCPORT} getinfo",
     "postman": "yarn run newman run src/postman/graphql.postman_collection.json -e src/postman/devnet.postman_environment.json",
     "postman-local": "yarn run newman run src/postman/graphql.postman_collection.json -e src/postman/devnet-local.postman_environment.json ",
     "update-postman": "curl --location --request GET \"https://api.getpostman.com/collections/2e9d4144-4c26-4b72-b000-ad1e63105f94\" --header \"X-Api-Key: $POSTMANAPIKEY\" > src/postman/graphql.postman_collection.json"
