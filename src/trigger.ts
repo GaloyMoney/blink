@@ -5,7 +5,7 @@ import { InvoiceUser, setupMongoConnection, Transaction, User } from "./mongodb"
 import { sendInvoicePaidNotification, sendNotification } from "./notification";
 import { IDataNotification } from "./types";
 import { getAuth, logger } from './utils';
-import { WalletFactory } from "./walletFactory";
+import { AsyncWalletFactory } from "./walletFactory";
 const lnService = require('ln-service');
 
 export async function onchainTransactionEventHandler(tx) {
@@ -71,7 +71,7 @@ export const onInvoiceUpdate = async invoice => {
     const uid = invoiceUser.uid
     const hash = invoice.id as string
 
-    const wallet = await WalletFactory({ uid })
+    const wallet = await AsyncWalletFactory({ uid })
     await wallet.updatePendingInvoice({ hash })
     await sendInvoicePaidNotification({amount: invoice.received, hash, uid})
   } else {

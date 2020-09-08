@@ -254,10 +254,10 @@ const server = new GraphQLServer({
   context: async (req) => {
     logger.info(req.request.body, 'body')
     const token = verifyToken(req)
-    const lightningWallet = await WalletFactory(token)
+    const lightningWallet = !!token ? WalletFactory(token) : null
     const result = {
       ...req,
-      uid: token.uid,
+      uid: token?.uid ?? null,
       lightningWallet,
     }
     return result

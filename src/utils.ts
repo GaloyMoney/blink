@@ -1,9 +1,7 @@
 import * as jwt from 'jsonwebtoken'
 import * as lnService from "ln-service"
 import * as moment from 'moment'
-import { User } from "./mongodb"
 import { sendText } from './text'
-import { WalletFactory } from "./walletFactory"
 export const validate = require("validate.js")
 const lightningPayReq = require('bolt11')
 
