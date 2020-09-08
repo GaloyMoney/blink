@@ -2,7 +2,7 @@ import { LightningBtcWallet } from "./LightningBtcWallet"
 import { LightningUsdWallet } from "./LightningUsdWallet"
 import { User } from "./mongodb"
 
-export const WalletFactory = ({uid, currency}: {uid: string, currency: string}) => {
+export const WalletFactory = ({uid, currency = "BTC"}: {uid: string, currency: string}) => {
   if (currency === "USD") {
     return new LightningUsdWallet({uid})
   } else {
