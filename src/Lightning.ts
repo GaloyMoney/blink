@@ -120,7 +120,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       request = result.request
       id = result.id
     } catch (err) {
-      logger.error("impossible to create the invoice")
+      logger.error({err}, "impossible to create the invoice")
     }
 
     try {
@@ -132,7 +132,6 @@ export const LightningMixin = (superclass) => class extends superclass {
     } catch (err) {
       // FIXME if the mongodb connection has not been instanciated
       // this fails silently
-      logger.error(err)
       throw Error(`internal: error storing invoice to db ${util.inspect({ err })}`)
     }
 
@@ -234,9 +233,9 @@ export const LightningMixin = (superclass) => class extends superclass {
         }
 
         logger.info({ routes }, "successfully found routes for payment to %o from user %o", destination, this.uid)
-      } catch (error) {
-        logger.error(error, "error getting route")
-        throw new Error(error)
+      } catch (err) {
+        logger.error({err}, "error getting route")
+        throw new Error(err)
       }
 
       for (const potentialRoute of routes) {

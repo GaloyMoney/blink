@@ -43,7 +43,7 @@ export async function onchainTransactionEventHandler(tx) {
         return
       }
     } catch (error) {
-      logger.error(error)
+      logger.error(error, "issue in onchainTransactionEventHandler to get User id attached to output_addresses")
       throw error
     }
     const data: IDataNotification = {

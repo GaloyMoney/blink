@@ -55,9 +55,9 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
       try {
         ({fee: estimatedFee} = await lnService.getChainFeeEstimate({ lnd: this.lnd, send_to: sendTo }))
-      } catch (error) {
-        logger.error(error)
-        throw new Error(`Unable to estimate fee for on-chain transaction: ${error}`)
+      } catch (err) {
+        logger.error({err}, `Unable to estimate fee for on-chain transaction`)
+        throw new Error(`Unable to estimate fee for on-chain transaction: ${err}`)
       }
 
       // case where there is not enough money available within lnd on-chain wallet
@@ -77,8 +77,8 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
       try {
         ({ id } = await lnService.sendToChainAddress({ address, lnd: this.lnd, tokens: amount, description }))
-      } catch (error) {
-        logger.error(error)
+      } catch (err) {
+        logger.error({err}, "Impossible to sendToChainAddress")
         return false
       }
 

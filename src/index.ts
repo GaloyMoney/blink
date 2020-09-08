@@ -137,7 +137,7 @@ const resolvers = {
             const result = await lightningWallet.addInvoice({ value, memo })
             return result
           } catch (err) {
-            logger.error(err)
+            logger.error({err}, "addInvoice error")
             throw err
           }
         },
@@ -145,7 +145,7 @@ const resolvers = {
           try {
             return await lightningWallet.updatePendingInvoice({ hash })
           } catch (err) {
-            logger.error(err)
+            logger.error({err}, "updatePendingInvoice error")
             throw err
           }
         },
