@@ -3,13 +3,15 @@
  */
 import { quit } from "../lock";
 import { InvoiceUser, setupMongoConnection } from "../mongodb";
-import { getUidFromToken, getUserWallet } from "../tests/helper";
+import { getUserWallet } from "../tests/helper";
 import { OnboardingEarn } from "../types";
 import { getAuth } from "../utils";
 const lnService = require('ln-service')
 const lightningPayReq = require('bolt11')
 const mongoose = require("mongoose")
 const util = require('util')
+const {decode} = require('bip66');
+
 
 let userWallet1, userWallet2
 let uidFromToken1, uidFromToken2
@@ -43,15 +45,25 @@ it('add invoice', async () => {
   const unsignedComponents = createUnsignedRequest(decoded);
   const hash = unsignedComponents.hash
 
-  const {signature} = await lnService.signMessage({lnd, message: hash});
-  // const {request} = lnService.createSignedRequest({
-  //   destination: decoded.destination,
-  //   hrp: unsignedComponents.hrp,
-  //   signature,
-  //   tags: unsignedComponents.tags,
-  // });
+  const {signature} = await lnService.signBytes({
+    key_family: 6,
+    key_index: 0,
+    lnd,
+    preimage: unsignedComponents.preimage,
+  });
+
+  const {r, s} = decode(Buffer.from(signature, 'hex'));
+
+  const rValue = r.length === 33 ? r.slice(1) : r;
+
+  const {request} = await lnService.createSignedRequest({
+    destination: decoded.destination,
+    hrp: unsignedComponents.hrp,
+    signature: Buffer.concat([rValue, s]).toString('hex'),
+    tags: unsignedComponents.tags,
+  });
   
-  console.log(util.inspect({ decoded, unsignedComponents, signature, request_org, hash }, false, Infinity))
+  console.log(util.inspect({ decoded, unsignedComponents, signature, request_org, hash, request }, false, Infinity))
 
   // decoded["features"].push({
   //   bit: 60, 
