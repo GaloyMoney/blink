@@ -1,5 +1,5 @@
 import { AdminWallet } from "./LightningAdminImpl";
-import { setupMongoConnection } from "./mongodb";
+import { setupMongoConnection, User } from "./mongodb";
 import { Price } from "./priceImpl";
 
 const express = require('express');
@@ -11,6 +11,7 @@ const register = require('prom-client').register
 const equity_g = new client.Gauge({ name: 'shareholder', help: 'value of shareholder' })
 const liabilities_g = new client.Gauge({ name: 'liabilities', help: 'how much money customers has' })
 const lightning_g = new client.Gauge({ name: 'lightning', help: 'how much money there is our books for lnd' })
+const userCount_g = new client.Gauge({ name: 'userCount', help: 'how much users have registered' })
 const lnd_g = new client.Gauge({ name: 'lnd', help: 'how much money in our node' })
 const lndOnChain_g = new client.Gauge({ name: 'lnd_onchain', help: 'how much fund is onChain in lnd' })
 const lndOffChain_g = new client.Gauge({ name: 'lnd_offchain', help: 'how much fund is offChain in our node' })
@@ -46,6 +47,9 @@ const main = async () => {
     lndOnChain_g.set(onChain)
     lndOffChain_g.set(offChain)
     // price_g.set(price)
+
+    const userCount = await User.count()
+    userCount_g.set(userCount)
 
     res.set('Content-Type', register.contentType);
     res.end(register.metrics());
