@@ -85,8 +85,7 @@ then
   export TLSOUTSIDE2=$(kubectl exec lnd-container-2 -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
 
   helmUpgrade test-chart -f ~/GaloyApp/backend/test-chart/values.yaml --set \
-  macaroon=$MACAROON,macaroonoutside1=$MACAROONOUTSIDE1,macaroonoutside2=$MACAROONOUTSIDE2,image.tag=$CIRCLE_SHA1 \
-  tlsoutside1=$TLSOUTSIDE1,tlsoutside2=$TLSOUTSIDE2,tls=$TLS \
+  macaroon=$MACAROON,macaroonoutside1=$MACAROONOUTSIDE1,macaroonoutside2=$MACAROONOUTSIDE2,image.tag=$CIRCLE_SHA,tlsoutside1=$TLSOUTSIDE1,tlsoutside2=$TLSOUTSIDE2,tls=$TLS \
   ~/GaloyApp/backend/test-chart/
 
   echo $(kubectl get -n=$NAMESPACE pods)
