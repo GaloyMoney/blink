@@ -49,35 +49,6 @@ export async function onchainTransactionEventHandler(tx) {
   }
 }
 
-export const sendLightningNotification = async ({hash, amount, uid}) => {
-  const data: IDataNotification = {
-    type: "paid-invoice",
-    hash,
-    amount,
-  }
-  await sendNotification({uid, title: `You receive a payment of ${amount} sats`, data})
-}
-
-export const onInvoiceUpdate = async invoice => {
-  logger.debug(invoice)
-
-  if (!invoice.is_confirmed) {
-    return
-  }
-
-  // FIXME: we're making 2x the request to Invoice User here. One in trigger, one in lighning.
-  const invoiceUser = await InvoiceUser.findOne({ _id: invoice.id, pending: true })
-  if (invoiceUser) {
-    const uid = invoiceUser.uid
-    const hash = invoice.id as string
-
-    const wallet = new LightningUserWallet({ uid })
-    await wallet.updatePendingInvoice({ hash })
-    await sendLightningNotification({amount: invoice.received, hash, uid})
-  } else {
-    logger.warn({invoice}, "we received an invoice but had no user attached to it")
-  }
-}
 
 const main = async () => {	
   const { lnd } = lnService.authenticatedLndGrpc(getAuth())
@@ -87,7 +58,31 @@ const main = async () => {
   });
 
   const subInvoices = subscribeToInvoices({ lnd });
-  subInvoices.on('invoice_updated', onInvoiceUpdate)
+  subInvoices.on('invoice_updated', async invoice => {
+    logger.debug(invoice)
+
+    if (!invoice.is_confirmed) {
+      return
+    }
+
+    // FIXME: we're making 2x the request to Invoice User here. One in trigger, one in lighning.
+    const invoiceUser = await InvoiceUser.findOne({ _id: invoice.id, pending: true })
+    if (invoiceUser) {
+      const uid = invoiceUser.uid
+      const hash = invoice.id as string
+
+      const lightningAdminWallet = new LightningUserWallet({ uid })
+      await lightningAdminWallet.updatePendingInvoice({ hash })
+      const data: IDataNotification = {
+        type: "paid-invoice",
+        hash,
+        amount: invoice.received
+      }
+      await sendNotification({uid, title: `You receive a payment of ${invoice.received} sats`, data})
+    } else {
+      logger.warn({invoice}, "we received an invoice but had no user attached to it")
+    }
+  })
 
   const subTransactions = subscribeToTransactions({ lnd });
   subTransactions.on('chain_transaction', onchainTransactionEventHandler);

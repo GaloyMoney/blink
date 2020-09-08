@@ -30,6 +30,7 @@ export const TEST_NUMBER = [
     { phone: "+16505554321", code: 321321 },
     { phone: "+16505554322", code: 321321 },
     { phone: "+16505554323", code: 321321 },
+    { phone: "+16505554324", code: 321321 },
 ]
 
 export const requestPhoneCode = async ({ phone }) => {
