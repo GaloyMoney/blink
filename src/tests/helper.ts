@@ -7,7 +7,6 @@ import { WalletFactory } from "../walletFactory";
 const BitcoindClient = require('bitcoin-core')
 
 const lnService = require('ln-service')
-const cert = process.env.TLS
 
 //FIXME: Maybe switch to using single reward
 export const onBoardingEarnAmt: number = Object.values(OnboardingEarn).reduce((a, b) => a + b, 0)
