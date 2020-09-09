@@ -24,7 +24,7 @@ export async function onchainTransactionEventHandler(tx) {
     await Transaction.updateMany({ hash: tx.id }, { pending: false })
     const entry = await Transaction.findOne({ account_path: { $all : ["Liabilities", "Customer"] }, hash: tx.id })
 
-    const title = tx.is_confirmed ? `Your on-chain transaction has been confirmed` : `Your transaction has been sent. It may takes some time before it is confirmed`
+    const title = `Your on-chain transaction has been confirmed`
     const data: IDataNotification = {
       type: "onchain_payment",
       hash: tx.id,
