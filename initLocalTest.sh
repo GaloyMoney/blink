@@ -12,6 +12,7 @@ else
 fi
 
 if [ ${LOCAL} ]; then 
+  MINIKUBEIP=$(minikube ip)
   NAMESPACE="default"
   SERVICETYPE=LoadBalancer; 
 
@@ -57,7 +58,7 @@ helmUpgrade redis bitnami/redis -f ../../redis-chart/custom-values.yaml --set=ma
 sleep 8
 kubectlWait app=bitcoind-container
 
-helmUpgrade lnd -f ../../lnd-chart/values.yaml -f ../../lnd-chart/$NETWORK-values.yaml --set lndService.serviceType=$SERVICETYPE ../../lnd-chart/
+helmUpgrade lnd -f ../../lnd-chart/values.yaml -f ../../lnd-chart/$NETWORK-values.yaml --set lndService.serviceType=$SERVICETYPE,minikubeip=$MINIKUBEIP ../../lnd-chart/
 
 kubectlWait app=redis
 sleep 8
@@ -80,8 +81,12 @@ then
   exportMacaroon 1 MACAROONOUTSIDE1
   exportMacaroon 2 MACAROONOUTSIDE2
   
+  # Todo: refactor
+  export TLSOUTSIDE1=$(kubectl -n $NAMESPACE exec lnd-container-1 -c lnd-container -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
+  export TLSOUTSIDE2=$(kubectl -n $NAMESPACE exec lnd-container-2 -c lnd-container -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
+
   helmUpgrade test-chart -f ~/GaloyApp/backend/test-chart/values.yaml --set \
-  macaroon=$MACAROON,macaroonoutside1=$MACAROONOUTSIDE1,macaroonoutside2=$MACAROONOUTSIDE2,image.tag=$CIRCLE_SHA1 \
+  macaroon=$MACAROON,macaroonoutside1=$MACAROONOUTSIDE1,macaroonoutside2=$MACAROONOUTSIDE2,image.tag=$CIRCLE_SHA1,tlsoutside1=$TLSOUTSIDE1,tlsoutside2=$TLSOUTSIDE2,tls=$TLS \
   ~/GaloyApp/backend/test-chart/
 
   echo $(kubectl get -n=$NAMESPACE pods)
@@ -100,9 +105,9 @@ else
   
   kubectl exec -n $NAMESPACE mongodb-0 -- bash -c "mongo admin -u root -p "$MONGODB_ROOT_PASSWORD" --eval \"c=rs.conf();c.writeConcernMajorityJournalDefault=false;rs.reconfig(c)\""
   
-  helmUpgrade graphql-server -f ~/GaloyApp/backend/graphql-chart/$NETWORK-values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/graphql-chart/
   helmUpgrade prometheus-client -f ~/GaloyApp/backend/graphql-chart/prometheus-values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/graphql-chart/
   helmUpgrade trigger --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/trigger-chart/
+  # TODO: missing kubectlWait trigger and prometheus-client
 
 fi
 

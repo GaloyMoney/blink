@@ -157,7 +157,7 @@ it('pay hodl invoice', async () => {
   await lnService.settleHodlInvoice({ lnd: lndOutside1, secret: secret.toString('hex') });
   expect(finalBalance).toBe(onBoardingEarnAmt - 3 * amountInvoice)
   await checkIsBalanced()
-}, 50000)
+}, 60000)
 
 it('payInvoice to lnd outside 2', async () => {
   const { request } = await lnService.createInvoice({ lnd: lndOutside2, tokens: amountInvoice, is_including_private_channels: true })
