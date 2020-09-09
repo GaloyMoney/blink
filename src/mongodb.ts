@@ -43,7 +43,10 @@ const UserSchema = new Schema({
     type: [String],
     default: []
   },
-  level: Number,
+  level: {
+    type: Number,
+    default: 1
+  },
   phone: { // TODO we should store country as a separate string
     type: String,
     required: true,
