@@ -147,7 +147,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
       await user.save()
 
     } catch (err) {
-      throw new Error(`internal error storing invoice to db ${util.inspect({ err })}`)
+      throw new Error(`internal error storing new onchain address to db ${util.inspect({ err })}`)
     }
 
     return address
@@ -199,11 +199,11 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
         // has the transaction has not been added yet to the user account?
         const mongotx = await Transaction.findOne({ account_path: this.accountPathMedici, type, hash: matched_tx.id })
+        
         // logger.debug({ matched_tx, mongotx }, "updateOnchainPayment with user %o", this.uid)
 
-        const metadata = { currency: this.currency, type, hash: matched_tx.id }
-
         if (!mongotx) {
+          const metadata = { currency: this.currency, type, hash: matched_tx.id }
           await MainBook.entry()
             .credit('Assets:Reserve:Lightning', matched_tx.tokens, metadata)
             .debit(this.accountPath, matched_tx.tokens, metadata)
