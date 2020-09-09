@@ -170,7 +170,12 @@ const resolvers = {
     },
     onchain: async (_, __, { lightningWallet }) => {
       return {
-        getNewAddress: () => lightningWallet.getOnChainAddress(),
+        getNewAddress: () => {
+          try {
+            return lightningWallet.getOnChainAddress()
+          } catch (err) {
+            logger.error({ err }, "error with getNewAddress")
+          }},
         pay: ({address, amount}) => ({success: lightningWallet.onChainPay({address, amount})}),
       }
     },
