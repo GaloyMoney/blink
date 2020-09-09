@@ -3,10 +3,12 @@
  */
 // this import needs to be before medici
 import { quit } from "../lock";
-import { MainBook, setupMongoConnection, User } from "../mongodb";
-import { bitcoindClient, checkIsBalanced, getUserWallet, lndMain, lndOutside1, RANDOM_ADDRESS, waitUntilBlockHeight, onBoardingEarnIds } from "../tests/helper";
+import { MainBook, setupMongoConnection } from "../mongodb";
+import { bitcoindClient, checkIsBalanced, getUserWallet, lndMain, lndOutside1, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
 import { onchainTransactionEventHandler } from "../trigger";
 import { sleep } from "../utils";
+const { once } = require('events');
+
 const lnService = require('ln-service')
 
 const mongoose = require("mongoose");
@@ -53,22 +55,20 @@ it('Sends onchain payment', async () => {
 	expect(interimBalance).toBe(initialBalanceUser0 - amount - pendingTxn.fee)
 	await checkIsBalanced()
 
+  // const subSpend = lnService.subscribeToChainSpend({ lnd: lndMain, bech32_address: address, min_height: 1 })
+  
   const sub = lnService.subscribeToTransactions({ lnd: lndMain })
 
-	const subSpend = lnService.subscribeToChainSpend({ lnd: lndMain, bech32_address: address, min_height: 1 })
-
-  await Promise.all([
-    subSpend.once('confirmation', ({ height }) => console.log({ height })),
-    sub.once('chain_transaction', onchainTransactionEventHandler),
-    bitcoindClient.generateToAddress(6, RANDOM_ADDRESS),
+  const results = await Promise.all([
+    once(sub, 'chain_transaction'),
     waitUntilBlockHeight({ lnd: lndMain, blockHeight: initBlockCount + 6 }),
+    bitcoindClient.generateToAddress(6, RANDOM_ADDRESS),
   ])
 
-  // FIXME why sleep is needed here?
-  await sleep(10000)
+  await onchainTransactionEventHandler(results[0][0])
 
-  // expect(notification.sendNotification.mock.calls.length).toBe(1)
-  // expect(notification.sendNotification.mock.calls[0][0].data.type).toBe("onchain_payment")
+  expect(notification.sendNotification.mock.calls.length).toBe(1)
+  expect(notification.sendNotification.mock.calls[0][0].data.type).toBe("onchain_payment")
 
   const [{ pending, fee }] = (await MainBook.ledger({ account: wallet.accountPath, hash: pendingTxn.hash, memo: "onchainpayment" })).results
 	expect(pending).toBe(false)
