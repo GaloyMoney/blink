@@ -61,8 +61,6 @@ it('Sends onchain payment', async () => {
 
   // const subSpend = lnService.subscribeToChainSpend({ lnd: lndMain, bech32_address: address, min_height: 1 })
   
-  const sub = lnService.subscribeToTransactions({ lnd: lndMain })
-
   const results = await Promise.all([
     once(sub, 'chain_transaction'),
     waitUntilBlockHeight({ lnd: lndMain, blockHeight: initBlockCount + 6 }),
