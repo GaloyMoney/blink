@@ -71,8 +71,8 @@ it('Sends onchain payment', async () => {
 
   await onchainTransactionEventHandler(results[0][0])
 
-  expect(notification.sendNotification.mock.calls.length).toBe(1)
-  expect(notification.sendNotification.mock.calls[0][0].data.type).toBe("onchain_payment")
+  expect(sendNotification.mock.calls.length).toBe(1)
+  expect(sendNotification.mock.calls[0][0].data.type).toBe("onchain_payment")
 
   const [{ pending, fee }] = (await MainBook.ledger({ account: userWallet0.accountPath, hash: pendingTxn.hash, memo: "onchainpayment" })).results
 	expect(pending).toBe(false)
