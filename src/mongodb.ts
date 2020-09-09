@@ -5,6 +5,12 @@ const mongoose = require("mongoose");
 
 const Schema = mongoose.Schema;
 
+const dbVersionSchema = new Schema({
+  version: Number
+})
+export const DbVersion = mongoose.model("DbVersion", dbVersionSchema)
+
+
 // expired invoice should be removed from the collection
 const invoiceUserSchema = new Schema({
   _id: String, // hash of invoice
