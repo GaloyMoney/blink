@@ -2,13 +2,11 @@
  * @jest-environment node
  */
 import { quit } from "../lock";
-import { MainBook, setupMongoConnection, User } from "../mongodb";
-import { bitcoindClient, checkIsBalanced, getUserWallet, lndMain, lndOutside1, RANDOM_ADDRESS, waitUntilBlockHeight, onBoardingEarnIds } from "../tests/helper";
+import { MainBook, setupMongoConnection } from "../mongodb";
+import { bitcoindClient, checkIsBalanced, getUserWallet, lndMain, lndOutside1, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
 import { onchainTransactionEventHandler } from "../trigger";
 import { sleep } from "../utils";
-const util = require('util')
-
-const {once} = require('events');
+const { once } = require('events');
 
 const lnService = require('ln-service')
 
@@ -59,23 +57,20 @@ it('Sends onchain payment', async () => {
 	expect(interimBalance).toBe(initialBalanceUser0 - amount - pendingTxn.fee)
 	await checkIsBalanced()
 
-	// const subSpend = lnService.subscribeToChainSpend({ lnd: lndMain, bech32_address: address, min_height: 1 })
+  // const subSpend = lnService.subscribeToChainSpend({ lnd: lndMain, bech32_address: address, min_height: 1 })
+  
+  const sub = lnService.subscribeToTransactions({ lnd: lndMain })
 
-  const resultPromises = await Promise.all([
-    // once(subSpend, 'confirmation'),
+  const results = await Promise.all([
     once(sub, 'chain_transaction'),
     waitUntilBlockHeight({ lnd: lndMain, blockHeight: initBlockCount + 6 }),
     bitcoindClient.generateToAddress(6, RANDOM_ADDRESS),
   ])
 
-  console.log(util.inspect({ resultPromises }, false, Infinity))
+  await onchainTransactionEventHandler(results[0][0])
 
-    // FIXME: the event is actually fired twice.
-  // is it a lnd issue?
-  // a workaround: use a hash of the event and store in redis 
-  // to not replay if it has already been handled?
-  // expect(sendNotification.mock.calls.length).toBe(1)
-  expect(sendNotification.mock.calls[0][0].data.type).toBe("onchain_payment")
+  expect(notification.sendNotification.mock.calls.length).toBe(1)
+  expect(notification.sendNotification.mock.calls[0][0].data.type).toBe("onchain_payment")
 
   const [{ pending, fee }] = (await MainBook.ledger({ account: userWallet0.accountPath, hash: pendingTxn.hash, memo: "onchainpayment" })).results
 	expect(pending).toBe(false)

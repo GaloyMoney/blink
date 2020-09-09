@@ -13,7 +13,7 @@
     "add-charts": "export LOCAL=true && ./initLocalTest.sh",
     "forward-mongodb": "kubectl port-forward $(kubectl get pods -l app.kubernetes.io/name=mongodb | awk '/mongo/ {print $1}') 27017",
     "restart-charts": "yarn run remove-charts || : && yarn run add-charts",
-    "test-local-clean": "yarn run restart-charts && yarn run test-local",
+    "test-local-clean": "yarn run restart-charts && yarn jest --clearCache && yarn run test-local",
     "test-local": "source exportLocal.sh && yarn jest --runInBand $TEST | pino-pretty -c -l",
     "prometheus": "source exportLocal.sh && ts-node src/prometheus.ts",
     "lnd-connection": "source exportLocal.sh && echo $MACAROON | base64 -d > ./macaroon && echo $TLS | base64 -d > ./tls.cert && lncli --network regtest --macaroonpath=./macaroon --tlscertpath=./tls.cert --rpcserver=${LNDIP}:${LNDRPCPORT} getinfo",
