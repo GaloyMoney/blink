@@ -12,6 +12,7 @@ else
 fi
 
 if [ ${LOCAL} ]; then 
+  MINIKUBEIP=$(minikube ip)
   NAMESPACE="default"
   SERVICETYPE=LoadBalancer; 
 
@@ -57,7 +58,7 @@ helmUpgrade redis bitnami/redis -f ../../redis-chart/custom-values.yaml --set=ma
 sleep 8
 kubectlWait app=bitcoind-container
 
-helmUpgrade lnd -f ../../lnd-chart/values.yaml -f ../../lnd-chart/$NETWORK-values.yaml --set lndService.serviceType=$SERVICETYPE ../../lnd-chart/
+helmUpgrade lnd -f ../../lnd-chart/values.yaml -f ../../lnd-chart/$NETWORK-values.yaml --set lndService.serviceType=$SERVICETYPE,minikubeip=$MINIKUBEIP ../../lnd-chart/
 
 kubectlWait app=redis
 sleep 8
