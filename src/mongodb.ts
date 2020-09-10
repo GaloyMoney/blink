@@ -58,7 +58,6 @@ const UserSchema = new Schema({
     type: [String],
     default: []
   },
-
   currency: {
     type: String,
     enum: ["USD", "BTC"],
