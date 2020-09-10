@@ -51,6 +51,8 @@ export const sendNotification = async ({uid, title, body, data}: INotification) 
     message['notification']['body'] = body
   }
   
+  console.log({user})
+
   if (user.deviceToken.length === 0) {
     logger.info({message}, "skipping notification for user %o as no deviceToken has been registered", uid)
     return
