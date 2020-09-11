@@ -113,8 +113,8 @@ const resolvers = {
     requestPhoneCode: async (_, { phone }) => {
       return { success: requestPhoneCode({ phone }) }
     },
-    login: async (_, { phone, code }) => {
-      return { token: login({ phone, code }) }
+    login: async (_, { phone, code, currency }) => {
+      return { token: login({ phone, code, currency }) }
     },
     updateUser: async (_, __,  { lightningWallet }) => {
       // FIXME manage uid

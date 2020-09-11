@@ -3,6 +3,7 @@ import { LightningUsdWallet } from "./LightningUsdWallet"
 import { User } from "./mongodb"
 
 export const WalletFactory = ({uid, currency = "BTC"}: {uid: string, currency: string}) => {
+// TODO: remove default BTC once old tokens had been "expired"
   if (currency === "USD") {
     return new LightningUsdWallet({uid})
   } else {
