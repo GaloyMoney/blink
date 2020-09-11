@@ -39,6 +39,7 @@ export class AdminWallet {
     }
 
     logger.debug(books, "status of our bookeeping")
+    return books
   }
 
   async getBalanceSheet() {    

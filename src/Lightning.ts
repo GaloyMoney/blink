@@ -82,7 +82,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     return super.getBalance()
   }
 
-  async getTransactions(): Promise<Array<ILightningTransaction>> {
+  async getRawTransaction() {
     await this.updatePending()
 
     const { results } = await MainBook.ledger({
@@ -91,10 +91,17 @@ export const LightningMixin = (superclass) => class extends superclass {
       // start_date: startDate,
       // end_date: endDate
     })
+
+    return results
+  }
+
+  async getTransactions(): Promise<Array<ILightningTransaction>> {
+    const rawTransactions = await this.getRawTransaction()
+
     // TODO we could duplicated pending/type to transaction,
     // this would avoid to fetch the data from hash collection and speed up query
 
-    const results_processed = results.map((item) => ({
+    const results_processed = rawTransactions.map((item) => ({
       created_at: moment(item.timestamp).unix(),
       amount: item.debit - item.credit,
       description: formatInvoice(item.type, item.memo, item.pending, item.credit > 0 ? true : false),

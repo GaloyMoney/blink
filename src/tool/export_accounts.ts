@@ -1,4 +1,3 @@
-import { AdminWallet } from "../LightningAdminImpl";
 import {User, setupMongoConnection} from "../mongodb"
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 
@@ -8,16 +7,34 @@ const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const main = async () => {
   await setupMongoConnection()
 
-  const adminWallet = new AdminWallet()
-  const books = await adminWallet.getBooks()
+  let users
+
+  try {
+    users = await User.find({"phone": {"$exists": 1}})
+  } catch (err) {
+    console.log(err)
+  }
 
   console.log("csvWriter")
   const csvWriter = createCsvWriter({
     path: 'records.csv',
-    header: ['Account', 'Balance']
+    header: [
+        {id: 'phone', title: 'Phone'},
+        {id: 'amount', title: 'Amount'},
+        {id: 'memo', title: 'Memo'},
+    ]
   });
 
-  Object.keys(books).forEach(async account => await csvWriter.writeRecords([account, books[account]]));
+  const records: any[] = []
+
+  for (const user of users) {
+    records.push({
+      phone: user.phone
+    })
+  }
+
+  console.log(records)
+  await csvWriter.writeRecords(records)
 }
 
 main().then(o => console.log(o)).catch(err => console.log(err))
