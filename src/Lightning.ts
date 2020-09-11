@@ -1,6 +1,5 @@
 const lnService = require('ln-service');
 import { createHash, randomBytes } from "crypto";
-import { intersection } from "lodash";
 import moment from "moment";
 import { disposer } from "./lock";
 import { InvoiceUser, MainBook, Transaction, User } from "./mongodb";

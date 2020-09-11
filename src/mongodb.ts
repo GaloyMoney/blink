@@ -115,6 +115,13 @@ const transactionSchema = new Schema({
   },
   pending: Boolean, // used to denote confirmation status of on and off chain txn
   err: String,
+  currency: {
+    // TODO: check if an upgrade is needed for this one
+    type: String,
+    enum: ["USD", "BTC"],
+    default: "BTC",
+    required: true
+  },
 
   // original property from medici
   credit: Number,

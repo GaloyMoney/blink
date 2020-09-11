@@ -1,9 +1,8 @@
-import { setupMongoConnection } from "../mongodb";
-import { WalletFactory } from "../walletFactory";
+import { MainBook, setupMongoConnection } from "../mongodb";
+import { customerPath } from "../wallet";
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 
-const uid = "5f1b76e7035c825d8615fb56"
-const currency = "BTC"
+const uid = "5f5bdcc1c2cec44610ee24d2"
 
 // need to set MONGODB_ADDRESS to call the script
 // ie: MONGODB_ADDRESS=localhost ts-node export_user_create_csv.ts
@@ -11,18 +10,32 @@ const currency = "BTC"
 const main = async () => {
   await setupMongoConnection()
 
-  const wallet = WalletFactory({uid, currency})
-  const transactions = await wallet.getRawTransactions()
+  const { results: transactions } = await MainBook.ledger({
+    account: customerPath(uid),
+  })
 
-  console.log({transactions})
+  console.log("csvWriter")
+  const csvWriter = createCsvWriter({
+    path: `record_transactions_${uid}.csv`,
+    header: [
+      {id: 'voided', title: 'voided'},
+      {id: 'approved', title: 'approved'},
+      {id: '_id', title: '_id'},
+      {id: 'accounts', title: 'accounts'},
+      {id: 'credit', title: 'credit'},
+      {id: 'debit', title: 'debit'},
+      {id: '_journal', title: '_journal'},
+      {id: 'book', title: 'book'},
+      {id: 'datetime', title: 'datetime'},
+      {id: 'currency', title: 'currency'},
+      {id: 'type', title: 'type'},
+      {id: 'hash', title: 'hash'},
+      {id: 'meta', title: 'meta'},
+    ]
+  });
 
-  // console.log("csvWriter")
-  // const csvWriter = createCsvWriter({
-  //   path: 'records.csv',
-  //   header: ['Account', 'Balance']
-  // });
-
-  // Object.keys(books).forEach(async account => await csvWriter.writeRecords([account, books[account]]));
+  transactions.forEach(tx => tx.meta = JSON.stringify(tx.meta))
+  await csvWriter.writeRecords(transactions)
 }
 
 main().then(o => console.log(o)).catch(err => console.log(err))
