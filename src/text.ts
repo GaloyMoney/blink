@@ -75,7 +75,7 @@ export const login = async ({ phone, code, currency = "BTC" }: ILogin) => {
   
   // TODO: not sure if graphql return null or undefined when a field is not passed
   // adding this as an early catch for now
-  if (!!currency) {
+  if (!currency) {
     const err = `currency is not set. exiting login()`
     logger.error({currency}, err)
     throw Error(err)
