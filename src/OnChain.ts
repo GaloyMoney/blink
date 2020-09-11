@@ -3,7 +3,7 @@ import { intersection, last } from "lodash";
 import { disposer } from "./lock";
 import { MainBook, Transaction, User } from "./mongodb";
 import { IOnChainPayment, ISuccess } from "./types";
-import { getAuth, getOnChainTransactions, logger, sendToAdmin } from "./utils";
+import { getAuth, logger, sendToAdmin } from "./utils";
 import { customerPath } from "./wallet";
 const util = require('util')
 
@@ -19,6 +19,16 @@ export const OnChainMixin = (superclass) => class extends superclass {
   async updatePending() {
     await this.updateOnchainPayment()
     return super.updatePending()
+  }
+
+  async getOnChainTransactions({ lnd, incoming }: { lnd: any, incoming: boolean }) {
+    try {
+      const onchainTransactions = await lnService.getChainTransactions({ lnd })
+      return onchainTransactions.transactions.filter(tx => incoming ? !tx.is_outgoing : tx.is_outgoing)
+    } catch (err) {
+      const err_string = `${util.inspect({ err }, { showHidden: false, depth: null })}`
+      throw new Error(`issue fetching transaction: ${err_string})`)
+    }
   }
 
   async onChainPay({ address, amount, description }: IOnChainPayment): Promise<ISuccess | Error> {
@@ -82,7 +92,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
         return false
       }
 
-      const outgoingOnchainTxns = await getOnChainTransactions({ lnd: this.lnd, incoming: false })
+      const outgoingOnchainTxns = await this.getOnChainTransactions({ lnd: this.lnd, incoming: false })
 
       const [{ fee }] = outgoingOnchainTxns.filter(tx => tx.id === id)
 
@@ -155,7 +165,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
   async getIncomingOnchainPayments(confirmed: boolean) {
 
-    const incoming_txs = (await getOnChainTransactions({ lnd: this.lnd, incoming: true }))
+    const incoming_txs = (await this.getOnChainTransactions({ lnd: this.lnd, incoming: true }))
       .filter(tx => tx.is_confirmed === confirmed)
 
     const { onchain_addresses } = await User.findOne({ _id: this.uid }, {onchain_addresses: 1})
@@ -213,4 +223,5 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
     })
   }
+
 };

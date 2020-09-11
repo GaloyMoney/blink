@@ -6,7 +6,7 @@ import { disposer } from "./lock";
 import { InvoiceUser, MainBook, Transaction, User } from "./mongodb";
 import { sendInvoicePaidNotification } from "./notification";
 import { IAddInvoiceRequest, ILightningTransaction, IPaymentRequest, TransactionType } from "./types";
-import { getAuth, getOnChainTransactions, logger, measureTime, timeout } from "./utils";
+import { getAuth, logger, measureTime, timeout } from "./utils";
 import { customerPath } from "./wallet"
 
 const util = require('util')
@@ -82,7 +82,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     return super.getBalance()
   }
 
-  async getRawTransaction() {
+  async getRawTransactions() {
     await this.updatePending()
 
     const { results } = await MainBook.ledger({
@@ -96,7 +96,7 @@ export const LightningMixin = (superclass) => class extends superclass {
   }
 
   async getTransactions(): Promise<Array<ILightningTransaction>> {
-    const rawTransactions = await this.getRawTransaction()
+    const rawTransactions = await this.getRawTransactions()
 
     // TODO we could duplicated pending/type to transaction,
     // this would avoid to fetch the data from hash collection and speed up query
@@ -482,18 +482,6 @@ export const LightningMixin = (superclass) => class extends superclass {
     for (const invoice of invoices) {
       await this.updatePendingInvoice({ hash: invoice._id })
     }
-  }
-
-  async getIncomingOnchainPayments(confirmed: boolean) {
-
-    let incoming_txs = (await getOnChainTransactions({ lnd: this.lnd, incoming: true }))
-      .filter(tx => tx.is_confirmed === confirmed)
-
-    const { onchain_addresses } = await User.findOne({ _id: this.uid }, {onchain_addresses: 1})
-    const matched_txs = incoming_txs
-      .filter(tx => intersection(tx.output_addresses, onchain_addresses).length > 0)
-
-    return matched_txs
   }
 
   async getPendingIncomingOnchainPayments() {
