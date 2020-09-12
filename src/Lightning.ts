@@ -207,7 +207,7 @@ export const LightningMixin = (superclass) => class extends superclass {
             throw Error('User tried to pay invoice destined to us, but it was already paid or does not exist')
             // FIXME: Using == here because === returns false even for same uids
           } else if (existingInvoice.uid == this.uid) {
-            throw Error('User tried to pay their own invoice')
+            throw Error(`User ${this.uid} tried to pay their own invoice (invoice belong to: ${existingInvoice.uid})`)
           }
           payeeUid = existingInvoice.uid
         }
@@ -217,7 +217,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         }
 
         const metadata = { currency: this.currency, hash: id, type: "on_us", pending: false }
-        await MainBook.entry()
+        await MainBook.entry(description)
           .credit(this.accountPath, tokens, metadata)
           .debit(customerPath(payeeUid), tokens, metadata)
           .commit()
