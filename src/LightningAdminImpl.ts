@@ -21,15 +21,15 @@ export class AdminWallet {
     }
   }
 
-  async getBalanceSheet() {
+  async getBooks() {
     const accounts = await MainBook.listAccounts()
-    
+
     // used for debugging
     const books = {}
     for (const account of accounts) {
       for (const currency of ["USD", "BTC"]) {
         const { balance } = await MainBook.balance({
-          account: account,
+          account,
           currency,
         })
         if (!!balance) {
@@ -37,8 +37,12 @@ export class AdminWallet {
         }
       }
     }
-    logger.debug(books, "status of our bookeeping")
 
+    logger.debug(books, "status of our bookeeping")
+    return books
+  }
+
+  async getBalanceSheet() {    
     const getBalanceOf = async (account) => {
       const { balance } = await MainBook.balance({
         account,

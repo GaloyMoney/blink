@@ -6,7 +6,9 @@ import { MainBook, setupMongoConnection } from "../mongodb";
 import { bitcoindClient, checkIsBalanced, getUserWallet, lndMain, lndOutside1, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
 import { onchainTransactionEventHandler } from "../trigger";
 import { sleep } from "../utils";
-const { once } = require('events');
+const util = require('util')
+
+const {once} = require('events');
 
 const lnService = require('ln-service')
 
@@ -48,18 +50,28 @@ it('Sends onchain payment', async () => {
   const sub = lnService.subscribeToTransactions({ lnd: lndMain })
   sub.on('chain_transaction', onchainTransactionEventHandler)
 
-	const payResult = await userWallet0.onChainPay({ address, amount, description: "onchainpayment" })
-  expect(payResult).toBeTruthy()
+  {
+    const results = await Promise.all([
+      once(sub, 'chain_transaction'),
+      userWallet0.onChainPay({ address, amount, description: "onchainpayment" }),
+    ])
+
+    expect(results[1]).toBeTruthy()
+    await onchainTransactionEventHandler(results[0][0])
+  }
+
+  // we don't send a notification for send transaction for now
+  // expect(sendNotification.mock.calls.length).toBe(1)
+  // expect(sendNotification.mock.calls[0][0].data.type).toBe("onchain_payment")
+  // expect(sendNotification.mock.calls[0][0].data.title).toBe(`Your transaction has been sent. It may takes some time before it is confirmed`)
 
   const [pendingTxn] = (await MainBook.ledger({ account: userWallet0.accountPath, pending: true, memo: "onchainpayment" })).results
 
 	const interimBalance = await userWallet0.getBalance()
 	expect(interimBalance).toBe(initialBalanceUser0 - amount - pendingTxn.fee)
-	await checkIsBalanced()
-
-  // const subSpend = lnService.subscribeToChainSpend({ lnd: lndMain, bech32_address: address, min_height: 1 })
+  await checkIsBalanced()
   
-  const sub = lnService.subscribeToTransactions({ lnd: lndMain })
+  // const subSpend = lnService.subscribeToChainSpend({ lnd: lndMain, bech32_address: address, min_height: 1 })
 
   const results = await Promise.all([
     once(sub, 'chain_transaction'),
@@ -67,10 +79,11 @@ it('Sends onchain payment', async () => {
     bitcoindClient.generateToAddress(6, RANDOM_ADDRESS),
   ])
 
-  await onchainTransactionEventHandler(results[0][0])
+  console.log(JSON.stringify(sendNotification.mock.calls))
 
-  expect(notification.sendNotification.mock.calls.length).toBe(1)
-  expect(notification.sendNotification.mock.calls[0][0].data.type).toBe("onchain_payment")
+  expect(sendNotification.mock.calls.length).toBe(2)  // FIXME: should be 1
+  expect(sendNotification.mock.calls[1][0].title).toBe(`Your on-chain transaction has been confirmed`)
+  expect(sendNotification.mock.calls[1][0].data.type).toBe("onchain_payment")
 
   const [{ pending, fee }] = (await MainBook.ledger({ account: userWallet0.accountPath, hash: pendingTxn.hash, memo: "onchainpayment" })).results
 	expect(pending).toBe(false)

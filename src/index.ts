@@ -10,6 +10,7 @@ import { login, requestPhoneCode } from "./text";
 import { OnboardingEarn } from "./types";
 import { AdminWallet } from "./LightningAdminImpl";
 import { sendNotification } from "./notification"
+import { upgrade } from "./upgrade_schema"
 
 const path = require("path");
 dotenv.config()
@@ -284,10 +285,11 @@ const options = {
 
 setupMongoConnection()
   .then(() => {
-    server.start(options, ({ port }) =>
-      logger.info(
-        `Server started, listening on port ${port} for incoming requests.`,
-      ),
-    )
-  }).catch((err) => logger.error(err, "server error"))
+    upgrade().then(() => {
+      server.start(options, ({ port }) =>
+        logger.info(
+          `Server started, listening on port ${port} for incoming requests.`,
+        ),
+      )
+  })}).catch((err) => logger.error(err, "server error"))
 

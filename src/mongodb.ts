@@ -5,6 +5,12 @@ const mongoose = require("mongoose");
 
 const Schema = mongoose.Schema;
 
+const dbVersionSchema = new Schema({
+  version: Number
+})
+export const DbVersion = mongoose.model("DbVersion", dbVersionSchema)
+
+
 // expired invoice should be removed from the collection
 const invoiceUserSchema = new Schema({
   _id: String, // hash of invoice
@@ -55,7 +61,6 @@ const UserSchema = new Schema({
     type: [String],
     default: []
   },
-
   currency: {
     type: String,
     enum: ["USD", "BTC"],
@@ -113,6 +118,13 @@ const transactionSchema = new Schema({
   },
   pending: Boolean, // used to denote confirmation status of on and off chain txn
   err: String,
+  currency: {
+    // TODO: check if an upgrade is needed for this one
+    type: String,
+    enum: ["USD", "BTC"],
+    default: "BTC",
+    required: true
+  },
 
   // original property from medici
   credit: Number,

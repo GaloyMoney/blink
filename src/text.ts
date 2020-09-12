@@ -2,7 +2,7 @@ const twilioPhoneNumber = "***REMOVED***"
 import moment from "moment"
 import { PhoneCode, User } from "./mongodb";
 
-import { randomIntFromInterval, createToken } from "./utils"
+import { randomIntFromInterval, createToken, logger } from "./utils"
 
 const getTwilioClient = () => {
   // FIXME: replace with env variable
@@ -72,6 +72,14 @@ interface ILogin {
 }
 
 export const login = async ({ phone, code, currency = "BTC" }: ILogin) => {
+  
+  // TODO: not sure if graphql return null or undefined when a field is not passed
+  // adding this as an early catch for now
+  if (!currency) {
+    const err = `currency is not set. exiting login()`
+    logger.error({currency}, err)
+    throw Error(err)
+  }
 
   try {
     const codes = await PhoneCode.find({

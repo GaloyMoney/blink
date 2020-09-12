@@ -54,7 +54,7 @@ afterAll(async () => {
 
 const onchain_funding = async ({ walletDestination }) => {
   const initialBalance = await walletDestination.getBalance()
-  const initTransations = await walletDestination.getTransactions()
+  const initTransactions = await walletDestination.getTransactions()
 
   const address = await walletDestination.getOnChainAddress()
   expect(address.substr(0, 4)).toBe("bcrt")
@@ -70,10 +70,10 @@ const onchain_funding = async ({ walletDestination }) => {
     const balance = await walletDestination.getBalance()
     expect(balance).toBe(initialBalance + btc2sat(amount_BTC))
 
-    const transations = await walletDestination.getTransactions()
-    expect(transations.length).toBe(initTransations.length + 1)
-    expect(transations[transations.length - 1].type).toBe("onchain_receipt")
-    expect(transations[transations.length - 1].amount).toBe(btc2sat(amount_BTC))
+    const transactions = await walletDestination.getTransactions()
+    expect(transactions.length).toBe(initTransactions.length + 1)
+    expect(transactions[transactions.length - 1].type).toBe("onchain_receipt")
+    expect(transactions[transactions.length - 1].amount).toBe(btc2sat(amount_BTC))
   }
 
   const fundLndWallet = async () => {
@@ -98,14 +98,15 @@ it('funding funder with onchain tx from bitcoind', async () => {
 
 it('identifies unconfirmed incoming on chain txn', async () => {
   const address = await walletUser0.getOnChainAddress()
-  expect(address.substr(0, 4)).toBe("bcrt")
 
   const sub = await lnService.subscribeToTransactions({ lnd: lndMain })
   sub.on('chain_transaction', onchainTransactionEventHandler)
-  await bitcoindClient.sendToAddress(address, amount_BTC)
-
-  await once(sub, 'chain_transaction')
   
+  await Promise.all([
+    once(sub, 'chain_transaction'),
+    bitcoindClient.sendToAddress(address, amount_BTC)
+  ])
+
   const pendingTxn = await walletUser0.getPendingIncomingOnchainPayments()
   expect(pendingTxn.length).toBe(1)
   expect(pendingTxn[0].amount).toBe(btc2sat(1))

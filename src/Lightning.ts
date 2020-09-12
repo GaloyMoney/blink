@@ -1,12 +1,11 @@
 const lnService = require('ln-service');
 import { createHash, randomBytes } from "crypto";
-import { intersection } from "lodash";
 import moment from "moment";
 import { disposer } from "./lock";
 import { InvoiceUser, MainBook, Transaction, User } from "./mongodb";
 import { sendInvoicePaidNotification } from "./notification";
 import { IAddInvoiceRequest, ILightningTransaction, IPaymentRequest, TransactionType } from "./types";
-import { getAuth, getOnChainTransactions, logger, measureTime, timeout } from "./utils";
+import { getAuth, logger, measureTime, timeout } from "./utils";
 import { customerPath } from "./wallet"
 
 const util = require('util')
@@ -82,7 +81,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     return super.getBalance()
   }
 
-  async getTransactions(): Promise<Array<ILightningTransaction>> {
+  async getRawTransactions() {
     await this.updatePending()
 
     const { results } = await MainBook.ledger({
@@ -91,10 +90,17 @@ export const LightningMixin = (superclass) => class extends superclass {
       // start_date: startDate,
       // end_date: endDate
     })
+
+    return results
+  }
+
+  async getTransactions(): Promise<Array<ILightningTransaction>> {
+    const rawTransactions = await this.getRawTransactions()
+
     // TODO we could duplicated pending/type to transaction,
     // this would avoid to fetch the data from hash collection and speed up query
 
-    const results_processed = results.map((item) => ({
+    const results_processed = rawTransactions.map((item) => ({
       created_at: moment(item.timestamp).unix(),
       amount: item.debit - item.credit,
       description: formatInvoice(item.type, item.memo, item.pending, item.credit > 0 ? true : false),
@@ -201,7 +207,7 @@ export const LightningMixin = (superclass) => class extends superclass {
             throw Error('User tried to pay invoice destined to us, but it was already paid or does not exist')
             // FIXME: Using == here because === returns false even for same uids
           } else if (existingInvoice.uid == this.uid) {
-            throw Error('User tried to pay their own invoice')
+            throw Error(`User ${this.uid} tried to pay their own invoice (invoice belong to: ${existingInvoice.uid})`)
           }
           payeeUid = existingInvoice.uid
         }
@@ -211,7 +217,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         }
 
         const metadata = { currency: this.currency, hash: id, type: "on_us", pending: false }
-        await MainBook.entry()
+        await MainBook.entry(description)
           .credit(this.accountPath, tokens, metadata)
           .debit(customerPath(payeeUid), tokens, metadata)
           .commit()
@@ -475,18 +481,6 @@ export const LightningMixin = (superclass) => class extends superclass {
     for (const invoice of invoices) {
       await this.updatePendingInvoice({ hash: invoice._id })
     }
-  }
-
-  async getIncomingOnchainPayments(confirmed: boolean) {
-
-    let incoming_txs = (await getOnChainTransactions({ lnd: this.lnd, incoming: true }))
-      .filter(tx => tx.is_confirmed === confirmed)
-
-    const { onchain_addresses } = await User.findOne({ _id: this.uid }, {onchain_addresses: 1})
-    const matched_txs = incoming_txs
-      .filter(tx => intersection(tx.output_addresses, onchain_addresses).length > 0)
-
-    return matched_txs
   }
 
   async getPendingIncomingOnchainPayments() {

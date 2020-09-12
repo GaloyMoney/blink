@@ -95,16 +95,6 @@ export async function measureTime(operation: Promise<any>): Promise<[any, number
   return [result, timeElapsedms]
 }
 
-export async function getOnChainTransactions({ lnd, incoming }: { lnd: any, incoming: boolean }) {
-  try {
-    const onchainTransactions = await lnService.getChainTransactions({ lnd })
-    return onchainTransactions.transactions.filter(tx => incoming ? !tx.is_outgoing : tx.is_outgoing)
-  } catch (err) {
-    const err_string = `${util.inspect({ err }, { showHidden: false, depth: null })}`
-    throw new Error(`issue fetching transaction: ${err_string})`)
-  }
-}
-
 export async function sendToAdmin(body) {
   await sendText({ body, to: '+1***REMOVED***' })
   await sendText({ body, to: '***REMOVED***' })

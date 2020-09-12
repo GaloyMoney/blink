@@ -127,6 +127,22 @@ it('payInvoiceToAnotherGaloyUser', async () => {
   await checkIsBalanced()
 }, 50000)
 
+it('payInvoiceToAnotherGaloyUserWithMemo', async () => {
+  const memo = "myOtherMemo"
+
+  const request = await userWallet1.addInvoice({ value: amountInvoice, memo })
+  await userWallet2.pay({ invoice: request })
+  
+  const matchTx = tx => tx.type === 'on_us' && tx.hash === getHash(request)
+
+  const user1Txn = await userWallet1.getTransactions()
+  expect(user1Txn.filter(matchTx)[0].description).toBe(memo)
+
+  const user2Txn = await userWallet2.getTransactions()
+  expect(user2Txn.filter(matchTx)[0].description).toBe(memo)
+  await checkIsBalanced()
+}, 50000)
+
 it('payInvoiceToSelf', async () => {
   const invoice = await userWallet1.addInvoice({ value: 1000, memo: "self payment" })
   await expect(userWallet1.pay({ invoice })).rejects.toThrow()
