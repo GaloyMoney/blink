@@ -1,9 +1,10 @@
 /**
  * @jest-environment node
  */
+import { setupMongoConnection } from "../mongodb";
+
 const lnService = require('ln-service')
-import { setupMongoConnection, User } from "../mongodb"
-import { bitcoindClient, lndMain, lndOutside1, lndOutside2, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper"
+import { bitcoindClient, lndMain, lndOutside1, lndOutside2, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
 const mongoose = require("mongoose");
 
 const initialBitcoinWalletBalance = 0
@@ -22,12 +23,11 @@ const amount_BTC = 1
 let lndOutside1_wallet_addr
 
 
-it('add admin', async () => {
-	// FIXME there should be an API for this
-	// FIXME XXX if several admin users are created there is an accounting issue, transaction are created several times
+beforeAll(async () => {
+  await setupMongoConnection()
+})
 
-	await setupMongoConnection()
-	await new User({ role: "admin" }).save()
+afterAll(async () => {
 	await mongoose.connection.close()
 })
 
@@ -49,4 +49,4 @@ it('funds outside lnd node', async () => {
 	await waitUntilBlockHeight({ lnd: lndMain, blockHeight: 100 + numOfBlock + 6 })
 	await waitUntilBlockHeight({ lnd: lndOutside1, blockHeight: 100 + numOfBlock + 6 })
 	await waitUntilBlockHeight({ lnd: lndOutside2, blockHeight: 100 + numOfBlock + 6 })
-}, 100000)
+}, 10000)

@@ -1,17 +1,16 @@
 import { setupMongoConnection, User } from "./mongodb"
-// this import needs to be before medici
 
 import dotenv from "dotenv";
 import { rule, shield } from 'graphql-shield';
 import { GraphQLServer } from 'graphql-yoga';
 import { ContextParameters } from 'graphql-yoga/dist/types';
 import * as jwt from 'jsonwebtoken';
-import { LightningUserWallet } from "./LightningUserWallet";
 import { Price } from "./priceImpl";
 import { login, requestPhoneCode } from "./text";
 import { OnboardingEarn } from "./types";
-import { LightningAdminWallet } from "./LightningAdminImpl";
+import { AdminWallet } from "./LightningAdminImpl";
 import { sendNotification } from "./notification"
+import { upgrade } from "./upgrade_schema"
 
 const path = require("path");
 dotenv.config()
@@ -19,6 +18,7 @@ dotenv.config()
 
 import { logger } from "./utils"
 import moment from "moment";
+import { WalletFactory } from "./walletFactory";
 const pino = require('pino-http')({
   logger,
   // TODO: get uid and other information from the request.
@@ -55,9 +55,7 @@ const resolvers = {
         level: 1,
       }
     },
-    wallet: async (_, __, { uid }) => {
-      const lightningWallet = new LightningUserWallet({ uid })
-
+    wallet: async (_, __, { lightningWallet }) => {
       const btw_wallet = {
         id: "BTC",
         currency: "BTC",
@@ -77,9 +75,8 @@ const resolvers = {
         throw err
       }
     },
-    pendingOnChainPayment: async (_, __, { uid }) => {
-      const lightningWallet = new LightningUserWallet({ uid })
-      return await lightningWallet.getPendingIncomingOnchainPayments()
+    pendingOnChainPayment: async (_, __, { lightningWallet }) => {
+      return lightningWallet.getPendingIncomingOnchainPayments()
     },
     prices: async () => {
       try {
@@ -107,8 +104,7 @@ const resolvers = {
 
       return response
     },
-    getLastOnChainAddress: async (_, __, {uid}) => {
-      const lightningWallet = new LightningUserWallet({uid})
+    getLastOnChainAddress: async (_, __, { lightningWallet }) => {
       const getLastAddress = await lightningWallet.getLastOnChainAddress()
       return {id: getLastAddress}
     }
@@ -117,25 +113,24 @@ const resolvers = {
     requestPhoneCode: async (_, { phone }) => {
       return { success: requestPhoneCode({ phone }) }
     },
-    login: async (_, { phone, code }) => {
-      return { token: login({ phone, code }) }
+    login: async (_, { phone, code, currency }) => {
+      return { token: login({ phone, code, currency }) }
     },
-    updateUser: async (_, { user }) => {
+    updateUser: async (_, __,  { lightningWallet }) => {
       // FIXME manage uid
       // TODO only level for now
-      const lightningWallet = new LightningUserWallet({ uid: user._id })
       const result = await lightningWallet.setLevel({ level: 1 })
       return {
-        id: user._id,
+        id: lightningWallet.uid,
         level: result.level,
       }
     },
-    openChannel: async (_, { local_tokens, public_key, socket }, { uid }) => {
-      const lightningAdminWallet = new LightningAdminWallet({ uid })
+    openChannel: async (_, { local_tokens, public_key, socket }, {}) => {
+      // FIXME: security risk. remove openChannel from graphql
+      const lightningAdminWallet = new AdminWallet()
       return { tx: lightningAdminWallet.openChannel({ local_tokens, public_key, socket }) }
     },
-    invoice: async (_, __, { uid }) => {
-      const lightningWallet = new LightningUserWallet({ uid })
+    invoice: async (_, __, { lightningWallet }) => {
       return ({
 
         addInvoice: async ({ value, memo }) => {
@@ -143,7 +138,7 @@ const resolvers = {
             const result = await lightningWallet.addInvoice({ value, memo })
             return result
           } catch (err) {
-            logger.error(err)
+            logger.error({err}, "addInvoice error")
             throw err
           }
         },
@@ -151,14 +146,14 @@ const resolvers = {
           try {
             return await lightningWallet.updatePendingInvoice({ hash })
           } catch (err) {
-            logger.error(err)
+            logger.error({err}, "updatePendingInvoice error")
             throw err
           }
         },
         payInvoice: async ({ invoice, amount }) => {
           try {
             const success = await lightningWallet.pay({ invoice, amount })
-            logger.debug({ success }, "succesful payment for user %o", { uid })
+            logger.debug({ success }, "succesful payment for user %o", lightningWallet.uid)
             return success
           } catch (err) {
             logger.error({ err }, "lightning payment error")
@@ -168,15 +163,13 @@ const resolvers = {
 
       })
     },
-    earnCompleted: async (_, { ids }, { uid }) => {
-      const lightningWallet = new LightningUserWallet({ uid })
+    earnCompleted: async (_, { ids }, { lightningWallet }) => {
       return lightningWallet.addEarn(ids)
     },
     deleteUser: () => {
       // TODO
     },
-    onchain: async (_, __, { uid }) => {
-      const lightningWallet = new LightningUserWallet({uid})
+    onchain: async (_, __, { lightningWallet }) => {
       return {
         getNewAddress: () => lightningWallet.getOnChainAddress(),
         pay: ({address, amount}) => ({success: lightningWallet.onChainPay({address, amount})}),
@@ -199,7 +192,7 @@ const resolvers = {
 }
 
 
-function getUid(ctx: ContextParameters) {
+function verifyToken(ctx: ContextParameters) {
 
   let token
   try {
@@ -222,7 +215,7 @@ function getUid(ctx: ContextParameters) {
     // TODO return new AuthenticationError("Not authorised"); ?
     // ie: differenciate between non authenticated, and not authorized
   }
-  return token.uid
+  return token
 }
 
 const isAuthenticated = rule({ cache: 'contextual' })(
@@ -260,24 +253,17 @@ const server = new GraphQLServer({
   resolvers,
   middlewares: [permissions],
   context: async (req) => {
+    logger.info(req.request.body, 'body')
+    const token = verifyToken(req)
+    const lightningWallet = !!token ? WalletFactory(token) : null
     const result = {
       ...req,
-      uid: getUid(req)
+      uid: token?.uid ?? null,
+      lightningWallet,
     }
     return result
   }
 })
-
-//TODO: set logger level instead of not calling next
-// https://github.com/pinojs/pino/issues/713
-// server.express.use((req, res, next) => {
-//   const userAgent = req.get('User-Agent')
-//   if (userAgent?.split('/')[0] == 'GoogleHC') {
-//     next()
-//   } else {
-//     return
-//   }
-// })
 
 server.express.use(pino)
 
@@ -294,10 +280,11 @@ const options = {
 
 setupMongoConnection()
   .then(() => {
-    server.start(options, ({ port }) =>
-      logger.info(
-        `Server started, listening on port ${port} for incoming requests.`,
-      ),
-    )
-  }).catch((err) => logger.error(err, "server error"))
+    upgrade().then(() => {
+      server.start(options, ({ port }) =>
+        logger.info(
+          `Server started, listening on port ${port} for incoming requests.`,
+        ),
+      )
+  })}).catch((err) => logger.error(err, "server error"))
 

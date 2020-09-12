@@ -7,8 +7,6 @@ const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const main = async () => {
   await setupMongoConnection()
 
-  console.log("main")
-
   let users
 
   try {
