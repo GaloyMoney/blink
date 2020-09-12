@@ -101,10 +101,12 @@ it('identifies unconfirmed incoming on chain txn', async () => {
 
   const sub = await lnService.subscribeToTransactions({ lnd: lndMain })
   sub.on('chain_transaction', onchainTransactionEventHandler)
-  await bitcoindClient.sendToAddress(address, amount_BTC)
-
-  await once(sub, 'chain_transaction')
   
+  await Promise.all([
+    once(sub, 'chain_transaction'),
+    bitcoindClient.sendToAddress(address, amount_BTC)
+  ])
+
   const pendingTxn = await walletUser0.getPendingIncomingOnchainPayments()
   expect(pendingTxn.length).toBe(1)
   expect(pendingTxn[0].amount).toBe(btc2sat(1))
