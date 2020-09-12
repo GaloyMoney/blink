@@ -41,7 +41,7 @@ helmUpgrade () {
 }
 
 kubectlWait () {
-  command kubectl wait -n=$NAMESPACE --for=condition=ready --timeout=1200s pod -l "$@"
+  while ! command kubectl wait -n=$NAMESPACE --for=condition=ready --timeout=1200s pod -l "$@" ; do sleep 1; done
 }
 
 exportMacaroon() {
@@ -58,13 +58,11 @@ then
 fi
 
 helmUpgrade redis bitnami/redis -f ../../redis-chart/custom-values.yaml --set=master.service.type=$SERVICETYPE,master.persistence.enabled=$REDISPERSISTENCE 
-sleep 8
 kubectlWait app=bitcoind-container
 
 helmUpgrade lnd -f ../../lnd-chart/values.yaml -f ../../lnd-chart/$NETWORK-values.yaml --set lndService.serviceType=$SERVICETYPE,minikubeip=$MINIKUBEIP ../../lnd-chart/
 
 kubectlWait app=redis
-sleep 8
 kubectlWait app=lnd-container
 
 exportMacaroon 0 MACAROON

@@ -9,7 +9,7 @@
     "watch": "source exportLocal.sh && nodemon -V -e ts,graphql -w ./src -x yarn run start",
     "watch-trigger": "source exportLocal.sh && nodemon -V -e ts,graphql -w ./src -x yarn trigger",
     "kill-graphql": "kill $(lsof -t -i:4000)",
-    "remove-charts": "helm uninstall lnd | helm uninstall mongodb | helm uninstall redis | helm uninstall bitcoind",
+    "remove-charts": "helm uninstall lnd || kubectl wait --for=delete --timeout=1200s pod -l app=lnd-container | helm uninstall mongodb | helm uninstall redis | helm uninstall bitcoind",
     "add-charts": "export LOCAL=true && ./initLocalTest.sh",
     "forward-mongodb": "kubectl port-forward $(kubectl get pods -l app.kubernetes.io/name=mongodb | awk '/mongo/ {print $1}') 27017",
     "restart-charts": "yarn run remove-charts || : && yarn run add-charts",
