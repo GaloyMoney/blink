@@ -32,7 +32,7 @@ export type IAddInvoiceResponse = {
 }
 
 export type TransactionType = "payment" | "inflight-payment" |
-  "paid-invoice" | "unconfirmed-invoice" | "earn" | "onchain_receipt" | "on_us" | "onchain_payment"
+  "paid-invoice" | "unconfirmed-invoice" | "onchain_receipt" | "on_us" | "onchain_payment"
 
 export interface IOnChainPayment {
   address: string,
@@ -47,6 +47,7 @@ export interface ILightningTransaction {
   hash?: string
   destination?: string
   type: TransactionType
+  pending: boolean
 }
 
 export interface IPaymentRequest {

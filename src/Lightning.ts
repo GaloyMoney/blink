@@ -22,42 +22,6 @@ export type ITxType = "invoice" | "payment" | "onchain_receipt" | "onchain_payme
 export type payInvoiceResult = "success" | "failed" | "pending"
 type IMemo = string | undefined
 
-const formatInvoice = (type: ITxType, memo: IMemo, pending: boolean, credit?: boolean): String => {
-  if (pending) {
-    return `Waiting for payment confirmation`
-  } else {
-    if (memo) {
-      return memo
-    }
-    // else if (invoice.htlcs[0].customRecords) {
-    // FIXME above syntax from lnd, not lnService script "overlay"
-    // TODO for lnd keysend 
-    // } 
-
-    // FIXME: this could be done in the frontend?
-    switch (type) {
-      case "on_us": return (credit ? 'Payment sent' : 'Payment received')
-      case "payment": return `Payment sent`
-      case "invoice": return `Payment received`
-      case "onchain_receipt": return `Onchain payment received`
-      case "onchain_payment": return `Onchain payment sent`
-      default: return type
-    }
-  }
-}
-
-const formatType = (type: ITxType, pending: Boolean | undefined): TransactionType | Error => {
-  if (type === "invoice") {
-    return pending ? "unconfirmed-invoice" : "paid-invoice"
-  }
-
-  if (type === "payment") {
-    return pending ? "inflight-payment" : "payment"
-  }
-
-  return type
-}
-
 export const LightningMixin = (superclass) => class extends superclass {
   lnd = lnService.authenticatedLndGrpc(getAuth()).lnd
   nodePubKey: string | null = null
@@ -97,17 +61,17 @@ export const LightningMixin = (superclass) => class extends superclass {
   async getTransactions(): Promise<Array<ILightningTransaction>> {
     const rawTransactions = await this.getRawTransactions()
 
-    // TODO we could duplicated pending/type to transaction,
-    // this would avoid to fetch the data from hash collection and speed up query
-
     const results_processed = rawTransactions.map((item) => ({
       created_at: moment(item.timestamp).unix(),
       amount: item.debit - item.credit,
-      description: formatInvoice(item.type, item.memo, item.pending, item.credit > 0 ? true : false),
+      sat: item.sat,
+      usd: item.usd,
+      description: item.memo,
       hash: item.hash,
       fee: item.fee,
       // destination: TODO
-      type: formatType(item.type, item.pending),
+      type: item.type,
+      pending: item.pending,
       id: item._id,
     }))
 
