@@ -1,6 +1,7 @@
 import * as jwt from 'jsonwebtoken'
 import * as lnService from "ln-service"
 import * as moment from 'moment'
+import { Price } from "./priceImpl"
 import { sendText } from './text'
 export const validate = require("validate.js")
 const lightningPayReq = require('bolt11')
@@ -24,6 +25,24 @@ export const btc2sat = (btc: number) => {
 
 export const sat2btc = (sat: number) => {
   return sat / Math.pow(10, 8)
+}
+
+export const addCurrentValueToMetadata = async (metadata, {sats, usd}: {sats: number, usd?: number}) => {
+  let _usd = usd
+  
+  if (!usd) {
+    _usd = await satsToUsd(sats)
+  }
+
+  metadata['sats'] = sats
+  metadata['usd'] = _usd
+}
+
+export const satsToUsd = async sats => {
+  // TODO: caching in graphql, should be passed as a variable to addInvoice
+  const lastPrices = await new Price().lastPrice() // sats/usd
+  const usdValue = lastPrices * sats
+  return usdValue
 }
 
 export const randomIntFromInterval = (min, max) =>

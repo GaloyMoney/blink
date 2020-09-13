@@ -6,8 +6,7 @@ const Redlock = require('redlock');
 // keeping in mind that you can extend the lock up until
 // the point when it expires
 // TODO: use TIMEOUTs env variable 
-const ttl = process.env.NETWORK ? 60000 : 4000
-console.log({ttl})
+const ttl = process.env.NETWORK !== "regtest" ? 60000 : 10000
 
 // if we weren't able to reach redis, your lock will eventually
 // expire, but you probably want to do something like log that
@@ -15,6 +14,7 @@ console.log({ttl})
 // will be ignored
 function unlockErrorHandler(err) {
   console.error(err);
+  // throw Error(err)
 }
 
 let redlock, client

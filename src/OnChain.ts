@@ -3,7 +3,7 @@ import { intersection, last } from "lodash";
 import { disposer } from "./lock";
 import { MainBook, Transaction, User } from "./mongodb";
 import { IOnChainPayment, ISuccess } from "./types";
-import { getAuth, logger, sendToAdmin } from "./utils";
+import { addCurrentValueToMetadata, getAuth, logger, sendToAdmin } from "./utils";
 import { customerPath } from "./wallet";
 const util = require('util')
 
@@ -19,16 +19,6 @@ export const OnChainMixin = (superclass) => class extends superclass {
   async updatePending() {
     await this.updateOnchainPayment()
     return super.updatePending()
-  }
-
-  async getOnChainTransactions({ lnd, incoming }: { lnd: any, incoming: boolean }) {
-    try {
-      const onchainTransactions = await lnService.getChainTransactions({ lnd })
-      return onchainTransactions.transactions.filter(tx => incoming ? !tx.is_outgoing : tx.is_outgoing)
-    } catch (err) {
-      const err_string = `${util.inspect({ err }, { showHidden: false, depth: null })}`
-      throw new Error(`issue fetching transaction: ${err_string})`)
-    }
   }
 
   async onChainPay({ address, amount, description }: IOnChainPayment): Promise<ISuccess | Error> {
@@ -48,11 +38,16 @@ export const OnChainMixin = (superclass) => class extends superclass {
           throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${amount}`)
         }
 
-        const metadata = { currency: this.currency, type: "on_us", pending: false }
-        await MainBook.entry()
-          .credit(this.accountPath, amount, metadata)
-          .debit(customerPath(payeeUser._id), amount, metadata)
-          .commit()
+        {
+          const sats = amount
+          const metadata = { currency: this.currency, type: "on_us", pending: false }
+          await addCurrentValueToMetadata(metadata, {sats})
+
+          await MainBook.entry()
+            .credit(this.accountPath, sats, metadata)
+            .debit(customerPath(payeeUser._id), sats, metadata)
+            .commit()
+        }
 
         return true
       }
@@ -96,12 +91,16 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
       const [{ fee }] = outgoingOnchainTxns.filter(tx => tx.id === id)
 
-      const metadata = { currency: this.currency, hash: id, type: "onchain_payment", pending: true, fee }
-      await MainBook.entry(description)
-        .debit('Assets:Reserve:Lightning', amount + fee, metadata)
-        .credit(this.accountPath, amount + fee, metadata)
-        .commit()
+      {
+        const sats = amount + fee
+        const metadata = { currency: this.currency, hash: id, type: "onchain_payment", pending: true, fee }
+        await addCurrentValueToMetadata(metadata, {sats})
 
+        await MainBook.entry(description)
+          .debit('Assets:Reserve:Lightning', sats, metadata)
+          .credit(this.accountPath, sats, metadata)
+          .commit()
+      }
       return true
 
     })
@@ -163,6 +162,16 @@ export const OnChainMixin = (superclass) => class extends superclass {
     return address
   }
 
+  async getOnChainTransactions({ lnd, incoming }: { lnd: any, incoming: boolean }) {
+    try {
+      const onchainTransactions = await lnService.getChainTransactions({ lnd })
+      return onchainTransactions.transactions.filter(tx => incoming ? !tx.is_outgoing : tx.is_outgoing)
+    } catch (err) {
+      const err_string = `${util.inspect({ err }, { showHidden: false, depth: null })}`
+      throw new Error(`issue fetching transaction: ${err_string})`)
+    }
+  }
+
   async getIncomingOnchainPayments(confirmed: boolean) {
 
     const incoming_txs = (await this.getOnChainTransactions({ lnd: this.lnd, incoming: true }))
@@ -213,10 +222,14 @@ export const OnChainMixin = (superclass) => class extends superclass {
         // logger.debug({ matched_tx, mongotx }, "updateOnchainPayment with user %o", this.uid)
 
         if (!mongotx) {
+
+          const sats = matched_tx.tokens
           const metadata = { currency: this.currency, type, hash: matched_tx.id }
+          await addCurrentValueToMetadata(metadata, {sats})
+
           await MainBook.entry()
-            .credit('Assets:Reserve:Lightning', matched_tx.tokens, metadata)
-            .debit(this.accountPath, matched_tx.tokens, metadata)
+            .credit('Assets:Reserve:Lightning', sats, metadata)
+            .debit(this.accountPath, sats, metadata)
             .commit()
         }
       }

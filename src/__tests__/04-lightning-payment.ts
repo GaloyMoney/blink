@@ -223,7 +223,7 @@ it('pays zero amount invoice', async () => {
 
 it('receive zero amount invoice', async () => {
   const initialBalance = await userWallet1.getBalance()
-  const invoice = await userWallet1.addInvoice()
+  const invoice = await userWallet1.addInvoice({})
   await lnService.pay({ lnd: lndOutside1, request: invoice, tokens: amountInvoice })
   const finalBalance = await userWallet1.getBalance()
   expect(finalBalance).toBe(initialBalance + amountInvoice)

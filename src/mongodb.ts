@@ -18,9 +18,17 @@ const invoiceUserSchema = new Schema({
   uid: String,
   pending: Boolean,
 
-  // for invoice that are denominated in usd. this is the sats equivalent
+  // usd equivalent. sats is attached in the invoice directly.
+  // optional, as BTC wallet doesn't have to set a sat amount when creating the invoice
   usd: Number, 
-  
+
+  // currency matchs the user account
+  currency: {
+    type: String,
+    enum: ["USD", "BTC"],
+    default: "BTC",
+  },
+
   timestamp: {
     type: Date,
     default: Date.now
@@ -111,7 +119,12 @@ const transactionSchema = new Schema({
     //   a ref only for Invoice. otherwise the hash is not linked
     // }
   },
+
+  // used for escrow transaction, to know which channel this transaction is associated with
+  // FIXME? hash is currently used for onchain tx but txid should be used instead?
+  // an onchain output is deterministically represented by hash of tx + vout
   txid: String,
+  
   fee: Number,
   type: {
     type: String,
@@ -126,6 +139,10 @@ const transactionSchema = new Schema({
     default: "BTC",
     required: true
   },
+
+  // not used for accounting but used for usd/sats equivalent
+  usd: Number,
+  sats: Number,
 
   // original property from medici
   credit: Number,
