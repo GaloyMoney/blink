@@ -1,4 +1,4 @@
-import { setupMongoConnection, User } from "./mongodb"
+import { setupMongoConnection, upgrade, User } from "./mongodb"
 
 import dotenv from "dotenv";
 import { rule, shield } from 'graphql-shield';
@@ -10,7 +10,6 @@ import { login, requestPhoneCode } from "./text";
 import { OnboardingEarn } from "./types";
 import { AdminWallet } from "./LightningAdminImpl";
 import { sendNotification } from "./notification"
-import { upgrade } from "./upgrade_schema"
 
 const path = require("path");
 dotenv.config()
