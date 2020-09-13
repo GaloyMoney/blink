@@ -21,7 +21,7 @@ export const upgrade = async () => {
       await User.updateMany({}, {$set: {currency: "BTC"}})
       
       logger.info("there needs to have a role: funder")
-      await User.findOneAndUpdate({phone: "+1***REMOVED***", currency: "BTC"}, {role: "funder"})
+      await User.findOneAndUpdate({phone: "+1***REMOVED***", currency: "BTC"}, {role: "funder"}, {"upsert": true})
   
       logger.info("earn is no longer a particular type. replace with on_us")
       await Transaction.updateMany({type: "earn"}, {$set: {type: "on_us"}})
