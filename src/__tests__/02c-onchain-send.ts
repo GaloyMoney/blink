@@ -65,7 +65,7 @@ it('Sends onchain payment', async () => {
   // expect(sendNotification.mock.calls[0][0].data.type).toBe("onchain_payment")
   // expect(sendNotification.mock.calls[0][0].data.title).toBe(`Your transaction has been sent. It may takes some time before it is confirmed`)
 
-  const [pendingTxn] = (await MainBook.ledger({ account: userWallet0.accountPath, pending: true, memo: "onchainpayment" })).results
+  const { results: [pendingTxn] } = await MainBook.ledger({ account: userWallet0.accountPath, pending: true, memo: "onchainpayment" })
 
 	const interimBalance = await userWallet0.getBalance()
 	expect(interimBalance).toBe(initialBalanceUser0 - amount - pendingTxn.fee)
