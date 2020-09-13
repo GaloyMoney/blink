@@ -87,7 +87,7 @@ it('Sends onchain payment', async () => {
   expect(sendNotification.mock.calls[1][0].title).toBe(`Your on-chain transaction has been confirmed`)
   expect(sendNotification.mock.calls[1][0].data.type).toBe("onchain_payment")
 
-  const [{ pending, fee }] = (await MainBook.ledger({ account: userWallet0.accountPath, hash: pendingTxn.hash, memo: "onchainpayment" })).results
+  const { results: [{ pending, fee }] } = await MainBook.ledger({ account: userWallet0.accountPath, hash: pendingTxn.hash, memo: "onchainpayment" })
 	expect(pending).toBe(false)
 
 	const [txn] = (await userWallet0.getTransactions()).filter(tx => tx.hash === pendingTxn.hash)
