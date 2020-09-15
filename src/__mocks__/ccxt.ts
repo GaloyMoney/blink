@@ -194,12 +194,12 @@ const priceResponse = [
   [ 1595541600000, 9618.5, 9618.5, 9604.4, 9614, 97.54861275 ]
 ]
 
-// merge split
+// make time current
 import { forEach, tail } from "lodash"
 import moment from "moment";
 const priceResponseTimingCurrent: any[] = []
-const init = moment().subtract(4, 'hours').startOf('hour')
-forEach(priceResponse, (value, key) => priceResponseTimingCurrent.push([init.add(key, 'hours').unix() * 1000, ...tail(value)]))
+const init = () => moment().subtract(4, 'hours').startOf('hour')
+forEach(priceResponse, (value, key) => priceResponseTimingCurrent.push([init().add(key, 'hours').unix() * 1000, ...tail(value)]))
 
 export class bitfinex {
 

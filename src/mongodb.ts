@@ -238,27 +238,24 @@ export const upgrade = async () => {
       const moment = require('moment');
       
       const { pair: { exchange: { price }}} = await PriceHistory.findOne({}, {}, {sort: {_id: 1}})
-      // console.log({price})
       const priceMapping = mapValues(keyBy(price, i => moment(i._id) ), 'o')
       const lastPriceObj = last(price)
       const lastPrice = (lastPriceObj as any).o
 
       const transactions = await Transaction.find({})
 
-      console.log(priceMapping)
-
       for (const tx of transactions) {
         const txTime = moment(tx.datetime).startOf('hour');
 
-        if (has(priceMapping, txTime)) {
-          priceTime = priceMapping[txTime]
+        if (has(priceMapping, `${txTime}`)) {
+          priceTime = priceMapping[`${txTime}`]
         } else {
-          // console.warn({tx}, 'using most recent price for time %o', `${txTime}`)
+          logger.warn({tx}, 'using most recent price for time %o', `${txTime}`)
           priceTime = lastPrice
         }
         
         const usd = (tx.debit - tx.debit) * priceTime
-        // await Transaction.findOneAndUpdate({id: tx._id}, {usd})
+        await Transaction.findOneAndUpdate({id: tx._id}, {usd})
       }
 
       logger.info("setting db version to 2")

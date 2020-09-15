@@ -58,13 +58,13 @@ export const LightningMixin = (superclass) => class extends superclass {
 
   async getTransactions(): Promise<Array<ILightningTransaction>> {
     const rawTransactions = await this.getRawTransactions()
-    
+
     const results_processed = rawTransactions.map(item => ({
       created_at: moment(item.timestamp).unix(),
       amount: item.debit - item.credit,
       sat: item.sat,
       usd: item.usd,
-      description: item.memo || item.type, // TODO remove `?? item.type` once users have upgraded
+      description: item.memo || item.type, // TODO remove `|| item.type` once users have upgraded
       hash: item.hash,
       fee: item.fee,
       // destination: TODO

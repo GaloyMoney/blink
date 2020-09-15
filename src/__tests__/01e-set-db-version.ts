@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-import { setupMongoConnection, DbVersion } from "../mongodb";
+import { setupMongoConnection, DbVersion, upgrade } from "../mongodb";
 const mongoose = require("mongoose");
 
 
@@ -20,3 +20,6 @@ it('db version', async () => {
   await dbVersion.save()
 })
 
+// it('upgrade db v2', async () => {
+//   await upgrade()
+// })
