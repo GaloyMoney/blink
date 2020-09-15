@@ -79,6 +79,9 @@ type Token {
 type BuildParameter {
   commitHash: String
   buildTime: String
+  helmRevision: Int
+  minBuildNumberAndroid: Int
+  minBuildNumberIos: Int
 }
 
 type Query { 

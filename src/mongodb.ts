@@ -7,7 +7,8 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const dbVersionSchema = new Schema({
-  version: Number
+  version: Number,
+  minBuildNumber: Number,
 })
 export const DbVersion = mongoose.model("DbVersion", dbVersionSchema)
 
@@ -260,6 +261,7 @@ export const upgrade = async () => {
 
       logger.info("setting db version to 2")
       dbVersion.version = 2
+      dbVersion.minBuildNumber = 182
       await dbVersion.save()
 
       logger.info("upgrade succesful to version 2")

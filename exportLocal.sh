@@ -35,3 +35,4 @@ export JWT_SECRET="jwt_secret"
 export GOOGLE_APPLICATION_CREDENTIALS="./galoyapp-firebase-serviceaccont.json"
 
 export LOGLEVEL="debug"
+export HELMREVISION=1

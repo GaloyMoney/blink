@@ -1,4 +1,4 @@
-import { setupMongoConnection, upgrade, User } from "./mongodb"
+import { DbVersion, setupMongoConnection, upgrade, User } from "./mongodb"
 
 import dotenv from "dotenv";
 import { rule, shield } from 'graphql-shield';
@@ -36,6 +36,11 @@ const pino = require('pino-http')({
 
 const commitHash = process.env.COMMITHASH
 const buildTime = process.env.BUILDTIME
+const helmRevision = process.env.HELMREVISION
+const getMinBuildNumber = async () => {
+  const { minBuildNumber } = await DbVersion.findOne({}, {minBuildNumber: 1, _id: 0})
+  return minBuildNumber 
+}
 
 const DEFAULT_USD = {
   currency: "USD",
@@ -67,14 +72,13 @@ const resolvers = {
         DEFAULT_USD
       ])
     },
-    buildParameters: async () => {
-      try {
-        return { commitHash, buildTime }
-      } catch (err) {
-        logger.warn(err)
-        throw err
-      }
-    },
+    buildParameters: () => ({
+      commitHash: () => commitHash, 
+      buildTime: () => buildTime, 
+      helmRevision: () => helmRevision,
+      minBuildNumberAndroid: getMinBuildNumber,
+      minBuildNumberIos: getMinBuildNumber,
+    }),
     pendingOnChainPayment: async (_, __, { lightningWallet }) => {
       return lightningWallet.getPendingIncomingOnchainPayments()
     },
