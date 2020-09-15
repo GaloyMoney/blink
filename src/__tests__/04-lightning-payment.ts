@@ -119,11 +119,11 @@ it('payInvoiceToAnotherGaloyUser', async () => {
 
   const user1Txn = await userWallet1.getTransactions()
   const user1OnUsTxn = user1Txn.filter(matchTx)
-  expect(user1OnUsTxn[0].description).toBe('Payment sent')
+  expect(user1OnUsTxn[0].description).toBe('on_us')
 
   const user2Txn = await userWallet2.getTransactions()
   const user2OnUsTxn = user2Txn.filter(matchTx)
-  expect(user2OnUsTxn[0].description).toBe('Payment received')
+  expect(user2OnUsTxn[0].description).toBe('on_us')
   await checkIsBalanced()
 }, 50000)
 
