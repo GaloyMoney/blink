@@ -13,14 +13,12 @@ const util = require('util')
 const using = require('bluebird').using
 
 const TIMEOUT_PAYMENT = process.env.NETWORK !== "regtest" ? 45000 : 3000
-console.log({TIMEOUT_PAYMENT, network: process.env.NETWORK})
 
 const FEECAP = 0.02 // = 2%
 const FEEMIN = 10 // sats
 
 export type ITxType = "invoice" | "payment" | "onchain_receipt" | "onchain_payment" | "on_us"
 export type payInvoiceResult = "success" | "failed" | "pending"
-type IMemo = string | undefined
 
 export const LightningMixin = (superclass) => class extends superclass {
   lnd = lnService.authenticatedLndGrpc(getAuth()).lnd
@@ -66,7 +64,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       amount: item.debit - item.credit,
       sat: item.sat,
       usd: item.usd,
-      description: item.memo,
+      description: item.memo ?? item.type, // TODO remove `?? item.type` once users have upgraded
       hash: item.hash,
       fee: item.fee,
       // destination: TODO

@@ -55,16 +55,17 @@ const resolvers = {
       }
     },
     wallet: async (_, __, { lightningWallet }) => {
-      const btw_wallet = {
+      const btc_wallet = {
         id: "BTC",
         currency: "BTC",
         balance: lightningWallet.getBalance(), // FIXME why a function and not a callback?
         transactions: lightningWallet.getTransactions()
       }
 
-      return ([btw_wallet,
-        DEFAULT_USD]
-      )
+      return ([
+        btc_wallet,
+        DEFAULT_USD
+      ])
     },
     buildParameters: async () => {
       try {

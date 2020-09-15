@@ -6,7 +6,7 @@ type Transaction {
   created_at: Int!, # TODO create a Date scalar
   # https://www.apollographql.com/docs/graphql-tools/scalars/
   hash: String,
-  usd: Float, #TODO use Int
+  usd: Float, #TODO use Int and * 100
   sat: Int,
   pending: Boolean,
   type: String!,
