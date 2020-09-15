@@ -212,13 +212,7 @@ export const PriceHistory = mongoose.model("PriceHistory", priceHistorySchema);
 export const upgrade = async () => {
   
   try {
-    let dbVersion = await DbVersion.findOne({})
-
-    console.log({dbVersion})
-
-    if (!dbVersion) {
-      dbVersion = {version: 0}
-    }
+    const dbVersion = await DbVersion.findOne({})
   
     logger.info({dbVersion}, "entering upgrade db module version")
   
@@ -238,11 +232,46 @@ export const upgrade = async () => {
 
       logger.info("upgrade succesful to version 1")
 
+    } else if (dbVersion.version === 1) {
+
+      let priceTime
+      const moment = require('moment');
+      
+      const { pair: { exchange: { price }}} = await PriceHistory.findOne({}, {}, {sort: {_id: 1}})
+      // console.log({price})
+      const priceMapping = mapValues(keyBy(price, i => moment(i._id) ), 'o')
+      const lastPriceObj = last(price)
+      const lastPrice = (lastPriceObj as any).o
+
+      const transactions = await Transaction.find({})
+
+      console.log(priceMapping)
+
+      for (const tx of transactions) {
+        const txTime = moment(tx.datetime).startOf('hour');
+
+        if (has(priceMapping, txTime)) {
+          priceTime = priceMapping[txTime]
+        } else {
+          // console.warn({tx}, 'using most recent price for time %o', `${txTime}`)
+          priceTime = lastPrice
+        }
+        
+        const usd = (tx.debit - tx.debit) * priceTime
+        // await Transaction.findOneAndUpdate({id: tx._id}, {usd})
+      }
+
+      logger.info("setting db version to 2")
+      dbVersion.version = 2
+      await dbVersion.save()
+
+      logger.info("upgrade succesful to version 2")
+
     } else {
       logger.info("no need to upgrade the db")
     }
   } catch (err) {
-    logger.error({err}, "db upgrade error. exiting")
+    logger.fatal({err}, "db upgrade error. exiting")
     exit()
   }
 }
@@ -273,4 +302,5 @@ export const setupMongoConnection = async () => {
 }
 
 import { book } from "medici";
+import { has, keyBy, last, map, mapValues } from "lodash";
 export const MainBook = new book("MainBook")
