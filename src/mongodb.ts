@@ -284,7 +284,7 @@ export const upgrade = async () => {
           }
           
           const usd = (tx.debit - tx.debit) * priceTime
-          await Transaction.findOneAndUpdate({id: tx._id}, {usd})
+          await Transaction.findOneAndUpdate({_id: tx._id}, {usd})
         }
       }
 
