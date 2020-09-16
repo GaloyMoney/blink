@@ -4,59 +4,21 @@ import moment from "moment";
 import { disposer } from "./lock";
 import { InvoiceUser, MainBook, Transaction, User } from "./mongodb";
 import { sendInvoicePaidNotification } from "./notification";
-import { IAddInvoiceRequest, ILightningTransaction, IPaymentRequest, TransactionType } from "./types";
-import { getAuth, logger, measureTime, timeout } from "./utils";
+import { IAddInvoiceInternalRequest, ILightningTransaction, IPaymentRequest, TransactionType } from "./types";
+import { addCurrentValueToMetadata, getAuth, logger, measureTime, timeout } from "./utils";
 import { customerPath } from "./wallet"
 
 const util = require('util')
 
 const using = require('bluebird').using
 
-const TIMEOUT_PAYMENT = process.env.NETWORK ? 45000 : 3000
-console.log({TIMEOUT_PAYMENT})
+const TIMEOUT_PAYMENT = process.env.NETWORK !== "regtest" ? 45000 : 3000
 
 const FEECAP = 0.02 // = 2%
 const FEEMIN = 10 // sats
 
-export type ITxType = "invoice" | "payment" | "earn" | "onchain_receipt" | "onchain_payment" | "on_us"
+export type ITxType = "invoice" | "payment" | "onchain_receipt" | "onchain_payment" | "on_us"
 export type payInvoiceResult = "success" | "failed" | "pending"
-type IMemo = string | undefined
-
-const formatInvoice = (type: ITxType, memo: IMemo, pending: boolean, credit?: boolean): String => {
-  if (pending) {
-    return `Waiting for payment confirmation`
-  } else {
-    if (memo) {
-      return memo
-    }
-    // else if (invoice.htlcs[0].customRecords) {
-    // FIXME above syntax from lnd, not lnService script "overlay"
-    // TODO for lnd keysend 
-    // } 
-
-    // FIXME: this could be done in the frontend?
-    switch (type) {
-      case "on_us": return (credit ? 'Payment sent' : 'Payment received')
-      case "payment": return `Payment sent`
-      case "invoice": return `Payment received`
-      case "onchain_receipt": return `Onchain payment received`
-      case "onchain_payment": return `Onchain payment sent`
-      case "earn": return `Earn` // TODO: deprecated, should be on_us
-    }
-  }
-}
-
-const formatType = (type: ITxType, pending: Boolean | undefined): TransactionType | Error => {
-  if (type === "invoice") {
-    return pending ? "unconfirmed-invoice" : "paid-invoice"
-  }
-
-  if (type === "payment") {
-    return pending ? "inflight-payment" : "payment"
-  }
-
-  return type
-}
 
 export const LightningMixin = (superclass) => class extends superclass {
   lnd = lnService.authenticatedLndGrpc(getAuth()).lnd
@@ -97,30 +59,31 @@ export const LightningMixin = (superclass) => class extends superclass {
   async getTransactions(): Promise<Array<ILightningTransaction>> {
     const rawTransactions = await this.getRawTransactions()
 
-    // TODO we could duplicated pending/type to transaction,
-    // this would avoid to fetch the data from hash collection and speed up query
-
-    const results_processed = rawTransactions.map((item) => ({
+    const results_processed = rawTransactions.map(item => ({
       created_at: moment(item.timestamp).unix(),
       amount: item.debit - item.credit,
-      description: formatInvoice(item.type, item.memo, item.pending, item.credit > 0 ? true : false),
+      sat: item.sat,
+      usd: item.usd,
+      description: item.memo || item.type, // TODO remove `|| item.type` once users have upgraded
       hash: item.hash,
       fee: item.fee,
       // destination: TODO
-      type: formatType(item.type, item.pending),
+      type: item.type,
+      pending: item.pending,
       id: item._id,
+      currency: item.currency
     }))
 
     return results_processed
   }
 
-  async addInvoice({ value, memo }: IAddInvoiceRequest = { value: undefined, memo: undefined }): Promise<string> {
+  async addInvoiceInternal({ sats, usd, currency, memo }: IAddInvoiceInternalRequest): Promise<string> {
     let request, id
 
     try {
       const result = await lnService.createInvoice({
         lnd: this.lnd,
-        tokens: value,
+        tokens: sats,
         description: memo,
       })
       request = result.request
@@ -134,6 +97,8 @@ export const LightningMixin = (superclass) => class extends superclass {
         _id: id,
         uid: this.uid,
         pending: true,
+        usd,
+        currency,
       }).save()
     } catch (err) {
       // FIXME if the mongodb connection has not been instanciated
@@ -216,11 +181,19 @@ export const LightningMixin = (superclass) => class extends superclass {
           throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${tokens}`)
         }
 
-        const metadata = { currency: this.currency, hash: id, type: "on_us", pending: false }
-        await MainBook.entry(description)
-          .credit(this.accountPath, tokens, metadata)
-          .debit(customerPath(payeeUid), tokens, metadata)
-          .commit()
+        {
+          const sats = tokens
+          const metadata = { currency: this.currency, hash: id, type: "on_us", pending: false }
+          await addCurrentValueToMetadata(metadata, {sats})
+
+          // TODO XXX FIXME:
+          // manage the case where a user in USD tries to pay another used in BTC with an onUS transaction
+
+          await MainBook.entry(description)
+            .credit(this.accountPath, sats, metadata)
+            .debit(customerPath(payeeUid), sats, metadata)
+            .commit()
+        }
 
         await sendInvoicePaidNotification({amount: tokens, uid: payeeUid, hash: id})
         await InvoiceUser.findOneAndUpdate({ _id: id }, { pending: false })
@@ -284,11 +257,19 @@ export const LightningMixin = (superclass) => class extends superclass {
 
       // reduce balance from customer first
 
-      const metadata = { currency: this.currency, hash: id, type: "payment", pending: true, fee }
-      const entry = await MainBook.entry(description)
-        .debit('Assets:Reserve:Lightning', tokens + fee, metadata)
-        .credit(this.accountPath, tokens + fee, metadata)
-        .commit()
+      let entry 
+
+      {
+        const sats = tokens + fee
+
+        const metadata = { currency: this.currency, hash: id, type: "payment", pending: true, fee }
+        await addCurrentValueToMetadata(metadata, {sats})
+
+        entry = await MainBook.entry(description)
+          .debit('Assets:Reserve:Lightning', sats, metadata)
+          .credit(this.accountPath, sats, metadata)
+          .commit()
+      }
 
       // there is 3 scenarios for a payment.
       // 1/ payment succeed is less than TIMEOUT_PAYMENT
@@ -341,7 +322,6 @@ export const LightningMixin = (superclass) => class extends superclass {
       return "success"
 
     })
-
   }
 
   // TODO manage the error case properly. right now there is a mix of string being return
@@ -384,7 +364,6 @@ export const LightningMixin = (superclass) => class extends superclass {
       }
 
     })
-
   }
 
   async updatePendingInvoice({ hash }) {
@@ -400,7 +379,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       throw new Error(`issue fetching invoice: ${util.inspect({ err }, { showHidden: false, depth: Infinity })})`)
     }
 
-    // invoice that are onUs will be cancelled but not confirmied
+    // invoice that are on_us will be cancelled but not confirmed
     // so we need a branch to return true in case the payment 
     // has been managed off lnd.
     if (invoice.is_canceled) {
@@ -434,15 +413,15 @@ export const LightningMixin = (superclass) => class extends superclass {
 
           invoiceUser.pending = false
           invoiceUser.save()
-
-          
-          const metadata = { hash, type: "invoice" }
           
           const sats = invoice.received
-
-          const isUSD = !!invoiceUser.usd
+          
+          const isUSD = invoiceUser.currency === "USD"
           const usd = invoiceUser.usd
-          // TODO: refactor with the hedging class?
+
+          const metadata = { hash, type: "invoice" }
+          await addCurrentValueToMetadata(metadata, {usd, sats})
+
           const brokerAccount = 'Liabilities:Broker'
 
           const entry = MainBook.entry(invoice.description)
@@ -483,7 +462,4 @@ export const LightningMixin = (superclass) => class extends superclass {
     }
   }
 
-  async getPendingIncomingOnchainPayments() {
-    return (await this.getIncomingOnchainPayments(false)).map(({ tokens, id }) => ({ txId: id, amount: tokens }))
-  }
 }

@@ -70,9 +70,8 @@ export const onInvoiceUpdate = async invoice => {
   if (invoiceUser) {
     const uid = invoiceUser.uid
     const hash = invoice.id as string
-    const currency = !!invoice.usd ? "USD" : "BTC"
 
-    const wallet = WalletFactory({ uid, currency })
+    const wallet = WalletFactory({ uid, currency: invoice.currency })
     await wallet.updatePendingInvoice({ hash })
     await sendInvoicePaidNotification({amount: invoice.received, hash, uid})
   } else {

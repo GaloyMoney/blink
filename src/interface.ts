@@ -7,7 +7,7 @@ export interface IWallet {
 
 export interface ILightningWallet extends IWallet {
   payInvoice({invoice: string}): Promise<any> // TODO
-  addInvoice(IAddInvoiceRequest): Promise<any> // TODO
+  addInvoice(IAddBTCInvoiceRequest): Promise<any> // TODO
 }
 
 export interface FiatTransaction {

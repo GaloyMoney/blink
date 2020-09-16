@@ -2,7 +2,8 @@ import { LightningMixin } from "./Lightning";
 import { disposer } from "./lock";
 import { User } from "./mongodb";
 import { OnChainMixin } from "./OnChain";
-import { ILightningWalletUser, OnboardingEarn } from "./types";
+import { IAddBTCInvoiceRequest, ILightningWalletUser, OnboardingEarn } from "./types";
+import { satsToUsd } from "./utils";
 import { UserWallet } from "./wallet";
 import { getFunderWallet } from "./walletFactory";
 const using = require('bluebird').using
@@ -45,8 +46,19 @@ export class LightningBtcWallet extends OnChainMixin(LightningMixin(UserWallet))
     })
   }
 
-  async setLevel({ level }) {
-    // FIXME this should be in User and not tight to Lightning // use Mixins instead
-    return await User.findOneAndUpdate({ _id: this.uid }, { level }, { new: true, upsert: true })
+  async addInvoice({ value = undefined, memo = undefined }: IAddBTCInvoiceRequest): Promise<string> {
+
+    let sats, usd
+
+    // value is not mandatory for btc currency
+    // the payer can set the amount himself
+    if (!!value) {
+      sats = value
+      usd = await satsToUsd(sats)
+    }
+
+    const request = await super.addInvoiceInternal({sats, usd, currency: this.currency, memo})
+
+    return request
   }
 }
