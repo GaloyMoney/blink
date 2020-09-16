@@ -213,11 +213,22 @@ export const PriceHistory = mongoose.model("PriceHistory", priceHistorySchema);
 export const upgrade = async () => {
   
   try {
-    const dbVersion = await DbVersion.findOne({})
+    let dbVersion = await DbVersion.findOne({})
   
+    if (!dbVersion) {
+      dbVersion = DbVersion.create()
+      dbVersion.version = 0
+    }
+
     logger.info({dbVersion}, "entering upgrade db module version")
   
+    if (dbVersion.version === 2) {
+      logger.info("no need to upgrade the db")
+    }
+
     if (dbVersion.version === 0) {
+      logger.info("starting upgrade to version 1")
+
       logger.info("all existing wallet should have BTC as currency")
       // this is to enforce the index constraint
       await User.updateMany({}, {$set: {currency: "BTC"}})
@@ -232,31 +243,49 @@ export const upgrade = async () => {
       await DbVersion.findOneAndUpdate({}, {version: 1}, {upsert: true})
 
       logger.info("upgrade succesful to version 1")
-
-    } else if (dbVersion.version === 1) {
+    }
+    
+    if (dbVersion.version === 1) {
+      logger.info("starting upgrade to version 2")
 
       let priceTime
       const moment = require('moment');
       
-      const { pair: { exchange: { price }}} = await PriceHistory.findOne({}, {}, {sort: {_id: 1}})
-      const priceMapping = mapValues(keyBy(price, i => moment(i._id) ), 'o')
-      const lastPriceObj = last(price)
-      const lastPrice = (lastPriceObj as any).o
+      let price
+      let skipUpdate = false
 
-      const transactions = await Transaction.find({})
-
-      for (const tx of transactions) {
-        const txTime = moment(tx.datetime).startOf('hour');
-
-        if (has(priceMapping, `${txTime}`)) {
-          priceTime = priceMapping[`${txTime}`]
+      try {
+        ({ pair: { exchange: { price }}} = await PriceHistory.findOne({}, {}, {sort: {_id: 1}}))
+      } catch (err) {
+        logger.warn("no price available. would only ok if no transaction is available, ie: on devnet")
+        const count = await Transaction.countDocuments()
+        if (count === 0) {
+          skipUpdate = true
         } else {
-          logger.warn({tx}, 'using most recent price for time %o', `${txTime}`)
-          priceTime = lastPrice
+          exit()
         }
-        
-        const usd = (tx.debit - tx.debit) * priceTime
-        await Transaction.findOneAndUpdate({id: tx._id}, {usd})
+      }
+
+      if (!skipUpdate) {
+        const priceMapping = mapValues(keyBy(price, i => moment(i._id) ), 'o')
+        const lastPriceObj = last(price)
+        const lastPrice = (lastPriceObj as any).o
+  
+        const transactions = await Transaction.find({})
+  
+        for (const tx of transactions) {
+          const txTime = moment(tx.datetime).startOf('hour');
+  
+          if (has(priceMapping, `${txTime}`)) {
+            priceTime = priceMapping[`${txTime}`]
+          } else {
+            logger.warn({tx}, 'using most recent price for time %o', `${txTime}`)
+            priceTime = lastPrice
+          }
+          
+          const usd = (tx.debit - tx.debit) * priceTime
+          await Transaction.findOneAndUpdate({id: tx._id}, {usd})
+        }
       }
 
       logger.info("setting db version to 2")
@@ -265,10 +294,8 @@ export const upgrade = async () => {
       await dbVersion.save()
 
       logger.info("upgrade succesful to version 2")
-
-    } else {
-      logger.info("no need to upgrade the db")
-    }
+    } 
+    
   } catch (err) {
     logger.fatal({err}, "db upgrade error. exiting")
     exit()
