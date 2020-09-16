@@ -81,6 +81,7 @@ it('Sends onchain payment', async () => {
     ])
   }
 
+  await sleep(100)
   console.log(JSON.stringify(sendNotification.mock.calls))
 
   // expect(sendNotification.mock.calls.length).toBe(2)  // FIXME: should be 1
