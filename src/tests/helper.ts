@@ -1,15 +1,12 @@
-import { getAuth, logger, sleep } from "../utils";
-import { LightningUserWallet } from "../LightningUserWallet";
-const BitcoindClient = require('bitcoin-core')
 import * as jwt from 'jsonwebtoken';
-import { TEST_NUMBER, login } from "../text";
-import { LightningAdminWallet } from "../LightningAdminImpl"
-import { User } from "../mongodb";
+import { AdminWallet } from "../LightningAdminImpl";
+import { login, TEST_NUMBER } from "../text";
 import { OnboardingEarn } from "../types";
-const mongoose = require("mongoose")
+import { getAuth, logger, sleep } from "../utils";
+import { WalletFactory } from "../walletFactory";
+const BitcoindClient = require('bitcoin-core')
 
 const lnService = require('ln-service')
-const cert = process.env.TLS
 
 //FIXME: Maybe switch to using single reward
 export const onBoardingEarnAmt: number = Object.values(OnboardingEarn).reduce((a, b) => a + b, 0)
@@ -38,21 +35,20 @@ export const bitcoindClient = new BitcoindClient(connection_obj)
 
 export const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
 
-export const getTestUserUid = async userNumber => {
+export const getTestUserToken = async (userNumber) => {
   const raw_token = await login(TEST_NUMBER[userNumber])
   const token = jwt.verify(raw_token, process.env.JWT_SECRET);
-  return token.uid
+  return token
 }
 
 export const getUserWallet = async userNumber => {
-  const uid = await getTestUserUid(userNumber)
-  const userWallet = new LightningUserWallet({ uid })
+  const token = await getTestUserToken(userNumber)
+  const userWallet = WalletFactory(token)
   return userWallet
 }
 
 export const checkIsBalanced = async () => {
-	const admin = await User.findOne({ role: "admin" })
-	const adminWallet = new LightningAdminWallet({ uid: admin._id })
+	const adminWallet = new AdminWallet()
 	const { assetsLiabilitiesDifference, lndBalanceSheetDifference } = await adminWallet.balanceSheetIsBalanced()
 	expect(assetsLiabilitiesDifference).toBeFalsy() // should be 0
 	expect(lndBalanceSheetDifference).toBeFalsy() // should be 0
@@ -61,7 +57,6 @@ export const checkIsBalanced = async () => {
 export async function waitUntilBlockHeight({ lnd, blockHeight }) {
   let current_block_height, is_synced_to_chain
   ({ current_block_height, is_synced_to_chain } = await lnService.getWalletInfo({ lnd }))
-  logger.debug({ current_block_height, is_synced_to_chain })
 
   let time = 0
   const ms = 50
@@ -71,6 +66,6 @@ export async function waitUntilBlockHeight({ lnd, blockHeight }) {
       // logger.debug({ current_block_height, is_synced_to_chain})
       time++
   }
-  logger.debug(`Seconds to sync blockheight ${blockHeight}: ${time / (1000 / ms)}`)
-  return
+
+  logger.debug({ current_block_height, is_synced_to_chain }, `Seconds to sync blockheight ${blockHeight}: ${time / (1000 / ms)}`)
 }

@@ -5,13 +5,21 @@ const mongoose = require("mongoose");
 
 const Schema = mongoose.Schema;
 
-// could be capped after X months.
-// as this could be reconstructure from the ledger
-// and old non pending transaction would not really matters
+const dbVersionSchema = new Schema({
+  version: Number
+})
+export const DbVersion = mongoose.model("DbVersion", dbVersionSchema)
+
+
+// expired invoice should be removed from the collection
 const invoiceUserSchema = new Schema({
   _id: String, // hash of invoice
   uid: String,
   pending: Boolean,
+
+  // for invoice that are denominated in usd. this is the sats equivalent
+  usd: Number, 
+  
   timestamp: {
     type: Date,
     default: Date.now
@@ -33,7 +41,7 @@ const UserSchema = new Schema({
   },
   role: {
     type: String,
-    enum: ["user", "admin"],
+    enum: ["user", "admin", "funder", "broker"],
     required: true,
     default: "user"
   },
@@ -44,17 +52,30 @@ const UserSchema = new Schema({
   level: Number,
   phone: { // TODO we should store country as a separate string
     type: String,
-    unique : true,
+    required: true,
   }, 
   deviceToken: {
     type: [String],
     default: []
+  },
+  currency: {
+    type: String,
+    enum: ["USD", "BTC"],
+    default: "BTC",
+    required: true,
   },
   // firstName,
   // lastName,
   // activated,
   // etc
 })
+
+UserSchema.index({
+  phone: 1,
+  currency: 1,
+}, {
+  unique: true,
+});
 
 // TOOD create indexes
 
@@ -75,12 +96,7 @@ export const PhoneCode = mongoose.model("PhoneCode", PhoneCodeSchema)
 
 
 const transactionSchema = new Schema({
-  // custom property
-  currency: {
-    type: String,
-    enum: ["USD", "BTC"],
-    required: true
-  },
+
   hash: {
     type: Schema.Types.String,
     ref: 'InvoiceUser'
@@ -95,10 +111,17 @@ const transactionSchema = new Schema({
   fee: Number,
   type: {
     type: String,
-    enum: ["invoice", "payment", "earn", "onchain_receipt", "fee", "escrow", "on_us", "onchain_payment"]
+    enum: ["invoice", "payment", "onchain_receipt", "fee", "escrow", "on_us", "onchain_payment"]
   },
   pending: Boolean, // used to denote confirmation status of on and off chain txn
   err: String,
+  currency: {
+    // TODO: check if an upgrade is needed for this one
+    type: String,
+    enum: ["USD", "BTC"],
+    default: "BTC",
+    required: true
+  },
 
   // original property from medici
   credit: Number,
