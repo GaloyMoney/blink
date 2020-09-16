@@ -165,7 +165,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
   async getOnChainTransactions({ lnd, incoming }: { lnd: any, incoming: boolean }) {
     try {
       const onchainTransactions = await lnService.getChainTransactions({ lnd })
-      return onchainTransactions.transactions.filter(tx => incoming ? !tx.is_outgoing : tx.is_outgoing)
+      return onchainTransactions.transactions.filter(tx => incoming === !tx.is_outgoing)
     } catch (err) {
       const err_string = `${util.inspect({ err }, { showHidden: false, depth: null })}`
       throw new Error(`issue fetching transaction: ${err_string})`)
