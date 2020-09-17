@@ -1,10 +1,6 @@
 /**
  * @jest-environment node
  */
-import { quit } from "../lock";
-import { InvoiceUser, setupMongoConnection } from "../mongodb";
-import { getUserWallet } from "../tests/helper";
-import { OnboardingEarn } from "../types";
 import { getAuth } from "../utils";
 const lnService = require('ln-service')
 const lightningPayReq = require('bolt11')
@@ -13,22 +9,14 @@ const util = require('util')
 const {decode} = require('bip66');
 
 
-let userWallet1, userWallet2
-let uidFromToken1, uidFromToken2
-
 const logger = require('pino')({ level: "debug" })
 
 beforeAll(async () => {
-  await setupMongoConnection()
-  uidFromToken1 = await getUidFromToken(1)
-  userWallet1 = await getUserWallet(1)
-  uidFromToken2 = await getUidFromToken(2)
-  userWallet2 = await getUserWallet(2)
+
 });
 
 afterAll(async () => {
-  await mongoose.connection.close()
-  await quit()
+
 });
 
 
@@ -42,14 +30,15 @@ it('add invoice', async () => {
   const request_org = (await lnService.createInvoice({lnd, description: "abc"})).request
   const decoded = parsePaymentRequest({request: request_org});
 
-  const unsignedComponents = createUnsignedRequest(decoded);
-  const hash = unsignedComponents.hash
+  decoded["uid"] = "abcdef"
+
+  const { preimage, hash, hrp, tags } = createUnsignedRequest(decoded);
 
   const {signature} = await lnService.signBytes({
     key_family: 6,
     key_index: 0,
     lnd,
-    preimage: unsignedComponents.preimage,
+    preimage,
   });
 
   const {r, s} = decode(Buffer.from(signature, 'hex'));
@@ -58,21 +47,22 @@ it('add invoice', async () => {
 
   const {request} = await lnService.createSignedRequest({
     destination: decoded.destination,
-    hrp: unsignedComponents.hrp,
+    hrp,
     signature: Buffer.concat([rValue, s]).toString('hex'),
-    tags: unsignedComponents.tags,
+    tags,
   });
   
-  console.log(util.inspect({ decoded, unsignedComponents, signature, request_org, hash, request }, false, Infinity))
+  // console.log({request_org, request_new: request })
+  console.log(util.inspect({ decoded, signature, hash, request_org, request_new: request }, false, Infinity))
 
   // decoded["features"].push({
   //   bit: 60, 
   // })
 
 
-  // const decoded = lightningPayReq.decode(request)
+  const decoded_new = lightningPayReq.decode(request)
   // const decodedHash = decoded.tags.filter(item => item.tagName === "payment_hash")[0].data
-  // console.log(util.inspect({ decoded }, false, Infinity))
+  console.log(util.inspect({ decoded_new }, false, Infinity))
 
   // decoded['tags'].push({ 
   //   tagName: 'unknownTag',
