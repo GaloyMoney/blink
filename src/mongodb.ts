@@ -271,7 +271,7 @@ export const upgrade = async () => {
         const lastPriceObj = last(price)
         const lastPrice = (lastPriceObj as any).o
   
-        const transactions = await Transaction.find({ memo: { $ne: "escrow" } })
+        const transactions = await Transaction.find({})
   
         for (const tx of transactions) {
           const txTime = moment(tx.datetime).startOf('hour');
