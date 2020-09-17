@@ -5,7 +5,7 @@ import { InvoiceUser, setupMongoConnection, Transaction, User } from "./mongodb"
 import { sendInvoicePaidNotification, sendNotification } from "./notification";
 import { IDataNotification } from "./types";
 import { getAuth, logger } from './utils';
-import { AsyncWalletFactory } from "./walletFactory";
+import { WalletFactory } from "./walletFactory";
 const lnService = require('ln-service');
 
 export async function onchainTransactionEventHandler(tx) {
@@ -24,7 +24,7 @@ export async function onchainTransactionEventHandler(tx) {
     await Transaction.updateMany({ hash: tx.id }, { pending: false })
     const entry = await Transaction.findOne({ account_path: { $all : ["Liabilities", "Customer"] }, hash: tx.id })
 
-    const title = tx.is_confirmed ? `Your on-chain transaction has been confirmed` : `Your transaction has been sent. It may takes some time before it is confirmed`
+    const title = `Your on-chain transaction has been confirmed`
     const data: IDataNotification = {
       type: "onchain_payment",
       hash: tx.id,
@@ -71,7 +71,7 @@ export const onInvoiceUpdate = async invoice => {
     const uid = invoiceUser.uid
     const hash = invoice.id as string
 
-    const wallet = await AsyncWalletFactory({ uid })
+    const wallet = WalletFactory({ uid, currency: invoice.currency })
     await wallet.updatePendingInvoice({ hash })
     await sendInvoicePaidNotification({amount: invoice.received, hash, uid})
   } else {

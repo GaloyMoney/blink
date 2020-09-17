@@ -1,8 +1,11 @@
 export NETWORK=regtest
-export TLS=$(kubectl exec lnd-container-0 -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
-export MACAROON=$(kubectl exec lnd-container-0 -- base64 /root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
-export MACAROONOUTSIDE1=$(kubectl exec lnd-container-1 -- base64 /root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
-export MACAROONOUTSIDE2=$(kubectl exec lnd-container-2 -- base64 /root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
+export TLS=$(kubectl exec lnd-container-0  -c lnd-container -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
+export TLSOUTSIDE1=$(kubectl exec lnd-container-1  -c lnd-container -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
+export TLSOUTSIDE2=$(kubectl exec lnd-container-2  -c lnd-container -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
+
+export MACAROON=$(kubectl exec lnd-container-0  -c lnd-container -- base64 /root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
+export MACAROONOUTSIDE1=$(kubectl exec lnd-container-1  -c lnd-container -- base64 /root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
+export MACAROONOUTSIDE2=$(kubectl exec lnd-container-2  -c lnd-container -- base64 /root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
 
 # change 18443 to 18332 for testnet below
 
@@ -32,3 +35,4 @@ export JWT_SECRET="jwt_secret"
 export GOOGLE_APPLICATION_CREDENTIALS="./galoyapp-firebase-serviceaccont.json"
 
 export LOGLEVEL="debug"
+export HELMREVISION=1

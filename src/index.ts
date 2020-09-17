@@ -1,4 +1,4 @@
-import { setupMongoConnection, User } from "./mongodb"
+import { DbVersion, setupMongoConnection, upgrade, User } from "./mongodb"
 
 import dotenv from "dotenv";
 import { rule, shield } from 'graphql-shield';
@@ -36,6 +36,11 @@ const pino = require('pino-http')({
 
 const commitHash = process.env.COMMITHASH
 const buildTime = process.env.BUILDTIME
+const helmRevision = process.env.HELMREVISION
+const getMinBuildNumber = async () => {
+  const { minBuildNumber } = await DbVersion.findOne({}, {minBuildNumber: 1, _id: 0})
+  return minBuildNumber 
+}
 
 const DEFAULT_USD = {
   currency: "USD",
@@ -55,25 +60,25 @@ const resolvers = {
       }
     },
     wallet: async (_, __, { lightningWallet }) => {
-      const btw_wallet = {
+      const btc_wallet = {
         id: "BTC",
         currency: "BTC",
         balance: lightningWallet.getBalance(), // FIXME why a function and not a callback?
         transactions: lightningWallet.getTransactions()
       }
 
-      return ([btw_wallet,
-        DEFAULT_USD]
-      )
+      return ([
+        btc_wallet,
+        DEFAULT_USD
+      ])
     },
-    buildParameters: async () => {
-      try {
-        return { commitHash, buildTime }
-      } catch (err) {
-        logger.warn(err)
-        throw err
-      }
-    },
+    buildParameters: () => ({
+      commitHash: () => commitHash, 
+      buildTime: () => buildTime, 
+      helmRevision: () => helmRevision,
+      minBuildNumberAndroid: getMinBuildNumber,
+      minBuildNumberIos: getMinBuildNumber,
+    }),
     pendingOnChainPayment: async (_, __, { lightningWallet }) => {
       return lightningWallet.getPendingIncomingOnchainPayments()
     },
@@ -112,8 +117,8 @@ const resolvers = {
     requestPhoneCode: async (_, { phone }) => {
       return { success: requestPhoneCode({ phone }) }
     },
-    login: async (_, { phone, code }) => {
-      return { token: login({ phone, code }) }
+    login: async (_, { phone, code, currency }) => {
+      return { token: login({ phone, code, currency }) }
     },
     updateUser: async (_, __,  { lightningWallet }) => {
       // FIXME manage uid
@@ -170,7 +175,12 @@ const resolvers = {
     },
     onchain: async (_, __, { lightningWallet }) => {
       return {
-        getNewAddress: () => lightningWallet.getOnChainAddress(),
+        getNewAddress: () => {
+          try {
+            return lightningWallet.getOnChainAddress()
+          } catch (err) {
+            logger.error({ err }, "error with getNewAddress")
+          }},
         pay: ({address, amount}) => ({success: lightningWallet.onChainPay({address, amount})}),
       }
     },
@@ -279,10 +289,11 @@ const options = {
 
 setupMongoConnection()
   .then(() => {
-    server.start(options, ({ port }) =>
-      logger.info(
-        `Server started, listening on port ${port} for incoming requests.`,
-      ),
-    )
-  }).catch((err) => logger.error(err, "server error"))
+    upgrade().then(() => {
+      server.start(options, ({ port }) =>
+        logger.info(
+          `Server started, listening on port ${port} for incoming requests.`,
+        ),
+      )
+  })}).catch((err) => logger.error(err, "server error"))
 

@@ -10,6 +10,8 @@ const using = require('bluebird').using
  * this represents a user wallet
  */
 export class LightningUsdWallet extends LightningMixin(UserWallet) {
+  readonly currency = "USD" 
+
   constructor({ uid }: ILightningWalletUser) {
     super({ uid, currency: "USD" })
   }
@@ -19,16 +21,12 @@ export class LightningUsdWallet extends LightningMixin(UserWallet) {
       throw Error("USD Wallet need to have set an amount when creating an invoice")
     }
 
-    const price = new Price()
-    const lastPrices = await price.lastPrice() // sats/usd
+    const usd = value
+    const lastPrices = await new Price().lastPrice() // sats/usd
     const satValue = value / lastPrices
 
     // TODO: timeout should be ~ 1 min
-    const request = await super.addInvoice({value: satValue, memo})
-
-    // inefficient, we are doing 2 consecutives requests on the same item/collection
-    // but better for now to use inheritence
-    await InvoiceUser.updateOne({_id: getHash(request)}, {usd: value})
+    const request = await super.addInvoiceInternal({sats: satValue, usd, currency: this.currency, memo})
 
     return request
   }

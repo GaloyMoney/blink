@@ -1,9 +1,17 @@
 import { exit } from "process"
+import { logger } from "./utils"
 
 const mongoose = require("mongoose");
 // mongoose.set("debug", true);
 
 const Schema = mongoose.Schema;
+
+const dbVersionSchema = new Schema({
+  version: Number,
+  minBuildNumber: Number,
+})
+export const DbVersion = mongoose.model("DbVersion", dbVersionSchema)
+
 
 // expired invoice should be removed from the collection
 const invoiceUserSchema = new Schema({
@@ -11,9 +19,17 @@ const invoiceUserSchema = new Schema({
   uid: String,
   pending: Boolean,
 
-  // for invoice that are denominated in usd. this is the sats equivalent
+  // usd equivalent. sats is attached in the invoice directly.
+  // optional, as BTC wallet doesn't have to set a sat amount when creating the invoice
   usd: Number, 
-  
+
+  // currency matchs the user account
+  currency: {
+    type: String,
+    enum: ["USD", "BTC"],
+    default: "BTC",
+  },
+
   timestamp: {
     type: Date,
     default: Date.now
@@ -43,7 +59,10 @@ const UserSchema = new Schema({
     type: [String],
     default: []
   },
-  level: Number,
+  level: {
+    type: Number,
+    default: 1
+  },
   phone: { // TODO we should store country as a separate string
     type: String,
     required: true,
@@ -52,7 +71,6 @@ const UserSchema = new Schema({
     type: [String],
     default: []
   },
-
   currency: {
     type: String,
     enum: ["USD", "BTC"],
@@ -102,7 +120,12 @@ const transactionSchema = new Schema({
     //   a ref only for Invoice. otherwise the hash is not linked
     // }
   },
+
+  // used for escrow transaction, to know which channel this transaction is associated with
+  // FIXME? hash is currently used for onchain tx but txid should be used instead?
+  // an onchain output is deterministically represented by hash of tx + vout
   txid: String,
+  
   fee: Number,
   type: {
     type: String,
@@ -110,6 +133,17 @@ const transactionSchema = new Schema({
   },
   pending: Boolean, // used to denote confirmation status of on and off chain txn
   err: String,
+  currency: {
+    // TODO: check if an upgrade is needed for this one
+    type: String,
+    enum: ["USD", "BTC"],
+    default: "BTC",
+    required: true
+  },
+
+  // not used for accounting but used for usd/sats equivalent
+  usd: Number,
+  sats: Number,
 
   // original property from medici
   credit: Number,
@@ -176,6 +210,98 @@ const priceHistorySchema = new Schema({
 })
 export const PriceHistory = mongoose.model("PriceHistory", priceHistorySchema);
 
+export const upgrade = async () => {
+  
+  try {
+    let dbVersion = await DbVersion.findOne({})
+  
+    if (!dbVersion) {
+      dbVersion = DbVersion.create()
+      dbVersion.version = 0
+    }
+
+    logger.info({dbVersion}, "entering upgrade db module version")
+  
+    if (dbVersion.version === 2) {
+      logger.info("no need to upgrade the db")
+    }
+
+    if (dbVersion.version === 0) {
+      logger.info("starting upgrade to version 1")
+
+      logger.info("all existing wallet should have BTC as currency")
+      // this is to enforce the index constraint
+      await User.updateMany({}, {$set: {currency: "BTC"}})
+      
+      logger.info("there needs to have a role: funder")
+      await User.findOneAndUpdate({phone: "+1***REMOVED***", currency: "BTC"}, {role: "funder"})
+  
+      logger.info("earn is no longer a particular type. replace with on_us")
+      await Transaction.updateMany({type: "earn"}, {$set: {type: "on_us"}})
+      
+      logger.info("setting db version to 1")
+      await DbVersion.findOneAndUpdate({}, {version: 1}, {upsert: true})
+
+      logger.info("upgrade succesful to version 1")
+    }
+    
+    if (dbVersion.version === 1) {
+      logger.info("starting upgrade to version 2")
+
+      let priceTime
+      const moment = require('moment');
+      
+      let price
+      let skipUpdate = false
+
+      try {
+        ({ pair: { exchange: { price }}} = await PriceHistory.findOne({}, {}, {sort: {_id: 1}}))
+      } catch (err) {
+        logger.warn("no price available. would only ok if no transaction is available, ie: on devnet")
+        const count = await Transaction.countDocuments()
+        if (count === 0) {
+          skipUpdate = true
+        } else {
+          exit()
+        }
+      }
+
+      if (!skipUpdate) {
+        const priceMapping = mapValues(keyBy(price, i => moment(i._id) ), 'o')
+        const lastPriceObj = last(price)
+        const lastPrice = (lastPriceObj as any).o
+  
+        const transactions = await Transaction.find({})
+  
+        for (const tx of transactions) {
+          const txTime = moment(tx.datetime).startOf('hour');
+  
+          if (has(priceMapping, `${txTime}`)) {
+            priceTime = priceMapping[`${txTime}`]
+          } else {
+            logger.warn({tx}, 'using most recent price for time %o', `${txTime}`)
+            priceTime = lastPrice
+          }
+          
+          const usd = (tx.debit + tx.credit) * priceTime
+          await Transaction.findOneAndUpdate({_id: tx._id}, {usd})
+        }
+      }
+
+      logger.info("setting db version to 2")
+      dbVersion.version = 2
+      dbVersion.minBuildNumber = 182
+      await dbVersion.save()
+
+      logger.info("upgrade succesful to version 2")
+    } 
+    
+  } catch (err) {
+    logger.fatal({err}, "db upgrade error. exiting")
+    exit()
+  }
+}
+
 
 // TODO add an event listenever if we got disconnecter from MongoDb
 // after a first succesful connection
@@ -202,4 +328,5 @@ export const setupMongoConnection = async () => {
 }
 
 import { book } from "medici";
+import { has, keyBy, last, map, mapValues } from "lodash";
 export const MainBook = new book("MainBook")

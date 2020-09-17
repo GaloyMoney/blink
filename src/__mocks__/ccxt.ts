@@ -131,8 +131,6 @@ export class ftx {
 
 
 
-// merge split
-
 const priceResponse = [
   [ 1595455200000, 9392.7, 9642.4, 9389.8, 9520.1, 2735.99917304 ],
   [ 1595458800000, 9523.2, 9557.8, 9523.2, 9557.7, 193.67510759 ],
@@ -196,13 +194,20 @@ const priceResponse = [
   [ 1595541600000, 9618.5, 9618.5, 9604.4, 9614, 97.54861275 ]
 ]
 
+// make time current
+import { forEach, tail } from "lodash"
+import moment from "moment";
+const priceResponseTimingCurrent: any[] = []
+const init = () => moment().subtract(4, 'hours').startOf('hour')
+forEach(priceResponse, (value, key) => priceResponseTimingCurrent.push([init().add(key, 'hours').unix() * 1000, ...tail(value)]))
+
 export class bitfinex {
 
   constructor() {}
 
   fetchOHLCV() {
     return new Promise((resolve, reject) => {
-      resolve(priceResponse)
+      resolve(priceResponseTimingCurrent)
     })
   }
 

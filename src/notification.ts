@@ -28,6 +28,7 @@ export const sendInvoicePaidNotification = async ({hash, amount, uid}) => {
 export const sendNotification = async ({uid, title, body, data}: INotification) => {
 
   const user = await User.findOne({ _id: uid })
+
   const message = {
     // only string can be sent to notifications
     data: {
@@ -49,8 +50,18 @@ export const sendNotification = async ({uid, title, body, data}: INotification) 
   if (body) {
     message['notification']['body'] = body
   }
-  
-  console.log({message})
+
+  if (user.deviceToken.length === 1 && user.deviceToken[0] === "test") {
+    logger.info({message}, "test token. skipping notification for user %o", uid)
+    return
+  }
+
+  if (user.deviceToken.length === 0) {
+    logger.info({message}, "skipping notification for user %o as no deviceToken has been registered", uid)
+    return
+  }
+
+  logger.info({message}, "sending notification for user %o", uid)
 
   const response = await admin.messaging().sendToDevice(
     user.deviceToken,
@@ -64,6 +75,5 @@ export const sendNotification = async ({uid, title, body, data}: INotification) 
     )
   // FIXME: any as a workaround to https://github.com/Microsoft/TypeScript/issues/15300
 
-  logger.info(response.successCount + ' messages were sent successfully');
-
+  logger.info(response.successCount + ' messages were sent successfully')
 }

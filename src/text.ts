@@ -2,7 +2,7 @@ const twilioPhoneNumber = "***REMOVED***"
 import moment from "moment"
 import { PhoneCode, User } from "./mongodb";
 
-import { randomIntFromInterval, createToken } from "./utils"
+import { randomIntFromInterval, createToken, logger } from "./utils"
 
 const getTwilioClient = () => {
   // FIXME: replace with env variable
@@ -37,6 +37,8 @@ export const TEST_NUMBER = [
   { phone: "+16505554326", code: 321321, currency: "BTC" }, // btc
 
   { phone: "+16505554327", code: 321321, currency: "BTC" }, // broker
+  { phone: "+16505554328", code: 321321, currency: "BTC" }, // 
+  { phone: "+16505554329", code: 321321, currency: "BTC" }, // postman
 ]
 
 export const requestPhoneCode = async ({ phone }) => {
@@ -72,6 +74,14 @@ interface ILogin {
 }
 
 export const login = async ({ phone, code, currency = "BTC" }: ILogin) => {
+  
+  // TODO: not sure if graphql return null or undefined when a field is not passed
+  // adding this as an early catch for now
+  if (!currency) {
+    const err = `currency is not set. exiting login()`
+    logger.error({currency}, err)
+    throw Error(err)
+  }
 
   try {
     const codes = await PhoneCode.find({
@@ -94,8 +104,10 @@ export const login = async ({ phone, code, currency = "BTC" }: ILogin) => {
 
     // code is correct
     // get User 
-    const user = await User.findOneAndUpdate({ phone, currency }, { level: 1 }, { upsert: true, new: true })
-    return createToken({ uid: user._id, currency })
+    const user = await User.findOneAndUpdate({ phone, currency }, {}, { upsert: true, new: true })
+    
+    const network = process.env.NETWORK
+    return createToken({ uid: user._id, currency, network })
     
   } catch (err) {
     console.error(err)

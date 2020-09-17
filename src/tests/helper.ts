@@ -7,7 +7,6 @@ import { WalletFactory } from "../walletFactory";
 const BitcoindClient = require('bitcoin-core')
 
 const lnService = require('ln-service')
-const cert = process.env.TLS
 
 //FIXME: Maybe switch to using single reward
 export const onBoardingEarnAmt: number = Object.values(OnboardingEarn).reduce((a, b) => a + b, 0)
@@ -16,13 +15,13 @@ export const onBoardingEarnIds: string[] = Object.keys(OnboardingEarn)
 export const lndMain = lnService.authenticatedLndGrpc(getAuth()).lnd
 
 export const lndOutside1 = lnService.authenticatedLndGrpc({
-  cert,
+  cert: process.env.TLSOUTSIDE1,
   macaroon: process.env.MACAROONOUTSIDE1,
   socket: `${process.env.LNDOUTSIDE1ADDR}:${process.env.LNDOUTSIDE1RPCPORT}`,
 }).lnd;
 
 export const lndOutside2 = lnService.authenticatedLndGrpc({
-  cert,
+  cert: process.env.TLSOUTSIDE2,
   macaroon: process.env.MACAROONOUTSIDE2,
   socket: `${process.env.LNDOUTSIDE2ADDR}:${process.env.LNDOUTSIDE2RPCPORT}`,
 }).lnd;
