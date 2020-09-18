@@ -3,12 +3,15 @@ set -e
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update
 
+
 if [ "$1" == "testnet" ] || [ "$1" == "mainnet" ];
 then
+  REDISPERSISTENCE="true"
   NETWORK="$1"
   NAMESPACE="$1"
 else
   NETWORK="regtest"
+  REDISPERSISTENCE="false"
 fi
 
 if [ ${LOCAL} ]; then 
@@ -65,13 +68,8 @@ createLoopConfigmaps() {
 # bug with --wait: https://github.com/helm/helm/issues/7139 ?
 helmUpgrade bitcoind ../../bitcoind-chart/ -f ../../bitcoind-chart/values.yaml -f ../../bitcoind-chart/$NETWORK-values.yaml --set serviceType=$SERVICETYPE  
 
-REDISPERSISTENCE="true"
-if [ "$NETWORK" == "regtest" ]
-then
-  REDISPERSISTENCE="false"
-fi
-
-helmUpgrade redis bitnami/redis -f ../../redis-chart/custom-values.yaml --set=master.service.type=$SERVICETYPE,master.persistence.enabled=$REDISPERSISTENCE 
+# note: using persistence.enabled instead of master.persitence.enabled following comment from https://github.com/bitnami/charts/tree/master/bitnami/redis regrding minikube
+helmUpgrade redis bitnami/redis --set=master.service.type=$SERVICETYPE --set=persistence.enabled=$REDISPERSISTENCE --set=usePassword=false --set=image.tag=6.0.8-debian-10-r0  --set=cluster.slaveCount=0
 kubectlWait app=bitcoind-container
 
 helmUpgrade lnd -f ../../lnd-chart/values.yaml -f ../../lnd-chart/$NETWORK-values.yaml --set lndService.serviceType=$SERVICETYPE,minikubeip=$MINIKUBEIP ../../lnd-chart/
