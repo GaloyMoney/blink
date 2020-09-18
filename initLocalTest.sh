@@ -31,7 +31,8 @@ helmUpgrade () {
 }
 
 kubectlWait () {
-  while ! command kubectl wait -n=$NAMESPACE --for=condition=ready --timeout=1200s pod -l "$@" ; do sleep 1; done
+  sleep 1
+  kubectl wait -n=$NAMESPACE --for=condition=ready --timeout=1200s pod -l "$@"
 }
 
 exportMacaroon() {
