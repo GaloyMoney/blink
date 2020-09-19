@@ -31,7 +31,7 @@ helmUpgrade () {
 }
 
 kubectlWait () {
-  sleep 1
+  sleep 5
   kubectl wait -n=$NAMESPACE --for=condition=ready --timeout=1200s pod -l "$@"
 }
 
@@ -60,6 +60,10 @@ helmUpgrade redis bitnami/redis --set=master.service.type=$SERVICETYPE --set=mas
 kubectlWait app=bitcoind-container
 
 helmUpgrade lnd -f ../../lnd-chart/values.yaml -f ../../lnd-chart/$NETWORK-values.yaml --set lndService.serviceType=$SERVICETYPE,minikubeip=$MINIKUBEIP ../../lnd-chart/
+
+# if the lnd pod exist, we want to make sure we wait for it to be removed. otherwise it could be seen as ready by `kubectlWait app=lnd-container` while it could just have been in the process of still winding down
+# we use || : to not return an error if the pod doesn't exist
+kubectl wait --for=delete --timeout=1200s pod -l app=lnd-container || :
 
 kubectlWait app=redis
 kubectlWait app=lnd-container
