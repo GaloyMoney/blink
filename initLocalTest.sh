@@ -105,6 +105,7 @@ if [ "$NETWORK" == "regtest" ]
 
   echo $(kubectl get -n=$NAMESPACE pods)
   echo "Waiting for test-pod and graphql-server to come alive"
+
 else
   helmUpgrade prometheus-client -f ~/GaloyApp/backend/graphql-chart/prometheus-values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/graphql-chart/
   helmUpgrade trigger --set image.tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/trigger-chart/
