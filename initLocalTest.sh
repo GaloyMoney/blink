@@ -62,9 +62,11 @@ helmUpgrade lnd -f ../../lnd-chart/values.yaml -f ../../lnd-chart/$NETWORK-value
 
 # if the lnd pod exist, we want to make sure we wait for it to be removed. otherwise it could be seen as ready by `kubectlWait app=lnd-container` while it could just have been in the process of still winding down
 # we use || : to not return an error if the pod doesn't exist
-echo "deleting previous lnds, if they exist pod exist"
+echo "deleting previous lnds, if the pod already exist"
 kubectl wait --for=delete --timeout=60s pod -l app=lnd-container || :
 
+# add extra 10 seconds... seems lnd is quite long to show up some time
+sleep 10
 kubectlWait app=lnd-container
 
 exportMacaroon 0 MACAROON
