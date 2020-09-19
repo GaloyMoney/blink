@@ -30,6 +30,7 @@ const main = async () => {
       {id: 'currency', title: 'currency'},
       {id: 'type', title: 'type'},
       {id: 'hash', title: 'hash'},
+      {id: 'txid', title: 'txid'},
       {id: 'meta', title: 'meta'},
     ]
   });

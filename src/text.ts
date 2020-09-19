@@ -104,8 +104,10 @@ export const login = async ({ phone, code, currency = "BTC" }: ILogin) => {
 
     // code is correct
     // get User 
-    const user = await User.findOneAndUpdate({ phone, currency }, { level: 1 }, { upsert: true, new: true })
-    return createToken({ uid: user._id, currency })
+    const user = await User.findOneAndUpdate({ phone, currency }, {}, { upsert: true, new: true })
+    
+    const network = process.env.NETWORK
+    return createToken({ uid: user._id, currency, network })
     
   } catch (err) {
     console.error(err)

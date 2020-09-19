@@ -18,19 +18,6 @@ if [ ${LOCAL} ]; then
   MINIKUBEIP=$(minikube ip)
   NAMESPACE="default"
   SERVICETYPE=LoadBalancer; 
-
-  # setting up short term token so that lnd can be pulled from gcr.io
-  SECRETNAME=galoyapp.secret.com
-
-  kubectl delete secret/$SECRETNAME || :
-
-  kubectl create secret docker-registry $SECRETNAME \
-    --docker-server=https://gcr.io \
-    --docker-username=oauth2accesstoken \
-    --docker-password="$(gcloud auth print-access-token)" \
-    --docker-email=youremail@example.com
-
-  kubectl patch serviceaccount default -p "{\"imagePullSecrets\": [{\"name\": \"$SECRETNAME\"}]}"
 else 
   SERVICETYPE=ClusterIP; 
 fi
@@ -44,7 +31,8 @@ helmUpgrade () {
 }
 
 kubectlWait () {
-  command kubectl wait -n=$NAMESPACE --for=condition=ready --timeout=1200s pod -l "$@"
+  sleep 1
+  kubectl wait -n=$NAMESPACE --for=condition=ready --timeout=1200s pod -l "$@"
 }
 
 exportMacaroon() {
