@@ -31,6 +31,7 @@ helmUpgrade () {
 }
 
 kubectlWait () {
+  echo "waiting for -n=$NAMESPACE -l $@"
   sleep 5
   kubectl wait -n=$NAMESPACE --for=condition=ready --timeout=1200s pod -l "$@"
 }
@@ -71,17 +72,27 @@ kubectlWait app=lnd-container
 exportMacaroon 0 MACAROON
 export TLS=$(kubectl -n $NAMESPACE exec lnd-container-0 -c lnd-container -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
 
+
+# mongodb
 if [ "$NETWORK" == "regtest" ]
 then
   helmUpgrade mongodb --set auth.username=testGaloy,auth.password=testGaloy,auth.database=galoy,persistence.enabled=false,service.type=$SERVICETYPE bitnami/mongodb
+else
+  export MONGODB_ROOT_PASSWORD=$(kubectl get secret -n $NAMESPACE mongodb -o jsonpath="{.data.mongodb-root-password}" | base64 -d)
+  export MONGODB_REPLICA_SET_KEY=$(kubectl get secret -n $NAMESPACE mongodb -o jsonpath="{.data.mongodb-replica-set-key}" | base64 -d)
+  helmUpgrade mongodb -f ~/GaloyApp/backend/mongo-chart/custom-values.yaml bitnami/mongodb --set auth.rootPassword=$MONGODB_ROOT_PASSWORD,auth.replicaSetKey=$MONGODB_REPLICA_SET_KEY
 
+  kubectl exec -n $NAMESPACE mongodb-0 -- bash -c "mongo admin -u root -p "$MONGODB_ROOT_PASSWORD" --eval \"db.adminCommand({setDefaultRWConcern:1,defaultWriteConcern:{'w':'majority'}})\""
+  kubectl exec -n $NAMESPACE mongodb-0 -- bash -c "mongo admin -u root -p "$MONGODB_ROOT_PASSWORD" --eval \"c=rs.conf();c.writeConcernMajorityJournalDefault=false;rs.reconfig(c)\""
+fi
+
+if [ ${LOCAL} ]
+then
   kubectlWait app.kubernetes.io/component=mongodb
+  exit 0
+fi
 
-  if [ ${LOCAL} ]
-  then
-    exit 0
-  fi
-
+if [ "$NETWORK" == "regtest" ]
   exportMacaroon 1 MACAROONOUTSIDE1
   exportMacaroon 2 MACAROONOUTSIDE2
   
@@ -95,27 +106,20 @@ then
 
   echo $(kubectl get -n=$NAMESPACE pods)
   echo "Waiting for test-pod and graphql-server to come alive"
-
-  kubectlWait app=test-chart
-  
 else
-  export MONGODB_ROOT_PASSWORD=$(kubectl get secret -n $NAMESPACE mongodb -o jsonpath="{.data.mongodb-root-password}" | base64 -d)
-  export MONGODB_REPLICA_SET_KEY=$(kubectl get secret -n $NAMESPACE mongodb -o jsonpath="{.data.mongodb-replica-set-key}" | base64 -d)
-  helmUpgrade mongodb -f ~/GaloyApp/backend/mongo-chart/custom-values.yaml bitnami/mongodb --set auth.rootPassword=$MONGODB_ROOT_PASSWORD,auth.replicaSetKey=$MONGODB_REPLICA_SET_KEY
-  kubectlWait app.kubernetes.io/component=mongodb
-
-  kubectl exec -n $NAMESPACE mongodb-0 -- bash -c "mongo admin -u root -p "$MONGODB_ROOT_PASSWORD" --eval \"db.adminCommand({setDefaultRWConcern:1,defaultWriteConcern:{'w':'majority'}})\""
-  
-  kubectl exec -n $NAMESPACE mongodb-0 -- bash -c "mongo admin -u root -p "$MONGODB_ROOT_PASSWORD" --eval \"c=rs.conf();c.writeConcernMajorityJournalDefault=false;rs.reconfig(c)\""
-  
   helmUpgrade prometheus-client -f ~/GaloyApp/backend/graphql-chart/prometheus-values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/graphql-chart/
   helmUpgrade trigger --set image.tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/trigger-chart/
 
   createLoopConfigmaps
   helmUpgrade loop-server -f ~/GaloyApp/backend/loop-server/$NETWORK-values.yaml ~/GaloyApp/backend/loop-server/
   # TODO: missing kubectlWait trigger and prometheus-client
-
 fi
 
 helmUpgrade graphql-server -f ~/GaloyApp/backend/graphql-chart/$NETWORK-values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/graphql-chart/
+
+if [ "$NETWORK" == "regtest" ]
+  kubectlWait app=test-chart
+fi
+
+kubectlWait app.kubernetes.io/component=mongodb
 kubectlWait app=graphql-server
