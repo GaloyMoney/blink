@@ -56,22 +56,21 @@ createLoopConfigmaps() {
 
 # bug with --wait: https://github.com/helm/helm/issues/7139 ?
 helmUpgrade bitcoind ../../bitcoind-chart/ -f ../../bitcoind-chart/values.yaml -f ../../bitcoind-chart/$NETWORK-values.yaml --set serviceType=$SERVICETYPE  
-
-helmUpgrade redis bitnami/redis --set=master.service.type=$SERVICETYPE --set=master.persistence.enabled=$REDISPERSISTENCE --set=usePassword=false --set=image.tag=6.0.8-debian-10-r0  --set=cluster.slaveCount=0
 kubectlWait app=bitcoind-container
 
 helmUpgrade lnd -f ../../lnd-chart/values.yaml -f ../../lnd-chart/$NETWORK-values.yaml --set lndService.serviceType=$SERVICETYPE,minikubeip=$MINIKUBEIP ../../lnd-chart/
 
 # if the lnd pod exist, we want to make sure we wait for it to be removed. otherwise it could be seen as ready by `kubectlWait app=lnd-container` while it could just have been in the process of still winding down
 # we use || : to not return an error if the pod doesn't exist
-kubectl wait --for=delete --timeout=1200s pod -l app=lnd-container || :
+echo "deleting previous lnds, if they exist pod exist"
+kubectl wait --for=delete --timeout=60s pod -l app=lnd-container || :
 
-kubectlWait app=redis
 kubectlWait app=lnd-container
 
 exportMacaroon 0 MACAROON
 export TLS=$(kubectl -n $NAMESPACE exec lnd-container-0 -c lnd-container -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
 
+helmUpgrade redis bitnami/redis --set=master.service.type=$SERVICETYPE --set=master.persistence.enabled=$REDISPERSISTENCE --set=usePassword=false --set=image.tag=6.0.8-debian-10-r0  --set=cluster.slaveCount=0
 
 # mongodb
 if [ "$NETWORK" == "regtest" ]
@@ -121,5 +120,6 @@ if [ "$NETWORK" == "regtest" ]
   kubectlWait app=test-chart
 fi
 
+kubectlWait app=redis
 kubectlWait app.kubernetes.io/component=mongodb
 kubectlWait app=graphql-server
