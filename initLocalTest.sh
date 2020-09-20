@@ -121,6 +121,7 @@ fi
 helmUpgrade graphql-server -f ~/GaloyApp/backend/graphql-chart/$NETWORK-values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/graphql-chart/
 
 if [ "$NETWORK" == "regtest" ]
+then
   kubectlWait app=test-chart
 fi
 
