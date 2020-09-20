@@ -94,6 +94,7 @@ then
 fi
 
 if [ "$NETWORK" == "regtest" ]
+then
   exportMacaroon 1 MACAROONOUTSIDE1
   exportMacaroon 2 MACAROONOUTSIDE2
   
