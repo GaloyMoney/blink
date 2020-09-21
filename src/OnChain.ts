@@ -23,57 +23,57 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
   async onChainPay({ address, amount, description }: IOnChainPayment): Promise<ISuccess | Error> {
     const payeeUser = await User.findOne({ onchain_addresses: { $in: address } })
-    const balance = await this.getBalance()
 
-    return await using(disposer(this.uid), async (lock) => {
+    if (payeeUser) {
+      // FIXME: Using == here because === returns false even for same uids
+      if (payeeUser._id == this.uid) {
+        throw Error('User tried to pay themselves')
+      }
 
-      if (payeeUser) {
-        // FIXME: Using == here because === returns false even for same uids
-        if (payeeUser._id == this.uid) {
-          throw Error('User tried to pay themselves')
-        }
+      const sats = amount
+      const metadata = { currency: this.currency, type: "on_us", pending: false }
+      await addCurrentValueToMetadata(metadata, { sats })
+
+      return await using(disposer(this.uid), async (lock) => {
+        const balance = await this.getBalance()
 
         //case where user doesn't have enough money
         if (balance < amount) {
           throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${amount}`)
         }
-
-        {
-          const sats = amount
-          const metadata = { currency: this.currency, type: "on_us", pending: false }
-          await addCurrentValueToMetadata(metadata, {sats})
-
-          await MainBook.entry()
-            .credit(this.accountPath, sats, metadata)
-            .debit(customerPath(payeeUser._id), sats, metadata)
-            .commit()
-        }
-
+        await MainBook.entry()
+          .credit(this.accountPath, sats, metadata)
+          .debit(customerPath(payeeUser._id), sats, metadata)
+          .commit()
         return true
-      }
+      })
+    }
 
-      const { chain_balance: onChainBalance } = await lnService.getChainBalance({ lnd: this.lnd })
+    const { chain_balance: onChainBalance } = await lnService.getChainBalance({ lnd: this.lnd })
 
-      let estimatedFee, id
+    let estimatedFee, id
 
-      const sendTo = [{ address, tokens: amount }]
+    const sendTo = [{ address, tokens: amount }]
 
-      try {
-        ({fee: estimatedFee} = await lnService.getChainFeeEstimate({ lnd: this.lnd, send_to: sendTo }))
-      } catch (err) {
-        logger.error({err}, `Unable to estimate fee for on-chain transaction`)
-        throw new Error(`Unable to estimate fee for on-chain transaction: ${err}`)
-      }
+    try {
+      ({ fee: estimatedFee } = await lnService.getChainFeeEstimate({ lnd: this.lnd, send_to: sendTo }))
+    } catch (err) {
+      logger.error({ err }, `Unable to estimate fee for on-chain transaction`)
+      throw new Error(`Unable to estimate fee for on-chain transaction: ${err}`)
+    }
 
-      // case where there is not enough money available within lnd on-chain wallet
-      if (onChainBalance < amount + estimatedFee) {
-        const body = `insufficient onchain balance. have ${onChainBalance}, need ${amount + estimatedFee}`
+    // case where there is not enough money available within lnd on-chain wallet
+    if (onChainBalance < amount + estimatedFee) {
+      const body = `insufficient onchain balance. have ${onChainBalance}, need ${amount + estimatedFee}`
 
-        //FIXME: use pagerduty instead of text
-        await sendToAdmin(body)
-        throw Error(body)
-      }
+      //FIXME: use pagerduty instead of text
+      await sendToAdmin(body)
+      throw Error(body)
+    }
 
+    return await using(disposer(this.uid), async (lock) => {
+      const balance = await this.getBalance()
+      
       // case where the user doesn't have enough money
       if (balance < amount + estimatedFee) {
         throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${amount + estimatedFee}`)
@@ -83,7 +83,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
       try {
         ({ id } = await lnService.sendToChainAddress({ address, lnd: this.lnd, tokens: amount, description }))
       } catch (err) {
-        logger.error({err}, "Impossible to sendToChainAddress")
+        logger.error({ err }, "Impossible to sendToChainAddress")
         return false
       }
 
@@ -94,7 +94,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
       {
         const sats = amount + fee
         const metadata = { currency: this.currency, hash: id, type: "onchain_payment", pending: true, fee }
-        await addCurrentValueToMetadata(metadata, {sats})
+        await addCurrentValueToMetadata(metadata, { sats })
 
         await MainBook.entry(description)
           .debit('Assets:Reserve:Lightning', sats, metadata)
@@ -177,7 +177,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
     const incoming_txs = (await this.getOnChainTransactions({ lnd: this.lnd, incoming: true }))
       .filter(tx => tx.is_confirmed === confirmed)
 
-    const { onchain_addresses } = await User.findOne({ _id: this.uid }, {onchain_addresses: 1})
+    const { onchain_addresses } = await User.findOne({ _id: this.uid }, { onchain_addresses: 1 })
     const matched_txs = incoming_txs
       .filter(tx => intersection(tx.output_addresses, onchain_addresses).length > 0)
 
@@ -218,14 +218,14 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
         // has the transaction has not been added yet to the user account?
         const mongotx = await Transaction.findOne({ account_path: this.accountPathMedici, type, hash: matched_tx.id })
-        
+
         // logger.debug({ matched_tx, mongotx }, "updateOnchainPayment with user %o", this.uid)
 
         if (!mongotx) {
 
           const sats = matched_tx.tokens
           const metadata = { currency: this.currency, type, hash: matched_tx.id }
-          await addCurrentValueToMetadata(metadata, {sats})
+          await addCurrentValueToMetadata(metadata, { sats })
 
           await MainBook.entry()
             .credit('Assets:Reserve:Lightning', sats, metadata)
