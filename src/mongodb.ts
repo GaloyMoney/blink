@@ -126,7 +126,6 @@ const transactionSchema = new Schema({
   // an onchain output is deterministically represented by hash of tx + vout
   txid: String,
   
-  fee: Number,
   type: {
     type: String,
     enum: ["invoice", "payment", "onchain_receipt", "fee", "escrow", "on_us", "onchain_payment"]
@@ -141,9 +140,18 @@ const transactionSchema = new Schema({
     required: true
   },
 
+  fee: {
+    type: Number,
+    default: 0
+  },
+
   // not used for accounting but used for usd/sats equivalent
   usd: Number,
   sats: Number,
+  feeUsd: { 
+    Number,
+    default: 0
+  },
 
   // original property from medici
   credit: Number,
