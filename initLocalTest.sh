@@ -32,8 +32,17 @@ helmUpgrade () {
 
 kubectlWait () {
   echo "waiting for -n=$NAMESPACE -l $@"
-  sleep 5
+  sleep 6
   kubectl wait -n=$NAMESPACE --for=condition=ready --timeout=1200s pod -l "$@"
+}
+
+kubectlLndDeletionWait () {
+# if the lnd pod needs upgrade, we want to make sure we wait for it to be removed. 
+# otherwise it could be seen as ready by `kubectlWait app=lnd-container` while it could just have been in the process of still winding down
+# we use || : to not return an error if the pod doesn't exist, or if no update is requiered (will timeout in this case)
+# TODO: using --wait on upgrade would simplify this upgrade, but is currently running into some issues
+  echo "waiting for pod deletion"
+  kubectl wait -n=$NAMESPACE --for=delete --timeout=45s pod -l app=lnd-container || :
 }
 
 exportMacaroon() {
@@ -58,16 +67,24 @@ createLoopConfigmaps() {
 helmUpgrade bitcoind ../../bitcoind-chart/ -f ../../bitcoind-chart/values.yaml -f ../../bitcoind-chart/$NETWORK-values.yaml --set serviceType=$SERVICETYPE  
 kubectlWait app=bitcoind-container
 
+# pod deletion has occured before the script started, but may not be completed yet
+if [ ${LOCAL} ]
+then
+  kubectlLndDeletionWait
+fi
+
 helmUpgrade lnd -f ../../lnd-chart/values.yaml -f ../../lnd-chart/$NETWORK-values.yaml --set lndService.serviceType=$SERVICETYPE,minikubeip=$MINIKUBEIP ../../lnd-chart/
 
-# if the lnd pod exist, we want to make sure we wait for it to be removed. otherwise it could be seen as ready by `kubectlWait app=lnd-container` while it could just have been in the process of still winding down
-# we use || : to not return an error if the pod doesn't exist
-echo "deleting previous lnds, if the pod already exist"
-kubectl wait -n=$NAMESPACE --for=delete --timeout=60s pod -l app=lnd-container || :
+# avoiding to spend time with circleci regtest with this condition
+if [ "$1" == "testnet" ] || [ "$1" == "mainnet" ];
+then
+  kubectlLndDeletionWait
+fi
 
-# add extra 10 seconds... seems lnd is quite long to show up some time
-sleep 10
+# # add extra sleep time... seems lnd is quite long to show up some time
+sleep 15
 kubectlWait app=lnd-container
+
 
 exportMacaroon 0 MACAROON
 export TLS=$(kubectl -n $NAMESPACE exec lnd-container-0 -c lnd-container -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
