@@ -137,7 +137,7 @@ const resolvers = {
     onchain: async (_, __, { lightningWallet }) => ({
       getNewAddress: () => lightningWallet.getOnChainAddress(),
       pay: ({address, amount}) => ({success: lightningWallet.onChainPay({address, amount})}),
-      getFees: ({address}) => lightningWallet.getOnchainFees({address}),
+      getFee: ({address}) => lightningWallet.getOnchainFee({address}),
     }),
     addDeviceToken: async (_, { deviceToken }, { uid }) => {
       // TODO: refactor to a higher level User class

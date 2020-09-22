@@ -27,7 +27,7 @@ export const sat2btc = (sat: number) => {
   return sat / Math.pow(10, 8)
 }
 
-export const addCurrentValueToMetadata = async (metadata, {sats, usd}: {sats: number, usd?: number}) => {
+export const addCurrentValueToMetadata = async (metadata, {sats, usd, fee}: {sats: number, usd?: number, fee?: number}) => {
   let _usd = usd
   
   if (!usd) {
@@ -36,6 +36,11 @@ export const addCurrentValueToMetadata = async (metadata, {sats, usd}: {sats: nu
 
   metadata['sats'] = sats
   metadata['usd'] = _usd
+  
+  if (fee) {
+    metadata['fee'] = fee
+    metadata['feeUsd'] = await satsToUsd(fee)
+  }
 }
 
 export const satsToUsd = async sats => {

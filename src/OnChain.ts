@@ -28,7 +28,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
   async PayeeUser(address: string) { return User.findOne({ onchain_addresses: { $in: address } }) }
 
-  async getOnchainFees({address}): Promise<number | Error> {
+  async getOnchainFee({address}): Promise<number | Error> {
     const payeeUser = await this.PayeeUser(address)
 
     console.log({payeeUser})
@@ -57,8 +57,8 @@ export const OnChainMixin = (superclass) => class extends superclass {
       }
 
       const sats = amount
-      const metadata = { currency: this.currency, type: "on_us", pending: false }
-      await addCurrentValueToMetadata(metadata, { sats })
+      const metadata = { currency: this.currency, type: "onchain_on_us", pending: false }
+      await addCurrentValueToMetadata(metadata, { sats, fee: 0 })
 
       return await using(disposer(this.uid), async (lock) => {
 
@@ -117,9 +117,10 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
       {
         const sats = amount + fee
-        const metadata = { currency: this.currency, hash: id, type: "onchain_payment", pending: true, fee }
-        await addCurrentValueToMetadata(metadata, { sats })
+        const metadata = { currency: this.currency, hash: id, type: "onchain_payment", pending: true }
+        await addCurrentValueToMetadata(metadata, { sats, fee })
 
+        // TODO/FIXME refactor. add the transaction first and set the fees in a second tx.
         await MainBook.entry(description)
           .debit('Assets:Reserve:Lightning', sats, metadata)
           .credit(this.accountPath, sats, metadata)

@@ -128,7 +128,11 @@ const transactionSchema = new Schema({
   
   type: {
     type: String,
-    enum: ["invoice", "payment", "onchain_receipt", "fee", "escrow", "on_us", "onchain_payment"]
+    enum: [
+      "invoice", "payment", "on_us", // lightning
+      "onchain_receipt", "onchain_payment", "onchain_on_us", // onchain
+      "fee", "escrow", // channel-related
+    ]
   },
   pending: Boolean, // used to denote confirmation status of on and off chain txn
   err: String,
@@ -149,7 +153,7 @@ const transactionSchema = new Schema({
   usd: Number,
   sats: Number,
   feeUsd: { 
-    Number,
+    type: Number,
     default: 0
   },
 
