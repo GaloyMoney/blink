@@ -44,7 +44,23 @@ afterAll(async () => {
 
 const amount = 10000 // sats
 
-it('Sends onchain payment', async () => {
+
+it('testing Fees', async () => {
+  {
+    const address = await bitcoindClient.getNewAddress()
+    const fees = await userWallet0.getOnchainFees({address})
+    expect(fees).toBeGreaterThan(0)
+  }
+  
+  {
+    const address = await userWallet3.getOnChainAddress()
+    const fees = await userWallet0.getOnchainFees({address})
+    expect(fees).toBe(0)
+  }
+  
+}, 10000)
+
+it('Sends onchain payment successfully', async () => {
   const { address } = await lnService.createChainAddress({ format: 'p2wpkh', lnd: lndOutside1 })
 
   const sub = lnService.subscribeToTransactions({ lnd: lndMain })

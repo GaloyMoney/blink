@@ -48,6 +48,7 @@ type PendingOnchainPayment {
 type OnChain {
   getNewAddress: String
   pay(address: String!, amount: Int!): Success
+  getFees(address: String!): String
 }
 
 type LastOnChainAddress {

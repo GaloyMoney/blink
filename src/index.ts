@@ -173,17 +173,11 @@ const resolvers = {
     deleteUser: () => {
       // TODO
     },
-    onchain: async (_, __, { lightningWallet }) => {
-      return {
-        getNewAddress: () => {
-          try {
-            return lightningWallet.getOnChainAddress()
-          } catch (err) {
-            logger.error({ err }, "error with getNewAddress")
-          }},
-        pay: ({address, amount}) => ({success: lightningWallet.onChainPay({address, amount})}),
-      }
-    },
+    onchain: async (_, __, { lightningWallet }) => ({
+      getNewAddress: () => lightningWallet.getOnChainAddress(),
+      pay: ({address, amount}) => ({success: lightningWallet.onChainPay({address, amount})}),
+      getFees: ({address}) => lightningWallet.getFees({address}),
+    }),
     addDeviceToken: async (_, { deviceToken }, { uid }) => {
       // TODO: refactor to a higher level User class
       const user = await User.findOne({ _id: uid })

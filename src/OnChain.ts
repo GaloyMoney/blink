@@ -9,6 +9,11 @@ const util = require('util')
 
 const using = require('bluebird').using
 
+// TODO: look if tokens/amount has an effect on the fees
+// we don't want to go back and forth between RN and the backend if amount changes
+// but fees are the same
+const someAmount = 50000
+
 export const OnChainMixin = (superclass) => class extends superclass {
   lnd = lnService.authenticatedLndGrpc(getAuth()).lnd
 
@@ -21,10 +26,31 @@ export const OnChainMixin = (superclass) => class extends superclass {
     return super.updatePending()
   }
 
-  async onChainPay({ address, amount, description }: IOnChainPayment): Promise<ISuccess | Error> {
-    const payeeUser = await User.findOne({ onchain_addresses: { $in: address } })
+  async PayeeUser(address: string) { return User.findOne({ onchain_addresses: { $in: address } }) }
+
+  async getOnchainFees({address}): Promise<number | Error> {
+    const payeeUser = await this.PayeeUser(address)
+
+    console.log({payeeUser})
+
+    let fee
 
     if (payeeUser) {
+      fee = 0
+    } else {
+      const sendTo = [{ address, tokens: someAmount }];
+      ({ fee } = await lnService.getChainFeeEstimate({ lnd: this.lnd, send_to: sendTo }))
+    }
+
+    return fee
+  }
+
+  async onChainPay({ address, amount, description }: IOnChainPayment): Promise<ISuccess | Error> {
+    const payeeUser = await this.PayeeUser(address)
+    const balance = await this.getBalance()
+
+    if (payeeUser) {
+
       // FIXME: Using == here because === returns false even for same uids
       if (payeeUser._id == this.uid) {
         throw Error('User tried to pay themselves')
@@ -35,7 +61,6 @@ export const OnChainMixin = (superclass) => class extends superclass {
       await addCurrentValueToMetadata(metadata, { sats })
 
       return await using(disposer(this.uid), async (lock) => {
-        const balance = await this.getBalance()
 
         //case where user doesn't have enough money
         if (balance < amount) {
@@ -72,7 +97,6 @@ export const OnChainMixin = (superclass) => class extends superclass {
     }
 
     return await using(disposer(this.uid), async (lock) => {
-      const balance = await this.getBalance()
       
       // case where the user doesn't have enough money
       if (balance < amount + estimatedFee) {
