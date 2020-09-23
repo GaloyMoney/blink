@@ -67,6 +67,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       description: item.memo || item.type, // TODO remove `|| item.type` once users have upgraded
       hash: item.hash,
       fee: item.fee,
+      feeUsd: item.feeUsd,
       // destination: TODO
       type: item.type,
       pending: item.pending,
