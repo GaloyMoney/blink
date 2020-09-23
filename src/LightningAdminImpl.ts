@@ -105,7 +105,7 @@ export class AdminWallet {
 
     const metadata = { currency: this.currency, txid: transaction_id, type: "fee" }
 
-    await MainBook.entry("on chain fees")
+    await MainBook.entry("on chain fee")
       .debit('Assets:Reserve:Lightning', fee, {...metadata,})
       .credit('Expenses:Bitcoin:Fees', fee, {...metadata})
       .commit()

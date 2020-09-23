@@ -1,1 +1,1178 @@
-{"collection":{"info":{"_postman_id":"2e9d4144-4c26-4b72-b000-ad1e63105f94","name":"graphql_simple_workflow","schema":"https://schema.getpostman.com/json/collection/v2.1.0/collection.json"},"item":[{"name":"active","item":[{"name":"notoken","item":[{"name":"queries","item":[{"name":"prices","_postman_id":"117cc6e8-1403-486f-ad16-67978ce68509","protocolProfileBehavior":{"disableBodyPruning":true},"request":{"method":"POST","header":[],"body":{"mode":"graphql","graphql":{"query":"query prices {\n    prices {\n        id\n        o\n    }\n}","variables":"{}"},"options":{"graphql":{}}},"url":{"raw":"{{protocol}}://{{domain}}:{{port}}/graphql","protocol":"{{protocol}}","host":["{{domain}}"],"port":"{{port}}","path":["graphql"]}},"response":[]},{"name":"buildParameters","event":[{"listen":"test","script":{"id":"c023bfd8-a378-4174-bc68-1bf475651f3a","exec":["var moment = require('moment')","","pm.test(\"validate build parameters are set\", function () {","    if (pm.environment.name != \"devnet\") {","        const jsonData = pm.response.json();","        const {commitHash, buildTime} = jsonData.data.buildParameters","        pm.expect(commitHash.length).to.eql(40);","        pm.expect(buildTime.substring(0,4)).to.eql(\"2020\")","    }","});",""],"type":"text/javascript"}}],"_postman_id":"5bcb6126-23f6-4957-8e81-bc119d3d2bc6","protocolProfileBehavior":{"disableBodyPruning":true},"request":{"method":"POST","header":[],"body":{"mode":"graphql","graphql":{"query":"query buildParameters {\n    buildParameters {\n        commitHash\n        buildTime\n    }\n}","variables":"{}"},"options":{"graphql":{}}},"url":{"raw":"{{protocol}}://{{domain}}:{{port}}/graphql","protocol":"{{protocol}}","host":["{{domain}}"],"port":"{{port}}","path":["graphql"]}},"response":[]},{"name":"earnList","_postman_id":"7110b911-fcd5-4e1a-8bf3-a6b6e3a25e79","protocolProfileBehavior":{"disableBodyPruning":true},"request":{"method":"POST","header":[],"body":{"mode":"graphql","graphql":{"query":"query earnList {\n    earnList {\n        id\n        value\n        completed\n    }\n}","variables":"{}"},"options":{"graphql":{}}},"url":{"raw":"{{protocol}}://{{domain}}:{{port}}/graphql","protocol":"{{protocol}}","host":["{{domain}}"],"port":"{{port}}","path":["graphql"]}},"response":[]}],"_postman_id":"6a590bf4-6b11-4820-8ff4-b8d55d94ea59","_postman_isSubFolder":true},{"name":"mutations","item":[{"name":"requestPhoneCode","event":[{"listen":"test","script":{"id":"51715ea9-8894-4856-9810-7f1fc0dfa852","exec":["pm.test(\"requesting a code\", function () {","    var jsonData = pm.response.json();","    pm.expect(jsonData.data.requestPhoneCode.success).to.eql(true);","});","",""],"type":"text/javascript"}}],"_postman_id":"131a3bff-ea53-4d7c-8186-bf2773ee7040","protocolProfileBehavior":{"disableBodyPruning":true},"request":{"method":"POST","header":[],"body":{"mode":"graphql","graphql":{"query":"mutation requestPhoneCode ($phone: String) {\n    requestPhoneCode (phone: $phone) {\n        success\n    }\n}","variables":"{\n  \"phone\": \"{{phone}}\"\n}"},"options":{"graphql":{}}},"url":{"raw":"{{protocol}}://{{domain}}:{{port}}/graphql","protocol":"{{protocol}}","host":["{{domain}}"],"port":"{{port}}","path":["graphql"]}},"response":[]},{"name":"login (phone+code)","event":[{"listen":"test","script":{"id":"d0f75371-2d42-483b-988e-50e3ea6f14d4","exec":["pm.test(\"requesting a token\", function () {","    const jsonData = pm.response.json();","    const token = jsonData.data.login.token","    // token should have two dot \".\"","    const parts = token.split(\".\")","    pm.expect(parts.length).to.eql(3);","    pm.environment.set(\"token\", token)","});"],"type":"text/javascript"}}],"_postman_id":"75663c44-6c11-4208-81fb-aed35275e5b8","protocolProfileBehavior":{"disableBodyPruning":true},"request":{"method":"POST","header":[],"body":{"mode":"graphql","graphql":{"query":"mutation login ($phone: String, $code: Int) {\n    login (phone: $phone, code: $code) {\n        token\n    }\n}","variables":"{\n  \"phone\": \"{{phone}}\",\n  \"code\": {{code}}\n}"},"options":{"graphql":{}}},"url":{"raw":"{{protocol}}://{{domain}}:{{port}}/graphql","protocol":"{{protocol}}","host":["{{domain}}"],"port":"{{port}}","path":["graphql"]}},"response":[]},{"name":"login (phone+code+currency)","event":[{"listen":"test","script":{"id":"3699c954-f061-4cb0-ba3b-0c12884b8ff7","exec":["pm.test(\"requesting a token\", function () {","    const jsonData = pm.response.json();","    const token = jsonData.data.login.token","    // token should have two dot \".\"","    const parts = token.split(\".\")","    pm.expect(parts.length).to.eql(3);","    pm.environment.set(\"token\", token)","});"],"type":"text/javascript"}}],"_postman_id":"2bf70061-0945-41bd-8e15-a2c33063aa38","protocolProfileBehavior":{"disableBodyPruning":true},"request":{"method":"POST","header":[],"body":{"mode":"graphql","graphql":{"query":"mutation login ($phone: String, $code: Int, $currency: String) {\n    login (phone: $phone, code: $code, currency: $currency) {\n        token\n    }\n}","variables":"{\n  \"phone\": \"{{phone}}\",\n  \"code\": {{code}},\n  \"currency\": \"{{currency}}\"\n}"},"options":{"graphql":{}}},"url":{"raw":"{{protocol}}://{{domain}}:{{port}}/graphql","protocol":"{{protocol}}","host":["{{domain}}"],"port":"{{port}}","path":["graphql"]}},"response":[]}],"_postman_id":"df6e8c19-ed5e-47b7-b4de-7984c25f709c","_postman_isSubFolder":true}],"_postman_id":"b4f20ab7-449c-46ca-84ea-f82e1d5a3ba1","_postman_isSubFolder":true},{"name":"token","item":[{"name":"queries","item":[{"name":"wallet","_postman_id":"4a9dd665-5a88-434e-bb79-7fc72d6caa71","protocolProfileBehavior":{"disableBodyPruning":true},"request":{"method":"POST","header":[],"body":{"mode":"graphql","graphql":{"query":"query wallet {\n    wallet {\n        id\n        currency\n        balance\n        transactions {\n            id\n            amount\n            description\n            created_at\n            hash\n            type\n        }\n    }\n}","variables":"{}"},"options":{"graphql":{}}},"url":{"raw":"{{protocol}}://{{domain}}:{{port}}/graphql","protocol":"{{protocol}}","host":["{{domain}}"],"port":"{{port}}","path":["graphql"]}},"response":[]},{"name":"earnList","_postman_id":"2427945c-ffde-4652-975e-f6fac8b630f5","protocolProfileBehavior":{"disableBodyPruning":true},"request":{"method":"POST","header":[],"body":{"mode":"graphql","graphql":{"query":"query earnList {\n    earnList {\n        id\n        value\n        completed\n    }\n}","variables":"{}"},"options":{"graphql":{}}},"url":{"raw":"{{protocol}}://{{domain}}:{{port}}/graphql","protocol":"{{protocol}}","host":["{{domain}}"],"port":"{{port}}","path":["graphql"]}},"response":[]},{"name":"me","_postman_id":"9bb10890-196d-4e67-8de3-4903d61012d0","protocolProfileBehavior":{"disableBodyPruning":true},"request":{"method":"POST","header":[],"body":{"mode":"graphql","graphql":{"query":"query me {\n    me {\n        id\n        name\n        level\n    }\n}","variables":"{}"},"options":{"graphql":{}}},"url":{"raw":"{{protocol}}://{{domain}}:{{port}}/graphql","protocol":"{{protocol}}","host":["{{domain}}"],"port":"{{port}}","path":["graphql"]}},"response":[]},{"name":"lastOnChain","_postman_id":"f2e970ff-32cb-40d3-b6cb-18d28792d54e","protocolProfileBehavior":{"disableBodyPruning":true},"request":{"auth":{"type":"bearer","bearer":[{"key":"token","value":"{{token}}","type":"string"}]},"method":"POST","header":[],"body":{"mode":"graphql","graphql":{"query":"query lastOnChain {\n    getLastOnChainAddress {\n        id\n    }\n}","variables":"{}"},"options":{"graphql":{}}},"url":{"raw":"{{protocol}}://{{domain}}:{{port}}/graphql","protocol":"{{protocol}}","host":["{{domain}}"],"port":"{{port}}","path":["graphql"]}},"response":[]}],"_postman_id":"4be17ce8-9841-4b56-ae6d-b69940cb4fce","_postman_isSubFolder":true},{"name":"mutations","item":[{"name":"earnCompleted (empty)","_postman_id":"869f741c-be9a-4942-a7fd-b3d6f2cb57aa","protocolProfileBehavior":{"disableBodyPruning":true},"request":{"method":"POST","header":[],"body":{"mode":"graphql","graphql":{"query":"mutation earnCompleted ($ids: [ID]) {\n    earnCompleted (ids: $ids) {\n        id\n        value\n        completed\n    }\n}","variables":"{\n  \"ids\": []\n}"},"options":{"graphql":{}}},"url":{"raw":"{{protocol}}://{{domain}}:{{port}}/graphql","protocol":"{{protocol}}","host":["{{domain}}"],"port":"{{port}}","path":["graphql"]}},"response":[]},{"name":"earnCompleted","_postman_id":"b0083668-bdcf-4fa6-ab7b-ee13f1b773bb","protocolProfileBehavior":{"disableBodyPruning":true},"request":{"method":"POST","header":[],"body":{"mode":"graphql","graphql":{"query":"mutation earnCompleted ($ids: [ID]) {\n    earnCompleted (ids: $ids) {\n        id\n        value\n        completed\n    }\n}","variables":"{\n  \"ids\": [\n    \"whatIsBitcoin\",\n    \"sat\",\n    \"whereBitcoinExist\"\n  ]\n}"},"options":{"graphql":{}}},"url":{"raw":"{{protocol}}://{{domain}}:{{port}}/graphql","protocol":"{{protocol}}","host":["{{domain}}"],"port":"{{port}}","path":["graphql"]}},"response":[]},{"name":"onchain.getNewAddress","_postman_id":"a76446a6-398e-4e3c-b9bd-032730ab5e02","protocolProfileBehavior":{"disableBodyPruning":true},"request":{"auth":{"type":"bearer","bearer":[{"key":"token","value":"{{token}}","type":"string"}]},"method":"POST","header":[],"body":{"mode":"graphql","graphql":{"query":"mutation onchain {\n    onchain {\n        getNewAddress\n    }\n}","variables":"{}"},"options":{"graphql":{}}},"url":{"raw":"{{protocol}}://{{domain}}:{{port}}/graphql","protocol":"{{protocol}}","host":["{{domain}}"],"port":"{{port}}","path":["graphql"]}},"response":[]},{"name":"addInvoice","event":[{"listen":"test","script":{"id":"90f0cf2d-6db7-4d76-b026-714e8b186a1f","exec":["pm.test(\"add invoice\", function () {","    const jsonData = pm.response.json();","    const invoice = jsonData.data.invoice.addInvoice","    pm.expect(invoice.substring(0,2)).to.eql(\"ln\")","});"],"type":"text/javascript"}}],"_postman_id":"2a3aed13-0ffc-41fa-b382-f5c7be876d45","protocolProfileBehavior":{"disableBodyPruning":true},"request":{"method":"POST","header":[],"body":{"mode":"graphql","graphql":{"query":"mutation invoice ($value: Int, $memo: String) {\n    invoice {\n        addInvoice (value: $value, memo: $memo)\n    }\n}","variables":"{\n  \"value\": 1000,\n  \"memo\": \"memo Invoice GQL\"\n}"},"options":{"graphql":{}}},"url":{"raw":"{{protocol}}://{{domain}}:{{port}}/graphql","protocol":"{{protocol}}","host":["{{domain}}"],"port":"{{port}}","path":["graphql"]}},"response":[]},{"name":"addInvoiceZeroAmount","event":[{"listen":"test","script":{"id":"61a910cd-76a2-446a-b351-6d83cb7c22cb","exec":["pm.test(\"add invoice\", function () {","    const jsonData = pm.response.json();","    const invoice = jsonData.data.invoice.addInvoice","    pm.expect(invoice.substring(0,2)).to.eql(\"ln\")","});"],"type":"text/javascript"}}],"_postman_id":"f40b5d6b-9f00-4b8c-9c45-da39d884fd12","protocolProfileBehavior":{"disableBodyPruning":true},"request":{"method":"POST","header":[],"body":{"mode":"graphql","graphql":{"query":"mutation invoice {\n    invoice {\n        addInvoice\n    }\n}","variables":"{\n}"},"options":{"graphql":{}}},"url":{"raw":"{{protocol}}://{{domain}}:{{port}}/graphql","protocol":"{{protocol}}","host":["{{domain}}"],"port":"{{port}}","path":["graphql"]}},"response":[]},{"name":"addDeviceToken","_postman_id":"aeca95db-0227-4ca4-90d7-356a41618914","protocolProfileBehavior":{"disableBodyPruning":true},"request":{"auth":{"type":"bearer","bearer":[{"key":"token","value":"{{token}}","type":"string"}]},"method":"POST","header":[],"body":{"mode":"graphql","graphql":{"query":"mutation addDeviceToken($deviceToken: String) {\n    addDeviceToken(deviceToken: $deviceToken) {\n        success\n    }\n}","variables":"{\n    \"deviceToken\": \"test\"\n}"},"options":{"graphql":{}}},"url":{"raw":"{{protocol}}://{{domain}}:{{port}}/graphql","protocol":"{{protocol}}","host":["{{domain}}"],"port":"{{port}}","path":["graphql"]}},"response":[]}],"_postman_id":"2643f148-1d17-4667-acec-ad29dfb98932","event":[{"listen":"prerequest","script":{"id":"cad66d74-351b-4ab2-ba4f-dba8a0903db5","type":"text/javascript","exec":[""]}},{"listen":"test","script":{"id":"d13a0524-f9b5-48b3-8ac9-65950e15f4b6","type":"text/javascript","exec":[""]}}],"_postman_isSubFolder":true}],"_postman_id":"09985ead-e8b9-450b-adf3-2c6eda1fb1fd","auth":{"type":"bearer","bearer":[{"key":"token","value":"{{token}}","type":"string"}]},"event":[{"listen":"prerequest","script":{"id":"1a50ec40-6823-49cd-9122-8050fc88caff","type":"text/javascript","exec":[""]}},{"listen":"test","script":{"id":"ae312eb6-510f-4126-acae-f8122e9bb4ef","type":"text/javascript","exec":[""]}}],"_postman_isSubFolder":true}],"_postman_id":"d263a696-1465-491c-90d9-97d149e71993","event":[{"listen":"prerequest","script":{"id":"cfcd067f-a618-4e27-a9b8-c3818b3182fb","type":"text/javascript","exec":[""]}},{"listen":"test","script":{"id":"7362980b-fb23-4481-99b1-4509ff655a0d","type":"text/javascript","exec":["pm.test(\"Status code is 200\", function () {","    pm.response.to.have.status(200);","});","","pm.test(\"has no error\", function () {","    const jsonData = pm.response.json();","    pm.expect(jsonData.errors).to.be.undefined","})"]}}]},{"name":"todo","item":[{"name":"deleteUser","_postman_id":"d9acf3bd-6002-4ca7-88fa-5dea49408ba0","protocolProfileBehavior":{"disableBodyPruning":true},"request":{"method":"POST","header":[],"body":{"mode":"graphql","graphql":{"query":"mutation deleteUser {\n    deleteUser\n}","variables":"{}"},"options":{"graphql":{}}},"url":{"raw":"{{protocol}}://{{domain}}:{{port}}/graphql","protocol":"{{protocol}}","host":["{{domain}}"],"port":"{{port}}","path":["graphql"]}},"response":[]},{"name":"updateUser","_postman_id":"428bc3ce-6b96-4065-8bda-903ffa35aea4","protocolProfileBehavior":{"disableBodyPruning":true},"request":{"method":"POST","header":[],"body":{"mode":"graphql","graphql":{"query":"mutation updateUser ($user: InputUser) {\n    updateUser (user: $user) {\n        id\n        name\n        level\n    }\n}","variables":"{\n  \"user\": {\n    \"id\": 0,\n    \"level\": 0,\n    \"deviceToken\": \"\"\n  }\n}"},"options":{"graphql":{}}},"url":{"raw":"{{protocol}}://{{domain}}:{{port}}/graphql","protocol":"{{protocol}}","host":["{{domain}}"],"port":"{{port}}","path":["graphql"]}},"response":[]},{"name":"payInvoice","_postman_id":"9f7fb88e-0210-45d6-96a1-c09ba3ac6861","protocolProfileBehavior":{"disableBodyPruning":true},"request":{"method":"POST","header":[],"body":{"mode":"graphql","graphql":{"query":"mutation payInvoice($invoice: String!, $amount: Int) {\n    invoice {\n        payInvoice(invoice: $invoice, amount: $amount)\n    }\n}","variables":"{\n  \"invoice\": \"lnbcrt120n1p05z3mmpp542cl7zycquxujevz4vmvueuf2yfglw9n3ad25vmsy2et5gxfmjksdqqcqzpgsp5g8lehuzt8k78kf0xyc63eukkgs2l7qw459kzkuhymv9q6v2utcds9qy9qsqwwe2azwwelu7ymf4ty8tj57c7lvq0drzpyufmeyxlrywghx6hvfnxl4k4xrtqgv955h7a4gyttqdgcnetuke2334xs6csw7akjll2hsqexzc4t\"\n}"},"options":{"graphql":{}}},"url":{"raw":"{{protocol}}://{{domain}}:{{port}}/graphql","protocol":"{{protocol}}","host":["{{domain}}"],"port":"{{port}}","path":["graphql"]}},"response":[]},{"name":"updatePendingInvoice","event":[{"listen":"test","script":{"id":"9b841939-3aa5-43ee-90e9-43e196454482","exec":["// todo // being able to have https://blog.postman.com/writing-a-behaviour-driven-api-testing-environment-within-postman/ in the library","// need to compress it and load it with eval()","","// TODO: set the parameter of the invoice to a real hash"],"type":"text/javascript"}}],"_postman_id":"7c549ae6-62c7-40c0-a3f1-ad0c0f3bbec5","protocolProfileBehavior":{"disableBodyPruning":true},"request":{"method":"POST","header":[],"body":{"mode":"graphql","graphql":{"query":"mutation invoice ($hash: String) {\n    invoice {\n        updatePendingInvoice (hash: $hash)\n    }\n}","variables":"{\n  \"hash\": \"9370880d24e0a0dfc4304ce3009f58e06fba301973e765346b06441ae3236c90\"\n}"},"options":{"graphql":{}}},"url":{"raw":"{{protocol}}://{{domain}}:{{port}}/graphql","protocol":"{{protocol}}","host":["{{domain}}"],"port":"{{port}}","path":["graphql"]}},"response":[]},{"name":"openChannel","_postman_id":"70c9bbdd-7f13-43cb-868d-08c19055d9c7","protocolProfileBehavior":{"disableBodyPruning":true},"request":{"method":"POST","header":[],"body":{"mode":"graphql","graphql":{"query":"mutation openChannel ($local_tokens: Int, $public_key: String, $socket: String) {\n    openChannel (local_tokens: $local_tokens, public_key: $public_key, socket: $socket) {\n        tx\n    }\n}","variables":"{\n  \"local_tokens\": 10000000,\n  \"public_key\": \"03864ef025fde8fb587d989186ce6a4a186895ee44a926bfc370e2c366597a3f8f\",\n  \"socket\": \"34.239.230.56:9735\"\n}"},"options":{"graphql":{}}},"url":{"raw":"{{protocol}}://{{domain}}:{{port}}/graphql","protocol":"{{protocol}}","host":["{{domain}}"],"port":"{{port}}","path":["graphql"]}},"response":[]},{"name":"sendMessage","_postman_id":"d9107142-be9e-4ff5-af93-00d332f783c1","protocolProfileBehavior":{"disableBodyPruning":true},"request":{"auth":{"type":"bearer","bearer":[{"key":"token","value":"{{token}}","type":"string"}]},"method":"POST","header":[],"body":{"mode":"graphql","graphql":{"query":"mutation testMessage {\n    testMessage {\n        success\n    }\n}","variables":"{}"},"options":{"graphql":{}}},"url":{"raw":"{{protocol}}://{{domain}}:{{port}}/graphql","protocol":"{{protocol}}","host":["{{domain}}"],"port":"{{port}}","path":["graphql"]}},"response":[]},{"name":"onchain.pay","_postman_id":"a63014e6-f96f-4531-9758-7681f7f69a99","protocolProfileBehavior":{"disableBodyPruning":true},"request":{"auth":{"type":"bearer","bearer":[{"key":"token","value":"{{token}}","type":"string"}]},"method":"POST","header":[],"body":{"mode":"graphql","graphql":{"query":"mutation onchain($address: String!, $amount: Int!) {\n    onchain {\n        pay(address: $address, amount: $amount)\n    }\n}","variables":"{\n    \"address\": \"bcrt1qam64av6cyhjsgdwajjpe0l9z8ju4w7rjryecf3\",\n    \"amount\": 10000\n}"},"options":{"graphql":{}}},"url":{"raw":"{{protocol}}://{{domain}}:{{port}}/graphql","protocol":"{{protocol}}","host":["{{domain}}"],"port":"{{port}}","path":["graphql"]}},"response":[]}],"_postman_id":"c0c07eeb-135b-4253-b620-69cc6fb62812","auth":{"type":"bearer","bearer":[{"key":"token","value":"{{token}}","type":"string"}]},"event":[{"listen":"prerequest","script":{"id":"3cefbaed-bc5f-4e24-a83b-b42f3f788430","type":"text/javascript","exec":[""]}},{"listen":"test","script":{"id":"1722ab67-4dfe-456d-bfeb-d62648a5663f","type":"text/javascript","exec":[""]}}]}],"event":[{"listen":"prerequest","script":{"id":"e873695f-5e43-45db-8e7e-283fd412737c","type":"text/javascript","exec":[""]}},{"listen":"test","script":{"id":"49c120ad-97f5-48b5-94da-540f8aaa7b89","type":"text/javascript","exec":[""]}}]}}
+{
+  "collection": {
+    "info": {
+      "_postman_id": "2e9d4144-4c26-4b72-b000-ad1e63105f94",
+      "name": "graphql_simple_workflow",
+      "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+      {
+        "name": "active",
+        "item": [
+          {
+            "name": "notoken",
+            "item": [
+              {
+                "name": "queries",
+                "item": [
+                  {
+                    "name": "prices",
+                    "_postman_id": "117cc6e8-1403-486f-ad16-67978ce68509",
+                    "protocolProfileBehavior": {
+                      "disableBodyPruning": true
+                    },
+                    "request": {
+                      "method": "POST",
+                      "header": [],
+                      "body": {
+                        "mode": "graphql",
+                        "graphql": {
+                          "query": "query prices {\n    prices {\n        id\n        o\n    }\n}",
+                          "variables": "{}"
+                        },
+                        "options": {
+                          "graphql": {}
+                        }
+                      },
+                      "url": {
+                        "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+                        "protocol": "{{protocol}}",
+                        "host": [
+                          "{{domain}}"
+                        ],
+                        "port": "{{port}}",
+                        "path": [
+                          "graphql"
+                        ]
+                      }
+                    },
+                    "response": []
+                  },
+                  {
+                    "name": "buildParameters",
+                    "event": [
+                      {
+                        "listen": "test",
+                        "script": {
+                          "id": "c023bfd8-a378-4174-bc68-1bf475651f3a",
+                          "exec": [
+                            "var moment = require('moment')",
+                            "",
+                            "pm.test(\"validate build parameters are set\", function () {",
+                            "    if (pm.environment.name != \"devnet\") {",
+                            "        const jsonData = pm.response.json();",
+                            "        const {commitHash, buildTime} = jsonData.data.buildParameters",
+                            "        pm.expect(commitHash.length).to.eql(40);",
+                            "        pm.expect(buildTime.substring(0,4)).to.eql(\"2020\")",
+                            "    }",
+                            "});",
+                            ""
+                          ],
+                          "type": "text/javascript"
+                        }
+                      }
+                    ],
+                    "_postman_id": "5bcb6126-23f6-4957-8e81-bc119d3d2bc6",
+                    "protocolProfileBehavior": {
+                      "disableBodyPruning": true
+                    },
+                    "request": {
+                      "method": "POST",
+                      "header": [],
+                      "body": {
+                        "mode": "graphql",
+                        "graphql": {
+                          "query": "query buildParameters {\n    buildParameters {\n        commitHash\n        buildTime\n    }\n}",
+                          "variables": "{}"
+                        },
+                        "options": {
+                          "graphql": {}
+                        }
+                      },
+                      "url": {
+                        "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+                        "protocol": "{{protocol}}",
+                        "host": [
+                          "{{domain}}"
+                        ],
+                        "port": "{{port}}",
+                        "path": [
+                          "graphql"
+                        ]
+                      }
+                    },
+                    "response": []
+                  },
+                  {
+                    "name": "earnList",
+                    "_postman_id": "7110b911-fcd5-4e1a-8bf3-a6b6e3a25e79",
+                    "protocolProfileBehavior": {
+                      "disableBodyPruning": true
+                    },
+                    "request": {
+                      "method": "POST",
+                      "header": [],
+                      "body": {
+                        "mode": "graphql",
+                        "graphql": {
+                          "query": "query earnList {\n    earnList {\n        id\n        value\n        completed\n    }\n}",
+                          "variables": "{}"
+                        },
+                        "options": {
+                          "graphql": {}
+                        }
+                      },
+                      "url": {
+                        "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+                        "protocol": "{{protocol}}",
+                        "host": [
+                          "{{domain}}"
+                        ],
+                        "port": "{{port}}",
+                        "path": [
+                          "graphql"
+                        ]
+                      }
+                    },
+                    "response": []
+                  }
+                ],
+                "_postman_id": "6a590bf4-6b11-4820-8ff4-b8d55d94ea59",
+                "_postman_isSubFolder": true
+              },
+              {
+                "name": "mutations",
+                "item": [
+                  {
+                    "name": "requestPhoneCode",
+                    "event": [
+                      {
+                        "listen": "test",
+                        "script": {
+                          "id": "51715ea9-8894-4856-9810-7f1fc0dfa852",
+                          "exec": [
+                            "pm.test(\"requesting a code\", function () {",
+                            "    var jsonData = pm.response.json();",
+                            "    pm.expect(jsonData.data.requestPhoneCode.success).to.eql(true);",
+                            "});",
+                            "",
+                            ""
+                          ],
+                          "type": "text/javascript"
+                        }
+                      }
+                    ],
+                    "_postman_id": "131a3bff-ea53-4d7c-8186-bf2773ee7040",
+                    "protocolProfileBehavior": {
+                      "disableBodyPruning": true
+                    },
+                    "request": {
+                      "method": "POST",
+                      "header": [],
+                      "body": {
+                        "mode": "graphql",
+                        "graphql": {
+                          "query": "mutation requestPhoneCode ($phone: String) {\n    requestPhoneCode (phone: $phone) {\n        success\n    }\n}",
+                          "variables": "{\n  \"phone\": \"{{phone}}\"\n}"
+                        },
+                        "options": {
+                          "graphql": {}
+                        }
+                      },
+                      "url": {
+                        "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+                        "protocol": "{{protocol}}",
+                        "host": [
+                          "{{domain}}"
+                        ],
+                        "port": "{{port}}",
+                        "path": [
+                          "graphql"
+                        ]
+                      }
+                    },
+                    "response": []
+                  },
+                  {
+                    "name": "login (phone+code)",
+                    "event": [
+                      {
+                        "listen": "test",
+                        "script": {
+                          "id": "d0f75371-2d42-483b-988e-50e3ea6f14d4",
+                          "exec": [
+                            "pm.test(\"requesting a token\", function () {",
+                            "    const jsonData = pm.response.json();",
+                            "    const token = jsonData.data.login.token",
+                            "    // token should have two dot \".\"",
+                            "    const parts = token.split(\".\")",
+                            "    pm.expect(parts.length).to.eql(3);",
+                            "    pm.environment.set(\"token\", token)",
+                            "});"
+                          ],
+                          "type": "text/javascript"
+                        }
+                      }
+                    ],
+                    "_postman_id": "75663c44-6c11-4208-81fb-aed35275e5b8",
+                    "protocolProfileBehavior": {
+                      "disableBodyPruning": true
+                    },
+                    "request": {
+                      "method": "POST",
+                      "header": [],
+                      "body": {
+                        "mode": "graphql",
+                        "graphql": {
+                          "query": "mutation login ($phone: String, $code: Int) {\n    login (phone: $phone, code: $code) {\n        token\n    }\n}",
+                          "variables": "{\n  \"phone\": \"{{phone}}\",\n  \"code\": {{code}}\n}"
+                        },
+                        "options": {
+                          "graphql": {}
+                        }
+                      },
+                      "url": {
+                        "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+                        "protocol": "{{protocol}}",
+                        "host": [
+                          "{{domain}}"
+                        ],
+                        "port": "{{port}}",
+                        "path": [
+                          "graphql"
+                        ]
+                      }
+                    },
+                    "response": []
+                  },
+                  {
+                    "name": "login (phone+code+currency)",
+                    "event": [
+                      {
+                        "listen": "test",
+                        "script": {
+                          "id": "3699c954-f061-4cb0-ba3b-0c12884b8ff7",
+                          "exec": [
+                            "pm.test(\"requesting a token\", function () {",
+                            "    const jsonData = pm.response.json();",
+                            "    const token = jsonData.data.login.token",
+                            "    // token should have two dot \".\"",
+                            "    const parts = token.split(\".\")",
+                            "    pm.expect(parts.length).to.eql(3);",
+                            "    pm.environment.set(\"token\", token)",
+                            "});"
+                          ],
+                          "type": "text/javascript"
+                        }
+                      }
+                    ],
+                    "_postman_id": "2bf70061-0945-41bd-8e15-a2c33063aa38",
+                    "protocolProfileBehavior": {
+                      "disableBodyPruning": true
+                    },
+                    "request": {
+                      "method": "POST",
+                      "header": [],
+                      "body": {
+                        "mode": "graphql",
+                        "graphql": {
+                          "query": "mutation login ($phone: String, $code: Int, $currency: String) {\n    login (phone: $phone, code: $code, currency: $currency) {\n        token\n    }\n}",
+                          "variables": "{\n  \"phone\": \"{{phone}}\",\n  \"code\": {{code}},\n  \"currency\": \"{{currency}}\"\n}"
+                        },
+                        "options": {
+                          "graphql": {}
+                        }
+                      },
+                      "url": {
+                        "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+                        "protocol": "{{protocol}}",
+                        "host": [
+                          "{{domain}}"
+                        ],
+                        "port": "{{port}}",
+                        "path": [
+                          "graphql"
+                        ]
+                      }
+                    },
+                    "response": []
+                  }
+                ],
+                "_postman_id": "df6e8c19-ed5e-47b7-b4de-7984c25f709c",
+                "_postman_isSubFolder": true
+              }
+            ],
+            "_postman_id": "b4f20ab7-449c-46ca-84ea-f82e1d5a3ba1",
+            "_postman_isSubFolder": true
+          },
+          {
+            "name": "token",
+            "item": [
+              {
+                "name": "queries",
+                "item": [
+                  {
+                    "name": "wallet",
+                    "_postman_id": "4a9dd665-5a88-434e-bb79-7fc72d6caa71",
+                    "protocolProfileBehavior": {
+                      "disableBodyPruning": true
+                    },
+                    "request": {
+                      "method": "POST",
+                      "header": [],
+                      "body": {
+                        "mode": "graphql",
+                        "graphql": {
+                          "query": "query wallet {\n    wallet {\n        id\n        currency\n        balance\n        transactions {\n            id\n            amount\n            description\n            created_at\n            hash\n            type\n            usd\n            fee\n        }\n    }\n}",
+                          "variables": "{}"
+                        },
+                        "options": {
+                          "graphql": {}
+                        }
+                      },
+                      "url": {
+                        "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+                        "protocol": "{{protocol}}",
+                        "host": [
+                          "{{domain}}"
+                        ],
+                        "port": "{{port}}",
+                        "path": [
+                          "graphql"
+                        ]
+                      }
+                    },
+                    "response": []
+                  },
+                  {
+                    "name": "earnList",
+                    "_postman_id": "2427945c-ffde-4652-975e-f6fac8b630f5",
+                    "protocolProfileBehavior": {
+                      "disableBodyPruning": true
+                    },
+                    "request": {
+                      "method": "POST",
+                      "header": [],
+                      "body": {
+                        "mode": "graphql",
+                        "graphql": {
+                          "query": "query earnList {\n    earnList {\n        id\n        value\n        completed\n    }\n}",
+                          "variables": "{}"
+                        },
+                        "options": {
+                          "graphql": {}
+                        }
+                      },
+                      "url": {
+                        "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+                        "protocol": "{{protocol}}",
+                        "host": [
+                          "{{domain}}"
+                        ],
+                        "port": "{{port}}",
+                        "path": [
+                          "graphql"
+                        ]
+                      }
+                    },
+                    "response": []
+                  },
+                  {
+                    "name": "me",
+                    "_postman_id": "9bb10890-196d-4e67-8de3-4903d61012d0",
+                    "protocolProfileBehavior": {
+                      "disableBodyPruning": true
+                    },
+                    "request": {
+                      "method": "POST",
+                      "header": [],
+                      "body": {
+                        "mode": "graphql",
+                        "graphql": {
+                          "query": "query me {\n    me {\n        id\n        name\n        level\n    }\n}",
+                          "variables": "{}"
+                        },
+                        "options": {
+                          "graphql": {}
+                        }
+                      },
+                      "url": {
+                        "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+                        "protocol": "{{protocol}}",
+                        "host": [
+                          "{{domain}}"
+                        ],
+                        "port": "{{port}}",
+                        "path": [
+                          "graphql"
+                        ]
+                      }
+                    },
+                    "response": []
+                  },
+                  {
+                    "name": "lastOnChain",
+                    "_postman_id": "f2e970ff-32cb-40d3-b6cb-18d28792d54e",
+                    "protocolProfileBehavior": {
+                      "disableBodyPruning": true
+                    },
+                    "request": {
+                      "auth": {
+                        "type": "bearer",
+                        "bearer": [
+                          {
+                            "key": "token",
+                            "value": "{{token}}",
+                            "type": "string"
+                          }
+                        ]
+                      },
+                      "method": "POST",
+                      "header": [],
+                      "body": {
+                        "mode": "graphql",
+                        "graphql": {
+                          "query": "query lastOnChain {\n    getLastOnChainAddress {\n        id\n    }\n}",
+                          "variables": "{}"
+                        },
+                        "options": {
+                          "graphql": {}
+                        }
+                      },
+                      "url": {
+                        "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+                        "protocol": "{{protocol}}",
+                        "host": [
+                          "{{domain}}"
+                        ],
+                        "port": "{{port}}",
+                        "path": [
+                          "graphql"
+                        ]
+                      }
+                    },
+                    "response": []
+                  }
+                ],
+                "_postman_id": "4be17ce8-9841-4b56-ae6d-b69940cb4fce",
+                "_postman_isSubFolder": true
+              },
+              {
+                "name": "mutations",
+                "item": [
+                  {
+                    "name": "earnCompleted (empty)",
+                    "_postman_id": "869f741c-be9a-4942-a7fd-b3d6f2cb57aa",
+                    "protocolProfileBehavior": {
+                      "disableBodyPruning": true
+                    },
+                    "request": {
+                      "method": "POST",
+                      "header": [],
+                      "body": {
+                        "mode": "graphql",
+                        "graphql": {
+                          "query": "mutation earnCompleted ($ids: [ID]) {\n    earnCompleted (ids: $ids) {\n        id\n        value\n        completed\n    }\n}",
+                          "variables": "{\n  \"ids\": []\n}"
+                        },
+                        "options": {
+                          "graphql": {}
+                        }
+                      },
+                      "url": {
+                        "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+                        "protocol": "{{protocol}}",
+                        "host": [
+                          "{{domain}}"
+                        ],
+                        "port": "{{port}}",
+                        "path": [
+                          "graphql"
+                        ]
+                      }
+                    },
+                    "response": []
+                  },
+                  {
+                    "name": "earnCompleted",
+                    "_postman_id": "b0083668-bdcf-4fa6-ab7b-ee13f1b773bb",
+                    "protocolProfileBehavior": {
+                      "disableBodyPruning": true
+                    },
+                    "request": {
+                      "method": "POST",
+                      "header": [],
+                      "body": {
+                        "mode": "graphql",
+                        "graphql": {
+                          "query": "mutation earnCompleted ($ids: [ID]) {\n    earnCompleted (ids: $ids) {\n        id\n        value\n        completed\n    }\n}",
+                          "variables": "{\n  \"ids\": [\n    \"whatIsBitcoin\",\n    \"sat\",\n    \"whereBitcoinExist\"\n  ]\n}"
+                        },
+                        "options": {
+                          "graphql": {}
+                        }
+                      },
+                      "url": {
+                        "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+                        "protocol": "{{protocol}}",
+                        "host": [
+                          "{{domain}}"
+                        ],
+                        "port": "{{port}}",
+                        "path": [
+                          "graphql"
+                        ]
+                      }
+                    },
+                    "response": []
+                  },
+                  {
+                    "name": "onchain.getNewAddress",
+                    "_postman_id": "a76446a6-398e-4e3c-b9bd-032730ab5e02",
+                    "protocolProfileBehavior": {
+                      "disableBodyPruning": true
+                    },
+                    "request": {
+                      "auth": {
+                        "type": "bearer",
+                        "bearer": [
+                          {
+                            "key": "token",
+                            "value": "{{token}}",
+                            "type": "string"
+                          }
+                        ]
+                      },
+                      "method": "POST",
+                      "header": [],
+                      "body": {
+                        "mode": "graphql",
+                        "graphql": {
+                          "query": "mutation onchain {\n    onchain {\n        getNewAddress\n    }\n}",
+                          "variables": "{}"
+                        },
+                        "options": {
+                          "graphql": {}
+                        }
+                      },
+                      "url": {
+                        "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+                        "protocol": "{{protocol}}",
+                        "host": [
+                          "{{domain}}"
+                        ],
+                        "port": "{{port}}",
+                        "path": [
+                          "graphql"
+                        ]
+                      }
+                    },
+                    "response": []
+                  },
+                  {
+                    "name": "onchain.getFee",
+                    "_postman_id": "851e81b9-c709-4054-985e-19568c88f4e6",
+                    "protocolProfileBehavior": {
+                      "disableBodyPruning": true
+                    },
+                    "request": {
+                      "auth": {
+                        "type": "bearer",
+                        "bearer": [
+                          {
+                            "key": "token",
+                            "value": "{{token}}",
+                            "type": "string"
+                          }
+                        ]
+                      },
+                      "method": "POST",
+                      "header": [],
+                      "body": {
+                        "mode": "graphql",
+                        "graphql": {
+                          "query": "mutation onchain($address: String!) {\n    onchain {\n        getFees(address: $address)\n    }\n}",
+                          "variables": "{\n    \"address\": \"2NAJJxF7Vi9wgxHpaYAVjhBRspRfUcyDy1Z\"\n}"
+                        },
+                        "options": {
+                          "graphql": {}
+                        }
+                      },
+                      "url": {
+                        "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+                        "protocol": "{{protocol}}",
+                        "host": [
+                          "{{domain}}"
+                        ],
+                        "port": "{{port}}",
+                        "path": [
+                          "graphql"
+                        ]
+                      }
+                    },
+                    "response": []
+                  },
+                  {
+                    "name": "addInvoice",
+                    "event": [
+                      {
+                        "listen": "test",
+                        "script": {
+                          "id": "90f0cf2d-6db7-4d76-b026-714e8b186a1f",
+                          "exec": [
+                            "pm.test(\"add invoice\", function () {",
+                            "    const jsonData = pm.response.json();",
+                            "    const invoice = jsonData.data.invoice.addInvoice",
+                            "    pm.expect(invoice.substring(0,2)).to.eql(\"ln\")",
+                            "});"
+                          ],
+                          "type": "text/javascript"
+                        }
+                      }
+                    ],
+                    "_postman_id": "2a3aed13-0ffc-41fa-b382-f5c7be876d45",
+                    "protocolProfileBehavior": {
+                      "disableBodyPruning": true
+                    },
+                    "request": {
+                      "method": "POST",
+                      "header": [],
+                      "body": {
+                        "mode": "graphql",
+                        "graphql": {
+                          "query": "mutation invoice ($value: Int, $memo: String) {\n    invoice {\n        addInvoice (value: $value, memo: $memo)\n    }\n}",
+                          "variables": "{\n  \"value\": 1000,\n  \"memo\": \"memo Invoice GQL\"\n}"
+                        },
+                        "options": {
+                          "graphql": {}
+                        }
+                      },
+                      "url": {
+                        "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+                        "protocol": "{{protocol}}",
+                        "host": [
+                          "{{domain}}"
+                        ],
+                        "port": "{{port}}",
+                        "path": [
+                          "graphql"
+                        ]
+                      }
+                    },
+                    "response": []
+                  },
+                  {
+                    "name": "addInvoiceZeroAmount",
+                    "event": [
+                      {
+                        "listen": "test",
+                        "script": {
+                          "id": "61a910cd-76a2-446a-b351-6d83cb7c22cb",
+                          "exec": [
+                            "pm.test(\"add invoice\", function () {",
+                            "    const jsonData = pm.response.json();",
+                            "    const invoice = jsonData.data.invoice.addInvoice",
+                            "    pm.expect(invoice.substring(0,2)).to.eql(\"ln\")",
+                            "});"
+                          ],
+                          "type": "text/javascript"
+                        }
+                      }
+                    ],
+                    "_postman_id": "f40b5d6b-9f00-4b8c-9c45-da39d884fd12",
+                    "protocolProfileBehavior": {
+                      "disableBodyPruning": true
+                    },
+                    "request": {
+                      "method": "POST",
+                      "header": [],
+                      "body": {
+                        "mode": "graphql",
+                        "graphql": {
+                          "query": "mutation invoice {\n    invoice {\n        addInvoice\n    }\n}",
+                          "variables": "{\n}"
+                        },
+                        "options": {
+                          "graphql": {}
+                        }
+                      },
+                      "url": {
+                        "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+                        "protocol": "{{protocol}}",
+                        "host": [
+                          "{{domain}}"
+                        ],
+                        "port": "{{port}}",
+                        "path": [
+                          "graphql"
+                        ]
+                      }
+                    },
+                    "response": []
+                  },
+                  {
+                    "name": "addDeviceToken",
+                    "_postman_id": "aeca95db-0227-4ca4-90d7-356a41618914",
+                    "protocolProfileBehavior": {
+                      "disableBodyPruning": true
+                    },
+                    "request": {
+                      "auth": {
+                        "type": "bearer",
+                        "bearer": [
+                          {
+                            "key": "token",
+                            "value": "{{token}}",
+                            "type": "string"
+                          }
+                        ]
+                      },
+                      "method": "POST",
+                      "header": [],
+                      "body": {
+                        "mode": "graphql",
+                        "graphql": {
+                          "query": "mutation addDeviceToken($deviceToken: String) {\n    addDeviceToken(deviceToken: $deviceToken) {\n        success\n    }\n}",
+                          "variables": "{\n    \"deviceToken\": \"test\"\n}"
+                        },
+                        "options": {
+                          "graphql": {}
+                        }
+                      },
+                      "url": {
+                        "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+                        "protocol": "{{protocol}}",
+                        "host": [
+                          "{{domain}}"
+                        ],
+                        "port": "{{port}}",
+                        "path": [
+                          "graphql"
+                        ]
+                      }
+                    },
+                    "response": []
+                  }
+                ],
+                "_postman_id": "2643f148-1d17-4667-acec-ad29dfb98932",
+                "event": [
+                  {
+                    "listen": "prerequest",
+                    "script": {
+                      "id": "cad66d74-351b-4ab2-ba4f-dba8a0903db5",
+                      "type": "text/javascript",
+                      "exec": [
+                        ""
+                      ]
+                    }
+                  },
+                  {
+                    "listen": "test",
+                    "script": {
+                      "id": "d13a0524-f9b5-48b3-8ac9-65950e15f4b6",
+                      "type": "text/javascript",
+                      "exec": [
+                        ""
+                      ]
+                    }
+                  }
+                ],
+                "_postman_isSubFolder": true
+              }
+            ],
+            "_postman_id": "09985ead-e8b9-450b-adf3-2c6eda1fb1fd",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "event": [
+              {
+                "listen": "prerequest",
+                "script": {
+                  "id": "1a50ec40-6823-49cd-9122-8050fc88caff",
+                  "type": "text/javascript",
+                  "exec": [
+                    ""
+                  ]
+                }
+              },
+              {
+                "listen": "test",
+                "script": {
+                  "id": "ae312eb6-510f-4126-acae-f8122e9bb4ef",
+                  "type": "text/javascript",
+                  "exec": [
+                    ""
+                  ]
+                }
+              }
+            ],
+            "_postman_isSubFolder": true
+          }
+        ],
+        "_postman_id": "d263a696-1465-491c-90d9-97d149e71993",
+        "event": [
+          {
+            "listen": "prerequest",
+            "script": {
+              "id": "cfcd067f-a618-4e27-a9b8-c3818b3182fb",
+              "type": "text/javascript",
+              "exec": [
+                ""
+              ]
+            }
+          },
+          {
+            "listen": "test",
+            "script": {
+              "id": "7362980b-fb23-4481-99b1-4509ff655a0d",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"Status code is 200\", function () {",
+                "    pm.response.to.have.status(200);",
+                "});",
+                "",
+                "pm.test(\"has no error\", function () {",
+                "    const jsonData = pm.response.json();",
+                "    pm.expect(jsonData.errors).to.be.undefined",
+                "})"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "todo",
+        "item": [
+          {
+            "name": "deleteUser",
+            "_postman_id": "d9acf3bd-6002-4ca7-88fa-5dea49408ba0",
+            "protocolProfileBehavior": {
+              "disableBodyPruning": true
+            },
+            "request": {
+              "method": "POST",
+              "header": [],
+              "body": {
+                "mode": "graphql",
+                "graphql": {
+                  "query": "mutation deleteUser {\n    deleteUser\n}",
+                  "variables": "{}"
+                },
+                "options": {
+                  "graphql": {}
+                }
+              },
+              "url": {
+                "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+                "protocol": "{{protocol}}",
+                "host": [
+                  "{{domain}}"
+                ],
+                "port": "{{port}}",
+                "path": [
+                  "graphql"
+                ]
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "updateUser",
+            "_postman_id": "428bc3ce-6b96-4065-8bda-903ffa35aea4",
+            "protocolProfileBehavior": {
+              "disableBodyPruning": true
+            },
+            "request": {
+              "method": "POST",
+              "header": [],
+              "body": {
+                "mode": "graphql",
+                "graphql": {
+                  "query": "mutation updateUser ($user: InputUser) {\n    updateUser (user: $user) {\n        id\n        name\n        level\n    }\n}",
+                  "variables": "{\n  \"user\": {\n    \"id\": 0,\n    \"level\": 0,\n    \"deviceToken\": \"\"\n  }\n}"
+                },
+                "options": {
+                  "graphql": {}
+                }
+              },
+              "url": {
+                "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+                "protocol": "{{protocol}}",
+                "host": [
+                  "{{domain}}"
+                ],
+                "port": "{{port}}",
+                "path": [
+                  "graphql"
+                ]
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "payInvoice",
+            "_postman_id": "9f7fb88e-0210-45d6-96a1-c09ba3ac6861",
+            "protocolProfileBehavior": {
+              "disableBodyPruning": true
+            },
+            "request": {
+              "method": "POST",
+              "header": [],
+              "body": {
+                "mode": "graphql",
+                "graphql": {
+                  "query": "mutation payInvoice($invoice: String!, $amount: Int) {\n    invoice {\n        payInvoice(invoice: $invoice, amount: $amount)\n    }\n}",
+                  "variables": "{\n  \"invoice\": \"lnbcrt120n1p05z3mmpp542cl7zycquxujevz4vmvueuf2yfglw9n3ad25vmsy2et5gxfmjksdqqcqzpgsp5g8lehuzt8k78kf0xyc63eukkgs2l7qw459kzkuhymv9q6v2utcds9qy9qsqwwe2azwwelu7ymf4ty8tj57c7lvq0drzpyufmeyxlrywghx6hvfnxl4k4xrtqgv955h7a4gyttqdgcnetuke2334xs6csw7akjll2hsqexzc4t\"\n}"
+                },
+                "options": {
+                  "graphql": {}
+                }
+              },
+              "url": {
+                "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+                "protocol": "{{protocol}}",
+                "host": [
+                  "{{domain}}"
+                ],
+                "port": "{{port}}",
+                "path": [
+                  "graphql"
+                ]
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "updatePendingInvoice",
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "9b841939-3aa5-43ee-90e9-43e196454482",
+                  "exec": [
+                    "// todo // being able to have https://blog.postman.com/writing-a-behaviour-driven-api-testing-environment-within-postman/ in the library",
+                    "// need to compress it and load it with eval()",
+                    "",
+                    "// TODO: set the parameter of the invoice to a real hash"
+                  ],
+                  "type": "text/javascript"
+                }
+              }
+            ],
+            "_postman_id": "7c549ae6-62c7-40c0-a3f1-ad0c0f3bbec5",
+            "protocolProfileBehavior": {
+              "disableBodyPruning": true
+            },
+            "request": {
+              "method": "POST",
+              "header": [],
+              "body": {
+                "mode": "graphql",
+                "graphql": {
+                  "query": "mutation invoice ($hash: String) {\n    invoice {\n        updatePendingInvoice (hash: $hash)\n    }\n}",
+                  "variables": "{\n  \"hash\": \"9370880d24e0a0dfc4304ce3009f58e06fba301973e765346b06441ae3236c90\"\n}"
+                },
+                "options": {
+                  "graphql": {}
+                }
+              },
+              "url": {
+                "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+                "protocol": "{{protocol}}",
+                "host": [
+                  "{{domain}}"
+                ],
+                "port": "{{port}}",
+                "path": [
+                  "graphql"
+                ]
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "openChannel",
+            "_postman_id": "70c9bbdd-7f13-43cb-868d-08c19055d9c7",
+            "protocolProfileBehavior": {
+              "disableBodyPruning": true
+            },
+            "request": {
+              "method": "POST",
+              "header": [],
+              "body": {
+                "mode": "graphql",
+                "graphql": {
+                  "query": "mutation openChannel ($local_tokens: Int, $public_key: String, $socket: String) {\n    openChannel (local_tokens: $local_tokens, public_key: $public_key, socket: $socket) {\n        tx\n    }\n}",
+                  "variables": "{\n  \"local_tokens\": 10000000,\n  \"public_key\": \"03864ef025fde8fb587d989186ce6a4a186895ee44a926bfc370e2c366597a3f8f\",\n  \"socket\": \"34.239.230.56:9735\"\n}"
+                },
+                "options": {
+                  "graphql": {}
+                }
+              },
+              "url": {
+                "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+                "protocol": "{{protocol}}",
+                "host": [
+                  "{{domain}}"
+                ],
+                "port": "{{port}}",
+                "path": [
+                  "graphql"
+                ]
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "sendMessage",
+            "_postman_id": "d9107142-be9e-4ff5-af93-00d332f783c1",
+            "protocolProfileBehavior": {
+              "disableBodyPruning": true
+            },
+            "request": {
+              "auth": {
+                "type": "bearer",
+                "bearer": [
+                  {
+                    "key": "token",
+                    "value": "{{token}}",
+                    "type": "string"
+                  }
+                ]
+              },
+              "method": "POST",
+              "header": [],
+              "body": {
+                "mode": "graphql",
+                "graphql": {
+                  "query": "mutation testMessage {\n    testMessage {\n        success\n    }\n}",
+                  "variables": "{}"
+                },
+                "options": {
+                  "graphql": {}
+                }
+              },
+              "url": {
+                "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+                "protocol": "{{protocol}}",
+                "host": [
+                  "{{domain}}"
+                ],
+                "port": "{{port}}",
+                "path": [
+                  "graphql"
+                ]
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "onchain.pay",
+            "_postman_id": "a63014e6-f96f-4531-9758-7681f7f69a99",
+            "protocolProfileBehavior": {
+              "disableBodyPruning": true
+            },
+            "request": {
+              "auth": {
+                "type": "bearer",
+                "bearer": [
+                  {
+                    "key": "token",
+                    "value": "{{token}}",
+                    "type": "string"
+                  }
+                ]
+              },
+              "method": "POST",
+              "header": [],
+              "body": {
+                "mode": "graphql",
+                "graphql": {
+                  "query": "mutation onchain($address: String!, $amount: Int!) {\n    onchain {\n        pay(address: $address, amount: $amount)\n    }\n}",
+                  "variables": "{\n    \"address\": \"bcrt1qam64av6cyhjsgdwajjpe0l9z8ju4w7rjryecf3\",\n    \"amount\": 10000\n}"
+                },
+                "options": {
+                  "graphql": {}
+                }
+              },
+              "url": {
+                "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+                "protocol": "{{protocol}}",
+                "host": [
+                  "{{domain}}"
+                ],
+                "port": "{{port}}",
+                "path": [
+                  "graphql"
+                ]
+              }
+            },
+            "response": []
+          }
+        ],
+        "_postman_id": "c0c07eeb-135b-4253-b620-69cc6fb62812",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "event": [
+          {
+            "listen": "prerequest",
+            "script": {
+              "id": "3cefbaed-bc5f-4e24-a83b-b42f3f788430",
+              "type": "text/javascript",
+              "exec": [
+                ""
+              ]
+            }
+          },
+          {
+            "listen": "test",
+            "script": {
+              "id": "1722ab67-4dfe-456d-bfeb-d62648a5663f",
+              "type": "text/javascript",
+              "exec": [
+                ""
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "event": [
+      {
+        "listen": "prerequest",
+        "script": {
+          "id": "e873695f-5e43-45db-8e7e-283fd412737c",
+          "type": "text/javascript",
+          "exec": [
+            ""
+          ]
+        }
+      },
+      {
+        "listen": "test",
+        "script": {
+          "id": "49c120ad-97f5-48b5-94da-540f8aaa7b89",
+          "type": "text/javascript",
+          "exec": [
+            ""
+          ]
+        }
+      }
+    ]
+  }
+}

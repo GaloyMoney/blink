@@ -44,7 +44,23 @@ afterAll(async () => {
 
 const amount = 10000 // sats
 
-it('Sends onchain payment', async () => {
+
+it('testing Fee', async () => {
+  {
+    const address = await bitcoindClient.getNewAddress()
+    const fee = await userWallet0.getOnchainFee({address})
+    expect(fee).toBeGreaterThan(0)
+  }
+  
+  {
+    const address = await userWallet3.getOnChainAddress()
+    const fee = await userWallet0.getOnchainFee({address})
+    expect(fee).toBe(0)
+  }
+  
+}, 10000)
+
+it('Sends onchain payment successfully', async () => {
   const { address } = await lnService.createChainAddress({ format: 'p2wpkh', lnd: lndOutside1 })
 
   const sub = lnService.subscribeToTransactions({ lnd: lndMain })
@@ -88,8 +104,13 @@ it('Sends onchain payment', async () => {
   expect(sendNotification.mock.calls[0][0].title).toBe(`Your on-chain transaction has been confirmed`)
   expect(sendNotification.mock.calls[0][0].data.type).toBe("onchain_payment")
 
-  const { results: [{ pending, fee }] } = await MainBook.ledger({ account: userWallet0.accountPath, hash: pendingTxn.hash, memo: "onchainpayment" })
+  const { results: [{ pending, fee, feeUsd }] } = await MainBook.ledger({ account: userWallet0.accountPath, hash: pendingTxn.hash, memo: "onchainpayment" })
+
+  console.log({ pending, fee, feeUsd })
+
 	expect(pending).toBe(false)
+	expect(fee).toBeGreaterThan(0)
+	expect(feeUsd).toBeGreaterThan(0)
 
 	const [txn] = (await userWallet0.getTransactions()).filter(tx => tx.hash === pendingTxn.hash)
 	expect(txn.amount).toBe(- amount - fee)
@@ -112,6 +133,12 @@ it('makes onchain on-us transaction', async () => {
   expect(paymentResult).toBe(true)
   expect(finalBalanceUser0).toBe(initialBalanceUser0 - amount)
   expect(finalBalanceUser3).toBe(initialBalanceUser3 + amount)
+
+  const { results: [{ pending, fee, feeUsd }] } = await MainBook.ledger({ account: userWallet0.accountPath, type: "onchain_on_us" })
+  expect(pending).toBe(false)
+	expect(fee).toBe(0)
+	expect(feeUsd).toBe(0)
+
   await checkIsBalanced()
 }, 10000)
 
