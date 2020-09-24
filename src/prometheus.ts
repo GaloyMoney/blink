@@ -30,9 +30,6 @@ const main = async () => {
     } catch (err) {
       console.error(`issue getting price: ${err}`)
     }
-
-    await adminWallet.updateEscrows()
-    await adminWallet.updateUsersPendingPayment()
     
     const {equity, lightning, liabilities} = await adminWallet.getBalanceSheet()
     const { assetsLiabilitiesDifference, lndBalanceSheetDifference } = await adminWallet.balanceSheetIsBalanced()
