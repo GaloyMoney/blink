@@ -12,8 +12,10 @@ const mongoose = require("mongoose")
 
 let userWalletUsd, initBalanceUsd
 let userWallet2, initBalance2
+let lastPrice
 
 const amountInvoiceUsd = 2
+const amountInvoice = 1000
 
 beforeAll(async () => {
   await setupMongoConnection()
@@ -21,6 +23,9 @@ beforeAll(async () => {
   expect(userWalletUsd.currency).toBe("USD")
 
   userWallet2 = await getUserWallet(2)
+
+  const price = new Price()
+  lastPrice = await price.lastPrice()
 });
 
 beforeEach(async () => {
@@ -41,8 +46,6 @@ it('add invoice with dollar amount', async () => {
   expect(uid).toBe(userWalletUsd.uid)
   expect(usd).toBe(amountInvoiceUsd)
   
-  const price = new Price()
-  const lastPrice = await price.lastPrice()
   const satoshis = getAmount(request)!
   expect(usd).toBeCloseTo(satoshis * lastPrice)
 })
@@ -75,11 +78,11 @@ it('receives payment from outside', async () => {
 }, 50000)
 
 
-// it('payInvoice', async () => {
-//   const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: amountInvoice })
-//   const result = await initBalanceUsd.pay({ invoice: request })
-//   expect(result).toBe("success")
-//   const finalBalance = await initBalanceUsd.getBalance()
-//   expect(finalBalance).toBe(initBalanceUsd - amountInvoice)
-//   await checkIsBalanced()
-// }, 50000)
+it('payInvoice', async () => {
+  const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: amountInvoice })
+  const result = await userWalletUsd.pay({ invoice: request })
+  expect(result).toBe("success")
+  const finalBalance = await userWalletUsd.getBalance()
+  expect(finalBalance).toBeCloseTo(initBalanceUsd - amountInvoice * lastPrice)
+  await checkIsBalanced()
+}, 50000)
