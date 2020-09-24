@@ -7,7 +7,7 @@ const main = async () => {
 
 	await adminWallet.updateEscrows()
     await adminWallet.updateUsersPendingPayment()
-
+    return
 }
 
 setupMongoConnection().then(() => main()).catch((err) => console.log(err))
