@@ -42,11 +42,11 @@ kubectlLndDeletionWait () {
 # we use || : to not return an error if the pod doesn't exist, or if no update is requiered (will timeout in this case)
 # TODO: using --wait on upgrade would simplify this upgrade, but is currently running into some issues
   echo "waiting for pod deletion"
-  kubectl wait -n=$NAMESPACE --for=delete --timeout=45s pod -l app=lnd-container || :
+  kubectl wait -n=$NAMESPACE --for=delete --timeout=45s pod -l type=lnd || :
 }
 
 exportMacaroon() {
-  export "$2"=$(kubectl exec -n=$NAMESPACE lnd-container-"$1" -c lnd-container -- base64 /root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
+  export "$2"=$(kubectl exec -n=$NAMESPACE $1 -c lnd-container -- base64 /root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
 }
 
 createLoopConfigmaps() {
@@ -83,10 +83,10 @@ fi
 
 # # add extra sleep time... seems lnd is quite long to show up some time
 sleep 15
-kubectlWait app=lnd-container
+kubectlWait type=lnd
 
 
-exportMacaroon 0 MACAROON
+exportMacaroon lnd-container-0 MACAROON
 export TLS=$(kubectl -n $NAMESPACE exec lnd-container-0 -c lnd-container -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
 
 helmUpgrade redis bitnami/redis --set=master.service.type=$SERVICETYPE --set=master.persistence.enabled=$REDISPERSISTENCE --set=usePassword=false --set=image.tag=6.0.8-debian-10-r0  --set=cluster.slaveCount=0
@@ -112,12 +112,12 @@ fi
 
 if [ "$NETWORK" == "regtest" ]
 then
-  exportMacaroon 1 MACAROONOUTSIDE1
-  exportMacaroon 2 MACAROONOUTSIDE2
+  exportMacaroon lnd-container-outside-1-0 MACAROONOUTSIDE1
+  exportMacaroon lnd-container-outside-2-0 MACAROONOUTSIDE2
   
   # Todo: refactor
-  export TLSOUTSIDE1=$(kubectl -n $NAMESPACE exec lnd-container-1 -c lnd-container -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
-  export TLSOUTSIDE2=$(kubectl -n $NAMESPACE exec lnd-container-2 -c lnd-container -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
+  export TLSOUTSIDE1=$(kubectl -n $NAMESPACE exec lnd-container-outside-1-0 -c lnd-container -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
+  export TLSOUTSIDE2=$(kubectl -n $NAMESPACE exec lnd-container-outside-2-0 -c lnd-container -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
 
   helmUpgrade test-chart -f ~/GaloyApp/backend/test-chart/values.yaml --set \
   macaroon=$MACAROON,macaroonoutside1=$MACAROONOUTSIDE1,macaroonoutside2=$MACAROONOUTSIDE2,image.tag=$CIRCLE_SHA1,tlsoutside1=$TLSOUTSIDE1,tlsoutside2=$TLSOUTSIDE2,tls=$TLS \
