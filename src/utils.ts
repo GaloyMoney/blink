@@ -1,4 +1,5 @@
 import * as jwt from 'jsonwebtoken'
+import * as lnService from "ln-service"
 import * as moment from 'moment'
 import { Price } from "./priceImpl"
 import { sendText } from './text'
@@ -26,19 +27,20 @@ export const sat2btc = (sat: number) => {
   return sat / Math.pow(10, 8)
 }
 
-export const getCurrencyEquivalent = async ({sats, usd, fee}: {sats: number, usd?: number, fee?: number}) => {
+export const addCurrentValueToMetadata = async (metadata, {sats, usd, fee}: {sats: number, usd?: number, fee?: number}) => {
   let _usd = usd
-  let feeUsd
-
+  
   if (!usd) {
     _usd = await satsToUsd(sats)
   }
 
+  metadata['sats'] = sats
+  metadata['usd'] = _usd
+  
   if (fee) {
-    feeUsd = await satsToUsd(fee)
+    metadata['fee'] = fee
+    metadata['feeUsd'] = await satsToUsd(fee)
   }
-
-  return {fee, feeUsd, sats, usd: _usd}
 }
 
 export const satsToUsd = async sats => {

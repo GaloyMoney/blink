@@ -3,7 +3,7 @@ import { intersection, last } from "lodash";
 import { disposer } from "./lock";
 import { MainBook, Transaction, User } from "./mongodb";
 import { IOnChainPayment, ISuccess } from "./types";
-import { getCurrencyEquivalent, getAuth, logger, sendToAdmin } from "./utils";
+import { addCurrentValueToMetadata, getAuth, logger, sendToAdmin } from "./utils";
 import { customerPath } from "./wallet";
 const util = require('util')
 
@@ -57,9 +57,8 @@ export const OnChainMixin = (superclass) => class extends superclass {
       }
 
       const sats = amount
-
-      const addedMetadata = await getCurrencyEquivalent({ sats, fee: 0 })
-      const metadata = Object.assign({ currency: this.currency, type: "onchain_on_us", pending: false }, addedMetadata)
+      const metadata = { currency: this.currency, type: "onchain_on_us", pending: false }
+      await addCurrentValueToMetadata(metadata, { sats, fee: 0 })
 
       return await using(disposer(this.uid), async (lock) => {
 
@@ -67,12 +66,10 @@ export const OnChainMixin = (superclass) => class extends superclass {
         if (balance < amount) {
           throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${amount}`)
         }
-
         await MainBook.entry()
-          .debit(customerPath(payeeUser._id), sats, metadata)
           .credit(this.accountPath, sats, metadata)
+          .debit(customerPath(payeeUser._id), sats, metadata)
           .commit()
-        
         return true
       })
     }
@@ -120,9 +117,8 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
       {
         const sats = amount + fee
-        
-        const addedMetadata = await getCurrencyEquivalent({ sats, fee })
-        const metadata = Object.assign({ currency: this.currency, hash: id, type: "onchain_payment", pending: true }, addedMetadata)
+        const metadata = { currency: this.currency, hash: id, type: "onchain_payment", pending: true }
+        await addCurrentValueToMetadata(metadata, { sats, fee })
 
         // TODO/FIXME refactor. add the transaction first and set the fees in a second tx.
         await MainBook.entry(description)
@@ -130,7 +126,6 @@ export const OnChainMixin = (superclass) => class extends superclass {
           .credit(this.accountPath, sats, metadata)
           .commit()
       }
-
       return true
 
     })
@@ -254,16 +249,14 @@ export const OnChainMixin = (superclass) => class extends superclass {
         if (!mongotx) {
 
           const sats = matched_tx.tokens
+          const metadata = { currency: this.currency, type, hash: matched_tx.id }
+          await addCurrentValueToMetadata(metadata, { sats })
 
-          const addedMetadata = await getCurrencyEquivalent({ sats })
-          const metadata = Object.assign({ currency: this.currency, type, hash: matched_tx.id }, addedMetadata)
-    
           await MainBook.entry()
-            .debit(this.accountPath, sats, metadata)
             .credit('Assets:Reserve:Lightning', sats, metadata)
+            .debit(this.accountPath, sats, metadata)
             .commit()
         }
-
       }
 
     })
