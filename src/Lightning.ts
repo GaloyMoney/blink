@@ -2,11 +2,11 @@ const lnService = require('ln-service');
 import { createHash, randomBytes } from "crypto";
 import moment from "moment";
 import { disposer } from "./lock";
-import { InvoiceUser, MainBook, Transaction, User } from "./mongodb";
+import { InvoiceUser, MainBook, Transaction } from "./mongodb";
 import { sendInvoicePaidNotification } from "./notification";
-import { IAddInvoiceInternalRequest, ILightningTransaction, IPaymentRequest, TransactionType } from "./types";
+import { IAddInvoiceInternalRequest, ILightningTransaction, IPaymentRequest } from "./types";
 import { addCurrentValueToMetadata, getAuth, logger, measureTime, timeout } from "./utils";
-import { customerPath } from "./wallet"
+import { customerPath } from "./wallet";
 
 const util = require('util')
 
@@ -67,6 +67,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       description: item.memo || item.type, // TODO remove `|| item.type` once users have upgraded
       hash: item.hash,
       fee: item.fee,
+      feeUsd: item.feeUsd,
       // destination: TODO
       type: item.type,
       pending: item.pending,
@@ -184,7 +185,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         {
           const sats = tokens
           const metadata = { currency: this.currency, hash: id, type: "on_us", pending: false }
-          await addCurrentValueToMetadata(metadata, {sats})
+          await addCurrentValueToMetadata(metadata, {sats, fee: 0})
 
           // TODO XXX FIXME:
           // manage the case where a user in USD tries to pay another used in BTC with an onUS transaction
@@ -263,7 +264,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         const sats = tokens + fee
 
         const metadata = { currency: this.currency, hash: id, type: "payment", pending: true, fee }
-        await addCurrentValueToMetadata(metadata, {sats})
+        await addCurrentValueToMetadata(metadata, {sats, fee})
 
         entry = await MainBook.entry(description)
           .debit('Assets:Reserve:Lightning', sats, metadata)
@@ -420,7 +421,7 @@ export const LightningMixin = (superclass) => class extends superclass {
           const usd = invoiceUser.usd
 
           const metadata = { hash, type: "invoice" }
-          await addCurrentValueToMetadata(metadata, {usd, sats})
+          await addCurrentValueToMetadata(metadata, {usd, sats, fee: 0})
 
           const brokerAccount = 'Liabilities:Broker'
 

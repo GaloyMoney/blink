@@ -10,6 +10,7 @@ type Transaction {
   sat: Int,
   pending: Boolean,
   type: String!,
+  feeUsd: Float, # TODO: move to Int 
 }
 
 type Price {
@@ -47,6 +48,7 @@ type PendingOnchainPayment {
 type OnChain {
   getNewAddress: String
   pay(address: String!, amount: Int!): Success
+  getFee(address: String!): Int # sats
 }
 
 type LastOnChainAddress {

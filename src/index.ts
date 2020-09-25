@@ -79,9 +79,7 @@ const resolvers = {
       minBuildNumberAndroid: getMinBuildNumber,
       minBuildNumberIos: getMinBuildNumber,
     }),
-    pendingOnChainPayment: async (_, __, { lightningWallet }) => {
-      return lightningWallet.getPendingIncomingOnchainPayments()
-    },
+    pendingOnChainPayment: async (_, __, { lightningWallet }) => lightningWallet.getPendingIncomingOnchainPayments(),
     prices: async () => {
       try {
         const price = new Price()
@@ -108,18 +106,11 @@ const resolvers = {
 
       return response
     },
-    getLastOnChainAddress: async (_, __, { lightningWallet }) => {
-      const getLastAddress = await lightningWallet.getLastOnChainAddress()
-      return {id: getLastAddress}
-    }
+    getLastOnChainAddress: async (_, __, { lightningWallet }) => ({id: lightningWallet.getLastOnChainAddress()}),
   },
   Mutation: {
-    requestPhoneCode: async (_, { phone }) => {
-      return { success: requestPhoneCode({ phone }) }
-    },
-    login: async (_, { phone, code, currency }) => {
-      return { token: login({ phone, code, currency }) }
-    },
+    requestPhoneCode: async (_, { phone }) => ({ success: requestPhoneCode({ phone }) }),
+    login: async (_, { phone, code, currency }) => ({ token: login({ phone, code, currency }) }),
     updateUser: async (_, __,  { lightningWallet }) => {
       // FIXME manage uid
       // TODO only level for now
@@ -134,56 +125,20 @@ const resolvers = {
       const lightningAdminWallet = new AdminWallet()
       return { tx: lightningAdminWallet.openChannel({ local_tokens, public_key, socket }) }
     },
-    invoice: async (_, __, { lightningWallet }) => {
-      return ({
-
-        addInvoice: async ({ value, memo }) => {
-          try {
-            const result = await lightningWallet.addInvoice({ value, memo })
-            return result
-          } catch (err) {
-            logger.error({err}, "addInvoice error")
-            throw err
-          }
-        },
-        updatePendingInvoice: async ({ hash }) => {
-          try {
-            return await lightningWallet.updatePendingInvoice({ hash })
-          } catch (err) {
-            logger.error({err}, "updatePendingInvoice error")
-            throw err
-          }
-        },
-        payInvoice: async ({ invoice, amount }) => {
-          try {
-            const success = await lightningWallet.pay({ invoice, amount })
-            logger.debug({ success }, "succesful payment for user %o", lightningWallet.uid)
-            return success
-          } catch (err) {
-            logger.error({ err }, "lightning payment error")
-            throw err
-          }
-        },
-
-      })
-    },
-    earnCompleted: async (_, { ids }, { lightningWallet }) => {
-      return lightningWallet.addEarn(ids)
-    },
+    invoice: async (_, __, { lightningWallet }) => ({
+      addInvoice: async ({ value, memo }) => lightningWallet.addInvoice({ value, memo }),
+      updatePendingInvoice: async ({ hash }) => lightningWallet.updatePendingInvoice({ hash }),
+      payInvoice: async ({ invoice, amount }) => lightningWallet.pay({ invoice, amount })
+    }),
+    earnCompleted: async (_, { ids }, { lightningWallet }) => lightningWallet.addEarn(ids),
     deleteUser: () => {
       // TODO
     },
-    onchain: async (_, __, { lightningWallet }) => {
-      return {
-        getNewAddress: () => {
-          try {
-            return lightningWallet.getOnChainAddress()
-          } catch (err) {
-            logger.error({ err }, "error with getNewAddress")
-          }},
-        pay: ({address, amount}) => ({success: lightningWallet.onChainPay({address, amount})}),
-      }
-    },
+    onchain: async (_, __, { lightningWallet }) => ({
+      getNewAddress: () => lightningWallet.getOnChainAddress(),
+      pay: ({address, amount}) => ({success: lightningWallet.onChainPay({address, amount})}),
+      getFee: ({address}) => lightningWallet.getOnchainFee({address}),
+    }),
     addDeviceToken: async (_, { deviceToken }, { uid }) => {
       // TODO: refactor to a higher level User class
       const user = await User.findOne({ _id: uid })

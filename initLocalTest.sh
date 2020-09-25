@@ -31,8 +31,18 @@ helmUpgrade () {
 }
 
 kubectlWait () {
-  sleep 1
+  echo "waiting for -n=$NAMESPACE -l $@"
+  sleep 6
   kubectl wait -n=$NAMESPACE --for=condition=ready --timeout=1200s pod -l "$@"
+}
+
+kubectlLndDeletionWait () {
+# if the lnd pod needs upgrade, we want to make sure we wait for it to be removed. 
+# otherwise it could be seen as ready by `kubectlWait app=lnd-container` while it could just have been in the process of still winding down
+# we use || : to not return an error if the pod doesn't exist, or if no update is requiered (will timeout in this case)
+# TODO: using --wait on upgrade would simplify this upgrade, but is currently running into some issues
+  echo "waiting for pod deletion"
+  kubectl wait -n=$NAMESPACE --for=delete --timeout=45s pod -l app=lnd-container || :
 }
 
 exportMacaroon() {
@@ -54,31 +64,54 @@ createLoopConfigmaps() {
 }
 
 # bug with --wait: https://github.com/helm/helm/issues/7139 ?
-helmUpgrade bitcoind ../../bitcoind-chart/ -f ../../bitcoind-chart/values.yaml -f ../../bitcoind-chart/$NETWORK-values.yaml --set serviceType=$SERVICETYPE  
-
-# note: using persistence.enabled instead of master.persitence.enabled following comment from https://github.com/bitnami/charts/tree/master/bitnami/redis regrding minikube
-helmUpgrade redis bitnami/redis --set=master.service.type=$SERVICETYPE --set=persistence.enabled=$REDISPERSISTENCE --set=usePassword=false --set=image.tag=6.0.8-debian-10-r0  --set=cluster.slaveCount=0
+helmUpgrade bitcoind -f ../../bitcoind-chart/$NETWORK-values.yaml --set serviceType=$SERVICETYPE ../../bitcoind-chart/
 kubectlWait app=bitcoind-container
 
-helmUpgrade lnd -f ../../lnd-chart/values.yaml -f ../../lnd-chart/$NETWORK-values.yaml --set lndService.serviceType=$SERVICETYPE,minikubeip=$MINIKUBEIP ../../lnd-chart/
+# pod deletion has occured before the script started, but may not be completed yet
+if [ ${LOCAL} ]
+then
+  kubectlLndDeletionWait
+fi
 
-kubectlWait app=redis
+helmUpgrade lnd -f ../../lnd-chart/$NETWORK-values.yaml --set lndService.serviceType=$SERVICETYPE,minikubeip=$MINIKUBEIP ../../lnd-chart/
+
+# avoiding to spend time with circleci regtest with this condition
+if [ "$1" == "testnet" ] || [ "$1" == "mainnet" ];
+then
+  kubectlLndDeletionWait
+fi
+
+# # add extra sleep time... seems lnd is quite long to show up some time
+sleep 15
 kubectlWait app=lnd-container
+
 
 exportMacaroon 0 MACAROON
 export TLS=$(kubectl -n $NAMESPACE exec lnd-container-0 -c lnd-container -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
 
+helmUpgrade redis bitnami/redis --set=master.service.type=$SERVICETYPE --set=master.persistence.enabled=$REDISPERSISTENCE --set=usePassword=false --set=image.tag=6.0.8-debian-10-r0  --set=cluster.slaveCount=0
+
+# mongodb
 if [ "$NETWORK" == "regtest" ]
 then
   helmUpgrade mongodb --set auth.username=testGaloy,auth.password=testGaloy,auth.database=galoy,persistence.enabled=false,service.type=$SERVICETYPE bitnami/mongodb
+else
+  export MONGODB_ROOT_PASSWORD=$(kubectl get secret -n $NAMESPACE mongodb -o jsonpath="{.data.mongodb-root-password}" | base64 -d)
+  export MONGODB_REPLICA_SET_KEY=$(kubectl get secret -n $NAMESPACE mongodb -o jsonpath="{.data.mongodb-replica-set-key}" | base64 -d)
+  helmUpgrade mongodb -f ~/GaloyApp/backend/mongo-chart/custom-values.yaml bitnami/mongodb --set auth.rootPassword=$MONGODB_ROOT_PASSWORD,auth.replicaSetKey=$MONGODB_REPLICA_SET_KEY
 
+  kubectl exec -n $NAMESPACE mongodb-0 -- bash -c "mongo admin -u root -p "$MONGODB_ROOT_PASSWORD" --eval \"db.adminCommand({setDefaultRWConcern:1,defaultWriteConcern:{'w':'majority'}})\""
+  kubectl exec -n $NAMESPACE mongodb-0 -- bash -c "mongo admin -u root -p "$MONGODB_ROOT_PASSWORD" --eval \"c=rs.conf();c.writeConcernMajorityJournalDefault=false;rs.reconfig(c)\""
+fi
+
+if [ ${LOCAL} ]
+then
   kubectlWait app.kubernetes.io/component=mongodb
+  exit 0
+fi
 
-  if [ ${LOCAL} ]
-  then
-    exit 0
-  fi
-
+if [ "$NETWORK" == "regtest" ]
+then
   exportMacaroon 1 MACAROONOUTSIDE1
   exportMacaroon 2 MACAROONOUTSIDE2
   
@@ -86,33 +119,31 @@ then
   export TLSOUTSIDE1=$(kubectl -n $NAMESPACE exec lnd-container-1 -c lnd-container -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
   export TLSOUTSIDE2=$(kubectl -n $NAMESPACE exec lnd-container-2 -c lnd-container -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
 
-  helmUpgrade test-chart -f ~/GaloyApp/backend/test-chart/values.yaml --set \
+  helmUpgrade test-chart --set \
   macaroon=$MACAROON,macaroonoutside1=$MACAROONOUTSIDE1,macaroonoutside2=$MACAROONOUTSIDE2,image.tag=$CIRCLE_SHA1,tlsoutside1=$TLSOUTSIDE1,tlsoutside2=$TLSOUTSIDE2,tls=$TLS \
   ~/GaloyApp/backend/test-chart/
 
   echo $(kubectl get -n=$NAMESPACE pods)
   echo "Waiting for test-pod and graphql-server to come alive"
 
-  kubectlWait app=test-chart
-  
 else
-  export MONGODB_ROOT_PASSWORD=$(kubectl get secret -n $NAMESPACE mongodb -o jsonpath="{.data.mongodb-root-password}" | base64 -d)
-  export MONGODB_REPLICA_SET_KEY=$(kubectl get secret -n $NAMESPACE mongodb -o jsonpath="{.data.mongodb-replica-set-key}" | base64 -d)
-  helmUpgrade mongodb -f ~/GaloyApp/backend/mongo-chart/custom-values.yaml -f ~/GaloyApp/backend/mongo-chart/$NETWORK-values.yaml bitnami/mongodb --set auth.rootPassword=$MONGODB_ROOT_PASSWORD,auth.replicaSetKey=$MONGODB_REPLICA_SET_KEY
-  kubectlWait app.kubernetes.io/component=mongodb
-
-  kubectl exec -n $NAMESPACE mongodb-0 -- bash -c "mongo admin -u root -p "$MONGODB_ROOT_PASSWORD" --eval \"db.adminCommand({setDefaultRWConcern:1,defaultWriteConcern:{'w':'majority'}})\""
-  
-  kubectl exec -n $NAMESPACE mongodb-0 -- bash -c "mongo admin -u root -p "$MONGODB_ROOT_PASSWORD" --eval \"c=rs.conf();c.writeConcernMajorityJournalDefault=false;rs.reconfig(c)\""
-  
   helmUpgrade prometheus-client -f ~/GaloyApp/backend/graphql-chart/prometheus-values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/graphql-chart/
   helmUpgrade trigger --set image.tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/trigger-chart/
 
   createLoopConfigmaps
   helmUpgrade loop-server -f ~/GaloyApp/backend/loop-server/$NETWORK-values.yaml ~/GaloyApp/backend/loop-server/
   # TODO: missing kubectlWait trigger and prometheus-client
-
 fi
 
 helmUpgrade graphql-server -f ~/GaloyApp/backend/graphql-chart/$NETWORK-values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/graphql-chart/
+
+helmUpgrade update-job --set image.tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/update-job/
+
+if [ "$NETWORK" == "regtest" ]
+then
+  kubectlWait app=test-chart
+fi
+
+kubectlWait app=redis
+kubectlWait app.kubernetes.io/component=mongodb
 kubectlWait app=graphql-server
