@@ -64,7 +64,7 @@ createLoopConfigmaps() {
 }
 
 # bug with --wait: https://github.com/helm/helm/issues/7139 ?
-helmUpgrade bitcoind ../../bitcoind-chart/ -f ../../bitcoind-chart/values.yaml -f ../../bitcoind-chart/$NETWORK-values.yaml --set serviceType=$SERVICETYPE  
+helmUpgrade bitcoind -f ../../bitcoind-chart/$NETWORK-values.yaml --set serviceType=$SERVICETYPE ../../bitcoind-chart/
 kubectlWait app=bitcoind-container
 
 # pod deletion has occured before the script started, but may not be completed yet
@@ -73,7 +73,7 @@ then
   kubectlLndDeletionWait
 fi
 
-helmUpgrade lnd -f ../../lnd-chart/values.yaml -f ../../lnd-chart/$NETWORK-values.yaml --set lndService.serviceType=$SERVICETYPE,minikubeip=$MINIKUBEIP ../../lnd-chart/
+helmUpgrade lnd -f ../../lnd-chart/$NETWORK-values.yaml --set lndService.serviceType=$SERVICETYPE,minikubeip=$MINIKUBEIP ../../lnd-chart/
 
 # avoiding to spend time with circleci regtest with this condition
 if [ "$1" == "testnet" ] || [ "$1" == "mainnet" ];
@@ -119,7 +119,7 @@ then
   export TLSOUTSIDE1=$(kubectl -n $NAMESPACE exec lnd-container-1 -c lnd-container -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
   export TLSOUTSIDE2=$(kubectl -n $NAMESPACE exec lnd-container-2 -c lnd-container -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
 
-  helmUpgrade test-chart -f ~/GaloyApp/backend/test-chart/values.yaml --set \
+  helmUpgrade test-chart --set \
   macaroon=$MACAROON,macaroonoutside1=$MACAROONOUTSIDE1,macaroonoutside2=$MACAROONOUTSIDE2,image.tag=$CIRCLE_SHA1,tlsoutside1=$TLSOUTSIDE1,tlsoutside2=$TLSOUTSIDE2,tls=$TLS \
   ~/GaloyApp/backend/test-chart/
 
@@ -136,6 +136,8 @@ else
 fi
 
 helmUpgrade graphql-server -f ~/GaloyApp/backend/graphql-chart/$NETWORK-values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/graphql-chart/
+
+helmUpgrade update-job --set image.tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/update-job/
 
 if [ "$NETWORK" == "regtest" ]
 then
