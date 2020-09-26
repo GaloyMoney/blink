@@ -19,9 +19,9 @@ const LOW_SAFEBOUND_EXPOSURE = 0.9
 const HIGH_SAFEBOUND_EXPOSURE = 1.1
 const HIGH_BOUND_EXPOSURE = 1.2
 
-const LOW_BOUND_LEVERAGE = 0.75
-const LOW_SAFEBOUND_LEVERAGE = 1
-const HIGH_SAFEBOUND_LEVERAGE = 1.5
+const LOW_BOUND_LEVERAGE = 1
+const LOW_SAFEBOUND_LEVERAGE = 1.20
+const HIGH_SAFEBOUND_LEVERAGE = 1.66
 const HIGH_BOUND_LEVERAGE = 2
 
 const symbol = 'BTC-PERP'
@@ -124,7 +124,7 @@ export class LightningBrokerWallet extends OnChainMixin(BrokerWallet) {
     
   }
 
-  async getFuturePosition() {
+  async getAccountPosition() {
     const satsPrice = await this.price.lastPrice()
     // FIXME this helper function is inverse?
     // or because price = usd/btc, usd/sats, sat or btc are in the denominator
@@ -134,13 +134,16 @@ export class LightningBrokerWallet extends OnChainMixin(BrokerWallet) {
     // TODO: what is being returned if no order had been placed?
     // probably an empty array
 
-    const { result: position } = await this.ftx.privateGetAccount()
-    console.log({position})
+    const { result: { collateral, positions, chargeInterestOnNegativeUsd, marginFraction } } = await this.ftx.privateGetAccount()
+    // console.log(util.inspect({ result }, { showHidden: false, depth: null }))
 
-    const positionBtcPerp = find(position, { future: symbol} )
+    const positionBtcPerp = find(positions, { future: symbol} )
     console.log({positionBtcPerp})
 
     const { netSize, estimatedLiquidationPrice, collateralUsed, maintenanceMarginRequirement } = positionBtcPerp
+
+    // TODO: check this is the intended settings
+    assert(chargeInterestOnNegativeUsd == true)
 
     assert(netSize <= 0)
 
@@ -155,32 +158,19 @@ export class LightningBrokerWallet extends OnChainMixin(BrokerWallet) {
       estimatedLiquidationPrice,
       collateralUsed, // USD
       maintenanceMarginRequirement, // start at 0.03 but increase with position side 
+      collateral,
+      leverage : 1 / marginFraction
     }
   }
 
   async getExposureRatio() {
     const {usd: usdLiability} = await this.getLocalLiabilities()
-    const {usd: usdExposure} = await this.getFuturePosition()
+    const {usd: usdExposure} = await this.getAccountPosition()
 
     return {
       ratio: usdLiability / usdExposure,
       diff: usdLiability - usdExposure
     }
-  }
-
-  async getLeverage() {
-    const satsPrice = await this.price.lastPrice()
-    const btcPrice = btc2sat(satsPrice) 
-
-    const { usd: positionSize } = await this.getFuturePosition()
-    const { BTC: btcCollateral } = await this.getExchangeBalance()
-    const usdCollateral = btcCollateral * btcPrice
-    const leverage = positionSize / usdCollateral
-
-    console.log({usdCollateral, positionSize, leverage})
-    // TODO the calculatation show a result with a few % variation FTX UI
-    // should not be a problem given the low leverage but still need to be investigated
-    return leverage
   }
 
   // we need to rebalance when price is increasing/decreasing.
@@ -189,53 +179,49 @@ export class LightningBrokerWallet extends OnChainMixin(BrokerWallet) {
   // if price decrease, then there would be too much btc on the exchange
   // the account won't be at the irsk of being liquidated in this case
   // but then the custody risk of the exchange increases
-  isRebalanceNeeded({leverage, usdCollateral}) {
+  isRebalanceNeeded({leverage, usdCollateral, btcPrice}) {
 
-    let needRebalance = false
-    let usdOrderAmount, direction, btcOrderAmount
+    let btcAmount, usdAmountDiff
+    let depositOrWithdraw = null
+
+    const usdLeveraged = usdCollateral * leverage
 
     try {
-      // undercovered (ie: have BTC not covered)
-      // long
-      // will loose money if BTCUSD price drops
-      if (leverage < LOW_BOUND_EXPOSURE) {
-        const targetCollateral = usdCollateral * LOW_SAFEBOUND_EXPOSURE
-        usdOrderAmount = targetLeverage + usdExposure
-        btcOrderAmount = sat2btc(usdOrderAmount * satsPrice)
-        assert(btcOrderAmount > 0)
-        // assert(btcOrderAmount < usdLiability)
-        direction = "withdraw"
-        needRebalance = true
+      // leverage is too low
+      // no imminent risk (beyond exchange custory risk)
+      if (leverage < LOW_BOUND_LEVERAGE) {
+        const targetUsdCollateral = usdCollateral * LOW_SAFEBOUND_LEVERAGE
+        usdAmountDiff = targetUsdCollateral - usdLeveraged
+        depositOrWithdraw = "withdraw"
       }
 
       // overexposed
       // short
       // will loose money if BTCUSD price increase
-      else if (leverage > HIGH_BOUND_EXPOSURE) {
-        const targetLeverage = usdLiability * HIGH_SAFEBOUND_EXPOSURE
-        usdOrderAmount = - (targetLeverage + usdExposure)
-        btcOrderAmount = usdOrderAmount
-        assert(btcOrderAmount > 0)
-        // assert(usdOrderAmount < usdLiability)
-
-        direction = "deposit"
-        needRebalance = true
+      else if (leverage > HIGH_BOUND_LEVERAGE) {
+        const targetUsdCollateral = usdCollateral * HIGH_SAFEBOUND_LEVERAGE
+        usdAmountDiff = usdLeveraged - targetUsdCollateral
+        depositOrWithdraw = "deposit"
       }
 
     } catch (err) {
       throw Error("can't calculate rebalance")
     }
 
-    return { needRebalance, amount: btcOrderAmount, direction }
+    btcAmount = usdAmountDiff * btcPrice
+    assert(btcAmount > 0)
+    // amount more than 50% of the collateral should not happen
+    assert(btcAmount < .5 * usdCollateral * btcPrice)
 
+    return { btcAmount, depositOrWithdraw }
   }
 
   // we need to have an order when USD balance of the broker changes.
   // ie: when someone has sent/receive sats from their account
   isOrderNeeded({ ratio, usdLiability, usdExposure, satsPrice }) {
 
-    let needOrder = false
-    let usdOrderAmount, direction, btcOrderAmount
+    let usdOrderAmount, btcAmount
+    let buyOrSell = null
 
     try {
       // undercovered (ie: have BTC not covered)
@@ -244,11 +230,7 @@ export class LightningBrokerWallet extends OnChainMixin(BrokerWallet) {
       if (ratio < LOW_BOUND_EXPOSURE) {
         const targetUsd = usdLiability * LOW_SAFEBOUND_EXPOSURE
         usdOrderAmount = targetUsd + usdExposure
-        btcOrderAmount = sat2btc(usdOrderAmount * satsPrice)
-        assert(btcOrderAmount > 0)
-        // assert(btcOrderAmount < usdLiability)
-        direction = "sell"
-        needOrder = true
+        buyOrSell = "sell"
       }
 
       // overexposed
@@ -257,29 +239,30 @@ export class LightningBrokerWallet extends OnChainMixin(BrokerWallet) {
       else if (ratio > HIGH_BOUND_EXPOSURE) {
         const targetUsd = usdLiability * HIGH_SAFEBOUND_EXPOSURE
         usdOrderAmount = - (targetUsd + usdExposure)
-        btcOrderAmount = usdOrderAmount
-        assert(btcOrderAmount > 0)
-        // assert(usdOrderAmount < usdLiability)
-        // TODO: should be reduce only
-        direction = "buy"
-        needOrder = true
+        buyOrSell = "buy"
       }
 
     } catch (err) {
       throw Error("can't calculate hedging value")
     }
 
-    return { needOrder, amount: btcOrderAmount, direction }
+    btcAmount = sat2btc(usdOrderAmount * satsPrice)
+
+    assert(btcAmount > 0)
+    // assert(usdOrderAmount < usdLiability)
+    // TODO: should be reduce only
+
+    return { btcAmount, buyOrSell }
   }
 
 
-  async executeOrder({ direction, amount }) {
+  async executeOrder({ buyOrSell, btcAmount }) {
 
     // let orderId = 6103637365
     let orderId
 
     // TODO add: try/catch
-    const order = await this.ftx.createOrder(symbol, 'market', direction, amount)
+    const order = await this.ftx.createOrder(symbol, 'market', buyOrSell, btcAmount)
 
     // FIXME: have a better way to manage latency
     // ie: use a while loop and check condition for a couple of seconds.
@@ -299,24 +282,32 @@ export class LightningBrokerWallet extends OnChainMixin(BrokerWallet) {
   // TODO: cron job on this
   async updatePositionAndLeverage() {
     const satsPrice = await this.price.lastPrice()
+    const btcPrice = btc2sat(satsPrice) 
 
     const {usd: usdLiability} = await this.getLocalLiabilities()
-    const {usd: usdExposure} = await this.getFuturePosition()
+    const {usd: usdExposure, leverage, collateral} = await this.getAccountPosition()
     const {ratio} = await this.getExposureRatio()
 
-    const { needOrder, amount, direction } = this.isOrderNeeded({ ratio, usdLiability, usdExposure, satsPrice })
+    {
+      const { btcAmount, buyOrSell } = this.isOrderNeeded({ ratio, usdLiability, usdExposure, satsPrice })
 
-    if (needOrder) {
-      await this.executeOrder({ amount, direction })
+      if (buyOrSell) {
+        await this.executeOrder({ btcAmount, buyOrSell })
+      }
     }
 
-    const leverage = await this.getLeverage()
-
-    const rebalanceNeeded = this.isRebalanceNeeded({leverage})
-    if (rebalanceNeeded) {
-
+    {
+      const { btcAmount, depositOrWithdraw } = this.isRebalanceNeeded({ leverage, usdCollateral: collateral, btcPrice })
+      // deposit and withdraw are from the exchange point of view
+      if (depositOrWithdraw === "withdraw") {
+        const address = await this.getOnChainAddress()
+        await this.ftx.withdraw("BTC", btcAmount, address)
+      } else if (depositOrWithdraw === "deposit") {
+        const description = `deposit of ${btcAmount} btc to ${this.ftx.name}`
+        const address = await this.exchangeDepositAddress()
+        await this.onChainPay({address, amount: btcAmount, description})
+      }
     }
 
   }
-
 }
