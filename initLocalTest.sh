@@ -154,6 +154,8 @@ then
 
   kubectl -n $NAMESPACE get configmaps prometheus-alertmanager -o yaml | sed -e "s|SLACK_API_URL|$SLACK_API_URL|; s|SERVICE_KEY|$SERVICE_KEY|" | kubectl -n $NAMESPACE apply -f -
 
+  helmUpgrade grafana stable/grafana -f ~/GaloyApp/backend/grafana/values.yaml
+  helmUpgrade mongo-exporter ~/GaloyApp/backend/mongo-exporter
 fi
 
 kubectlWait app=redis
