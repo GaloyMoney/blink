@@ -2,7 +2,7 @@
  * @jest-environment node
  */
 import { quit } from "../lock";
-import { InvoiceUser, MainBook, setupMongoConnection, Transaction } from "../mongodb";
+import { InvoiceUser, MainBook, setupMongoConnection } from "../mongodb";
 import { Price } from "../priceImpl";
 import { checkIsBalanced, getUserWallet, lndOutside1 } from "../tests/helper";
 import { getAmount, getHash } from "../utils";

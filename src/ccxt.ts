@@ -101,6 +101,78 @@ const createMarketBuyOrderResponse = { result: {
   trades: undefined
 }}
 
+const getBalanceResult = {
+  info: {
+    result: [
+      { coin: 'USDT', free: 0, total: 0, usdValue: 5.0001234-9 },
+      {
+        coin: 'USD',
+        free: 0.0000123,
+        total: 0.0004567,
+        usdValue: 0.000789,
+      },
+      {
+        coin: 'BTC',
+        free: 0.005430,
+        total: 0.005430934,
+        usdValue: 50.12345
+      }
+    ],
+    success: true
+  },
+  USDT: { free: 0, used: 0, total: 0 },
+  USD: { free: 0.0000123, used: 0.002345, total: 0.0001234},
+  BTC: { free: 0.005430, used: 0, total: 0.005430 },
+  free: { USDT: 0, USD: 0.002345, BTC: 0.005430 },
+  used: { USDT: 0, USD: 0.001234, BTC: 0 },
+  total: { USDT: 0, USD: 0.002345, BTC: 0.005430 }
+}
+
+const ftxHas = {
+  cancelAllOrders: true,
+  cancelOrder: true,
+  cancelOrders: false,
+  CORS: false,
+  createDepositAddress: false,
+  createLimitOrder: true,
+  createMarketOrder: true,
+  createOrder: true,
+  deposit: false,
+  editOrder: 'emulated',
+  fetchBalance: true,
+  fetchBidsAsks: false,
+  fetchClosedOrders: false,
+  fetchCurrencies: true,
+  fetchDepositAddress: true,
+  fetchDeposits: true,
+  fetchFundingFees: false,
+  fetchL2OrderBook: true,
+  fetchLedger: false,
+  fetchMarkets: true,
+  fetchMyTrades: true,
+  fetchOHLCV: true,
+  fetchOpenOrders: true,
+  fetchOrder: true,
+  fetchOrderBook: true,
+  fetchOrderBooks: false,
+  fetchOrders: true,
+  fetchOrderTrades: false,
+  fetchStatus: 'emulated',
+  fetchTicker: true,
+  fetchTickers: true,
+  fetchTime: false,
+  fetchTrades: true,
+  fetchTradingFee: false,
+  fetchTradingFees: true,
+  fetchTradingLimits: false,
+  fetchTransactions: false,
+  fetchWithdrawals: true,
+  privateAPI: true,
+  publicAPI: true,
+  withdraw: true
+}
+
+
 
 export class ftx {
 
@@ -115,6 +187,18 @@ export class ftx {
   fetchOrder() {
     return new Promise((resolve, reject) => {
       resolve(createMarketBuyOrderResponse)
+    })
+  }
+
+  has() {
+    return new Promise((resolve, reject) => {
+      resolve(ftxHas)
+    })
+  }
+
+  getBalance() {
+    return new Promise((resolve, reject) => {
+      resolve(getBalanceResult)
     })
   }
 

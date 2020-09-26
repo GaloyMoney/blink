@@ -6,7 +6,7 @@ import { InvoiceUser, MainBook, Transaction } from "./mongodb";
 import { sendInvoicePaidNotification } from "./notification";
 import { IAddInvoiceInternalRequest, ILightningTransaction, IPaymentRequest } from "./types";
 import { getCurrencyEquivalent, getAuth, logger, measureTime, timeout } from "./utils";
-import { customerPath } from "./wallet";
+import { brokerAccountPath, customerPath } from "./wallet";
 
 const util = require('util')
 
@@ -270,15 +270,13 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         // reduce balance from customer first
 
-        const brokerAccount = 'Liabilities:Broker'
-
         entry = MainBook.entry(description)
           .debit('Assets:Reserve:Lightning', sats, {...metadata, currency: "BTC"})
-          .credit(this.isUSD ? brokerAccount : this.accountPath, sats, {...metadata, currency: "BTC"})
+          .credit(this.isUSD ? brokerAccountPath : this.accountPath, sats, {...metadata, currency: "BTC"})
         
         if(this.isUSD) {
           entry
-            .debit(brokerAccount, metadata.usd, {...metadata, currency: "USD"})
+            .debit(brokerAccountPath, metadata.usd, {...metadata, currency: "USD"})
             .credit(this.accountPath, metadata.usd, {...metadata, currency: "USD"})
         }
 
@@ -435,16 +433,14 @@ export const LightningMixin = (superclass) => class extends superclass {
           const addedMetadata = await getCurrencyEquivalent({usd, sats, fee: 0})
           const metadata = Object.assign({ hash, type: "invoice" }, addedMetadata)
 
-          const brokerAccount = 'Liabilities:Broker'
-
           const entry = MainBook.entry(invoice.description)
-            .debit(this.isUSD ? brokerAccount : this.accountPath, sats, {...metadata, currency: "BTC"})
+            .debit(this.isUSD ? brokerAccountPath : this.accountPath, sats, {...metadata, currency: "BTC"})
             .credit('Assets:Reserve:Lightning', sats, {...metadata, currency: "BTC"})
           
           if(this.isUSD) {
             entry
               .debit(this.accountPath, usd, {...metadata, currency: "USD"})
-              .credit(brokerAccount, usd, {...metadata, currency: "USD"})
+              .credit(brokerAccountPath, usd, {...metadata, currency: "USD"})
           }
 
           await entry.commit()

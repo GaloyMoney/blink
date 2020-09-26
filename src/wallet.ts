@@ -1,5 +1,7 @@
 import { MainBook, User } from "./mongodb"
 
+export const brokerAccountPath = 'Liabilities:Broker'
+
 export const customerPath = (uid) => { 
   return `Liabilities:Customer:${uid}`
 }
