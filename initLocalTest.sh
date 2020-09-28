@@ -86,8 +86,8 @@ sleep 15
 kubectlWait type=lnd
 
 
-exportMacaroon lnd-container-0-0 MACAROON
-export TLS=$(kubectl -n $NAMESPACE exec lnd-container-0-0 -c lnd-container -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
+exportMacaroon lnd-container-0 MACAROON
+export TLS=$(kubectl -n $NAMESPACE exec lnd-container-0 -c lnd-container -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
 
 helmUpgrade redis bitnami/redis --set=master.service.type=$SERVICETYPE --set=master.persistence.enabled=$REDISPERSISTENCE --set=usePassword=false --set=image.tag=6.0.8-debian-10-r0  --set=cluster.slaveCount=0
 
