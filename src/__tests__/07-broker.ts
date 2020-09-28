@@ -30,20 +30,20 @@ afterAll(async () => {
 //   console.log({liabilities})
 // })
 
-it('balance', async () => {
-  const balance = await brokerWallet.getExchangeBalance()
-  console.log({balance})
-})
+// it('balance', async () => {
+//   const balance = await brokerWallet.getExchangeBalance()
+//   console.log({balance})
+// })
 
 it('future', async () => {
-  const future = await brokerWallet.getFuturePosition()
+  const future = await brokerWallet.getAccountPosition()
   console.log({future})
 })
 
-it('leverage', async () => {
-  const future = await brokerWallet.getLeverage()
-  console.log({future})
-})
+// it('leverage', async () => {
+//   const future = await brokerWallet.getLeverage()
+//   console.log({future})
+// })
 
 // it('ratio', async () => {
 //   const ratio = await brokerWallet.getExposureRatio()
