@@ -18,7 +18,7 @@ else
     NAMESPACE="default"
     SERVICETYPE=LoadBalancer
   else 
-    SERVICETYPE=NodePort
+    SERVICETYPE=ClusterIP
   fi
 fi
 
