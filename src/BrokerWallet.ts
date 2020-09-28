@@ -1,11 +1,10 @@
 import { find } from "lodash";
-import { LightningMixin } from "./Lightning";
 import { MainBook } from "./mongodb";
 import { OnChainMixin } from "./OnChain";
 import { Price } from "./priceImpl";
 import { ILightningWalletUser } from "./types";
 import { btc2sat, sat2btc, sleep } from "./utils";
-import { brokerAccountPath } from "./wallet";
+import { UserWallet } from "./wallet";
 const using = require('bluebird').using
 const util = require('util')
 const ccxt = require('ccxt')
@@ -19,40 +18,16 @@ const LOW_SAFEBOUND_EXPOSURE = 0.9
 const HIGH_SAFEBOUND_EXPOSURE = 1.1
 const HIGH_BOUND_EXPOSURE = 1.2
 
-const LOW_BOUND_LEVERAGE = 1
-const LOW_SAFEBOUND_LEVERAGE = 1.20
-const HIGH_SAFEBOUND_LEVERAGE = 1.66
-const HIGH_BOUND_LEVERAGE = 2
+// TODO: take a target leverage and safe parameter and calculate those bounding values dynamically.
+const LOW_BOUND_LEVERAGE = 1.5
+const LOW_SAFEBOUND_LEVERAGE = 1.8
+const HIGH_SAFEBOUND_LEVERAGE = 2.25
+const HIGH_BOUND_LEVERAGE = 2.5
 
 const symbol = 'BTC-PERP'
 
 
-export class BrokerWallet {
-  readonly uid: string
-  readonly currency: string
-
-  constructor({uid, currency}) {
-    this.uid = uid
-    this.currency = currency
-  }
-
-  get accountPath(): string {
-    return brokerAccountPath
-  }
-
-  async getBalance() {
-
-    const { balance } = await MainBook.balance({
-      account: this.accountPath,
-      currency: this.currency, 
-    })
-
-    return - balance
-  }
-}
-
-
-export class LightningBrokerWallet extends OnChainMixin(BrokerWallet) {
+export class BrokerWallet extends OnChainMixin(UserWallet) {
   readonly currency = "BTC" 
   ftx
   price
@@ -134,8 +109,11 @@ export class LightningBrokerWallet extends OnChainMixin(BrokerWallet) {
     // TODO: what is being returned if no order had been placed?
     // probably an empty array
 
+    // const result = await this.ftx.privateGetAccount()
+    // console.log(util.inspect({ result }, { showHidden: false, depth: null }))    
+    // console.log(this.ftx.privateGetAccount)
+
     const { result: { collateral, positions, chargeInterestOnNegativeUsd, marginFraction } } = await this.ftx.privateGetAccount()
-    // console.log(util.inspect({ result }, { showHidden: false, depth: null }))
 
     const positionBtcPerp = find(positions, { future: symbol} )
     console.log({positionBtcPerp})
@@ -181,8 +159,10 @@ export class LightningBrokerWallet extends OnChainMixin(BrokerWallet) {
   // but then the custody risk of the exchange increases
   isRebalanceNeeded({leverage, usdCollateral, btcPrice}) {
 
+    type IDepositOrWithdraw = "withdraw" | "deposit" | null
+
     let btcAmount, usdAmountDiff
-    let depositOrWithdraw = null
+    let depositOrWithdraw: IDepositOrWithdraw = null
 
     const usdLeveraged = usdCollateral * leverage
 
@@ -192,7 +172,7 @@ export class LightningBrokerWallet extends OnChainMixin(BrokerWallet) {
       if (leverage < LOW_BOUND_LEVERAGE) {
         const targetUsdCollateral = usdCollateral * LOW_SAFEBOUND_LEVERAGE
         usdAmountDiff = targetUsdCollateral - usdLeveraged
-        depositOrWithdraw = "withdraw"
+        depositOrWithdraw =  "withdraw"
       }
 
       // overexposed
@@ -220,8 +200,10 @@ export class LightningBrokerWallet extends OnChainMixin(BrokerWallet) {
   // ie: when someone has sent/receive sats from their account
   isOrderNeeded({ ratio, usdLiability, usdExposure, satsPrice }) {
 
+    type IBuyOrSell = "sell" | "buy" | null
+
     let usdOrderAmount, btcAmount
-    let buyOrSell = null
+    let buyOrSell: IBuyOrSell = null
 
     try {
       // undercovered (ie: have BTC not covered)

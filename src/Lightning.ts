@@ -6,7 +6,7 @@ import { InvoiceUser, MainBook, Transaction } from "./mongodb";
 import { sendInvoicePaidNotification } from "./notification";
 import { IAddInvoiceInternalRequest, ILightningTransaction, IPaymentRequest } from "./types";
 import { getCurrencyEquivalent, getAuth, logger, measureTime, timeout } from "./utils";
-import { brokerAccountPath, customerPath } from "./wallet";
+import { customerPath, getBrokerAccountPath } from "./wallet";
 
 const util = require('util')
 
@@ -268,6 +268,9 @@ export const LightningMixin = (superclass) => class extends superclass {
           route.messages = messages
         }
 
+        // FIXME: cache this
+        const brokerAccountPath = await getBrokerAccountPath()
+
         // reduce balance from customer first
 
         entry = MainBook.entry(description)
@@ -432,6 +435,8 @@ export const LightningMixin = (superclass) => class extends superclass {
 
           const addedMetadata = await getCurrencyEquivalent({usd, sats, fee: 0})
           const metadata = Object.assign({ hash, type: "invoice" }, addedMetadata)
+
+          const brokerAccountPath = await getBrokerAccountPath()
 
           const entry = MainBook.entry(invoice.description)
             .debit(this.isUSD ? brokerAccountPath : this.accountPath, sats, {...metadata, currency: "BTC"})

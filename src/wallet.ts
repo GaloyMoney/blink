@@ -1,6 +1,9 @@
 import { MainBook, User } from "./mongodb"
 
-export const brokerAccountPath = 'Liabilities:Broker'
+export const getBrokerAccountPath = async () => { 
+  const uid = await User.findOne({role: "broker"}, {_id: 1})
+  return customerPath(uid)
+}
 
 export const customerPath = (uid) => { 
   return `Liabilities:Customer:${uid}`
