@@ -21,6 +21,7 @@ const HIGH_BOUND_EXPOSURE = 1.2
 // TODO: take a target leverage and safe parameter and calculate those bounding values dynamically.
 const LOW_BOUND_LEVERAGE = 1.5
 const LOW_SAFEBOUND_LEVERAGE = 1.8
+// average: 2
 const HIGH_SAFEBOUND_LEVERAGE = 2.25
 const HIGH_BOUND_LEVERAGE = 2.5
 
@@ -121,7 +122,7 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
     const { netSize, estimatedLiquidationPrice, collateralUsed, maintenanceMarginRequirement } = positionBtcPerp
 
     // TODO: check this is the intended settings
-    assert(chargeInterestOnNegativeUsd == true)
+    assert(chargeInterestOnNegativeUsd === true)
 
     assert(netSize <= 0)
 
@@ -141,13 +142,10 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
     }
   }
 
-  async getExposureRatio() {
-    const {usd: usdLiability} = await this.getLocalLiabilities()
-    const {usd: usdExposure} = await this.getAccountPosition()
-
+  static getExposureRatio({ usdLiability, usdExposure }) {
     return {
-      ratio: usdLiability / usdExposure,
-      diff: usdLiability - usdExposure
+      ratio: usdExposure / usdLiability,
+      diff: usdExposure - usdLiability
     }
   }
 
@@ -157,21 +155,21 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
   // if price decrease, then there would be too much btc on the exchange
   // the account won't be at the irsk of being liquidated in this case
   // but then the custody risk of the exchange increases
-  isRebalanceNeeded({leverage, usdCollateral, btcPrice}) {
+  static isRebalanceNeeded({ leverage, usdCollateral, btcPrice }) {
 
     type IDepositOrWithdraw = "withdraw" | "deposit" | null
 
     let btcAmount, usdAmountDiff
     let depositOrWithdraw: IDepositOrWithdraw = null
 
-    const usdLeveraged = usdCollateral * leverage
+    const usdPosition = usdCollateral / leverage
 
     try {
       // leverage is too low
       // no imminent risk (beyond exchange custory risk)
       if (leverage < LOW_BOUND_LEVERAGE) {
-        const targetUsdCollateral = usdCollateral * LOW_SAFEBOUND_LEVERAGE
-        usdAmountDiff = targetUsdCollateral - usdLeveraged
+        const targetUsdCollateral = usdCollateral / LOW_SAFEBOUND_LEVERAGE
+        usdAmountDiff = usdPosition - targetUsdCollateral
         depositOrWithdraw =  "withdraw"
       }
 
@@ -179,8 +177,8 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
       // short
       // will loose money if BTCUSD price increase
       else if (leverage > HIGH_BOUND_LEVERAGE) {
-        const targetUsdCollateral = usdCollateral * HIGH_SAFEBOUND_LEVERAGE
-        usdAmountDiff = usdLeveraged - targetUsdCollateral
+        const targetUsdCollateral = usdCollateral / HIGH_SAFEBOUND_LEVERAGE
+        usdAmountDiff = targetUsdCollateral - usdPosition
         depositOrWithdraw = "deposit"
       }
 
@@ -188,17 +186,21 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
       throw Error("can't calculate rebalance")
     }
 
-    btcAmount = usdAmountDiff * btcPrice
-    assert(btcAmount > 0)
-    // amount more than 50% of the collateral should not happen
-    assert(btcAmount < .5 * usdCollateral * btcPrice)
+    btcAmount = usdAmountDiff / btcPrice
+
+    if (!!depositOrWithdraw) {
+      assert(btcAmount > 0)
+      // amount more than 3x of collateral should not happen
+      // although it could happen the first time the broker is launched? 
+      assert(btcAmount < 3 * usdCollateral * btcPrice)
+    }
 
     return { btcAmount, depositOrWithdraw }
   }
 
-  // we need to have an order when USD balance of the broker changes.
-  // ie: when someone has sent/receive sats from their account
-  isOrderNeeded({ ratio, usdLiability, usdExposure, satsPrice }) {
+  static isOrderNeeded({ usdLiability, usdExposure, btcPrice }) {
+
+    const {ratio} = this.getExposureRatio({ usdLiability, usdExposure })
 
     type IBuyOrSell = "sell" | "buy" | null
 
@@ -211,8 +213,8 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
       // will loose money if BTCUSD price drops
       if (ratio < LOW_BOUND_EXPOSURE) {
         const targetUsd = usdLiability * LOW_SAFEBOUND_EXPOSURE
-        usdOrderAmount = targetUsd + usdExposure
-        buyOrSell = "sell"
+        usdOrderAmount = targetUsd - usdExposure
+        buyOrSell = "buy"
       }
 
       // overexposed
@@ -220,19 +222,21 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
       // will loose money if BTCUSD price increase
       else if (ratio > HIGH_BOUND_EXPOSURE) {
         const targetUsd = usdLiability * HIGH_SAFEBOUND_EXPOSURE
-        usdOrderAmount = - (targetUsd + usdExposure)
-        buyOrSell = "buy"
+        usdOrderAmount = usdExposure - targetUsd
+        buyOrSell = "sell"
       }
 
     } catch (err) {
       throw Error("can't calculate hedging value")
     }
 
-    btcAmount = sat2btc(usdOrderAmount * satsPrice)
+    btcAmount = usdOrderAmount / btcPrice
 
-    assert(btcAmount > 0)
-    // assert(usdOrderAmount < usdLiability)
-    // TODO: should be reduce only
+    if (!!buyOrSell) {
+      assert(btcAmount >= 0)
+      // assert(usdOrderAmount < usdLiability)
+      // TODO: should be reduce only
+    }
 
     return { btcAmount, buyOrSell }
   }
@@ -268,10 +272,9 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
 
     const {usd: usdLiability} = await this.getLocalLiabilities()
     const {usd: usdExposure, leverage, collateral} = await this.getAccountPosition()
-    const {ratio} = await this.getExposureRatio()
 
     {
-      const { btcAmount, buyOrSell } = this.isOrderNeeded({ ratio, usdLiability, usdExposure, satsPrice })
+      const { btcAmount, buyOrSell } = BrokerWallet.isOrderNeeded({ usdLiability, usdExposure, btcPrice })
 
       if (buyOrSell) {
         await this.executeOrder({ btcAmount, buyOrSell })
@@ -279,7 +282,7 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
     }
 
     {
-      const { btcAmount, depositOrWithdraw } = this.isRebalanceNeeded({ leverage, usdCollateral: collateral, btcPrice })
+      const { btcAmount, depositOrWithdraw } = BrokerWallet.isRebalanceNeeded({ leverage, usdCollateral: collateral, btcPrice })
       // deposit and withdraw are from the exchange point of view
       if (depositOrWithdraw === "withdraw") {
         const address = await this.getOnChainAddress()
