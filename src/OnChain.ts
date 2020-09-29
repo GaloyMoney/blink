@@ -45,12 +45,17 @@ export const OnChainMixin = (superclass) => class extends superclass {
     return fee
   }
 
-  async onChainPay({ address, amount, description }: IOnChainPayment): Promise<ISuccess | Error> {
-    const payeeUser = await this.PayeeUser(address)
+  async onChainPay({ address, amount, memo }: IOnChainPayment): Promise<ISuccess | Error> {
     const balance = await this.getBalance()
+    
+    // quit early if balance is not enough
+    if (balance < amount) {
+      throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${amount}`)
+    }
+
+    const payeeUser = await this.PayeeUser(address)
 
     if (payeeUser) {
-
       // FIXME: Using == here because === returns false even for same uids
       if (payeeUser._id == this.uid) {
         throw Error('User tried to pay themselves')
@@ -62,12 +67,8 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
       return await using(disposer(this.uid), async (lock) => {
 
-        //case where user doesn't have enough money
-        if (balance < amount) {
-          throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${amount}`)
-        }
         await MainBook.entry()
-          .credit(this.accountPath, sats, metadata)
+          .credit(this.accountPath, sats, {...metadata, memo})
           .debit(customerPath(payeeUser._id), sats, metadata)
           .commit()
         return true
@@ -105,7 +106,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
       }
 
       try {
-        ({ id } = await lnService.sendToChainAddress({ address, lnd: this.lnd, tokens: amount, description }))
+        ({ id } = await lnService.sendToChainAddress({ address, lnd: this.lnd, tokens: amount }))
       } catch (err) {
         logger.error({ err }, "Impossible to sendToChainAddress")
         return false
@@ -121,7 +122,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
         await addCurrentValueToMetadata(metadata, { sats, fee })
 
         // TODO/FIXME refactor. add the transaction first and set the fees in a second tx.
-        await MainBook.entry(description)
+        await MainBook.entry(memo)
           .debit('Assets:Reserve:Lightning', sats, metadata)
           .credit(this.accountPath, sats, metadata)
           .commit()

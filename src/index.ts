@@ -136,7 +136,7 @@ const resolvers = {
     },
     onchain: async (_, __, { lightningWallet }) => ({
       getNewAddress: () => lightningWallet.getOnChainAddress(),
-      pay: ({address, amount}) => ({success: lightningWallet.onChainPay({address, amount})}),
+      pay: ({address, amount, memo}) => ({success: lightningWallet.onChainPay({address, amount, memo})}),
       getFee: ({address}) => lightningWallet.getOnchainFee({address}),
     }),
     addDeviceToken: async (_, { deviceToken }, { uid }) => {

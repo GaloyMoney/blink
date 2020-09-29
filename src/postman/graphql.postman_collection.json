@@ -323,7 +323,7 @@
                       "body": {
                         "mode": "graphql",
                         "graphql": {
-                          "query": "query wallet {\n    wallet {\n        id\n        currency\n        balance\n        transactions {\n            id\n            amount\n            description\n            created_at\n            hash\n            type\n            usd\n            fee\n        }\n    }\n}",
+                          "query": "query wallet {\n    wallet {\n        id\n        currency\n        balance\n        transactions {\n            id\n            amount\n            description\n            created_at\n            hash\n            type\n            usd\n            fee\n            feeUsd\n        }\n    }\n}",
                           "variables": "{}"
                         },
                         "options": {
@@ -1095,8 +1095,8 @@
               "body": {
                 "mode": "graphql",
                 "graphql": {
-                  "query": "mutation onchain($address: String!, $amount: Int!) {\n    onchain {\n        pay(address: $address, amount: $amount)\n    }\n}",
-                  "variables": "{\n    \"address\": \"bcrt1qam64av6cyhjsgdwajjpe0l9z8ju4w7rjryecf3\",\n    \"amount\": 10000\n}"
+                  "query": "mutation onchain($address: String!, $amount: Int!, $memo: String) {\n    onchain {\n        pay(address: $address, amount: $amount, memo: $memo) {\n            success\n        }\n    }\n}",
+                  "variables": "{\n    \"address\": \"bcrt1q62dn33gg83hzckew7p2zlzkvtf2kg7rq7kmuew\",\n    \"amount\": 10000,\n    \"memo\": \"test\"\n}"
                 },
                 "options": {
                   "graphql": {}

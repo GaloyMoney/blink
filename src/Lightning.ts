@@ -43,42 +43,6 @@ export const LightningMixin = (superclass) => class extends superclass {
     return super.getBalance()
   }
 
-  // TODO: refactor. should be in userWallet
-  async getRawTransactions() {
-    await this.updatePending()
-
-    const { results } = await MainBook.ledger({
-      currency: this.currency,
-      account: this.accountPath,
-      // start_date: startDate,
-      // end_date: endDate
-    })
-
-    return results
-  }
-
-  async getTransactions(): Promise<Array<ILightningTransaction>> {
-    const rawTransactions = await this.getRawTransactions()
-
-    const results_processed = rawTransactions.map(item => ({
-      created_at: moment(item.timestamp).unix(),
-      amount: item.debit - item.credit,
-      sat: item.sat,
-      usd: item.usd,
-      description: item.memoPayer || item.memo || item.type, // TODO remove `|| item.type` once users have upgraded
-      type: item.type,
-      hash: item.hash,
-      fee: item.fee,
-      feeUsd: item.feeUsd,
-      // destination: TODO
-      pending: item.pending,
-      id: item._id,
-      currency: item.currency
-    }))
-
-    return results_processed
-  }
-
   async addInvoiceInternal({ sats, usd, currency, memo }: IAddInvoiceInternalRequest): Promise<string> {
     let request, id
 
