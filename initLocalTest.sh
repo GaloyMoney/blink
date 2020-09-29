@@ -144,18 +144,17 @@ then
   kubectlWait app=test-chart
 elif [ "$NETWORK" == "testnet" ]
 then
-  NAMESPACE=monitoring
   SECRET=alertmanager-keys
 
-  helmUpgrade prometheus stable/prometheus -f ~/GaloyApp/backend/prometheus-server/values.yaml
+  NAMESPACE=monitoring helmUpgrade prometheus stable/prometheus -f ~/GaloyApp/backend/prometheus-server/values.yaml
 
   export SLACK_API_URL=$(kubectl get secret -n $NAMESPACE $SECRET -o jsonpath="{.data.SLACK_API_URL}" | base64 --decode)
   export SERVICE_KEY=$(kubectl get secret -n $NAMESPACE $SECRET -o jsonpath="{.data.SERVICE_KEY}" | base64 --decode)
 
   kubectl -n $NAMESPACE get configmaps prometheus-alertmanager -o yaml | sed -e "s|SLACK_API_URL|$SLACK_API_URL|; s|SERVICE_KEY|$SERVICE_KEY|" | kubectl -n $NAMESPACE apply -f -
 
-  helmUpgrade grafana stable/grafana -f ~/GaloyApp/backend/grafana/values.yaml
-  helmUpgrade mongo-exporter ~/GaloyApp/backend/mongo-exporter
+  NAMESPACE=monitoring helmUpgrade grafana stable/grafana -f ~/GaloyApp/backend/grafana/values.yaml
+  NAMESPACE=monitoring helmUpgrade mongo-exporter ~/GaloyApp/backend/mongo-exporter
 fi
 
 kubectlWait app=redis
