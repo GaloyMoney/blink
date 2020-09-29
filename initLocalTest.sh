@@ -9,7 +9,7 @@ then
   REDISPERSISTENCE="true"
   NETWORK="$1"
   NAMESPACE="$1"
-  SERVICETYPE=LoadBalancer
+  SERVICETYPE=ClusterIP
 else
   NETWORK="regtest"
   REDISPERSISTENCE="false"
@@ -73,7 +73,7 @@ then
   kubectlLndDeletionWait
 fi
 
-helmUpgrade lnd -f ../../lnd-chart/$NETWORK-values.yaml --set lndService.serviceType=$SERVICETYPE,minikubeip=$MINIKUBEIP ../../lnd-chart/
+helmUpgrade lnd -f ../../lnd-chart/$NETWORK-values.yaml --set lndService.serviceType=LoadBalancer,minikubeip=$MINIKUBEIP ../../lnd-chart/
 
 # avoiding to spend time with circleci regtest with this condition
 if [ "$1" == "testnet" ] || [ "$1" == "mainnet" ];
