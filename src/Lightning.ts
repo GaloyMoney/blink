@@ -43,6 +43,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     return super.getBalance()
   }
 
+  // TODO: refactor. should be in userWallet
   async getRawTransactions() {
     await this.updatePending()
 
@@ -64,12 +65,12 @@ export const LightningMixin = (superclass) => class extends superclass {
       amount: item.debit - item.credit,
       sat: item.sat,
       usd: item.usd,
-      description: item.memo || item.type, // TODO remove `|| item.type` once users have upgraded
+      description: item.memoPayer || item.memo || item.type, // TODO remove `|| item.type` once users have upgraded
+      type: item.type,
       hash: item.hash,
       fee: item.fee,
       feeUsd: item.feeUsd,
       // destination: TODO
-      type: item.type,
       pending: item.pending,
       id: item._id,
       currency: item.currency
@@ -148,12 +149,13 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     tokens = !!tokens ? tokens : params.amount
 
-    return { tokens, destination, pushPayment, id, routeHint, description, messages}
+    return { tokens, destination, pushPayment, id, routeHint, messages,
+      memoInvoice: description, memoPayer: params.memo }
   }
 
   async pay(params: IPaymentRequest): Promise<payInvoiceResult | Error> {
 
-    const { tokens, destination, pushPayment, id, routeHint, description, messages } = await this.validate(params)
+    const { tokens, destination, pushPayment, id, routeHint, messages, memoInvoice, memoPayer } = await this.validate(params)
 
     let fee
     let route, routes
@@ -190,8 +192,8 @@ export const LightningMixin = (superclass) => class extends superclass {
           // TODO XXX FIXME:
           // manage the case where a user in USD tries to pay another used in BTC with an onUS transaction
 
-          await MainBook.entry(description)
-            .credit(this.accountPath, sats, metadata)
+          await MainBook.entry(memoInvoice)
+            .credit(this.accountPath, sats, {...metadata, memoPayer})
             .debit(customerPath(payeeUid), sats, metadata)
             .commit()
         }
@@ -266,9 +268,9 @@ export const LightningMixin = (superclass) => class extends superclass {
         const metadata = { currency: this.currency, hash: id, type: "payment", pending: true, fee }
         await addCurrentValueToMetadata(metadata, {sats, fee})
 
-        entry = await MainBook.entry(description)
+        entry = await MainBook.entry(memoInvoice)
           .debit('Assets:Reserve:Lightning', sats, metadata)
-          .credit(this.accountPath, sats, metadata)
+          .credit(this.accountPath, sats, {...metadata, memoPayer})
           .commit()
       }
 

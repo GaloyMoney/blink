@@ -53,7 +53,8 @@ export interface ILightningTransaction {
 export interface IPaymentRequest {
   destination?: string,
   amount?: number,
-  invoice?: string
+  invoice?: string,
+  memo?: string,
 }
 
 export type IPayInvoice = {

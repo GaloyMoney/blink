@@ -1,5 +1,5 @@
 import * as jwt from 'jsonwebtoken';
-import { AdminWallet } from "../LightningAdminImpl";
+import { AdminWallet } from "../AdminWallet";
 import { login, TEST_NUMBER } from "../text";
 import { OnboardingEarn } from "../types";
 import { getAuth, logger, sleep } from "../utils";

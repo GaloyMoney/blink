@@ -7,7 +7,7 @@ const mongoose = require("mongoose");
 import { Hedging } from "../hedge"
 
 
-// jest.mock('./LightningAdminImpl')
+// jest.mock('./AdminWallet')
 
 const lastBTCPrice = 0.000096006
 

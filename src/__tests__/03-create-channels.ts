@@ -2,7 +2,7 @@
  * @jest-environment node
  */
 import { setupMongoConnection } from "../mongodb";
-import { AdminWallet } from "../LightningAdminImpl";
+import { AdminWallet } from "../AdminWallet";
 import { bitcoindClient, checkIsBalanced, lndMain, lndOutside1, lndOutside2, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
 import { logger, sleep } from "../utils";
 const mongoose = require("mongoose");

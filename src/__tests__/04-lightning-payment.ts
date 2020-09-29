@@ -106,8 +106,10 @@ it('fails to pay when user has insufficient balance', async () => {
 })
 
 it('payInvoiceToAnotherGaloyUser', async () => {
+  const memo = "my memo as a payer"
+
   const request = await userWallet2.addInvoice({ value: amountInvoice })
-  await userWallet1.pay({ invoice: request })
+  await userWallet1.pay({ invoice: request, memo })
 
   const user1FinalBalance = await userWallet1.getBalance()
   const user2FinalBalance = await userWallet2.getBalance()
@@ -116,19 +118,22 @@ it('payInvoiceToAnotherGaloyUser', async () => {
   expect(user2FinalBalance).toBe(initBalance2 + amountInvoice)
   
   const matchTx = tx => tx.type === 'on_us' && tx.hash === getHash(request)
+  
+    const user2Txn = await userWallet2.getTransactions()
+    const user2OnUsTxn = user2Txn.filter(matchTx)
+    expect(user2OnUsTxn[0].type).toBe('on_us')
+    expect(user2OnUsTxn[0].description).toBe('on_us')
+    await checkIsBalanced()
 
   const user1Txn = await userWallet1.getTransactions()
   const user1OnUsTxn = user1Txn.filter(matchTx)
-  expect(user1OnUsTxn[0].description).toBe('on_us')
+  expect(user1OnUsTxn[0].type).toBe('on_us')
+  expect(user1OnUsTxn[0].description).toBe(memo)
 
-  const user2Txn = await userWallet2.getTransactions()
-  const user2OnUsTxn = user2Txn.filter(matchTx)
-  expect(user2OnUsTxn[0].description).toBe('on_us')
-  await checkIsBalanced()
 }, 50000)
 
 it('payInvoiceToAnotherGaloyUserWithMemo', async () => {
-  const memo = "myOtherMemo"
+  const memo = "invoiceMemo"
 
   const request = await userWallet1.addInvoice({ value: amountInvoice, memo })
   await userWallet2.pay({ invoice: request })
@@ -137,9 +142,30 @@ it('payInvoiceToAnotherGaloyUserWithMemo', async () => {
 
   const user1Txn = await userWallet1.getTransactions()
   expect(user1Txn.filter(matchTx)[0].description).toBe(memo)
+  expect(user1Txn.filter(matchTx)[0].type).toBe('on_us')
 
   const user2Txn = await userWallet2.getTransactions()
   expect(user2Txn.filter(matchTx)[0].description).toBe(memo)
+  expect(user2Txn.filter(matchTx)[0].type).toBe('on_us')
+  await checkIsBalanced()
+}, 50000)
+
+it('payInvoiceToAnotherGaloyUserWith2DifferentMemo', async () => {
+  const memo = "invoiceMemo"
+  const memoPayer = "my memo as a payer"
+
+  const request = await userWallet2.addInvoice({ value: amountInvoice, memo })
+  await userWallet1.pay({ invoice: request, memo: memoPayer })
+  
+  const matchTx = tx => tx.type === 'on_us' && tx.hash === getHash(request)
+
+  const user1Txn = await userWallet2.getTransactions()
+  expect(user1Txn.filter(matchTx)[0].description).toBe(memo)
+  expect(user1Txn.filter(matchTx)[0].type).toBe('on_us')
+
+  const user2Txn = await userWallet1.getTransactions()
+  expect(user2Txn.filter(matchTx)[0].description).toBe(memoPayer)
+  expect(user2Txn.filter(matchTx)[0].type).toBe('on_us')
   await checkIsBalanced()
 }, 50000)
 

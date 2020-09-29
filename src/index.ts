@@ -8,7 +8,7 @@ import * as jwt from 'jsonwebtoken';
 import { Price } from "./priceImpl";
 import { login, requestPhoneCode } from "./text";
 import { OnboardingEarn } from "./types";
-import { AdminWallet } from "./LightningAdminImpl";
+import { AdminWallet } from "./AdminWallet";
 import { sendNotification } from "./notification"
 
 const path = require("path");
@@ -128,7 +128,7 @@ const resolvers = {
     invoice: async (_, __, { lightningWallet }) => ({
       addInvoice: async ({ value, memo }) => lightningWallet.addInvoice({ value, memo }),
       updatePendingInvoice: async ({ hash }) => lightningWallet.updatePendingInvoice({ hash }),
-      payInvoice: async ({ invoice, amount }) => lightningWallet.pay({ invoice, amount })
+      payInvoice: async ({ invoice, amount, memo }) => lightningWallet.pay({ invoice, amount, memo })
     }),
     earnCompleted: async (_, { ids }, { lightningWallet }) => lightningWallet.addEarn(ids),
     deleteUser: () => {
