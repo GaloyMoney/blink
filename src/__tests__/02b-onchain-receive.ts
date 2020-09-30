@@ -60,13 +60,9 @@ const onchain_funding = async ({ walletDestination }) => {
   expect(address.substr(0, 4)).toBe("bcrt")
 
   const checkBalance = async () => {
-    const subToChainAddr = lnService.subscribeToChainAddress({ lnd: lndMain, bech32_address: address, min_height })
-    const subToTxn = lnService.subscribeToTransactions({ lnd: lndMain })
-    subToTxn.on('chain_transaction', onchainTransactionEventHandler)
-    await once(subToChainAddr, 'confirmation')
-
-    subToChainAddr.removeAllListeners();
-    subToTxn.removeAllListeners();
+    const sub = lnService.subscribeToChainAddress({ lnd: lndMain, bech32_address: address, min_height })
+    await once(sub, 'confirmation')
+    sub.removeAllListeners();
 
     await waitUntilBlockHeight({ lnd: lndMain, blockHeight: initBlockCount + 6 })
     await checkIsBalanced()
