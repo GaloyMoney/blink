@@ -64,7 +64,6 @@ export class AdminWallet {
   }
 
   async balanceSheetIsBalanced() {
-    await this.updateUsersPendingPayment()
     const {assets, liabilities, lightning, expenses} = await this.getBalanceSheet()
     const { total } = await this.lndBalances()
 
