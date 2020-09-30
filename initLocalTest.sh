@@ -148,10 +148,11 @@ then
 
   NAMESPACE=monitoring helmUpgrade prometheus stable/prometheus -f ~/GaloyApp/backend/prometheus-server/values.yaml
 
-  export SLACK_API_URL=$(kubectl get secret -n $NAMESPACE $SECRET -o jsonpath="{.data.SLACK_API_URL}" | base64 --decode)
-  export SERVICE_KEY=$(kubectl get secret -n $NAMESPACE $SECRET -o jsonpath="{.data.SERVICE_KEY}" | base64 --decode)
+#FIXME: duplicate monitoring namespace passed
+  export SLACK_API_URL=$(kubectl get secret -n monitoring $SECRET -o jsonpath="{.data.SLACK_API_URL}" | base64 -d)
+  export SERVICE_KEY=$(kubectl get secret -n monitoring $SECRET -o jsonpath="{.data.SERVICE_KEY}" | base64 -d)
 
-  kubectl -n $NAMESPACE get configmaps prometheus-alertmanager -o yaml | sed -e "s|SLACK_API_URL|$SLACK_API_URL|; s|SERVICE_KEY|$SERVICE_KEY|" | kubectl -n $NAMESPACE apply -f -
+  kubectl -n monitoring get configmaps prometheus-alertmanager -o yaml | sed -e "s|SLACK_API_URL|$SLACK_API_URL|; s|SERVICE_KEY|$SERVICE_KEY|" | kubectl -n $NAMESPACE apply -f -
 
   NAMESPACE=monitoring helmUpgrade grafana stable/grafana -f ~/GaloyApp/backend/grafana/values.yaml
   NAMESPACE=monitoring helmUpgrade mongo-exporter ~/GaloyApp/backend/mongo-exporter
