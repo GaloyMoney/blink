@@ -303,16 +303,20 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         if (err.message === "Timeout") {
           return "pending"
-          // pending in-flight payment are being handled in a cron-like job
+          // pending in-flight payment are being handled either by a cron job 
+          // or payment update when the user query his balance
         }
 
         try {
+          // FIXME: this query may not make sense 
+          // where multiple payment have the same hash
+          // ie: when a payment is being retried
           await Transaction.updateMany({ hash: id }, { pending: false, error: err[1] })
           await MainBook.void(entry._id, err[1])
         } catch (err_db) {
           const err_message = `error canceling payment entry ${util.inspect({ err_db })}`
-          console.error(err_message)
-          throw Error(`internal ${err_message}`)
+          logger.error(err_message)
+          throw Error(`ERROR CANCELLING A PAYMENT FOR ${this.uid}: ${err_message}`)
         }
 
         throw Error(`internal error paying invoice ${util.inspect({ err }, false, Infinity)}`)
@@ -359,7 +363,9 @@ export const LightningMixin = (superclass) => class extends superclass {
             await payment.save()
             await MainBook.void(payment._journal, "Payment canceled") // JSON.stringify(result.failed
           } catch (err) {
-            throw Error(`internal: error canceling payment entry ${util.inspect({ err })}`)
+            const errMessage = `ERROR canceling payment entry ${util.inspect({ err })}`
+            logger.error(errMessage)
+            throw Error(errMessage)
           }
         }
       }
