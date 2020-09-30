@@ -49,6 +49,7 @@ export const getUserWallet = async userNumber => {
 
 export const checkIsBalanced = async () => {
 	const adminWallet = new AdminWallet()
+  await adminWallet.updateUsersPendingPayment()
 	const { assetsLiabilitiesDifference, lndBalanceSheetDifference } = await adminWallet.balanceSheetIsBalanced()
 	expect(assetsLiabilitiesDifference).toBeFalsy() // should be 0
 	expect(lndBalanceSheetDifference).toBeFalsy() // should be 0
