@@ -35,7 +35,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
   async updatePending() {
     await this.updatePendingInvoices()
-    await this.updatePendingPayment()
+    await this.updatePendingPayments()
   }
 
   async getBalance() {
@@ -332,15 +332,18 @@ export const LightningMixin = (superclass) => class extends superclass {
   // TODO manage the error case properly. right now there is a mix of string being return
   // or error being thrown. Not sure how this is handled by GraphQL
 
-  async updatePendingPayment() {
+  async updatePendingPayments() {
 
-    const payments = await Transaction.find({ account_path: this.accountPathMedici, type: "payment", pending: true })
+    const query = { account_path: this.accountPathMedici, type: "payment", pending: true }
+    const count = Transaction.count(query)
 
-    if (payments === []) {
+    if (count === 0) {
       return
     }
 
     return await using(disposer(this.uid), async (lock) => {
+
+      const payments = await Transaction.find(query)
 
       for (const payment of payments) {
 
@@ -354,7 +357,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         if (result.is_confirmed) {
           // success
           payment.pending = false
-          payment.save()
+          await payment.save()
         }
 
         if (result.is_failed) {
@@ -398,18 +401,18 @@ export const LightningMixin = (superclass) => class extends superclass {
 
       try {
 
-        const invoiceUser = await InvoiceUser.findOne({ _id: hash, uid: this.uid })
-
-        if (!invoiceUser.pending) {
-          // invoice has already been processed
-          return true
-        }
-
-        if (!invoiceUser) {
-          throw Error(`no mongodb entry is associated with this invoice ${invoice}`)
-        }
-
         return await using(disposer(this.uid), async (lock) => {
+
+          const invoiceUser = await InvoiceUser.findOne({ _id: hash, uid: this.uid })
+
+          if (!invoiceUser.pending) {
+            // invoice has already been processed
+            return true
+          }
+
+          if (!invoiceUser) {
+            throw Error(`no mongodb entry is associated with this invoice ${invoice}`)
+          }
 
           // TODO: use a transaction here
           // const session = await InvoiceUser.startSession()
@@ -419,7 +422,7 @@ export const LightningMixin = (superclass) => class extends superclass {
           // may still not avoid issue from discrenpency between hash and the books
 
           invoiceUser.pending = false
-          invoiceUser.save()
+          await invoiceUser.save()
           
           const sats = invoice.received
           
@@ -450,7 +453,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         })
 
       } catch (err) {
-        console.error(err)
+        logger.error(err)
         throw new Error(`issue updating invoice: ${err}`)
       }
     }
