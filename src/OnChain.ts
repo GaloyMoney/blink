@@ -21,6 +21,11 @@ export const OnChainMixin = (superclass) => class extends superclass {
     super(...args)
   }
 
+  async getBalance() {
+    await this.updatePending()
+    return super.getBalance()
+  }
+
   async updatePending() {
     await this.updateOnchainPayment()
     return super.updatePending()
@@ -30,8 +35,6 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
   async getOnchainFee({address}): Promise<number | Error> {
     const payeeUser = await this.PayeeUser(address)
-
-    console.log({payeeUser})
 
     let fee
 
@@ -135,7 +138,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
   async getLastOnChainAddress(): Promise<String | Error | undefined> {
     let user = await User.findOne({ _id: this.uid })
     if (!user) { // this should not happen. is test that relevant?
-      console.error("no user is associated with this address")
+      logger.error("no user is associated with this address")
       throw new Error(`no user with this uid`)
     }
 
@@ -173,7 +176,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
     try {
       const user = await User.findOne({ _id: this.uid })
       if (!user) { // this should not happen. is test that relevant?
-        console.error("no user is associated with this address")
+        logger.error("no user is associated with this address")
         throw new Error(`no user with this uid`)
       }
 

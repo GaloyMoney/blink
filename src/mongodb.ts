@@ -334,7 +334,7 @@ export const setupMongoConnection = async () => {
       useFindAndModify: false
     })
   } catch (err) {
-    console.error(`error connecting to mongodb ${err}`)
+    logger.error(`error connecting to mongodb ${err}`)
     exit(1)
   }
 }

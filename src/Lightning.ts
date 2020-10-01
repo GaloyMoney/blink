@@ -117,13 +117,22 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     let pushPayment = false
     let tokens
+    let expires_at
+    let features
+    let cltv_delta
+    let payment
     let destination, id, description
     let routeHint = []
     let messages: Object[] = []
     
     if (params.invoice) {
-      // TODO replace this with bolt11 utils library
-      ({ id, tokens, destination, description, routes: routeHint } = await lnService.decodePaymentRequest({ lnd: this.lnd, request: params.invoice }))
+      // TODO: replace this with bolt11 utils library
+      // TODO: use msat instead of sats for the db?
+      ({ id, safe_tokens: tokens, destination, description, routes: routeHint, payment, cltv_delta, expires_at, features } = await lnService.decodePaymentRequest({ lnd: this.lnd, request: params.invoice }))
+
+      logger.info({ id, tokens, destination, description, routes: routeHint, payment, cltv_delta, expires_at, features }, "succesfully decoded invoice")
+
+      // TODO: if expired_at expired, thrown an error
 
       if (!!params.amount && tokens !== 0) {
         throw Error('Invoice contains non-zero amount, but amount was also passed separately')
@@ -148,17 +157,20 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     tokens = !!tokens ? tokens : params.amount
 
-    return { tokens, destination, pushPayment, id, routeHint, description, messages}
+    return { tokens, destination, pushPayment, id, routeHint, description, messages, payment, cltv_delta, expires_at, features }
   }
 
   async pay(params: IPaymentRequest): Promise<payInvoiceResult | Error> {
 
-    const { tokens, destination, pushPayment, id, routeHint, description, messages } = await this.validate(params)
+    const { tokens, destination, pushPayment, id, routeHint, description, messages, payment, cltv_delta, features } = await this.validate(params)
 
     let fee
-    let route, routes
+    let route
     let payeeUid
 
+    // TODO: this should be inside the lock.
+    // but getBalance is currently also getting the lock. 
+    // --> need a re-entrant mutex or another architecture to have balance within the lock
     const balance = await this.getBalance()
 
     return await using(disposer(this.uid), async (lock) => {
@@ -170,7 +182,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         } else {
           const existingInvoice = await InvoiceUser.findOne({ _id: id, pending: true })
           if (!existingInvoice) {
-            throw Error('User tried to pay invoice destined to us, but it was already paid or does not exist')
+            throw Error('User tried to pay invoice from the same wallet, but it was already paid or does not exist')
             // FIXME: Using == here because === returns false even for same uids
           } else if (existingInvoice.uid == this.uid) {
             throw Error(`User ${this.uid} tried to pay their own invoice (invoice belong to: ${existingInvoice.uid})`)
@@ -202,66 +214,45 @@ export const LightningMixin = (superclass) => class extends superclass {
         return "success"
       }
 
-      // TODO add private route from invoice
+      const max_fee = Math.max(FEECAP * tokens, FEEMIN)
+
+      // TODO: fine tune those values:
+      // const probe_timeout_ms
+      // const path_timeout_ms
+
+      // payment + mtokens
+      // payment, mtokens: tokens * 1000,
 
       try {
-        ({ routes } = await lnService.getRoutes({ destination, lnd: this.lnd, tokens, routes: routeHint }));
-
-        if (routes.length === 0) {
-          logger.warn("there is no potential route for payment to %o from user %o", destination, this.uid)
-          throw Error(`there is no potential route for this payment`)
-        }
-
-        logger.info({ routes }, "successfully found routes for payment to %o from user %o", destination, this.uid)
+        ({ route } = await lnService.probeForRoute({ lnd: this.lnd, 
+          destination, tokens, routes: routeHint, cltv_delta, features, max_fee, messages
+        }));
       } catch (err) {
-        logger.error({err}, "error getting route")
+        logger.error({err, destination, tokens, routes: routeHint, cltv_delta, features, max_fee, messages }, "error getting route / probing for route")
         throw new Error(err)
       }
 
-      for (const potentialRoute of routes) {
-        const probePromise = lnService.probe({ lnd: this.lnd, routes: [potentialRoute] })
-        const [probeResult, timeElapsedms] = await measureTime(probePromise)
-        logger.info({ probeResult }, `probe took ${timeElapsedms} ms`)
-        if (
-          probeResult.generic_failures.length == 0 &&
-          probeResult.stuck.length == 0 &&
-          probeResult.temporary_failures.length == 0 &&
-          probeResult.successes.length > 0
-        ) {
-          route = probeResult.route
-          break
-        }
-      }
-
       if (!route) {
-        logger.warn("there is no payable route for payment to %o from user %o", destination, this.uid)
-        throw Error(`there is no payable route for this payment`)
+        logger.warn("there is no potential route for payment to %o from user %o", destination, this.uid)
+        throw Error(`there is no potential route for this payment`)
       }
 
+      // console.log({route})
       logger.info({ route }, "successfully found payable route for payment to %o from user %o", destination, this.uid)
 
       // we are confident enough that there is a possible payment route. let's move forward
 
-      fee = route.safe_fee
-
-      if (fee > FEECAP * tokens && fee > FEEMIN) {
-        throw Error(`cancelled: fee exceeds ${FEECAP * 100} percent of token amount`)
-      }
-
-      if (balance < tokens + fee) {
-        throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${tokens + fee}`)
-      }
-
-      if (pushPayment) {
-        route.messages = messages
-      }
-
-      // reduce balance from customer first
-
       let entry 
 
       {
+        fee = route.safe_fee
         const sats = tokens + fee
+
+        if (balance < sats) {
+          throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${sats}`)
+        }
+
+        // reduce balance from customer first
 
         const metadata = { currency: this.currency, hash: id, type: "payment", pending: true, fee }
         await addCurrentValueToMetadata(metadata, {sats, fee})
