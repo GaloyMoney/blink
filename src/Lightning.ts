@@ -225,10 +225,11 @@ export const LightningMixin = (superclass) => class extends superclass {
 
       try {
         ({ route } = await lnService.probeForRoute({ lnd: this.lnd, 
-          destination, tokens, routes: routeHint, cltv_delta, features, max_fee, messages
+          destination, mtokens: tokens * 1000, routes: routeHint, cltv_delta, features, max_fee, messages, payment
         }));
       } catch (err) {
-        logger.error({err, destination, tokens, routes: routeHint, cltv_delta, features, max_fee, messages }, "error getting route / probing for route")
+        logger.error({err, destination, mtokens: tokens * 1000, routes: routeHint, cltv_delta, features, max_fee, messages, payment }, 
+          "error getting route / probing for route")
         throw new Error(err)
       }
 
