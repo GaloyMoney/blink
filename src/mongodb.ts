@@ -223,6 +223,17 @@ const priceHistorySchema = new Schema({
 export const PriceHistory = mongoose.model("PriceHistory", priceHistorySchema);
 
 export const upgrade = async () => {
+
+  try {
+    const Journal = mongoose.model("Medici_Journal", new mongoose.Schema());
+    const memo = 'escrow'
+    await Transaction.remove({memo})
+    await Journal.remove({memo})
+
+  } catch(err) {
+    logger.error({err}, "unable to clear escrow txns")
+    exit()
+  }
   
   try {
     let dbVersion = await DbVersion.findOne({})
