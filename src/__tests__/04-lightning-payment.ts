@@ -90,6 +90,15 @@ it('payInvoice', async () => {
   await checkIsBalanced()
 }, 50000)
 
+it('payInvoice with High CLTV Delta', async () => {
+  const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: amountInvoice, cltv_delta: 200 })
+  const result = await userWallet1.pay({ invoice: request })
+  expect(result).toBe("success")
+  const finalBalance = await userWallet1.getBalance()
+  expect(finalBalance).toBe(initBalance1 - amountInvoice)
+  await checkIsBalanced()
+}, 50000)
+
 it('receives payment from outside', async () => {
   const memo = "myMemo"
 
