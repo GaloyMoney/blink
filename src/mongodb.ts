@@ -192,7 +192,6 @@ const transactionSchema = new Schema({
 // TODO indexes, see https://github.com/koresar/medici/blob/master/src/index.js#L39
 
 transactionSchema.index({ "type": 1, "pending" : 1, "account_path": 1 });
-transactionSchema.index({ "pending": 1 });
 
 
 export const Transaction = mongoose.model("Medici_Transaction", transactionSchema);
