@@ -44,14 +44,14 @@ it('second loop start after first loop has ended', async () => {
 it('throwing error releases the lock', async () => {
   const client = redis.createClient(process.env.REDIS_PORT, process.env.REDIS_IP)
 
-  const exceptLockToBe = (fn) => client.get(getResource(uid), (err, res) => {
+  const expectLockToBe = (fn) => client.get(getResource(uid), (err, res) => {
     console.log({res})
     fn(res)
   });
 
   try {
     await using(disposer(uid), async function(lock) {  
-      exceptLockToBe(res => expect(res).toBeTruthy())
+      expectLockToBe(res => expect(res).toBeTruthy())
       await sleep(500)
       throw Error("dummy error")
     });
@@ -59,7 +59,7 @@ it('throwing error releases the lock', async () => {
     console.log(`error is being catched ${err}`)
   }
 
-  exceptLockToBe(res => expect(res).toBeFalsy())
+  expectLockToBe(res => expect(res).toBeFalsy())
 
   // TODO: properly use callback to avoid sleep
   await sleep(500)
