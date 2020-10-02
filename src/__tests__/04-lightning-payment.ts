@@ -159,13 +159,13 @@ it('payInvoiceToAnotherGaloyUserWith2DifferentMemo', async () => {
   
   const matchTx = tx => tx.type === 'on_us' && tx.hash === getHash(request)
 
-  const user1Txn = await userWallet2.getTransactions()
-  expect(user1Txn.filter(matchTx)[0].description).toBe(memo)
-  expect(user1Txn.filter(matchTx)[0].type).toBe('on_us')
-
-  const user2Txn = await userWallet1.getTransactions()
-  expect(user2Txn.filter(matchTx)[0].description).toBe(memoPayer)
+  const user2Txn = await userWallet2.getTransactions()
+  expect(user2Txn.filter(matchTx)[0].description).toBe(memo)
   expect(user2Txn.filter(matchTx)[0].type).toBe('on_us')
+
+  const user1Txn = await userWallet1.getTransactions()
+  expect(user1Txn.filter(matchTx)[0].description).toBe(memoPayer)
+  expect(user1Txn.filter(matchTx)[0].type).toBe('on_us')
   await checkIsBalanced()
 }, 50000)
 
