@@ -191,7 +191,7 @@ const transactionSchema = new Schema({
 
 // TODO indexes, see https://github.com/koresar/medici/blob/master/src/index.js#L39
 
-transactionSchema.index({ "account_path.0": 1, "account_path.1": 1, "account_path.2": 1, "type": 1, "pending" : 1});
+transactionSchema.index({ "type": 1, "pending" : 1, "account_path": 1 });
 transactionSchema.index({ "pending": 1 });
 
 
