@@ -279,7 +279,6 @@ export const upgrade = async () => {
         await DbVersion.findOneAndUpdate({}, { version: 1 }, { upsert: true })
 
         logger.info("upgrade successful to version 1")
-        break;
 
       case 1:
         logger.info("starting upgrade to version 2")
@@ -330,7 +329,6 @@ export const upgrade = async () => {
         await dbVersion.save()
 
         logger.info("upgrade successful to version 2")
-        break;
 
       case 2:
         logger.info("starting upgrade to version 3")
@@ -343,10 +341,9 @@ export const upgrade = async () => {
         await dbVersion.save()
 
         logger.info("upgrade successful to version 3")
-        break;
 
       default:
-        logger.info("no need to upgrade the db")
+        logger.info("db was just upgraded or did not need upgrade")
         break;
     }
   } catch (err) {
