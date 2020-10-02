@@ -385,7 +385,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     // has been managed off lnd.
     if (invoice.is_canceled) {
       // TODO: proper testing
-      const result = Transaction.findOne({currency: this.currency, id: hash, type: "on_us", pending: false})
+      const result = Transaction.findOne({currency: this.currency, hash, type: "on_us", pending: false})
       return !!result
 
     } else if (invoice.is_confirmed) {

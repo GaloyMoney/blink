@@ -21,7 +21,7 @@ const invoiceUserSchema = new Schema({
 
   // usd equivalent. sats is attached in the invoice directly.
   // optional, as BTC wallet doesn't have to set a sat amount when creating the invoice
-  usd: Number, 
+  usd: Number,
 
   // currency matchs the user account
   currency: {
@@ -66,7 +66,7 @@ const UserSchema = new Schema({
   phone: { // TODO we should store country as a separate string
     type: String,
     required: true,
-  }, 
+  },
   deviceToken: {
     type: [String],
     default: []
@@ -125,7 +125,7 @@ const transactionSchema = new Schema({
   // FIXME? hash is currently used for onchain tx but txid should be used instead?
   // an onchain output is deterministically represented by hash of tx + vout
   txid: String,
-  
+
   type: {
     type: String,
     enum: [
@@ -152,7 +152,7 @@ const transactionSchema = new Schema({
   // not used for accounting but used for usd/sats equivalent
   usd: Number,
   sats: Number,
-  feeUsd: { 
+  feeUsd: {
     type: Number,
     default: 0
   },
@@ -222,94 +222,132 @@ const priceHistorySchema = new Schema({
 })
 export const PriceHistory = mongoose.model("PriceHistory", priceHistorySchema);
 
+const journalSchema = new Schema({
+  datetime: Date,
+  memo: {
+    type: String,
+    default: ""
+  },
+  _transactions: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Medici_Transaction"
+    }
+  ],
+  book: String,
+  voided: {
+    type: Boolean,
+    default: false
+  },
+  void_reason: String,
+  approved: {
+    type: Boolean,
+    default: true
+  }
+});
+
+export const Journal = mongoose.model("Medici_Journal", journalSchema)
+
 export const upgrade = async () => {
-  
+
   try {
+
     let dbVersion = await DbVersion.findOne({})
-  
+
     if (!dbVersion) {
       dbVersion = DbVersion.create()
       dbVersion.version = 0
     }
 
-    logger.info({dbVersion}, "entering upgrade db module version")
-  
-    if (dbVersion.version === 2) {
-      logger.info("no need to upgrade the db")
-    }
+    logger.info({ dbVersion }, "entering upgrade db module version")
 
-    if (dbVersion.version === 0) {
-      logger.info("starting upgrade to version 1")
+    switch (dbVersion.version) {
+      case 0:
+        logger.info("starting upgrade to version 1")
 
-      logger.info("all existing wallet should have BTC as currency")
-      // this is to enforce the index constraint
-      await User.updateMany({}, {$set: {currency: "BTC"}})
-      
-      logger.info("there needs to have a role: funder")
-      await User.findOneAndUpdate({phone: "+1***REMOVED***", currency: "BTC"}, {role: "funder"})
-  
-      logger.info("earn is no longer a particular type. replace with on_us")
-      await Transaction.updateMany({type: "earn"}, {$set: {type: "on_us"}})
-      
-      logger.info("setting db version to 1")
-      await DbVersion.findOneAndUpdate({}, {version: 1}, {upsert: true})
+        logger.info("all existing wallet should have BTC as currency")
+        // this is to enforce the index constraint
+        await User.updateMany({}, { $set: { currency: "BTC" } })
 
-      logger.info("upgrade succesful to version 1")
-    }
-    
-    if (dbVersion.version === 1) {
-      logger.info("starting upgrade to version 2")
+        logger.info("there needs to have a role: funder")
+        await User.findOneAndUpdate({ phone: "+1***REMOVED***", currency: "BTC" }, { role: "funder" })
 
-      let priceTime
-      const moment = require('moment');
-      
-      let price
-      let skipUpdate = false
+        logger.info("earn is no longer a particular type. replace with on_us")
+        await Transaction.updateMany({ type: "earn" }, { $set: { type: "on_us" } })
 
-      try {
-        ({ pair: { exchange: { price }}} = await PriceHistory.findOne({}, {}, {sort: {_id: 1}}))
-      } catch (err) {
-        logger.warn("no price available. would only ok if no transaction is available, ie: on devnet")
-        const count = await Transaction.countDocuments()
-        if (count === 0) {
-          skipUpdate = true
-        } else {
-          exit()
-        }
-      }
+        logger.info("setting db version to 1")
+        await DbVersion.findOneAndUpdate({}, { version: 1 }, { upsert: true })
 
-      if (!skipUpdate) {
-        const priceMapping = mapValues(keyBy(price, i => moment(i._id) ), 'o')
-        const lastPriceObj = last(price)
-        const lastPrice = (lastPriceObj as any).o
-  
-        const transactions = await Transaction.find({})
-  
-        for (const tx of transactions) {
-          const txTime = moment(tx.datetime).startOf('hour');
-  
-          if (has(priceMapping, `${txTime}`)) {
-            priceTime = priceMapping[`${txTime}`]
+        logger.info("upgrade successful to version 1")
+
+      case 1:
+        logger.info("starting upgrade to version 2")
+
+        let priceTime
+        const moment = require('moment');
+
+        let price
+        let skipUpdate = false
+
+        try {
+          ({ pair: { exchange: { price } } } = await PriceHistory.findOne({}, {}, { sort: { _id: 1 } }))
+        } catch (err) {
+          logger.warn("no price available. would only ok if no transaction is available, ie: on devnet")
+          const count = await Transaction.countDocuments()
+          if (count === 0) {
+            skipUpdate = true
           } else {
-            logger.warn({tx}, 'using most recent price for time %o', `${txTime}`)
-            priceTime = lastPrice
+            exit()
           }
-          
-          const usd = (tx.debit + tx.credit) * priceTime
-          await Transaction.findOneAndUpdate({_id: tx._id}, {usd})
         }
-      }
 
-      logger.info("setting db version to 2")
-      dbVersion.version = 2
-      dbVersion.minBuildNumber = 182
-      await dbVersion.save()
+        if (!skipUpdate) {
+          const priceMapping = mapValues(keyBy(price, i => moment(i._id)), 'o')
+          const lastPriceObj = last(price)
+          const lastPrice = (lastPriceObj as any).o
 
-      logger.info("upgrade succesful to version 2")
-    } 
-    
+          const transactions = await Transaction.find({})
+
+          for (const tx of transactions) {
+            const txTime = moment(tx.datetime).startOf('hour');
+
+            if (has(priceMapping, `${txTime}`)) {
+              priceTime = priceMapping[`${txTime}`]
+            } else {
+              logger.warn({ tx }, 'using most recent price for time %o', `${txTime}`)
+              priceTime = lastPrice
+            }
+
+            const usd = (tx.debit + tx.credit) * priceTime
+            await Transaction.findOneAndUpdate({ _id: tx._id }, { usd })
+          }
+        }
+
+        logger.info("setting db version to 2")
+        dbVersion.version = 2
+        dbVersion.minBuildNumber = 182
+        await dbVersion.save()
+
+        logger.info("upgrade successful to version 2")
+
+      case 2:
+        logger.info("starting upgrade to version 3")
+
+        const memo = 'escrow'
+        await Transaction.remove({ memo })
+        await Journal.remove({ memo })
+
+        dbVersion.version = 2
+        await dbVersion.save()
+
+        logger.info("upgrade successful to version 3")
+
+      default:
+        logger.info("db was just upgraded or did not need upgrade")
+        break;
+    }
   } catch (err) {
-    logger.fatal({err}, "db upgrade error. exiting")
+    logger.fatal({ err }, "db upgrade error. exiting")
     exit()
   }
 }
@@ -323,7 +361,7 @@ export const setupMongoConnection = async () => {
   const password = process.env.MONGODB_ROOT_PASSWORD ?? "testGaloy"
   const address = process.env.MONGODB_ADDRESS ?? "mongodb"
   const db = process.env.MONGODB_DATABASE ?? "galoy"
-  
+
   const path = `mongodb://${user}:${password}@${address}/${db}`
 
   try {
