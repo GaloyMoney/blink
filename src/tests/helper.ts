@@ -1,3 +1,4 @@
+import { find } from "core-js/fn/array";
 import * as jwt from 'jsonwebtoken';
 import { AdminWallet } from "../LightningAdminImpl";
 import { login, TEST_NUMBER } from "../text";
@@ -8,9 +9,9 @@ const BitcoindClient = require('bitcoin-core')
 
 const lnService = require('ln-service')
 
-//FIXME: Maybe switch to using single reward
-export const onBoardingEarnAmt: number = Object.values(OnboardingEarn).reduce((a, b) => a + b, 0)
-export const onBoardingEarnIds: string[] = Object.keys(OnboardingEarn)
+const earnsToGet = ['buyFirstSats', 'debitCardActivation', 'firstCardSpending']
+export const onBoardingEarnAmt: number = Object.keys(OnboardingEarn).filter(k => find(earnsToGet, o => o === k) ).reduce((p, k) => p + OnboardingEarn[k], 0)
+export const onBoardingEarnIds: string[] = earnsToGet
 
 export const lndMain = lnService.authenticatedLndGrpc(getAuth()).lnd
 

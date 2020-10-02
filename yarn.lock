@@ -2254,9 +2254,9 @@ bip174@^2.0.1:
   integrity sha512-i3X26uKJOkDTAalYAp0Er+qGMDhrbbh2o93/xiPyAN2s25KrClSpe3VXo/7mNJoqA5qfko8rLS2l3RWZgYmjKQ==
 
 bip32@^2.0.4:
-  version "2.0.5"
-  resolved "https://registry.yarnpkg.com/bip32/-/bip32-2.0.5.tgz#e3808a9e97a880dbafd0f5f09ca4a1e14ee275d2"
-  integrity sha512-zVY4VvJV+b2fS0/dcap/5XLlpqtgwyN8oRkuGgAS1uLOeEp0Yo6Tw2yUTozTtlrMJO3G8n4g/KX/XGFHW6Pq3g==
+  version "2.0.6"
+  resolved "https://registry.yarnpkg.com/bip32/-/bip32-2.0.6.tgz#6a81d9f98c4cd57d05150c60d8f9e75121635134"
+  integrity sha512-HpV5OMLLGTjSVblmrtYRfFFKuQB+GArM0+XP8HGWfJ5vxYBqo+DesvJwOdC2WJ3bCkZShGf0QIfoIpeomVzVdA==
   dependencies:
     "@types/node" "10.12.18"
     bs58check "^2.1.1"
@@ -5810,9 +5810,9 @@ liquid-json@0.3.1:
   integrity sha1-kVWhgTbYprJhXl8W+aJEira1Duo=
 
 ln-service@^49.12.1:
-  version "49.12.1"
-  resolved "https://registry.yarnpkg.com/ln-service/-/ln-service-49.12.1.tgz#dbbb90f25904b6dd7d06ed8247f80a7ab0ea25c4"
-  integrity sha512-UoxCBvnHmvRJtUjNGQIZECr+z26AP8FY2ANByiCqqrQnhvoAKm1QxImCoRtza0TgB6LSio+dKS5/EqG11JuAtQ==
+  version "49.12.2"
+  resolved "https://registry.yarnpkg.com/ln-service/-/ln-service-49.12.2.tgz#f2036a86832c6fde9c7a47c6c7f0f4adf312875f"
+  integrity sha512-UPz/4KV7SxD22CSOlD+cJMVE0hb0OyL2YJe5BJ3hC3dzgFcGqHJJeDkJ0d6v+vMefFaXXpqM3JUk+6QE6euqIw==
   dependencies:
     "@datastructures-js/priority-queue" "4.1.2"
     async "3.2.0"
@@ -6331,9 +6331,9 @@ ncp@~2.0.0:
   integrity sha1-GVoh1sRuNh0vsSgbo4uR6d9727M=
 
 needle@^2.5.0:
-  version "2.5.0"
-  resolved "https://registry.yarnpkg.com/needle/-/needle-2.5.0.tgz#e6fc4b3cc6c25caed7554bd613a5cf0bac8c31c0"
-  integrity sha512-o/qITSDR0JCyCKEQ1/1bnUXMmznxabbwi/Y4WwJElf+evwJNFNwIDMCCt5IigFVxgeGBJESLohGtIS9gEzo1fA==
+  version "2.5.2"
+  resolved "https://registry.yarnpkg.com/needle/-/needle-2.5.2.tgz#cf1a8fce382b5a280108bba90a14993c00e4010a"
+  integrity sha512-LbRIwS9BfkPvNwNHlsA41Q29kL2L/6VaOJ0qisM5lLWsTV3nP15abO5ITL6L81zqFhzjRKDAYjpcBcwM0AVvLQ==
   dependencies:
     debug "^3.2.6"
     iconv-lite "^0.4.4"
@@ -6402,9 +6402,9 @@ node-forge@^0.9.0, node-forge@^0.9.1:
   integrity sha512-G6RlQt5Sb4GMBzXvhfkeFmbqR6MzhtnT7VTHuLadjkii3rdYHNdw0m8zA4BTxVIh68FicCQ2NSUANpsqkr9jvQ==
 
 node-gyp-build@^4.2.0:
-  version "4.2.2"
-  resolved "https://registry.yarnpkg.com/node-gyp-build/-/node-gyp-build-4.2.2.tgz#3f44b65adaafd42fb6c3d81afd630e45c847eb66"
-  integrity sha512-Lqh7mrByWCM8Cf9UPqpeoVBBo5Ugx+RKu885GAzmLBVYjeywScxHXPGLa4JfYNZmcNGwzR0Glu5/9GaQZMFqyA==
+  version "4.2.3"
+  resolved "https://registry.yarnpkg.com/node-gyp-build/-/node-gyp-build-4.2.3.tgz#ce6277f853835f718829efb47db20f3e4d9c4739"
+  integrity sha512-MN6ZpzmfNCRM+3t57PTJHgHyw/h4OWnZ6mR8P5j/uZtqQr46RRuDE/P+g3n0YR/AiYXeWixZZzaip77gdICfRg==
 
 node-int64@^0.4.0:
   version "0.4.0"
