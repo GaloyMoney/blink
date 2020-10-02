@@ -1,5 +1,5 @@
-import { find } from "core-js/fn/array";
 import * as jwt from 'jsonwebtoken';
+import { find } from "lodash";
 import { AdminWallet } from "../LightningAdminImpl";
 import { login, TEST_NUMBER } from "../text";
 import { OnboardingEarn } from "../types";
