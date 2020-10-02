@@ -330,8 +330,6 @@ export const LightningMixin = (superclass) => class extends superclass {
 
   async updatePendingPayment() {
 
-
-    //FIXME: Maybe using accounts instead of account_path will make sure index is actually being used
     const payments = await Transaction.find({ account_path: this.accountPathMedici, type: "payment", pending: true })
 
     if (payments === []) {
