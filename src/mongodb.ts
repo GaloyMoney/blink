@@ -21,7 +21,7 @@ const invoiceUserSchema = new Schema({
 
   // usd equivalent. sats is attached in the invoice directly.
   // optional, as BTC wallet doesn't have to set a sat amount when creating the invoice
-  usd: Number, 
+  usd: Number,
 
   // currency matchs the user account
   currency: {
@@ -66,7 +66,7 @@ const UserSchema = new Schema({
   phone: { // TODO we should store country as a separate string
     type: String,
     required: true,
-  }, 
+  },
   deviceToken: {
     type: [String],
     default: []
@@ -125,7 +125,7 @@ const transactionSchema = new Schema({
   // FIXME? hash is currently used for onchain tx but txid should be used instead?
   // an onchain output is deterministically represented by hash of tx + vout
   txid: String,
-  
+
   type: {
     type: String,
     enum: [
@@ -152,7 +152,7 @@ const transactionSchema = new Schema({
   // not used for accounting but used for usd/sats equivalent
   usd: Number,
   sats: Number,
-  feeUsd: { 
+  feeUsd: {
     type: Number,
     default: 0
   },
