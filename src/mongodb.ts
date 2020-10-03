@@ -307,7 +307,7 @@ export const upgrade = async () => {
       case 2:
         logger.info("starting upgrade to version 3")
 
-        const Journal = mongoose.model("Medici_Journal", new mongoose.Schema());
+        const Journal = mongoose.model("Medici_Journal");
         const memo = 'escrow'
         await Transaction.remove({ memo })
         await Journal.remove({ memo })
