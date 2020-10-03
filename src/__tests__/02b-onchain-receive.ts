@@ -92,6 +92,7 @@ it('user0 is credited for on chain transaction', async () => {
   await onchain_funding({ walletDestination: walletUser0 })
 }, 100000)
 
+
 it('funding funder with onchain tx from bitcoind', async () => {
   await onchain_funding({ walletDestination: funderWallet })
 }, 100000)
@@ -136,5 +137,44 @@ it('identifies unconfirmed incoming on chain txn', async () => {
   // expect(notification.sendNotification.mock.calls[1][0].data.type).toBe("onchain_receipt")
   // expect(notification.sendNotification.mock.calls[1][0].title).toBe(
   //   `Your wallet has been credited with ${btc2sat(amount_BTC)} sats`)
+
+}, 100000)
+
+it('batch transaction testing', async () => {
+  const address0 = await walletUser0.getOnChainAddress()
+  const walletUser4 = await getUserWallet(4)
+  const address4 = await walletUser4.getOnChainAddress()
+
+  const change_legacy = await bitcoindClient.getNewAddress("", "legacy")
+  const change_p2sh_segwit = await bitcoindClient.getNewAddress("", "p2sh-segwit")
+  const change_bech32 = await bitcoindClient.getNewAddress("", "bech32")
+
+  const output0 = {}
+  output0[address0] = 1
+  
+  const output1 = {}
+  output1[address4] = 2
+
+  const output2 = {}
+  output2[change_legacy] = 10
+
+  const output3 = {}
+  output3[change_p2sh_segwit] = 10
+
+  const output4 = {}
+  output4[change_bech32] = 26.999
+
+  const outputs = [output0, output1, output2, output3, output4]
+
+  const unspent = await bitcoindClient.listUnspent()
+
+  const psbt = await bitcoindClient.createPsbt([unspent[0]], outputs)
+  const decodedPsbt1 = await bitcoindClient.decodePsbt(psbt)
+  const walletProcessPsbt = await bitcoindClient.walletProcessPsbt(psbt)
+  const decodedPsbt2 = await bitcoindClient.decodePsbt(walletProcessPsbt.psbt)
+
+  const util = require('util')
+  // console.log(util.inspect({psbt, decodedPsbt1, walletProcessPsbt, decodedPsbt2, unspent}, false, Infinity))
+  console.log(util.inspect({psbt, decodedPsbt1, walletProcessPsbt, decodedPsbt2}, false, Infinity))
 
 }, 100000)
