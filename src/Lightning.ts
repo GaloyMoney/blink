@@ -357,16 +357,13 @@ export const LightningMixin = (superclass) => class extends superclass {
           throw Error('issue fetching payment: ' + err.toString())
         }
 
-        if (result.is_confirmed) {
-          // success
+        if (result.is_confirmed || result.is_failed) {
           payment.pending = false
           await payment.save()
         }
 
         if (result.is_failed) {
           try {
-            payment.pending = false
-            await payment.save()
             await MainBook.void(payment._journal, "Payment canceled") // JSON.stringify(result.failed
           } catch (err) {
             const errMessage = `ERROR canceling payment entry ${util.inspect({ err })}`
