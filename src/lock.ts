@@ -55,9 +55,10 @@ const getRedLock = () => {
   return redlock
 }
 
+export const getResource = path => `locks:account:${path}`;
+
 export const disposer = (path) => {
-  const resource = `locks:account:${path}`;
-  return getRedLock().disposer(resource, ttl, unlockErrorHandler)
+  return getRedLock().disposer(getResource(path), ttl, unlockErrorHandler)
 }
 
 // export const quit = async () => await getRedLock().quit()
