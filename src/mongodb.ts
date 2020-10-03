@@ -222,32 +222,6 @@ const priceHistorySchema = new Schema({
 })
 export const PriceHistory = mongoose.model("PriceHistory", priceHistorySchema);
 
-const journalSchema = new Schema({
-  datetime: Date,
-  memo: {
-    type: String,
-    default: ""
-  },
-  _transactions: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "Medici_Transaction"
-    }
-  ],
-  book: String,
-  voided: {
-    type: Boolean,
-    default: false
-  },
-  void_reason: String,
-  approved: {
-    type: Boolean,
-    default: true
-  }
-});
-
-export const Journal = mongoose.model("Medici_Journal", journalSchema)
-
 export const upgrade = async () => {
 
   try {
@@ -333,6 +307,7 @@ export const upgrade = async () => {
       case 2:
         logger.info("starting upgrade to version 3")
 
+        const Journal = mongoose.model("Medici_Journal", new mongoose.Schema());
         const memo = 'escrow'
         await Transaction.remove({ memo })
         await Journal.remove({ memo })
