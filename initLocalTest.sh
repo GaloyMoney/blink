@@ -9,7 +9,7 @@ then
   REDISPERSISTENCE="true"
   NETWORK="$1"
   NAMESPACE="$1"
-  SERVICETYPE=LoadBalancer
+  SERVICETYPE=ClusterIP
 else
   NETWORK="regtest"
   REDISPERSISTENCE="false"
@@ -73,7 +73,7 @@ then
   kubectlLndDeletionWait
 fi
 
-helmUpgrade lnd -f ../../lnd-chart/$NETWORK-values.yaml --set lndService.serviceType=$SERVICETYPE,minikubeip=$MINIKUBEIP ../../lnd-chart/
+helmUpgrade lnd -f ../../lnd-chart/$NETWORK-values.yaml --set lndService.serviceType=LoadBalancer,minikubeip=$MINIKUBEIP ../../lnd-chart/
 
 # avoiding to spend time with circleci regtest with this condition
 if [ "$1" == "testnet" ] || [ "$1" == "mainnet" ];
@@ -142,6 +142,20 @@ helmUpgrade update-job --set image.tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON 
 if [ "$NETWORK" == "regtest" ]
 then
   kubectlWait app=test-chart
+elif [ "$NETWORK" == "testnet" ]
+then
+  SECRET=alertmanager-keys
+
+  NAMESPACE=monitoring helmUpgrade prometheus stable/prometheus -f ~/GaloyApp/backend/prometheus-server/values.yaml
+
+#FIXME: duplicate monitoring namespace passed
+  export SLACK_API_URL=$(kubectl get secret -n monitoring $SECRET -o jsonpath="{.data.SLACK_API_URL}" | base64 -d)
+  export SERVICE_KEY=$(kubectl get secret -n monitoring $SECRET -o jsonpath="{.data.SERVICE_KEY}" | base64 -d)
+
+  kubectl -n monitoring get configmaps prometheus-alertmanager -o yaml | sed -e "s|SLACK_API_URL|$SLACK_API_URL|; s|SERVICE_KEY|$SERVICE_KEY|" | kubectl -n monitoring apply -f -
+
+  NAMESPACE=monitoring helmUpgrade grafana stable/grafana -f ~/GaloyApp/backend/grafana/values.yaml
+  NAMESPACE=monitoring helmUpgrade mongo-exporter ~/GaloyApp/backend/mongo-exporter
 fi
 
 kubectlWait app=redis
