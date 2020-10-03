@@ -34,7 +34,6 @@ export class UserWallet {
     return - balance
   }
 
-  // TODO: refactor. should be in userWallet
   async getRawTransactions() {
     const { results } = await MainBook.ledger({
       currency: this.currency,
