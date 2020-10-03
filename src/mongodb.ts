@@ -224,32 +224,6 @@ const priceHistorySchema = new Schema({
 })
 export const PriceHistory = mongoose.model("PriceHistory", priceHistorySchema);
 
-const journalSchema = new Schema({
-  datetime: Date,
-  memo: {
-    type: String,
-    default: ""
-  },
-  _transactions: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "Medici_Transaction"
-    }
-  ],
-  book: String,
-  voided: {
-    type: Boolean,
-    default: false
-  },
-  void_reason: String,
-  approved: {
-    type: Boolean,
-    default: true
-  }
-});
-
-export const Journal = mongoose.model("Medici_Journal", journalSchema)
-
 export const upgrade = async () => {
 
   try {
@@ -335,6 +309,7 @@ export const upgrade = async () => {
       case 2:
         logger.info("starting upgrade to version 3")
 
+        const Journal = mongoose.model("Medici_Journal");
         const memo = 'escrow'
         await Transaction.remove({ memo })
         await Journal.remove({ memo })
@@ -374,7 +349,7 @@ export const setupMongoConnection = async () => {
       useFindAndModify: false
     })
   } catch (err) {
-    console.error(`error connecting to mongodb ${err}`)
+    logger.error(`error connecting to mongodb ${err}`)
     exit(1)
   }
 }

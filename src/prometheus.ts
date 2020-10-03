@@ -1,6 +1,7 @@
 import { AdminWallet } from "./AdminWallet";
 import { setupMongoConnection, User } from "./mongodb";
 import { Price } from "./priceImpl";
+import { logger } from "./utils";
 
 const express = require('express');
 const server = express();
@@ -28,7 +29,7 @@ const main = async () => {
       const price = new Price()
       await price.update()
     } catch (err) {
-      console.error(`issue getting price: ${err}`)
+      logger.error(`issue getting price: ${err}`)
     }
     
     const {equity, lightning, liabilities} = await adminWallet.getBalanceSheet()
@@ -57,10 +58,10 @@ const main = async () => {
   })
     
   const port = process.env.PORT || 3000;
-  console.log(
+  logger.info(
     `Server listening to ${port}, metrics exposed on /metrics endpoint`,
   )
   server.listen(port);
 }
 
-setupMongoConnection().then(() => main()).catch((err) => console.log(err))
+setupMongoConnection().then(() => main()).catch((err) => logger.error(err))
