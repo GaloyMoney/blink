@@ -185,7 +185,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         return "success"
       }
 
-      const max_fee = Math.max(FEECAP * tokens, FEEMIN)
+      const max_fee = Math.floor(Math.max(FEECAP * tokens, FEEMIN))
 
       // TODO: fine tune those values:
       // const probe_timeout_ms
