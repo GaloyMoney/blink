@@ -189,8 +189,16 @@ const transactionSchema = new Schema({
   }
 })
 
-transactionSchema.index({ "type": 1, "pending" : 1, "account_path": 1 });
+//indexes used by our queries
+transactionSchema.index({ "type": 1, "pending": 1, "account_path": 1 });
 transactionSchema.index({ "account_path": 1 });
+transactionSchema.index({ "hash" : 1})
+
+//indexes used by medici internally, and also set by default
+//we are setting them here manually because we are using a custom schema
+transactionSchema.index({ "_journal": 1 })
+transactionSchema.index({ "accounts": 1, "book": 1, "approved": 1, "datetime": -1, "timestamp": -1 });
+
 
 
 export const Transaction = mongoose.model("Medici_Transaction", transactionSchema);
