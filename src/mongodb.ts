@@ -149,6 +149,8 @@ const transactionSchema = new Schema({
     default: 0
   },
 
+  memoPayer: String,
+
   // not used for accounting but used for usd/sats equivalent
   usd: Number,
   sats: Number,

@@ -1,6 +1,6 @@
 import * as jwt from 'jsonwebtoken';
+import { AdminWallet } from "../AdminWallet";
 import { find } from "lodash";
-import { AdminWallet } from "../LightningAdminImpl";
 import { login, TEST_NUMBER } from "../text";
 import { OnboardingEarn } from "../types";
 import { getAuth, logger, sleep } from "../utils";

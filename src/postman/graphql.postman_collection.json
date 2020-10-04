@@ -323,7 +323,7 @@
                       "body": {
                         "mode": "graphql",
                         "graphql": {
-                          "query": "query wallet {\n    wallet {\n        id\n        currency\n        balance\n        transactions {\n            id\n            amount\n            description\n            created_at\n            hash\n            type\n            usd\n            fee\n        }\n    }\n}",
+                          "query": "query wallet {\n    wallet {\n        id\n        currency\n        balance\n        transactions {\n            id\n            amount\n            description\n            created_at\n            hash\n            type\n            usd\n            fee\n            feeUsd\n        }\n    }\n}",
                           "variables": "{}"
                         },
                         "options": {
@@ -928,8 +928,8 @@
               "body": {
                 "mode": "graphql",
                 "graphql": {
-                  "query": "mutation payInvoice($invoice: String!, $amount: Int) {\n    invoice {\n        payInvoice(invoice: $invoice, amount: $amount)\n    }\n}",
-                  "variables": "{\n  \"invoice\": \"lnbcrt120n1p05z3mmpp542cl7zycquxujevz4vmvueuf2yfglw9n3ad25vmsy2et5gxfmjksdqqcqzpgsp5g8lehuzt8k78kf0xyc63eukkgs2l7qw459kzkuhymv9q6v2utcds9qy9qsqwwe2azwwelu7ymf4ty8tj57c7lvq0drzpyufmeyxlrywghx6hvfnxl4k4xrtqgv955h7a4gyttqdgcnetuke2334xs6csw7akjll2hsqexzc4t\"\n}"
+                  "query": "mutation payInvoice($invoice: String!, $amount: Int, $memo: String) {\n    invoice {\n        payInvoice(invoice: $invoice, amount: $amount, memo: $memo)\n    }\n}",
+                  "variables": "{\n  \"invoice\": \"lnbcrt1p0hxuhnpp5l0emkjdd95vm9qs9268emss0xsu5tq2tu9cwcrqr0qj4h2g0eqmsdqqcqzpgsp5j82t7ajhzednhlkhj7hkgdd37eqfngvda36m9hy90809sk8ug5fq9qy9qsqt42wqpmyp3jz94a77d325m382gewnjhzse5ncc6cjkdh5hjw77mxyg3cyngj429ss2g0hl9x2l4kzn3d83pnjrsxkce2yvmdnanh74sqpmcahj\",\n  \"amount\": 50,\n  \"memo\": \"this is my memo\"\n}"
                 },
                 "options": {
                   "graphql": {}
@@ -1095,8 +1095,8 @@
               "body": {
                 "mode": "graphql",
                 "graphql": {
-                  "query": "mutation onchain($address: String!, $amount: Int!) {\n    onchain {\n        pay(address: $address, amount: $amount)\n    }\n}",
-                  "variables": "{\n    \"address\": \"bcrt1qam64av6cyhjsgdwajjpe0l9z8ju4w7rjryecf3\",\n    \"amount\": 10000\n}"
+                  "query": "mutation onchain($address: String!, $amount: Int!, $memo: String) {\n    onchain {\n        pay(address: $address, amount: $amount, memo: $memo) {\n            success\n        }\n    }\n}",
+                  "variables": "{\n    \"address\": \"bcrt1q62dn33gg83hzckew7p2zlzkvtf2kg7rq7kmuew\",\n    \"amount\": 10000,\n    \"memo\": \"test\"\n}"
                 },
                 "options": {
                   "graphql": {}
