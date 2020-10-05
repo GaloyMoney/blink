@@ -37,7 +37,7 @@ export type TransactionType = "payment" | "inflight-payment" |
 export interface IOnChainPayment {
   address: string,
   amount: number,
-  description?: string
+  memo?: string
 }
 
 export interface ILightningTransaction {
@@ -53,7 +53,8 @@ export interface ILightningTransaction {
 export interface IPaymentRequest {
   destination?: string,
   amount?: number,
-  invoice?: string
+  invoice?: string,
+  memo?: string,
 }
 
 export type IPayInvoice = {

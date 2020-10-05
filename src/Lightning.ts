@@ -43,41 +43,6 @@ export const LightningMixin = (superclass) => class extends superclass {
     return super.getBalance()
   }
 
-  async getRawTransactions() {
-    await this.updatePending()
-
-    const { results } = await MainBook.ledger({
-      currency: this.currency,
-      account: this.accountPath,
-      // start_date: startDate,
-      // end_date: endDate
-    })
-
-    return results
-  }
-
-  async getTransactions(): Promise<Array<ILightningTransaction>> {
-    const rawTransactions = await this.getRawTransactions()
-
-    const results_processed = rawTransactions.map(item => ({
-      created_at: moment(item.timestamp).unix(),
-      amount: item.debit - item.credit,
-      sat: item.sat,
-      usd: item.usd,
-      description: item.memo || item.type, // TODO remove `|| item.type` once users have upgraded
-      hash: item.hash,
-      fee: item.fee,
-      feeUsd: item.feeUsd,
-      // destination: TODO
-      type: item.type,
-      pending: item.pending,
-      id: item._id,
-      currency: item.currency
-    }))
-
-    return results_processed
-  }
-
   async addInvoiceInternal({ sats, usd, currency, memo }: IAddInvoiceInternalRequest): Promise<string> {
     let request, id
 
@@ -162,14 +127,13 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     tokens = !!tokens ? tokens : params.amount
 
-
-
-    return { tokens, destination, pushPayment, id, routeHint, description, messages, payment, cltv_delta, expires_at, features }
+    return { tokens, destination, pushPayment, id, routeHint, messages, 
+      memoInvoice: description, memoPayer: params.memo, payment, cltv_delta, expires_at, features }
   }
 
   async pay(params: IPaymentRequest): Promise<payInvoiceResult | Error> {
 
-    const { tokens, destination, pushPayment, id, routeHint, description, messages, payment, cltv_delta, features } = await this.validate(params)
+    const { tokens, destination, pushPayment, id, routeHint, messages, memoInvoice, memoPayer, payment, cltv_delta, features } = await this.validate(params)
 
     let fee
     let route
@@ -209,8 +173,8 @@ export const LightningMixin = (superclass) => class extends superclass {
           // TODO XXX FIXME:
           // manage the case where a user in USD tries to pay another used in BTC with an onUS transaction
 
-          await MainBook.entry(description)
-            .credit(this.accountPath, sats, metadata)
+          await MainBook.entry(memoInvoice)
+            .credit(this.accountPath, sats, {...metadata, memoPayer})
             .debit(customerPath(payeeUid), sats, metadata)
             .commit()
         }
@@ -221,7 +185,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         return "success"
       }
 
-      const max_fee = Math.max(FEECAP * tokens, FEEMIN)
+      const max_fee = Math.floor(Math.max(FEECAP * tokens, FEEMIN))
 
       // TODO: fine tune those values:
       // const probe_timeout_ms
@@ -268,9 +232,9 @@ export const LightningMixin = (superclass) => class extends superclass {
         const metadata = { currency: this.currency, hash: id, type: "payment", pending: true, fee }
         await addCurrentValueToMetadata(metadata, {sats, fee})
 
-        entry = await MainBook.entry(description)
+        entry = await MainBook.entry(memoInvoice)
           .debit('Assets:Reserve:Lightning', sats, metadata)
-          .credit(this.accountPath, sats, metadata)
+          .credit(this.accountPath, sats, {...metadata, memoPayer})
           .commit()
       }
 

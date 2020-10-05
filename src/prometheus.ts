@@ -1,4 +1,4 @@
-import { AdminWallet } from "./LightningAdminImpl";
+import { AdminWallet } from "./AdminWallet";
 import { setupMongoConnection, User } from "./mongodb";
 import { Price } from "./priceImpl";
 import { logger } from "./utils";

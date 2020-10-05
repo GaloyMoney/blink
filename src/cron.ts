@@ -1,5 +1,5 @@
 import { setupMongoConnection, User } from "./mongodb";
-import { AdminWallet } from "./LightningAdminImpl"
+import { AdminWallet } from "./AdminWallet"
 
 const main = async () => {
 	const adminWallet = new AdminWallet()

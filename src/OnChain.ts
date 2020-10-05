@@ -33,7 +33,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
   async PayeeUser(address: string) { return User.findOne({ onchain_addresses: { $in: address } }) }
 
-  async getOnchainFee({address}): Promise<number | Error> {
+  async getOnchainFee({address}: {address: string}): Promise<number | Error> {
     const payeeUser = await this.PayeeUser(address)
 
     let fee
@@ -48,12 +48,17 @@ export const OnChainMixin = (superclass) => class extends superclass {
     return fee
   }
 
-  async onChainPay({ address, amount, description }: IOnChainPayment): Promise<ISuccess | Error> {
-    const payeeUser = await this.PayeeUser(address)
+  async onChainPay({ address, amount, memo }: IOnChainPayment): Promise<ISuccess | Error> {
     const balance = await this.getBalance()
+    
+    // quit early if balance is not enough
+    if (balance < amount) {
+      throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${amount}`)
+    }
+
+    const payeeUser = await this.PayeeUser(address)
 
     if (payeeUser) {
-
       // FIXME: Using == here because === returns false even for same uids
       if (payeeUser._id == this.uid) {
         throw Error('User tried to pay themselves')
@@ -65,12 +70,8 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
       return await using(disposer(this.uid), async (lock) => {
 
-        //case where user doesn't have enough money
-        if (balance < amount) {
-          throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${amount}`)
-        }
         await MainBook.entry()
-          .credit(this.accountPath, sats, metadata)
+          .credit(this.accountPath, sats, {...metadata, memo})
           .debit(customerPath(payeeUser._id), sats, metadata)
           .commit()
         return true
@@ -108,7 +109,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
       }
 
       try {
-        ({ id } = await lnService.sendToChainAddress({ address, lnd: this.lnd, tokens: amount, description }))
+        ({ id } = await lnService.sendToChainAddress({ address, lnd: this.lnd, tokens: amount }))
       } catch (err) {
         logger.error({ err }, "Impossible to sendToChainAddress")
         return false
@@ -124,7 +125,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
         await addCurrentValueToMetadata(metadata, { sats, fee })
 
         // TODO/FIXME refactor. add the transaction first and set the fees in a second tx.
-        await MainBook.entry(description)
+        await MainBook.entry(memo)
           .debit('Assets:Reserve:Lightning', sats, metadata)
           .credit(this.accountPath, sats, metadata)
           .commit()
@@ -202,14 +203,14 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
   async getIncomingOnchainPayments(confirmed: boolean) {
 
-    const incoming_txs = (await this.getOnChainTransactions({ lnd: this.lnd, incoming: true }))
+    const lnd_incoming_txs = (await this.getOnChainTransactions({ lnd: this.lnd, incoming: true }))
       .filter(tx => tx.is_confirmed === confirmed)
 
     const { onchain_addresses } = await User.findOne({ _id: this.uid }, { onchain_addresses: 1 })
-    const matched_txs = incoming_txs
-      .filter(tx => intersection(tx.output_addresses, onchain_addresses).length > 0)
 
-    return matched_txs
+    const user_matched_txs = lnd_incoming_txs.filter(tx => intersection(tx.output_addresses, onchain_addresses).length > 0)
+
+    return user_matched_txs
   }
 
   async getPendingIncomingOnchainPayments() {
@@ -218,7 +219,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
   async updateOnchainPayment() {
 
-    const matched_txs = await this.getIncomingOnchainPayments(true)
+    const user_matched_txs = await this.getIncomingOnchainPayments(true)
 
     //        { block_id: '0000000000000b1fa86d936adb8dea741a9ecd5f6a58fc075a1894795007bdbc',
     //          confirmation_count: 712,
@@ -242,7 +243,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
     return await using(disposer(this.uid), async (lock) => {
 
-      for (const matched_tx of matched_txs) {
+      for (const matched_tx of user_matched_txs) {
 
         // has the transaction has not been added yet to the user account?
         const mongotx = await Transaction.findOne({ account_path: this.accountPathMedici, type, hash: matched_tx.id })
