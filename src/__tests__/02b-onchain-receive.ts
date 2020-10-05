@@ -5,14 +5,15 @@ import { setupMongoConnection, User } from "../mongodb";
 
 import { LightningBtcWallet } from "../LightningBtcWallet";
 import { quit } from "../lock";
-import { bitcoindClient, checkIsBalanced, getUserWallet, lndMain, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
+import { checkIsBalanced, getUserWallet, lndMain, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
 import { onchainTransactionEventHandler } from "../trigger";
-import { btc2sat, sleep } from "../utils";
+import { bitcoindClient, btc2sat, sleep } from "../utils";
 
 const lnService = require('ln-service')
 
 const mongoose = require("mongoose");
 const { once } = require('events');
+const util = require('util')
 
 
 let funderWallet
@@ -140,41 +141,46 @@ it('identifies unconfirmed incoming on chain txn', async () => {
 
 }, 100000)
 
-it('batch transaction testing', async () => {
+it('batch send transaction', async () => {
   const address0 = await walletUser0.getOnChainAddress()
   const walletUser4 = await getUserWallet(4)
   const address4 = await walletUser4.getOnChainAddress()
 
-  const change_legacy = await bitcoindClient.getNewAddress("", "legacy")
-  const change_p2sh_segwit = await bitcoindClient.getNewAddress("", "p2sh-segwit")
-  const change_bech32 = await bitcoindClient.getNewAddress("", "bech32")
-
+  const initBalanceUser4 = await walletUser4.getBalance()
+  console.log({initBalanceUser4, initialBalanceUser0})
+  
   const output0 = {}
   output0[address0] = 1
   
   const output1 = {}
   output1[address4] = 2
 
-  const output2 = {}
-  output2[change_legacy] = 10
+  const outputs = [output0, output1]
 
-  const output3 = {}
-  output3[change_p2sh_segwit] = 10
-
-  const output4 = {}
-  output4[change_bech32] = 26.999
-
-  const outputs = [output0, output1, output2, output3, output4]
-
-  const unspent = await bitcoindClient.listUnspent()
-
-  const psbt = await bitcoindClient.createPsbt([unspent[0]], outputs)
+  const {psbt} = await bitcoindClient.walletCreateFundedPsbt([], outputs)
   const decodedPsbt1 = await bitcoindClient.decodePsbt(psbt)
+  const analysePsbt1 = await bitcoindClient.analyzePsbt(psbt)
   const walletProcessPsbt = await bitcoindClient.walletProcessPsbt(psbt)
   const decodedPsbt2 = await bitcoindClient.decodePsbt(walletProcessPsbt.psbt)
+  const analysePsbt2 = await bitcoindClient.analyzePsbt(walletProcessPsbt.psbt)
+  const finalizedPsbt = await bitcoindClient.finalizePsbt(walletProcessPsbt.psbt)
+  const txid = await bitcoindClient.sendRawTransaction(finalizedPsbt.hex) 
 
-  const util = require('util')
   // console.log(util.inspect({psbt, decodedPsbt1, walletProcessPsbt, decodedPsbt2, unspent}, false, Infinity))
-  console.log(util.inspect({psbt, decodedPsbt1, walletProcessPsbt, decodedPsbt2}, false, Infinity))
+  console.log(util.inspect({psbt, decodedPsbt1, analysePsbt1, walletProcessPsbt, decodedPsbt2, analysePsbt2, finalizedPsbt}, false, Infinity))
+  
+  await bitcoindClient.generateToAddress(6, RANDOM_ADDRESS)
+  await waitUntilBlockHeight({ lnd: lndMain, blockHeight: initBlockCount + 6 })
+
+  {
+    const balance0 = await walletUser0.getBalance()
+    const balance4 = await walletUser4.getBalance()
+    console.log({balance0, balance4})
+
+    expect(balance0).toBe(initialBalanceUser0 + btc2sat(1))
+    expect(balance4).toBe(initBalanceUser4 + btc2sat(2))
+  }
+
+  await checkIsBalanced()
 
 }, 100000)
