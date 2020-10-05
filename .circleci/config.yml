@@ -234,6 +234,8 @@ jobs:
           tag: $CIRCLE_SHA1
       - gcp-gcr/gcr-auth
       - gcp-gcr/push-image
+          image: lnpage
+          tag: $CIRCLE_SHA1
 
 workflows:
   build_and_update_lnpage:
