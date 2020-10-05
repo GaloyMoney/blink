@@ -230,7 +230,7 @@ jobs:
     machine: true
     steps:
       - checkout:
-          path: ~/GaloyApp/lnpage
+          path: ~/GaloyApp
       - gcp-gcr/build-image:
           image: lnpage
           tag: $CIRCLE_SHA1
