@@ -278,6 +278,9 @@ workflows:
       - build_lnpage:
           requires:
             - hold_build_lnpage
+      - update_lnpage:
+          requires:
+            - build_lnpage
   kube:
     jobs:
       - build_test_image
