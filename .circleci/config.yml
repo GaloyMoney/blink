@@ -7,7 +7,7 @@ orbs:
   slack: circleci/slack@3.4.2
 
 commands:
-  gcr-auth:
+  gke-auth:
     steps:
       - run:
           name: Authenticate on gcloud
@@ -146,13 +146,10 @@ jobs:
           name: generate and export namespace name
           command: |
             echo "export NAMESPACE=devnet-$CIRCLE_SHA1" >> $BASH_ENV
+      - gke-auth
       - run:
-          name: authorize gcloud and kubectl on circleci and create namespace
+          name: create namespace
           command: |
-            echo ${GCLOUD_SERVICE_KEY} > gcloud-service-key.json
-            gcloud auth activate-service-account --key-file=gcloud-service-key.json
-            gcloud config set project ${GOOGLE_PROJECT_ID}
-            gcloud container clusters get-credentials testnet-cluster --region us-central1-a --project ${GOOGLE_PROJECT_ID}
             kubectl create namespace $NAMESPACE
       - run:
           name: install helm charts
@@ -199,13 +196,7 @@ jobs:
     steps:
       - checkout:
           path: ~/GaloyApp
-      - run:
-          name: Authenticate on gcloud
-          command: |
-            echo ${GCLOUD_SERVICE_KEY} > gcloud-service-key.json
-            gcloud auth activate-service-account --key-file=gcloud-service-key.json
-            gcloud config set project ${GOOGLE_PROJECT_ID}
-            gcloud container clusters get-credentials testnet-cluster --region us-central1-a --project ${GOOGLE_PROJECT_ID}
+      - gke-auth
       - run:
           name: Upgrade mainnet deployments
           command: |
@@ -258,7 +249,7 @@ jobs:
     steps:
       - checkout:
           path: ~/GaloyApp
-      - gcr-auth
+      - gke-auth
       - run:
           name: Update lnpage
           command: |
