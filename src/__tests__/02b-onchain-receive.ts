@@ -96,7 +96,7 @@ it('user0 is credited for on chain transaction', async () => {
 
 
 it('funding funder with onchain tx from bitcoind', async () => {
-  // await onchain_funding({ walletDestination: funderWallet })
+  await onchain_funding({ walletDestination: funderWallet })
 }, 100000)
 
 it('identifies unconfirmed incoming on chain txn', async () => {
