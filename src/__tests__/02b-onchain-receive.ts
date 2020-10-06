@@ -8,6 +8,7 @@ import { quit } from "../lock";
 import { checkIsBalanced, getUserWallet, lndMain, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
 import { onchainTransactionEventHandler } from "../trigger";
 import { bitcoindClient, btc2sat, sleep } from "../utils";
+import { filter } from "lodash";
 
 const lnService = require('ln-service')
 
@@ -95,7 +96,7 @@ it('user0 is credited for on chain transaction', async () => {
 
 
 it('funding funder with onchain tx from bitcoind', async () => {
-  await onchain_funding({ walletDestination: funderWallet })
+  // await onchain_funding({ walletDestination: funderWallet })
 }, 100000)
 
 it('identifies unconfirmed incoming on chain txn', async () => {
@@ -109,9 +110,10 @@ it('identifies unconfirmed incoming on chain txn', async () => {
     bitcoindClient.sendToAddress(address, amount_BTC)
   ])
 
-  const pendingTxn = await walletUser0.getPendingIncomingOnchainPayments()
-  expect(pendingTxn.length).toBe(1)
-  expect(pendingTxn[0].amount).toBe(btc2sat(1))
+  const txs = (await walletUser0.getTransactions())
+  const pendingTxs = filter(txs, {pending: true})
+  expect(pendingTxs.length).toBe(1)
+  expect(pendingTxs[0].amount).toBe(btc2sat(1))
 
   await sleep(1000)
 
@@ -158,16 +160,13 @@ it('batch send transaction', async () => {
   const outputs = [output0, output1]
 
   const {psbt} = await bitcoindClient.walletCreateFundedPsbt([], outputs)
-  const decodedPsbt1 = await bitcoindClient.decodePsbt(psbt)
-  const analysePsbt1 = await bitcoindClient.analyzePsbt(psbt)
+  // const decodedPsbt1 = await bitcoindClient.decodePsbt(psbt)
+  // const analysePsbt1 = await bitcoindClient.analyzePsbt(psbt)
   const walletProcessPsbt = await bitcoindClient.walletProcessPsbt(psbt)
-  const decodedPsbt2 = await bitcoindClient.decodePsbt(walletProcessPsbt.psbt)
-  const analysePsbt2 = await bitcoindClient.analyzePsbt(walletProcessPsbt.psbt)
+  // const decodedPsbt2 = await bitcoindClient.decodePsbt(walletProcessPsbt.psbt)
+  // const analysePsbt2 = await bitcoindClient.analyzePsbt(walletProcessPsbt.psbt)
   const finalizedPsbt = await bitcoindClient.finalizePsbt(walletProcessPsbt.psbt)
   const txid = await bitcoindClient.sendRawTransaction(finalizedPsbt.hex) 
-
-  // console.log(util.inspect({psbt, decodedPsbt1, walletProcessPsbt, decodedPsbt2, unspent}, false, Infinity))
-  console.log(util.inspect({psbt, decodedPsbt1, analysePsbt1, walletProcessPsbt, decodedPsbt2, analysePsbt2, finalizedPsbt}, false, Infinity))
   
   await bitcoindClient.generateToAddress(6, RANDOM_ADDRESS)
   await waitUntilBlockHeight({ lnd: lndMain, blockHeight: initBlockCount + 6 })

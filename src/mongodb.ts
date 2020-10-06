@@ -129,6 +129,7 @@ const transactionSchema = new Schema({
   type: {
     type: String,
     enum: [
+      // TODO: merge with the Interface located in types.ts?
       "invoice", "payment", "on_us", // lightning
       "onchain_receipt", "onchain_payment", "onchain_on_us", // onchain
       "fee", "escrow", // channel-related
