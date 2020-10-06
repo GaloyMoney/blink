@@ -6,6 +6,17 @@ orbs:
   gcp-gcr: circleci/gcp-gcr@0.7.1
   slack: circleci/slack@3.4.2
 
+commands:
+  gcr-auth:
+    steps:
+      - run:
+          name: Authenticate on gcloud
+          command: |
+            echo ${GCLOUD_SERVICE_KEY} > gcloud-service-key.json
+            gcloud auth activate-service-account --key-file=gcloud-service-key.json
+            gcloud config set project ${GOOGLE_PROJECT_ID}
+            gcloud container clusters get-credentials testnet-cluster --region us-central1-a --project ${GOOGLE_PROJECT_ID}
+
 jobs:
   build_ios:
     macos:
@@ -238,6 +249,22 @@ jobs:
       - gcp-gcr/push-image:
           image: lnpage
           tag: $CIRCLE_SHA1
+
+  update_lnpage:
+    working_directory: ~/GaloyApp/lnpage
+    docker:
+      - image: kiwigrid/gcloud-kubectl-helm:latest
+    resource_class: small
+    steps:
+      - checkout:
+          path: ~/GaloyApp
+      - gcr-auth
+      - run:
+          name: Update lnpage
+          command: |
+            kubectl apply -f ~/GaloyApp/lnpage/deployment.yaml
+            kubectl set image deployment/lnpage lnpage-container=gcr.io/galoyapp/lnpage:"$CIRCLE_SHA1"
+
 
 workflows:
   build_and_update_lnpage:
