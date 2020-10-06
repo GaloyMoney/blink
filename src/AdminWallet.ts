@@ -85,7 +85,7 @@ export class AdminWallet {
 
     const total = chain_balance + channel_balance + pending_chain_balance
 
-    return { total, onChain: chain_balance , offChain: channel_balance } 
+    return { total, onChain: chain_balance + pending_chain_balance, offChain: channel_balance } 
   }
 
   async getInfo() {

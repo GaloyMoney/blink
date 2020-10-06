@@ -16,7 +16,7 @@ export async function onchainTransactionEventHandler(tx) {
     if (!tx.is_confirmed) {
       return
       // FIXME 
-      // we have to return here because we will not know the whose user the the txid belond to
+      // we have to return here because we will not know whose user the the txid belond to
       // this is because of limitation for lnd onchain wallet. we only know the txid after the 
       // transaction has been sent. and this events is trigger before
     }
@@ -32,14 +32,15 @@ export async function onchainTransactionEventHandler(tx) {
     }
     await sendNotification({uid: entry.account_path[2], title, data})
   } else {
+    // TODO: the same way Lightning is updating the wallet/accounting, 
+    // this event should update the onchain wallet/account of the associated user
+
     let _id
     try {
       ({ _id } = await User.findOne({ onchain_addresses: { $in: tx.output_addresses } }, { _id: 1 }))
       if (!_id) {
-        //FIXME: Log the onchain address, need to first find which of the tx.output_addresses
-        // belongs to us
-        const error = `No user associated with the onchain address`
-        logger.warn(error)
+        //FIXME: Log the onchain address, need to first find which of the tx.output_addresses belongs to us
+        logger.error({tx}, `No user associated with the onchain address`)
         return
       }
     } catch (error) {

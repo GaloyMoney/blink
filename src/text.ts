@@ -60,7 +60,7 @@ export const requestPhoneCode = async ({ phone }) => {
 
     await sendText({ body, to: phone })
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return false
   }
 
@@ -98,7 +98,7 @@ export const login = async ({ phone, code, currency = "BTC" }: ILogin) => {
     } else if (codes.findIndex(item => item.code === code) === -1) {
       // this branch is both relevant for test and non-test accounts
       // for when the code is not correct
-      console.warn(`code is not correct: ${code} with ${phone}`)
+      logger.warn(`code is not correct: ${code} with ${phone}`)
       return null
     }
 
@@ -110,7 +110,7 @@ export const login = async ({ phone, code, currency = "BTC" }: ILogin) => {
     return createToken({ uid: user._id, currency, network })
     
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     throw err
   }
 }

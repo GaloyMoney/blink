@@ -5,7 +5,7 @@ import { createHash, randomBytes } from 'crypto';
 import { quit } from "../lock";
 import { InvoiceUser, MainBook, setupMongoConnection, Transaction, User } from "../mongodb";
 import { checkIsBalanced, getUserWallet, lndOutside1, lndOutside2, onBoardingEarnAmt, onBoardingEarnIds } from "../tests/helper";
-import { getHash } from "../utils";
+import { getHash, sleep } from "../utils";
 import { getFunderWallet } from "../walletFactory";
 const lnService = require('ln-service')
 const mongoose = require("mongoose")
@@ -34,8 +34,12 @@ afterAll(async () => {
   // to make this test re-entrant, we need to remove the fund from userWallet1 and delete the user
   const finalBalance = await userWallet1.getBalance()
   const funderWallet = await getFunderWallet()
-  const request = await funderWallet.addInvoice({value: finalBalance})
-  await userWallet1.pay({invoice: request})
+
+  if (!!finalBalance) {
+    const request = await funderWallet.addInvoice({value: finalBalance})
+    await userWallet1.pay({invoice: request})
+  }
+
   await User.findOneAndRemove({_id: userWallet1.uid})
 
   await mongoose.connection.close()
@@ -86,6 +90,15 @@ it('payInvoice', async () => {
   await checkIsBalanced()
 }, 50000)
 
+it('payInvoice with High CLTV Delta', async () => {
+  const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: amountInvoice, cltv_delta: 200 })
+  const result = await userWallet1.pay({ invoice: request })
+  expect(result).toBe("success")
+  const finalBalance = await userWallet1.getBalance()
+  expect(finalBalance).toBe(initBalance1 - amountInvoice)
+  await checkIsBalanced()
+}, 50000)
+
 it('receives payment from outside', async () => {
   const memo = "myMemo"
 
@@ -106,8 +119,10 @@ it('fails to pay when user has insufficient balance', async () => {
 })
 
 it('payInvoiceToAnotherGaloyUser', async () => {
+  const memo = "my memo as a payer"
+
   const request = await userWallet2.addInvoice({ value: amountInvoice })
-  await userWallet1.pay({ invoice: request })
+  await userWallet1.pay({ invoice: request, memo })
 
   const user1FinalBalance = await userWallet1.getBalance()
   const user2FinalBalance = await userWallet2.getBalance()
@@ -116,19 +131,22 @@ it('payInvoiceToAnotherGaloyUser', async () => {
   expect(user2FinalBalance).toBe(initBalance2 + amountInvoice)
   
   const matchTx = tx => tx.type === 'on_us' && tx.hash === getHash(request)
+  
+    const user2Txn = await userWallet2.getTransactions()
+    const user2OnUsTxn = user2Txn.filter(matchTx)
+    expect(user2OnUsTxn[0].type).toBe('on_us')
+    expect(user2OnUsTxn[0].description).toBe('on_us')
+    await checkIsBalanced()
 
   const user1Txn = await userWallet1.getTransactions()
   const user1OnUsTxn = user1Txn.filter(matchTx)
-  expect(user1OnUsTxn[0].description).toBe('on_us')
+  expect(user1OnUsTxn[0].type).toBe('on_us')
+  expect(user1OnUsTxn[0].description).toBe(memo)
 
-  const user2Txn = await userWallet2.getTransactions()
-  const user2OnUsTxn = user2Txn.filter(matchTx)
-  expect(user2OnUsTxn[0].description).toBe('on_us')
-  await checkIsBalanced()
 }, 50000)
 
 it('payInvoiceToAnotherGaloyUserWithMemo', async () => {
-  const memo = "myOtherMemo"
+  const memo = "invoiceMemo"
 
   const request = await userWallet1.addInvoice({ value: amountInvoice, memo })
   await userWallet2.pay({ invoice: request })
@@ -137,9 +155,30 @@ it('payInvoiceToAnotherGaloyUserWithMemo', async () => {
 
   const user1Txn = await userWallet1.getTransactions()
   expect(user1Txn.filter(matchTx)[0].description).toBe(memo)
+  expect(user1Txn.filter(matchTx)[0].type).toBe('on_us')
 
   const user2Txn = await userWallet2.getTransactions()
   expect(user2Txn.filter(matchTx)[0].description).toBe(memo)
+  expect(user2Txn.filter(matchTx)[0].type).toBe('on_us')
+  await checkIsBalanced()
+}, 50000)
+
+it('payInvoiceToAnotherGaloyUserWith2DifferentMemo', async () => {
+  const memo = "invoiceMemo"
+  const memoPayer = "my memo as a payer"
+
+  const request = await userWallet2.addInvoice({ value: amountInvoice, memo })
+  await userWallet1.pay({ invoice: request, memo: memoPayer })
+  
+  const matchTx = tx => tx.type === 'on_us' && tx.hash === getHash(request)
+
+  const user2Txn = await userWallet2.getTransactions()
+  expect(user2Txn.filter(matchTx)[0].description).toBe(memo)
+  expect(user2Txn.filter(matchTx)[0].type).toBe('on_us')
+
+  const user1Txn = await userWallet1.getTransactions()
+  expect(user1Txn.filter(matchTx)[0].description).toBe(memoPayer)
+  expect(user1Txn.filter(matchTx)[0].type).toBe('on_us')
   await checkIsBalanced()
 }, 50000)
 
@@ -174,13 +213,14 @@ it('fails to pay when channel capacity exceeded', async () => {
   await checkIsBalanced()
 }, 50000)
 
-it('pay hodl invoice', async () => {
+it('pay _hodl invoice', async () => {
   const randomSecret = () => randomBytes(32);
   const sha256 = buffer => createHash('sha256').update(buffer).digest('hex');
   const secret = randomSecret();
   const id = sha256(secret);
 
   const { request } = await lnService.createHodlInvoice({ id, lnd: lndOutside1, tokens: amountInvoice });
+  console.log({request})
   const result = await userWallet1.pay({ invoice: request })
 
   expect(result).toBe("pending")
@@ -189,6 +229,34 @@ it('pay hodl invoice', async () => {
   // https://github.com/alexbosworth/ln-service/issues/122
   await lnService.settleHodlInvoice({ lnd: lndOutside1, secret: secret.toString('hex') });
   expect(finalBalance).toBe(initBalance1 - amountInvoice)
+  await checkIsBalanced()
+}, 60000)
+
+it(`don't settle hodl invoice`, async () => {
+  const randomSecret = () => randomBytes(32);
+  const sha256 = buffer => createHash('sha256').update(buffer).digest('hex');
+  const secret = randomSecret();
+  const id = sha256(secret);
+
+  const { request } = await lnService.createHodlInvoice({ id, lnd: lndOutside1, tokens: amountInvoice });
+  console.log({request})
+  const result = await userWallet1.pay({ invoice: request })
+  expect(result).toBe("pending")
+
+  console.log("payment has timeout. status is pending.")
+
+  const intermediateBalance = await userWallet1.getBalance()
+  expect(intermediateBalance).toBe(initBalance1 - amountInvoice)
+
+  await lnService.cancelHodlInvoice({id, lnd: lndOutside1});
+
+  // making sure it's propagating back to lnd0.
+  // use an event to do it deterministically
+  await sleep(5000)
+  // await userWallet1.updatePendingPayments()
+
+  const finalBalance = await userWallet1.getBalance()
+  expect(finalBalance).toBe(initBalance1)
   await checkIsBalanced()
 }, 60000)
 

@@ -30,6 +30,20 @@ helmUpgrade () {
   command helm upgrade -i -n=$NAMESPACE "$@"
 }
 
+monitoringDeploymentsUpgrade() {
+  SECRET=alertmanager-keys
+  local NAMESPACE=monitoring
+  helmUpgrade prometheus stable/prometheus -f ~/GaloyApp/backend/prometheus-server/values.yaml
+
+  export SLACK_API_URL=$(kubectl get secret -n $NAMESPACE $SECRET -o jsonpath="{.data.SLACK_API_URL}" | base64 -d)
+  export SERVICE_KEY=$(kubectl get secret -n $NAMESPACE $SECRET -o jsonpath="{.data.SERVICE_KEY}" | base64 -d)
+
+  kubectl -n $NAMESPACE get configmaps prometheus-alertmanager -o yaml | sed -e "s|SLACK_API_URL|$SLACK_API_URL|; s|SERVICE_KEY|$SERVICE_KEY|" | kubectl -n $NAMESPACE apply -f -
+
+  helmUpgrade grafana stable/grafana -f ~/GaloyApp/backend/grafana/values.yaml
+  helmUpgrade mongo-exporter ~/GaloyApp/backend/mongo-exporter
+}
+
 kubectlWait () {
   echo "waiting for -n=$NAMESPACE -l $@"
   sleep 6
@@ -144,18 +158,7 @@ then
   kubectlWait app=test-chart
 elif [ "$NETWORK" == "testnet" ]
 then
-  SECRET=alertmanager-keys
-
-  NAMESPACE=monitoring helmUpgrade prometheus stable/prometheus -f ~/GaloyApp/backend/prometheus-server/values.yaml
-
-#FIXME: duplicate monitoring namespace passed
-  export SLACK_API_URL=$(kubectl get secret -n monitoring $SECRET -o jsonpath="{.data.SLACK_API_URL}" | base64 -d)
-  export SERVICE_KEY=$(kubectl get secret -n monitoring $SECRET -o jsonpath="{.data.SERVICE_KEY}" | base64 -d)
-
-  kubectl -n monitoring get configmaps prometheus-alertmanager -o yaml | sed -e "s|SLACK_API_URL|$SLACK_API_URL|; s|SERVICE_KEY|$SERVICE_KEY|" | kubectl -n monitoring apply -f -
-
-  NAMESPACE=monitoring helmUpgrade grafana stable/grafana -f ~/GaloyApp/backend/grafana/values.yaml
-  NAMESPACE=monitoring helmUpgrade mongo-exporter ~/GaloyApp/backend/mongo-exporter
+  monitoringDeploymentsUpgrade
 fi
 
 kubectlWait app=redis

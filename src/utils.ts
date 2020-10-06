@@ -5,9 +5,17 @@ import { Price } from "./priceImpl"
 import { sendText } from './text'
 export const validate = require("validate.js")
 const lightningPayReq = require('bolt11')
+const BitcoindClient = require('bitcoin-core')
 
 export const logger = require('pino')({ level: process.env.LOGLEVEL || "info" })
 const util = require('util')
+
+const connection_obj = {
+  network: process.env.NETWORK, username: 'rpcuser', password: 'rpcpass',
+  host: process.env.BITCOINDADDR, port: process.env.BITCOINDPORT
+}
+
+export const bitcoindClient = new BitcoindClient(connection_obj)
 
 export const getHash = (request) => {
   const decoded = lightningPayReq.decode(request)
