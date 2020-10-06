@@ -37,7 +37,7 @@ const invoiceUserSchema = new Schema({
 })
 
 // TOOD create indexes
-invoiceUserSchema.index({ uid: 1, pending: 1 })
+invoiceUserSchema.index({ pending: 1 , uid: 1 })
 
 export const InvoiceUser = mongoose.model("InvoiceUser", invoiceUserSchema)
 
