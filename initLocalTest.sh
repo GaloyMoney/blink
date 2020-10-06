@@ -9,17 +9,17 @@ then
   REDISPERSISTENCE="true"
   NETWORK="$1"
   NAMESPACE="$1"
+  SERVICETYPE=ClusterIP
 else
   NETWORK="regtest"
   REDISPERSISTENCE="false"
-fi
-
-if [ ${LOCAL} ]; then 
-  MINIKUBEIP=$(minikube ip)
-  NAMESPACE="default"
-  SERVICETYPE=LoadBalancer; 
-else 
-  SERVICETYPE=ClusterIP; 
+  if [ ${LOCAL} ]; then 
+    MINIKUBEIP=$(minikube ip)
+    NAMESPACE="default"
+    SERVICETYPE=LoadBalancer
+  else 
+    SERVICETYPE=ClusterIP
+  fi
 fi
 
 helmUpgrade () {
@@ -28,6 +28,20 @@ helmUpgrade () {
   echo "---"
   echo "executing upgrade: helm upgrade -i -n=$NAMESPACE $@"
   command helm upgrade -i -n=$NAMESPACE "$@"
+}
+
+monitoringDeploymentsUpgrade() {
+  SECRET=alertmanager-keys
+  local NAMESPACE=monitoring
+  helmUpgrade prometheus stable/prometheus -f ~/GaloyApp/backend/prometheus-server/values.yaml
+
+  export SLACK_API_URL=$(kubectl get secret -n $NAMESPACE $SECRET -o jsonpath="{.data.SLACK_API_URL}" | base64 -d)
+  export SERVICE_KEY=$(kubectl get secret -n $NAMESPACE $SECRET -o jsonpath="{.data.SERVICE_KEY}" | base64 -d)
+
+  kubectl -n $NAMESPACE get configmaps prometheus-alertmanager -o yaml | sed -e "s|SLACK_API_URL|$SLACK_API_URL|; s|SERVICE_KEY|$SERVICE_KEY|" | kubectl -n $NAMESPACE apply -f -
+
+  helmUpgrade grafana stable/grafana -f ~/GaloyApp/backend/grafana/values.yaml
+  helmUpgrade mongo-exporter ~/GaloyApp/backend/mongo-exporter
 }
 
 kubectlWait () {
@@ -42,11 +56,11 @@ kubectlLndDeletionWait () {
 # we use || : to not return an error if the pod doesn't exist, or if no update is requiered (will timeout in this case)
 # TODO: using --wait on upgrade would simplify this upgrade, but is currently running into some issues
   echo "waiting for pod deletion"
-  kubectl wait -n=$NAMESPACE --for=delete --timeout=45s pod -l app=lnd-container || :
+  kubectl wait -n=$NAMESPACE --for=delete --timeout=45s pod -l type=lnd || :
 }
 
 exportMacaroon() {
-  export "$2"=$(kubectl exec -n=$NAMESPACE lnd-container-"$1" -c lnd-container -- base64 /root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
+  export "$2"=$(kubectl exec -n=$NAMESPACE $1 -c lnd-container -- base64 /root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
 }
 
 createLoopConfigmaps() {
@@ -73,7 +87,7 @@ then
   kubectlLndDeletionWait
 fi
 
-helmUpgrade lnd -f ../../lnd-chart/$NETWORK-values.yaml --set lndService.serviceType=$SERVICETYPE,minikubeip=$MINIKUBEIP ../../lnd-chart/
+helmUpgrade lnd -f ../../lnd-chart/$NETWORK-values.yaml --set lndService.serviceType=LoadBalancer,minikubeip=$MINIKUBEIP ../../lnd-chart/
 
 # avoiding to spend time with circleci regtest with this condition
 if [ "$1" == "testnet" ] || [ "$1" == "mainnet" ];
@@ -83,10 +97,10 @@ fi
 
 # # add extra sleep time... seems lnd is quite long to show up some time
 sleep 15
-kubectlWait app=lnd-container
+kubectlWait type=lnd
 
 
-exportMacaroon 0 MACAROON
+exportMacaroon lnd-container-0 MACAROON
 export TLS=$(kubectl -n $NAMESPACE exec lnd-container-0 -c lnd-container -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
 
 helmUpgrade redis bitnami/redis --set=master.service.type=$SERVICETYPE --set=master.persistence.enabled=$REDISPERSISTENCE --set=usePassword=false --set=image.tag=6.0.8-debian-10-r0  --set=cluster.slaveCount=0
@@ -112,12 +126,12 @@ fi
 
 if [ "$NETWORK" == "regtest" ]
 then
-  exportMacaroon 1 MACAROONOUTSIDE1
-  exportMacaroon 2 MACAROONOUTSIDE2
+  exportMacaroon lnd-container-outside-1-0 MACAROONOUTSIDE1
+  exportMacaroon lnd-container-outside-2-0 MACAROONOUTSIDE2
   
   # Todo: refactor
-  export TLSOUTSIDE1=$(kubectl -n $NAMESPACE exec lnd-container-1 -c lnd-container -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
-  export TLSOUTSIDE2=$(kubectl -n $NAMESPACE exec lnd-container-2 -c lnd-container -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
+  export TLSOUTSIDE1=$(kubectl -n $NAMESPACE exec lnd-container-outside-1-0 -c lnd-container -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
+  export TLSOUTSIDE2=$(kubectl -n $NAMESPACE exec lnd-container-outside-2-0 -c lnd-container -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
 
   helmUpgrade test-chart --set \
   macaroon=$MACAROON,macaroonoutside1=$MACAROONOUTSIDE1,macaroonoutside2=$MACAROONOUTSIDE2,image.tag=$CIRCLE_SHA1,tlsoutside1=$TLSOUTSIDE1,tlsoutside2=$TLSOUTSIDE2,tls=$TLS \
@@ -142,6 +156,9 @@ helmUpgrade update-job --set image.tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON 
 if [ "$NETWORK" == "regtest" ]
 then
   kubectlWait app=test-chart
+elif [ "$NETWORK" == "testnet" ]
+then
+  monitoringDeploymentsUpgrade
 fi
 
 kubectlWait app=redis

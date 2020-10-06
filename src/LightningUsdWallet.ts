@@ -1,10 +1,7 @@
 import { LightningMixin } from "./Lightning";
-import { InvoiceUser } from "./mongodb";
 import { Price } from "./priceImpl";
 import { IAddUSDInvoiceRequest, ILightningWalletUser } from "./types";
-import { getHash } from "./utils";
 import { UserWallet } from "./wallet";
-const using = require('bluebird').using
 
 /**
  * this represents a user wallet

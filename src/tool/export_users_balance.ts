@@ -1,4 +1,4 @@
-import { AdminWallet } from "../LightningAdminImpl";
+import { AdminWallet } from "../AdminWallet";
 import { setupMongoConnection } from "../mongodb"
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 

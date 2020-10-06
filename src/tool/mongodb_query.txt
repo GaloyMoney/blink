@@ -1,0 +1,10 @@
+
+to get double reimbursement:
+
+db.getCollection('medici_transactions').aggregate([
+    {$group : { "_id": "$_original_journal" , count : { $sum: 1 }}},
+
+    // reimbursement is done on both transaction attached to the journal
+    // so need to be more than 2 to match the "issue"
+    {$match : { count : { $gt : 2 } }} 
+])

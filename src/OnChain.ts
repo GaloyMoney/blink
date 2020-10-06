@@ -1,9 +1,10 @@
 const lnService = require('ln-service');
-import { intersection, last } from "lodash";
+import { assert } from "console";
+import { filter, includes, intersection, last, sumBy } from "lodash";
 import { disposer } from "./lock";
 import { MainBook, Transaction, User } from "./mongodb";
 import { IOnChainPayment, ISuccess } from "./types";
-import { getCurrencyEquivalent, getAuth, logger, sendToAdmin } from "./utils";
+import { bitcoindClient, btc2sat, getAuth, getCurrencyEquivalent, logger, sendToAdmin } from "./utils";
 import { customerPath } from "./wallet";
 const util = require('util')
 
@@ -14,11 +15,21 @@ const using = require('bluebird').using
 // but fees are the same
 const someAmount = 50000
 
+export const amountOnVout = ({vout, onchain_addresses}) => {
+  // TODO: check if this is always [0], ie: there is always a single addresses for vout for lnd output
+  return sumBy(filter(vout, tx => includes(onchain_addresses, tx.scriptPubKey.addresses[0])), "value")
+}
+
 export const OnChainMixin = (superclass) => class extends superclass {
   lnd = lnService.authenticatedLndGrpc(getAuth()).lnd
 
   constructor(...args) {
     super(...args)
+  }
+
+  async getBalance() {
+    await this.updatePending()
+    return super.getBalance()
   }
 
   async updatePending() {
@@ -28,10 +39,8 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
   async PayeeUser(address: string) { return User.findOne({ onchain_addresses: { $in: address } }) }
 
-  async getOnchainFee({address}): Promise<number | Error> {
+  async getOnchainFee({address}: {address: string}): Promise<number | Error> {
     const payeeUser = await this.PayeeUser(address)
-
-    console.log({payeeUser})
 
     let fee
 
@@ -45,12 +54,17 @@ export const OnChainMixin = (superclass) => class extends superclass {
     return fee
   }
 
-  async onChainPay({ address, amount, description }: IOnChainPayment): Promise<ISuccess | Error> {
-    const payeeUser = await this.PayeeUser(address)
+  async onChainPay({ address, amount, memo }: IOnChainPayment): Promise<ISuccess | Error> {
     const balance = await this.getBalance()
+    
+    // quit early if balance is not enough
+    if (balance < amount) {
+      throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${amount}`)
+    }
+
+    const payeeUser = await this.PayeeUser(address)
 
     if (payeeUser) {
-
       // FIXME: Using == here because === returns false even for same uids
       if (payeeUser._id == this.uid) {
         throw Error('User tried to pay themselves')
@@ -63,14 +77,9 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
       return await using(disposer(this.uid), async (lock) => {
 
-        //case where user doesn't have enough money
-        if (balance < amount) {
-          throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${amount}`)
-        }
-
         await MainBook.entry()
           .debit(customerPath(payeeUser._id), sats, metadata)
-          .credit(this.accountPath, sats, metadata)
+          .credit(this.accountPath, sats, {...metadata, memo})
           .commit()
         
         return true
@@ -108,7 +117,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
       }
 
       try {
-        ({ id } = await lnService.sendToChainAddress({ address, lnd: this.lnd, tokens: amount, description }))
+        ({ id } = await lnService.sendToChainAddress({ address, lnd: this.lnd, tokens: amount }))
       } catch (err) {
         logger.error({ err }, "Impossible to sendToChainAddress")
         return false
@@ -125,7 +134,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
         const metadata = Object.assign({ currency: this.currency, hash: id, type: "onchain_payment", pending: true }, addedMetadata)
 
         // TODO/FIXME refactor. add the transaction first and set the fees in a second tx.
-        await MainBook.entry(description)
+        await MainBook.entry(memo)
           .debit('Assets:Reserve:Lightning', sats, metadata)
           .credit(this.accountPath, sats, metadata)
           .commit()
@@ -140,7 +149,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
   async getLastOnChainAddress(): Promise<String | Error | undefined> {
     let user = await User.findOne({ _id: this.uid })
     if (!user) { // this should not happen. is test that relevant?
-      console.error("no user is associated with this address")
+      logger.error("no user is associated with this address")
       throw new Error(`no user with this uid`)
     }
 
@@ -178,7 +187,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
     try {
       const user = await User.findOne({ _id: this.uid })
       if (!user) { // this should not happen. is test that relevant?
-        console.error("no user is associated with this address")
+        logger.error("no user is associated with this address")
         throw new Error(`no user with this uid`)
       }
 
@@ -202,26 +211,10 @@ export const OnChainMixin = (superclass) => class extends superclass {
     }
   }
 
-  async getIncomingOnchainPayments(confirmed: boolean) {
+  async getIncomingOnchainPayments({confirmed}: {confirmed: boolean}) {
 
-    const incoming_txs = (await this.getOnChainTransactions({ lnd: this.lnd, incoming: true }))
-      .filter(tx => tx.is_confirmed === confirmed)
-
-    const { onchain_addresses } = await User.findOne({ _id: this.uid }, { onchain_addresses: 1 })
-    const matched_txs = incoming_txs
-      .filter(tx => intersection(tx.output_addresses, onchain_addresses).length > 0)
-
-    return matched_txs
-  }
-
-  async getPendingIncomingOnchainPayments() {
-    return (await this.getIncomingOnchainPayments(false)).map(({ tokens, id }) => ({ amount: tokens, txId: id }))
-  }
-
-  async updateOnchainPayment() {
-
-    const matched_txs = await this.getIncomingOnchainPayments(true)
-
+    const lnd_incoming_txs = await this.getOnChainTransactions({ lnd: this.lnd, incoming: true })
+    
     //        { block_id: '0000000000000b1fa86d936adb8dea741a9ecd5f6a58fc075a1894795007bdbc',
     //          confirmation_count: 712,
     //          confirmation_height: 1744148,
@@ -234,17 +227,29 @@ export const OnChainMixin = (superclass) => class extends superclass {
     //          tokens: 10775,
     //          transaction: '020000000001.....' } ] }
 
-    // TODO FIXME XXX: this could lead to an issue for many output transaction.
-    // ie: if an attacker send 10 to user A at Galoy, and 10 to user B at galoy
-    // in a sinle transaction, both would be credited 20.
+    const lnd_incoming_filtered = lnd_incoming_txs.filter(tx => tx.is_confirmed === confirmed)
 
-    // FIXME O(n) ^ 2. bad.
+    const { onchain_addresses } = await User.findOne({ _id: this.uid }, { onchain_addresses: 1 })
+
+    const user_matched_txs = lnd_incoming_filtered.filter(tx => intersection(tx.output_addresses, onchain_addresses).length > 0)
+
+    return user_matched_txs
+  }
+
+  async getPendingIncomingOnchainPayments() {
+    return (await this.getIncomingOnchainPayments({confirmed: false})).map(({ tokens, id }) => ({ amount: tokens, txId: id }))
+  }
+
+  async updateOnchainPayment() {
+
+    const user_matched_txs = await this.getIncomingOnchainPayments({confirmed: true})
 
     const type = "onchain_receipt"
 
     return await using(disposer(this.uid), async (lock) => {
 
-      for (const matched_tx of matched_txs) {
+      // FIXME O(n) ^ 2. bad.
+      for (const matched_tx of user_matched_txs) {
 
         // has the transaction has not been added yet to the user account?
         const mongotx = await Transaction.findOne({ account_path: this.accountPathMedici, type, hash: matched_tx.id })
@@ -253,10 +258,46 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
         if (!mongotx) {
 
-          const sats = matched_tx.tokens
+          const {vout} = await bitcoindClient.decodeRawTransaction(matched_tx.transaction)
+
+          //   vout: [
+          //   {
+          //     value: 1,
+          //     n: 0,
+          //     scriptPubKey: {
+          //       asm: '0 13584315784642a24d62c7dd1073f24c60604a10',
+          //       hex: '001413584315784642a24d62c7dd1073f24c60604a10',
+          //       reqSigs: 1,
+          //       type: 'witness_v0_keyhash',
+          //       addresses: [ 'bcrt1qzdvyx9tcgep2yntzclw3quljf3sxqjsszrwx2x' ]
+          //     }
+          //   },
+          //   {
+          //     value: 46.9999108,
+          //     n: 1,
+          //     scriptPubKey: {
+          //       asm: '0 44c6e3f09c2462f9825e441a69d3f2c2325f3ab8',
+          //       hex: '001444c6e3f09c2462f9825e441a69d3f2c2325f3ab8',
+          //       reqSigs: 1,
+          //       type: 'witness_v0_keyhash',
+          //       addresses: [ 'bcrt1qgnrw8uyuy330nqj7gsdxn5ljcge97w4cu4c7m0' ]
+          //     }
+          //   }
+          // ]
+
+          // TODO: dedupe from getIncomingOnchainPayments
+          const { onchain_addresses } = await User.findOne({ _id: this.uid }, { onchain_addresses: 1 })
+
+          // we have to look at the precise vout because lnd sums up the value at the transaction level, not at the vout level.
+          // ie: if an attacker send 10 to user A at Galoy, and 10 to user B at galoy in a sinle transaction,
+          // both would be credited 20, unless we do the below filtering.
+          const value = amountOnVout({vout, onchain_addresses})
+
+          const sats = btc2sat(value)
+          assert(matched_tx.tokens >= sats)
 
           const addedMetadata = await getCurrencyEquivalent({ sats })
-          const metadata = Object.assign({ currency: this.currency, type, hash: matched_tx.id }, addedMetadata)
+          const metadata = { currency: this.currency, type, hash: matched_tx.id , ...addedMetadata }
     
           await MainBook.entry()
             .debit(this.accountPath, sats, metadata)

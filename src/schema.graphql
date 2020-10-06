@@ -37,7 +37,7 @@ type Wallet {
 type Invoice {
   addInvoice(value: Int, memo: String): String
   updatePendingInvoice(hash: String!): Boolean
-  payInvoice(invoice: String!, amount: Int): String #FIXME: use a more precise type
+  payInvoice(invoice: String!, amount: Int, memo: String): String #FIXME: use a more precise type
 }
 
 type PendingOnchainPayment {
@@ -47,7 +47,7 @@ type PendingOnchainPayment {
 
 type OnChain {
   getNewAddress: String
-  pay(address: String!, amount: Int!): Success
+  pay(address: String!, amount: Int!, memo: String): Success
   getFee(address: String!): Int # sats
 }
 
