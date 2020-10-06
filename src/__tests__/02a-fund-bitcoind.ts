@@ -4,7 +4,8 @@
 import { setupMongoConnection } from "../mongodb";
 
 const lnService = require('ln-service')
-import { bitcoindClient, lndMain, lndOutside1, lndOutside2, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
+import { lndMain, lndOutside1, lndOutside2, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
+import { bitcoindClient } from "../utils";
 const mongoose = require("mongoose");
 
 const initialBitcoinWalletBalance = 0

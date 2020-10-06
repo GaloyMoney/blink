@@ -4,7 +4,8 @@
 import { setupMongoConnection, User } from "../mongodb";
 const redis = require('redis')
 
-import {lndMain, lndOutside1, lndOutside2, bitcoindClient} from "../tests/helper"
+import {lndMain, lndOutside1, lndOutside2} from "../tests/helper"
+import { bitcoindClient } from "../utils";
 const mongoose = require("mongoose");
 
 //TODO: Choose between camel case or underscores for variable naming

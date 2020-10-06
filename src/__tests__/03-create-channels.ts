@@ -3,8 +3,8 @@
  */
 import { setupMongoConnection } from "../mongodb";
 import { AdminWallet } from "../AdminWallet";
-import { bitcoindClient, checkIsBalanced, lndMain, lndOutside1, lndOutside2, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
-import { logger, sleep } from "../utils";
+import { checkIsBalanced, lndMain, lndOutside1, lndOutside2, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
+import { bitcoindClient, logger, sleep } from "../utils";
 const mongoose = require("mongoose");
 const { once } = require('events');
 
