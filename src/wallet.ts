@@ -3,8 +3,8 @@ import { MainBook, User } from "./mongodb"
 import { ILightningTransaction } from "./types"
 
 export const getBrokerAccountPath = async () => { 
-  const uid = await User.findOne({role: "broker"}, {_id: 1})
-  return customerPath(uid)
+  const {_id} = await User.findOne({role: "broker"}, {_id: 1})
+  return customerPath(_id)
 }
 
 export const customerPath = (uid) => { 

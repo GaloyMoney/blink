@@ -3,7 +3,7 @@ import { MainBook } from "./mongodb";
 import { OnChainMixin } from "./OnChain";
 import { Price } from "./priceImpl";
 import { ILightningWalletUser } from "./types";
-import { btc2sat, sat2btc, sleep } from "./utils";
+import { btc2sat, sleep } from "./utils";
 import { UserWallet } from "./wallet";
 const using = require('bluebird').using
 const util = require('util')
@@ -288,9 +288,9 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
         const address = await this.getOnChainAddress()
         await this.ftx.withdraw("BTC", btcAmount, address)
       } else if (depositOrWithdraw === "deposit") {
-        const description = `deposit of ${btcAmount} btc to ${this.ftx.name}`
+        const memo = `deposit of ${btcAmount} btc to ${this.ftx.name}`
         const address = await this.exchangeDepositAddress()
-        await this.onChainPay({address, amount: btcAmount, description})
+        await this.onChainPay({address, amount: btcAmount, memo })
       }
     }
 
