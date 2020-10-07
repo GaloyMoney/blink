@@ -268,7 +268,7 @@ jobs:
       - checkout:
           path: ~/GaloyApp
       - gke-auth
-      - update-lnpage
+      - update-lnpage:
           namespace: testnet
 
 
