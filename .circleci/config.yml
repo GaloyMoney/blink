@@ -17,6 +17,11 @@ commands:
             gcloud auth activate-service-account --key-file=gcloud-service-key.json
             gcloud config set project ${GOOGLE_PROJECT_ID}
             gcloud container clusters get-credentials testnet-cluster --region us-central1-a --project ${GOOGLE_PROJECT_ID}
+  # update-lnpage:
+  #   steps:
+  #     - run:
+  #         name: Update lnpage
+  #         command:
 
 jobs:
   build_ios:
@@ -256,14 +261,13 @@ jobs:
           command: |
             wget https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -O jq
             chmod +x ./jq
-            kubectl apply -f ~/GaloyApp/lnpage/deployment.yaml
-            kubectl set image deployment/lnpage lnpage-container=gcr.io/galoyapp/lnpage:"$CIRCLE_SHA1"
+            helm -n testnet install lnpage ./lnpage-chart -f ./lnpage-chart/testnet-values.yaml
             sleep 15 #without sleep wait hangs because it targets older pod
-            kubectl wait --for=condition=ready pod -l app=lnpage
-            LND_ADDR=$(kubectl -n mainnet get services | awk '/lnd-service/ {print $4}')
-            LND_PUB_KEY=$(kubectl -n mainnet exec lnd-container-0 -- lncli getinfo | ./jq -r '.identity_pubkey')
+            kubectl -n testnet wait --for=condition=ready pod -l app=lnpage
+            LND_ADDR=$(kubectl -n testnet get services | awk '/lnd-service/ {print $4}')
+            LND_PUB_KEY=$(kubectl -n testnet exec lnd-container-0 -- lncli getinfo | ./jq -r '.identity_pubkey')
             echo "window.env={'LND_PUB_KEY':'$LND_PUB_KEY','LND_ADDR':'$LND_ADDR'}" > env.js
-            kubectl cp ./env.js $(kubectl get pods -l app=lnpage --no-headers -o custom-columns=":metadata.name"):/usr/share/nginx/html/env.js
+            kubectl -n testnet cp ./env.js $(kubectl -n testnet get pods -l app=lnpage --no-headers -o custom-columns=":metadata.name"):/usr/share/nginx/html/env.js
 
 
 
