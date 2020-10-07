@@ -259,7 +259,7 @@ jobs:
           image: lnpage
           tag: $CIRCLE_SHA1
 
-  update_testnet_lnpage:
+  update_lnpage:
     working_directory: ~/GaloyApp/lnpage
     docker:
       - image: kiwigrid/gcloud-kubectl-helm:latest
@@ -270,6 +270,8 @@ jobs:
       - gke-auth
       - update-lnpage:
           namespace: testnet
+      - update-lnpage:
+          namespace: mainnet
 
 
 
@@ -285,7 +287,7 @@ workflows:
       - build_lnpage:
           requires:
             - hold_build_lnpage
-      - update_testnet_lnpage:
+      - update_lnpage:
           requires:
             - build_lnpage
   kube:
