@@ -5,6 +5,8 @@ orbs:
   helm: circleci/helm@0.2.3
   gcp-gcr: circleci/gcp-gcr@0.7.1
   slack: circleci/slack@3.4.2
+  jq: circleci/jq@2.2.0
+
 
 commands:
   gke-auth:
@@ -249,12 +251,20 @@ jobs:
     steps:
       - checkout:
           path: ~/GaloyApp
+      - jq/install
       - gke-auth
       - run:
           name: Update lnpage
           command: |
             kubectl apply -f ~/GaloyApp/lnpage/deployment.yaml
             kubectl set image deployment/lnpage lnpage-container=gcr.io/galoyapp/lnpage:"$CIRCLE_SHA1"
+            sleep 15 #without sleep wait hangs because it targets older pod
+            kubectl wait --for=condition=ready pod -l app=lnpage
+            LND_ADDR=$(kubectl -n mainnet get services | awk '/lnd-service/ {print $4}')
+            LND_PUB_KEY=$(kubectl -n mainnet exec lnd-container-0 -- lncli getinfo | jq -r '.identity_pubkey')
+            echo "window.env={'LND_PUB_KEY':'$LND_PUB_KEY','LND_ADDR':'$LND_ADDR'}" > env.js
+            kubectl cp ./env.js $(kubectl get pods -l app=lnpage --no-headers -o custom-columns=":metadata.name"):/usr/share/nginx/html/env.js
+
 
 
 workflows:
