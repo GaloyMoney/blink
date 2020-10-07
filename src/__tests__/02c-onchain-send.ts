@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-import { first, last } from "lodash";
+import { filter, first, last } from "lodash";
 import { quit } from "../lock";
 import { MainBook, setupMongoConnection } from "../mongodb";
 import { checkIsBalanced, getUserWallet, lndMain, lndOutside1, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
@@ -89,6 +89,11 @@ it('Sends onchain payment successfully', async () => {
 	expect(interimBalance).toBe(initialBalanceUser0 - amount - pendingTxn.fee)
   await checkIsBalanced()
   
+  const txs = await userWallet0.getTransactions()
+  const pendingTxs = filter(txs, {pending: true})
+  expect(pendingTxs.length).toBe(1)
+  expect(pendingTxs[0].amount).toBe(-amount - pendingTxs[0].fee)
+
   // const subSpend = lnService.subscribeToChainSpend({ lnd: lndMain, bech32_address: address, min_height: 1 })
 
   {
@@ -107,8 +112,6 @@ it('Sends onchain payment successfully', async () => {
   expect(sendNotification.mock.calls[0][0].data.type).toBe("onchain_payment")
 
   const { results: [{ pending, fee, feeUsd }] } = await MainBook.ledger({ account: userWallet0.accountPath, hash: pendingTxn.hash })
-
-  console.log({ pending, fee, feeUsd })
 
 	expect(pending).toBe(false)
 	expect(fee).toBeGreaterThan(0)
