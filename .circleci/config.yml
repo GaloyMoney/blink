@@ -259,7 +259,7 @@ jobs:
           image: lnpage
           tag: $CIRCLE_SHA1
 
-  update_lnpage:
+  update_testnet_lnpage:
     working_directory: ~/GaloyApp/lnpage
     docker:
       - image: kiwigrid/gcloud-kubectl-helm:latest
@@ -268,18 +268,8 @@ jobs:
       - checkout:
           path: ~/GaloyApp
       - gke-auth
-      - run:
-          name: Update lnpage
-          command: |
-            wget https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -O jq
-            chmod +x ./jq
-            helm -n testnet install lnpage ./lnpage-chart -f ./lnpage-chart/testnet-values.yaml
-            sleep 15 #without sleep wait hangs because it targets older pod
-            kubectl -n testnet wait --for=condition=ready pod -l app=lnpage
-            LND_ADDR=$(kubectl -n testnet get services | awk '/lnd-service/ {print $4}')
-            LND_PUB_KEY=$(kubectl -n testnet exec lnd-container-0 -- lncli getinfo | ./jq -r '.identity_pubkey')
-            echo "window.env={'LND_PUB_KEY':'$LND_PUB_KEY','LND_ADDR':'$LND_ADDR'}" > env.js
-            kubectl -n testnet cp ./env.js $(kubectl -n testnet get pods -l app=lnpage --no-headers -o custom-columns=":metadata.name"):/usr/share/nginx/html/env.js
+      - update-lnpage
+          namespace: testnet
 
 
 
