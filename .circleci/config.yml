@@ -285,7 +285,7 @@ workflows:
       - build_lnpage:
           requires:
             - hold_build_lnpage
-      - update_lnpage:
+      - update_testnet_lnpage:
           requires:
             - build_lnpage
   kube:
