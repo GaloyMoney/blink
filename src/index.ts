@@ -10,12 +10,13 @@ import { login, requestPhoneCode } from "./text";
 import { OnboardingEarn } from "./types";
 import { AdminWallet } from "./AdminWallet";
 import { sendNotification } from "./notification"
+import lnService from "ln-service"
 
 const path = require("path");
 dotenv.config()
 
 
-import { logger } from "./utils"
+import { logger, getAuth } from "./utils"
 import moment from "moment";
 import { WalletFactory } from "./walletFactory";
 const pino = require('pino-http')({
@@ -34,12 +35,14 @@ const pino = require('pino-http')({
   }
 })
 
+const { lnd } = lnService.authenticatedLndGrpc(getAuth())
+
 const commitHash = process.env.COMMITHASH
 const buildTime = process.env.BUILDTIME
 const helmRevision = process.env.HELMREVISION
 const getMinBuildNumber = async () => {
-  const { minBuildNumber } = await DbVersion.findOne({}, {minBuildNumber: 1, _id: 0})
-  return minBuildNumber 
+  const { minBuildNumber } = await DbVersion.findOne({}, { minBuildNumber: 1, _id: 0 })
+  return minBuildNumber
 }
 
 const DEFAULT_USD = {
@@ -72,9 +75,18 @@ const resolvers = {
         DEFAULT_USD
       ])
     },
+    nodeStats: async () => {
+      const result = await lnService.getWalletInfo({lnd})
+      const peersCount = result.peers_count
+      const channelsCount = result.active_channels_count
+      return {
+        peersCount,
+        channelsCount
+      }
+    },
     buildParameters: () => ({
-      commitHash: () => commitHash, 
-      buildTime: () => buildTime, 
+      commitHash: () => commitHash,
+      buildTime: () => buildTime,
       helmRevision: () => helmRevision,
       minBuildNumberAndroid: getMinBuildNumber,
       minBuildNumberIos: getMinBuildNumber,
@@ -106,12 +118,12 @@ const resolvers = {
 
       return response
     },
-    getLastOnChainAddress: async (_, __, { lightningWallet }) => ({id: lightningWallet.getLastOnChainAddress()}),
+    getLastOnChainAddress: async (_, __, { lightningWallet }) => ({ id: lightningWallet.getLastOnChainAddress() }),
   },
   Mutation: {
     requestPhoneCode: async (_, { phone }) => ({ success: requestPhoneCode({ phone }) }),
     login: async (_, { phone, code, currency }) => ({ token: login({ phone, code, currency }) }),
-    updateUser: async (_, __,  { lightningWallet }) => {
+    updateUser: async (_, __, { lightningWallet }) => {
       // FIXME manage uid
       // TODO only level for now
       const result = await lightningWallet.setLevel({ level: 1 })
@@ -120,7 +132,7 @@ const resolvers = {
         level: result.level,
       }
     },
-    openChannel: async (_, { local_tokens, public_key, socket }, {}) => {
+    openChannel: async (_, { local_tokens, public_key, socket }, { }) => {
       // FIXME: security risk. remove openChannel from graphql
       const lightningAdminWallet = new AdminWallet()
       return { tx: lightningAdminWallet.openChannel({ local_tokens, public_key, socket }) }
@@ -136,21 +148,21 @@ const resolvers = {
     },
     onchain: async (_, __, { lightningWallet }) => ({
       getNewAddress: () => lightningWallet.getOnChainAddress(),
-      pay: ({address, amount, memo}) => ({success: lightningWallet.onChainPay({address, amount, memo})}),
-      getFee: ({address}) => lightningWallet.getOnchainFee({address}),
+      pay: ({ address, amount, memo }) => ({ success: lightningWallet.onChainPay({ address, amount, memo }) }),
+      getFee: ({ address }) => lightningWallet.getOnchainFee({ address }),
     }),
     addDeviceToken: async (_, { deviceToken }, { uid }) => {
       // TODO: refactor to a higher level User class
       const user = await User.findOne({ _id: uid })
       user.deviceToken.addToSet(deviceToken)
       await user.save()
-      return {success: true}
+      return { success: true }
     },
 
     // FIXME test
     testMessage: async (_, __, { uid }) => {
-      await sendNotification({uid, title: "Title", body: `New message sent at ${moment.utc().format('YYYY-MM-DD HH:mm:ss')}`})
-      return {success: true}
+      await sendNotification({ uid, title: "Title", body: `New message sent at ${moment.utc().format('YYYY-MM-DD HH:mm:ss')}` })
+      return { success: true }
     },
   }
 }
@@ -239,7 +251,7 @@ server.express.get('/healthz', function(req, res) {
 
 const options = {
   endpoint: '/graphql',
-  playground: process.env.NETWORK === 'mainnet' ? 'false': '/'
+  playground: process.env.NETWORK === 'mainnet' ? 'false' : '/'
 }
 
 setupMongoConnection()
@@ -250,5 +262,6 @@ setupMongoConnection()
           `Server started, listening on port ${port} for incoming requests.`,
         ),
       )
-  })}).catch((err) => logger.error(err, "server error"))
+    })
+  }).catch((err) => logger.error(err, "server error"))
 

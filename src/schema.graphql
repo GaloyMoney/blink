@@ -86,12 +86,18 @@ type BuildParameter {
   minBuildNumberIos: Int
 }
 
+type NodeStats {
+  peersCount: Int
+  channelsCount: Int
+}
+
 type Query { 
   prices: [Price]
   wallet: [Wallet]
   earnList: [Earn]
   me: User
   buildParameters: BuildParameter
+  nodeStats: NodeStats
   getLastOnChainAddress: LastOnChainAddress
   pendingOnChainPayment: [PendingOnchainPayment]
 }
