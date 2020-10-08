@@ -40,11 +40,6 @@ type Invoice {
   payInvoice(invoice: String!, amount: Int, memo: String): String #FIXME: use a more precise type
 }
 
-type PendingOnchainPayment {
-  txId: ID
-  amount: Int
-}
-
 type OnChain {
   getNewAddress: String
   pay(address: String!, amount: Int!, memo: String): Success
@@ -93,7 +88,6 @@ type Query {
   me: User
   buildParameters: BuildParameter
   getLastOnChainAddress: LastOnChainAddress
-  pendingOnChainPayment: [PendingOnchainPayment]
 }
 
 type Mutation {

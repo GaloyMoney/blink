@@ -323,7 +323,7 @@
                       "body": {
                         "mode": "graphql",
                         "graphql": {
-                          "query": "query wallet {\n    wallet {\n        id\n        currency\n        balance\n        transactions {\n            id\n            amount\n            description\n            created_at\n            hash\n            type\n            usd\n            fee\n            feeUsd\n        }\n    }\n}",
+                          "query": "query wallet {\n    wallet {\n        id\n        currency\n        balance\n        transactions {\n            id\n            amount\n            description\n            created_at\n            hash\n            type\n            usd\n            fee\n            feeUsd\n            pending\n        }\n    }\n}",
                           "variables": "{}"
                         },
                         "options": {
@@ -591,8 +591,8 @@
                       "body": {
                         "mode": "graphql",
                         "graphql": {
-                          "query": "mutation onchain($address: String!) {\n    onchain {\n        getFees(address: $address)\n    }\n}",
-                          "variables": "{\n    \"address\": \"2NAJJxF7Vi9wgxHpaYAVjhBRspRfUcyDy1Z\"\n}"
+                          "query": "mutation onchain($address: String!) {\n    onchain {\n        getFee(address: $address)\n    }\n}",
+                          "variables": "{\n    \"address\": \"bcrt1q8zu98ny6nmygwxwd503rrrj8pc6edjsym2ggyg\"\n}"
                         },
                         "options": {
                           "graphql": {}
@@ -928,8 +928,8 @@
               "body": {
                 "mode": "graphql",
                 "graphql": {
-                  "query": "mutation payInvoice($invoice: String!, $amount: Int, $memo: String) {\n    invoice {\n        payInvoice(invoice: $invoice, amount: $amount, memo: $memo)\n    }\n}",
-                  "variables": "{\n  \"invoice\": \"lnbcrt1p0hxuhnpp5l0emkjdd95vm9qs9268emss0xsu5tq2tu9cwcrqr0qj4h2g0eqmsdqqcqzpgsp5j82t7ajhzednhlkhj7hkgdd37eqfngvda36m9hy90809sk8ug5fq9qy9qsqt42wqpmyp3jz94a77d325m382gewnjhzse5ncc6cjkdh5hjw77mxyg3cyngj429ss2g0hl9x2l4kzn3d83pnjrsxkce2yvmdnanh74sqpmcahj\",\n  \"amount\": 50,\n  \"memo\": \"this is my memo\"\n}"
+                  "query": "mutation payInvoice($invoice: String!, $amount: Int) {\n    invoice {\n        payInvoice(invoice: $invoice, amount: $amount)\n    }\n}",
+                  "variables": "{\n  \"invoice\": \"lnbc937u1p0h8fwepp53na8mvv47a6psnrl3nkylgmj8f94z4vf3dwjwpmxls2gkmhfmeqsdz2gf5hgun9ve5kcmpqvdskgefcx43nstfjvvungtf5vguxgtfexccx2tf5xu6rqwphvv6xgetxv5cqzxgxqrp9ssp5fsr9qxs8fzys8elg8t754s08vktylulqdc67mytr6d85tgnde0lq9qy9qsqft2kymars7zkkvaedzz5r6kj8e0z6dzu9dfp68ntjmrtdqtq7dghdr0jpuvhwykvz2jwelux3aq6hush0pyqa9pe7nc2lsyau7xe0ysprk26zf\"\n}"
                 },
                 "options": {
                   "graphql": {}
@@ -976,8 +976,8 @@
               "body": {
                 "mode": "graphql",
                 "graphql": {
-                  "query": "mutation invoice ($hash: String) {\n    invoice {\n        updatePendingInvoice (hash: $hash)\n    }\n}",
-                  "variables": "{\n  \"hash\": \"9370880d24e0a0dfc4304ce3009f58e06fba301973e765346b06441ae3236c90\"\n}"
+                  "query": "mutation invoice ($hash: String!) {\n    invoice {\n        updatePendingInvoice (hash: $hash)\n    }\n}",
+                  "variables": "{\n  \"hash\": \"767037b6fcdfb02736f96a6e7cb26e886f41e74d6232c45091febc6dc95c6696\"\n}"
                 },
                 "options": {
                   "graphql": {}
@@ -1031,7 +1031,7 @@
             "response": []
           },
           {
-            "name": "sendMessage",
+            "name": "testMessage",
             "_postman_id": "d9107142-be9e-4ff5-af93-00d332f783c1",
             "protocolProfileBehavior": {
               "disableBodyPruning": true
