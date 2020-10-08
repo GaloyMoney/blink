@@ -1,11 +1,11 @@
 const lnService = require('ln-service');
 import { assert } from "console";
 import { filter, includes, intersection, last, sumBy } from "lodash";
+import { customerPath, lightningAccountingPath } from "./ledger";
 import { disposer } from "./lock";
 import { MainBook, Transaction, User } from "./mongodb";
 import { IOnChainPayment, ISuccess } from "./types";
 import { bitcoindClient, btc2sat, getAuth, getCurrencyEquivalent, logger, sendToAdmin } from "./utils";
-import { customerPath } from "./wallet";
 const util = require('util')
 
 const using = require('bluebird').using
@@ -135,7 +135,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
         // TODO/FIXME refactor. add the transaction first and set the fees in a second tx.
         await MainBook.entry(memo)
-          .debit('Assets:Reserve:Lightning', sats, metadata)
+          .debit(lightningAccountingPath, sats, metadata)
           .credit(this.accountPath, sats, metadata)
           .commit()
       }
@@ -297,11 +297,11 @@ export const OnChainMixin = (superclass) => class extends superclass {
           assert(matched_tx.tokens >= sats)
 
           const addedMetadata = await getCurrencyEquivalent({ sats })
-          const metadata = { currency: this.currency, type, hash: matched_tx.id , ...addedMetadata }
+          const metadata = { type, hash: matched_tx.id , ...addedMetadata }
     
           await MainBook.entry()
             .debit(this.accountPath, sats, metadata)
-            .credit('Assets:Reserve:Lightning', sats, metadata)
+            .credit(lightningAccountingPath, sats, metadata)
             .commit()
         }
 

@@ -1,12 +1,12 @@
 /**
  * @jest-environment node
  */
+import { customerPath } from "../ledger";
 import { quit } from "../lock";
 import { InvoiceUser, MainBook, setupMongoConnection } from "../mongodb";
 import { Price } from "../priceImpl";
 import { checkIsBalanced, getUserWallet, lndOutside1 } from "../tests/helper";
 import { getAmount, getHash } from "../utils";
-import { customerPath } from "../wallet";
 const lnService = require('ln-service')
 const mongoose = require("mongoose")
 

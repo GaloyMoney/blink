@@ -1,5 +1,5 @@
+import { customerPath } from "../ledger";
 import { MainBook, setupMongoConnection } from "../mongodb";
-import { customerPath } from "../wallet";
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 
 const uid = "5f5bdcc1c2cec44610ee24d2"

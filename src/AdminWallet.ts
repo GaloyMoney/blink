@@ -1,7 +1,8 @@
 import { filter, find } from "lodash";
-import { WalletFactory } from "./walletFactory";
+import { getBrokerWallet, WalletFactory } from "./walletFactory";
 import { MainBook, Transaction, User } from "./mongodb";
 import { getAuth, logger } from "./utils";
+import { accountingExpenses, lightningAccountingPath } from "./ledger";
 const lnService = require('ln-service')
 
 
@@ -54,8 +55,8 @@ export class AdminWallet {
 
     const assets = await getBalanceOf("Assets") 
     const liabilities = await getBalanceOf("Liabilities") 
-    const lightning = await getBalanceOf("Assets:Reserve:Lightning") 
-    const expenses = await getBalanceOf("Expenses") 
+    const lightning = await getBalanceOf(lightningAccountingPath) 
+    const expenses = await getBalanceOf(accountingExpenses) 
 
     // FIXME: have a way to generate a PNL
     const equity = - expenses
@@ -66,14 +67,15 @@ export class AdminWallet {
   async balanceSheetIsBalanced() {
     const {assets, liabilities, lightning, expenses} = await this.getBalanceSheet()
     const { total } = await this.lndBalances()
+    const ftx = await this.ftxBalance()
 
     const assetsLiabilitiesDifference = assets + liabilities + expenses
-    const lndBalanceSheetDifference = total - lightning
-    if(!!lndBalanceSheetDifference) {
-      logger.debug({total, lightning, lndBalanceSheetDifference, assets, liabilities, expenses}, `not balanced`)
+    const bookingVersusRealWorldAssets = total + ftx - lightning
+    if(!!bookingVersusRealWorldAssets) {
+      logger.debug({total, lightning, bookingVersusRealWorldAssets, assets, liabilities, expenses}, `not balanced`)
     }
 
-    return { assetsLiabilitiesDifference, lndBalanceSheetDifference }
+    return { assetsLiabilitiesDifference, bookingVersusRealWorldAssets }
   }
 
   async lndBalances () {
@@ -81,11 +83,18 @@ export class AdminWallet {
     const { channel_balance } = await lnService.getChannelBalance({lnd: this.lnd})
 
     //FIXME: This can cause incorrect balance to be reported in case an unconfirmed txn is later cancelled/double spent
+    // bitcoind seems to have a way to report this correctly. does lnd have?
     const { pending_chain_balance } = await lnService.getPendingChainBalance({lnd: this.lnd})
 
     const total = chain_balance + channel_balance + pending_chain_balance
 
     return { total, onChain: chain_balance + pending_chain_balance, offChain: channel_balance } 
+  }
+
+  async ftxBalance () {
+    const brokerWallet = await getBrokerWallet()
+    const balance = await brokerWallet.getExchangeBalance()
+    return balance.BTC
   }
 
   async getInfo() {

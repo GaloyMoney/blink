@@ -1,12 +1,12 @@
 const lnService = require('ln-service');
 import { createHash, randomBytes } from "crypto";
 import moment from "moment";
+import { customerPath, getBrokerAccountPath } from "./ledger";
 import { disposer } from "./lock";
 import { InvoiceUser, MainBook, Transaction } from "./mongodb";
 import { sendInvoicePaidNotification } from "./notification";
 import { IAddInvoiceInternalRequest, ILightningTransaction, IPaymentRequest } from "./types";
 import { getCurrencyEquivalent, getAuth, logger, measureTime, timeout } from "./utils";
-import { customerPath, getBrokerAccountPath } from "./wallet";
 
 const util = require('util')
 

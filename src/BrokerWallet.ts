@@ -1,4 +1,5 @@
 import { find } from "lodash";
+import { ftxAccountingPath } from "./ledger";
 import { MainBook } from "./mongodb";
 import { OnChainMixin } from "./OnChain";
 import { Price } from "./priceImpl";
@@ -97,7 +98,6 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
 
     // TODO do not return only balance?
     return balance.total
-    
   }
 
   async getAccountPosition() {
@@ -241,6 +241,50 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
     return { btcAmount, buyOrSell }
   }
 
+  async rebalance ({ btcAmount, depositOrWithdraw }) {
+    const metadata = { type: "exchange_rebalance", currency: this.currency }
+
+    // deposit and withdraw are from the exchange point of view
+    if (depositOrWithdraw === "withdraw") {
+      const memo = `withdrawal of ${btcAmount} btc from ${this.ftx.name}`
+
+      const address = await this.getOnChainAddress()
+
+      // TODO: need a withdrawal password?
+      const withdrawal = await this.ftx.withdraw("BTC", btcAmount, address)
+
+      // TODO: check syntax
+      if (withdrawal.success) {
+        await MainBook.entry()
+        .debit(ftxAccountingPath, btc2sat(btcAmount), {...metadata, memo})
+        .credit(this.accountPath, btc2sat(btcAmount), {...metadata, memo})
+        .commit()
+      } else {
+        console.error(`can't `)
+      }
+
+    } else if (depositOrWithdraw === "deposit") {
+      const memo = `deposit of ${btcAmount} btc to ${this.ftx.name}`
+      const address = await this.exchangeDepositAddress()
+      await this.onChainPay({address, amount: btcAmount, memo })
+
+      // onChainPay is doing:
+      //
+      // await MainBook.entry(memo)
+      // .debit(lightningAccountingPath, sats, metadata)
+      // .credit(this.accountPath, sats, metadata)
+      // .commit()
+      //
+      // we're doing 2 transactions here on medici.
+      // explore a way to refactor this to make a single transaction.
+
+      await MainBook.entry()
+        .debit(this.accountPath, btc2sat(btcAmount), {...metadata, memo})
+        .credit(ftxAccountingPath, btc2sat(btcAmount), {...metadata, memo})
+        .commit()
+
+    }
+  }
 
   async executeOrder({ buyOrSell, btcAmount }) {
 
@@ -283,15 +327,7 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
 
     {
       const { btcAmount, depositOrWithdraw } = BrokerWallet.isRebalanceNeeded({ leverage, usdCollateral: collateral, btcPrice })
-      // deposit and withdraw are from the exchange point of view
-      if (depositOrWithdraw === "withdraw") {
-        const address = await this.getOnChainAddress()
-        await this.ftx.withdraw("BTC", btcAmount, address)
-      } else if (depositOrWithdraw === "deposit") {
-        const memo = `deposit of ${btcAmount} btc to ${this.ftx.name}`
-        const address = await this.exchangeDepositAddress()
-        await this.onChainPay({address, amount: btcAmount, memo })
-      }
+      await this.rebalance({ btcAmount, depositOrWithdraw })
     }
 
   }

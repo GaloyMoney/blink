@@ -1,15 +1,7 @@
 import moment from "moment"
 import { MainBook, User } from "./mongodb"
 import { ILightningTransaction } from "./types"
-
-export const getBrokerAccountPath = async () => { 
-  const {_id} = await User.findOne({role: "broker"}, {_id: 1})
-  return customerPath(_id)
-}
-
-export const customerPath = (uid) => { 
-  return `Liabilities:Customer:${uid}`
-}
+import { customerPath } from "./ledger"
 
 export class UserWallet {
 

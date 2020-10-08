@@ -52,9 +52,10 @@ const UserSchema = new Schema({
   },
   role: {
     type: String,
-    enum: ["user", "admin", "funder", "broker"],
+    enum: ["user", "funder", "broker"], // FIXME: "admin" is not used anymore --> remove?
     required: true,
     default: "user"
+    // doto : enfore the fact there can be only one funder/broker
   },
   onchain_addresses: {
     type: [String],
