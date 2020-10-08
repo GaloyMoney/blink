@@ -14,12 +14,14 @@ export interface IAddInvoiceInternalRequest {
   usd: number,
   sats: number,
   currency: "USD" | "BTC",
-  memo: string | undefined
+  memo: string | undefined,
+  selfGenerated?: boolean
 }
 
 export interface IAddBTCInvoiceRequest {
   value: number | undefined,
-  memo?: string | undefined
+  memo?: string | undefined,
+  selfGenerated?: boolean
 }
 
 export interface IAddUSDInvoiceRequest {

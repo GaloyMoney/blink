@@ -106,7 +106,7 @@ type Mutation {
   requestPhoneCode(phone: String): Success
   login(phone: String, code: Int, currency: String): Token
   openChannel(local_tokens: Int, public_key: String, socket: String): OnchainTransaction
-
+  publicInvoice(uid: String): Invoice
   onchain: OnChain
   invoice: Invoice
   earnCompleted(ids: [ID]): [Earn]

@@ -76,7 +76,7 @@ const resolvers = {
       ])
     },
     nodeStats: async () => {
-      const result = await lnService.getWalletInfo({lnd})
+      const result = await lnService.getWalletInfo({ lnd })
       const peersCount = result.peers_count
       const channelsCount = result.active_channels_count
       return {
@@ -132,13 +132,20 @@ const resolvers = {
         level: result.level,
       }
     },
+    publicInvoice: async (_, { uid }) => {
+      const lightningWallet = WalletFactory({ uid, currency: 'BTC' })
+      return {
+        addInvoice: async ({ value, memo }) => lightningWallet.addInvoice({ value, memo, selfGenerated: false }),
+        updatePendingInvoice: async ({ hash }) => lightningWallet.updatePendingInvoice({ hash })
+      }
+    },
     openChannel: async (_, { local_tokens, public_key, socket }, { }) => {
       // FIXME: security risk. remove openChannel from graphql
       const lightningAdminWallet = new AdminWallet()
       return { tx: lightningAdminWallet.openChannel({ local_tokens, public_key, socket }) }
     },
     invoice: async (_, __, { lightningWallet }) => ({
-      addInvoice: async ({ value, memo }) => lightningWallet.addInvoice({ value, memo }),
+      addInvoice: async ({ value, memo }) => lightningWallet.addInvoice({ value, memo, selfGenerated: true }),
       updatePendingInvoice: async ({ hash }) => lightningWallet.updatePendingInvoice({ hash }),
       payInvoice: async ({ invoice, amount, memo }) => lightningWallet.pay({ invoice, amount, memo })
     }),

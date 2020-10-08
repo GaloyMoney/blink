@@ -43,7 +43,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     return super.getBalance()
   }
 
-  async addInvoiceInternal({ sats, usd, currency, memo }: IAddInvoiceInternalRequest): Promise<string> {
+  async addInvoiceInternal({ sats, usd, currency, memo, selfGenerated }: IAddInvoiceInternalRequest): Promise<string> {
     let request, id
 
     try {
@@ -65,6 +65,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         pending: true,
         usd,
         currency,
+        selfGenerated
       }).save()
     } catch (err) {
       // FIXME if the mongodb connection has not been instanciated
