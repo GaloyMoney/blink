@@ -16,7 +16,7 @@ const path = require("path");
 dotenv.config()
 
 
-import { logger, getAuth } from "./utils"
+import { logger, getAuth, nodeStats } from "./utils"
 import moment from "moment";
 import { WalletFactory } from "./walletFactory";
 const pino = require('pino-http')({
@@ -75,15 +75,7 @@ const resolvers = {
         DEFAULT_USD
       ])
     },
-    nodeStats: async () => {
-      const result = await lnService.getWalletInfo({ lnd })
-      const peersCount = result.peers_count
-      const channelsCount = result.active_channels_count
-      return {
-        peersCount,
-        channelsCount
-      }
-    },
+    nodeStats: async() => nodeStats({lnd}),
     buildParameters: () => ({
       commitHash: () => commitHash,
       buildTime: () => buildTime,
