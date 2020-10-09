@@ -119,7 +119,7 @@ it('opens channel from lndOutside1 to lnd1', async () => {
 
 it('returns correct nodeStats', async () => {
 	const { peersCount, channelsCount } = await nodeStats({ lnd: lndMain })
-	expect(peersCount).toBe(2)
+	expect(peersCount).toBe(1)
 	expect(channelsCount).toBe(channelLengthMain + 2)
 })
 
