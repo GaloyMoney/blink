@@ -16,7 +16,7 @@ let userWalletUsd, initBalanceUsd
 let userWallet2, initBalance2
 let lastPrice
 
-const amountInvoiceUsd = 2
+const amountInvoiceUsd = 50
 const amountInvoice = 1000
 
 beforeAll(async () => {
