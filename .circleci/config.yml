@@ -150,7 +150,7 @@ jobs:
       - run:
           name: Run jest test
           command: |
-            kubectl exec --namespace=$NAMESPACE test-pod -- bash -c "cd functions && yarn test"
+            kubectl exec --namespace=$NAMESPACE test-pod -- bash -c "cd functions && yarn test --verbose"
       - run:
           name: Run postman test
           command: |
