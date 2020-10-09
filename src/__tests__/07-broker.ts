@@ -217,7 +217,6 @@ it('isRebalanceNeeded test no action', async () => {
   }
 })
 
-
 it('calculate hedging amount when over exposed', async () => {
   // ratio is a .5
   // need to be at .9
@@ -235,6 +234,11 @@ it('calculate hedging amount when under exposed', async () => {
   expect(buyOrSell).toBe("sell")
   expect(btcAmount).toBe(0.045)
 })
+
+
+// TODO: accounting rebalancing test
+
+
 
 it('calculate hedging when no rebalance is needed', async () => {
   const { btcAmount, buyOrSell } = BrokerWallet.isOrderNeeded({ usdLiability: 950, usdExposure: 1000, btcPrice: 10000 })

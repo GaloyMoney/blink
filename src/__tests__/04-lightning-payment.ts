@@ -98,7 +98,7 @@ it('payInvoice', async () => {
   expect(result).toBe("success")
   const finalBalance = await userWallet1.getBalance()
   expect(finalBalance).toBe(initBalance1 - amountInvoice)
-}, 50000)
+})
 
 it('payInvoice with High CLTV Delta', async () => {
   const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: amountInvoice, cltv_delta: 200 })
@@ -106,7 +106,7 @@ it('payInvoice with High CLTV Delta', async () => {
   expect(result).toBe("success")
   const finalBalance = await userWallet1.getBalance()
   expect(finalBalance).toBe(initBalance1 - amountInvoice)
-}, 50000)
+})
 
 it('receives payment from outside', async () => {
   const memo = "myMemo"
@@ -118,7 +118,7 @@ it('receives payment from outside', async () => {
 
   const mongotx = await Transaction.findOne({hash: getHash(request)})
   expect(mongotx.memo).toBe(memo)
-}, 50000)
+})
 
 it('fails to pay when user has insufficient balance', async () => {
   const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: initBalance1 + 1000000 })
@@ -151,7 +151,7 @@ it('payInvoiceToAnotherGaloyUser', async () => {
   expect(user1OnUsTxn[0].type).toBe('on_us')
   expect(user1OnUsTxn[0].description).toBe(memo)
 
-}, 50000)
+})
 
 it('payInvoiceToAnotherGaloyUserWithMemo', async () => {
   const memo = "invoiceMemo"
@@ -168,7 +168,7 @@ it('payInvoiceToAnotherGaloyUserWithMemo', async () => {
   const user2Txn = await userWallet2.getTransactions()
   expect(user2Txn.filter(matchTx)[0].description).toBe(memo)
   expect(user2Txn.filter(matchTx)[0].type).toBe('on_us')
-}, 50000)
+})
 
 it('payInvoiceToAnotherGaloyUserWith2DifferentMemo', async () => {
   const memo = "invoiceMemo"
@@ -186,12 +186,12 @@ it('payInvoiceToAnotherGaloyUserWith2DifferentMemo', async () => {
   const user1Txn = await userWallet1.getTransactions()
   expect(user1Txn.filter(matchTx)[0].description).toBe(memoPayer)
   expect(user1Txn.filter(matchTx)[0].type).toBe('on_us')
-}, 50000)
+})
 
 it('payInvoiceToSelf', async () => {
   const invoice = await userWallet1.addInvoice({ value: 1000, memo: "self payment" })
   await expect(userWallet1.pay({ invoice })).rejects.toThrow()
-}, 50000)
+})
 
 it('pushPayment', async () => {
   // const destination = (await lnService.getWalletInfo({ lnd: lndOutside1 })).public_key;
@@ -200,7 +200,7 @@ it('pushPayment', async () => {
   // expect(res).toBe("success")
   // expect(finalBalance).toBe(initBalance1 - amountInvoice)
   // await checkIsBalanced()
-}, 50000)
+})
 
 it('fails to pay when channel capacity exceeded', async () => {
   const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: 15000000 })
@@ -216,9 +216,9 @@ it('fails to pay when channel capacity exceeded', async () => {
   }
   //FIXME: Are single line if bad design?
   if (!didThrow) fail('Function did not fail')
-}, 50000)
+})
 
-it('pay _hodl invoice', async () => {
+it('pay hodl invoice', async () => {
   const randomSecret = () => randomBytes(32);
   const sha256 = buffer => createHash('sha256').update(buffer).digest('hex');
   const secret = randomSecret();
@@ -275,7 +275,7 @@ it('payInvoice to lnd outside 2', async () => {
 
   const { results: [{ fee }] } = await MainBook.ledger({ account: userWallet1.accountPath, hash: id })
   expect(finalBalance).toBe(initialBalance - amountInvoice - fee)
-}, 100000)
+})
 
 it('if fee are too high, payment is cancelled', async () => {
   // TODO
@@ -288,7 +288,7 @@ it('pays zero amount invoice', async () => {
   expect(result).toBe("success")
   const finalBalance = await userWallet1.getBalance()
   expect(finalBalance).toBe(initialBalance - amountInvoice)
-}, 100000)
+})
 
 it('receive zero amount invoice', async () => {
   const initialBalance = await userWallet1.getBalance()
@@ -296,7 +296,7 @@ it('receive zero amount invoice', async () => {
   await lnService.pay({ lnd: lndOutside1, request: invoice, tokens: amountInvoice })
   const finalBalance = await userWallet1.getBalance()
   expect(finalBalance).toBe(initialBalance + amountInvoice)
-}, 100000)
+})
 
 it('fails to pay zero amt invoice without separate amt', async () => {
   const { request } = await lnService.createInvoice({ lnd: lndOutside1 })

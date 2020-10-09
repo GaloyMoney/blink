@@ -34,7 +34,7 @@ it('filter0', async () => {
   const f = amountOnVout({vout, onchain_addresses})
   expect(f).toBe(1)
 
-}, 100000)
+})
 
 it('filter1', async () => {
 
@@ -68,5 +68,5 @@ it('filter1', async () => {
   const f = amountOnVout({vout, onchain_addresses})
   expect(f).toBe(1)
 
-}, 100000)
+})
 

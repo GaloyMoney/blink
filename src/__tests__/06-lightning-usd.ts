@@ -85,7 +85,7 @@ it('receives payment from outside', async () => {
   expect(balanceUSD).toBeTruthy()
   expect(balanceBTC).toBeFalsy()
 
-}, 50000)
+})
 
 
 it('payInvoice', async () => {
@@ -94,19 +94,19 @@ it('payInvoice', async () => {
   expect(result).toBe("success")
   const finalBalance = await userWalletUsd.getBalance()
   expect(finalBalance).toBeCloseTo(initBalanceUsd - amountInvoice * lastPrice)
-}, 50000)
+})
 
 it('on us should fail if different currency', async () => {
   const userWalletBtc = await getUserWallet(1)
   const request = await userWalletBtc.addInvoice({value: 1, memo: "btc invoice"})
 
   await expect(userWalletUsd.pay({ invoice: request })).rejects.toThrow()
-}, 50000)
+})
 
-it('on us should are ok with same currency', async () => {
+it('on-us should be ok with same currency', async () => {
   const userWalletUsd10 = await getUserWallet(10)
   const request = await userWalletUsd10.addInvoice({value: 1, memo: "usd invoice"})
 
   const result = await userWalletUsd.pay({ invoice: request })
   expect(result).toBe("success")
-}, 50000)
+})

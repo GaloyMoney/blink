@@ -93,7 +93,7 @@ it('opens channel from lnd1 to lndOutside1', async () => {
 	const { channels } = await lnService.getChannels({ lnd: lndMain })
 	expect(channels.length).toEqual(channelLengthMain + 1)
 
-}, 100000)
+})
 
 it('opens private channel from lndOutside1 to lndOutside2', async () => {
 	const socket = `lnd-outside-2:9735`
@@ -111,7 +111,7 @@ it('opens private channel from lndOutside1 to lndOutside2', async () => {
 	const { channels } = await lnService.getChannels({ lnd: lndOutside1 })	
 	expect(channels.length).toEqual(channelLengthOutside1 + 2)
 	expect(channels.some(e => e.is_private))
-}, 240000)
+})
 
 it('opens channel from lndOutside1 to lnd1', async () => {
 	const socket = `lnd-service:9735`
@@ -122,14 +122,14 @@ it('opens channel from lndOutside1 to lnd1', async () => {
 		expect(channels.length).toEqual(channelLengthMain + 2)
 	}
 
-}, 100000)
+})
 
 it('escrow update 1', async () => {
   await adminWallet.updateEscrows()
   await checkIsBalanced()
-}, 100000)
+})
 
 it('escrow update 2', async () => {
   await adminWallet.updateEscrows()
   await checkIsBalanced()
-}, 100000)
+})

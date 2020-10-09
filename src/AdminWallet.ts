@@ -44,25 +44,17 @@ export class AdminWallet {
   }
 
   async getBalanceSheet() {    
-    const getBalanceOf = async (account) => {
-      const { balance } = await MainBook.balance({
-        account,
-        currency: this.currency
-      })
+    const { balance: assets } = await MainBook.balance({accounts: "Assets", currency: "BTC"}) 
+    const { balance: liabilities } = await MainBook.balance({accounts: "Liabilities", currency: "BTC"}) 
+    const { balance: lightning } = await MainBook.balance({accounts: lightningAccountingPath, currency: "BTC"}) 
+    const { balance: expenses } = await MainBook.balance({accounts: accountingExpenses, currency: "BTC"}) 
+    const { balance: usd } = await MainBook.balance({accounts: "Liabilities", currency: "USD"}) 
 
-      return balance
-    }
-
-    const assets = await getBalanceOf("Assets") 
-    const liabilities = await getBalanceOf("Liabilities") 
-    const lightning = await getBalanceOf(lightningAccountingPath) 
-    const expenses = await getBalanceOf(accountingExpenses) 
-
-    return {assets, liabilities, lightning, expenses }
+    return {assets, liabilities, lightning, expenses, usd }
   }
 
   async balanceSheetIsBalanced() {
-    const {assets, liabilities, lightning, expenses} = await this.getBalanceSheet()
+    const {assets, liabilities, lightning, expenses, usd } = await this.getBalanceSheet()
     const { total: lnd } = await this.lndBalances() // doesnt include ercrow amount
     const ftx = await this.ftxBalance()
 
@@ -124,20 +116,20 @@ export class AdminWallet {
     const metadata = { type, currency: this.currency }
 
     const { channels } = await lnService.getChannels({lnd: this.lnd})
-    const selfInitated = filter(channels, {is_partner_initiated: false, is_active: true})
+    const selfInitated = filter(channels, {is_partner_initiated: false})
 
     const mongotxs = await Transaction.aggregate([
       { $match: { type: "escrow", accounts: lightningAccountingPath }}, 
       { $group: {_id: "$txid", total: { "$sum": "$debit" } }},
     ])
 
-    // TODO remove the inactive channel from escrow (??)
-
     for (const channel of selfInitated) {
 
       const txid = `${channel.transaction_id}:${channel.transaction_vout}`
       
       const mongotx = filter(mongotxs, {_id: txid})[0] ?? { total: 0 }
+
+      logger.debug({mongotx, channel}, "need escrow?")
 
       if (mongotx?.total === channel.commit_transaction_fee) {
         continue
@@ -146,7 +138,7 @@ export class AdminWallet {
       //log can be located by searching for 'update escrow' in gke logs
       //FIXME: Remove once escrow bug is fixed
       const diff = channel.commit_transaction_fee - (mongotx?.total)
-      logger.debug({channel, diff}, `in update escrow, mongotx ${mongotx}`)
+      logger.debug({diff}, `update escrow with diff`)
 
       await MainBook.entry("escrow")
         .debit(lightningAccountingPath, diff, {...metadata, txid})

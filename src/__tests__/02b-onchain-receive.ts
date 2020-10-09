@@ -98,12 +98,12 @@ const onchain_funding = async ({ walletDestination }) => {
 
 it('user0 is credited for on chain transaction', async () => {
   await onchain_funding({ walletDestination: walletUser0 })
-}, 100000)
+})
 
 
 it('funding funder with onchain tx from bitcoind', async () => {
   await onchain_funding({ walletDestination: funderWallet })
-}, 100000)
+})
 
 it('identifies unconfirmed incoming on chain txn', async () => {
   const address = await walletUser0.getOnChainAddress()
@@ -147,7 +147,7 @@ it('identifies unconfirmed incoming on chain txn', async () => {
   // expect(notification.sendNotification.mock.calls[1][0].title).toBe(
   //   `Your wallet has been credited with ${btc2sat(amount_BTC)} sats`)
 
-}, 100000)
+})
 
 it('batch send transaction', async () => {
   const address0 = await walletUser0.getOnChainAddress()
@@ -186,4 +186,4 @@ it('batch send transaction', async () => {
     expect(balance4).toBe(initBalanceUser4 + btc2sat(2))
   }
 
-}, 100000)
+})

@@ -116,7 +116,7 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
 
     const { result: { collateral, positions, chargeInterestOnNegativeUsd, marginFraction } } = await this.ftx.privateGetAccount()
 
-    const positionBtcPerp = find(positions, { future: symbol} )
+    const positionBtcPerp = find(positions, { future: symbol } )
     console.log({positionBtcPerp})
 
     const { netSize, estimatedLiquidationPrice, collateralUsed, maintenanceMarginRequirement } = positionBtcPerp
@@ -250,9 +250,11 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
 
       const address = await this.getOnChainAddress()
 
-      // TODO: is there a withdrawal fees to account for?
       // TODO: need a withdrawal password?
+      // FIXME: No fees? event the on-chain fees?
       const withdrawal = await this.ftx.withdraw("BTC", btcAmount, address)
+
+      console.log({withdrawal})
 
       //
       // from ccxt. could be different for ftx
@@ -319,25 +321,34 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
 
   async executeOrder({ buyOrSell, btcAmount }) {
 
+    let order, orderStatus
+
     // let orderId = 6103637365
     let orderId
 
-    // TODO add: try/catch
-    const order = await this.ftx.createOrder(symbol, 'market', buyOrSell, btcAmount)
+    try {
+      order = await this.ftx.createOrder(symbol, 'market', buyOrSell, btcAmount)
+    } catch (err) {
+      logger.error({err, buyOrSell, btcAmount, symbol}, "error placing an order")
+      throw err
+    }
 
     // FIXME: have a better way to manage latency
     // ie: use a while loop and check condition for a couple of seconds.
     // or rely on a websocket
-    await sleep(1000)
+    await sleep(5000)
 
-    const result = await this.ftx.fetchOrder(order.id)
-
-    if (result.status !== "closed") {
-      console.warn("market order has not been fullfilled")
-      // Pager
+    try {
+      orderStatus = await this.ftx.fetchOrder(order.id)
+    } catch (err) {
+      logger.error({err, buyOrSell, btcAmount, symbol, order}, "error fetching an order")
+      throw err
     }
 
-    // TODO: check we are back to low_safebound
+    if (orderStatus.status !== "closed") {
+      logger.error({order}, "market order has not been fullfilled")
+      // Pager
+    }
   }
 
   // TODO: cron job on this
@@ -350,9 +361,11 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
 
     {
       const { btcAmount, buyOrSell } = BrokerWallet.isOrderNeeded({ usdLiability, usdExposure, btcPrice })
-
       if (buyOrSell) {
         await this.executeOrder({ btcAmount, buyOrSell })
+
+        const { buyOrSell: newBuyOrSell } = BrokerWallet.isOrderNeeded({ usdLiability, usdExposure, btcPrice })
+        assert(!newBuyOrSell)
       }
     }
 
