@@ -341,7 +341,7 @@ export const upgrade = async () => {
 export const setupMongoConnection = async () => {
   const user = process.env.MONGODB_USER ?? "testGaloy"
   const password = process.env.MONGODB_ROOT_PASSWORD ?? "testGaloy"
-  const address = process.env.MONGODB_ADDRESS ?? "127.0.0.1:27019"
+  const address = process.env.MONGODB_ADDRESS ?? "mongodb"
   const db = process.env.MONGODB_DATABASE ?? "galoy"
 
   const path = `mongodb://${user}:${password}@${address}/${db}`
