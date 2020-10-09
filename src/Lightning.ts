@@ -169,20 +169,21 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         }
 
-        if (balance < tokens) {
-          throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${tokens}`)
+        const sats = tokens
+        const addedMetadata = await getCurrencyEquivalent({sats, fee: 0})
+        const metadata = { currency: this.currency, hash: id, type: "on_us", pending: false, ...addedMetadata }
+
+        const value = this.isUSD ? metadata.usd : sats
+
+        if (balance < value) {
+          throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${value}`)
         }
 
-        {
-          const sats = tokens
-          const addedMetadata = await getCurrencyEquivalent({sats, fee: 0})
-          const metadata = Object.assign({ currency: this.currency, hash: id, type: "on_us", pending: false }, addedMetadata)
-
-          await MainBook.entry(memoInvoice)
-            .debit(customerPath(payeeUid), sats, metadata)
-            .credit(this.accountPath, sats, {...metadata, memoPayer})
-            .commit()
-        }
+        await MainBook.entry(memoInvoice)
+          .debit(customerPath(payeeUid), value, metadata)
+          .credit(this.accountPath, value, {...metadata, memoPayer})
+          .commit()
+      
 
         await sendInvoicePaidNotification({amount: tokens, uid: payeeUid, hash: id})
         await InvoiceUser.findOneAndUpdate({ _id: id }, { pending: false })
@@ -415,7 +416,7 @@ export const LightningMixin = (superclass) => class extends superclass {
           const usd = invoiceUser.usd
 
           const addedMetadata = await getCurrencyEquivalent({usd, sats, fee: 0})
-          const metadata = Object.assign({ hash, type: "invoice" }, addedMetadata)
+          const metadata = { hash, type: "invoice", ... addedMetadata }
 
           const brokerAccountPath = await getBrokerAccountPath()
 

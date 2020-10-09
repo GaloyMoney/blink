@@ -58,18 +58,15 @@ export class AdminWallet {
     const lightning = await getBalanceOf(lightningAccountingPath) 
     const expenses = await getBalanceOf(accountingExpenses) 
 
-    // FIXME: have a way to generate a PNL
-    const equity = - expenses
-
-    return {assets, liabilities, lightning, expenses, equity}
+    return {assets, liabilities, lightning, expenses }
   }
 
   async balanceSheetIsBalanced() {
     const {assets, liabilities, lightning, expenses} = await this.getBalanceSheet()
-    const { total: lnd } = await this.lndBalances()
+    const { total: lnd } = await this.lndBalances() // doesnt include ercrow amount
     const ftx = await this.ftxBalance()
 
-    const assetsLiabilitiesDifference = assets + liabilities + expenses
+    const assetsLiabilitiesDifference = assets + (liabilities + expenses)
     const bookingVersusRealWorldAssets = (lnd + ftx) - lightning
     if(!!bookingVersusRealWorldAssets) {
       logger.debug({lnd, lightning, bookingVersusRealWorldAssets, assets, liabilities, expenses}, `not balanced`)

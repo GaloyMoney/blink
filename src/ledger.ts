@@ -19,7 +19,6 @@ export const getBrokerAccountPath = async () => {
 
 
 // expenses
-
 export const accountingExpenses = "Expenses"
 
 export const openChannelFees = 'Expenses:Bitcoin:Fees'

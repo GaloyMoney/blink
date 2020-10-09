@@ -76,7 +76,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
       const sats = amount
 
       const addedMetadata = await getCurrencyEquivalent({ sats, fee: 0 })
-      const metadata = Object.assign({ currency: this.currency, type: "onchain_on_us", pending: false }, addedMetadata)
+      const metadata = { currency: this.currency, type: "onchain_on_us", pending: false, ...addedMetadata}
 
       return await using(disposer(this.uid), async (lock) => {
 
@@ -134,7 +134,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
         const sats = amount + fee
         
         const addedMetadata = await getCurrencyEquivalent({ sats, fee })
-        const metadata = Object.assign({ currency: this.currency, hash: id, type: "onchain_payment", pending: true }, addedMetadata)
+        const metadata = { currency: this.currency, hash: id, type: "onchain_payment", pending: true, ...addedMetadata }
 
         // TODO/FIXME refactor. add the transaction first and set the fees in a second tx.
         await MainBook.entry(memo)
@@ -363,7 +363,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
           const addedMetadata = await getCurrencyEquivalent({ sats })
           const metadata = { currency: this.currency, type, hash: matched_tx.id, pending: false, ...addedMetadata }
-          
+
           await MainBook.entry()
             .debit(this.accountPath, sats, metadata)
             .credit(lightningAccountingPath, sats, metadata)

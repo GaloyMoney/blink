@@ -14,7 +14,7 @@ export async function promoteToFunder(uid) {
   await User.findOneAndUpdate({_id: uid}, {role: "funder"})
 }
 
-// change role to admin
+// change role to broker
 // FIXME there should be an API for this
 export async function promoteToBroker(uid) {
   await User.findOneAndUpdate({_id: uid}, {role: "broker"})

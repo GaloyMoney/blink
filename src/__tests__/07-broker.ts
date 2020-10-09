@@ -241,63 +241,7 @@ it('calculate hedging when no rebalance is needed', async () => {
   expect(buyOrSell).toBeNull()
 })
 
-// it('calculate hedging amount when over exposed', async () => {
-//   const hedge = new Hedging()
-
-//   const equity = 10 * 10 ** 8
-//   const netSizeSats = - 13 * 10 ** 8
-
-//   // const result = hedge.calculate({equity, netSizeSats, lastBTCPrice})
-//   // expect(result).toEqual({needHedging: true, amount: 2 * 10 ** 8, direction: "buy"})
-// })
-
-// it('no need for hedging', async () => {
-//   const hedge = new Hedging()
-
-//   const equity = 10 * 10 ** 8
-//   const netSizeSats = - 11 * 10 ** 8
-
-//   // const result = hedge.calculate({equity, netSizeSats, lastBTCPrice})
-//   // expect(result).toEqual({needHedging: false})
-// })
-
-
-// it('node balance', async () => {
-//   const liabilities = await brokerWallet.getLocalLiabilities()
-//   console.log({liabilities})
-// })
-
-// it('balance', async () => {
-//   const balance = await brokerWallet.getExchangeBalance()
-//   console.log({balance})
-// })
-
 it('future', async () => {
   const future = await brokerWallet.getAccountPosition()
   console.log({future})
 })
-
-// it('leverage', async () => {
-//   const future = await brokerWallet.getLeverage()
-//   console.log({future})
-// })
-
-// it('ratio', async () => {
-//   const ratio = await brokerWallet.getExposureRatio()
-//   console.log({ratio})
-// })
-
-// it('btcBalance', async () => {
-//   const btcBalance = await brokerWallet.satsBalance()
-//   console.log(util.inspect({ btcBalance }, { showHidden: false, depth: null }))
-// })
-
-// it('create address', async () => {
-//   const depositAddress = await brokerWallet.createDepositAddress()
-//   console.log(util.inspect({ depositAddress }, { showHidden: false, depth: null }))
-// })
-
-// it('deposit address', async () => {
-//   const depositAddress = await brokerWallet.exchangeDepositAddress()
-//   console.log(util.inspect({ depositAddress }, { showHidden: false, depth: null }))
-// })
