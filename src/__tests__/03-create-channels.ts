@@ -79,12 +79,11 @@ const openChannel = async ({ lnd, other_lnd, socket, is_private = false }) => {
 		// error: https://github.com/alexbosworth/ln-service/issues/122
 		// need to investigate.
 		// once(sub, 'channel_opened'),
-		sleep(5000),
 		mineBlock(),
 	])
 
-	await adminWallet.updateEscrows()
-	await checkIsBalanced()
+  await sleep(5000)
+  await adminWallet.updateEscrows()
 }
 
 it('opens channel from lnd1 to lndOutside1', async () => {
