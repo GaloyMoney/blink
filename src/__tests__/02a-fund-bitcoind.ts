@@ -1,10 +1,11 @@
 /**
  * @jest-environment node
  */
+import { AdminWallet } from "../AdminWallet";
 import { setupMongoConnection } from "../mongodb";
 
 const lnService = require('ln-service')
-import { lndMain, lndOutside1, lndOutside2, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
+import { checkIsBalanced, lndMain, lndOutside1, lndOutside2, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
 import { bitcoindClient } from "../utils";
 const mongoose = require("mongoose");
 
@@ -26,6 +27,13 @@ let lndOutside1_wallet_addr
 
 beforeAll(async () => {
   await setupMongoConnection()
+  jest.spyOn(AdminWallet.prototype, 'ftxBalance').mockImplementation(() => new Promise((resolve, reject) => {
+    resolve(0) 
+  }));
+})
+
+afterEach(async () => {
+  await checkIsBalanced()
 })
 
 afterAll(async () => {

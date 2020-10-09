@@ -29,9 +29,13 @@ const amount_BTC = 1
 jest.mock('../notification')
 const { sendNotification } = require("../notification");
 
+import { AdminWallet } from "../AdminWallet"
 
 beforeAll(async () => {
   await setupMongoConnection()
+  jest.spyOn(AdminWallet.prototype, 'ftxBalance').mockImplementation(() => new Promise((resolve, reject) => {
+    resolve(0) 
+  }));
 })
 
 beforeEach(async () => {
@@ -47,9 +51,11 @@ beforeEach(async () => {
 afterEach(async () => {
   await bitcoindClient.generateToAddress(3, RANDOM_ADDRESS)
   await sleep(250)
+  await checkIsBalanced()
 })
 
 afterAll(async () => {
+  jest.restoreAllMocks();
   await mongoose.connection.close()
   await quit()
 })
@@ -179,7 +185,5 @@ it('batch send transaction', async () => {
     expect(balance0).toBe(initialBalanceUser0 + btc2sat(1))
     expect(balance4).toBe(initBalanceUser4 + btc2sat(2))
   }
-
-  await checkIsBalanced()
 
 }, 100000)

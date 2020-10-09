@@ -33,7 +33,8 @@ export type IAddInvoiceResponse = {
 
 export type TransactionType = "payment" | "paid-invoice" | "on_us" | 
   "onchain_receipt" | "onchain_payment" | "onchain_on_us" | 
-  "exchange_rebalance"
+  "exchange_rebalance" | 
+  "fee" | "escrow"
 
 export interface IOnChainPayment {
   address: string,

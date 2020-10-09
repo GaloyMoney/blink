@@ -20,7 +20,11 @@ let channelLengthMain, channelLengthOutside1
 
 
 beforeAll(async () => {
-	await setupMongoConnection()
+  await setupMongoConnection()
+   jest.spyOn(AdminWallet.prototype, 'ftxBalance').mockImplementation(() => new Promise((resolve, reject) => {
+    resolve(0) 
+  }));
+
 	adminWallet = new AdminWallet()
 
 	channelLengthMain = (await lnService.getChannels({ lnd: lndMain })).channels.length
@@ -31,8 +35,12 @@ beforeEach(async () => {
 	initBlockCount = await bitcoindClient.getBlockCount()
 })
 
+afterEach(async () => {
+  await checkIsBalanced()
+})
+
 afterAll(async () => {
-	return await mongoose.connection.close()
+  return await mongoose.connection.close()
 })
 
 const newBlock = 6

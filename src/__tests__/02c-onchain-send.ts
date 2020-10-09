@@ -24,15 +24,24 @@ jest.mock('../notification')
 const { sendNotification } = require("../notification");
 
 
+import { AdminWallet } from "../AdminWallet"
+
 beforeAll(async () => {
   await setupMongoConnection()
   userWallet0 = await getUserWallet(0)
   userWallet3 = await getUserWallet(3)
+  jest.spyOn(AdminWallet.prototype, 'ftxBalance').mockImplementation(() => new Promise((resolve, reject) => {
+    resolve(0) 
+  }));
 })
 
 beforeEach(async () => {
   initBlockCount = await bitcoindClient.getBlockCount()
   initialBalanceUser0 = await userWallet0.getBalance()
+})
+
+afterEach(async () => {
+  await checkIsBalanced()
 })
 
 afterAll(async () => {
@@ -123,7 +132,6 @@ it('Sends onchain payment successfully', async () => {
 
 	const finalBalance = await userWallet0.getBalance()
 	expect(finalBalance).toBe(initialBalanceUser0 - amount - fee)
-	await checkIsBalanced()
 }, 20000)
 
 it('makes onchain on-us transaction', async () => {
@@ -155,7 +163,6 @@ it('Sends onchain payment _with memo', async () => {
   const txs = await userWallet0.getTransactions()
   console.log(first(txs))
   expect((first(txs) as any).description).toBe(memo)
-  await checkIsBalanced()
 }, 10000)
 
 it('makes onchain on-us transaction with memo', async () => {
@@ -170,7 +177,6 @@ it('makes onchain on-us transaction with memo', async () => {
   // receiver should not know memo from sender
   const txsUser3 = await userWallet3.getTransactions()
   expect((first(txsUser3) as any).description).not.toBe(memo)
-  await checkIsBalanced()
 }, 10000)
 
 it('fails to make onchain payment to self', async () => {

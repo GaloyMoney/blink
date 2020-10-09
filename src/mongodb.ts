@@ -135,6 +135,7 @@ const transactionSchema = new Schema({
       "invoice", "payment", "on_us", // lightning
       "onchain_receipt", "onchain_payment", "onchain_on_us", // onchain
       "fee", "escrow", // channel-related
+      "exchange_rebalance"//
     ]
   },
   pending: Boolean, // used to denote confirmation status of on and off chain txn

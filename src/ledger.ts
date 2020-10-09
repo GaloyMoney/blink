@@ -5,6 +5,7 @@ export const lightningAccountingPath = 'Assets:Reserve:Lightning'
 
 export const ftxAccountingPath = 'Assets:FTX'
 
+export const escrowAccountingPath = 'Assets:Reserve:Escrow'
 
 // liabilities
 export const customerPath = (uid) => { 
@@ -20,3 +21,5 @@ export const getBrokerAccountPath = async () => {
 // expenses
 
 export const accountingExpenses = "Expenses"
+
+export const openChannelFees = 'Expenses:Bitcoin:Fees'

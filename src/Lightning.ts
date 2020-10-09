@@ -1,6 +1,6 @@
 const lnService = require('ln-service');
+const assert = require('assert').strict;
 import { createHash, randomBytes } from "crypto";
-import moment from "moment";
 import { customerPath, getBrokerAccountPath } from "./ledger";
 import { disposer } from "./lock";
 import { InvoiceUser, MainBook, Transaction } from "./mongodb";
@@ -161,6 +161,12 @@ export const LightningMixin = (superclass) => class extends superclass {
             throw Error(`User ${this.uid} tried to pay their own invoice (invoice belong to: ${existingInvoice.uid})`)
           }
           payeeUid = existingInvoice.uid
+
+
+          // TODO XXX FIXME:
+          // manage the case where a user in USD tries to pay another used in BTC with an onUS transaction
+          assert(this.currency == existingInvoice.currency)
+
         }
 
         if (balance < tokens) {
@@ -171,9 +177,6 @@ export const LightningMixin = (superclass) => class extends superclass {
           const sats = tokens
           const addedMetadata = await getCurrencyEquivalent({sats, fee: 0})
           const metadata = Object.assign({ currency: this.currency, hash: id, type: "on_us", pending: false }, addedMetadata)
-
-          // TODO XXX FIXME:
-          // manage the case where a user in USD tries to pay another used in BTC with an onUS transaction
 
           await MainBook.entry(memoInvoice)
             .debit(customerPath(payeeUid), sats, metadata)

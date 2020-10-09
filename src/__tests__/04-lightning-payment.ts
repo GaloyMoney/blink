@@ -7,6 +7,8 @@ import { InvoiceUser, MainBook, setupMongoConnection, Transaction, User } from "
 import { checkIsBalanced, getUserWallet, lndOutside1, lndOutside2, onBoardingEarnAmt, onBoardingEarnIds } from "../tests/helper";
 import { getHash, sleep } from "../utils";
 import { getFunderWallet } from "../walletFactory";
+import { AdminWallet } from "../AdminWallet";
+
 const lnService = require('ln-service')
 const mongoose = require("mongoose")
 
@@ -21,6 +23,11 @@ const { sendNotification } = require("../notification");
 
 beforeAll(async () => {
   await setupMongoConnection()
+
+   jest.spyOn(AdminWallet.prototype, 'ftxBalance').mockImplementation(() => new Promise((resolve, reject) => {
+    resolve(0) 
+  }));
+
   userWallet1 = await getUserWallet(1)
   userWallet2 = await getUserWallet(2)
 });
@@ -28,6 +35,10 @@ beforeAll(async () => {
 beforeEach(async () => {
   initBalance1 = await userWallet1.getBalance()
   initBalance2 = await userWallet2.getBalance()
+})
+
+afterEach(async () => {
+  await checkIsBalanced()
 })
 
 afterAll(async () => {
@@ -87,7 +98,6 @@ it('payInvoice', async () => {
   expect(result).toBe("success")
   const finalBalance = await userWallet1.getBalance()
   expect(finalBalance).toBe(initBalance1 - amountInvoice)
-  await checkIsBalanced()
 }, 50000)
 
 it('payInvoice with High CLTV Delta', async () => {
@@ -96,7 +106,6 @@ it('payInvoice with High CLTV Delta', async () => {
   expect(result).toBe("success")
   const finalBalance = await userWallet1.getBalance()
   expect(finalBalance).toBe(initBalance1 - amountInvoice)
-  await checkIsBalanced()
 }, 50000)
 
 it('receives payment from outside', async () => {
@@ -109,7 +118,6 @@ it('receives payment from outside', async () => {
 
   const mongotx = await Transaction.findOne({hash: getHash(request)})
   expect(mongotx.memo).toBe(memo)
-  await checkIsBalanced()
 }, 50000)
 
 it('fails to pay when user has insufficient balance', async () => {
@@ -160,7 +168,6 @@ it('payInvoiceToAnotherGaloyUserWithMemo', async () => {
   const user2Txn = await userWallet2.getTransactions()
   expect(user2Txn.filter(matchTx)[0].description).toBe(memo)
   expect(user2Txn.filter(matchTx)[0].type).toBe('on_us')
-  await checkIsBalanced()
 }, 50000)
 
 it('payInvoiceToAnotherGaloyUserWith2DifferentMemo', async () => {
@@ -179,7 +186,6 @@ it('payInvoiceToAnotherGaloyUserWith2DifferentMemo', async () => {
   const user1Txn = await userWallet1.getTransactions()
   expect(user1Txn.filter(matchTx)[0].description).toBe(memoPayer)
   expect(user1Txn.filter(matchTx)[0].type).toBe('on_us')
-  await checkIsBalanced()
 }, 50000)
 
 it('payInvoiceToSelf', async () => {
@@ -210,7 +216,6 @@ it('fails to pay when channel capacity exceeded', async () => {
   }
   //FIXME: Are single line if bad design?
   if (!didThrow) fail('Function did not fail')
-  await checkIsBalanced()
 }, 50000)
 
 it('pay _hodl invoice', async () => {
@@ -229,7 +234,6 @@ it('pay _hodl invoice', async () => {
   // https://github.com/alexbosworth/ln-service/issues/122
   await lnService.settleHodlInvoice({ lnd: lndOutside1, secret: secret.toString('hex') });
   expect(finalBalance).toBe(initBalance1 - amountInvoice)
-  await checkIsBalanced()
 }, 60000)
 
 it(`don't settle hodl invoice`, async () => {
@@ -257,7 +261,6 @@ it(`don't settle hodl invoice`, async () => {
 
   const finalBalance = await userWallet1.getBalance()
   expect(finalBalance).toBe(initBalance1)
-  await checkIsBalanced()
 }, 60000)
 
 it('payInvoice to lnd outside 2', async () => {
@@ -272,7 +275,6 @@ it('payInvoice to lnd outside 2', async () => {
 
   const { results: [{ fee }] } = await MainBook.ledger({ account: userWallet1.accountPath, hash: id })
   expect(finalBalance).toBe(initialBalance - amountInvoice - fee)
-  await checkIsBalanced()
 }, 100000)
 
 it('if fee are too high, payment is cancelled', async () => {
@@ -286,7 +288,6 @@ it('pays zero amount invoice', async () => {
   expect(result).toBe("success")
   const finalBalance = await userWallet1.getBalance()
   expect(finalBalance).toBe(initialBalance - amountInvoice)
-  await checkIsBalanced()
 }, 100000)
 
 it('receive zero amount invoice', async () => {
@@ -295,7 +296,6 @@ it('receive zero amount invoice', async () => {
   await lnService.pay({ lnd: lndOutside1, request: invoice, tokens: amountInvoice })
   const finalBalance = await userWallet1.getBalance()
   expect(finalBalance).toBe(initialBalance + amountInvoice)
-  await checkIsBalanced()
 }, 100000)
 
 it('fails to pay zero amt invoice without separate amt', async () => {

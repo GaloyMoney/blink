@@ -2,7 +2,7 @@ import { filter, find } from "lodash";
 import { getBrokerWallet, WalletFactory } from "./walletFactory";
 import { MainBook, Transaction, User } from "./mongodb";
 import { getAuth, logger } from "./utils";
-import { accountingExpenses, lightningAccountingPath } from "./ledger";
+import { accountingExpenses, escrowAccountingPath, lightningAccountingPath, openChannelFees } from "./ledger";
 const lnService = require('ln-service')
 
 
@@ -66,13 +66,13 @@ export class AdminWallet {
 
   async balanceSheetIsBalanced() {
     const {assets, liabilities, lightning, expenses} = await this.getBalanceSheet()
-    const { total } = await this.lndBalances()
+    const { total: lnd } = await this.lndBalances()
     const ftx = await this.ftxBalance()
 
     const assetsLiabilitiesDifference = assets + liabilities + expenses
-    const bookingVersusRealWorldAssets = total + ftx - lightning
+    const bookingVersusRealWorldAssets = (lnd + ftx) - lightning
     if(!!bookingVersusRealWorldAssets) {
-      logger.debug({total, lightning, bookingVersusRealWorldAssets, assets, liabilities, expenses}, `not balanced`)
+      logger.debug({lnd, lightning, bookingVersusRealWorldAssets, assets, liabilities, expenses}, `not balanced`)
     }
 
     return { assetsLiabilitiesDifference, bookingVersusRealWorldAssets }
@@ -114,8 +114,8 @@ export class AdminWallet {
     const metadata = { currency: this.currency, txid: transaction_id, type: "fee" }
 
     await MainBook.entry("on chain fee")
-      .debit('Assets:Reserve:Lightning', fee, {...metadata,})
-      .credit('Expenses:Bitcoin:Fees', fee, {...metadata})
+      .debit(lightningAccountingPath, fee, {...metadata,})
+      .credit(openChannelFees, fee, {...metadata})
       .commit()
 
     return transaction_id
@@ -130,7 +130,7 @@ export class AdminWallet {
     const selfInitated = filter(channels, {is_partner_initiated: false, is_active: true})
 
     const mongotxs = await Transaction.aggregate([
-      { $match: { type: "escrow", accounts: "Assets:Reserve:Lightning" }}, 
+      { $match: { type: "escrow", accounts: lightningAccountingPath }}, 
       { $group: {_id: "$txid", total: { "$sum": "$debit" } }},
     ])
 
@@ -152,8 +152,8 @@ export class AdminWallet {
       logger.debug({channel, diff}, `in update escrow, mongotx ${mongotx}`)
 
       await MainBook.entry("escrow")
-        .debit('Assets:Reserve:Lightning', diff, {...metadata, txid})
-        .credit('Assets:Reserve:Escrow', diff, {...metadata, txid})
+        .debit(lightningAccountingPath, diff, {...metadata, txid})
+        .credit(escrowAccountingPath, diff, {...metadata, txid})
         .commit()
     }
 

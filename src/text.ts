@@ -35,10 +35,11 @@ export const TEST_NUMBER = [
 
   { phone: "+16505554326", code: 321321, currency: "USD" }, // usd
   { phone: "+16505554326", code: 321321, currency: "BTC" }, // btc
-
+  
   { phone: "+16505554327", code: 321321, currency: "BTC" }, // broker
   { phone: "+16505554328", code: 321321, currency: "BTC" }, // 
   { phone: "+16505554329", code: 321321, currency: "BTC" }, // postman
+  { phone: "+16505554330", code: 321321, currency: "USD" }, // usd bis
 ]
 
 export const requestPhoneCode = async ({ phone }) => {
