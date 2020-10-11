@@ -27,8 +27,7 @@ commands:
           command: |
             wget https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -O jq
             chmod +x ./jq
-            helm -n <<parameters.namespace>> upgrade -i lnpage ./lnpage-chart -f ./lnpage-chart/<<parameters.namespace>>-values.yaml --set image.tag=$CIRCLE_SHA1
-            sleep 15 #without sleep wait hangs because it targets older pod
+            helm -n <<parameters.namespace>> upgrade -i --wait lnpage ./lnpage-chart -f ./lnpage-chart/<<parameters.namespace>>-values.yaml --set image.tag=$CIRCLE_SHA1
             kubectl -n << parameters.namespace >> wait --for=condition=ready pod -l app=lnpage
             LND_ADDR=$(kubectl -n <<parameters.namespace>> get services | awk '/lnd-service/ {print $4}')
             LND_PUB_KEY=$(kubectl -n <<parameters.namespace>> exec lnd-container-0 -- lncli -n <<parameters.namespace>> getinfo | ./jq -r '.identity_pubkey')
