@@ -10,16 +10,15 @@ import { login, requestPhoneCode } from "./text";
 import { OnboardingEarn } from "./types";
 import { AdminWallet } from "./AdminWallet";
 import { sendNotification } from "./notification"
+import { baseLogger } from "./utils"
+import moment from "moment";
+import { WalletFactory } from "./walletFactory";
 
 const path = require("path");
 dotenv.config()
 
-
-import { logger } from "./utils"
-import moment from "moment";
-import { WalletFactory } from "./walletFactory";
 const pino = require('pino-http')({
-  logger,
+  baseLogger,
   // TODO: get uid and other information from the request.
   // tried https://github.com/addityasingh/graphql-pino-middleware without success
   // Define additional custom request properties
@@ -79,15 +78,9 @@ const resolvers = {
       minBuildNumberAndroid: getMinBuildNumber,
       minBuildNumberIos: getMinBuildNumber,
     }),
-    prices: async () => {
-      try {
-        const price = new Price()
-        const lastPrices = await price.lastCached()
-        return lastPrices
-      } catch (err) {
-        logger.warn(err)
-        throw err
-      }
+    prices: async (_, __, {logger}) => {
+      const price = new Price({logger})
+      return await price.lastCached()
     },
     earnList: async (_, __, { uid }) => {
       const response: Object[] = []
@@ -108,8 +101,8 @@ const resolvers = {
     getLastOnChainAddress: async (_, __, { lightningWallet }) => ({id: lightningWallet.getLastOnChainAddress()}),
   },
   Mutation: {
-    requestPhoneCode: async (_, { phone }) => ({ success: requestPhoneCode({ phone }) }),
-    login: async (_, { phone, code, currency }) => ({ token: login({ phone, code, currency }) }),
+    requestPhoneCode: async (_, { phone }, { logger }) => ({ success: requestPhoneCode({ phone, logger }) }),
+    login: async (_, { phone, code, currency }, { logger }) => ({ token: login({ phone, code, currency, logger }) }),
     updateUser: async (_, __,  { lightningWallet }) => {
       // FIXME manage uid
       // TODO only level for now
@@ -215,15 +208,16 @@ const server = new GraphQLServer({
   resolvers,
   middlewares: [permissions],
   context: async (req) => {
-    logger.info(req.request.body, 'body')
     const token = verifyToken(req)
-    const lightningWallet = !!token ? WalletFactory(token) : null
-    const result = {
+    const uid = token?.uid ?? null
+    const logger = baseLogger.child({uid, module: "graphql", body: req.request.body})
+    const lightningWallet = !!token ? WalletFactory({...token, logger}) : null
+    return {
       ...req,
-      uid: token?.uid ?? null,
+      logger,
+      uid,
       lightningWallet,
     }
-    return result
   }
 })
 
@@ -244,9 +238,9 @@ setupMongoConnection()
   .then(() => {
     upgrade().then(() => {
       server.start(options, ({ port }) =>
-        logger.info(
+        baseLogger.info(
           `Server started, listening on port ${port} for incoming requests.`,
         ),
       )
-  })}).catch((err) => logger.error(err, "server error"))
+  })}).catch((err) => baseLogger.error(err, "server error"))
 

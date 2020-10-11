@@ -1,10 +1,10 @@
 import { filter, find, sumBy } from "lodash";
 import { WalletFactory } from "./walletFactory";
 import { MainBook, Transaction, User } from "./mongodb";
-import { WalletFactory } from "./walletFactory";
-import { MainBook, Transaction, User } from "./mongodb";
-import { getAuth, logger } from "./utils";
+import { getAuth, baseLogger } from "./utils";
 const lnService = require('ln-service')
+
+const logger = baseLogger.child({module: "admin"})
 
 
 export class AdminWallet {
@@ -18,7 +18,7 @@ export class AdminWallet {
       logger.debug("updating user %o", user._id)
 
       // A better approach would be to just loop over pending: true invoice/payment
-      userWallet = WalletFactory({uid: user._id, currency: user.currency})
+      userWallet = WalletFactory({uid: user._id, currency: user.currency, logger})
       await userWallet.updatePending()
     }
   }

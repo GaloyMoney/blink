@@ -1,11 +1,10 @@
 const lnService = require('ln-service');
 import { createHash, randomBytes } from "crypto";
-import moment from "moment";
 import { disposer } from "./lock";
 import { InvoiceUser, MainBook, Transaction } from "./mongodb";
 import { sendInvoicePaidNotification } from "./notification";
-import { IAddInvoiceInternalRequest, ILightningTransaction, IPaymentRequest } from "./types";
-import { addCurrentValueToMetadata, getAuth, logger, measureTime, timeout } from "./utils";
+import { IAddInvoiceInternalRequest, IPaymentRequest } from "./types";
+import { addCurrentValueToMetadata, getAuth, timeout } from "./utils";
 import { customerPath } from "./wallet";
 
 const util = require('util')
@@ -55,7 +54,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       request = result.request
       id = result.id
     } catch (err) {
-      logger.error({err}, "impossible to create the invoice")
+      this.logger.error({err}, "impossible to create the invoice")
     }
 
     try {
@@ -95,7 +94,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       // TODO: use msat instead of sats for the db?
       ({ id, safe_tokens: tokens, destination, description, routes: routeHint, payment, cltv_delta, expires_at, features } = await lnService.decodePaymentRequest({ lnd: this.lnd, request: params.invoice }))
 
-      logger.info({ id, tokens, destination, description, routes: routeHint, payment, cltv_delta, expires_at, features }, "succesfully decoded invoice")
+      this.logger.info({ id, tokens, destination, description, routes: routeHint, payment, cltv_delta, expires_at, features }, "succesfully decoded invoice")
 
       // TODO: if expired_at expired, thrown an error
 
@@ -179,7 +178,7 @@ export const LightningMixin = (superclass) => class extends superclass {
             .commit()
         }
 
-        await sendInvoicePaidNotification({amount: tokens, uid: payeeUid, hash: id})
+        await sendInvoicePaidNotification({amount: tokens, uid: payeeUid, hash: id, logger: this.logger})
         await InvoiceUser.findOneAndUpdate({ _id: id }, { pending: false })
         await lnService.cancelHodlInvoice({ lnd: this.lnd, id })
         return "success"
@@ -202,18 +201,18 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         }));
       } catch (err) {
-        logger.error({err,  destination, mtokens, routes: routeHint, cltv_delta, features, max_fee, messages  }, 
+        this.logger.error({err,  destination, mtokens, routes: routeHint, cltv_delta, features, max_fee, messages  }, 
           "error getting route / probing for route")
         throw new Error(err)
       }
 
       if (!route) {
-        logger.warn("there is no potential route for payment to %o from user %o", destination, this.uid)
+        this.logger.warn("there is no potential route for payment to %o from user %o", destination, this.uid)
         throw Error(`there is no potential route for this payment`)
       }
 
       // console.log({route})
-      logger.info({ route }, "successfully found payable route for payment to %o from user %o", destination, this.uid)
+      this.logger.info({ route }, "successfully found payable route for payment to %o from user %o", destination, this.uid)
 
       // we are confident enough that there is a possible payment route. let's move forward
 
@@ -270,7 +269,7 @@ export const LightningMixin = (superclass) => class extends superclass {
           // or payment update when the user query his balance
         }
 
-        logger.warn({ err, message: err.message, errorCode: err[1] },
+        this.logger.warn({ err, message: err.message, errorCode: err[1] },
           `payment "error" to %o from user %o`, destination, this.uid)
 
         try {
@@ -281,11 +280,11 @@ export const LightningMixin = (superclass) => class extends superclass {
           await MainBook.void(entry._id, err[1])
         } catch (err_db) {
           const err_message = `error canceling payment entry ${util.inspect({ err_db })}`
-          logger.error(err_message)
+          this.logger.error(err_message)
           throw Error(`ERROR CANCELLING A PAYMENT FOR ${this.uid}: ${err_message}`)
         }
 
-        logger.error({ err, route, id })
+        this.logger.error({ err, route, id })
         throw Error(`error paying invoice ${util.inspect({ err }, false, Infinity)}`)
       }
 
@@ -331,7 +330,7 @@ export const LightningMixin = (superclass) => class extends superclass {
             await MainBook.void(payment._journal, "Payment canceled") // JSON.stringify(result.failed
           } catch (err) {
             const errMessage = `ERROR canceling payment entry ${util.inspect({ err })}`
-            logger.error(errMessage)
+            this.logger.error(errMessage)
             throw Error(errMessage)
           }
         }
@@ -417,7 +416,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         })
 
       } catch (err) {
-        logger.error(err)
+        this.logger.error(err)
         throw new Error(`issue updating invoice: ${err}`)
       }
     }

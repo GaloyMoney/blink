@@ -2,7 +2,7 @@ const twilioPhoneNumber = "***REMOVED***"
 import moment from "moment"
 import { PhoneCode, User } from "./mongodb";
 
-import { randomIntFromInterval, createToken, logger } from "./utils"
+import { randomIntFromInterval, createToken } from "./utils"
 
 const getTwilioClient = () => {
   // FIXME: replace with env variable
@@ -41,7 +41,7 @@ export const TEST_NUMBER = [
   { phone: "+16505554329", code: 321321, currency: "BTC" }, // postman
 ]
 
-export const requestPhoneCode = async ({ phone }) => {
+export const requestPhoneCode = async ({ phone, logger }) => {
 
   // make it possible to bypass the auth for testing purpose
   if (TEST_NUMBER.findIndex(item => item.phone === phone) !== -1) {
@@ -71,9 +71,10 @@ interface ILogin {
   phone: string
   code: number
   currency?: string
+  logger: any
 }
 
-export const login = async ({ phone, code, currency = "BTC" }: ILogin) => {
+export const login = async ({ phone, code, currency = "BTC", logger }: ILogin) => {
   
   // TODO: not sure if graphql return null or undefined when a field is not passed
   // adding this as an early catch for now

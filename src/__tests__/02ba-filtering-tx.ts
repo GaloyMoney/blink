@@ -1,6 +1,8 @@
-import { amountOnVout } from "../OnChain"
 
 // TODO: more testing
+
+import { amountOnVout } from "../utils"
+
 // ie: could we have multiple addresses in a vout?
 it('filter0', async () => {
 

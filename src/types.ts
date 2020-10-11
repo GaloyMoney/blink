@@ -6,6 +6,7 @@ export type ISuccess = boolean
 
 export interface ILightningWalletUser {
   uid: string
+  logger: any
 }
 
 // Lightning
@@ -79,6 +80,7 @@ export interface INotification {
   title: string,
   data?: IDataNotification
   body?: string,
+  logger: any
 }
 
 // onboarding

@@ -3,7 +3,7 @@ const ccxt = require('ccxt')
 import { find } from "lodash";
 import { AdminWallet } from "./AdminWallet";
 import { Price } from "./priceImpl";
-import { btc2sat, sleep } from "./utils";
+import { baseLogger, btc2sat, sleep } from "./utils";
 const util = require('util')
 const assert = require('assert')
 
@@ -104,7 +104,7 @@ export class Hedging {
     // FIXME maybe not the best way to do things
     equity = - equity
 
-    const price = new Price()
+    const price = new Price({logger: baseLogger})
     const lastBTCPrice = await price.lastPrice()
 
     // const ftx_balance = await ftx.fetchBalance()

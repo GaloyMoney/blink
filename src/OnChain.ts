@@ -6,7 +6,7 @@ import { disposer } from "./lock";
 import { MainBook, Transaction, User } from "./mongodb";
 import { Price } from "./priceImpl";
 import { ILightningTransaction, IOnChainPayment, ISuccess } from "./types";
-import { addCurrentValueToMetadata, bitcoindClient, btc2sat, getAuth, logger, satsToUsdCached, sendToAdmin } from "./utils";
+import { addCurrentValueToMetadata, amountOnVout, bitcoindClient, btc2sat, getAuth, satsToUsdCached, sendToAdmin } from "./utils";
 import { customerPath } from "./wallet";
 const util = require('util')
 
@@ -16,11 +16,6 @@ const using = require('bluebird').using
 // we don't want to go back and forth between RN and the backend if amount changes
 // but fees are the same
 const someAmount = 50000
-
-export const amountOnVout = ({vout, onchain_addresses}) => {
-  // TODO: check if this is always [0], ie: there is always a single addresses for vout for lnd output
-  return sumBy(filter(vout, tx => includes(onchain_addresses, tx.scriptPubKey.addresses[0])), "value")
-}
 
 export const OnChainMixin = (superclass) => class extends superclass {
   lnd = lnService.authenticatedLndGrpc(getAuth()).lnd
@@ -95,7 +90,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
     try {
       ({ fee: estimatedFee } = await lnService.getChainFeeEstimate({ lnd: this.lnd, send_to: sendTo }))
     } catch (err) {
-      logger.error({ err }, `Unable to estimate fee for on-chain transaction`)
+      this.logger.error({ err }, `Unable to estimate fee for on-chain transaction`)
       throw new Error(`Unable to estimate fee for on-chain transaction: ${err}`)
     }
 
@@ -119,7 +114,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
       try {
         ({ id } = await lnService.sendToChainAddress({ address, lnd: this.lnd, tokens: amount }))
       } catch (err) {
-        logger.error({ err }, "Impossible to sendToChainAddress")
+        this.logger.error({ err }, "Impossible to sendToChainAddress")
         return false
       }
 
@@ -147,7 +142,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
   async getLastOnChainAddress(): Promise<String | Error | undefined> {
     let user = await User.findOne({ _id: this.uid })
     if (!user) { // this should not happen. is test that relevant?
-      logger.error("no user is associated with this address")
+      this.logger.error("no user is associated with this address")
       throw new Error(`no user with this uid`)
     }
 
@@ -185,7 +180,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
     try {
       const user = await User.findOne({ _id: this.uid })
       if (!user) { // this should not happen. is test that relevant?
-        logger.error("no user is associated with this address")
+        this.logger.error("no user is associated with this address")
         throw new Error(`no user with this uid`)
       }
 
@@ -279,7 +274,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
 
     // TODO: refactor Price
-    const price = await new Price().lastPrice()
+    const price = await new Price({logger: this.logger}).lastPrice()
 
     return [
       ...unconfirmed.map(({ tokens, id, created_at }) => ({
@@ -314,7 +309,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
         // has the transaction has not been added yet to the user account?
         const mongotx = await Transaction.findOne({ account_path: this.accountPathMedici, type, hash: matched_tx.id })
 
-        // logger.debug({ matched_tx, mongotx }, "updateOnchainPayment with user %o", this.uid)
+        // this.logger.debug({ matched_tx, mongotx }, "updateOnchainPayment with user %o", this.uid)
 
         if (!mongotx) {
 

@@ -9,8 +9,8 @@ import { UserWallet } from "./wallet";
 export class LightningUsdWallet extends LightningMixin(UserWallet) {
   readonly currency = "USD" 
 
-  constructor({ uid }: ILightningWalletUser) {
-    super({ uid, currency: "USD" })
+  constructor({ uid, logger }: ILightningWalletUser) {
+    super({ uid, currency: "USD", logger })
   }
 
   async addInvoice({ value, memo }: IAddUSDInvoiceRequest): Promise<string> {
@@ -19,7 +19,7 @@ export class LightningUsdWallet extends LightningMixin(UserWallet) {
     }
 
     const usd = value
-    const lastPrices = await new Price().lastPrice() // sats/usd
+    const lastPrices = await new Price({logger: this.logger}).lastPrice() // sats/usd
     const satValue = value / lastPrices
 
     // TODO: timeout should be ~ 1 min

@@ -12,13 +12,13 @@ const using = require('bluebird').using
  * this represents a user wallet
  */
 export class LightningBtcWallet extends OnChainMixin(LightningMixin(UserWallet)) {
-  constructor({ uid }: ILightningWalletUser) {
-    super({ uid, currency: "BTC" })
+  constructor({ uid, logger }: ILightningWalletUser) {
+    super({ uid, currency: "BTC", logger })
   }
 
   async addEarn(ids) {
 
-    const lightningFundingWallet = await getFunderWallet()
+    const lightningFundingWallet = await getFunderWallet({ logger: this.logger })
     const result: object[] = []
 
     return await using(disposer(this.uid), async (lock) => {

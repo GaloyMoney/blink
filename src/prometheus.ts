@@ -1,7 +1,9 @@
 import { AdminWallet } from "./AdminWallet";
 import { setupMongoConnection, User } from "./mongodb";
 import { Price } from "./priceImpl";
-import { logger } from "./utils";
+import { baseLogger } from "./utils";
+
+const logger = baseLogger.child({module: "prometheus"})
 
 const express = require('express');
 const server = express();
@@ -30,7 +32,7 @@ const main = async () => {
   server.get('/metrics', async (req, res) => {
     
     try {
-      const price = new Price()
+      const price = new Price({ logger })
       await price.update()
     } catch (err) {
       logger.error(`issue getting price: ${err}`)
