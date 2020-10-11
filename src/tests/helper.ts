@@ -5,7 +5,6 @@ import { login, TEST_NUMBER } from "../text";
 import { OnboardingEarn } from "../types";
 import { getAuth, logger, sleep } from "../utils";
 import { WalletFactory } from "../walletFactory";
-const BitcoindClient = require('bitcoin-core')
 
 const lnService = require('ln-service')
 
@@ -26,13 +25,6 @@ export const lndOutside2 = lnService.authenticatedLndGrpc({
   macaroon: process.env.MACAROONOUTSIDE2,
   socket: `${process.env.LNDOUTSIDE2ADDR}:${process.env.LNDOUTSIDE2RPCPORT}`,
 }).lnd;
-
-const connection_obj = {
-  network: 'regtest', username: 'rpcuser', password: 'rpcpass',
-  host: process.env.BITCOINDADDR, port: process.env.BITCOINDPORT
-}
-
-export const bitcoindClient = new BitcoindClient(connection_obj)
 
 export const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
 

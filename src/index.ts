@@ -83,7 +83,6 @@ const resolvers = {
       minBuildNumberAndroid: getMinBuildNumber,
       minBuildNumberIos: getMinBuildNumber,
     }),
-    pendingOnChainPayment: async (_, __, { lightningWallet }) => lightningWallet.getPendingIncomingOnchainPayments(),
     prices: async () => {
       try {
         const price = new Price()
@@ -205,7 +204,6 @@ const permissions = shield({
     // earnList: isAuthenticated,
     wallet: isAuthenticated,
     me: isAuthenticated,
-    pendingOnChainPayment: isAuthenticated
   },
   Mutation: {
     // requestPhoneCode: not(isAuthenticated),

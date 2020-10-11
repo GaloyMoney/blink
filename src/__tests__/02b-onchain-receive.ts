@@ -5,14 +5,16 @@ import { setupMongoConnection, User } from "../mongodb";
 
 import { LightningBtcWallet } from "../LightningBtcWallet";
 import { quit } from "../lock";
-import { bitcoindClient, checkIsBalanced, getUserWallet, lndMain, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
+import { checkIsBalanced, getUserWallet, lndMain, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
 import { onchainTransactionEventHandler } from "../trigger";
-import { btc2sat, sleep } from "../utils";
+import { bitcoindClient, btc2sat, sleep } from "../utils";
+import { filter } from "lodash";
 
 const lnService = require('ln-service')
 
 const mongoose = require("mongoose");
 const { once } = require('events');
+const util = require('util')
 
 
 let funderWallet
@@ -92,6 +94,7 @@ it('user0 is credited for on chain transaction', async () => {
   await onchain_funding({ walletDestination: walletUser0 })
 }, 100000)
 
+
 it('funding funder with onchain tx from bitcoind', async () => {
   await onchain_funding({ walletDestination: funderWallet })
 }, 100000)
@@ -107,9 +110,10 @@ it('identifies unconfirmed incoming on chain txn', async () => {
     bitcoindClient.sendToAddress(address, amount_BTC)
   ])
 
-  const pendingTxn = await walletUser0.getPendingIncomingOnchainPayments()
-  expect(pendingTxn.length).toBe(1)
-  expect(pendingTxn[0].amount).toBe(btc2sat(1))
+  const txs = (await walletUser0.getTransactions())
+  const pendingTxs = filter(txs, {pending: true})
+  expect(pendingTxs.length).toBe(1)
+  expect(pendingTxs[0].amount).toBe(btc2sat(1))
 
   await sleep(1000)
 
@@ -136,5 +140,46 @@ it('identifies unconfirmed incoming on chain txn', async () => {
   // expect(notification.sendNotification.mock.calls[1][0].data.type).toBe("onchain_receipt")
   // expect(notification.sendNotification.mock.calls[1][0].title).toBe(
   //   `Your wallet has been credited with ${btc2sat(amount_BTC)} sats`)
+
+}, 100000)
+
+it('batch send transaction', async () => {
+  const address0 = await walletUser0.getOnChainAddress()
+  const walletUser4 = await getUserWallet(4)
+  const address4 = await walletUser4.getOnChainAddress()
+
+  const initBalanceUser4 = await walletUser4.getBalance()
+  console.log({initBalanceUser4, initialBalanceUser0})
+  
+  const output0 = {}
+  output0[address0] = 1
+  
+  const output1 = {}
+  output1[address4] = 2
+
+  const outputs = [output0, output1]
+
+  const {psbt} = await bitcoindClient.walletCreateFundedPsbt([], outputs)
+  // const decodedPsbt1 = await bitcoindClient.decodePsbt(psbt)
+  // const analysePsbt1 = await bitcoindClient.analyzePsbt(psbt)
+  const walletProcessPsbt = await bitcoindClient.walletProcessPsbt(psbt)
+  // const decodedPsbt2 = await bitcoindClient.decodePsbt(walletProcessPsbt.psbt)
+  // const analysePsbt2 = await bitcoindClient.analyzePsbt(walletProcessPsbt.psbt)
+  const finalizedPsbt = await bitcoindClient.finalizePsbt(walletProcessPsbt.psbt)
+  const txid = await bitcoindClient.sendRawTransaction(finalizedPsbt.hex) 
+  
+  await bitcoindClient.generateToAddress(6, RANDOM_ADDRESS)
+  await waitUntilBlockHeight({ lnd: lndMain, blockHeight: initBlockCount + 6 })
+
+  {
+    const balance0 = await walletUser0.getBalance()
+    const balance4 = await walletUser4.getBalance()
+    console.log({balance0, balance4})
+
+    expect(balance0).toBe(initialBalanceUser0 + btc2sat(1))
+    expect(balance4).toBe(initBalanceUser4 + btc2sat(2))
+  }
+
+  await checkIsBalanced()
 
 }, 100000)

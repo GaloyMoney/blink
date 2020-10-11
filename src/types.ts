@@ -33,8 +33,8 @@ export type IAddInvoiceResponse = {
   request: string
 }
 
-export type TransactionType = "payment" | "inflight-payment" |
-  "paid-invoice" | "unconfirmed-invoice" | "onchain_receipt" | "on_us" | "onchain_payment"
+export type TransactionType = "payment" | "paid-invoice" | "on_us" | 
+  "onchain_receipt" | "onchain_payment" | "onchain_on_us"
 
 export interface IOnChainPayment {
   address: string,
