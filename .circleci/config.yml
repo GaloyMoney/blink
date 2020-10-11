@@ -261,7 +261,7 @@ jobs:
           tag: $CIRCLE_SHA1
 
   update_lnpage:
-    working_directory: ~/GaloyApp/lnpage
+    working_directory: ~/GaloyApp/infrastructure
     docker:
       - image: kiwigrid/gcloud-kubectl-helm:latest
     resource_class: small
