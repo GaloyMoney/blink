@@ -136,7 +136,7 @@ const resolvers = {
       return { tx: lightningAdminWallet.openChannel({ local_tokens, public_key, socket }) }
     },
     invoice: async (_, __, { lightningWallet }) => ({
-      addInvoice: async ({ value, memo }) => lightningWallet.addInvoice({ value, memo, selfGenerated: true }),
+      addInvoice: async ({ value, memo }) => lightningWallet.addInvoice({ value, memo }),
       updatePendingInvoice: async ({ hash }) => lightningWallet.updatePendingInvoice({ hash }),
       payInvoice: async ({ invoice, amount, memo }) => lightningWallet.pay({ invoice, amount, memo })
     }),
