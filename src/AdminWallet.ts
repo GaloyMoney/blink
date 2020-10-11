@@ -1,4 +1,6 @@
-import { filter, find } from "lodash";
+import { filter, find, sumBy } from "lodash";
+import { WalletFactory } from "./walletFactory";
+import { MainBook, Transaction, User } from "./mongodb";
 import { WalletFactory } from "./walletFactory";
 import { MainBook, Transaction, User } from "./mongodb";
 import { getAuth, logger } from "./utils";
@@ -78,19 +80,22 @@ export class AdminWallet {
 
   async lndBalances () {
     const { chain_balance } = await lnService.getChainBalance({lnd: this.lnd})
-    const { channel_balance } = await lnService.getChannelBalance({lnd: this.lnd})
+    const { channel_balance, pending_balance: opening_channel_balance } = await lnService.getChannelBalance({lnd: this.lnd})
 
     //FIXME: This can cause incorrect balance to be reported in case an unconfirmed txn is later cancelled/double spent
     const { pending_chain_balance } = await lnService.getPendingChainBalance({lnd: this.lnd})
 
-    const total = chain_balance + channel_balance + pending_chain_balance
+    const { channels: closedChannels } = await lnService.getClosedChannels({lnd: this.lnd})
 
-    return { total, onChain: chain_balance + pending_chain_balance, offChain: channel_balance } 
+    const closing_channel_balance = sumBy(closedChannels, channel => sumBy(
+      (channel as any).close_payments, payment => (payment as any).is_pending ? (payment as any).tokens : 0 )
+    )
+    
+    const total = chain_balance + channel_balance + pending_chain_balance + opening_channel_balance + closing_channel_balance
+    return { total, onChain: chain_balance + pending_chain_balance, offChain: channel_balance, opening_channel_balance, closing_channel_balance } 
   }
 
-  async getInfo() {
-    return await lnService.getWalletInfo({ lnd: this.lnd });
-  }
+  getInfo = async () => lnService.getWalletInfo({ lnd: this.lnd });
 
   async openChannel({local_tokens, public_key, socket}): Promise<string> {
     const {transaction_id} = await lnService.openChannel({ lnd: this.lnd, local_tokens,
