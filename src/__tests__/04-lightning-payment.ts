@@ -56,7 +56,7 @@ it('add invoice', async () => {
 
 it('add public invoice', async () => {
   const request = await userWallet1.addInvoice({ selfGenerated: false })
-  expect(request.startsWith("lnbcrt10")).toBeTruthy()
+  expect(request.startsWith("lnbcrt1")).toBeTruthy()
   const { uid, selfGenerated } = await InvoiceUser.findById(getHash(request))
   expect(uid).toBe(userWallet1.uid)
   expect(selfGenerated).toBe(false)
