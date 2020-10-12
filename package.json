@@ -38,6 +38,7 @@
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "firebase-admin": "^9.1.0",
+    "graphql": "^15.3.0",
     "graphql-request": "^1.8.2",
     "graphql-shield": "^7.3.0",
     "graphql-yoga": "^1.18.3",

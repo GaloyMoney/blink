@@ -12,8 +12,8 @@ import { OnboardingEarn } from "./types";
 import { baseLogger } from "./utils";
 import { WalletFactory } from "./walletFactory";
 import { v4 as uuidv4 } from 'uuid';
+import { GraphQLError } from 'graphql';
 const util = require('util')
-
 
 const path = require("path");
 dotenv.config()
@@ -37,6 +37,7 @@ const pino_http = require('pino-http')({
   },
   reqCustomProps: function (req) {
     return {
+      // FIXME: duplicate parsing from graphql context.
       token: verifyToken(req)
     }
   },
@@ -153,6 +154,7 @@ const resolvers = {
 
     // FIXME test
     testMessage: async (_, __, { uid, logger }) => {
+      // throw new GraphQLError("test error")
       await sendNotification({
           uid, 
           title: "Title", 
@@ -239,11 +241,13 @@ const server = new GraphQLServer({
   }
 })
 
+// injecting unique id to the request for correlating different logs messages
 server.express.use(function (req, res, next) {
   // @ts-ignore
   req.id = uuidv4();
   next();
 });
+
 server.express.use(pino_http)
 
 
@@ -253,6 +257,12 @@ server.express.get('/healthz', function(req, res) {
 });
 
 const options = {
+  // tracing: true,
+  formatError: err => {
+    baseLogger.error({err}, "catch all error"); 
+    // return defaultErrorFormatter(err)
+    return err
+  },
   endpoint: '/graphql',
   playground: process.env.NETWORK === 'mainnet' ? 'false': '/'
 }
