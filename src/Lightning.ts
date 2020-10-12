@@ -4,7 +4,7 @@ import { disposer } from "./lock";
 import { InvoiceUser, MainBook, Transaction } from "./mongodb";
 import { sendInvoicePaidNotification } from "./notification";
 import { IAddInvoiceInternalRequest, IPaymentRequest } from "./types";
-import { addCurrentValueToMetadata, getAuth, timeout } from "./utils";
+import { addCurrentValueToMetadata, getAuth, timeout, LoggedError } from "./utils";
 import { customerPath } from "./wallet";
 
 const util = require('util')
@@ -54,7 +54,9 @@ export const LightningMixin = (superclass) => class extends superclass {
       request = result.request
       id = result.id
     } catch (err) {
-      this.logger.error({err}, "impossible to create the invoice")
+      const error = "impossible to create the invoice"
+      this.logger.error({err}, error)
+      throw new LoggedError(error)
     }
 
     try {
@@ -68,7 +70,9 @@ export const LightningMixin = (superclass) => class extends superclass {
     } catch (err) {
       // FIXME if the mongodb connection has not been instanciated
       // this fails silently
-      throw Error(`internal: error storing invoice to db ${util.inspect({ err })}`)
+      const error = `error storing invoice to db`
+      this.logged.error({err}, error)
+      throw new LoggedError(error)
     }
 
     return request
@@ -99,11 +103,15 @@ export const LightningMixin = (superclass) => class extends superclass {
       // TODO: if expired_at expired, thrown an error
 
       if (!!params.amount && tokens !== 0) {
-        throw Error('Invoice contains non-zero amount, but amount was also passed separately')
+        const error = `Invoice contains non-zero amount, but amount was also passed separately`
+        this.logged.error({tokens, params}, error)
+        throw new LoggedError(error)
       }
     } else {
       if (!params.destination) {
-        throw Error('Pay requires either invoice or destination to be specified')
+        const error = 'Pay requires either invoice or destination to be specified'
+        this.logged.error({invoice: params.invoice, destination}, error)
+        throw new LoggedError(error)
       }
 
       pushPayment = true
@@ -121,7 +129,9 @@ export const LightningMixin = (superclass) => class extends superclass {
     }
 
     if (!params.amount && tokens === 0) {
-      throw Error('Invoice is a zero-amount invoice, or pushPayment is being used, but no amount was passed separately')
+      const error = 'Invoice is a zero-amount invoice, or pushPayment is being used, but no amount was passed separately'
+      this.logge.error({tokens, params}, error)
+      throw new LoggedError(error)
     }
 
     tokens = !!tokens ? tokens : params.amount
@@ -152,16 +162,22 @@ export const LightningMixin = (superclass) => class extends superclass {
         } else {
           const existingInvoice = await InvoiceUser.findOne({ _id: id, pending: true })
           if (!existingInvoice) {
-            throw Error('User tried to pay invoice from the same wallet, but it was already paid or does not exist')
+            const error = 'User tried to pay invoice from the same wallet, but it was already paid or does not exist'
+            this.logger.error({existingInvoice, params}, error)
+            throw new LoggedError(error)
             // FIXME: Using == here because === returns false even for same uids
           } else if (existingInvoice.uid == this.uid) {
-            throw Error(`User ${this.uid} tried to pay their own invoice (invoice belong to: ${existingInvoice.uid})`)
+            const error = `User tried to pay their own invoice`
+            this.logger.error({existingInvoice}, error)
+            throw new LoggedError(error)
           }
           payeeUid = existingInvoice.uid
         }
 
         if (balance < tokens) {
-          throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${tokens}`)
+          const error = `balance is too low. have: ${balance} sats, need ${tokens}`
+          this.logger.error(error)
+          throw new LoggedError(error)
         }
 
         {
@@ -203,12 +219,12 @@ export const LightningMixin = (superclass) => class extends superclass {
       } catch (err) {
         this.logger.error({err,  destination, mtokens, routes: routeHint, cltv_delta, features, max_fee, messages  }, 
           "error getting route / probing for route")
-        throw new Error(err)
+        throw new LoggedError(err)
       }
 
       if (!route) {
         this.logger.warn("there is no potential route for payment to %o from user %o", destination, this.uid)
-        throw Error(`there is no potential route for this payment`)
+        throw new LoggedError(`there is no potential route for this payment`)
       }
 
       // console.log({route})
@@ -223,7 +239,9 @@ export const LightningMixin = (superclass) => class extends superclass {
         const sats = tokens + fee
 
         if (balance < sats) {
-          throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${sats}`)
+          const error = `cancelled: balance is too low. have: ${balance} sats, need ${sats}`
+          this.logger.warn({balance, sats, fee}, error)
+          throw new LoggedError(error)
         }
 
         // reduce balance from customer first
@@ -269,8 +287,7 @@ export const LightningMixin = (superclass) => class extends superclass {
           // or payment update when the user query his balance
         }
 
-        this.logger.warn({ err, message: err.message, errorCode: err[1] },
-          `payment "error" to %o from user %o`, destination, this.uid)
+        this.logger.warn({ err, message: err.message, errorCode: err[1], destination, route, id }, `payment "error`)
 
         try {
           // FIXME: this query may not make sense 
@@ -278,14 +295,13 @@ export const LightningMixin = (superclass) => class extends superclass {
           // ie: when a payment is being retried
           await Transaction.updateMany({ hash: id }, { pending: false, error: err[1] })
           await MainBook.void(entry._id, err[1])
-        } catch (err_db) {
-          const err_message = `error canceling payment entry ${util.inspect({ err_db })}`
-          this.logger.error(err_message)
-          throw Error(`ERROR CANCELLING A PAYMENT FOR ${this.uid}: ${err_message}`)
+        } catch (err) {
+          const error = `error canceling payment entry`
+          this.logger.fatal({err, hash: id}, error)
+          throw new LoggedError(error)
         }
 
-        this.logger.error({ err, route, id })
-        throw Error(`error paying invoice ${util.inspect({ err }, false, Infinity)}`)
+        throw new LoggedError(`error paying invoice ${util.inspect({ err }, false, Infinity)}`)
       }
 
       // success
@@ -317,7 +333,9 @@ export const LightningMixin = (superclass) => class extends superclass {
         try {
           result = await lnService.getPayment({ lnd: this.lnd, id: payment.hash })
         } catch (err) {
-          throw Error('issue fetching payment: ' + err.toString())
+          const error = 'issue fetching payment'
+          this.logger.error({err}, error)
+          throw new LoggedError(error)
         }
 
         if (result.is_confirmed || result.is_failed) {
@@ -329,9 +347,9 @@ export const LightningMixin = (superclass) => class extends superclass {
           try {
             await MainBook.void(payment._journal, "Payment canceled") // JSON.stringify(result.failed
           } catch (err) {
-            const errMessage = `ERROR canceling payment entry ${util.inspect({ err })}`
-            this.logger.error(errMessage)
-            throw Error(errMessage)
+            const error = `error canceling payment entry`
+            this.logger.fatal({err, payment, result}, error)
+            throw new LoggedError(error)
           }
         }
       }
@@ -349,7 +367,9 @@ export const LightningMixin = (superclass) => class extends superclass {
       // or invoice doesn't exist. to preserve privacy and prevent DDOS attack.
       invoice = await lnService.getInvoice({ lnd: this.lnd, id: hash })
     } catch (err) {
-      throw new Error(`issue fetching invoice: ${util.inspect({ err }, { showHidden: false, depth: Infinity })})`)
+      const error = `issue fetching invoice`
+      this.logger.error({err, invoice}, error)
+      throw new LoggedError(error)
     }
 
     // invoice that are on_us will be cancelled but not confirmed
@@ -374,7 +394,9 @@ export const LightningMixin = (superclass) => class extends superclass {
           }
 
           if (!invoiceUser) {
-            throw Error(`no mongodb entry is associated with this invoice ${invoice}`)
+            const error = `no mongodb entry is associated with this invoice`
+            this.logger.error({invoice}, error)
+            throw new LoggedError(error)
           }
 
           // TODO: use a transaction here
@@ -416,8 +438,9 @@ export const LightningMixin = (superclass) => class extends superclass {
         })
 
       } catch (err) {
-        this.logger.error(err)
-        throw new Error(`issue updating invoice: ${err}`)
+        const error = `issue updating invoice`
+        this.logger.error({err, invoice}, error)
+        throw new LoggedError(error)
       }
     }
 

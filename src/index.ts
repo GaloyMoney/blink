@@ -9,10 +9,9 @@ import { sendNotification } from "./notification";
 import { Price } from "./priceImpl";
 import { login, requestPhoneCode } from "./text";
 import { OnboardingEarn } from "./types";
-import { baseLogger } from "./utils";
+import { baseLogger, customLoggerPrefix, LoggedError } from "./utils";
 import { WalletFactory } from "./walletFactory";
 import { v4 as uuidv4 } from 'uuid';
-import { GraphQLError } from 'graphql';
 const util = require('util')
 
 const path = require("path");
@@ -154,14 +153,14 @@ const resolvers = {
 
     // FIXME test
     testMessage: async (_, __, { uid, logger }) => {
-      // throw new GraphQLError("test error")
-      await sendNotification({
-          uid, 
-          title: "Title", 
-          body: `New message sent at ${moment.utc().format('YYYY-MM-DD HH:mm:ss')}`,
-          logger
-        })
-      return {success: true}
+      throw new LoggedError("test error")
+      // await sendNotification({
+      //     uid, 
+      //     title: "Title", 
+      //     body: `New message sent at ${moment.utc().format('YYYY-MM-DD HH:mm:ss')}`,
+      //     logger
+      //   })
+      // return {success: true}
     },
   }
 }
@@ -256,10 +255,15 @@ server.express.get('/healthz', function(req, res) {
   res.send('OK');
 });
 
+import { GraphQLError } from "graphql";
+import { startsWith } from "lodash";
+
 const options = {
   // tracing: true,
   formatError: err => {
-    baseLogger.error({err}, "catch all error"); 
+    if (!(startsWith(err.message, customLoggerPrefix))) {
+      baseLogger.error({err}, "graphql catch-all error"); 
+    }
     // return defaultErrorFormatter(err)
     return err
   },

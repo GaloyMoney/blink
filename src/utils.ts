@@ -7,9 +7,25 @@ import { sendText } from './text'
 export const validate = require("validate.js")
 const lightningPayReq = require('bolt11')
 const BitcoindClient = require('bitcoin-core')
+const { ApolloError } = require('apollo-server');
 
 export const baseLogger = require('pino')({ level: process.env.LOGLEVEL || "info" })
 const util = require('util')
+
+// @ts-ignore
+import { GraphQLError } from "graphql";
+
+// FIXME: super ugly hack.
+// for some reason LoggedError get casted as GraphQLError
+// in the formatError function that graphqlQL use to parse error before
+// sending it back to the client. this is a temporary workaround
+export const customLoggerPrefix = `custom: `
+
+export class LoggedError extends GraphQLError {
+  constructor(message) {
+    super(`${customLoggerPrefix}${message}`);
+  }
+}
 
 const connection_obj = {
   network: process.env.NETWORK, username: 'rpcuser', password: 'rpcpass',
@@ -136,9 +152,4 @@ export async function measureTime(operation: Promise<any>): Promise<[any, number
   const timeElapsed = process.hrtime(startTime)
   const timeElapsedms = timeElapsed[0] * 1000 + timeElapsed[1] / 1000000
   return [result, timeElapsedms]
-}
-
-export async function sendToAdmin(body) {
-  await sendText({ body, to: '+1***REMOVED***' })
-  await sendText({ body, to: '***REMOVED***' })
 }

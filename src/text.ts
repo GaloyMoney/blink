@@ -2,7 +2,7 @@ const twilioPhoneNumber = "***REMOVED***"
 import moment from "moment"
 import { PhoneCode, User } from "./mongodb";
 
-import { randomIntFromInterval, createToken } from "./utils"
+import { randomIntFromInterval, createToken, LoggedError } from "./utils"
 
 const getTwilioClient = () => {
   // FIXME: replace with env variable
@@ -81,7 +81,7 @@ export const login = async ({ phone, code, currency = "BTC", logger }: ILogin) =
   if (!currency) {
     const err = `currency is not set. exiting login()`
     logger.error({currency}, err)
-    throw Error(err)
+    throw new LoggedError(err)
   }
 
   try {

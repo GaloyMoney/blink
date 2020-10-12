@@ -6,7 +6,7 @@ import { disposer } from "./lock";
 import { MainBook, Transaction, User } from "./mongodb";
 import { Price } from "./priceImpl";
 import { ILightningTransaction, IOnChainPayment, ISuccess } from "./types";
-import { addCurrentValueToMetadata, amountOnVout, bitcoindClient, btc2sat, getAuth, satsToUsdCached, sendToAdmin } from "./utils";
+import { addCurrentValueToMetadata, amountOnVout, bitcoindClient, btc2sat, getAuth, LoggedError, satsToUsdCached } from "./utils";
 import { customerPath } from "./wallet";
 const util = require('util')
 
@@ -56,7 +56,9 @@ export const OnChainMixin = (superclass) => class extends superclass {
     
     // quit early if balance is not enough
     if (balance < amount) {
-      throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${amount}`)
+      const error = `balance is too low. have: ${balance} sats, need ${amount}`
+      this.logger.warn({balance, amount}, error)
+      throw new LoggedError(error)
     }
 
     const payeeUser = await this.PayeeUser(address)
@@ -64,7 +66,9 @@ export const OnChainMixin = (superclass) => class extends superclass {
     if (payeeUser) {
       // FIXME: Using == here because === returns false even for same uids
       if (payeeUser._id == this.uid) {
-        throw Error('User tried to pay themselves')
+        const error = 'User tried to pay himself'
+        this.logger.warn({payeeUser}, error)
+        throw new LoggedError(error)
       }
 
       const sats = amount
@@ -90,31 +94,31 @@ export const OnChainMixin = (superclass) => class extends superclass {
     try {
       ({ fee: estimatedFee } = await lnService.getChainFeeEstimate({ lnd: this.lnd, send_to: sendTo }))
     } catch (err) {
-      this.logger.error({ err }, `Unable to estimate fee for on-chain transaction`)
-      throw new Error(`Unable to estimate fee for on-chain transaction: ${err}`)
+      const error = `Unable to estimate fee for on-chain transaction`
+      this.logger.error({ err, sendTo }, error)
+      throw new LoggedError(error)
     }
 
     // case where there is not enough money available within lnd on-chain wallet
     if (onChainBalance < amount + estimatedFee) {
-      const body = `insufficient onchain balance. have ${onChainBalance}, need ${amount + estimatedFee}`
-
-      //FIXME: use pagerduty instead of text
-      await sendToAdmin(body)
-      throw Error(body)
+      const error = `insufficient onchain balance on the lnd node. have ${onChainBalance}, need ${amount + estimatedFee}`
+      this.logger.fatal({onChainBalance, amount, estimatedFee, sendTo}, error)
+      throw new LoggedError(error)
     }
 
     return await using(disposer(this.uid), async (lock) => {
       
       // case where the user doesn't have enough money
       if (balance < amount + estimatedFee) {
-        throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${amount + estimatedFee}`)
-        // TODO: report error in a way this can be handled propertly in React Native
+        const error = `balance is too low. have: ${balance} sats, need ${amount + estimatedFee}`
+        this.logger.warn({balance, amount, estimatedFee, sendTo}, error)
+        throw new LoggedError(error)
       }
 
       try {
         ({ id } = await lnService.sendToChainAddress({ address, lnd: this.lnd, tokens: amount }))
       } catch (err) {
-        this.logger.error({ err }, "Impossible to sendToChainAddress")
+        this.logger.error({ err, address, tokens: amount }, "Impossible to sendToChainAddress")
         return false
       }
 
@@ -141,9 +145,11 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
   async getLastOnChainAddress(): Promise<String | Error | undefined> {
     let user = await User.findOne({ _id: this.uid })
+
     if (!user) { // this should not happen. is test that relevant?
-      this.logger.error("no user is associated with this address")
-      throw new Error(`no user with this uid`)
+      const error = "no user is associated with this address"
+      this.logger.error({user}, error)
+      throw new LoggedError(`no user with this uid`)
     }
 
     if (user.onchain_addresses?.length === 0) {
@@ -174,21 +180,26 @@ export const OnChainMixin = (superclass) => class extends superclass {
       })
       address = response.address
     } catch (err) {
-      throw new Error(`internal error getting address ${util.inspect({ err })}`)
+      const error = `error getting on chain address`
+      this.logger.error({err}, error)
+      throw new LoggedError(error)
     }
 
     try {
       const user = await User.findOne({ _id: this.uid })
       if (!user) { // this should not happen. is test that relevant?
-        this.logger.error("no user is associated with this address")
-        throw new Error(`no user with this uid`)
+        const error = "no user is associated with this address"
+        this.logger.error({user}, error)
+        throw new LoggedError(error)
       }
 
       user.onchain_addresses.push(address)
       await user.save()
 
     } catch (err) {
-      throw new Error(`internal error storing new onchain address to db ${util.inspect({ err })}`)
+      const error = `error storing new onchain address to db`
+      this.logger.error({err}, error)
+      throw new LoggedError(error)
     }
 
     return address
@@ -199,8 +210,9 @@ export const OnChainMixin = (superclass) => class extends superclass {
       const onchainTransactions = await lnService.getChainTransactions({ lnd })
       return onchainTransactions.transactions.filter(tx => incoming === !tx.is_outgoing)
     } catch (err) {
-      const err_string = `${util.inspect({ err }, { showHidden: false, depth: null })}`
-      throw new Error(`issue fetching transaction: ${err_string})`)
+      const error = `issue fetching transaction`
+      this.logger.error({err, incoming}, error)
+      throw new LoggedError(error)
     }
   }
 

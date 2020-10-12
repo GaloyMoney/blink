@@ -362,7 +362,7 @@ export const setupMongoConnection = async () => {
       useFindAndModify: false
     })
   } catch (err) {
-    baseLogger.error(`error connecting to mongodb ${err}`)
+    baseLogger.fatal(`error connecting to mongodb ${err}`)
     exit(1)
   }
 }
