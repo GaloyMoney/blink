@@ -3,11 +3,9 @@ import * as lnService from "ln-service"
 import { filter, includes, sumBy } from "lodash"
 import * as moment from 'moment'
 import { Price } from "./priceImpl"
-import { sendText } from './text'
 export const validate = require("validate.js")
 const lightningPayReq = require('bolt11')
 const BitcoindClient = require('bitcoin-core')
-const { ApolloError } = require('apollo-server');
 
 export const baseLogger = require('pino')({ level: process.env.LOGLEVEL || "info" })
 const util = require('util')

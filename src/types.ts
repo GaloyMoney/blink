@@ -32,6 +32,8 @@ export type IAddInvoiceResponse = {
   request: string
 }
 
+export type ChainType = "lightning" | "onchain"
+
 export type TransactionType = "payment" | "paid-invoice" | "on_us" | 
   "onchain_receipt" | "onchain_payment" | "onchain_on_us"
 
