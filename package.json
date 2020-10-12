@@ -53,12 +53,14 @@
     "redis": "^3.0.2",
     "redlock": "^4.1.0",
     "twilio": "^3.42.2",
+    "uuid": "^8.3.1",
     "validate.js": "^0.13.1"
   },
   "devDependencies": {
     "@babel/core": "^7.9.6",
     "@types/jest": "^25.2.1",
     "@types/node": "^13.13.1",
+    "@types/uuid": "^8.3.0",
     "bolt07": "^1.5.0",
     "csv-parser": "^2.3.3",
     "csv-writer": "^1.6.0",

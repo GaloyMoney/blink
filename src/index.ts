@@ -1,33 +1,45 @@
-import { DbVersion, setupMongoConnection, upgrade, User } from "./mongodb"
-
 import dotenv from "dotenv";
 import { rule, shield } from 'graphql-shield';
 import { GraphQLServer } from 'graphql-yoga';
-import { ContextParameters } from 'graphql-yoga/dist/types';
 import * as jwt from 'jsonwebtoken';
+import moment from "moment";
+import { AdminWallet } from "./AdminWallet";
+import { DbVersion, setupMongoConnection, upgrade, User } from "./mongodb";
+import { sendNotification } from "./notification";
 import { Price } from "./priceImpl";
 import { login, requestPhoneCode } from "./text";
 import { OnboardingEarn } from "./types";
-import { AdminWallet } from "./AdminWallet";
-import { sendNotification } from "./notification"
-import { baseLogger } from "./utils"
-import moment from "moment";
+import { baseLogger } from "./utils";
 import { WalletFactory } from "./walletFactory";
+import { v4 as uuidv4 } from 'uuid';
+const util = require('util')
+
 
 const path = require("path");
 dotenv.config()
 
-const pino = require('pino-http')({
-  baseLogger,
-  // TODO: get uid and other information from the request.
-  // tried https://github.com/addityasingh/graphql-pino-middleware without success
-  // Define additional custom request properties
-  // reqCustomProps: function (req) {
-  //   console.log({req})
-  //   return {
-  //     // uid: req.uid
-  //   }
-  // }
+const graphqlLogger = baseLogger.child({module: "graphql"})
+const pino = require('pino')
+
+const pino_http = require('pino-http')({
+  logger: graphqlLogger,
+  wrapSerializers: false,
+  
+  // Define custom serializers
+  serializers: {
+    err: pino.stdSerializers.err,
+    req: pino.stdSerializers.req,
+    res: (res) => ({
+      // FIXME: kind of a hack. body should be in in req. but have not being able to do it.
+      body: res.req.body,
+      ...pino.stdSerializers.res(res)
+    })
+  },
+  reqCustomProps: function (req) {
+    return {
+      token: verifyToken(req)
+    }
+  },
   autoLogging: {
     ignorePaths: ["/healthz"]
   }
@@ -153,11 +165,11 @@ const resolvers = {
 }
 
 
-function verifyToken(ctx: ContextParameters) {
+function verifyToken(req) {
 
   let token
   try {
-    const auth = ctx.request.get('Authorization')
+    const auth = req.get('Authorization')
 
     if (!auth) {
       return null
@@ -212,13 +224,14 @@ const server = new GraphQLServer({
   typeDefs: path.join(__dirname, "schema.graphql"),
   resolvers,
   middlewares: [permissions],
-  context: async (req) => {
-    const token = verifyToken(req)
+  context: async (context) => {
+    const token = verifyToken(context.request)
     const uid = token?.uid ?? null
-    const logger = baseLogger.child({uid, module: "graphql", body: req.request.body})
+    // @ts-ignore
+    const logger = graphqlLogger.child({token, id: context.request.id, body: context.request.body})
     const lightningWallet = !!token ? WalletFactory({...token, logger}) : null
     return {
-      ...req,
+      ...context,
       logger,
       uid,
       lightningWallet,
@@ -226,7 +239,12 @@ const server = new GraphQLServer({
   }
 })
 
-server.express.use(pino)
+server.express.use(function (req, res, next) {
+  // @ts-ignore
+  req.id = uuidv4();
+  next();
+});
+server.express.use(pino_http)
 
 
 // Health check
@@ -243,9 +261,9 @@ setupMongoConnection()
   .then(() => {
     upgrade().then(() => {
       server.start(options, ({ port }) =>
-        baseLogger.info(
+        graphqlLogger.info(
           `Server started, listening on port ${port} for incoming requests.`,
         ),
       )
-  })}).catch((err) => baseLogger.error(err, "server error"))
+  })}).catch((err) => graphqlLogger.error(err, "server error"))
 
