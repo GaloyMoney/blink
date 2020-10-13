@@ -52,22 +52,28 @@ export const OnChainMixin = (superclass) => class extends superclass {
   }
 
   async onChainPay({ address, amount, memo }: IOnChainPayment): Promise<ISuccess | Error> {
+    let onchainLogger = this.logger.child({chain: "onchain", transactionType: "payment", address, amount, memo })
+
     const balance = await this.getBalance()
     
+    onchainLogger = onchainLogger.child({ balance })
+
     // quit early if balance is not enough
     if (balance < amount) {
-      const error = `balance is too low. have: ${balance} sats, need ${amount}`
-      this.logger.warn({balance, amount}, error)
+      const error = `balance is too low`
+      onchainLogger.warn({ success: false, error }, error)
       throw new LoggedError(error)
     }
 
     const payeeUser = await this.PayeeUser(address)
 
     if (payeeUser) {
+      const onchainLoggerOnUs = onchainLogger.child({onUs: true})
+
       // FIXME: Using == here because === returns false even for same uids
       if (payeeUser._id == this.uid) {
         const error = 'User tried to pay himself'
-        this.logger.warn({payeeUser}, error)
+        this.logger.warn({ payeeUser, error, success: false }, error)
         throw new LoggedError(error)
       }
 
@@ -81,6 +87,9 @@ export const OnChainMixin = (superclass) => class extends superclass {
           .credit(this.accountPath, sats, {...metadata, memo})
           .debit(customerPath(payeeUser._id), sats, metadata)
           .commit()
+        
+        onchainLoggerOnUs.info({ success: true, ...metadata })
+
         return true
       })
     }
@@ -95,14 +104,14 @@ export const OnChainMixin = (superclass) => class extends superclass {
       ({ fee: estimatedFee } = await lnService.getChainFeeEstimate({ lnd: this.lnd, send_to: sendTo }))
     } catch (err) {
       const error = `Unable to estimate fee for on-chain transaction`
-      this.logger.error({ err, sendTo }, error)
+      onchainLogger.error({ err, sendTo, success: false }, error)
       throw new LoggedError(error)
     }
 
     // case where there is not enough money available within lnd on-chain wallet
     if (onChainBalance < amount + estimatedFee) {
       const error = `insufficient onchain balance on the lnd node. have ${onChainBalance}, need ${amount + estimatedFee}`
-      this.logger.fatal({onChainBalance, amount, estimatedFee, sendTo}, error)
+      onchainLogger.fatal({onChainBalance, amount, estimatedFee, sendTo, success: false}, error)
       throw new LoggedError(error)
     }
 
@@ -111,24 +120,25 @@ export const OnChainMixin = (superclass) => class extends superclass {
       // case where the user doesn't have enough money
       if (balance < amount + estimatedFee) {
         const error = `balance is too low. have: ${balance} sats, need ${amount + estimatedFee}`
-        this.logger.warn({balance, amount, estimatedFee, sendTo}, error)
+        onchainLogger.warn({balance, amount, estimatedFee, sendTo, success: false }, error)
         throw new LoggedError(error)
       }
 
       try {
         ({ id } = await lnService.sendToChainAddress({ address, lnd: this.lnd, tokens: amount }))
       } catch (err) {
-        this.logger.error({ err, address, tokens: amount }, "Impossible to sendToChainAddress")
+        onchainLogger.error({ err, address, tokens: amount, success: false }, "Impossible to sendToChainAddress")
         return false
       }
 
       const outgoingOnchainTxns = await this.getOnChainTransactions({ lnd: this.lnd, incoming: false })
 
       const [{ fee }] = outgoingOnchainTxns.filter(tx => tx.id === id)
+      let metadata
 
       {
         const sats = amount + fee
-        const metadata = { currency: this.currency, hash: id, type: "onchain_payment", pending: true }
+        metadata = { currency: this.currency, hash: id, type: "onchain_payment", pending: true }
         await addCurrentValueToMetadata(metadata, { sats, fee })
 
         // TODO/FIXME refactor. add the transaction first and set the fees in a second tx.
@@ -137,6 +147,8 @@ export const OnChainMixin = (superclass) => class extends superclass {
           .credit(this.accountPath, sats, metadata)
           .commit()
       }
+
+      onchainLogger.info({success: true, ...metadata})
       return true
 
     })
@@ -308,7 +320,6 @@ export const OnChainMixin = (superclass) => class extends superclass {
   }
 
   async updateOnchainPayment() {
-
     const user_matched_txs = await this.getIncomingOnchainPayments({confirmed: true})
 
     const type = "onchain_receipt"
@@ -370,6 +381,9 @@ export const OnChainMixin = (superclass) => class extends superclass {
             .credit('Assets:Reserve:Lightning', sats, metadata)
             .debit(this.accountPath, sats, metadata)
             .commit()
+
+          const onchainLogger = this.logger.child({ chain: "onchain", transactionType: "receipt" })
+          onchainLogger.info({ success: true, ...metadata })
         }
       }
 

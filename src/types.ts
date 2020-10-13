@@ -34,6 +34,11 @@ export type IAddInvoiceResponse = {
 
 export type ChainType = "lightning" | "onchain"
 
+// TODO:
+// refactor lightning/onchain and payment/receipt/onus
+// to 2 different variables.
+// also log have renamed "paid-invoice" --> "receipt"
+
 export type TransactionType = "payment" | "paid-invoice" | "on_us" | 
   "onchain_receipt" | "onchain_payment" | "onchain_on_us"
 

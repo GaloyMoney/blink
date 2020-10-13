@@ -174,7 +174,7 @@ export const LightningMixin = (superclass) => class extends superclass {
             throw new LoggedError(error)
             // FIXME: Using == here because === returns false even for same uids
           } else if (existingInvoice.uid == this.uid) {
-            const error = `User tried to pay their own invoice`
+            const error = 'User tried to pay himself'
             lightningLoggerOnUs.error({ success: false, error }, error)
             throw new LoggedError(error)
           }
@@ -240,6 +240,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       // we are confident enough that there is a possible payment route. let's move forward
 
       let entry 
+      let metadata
 
       {
         fee = route.safe_fee
@@ -255,7 +256,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         // reduce balance from customer first
 
-        const metadata = { currency: this.currency, hash: id, type: "payment", pending: true, fee }
+        metadata = { currency: this.currency, hash: id, type: "payment", pending: true, fee }
         await addCurrentValueToMetadata(metadata, {sats, fee})
 
         entry = await MainBook.entry(memoInvoice)
@@ -292,14 +293,14 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         if (err.message === "Timeout") {
           // FIXME: not a best practive to mix boolean with string for success
-          lightningLogger.warn({success: "timeout"})
+          lightningLogger.warn({success: "timeout", ...metadata })
 
           return "pending"
           // pending in-flight payment are being handled either by a cron job 
           // or payment update when the user query his balance
         }
 
-        lightningLogger.warn({ err, success: false }, `payment error`)
+        lightningLogger.warn({ success: false, err, ...metadata }, `payment error`)
 
         try {
           // FIXME: this query may not make sense 
@@ -318,7 +319,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
       // success
       await Transaction.updateMany({ hash: id }, { pending: false })
-      lightningLogger.info({ success: true }, `payment success`)
+      lightningLogger.info({ success: true, ...metadata }, `payment success`)
 
       return "success"
 
@@ -455,7 +456,7 @@ export const LightningMixin = (superclass) => class extends superclass {
           // session.commitTransaction()
           // session.endSession()
 
-          this.logger.info({chain: "lightning", transactionType: "paid-invoice", success: true, sats, metadata })
+          this.logger.info({chain: "lightning", transactionType: "receipt", success: true, ...metadata })
 
           return true
         })
