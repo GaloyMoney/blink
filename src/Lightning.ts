@@ -72,7 +72,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       // FIXME if the mongodb connection has not been instanciated
       // this fails silently
       const error = `error storing invoice to db`
-      this.logged.error({err}, error)
+      this.logger.error({err}, error)
       throw new LoggedError(error)
     }
 
@@ -105,13 +105,13 @@ export const LightningMixin = (superclass) => class extends superclass {
 
       if (!!params.amount && tokens !== 0) {
         const error = `Invoice contains non-zero amount, but amount was also passed separately`
-        this.logged.error({tokens, params}, error)
+        this.logger.error({tokens, params}, error)
         throw new LoggedError(error)
       }
     } else {
       if (!params.destination) {
         const error = 'Pay requires either invoice or destination to be specified'
-        this.logged.error({invoice: params.invoice, destination}, error)
+        this.logger.error({invoice: params.invoice, destination}, error)
         throw new LoggedError(error)
       }
 
@@ -131,7 +131,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     if (!params.amount && tokens === 0) {
       const error = 'Invoice is a zero-amount invoice, or pushPayment is being used, but no amount was passed separately'
-      this.logge.error({tokens, params}, error)
+      this.logger.error({tokens, params}, error)
       throw new LoggedError(error)
     }
 
