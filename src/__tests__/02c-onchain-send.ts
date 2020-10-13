@@ -37,7 +37,7 @@ beforeEach(async () => {
 
 afterAll(async () => {
   await bitcoindClient.generateToAddress(3, RANDOM_ADDRESS)
-  await sleep(100)
+  await sleep(2000)
 
 	await mongoose.connection.close()
 	await quit()
