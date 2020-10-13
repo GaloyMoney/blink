@@ -2383,11 +2383,6 @@ bintrees@1.0.1:
   resolved "https://registry.yarnpkg.com/bintrees/-/bintrees-1.0.1.tgz#0e655c9b9c2435eaab68bf4027226d2b55a34524"
   integrity sha1-DmVcm5wkNeqraL9AJyJtK1WjRSQ=
 
-bip174@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/bip174/-/bip174-1.0.1.tgz#858a587f9529e22ee9b0572fd884e5783696824d"
-  integrity sha512-Mq2aFs1TdMfxBpYPg7uzjhsiXbAtoVq44TNjEWtvuZBiBgc3m7+n55orYMtTAxdg7jWbL4DtH0MKocJER4xERQ==
-
 bip174@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/bip174/-/bip174-2.0.1.tgz#39cf8ca99e50ce538fb762589832f4481d07c254"
@@ -2430,27 +2425,6 @@ bitcoin-ops@1.4.1, bitcoin-ops@^1.3.0, bitcoin-ops@^1.4.0:
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/bitcoin-ops/-/bitcoin-ops-1.4.1.tgz#e45de620398e22fd4ca6023de43974ff42240278"
   integrity sha512-pef6gxZFztEhaE9RY9HmWVmiIHqCb2OyS4HPKkpc6CIiiOa3Qmuoylxc5P2EkU3w+5eTSifI9SEZC88idAIGow==
-
-bitcoinjs-lib@5.1.10:
-  version "5.1.10"
-  resolved "https://registry.yarnpkg.com/bitcoinjs-lib/-/bitcoinjs-lib-5.1.10.tgz#91ec7cde308007008b22ed9117c5f26970cbad54"
-  integrity sha512-CesUqtBtnYc+SOMsYN9jWQWhdohW1MpklUkF7Ukn4HiAyN6yxykG+cIJogfRt6x5xcgH87K1Q+Mnoe/B+du1Iw==
-  dependencies:
-    bech32 "^1.1.2"
-    bip174 "^1.0.1"
-    bip32 "^2.0.4"
-    bip66 "^1.1.0"
-    bitcoin-ops "^1.4.0"
-    bs58check "^2.0.0"
-    create-hash "^1.1.0"
-    create-hmac "^1.1.3"
-    merkle-lib "^2.0.10"
-    pushdata-bitcoin "^1.0.1"
-    randombytes "^2.0.1"
-    tiny-secp256k1 "^1.1.1"
-    typeforce "^1.11.3"
-    varuint-bitcoin "^1.0.4"
-    wif "^2.0.1"
 
 bitcoinjs-lib@5.2.0:
   version "5.2.0"
@@ -2516,11 +2490,6 @@ bluebird@^3.7.2:
   version "3.7.2"
   resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.7.2.tgz#9f229c15be272454ffa973ace0dbee79a1b0c36f"
   integrity sha512-XpNj6GDQzdfW+r2Wnn7xiSAd7TM3jzkxGXBGTtWKuSXv1xUV+azxAm8jdWZN06QTQk+2N2XB9jRDkvbmQmcRtg==
-
-bn.js@5.1.2:
-  version "5.1.2"
-  resolved "https://registry.yarnpkg.com/bn.js/-/bn.js-5.1.2.tgz#c9686902d3c9a27729f43ab10f9d79c2004da7b0"
-  integrity sha512-40rZaf3bUNKTVYu9sIeeEGOg7g14Yvnj9kH7b50EiwX0Q7A6umbvfI5tvHaOERH0XigqKkfLkFQxzb4e6CIXnA==
 
 bn.js@5.1.3:
   version "5.1.3"
@@ -2809,10 +2778,10 @@ cbor@5.1.0:
     bignumber.js "^9.0.0"
     nofilter "^1.0.4"
 
-ccxt@^1.36.9:
-  version "1.36.9"
-  resolved "https://registry.yarnpkg.com/ccxt/-/ccxt-1.36.9.tgz#0ec779f5d9b962a632dc70c76f25e3a000aab40a"
-  integrity sha512-im3HJJZUHWeTJVlAtMMrK8q5nTrRrkoSoe6NEv+qq9G58OztN6LkCnKvnA1C1qYvJ48N9npOzpNZ7Y+w8N/W1g==
+ccxt@^1.36.10:
+  version "1.36.10"
+  resolved "https://registry.yarnpkg.com/ccxt/-/ccxt-1.36.10.tgz#46411d8fc15e660b98c5816a46abff4157ef685b"
+  integrity sha512-hG1D++lNMGqxDgvO/3YiZTJrT2QGoCEc4x3GvTc3rj2U09HV7NZvHXUj60chdMLl14TlQEWKYKOy1D22CRkoWw==
 
 chalk@2.4.2, chalk@^2.0.0, chalk@^2.3.0, chalk@^2.4.1, chalk@^2.4.2:
   version "2.4.2"
@@ -5706,10 +5675,10 @@ levn@~0.3.0:
     prelude-ls "~1.1.2"
     type-check "~0.3.2"
 
-lightning@2.0.54:
-  version "2.0.54"
-  resolved "https://registry.yarnpkg.com/lightning/-/lightning-2.0.54.tgz#2c5109f14f3c4c14c370a488c4a5ed764719bca5"
-  integrity sha512-NbKno+RNlOUIIND9s5DwfBwPvUcEfWhaiRKHzOsOJB9NZZUgzczjSK9aO84yd5Sen/fauMyA0jNHbBdBp7jtqQ==
+lightning@2.0.55:
+  version "2.0.55"
+  resolved "https://registry.yarnpkg.com/lightning/-/lightning-2.0.55.tgz#bed0c677aca7a07e4b156a4fe9517ad013f4a603"
+  integrity sha512-BvO6UblGDT2qyKEmkyk6PizixtynzsCY6xMnnuM9/0DOMLh7qO+vdJzYGZCgFs5EzQUyghJf2urV045l9AwAnA==
   dependencies:
     "@grpc/proto-loader" "0.5.5"
     async "3.2.0"
@@ -5723,7 +5692,7 @@ lightning@2.0.54:
     express "4.17.1"
     grpc "1.24.3"
     invoices "1.1.4"
-    psbt "1.1.5"
+    psbt "1.1.6"
 
 lines-and-columns@^1.1.6:
   version "1.1.6"
@@ -5735,10 +5704,10 @@ liquid-json@0.3.1:
   resolved "https://registry.yarnpkg.com/liquid-json/-/liquid-json-0.3.1.tgz#9155a18136d8a6b2615e5f16f9a2448ab6b50eea"
   integrity sha1-kVWhgTbYprJhXl8W+aJEira1Duo=
 
-ln-service@^49.14.0:
-  version "49.14.0"
-  resolved "https://registry.yarnpkg.com/ln-service/-/ln-service-49.14.0.tgz#aa40dda33529d8fd23622b7f843a6c9f290ac01d"
-  integrity sha512-01CoIfdo1vRQfc3siVGAZEDaKv3IrAwpjLLCtOa8aYxIwjQN+a7YC4GIBysbxiOaF0E+eZZIGz8Y76U7zWHhEQ==
+ln-service@^49.14.1:
+  version "49.14.1"
+  resolved "https://registry.yarnpkg.com/ln-service/-/ln-service-49.14.1.tgz#df51d437df5a6ef3d14aa71f3a6faa3c136efa97"
+  integrity sha512-VvKMOhpnvPp8NvPbcS2pGk/UwyEZO8jzcbOtflCqLTTuClw7a4pEGQwpPeVCDTD6V+BGVOnZ75OL93OOw+/xuQ==
   dependencies:
     "@datastructures-js/priority-queue" "4.1.2"
     async "3.2.0"
@@ -5751,7 +5720,7 @@ ln-service@^49.14.0:
     express "4.17.1"
     invoices "1.1.4"
     is-base64 "1.1.0"
-    lightning "2.0.54"
+    lightning "2.0.55"
     macaroon "3.0.4"
     morgan "1.10.0"
     ws "7.3.1"
@@ -6992,15 +6961,15 @@ proxy-addr@~2.0.5:
     forwarded "~0.1.2"
     ipaddr.js "1.9.1"
 
-psbt@1.1.5:
-  version "1.1.5"
-  resolved "https://registry.yarnpkg.com/psbt/-/psbt-1.1.5.tgz#1577342f031eee87337c7c777a033d65a9abfac2"
-  integrity sha512-NqVxxE78qG6dwnxpwR61niEaE5znUhOJOjjoGVsw4deX4OjE72py8wsEsCLuG7Yma7FsjhN58cmsMb2TqvoEGA==
+psbt@1.1.6:
+  version "1.1.6"
+  resolved "https://registry.yarnpkg.com/psbt/-/psbt-1.1.6.tgz#37968dde544c0e066aa000f6862863c4955e6355"
+  integrity sha512-snms+l+yUEDeYJWJrjIBrYqYseVpuO0jp/wjG6Mkcmhahcs58kswFoL+z4cmKgv11P64BYoIzmUgQBHJC+KxOw==
   dependencies:
     bip66 "1.1.5"
     bitcoin-ops "1.4.1"
-    bitcoinjs-lib "5.1.10"
-    bn.js "5.1.2"
+    bitcoinjs-lib "5.2.0"
+    bn.js "5.1.3"
     pushdata-bitcoin "1.0.1"
     varuint-bitcoin "1.1.2"
 
