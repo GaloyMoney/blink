@@ -11,9 +11,9 @@ const logger = baseLogger.child({module: "trigger"})
 
 export async function onchainTransactionEventHandler(tx) {
   logger.debug({tx})
+  const onchainLogger = logger.child({ protocol: "onchain", hash: tx.id })
 
   if (tx.is_outgoing) {
-
     if (!tx.is_confirmed) {
       return
       // FIXME 
@@ -23,7 +23,7 @@ export async function onchainTransactionEventHandler(tx) {
     }
 
     await Transaction.updateMany({ hash: tx.id }, { pending: false })
-    logger.info({ protocol: "onchain", success: true, pending: false, hash: tx.id }, "payment completed")
+    onchainLogger.info({ success: true, pending: false, transactionType: "payment" }, "payment completed")
     const entry = await Transaction.findOne({ account_path: { $all : ["Liabilities", "Customer"] }, hash: tx.id })
 
     const title = `Your on-chain transaction has been confirmed`
@@ -42,7 +42,7 @@ export async function onchainTransactionEventHandler(tx) {
       ({ _id } = await User.findOne({ onchain_addresses: { $in: tx.output_addresses } }, { _id: 1 }))
       if (!_id) {
         //FIXME: Log the onchain address, need to first find which of the tx.output_addresses belongs to us
-        logger.error({tx}, `No user associated with the onchain address`)
+        logger.fatal({tx}, `No user associated with the onchain address`)
         return
       }
     } catch (error) {
@@ -54,6 +54,15 @@ export async function onchainTransactionEventHandler(tx) {
       amount: Number(tx.tokens),
       txid: tx.id
     }
+
+    if (tx.is_confirmed === false) {
+      onchainLogger.info({ transactionType: "receipt", pending: true }, "mempool apparence")
+    } else {
+      // onchain is currently only BTC
+      const wallet = WalletFactory({ uid: _id, currency: "BTC", logger })
+      await wallet.updateOnchainReceipt()
+    }
+
     const title = tx.is_confirmed ?
       `Your wallet has been credited with ${tx.tokens} sats` :
       `You have a pending incoming transaction of ${tx.tokens} sats`

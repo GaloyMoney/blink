@@ -30,7 +30,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
   }
 
   async updatePending() {
-    await this.updateOnchainPayment()
+    await this.updateOnchainReceipt()
     return super.updatePending()
   }
 
@@ -319,7 +319,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
     ]
   }
 
-  async updateOnchainPayment() {
+  async updateOnchainReceipt() {
     const user_matched_txs = await this.getIncomingOnchainPayments({confirmed: true})
 
     const type = "onchain_receipt"
@@ -332,7 +332,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
         // has the transaction has not been added yet to the user account?
         const mongotx = await Transaction.findOne({ account_path: this.accountPathMedici, type, hash: matched_tx.id })
 
-        // this.logger.debug({ matched_tx, mongotx }, "updateOnchainPayment with user %o", this.uid)
+        // this.logger.debug({ matched_tx, mongotx }, "updateOnchainReceipt with user %o", this.uid)
 
         if (!mongotx) {
 
