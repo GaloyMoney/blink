@@ -9,11 +9,13 @@ import { sendNotification } from "./notification";
 import { Price } from "./priceImpl";
 import { login, requestPhoneCode } from "./text";
 import { OnboardingEarn } from "./types";
-import { baseLogger, customLoggerPrefix, LoggedError } from "./utils";
+import { baseLogger, customLoggerPrefix, getAuth, nodeStats } from "./utils";
 import { WalletFactory } from "./walletFactory";
 import { v4 as uuidv4 } from 'uuid';
 import { startsWith } from "lodash";
 const util = require('util')
+const lnService = require('ln-service')
+
 
 const path = require("path");
 dotenv.config()
@@ -46,12 +48,14 @@ const pino_http = require('pino-http')({
   }
 })
 
+const { lnd } = lnService.authenticatedLndGrpc(getAuth())
+
 const commitHash = process.env.COMMITHASH
 const buildTime = process.env.BUILDTIME
 const helmRevision = process.env.HELMREVISION
 const getMinBuildNumber = async () => {
-  const { minBuildNumber } = await DbVersion.findOne({}, {minBuildNumber: 1, _id: 0})
-  return minBuildNumber 
+  const { minBuildNumber } = await DbVersion.findOne({}, { minBuildNumber: 1, _id: 0 })
+  return minBuildNumber
 }
 
 const DEFAULT_USD = {
@@ -84,9 +88,10 @@ const resolvers = {
         DEFAULT_USD
       ])
     },
+    nodeStats: async() => nodeStats({lnd}),
     buildParameters: () => ({
-      commitHash: () => commitHash, 
-      buildTime: () => buildTime, 
+      commitHash: () => commitHash,
+      buildTime: () => buildTime,
       helmRevision: () => helmRevision,
       minBuildNumberAndroid: getMinBuildNumber,
       minBuildNumberIos: getMinBuildNumber,
@@ -111,7 +116,7 @@ const resolvers = {
 
       return response
     },
-    getLastOnChainAddress: async (_, __, { lightningWallet }) => ({id: lightningWallet.getLastOnChainAddress()}),
+    getLastOnChainAddress: async (_, __, { lightningWallet }) => ({ id: lightningWallet.getLastOnChainAddress() }),
   },
   Mutation: {
     requestPhoneCode: async (_, { phone }, { logger }) => ({ success: requestPhoneCode({ phone, logger }) }),
@@ -125,7 +130,14 @@ const resolvers = {
         level: result.level,
       }
     },
-    openChannel: async (_, { local_tokens, public_key, socket }, {}) => {
+    publicInvoice: async (_, { uid, logger }) => {
+      const lightningWallet = WalletFactory({ uid, currency: 'BTC', logger })
+      return {
+        addInvoice: async ({ value, memo }) => lightningWallet.addInvoice({ value, memo, selfGenerated: false }),
+        updatePendingInvoice: async ({ hash }) => lightningWallet.updatePendingInvoice({ hash })
+      }
+    },
+    openChannel: async (_, { local_tokens, public_key, socket }, { }) => {
       // FIXME: security risk. remove openChannel from graphql
       const lightningAdminWallet = new AdminWallet()
       return { tx: lightningAdminWallet.openChannel({ local_tokens, public_key, socket }) }
@@ -141,15 +153,15 @@ const resolvers = {
     },
     onchain: async (_, __, { lightningWallet }) => ({
       getNewAddress: () => lightningWallet.getOnChainAddress(),
-      pay: ({address, amount, memo}) => ({success: lightningWallet.onChainPay({address, amount, memo})}),
-      getFee: ({address}) => lightningWallet.getOnchainFee({address}),
+      pay: ({ address, amount, memo }) => ({ success: lightningWallet.onChainPay({ address, amount, memo }) }),
+      getFee: ({ address }) => lightningWallet.getOnchainFee({ address }),
     }),
     addDeviceToken: async (_, { deviceToken }, { uid }) => {
       // TODO: refactor to a higher level User class
       const user = await User.findOne({ _id: uid })
       user.deviceToken.addToSet(deviceToken)
       await user.save()
-      return {success: true}
+      return { success: true }
     },
 
     // FIXME test
@@ -266,7 +278,7 @@ const options = {
     return err
   },
   endpoint: '/graphql',
-  playground: process.env.NETWORK === 'mainnet' ? 'false': '/'
+  playground: process.env.NETWORK === 'mainnet' ? 'false' : '/'
 }
 
 setupMongoConnection()

@@ -34,6 +34,11 @@ const invoiceUserSchema = new Schema({
     type: Date,
     default: Date.now
   },
+
+  selfGenerated: {
+    type: Boolean,
+    default: true
+  }
 })
 
 // TOOD create indexes

@@ -55,16 +55,16 @@ export const sat2btc = (sat: number) => {
   return sat / Math.pow(10, 8)
 }
 
-export const addCurrentValueToMetadata = async (metadata, {sats, usd, fee}: {sats: number, usd?: number, fee?: number}) => {
+export const addCurrentValueToMetadata = async (metadata, { sats, usd, fee }: { sats: number, usd?: number, fee?: number }) => {
   let _usd = usd
-  
+
   if (!usd) {
     _usd = await satsToUsd(sats)
   }
 
   metadata['sats'] = sats
   metadata['usd'] = _usd
-  
+
   if (fee) {
     metadata['fee'] = fee
     metadata['feeUsd'] = await satsToUsd(fee)
@@ -91,10 +91,10 @@ export async function sleep(ms) {
 }
 
 export function timeout(delay, msg) {
-  return new Promise(function (resolve, reject) {
-      setTimeout(function () {
-          reject(new Error(msg));
-      }, delay);
+  return new Promise(function(resolve, reject) {
+    setTimeout(function() {
+      reject(new Error(msg));
+    }, delay);
   });
 }
 
@@ -118,13 +118,13 @@ export const createToken = ({ uid, currency, network }) => jwt.sign(
 validate.extend(validate.validators.datetime, {
   // The value is guaranteed not to be null or undefined but otherwise it
   // could be anything.
-  parse: function (value: any, options: any) {
-      return +moment.utc(value);
+  parse: function(value: any, options: any) {
+    return +moment.utc(value);
   },
   // Input is a unix timestamp
-  format: function (value: any, options: any) {
-      const format = options.dateOnly ? "YYYY-MM-DD" : "YYYY-MM-DD hh:mm:ss";
-      return moment.utc(value).format(format);
+  format: function(value: any, options: any) {
+    const format = options.dateOnly ? "YYYY-MM-DD" : "YYYY-MM-DD hh:mm:ss";
+    return moment.utc(value).format(format);
   }
 })
 
@@ -150,4 +150,14 @@ export async function measureTime(operation: Promise<any>): Promise<[any, number
   const timeElapsed = process.hrtime(startTime)
   const timeElapsedms = timeElapsed[0] * 1000 + timeElapsed[1] / 1000000
   return [result, timeElapsedms]
+}
+
+export async function nodeStats ({lnd}) {
+  const result = await lnService.getWalletInfo({ lnd })
+  const peersCount = result.peers_count
+  const channelsCount = result.active_channels_count
+  return {
+    peersCount,
+    channelsCount
+  }
 }

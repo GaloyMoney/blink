@@ -1,8 +1,8 @@
 /**
  * @jest-environment node
  */
-import { setupMongoConnection } from "../mongodb";
 import { AdminWallet } from "../AdminWallet";
+import { setupMongoConnection } from "../mongodb";
 import { checkIsBalanced, lndMain, lndOutside1, lndOutside2, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
 import { baseLogger, bitcoindClient, sleep } from "../utils";
 const mongoose = require("mongoose");
@@ -101,7 +101,7 @@ it('opens private channel from lndOutside1 to lndOutside2', async () => {
 
 	subscription.removeAllListeners();
 
-	const { channels } = await lnService.getChannels({ lnd: lndOutside1 })	
+	const { channels } = await lnService.getChannels({ lnd: lndOutside1 })
 	expect(channels.length).toEqual(channelLengthOutside1 + 2)
 	expect(channels.some(e => e.is_private))
 }, 240000)
@@ -117,12 +117,18 @@ it('opens channel from lndOutside1 to lnd1', async () => {
 
 }, 100000)
 
+it('returns correct nodeStats', async () => {
+	const { peersCount, channelsCount } = await nodeStats({ lnd: lndMain })
+	expect(peersCount).toBe(1)
+	expect(channelsCount).toBe(channelLengthMain + 2)
+})
+
 it('escrow update 1', async () => {
-  await adminWallet.updateEscrows()
-  await checkIsBalanced()
+	await adminWallet.updateEscrows()
+	await checkIsBalanced()
 }, 100000)
 
 it('escrow update 2', async () => {
-  await adminWallet.updateEscrows()
-  await checkIsBalanced()
+	await adminWallet.updateEscrows()
+	await checkIsBalanced()
 }, 100000)

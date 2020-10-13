@@ -81,12 +81,18 @@ type BuildParameter {
   minBuildNumberIos: Int
 }
 
+type NodeStats {
+  peersCount: Int
+  channelsCount: Int
+}
+
 type Query { 
   prices: [Price]
   wallet: [Wallet]
   earnList: [Earn]
   me: User
   buildParameters: BuildParameter
+  nodeStats: NodeStats
   getLastOnChainAddress: LastOnChainAddress
 }
 
@@ -94,7 +100,7 @@ type Mutation {
   requestPhoneCode(phone: String): Success
   login(phone: String, code: Int, currency: String): Token
   openChannel(local_tokens: Int, public_key: String, socket: String): OnchainTransaction
-
+  publicInvoice(uid: String): Invoice
   onchain: OnChain
   invoice: Invoice
   earnCompleted(ids: [ID]): [Earn]
