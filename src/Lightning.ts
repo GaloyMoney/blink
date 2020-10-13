@@ -137,7 +137,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     if (!params.amount && tokens === 0) {
       const error = 'Invoice is a zero-amount invoice, or pushPayment is being used, but no amount was passed separately'
-      this.logger.error({tokens, params}, error)
+      lightningLogger.error({tokens, params, success: false, error}, error)
       throw new LoggedError(error)
     }
 
