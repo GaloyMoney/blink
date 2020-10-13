@@ -17,9 +17,6 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await mongoose.connection.close()
-  
-  console.log(process.memoryUsage());
-  console.log(require('os').arch())
 })
 
 it('I can connect to bitcoind', async () => {
