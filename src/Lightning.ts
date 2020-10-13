@@ -229,13 +229,15 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         }));
       } catch (err) {
-        lightningLogger.error({ err, max_fee, probingSuccess: false, success: false }, "error getting route / probing for route")
-        throw new LoggedError(err)
+        const error = "error getting route / probing for route"
+        lightningLogger.error({ err, max_fee, probingSuccess: false, success: false }, error)
+        throw new LoggedError(error)
       }
 
       if (!route) {
-        lightningLogger.warn({ probingSuccess: false, success: false }, "there is no potential route for payment to %o", destination)
-        throw new LoggedError(`there is no potential route for this payment`)
+        const error = "there is no potential route for payment"
+        lightningLogger.warn({ probingSuccess: false, success: false }, error)
+        throw new LoggedError(error)
       }
 
       // we are confident enough that there is a possible payment route. let's move forward
@@ -293,8 +295,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       } catch (err) {
 
         if (err.message === "Timeout") {
-          // FIXME: not a best practive to mix boolean with string for success
-          lightningLogger.warn({success: "timeout", ...metadata })
+          lightningLogger.warn({ ...metadata, pending: true }, 'timeout payment')
 
           return "pending"
           // pending in-flight payment are being handled either by a cron job 

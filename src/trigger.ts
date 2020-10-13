@@ -11,7 +11,7 @@ const logger = baseLogger.child({module: "trigger"})
 
 export async function onchainTransactionEventHandler(tx) {
   logger.debug({tx})
-  const onchainLogger = logger.child({ protocol: "onchain", hash: tx.id })
+  const onchainLogger = logger.child({ protocol: "onchain", hash: tx.id, onUs: false })
 
   if (tx.is_outgoing) {
     if (!tx.is_confirmed) {
@@ -87,7 +87,7 @@ export const onInvoiceUpdate = async invoice => {
     await wallet.updatePendingInvoice({ hash })
     await sendInvoicePaidNotification({amount: invoice.received, hash, uid, logger})
   } else {
-    logger.warn({invoice}, "we received an invoice but had no user attached to it")
+    logger.fatal({invoice}, "we received an invoice but had no user attached to it")
   }
 }
 
@@ -95,7 +95,7 @@ const main = async () => {
   const { lnd } = lnService.authenticatedLndGrpc(getAuth())
 
   lnService.getWalletInfo({ lnd }, (err, result) => {
-    logger.debug(err, result)
+    logger.debug({err, result}, 'getWalletInfo')
   });
 
   const subInvoices = subscribeToInvoices({ lnd });
@@ -106,7 +106,7 @@ const main = async () => {
   
   const subChannels = subscribeToChannels({ lnd });
   subChannels.on('channel_opened', channel => {
-    logger.info(channel)
+    logger.info({channel}, 'channel open')
   })
 }
 
