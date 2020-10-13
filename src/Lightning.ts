@@ -153,7 +153,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     const { tokens, destination, pushPayment, id, routeHint, messages, memoInvoice, memoPayer, payment, cltv_delta, features } = await this.validate(params, lightningLogger)
 
     // not including message because it contains the preimage and we don't want to log this
-    lightningLogger = lightningLogger.child({ tokens, destination, pushPayment, id, routeHint, memoInvoice, memoPayer, payment, cltv_delta, features, params })
+    lightningLogger = lightningLogger.child({ decoded: {tokens, destination, pushPayment, id, routeHint, memoInvoice, memoPayer, payment, cltv_delta, features}, params })
 
     let fee
     let route
