@@ -23,6 +23,7 @@ export async function onchainTransactionEventHandler(tx) {
     }
 
     await Transaction.updateMany({ hash: tx.id }, { pending: false })
+    logger.info({ protocol: "onchain", success: true, pending: false, hash: tx.id }, "payment completed")
     const entry = await Transaction.findOne({ account_path: { $all : ["Liabilities", "Customer"] }, hash: tx.id })
 
     const title = `Your on-chain transaction has been confirmed`
