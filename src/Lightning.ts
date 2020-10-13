@@ -79,7 +79,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     return request
   }
 
-  async validate(params: IPaymentRequest) {
+  async validate(params: IPaymentRequest, lightningLogger) {
 
     const keySendPreimageType = '5482373484';
     const preimageByteLength = 32;
@@ -97,21 +97,27 @@ export const LightningMixin = (superclass) => class extends superclass {
     if (params.invoice) {
       // TODO: replace this with bolt11 utils library
       // TODO: use msat instead of sats for the db?
-      ({ id, safe_tokens: tokens, destination, description, routes: routeHint, payment, cltv_delta, expires_at, features } = await lnService.decodePaymentRequest({ lnd: this.lnd, request: params.invoice }))
 
-      this.logger.info({ id, tokens, destination, description, routes: routeHint, payment, cltv_delta, expires_at, features }, "succesfully decoded invoice")
+      try {
+        ({ id, safe_tokens: tokens, destination, description, routes: routeHint, payment, cltv_delta, expires_at, features } = await lnService.decodePaymentRequest({ lnd: this.lnd, request: params.invoice }))
+      } catch (err) {
+        const error = `Error decoding the invoice`
+        lightningLogger.error({params, success: false, error}, error)
+        throw new LoggedError(error)
+      }
 
       // TODO: if expired_at expired, thrown an error
 
       if (!!params.amount && tokens !== 0) {
         const error = `Invoice contains non-zero amount, but amount was also passed separately`
-        this.logger.error({tokens, params}, error)
+        lightningLogger.error({tokens, params, success: false, error}, error)
         throw new LoggedError(error)
       }
+
     } else {
       if (!params.destination) {
         const error = 'Pay requires either invoice or destination to be specified'
-        this.logger.error({invoice: params.invoice, destination}, error)
+        lightningLogger.error({invoice: params.invoice, destination, success: false, error}, error)
         throw new LoggedError(error)
       }
 
@@ -143,13 +149,11 @@ export const LightningMixin = (superclass) => class extends superclass {
 
   async pay(params: IPaymentRequest): Promise<payInvoiceResult | Error> {
     let lightningLogger = this.logger.child({protocol: "lightning", transactionType: "payment"})
-    lightningLogger.info({params}, "init payment")
     
-    const { tokens, destination, pushPayment, id, routeHint, messages, memoInvoice, memoPayer, payment, cltv_delta, features } = await this.validate(params)
+    const { tokens, destination, pushPayment, id, routeHint, messages, memoInvoice, memoPayer, payment, cltv_delta, features } = await this.validate(params, lightningLogger)
 
-    lightningLogger = lightningLogger.child({ tokens, destination, pushPayment, id, routeHint, messages, memoInvoice, memoPayer, payment, cltv_delta, features, params })
-    lightningLogger.info("have validated inputs")
-
+    // not including message because it contains the preimage and we don't want to log this
+    lightningLogger = lightningLogger.child({ tokens, destination, pushPayment, id, routeHint, memoInvoice, memoPayer, payment, cltv_delta, features, params })
 
     let fee
     let route

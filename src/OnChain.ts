@@ -88,7 +88,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
           .debit(customerPath(payeeUser._id), sats, metadata)
           .commit()
         
-        onchainLoggerOnUs.info({ success: true, ...metadata })
+        onchainLoggerOnUs.info({ success: true, ...metadata }, "onchain payment succeed")
 
         return true
       })
