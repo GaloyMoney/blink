@@ -94,6 +94,8 @@ export const OnChainMixin = (superclass) => class extends superclass {
       })
     }
 
+    onchainLogger = onchainLogger.child({onUs: false})
+
     const { chain_balance: onChainBalance } = await lnService.getChainBalance({ lnd: this.lnd })
 
     let estimatedFee, id
@@ -111,7 +113,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
     // case where there is not enough money available within lnd on-chain wallet
     if (onChainBalance < amount + estimatedFee) {
       const error = `insufficient onchain balance on the lnd node. have ${onChainBalance}, need ${amount + estimatedFee}`
-      onchainLogger.fatal({onChainBalance, amount, estimatedFee, sendTo, success: false}, error)
+      onchainLogger.fatal({onChainBalance, amount, estimatedFee, sendTo, success: false }, error)
       throw new LoggedError(error)
     }
 
@@ -148,7 +150,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
           .commit()
       }
 
-      onchainLogger.info({success: true, ...metadata})
+      onchainLogger.info({success: true , ...metadata})
       return true
 
     })
@@ -382,7 +384,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
             .debit(this.accountPath, sats, metadata)
             .commit()
 
-          const onchainLogger = this.logger.child({ protocol: "onchain", transactionType: "receipt" })
+          const onchainLogger = this.logger.child({ protocol: "onchain", transactionType: "receipt", onUs: false })
           onchainLogger.info({ success: true, ...metadata })
         }
       }
