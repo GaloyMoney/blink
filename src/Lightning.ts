@@ -142,7 +142,7 @@ export const LightningMixin = (superclass) => class extends superclass {
   }
 
   async pay(params: IPaymentRequest): Promise<payInvoiceResult | Error> {
-    let lightningLogger = this.logger.child({chain: "lightning", transactionType: "payment"})
+    let lightningLogger = this.logger.child({protocol: "lightning", transactionType: "payment"})
     lightningLogger.info({params}, "init payment")
     
     const { tokens, destination, pushPayment, id, routeHint, messages, memoInvoice, memoPayer, payment, cltv_delta, features } = await this.validate(params)
@@ -359,7 +359,7 @@ export const LightningMixin = (superclass) => class extends superclass {
           await payment.save()
         }
 
-        const lightningLogger = this.logger.child({chain: "lightning", transactionType: "payment", onUs: false})
+        const lightningLogger = this.logger.child({protocol: "lightning", transactionType: "payment", onUs: false})
 
         if (result.is_confirmed) {
           lightningLogger.info({success: true, id: payment.hash, payment}, 'payment has been confirmed')
@@ -457,7 +457,7 @@ export const LightningMixin = (superclass) => class extends superclass {
           // session.commitTransaction()
           // session.endSession()
 
-          this.logger.info({chain: "lightning", transactionType: "receipt", success: true, ...metadata })
+          this.logger.info({protocol: "lightning", transactionType: "receipt", success: true, ...metadata })
 
           return true
         })

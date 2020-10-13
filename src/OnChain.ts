@@ -52,7 +52,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
   }
 
   async onChainPay({ address, amount, memo }: IOnChainPayment): Promise<ISuccess | Error> {
-    let onchainLogger = this.logger.child({chain: "onchain", transactionType: "payment", address, amount, memo })
+    let onchainLogger = this.logger.child({protocol: "onchain", transactionType: "payment", address, amount, memo })
 
     const balance = await this.getBalance()
     
@@ -382,7 +382,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
             .debit(this.accountPath, sats, metadata)
             .commit()
 
-          const onchainLogger = this.logger.child({ chain: "onchain", transactionType: "receipt" })
+          const onchainLogger = this.logger.child({ protocol: "onchain", transactionType: "receipt" })
           onchainLogger.info({ success: true, ...metadata })
         }
       }
