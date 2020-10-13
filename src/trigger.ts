@@ -1,12 +1,13 @@
-import { triggerAsyncId } from "async_hooks";
 import express from 'express';
 import { subscribeToChannels, subscribeToInvoices, subscribeToTransactions } from 'ln-service';
 import { InvoiceUser, setupMongoConnection, Transaction, User } from "./mongodb";
 import { sendInvoicePaidNotification, sendNotification } from "./notification";
 import { IDataNotification } from "./types";
-import { getAuth, logger } from './utils';
+import { getAuth, baseLogger } from './utils';
 import { WalletFactory } from "./walletFactory";
 const lnService = require('ln-service');
+
+const logger = baseLogger.child({module: "trigger"})
 
 export async function onchainTransactionEventHandler(tx) {
   logger.debug({tx})
@@ -30,7 +31,7 @@ export async function onchainTransactionEventHandler(tx) {
       hash: tx.id,
       amount: tx.tokens,
     }
-    await sendNotification({uid: entry.account_path[2], title, data})
+    await sendNotification({uid: entry.account_path[2], title, data, logger })
   } else {
     // TODO: the same way Lightning is updating the wallet/accounting, 
     // this event should update the onchain wallet/account of the associated user
@@ -55,7 +56,7 @@ export async function onchainTransactionEventHandler(tx) {
     const title = tx.is_confirmed ?
       `Your wallet has been credited with ${tx.tokens} sats` :
       `You have a pending incoming transaction of ${tx.tokens} sats`
-    await sendNotification({ title, uid: _id, data })
+    await sendNotification({ title, uid: _id, data, logger })
   }
 }
 
@@ -72,9 +73,9 @@ export const onInvoiceUpdate = async invoice => {
     const uid = invoiceUser.uid
     const hash = invoice.id as string
 
-    const wallet = WalletFactory({ uid, currency: invoice.currency })
+    const wallet = WalletFactory({ uid, currency: invoice.currency, logger })
     await wallet.updatePendingInvoice({ hash })
-    await sendInvoicePaidNotification({amount: invoice.received, hash, uid})
+    await sendInvoicePaidNotification({amount: invoice.received, hash, uid, logger})
   } else {
     logger.warn({invoice}, "we received an invoice but had no user attached to it")
   }

@@ -1,10 +1,10 @@
 /**
  * @jest-environment node
  */
-import { setupMongoConnection } from "../mongodb";
 import { AdminWallet } from "../AdminWallet";
+import { setupMongoConnection } from "../mongodb";
 import { checkIsBalanced, lndMain, lndOutside1, lndOutside2, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
-import { bitcoindClient, nodeStats, logger, sleep } from "../utils";
+import { baseLogger, bitcoindClient, nodeStats, sleep } from "../utils";
 const mongoose = require("mongoose");
 const { once } = require('events');
 
@@ -32,7 +32,8 @@ beforeEach(async () => {
 })
 
 afterAll(async () => {
-	return await mongoose.connection.close()
+  return await mongoose.connection.close()
+  console.log(process.memoryUsage());
 })
 
 const newBlock = 6
@@ -64,7 +65,7 @@ const openChannel = async ({ lnd, other_lnd, socket, is_private = false }) => {
 		await waitUntilBlockHeight({ lnd: other_lnd, blockHeight: initBlockCount + newBlock })
 	}
 
-	logger.debug("mining blocks and waiting for channel being opened")
+	baseLogger.debug("mining blocks and waiting for channel being opened")
 
 	await Promise.all([
 		openChannelPromise,

@@ -176,7 +176,7 @@ jobs:
       - run:
           name: Run jest test
           command: |
-            kubectl exec --namespace=$NAMESPACE test-pod -- bash -c "cd functions && yarn test"
+            kubectl exec --namespace=$NAMESPACE test-pod -- bash -c "cd functions && yarn test --max_old_space_size=3000"
       - run:
           name: Run postman test
           command: |

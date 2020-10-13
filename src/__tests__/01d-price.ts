@@ -5,6 +5,7 @@
 import { setupMongoConnection } from "../mongodb"
 
 import { Price } from "../priceImpl";
+import { baseLogger } from "../utils";
 const mongoose = require("mongoose");
 
 let price
@@ -12,7 +13,7 @@ let price
 beforeAll(async () => {
   // await mongoose.connection.dropDatabase()
   await setupMongoConnection()
-  price = new Price()
+  price = new Price({logger: baseLogger})
 })
 
 afterAll(async () => {

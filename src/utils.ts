@@ -1,18 +1,38 @@
 import * as jwt from 'jsonwebtoken'
 import * as lnService from "ln-service"
+import { filter, includes, sumBy } from "lodash"
 import * as moment from 'moment'
 import { Price } from "./priceImpl"
-import { sendText } from './text'
 export const validate = require("validate.js")
 const lightningPayReq = require('bolt11')
 const BitcoindClient = require('bitcoin-core')
 
-export const logger = require('pino')({ level: process.env.LOGLEVEL || "info" })
+export const baseLogger = require('pino')({ level: process.env.LOGLEVEL || "info" })
 const util = require('util')
+
+// @ts-ignore
+import { GraphQLError } from "graphql";
+
+// FIXME: super ugly hack.
+// for some reason LoggedError get casted as GraphQLError
+// in the formatError function that graphqlQL use to parse error before
+// sending it back to the client. this is a temporary workaround
+export const customLoggerPrefix = `custom: `
+
+export class LoggedError extends GraphQLError {
+  constructor(message) {
+    super(`${customLoggerPrefix}${message}`);
+  }
+}
 
 const connection_obj = {
   network: process.env.NETWORK, username: 'rpcuser', password: 'rpcpass',
   host: process.env.BITCOINDADDR, port: process.env.BITCOINDPORT
+}
+
+export const amountOnVout = ({vout, onchain_addresses}) => {
+  // TODO: check if this is always [0], ie: there is always a single addresses for vout for lnd output
+  return sumBy(filter(vout, tx => includes(onchain_addresses, tx.scriptPubKey.addresses[0])), "value")
 }
 
 export const bitcoindClient = new BitcoindClient(connection_obj)
@@ -53,7 +73,8 @@ export const addCurrentValueToMetadata = async (metadata, { sats, usd, fee }: { 
 
 export const satsToUsd = async sats => {
   // TODO: caching in graphql, should be passed as a variable to addInvoice
-  const lastPrices = await new Price().lastPrice() // sats/usd
+  // FIXME: remove the baseLogger
+  const lastPrices = await new Price({logger: baseLogger }).lastPrice() // sats/usd
   const usdValue = lastPrices * sats
   return usdValue
 }
@@ -129,11 +150,6 @@ export async function measureTime(operation: Promise<any>): Promise<[any, number
   const timeElapsed = process.hrtime(startTime)
   const timeElapsedms = timeElapsed[0] * 1000 + timeElapsed[1] / 1000000
   return [result, timeElapsedms]
-}
-
-export async function sendToAdmin(body) {
-  await sendText({ body, to: '+1***REMOVED***' })
-  await sendText({ body, to: '***REMOVED***' })
 }
 
 export async function nodeStats ({lnd}) {

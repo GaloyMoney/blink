@@ -1,5 +1,5 @@
 import { exit } from "process"
-import { logger } from "./utils"
+import { baseLogger } from "./utils"
 
 const mongoose = require("mongoose");
 // mongoose.set("debug", true);
@@ -253,29 +253,29 @@ export const upgrade = async () => {
       dbVersion.version = 0
     }
 
-    logger.info({ dbVersion }, "entering upgrade db module version")
+    baseLogger.info({ dbVersion }, "entering upgrade db module version")
 
     switch (dbVersion.version) {
       case 0:
-        logger.info("starting upgrade to version 1")
+        baseLogger.info("starting upgrade to version 1")
 
-        logger.info("all existing wallet should have BTC as currency")
+        baseLogger.info("all existing wallet should have BTC as currency")
         // this is to enforce the index constraint
         await User.updateMany({}, { $set: { currency: "BTC" } })
 
-        logger.info("there needs to have a role: funder")
+        baseLogger.info("there needs to have a role: funder")
         await User.findOneAndUpdate({ phone: "+1***REMOVED***", currency: "BTC" }, { role: "funder" })
 
-        logger.info("earn is no longer a particular type. replace with on_us")
+        baseLogger.info("earn is no longer a particular type. replace with on_us")
         await Transaction.updateMany({ type: "earn" }, { $set: { type: "on_us" } })
 
-        logger.info("setting db version to 1")
+        baseLogger.info("setting db version to 1")
         await DbVersion.findOneAndUpdate({}, { version: 1 }, { upsert: true })
 
-        logger.info("upgrade successful to version 1")
+        baseLogger.info("upgrade successful to version 1")
 
       case 1:
-        logger.info("starting upgrade to version 2")
+        baseLogger.info("starting upgrade to version 2")
 
         let priceTime
         const moment = require('moment');
@@ -286,7 +286,7 @@ export const upgrade = async () => {
         try {
           ({ pair: { exchange: { price } } } = await PriceHistory.findOne({}, {}, { sort: { _id: 1 } }))
         } catch (err) {
-          logger.warn("no price available. would only ok if no transaction is available, ie: on devnet")
+          baseLogger.warn("no price available. would only ok if no transaction is available, ie: on devnet")
           const count = await Transaction.countDocuments()
           if (count === 0) {
             skipUpdate = true
@@ -308,7 +308,7 @@ export const upgrade = async () => {
             if (has(priceMapping, `${txTime}`)) {
               priceTime = priceMapping[`${txTime}`]
             } else {
-              logger.warn({ tx }, 'using most recent price for time %o', `${txTime}`)
+              baseLogger.warn({ tx }, 'using most recent price for time %o', `${txTime}`)
               priceTime = lastPrice
             }
 
@@ -317,15 +317,15 @@ export const upgrade = async () => {
           }
         }
 
-        logger.info("setting db version to 2")
+        baseLogger.info("setting db version to 2")
         dbVersion.version = 2
         dbVersion.minBuildNumber = 182
         await dbVersion.save()
 
-        logger.info("upgrade successful to version 2")
+        baseLogger.info("upgrade successful to version 2")
 
       case 2:
-        logger.info("starting upgrade to version 3")
+        baseLogger.info("starting upgrade to version 3")
 
         const Journal = mongoose.model("Medici_Journal");
         const memo = 'escrow'
@@ -335,14 +335,14 @@ export const upgrade = async () => {
         dbVersion.version = 2
         await dbVersion.save()
 
-        logger.info("upgrade successful to version 3")
+        baseLogger.info("upgrade successful to version 3")
 
       default:
-        logger.info("db was just upgraded or did not need upgrade")
+        baseLogger.info("db was just upgraded or did not need upgrade")
         break;
     }
   } catch (err) {
-    logger.fatal({ err }, "db upgrade error. exiting")
+    baseLogger.fatal({ err }, "db upgrade error. exiting")
     exit()
   }
 }
@@ -367,7 +367,7 @@ export const setupMongoConnection = async () => {
       useFindAndModify: false
     })
   } catch (err) {
-    logger.error(`error connecting to mongodb ${err}`)
+    baseLogger.fatal(`error connecting to mongodb ${err}`)
     exit(1)
   }
 }

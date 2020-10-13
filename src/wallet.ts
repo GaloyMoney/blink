@@ -10,10 +10,12 @@ export class UserWallet {
 
   readonly uid: string
   readonly currency: string
+  readonly logger: any
 
-  constructor({uid, currency}) {
+  constructor({uid, currency, logger}) {
     this.uid = uid
     this.currency = currency
+    this.logger = logger
   }
 
   get accountPath(): string {
@@ -23,6 +25,7 @@ export class UserWallet {
   get accountPathMedici(): Array<string> {
     return this.accountPath.split(":")
   }
+
 
   async getBalance() {
 
