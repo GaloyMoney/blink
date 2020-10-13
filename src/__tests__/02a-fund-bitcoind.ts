@@ -29,7 +29,8 @@ beforeAll(async () => {
 })
 
 afterAll(async () => {
-	await mongoose.connection.close()
+  await mongoose.connection.close()
+  console.log(process.memoryUsage());
 })
 
 it('funds bitcoind wallet', async () => {

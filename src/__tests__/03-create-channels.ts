@@ -32,7 +32,8 @@ beforeEach(async () => {
 })
 
 afterAll(async () => {
-	return await mongoose.connection.close()
+  return await mongoose.connection.close()
+  console.log(process.memoryUsage());
 })
 
 const newBlock = 6

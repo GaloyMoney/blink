@@ -44,6 +44,8 @@ afterAll(async () => {
 
   await mongoose.connection.close()
   await quit()
+
+  console.log(process.memoryUsage());
 });
 
 
