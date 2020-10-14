@@ -24,7 +24,7 @@ export async function onchainTransactionEventHandler(tx) {
 
 
   logger.debug({tx})
-  const onchainLogger = logger.child({ protocol: "onchain", hash: tx.id, onUs: false })
+  const onchainLogger = logger.child({ topic: "payment", protocol: "onchain", hash: tx.id, onUs: false })
 
   if (tx.is_outgoing) {
     if (!tx.is_confirmed) {
