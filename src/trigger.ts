@@ -1,18 +1,32 @@
-import { triggerAsyncId } from "async_hooks";
 import express from 'express';
 import { subscribeToChannels, subscribeToInvoices, subscribeToTransactions } from 'ln-service';
 import { InvoiceUser, setupMongoConnection, Transaction, User } from "./mongodb";
 import { sendInvoicePaidNotification, sendNotification } from "./notification";
 import { IDataNotification } from "./types";
-import { getAuth, logger } from './utils';
+import { getAuth, baseLogger } from './utils';
 import { WalletFactory } from "./walletFactory";
+const crypto = require("crypto")
 const lnService = require('ln-service');
 
+const logger = baseLogger.child({module: "trigger"})
+
+const txsReceived = new Set() 
+
 export async function onchainTransactionEventHandler(tx) {
+
+  // workaround for https://github.com/lightningnetwork/lnd/issues/2267
+  // a lock might be necessary
+  const hash = crypto.createHash('sha256').update(JSON.stringify(tx)).digest('base64');
+  if (txsReceived.has(hash)) {
+    return
+  }
+  txsReceived.add(hash)
+
+
   logger.debug({tx})
+  const onchainLogger = logger.child({ protocol: "onchain", hash: tx.id, onUs: false })
 
   if (tx.is_outgoing) {
-
     if (!tx.is_confirmed) {
       return
       // FIXME 
@@ -22,6 +36,7 @@ export async function onchainTransactionEventHandler(tx) {
     }
 
     await Transaction.updateMany({ hash: tx.id }, { pending: false })
+    onchainLogger.info({ success: true, pending: false, transactionType: "payment" }, "payment completed")
     const entry = await Transaction.findOne({ account_path: { $all : ["Liabilities", "Customer"] }, hash: tx.id })
 
     const title = `Your on-chain transaction has been confirmed`
@@ -30,7 +45,7 @@ export async function onchainTransactionEventHandler(tx) {
       hash: tx.id,
       amount: tx.tokens,
     }
-    await sendNotification({uid: entry.account_path[2], title, data})
+    await sendNotification({uid: entry.account_path[2], title, data, logger })
   } else {
     // TODO: the same way Lightning is updating the wallet/accounting, 
     // this event should update the onchain wallet/account of the associated user
@@ -40,7 +55,7 @@ export async function onchainTransactionEventHandler(tx) {
       ({ _id } = await User.findOne({ onchain_addresses: { $in: tx.output_addresses } }, { _id: 1 }))
       if (!_id) {
         //FIXME: Log the onchain address, need to first find which of the tx.output_addresses belongs to us
-        logger.error({tx}, `No user associated with the onchain address`)
+        logger.fatal({tx}, `No user associated with the onchain address`)
         return
       }
     } catch (error) {
@@ -52,10 +67,19 @@ export async function onchainTransactionEventHandler(tx) {
       amount: Number(tx.tokens),
       txid: tx.id
     }
+
+    if (tx.is_confirmed === false) {
+      onchainLogger.info({ transactionType: "receipt", pending: true }, "mempool apparence")
+    } else {
+      // onchain is currently only BTC
+      const wallet = WalletFactory({ uid: _id, currency: "BTC", logger })
+      await wallet.updateOnchainReceipt()
+    }
+
     const title = tx.is_confirmed ?
       `Your wallet has been credited with ${tx.tokens} sats` :
       `You have a pending incoming transaction of ${tx.tokens} sats`
-    await sendNotification({ title, uid: _id, data })
+    await sendNotification({ title, uid: _id, data, logger })
   }
 }
 
@@ -72,11 +96,11 @@ export const onInvoiceUpdate = async invoice => {
     const uid = invoiceUser.uid
     const hash = invoice.id as string
 
-    const wallet = WalletFactory({ uid, currency: invoice.currency })
+    const wallet = WalletFactory({ uid, currency: invoice.currency, logger })
     await wallet.updatePendingInvoice({ hash })
-    await sendInvoicePaidNotification({amount: invoice.received, hash, uid})
+    await sendInvoicePaidNotification({amount: invoice.received, hash, uid, logger})
   } else {
-    logger.warn({invoice}, "we received an invoice but had no user attached to it")
+    logger.fatal({invoice}, "we received an invoice but had no user attached to it")
   }
 }
 
@@ -84,7 +108,7 @@ const main = async () => {
   const { lnd } = lnService.authenticatedLndGrpc(getAuth())
 
   lnService.getWalletInfo({ lnd }, (err, result) => {
-    logger.debug(err, result)
+    logger.debug({err, result}, 'getWalletInfo')
   });
 
   const subInvoices = subscribeToInvoices({ lnd });
@@ -95,7 +119,7 @@ const main = async () => {
   
   const subChannels = subscribeToChannels({ lnd });
   subChannels.on('channel_opened', channel => {
-    logger.info(channel)
+    logger.info({channel}, 'channel open')
   })
 }
 

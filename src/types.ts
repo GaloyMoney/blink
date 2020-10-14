@@ -6,6 +6,7 @@ export type ISuccess = boolean
 
 export interface ILightningWalletUser {
   uid: string
+  logger: any
 }
 
 // Lightning
@@ -14,12 +15,14 @@ export interface IAddInvoiceInternalRequest {
   usd: number,
   sats: number,
   currency: "USD" | "BTC",
-  memo: string | undefined
+  memo: string | undefined,
+  selfGenerated?: boolean
 }
 
 export interface IAddBTCInvoiceRequest {
   value: number | undefined,
-  memo?: string | undefined
+  memo?: string | undefined,
+  selfGenerated?: boolean
 }
 
 export interface IAddUSDInvoiceRequest {
@@ -30,6 +33,13 @@ export interface IAddUSDInvoiceRequest {
 export type IAddInvoiceResponse = {
   request: string
 }
+
+export type ChainType = "lightning" | "onchain"
+
+// TODO:
+// refactor lightning/onchain and payment/receipt/onus
+// to 2 different variables.
+// also log have renamed "paid-invoice" --> "receipt"
 
 export type TransactionType = "payment" | "paid-invoice" | "on_us" | 
   "onchain_receipt" | "onchain_payment" | "onchain_on_us" | 
@@ -81,6 +91,7 @@ export interface INotification {
   title: string,
   data?: IDataNotification
   body?: string,
+  logger: any
 }
 
 // onboarding

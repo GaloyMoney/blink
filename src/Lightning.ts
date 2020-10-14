@@ -5,8 +5,8 @@ import { customerPath, getBrokerAccountPath } from "./ledger";
 import { disposer } from "./lock";
 import { InvoiceUser, MainBook, Transaction } from "./mongodb";
 import { sendInvoicePaidNotification } from "./notification";
-import { IAddInvoiceInternalRequest, ILightningTransaction, IPaymentRequest } from "./types";
-import { getCurrencyEquivalent, getAuth, logger, measureTime, timeout } from "./utils";
+import { IAddInvoiceInternalRequest, IPaymentRequest } from "./types";
+import { getAuth, getCurrencyEquivalent, LoggedError, timeout } from "./utils";
 
 const util = require('util')
 
@@ -45,7 +45,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     return super.getBalance()
   }
 
-  async addInvoiceInternal({ sats, usd, currency, memo }: IAddInvoiceInternalRequest): Promise<string> {
+  async addInvoiceInternal({ sats, usd, currency, memo, selfGenerated }: IAddInvoiceInternalRequest): Promise<string> {
     let request, id
 
     try {
@@ -57,7 +57,9 @@ export const LightningMixin = (superclass) => class extends superclass {
       request = result.request
       id = result.id
     } catch (err) {
-      logger.error({err}, "impossible to create the invoice")
+      const error = "impossible to create the invoice"
+      this.logger.error({err}, error)
+      throw new LoggedError(error)
     }
 
     try {
@@ -67,17 +69,20 @@ export const LightningMixin = (superclass) => class extends superclass {
         pending: true,
         usd,
         currency,
+        selfGenerated
       }).save()
     } catch (err) {
       // FIXME if the mongodb connection has not been instanciated
       // this fails silently
-      throw Error(`internal: error storing invoice to db ${util.inspect({ err })}`)
+      const error = `error storing invoice to db`
+      this.logger.error({err}, error)
+      throw new LoggedError(error)
     }
 
     return request
   }
 
-  async validate(params: IPaymentRequest) {
+  async validate(params: IPaymentRequest, lightningLogger) {
 
     const keySendPreimageType = '5482373484';
     const preimageByteLength = 32;
@@ -95,18 +100,28 @@ export const LightningMixin = (superclass) => class extends superclass {
     if (params.invoice) {
       // TODO: replace this with bolt11 utils library
       // TODO: use msat instead of sats for the db?
-      ({ id, safe_tokens: tokens, destination, description, routes: routeHint, payment, cltv_delta, expires_at, features } = await lnService.decodePaymentRequest({ lnd: this.lnd, request: params.invoice }))
 
-      logger.info({ id, tokens, destination, description, routes: routeHint, payment, cltv_delta, expires_at, features }, "succesfully decoded invoice")
+      try {
+        ({ id, safe_tokens: tokens, destination, description, routes: routeHint, payment, cltv_delta, expires_at, features } = await lnService.decodePaymentRequest({ lnd: this.lnd, request: params.invoice }))
+      } catch (err) {
+        const error = `Error decoding the invoice`
+        lightningLogger.error({params, success: false, error}, error)
+        throw new LoggedError(error)
+      }
 
       // TODO: if expired_at expired, thrown an error
 
       if (!!params.amount && tokens !== 0) {
-        throw Error('Invoice contains non-zero amount, but amount was also passed separately')
+        const error = `Invoice contains non-zero amount, but amount was also passed separately`
+        lightningLogger.error({tokens, params, success: false, error}, error)
+        throw new LoggedError(error)
       }
+
     } else {
       if (!params.destination) {
-        throw Error('Pay requires either invoice or destination to be specified')
+        const error = 'Pay requires either invoice or destination to be specified'
+        lightningLogger.error({invoice: params.invoice, destination, success: false, error}, error)
+        throw new LoggedError(error)
       }
 
       pushPayment = true
@@ -124,7 +139,9 @@ export const LightningMixin = (superclass) => class extends superclass {
     }
 
     if (!params.amount && tokens === 0) {
-      throw Error('Invoice is a zero-amount invoice, or pushPayment is being used, but no amount was passed separately')
+      const error = 'Invoice is a zero-amount invoice, or pushPayment is being used, but no amount was passed separately'
+      lightningLogger.error({tokens, params, success: false, error}, error)
+      throw new LoggedError(error)
     }
 
     tokens = !!tokens ? tokens : params.amount
@@ -134,8 +151,12 @@ export const LightningMixin = (superclass) => class extends superclass {
   }
 
   async pay(params: IPaymentRequest): Promise<payInvoiceResult | Error> {
+    let lightningLogger = this.logger.child({protocol: "lightning", transactionType: "payment"})
+    
+    const { tokens, destination, pushPayment, id, routeHint, messages, memoInvoice, memoPayer, payment, cltv_delta, features } = await this.validate(params, lightningLogger)
 
-    const { tokens, destination, pushPayment, id, routeHint, messages, memoInvoice, memoPayer, payment, cltv_delta, features } = await this.validate(params)
+    // not including message because it contains the preimage and we don't want to log this
+    lightningLogger = lightningLogger.child({ decoded: {tokens, destination, pushPayment, id, routeHint, memoInvoice, memoPayer, payment, cltv_delta, features}, params })
 
     let fee
     let route
@@ -147,6 +168,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     const balance = await this.getBalance()
 
     return await using(disposer(this.uid), async (lock) => {
+      const lightningLoggerOnUs = lightningLogger.child({ onUs: true, fee: 0 })
 
       if (destination === await this.getNodePubkey()) {
         if (pushPayment) {
@@ -155,18 +177,26 @@ export const LightningMixin = (superclass) => class extends superclass {
         } else {
           const existingInvoice = await InvoiceUser.findOne({ _id: id, pending: true })
           if (!existingInvoice) {
-            throw Error('User tried to pay invoice from the same wallet, but it was already paid or does not exist')
+            const error = 'User tried to pay invoice from the same wallet, but it was already paid or does not exist'
+            lightningLoggerOnUs.error({ success: false, error }, error)
+            throw new LoggedError(error)
             // FIXME: Using == here because === returns false even for same uids
           } else if (existingInvoice.uid == this.uid) {
-            throw Error(`User ${this.uid} tried to pay their own invoice (invoice belong to: ${existingInvoice.uid})`)
+            const error = 'User tried to pay himself'
+            lightningLoggerOnUs.error({ success: false, error }, error)
+            throw new LoggedError(error)
           }
           payeeUid = existingInvoice.uid
-
 
           // TODO XXX FIXME:
           // manage the case where a user in USD tries to pay another used in BTC with an onUS transaction
           assert(this.currency == existingInvoice.currency)
+        }
 
+        if (balance < tokens) {
+          const error = `balance is too low`
+          lightningLoggerOnUs.error({balance, success: false, error}, error)
+          throw new LoggedError(error)
         }
 
         const sats = tokens
@@ -184,10 +214,12 @@ export const LightningMixin = (superclass) => class extends superclass {
           .credit(this.accountPath, value, {...metadata, memoPayer})
           .commit()
       
-
-        await sendInvoicePaidNotification({amount: tokens, uid: payeeUid, hash: id})
+        await sendInvoicePaidNotification({amount: tokens, uid: payeeUid, hash: id, logger: this.logger })
         await InvoiceUser.findOneAndUpdate({ _id: id }, { pending: false })
         await lnService.cancelHodlInvoice({ lnd: this.lnd, id })
+          
+        lightningLoggerOnUs.info({success: true, ...metadata}, "lightning payment success")
+
         return "success"
       }
 
@@ -199,6 +231,9 @@ export const LightningMixin = (superclass) => class extends superclass {
 
       const mtokens = tokens * 1000
 
+      lightningLogger = lightningLogger.child({onUs: false, max_fee})
+
+
       try {
         ({ route } = await lnService.probeForRoute({ lnd: this.lnd, 
           destination, mtokens, routes: routeHint, cltv_delta, features, max_fee, messages, 
@@ -208,18 +243,16 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         }));
       } catch (err) {
-        logger.error({err,  destination, mtokens, routes: routeHint, cltv_delta, features, max_fee, messages  }, 
-          "error getting route / probing for route")
-        throw new Error(err)
+        const error = "error getting route / probing for route"
+        lightningLogger.error({ err, max_fee, probingSuccess: false, success: false }, error)
+        throw new LoggedError(error)
       }
 
       if (!route) {
-        logger.warn("there is no potential route for payment to %o from user %o", destination, this.uid)
-        throw Error(`there is no potential route for this payment`)
+        const error = "there is no potential route for payment"
+        lightningLogger.warn({ probingSuccess: false, success: false }, error)
+        throw new LoggedError(error)
       }
-
-      // console.log({route})
-      logger.info({ route }, "successfully found payable route for payment to %o from user %o", destination, this.uid)
 
       // we are confident enough that there is a possible payment route. let's move forward
       // TODO quote for fees, and also USD for USD users
@@ -230,13 +263,17 @@ export const LightningMixin = (superclass) => class extends superclass {
         fee = route.safe_fee
         const sats = tokens + fee
 
+        lightningLogger = lightningLogger.child({ probingSuccess: true, route, balance, fee, sats })
+
         const addedMetadata = await getCurrencyEquivalent({sats, fee})
         const metadata = { currency: this.currency, hash: id, type: "payment", pending: true, fee, ...addedMetadata }
 
         const value = this.isUSD ? metadata.usd : sats
 
         if (balance < value) {
-          throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${value}`)
+          const error = `balance is too low`
+          lightningLogger.warn({ success: false, error }, error)
+          throw new LoggedError(error)
         }
 
         if (pushPayment) {
@@ -259,61 +296,63 @@ export const LightningMixin = (superclass) => class extends superclass {
         }
 
         await entry.commit()
-      }
 
-      // there is 3 scenarios for a payment.
-      // 1/ payment succeed is less than TIMEOUT_PAYMENT
-      // 2/ the payment fails. we are reverting it. this including voiding prior transaction
-      // 3/ payment is still pending after TIMEOUT_PAYMENT.
-      // we are timing out the request for UX purpose, so that the client can show the payment is pending
-      // even if the payment is still ongoing from lnd.
-      // to clean pending payments, another cron-job loop will run in the background.
-
-      try {
-
-        // Fixme: seems to be leaking if it timeout.
-        const promise = lnService.payViaRoutes({ lnd: this.lnd, routes: [route], id })
-
-        await Promise.race([promise, timeout(TIMEOUT_PAYMENT, 'Timeout')])
-        // FIXME
-        // return this.payDetail({
-        //     pubkey: details.destination,
-        //     hash: details.id,
-        //     amount: details.tokens,
-        //     routes: details.routes
-        // })
-
-        // console.log({result})
-
-      } catch (err) {
-
-        if (err.message === "Timeout") {
-          return "pending"
-          // pending in-flight payment are being handled either by a cron job 
-          // or payment update when the user query his balance
-        }
-
-        logger.warn({ err, message: err.message, errorCode: err[1] },
-          `payment "error" to %o from user %o`, destination, this.uid)
+        // there is 3 scenarios for a payment.
+        // 1/ payment succeed is less than TIMEOUT_PAYMENT
+        // 2/ the payment fails. we are reverting it. this including voiding prior transaction
+        // 3/ payment is still pending after TIMEOUT_PAYMENT.
+        // we are timing out the request for UX purpose, so that the client can show the payment is pending
+        // even if the payment is still ongoing from lnd.
+        // to clean pending payments, another cron-job loop will run in the background.
 
         try {
-          // FIXME: this query may not make sense 
-          // where multiple payment have the same hash
-          // ie: when a payment is being retried
-          await Transaction.updateMany({ hash: id }, { pending: false, error: err[1] })
-          await MainBook.void(entry._id, err[1])
-        } catch (err_db) {
-          const err_message = `error canceling payment entry ${util.inspect({ err_db })}`
-          logger.error(err_message)
-          throw Error(`ERROR CANCELLING A PAYMENT FOR ${this.uid}: ${err_message}`)
+
+          // Fixme: seems to be leaking if it timeout.
+          const promise = lnService.payViaRoutes({ lnd: this.lnd, routes: [route], id })
+
+          await Promise.race([promise, timeout(TIMEOUT_PAYMENT, 'Timeout')])
+          // FIXME
+          // return this.payDetail({
+          //     pubkey: details.destination,
+          //     hash: details.id,
+          //     amount: details.tokens,
+          //     routes: details.routes
+          // })
+
+          // console.log({result})
+
+        } catch (err) {
+
+          if (err.message === "Timeout") {
+            lightningLogger.warn({ ...metadata, pending: true }, 'timeout payment')
+
+            return "pending"
+            // pending in-flight payment are being handled either by a cron job 
+            // or payment update when the user query his balance
+          }
+
+          lightningLogger.warn({ success: false, err, ...metadata }, `payment error`)
+
+          try {
+            // FIXME: this query may not make sense 
+            // where multiple payment have the same hash
+            // ie: when a payment is being retried
+            await Transaction.updateMany({ hash: id }, { pending: false, error: err[1] })
+            await MainBook.void(entry._id, err[1])
+          } catch (err) {
+            const error = `ERROR CANCELING PAYMENT ENTRY`
+            lightningLogger.fatal({err}, error)
+            throw new LoggedError(error)
+          }
+
+          throw new LoggedError(`error paying invoice ${util.inspect({ err }, false, Infinity)}`)
         }
 
-        logger.error({ err, route, id })
-        throw Error(`error paying invoice ${util.inspect({ err }, false, Infinity)}`)
+        // success
+        await Transaction.updateMany({ hash: id }, { pending: false })
+        lightningLogger.info({ success: true, ...metadata }, `payment success`)
       }
 
-      // success
-      await Transaction.updateMany({ hash: id }, { pending: false })
       return "success"
 
     })
@@ -341,7 +380,9 @@ export const LightningMixin = (superclass) => class extends superclass {
         try {
           result = await lnService.getPayment({ lnd: this.lnd, id: payment.hash })
         } catch (err) {
-          throw Error('issue fetching payment: ' + err.toString())
+          const error = 'issue fetching payment'
+          this.logger.error({err, payment}, error)
+          throw new LoggedError(error)
         }
 
         if (result.is_confirmed || result.is_failed) {
@@ -349,13 +390,20 @@ export const LightningMixin = (superclass) => class extends superclass {
           await payment.save()
         }
 
+        const lightningLogger = this.logger.child({protocol: "lightning", transactionType: "payment", onUs: false})
+
+        if (result.is_confirmed) {
+          lightningLogger.info({success: true, id: payment.hash, payment}, 'payment has been confirmed')
+        }
+
         if (result.is_failed) {
           try {
             await MainBook.void(payment._journal, "Payment canceled") // JSON.stringify(result.failed
+            lightningLogger.info({success: false, id: payment.hash, payment, result}, 'payment has been canceled')
           } catch (err) {
-            const errMessage = `ERROR canceling payment entry ${util.inspect({ err })}`
-            logger.error(errMessage)
-            throw Error(errMessage)
+            const error = `error canceling payment entry`
+            this.logger.fatal({err, payment, result}, error)
+            throw new LoggedError(error)
           }
         }
       }
@@ -373,7 +421,9 @@ export const LightningMixin = (superclass) => class extends superclass {
       // or invoice doesn't exist. to preserve privacy and prevent DDOS attack.
       invoice = await lnService.getInvoice({ lnd: this.lnd, id: hash })
     } catch (err) {
-      throw new Error(`issue fetching invoice: ${util.inspect({ err }, { showHidden: false, depth: Infinity })})`)
+      const error = `issue fetching invoice`
+      this.logger.error({err, invoice}, error)
+      throw new LoggedError(error)
     }
 
     // invoice that are on_us will be cancelled but not confirmed
@@ -398,7 +448,9 @@ export const LightningMixin = (superclass) => class extends superclass {
           }
 
           if (!invoiceUser) {
-            throw Error(`no mongodb entry is associated with this invoice ${invoice}`)
+            const error = `no mongodb entry is associated with this invoice`
+            this.logger.error({invoice}, error)
+            throw new LoggedError(error)
           }
 
           // TODO: use a transaction here
@@ -435,12 +487,15 @@ export const LightningMixin = (superclass) => class extends superclass {
           // session.commitTransaction()
           // session.endSession()
 
+          this.logger.info({protocol: "lightning", transactionType: "receipt", onUs: false, success: true, ...metadata })
+
           return true
         })
 
       } catch (err) {
-        logger.error(err)
-        throw new Error(`issue updating invoice: ${err}`)
+        const error = `issue updating invoice`
+        this.logger.error({err, invoice}, error)
+        throw new LoggedError(error)
       }
     }
 

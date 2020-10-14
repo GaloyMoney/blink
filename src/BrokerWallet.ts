@@ -4,7 +4,7 @@ import { MainBook } from "./mongodb";
 import { OnChainMixin } from "./OnChain";
 import { Price } from "./priceImpl";
 import { ILightningWalletUser } from "./types";
-import { btc2sat, logger, sleep } from "./utils";
+import { btc2sat, sleep } from "./utils";
 import { UserWallet } from "./wallet";
 const using = require('bluebird').using
 const util = require('util')
@@ -34,10 +34,11 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
   ftx
   price
 
-  constructor({ uid }: ILightningWalletUser) {
+  constructor({ uid, logger }: ILightningWalletUser) {
     super({ uid, currency: "BTC" })
     this.ftx = new ccxt.ftx({ apiKey, secret })
-    this.price = new Price()
+    this.price = new Price({ logger })
+    this.logger = logger.child({ topic: "broker" })
   }
 
   async getLocalLiabilities() { 
@@ -293,7 +294,7 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
         .commit()
 
       } else {
-        logger.error({...metadata, memo, withdrawal}, `withdrawal was not succesful`)
+        this.logger.error({...metadata, memo, withdrawal}, `withdrawal was not succesful`)
       }
 
     } else if (depositOrWithdraw === "deposit") {
@@ -329,7 +330,7 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
     try {
       order = await this.ftx.createOrder(symbol, 'market', buyOrSell, btcAmount)
     } catch (err) {
-      logger.error({err, buyOrSell, btcAmount, symbol}, "error placing an order")
+      this.logger.error({err, buyOrSell, btcAmount, symbol}, "error placing an order")
       throw err
     }
 
@@ -341,12 +342,12 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
     try {
       orderStatus = await this.ftx.fetchOrder(order.id)
     } catch (err) {
-      logger.error({err, buyOrSell, btcAmount, symbol, order}, "error fetching an order")
+      this.logger.error({err, buyOrSell, btcAmount, symbol, order}, "error fetching an order")
       throw err
     }
 
     if (orderStatus.status !== "closed") {
-      logger.error({order}, "market order has not been fullfilled")
+      this.logger.error({order}, "market order has not been fullfilled")
       // Pager
     }
   }

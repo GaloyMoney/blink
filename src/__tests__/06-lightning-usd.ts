@@ -1,13 +1,13 @@
 /**
  * @jest-environment node
  */
+import { AdminWallet } from "../AdminWallet";
 import { customerPath } from "../ledger";
 import { quit } from "../lock";
 import { InvoiceUser, MainBook, setupMongoConnection } from "../mongodb";
 import { Price } from "../priceImpl";
 import { checkIsBalanced, getUserWallet, lndOutside1 } from "../tests/helper";
-import { getAmount, getHash } from "../utils";
-import { AdminWallet } from "../AdminWallet";
+import { baseLogger, getAmount, getHash } from "../utils";
 
 const lnService = require('ln-service')
 const mongoose = require("mongoose")
@@ -57,6 +57,8 @@ it('add invoice with dollar amount', async () => {
   expect(uid).toBe(userWalletUsd.uid)
   expect(usd).toBe(amountInvoiceUsd)
   
+  const price = new Price({logger: baseLogger})
+  const lastPrice = await price.lastPrice()
   const satoshis = getAmount(request)!
   expect(usd).toBeCloseTo(satoshis * lastPrice)
 })

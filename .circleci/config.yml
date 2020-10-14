@@ -1,10 +1,39 @@
 version: 2.1
 
 orbs:
-  gcp-gke: circleci/gcp-gke@1.0.3
+  gcp-gke: circleci/gcp-gke@1.1.0
   helm: circleci/helm@0.2.3
   gcp-gcr: circleci/gcp-gcr@0.7.1
   slack: circleci/slack@3.4.2
+
+
+commands:
+  gke-auth:
+    steps:
+      - run:
+          name: Authenticate on gcloud
+          command: |
+            echo ${GCLOUD_SERVICE_KEY} > gcloud-service-key.json
+            gcloud auth activate-service-account --key-file=gcloud-service-key.json
+            gcloud config set project ${GOOGLE_PROJECT_ID}
+            gcloud container clusters get-credentials testnet-cluster --region us-central1-a --project ${GOOGLE_PROJECT_ID}
+  update-lnpage:
+    parameters:
+      namespace:
+        type: string
+    steps:
+      - run:
+          name: Update lnpage
+          command: |
+            wget https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -O jq
+            chmod +x ./jq
+            helm -n <<parameters.namespace>> upgrade -i --wait lnpage ./lnpage-chart -f ./lnpage-chart/<<parameters.namespace>>-values.yaml --set image.tag=$CIRCLE_SHA1
+            kubectl -n << parameters.namespace >> wait --for=condition=ready pod -l app=lnpage
+            LND_ADDR=$(kubectl -n <<parameters.namespace>> get services | awk '/lnd-service/ {print $4}')
+            LND_PUB_KEY=$(kubectl -n <<parameters.namespace>> exec lnd-container-0 -- lncli -n <<parameters.namespace>> getinfo | ./jq -r '.identity_pubkey')
+            GRAPHQL_URI=https://graphql.<<parameters.namespace>>.galoy.io/graphql
+            echo "window.env={'LND_PUB_KEY':'$LND_PUB_KEY','LND_ADDR':'$LND_ADDR','GRAPHQL_URI':'$GRAPHQL_URI'}" > env.js
+            kubectl -n <<parameters.namespace>> cp ./env.js $(kubectl -n <<parameters.namespace>> get pods -l app=lnpage --no-headers -o custom-columns=":metadata.name"):/usr/share/nginx/html/env.js
 
 jobs:
   build_ios:
@@ -135,13 +164,10 @@ jobs:
           name: generate and export namespace name
           command: |
             echo "export NAMESPACE=devnet-$CIRCLE_SHA1" >> $BASH_ENV
+      - gke-auth
       - run:
-          name: authorize gcloud and kubectl on circleci and create namespace
+          name: create namespace
           command: |
-            echo ${GCLOUD_SERVICE_KEY} > gcloud-service-key.json
-            gcloud auth activate-service-account --key-file=gcloud-service-key.json
-            gcloud config set project ${GOOGLE_PROJECT_ID}
-            gcloud container clusters get-credentials testnet-cluster --region us-central1-a --project ${GOOGLE_PROJECT_ID}
             kubectl create namespace $NAMESPACE
       - run:
           name: install helm charts
@@ -150,7 +176,7 @@ jobs:
       - run:
           name: Run jest test
           command: |
-            kubectl exec --namespace=$NAMESPACE test-pod -- bash -c "cd functions && yarn test --verbose"
+            kubectl exec --namespace=$NAMESPACE test-pod -- bash -c "cd functions && yarn test --max_old_space_size=3000"
       - run:
           name: Run postman test
           command: |
@@ -188,13 +214,7 @@ jobs:
     steps:
       - checkout:
           path: ~/GaloyApp
-      - run:
-          name: Authenticate on gcloud
-          command: |
-            echo ${GCLOUD_SERVICE_KEY} > gcloud-service-key.json
-            gcloud auth activate-service-account --key-file=gcloud-service-key.json
-            gcloud config set project ${GOOGLE_PROJECT_ID}
-            gcloud container clusters get-credentials testnet-cluster --region us-central1-a --project ${GOOGLE_PROJECT_ID}
+      - gke-auth
       - run:
           name: Upgrade mainnet deployments
           command: |
@@ -225,7 +245,51 @@ jobs:
             echo "nothing to commit"
           fi
 
+  build_lnpage:
+    working_directory: ~/GaloyApp/lnpage
+    machine: true
+    steps:
+      - checkout:
+          path: ~/GaloyApp
+      - gcp-gcr/build-image:
+          image: lnpage
+          tag: $CIRCLE_SHA1
+      - gcp-gcr/gcr-auth
+      - gcp-gcr/push-image:
+          image: lnpage
+          tag: $CIRCLE_SHA1
+
+  update_lnpage:
+    working_directory: ~/GaloyApp/infrastructure
+    docker:
+      - image: kiwigrid/gcloud-kubectl-helm:latest
+    resource_class: small
+    steps:
+      - checkout:
+          path: ~/GaloyApp
+      - gke-auth
+      - update-lnpage:
+          namespace: testnet
+      - update-lnpage:
+          namespace: mainnet
+
+
+
 workflows:
+  build_and_update_lnpage:
+    jobs:
+      - hold_build_lnpage:
+          type: approval
+          # filters:
+          #   branches:
+          #     only:
+          #       - master
+      - build_lnpage:
+          requires:
+            - hold_build_lnpage
+      - update_lnpage:
+          requires:
+            - build_lnpage
   kube:
     jobs:
       - build_test_image

@@ -1,6 +1,5 @@
 import * as admin from 'firebase-admin';
 import { User } from "./mongodb";
-import { logger } from "./utils";
 import { IDataNotification, INotification } from "./types"
 import { mapValues } from "lodash";
 
@@ -15,17 +14,17 @@ if(process.env.GOOGLE_APPLICATION_CREDENTIALS) {
 }
 
 
-export const sendInvoicePaidNotification = async ({hash, amount, uid}) => {
+export const sendInvoicePaidNotification = async ({hash, amount, uid, logger}) => {
   const data: IDataNotification = {
     type: "paid-invoice",
     hash,
     amount,
   }
-  await sendNotification({uid, title: `You receive a payment of ${amount} sats`, data})
+  await sendNotification({uid, title: `You receive a payment of ${amount} sats`, data, logger})
 }
 
 
-export const sendNotification = async ({uid, title, body, data}: INotification) => {
+export const sendNotification = async ({uid, title, body, data, logger}: INotification) => {
 
   const user = await User.findOne({ _id: uid })
 

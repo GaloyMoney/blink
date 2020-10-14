@@ -1,10 +1,10 @@
 /**
  * @jest-environment node
  */
-import { setupMongoConnection } from "../mongodb";
 import { AdminWallet } from "../AdminWallet";
+import { setupMongoConnection } from "../mongodb";
 import { checkIsBalanced, lndMain, lndOutside1, lndOutside2, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
-import { bitcoindClient, logger, sleep } from "../utils";
+import { baseLogger, bitcoindClient, nodeStats, sleep } from "../utils";
 const mongoose = require("mongoose");
 const { once } = require('events');
 
@@ -72,7 +72,7 @@ const openChannel = async ({ lnd, other_lnd, socket, is_private = false }) => {
 		await waitUntilBlockHeight({ lnd: other_lnd, blockHeight: initBlockCount + newBlock })
 	}
 
-	logger.debug("mining blocks and waiting for channel being opened")
+	baseLogger.debug("mining blocks and waiting for channel being opened")
 
 	await Promise.all([
 		openChannelPromise,
@@ -108,7 +108,7 @@ it('opens private channel from lndOutside1 to lndOutside2', async () => {
 
 	subscription.removeAllListeners();
 
-	const { channels } = await lnService.getChannels({ lnd: lndOutside1 })	
+	const { channels } = await lnService.getChannels({ lnd: lndOutside1 })
 	expect(channels.length).toEqual(channelLengthOutside1 + 2)
 	expect(channels.some(e => e.is_private))
 })
@@ -122,6 +122,12 @@ it('opens channel from lndOutside1 to lnd1', async () => {
 		expect(channels.length).toEqual(channelLengthMain + 2)
 	}
 
+})
+
+it('returns correct nodeStats', async () => {
+	const { peersCount, channelsCount } = await nodeStats({ lnd: lndMain })
+	expect(peersCount).toBe(1)
+	expect(channelsCount).toBe(channelLengthMain + 2)
 })
 
 it('escrow update 1', async () => {

@@ -1,13 +1,13 @@
 const lnService = require('ln-service');
 import { assert } from "console";
-import { filter, includes, intersection, last, sumBy } from "lodash";
+import { intersection, last } from "lodash";
 import moment from "moment";
 import { customerPath, lightningAccountingPath } from "./ledger";
 import { disposer } from "./lock";
 import { MainBook, Transaction, User } from "./mongodb";
 import { Price } from "./priceImpl";
 import { ILightningTransaction, IOnChainPayment, ISuccess } from "./types";
-import { bitcoindClient, btc2sat, getAuth, getCurrencyEquivalent, logger, satsToUsdCached, sendToAdmin } from "./utils";
+import { amountOnVout, bitcoindClient, btc2sat, getAuth, getCurrencyEquivalent, LoggedError, satsToUsdCached } from "./utils";
 
 const util = require('util')
 
@@ -17,11 +17,6 @@ const using = require('bluebird').using
 // we don't want to go back and forth between RN and the backend if amount changes
 // but fees are the same
 const someAmount = 50000
-
-export const amountOnVout = ({vout, onchain_addresses}) => {
-  // TODO: check if this is always [0], ie: there is always a single addresses for vout for lnd output
-  return sumBy(filter(vout, tx => includes(onchain_addresses, tx.scriptPubKey.addresses[0])), "value")
-}
 
 export const OnChainMixin = (superclass) => class extends superclass {
   lnd = lnService.authenticatedLndGrpc(getAuth()).lnd
@@ -36,7 +31,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
   }
 
   async updatePending() {
-    await this.updateOnchainPayment()
+    await this.updateOnchainReceipt()
     return super.updatePending()
   }
 
@@ -58,19 +53,29 @@ export const OnChainMixin = (superclass) => class extends superclass {
   }
 
   async onChainPay({ address, amount, memo }: IOnChainPayment): Promise<ISuccess | Error> {
+    let onchainLogger = this.logger.child({protocol: "onchain", transactionType: "payment", address, amount, memo })
+
     const balance = await this.getBalance()
     
+    onchainLogger = onchainLogger.child({ balance })
+
     // quit early if balance is not enough
     if (balance < amount) {
-      throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${amount}`)
+      const error = `balance is too low`
+      onchainLogger.warn({ success: false, error }, error)
+      throw new LoggedError(error)
     }
 
     const payeeUser = await this.PayeeUser(address)
 
     if (payeeUser) {
+      const onchainLoggerOnUs = onchainLogger.child({onUs: true})
+
       // FIXME: Using == here because === returns false even for same uids
       if (payeeUser._id == this.uid) {
-        throw Error('User tried to pay themselves')
+        const error = 'User tried to pay himself'
+        this.logger.warn({ payeeUser, error, success: false }, error)
+        throw new LoggedError(error)
       }
 
       const sats = amount
@@ -85,9 +90,13 @@ export const OnChainMixin = (superclass) => class extends superclass {
           .credit(this.accountPath, sats, {...metadata, memo})
           .commit()
         
+        onchainLoggerOnUs.info({ success: true, ...metadata }, "onchain payment succeed")
+
         return true
       })
     }
+
+    onchainLogger = onchainLogger.child({onUs: false})
 
     const { chain_balance: onChainBalance } = await lnService.getChainBalance({ lnd: this.lnd })
 
@@ -98,31 +107,31 @@ export const OnChainMixin = (superclass) => class extends superclass {
     try {
       ({ fee: estimatedFee } = await lnService.getChainFeeEstimate({ lnd: this.lnd, send_to: sendTo }))
     } catch (err) {
-      logger.error({ err }, `Unable to estimate fee for on-chain transaction`)
-      throw new Error(`Unable to estimate fee for on-chain transaction: ${err}`)
+      const error = `Unable to estimate fee for on-chain transaction`
+      onchainLogger.error({ err, sendTo, success: false }, error)
+      throw new LoggedError(error)
     }
 
     // case where there is not enough money available within lnd on-chain wallet
     if (onChainBalance < amount + estimatedFee) {
-      const body = `insufficient onchain balance. have ${onChainBalance}, need ${amount + estimatedFee}`
-
-      //FIXME: use pagerduty instead of text
-      await sendToAdmin(body)
-      throw Error(body)
+      const error = `insufficient onchain balance on the lnd node. rebalancing is needed`
+      onchainLogger.fatal({onChainBalance, amount, estimatedFee, sendTo, success: false }, error)
+      throw new LoggedError(error)
     }
-
+    
     return await using(disposer(this.uid), async (lock) => {
       
       // case where the user doesn't have enough money
       if (balance < amount + estimatedFee) {
-        throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${amount + estimatedFee}`)
-        // TODO: report error in a way this can be handled propertly in React Native
+        const error = `balance is too low. have: ${balance} sats, need ${amount + estimatedFee}`
+        onchainLogger.warn({balance, amount, estimatedFee, sendTo, success: false }, error)
+        throw new LoggedError(error)
       }
 
       try {
         ({ id } = await lnService.sendToChainAddress({ address, lnd: this.lnd, tokens: amount }))
       } catch (err) {
-        logger.error({ err }, "Impossible to sendToChainAddress")
+        onchainLogger.error({ err, address, tokens: amount, success: false }, "Impossible to sendToChainAddress")
         return false
       }
 
@@ -141,6 +150,8 @@ export const OnChainMixin = (superclass) => class extends superclass {
           .debit(lightningAccountingPath, sats, metadata)
           .credit(this.accountPath, sats, metadata)
           .commit()
+
+        onchainLogger.info({success: true , ...metadata}, 'successfull onchain payment')
       }
 
       return true
@@ -151,9 +162,11 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
   async getLastOnChainAddress(): Promise<String | Error | undefined> {
     let user = await User.findOne({ _id: this.uid })
+
     if (!user) { // this should not happen. is test that relevant?
-      logger.error("no user is associated with this address")
-      throw new Error(`no user with this uid`)
+      const error = "no user is associated with this address"
+      this.logger.error({user}, error)
+      throw new LoggedError(`no user with this uid`)
     }
 
     if (user.onchain_addresses?.length === 0) {
@@ -184,21 +197,26 @@ export const OnChainMixin = (superclass) => class extends superclass {
       })
       address = response.address
     } catch (err) {
-      throw new Error(`internal error getting address ${util.inspect({ err })}`)
+      const error = `error getting on chain address`
+      this.logger.error({err}, error)
+      throw new LoggedError(error)
     }
 
     try {
       const user = await User.findOne({ _id: this.uid })
       if (!user) { // this should not happen. is test that relevant?
-        logger.error("no user is associated with this address")
-        throw new Error(`no user with this uid`)
+        const error = "no user is associated with this address"
+        this.logger.error({user}, error)
+        throw new LoggedError(error)
       }
 
       user.onchain_addresses.push(address)
       await user.save()
 
     } catch (err) {
-      throw new Error(`internal error storing new onchain address to db ${util.inspect({ err })}`)
+      const error = `error storing new onchain address to db`
+      this.logger.error({err}, error)
+      throw new LoggedError(error)
     }
 
     return address
@@ -209,8 +227,9 @@ export const OnChainMixin = (superclass) => class extends superclass {
       const onchainTransactions = await lnService.getChainTransactions({ lnd })
       return onchainTransactions.transactions.filter(tx => incoming === !tx.is_outgoing)
     } catch (err) {
-      const err_string = `${util.inspect({ err }, { showHidden: false, depth: null })}`
-      throw new Error(`issue fetching transaction: ${err_string})`)
+      const error = `issue fetching transaction`
+      this.logger.error({err, incoming}, error)
+      throw new LoggedError(error)
     }
   }
 
@@ -284,7 +303,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
 
     // TODO: refactor Price
-    const price = await new Price().lastPrice()
+    const price = await new Price({logger: this.logger}).lastPrice()
 
     return [
       ...unconfirmed.map(({ tokens, id, created_at }) => ({
@@ -305,8 +324,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
     ]
   }
 
-  async updateOnchainPayment() {
-
+  async updateOnchainReceipt() {
     const user_matched_txs = await this.getIncomingOnchainPayments({confirmed: true})
 
     const type = "onchain_receipt"
@@ -319,7 +337,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
         // has the transaction has not been added yet to the user account?
         const mongotx = await Transaction.findOne({ account_path: this.accountPathMedici, type, hash: matched_tx.id })
 
-        // logger.debug({ matched_tx, mongotx }, "updateOnchainPayment with user %o", this.uid)
+        // this.logger.debug({ matched_tx, mongotx }, "updateOnchainReceipt with user %o", this.uid)
 
         if (!mongotx) {
 
@@ -368,6 +386,9 @@ export const OnChainMixin = (superclass) => class extends superclass {
             .debit(this.accountPath, sats, metadata)
             .credit(lightningAccountingPath, sats, metadata)
             .commit()
+
+          const onchainLogger = this.logger.child({ protocol: "onchain", transactionType: "receipt", onUs: false })
+          onchainLogger.info({ success: true, ...metadata })
         }
 
       }

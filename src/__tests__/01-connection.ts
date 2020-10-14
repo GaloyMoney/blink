@@ -16,7 +16,7 @@ beforeAll(async () => {
 })
 
 afterAll(async () => {
-	await mongoose.connection.close()
+  await mongoose.connection.close()
 })
 
 it('I can connect to bitcoind', async () => {
