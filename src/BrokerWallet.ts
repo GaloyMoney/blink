@@ -14,10 +14,10 @@ const assert = require('assert')
 const apiKey = process.env.FTX_KEY
 const secret = process.env.FTX_SECRET
 
-const LOW_BOUND_EXPOSURE = 0.8
-const LOW_SAFEBOUND_EXPOSURE = 0.9
-const HIGH_SAFEBOUND_EXPOSURE = 1.1
-const HIGH_BOUND_EXPOSURE = 1.2
+const LOW_BOUND_PRICE_EXPOSURE = 0.8
+const LOW_SAFEBOUND_PRICE_EXPOSURE = 0.9
+const HIGH_SAFEBOUND_PRICE_EXPOSURE = 1.1
+const HIGH_BOUND_PRICE_EXPOSURE = 1.2
 
 // TODO: take a target leverage and safe parameter and calculate those bounding values dynamically.
 const LOW_BOUND_LEVERAGE = 1.5
@@ -165,7 +165,7 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
     const usdPosition = usdCollateral / leverage
 
     try {
-      // leverage is too low
+      // under leveraged
       // no imminent risk (beyond exchange custory risk)
       if (leverage < LOW_BOUND_LEVERAGE) {
         const targetUsdCollateral = usdCollateral / LOW_SAFEBOUND_LEVERAGE
@@ -173,9 +173,8 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
         depositOrWithdraw =  "withdraw"
       }
 
-      // overexposed
-      // short
-      // will loose money if BTCUSD price increase
+      // over leveraged
+      // our collateral could get liquidated if we don't rebalance
       else if (leverage > HIGH_BOUND_LEVERAGE) {
         const targetUsdCollateral = usdCollateral / HIGH_SAFEBOUND_LEVERAGE
         usdAmountDiff = targetUsdCollateral - usdPosition
@@ -208,23 +207,24 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
     let buyOrSell: IBuyOrSell = null
 
     try {
-      // undercovered (ie: have BTC not covered)
-      // long
+      // long (exposed to change in price in BTC)
       // will loose money if BTCUSD price drops
-      if (ratio < LOW_BOUND_EXPOSURE) {
-        const targetUsd = usdLiability * LOW_SAFEBOUND_EXPOSURE
+      if (ratio < LOW_BOUND_PRICE_EXPOSURE) {
+        const targetUsd = usdLiability * LOW_SAFEBOUND_PRICE_EXPOSURE
         usdOrderAmount = targetUsd - usdExposure
         buyOrSell = "buy"
       }
 
-      // overexposed
-      // short
+      // short (exposed to change in price in BTC)
       // will loose money if BTCUSD price increase
-      else if (ratio > HIGH_BOUND_EXPOSURE) {
-        const targetUsd = usdLiability * HIGH_SAFEBOUND_EXPOSURE
+      else if (ratio > HIGH_BOUND_PRICE_EXPOSURE) {
+        const targetUsd = usdLiability * HIGH_SAFEBOUND_PRICE_EXPOSURE
         usdOrderAmount = usdExposure - targetUsd
         buyOrSell = "sell"
       }
+
+      // else:
+      // we have no, or next to none, exposure to change in price in BTC
 
     } catch (err) {
       throw Error("can't calculate hedging value")
