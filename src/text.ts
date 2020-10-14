@@ -76,12 +76,13 @@ interface ILogin {
 }
 
 export const login = async ({ phone, code, currency = "BTC", logger }: ILogin) => {
-  
+  const subLogger = logger.child({topic: "login"})
+
   // TODO: not sure if graphql return null or undefined when a field is not passed
   // adding this as an early catch for now
   if (!currency) {
     const err = `currency is not set. exiting login()`
-    logger.error({currency}, err)
+    subLogger.error({currency, phone}, err)
     throw new LoggedError(err)
   }
 
@@ -100,19 +101,29 @@ export const login = async ({ phone, code, currency = "BTC", logger }: ILogin) =
     } else if (codes.findIndex(item => item.code === code) === -1) {
       // this branch is both relevant for test and non-test accounts
       // for when the code is not correct
-      logger.warn(`code is not correct: ${code} with ${phone}`)
+      subLogger.warn({ phone, code }, `user enter incorrect code`)
       return null
     }
 
     // code is correct
-    // get User 
-    const user = await User.findOneAndUpdate({ phone, currency }, {}, { upsert: true, new: true })
     
+    // get User 
+    let user
+
+    user = await User.findOne({ phone, currency })
+
+    if (user) {
+      subLogger.info({ phone, currency }, "user logged in")
+    } else {
+      user = await User.findOneAndUpdate({ phone, currency }, {}, { upsert: true, new: true })
+      subLogger.info({ phone, currency } , "a new user has register")
+    }
+
     const network = process.env.NETWORK
     return createToken({ uid: user._id, currency, network })
     
   } catch (err) {
-    logger.error(err)
+    subLogger.error({err})
     throw err
   }
 }

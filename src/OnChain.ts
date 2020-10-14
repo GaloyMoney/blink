@@ -53,7 +53,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
   }
 
   async onChainPay({ address, amount, memo }: IOnChainPayment): Promise<ISuccess | Error> {
-    let onchainLogger = this.logger.child({protocol: "onchain", transactionType: "payment", address, amount, memo })
+    let onchainLogger = this.logger.child({ topic: "payment", protocol: "onchain", transactionType: "payment", address, amount, memo })
 
     const balance = await this.getBalance()
     
@@ -118,7 +118,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
       onchainLogger.fatal({onChainBalance, amount, estimatedFee, sendTo, success: false }, error)
       throw new LoggedError(error)
     }
-    
+
     return await using(disposer(this.uid), async (lock) => {
       
       // case where the user doesn't have enough money
@@ -387,7 +387,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
             .credit(lightningAccountingPath, sats, metadata)
             .commit()
 
-          const onchainLogger = this.logger.child({ protocol: "onchain", transactionType: "receipt", onUs: false })
+          const onchainLogger = this.logger.child({ topic: "payment", protocol: "onchain", transactionType: "receipt", onUs: false })
           onchainLogger.info({ success: true, ...metadata })
         }
 

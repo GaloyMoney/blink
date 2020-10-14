@@ -151,7 +151,7 @@ export const LightningMixin = (superclass) => class extends superclass {
   }
 
   async pay(params: IPaymentRequest): Promise<payInvoiceResult | Error> {
-    let lightningLogger = this.logger.child({protocol: "lightning", transactionType: "payment"})
+    let lightningLogger = this.logger.child({ topic: "payment", protocol: "lightning", transactionType: "payment" })
     
     const { tokens, destination, pushPayment, id, routeHint, messages, memoInvoice, memoPayer, payment, cltv_delta, features } = await this.validate(params, lightningLogger)
 
