@@ -112,11 +112,11 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
     // case where there is not enough money available within lnd on-chain wallet
     if (onChainBalance < amount + estimatedFee) {
-      const error = `insufficient onchain balance on the lnd node. have ${onChainBalance}, need ${amount + estimatedFee}`
+      const error = `insufficient onchain balance on the lnd node. rebalancing is needed`
       onchainLogger.fatal({onChainBalance, amount, estimatedFee, sendTo, success: false }, error)
       throw new LoggedError(error)
     }
-
+    
     return await using(disposer(this.uid), async (lock) => {
       
       // case where the user doesn't have enough money
@@ -150,7 +150,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
           .commit()
       }
 
-      onchainLogger.info({success: true , ...metadata})
+      onchainLogger.info({success: true , ...metadata}, 'successfull onchain payment')
       return true
 
     })
