@@ -57,8 +57,6 @@ it('add invoice with dollar amount', async () => {
   expect(uid).toBe(userWalletUsd.uid)
   expect(usd).toBe(amountInvoiceUsd)
   
-  const price = new Price({logger: baseLogger})
-  const lastPrice = await price.lastPrice()
   const satoshis = getAmount(request)!
   expect(usd).toBeCloseTo(satoshis * lastPrice)
 })
@@ -107,7 +105,10 @@ it('on us should fail if different currency', async () => {
 
 it('on-us should be ok with same currency', async () => {
   const userWalletUsd10 = await getUserWallet(10)
-  const request = await userWalletUsd10.addInvoice({value: 1, memo: "usd invoice"})
+  const request = await userWalletUsd10.addInvoice({value: 0.1, memo: "usd invoice"})
+
+  const balance = userWalletUsd.getBalance()
+  console.log({balance})
 
   const result = await userWalletUsd.pay({ invoice: request })
   expect(result).toBe("success")
