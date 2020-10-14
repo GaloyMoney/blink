@@ -5,11 +5,24 @@ import { sendInvoicePaidNotification, sendNotification } from "./notification";
 import { IDataNotification } from "./types";
 import { getAuth, baseLogger } from './utils';
 import { WalletFactory } from "./walletFactory";
+const crypto = require("crypto")
 const lnService = require('ln-service');
 
 const logger = baseLogger.child({module: "trigger"})
 
+const txsReceived = new Set() 
+
 export async function onchainTransactionEventHandler(tx) {
+
+  // workaround for https://github.com/lightningnetwork/lnd/issues/2267
+  // a lock might be necessary
+  const hash = crypto.createHash('sha256').update(JSON.stringify(tx)).digest('base64');
+  if (txsReceived.has(hash)) {
+    return
+  }
+  txsReceived.add(hash)
+
+
   logger.debug({tx})
   const onchainLogger = logger.child({ protocol: "onchain", hash: tx.id, onUs: false })
 

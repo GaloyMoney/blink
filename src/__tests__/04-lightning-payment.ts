@@ -274,7 +274,7 @@ it('payInvoice to lnd outside 2', async () => {
 
   const initialBalance = await userWallet1.getBalance()
 
-  const result = await userWallet1.pay({ invoice: request })
+  const result = await userWallet1.pay({ invoice: request, memo: "pay an unconnected node" })
   expect(result).toBe("success")
   const finalBalance = await userWallet1.getBalance()
 

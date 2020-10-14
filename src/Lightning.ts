@@ -204,12 +204,14 @@ export const LightningMixin = (superclass) => class extends superclass {
             .credit(this.accountPath, sats, {...metadata, memoPayer})
             .debit(customerPath(payeeUid), sats, metadata)
             .commit()
+
+          await sendInvoicePaidNotification({amount: tokens, uid: payeeUid, hash: id, logger: this.logger})
+          await InvoiceUser.findOneAndUpdate({ _id: id }, { pending: false })
+          await lnService.cancelHodlInvoice({ lnd: this.lnd, id })
+
+          lightningLoggerOnUs.info({success: true, ...metadata}, "lightning payment success")
         }
 
-        await sendInvoicePaidNotification({amount: tokens, uid: payeeUid, hash: id, logger: this.logger})
-        await InvoiceUser.findOneAndUpdate({ _id: id }, { pending: false })
-        await lnService.cancelHodlInvoice({ lnd: this.lnd, id })
-        lightningLoggerOnUs.info({success: true}, "success")
         return "success"
       }
 
@@ -247,9 +249,10 @@ export const LightningMixin = (superclass) => class extends superclass {
       // we are confident enough that there is a possible payment route. let's move forward
 
       let entry 
-      let metadata
 
       {
+        let metadata
+
         fee = route.safe_fee
         const sats = tokens + fee
 
@@ -270,62 +273,62 @@ export const LightningMixin = (superclass) => class extends superclass {
           .debit('Assets:Reserve:Lightning', sats, metadata)
           .credit(this.accountPath, sats, {...metadata, memoPayer})
           .commit()
-      }
 
-      // there is 3 scenarios for a payment.
-      // 1/ payment succeed is less than TIMEOUT_PAYMENT
-      // 2/ the payment fails. we are reverting it. this including voiding prior transaction
-      // 3/ payment is still pending after TIMEOUT_PAYMENT.
-      // we are timing out the request for UX purpose, so that the client can show the payment is pending
-      // even if the payment is still ongoing from lnd.
-      // to clean pending payments, another cron-job loop will run in the background.
-
-      try {
-
-        // Fixme: seems to be leaking if it timeout.
-        const promise = lnService.payViaRoutes({ lnd: this.lnd, routes: [route], id })
-
-        await Promise.race([promise, timeout(TIMEOUT_PAYMENT, 'Timeout')])
-        // FIXME
-        // return this.payDetail({
-        //     pubkey: details.destination,
-        //     hash: details.id,
-        //     amount: details.tokens,
-        //     routes: details.routes
-        // })
-
-        // console.log({result})
-
-      } catch (err) {
-
-        if (err.message === "Timeout") {
-          lightningLogger.warn({ ...metadata, pending: true }, 'timeout payment')
-
-          return "pending"
-          // pending in-flight payment are being handled either by a cron job 
-          // or payment update when the user query his balance
-        }
-
-        lightningLogger.warn({ success: false, err, ...metadata }, `payment error`)
+        // there is 3 scenarios for a payment.
+        // 1/ payment succeed is less than TIMEOUT_PAYMENT
+        // 2/ the payment fails. we are reverting it. this including voiding prior transaction
+        // 3/ payment is still pending after TIMEOUT_PAYMENT.
+        // we are timing out the request for UX purpose, so that the client can show the payment is pending
+        // even if the payment is still ongoing from lnd.
+        // to clean pending payments, another cron-job loop will run in the background.
 
         try {
-          // FIXME: this query may not make sense 
-          // where multiple payment have the same hash
-          // ie: when a payment is being retried
-          await Transaction.updateMany({ hash: id }, { pending: false, error: err[1] })
-          await MainBook.void(entry._id, err[1])
+
+          // Fixme: seems to be leaking if it timeout.
+          const promise = lnService.payViaRoutes({ lnd: this.lnd, routes: [route], id })
+
+          await Promise.race([promise, timeout(TIMEOUT_PAYMENT, 'Timeout')])
+          // FIXME
+          // return this.payDetail({
+          //     pubkey: details.destination,
+          //     hash: details.id,
+          //     amount: details.tokens,
+          //     routes: details.routes
+          // })
+
+          // console.log({result})
+
         } catch (err) {
-          const error = `ERROR CANCELING PAYMENT ENTRY`
-          lightningLogger.fatal({err}, error)
-          throw new LoggedError(error)
+
+          if (err.message === "Timeout") {
+            lightningLogger.warn({ ...metadata, pending: true }, 'timeout payment')
+
+            return "pending"
+            // pending in-flight payment are being handled either by a cron job 
+            // or payment update when the user query his balance
+          }
+
+          lightningLogger.warn({ success: false, err, ...metadata }, `payment error`)
+
+          try {
+            // FIXME: this query may not make sense 
+            // where multiple payment have the same hash
+            // ie: when a payment is being retried
+            await Transaction.updateMany({ hash: id }, { pending: false, error: err[1] })
+            await MainBook.void(entry._id, err[1])
+          } catch (err) {
+            const error = `ERROR CANCELING PAYMENT ENTRY`
+            lightningLogger.fatal({err}, error)
+            throw new LoggedError(error)
+          }
+
+          throw new LoggedError(`error paying invoice ${util.inspect({ err }, false, Infinity)}`)
         }
 
-        throw new LoggedError(`error paying invoice ${util.inspect({ err }, false, Infinity)}`)
+        // success
+        await Transaction.updateMany({ hash: id }, { pending: false })
+        lightningLogger.info({ success: true, ...metadata }, `payment success`)
       }
-
-      // success
-      await Transaction.updateMany({ hash: id }, { pending: false })
-      lightningLogger.info({ success: true, ...metadata }, `payment success`)
 
       return "success"
 
@@ -462,7 +465,7 @@ export const LightningMixin = (superclass) => class extends superclass {
           // session.commitTransaction()
           // session.endSession()
 
-          this.logger.info({protocol: "lightning", transactionType: "receipt", success: true, ...metadata })
+          this.logger.info({protocol: "lightning", transactionType: "receipt", onUs: false, success: true, ...metadata })
 
           return true
         })
