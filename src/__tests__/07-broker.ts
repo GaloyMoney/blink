@@ -3,6 +3,7 @@
  */
 import { setupMongoConnection } from "../mongodb"
 import { BrokerWallet } from "../BrokerWallet";
+import { baseLogger } from "../utils";
 const mongoose = require("mongoose");
 const util = require('util')
 
@@ -182,7 +183,7 @@ let brokerWallet
 
 beforeAll(async () => {
   await setupMongoConnection()
-  brokerWallet = new BrokerWallet({uid: "broker"})
+  brokerWallet = new BrokerWallet({uid: "broker", logger: baseLogger})
 
 })
 

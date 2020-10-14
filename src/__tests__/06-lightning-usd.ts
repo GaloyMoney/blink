@@ -31,7 +31,7 @@ beforeAll(async () => {
 
   userWallet2 = await getUserWallet(2)
 
-  const price = new Price()
+  const price = new Price({ logger: baseLogger })
   lastPrice = await price.lastPrice()
 });
 
