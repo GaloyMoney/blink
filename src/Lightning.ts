@@ -254,7 +254,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       // we are confident enough that there is a possible payment route. let's move forward
       // TODO quote for fees, and also USD for USD users
 
-      let entry 
+      let journal 
 
       {
         fee = route.safe_fee
@@ -282,17 +282,17 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         // reduce balance from customer first
 
-        entry = MainBook.entry(memoInvoice)
+        journal = MainBook.entry(memoInvoice)
           .debit('Assets:Reserve:Lightning', sats, {...metadata, currency: "BTC"})
           .credit(this.isUSD ? brokerAccountPath : this.accountPath, sats, {...metadata, currency: "BTC"})
         
         if(this.isUSD) {
-          entry
+          journal
             .debit(brokerAccountPath, metadata.usd, {...metadata, currency: "USD"})
             .credit(this.accountPath, metadata.usd, {...metadata, currency: "USD"})
         }
 
-        await entry.commit()
+        await journal.commit()
 
         // there is 3 scenarios for a payment.
         // 1/ payment succeed is less than TIMEOUT_PAYMENT
@@ -333,12 +333,12 @@ export const LightningMixin = (superclass) => class extends superclass {
             // where multiple payment have the same hash
             // ie: when a payment is being retried
             await Transaction.updateMany({ hash: id }, { pending: false, error: err[1] })
-            await MainBook.void(entry._id, err[1])
+            await MainBook.void(journal.journal._id, err[1])
             lightningLogger.warn({ success: false, err, ...metadata }, `payment error`)
 
           } catch (err_fatal) {
             const error = `ERROR CANCELING PAYMENT ENTRY`
-            lightningLogger.fatal({err, err_fatal, entry}, error)
+            lightningLogger.fatal({err, err_fatal, entry: journal}, error)
             throw new LoggedError(error)
           }
 
