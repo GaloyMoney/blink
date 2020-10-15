@@ -116,6 +116,8 @@ it('identifies unconfirmed incoming on chain txn', async () => {
     bitcoindClient.sendToAddress(address, amount_BTC)
   ])
 
+  await sleep(1000)
+
   const txs = (await walletUser0.getTransactions())
   const pendingTxs = filter(txs, {pending: true})
   expect(pendingTxs.length).toBe(1)
