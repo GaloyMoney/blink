@@ -76,12 +76,12 @@ const resolvers = {
         level: 1,
       }
     },
-    wallet: async (_, __, { lightningWallet }) => {
+    wallet: async (_, __, { wallet }) => {
       const btc_wallet = {
         id: "BTC",
         currency: "BTC",
-        balance: lightningWallet.getBalance(), // FIXME why a function and not a callback?
-        transactions: lightningWallet.getTransactions()
+        balance: wallet.getBalance(), // FIXME why a function and not a callback?
+        transactions: wallet.getTransactions()
       }
 
       return ([
@@ -117,25 +117,25 @@ const resolvers = {
 
       return response
     },
-    getLastOnChainAddress: async (_, __, { lightningWallet }) => ({ id: lightningWallet.getLastOnChainAddress() }),
+    getLastOnChainAddress: async (_, __, { wallet }) => ({ id: wallet.getLastOnChainAddress() }),
   },
   Mutation: {
     requestPhoneCode: async (_, { phone }, { logger }) => ({ success: requestPhoneCode({ phone, logger }) }),
     login: async (_, { phone, code, currency }, { logger }) => ({ token: login({ phone, code, currency, logger }) }),
-    updateUser: async (_, __,  { lightningWallet }) => {
+    updateUser: async (_, __,  { wallet }) => {
       // FIXME manage uid
       // TODO only level for now
-      const result = await lightningWallet.setLevel({ level: 1 })
+      const result = await wallet.setLevel({ level: 1 })
       return {
-        id: lightningWallet.uid,
+        id: wallet.uid,
         level: result.level,
       }
     },
     publicInvoice: async (_, { uid, logger }) => {
-      const lightningWallet = WalletFactory({ uid, currency: 'BTC', logger })
+      const wallet = WalletFactory({ uid, currency: 'BTC', logger })
       return {
-        addInvoice: async ({ value, memo }) => lightningWallet.addInvoice({ value, memo, selfGenerated: false }),
-        updatePendingInvoice: async ({ hash }) => lightningWallet.updatePendingInvoice({ hash })
+        addInvoice: async ({ value, memo }) => wallet.addInvoice({ value, memo, selfGenerated: false }),
+        updatePendingInvoice: async ({ hash }) => wallet.updatePendingInvoice({ hash })
       }
     },
     openChannel: async (_, { local_tokens, public_key, socket }, { }) => {
@@ -143,19 +143,19 @@ const resolvers = {
       const lightningAdminWallet = new AdminWallet()
       return { tx: lightningAdminWallet.openChannel({ local_tokens, public_key, socket }) }
     },
-    invoice: async (_, __, { lightningWallet }) => ({
-      addInvoice: async ({ value, memo }) => lightningWallet.addInvoice({ value, memo }),
-      updatePendingInvoice: async ({ hash }) => lightningWallet.updatePendingInvoice({ hash }),
-      payInvoice: async ({ invoice, amount, memo }) => lightningWallet.pay({ invoice, amount, memo })
+    invoice: async (_, __, { wallet }) => ({
+      addInvoice: async ({ value, memo }) => wallet.addInvoice({ value, memo }),
+      updatePendingInvoice: async ({ hash }) => wallet.updatePendingInvoice({ hash }),
+      payInvoice: async ({ invoice, amount, memo }) => wallet.pay({ invoice, amount, memo })
     }),
-    earnCompleted: async (_, { ids }, { lightningWallet }) => lightningWallet.addEarn(ids),
+    earnCompleted: async (_, { ids }, { wallet }) => wallet.addEarn(ids),
     deleteUser: () => {
       // TODO
     },
-    onchain: async (_, __, { lightningWallet }) => ({
-      getNewAddress: () => lightningWallet.getOnChainAddress(),
-      pay: ({ address, amount, memo }) => ({ success: lightningWallet.onChainPay({ address, amount, memo }) }),
-      getFee: ({ address }) => lightningWallet.getOnchainFee({ address }),
+    onchain: async (_, __, { wallet }) => ({
+      getNewAddress: () => wallet.getOnChainAddress(),
+      pay: ({ address, amount, memo }) => ({ success: wallet.onChainPay({ address, amount, memo }) }),
+      getFee: ({ address }) => wallet.getOnchainFee({ address }),
     }),
     addDeviceToken: async (_, { deviceToken }, { uid }) => {
       // TODO: refactor to a higher level User class
@@ -244,12 +244,12 @@ const server = new GraphQLServer({
     const uid = token?.uid ?? null
     // @ts-ignore
     const logger = graphqlLogger.child({token, id: context.request.id, body: context.request.body})
-    const lightningWallet = !!token ? WalletFactory({...token, logger}) : null
+    const wallet = !!token ? WalletFactory({...token, logger}) : null
     return {
       ...context,
       logger,
       uid,
-      lightningWallet,
+      wallet,
     }
   }
 })
