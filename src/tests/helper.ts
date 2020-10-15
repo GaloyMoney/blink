@@ -1,10 +1,8 @@
-import * as jwt from 'jsonwebtoken';
-import { AdminWallet } from "../AdminWallet";
 import { find } from "lodash";
-import { login, TEST_NUMBER } from "../text";
+import { AdminWallet } from "../AdminWallet";
 import { OnboardingEarn } from "../types";
 import { baseLogger, getAuth, sleep } from "../utils";
-import { WalletFactory } from "../walletFactory";
+import { getTestUserToken, WalletFactory } from "../walletFactory";
 
 const lnService = require('ln-service')
 
@@ -27,12 +25,6 @@ export const lndOutside2 = lnService.authenticatedLndGrpc({
 }).lnd;
 
 export const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
-
-export const getTestUserToken = async (userNumber) => {
-  const raw_token = await login({...TEST_NUMBER[userNumber], logger: baseLogger})
-  const token = jwt.verify(raw_token, process.env.JWT_SECRET);
-  return token
-}
 
 export const getUserWallet = async userNumber => {
   const token = await getTestUserToken(userNumber)

@@ -4,7 +4,7 @@ import { GraphQLServer } from 'graphql-yoga';
 import * as jwt from 'jsonwebtoken';
 import moment from "moment";
 import { AdminWallet } from "./AdminWallet";
-import { DbVersion, setupMongoConnection, upgrade, User } from "./mongodb";
+import { DbVersion, setupMongoConnection, User } from "./mongodb";
 import { sendNotification } from "./notification";
 import { Price } from "./priceImpl";
 import { login, requestPhoneCode } from "./text";
@@ -13,6 +13,7 @@ import { baseLogger, customLoggerPrefix, getAuth, nodeStats } from "./utils";
 import { WalletFactory } from "./walletFactory";
 import { v4 as uuidv4 } from 'uuid';
 import { startsWith } from "lodash";
+import { upgrade } from "./upgrade"
 const util = require('util')
 const lnService = require('ln-service')
 

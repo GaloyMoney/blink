@@ -244,112 +244,6 @@ const priceHistorySchema = new Schema({
 })
 export const PriceHistory = mongoose.model("PriceHistory", priceHistorySchema);
 
-export const upgrade = async () => {
-
-  try {
-
-    let dbVersion = await DbVersion.findOne({})
-
-    if (!dbVersion) {
-      dbVersion = DbVersion.create()
-      dbVersion.version = 0
-    }
-
-    baseLogger.info({ dbVersion }, "entering upgrade db module version")
-
-    switch (dbVersion.version) {
-      case 0:
-        baseLogger.info("starting upgrade to version 1")
-
-        baseLogger.info("all existing wallet should have BTC as currency")
-        // this is to enforce the index constraint
-        await User.updateMany({}, { $set: { currency: "BTC" } })
-
-        baseLogger.info("there needs to have a role: funder")
-        await User.findOneAndUpdate({ phone: "+1***REMOVED***", currency: "BTC" }, { role: "funder" })
-
-        baseLogger.info("earn is no longer a particular type. replace with on_us")
-        await Transaction.updateMany({ type: "earn" }, { $set: { type: "on_us" } })
-
-        baseLogger.info("setting db version to 1")
-        await DbVersion.findOneAndUpdate({}, { version: 1 }, { upsert: true })
-
-        baseLogger.info("upgrade successful to version 1")
-
-      case 1:
-        baseLogger.info("starting upgrade to version 2")
-
-        let priceTime
-        const moment = require('moment');
-
-        let price
-        let skipUpdate = false
-
-        try {
-          ({ pair: { exchange: { price } } } = await PriceHistory.findOne({}, {}, { sort: { _id: 1 } }))
-        } catch (err) {
-          baseLogger.warn("no price available. would only ok if no transaction is available, ie: on devnet")
-          const count = await Transaction.countDocuments()
-          if (count === 0) {
-            skipUpdate = true
-          } else {
-            exit()
-          }
-        }
-
-        if (!skipUpdate) {
-          const priceMapping = mapValues(keyBy(price, i => moment(i._id)), 'o')
-          const lastPriceObj = last(price)
-          const lastPrice = (lastPriceObj as any).o
-
-          const transactions = await Transaction.find({})
-
-          for (const tx of transactions) {
-            const txTime = moment(tx.datetime).startOf('hour');
-
-            if (has(priceMapping, `${txTime}`)) {
-              priceTime = priceMapping[`${txTime}`]
-            } else {
-              baseLogger.warn({ tx }, 'using most recent price for time %o', `${txTime}`)
-              priceTime = lastPrice
-            }
-
-            const usd = (tx.debit + tx.credit) * priceTime
-            await Transaction.findOneAndUpdate({ _id: tx._id }, { usd })
-          }
-        }
-
-        baseLogger.info("setting db version to 2")
-        dbVersion.version = 2
-        dbVersion.minBuildNumber = 182
-        await dbVersion.save()
-
-        baseLogger.info("upgrade successful to version 2")
-
-      case 2:
-        baseLogger.info("starting upgrade to version 3")
-
-        const Journal = mongoose.model("Medici_Journal");
-        const memo = 'escrow'
-        await Transaction.remove({ memo })
-        await Journal.remove({ memo })
-
-        dbVersion.version = 2
-        await dbVersion.save()
-
-        baseLogger.info("upgrade successful to version 3")
-
-      default:
-        baseLogger.info("db was just upgraded or did not need upgrade")
-        break;
-    }
-  } catch (err) {
-    baseLogger.fatal({ err }, "db upgrade error. exiting")
-    exit()
-  }
-}
-
-
 // TODO add an event listenever if we got disconnecter from MongoDb
 // after a first succesful connection
 
@@ -376,6 +270,7 @@ export const setupMongoConnection = async () => {
 
 import { book } from "medici";
 import { has, keyBy, last, mapValues } from "lodash";
+import { createBrokerUid } from "./walletFactory";
 export const MainBook = new book("MainBook")
 
 

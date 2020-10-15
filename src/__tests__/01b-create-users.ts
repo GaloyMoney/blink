@@ -3,8 +3,8 @@
  */
 const lnService = require('ln-service')
 import { setupMongoConnection, User } from "../mongodb";
-import { getTestUserToken } from "../tests/helper";
 import { TEST_NUMBER } from "../text";
+import { createBrokerUid, getTestUserToken } from "../walletFactory";
 const mongoose = require("mongoose");
 
 
@@ -12,12 +12,6 @@ const mongoose = require("mongoose");
 // FIXME there should be an API for this
 export async function promoteToFunder(uid) {
   await User.findOneAndUpdate({_id: uid}, {role: "funder"})
-}
-
-// change role to broker
-// FIXME there should be an API for this
-export async function promoteToBroker(uid) {
-  await User.findOneAndUpdate({_id: uid}, {role: "broker"})
 }
 
 beforeAll(async () => {
@@ -45,10 +39,8 @@ it('add Funder', async () => {
 })
 
 it('add Broker', async () => {  
-  const {uid} = await getTestUserToken(7)
-  await promoteToBroker(uid)
+  await createBrokerUid()
 })
-
 
 it('add user5 / usd user', async () => {  
   const user5 = await getTestUserToken(5)
