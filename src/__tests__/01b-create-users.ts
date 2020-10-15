@@ -14,6 +14,12 @@ export async function promoteToFunder(uid) {
   await User.findOneAndUpdate({_id: uid}, {role: "funder"})
 }
 
+// change role to broker
+// FIXME there should be an API for this
+export async function promoteToBroker(uid) {
+  await User.findOneAndUpdate({_id: uid}, {role: "broker"})
+}
+
 beforeAll(async () => {
   await setupMongoConnection()
 })
@@ -36,6 +42,11 @@ it('add user0 without currency (old account)', async () => {
 it('add Funder', async () => {  
   const {uid} = await getTestUserToken(4)
   await promoteToFunder(uid)
+})
+
+it('add Broker', async () => {  
+  const {uid} = await getTestUserToken(7)
+  await promoteToBroker(uid)
 })
 
 

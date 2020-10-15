@@ -1,5 +1,7 @@
 import { LightningBtcWallet } from "./LightningBtcWallet"
 import { LightningUsdWallet } from "./LightningUsdWallet"
+import { BrokerWallet } from "./BrokerWallet";
+
 import { User } from "./mongodb"
 
 export const WalletFactory = ({uid, logger, currency = "BTC"}: {uid: string, currency: string, logger: any}) => {
@@ -14,4 +16,9 @@ export const WalletFactory = ({uid, logger, currency = "BTC"}: {uid: string, cur
 export const getFunderWallet = async ({ logger }) => {
   const funder = await User.findOne({ role: "funder" })
   return new LightningBtcWallet({ uid: funder._id, logger })
+}
+
+export const getBrokerWallet = async ({ logger }) => {
+  const broker = await User.findOne({ role: "broker" })
+  return new BrokerWallet({ uid: broker._id, logger })
 }

@@ -148,7 +148,7 @@ else
   helmUpgrade loop-server -f ~/GaloyApp/backend/loop-server/$NETWORK-values.yaml ~/GaloyApp/backend/loop-server/
   # TODO: missing kubectlWait trigger and prometheus-client
 
-  helmUpgrade update-job -f ~/GaloyApp/backend/update-job/$NETWORK-values.yaml --set image.tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/update-job/
+  helmUpgrade update-job -f ~/GaloyApp/infrastructure/update-job/$NETWORK-values.yaml --set image.tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/infrastructure/update-job/
 fi
 
 helmUpgrade graphql-server -f ~/GaloyApp/backend/graphql-chart/$NETWORK-values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/graphql-chart/

@@ -43,9 +43,9 @@ export const getUserWallet = async userNumber => {
 export const checkIsBalanced = async () => {
 	const adminWallet = new AdminWallet()
   await adminWallet.updateUsersPendingPayment()
-	const { assetsLiabilitiesDifference, lndBalanceSheetDifference } = await adminWallet.balanceSheetIsBalanced()
+	const { assetsLiabilitiesDifference, bookingVersusRealWorldAssets } = await adminWallet.balanceSheetIsBalanced()
 	expect(assetsLiabilitiesDifference).toBeFalsy() // should be 0
-	expect(lndBalanceSheetDifference).toBeFalsy() // should be 0
+	expect(bookingVersusRealWorldAssets).toBeFalsy() // should be 0
 }
 
 export async function waitUntilBlockHeight({ lnd, blockHeight }) {

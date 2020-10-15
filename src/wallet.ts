@@ -1,10 +1,7 @@
 import moment from "moment"
 import { MainBook, User } from "./mongodb"
 import { ILightningTransaction } from "./types"
-
-export const customerPath = (uid) => { 
-  return `Liabilities:Customer:${uid}`
-}
+import { customerPath } from "./ledger"
 
 export class UserWallet {
 

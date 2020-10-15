@@ -6,9 +6,8 @@ module.exports = {
     "^.+\\.(ts)$": "ts-jest"
   },
   "testPathIgnorePatterns": [
-    // FIXME
-    // "lightning",
-    "exchange"
+    // "example-file",
   ],
-  "testSequencer":"./jestTestSequencer.js"
+  "testSequencer":"./jestTestSequencer.js",
+  setupFilesAfterEnv: ['./jest.setup.js'],
 }

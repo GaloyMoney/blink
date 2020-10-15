@@ -57,9 +57,10 @@ const UserSchema = new Schema({
   },
   role: {
     type: String,
-    enum: ["user", "admin", "funder", "broker"],
+    enum: ["user", "funder", "broker"], // FIXME: "admin" is not used anymore --> remove?
     required: true,
     default: "user"
+    // doto : enfore the fact there can be only one funder/broker
   },
   onchain_addresses: {
     type: [String],
@@ -139,6 +140,7 @@ const transactionSchema = new Schema({
       "invoice", "payment", "on_us", // lightning
       "onchain_receipt", "onchain_payment", "onchain_on_us", // onchain
       "fee", "escrow", // channel-related
+      "exchange_rebalance"//
     ]
   },
   pending: Boolean, // used to denote confirmation status of on and off chain txn
@@ -373,5 +375,21 @@ export const setupMongoConnection = async () => {
 }
 
 import { book } from "medici";
-import { has, keyBy, last, map, mapValues } from "lodash";
+import { has, keyBy, last, mapValues } from "lodash";
 export const MainBook = new book("MainBook")
+
+
+// approach below doesn't work
+// find a way to make currency mandatory for balance and ledger
+
+// MainBook.balance = function(_super) {
+//   return function() {
+//     if (!arguments[0].currency) {
+//       throw Error("currency is missing to get the balance")
+//     }
+//     // @ts-ignore
+//     return _super.apply(this, arguments);
+//   };
+// }
+
+// TODO: .ledger() as well

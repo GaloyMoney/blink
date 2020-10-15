@@ -1,11 +1,12 @@
 const lnService = require('ln-service');
+const assert = require('assert').strict;
 import { createHash, randomBytes } from "crypto";
+import { customerPath, getBrokerAccountPath } from "./ledger";
 import { disposer } from "./lock";
 import { InvoiceUser, MainBook, Transaction } from "./mongodb";
 import { sendInvoicePaidNotification } from "./notification";
 import { IAddInvoiceInternalRequest, IPaymentRequest } from "./types";
-import { addCurrentValueToMetadata, getAuth, timeout, LoggedError } from "./utils";
-import { customerPath } from "./wallet";
+import { getAuth, getCurrencyEquivalent, LoggedError, timeout } from "./utils";
 
 const util = require('util')
 
@@ -22,9 +23,11 @@ export type payInvoiceResult = "success" | "failed" | "pending"
 export const LightningMixin = (superclass) => class extends superclass {
   lnd = lnService.authenticatedLndGrpc(getAuth()).lnd
   nodePubKey: string | null = null
+  readonly isUsd
 
   constructor(...args) {
     super(...args)
+    this.isUSD = this.currency === "USD"
   }
 
   async getNodePubkey() {
@@ -184,33 +187,35 @@ export const LightningMixin = (superclass) => class extends superclass {
             throw new LoggedError(error)
           }
           payeeUid = existingInvoice.uid
-        }
-
-        if (balance < tokens) {
-          const error = `balance is too low`
-          lightningLoggerOnUs.error({balance, success: false, error}, error)
-          throw new LoggedError(error)
-        }
-
-        {
-          const sats = tokens
-          const metadata = { currency: this.currency, hash: id, type: "on_us", pending: false }
-          await addCurrentValueToMetadata(metadata, {sats, fee: 0})
 
           // TODO XXX FIXME:
           // manage the case where a user in USD tries to pay another used in BTC with an onUS transaction
-
-          await MainBook.entry(memoInvoice)
-            .credit(this.accountPath, sats, {...metadata, memoPayer})
-            .debit(customerPath(payeeUid), sats, metadata)
-            .commit()
-
-          await sendInvoicePaidNotification({amount: tokens, uid: payeeUid, hash: id, logger: this.logger})
-          await InvoiceUser.findOneAndUpdate({ _id: id }, { pending: false })
-          await lnService.cancelHodlInvoice({ lnd: this.lnd, id })
-
-          lightningLoggerOnUs.info({success: true, ...metadata}, "lightning payment success")
+          assert(this.currency == existingInvoice.currency)
         }
+
+
+
+        const sats = tokens
+        const addedMetadata = await getCurrencyEquivalent({sats, fee: 0})
+        const metadata = { currency: this.currency, hash: id, type: "on_us", pending: false, ...addedMetadata }
+
+        const value = this.isUSD ? metadata.usd : sats
+
+        if (balance < value) {
+          const error = `balance is too low`
+          lightningLoggerOnUs.error({balance, value, success: false, error}, error)
+          throw new LoggedError(error)
+        }
+        await MainBook.entry(memoInvoice)
+          .debit(customerPath(payeeUid), value, metadata)
+          .credit(this.accountPath, value, {...metadata, memoPayer})
+          .commit()
+      
+        await sendInvoicePaidNotification({amount: tokens, uid: payeeUid, hash: id, logger: this.logger })
+        await InvoiceUser.findOneAndUpdate({ _id: id }, { pending: false })
+        await lnService.cancelHodlInvoice({ lnd: this.lnd, id })
+          
+        lightningLoggerOnUs.info({success: true, ...metadata}, "lightning payment success")
 
         return "success"
       }
@@ -247,32 +252,47 @@ export const LightningMixin = (superclass) => class extends superclass {
       }
 
       // we are confident enough that there is a possible payment route. let's move forward
+      // TODO quote for fees, and also USD for USD users
 
       let entry 
 
       {
-        let metadata
-
         fee = route.safe_fee
         const sats = tokens + fee
 
         lightningLogger = lightningLogger.child({ probingSuccess: true, route, balance, fee, sats })
 
-        if (balance < sats) {
+        const addedMetadata = await getCurrencyEquivalent({sats, fee})
+        const metadata = { currency: this.currency, hash: id, type: "payment", pending: true, fee, ...addedMetadata }
+
+        const value = this.isUSD ? metadata.usd : sats
+
+        if (balance < value) {
           const error = `balance is too low`
           lightningLogger.warn({ success: false, error }, error)
           throw new LoggedError(error)
         }
 
+        if (pushPayment) {
+          route.messages = messages
+        }
+
+        // FIXME: cache this
+        const brokerAccountPath = await getBrokerAccountPath()
+
         // reduce balance from customer first
 
-        metadata = { currency: this.currency, hash: id, type: "payment", pending: true, fee }
-        await addCurrentValueToMetadata(metadata, {sats, fee})
+        entry = MainBook.entry(memoInvoice)
+          .debit('Assets:Reserve:Lightning', sats, {...metadata, currency: "BTC"})
+          .credit(this.isUSD ? brokerAccountPath : this.accountPath, sats, {...metadata, currency: "BTC"})
+        
+        if(this.isUSD) {
+          entry
+            .debit(brokerAccountPath, metadata.usd, {...metadata, currency: "USD"})
+            .credit(this.accountPath, metadata.usd, {...metadata, currency: "USD"})
+        }
 
-        entry = await MainBook.entry(memoInvoice)
-          .debit('Assets:Reserve:Lightning', sats, metadata)
-          .credit(this.accountPath, sats, {...metadata, memoPayer})
-          .commit()
+        await entry.commit()
 
         // there is 3 scenarios for a payment.
         // 1/ payment succeed is less than TIMEOUT_PAYMENT
@@ -442,22 +462,21 @@ export const LightningMixin = (superclass) => class extends superclass {
           
           const sats = invoice.received
           
-          const isUSD = invoiceUser.currency === "USD"
           const usd = invoiceUser.usd
 
-          const metadata = { hash, type: "invoice" }
-          await addCurrentValueToMetadata(metadata, {usd, sats, fee: 0})
+          const addedMetadata = await getCurrencyEquivalent({usd, sats, fee: 0})
+          const metadata = { hash, type: "invoice", ... addedMetadata }
 
-          const brokerAccount = 'Liabilities:Broker'
+          const brokerAccountPath = await getBrokerAccountPath()
 
           const entry = MainBook.entry(invoice.description)
+            .debit(this.isUSD ? brokerAccountPath : this.accountPath, sats, {...metadata, currency: "BTC"})
             .credit('Assets:Reserve:Lightning', sats, {...metadata, currency: "BTC"})
-            .debit(isUSD ? brokerAccount : this.accountPath, sats, {...metadata, currency: "BTC"})
           
-          if(isUSD) {
+          if(this.isUSD) {
             entry
-              .credit(brokerAccount, usd, {...metadata, currency: "USD"})
               .debit(this.accountPath, usd, {...metadata, currency: "USD"})
+              .credit(brokerAccountPath, usd, {...metadata, currency: "USD"})
           }
 
           await entry.commit()

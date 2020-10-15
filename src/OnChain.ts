@@ -1,13 +1,14 @@
 const lnService = require('ln-service');
 import { assert } from "console";
-import { filter, includes, intersection, last, sumBy } from "lodash";
+import { intersection, last } from "lodash";
 import moment from "moment";
+import { customerPath, lightningAccountingPath } from "./ledger";
 import { disposer } from "./lock";
 import { MainBook, Transaction, User } from "./mongodb";
 import { Price } from "./priceImpl";
 import { ILightningTransaction, IOnChainPayment, ISuccess } from "./types";
-import { addCurrentValueToMetadata, amountOnVout, bitcoindClient, btc2sat, getAuth, LoggedError, satsToUsdCached } from "./utils";
-import { customerPath } from "./wallet";
+import { amountOnVout, bitcoindClient, btc2sat, getAuth, getCurrencyEquivalent, LoggedError, satsToUsdCached } from "./utils";
+
 const util = require('util')
 
 const using = require('bluebird').using
@@ -78,14 +79,15 @@ export const OnChainMixin = (superclass) => class extends superclass {
       }
 
       const sats = amount
-      const metadata = { currency: this.currency, type: "onchain_on_us", pending: false }
-      await addCurrentValueToMetadata(metadata, { sats, fee: 0 })
+
+      const addedMetadata = await getCurrencyEquivalent({ sats, fee: 0 })
+      const metadata = { currency: this.currency, type: "onchain_on_us", pending: false, ...addedMetadata}
 
       return await using(disposer(this.uid), async (lock) => {
 
         await MainBook.entry()
-          .credit(this.accountPath, sats, {...metadata, memo})
           .debit(customerPath(payeeUser._id), sats, metadata)
+          .credit(this.accountPath, sats, {...metadata, memo})
           .commit()
         
         onchainLoggerOnUs.info({ success: true, ...metadata }, "onchain payment succeed")
@@ -136,21 +138,22 @@ export const OnChainMixin = (superclass) => class extends superclass {
       const outgoingOnchainTxns = await this.getOnChainTransactions({ lnd: this.lnd, incoming: false })
 
       const [{ fee }] = outgoingOnchainTxns.filter(tx => tx.id === id)
-      let metadata
 
       {
         const sats = amount + fee
-        metadata = { currency: this.currency, hash: id, type: "onchain_payment", pending: true }
-        await addCurrentValueToMetadata(metadata, { sats, fee })
+        
+        const addedMetadata = await getCurrencyEquivalent({ sats, fee })
+        const metadata = { currency: this.currency, hash: id, type: "onchain_payment", pending: true, ...addedMetadata }
 
         // TODO/FIXME refactor. add the transaction first and set the fees in a second tx.
         await MainBook.entry(memo)
-          .debit('Assets:Reserve:Lightning', sats, metadata)
+          .debit(lightningAccountingPath, sats, metadata)
           .credit(this.accountPath, sats, metadata)
           .commit()
+
+        onchainLogger.info({success: true , ...metadata}, 'successfull onchain payment')
       }
 
-      onchainLogger.info({ success: true , ...metadata}, 'successfull onchain payment')
       return true
 
     })
@@ -376,17 +379,18 @@ export const OnChainMixin = (superclass) => class extends superclass {
           const sats = btc2sat(value)
           assert(matched_tx.tokens >= sats)
 
-          const metadata = { currency: this.currency, type, hash: matched_tx.id, pending: false }
-          await addCurrentValueToMetadata(metadata, { sats })
+          const addedMetadata = await getCurrencyEquivalent({ sats })
+          const metadata = { currency: this.currency, type, hash: matched_tx.id, pending: false, ...addedMetadata }
 
           await MainBook.entry()
-            .credit('Assets:Reserve:Lightning', sats, metadata)
             .debit(this.accountPath, sats, metadata)
+            .credit(lightningAccountingPath, sats, metadata)
             .commit()
 
           const onchainLogger = this.logger.child({ topic: "payment", protocol: "onchain", transactionType: "receipt", onUs: false })
           onchainLogger.info({ success: true, ...metadata })
         }
+
       }
 
     })
