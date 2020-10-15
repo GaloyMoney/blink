@@ -193,11 +193,7 @@ export const LightningMixin = (superclass) => class extends superclass {
           assert(this.currency == existingInvoice.currency)
         }
 
-        if (balance < tokens) {
-          const error = `balance is too low`
-          lightningLoggerOnUs.error({balance, success: false, error}, error)
-          throw new LoggedError(error)
-        }
+
 
         const sats = tokens
         const addedMetadata = await getCurrencyEquivalent({sats, fee: 0})
@@ -206,9 +202,10 @@ export const LightningMixin = (superclass) => class extends superclass {
         const value = this.isUSD ? metadata.usd : sats
 
         if (balance < value) {
-          throw Error(`cancelled: balance is too low. have: ${balance} sats, need ${value}`)
+          const error = `balance is too low`
+          lightningLoggerOnUs.error({balance, value, success: false, error}, error)
+          throw new LoggedError(error)
         }
-
         await MainBook.entry(memoInvoice)
           .debit(customerPath(payeeUid), value, metadata)
           .credit(this.accountPath, value, {...metadata, memoPayer})

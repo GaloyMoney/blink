@@ -107,7 +107,7 @@ it('on-us should be ok with same currency', async () => {
   const userWalletUsd10 = await getUserWallet(10)
   const request = await userWalletUsd10.addInvoice({value: 0.1, memo: "usd invoice"})
 
-  const balance = userWalletUsd.getBalance()
+  const balance = await userWalletUsd.getBalance()
   console.log({balance})
 
   const result = await userWalletUsd.pay({ invoice: request })
