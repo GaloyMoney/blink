@@ -352,7 +352,6 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
     }
   }
 
-  // TODO: cron job on this
   async updatePositionAndLeverage() {
     const satsPrice = await this.price.lastPrice()
     const btcPrice = btc2sat(satsPrice) 
@@ -360,12 +359,21 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
     const {usd: usdLiability} = await this.getLocalLiabilities()
     const {usd: usdExposure, leverage, collateral} = await this.getAccountPosition()
 
+    this.logger.debug({ usdExposure, usdLiability, leverage, collateral, btcPrice }, "input for the broker algos")
+    
     {
       const { btcAmount, buyOrSell } = BrokerWallet.isOrderNeeded({ usdLiability, usdExposure, btcPrice })
+      this.logger.debug({ btcAmount, buyOrSell }, "isOrderNeeded result")
+
       if (buyOrSell) {
         await this.executeOrder({ btcAmount, buyOrSell })
 
-        const { buyOrSell: newBuyOrSell } = BrokerWallet.isOrderNeeded({ usdLiability, usdExposure, btcPrice })
+        const {usd: updatedUsdLiability } = await this.getLocalLiabilities()
+        const {usd: updatedUsdExposure } = await this.getAccountPosition()
+        this.logger.debug({ usdExposure, usdLiability, leverage, collateral, btcPrice }, "input for the updated isOrderNeeded after an order")
+        const { buyOrSell: newBuyOrSell } = BrokerWallet.isOrderNeeded({ usdLiability: updatedUsdLiability, usdExposure: updatedUsdExposure, btcPrice })
+
+        this.logger.debug({ newBuyOrSell }, "output for the updated isOrderNeeded after an order")
         assert(!newBuyOrSell)
       }
     }
@@ -373,6 +381,10 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
     {
       const { btcAmount, depositOrWithdraw } = BrokerWallet.isRebalanceNeeded({ leverage, usdCollateral: collateral, btcPrice })
       await this.rebalance({ btcAmount, depositOrWithdraw })
+
+      this.logger.debug({ btcAmount, depositOrWithdraw }, "isRebalanceNeeded result")
+
+      // TODO: add a check this is no longer needed. maybe with the block this is not as easy?
     }
 
   }
