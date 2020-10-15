@@ -384,7 +384,8 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
 
       this.logger.debug({ btcAmount, depositOrWithdraw }, "isRebalanceNeeded result")
 
-      // TODO: add a check this is no longer needed. maybe with the block this is not as easy?
+      // TODO: add a check that rebalancing is no longer needed. 
+      // maybe with the block time, this is not as easy?
     }
 
   }
