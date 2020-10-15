@@ -328,17 +328,17 @@ export const LightningMixin = (superclass) => class extends superclass {
             // or payment update when the user query his balance
           }
 
-          lightningLogger.warn({ success: false, err, ...metadata }, `payment error`)
-
           try {
             // FIXME: this query may not make sense 
             // where multiple payment have the same hash
             // ie: when a payment is being retried
             await Transaction.updateMany({ hash: id }, { pending: false, error: err[1] })
             await MainBook.void(entry._id, err[1])
-          } catch (err) {
+            lightningLogger.warn({ success: false, err, ...metadata }, `payment error`)
+
+          } catch (err_fatal) {
             const error = `ERROR CANCELING PAYMENT ENTRY`
-            lightningLogger.fatal({err}, error)
+            lightningLogger.fatal({err, err_fatal, entry}, error)
             throw new LoggedError(error)
           }
 
