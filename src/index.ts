@@ -59,13 +59,6 @@ const getMinBuildNumber = async () => {
   return minBuildNumber
 }
 
-const DEFAULT_USD = {
-  currency: "USD",
-  balance: 0,
-  transactions: [],
-  id: "USD",
-}
-
 const resolvers = {
   Query: {
     me: async (_, __, { uid }) => {
@@ -76,20 +69,13 @@ const resolvers = {
         level: 1,
       }
     },
-    wallet: async (_, __, { wallet }) => {
-      const btc_wallet = {
-        id: "BTC",
-        currency: "BTC",
-        balance: wallet.getBalance(), // FIXME why a function and not a callback?
-        transactions: wallet.getTransactions()
-      }
-
-      return ([
-        btc_wallet,
-        DEFAULT_USD
-      ])
-    },
-    nodeStats: async() => nodeStats({lnd}),
+    wallet: async (_, __, { wallet }) => ([{
+      id: wallet.currency,
+      currency: wallet.currency,
+      balance: () => wallet.getBalance(),
+      transactions: () => wallet.getTransactions()
+    }]),
+    nodeStats: async () => nodeStats({lnd}),
     buildParameters: () => ({
       commitHash: () => commitHash,
       buildTime: () => buildTime,
