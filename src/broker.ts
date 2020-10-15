@@ -6,7 +6,7 @@ const main = async () => {
   const broker = await getBrokerWallet({ logger: baseLogger.child({module: "cron" }) })
 
   const balance = await broker.getExchangeBalance()
-  baseLogger.log({ balance }, "broker.getExchangeBalance")
+  baseLogger.debug({ balance }, "broker.getExchangeBalance")
 
   await broker.updatePositionAndLeverage()
   // FIXME: we probably needs to exit because we have a memleak of pending promise
