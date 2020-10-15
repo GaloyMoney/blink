@@ -116,9 +116,10 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
     // console.log(this.ftx.privateGetAccount)
 
     const { result: { collateral, positions, chargeInterestOnNegativeUsd, marginFraction } } = await this.ftx.privateGetAccount()
+    this.logger.log({collateral, positions, chargeInterestOnNegativeUsd, marginFraction}, "this.ftx.privateGetAccount result")
 
     const positionBtcPerp = find(positions, { future: symbol } )
-    console.log({positionBtcPerp})
+    this.logger.log({positionBtcPerp}, "positionBtcPerp result")
 
     const { netSize, estimatedLiquidationPrice, collateralUsed, maintenanceMarginRequirement } = positionBtcPerp
 
