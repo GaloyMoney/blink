@@ -1,7 +1,7 @@
 import { filter, find, sumBy } from "lodash";
 import { WalletFactory, getBrokerWallet } from "./walletFactory";
 import { MainBook, Transaction, User } from "./mongodb";
-import { getAuth, baseLogger } from "./utils";
+import { getAuth, baseLogger, btc2sat } from "./utils";
 import { accountingExpenses, escrowAccountingPath, lightningAccountingPath, openChannelFees } from "./ledger";
 const lnService = require('ln-service')
 
@@ -90,7 +90,7 @@ export class AdminWallet {
   async ftxBalance () {
     const brokerWallet = await getBrokerWallet({ logger })
     const balance = await brokerWallet.getExchangeBalance()
-    return balance.BTC
+    return balance
   }
 
   getInfo = async () => lnService.getWalletInfo({ lnd: this.lnd });

@@ -4,6 +4,7 @@
 import { setupMongoConnection } from "../mongodb"
 import { BrokerWallet } from "../BrokerWallet";
 import { baseLogger } from "../utils";
+import { quit } from "../lock";
 const mongoose = require("mongoose");
 const util = require('util')
 
@@ -12,43 +13,69 @@ const fixtures = [{
     return new Promise((resolve, reject) => {
       resolve({
         result: {
-        backstopProvider: false,
-        chargeInterestOnNegativeUsd: true,
-        collateral: 90.1234,
-        freeCollateral: 80.1234,
-        initialMarginRequirement: 0.05,
-        leverage: 20,
-        liquidating: false,
-        maintenanceMarginRequirement: 0.03,
-        makerFee: 0,
-        marginFraction: 0.495,
-        openMarginFraction: 0.472,
-        positionLimit: null,
-        positionLimitUsed: null,
-        positions: [{
-          collateralUsed: 0.328866663378,
-          cost: -0.9872,
-          entryPrice: 9872,
-          estimatedLiquidationPrice: 0,
-          future: 'BTC-PERP',
-          initialMarginRequirement: 0.33333333,
-          longOrderSize: 0,
+          marginFraction: null,
+          chargeInterestOnNegativeUsd: true,
+          collateral: 0,
+          positions: [],
+
+        },
+      success: true
+    })
+  })},
+  createMarketBuyOrder: () => ({ }),
+  getBalance: () => ({
+    info: {
+      result: [],
+      success: true
+    },
+    USDT: { free: 0, used: 0, total: 0 },
+    USD: { free: 0.0000123, used: 0.002345, total: 0.0001234},
+    BTC: { free: 0.005430, used: 0, total: 0.005430 },
+    free: { USDT: 0, USD: 0.002345, BTC: 0.005430 },
+    used: { USDT: 0, USD: 0.001234, BTC: 0 },
+    total: { USDT: 0, USD: 0.002345, BTC: 0.005430 }
+  })
+}, {
+  privateGetAccount: function() {
+    return new Promise((resolve, reject) => {
+      resolve({
+        result: {
+          backstopProvider: false,
+          chargeInterestOnNegativeUsd: true,
+          collateral: 90.1234,
+          freeCollateral: 80.1234,
+          initialMarginRequirement: 0.05,
+          leverage: 20,
+          liquidating: false,
           maintenanceMarginRequirement: 0.03,
-          netSize: -0.0001,
-          openSize: 0.0001,
-          realizedPnl: -0.01195,
-          shortOrderSize: 0,
-          side: 'sell',
-          size: 0.0001,
-          unrealizedPnl: 0.0006
-        }],
-        spotLendingEnabled: false,
-        spotMarginEnabled: false,
-        takerFee: 0.0007,
-        totalAccountValue: 96.06484715052996,
-        totalPositionSize: 202.1541,
-        useFttCollateral: true,
-        username: '***REMOVED***'
+          makerFee: 0,
+          marginFraction: 0.495,
+          openMarginFraction: 0.472,
+          positionLimit: null,
+          positionLimitUsed: null,
+          positions: [{
+            collateralUsed: 0.328866663378,
+            cost: -0.9872,
+            entryPrice: 9872,
+            estimatedLiquidationPrice: 0,
+            future: 'BTC-PERP',
+            initialMarginRequirement: 0.33333333,
+            longOrderSize: 0,
+            maintenanceMarginRequirement: 0.03,
+            netSize: -0.0001,
+            openSize: 0.0001,
+            realizedPnl: -0.01195,
+            shortOrderSize: 0,
+            side: 'sell',
+            size: 0.0001,
+            unrealizedPnl: 0.0006
+          }],
+          spotLendingEnabled: false,
+          spotMarginEnabled: false,
+          takerFee: 0.0007,
+          totalAccountValue: 96.06484715052996,
+          totalPositionSize: 202.1541,
+          useFttCollateral: true
       },
       success: true
     })
@@ -171,82 +198,36 @@ const ftxHas = {
 
 const ccxt = require('ccxt')
 
+const ftxMock = jest.fn();
+
+// fixtures.forEach()
+
+ftxMock.mockReturnValueOnce(fixtures[1]).mockReturnValueOnce(fixtures[0]);
+
 jest.mock('ccxt', () => ({
-  ftx: function() {
-    return fixtures[0]
-  }
+  ftx: function() { return ftxMock() } 
 }))
 
-const lastBTCPrice = 0.000096006
-
-let brokerWallet
+let brokerWalletFixture0, brokerWalletFixture1
 
 beforeAll(async () => {
   await setupMongoConnection()
-  brokerWallet = new BrokerWallet({uid: "broker", logger: baseLogger})
 
+  brokerWalletFixture0 = new BrokerWallet({uid: "broker", logger: baseLogger})
+  brokerWalletFixture1 = new BrokerWallet({uid: "broker", logger: baseLogger})
 })
 
 afterAll(async () => {
-  // await mongoose.connection.close()
-  // await quit()
+  await mongoose.connection.close()
+  await quit()
 })
 
-it('isRebalanceNeeded test under leverage', async () => {
-  const { btcAmount, depositOrWithdraw } = BrokerWallet.isRebalanceNeeded({leverage: 0.8, usdCollateral: 1000, btcPrice: 10000})
-  expect(depositOrWithdraw).toBe("withdraw")
-  // withdraw 0.0694 to go from 0.8 to 1.8 leverage
-  expect(btcAmount).toBeCloseTo(((1000 / .8) - (1000 / 1.8))/ 10000) 
+it('future0', async () => {
+  const future = await brokerWalletFixture0.getAccountPosition()
+  console.log({future})
 })
 
-it('isRebalanceNeeded test over leverage', async () => {
-  const { btcAmount, depositOrWithdraw } = BrokerWallet.isRebalanceNeeded({leverage: 2.8, usdCollateral: 1000, btcPrice: 10000})
-  expect(depositOrWithdraw).toBe("deposit")
-  // deposit 0.0054 to go from 2.5 to 2.2 leverage
-  expect(btcAmount).toBeCloseTo(((1000 / 2.2) - (1000 / 2.5))/ 10000) 
-})
-
-it('isRebalanceNeeded test no action', async () => {
-  {
-    const { btcAmount, depositOrWithdraw } = BrokerWallet.isRebalanceNeeded({leverage: 1.6, usdCollateral: 1000, btcPrice: 10000})
-    expect(depositOrWithdraw).toBeNull()
-  }
-  
-  {
-    const { btcAmount, depositOrWithdraw } = BrokerWallet.isRebalanceNeeded({leverage: 2.1, usdCollateral: 1000, btcPrice: 10000})
-    expect(depositOrWithdraw).toBeNull()
-  }
-})
-
-it('calculate hedging amount when over exposed', async () => {
-  // ratio is a .5
-  // need to be at .9
-  // should buy $400/0.04 BTC
-  const { btcAmount, buyOrSell } = BrokerWallet.isOrderNeeded({ usdLiability: 1000, usdExposure: 500, btcPrice: 10000 })
-  expect(buyOrSell).toBe("buy")
-  expect(btcAmount).toBe(0.04)
-})
-
-it('calculate hedging amount when under exposed', async () => {
-  // ratio is a 2
-  // need to be at 1.1
-  // should sell $450/0.045 BTC to have exposure being back at $600
-  const { btcAmount, buyOrSell } = BrokerWallet.isOrderNeeded({ usdLiability: 500, usdExposure: 1000, btcPrice: 10000 })
-  expect(buyOrSell).toBe("sell")
-  expect(btcAmount).toBe(0.045)
-})
-
-
-// TODO: accounting rebalancing test
-
-
-
-it('calculate hedging when no rebalance is needed', async () => {
-  const { btcAmount, buyOrSell } = BrokerWallet.isOrderNeeded({ usdLiability: 950, usdExposure: 1000, btcPrice: 10000 })
-  expect(buyOrSell).toBeNull()
-})
-
-it('future', async () => {
-  const future = await brokerWallet.getAccountPosition()
+it('future1', async () => {
+  const future = await brokerWalletFixture1.getAccountPosition()
   console.log({future})
 })

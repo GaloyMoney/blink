@@ -82,9 +82,7 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
     // at least on FTX. interest will be charged when below -$30,000.
     // TODO: manage this part
 
-    const {BTC: exchangeBTC} = await this.getExchangeBalance()
-    const exchange = btc2sat(exchangeBTC)
-
+    const exchange = await this.getExchangeBalance()
     const total = node + exchange
 
     return {
@@ -96,9 +94,8 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
 
   async getExchangeBalance() {
     const balance = await this.ftx.fetchBalance()
-
-    // TODO do not return only balance?
-    return balance.total
+    this.logger.debug({ balance }, "this.ftx.fetchBalance result")
+    return btc2sat(balance.total.BTC ?? 0)
   }
 
   async getAccountPosition() {
@@ -121,7 +118,7 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
     const positionBtcPerp = find(positions, { future: symbol } )
     this.logger.debug({positionBtcPerp}, "positionBtcPerp result")
 
-    const { netSize, estimatedLiquidationPrice, collateralUsed, maintenanceMarginRequirement } = positionBtcPerp
+    const { netSize = 0, estimatedLiquidationPrice, collateralUsed, maintenanceMarginRequirement } = positionBtcPerp ?? {}
 
     // TODO: check this is the intended settings
     assert(chargeInterestOnNegativeUsd === true)
@@ -254,9 +251,9 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
 
       // TODO: need a withdrawal password?
       // FIXME: No fees? event the on-chain fees?
-      const withdrawal = await this.ftx.withdraw("BTC", btcAmount, address)
-
-      console.log({withdrawal})
+      const currency = "BTC"
+      const withdrawal = await this.ftx.withdraw(currency, btcAmount, address)
+      this.logger.debug({withdrawal, currency, btcAmount, address}, "this.ftx.withdraw()")
 
       //
       // from ccxt. could be different for ftx
@@ -326,12 +323,15 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
     let order, orderStatus
 
     // let orderId = 6103637365
-    let orderId
+    // let orderId
+
+    const orderType = 'market'
+    const logOrder = this.logger.child({symbol, orderType, buyOrSell, btcAmount})
 
     try {
-      order = await this.ftx.createOrder(symbol, 'market', buyOrSell, btcAmount)
+      order = await this.ftx.createOrder(symbol, orderType, buyOrSell, btcAmount)
     } catch (err) {
-      this.logger.error({err, buyOrSell, btcAmount, symbol}, "error placing an order")
+      logOrder.error({err}, "error placing an order")
       throw err
     }
 
@@ -343,13 +343,15 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
     try {
       orderStatus = await this.ftx.fetchOrder(order.id)
     } catch (err) {
-      this.logger.error({err, buyOrSell, btcAmount, symbol, order}, "error fetching an order")
+      logOrder.error({ err }, "error fetching order status")
       throw err
     }
 
     if (orderStatus.status !== "closed") {
-      this.logger.error({order}, "market order has not been fullfilled")
+      logOrder.error({ order, orderStatus}, "market order has not been fullfilled")
       // Pager
+    } else {
+      logOrder.info({ order, orderStatus }, "order placed succesfully")
     }
   }
 
