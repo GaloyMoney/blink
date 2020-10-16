@@ -50,7 +50,7 @@ export class AdminWallet {
     const { balance: liabilities } = await MainBook.balance({accounts: "Liabilities", currency: "BTC"}) 
     const { balance: lightning } = await MainBook.balance({accounts: lightningAccountingPath, currency: "BTC"}) 
     const { balance: expenses } = await MainBook.balance({accounts: accountingExpenses, currency: "BTC"}) 
-    const { balance: usd } = await MainBook.balance({accounts: "Liabilities", currency: "USD"}) 
+    const { balance: usd } = await MainBook.balance({accounts: "Liabilities:Broker", currency: "USD"}) 
 
     return {assets, liabilities, lightning, expenses, usd }
   }

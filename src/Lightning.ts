@@ -1,7 +1,7 @@
 const lnService = require('ln-service');
 const assert = require('assert').strict;
 import { createHash, randomBytes } from "crypto";
-import { customerPath, getBrokerAccountPath } from "./ledger";
+import { customerPath, brokerPath, lightningAccountingPath } from "./ledger";
 import { disposer } from "./lock";
 import { InvoiceUser, MainBook, Transaction } from "./mongodb";
 import { sendInvoicePaidNotification } from "./notification";
@@ -277,18 +277,15 @@ export const LightningMixin = (superclass) => class extends superclass {
           route.messages = messages
         }
 
-        // FIXME: cache this
-        const brokerAccountPath = await getBrokerAccountPath()
-
         // reduce balance from customer first
 
         journal = MainBook.entry(memoInvoice)
           .debit('Assets:Reserve:Lightning', sats, {...metadata, currency: "BTC"})
-          .credit(this.isUSD ? brokerAccountPath : this.accountPath, sats, {...metadata, currency: "BTC"})
+          .credit(this.isUSD ? brokerPath : this.accountPath, sats, {...metadata, currency: "BTC"})
         
         if(this.isUSD) {
           journal
-            .debit(brokerAccountPath, metadata.usd, {...metadata, currency: "USD"})
+            .debit(brokerPath, metadata.usd, {...metadata, currency: "USD"})
             .credit(this.accountPath, metadata.usd, {...metadata, currency: "USD"})
         }
 
@@ -467,16 +464,14 @@ export const LightningMixin = (superclass) => class extends superclass {
           const addedMetadata = await getCurrencyEquivalent({usd, sats, fee: 0})
           const metadata = { hash, type: "invoice", ... addedMetadata }
 
-          const brokerAccountPath = await getBrokerAccountPath()
-
           const entry = MainBook.entry(invoice.description)
-            .debit(this.isUSD ? brokerAccountPath : this.accountPath, sats, {...metadata, currency: "BTC"})
-            .credit('Assets:Reserve:Lightning', sats, {...metadata, currency: "BTC"})
+            .debit(this.isUSD ? brokerPath : this.accountPath, sats, {...metadata, currency: "BTC"})
+            .credit(lightningAccountingPath, sats, {...metadata, currency: "BTC"})
           
           if(this.isUSD) {
             entry
               .debit(this.accountPath, usd, {...metadata, currency: "USD"})
-              .credit(brokerAccountPath, usd, {...metadata, currency: "USD"})
+              .credit(brokerPath, usd, {...metadata, currency: "USD"})
           }
 
           await entry.commit()

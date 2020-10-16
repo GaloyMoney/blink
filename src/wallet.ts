@@ -1,9 +1,8 @@
 import moment from "moment"
 import { MainBook, User } from "./mongodb"
 import { ILightningTransaction } from "./types"
-import { customerPath } from "./ledger"
 
-export class UserWallet {
+export abstract class UserWallet {
 
   readonly uid: string
   readonly currency: string
@@ -15,14 +14,11 @@ export class UserWallet {
     this.logger = logger
   }
 
-  get accountPath(): string {
-    return customerPath(this.uid)
-  }
+  abstract get accountPath(): string
 
   get accountPathMedici(): Array<string> {
     return this.accountPath.split(":")
   }
-
 
   async getBalance() {
 
@@ -68,7 +64,6 @@ export class UserWallet {
   }
 
   async setLevel({ level }) {
-    // FIXME this should be in User and not tight to Lightning // use Mixins instead
     return await User.findOneAndUpdate({ _id: this.uid }, { level }, { new: true, upsert: true })
   }
 }

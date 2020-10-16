@@ -1,3 +1,4 @@
+import { customerPath } from "./ledger";
 import { LightningMixin } from "./Lightning";
 import { Price } from "./priceImpl";
 import { IAddUSDInvoiceRequest, ILightningWalletUser } from "./types";
@@ -8,6 +9,10 @@ import { UserWallet } from "./wallet";
  */
 export class LightningUsdWallet extends LightningMixin(UserWallet) {
   readonly currency = "USD" 
+
+  get accountPath(): string {
+    return customerPath(this.uid)
+  }
 
   constructor({ uid, logger }: ILightningWalletUser) {
     super({ uid, currency: "USD", logger })

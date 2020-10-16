@@ -1,3 +1,4 @@
+import { customerPath } from "./ledger";
 import { LightningMixin } from "./Lightning";
 import { disposer } from "./lock";
 import { User } from "./mongodb";
@@ -12,8 +13,13 @@ const using = require('bluebird').using
  * this represents a user wallet
  */
 export class LightningBtcWallet extends OnChainMixin(LightningMixin(UserWallet)) {
+  
   constructor({ uid, logger }: ILightningWalletUser) {
     super({ uid, currency: "BTC", logger })
+  }
+
+  get accountPath(): string {
+    return customerPath(this.uid)
   }
 
   async addEarn(ids) {

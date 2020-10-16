@@ -1,5 +1,5 @@
 import { find } from "lodash";
-import { ftxAccountingPath } from "./ledger";
+import { ftxAccountingPath, brokerPath } from "./ledger";
 import { MainBook } from "./mongodb";
 import { OnChainMixin } from "./OnChain";
 import { Price } from "./priceImpl";
@@ -34,6 +34,10 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
   ftx
   price
 
+  get accountPath(): string {
+    return brokerPath
+  }
+  
   constructor({ uid, logger }: ILightningWalletUser) {
     super({ uid, currency: "BTC" })
     this.ftx = new ccxt.ftx({ apiKey, secret })
@@ -327,6 +331,11 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
 
     const orderType = 'market'
     const logOrder = this.logger.child({symbol, orderType, buyOrSell, btcAmount})
+
+    const minOrderSize = 0.0001
+    if (btcAmount < minOrderSize) {
+      logOrder.info({minOrderSize}, "order amount is too small, skipping order")
+    }
 
     try {
       order = await this.ftx.createOrder(symbol, orderType, buyOrSell, btcAmount)
