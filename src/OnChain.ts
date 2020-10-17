@@ -47,6 +47,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
     return fee
   }
 
+  // amount in sats
   async onChainPay({ address, amount, memo }: IOnChainPayment): Promise<ISuccess | Error> {
     let onchainLogger = this.logger.child({ topic: "payment", protocol: "onchain", transactionType: "payment", address, amount, memo })
 

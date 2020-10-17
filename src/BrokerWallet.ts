@@ -199,8 +199,6 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
 
     btcAmount = usdAmountDiff / btcPrice
 
-    console.log({btcAmount, usdAmountDiff, btcPrice})
-
     if (!!depositOrWithdraw) {
       assert(btcAmount > 0)
       // amount more than 3x of collateral should not happen
@@ -313,7 +311,7 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
     } else if (depositOrWithdraw === "deposit") {
       const memo = `deposit of ${btcAmount} btc to ${this.ftx.name}`
       const address = await this.exchangeDepositAddress()
-      await this.onChainPay({address, amount: btcAmount, memo })
+      await this.onChainPay({address, amount: btc2sat(btcAmount), memo })
 
       // onChainPay is doing:
       //
