@@ -25,14 +25,9 @@ export const OnChainMixin = (superclass) => class extends superclass {
     super(...args)
   }
 
-  async getBalance() {
-    await this.updatePending()
-    return super.getBalance()
-  }
-
-  async updatePending() {
+  async updatePending(): Promise<void | Error> {
     await this.updateOnchainReceipt()
-    return super.updatePending()
+    await super.updatePending()
   }
 
   async PayeeUser(address: string) { return User.findOne({ onchain_addresses: { $in: address } }) }

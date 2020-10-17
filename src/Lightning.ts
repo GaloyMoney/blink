@@ -38,11 +38,7 @@ export const LightningMixin = (superclass) => class extends superclass {
   async updatePending() {
     await this.updatePendingInvoices()
     await this.updatePendingPayments()
-  }
-
-  async getBalance() {
-    await this.updatePending()
-    return super.getBalance()
+    await super.updatePending()
   }
 
   async addInvoiceInternal({ sats, usd, currency, memo, selfGenerated }: IAddInvoiceInternalRequest): Promise<string> {
