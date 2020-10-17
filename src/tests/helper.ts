@@ -2,7 +2,7 @@ import { find } from "lodash";
 import { AdminWallet } from "../AdminWallet";
 import { OnboardingEarn } from "../types";
 import { baseLogger, getAuth, sleep } from "../utils";
-import { getTestUserToken, WalletFactory } from "../walletFactory";
+import { getTokenFromPhoneIndex, WalletFactory } from "../walletFactory";
 
 const lnService = require('ln-service')
 
@@ -27,7 +27,7 @@ export const lndOutside2 = lnService.authenticatedLndGrpc({
 export const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
 
 export const getUserWallet = async userNumber => {
-  const token = await getTestUserToken(userNumber)
+  const token = await getTokenFromPhoneIndex(userNumber)
   const userWallet = WalletFactory({...token, logger: baseLogger})
   return userWallet
 }

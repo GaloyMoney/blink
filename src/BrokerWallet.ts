@@ -1,5 +1,5 @@
 import { find } from "lodash";
-import { ftxAccountingPath, brokerPath } from "./ledger";
+import { accountBrokerFtxPath, brokerPath } from "./ledger";
 import { MainBook } from "./mongodb";
 import { OnChainMixin } from "./OnChain";
 import { Price } from "./priceImpl";
@@ -302,7 +302,7 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
       // TODO: ^^^^^^ check syntax
 
         await MainBook.entry()
-        .debit(ftxAccountingPath, btc2sat(btcAmount), {...metadata, memo})
+        .debit(accountBrokerFtxPath, btc2sat(btcAmount), {...metadata, memo})
         .credit(this.accountPath, btc2sat(btcAmount), {...metadata, memo})
         .commit()
 
@@ -327,7 +327,7 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
 
       await MainBook.entry()
         .debit(this.accountPath, btc2sat(btcAmount), {...metadata, memo})
-        .credit(ftxAccountingPath, btc2sat(btcAmount), {...metadata, memo})
+        .credit(accountBrokerFtxPath, btc2sat(btcAmount), {...metadata, memo})
         .commit()
 
     }
@@ -408,7 +408,7 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
       const { btcAmount, depositOrWithdraw } = BrokerWallet.isRebalanceNeeded({ usdLiability, btcPrice, usdCollateral: collateral })
       subLogger.debug({ btcAmount, depositOrWithdraw }, "isRebalanceNeeded result")
 
-      // await this.rebalance({ btcAmount, depositOrWithdraw })
+      await this.rebalance({ btcAmount, depositOrWithdraw })
 
       // TODO: add a check that rebalancing is no longer needed. 
       // maybe with the block time, this is not as easy?

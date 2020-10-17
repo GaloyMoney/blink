@@ -20,6 +20,13 @@ export abstract class UserWallet {
     return this.accountPath.split(":")
   }
 
+  // this needs to be here to be able to call / chain updatePending()
+  // otherwise super.updatePending() would result in an error
+  // there may be better way to architecture this?
+  async updatePending() {
+    return new Promise((resolve, reject) => resolve(true))
+  }
+
   async getBalance() {
 
     const { balance } = await MainBook.balance({

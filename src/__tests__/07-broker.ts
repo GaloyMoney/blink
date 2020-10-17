@@ -5,6 +5,7 @@ import { setupMongoConnection } from "../mongodb"
 import { BrokerWallet } from "../BrokerWallet";
 import { baseLogger } from "../utils";
 import { quit } from "../lock";
+import { getTokenFromPhoneIndex } from "../walletFactory";
 const mongoose = require("mongoose");
 const util = require('util')
 
@@ -212,9 +213,10 @@ let brokerWalletFixture0, brokerWalletFixture1
 
 beforeAll(async () => {
   await setupMongoConnection()
+  const { uid } = await getTokenFromPhoneIndex(7)
 
-  brokerWalletFixture0 = new BrokerWallet({uid: "broker", logger: baseLogger})
-  brokerWalletFixture1 = new BrokerWallet({uid: "broker", logger: baseLogger})
+  brokerWalletFixture0 = new BrokerWallet({ uid, logger: baseLogger })
+  brokerWalletFixture1 = new BrokerWallet({ uid, logger: baseLogger })
 })
 
 afterAll(async () => {
@@ -230,4 +232,8 @@ it('future0', async () => {
 it('future1', async () => {
   const future = await brokerWalletFixture1.getAccountPosition()
   console.log({future})
+})
+
+it('getBalance', async () => {
+  await brokerWalletFixture1.getBalance()
 })
