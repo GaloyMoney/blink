@@ -14,10 +14,11 @@ const assert = require('assert')
 const apiKey = process.env.FTX_KEY
 const secret = process.env.FTX_SECRET
 
-const LOW_BOUND_PRICE_EXPOSURE = 0.8
-const LOW_SAFEBOUND_PRICE_EXPOSURE = 0.9
-const HIGH_SAFEBOUND_PRICE_EXPOSURE = 1.1
-const HIGH_BOUND_PRICE_EXPOSURE = 1.2
+const LOW_BOUND_RATIO_SHORTING = 0.96
+const LOW_SAFEBOUND_RATIO_SHORTING = 0.98
+// average: 0.99
+const HIGH_SAFEBOUND_RATIO_SHORTING = 1
+const HIGH_BOUND_RATIO_SHORTING = 1.02
 
 // TODO: take a target leverage and safe parameter and calculate those bounding values dynamically.
 const LOW_BOUND_LEVERAGE = 1.5
@@ -140,8 +141,11 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
       estimatedLiquidationPrice,
       collateralUsed, // USD
       maintenanceMarginRequirement, // start at 0.03 but increase with position side 
-      collateral,
-      leverage : 1 / marginFraction
+      
+      collateral, // in USD
+
+      // if there is no collateral, marginFraction will be null. this is equivalent to infinite leverage. 
+      leverage : marginFraction ? 1 / marginFraction : Number.POSITIVE_INFINITY,
     }
   }
 
@@ -158,43 +162,50 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
   // if price decrease, then there would be too much btc on the exchange
   // the account won't be at the irsk of being liquidated in this case
   // but then the custody risk of the exchange increases
-  static isRebalanceNeeded({ leverage, usdCollateral, btcPrice }) {
+  static isRebalanceNeeded({ usdLiability, btcPrice, usdCollateral }) {
 
     type IDepositOrWithdraw = "withdraw" | "deposit" | null
 
     let btcAmount, usdAmountDiff
     let depositOrWithdraw: IDepositOrWithdraw = null
 
-    const usdPosition = usdCollateral / leverage
+    if (!usdLiability) {
+      return { depositOrWithdraw }
+    }
 
-    try {
-      // under leveraged
-      // no imminent risk (beyond exchange custory risk)
-      if (leverage < LOW_BOUND_LEVERAGE) {
-        const targetUsdCollateral = usdCollateral / LOW_SAFEBOUND_LEVERAGE
-        usdAmountDiff = usdPosition - targetUsdCollateral
-        depositOrWithdraw =  "withdraw"
-      }
+    // this is an approximation of leverage, because usdLiability is an internal value
+    // and not necessary exactly 100% of what is in the exchange
+    // ie: it should be bounded by 
+    // const LOW_SAFEBOUND_RATIO_SHORTING = 0.98 
+    // and
+    // const HIGH_SAFEBOUND_RATIO_SHORTING = 1
+    const leverage = usdLiability / usdCollateral
 
-      // over leveraged
-      // our collateral could get liquidated if we don't rebalance
-      else if (leverage > HIGH_BOUND_LEVERAGE) {
-        const targetUsdCollateral = usdCollateral / HIGH_SAFEBOUND_LEVERAGE
-        usdAmountDiff = targetUsdCollateral - usdPosition
-        depositOrWithdraw = "deposit"
-      }
+    // under leveraged
+    // no imminent risk (beyond exchange custory risk)
+    if (leverage < LOW_BOUND_LEVERAGE) {
+      const targetUsdCollateral = usdLiability / LOW_SAFEBOUND_LEVERAGE
+      usdAmountDiff = usdCollateral - targetUsdCollateral
+      depositOrWithdraw =  "withdraw"
+    }
 
-    } catch (err) {
-      throw Error("can't calculate rebalance")
+    // over leveraged
+    // our collateral could get liquidated if we don't rebalance
+    else if (leverage  > HIGH_BOUND_LEVERAGE) {
+      const targetUsdCollateral = usdLiability / HIGH_SAFEBOUND_LEVERAGE
+      usdAmountDiff = targetUsdCollateral - usdCollateral
+      depositOrWithdraw = "deposit"
     }
 
     btcAmount = usdAmountDiff / btcPrice
+
+    console.log({btcAmount, usdAmountDiff, btcPrice})
 
     if (!!depositOrWithdraw) {
       assert(btcAmount > 0)
       // amount more than 3x of collateral should not happen
       // although it could happen the first time the broker is launched? 
-      assert(btcAmount < 3 * usdCollateral * btcPrice)
+      assert(btcAmount < 3 * usdLiability * btcPrice)
     }
 
     return { btcAmount, depositOrWithdraw }
@@ -212,16 +223,16 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
     try {
       // long (exposed to change in price in BTC)
       // will loose money if BTCUSD price drops
-      if (ratio < LOW_BOUND_PRICE_EXPOSURE) {
-        const targetUsd = usdLiability * LOW_SAFEBOUND_PRICE_EXPOSURE
+      if (ratio < LOW_BOUND_RATIO_SHORTING) {
+        const targetUsd = usdLiability * LOW_SAFEBOUND_RATIO_SHORTING
         usdOrderAmount = targetUsd - usdExposure
         buyOrSell = "buy"
       }
 
       // short (exposed to change in price in BTC)
       // will loose money if BTCUSD price increase
-      else if (ratio > HIGH_BOUND_PRICE_EXPOSURE) {
-        const targetUsd = usdLiability * HIGH_SAFEBOUND_PRICE_EXPOSURE
+      else if (ratio > HIGH_BOUND_RATIO_SHORTING) {
+        const targetUsd = usdLiability * HIGH_SAFEBOUND_RATIO_SHORTING
         usdOrderAmount = usdExposure - targetUsd
         buyOrSell = "sell"
       }
@@ -371,33 +382,38 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
     const {usd: usdLiability} = await this.getLocalLiabilities()
     const {usd: usdExposure, leverage, collateral} = await this.getAccountPosition()
 
-    this.logger.debug({ usdExposure, usdLiability, leverage, collateral, btcPrice }, "input for the broker algos")
-    
-    {
+    const subLogger = this.logger.child({ usdExposure, usdLiability, leverage, collateral, btcPrice })
+
+    try {
       const { btcAmount, buyOrSell } = BrokerWallet.isOrderNeeded({ usdLiability, usdExposure, btcPrice })
-      this.logger.debug({ btcAmount, buyOrSell }, "isOrderNeeded result")
+      subLogger.debug({ btcAmount, buyOrSell }, "isOrderNeeded result")
 
       if (buyOrSell) {
         await this.executeOrder({ btcAmount, buyOrSell })
 
         const {usd: updatedUsdLiability } = await this.getLocalLiabilities()
         const {usd: updatedUsdExposure } = await this.getAccountPosition()
-        this.logger.debug({ usdExposure, usdLiability, leverage, collateral, btcPrice }, "input for the updated isOrderNeeded after an order")
+
+        subLogger.debug({ updatedUsdLiability, updatedUsdExposure, btcPrice }, "input for the updated isOrderNeeded after an order")
         const { buyOrSell: newBuyOrSell } = BrokerWallet.isOrderNeeded({ usdLiability: updatedUsdLiability, usdExposure: updatedUsdExposure, btcPrice })
 
-        this.logger.debug({ newBuyOrSell }, "output for the updated isOrderNeeded after an order")
+        subLogger.debug({ newBuyOrSell }, "output for the updated isOrderNeeded after an order")
         assert(!newBuyOrSell)
       }
+    } catch (err) {
+      subLogger.error({err}, "error in the order loop")
     }
 
-    {
-      const { btcAmount, depositOrWithdraw } = BrokerWallet.isRebalanceNeeded({ leverage, usdCollateral: collateral, btcPrice })
-      await this.rebalance({ btcAmount, depositOrWithdraw })
+    try {
+      const { btcAmount, depositOrWithdraw } = BrokerWallet.isRebalanceNeeded({ usdLiability, btcPrice, usdCollateral: collateral })
+      subLogger.debug({ btcAmount, depositOrWithdraw }, "isRebalanceNeeded result")
 
-      this.logger.debug({ btcAmount, depositOrWithdraw }, "isRebalanceNeeded result")
+      // await this.rebalance({ btcAmount, depositOrWithdraw })
 
       // TODO: add a check that rebalancing is no longer needed. 
       // maybe with the block time, this is not as easy?
+    } catch (err) {
+      subLogger.error({err}, "error in the rebalance loop")
     }
 
   }
