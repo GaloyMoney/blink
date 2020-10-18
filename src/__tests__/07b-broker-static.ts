@@ -3,21 +3,28 @@
  */
 import { BrokerWallet } from "../BrokerWallet";
 
-it('calculate hedging amount when over exposed', async () => {
+it('init-order', async () => {
+  const { btcAmount, buyOrSell } = BrokerWallet.isOrderNeeded({ usdLiability: 100, usdExposure: 0, btcPrice: 10000 })
+  // we should sell to have $98 short position 
+  expect(buyOrSell).toBe("sell")
+  expect(btcAmount).toBe(0.0098)
+})
+
+it('calculate hedging amount when under exposed', async () => {
   // ratio is a .5
   // need to be at .98
   // should buy $480/0.048 BTC
   const { btcAmount, buyOrSell } = BrokerWallet.isOrderNeeded({ usdLiability: 1000, usdExposure: 500, btcPrice: 10000 })
-  expect(buyOrSell).toBe("buy")
+  expect(buyOrSell).toBe("sell")
   expect(btcAmount).toBe(0.048)
 })
 
-it('calculate hedging amount when under exposed', async () => {
+it('calculate hedging amount when over exposed', async () => {
   // ratio is a 2
   // need to be at HIGH_SAFEBOUND_RATIO_SHORTING (1.00)
   // should sell $1000/0.1 BTC to have exposure being back at $1000
   const { btcAmount, buyOrSell } = BrokerWallet.isOrderNeeded({ usdLiability: 1000, usdExposure: 2000, btcPrice: 10000 })
-  expect(buyOrSell).toBe("sell")
+  expect(buyOrSell).toBe("buy")
   expect(btcAmount).toBe(0.1)
 })
 

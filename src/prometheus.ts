@@ -56,11 +56,14 @@ const main = async () => {
     lndOpeningChannelBalance_g.set(opening_channel_balance)
     lndClosingChannelBalance_g.set(closing_channel_balance)
     // price_g.set(price)
-        
+      
     const userCount = await User.count()
     userCount_g.set(userCount)
     
     usd_liabilities_g.set(usd_liabilities)
+
+    // TODO:
+    // add accounting BTC balance for the Broker account
     ftx_btc_g.set(await adminWallet.ftxBalance())
 
     const brokerWallet = await getBrokerWallet({ logger })

@@ -123,6 +123,33 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
     const positionBtcPerp = find(positions, { future: symbol } )
     this.logger.debug({positionBtcPerp}, "positionBtcPerp result")
 
+    // {
+    //   "level": 20,
+    //   "time": 1602973260135,
+    //   "pid": 97313,
+    //   "hostname": "prometheus-client-86dcdb9776-2cc7v",
+    //   "module": "cron",
+    //   "topic": "broker",
+    //   "positionBtcPerp": {
+    //     "collateralUsed": 9.75111,
+    //     "cost": -97.5111,
+    //     "entryPrice": 11338.5,
+    //     "estimatedLiquidationPrice": 19757.17571032585,
+    //     "future": "BTC-PERP",
+    //     "initialMarginRequirement": 0.1,
+    //     "longOrderSize": 0,
+    //     "maintenanceMarginRequirement": 0.03,
+    //     "netSize": -0.0086,
+    //     "openSize": 0.0086,
+    //     "realizedPnl": 0.0172,
+    //     "shortOrderSize": 0,
+    //     "side": "sell",
+    //     "size": 0.0086,
+    //     "unrealizedPnl": 0
+    //   },
+    //   "msg": "positionBtcPerp result"
+    // }
+
     const { netSize = 0, estimatedLiquidationPrice, collateralUsed, maintenanceMarginRequirement } = positionBtcPerp ?? {}
 
     // TODO: check this is the intended settings
@@ -224,7 +251,7 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
       if (ratio < LOW_BOUND_RATIO_SHORTING) {
         const targetUsd = usdLiability * LOW_SAFEBOUND_RATIO_SHORTING
         usdOrderAmount = targetUsd - usdExposure
-        buyOrSell = "buy"
+        buyOrSell = "sell"
       }
 
       // short (exposed to change in price in BTC)
@@ -232,7 +259,7 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
       else if (ratio > HIGH_BOUND_RATIO_SHORTING) {
         const targetUsd = usdLiability * HIGH_SAFEBOUND_RATIO_SHORTING
         usdOrderAmount = usdExposure - targetUsd
-        buyOrSell = "sell"
+        buyOrSell = "buy"
       }
 
       // else:
@@ -253,22 +280,32 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
     return { btcAmount, buyOrSell }
   }
 
-  async rebalance ({ btcAmount, depositOrWithdraw }) {
+  async rebalance ({ btcAmount, depositOrWithdraw, logger }) {
     const metadata = { type: "exchange_rebalance", currency: this.currency }
 
     // deposit and withdraw are from the exchange point of view
     if (depositOrWithdraw === "withdraw") {
       const memo = `withdrawal of ${btcAmount} btc from ${this.ftx.name}`
 
-      const address = await this.getOnChainAddress()
+      // getLastOnChainAddress() could be used with whitelisting for more security
+      const address = await this.getLastOnChainAddress()
 
       // TODO: need a withdrawal password?
       // FIXME: No fees? event the on-chain fees?
       const currency = "BTC"
-      const withdrawal = await this.ftx.withdraw(currency, btcAmount, address)
-      this.logger.debug({withdrawal, currency, btcAmount, address}, "this.ftx.withdraw()")
 
-      //
+      let withdrawalResult 
+
+      const subLogger = logger.child({...metadata, memo, address, currency})
+
+      try {
+        withdrawalResult = await this.ftx.withdraw(currency, btcAmount, address)
+      } catch(err) { 
+        const error = "this.ftx.withdraw() error issue"
+        subLogger.error({withdrawalResult}, error)
+        throw new Error(err)
+      }
+
       // from ccxt. could be different for ftx
       //
       //   {
@@ -296,7 +333,7 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
       //     },
       // }
 
-      if (withdrawal.success) {
+      if (withdrawalResult.success) {
       // TODO: ^^^^^^ check syntax
 
         await MainBook.entry()
@@ -305,7 +342,7 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
         .commit()
 
       } else {
-        this.logger.error({...metadata, memo, withdrawal}, `withdrawal was not succesful`)
+        subLogger.error({withdrawalResult}, `withdrawal was not succesful`)
       }
 
     } else if (depositOrWithdraw === "deposit") {
@@ -338,13 +375,18 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
     // let orderId = 6103637365
     // let orderId
 
+    // TODO: limit order
     const orderType = 'market'
+
     const logOrder = this.logger.child({symbol, orderType, buyOrSell, btcAmount})
 
     const minOrderSize = 0.0001
     if (btcAmount < minOrderSize) {
       logOrder.info({minOrderSize}, "order amount is too small, skipping order")
     }
+
+    // TODO:
+    // buy should be "reduceOnly":true
 
     try {
       order = await this.ftx.createOrder(symbol, orderType, buyOrSell, btcAmount)
@@ -369,6 +411,86 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
       logOrder.error({ order, orderStatus}, "market order has not been fullfilled")
       // Pager
     } else {
+
+      // {
+      //   "level": 30,
+      //   "time": 1602973199649,
+      //   "pid": 97313,
+      //   "hostname": "prometheus-client-86dcdb9776-2cc7v",
+      //   "module": "cron",
+      //   "topic": "broker",
+      //   "symbol": "BTC-PERP",
+      //   "orderType": "market",
+      //   "buyOrSell": "sell",
+      //   "btcAmount": 0.008632840028188865,
+      //   "order": {
+      //     "info": {
+      //       "avgFillPrice": null,
+      //       "clientId": null,
+      //       "createdAt": "2020-10-17T22:19:54.361904+00:00",
+      //       "filledSize": 0,
+      //       "future": "BTC-PERP",
+      //       "id": 12006176240,
+      //       "ioc": true,
+      //       "liquidation": false,
+      //       "market": "BTC-PERP",
+      //       "postOnly": false,
+      //       "price": null,
+      //       "reduceOnly": false,
+      //       "remainingSize": 0.0086,
+      //       "side": "sell",
+      //       "size": 0.0086,
+      //       "status": "new",
+      //       "type": "market"
+      //     },
+      //     "id": "12006176240",
+      //     "timestamp": 1602973194361,
+      //     "datetime": "2020-10-17T22:19:54.361Z",
+      //     "symbol": "BTC-PERP",
+      //     "type": "market",
+      //     "side": "sell",
+      //     "amount": 0.0086,
+      //     "filled": 0,
+      //     "remaining": 0.0086,
+      //     "status": "open"
+      //   },
+      //   "orderStatus": {
+      //     "info": {
+      //       "avgFillPrice": 11340.5,
+      //       "clientId": null,
+      //       "createdAt": "2020-10-17T22:19:54.361904+00:00",
+      //       "filledSize": 0.0086,
+      //       "future": "BTC-PERP",
+      //       "id": 12006176240,
+      //       "ioc": true,
+      //       "liquidation": false,
+      //       "market": "BTC-PERP",
+      //       "postOnly": false,
+      //       "price": null,
+      //       "reduceOnly": false,
+      //       "remainingSize": 0,
+      //       "side": "sell",
+      //       "size": 0.0086,
+      //       "status": "closed",
+      //       "type": "market"
+      //     },
+      //     "id": "12006176240",
+      //     "timestamp": 1602973194361,
+      //     "datetime": "2020-10-17T22:19:54.361Z",
+      //     "symbol": "BTC-PERP",
+      //     "type": "market",
+      //     "side": "sell",
+      //     "price": 11340.5,
+      //     "amount": 0.0086,
+      //     "cost": 97.5283,
+      //     "average": 11340.5,
+      //     "filled": 0.0086,
+      //     "remaining": 0,
+      //     "status": "closed"
+      //   },
+      //   "msg": "order placed succesfully"
+      // }
+
       logOrder.info({ order, orderStatus }, "order placed succesfully")
     }
   }
@@ -377,12 +499,14 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
     const satsPrice = await this.price.lastPrice()
     const btcPrice = btc2sat(satsPrice) 
 
-    const {usd: usdLiability} = await this.getLocalLiabilities()
-    const {usd: usdExposure, leverage, collateral} = await this.getAccountPosition()
-
-    const subLogger = this.logger.child({ usdExposure, usdLiability, leverage, collateral, btcPrice })
+    let subLogger
 
     try {
+      const {usd: usdLiability} = await this.getLocalLiabilities()
+      const {usd: usdExposure, leverage, collateral} = await this.getAccountPosition()
+  
+      subLogger = this.logger.child({ usdExposure, usdLiability, leverage, collateral, btcPrice })
+
       const { btcAmount, buyOrSell } = BrokerWallet.isOrderNeeded({ usdLiability, usdExposure, btcPrice })
       subLogger.debug({ btcAmount, buyOrSell }, "isOrderNeeded result")
 
@@ -398,15 +522,23 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
         subLogger.debug({ newBuyOrSell }, "output for the updated isOrderNeeded after an order")
         assert(!newBuyOrSell)
       }
+
     } catch (err) {
       subLogger.error({err}, "error in the order loop")
     }
 
     try {
+      const {usd: usdLiability} = await this.getLocalLiabilities()
+      const {usd: usdExposure, leverage, collateral} = await this.getAccountPosition()
+  
+      subLogger = this.logger.child({ usdExposure, usdLiability, leverage, collateral, btcPrice })
+
       const { btcAmount, depositOrWithdraw } = BrokerWallet.isRebalanceNeeded({ usdLiability, btcPrice, usdCollateral: collateral })
       subLogger.debug({ btcAmount, depositOrWithdraw }, "isRebalanceNeeded result")
 
-      await this.rebalance({ btcAmount, depositOrWithdraw })
+      subLogger.child({ btcAmount, depositOrWithdraw })
+
+      await this.rebalance({ btcAmount, depositOrWithdraw, logger: subLogger })
 
       // TODO: add a check that rebalancing is no longer needed. 
       // maybe with the block time, this is not as easy?
