@@ -33,6 +33,18 @@ it('calculate hedging when no rebalance is needed', async () => {
   expect(buyOrSell).toBeNull()
 })
 
+// {"usdExposure":92.136,"usdLiability":40.31493016,"leverage":2.155660936095568,"btcPrice":11517,"btcAmount":0.004499528509160371,"buyOrSell":"buy","msg":"isOrderNeeded result"}
+it('test prod hedging', async () => { // 
+  const { btcAmount, buyOrSell } = BrokerWallet.isOrderNeeded({ usdLiability: 40.31493016, usdExposure: 92.136, btcPrice: 11517 })
+  expect(buyOrSell).toBe("buy")
+})
+
+// "updatedUsdLiability":40.31493016,"updatedUsdExposure":41.4612,"btcPrice":11517
+it('test prod hedging', async () => { // 
+  const { btcAmount, buyOrSell } = BrokerWallet.isOrderNeeded({ usdLiability: 40.31493016, usdExposure: 41.4612, btcPrice: 11517 })
+  expect(buyOrSell).toBeNull()
+})
+
 
 it('test init account', async () => { // "leverage":null,"collateral":0,"btcPrice":11378,
   const { btcAmount, depositOrWithdraw } = BrokerWallet.isRebalanceNeeded({ usdLiability: 0, btcPrice: 10000, usdCollateral: 0})

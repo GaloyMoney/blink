@@ -203,6 +203,8 @@ const ftxMock = jest.fn();
 
 // fixtures.forEach()
 
+let uid 
+
 ftxMock.mockReturnValueOnce(fixtures[1]).mockReturnValueOnce(fixtures[0]);
 
 jest.mock('ccxt', () => ({
@@ -212,8 +214,9 @@ jest.mock('ccxt', () => ({
 let brokerWalletFixture0, brokerWalletFixture1
 
 beforeAll(async () => {
-  await setupMongoConnection()
-  const { uid } = await getTokenFromPhoneIndex(7)
+  await setupMongoConnection();
+
+  ({ uid } = await getTokenFromPhoneIndex(7))
 
   brokerWalletFixture0 = new BrokerWallet({ uid, logger: baseLogger })
   brokerWalletFixture1 = new BrokerWallet({ uid, logger: baseLogger })
@@ -237,3 +240,9 @@ it('future1', async () => {
 it('getBalance', async () => {
   await brokerWalletFixture1.getBalance()
 })
+
+// it('getFunding', async () => {
+//   const brokerWalletNofixtures = new BrokerWallet({ uid, logger: baseLogger })
+
+//   console.log(await brokerWalletNofixtures.getNextFundingRate())
+// })

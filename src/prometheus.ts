@@ -26,6 +26,7 @@ const usd_liabilities_g = new client.Gauge({ name: `${prefix}_usdLiabilities`, h
 const usdShortPosition_g = new client.Gauge({ name: `${prefix}_usdShortPosition`, help: 'usd short position on ftx' })
 const ftx_btc_g = new client.Gauge({ name: `${prefix}_ftxBtcBalance`, help: 'btc balance in ftx' })
 const leverage_g = new client.Gauge({ name: `${prefix}_leverage`, help: 'leverage ratio on ftx' })
+const fundingRate_g = new client.Gauge({ name: `${prefix}_fundingRate_g`, help: 'FTX hourly funding rate' })
 const assetsLiabilitiesDifference_g = new client.Gauge({ name: `${prefix}_assetsEqLiabilities`, help: 'do we have a balanced book' })
 const bookingVersusRealWorldAssets_g = new client.Gauge({ name: `${prefix}_lndBalanceSync`, help: 'are lnd in syncs with our books' })
 // const price_g = new client.Gauge({ name: `${prefix}_price`, help: 'BTC/USD price' })
@@ -71,6 +72,8 @@ const main = async () => {
 
     usdShortPosition_g.set(usdShortPosition)
     leverage_g.set(leverage)
+
+    fundingRate_g.set(await brokerWallet.getNextFundingRate())
 
     res.set('Content-Type', register.contentType);
     res.end(register.metrics());
