@@ -8,7 +8,7 @@ export abstract class UserWallet {
   readonly currency: string
   readonly logger: any
 
-  constructor({uid, currency, logger}) {
+  constructor({ uid, currency, logger }) {
     this.uid = uid
     this.currency = currency
     this.logger = logger
@@ -24,7 +24,7 @@ export abstract class UserWallet {
 
     const { balance } = await MainBook.balance({
       account: this.accountPath,
-      currency: this.currency, 
+      currency: this.currency,
     })
 
     return - balance
@@ -65,5 +65,9 @@ export abstract class UserWallet {
 
   async setLevel({ level }) {
     return await User.findOneAndUpdate({ _id: this.uid }, { level }, { new: true, upsert: true })
+  }
+
+  async setUsername({ username }) {
+    return await User.findOneAndUpdate({ _id: this.uid }, { username }, { new: true })
   }
 }
