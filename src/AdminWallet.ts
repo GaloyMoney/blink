@@ -50,13 +50,12 @@ export class AdminWallet {
     const { balance: liabilities } = await MainBook.balance({accounts: "Liabilities", currency: "BTC"}) 
     const { balance: lightning } = await MainBook.balance({accounts: lightningAccountingPath, currency: "BTC"}) 
     const { balance: expenses } = await MainBook.balance({accounts: accountingExpenses, currency: "BTC"}) 
-    const { balance: usd } = await MainBook.balance({accounts: brokerPath, currency: "USD"}) 
 
-    return {assets, liabilities, lightning, expenses, usd }
+    return {assets, liabilities, lightning, expenses }
   }
 
   async balanceSheetIsBalanced() {
-    const {assets, liabilities, lightning, expenses, usd } = await this.getBalanceSheet()
+    const {assets, liabilities, lightning, expenses } = await this.getBalanceSheet()
     const { total: lnd } = await this.lndBalances() // doesnt include ercrow amount
 
     const brokerWallet = await getBrokerWallet({ logger })
