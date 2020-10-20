@@ -2,6 +2,7 @@
  * @jest-environment node
  */
 import { AdminWallet } from "../AdminWallet";
+import { BrokerWallet } from "../BrokerWallet";
 import { setupMongoConnection } from "../mongodb";
 
 const lnService = require('ln-service')
@@ -27,8 +28,8 @@ let lndOutside1_wallet_addr
 
 beforeAll(async () => {
   await setupMongoConnection()
-  jest.spyOn(AdminWallet.prototype, 'ftxBalance').mockImplementation(() => new Promise((resolve, reject) => {
-    resolve(0) 
+  jest.spyOn(BrokerWallet.prototype, 'getExchangeBalance').mockImplementation(() => new Promise((resolve, reject) => {
+    resolve({ sats : 0, usdPnl: 0 }) 
   }));
 })
 

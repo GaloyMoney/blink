@@ -22,9 +22,10 @@ const amountInvoice = 1000
 beforeAll(async () => {
   await setupMongoConnection()
 
-   jest.spyOn(AdminWallet.prototype, 'ftxBalance').mockImplementation(() => new Promise((resolve, reject) => {
-    resolve(0) 
+  jest.spyOn(BrokerWallet.prototype, 'getExchangeBalance').mockImplementation(() => new Promise((resolve, reject) => {
+    resolve({ sats : 0, usdPnl: 0 }) 
   }));
+
 
   userWalletUsd = await getUserWallet(5)
   expect(userWalletUsd.currency).toBe("USD")
