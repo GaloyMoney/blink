@@ -21,13 +21,13 @@ const lnService = require('ln-service')
 const path = require("path");
 dotenv.config()
 
-const graphqlLogger = baseLogger.child({module: "graphql"})
+const graphqlLogger = baseLogger.child({ module: "graphql" })
 const pino = require('pino')
 
 const pino_http = require('pino-http')({
   logger: graphqlLogger,
   wrapSerializers: false,
-  
+
   // Define custom serializers
   serializers: {
     err: pino.stdSerializers.err,
@@ -38,7 +38,7 @@ const pino_http = require('pino-http')({
       ...pino.stdSerializers.res(res)
     })
   },
-  reqCustomProps: function (req) {
+  reqCustomProps: function(req) {
     return {
       // FIXME: duplicate parsing from graphql context.
       token: verifyToken(req)
@@ -75,7 +75,7 @@ const resolvers = {
       balance: () => wallet.getBalance(),
       transactions: () => wallet.getTransactions()
     }]),
-    nodeStats: async () => nodeStats({lnd}),
+    nodeStats: async () => nodeStats({ lnd }),
     buildParameters: () => ({
       commitHash: () => commitHash,
       buildTime: () => buildTime,
@@ -83,8 +83,8 @@ const resolvers = {
       minBuildNumberAndroid: getMinBuildNumber,
       minBuildNumberIos: getMinBuildNumber,
     }),
-    prices: async (_, __, {logger}) => {
-      const price = new Price({logger})
+    prices: async (_, __, { logger }) => {
+      const price = new Price({ logger })
       return await price.lastCached()
     },
     earnList: async (_, __, { uid }) => {
@@ -108,15 +108,19 @@ const resolvers = {
   Mutation: {
     requestPhoneCode: async (_, { phone }, { logger }) => ({ success: requestPhoneCode({ phone, logger }) }),
     login: async (_, { phone, code, currency }, { logger }) => ({ token: login({ phone, code, currency, logger }) }),
-    updateUser: async (_, __,  { wallet }) => {
+    updateUser: async (_, __, { wallet }) => ({
       // FIXME manage uid
       // TODO only level for now
-      const result = await wallet.setLevel({ level: 1 })
-      return {
-        id: wallet.uid,
-        level: result.level,
-      }
-    },
+      setLevel: async () => {
+        const result = await wallet.setLevel({ level: 1 })
+        return {
+          id: wallet.uid,
+          level: result.level,
+        }
+      },
+      setUsername: async ({ username }) => await wallet.setUsername({ username })
+
+    }),
     publicInvoice: async (_, { uid, logger }) => {
       const wallet = WalletFactory({ uid, currency: 'BTC', logger })
       return {
@@ -155,12 +159,12 @@ const resolvers = {
     testMessage: async (_, __, { uid, logger }) => {
       // throw new LoggedError("test error")
       await sendNotification({
-          uid, 
-          title: "Title", 
-          body: `New message sent at ${moment.utc().format('YYYY-MM-DD HH:mm:ss')}`,
-          logger
-        })
-      return {success: true}
+        uid,
+        title: "Title",
+        body: `New message sent at ${moment.utc().format('YYYY-MM-DD HH:mm:ss')}`,
+        logger
+      })
+      return { success: true }
     },
   }
 }
@@ -229,8 +233,8 @@ const server = new GraphQLServer({
     const token = verifyToken(context.request)
     const uid = token?.uid ?? null
     // @ts-ignore
-    const logger = graphqlLogger.child({token, id: context.request.id, body: context.request.body})
-    const wallet = !!token ? WalletFactory({...token, logger}) : null
+    const logger = graphqlLogger.child({ token, id: context.request.id, body: context.request.body })
+    const wallet = !!token ? WalletFactory({ ...token, logger }) : null
     return {
       ...context,
       logger,
@@ -241,7 +245,7 @@ const server = new GraphQLServer({
 })
 
 // injecting unique id to the request for correlating different logs messages
-server.express.use(function (req, res, next) {
+server.express.use(function(req, res, next) {
   // @ts-ignore
   req.id = uuidv4();
   next();
@@ -259,7 +263,7 @@ const options = {
   // tracing: true,
   formatError: err => {
     if (!(startsWith(err.message, customLoggerPrefix))) {
-      baseLogger.error({err}, "graphql catch-all error"); 
+      baseLogger.error({ err }, "graphql catch-all error");
     }
     // return defaultErrorFormatter(err)
     return err
@@ -276,5 +280,6 @@ setupMongoConnection()
           `Server started, listening on port ${port} for incoming requests.`,
         ),
       )
-  })}).catch((err) => graphqlLogger.error(err, "server error"))
+    })
+  }).catch((err) => graphqlLogger.error(err, "server error"))
 
