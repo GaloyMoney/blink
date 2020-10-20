@@ -4,7 +4,7 @@
 import { filter, first, last } from "lodash";
 import { quit } from "../lock";
 import { MainBook, setupMongoConnection } from "../mongodb";
-import { checkIsBalanced, getUserWallet, lndMain, lndOutside1, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
+import { checkIsBalanced, getUserWallet, lndMain, lndOutside1, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
 import { onchainTransactionEventHandler } from "../trigger";
 import { bitcoindClient, sleep } from "../utils";
 const util = require('util')
@@ -31,9 +31,7 @@ beforeAll(async () => {
   await setupMongoConnection()
   userWallet0 = await getUserWallet(0)
   userWallet3 = await getUserWallet(3)
-  jest.spyOn(BrokerWallet.prototype, 'getExchangeBalance').mockImplementation(() => new Promise((resolve, reject) => {
-    resolve({ sats : 0, usdPnl: 0 }) 
-  }));
+  mockGetExchangeBalance()
 })
 
 beforeEach(async () => {

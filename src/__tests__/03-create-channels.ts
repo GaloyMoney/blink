@@ -2,9 +2,8 @@
  * @jest-environment node
  */
 import { AdminWallet } from "../AdminWallet";
-import { BrokerWallet } from "../BrokerWallet";
 import { setupMongoConnection } from "../mongodb";
-import { checkIsBalanced, lndMain, lndOutside1, lndOutside2, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
+import { checkIsBalanced, lndMain, lndOutside1, lndOutside2, RANDOM_ADDRESS, waitUntilBlockHeight, mockGetExchangeBalance } from "../tests/helper";
 import { baseLogger, bitcoindClient, nodeStats, sleep } from "../utils";
 const mongoose = require("mongoose");
 const { once } = require('events');
@@ -22,9 +21,7 @@ let channelLengthMain, channelLengthOutside1
 
 beforeAll(async () => {
   await setupMongoConnection()
-  jest.spyOn(BrokerWallet.prototype, 'getExchangeBalance').mockImplementation(() => new Promise((resolve, reject) => {
-    resolve({ sats : 0, usdPnl: 0 }) 
-  }));
+  mockGetExchangeBalance()
 
 	adminWallet = new AdminWallet()
 

@@ -1,13 +1,11 @@
 /**
  * @jest-environment node
  */
-import { AdminWallet } from "../AdminWallet";
-import { BrokerWallet } from "../BrokerWallet";
 import { setupMongoConnection } from "../mongodb";
+import { checkIsBalanced, lndMain, lndOutside1, lndOutside2, RANDOM_ADDRESS, waitUntilBlockHeight, mockGetExchangeBalance } from "../tests/helper";
+import { bitcoindClient } from "../utils";
 
 const lnService = require('ln-service')
-import { checkIsBalanced, lndMain, lndOutside1, lndOutside2, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
-import { bitcoindClient } from "../utils";
 const mongoose = require("mongoose");
 
 const initialBitcoinWalletBalance = 0
@@ -28,9 +26,7 @@ let lndOutside1_wallet_addr
 
 beforeAll(async () => {
   await setupMongoConnection()
-  jest.spyOn(BrokerWallet.prototype, 'getExchangeBalance').mockImplementation(() => new Promise((resolve, reject) => {
-    resolve({ sats : 0, usdPnl: 0 }) 
-  }));
+  mockGetExchangeBalance()
 })
 
 afterEach(async () => {

@@ -5,7 +5,7 @@ import { createHash, randomBytes } from 'crypto';
 import { BrokerWallet } from "../BrokerWallet";
 import { quit } from "../lock";
 import { InvoiceUser, MainBook, setupMongoConnection, Transaction, User } from "../mongodb";
-import { checkIsBalanced, getUserWallet, lndOutside1, lndOutside2, onBoardingEarnAmt, onBoardingEarnIds } from "../tests/helper";
+import { checkIsBalanced, getUserWallet, lndOutside1, lndOutside2, mockGetExchangeBalance, onBoardingEarnAmt, onBoardingEarnIds } from "../tests/helper";
 import { baseLogger, getHash, sleep } from "../utils";
 import { getFunderWallet } from "../walletFactory";
 
@@ -23,10 +23,7 @@ const { sendNotification } = require("../notification");
 
 beforeAll(async () => {
   await setupMongoConnection()
-
-  jest.spyOn(BrokerWallet.prototype, 'getExchangeBalance').mockImplementation(() => new Promise((resolve, reject) => {
-    resolve({ sats : 0, usdPnl: 0 }) 
-  }));
+  mockGetExchangeBalance()
 
   userWallet1 = await getUserWallet(1)
   userWallet2 = await getUserWallet(2)
