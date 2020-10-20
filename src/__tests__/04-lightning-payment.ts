@@ -2,13 +2,12 @@
  * @jest-environment node
  */
 import { createHash, randomBytes } from 'crypto';
+import { BrokerWallet } from "../BrokerWallet";
 import { quit } from "../lock";
 import { InvoiceUser, MainBook, setupMongoConnection, Transaction, User } from "../mongodb";
 import { checkIsBalanced, getUserWallet, lndOutside1, lndOutside2, onBoardingEarnAmt, onBoardingEarnIds } from "../tests/helper";
-import { getHash, sleep, baseLogger } from "../utils";
+import { baseLogger, getHash, sleep } from "../utils";
 import { getFunderWallet } from "../walletFactory";
-import { AdminWallet } from "../AdminWallet";
-import { BrokerWallet } from "../BrokerWallet";
 
 const lnService = require('ln-service')
 const mongoose = require("mongoose")

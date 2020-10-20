@@ -1,12 +1,9 @@
 /**
  * @jest-environment node
  */
-import { setupMongoConnection } from "../mongodb"
-import { BrokerWallet } from "../BrokerWallet";
-import { baseLogger } from "../utils";
 import { quit } from "../lock";
+import { setupMongoConnection } from "../mongodb";
 import { getTokenFromPhoneIndex } from "../walletFactory";
-import { iteratee } from "lodash";
 const mongoose = require("mongoose");
 const util = require('util')
 

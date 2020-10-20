@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-import { AdminWallet } from "../AdminWallet";
+import { BrokerWallet } from "../BrokerWallet";
 import { customerPath } from "../ledger";
 import { quit } from "../lock";
 import { InvoiceUser, MainBook, setupMongoConnection } from "../mongodb";
