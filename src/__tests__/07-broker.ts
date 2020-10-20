@@ -241,8 +241,6 @@ it('getBalance', async () => {
   await brokerWalletFixture1.getBalance()
 })
 
-// it('getFunding', async () => {
-//   const brokerWalletNofixtures = new BrokerWallet({ uid, logger: baseLogger })
-
-//   console.log(await brokerWalletNofixtures.getNextFundingRate())
-// })
+it('getBalance', async () => {
+  await brokerWalletFixture1.getBalance()
+})

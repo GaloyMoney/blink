@@ -58,7 +58,9 @@ export class AdminWallet {
   async balanceSheetIsBalanced() {
     const {assets, liabilities, lightning, expenses, usd } = await this.getBalanceSheet()
     const { total: lnd } = await this.lndBalances() // doesnt include ercrow amount
-    const ftx = await this.ftxBalance()
+
+    const brokerWallet = await getBrokerWallet({ logger })
+    const { sats: ftx } = await brokerWallet.getExchangeBalance()
 
     const assetsLiabilitiesDifference = assets + (liabilities + expenses)
     const bookingVersusRealWorldAssets = (lnd + ftx) - lightning
@@ -87,12 +89,6 @@ export class AdminWallet {
     
     const total = chain_balance + channel_balance + pending_chain_balance + opening_channel_balance + closing_channel_balance
     return { total, onChain: chain_balance + pending_chain_balance, offChain: channel_balance, opening_channel_balance, closing_channel_balance } 
-  }
-
-  async ftxBalance () {
-    const brokerWallet = await getBrokerWallet({ logger })
-    const balance = await brokerWallet.getExchangeBalance()
-    return balance
   }
 
   getInfo = async () => lnService.getWalletInfo({ lnd: this.lnd });

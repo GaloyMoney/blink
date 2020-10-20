@@ -87,7 +87,7 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
     // at least on FTX. interest will be charged when below -$30,000.
     // TODO: manage this part
 
-    const exchange = await this.getExchangeBalance()
+    const { sats: exchange } = await this.getExchangeBalance()
     const total = node + exchange
 
     return {
@@ -97,10 +97,34 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
     }
   }
 
+  async getProfit() {
+    const satsPrice = await this.price.lastPrice()
+
+    const { total: sats, node, exchange } = await this.satsBalance()
+    const usdAssetsInBtc = sats * satsPrice
+    const nodeInBtc = node * satsPrice
+    const exchangeInBtc = exchange * satsPrice
+    
+    const { usd: usdLiabilities } = await this.getLocalLiabilities()
+
+    const { usdPnl } = await this.getExchangeBalance()
+    
+    const usdProfit = usdAssetsInBtc + usdPnl - usdLiabilities
+
+    console.log({ usdProfit,  usdAssetsInBtc, usdPnl, usdLiabilities, nodeInBtc, exchangeInBtc })
+
+    return {
+      usdProfit
+    }
+  }
+
   async getExchangeBalance() {
     const balance = await this.ftx.fetchBalance()
     this.logger.debug({ balance }, "this.ftx.fetchBalance result")
-    return btc2sat(balance.total.BTC ?? 0)
+    return {
+      sats: btc2sat(balance.total.BTC ?? 0),
+      usdPnl: balance.total.USD
+    }
   }
 
   async getNextFundingRate() {
@@ -118,8 +142,8 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
     // TODO: what is being returned if no order had been placed?
     // probably an empty array
 
-    // const result = await this.ftx.privateGetAccount()
-    // console.log(util.inspect({ result }, { showHidden: false, depth: null }))    
+    const result = await this.ftx.privateGetAccount()
+    console.log(util.inspect({ result }, { showHidden: false, depth: null }))    
     // console.log(this.ftx.privateGetAccount)
 
     const { result: { collateral, positions, chargeInterestOnNegativeUsd, marginFraction } } = await this.ftx.privateGetAccount()
