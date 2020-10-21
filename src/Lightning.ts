@@ -189,8 +189,6 @@ export const LightningMixin = (superclass) => class extends superclass {
           assert(this.currency == existingInvoice.currency)
         }
 
-
-
         const sats = tokens
         const addedMetadata = await getCurrencyEquivalent({sats, fee: 0})
         const metadata = { currency: this.currency, hash: id, type: "on_us", pending: false, ...addedMetadata }
@@ -211,7 +209,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         await InvoiceUser.findOneAndUpdate({ _id: id }, { pending: false })
         await lnService.cancelHodlInvoice({ lnd: this.lnd, id })
           
-        lightningLoggerOnUs.info({success: true, ...metadata}, "lightning payment success")
+        lightningLoggerOnUs.info({success: true, isReward: params.isReward ?? false, ...metadata}, "lightning payment success")
 
         return "success"
       }
