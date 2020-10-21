@@ -76,7 +76,10 @@ const UserSchema = new Schema({
   },
   username: {
     type: String,
-    unique: true
+    index: {
+      unique: true,
+      partialFilterExpression: {email: {$type: "string"}}
+    }
   },
   deviceToken: {
     type: [String],
@@ -102,7 +105,6 @@ UserSchema.index({
 });
 
 // TOOD create indexes
-UserSchema.index({ "username": 1 }, { unique: true })
 
 export const User = mongoose.model("User", UserSchema)
 
