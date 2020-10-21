@@ -104,6 +104,8 @@ export class AdminWallet {
 
     const metadata = { currency: this.currency, txid: transaction_id, type: "fee" }
 
+    console.log({metadata}, "openChannel")
+
     await MainBook.entry("on chain fee")
       .debit(lightningAccountingPath, fee, {...metadata,})
       .credit(openChannelFees, fee, {...metadata})
