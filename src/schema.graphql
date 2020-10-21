@@ -32,6 +32,7 @@ type Wallet {
   currency: String # enum?
   balance: Int
   transactions: [Transaction]
+  csv: String
 }
 
 type Invoice {
