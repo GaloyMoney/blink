@@ -92,6 +92,12 @@ export abstract class UserWallet {
         {id: 'type', title: 'type'},
         {id: 'hash', title: 'hash'},
         {id: 'txid', title: 'txid'},
+        {id: 'fee', title: 'fee'},
+        {id: 'feeUsd', title: 'feeUsd'},
+        {id: 'sats', title: 'sats'},
+        {id: 'usd', title: 'usd'},
+        {id: 'memo', title: 'memo'},
+        {id: 'memoPayer', title: 'memoPayer'},
         {id: 'meta', title: 'meta'},
       ]
     })
