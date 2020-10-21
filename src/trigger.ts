@@ -35,11 +35,6 @@ export async function onchainTransactionEventHandler(tx) {
       // transaction has been sent. and this events is trigger before
     }
 
-    // TODO:
-    // this loop should also be in the adminWallet so that if a payment is not set to pending
-    // at the time of the trigger because trigger is downn, AdminWallet would do it
-    // 
-
     await Transaction.updateMany({ hash: tx.id }, { pending: false })
     onchainLogger.info({ success: true, pending: false, transactionType: "payment" }, "payment completed")
     const entry = await Transaction.findOne({ account_path: { $all : ["Liabilities", "Customer"] }, hash: tx.id })

@@ -13,6 +13,11 @@ const util = require('util')
 
 const using = require('bluebird').using
 
+// TODO: look if tokens/amount has an effect on the fees
+// we don't want to go back and forth between RN and the backend if amount changes
+// but fees are the same
+const someAmount = 50000
+
 export const OnChainMixin = (superclass) => class extends superclass {
   lnd = lnService.authenticatedLndGrpc(getAuth()).lnd
 
@@ -31,11 +36,6 @@ export const OnChainMixin = (superclass) => class extends superclass {
     const payeeUser = await this.PayeeUser(address)
 
     let fee
-
-    // it's a fix for now. we use balance so that it works if someone click on "Max"
-    // amount from the sendBitcoin Screen 
-    // FIXME: inefficient
-    const someAmount = await this.getBalance()
 
     if (payeeUser) {
       fee = 0
