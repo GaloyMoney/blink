@@ -732,6 +732,64 @@
 										}
 									},
 									"response": []
+								},
+								{
+									"name": "setUsername",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "763d778e-9608-459d-90f7-fec1d40bbbac",
+												"exec": [
+													"pm.test(\"validate username is set\", function () {",
+													"    if (pm.environment.name != \"devnet\") {",
+													"        const jsonData = pm.response.json();",
+													"        const {updateUser: {setUsername}} = jsonData.data",
+													"        pm.expect(setUsername).to.be.true();",
+													"    }",
+													"});",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI1ZjkwMTY3ODM2MmZmNjIzMjVkZmFmYjciLCJuZXR3b3JrIjoicmVndGVzdCIsImN1cnJlbmN5IjoiQlRDIiwiaWF0IjoxNjAzMjc4NDU2fQ.-im7fJS_aneM32zNXDVqSDPPoQtCtCE22X-hUclT3u0",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "mutation setUsername($username: String!) {\n    updateUser {\n        setUsername (username: $username)\n    }\n}",
+												"variables": "{\n    \"username\":\"test\"\n}"
+											},
+											"options": {
+												"graphql": {}
+											}
+										},
+										"url": {
+											"raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+											"protocol": "{{protocol}}",
+											"host": [
+												"{{domain}}"
+											],
+											"port": "{{port}}",
+											"path": [
+												"graphql"
+											]
+										}
+									},
+									"response": []
 								}
 							],
 							"event": [
