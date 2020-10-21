@@ -75,7 +75,8 @@ const UserSchema = new Schema({
     required: true,
   },
   username: {
-    type: String
+    type: String,
+    unique: true
   },
   deviceToken: {
     type: [String],
