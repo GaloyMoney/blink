@@ -100,18 +100,14 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
   async getProfit() {
     const satsPrice = await this.price.lastPrice()
 
-    const { total: sats, node, exchange } = await this.satsBalance()
+    const { total: sats } = await this.satsBalance()
     const usdAssetsInBtc = sats * satsPrice
-    const nodeInBtc = node * satsPrice
-    const exchangeInBtc = exchange * satsPrice
     
     const { usd: usdLiabilities } = await this.getLocalLiabilities()
 
     const { usdPnl } = await this.getExchangeBalance()
     
     const usdProfit = usdAssetsInBtc + usdPnl - usdLiabilities
-
-    console.log({ usdProfit,  usdAssetsInBtc, usdPnl, usdLiabilities, nodeInBtc, exchangeInBtc })
 
     return {
       usdProfit
