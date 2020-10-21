@@ -68,6 +68,6 @@ export abstract class UserWallet {
   }
 
   async setUsername({ username }) {
-    return await User.findOneAndUpdate({ _id: this.uid, username: null }, { username }, { new: true })
+    return !!await User.findOneAndUpdate({ _id: this.uid, username: null }, { username }, { new: true })
   }
 }
