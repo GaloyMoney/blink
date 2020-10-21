@@ -8,6 +8,18 @@ import * as jwt from 'jsonwebtoken';
 import { baseLogger } from "./utils";
 
 export const WalletFactory = ({uid, logger, currency = "BTC"}: {uid: string, currency: string, logger: any}) => {
+  
+  // FIXME:
+  // trigger is currently instancing the broker wallet as a traditional LightningBtcWallet wallet
+  // but the accounting path for LightningBtcWallet is Liabilities:Customer:uid 
+  // and it is Liabilities:Broker for the broker
+  // this is a temporary fix
+  // 
+  // broker id = ObjectId("5f8a1e6c2f410ed166a1b9ab")
+  if (uid === "5f8a1e6c2f410ed166a1b9ab") {
+    return new BrokerWallet({ uid, logger })
+  }
+
 // TODO: remove default BTC once old tokens had been "expired"
   if (currency === "USD") {
     return new LightningUsdWallet({uid, logger})
