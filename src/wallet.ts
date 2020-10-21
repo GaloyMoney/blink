@@ -101,7 +101,15 @@ export abstract class UserWallet {
     const header = csvWriter.getHeaderString();
     const records = csvWriter.stringifyRecords(transactions)
  
-    return header + records
+    const str = header + records
+
+    // create buffer from string
+    const binaryData = Buffer.from(str, "utf8");
+
+    // decode buffer as base64
+    const base64Data = binaryData.toString("base64");
+
+    return base64Data
   }
 
   async setLevel({ level }) {
