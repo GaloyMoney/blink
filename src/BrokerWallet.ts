@@ -1,5 +1,5 @@
 import { find } from "lodash";
-import { accountBrokerFtxPath, brokerPath } from "./ledger";
+import { accountBrokerFtxPath, brokerPath, liabilitiesBrokerFtxPath } from "./ledger";
 import { MainBook } from "./mongodb";
 import { OnChainMixin } from "./OnChain";
 import { Price } from "./priceImpl";
@@ -34,10 +34,6 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
   readonly currency = "BTC" 
   ftx
   price
-
-  get accountPath(): string {
-    return brokerPath
-  }
   
   constructor({ uid, logger }: ILightningWalletUser) {
     super({ uid, currency: "BTC" })
@@ -48,18 +44,26 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
 
   async getLocalLiabilities() { 
     const { balance: usd } = await MainBook.balance({
-      account: this.accountPath,
+      account: brokerPath,
       currency: "USD", 
     })
 
-    const { balance: sats } = await MainBook.balance({
+    const { balance: satsLnd } = await MainBook.balance({
       account: this.accountPath,
+      currency: "BTC", 
+    })
+
+    // TODO: calculate PnL for the broker
+    // this will influence this account.
+    const { balance: satsFtx } = await MainBook.balance({
+      account: liabilitiesBrokerFtxPath,
       currency: "BTC", 
     })
 
     return { 
       usd,
-      sats
+      satsLnd,
+      satsFtx,
     }
   }
 
@@ -81,7 +85,7 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
   }
 
   async satsBalance() {
-    const { sats: nodeLiabilities } = await this.getLocalLiabilities();
+    const { satsLnd: nodeLiabilities } = await this.getLocalLiabilities();
     const node = - nodeLiabilities
 
     // at least on FTX. interest will be charged when below -$30,000.
@@ -102,16 +106,12 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
 
     const { total: sats, node, exchange } = await this.satsBalance()
     const usdAssetsInBtc = sats * satsPrice
-    const nodeInBtc = node * satsPrice
-    const exchangeInBtc = exchange * satsPrice
     
     const { usd: usdLiabilities } = await this.getLocalLiabilities()
 
     const { usdPnl } = await this.getExchangeBalance()
     
     const usdProfit = usdAssetsInBtc + usdPnl - usdLiabilities
-
-    console.log({ usdProfit,  usdAssetsInBtc, usdPnl, usdLiabilities, nodeInBtc, exchangeInBtc })
 
     return {
       usdProfit
@@ -371,7 +371,7 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
 
         await MainBook.entry()
         .debit(accountBrokerFtxPath, btc2sat(btcAmount), {...metadata, memo})
-        .credit(this.accountPath, btc2sat(btcAmount), {...metadata, memo})
+        .credit(liabilitiesBrokerFtxPath, btc2sat(btcAmount), {...metadata, memo})
         .commit()
 
       } else {
@@ -440,7 +440,7 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
       // explore a way to refactor this to make a single transaction.
 
       await MainBook.entry()
-        .debit(this.accountPath, btc2sat(btcAmount), {...metadata, memo})
+        .debit(liabilitiesBrokerFtxPath, btc2sat(btcAmount), {...metadata, memo})
         .credit(accountBrokerFtxPath, btc2sat(btcAmount), {...metadata, memo})
         .commit()
 

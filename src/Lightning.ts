@@ -1,7 +1,7 @@
 const lnService = require('ln-service');
 const assert = require('assert').strict;
 import { createHash, randomBytes } from "crypto";
-import { customerPath, brokerPath, lightningAccountingPath } from "./ledger";
+import { customerPath, brokerPath, lightningAccountingPath, brokerLndPath } from "./ledger";
 import { disposer } from "./lock";
 import { InvoiceUser, MainBook, Transaction } from "./mongodb";
 import { sendInvoicePaidNotification } from "./notification";
@@ -273,11 +273,15 @@ export const LightningMixin = (superclass) => class extends superclass {
           route.messages = messages
         }
 
+        // TODO: brokerLndPath should be cached
+        const path = this.isUSD ? await brokerLndPath() : this.accountPath
+
         // reduce balance from customer first
+
 
         journal = MainBook.entry(memoInvoice)
           .debit('Assets:Reserve:Lightning', sats, {...metadata, currency: "BTC"})
-          .credit(this.isUSD ? brokerPath : this.accountPath, sats, {...metadata, currency: "BTC"})
+          .credit(path, sats, {...metadata, currency: "BTC"})
         
         if(this.isUSD) {
           journal
@@ -460,8 +464,11 @@ export const LightningMixin = (superclass) => class extends superclass {
           const addedMetadata = await getCurrencyEquivalent({usd, sats, fee: 0})
           const metadata = { hash, type: "invoice", ... addedMetadata }
 
+          // TODO: brokerLndPath should be cached
+          const path = this.isUSD ? await brokerLndPath() : this.accountPath
+
           const entry = MainBook.entry(invoice.description)
-            .debit(this.isUSD ? brokerPath : this.accountPath, sats, {...metadata, currency: "BTC"})
+            .debit(path, sats, {...metadata, currency: "BTC"})
             .credit(lightningAccountingPath, sats, {...metadata, currency: "BTC"})
           
           if(this.isUSD) {
