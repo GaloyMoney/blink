@@ -4,7 +4,7 @@ import { MainBook } from "./mongodb";
 import { OnChainMixin } from "./OnChain";
 import { Price } from "./priceImpl";
 import { ILightningWalletUser } from "./types";
-import { baseLogger, btc2sat, sleep } from "./utils";
+import { baseLogger, btc2sat, getCurrencyEquivalent, sleep } from "./utils";
 import { UserWallet } from "./wallet";
 const using = require('bluebird').using
 const util = require('util')
@@ -310,7 +310,14 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
   }
 
   async rebalance ({ btcAmount, depositOrWithdraw, logger }) {
-    const metadata = { type: "exchange_rebalance", currency: this.currency }
+    const currency = this.currency
+    const sats = btc2sat(btcAmount)
+
+    const addedMetadata = await getCurrencyEquivalent({sats, fee: 0})
+    const metadata = { type: "exchange_rebalance", currency, ...addedMetadata }
+
+    let subLogger = logger.child({...metadata, currency, btcAmount, depositOrWithdraw})
+
 
     // deposit and withdraw are from the exchange point of view
     if (depositOrWithdraw === "withdraw") {
@@ -324,11 +331,10 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
 
       // TODO: need a withdrawal password?
       // FIXME: No fees? event the on-chain fees?
-      const currency = "BTC"
 
       let withdrawalResult 
 
-      const subLogger = logger.child({...metadata, memo, address, currency})
+      subLogger = subLogger.child({memo, address})
 
       try {
         withdrawalResult = await this.ftx.withdraw(currency, btcAmount, address)
@@ -338,7 +344,8 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
         throw new Error(err)
       }
 
-      // from ccxt. could be different for ftx
+      // this.ftx.withdraw documentation from from ccxt. 
+      // could be different for ftx
       //
       //   {
       //     'info':      { ... },    // the JSON response from the exchange as is
@@ -370,9 +377,11 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
         // TODO: wait until request succeed before updating tx
 
         await MainBook.entry()
-        .debit(accountBrokerFtxPath, btc2sat(btcAmount), {...metadata, memo})
-        .credit(liabilitiesBrokerFtxPath, btc2sat(btcAmount), {...metadata, memo})
+        .debit(accountBrokerFtxPath, sats, {...metadata, memo })
+        .credit(liabilitiesBrokerFtxPath, sats, {...metadata, memo })
         .commit()
+
+        subLogger.info({withdrawalResult}, `rebalancing withdrawal was succesful`)
 
       } else {
 
@@ -421,13 +430,13 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
         //   "msg": "withdrawal was not succesful"
         // }
 
-        subLogger.error({withdrawalResult}, `withdrawal was not succesful`)
+        subLogger.error({withdrawalResult}, `rebalancing withdrawal was not succesful`)
       }
 
     } else if (depositOrWithdraw === "deposit") {
       const memo = `deposit of ${btcAmount} btc to ${this.ftx.name}`
       const address = await this.exchangeDepositAddress()
-      await this.onChainPay({address, amount: btc2sat(btcAmount), memo })
+      await this.onChainPay({address, amount: sats, memo })
 
       // onChainPay is doing:
       //
@@ -440,9 +449,12 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
       // explore a way to refactor this to make a single transaction.
 
       await MainBook.entry()
-        .debit(liabilitiesBrokerFtxPath, btc2sat(btcAmount), {...metadata, memo})
-        .credit(accountBrokerFtxPath, btc2sat(btcAmount), {...metadata, memo})
+        .debit(liabilitiesBrokerFtxPath, sats, {...metadata, memo })
+        .credit(accountBrokerFtxPath, sats, {...metadata, memo })
         .commit()
+
+      subLogger.info({memo, address}, "deposit rebalancing succesful")
+
 
     }
   }
