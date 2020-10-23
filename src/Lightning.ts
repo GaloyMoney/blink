@@ -311,8 +311,6 @@ export const LightningMixin = (superclass) => class extends superclass {
           //     routes: details.routes
           // })
 
-          // console.log({result})
-
         } catch (err) {
 
           if (err.message === "Timeout") {

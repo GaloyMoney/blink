@@ -13,4 +13,4 @@ const main = async () => {
 	process.exit(0)
 }
 
-setupMongoConnection().then(main).catch((err) => console.log(err))
+setupMongoConnection().then(main).catch((err) => baseLogger.error(err))
