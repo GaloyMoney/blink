@@ -22,7 +22,7 @@
     "lnd-connection": "source exportLocal.sh && echo $MACAROON | base64 -d > ./macaroon && echo $TLS | base64 -d > ./tls.cert && lncli --network regtest --macaroonpath=./macaroon --tlscertpath=./tls.cert --rpcserver=${LNDIP}:${LNDRPCPORT} getinfo",
     "postman": "yarn node src/postman/newman.ts",
     "bitcoin-cli": "kubectl exec bitcoind-container-0 -- bitcoin-cli -rpcuser=rpcuser -rpcpassword=rpcpass -chain=regtest",
-    "update-postman": "curl --location --request GET \"https://api.getpostman.com/collections/2e9d4144-4c26-4b72-b000-ad1e63105f94\" --header \"X-Api-Key: $POSTMANAPIKEY\" | jq > src/postman/graphql.postman_collection.json"
+    "update-postman": "curl --location --request GET \"https://api.getpostman.com/collections/4e3fee88-7267-44e1-a316-b81e90b0bd2b\" --header \"X-Api-Key: $POSTMANAPIKEY\" | jq . > src/postman/graphql.postman_collection.json"
   },
   "engines": {
     "node": "12"
