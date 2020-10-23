@@ -1,5 +1,5 @@
 import { find } from "lodash";
-import { accountBrokerFtxPath, brokerPath, liabilitiesBrokerFtxPath } from "./ledger";
+import { accountBrokerFtxPath, brokerPath, customerPath, liabilitiesBrokerFtxPath } from "./ledger";
 import { MainBook } from "./mongodb";
 import { OnChainMixin } from "./OnChain";
 import { Price } from "./priceImpl";
@@ -35,6 +35,10 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
   ftx
   price
   
+  get accountPath(): string {
+    return customerPath(this.uid)
+  }
+
   constructor({ uid, logger }: ILightningWalletUser) {
     super({ uid, currency: "BTC" })
     this.ftx = new ccxt.ftx({ apiKey, secret })
@@ -376,6 +380,13 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
 
         // TODO: wait until request succeed before updating tx
 
+        // updateOnchainReceipt() doing:
+        // 
+        // await MainBook.entry()
+        // .debit(this.accountPath, sats, metadata)
+        // .credit(lightningAccountingPath, sats, metadata)
+        // .commit()
+
         await MainBook.entry()
         .debit(accountBrokerFtxPath, sats, {...metadata, memo })
         .credit(liabilitiesBrokerFtxPath, sats, {...metadata, memo })
@@ -454,7 +465,6 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
         .commit()
 
       subLogger.info({memo, address}, "deposit rebalancing succesful")
-
 
     }
   }
