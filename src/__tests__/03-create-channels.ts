@@ -5,6 +5,7 @@ import { AdminWallet } from "../AdminWallet";
 import { setupMongoConnection } from "../mongodb";
 import { checkIsBalanced, lndMain, lndOutside1, lndOutside2, RANDOM_ADDRESS, waitUntilBlockHeight, mockGetExchangeBalance } from "../tests/helper";
 import { baseLogger, bitcoindClient, nodeStats, sleep } from "../utils";
+import { onChannelOpened } from '../trigger'
 const mongoose = require("mongoose");
 const { once } = require('events');
 
@@ -20,8 +21,8 @@ let channelLengthMain, channelLengthOutside1
 
 
 beforeAll(async () => {
-  await setupMongoConnection()
-  mockGetExchangeBalance()
+	await setupMongoConnection()
+	mockGetExchangeBalance()
 
 	adminWallet = new AdminWallet()
 
@@ -34,11 +35,11 @@ beforeEach(async () => {
 })
 
 afterEach(async () => {
-  await checkIsBalanced()
+	await checkIsBalanced()
 })
 
 afterAll(async () => {
-  return await mongoose.connection.close()
+	return await mongoose.connection.close()
 })
 
 const newBlock = 6
@@ -48,21 +49,19 @@ const openChannel = async ({ lnd, other_lnd, socket, is_private = false }) => {
 	await waitUntilBlockHeight({ lnd: lndMain, blockHeight: initBlockCount })
 	await waitUntilBlockHeight({ lnd: other_lnd, blockHeight: initBlockCount })
 
-	const { public_key } = await lnService.getWalletInfo({ lnd: other_lnd })
+	const { public_key: partner_public_key } = await lnService.getWalletInfo({ lnd: other_lnd })
 
-	let openChannelPromise
-
-	if (lnd === lndMain) {
-		openChannelPromise = adminWallet.openChannel({ local_tokens, public_key, socket })
-	} else {
-		openChannelPromise = lnService.openChannel({
-			lnd, local_tokens, is_private, partner_public_key: public_key, partner_socket: socket
-		})
-	}
+	let openChannelPromise = lnService.openChannel({
+		lnd, local_tokens, is_private, partner_public_key, partner_socket: socket
+	})
 
 	const sub = lnService.subscribeToChannels({ lnd })
+
+	if (lnd === lndMain) {
+		sub.on('channel_opened', onChannelOpened)
+	}
+
 	await once(sub, 'channel_opening')
-	sub.removeAllListeners()
 
 	const mineBlock = async () => {
 		await bitcoindClient.generateToAddress(newBlock, RANDOM_ADDRESS)
@@ -80,8 +79,9 @@ const openChannel = async ({ lnd, other_lnd, socket, is_private = false }) => {
 		mineBlock(),
 	])
 
-  await sleep(5000)
-  await adminWallet.updateEscrows()
+	await sleep(5000)
+	await adminWallet.updateEscrows()
+	sub.removeAllListeners()
 }
 
 it('opens channel from lnd1 to lndOutside1', async () => {
@@ -129,11 +129,11 @@ it('returns correct nodeStats', async () => {
 })
 
 it('escrow update 1', async () => {
-  await adminWallet.updateEscrows()
-  await checkIsBalanced()
+	await adminWallet.updateEscrows()
+	await checkIsBalanced()
 })
 
 it('escrow update 2', async () => {
-  await adminWallet.updateEscrows()
-  await checkIsBalanced()
+	await adminWallet.updateEscrows()
+	await checkIsBalanced()
 })
