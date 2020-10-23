@@ -41,7 +41,7 @@ export class LightningBtcWallet extends OnChainMixin(LightningMixin(UserWallet))
         if (userPastState.earn.findIndex(item => item === id) === -1) {
 
           const invoice = await this.addInvoice({memo: id, value: amount})
-          await lightningFundingWallet.pay({invoice})
+          await lightningFundingWallet.pay({invoice, isReward: true})
         }
 
         result.push({ id, value: amount, completed: true })

@@ -22,10 +22,14 @@ const lndOnChain_g = new client.Gauge({ name: `${prefix}_lnd_onchain`, help: 'ho
 const lndOffChain_g = new client.Gauge({ name: `${prefix}_lnd_offchain`, help: 'how much fund is offChain in our node' })
 const lndOpeningChannelBalance_g = new client.Gauge({ name: `${prefix}_lnd_openingchannelbalance`, help: 'how much fund is pending following opening channel' })
 const lndClosingChannelBalance_g = new client.Gauge({ name: `${prefix}_lnd_closingchannelbalance`, help: 'how much fund is closing following force closed channel' })
-const usd_liabilities_g = new client.Gauge({ name: `${prefix}_usdLiabilities`, help: 'usd liabilities' })
 const usdShortPosition_g = new client.Gauge({ name: `${prefix}_usdShortPosition`, help: 'usd short position on ftx' })
 const ftx_btc_g = new client.Gauge({ name: `${prefix}_ftxBtcBalance`, help: 'btc balance in ftx' })
+const ftx_usdPnl_g = new client.Gauge({ name: `${prefix}_ftxUsdPnl`, help: 'usd balance in FTX, which also represents the PNL' })
+const broker_local_btc_g = new client.Gauge({ name: `${prefix}_brokerLocalBtcBalance`, help: 'btc balance in for the broker in the node' })
+const broker_local_usd_g = new client.Gauge({ name: `${prefix}_brokerLocalUsdBalance`, help: 'usd liabilities for the broker' })
+const broker_profit_g = new client.Gauge({ name: `${prefix}_brokerProfit`, help: 'profit of the broker wallet' })
 const leverage_g = new client.Gauge({ name: `${prefix}_leverage`, help: 'leverage ratio on ftx' })
+const fundingRate_g = new client.Gauge({ name: `${prefix}_fundingRate`, help: 'FTX hourly funding rate' })
 const assetsLiabilitiesDifference_g = new client.Gauge({ name: `${prefix}_assetsEqLiabilities`, help: 'do we have a balanced book' })
 const bookingVersusRealWorldAssets_g = new client.Gauge({ name: `${prefix}_lndBalanceSync`, help: 'are lnd in syncs with our books' })
 // const price_g = new client.Gauge({ name: `${prefix}_price`, help: 'BTC/USD price' })
@@ -42,7 +46,7 @@ const main = async () => {
       logger.error(`issue getting price: ${err}`)
     }
     
-    const { lightning, liabilities, usd: usd_liabilities } = await adminWallet.getBalanceSheet()
+    const { lightning, liabilities } = await adminWallet.getBalanceSheet()
     const { assetsLiabilitiesDifference, bookingVersusRealWorldAssets } = await adminWallet.balanceSheetIsBalanced()
     liabilities_g.set(liabilities)
     lightning_g.set(lightning)
@@ -56,18 +60,23 @@ const main = async () => {
     lndOpeningChannelBalance_g.set(opening_channel_balance)
     lndClosingChannelBalance_g.set(closing_channel_balance)
     // price_g.set(price)
-        
+      
     const userCount = await User.count()
     userCount_g.set(userCount)
     
-    usd_liabilities_g.set(usd_liabilities)
-    ftx_btc_g.set(await adminWallet.ftxBalance())
-
     const brokerWallet = await getBrokerWallet({ logger })
     const { usd: usdShortPosition, leverage } = await brokerWallet.getAccountPosition()
 
+    ftx_btc_g.set((await brokerWallet.getExchangeBalance()).sats)
+    ftx_usdPnl_g.set((await brokerWallet.getExchangeBalance()).usdPnl)
+    broker_local_btc_g.set((await brokerWallet.getLocalLiabilities()).satsLnd)
+    broker_local_usd_g.set((await brokerWallet.getLocalLiabilities()).usd)
+    broker_profit_g.set((await brokerWallet.getProfit()).usdProfit)
+
     usdShortPosition_g.set(usdShortPosition)
     leverage_g.set(leverage)
+
+    fundingRate_g.set(await brokerWallet.getNextFundingRate())
 
     res.set('Content-Type', register.contentType);
     res.end(register.metrics());

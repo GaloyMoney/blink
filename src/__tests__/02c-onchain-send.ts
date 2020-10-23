@@ -4,7 +4,7 @@
 import { filter, first, last } from "lodash";
 import { quit } from "../lock";
 import { MainBook, setupMongoConnection } from "../mongodb";
-import { checkIsBalanced, getUserWallet, lndMain, lndOutside1, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
+import { checkIsBalanced, getUserWallet, lndMain, lndOutside1, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
 import { onchainTransactionEventHandler } from "../trigger";
 import { bitcoindClient, sleep } from "../utils";
 const util = require('util')
@@ -25,14 +25,13 @@ const { sendNotification } = require("../notification");
 
 
 import { AdminWallet } from "../AdminWallet"
+import { BrokerWallet } from "../BrokerWallet";
 
 beforeAll(async () => {
   await setupMongoConnection()
   userWallet0 = await getUserWallet(0)
   userWallet3 = await getUserWallet(3)
-  jest.spyOn(AdminWallet.prototype, 'ftxBalance').mockImplementation(() => new Promise((resolve, reject) => {
-    resolve(0) 
-  }));
+  mockGetExchangeBalance()
 })
 
 beforeEach(async () => {

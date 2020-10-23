@@ -1,14 +1,14 @@
 /**
  * @jest-environment node
  */
-import { setupMongoConnection, User } from "../mongodb";
-
+import { filter } from "lodash";
 import { LightningBtcWallet } from "../LightningBtcWallet";
 import { quit } from "../lock";
-import { checkIsBalanced, getUserWallet, lndMain, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
+import { setupMongoConnection, User } from "../mongodb";
+import { checkIsBalanced, getUserWallet, lndMain, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
 import { onchainTransactionEventHandler } from "../trigger";
 import { baseLogger, bitcoindClient, btc2sat, sleep } from "../utils";
-import { filter } from "lodash";
+
 
 const lnService = require('ln-service')
 
@@ -29,13 +29,10 @@ const amount_BTC = 1
 jest.mock('../notification')
 const { sendNotification } = require("../notification");
 
-import { AdminWallet } from "../AdminWallet"
 
 beforeAll(async () => {
   await setupMongoConnection()
-  jest.spyOn(AdminWallet.prototype, 'ftxBalance').mockImplementation(() => new Promise((resolve, reject) => {
-    resolve(0) 
-  }));
+  mockGetExchangeBalance()
 })
 
 beforeEach(async () => {

@@ -2,12 +2,12 @@
  * @jest-environment node
  */
 import { createHash, randomBytes } from 'crypto';
+import { BrokerWallet } from "../BrokerWallet";
 import { quit } from "../lock";
 import { InvoiceUser, MainBook, setupMongoConnection, Transaction, User } from "../mongodb";
-import { checkIsBalanced, getUserWallet, lndOutside1, lndOutside2, onBoardingEarnAmt, onBoardingEarnIds } from "../tests/helper";
-import { getHash, sleep, baseLogger } from "../utils";
+import { checkIsBalanced, getUserWallet, lndOutside1, lndOutside2, mockGetExchangeBalance, onBoardingEarnAmt, onBoardingEarnIds } from "../tests/helper";
+import { baseLogger, getHash, sleep } from "../utils";
 import { getFunderWallet } from "../walletFactory";
-import { AdminWallet } from "../AdminWallet";
 
 const lnService = require('ln-service')
 const mongoose = require("mongoose")
@@ -23,10 +23,7 @@ const { sendNotification } = require("../notification");
 
 beforeAll(async () => {
   await setupMongoConnection()
-
-   jest.spyOn(AdminWallet.prototype, 'ftxBalance').mockImplementation(() => new Promise((resolve, reject) => {
-    resolve(0) 
-  }));
+  mockGetExchangeBalance()
 
   userWallet1 = await getUserWallet(1)
   userWallet2 = await getUserWallet(2)

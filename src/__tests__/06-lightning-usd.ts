@@ -1,12 +1,12 @@
 /**
  * @jest-environment node
  */
-import { AdminWallet } from "../AdminWallet";
+import { BrokerWallet } from "../BrokerWallet";
 import { customerPath } from "../ledger";
 import { quit } from "../lock";
 import { InvoiceUser, MainBook, setupMongoConnection } from "../mongodb";
 import { Price } from "../priceImpl";
-import { checkIsBalanced, getUserWallet, lndOutside1 } from "../tests/helper";
+import { checkIsBalanced, getUserWallet, lndOutside1, mockGetExchangeBalance } from "../tests/helper";
 import { baseLogger, getAmount, getHash } from "../utils";
 
 const lnService = require('ln-service')
@@ -21,10 +21,8 @@ const amountInvoice = 1000
 
 beforeAll(async () => {
   await setupMongoConnection()
+  mockGetExchangeBalance()
 
-   jest.spyOn(AdminWallet.prototype, 'ftxBalance').mockImplementation(() => new Promise((resolve, reject) => {
-    resolve(0) 
-  }));
 
   userWalletUsd = await getUserWallet(5)
   expect(userWalletUsd.currency).toBe("USD")

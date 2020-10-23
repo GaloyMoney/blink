@@ -1,8 +1,8 @@
 import { filter, find, sumBy } from "lodash";
-import { WalletFactory, getBrokerWallet } from "./walletFactory";
-import { MainBook, Transaction, User } from "./mongodb";
-import { getAuth, baseLogger, btc2sat } from "./utils";
 import { accountingExpenses, escrowAccountingPath, lightningAccountingPath, openChannelFees } from "./ledger";
+import { MainBook, Transaction, User } from "./mongodb";
+import { baseLogger, getAuth } from "./utils";
+import { getBrokerWallet, WalletFactory } from "./walletFactory";
 const lnService = require('ln-service')
 
 const logger = baseLogger.child({module: "admin"})
@@ -50,15 +50,16 @@ export class AdminWallet {
     const { balance: liabilities } = await MainBook.balance({accounts: "Liabilities", currency: "BTC"}) 
     const { balance: lightning } = await MainBook.balance({accounts: lightningAccountingPath, currency: "BTC"}) 
     const { balance: expenses } = await MainBook.balance({accounts: accountingExpenses, currency: "BTC"}) 
-    const { balance: usd } = await MainBook.balance({accounts: "Liabilities:Broker", currency: "USD"}) 
 
-    return {assets, liabilities, lightning, expenses, usd }
+    return {assets, liabilities, lightning, expenses }
   }
 
   async balanceSheetIsBalanced() {
-    const {assets, liabilities, lightning, expenses, usd } = await this.getBalanceSheet()
+    const {assets, liabilities, lightning, expenses } = await this.getBalanceSheet()
     const { total: lnd } = await this.lndBalances() // doesnt include ercrow amount
-    const ftx = await this.ftxBalance()
+
+    const brokerWallet = await getBrokerWallet({ logger })
+    const { sats: ftx } = await brokerWallet.getExchangeBalance()
 
     const assetsLiabilitiesDifference = assets + (liabilities + expenses)
     const bookingVersusRealWorldAssets = (lnd + ftx) - lightning
@@ -79,18 +80,14 @@ export class AdminWallet {
 
     const { channels: closedChannels } = await lnService.getClosedChannels({lnd: this.lnd})
 
+    // FIXME: calculation seem wrong (seeing the grafana graph, need to double check)
+    logger.debug({closedChannels}, "lnService.getClosedChannels")
     const closing_channel_balance = sumBy(closedChannels, channel => sumBy(
       (channel as any).close_payments, payment => (payment as any).is_pending ? (payment as any).tokens : 0 )
     )
     
     const total = chain_balance + channel_balance + pending_chain_balance + opening_channel_balance + closing_channel_balance
     return { total, onChain: chain_balance + pending_chain_balance, offChain: channel_balance, opening_channel_balance, closing_channel_balance } 
-  }
-
-  async ftxBalance () {
-    const brokerWallet = await getBrokerWallet({ logger })
-    const balance = await brokerWallet.getExchangeBalance()
-    return balance
   }
 
   getInfo = async () => lnService.getWalletInfo({ lnd: this.lnd });

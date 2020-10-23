@@ -26,8 +26,8 @@ export const getBrokerWallet = async ({ logger }) => {
   return new BrokerWallet({ uid: broker._id, logger })
 }
 
-export const getTestUserToken = async (userNumber) => {
-  const raw_token = await login({...TEST_NUMBER[userNumber], logger: baseLogger})
+export const getTokenFromPhoneIndex = async (index) => {
+  const raw_token = await login({...TEST_NUMBER[index], logger: baseLogger})
   const token = jwt.verify(raw_token, process.env.JWT_SECRET);
   return token
 }
@@ -36,6 +36,6 @@ export const getTestUserToken = async (userNumber) => {
 // FIXME there should be an API for this
 // FIXME: this "power" user should not be able to log from a phone number
 export async function createBrokerUid() {
-  const {uid} = await getTestUserToken(7)
+  const {uid} = await getTokenFromPhoneIndex(7)
   await User.findOneAndUpdate({_id: uid}, {role: "broker"})
 }

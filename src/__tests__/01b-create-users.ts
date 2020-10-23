@@ -4,8 +4,8 @@
 const lnService = require('ln-service')
 import { setupMongoConnection, User } from "../mongodb";
 import { TEST_NUMBER } from "../text";
-import { createBrokerUid, getTestUserToken } from "../walletFactory";
 import { getUserWallet } from "../tests/helper"
+import { createBrokerUid, getTokenFromPhoneIndex } from "../walletFactory";
 const mongoose = require("mongoose");
 
 
@@ -29,13 +29,13 @@ it('add user0 without currency (old account)', async () => {
   await User.findOneAndUpdate({}, { phone: TEST_NUMBER[0].phone }, { upsert: true })
   await User.updateMany({}, { $set: { currency: "BTC" } })
 
-  const token = await getTestUserToken(0)
+  const token = await getTokenFromPhoneIndex(0)
   expect(token.currency).toBe("BTC")
 })
 
 
-it('add Funder', async () => {
-  const { uid } = await getTestUserToken(4)
+it('add Funder', async () => {  
+  const {uid} = await getTokenFromPhoneIndex(4)
   await promoteToFunder(uid)
 })
 
@@ -43,11 +43,11 @@ it('add Broker', async () => {
   await createBrokerUid()
 })
 
-it('add user5 / usd user', async () => {
-  const user5 = await getTestUserToken(5)
+it('add user5 / usd user', async () => {  
+  const user5 = await getTokenFromPhoneIndex(5)
   expect(user5.currency).toBe("USD")
 
-  const user6 = await getTestUserToken(6)
+  const user6 = await getTokenFromPhoneIndex(6)
   expect(user6.currency).toBe("BTC")
 
   expect(user5.uid).not.toBe(user6.uid)

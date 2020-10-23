@@ -25,14 +25,9 @@ export const OnChainMixin = (superclass) => class extends superclass {
     super(...args)
   }
 
-  async getBalance() {
-    await this.updatePending()
-    return super.getBalance()
-  }
-
-  async updatePending() {
+  async updatePending(): Promise<void | Error> {
     await this.updateOnchainReceipt()
-    return super.updatePending()
+    await super.updatePending()
   }
 
   async PayeeUser(address: string) { return User.findOne({ onchain_addresses: { $in: address } }) }
@@ -52,6 +47,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
     return fee
   }
 
+  // amount in sats
   async onChainPay({ address, amount, memo }: IOnChainPayment): Promise<ISuccess | Error> {
     let onchainLogger = this.logger.child({ topic: "payment", protocol: "onchain", transactionType: "payment", address, amount, memo })
 
@@ -169,7 +165,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
       throw new LoggedError(`no user with this uid`)
     }
 
-    if (user.onchain_addresses?.length === 0) {
+    if (user.onchain_addresses.length === 0) {
       // TODO create one address when a user is created instead?
       // FIXME this shold not be done in a query but only in a mutation?
       await this.getOnChainAddress()
@@ -335,6 +331,10 @@ export const OnChainMixin = (superclass) => class extends superclass {
       for (const matched_tx of user_matched_txs) {
 
         // has the transaction has not been added yet to the user account?
+        //
+        // note: the fact we fiter with `account_path: this.accountPathMedici` could create 
+        // double transaction for some non customer specific wallet. ie: if the path is different
+        // for the broker. this is fixed now but something to think about.
         const mongotx = await Transaction.findOne({ account_path: this.accountPathMedici, type, hash: matched_tx.id })
 
         // this.logger.debug({ matched_tx, mongotx }, "updateOnchainReceipt with user %o", this.uid)
