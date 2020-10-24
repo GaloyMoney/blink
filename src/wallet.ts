@@ -1,6 +1,9 @@
-import moment from "moment"
-import { MainBook, User } from "./mongodb"
-import { ILightningTransaction } from "./types"
+import moment from "moment";
+import { customerPath } from "./ledger";
+import { MainBook, User } from "./mongodb";
+import { ILightningTransaction } from "./types";
+
+const createCsvStringifier = require('csv-writer').createObjectCsvStringifier;
 
 export abstract class UserWallet {
 
@@ -67,6 +70,52 @@ export abstract class UserWallet {
     }))
 
     return results_processed
+  }
+
+  async getStringCsv() {
+    const { results: transactions } = await MainBook.ledger({
+      account: customerPath(this.uid),
+    })
+  
+    const csvWriter = createCsvStringifier({
+      header: [
+        {id: 'voided', title: 'voided'},
+        {id: 'approved', title: 'approved'},
+        {id: '_id', title: '_id'},
+        {id: 'accounts', title: 'accounts'},
+        {id: 'credit', title: 'credit'},
+        {id: 'debit', title: 'debit'},
+        {id: '_journal', title: '_journal'},
+        {id: 'book', title: 'book'},
+        {id: 'datetime', title: 'datetime'},
+        {id: 'currency', title: 'currency'},
+        {id: 'type', title: 'type'},
+        {id: 'hash', title: 'hash'},
+        {id: 'txid', title: 'txid'},
+        {id: 'fee', title: 'fee'},
+        {id: 'feeUsd', title: 'feeUsd'},
+        {id: 'sats', title: 'sats'},
+        {id: 'usd', title: 'usd'},
+        {id: 'memo', title: 'memo'},
+        {id: 'memoPayer', title: 'memoPayer'},
+        {id: 'meta', title: 'meta'},
+      ]
+    })
+  
+    transactions.forEach(tx => tx.meta = JSON.stringify(tx.meta))
+
+    const header = csvWriter.getHeaderString();
+    const records = csvWriter.stringifyRecords(transactions)
+ 
+    const str = header + records
+
+    // create buffer from string
+    const binaryData = Buffer.from(str, "utf8");
+
+    // decode buffer as base64
+    const base64Data = binaryData.toString("base64");
+
+    return base64Data
   }
 
   async setLevel({ level }) {

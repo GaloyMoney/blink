@@ -69,7 +69,7 @@ const main = async () => {
 
     ftx_btc_g.set((await brokerWallet.getExchangeBalance()).sats)
     ftx_usdPnl_g.set((await brokerWallet.getExchangeBalance()).usdPnl)
-    broker_local_btc_g.set((await brokerWallet.getLocalLiabilities()).sats)
+    broker_local_btc_g.set((await brokerWallet.getLocalLiabilities()).satsLnd)
     broker_local_usd_g.set((await brokerWallet.getLocalLiabilities()).usd)
     broker_profit_g.set((await brokerWallet.getProfit()).usdProfit)
 

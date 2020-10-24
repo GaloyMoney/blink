@@ -73,7 +73,8 @@ const resolvers = {
       id: wallet.currency,
       currency: wallet.currency,
       balance: () => wallet.getBalance(),
-      transactions: () => wallet.getTransactions()
+      transactions: () => wallet.getTransactions(),
+      csv: () => wallet.getStringCsv()
     }]),
     nodeStats: async () => nodeStats({lnd}),
     buildParameters: () => ({

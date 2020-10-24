@@ -67,6 +67,7 @@ export interface IPaymentRequest {
   amount?: number,
   invoice?: string,
   memo?: string,
+  isReward?: boolean,
 }
 
 export type IPayInvoice = {
