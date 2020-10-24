@@ -58,7 +58,7 @@ const openChannel = async ({ lnd, other_lnd, socket, is_private = false }) => {
 	const sub = lnService.subscribeToChannels({ lnd })
 
 	if (lnd === lndMain) {
-		sub.on('channel_opened', onChannelOpened)
+		sub.on('channel_opened', (channel) => onChannelOpened({channel, lnd}))
 	}
 
 	await once(sub, 'channel_opening')
