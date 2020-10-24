@@ -76,37 +76,37 @@ export abstract class UserWallet {
     const { results: transactions } = await MainBook.ledger({
       account: customerPath(this.uid),
     })
-  
+
     const csvWriter = createCsvStringifier({
       header: [
-        {id: 'voided', title: 'voided'},
-        {id: 'approved', title: 'approved'},
-        {id: '_id', title: '_id'},
-        {id: 'accounts', title: 'accounts'},
-        {id: 'credit', title: 'credit'},
-        {id: 'debit', title: 'debit'},
-        {id: '_journal', title: '_journal'},
-        {id: 'book', title: 'book'},
-        {id: 'datetime', title: 'datetime'},
-        {id: 'currency', title: 'currency'},
-        {id: 'type', title: 'type'},
-        {id: 'hash', title: 'hash'},
-        {id: 'txid', title: 'txid'},
-        {id: 'fee', title: 'fee'},
-        {id: 'feeUsd', title: 'feeUsd'},
-        {id: 'sats', title: 'sats'},
-        {id: 'usd', title: 'usd'},
-        {id: 'memo', title: 'memo'},
-        {id: 'memoPayer', title: 'memoPayer'},
-        {id: 'meta', title: 'meta'},
+        { id: 'voided', title: 'voided' },
+        { id: 'approved', title: 'approved' },
+        { id: '_id', title: '_id' },
+        { id: 'accounts', title: 'accounts' },
+        { id: 'credit', title: 'credit' },
+        { id: 'debit', title: 'debit' },
+        { id: '_journal', title: '_journal' },
+        { id: 'book', title: 'book' },
+        { id: 'datetime', title: 'datetime' },
+        { id: 'currency', title: 'currency' },
+        { id: 'type', title: 'type' },
+        { id: 'hash', title: 'hash' },
+        { id: 'txid', title: 'txid' },
+        { id: 'fee', title: 'fee' },
+        { id: 'feeUsd', title: 'feeUsd' },
+        { id: 'sats', title: 'sats' },
+        { id: 'usd', title: 'usd' },
+        { id: 'memo', title: 'memo' },
+        { id: 'memoPayer', title: 'memoPayer' },
+        { id: 'meta', title: 'meta' },
       ]
     })
-  
+
     transactions.forEach(tx => tx.meta = JSON.stringify(tx.meta))
 
     const header = csvWriter.getHeaderString();
     const records = csvWriter.stringifyRecords(transactions)
- 
+
     const str = header + records
 
     // create buffer from string
@@ -123,6 +123,11 @@ export abstract class UserWallet {
   }
 
   async setUsername({ username }) {
-    return !!await User.findOneAndUpdate({ _id: this.uid, username: null }, { username }, { new: true })
+    try {
+      return !!await User.findOneAndUpdate({ _id: this.uid, username: null }, { username }, { new: true })
+    } catch (error) {
+      this.logger.debug(error)
+      return false
+    }
   }
 }
