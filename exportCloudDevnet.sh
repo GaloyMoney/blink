@@ -6,12 +6,12 @@ if [ "$DELETE" = "false" ]; then
 else
 	echo "deleting pods"
 	kubectl -n $NAMESPACE delete pod -l app=bitcoind-container
-	kubectl -n $NAMESPACE wait --for=condition=ready -l app=bitcoind-container
+	kubectl -n $NAMESPACE wait --for=condition=ready pod -l app=bitcoind-container
 	kubectl -n $NAMESPACE delete pod -l app.kubernetes.io/name=mongodb
 	kubectl -n $NAMESPACE delete pod -l type=lnd
 	sleep 5
-	kubectl -n $NAMESPACE wait --for=condition=ready -l type=lnd
-	kubectl -n $NAMESPACE wait --for=condition=ready -l app.kubernetes.io/name=mongodb
+	kubectl -n $NAMESPACE wait --for=condition=ready pod -l type=lnd
+	kubectl -n $NAMESPACE wait --for=condition=ready pod -l app.kubernetes.io/name=mongodb
 fi
 
 nohup ./portForward.sh &
