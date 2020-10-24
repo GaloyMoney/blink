@@ -123,11 +123,10 @@ export abstract class UserWallet {
   }
 
   async setUsername({ username }) {
-    try {
+      if(!!await User.findOne({ username })) {
+        this.logger.error(`Username is already taken`)
+        return false
+      }
       return !!await User.findOneAndUpdate({ _id: this.uid, username: null }, { username }, { new: true })
-    } catch (error) {
-      this.logger.debug(error)
-      return false
-    }
   }
 }
