@@ -115,7 +115,7 @@ export const onChannelOpened = async ({ channel, lnd }) => {
 
   const { fee } = find(transactions, { id: transaction_id })
 
-  const metadata = { currency: this.currency, txid: transaction_id, type: "fee" }
+  const metadata = { currency: "BTC", txid: transaction_id, type: "fee" }
 
   logger.debug({ metadata })
 
