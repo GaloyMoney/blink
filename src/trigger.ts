@@ -106,12 +106,12 @@ export const onInvoiceUpdate = async invoice => {
   }
 }
 
-export const onChannelOpened = async channel => {
+export const onChannelOpened = async ({ channel, lnd }) => {
   logger.debug({ channel })
 
   const { transaction_id } = channel
 
-  const { transactions } = await lnService.getChainTransactions({ lnd: this.lnd })
+  const { transactions } = await lnService.getChainTransactions({ lnd })
 
   const { fee } = find(transactions, { id: transaction_id })
 
@@ -139,7 +139,7 @@ const main = async () => {
   subTransactions.on('chain_transaction', onchainTransactionEventHandler);
 
   const subChannels = subscribeToChannels({ lnd });
-  subChannels.on('channel_opened', onChannelOpened)
+  subChannels.on('channel_opened', (channel) => onChannelOpened({ channel, lnd }))
 }
 
 const healthCheck = () => {
