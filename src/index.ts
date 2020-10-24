@@ -259,7 +259,10 @@ server.express.get('/healthz', function(req, res) {
 const options = {
   // tracing: true,
   formatError: err => {
-    if (!(startsWith(err.message, customLoggerPrefix))) {
+    // FIXME
+    if (startsWith(err.message, customLoggerPrefix)) {
+      err.message = err.message.slice(customLoggerPrefix.length)
+    } else {
       baseLogger.error({err}, "graphql catch-all error"); 
     }
     // return defaultErrorFormatter(err)
