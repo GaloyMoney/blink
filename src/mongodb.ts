@@ -78,7 +78,7 @@ const UserSchema = new Schema({
     type: String,
     index: {
       unique: true,
-      partialFilterExpression: {email: {$type: "string"}}
+      partialFilterExpression: { username: { $type: "string" } }
     }
   },
   deviceToken: {

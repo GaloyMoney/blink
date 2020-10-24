@@ -57,14 +57,22 @@ it('add user5 / usd user', async () => {
   expect(phoneUser5).toStrictEqual(phoneUser6)
 })
 
+const username = "user1"
+
 it('sets username for user', async () => {
   const userWallet = await getUserWallet(1)
-  const result = await userWallet.setUsername({username: "xyz"})
+  const result = await userWallet.setUsername({username})
   expect(!!result).toBeTruthy()
 })
 
 it('does not set username when it already exists', async () => {
   const userWallet = await getUserWallet(1)
   const result = await userWallet.setUsername({username: "abc"})
+  expect(!!result).toBeFalsy()
+})
+
+it('does not set username if already taken', async () => {
+  const userWallet2 = await getUserWallet(2)
+  const result = await userWallet2.setUsername({username})
   expect(!!result).toBeFalsy()
 })
