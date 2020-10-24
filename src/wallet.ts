@@ -127,6 +127,6 @@ export abstract class UserWallet {
         this.logger.error(`Username is already taken`)
         return false
       }
-      return !!await User.findOneAndUpdate({ _id: this.uid, username: null }, { username }, { new: true })
+      return !!await User.findOneAndUpdate({ _id: this.uid, username: null }, { username })
   }
 }
