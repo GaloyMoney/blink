@@ -1,5 +1,6 @@
 import express from 'express';
-import { subscribeToChannels, subscribeToInvoices, subscribeToTransactions } from 'ln-service';
+import { subscribeToChannels, subscribeToInvoices, subscribeToTransactions, subscribeToBackups } from 'ln-service';
+import Storage from '@google-cloud/storage'
 import { InvoiceUser, setupMongoConnection, Transaction, User } from "./mongodb";
 import { sendInvoicePaidNotification, sendNotification } from "./notification";
 import { IDataNotification } from "./types";
@@ -8,9 +9,16 @@ import { WalletFactory } from "./walletFactory";
 const crypto = require("crypto")
 const lnService = require('ln-service');
 
-const logger = baseLogger.child({module: "trigger"})
+const logger = baseLogger.child({ module: "trigger" })
 
-const txsReceived = new Set() 
+const txsReceived = new Set()
+
+const uploadBackup = async (backup) => {
+  const storage = new Storage({ keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS })
+  const bucket = storage.bucket('lnd-static-channel-backups')
+  const file = bucket.file('scb.json')
+  return await file.save(backup)
+}
 
 export async function onchainTransactionEventHandler(tx) {
 
@@ -23,7 +31,7 @@ export async function onchainTransactionEventHandler(tx) {
   txsReceived.add(hash)
 
 
-  logger.debug({tx})
+  logger.debug({ tx })
   const onchainLogger = logger.child({ topic: "payment", protocol: "onchain", hash: tx.id, onUs: false })
 
   if (tx.is_outgoing) {
@@ -37,7 +45,7 @@ export async function onchainTransactionEventHandler(tx) {
 
     await Transaction.updateMany({ hash: tx.id }, { pending: false })
     onchainLogger.info({ success: true, pending: false, transactionType: "payment" }, "payment completed")
-    const entry = await Transaction.findOne({ account_path: { $all : ["Liabilities", "Customer"] }, hash: tx.id })
+    const entry = await Transaction.findOne({ account_path: { $all: ["Liabilities", "Customer"] }, hash: tx.id })
 
     const title = `Your on-chain transaction has been confirmed`
     const data: IDataNotification = {
@@ -45,7 +53,7 @@ export async function onchainTransactionEventHandler(tx) {
       hash: tx.id,
       amount: tx.tokens,
     }
-    await sendNotification({uid: entry.account_path[2], title, data, logger })
+    await sendNotification({ uid: entry.account_path[2], title, data, logger })
   } else {
     // TODO: the same way Lightning is updating the wallet/accounting, 
     // this event should update the onchain wallet/account of the associated user
@@ -55,7 +63,7 @@ export async function onchainTransactionEventHandler(tx) {
       ({ _id } = await User.findOne({ onchain_addresses: { $in: tx.output_addresses } }, { _id: 1 }))
       if (!_id) {
         //FIXME: Log the onchain address, need to first find which of the tx.output_addresses belongs to us
-        logger.fatal({tx}, `No user associated with the onchain address`)
+        logger.fatal({ tx }, `No user associated with the onchain address`)
         return
       }
     } catch (error) {
@@ -98,17 +106,17 @@ export const onInvoiceUpdate = async invoice => {
 
     const wallet = WalletFactory({ uid, currency: invoiceUser.currency, logger })
     await wallet.updatePendingInvoice({ hash })
-    await sendInvoicePaidNotification({amount: invoice.received, hash, uid, logger})
+    await sendInvoicePaidNotification({ amount: invoice.received, hash, uid, logger })
   } else {
-    logger.fatal({invoice}, "we received an invoice but had no user attached to it")
+    logger.fatal({ invoice }, "we received an invoice but had no user attached to it")
   }
 }
 
-const main = async () => {	
+const main = async () => {
   const { lnd } = lnService.authenticatedLndGrpc(getAuth())
 
   lnService.getWalletInfo({ lnd }, (err, result) => {
-    logger.debug({err, result}, 'getWalletInfo')
+    logger.debug({ err, result }, 'getWalletInfo')
   });
 
   const subInvoices = subscribeToInvoices({ lnd });
@@ -116,11 +124,14 @@ const main = async () => {
 
   const subTransactions = subscribeToTransactions({ lnd });
   subTransactions.on('chain_transaction', onchainTransactionEventHandler);
-  
+
   const subChannels = subscribeToChannels({ lnd });
   subChannels.on('channel_opened', channel => {
-    logger.info({channel}, 'channel open')
+    logger.info({ channel }, 'channel open')
   })
+
+  const subBackups = subscribeToBackups({ lnd })
+  subBackups.on('backup', ({ backup }) => uploadBackup(backup))
 }
 
 const healthCheck = () => {
