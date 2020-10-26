@@ -67,12 +67,10 @@ it('sets username for user', async () => {
 
 it('does not set username when it already exists', async () => {
   const userWallet = await getUserWallet(1)
-  const result = await userWallet.setUsername({username: "abc"})
-  expect(!!result).toBeFalsy()
+  await expect(userWallet.setUsername({username: "abc"})).rejects.toThrow()
 })
 
 it('does not set username if already taken', async () => {
   const userWallet2 = await getUserWallet(2)
-  const result = await userWallet2.setUsername({username})
-  expect(!!result).toBeFalsy()
+  await expect(userWallet2.setUsername({username})).rejects.toThrow()
 })
