@@ -1,7 +1,7 @@
 {
   "collection": {
     "info": {
-      "_postman_id": "2e9d4144-4c26-4b72-b000-ad1e63105f94",
+      "_postman_id": "4e3fee88-7267-44e1-a316-b81e90b0bd2b",
       "name": "graphql_simple_workflow",
       "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
@@ -17,7 +17,7 @@
                 "item": [
                   {
                     "name": "prices",
-                    "_postman_id": "117cc6e8-1403-486f-ad16-67978ce68509",
+                    "_postman_id": "09a8a7d4-161b-4c96-82ff-8cdc620b7c75",
                     "protocolProfileBehavior": {
                       "disableBodyPruning": true
                     },
@@ -54,7 +54,7 @@
                       {
                         "listen": "test",
                         "script": {
-                          "id": "c023bfd8-a378-4174-bc68-1bf475651f3a",
+                          "id": "d6854f5c-2da7-4a22-9830-73a454397817",
                           "exec": [
                             "var moment = require('moment')",
                             "",
@@ -72,7 +72,7 @@
                         }
                       }
                     ],
-                    "_postman_id": "5bcb6126-23f6-4957-8e81-bc119d3d2bc6",
+                    "_postman_id": "4e9df8f4-701e-4d0b-aece-686402f3eb48",
                     "protocolProfileBehavior": {
                       "disableBodyPruning": true
                     },
@@ -104,8 +104,61 @@
                     "response": []
                   },
                   {
+                    "name": "nodeStats",
+                    "event": [
+                      {
+                        "listen": "test",
+                        "script": {
+                          "id": "763d778e-9608-459d-90f7-fec1d40bbbac",
+                          "exec": [
+                            "pm.test(\"validate build parameters are set\", function () {",
+                            "    if (pm.environment.name != \"devnet\") {",
+                            "        const jsonData = pm.response.json();",
+                            "        const {peersCount, channelsCount} = jsonData.data.nodeStats",
+                            "        pm.expect(peersCount).to.be.above(1);",
+                            "        pm.expect(channelsCount).to.be.above(2);",
+                            "    }",
+                            "});",
+                            ""
+                          ],
+                          "type": "text/javascript"
+                        }
+                      }
+                    ],
+                    "_postman_id": "187a4fa3-5445-45c2-982b-18df462650e6",
+                    "protocolProfileBehavior": {
+                      "disableBodyPruning": true
+                    },
+                    "request": {
+                      "method": "POST",
+                      "header": [],
+                      "body": {
+                        "mode": "graphql",
+                        "graphql": {
+                          "query": "query nodeStats {\n    nodeStats {\n        peersCount\n        channelsCount\n    }\n}",
+                          "variables": "{\n    \"uid\": \"5f5d9945815f69ab78d87348\",\n    \"value\": 2000\n}"
+                        },
+                        "options": {
+                          "graphql": {}
+                        }
+                      },
+                      "url": {
+                        "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+                        "protocol": "{{protocol}}",
+                        "host": [
+                          "{{domain}}"
+                        ],
+                        "port": "{{port}}",
+                        "path": [
+                          "graphql"
+                        ]
+                      }
+                    },
+                    "response": []
+                  },
+                  {
                     "name": "earnList",
-                    "_postman_id": "7110b911-fcd5-4e1a-8bf3-a6b6e3a25e79",
+                    "_postman_id": "38ebca17-3485-49a5-9cae-be79581acdd4",
                     "protocolProfileBehavior": {
                       "disableBodyPruning": true
                     },
@@ -137,7 +190,7 @@
                     "response": []
                   }
                 ],
-                "_postman_id": "6a590bf4-6b11-4820-8ff4-b8d55d94ea59",
+                "_postman_id": "54194dcd-5f85-49e4-8401-f2a140ae8917",
                 "_postman_isSubFolder": true
               },
               {
@@ -149,7 +202,7 @@
                       {
                         "listen": "test",
                         "script": {
-                          "id": "51715ea9-8894-4856-9810-7f1fc0dfa852",
+                          "id": "aced0500-81fb-4e10-884a-05decf972a74",
                           "exec": [
                             "pm.test(\"requesting a code\", function () {",
                             "    var jsonData = pm.response.json();",
@@ -162,7 +215,7 @@
                         }
                       }
                     ],
-                    "_postman_id": "131a3bff-ea53-4d7c-8186-bf2773ee7040",
+                    "_postman_id": "a1d7129f-57fc-45c3-b090-42fe0be9bd6b",
                     "protocolProfileBehavior": {
                       "disableBodyPruning": true
                     },
@@ -199,7 +252,7 @@
                       {
                         "listen": "test",
                         "script": {
-                          "id": "d0f75371-2d42-483b-988e-50e3ea6f14d4",
+                          "id": "c9fc19ca-aa5d-489c-945d-40a95652d96c",
                           "exec": [
                             "pm.test(\"requesting a token\", function () {",
                             "    const jsonData = pm.response.json();",
@@ -214,7 +267,7 @@
                         }
                       }
                     ],
-                    "_postman_id": "75663c44-6c11-4208-81fb-aed35275e5b8",
+                    "_postman_id": "117f0e99-5813-4ec9-994b-4adcff5eaa8e",
                     "protocolProfileBehavior": {
                       "disableBodyPruning": true
                     },
@@ -251,7 +304,7 @@
                       {
                         "listen": "test",
                         "script": {
-                          "id": "3699c954-f061-4cb0-ba3b-0c12884b8ff7",
+                          "id": "8588c414-cb2d-484b-86ca-458ed51845ad",
                           "exec": [
                             "pm.test(\"requesting a token\", function () {",
                             "    const jsonData = pm.response.json();",
@@ -266,7 +319,7 @@
                         }
                       }
                     ],
-                    "_postman_id": "2bf70061-0945-41bd-8e15-a2c33063aa38",
+                    "_postman_id": "29aeb72c-5b1e-4182-9105-2192ecde4871",
                     "protocolProfileBehavior": {
                       "disableBodyPruning": true
                     },
@@ -298,11 +351,11 @@
                     "response": []
                   }
                 ],
-                "_postman_id": "df6e8c19-ed5e-47b7-b4de-7984c25f709c",
+                "_postman_id": "3a772ed0-f91e-40fc-9c7b-119dc8af1b1f",
                 "_postman_isSubFolder": true
               }
             ],
-            "_postman_id": "b4f20ab7-449c-46ca-84ea-f82e1d5a3ba1",
+            "_postman_id": "b0aa83f9-62d4-4267-a227-871a0dbf3605",
             "_postman_isSubFolder": true
           },
           {
@@ -313,7 +366,7 @@
                 "item": [
                   {
                     "name": "wallet",
-                    "_postman_id": "4a9dd665-5a88-434e-bb79-7fc72d6caa71",
+                    "_postman_id": "179ea703-717d-4839-b50e-5b8af5018221",
                     "protocolProfileBehavior": {
                       "disableBodyPruning": true
                     },
@@ -323,7 +376,7 @@
                       "body": {
                         "mode": "graphql",
                         "graphql": {
-                          "query": "query wallet {\n    wallet {\n        id\n        currency\n        balance\n        transactions {\n            id\n            amount\n            description\n            created_at\n            hash\n            type\n            usd\n            fee\n            feeUsd\n            pending\n        }\n    }\n}",
+                          "query": "query wallet {\n    wallet {\n        id\n        currency\n        balance\n        transactions {\n            id\n            amount\n            description\n            created_at\n            hash\n            type\n            usd\n            fee\n            feeUsd\n        }\n    }\n}",
                           "variables": "{}"
                         },
                         "options": {
@@ -346,7 +399,7 @@
                   },
                   {
                     "name": "earnList",
-                    "_postman_id": "2427945c-ffde-4652-975e-f6fac8b630f5",
+                    "_postman_id": "8b224de7-ea50-4c8a-9d5b-6b62c87264a8",
                     "protocolProfileBehavior": {
                       "disableBodyPruning": true
                     },
@@ -379,7 +432,7 @@
                   },
                   {
                     "name": "me",
-                    "_postman_id": "9bb10890-196d-4e67-8de3-4903d61012d0",
+                    "_postman_id": "e58c3016-1d5d-45a6-a01a-cbe338904bf6",
                     "protocolProfileBehavior": {
                       "disableBodyPruning": true
                     },
@@ -412,7 +465,7 @@
                   },
                   {
                     "name": "lastOnChain",
-                    "_postman_id": "f2e970ff-32cb-40d3-b6cb-18d28792d54e",
+                    "_postman_id": "c35e83e7-c2db-4ac6-bea3-07589ded282b",
                     "protocolProfileBehavior": {
                       "disableBodyPruning": true
                     },
@@ -454,7 +507,7 @@
                     "response": []
                   }
                 ],
-                "_postman_id": "4be17ce8-9841-4b56-ae6d-b69940cb4fce",
+                "_postman_id": "c5234c7e-2dd6-46f0-943e-68841da7e0d9",
                 "_postman_isSubFolder": true
               },
               {
@@ -462,7 +515,7 @@
                 "item": [
                   {
                     "name": "earnCompleted (empty)",
-                    "_postman_id": "869f741c-be9a-4942-a7fd-b3d6f2cb57aa",
+                    "_postman_id": "6028b279-fad1-47db-80b4-1e3fcaf992b7",
                     "protocolProfileBehavior": {
                       "disableBodyPruning": true
                     },
@@ -495,7 +548,7 @@
                   },
                   {
                     "name": "earnCompleted",
-                    "_postman_id": "b0083668-bdcf-4fa6-ab7b-ee13f1b773bb",
+                    "_postman_id": "7047794f-d2ff-451d-b1b0-f3de5101e775",
                     "protocolProfileBehavior": {
                       "disableBodyPruning": true
                     },
@@ -528,7 +581,7 @@
                   },
                   {
                     "name": "onchain.getNewAddress",
-                    "_postman_id": "a76446a6-398e-4e3c-b9bd-032730ab5e02",
+                    "_postman_id": "053901ed-b289-4132-8255-7f9c087ebe36",
                     "protocolProfileBehavior": {
                       "disableBodyPruning": true
                     },
@@ -571,7 +624,7 @@
                   },
                   {
                     "name": "onchain.getFee",
-                    "_postman_id": "851e81b9-c709-4054-985e-19568c88f4e6",
+                    "_postman_id": "910ff27c-1f2b-438f-861d-e6b7d30b2420",
                     "protocolProfileBehavior": {
                       "disableBodyPruning": true
                     },
@@ -591,8 +644,8 @@
                       "body": {
                         "mode": "graphql",
                         "graphql": {
-                          "query": "mutation onchain($address: String!) {\n    onchain {\n        getFee(address: $address)\n    }\n}",
-                          "variables": "{\n    \"address\": \"bcrt1q8zu98ny6nmygwxwd503rrrj8pc6edjsym2ggyg\"\n}"
+                          "query": "mutation onchain($address: String!) {\n    onchain {\n        getFees(address: $address)\n    }\n}",
+                          "variables": "{\n    \"address\": \"2NAJJxF7Vi9wgxHpaYAVjhBRspRfUcyDy1Z\"\n}"
                         },
                         "options": {
                           "graphql": {}
@@ -618,7 +671,7 @@
                       {
                         "listen": "test",
                         "script": {
-                          "id": "90f0cf2d-6db7-4d76-b026-714e8b186a1f",
+                          "id": "aa2789b2-8811-4e59-b326-c88e692d8168",
                           "exec": [
                             "pm.test(\"add invoice\", function () {",
                             "    const jsonData = pm.response.json();",
@@ -630,7 +683,7 @@
                         }
                       }
                     ],
-                    "_postman_id": "2a3aed13-0ffc-41fa-b382-f5c7be876d45",
+                    "_postman_id": "577d8632-2f60-400e-a3fe-cc0a534f08b0",
                     "protocolProfileBehavior": {
                       "disableBodyPruning": true
                     },
@@ -667,7 +720,7 @@
                       {
                         "listen": "test",
                         "script": {
-                          "id": "61a910cd-76a2-446a-b351-6d83cb7c22cb",
+                          "id": "59a2eac8-1ce1-4c65-aeed-909e6fb275a5",
                           "exec": [
                             "pm.test(\"add invoice\", function () {",
                             "    const jsonData = pm.response.json();",
@@ -679,7 +732,7 @@
                         }
                       }
                     ],
-                    "_postman_id": "f40b5d6b-9f00-4b8c-9c45-da39d884fd12",
+                    "_postman_id": "0e2d68ba-38ab-4b51-96fd-cdafae76cea0",
                     "protocolProfileBehavior": {
                       "disableBodyPruning": true
                     },
@@ -712,7 +765,7 @@
                   },
                   {
                     "name": "addDeviceToken",
-                    "_postman_id": "aeca95db-0227-4ca4-90d7-356a41618914",
+                    "_postman_id": "3bdacdc7-85f0-4df1-9eb1-b55dc3367f03",
                     "protocolProfileBehavior": {
                       "disableBodyPruning": true
                     },
@@ -752,14 +805,76 @@
                       }
                     },
                     "response": []
+                  },
+                  {
+                    "name": "setUsername",
+                    "event": [
+                      {
+                        "listen": "test",
+                        "script": {
+                          "id": "763d778e-9608-459d-90f7-fec1d40bbbac",
+                          "exec": [
+                            "pm.test(\"validate username is set\", function () {",
+                            "    if (pm.environment.name != \"devnet\") {",
+                            "        const jsonData = pm.response.json();",
+                            "        const {updateUser: {setUsername}} = jsonData.data",
+                            "        pm.expect(setUsername).to.be.true();",
+                            "    }",
+                            "});",
+                            ""
+                          ],
+                          "type": "text/javascript"
+                        }
+                      }
+                    ],
+                    "_postman_id": "55172f62-4c62-445a-8d9d-34c21420733a",
+                    "protocolProfileBehavior": {
+                      "disableBodyPruning": true
+                    },
+                    "request": {
+                      "auth": {
+                        "type": "bearer",
+                        "bearer": [
+                          {
+                            "key": "token",
+                            "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI1ZjkwMTY3ODM2MmZmNjIzMjVkZmFmYjciLCJuZXR3b3JrIjoicmVndGVzdCIsImN1cnJlbmN5IjoiQlRDIiwiaWF0IjoxNjAzMjc4NDU2fQ.-im7fJS_aneM32zNXDVqSDPPoQtCtCE22X-hUclT3u0",
+                            "type": "string"
+                          }
+                        ]
+                      },
+                      "method": "POST",
+                      "header": [],
+                      "body": {
+                        "mode": "graphql",
+                        "graphql": {
+                          "query": "mutation setUsername($username: String!) {\n    updateUser {\n        setUsername (username: $username)\n    }\n}",
+                          "variables": "{\n    \"username\":\"test\"\n}"
+                        },
+                        "options": {
+                          "graphql": {}
+                        }
+                      },
+                      "url": {
+                        "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+                        "protocol": "{{protocol}}",
+                        "host": [
+                          "{{domain}}"
+                        ],
+                        "port": "{{port}}",
+                        "path": [
+                          "graphql"
+                        ]
+                      }
+                    },
+                    "response": []
                   }
                 ],
-                "_postman_id": "2643f148-1d17-4667-acec-ad29dfb98932",
+                "_postman_id": "eadcead8-9d90-47bd-8d7e-ce794d5c9de4",
                 "event": [
                   {
                     "listen": "prerequest",
                     "script": {
-                      "id": "cad66d74-351b-4ab2-ba4f-dba8a0903db5",
+                      "id": "6d48e29c-60ad-43cf-af0b-acfd16c9bf22",
                       "type": "text/javascript",
                       "exec": [
                         ""
@@ -769,7 +884,7 @@
                   {
                     "listen": "test",
                     "script": {
-                      "id": "d13a0524-f9b5-48b3-8ac9-65950e15f4b6",
+                      "id": "daba0420-4cc7-47e6-9fc5-caa8eadd157f",
                       "type": "text/javascript",
                       "exec": [
                         ""
@@ -780,7 +895,7 @@
                 "_postman_isSubFolder": true
               }
             ],
-            "_postman_id": "09985ead-e8b9-450b-adf3-2c6eda1fb1fd",
+            "_postman_id": "f26c0021-9c68-40ca-a4a6-6b975711c873",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -795,7 +910,7 @@
               {
                 "listen": "prerequest",
                 "script": {
-                  "id": "1a50ec40-6823-49cd-9122-8050fc88caff",
+                  "id": "be58a9be-82f9-46c4-be28-648ca5fc7b8d",
                   "type": "text/javascript",
                   "exec": [
                     ""
@@ -805,7 +920,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "ae312eb6-510f-4126-acae-f8122e9bb4ef",
+                  "id": "4249ed6e-da04-469f-ab0a-a702c7f3ad69",
                   "type": "text/javascript",
                   "exec": [
                     ""
@@ -816,12 +931,12 @@
             "_postman_isSubFolder": true
           }
         ],
-        "_postman_id": "d263a696-1465-491c-90d9-97d149e71993",
+        "_postman_id": "eb59b46c-1e18-4be7-add8-3655db0e2d4c",
         "event": [
           {
             "listen": "prerequest",
             "script": {
-              "id": "cfcd067f-a618-4e27-a9b8-c3818b3182fb",
+              "id": "7cefffb5-2eb6-4259-ae99-23c371b80a60",
               "type": "text/javascript",
               "exec": [
                 ""
@@ -831,7 +946,7 @@
           {
             "listen": "test",
             "script": {
-              "id": "7362980b-fb23-4481-99b1-4509ff655a0d",
+              "id": "fac2cd73-5f19-46b1-a72c-2d0d2a06c738",
               "type": "text/javascript",
               "exec": [
                 "pm.test(\"Status code is 200\", function () {",
@@ -852,7 +967,7 @@
         "item": [
           {
             "name": "deleteUser",
-            "_postman_id": "d9acf3bd-6002-4ca7-88fa-5dea49408ba0",
+            "_postman_id": "6e1a4946-ea33-488d-9cee-63fbb894372c",
             "protocolProfileBehavior": {
               "disableBodyPruning": true
             },
@@ -885,7 +1000,7 @@
           },
           {
             "name": "updateUser",
-            "_postman_id": "428bc3ce-6b96-4065-8bda-903ffa35aea4",
+            "_postman_id": "04a7a489-da9b-40e2-a8c9-299376a18478",
             "protocolProfileBehavior": {
               "disableBodyPruning": true
             },
@@ -918,7 +1033,7 @@
           },
           {
             "name": "payInvoice",
-            "_postman_id": "9f7fb88e-0210-45d6-96a1-c09ba3ac6861",
+            "_postman_id": "f2a84bf9-7b48-48e3-af37-72520004091a",
             "protocolProfileBehavior": {
               "disableBodyPruning": true
             },
@@ -928,8 +1043,8 @@
               "body": {
                 "mode": "graphql",
                 "graphql": {
-                  "query": "mutation payInvoice($invoice: String!, $amount: Int) {\n    invoice {\n        payInvoice(invoice: $invoice, amount: $amount)\n    }\n}",
-                  "variables": "{\n  \"invoice\": \"lnbc937u1p0h8fwepp53na8mvv47a6psnrl3nkylgmj8f94z4vf3dwjwpmxls2gkmhfmeqsdz2gf5hgun9ve5kcmpqvdskgefcx43nstfjvvungtf5vguxgtfexccx2tf5xu6rqwphvv6xgetxv5cqzxgxqrp9ssp5fsr9qxs8fzys8elg8t754s08vktylulqdc67mytr6d85tgnde0lq9qy9qsqft2kymars7zkkvaedzz5r6kj8e0z6dzu9dfp68ntjmrtdqtq7dghdr0jpuvhwykvz2jwelux3aq6hush0pyqa9pe7nc2lsyau7xe0ysprk26zf\"\n}"
+                  "query": "mutation payInvoice($invoice: String!, $amount: Int, $memo: String) {\n    invoice {\n        payInvoice(invoice: $invoice, amount: $amount, memo: $memo)\n    }\n}",
+                  "variables": "{\n  \"invoice\": \"lnbcrt1p0hxuhnpp5l0emkjdd95vm9qs9268emss0xsu5tq2tu9cwcrqr0qj4h2g0eqmsdqqcqzpgsp5j82t7ajhzednhlkhj7hkgdd37eqfngvda36m9hy90809sk8ug5fq9qy9qsqt42wqpmyp3jz94a77d325m382gewnjhzse5ncc6cjkdh5hjw77mxyg3cyngj429ss2g0hl9x2l4kzn3d83pnjrsxkce2yvmdnanh74sqpmcahj\",\n  \"amount\": 50,\n  \"memo\": \"this is my memo\"\n}"
                 },
                 "options": {
                   "graphql": {}
@@ -955,7 +1070,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "9b841939-3aa5-43ee-90e9-43e196454482",
+                  "id": "ba4a8dd8-2348-47ab-a02e-e30099588abb",
                   "exec": [
                     "// todo // being able to have https://blog.postman.com/writing-a-behaviour-driven-api-testing-environment-within-postman/ in the library",
                     "// need to compress it and load it with eval()",
@@ -966,7 +1081,7 @@
                 }
               }
             ],
-            "_postman_id": "7c549ae6-62c7-40c0-a3f1-ad0c0f3bbec5",
+            "_postman_id": "eef92b1e-80ac-4e1e-af05-d12258fd65bc",
             "protocolProfileBehavior": {
               "disableBodyPruning": true
             },
@@ -976,8 +1091,8 @@
               "body": {
                 "mode": "graphql",
                 "graphql": {
-                  "query": "mutation invoice ($hash: String!) {\n    invoice {\n        updatePendingInvoice (hash: $hash)\n    }\n}",
-                  "variables": "{\n  \"hash\": \"767037b6fcdfb02736f96a6e7cb26e886f41e74d6232c45091febc6dc95c6696\"\n}"
+                  "query": "mutation invoice ($hash: String) {\n    invoice {\n        updatePendingInvoice (hash: $hash)\n    }\n}",
+                  "variables": "{\n  \"hash\": \"9370880d24e0a0dfc4304ce3009f58e06fba301973e765346b06441ae3236c90\"\n}"
                 },
                 "options": {
                   "graphql": {}
@@ -999,7 +1114,7 @@
           },
           {
             "name": "openChannel",
-            "_postman_id": "70c9bbdd-7f13-43cb-868d-08c19055d9c7",
+            "_postman_id": "dd0b51c7-5ccf-4d13-bfe8-10ba113f6934",
             "protocolProfileBehavior": {
               "disableBodyPruning": true
             },
@@ -1031,8 +1146,8 @@
             "response": []
           },
           {
-            "name": "testMessage",
-            "_postman_id": "d9107142-be9e-4ff5-af93-00d332f783c1",
+            "name": "sendMessage",
+            "_postman_id": "12b8daca-8f96-4341-b901-7f1f3eea1864",
             "protocolProfileBehavior": {
               "disableBodyPruning": true
             },
@@ -1075,7 +1190,7 @@
           },
           {
             "name": "onchain.pay",
-            "_postman_id": "a63014e6-f96f-4531-9758-7681f7f69a99",
+            "_postman_id": "4061819c-b597-4dcf-8ce5-ddd3d40b4c5b",
             "protocolProfileBehavior": {
               "disableBodyPruning": true
             },
@@ -1117,7 +1232,7 @@
             "response": []
           }
         ],
-        "_postman_id": "c0c07eeb-135b-4253-b620-69cc6fb62812",
+        "_postman_id": "196d3a38-e76a-45c8-aac6-7ce1c27de7de",
         "auth": {
           "type": "bearer",
           "bearer": [
@@ -1132,7 +1247,7 @@
           {
             "listen": "prerequest",
             "script": {
-              "id": "3cefbaed-bc5f-4e24-a83b-b42f3f788430",
+              "id": "cbe9c2a3-8b43-4021-bafc-813d735002ac",
               "type": "text/javascript",
               "exec": [
                 ""
@@ -1142,7 +1257,7 @@
           {
             "listen": "test",
             "script": {
-              "id": "1722ab67-4dfe-456d-bfeb-d62648a5663f",
+              "id": "a94178ba-0051-4668-bd7a-7baa08ed4b0b",
               "type": "text/javascript",
               "exec": [
                 ""
@@ -1156,7 +1271,7 @@
       {
         "listen": "prerequest",
         "script": {
-          "id": "e873695f-5e43-45db-8e7e-283fd412737c",
+          "id": "eb604db2-49a2-4c0b-9b78-7adc76c5f1d8",
           "type": "text/javascript",
           "exec": [
             ""
@@ -1166,7 +1281,7 @@
       {
         "listen": "test",
         "script": {
-          "id": "49c120ad-97f5-48b5-94da-540f8aaa7b89",
+          "id": "b405e411-7ef7-4649-9b1c-21c39e080538",
           "type": "text/javascript",
           "exec": [
             ""

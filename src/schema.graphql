@@ -97,6 +97,11 @@ type Query {
   getLastOnChainAddress: LastOnChainAddress
 }
 
+type UpdateUser {
+  setLevel(user: InputUser): User
+  setUsername(username: String!): Boolean
+}
+
 type Mutation {
   requestPhoneCode(phone: String): Success
   login(phone: String, code: Int, currency: String): Token
@@ -105,7 +110,7 @@ type Mutation {
   onchain: OnChain
   invoice: Invoice
   earnCompleted(ids: [ID]): [Earn]
-  updateUser(user: InputUser): User
+  updateUser: UpdateUser
   deleteUser: Boolean # TODO
   addDeviceToken(deviceToken: String): Success # to refactor with User?
   testMessage: Success # FIXME remove test
