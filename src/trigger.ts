@@ -117,12 +117,12 @@ export const onChannelOpened = async ({ channel, lnd }) => {
 
   const metadata = { currency: "BTC", txid: transaction_id, type: "fee" }
 
-  logger.debug({ metadata })
-
   await MainBook.entry("on chain fee")
     .debit(lightningAccountingPath, fee, { ...metadata, })
     .credit(openChannelFees, fee, { ...metadata })
     .commit()
+
+  logger.info({ success: true, ...metadata }, `open channel fee added to mongodb`)
 }
 
 const main = async () => {
