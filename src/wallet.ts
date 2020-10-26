@@ -122,11 +122,20 @@ export abstract class UserWallet {
     return await User.findOneAndUpdate({ _id: this.uid }, { level }, { new: true, upsert: true })
   }
 
-  async setUsername({ username }) {
-      if(!!await User.findOne({ username })) {
-        this.logger.error(`Username is already taken`)
-        return false
-      }
-      return !!await User.findOneAndUpdate({ _id: this.uid, username: null }, { username })
+  async setUsername({ username }): Promise<boolean | Error> {
+    if (!!await User.findOne({ _id: !this.uid, username })) {
+      const error = `Username is already taken`
+      this.logger.error(error)
+      throw new LoggedError(error)
+    }
+    const result = await User.findOneAndUpdate({ _id: this.uid, username: null }, { username })
+
+    if (!result) {
+      const error = `Username is already set`
+      this.logger.error(error)
+      throw new LoggedError(error)
+    }
+
+    return !!result
   }
 }
