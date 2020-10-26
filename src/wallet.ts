@@ -124,7 +124,7 @@ export abstract class UserWallet {
   }
 
   async setUsername({ username }): Promise<boolean | Error> {
-    if (!!await User.findOne({ _id: !this.uid, username })) {
+    if (!!await User.findOne({ _id: { $ne: this.uid }, username })) {
       const error = `Username is already taken`
       this.logger.error(error)
       throw new LoggedError(error)
