@@ -107,7 +107,7 @@ export const onInvoiceUpdate = async invoice => {
 }
 
 export const onChannelOpened = async ({ channel, lnd }) => {
-  logger.debug({ channel })
+  logger.debug({ channel }, "channel opened")
 
   const { transaction_id } = channel
 
