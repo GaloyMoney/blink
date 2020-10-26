@@ -87,11 +87,23 @@ type NodeStats {
   channelsCount: Int
 }
 
+type Coordinate {
+  latitude: Float
+  longitude: Float
+}
+
+type Marker {
+  id: ID
+  title: String
+  coordinate: Coordinate
+}
+
 type Query { 
   prices: [Price]
   wallet: [Wallet]
   earnList: [Earn]
   me: User
+  maps: [Marker]
   buildParameters: BuildParameter
   nodeStats: NodeStats
   getLastOnChainAddress: LastOnChainAddress

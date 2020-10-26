@@ -105,6 +105,18 @@ const resolvers = {
       return response
     },
     getLastOnChainAddress: async (_, __, { wallet }) => ({ id: wallet.getLastOnChainAddress() }),
+
+    // TODO: make this dynamic with call from MongoDB
+    maps: async () => [
+      {
+        id: 1,
+        title: "Bitcoin ATM - Café Cocoa",
+        coordinate: {
+          latitude: 13.496743,
+          longitude: -89.439462,
+        },
+      },
+    ]
   },
   Mutation: {
     requestPhoneCode: async (_, { phone }, { logger }) => ({ success: requestPhoneCode({ phone, logger }) }),
