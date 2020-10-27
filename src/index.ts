@@ -54,9 +54,11 @@ const { lnd } = lnService.authenticatedLndGrpc(getAuth())
 const commitHash = process.env.COMMITHASH
 const buildTime = process.env.BUILDTIME
 const helmRevision = process.env.HELMREVISION
+
+// TODO: caching for some period of time. maybe 1h
 const getMinBuildNumber = async () => {
-  const { minBuildNumber } = await DbVersion.findOne({}, { minBuildNumber: 1, _id: 0 })
-  return minBuildNumber
+  const { minBuildNumber, lastBuildNumber } = await DbVersion.findOne({}, { minBuildNumber: 1, lastBuildNumber: 1, _id: 0 })
+  return { minBuildNumber, lastBuildNumber }
 }
 
 const resolvers = {
@@ -77,13 +79,19 @@ const resolvers = {
       csv: () => wallet.getStringCsv()
     }]),
     nodeStats: async () => nodeStats({lnd}),
-    buildParameters: () => ({
+    buildParameters: async () => {
+      const { minBuildNumber, lastBuildNumber } = await getMinBuildNumber()
+
+      return {
+      id: lastBuildNumber,
       commitHash: () => commitHash,
       buildTime: () => buildTime,
       helmRevision: () => helmRevision,
-      minBuildNumberAndroid: getMinBuildNumber,
-      minBuildNumberIos: getMinBuildNumber,
-    }),
+      minBuildNumberAndroid: minBuildNumber,
+      minBuildNumberIos: minBuildNumber,
+      lastBuildNumberAndroid: lastBuildNumber,
+      lastBuildNumberIos: lastBuildNumber,
+    }},
     prices: async (_, __, {logger}) => {
       const price = new Price({logger})
       return await price.lastCached()

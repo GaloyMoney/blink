@@ -75,11 +75,14 @@ type Token {
 }
 
 type BuildParameter {
+  id: ID
   commitHash: String
   buildTime: String
   helmRevision: Int
   minBuildNumberAndroid: Int
   minBuildNumberIos: Int
+  lastBuildNumberAndroid: Int
+  lastBuildNumberIos: Int
 }
 
 type NodeStats {

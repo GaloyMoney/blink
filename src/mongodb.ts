@@ -9,6 +9,7 @@ const Schema = mongoose.Schema;
 const dbVersionSchema = new Schema({
   version: Number,
   minBuildNumber: Number,
+  lastBuildNumber: Number,
 })
 export const DbVersion = mongoose.model("DbVersion", dbVersionSchema)
 
