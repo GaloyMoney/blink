@@ -14,10 +14,12 @@ const logger = baseLogger.child({ module: "trigger" })
 const txsReceived = new Set()
 
 const uploadBackup = async (backup) => {
+  logger.debug({backup}, "updating scb on gcs")
   const storage = new Storage({ keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS })
   const bucket = storage.bucket('lnd-static-channel-backups')
   const file = bucket.file('scb.json')
-  return await file.save(backup)
+  await file.save(backup)
+  logger.info("scb backed up on gcs successfully")
 }
 
 export async function onchainTransactionEventHandler(tx) {
