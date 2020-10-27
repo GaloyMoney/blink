@@ -1,6 +1,6 @@
 import express from 'express';
 import { subscribeToChannels, subscribeToInvoices, subscribeToTransactions, subscribeToBackups } from 'ln-service';
-import Storage from '@google-cloud/storage'
+import { Storage } from '@google-cloud/storage'
 import { InvoiceUser, setupMongoConnection, Transaction, User } from "./mongodb";
 import { sendInvoicePaidNotification, sendNotification } from "./notification";
 import { IDataNotification } from "./types";
