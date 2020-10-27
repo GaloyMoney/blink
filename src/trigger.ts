@@ -122,7 +122,7 @@ export const onChannelOpened = async ({ channel, lnd }) => {
     .credit(openChannelFees, fee, { ...metadata })
     .commit()
 
-  logger.info({ success: true, ...metadata }, `open channel fee added to mongodb`)
+  logger.info({ success: true, channel, fee, ...metadata }, `open channel fee added to mongodb`)
 }
 
 const main = async () => {
