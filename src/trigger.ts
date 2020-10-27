@@ -31,7 +31,7 @@ export async function onchainTransactionEventHandler(tx) {
   txsReceived.add(hash)
 
 
-  logger.debug({ tx })
+  logger.debug({ tx }, "received new onchain tx event")
   const onchainLogger = logger.child({ topic: "payment", protocol: "onchain", hash: tx.id, onUs: false })
 
   if (tx.is_outgoing) {
