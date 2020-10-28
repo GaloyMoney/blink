@@ -66,8 +66,7 @@ describe('username tests', () => {
   const username = "user1"
 
   it('does not set username if length less than 3', async () => {
-    const result = await userWallet.setUsername({ username })
-    expect(!!result).toBeTruthy()
+    await expect(userWallet.setUsername({ username: 'ab' })).rejects.toThrow()
   })
 
   it('sets username for user', async () => {
