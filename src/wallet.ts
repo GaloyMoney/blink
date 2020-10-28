@@ -2,7 +2,7 @@ import moment from "moment";
 import { customerPath } from "./ledger";
 import { MainBook, User } from "./mongodb";
 import { ILightningTransaction } from "./types";
-import { LoggedError } from "./utils"
+import { LoggedError, isAlphaNumeric } from "./utils"
 
 const createCsvStringifier = require('csv-writer').createObjectCsvStringifier;
 
@@ -130,6 +130,11 @@ export abstract class UserWallet {
   async setUsername({ username }): Promise<boolean | Error> {
 
     //FIXME: Should checkIfUsernameExists be called here? Or called directy by RN before calling setUsername?
+    if(!isAlphaNumeric(username)) {
+      const error = `Username can only have alphabets, numbers and underscores`
+      this.logger.error(error)
+      throw new LoggedError(error)
+    }
 
     if (username.length < 3) {
       const error = `Username should be at least 3 characters long`

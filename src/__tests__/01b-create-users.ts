@@ -69,6 +69,10 @@ describe('username tests', () => {
     await expect(userWallet.setUsername({ username: 'ab' })).rejects.toThrow()
   })
 
+  it('does not set username if contains invalid characters', async () => {
+    await expect(userWallet.setUsername({ username: 'ab+/' })).rejects.toThrow()
+  })
+
   it('sets username for user', async () => {
     const result = await userWallet.setUsername({ username })
     expect(!!result).toBeTruthy()
