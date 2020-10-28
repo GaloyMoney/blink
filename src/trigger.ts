@@ -109,6 +109,8 @@ export const onInvoiceUpdate = async invoice => {
 export const onChannelOpened = async ({ channel, lnd }) => {
   logger.debug({ channel }, "channel opened")
 
+  if(channel.is_partner_initiated) return
+
   const { transaction_id } = channel
 
   const { transactions } = await lnService.getChainTransactions({ lnd })
