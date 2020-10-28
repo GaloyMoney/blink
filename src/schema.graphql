@@ -59,6 +59,7 @@ type User {
   id: ID
   name: String
   level: Int!
+  phone: String
 }
 
 input InputUser {

@@ -64,11 +64,12 @@ const getMinBuildNumber = async () => {
 const resolvers = {
   Query: {
     me: async (_, __, { uid }) => {
-      const user = await User.findOne({ _id: uid })
+      const { phone } = await User.findOne({ _id: uid })
 
       return {
         id: uid,
         level: 1,
+        phone
       }
     },
     wallet: async (_, __, { wallet }) => ([{
@@ -83,14 +84,14 @@ const resolvers = {
       const { minBuildNumber, lastBuildNumber } = await getMinBuildNumber()
 
       return {
-      id: lastBuildNumber,
-      commitHash: () => commitHash,
-      buildTime: () => buildTime,
-      helmRevision: () => helmRevision,
-      minBuildNumberAndroid: minBuildNumber,
-      minBuildNumberIos: minBuildNumber,
-      lastBuildNumberAndroid: lastBuildNumber,
-      lastBuildNumberIos: lastBuildNumber,
+        id: lastBuildNumber,
+        commitHash: () => commitHash,
+        buildTime: () => buildTime,
+        helmRevision: () => helmRevision,
+        minBuildNumberAndroid: minBuildNumber,
+        minBuildNumberIos: minBuildNumber,
+        lastBuildNumberAndroid: lastBuildNumber,
+        lastBuildNumberIos: lastBuildNumber,
     }},
     prices: async (_, __, {logger}) => {
       const price = new Price({logger})
