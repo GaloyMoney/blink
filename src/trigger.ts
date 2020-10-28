@@ -19,7 +19,7 @@ const uploadBackup = async (backup) => {
   const bucket = storage.bucket('lnd-static-channel-backups')
   const file = bucket.file('scb.json')
   await file.save(backup)
-  logger.info("scb backed up on gcs successfully")
+  logger.info({backup}, "scb backed up on gcs successfully")
 }
 
 export async function onchainTransactionEventHandler(tx) {
