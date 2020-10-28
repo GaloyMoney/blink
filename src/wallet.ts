@@ -123,12 +123,20 @@ export abstract class UserWallet {
     return await User.findOneAndUpdate({ _id: this.uid }, { level }, { new: true, upsert: true })
   }
 
+  async checkIfUsernameExists({ username }): Promise<boolean> {
+    return !!await User.findOne({ _id: { $ne: this.uid }, username })
+  }
+
   async setUsername({ username }): Promise<boolean | Error> {
-    if (!!await User.findOne({ _id: { $ne: this.uid }, username })) {
-      const error = `Username is already taken`
+
+    //FIXME: Should checkIfUsernameExists be called here? Or called directy by RN before calling setUsername?
+
+    if (username.length < 3) {
+      const error = `Username should be at least 3 characters long`
       this.logger.error(error)
       throw new LoggedError(error)
     }
+
     const result = await User.findOneAndUpdate({ _id: this.uid, username: null }, { username })
 
     if (!result) {
