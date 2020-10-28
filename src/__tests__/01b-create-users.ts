@@ -8,6 +8,8 @@ import { getUserWallet } from "../tests/helper"
 import { createBrokerUid, getTokenFromPhoneIndex } from "../walletFactory";
 const mongoose = require("mongoose");
 
+let userWallet
+
 
 // change role to admin
 // FIXME there should be an API for this
@@ -34,8 +36,8 @@ it('add user0 without currency (old account)', async () => {
 })
 
 
-it('add Funder', async () => {  
-  const {uid} = await getTokenFromPhoneIndex(4)
+it('add Funder', async () => {
+  const { uid } = await getTokenFromPhoneIndex(4)
   await promoteToFunder(uid)
 })
 
@@ -43,7 +45,7 @@ it('add Broker', async () => {
   await createBrokerUid()
 })
 
-it('add user5 / usd user', async () => {  
+it('add user5 / usd user', async () => {
   const user5 = await getTokenFromPhoneIndex(5)
   expect(user5.currency).toBe("USD")
 
@@ -57,20 +59,38 @@ it('add user5 / usd user', async () => {
   expect(phoneUser5).toStrictEqual(phoneUser6)
 })
 
-const username = "user1"
+describe('username tests', () => {
+  beforeAll(async () => {
+    userWallet = await getUserWallet(1)
+  })
+  const username = "user1"
 
-it('sets username for user', async () => {
-  const userWallet = await getUserWallet(1)
-  const result = await userWallet.setUsername({username})
-  expect(!!result).toBeTruthy()
+  it('does not set username if length less than 3', async () => {
+    const result = await userWallet.setUsername({ username })
+    expect(!!result).toBeTruthy()
+  })
+
+  it('sets username for user', async () => {
+    const result = await userWallet.setUsername({ username })
+    expect(!!result).toBeTruthy()
+  })
+
+  it('does not allow re-setting username', async () => {
+    await expect(userWallet.setUsername({ username: "abc" })).rejects.toThrow()
+  })
+
+  it('checkIfUsernameExists returns true if username already exists', async () => {
+    const result = await userWallet.checkIfUsernameExists({ username })
+    expect(result).toBe(true)
+  })
+
+  it('does not set username if already taken', async () => {
+    const userWallet2 = await getUserWallet(2)
+    await expect(userWallet2.setUsername({ username })).rejects.toThrow()
+  })
+
 })
 
-it('does not set username when it already exists', async () => {
-  const userWallet = await getUserWallet(1)
-  await expect(userWallet.setUsername({username: "abc"})).rejects.toThrow()
-})
 
-it('does not set username if already taken', async () => {
-  const userWallet2 = await getUserWallet(2)
-  await expect(userWallet2.setUsername({username})).rejects.toThrow()
-})
+
+
