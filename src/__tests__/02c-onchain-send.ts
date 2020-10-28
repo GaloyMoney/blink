@@ -46,7 +46,7 @@ afterEach(async () => {
 afterAll(async () => {
   await bitcoindClient.generateToAddress(3, RANDOM_ADDRESS)
   await sleep(2000)
-
+  jest.restoreAllMocks();
 	await mongoose.connection.close()
 	await quit()
 })
