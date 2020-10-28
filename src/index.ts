@@ -105,6 +105,8 @@ const resolvers = {
       return response
     },
     getLastOnChainAddress: async (_, __, { wallet }) => ({ id: wallet.getLastOnChainAddress() }),
+    checkIfUsernameExists: async (_, { username }, { wallet }) => await wallet.checkIfUsernameExists({ username })
+
   },
   Mutation: {
     requestPhoneCode: async (_, { phone }, { logger }) => ({ success: requestPhoneCode({ phone, logger }) }),

@@ -95,6 +95,7 @@ type Query {
   buildParameters: BuildParameter
   nodeStats: NodeStats
   getLastOnChainAddress: LastOnChainAddress
+  checkIfUsernameExists(username: String!): Boolean
 }
 
 type UpdateUser {
