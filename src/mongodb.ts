@@ -43,7 +43,7 @@ const invoiceUserSchema = new Schema({
 })
 
 // TOOD create indexes
-invoiceUserSchema.index({ pending: 1 , uid: 1 })
+invoiceUserSchema.index({ pending: 1, uid: 1 })
 
 export const InvoiceUser = mongoose.model("InvoiceUser", invoiceUserSchema)
 
@@ -74,6 +74,13 @@ const UserSchema = new Schema({
   phone: { // TODO we should store country as a separate string
     type: String,
     required: true,
+  },
+  username: {
+    type: String,
+    index: {
+      unique: true,
+      partialFilterExpression: { username: { $type: "string" } }
+    }
   },
   deviceToken: {
     type: [String],
@@ -202,7 +209,7 @@ const transactionSchema = new Schema({
 //indexes used by our queries
 transactionSchema.index({ "type": 1, "pending": 1, "account_path": 1 });
 transactionSchema.index({ "account_path": 1 });
-transactionSchema.index({ "hash" : 1})
+transactionSchema.index({ "hash": 1 })
 
 //indexes used by medici internally, and also set by default
 //we are setting them here manually because we are using a custom schema
