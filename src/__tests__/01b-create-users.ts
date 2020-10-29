@@ -6,6 +6,7 @@ import { setupMongoConnection, User } from "../mongodb";
 import { TEST_NUMBER } from "../text";
 import { getUserWallet } from "../tests/helper"
 import { createBrokerUid, getTokenFromPhoneIndex } from "../walletFactory";
+import { UserWallet } from "../wallet"
 const mongoose = require("mongoose");
 
 let userWallet
@@ -83,7 +84,7 @@ describe('username tests', () => {
   })
 
   it('usernameExists returns true if username already exists', async () => {
-    const result = await userWallet.usernameExists({ username })
+    const result = await UserWallet.usernameExists({ username })
     expect(result).toBe(true)
   })
 
