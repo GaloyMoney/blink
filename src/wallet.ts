@@ -129,14 +129,6 @@ export abstract class UserWallet {
 
   async setUsername({ username }): Promise<boolean | Error> {
 
-    //FIXME: Should checkIfUsernameExists be called here? Or called directy by RN before calling setUsername?
-
-    if (username.length < 3) {
-      const error = `Username should be at least 3 characters long`
-      this.logger.error(error)
-      throw new LoggedError(error)
-    }
-
     const result = await User.findOneAndUpdate({ _id: this.uid, username: null }, { username })
 
     if (!result) {
