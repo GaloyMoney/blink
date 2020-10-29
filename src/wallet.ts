@@ -2,7 +2,7 @@ import moment from "moment";
 import { customerPath } from "./ledger";
 import { MainBook, User } from "./mongodb";
 import { ILightningTransaction } from "./types";
-import { LoggedError, isAlphaNumeric } from "./utils"
+import { LoggedError } from "./utils"
 
 const createCsvStringifier = require('csv-writer').createObjectCsvStringifier;
 
