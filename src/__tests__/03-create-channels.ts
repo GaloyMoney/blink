@@ -61,6 +61,10 @@ const openChannel = async ({ lnd, other_lnd, socket, is_private = false }) => {
     sub.once('channel_opened', (channel) => onChannelOpened({ channel, lnd }))
   }
 
+  if (other_lnd === lndMain) {
+     sub.once('channel_opened', (channel) => expect(channel.is_partner_initiated).toBe(true))
+  }
+
   await once(sub, 'channel_opening')
 
   const mineBlock = async () => {
