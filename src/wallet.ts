@@ -123,7 +123,7 @@ export abstract class UserWallet {
     return await User.findOneAndUpdate({ _id: this.uid }, { level }, { new: true, upsert: true })
   }
 
-  async usernameExists({ username }): Promise<boolean> {
+  static async usernameExists({ username }): Promise<boolean> {
     return !!await User.findOne({ username })
   }
 

@@ -11,6 +11,7 @@ import { login, requestPhoneCode } from "./text";
 import { OnboardingEarn } from "./types";
 import { baseLogger, customLoggerPrefix, getAuth, nodeStats } from "./utils";
 import { WalletFactory } from "./walletFactory";
+import { UserWallet } from "./wallet"
 import { v4 as uuidv4 } from 'uuid';
 import { startsWith } from "lodash";
 import { upgrade } from "./upgrade"
@@ -105,7 +106,7 @@ const resolvers = {
       return response
     },
     getLastOnChainAddress: async (_, __, { wallet }) => ({ id: wallet.getLastOnChainAddress() }),
-    usernameExists: async (_, { username }, { wallet }) => await wallet.usernameExists({ username })
+    usernameExists: async (_, { username }, { wallet }) => await UserWallet.usernameExists({ username })
 
   },
   Mutation: {
