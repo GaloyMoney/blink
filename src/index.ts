@@ -105,7 +105,7 @@ const resolvers = {
       return response
     },
     getLastOnChainAddress: async (_, __, { wallet }) => ({ id: wallet.getLastOnChainAddress() }),
-    checkIfUsernameExists: async (_, { username }, { wallet }) => await wallet.checkIfUsernameExists({ username })
+    usernameExists: async (_, { username }, { wallet }) => await wallet.usernameExists({ username })
 
   },
   Mutation: {

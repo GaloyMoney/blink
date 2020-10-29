@@ -82,8 +82,8 @@ describe('username tests', () => {
     await expect(userWallet.setUsername({ username: "abc" })).rejects.toThrow()
   })
 
-  it('checkIfUsernameExists returns true if username already exists', async () => {
-    const result = await userWallet.checkIfUsernameExists({ username })
+  it('usernameExists returns true if username already exists', async () => {
+    const result = await userWallet.usernameExists({ username })
     expect(result).toBe(true)
   })
 

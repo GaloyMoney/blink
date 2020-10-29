@@ -123,18 +123,13 @@ export abstract class UserWallet {
     return await User.findOneAndUpdate({ _id: this.uid }, { level }, { new: true, upsert: true })
   }
 
-  async checkIfUsernameExists({ username }): Promise<boolean> {
+  async usernameExists({ username }): Promise<boolean> {
     return !!await User.findOne({ username })
   }
 
   async setUsername({ username }): Promise<boolean | Error> {
 
     //FIXME: Should checkIfUsernameExists be called here? Or called directy by RN before calling setUsername?
-    if(!isAlphaNumeric(username)) {
-      const error = `Username can only have alphabets, numbers and underscores`
-      this.logger.error(error)
-      throw new LoggedError(error)
-    }
 
     if (username.length < 3) {
       const error = `Username should be at least 3 characters long`
