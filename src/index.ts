@@ -122,7 +122,16 @@ const resolvers = {
       setUsername: async ({ username }) => await wallet.setUsername({ username })
 
     }),
-    publicInvoice: async (_, { uid }, { logger }) => {
+    publicInvoice: async (_, { username }, { logger }) => {
+      const user = await User.findOne({ username })
+      if (!user) {
+        const error = `User not found`
+        logger.fatal(error)
+        throw Error(error) 
+      }
+      
+      const { uid } = user
+
       const wallet = WalletFactory({ uid, currency: 'BTC', logger })
       return {
         addInvoice: async ({ value, memo }) => wallet.addInvoice({ value, memo, selfGenerated: false }),
