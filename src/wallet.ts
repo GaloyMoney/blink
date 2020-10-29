@@ -124,7 +124,7 @@ export abstract class UserWallet {
   }
 
   static async usernameExists({ username }): Promise<boolean> {
-    return !!await User.findOne({ username })
+    return await User.exists({ username })
   }
 
   async setUsername({ username }): Promise<boolean | Error> {
