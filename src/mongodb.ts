@@ -272,6 +272,7 @@ export const setupMongoConnection = async () => {
       useCreateIndex: true,
       useFindAndModify: false
     })
+    mongoose.set('runValidators', true)
   } catch (err) {
     baseLogger.fatal(`error connecting to mongodb ${err}`)
     exit(1)
