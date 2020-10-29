@@ -160,8 +160,3 @@ export async function nodeStats({ lnd }) {
     channelsCount
   }
 }
-
-export function isAlphaNumeric(string): boolean {
-  if (!string.match(/^[0-9a-z_]+$/i)) return false
-  return true
-}

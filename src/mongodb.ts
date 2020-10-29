@@ -76,6 +76,9 @@ const UserSchema = new Schema({
   },
   username: {
     type: String,
+    match: [/^[0-9a-z_]+$/i, "Username can only have alphabets, numbers and underscores"],
+    minlength: 3,
+    maxlength: 50,
     index: {
       unique: true,
       partialFilterExpression: { username: { $type: "string" } }
