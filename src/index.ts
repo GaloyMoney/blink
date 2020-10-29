@@ -63,11 +63,13 @@ const getMinBuildNumber = async () => {
 const resolvers = {
   Query: {
     me: async (_, __, { uid }) => {
-      const user = await User.findOne({ _id: uid })
+      const { phone, username } = await User.findOne({ _id: uid })
 
       return {
         id: uid,
         level: 1,
+        phone,
+        username
       }
     },
     wallet: async (_, __, { wallet }) => ([{

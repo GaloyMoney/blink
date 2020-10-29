@@ -57,8 +57,9 @@ type OnchainTransaction {
 
 type User {
   id: ID
-  name: String
+  username: String
   level: Int!
+  phone: String
 }
 
 input InputUser {
