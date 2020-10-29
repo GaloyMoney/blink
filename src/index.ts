@@ -122,7 +122,7 @@ const resolvers = {
       setUsername: async ({ username }) => await wallet.setUsername({ username })
 
     }),
-    publicInvoice: async (_, { uid, logger }) => {
+    publicInvoice: async (_, { uid }, { logger }) => {
       const wallet = WalletFactory({ uid, currency: 'BTC', logger })
       return {
         addInvoice: async ({ value, memo }) => wallet.addInvoice({ value, memo, selfGenerated: false }),
