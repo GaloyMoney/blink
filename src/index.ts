@@ -134,11 +134,6 @@ const resolvers = {
         updatePendingInvoice: async ({ hash }) => wallet.updatePendingInvoice({ hash })
       }
     },
-    openChannel: async (_, { local_tokens, public_key, socket }, { }) => {
-      // FIXME: security risk. remove openChannel from graphql
-      const lightningAdminWallet = new AdminWallet()
-      return { tx: lightningAdminWallet.openChannel({ local_tokens, public_key, socket }) }
-    },
     invoice: async (_, __, { wallet }) => ({
       addInvoice: async ({ value, memo }) => wallet.addInvoice({ value, memo }),
       updatePendingInvoice: async ({ hash }) => wallet.updatePendingInvoice({ hash }),

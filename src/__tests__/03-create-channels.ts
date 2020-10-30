@@ -5,6 +5,7 @@ import { AdminWallet } from "../AdminWallet";
 import { setupMongoConnection } from "../mongodb";
 import { checkIsBalanced, lndMain, lndOutside1, lndOutside2, RANDOM_ADDRESS, waitUntilBlockHeight, mockGetExchangeBalance } from "../tests/helper";
 import { baseLogger, bitcoindClient, nodeStats, sleep } from "../utils";
+import { onChannelOpened } from '../trigger'
 const mongoose = require("mongoose");
 const { once } = require('events');
 
@@ -49,21 +50,23 @@ const openChannel = async ({ lnd, other_lnd, socket, is_private = false }) => {
   await waitUntilBlockHeight({ lnd: lndMain, blockHeight: initBlockCount })
   await waitUntilBlockHeight({ lnd: other_lnd, blockHeight: initBlockCount })
 
-  const { public_key } = await lnService.getWalletInfo({ lnd: other_lnd })
+  const { public_key: partner_public_key } = await lnService.getWalletInfo({ lnd: other_lnd })
 
-  let openChannelPromise
-
-  if (lnd === lndMain) {
-    openChannelPromise = adminWallet.openChannel({ local_tokens, public_key, socket })
-  } else {
-    openChannelPromise = lnService.openChannel({
-      lnd, local_tokens, is_private, partner_public_key: public_key, partner_socket: socket
-    })
-  }
+  let openChannelPromise = lnService.openChannel({
+    lnd, local_tokens, is_private, partner_public_key, partner_socket: socket
+  })
 
   const sub = lnService.subscribeToChannels({ lnd })
+
+  if (lnd === lndMain) {
+    sub.once('channel_opened', (channel) => onChannelOpened({ channel, lnd }))
+  }
+
+  if (other_lnd === lndMain) {
+     sub.once('channel_opened', (channel) => expect(channel.is_partner_initiated).toBe(true))
+  }
+
   await once(sub, 'channel_opening')
-  sub.removeAllListeners()
 
   const mineBlock = async () => {
     await bitcoindClient.generateToAddress(newBlock, RANDOM_ADDRESS)
@@ -81,8 +84,10 @@ const openChannel = async ({ lnd, other_lnd, socket, is_private = false }) => {
     mineBlock(),
   ])
 
+  
   await sleep(5000)
   await adminWallet.updateEscrows()
+  sub.removeAllListeners()
 }
 
 it('opens channel from lnd1 to lndOutside1', async () => {
