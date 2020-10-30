@@ -21,3 +21,6 @@ export const liabilitiesBrokerFtxPath = `Liabilities:Broker:Ftx`
 // expenses
 export const accountingExpenses = "Expenses"
 export const openChannelFees = 'Expenses:Bitcoin:Fees'
+
+// revenue
+// export const revenueFees = 'Revenue:Lightning:Fees'

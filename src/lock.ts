@@ -1,4 +1,5 @@
 import { baseLogger } from "./utils";
+const asyncRedis = require("async-redis");
 
 const redis = require('redis')
 const Redlock = require('redlock');
@@ -18,12 +19,18 @@ function unlockErrorHandler(err) {
   // throw Error(err)
 }
 
-let redlock, client
+let redlock, clientLock, clientAsync
 
 const getClient = () => {
-  client = client ?? redis.createClient(process.env.REDIS_PORT, process.env.REDIS_IP)
-  return client
+  clientLock = clientLock ?? redis.createClient(process.env.REDIS_PORT, process.env.REDIS_IP)
+  return clientLock
 }
+
+export const getAsyncRedisClient = () => {
+  clientAsync = clientAsync ?? asyncRedis.decorate(redis.createClient(process.env.REDIS_PORT, process.env.REDIS_IP));
+  return clientAsync
+}
+
 
 const getRedLock = () => {
   if (redlock) { 

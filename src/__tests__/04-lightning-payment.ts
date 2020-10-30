@@ -2,11 +2,11 @@
  * @jest-environment node
  */
 import { createHash, randomBytes } from 'crypto';
-import { BrokerWallet } from "../BrokerWallet";
 import { quit } from "../lock";
 import { InvoiceUser, MainBook, setupMongoConnection, Transaction, User } from "../mongodb";
 import { checkIsBalanced, getUserWallet, lndOutside1, lndOutside2, mockGetExchangeBalance, onBoardingEarnAmt, onBoardingEarnIds } from "../tests/helper";
 import { baseLogger, getHash, sleep } from "../utils";
+import { FEECAP } from "../Lightning";
 import { getFunderWallet } from "../walletFactory";
 
 const lnService = require('ln-service')
@@ -97,8 +97,24 @@ it('add earn adds balance correctly', async () => {
   await getAndVerifyRewards()
 }, 30000)
 
-it('payInvoice', async () => {
+
+
+it('payInvoice without_calling getFees', async () => {
   const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: amountInvoice })
+  const result = await userWallet1.pay({ invoice: request })
+  expect(result).toBe("success")
+
+  const finalBalance = await userWallet1.getBalance()
+  expect(finalBalance).toBe(initBalance1 - amountInvoice * (1 + FEECAP))
+})
+
+it('getFees + call pay__', async () => {
+  const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: amountInvoice })
+  const fee = await userWallet1.getFees({ invoice: request })
+
+  // 'fees with a connected node should be 0'
+  expect(fee).toBe(0)
+
   const result = await userWallet1.pay({ invoice: request })
   expect(result).toBe("success")
   const finalBalance = await userWallet1.getBalance()

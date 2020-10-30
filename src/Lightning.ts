@@ -2,7 +2,7 @@ const lnService = require('ln-service');
 const assert = require('assert').strict;
 import { createHash, randomBytes } from "crypto";
 import { customerPath, brokerPath, lightningAccountingPath, brokerLndPath } from "./ledger";
-import { disposer } from "./lock";
+import { disposer, getAsyncRedisClient } from "./lock";
 import { InvoiceUser, MainBook, Transaction } from "./mongodb";
 import { sendInvoicePaidNotification } from "./notification";
 import { IAddInvoiceInternalRequest, IPaymentRequest } from "./types";
@@ -14,8 +14,8 @@ const using = require('bluebird').using
 
 const TIMEOUT_PAYMENT = process.env.NETWORK !== "regtest" ? 45000 : 3000
 
-const FEECAP = 0.02 // = 2%
-const FEEMIN = 10 // sats
+export const FEECAP = 0.02 // = 2%
+export const FEEMIN = 10 // sats
 
 export type ITxType = "invoice" | "payment" | "onchain_receipt" | "onchain_payment" | "on_us"
 export type payInvoiceResult = "success" | "failed" | "pending"
@@ -76,6 +76,54 @@ export const LightningMixin = (superclass) => class extends superclass {
     }
 
     return request
+  }
+
+  async getFees(params: IPaymentRequest): Promise<Number | Error> {
+    const key = JSON.stringify(params)
+
+    // TODO:
+    // we should also log the fact we have started the query
+    // if (await getAsyncRedisClient().get(JSON.stringify(params))) {
+    //   return
+    // }
+
+    const lightningLogger = this.logger.child({ topic: "fee_estimation", protocol: "lightning" })
+
+    const { tokens, mtokens, max_fee, destination, pushPayment, id, routeHint, messages, memoInvoice, memoPayer, payment, cltv_delta, features } = await this.validate(params, lightningLogger)
+
+    // --> this should be managed by RN
+    if (destination === await this.getNodePubkey()) {
+      return 0
+    }
+
+    let route
+
+    try {
+      ({ route } = await lnService.probeForRoute({ lnd: this.lnd, destination, mtokens, routes: routeHint, cltv_delta, features, max_fee, messages, 
+        
+        // FIXME: this fails for push payment. not adding this for now.
+        // payment, total_mtokens: mtokens,
+
+      }));
+    } catch (err) {
+      const error = "error getting route / probing for route"
+      lightningLogger.error({ err, max_fee, probingSuccess: false, success: false }, error)
+      throw new LoggedError(error)
+    }
+
+    if (!route) {
+      // TODO: check if the error is irrecovable or not.
+
+      const error = "there is no potential route for payment"
+      lightningLogger.warn({ probingSuccess: false, success: false }, error)
+      throw new LoggedError(error)
+    }
+
+    const value = JSON.stringify(route)
+    this.logger.debug({key, value}, "sending route to redis")
+    await getAsyncRedisClient().set(key, value, 'EX', 60 * 5); // expires after 5 minutes
+
+    return route.fee
   }
 
   async validate(params: IPaymentRequest, lightningLogger) {
@@ -142,14 +190,17 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     tokens = !!tokens ? tokens : params.amount
 
-    return { tokens, destination, pushPayment, id, routeHint, messages, 
+    const max_fee = Math.floor(Math.max(FEECAP * tokens, FEEMIN))
+
+    return { tokens, mtokens: tokens * 1000, destination, pushPayment, id, routeHint, messages, max_fee,
       memoInvoice: description, memoPayer: params.memo, payment, cltv_delta, expires_at, features }
   }
+
 
   async pay(params: IPaymentRequest): Promise<payInvoiceResult | Error> {
     let lightningLogger = this.logger.child({ topic: "payment", protocol: "lightning", transactionType: "payment" })
     
-    const { tokens, destination, pushPayment, id, routeHint, messages, memoInvoice, memoPayer, payment, cltv_delta, features } = await this.validate(params, lightningLogger)
+    const { tokens, mtokens, destination, pushPayment, id, routeHint, messages, memoInvoice, memoPayer, payment, cltv_delta, features, max_fee } = await this.validate(params, lightningLogger)
 
     // not including message because it contains the preimage and we don't want to log this
     lightningLogger = lightningLogger.child({ decoded: {tokens, destination, pushPayment, id, routeHint, memoInvoice, memoPayer, payment, cltv_delta, features}, params })
@@ -157,6 +208,8 @@ export const LightningMixin = (superclass) => class extends superclass {
     let fee
     let route
     let payeeUid
+    let paymentPromise
+
 
     // TODO: this should be inside the lock.
     // but getBalance is currently also getting the lock. 
@@ -214,47 +267,32 @@ export const LightningMixin = (superclass) => class extends superclass {
         return "success"
       }
 
-      const max_fee = Math.floor(Math.max(FEECAP * tokens, FEEMIN))
-
       // TODO: fine tune those values:
       // const probe_timeout_ms
       // const path_timeout_ms
 
-      const mtokens = tokens * 1000
+      lightningLogger = lightningLogger.child({onUs: false})
 
-      lightningLogger = lightningLogger.child({onUs: false, max_fee})
+      route = JSON.parse(await getAsyncRedisClient().get(JSON.stringify(params)))
+      this.logger.info({route}, "route from redis")
 
-
-      try {
-        ({ route } = await lnService.probeForRoute({ lnd: this.lnd, 
-          destination, mtokens, routes: routeHint, cltv_delta, features, max_fee, messages, 
-          
-          // FIXME: this fails for push payment. not adding this for now.
-          // payment, total_mtokens: mtokens,
-
-        }));
-      } catch (err) {
-        const error = "error getting route / probing for route"
-        lightningLogger.error({ err, max_fee, probingSuccess: false, success: false }, error)
-        throw new LoggedError(error)
+      if (!!route) {
+        lightningLogger = lightningLogger.child({routing: "payViaRoutes", route})
+        fee = route.safe_fee
+      } else {
+        lightningLogger = lightningLogger.child({routing: "payViaPaymentDetails"})
+        fee = max_fee
       }
 
-      if (!route) {
-        const error = "there is no potential route for payment"
-        lightningLogger.warn({ probingSuccess: false, success: false }, error)
-        throw new LoggedError(error)
-      }
 
       // we are confident enough that there is a possible payment route. let's move forward
       // TODO quote for fees, and also USD for USD users
 
-      let journal 
-
+      let journal
+      
       {
-        fee = route.safe_fee
         const sats = tokens + fee
-
-        lightningLogger = lightningLogger.child({ probingSuccess: true, route, balance, fee, sats })
+        lightningLogger = lightningLogger.child({ balance, fee, sats })
 
         const addedMetadata = await getCurrencyEquivalent({sats, fee})
         const metadata = { currency: this.currency, hash: id, type: "payment", pending: true, fee, ...addedMetadata }
@@ -278,7 +316,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
 
         journal = MainBook.entry(memoInvoice)
-          .debit('Assets:Reserve:Lightning', sats, {...metadata, currency: "BTC"})
+          .debit(lightningAccountingPath, sats, {...metadata, currency: "BTC"})
           .credit(path, sats, {...metadata, currency: "BTC"})
         
         if(this.isUSD) {
@@ -290,7 +328,11 @@ export const LightningMixin = (superclass) => class extends superclass {
         await journal.commit()
 
         // there is 3 scenarios for a payment.
-        // 1/ payment succeed is less than TIMEOUT_PAYMENT
+        // 1/ payment succeed (function return before TIMEOUT_PAYMENT) and:
+        // 1A/ fees are known in advance
+        // 1B/ fees are not kwown in advance --> need to refund for the difference in fees?
+        //   for now we keep the change
+        
         // 2/ the payment fails. we are reverting it. this including voiding prior transaction
         // 3/ payment is still pending after TIMEOUT_PAYMENT.
         // we are timing out the request for UX purpose, so that the client can show the payment is pending
@@ -298,11 +340,29 @@ export const LightningMixin = (superclass) => class extends superclass {
         // to clean pending payments, another cron-job loop will run in the background.
 
         try {
-
+        
           // Fixme: seems to be leaking if it timeout.
-          const promise = lnService.payViaRoutes({ lnd: this.lnd, routes: [route], id })
+          if (route) {
+            paymentPromise = lnService.payViaRoutes({ lnd: this.lnd, routes: [route], id })
 
-          await Promise.race([promise, timeout(TIMEOUT_PAYMENT, 'Timeout')])
+          } else {
+            
+            // incoming_peer?
+            // max_paths for MPP
+            // max_timeout_height ??
+            paymentPromise = lnService.payViaPaymentDetails({ lnd: this.lnd, 
+              id, 
+              cltv_delta, 
+              destination, 
+              features, 
+              max_fee, 
+              messages,
+              mtokens, 
+              routes: routeHint,
+            })
+          }
+
+          await Promise.race([paymentPromise, timeout(TIMEOUT_PAYMENT, 'Timeout')])
           // FIXME
           // return this.payDetail({
           //     pubkey: details.destination,
@@ -340,6 +400,18 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         // success
         await Transaction.updateMany({ hash: id }, { pending: false })
+
+        if (!route) {
+          const feeDifference = max_fee - paymentPromise.fee
+
+          this.logger.info({feeDifference, max_fee, actualFee: paymentPromise.fee, id}, "logging a fee difference")
+
+          await MainBook.entry("fee reimbursement")
+            .debit(path, feeDifference, {...metadata, currency: "BTC"})
+            .credit(lightningAccountingPath, feeDifference, {...metadata, currency: "BTC"})
+            .commit()
+        }
+
         lightningLogger.info({ success: true, ...metadata }, `payment success`)
       }
 
