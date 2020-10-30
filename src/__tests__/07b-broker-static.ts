@@ -57,21 +57,24 @@ it('test first deposit', async () => { // "leverage":null,"collateral":0,"btcPri
   expect(btcAmount).toBeCloseTo(0.04444) // $1000 / leverage (2.25) / price
 })
 
-it('isRebalanceNeeded test under leverage', async () => {
+// leverage 5x
+it('isRebalanceNeeded test over leverage', async () => {
   const { btcAmount, depositOrWithdraw } = BrokerWallet.isRebalanceNeeded({ usdLiability: 1000, btcPrice: 10000, usdCollateral: 200 })
   expect(depositOrWithdraw).toBe("deposit")
   // deposit $244 go to $444
   expect(btcAmount).toBeCloseTo(0.0244) 
 })
 
-it('isRebalanceNeeded test over leverage', async () => {
-  const { btcAmount, depositOrWithdraw } = BrokerWallet.isRebalanceNeeded({ usdLiability: 1000, btcPrice: 10000, usdCollateral: 800})
+// leverage 1.25
+it('isRebalanceNeeded test under leverage', async () => {
+  const { btcAmount, depositOrWithdraw } = BrokerWallet.isRebalanceNeeded({ usdLiability: 1000, btcPrice: 10000, usdCollateral: 900})
   expect(depositOrWithdraw).toBe("withdraw")
-  // withdraw $245 to go from $800 to $555 (1000/1.8)
-  expect(btcAmount).toBeCloseTo(0.0245) 
+  // withdraw $345 to go from $900 to $555 (1000/1.8)
+  expect(btcAmount).toBeCloseTo(0.0345)
 })
 
-it('isRebalanceNeeded test outrageously over leverage', async () => {
+// leverage 0.35x
+it('isRebalanceNeeded test outrageously under leverage', async () => {
   const { btcAmount, depositOrWithdraw } = BrokerWallet.isRebalanceNeeded({ usdLiability: 1000, btcPrice: 10000, usdCollateral: 2800 })
   expect(depositOrWithdraw).toBe("withdraw")
   // withdral to be at $555
