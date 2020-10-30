@@ -99,16 +99,16 @@ it('add earn adds balance correctly', async () => {
 
 
 
-it('payInvoice without_calling getFees', async () => {
+it('payInvoice without calling __getFees__', async () => {
   const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: amountInvoice })
   const result = await userWallet1.pay({ invoice: request })
   expect(result).toBe("success")
 
   const finalBalance = await userWallet1.getBalance()
-  expect(finalBalance).toBe(initBalance1 - amountInvoice * (1 + FEECAP))
+  expect(finalBalance).toBe(initBalance1 - amountInvoice)
 })
 
-it('getFees + call pay__', async () => {
+it('getFees + call pay', async () => {
   const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: amountInvoice })
   const fee = await userWallet1.getFees({ invoice: request })
 
@@ -250,14 +250,19 @@ it('pay hodl invoice', async () => {
   const result = await userWallet1.pay({ invoice: request })
 
   expect(result).toBe("pending")
-  const finalBalance = await userWallet1.getBalance()
+  const beforeBeforeSettlement = await userWallet1.getBalance()
+  expect(beforeBeforeSettlement).toBe(initBalance1 - amountInvoice * (1 + FEECAP))
   // FIXME: necessary to not have openHandler ?
   // https://github.com/alexbosworth/ln-service/issues/122
   await lnService.settleHodlInvoice({ lnd: lndOutside1, secret: secret.toString('hex') });
+
+  await sleep(5000)
+
+  const finalBalance = await userWallet1.getBalance()
   expect(finalBalance).toBe(initBalance1 - amountInvoice)
 }, 60000)
 
-it(`don't settle hodl invoice`, async () => {
+it(`don't settle __hodl__ invoice`, async () => {
   const randomSecret = () => randomBytes(32);
   const sha256 = buffer => createHash('sha256').update(buffer).digest('hex');
   const secret = randomSecret();
@@ -271,7 +276,7 @@ it(`don't settle hodl invoice`, async () => {
   console.log("payment has timeout. status is pending.")
 
   const intermediateBalance = await userWallet1.getBalance()
-  expect(intermediateBalance).toBe(initBalance1 - amountInvoice)
+  expect(intermediateBalance).toBe(initBalance1 - (amountInvoice * (1 + FEECAP)))
 
   await lnService.cancelHodlInvoice({ id, lnd: lndOutside1 });
 
@@ -284,17 +289,23 @@ it(`don't settle hodl invoice`, async () => {
   expect(finalBalance).toBe(initBalance1)
 }, 60000)
 
-it('payInvoice to lnd outside 2', async () => {
+it('payInvoice to lnd outside2', async () => {
   const { request } = await lnService.createInvoice({ lnd: lndOutside2, tokens: amountInvoice, is_including_private_channels: true })
-  const { id } = await lnService.decodePaymentRequest({ lnd: lndOutside2, request })
-
+  
   const initialBalance = await userWallet1.getBalance()
-
+  
   const result = await userWallet1.pay({ invoice: request, memo: "pay an unconnected node" })
   expect(result).toBe("success")
   const finalBalance = await userWallet1.getBalance()
+  
+  // const { id } = await lnService.decodePaymentRequest({ lnd: lndOutside2, request })
+  // const { results: [{ fee }] } = await MainBook.ledger({ account: userWallet1.accountPath, hash: id })
+  // ^^^^ this fetch the wrong transaction
+  
+  // TODO: have a way to do this more programatically?
+  // base rate: 1, fee Rate: 1
+  const fee = 2
 
-  const { results: [{ fee }] } = await MainBook.ledger({ account: userWallet1.accountPath, hash: id })
   expect(finalBalance).toBe(initialBalance - amountInvoice - fee)
 })
 

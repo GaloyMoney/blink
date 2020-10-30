@@ -209,6 +209,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     let route
     let payeeUid
     let paymentPromise
+    let feeKnownInAdvance
 
 
     // TODO: this should be inside the lock.
@@ -279,9 +280,11 @@ export const LightningMixin = (superclass) => class extends superclass {
       if (!!route) {
         lightningLogger = lightningLogger.child({routing: "payViaRoutes", route})
         fee = route.safe_fee
+        feeKnownInAdvance = true
       } else {
         lightningLogger = lightningLogger.child({routing: "payViaPaymentDetails"})
         fee = max_fee
+        feeKnownInAdvance = false
       }
 
 
@@ -295,7 +298,15 @@ export const LightningMixin = (superclass) => class extends superclass {
         lightningLogger = lightningLogger.child({ balance, fee, sats })
 
         const addedMetadata = await getCurrencyEquivalent({sats, fee})
-        const metadata = { currency: this.currency, hash: id, type: "payment", pending: true, fee, ...addedMetadata }
+        const metadata = { 
+          // currency: this.currency,
+          hash: id,
+          type: "payment",
+          pending: true,
+          fee,
+          feeKnownInAdvance,
+          ...addedMetadata
+        }
 
         const value = this.isUSD ? metadata.usd : sats
 
@@ -309,15 +320,12 @@ export const LightningMixin = (superclass) => class extends superclass {
           route.messages = messages
         }
 
-        // TODO: brokerLndPath should be cached
-        const path = this.isUSD ? await brokerLndPath() : this.accountPath
-
         // reduce balance from customer first
 
 
         journal = MainBook.entry(memoInvoice)
           .debit(lightningAccountingPath, sats, {...metadata, currency: "BTC"})
-          .credit(path, sats, {...metadata, currency: "BTC"})
+          .credit(await this.path(), sats, {...metadata, currency: "BTC"})
         
         if(this.isUSD) {
           journal
@@ -395,29 +403,46 @@ export const LightningMixin = (superclass) => class extends superclass {
             throw new LoggedError(error)
           }
 
-          throw new LoggedError(`error paying invoice ${util.inspect({ err }, false, Infinity)}`)
+          throw new LoggedError(`Error paying invoice: ${util.inspect({ err }, false, Infinity)}`)
         }
 
         // success
         await Transaction.updateMany({ hash: id }, { pending: false })
-
-        if (!route) {
-          const feeDifference = max_fee - paymentPromise.fee
-
-          this.logger.info({feeDifference, max_fee, actualFee: paymentPromise.fee, id}, "logging a fee difference")
-
-          await MainBook.entry("fee reimbursement")
-            .debit(path, feeDifference, {...metadata, currency: "BTC"})
-            .credit(lightningAccountingPath, feeDifference, {...metadata, currency: "BTC"})
-            .commit()
+        const paymentResult = await paymentPromise
+        
+        if (!feeKnownInAdvance) {
+          await this.recordFeeDifference({paymentResult, max_fee, id, related_journal: journal.journal._id})
         }
 
-        lightningLogger.info({ success: true, ...metadata }, `payment success`)
+        lightningLogger.info({ success: true, paymentResult, ...metadata }, `payment success`)
       }
 
       return "success"
 
     })
+  }
+
+  async recordFeeDifference({paymentResult, max_fee, id, related_journal}) {
+    const feeDifference = max_fee - paymentResult.safe_fee
+
+    assert(feeDifference >= 0)
+    assert(feeDifference <= max_fee)
+
+    this.logger.info({paymentResult, feeDifference, max_fee, actualFee: paymentResult.safe_fee, id}, "logging a fee difference")
+
+    const metadata = {currency: "BTC", hash: id, related_journal}
+
+    // todo: add a reference to the journal entry of the main tx
+    await MainBook.entry("fee reimbursement")
+      .debit(await this.path(), feeDifference, metadata)
+      .credit(lightningAccountingPath, feeDifference, metadata)
+      .commit()
+  }
+
+  async path() {
+    // TODO: brokerLndPath should be cached
+    const path = this.isUSD ? await brokerLndPath() : this.accountPath
+    return path
   }
 
   // TODO manage the error case properly. right now there is a mix of string being return
@@ -426,6 +451,9 @@ export const LightningMixin = (superclass) => class extends superclass {
   async updatePendingPayments() {
 
     const query = { account_path: this.accountPathMedici, type: "payment", pending: true }
+
+    // we are doing this query pre-emptively to avoid locking up the user if nothing is pending
+    // which will be the case most of the time, unless a payment is facing a "hodl invoice"
     const count = Transaction.count(query)
 
     if (count === 0) {
@@ -456,6 +484,11 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         if (result.is_confirmed) {
           lightningLogger.info({success: true, id: payment.hash, payment}, 'payment has been confirmed')
+
+          if (!payment.feeKnownInAdvance) {
+            await this.recordFeeDifference({paymentResult: result.payment, max_fee: payment.fee, id: payment.hash, related_journal: payment._journal})
+          }
+
         }
 
         if (result.is_failed) {

@@ -165,6 +165,13 @@ const transactionSchema = new Schema({
     default: 0
   },
 
+  // for fee updated
+  feeKnownInAdvance: {
+    type: Boolean
+  },
+  related_journal: Schema.Types.ObjectId,
+
+
   memoPayer: String,
 
   // not used for accounting but used for usd/sats equivalent
