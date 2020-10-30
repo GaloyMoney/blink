@@ -57,8 +57,9 @@ type OnchainTransaction {
 
 type User {
   id: ID
-  name: String
+  username: String
   level: Int!
+  phone: String
 }
 
 input InputUser {
@@ -95,6 +96,12 @@ type Query {
   buildParameters: BuildParameter
   nodeStats: NodeStats
   getLastOnChainAddress: LastOnChainAddress
+  usernameExists(username: String!): Boolean
+}
+
+type UpdateUser {
+  setLevel(user: InputUser): User
+  setUsername(username: String!): Boolean
 }
 
 type Mutation {
@@ -105,7 +112,7 @@ type Mutation {
   onchain: OnChain
   invoice: Invoice
   earnCompleted(ids: [ID]): [Earn]
-  updateUser(user: InputUser): User
+  updateUser: UpdateUser
   deleteUser: Boolean # TODO
   addDeviceToken(deviceToken: String): Success # to refactor with User?
   testMessage: Success # FIXME remove test

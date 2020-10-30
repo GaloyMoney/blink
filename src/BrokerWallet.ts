@@ -146,12 +146,12 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
     // TODO: what is being returned if no order had been placed?
     // probably an empty array
 
+    // tmp for log
     const result = await this.ftx.privateGetAccount()
-    console.log(util.inspect({ result }, { showHidden: false, depth: null }))    
-    // console.log(this.ftx.privateGetAccount)
+    this.logger.debug({ result }, "full result of this.ftx.privateGetAccount")    
 
-    const { result: { collateral, positions, chargeInterestOnNegativeUsd, marginFraction } } = await this.ftx.privateGetAccount()
-    this.logger.debug({collateral, positions, chargeInterestOnNegativeUsd, marginFraction}, "this.ftx.privateGetAccount result")
+    const { result: { collateral, positions, chargeInterestOnNegativeUsd, marginFraction } } = result
+    this.logger.debug({collateral, positions, chargeInterestOnNegativeUsd, marginFraction}, "value kept from this.ftx.privateGetAccount")
 
     const positionBtcPerp = find(positions, { future: symbol } )
     this.logger.debug({positionBtcPerp}, "positionBtcPerp result")
@@ -604,14 +604,14 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
     const satsPrice = await this.price.lastPrice()
     const btcPrice = btc2sat(satsPrice) 
 
-    let subLogger
+    let subLogger = this.logger
     this.logger.debug("starting with order loop")
 
     try {
       const {usd: usdLiability} = await this.getLocalLiabilities()
       const {usd: usdExposure, leverage, collateral} = await this.getAccountPosition()
   
-      subLogger = this.logger.child({ usdExposure, usdLiability, leverage, collateral, btcPrice })
+      subLogger = subLogger.child({ usdExposure, usdLiability, leverage, collateral, btcPrice })
 
       const { btcAmount, buyOrSell } = BrokerWallet.isOrderNeeded({ usdLiability, usdExposure, btcPrice })
       subLogger.debug({ btcAmount, buyOrSell }, "isOrderNeeded result")
@@ -644,7 +644,6 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
       const { btcAmount, depositOrWithdraw } = BrokerWallet.isRebalanceNeeded({ usdLiability, btcPrice, usdCollateral: collateral })
       subLogger.debug({ btcAmount, depositOrWithdraw }, "isRebalanceNeeded result")
 
-      subLogger.child({ btcAmount, depositOrWithdraw })
       await this.rebalance({ btcAmount, depositOrWithdraw, logger: subLogger })
 
       // TODO: add a check that rebalancing is no longer needed. 

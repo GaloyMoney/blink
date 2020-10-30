@@ -2,6 +2,7 @@ import moment from "moment";
 import { customerPath } from "./ledger";
 import { MainBook, User } from "./mongodb";
 import { ILightningTransaction } from "./types";
+import { LoggedError } from "./utils"
 
 const createCsvStringifier = require('csv-writer').createObjectCsvStringifier;
 
@@ -11,7 +12,7 @@ export abstract class UserWallet {
   readonly currency: string
   readonly logger: any
 
-  constructor({uid, currency, logger}) {
+  constructor({ uid, currency, logger }) {
     this.uid = uid
     this.currency = currency
     this.logger = logger
@@ -33,7 +34,7 @@ export abstract class UserWallet {
 
     const { balance } = await MainBook.balance({
       account: this.accountPath,
-      currency: this.currency, 
+      currency: this.currency,
     })
 
     return - balance
@@ -76,37 +77,37 @@ export abstract class UserWallet {
     const { results: transactions } = await MainBook.ledger({
       account: customerPath(this.uid),
     })
-  
+
     const csvWriter = createCsvStringifier({
       header: [
-        {id: 'voided', title: 'voided'},
-        {id: 'approved', title: 'approved'},
-        {id: '_id', title: '_id'},
-        {id: 'accounts', title: 'accounts'},
-        {id: 'credit', title: 'credit'},
-        {id: 'debit', title: 'debit'},
-        {id: '_journal', title: '_journal'},
-        {id: 'book', title: 'book'},
-        {id: 'datetime', title: 'datetime'},
-        {id: 'currency', title: 'currency'},
-        {id: 'type', title: 'type'},
-        {id: 'hash', title: 'hash'},
-        {id: 'txid', title: 'txid'},
-        {id: 'fee', title: 'fee'},
-        {id: 'feeUsd', title: 'feeUsd'},
-        {id: 'sats', title: 'sats'},
-        {id: 'usd', title: 'usd'},
-        {id: 'memo', title: 'memo'},
-        {id: 'memoPayer', title: 'memoPayer'},
-        {id: 'meta', title: 'meta'},
+        { id: 'voided', title: 'voided' },
+        { id: 'approved', title: 'approved' },
+        { id: '_id', title: '_id' },
+        { id: 'accounts', title: 'accounts' },
+        { id: 'credit', title: 'credit' },
+        { id: 'debit', title: 'debit' },
+        { id: '_journal', title: '_journal' },
+        { id: 'book', title: 'book' },
+        { id: 'datetime', title: 'datetime' },
+        { id: 'currency', title: 'currency' },
+        { id: 'type', title: 'type' },
+        { id: 'hash', title: 'hash' },
+        { id: 'txid', title: 'txid' },
+        { id: 'fee', title: 'fee' },
+        { id: 'feeUsd', title: 'feeUsd' },
+        { id: 'sats', title: 'sats' },
+        { id: 'usd', title: 'usd' },
+        { id: 'memo', title: 'memo' },
+        { id: 'memoPayer', title: 'memoPayer' },
+        { id: 'meta', title: 'meta' },
       ]
     })
-  
+
     transactions.forEach(tx => tx.meta = JSON.stringify(tx.meta))
 
     const header = csvWriter.getHeaderString();
     const records = csvWriter.stringifyRecords(transactions)
- 
+
     const str = header + records
 
     // create buffer from string
@@ -120,5 +121,22 @@ export abstract class UserWallet {
 
   async setLevel({ level }) {
     return await User.findOneAndUpdate({ _id: this.uid }, { level }, { new: true, upsert: true })
+  }
+
+  static async usernameExists({ username }): Promise<boolean> {
+    return await User.exists({ username })
+  }
+
+  async setUsername({ username }): Promise<boolean | Error> {
+
+    const result = await User.findOneAndUpdate({ _id: this.uid, username: null }, { username })
+
+    if (!result) {
+      const error = `Username is already set`
+      this.logger.error(error)
+      throw new LoggedError(error)
+    }
+
+    return !!result
   }
 }

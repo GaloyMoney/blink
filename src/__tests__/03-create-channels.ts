@@ -39,6 +39,7 @@ afterEach(async () => {
 })
 
 afterAll(async () => {
+  jest.restoreAllMocks();
   return await mongoose.connection.close()
 })
 

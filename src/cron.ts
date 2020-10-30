@@ -1,5 +1,6 @@
 import { AdminWallet } from "./AdminWallet";
 import { setupMongoConnection } from "./mongodb";
+import { baseLogger } from "./utils";
 
 const main = async () => {
 	const adminWallet = new AdminWallet()
@@ -9,4 +10,4 @@ const main = async () => {
 	process.exit(0)
 }
 
-setupMongoConnection().then(main).catch((err) => console.log(err))
+setupMongoConnection().then(main).catch((err) => baseLogger.error(err))
