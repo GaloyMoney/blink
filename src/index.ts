@@ -10,7 +10,7 @@ import { Price } from "./priceImpl";
 import { login, requestPhoneCode } from "./text";
 import { OnboardingEarn } from "./types";
 import { baseLogger, customLoggerPrefix, getAuth, nodeStats } from "./utils";
-import { WalletFactory } from "./walletFactory";
+import { WalletFactory, WalletFromUsername } from "./walletFactory";
 import { UserWallet } from "./wallet"
 import { v4 as uuidv4 } from 'uuid';
 import { startsWith } from "lodash";
@@ -128,16 +128,7 @@ const resolvers = {
 
     }),
     publicInvoice: async (_, { username }, { logger }) => {
-      const user = await User.findOne({ username })
-      if (!user) {
-        const error = `User not found`
-        logger.fatal(error)
-        throw Error(error) 
-      }
-      
-      const { uid } = user
-
-      const wallet = WalletFactory({ uid, currency: 'BTC', logger })
+      const wallet = await WalletFromUsername({ username, logger })
       return {
         addInvoice: async ({ value, memo }) => wallet.addInvoice({ value, memo, selfGenerated: false }),
         updatePendingInvoice: async ({ hash }) => wallet.updatePendingInvoice({ hash })
