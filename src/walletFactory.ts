@@ -20,7 +20,7 @@ export const WalletFromUsername = async ({ username, logger }: { username: strin
   const user = await User.findOne({ username })
   if (!user) {
     const error = `User not found`
-    logger.fatal(error)
+    logger.warn(error)
     throw new LoggedError(error)
   }
 
