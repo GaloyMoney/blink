@@ -128,7 +128,7 @@ const resolvers = {
         },
       },
     ],
-    usernameExists: async (_, { username }, { wallet }) => await UserWallet.usernameExists({ username })
+    usernameExists: async (_, { username }) => await UserWallet.usernameExists({ username })
 
   },
   Mutation: {
