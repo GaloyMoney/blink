@@ -10,7 +10,7 @@ import { Price } from "./priceImpl";
 import { login, requestPhoneCode } from "./text";
 import { OnboardingEarn } from "./types";
 import { baseLogger, customLoggerPrefix, getAuth, nodeStats } from "./utils";
-import { WalletFactory } from "./walletFactory";
+import { WalletFactory, WalletFromUsername } from "./walletFactory";
 import { UserWallet } from "./wallet"
 import { v4 as uuidv4 } from 'uuid';
 import { startsWith } from "lodash";
@@ -127,8 +127,8 @@ const resolvers = {
       setUsername: async ({ username }) => await wallet.setUsername({ username })
 
     }),
-    publicInvoice: async (_, { uid, logger }) => {
-      const wallet = WalletFactory({ uid, currency: 'BTC', logger })
+    publicInvoice: async (_, { username }, { logger }) => {
+      const wallet = await WalletFromUsername({ username, logger })
       return {
         addInvoice: async ({ value, memo }) => wallet.addInvoice({ value, memo, selfGenerated: false }),
         updatePendingInvoice: async ({ hash }) => wallet.updatePendingInvoice({ hash })

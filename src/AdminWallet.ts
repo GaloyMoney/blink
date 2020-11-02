@@ -1,4 +1,4 @@
-import { filter, find, sumBy } from "lodash";
+import { filter, sumBy } from "lodash";
 import { accountingExpenses, escrowAccountingPath, lightningAccountingPath, openChannelFees } from "./ledger";
 import { MainBook, Transaction, User } from "./mongodb";
 import { baseLogger, getAuth } from "./utils";
