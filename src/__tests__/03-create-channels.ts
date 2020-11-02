@@ -5,7 +5,7 @@ import { AdminWallet } from "../AdminWallet";
 import { setupMongoConnection } from "../mongodb";
 import { checkIsBalanced, lndMain, lndOutside1, lndOutside2, RANDOM_ADDRESS, waitUntilBlockHeight, mockGetExchangeBalance } from "../tests/helper";
 import { baseLogger, bitcoindClient, nodeStats, sleep } from "../utils";
-import { onChannelOpened } from '../trigger'
+import { onChannelOpened, uploadBackup } from '../trigger'
 const mongoose = require("mongoose");
 const { once } = require('events');
 
