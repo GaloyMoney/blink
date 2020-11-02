@@ -15,7 +15,7 @@ const logger = baseLogger.child({ module: "trigger" })
 
 const txsReceived = new Set()
 
-const uploadBackup = async (backup) => {
+export const uploadBackup = async (backup) => {
   logger.debug({backup}, "updating scb on gcs")
   const storage = new Storage({ keyFilename: process.env.GCS_APPLICATION_CREDENTIALS })
   const bucket = storage.bucket('lnd-static-channel-backups')
