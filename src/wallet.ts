@@ -123,12 +123,12 @@ export abstract class UserWallet {
     return await User.findOneAndUpdate({ _id: this.uid }, { level }, { new: true, upsert: true })
   }
 
+  static async usernameExists({ username }): Promise<boolean> {
+    return await User.exists({ username })
+  }
+
   async setUsername({ username }): Promise<boolean | Error> {
-    if (!!await User.findOne({ _id: { $ne: this.uid }, username })) {
-      const error = `Username is already taken`
-      this.logger.error(error)
-      throw new LoggedError(error)
-    }
+
     const result = await User.findOneAndUpdate({ _id: this.uid, username: null }, { username })
 
     if (!result) {

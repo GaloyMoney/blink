@@ -11,6 +11,7 @@ import { login, requestPhoneCode } from "./text";
 import { OnboardingEarn } from "./types";
 import { baseLogger, customLoggerPrefix, getAuth, nodeStats } from "./utils";
 import { WalletFactory } from "./walletFactory";
+import { UserWallet } from "./wallet"
 import { v4 as uuidv4 } from 'uuid';
 import { startsWith } from "lodash";
 import { upgrade } from "./upgrade"
@@ -62,11 +63,13 @@ const getMinBuildNumber = async () => {
 const resolvers = {
   Query: {
     me: async (_, __, { uid }) => {
-      const user = await User.findOne({ _id: uid })
+      const { phone, username } = await User.findOne({ _id: uid })
 
       return {
         id: uid,
         level: 1,
+        phone,
+        username
       }
     },
     wallet: async (_, __, { wallet }) => ([{
@@ -105,6 +108,8 @@ const resolvers = {
       return response
     },
     getLastOnChainAddress: async (_, __, { wallet }) => ({ id: wallet.getLastOnChainAddress() }),
+    usernameExists: async (_, { username }, { wallet }) => await UserWallet.usernameExists({ username })
+
   },
   Mutation: {
     requestPhoneCode: async (_, { phone }, { logger }) => ({ success: requestPhoneCode({ phone, logger }) }),
@@ -128,11 +133,6 @@ const resolvers = {
         addInvoice: async ({ value, memo }) => wallet.addInvoice({ value, memo, selfGenerated: false }),
         updatePendingInvoice: async ({ hash }) => wallet.updatePendingInvoice({ hash })
       }
-    },
-    openChannel: async (_, { local_tokens, public_key, socket }, { }) => {
-      // FIXME: security risk. remove openChannel from graphql
-      const lightningAdminWallet = new AdminWallet()
-      return { tx: lightningAdminWallet.openChannel({ local_tokens, public_key, socket }) }
     },
     invoice: async (_, __, { wallet }) => ({
       addInvoice: async ({ value, memo }) => wallet.addInvoice({ value, memo }),

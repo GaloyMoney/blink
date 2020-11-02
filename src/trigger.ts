@@ -1,7 +1,9 @@
 import express from 'express';
 import { subscribeToChannels, subscribeToInvoices, subscribeToTransactions, subscribeToBackups } from 'ln-service';
 import { Storage } from '@google-cloud/storage'
-import { InvoiceUser, setupMongoConnection, Transaction, User } from "./mongodb";
+import { find } from "lodash";
+import { InvoiceUser, setupMongoConnection, Transaction, User, MainBook } from "./mongodb";
+import { lightningAccountingPath, openChannelFees } from "./ledger";
 import { sendInvoicePaidNotification, sendNotification } from "./notification";
 import { IDataNotification } from "./types";
 import { getAuth, baseLogger } from './utils';
@@ -114,6 +116,31 @@ export const onInvoiceUpdate = async invoice => {
   }
 }
 
+export const onChannelOpened = async ({ channel, lnd }) => {
+
+  if (channel.is_partner_initiated) {
+    logger.debug({ channel }, "channel opened to us")
+    return
+  }
+
+  logger.debug({ channel }, "channel opened by us")
+
+  const { transaction_id } = channel
+
+  const { transactions } = await lnService.getChainTransactions({ lnd })
+
+  const { fee } = find(transactions, { id: transaction_id })
+
+  const metadata = { currency: "BTC", txid: transaction_id, type: "fee" }
+
+  await MainBook.entry("on chain fee")
+    .debit(lightningAccountingPath, fee, { ...metadata, })
+    .credit(openChannelFees, fee, { ...metadata })
+    .commit()
+
+  logger.info({ success: true, channel, fee, ...metadata }, `open channel fee added to mongodb`)
+}
+
 const main = async () => {
   const { lnd } = lnService.authenticatedLndGrpc(getAuth())
 
@@ -128,12 +155,11 @@ const main = async () => {
   subTransactions.on('chain_transaction', onchainTransactionEventHandler);
 
   const subChannels = subscribeToChannels({ lnd });
-  subChannels.on('channel_opened', channel => {
-    logger.info({ channel }, 'channel open')
-  })
+  subChannels.on('channel_opened', (channel) => onChannelOpened({ channel, lnd }))
 
   const subBackups = subscribeToBackups({ lnd })
   subBackups.on('backup', ({ backup }) => uploadBackup(backup))
+
 }
 
 const healthCheck = () => {
