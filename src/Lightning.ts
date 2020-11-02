@@ -380,7 +380,7 @@ export const LightningMixin = (superclass) => class extends superclass {
           await payment.save()
         }
 
-        const lightningLogger = this.logger.child({protocol: "lightning", transactionType: "payment", onUs: false})
+        const lightningLogger = this.logger.child({topic: "payment", protocol: "lightning", transactionType: "payment", onUs: false})
 
         if (result.is_confirmed) {
           lightningLogger.info({success: true, id: payment.hash, payment}, 'payment has been confirmed')
@@ -478,7 +478,7 @@ export const LightningMixin = (superclass) => class extends superclass {
           // session.commitTransaction()
           // session.endSession()
 
-          this.logger.info({protocol: "lightning", transactionType: "receipt", onUs: false, success: true, ...metadata })
+          this.logger.info({topic: "payment", protocol: "lightning", transactionType: "receipt", onUs: false, success: true, ...metadata })
 
           return true
         })

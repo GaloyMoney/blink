@@ -55,9 +55,11 @@ const { lnd } = lnService.authenticatedLndGrpc(getAuth())
 const commitHash = process.env.COMMITHASH
 const buildTime = process.env.BUILDTIME
 const helmRevision = process.env.HELMREVISION
+
+// TODO: caching for some period of time. maybe 1h
 const getMinBuildNumber = async () => {
-  const { minBuildNumber } = await DbVersion.findOne({}, { minBuildNumber: 1, _id: 0 })
-  return minBuildNumber
+  const { minBuildNumber, lastBuildNumber } = await DbVersion.findOne({}, { minBuildNumber: 1, lastBuildNumber: 1, _id: 0 })
+  return { minBuildNumber, lastBuildNumber }
 }
 
 const resolvers = {
@@ -69,7 +71,7 @@ const resolvers = {
         id: uid,
         level: 1,
         phone,
-        username
+        username,
       }
     },
     wallet: async (_, __, { wallet }) => ([{
@@ -79,16 +81,22 @@ const resolvers = {
       transactions: () => wallet.getTransactions(),
       csv: () => wallet.getStringCsv()
     }]),
-    nodeStats: async () => nodeStats({ lnd }),
-    buildParameters: () => ({
-      commitHash: () => commitHash,
-      buildTime: () => buildTime,
-      helmRevision: () => helmRevision,
-      minBuildNumberAndroid: getMinBuildNumber,
-      minBuildNumberIos: getMinBuildNumber,
-    }),
-    prices: async (_, __, { logger }) => {
-      const price = new Price({ logger })
+    nodeStats: async () => nodeStats({lnd}),
+    buildParameters: async () => {
+      const { minBuildNumber, lastBuildNumber } = await getMinBuildNumber()
+
+      return {
+        id: lastBuildNumber,
+        commitHash: () => commitHash,
+        buildTime: () => buildTime,
+        helmRevision: () => helmRevision,
+        minBuildNumberAndroid: minBuildNumber,
+        minBuildNumberIos: minBuildNumber,
+        lastBuildNumberAndroid: lastBuildNumber,
+        lastBuildNumberIos: lastBuildNumber,
+    }},
+    prices: async (_, __, {logger}) => {
+      const price = new Price({logger})
       return await price.lastCached()
     },
     earnList: async (_, __, { uid }) => {
@@ -108,7 +116,19 @@ const resolvers = {
       return response
     },
     getLastOnChainAddress: async (_, __, { wallet }) => ({ id: wallet.getLastOnChainAddress() }),
-    usernameExists: async (_, { username }, { wallet }) => await UserWallet.usernameExists({ username })
+
+    // TODO: make this dynamic with call from MongoDB
+    maps: async () => [
+      {
+        id: 1,
+        title: "Bitcoin ATM - Café Cocoa",
+        coordinate: {
+          latitude: 13.496743,
+          longitude: -89.439462,
+        },
+      },
+    ],
+    usernameExists: async (_, { username }) => await UserWallet.usernameExists({ username })
 
   },
   Mutation: {
@@ -263,8 +283,11 @@ server.express.get('/healthz', function(req, res) {
 const options = {
   // tracing: true,
   formatError: err => {
-    if (!(startsWith(err.message, customLoggerPrefix))) {
-      baseLogger.error({ err }, "graphql catch-all error");
+    // FIXME
+    if (startsWith(err.message, customLoggerPrefix)) {
+      err.message = err.message.slice(customLoggerPrefix.length)
+    } else {
+      baseLogger.error({err}, "graphql catch-all error"); 
     }
     // return defaultErrorFormatter(err)
     return err

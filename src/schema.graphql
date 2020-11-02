@@ -76,11 +76,14 @@ type Token {
 }
 
 type BuildParameter {
+  id: ID
   commitHash: String
   buildTime: String
   helmRevision: Int
   minBuildNumberAndroid: Int
   minBuildNumberIos: Int
+  lastBuildNumberAndroid: Int
+  lastBuildNumberIos: Int
 }
 
 type NodeStats {
@@ -88,11 +91,23 @@ type NodeStats {
   channelsCount: Int
 }
 
+type Coordinate {
+  latitude: Float
+  longitude: Float
+}
+
+type Marker {
+  id: ID
+  title: String
+  coordinate: Coordinate
+}
+
 type Query { 
   prices: [Price]
   wallet: [Wallet]
   earnList: [Earn]
   me: User
+  maps: [Marker]
   buildParameters: BuildParameter
   nodeStats: NodeStats
   getLastOnChainAddress: LastOnChainAddress

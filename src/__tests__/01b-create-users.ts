@@ -62,7 +62,7 @@ it('add user5 / usd user', async () => {
 
 describe('username tests', () => {
   beforeAll(async () => {
-    userWallet = await getUserWallet(1)
+    userWallet = await getUserWallet(0)
   })
   const username = "_User1"
 
