@@ -197,7 +197,7 @@
                         "script": {
                           "id": "7c33001f-5600-4d7f-a1b7-f4b2444880c0",
                           "exec": [
-                            "pm.test(\"invoice starts with lnbcrt\", function () {",
+                            "pm.test(\"expect usernameExists to return true for test username\", function () {",
                             "    var jsonData = pm.response.json();",
                             "    pm.expect(jsonData.data.usernameExists).to.be(true);",
                             "});",
