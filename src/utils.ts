@@ -30,7 +30,7 @@ const connection_obj = {
   host: process.env.BITCOINDADDR, port: process.env.BITCOINDPORT
 }
 
-export const amountOnVout = ({vout, onchain_addresses}) => {
+export const amountOnVout = ({ vout, onchain_addresses }) => {
   // TODO: check if this is always [0], ie: there is always a single addresses for vout for lnd output
   return sumBy(filter(vout, tx => includes(onchain_addresses, tx.scriptPubKey.addresses[0])), "value")
 }
@@ -55,7 +55,7 @@ export const sat2btc = (sat: number) => {
   return sat / Math.pow(10, 8)
 }
 
-export const getCurrencyEquivalent = async ({sats, usd, fee}: {sats: number, usd?: number, fee?: number}) => {
+export const getCurrencyEquivalent = async ({ sats, usd, fee }: { sats: number, usd?: number, fee?: number }) => {
   let _usd = usd
   let feeUsd
 
@@ -67,13 +67,13 @@ export const getCurrencyEquivalent = async ({sats, usd, fee}: {sats: number, usd
     feeUsd = await satsToUsd(fee)
   }
 
-  return {fee, feeUsd, sats, usd: _usd}
+  return { fee, feeUsd, sats, usd: _usd }
 }
 
 export const satsToUsd = async sats => {
   // TODO: caching in graphql, should be passed as a variable to addInvoice
   // FIXME: remove the baseLogger
-  const lastPrices = await new Price({logger: baseLogger }).lastPrice() // sats/usd
+  const lastPrices = await new Price({ logger: baseLogger }).lastPrice() // sats/usd
   const usdValue = lastPrices * sats
   return usdValue
 }
@@ -151,7 +151,7 @@ export async function measureTime(operation: Promise<any>): Promise<[any, number
   return [result, timeElapsedms]
 }
 
-export async function nodeStats ({lnd}) {
+export async function nodeStats({ lnd }) {
   const result = await lnService.getWalletInfo({ lnd })
   const peersCount = result.peers_count
   const channelsCount = result.active_channels_count

@@ -77,6 +77,9 @@ const UserSchema = new Schema({
   },
   username: {
     type: String,
+    match: [/^[0-9a-z_]+$/i, "Username can only have alphabets, numbers and underscores"],
+    minlength: 3,
+    maxlength: 50,
     index: {
       unique: true,
       partialFilterExpression: { username: { $type: "string" } }
@@ -270,6 +273,7 @@ export const setupMongoConnection = async () => {
       useCreateIndex: true,
       useFindAndModify: false
     })
+    mongoose.set('runValidators', true)
   } catch (err) {
     baseLogger.fatal(`error connecting to mongodb ${err}`)
     exit(1)

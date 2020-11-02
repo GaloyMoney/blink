@@ -49,6 +49,7 @@ afterAll(async () => {
   }
 
   await User.findOneAndRemove({ _id: userWallet1.uid })
+  jest.restoreAllMocks();
 
   await mongoose.connection.close()
   await quit()

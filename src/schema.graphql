@@ -57,7 +57,7 @@ type OnchainTransaction {
 
 type User {
   id: ID
-  name: String
+  username: String
   level: Int!
   phone: String
 }
@@ -111,6 +111,7 @@ type Query {
   buildParameters: BuildParameter
   nodeStats: NodeStats
   getLastOnChainAddress: LastOnChainAddress
+  usernameExists(username: String!): Boolean
 }
 
 type UpdateUser {
