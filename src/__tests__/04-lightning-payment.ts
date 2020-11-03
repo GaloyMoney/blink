@@ -99,36 +99,45 @@ it('add earn adds balance correctly', async () => {
 }, 30000)
 
 
+const functionToTests = [
+  { 
+    name: "getFees + pay",
+    fn: function fn(wallet) {
+      return (input) => {
+        wallet.getFees(input);
+        return wallet.pay(input)
+      }
+    }
+  },
+  {
+    name: "direct pay",
+    fn: function fn(wallet) {
+      return (input) => {
+        return wallet.pay(input)
+      }
+    },
+  }
+]
 
-it('payInvoice without calling __getFees__', async () => {
-  const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: amountInvoice })
-  const result = await userWallet1.pay({ invoice: request })
-  expect(result).toBe("success")
+functionToTests.forEach(({fn, name}) => {
+  it(`simple payInvoice ${name}`, async () => {
+    const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: amountInvoice })
+    const result = await fn(userWallet1)({ invoice: request })
+    expect(result).toBe("success")
+  
+    const finalBalance = await userWallet1.getBalance()
+    expect(finalBalance).toBe(initBalance1 - amountInvoice)
+  })
 
-  const finalBalance = await userWallet1.getBalance()
-  expect(finalBalance).toBe(initBalance1 - amountInvoice)
+  it('payInvoice with High CLTV Delta', async () => {
+    const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: amountInvoice, cltv_delta: 200 })
+    const result = await await fn(userWallet1)({ invoice: request })
+    expect(result).toBe("success")
+    const finalBalance = await userWallet1.getBalance()
+    expect(finalBalance).toBe(initBalance1 - amountInvoice)
+  })
 })
 
-it('getFees + call pay', async () => {
-  const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: amountInvoice })
-  const fee = await userWallet1.getFees({ invoice: request })
-
-  // 'fees with a connected node should be 0'
-  expect(fee).toBe(0)
-
-  const result = await userWallet1.pay({ invoice: request })
-  expect(result).toBe("success")
-  const finalBalance = await userWallet1.getBalance()
-  expect(finalBalance).toBe(initBalance1 - amountInvoice)
-})
-
-it('payInvoice with High CLTV Delta', async () => {
-  const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: amountInvoice, cltv_delta: 200 })
-  const result = await userWallet1.pay({ invoice: request })
-  expect(result).toBe("success")
-  const finalBalance = await userWallet1.getBalance()
-  expect(finalBalance).toBe(initBalance1 - amountInvoice)
-})
 
 it('receives payment from outside', async () => {
   const memo = "myMemo"
@@ -141,6 +150,7 @@ it('receives payment from outside', async () => {
   const mongotx = await Transaction.findOne({ hash: getHash(request) })
   expect(mongotx.memo).toBe(memo)
 })
+
 
 it('fails to pay when user has insufficient balance', async () => {
   const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: initBalance1 + 1000000 })
