@@ -19,7 +19,7 @@ export const uploadBackup = async (backup) => {
   logger.debug({backup}, "updating scb on gcs")
   const storage = new Storage({ keyFilename: process.env.GCS_APPLICATION_CREDENTIALS })
   const bucket = storage.bucket('lnd-static-channel-backups')
-  const file = bucket.file('scb.json')
+  const file = bucket.file(`${process.env.NETWORK}_scb.json`)
   await file.save(backup)
   logger.info({backup}, "scb backed up on gcs successfully")
 }
