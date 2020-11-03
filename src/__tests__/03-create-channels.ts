@@ -63,7 +63,7 @@ const openChannel = async ({ lnd, other_lnd, socket, is_private = false }) => {
   }
 
   if (other_lnd === lndMain) {
-    sub.once('channel_opened', (channel) => expect(channel.is_partner_initiated).toBe(true))
+     sub.once('channel_opened', (channel) => expect(channel.is_partner_initiated).toBe(true))
   }
 
   await once(sub, 'channel_opening')
@@ -84,7 +84,7 @@ const openChannel = async ({ lnd, other_lnd, socket, is_private = false }) => {
     mineBlock(),
   ])
 
-
+  
   await sleep(5000)
   await adminWallet.updateEscrows()
   sub.removeAllListeners()
@@ -92,15 +92,11 @@ const openChannel = async ({ lnd, other_lnd, socket, is_private = false }) => {
 
 it('opens channel from lnd1 to lndOutside1', async () => {
   const socket = `lnd-outside-1:9735`
-
-  const subBackups = lnService.subscribeToBackups({ lnd: lndMain })
-
-  subBackups.on('backup', ({ backup }) => uploadBackup(backup))
-
   await openChannel({ lnd: lndMain, other_lnd: lndOutside1, socket })
 
   const { channels } = await lnService.getChannels({ lnd: lndMain })
   expect(channels.length).toEqual(channelLengthMain + 1)
+
 })
 
 it('opens private channel from lndOutside1 to lndOutside2', async () => {
