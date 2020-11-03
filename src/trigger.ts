@@ -1,6 +1,7 @@
 import express from 'express';
+import { subscribeToChannels, subscribeToInvoices, subscribeToTransactions, subscribeToBackups } from 'ln-service';
+import { Storage } from '@google-cloud/storage'
 import { find } from "lodash";
-import { subscribeToChannels, subscribeToInvoices, subscribeToTransactions } from 'ln-service';
 import { InvoiceUser, setupMongoConnection, Transaction, User, MainBook } from "./mongodb";
 import { lightningAccountingPath, openChannelFees } from "./ledger";
 import { sendInvoicePaidNotification, sendNotification } from "./notification";
@@ -14,6 +15,15 @@ const logger = baseLogger.child({ module: "trigger" })
 
 const txsReceived = new Set()
 
+export const uploadBackup = async (backup) => {
+  logger.debug({backup}, "updating scb on gcs")
+  const storage = new Storage({ keyFilename: process.env.GCS_APPLICATION_CREDENTIALS })
+  const bucket = storage.bucket('lnd-static-channel-backups')
+  const file = bucket.file(`${process.env.NETWORK}_scb.json`)
+  await file.save(backup)
+  logger.info({backup}, "scb backed up on gcs successfully")
+}
+
 export async function onchainTransactionEventHandler(tx) {
 
   // workaround for https://github.com/lightningnetwork/lnd/issues/2267
@@ -25,7 +35,7 @@ export async function onchainTransactionEventHandler(tx) {
   txsReceived.add(hash)
 
 
-  logger.debug({ tx })
+  logger.debug({ tx }, "received new onchain tx event")
   const onchainLogger = logger.child({ topic: "payment", protocol: "onchain", hash: tx.id, onUs: false })
 
   if (tx.is_outgoing) {
@@ -146,6 +156,10 @@ const main = async () => {
 
   const subChannels = subscribeToChannels({ lnd });
   subChannels.on('channel_opened', (channel) => onChannelOpened({ channel, lnd }))
+
+  const subBackups = subscribeToBackups({ lnd })
+  subBackups.on('backup', ({ backup }) => uploadBackup(backup))
+
 }
 
 const healthCheck = () => {
