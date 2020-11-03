@@ -1,4 +1,4 @@
-import { filter, find, sumBy } from "lodash";
+import { filter, sumBy } from "lodash";
 import { accountingExpenses, escrowAccountingPath, lightningAccountingPath, openChannelFees } from "./ledger";
 import { MainBook, Transaction, User } from "./mongodb";
 import { baseLogger, getAuth } from "./utils";
@@ -91,26 +91,6 @@ export class AdminWallet {
   }
 
   getInfo = async () => lnService.getWalletInfo({ lnd: this.lnd });
-
-  async openChannel({local_tokens, public_key, socket}): Promise<string> {
-    const {transaction_id} = await lnService.openChannel({ lnd: this.lnd, local_tokens,
-      partner_public_key: public_key, partner_socket: socket
-    })
-
-    // FIXME: O(n), not great
-    const { transactions } = await lnService.getChainTransactions({lnd: this.lnd})
-
-    const { fee } = find(transactions, {id: transaction_id})
-
-    const metadata = { currency: this.currency, txid: transaction_id, type: "fee" }
-
-    await MainBook.entry("on chain fee")
-      .debit(lightningAccountingPath, fee, {...metadata,})
-      .credit(openChannelFees, fee, {...metadata})
-      .commit()
-
-    return transaction_id
-  }
 
   async updateEscrows() {
     const type = "escrow"

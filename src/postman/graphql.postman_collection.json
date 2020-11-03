@@ -188,6 +188,56 @@
                       }
                     },
                     "response": []
+                  },
+                  {
+                    "name": "usernameExists",
+                    "event": [
+                      {
+                        "listen": "test",
+                        "script": {
+                          "id": "7c33001f-5600-4d7f-a1b7-f4b2444880c0",
+                          "exec": [
+                            "pm.test(\"expect usernameExists to return true for test username\", function () {",
+                            "    var jsonData = pm.response.json();",
+                            "    pm.expect(jsonData.data.usernameExists).to.be(true);",
+                            "});",
+                            "",
+                            ""
+                          ],
+                          "type": "text/javascript"
+                        }
+                      }
+                    ],
+                    "_postman_id": "b3ddaaa8-e673-4d7b-906d-ef0bf7d6cc35",
+                    "protocolProfileBehavior": {
+                      "disableBodyPruning": true
+                    },
+                    "request": {
+                      "method": "POST",
+                      "header": [],
+                      "body": {
+                        "mode": "graphql",
+                        "graphql": {
+                          "query": "query usernameExists($username: String!) {\n    usernameExists(username: $username)\n}",
+                          "variables": "{\n    \"username\":\"xyz\"\n}"
+                        },
+                        "options": {
+                          "graphql": {}
+                        }
+                      },
+                      "url": {
+                        "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+                        "protocol": "{{protocol}}",
+                        "host": [
+                          "{{domain}}"
+                        ],
+                        "port": "{{port}}",
+                        "path": [
+                          "graphql"
+                        ]
+                      }
+                    },
+                    "response": []
                   }
                 ],
                 "_postman_id": "54194dcd-5f85-49e4-8401-f2a140ae8917",
@@ -227,6 +277,56 @@
                         "graphql": {
                           "query": "mutation requestPhoneCode ($phone: String) {\n    requestPhoneCode (phone: $phone) {\n        success\n    }\n}",
                           "variables": "{\n  \"phone\": \"{{phone}}\"\n}"
+                        },
+                        "options": {
+                          "graphql": {}
+                        }
+                      },
+                      "url": {
+                        "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+                        "protocol": "{{protocol}}",
+                        "host": [
+                          "{{domain}}"
+                        ],
+                        "port": "{{port}}",
+                        "path": [
+                          "graphql"
+                        ]
+                      }
+                    },
+                    "response": []
+                  },
+                  {
+                    "name": "addPublicInvoice",
+                    "event": [
+                      {
+                        "listen": "test",
+                        "script": {
+                          "id": "ff68b65a-6bee-4c56-9de9-a1eedb85b22e",
+                          "exec": [
+                            "pm.test(\"invoice starts with lnbcrt\", function () {",
+                            "    var jsonData = pm.response.json();",
+                            "    pm.expect(jsonData.data.publicInvoice.addInvoice.slice(0,6)).to.be('lnbcrt');",
+                            "});",
+                            "",
+                            ""
+                          ],
+                          "type": "text/javascript"
+                        }
+                      }
+                    ],
+                    "_postman_id": "59e9aae4-7d9f-4921-be12-6d5524207ae4",
+                    "protocolProfileBehavior": {
+                      "disableBodyPruning": true
+                    },
+                    "request": {
+                      "method": "POST",
+                      "header": [],
+                      "body": {
+                        "mode": "graphql",
+                        "graphql": {
+                          "query": "mutation publicInvoice ($username: String) {\n    publicInvoice (username: $username) {\n        addInvoice\n    }\n}",
+                          "variables": "{\n  \"username\": \"xyz\"\n}"
                         },
                         "options": {
                           "graphql": {}

@@ -57,8 +57,9 @@ type OnchainTransaction {
 
 type User {
   id: ID
-  name: String
+  username: String
   level: Int!
+  phone: String
 }
 
 input InputUser {
@@ -75,11 +76,14 @@ type Token {
 }
 
 type BuildParameter {
+  id: ID
   commitHash: String
   buildTime: String
   helmRevision: Int
   minBuildNumberAndroid: Int
   minBuildNumberIos: Int
+  lastBuildNumberAndroid: Int
+  lastBuildNumberIos: Int
 }
 
 type NodeStats {
@@ -87,14 +91,27 @@ type NodeStats {
   channelsCount: Int
 }
 
+type Coordinate {
+  latitude: Float
+  longitude: Float
+}
+
+type Marker {
+  id: ID
+  title: String
+  coordinate: Coordinate
+}
+
 type Query { 
   prices: [Price]
   wallet: [Wallet]
   earnList: [Earn]
   me: User
+  maps: [Marker]
   buildParameters: BuildParameter
   nodeStats: NodeStats
   getLastOnChainAddress: LastOnChainAddress
+  usernameExists(username: String!): Boolean
 }
 
 type UpdateUser {
@@ -106,7 +123,7 @@ type Mutation {
   requestPhoneCode(phone: String): Success
   login(phone: String, code: Int, currency: String): Token
   openChannel(local_tokens: Int, public_key: String, socket: String): OnchainTransaction
-  publicInvoice(uid: String): Invoice
+  publicInvoice(username: String!): Invoice
   onchain: OnChain
   invoice: Invoice
   earnCompleted(ids: [ID]): [Earn]

@@ -1,6 +1,9 @@
 import express from 'express';
-import { subscribeToChannels, subscribeToInvoices, subscribeToTransactions } from 'ln-service';
-import { InvoiceUser, setupMongoConnection, Transaction, User } from "./mongodb";
+import { subscribeToChannels, subscribeToInvoices, subscribeToTransactions, subscribeToBackups } from 'ln-service';
+import { Storage } from '@google-cloud/storage'
+import { find } from "lodash";
+import { InvoiceUser, setupMongoConnection, Transaction, User, MainBook } from "./mongodb";
+import { lightningAccountingPath, openChannelFees } from "./ledger";
 import { sendInvoicePaidNotification, sendNotification } from "./notification";
 import { IDataNotification } from "./types";
 import { getAuth, baseLogger } from './utils';
@@ -8,9 +11,18 @@ import { WalletFactory } from "./walletFactory";
 const crypto = require("crypto")
 const lnService = require('ln-service');
 
-const logger = baseLogger.child({module: "trigger"})
+const logger = baseLogger.child({ module: "trigger" })
 
-const txsReceived = new Set() 
+const txsReceived = new Set()
+
+export const uploadBackup = async (backup) => {
+  logger.debug({backup}, "updating scb on gcs")
+  const storage = new Storage({ keyFilename: process.env.GCS_APPLICATION_CREDENTIALS })
+  const bucket = storage.bucket('lnd-static-channel-backups')
+  const file = bucket.file(`${process.env.NETWORK}_scb.json`)
+  await file.save(backup)
+  logger.info({backup}, "scb backed up on gcs successfully")
+}
 
 export async function onchainTransactionEventHandler(tx) {
 
@@ -23,7 +35,7 @@ export async function onchainTransactionEventHandler(tx) {
   txsReceived.add(hash)
 
 
-  logger.debug({tx})
+  logger.debug({ tx }, "received new onchain tx event")
   const onchainLogger = logger.child({ topic: "payment", protocol: "onchain", hash: tx.id, onUs: false })
 
   if (tx.is_outgoing) {
@@ -37,7 +49,7 @@ export async function onchainTransactionEventHandler(tx) {
 
     await Transaction.updateMany({ hash: tx.id }, { pending: false })
     onchainLogger.info({ success: true, pending: false, transactionType: "payment" }, "payment completed")
-    const entry = await Transaction.findOne({ account_path: { $all : ["Liabilities", "Customer"] }, hash: tx.id })
+    const entry = await Transaction.findOne({ account_path: { $all: ["Liabilities", "Customer"] }, hash: tx.id })
 
     const title = `Your on-chain transaction has been confirmed`
     const data: IDataNotification = {
@@ -45,7 +57,7 @@ export async function onchainTransactionEventHandler(tx) {
       hash: tx.id,
       amount: tx.tokens,
     }
-    await sendNotification({uid: entry.account_path[2], title, data, logger })
+    await sendNotification({ uid: entry.account_path[2], title, data, logger })
   } else {
     // TODO: the same way Lightning is updating the wallet/accounting, 
     // this event should update the onchain wallet/account of the associated user
@@ -55,7 +67,7 @@ export async function onchainTransactionEventHandler(tx) {
       ({ _id } = await User.findOne({ onchain_addresses: { $in: tx.output_addresses } }, { _id: 1 }))
       if (!_id) {
         //FIXME: Log the onchain address, need to first find which of the tx.output_addresses belongs to us
-        logger.fatal({tx}, `No user associated with the onchain address`)
+        logger.fatal({ tx }, `No user associated with the onchain address`)
         return
       }
     } catch (error) {
@@ -98,17 +110,42 @@ export const onInvoiceUpdate = async invoice => {
 
     const wallet = WalletFactory({ uid, currency: invoiceUser.currency, logger })
     await wallet.updatePendingInvoice({ hash })
-    await sendInvoicePaidNotification({amount: invoice.received, hash, uid, logger})
+    await sendInvoicePaidNotification({ amount: invoice.received, hash, uid, logger })
   } else {
-    logger.fatal({invoice}, "we received an invoice but had no user attached to it")
+    logger.fatal({ invoice }, "we received an invoice but had no user attached to it")
   }
 }
 
-const main = async () => {	
+export const onChannelOpened = async ({ channel, lnd }) => {
+
+  if (channel.is_partner_initiated) {
+    logger.debug({ channel }, "channel opened to us")
+    return
+  }
+
+  logger.debug({ channel }, "channel opened by us")
+
+  const { transaction_id } = channel
+
+  const { transactions } = await lnService.getChainTransactions({ lnd })
+
+  const { fee } = find(transactions, { id: transaction_id })
+
+  const metadata = { currency: "BTC", txid: transaction_id, type: "fee" }
+
+  await MainBook.entry("on chain fee")
+    .debit(lightningAccountingPath, fee, { ...metadata, })
+    .credit(openChannelFees, fee, { ...metadata })
+    .commit()
+
+  logger.info({ success: true, channel, fee, ...metadata }, `open channel fee added to mongodb`)
+}
+
+const main = async () => {
   const { lnd } = lnService.authenticatedLndGrpc(getAuth())
 
   lnService.getWalletInfo({ lnd }, (err, result) => {
-    logger.debug({err, result}, 'getWalletInfo')
+    logger.debug({ err, result }, 'getWalletInfo')
   });
 
   const subInvoices = subscribeToInvoices({ lnd });
@@ -116,11 +153,13 @@ const main = async () => {
 
   const subTransactions = subscribeToTransactions({ lnd });
   subTransactions.on('chain_transaction', onchainTransactionEventHandler);
-  
+
   const subChannels = subscribeToChannels({ lnd });
-  subChannels.on('channel_opened', channel => {
-    logger.info({channel}, 'channel open')
-  })
+  subChannels.on('channel_opened', (channel) => onChannelOpened({ channel, lnd }))
+
+  const subBackups = subscribeToBackups({ lnd })
+  subBackups.on('backup', ({ backup }) => uploadBackup(backup))
+
 }
 
 const healthCheck = () => {

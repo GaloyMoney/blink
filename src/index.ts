@@ -10,7 +10,8 @@ import { Price } from "./priceImpl";
 import { login, requestPhoneCode } from "./text";
 import { OnboardingEarn } from "./types";
 import { baseLogger, customLoggerPrefix, getAuth, nodeStats } from "./utils";
-import { WalletFactory } from "./walletFactory";
+import { WalletFactory, WalletFromUsername } from "./walletFactory";
+import { UserWallet } from "./wallet"
 import { v4 as uuidv4 } from 'uuid';
 import { startsWith } from "lodash";
 import { upgrade } from "./upgrade"
@@ -54,19 +55,23 @@ const { lnd } = lnService.authenticatedLndGrpc(getAuth())
 const commitHash = process.env.COMMITHASH
 const buildTime = process.env.BUILDTIME
 const helmRevision = process.env.HELMREVISION
+
+// TODO: caching for some period of time. maybe 1h
 const getMinBuildNumber = async () => {
-  const { minBuildNumber } = await DbVersion.findOne({}, { minBuildNumber: 1, _id: 0 })
-  return minBuildNumber
+  const { minBuildNumber, lastBuildNumber } = await DbVersion.findOne({}, { minBuildNumber: 1, lastBuildNumber: 1, _id: 0 })
+  return { minBuildNumber, lastBuildNumber }
 }
 
 const resolvers = {
   Query: {
     me: async (_, __, { uid }) => {
-      const user = await User.findOne({ _id: uid })
+      const { phone, username } = await User.findOne({ _id: uid })
 
       return {
         id: uid,
         level: 1,
+        phone,
+        username,
       }
     },
     wallet: async (_, __, { wallet }) => ([{
@@ -76,16 +81,22 @@ const resolvers = {
       transactions: () => wallet.getTransactions(),
       csv: () => wallet.getStringCsv()
     }]),
-    nodeStats: async () => nodeStats({ lnd }),
-    buildParameters: () => ({
-      commitHash: () => commitHash,
-      buildTime: () => buildTime,
-      helmRevision: () => helmRevision,
-      minBuildNumberAndroid: getMinBuildNumber,
-      minBuildNumberIos: getMinBuildNumber,
-    }),
-    prices: async (_, __, { logger }) => {
-      const price = new Price({ logger })
+    nodeStats: async () => nodeStats({lnd}),
+    buildParameters: async () => {
+      const { minBuildNumber, lastBuildNumber } = await getMinBuildNumber()
+
+      return {
+        id: lastBuildNumber,
+        commitHash: () => commitHash,
+        buildTime: () => buildTime,
+        helmRevision: () => helmRevision,
+        minBuildNumberAndroid: minBuildNumber,
+        minBuildNumberIos: minBuildNumber,
+        lastBuildNumberAndroid: lastBuildNumber,
+        lastBuildNumberIos: lastBuildNumber,
+    }},
+    prices: async (_, __, {logger}) => {
+      const price = new Price({logger})
       return await price.lastCached()
     },
     earnList: async (_, __, { uid }) => {
@@ -105,6 +116,20 @@ const resolvers = {
       return response
     },
     getLastOnChainAddress: async (_, __, { wallet }) => ({ id: wallet.getLastOnChainAddress() }),
+
+    // TODO: make this dynamic with call from MongoDB
+    maps: async () => [
+      {
+        id: 1,
+        title: "Bitcoin ATM - Café Cocoa",
+        coordinate: {
+          latitude: 13.496743,
+          longitude: -89.439462,
+        },
+      },
+    ],
+    usernameExists: async (_, { username }) => await UserWallet.usernameExists({ username })
+
   },
   Mutation: {
     requestPhoneCode: async (_, { phone }, { logger }) => ({ success: requestPhoneCode({ phone, logger }) }),
@@ -122,17 +147,12 @@ const resolvers = {
       setUsername: async ({ username }) => await wallet.setUsername({ username })
 
     }),
-    publicInvoice: async (_, { uid, logger }) => {
-      const wallet = WalletFactory({ uid, currency: 'BTC', logger })
+    publicInvoice: async (_, { username }, { logger }) => {
+      const wallet = await WalletFromUsername({ username, logger })
       return {
         addInvoice: async ({ value, memo }) => wallet.addInvoice({ value, memo, selfGenerated: false }),
         updatePendingInvoice: async ({ hash }) => wallet.updatePendingInvoice({ hash })
       }
-    },
-    openChannel: async (_, { local_tokens, public_key, socket }, { }) => {
-      // FIXME: security risk. remove openChannel from graphql
-      const lightningAdminWallet = new AdminWallet()
-      return { tx: lightningAdminWallet.openChannel({ local_tokens, public_key, socket }) }
     },
     invoice: async (_, __, { wallet }) => ({
       addInvoice: async ({ value, memo }) => wallet.addInvoice({ value, memo }),
@@ -263,8 +283,11 @@ server.express.get('/healthz', function(req, res) {
 const options = {
   // tracing: true,
   formatError: err => {
-    if (!(startsWith(err.message, customLoggerPrefix))) {
-      baseLogger.error({ err }, "graphql catch-all error");
+    // FIXME
+    if (startsWith(err.message, customLoggerPrefix)) {
+      err.message = err.message.slice(customLoggerPrefix.length)
+    } else {
+      baseLogger.error({err}, "graphql catch-all error"); 
     }
     // return defaultErrorFormatter(err)
     return err
