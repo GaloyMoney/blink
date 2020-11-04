@@ -99,7 +99,7 @@ const resolvers = {
     earnList: async (_, __, { uid }) => {
       const response: Object[] = []
 
-      const user = await User.findOne({ _id: uid })
+      const user = !!uid ? await User.findOne({ _id: uid }) : null
       const earned = user?.earn || []
 
       for (const [id, value] of Object.entries(OnboardingEarn)) {
