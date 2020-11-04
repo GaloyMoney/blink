@@ -61,8 +61,8 @@ export const mainCache = new NodeCache();
 
 const resolvers = {
   Query: {
-    me: async (_, __, { uid }) => {
-      const { phone, username } = await User.findOne({ _id: uid })
+    me: async (_, __, { uid, user }) => {
+      const { phone, username } = user
 
       return {
         id: uid,
@@ -109,10 +109,8 @@ const resolvers = {
     
       return value
     },
-    earnList: async (_, __, { uid }) => {
+    earnList: async (_, __, { uid, user }) => {
       const response: Object[] = []
-
-      const user = !!uid ? await User.findOne({ _id: uid }) : null
       const earned = user?.earn || []
 
       for (const [id, value] of Object.entries(OnboardingEarn)) {
@@ -178,10 +176,9 @@ const resolvers = {
       pay: ({ address, amount, memo }) => ({ success: wallet.onChainPay({ address, amount, memo }) }),
       getFee: ({ address }) => wallet.getOnchainFee({ address }),
     }),
-    addDeviceToken: async (_, { deviceToken }, { uid }) => {
-      // TODO: refactor to a higher level User class
-      const user = await User.findOne({ _id: uid })
+    addDeviceToken: async (_, { deviceToken }, { uid, user }) => {
       user.deviceToken.addToSet(deviceToken)
+      // TODO: check if this is ok to shared an user instance and mutate it.
       await user.save()
       return { success: true }
     },
@@ -263,6 +260,7 @@ const server = new GraphQLServer({
   context: async (context) => {
     const token = verifyToken(context.request)
     const uid = token?.uid ?? null
+    const user = !!uid ? User.findOne({ _id: uid }) : null
     // @ts-ignore
     const logger = graphqlLogger.child({ token, id: context.request.id, body: context.request.body })
     const wallet = !!token ? WalletFactory({ ...token, logger }) : null
@@ -271,6 +269,7 @@ const server = new GraphQLServer({
       logger,
       uid,
       wallet,
+      user
     }
   }
 })
