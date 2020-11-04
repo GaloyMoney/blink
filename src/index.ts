@@ -93,8 +93,21 @@ const resolvers = {
         lastBuildNumberIos: lastBuildNumber,
     }},
     prices: async (_, __, {logger}) => {
-      const price = new Price({logger})
-      return await price.lastCached()
+      const key = "prices"
+      let value
+    
+      value = mainCache.get(key);
+      if ( value === undefined ){
+        const price = new Price({logger})
+        const lastCached = await price.lastCached()
+        // TODO: maybe have a better way to reset the cache.
+        // if we have 300 seconds of cache here, but we also only fetch from prometheus value only every 300 seconds
+        // then the price value could be stale up to 600 seconds on the client side
+        mainCache.set( key, lastCached, [ 300 ] )
+        value = lastCached
+      }
+    
+      return value
     },
     earnList: async (_, __, { uid }) => {
       const response: Object[] = []
