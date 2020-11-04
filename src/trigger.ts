@@ -93,7 +93,7 @@ export async function onchainTransactionEventHandler(tx) {
     const usd = tx.tokens * satsPrice
 
     const title = tx.is_confirmed ?
-      `Your succesfully received $${usd} | ${tx.tokens} sats` :
+      `You received $${usd} | ${tx.tokens} sats` :
       `$${usd} | ${tx.tokens} sats is on its way to your wallet`
     await sendNotification({ title, uid: _id, data, logger })
   }
