@@ -14,8 +14,8 @@ export class LightningUsdWallet extends LightningMixin(UserWallet) {
     return customerPath(this.uid)
   }
 
-  constructor({ uid, logger }: ILightningWalletUser) {
-    super({ uid, currency: "USD", logger })
+  constructor({ user, uid, logger }: ILightningWalletUser) {
+    super({ user, uid, currency: "USD", logger })
   }
 
   async addInvoice({ value, memo }: IAddUSDInvoiceRequest): Promise<string> {

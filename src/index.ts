@@ -263,7 +263,7 @@ const server = new GraphQLServer({
     const user = !!uid ? User.findOne({ _id: uid }) : null
     // @ts-ignore
     const logger = graphqlLogger.child({ token, id: context.request.id, body: context.request.body })
-    const wallet = !!token ? WalletFactory({ ...token, logger }) : null
+    const wallet = !!token ? WalletFactory({ ...token, user, logger }) : null
     return {
       ...context,
       logger,

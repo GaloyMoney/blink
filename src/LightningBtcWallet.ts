@@ -14,8 +14,8 @@ const using = require('bluebird').using
  */
 export class LightningBtcWallet extends OnChainMixin(LightningMixin(UserWallet)) {
   
-  constructor({ uid, logger }: ILightningWalletUser) {
-    super({ uid, currency: "BTC", logger })
+  constructor({ user, uid, logger }: ILightningWalletUser) {
+    super({ user, uid, currency: "BTC", logger })
   }
 
   get accountPath(): string {

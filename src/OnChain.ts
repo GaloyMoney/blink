@@ -157,13 +157,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
   }
 
   async getLastOnChainAddress(): Promise<String | Error | undefined> {
-    let user = await User.findOne({ _id: this.uid })
-
-    if (!user) { // this should not happen. is test that relevant?
-      const error = "no user is associated with this address"
-      this.logger.error({user}, error)
-      throw new LoggedError(`no user with this uid`)
-    }
+    let user = this.user
 
     if (user.onchain_addresses.length === 0) {
       // TODO create one address when a user is created instead?

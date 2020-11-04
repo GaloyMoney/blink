@@ -8,11 +8,13 @@ const createCsvStringifier = require('csv-writer').createObjectCsvStringifier;
 
 export abstract class UserWallet {
 
+  readonly user: any // mongoose object
   readonly uid: string
   readonly currency: string
   readonly logger: any
 
-  constructor({ uid, currency, logger }) {
+  constructor({ user, uid, currency, logger }) {
+    this.user = user
     this.uid = uid
     this.currency = currency
     this.logger = logger

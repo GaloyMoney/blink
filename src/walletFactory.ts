@@ -7,12 +7,12 @@ import { login, TEST_NUMBER } from "./text";
 import * as jwt from 'jsonwebtoken';
 import { baseLogger, LoggedError } from "./utils";
 
-export const WalletFactory = ({ uid, logger, currency = "BTC" }: { uid: string, currency: string, logger: any }) => {
+export const WalletFactory = ({ user, uid, logger, currency = "BTC" }: { user: any, uid: string, currency: string, logger: any }) => {
   // TODO: remove default BTC once old tokens had been "expired"
   if (currency === "USD") {
-    return new LightningUsdWallet({ uid, logger })
+    return new LightningUsdWallet({ user, uid, logger })
   } else {
-    return new LightningBtcWallet({ uid, logger })
+    return new LightningBtcWallet({ user, uid, logger })
   }
 }
 
@@ -26,17 +26,17 @@ export const WalletFromUsername = async ({ username, logger }: { username: strin
 
   const { uid, currency } = user
 
-  return WalletFactory({ uid, currency, logger })
+  return WalletFactory({ user, uid, currency, logger })
 }
 
 export const getFunderWallet = async ({ logger }) => {
   const funder = await User.findOne({ role: "funder" })
-  return new LightningBtcWallet({ uid: funder._id, logger })
+  return new LightningBtcWallet({ user: funder, uid: funder._id, logger })
 }
 
 export const getBrokerWallet = async ({ logger }) => {
   const broker = await User.findOne({ role: "broker" })
-  return new BrokerWallet({ uid: broker._id, logger })
+  return new BrokerWallet({ user: broker, uid: broker._id, logger })
 }
 
 export const getTokenFromPhoneIndex = async (index) => {
