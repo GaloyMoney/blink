@@ -9,7 +9,7 @@ import { sendNotification } from "./notification";
 import { Price } from "./priceImpl";
 import { login, requestPhoneCode } from "./text";
 import { OnboardingEarn } from "./types";
-import { baseLogger, customLoggerPrefix, getAuth, nodeStats } from "./utils";
+import { baseLogger, customLoggerPrefix, getAuth, getMinBuildNumber, nodeStats } from "./utils";
 import { WalletFactory, WalletFromUsername } from "./walletFactory";
 import { UserWallet } from "./wallet"
 import { v4 as uuidv4 } from 'uuid';
@@ -56,11 +56,8 @@ const commitHash = process.env.COMMITHASH
 const buildTime = process.env.BUILDTIME
 const helmRevision = process.env.HELMREVISION
 
-// TODO: caching for some period of time. maybe 1h
-const getMinBuildNumber = async () => {
-  const { minBuildNumber, lastBuildNumber } = await DbVersion.findOne({}, { minBuildNumber: 1, lastBuildNumber: 1, _id: 0 })
-  return { minBuildNumber, lastBuildNumber }
-}
+const NodeCache = require( "node-cache" );
+export const mainCache = new NodeCache();
 
 const resolvers = {
   Query: {

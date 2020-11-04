@@ -12,6 +12,8 @@ const util = require('util')
 
 // @ts-ignore
 import { GraphQLError } from "graphql";
+import { mainCache } from "."
+import { DbVersion } from "./mongodb"
 
 // FIXME: super ugly hack.
 // for some reason LoggedError get casted as GraphQLError
@@ -159,4 +161,18 @@ export async function nodeStats({ lnd }) {
     peersCount,
     channelsCount
   }
+}
+
+export const getMinBuildNumber = async () => {
+  const key = "minBuildNumber"
+  let value
+
+  value = mainCache.get(key);
+  if ( value === undefined ){
+    const { minBuildNumber, lastBuildNumber } = await DbVersion.findOne({}, { minBuildNumber: 1, lastBuildNumber: 1, _id: 0 })
+    mainCache.set( key, { minBuildNumber, lastBuildNumber }, [ 3600 ] )
+    value = { minBuildNumber, lastBuildNumber }
+  }
+
+  return value
 }
