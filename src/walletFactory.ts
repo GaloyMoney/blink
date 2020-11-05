@@ -17,7 +17,7 @@ export const WalletFactory = ({ uid, logger, currency = "BTC" }: { uid: string, 
 }
 
 export const WalletFromUsername = async ({ username, logger }: { username: string, logger: any }) => {
-  const user = await User.findOne({ username: username.toLowerCase() })
+  const user = await User.findOne({ username })
   if (!user) {
     const error = `User not found`
     logger.warn(error)
