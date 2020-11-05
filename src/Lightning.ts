@@ -7,6 +7,7 @@ import { InvoiceUser, MainBook, Transaction } from "./mongodb";
 import { sendInvoicePaidNotification } from "./notification";
 import { IAddInvoiceInternalRequest, IPaymentRequest } from "./types";
 import { getAuth, LoggedError, timeout } from "./utils";
+const moment = require('moment'); 
 
 const util = require('util')
 
@@ -19,6 +20,11 @@ const FEEMIN = 10 // sats
 
 export type ITxType = "invoice" | "payment" | "onchain_receipt" | "onchain_payment" | "on_us"
 export type payInvoiceResult = "success" | "failed" | "pending"
+
+const delay = {
+  "BTC": {value: 1, unit: 'days'},
+  "USD": {value: 2, unit: 'mins'},
+}
 
 export const LightningMixin = (superclass) => class extends superclass {
   lnd = lnService.authenticatedLndGrpc(getAuth()).lnd
@@ -41,14 +47,19 @@ export const LightningMixin = (superclass) => class extends superclass {
     await super.updatePending()
   }
 
-  async addInvoiceInternal({ sats, usd, currency, memo, selfGenerated }: IAddInvoiceInternalRequest): Promise<string> {
+  getExpiration = (input) => input.add(delay[this.currency].value, delay[this.currency].unit)
+
+  async addInvoiceInternal({ sats, usd, memo, selfGenerated }: IAddInvoiceInternalRequest): Promise<string> {
     let request, id
+
+    const expires_at = this.getExpiration(moment()).toDate()
 
     try {
       const result = await lnService.createInvoice({
         lnd: this.lnd,
         tokens: sats,
         description: memo,
+        expires_at
       })
       request = result.request
       id = result.id
@@ -64,8 +75,8 @@ export const LightningMixin = (superclass) => class extends superclass {
         uid: this.uid,
         pending: true,
         usd,
-        currency,
-        selfGenerated
+        currency: this.currency,
+        selfGenerated,
       }).save()
     } catch (err) {
       // FIXME if the mongodb connection has not been instanciated
@@ -74,6 +85,8 @@ export const LightningMixin = (superclass) => class extends superclass {
       this.logger.error({err}, error)
       throw new LoggedError(error)
     }
+
+    this.logger.info({sats, usd, memo, currency: this.currency, selfGenerated, id, uid: this.uid}, "a new invoice has been added")
 
     return request
   }
@@ -199,6 +212,9 @@ export const LightningMixin = (superclass) => class extends superclass {
           lightningLoggerOnUs.error({balance, value, success: false, error}, error)
           throw new LoggedError(error)
         }
+
+        this.logger.warn({value, customerPath: customerPath(payeeUid), metadata, payeeUid}, "total is nan")
+
         await MainBook.entry(memoInvoice)
           .debit(customerPath(payeeUid), value, metadata)
           .credit(this.accountPath, value, {...metadata, memoPayer})
@@ -273,6 +289,8 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         // reduce balance from customer first
 
+
+        this.logger.warn({sats, path, value, ...metadata, currency: "BTC"}, "test value")
 
         journal = MainBook.entry(memoInvoice)
           .debit('Assets:Reserve:Lightning', sats, {...metadata, currency: "BTC"})
@@ -398,7 +416,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     })
   }
 
-  async updatePendingInvoice({ hash }) {
+  async updatePendingInvoice({ hash, expired = false }) {
     let invoice
 
     try {
@@ -483,6 +501,18 @@ export const LightningMixin = (superclass) => class extends superclass {
         this.logger.error({err, invoice}, error)
         throw new LoggedError(error)
       }
+    } else if (expired) {
+
+      try {
+        await lnService.cancelHodlInvoice({ lnd: this.lnd, id: hash })
+      } catch (err) {
+        const error = "error deleting invoice"
+        this.logger.error({err, error, hash, uid: this.uid}, error)
+      }
+
+      const result = await InvoiceUser.deleteOne({ _id: hash, uid: this.uid, pending: true })
+      this.logger.info({hash, uid: this.uid, result}, "succesfully deleted expired invoice")
+
     }
 
     return false
@@ -495,7 +525,9 @@ export const LightningMixin = (superclass) => class extends superclass {
     const invoices = await InvoiceUser.find({ uid: this.uid, pending: true })
 
     for (const invoice of invoices) {
-      await this.updatePendingInvoice({ hash: invoice._id })
+      const { _id, timestamp } = invoice
+      const expired = moment() > this.getExpiration(moment(timestamp))
+      await this.updatePendingInvoice({ hash: _id, expired })
     }
   }
 

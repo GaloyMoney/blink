@@ -2,7 +2,6 @@ import { find } from "lodash";
 import { accountBrokerFtxPath, brokerPath, customerPath, liabilitiesBrokerFtxPath } from "./ledger";
 import { MainBook } from "./mongodb";
 import { OnChainMixin } from "./OnChain";
-import { Price } from "./priceImpl";
 import { ILightningWalletUser } from "./types";
 import { baseLogger, btc2sat, sleep } from "./utils";
 import { UserWallet } from "./wallet";
@@ -104,10 +103,8 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
   }
 
   async getProfit() {
-    const satsPrice = await this.lastPrice
-
     const { total: sats, node, exchange } = await this.satsBalance()
-    const usdAssetsInBtc = sats * satsPrice
+    const usdAssetsInBtc = sats * this.lastPrice
     
     const { usd: usdLiabilities } = await this.getLocalLiabilities()
 
@@ -135,11 +132,10 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
   }
 
   async getAccountPosition() {
-    const satsPrice = await this.lastPrice
     // FIXME this helper function is inverse?
     // or because price = usd/btc, usd/sats, sat or btc are in the denominator
     // and therefore the "inverse" make sense...?
-    const btcPrice = btc2sat(satsPrice) 
+    const btcPrice = btc2sat(this.lastPrice) 
 
     // TODO: what is being returned if no order had been placed?
     // probably an empty array
@@ -598,8 +594,7 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
   }
 
   async updatePositionAndLeverage() {
-    const satsPrice = await this.lastPrice
-    const btcPrice = btc2sat(satsPrice) 
+    const btcPrice = btc2sat(this.lastPrice) 
 
     let subLogger = this.logger
     this.logger.debug("starting with order loop")

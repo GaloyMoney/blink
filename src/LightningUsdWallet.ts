@@ -26,8 +26,7 @@ export class LightningUsdWallet extends LightningMixin(UserWallet) {
     const usd = value
     const satValue = value / this.lastPrice
 
-    // TODO: timeout should be ~ 1 min
-    const request = await super.addInvoiceInternal({sats: satValue, usd, currency: this.currency, memo})
+    const request = await super.addInvoiceInternal({sats: satValue, usd, memo})
 
     return request
   }

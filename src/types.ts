@@ -16,7 +16,6 @@ export interface ILightningWalletUser {
 export interface IAddInvoiceInternalRequest {
   usd: number,
   sats: number,
-  currency: "USD" | "BTC",
   memo: string | undefined,
   selfGenerated?: boolean
 }

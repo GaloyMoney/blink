@@ -158,6 +158,8 @@ export const OnChainMixin = (superclass) => class extends superclass {
       // TODO create one address when a user is created instead?
       // FIXME this shold not be done in a query but only in a mutation?
       await this.getOnChainAddress()
+
+      // TODO: there should be a way to refresh the user?
       user = await User.findOne({ _id: this.uid })
     }
 
