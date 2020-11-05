@@ -82,6 +82,7 @@ const UserSchema = new Schema({
     maxlength: 50,
     index: {
       unique: true,
+      collation: {locale: "en", strength: 2},
       partialFilterExpression: { username: { $type: "string" } }
     }
   },
