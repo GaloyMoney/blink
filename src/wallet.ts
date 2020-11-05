@@ -144,7 +144,7 @@ export abstract class UserWallet {
     return !!result
   }
 
-  async getCurrencyEquivalent({ sats, usd, fee }: { sats: number, usd?: number, fee?: number }) {
+  getCurrencyEquivalent({ sats, usd, fee }: { sats: number, usd?: number, fee?: number }) {
     let _usd = usd
     let feeUsd
   
