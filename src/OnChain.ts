@@ -76,6 +76,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
       const sats = amount
       const metadata = { currency: this.currency, type: "onchain_on_us", pending: false, ...this.getCurrencyEquivalent({ sats, fee: 0 })}
 
+      // TODO: this lock seems useless
       return await using(disposer(this.uid), async (lock) => {
 
         await MainBook.entry()
@@ -112,15 +113,15 @@ export const OnChainMixin = (superclass) => class extends superclass {
       throw new LoggedError(error)
     }
 
+    // case where the user doesn't have enough money
+    if (balance < amount + estimatedFee) {
+      const error = `balance is too low. have: ${balance} sats, need ${amount + estimatedFee}`
+      onchainLogger.warn({balance, amount, estimatedFee, sendTo, success: false }, error)
+      throw new LoggedError(error)
+    }
+
     return await using(disposer(this.uid), async (lock) => {
       
-      // case where the user doesn't have enough money
-      if (balance < amount + estimatedFee) {
-        const error = `balance is too low. have: ${balance} sats, need ${amount + estimatedFee}`
-        onchainLogger.warn({balance, amount, estimatedFee, sendTo, success: false }, error)
-        throw new LoggedError(error)
-      }
-
       try {
         ({ id } = await lnService.sendToChainAddress({ address, lnd: this.lnd, tokens: amount }))
       } catch (err) {
@@ -131,6 +132,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
       const outgoingOnchainTxns = await this.getOnChainTransactions({ lnd: this.lnd, incoming: false })
 
       const [{ fee }] = outgoingOnchainTxns.filter(tx => tx.id === id)
+      console.log({fee})
 
       {
         const sats = amount + fee

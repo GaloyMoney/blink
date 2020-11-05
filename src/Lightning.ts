@@ -29,7 +29,10 @@ const delay = {
 export const LightningMixin = (superclass) => class extends superclass {
   lnd = lnService.authenticatedLndGrpc(getAuth()).lnd
   nodePubKey: string | null = null
-  readonly isUsd
+
+  // FIXME: need ! otherwise have `Property isUsd has no initializer and is not definitely assigned in the constructor`
+  // which doesn't seems to make sense
+  readonly isUsd!: boolean
 
   constructor(...args) {
     super(...args)
@@ -213,7 +216,7 @@ export const LightningMixin = (superclass) => class extends superclass {
           throw new LoggedError(error)
         }
 
-        this.logger.warn({value, customerPath: customerPath(payeeUid), metadata, payeeUid}, "total is nan")
+        this.logger.warn({value, tokens, customerPath: customerPath(payeeUid), metadata, payeeUid}, "total is nan")
 
         await MainBook.entry(memoInvoice)
           .debit(customerPath(payeeUid), value, metadata)
@@ -270,7 +273,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         const sats = tokens + fee
 
         lightningLogger = lightningLogger.child({ probingSuccess: true, route, balance, fee, sats })
-        const metadata = { currency: this.currency, hash: id, type: "payment", pending: true, fee, ...this.getCurrencyEquivalent({sats, fee: 0}) }
+        const metadata = { currency: this.currency, hash: id, type: "payment", pending: true, fee, ...this.getCurrencyEquivalent({sats, fee }) }
 
         const value = this.isUSD ? metadata.usd : sats
 
