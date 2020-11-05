@@ -368,7 +368,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
           const sats = btc2sat(value)
           assert(matched_tx.tokens >= sats)
 
-          const metadata = { currency: this.currency, type, hash: matched_tx.id, pending: false, ...this.getCurrencyEquivalent({ sats }) }
+          const metadata = { currency: this.currency, type, hash: matched_tx.id, pending: false, ...this.getCurrencyEquivalent({ sats, fee: 0 }) }
 
           await MainBook.entry()
             .debit(this.accountPath, sats, metadata)

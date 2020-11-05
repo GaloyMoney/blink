@@ -144,7 +144,7 @@ export abstract class UserWallet {
     return !!result
   }
 
-  getCurrencyEquivalent({ sats, usd, fee }: { sats: number, usd?: number, fee?: number }) {
+  getCurrencyEquivalent({ sats, fee, usd }: { sats: number, fee: number, usd?: number }) {
     let _usd = usd
     let feeUsd
   
@@ -152,9 +152,8 @@ export abstract class UserWallet {
       _usd = this.satsToUsd(sats)
     }
   
-    if (fee) {
-      feeUsd = this.satsToUsd(fee)
-    }
+    // TODO: check if fee is always given in sats
+    feeUsd = this.satsToUsd(fee)
   
     return { fee, feeUsd, sats, usd: _usd }
   }
