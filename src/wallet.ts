@@ -8,12 +8,14 @@ const createCsvStringifier = require('csv-writer').createObjectCsvStringifier;
 
 export abstract class UserWallet {
 
+  readonly lastPrice: number
   readonly user: any // mongoose object
   readonly uid: string
   readonly currency: string
   readonly logger: any
 
-  constructor({ user, uid, currency, logger }) {
+  constructor({ lastPrice, user, uid, currency, logger }) {
+    this.lastPrice = lastPrice
     this.user = user
     this.uid = uid
     this.currency = currency
@@ -140,5 +142,25 @@ export abstract class UserWallet {
     }
 
     return !!result
+  }
+
+  async getCurrencyEquivalent({ sats, usd, fee }: { sats: number, usd?: number, fee?: number }) {
+    let _usd = usd
+    let feeUsd
+  
+    if (!usd) {
+      _usd = this.satsToUsd(sats)
+    }
+  
+    if (fee) {
+      feeUsd = this.satsToUsd(fee)
+    }
+  
+    return { fee, feeUsd, sats, usd: _usd }
+  }
+  
+  satsToUsd = sats => {
+    const usdValue = this.lastPrice * sats
+    return usdValue
   }
 }

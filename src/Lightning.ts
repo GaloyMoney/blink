@@ -6,7 +6,7 @@ import { disposer } from "./lock";
 import { InvoiceUser, MainBook, Transaction } from "./mongodb";
 import { sendInvoicePaidNotification } from "./notification";
 import { IAddInvoiceInternalRequest, IPaymentRequest } from "./types";
-import { getAuth, getCurrencyEquivalent, LoggedError, timeout } from "./utils";
+import { getAuth, LoggedError, timeout } from "./utils";
 
 const util = require('util')
 
@@ -190,8 +190,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         }
 
         const sats = tokens
-        const addedMetadata = await getCurrencyEquivalent({sats, fee: 0})
-        const metadata = { currency: this.currency, hash: id, type: "on_us", pending: false, ...addedMetadata }
+        const metadata = { currency: this.currency, hash: id, type: "on_us", pending: false, ...this.getCurrencyEquivalent({sats, fee: 0}) }
 
         const value = this.isUSD ? metadata.usd : sats
 
@@ -255,9 +254,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         const sats = tokens + fee
 
         lightningLogger = lightningLogger.child({ probingSuccess: true, route, balance, fee, sats })
-
-        const addedMetadata = await getCurrencyEquivalent({sats, fee})
-        const metadata = { currency: this.currency, hash: id, type: "payment", pending: true, fee, ...addedMetadata }
+        const metadata = { currency: this.currency, hash: id, type: "payment", pending: true, fee, ...this.getCurrencyEquivalent({sats, fee: 0}) }
 
         const value = this.isUSD ? metadata.usd : sats
 
@@ -456,9 +453,7 @@ export const LightningMixin = (superclass) => class extends superclass {
           const sats = invoice.received
           
           const usd = invoiceUser.usd
-
-          const addedMetadata = await getCurrencyEquivalent({usd, sats, fee: 0})
-          const metadata = { hash, type: "invoice", ... addedMetadata }
+          const metadata = { hash, type: "invoice", ...this.getCurrencyEquivalent({usd, sats, fee: 0}) }
 
           // TODO: brokerLndPath should be cached
           const path = this.isUSD ? await brokerLndPath() : this.accountPath

@@ -6,6 +6,7 @@ import { BrokerWallet } from "../BrokerWallet";
 import { baseLogger } from "../utils";
 import { quit } from "../lock";
 import { getTokenFromPhoneIndex } from "../walletFactory";
+import { min } from "lodash";
 const mongoose = require("mongoose");
 const util = require('util')
 
@@ -218,8 +219,8 @@ beforeAll(async () => {
 
   ({ uid } = await getTokenFromPhoneIndex(7))
 
-  brokerWalletFixture0 = new BrokerWallet({ uid, logger: baseLogger })
-  brokerWalletFixture1 = new BrokerWallet({ uid, logger: baseLogger })
+  brokerWalletFixture0 = new BrokerWallet({ user: null, uid, logger: baseLogger, lastPrice: 10000 })
+  brokerWalletFixture1 = new BrokerWallet({ user: null, uid, logger: baseLogger, lastPrice: 10000 })
 })
 
 afterAll(async () => {

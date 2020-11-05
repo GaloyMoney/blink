@@ -2,7 +2,6 @@
  * @jest-environment node
  */
 import { createHash, randomBytes } from 'crypto';
-import { BrokerWallet } from "../BrokerWallet";
 import { quit } from "../lock";
 import { InvoiceUser, MainBook, setupMongoConnection, Transaction, User } from "../mongodb";
 import { checkIsBalanced, getUserWallet, lndOutside1, lndOutside2, mockGetExchangeBalance, onBoardingEarnAmt, onBoardingEarnIds } from "../tests/helper";

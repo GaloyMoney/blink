@@ -281,8 +281,6 @@ export const setupMongoConnection = async () => {
 }
 
 import { book } from "medici";
-import { has, keyBy, last, mapValues } from "lodash";
-import { createBrokerUid } from "./walletFactory";
 export const MainBook = new book("MainBook")
 
 

@@ -62,10 +62,10 @@ export async function onchainTransactionEventHandler(tx) {
     // TODO: the same way Lightning is updating the wallet/accounting, 
     // this event should update the onchain wallet/account of the associated user
 
-    let _id
+    let user
     try {
-      ({ _id } = await User.findOne({ onchain_addresses: { $in: tx.output_addresses } }, { _id: 1 }))
-      if (!_id) {
+      user = await User.findOne({ onchain_addresses: { $in: tx.output_addresses } })
+      if (!user._id) {
         //FIXME: Log the onchain address, need to first find which of the tx.output_addresses belongs to us
         logger.fatal({ tx }, `No user associated with the onchain address`)
         return
@@ -84,14 +84,14 @@ export async function onchainTransactionEventHandler(tx) {
       onchainLogger.info({ transactionType: "receipt", pending: true }, "mempool apparence")
     } else {
       // onchain is currently only BTC
-      const wallet = WalletFactory({ uid: _id, currency: "BTC", logger })
+      const wallet = await WalletFactory({ user, uid: user._id, currency: "BTC", logger })
       await wallet.updateOnchainReceipt()
     }
 
     const title = tx.is_confirmed ?
       `Your wallet has been credited with ${tx.tokens} sats` :
       `You have a pending incoming transaction of ${tx.tokens} sats`
-    await sendNotification({ title, uid: _id, data, logger })
+    await sendNotification({ title, uid: user._id, data, logger })
   }
 }
 
@@ -108,7 +108,8 @@ export const onInvoiceUpdate = async invoice => {
     const uid = invoiceUser.uid
     const hash = invoice.id as string
 
-    const wallet = WalletFactory({ uid, currency: invoiceUser.currency, logger })
+    const user = await User.findOne({_id: uid})
+    const wallet = await WalletFactory({ user, uid, currency: invoiceUser.currency, logger })
     await wallet.updatePendingInvoice({ hash })
     await sendInvoicePaidNotification({ amount: invoice.received, hash, uid, logger })
   } else {

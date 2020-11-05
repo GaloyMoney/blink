@@ -14,8 +14,8 @@ export class LightningUsdWallet extends LightningMixin(UserWallet) {
     return customerPath(this.uid)
   }
 
-  constructor({ user, uid, logger }: ILightningWalletUser) {
-    super({ user, uid, currency: "USD", logger })
+  constructor(args: ILightningWalletUser) {
+    super({ currency: "USD", ...args })
   }
 
   async addInvoice({ value, memo }: IAddUSDInvoiceRequest): Promise<string> {
@@ -24,8 +24,7 @@ export class LightningUsdWallet extends LightningMixin(UserWallet) {
     }
 
     const usd = value
-    const lastPrices = await new Price({logger: this.logger}).lastPrice() // sats/usd
-    const satValue = value / lastPrices
+    const satValue = value / this.lastPrice
 
     // TODO: timeout should be ~ 1 min
     const request = await super.addInvoiceInternal({sats: satValue, usd, currency: this.currency, memo})

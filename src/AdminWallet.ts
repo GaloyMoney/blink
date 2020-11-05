@@ -15,11 +15,11 @@ export class AdminWallet {
   async updateUsersPendingPayment() {
     let userWallet
 
-    for await (const user of User.find({}, { _id: 1})) {
-      logger.debug("updating user %o", user._id)
+    for await (const user of User.find({})) {
+      logger.trace("updating user %o", user._id)
 
       // A better approach would be to just loop over pending: true invoice/payment
-      userWallet = WalletFactory({uid: user._id, currency: user.currency, logger})
+      userWallet = await WalletFactory({user, uid: user._id, currency: user.currency, logger})
       await userWallet.updatePending()
     }
   }

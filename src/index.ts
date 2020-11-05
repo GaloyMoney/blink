@@ -2,19 +2,19 @@ import dotenv from "dotenv";
 import { rule, shield } from 'graphql-shield';
 import { GraphQLServer } from 'graphql-yoga';
 import * as jwt from 'jsonwebtoken';
+import { startsWith } from "lodash";
 import moment from "moment";
-import { AdminWallet } from "./AdminWallet";
-import { DbVersion, setupMongoConnection, User } from "./mongodb";
+import { v4 as uuidv4 } from 'uuid';
+import { setupMongoConnection, User } from "./mongodb";
 import { sendNotification } from "./notification";
 import { Price } from "./priceImpl";
 import { login, requestPhoneCode } from "./text";
 import { OnboardingEarn } from "./types";
+import { upgrade } from "./upgrade";
 import { baseLogger, customLoggerPrefix, getAuth, getMinBuildNumber, nodeStats } from "./utils";
+import { UserWallet } from "./wallet";
 import { WalletFactory, WalletFromUsername } from "./walletFactory";
-import { UserWallet } from "./wallet"
-import { v4 as uuidv4 } from 'uuid';
-import { startsWith } from "lodash";
-import { upgrade } from "./upgrade"
+import { mainCache } from "./cache"
 const util = require('util')
 const lnService = require('ln-service')
 
@@ -56,9 +56,6 @@ const commitHash = process.env.COMMITHASH
 const buildTime = process.env.BUILDTIME
 const helmRevision = process.env.HELMREVISION
 
-const NodeCache = require( "node-cache" );
-export const mainCache = new NodeCache();
-
 const resolvers = {
   Query: {
     me: async (_, __, { uid, user }) => {
@@ -93,7 +90,7 @@ const resolvers = {
         lastBuildNumberIos: lastBuildNumber,
     }},
     prices: async (_, __, {logger}) => {
-      const key = "prices"
+      const key = "lastCached"
       let value
     
       value = mainCache.get(key);
@@ -263,7 +260,7 @@ const server = new GraphQLServer({
     const user = !!uid ? User.findOne({ _id: uid }) : null
     // @ts-ignore
     const logger = graphqlLogger.child({ token, id: context.request.id, body: context.request.body })
-    const wallet = !!token ? WalletFactory({ ...token, user, logger }) : null
+    const wallet = !!token ? await WalletFactory({ ...token, user, logger }) : null
     return {
       ...context,
       logger,

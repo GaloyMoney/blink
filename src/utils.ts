@@ -12,8 +12,8 @@ const util = require('util')
 
 // @ts-ignore
 import { GraphQLError } from "graphql";
-import { mainCache } from "."
 import { DbVersion } from "./mongodb"
+import { mainCache } from "./cache"
 
 // FIXME: super ugly hack.
 // for some reason LoggedError get casted as GraphQLError
@@ -55,29 +55,6 @@ export const btc2sat = (btc: number) => {
 
 export const sat2btc = (sat: number) => {
   return sat / Math.pow(10, 8)
-}
-
-export const getCurrencyEquivalent = async ({ sats, usd, fee }: { sats: number, usd?: number, fee?: number }) => {
-  let _usd = usd
-  let feeUsd
-
-  if (!usd) {
-    _usd = await satsToUsd(sats)
-  }
-
-  if (fee) {
-    feeUsd = await satsToUsd(fee)
-  }
-
-  return { fee, feeUsd, sats, usd: _usd }
-}
-
-export const satsToUsd = async sats => {
-  // TODO: caching in graphql, should be passed as a variable to addInvoice
-  // FIXME: remove the baseLogger
-  const lastPrices = await new Price({ logger: baseLogger }).lastPrice() // sats/usd
-  const usdValue = lastPrices * sats
-  return usdValue
 }
 
 export const satsToUsdCached = (sats, price) => {
