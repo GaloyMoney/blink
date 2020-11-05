@@ -24,9 +24,9 @@ export const WalletFromUsername = async ({ username, logger }: { username: strin
     throw new LoggedError(error)
   }
 
-  const { uid, currency } = user
+  const { _id, currency } = user
 
-  return WalletFactory({ uid, currency, logger })
+  return WalletFactory({ uid: _id, currency, logger })
 }
 
 export const getFunderWallet = async ({ logger }) => {
