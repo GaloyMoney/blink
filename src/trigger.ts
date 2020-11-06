@@ -6,7 +6,7 @@ import { InvoiceUser, setupMongoConnection, Transaction, User, MainBook } from "
 import { lightningAccountingPath, openChannelFees } from "./ledger";
 import { sendInvoicePaidNotification, sendNotification } from "./notification";
 import { IDataNotification } from "./types";
-import { getAuth, baseLogger } from './utils';
+import { getAuth, baseLogger, LOOK_BACK } from './utils';
 import { WalletFactory } from "./walletFactory";
 const crypto = require("crypto")
 const lnService = require('ln-service');
@@ -128,7 +128,10 @@ export const onChannelOpened = async ({ channel, lnd }) => {
 
   const { transaction_id } = channel
 
-  const { transactions } = await lnService.getChainTransactions({ lnd })
+  // TODO: dedupe from onchain
+  const { current_block_height } = await lnService.getHeight({lnd})
+  const after = Math.max(0, current_block_height - LOOK_BACK) // this is necessary for tests, otherwise after may be negative
+  const { transactions } = await lnService.getChainTransactions({ lnd, after })
 
   const { fee } = find(transactions, { id: transaction_id })
 

@@ -6,7 +6,7 @@ import { customerPath, lightningAccountingPath } from "./ledger";
 import { disposer } from "./lock";
 import { MainBook, Transaction, User } from "./mongodb";
 import { ILightningTransaction, IOnChainPayment, ISuccess } from "./types";
-import { amountOnVout, bitcoindClient, btc2sat, getAuth, LoggedError } from "./utils";
+import { amountOnVout, bitcoindClient, btc2sat, getAuth, LoggedError, LOOK_BACK } from "./utils";
 
 const util = require('util')
 
@@ -215,8 +215,12 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
   async getOnChainTransactions({ lnd, incoming }: { lnd: any, incoming: boolean }) {
     try {
-      const onchainTransactions = await lnService.getChainTransactions({ lnd })
-      return onchainTransactions.transactions.filter(tx => incoming === !tx.is_outgoing)
+      const { current_block_height } = await lnService.getHeight({lnd})
+      const after = Math.max(0, current_block_height - LOOK_BACK) // this is necessary for tests, otherwise after may be negative
+      const { transactions } = await lnService.getChainTransactions({ lnd, after })
+
+
+      return transactions.filter(tx => incoming === !tx.is_outgoing)
     } catch (err) {
       const error = `issue fetching transaction`
       this.logger.error({err, incoming}, error)

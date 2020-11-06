@@ -10,6 +10,10 @@ const BitcoindClient = require('bitcoin-core')
 export const baseLogger = require('pino')({ level: process.env.LOGLEVEL || "info" })
 const util = require('util')
 
+// how many block are we looking back for getChainTransactions
+export const LOOK_BACK = 2016
+
+
 // @ts-ignore
 import { GraphQLError } from "graphql";
 import { DbVersion } from "./mongodb"
