@@ -103,7 +103,7 @@ export const onInvoiceUpdate = async invoice => {
   }
 
   // FIXME: we're making 2x the request to Invoice User here. One in trigger, one in lighning.
-  const invoiceUser = await InvoiceUser.findOne({ _id: invoice.id, pending: true })
+  const invoiceUser = await InvoiceUser.findOne({ _id: invoice.id })
   if (invoiceUser) {
     const uid = invoiceUser.uid
     const hash = invoice.id as string

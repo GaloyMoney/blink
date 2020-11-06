@@ -9,7 +9,6 @@ const logger = baseLogger.child({module: "admin"})
 
 
 export class AdminWallet {
-  readonly currency = "BTC" // add USD as well
   readonly lnd = lnService.authenticatedLndGrpc(getAuth()).lnd
 
   async updateUsersPendingPayment() {
@@ -95,7 +94,7 @@ export class AdminWallet {
   async updateEscrows() {
     const type = "escrow"
 
-    const metadata = { type, currency: this.currency }
+    const metadata = { type, currency: "BTC" }
 
     const { channels } = await lnService.getChannels({lnd: this.lnd})
     const selfInitated = filter(channels, {is_partner_initiated: false})
