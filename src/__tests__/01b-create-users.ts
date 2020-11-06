@@ -74,6 +74,10 @@ describe('username tests', () => {
     await expect(userWallet.setUsername({ username: 'ab+/' })).rejects.toThrow()
   })
 
+  it('does not allow non english characters', async () => {
+    await expect(userWallet.setUsername({ username: 'ñ_user1' })).rejects.toThrow()
+  })
+
   it('sets username for user', async () => {
     const result = await userWallet.setUsername({ username })
     expect(!!result).toBeTruthy()
@@ -81,10 +85,6 @@ describe('username tests', () => {
 
   it('does not set username with only case difference', async () => {
     await expect(userWallet.setUsername({ username: '_user1' })).rejects.toThrow()
-  })
-
-  it('does not allow non english characters', async () => {
-    await expect(userWallet.setUsername({ username: 'ñ_user1' })).rejects.toThrow()
   })
 
   it('does not allow re-setting username', async () => {
