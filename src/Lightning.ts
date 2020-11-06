@@ -425,7 +425,6 @@ export const LightningMixin = (superclass) => class extends superclass {
   }
 
   async updatePendingInvoice({ hash, expired = false }) {
-    console.log({hash, expired})
     let invoice
 
     try {
@@ -434,6 +433,8 @@ export const LightningMixin = (superclass) => class extends superclass {
       // at least return same error if invoice not from user
       // or invoice doesn't exist. to preserve privacy and prevent DDOS attack.
       invoice = await lnService.getInvoice({ lnd: this.lnd, id: hash })
+
+      // TODO: we should not log/keep secret in the logs
       this.logger.info({invoice, uid: this.uid}, "got invoice status")
     } catch (err) {
       const error = `issue fetching invoice`
@@ -547,7 +548,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       const additional_delay_unit = "hours"
       
       const expired = moment() > this.getExpiration(moment(timestamp)
-        // .add(additional_delay_value, additional_delay_unit)
+        .add(additional_delay_value, additional_delay_unit)
       )
       await this.updatePendingInvoice({ hash: _id, expired })
     }

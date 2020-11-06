@@ -6,7 +6,6 @@ import { BrokerWallet } from "../BrokerWallet";
 import { baseLogger } from "../utils";
 import { quit } from "../lock";
 import { getTokenFromPhoneIndex } from "../walletFactory";
-import { min } from "lodash";
 const mongoose = require("mongoose");
 const util = require('util')
 

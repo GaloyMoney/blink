@@ -41,15 +41,15 @@ afterEach(async () => {
 
 afterAll(async () => {
   // to make this test re-entrant, we need to remove the fund from userWallet1 and delete the user
-  // const finalBalance = await userWallet1.getBalance()
-  // const funderWallet = await getFunderWallet({ logger: baseLogger })
+  const finalBalance = await userWallet1.getBalance()
+  const funderWallet = await getFunderWallet({ logger: baseLogger })
 
-  // if (!!finalBalance) {
-  //   const request = await funderWallet.addInvoice({ value: finalBalance })
-  //   await userWallet1.pay({ invoice: request })
-  // }
+  if (!!finalBalance) {
+    const request = await funderWallet.addInvoice({ value: finalBalance })
+    await userWallet1.pay({ invoice: request })
+  }
 
-  // await User.findOneAndRemove({ _id: userWallet1.uid })
+  await User.findOneAndRemove({ _id: userWallet1.uid })
   jest.restoreAllMocks();
 
   await mongoose.connection.close()
