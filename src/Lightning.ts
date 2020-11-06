@@ -45,9 +45,11 @@ export const LightningMixin = (superclass) => class extends superclass {
   }
 
   async updatePending() {
-    await this.updatePendingInvoices()
-    await this.updatePendingPayments()
-    await super.updatePending()
+    await Promise.all([
+      this.updatePendingInvoices(),
+      this.updatePendingPayments(),
+      super.updatePending(),
+    ])
   }
 
   getExpiration = (input) => input.add(delay[this.currency].value, delay[this.currency].unit)
