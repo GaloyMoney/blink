@@ -425,6 +425,7 @@ export const LightningMixin = (superclass) => class extends superclass {
   }
 
   async updatePendingInvoice({ hash, expired = false }) {
+    console.log({hash, expired})
     let invoice
 
     try {
@@ -508,6 +509,22 @@ export const LightningMixin = (superclass) => class extends superclass {
         this.logger.error({err, invoice}, error)
         throw new LoggedError(error)
       }
+    } else if (expired) {
+
+      // maybe not needed after old invoice has been deleted?
+
+      try {
+        await lnService.cancelHodlInvoice({ lnd: this.lnd, id: hash })
+        this.logger.info({id: hash, uid: this.uid}, "canceling invoice")
+
+      } catch (err) {
+        const error = "error deleting invoice"
+        this.logger.error({err, error, hash, uid: this.uid}, error)
+      }
+
+      const resultDeletion = await InvoiceUser.deleteOne({ _id: hash, uid: this.uid })
+      this.logger.info({hash, uid: this.uid, resultDeletion}, "succesfully deleted expired invoice")
+
     }
 
     return false
@@ -520,7 +537,19 @@ export const LightningMixin = (superclass) => class extends superclass {
     const invoices = await InvoiceUser.find({ uid: this.uid })
 
     for (const invoice of invoices) {
-      await this.updatePendingInvoice({ hash: invoice._id })
+      const { _id, timestamp } = invoice
+
+      // FIXME
+      // adding a buffer on the expiration timeline before which we delete the invoice 
+      // because it seems lnd still can accept invoice even if they have expired
+      // see more: https://github.com/lightningnetwork/lnd/pull/3694
+      const additional_delay_value = 1
+      const additional_delay_unit = "hours"
+      
+      const expired = moment() > this.getExpiration(moment(timestamp)
+        // .add(additional_delay_value, additional_delay_unit)
+      )
+      await this.updatePendingInvoice({ hash: _id, expired })
     }
   }
 
