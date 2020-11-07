@@ -16,7 +16,10 @@ export const DbVersion = mongoose.model("DbVersion", dbVersionSchema)
 
 const invoiceUserSchema = new Schema({
   _id: String, // hash of invoice
-  uid: String,
+  uid: {
+    type: String,
+    required: true
+  },
   pending: Boolean,
 
   // usd equivalent. sats is attached in the invoice directly.
@@ -166,7 +169,10 @@ const transactionSchema = new Schema({
       "exchange_rebalance"//
     ]
   },
-  pending: Boolean, // used to denote confirmation status of on and off chain txn
+  pending: {
+    type: Boolean,
+    required: true
+  }, // used to denote confirmation status of on and off chain txn
   err: String,
   currency: {
     // TODO: check if an upgrade is needed for this one
