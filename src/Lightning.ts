@@ -172,11 +172,17 @@ export const LightningMixin = (superclass) => class extends superclass {
         if (pushPayment) {
           if (!username) {
             const error = 'a username is requiered for push payment to the ***REMOVED*** wallet'
-            lightningLoggerOnUs.error({ success: false, error }, error)
+            lightningLoggerOnUs.warn({ success: false, error }, error)
             throw new LoggedError(error)
           }
 
           const user = await User.findOne({ username })
+          if (!user) {
+            const error = `this username doesn't exist`
+            lightningLoggerOnUs.warn({ success: false, error }, error)
+            throw new LoggedError(error)
+          }
+
           payeeUid = user._id
           payeeCurrency = user.currency
 
