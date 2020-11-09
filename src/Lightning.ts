@@ -181,8 +181,6 @@ export const LightningMixin = (superclass) => class extends superclass {
           payeeUid = user._id
           payeeCurrency = user.currency
 
-          // TODO: if (dest == user) throw error
-          //TODO: push payment on-us use case implementation
         } else {
           lightningLoggerOnUs = lightningLoggerOnUs.child({pushPayment: false})
 

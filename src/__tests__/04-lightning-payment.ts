@@ -5,7 +5,7 @@ import { createHash, randomBytes } from 'crypto';
 import { BrokerWallet } from "../BrokerWallet";
 import { quit } from "../lock";
 import { InvoiceUser, MainBook, setupMongoConnection, Transaction, User } from "../mongodb";
-import { checkIsBalanced, getUserWallet, lndOutside1, lndOutside2, mockGetExchangeBalance, onBoardingEarnAmt, onBoardingEarnIds } from "../tests/helper";
+import { checkIsBalanced, getUserWallet, lndOutside1, lndOutside2, mockGetExchangeBalance, onBoardingEarnAmt, onBoardingEarnIds, username } from "../tests/helper";
 import { baseLogger, getHash, sleep } from "../utils";
 import { getFunderWallet } from "../walletFactory";
 
@@ -200,8 +200,6 @@ it('payInvoiceToSelf', async () => {
   const invoice = await userWallet1.addInvoice({ value: 1000, memo: "self payment" })
   await expect(userWallet1.pay({ invoice })).rejects.toThrow()
 })
-
-import { username } from "./01b-create-users"
 
 it('onUs pushPayment', async () => {
   const destination = await userWallet0.getNodePubkey()

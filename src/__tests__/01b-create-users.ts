@@ -4,7 +4,7 @@
 const lnService = require('ln-service')
 import { setupMongoConnection, User } from "../mongodb";
 import { TEST_NUMBER } from "../text";
-import { getUserWallet } from "../tests/helper"
+import { getUserWallet, username } from "../tests/helper"
 import { createBrokerUid, getTokenFromPhoneIndex } from "../walletFactory";
 import { UserWallet } from "../wallet"
 const mongoose = require("mongoose");
@@ -59,8 +59,6 @@ it('add user5 / usd user', async () => {
   const phoneUser6 = await User.findOne({ _id: user6.uid }, { phone: 1, _id: 0 })
   expect(phoneUser5).toStrictEqual(phoneUser6)
 })
-
-export const username = "user0"
 
 describe('username tests', () => {
   beforeAll(async () => {
