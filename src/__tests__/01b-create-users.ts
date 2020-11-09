@@ -4,7 +4,7 @@
 const lnService = require('ln-service')
 import { setupMongoConnection, User } from "../mongodb";
 import { TEST_NUMBER } from "../text";
-import { getUserWallet } from "../tests/helper"
+import { getUserWallet, username } from "../tests/helper"
 import { createBrokerUid, getTokenFromPhoneIndex } from "../walletFactory";
 import { UserWallet } from "../wallet"
 const mongoose = require("mongoose");
@@ -64,7 +64,6 @@ describe('username tests', () => {
   beforeAll(async () => {
     userWallet = await getUserWallet(0)
   })
-  const username = "_User1"
 
   it('does not set username if length less than 3', async () => {
     await expect(userWallet.setUsername({ username: 'ab' })).rejects.toThrow()

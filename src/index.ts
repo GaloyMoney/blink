@@ -2,19 +2,18 @@ import dotenv from "dotenv";
 import { rule, shield } from 'graphql-shield';
 import { GraphQLServer } from 'graphql-yoga';
 import * as jwt from 'jsonwebtoken';
+import { startsWith } from "lodash";
 import moment from "moment";
-import { AdminWallet } from "./AdminWallet";
-import { DbVersion, setupMongoConnection, User } from "./mongodb";
+import { v4 as uuidv4 } from 'uuid';
+import { DbVersion, setupMongoConnection, User, MapDB } from "./mongodb";
 import { sendNotification } from "./notification";
 import { Price } from "./priceImpl";
 import { login, requestPhoneCode } from "./text";
 import { OnboardingEarn } from "./types";
+import { upgrade } from "./upgrade";
 import { baseLogger, customLoggerPrefix, getAuth, nodeStats } from "./utils";
+import { UserWallet } from "./wallet";
 import { WalletFactory, WalletFromUsername } from "./walletFactory";
-import { UserWallet } from "./wallet"
-import { v4 as uuidv4 } from 'uuid';
-import { startsWith } from "lodash";
-import { upgrade } from "./upgrade"
 const util = require('util')
 const lnService = require('ln-service')
 
@@ -117,17 +116,14 @@ const resolvers = {
     },
     getLastOnChainAddress: async (_, __, { wallet }) => ({ id: wallet.getLastOnChainAddress() }),
 
-    // TODO: make this dynamic with call from MongoDB
-    maps: async () => [
-      {
-        id: 1,
-        title: "Bitcoin ATM - Café Cocoa",
-        coordinate: {
-          latitude: 13.496743,
-          longitude: -89.439462,
-        },
-      },
-    ],
+    maps: async () => {
+      const maps = await MapDB.find({})
+      return maps.map(item => ({
+        id: item._id,
+        title: item.title,
+        coordinate: item.coordinate
+      }))
+    },
     usernameExists: async (_, { username }) => await UserWallet.usernameExists({ username })
 
   },
@@ -157,7 +153,8 @@ const resolvers = {
     invoice: async (_, __, { wallet }) => ({
       addInvoice: async ({ value, memo }) => wallet.addInvoice({ value, memo }),
       updatePendingInvoice: async ({ hash }) => wallet.updatePendingInvoice({ hash }),
-      payInvoice: async ({ invoice, amount, memo }) => wallet.pay({ invoice, amount, memo })
+      payInvoice: async ({ invoice, amount, memo }) => wallet.pay({ invoice, amount, memo }),
+      payKeysendUsername: async ({ destination, username, amount, memo }) => wallet.pay({ destination, username, amount, memo })
     }),
     earnCompleted: async (_, { ids }, { wallet }) => wallet.addEarn(ids),
     deleteUser: () => {
