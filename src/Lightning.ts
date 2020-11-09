@@ -163,14 +163,13 @@ export const LightningMixin = (superclass) => class extends superclass {
     const balance = await this.getBalance()
 
     return await using(disposer(this.uid), async (lock) => {
-      let lightningLoggerOnUs = lightningLogger.child({ onUs: true, fee: 0 })
+      const lightningLoggerOnUs = lightningLogger.child({ onUs: true, fee: 0, pushPayment })
 
       // On us transaction
       if (destination === await this.getNodePubkey()) {
         let payeeUid, payeeCurrency
 
         if (pushPayment) {
-          lightningLoggerOnUs = lightningLoggerOnUs.child({pushPayment: true})
           if (!username) {
             const error = 'a username is requiered for push payment to the ***REMOVED*** wallet'
             lightningLoggerOnUs.error({ success: false, error }, error)
@@ -182,7 +181,6 @@ export const LightningMixin = (superclass) => class extends superclass {
           payeeCurrency = user.currency
 
         } else {
-          lightningLoggerOnUs = lightningLoggerOnUs.child({pushPayment: false})
 
           const payeeInvoice = await InvoiceUser.findOne({ _id: id, pending: true })
           if (!payeeInvoice) {
@@ -217,14 +215,18 @@ export const LightningMixin = (superclass) => class extends superclass {
           lightningLoggerOnUs.error({balance, value, success: false, error}, error)
           throw new LoggedError(error)
         }
+
         await MainBook.entry(memoInvoice)
           .debit(customerPath(payeeUid), value, metadata)
           .credit(this.accountPath, value, {...metadata, memoPayer})
           .commit()
       
         await sendInvoicePaidNotification({amount: tokens, uid: payeeUid, hash: id, logger: this.logger })
-        await InvoiceUser.findOneAndUpdate({ _id: id }, { pending: false })
-        await lnService.cancelHodlInvoice({ lnd: this.lnd, id })
+
+        if (!pushPayment) {
+          await InvoiceUser.findOneAndUpdate({ _id: id }, { pending: false })
+          await lnService.cancelHodlInvoice({ lnd: this.lnd, id })
+        }
           
         lightningLoggerOnUs.info({success: true, isReward: params.isReward ?? false, ...metadata}, "lightning payment success")
 
