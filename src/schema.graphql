@@ -39,6 +39,7 @@ type Invoice {
   addInvoice(value: Int, memo: String): String
   updatePendingInvoice(hash: String!): Boolean
   payInvoice(invoice: String!, amount: Int, memo: String): String #FIXME: use a more precise type
+  payKeysendUsername(amount: Int!, destination: String!, username: String!, memo: String): String
 }
 
 type OnChain {
@@ -87,6 +88,7 @@ type BuildParameter {
 }
 
 type NodeStats {
+  id: ID # nodePublicKey
   peersCount: Int
   channelsCount: Int
 }
