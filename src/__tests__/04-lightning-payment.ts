@@ -218,7 +218,7 @@ it('onUs pushPayment', async () => {
 
 it('onUs pushPayment error for same user', async () => {
   const destination = await userWallet0.getNodePubkey()
-  await expect(userWallet0.pay({ destination, username, amount: amountInvoice })).reject.toThrow()
+  await expect(userWallet0.pay({ destination, username, amount: amountInvoice })).rejects.toThrow()
   await checkIsBalanced()
 })
 
