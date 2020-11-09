@@ -12,8 +12,8 @@ import { getFunderWallet } from "../walletFactory";
 const lnService = require('ln-service')
 const mongoose = require("mongoose")
 
-let userWallet1, userWallet2
-let initBalance1, initBalance2
+let userWallet0, userWallet1, userWallet2
+let initBalance0, initBalance1, initBalance2
 
 const amountInvoice = 1000
 
@@ -25,11 +25,13 @@ beforeAll(async () => {
   await setupMongoConnection()
   mockGetExchangeBalance()
 
+  userWallet0 = await getUserWallet(0)
   userWallet1 = await getUserWallet(1)
   userWallet2 = await getUserWallet(2)
 });
 
 beforeEach(async () => {
+  initBalance0 = await userWallet0.getBalance()
   initBalance1 = await userWallet1.getBalance()
   initBalance2 = await userWallet2.getBalance()
 })
@@ -199,14 +201,34 @@ it('payInvoiceToSelf', async () => {
   await expect(userWallet1.pay({ invoice })).rejects.toThrow()
 })
 
-it('pushPayment', async () => {
-  // const destination = (await lnService.getWalletInfo({ lnd: lndOutside1 })).public_key;
-  // const res = await userWallet1.pay({ destination, amount: amountInvoice })
-  // const finalBalance = await userWallet1.getBalance()
-  // expect(res).toBe("success")
-  // expect(finalBalance).toBe(initBalance1 - amountInvoice)
-  // await checkIsBalanced()
+import { username } from "./01b-create-users"
+
+it('onUs pushPayment', async () => {
+  const destination = await userWallet0.getNodePubkey()
+  const res = await userWallet1.pay({ destination, username, amount: amountInvoice })
+
+  const finalBalance0 = await userWallet0.getBalance()
+  const finalBalance1 = await userWallet1.getBalance()  
+  
+  expect(res).toBe("success")
+  expect(finalBalance0).toBe(initBalance0 + amountInvoice)
+  expect(finalBalance1).toBe(initBalance1 - amountInvoice)
+  await checkIsBalanced()
 })
+
+it('onUs pushPayment error for same user', async () => {
+  const destination = await userWallet0.getNodePubkey()
+  await expect(userWallet0.pay({ destination, username, amount: amountInvoice })).reject.toThrow()
+  await checkIsBalanced()
+})
+
+// it('pushPayment payment', async () => {
+
+// })
+
+// it('pushPayment receipt', async () => {
+
+// })
 
 it('fails to pay when channel capacity exceeded', async () => {
   const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: 15000000 })
