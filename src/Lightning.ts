@@ -235,6 +235,12 @@ export const LightningMixin = (superclass) => class extends superclass {
 
       // "normal" transaction: paying another lightning node
 
+      if (pushPayment) {
+        const error = "no push payment to other wallet (yet)"
+        lightningLogger.error({ success: false }, error)
+        throw new LoggedError(error)
+      }
+
       const max_fee = Math.floor(Math.max(FEECAP * tokens, FEEMIN))
 
       // TODO: fine tune those values:
