@@ -3,7 +3,6 @@
  */
 import { getAuth } from "../utils";
 const lnService = require('ln-service')
-const lightningPayReq = require('bolt11')
 const mongoose = require("mongoose")
 const util = require('util')
 const {decode} = require('bip66');
@@ -60,6 +59,8 @@ it('add invoice', async () => {
 
   // Decoded details of the payment request
   const requestDetails = parsePaymentRequest({request});
+
+  console.log(util.inspect({ request, request_org, requestDetails, decoded }, false, Infinity))
 
   expect(requestDetails.username).toBe(username)
 })

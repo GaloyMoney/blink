@@ -9,8 +9,6 @@ import { Price } from "./priceImpl";
 import { ILightningTransaction, IOnChainPayment, ISuccess } from "./types";
 import { amountOnVout, bitcoindClient, btc2sat, getAuth, getCurrencyEquivalent, LoggedError, satsToUsdCached } from "./utils";
 
-const util = require('util')
-
 const using = require('bluebird').using
 
 // TODO: look if tokens/amount has an effect on the fees
