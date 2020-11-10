@@ -314,12 +314,14 @@ export const LightningMixin = (superclass) => class extends superclass {
         lightningLogger = lightningLogger.child({routing: "payViaRoutes", route})
         fee = route.safe_fee
         feeKnownInAdvance = true
+
+        this.logger({max_fee: fee, std_fee: route.fee}, "fee difference")
+
       } else {
         lightningLogger = lightningLogger.child({routing: "payViaPaymentDetails"})
         fee = max_fee
         feeKnownInAdvance = false
       }
-
 
       // we are confident enough that there is a possible payment route. let's move forward
       // TODO quote for fees, and also USD for USD users
