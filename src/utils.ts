@@ -155,8 +155,10 @@ export async function nodeStats({ lnd }) {
   const result = await lnService.getWalletInfo({ lnd })
   const peersCount = result.peers_count
   const channelsCount = result.active_channels_count
+  const id = result.public_key
   return {
     peersCount,
-    channelsCount
+    channelsCount,
+    id
   }
 }

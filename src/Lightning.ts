@@ -3,7 +3,7 @@ const assert = require('assert').strict;
 import { createHash, randomBytes } from "crypto";
 import { customerPath, brokerPath, lightningAccountingPath, brokerLndPath } from "./ledger";
 import { disposer } from "./lock";
-import { InvoiceUser, MainBook, Transaction } from "./mongodb";
+import { InvoiceUser, MainBook, Transaction, User } from "./mongodb";
 import { sendInvoicePaidNotification } from "./notification";
 import { IAddInvoiceInternalRequest, IPaymentRequest } from "./types";
 import { getAuth, getCurrencyEquivalent, LoggedError, timeout } from "./utils";
@@ -143,20 +143,19 @@ export const LightningMixin = (superclass) => class extends superclass {
     tokens = !!tokens ? tokens : params.amount
 
     return { tokens, destination, pushPayment, id, routeHint, messages, 
-      memoInvoice: description, memoPayer: params.memo, payment, cltv_delta, expires_at, features }
+      memoInvoice: description, memoPayer: params.memo, payment, cltv_delta, expires_at, features, username: params.username }
   }
 
   async pay(params: IPaymentRequest): Promise<payInvoiceResult | Error> {
     let lightningLogger = this.logger.child({ topic: "payment", protocol: "lightning", transactionType: "payment" })
     
-    const { tokens, destination, pushPayment, id, routeHint, messages, memoInvoice, memoPayer, payment, cltv_delta, features } = await this.validate(params, lightningLogger)
+    const { tokens, destination, pushPayment, id, routeHint, messages, memoInvoice, memoPayer, payment, cltv_delta, features, username } = await this.validate(params, lightningLogger)
 
     // not including message because it contains the preimage and we don't want to log this
     lightningLogger = lightningLogger.child({ decoded: {tokens, destination, pushPayment, id, routeHint, memoInvoice, memoPayer, payment, cltv_delta, features}, params })
 
     let fee
     let route
-    let payeeUid
 
     // TODO: this should be inside the lock.
     // but getBalance is currently also getting the lock. 
@@ -166,28 +165,50 @@ export const LightningMixin = (superclass) => class extends superclass {
     return await using(disposer(this.uid), async (lock) => {
       const lightningLoggerOnUs = lightningLogger.child({ onUs: true, fee: 0 })
 
+      // On us transaction
       if (destination === await this.getNodePubkey()) {
+        let payeeUid, payeeCurrency
+
         if (pushPayment) {
-          // TODO: if (dest == user) throw error
-          //TODO: push payment on-us use case implementation
+          if (!username) {
+            const error = 'a username is required for push payment to the ***REMOVED*** wallet'
+            lightningLoggerOnUs.warn({ success: false, error }, error)
+            throw new LoggedError(error)
+          }
+
+          const payee = await User.findOne({ username })
+          if (!payee) {
+            const error = `this username doesn't exist`
+            lightningLoggerOnUs.warn({ success: false, error }, error)
+            throw new LoggedError(error)
+          }
+
+          payeeUid = payee._id
+          payeeCurrency = payee.currency
+
         } else {
-          const existingInvoice = await InvoiceUser.findOne({ _id: id, pending: true })
-          if (!existingInvoice) {
+
+          const payeeInvoice = await InvoiceUser.findOne({ _id: id, pending: true })
+          if (!payeeInvoice) {
             const error = 'User tried to pay invoice from the same wallet, but it was already paid or does not exist'
             lightningLoggerOnUs.error({ success: false, error }, error)
             throw new LoggedError(error)
             // FIXME: Using == here because === returns false even for same uids
-          } else if (existingInvoice.uid == this.uid) {
-            const error = 'User tried to pay himself'
-            lightningLoggerOnUs.error({ success: false, error }, error)
-            throw new LoggedError(error)
           }
-          payeeUid = existingInvoice.uid
 
-          // TODO XXX FIXME:
-          // manage the case where a user in USD tries to pay another used in BTC with an onUS transaction
-          assert(this.currency == existingInvoice.currency)
+          payeeUid = payeeInvoice.uid
+          payeeCurrency = payeeInvoice.currency
         }
+
+        if (payeeUid == this.uid) {
+          const error = 'User tried to pay himself'
+          lightningLoggerOnUs.error({ success: false, error }, error)
+          throw new LoggedError(error)
+        }
+
+        // TODO XXX FIXME:
+        // manage the case where a user in USD tries to pay another used in BTC with an onUS transaction
+        assert(this.currency == payeeCurrency)
 
         const sats = tokens
         const addedMetadata = await getCurrencyEquivalent({sats, fee: 0})
@@ -200,18 +221,30 @@ export const LightningMixin = (superclass) => class extends superclass {
           lightningLoggerOnUs.error({balance, value, success: false, error}, error)
           throw new LoggedError(error)
         }
+
         await MainBook.entry(memoInvoice)
           .debit(customerPath(payeeUid), value, metadata)
           .credit(this.accountPath, value, {...metadata, memoPayer})
           .commit()
       
         await sendInvoicePaidNotification({amount: tokens, uid: payeeUid, hash: id, logger: this.logger })
-        await InvoiceUser.findOneAndUpdate({ _id: id }, { pending: false })
-        await lnService.cancelHodlInvoice({ lnd: this.lnd, id })
+
+        if (!pushPayment) {
+          await InvoiceUser.findOneAndUpdate({ _id: id }, { pending: false })
+          await lnService.cancelHodlInvoice({ lnd: this.lnd, id })
+        }
           
         lightningLoggerOnUs.info({success: true, isReward: params.isReward ?? false, ...metadata}, "lightning payment success")
 
         return "success"
+      }
+
+      // "normal" transaction: paying another lightning node
+
+      if (pushPayment) {
+        const error = "no push payment to other wallet (yet)"
+        lightningLogger.error({ success: false }, error)
+        throw new LoggedError(error)
       }
 
       const max_fee = Math.floor(Math.max(FEECAP * tokens, FEEMIN))
@@ -222,7 +255,8 @@ export const LightningMixin = (superclass) => class extends superclass {
 
       const mtokens = tokens * 1000
 
-      lightningLogger = lightningLogger.child({onUs: false, max_fee})
+      // TODO: push payment for other node as well
+      lightningLogger = lightningLogger.child({ onUs: false, max_fee })
 
 
       try {

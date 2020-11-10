@@ -153,7 +153,8 @@ const resolvers = {
     invoice: async (_, __, { wallet }) => ({
       addInvoice: async ({ value, memo }) => wallet.addInvoice({ value, memo }),
       updatePendingInvoice: async ({ hash }) => wallet.updatePendingInvoice({ hash }),
-      payInvoice: async ({ invoice, amount, memo }) => wallet.pay({ invoice, amount, memo })
+      payInvoice: async ({ invoice, amount, memo }) => wallet.pay({ invoice, amount, memo }),
+      payKeysendUsername: async ({ destination, username, amount, memo }) => wallet.pay({ destination, username, amount, memo })
     }),
     earnCompleted: async (_, { ids }, { wallet }) => wallet.addEarn(ids),
     deleteUser: () => {
