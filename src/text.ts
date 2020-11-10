@@ -2,7 +2,7 @@ const twilioPhoneNumber = "***REMOVED***"
 import moment from "moment"
 import { PhoneCode, User } from "./mongodb";
 
-import { randomIntFromInterval, createToken, logger } from "./utils"
+import { randomIntFromInterval, createToken, LoggedError } from "./utils"
 
 const getTwilioClient = () => {
   // FIXME: replace with env variable
@@ -35,13 +35,14 @@ export const TEST_NUMBER = [
 
   { phone: "+16505554326", code: 321321, currency: "USD" }, // usd
   { phone: "+16505554326", code: 321321, currency: "BTC" }, // btc
-
+  
   { phone: "+16505554327", code: 321321, currency: "BTC" }, // broker
   { phone: "+16505554328", code: 321321, currency: "BTC" }, // 
   { phone: "+16505554329", code: 321321, currency: "BTC" }, // postman
+  { phone: "+16505554330", code: 321321, currency: "USD" }, // usd bis
 ]
 
-export const requestPhoneCode = async ({ phone }) => {
+export const requestPhoneCode = async ({ phone, logger }) => {
 
   // make it possible to bypass the auth for testing purpose
   if (TEST_NUMBER.findIndex(item => item.phone === phone) !== -1) {
@@ -60,7 +61,7 @@ export const requestPhoneCode = async ({ phone }) => {
 
     await sendText({ body, to: phone })
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return false
   }
 
@@ -71,16 +72,18 @@ interface ILogin {
   phone: string
   code: number
   currency?: string
+  logger: any
 }
 
-export const login = async ({ phone, code, currency = "BTC" }: ILogin) => {
-  
+export const login = async ({ phone, code, currency = "BTC", logger }: ILogin) => {
+  const subLogger = logger.child({topic: "login"})
+
   // TODO: not sure if graphql return null or undefined when a field is not passed
   // adding this as an early catch for now
   if (!currency) {
     const err = `currency is not set. exiting login()`
-    logger.error({currency}, err)
-    throw Error(err)
+    subLogger.error({currency, phone}, err)
+    throw new LoggedError(err)
   }
 
   try {
@@ -98,19 +101,29 @@ export const login = async ({ phone, code, currency = "BTC" }: ILogin) => {
     } else if (codes.findIndex(item => item.code === code) === -1) {
       // this branch is both relevant for test and non-test accounts
       // for when the code is not correct
-      console.warn(`code is not correct: ${code} with ${phone}`)
+      subLogger.warn({ phone, code }, `user enter incorrect code`)
       return null
     }
 
     // code is correct
-    // get User 
-    const user = await User.findOneAndUpdate({ phone, currency }, {}, { upsert: true, new: true })
     
+    // get User 
+    let user
+
+    user = await User.findOne({ phone, currency })
+
+    if (user) {
+      subLogger.info({ phone, currency }, "user logged in")
+    } else {
+      user = await User.findOneAndUpdate({ phone, currency }, {}, { upsert: true, new: true })
+      subLogger.info({ phone, currency } , "a new user has register")
+    }
+
     const network = process.env.NETWORK
     return createToken({ uid: user._id, currency, network })
     
   } catch (err) {
-    console.error(err)
+    subLogger.error({err})
     throw err
   }
 }

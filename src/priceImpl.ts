@@ -1,4 +1,4 @@
-import { logger, sat2btc } from "./utils"
+import { sat2btc } from "./utils"
 const mongoose = require("mongoose")
 import moment = require("moment")
 import { PriceHistory } from "./mongodb"
@@ -15,14 +15,17 @@ export class Price {
   readonly pair
   readonly path
   readonly exchange
+  readonly logger: any
 
-  constructor(pair = "BTC/USD") {
+  constructor({logger}) {
+    const pair = "BTC/USD" // TODO: handle other pairs, eventually
     this.pair = pair
     this.exchange = "bitfinex"
     this.path = {
       "pair.name": this.pair,
       "pair.exchange.name": this.exchange
     }
+    this.logger = logger
   }
 
   /**
@@ -37,11 +40,11 @@ export class Price {
       'rateLimit': 30000,
       'timeout': 5000,
     })
-    logger.info("start fetching data from exchange")
+    this.logger.info("start fetching data from exchange")
     let ohlcv;
     try {
       ohlcv = await exchange.fetchOHLCV(this.pair, "1h", since, limit);
-      logger.info("data fetched from exchange")
+      this.logger.info("data fetched from exchange")
     }
     catch (e) {
       if (e instanceof ccxt.NetworkError) {
@@ -69,9 +72,9 @@ export class Price {
     const DEBUG = false
     if (DEBUG) {
       const fs = require('fs');
-      fs.writeFile("test.txt", JSON.stringify(result, null, 4), function (err) {
+      fs.writeFile("test.txt", JSON.stringify(result, null, 4), (err) => {
         if (err) {
-          logger.error({ err }, "error writing test file (useless log?)")
+          this.logger.error({ err }, "error writing test file (useless log?)")
         }
       })
     }
@@ -111,7 +114,7 @@ export class Price {
     }
 
     while (currDate < endDate) {
-      logger.debug({ currDate, endDate }, "loop to fetch data from exchange")
+      this.logger.debug({ currDate, endDate }, "loop to fetch data from exchange")
       const ohlcv = await this.getFromExchange({ since: currDate, limit, init })
 
       try {
@@ -120,7 +123,7 @@ export class Price {
 
           // FIXME inefficient
           if (doc.pair.exchange.price.find(obj => obj._id.getTime() === value[0])) {
-            logger.debug("we already have those price datas in our database... continue")
+            this.logger.debug("we already have those price datas in our database... continue")
             continue
           }
 

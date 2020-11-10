@@ -1,13 +1,41 @@
 import * as jwt from 'jsonwebtoken'
 import * as lnService from "ln-service"
+import { filter, includes, sumBy } from "lodash"
 import * as moment from 'moment'
 import { Price } from "./priceImpl"
-import { sendText } from './text'
 export const validate = require("validate.js")
 const lightningPayReq = require('bolt11')
+const BitcoindClient = require('bitcoin-core')
 
-export const logger = require('pino')({ level: process.env.LOGLEVEL || "info" })
+export const baseLogger = require('pino')({ level: process.env.LOGLEVEL || "info" })
 const util = require('util')
+
+// @ts-ignore
+import { GraphQLError } from "graphql";
+
+// FIXME: super ugly hack.
+// for some reason LoggedError get casted as GraphQLError
+// in the formatError function that graphqlQL use to parse error before
+// sending it back to the client. this is a temporary workaround
+export const customLoggerPrefix = `custom: `
+
+export class LoggedError extends GraphQLError {
+  constructor(message) {
+    super(`${customLoggerPrefix}${message}`);
+  }
+}
+
+const connection_obj = {
+  network: process.env.NETWORK, username: 'rpcuser', password: 'rpcpass',
+  host: process.env.BITCOINDADDR, port: process.env.BITCOINDPORT
+}
+
+export const amountOnVout = ({ vout, onchain_addresses }) => {
+  // TODO: check if this is always [0], ie: there is always a single addresses for vout for lnd output
+  return sumBy(filter(vout, tx => includes(onchain_addresses, tx.scriptPubKey.addresses[0])), "value")
+}
+
+export const bitcoindClient = new BitcoindClient(connection_obj)
 
 export const getHash = (request) => {
   const decoded = lightningPayReq.decode(request)
@@ -27,22 +55,31 @@ export const sat2btc = (sat: number) => {
   return sat / Math.pow(10, 8)
 }
 
-export const addCurrentValueToMetadata = async (metadata, {sats, usd}: {sats: number, usd?: number}) => {
+export const getCurrencyEquivalent = async ({ sats, usd, fee }: { sats: number, usd?: number, fee?: number }) => {
   let _usd = usd
-  
+  let feeUsd
+
   if (!usd) {
     _usd = await satsToUsd(sats)
   }
 
-  metadata['sats'] = sats
-  metadata['usd'] = _usd
+  if (fee) {
+    feeUsd = await satsToUsd(fee)
+  }
+
+  return { fee, feeUsd, sats, usd: _usd }
 }
 
 export const satsToUsd = async sats => {
   // TODO: caching in graphql, should be passed as a variable to addInvoice
-  const lastPrices = await new Price().lastPrice() // sats/usd
+  // FIXME: remove the baseLogger
+  const lastPrices = await new Price({ logger: baseLogger }).lastPrice() // sats/usd
   const usdValue = lastPrices * sats
   return usdValue
+}
+
+export const satsToUsdCached = (sats, price) => {
+  return price * sats
 }
 
 export const randomIntFromInterval = (min, max) =>
@@ -53,10 +90,10 @@ export async function sleep(ms) {
 }
 
 export function timeout(delay, msg) {
-  return new Promise(function (resolve, reject) {
-      setTimeout(function () {
-          reject(new Error(msg));
-      }, delay);
+  return new Promise(function(resolve, reject) {
+    setTimeout(function() {
+      reject(new Error(msg));
+    }, delay);
   });
 }
 
@@ -80,13 +117,13 @@ export const createToken = ({ uid, currency, network }) => jwt.sign(
 validate.extend(validate.validators.datetime, {
   // The value is guaranteed not to be null or undefined but otherwise it
   // could be anything.
-  parse: function (value: any, options: any) {
-      return +moment.utc(value);
+  parse: function(value: any, options: any) {
+    return +moment.utc(value);
   },
   // Input is a unix timestamp
-  format: function (value: any, options: any) {
-      const format = options.dateOnly ? "YYYY-MM-DD" : "YYYY-MM-DD hh:mm:ss";
-      return moment.utc(value).format(format);
+  format: function(value: any, options: any) {
+    const format = options.dateOnly ? "YYYY-MM-DD" : "YYYY-MM-DD hh:mm:ss";
+    return moment.utc(value).format(format);
   }
 })
 
@@ -114,7 +151,14 @@ export async function measureTime(operation: Promise<any>): Promise<[any, number
   return [result, timeElapsedms]
 }
 
-export async function sendToAdmin(body) {
-  await sendText({ body, to: '+1***REMOVED***' })
-  await sendText({ body, to: '***REMOVED***' })
+export async function nodeStats({ lnd }) {
+  const result = await lnService.getWalletInfo({ lnd })
+  const peersCount = result.peers_count
+  const channelsCount = result.active_channels_count
+  const id = result.public_key
+  return {
+    peersCount,
+    channelsCount,
+    id
+  }
 }

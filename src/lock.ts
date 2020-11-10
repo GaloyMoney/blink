@@ -1,4 +1,4 @@
-import { logger } from "./utils";
+import { baseLogger } from "./utils";
 
 const redis = require('redis')
 const Redlock = require('redlock');
@@ -14,7 +14,7 @@ const ttl = process.env.NETWORK !== "regtest" ? 60000 : 10000
 // an error occurred; if you don't pass a handler, this error
 // will be ignored
 function unlockErrorHandler(err) {
-  logger.error(err, `unable to release redis lock`);
+  baseLogger.error(err, `unable to release redis lock`);
   // throw Error(err)
 }
 
@@ -55,9 +55,10 @@ const getRedLock = () => {
   return redlock
 }
 
+export const getResource = path => `locks:account:${path}`;
+
 export const disposer = (path) => {
-  const resource = `locks:account:${path}`;
-  return getRedLock().disposer(resource, ttl, unlockErrorHandler)
+  return getRedLock().disposer(getResource(path), ttl, unlockErrorHandler)
 }
 
 // export const quit = async () => await getRedLock().quit()

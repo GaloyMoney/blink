@@ -1,96 +1,102 @@
-import { DbVersion, setupMongoConnection, upgrade, User } from "./mongodb"
-
 import dotenv from "dotenv";
 import { rule, shield } from 'graphql-shield';
 import { GraphQLServer } from 'graphql-yoga';
-import { ContextParameters } from 'graphql-yoga/dist/types';
 import * as jwt from 'jsonwebtoken';
+import { startsWith } from "lodash";
+import moment from "moment";
+import { v4 as uuidv4 } from 'uuid';
+import { DbVersion, setupMongoConnection, User, MapDB } from "./mongodb";
+import { sendNotification } from "./notification";
 import { Price } from "./priceImpl";
 import { login, requestPhoneCode } from "./text";
 import { OnboardingEarn } from "./types";
-import { AdminWallet } from "./LightningAdminImpl";
-import { sendNotification } from "./notification"
+import { upgrade } from "./upgrade";
+import { baseLogger, customLoggerPrefix, getAuth, nodeStats } from "./utils";
+import { UserWallet } from "./wallet";
+import { WalletFactory, WalletFromUsername } from "./walletFactory";
+const util = require('util')
+const lnService = require('ln-service')
+
 
 const path = require("path");
 dotenv.config()
 
+const graphqlLogger = baseLogger.child({ module: "graphql" })
+const pino = require('pino')
 
-import { logger } from "./utils"
-import moment from "moment";
-import { WalletFactory } from "./walletFactory";
-const pino = require('pino-http')({
-  logger,
-  // TODO: get uid and other information from the request.
-  // tried https://github.com/addityasingh/graphql-pino-middleware without success
-  // Define additional custom request properties
-  // reqCustomProps: function (req) {
-  //   console.log({req})
-  //   return {
-  //     // uid: req.uid
-  //   }
-  // }
+const pino_http = require('pino-http')({
+  logger: graphqlLogger,
+  wrapSerializers: false,
+
+  // Define custom serializers
+  serializers: {
+    err: pino.stdSerializers.err,
+    req: pino.stdSerializers.req,
+    res: (res) => ({
+      // FIXME: kind of a hack. body should be in in req. but have not being able to do it.
+      body: res.req.body,
+      ...pino.stdSerializers.res(res)
+    })
+  },
+  reqCustomProps: function(req) {
+    return {
+      // FIXME: duplicate parsing from graphql context.
+      token: verifyToken(req)
+    }
+  },
   autoLogging: {
     ignorePaths: ["/healthz"]
   }
 })
 
+const { lnd } = lnService.authenticatedLndGrpc(getAuth())
+
 const commitHash = process.env.COMMITHASH
 const buildTime = process.env.BUILDTIME
 const helmRevision = process.env.HELMREVISION
-const getMinBuildNumber = async () => {
-  const { minBuildNumber } = await DbVersion.findOne({}, {minBuildNumber: 1, _id: 0})
-  return minBuildNumber 
-}
 
-const DEFAULT_USD = {
-  currency: "USD",
-  balance: 0,
-  transactions: [],
-  id: "USD",
+// TODO: caching for some period of time. maybe 1h
+const getMinBuildNumber = async () => {
+  const { minBuildNumber, lastBuildNumber } = await DbVersion.findOne({}, { minBuildNumber: 1, lastBuildNumber: 1, _id: 0 })
+  return { minBuildNumber, lastBuildNumber }
 }
 
 const resolvers = {
   Query: {
     me: async (_, __, { uid }) => {
-      const user = await User.findOne({ _id: uid })
+      const { phone, username } = await User.findOne({ _id: uid })
 
       return {
         id: uid,
         level: 1,
+        phone,
+        username,
       }
     },
-    wallet: async (_, __, { lightningWallet }) => {
-      const btc_wallet = {
-        id: "BTC",
-        currency: "BTC",
-        balance: lightningWallet.getBalance(), // FIXME why a function and not a callback?
-        transactions: lightningWallet.getTransactions()
-      }
+    wallet: async (_, __, { wallet }) => ([{
+      id: wallet.currency,
+      currency: wallet.currency,
+      balance: () => wallet.getBalance(),
+      transactions: () => wallet.getTransactions(),
+      csv: () => wallet.getStringCsv()
+    }]),
+    nodeStats: async () => nodeStats({lnd}),
+    buildParameters: async () => {
+      const { minBuildNumber, lastBuildNumber } = await getMinBuildNumber()
 
-      return ([
-        btc_wallet,
-        DEFAULT_USD
-      ])
-    },
-    buildParameters: () => ({
-      commitHash: () => commitHash, 
-      buildTime: () => buildTime, 
-      helmRevision: () => helmRevision,
-      minBuildNumberAndroid: getMinBuildNumber,
-      minBuildNumberIos: getMinBuildNumber,
-    }),
-    pendingOnChainPayment: async (_, __, { lightningWallet }) => {
-      return lightningWallet.getPendingIncomingOnchainPayments()
-    },
-    prices: async () => {
-      try {
-        const price = new Price()
-        const lastPrices = await price.lastCached()
-        return lastPrices
-      } catch (err) {
-        logger.warn(err)
-        throw err
-      }
+      return {
+        id: lastBuildNumber,
+        commitHash: () => commitHash,
+        buildTime: () => buildTime,
+        helmRevision: () => helmRevision,
+        minBuildNumberAndroid: minBuildNumber,
+        minBuildNumberIos: minBuildNumber,
+        lastBuildNumberAndroid: lastBuildNumber,
+        lastBuildNumberIos: lastBuildNumber,
+    }},
+    prices: async (_, __, {logger}) => {
+      const price = new Price({logger})
+      return await price.lastCached()
     },
     earnList: async (_, __, { uid }) => {
       const response: Object[] = []
@@ -108,104 +114,85 @@ const resolvers = {
 
       return response
     },
-    getLastOnChainAddress: async (_, __, { lightningWallet }) => {
-      const getLastAddress = await lightningWallet.getLastOnChainAddress()
-      return {id: getLastAddress}
-    }
+    getLastOnChainAddress: async (_, __, { wallet }) => ({ id: wallet.getLastOnChainAddress() }),
+
+    maps: async () => {
+      const maps = await MapDB.find({})
+      return maps.map(item => ({
+        id: item._id,
+        title: item.title,
+        coordinate: item.coordinate
+      }))
+    },
+    usernameExists: async (_, { username }) => await UserWallet.usernameExists({ username })
+
   },
   Mutation: {
-    requestPhoneCode: async (_, { phone }) => {
-      return { success: requestPhoneCode({ phone }) }
-    },
-    login: async (_, { phone, code, currency }) => {
-      return { token: login({ phone, code, currency }) }
-    },
-    updateUser: async (_, __,  { lightningWallet }) => {
+    requestPhoneCode: async (_, { phone }, { logger }) => ({ success: requestPhoneCode({ phone, logger }) }),
+    login: async (_, { phone, code, currency }, { logger }) => ({ token: login({ phone, code, currency, logger }) }),
+    updateUser: async (_, __, { wallet }) => ({
       // FIXME manage uid
       // TODO only level for now
-      const result = await lightningWallet.setLevel({ level: 1 })
+      setLevel: async () => {
+        const result = await wallet.setLevel({ level: 1 })
+        return {
+          id: wallet.uid,
+          level: result.level,
+        }
+      },
+      setUsername: async ({ username }) => await wallet.setUsername({ username })
+
+    }),
+    publicInvoice: async (_, { username }, { logger }) => {
+      const wallet = await WalletFromUsername({ username, logger })
       return {
-        id: lightningWallet.uid,
-        level: result.level,
+        addInvoice: async ({ value, memo }) => wallet.addInvoice({ value, memo, selfGenerated: false }),
+        updatePendingInvoice: async ({ hash }) => wallet.updatePendingInvoice({ hash })
       }
     },
-    openChannel: async (_, { local_tokens, public_key, socket }, {}) => {
-      // FIXME: security risk. remove openChannel from graphql
-      const lightningAdminWallet = new AdminWallet()
-      return { tx: lightningAdminWallet.openChannel({ local_tokens, public_key, socket }) }
-    },
-    invoice: async (_, __, { lightningWallet }) => {
-      return ({
-
-        addInvoice: async ({ value, memo }) => {
-          try {
-            const result = await lightningWallet.addInvoice({ value, memo })
-            return result
-          } catch (err) {
-            logger.error({err}, "addInvoice error")
-            throw err
-          }
-        },
-        updatePendingInvoice: async ({ hash }) => {
-          try {
-            return await lightningWallet.updatePendingInvoice({ hash })
-          } catch (err) {
-            logger.error({err}, "updatePendingInvoice error")
-            throw err
-          }
-        },
-        payInvoice: async ({ invoice, amount }) => {
-          try {
-            const success = await lightningWallet.pay({ invoice, amount })
-            logger.debug({ success }, "succesful payment for user %o", lightningWallet.uid)
-            return success
-          } catch (err) {
-            logger.error({ err }, "lightning payment error")
-            throw err
-          }
-        },
-
-      })
-    },
-    earnCompleted: async (_, { ids }, { lightningWallet }) => {
-      return lightningWallet.addEarn(ids)
-    },
+    invoice: async (_, __, { wallet }) => ({
+      addInvoice: async ({ value, memo }) => wallet.addInvoice({ value, memo }),
+      updatePendingInvoice: async ({ hash }) => wallet.updatePendingInvoice({ hash }),
+      payInvoice: async ({ invoice, amount, memo }) => wallet.pay({ invoice, amount, memo }),
+      payKeysendUsername: async ({ destination, username, amount, memo }) => wallet.pay({ destination, username, amount, memo })
+    }),
+    earnCompleted: async (_, { ids }, { wallet }) => wallet.addEarn(ids),
     deleteUser: () => {
       // TODO
     },
-    onchain: async (_, __, { lightningWallet }) => {
-      return {
-        getNewAddress: () => {
-          try {
-            return lightningWallet.getOnChainAddress()
-          } catch (err) {
-            logger.error({ err }, "error with getNewAddress")
-          }},
-        pay: ({address, amount}) => ({success: lightningWallet.onChainPay({address, amount})}),
-      }
-    },
+    onchain: async (_, __, { wallet }) => ({
+      getNewAddress: () => wallet.getOnChainAddress(),
+      pay: ({ address, amount, memo }) => ({ success: wallet.onChainPay({ address, amount, memo }) }),
+      getFee: ({ address }) => wallet.getOnchainFee({ address }),
+    }),
     addDeviceToken: async (_, { deviceToken }, { uid }) => {
       // TODO: refactor to a higher level User class
       const user = await User.findOne({ _id: uid })
       user.deviceToken.addToSet(deviceToken)
       await user.save()
-      return {success: true}
+      return { success: true }
     },
 
     // FIXME test
-    testMessage: async (_, __, { uid }) => {
-      await sendNotification({uid, title: "Title", body: `New message sent at ${moment.utc().format('YYYY-MM-DD HH:mm:ss')}`})
-      return {success: true}
+    testMessage: async (_, __, { uid, logger }) => {
+      // throw new LoggedError("test error")
+      await sendNotification({
+        uid,
+        title: "Title",
+        body: `New message sent at ${moment.utc().format('YYYY-MM-DD HH:mm:ss')}`,
+        logger
+      })
+      return { success: true }
     },
   }
 }
 
 
-function verifyToken(ctx: ContextParameters) {
+function verifyToken(req) {
 
   let token
   try {
-    const auth = ctx.request.get('Authorization')
+    const auth = req.get('Authorization')
 
     if (!auth) {
       return null
@@ -239,7 +226,6 @@ const permissions = shield({
     // earnList: isAuthenticated,
     wallet: isAuthenticated,
     me: isAuthenticated,
-    pendingOnChainPayment: isAuthenticated
   },
   Mutation: {
     // requestPhoneCode: not(isAuthenticated),
@@ -261,20 +247,29 @@ const server = new GraphQLServer({
   typeDefs: path.join(__dirname, "schema.graphql"),
   resolvers,
   middlewares: [permissions],
-  context: async (req) => {
-    logger.info(req.request.body, 'body')
-    const token = verifyToken(req)
-    const lightningWallet = !!token ? WalletFactory(token) : null
-    const result = {
-      ...req,
-      uid: token?.uid ?? null,
-      lightningWallet,
+  context: async (context) => {
+    const token = verifyToken(context.request)
+    const uid = token?.uid ?? null
+    // @ts-ignore
+    const logger = graphqlLogger.child({ token, id: context.request.id, body: context.request.body })
+    const wallet = !!token ? WalletFactory({ ...token, logger }) : null
+    return {
+      ...context,
+      logger,
+      uid,
+      wallet,
     }
-    return result
   }
 })
 
-server.express.use(pino)
+// injecting unique id to the request for correlating different logs messages
+server.express.use(function(req, res, next) {
+  // @ts-ignore
+  req.id = uuidv4();
+  next();
+});
+
+server.express.use(pino_http)
 
 
 // Health check
@@ -283,17 +278,29 @@ server.express.get('/healthz', function(req, res) {
 });
 
 const options = {
+  // tracing: true,
+  formatError: err => {
+    // FIXME
+    if (startsWith(err.message, customLoggerPrefix)) {
+      err.message = err.message.slice(customLoggerPrefix.length)
+    } else {
+      baseLogger.error({err}, "graphql catch-all error"); 
+    }
+    // return defaultErrorFormatter(err)
+    return err
+  },
   endpoint: '/graphql',
-  playground: process.env.NETWORK === 'mainnet' ? 'false': '/'
+  playground: process.env.NETWORK === 'mainnet' ? 'false' : '/'
 }
 
 setupMongoConnection()
   .then(() => {
     upgrade().then(() => {
       server.start(options, ({ port }) =>
-        logger.info(
+        graphqlLogger.info(
           `Server started, listening on port ${port} for incoming requests.`,
         ),
       )
-  })}).catch((err) => logger.error(err, "server error"))
+    })
+  }).catch((err) => graphqlLogger.error(err, "server error"))
 

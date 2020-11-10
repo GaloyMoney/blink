@@ -1,11 +1,12 @@
 /**
  * @jest-environment node
  */
+import { filter, first, last } from "lodash";
 import { quit } from "../lock";
 import { MainBook, setupMongoConnection } from "../mongodb";
-import { bitcoindClient, checkIsBalanced, getUserWallet, lndMain, lndOutside1, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
+import { checkIsBalanced, getUserWallet, lndMain, lndOutside1, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
 import { onchainTransactionEventHandler } from "../trigger";
-import { sleep } from "../utils";
+import { bitcoindClient, sleep } from "../utils";
 const util = require('util')
 
 const {once} = require('events');
@@ -23,10 +24,14 @@ jest.mock('../notification')
 const { sendNotification } = require("../notification");
 
 
+import { AdminWallet } from "../AdminWallet"
+import { BrokerWallet } from "../BrokerWallet";
+
 beforeAll(async () => {
   await setupMongoConnection()
   userWallet0 = await getUserWallet(0)
   userWallet3 = await getUserWallet(3)
+  mockGetExchangeBalance()
 })
 
 beforeEach(async () => {
@@ -34,17 +39,37 @@ beforeEach(async () => {
   initialBalanceUser0 = await userWallet0.getBalance()
 })
 
+afterEach(async () => {
+  await checkIsBalanced()
+})
+
 afterAll(async () => {
   await bitcoindClient.generateToAddress(3, RANDOM_ADDRESS)
-  await sleep(100)
-
+  await sleep(2000)
+  jest.restoreAllMocks();
 	await mongoose.connection.close()
 	await quit()
 })
 
-const amount = 10000 // sats
+const amount = 10040 // sats
 
-it('Sends onchain payment', async () => {
+
+it('testing Fee', async () => {
+  {
+    const address = await bitcoindClient.getNewAddress()
+    const fee = await userWallet0.getOnchainFee({address})
+    expect(fee).toBeGreaterThan(0)
+  }
+  
+  {
+    const address = await userWallet3.getOnChainAddress()
+    const fee = await userWallet0.getOnchainFee({address})
+    expect(fee).toBe(0)
+  }
+  
+}, 10000)
+
+it('Sends onchain payment successfully', async () => {
   const { address } = await lnService.createChainAddress({ format: 'p2wpkh', lnd: lndOutside1 })
 
   const sub = lnService.subscribeToTransactions({ lnd: lndMain })
@@ -53,7 +78,7 @@ it('Sends onchain payment', async () => {
   {
     const results = await Promise.all([
       once(sub, 'chain_transaction'),
-      userWallet0.onChainPay({ address, amount, description: "onchainpayment" }),
+      userWallet0.onChainPay({ address, amount }),
     ])
 
     expect(results[1]).toBeTruthy()
@@ -65,31 +90,40 @@ it('Sends onchain payment', async () => {
   // expect(sendNotification.mock.calls[0][0].data.type).toBe("onchain_payment")
   // expect(sendNotification.mock.calls[0][0].data.title).toBe(`Your transaction has been sent. It may takes some time before it is confirmed`)
 
-  const { results: [pendingTxn] } = await MainBook.ledger({ account: userWallet0.accountPath, pending: true, memo: "onchainpayment" })
+  // FIXME: does this syntax always take the first match item in the array? (which is waht we want, items are return as newest first)
+  const { results: [pendingTxn] } = await MainBook.ledger({ account: userWallet0.accountPath, pending: true })
 
 	const interimBalance = await userWallet0.getBalance()
 	expect(interimBalance).toBe(initialBalanceUser0 - amount - pendingTxn.fee)
   await checkIsBalanced()
   
+  const txs = await userWallet0.getTransactions()
+  const pendingTxs = filter(txs, {pending: true})
+  expect(pendingTxs.length).toBe(1)
+  expect(pendingTxs[0].amount).toBe(-amount - pendingTxs[0].fee)
+
   // const subSpend = lnService.subscribeToChainSpend({ lnd: lndMain, bech32_address: address, min_height: 1 })
 
   {
-    const results = await Promise.all([
+    await Promise.all([
       once(sub, 'chain_transaction'),
       waitUntilBlockHeight({ lnd: lndMain, blockHeight: initBlockCount + 6 }),
       bitcoindClient.generateToAddress(6, RANDOM_ADDRESS),
     ])
   }
 
-  await sleep(100)
+  await sleep(1000)
   console.log(JSON.stringify(sendNotification.mock.calls))
 
   // expect(sendNotification.mock.calls.length).toBe(2)  // FIXME: should be 1
   expect(sendNotification.mock.calls[0][0].title).toBe(`Your on-chain transaction has been confirmed`)
   expect(sendNotification.mock.calls[0][0].data.type).toBe("onchain_payment")
 
-  const { results: [{ pending, fee }] } = await MainBook.ledger({ account: userWallet0.accountPath, hash: pendingTxn.hash, memo: "onchainpayment" })
+  const { results: [{ pending, fee, feeUsd }] } = await MainBook.ledger({ account: userWallet0.accountPath, hash: pendingTxn.hash })
+
 	expect(pending).toBe(false)
+	expect(fee).toBeGreaterThan(0)
+	expect(feeUsd).toBeGreaterThan(0)
 
 	const [txn] = (await userWallet0.getTransactions()).filter(tx => tx.hash === pendingTxn.hash)
 	expect(txn.amount).toBe(- amount - fee)
@@ -97,7 +131,6 @@ it('Sends onchain payment', async () => {
 
 	const finalBalance = await userWallet0.getBalance()
 	expect(finalBalance).toBe(initialBalanceUser0 - amount - fee)
-	await checkIsBalanced()
 }, 20000)
 
 it('makes onchain on-us transaction', async () => {
@@ -112,7 +145,37 @@ it('makes onchain on-us transaction', async () => {
   expect(paymentResult).toBe(true)
   expect(finalBalanceUser0).toBe(initialBalanceUser0 - amount)
   expect(finalBalanceUser3).toBe(initialBalanceUser3 + amount)
+
+  const { results: [{ pending, fee, feeUsd }] } = await MainBook.ledger({ account: userWallet0.accountPath, type: "onchain_on_us" })
+  expect(pending).toBe(false)
+	expect(fee).toBe(0)
+	expect(feeUsd).toBe(0)
+
   await checkIsBalanced()
+}, 10000)
+
+it('Sends onchain payment _with memo', async () => {
+  const memo = "this is my onchain memo"
+  const { address } = await lnService.createChainAddress({ format: 'p2wpkh', lnd: lndOutside1 })
+  const paymentResult = await userWallet0.onChainPay({ address, amount, memo })
+  expect(paymentResult).toBe(true)
+  const txs = await userWallet0.getTransactions()
+  console.log(first(txs))
+  expect((first(txs) as any).description).toBe(memo)
+}, 10000)
+
+it('makes onchain on-us transaction with memo', async () => {
+  const memo = "this is my onchain memo"
+  const user3Address = await userWallet3.getOnChainAddress()
+  const paymentResult = await userWallet0.onChainPay({ address: user3Address as string, amount, memo })
+  expect(paymentResult).toBe(true)
+  
+  const txs = await userWallet0.getTransactions()
+  expect((first(txs) as any).description).toBe(memo)
+  
+  // receiver should not know memo from sender
+  const txsUser3 = await userWallet3.getTransactions()
+  expect((first(txsUser3) as any).description).not.toBe(memo)
 }, 10000)
 
 it('fails to make onchain payment to self', async () => {
