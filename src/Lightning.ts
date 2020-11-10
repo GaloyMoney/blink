@@ -163,7 +163,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     const balance = await this.getBalance()
 
     return await using(disposer(this.uid), async (lock) => {
-      const lightningLoggerOnUs = lightningLogger.child({ onUs: true, fee: 0, pushPayment })
+      const lightningLoggerOnUs = lightningLogger.child({ onUs: true, fee: 0 })
 
       // On us transaction
       if (destination === await this.getNodePubkey()) {
@@ -256,7 +256,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       const mtokens = tokens * 1000
 
       // TODO: push payment for other node as well
-      lightningLogger = lightningLogger.child({ onUs: false, max_fee, pushPayment: false })
+      lightningLogger = lightningLogger.child({ onUs: false, max_fee })
 
 
       try {
