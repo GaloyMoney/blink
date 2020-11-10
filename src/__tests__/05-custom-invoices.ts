@@ -30,7 +30,7 @@ it('add invoice', async () => {
   const request_org = (await lnService.createInvoice({lnd, description: "abc"})).request
   const decoded = parsePaymentRequest({request: request_org});
 
-  decoded["uid"] = "abcdef"
+  decoded["username"] = "abcdef"
 
   const { preimage, hash, hrp, tags } = createUnsignedRequest(decoded);
 
