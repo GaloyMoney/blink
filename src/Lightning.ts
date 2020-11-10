@@ -163,7 +163,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     const balance = await this.getBalance()
 
     return await using(disposer(this.uid), async (lock) => {
-      const lightningLoggerOnUs = lightningLogger.child({ onUs: true, fee: 0, pushPayment })
+      const lightningLoggerOnUs = lightningLogger.child({ onUs: true, fee: 0 })
 
       // On us transaction
       if (destination === await this.getNodePubkey()) {
@@ -171,20 +171,20 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         if (pushPayment) {
           if (!username) {
-            const error = 'a username is requiered for push payment to the ***REMOVED*** wallet'
+            const error = 'a username is required for push payment to the ***REMOVED*** wallet'
             lightningLoggerOnUs.warn({ success: false, error }, error)
             throw new LoggedError(error)
           }
 
-          const user = await User.findOne({ username })
-          if (!user) {
+          const payee = await User.findOne({ username })
+          if (!payee) {
             const error = `this username doesn't exist`
             lightningLoggerOnUs.warn({ success: false, error }, error)
             throw new LoggedError(error)
           }
 
-          payeeUid = user._id
-          payeeCurrency = user.currency
+          payeeUid = payee._id
+          payeeCurrency = payee.currency
 
         } else {
 
@@ -256,7 +256,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       const mtokens = tokens * 1000
 
       // TODO: push payment for other node as well
-      lightningLogger = lightningLogger.child({ onUs: false, max_fee, pushPayment: false })
+      lightningLogger = lightningLogger.child({ onUs: false, max_fee })
 
 
       try {
