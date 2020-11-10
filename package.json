@@ -33,7 +33,6 @@
     "apollo-server": "^2.18.2",
     "bitcoin-core": "^3.0.0",
     "bluebird": "^3.7.2",
-    "bolt11": "^1.2.7",
     "ccxt": "^1.36.10",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",

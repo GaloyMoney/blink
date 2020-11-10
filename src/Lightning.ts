@@ -94,7 +94,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     let messages: Object[] = []
     
     if (params.invoice) {
-      // TODO: replace this with bolt11 utils library
+      // TODO: replace this with invoices/bolt11/parsePaymentRequest function?
       // TODO: use msat instead of sats for the db?
 
       try {

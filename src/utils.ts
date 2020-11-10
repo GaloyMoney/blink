@@ -4,8 +4,9 @@ import { filter, includes, sumBy } from "lodash"
 import * as moment from 'moment'
 import { Price } from "./priceImpl"
 export const validate = require("validate.js")
-const lightningPayReq = require('bolt11')
 const BitcoindClient = require('bitcoin-core')
+const {parsePaymentRequest} = require('invoices');
+
 
 export const baseLogger = require('pino')({ level: process.env.LOGLEVEL || "info" })
 const util = require('util')
@@ -38,13 +39,11 @@ export const amountOnVout = ({ vout, onchain_addresses }) => {
 export const bitcoindClient = new BitcoindClient(connection_obj)
 
 export const getHash = (request) => {
-  const decoded = lightningPayReq.decode(request)
-  return decoded.tags.filter(item => item.tagName === "payment_hash")[0].data
+  return parsePaymentRequest({request}).id
 }
 
 export const getAmount = (request): number | undefined => {
-  const decoded = lightningPayReq.decode(request)
-  return decoded.satoshis
+  return parsePaymentRequest({request}).tokens
 }
 
 export const btc2sat = (btc: number) => {
