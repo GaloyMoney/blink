@@ -7,6 +7,7 @@ import { InvoiceUser, MainBook, Transaction, User } from "./mongodb";
 import { sendInvoicePaidNotification } from "./notification";
 import { IAddInvoiceInternalRequest, IPaymentRequest } from "./types";
 import { getAuth, getCurrencyEquivalent, LoggedError, timeout } from "./utils";
+import { regExUsername } from "./wallet";
 
 const util = require('util')
 
@@ -176,7 +177,7 @@ export const LightningMixin = (superclass) => class extends superclass {
             throw new LoggedError(error)
           }
 
-          const payee = await User.findOne({ username })
+          const payee = await User.findOne({ username: regExUsername({username}) })
           if (!payee) {
             const error = `this username doesn't exist`
             lightningLoggerOnUs.warn({ success: false, error }, error)

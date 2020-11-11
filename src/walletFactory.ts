@@ -6,6 +6,7 @@ import { User } from "./mongodb"
 import { login, TEST_NUMBER } from "./text";
 import * as jwt from 'jsonwebtoken';
 import { baseLogger, LoggedError } from "./utils";
+import { regExUsername } from "./wallet";
 
 export const WalletFactory = ({ uid, logger, currency = "BTC" }: { uid: string, currency: string, logger: any }) => {
   // TODO: remove default BTC once old tokens had been "expired"
@@ -17,7 +18,7 @@ export const WalletFactory = ({ uid, logger, currency = "BTC" }: { uid: string, 
 }
 
 export const WalletFromUsername = async ({ username, logger }: { username: string, logger: any }) => {
-  const user = await User.findOne({ username })
+  const user = await User.findOne({ username: regExUsername({username}) })
   if (!user) {
     const error = `User not found`
     logger.warn(error)

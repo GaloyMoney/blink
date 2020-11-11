@@ -6,6 +6,8 @@ import { LoggedError } from "./utils"
 
 const createCsvStringifier = require('csv-writer').createObjectCsvStringifier;
 
+export const regExUsername = ({username}) => new RegExp(`^${username}$`, 'i')
+
 export abstract class UserWallet {
 
   readonly uid: string
@@ -124,7 +126,7 @@ export abstract class UserWallet {
   }
 
   static async usernameExists({ username }): Promise<boolean> {
-    return await User.exists({ username: new RegExp(`^${username}$`, 'i') })
+    return await User.exists({ username: regExUsername({username}) })
   }
 
   async setUsername({ username }): Promise<boolean | Error> {
