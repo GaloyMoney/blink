@@ -89,7 +89,7 @@ describe('username tests', () => {
   })
 
   it('user with different case exist as well', async () => {
-    const result = await User.exists({ username: username.toLocaleUpperCase() })
+    const result = await User.exists({ username: new RegExp(username, 'i') })
     console.log({result}, "exist uppercase")
     expect(result).toBeTruthy()
   })
