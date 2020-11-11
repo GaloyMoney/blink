@@ -95,6 +95,12 @@ describe('username tests', () => {
     expect(result).toBe(true)
   })
 
+  it('user with different case exist as well', async () => {
+    const result = await User.exists({ username: new RegExp(username, 'i') })
+    console.log({result}, "exist uppercase")
+    expect(result).toBeTruthy()
+  })
+
   it('does not set username if already taken', async () => {
     const userWallet2 = await getUserWallet(2)
     await expect(userWallet2.setUsername({ username })).rejects.toThrow()
