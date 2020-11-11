@@ -4,6 +4,8 @@ import { PhoneCode, User } from "./mongodb";
 
 import { randomIntFromInterval, createToken, LoggedError } from "./utils"
 
+const projectName = "***REMOVED*** Wallet"
+
 const getTwilioClient = () => {
   // FIXME: replace with env variable
   // and revoke credentials here
@@ -50,7 +52,7 @@ export const requestPhoneCode = async ({ phone, logger }) => {
   }
 
   const code = randomIntFromInterval(100000, 999999)
-  const body = `${code} is your verification code for Galoy`
+  const body = `${code} is your verification code for ${projectName}`
 
   try {
     // TODO: only one code per 30 seconds should be generated.
