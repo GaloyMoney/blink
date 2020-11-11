@@ -95,6 +95,21 @@ describe('username tests', () => {
     expect(result).toBe(true)
   })
 
+  it('usernameExists returns true for other capitalization', async () => {
+    const result = await UserWallet.usernameExists({ username })
+    expect(result).toBe(true)
+  })
+
+  it('usernameExists returns true if username already exists', async () => {
+    const result = await UserWallet.usernameExists({ username: username.toLocaleUpperCase() })
+    expect(result).toBe(true)
+  })
+
+  it('"user" should not match', async () => {
+    const result = await User.exists({ username: "user" })
+    expect(result).toBeFalsy()
+  })
+
   it('does not set username if already taken', async () => {
     const userWallet2 = await getUserWallet(2)
     await expect(userWallet2.setUsername({ username })).rejects.toThrow()
