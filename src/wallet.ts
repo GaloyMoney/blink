@@ -124,7 +124,7 @@ export abstract class UserWallet {
   }
 
   static async usernameExists({ username }): Promise<boolean> {
-    return await User.exists({ username: new RegExp(username, 'i') })
+    return await User.exists({ username: new RegExp(`^${username}$`, 'i') })
   }
 
   async setUsername({ username }): Promise<boolean | Error> {

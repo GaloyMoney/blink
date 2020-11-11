@@ -95,10 +95,19 @@ describe('username tests', () => {
     expect(result).toBe(true)
   })
 
-  it('user with different case exist as well', async () => {
-    const result = await User.exists({ username: new RegExp(username, 'i') })
-    console.log({result}, "exist uppercase")
-    expect(result).toBeTruthy()
+  it('usernameExists returns true for other capitalization', async () => {
+    const result = await UserWallet.usernameExists({ username })
+    expect(result).toBe(true)
+  })
+
+  it('usernameExists returns true if username already exists', async () => {
+    const result = await UserWallet.usernameExists({ username: username.toLocaleUpperCase() })
+    expect(result).toBe(true)
+  })
+
+  it('"user" should not match', async () => {
+    const result = await User.exists({ username: "user" })
+    expect(result).toBeFalsy()
   })
 
   it('does not set username if already taken', async () => {
