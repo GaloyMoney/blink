@@ -82,6 +82,18 @@ describe('username tests', () => {
     expect(!!result).toBeTruthy()
   })
 
+  it('user exist', async () => {
+    const result = await User.exists({ username })
+    console.log({result}, "exist lowercase")
+    expect(result).toBeTruthy()
+  })
+
+  it('user with different case exist as well', async () => {
+    const result = await User.exists({ username: username.toLocaleUpperCase() })
+    console.log({result}, "exist uppercase")
+    expect(result).toBeTruthy()
+  })
+
   it('does not set username with only case difference', async () => {
     await expect(userWallet.setUsername({ username: '_user1' })).rejects.toThrow()
   })
