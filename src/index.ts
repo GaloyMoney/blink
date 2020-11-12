@@ -5,14 +5,14 @@ import * as jwt from 'jsonwebtoken';
 import { startsWith } from "lodash";
 import moment from "moment";
 import { v4 as uuidv4 } from 'uuid';
-import { mainCache } from "./cache";
+import { getMinBuildNumber, mainCache } from "./cache";
 import { MapDB, setupMongoConnection, User } from "./mongodb";
 import { sendNotification } from "./notification";
 import { Price } from "./priceImpl";
 import { login, requestPhoneCode } from "./text";
 import { OnboardingEarn } from "./types";
 import { upgrade } from "./upgrade";
-import { baseLogger, customLoggerPrefix, getAuth, nodeStats, getMinBuildNumber } from "./utils";
+import { baseLogger, customLoggerPrefix, getAuth, nodeStats } from "./utils";
 import { UserWallet } from "./wallet";
 import { WalletFactory, WalletFromUsername } from "./walletFactory";
 const util = require('util')
