@@ -404,13 +404,10 @@ export const LightningMixin = (superclass) => class extends superclass {
     })
   }
 
-  // TODO manage the error case properly. right now there is a mix of string being return
-  // or error being thrown. Not sure how this is handled by GraphQL
-
   async updatePendingPayments() {
 
     const query = { account_path: this.accountPathMedici, type: "payment", pending: true }
-    const count = Transaction.count(query)
+    const count = await Transaction.count(query)
 
     if (count === 0) {
       return
