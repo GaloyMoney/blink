@@ -35,8 +35,7 @@ export async function onchainTransactionEventHandler(tx) {
   }
   txsReceived.add(hash)
 
-
-  logger.debug({ tx }, "received new onchain tx event")
+  logger.info({ tx }, "received new onchain tx event")
   const onchainLogger = logger.child({ topic: "payment", protocol: "onchain", hash: tx.id, onUs: false })
 
   if (tx.is_outgoing) {
@@ -124,11 +123,11 @@ export const onInvoiceUpdate = async invoice => {
 export const onChannelOpened = async ({ channel, lnd }) => {
 
   if (channel.is_partner_initiated) {
-    logger.debug({ channel }, "channel opened to us")
+    logger.info({ channel }, "channel opened to us")
     return
   }
 
-  logger.debug({ channel }, "channel opened by us")
+  logger.info({ channel }, "channel opened by us")
 
   const { transaction_id } = channel
 
