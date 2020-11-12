@@ -5,6 +5,7 @@ import { filter } from "lodash";
 import { LightningBtcWallet } from "../LightningBtcWallet";
 import { quit } from "../lock";
 import { setupMongoConnection, User } from "../mongodb";
+import { Price } from "../priceImpl";
 import { checkIsBalanced, getUserWallet, lndMain, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
 import { onchainTransactionEventHandler } from "../trigger";
 import { baseLogger, bitcoindClient, btc2sat, sleep } from "../utils";
@@ -125,8 +126,11 @@ it('identifies unconfirmed incoming on chain txn', async () => {
 
   expect(sendNotification.mock.calls.length).toBe(1)
   expect(sendNotification.mock.calls[0][0].data.type).toBe("onchain_receipt")
-  expect(sendNotification.mock.calls[0][0].title).toBe(
-    `You have a pending incoming transaction of ${btc2sat(amount_BTC)} sats`)
+
+  const satsPrice = await new Price({ logger: baseLogger }).lastPrice()
+  const usd = btc2sat(amount_BTC) * satsPrice
+
+  expect(sendNotification.mock.calls[0][0].title).toBe(`$${usd} | ${btc2sat(amount_BTC)} sats is on its way to your wallet`)
 
   await Promise.all([
     bitcoindClient.generateToAddress(1, RANDOM_ADDRESS),

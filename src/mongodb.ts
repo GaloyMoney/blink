@@ -14,7 +14,6 @@ const dbVersionSchema = new Schema({
 export const DbVersion = mongoose.model("DbVersion", dbVersionSchema)
 
 
-// expired invoice should be removed from the collection
 const invoiceUserSchema = new Schema({
   _id: String, // hash of invoice
   uid: String,
@@ -45,6 +44,19 @@ invoiceUserSchema.index({ "uid": 1 })
 
 
 export const InvoiceUser = mongoose.model("InvoiceUser", invoiceUserSchema)
+
+
+const mapSchema = new Schema({
+  title: String,
+  coordinate: {
+    latitude: String,
+    longitude: String,
+  }
+})
+
+export const MapDB = mongoose.model("Map", mapSchema)
+
+
 
 const UserSchema = new Schema({
   created_at: {
@@ -81,6 +93,7 @@ const UserSchema = new Schema({
     maxlength: 50,
     index: {
       unique: true,
+      collation: {locale: "en", strength: 2},
       partialFilterExpression: { username: { $type: "string" } }
     }
   },

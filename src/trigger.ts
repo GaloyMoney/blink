@@ -8,6 +8,7 @@ import { sendInvoicePaidNotification, sendNotification } from "./notification";
 import { IDataNotification } from "./types";
 import { getAuth, baseLogger, LOOK_BACK } from './utils';
 import { WalletFactory } from "./walletFactory";
+import { Price } from "./priceImpl";
 const crypto = require("crypto")
 const lnService = require('ln-service');
 
@@ -88,9 +89,12 @@ export async function onchainTransactionEventHandler(tx) {
       await wallet.updateOnchainReceipt()
     }
 
+    const satsPrice = await new Price({ logger }).lastPrice()
+    const usd = tx.tokens * satsPrice
+
     const title = tx.is_confirmed ?
-      `Your wallet has been credited with ${tx.tokens} sats` :
-      `You have a pending incoming transaction of ${tx.tokens} sats`
+      `You received $${usd} | ${tx.tokens} sats` :
+      `$${usd} | ${tx.tokens} sats is on its way to your wallet`
     await sendNotification({ title, uid: user._id, data, logger })
   }
 }

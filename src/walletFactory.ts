@@ -7,6 +7,7 @@ import { login, TEST_NUMBER } from "./text";
 import * as jwt from 'jsonwebtoken';
 import { baseLogger, LoggedError } from "./utils";
 import { getLastPrice } from "./cache";
+import { regExUsername } from "./wallet";
 
 export const WalletFactory = async ({ user, uid, logger, currency = "BTC" }: { user: any, uid: string, currency: string, logger: any }) => {
   const lastPrice = await getLastPrice()
@@ -20,7 +21,7 @@ export const WalletFactory = async ({ user, uid, logger, currency = "BTC" }: { u
 }
 
 export const WalletFromUsername = async ({ username, logger }: { username: string, logger: any }) => {
-  const user = await User.findOne({ username })
+  const user = await User.findOne({ username: regExUsername({username}) })
   if (!user) {
     const error = `User not found`
     logger.warn({username}, error)
@@ -28,9 +29,9 @@ export const WalletFromUsername = async ({ username, logger }: { username: strin
   }
 
   // FIXME: there are some duplication between user and uid/currency
-  const { uid, currency } = user
+  const { _id, currency } = user
 
-  return await WalletFactory({ user, uid, currency, logger })
+  return WalletFactory({ user, uid: _id, currency, logger })
 }
 
 export const getFunderWallet = async ({ logger }) => {

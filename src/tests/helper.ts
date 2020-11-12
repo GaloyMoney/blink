@@ -6,6 +6,8 @@ import { OnboardingEarn } from "../types";
 import { baseLogger, getAuth, sleep } from "../utils";
 import { getTokenFromPhoneIndex, WalletFactory } from "../walletFactory";
 
+export const username = "user0"
+
 const lnService = require('ln-service')
 
 const earnsToGet = ['buyFirstSats', 'debitCardActivation', 'firstCardSpending']
