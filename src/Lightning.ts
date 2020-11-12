@@ -484,7 +484,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       this.logger.info({hash, uid: this.uid, resultDeletion}, "succesfully deleted cancelled invoice")
 
       // TODO: proper testing
-      const result = Transaction.findOne({currency: this.currency, hash, type: "on_us", pending: false})
+      const result = await Transaction.findOne({currency: this.currency, hash, type: "on_us", pending: false})
       return !!result
 
     } else if (invoice.is_confirmed) {
