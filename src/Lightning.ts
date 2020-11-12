@@ -491,7 +491,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
       try {
 
-        return await using(disposer(this.uid), async (lock) => {
+        return await using(disposer(hash), async (lock) => {
 
           const invoiceUser = await InvoiceUser.findOne({ _id: hash, uid: this.uid })
 
