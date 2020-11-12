@@ -8,6 +8,7 @@ import { sendInvoicePaidNotification } from "./notification";
 import { IAddInvoiceInternalRequest, IPaymentRequest } from "./types";
 import { getAuth, LoggedError, timeout } from "./utils";
 import { regExUsername } from "./wallet";
+import moment from "moment"
 
 const util = require('util')
 
