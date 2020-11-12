@@ -132,7 +132,6 @@ export const OnChainMixin = (superclass) => class extends superclass {
       const outgoingOnchainTxns = await this.getOnChainTransactions({ lnd: this.lnd, incoming: false })
 
       const [{ fee }] = outgoingOnchainTxns.filter(tx => tx.id === id)
-      console.log({fee})
 
       {
         const sats = amount + fee

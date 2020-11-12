@@ -173,7 +173,7 @@ const resolvers = {
     }),
     addDeviceToken: async (_, { deviceToken }, { uid, user }) => {
       user.deviceToken.addToSet(deviceToken)
-      // TODO: check if this is ok to shared an user instance and mutate it.
+      // TODO: check if this is ok to shared a mongoose user instance and mutate it.
       await user.save()
       return { success: true }
     },
@@ -258,7 +258,7 @@ const server = new GraphQLServer({
     const user = !!uid ? User.findOne({ _id: uid }) : null
     // @ts-ignore
     const logger = graphqlLogger.child({ token, id: context.request.id, body: context.request.body })
-    const wallet = !!token ? await WalletFactory({ ...token, user, logger }) : null
+    const wallet = !!uid ? await WalletFactory({ ...token, user, logger }) : null
     return {
       ...context,
       logger,

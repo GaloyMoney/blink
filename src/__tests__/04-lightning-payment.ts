@@ -38,7 +38,7 @@ beforeEach(async () => {
 })
 
 afterEach(async () => {
-  // await checkIsBalanced()
+  await checkIsBalanced()
 })
 
 afterAll(async () => {
@@ -125,8 +125,14 @@ it('receives payment from outside', async () => {
   const finalBalance = await userWallet1.getBalance()
   expect(finalBalance).toBe(initBalance1 + amountInvoice)
 
-  const mongotx = await Transaction.findOne({ hash: getHash(request) })
+  const hash = getHash(request)
+
+  const mongotx = await Transaction.findOne({ hash })
   expect(mongotx.memo).toBe(memo)
+
+  expect(await userWallet1.updatePendingInvoice({ hash })).toBeTruthy()
+  expect(await userWallet1.updatePendingInvoice({ hash })).toBeTruthy()
+
 })
 
 // @ts-ignore
@@ -183,7 +189,7 @@ it('expired payment', async () => {
     console.log({err}, "invoice should not exist any more")
   }
 
-  expect(await userWallet1.updatePendingInvoice({ hash: id })).toBeTruthy()
+  expect(await userWallet1.updatePendingInvoice({ hash: id })).toBeFalsy()
   
 }, 150000)
 
@@ -205,7 +211,8 @@ it('payInvoiceToAnotherGaloyUser', async () => {
   expect(user1FinalBalance).toBe(initBalance1 - amountInvoice)
   expect(user2FinalBalance).toBe(initBalance2 + amountInvoice)
 
-  const matchTx = tx => tx.type === 'on_us' && tx.hash === getHash(request)
+  const hash = getHash(request)
+  const matchTx = tx => tx.type === 'on_us' && tx.hash === hash
 
   const user2Txn = await userWallet2.getTransactions()
   const user2OnUsTxn = user2Txn.filter(matchTx)
@@ -217,6 +224,12 @@ it('payInvoiceToAnotherGaloyUser', async () => {
   const user1OnUsTxn = user1Txn.filter(matchTx)
   expect(user1OnUsTxn[0].type).toBe('on_us')
   expect(user1OnUsTxn[0].description).toBe(memo)
+
+  // making request twice because there is a cancel state, and this should be re-entrant
+  expect(await userWallet1.updatePendingInvoice({ hash })).toBeTruthy()
+  expect(await userWallet2.updatePendingInvoice({ hash })).toBeTruthy()
+  expect(await userWallet1.updatePendingInvoice({ hash })).toBeTruthy()
+  expect(await userWallet2.updatePendingInvoice({ hash })).toBeTruthy()
 
 })
 
