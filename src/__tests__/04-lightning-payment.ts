@@ -174,17 +174,17 @@ it('expired payment', async () => {
   
 
   await userWallet1.getBalance()
-
-  await sleep(500)
-
+    
   expect(await InvoiceUser.countDocuments({_id: id})).toBe(0)
-
+  
   try {
     await lnService.getInvoice({ lnd: getAuth(), id })
   } catch (err) {
     console.log({err}, "invoice should not exist any more")
   }
 
+  expect(await userWallet1.updatePendingInvoice({ hash: id })).toBeTruthy()
+  
 }, 150000)
 
 it('fails to pay when user has insufficient balance', async () => {

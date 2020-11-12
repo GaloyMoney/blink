@@ -413,6 +413,10 @@ export const LightningMixin = (superclass) => class extends superclass {
       return
     }
 
+    // we only lock the account if there is some pending paument transaction, which would typically be unlikely
+    // we're doing the the Transaction.find after the lock to make sure there is no race condition
+    // note: there might be another design that doesn't requiere a lock at the uid level but only at the hash level,
+    // but will need to dig more into the cursor aspect of mongodb to see if there is a concurrency-safe way to do it.
     return await using(disposer(this.uid), async (lock) => {
 
       const payments = await Transaction.find(query)
@@ -477,6 +481,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     // has been managed off lnd.
     if (invoice.is_canceled) {
 
+      // check what happen if we go to this loop twice?
       const resultDeletion = await InvoiceUser.deleteOne({ _id: hash, uid: this.uid })
       this.logger.info({hash, uid: this.uid, resultDeletion}, "succesfully deleted cancelled invoice")
 
