@@ -181,7 +181,7 @@ it('expired payment', async () => {
 
   await userWallet1.getBalance()
 
-  await sleep(500)
+  await sleep(1000)
     
   expect(await InvoiceUser.countDocuments({_id: id})).toBe(0)
   
