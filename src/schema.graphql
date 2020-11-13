@@ -102,6 +102,7 @@ type Marker {
   id: ID
   title: String
   coordinate: Coordinate
+  username: String
 }
 
 type Query { 
