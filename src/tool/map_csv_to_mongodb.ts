@@ -1,3 +1,5 @@
+import { setupMongoConnection } from "../mongodb"
+
 const csv = require('csv-parser')
 const fs = require('fs')
 
@@ -5,8 +7,7 @@ const fs = require('fs')
 
 export const baseLogger = require('pino')
 
-const main = async () => {
-  // await setupMongoConnection()
+const insertMarkers = async () => {
 
   let results: any[] = [];
 
@@ -27,10 +28,14 @@ const main = async () => {
 
     const util = require('util')
     const data = util.inspect(results, {showHidden: false, depth: 3})
+
+    
     const script = `run db.getCollection('maps').insertMany(${data})`
-    console.log(script)
+    
   });
 }
 
-main().then(o => console.log(o)).catch(err => console.log(err))
-console.log("end")
+// only execute if it is the main module
+if (require.main === module) {
+  setupMongoConnection().then(insertMarkers).catch((err) => baseLogger.error(err))
+}
