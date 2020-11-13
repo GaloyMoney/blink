@@ -29,9 +29,9 @@ const insertMarkers = async () => {
     const util = require('util')
     const data = util.inspect(results, {showHidden: false, depth: 3})
 
-    
+    // TODO: execute the script here insteaad of showing instruction
     const script = `run db.getCollection('maps').insertMany(${data})`
-    
+     
   });
 }
 
