@@ -142,7 +142,7 @@ it('expired payment', async () => {
   const memo = "payment that should expire"
   const { lnd } = lnService.authenticatedLndGrpc(getAuth())
 
-  const dbSetSpy = jest.spyOn(Lightning, 'delay').mockImplementation(() => ({value: 1, unit: 'seconds'}))
+  const dbSetSpy = jest.spyOn(Lightning, 'delay').mockImplementation(() => ({value: 1, unit: 'seconds', "additional_delay_value": 0}))
 
   const request = await userWallet1.addInvoice({ value: amountInvoice, memo })
   const { id } = await lnService.decodePaymentRequest({ lnd, request })

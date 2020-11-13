@@ -22,10 +22,13 @@ const FEEMIN = 10 // sats
 export type ITxType = "invoice" | "payment" | "onchain_receipt" | "onchain_payment" | "on_us"
 export type payInvoiceResult = "success" | "failed" | "pending"
 
+// this value is here so that it can get mocked.
+// there could probably be a better design
+// but mocking on mixin is tricky
 export const delay = (currency) => {
   return {
-    "BTC": {value: 1, unit: 'days'},
-    "USD": {value: 2, unit: 'mins'},
+    "BTC": {value: 1, unit: 'days', "additional_delay_value": 1},
+    "USD": {value: 2, unit: 'mins', "additional_delay_value": 1},
   }[currency]
 }
 
@@ -579,11 +582,8 @@ export const LightningMixin = (superclass) => class extends superclass {
       // adding a buffer on the expiration timeline before which we delete the invoice 
       // because it seems lnd still can accept invoice even if they have expired
       // see more: https://github.com/lightningnetwork/lnd/pull/3694
-      const additional_delay_value = 1
-      const additional_delay_unit = "hours"
-      
       const expired = moment() > this.getExpiration(moment(timestamp)
-        .add(additional_delay_value, additional_delay_unit)
+        .add(delay(this.currency).additional_delay_value, "hours")
       )
       await this.updatePendingInvoice({ hash: _id, expired })
     }
