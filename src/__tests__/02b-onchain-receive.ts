@@ -9,6 +9,7 @@ import { Price } from "../priceImpl";
 import { checkIsBalanced, getUserWallet, lndMain, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
 import { onchainTransactionEventHandler } from "../trigger";
 import { baseLogger, bitcoindClient, btc2sat, sleep } from "../utils";
+import { WalletFactory } from "../walletFactory";
 
 
 const lnService = require('ln-service')
@@ -40,7 +41,7 @@ beforeEach(async () => {
   walletUser0 = await getUserWallet(0)
 
   const funder = await User.findOne({ role: "funder" })
-  funderWallet = new LightningBtcWallet({ uid: funder._id, logger: baseLogger })
+  funderWallet = await WalletFactory({ uid: funder._id, user: funder, currency: "BTC", logger: baseLogger })
 
   initBlockCount = await bitcoindClient.getBlockCount()
   initialBalanceUser0 = await walletUser0.getBalance()

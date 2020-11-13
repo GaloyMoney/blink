@@ -10,11 +10,15 @@ export const regExUsername = ({username}) => new RegExp(`^${username}$`, 'i')
 
 export abstract class UserWallet {
 
+  readonly lastPrice: number
+  readonly user: any // mongoose object
   readonly uid: string
   readonly currency: string
   readonly logger: any
 
-  constructor({ uid, currency, logger }) {
+  constructor({ lastPrice, user, uid, currency, logger }) {
+    this.lastPrice = lastPrice
+    this.user = user
     this.uid = uid
     this.currency = currency
     this.logger = logger
@@ -140,5 +144,24 @@ export abstract class UserWallet {
     }
 
     return !!result
+  }
+
+  getCurrencyEquivalent({ sats, fee, usd }: { sats: number, fee: number, usd?: number }) {
+    let _usd = usd
+    let feeUsd
+  
+    if (!usd) {
+      _usd = this.satsToUsd(sats)
+    }
+  
+    // TODO: check if fee is always given in sats
+    feeUsd = this.satsToUsd(fee)
+  
+    return { fee, feeUsd, sats, usd: _usd }
+  }
+  
+  satsToUsd = sats => {
+    const usdValue = this.lastPrice * sats
+    return usdValue
   }
 }

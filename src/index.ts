@@ -5,7 +5,8 @@ import * as jwt from 'jsonwebtoken';
 import { startsWith } from "lodash";
 import moment from "moment";
 import { v4 as uuidv4 } from 'uuid';
-import { DbVersion, setupMongoConnection, User, MapDB } from "./mongodb";
+import { getMinBuildNumber, mainCache } from "./cache";
+import { MapDB, setupMongoConnection, User } from "./mongodb";
 import { sendNotification } from "./notification";
 import { Price } from "./priceImpl";
 import { login, requestPhoneCode } from "./text";
@@ -55,16 +56,10 @@ const commitHash = process.env.COMMITHASH
 const buildTime = process.env.BUILDTIME
 const helmRevision = process.env.HELMREVISION
 
-// TODO: caching for some period of time. maybe 1h
-const getMinBuildNumber = async () => {
-  const { minBuildNumber, lastBuildNumber } = await DbVersion.findOne({}, { minBuildNumber: 1, lastBuildNumber: 1, _id: 0 })
-  return { minBuildNumber, lastBuildNumber }
-}
-
 const resolvers = {
   Query: {
-    me: async (_, __, { uid }) => {
-      const { phone, username } = await User.findOne({ _id: uid })
+    me: async (_, __, { uid, user }) => {
+      const { phone, username } = user
 
       return {
         id: uid,
@@ -95,13 +90,24 @@ const resolvers = {
         lastBuildNumberIos: lastBuildNumber,
     }},
     prices: async (_, __, {logger}) => {
-      const price = new Price({logger})
-      return await price.lastCached()
+      const key = "lastCached"
+      let value
+    
+      value = mainCache.get(key);
+      if ( value === undefined ){
+        const price = new Price({logger})
+        const lastCached = await price.lastCached()
+        // TODO: maybe have a better way to reset the cache.
+        // if we have 300 seconds of cache here, but we also only fetch from prometheus value only every 300 seconds
+        // then the price value could be stale up to 600 seconds on the client side
+        mainCache.set( key, lastCached, [ 300 ] )
+        value = lastCached
+      }
+    
+      return value
     },
-    earnList: async (_, __, { uid }) => {
+    earnList: async (_, __, { uid, user }) => {
       const response: Object[] = []
-
-      const user = await User.findOne({ _id: uid })
       const earned = user?.earn || []
 
       for (const [id, value] of Object.entries(OnboardingEarn)) {
@@ -165,10 +171,9 @@ const resolvers = {
       pay: ({ address, amount, memo }) => ({ success: wallet.onChainPay({ address, amount, memo }) }),
       getFee: ({ address }) => wallet.getOnchainFee({ address }),
     }),
-    addDeviceToken: async (_, { deviceToken }, { uid }) => {
-      // TODO: refactor to a higher level User class
-      const user = await User.findOne({ _id: uid })
+    addDeviceToken: async (_, { deviceToken }, { uid, user }) => {
       user.deviceToken.addToSet(deviceToken)
+      // TODO: check if this is ok to shared a mongoose user instance and mutate it.
       await user.save()
       return { success: true }
     },
@@ -250,14 +255,16 @@ const server = new GraphQLServer({
   context: async (context) => {
     const token = verifyToken(context.request)
     const uid = token?.uid ?? null
+    const user = !!uid ? User.findOne({ _id: uid }) : null
     // @ts-ignore
     const logger = graphqlLogger.child({ token, id: context.request.id, body: context.request.body })
-    const wallet = !!token ? WalletFactory({ ...token, logger }) : null
+    const wallet = !!uid ? await WalletFactory({ ...token, user, logger }) : null
     return {
       ...context,
       logger,
       uid,
       wallet,
+      user
     }
   }
 })

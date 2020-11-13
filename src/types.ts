@@ -5,6 +5,8 @@ export type Currency = "USD" | "BTC"
 export type ISuccess = boolean
 
 export interface ILightningWalletUser {
+  lastPrice: number
+  user: any
   uid: string
   logger: any
 }
@@ -14,7 +16,6 @@ export interface ILightningWalletUser {
 export interface IAddInvoiceInternalRequest {
   usd: number,
   sats: number,
-  currency: "USD" | "BTC",
   memo: string | undefined,
   selfGenerated?: boolean
 }

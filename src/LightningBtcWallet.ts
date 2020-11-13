@@ -4,7 +4,6 @@ import { disposer } from "./lock";
 import { User } from "./mongodb";
 import { OnChainMixin } from "./OnChain";
 import { IAddBTCInvoiceRequest, ILightningWalletUser, OnboardingEarn } from "./types";
-import { satsToUsd } from "./utils";
 import { UserWallet } from "./wallet";
 import { getFunderWallet } from "./walletFactory";
 const using = require('bluebird').using
@@ -14,8 +13,8 @@ const using = require('bluebird').using
  */
 export class LightningBtcWallet extends OnChainMixin(LightningMixin(UserWallet)) {
   
-  constructor({ uid, logger }: ILightningWalletUser) {
-    super({ uid, currency: "BTC", logger })
+  constructor(args: ILightningWalletUser) {
+    super({ currency: "BTC", ...args })
   }
 
   get accountPath(): string {
@@ -59,10 +58,10 @@ export class LightningBtcWallet extends OnChainMixin(LightningMixin(UserWallet))
     // the payer can set the amount himself
     if (!!value) {
       sats = value
-      usd = await satsToUsd(sats)
+      usd = this.satsToUsd(sats)
     }
 
-    const request = await super.addInvoiceInternal({sats, usd, currency: this.currency, memo, selfGenerated})
+    const request = await super.addInvoiceInternal({sats, usd, memo, selfGenerated})
 
     return request
   }
