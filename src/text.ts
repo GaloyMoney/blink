@@ -4,6 +4,8 @@ import { PhoneCode, User } from "./mongodb";
 
 import { randomIntFromInterval, createToken, LoggedError } from "./utils"
 
+const projectName = "***REMOVED*** Wallet"
+
 const getTwilioClient = () => {
   // FIXME: replace with env variable
   // and revoke credentials here
@@ -32,7 +34,7 @@ export const TEST_NUMBER = [
   { phone: "+16505554323", code: 321321, currency: "BTC" },
   { phone: "+16505554324", code: 321321, currency: "BTC" },
   { phone: "+16505554325", code: 321321, currency: "BTC" }, // funder
-
+  
   { phone: "+16505554326", code: 321321, currency: "USD" }, // usd
   { phone: "+16505554326", code: 321321, currency: "BTC" }, // btc
   
@@ -40,6 +42,8 @@ export const TEST_NUMBER = [
   { phone: "+16505554328", code: 321321, currency: "BTC" }, // 
   { phone: "+16505554329", code: 321321, currency: "BTC" }, // postman
   { phone: "+16505554330", code: 321321, currency: "USD" }, // usd bis
+
+  { phone: "+***REMOVED***", code: 321321, currency: "BTC" }, // for manual testing
 ]
 
 export const requestPhoneCode = async ({ phone, logger }) => {
@@ -50,7 +54,7 @@ export const requestPhoneCode = async ({ phone, logger }) => {
   }
 
   const code = randomIntFromInterval(100000, 999999)
-  const body = `${code} is your verification code for Galoy`
+  const body = `${code} is your verification code for ${projectName}`
 
   try {
     // TODO: only one code per 30 seconds should be generated.

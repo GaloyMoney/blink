@@ -5,9 +5,11 @@ import { filter } from "lodash";
 import { LightningBtcWallet } from "../LightningBtcWallet";
 import { quit } from "../lock";
 import { setupMongoConnection, User } from "../mongodb";
+import { Price } from "../priceImpl";
 import { checkIsBalanced, getUserWallet, lndMain, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
 import { onchainTransactionEventHandler } from "../trigger";
 import { baseLogger, bitcoindClient, btc2sat, sleep } from "../utils";
+import { WalletFactory } from "../walletFactory";
 
 
 const lnService = require('ln-service')
@@ -39,7 +41,7 @@ beforeEach(async () => {
   walletUser0 = await getUserWallet(0)
 
   const funder = await User.findOne({ role: "funder" })
-  funderWallet = new LightningBtcWallet({ uid: funder._id, logger: baseLogger })
+  funderWallet = await WalletFactory({ uid: funder._id, user: funder, currency: "BTC", logger: baseLogger })
 
   initBlockCount = await bitcoindClient.getBlockCount()
   initialBalanceUser0 = await walletUser0.getBalance()
@@ -124,8 +126,11 @@ it('identifies unconfirmed incoming on chain txn', async () => {
 
   expect(sendNotification.mock.calls.length).toBe(1)
   expect(sendNotification.mock.calls[0][0].data.type).toBe("onchain_receipt")
-  expect(sendNotification.mock.calls[0][0].title).toBe(
-    `You have a pending incoming transaction of ${btc2sat(amount_BTC)} sats`)
+
+  const satsPrice = await new Price({ logger: baseLogger }).lastPrice()
+  const usd = (btc2sat(amount_BTC) * satsPrice).toFixed(2)
+
+  expect(sendNotification.mock.calls[0][0].title).toBe(`$${usd} | ${btc2sat(amount_BTC)} sats is on its way to your wallet`)
 
   await Promise.all([
     bitcoindClient.generateToAddress(1, RANDOM_ADDRESS),

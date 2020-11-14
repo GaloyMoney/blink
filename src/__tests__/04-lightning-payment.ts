@@ -2,11 +2,11 @@
  * @jest-environment node
  */
 import { createHash, randomBytes } from 'crypto';
+import { FEECAP } from "../Lightning";
 import { quit } from "../lock";
-import { InvoiceUser, MainBook, setupMongoConnection, Transaction, User } from "../mongodb";
+import { InvoiceUser, setupMongoConnection, Transaction, User } from "../mongodb";
 import { checkIsBalanced, getUserWallet, lndOutside1, lndOutside2, mockGetExchangeBalance, onBoardingEarnAmt, onBoardingEarnIds, username } from "../tests/helper";
 import { baseLogger, getHash, sleep } from "../utils";
-import { FEECAP } from "../Lightning";
 import { getFunderWallet } from "../walletFactory";
 
 const lnService = require('ln-service')
@@ -34,6 +34,8 @@ beforeEach(async () => {
   initBalance0 = await userWallet0.getBalance()
   initBalance1 = await userWallet1.getBalance()
   initBalance2 = await userWallet2.getBalance()
+
+  jest.clearAllMocks()
 })
 
 afterEach(async () => {
@@ -203,10 +205,115 @@ it('receives payment from outside', async () => {
   const finalBalance = await userWallet1.getBalance()
   expect(finalBalance).toBe(initBalance1 + amountInvoice)
 
-  const mongotx = await Transaction.findOne({ hash: getHash(request) })
+  const hash = getHash(request)
+
+  const mongotx = await Transaction.findOne({ hash })
   expect(mongotx.memo).toBe(memo)
+
+  expect(await userWallet1.updatePendingInvoice({ hash })).toBeTruthy()
+  expect(await userWallet1.updatePendingInvoice({ hash })).toBeTruthy()
+
 })
 
+// @ts-ignore
+const Lightning = require('../Lightning');
+
+it('expired payment', async () => {
+  const memo = "payment that should expire"
+  const { lnd } = lnService.authenticatedLndGrpc(getAuth())
+
+  const dbSetSpy = jest.spyOn(Lightning, 'delay').mockImplementation(() => ({value: 1, unit: 'seconds', "additional_delay_value": 0}))
+
+  const request = await userWallet1.addInvoice({ value: amountInvoice, memo })
+  const { id } = await lnService.decodePaymentRequest({ lnd, request })
+  expect(await InvoiceUser.countDocuments({_id: id})).toBe(1)
+
+  // is deleting the invoice the same as when as invoice expired?
+  // const res = await lnService.cancelHodlInvoice({ lnd, id })
+  // console.log({res}, "cancelHodlInvoice result")
+
+  await sleep(5000)
+  
+  // hacky way to test if an invoice has expired 
+  // without having to to have a big timeout.
+  // let i = 30
+  // let hasExpired = false
+  // while (i > 0 || hasExpired) {
+  //   try {
+  //     console.log({i}, "get invoice start")
+  //     const res = await lnService.getInvoice({ lnd, id })
+  //     console.log({res, i}, "has expired?")
+  //   } catch (err) {
+  //     console.log({err})
+  //   }
+  //   i--
+  //   await sleep(1000)
+  // }
+  
+  // try {
+  //   await lnService.pay({ lnd: lndOutside1, request })
+  // } catch (err) {
+  //   console.log({err}, "error paying expired/cancelled invoice (that is intended)")
+  // }
+
+  // await expect(lnService.pay({ lnd: lndOutside1, request })).rejects.toThrow()
+  
+
+  await userWallet1.getBalance()
+
+  await sleep(1000)
+    
+  expect(await InvoiceUser.countDocuments({_id: id})).toBe(0)
+  
+  try {
+    await lnService.getInvoice({ lnd: getAuth(), id })
+  } catch (err) {
+    console.log({err}, "invoice should not exist any more")
+  }
+
+  expect(await userWallet1.updatePendingInvoice({ hash: id })).toBeFalsy()
+  
+}, 150000)
+
+it('fails to pay when user has insufficient balance', async () => {
+  const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: initBalance1 + 1000000 })
+  //FIXME: Check exact error message also
+  await expect(userWallet1.pay({ invoice: request })).rejects.toThrow()
+})
+
+it('payInvoiceToAnotherGaloyUser', async () => {
+  const memo = "my memo as a payer"
+
+  const request = await userWallet2.addInvoice({ value: amountInvoice })
+  await userWallet1.pay({ invoice: request, memo })
+
+  const user1FinalBalance = await userWallet1.getBalance()
+  const user2FinalBalance = await userWallet2.getBalance()
+
+  expect(user1FinalBalance).toBe(initBalance1 - amountInvoice)
+  expect(user2FinalBalance).toBe(initBalance2 + amountInvoice)
+
+  const hash = getHash(request)
+  const matchTx = tx => tx.type === 'on_us' && tx.hash === hash
+
+  const user2Txn = await userWallet2.getTransactions()
+  const user2OnUsTxn = user2Txn.filter(matchTx)
+  expect(user2OnUsTxn[0].type).toBe('on_us')
+  expect(user2OnUsTxn[0].description).toBe('on_us')
+  await checkIsBalanced()
+
+  const user1Txn = await userWallet1.getTransactions()
+  const user1OnUsTxn = user1Txn.filter(matchTx)
+  expect(user1OnUsTxn[0].type).toBe('on_us')
+  expect(user1OnUsTxn[0].description).toBe(memo)
+
+  // making request twice because there is a cancel state, and this should be re-entrant
+  expect(await userWallet1.updatePendingInvoice({ hash })).toBeTruthy()
+  expect(await userWallet2.updatePendingInvoice({ hash })).toBeTruthy()
+  expect(await userWallet1.updatePendingInvoice({ hash })).toBeTruthy()
+  expect(await userWallet2.updatePendingInvoice({ hash })).toBeTruthy()
+
+})
 
 it('payInvoiceToAnotherGaloyUserWithMemo', async () => {
   const memo = "invoiceMemo"

@@ -4,14 +4,21 @@ import { filter, includes, sumBy } from "lodash"
 import * as moment from 'moment'
 import { Price } from "./priceImpl"
 export const validate = require("validate.js")
-const lightningPayReq = require('bolt11')
 const BitcoindClient = require('bitcoin-core')
+const {parsePaymentRequest} = require('invoices');
+
 
 export const baseLogger = require('pino')({ level: process.env.LOGLEVEL || "info" })
 const util = require('util')
 
+// how many block are we looking back for getChainTransactions
+export const LOOK_BACK = 2016
+
+
 // @ts-ignore
 import { GraphQLError } from "graphql";
+import { DbVersion } from "./mongodb"
+import { mainCache } from "./cache"
 
 // FIXME: super ugly hack.
 // for some reason LoggedError get casted as GraphQLError
@@ -38,13 +45,11 @@ export const amountOnVout = ({ vout, onchain_addresses }) => {
 export const bitcoindClient = new BitcoindClient(connection_obj)
 
 export const getHash = (request) => {
-  const decoded = lightningPayReq.decode(request)
-  return decoded.tags.filter(item => item.tagName === "payment_hash")[0].data
+  return parsePaymentRequest({request}).id
 }
 
 export const getAmount = (request): number | undefined => {
-  const decoded = lightningPayReq.decode(request)
-  return decoded.satoshis
+  return parsePaymentRequest({request}).tokens
 }
 
 export const btc2sat = (btc: number) => {
@@ -53,29 +58,6 @@ export const btc2sat = (btc: number) => {
 
 export const sat2btc = (sat: number) => {
   return sat / Math.pow(10, 8)
-}
-
-export const getCurrencyEquivalent = async ({ sats, usd, fee }: { sats: number, usd?: number, fee?: number }) => {
-  let _usd = usd
-  let feeUsd
-
-  if (!usd) {
-    _usd = await satsToUsd(sats)
-  }
-
-  if (fee) {
-    feeUsd = await satsToUsd(fee)
-  }
-
-  return { fee, feeUsd, sats, usd: _usd }
-}
-
-export const satsToUsd = async sats => {
-  // TODO: caching in graphql, should be passed as a variable to addInvoice
-  // FIXME: remove the baseLogger
-  const lastPrices = await new Price({ logger: baseLogger }).lastPrice() // sats/usd
-  const usdValue = lastPrices * sats
-  return usdValue
 }
 
 export const satsToUsdCached = (sats, price) => {

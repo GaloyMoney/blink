@@ -61,7 +61,7 @@ const main = async () => {
     lndClosingChannelBalance_g.set(closing_channel_balance)
     // price_g.set(price)
       
-    const userCount = await User.count()
+    const userCount = await User.countDocuments()
     userCount_g.set(userCount)
     
     const brokerWallet = await getBrokerWallet({ logger })

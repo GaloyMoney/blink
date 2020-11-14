@@ -9,17 +9,16 @@ const logger = baseLogger.child({module: "admin"})
 
 
 export class AdminWallet {
-  readonly currency = "BTC" // add USD as well
   readonly lnd = lnService.authenticatedLndGrpc(getAuth()).lnd
 
   async updateUsersPendingPayment() {
     let userWallet
 
-    for await (const user of User.find({}, { _id: 1})) {
-      logger.debug("updating user %o", user._id)
+    for await (const user of User.find({})) {
+      logger.trace("updating user %o", user._id)
 
       // A better approach would be to just loop over pending: true invoice/payment
-      userWallet = WalletFactory({uid: user._id, currency: user.currency, logger})
+      userWallet = await WalletFactory({user, uid: user._id, currency: user.currency, logger})
       await userWallet.updatePending()
     }
   }
@@ -95,7 +94,7 @@ export class AdminWallet {
   async updateEscrows() {
     const type = "escrow"
 
-    const metadata = { type, currency: this.currency }
+    const metadata = { type, currency: "BTC" }
 
     const { channels } = await lnService.getChannels({lnd: this.lnd})
     const selfInitated = filter(channels, {is_partner_initiated: false})

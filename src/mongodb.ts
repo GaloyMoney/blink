@@ -16,11 +16,7 @@ export const DbVersion = mongoose.model("DbVersion", dbVersionSchema)
 
 const invoiceUserSchema = new Schema({
   _id: String, // hash of invoice
-  uid: {
-    type: String,
-    required: true
-  },
-  pending: Boolean,
+  uid: String,
 
   // usd equivalent. sats is attached in the invoice directly.
   // optional, as BTC wallet doesn't have to set a sat amount when creating the invoice
@@ -44,8 +40,8 @@ const invoiceUserSchema = new Schema({
   }
 })
 
-// TOOD create indexes
-invoiceUserSchema.index({ pending: 1, uid: 1 })
+invoiceUserSchema.index({ "uid": 1 })
+
 
 export const InvoiceUser = mongoose.model("InvoiceUser", invoiceUserSchema)
 
@@ -97,6 +93,7 @@ const UserSchema = new Schema({
     maxlength: 50,
     index: {
       unique: true,
+      collation: {locale: "en", strength: 2},
       partialFilterExpression: { username: { $type: "string" } }
     }
   },
@@ -169,7 +166,13 @@ const transactionSchema = new Schema({
       "exchange_rebalance"//
     ]
   },
-  pending: Boolean, // used to denote confirmation status of on and off chain txn
+
+  // used to denote confirmation status of on and off chain txn
+  // for sending payment on lightning, pending will be true when sending an onchain transactio
+  // for sending payment on chain, pending will be true until the transaction get mined
+  // pending is not used for receiving transaction.
+  pending: Boolean, 
+  
   err: String,
   currency: {
     // TODO: check if an upgrade is needed for this one
@@ -303,8 +306,6 @@ export const setupMongoConnection = async () => {
 }
 
 import { book } from "medici";
-import { has, keyBy, last, mapValues } from "lodash";
-import { createBrokerUid } from "./walletFactory";
 export const MainBook = new book("MainBook")
 
 

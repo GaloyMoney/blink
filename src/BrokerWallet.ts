@@ -2,9 +2,8 @@ import { find } from "lodash";
 import { accountBrokerFtxPath, brokerPath, customerPath, liabilitiesBrokerFtxPath } from "./ledger";
 import { MainBook } from "./mongodb";
 import { OnChainMixin } from "./OnChain";
-import { Price } from "./priceImpl";
 import { ILightningWalletUser } from "./types";
-import { baseLogger, btc2sat, getCurrencyEquivalent, sleep } from "./utils";
+import { baseLogger, btc2sat, sleep } from "./utils";
 import { UserWallet } from "./wallet";
 const using = require('bluebird').using
 const util = require('util')
@@ -33,16 +32,14 @@ const symbol = 'BTC-PERP'
 export class BrokerWallet extends OnChainMixin(UserWallet) {
   readonly currency = "BTC" 
   ftx
-  price
   
   get accountPath(): string {
     return customerPath(this.uid)
   }
 
-  constructor({ uid, logger }: ILightningWalletUser) {
-    super({ uid, currency: "BTC" })
+  constructor({ uid, logger, lastPrice }: ILightningWalletUser) {
+    super({ uid, currency: "BTC", lastPrice })
     this.ftx = new ccxt.ftx({ apiKey, secret })
-    this.price = new Price({ logger })
     this.logger = logger.child({ topic: "broker" })
   }
 
@@ -106,10 +103,8 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
   }
 
   async getProfit() {
-    const satsPrice = await this.price.lastPrice()
-
     const { total: sats, node, exchange } = await this.satsBalance()
-    const usdAssetsInBtc = sats * satsPrice
+    const usdAssetsInBtc = sats * this.lastPrice
     
     const { usd: usdLiabilities } = await this.getLocalLiabilities()
 
@@ -137,11 +132,10 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
   }
 
   async getAccountPosition() {
-    const satsPrice = await this.price.lastPrice()
     // FIXME this helper function is inverse?
     // or because price = usd/btc, usd/sats, sat or btc are in the denominator
     // and therefore the "inverse" make sense...?
-    const btcPrice = btc2sat(satsPrice) 
+    const btcPrice = btc2sat(this.lastPrice) 
 
     // TODO: what is being returned if no order had been placed?
     // probably an empty array
@@ -317,8 +311,7 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
     const currency = this.currency
     const sats = btc2sat(btcAmount)
 
-    const addedMetadata = await getCurrencyEquivalent({sats, fee: 0})
-    const metadata = { type: "exchange_rebalance", currency, ...addedMetadata }
+    const metadata = { type: "exchange_rebalance", currency, ...this.getCurrencyEquivalent({sats, fee: 0}) }
 
     let subLogger = logger.child({...metadata, currency, btcAmount, depositOrWithdraw})
 
@@ -601,8 +594,7 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
   }
 
   async updatePositionAndLeverage() {
-    const satsPrice = await this.price.lastPrice()
-    const btcPrice = btc2sat(satsPrice) 
+    const btcPrice = btc2sat(this.lastPrice) 
 
     let subLogger = this.logger
     this.logger.debug("starting with order loop")

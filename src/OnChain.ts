@@ -5,11 +5,8 @@ import moment from "moment";
 import { customerPath, lightningAccountingPath } from "./ledger";
 import { disposer } from "./lock";
 import { MainBook, Transaction, User } from "./mongodb";
-import { Price } from "./priceImpl";
 import { ILightningTransaction, IOnChainPayment, ISuccess } from "./types";
-import { amountOnVout, bitcoindClient, btc2sat, getAuth, getCurrencyEquivalent, LoggedError, satsToUsdCached } from "./utils";
-
-const util = require('util')
+import { amountOnVout, bitcoindClient, btc2sat, getAuth, LoggedError, LOOK_BACK } from "./utils";
 
 const using = require('bluebird').using
 
@@ -26,8 +23,10 @@ export const OnChainMixin = (superclass) => class extends superclass {
   }
 
   async updatePending(): Promise<void | Error> {
-    await this.updateOnchainReceipt()
-    await super.updatePending()
+    await Promise.all([
+      this.updateOnchainReceipt(),
+      super.updatePending()
+    ])
   }
 
   async PayeeUser(address: string) { return User.findOne({ onchain_addresses: { $in: address } }) }
@@ -75,10 +74,9 @@ export const OnChainMixin = (superclass) => class extends superclass {
       }
 
       const sats = amount
+      const metadata = { currency: this.currency, type: "onchain_on_us", pending: false, ...this.getCurrencyEquivalent({ sats, fee: 0 })}
 
-      const addedMetadata = await getCurrencyEquivalent({ sats, fee: 0 })
-      const metadata = { currency: this.currency, type: "onchain_on_us", pending: false, ...addedMetadata}
-
+      // TODO: this lock seems useless
       return await using(disposer(this.uid), async (lock) => {
 
         await MainBook.entry()
@@ -115,15 +113,15 @@ export const OnChainMixin = (superclass) => class extends superclass {
       throw new LoggedError(error)
     }
 
+    // case where the user doesn't have enough money
+    if (balance < amount + estimatedFee) {
+      const error = `balance is too low. have: ${balance} sats, need ${amount + estimatedFee}`
+      onchainLogger.warn({balance, amount, estimatedFee, sendTo, success: false }, error)
+      throw new LoggedError(error)
+    }
+
     return await using(disposer(this.uid), async (lock) => {
       
-      // case where the user doesn't have enough money
-      if (balance < amount + estimatedFee) {
-        const error = `balance is too low. have: ${balance} sats, need ${amount + estimatedFee}`
-        onchainLogger.warn({balance, amount, estimatedFee, sendTo, success: false }, error)
-        throw new LoggedError(error)
-      }
-
       try {
         ({ id } = await lnService.sendToChainAddress({ address, lnd: this.lnd, tokens: amount }))
       } catch (err) {
@@ -137,9 +135,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
       {
         const sats = amount + fee
-        
-        const addedMetadata = await getCurrencyEquivalent({ sats, fee })
-        const metadata = { currency: this.currency, hash: id, type: "onchain_payment", pending: true, ...addedMetadata }
+        const metadata = { currency: this.currency, hash: id, type: "onchain_payment", pending: true, ...this.getCurrencyEquivalent({ sats, fee }) }
 
         // TODO/FIXME refactor. add the transaction first and set the fees in a second tx.
         await MainBook.entry(memo)
@@ -157,18 +153,14 @@ export const OnChainMixin = (superclass) => class extends superclass {
   }
 
   async getLastOnChainAddress(): Promise<String | Error | undefined> {
-    let user = await User.findOne({ _id: this.uid })
-
-    if (!user) { // this should not happen. is test that relevant?
-      const error = "no user is associated with this address"
-      this.logger.error({user}, error)
-      throw new LoggedError(`no user with this uid`)
-    }
+    let user = this.user
 
     if (user.onchain_addresses.length === 0) {
       // TODO create one address when a user is created instead?
       // FIXME this shold not be done in a query but only in a mutation?
       await this.getOnChainAddress()
+
+      // TODO: there should be a way to refresh the user?
       user = await User.findOne({ _id: this.uid })
     }
 
@@ -220,8 +212,12 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
   async getOnChainTransactions({ lnd, incoming }: { lnd: any, incoming: boolean }) {
     try {
-      const onchainTransactions = await lnService.getChainTransactions({ lnd })
-      return onchainTransactions.transactions.filter(tx => incoming === !tx.is_outgoing)
+      const { current_block_height } = await lnService.getHeight({lnd})
+      const after = Math.max(0, current_block_height - LOOK_BACK) // this is necessary for tests, otherwise after may be negative
+      const { transactions } = await lnService.getChainTransactions({ lnd, after })
+
+
+      return transactions.filter(tx => incoming === !tx.is_outgoing)
     } catch (err) {
       const error = `issue fetching transaction`
       this.logger.error({err, incoming}, error)
@@ -297,10 +293,6 @@ export const OnChainMixin = (superclass) => class extends superclass {
     //   transaction: '020000000001019b5e33c844cc72b093683cec8f743f1ddbcf075077e5851cc8a598a844e684850100000000feffffff022054380c0100000016001499294eb1f4936f15472a891ba400dc09bfd0aa7b00e1f505000000001600146107c29ed16bf7712347ddb731af713e68f1a50702473044022016c03d070341b8954fe8f956ed1273bb3852d3b4ba0d798e090bb5fddde9321a022028dad050cac2e06fb20fad5b5bb6f1d2786306d90a1d8d82bf91e03a85e46fa70121024e3c0b200723dda6862327135ab70941a94d4f353c51f83921fcf4b5935eb80495000000'
     // }
 
-
-    // TODO: refactor Price
-    const price = await new Price({logger: this.logger}).lastPrice()
-
     return [
       ...unconfirmed.map(({ tokens, id, created_at }) => ({
         id, 
@@ -308,7 +300,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
         pending: true,
         created_at: moment(created_at).unix(),
         sat: tokens,
-        usd: satsToUsdCached(tokens, price),
+        usd: this.satsToUsd(tokens, this.lastPrice),
         description: "pending",
         type: "onchain_receipt",
         hash: id,
@@ -379,8 +371,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
           const sats = btc2sat(value)
           assert(matched_tx.tokens >= sats)
 
-          const addedMetadata = await getCurrencyEquivalent({ sats })
-          const metadata = { currency: this.currency, type, hash: matched_tx.id, pending: false, ...addedMetadata }
+          const metadata = { currency: this.currency, type, hash: matched_tx.id, pending: false, ...this.getCurrencyEquivalent({ sats, fee: 0 }) }
 
           await MainBook.entry()
             .debit(this.accountPath, sats, metadata)
