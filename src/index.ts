@@ -126,7 +126,9 @@ const resolvers = {
       const maps = await MapDB.find({})
       return maps.map(item => ({
         id: item._id,
-        ...item,
+        username: item.username,
+        title: item.title,
+        coordinate: item.coordinate,
       }))
     },
     usernameExists: async (_, { username }) => await UserWallet.usernameExists({ username })
