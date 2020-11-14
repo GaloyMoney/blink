@@ -89,7 +89,7 @@ export async function onchainTransactionEventHandler(tx) {
     }
 
     const satsPrice = await new Price({ logger }).lastPrice()
-    const usd = tx.tokens * satsPrice
+    const usd = (tx.tokens * satsPrice).toFixed(2)
 
     const title = tx.is_confirmed ?
       `You received $${usd} | ${tx.tokens} sats` :

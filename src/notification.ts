@@ -24,7 +24,7 @@ export const sendInvoicePaidNotification = async ({hash, amount, uid, logger}) =
     amount,
   }
 
-  const usd = amount * satsPrice
+  const usd = (amount * satsPrice).toFixed(2)
   // TODO dedupe from trigger.ts
   await sendNotification({uid, title: `You received $${usd} | ${amount} sats`, data, logger})
 }
