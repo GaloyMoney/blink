@@ -111,7 +111,7 @@ type Query {
   earnList: [Earn]
   me: User
   maps: [Marker]
-  buildParameters(appVersion: String, buildVersion: String): BuildParameter
+  buildParameters(appVersion: String, buildVersion: String, os: String): BuildParameter
   nodeStats: NodeStats
   getLastOnChainAddress: LastOnChainAddress
   usernameExists(username: String!): Boolean

@@ -6,7 +6,7 @@ import { InvoiceUser, setupMongoConnection, Transaction, User, MainBook } from "
 import { lightningAccountingPath, openChannelFees } from "./ledger";
 import { sendInvoicePaidNotification, sendNotification } from "./notification";
 import { IDataNotification } from "./types";
-import { getAuth, baseLogger } from './utils';
+import { getAuth, baseLogger, LOOK_BACK } from './utils';
 import { WalletFactory } from "./walletFactory";
 import { Price } from "./priceImpl";
 const crypto = require("crypto")
@@ -35,8 +35,7 @@ export async function onchainTransactionEventHandler(tx) {
   }
   txsReceived.add(hash)
 
-
-  logger.debug({ tx }, "received new onchain tx event")
+  logger.info({ tx }, "received new onchain tx event")
   const onchainLogger = logger.child({ topic: "payment", protocol: "onchain", hash: tx.id, onUs: false })
 
   if (tx.is_outgoing) {
@@ -63,10 +62,10 @@ export async function onchainTransactionEventHandler(tx) {
     // TODO: the same way Lightning is updating the wallet/accounting, 
     // this event should update the onchain wallet/account of the associated user
 
-    let _id
+    let user
     try {
-      ({ _id } = await User.findOne({ onchain_addresses: { $in: tx.output_addresses } }, { _id: 1 }))
-      if (!_id) {
+      user = await User.findOne({ onchain_addresses: { $in: tx.output_addresses } })
+      if (!user._id) {
         //FIXME: Log the onchain address, need to first find which of the tx.output_addresses belongs to us
         logger.fatal({ tx }, `No user associated with the onchain address`)
         return
@@ -85,17 +84,17 @@ export async function onchainTransactionEventHandler(tx) {
       onchainLogger.info({ transactionType: "receipt", pending: true }, "mempool apparence")
     } else {
       // onchain is currently only BTC
-      const wallet = WalletFactory({ uid: _id, currency: "BTC", logger })
+      const wallet = await WalletFactory({ user, uid: user._id, currency: "BTC", logger })
       await wallet.updateOnchainReceipt()
     }
 
     const satsPrice = await new Price({ logger }).lastPrice()
-    const usd = tx.tokens * satsPrice
+    const usd = (tx.tokens * satsPrice).toFixed(2)
 
     const title = tx.is_confirmed ?
       `You received $${usd} | ${tx.tokens} sats` :
       `$${usd} | ${tx.tokens} sats is on its way to your wallet`
-    await sendNotification({ title, uid: _id, data, logger })
+    await sendNotification({ title, uid: user._id, data, logger })
   }
 }
 
@@ -107,12 +106,13 @@ export const onInvoiceUpdate = async invoice => {
   }
 
   // FIXME: we're making 2x the request to Invoice User here. One in trigger, one in lighning.
-  const invoiceUser = await InvoiceUser.findOne({ _id: invoice.id, pending: true })
+  const invoiceUser = await InvoiceUser.findOne({ _id: invoice.id })
   if (invoiceUser) {
     const uid = invoiceUser.uid
     const hash = invoice.id as string
 
-    const wallet = WalletFactory({ uid, currency: invoiceUser.currency, logger })
+    const user = await User.findOne({_id: uid})
+    const wallet = await WalletFactory({ user, uid, currency: invoiceUser.currency, logger })
     await wallet.updatePendingInvoice({ hash })
     await sendInvoicePaidNotification({ amount: invoice.received, hash, uid, logger })
   } else {
@@ -123,15 +123,18 @@ export const onInvoiceUpdate = async invoice => {
 export const onChannelOpened = async ({ channel, lnd }) => {
 
   if (channel.is_partner_initiated) {
-    logger.debug({ channel }, "channel opened to us")
+    logger.info({ channel }, "channel opened to us")
     return
   }
 
-  logger.debug({ channel }, "channel opened by us")
+  logger.info({ channel }, "channel opened by us")
 
   const { transaction_id } = channel
 
-  const { transactions } = await lnService.getChainTransactions({ lnd })
+  // TODO: dedupe from onchain
+  const { current_block_height } = await lnService.getHeight({lnd})
+  const after = Math.max(0, current_block_height - LOOK_BACK) // this is necessary for tests, otherwise after may be negative
+  const { transactions } = await lnService.getChainTransactions({ lnd, after })
 
   const { fee } = find(transactions, { id: transaction_id })
 

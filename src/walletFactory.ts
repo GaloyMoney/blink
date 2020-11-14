@@ -6,14 +6,17 @@ import { User } from "./mongodb"
 import { login, TEST_NUMBER } from "./text";
 import * as jwt from 'jsonwebtoken';
 import { baseLogger, LoggedError } from "./utils";
+import { getLastPrice } from "./cache";
 import { regExUsername } from "./wallet";
 
-export const WalletFactory = ({ uid, logger, currency = "BTC" }: { uid: string, currency: string, logger: any }) => {
+export const WalletFactory = async ({ user, uid, logger, currency = "BTC" }: { user: any, uid: string, currency: string, logger: any }) => {
+  const lastPrice = await getLastPrice()
+
   // TODO: remove default BTC once old tokens had been "expired"
   if (currency === "USD") {
-    return new LightningUsdWallet({ uid, logger })
+    return new LightningUsdWallet({ lastPrice, user, uid, logger })
   } else {
-    return new LightningBtcWallet({ uid, logger })
+    return new LightningBtcWallet({ lastPrice, user, uid, logger })
   }
 }
 
@@ -21,23 +24,24 @@ export const WalletFromUsername = async ({ username, logger }: { username: strin
   const user = await User.findOne({ username: regExUsername({username}) })
   if (!user) {
     const error = `User not found`
-    logger.warn(error)
+    logger.warn({username}, error)
     throw new LoggedError(error)
   }
 
+  // FIXME: there are some duplication between user and uid/currency
   const { _id, currency } = user
 
-  return WalletFactory({ uid: _id, currency, logger })
+  return WalletFactory({ user, uid: _id, currency, logger })
 }
 
 export const getFunderWallet = async ({ logger }) => {
   const funder = await User.findOne({ role: "funder" })
-  return new LightningBtcWallet({ uid: funder._id, logger })
+  return new LightningBtcWallet({ lastPrice: await getLastPrice(), user: funder, uid: funder._id, logger })
 }
 
 export const getBrokerWallet = async ({ logger }) => {
   const broker = await User.findOne({ role: "broker" })
-  return new BrokerWallet({ uid: broker._id, logger })
+  return new BrokerWallet({ lastPrice: await getLastPrice(), user: broker, uid: broker._id, logger })
 }
 
 export const getTokenFromPhoneIndex = async (index) => {

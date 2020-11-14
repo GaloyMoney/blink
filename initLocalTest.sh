@@ -1,6 +1,8 @@
 set -e
 
 helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo add grafana https://grafana.github.io/helm-charts
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
 
 
@@ -33,14 +35,14 @@ helmUpgrade () {
 monitoringDeploymentsUpgrade() {
   SECRET=alertmanager-keys
   local NAMESPACE=monitoring
-  helmUpgrade prometheus stable/prometheus -f ~/GaloyApp/backend/prometheus-server/values.yaml
+  helmUpgrade prometheus prometheus-community/prometheus -f ~/GaloyApp/backend/prometheus-server/values.yaml
 
   export SLACK_API_URL=$(kubectl get secret -n $NAMESPACE $SECRET -o jsonpath="{.data.SLACK_API_URL}" | base64 -d)
   export SERVICE_KEY=$(kubectl get secret -n $NAMESPACE $SECRET -o jsonpath="{.data.SERVICE_KEY}" | base64 -d)
 
   kubectl -n $NAMESPACE get configmaps prometheus-alertmanager -o yaml | sed -e "s|SLACK_API_URL|$SLACK_API_URL|; s|SERVICE_KEY|$SERVICE_KEY|" | kubectl -n $NAMESPACE apply -f -
 
-  helmUpgrade grafana stable/grafana -f ~/GaloyApp/backend/grafana/values.yaml
+  helmUpgrade grafana grafana/grafana -f ~/GaloyApp/backend/grafana/values.yaml
   helmUpgrade mongo-exporter ~/GaloyApp/backend/mongo-exporter
 }
 
