@@ -410,7 +410,7 @@ export const LightningMixin = (superclass) => class extends superclass {
   async updatePendingPayments() {
 
     const query = { account_path: this.accountPathMedici, type: "payment", pending: true }
-    const count = await Transaction.count(query)
+    const count = await Transaction.countDocuments(query)
 
     if (count === 0) {
       return
