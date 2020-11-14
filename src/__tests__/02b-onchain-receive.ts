@@ -128,7 +128,7 @@ it('identifies unconfirmed incoming on chain txn', async () => {
   expect(sendNotification.mock.calls[0][0].data.type).toBe("onchain_receipt")
 
   const satsPrice = await new Price({ logger: baseLogger }).lastPrice()
-  const usd = btc2sat(amount_BTC) * satsPrice
+  const usd = (btc2sat(amount_BTC) * satsPrice).toFixed(2)
 
   expect(sendNotification.mock.calls[0][0].title).toBe(`$${usd} | ${btc2sat(amount_BTC)} sats is on its way to your wallet`)
 
