@@ -255,7 +255,7 @@ const server = new GraphQLServer({
   context: async (context) => {
     const token = verifyToken(context.request)
     const uid = token?.uid ?? null
-    const user = !!uid ? User.findOne({ _id: uid }) : null
+    const user = !!uid ? await User.findOne({ _id: uid }) : null
     // @ts-ignore
     const logger = graphqlLogger.child({ token, id: context.request.id, body: context.request.body })
     const wallet = !!uid ? await WalletFactory({ ...token, user, logger }) : null
