@@ -51,6 +51,10 @@ const mapSchema = new Schema({
   coordinate: {
     latitude: String,
     longitude: String,
+  },
+  username: { 
+    type: String,
+    set: v => v === "" ? undefined : v,
   }
 })
 
