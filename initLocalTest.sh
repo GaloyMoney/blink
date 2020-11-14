@@ -1,6 +1,7 @@
 set -e
 
 helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
 
 
@@ -33,7 +34,7 @@ helmUpgrade () {
 monitoringDeploymentsUpgrade() {
   SECRET=alertmanager-keys
   local NAMESPACE=monitoring
-  helmUpgrade prometheus stable/prometheus -f ~/GaloyApp/backend/prometheus-server/values.yaml
+  helmUpgrade prometheus prometheus-community/prometheus -f ~/GaloyApp/backend/prometheus-server/values.yaml
 
   export SLACK_API_URL=$(kubectl get secret -n $NAMESPACE $SECRET -o jsonpath="{.data.SLACK_API_URL}" | base64 -d)
   export SERVICE_KEY=$(kubectl get secret -n $NAMESPACE $SECRET -o jsonpath="{.data.SERVICE_KEY}" | base64 -d)
