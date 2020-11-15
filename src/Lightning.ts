@@ -296,7 +296,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         if (balance < value) {
           const error = `balance is too low`
-          lightningLoggerOnUs.error({balance, value, success: false, error}, error)
+          lightningLoggerOnUs.warn({balance, value, success: false, error}, error)
           throw new LoggedError(error)
         }
 

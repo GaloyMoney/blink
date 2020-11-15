@@ -6,7 +6,7 @@ import { FEECAP } from "../Lightning";
 import { quit } from "../lock";
 import { InvoiceUser, setupMongoConnection, Transaction, User } from "../mongodb";
 import { checkIsBalanced, getUserWallet, lndOutside1, lndOutside2, mockGetExchangeBalance, onBoardingEarnAmt, onBoardingEarnIds, username } from "../tests/helper";
-import { baseLogger, getHash, sleep } from "../utils";
+import { baseLogger, getAuth, getHash, sleep } from "../utils";
 import { getFunderWallet } from "../walletFactory";
 
 const lnService = require('ln-service')
