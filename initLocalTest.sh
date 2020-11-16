@@ -143,7 +143,7 @@ then
   echo "Waiting for test-pod and graphql-server to come alive"
 
 else
-  helmUpgrade prometheus-client -f ~/GaloyApp/backend/graphql-chart/prometheus-values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/graphql-chart/
+  helmUpgrade prometheus-client -f ~/GaloyApp/infrastructure/graphql-chart/prometheus-values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/infrastructure/graphql-chart/
   helmUpgrade trigger --set image.tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/trigger-chart/
 
   createLoopConfigmaps
@@ -153,7 +153,7 @@ else
   helmUpgrade update-job -f ~/GaloyApp/infrastructure/update-job/$NETWORK-values.yaml --set image.tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/infrastructure/update-job/
 fi
 
-helmUpgrade graphql-server -f ~/GaloyApp/backend/graphql-chart/$NETWORK-values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/graphql-chart/
+helmUpgrade graphql-server -f ~/GaloyApp/infrastructure/graphql-chart/$NETWORK-values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/infrastructure/graphql-chart/
 
 if [ "$NETWORK" == "regtest" ]
 then
