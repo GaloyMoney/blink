@@ -9,7 +9,7 @@ import { createBrokerUid, getTokenFromPhoneIndex } from "../walletFactory";
 import { UserWallet } from "../wallet"
 const mongoose = require("mongoose");
 
-let userWallet
+let userWallet, userWallet1
 
 
 // change role to admin
@@ -63,6 +63,7 @@ it('add user5 / usd user', async () => {
 describe('username tests', () => {
   beforeAll(async () => {
     userWallet = await getUserWallet(0)
+    userWallet1 = await getUserWallet(1)
   })
 
   it('does not set username if length less than 3', async () => {
@@ -77,8 +78,20 @@ describe('username tests', () => {
     await expect(userWallet.setUsername({ username: 'ñ_user1' })).rejects.toThrow()
   })
 
-  it('sets username for user', async () => {
+  it('cannot set user starting with 1, 3, bc1, lnbc1', async () => {
+    await expect(userWallet.setUsername({ username: "1ab" })).rejects.toThrow()
+    await expect(userWallet.setUsername({ username: "3basd" })).rejects.toThrow()
+    await expect(userWallet.setUsername({ username: "bc1ba" })).rejects.toThrow()
+    await expect(userWallet.setUsername({ username: "lnbc1qwe1" })).rejects.toThrow()
+  })
+
+  it('sets username for user0', async () => {
     const result = await userWallet.setUsername({ username })
+    expect(!!result).toBeTruthy()
+  })
+  
+  it('sets username for user1', async () => {
+    const result = await userWallet1.setUsername({ username: "user1" })
     expect(!!result).toBeTruthy()
   })
 
