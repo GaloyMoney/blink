@@ -103,6 +103,14 @@ it('add earn adds balance correctly', async () => {
 }, 30000)
 
 
+const createInvoiceHash = () => {
+  const randomSecret = () => randomBytes(32);
+  const sha256 = buffer => createHash('sha256').update(buffer).digest('hex');
+  const secret = randomSecret();
+  const id = sha256(secret);
+  return {id, secret: secret.toString('hex')}
+}
+
 const functionToTests = [
   { 
     name: "getFee + pay",
@@ -187,6 +195,48 @@ functionToTests.forEach(({fn, name}) => {
   
     expect(finalBalance).toBe(initialBalance - amountInvoice - fee)
   })
+
+  it(`pay hodl invoice ${name}`, async () => {
+    const {id, secret} = createInvoiceHash()
+
+    const { request } = await lnService.createHodlInvoice({ id, lnd: lndOutside1, tokens: amountInvoice });
+    const result = await fn(userWallet1)({ invoice: request })
+
+    expect(result).toBe("pending")
+    const balanceBeforeSettlement = await userWallet1.getBalance()
+    expect(balanceBeforeSettlement).toBe(initBalance1 - amountInvoice * (1 + FEECAP))
+    // FIXME: necessary to not have openHandler ?
+    // https://github.com/alexbosworth/ln-service/issues/122
+    await lnService.settleHodlInvoice({ lnd: lndOutside1, secret });
+
+    await sleep(5000)
+
+    const finalBalance = await userWallet1.getBalance()
+    expect(finalBalance).toBe(initBalance1 - amountInvoice)
+  }, 60000)
+
+  it(`don't settle hodl invoice`, async () => {
+    const {id} = createInvoiceHash()
+
+    const { request } = await lnService.createHodlInvoice({ id, lnd: lndOutside1, tokens: amountInvoice });
+    const result = await fn(userWallet1)({ invoice: request })
+    
+    expect(result).toBe("pending")
+    console.log("payment has timeout. status is pending.")
+
+    const intermediateBalance = await userWallet1.getBalance()
+    expect(intermediateBalance).toBe(initBalance1 - (amountInvoice * (1 + FEECAP)))
+
+    await lnService.cancelHodlInvoice({ id, lnd: lndOutside1 });
+
+    // making sure it's propagating back to lnd0.
+    // use an event to do it deterministically
+    await sleep(5000)
+    // await userWallet1.updatePendingPayments()
+
+    const finalBalance = await userWallet1.getBalance()
+    expect(finalBalance).toBe(initBalance1)
+  }, 60000)
 
 })
 
@@ -386,59 +436,6 @@ it('fails to pay when channel capacity exceeded', async () => {
   const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: 15000000 })
   await expect(userWallet1.pay({ invoice: request })).rejects.toThrow()
 })
-
-
-// TODO: also add to above getfees + pay
-it('pay hodl invoice', async () => {
-  const randomSecret = () => randomBytes(32);
-  const sha256 = buffer => createHash('sha256').update(buffer).digest('hex');
-  const secret = randomSecret();
-  const id = sha256(secret);
-
-  const { request } = await lnService.createHodlInvoice({ id, lnd: lndOutside1, tokens: amountInvoice });
-  console.log({ request })
-  const result = await userWallet1.pay({ invoice: request })
-
-  expect(result).toBe("pending")
-  const balanceBeforeSettlement = await userWallet1.getBalance()
-  expect(balanceBeforeSettlement).toBe(initBalance1 - amountInvoice * (1 + FEECAP))
-  // FIXME: necessary to not have openHandler ?
-  // https://github.com/alexbosworth/ln-service/issues/122
-  await lnService.settleHodlInvoice({ lnd: lndOutside1, secret: secret.toString('hex') });
-
-  await sleep(5000)
-
-  const finalBalance = await userWallet1.getBalance()
-  expect(finalBalance).toBe(initBalance1 - amountInvoice)
-}, 60000)
-
-// TODO: also add to above getfees + pay
-it(`don't settle hodl invoice`, async () => {
-  const randomSecret = () => randomBytes(32);
-  const sha256 = buffer => createHash('sha256').update(buffer).digest('hex');
-  const secret = randomSecret();
-  const id = sha256(secret);
-
-  const { request } = await lnService.createHodlInvoice({ id, lnd: lndOutside1, tokens: amountInvoice });
-  console.log({ request })
-  const result = await userWallet1.pay({ invoice: request })
-  expect(result).toBe("pending")
-
-  console.log("payment has timeout. status is pending.")
-
-  const intermediateBalance = await userWallet1.getBalance()
-  expect(intermediateBalance).toBe(initBalance1 - (amountInvoice * (1 + FEECAP)))
-
-  await lnService.cancelHodlInvoice({ id, lnd: lndOutside1 });
-
-  // making sure it's propagating back to lnd0.
-  // use an event to do it deterministically
-  await sleep(5000)
-  // await userWallet1.updatePendingPayments()
-
-  const finalBalance = await userWallet1.getBalance()
-  expect(finalBalance).toBe(initBalance1)
-}, 60000)
 
 it('if fee are too high, payment is cancelled', async () => {
   // TODO
