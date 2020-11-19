@@ -120,11 +120,12 @@ export const LightningMixin = (superclass) => class extends superclass {
     //
     // OR: add a lock
 
-
-
     // TODO: do a balance check, so that we don't probe needlessly if the user doesn't have the 
     // probably make sense to used a cached balance here. 
 
+    // TODO: if this is a node we are connected with, we may not even need a probe/round trip to redis
+    // we could handle this from the front end directly.
+    
     const lightningLogger = this.logger.child({ topic: "fee_estimation", protocol: "lightning" })
 
     const { mtokens, max_fee, destination, id, routeHint, messages, cltv_delta, features } = await this.validate(params, lightningLogger)
