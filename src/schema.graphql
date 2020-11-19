@@ -40,6 +40,7 @@ type Invoice {
   updatePendingInvoice(hash: String!): Boolean
   payInvoice(invoice: String!, amount: Int, memo: String): String #FIXME: use a more precise type
   payKeysendUsername(amount: Int!, destination: String!, username: String!, memo: String): String
+  getFee(destination: String, amount: Int, invoice: String, memo: String): Int # sats
 }
 
 type OnChain {
