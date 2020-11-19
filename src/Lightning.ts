@@ -5,7 +5,7 @@ import { brokerLndPath, brokerPath, customerPath, lightningAccountingPath } from
 import { disposer, getAsyncRedisClient } from "./lock";
 import { InvoiceUser, MainBook, Transaction, User } from "./mongodb";
 import { sendInvoicePaidNotification } from "./notification";
-import { IAddInvoiceInternalRequest, IPaymentRequest, IQuoteRequest } from "./types";
+import { IAddInvoiceInternalRequest, IPaymentRequest, IFeeRequest } from "./types";
 import { getAuth, LoggedError, timeout } from "./utils";
 import { regExUsername } from "./wallet";
 import moment from "moment"
@@ -104,7 +104,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     return request
   }
 
-  async getLightningFee(params: IQuoteRequest): Promise<Number | Error> {
+  async getLightningFee(params: IFeeRequest): Promise<Number | Error> {
     const key = JSON.stringify(params)
 
     const cacheProbe = await getAsyncRedisClient().get(JSON.stringify(params))
@@ -159,7 +159,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     return route.fee
   }
 
-  async validate(params: IQuoteRequest, lightningLogger) {
+  async validate(params: IFeeRequest, lightningLogger) {
 
     const keySendPreimageType = '5482373484';
     const preimageByteLength = 32;
@@ -226,13 +226,14 @@ export const LightningMixin = (superclass) => class extends superclass {
     const max_fee = Math.floor(Math.max(FEECAP * tokens, FEEMIN))
 
     return { tokens, mtokens: tokens * 1000, destination, pushPayment, id, routeHint, messages, max_fee,
-      memoInvoice: description, memoPayer: params.memo, payment, cltv_delta, expires_at, features, username: params.username }
+      memoInvoice: description, payment, cltv_delta, expires_at, features,  }
   }
 
   async pay(params: IPaymentRequest): Promise<payInvoiceResult | Error> {
     let lightningLogger = this.logger.child({ topic: "payment", protocol: "lightning", transactionType: "payment" })
     
-    const { tokens, mtokens, destination, pushPayment, id, routeHint, messages, memoInvoice, memoPayer, payment, cltv_delta, features, max_fee, username } = await this.validate(params, lightningLogger)
+    const { tokens, mtokens, destination, pushPayment, id, routeHint, messages, memoInvoice, payment, cltv_delta, features, max_fee } = await this.validate(params, lightningLogger)
+    const { username, memo: memoPayer } = params 
 
     // not including message because it contains the preimage and we don't want to log this
     lightningLogger = lightningLogger.child({ decoded: {tokens, destination, pushPayment, id, routeHint, memoInvoice, memoPayer, payment, cltv_delta, features}, params })
