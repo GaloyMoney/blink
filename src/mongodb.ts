@@ -51,6 +51,10 @@ const mapSchema = new Schema({
   coordinate: {
     latitude: String,
     longitude: String,
+  },
+  username: { 
+    type: String,
+    set: v => v === "" ? undefined : v,
   }
 })
 
@@ -88,7 +92,7 @@ const UserSchema = new Schema({
   },
   username: {
     type: String,
-    match: [/^[0-9a-z_]+$/i, "Username can only have alphabets, numbers and underscores"],
+    match: [/(?!^(1|3|bc1|lnbc1))^[0-9a-z_]+$/i, "Username can only have alphabets, numbers and underscores"],
     minlength: 3,
     maxlength: 50,
     index: {
