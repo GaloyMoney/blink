@@ -5,7 +5,7 @@ import { brokerLndPath, brokerPath, customerPath, lightningAccountingPath } from
 import { disposer, getAsyncRedisClient } from "./lock";
 import { InvoiceUser, MainBook, Transaction, User } from "./mongodb";
 import { sendInvoicePaidNotification } from "./notification";
-import { IAddInvoiceInternalRequest, IPaymentRequest } from "./types";
+import { IAddInvoiceInternalRequest, IPaymentRequest, IQuoteRequest } from "./types";
 import { getAuth, LoggedError, timeout } from "./utils";
 import { regExUsername } from "./wallet";
 import moment from "moment"
@@ -104,18 +104,25 @@ export const LightningMixin = (superclass) => class extends superclass {
     return request
   }
 
-  async getFees(params: IPaymentRequest): Promise<Number | Error> {
+  async getLightningFee(params: IQuoteRequest): Promise<Number | Error> {
     const key = JSON.stringify(params)
+
+    const cacheProbe = await getAsyncRedisClient().get(JSON.stringify(params))
+    if (cacheProbe) {
+      return JSON.parse(cacheProbe).fee
+    }
 
     // TODO:
     // we should also log the fact we have started the query
     // if (await getAsyncRedisClient().get(JSON.stringify(params))) {
     //   return
     // }
+    //
+    // OR: add a lock
 
     const lightningLogger = this.logger.child({ topic: "fee_estimation", protocol: "lightning" })
 
-    const { tokens, mtokens, max_fee, destination, pushPayment, id, routeHint, messages, memoInvoice, memoPayer, payment, cltv_delta, features } = await this.validate(params, lightningLogger)
+    const { mtokens, max_fee, destination, id, routeHint, messages, cltv_delta, features } = await this.validate(params, lightningLogger)
 
     // --> this should be managed by RN
     if (destination === await this.getNodePubkey()) {
@@ -146,13 +153,13 @@ export const LightningMixin = (superclass) => class extends superclass {
     }
 
     const value = JSON.stringify(route)
-    this.logger.debug({key, value}, "sending route to redis")
     await getAsyncRedisClient().set(key, value, 'EX', 60 * 5); // expires after 5 minutes
 
+    lightningLogger.info({redis: {key, value}, params, decoded: { mtokens, max_fee, destination, id, routeHint, messages, cltv_delta, features }}, "succesfully found a route")
     return route.fee
   }
 
-  async validate(params: IPaymentRequest, lightningLogger) {
+  async validate(params: IQuoteRequest, lightningLogger) {
 
     const keySendPreimageType = '5482373484';
     const preimageByteLength = 32;

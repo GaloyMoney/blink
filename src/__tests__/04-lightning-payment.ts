@@ -105,10 +105,10 @@ it('add earn adds balance correctly', async () => {
 
 const functionToTests = [
   { 
-    name: "getFees + pay",
+    name: "getFee + pay",
     fn: function fn(wallet) {
       return (input) => {
-        wallet.getFees(input);
+        wallet.getLightningFee(input);
         return wallet.pay(input)
       }
     }
@@ -400,8 +400,8 @@ it('pay hodl invoice', async () => {
   const result = await userWallet1.pay({ invoice: request })
 
   expect(result).toBe("pending")
-  const beforeBeforeSettlement = await userWallet1.getBalance()
-  expect(beforeBeforeSettlement).toBe(initBalance1 - amountInvoice * (1 + FEECAP))
+  const balanceBeforeSettlement = await userWallet1.getBalance()
+  expect(balanceBeforeSettlement).toBe(initBalance1 - amountInvoice * (1 + FEECAP))
   // FIXME: necessary to not have openHandler ?
   // https://github.com/alexbosworth/ln-service/issues/122
   await lnService.settleHodlInvoice({ lnd: lndOutside1, secret: secret.toString('hex') });

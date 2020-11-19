@@ -63,6 +63,13 @@ export interface ILightningTransaction {
   pending: boolean
 }
 
+export interface IQuoteRequest {
+  destination?: string,
+  amount?: number,
+  invoice?: string,
+  memo?: string,
+}
+
 export interface IPaymentRequest {
   destination?: string,
   username?: string,
