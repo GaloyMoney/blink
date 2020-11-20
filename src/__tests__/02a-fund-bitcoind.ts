@@ -36,7 +36,6 @@ afterEach(async () => {
 afterAll(async () => {
   await mongoose.connection.close()
   jest.restoreAllMocks()
-  console.log(process.memoryUsage());
 })
 
 it('funds bitcoind wallet', async () => {
