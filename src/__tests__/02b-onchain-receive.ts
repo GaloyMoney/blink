@@ -25,8 +25,9 @@ let initialBalanceUser0
 let walletUser0
 const min_height = 1
 
+let amount_BTC
 
-const amount_BTC = 1
+
 
 jest.mock('../notification')
 const { sendNotification } = require("../notification");
@@ -45,6 +46,9 @@ beforeEach(async () => {
 
   initBlockCount = await bitcoindClient.getBlockCount()
   initialBalanceUser0 = await walletUser0.getBalance()
+
+  // TODO: seed the Math.random()
+  amount_BTC = +((1+Math.random()).toFixed(3))
 })
 
 afterEach(async () => {
@@ -78,9 +82,15 @@ const onchain_funding = async ({ walletDestination }) => {
     expect(balance).toBe(initialBalance + btc2sat(amount_BTC))
 
     const transactions = await walletDestination.getTransactions()
+
+
+    console.log({tx: transactions[transactions.length - 1]})
+
     expect(transactions.length).toBe(initTransactions.length + 1)
     expect(transactions[transactions.length - 1].type).toBe("onchain_receipt")
     expect(transactions[transactions.length - 1].amount).toBe(btc2sat(amount_BTC))
+    expect(transactions[transactions.length - 1].addresses[0]).toBe(address)
+
   }
 
   const fundLndWallet = async () => {
@@ -120,7 +130,8 @@ it('identifies unconfirmed incoming on chain txn', async () => {
   const txs = (await walletUser0.getTransactions())
   const pendingTxs = filter(txs, {pending: true})
   expect(pendingTxs.length).toBe(1)
-  expect(pendingTxs[0].amount).toBe(btc2sat(1))
+  expect(pendingTxs[0].amount).toBe(btc2sat(amount_BTC))
+  expect(pendingTxs[0].addresses[0]).toBe(address)
 
   await sleep(1000)
 
@@ -184,7 +195,6 @@ it('batch send transaction', async () => {
   {
     const balance0 = await walletUser0.getBalance()
     const balance4 = await walletUser4.getBalance()
-    console.log({balance0, balance4})
 
     expect(balance0).toBe(initialBalanceUser0 + btc2sat(1))
     expect(balance4).toBe(initBalanceUser4 + btc2sat(2))
