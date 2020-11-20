@@ -11,6 +11,7 @@ type Transaction {
   pending: Boolean,
   type: String!,
   feeUsd: Float, # TODO: move to Int 
+  addresses: [String]
 }
 
 type Price {

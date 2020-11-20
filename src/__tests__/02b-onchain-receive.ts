@@ -81,6 +81,8 @@ const onchain_funding = async ({ walletDestination }) => {
     expect(transactions.length).toBe(initTransactions.length + 1)
     expect(transactions[transactions.length - 1].type).toBe("onchain_receipt")
     expect(transactions[transactions.length - 1].amount).toBe(btc2sat(amount_BTC))
+    expect(transactions[transactions.length - 1].addresses[0]).toBe(address)
+
   }
 
   const fundLndWallet = async () => {
@@ -121,6 +123,7 @@ it('identifies unconfirmed incoming on chain txn', async () => {
   const pendingTxs = filter(txs, {pending: true})
   expect(pendingTxs.length).toBe(1)
   expect(pendingTxs[0].amount).toBe(btc2sat(1))
+  expect(pendingTxs[0].addresses[0]).toBe(address)
 
   await sleep(1000)
 

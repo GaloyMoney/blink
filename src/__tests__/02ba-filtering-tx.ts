@@ -1,7 +1,4 @@
-
-// TODO: more testing
-
-import { amountOnVout } from "../utils"
+import { amountOnVout, myOwnAddressesOnVout } from "../utils"
 
 // ie: could we have multiple addresses in a vout?
 it('filter0', async () => {
@@ -70,5 +67,38 @@ it('filter1', async () => {
   const f = amountOnVout({vout, onchain_addresses})
   expect(f).toBe(1)
 
+})
+
+it('filter address', async () => {
+
+  const onchain_addresses = ["bcrt1q8psckhj450a4qs6jy7f4n0rec9h5qp3e4zllve","bcrt1qg5h7khnuvyk3hrmkwhcde7ntdjd4aj63ta4jcr","bcrt1q72nxdjsh0zsdyd0e9zreh9e6npcutcqsqscfvw"]
+  
+  const vout = [
+    {
+      value: 45.9998826,
+      n: 0,
+      scriptPubKey: {
+        asm: '0 fa5456eb34b5eb6aab19e8254f06acd086aeee08',
+        hex: '0014fa5456eb34b5eb6aab19e8254f06acd086aeee08',
+        reqSigs: 1,
+        type: 'witness_v0_keyhash',
+        addresses: [ 'bcrt1qlf29d6e5kh4k42ceaqj57p4v6zr2amsg6f0gk2' ]
+      }
+    },
+    {
+      value: 1,
+      n: 1,
+      scriptPubKey: {
+        asm: '0 f2a666ca1778a0d235f928879b973a9871c5e010',
+        hex: '0014f2a666ca1778a0d235f928879b973a9871c5e010',
+        reqSigs: 1,
+        type: 'witness_v0_keyhash',
+        addresses: [ 'bcrt1q72nxdjsh0zsdyd0e9zreh9e6npcutcqsqscfvw' ]
+      }
+    }
+  ]
+
+  const addresses = myOwnAddressesOnVout({vout, onchain_addresses})
+  expect(addresses).toStrictEqual(["bcrt1q72nxdjsh0zsdyd0e9zreh9e6npcutcqsqscfvw"])
 })
 

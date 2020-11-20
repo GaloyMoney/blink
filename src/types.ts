@@ -53,7 +53,7 @@ export interface IOnChainPayment {
   memo?: string
 }
 
-export interface ILightningTransaction {
+export interface ITransaction {
   amount: number
   description: string
   created_at: Date
@@ -61,6 +61,7 @@ export interface ILightningTransaction {
   destination?: string
   type: TransactionType
   pending: boolean
+  addresses?: [string]
 }
 
 export interface IFeeRequest {

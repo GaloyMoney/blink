@@ -197,6 +197,8 @@ const transactionSchema = new Schema({
   },
   related_journal: Schema.Types.ObjectId,
 
+  // for onchain transactions.
+  payee_addresses: [String],
 
   memoPayer: String,
 

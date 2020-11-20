@@ -1,7 +1,7 @@
 import moment from "moment";
 import { customerPath } from "./ledger";
 import { MainBook, User } from "./mongodb";
-import { ILightningTransaction } from "./types";
+import { ITransaction } from "./types";
 import { LoggedError } from "./utils"
 
 const createCsvStringifier = require('csv-writer').createObjectCsvStringifier;
@@ -57,7 +57,7 @@ export abstract class UserWallet {
     return results
   }
 
-  async getTransactions(): Promise<Array<ILightningTransaction>> {
+  async getTransactions(): Promise<Array<ITransaction>> {
     const rawTransactions = await this.getRawTransactions()
 
     const results_processed = rawTransactions.map(item => ({
@@ -73,7 +73,8 @@ export abstract class UserWallet {
       // destination: TODO
       pending: item.pending,
       id: item._id,
-      currency: item.currency
+      currency: item.currency,
+      addresses: item.payee_addresses,
     }))
 
     return results_processed

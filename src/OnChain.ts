@@ -5,8 +5,8 @@ import moment from "moment";
 import { customerPath, lightningAccountingPath } from "./ledger";
 import { disposer } from "./lock";
 import { MainBook, Transaction, User } from "./mongodb";
-import { ILightningTransaction, IOnChainPayment, ISuccess } from "./types";
-import { amountOnVout, bitcoindClient, btc2sat, getAuth, LoggedError, LOOK_BACK } from "./utils";
+import { ITransaction, IOnChainPayment, ISuccess } from "./types";
+import { amountOnVout, bitcoindClient, btc2sat, getAuth, LoggedError, LOOK_BACK, myOwnAddressesOnVout } from "./utils";
 
 const using = require('bluebird').using
 
@@ -51,7 +51,6 @@ export const OnChainMixin = (superclass) => class extends superclass {
     let onchainLogger = this.logger.child({ topic: "payment", protocol: "onchain", transactionType: "payment", address, amount, memo })
 
     const balance = await this.getBalance()
-    
     onchainLogger = onchainLogger.child({ balance })
 
     // quit early if balance is not enough
@@ -74,7 +73,13 @@ export const OnChainMixin = (superclass) => class extends superclass {
       }
 
       const sats = amount
-      const metadata = { currency: this.currency, type: "onchain_on_us", pending: false, ...this.getCurrencyEquivalent({ sats, fee: 0 })}
+      const metadata = { 
+        currency: this.currency, 
+        type: "onchain_on_us",
+        pending: false,
+        ...this.getCurrencyEquivalent({ sats, fee: 0 }),
+        payeeAddresses: [address]
+      }
 
       // TODO: this lock seems useless
       return await using(disposer(this.uid), async (lock) => {
@@ -225,7 +230,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
     }
   }
 
-  async getIncomingOnchainPayments({confirmed}: {confirmed: boolean}) {
+  async getOnchainReceipt({confirmed}: {confirmed: boolean}) {
 
     const lnd_incoming_txs = await this.getOnChainTransactions({ lnd: this.lnd, incoming: true })
     
@@ -250,7 +255,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
     return user_matched_txs
   }
 
-  async getTransactions(): Promise<Array<ILightningTransaction>> {
+  async getTransactions(): Promise<Array<ITransaction>> {
     const confirmed = await super.getTransactions()
 
     //  ({
@@ -275,7 +280,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
     // TODO: should have outgoing unconfirmed transaction as well.
     // they are in medici, but not necessarily confirmed
-    const unconfirmed = await this.getIncomingOnchainPayments({confirmed: false})
+    const unconfirmed = await this.getOnchainReceipt({confirmed: false})
 
     
     // {
@@ -293,27 +298,79 @@ export const OnChainMixin = (superclass) => class extends superclass {
     //   transaction: '020000000001019b5e33c844cc72b093683cec8f743f1ddbcf075077e5851cc8a598a844e684850100000000feffffff022054380c0100000016001499294eb1f4936f15472a891ba400dc09bfd0aa7b00e1f505000000001600146107c29ed16bf7712347ddb731af713e68f1a50702473044022016c03d070341b8954fe8f956ed1273bb3852d3b4ba0d798e090bb5fddde9321a022028dad050cac2e06fb20fad5b5bb6f1d2786306d90a1d8d82bf91e03a85e46fa70121024e3c0b200723dda6862327135ab70941a94d4f353c51f83921fcf4b5935eb80495000000'
     // }
 
+    // unconfirmed = 
+
+    const unconfirmed_promise = unconfirmed.map(async ({ transaction, id, created_at }) => {
+      const { sats, addresses } = await this.getValueAndAddress(transaction)
+      return { sats, addresses, id, created_at }
+    })
+
+    const unconfirmed_meta: any[] = await Promise.all(unconfirmed_promise)
+
     return [
-      ...unconfirmed.map(({ tokens, id, created_at }) => ({
+      ...unconfirmed_meta.map(({ sats, addresses, id, created_at }) => ({
         id, 
-        amount: tokens,
+        amount: sats,
         pending: true,
         created_at: moment(created_at).unix(),
-        sat: tokens,
-        usd: this.satsToUsd(tokens, this.lastPrice),
+        sat: sats,
+        usd: this.satsToUsd(sats, this.lastPrice),
         description: "pending",
         type: "onchain_receipt",
         hash: id,
         currency: "BTC",
         fee: 0,
         feeUsd: 0,
+        addresses
       })),
       ...confirmed
     ]
   }
 
+  // raw encoded transaction
+  async getValueAndAddress(tx) {
+    const {vout} = await bitcoindClient.decodeRawTransaction(tx)
+
+    //   vout: [
+    //   {
+    //     value: 1,
+    //     n: 0,
+    //     scriptPubKey: {
+    //       asm: '0 13584315784642a24d62c7dd1073f24c60604a10',
+    //       hex: '001413584315784642a24d62c7dd1073f24c60604a10',
+    //       reqSigs: 1,
+    //       type: 'witness_v0_keyhash',
+    //       addresses: [ 'bcrt1qzdvyx9tcgep2yntzclw3quljf3sxqjsszrwx2x' ]
+    //     }
+    //   },
+    //   {
+    //     value: 46.9999108,
+    //     n: 1,
+    //     scriptPubKey: {
+    //       asm: '0 44c6e3f09c2462f9825e441a69d3f2c2325f3ab8',
+    //       hex: '001444c6e3f09c2462f9825e441a69d3f2c2325f3ab8',
+    //       reqSigs: 1,
+    //       type: 'witness_v0_keyhash',
+    //       addresses: [ 'bcrt1qgnrw8uyuy330nqj7gsdxn5ljcge97w4cu4c7m0' ]
+    //     }
+    //   }
+    // ]
+
+    // TODO: dedupe from getOnchainReceipt
+    const { onchain_addresses } = await User.findOne({ _id: this.uid }, { onchain_addresses: 1 })
+
+    // we have to look at the precise vout because lnd sums up the value at the transaction level, not at the vout level.
+    // ie: if an attacker send 10 to user A at Galoy, and 10 to user B at galoy in a sinle transaction,
+    // both would be credited 20, unless we do the below filtering.
+    const value = amountOnVout({vout, onchain_addresses})
+    const addresses = myOwnAddressesOnVout({vout, onchain_addresses})
+    const sats = btc2sat(value)
+
+    return { sats, addresses }
+  }
+
   async updateOnchainReceipt() {
-    const user_matched_txs = await this.getIncomingOnchainPayments({confirmed: true})
+    const user_matched_txs = await this.getOnchainReceipt({confirmed: true})
 
     const type = "onchain_receipt"
 
@@ -333,45 +390,17 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
         if (!mongotx) {
 
-          const {vout} = await bitcoindClient.decodeRawTransaction(matched_tx.transaction)
+          const {sats, addresses} = await this.getValueAndAddress(matched_tx.transaction)
 
-          //   vout: [
-          //   {
-          //     value: 1,
-          //     n: 0,
-          //     scriptPubKey: {
-          //       asm: '0 13584315784642a24d62c7dd1073f24c60604a10',
-          //       hex: '001413584315784642a24d62c7dd1073f24c60604a10',
-          //       reqSigs: 1,
-          //       type: 'witness_v0_keyhash',
-          //       addresses: [ 'bcrt1qzdvyx9tcgep2yntzclw3quljf3sxqjsszrwx2x' ]
-          //     }
-          //   },
-          //   {
-          //     value: 46.9999108,
-          //     n: 1,
-          //     scriptPubKey: {
-          //       asm: '0 44c6e3f09c2462f9825e441a69d3f2c2325f3ab8',
-          //       hex: '001444c6e3f09c2462f9825e441a69d3f2c2325f3ab8',
-          //       reqSigs: 1,
-          //       type: 'witness_v0_keyhash',
-          //       addresses: [ 'bcrt1qgnrw8uyuy330nqj7gsdxn5ljcge97w4cu4c7m0' ]
-          //     }
-          //   }
-          // ]
-
-          // TODO: dedupe from getIncomingOnchainPayments
-          const { onchain_addresses } = await User.findOne({ _id: this.uid }, { onchain_addresses: 1 })
-
-          // we have to look at the precise vout because lnd sums up the value at the transaction level, not at the vout level.
-          // ie: if an attacker send 10 to user A at Galoy, and 10 to user B at galoy in a sinle transaction,
-          // both would be credited 20, unless we do the below filtering.
-          const value = amountOnVout({vout, onchain_addresses})
-
-          const sats = btc2sat(value)
           assert(matched_tx.tokens >= sats)
 
-          const metadata = { currency: this.currency, type, hash: matched_tx.id, pending: false, ...this.getCurrencyEquivalent({ sats, fee: 0 }) }
+          const metadata = { 
+            currency: this.currency,
+            type, hash: matched_tx.id,
+            pending: false,
+            ...this.getCurrencyEquivalent({ sats, fee: 0 }),
+            payeeAddresses: addresses
+          }
 
           await MainBook.entry()
             .debit(this.accountPath, sats, metadata)
