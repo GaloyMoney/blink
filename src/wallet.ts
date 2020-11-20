@@ -61,9 +61,6 @@ export abstract class UserWallet {
   async getTransactions(): Promise<Array<ITransaction>> {
     const rawTransactions = await this.getRawTransactions()
 
-    console.log({rawTransactions})
-    await sleep(1000)
-
     const results_processed = rawTransactions.map(item => ({
       created_at: moment(item.timestamp).unix(),
       amount: item.debit - item.credit,
@@ -80,8 +77,6 @@ export abstract class UserWallet {
       currency: item.currency,
       addresses: item.payee_addresses,
     }))
-
-    // exit()
 
     return results_processed
   }
