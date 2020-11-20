@@ -48,7 +48,7 @@ beforeEach(async () => {
   initialBalanceUser0 = await walletUser0.getBalance()
 
   // TODO: seed the Math.random()
-  amount_BTC = +((1+Math.random()).toFixed(3))
+  amount_BTC = Math.floor(1 + Math.floor(Math.random() * 100)/100)
 })
 
 afterEach(async () => {
