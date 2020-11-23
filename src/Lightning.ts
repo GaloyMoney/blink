@@ -130,7 +130,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     const { mtokens, max_fee, destination, id, routeHint, messages, cltv_delta, features } = await this.validate(params, lightningLogger)
 
-    // --> this should be managed by RN
+    // --> this should not happen as this is managed also in within RN
     if (destination === await this.getNodePubkey()) {
       return 0
     }
@@ -586,7 +586,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       invoice = await lnService.getInvoice({ lnd: this.lnd, id: hash })
 
       // TODO: we should not log/keep secret in the logs
-      this.logger.info({invoice, uid: this.uid}, "got invoice status")
+      this.logger.debug({invoice, uid: this.uid}, "got invoice status")
     } catch (err) {
       const error = `issue fetching invoice`
       this.logger.error({err, invoice}, error)
