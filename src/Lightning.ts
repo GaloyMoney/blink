@@ -360,9 +360,6 @@ export const LightningMixin = (superclass) => class extends superclass {
         lightningLogger = lightningLogger.child({routing: "payViaRoutes", route})
         fee = route.safe_fee
         feeKnownInAdvance = true
-
-        this.logger.info({max_fee: fee, std_fee: route.fee}, "fee difference")
-
       } else {
         lightningLogger = lightningLogger.child({routing: "payViaPaymentDetails"})
         fee = max_fee
