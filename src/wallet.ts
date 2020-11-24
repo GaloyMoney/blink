@@ -141,7 +141,7 @@ export abstract class UserWallet {
 
     if (!result) {
       const error = `Username is already set`
-      this.logger.error(error)
+      this.logger.error({result}, error)
       throw new LoggedError(error)
     }
 
