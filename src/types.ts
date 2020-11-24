@@ -67,7 +67,8 @@ export interface ITransaction {
 export interface IFeeRequest {
   destination?: string,
   amount?: number,
-  invoice?: string
+  invoice?: string,
+  username?: string
 }
 
 export interface IPaymentRequest {
