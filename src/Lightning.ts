@@ -105,13 +105,7 @@ export const LightningMixin = (superclass) => class extends superclass {
   }
 
   async getLightningFee(params: IFeeRequest): Promise<Number | Error> {
-    const key = JSON.stringify(params)
-
-    const cacheProbe = await getAsyncRedisClient().get(JSON.stringify(params))
-    if (cacheProbe) {
-      return JSON.parse(cacheProbe).fee
-    }
-
+    
     // TODO:
     // we should also log the fact we have started the query
     // if (await getAsyncRedisClient().get(JSON.stringify(params))) {
@@ -126,9 +120,17 @@ export const LightningMixin = (superclass) => class extends superclass {
     // TODO: if this is a node we are connected with, we may not even need a probe/round trip to redis
     // we could handle this from the front end directly.
     
-    const lightningLogger = this.logger.child({ topic: "fee_estimation", protocol: "lightning" })
+    const { mtokens, max_fee, destination, id, routeHint, messages, cltv_delta, features } = await this.validate(params, this.logger)
+    const lightningLogger = this.logger.child({ topic: "fee_estimation", protocol: "lightning", params, decoded: { mtokens, max_fee, destination, id, routeHint, messages, cltv_delta, features }})
 
-    const { mtokens, max_fee, destination, id, routeHint, messages, cltv_delta, features } = await this.validate(params, lightningLogger)
+    const key = { id, mtokens }
+
+    const cacheProbe = await getAsyncRedisClient().get(JSON.stringify(key))
+    if (cacheProbe) {
+      lightningLogger.info("route result in cache")
+      return JSON.parse(cacheProbe).fee
+    }
+
 
     // --> this should not happen as this is managed also in within RN
     if (destination === await this.getNodePubkey()) {
@@ -161,7 +163,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     const value = JSON.stringify(route)
     await getAsyncRedisClient().set(key, value, 'EX', 60 * 5); // expires after 5 minutes
 
-    lightningLogger.info({redis: {key, value}, params, decoded: { mtokens, max_fee, destination, id, routeHint, messages, cltv_delta, features }}, "succesfully found a route")
+    lightningLogger.info({redis: {key, value}}, "succesfully found a route")
     return route.fee
   }
 
@@ -350,7 +352,8 @@ export const LightningMixin = (superclass) => class extends superclass {
       // TODO: push payment for other node as well
       lightningLogger = lightningLogger.child({ onUs: false, max_fee })
 
-      route = JSON.parse(await getAsyncRedisClient().get(JSON.stringify(params)))
+      const key = { id, mtokens }
+      route = JSON.parse(await getAsyncRedisClient().get(JSON.stringify(key)))
       this.logger.info({route}, "route from redis")
 
       if (!!route) {
@@ -490,13 +493,13 @@ export const LightningMixin = (superclass) => class extends superclass {
     })
   }
 
-  async recordFeeDifference({paymentResult, max_fee, id, related_journal}) {
+  async recordFeeDifference({ paymentResult, max_fee, id, related_journal}) {
     const feeDifference = max_fee - paymentResult.safe_fee
 
     assert(feeDifference >= 0)
     assert(feeDifference <= max_fee)
 
-    this.logger.info({paymentResult, feeDifference, max_fee, actualFee: paymentResult.safe_fee, id}, "logging a fee difference")
+    this.logger.info({ paymentResult, feeDifference, max_fee, actualFee: paymentResult.safe_fee, id}, "logging a fee difference")
 
     const metadata = {currency: "BTC", hash: id, related_journal}
 
