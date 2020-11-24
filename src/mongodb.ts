@@ -161,10 +161,11 @@ const transactionSchema = new Schema({
   txid: String,
 
   type: {
+    required: true,
     type: String,
     enum: [
       // TODO: merge with the Interface located in types.ts?
-      "invoice", "payment", "on_us", // lightning
+      "invoice", "payment", "on_us", "fee_reimbursement", // lightning
       "onchain_receipt", "onchain_payment", "onchain_on_us", // onchain
       "fee", "escrow", // channel-related
       "exchange_rebalance"//
