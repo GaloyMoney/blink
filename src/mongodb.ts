@@ -156,6 +156,18 @@ const FaucetSchema = new Schema({
   used: {
     type: Boolean,
     default: false
+  },
+  message: {
+    type: String,
+    required: true
+  },
+  amount: {
+    type: Number,
+    required: true
+  },
+  currency: {
+    type: String,
+    default: "BTC"
   }
 })
 

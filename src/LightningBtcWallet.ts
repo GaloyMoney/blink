@@ -53,28 +53,30 @@ export class LightningBtcWallet extends OnChainMixin(LightningMixin(UserWallet))
   async faucet(hash) {
     const lightningFundingWallet = await getFunderWallet({ logger: this.logger })
     const result: object[] = []
-    let success
+    let success, message
 
     const faucetPastState = await Faucet.findOneAndUpdate(
       { hash },
       { used: true },
     )
 
-    console.log({faucetPastState})
-
     if (!faucetPastState) {
       success = false 
     } else {
       if (faucetPastState.used === false) {
-        const invoice = await this.addInvoice({memo: `faucet-${hash}`, value: 100})
+        // TODO: currency
+
+        const invoice = await this.addInvoice({memo: `faucet-${hash}`, value: faucetPastState.amount})
         await lightningFundingWallet.pay({invoice, isReward: true})
+        
         success = true
+        message = faucetPastState.message
       } else {
         success = false
       }
     }
 
-    return {success}
+    return {success, message}
   }
 
   async addInvoice({ value = undefined, memo = undefined, selfGenerated = true }: IAddBTCInvoiceRequest): Promise<string> {
