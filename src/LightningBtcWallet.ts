@@ -51,8 +51,6 @@ export class LightningBtcWallet extends OnChainMixin(LightningMixin(UserWallet))
   }
 
   async faucet(hash) {
-    const lightningFundingWallet = await getFunderWallet({ logger: this.logger })
-    const result: object[] = []
     let success, message
 
     const faucetPastState = await Faucet.findOneAndUpdate(
@@ -64,7 +62,9 @@ export class LightningBtcWallet extends OnChainMixin(LightningMixin(UserWallet))
       success = false 
     } else {
       if (faucetPastState.used === false) {
-        // TODO: currency
+        const lightningFundingWallet = await getFunderWallet({ logger: this.logger })
+
+        // TODO: currency conversion if faucetPastState.currency === "USD"
 
         const invoice = await this.addInvoice({memo: `faucet-${hash}`, value: faucetPastState.amount})
         await lightningFundingWallet.pay({invoice, isReward: true})
