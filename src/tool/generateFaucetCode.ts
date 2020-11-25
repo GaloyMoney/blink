@@ -31,7 +31,7 @@ const main = async () => {
     let i;
     for (i = 0; i < 10; i++) {
       const result = await addFaucet({ amount: 100, message: "succesfully received 100 sats!" })    
-      const entry = {qrdata: `faucet:${result.hash})`, ...result._doc}
+      const entry = {qrdata: `faucet:${result.hash}`, ...result._doc}
       records.push(entry)
     }
 
