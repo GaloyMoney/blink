@@ -134,6 +134,7 @@ type Mutation {
   earnCompleted(ids: [ID]): [Earn]
   updateUser: UpdateUser
   deleteUser: Boolean # TODO
+  faucet(hash: String): Success
   addDeviceToken(deviceToken: String): Success # to refactor with User?
   testMessage: Success # FIXME remove test
 }

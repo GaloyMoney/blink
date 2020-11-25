@@ -165,6 +165,7 @@ const resolvers = {
       getFee: async ({ destination, amount, invoice, memo }) => wallet.getLightningFee({ destination, amount, invoice, memo })
     }),
     earnCompleted: async (_, { ids }, { wallet }) => wallet.addEarn(ids),
+    faucet: async (_, { hash }, { wallet }) => wallet.faucet(hash),
     deleteUser: () => {
       // TODO
     },
@@ -246,6 +247,7 @@ const permissions = shield({
     updateUser: isAuthenticated,
     deleteUser: isAuthenticated,
     addDeviceToken: isAuthenticated,
+    faucet: isAuthenticated,
   },
 }, { allowExternalErrors: true }) // TODO remove to not expose internal error
 

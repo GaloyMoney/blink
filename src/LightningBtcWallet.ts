@@ -1,7 +1,7 @@
 import { customerPath } from "./ledger";
 import { LightningMixin } from "./Lightning";
 import { disposer } from "./lock";
-import { User } from "./mongodb";
+import { Faucet, User } from "./mongodb";
 import { OnChainMixin } from "./OnChain";
 import { IAddBTCInvoiceRequest, ILightningWalletUser, OnboardingEarn } from "./types";
 import { UserWallet } from "./wallet";
@@ -48,6 +48,33 @@ export class LightningBtcWallet extends OnChainMixin(LightningMixin(UserWallet))
 
       return result
     })
+  }
+
+  async faucet(hash) {
+    const lightningFundingWallet = await getFunderWallet({ logger: this.logger })
+    const result: object[] = []
+    let success
+
+    const faucetPastState = await Faucet.findOneAndUpdate(
+      { hash },
+      { used: true },
+    )
+
+    console.log({faucetPastState})
+
+    if (!faucetPastState) {
+      success = false 
+    } else {
+      if (faucetPastState.used === false) {
+        const invoice = await this.addInvoice({memo: `faucet-${hash}`, value: 100})
+        await lightningFundingWallet.pay({invoice, isReward: true})
+        success = true
+      } else {
+        success = false
+      }
+    }
+
+    return {success}
   }
 
   async addInvoice({ value = undefined, memo = undefined, selfGenerated = true }: IAddBTCInvoiceRequest): Promise<string> {

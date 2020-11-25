@@ -142,6 +142,26 @@ const PhoneCodeSchema = new Schema({
 export const PhoneCode = mongoose.model("PhoneCode", PhoneCodeSchema)
 
 
+const crypto = require('crypto');
+
+const FaucetSchema = new Schema({
+  created_at: {
+    type: Date,
+    default: Date.now
+  },
+  hash: {
+    type: String,
+    default: crypto.randomBytes(32).toString('hex')
+  },
+  used: {
+    type: Boolean,
+    default: false
+  }
+})
+
+export const Faucet = mongoose.model("Faucet", FaucetSchema)
+
+
 const transactionSchema = new Schema({
 
   hash: {
