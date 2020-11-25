@@ -41,7 +41,10 @@ export const insertMarkers = async (executeScript = false) => {
 
 // only execute if it is the main module
 if (require.main === module) {
-  setupMongoConnection().then(() => insertMarkers()).catch((err) => baseLogger.error(err))
+  const fn = async () => {
+    await insertMarkers()
+  }
+  fn()
 }
 
 

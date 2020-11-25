@@ -92,7 +92,7 @@ const UserSchema = new Schema({
   },
   username: {
     type: String,
-    match: [/^[0-9a-z_]+$/i, "Username can only have alphabets, numbers and underscores"],
+    match: [/(?!^(1|3|bc1|lnbc1))^[0-9a-z_]+$/i, "Username can only have alphabets, numbers and underscores"],
     minlength: 3,
     maxlength: 50,
     index: {
@@ -142,6 +142,36 @@ const PhoneCodeSchema = new Schema({
 export const PhoneCode = mongoose.model("PhoneCode", PhoneCodeSchema)
 
 
+const FaucetSchema = new Schema({
+  created_at: {
+    type: Date,
+    default: Date.now
+  },
+  hash: {
+    type: String,
+    required: true 
+  },
+  used: {
+    type: Boolean,
+    default: false
+  },
+  message: {
+    type: String,
+    required: true
+  },
+  amount: {
+    type: Number,
+    required: true
+  },
+  currency: {
+    type: String,
+    default: "BTC"
+  }
+})
+
+export const Faucet = mongoose.model("Faucet", FaucetSchema)
+
+
 const transactionSchema = new Schema({
 
   hash: {
@@ -161,10 +191,11 @@ const transactionSchema = new Schema({
   txid: String,
 
   type: {
+    required: true,
     type: String,
     enum: [
       // TODO: merge with the Interface located in types.ts?
-      "invoice", "payment", "on_us", // lightning
+      "invoice", "payment", "on_us", "fee_reimbursement", // lightning
       "onchain_receipt", "onchain_payment", "onchain_on_us", // onchain
       "fee", "escrow", // channel-related
       "exchange_rebalance"//
@@ -190,6 +221,15 @@ const transactionSchema = new Schema({
     type: Number,
     default: 0
   },
+
+  // for fee updated
+  feeKnownInAdvance: {
+    type: Boolean
+  },
+  related_journal: Schema.Types.ObjectId,
+
+  // for onchain transactions.
+  payee_addresses: [String],
 
   memoPayer: String,
 

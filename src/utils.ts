@@ -1,8 +1,7 @@
 import * as jwt from 'jsonwebtoken'
 import * as lnService from "ln-service"
-import { filter, includes, sumBy } from "lodash"
+import { filter, includes, intersection, sumBy, union } from "lodash"
 import * as moment from 'moment'
-import { Price } from "./priceImpl"
 export const validate = require("validate.js")
 const BitcoindClient = require('bitcoin-core')
 const {parsePaymentRequest} = require('invoices');
@@ -17,8 +16,6 @@ export const LOOK_BACK = 2016
 
 // @ts-ignore
 import { GraphQLError } from "graphql";
-import { DbVersion } from "./mongodb"
-import { mainCache } from "./cache"
 
 // FIXME: super ugly hack.
 // for some reason LoggedError get casted as GraphQLError
@@ -37,9 +34,14 @@ const connection_obj = {
   host: process.env.BITCOINDADDR, port: process.env.BITCOINDPORT
 }
 
-export const amountOnVout = ({ vout, onchain_addresses }) => {
+export const amountOnVout = ({ vout, onchain_addresses }): number => {
   // TODO: check if this is always [0], ie: there is always a single addresses for vout for lnd output
   return sumBy(filter(vout, tx => includes(onchain_addresses, tx.scriptPubKey.addresses[0])), "value")
+}
+
+export const myOwnAddressesOnVout = ({ vout, onchain_addresses }) => {
+  // TODO: check if this is always [0], ie: there is always a single addresses for vout for lnd output
+  return intersection(union(vout.map(output => output.scriptPubKey.addresses[0])), onchain_addresses)
 }
 
 export const bitcoindClient = new BitcoindClient(connection_obj)

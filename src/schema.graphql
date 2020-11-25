@@ -11,6 +11,7 @@ type Transaction {
   pending: Boolean,
   type: String!,
   feeUsd: Float, # TODO: move to Int 
+  addresses: [String]
 }
 
 type Price {
@@ -40,6 +41,7 @@ type Invoice {
   updatePendingInvoice(hash: String!): Boolean
   payInvoice(invoice: String!, amount: Int, memo: String): String #FIXME: use a more precise type
   payKeysendUsername(amount: Int!, destination: String!, username: String!, memo: String): String
+  getFee(destination: String, amount: Int, invoice: String, memo: String): Int # sats
 }
 
 type OnChain {
@@ -98,6 +100,13 @@ type Coordinate {
   longitude: Float
 }
 
+type FaucetResult {
+  success: Boolean
+  amount: Int
+  currency: String
+  message: String
+}
+
 type Marker {
   id: ID
   title: String
@@ -132,6 +141,7 @@ type Mutation {
   earnCompleted(ids: [ID]): [Earn]
   updateUser: UpdateUser
   deleteUser: Boolean # TODO
+  faucet(hash: String): FaucetResult
   addDeviceToken(deviceToken: String): Success # to refactor with User?
   testMessage: Success # FIXME remove test
 }

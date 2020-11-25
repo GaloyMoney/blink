@@ -20,11 +20,11 @@ const HIGH_SAFEBOUND_RATIO_SHORTING = 1
 const HIGH_BOUND_RATIO_SHORTING = 1.03
 
 // TODO: take a target leverage and safe parameter and calculate those bounding values dynamically.
-const LOW_BOUND_LEVERAGE = 1.5
+const LOW_BOUND_LEVERAGE = 1.2
 const LOW_SAFEBOUND_LEVERAGE = 1.8
 // average: 2
 const HIGH_SAFEBOUND_LEVERAGE = 2.25
-const HIGH_BOUND_LEVERAGE = 2.5
+const HIGH_BOUND_LEVERAGE = 3
 
 const symbol = 'BTC-PERP'
 
