@@ -270,6 +270,9 @@ jobs:
       - gke-auth
       - update-lnpage:
           namespace: testnet
+      - update-lnpage:
+          namespace: mainnet
+
 
 
 workflows:
