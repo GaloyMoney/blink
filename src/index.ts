@@ -223,7 +223,10 @@ function verifyToken(req) {
 
 const isAuthenticated = rule({ cache: 'contextual' })(
   async (parent, args, ctx, info) => {
-    return ctx.uid !== null
+    if(ctx.uid === null) {
+      return new Error(`${util.inspect({ message: 'Not authorised!', request: ctx.request.body }, false, Infinity)}`)
+    }
+    return true
   },
 )
 
