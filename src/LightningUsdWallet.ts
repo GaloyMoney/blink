@@ -1,10 +1,8 @@
+import { customerPath } from "./ledger";
 import { LightningMixin } from "./Lightning";
-import { InvoiceUser } from "./mongodb";
 import { Price } from "./priceImpl";
 import { IAddUSDInvoiceRequest, ILightningWalletUser } from "./types";
-import { getHash } from "./utils";
 import { UserWallet } from "./wallet";
-const using = require('bluebird').using
 
 /**
  * this represents a user wallet
@@ -12,8 +10,12 @@ const using = require('bluebird').using
 export class LightningUsdWallet extends LightningMixin(UserWallet) {
   readonly currency = "USD" 
 
-  constructor({ uid }: ILightningWalletUser) {
-    super({ uid, currency: "USD" })
+  get accountPath(): string {
+    return customerPath(this.uid)
+  }
+
+  constructor(args: ILightningWalletUser) {
+    super({ currency: "USD", ...args })
   }
 
   async addInvoice({ value, memo }: IAddUSDInvoiceRequest): Promise<string> {
@@ -22,11 +24,9 @@ export class LightningUsdWallet extends LightningMixin(UserWallet) {
     }
 
     const usd = value
-    const lastPrices = await new Price().lastPrice() // sats/usd
-    const satValue = value / lastPrices
+    const satValue = value / this.lastPrice
 
-    // TODO: timeout should be ~ 1 min
-    const request = await super.addInvoiceInternal({sats: satValue, usd, currency: this.currency, memo})
+    const request = await super.addInvoiceInternal({sats: satValue, usd, memo})
 
     return request
   }

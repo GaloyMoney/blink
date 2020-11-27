@@ -1,4 +1,5 @@
-import { logger } from "./utils";
+import { baseLogger } from "./utils";
+const asyncRedis = require("async-redis");
 
 const redis = require('redis')
 const Redlock = require('redlock');
@@ -14,16 +15,24 @@ const ttl = process.env.NETWORK !== "regtest" ? 60000 : 10000
 // an error occurred; if you don't pass a handler, this error
 // will be ignored
 function unlockErrorHandler(err) {
-  logger.error(err, `unable to release redis lock`);
+  baseLogger.error(err, `unable to release redis lock`);
   // throw Error(err)
 }
 
-let redlock, client
+let redlock, clientLock, clientAsync
+
+// FIXME: refactor with a single client
 
 const getClient = () => {
-  client = client ?? redis.createClient(process.env.REDIS_PORT, process.env.REDIS_IP)
-  return client
+  clientLock = clientLock ?? redis.createClient(process.env.REDIS_PORT, process.env.REDIS_IP)
+  return clientLock
 }
+
+export const getAsyncRedisClient = () => {
+  clientAsync = clientAsync ?? asyncRedis.decorate(redis.createClient(process.env.REDIS_PORT, process.env.REDIS_IP));
+  return clientAsync
+}
+
 
 const getRedLock = () => {
   if (redlock) { 

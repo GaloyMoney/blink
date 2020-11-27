@@ -1,6 +1,8 @@
 set -e
 
 helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo add grafana https://grafana.github.io/helm-charts
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
 
 
@@ -33,14 +35,14 @@ helmUpgrade () {
 monitoringDeploymentsUpgrade() {
   SECRET=alertmanager-keys
   local NAMESPACE=monitoring
-  helmUpgrade prometheus stable/prometheus -f ~/GaloyApp/backend/prometheus-server/values.yaml
+  helmUpgrade prometheus prometheus-community/prometheus -f ~/GaloyApp/backend/prometheus-server/values.yaml
 
   export SLACK_API_URL=$(kubectl get secret -n $NAMESPACE $SECRET -o jsonpath="{.data.SLACK_API_URL}" | base64 -d)
   export SERVICE_KEY=$(kubectl get secret -n $NAMESPACE $SECRET -o jsonpath="{.data.SERVICE_KEY}" | base64 -d)
 
   kubectl -n $NAMESPACE get configmaps prometheus-alertmanager -o yaml | sed -e "s|SLACK_API_URL|$SLACK_API_URL|; s|SERVICE_KEY|$SERVICE_KEY|" | kubectl -n $NAMESPACE apply -f -
 
-  helmUpgrade grafana stable/grafana -f ~/GaloyApp/backend/grafana/values.yaml
+  helmUpgrade grafana grafana/grafana -f ~/GaloyApp/backend/grafana/values.yaml
   helmUpgrade mongo-exporter ~/GaloyApp/backend/mongo-exporter
 }
 
@@ -141,17 +143,17 @@ then
   echo "Waiting for test-pod and graphql-server to come alive"
 
 else
-  helmUpgrade prometheus-client -f ~/GaloyApp/backend/graphql-chart/prometheus-values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/graphql-chart/
+  helmUpgrade prometheus-client -f ~/GaloyApp/infrastructure/graphql-chart/prometheus-values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/infrastructure/graphql-chart/
   helmUpgrade trigger --set image.tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/trigger-chart/
 
   createLoopConfigmaps
   helmUpgrade loop-server -f ~/GaloyApp/backend/loop-server/$NETWORK-values.yaml ~/GaloyApp/backend/loop-server/
   # TODO: missing kubectlWait trigger and prometheus-client
+
+  helmUpgrade update-job -f ~/GaloyApp/infrastructure/update-job/$NETWORK-values.yaml --set image.tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/infrastructure/update-job/
 fi
 
-helmUpgrade graphql-server -f ~/GaloyApp/backend/graphql-chart/$NETWORK-values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/graphql-chart/
-
-helmUpgrade update-job --set image.tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/update-job/
+helmUpgrade graphql-server -f ~/GaloyApp/infrastructure/graphql-chart/$NETWORK-values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/infrastructure/graphql-chart/
 
 if [ "$NETWORK" == "regtest" ]
 then

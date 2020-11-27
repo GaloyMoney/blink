@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-import { setupMongoConnection, DbVersion, upgrade } from "../mongodb";
+import { setupMongoConnection, DbVersion } from "../mongodb";
 const mongoose = require("mongoose");
 
 

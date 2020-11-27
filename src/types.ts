@@ -5,7 +5,10 @@ export type Currency = "USD" | "BTC"
 export type ISuccess = boolean
 
 export interface ILightningWalletUser {
+  lastPrice: number
+  user: any
   uid: string
+  logger: any
 }
 
 // Lightning
@@ -13,13 +16,14 @@ export interface ILightningWalletUser {
 export interface IAddInvoiceInternalRequest {
   usd: number,
   sats: number,
-  currency: "USD" | "BTC",
-  memo: string | undefined
+  memo: string | undefined,
+  selfGenerated?: boolean
 }
 
 export interface IAddBTCInvoiceRequest {
   value: number | undefined,
-  memo?: string | undefined
+  memo?: string | undefined,
+  selfGenerated?: boolean
 }
 
 export interface IAddUSDInvoiceRequest {
@@ -31,8 +35,17 @@ export type IAddInvoiceResponse = {
   request: string
 }
 
-export type TransactionType = "payment" | "inflight-payment" |
-  "paid-invoice" | "unconfirmed-invoice" | "onchain_receipt" | "on_us" | "onchain_payment"
+export type ChainType = "lightning" | "onchain"
+
+// TODO:
+// refactor lightning/onchain and payment/receipt/onus
+// to 2 different variables.
+// also log have renamed "paid-invoice" --> "receipt"
+
+export type TransactionType = "payment" | "paid-invoice" | "on_us" | 
+  "onchain_receipt" | "onchain_payment" | "onchain_on_us" | 
+  "exchange_rebalance" | 
+  "fee" | "escrow"
 
 export interface IOnChainPayment {
   address: string,
@@ -40,7 +53,7 @@ export interface IOnChainPayment {
   memo?: string
 }
 
-export interface ILightningTransaction {
+export interface ITransaction {
   amount: number
   description: string
   created_at: Date
@@ -48,13 +61,23 @@ export interface ILightningTransaction {
   destination?: string
   type: TransactionType
   pending: boolean
+  addresses?: [string]
+}
+
+export interface IFeeRequest {
+  destination?: string,
+  amount?: number,
+  invoice?: string,
+  username?: string
 }
 
 export interface IPaymentRequest {
   destination?: string,
+  username?: string,
   amount?: number,
   invoice?: string,
   memo?: string,
+  isReward?: boolean,
 }
 
 export type IPayInvoice = {
@@ -79,6 +102,7 @@ export interface INotification {
   title: string,
   data?: IDataNotification
   body?: string,
+  logger: any
 }
 
 // onboarding

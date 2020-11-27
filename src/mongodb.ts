@@ -1,5 +1,5 @@
 import { exit } from "process"
-import { logger } from "./utils"
+import { baseLogger } from "./utils"
 
 const mongoose = require("mongoose");
 // mongoose.set("debug", true);
@@ -9,15 +9,14 @@ const Schema = mongoose.Schema;
 const dbVersionSchema = new Schema({
   version: Number,
   minBuildNumber: Number,
+  lastBuildNumber: Number,
 })
 export const DbVersion = mongoose.model("DbVersion", dbVersionSchema)
 
 
-// expired invoice should be removed from the collection
 const invoiceUserSchema = new Schema({
   _id: String, // hash of invoice
   uid: String,
-  pending: Boolean,
 
   // usd equivalent. sats is attached in the invoice directly.
   // optional, as BTC wallet doesn't have to set a sat amount when creating the invoice
@@ -34,11 +33,34 @@ const invoiceUserSchema = new Schema({
     type: Date,
     default: Date.now
   },
+
+  selfGenerated: {
+    type: Boolean,
+    default: true
+  }
 })
 
-// TOOD create indexes
+invoiceUserSchema.index({ "uid": 1 })
+
 
 export const InvoiceUser = mongoose.model("InvoiceUser", invoiceUserSchema)
+
+
+const mapSchema = new Schema({
+  title: String,
+  coordinate: {
+    latitude: String,
+    longitude: String,
+  },
+  username: { 
+    type: String,
+    set: v => v === "" ? undefined : v,
+  }
+})
+
+export const MapDB = mongoose.model("Map", mapSchema)
+
+
 
 const UserSchema = new Schema({
   created_at: {
@@ -51,9 +73,10 @@ const UserSchema = new Schema({
   },
   role: {
     type: String,
-    enum: ["user", "admin", "funder", "broker"],
+    enum: ["user", "funder", "broker"], // FIXME: "admin" is not used anymore --> remove?
     required: true,
     default: "user"
+    // doto : enfore the fact there can be only one funder/broker
   },
   onchain_addresses: {
     type: [String],
@@ -66,6 +89,17 @@ const UserSchema = new Schema({
   phone: { // TODO we should store country as a separate string
     type: String,
     required: true,
+  },
+  username: {
+    type: String,
+    match: [/(?!^(1|3|bc1|lnbc1))^[0-9a-z_]+$/i, "Username can only have alphabets, numbers and underscores"],
+    minlength: 3,
+    maxlength: 50,
+    index: {
+      unique: true,
+      collation: {locale: "en", strength: 2},
+      partialFilterExpression: { username: { $type: "string" } }
+    }
   },
   deviceToken: {
     type: [String],
@@ -108,6 +142,36 @@ const PhoneCodeSchema = new Schema({
 export const PhoneCode = mongoose.model("PhoneCode", PhoneCodeSchema)
 
 
+const FaucetSchema = new Schema({
+  created_at: {
+    type: Date,
+    default: Date.now
+  },
+  hash: {
+    type: String,
+    required: true 
+  },
+  used: {
+    type: Boolean,
+    default: false
+  },
+  message: {
+    type: String,
+    required: true
+  },
+  amount: {
+    type: Number,
+    required: true
+  },
+  currency: {
+    type: String,
+    default: "BTC"
+  }
+})
+
+export const Faucet = mongoose.model("Faucet", FaucetSchema)
+
+
 const transactionSchema = new Schema({
 
   hash: {
@@ -127,14 +191,23 @@ const transactionSchema = new Schema({
   txid: String,
 
   type: {
+    required: true,
     type: String,
     enum: [
-      "invoice", "payment", "on_us", // lightning
+      // TODO: merge with the Interface located in types.ts?
+      "invoice", "payment", "on_us", "fee_reimbursement", // lightning
       "onchain_receipt", "onchain_payment", "onchain_on_us", // onchain
       "fee", "escrow", // channel-related
+      "exchange_rebalance"//
     ]
   },
-  pending: Boolean, // used to denote confirmation status of on and off chain txn
+
+  // used to denote confirmation status of on and off chain txn
+  // for sending payment on lightning, pending will be true when sending an onchain transactio
+  // for sending payment on chain, pending will be true until the transaction get mined
+  // pending is not used for receiving transaction.
+  pending: Boolean, 
+  
   err: String,
   currency: {
     // TODO: check if an upgrade is needed for this one
@@ -148,6 +221,15 @@ const transactionSchema = new Schema({
     type: Number,
     default: 0
   },
+
+  // for fee updated
+  feeKnownInAdvance: {
+    type: Boolean
+  },
+  related_journal: Schema.Types.ObjectId,
+
+  // for onchain transactions.
+  payee_addresses: [String],
 
   memoPayer: String,
 
@@ -189,7 +271,18 @@ const transactionSchema = new Schema({
   }
 })
 
-// TODO indexes, see https://github.com/koresar/medici/blob/master/src/index.js#L39
+//indexes used by our queries
+transactionSchema.index({ "type": 1, "pending": 1, "account_path": 1 });
+transactionSchema.index({ "account_path": 1 });
+transactionSchema.index({ "hash": 1 })
+
+//indexes used by medici internally, and also set by default
+//we are setting them here manually because we are using a custom schema
+transactionSchema.index({ "_journal": 1 })
+transactionSchema.index({ "accounts": 1, "book": 1, "approved": 1, "datetime": -1, "timestamp": -1 });
+
+
+
 export const Transaction = mongoose.model("Medici_Transaction", transactionSchema);
 
 
@@ -224,112 +317,6 @@ const priceHistorySchema = new Schema({
 })
 export const PriceHistory = mongoose.model("PriceHistory", priceHistorySchema);
 
-export const upgrade = async () => {
-
-  try {
-
-    let dbVersion = await DbVersion.findOne({})
-
-    if (!dbVersion) {
-      dbVersion = DbVersion.create()
-      dbVersion.version = 0
-    }
-
-    logger.info({ dbVersion }, "entering upgrade db module version")
-
-    switch (dbVersion.version) {
-      case 0:
-        logger.info("starting upgrade to version 1")
-
-        logger.info("all existing wallet should have BTC as currency")
-        // this is to enforce the index constraint
-        await User.updateMany({}, { $set: { currency: "BTC" } })
-
-        logger.info("there needs to have a role: funder")
-        await User.findOneAndUpdate({ phone: "+1***REMOVED***", currency: "BTC" }, { role: "funder" })
-
-        logger.info("earn is no longer a particular type. replace with on_us")
-        await Transaction.updateMany({ type: "earn" }, { $set: { type: "on_us" } })
-
-        logger.info("setting db version to 1")
-        await DbVersion.findOneAndUpdate({}, { version: 1 }, { upsert: true })
-
-        logger.info("upgrade successful to version 1")
-
-      case 1:
-        logger.info("starting upgrade to version 2")
-
-        let priceTime
-        const moment = require('moment');
-
-        let price
-        let skipUpdate = false
-
-        try {
-          ({ pair: { exchange: { price } } } = await PriceHistory.findOne({}, {}, { sort: { _id: 1 } }))
-        } catch (err) {
-          logger.warn("no price available. would only ok if no transaction is available, ie: on devnet")
-          const count = await Transaction.countDocuments()
-          if (count === 0) {
-            skipUpdate = true
-          } else {
-            exit()
-          }
-        }
-
-        if (!skipUpdate) {
-          const priceMapping = mapValues(keyBy(price, i => moment(i._id)), 'o')
-          const lastPriceObj = last(price)
-          const lastPrice = (lastPriceObj as any).o
-
-          const transactions = await Transaction.find({})
-
-          for (const tx of transactions) {
-            const txTime = moment(tx.datetime).startOf('hour');
-
-            if (has(priceMapping, `${txTime}`)) {
-              priceTime = priceMapping[`${txTime}`]
-            } else {
-              logger.warn({ tx }, 'using most recent price for time %o', `${txTime}`)
-              priceTime = lastPrice
-            }
-
-            const usd = (tx.debit + tx.credit) * priceTime
-            await Transaction.findOneAndUpdate({ _id: tx._id }, { usd })
-          }
-        }
-
-        logger.info("setting db version to 2")
-        dbVersion.version = 2
-        dbVersion.minBuildNumber = 182
-        await dbVersion.save()
-
-        logger.info("upgrade successful to version 2")
-
-      case 2:
-        logger.info("starting upgrade to version 3")
-
-        const Journal = mongoose.model("Medici_Journal");
-        const memo = 'escrow'
-        await Transaction.remove({ memo })
-        await Journal.remove({ memo })
-
-        dbVersion.version = 2
-        await dbVersion.save()
-
-        logger.info("upgrade successful to version 3")
-
-      default:
-        logger.info("db was just upgraded or did not need upgrade")
-        break;
-    }
-  } catch (err) {
-    logger.fatal({ err }, "db upgrade error. exiting")
-    exit()
-  }
-}
-
-
 // TODO add an event listenever if we got disconnecter from MongoDb
 // after a first succesful connection
 
@@ -348,12 +335,28 @@ export const setupMongoConnection = async () => {
       useCreateIndex: true,
       useFindAndModify: false
     })
+    mongoose.set('runValidators', true)
   } catch (err) {
-    logger.error(`error connecting to mongodb ${err}`)
+    baseLogger.fatal(`error connecting to mongodb ${err}`)
     exit(1)
   }
 }
 
 import { book } from "medici";
-import { has, keyBy, last, map, mapValues } from "lodash";
 export const MainBook = new book("MainBook")
+
+
+// approach below doesn't work
+// find a way to make currency mandatory for balance and ledger
+
+// MainBook.balance = function(_super) {
+//   return function() {
+//     if (!arguments[0].currency) {
+//       throw Error("currency is missing to get the balance")
+//     }
+//     // @ts-ignore
+//     return _super.apply(this, arguments);
+//   };
+// }
+
+// TODO: .ledger() as well

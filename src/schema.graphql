@@ -11,6 +11,7 @@ type Transaction {
   pending: Boolean,
   type: String!,
   feeUsd: Float, # TODO: move to Int 
+  addresses: [String]
 }
 
 type Price {
@@ -32,17 +33,15 @@ type Wallet {
   currency: String # enum?
   balance: Int
   transactions: [Transaction]
+  csv: String
 }
 
 type Invoice {
   addInvoice(value: Int, memo: String): String
   updatePendingInvoice(hash: String!): Boolean
   payInvoice(invoice: String!, amount: Int, memo: String): String #FIXME: use a more precise type
-}
-
-type PendingOnchainPayment {
-  txId: ID
-  amount: Int
+  payKeysendUsername(amount: Int!, destination: String!, username: String!, memo: String): String
+  getFee(destination: String, amount: Int, invoice: String, memo: String): Int # sats
 }
 
 type OnChain {
@@ -61,8 +60,9 @@ type OnchainTransaction {
 
 type User {
   id: ID
-  name: String
+  username: String
   level: Int!
+  phone: String
 }
 
 input InputUser {
@@ -79,11 +79,39 @@ type Token {
 }
 
 type BuildParameter {
+  id: ID
   commitHash: String
   buildTime: String
   helmRevision: Int
   minBuildNumberAndroid: Int
   minBuildNumberIos: Int
+  lastBuildNumberAndroid: Int
+  lastBuildNumberIos: Int
+}
+
+type NodeStats {
+  id: ID # nodePublicKey
+  peersCount: Int
+  channelsCount: Int
+}
+
+type Coordinate {
+  latitude: Float
+  longitude: Float
+}
+
+type FaucetResult {
+  success: Boolean
+  amount: Int
+  currency: String
+  message: String
+}
+
+type Marker {
+  id: ID
+  title: String
+  coordinate: Coordinate
+  username: String
 }
 
 type Query { 
@@ -91,21 +119,29 @@ type Query {
   wallet: [Wallet]
   earnList: [Earn]
   me: User
-  buildParameters: BuildParameter
+  maps: [Marker]
+  buildParameters(appVersion: String, buildVersion: String, os: String): BuildParameter
+  nodeStats: NodeStats
   getLastOnChainAddress: LastOnChainAddress
-  pendingOnChainPayment: [PendingOnchainPayment]
+  usernameExists(username: String!): Boolean
+}
+
+type UpdateUser {
+  setLevel(user: InputUser): User
+  setUsername(username: String!): Boolean
 }
 
 type Mutation {
   requestPhoneCode(phone: String): Success
   login(phone: String, code: Int, currency: String): Token
   openChannel(local_tokens: Int, public_key: String, socket: String): OnchainTransaction
-
+  publicInvoice(username: String!): Invoice
   onchain: OnChain
   invoice: Invoice
   earnCompleted(ids: [ID]): [Earn]
-  updateUser(user: InputUser): User
+  updateUser: UpdateUser
   deleteUser: Boolean # TODO
+  faucet(hash: String): FaucetResult
   addDeviceToken(deviceToken: String): Success # to refactor with User?
   testMessage: Success # FIXME remove test
 }

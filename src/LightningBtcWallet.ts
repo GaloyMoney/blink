@@ -1,9 +1,9 @@
+import { customerPath } from "./ledger";
 import { LightningMixin } from "./Lightning";
 import { disposer } from "./lock";
-import { User } from "./mongodb";
+import { Faucet, User } from "./mongodb";
 import { OnChainMixin } from "./OnChain";
 import { IAddBTCInvoiceRequest, ILightningWalletUser, OnboardingEarn } from "./types";
-import { satsToUsd } from "./utils";
 import { UserWallet } from "./wallet";
 import { getFunderWallet } from "./walletFactory";
 const using = require('bluebird').using
@@ -12,13 +12,18 @@ const using = require('bluebird').using
  * this represents a user wallet
  */
 export class LightningBtcWallet extends OnChainMixin(LightningMixin(UserWallet)) {
-  constructor({ uid }: ILightningWalletUser) {
-    super({ uid, currency: "BTC" })
+  
+  constructor(args: ILightningWalletUser) {
+    super({ currency: "BTC", ...args })
+  }
+
+  get accountPath(): string {
+    return customerPath(this.uid)
   }
 
   async addEarn(ids) {
 
-    const lightningFundingWallet = await getFunderWallet()
+    const lightningFundingWallet = await getFunderWallet({ logger: this.logger })
     const result: object[] = []
 
     return await using(disposer(this.uid), async (lock) => {
@@ -35,7 +40,7 @@ export class LightningBtcWallet extends OnChainMixin(LightningMixin(UserWallet))
         if (userPastState.earn.findIndex(item => item === id) === -1) {
 
           const invoice = await this.addInvoice({memo: id, value: amount})
-          await lightningFundingWallet.pay({invoice})
+          await lightningFundingWallet.pay({invoice, isReward: true})
         }
 
         result.push({ id, value: amount, completed: true })
@@ -45,7 +50,36 @@ export class LightningBtcWallet extends OnChainMixin(LightningMixin(UserWallet))
     })
   }
 
-  async addInvoice({ value = undefined, memo = undefined }: IAddBTCInvoiceRequest): Promise<string> {
+  async faucet(hash) {
+    let success, message
+
+    const faucetPastState = await Faucet.findOneAndUpdate(
+      { hash },
+      { used: true },
+    )
+
+    if (!faucetPastState) {
+      success = false 
+    } else {
+      if (faucetPastState.used === false) {
+        const lightningFundingWallet = await getFunderWallet({ logger: this.logger })
+
+        // TODO: currency conversion if faucetPastState.currency === "USD"
+
+        const invoice = await this.addInvoice({memo: `faucet-${hash}`, value: faucetPastState.amount})
+        await lightningFundingWallet.pay({invoice, isReward: true})
+        
+        success = true
+        message = faucetPastState.message
+      } else {
+        success = false
+      }
+    }
+
+    return {success, message}
+  }
+
+  async addInvoice({ value = undefined, memo = undefined, selfGenerated = true }: IAddBTCInvoiceRequest): Promise<string> {
 
     let sats, usd
 
@@ -53,11 +87,12 @@ export class LightningBtcWallet extends OnChainMixin(LightningMixin(UserWallet))
     // the payer can set the amount himself
     if (!!value) {
       sats = value
-      usd = await satsToUsd(sats)
+      usd = this.satsToUsd(sats)
     }
 
-    const request = await super.addInvoiceInternal({sats, usd, currency: this.currency, memo})
+    const request = await super.addInvoiceInternal({sats, usd, memo, selfGenerated})
 
     return request
   }
+
 }

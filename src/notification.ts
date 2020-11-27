@@ -1,8 +1,8 @@
 import * as admin from 'firebase-admin';
 import { User } from "./mongodb";
-import { logger } from "./utils";
 import { IDataNotification, INotification } from "./types"
 import { mapValues } from "lodash";
+import { Price } from "./priceImpl";
 
 // The key GOOGLE_APPLICATION_CREDENTIALS should be set in production
 // This key defined the path of the config file that include the key
@@ -15,17 +15,22 @@ if(process.env.GOOGLE_APPLICATION_CREDENTIALS) {
 }
 
 
-export const sendInvoicePaidNotification = async ({hash, amount, uid}) => {
+export const sendInvoicePaidNotification = async ({hash, amount, uid, logger}) => {
+  const satsPrice = await new Price({ logger }).lastPrice()
+
   const data: IDataNotification = {
     type: "paid-invoice",
     hash,
     amount,
   }
-  await sendNotification({uid, title: `You receive a payment of ${amount} sats`, data})
+
+  const usd = (amount * satsPrice).toFixed(2)
+  // TODO dedupe from trigger.ts
+  await sendNotification({uid, title: `You received $${usd} | ${amount} sats`, data, logger})
 }
 
 
-export const sendNotification = async ({uid, title, body, data}: INotification) => {
+export const sendNotification = async ({uid, title, body, data, logger}: INotification) => {
 
   const user = await User.findOne({ _id: uid })
 
@@ -73,7 +78,7 @@ export const sendNotification = async ({uid, title, body, data}: INotification) 
       // priority: 'high',
     },
     )
-  // FIXME: any as a workaround to https://github.com/Microsoft/TypeScript/issues/15300
 
-  logger.info(response.successCount + ' messages were sent successfully')
+  // FIXME: any as a workaround to https://github.com/Microsoft/TypeScript/issues/15300
+  logger.info({response, uid, title, body, data}, 'notification was sent successfully')
 }

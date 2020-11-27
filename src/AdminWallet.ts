@@ -1,22 +1,24 @@
-import { filter, find } from "lodash";
-import { WalletFactory } from "./walletFactory";
+import { filter, sumBy } from "lodash";
+import { accountingExpenses, escrowAccountingPath, lightningAccountingPath, openChannelFees } from "./ledger";
 import { MainBook, Transaction, User } from "./mongodb";
-import { getAuth, logger } from "./utils";
+import { baseLogger, getAuth } from "./utils";
+import { getBrokerWallet, WalletFactory } from "./walletFactory";
 const lnService = require('ln-service')
+
+const logger = baseLogger.child({module: "admin"})
 
 
 export class AdminWallet {
-  readonly currency = "BTC" // add USD as well
   readonly lnd = lnService.authenticatedLndGrpc(getAuth()).lnd
 
   async updateUsersPendingPayment() {
     let userWallet
 
-    for await (const user of User.find({}, { _id: 1})) {
-      logger.debug("updating user %o", user._id)
+    for await (const user of User.find({})) {
+      logger.trace("updating user %o", user._id)
 
       // A better approach would be to just loop over pending: true invoice/payment
-      userWallet = WalletFactory({uid: user._id, currency: user.currency})
+      userWallet = await WalletFactory({user, uid: user._id, currency: user.currency, logger})
       await userWallet.updatePending()
     }
   }
@@ -43,95 +45,72 @@ export class AdminWallet {
   }
 
   async getBalanceSheet() {    
-    const getBalanceOf = async (account) => {
-      const { balance } = await MainBook.balance({
-        account,
-        currency: this.currency
-      })
+    const { balance: assets } = await MainBook.balance({accounts: "Assets", currency: "BTC"}) 
+    const { balance: liabilities } = await MainBook.balance({accounts: "Liabilities", currency: "BTC"}) 
+    const { balance: lightning } = await MainBook.balance({accounts: lightningAccountingPath, currency: "BTC"}) 
+    const { balance: expenses } = await MainBook.balance({accounts: accountingExpenses, currency: "BTC"}) 
 
-      return balance
-    }
-
-    const assets = await getBalanceOf("Assets") 
-    const liabilities = await getBalanceOf("Liabilities") 
-    const lightning = await getBalanceOf("Assets:Reserve:Lightning") 
-    const expenses = await getBalanceOf("Expenses") 
-
-    // FIXME: have a way to generate a PNL
-    const equity = - expenses
-
-    return {assets, liabilities, lightning, expenses, equity}
+    return {assets, liabilities, lightning, expenses }
   }
 
   async balanceSheetIsBalanced() {
-    const {assets, liabilities, lightning, expenses} = await this.getBalanceSheet()
-    const { total } = await this.lndBalances()
+    const {assets, liabilities, lightning, expenses } = await this.getBalanceSheet()
+    const { total: lnd } = await this.lndBalances() // doesnt include ercrow amount
 
-    const assetsLiabilitiesDifference = assets + liabilities + expenses
-    const lndBalanceSheetDifference = total - lightning
-    if(!!lndBalanceSheetDifference) {
-      logger.debug({total, lightning, lndBalanceSheetDifference, assets, liabilities, expenses}, `not balanced`)
+    const brokerWallet = await getBrokerWallet({ logger })
+    const { sats: ftx } = await brokerWallet.getExchangeBalance()
+
+    const assetsLiabilitiesDifference = assets + (liabilities + expenses)
+    const bookingVersusRealWorldAssets = (lnd + ftx) - lightning
+    if(!!bookingVersusRealWorldAssets) {
+      logger.debug({lnd, lightning, bookingVersusRealWorldAssets, assets, liabilities, expenses}, `not balanced`)
     }
 
-    return { assetsLiabilitiesDifference, lndBalanceSheetDifference }
+    return { assetsLiabilitiesDifference, bookingVersusRealWorldAssets }
   }
 
   async lndBalances () {
     const { chain_balance } = await lnService.getChainBalance({lnd: this.lnd})
-    const { channel_balance } = await lnService.getChannelBalance({lnd: this.lnd})
+    const { channel_balance, pending_balance: opening_channel_balance } = await lnService.getChannelBalance({lnd: this.lnd})
 
     //FIXME: This can cause incorrect balance to be reported in case an unconfirmed txn is later cancelled/double spent
+    // bitcoind seems to have a way to report this correctly. does lnd have?
     const { pending_chain_balance } = await lnService.getPendingChainBalance({lnd: this.lnd})
 
-    const total = chain_balance + channel_balance + pending_chain_balance
+    const { channels: closedChannels } = await lnService.getClosedChannels({lnd: this.lnd})
 
-    return { total, onChain: chain_balance + pending_chain_balance, offChain: channel_balance } 
+    // FIXME: calculation seem wrong (seeing the grafana graph, need to double check)
+    logger.debug({closedChannels}, "lnService.getClosedChannels")
+    const closing_channel_balance = sumBy(closedChannels, channel => sumBy(
+      (channel as any).close_payments, payment => (payment as any).is_pending ? (payment as any).tokens : 0 )
+    )
+    
+    const total = chain_balance + channel_balance + pending_chain_balance + opening_channel_balance + closing_channel_balance
+    return { total, onChain: chain_balance + pending_chain_balance, offChain: channel_balance, opening_channel_balance, closing_channel_balance } 
   }
 
-  async getInfo() {
-    return await lnService.getWalletInfo({ lnd: this.lnd });
-  }
-
-  async openChannel({local_tokens, public_key, socket}): Promise<string> {
-    const {transaction_id} = await lnService.openChannel({ lnd: this.lnd, local_tokens,
-      partner_public_key: public_key, partner_socket: socket
-    })
-
-    // FIXME: O(n), not great
-    const { transactions } = await lnService.getChainTransactions({lnd: this.lnd})
-
-    const { fee } = find(transactions, {id: transaction_id})
-
-    const metadata = { currency: this.currency, txid: transaction_id, type: "fee" }
-
-    await MainBook.entry("on chain fee")
-      .debit('Assets:Reserve:Lightning', fee, {...metadata,})
-      .credit('Expenses:Bitcoin:Fees', fee, {...metadata})
-      .commit()
-
-    return transaction_id
-  }
+  getInfo = async () => lnService.getWalletInfo({ lnd: this.lnd });
 
   async updateEscrows() {
     const type = "escrow"
 
-    const metadata = { type, currency: this.currency }
+    const metadata = { type, currency: "BTC" }
 
     const { channels } = await lnService.getChannels({lnd: this.lnd})
-    const selfInitated = filter(channels, {is_partner_initiated: false, is_active: true})
+    const selfInitated = filter(channels, {is_partner_initiated: false})
 
     const mongotxs = await Transaction.aggregate([
-      { $match: { type: "escrow", accounts: "Assets:Reserve:Lightning" }}, 
+      { $match: { type: "escrow", accounts: lightningAccountingPath }}, 
       { $group: {_id: "$txid", total: { "$sum": "$debit" } }},
     ])
-
-    // TODO remove the inactive channel from escrow (??)
 
     for (const channel of selfInitated) {
 
       const txid = `${channel.transaction_id}:${channel.transaction_vout}`
       
       const mongotx = filter(mongotxs, {_id: txid})[0] ?? { total: 0 }
+
+      logger.debug({mongotx, channel}, "need escrow?")
 
       if (mongotx?.total === channel.commit_transaction_fee) {
         continue
@@ -140,11 +119,11 @@ export class AdminWallet {
       //log can be located by searching for 'update escrow' in gke logs
       //FIXME: Remove once escrow bug is fixed
       const diff = channel.commit_transaction_fee - (mongotx?.total)
-      logger.debug({channel, diff}, `in update escrow, mongotx ${mongotx}`)
+      logger.debug({diff}, `update escrow with diff`)
 
       await MainBook.entry("escrow")
-        .debit('Assets:Reserve:Lightning', diff, {...metadata, txid})
-        .credit('Assets:Reserve:Escrow', diff, {...metadata, txid})
+        .debit(lightningAccountingPath, diff, {...metadata, txid})
+        .credit(escrowAccountingPath, diff, {...metadata, txid})
         .commit()
     }
 
