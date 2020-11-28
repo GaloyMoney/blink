@@ -9,7 +9,7 @@ import { createBrokerUid, getTokenFromPhoneIndex } from "../walletFactory";
 import { UserWallet } from "../wallet"
 const mongoose = require("mongoose");
 
-let userWallet, userWallet1
+let userWallet0, userWallet1, userWallet2
 
 
 // change role to admin
@@ -62,31 +62,32 @@ it('add user5 / usd user', async () => {
 
 describe('username tests', () => {
   beforeAll(async () => {
-    userWallet = await getUserWallet(0)
+    userWallet0 = await getUserWallet(0)
     userWallet1 = await getUserWallet(1)
+    userWallet2 = await getUserWallet(2)
   })
 
   it('does not set username if length less than 3', async () => {
-    await expect(userWallet.setUsername({ username: 'ab' })).rejects.toThrow()
+    await expect(userWallet0.setUsername({ username: 'ab' })).rejects.toThrow()
   })
 
   it('does not set username if contains invalid characters', async () => {
-    await expect(userWallet.setUsername({ username: 'ab+/' })).rejects.toThrow()
+    await expect(userWallet0.setUsername({ username: 'ab+/' })).rejects.toThrow()
   })
 
   it('does not allow non english characters', async () => {
-    await expect(userWallet.setUsername({ username: 'ñ_user1' })).rejects.toThrow()
+    await expect(userWallet0.setUsername({ username: 'ñ_user1' })).rejects.toThrow()
   })
 
   it('cannot set user starting with 1, 3, bc1, lnbc1', async () => {
-    await expect(userWallet.setUsername({ username: "1ab" })).rejects.toThrow()
-    await expect(userWallet.setUsername({ username: "3basd" })).rejects.toThrow()
-    await expect(userWallet.setUsername({ username: "bc1ba" })).rejects.toThrow()
-    await expect(userWallet.setUsername({ username: "lnbc1qwe1" })).rejects.toThrow()
+    await expect(userWallet0.setUsername({ username: "1ab" })).rejects.toThrow()
+    await expect(userWallet0.setUsername({ username: "3basd" })).rejects.toThrow()
+    await expect(userWallet0.setUsername({ username: "bc1ba" })).rejects.toThrow()
+    await expect(userWallet0.setUsername({ username: "lnbc1qwe1" })).rejects.toThrow()
   })
 
   it('sets username for user0', async () => {
-    const result = await userWallet.setUsername({ username })
+    const result = await userWallet0.setUsername({ username })
     expect(!!result).toBeTruthy()
   })
   
@@ -95,12 +96,17 @@ describe('username tests', () => {
     expect(!!result).toBeTruthy()
   })
 
+  it('sets username for user2', async () => {
+    const result = await userWallet2.setUsername({ username: "user2" })
+    expect(!!result).toBeTruthy()
+  })
+
   it('does not set username with only case difference', async () => {
-    await expect(userWallet.setUsername({ username: '_user1' })).rejects.toThrow()
+    await expect(userWallet0.setUsername({ username: '_user1' })).rejects.toThrow()
   })
 
   it('does not allow re-setting username', async () => {
-    await expect(userWallet.setUsername({ username: "abc" })).rejects.toThrow()
+    await expect(userWallet0.setUsername({ username: "abc" })).rejects.toThrow()
   })
 
   it('usernameExists returns true if username already exists', async () => {

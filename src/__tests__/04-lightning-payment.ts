@@ -43,16 +43,22 @@ afterEach(async () => {
 })
 
 afterAll(async () => {
+  
   // to make this test re-entrant, we need to remove the fund from userWallet1 and delete the user
-  const finalBalance = await userWallet1.getBalance()
-  const funderWallet = await getFunderWallet({ logger: baseLogger })
+  // uncomment when necessary
+  
+  // const finalBalance = await userWallet1.getBalance()
+  // const funderWallet = await getFunderWallet({ logger: baseLogger })
 
-  if (!!finalBalance) {
-    const request = await funderWallet.addInvoice({ value: finalBalance })
-    await userWallet1.pay({ invoice: request })
-  }
+  // if (!!finalBalance) {
+  //   const request = await funderWallet.addInvoice({ value: finalBalance })
+  //   await userWallet1.pay({ invoice: request })
+  // }
 
-  await User.findOneAndRemove({ _id: userWallet1.uid })
+  // await User.findOneAndRemove({ _id: userWallet1.uid })
+
+
+
   jest.restoreAllMocks();
 
   await mongoose.connection.close()
@@ -161,7 +167,8 @@ functionToTests.forEach(({fn, name}) => {
     expect(user1FinalBalance).toBe(initBalance1 - amountInvoice)
     expect(user2FinalBalance).toBe(initBalance2 + amountInvoice)
 
-    const matchTx = tx => tx.type === 'on_us' && tx.hash === getHash(request)
+    const hash = getHash(request)
+    const matchTx = tx => tx.type === 'on_us' && tx.hash === hash
 
     const user2Txn = await userWallet2.getTransactions()
     const user2OnUsTxn = user2Txn.filter(matchTx)
@@ -173,6 +180,12 @@ functionToTests.forEach(({fn, name}) => {
     const user1OnUsTxn = user1Txn.filter(matchTx)
     expect(user1OnUsTxn[0].type).toBe('on_us')
     expect(user1OnUsTxn[0].description).toBe(memo)
+
+    // making request twice because there is a cancel state, and this should be re-entrant
+    expect(await userWallet1.updatePendingInvoice({ hash })).toBeTruthy()
+    expect(await userWallet2.updatePendingInvoice({ hash })).toBeTruthy()
+    expect(await userWallet1.updatePendingInvoice({ hash })).toBeTruthy()
+    expect(await userWallet2.updatePendingInvoice({ hash })).toBeTruthy()
   })
 
   it(`payInvoice to lnd outside2 ${name}`, async () => {
@@ -329,40 +342,6 @@ it('fails to pay when user has insufficient balance', async () => {
   const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: initBalance1 + 1000000 })
   //FIXME: Check exact error message also
   await expect(userWallet1.pay({ invoice: request })).rejects.toThrow()
-})
-
-it('payInvoiceToAnotherGaloyUser', async () => {
-  const memo = "my memo as a payer"
-
-  const request = await userWallet2.addInvoice({ value: amountInvoice })
-  await userWallet1.pay({ invoice: request, memo })
-
-  const user1FinalBalance = await userWallet1.getBalance()
-  const user2FinalBalance = await userWallet2.getBalance()
-
-  expect(user1FinalBalance).toBe(initBalance1 - amountInvoice)
-  expect(user2FinalBalance).toBe(initBalance2 + amountInvoice)
-
-  const hash = getHash(request)
-  const matchTx = tx => tx.type === 'on_us' && tx.hash === hash
-
-  const user2Txn = await userWallet2.getTransactions()
-  const user2OnUsTxn = user2Txn.filter(matchTx)
-  expect(user2OnUsTxn[0].type).toBe('on_us')
-  expect(user2OnUsTxn[0].description).toBe('on_us')
-  await checkIsBalanced()
-
-  const user1Txn = await userWallet1.getTransactions()
-  const user1OnUsTxn = user1Txn.filter(matchTx)
-  expect(user1OnUsTxn[0].type).toBe('on_us')
-  expect(user1OnUsTxn[0].description).toBe(memo)
-
-  // making request twice because there is a cancel state, and this should be re-entrant
-  expect(await userWallet1.updatePendingInvoice({ hash })).toBeTruthy()
-  expect(await userWallet2.updatePendingInvoice({ hash })).toBeTruthy()
-  expect(await userWallet1.updatePendingInvoice({ hash })).toBeTruthy()
-  expect(await userWallet2.updatePendingInvoice({ hash })).toBeTruthy()
-
 })
 
 it('payInvoiceToAnotherGaloyUserWithMemo', async () => {
