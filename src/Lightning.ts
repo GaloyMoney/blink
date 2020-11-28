@@ -163,7 +163,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     const value = JSON.stringify(route)
     await getAsyncRedisClient().set(key, value, 'EX', 60 * 5); // expires after 5 minutes
 
-    lightningLogger.info({redis: {key, value}}, "succesfully found a route")
+    lightningLogger.info({redis: {key, value}, probingSuccess: true, success: true }, "succesfully found a route")
     return route.fee
   }
 
@@ -402,7 +402,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       {
         const sats = tokens + fee
 
-        lightningLogger = lightningLogger.child({ probingSuccess: true, route, balance, fee, sats })
+        lightningLogger = lightningLogger.child({ route, balance, fee, sats })
         const metadata = { currency: this.currency, hash: id, type: "payment", pending: true, fee, feeKnownInAdvance, ...this.getCurrencyEquivalent({sats, fee }) }
 
         const value = this.isUSD ? metadata.usd : sats
