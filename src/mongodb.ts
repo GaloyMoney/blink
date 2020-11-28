@@ -111,6 +111,10 @@ const UserSchema = new Schema({
     default: "BTC",
     required: true,
   },
+  contacts: {
+    type: [String],
+    default: []
+  },
   // firstName,
   // lastName,
   // activated,

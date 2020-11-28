@@ -63,6 +63,7 @@ type User {
   username: String
   level: Int!
   phone: String
+  contacts: [String]
 }
 
 input InputUser {

@@ -59,13 +59,14 @@ const helmRevision = process.env.HELMREVISION
 const resolvers = {
   Query: {
     me: async (_, __, { uid, user }) => {
-      const { phone, username } = user
+      const { phone, username, contacts } = user
 
       return {
         id: uid,
         level: 1,
         phone,
         username,
+        contacts
       }
     },
     wallet: async (_, __, { wallet }) => ([{
@@ -123,6 +124,7 @@ const resolvers = {
     getLastOnChainAddress: async (_, __, { wallet }) => ({ id: wallet.getLastOnChainAddress() }),
 
     maps: async () => {
+      // TODO: caching
       const maps = await MapDB.find({})
       return maps.map(item => ({
         id: item._id,
