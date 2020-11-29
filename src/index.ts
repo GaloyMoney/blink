@@ -165,6 +165,7 @@ const resolvers = {
       getFee: async ({ destination, amount, invoice, memo }) => wallet.getLightningFee({ destination, amount, invoice, memo })
     }),
     earnCompleted: async (_, { ids }, { wallet }) => wallet.addEarn(ids),
+    faucet: async (_, { hash }, { wallet }) => wallet.faucet(hash),
     deleteUser: () => {
       // TODO
     },
@@ -223,7 +224,10 @@ function verifyToken(req) {
 
 const isAuthenticated = rule({ cache: 'contextual' })(
   async (parent, args, ctx, info) => {
-    return ctx.uid !== null
+    if(ctx.uid === null) {
+      return new Error(`${util.inspect({ message: 'Not authorised!', request: ctx.request.body }, false, Infinity)}`)
+    }
+    return true
   },
 )
 
@@ -246,6 +250,7 @@ const permissions = shield({
     updateUser: isAuthenticated,
     deleteUser: isAuthenticated,
     addDeviceToken: isAuthenticated,
+    faucet: isAuthenticated,
   },
 }, { allowExternalErrors: true }) // TODO remove to not expose internal error
 
