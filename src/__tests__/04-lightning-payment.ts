@@ -141,6 +141,16 @@ functionToTests.forEach(({fn, name}) => {
     expect(finalBalance).toBe(initBalance1 - amountInvoice)
   })
 
+  it(`fails when repaying invoice ${name}`, async () => {
+    const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: amountInvoice })
+    await fn(userWallet1)({ invoice: request })
+    const result = await fn(userWallet1)({ invoice: request })
+    expect(result).toBe("already_paid")
+  
+    const finalBalance = await userWallet1.getBalance()
+    expect(finalBalance).toBe(initBalance1)
+  })
+
   it(`payInvoice with High CLTV Delta ${name}`, async () => {
     const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: amountInvoice, cltv_delta: 200 })
     const result = await await fn(userWallet1)({ invoice: request })
