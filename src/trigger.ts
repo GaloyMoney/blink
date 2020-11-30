@@ -138,7 +138,7 @@ export const onChannelOpened = async ({ channel, lnd }) => {
 
   const { fee } = find(transactions, { id: transaction_id })
 
-  const metadata = { currency: "BTC", txid: transaction_id, type: "fee" }
+  const metadata = { currency: "BTC", txid: transaction_id, type: "fee", pending: false }
 
   await MainBook.entry("on chain fee")
     .debit(lightningAccountingPath, fee, { ...metadata, })
