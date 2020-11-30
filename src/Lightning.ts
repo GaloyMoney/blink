@@ -259,10 +259,10 @@ export const LightningMixin = (superclass) => class extends superclass {
     const balance = await this.getBalance()
 
     return await using(disposer(this.uid), async (lock) => {
-      const lightningLoggerOnUs = lightningLogger.child({ onUs: true, fee: 0 })
-
       // On us transaction
       if (destination === await this.getNodePubkey()) {
+        const lightningLoggerOnUs = lightningLogger.child({ onUs: true, fee: 0 })
+
         let payeeUid, payeeCurrency
 
         if (pushPayment) {
@@ -282,6 +282,7 @@ export const LightningMixin = (superclass) => class extends superclass {
           payeeUid = payee._id
           payeeCurrency = payee.currency
         } else {
+          // standard path, user scan another lightning wallet of bitcoin beach invoice
 
           const payeeInvoice = await InvoiceUser.findOne({ _id: id })
           if (!payeeInvoice) {
