@@ -52,7 +52,7 @@ const mapSchema = new Schema({
     latitude: String,
     longitude: String,
   },
-  username: { 
+  username: {
     type: String,
     set: v => v === "" ? undefined : v,
   }
@@ -97,7 +97,7 @@ const UserSchema = new Schema({
     maxlength: 50,
     index: {
       unique: true,
-      collation: {locale: "en", strength: 2},
+      collation: { locale: "en", strength: 2 },
       partialFilterExpression: { username: { $type: "string" } }
     }
   },
@@ -149,7 +149,7 @@ const FaucetSchema = new Schema({
   },
   hash: {
     type: String,
-    required: true 
+    required: true
   },
   used: {
     type: Boolean,
@@ -203,11 +203,14 @@ const transactionSchema = new Schema({
   },
 
   // used to denote confirmation status of on and off chain txn
-  // for sending payment on lightning, pending will be true when sending an onchain transactio
+  // for sending payment on lightning, pending will be true in case of timeout
   // for sending payment on chain, pending will be true until the transaction get mined
   // pending is not used for receiving transaction.
-  pending: Boolean, 
-  
+  pending: {
+    type: Boolean,
+    required: true
+  },
+
   err: String,
   currency: {
     // TODO: check if an upgrade is needed for this one
