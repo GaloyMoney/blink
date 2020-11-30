@@ -632,7 +632,7 @@ export const LightningMixin = (superclass) => class extends superclass {
           const sats = invoice.received
           
           const usd = invoiceUser.usd
-          const metadata = { hash, type: "invoice", ...this.getCurrencyEquivalent({usd, sats, fee: 0}) }
+          const metadata = { hash, type: "invoice", pending: false, ...this.getCurrencyEquivalent({usd, sats, fee: 0}) }
 
           // TODO: brokerLndPath should be cached
           const path = this.isUSD ? await brokerLndPath() : this.accountPath
