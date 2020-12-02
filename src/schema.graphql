@@ -116,7 +116,7 @@ type Marker {
 }
 
 type Query { 
-  prices: [Price]
+  prices(length: Int): [Price]
   wallet: [Wallet]
   earnList: [Earn]
   me: User
