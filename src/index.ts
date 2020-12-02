@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import { rule, shield } from 'graphql-shield';
 import { GraphQLServer } from 'graphql-yoga';
 import * as jwt from 'jsonwebtoken';
-import { startsWith } from "lodash";
+import { chunk, startsWith } from "lodash";
 import moment from "moment";
 import { v4 as uuidv4 } from 'uuid';
 import { getMinBuildNumber, mainCache } from "./cache";
@@ -79,7 +79,6 @@ const resolvers = {
     nodeStats: async () => nodeStats({lnd}),
     buildParameters: async () => {
       const { minBuildNumber, lastBuildNumber } = await getMinBuildNumber()
-
       return {
         id: lastBuildNumber,
         commitHash: () => commitHash,
@@ -89,8 +88,11 @@ const resolvers = {
         minBuildNumberIos: minBuildNumber,
         lastBuildNumberAndroid: lastBuildNumber,
         lastBuildNumberIos: lastBuildNumber,
-    }},
-    prices: async (_, __, {logger}) => {
+      }
+    },
+    prices: async (_, { length }, {logger}) => {
+      const length_ = length ?? 365 * 24 * 10
+
       const key = "lastCached"
       let value
     
@@ -105,7 +107,8 @@ const resolvers = {
         value = lastCached
       }
     
-      return value
+      // TODO: there is probably a more efficient method than chunk)
+      return chunk(value, length_)[0]
     },
     earnList: async (_, __, { uid, user }) => {
       const response: Object[] = []
