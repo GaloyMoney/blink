@@ -108,7 +108,8 @@ const resolvers = {
     
       // TODO: there is probably a more efficient method than chunk)
       // return chunk(value, length)[0]
-      return value[value.length - 1]
+      // console.log({value})
+      return [value[value.length - 1]]
     },
     earnList: async (_, __, { uid, user }) => {
       const response: Object[] = []
