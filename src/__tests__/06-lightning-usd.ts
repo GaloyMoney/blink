@@ -110,5 +110,10 @@ it('on-us should be ok with same currency', async () => {
   console.log({balance})
 
   const result = await userWalletUsd.pay({ invoice: request })
+
+  // TODO:
+  // const finalBalance = await userWalletUsd.getBalance()
+
+  
   expect(result).toBe("success")
 })

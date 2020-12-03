@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import { rule, shield } from 'graphql-shield';
 import { GraphQLServer } from 'graphql-yoga';
 import * as jwt from 'jsonwebtoken';
-import { startsWith } from "lodash";
+import { chunk, startsWith } from "lodash";
 import moment from "moment";
 import { v4 as uuidv4 } from 'uuid';
 import { getMinBuildNumber, mainCache } from "./cache";
@@ -59,13 +59,14 @@ const helmRevision = process.env.HELMREVISION
 const resolvers = {
   Query: {
     me: async (_, __, { uid, user }) => {
-      const { phone, username } = user
+      const { phone, username, contacts } = user
 
       return {
         id: uid,
         level: 1,
         phone,
         username,
+        contacts
       }
     },
     wallet: async (_, __, { wallet }) => ([{
@@ -78,7 +79,6 @@ const resolvers = {
     nodeStats: async () => nodeStats({lnd}),
     buildParameters: async () => {
       const { minBuildNumber, lastBuildNumber } = await getMinBuildNumber()
-
       return {
         id: lastBuildNumber,
         commitHash: () => commitHash,
@@ -88,8 +88,10 @@ const resolvers = {
         minBuildNumberIos: minBuildNumber,
         lastBuildNumberAndroid: lastBuildNumber,
         lastBuildNumberIos: lastBuildNumber,
-    }},
-    prices: async (_, __, {logger}) => {
+      }
+    },
+    prices: async (_, { length = 365 * 24 * 10 }, {logger}) => {
+
       const key = "lastCached"
       let value
     
@@ -104,7 +106,8 @@ const resolvers = {
         value = lastCached
       }
     
-      return value
+      // TODO: there is probably a more efficient method than chunk)
+      return chunk(value, length)[0]
     },
     earnList: async (_, __, { uid, user }) => {
       const response: Object[] = []
@@ -123,6 +126,7 @@ const resolvers = {
     getLastOnChainAddress: async (_, __, { wallet }) => ({ id: wallet.getLastOnChainAddress() }),
 
     maps: async () => {
+      // TODO: caching
       const maps = await MapDB.find({})
       return maps.map(item => ({
         id: item._id,

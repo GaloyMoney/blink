@@ -32,7 +32,7 @@ export const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
 
 export const getUserWallet = async userNumber => {
   const token = await getTokenFromPhoneIndex(userNumber)
-  const user = await User.findOne({_id: token._id})
+  const user = await User.findOne({_id: token.uid})
   const userWallet = await WalletFactory({...token, user, logger: baseLogger})
   return userWallet
 }
