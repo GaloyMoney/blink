@@ -90,8 +90,7 @@ const resolvers = {
         lastBuildNumberIos: lastBuildNumber,
       }
     },
-    prices: async (_, { length }, {logger}) => {
-      const length_ = length ?? 365 * 24 * 10
+    prices: async (_, { length = 365 * 24 * 10 }, {logger}) => {
 
       const key = "lastCached"
       let value
@@ -108,7 +107,7 @@ const resolvers = {
       }
     
       // TODO: there is probably a more efficient method than chunk)
-      return chunk(value, length_)[0]
+      return chunk(value, length)[0]
     },
     earnList: async (_, __, { uid, user }) => {
       const response: Object[] = []
