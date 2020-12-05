@@ -340,6 +340,9 @@ export const setupMongoConnection = async () => {
       useFindAndModify: false
     })
     mongoose.set('runValidators', true)
+    await User.syncIndexes()
+    await Transaction.syncIndexes()
+    await InvoiceUser.syncIndexes()
   } catch (err) {
     baseLogger.fatal(`error connecting to mongodb ${err}`)
     exit(1)

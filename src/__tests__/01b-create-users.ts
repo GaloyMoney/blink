@@ -96,13 +96,13 @@ describe('username tests', () => {
     expect(!!result).toBeTruthy()
   })
 
+  it('does not set username with only case difference', async () => {
+    await expect(userWallet2.setUsername({ username: 'User1' })).rejects.toThrow()
+  })
+
   it('sets username for user2', async () => {
     const result = await userWallet2.setUsername({ username: "user2" })
     expect(!!result).toBeTruthy()
-  })
-
-  it('does not set username with only case difference', async () => {
-    await expect(userWallet0.setUsername({ username: '_user1' })).rejects.toThrow()
   })
 
   it('does not allow re-setting username', async () => {
