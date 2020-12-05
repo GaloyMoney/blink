@@ -112,8 +112,15 @@ const UserSchema = new Schema({
     required: true,
   },
   contacts: {
-    type: [String],
-    default: []
+    type: [{
+      id: {
+        type: String,
+        collation: {locale: "en", strength: 2},
+      },
+      name: String,
+      updated: Date,
+    }],
+    default: [],
   },
   // firstName,
   // lastName,
