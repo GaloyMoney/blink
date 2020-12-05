@@ -336,9 +336,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         
         // adding contact for the payer
         if (!!username) {
-          // TODO: check the pull/push work at intended
-          this.user.contacts.pull(username)
-          await this.user.save()
+          
           this.user.contacts.push({
             $each: [username],
             $position: 0
