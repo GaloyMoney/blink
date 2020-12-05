@@ -336,12 +336,33 @@ export const LightningMixin = (superclass) => class extends superclass {
         
         // adding contact for the payer
         if (!!username) {
-          
-          this.user.contacts.push({
-            $each: [username],
-            $position: 0
-          })
-          await this.user.save()
+          // https://stackoverflow.com/questions/37427610/mongodb-update-or-insert-object-in-array
+
+          const result = User.update(
+            {
+              _id: this.user._id,
+              "contacts.id": username
+            },
+            {
+              $set: {"contacts.$.updated": new Date()}
+            },
+          )
+
+          if(!result.nMatched) {
+            User.update(
+              {
+                _id: this.user._id
+              },
+              {
+                $addToSet: {
+                  contacts: {
+                    username
+                  }
+                }
+              }
+            );
+          }
+
         }
         
         // adding contact for the payee
