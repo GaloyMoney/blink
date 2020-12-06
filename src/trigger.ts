@@ -17,12 +17,12 @@ const logger = baseLogger.child({ module: "trigger" })
 const txsReceived = new Set()
 
 export const uploadBackup = async (backup) => {
-  logger.debug({backup}, "updating scb on gcs")
+  logger.debug({ backup }, "updating scb on gcs")
   const storage = new Storage({ keyFilename: process.env.GCS_APPLICATION_CREDENTIALS })
   const bucket = storage.bucket('lnd-static-channel-backups')
   const file = bucket.file(`${process.env.NETWORK}_scb.json`)
   await file.save(backup)
-  logger.info({backup}, "scb backed up on gcs successfully")
+  logger.info({ backup }, "scb backed up on gcs successfully")
 }
 
 export async function onchainTransactionEventHandler(tx) {
@@ -111,7 +111,7 @@ export const onInvoiceUpdate = async invoice => {
     const uid = invoiceUser.uid
     const hash = invoice.id as string
 
-    const user = await User.findOne({_id: uid})
+    const user = await User.findOne({ _id: uid })
     const wallet = await WalletFactory({ user, uid, currency: invoiceUser.currency, logger })
     await wallet.updatePendingInvoice({ hash })
     await sendInvoicePaidNotification({ amount: invoice.received, hash, uid, logger })
@@ -132,7 +132,7 @@ export const onChannelOpened = async ({ channel, lnd }) => {
   const { transaction_id } = channel
 
   // TODO: dedupe from onchain
-  const { current_block_height } = await lnService.getHeight({lnd})
+  const { current_block_height } = await lnService.getHeight({ lnd })
   const after = Math.max(0, current_block_height - LOOK_BACK) // this is necessary for tests, otherwise after may be negative
   const { transactions } = await lnService.getChainTransactions({ lnd, after })
 
@@ -146,6 +146,32 @@ export const onChannelOpened = async ({ channel, lnd }) => {
     .commit()
 
   logger.info({ success: true, channel, fee, ...metadata }, `open channel fee added to mongodb`)
+}
+
+export const onChannelClosed = async ({ channel, lnd }) => {
+  if (channel.is_partner_initiated) {
+    logger.info({ channel }, "channel opened by partner was closed")
+    return
+  }
+
+  logger.info({ channel }, "channel opened by us was closed")  
+
+  const { transaction_id } = channel
+
+  const { current_block_height } = await lnService.getHeight({ lnd })
+  const after = Math.max(0, current_block_height - LOOK_BACK) // this is necessary for tests, otherwise after may be negative
+  const { transactions } = await lnService.getChainTransactions({ lnd, after })
+
+  const { fee } = find(transactions, { id: transaction_id })
+
+  const metadata = { currency: "BTC", txid: transaction_id, type: "fee" }
+
+  await MainBook.entry("on chain fee")
+    .debit(lightningAccountingPath, fee, { ...metadata, })
+    .credit(openChannelFees, fee, { ...metadata })
+    .commit()
+
+  logger.info({ success: true, channel, fee, ...metadata }, `closed channel fee added to mongodb`)
 }
 
 const main = async () => {
