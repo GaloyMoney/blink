@@ -12,6 +12,9 @@ import { Price } from "./priceImpl";
 const crypto = require("crypto")
 const lnService = require('ln-service');
 
+//millitokens per million
+const FEE_RATE = 2500
+
 const logger = baseLogger.child({ module: "trigger" })
 
 const txsReceived = new Set()
@@ -129,6 +132,8 @@ export const onChannelOpened = async ({ channel, lnd }) => {
 
   logger.info({ channel }, "channel opened by us")
 
+  await lnService.updateRoutingFees({ lnd, fee_rate: FEE_RATE, transaction_id: channel.transaction_id })
+
   const { transaction_id } = channel
 
   // TODO: dedupe from onchain
@@ -154,7 +159,7 @@ export const onChannelClosed = async ({ channel, lnd }) => {
     return
   }
 
-  logger.info({ channel }, "channel opened by us was closed")  
+  logger.info({ channel }, "channel opened by us was closed")
 
   const { transaction_id } = channel
 
