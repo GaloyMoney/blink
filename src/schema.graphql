@@ -12,6 +12,7 @@ type Transaction {
   type: String!,
   feeUsd: Float, # TODO: move to Int 
   addresses: [String]
+  username: String
 }
 
 type Price {
