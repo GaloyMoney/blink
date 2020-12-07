@@ -184,13 +184,11 @@ functionToTests.forEach(({fn, name}) => {
       const user2Txn = await walletPayee.getTransactions()
       const user2OnUsTxn = user2Txn.filter(matchTx)
       expect(user2OnUsTxn[0].type).toBe('on_us')
-      expect(user2OnUsTxn[0].description).toBe('on_us')
       await checkIsBalanced()
   
       const user1Txn = await walletPayer.getTransactions()
       const user1OnUsTxn = user1Txn.filter(matchTx)
       expect(user1OnUsTxn[0].type).toBe('on_us')
-      expect(user1OnUsTxn[0].description).toBe(memo)
   
       // making request twice because there is a cancel state, and this should be re-entrant
       expect(await walletPayer.updatePendingInvoice({ hash })).toBeTruthy()
