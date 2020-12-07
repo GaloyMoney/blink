@@ -64,6 +64,7 @@ type User {
   level: Int!
   phone: String
   contacts: [String]
+  language: String
 }
 
 input InputUser {
@@ -128,6 +129,7 @@ type Query {
 }
 
 type UpdateUser {
+  setLanguage(language: String): Boolean
   setLevel(user: InputUser): User
   setUsername(username: String!): Boolean
 }

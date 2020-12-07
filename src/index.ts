@@ -59,14 +59,15 @@ const helmRevision = process.env.HELMREVISION
 const resolvers = {
   Query: {
     me: async (_, __, { uid, user }) => {
-      const { phone, username, contacts } = user
+      const { phone, username, contacts, language } = user
 
       return {
         id: uid,
         level: 1,
         phone,
         username,
-        contacts
+        contacts,
+        language
       }
     },
     wallet: async (_, __, { wallet }) => ([{
@@ -151,7 +152,8 @@ const resolvers = {
           level: result.level,
         }
       },
-      setUsername: async ({ username }) => await wallet.setUsername({ username })
+      setUsername: async ({ username }) => await wallet.setUsername({ username }),
+      setLanguage: async ({ language }) => await wallet.setLanguage({ language })
 
     }),
     publicInvoice: async (_, { username }, { logger }) => {

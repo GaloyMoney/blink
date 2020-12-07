@@ -115,6 +115,11 @@ const UserSchema = new Schema({
     type: [String],
     default: []
   },
+  language: {
+    type: String,
+    enum: ["en", "es", null],
+    default: null // will use OS preference settings
+  }
   // firstName,
   // lastName,
   // activated,
