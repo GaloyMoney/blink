@@ -192,6 +192,7 @@ const main = async () => {
 
   const subChannels = subscribeToChannels({ lnd });
   subChannels.on('channel_opened', (channel) => onChannelOpened({ channel, lnd }))
+  subChannels.on('channel_closed', (channel) => onChannelClosed({ channel, lnd }))
 
   const subBackups = subscribeToBackups({ lnd })
   subBackups.on('backup', ({ backup }) => uploadBackup(backup))
