@@ -67,7 +67,7 @@ const resolvers = {
         phone,
         username,
         contacts,
-        language: "es"
+        language
       }
     },
     wallet: async (_, __, { wallet }) => ([{
