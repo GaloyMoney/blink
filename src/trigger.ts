@@ -132,8 +132,6 @@ export const onChannelOpened = async ({ channel, lnd }) => {
 
   logger.info({ channel }, "channel opened by us")
 
-  await lnService.updateRoutingFees({ lnd, fee_rate: FEE_RATE, transaction_id: channel.transaction_id })
-
   const { transaction_id } = channel
 
   // TODO: dedupe from onchain
