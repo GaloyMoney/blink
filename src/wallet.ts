@@ -1,5 +1,4 @@
 import moment from "moment";
-import { exit } from "process";
 import { customerPath } from "./ledger";
 import { MainBook, User } from "./mongodb";
 import { ITransaction } from "./types";
@@ -108,6 +107,7 @@ export abstract class UserWallet {
         { id: 'book', title: 'book' },
         { id: 'datetime', title: 'datetime' },
         { id: 'currency', title: 'currency' },
+        { id: 'username', title: 'username' },
         { id: 'type', title: 'type' },
         { id: 'hash', title: 'hash' },
         { id: 'txid', title: 'txid' },
