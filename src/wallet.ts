@@ -61,22 +61,32 @@ export abstract class UserWallet {
   async getTransactions(): Promise<Array<ITransaction>> {
     const rawTransactions = await this.getRawTransactions()
 
-    const results_processed = rawTransactions.map(item => ({
-      created_at: moment(item.timestamp).unix(),
-      amount: item.debit - item.credit,
-      sat: item.sat,
-      usd: item.usd,
-      description: item.memoPayer || item.memo || item.type, // TODO remove `|| item.type` once users have upgraded
-      type: item.type,
-      hash: item.hash,
-      fee: item.fee,
-      feeUsd: item.feeUsd,
-      // destination: TODO
-      pending: item.pending,
-      id: item._id,
-      currency: item.currency,
-      addresses: item.payee_addresses,
-    }))
+    const results_processed = rawTransactions.map(item => {
+      const amount = item.debit - item.credit
+      const memoUsername = 
+        item.username ?
+          amount > 0 ?
+            `from ${item.username}`:
+            `to ${item.username}`:
+          null
+
+      return {
+        created_at: moment(item.timestamp).unix(),
+        amount,
+        sat: item.sat,
+        usd: item.usd,
+        description: item.memoPayer || item.memo || memoUsername || item.type, // TODO remove `|| item.type` once users have upgraded
+        type: item.type,
+        hash: item.hash,
+        fee: item.fee,
+        feeUsd: item.feeUsd,
+        username: item.username,
+        // destination: TODO
+        pending: item.pending,
+        id: item._id,
+        currency: item.currency,
+        addresses: item.payee_addresses,
+    }})
 
     return results_processed
   }

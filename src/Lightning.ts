@@ -322,8 +322,8 @@ export const LightningMixin = (superclass) => class extends superclass {
         }
 
         await MainBook.entry(memoInvoice)
-          .debit(customerPath(payeeUid), value, metadata)
-          .credit(this.accountPath, value, { ...metadata, memoPayer })
+          .debit(customerPath(payeeUid), value, { ...metadata, username: this.user.username})
+          .credit(this.accountPath, value, { ...metadata, memoPayer, username })
           .commit()
 
         await sendInvoicePaidNotification({ amount: tokens, uid: payeeUid, hash: id, logger: this.logger })
