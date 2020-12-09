@@ -155,7 +155,20 @@ export abstract class UserWallet {
       throw new LoggedError(error)
     }
 
-    return !!result
+    return true
+  }
+
+  async setLanguage({ language }): Promise<boolean | Error> {
+
+    const result = await User.findOneAndUpdate({ _id: this.uid, }, { language })
+
+    if (!result) {
+      const error = `issue setting language preferences`
+      this.logger.error({result}, error)
+      throw new LoggedError(error)
+    }
+
+    return true
   }
 
   getCurrencyEquivalent({ sats, fee, usd }: { sats: number, fee: number, usd?: number }) {
