@@ -145,7 +145,7 @@ export abstract class UserWallet {
       throw new LoggedError(error)
     }
 
-    return !!result
+    return true
   }
 
   async setLanguage({ language }): Promise<boolean | Error> {
@@ -158,7 +158,7 @@ export abstract class UserWallet {
       throw new LoggedError(error)
     }
 
-    return !!result
+    return true
   }
 
   getCurrencyEquivalent({ sats, fee, usd }: { sats: number, fee: number, usd?: number }) {
