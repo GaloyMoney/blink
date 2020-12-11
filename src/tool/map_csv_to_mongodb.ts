@@ -6,7 +6,7 @@ const util = require('util')
 
 // source ../../exportLocal.sh && ts-node ./import_and_pay.ts
 
-export const baseLogger = require('pino')
+export const baseLogger = require('pino')()
 
 export const insertMarkers = async (executeScript = false) => {
 
@@ -20,7 +20,7 @@ export const insertMarkers = async (executeScript = false) => {
       title: item["name - es"],
       coordinate: {
         type: 'Point',
-        coordinates: [item.latitude, item.longitude],
+        coordinates: [Number(item.latitude), Number(item.longitude)],
       },
       username: item["***REMOVED*** username"]
     }))
