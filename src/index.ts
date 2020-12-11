@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import { rule, shield } from 'graphql-shield';
 import { GraphQLServer } from 'graphql-yoga';
 import * as jwt from 'jsonwebtoken';
-import { chunk, startsWith } from "lodash";
+import { startsWith } from "lodash";
 import moment from "moment";
 import { v4 as uuidv4 } from 'uuid';
 import { getMinBuildNumber, mainCache } from "./cache";
@@ -60,6 +60,8 @@ const resolvers = {
   Query: {
     me: async (_, __, { uid, user }) => {
       const { phone, username, contacts, language } = user
+
+      console.log({contacts})
 
       return {
         id: uid,
@@ -269,6 +271,7 @@ const server = new GraphQLServer({
     const token = verifyToken(context.request)
     const uid = token?.uid ?? null
     const user = !!uid ? await User.findOne({ _id: uid }) : null
+    console.log({user})
     // @ts-ignore
     const logger = graphqlLogger.child({ token, id: context.request.id, body: context.request.body })
     const wallet = !!uid ? await WalletFactory({ ...token, user, logger }) : null
