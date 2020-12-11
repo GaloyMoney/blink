@@ -101,7 +101,7 @@ describe('username tests', () => {
   })
 
   it('sets username for user2', async () => {
-    const result = await userWallet2.setUsername({ username: "user2" })
+    const result = await userWallet2.setUsername({ username: "lily" })
     expect(!!result).toBeTruthy()
   })
 

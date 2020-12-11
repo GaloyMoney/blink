@@ -6,6 +6,19 @@ const mongoose = require("mongoose");
 
 const Schema = mongoose.Schema;
 
+const pointSchema = new mongoose.Schema({
+  type: {
+    type: String,
+    enum: ['Point'],
+    required: true
+  },
+  coordinates: {
+    type: [Number],
+    required: true
+  }
+});
+
+
 const dbVersionSchema = new Schema({
   version: Number,
   minBuildNumber: Number,
@@ -48,21 +61,6 @@ invoiceUserSchema.index({ "uid": 1 })
 export const InvoiceUser = mongoose.model("InvoiceUser", invoiceUserSchema)
 
 
-const mapSchema = new Schema({
-  title: String,
-  coordinate: {
-    latitude: String,
-    longitude: String,
-  },
-  username: { 
-    type: String,
-    set: v => v === "" ? undefined : v,
-  }
-})
-
-export const MapDB = mongoose.model("Map", mapSchema)
-
-
 
 const UserSchema = new Schema({
   created_at: {
@@ -75,10 +73,10 @@ const UserSchema = new Schema({
   },
   role: {
     type: String,
-    enum: ["user", "funder", "broker"], // FIXME: "admin" is not used anymore --> remove?
+    enum: ["user", "funder", "broker"],
     required: true,
     default: "user"
-    // doto : enfore the fact there can be only one funder/broker
+    // todo : enfore the fact there can be only one funder/broker
   },
   onchain_addresses: {
     type: [String],
@@ -131,11 +129,17 @@ const UserSchema = new Schema({
     type: String,
     enum: ["en", "es", null],
     default: null // will use OS preference settings
-  }
+  },
   // firstName,
   // lastName,
   // activated,
   // etc
+
+  title: String,
+  coordinate: {
+    type: pointSchema,
+  },
+
 })
 
 UserSchema.index({
@@ -145,7 +149,10 @@ UserSchema.index({
   unique: true,
 });
 
-// TOOD create indexes
+UserSchema.index({
+  title: 1,
+  coordinate: 1,
+});
 
 export const User = mongoose.model("User", UserSchema)
 
