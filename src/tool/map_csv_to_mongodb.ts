@@ -1,4 +1,4 @@
-import { MapDB, setupMongoConnection } from "../mongodb"
+import { setupMongoConnection, User } from "../mongodb"
 import { sleep } from "../utils"
 const csv = require('csv-parser')
 const fs = require('fs')
@@ -19,19 +19,33 @@ export const insertMarkers = async (executeScript = false) => {
     results = results.map(item => ({
       title: item["name - es"],
       coordinate: {
-        latitude: item.latitude,
-        longitude: item.longitude,
+        type: 'Point',
+        coordinates: [item.latitude, item.longitude],
       },
       username: item["***REMOVED*** username"]
     }))
 
     if (executeScript) {
-      console.log(results)
-      console.log(typeof results)
-      await MapDB.insertMany(results) 
+
+      for(const result of results) {
+        const user = await User.findOne({username: result.username})
+
+        if (!user) {
+          console.log(`the user ${result.username} does not exist`)
+          continue
+        }
+
+        if (!result.coordinate || !result.title) {
+          console.log(`missing input for ${result.username}`, {result})
+          continue
+        }
+
+        user.coordinate = result.coordinate
+        user.title = result.title
+        await user.save()
+      }
     } else {
-      const script = `run db.getCollection('maps').insertMany(${util.inspect(results, {showHidden: false, depth: 3})})`
-      console.log(script)
+      console.log(results)
     }
   });
 

@@ -204,7 +204,7 @@ functionToTests.forEach(({fn, name}) => {
     // userWallet0 = await getUserWallet(0)
     userWallet1 = await getUserWallet(1)
     userWallet2 = await getUserWallet(2)
-    // expect(userWallet1.user.contacts).toBe(["user2"])
+    // expect(userWallet1.user.contacts).toBe(["lily"])
     expect([...userWallet2.user.contacts]).toEqual(["user1"])
   })
 

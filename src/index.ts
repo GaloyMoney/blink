@@ -6,7 +6,7 @@ import { chunk, startsWith } from "lodash";
 import moment from "moment";
 import { v4 as uuidv4 } from 'uuid';
 import { getMinBuildNumber, mainCache } from "./cache";
-import { MapDB, setupMongoConnection, User } from "./mongodb";
+import { setupMongoConnection, User } from "./mongodb";
 import { sendNotification } from "./notification";
 import { Price } from "./priceImpl";
 import { login, requestPhoneCode } from "./text";
@@ -17,6 +17,7 @@ import { UserWallet } from "./wallet";
 import { WalletFactory, WalletFromUsername } from "./walletFactory";
 const util = require('util')
 const lnService = require('ln-service')
+import { insertMarkers } from "./tool/map_csv_to_mongodb"
 
 
 const path = require("path");
@@ -128,12 +129,15 @@ const resolvers = {
 
     maps: async () => {
       // TODO: caching
-      const maps = await MapDB.find({})
-      return maps.map(item => ({
-        id: item._id,
+      const users = await User.find({ titleMaps: { $exists: true }, coordinate: { $exists: true }}, {username: 1, title: 1, coordinate: 1})
+      return users.map(item => ({
+        id: item.username,
         username: item.username,
         title: item.title,
-        coordinate: item.coordinate,
+        coordinate: {
+          latitude: item.coordinate[0],
+          longitude: item.coordinate[1]
+        }
       }))
     },
     usernameExists: async (_, { username }) => await UserWallet.usernameExists({ username })
@@ -313,14 +317,15 @@ const options = {
   playground: process.env.NETWORK === 'mainnet' ? 'false' : '/'
 }
 
-setupMongoConnection()
-  .then(() => {
-    upgrade().then(() => {
-      server.start(options, ({ port }) =>
-        graphqlLogger.info(
-          `Server started, listening on port ${port} for incoming requests.`,
-        ),
-      )
-    })
-  }).catch((err) => graphqlLogger.error(err, "server error"))
+setupMongoConnection().then(() => {
+  upgrade().then(() => {
+  insertMarkers(true).then(
+  () => {
+    server.start(options, ({ port }) =>
+      graphqlLogger.info(
+        `Server started, listening on port ${port} for incoming requests.`,
+      ),
+    )
+  })})
+}).catch((err) => graphqlLogger.error(err, "server error"))
 
