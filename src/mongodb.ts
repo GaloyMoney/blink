@@ -125,6 +125,11 @@ const UserSchema = new Schema({
     }],
     default: [],
   },
+  language: {
+    type: String,
+    enum: ["en", "es", null],
+    default: null // will use OS preference settings
+  }
   // firstName,
   // lastName,
   // activated,
@@ -255,6 +260,14 @@ const transactionSchema = new Schema({
     default: 0
   },
 
+  // when transaction with on_us transaction, this is the other party username
+  username: {
+    type: String,
+    match: [/(?!^(1|3|bc1|lnbc1))^[0-9a-z_]+$/i, "Username can only have alphabets, numbers and underscores"],
+    minlength: 3,
+    maxlength: 50,
+  },
+
   // original property from medici
   credit: Number,
   debit: Number,
@@ -350,6 +363,9 @@ export const setupMongoConnection = async () => {
       useFindAndModify: false
     })
     mongoose.set('runValidators', true)
+    await User.syncIndexes()
+    await Transaction.syncIndexes()
+    await InvoiceUser.syncIndexes()
   } catch (err) {
     baseLogger.fatal(`error connecting to mongodb ${err}`)
     exit(1)
