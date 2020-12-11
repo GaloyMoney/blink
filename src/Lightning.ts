@@ -22,6 +22,35 @@ export const FEEMIN = 10 // sats
 export type ITxType = "invoice" | "payment" | "onchain_receipt" | "onchain_payment" | "on_us"
 export type payInvoiceResult = "success" | "failed" | "pending" | "already_paid"
 
+const addContact = async ({uid, username}) => {
+  // https://stackoverflow.com/questions/37427610/mongodb-update-or-insert-object-in-array
+
+  const result = await User.update(
+    {
+      _id: uid,
+      "contacts.id": username
+    },
+    {
+      $set: {"contacts.$.updated": new Date()}
+    },
+  )
+
+  if(!result.nModified) {
+    await User.update(
+      {
+        _id: uid
+      },
+      {
+        $addToSet: {
+          contacts: {
+            id: username
+          }
+        }
+      }
+    );
+  }
+}
+
 // this value is here so that it can get mocked.
 // there could probably be a better design
 // but mocking on mixin is tricky
@@ -88,6 +117,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         _id: id,
         uid: this.uid,
         usd,
+        username: this.user.username,
         currency: this.currency,
         selfGenerated,
       }).save()
@@ -244,7 +274,8 @@ export const LightningMixin = (superclass) => class extends superclass {
     let lightningLogger = this.logger.child({ topic: "payment", protocol: "lightning", transactionType: "payment" })
 
     const { tokens, mtokens, destination, pushPayment, id, routeHint, messages, memoInvoice, payment, cltv_delta, features, max_fee } = await this.validate(params, lightningLogger)
-    const { username, memo: memoPayer } = params
+    const { memo: memoPayer } = params
+    let username = params.username
 
     // not including message because it contains the preimage and we don't want to log this
     lightningLogger = lightningLogger.child({ decoded: { tokens, destination, pushPayment, id, routeHint, memoInvoice, memoPayer, payment, cltv_delta, features }, params })
@@ -296,8 +327,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
           payeeUid = payeeInvoice.uid
           payeeCurrency = payeeInvoice.currency
-
-          // TODO: add invoice from username
+          username = payeeInvoice.username
         }
 
         if (payeeUid == this.uid) {
@@ -338,47 +368,12 @@ export const LightningMixin = (superclass) => class extends superclass {
         
         // adding contact for the payer
         if (!!username) {
-          // https://stackoverflow.com/questions/37427610/mongodb-update-or-insert-object-in-array
-
-          const result = User.update(
-            {
-              _id: this.user._id,
-              "contacts.id": username
-            },
-            {
-              $set: {"contacts.$.updated": new Date()}
-            },
-          )
-
-          if(!result.nMatched) {
-            User.update(
-              {
-                _id: this.user._id
-              },
-              {
-                $addToSet: {
-                  contacts: {
-                    username
-                  }
-                }
-              }
-            );
-          }
-
+          await addContact({uid: this.user._id, username})
         }
         
         // adding contact for the payee
         if (!!this.user.username) {
-          // we are ordering the query so that the last used username goes last
-          // so that last (and probably most frequent) users are shown at the top
-          await User.update(
-            { _id: payeeUid },
-            { $pull: { contacts: this.user.username }}
-          )
-          await User.update(
-            { _id: payeeUid },
-            { $push: { contacts: { "$each": [this.user.username] }}}
-          )
+          await addContact({uid: payeeUid, username: this.user.username})
         }
 
         lightningLoggerOnUs.info({ success: true, isReward: params.isReward ?? false, ...metadata }, "lightning payment success")

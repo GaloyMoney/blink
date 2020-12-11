@@ -22,6 +22,8 @@ const invoiceUserSchema = new Schema({
   // optional, as BTC wallet doesn't have to set a sat amount when creating the invoice
   usd: Number,
 
+  username: String,
+
   // currency matchs the user account
   currency: {
     type: String,
@@ -261,6 +263,7 @@ const transactionSchema = new Schema({
   },
 
   // when transaction with on_us transaction, this is the other party username
+  // TODO: refactor, define username as a type so that every property that should be an username can inherit from those parameters
   username: {
     type: String,
     match: [/(?!^(1|3|bc1|lnbc1))^[0-9a-z_]+$/i, "Username can only have alphabets, numbers and underscores"],

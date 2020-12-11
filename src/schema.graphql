@@ -37,6 +37,11 @@ type Wallet {
   csv: String
 }
 
+type Contact {
+  id: ID #username
+  name: String #name can be set by the user
+}
+
 type Invoice {
   addInvoice(value: Int, memo: String): String
   updatePendingInvoice(hash: String!): Boolean
@@ -64,7 +69,7 @@ type User {
   username: String
   level: Int!
   phone: String
-  contacts: [String]
+  contacts: [Contact]
   language: String
 }
 
