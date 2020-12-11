@@ -17,6 +17,7 @@ import { UserWallet } from "./wallet";
 import { WalletFactory, WalletFromUsername } from "./walletFactory";
 const util = require('util')
 const lnService = require('ln-service')
+const mongoose = require("mongoose");
 
 
 const path = require("path");
@@ -294,7 +295,7 @@ server.express.use(pino_http)
 
 // Health check
 server.express.get('/healthz', function(req, res) {
-  res.send('OK');
+  res.status(mongoose.connection.readyState == 1 ? 200 : 503);
 });
 
 const options = {
