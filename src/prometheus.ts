@@ -2,7 +2,7 @@ import { AdminWallet } from "./AdminWallet";
 import { setupMongoConnection, User } from "./mongodb";
 import { Price } from "./priceImpl";
 import { baseLogger } from "./utils";
-import { getBrokerWallet } from "./walletFactory";
+import { getBrokerWallet, getFunderWallet } from "./walletFactory";
 
 const logger = baseLogger.child({module: "prometheus"})
 
@@ -25,6 +25,7 @@ const lndClosingChannelBalance_g = new client.Gauge({ name: `${prefix}_lnd_closi
 const usdShortPosition_g = new client.Gauge({ name: `${prefix}_usdShortPosition`, help: 'usd short position on ftx' })
 const ftx_btc_g = new client.Gauge({ name: `${prefix}_ftxBtcBalance`, help: 'btc balance in ftx' })
 const ftx_usdPnl_g = new client.Gauge({ name: `${prefix}_ftxUsdPnl`, help: 'usd balance in FTX, which also represents the PNL' })
+const funder_balance_g = new client.Gauge({ name: `${prefix}_funderBalance`, help: 'funder balance' })
 const broker_local_btc_g = new client.Gauge({ name: `${prefix}_brokerLocalBtcBalance`, help: 'btc balance in for the broker in the node' })
 const broker_local_usd_g = new client.Gauge({ name: `${prefix}_brokerLocalUsdBalance`, help: 'usd liabilities for the broker' })
 const broker_profit_g = new client.Gauge({ name: `${prefix}_brokerProfit`, help: 'profit of the broker wallet' })
@@ -64,6 +65,11 @@ const main = async () => {
     const userCount = await User.countDocuments()
     userCount_g.set(userCount)
     
+    const funderWallet = await getFunderWallet({ logger })
+    const funderBalance = await funderWallet.getBalance()
+    funder_balance_g.set(funderBalance)
+
+
     const brokerWallet = await getBrokerWallet({ logger })
     const { usd: usdShortPosition, leverage } = await brokerWallet.getAccountPosition()
 

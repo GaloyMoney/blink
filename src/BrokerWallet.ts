@@ -37,8 +37,8 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
     return customerPath(this.uid)
   }
 
-  constructor({ uid, logger, lastPrice }: ILightningWalletUser) {
-    super({ uid, currency: "BTC", lastPrice })
+  constructor({ uid, user, logger, lastPrice }: ILightningWalletUser) {
+    super({ uid, user, logger, currency: "BTC", lastPrice })
     this.ftx = new ccxt.ftx({ apiKey, secret })
     this.logger = logger.child({ topic: "broker" })
   }

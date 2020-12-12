@@ -12,6 +12,7 @@ type Transaction {
   type: String!,
   feeUsd: Float, # TODO: move to Int 
   addresses: [String]
+  username: String
 }
 
 type Price {
@@ -63,6 +64,8 @@ type User {
   username: String
   level: Int!
   phone: String
+  contacts: [String]
+  language: String
 }
 
 input InputUser {
@@ -115,7 +118,7 @@ type Marker {
 }
 
 type Query { 
-  prices: [Price]
+  prices(length: Int): [Price]
   wallet: [Wallet]
   earnList: [Earn]
   me: User
@@ -127,6 +130,7 @@ type Query {
 }
 
 type UpdateUser {
+  setLanguage(language: String): Boolean
   setLevel(user: InputUser): User
   setUsername(username: String!): Boolean
 }
