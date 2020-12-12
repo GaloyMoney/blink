@@ -273,6 +273,23 @@ jobs:
       - update-lnpage:
           namespace: mainnet
 
+  temp:
+    working_directory: ~/GaloyApp/lnpage
+    docker:
+      - image: kiwigrid/gcloud-kubectl-helm:latest
+    resource_class: small
+    steps:
+      - checkout:
+        path: ~/GaloyApp
+      - gke-auth
+      - run:
+          name: gcs upload test
+          command: |
+            cd ~/GaloyApp/lnpage/app/
+            VERSION_CODE=201
+            gsutil cp ./yarn.lock gs://bitcoin-beach-wallet/"$VERSION_CODE".apk
+            gsutil cp ./yarn.lock gs://bitcoin-beach-wallet/latest.apk
+
 
 
 workflows:
