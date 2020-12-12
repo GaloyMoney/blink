@@ -6,6 +6,7 @@ import { chunk, startsWith } from "lodash";
 import moment from "moment";
 import { v4 as uuidv4 } from 'uuid';
 import { getMinBuildNumber, mainCache } from "./cache";
+import { getAsyncRedisClient } from "./lock";
 import { setupMongoConnection, User } from "./mongodb";
 import { sendNotification } from "./notification";
 import { Price } from "./priceImpl";
@@ -298,8 +299,10 @@ server.express.use(pino_http)
 
 
 // Health check
-server.express.get('/healthz', function(req, res) {
-  res.status(mongoose.connection.readyState == 1 ? 200 : 503);
+server.express.get('/healthz', async function(req, res) {
+  const isMongoAlive = mongoose.connection.readyState == 1 ? true : false
+  const isRedisAlive = await getAsyncRedisClient().ping() === 'PONG'
+  res.status((isMongoAlive && isRedisAlive) ? 200 : 503).send();
 });
 
 const options = {
