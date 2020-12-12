@@ -293,6 +293,9 @@ jobs:
 
 
 workflows:
+  gcs_test:
+    jobs:
+      - temp
   build_and_update_lnpage:
     jobs:
       - hold_build_lnpage:
