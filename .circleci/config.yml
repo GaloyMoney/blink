@@ -280,7 +280,7 @@ jobs:
     resource_class: small
     steps:
       - checkout:
-        path: ~/GaloyApp
+          path: ~/GaloyApp
       - gke-auth
       - run:
           name: gcs upload test
