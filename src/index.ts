@@ -62,8 +62,6 @@ const resolvers = {
     me: async (_, __, { uid, user }) => {
       const { phone, username, contacts, language } = user
 
-      console.log({contacts})
-
       return {
         id: uid,
         level: 1,
@@ -275,7 +273,6 @@ const server = new GraphQLServer({
     const token = verifyToken(context.request)
     const uid = token?.uid ?? null
     const user = !!uid ? await User.findOne({ _id: uid }) : null
-    console.log({user})
     // @ts-ignore
     const logger = graphqlLogger.child({ token, id: context.request.id, body: context.request.body })
     const wallet = !!uid ? await WalletFactory({ ...token, user, logger }) : null
