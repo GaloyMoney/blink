@@ -158,7 +158,13 @@ const resolvers = {
       },
       setUsername: async ({ username }) => await wallet.setUsername({ username }),
       setLanguage: async ({ language }) => await wallet.setLanguage({ language })
-
+    }),
+    updateContact: async (_, __, { user }) => ({
+      setName: async ({ username, name }) => {
+        user.contacts.filter(item => item.id === username)[0].name = name
+        await user.save()
+        return true
+      }
     }),
     publicInvoice: async (_, { username }, { logger }) => {
       const wallet = await WalletFromUsername({ username, logger })

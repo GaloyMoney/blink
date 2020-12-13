@@ -121,6 +121,10 @@ const UserSchema = new Schema({
       updated: {
         type: Date,
         default: Date.now
+      },
+      transactions: {
+        type: Number,
+        default: 1,
       }
     }],
     default: [],
