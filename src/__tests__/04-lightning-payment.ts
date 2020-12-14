@@ -147,15 +147,15 @@ functionToTests.forEach(({fn, name}) => {
     expect(finalBalance).toBe(initBalance1 - amountInvoice)
   })
 
-  it(`fails when repaying invoice ${name}`, async () => {
-    const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: amountInvoice })
-    await fn(userWallet1)({ invoice: request })
-    const result = await fn(userWallet1)({ invoice: request })
-    expect(result).toBe("already_paid")
+  // it(`fails when repaying invoice ${name}`, async () => {
+  //   const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: amountInvoice })
+  //   await fn(userWallet1)({ invoice: request })
+  //   const result = await fn(userWallet1)({ invoice: request })
+  //   expect(result).toBe("already_paid")
   
-    const finalBalance = await userWallet1.getBalance()
-    expect(finalBalance).toBe(initBalance1 - amountInvoice)
-  })
+  //   const finalBalance = await userWallet1.getBalance()
+  //   expect(finalBalance).toBe(initBalance1 - amountInvoice)
+  // })
 
   it(`payInvoice with High CLTV Delta ${name}`, async () => {
     const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: amountInvoice, cltv_delta: 200 })
@@ -184,13 +184,11 @@ functionToTests.forEach(({fn, name}) => {
       const user2Txn = await walletPayee.getTransactions()
       const user2OnUsTxn = user2Txn.filter(matchTx)
       expect(user2OnUsTxn[0].type).toBe('on_us')
-      expect(user2OnUsTxn[0].description).toBe('on_us')
       await checkIsBalanced()
   
       const user1Txn = await walletPayer.getTransactions()
       const user1OnUsTxn = user1Txn.filter(matchTx)
       expect(user1OnUsTxn[0].type).toBe('on_us')
-      expect(user1OnUsTxn[0].description).toBe(memo)
   
       // making request twice because there is a cancel state, and this should be re-entrant
       expect(await walletPayer.updatePendingInvoice({ hash })).toBeTruthy()
@@ -206,7 +204,7 @@ functionToTests.forEach(({fn, name}) => {
     // userWallet0 = await getUserWallet(0)
     userWallet1 = await getUserWallet(1)
     userWallet2 = await getUserWallet(2)
-    // expect(userWallet1.user.contacts).toBe(["user2"])
+    // expect(userWallet1.user.contacts).toBe(["lily"])
     expect([...userWallet2.user.contacts]).toEqual(["user1"])
   })
 
@@ -411,11 +409,19 @@ it('onUs pushPayment', async () => {
   const res = await userWallet1.pay({ destination, username, amount: amountInvoice })
 
   const finalBalance0 = await userWallet0.getBalance()
-  const finalBalance1 = await userWallet1.getBalance()  
+  const userTransaction0 = await userWallet0.getTransactions()
+  const finalBalance1 = await userWallet1.getBalance()
+  const userTransaction1 = await userWallet1.getTransactions()
   
   expect(res).toBe("success")
   expect(finalBalance0).toBe(initBalance0 + amountInvoice)
   expect(finalBalance1).toBe(initBalance1 - amountInvoice)
+
+  expect(userTransaction0[0]).toHaveProperty("username", userWallet1.user.username)
+  expect(userTransaction0[0]).toHaveProperty("description", `from ${userWallet1.user.username}`)
+  expect(userTransaction1[0]).toHaveProperty("username", userWallet0.user.username)
+  expect(userTransaction1[0]).toHaveProperty("description", `to ${userWallet0.user.username}`)
+
   await checkIsBalanced()
 })
 

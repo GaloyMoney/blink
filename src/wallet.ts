@@ -1,5 +1,4 @@
 import moment from "moment";
-import { exit } from "process";
 import { customerPath } from "./ledger";
 import { MainBook, User } from "./mongodb";
 import { ITransaction } from "./types";
@@ -61,22 +60,32 @@ export abstract class UserWallet {
   async getTransactions(): Promise<Array<ITransaction>> {
     const rawTransactions = await this.getRawTransactions()
 
-    const results_processed = rawTransactions.map(item => ({
-      created_at: moment(item.timestamp).unix(),
-      amount: item.debit - item.credit,
-      sat: item.sat,
-      usd: item.usd,
-      description: item.memoPayer || item.memo || item.type, // TODO remove `|| item.type` once users have upgraded
-      type: item.type,
-      hash: item.hash,
-      fee: item.fee,
-      feeUsd: item.feeUsd,
-      // destination: TODO
-      pending: item.pending,
-      id: item._id,
-      currency: item.currency,
-      addresses: item.payee_addresses,
-    }))
+    const results_processed = rawTransactions.map(item => {
+      const amount = item.debit - item.credit
+      const memoUsername = 
+        item.username ?
+          amount > 0 ?
+            `from ${item.username}`:
+            `to ${item.username}`:
+          null
+
+      return {
+        created_at: moment(item.timestamp).unix(),
+        amount,
+        sat: item.sat,
+        usd: item.usd,
+        description: item.memoPayer || item.memo || memoUsername || item.type, // TODO remove `|| item.type` once users have upgraded
+        type: item.type,
+        hash: item.hash,
+        fee: item.fee,
+        feeUsd: item.feeUsd,
+        username: item.username,
+        // destination: TODO
+        pending: item.pending,
+        id: item._id,
+        currency: item.currency,
+        addresses: item.payee_addresses,
+    }})
 
     return results_processed
   }
@@ -98,6 +107,7 @@ export abstract class UserWallet {
         { id: 'book', title: 'book' },
         { id: 'datetime', title: 'datetime' },
         { id: 'currency', title: 'currency' },
+        { id: 'username', title: 'username' },
         { id: 'type', title: 'type' },
         { id: 'hash', title: 'hash' },
         { id: 'txid', title: 'txid' },
@@ -145,7 +155,20 @@ export abstract class UserWallet {
       throw new LoggedError(error)
     }
 
-    return !!result
+    return true
+  }
+
+  async setLanguage({ language }): Promise<boolean | Error> {
+
+    const result = await User.findOneAndUpdate({ _id: this.uid, }, { language })
+
+    if (!result) {
+      const error = `issue setting language preferences`
+      this.logger.error({result}, error)
+      throw new LoggedError(error)
+    }
+
+    return true
   }
 
   getCurrencyEquivalent({ sats, fee, usd }: { sats: number, fee: number, usd?: number }) {

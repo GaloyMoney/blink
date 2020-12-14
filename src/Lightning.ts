@@ -322,8 +322,8 @@ export const LightningMixin = (superclass) => class extends superclass {
         }
 
         await MainBook.entry(memoInvoice)
-          .debit(customerPath(payeeUid), value, metadata)
-          .credit(this.accountPath, value, { ...metadata, memoPayer })
+          .debit(customerPath(payeeUid), value, { ...metadata, username: this.user.username})
+          .credit(this.accountPath, value, { ...metadata, memoPayer, username })
           .commit()
 
         await sendInvoicePaidNotification({ amount: tokens, uid: payeeUid, hash: id, logger: this.logger })
@@ -503,10 +503,10 @@ export const LightningMixin = (superclass) => class extends superclass {
             throw new LoggedError(error)
           }
 
-          if (err[2]?.err?.details === "invoice is already paid") {
-            lightningLogger.warn({ ...metadata, pending: false }, 'invoice already paid')
-            return "already_paid"
-          }
+          // if (err[2]?.err?.details === "invoice is already paid") {
+          //   lightningLogger.warn({ ...metadata, pending: false }, 'invoice already paid')
+          //   return "already_paid"
+          // }
 
           throw new LoggedError(`Error paying invoice: ${util.inspect({ err }, false, Infinity)}`)
         }
@@ -535,7 +535,8 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     this.logger.info({ paymentResult, feeDifference, max_fee, actualFee: paymentResult.safe_fee, id }, "logging a fee difference")
 
-    const metadata = { currency: "BTC", hash: id, related_journal, type: "fee_reimbursement" }
+    const {usd} = this.getCurrencyEquivalent({sats: feeDifference})
+    const metadata = { currency: "BTC", hash: id, related_journal, type: "fee_reimbursement", usd }
 
     // todo: add a reference to the journal entry of the main tx
     await MainBook.entry("fee reimbursement")

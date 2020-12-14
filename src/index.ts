@@ -6,7 +6,7 @@ import { chunk, startsWith } from "lodash";
 import moment from "moment";
 import { v4 as uuidv4 } from 'uuid';
 import { getMinBuildNumber, mainCache } from "./cache";
-import { MapDB, setupMongoConnection, User } from "./mongodb";
+import { setupMongoConnection, User } from "./mongodb";
 import { sendNotification } from "./notification";
 import { Price } from "./priceImpl";
 import { login, requestPhoneCode } from "./text";
@@ -17,6 +17,7 @@ import { UserWallet } from "./wallet";
 import { WalletFactory, WalletFromUsername } from "./walletFactory";
 const util = require('util')
 const lnService = require('ln-service')
+import { insertMarkers } from "./tool/map_csv_to_mongodb"
 
 
 const path = require("path");
@@ -59,14 +60,15 @@ const helmRevision = process.env.HELMREVISION
 const resolvers = {
   Query: {
     me: async (_, __, { uid, user }) => {
-      const { phone, username, contacts } = user
+      const { phone, username, contacts, language } = user
 
       return {
         id: uid,
         level: 1,
         phone,
         username,
-        contacts
+        contacts,
+        language
       }
     },
     wallet: async (_, __, { wallet }) => ([{
@@ -127,12 +129,15 @@ const resolvers = {
 
     maps: async () => {
       // TODO: caching
-      const maps = await MapDB.find({})
-      return maps.map(item => ({
-        id: item._id,
+      const users = await User.find({ title: { $exists: true }, coordinate: { $exists: true }}, {username: 1, title: 1, coordinate: 1})
+      return users.map(item => ({
+        id: item.username,
         username: item.username,
         title: item.title,
-        coordinate: item.coordinate,
+        coordinate: {
+          latitude: item.coordinate.coordinates[0],
+          longitude: item.coordinate.coordinates[1]
+        }
       }))
     },
     usernameExists: async (_, { username }) => await UserWallet.usernameExists({ username })
@@ -151,7 +156,8 @@ const resolvers = {
           level: result.level,
         }
       },
-      setUsername: async ({ username }) => await wallet.setUsername({ username })
+      setUsername: async ({ username }) => await wallet.setUsername({ username }),
+      setLanguage: async ({ language }) => await wallet.setLanguage({ language })
 
     }),
     publicInvoice: async (_, { username }, { logger }) => {
@@ -311,14 +317,15 @@ const options = {
   playground: process.env.NETWORK === 'mainnet' ? 'false' : '/'
 }
 
-setupMongoConnection()
-  .then(() => {
-    upgrade().then(() => {
-      server.start(options, ({ port }) =>
-        graphqlLogger.info(
-          `Server started, listening on port ${port} for incoming requests.`,
-        ),
-      )
-    })
-  }).catch((err) => graphqlLogger.error(err, "server error"))
+setupMongoConnection().then(() => {
+  upgrade().then(() => {
+  insertMarkers(true).then(
+  () => {
+    server.start(options, ({ port }) =>
+      graphqlLogger.info(
+        `Server started, listening on port ${port} for incoming requests.`,
+      ),
+    )
+  })})
+}).catch((err) => graphqlLogger.error(err, "server error"))
 
