@@ -129,14 +129,14 @@ const resolvers = {
 
     maps: async () => {
       // TODO: caching
-      const users = await User.find({ titleMaps: { $exists: true }, coordinate: { $exists: true }}, {username: 1, title: 1, coordinate: 1})
+      const users = await User.find({ title: { $exists: true }, coordinate: { $exists: true }}, {username: 1, title: 1, coordinate: 1})
       return users.map(item => ({
         id: item.username,
         username: item.username,
         title: item.title,
         coordinate: {
-          latitude: item.coordinate[0],
-          longitude: item.coordinate[1]
+          latitude: item.coordinate.coordinates[0],
+          longitude: item.coordinate.coordinates[1]
         }
       }))
     },
