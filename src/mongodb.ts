@@ -122,7 +122,7 @@ const UserSchema = new Schema({
         type: Date,
         default: Date.now
       },
-      transactions: {
+      transactionsCount: {
         type: Number,
         default: 1,
       }

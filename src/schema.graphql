@@ -40,6 +40,7 @@ type Wallet {
 type Contact {
   id: ID #username
   name: String #name can be set by the user
+  transactionsCount: Int # number of transactions
 }
 
 type Invoice {
