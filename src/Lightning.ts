@@ -31,7 +31,6 @@ const addContact = async ({uid, username}) => {
       "contacts.id": username
     },
     {
-      $set: {"contacts.$.updated": new Date()},
       $inc: {"contacts.$.transactionsCount": 1},
     },
   )

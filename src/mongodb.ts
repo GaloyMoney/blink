@@ -118,10 +118,6 @@ const UserSchema = new Schema({
         collation: {locale: "en", strength: 2},
       },
       name: String,
-      updated: {
-        type: Date,
-        default: Date.now
-      },
       transactionsCount: {
         type: Number,
         default: 1,
