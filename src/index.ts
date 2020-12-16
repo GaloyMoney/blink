@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import { rule, shield } from 'graphql-shield';
 import { GraphQLServer } from 'graphql-yoga';
 import * as jwt from 'jsonwebtoken';
-import { chunk, startsWith } from "lodash";
+import { startsWith } from "lodash";
 import moment from "moment";
 import { v4 as uuidv4 } from 'uuid';
 import { getMinBuildNumber, mainCache } from "./cache";
@@ -160,7 +160,13 @@ const resolvers = {
       },
       setUsername: async ({ username }) => await wallet.setUsername({ username }),
       setLanguage: async ({ language }) => await wallet.setLanguage({ language })
-
+    }),
+    updateContact: async (_, __, { user }) => ({
+      setName: async ({ username, name }) => {
+        user.contacts.filter(item => item.id === username)[0].name = name
+        await user.save()
+        return true
+      }
     }),
     publicInvoice: async (_, { username }, { logger }) => {
       const wallet = await WalletFromUsername({ username, logger })

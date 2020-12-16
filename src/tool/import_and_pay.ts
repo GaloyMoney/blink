@@ -35,7 +35,6 @@ const main = async () => {
 
     for (const user of results) {
       if (!!user.Amount) {
-        console.log({user})
         const payeeWallet = await getUserWallet({phone: user.Phone})
         const request = await payeeWallet.addInvoice({ value: user.Amount, memo: user.Memo })
         await payerWallet.pay({invoice: request})
