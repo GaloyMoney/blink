@@ -24,6 +24,11 @@ export class AdminWallet {
   }
 
   async payCashBack() {
+    const cashback = process.env.CASHBACK
+    if (!cashback) {
+      return
+    }
+
     const lightningFundingWallet = await getFunderWallet({ logger })  
 
     const invoices = await InvoiceUser.find({ cashback: true })
