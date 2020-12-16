@@ -52,6 +52,11 @@ const invoiceUserSchema = new Schema({
   selfGenerated: {
     type: Boolean,
     default: true
+  },
+
+  cashback: {
+    type: Boolean,
+    default: false
   }
 })
 

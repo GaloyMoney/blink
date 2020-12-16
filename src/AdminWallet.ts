@@ -1,8 +1,8 @@
 import { filter, sumBy } from "lodash";
 import { accountingExpenses, escrowAccountingPath, lightningAccountingPath, openChannelFees } from "./ledger";
-import { MainBook, Transaction, User } from "./mongodb";
+import { InvoiceUser, MainBook, Transaction, User } from "./mongodb";
 import { baseLogger, getAuth } from "./utils";
-import { getBrokerWallet, WalletFactory } from "./walletFactory";
+import { getBrokerWallet, getFunderWallet, WalletFactory } from "./walletFactory";
 const lnService = require('ln-service')
 
 const logger = baseLogger.child({module: "admin"})
@@ -20,6 +20,15 @@ export class AdminWallet {
       // A better approach would be to just loop over pending: true invoice/payment
       userWallet = await WalletFactory({user, uid: user._id, currency: user.currency, logger})
       await userWallet.updatePending()
+    }
+  }
+
+  async payCashBack() {
+    const lightningFundingWallet = await getFunderWallet({ logger })  
+
+    const invoices = await InvoiceUser.find({ cashback: true })
+    for (const invoice of invoices) {
+      await lightningFundingWallet.pay({invoice, isReward: true})
     }
   }
 
