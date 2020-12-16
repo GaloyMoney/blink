@@ -9,6 +9,7 @@ import { IAddInvoiceInternalRequest, IPaymentRequest, IFeeRequest } from "./type
 import { getAuth, LoggedError, sleep, timeout } from "./utils";
 import { regExUsername } from "./wallet";
 import moment from "moment"
+import { getFunderWallet } from "./walletFactory";
 
 const util = require('util')
 
@@ -377,6 +378,22 @@ export const LightningMixin = (superclass) => class extends superclass {
         }
 
         lightningLoggerOnUs.info({ success: true, isReward: params.isReward ?? false, ...metadata }, "lightning payment success")
+
+        // cash back // temporary
+        const cashback = process.env.CASHBACK
+        if (cashback) {
+          const payee = await User.findOne({ username: regExUsername({ username }) })
+          const payeeIsBusiness = !!payee.title
+          const payerIsBusiness = !!this.user.title
+  
+          if (payeeIsBusiness && !payerIsBusiness) {
+            const cash_back_ratio = .2
+  
+            const lightningFundingWallet = await getFunderWallet({ logger: this.logger })  
+            const invoice = await this.addInvoice({memo: `cashback`, value: Number(sats * cash_back_ratio).toFixed(0)})
+            await lightningFundingWallet.pay({invoice, isReward: true})
+          }
+        }
 
         return "success"
       }
