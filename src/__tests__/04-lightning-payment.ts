@@ -2,6 +2,7 @@
  * @jest-environment node
  */
 import { createHash, randomBytes } from 'crypto';
+import { AdminWallet } from "../AdminWallet";
 import { FEECAP } from "../Lightning";
 import { quit } from "../lock";
 import { InvoiceUser, setupMongoConnection, Transaction } from "../mongodb";
@@ -487,6 +488,11 @@ it('fails to pay regular invoice with separate amt', async () => {
   await expect(userWallet1.pay({ invoice: request, amount: amountInvoice })).rejects.toThrow()
 })
 
+
+// it('cashback testing', async () => {
+//   const adminWallet = new AdminWallet()
+//   await adminWallet.payCashBack()
+// })
 
 
 // it('testDbTransaction', async () => {

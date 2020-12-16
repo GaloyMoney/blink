@@ -32,8 +32,10 @@ export class AdminWallet {
     const lightningFundingWallet = await getFunderWallet({ logger })  
 
     const invoices = await InvoiceUser.find({ cashback: true })
-    for (const invoice of invoices) {
-      await lightningFundingWallet.pay({invoice, isReward: true})
+    for (const invoice_db of invoices) {
+      const invoice = await lnService.getInvoice({ lnd: this.lnd, id: invoice_db._id })
+      const result = await lightningFundingWallet.pay({invoice: invoice.request, isReward: true})
+      logger.info({invoice, invoice_db, result}, "cashback succesfully sent")
     }
   }
 
