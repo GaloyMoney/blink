@@ -274,8 +274,8 @@ export const LightningMixin = (superclass) => class extends superclass {
     let lightningLogger = this.logger.child({ topic: "payment", protocol: "lightning", transactionType: "payment" })
 
     const { tokens, mtokens, destination, pushPayment, id, routeHint, messages, memoInvoice, payment, cltv_delta, features, max_fee } = await this.validate(params, lightningLogger)
-    const { memo: memoPayer } = params
-    let username = params.username
+    const { memo: memoPayer, username: input_username } = params
+    let username
 
     // not including message because it contains the preimage and we don't want to log this
     lightningLogger = lightningLogger.child({ decoded: { tokens, destination, pushPayment, id, routeHint, memoInvoice, memoPayer, payment, cltv_delta, features }, params })
@@ -299,7 +299,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         let payeeUid, payeeCurrency
 
         if (pushPayment) {
-          if (!username) {
+          if (!input_username) {
             const error = 'a username is required for push payment to the ***REMOVED*** wallet'
             lightningLoggerOnUs.warn({ success: false, error }, error)
             throw new LoggedError(error)
@@ -314,6 +314,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
           payeeUid = payee._id
           payeeCurrency = payee.currency
+          username = payee.username
         } else {
           // standard path, user scan another lightning wallet of bitcoin beach invoice
 
