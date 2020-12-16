@@ -381,7 +381,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         // cash back // temporary
         const cashback = process.env.CASHBACK
-        if (cashback) {
+        if (cashback && !params.isReward) {
           const payee = await User.findOne({ username: regExUsername({ username }) })
           const payeeIsBusiness = !!payee.title
           const payerIsBusiness = !!this.user.title
