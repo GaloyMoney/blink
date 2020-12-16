@@ -329,7 +329,7 @@ const options = {
 
 setupMongoConnection().then(() => {
   upgrade().then(() => {
-  insertMarkers(true).then(
+  insertMarkers().then(
   () => {
     server.start(options, ({ port }) =>
       graphqlLogger.info(

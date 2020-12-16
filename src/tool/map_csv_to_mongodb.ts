@@ -9,7 +9,7 @@ const util = require('util')
 
 export const baseLogger = require('pino')()
 
-export const insertMarkers = async (executeScript = false) => {
+export const insertMarkers = async () => {
 
   let results: any[] = [];
 
