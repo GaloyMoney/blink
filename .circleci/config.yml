@@ -218,6 +218,10 @@ jobs:
       - run:
           name: Upgrade mainnet deployments
           command: |
+            JOB_NAME=$(date -u '+%s')
+            kubectl --namespace=mainnet create job --from=CronJob/mongo-backup-job "$JOB_NAME"
+            kubectl --namespace=mainnet wait --for=condition=complete --timeout=60s job/$JOB_NAME
+            kubectl --namespace=mainnet delete job/$JOB_NAME
             cd ~/GaloyApp/backend/firebase/functions/ && ./initLocalTest.sh mainnet
                
   update_locale:
