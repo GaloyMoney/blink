@@ -355,7 +355,8 @@ it('expired payment', async () => {
   expect(await InvoiceUser.countDocuments({_id: id})).toBe(0)
   
   try {
-    await lnService.getInvoice({ lnd: getAuth(), id })
+    const { lnd } = lnService.authenticatedLndGrpc(getAuth())
+    await lnService.getInvoice({ lnd, id })
   } catch (err) {
     console.log({err}, "invoice should not exist any more")
   }
