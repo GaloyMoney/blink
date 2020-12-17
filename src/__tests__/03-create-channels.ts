@@ -5,7 +5,7 @@ import { AdminWallet } from "../AdminWallet";
 import { setupMongoConnection, MainBook } from "../mongodb";
 import { checkIsBalanced, lndMain, lndOutside1, lndOutside2, RANDOM_ADDRESS, waitUntilBlockHeight, mockGetExchangeBalance } from "../tests/helper";
 import { baseLogger, bitcoindClient, nodeStats, sleep } from "../utils";
-import { openChannelFees } from "../ledger"
+import { lndFee } from "../ledger"
 import { onChannelOpened, uploadBackup, onChannelClosed } from '../trigger'
 const mongoose = require("mongoose");
 const { once } = require('events');
@@ -94,7 +94,7 @@ const mineBlock = async ({ lnd, other_lnd, blockHeight }) => {
 it('opens channel from lnd1 to lndOutside1', async () => {
   const socket = `lnd-outside-1:9735`
   const { balance: initChannelFee } = await MainBook.balance({
-    account: openChannelFees,
+    account: lndFee,
     currency: "BTC",
   })
   await openChannel({ lnd: lndMain, other_lnd: lndOutside1, socket })
@@ -102,7 +102,7 @@ it('opens channel from lnd1 to lndOutside1', async () => {
   const { channels } = await lnService.getChannels({ lnd: lndMain })
   expect(channels.length).toEqual(channelLengthMain + 1)
   const { balance: finalChannelFee } = await MainBook.balance({
-    account: openChannelFees,
+    account: lndFee,
     currency: "BTC",
   })
   expect(finalChannelFee - initChannelFee).toBeGreaterThan(0)
@@ -150,7 +150,7 @@ it('opens and closes channel from lnd1 to lndOutside1', async () => {
   const { channels } = await lnService.getChannels({ lnd: lndMain })
   expect(channels.length).toEqual(channelLengthMain + 3)
   const { balance: finalChannelFee } = await MainBook.balance({
-    account: openChannelFees,
+    account: lndFee,
     currency: "BTC",
   })
   const sub = lnService.subscribeToChannels({ lnd: lndMain })
@@ -160,7 +160,7 @@ it('opens and closes channel from lnd1 to lndOutside1', async () => {
   await mineBlock({lnd: lndMain, other_lnd: lndOutside1, blockHeight: initBlockCount + newBlock})
 
   const { balance: initChannelFee } = await MainBook.balance({
-    account: openChannelFees,
+    account: lndFee,
     currency: "BTC",
   })
 
