@@ -3,7 +3,7 @@ import { subscribeToChannels, subscribeToInvoices, subscribeToTransactions, subs
 import { Storage } from '@google-cloud/storage'
 import { find } from "lodash";
 import { InvoiceUser, setupMongoConnection, Transaction, User, MainBook } from "./mongodb";
-import { lightningAccountingPath, openChannelFees } from "./ledger";
+import { lightningAccountingPath, lndFee } from "./ledger";
 import { sendInvoicePaidNotification, sendNotification } from "./notification";
 import { IDataNotification } from "./types";
 import { getAuth, baseLogger, LOOK_BACK } from './utils';
@@ -145,7 +145,7 @@ export const onChannelOpened = async ({ channel, lnd }) => {
 
   await MainBook.entry("on chain fee")
     .debit(lightningAccountingPath, fee, { ...metadata, })
-    .credit(openChannelFees, fee, { ...metadata })
+    .credit(lndFee, fee, { ...metadata })
     .commit()
 
   logger.info({ channel, fee, ...metadata }, `open channel fee added to mongodb`)
@@ -171,7 +171,7 @@ export const onChannelClosed = async ({ channel, lnd }) => {
 
   await MainBook.entry("on chain fee")
     .credit(lightningAccountingPath, fee, { ...metadata, })
-    .debit(openChannelFees, fee, { ...metadata })
+    .debit(lndFee, fee, { ...metadata })
     .commit()
 
   logger.info({ channel, fee, ...metadata }, `closed channel fee added to mongodb`)

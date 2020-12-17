@@ -1,5 +1,5 @@
 import { filter, sumBy } from "lodash";
-import { accountingExpenses, escrowAccountingPath, lightningAccountingPath, openChannelFees } from "./ledger";
+import { accountingExpenses, escrowAccountingPath, lightningAccountingPath } from "./ledger";
 import { MainBook, Transaction, User } from "./mongodb";
 import { baseLogger, getAuth } from "./utils";
 import { getBrokerWallet, WalletFactory } from "./walletFactory";
