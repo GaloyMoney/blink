@@ -137,7 +137,7 @@ then
 
   helmUpgrade test-chart --set \
   macaroon=$MACAROON,macaroonoutside1=$MACAROONOUTSIDE1,macaroonoutside2=$MACAROONOUTSIDE2,image.tag=$CIRCLE_SHA1,tlsoutside1=$TLSOUTSIDE1,tlsoutside2=$TLSOUTSIDE2,tls=$TLS \
-  ~/GaloyApp/backend/test-chart/
+  ~/GaloyApp/infrastructure/test-chart/
 
   echo $(kubectl get -n=$NAMESPACE pods)
   echo "Waiting for test-pod and graphql-server to come alive"
