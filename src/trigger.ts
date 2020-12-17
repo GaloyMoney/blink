@@ -21,12 +21,11 @@ const txsReceived = new Set()
 export const uploadBackup = async (backup) => {
   logger.debug({ backup }, "updating scb on dbx")
   const dbx = new Dropbox({ accessToken: process.env.DROPBOX_ACCESS_TOKEN })
-  const dbxUploadRes = await dbx.filesUpload({ path: `/${process.env.NETWORK}_lnd_scb`, contents: backup })
-
-  if (dbxUploadRes.status === 200) {
+  try {
+    await dbx.filesUpload({ path: `/${process.env.NETWORK}_lnd_scb`, contents: backup })
     logger.info({ backup }, "scb update to dbx successful")
-  } else {
-    logger.error({ dbxUploadRes }, "scb update to dbx failed")
+  } catch (error) {
+    logger.error({ error }, "scb update to dbx failed")
   }
 
   logger.debug({ backup }, "updating scb on gcs")
