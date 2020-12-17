@@ -92,7 +92,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     return input.add(delay(this.currency).value, delay(this.currency).unit)
   }
 
-  async addInvoiceInternal({ sats, usd, memo, selfGenerated, uid }: IAddInvoiceInternalRequest): Promise<string> {
+  async addInvoiceInternal({ sats, usd, memo, selfGenerated, uid, cashback }: IAddInvoiceInternalRequest): Promise<string> {
     let request, id
 
     const expires_at = this.getExpiration(moment()).toDate()
@@ -103,6 +103,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         tokens: sats,
         description: memo,
         expires_at,
+        cashback,
       })
       request = result.request
       id = result.id
