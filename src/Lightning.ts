@@ -305,7 +305,7 @@ export const LightningMixin = (superclass) => class extends superclass {
             throw new LoggedError(error)
           }
 
-          const payee = await User.findOne({ username: regExUsername({ username }) })
+          const payee = await User.findOne({ username: regExUsername({ username: input_username }) })
           if (!payee) {
             const error = `this username doesn't exist`
             lightningLoggerOnUs.warn({ success: false, error }, error)
