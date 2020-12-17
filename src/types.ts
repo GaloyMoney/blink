@@ -21,7 +21,7 @@ export interface IAddInvoiceInternalRequest {
 
   // for cashback. 
   cashback?: boolean,
-  uid: string
+  uid?: string
 }
 
 export interface IAddBTCInvoiceRequest {
