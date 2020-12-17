@@ -204,15 +204,24 @@ functionToTests.forEach(({fn, name}) => {
     
     // a cashback tx
     await paymentOtherGaloyUser({walletPayee: userWallet2, walletPayer: userWallet1})
-    expect(await InvoiceUser.count({cashback: true})).toBe(init_cashback + 1)
+    
+    if (process.env.CASHBACK) {
+      expect(await InvoiceUser.count({cashback: true})).toBe(init_cashback + 1)
+    }
     
     // a cashback tx
     await paymentOtherGaloyUser({walletPayee: userWallet2, walletPayer: userWallet0})
-    expect(await InvoiceUser.count({cashback: true})).toBe(init_cashback + 2)
-
+    
+    if (process.env.CASHBACK) {
+      expect(await InvoiceUser.count({cashback: true})).toBe(init_cashback + 2)
+    }
+    
     // not a cashback transaction
     await paymentOtherGaloyUser({walletPayee: userWallet1, walletPayer: userWallet2})
-    expect(await InvoiceUser.count({cashback: true})).toBe(init_cashback + 2)
+    if (process.env.CASHBACK) {
+      expect(await InvoiceUser.count({cashback: true})).toBe(init_cashback + 2)
+    }
+    
 
     userWallet0 = await getUserWallet(0)
     userWallet1 = await getUserWallet(1)
@@ -223,10 +232,12 @@ functionToTests.forEach(({fn, name}) => {
 
     expect(userWallet2.user.contacts.length).toBe(2)
     
-    const tx_count = await Transaction.count()
-    const adminWallet = new AdminWallet()
-    await adminWallet.payCashBack()
-    expect(await Transaction.count()).toBe(tx_count + 4)
+    if (process.env.CASHBACK) {
+      const tx_count = await Transaction.count()
+      const adminWallet = new AdminWallet()
+      await adminWallet.payCashBack()
+      expect(await Transaction.count()).toBe(tx_count + 4)
+    }
 
   })
 
