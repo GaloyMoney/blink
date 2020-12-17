@@ -92,7 +92,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     return input.add(delay(this.currency).value, delay(this.currency).unit)
   }
 
-  async addInvoiceInternal({ sats, usd, memo, selfGenerated }: IAddInvoiceInternalRequest): Promise<string> {
+  async addInvoiceInternal({ sats, usd, memo, selfGenerated, cashback }: IAddInvoiceInternalRequest): Promise<string> {
     let request, id
 
     const expires_at = this.getExpiration(moment()).toDate()
@@ -102,7 +102,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         lnd: this.lnd,
         tokens: sats,
         description: memo,
-        expires_at
+        expires_at,
       })
       request = result.request
       id = result.id
@@ -120,6 +120,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         username: this.user.username,
         currency: this.currency,
         selfGenerated,
+        cashback,
       }).save()
     } catch (err) {
       // FIXME if the mongodb connection has not been instanciated
@@ -378,6 +379,26 @@ export const LightningMixin = (superclass) => class extends superclass {
         }
 
         lightningLoggerOnUs.info({ success: true, isReward: params.isReward ?? false, ...metadata }, "lightning payment success")
+
+        // cash back // temporary
+        const cashback = process.env.CASHBACK
+        if (cashback && !params.isReward) {
+          const payee = await User.findOne({ username: regExUsername({ username }) })
+          const payeeIsBusiness = payee ? !!payee?.title : false
+          const payerIsBusiness = !!this.user.title
+  
+          if (payeeIsBusiness && !payerIsBusiness) {
+            const cash_back_ratio = .2
+  
+            const invoice = await this.addInvoice({
+              memo: `Bono de Navidad por usar Bitcoin en su negocio`,
+              value: Number(sats * cash_back_ratio).toFixed(0),
+              cashback: true
+            })
+
+            lightningLogger.info({invoice}, "adding invoice for cashback")
+          }
+        }
 
         return "success"
       }

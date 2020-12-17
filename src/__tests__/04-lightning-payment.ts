@@ -2,6 +2,7 @@
  * @jest-environment node
  */
 import { createHash, randomBytes } from 'crypto';
+import { AdminWallet } from "../AdminWallet";
 import { FEECAP } from "../Lightning";
 import { quit } from "../lock";
 import { InvoiceUser, setupMongoConnection, Transaction } from "../mongodb";
@@ -199,10 +200,29 @@ functionToTests.forEach(({fn, name}) => {
       expect(await walletPayee.updatePendingInvoice({ hash })).toBeTruthy()
     }
 
-    await paymentOtherGaloyUser({walletPayee: userWallet2, walletPayer: userWallet1})
-    await paymentOtherGaloyUser({walletPayee: userWallet2, walletPayer: userWallet0})
-    await paymentOtherGaloyUser({walletPayee: userWallet1, walletPayer: userWallet2})
+    const init_cashback = await InvoiceUser.count({cashback: true})
     
+    // a cashback tx
+    await paymentOtherGaloyUser({walletPayee: userWallet2, walletPayer: userWallet1})
+    
+    if (process.env.CASHBACK) {
+      expect(await InvoiceUser.count({cashback: true})).toBe(init_cashback + 1)
+    }
+    
+    // a cashback tx
+    await paymentOtherGaloyUser({walletPayee: userWallet2, walletPayer: userWallet0})
+    
+    if (process.env.CASHBACK) {
+      expect(await InvoiceUser.count({cashback: true})).toBe(init_cashback + 2)
+    }
+    
+    // not a cashback transaction
+    await paymentOtherGaloyUser({walletPayee: userWallet1, walletPayer: userWallet2})
+    if (process.env.CASHBACK) {
+      expect(await InvoiceUser.count({cashback: true})).toBe(init_cashback + 2)
+    }
+    
+
     userWallet0 = await getUserWallet(0)
     userWallet1 = await getUserWallet(1)
     userWallet2 = await getUserWallet(2)
@@ -211,6 +231,13 @@ functionToTests.forEach(({fn, name}) => {
     expect(userWallet0.user.contacts[0]).toHaveProperty("id", userWallet2.user.username)
 
     expect(userWallet2.user.contacts.length).toBe(2)
+    
+    if (process.env.CASHBACK) {
+      const tx_count = await Transaction.count()
+      const adminWallet = new AdminWallet()
+      await adminWallet.payCashBack()
+      expect(await Transaction.count()).toBe(tx_count + 4)
+    }
 
   })
 
@@ -487,7 +514,6 @@ it('fails to pay regular invoice with separate amt', async () => {
   const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: amountInvoice })
   await expect(userWallet1.pay({ invoice: request, amount: amountInvoice })).rejects.toThrow()
 })
-
 
 
 // it('testDbTransaction', async () => {

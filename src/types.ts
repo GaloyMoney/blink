@@ -17,13 +17,15 @@ export interface IAddInvoiceInternalRequest {
   usd: number,
   sats: number,
   memo: string | undefined,
-  selfGenerated?: boolean
+  selfGenerated?: boolean,
+  cashback?: boolean,
 }
 
 export interface IAddBTCInvoiceRequest {
   value: number | undefined,
   memo?: string | undefined,
   selfGenerated?: boolean
+  cashback?: boolean
 }
 
 export interface IAddUSDInvoiceRequest {
