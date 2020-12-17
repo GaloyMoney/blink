@@ -92,7 +92,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     return input.add(delay(this.currency).value, delay(this.currency).unit)
   }
 
-  async addInvoiceInternal({ sats, usd, memo, selfGenerated, cashback }: IAddInvoiceInternalRequest): Promise<string> {
+  async addInvoiceInternal({ sats, usd, memo, selfGenerated, uid, cashback }: IAddInvoiceInternalRequest): Promise<string> {
     let request, id
 
     const expires_at = this.getExpiration(moment()).toDate()
@@ -115,7 +115,9 @@ export const LightningMixin = (superclass) => class extends superclass {
     try {
       const result = await new InvoiceUser({
         _id: id,
-        uid: this.uid,
+
+        // uid for cashback. to remove after cashback is finished
+        uid: uid || this.uid,
         usd,
         username: this.user.username,
         currency: this.currency,
@@ -389,14 +391,17 @@ export const LightningMixin = (superclass) => class extends superclass {
   
           if (payeeIsBusiness && !payerIsBusiness) {
             const cash_back_ratio = .2
-  
-            const invoice = await this.addInvoice({
+            const sats = Math.floor(value * cash_back_ratio)
+
+            const invoiceCashBack = await this.addInvoiceInternal({
+              uid: payee._id,
               memo: `Bono de Navidad por usar Bitcoin en su negocio`,
-              value: Number(sats * cash_back_ratio).toFixed(0),
+              sats,
+              usd: this.satsToUsd(sats),
               cashback: true
             })
 
-            lightningLogger.info({invoice}, "adding invoice for cashback")
+            lightningLogger.info({invoiceCashBack}, "adding invoice for cashback")
           }
         }
 
