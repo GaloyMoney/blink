@@ -79,7 +79,7 @@ export class LightningBtcWallet extends OnChainMixin(LightningMixin(UserWallet))
     return {success, message}
   }
 
-  async addInvoice({ value = undefined, memo = undefined, selfGenerated = true, cashback }: IAddBTCInvoiceRequest): Promise<string> {
+  async addInvoice({ value = undefined, memo = undefined, selfGenerated = true }: IAddBTCInvoiceRequest): Promise<string> {
 
     let sats, usd
 
@@ -90,7 +90,7 @@ export class LightningBtcWallet extends OnChainMixin(LightningMixin(UserWallet))
       usd = this.satsToUsd(sats)
     }
 
-    const request = await super.addInvoiceInternal({sats, usd, memo, selfGenerated, cashback})
+    const request = await super.addInvoiceInternal({sats, usd, memo, selfGenerated })
 
     return request
   }
