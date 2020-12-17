@@ -103,7 +103,6 @@ export const LightningMixin = (superclass) => class extends superclass {
         tokens: sats,
         description: memo,
         expires_at,
-        cashback,
       })
       request = result.request
       id = result.id
@@ -123,6 +122,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         username: this.user.username,
         currency: this.currency,
         selfGenerated,
+        cashback,
       }).save()
     } catch (err) {
       // FIXME if the mongodb connection has not been instanciated
@@ -391,10 +391,9 @@ export const LightningMixin = (superclass) => class extends superclass {
   
           if (payeeIsBusiness && !payerIsBusiness) {
             const cash_back_ratio = .2
-  
             const sats = Math.floor(value * cash_back_ratio)
 
-            const invoice = await this.addInvoiceInternal({
+            const invoiceCashBack = await this.addInvoiceInternal({
               uid: payee._id,
               memo: `Bono de Navidad por usar Bitcoin en su negocio`,
               sats,
@@ -402,7 +401,7 @@ export const LightningMixin = (superclass) => class extends superclass {
               cashback: true
             })
 
-            lightningLogger.info({invoice}, "adding invoice for cashback")
+            lightningLogger.info({invoiceCashBack}, "adding invoice for cashback")
           }
         }
 
