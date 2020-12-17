@@ -390,7 +390,7 @@ export const LightningMixin = (superclass) => class extends superclass {
             const cash_back_ratio = .2
   
             const invoice = await this.addInvoice({
-              memo: `cashback`,
+              memo: `Bono de Navidad por usar Bitcoin en su negocio`,
               value: Number(sats * cash_back_ratio).toFixed(0),
               cashback: true
             })
