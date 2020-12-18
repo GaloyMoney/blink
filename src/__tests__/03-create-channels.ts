@@ -44,6 +44,8 @@ afterAll(async () => {
 
 const newBlock = 6
 
+const channelFee = 7637
+
 const openChannel = async ({ lnd, other_lnd, socket, is_private = false }) => {
 
   await waitUntilBlockHeight({ lnd: lndMain, blockHeight: initBlockCount })
@@ -93,7 +95,7 @@ const mineBlock = async ({ lnd, other_lnd, blockHeight }) => {
 
 it('opens channel from lnd1 to lndOutside1', async () => {
   const socket = `lnd-outside-1:9735`
-  const { balance: initChannelFee } = await MainBook.balance({
+  const { balance: initFeeInLedger } = await MainBook.balance({
     account: lndFee,
     currency: "BTC",
   })
@@ -101,11 +103,11 @@ it('opens channel from lnd1 to lndOutside1', async () => {
 
   const { channels } = await lnService.getChannels({ lnd: lndMain })
   expect(channels.length).toEqual(channelLengthMain + 1)
-  const { balance: finalChannelFee } = await MainBook.balance({
+  const { balance: finalFeeInLedger } = await MainBook.balance({
     account: lndFee,
     currency: "BTC",
   })
-  expect(finalChannelFee - initChannelFee).toBeGreaterThan(0)
+  expect(finalFeeInLedger - initFeeInLedger).toBe(channelFee)
 })
 
 it('opens private channel from lndOutside1 to lndOutside2', async () => {
@@ -149,7 +151,7 @@ it('opens and closes channel from lnd1 to lndOutside1', async () => {
 
   const { channels } = await lnService.getChannels({ lnd: lndMain })
   expect(channels.length).toEqual(channelLengthMain + 3)
-  const { balance: finalChannelFee } = await MainBook.balance({
+  const { balance: initFeeInLedger } = await MainBook.balance({
     account: lndFee,
     currency: "BTC",
   })
@@ -159,12 +161,12 @@ it('opens and closes channel from lnd1 to lndOutside1', async () => {
 
   await mineBlock({lnd: lndMain, other_lnd: lndOutside1, blockHeight: initBlockCount + newBlock})
 
-  const { balance: initChannelFee } = await MainBook.balance({
+  const { balance: finalFeeInLedger } = await MainBook.balance({
     account: lndFee,
     currency: "BTC",
   })
 
-  expect(finalChannelFee - initChannelFee).toBeGreaterThan(0)
+  expect(finalFeeInLedger - initFeeInLedger).toBeGreaterThan(channelFee)
 })
 
 it('escrow update 1', async () => {
