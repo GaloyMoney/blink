@@ -38,6 +38,7 @@ it('I can connect to outside lnds', async () => {
 })
 
 it('I can connect to mongodb', async () => {
+	expect(mongoose.connection.readyState).toBe(1)
 	const users = await User.find()
 	expect(users).toEqual(expect.arrayContaining([]))
 })

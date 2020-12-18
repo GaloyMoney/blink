@@ -90,7 +90,7 @@ export class LightningBtcWallet extends OnChainMixin(LightningMixin(UserWallet))
       usd = this.satsToUsd(sats)
     }
 
-    const request = await super.addInvoiceInternal({sats, usd, memo, selfGenerated})
+    const request = await super.addInvoiceInternal({sats, usd, memo, selfGenerated })
 
     return request
   }

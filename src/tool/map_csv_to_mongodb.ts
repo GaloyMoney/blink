@@ -9,7 +9,7 @@ const util = require('util')
 
 export const baseLogger = require('pino')()
 
-export const insertMarkers = async (executeScript = false) => {
+export const insertMarkers = async () => {
 
   let results: any[] = [];
 
@@ -26,27 +26,22 @@ export const insertMarkers = async (executeScript = false) => {
       username: item["***REMOVED*** username"]
     }))
 
-    if (executeScript) {
-
-      for(const result of results) {
-        const user = await User.findOne({ username: regExUsername({ username: result.username }) })
-        
-        if (!user) {
-          console.log(`the user ${result.username} does not exist`)
-          continue
-        }
-
-        if (!result.coordinate || !result.title) {
-          console.log(`missing input for ${result.username}`, {result})
-          continue
-        }
-
-        user.coordinate = result.coordinate
-        user.title = result.title
-        await user.save()
+    for(const result of results) {
+      const user = await User.findOne({ username: regExUsername({ username: result.username }) })
+      
+      if (!user) {
+        console.log(`the user ${result.username} does not exist`)
+        continue
       }
-    } else {
-      console.log(results)
+
+      if (!result.coordinate || !result.title) {
+        console.log(`missing input for ${result.username}`, {result})
+        continue
+      }
+
+      user.coordinate = result.coordinate
+      user.title = result.title
+      await user.save()
     }
   });
 

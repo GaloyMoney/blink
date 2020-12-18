@@ -6,6 +6,7 @@ const main = async () => {
 	const adminWallet = new AdminWallet()
 	await adminWallet.updateEscrows()
   await adminWallet.updateUsersPendingPayment()
+  await adminWallet.payCashBack()
   // FIXME: we probably needs to exit because we have a memleak of pending promise
 	process.exit(0)
 }

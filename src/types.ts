@@ -17,7 +17,11 @@ export interface IAddInvoiceInternalRequest {
   usd: number,
   sats: number,
   memo: string | undefined,
-  selfGenerated?: boolean
+  selfGenerated?: boolean,
+
+  // for cashback. 
+  cashback?: boolean,
+  uid?: string
 }
 
 export interface IAddBTCInvoiceRequest {

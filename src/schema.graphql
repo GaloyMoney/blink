@@ -37,6 +37,12 @@ type Wallet {
   csv: String
 }
 
+type Contact {
+  id: ID #username
+  name: String #name can be set by the user
+  transactionsCount: Int # number of transactions
+}
+
 type Invoice {
   addInvoice(value: Int, memo: String): String
   updatePendingInvoice(hash: String!): Boolean
@@ -64,7 +70,7 @@ type User {
   username: String
   level: Int!
   phone: String
-  contacts: [String]
+  contacts: [Contact]
   language: String
 }
 
@@ -135,6 +141,10 @@ type UpdateUser {
   setUsername(username: String!): Boolean
 }
 
+type UpdateContact {
+  setName(username: String, name: String): Boolean
+}
+
 type Mutation {
   requestPhoneCode(phone: String): Success
   login(phone: String, code: Int, currency: String): Token
@@ -144,6 +154,7 @@ type Mutation {
   invoice: Invoice
   earnCompleted(ids: [ID]): [Earn]
   updateUser: UpdateUser
+  updateContact: UpdateContact
   deleteUser: Boolean # TODO
   faucet(hash: String): FaucetResult
   addDeviceToken(deviceToken: String): Success # to refactor with User?

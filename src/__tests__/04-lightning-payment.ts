@@ -2,12 +2,12 @@
  * @jest-environment node
  */
 import { createHash, randomBytes } from 'crypto';
+import { AdminWallet } from "../AdminWallet";
 import { FEECAP } from "../Lightning";
 import { quit } from "../lock";
-import { InvoiceUser, setupMongoConnection, Transaction, User } from "../mongodb";
+import { InvoiceUser, setupMongoConnection, Transaction } from "../mongodb";
 import { checkIsBalanced, getUserWallet, lndOutside1, lndOutside2, mockGetExchangeBalance, onBoardingEarnAmt, onBoardingEarnIds, username } from "../tests/helper";
-import { baseLogger, getAuth, getHash, sleep } from "../utils";
-import { getFunderWallet } from "../walletFactory";
+import { getAuth, getHash, sleep } from "../utils";
 
 const lnService = require('ln-service')
 const mongoose = require("mongoose")
@@ -169,14 +169,17 @@ functionToTests.forEach(({fn, name}) => {
     const memo = "my memo as a payer"
 
     const paymentOtherGaloyUser = async ({walletPayer, walletPayee}) => {
+      const payerInitialBalance = await walletPayer.getBalance()
+      const payeeInitialBalance = await walletPayee.getBalance()
+
       const request = await walletPayee.addInvoice({ value: amountInvoice })
       await fn(walletPayer)({ invoice: request, memo })
   
-      const user1FinalBalance = await walletPayer.getBalance()
-      const user2FinalBalance = await walletPayee.getBalance()
+      const payerFinalBalance = await walletPayer.getBalance()
+      const payeeFinalBalance = await walletPayee.getBalance()
   
-      expect(user1FinalBalance).toBe(initBalance1 - amountInvoice)
-      expect(user2FinalBalance).toBe(initBalance2 + amountInvoice)
+      expect(payerFinalBalance).toBe(payerInitialBalance - amountInvoice)
+      expect(payeeFinalBalance).toBe(payeeInitialBalance + amountInvoice)
   
       const hash = getHash(request)
       const matchTx = tx => tx.type === 'on_us' && tx.hash === hash
@@ -197,15 +200,45 @@ functionToTests.forEach(({fn, name}) => {
       expect(await walletPayee.updatePendingInvoice({ hash })).toBeTruthy()
     }
 
-    await paymentOtherGaloyUser({walletPayee: userWallet2, walletPayer: userWallet1})
-    // await paymentOtherGaloyUser({walletPayee: userWallet2, walletPayer: userWallet0})
-    // await paymentOtherGaloyUser({walletPayee: userWallet1, walletPayer: userWallet2})
+    const init_cashback = await InvoiceUser.count({cashback: true})
     
-    // userWallet0 = await getUserWallet(0)
+    // a cashback tx
+    await paymentOtherGaloyUser({walletPayee: userWallet2, walletPayer: userWallet1})
+    
+    if (process.env.CASHBACK) {
+      expect(await InvoiceUser.count({cashback: true})).toBe(init_cashback + 1)
+    }
+    
+    // a cashback tx
+    await paymentOtherGaloyUser({walletPayee: userWallet2, walletPayer: userWallet0})
+    
+    if (process.env.CASHBACK) {
+      expect(await InvoiceUser.count({cashback: true})).toBe(init_cashback + 2)
+    }
+    
+    // not a cashback transaction
+    await paymentOtherGaloyUser({walletPayee: userWallet1, walletPayer: userWallet2})
+    if (process.env.CASHBACK) {
+      expect(await InvoiceUser.count({cashback: true})).toBe(init_cashback + 2)
+    }
+    
+
+    userWallet0 = await getUserWallet(0)
     userWallet1 = await getUserWallet(1)
     userWallet2 = await getUserWallet(2)
-    // expect(userWallet1.user.contacts).toBe(["lily"])
-    expect([...userWallet2.user.contacts]).toEqual(["user1"])
+
+    expect(userWallet0.user.contacts.length).toBe(1)
+    expect(userWallet0.user.contacts[0]).toHaveProperty("id", userWallet2.user.username)
+
+    expect(userWallet2.user.contacts.length).toBe(2)
+    
+    if (process.env.CASHBACK) {
+      const tx_count = await Transaction.count()
+      const adminWallet = new AdminWallet()
+      await adminWallet.payCashBack()
+      expect(await Transaction.count()).toBe(tx_count + 4)
+    }
+
   })
 
   it(`payInvoice to lnd outside2 ${name}`, async () => {
@@ -349,7 +382,8 @@ it('expired payment', async () => {
   expect(await InvoiceUser.countDocuments({_id: id})).toBe(0)
   
   try {
-    await lnService.getInvoice({ lnd: getAuth(), id })
+    const { lnd } = lnService.authenticatedLndGrpc(getAuth())
+    await lnService.getInvoice({ lnd, id })
   } catch (err) {
     console.log({err}, "invoice should not exist any more")
   }
@@ -422,6 +456,12 @@ it('onUs pushPayment', async () => {
   expect(userTransaction1[0]).toHaveProperty("username", userWallet0.user.username)
   expect(userTransaction1[0]).toHaveProperty("description", `to ${userWallet0.user.username}`)
 
+  userWallet0 = await getUserWallet(0)
+  userWallet1 = await getUserWallet(1)
+
+  expect(userWallet0.user.contacts[userWallet0.user.contacts.length - 1]).toHaveProperty("id", userWallet1.user.username)
+  expect(userWallet1.user.contacts[userWallet1.user.contacts.length - 1]).toHaveProperty("id", userWallet0.user.username)
+
   await checkIsBalanced()
 })
 
@@ -474,7 +514,6 @@ it('fails to pay regular invoice with separate amt', async () => {
   const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: amountInvoice })
   await expect(userWallet1.pay({ invoice: request, amount: amountInvoice })).rejects.toThrow()
 })
-
 
 
 // it('testDbTransaction', async () => {
