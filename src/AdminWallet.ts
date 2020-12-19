@@ -25,6 +25,8 @@ export class AdminWallet {
 
   async payCashBack() {
     const cashback = process.env.CASHBACK
+    logger.info({cashback}, "cashback enabled?")
+
     if (!cashback) {
       return
     }
