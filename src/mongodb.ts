@@ -78,10 +78,10 @@ const UserSchema = new Schema({
   },
   role: {
     type: String,
-    enum: ["user", "funder", "broker"],
+    enum: ["user", "broker"],
     required: true,
     default: "user"
-    // todo : enfore the fact there can be only one funder/broker
+    // todo : enfore the fact there can be only one broker
   },
   onchain_addresses: {
     type: [String],

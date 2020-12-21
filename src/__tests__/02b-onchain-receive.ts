@@ -2,14 +2,13 @@
  * @jest-environment node
  */
 import { filter } from "lodash";
-import { LightningBtcWallet } from "../LightningBtcWallet";
 import { quit } from "../lock";
 import { setupMongoConnection, User } from "../mongodb";
 import { Price } from "../priceImpl";
 import { checkIsBalanced, getUserWallet, lndMain, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
 import { onchainTransactionEventHandler } from "../trigger";
 import { baseLogger, bitcoindClient, btc2sat, sleep } from "../utils";
-import { WalletFactory } from "../walletFactory";
+import { getFunderWallet } from "../walletFactory";
 
 
 const lnService = require('ln-service')
@@ -41,8 +40,7 @@ beforeAll(async () => {
 beforeEach(async () => {
   walletUser0 = await getUserWallet(0)
 
-  const funder = await User.findOne({ role: "funder" })
-  funderWallet = await WalletFactory({ uid: funder._id, user: funder, currency: "BTC", logger: baseLogger })
+  funderWallet = await getFunderWallet({ logger: baseLogger }) 
 
   initBlockCount = await bitcoindClient.getBlockCount()
   initialBalanceUser0 = await walletUser0.getBalance()
