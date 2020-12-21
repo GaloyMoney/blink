@@ -68,17 +68,21 @@ export const sendNotification = async ({uid, title, body, data, logger}: INotifi
 
   logger.info({message}, "sending notification for user %o", uid)
 
-  const response = await admin.messaging().sendToDevice(
-    user.deviceToken,
-    message as any,
-    {
-      // Required for background/quit data-only messages on iOS
-      // contentAvailable: true,
-      // Required for background/quit data-only messages on Android
-      // priority: 'high',
-    },
-    )
+  try {
+    const response = await admin.messaging().sendToDevice(
+      user.deviceToken,
+      message as any,
+      {
+        // Required for background/quit data-only messages on iOS
+        // contentAvailable: true,
+        // Required for background/quit data-only messages on Android
+        // priority: 'high',
+      })
+
+    logger.info({response, uid, title, body, data}, 'notification was sent successfully')
+  } catch(err) {
+    logger.info({err, uid, title, body, data}, 'impossible to send notification')
+  }
 
   // FIXME: any as a workaround to https://github.com/Microsoft/TypeScript/issues/15300
-  logger.info({response, uid, title, body, data}, 'notification was sent successfully')
 }
