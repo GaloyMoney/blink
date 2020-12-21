@@ -49,8 +49,6 @@ export const getTokenFromPhoneIndex = async (index) => {
   const raw_token = await login({ ...entry, logger: baseLogger })
   const token = jwt.verify(raw_token, process.env.JWT_SECRET);
 
-  console.log({entry})
-
   if (entry.username) {
     const { uid } = token
     await User.findOneAndUpdate({ _id: uid }, { username: entry.username })
