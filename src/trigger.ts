@@ -9,6 +9,8 @@ import { IDataNotification } from "./types";
 import { getAuth, baseLogger, LOOK_BACK } from './utils';
 import { WalletFactory } from "./walletFactory";
 import { Price } from "./priceImpl";
+import { Dropbox } from "dropbox";
+
 const crypto = require("crypto")
 const lnService = require('ln-service');
 
@@ -17,12 +19,27 @@ const logger = baseLogger.child({ module: "trigger" })
 const txsReceived = new Set()
 
 export const uploadBackup = async (backup) => {
-  logger.debug({backup}, "updating scb on gcs")
-  const storage = new Storage({ keyFilename: process.env.GCS_APPLICATION_CREDENTIALS })
-  const bucket = storage.bucket('lnd-static-channel-backups')
-  const file = bucket.file(`${process.env.NETWORK}_scb.json`)
-  await file.save(backup)
-  logger.info({backup}, "scb backed up on gcs successfully")
+  logger.debug({ backup }, "updating scb on dbx")
+  try {
+    const dbx = new Dropbox({ accessToken: process.env.DROPBOX_ACCESS_TOKEN })
+    await dbx.filesUpload({ path: `/${process.env.NETWORK}_lnd_scb`, contents: backup })
+    logger.info({ backup }, "scb backed up on dbx successfully")
+  } catch (error) {
+    logger.error({ error }, "scb backup to dbx failed")
+  }
+
+  logger.debug({ backup }, "updating scb on gcs")
+  try {
+    const storage = new Storage({ keyFilename: process.env.GCS_APPLICATION_CREDENTIALS })
+    const bucket = storage.bucket('lnd-static-channel-backups')
+    const file = bucket.file(`${process.env.NETWORK}_lnd_scb`)
+    await file.save(backup)
+    logger.info({ backup }, "scb backed up on gcs successfully")
+  } catch (error) {
+    logger.error({ error }, "scb backup to gcs failed")
+  }
+
+
 }
 
 export async function onchainTransactionEventHandler(tx) {
@@ -132,7 +149,7 @@ export const onChannelOpened = async ({ channel, lnd }) => {
   const { transaction_id } = channel
 
   // TODO: dedupe from onchain
-  const { current_block_height } = await lnService.getHeight({lnd})
+  const { current_block_height } = await lnService.getHeight({ lnd })
   const after = Math.max(0, current_block_height - LOOK_BACK) // this is necessary for tests, otherwise after may be negative
   const { transactions } = await lnService.getChainTransactions({ lnd, after })
 
