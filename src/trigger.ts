@@ -143,9 +143,9 @@ export const onChannelOpened = async ({ channel, lnd }) => {
 
   const metadata = { currency: "BTC", txid: transaction_id, type: "fee" }
 
-  await MainBook.entry("on chain fee")
-    .debit(lightningAccountingPath, fee, { ...metadata, })
-    .credit(lndFee, fee, { ...metadata })
+  await MainBook.entry("channel opening onchain fee")
+    .credit(lightningAccountingPath, fee, { ...metadata, })
+    .debit(lndFee, fee, { ...metadata })
     .commit()
 
   logger.info({ channel, fee, ...metadata }, `open channel fee added to mongodb`)
@@ -169,9 +169,9 @@ export const onChannelClosed = async ({ channel, lnd }) => {
 
   const metadata = { currency: "BTC", txid: transaction_id, type: "fee" }
 
-  await MainBook.entry("on chain fee")
-    .debit(lightningAccountingPath, fee, { ...metadata, })
-    .credit(lndFee, fee, { ...metadata })
+  await MainBook.entry("channel closing onchain fee")
+    .credit(lightningAccountingPath, fee, { ...metadata, })
+    .debit(lndFee, fee, { ...metadata })
     .commit()
 
   logger.info({ channel, fee, ...metadata }, `closed channel fee added to mongodb`)
