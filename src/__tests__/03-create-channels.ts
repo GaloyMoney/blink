@@ -69,7 +69,7 @@ const openChannel = async ({ lnd, other_lnd, socket, is_private = false }) => {
 
   await once(sub, 'channel_opening')
 
-  await mineBlock({lnd, other_lnd, blockHeight: initBlockCount + newBlock})
+  await mineBlockAndSync({ lnd, other_lnd, blockHeight: initBlockCount + newBlock })
 
   baseLogger.debug("mining blocks and waiting for channel being opened")
 
@@ -78,7 +78,7 @@ const openChannel = async ({ lnd, other_lnd, socket, is_private = false }) => {
     // error: https://github.com/alexbosworth/ln-service/issues/122
     // need to investigate.
     // once(sub, 'channel_opened'),
-    mineBlock({ lnd, other_lnd, blockHeight: initBlockCount + newBlock }),
+    mineBlockAndSync({ lnd, other_lnd, blockHeight: initBlockCount + newBlock }),
   ])
 
 
@@ -87,7 +87,7 @@ const openChannel = async ({ lnd, other_lnd, socket, is_private = false }) => {
   sub.removeAllListeners()
 }
 
-const mineBlock = async ({ lnd, other_lnd, blockHeight }) => {
+const mineBlockAndSync = async ({ lnd, other_lnd, blockHeight }) => {
   await bitcoindClient.generateToAddress(newBlock, RANDOM_ADDRESS)
   await waitUntilBlockHeight({ lnd: lndMain, blockHeight })
   await waitUntilBlockHeight({ lnd: other_lnd, blockHeight })
@@ -107,7 +107,7 @@ it('opens channel from lnd1 to lndOutside1', async () => {
     account: lndFee,
     currency: "BTC",
   })
-  expect(finalFeeInLedger - initFeeInLedger).toBe(channelFee)
+  expect(finalFeeInLedger - initFeeInLedger).toBe(channelFee * -1)
 })
 
 it('opens private channel from lndOutside1 to lndOutside2', async () => {
@@ -159,7 +159,7 @@ it('opens and closes channel from lnd1 to lndOutside1', async () => {
   sub.on('channel_closed', (channel) => onChannelClosed({ channel, lnd: lndMain }))
   await lnService.closeChannel({ lnd: lndMain, id: channels[0].id })
 
-  await mineBlock({lnd: lndMain, other_lnd: lndOutside1, blockHeight: initBlockCount + newBlock})
+  await mineBlockAndSync({ lnd: lndMain, other_lnd: lndOutside1, blockHeight: initBlockCount + newBlock })
 
   const { balance: finalFeeInLedger } = await MainBook.balance({
     account: lndFee,
