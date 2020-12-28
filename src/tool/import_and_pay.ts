@@ -1,4 +1,4 @@
-import { LightningBtcWallet } from "../LightningBtcWallet"
+import { LightningUserWallet } from "../LightningUserWallet"
 // import { LightningUserWallet } from "./src/LightningUserWallet"
 // import { setupMongoConnection, User } from "./src/mongodb"
 
@@ -11,7 +11,7 @@ const getUserWallet = async ({phone}) => {
 
   // return new LightningUserWallet({ uid: user._id })
   if (user.currency === "BTC") {
-    return new LightningBtcWallet({ uid: user._id })
+    return new LightningUserWallet({ uid: user._id })
   } else {
     throw Error(`user ${user._id} doesnt have a BTC wallet`)
   }

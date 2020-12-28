@@ -2,7 +2,7 @@ import moment from "moment";
 import { customerPath } from "./ledger";
 import { MainBook, User } from "./mongodb";
 import { ITransaction } from "./types";
-import { LoggedError, sleep } from "./utils"
+import { LoggedError } from "./utils"
 
 const createCsvStringifier = require('csv-writer').createObjectCsvStringifier;
 
@@ -10,24 +10,28 @@ export const regExUsername = ({username}) => new RegExp(`^${username}$`, 'i')
 
 export abstract class UserWallet {
 
-  readonly lastPrice: number
+  static lastPrice: number
   readonly user: any // mongoose object
-  readonly uid: string
-  readonly currency: string
   readonly logger: any
 
-  constructor({ lastPrice, user, uid, currency, logger }) {
-    this.lastPrice = lastPrice
+  constructor({ user, logger }) {
     this.user = user
-    this.uid = uid
-    this.currency = currency
     this.logger = logger
+  }
+
+  // TODO: upgrade price automatically with a timer
+  static updatePrice(price) {
+    UserWallet.lastPrice = price
   }
 
   abstract get accountPath(): string
 
   get accountPathMedici(): Array<string> {
     return this.accountPath.split(":")
+  }
+
+  get uid(): string {
+    return this.user._id
   }
 
   // this needs to be here to be able to call / chain updatePending()
@@ -38,17 +42,60 @@ export abstract class UserWallet {
   async getBalance() {
     await this.updatePending()
 
-    const { balance } = await MainBook.balance({
-      account: this.accountPath,
-      currency: this.currency,
-    })
+    const balances = {
+      "BTC": 0,
+      "USD": 0
+    }
 
-    return - balance
+    // TODO: make this code parrallel instead of serial
+    for (const { id } of this.user.currencies) {
+      const { balance } = await MainBook.balance({
+        account: this.accountPath,
+        currency: id,
+      })
+
+      balances[id] = balance
+    }
+
+    // console.log({balances})
+
+    const priceMap = [
+      {
+        id: "BTC",
+        BTC: 1,
+        USD: 1/UserWallet.lastPrice, // TODO: check this should not be price
+      },
+      {
+        id: "USD",
+        BTC: UserWallet.lastPrice,
+        USD: 1
+      }
+    ]
+
+    // TODO: check forEach return
+    // TODO: add pct
+    let total = priceMap.map(({id, BTC, USD}) => ({
+      id,
+      value: BTC * balances["BTC"] + USD * balances["USD"]
+    }))
+
+    let total_obj = {}
+    total_obj["BTC"] = total.filter(item => item.id === "BTC")[0].value
+    total_obj["USD"] = total.filter(item => item.id === "USD")[0].value
+
+    // total_obj = {"USD": 100, "BTC": 10}
+
+    // console.log({total_obj})
+
+    // TODO: USD
+    return - total_obj["BTC"]
   }
 
   async getRawTransactions() {
     const { results } = await MainBook.ledger({
-      currency: this.currency,
+      // TODO: manage currencies
+
+      // currency: this.currency,
       account: this.accountPath,
       // start_date: startDate,
       // end_date: endDate
@@ -171,22 +218,17 @@ export abstract class UserWallet {
     return true
   }
 
-  getCurrencyEquivalent({ sats, fee, usd }: { sats: number, fee: number, usd?: number }) {
-    let _usd = usd
-    let feeUsd
-  
-    if (!usd) {
-      _usd = this.satsToUsd(sats)
+  static getCurrencyEquivalent({ sats, fee, usd }: { sats: number, fee?: number, usd?: number }) {
+    return {
+      fee, 
+      feeUsd: fee ? UserWallet.satsToUsd(fee): undefined,
+      sats,
+      usd: usd ?? UserWallet.satsToUsd(sats)
     }
-  
-    // TODO: check if fee is always given in sats
-    feeUsd = this.satsToUsd(fee)
-  
-    return { fee, feeUsd, sats, usd: _usd }
   }
   
-  satsToUsd = sats => {
-    const usdValue = this.lastPrice * sats
+  static satsToUsd = sats => {
+    const usdValue = UserWallet.lastPrice * sats
     return usdValue
   }
 }

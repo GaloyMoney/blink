@@ -1,14 +1,15 @@
 const lnService = require('ln-service');
 const assert = require('assert').strict;
 import { createHash, randomBytes } from "crypto";
-import { brokerLndPath, brokerPath, customerPath, lightningAccountingPath } from "./ledger";
+import { brokerLndPath, brokerPath, customerPath, lndAccountingPath } from "./ledger";
 import { disposer, getAsyncRedisClient } from "./lock";
 import { InvoiceUser, MainBook, Transaction, User } from "./mongodb";
 import { sendInvoicePaidNotification } from "./notification";
 import { IAddInvoiceInternalRequest, IPaymentRequest, IFeeRequest } from "./types";
-import { getAuth, LoggedError, sleep, timeout } from "./utils";
-import { regExUsername } from "./wallet";
+import { addContact, getAuth, LoggedError, sleep, timeout } from "./utils";
+import { regExUsername, UserWallet } from "./wallet";
 import moment from "moment"
+import { find } from "lodash";
 
 const util = require('util')
 
@@ -21,35 +22,6 @@ export const FEEMIN = 10 // sats
 
 export type ITxType = "invoice" | "payment" | "onchain_receipt" | "onchain_payment" | "on_us"
 export type payInvoiceResult = "success" | "failed" | "pending" | "already_paid"
-
-const addContact = async ({uid, username}) => {
-  // https://stackoverflow.com/questions/37427610/mongodb-update-or-insert-object-in-array
-
-  const result = await User.update(
-    {
-      _id: uid,
-      "contacts.id": username
-    },
-    {
-      $inc: {"contacts.$.transactionsCount": 1},
-    },
-  )
-
-  if(!result.nModified) {
-    await User.update(
-      {
-        _id: uid
-      },
-      {
-        $addToSet: {
-          contacts: {
-            id: username
-          }
-        }
-      }
-    );
-  }
-}
 
 // this value is here so that it can get mocked.
 // there could probably be a better design
@@ -71,7 +43,6 @@ export const LightningMixin = (superclass) => class extends superclass {
 
   constructor(...args) {
     super(...args)
-    this.isUSD = this.currency === "USD"
   }
 
   async getNodePubkey() {
@@ -89,7 +60,11 @@ export const LightningMixin = (superclass) => class extends superclass {
 
   getExpiration = (input) => {
     // console.log(delay(this.currency).value, delay(this.currency).unit, "getExpiration unit")
-    return input.add(delay(this.currency).value, delay(this.currency).unit)
+    
+    // TODO: manage USD shorter time
+    const currency = "BTC"
+
+    return input.add(delay(currency).value, delay(currency).unit)
   }
 
   async addInvoiceInternal({ sats, usd, memo, selfGenerated, uid, cashback }: IAddInvoiceInternalRequest): Promise<string> {
@@ -118,9 +93,9 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         // uid for cashback. to remove after cashback is finished
         uid: uid || this.uid,
-        usd,
-        username: this.user.username,
-        currency: this.currency,
+        
+        // usd,
+
         selfGenerated,
         cashback,
       }).save()
@@ -278,7 +253,6 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     const { tokens, mtokens, destination, pushPayment, id, routeHint, messages, memoInvoice, payment, cltv_delta, features, max_fee } = await this.validate(params, lightningLogger)
     const { memo: memoPayer, username: input_username } = params
-    let username
 
     // not including message because it contains the preimage and we don't want to log this
     lightningLogger = lightningLogger.child({ decoded: { tokens, destination, pushPayment, id, routeHint, memoInvoice, memoPayer, payment, cltv_delta, features }, params })
@@ -299,42 +273,39 @@ export const LightningMixin = (superclass) => class extends superclass {
       if (destination === await this.getNodePubkey()) {
         const lightningLoggerOnUs = lightningLogger.child({ onUs: true, fee: 0 })
 
-        let payeeUid, payeeCurrency
+        let payeeUser
 
         if (pushPayment) {
+          // pay through username
+          
           if (!input_username) {
             const error = 'a username is required for push payment to the ***REMOVED*** wallet'
             lightningLoggerOnUs.warn({ success: false, error }, error)
             throw new LoggedError(error)
           }
 
-          const payee = await User.findOne({ username: regExUsername({ username: input_username }) })
-          if (!payee) {
-            const error = `this username doesn't exist`
-            lightningLoggerOnUs.warn({ success: false, error }, error)
-            throw new LoggedError(error)
-          }
+          payeeUser = await User.findOne({ username: regExUsername({ username: input_username }) })
 
-          payeeUid = payee._id
-          payeeCurrency = payee.currency
-          username = payee.username
         } else {
           // standard path, user scan another lightning wallet of bitcoin beach invoice
 
           const payeeInvoice = await InvoiceUser.findOne({ _id: id })
           if (!payeeInvoice) {
-            const error = 'User tried to pay invoice from the same wallet, but it was already paid or does not exist'
+            const error = 'User tried to pay invoice from ***REMOVED*** wallet, but it was already paid or does not exist'
             lightningLoggerOnUs.error({ success: false, error }, error)
             throw new LoggedError(error)
-            // FIXME: Using == here because === returns false even for same uids
           }
 
-          payeeUid = payeeInvoice.uid
-          payeeCurrency = payeeInvoice.currency
-          username = payeeInvoice.username
+          payeeUser = await User.findOne({ _id: payeeInvoice.uid })
         }
 
-        if (payeeUid == this.uid) {
+        if (!payeeUser) {
+          const error = `this user doesn't exist`
+          lightningLoggerOnUs.warn({ success: false, error }, error)
+          throw new LoggedError(error)
+        }
+
+        if (String(payeeUser._id) === String(this.uid)) {
           const error = 'User tried to pay himself'
           lightningLoggerOnUs.error({ success: false, error }, error)
           throw new LoggedError(error)
@@ -342,12 +313,14 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         // TODO XXX FIXME:
         // manage the case where a user in USD tries to pay another used in BTC with an onUS transaction
-        assert(this.currency == payeeCurrency)
+        assert(find(this.user.currencies, {id: "BTC"}).pct === find(payeeUser.currencies, {id: "BTC"}).pct)
 
         const sats = tokens
-        const metadata = { currency: this.currency, hash: id, type: "on_us", pending: false, ...this.getCurrencyEquivalent({ sats, fee: 0 }) }
+        const metadata = { currency: this.currency, hash: id, type: "on_us", pending: false, ...UserWallet.getCurrencyEquivalent({ sats, fee: 0 }) }
 
-        const value = this.isUSD ? metadata.usd : sats
+        // TODO: check balance for USD
+        const value = sats
+        // const value = this.isUSD ? metadata.usd : sats
 
         if (balance < value) {
           const error = `balance is too low`
@@ -355,12 +328,14 @@ export const LightningMixin = (superclass) => class extends superclass {
           throw new LoggedError(error)
         }
 
+        console.log({debit: customerPath(payeeUser._id), credit: this.accountPath})
+
         await MainBook.entry(memoInvoice)
-          .debit(customerPath(payeeUid), value, { ...metadata, username: this.user.username})
-          .credit(this.accountPath, value, { ...metadata, memoPayer, username })
+          .debit(customerPath(payeeUser._id), value, { ...metadata, username: this.user.username})
+          .credit(this.accountPath, value, { ...metadata, memoPayer, username: payeeUser.username })
           .commit()
 
-        await sendInvoicePaidNotification({ amount: tokens, uid: payeeUid, hash: id, logger: this.logger })
+        await sendInvoicePaidNotification({ amount: tokens, uid: payeeUser._id, hash: id, logger: this.logger })
 
         if (!pushPayment) {
           const resultDeletion = await InvoiceUser.deleteOne({ _id: id })
@@ -371,13 +346,13 @@ export const LightningMixin = (superclass) => class extends superclass {
         }
         
         // adding contact for the payer
-        if (!!username) {
-          await addContact({uid: this.user._id, username})
+        if (!!payeeUser.username) {
+          await addContact({uid: this.uid, username: payeeUser.username})
         }
         
         // adding contact for the payee
         if (!!this.user.username) {
-          await addContact({uid: payeeUid, username: this.user.username})
+          await addContact({uid: payeeUser._id, username: this.user.username})
         }
 
         lightningLoggerOnUs.info({ success: true, isReward: params.isReward ?? false, ...metadata }, "lightning payment success")
@@ -385,8 +360,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         // cash back // temporary
         const cashback = process.env.CASHBACK
         if (cashback && !params.isReward) {
-          const payee = await User.findOne({ username: regExUsername({ username }) })
-          const payeeIsBusiness = payee ? !!payee?.title : false
+          const payeeIsBusiness = payeeUser ? !!payeeUser?.title : false
           const payerIsBusiness = !!this.user.title
   
           if (payeeIsBusiness && !payerIsBusiness) {
@@ -394,10 +368,10 @@ export const LightningMixin = (superclass) => class extends superclass {
             const sats = Math.floor(value * cash_back_ratio)
 
             const invoiceCashBack = await this.addInvoiceInternal({
-              uid: payee._id,
+              uid: payeeUser._id,
               memo: `Bono de Navidad por usar Bitcoin en su negocio`,
               sats,
-              usd: this.satsToUsd(sats),
+              usd: UserWallet.satsToUsd(sats),
               cashback: true
             })
 
@@ -447,7 +421,10 @@ export const LightningMixin = (superclass) => class extends superclass {
         const sats = tokens + fee
 
         lightningLogger = lightningLogger.child({ route, balance, fee, sats })
-        const metadata = { currency: this.currency, hash: id, type: "payment", pending: true, fee, feeKnownInAdvance, ...this.getCurrencyEquivalent({sats, fee }) }
+        const metadata = {
+          currency: this.currency, hash: id, type: "payment", pending: true,  
+          feeKnownInAdvance, ...UserWallet.getCurrencyEquivalent({ sats, fee })
+        }
 
         const value = this.isUSD ? metadata.usd : sats
 
@@ -464,7 +441,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         // reduce balance from customer first
 
         journal = MainBook.entry(memoInvoice)
-          .debit(lightningAccountingPath, sats, { ...metadata, currency: "BTC" })
+          .debit(lndAccountingPath, sats, { ...metadata, currency: "BTC" })
           .credit(await this.path(), sats, { ...metadata, currency: "BTC" })
 
         if (this.isUSD) {
@@ -576,13 +553,13 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     this.logger.info({ paymentResult, feeDifference, max_fee, actualFee: paymentResult.safe_fee, id }, "logging a fee difference")
 
-    const {usd} = this.getCurrencyEquivalent({sats: feeDifference})
+    const {usd} = UserWallet.getCurrencyEquivalent({sats: feeDifference})
     const metadata = { currency: "BTC", hash: id, related_journal, type: "fee_reimbursement", usd }
 
     // todo: add a reference to the journal entry of the main tx
     await MainBook.entry("fee reimbursement")
       .debit(await this.path(), feeDifference, metadata)
-      .credit(lightningAccountingPath, feeDifference, metadata)
+      .credit(lndAccountingPath, feeDifference, metadata)
       .commit()
   }
 
@@ -682,7 +659,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       this.logger.info({ hash, uid: this.uid, resultDeletion }, "succesfully deleted cancelled invoice")
 
       // TODO: proper testing
-      const result = await Transaction.findOne({ currency: this.currency, hash, type: "on_us", pending: false })
+      const result = await Transaction.findOne({ hash, type: "on_us", pending: false })
       return !!result
 
     } else if (invoice.is_confirmed) {
@@ -711,14 +688,14 @@ export const LightningMixin = (superclass) => class extends superclass {
           const sats = invoice.received
 
           const usd = invoiceUser.usd
-          const metadata = { hash, type: "invoice", ...this.getCurrencyEquivalent({ usd, sats, fee: 0 }) }
+          const metadata = { hash, type: "invoice", ...UserWallet.getCurrencyEquivalent({ usd, sats, fee: 0 }) }
 
           // TODO: brokerLndPath should be cached
           const path = this.isUSD ? await brokerLndPath() : this.accountPath
 
           const entry = MainBook.entry(invoice.description)
             .debit(path, sats, { ...metadata, currency: "BTC" })
-            .credit(lightningAccountingPath, sats, { ...metadata, currency: "BTC" })
+            .credit(lndAccountingPath, sats, { ...metadata, currency: "BTC" })
 
           if (this.isUSD) {
             entry
@@ -766,6 +743,9 @@ export const LightningMixin = (superclass) => class extends superclass {
   // TODO: move to an "admin/ops" wallet
   async updatePendingInvoices() {
 
+    // TODO
+    const currency = "BTC"
+
     const invoices = await InvoiceUser.find({ uid: this.uid })
 
     for (const invoice of invoices) {
@@ -776,7 +756,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       // because it seems lnd still can accept invoice even if they have expired
       // see more: https://github.com/lightningnetwork/lnd/pull/3694
       const expired = moment() > this.getExpiration(moment(timestamp)
-        .add(delay(this.currency).additional_delay_value, "hours")
+        .add(delay(currency).additional_delay_value, "hours")
       )
       await this.updatePendingInvoice({ hash: _id, expired })
     }

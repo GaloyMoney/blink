@@ -5,9 +5,7 @@ export type Currency = "USD" | "BTC"
 export type ISuccess = boolean
 
 export interface ILightningWalletUser {
-  lastPrice: number
   user: any
-  uid: string
   logger: any
 }
 

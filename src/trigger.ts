@@ -3,7 +3,7 @@ import { subscribeToChannels, subscribeToInvoices, subscribeToTransactions, subs
 import { Storage } from '@google-cloud/storage'
 import { find } from "lodash";
 import { InvoiceUser, setupMongoConnection, Transaction, User, MainBook } from "./mongodb";
-import { lightningAccountingPath, openChannelFees } from "./ledger";
+import { lndAccountingPath, openChannelFees } from "./ledger";
 import { sendInvoicePaidNotification, sendNotification } from "./notification";
 import { IDataNotification } from "./types";
 import { getAuth, baseLogger, LOOK_BACK } from './utils';
@@ -84,7 +84,7 @@ export async function onchainTransactionEventHandler(tx) {
       onchainLogger.info({ transactionType: "receipt", pending: true }, "mempool apparence")
     } else {
       // onchain is currently only BTC
-      const wallet = await WalletFactory({ user, uid: user._id, currency: "BTC", logger: onchainLogger })
+      const wallet = await WalletFactory({ user, logger: onchainLogger })
       await wallet.updateOnchainReceipt()
     }
 
@@ -112,7 +112,7 @@ export const onInvoiceUpdate = async invoice => {
     const hash = invoice.id as string
 
     const user = await User.findOne({_id: uid})
-    const wallet = await WalletFactory({ user, uid, currency: invoiceUser.currency, logger })
+    const wallet = await WalletFactory({ user, logger })
     await wallet.updatePendingInvoice({ hash })
     await sendInvoicePaidNotification({ amount: invoice.received, hash, uid, logger })
   } else {
@@ -141,7 +141,7 @@ export const onChannelOpened = async ({ channel, lnd }) => {
   const metadata = { currency: "BTC", txid: transaction_id, type: "fee" }
 
   await MainBook.entry("on chain fee")
-    .debit(lightningAccountingPath, fee, { ...metadata, })
+    .debit(lndAccountingPath, fee, { ...metadata, })
     .credit(openChannelFees, fee, { ...metadata })
     .commit()
 

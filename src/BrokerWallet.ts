@@ -30,15 +30,14 @@ const symbol = 'BTC-PERP'
 
 
 export class BrokerWallet extends OnChainMixin(UserWallet) {
-  readonly currency = "BTC" 
   ftx
   
   get accountPath(): string {
     return customerPath(this.uid)
   }
 
-  constructor({ uid, user, logger, lastPrice }: ILightningWalletUser) {
-    super({ uid, user, logger, currency: "BTC", lastPrice })
+  constructor({ user, logger }: ILightningWalletUser) {
+    super({ user, logger })
     this.ftx = new ccxt.ftx({ apiKey, secret })
     this.logger = logger.child({ topic: "broker" })
   }
@@ -311,7 +310,7 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
     const currency = this.currency
     const sats = btc2sat(btcAmount)
 
-    const metadata = { type: "exchange_rebalance", currency, ...this.getCurrencyEquivalent({sats, fee: 0}) }
+    const metadata = { type: "exchange_rebalance", currency, ...UserWallet.getCurrencyEquivalent({sats, fee: 0}) }
 
     let subLogger = logger.child({...metadata, currency, btcAmount, depositOrWithdraw})
 
@@ -377,7 +376,7 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
         // 
         // await MainBook.entry()
         // .debit(this.accountPath, sats, metadata)
-        // .credit(lightningAccountingPath, sats, metadata)
+        // .credit(lndAccountingPath, sats, metadata)
         // .commit()
 
         await MainBook.entry()
@@ -445,7 +444,7 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
       // onChainPay is doing:
       //
       // await MainBook.entry(memo)
-      // .debit(lightningAccountingPath, sats, metadata)
+      // .debit(lndAccountingPath, sats, metadata)
       // .credit(this.accountPath, sats, metadata)
       // .commit()
       //

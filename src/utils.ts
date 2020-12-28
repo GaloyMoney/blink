@@ -16,6 +16,7 @@ export const LOOK_BACK = 2016
 
 // @ts-ignore
 import { GraphQLError } from "graphql";
+import { User } from "./mongodb"
 
 // FIXME: super ugly hack.
 // for some reason LoggedError get casted as GraphQLError
@@ -33,6 +34,37 @@ const connection_obj = {
   network: process.env.NETWORK, username: 'rpcuser', password: 'rpcpass',
   host: process.env.BITCOINDADDR, port: process.env.BITCOINDPORT
 }
+
+
+export const addContact = async ({uid, username}) => {
+  // https://stackoverflow.com/questions/37427610/mongodb-update-or-insert-object-in-array
+
+  const result = await User.update(
+    {
+      _id: uid,
+      "contacts.id": username
+    },
+    {
+      $inc: {"contacts.$.transactionsCount": 1},
+    },
+  )
+
+  if(!result.nModified) {
+    await User.update(
+      {
+        _id: uid
+      },
+      {
+        $addToSet: {
+          contacts: {
+            id: username
+          }
+        }
+      }
+    );
+  }
+}
+
 
 export const amountOnVout = ({ vout, onchain_addresses }): number => {
   // TODO: check if this is always [0], ie: there is always a single addresses for vout for lnd output
@@ -81,8 +113,8 @@ export function timeout(delay, msg) {
   });
 }
 
-export const createToken = ({ uid, currency, network }) => jwt.sign(
-  { uid, network, currency }, process.env.JWT_SECRET, {
+export const createToken = ({ uid, network }) => jwt.sign(
+  { uid, network }, process.env.JWT_SECRET, {
   // TODO use asymetric signature
   // and verify the signature from the client
   // otherwise we could get subject to DDos attack

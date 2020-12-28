@@ -1,5 +1,5 @@
 import { filter, sumBy } from "lodash";
-import { accountingExpenses, escrowAccountingPath, lightningAccountingPath, openChannelFees } from "./ledger";
+import { accountingExpenses, escrowAccountingPath, lndAccountingPath, openChannelFees } from "./ledger";
 import { InvoiceUser, MainBook, Transaction, User } from "./mongodb";
 import { baseLogger, getAuth } from "./utils";
 import { getBrokerWallet, getFunderWallet, WalletFactory } from "./walletFactory";
@@ -18,7 +18,7 @@ export class AdminWallet {
       logger.trace("updating user %o", user._id)
 
       // A better approach would be to just loop over pending: true invoice/payment
-      userWallet = await WalletFactory({user, uid: user._id, currency: user.currency, logger})
+      userWallet = await WalletFactory({user, logger})
       await userWallet.updatePending()
     }
   }
@@ -65,7 +65,7 @@ export class AdminWallet {
   async getBalanceSheet() {    
     const { balance: assets } = await MainBook.balance({accounts: "Assets", currency: "BTC"}) 
     const { balance: liabilities } = await MainBook.balance({accounts: "Liabilities", currency: "BTC"}) 
-    const { balance: lightning } = await MainBook.balance({accounts: lightningAccountingPath, currency: "BTC"}) 
+    const { balance: lightning } = await MainBook.balance({accounts: lndAccountingPath, currency: "BTC"}) 
     const { balance: expenses } = await MainBook.balance({accounts: accountingExpenses, currency: "BTC"}) 
 
     return {assets, liabilities, lightning, expenses }
@@ -118,7 +118,7 @@ export class AdminWallet {
     const selfInitated = filter(channels, {is_partner_initiated: false})
 
     const mongotxs = await Transaction.aggregate([
-      { $match: { type: "escrow", accounts: lightningAccountingPath }}, 
+      { $match: { type: "escrow", accounts: lndAccountingPath }}, 
       { $group: {_id: "$txid", total: { "$sum": "$debit" } }},
     ])
 
@@ -140,7 +140,7 @@ export class AdminWallet {
       logger.debug({diff}, `update escrow with diff`)
 
       await MainBook.entry("escrow")
-        .debit(lightningAccountingPath, diff, {...metadata, txid})
+        .debit(lndAccountingPath, diff, {...metadata, txid})
         .credit(escrowAccountingPath, diff, {...metadata, txid})
         .commit()
     }

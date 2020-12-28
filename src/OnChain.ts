@@ -2,11 +2,12 @@ const lnService = require('ln-service');
 import { assert } from "console";
 import { intersection, last } from "lodash";
 import moment from "moment";
-import { customerPath, lightningAccountingPath } from "./ledger";
+import { customerPath, lndAccountingPath } from "./ledger";
 import { disposer } from "./lock";
 import { MainBook, Transaction, User } from "./mongodb";
 import { ITransaction, IOnChainPayment, ISuccess } from "./types";
 import { amountOnVout, bitcoindClient, btc2sat, getAuth, LoggedError, LOOK_BACK, myOwnAddressesOnVout } from "./utils";
+import { UserWallet } from "./wallet";
 
 const using = require('bluebird').using
 
@@ -29,7 +30,9 @@ export const OnChainMixin = (superclass) => class extends superclass {
     ])
   }
 
-  async PayeeUser(address: string) { return User.findOne({ onchain_addresses: { $in: address } }) }
+  async PayeeUser(address: string) { 
+    return User.findOne({ onchain_addresses: { $in: address } }) 
+  }
 
   async getOnchainFee({address}: {address: string}): Promise<number | Error> {
     const payeeUser = await this.PayeeUser(address)
@@ -65,8 +68,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
     if (payeeUser) {
       const onchainLoggerOnUs = onchainLogger.child({onUs: true})
 
-      // FIXME: Using == here because === returns false even for same uids
-      if (payeeUser._id == this.uid) {
+      if (String(payeeUser._id) === String(this.uid)) {
         const error = 'User tried to pay himself'
         this.logger.warn({ payeeUser, error, success: false }, error)
         throw new LoggedError(error)
@@ -77,7 +79,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
         currency: this.currency, 
         type: "onchain_on_us",
         pending: false,
-        ...this.getCurrencyEquivalent({ sats, fee: 0 }),
+        ...UserWallet.getCurrencyEquivalent({ sats, fee: 0 }),
         payee_addresses: [address]
       }
 
@@ -140,11 +142,11 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
       {
         const sats = amount + fee
-        const metadata = { currency: this.currency, hash: id, type: "onchain_payment", pending: true, ...this.getCurrencyEquivalent({ sats, fee }) }
+        const metadata = { currency: this.currency, hash: id, type: "onchain_payment", pending: true, ...UserWallet.getCurrencyEquivalent({ sats, fee }) }
 
         // TODO/FIXME refactor. add the transaction first and set the fees in a second tx.
         await MainBook.entry(memo)
-          .debit(lightningAccountingPath, sats, metadata)
+          .debit(lndAccountingPath, sats, metadata)
           .credit(this.accountPath, sats, metadata)
           .commit()
 
@@ -172,7 +174,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
     return last(user.onchain_addresses)
   }
 
-  async getOnChainAddress(): Promise<String | Error> {
+  async getOnChainAddress(): Promise<string | Error> {
     // another option to investigate is to have a master key / client
     // (maybe this could be saved in JWT)
     // and a way for them to derive new key
@@ -196,15 +198,8 @@ export const OnChainMixin = (superclass) => class extends superclass {
     }
 
     try {
-      const user = await User.findOne({ _id: this.uid })
-      if (!user) { // this should not happen. is test that relevant?
-        const error = "no user is associated with this address"
-        this.logger.error({user}, error)
-        throw new LoggedError(error)
-      }
-
-      user.onchain_addresses.push(address)
-      await user.save()
+      this.user.onchain_addresses.push(address)
+      await this.user.save()
 
     } catch (err) {
       const error = `error storing new onchain address to db`
@@ -312,7 +307,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
         pending: true,
         created_at: moment(created_at).unix(),
         sat: sats,
-        usd: this.satsToUsd(sats, this.lastPrice),
+        usd: UserWallet.satsToUsd(sats),
         description: "pending",
         type: "onchain_receipt",
         hash: id,
@@ -396,13 +391,13 @@ export const OnChainMixin = (superclass) => class extends superclass {
             currency: this.currency,
             type, hash: matched_tx.id,
             pending: false,
-            ...this.getCurrencyEquivalent({ sats, fee: 0 }),
+            ...UserWallet.getCurrencyEquivalent({ sats, fee: 0 }),
             payee_addresses: addresses
           }
 
           await MainBook.entry()
             .debit(this.accountPath, sats, metadata)
-            .credit(lightningAccountingPath, sats, metadata)
+            .credit(lndAccountingPath, sats, metadata)
             .commit()
 
           const onchainLogger = this.logger.child({ topic: "payment", protocol: "onchain", transactionType: "receipt", onUs: false })

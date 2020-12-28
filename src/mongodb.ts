@@ -35,15 +35,6 @@ const invoiceUserSchema = new Schema({
   // optional, as BTC wallet doesn't have to set a sat amount when creating the invoice
   usd: Number,
 
-  username: String,
-
-  // currency matchs the user account
-  currency: {
-    type: String,
-    enum: ["USD", "BTC"],
-    default: "BTC",
-  },
-
   timestamp: {
     type: Date,
     default: Date.now
@@ -94,6 +85,7 @@ const UserSchema = new Schema({
   phone: { // TODO we should store country as a separate string
     type: String,
     required: true,
+    unique: true,
   },
   username: {
     type: String,
@@ -110,11 +102,27 @@ const UserSchema = new Schema({
     type: [String],
     default: []
   },
-  currency: {
-    type: String,
-    enum: ["USD", "BTC"],
-    default: "BTC",
+  currencies: {
+    validate: {
+      validator: function(v) {
+        return sumBy(v, 'pct') == 1
+      },
+    },
+    type: [{
+      id: {
+        type: String,
+        enum: ["BTC", "USD"],
+        required: true
+      },
+      pct: {
+        type: Number,
+        required: true,
+        min: 0,
+        max: 1,
+      }
+    }],
     required: true,
+    default: [{id: "BTC", pct: 1}]
   },
   contacts: {
     type: [{
@@ -146,13 +154,6 @@ const UserSchema = new Schema({
   },
 
 })
-
-UserSchema.index({
-  phone: 1,
-  currency: 1,
-}, {
-  unique: true,
-});
 
 UserSchema.index({
   title: 1,
@@ -243,11 +244,29 @@ const transactionSchema = new Schema({
   
   err: String,
   currency: {
-    // TODO: check if an upgrade is needed for this one
     type: String,
     enum: ["USD", "BTC"],
     default: "BTC",
     required: true
+  },
+
+  currencies: {
+    // TODO: refactor with user
+    // TODO setter: sum pct = 100
+    type: [{
+      id: {
+        type: String,
+        enum: ["BTC", "USD"],
+        required: true
+      },
+      pct: {
+        type: Number,
+        required: true
+        // TODO setter: min 0 max 100
+      }
+    }],
+    required: true,
+    default: [{id: "BTC", pct: 1}]
   },
 
   fee: {
@@ -385,10 +404,18 @@ export const setupMongoConnection = async () => {
     baseLogger.fatal(`error connecting to mongodb ${err}`)
     exit(1)
   }
+
+  return mongoose
 }
 
 import { book } from "medici";
+import { sumBy } from "lodash";
 export const MainBook = new book("MainBook")
+
+
+const TransactionWrapper = ({payee, payer, sats}) => {
+
+}
 
 
 // approach below doesn't work
