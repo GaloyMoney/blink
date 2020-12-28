@@ -68,8 +68,8 @@ export const InvoiceUser = mongoose.model("InvoiceUser", invoiceUserSchema)
 // this regex is used to query username in mongodb without consideration of case
 export const getInsensitiveCaseUsername = ({username}) => {
   // we are doing this test to avoid SQLlike injection
-  // as the username string could come raw from anyone
-  if (!username.match(regexUsername)) {
+  // as the username string could come raw from anyone  
+  if (typeof username !== "string" || !username.match(regexUsername)) {
     return null
   }
 
