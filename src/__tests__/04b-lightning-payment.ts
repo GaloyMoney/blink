@@ -148,8 +148,6 @@ functionToTests.forEach(({fn, name}) => {
   
       const user2Txn = await walletPayee.getTransactions()
 
-      console.log({user2Txn, hash})
-
       const user2OnUsTxn = user2Txn.filter(matchTx)
       expect(user2OnUsTxn[0].type).toBe('on_us')
       await checkIsBalanced()
