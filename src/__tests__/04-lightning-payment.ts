@@ -200,26 +200,26 @@ functionToTests.forEach(({fn, name}) => {
       expect(await walletPayee.updatePendingInvoice({ hash })).toBeTruthy()
     }
 
-    const init_cashback = await InvoiceUser.count({cashback: true})
+    const init_cashback = await InvoiceUser.countDocuments({cashback: true})
     
     // a cashback tx
     await paymentOtherGaloyUser({walletPayee: userWallet2, walletPayer: userWallet1})
     
     if (process.env.CASHBACK) {
-      expect(await InvoiceUser.count({cashback: true})).toBe(init_cashback + 1)
+      expect(await InvoiceUser.countDocuments({cashback: true})).toBe(init_cashback + 1)
     }
     
     // a cashback tx
     await paymentOtherGaloyUser({walletPayee: userWallet2, walletPayer: userWallet0})
     
     if (process.env.CASHBACK) {
-      expect(await InvoiceUser.count({cashback: true})).toBe(init_cashback + 2)
+      expect(await InvoiceUser.countDocuments({cashback: true})).toBe(init_cashback + 2)
     }
     
     // not a cashback transaction
     await paymentOtherGaloyUser({walletPayee: userWallet1, walletPayer: userWallet2})
     if (process.env.CASHBACK) {
-      expect(await InvoiceUser.count({cashback: true})).toBe(init_cashback + 2)
+      expect(await InvoiceUser.countDocuments({cashback: true})).toBe(init_cashback + 2)
     }
     
 
@@ -231,10 +231,10 @@ functionToTests.forEach(({fn, name}) => {
     expect(userWallet0.user.contacts[0]).toHaveProperty("id", userWallet2.user.username)
     
     if (process.env.CASHBACK) {
-      const tx_count = await Transaction.count()
+      const tx_count = await Transaction.countDocuments()
       const adminWallet = new AdminWallet()
       await adminWallet.payCashBack()
-      expect(await Transaction.count()).toBe(tx_count + 4)
+      expect(await Transaction.countDocuments()).toBe(tx_count + 4)
     }
 
   })
