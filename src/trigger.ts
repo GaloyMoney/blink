@@ -20,8 +20,8 @@ const txsReceived = new Set()
 
 export const uploadBackup = async (backup) => {
   logger.debug({ backup }, "updating scb on dbx")
-  const dbx = new Dropbox({ accessToken: process.env.DROPBOX_ACCESS_TOKEN })
   try {
+    const dbx = new Dropbox({ accessToken: process.env.DROPBOX_ACCESS_TOKEN })
     await dbx.filesUpload({ path: `/${process.env.NETWORK}_lnd_scb`, contents: backup })
     logger.info({ backup }, "scb backed up on dbx successfully")
   } catch (error) {
@@ -29,9 +29,9 @@ export const uploadBackup = async (backup) => {
   }
 
   logger.debug({ backup }, "updating scb on gcs")
-  const storage = new Storage({ keyFilename: process.env.GCS_APPLICATION_CREDENTIALS })
-  const bucket = storage.bucket('lnd-static-channel-backups')
   try {
+    const storage = new Storage({ keyFilename: process.env.GCS_APPLICATION_CREDENTIALS })
+    const bucket = storage.bucket('lnd-static-channel-backups')
     const file = bucket.file(`${process.env.NETWORK}_lnd_scb`)
     await file.save(backup)
     logger.info({ backup }, "scb backed up on gcs successfully")
