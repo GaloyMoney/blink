@@ -1,15 +1,15 @@
 const lnService = require('ln-service');
 const assert = require('assert').strict;
 import { createHash, randomBytes } from "crypto";
+import { find } from "lodash";
+import moment from "moment";
 import { brokerLndPath, brokerPath, customerPath, lndAccountingPath } from "./ledger";
 import { disposer, getAsyncRedisClient } from "./lock";
-import { InvoiceUser, MainBook, Transaction, User } from "./mongodb";
+import { getInsensitiveCaseUsername, InvoiceUser, MainBook, Transaction, User } from "./mongodb";
 import { sendInvoicePaidNotification } from "./notification";
-import { IAddInvoiceInternalRequest, IPaymentRequest, IFeeRequest } from "./types";
-import { addContact, getAuth, LoggedError, sleep, timeout } from "./utils";
-import { regExUsername, UserWallet } from "./wallet";
-import moment from "moment"
-import { find } from "lodash";
+import { IAddInvoiceInternalRequest, IFeeRequest, IPaymentRequest } from "./types";
+import { addContact, getAuth, LoggedError, timeout } from "./utils";
+import { UserWallet } from "./wallet";
 
 const util = require('util')
 
@@ -283,8 +283,7 @@ export const LightningMixin = (superclass) => class extends superclass {
             lightningLoggerOnUs.warn({ success: false, error }, error)
             throw new LoggedError(error)
           }
-
-          payeeUser = await User.findOne({ username: regExUsername({ username: input_username }) })
+          payeeUser = await User.findOne({ username: getInsensitiveCaseUsername({ username: input_username }) })
 
         } else {
           // standard path, user scan another lightning wallet of bitcoin beach invoice

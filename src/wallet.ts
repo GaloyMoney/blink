@@ -1,12 +1,10 @@
 import moment from "moment";
 import { customerPath } from "./ledger";
-import { MainBook, User } from "./mongodb";
+import { getInsensitiveCaseUsername, MainBook, User } from "./mongodb";
 import { ITransaction } from "./types";
-import { LoggedError } from "./utils"
+import { LoggedError } from "./utils";
 
 const createCsvStringifier = require('csv-writer').createObjectCsvStringifier;
-
-export const regExUsername = ({username}) => new RegExp(`^${username}$`, 'i')
 
 export abstract class UserWallet {
 
@@ -189,7 +187,7 @@ export abstract class UserWallet {
   }
 
   static async usernameExists({ username }): Promise<boolean> {
-    return await User.exists({ username: regExUsername({username}) })
+    return await User.exists({ username: getInsensitiveCaseUsername({username}) })
   }
 
   async setUsername({ username }): Promise<boolean | Error> {
