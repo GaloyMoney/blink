@@ -23,17 +23,23 @@ export const uploadBackup = async (backup) => {
   const dbx = new Dropbox({ accessToken: process.env.DROPBOX_ACCESS_TOKEN })
   try {
     await dbx.filesUpload({ path: `/${process.env.NETWORK}_lnd_scb`, contents: backup })
-    logger.info({ backup }, "scb update to dbx successful")
+    logger.info({ backup }, "scb backed up on dbx successfully")
   } catch (error) {
-    logger.error({ error }, "scb update to dbx failed")
+    logger.error({ error }, "scb backup to dbx failed")
   }
 
   logger.debug({ backup }, "updating scb on gcs")
   const storage = new Storage({ keyFilename: process.env.GCS_APPLICATION_CREDENTIALS })
   const bucket = storage.bucket('lnd-static-channel-backups')
-  const file = bucket.file(`${process.env.NETWORK}_scb.json`)
-  await file.save(backup)
-  logger.info({ backup }, "scb backed up on gcs successfully")
+  try {
+    const file = bucket.file(`${process.env.NETWORK}_lnd_scb`)
+    await file.save(backup)
+    logger.info({ backup }, "scb backed up on gcs successfully")
+  } catch (error) {
+    logger.error({ error }, "scb backup to gcs failed")
+  }
+
+
 }
 
 export async function onchainTransactionEventHandler(tx) {
