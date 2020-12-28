@@ -7,7 +7,7 @@ import { login, TEST_NUMBER } from "./text";
 import * as jwt from 'jsonwebtoken';
 import { baseLogger, LoggedError } from "./utils";
 import { getLastPrice } from "./cache";
-import { regExUsername } from "./wallet";
+import { getInsensitiveCaseUsername } from "./mongodb";
 
 export const WalletFactory = async ({ user, uid, logger, currency = "BTC" }: { user: any, uid: string, currency: string, logger: any }) => {
   const lastPrice = await getLastPrice()
@@ -21,7 +21,7 @@ export const WalletFactory = async ({ user, uid, logger, currency = "BTC" }: { u
 }
 
 export const WalletFromUsername = async ({ username, logger }: { username: string, logger: any }) => {
-  const user = await User.findOne({ username: regExUsername({username}) })
+  const user = await User.findOne({ username: getInsensitiveCaseUsername({username}) })
   if (!user) {
     const error = `User not found`
     logger.warn({username}, error)

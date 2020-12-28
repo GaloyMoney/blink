@@ -65,7 +65,18 @@ invoiceUserSchema.index({ "uid": 1 })
 
 export const InvoiceUser = mongoose.model("InvoiceUser", invoiceUserSchema)
 
+// this regex is used to query username in mongodb without consideration of case
+export const getInsensitiveCaseUsername = ({username}) => {
+  // we are doing this test to avoid SQLlike injection
+  // as the username string could come raw from anyone
+  if (!username.match(regexUsername)) {
+    return null
+  }
 
+  return new RegExp(`^${username}$`, 'i')
+}
+
+export const regexUsername = /(?!^(1|3|bc1|lnbc1))^[0-9a-z_]+$/i
 
 const UserSchema = new Schema({
   created_at: {
@@ -97,7 +108,7 @@ const UserSchema = new Schema({
   },
   username: {
     type: String,
-    match: [/(?!^(1|3|bc1|lnbc1))^[0-9a-z_]+$/i, "Username can only have alphabets, numbers and underscores"],
+    match: [regexUsername, "Username can only have alphabets, numbers and underscores"],
     minlength: 3,
     maxlength: 50,
     index: {
