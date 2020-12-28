@@ -2,9 +2,8 @@
  * @jest-environment node
  */
 import { filter } from "lodash";
-import { LightningUserWallet } from "../LightningUserWallet";
 import { quit } from "../lock";
-import { setupMongoConnection, User } from "../mongodb";
+import { setupMongoConnection } from "../mongodb";
 import { Price } from "../priceImpl";
 import { checkIsBalanced, getUserWallet, lndMain, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
 import { onchainTransactionEventHandler } from "../trigger";
