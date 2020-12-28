@@ -20,7 +20,7 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  initBalance1 = await userWallet1.getBalance()
+  ({BTC: initBalance1} = await userWallet1.getBalances())
   jest.clearAllMocks()
 })
 
@@ -33,7 +33,7 @@ afterAll(async () => {
     // to make this test re-entrant, we need to remove the fund from userWallet1 and delete the user
   // uncomment when necessary
   
-  // const finalBalance = await userWallet1.getBalance()
+  // const finalBalance = await userWallet1.getBalances()
   // const funderWallet = await getFunderWallet({ logger: baseLogger })
 
   // if (!!finalBalance) {
@@ -53,8 +53,7 @@ afterAll(async () => {
 it('add earn adds balance correctly', async () => {
   const getAndVerifyRewards = async () => {
     await userWallet1.addEarn(onBoardingEarnIds)
-    const finalBalance = await userWallet1.getBalance()
-    console.log({finalBalance})
+    const {BTC: finalBalance} = await userWallet1.getBalances()
 
     expect(finalBalance).toBe(onBoardingEarnAmt)
     await checkIsBalanced()

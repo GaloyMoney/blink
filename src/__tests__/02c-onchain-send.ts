@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-import { filter, first, last } from "lodash";
+import { filter, first } from "lodash";
 import { quit } from "../lock";
 import { MainBook, setupMongoConnection } from "../mongodb";
 import { checkIsBalanced, getUserWallet, lndMain, lndOutside1, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
@@ -23,10 +23,6 @@ let userWallet0, userWallet3
 jest.mock('../notification')
 const { sendNotification } = require("../notification");
 
-
-import { AdminWallet } from "../AdminWallet"
-import { BrokerWallet } from "../BrokerWallet";
-
 beforeAll(async () => {
   await setupMongoConnection()
   userWallet0 = await getUserWallet(0)
@@ -35,8 +31,9 @@ beforeAll(async () => {
 })
 
 beforeEach(async () => {
-  initBlockCount = await bitcoindClient.getBlockCount()
-  initialBalanceUser0 = await userWallet0.getBalance()
+  initBlockCount = await bitcoindClient.getBlockCount();
+
+  ({BTC: initialBalanceUser0} = await userWallet0.getBalances())
 })
 
 afterEach(async () => {
@@ -93,7 +90,7 @@ it('Sends onchain payment successfully', async () => {
   // FIXME: does this syntax always take the first match item in the array? (which is waht we want, items are return as newest first)
   const { results: [pendingTxn] } = await MainBook.ledger({ account: userWallet0.accountPath, pending: true })
 
-	const interimBalance = await userWallet0.getBalance()
+	const {BTC: interimBalance} = await userWallet0.getBalances()
 	expect(interimBalance).toBe(initialBalanceUser0 - amount - pendingTxn.fee)
   await checkIsBalanced()
   
@@ -129,18 +126,18 @@ it('Sends onchain payment successfully', async () => {
 	expect(txn.amount).toBe(- amount - fee)
 	expect(txn.type).toBe('onchain_payment')
 
-	const finalBalance = await userWallet0.getBalance()
+	const {BTC: finalBalance} = await userWallet0.getBalances()
 	expect(finalBalance).toBe(initialBalanceUser0 - amount - fee)
 }, 20000)
 
 it('makes onchain on-us transaction', async () => {
   const user3Address = await userWallet3.getOnChainAddress()
-  const initialBalanceUser3 = await userWallet3.getBalance()
+  const {BTC: initialBalanceUser3} = await userWallet3.getBalances()
 
   const paymentResult = await userWallet0.onChainPay({ address: user3Address as string, amount })
 
-  const finalBalanceUser0 = await userWallet0.getBalance()
-  const finalBalanceUser3 = await userWallet3.getBalance()
+  const {BTC: finalBalanceUser0} = await userWallet0.getBalances()
+  const {BTC: finalBalanceUser3} = await userWallet3.getBalances()
 
   expect(paymentResult).toBe(true)
   expect(finalBalanceUser0).toBe(initialBalanceUser0 - amount)
@@ -192,7 +189,10 @@ it('fails to make onchain payment when insufficient balance', async () => {
     lnd: lndOutside1,
     format: 'p2wpkh',
   })
-  const initialBalanceUser3 = await userWallet3.getBalance()
+  const {BTC: initialBalanceUser3} = await userWallet3.getBalances();
+
+  console.log({initialBalanceUser3})
+
   //should fail because user does not have balance to pay for on-chain fee
   await expect(userWallet3.onChainPay({ address: address as string, amount: initialBalanceUser3 })).rejects.toThrow()
 })

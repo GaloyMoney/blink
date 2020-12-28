@@ -73,13 +73,27 @@ const resolvers = {
         language
       }
     },
+
+    // legacy, before handling multi currency account
     wallet: async (_, __, { wallet }) => ([{
       id: wallet.currency,
       currency: wallet.currency,
-      balance: () => wallet.getBalance(),
+      balance: () => wallet.getBalances()["BTC"],
       transactions: () => wallet.getTransactions(),
       csv: () => wallet.getStringCsv()
     }]),
+
+    wallet2: async (_, __, { wallet }) => {
+      const balances = wallet.getBalances()
+
+      return {
+        transactions: wallet.getTransactions(),
+        balances: wallet.user.currencies.map(item => ({
+          id: item.id,
+          balance: balances[item.id],
+        }))
+      }
+    },
     nodeStats: async () => nodeStats({lnd}),
     buildParameters: async () => {
       const { minBuildNumber, lastBuildNumber } = await getMinBuildNumber()

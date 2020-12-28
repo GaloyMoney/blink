@@ -3,19 +3,24 @@ import { customerPath } from "./ledger";
 import { getInsensitiveCaseUsername, MainBook, User } from "./mongodb";
 import { ITransaction } from "./types";
 import { LoggedError } from "./utils";
+const assert = require('assert')
 
 const createCsvStringifier = require('csv-writer').createObjectCsvStringifier;
 
 export abstract class UserWallet {
 
   static lastPrice: number
-  readonly user: any // mongoose object
+  user: any // mongoose object
   readonly logger: any
 
   constructor({ user, logger }) {
     this.user = user
     this.logger = logger
   }
+
+  // async refreshUser() {
+  //   this.user = await User.findOne({ _id: this.uid })
+  // }
 
   // TODO: upgrade price automatically with a timer
   static updatePrice(price) {
@@ -37,7 +42,7 @@ export abstract class UserWallet {
   // there may be better way to architecture this?
   async updatePending() { return }
 
-  async getBalance() {
+  async getBalances() {
     await this.updatePending()
 
     const balances = {
@@ -52,7 +57,9 @@ export abstract class UserWallet {
         currency: id,
       })
 
-      balances[id] = balance
+      // FIXME: is it the right place to have the - sign?
+      assert(balance <= 0)
+      balances[id] = - balance
     }
 
     // console.log({balances})
@@ -77,16 +84,10 @@ export abstract class UserWallet {
       value: BTC * balances["BTC"] + USD * balances["USD"]
     }))
 
-    let total_obj = {}
-    total_obj["BTC"] = total.filter(item => item.id === "BTC")[0].value
-    total_obj["USD"] = total.filter(item => item.id === "USD")[0].value
+    balances["total_in_BTC"] = total.filter(item => item.id === "BTC")[0].value
+    balances["total_in_USD"] = total.filter(item => item.id === "USD")[0].value
 
-    // total_obj = {"USD": 100, "BTC": 10}
-
-    // console.log({total_obj})
-
-    // TODO: USD
-    return - total_obj["BTC"]
+    return balances
   }
 
   async getRawTransactions() {

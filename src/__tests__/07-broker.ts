@@ -238,9 +238,9 @@ it('future1', async () => {
 })
 
 it('getBalance', async () => {
-  await brokerWalletFixture1.getBalance()
+  await brokerWalletFixture1.getBalances()
 })
 
 it('getBalance', async () => {
-  await brokerWalletFixture1.getBalance()
+  await brokerWalletFixture1.getBalances()
 })

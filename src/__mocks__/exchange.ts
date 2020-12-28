@@ -1,4 +1,4 @@
-import { getBalance } from "../exchange"
+import { getBalances } from "../exchange"
 
 it('fetchBalance', async () => {
     const balance = expect.objectContaining({
@@ -14,6 +14,6 @@ it('fetchBalance', async () => {
         }),
     })
 
-    const result = await getBalance()
+    const result = await getBalances()
     expect(result).toEqual(balance)
 })

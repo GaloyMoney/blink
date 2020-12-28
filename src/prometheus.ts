@@ -25,7 +25,8 @@ const lndClosingChannelBalance_g = new client.Gauge({ name: `${prefix}_lnd_closi
 const usdShortPosition_g = new client.Gauge({ name: `${prefix}_usdShortPosition`, help: 'usd short position on ftx' })
 const ftx_btc_g = new client.Gauge({ name: `${prefix}_ftxBtcBalance`, help: 'btc balance in ftx' })
 const ftx_usdPnl_g = new client.Gauge({ name: `${prefix}_ftxUsdPnl`, help: 'usd balance in FTX, which also represents the PNL' })
-const funder_balance_g = new client.Gauge({ name: `${prefix}_funderBalance`, help: 'funder balance' })
+const funder_balance_BTC_g = new client.Gauge({ name: `${prefix}_funderBalance_BTC`, help: 'funder balance BTC' })
+const funder_balance_USD_g = new client.Gauge({ name: `${prefix}_funderBalance_USD`, help: 'funder balance USD' })
 const broker_local_btc_g = new client.Gauge({ name: `${prefix}_brokerLocalBtcBalance`, help: 'btc balance in for the broker in the node' })
 const broker_local_usd_g = new client.Gauge({ name: `${prefix}_brokerLocalUsdBalance`, help: 'usd liabilities for the broker' })
 const broker_profit_g = new client.Gauge({ name: `${prefix}_brokerProfit`, help: 'profit of the broker wallet' })
@@ -66,8 +67,9 @@ const main = async () => {
     userCount_g.set(userCount)
     
     const funderWallet = await getFunderWallet({ logger })
-    const funderBalance = await funderWallet.getBalance()
-    funder_balance_g.set(funderBalance)
+    const funderBalance = await funderWallet.getBalances()
+    funder_balance_BTC_g.set(funderBalance)
+    funder_balance_USD_g.set(funderBalance)
 
 
     const brokerWallet = await getBrokerWallet({ logger })

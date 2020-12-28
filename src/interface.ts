@@ -1,6 +1,6 @@
 
 export interface IWallet {
-  getBalance(): Promise<number>
+  getBalances(): Promise<object>
   getTransactions(): any // TODO
   getInfo(): Promise<object>
 }

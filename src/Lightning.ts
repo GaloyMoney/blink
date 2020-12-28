@@ -266,7 +266,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     // TODO: this should be inside the lock.
     // but getBalance is currently also getting the lock. 
     // --> need a re-entrant mutex or another architecture to have balance within the lock
-    const balance = await this.getBalance()
+    const balance = await this.getBalances()
 
     return await using(disposer(this.uid), async (lock) => {
       // On us transaction
@@ -321,7 +321,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         const value = sats
         // const value = this.isUSD ? metadata.usd : sats
 
-        if (balance < value) {
+        if (balance.total_in_BTC < value) {
           const error = `balance is too low`
           lightningLoggerOnUs.warn({ balance, value, success: false, error }, error)
           throw new LoggedError(error)
@@ -425,9 +425,11 @@ export const LightningMixin = (superclass) => class extends superclass {
           feeKnownInAdvance, ...UserWallet.getCurrencyEquivalent({ sats, fee })
         }
 
-        const value = this.isUSD ? metadata.usd : sats
+        // FIXME usd management
+        // const value = this.isUSD ? metadata.usd : sats
+        const value = sats
 
-        if (balance < value) {
+        if (balance.total_in_BTC < value) {
           const error = `balance is too low`
           lightningLogger.warn({ success: false, error }, error)
           throw new LoggedError(error)

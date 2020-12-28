@@ -44,7 +44,7 @@ beforeEach(async () => {
   funderWallet = await getFunderWallet({ logger: baseLogger }) 
 
   initBlockCount = await bitcoindClient.getBlockCount()
-  initialBalanceUser0 = await walletUser0.getBalance()
+  initialBalanceUser0 = (await walletUser0.getBalances()).BTC
 
   // TODO: seed the Math.random()
   amount_BTC = Math.floor(1 + Math.floor(Math.random() * 100)/100)
@@ -63,7 +63,7 @@ afterAll(async () => {
 })
 
 const onchain_funding = async ({ walletDestination }) => {
-  const initialBalance = await walletDestination.getBalance()
+  const {BTC: initialBalance} = await walletDestination.getBalances()
   const initTransactions = await walletDestination.getTransactions()
 
   const address = await walletDestination.getOnChainAddress()
@@ -77,7 +77,7 @@ const onchain_funding = async ({ walletDestination }) => {
     await waitUntilBlockHeight({ lnd: lndMain, blockHeight: initBlockCount + 6 })
     await checkIsBalanced()
 
-    const balance = await walletDestination.getBalance()
+    const {BTC: balance} = await walletDestination.getBalances()
     expect(balance).toBe(initialBalance + btc2sat(amount_BTC))
 
     const transactions = await walletDestination.getTransactions()
@@ -168,7 +168,7 @@ it('batch send transaction', async () => {
   const walletUser4 = await getUserWallet(4)
   const address4 = await walletUser4.getOnChainAddress()
 
-  const initBalanceUser4 = await walletUser4.getBalance()
+  const {BTC: initBalanceUser4} = await walletUser4.getBalances()
   console.log({initBalanceUser4, initialBalanceUser0})
   
   const output0 = {}
@@ -192,8 +192,8 @@ it('batch send transaction', async () => {
   await waitUntilBlockHeight({ lnd: lndMain, blockHeight: initBlockCount + 6 })
 
   {
-    const balance0 = await walletUser0.getBalance()
-    const balance4 = await walletUser4.getBalance()
+    const {BTC: balance0} = await walletUser0.getBalances()
+    const {BTC: balance4} = await walletUser4.getBalances()
 
     expect(balance0).toBe(initialBalanceUser0 + btc2sat(1))
     expect(balance4).toBe(initBalanceUser4 + btc2sat(2))

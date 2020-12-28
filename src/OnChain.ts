@@ -53,11 +53,11 @@ export const OnChainMixin = (superclass) => class extends superclass {
   async onChainPay({ address, amount, memo }: IOnChainPayment): Promise<ISuccess | Error> {
     let onchainLogger = this.logger.child({ topic: "payment", protocol: "onchain", transactionType: "payment", address, amount, memo })
 
-    const balance = await this.getBalance()
+    const balance = await this.getBalances()
     onchainLogger = onchainLogger.child({ balance })
 
     // quit early if balance is not enough
-    if (balance < amount) {
+    if (balance.total_in_BTC < amount) {
       const error = `balance is too low`
       onchainLogger.warn({ success: false, error }, error)
       throw new LoggedError(error)
@@ -121,7 +121,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
     }
 
     // case where the user doesn't have enough money
-    if (balance < amount + estimatedFee) {
+    if (balance.total_in_BTC < amount + estimatedFee) {
       const error = `balance is too low. have: ${balance} sats, need ${amount + estimatedFee}`
       onchainLogger.warn({balance, amount, estimatedFee, sendTo, success: false }, error)
       throw new LoggedError(error)
@@ -160,18 +160,13 @@ export const OnChainMixin = (superclass) => class extends superclass {
   }
 
   async getLastOnChainAddress(): Promise<String | Error | undefined> {
-    let user = this.user
-
-    if (user.onchain_addresses.length === 0) {
+    if (this.user.onchain_addresses.length === 0) {
       // TODO create one address when a user is created instead?
-      // FIXME this shold not be done in a query but only in a mutation?
+      // FIXME this should not be done in a query but only in a mutation?
       await this.getOnChainAddress()
-
-      // TODO: there should be a way to refresh the user?
-      user = await User.findOne({ _id: this.uid })
     }
 
-    return last(user.onchain_addresses)
+    return last(this.user.onchain_addresses)
   }
 
   async getOnChainAddress(): Promise<string | Error> {

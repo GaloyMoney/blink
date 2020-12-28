@@ -34,8 +34,8 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  initBalanceUsd = await userWalletUsd.getBalance()
-  initBalance2 = await userWallet2.getBalance()
+  initBalanceUsd = await userWalletUsd.getBalances()
+  initBalance2 = await userWallet2.getBalances()
 })
 
 afterEach(async () => {
@@ -68,7 +68,7 @@ it('receives payment from outside', async () => {
   const request = await userWalletUsd.addInvoice({ value: amountInvoiceUsd })
   await lnService.pay({ lnd: lndOutside1, request })
 
-  const finalBalance = await userWalletUsd.getBalance()
+  const finalBalance = await userWalletUsd.getBalances()
   expect(finalBalance).toBe(initBalanceUsd + amountInvoiceUsd)
 
   const { balance: balanceUSD } = await MainBook.balance({
@@ -91,7 +91,7 @@ it('payInvoice', async () => {
   const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: amountInvoice })
   const result = await userWalletUsd.pay({ invoice: request })
   expect(result).toBe("success")
-  const finalBalance = await userWalletUsd.getBalance()
+  const finalBalance = await userWalletUsd.getBalances()
   expect(finalBalance).toBeCloseTo(initBalanceUsd - amountInvoice * lastPrice)
 })
 
@@ -106,13 +106,13 @@ it('on-us should be ok with same currency', async () => {
   const userWalletUsd10 = await getUserWallet(10)
   const request = await userWalletUsd10.addInvoice({value: 0.1, memo: "usd invoice"})
 
-  const balance = await userWalletUsd.getBalance()
+  const balance = await userWalletUsd.getBalances()
   console.log({balance})
 
   const result = await userWalletUsd.pay({ invoice: request })
 
   // TODO:
-  // const finalBalance = await userWalletUsd.getBalance()
+  // const finalBalance = await userWalletUsd.getBalances()
 
   
   expect(result).toBe("success")
