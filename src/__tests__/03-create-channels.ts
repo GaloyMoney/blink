@@ -89,8 +89,7 @@ const openChannel = async ({ lnd, other_lnd, socket, is_private = false }) => {
 
 const mineBlockAndSync = async ({ lnd, other_lnd, blockHeight }) => {
   await bitcoindClient.generateToAddress(newBlock, RANDOM_ADDRESS)
-  await waitUntilBlockHeight({ lnd: lndMain, blockHeight })
-  await waitUntilBlockHeight({ lnd: other_lnd, blockHeight })
+  await Promise.all([waitUntilBlockHeight({ lnd, blockHeight }), waitUntilBlockHeight({ lnd: other_lnd, blockHeight })])
 }
 
 it('opens channel from lnd1 to lndOutside1', async () => {
