@@ -7,7 +7,7 @@ import { brokerLndPath, brokerPath, customerPath, lndAccountingPath } from "./le
 import { disposer, getAsyncRedisClient } from "./lock";
 import { getInsensitiveCaseUsername, InvoiceUser, MainBook, Transaction, User } from "./mongodb";
 import { sendInvoicePaidNotification } from "./notification";
-import { receiptLnd } from "./transaction";
+import { payLnd, receiptLnd } from "./transaction";
 import { IAddInvoiceInternalRequest, IFeeRequest, IPaymentRequest } from "./types";
 import { addContact, getAuth, LoggedError, timeout } from "./utils";
 import { UserWallet } from "./wallet";
@@ -415,44 +415,41 @@ export const LightningMixin = (superclass) => class extends superclass {
       // we are confident enough that there is a possible payment route. let's move forward
       // TODO quote for fees, and also USD for USD users
 
-      let journal
+      let entry
 
       {
+        
         const sats = tokens + fee
 
-        lightningLogger = lightningLogger.child({ route, balance, fee, sats })
         const metadata = {
-          currency: this.currency, hash: id, type: "payment", pending: true,  
+          hash: id, type: "payment", pending: true,  
           feeKnownInAdvance, ...UserWallet.getCurrencyEquivalent({ sats, fee })
         }
 
-        // FIXME usd management
-        // const value = this.isUSD ? metadata.usd : sats
-        const value = sats
+        lightningLogger = lightningLogger.child({ route, balance, ...metadata })
 
-        if (balance.total_in_BTC < value) {
+        // FIXME usd management
+
+        if (balance.total_in_BTC < sats) {
           const error = `balance is too low`
           lightningLogger.warn({ success: false, error }, error)
           throw new LoggedError(error)
         }
 
+        // reduce balance from customer first
+
+        entry = await payLnd({
+          description: memoInvoice,
+          payer: this,
+          sats,
+          metadata,
+        })
+
+
         if (pushPayment) {
           route.messages = messages
         }
 
-        // reduce balance from customer first
-
-        journal = MainBook.entry(memoInvoice)
-          .debit(lndAccountingPath, sats, { ...metadata, currency: "BTC" })
-          .credit(await this.path(), sats, { ...metadata, currency: "BTC" })
-
-        if (this.isUSD) {
-          journal
-            .debit(brokerPath, metadata.usd, { ...metadata, currency: "USD" })
-            .credit(this.accountPath, metadata.usd, { ...metadata, currency: "USD" })
-        }
-
-        await journal.commit()
 
         // there is 3 scenarios for a payment.
         // 1/ payment succeed (function return before TIMEOUT_PAYMENT) and:
@@ -514,12 +511,12 @@ export const LightningMixin = (superclass) => class extends superclass {
             // where multiple payment have the same hash
             // ie: when a payment is being retried
             await Transaction.updateMany({ hash: id }, { pending: false, error: err[1] })
-            await MainBook.void(journal.journal._id, err[1])
+            await MainBook.void(entry.journal._id, err[1])
             lightningLogger.warn({ success: false, err, ...metadata }, `payment error`)
 
           } catch (err_fatal) {
             const error = `ERROR CANCELING PAYMENT ENTRY`
-            lightningLogger.fatal({ err, err_fatal, entry: journal }, error)
+            lightningLogger.fatal({ err, err_fatal, entry }, error)
             throw new LoggedError(error)
           }
 
@@ -536,7 +533,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         const paymentResult = await paymentPromise
 
         if (!feeKnownInAdvance) {
-          await this.recordFeeDifference({ paymentResult, max_fee, id, related_journal: journal.journal._id })
+          await this.recordFeeDifference({ paymentResult, max_fee, id, related_journal: entry.journal._id })
         }
 
         lightningLogger.info({ success: true, paymentResult, ...metadata }, `payment success`)
@@ -685,37 +682,18 @@ export const LightningMixin = (superclass) => class extends superclass {
           // may still not avoid issue from discrenpency between hash and the books
 
           const resultDeletion = await InvoiceUser.deleteOne({ _id: hash, uid: this.uid })
-          this.logger.info({ hash, uid: this.uid, resultDeletion }, "confirmed invoice has been deleted")
+          this.logger.info({ hash, uid: this.uid, resultDeletion }, "invoice has been deleted")
 
           const sats = invoice.received
+
+          const metadata = { hash, type: "invoice", ...UserWallet.getCurrencyEquivalent({ sats, fee: 0 }) }
 
           await receiptLnd({
             description: invoice.description,
             payee: this,
-            hash,
+            metadata,
             sats
           })
-
-            // const usd = invoiceUser.usd
-            // const metadata = { hash, type: "invoice", ...UserWallet.getCurrencyEquivalent({ usd, sats, fee: 0 }) }
-
-            // // TODO: brokerLndPath should be cached
-            // const path = this.isUSD ? await brokerLndPath() : this.accountPath
-
-            // const entry = MainBook.entry(invoice.description)
-            //   .debit(path, sats, { ...metadata, currency: "BTC" })
-            //   .credit(lndAccountingPath, sats, { ...metadata, currency: "BTC" })
-
-            // if (this.isUSD) {
-            //   entry
-            //     .debit(this.accountPath, usd, { ...metadata, currency: "USD" })
-            //     .credit(brokerPath, usd, { ...metadata, currency: "USD" })
-            // }
-
-            // await entry.commit()
-
-          // session.commitTransaction()
-          // session.endSession()
 
           this.logger.info({ topic: "payment", protocol: "lightning", transactionType: "receipt", onUs: false, success: true })
 

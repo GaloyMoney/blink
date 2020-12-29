@@ -166,6 +166,18 @@ const UserSchema = new Schema({
 
 })
 
+// Define getter for pctUsd
+// FIXME: this // An outer value of 'this' is shadowed by this container.
+// https://stackoverflow.com/questions/41944650/this-implicitly-has-type-any-because-it-does-not-have-a-type-annotation
+UserSchema.virtual('pctUsd').get(function (this: typeof UserSchema) {
+  return find(this.currencies, {id: "USD"})?.pct ?? 0
+});
+
+// Define setter virtual method
+UserSchema.virtual('pctBtc').get(function (this: typeof UserSchema) {
+  return find(this.currencies, {id: "BTC"})?.pct ?? 0
+});
+
 UserSchema.index({
   title: 1,
   coordinate: 1,
@@ -420,7 +432,7 @@ export const setupMongoConnection = async () => {
 }
 
 import { book } from "medici";
-import { sumBy } from "lodash";
+import { find, sumBy } from "lodash";
 export const MainBook = new book("MainBook")
 
 

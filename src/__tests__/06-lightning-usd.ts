@@ -79,7 +79,6 @@ it('receives payment from outside', async () => {
   // FIXME toBeCloseTo 1 digits to much higher precise
   expect(finalBalance.USD).toBeCloseTo(initBalanceUsd.USD + usdEq, 1)
   expect(finalBalance.BTC).toBe(0)
-
 })
 
 
