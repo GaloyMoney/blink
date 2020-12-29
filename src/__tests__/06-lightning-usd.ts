@@ -21,7 +21,8 @@ const satPrice = 1/10000
 UserWallet.setCurrentPrice(satPrice) // sats/USD. BTC at 10k
 
 // const amountInvoiceUsd = 50
-const amountInvoice = 10000
+const amountInvoiceReceive = 10000
+const amountInvoiceSend = 5000
 
 beforeAll(async () => {
   await setupMongoConnection()
@@ -69,12 +70,12 @@ afterAll(async () => {
 // })
 
 it('receives payment from outside', async () => {
-  const request = await userWalletUsd.addInvoice({ value: amountInvoice })
+  const request = await userWalletUsd.addInvoice({ value: amountInvoiceReceive })
   await lnService.pay({ lnd: lndOutside1, request })
 
   const finalBalance = await userWalletUsd.getBalances()
 
-  const usdEq = satPrice * amountInvoice
+  const usdEq = satPrice * amountInvoiceReceive
 
   // FIXME toBeCloseTo 1 digits to much higher precise
   expect(finalBalance.USD).toBeCloseTo(initBalanceUsd.USD + usdEq, 1)
@@ -83,32 +84,34 @@ it('receives payment from outside', async () => {
 
 
 it('payInvoice', async () => {
-  const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: amountInvoice })
+  // TODO: manage getFee as well
+
+  const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: amountInvoiceSend })
   const result = await userWalletUsd.pay({ invoice: request })
   expect(result).toBe("success")
   const finalBalance = await userWalletUsd.getBalances()
-  expect(finalBalance).toBeCloseTo(initBalanceUsd - amountInvoice * lastPrice)
+  expect(finalBalance).toBeCloseTo(initBalanceUsd - amountInvoiceSend * lastPrice)
 })
 
-it('on us should fail if different currency', async () => {
-  const userWalletBtc = await getUserWallet(1)
-  const request = await userWalletBtc.addInvoice({value: 1, memo: "btc invoice"})
+// it('on us should fail if different currency', async () => {
+//   const userWalletBtc = await getUserWallet(1)
+//   const request = await userWalletBtc.addInvoice({value: 1, memo: "btc invoice"})
 
-  await expect(userWalletUsd.pay({ invoice: request })).rejects.toThrow()
-})
+//   await expect(userWalletUsd.pay({ invoice: request })).rejects.toThrow()
+// })
 
-it('on-us should be ok with same currency', async () => {
-  const userWalletUsd10 = await getUserWallet(10)
-  const request = await userWalletUsd10.addInvoice({value: 0.1, memo: "usd invoice"})
+// it('on-us should be ok with same currency', async () => {
+//   const userWalletUsd10 = await getUserWallet(10)
+//   const request = await userWalletUsd10.addInvoice({value: 0.1, memo: "usd invoice"})
 
-  const balance = await userWalletUsd.getBalances()
-  console.log({balance})
+//   const balance = await userWalletUsd.getBalances()
+//   console.log({balance})
 
-  const result = await userWalletUsd.pay({ invoice: request })
+//   const result = await userWalletUsd.pay({ invoice: request })
 
-  // TODO:
-  // const finalBalance = await userWalletUsd.getBalances()
+//   // TODO:
+//   // const finalBalance = await userWalletUsd.getBalances()
 
   
-  expect(result).toBe("success")
-})
+//   expect(result).toBe("success")
+// })

@@ -430,6 +430,8 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         // FIXME usd management
 
+        console.log({balance, sats})
+
         if (balance.total_in_BTC < sats) {
           const error = `balance is too low`
           lightningLogger.warn({ success: false, error }, error)
