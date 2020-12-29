@@ -9,7 +9,7 @@ export const receiptLnd = async ({description, payee, hash, sats}) => { // payee
 
   const metadata = { hash, type: "invoice", ...UserWallet.getCurrencyEquivalent({ sats, fee: 0 }) }
   
-  const pctUsd = (find(payee.currencies, {id: "USD"})?.pct ?? 0)
+  const pctUsd = (find(payee.user.currencies, {id: "USD"})?.pct ?? 0)
   const pctBtc = 1 - pctUsd
 
   const entry = MainBook.entry(description)
@@ -31,6 +31,8 @@ export const receiptLnd = async ({description, payee, hash, sats}) => { // payee
       .debit(payee.accountPath, usdEquivalent, { ...metadata, currency: "USD" })
       .credit(brokerPath, usdEquivalent, { ...metadata, currency: "USD" })
   }
+
+  // TODO: log the exchange rate
 
   await entry.commit()
 }

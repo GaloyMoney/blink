@@ -10,7 +10,7 @@ import { UserWallet } from "./wallet";
 
 export const WalletFactory = async ({ user, logger }: { user: any, logger: any }) => {
   const lastPrice = await getLastPrice()
-  UserWallet.updatePrice(lastPrice)
+  UserWallet.setCurrentPrice(lastPrice)
 
   if (user.role === "broker") {
     return new BrokerWallet({ user, logger })

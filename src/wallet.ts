@@ -23,7 +23,7 @@ export abstract class UserWallet {
   // }
 
   // TODO: upgrade price automatically with a timer
-  static updatePrice(price) {
+  static setCurrentPrice(price) {
     UserWallet.lastPrice = price
   }
 

@@ -7,6 +7,7 @@ import { brokerLndPath, brokerPath, customerPath, lndAccountingPath } from "./le
 import { disposer, getAsyncRedisClient } from "./lock";
 import { getInsensitiveCaseUsername, InvoiceUser, MainBook, Transaction, User } from "./mongodb";
 import { sendInvoicePaidNotification } from "./notification";
+import { receiptLnd } from "./transaction";
 import { IAddInvoiceInternalRequest, IFeeRequest, IPaymentRequest } from "./types";
 import { addContact, getAuth, LoggedError, timeout } from "./utils";
 import { UserWallet } from "./wallet";
@@ -688,28 +689,35 @@ export const LightningMixin = (superclass) => class extends superclass {
 
           const sats = invoice.received
 
-          const usd = invoiceUser.usd
-          const metadata = { hash, type: "invoice", ...UserWallet.getCurrencyEquivalent({ usd, sats, fee: 0 }) }
+          await receiptLnd({
+            description: invoice.description,
+            payee: this,
+            hash,
+            sats
+          })
 
-          // TODO: brokerLndPath should be cached
-          const path = this.isUSD ? await brokerLndPath() : this.accountPath
+            // const usd = invoiceUser.usd
+            // const metadata = { hash, type: "invoice", ...UserWallet.getCurrencyEquivalent({ usd, sats, fee: 0 }) }
 
-          const entry = MainBook.entry(invoice.description)
-            .debit(path, sats, { ...metadata, currency: "BTC" })
-            .credit(lndAccountingPath, sats, { ...metadata, currency: "BTC" })
+            // // TODO: brokerLndPath should be cached
+            // const path = this.isUSD ? await brokerLndPath() : this.accountPath
 
-          if (this.isUSD) {
-            entry
-              .debit(this.accountPath, usd, { ...metadata, currency: "USD" })
-              .credit(brokerPath, usd, { ...metadata, currency: "USD" })
-          }
+            // const entry = MainBook.entry(invoice.description)
+            //   .debit(path, sats, { ...metadata, currency: "BTC" })
+            //   .credit(lndAccountingPath, sats, { ...metadata, currency: "BTC" })
 
-          await entry.commit()
+            // if (this.isUSD) {
+            //   entry
+            //     .debit(this.accountPath, usd, { ...metadata, currency: "USD" })
+            //     .credit(brokerPath, usd, { ...metadata, currency: "USD" })
+            // }
+
+            // await entry.commit()
 
           // session.commitTransaction()
           // session.endSession()
 
-          this.logger.info({ topic: "payment", protocol: "lightning", transactionType: "receipt", onUs: false, success: true, ...metadata })
+          this.logger.info({ topic: "payment", protocol: "lightning", transactionType: "receipt", onUs: false, success: true })
 
           return true
         })
