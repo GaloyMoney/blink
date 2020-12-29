@@ -161,6 +161,8 @@ it('opens and closes channel from lnd1 to lndOutside1', async () => {
   const mineBlockPromise = mineBlockAndSync({ lnd: lndMain, other_lnd: lndOutside1, blockHeight: initBlockCount + newBlock })
   await Promise.all([closeChannelPromise, closeChannelEventPromise, mineBlockPromise])
 
+  await sleep(5000)
+
   const { balance: finalFeeInLedger } = await MainBook.balance({
     account: lndFee,
     currency: "BTC",
