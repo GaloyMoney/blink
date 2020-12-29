@@ -7,7 +7,7 @@ import { brokerLndPath, brokerPath, customerPath, lndAccountingPath } from "./le
 import { disposer, getAsyncRedisClient } from "./lock";
 import { getInsensitiveCaseUsername, InvoiceUser, MainBook, Transaction, User } from "./mongodb";
 import { sendInvoicePaidNotification } from "./notification";
-import { payLnd, receiptLnd } from "./transaction";
+import { onUsPayment, payLnd, receiptLnd } from "./transaction";
 import { IAddInvoiceInternalRequest, IFeeRequest, IPaymentRequest } from "./types";
 import { addContact, getAuth, LoggedError, timeout } from "./utils";
 import { UserWallet } from "./wallet";
@@ -311,31 +311,25 @@ export const LightningMixin = (superclass) => class extends superclass {
           throw new LoggedError(error)
         }
 
-        // TODO XXX FIXME:
-        // manage the case where a user in USD tries to pay another used in BTC with an onUS transaction
-        assert(find(this.user.currencies, {id: "BTC"}).pct === find(payeeUser.currencies, {id: "BTC"}).pct)
-
         const sats = tokens
-        const metadata = { currency: this.currency, hash: id, type: "on_us", pending: false, ...UserWallet.getCurrencyEquivalent({ sats, fee: 0 }) }
+        const metadata = { hash: id, type: "on_us", pending: false, ...UserWallet.getCurrencyEquivalent({ sats, fee: 0 }) }
 
-        // TODO: check balance for USD
-        const value = sats
-        // const value = this.isUSD ? metadata.usd : sats
-
-        if (balance.total_in_BTC < value) {
+        if (balance.total_in_BTC < sats) {
           const error = `balance is too low`
-          lightningLoggerOnUs.warn({ balance, value, success: false, error }, error)
+          lightningLoggerOnUs.warn({ balance, sats, success: false, error }, error)
           throw new LoggedError(error)
         }
 
-        console.log({debit: customerPath(payeeUser._id), credit: this.accountPath})
+        await onUsPayment({
+          description: memoInvoice,
+          sats,
+          metadata,
+          payer: this,
+          payeeUser,
+          memoPayer
+        })
 
-        await MainBook.entry(memoInvoice)
-          .debit(customerPath(payeeUser._id), value, { ...metadata, username: this.user.username})
-          .credit(this.accountPath, value, { ...metadata, memoPayer, username: payeeUser.username })
-          .commit()
-
-        await sendInvoicePaidNotification({ amount: tokens, uid: payeeUser._id, hash: id, logger: this.logger })
+        await sendInvoicePaidNotification({ amount: sats, uid: payeeUser._id, hash: id, logger: this.logger })
 
         if (!pushPayment) {
           const resultDeletion = await InvoiceUser.deleteOne({ _id: id })
@@ -365,7 +359,7 @@ export const LightningMixin = (superclass) => class extends superclass {
   
           if (payeeIsBusiness && !payerIsBusiness) {
             const cash_back_ratio = .2
-            const sats = Math.floor(value * cash_back_ratio)
+            const sats = Math.floor(tokens * cash_back_ratio)
 
             const invoiceCashBack = await this.addInvoiceInternal({
               uid: payeeUser._id,

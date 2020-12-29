@@ -1,6 +1,6 @@
 import { brokerLndPath, customerPath, lndAccountingPath } from "../ledger"
 import { MainBook, setupMongoConnection, User } from "../mongodb"
-import { payLnd, receiptLnd } from "../transaction"
+import { onUsPayment, payLnd, receiptLnd } from "../transaction"
 import { UserWallet } from "../wallet"
 
 UserWallet.setCurrentPrice(0.0001) // sats/USD. BTC at 10k
@@ -25,20 +25,30 @@ const expectBalance = async ({account, currency, balance}) => {
 }
 
 
-const walletBTC = {
+const walletBTC: any = {
   user: new User({currencies: [{id: "BTC", pct: 1}]}),
-  accountPath: customerPath("userBTC")
 }
+walletBTC.accountPath = customerPath(walletBTC.user._id)
 
-const walletUSD = {
+const walletBTC2: any = {
+  user: new User({currencies: [{id: "BTC", pct: 1}]}),
+}
+walletBTC2.accountPath = customerPath(walletBTC2.user._id)
+
+const walletUSD: any = {
   user: new User({currencies: [{id: "USD", pct: 1}]}),
-  accountPath: customerPath("userUSD")
 }
+walletUSD.accountPath = customerPath(walletUSD.user._id)
 
-const wallet5050 = {
-  user: new User({ currencies: [{id: "USD", pct: .5}, {id: "BTC", pct: .5}]}),
-  accountPath: customerPath("user5050")
+const walletUSD2: any = {
+  user: new User({currencies: [{id: "USD", pct: 1}]}),
 }
+walletUSD2.accountPath = customerPath(walletUSD2.user._id)
+
+const wallet5050: any = {
+  user: new User({ currencies: [{id: "USD", pct: .5}, {id: "BTC", pct: .5}]}),
+}
+wallet5050.accountPath = customerPath(wallet5050.user._id)
 
 
 describe('receipt', () => {
@@ -158,16 +168,46 @@ describe('send outside', () => {
 })
 
 
-// it('on us payment', async () => {
-  
-  // const payer = {
-  //   currencies: [{id: "BTC", pct: 1}],
-  //   accountPath: customerPath("1234")
-  // }
-  // 
-  // const payee = {
-  //   currencies: [{id: "BTC", pct: 1}],
-  //   accountPath: lndAccountingPath
-  // }
+describe('on us payment', () => {
 
-// })
+  it('onUsBtcOnly', async () => {
+  
+    const payer = walletBTC
+    const payee = walletBTC2
+  
+    await onUsPayment({
+      description: "desc",
+      sats: 1000,
+      metadata: {type: "on_us"},
+      payer,
+      payeeUser: payee.user,
+      memoPayer: null
+    })
+  
+    await expectBalance({account: payer.accountPath, currency: "BTC", balance: 1000})
+    await expectBalance({account: payee.accountPath, currency: "BTC", balance: -1000})
+    await expectBalance({account: payer.accountPath, currency: "USD", balance: 0})
+    await expectBalance({account: payee.accountPath, currency: "USD", balance: 0})
+  })
+
+  it('onUsUSDOnly', async () => {
+  
+    const payer = walletUSD
+    const payee = walletUSD2
+  
+    await onUsPayment({
+      description: "desc",
+      sats: 1000,
+      metadata: {type: "on_us"},
+      payer,
+      payeeUser: payee.user,
+      memoPayer: null
+    })
+  
+    await expectBalance({account: payer.accountPath, currency: "USD", balance: 0.1})
+    await expectBalance({account: payee.accountPath, currency: "USD", balance: -0.1})
+    await expectBalance({account: payer.accountPath, currency: "BTC", balance: 0})
+    await expectBalance({account: payee.accountPath, currency: "BTC", balance: 0})
+  })
+
+})
