@@ -109,6 +109,33 @@ it('opens channel from lnd1 to lndOutside1', async () => {
   expect(finalFeeInLedger - initFeeInLedger).toBe(channelFee * -1)
 })
 
+it('opens and closes channel from lnd1 to lndOutside1', async () => {
+  const socket = `lnd-outside-1:9735`
+  await openChannel({ lnd: lndMain, other_lnd: lndOutside1, socket })
+
+  const { channels } = await lnService.getChannels({ lnd: lndMain })
+  expect(channels.length).toEqual(channelLengthMain + 3)
+  const { balance: initFeeInLedger } = await MainBook.balance({
+    account: lndFee,
+    currency: "BTC",
+  })
+
+  const sub = lnService.subscribeToChannels({ lnd: lndMain })
+  const closeChannelPromise = lnService.closeChannel({ lnd: lndMain, id: channels[0].id })
+  const closeChannelEventPromise = sub.once('channel_closed', (channel) => onChannelClosed({ channel, lnd: lndMain }))
+  const mineBlockPromise = mineBlockAndSync({ lnd: lndMain, other_lnd: lndOutside1, blockHeight: initBlockCount + newBlock })
+  await Promise.all([closeChannelPromise, mineBlockPromise])
+
+  await sleep(5000)
+
+  const { balance: finalFeeInLedger } = await MainBook.balance({
+    account: lndFee,
+    currency: "BTC",
+  })
+
+  expect(finalFeeInLedger - initFeeInLedger).toBe(channelFee * -1)
+})
+
 it('opens private channel from lndOutside1 to lndOutside2', async () => {
   const socket = `lnd-outside-2:9735`
 
@@ -142,33 +169,6 @@ it('returns correct nodeStats', async () => {
   const { peersCount, channelsCount } = await nodeStats({ lnd: lndMain })
   expect(peersCount).toBe(1)
   expect(channelsCount).toBe(channelLengthMain + 2)
-})
-
-it('opens and closes channel from lnd1 to lndOutside1', async () => {
-  const socket = `lnd-outside-1:9735`
-  await openChannel({ lnd: lndMain, other_lnd: lndOutside1, socket })
-
-  const { channels } = await lnService.getChannels({ lnd: lndMain })
-  expect(channels.length).toEqual(channelLengthMain + 3)
-  const { balance: initFeeInLedger } = await MainBook.balance({
-    account: lndFee,
-    currency: "BTC",
-  })
-
-  const sub = lnService.subscribeToChannels({ lnd: lndMain })
-  const closeChannelPromise = lnService.closeChannel({ lnd: lndMain, id: channels[0].id })
-  const closeChannelEventPromise = sub.once('channel_closed', (channel) => onChannelClosed({ channel, lnd: lndMain }))
-  const mineBlockPromise = mineBlockAndSync({ lnd: lndMain, other_lnd: lndOutside1, blockHeight: initBlockCount + newBlock })
-  await Promise.all([closeChannelPromise, closeChannelEventPromise, mineBlockPromise])
-
-  await sleep(5000)
-
-  const { balance: finalFeeInLedger } = await MainBook.balance({
-    account: lndFee,
-    currency: "BTC",
-  })
-
-  expect(finalFeeInLedger - initFeeInLedger).toBe(channelFee * -1)
 })
 
 it('escrow update 1', async () => {
