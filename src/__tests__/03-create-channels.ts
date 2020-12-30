@@ -114,7 +114,7 @@ it('opens and closes channel from lnd1 to lndOutside1', async () => {
   await openChannel({ lnd: lndMain, other_lnd: lndOutside1, socket })
 
   const { channels } = await lnService.getChannels({ lnd: lndMain })
-  expect(channels.length).toEqual(channelLengthMain + 3)
+  expect(channels.length).toEqual(channelLengthMain + 2)
   const { balance: initFeeInLedger } = await MainBook.balance({
     account: lndFee,
     currency: "BTC",
