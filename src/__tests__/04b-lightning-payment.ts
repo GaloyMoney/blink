@@ -81,25 +81,27 @@ const createInvoiceHash = () => {
 
 const functionToTests = [
   { 
-    name: "getFee + pay",
+    name: "getFee+Pay",
+    initialFee: 0,
     fn: function fn(wallet) {
-      return (input) => {
-        wallet.getLightningFee(input);
+      return async (input) => {
+        await wallet.getLightningFee(input);
         return wallet.pay(input)
       }
     }
   },
   {
-    name: "direct pay",
+    name: "directPay",
+    initialFee: FEECAP,
     fn: function fn(wallet) {
-      return (input) => {
+      return async (input) => {
         return wallet.pay(input)
       }
     },
   }
 ]
 
-functionToTests.forEach(({fn, name}) => {
+functionToTests.forEach(({fn, name, initialFee}) => {
   it(`simple payInvoice ${name}`, async () => {
     const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: amountInvoice })
     const result = await fn(userWallet1)({ invoice: request })
@@ -222,7 +224,7 @@ functionToTests.forEach(({fn, name}) => {
     expect(finalBalance).toBe(initialBalance - amountInvoice - fee)
   })
 
-  it(`pay hodl invoice ${name}`, async () => {
+  it(`payHodlInvoice-${name}`, async () => {
     const {id, secret} = createInvoiceHash()
 
     const { request } = await lnService.createHodlInvoice({ id, lnd: lndOutside1, tokens: amountInvoice });
@@ -230,7 +232,8 @@ functionToTests.forEach(({fn, name}) => {
 
     expect(result).toBe("pending")
     const {BTC: balanceBeforeSettlement} = await userWallet1.getBalances()
-    expect(balanceBeforeSettlement).toBe(initBalance1 - amountInvoice * (1 + FEECAP))
+    expect(balanceBeforeSettlement).toBe(initBalance1 - amountInvoice * (1 + initialFee))
+    
     // FIXME: necessary to not have openHandler ?
     // https://github.com/alexbosworth/ln-service/issues/122
     await lnService.settleHodlInvoice({ lnd: lndOutside1, secret });
@@ -241,7 +244,7 @@ functionToTests.forEach(({fn, name}) => {
     expect(finalBalance).toBe(initBalance1 - amountInvoice)
   }, 60000)
 
-  it(`don't settle hodl invoice`, async () => {
+  it(`don't settle hodl invoice ${name}`, async () => {
     const {id} = createInvoiceHash()
 
     const { request } = await lnService.createHodlInvoice({ id, lnd: lndOutside1, tokens: amountInvoice });
@@ -251,7 +254,7 @@ functionToTests.forEach(({fn, name}) => {
     console.log("payment has timeout. status is pending.")
 
     const {BTC: intermediateBalance} = await userWallet1.getBalances()
-    expect(intermediateBalance).toBe(initBalance1 - (amountInvoice * (1 + FEECAP)))
+    expect(intermediateBalance).toBe(initBalance1 - (amountInvoice * (1 + initialFee)))
 
     await lnService.cancelHodlInvoice({ id, lnd: lndOutside1 });
 
