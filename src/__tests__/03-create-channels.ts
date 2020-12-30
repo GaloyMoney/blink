@@ -168,7 +168,7 @@ it('opens and closes channel from lnd1 to lndOutside1', async () => {
     currency: "BTC",
   })
 
-  expect(finalFeeInLedger - initFeeInLedger).toBe(channelFee)
+  expect(finalFeeInLedger - initFeeInLedger).toBe(channelFee * -1)
 })
 
 it('escrow update 1', async () => {
