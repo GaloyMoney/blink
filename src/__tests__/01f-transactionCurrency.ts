@@ -1,5 +1,6 @@
 import { brokerLndPath, customerPath, lndAccountingPath } from "../ledger"
 import { MainBook, setupMongoConnection, User } from "../mongodb"
+import { rebalance } from "../transaction"
 import { onUsPayment, payLnd, receiptLnd } from "../transaction"
 import { UserWallet } from "../wallet"
 
@@ -24,29 +25,32 @@ const expectBalance = async ({account, currency, balance}) => {
   expect(balanceResult).toBe(balance)
 }
 
+const fullBTCmeta = {currencies: [{id: "BTC", pct: 1}]}
+const fullUSDmeta = {currencies: [{id: "USD", pct: 1}]}
+const _5050meta = {currencies: [{id: "USD", pct: .5}, {id: "BTC", pct: .5}]}
 
 const walletBTC: any = {
-  user: new User({currencies: [{id: "BTC", pct: 1}]}),
+  user: new User(fullBTCmeta),
 }
 walletBTC.accountPath = customerPath(walletBTC.user._id)
 
 const walletBTC2: any = {
-  user: new User({currencies: [{id: "BTC", pct: 1}]}),
+  user: new User(fullBTCmeta),
 }
 walletBTC2.accountPath = customerPath(walletBTC2.user._id)
 
 const walletUSD: any = {
-  user: new User({currencies: [{id: "USD", pct: 1}]}),
+  user: new User(fullUSDmeta),
 }
 walletUSD.accountPath = customerPath(walletUSD.user._id)
 
 const walletUSD2: any = {
-  user: new User({currencies: [{id: "USD", pct: 1}]}),
+  user: new User(fullUSDmeta),
 }
 walletUSD2.accountPath = customerPath(walletUSD2.user._id)
 
 const wallet5050: any = {
-  user: new User({ currencies: [{id: "USD", pct: .5}, {id: "BTC", pct: .5}]}),
+  user: new User(_5050meta),
 }
 wallet5050.accountPath = customerPath(wallet5050.user._id)
 
@@ -330,4 +334,26 @@ describe('on us payment', () => {
     await expectBalance({account: payee.accountPath, currency: "USD", balance: -0.1})
   })
 
+})
+
+describe('rebalance', () => {
+
+  it('BtcTo5050', async () => {
+
+    const wallet = walletBTC
+  
+    // todo: a first payment
+
+    await rebalance({
+      description: "rebalance",
+      sats: 1000,
+      metadata: {type: "rebalance"},
+      wallet,
+    })
+  
+    // await expectBalance({account: payer.accountPath, currency: "BTC", balance: 1000})
+    // await expectBalance({account: payee.accountPath, currency: "BTC", balance: -1000})
+    // await expectBalance({account: payer.accountPath, currency: "USD", balance: 0})
+    // await expectBalance({account: payee.accountPath, currency: "USD", balance: 0})
+  })
 })

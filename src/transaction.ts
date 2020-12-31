@@ -1,3 +1,4 @@
+import { find } from "lodash"
 import { brokerLndPath, customerPath, lndAccountingPath } from "./ledger"
 import { MainBook } from "./mongodb"
 import { UserWallet } from "./wallet"
@@ -89,5 +90,40 @@ export const onUsPayment = async ({description, sats, metadata, payer, payeeUser
 
   await entry.commit()
 
+  return entry
+}
+
+export const rebalance = async ({description, metadata, wallet, newTarget = undefined}) => {
+  const brokerPath = await brokerLndPath()
+  
+  const balances = wallet.getBalances()
+
+  const expectedBtc = find(wallet.user.currencies, {id: "BTC"}) * balances.total_in_BTC
+  const expectedUsd = find(wallet.user.currencies, {id: "USD"}) * balances.total_in_USD
+
+  const diffBtcNeeded = expectedBtc - balances.BTC 
+  const diffUsdNeeded = expectedUsd - balances.USD
+
+  const entry = MainBook.entry(description)
+
+  // buy btc
+  if (diffBtcNeeded > 0) {    
+    entry
+      .debit(wallet.accountPath, diffBtcNeeded, { ...metadata, currency: "BTC" })
+      .credit(brokerPath, diffBtcNeeded, { ...metadata, currency: "BTC" })
+
+      .credit(wallet.accountPath, diffUsdNeeded, { ...metadata, currency: "USD"})
+      .debit(brokerPath, diffUsdNeeded, { ...metadata, currency: "USD" })
+  // sell btc
+  } else {
+    entry
+      .credit(wallet.accountPath, diffBtcNeeded, { ...metadata, currency: "BTC" })
+      .debit(brokerPath, diffBtcNeeded, { ...metadata, currency: "BTC" })
+
+      .debit(wallet.accountPath, diffUsdNeeded, { ...metadata, currency: "USD"})
+      .credit(brokerPath, diffUsdNeeded, { ...metadata, currency: "USD" })
+  }
+
+  await entry.commit()
   return entry
 }
