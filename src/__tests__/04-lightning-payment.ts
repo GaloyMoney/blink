@@ -214,7 +214,7 @@ functionToTests.forEach(({fn, name, initialFee}) => {
     // a cashback tx
     await paymentOtherGaloyUser({walletPayee: userWallet2, walletPayer: userWallet0})
     
-    await sleep(1000)
+    await sleep(5000)
 
     if (process.env.CASHBACK) {
       expect(await InvoiceUser.countDocuments({cashback: true})).toBe(init_cashback + 2)
