@@ -422,9 +422,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         lightningLogger = lightningLogger.child({ route, balance, ...metadata })
 
-        // FIXME usd management
-
-        console.log({balance, sats})
+        // TODO usd management for balance
 
         if (balance.total_in_BTC < sats) {
           const error = `balance is too low`

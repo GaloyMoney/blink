@@ -1,11 +1,12 @@
 /**
  * @jest-environment node
  */
-import { setupMongoConnection } from "../mongodb"
+import { setupMongoConnection, User } from "../mongodb"
 import { BrokerWallet } from "../BrokerWallet";
 import { baseLogger } from "../utils";
 import { quit } from "../lock";
 import { getTokenFromPhoneIndex } from "../walletFactory";
+import { UserWallet } from "../wallet";
 const mongoose = require("mongoose");
 const util = require('util')
 
@@ -196,6 +197,8 @@ const ftxHas = {
   withdraw: true
 }
 
+const satPrice = 1/10000
+UserWallet.setCurrentPrice(satPrice) // sats/USD. BTC at 10k
 
 const ccxt = require('ccxt')
 
@@ -218,8 +221,8 @@ beforeAll(async () => {
 
   ({ uid } = await getTokenFromPhoneIndex(7))
 
-  brokerWalletFixture0 = new BrokerWallet({ user: null, uid, logger: baseLogger, lastPrice: 10000 })
-  brokerWalletFixture1 = new BrokerWallet({ user: null, uid, logger: baseLogger, lastPrice: 10000 })
+  brokerWalletFixture0 = new BrokerWallet({ user: new User(), logger: baseLogger })
+  brokerWalletFixture1 = new BrokerWallet({ user: new User(), logger: baseLogger })
 })
 
 afterAll(async () => {

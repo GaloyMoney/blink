@@ -238,9 +238,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
     const lnd_incoming_filtered = lnd_incoming_txs.filter(tx => tx.is_confirmed === confirmed)
 
-    const { onchain_addresses } = await User.findOne({ _id: this.uid }, { onchain_addresses: 1 })
-
-    const user_matched_txs = lnd_incoming_filtered.filter(tx => intersection(tx.output_addresses, onchain_addresses).length > 0)
+    const user_matched_txs = lnd_incoming_filtered.filter(tx => intersection(tx.output_addresses, this.user.onchain_addresses).length > 0)
 
     return user_matched_txs
   }

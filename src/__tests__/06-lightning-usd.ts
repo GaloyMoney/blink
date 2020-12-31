@@ -1,17 +1,16 @@
 /**
  * @jest-environment node
  */
-import { BrokerWallet } from "../BrokerWallet";
-import { customerPath } from "../ledger";
 import { quit } from "../lock";
-import { InvoiceUser, MainBook, setupMongoConnection } from "../mongodb";
+import { setupMongoConnection } from "../mongodb";
 import { Price } from "../priceImpl";
 import { checkIsBalanced, getUserWallet, lndOutside1, mockGetExchangeBalance } from "../tests/helper";
-import { baseLogger, getAmount, getHash } from "../utils";
+import { baseLogger } from "../utils";
+import { UserWallet } from "../wallet";
+
 
 const lnService = require('ln-service')
 const mongoose = require("mongoose")
-import { UserWallet } from "../wallet"
 
 let userWalletUsd, initBalanceUsd
 let userWallet2, initBalance2
@@ -84,13 +83,14 @@ it('receives payment from outside', async () => {
 
 
 it('payInvoice', async () => {
-  // TODO: manage getFee as well
-
+  // TODO: manage direct payment (without getFee) as well
+  
   const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: amountInvoiceSend })
+  await userWalletUsd.getLightningFee({ invoice: request })
   const result = await userWalletUsd.pay({ invoice: request })
   expect(result).toBe("success")
-  const finalBalance = await userWalletUsd.getBalances()
-  expect(finalBalance).toBeCloseTo(initBalanceUsd - amountInvoiceSend * lastPrice)
+  const balances = await userWalletUsd.getBalances()
+  expect(balances.USD).toBeCloseTo(initBalanceUsd.USD - amountInvoiceSend * lastPrice)
 })
 
 // it('on us should fail if different currency', async () => {

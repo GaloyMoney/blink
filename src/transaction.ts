@@ -68,16 +68,12 @@ export const onUsPayment = async ({description, sats, metadata, payer, payeeUser
     .credit(payer.accountPath, sats * payer.user.pctBtc, { ...metadata, memoPayer, username: payeeUser.username, currency: "BTC" })
 
   if (payeeUser.pctBtc > payer.user.pctBtc) {
-    console.log("case1")
     entry.credit(brokerPath, sats * (payeeUser.pctBtc - payer.user.pctBtc), { ...metadata, currency: "BTC" })
   } else if (payeeUser.pctBtc < payer.user.pctBtc) {
-    console.log("case2")
     entry.debit(brokerPath, sats * (payer.user.pctBtc - payeeUser.pctBtc), { ...metadata, currency: "BTC" })
   }
 
   if (!!payer.user.pctUsd || !!payeeUser.pctUsd) {
-    console.log("case3")
-
     const usdEq = sats * UserWallet.lastPrice
 
     entry

@@ -43,15 +43,8 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
   }
 
   async getLocalLiabilities() { 
-    const { balance: usd } = await MainBook.balance({
-      account: brokerPath,
-      currency: "USD", 
-    })
-
-    const { balance: satsLnd } = await MainBook.balance({
-      account: this.accountPath,
-      currency: "BTC", 
-    })
+    // FIXME harmonize the capitalzation for USD/usd
+    const { USD: usd, BTC: satsLnd } = await this.getBalances()
 
     // TODO: calculate PnL for the broker
     // this will influence this account.
