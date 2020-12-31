@@ -167,7 +167,7 @@ functionToTests.forEach(({fn, name, initialFee}) => {
     expect(finalBalance).toBe(initBalance1 - amountInvoice)
   })
 
-  it(`payInvoiceToAnotherGaloyUser ${name}`, async () => {
+  it(`payInvoiceToAnotherGaloyUser-${name}`, async () => {
     const memo = "my memo as a payer"
 
     const paymentOtherGaloyUser = async ({walletPayer, walletPayee}) => {
@@ -208,6 +208,7 @@ functionToTests.forEach(({fn, name, initialFee}) => {
     await paymentOtherGaloyUser({walletPayee: userWallet2, walletPayer: userWallet1})
     
     if (process.env.CASHBACK) {
+      console.log({invoices0: await InvoiceUser.find({})})
       expect(await InvoiceUser.countDocuments({cashback: true})).toBe(init_cashback + 1)
     }
     
@@ -215,8 +216,9 @@ functionToTests.forEach(({fn, name, initialFee}) => {
     await paymentOtherGaloyUser({walletPayee: userWallet2, walletPayer: userWallet0})
     
     await sleep(5000)
-
+    
     if (process.env.CASHBACK) {
+      console.log({invoices1: await InvoiceUser.find({})})
       expect(await InvoiceUser.countDocuments({cashback: true})).toBe(init_cashback + 2)
     }
     
