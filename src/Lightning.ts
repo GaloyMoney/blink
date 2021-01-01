@@ -389,7 +389,7 @@ export const LightningMixin = (superclass) => class extends superclass {
           const payeeIsBusiness = payee ? !!payee?.title : false
           const payerIsBusiness = !!this.user.title
 
-          console.log({payeeIsBusiness, payerIsBusiness, payee}, "entering backback loop")
+          console.log({payeeIsBusiness, payerIsBusiness, payee, payer: this.user.title}, "entering backback loop")
 
           if (payeeIsBusiness && !payerIsBusiness) {
             const cash_back_ratio = .2
