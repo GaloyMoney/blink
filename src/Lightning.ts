@@ -384,12 +384,13 @@ export const LightningMixin = (superclass) => class extends superclass {
         // cash back // temporary
         const cashback = process.env.CASHBACK
         if (cashback && !params.isReward) {
-          console.log("entering backback loop")
 
           const payee = await User.findOne({ username: getInsensitiveCaseUsername({ username }) })
           const payeeIsBusiness = payee ? !!payee?.title : false
           const payerIsBusiness = !!this.user.title
-  
+
+          console.log({payeeIsBusiness, payerIsBusiness, payee}, "entering backback loop")
+
           if (payeeIsBusiness && !payerIsBusiness) {
             const cash_back_ratio = .2
             const sats = Math.floor(value * cash_back_ratio)
