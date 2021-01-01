@@ -9,6 +9,7 @@ import { UserWallet } from "./wallet";
 
 
 export const WalletFactory = async ({ user, logger }: { user: any, logger: any }) => {
+  // FIXME: update price on event outside of the wallet factory
   const lastPrice = await getLastPrice()
   UserWallet.setCurrentPrice(lastPrice)
 

@@ -79,34 +79,4 @@ export class LightningUserWallet extends OnChainMixin(LightningMixin(UserWallet)
     return {success, message}
   }
 
-  async addInvoice({ value = undefined, memo = undefined, selfGenerated = true }: IAddBTCInvoiceRequest): Promise<string> {
-
-    let sats, usd
-
-    // value is not mandatory for btc currency
-    // the payer can set the amount himself
-    if (!!value) {
-      sats = value
-      usd = UserWallet.satsToUsd(sats)
-    }
-
-    const request = await super.addInvoiceInternal({sats, usd, memo, selfGenerated })
-
-    return request
-  }
-
-  // former USD
-  // async addInvoice({ value, memo }: IAddUSDInvoiceRequest): Promise<string> {
-  //   if (!value) {
-  //     throw Error("USD Wallet need to have an amount when creating an invoice")
-  //   }
-
-  //   const usd = value
-  //   const satValue = value / this.lastPrice
-
-  //   const request = await super.addInvoiceInternal({sats: satValue, usd, memo})
-
-  //   return request
-  // }
-
 }

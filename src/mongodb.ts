@@ -257,7 +257,8 @@ const transactionSchema = new Schema({
       "invoice", "payment", "on_us", "fee_reimbursement", // lightning
       "onchain_receipt", "onchain_payment", "onchain_on_us", // onchain
       "fee", "escrow", // channel-related
-      "exchange_rebalance"//
+      "exchange_rebalance", // send/receive btc from the exchange
+      "user_rebalance" // buy/sell btc in the user wallet
     ]
   },
 
@@ -275,9 +276,11 @@ const transactionSchema = new Schema({
     required: true
   },
 
+  // used as metadata only to know for a particular transaction what was the split between
+  // USD and BTC
+  // TODO implement this to make it relevant for the user
   currencies: {
     // TODO: refactor with user
-    // TODO setter: sum pct = 100
     type: [{
       id: {
         type: String,
@@ -286,12 +289,11 @@ const transactionSchema = new Schema({
       },
       pct: {
         type: Number,
-        required: true
-        // TODO setter: min 0 max 100
+        required: true,
+        min: 0,
+        max: 1,
       }
     }],
-    required: true,
-    default: [{id: "BTC", pct: 1}]
   },
 
   fee: {

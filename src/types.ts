@@ -11,9 +11,8 @@ export interface ILightningWalletUser {
 
 // Lightning
 
-export interface IAddInvoiceInternalRequest {
-  usd: number,
-  sats: number,
+export interface IAddInvoiceRequest {
+  value: number,
   memo: string | undefined,
   selfGenerated?: boolean,
 

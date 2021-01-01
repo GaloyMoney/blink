@@ -3,13 +3,14 @@ import { customerPath } from "./ledger";
 import { MainBook, User } from "./mongodb";
 import { ITransaction } from "./types";
 import { LoggedError } from "./utils";
+const assert = require('assert')
 
 const createCsvStringifier = require('csv-writer').createObjectCsvStringifier;
 
 export abstract class UserWallet {
 
   static lastPrice: number
-  user: any // mongoose object
+  user: typeof User // mongoose object
   readonly logger: any
 
   constructor({ user, logger }) {

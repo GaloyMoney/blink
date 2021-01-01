@@ -161,7 +161,6 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
   async getLastOnChainAddress(): Promise<String | Error | undefined> {
     if (this.user.onchain_addresses.length === 0) {
-      // TODO create one address when a user is created instead?
       // FIXME this should not be done in a query but only in a mutation?
       await this.getOnChainAddress()
     }
@@ -221,6 +220,14 @@ export const OnChainMixin = (superclass) => class extends superclass {
   }
 
   async getOnchainReceipt({confirmed}: {confirmed: boolean}) {
+    
+    // optimization to remove the need to fetch lnd when no address
+    // mainly useful for testing purpose
+    // we could only generate an onchain_address the first time the client request it
+    // as opposed to the first time the client log in
+    if (!this.user.onchain_addresses.length) {
+      return []
+    }
 
     const lnd_incoming_txs = await this.getOnChainTransactions({ lnd: this.lnd, incoming: true })
     
@@ -287,7 +294,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
     // }
 
     const unconfirmed_promise = unconfirmed.map(async ({ transaction, id, created_at }) => {
-      const { sats, addresses } = await this.getSatsAndAddress(transaction)
+      const { sats, addresses } = await this.getSatsAndAddressPerTx(transaction)
       return { sats, addresses, id, created_at }
     })
 
@@ -314,7 +321,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
   }
 
   // raw encoded transaction
-  async getSatsAndAddress(tx) {
+  async getSatsAndAddressPerTx(tx) {
     const {vout} = await bitcoindClient.decodeRawTransaction(tx)
 
     //   vout: [
@@ -342,15 +349,13 @@ export const OnChainMixin = (superclass) => class extends superclass {
     //   }
     // ]
 
-    // TODO: dedupe from getOnchainReceipt
-    const { onchain_addresses } = await User.findOne({ _id: this.uid }, { onchain_addresses: 1 })
-
     // we have to look at the precise vout because lnd sums up the value at the transaction level, not at the vout level.
     // ie: if an attacker send 10 to user A at Galoy, and 10 to user B at galoy in a sinle transaction,
     // both would be credited 20, unless we do the below filtering.
-    const value = amountOnVout({vout, onchain_addresses})
-    const addresses = myOwnAddressesOnVout({vout, onchain_addresses})
+    const value = amountOnVout({vout, onchain_addresses: this.user.onchain_addresses})
     const sats = btc2sat(value)
+
+    const addresses = myOwnAddressesOnVout({vout, onchain_addresses: this.user.onchain_addresses})
 
     return { sats, addresses }
   }
@@ -376,7 +381,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
         if (!mongotx) {
 
-          const {sats, addresses} = await this.getSatsAndAddress(matched_tx.transaction)
+          const {sats, addresses} = await this.getSatsAndAddressPerTx(matched_tx.transaction)
 
           assert(matched_tx.tokens >= sats)
 

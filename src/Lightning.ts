@@ -1,14 +1,13 @@
 const lnService = require('ln-service');
 const assert = require('assert').strict;
 import { createHash, randomBytes } from "crypto";
-import { find } from "lodash";
 import moment from "moment";
-import { brokerLndPath, brokerPath, customerPath, lndAccountingPath } from "./ledger";
+import { brokerLndPath, lndAccountingPath } from "./ledger";
 import { disposer, getAsyncRedisClient } from "./lock";
 import { InvoiceUser, MainBook, Transaction, User } from "./mongodb";
 import { sendInvoicePaidNotification } from "./notification";
 import { onUsPayment, payLnd, receiptLnd } from "./transaction";
-import { IAddInvoiceInternalRequest, IFeeRequest, IPaymentRequest } from "./types";
+import { IAddInvoiceRequest, IFeeRequest, IPaymentRequest } from "./types";
 import { addContact, getAuth, LoggedError, timeout } from "./utils";
 import { UserWallet } from "./wallet";
 
@@ -68,7 +67,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     return input.add(delay(currency).value, delay(currency).unit)
   }
 
-  async addInvoiceInternal({ sats, usd, memo, selfGenerated, uid, cashback }: IAddInvoiceInternalRequest): Promise<string> {
+  async addInvoice({ value, memo, selfGenerated, uid, cashback }: IAddInvoiceRequest): Promise<string> {
     let request, id
 
     const expires_at = this.getExpiration(moment()).toDate()
@@ -76,7 +75,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     try {
       const result = await lnService.createInvoice({
         lnd: this.lnd,
-        tokens: sats,
+        tokens: value,
         description: memo,
         expires_at,
       })
@@ -108,7 +107,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       throw new LoggedError(error)
     }
 
-    this.logger.info({ sats, usd, memo, currency: this.currency, selfGenerated, id, uid: this.uid }, "a new invoice has been added")
+    this.logger.info({ value, memo, currency: this.currency, selfGenerated, id, uid: this.uid }, "a new invoice has been added")
 
     return request
   }
@@ -727,13 +726,14 @@ export const LightningMixin = (superclass) => class extends superclass {
     // TODO
     const currency = "BTC"
 
+    // TODO: hydrates invoices from User?
     const invoices = await InvoiceUser.find({ uid: this.uid })
 
     for (const invoice of invoices) {
       const { _id, timestamp } = invoice
 
       // FIXME
-      // adding a buffer on the expiration timeline before which we delete the invoice 
+      // adding a time-buffer on the expiration before we delete the invoice 
       // because it seems lnd still can accept invoice even if they have expired
       // see more: https://github.com/lightningnetwork/lnd/pull/3694
       const expired = moment() > this.getExpiration(moment(timestamp)

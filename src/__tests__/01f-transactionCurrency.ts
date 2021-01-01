@@ -3,13 +3,23 @@ import { MainBook, setupMongoConnection, User } from "../mongodb"
 import { rebalance } from "../transaction"
 import { onUsPayment, payLnd, receiptLnd } from "../transaction"
 import { UserWallet } from "../wallet"
+import { WalletFactory } from "../walletFactory"
+import { baseLogger } from "../utils";
 
-UserWallet.setCurrentPrice(0.0001) // sats/USD. BTC at 10k
 
 let mongoose
 
+let walletBTC
+
 beforeAll(async () => {
   mongoose = await setupMongoConnection()
+
+  walletBTC = await WalletFactory({user: new User(fullBTCmeta), logger: baseLogger})
+
+
+  // FIXME: price is set twice. override the price by wallet factory
+  UserWallet.setCurrentPrice(0.0001) // sats/USD. BTC at 10k
+
 });
 
 afterEach(async () => {
@@ -29,10 +39,7 @@ const fullBTCmeta = {currencies: [{id: "BTC", pct: 1}]}
 const fullUSDmeta = {currencies: [{id: "USD", pct: 1}]}
 const _5050meta = {currencies: [{id: "USD", pct: .5}, {id: "BTC", pct: .5}]}
 
-const walletBTC: any = {
-  user: new User(fullBTCmeta),
-}
-walletBTC.accountPath = customerPath(walletBTC.user._id)
+
 
 const walletBTC2: any = {
   user: new User(fullBTCmeta),
@@ -338,22 +345,28 @@ describe('on us payment', () => {
 
 describe('rebalance', () => {
 
-  it('BtcTo5050', async () => {
+  it('BtcNoOp', async () => {
 
     const wallet = walletBTC
   
-    // todo: a first payment
+    await receiptLnd({
+      description: "first tx to have a balance",
+      payee: walletBTC,
+      metadata: { type: "invoice" },
+      sats: 1000,
+    })
+
+    await expectBalance({account: wallet.accountPath, currency: "BTC", balance: -1000})
+    await expectBalance({account: lndAccountingPath, currency: "BTC", balance: 1000})
 
     await rebalance({
       description: "rebalance",
-      sats: 1000,
-      metadata: {type: "rebalance"},
+      metadata: {type: "user_rebalance"},
       wallet,
     })
-  
-    // await expectBalance({account: payer.accountPath, currency: "BTC", balance: 1000})
-    // await expectBalance({account: payee.accountPath, currency: "BTC", balance: -1000})
-    // await expectBalance({account: payer.accountPath, currency: "USD", balance: 0})
-    // await expectBalance({account: payee.accountPath, currency: "USD", balance: 0})
+
+    await expectBalance({account: wallet.accountPath, currency: "BTC", balance: -1000})
+    await expectBalance({account: lndAccountingPath, currency: "BTC", balance: 1000})
+
   })
 })

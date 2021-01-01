@@ -96,10 +96,10 @@ export const onUsPayment = async ({description, sats, metadata, payer, payeeUser
 export const rebalance = async ({description, metadata, wallet, newTarget = undefined}) => {
   const brokerPath = await brokerLndPath()
   
-  const balances = wallet.getBalances()
+  const balances = await wallet.getBalances()
 
-  const expectedBtc = find(wallet.user.currencies, {id: "BTC"}) * balances.total_in_BTC
-  const expectedUsd = find(wallet.user.currencies, {id: "USD"}) * balances.total_in_USD
+  const expectedBtc = wallet.user.pctBtc * balances.total_in_BTC
+  const expectedUsd = wallet.user.pctUsd * balances.total_in_USD
 
   const diffBtcNeeded = expectedBtc - balances.BTC 
   const diffUsdNeeded = expectedUsd - balances.USD
@@ -115,15 +115,18 @@ export const rebalance = async ({description, metadata, wallet, newTarget = unde
       .credit(wallet.accountPath, diffUsdNeeded, { ...metadata, currency: "USD"})
       .debit(brokerPath, diffUsdNeeded, { ...metadata, currency: "USD" })
   // sell btc
-  } else {
+  } else if (diffBtcNeeded < 0) {
     entry
       .credit(wallet.accountPath, diffBtcNeeded, { ...metadata, currency: "BTC" })
       .debit(brokerPath, diffBtcNeeded, { ...metadata, currency: "BTC" })
 
       .debit(wallet.accountPath, diffUsdNeeded, { ...metadata, currency: "USD"})
       .credit(brokerPath, diffUsdNeeded, { ...metadata, currency: "USD" })
+  } else {
+    // no-op
+    return null
   }
 
   await entry.commit()
-  return entry
+  return null
 }
