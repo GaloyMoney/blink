@@ -9,18 +9,19 @@ import { baseLogger } from "../utils";
 
 let mongoose
 
-let walletBTC
+let walletBTC, walletUSD
 
 beforeAll(async () => {
   mongoose = await setupMongoConnection()
+});
 
+beforeEach(async () => {
   walletBTC = await WalletFactory({user: new User(fullBTCmeta), logger: baseLogger})
-
+  walletUSD = await WalletFactory({user: new User(fullUSDmeta), logger: baseLogger})
 
   // FIXME: price is set twice. override the price by wallet factory
   UserWallet.setCurrentPrice(0.0001) // sats/USD. BTC at 10k
-
-});
+})
 
 afterEach(async () => {
   await mongoose.connection.db.dropCollection("medici_journals")
@@ -35,8 +36,8 @@ const expectBalance = async ({account, currency, balance}) => {
   expect(balanceResult).toBe(balance)
 }
 
-const fullBTCmeta = {currencies: [{id: "BTC", pct: 1}]}
-const fullUSDmeta = {currencies: [{id: "USD", pct: 1}]}
+const fullBTCmeta = {currencies: [{id: "BTC", pct: 1}], phone: "1234"}
+const fullUSDmeta = {currencies: [{id: "USD", pct: 1}], phone: "2345"}
 const _5050meta = {currencies: [{id: "USD", pct: .5}, {id: "BTC", pct: .5}]}
 
 
@@ -45,11 +46,6 @@ const walletBTC2: any = {
   user: new User(fullBTCmeta),
 }
 walletBTC2.accountPath = customerPath(walletBTC2.user._id)
-
-const walletUSD: any = {
-  user: new User(fullUSDmeta),
-}
-walletUSD.accountPath = customerPath(walletUSD.user._id)
 
 const walletUSD2: any = {
   user: new User(fullUSDmeta),
@@ -366,6 +362,76 @@ describe('rebalance', () => {
     })
 
     await expectBalance({account: wallet.accountPath, currency: "BTC", balance: -1000})
+    await expectBalance({account: lndAccountingPath, currency: "BTC", balance: 1000})
+
+  })
+
+  it('Btcto5050', async () => {
+
+    const wallet = walletBTC
+  
+    await receiptLnd({
+      description: "first tx to have a balance",
+      payee: wallet,
+      metadata: { type: "invoice" },
+      sats: 1000,
+    })
+
+    await expectBalance({account: wallet.accountPath, currency: "BTC", balance: -1000})
+    await expectBalance({account: lndAccountingPath, currency: "BTC", balance: 1000})
+
+    wallet.user.currencies = _5050meta.currencies
+    const error = wallet.user.validateSync()
+    expect(error).toBeFalsy()
+
+    await rebalance({
+      description: "rebalance",
+      metadata: {type: "user_rebalance"},
+      wallet,
+    })
+
+    await expectBalance({account: wallet.accountPath, currency: "BTC", balance: -500})
+    await expectBalance({account: wallet.accountPath, currency: "USD", balance: -0.05})
+
+    await expectBalance({account: await brokerLndPath(), currency: "BTC", balance: -500})
+    await expectBalance({account: await brokerLndPath(), currency: "USD", balance: 0.05})
+    await expectBalance({account: lndAccountingPath, currency: "BTC", balance: 1000})
+
+  })
+
+  it('Usdto5050', async () => {
+
+    const wallet = walletUSD
+  
+    await receiptLnd({
+      description: "first tx to have a balance",
+      payee: wallet,
+      metadata: { type: "invoice" },
+      sats: 1000,
+    })
+
+    await expectBalance({account: wallet.accountPath, currency: "BTC", balance: 0})
+    await expectBalance({account: await brokerLndPath(), currency: "BTC", balance: -1000})
+    await expectBalance({account: lndAccountingPath, currency: "BTC", balance: 1000})
+
+    await expectBalance({account: wallet.accountPath, currency: "USD", balance: -0.10})
+    await expectBalance({account: await brokerLndPath(), currency: "USD", balance: 0.10})
+
+    wallet.user.currencies = _5050meta.currencies
+    const error = wallet.user.validateSync()
+    expect(error).toBeFalsy()
+
+    await rebalance({
+      description: "rebalance",
+      metadata: {type: "user_rebalance"},
+      wallet,
+    })
+
+    await expectBalance({account: wallet.accountPath, currency: "BTC", balance: -500})
+    await expectBalance({account: wallet.accountPath, currency: "USD", balance: -0.05})
+
+    await expectBalance({account: await brokerLndPath(), currency: "BTC", balance: -500})
+    await expectBalance({account: await brokerLndPath(), currency: "USD", balance: 0.05})
     await expectBalance({account: lndAccountingPath, currency: "BTC", balance: 1000})
 
   })

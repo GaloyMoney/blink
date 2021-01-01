@@ -29,6 +29,9 @@ const HIGH_BOUND_LEVERAGE = 3
 const symbol = 'BTC-PERP'
 
 
+export type IBuyOrSell = "sell" | "buy" | null
+
+
 export class BrokerWallet extends OnChainMixin(UserWallet) {
   ftx
   
@@ -258,8 +261,6 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
   static isOrderNeeded({ usdLiability, usdExposure, btcPrice }) {
 
     const {ratio} = this.getExposureRatio({ usdLiability, usdExposure })
-
-    type IBuyOrSell = "sell" | "buy" | null
 
     let usdOrderAmount, btcAmount
     let buyOrSell: IBuyOrSell = null

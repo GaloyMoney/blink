@@ -93,7 +93,7 @@ export const onUsPayment = async ({description, sats, metadata, payer, payeeUser
   return entry
 }
 
-export const rebalance = async ({description, metadata, wallet, newTarget = undefined}) => {
+export const rebalance = async ({description, metadata, wallet}) => {
   const brokerPath = await brokerLndPath()
   
   const balances = await wallet.getBalances()
@@ -101,27 +101,30 @@ export const rebalance = async ({description, metadata, wallet, newTarget = unde
   const expectedBtc = wallet.user.pctBtc * balances.total_in_BTC
   const expectedUsd = wallet.user.pctUsd * balances.total_in_USD
 
-  const diffBtcNeeded = expectedBtc - balances.BTC 
-  const diffUsdNeeded = expectedUsd - balances.USD
+  const diffBtc = expectedBtc - balances.BTC
+  const btcAmount = Math.abs(diffBtc)
+  const usdAmount = Math.abs(expectedUsd - balances.USD)
+
+  const buyOrSell = !!diffBtc ? diffBtc > 0 ? "buy": "sell": null 
 
   const entry = MainBook.entry(description)
 
-  // buy btc
-  if (diffBtcNeeded > 0) {    
+  // user buy btc
+  if (buyOrSell === "buy") {    
     entry
-      .debit(wallet.accountPath, diffBtcNeeded, { ...metadata, currency: "BTC" })
-      .credit(brokerPath, diffBtcNeeded, { ...metadata, currency: "BTC" })
+      .debit(wallet.accountPath, btcAmount, { ...metadata, currency: "BTC" })
+      .credit(brokerPath, btcAmount, { ...metadata, currency: "BTC" })
 
-      .credit(wallet.accountPath, diffUsdNeeded, { ...metadata, currency: "USD"})
-      .debit(brokerPath, diffUsdNeeded, { ...metadata, currency: "USD" })
-  // sell btc
-  } else if (diffBtcNeeded < 0) {
+      .credit(wallet.accountPath, usdAmount, { ...metadata, currency: "USD"})
+      .debit(brokerPath, usdAmount, { ...metadata, currency: "USD" })
+  // user sell btc
+  } else if (buyOrSell === "sell") {
     entry
-      .credit(wallet.accountPath, diffBtcNeeded, { ...metadata, currency: "BTC" })
-      .debit(brokerPath, diffBtcNeeded, { ...metadata, currency: "BTC" })
+      .credit(wallet.accountPath, btcAmount, { ...metadata, currency: "BTC" })
+      .debit(brokerPath, btcAmount, { ...metadata, currency: "BTC" })
 
-      .debit(wallet.accountPath, diffUsdNeeded, { ...metadata, currency: "USD"})
-      .credit(brokerPath, diffUsdNeeded, { ...metadata, currency: "USD" })
+      .debit(wallet.accountPath, usdAmount, { ...metadata, currency: "USD"})
+      .credit(brokerPath, usdAmount, { ...metadata, currency: "USD" })
   } else {
     // no-op
     return null
