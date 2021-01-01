@@ -122,11 +122,11 @@ it('opens and closes channel from lnd1 to lndOutside1', async () => {
 
   const sub = lnService.subscribeToChannels({ lnd: lndMain })
   const closeChannelPromise = lnService.closeChannel({ lnd: lndMain, id: channels[0].id })
-  const closeChannelEventPromise = sub.once('channel_closed', (channel) => onChannelClosed({ channel, lnd: lndMain }))
+  const closeChannelEventPromise = sub.on('channel_closed', (channel) => onChannelClosed({ channel, lnd: lndMain }))
   const mineBlockPromise = mineBlockAndSync({ lnd: lndMain, other_lnd: lndOutside1, blockHeight: initBlockCount + newBlock })
   await Promise.all([closeChannelPromise, mineBlockPromise])
 
-  await sleep(5000)
+  await sleep(10000)
 
   const { balance: finalFeeInLedger } = await MainBook.balance({
     account: lndFee,
