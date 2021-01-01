@@ -3303,6 +3303,13 @@ double-ended-queue@^2.1.0-0:
   resolved "https://registry.yarnpkg.com/double-ended-queue/-/double-ended-queue-2.1.0-0.tgz#103d3527fd31528f40188130c841efdd78264e5c"
   integrity sha1-ED01J/0xUo9AGIEwyEHv3XgmTlw=
 
+dropbox@^8.2.0:
+  version "8.2.0"
+  resolved "https://registry.yarnpkg.com/dropbox/-/dropbox-8.2.0.tgz#b3d2244424685d978761e3a9aea34625eb9422a3"
+  integrity sha512-lA/Bb7ZWPaeDK+S4AIeAAlPc49nwbrTlgMSLO5Nghg6FfhqhAKdICtpENviwb0YT1Zgn1NmYk1LCJfiyrJ7lVQ==
+  dependencies:
+    node-fetch "^2.6.1"
+
 dtrace-provider@~0.8:
   version "0.8.8"
   resolved "https://registry.yarnpkg.com/dtrace-provider/-/dtrace-provider-0.8.8.tgz#2996d5490c37e1347be263b423ed7b297fb0d97e"

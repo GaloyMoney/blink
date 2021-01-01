@@ -229,8 +229,6 @@ functionToTests.forEach(({fn, name}) => {
 
     expect(userWallet0.user.contacts.length).toBe(1)
     expect(userWallet0.user.contacts[0]).toHaveProperty("id", userWallet2.user.username)
-
-    expect(userWallet2.user.contacts.length).toBe(2)
     
     if (process.env.CASHBACK) {
       const tx_count = await Transaction.count()

@@ -9,6 +9,8 @@ import { IDataNotification } from "./types";
 import { getAuth, baseLogger, LOOK_BACK } from './utils';
 import { WalletFactory } from "./walletFactory";
 import { Price } from "./priceImpl";
+import { Dropbox } from "dropbox";
+
 const crypto = require("crypto")
 const lnService = require('ln-service');
 
@@ -20,12 +22,27 @@ const logger = baseLogger.child({ module: "trigger" })
 const txsReceived = new Set()
 
 export const uploadBackup = async (backup) => {
+  logger.debug({ backup }, "updating scb on dbx")
+  try {
+    const dbx = new Dropbox({ accessToken: process.env.DROPBOX_ACCESS_TOKEN })
+    await dbx.filesUpload({ path: `/${process.env.NETWORK}_lnd_scb`, contents: backup })
+    logger.info({ backup }, "scb backed up on dbx successfully")
+  } catch (error) {
+    logger.error({ error }, "scb backup to dbx failed")
+  }
+
   logger.debug({ backup }, "updating scb on gcs")
-  const storage = new Storage({ keyFilename: process.env.GCS_APPLICATION_CREDENTIALS })
-  const bucket = storage.bucket('lnd-static-channel-backups')
-  const file = bucket.file(`${process.env.NETWORK}_scb.json`)
-  await file.save(backup)
-  logger.info({ backup }, "scb backed up on gcs successfully")
+  try {
+    const storage = new Storage({ keyFilename: process.env.GCS_APPLICATION_CREDENTIALS })
+    const bucket = storage.bucket('lnd-static-channel-backups')
+    const file = bucket.file(`${process.env.NETWORK}_lnd_scb`)
+    await file.save(backup)
+    logger.info({ backup }, "scb backed up on gcs successfully")
+  } catch (error) {
+    logger.error({ error }, "scb backup to gcs failed")
+  }
+
+
 }
 
 export async function onchainTransactionEventHandler(tx) {
@@ -39,7 +56,7 @@ export async function onchainTransactionEventHandler(tx) {
   txsReceived.add(hash)
 
   logger.info({ tx }, "received new onchain tx event")
-  const onchainLogger = logger.child({ topic: "payment", protocol: "onchain", hash: tx.id, onUs: false })
+  const onchainLogger = logger.child({ topic: "payment", protocol: "onchain", tx, onUs: false })
 
   if (tx.is_outgoing) {
     if (!tx.is_confirmed) {
@@ -60,7 +77,7 @@ export async function onchainTransactionEventHandler(tx) {
       hash: tx.id,
       amount: tx.tokens,
     }
-    await sendNotification({ uid: entry.account_path[2], title, data, logger })
+    await sendNotification({ uid: entry.account_path[2], title, data, logger: onchainLogger })
   } else {
     // TODO: the same way Lightning is updating the wallet/accounting, 
     // this event should update the onchain wallet/account of the associated user
@@ -68,13 +85,13 @@ export async function onchainTransactionEventHandler(tx) {
     let user
     try {
       user = await User.findOne({ onchain_addresses: { $in: tx.output_addresses } })
-      if (!user._id) {
+      if (!user) {
         //FIXME: Log the onchain address, need to first find which of the tx.output_addresses belongs to us
-        logger.fatal({ tx }, `No user associated with the onchain address`)
+        onchainLogger.fatal(`No user associated with the onchain address`)
         return
       }
     } catch (error) {
-      logger.error(error, "issue in onchainTransactionEventHandler to get User id attached to output_addresses")
+      onchainLogger.error({error}, "issue in onchainTransactionEventHandler to get User id attached to output_addresses")
       throw error
     }
     const data: IDataNotification = {
@@ -87,17 +104,17 @@ export async function onchainTransactionEventHandler(tx) {
       onchainLogger.info({ transactionType: "receipt", pending: true }, "mempool apparence")
     } else {
       // onchain is currently only BTC
-      const wallet = await WalletFactory({ user, uid: user._id, currency: "BTC", logger })
+      const wallet = await WalletFactory({ user, uid: user._id, currency: "BTC", logger: onchainLogger })
       await wallet.updateOnchainReceipt()
     }
 
-    const satsPrice = await new Price({ logger }).lastPrice()
+    const satsPrice = await new Price({ logger: onchainLogger }).lastPrice()
     const usd = (tx.tokens * satsPrice).toFixed(2)
 
     const title = tx.is_confirmed ?
       `You received $${usd} | ${tx.tokens} sats` :
       `$${usd} | ${tx.tokens} sats is on its way to your wallet`
-    await sendNotification({ title, uid: user._id, data, logger })
+    await sendNotification({ title, uid: user._id, data, logger: onchainLogger })
   }
 }
 
