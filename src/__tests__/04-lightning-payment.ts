@@ -208,7 +208,6 @@ functionToTests.forEach(({fn, name, initialFee}) => {
     await paymentOtherGaloyUser({walletPayee: userWallet2, walletPayer: userWallet1})
     
     if (process.env.CASHBACK) {
-      console.log({invoices0: await InvoiceUser.find({})})
       expect(await InvoiceUser.countDocuments({cashback: true})).toBe(init_cashback + 1)
     }
     
@@ -218,7 +217,6 @@ functionToTests.forEach(({fn, name, initialFee}) => {
     await sleep(5000)
     
     if (process.env.CASHBACK) {
-      console.log({invoices1: await InvoiceUser.find({})})
       expect(await InvoiceUser.countDocuments({cashback: true})).toBe(init_cashback + 2)
     }
     

@@ -87,7 +87,6 @@ export const LightningMixin = (superclass) => class extends superclass {
   }
 
   getExpiration = (input) => {
-    // console.log(delay(this.currency).value, delay(this.currency).unit, "getExpiration unit")
     return input.add(delay(this.currency).value, delay(this.currency).unit)
   }
 
@@ -388,8 +387,6 @@ export const LightningMixin = (superclass) => class extends superclass {
           const payee = await User.findByUsername({ username })
           const payeeIsBusiness = payee ? !!payee?.title : false
           const payerIsBusiness = !!this.user.title
-
-          console.log({payeeIsBusiness, payerIsBusiness, payee, payer: this.user.title}, "entering backback loop")
 
           if (payeeIsBusiness && !payerIsBusiness) {
             const cash_back_ratio = .2
