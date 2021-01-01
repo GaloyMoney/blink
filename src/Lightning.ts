@@ -5,7 +5,7 @@ import { find } from "lodash";
 import moment from "moment";
 import { brokerLndPath, brokerPath, customerPath, lndAccountingPath } from "./ledger";
 import { disposer, getAsyncRedisClient } from "./lock";
-import { getInsensitiveCaseUsername, InvoiceUser, MainBook, Transaction, User } from "./mongodb";
+import { InvoiceUser, MainBook, Transaction, User } from "./mongodb";
 import { sendInvoicePaidNotification } from "./notification";
 import { onUsPayment, payLnd, receiptLnd } from "./transaction";
 import { IAddInvoiceInternalRequest, IFeeRequest, IPaymentRequest } from "./types";
@@ -284,7 +284,7 @@ export const LightningMixin = (superclass) => class extends superclass {
             lightningLoggerOnUs.warn({ success: false, error }, error)
             throw new LoggedError(error)
           }
-          payeeUser = await User.findOne({ username: getInsensitiveCaseUsername({ username: input_username }) })
+          payeeUser = await User.findByUsername({ username: input_username })
 
         } else {
           // standard path, user scan another lightning wallet of bitcoin beach invoice
@@ -356,7 +356,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         if (cashback && !params.isReward) {
           const payeeIsBusiness = payeeUser ? !!payeeUser?.title : false
           const payerIsBusiness = !!this.user.title
-  
+
           if (payeeIsBusiness && !payerIsBusiness) {
             const cash_back_ratio = .2
             const sats = Math.floor(tokens * cash_back_ratio)

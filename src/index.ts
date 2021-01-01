@@ -124,7 +124,6 @@ const resolvers = {
         value = lastCached
       }
     
-      // console.log({value})
       return value.splice(-length)
     },
     earnList: async (_, __, { uid, user }) => {

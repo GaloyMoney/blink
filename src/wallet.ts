@@ -1,9 +1,8 @@
 import moment from "moment";
 import { customerPath } from "./ledger";
-import { getInsensitiveCaseUsername, MainBook, User } from "./mongodb";
+import { MainBook, User } from "./mongodb";
 import { ITransaction } from "./types";
 import { LoggedError } from "./utils";
-const assert = require('assert')
 
 const createCsvStringifier = require('csv-writer').createObjectCsvStringifier;
 
@@ -188,7 +187,7 @@ export abstract class UserWallet {
   }
 
   static async usernameExists({ username }): Promise<boolean> {
-    return await User.exists({ username: getInsensitiveCaseUsername({username}) })
+    return !!(await User.findByUsername({ username}))
   }
 
   async setUsername({ username }): Promise<boolean | Error> {
