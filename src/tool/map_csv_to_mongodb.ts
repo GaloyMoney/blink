@@ -1,6 +1,5 @@
 import { User } from "../mongodb"
 import { sleep } from "../utils"
-import { regExUsername } from "../wallet"
 const csv = require('csv-parser')
 const fs = require('fs')
 const util = require('util')  
@@ -27,7 +26,7 @@ export const insertMarkers = async () => {
     }))
 
     for(const result of results) {
-      const user = await User.findOne({ username: regExUsername({ username: result.username }) })
+      const user = await User.findByUsername({ username: result.username })
       
       if (!user) {
         console.log(`the user ${result.username} does not exist`)

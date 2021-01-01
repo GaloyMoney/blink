@@ -65,6 +65,8 @@ invoiceUserSchema.index({ "uid": 1 })
 
 export const InvoiceUser = mongoose.model("InvoiceUser", invoiceUserSchema)
 
+export const regexUsername = /(?!^(1|3|bc1|lnbc1))^[0-9a-z_]+$/i
+
 
 
 const UserSchema = new Schema({
@@ -97,7 +99,7 @@ const UserSchema = new Schema({
   },
   username: {
     type: String,
-    match: [/(?!^(1|3|bc1|lnbc1))^[0-9a-z_]+$/i, "Username can only have alphabets, numbers and underscores"],
+    match: [regexUsername, "Username can only have alphabets, numbers and underscores"],
     minlength: 3,
     maxlength: 50,
     index: {
@@ -159,7 +161,18 @@ UserSchema.index({
   coordinate: 1,
 });
 
+
+UserSchema.statics.findByUsername = async function ({username}) {
+  if (typeof username !== "string" || !username.match(regexUsername)) {
+    return null
+  }
+
+  return this.findOne({ username: new RegExp(`^${username}$`, 'i')})
+}
+
 export const User = mongoose.model("User", UserSchema)
+
+
 
 
 // TODO: this DB should be capped.
