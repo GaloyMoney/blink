@@ -1,14 +1,13 @@
 const lnService = require('ln-service');
 const assert = require('assert').strict;
 import { createHash, randomBytes } from "crypto";
+import moment from "moment";
 import { brokerLndPath, brokerPath, customerPath, lightningAccountingPath } from "./ledger";
 import { disposer, getAsyncRedisClient } from "./lock";
 import { InvoiceUser, MainBook, Transaction, User } from "./mongodb";
 import { sendInvoicePaidNotification } from "./notification";
-import { IAddInvoiceInternalRequest, IPaymentRequest, IFeeRequest } from "./types";
-import { getAuth, LoggedError, sleep, timeout } from "./utils";
-import { regExUsername } from "./wallet";
-import moment from "moment"
+import { IAddInvoiceInternalRequest, IFeeRequest, IPaymentRequest } from "./types";
+import { getAuth, LoggedError, timeout } from "./utils";
 
 const util = require('util')
 
@@ -88,7 +87,6 @@ export const LightningMixin = (superclass) => class extends superclass {
   }
 
   getExpiration = (input) => {
-    // console.log(delay(this.currency).value, delay(this.currency).unit, "getExpiration unit")
     return input.add(delay(this.currency).value, delay(this.currency).unit)
   }
 
@@ -308,7 +306,7 @@ export const LightningMixin = (superclass) => class extends superclass {
             throw new LoggedError(error)
           }
 
-          const payee = await User.findOne({ username: regExUsername({ username: input_username }) })
+          const payee = await User.findByUsername({ username: input_username })
           if (!payee) {
             const error = `this username doesn't exist`
             lightningLoggerOnUs.warn({ success: false, error }, error)
@@ -385,10 +383,11 @@ export const LightningMixin = (superclass) => class extends superclass {
         // cash back // temporary
         const cashback = process.env.CASHBACK
         if (cashback && !params.isReward) {
-          const payee = await User.findOne({ username: regExUsername({ username }) })
+
+          const payee = await User.findByUsername({ username })
           const payeeIsBusiness = payee ? !!payee?.title : false
           const payerIsBusiness = !!this.user.title
-  
+
           if (payeeIsBusiness && !payerIsBusiness) {
             const cash_back_ratio = .2
             const sats = Math.floor(value * cash_back_ratio)
