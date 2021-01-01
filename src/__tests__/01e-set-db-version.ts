@@ -27,7 +27,7 @@ it('applies version 9 upgrade correctly', async () => {
   const fee = 1234
   const metadata = { currency: "BTC", txid: "xyz", type: "fee" }
   await MainBook.entry("channel closing onchain fee")
-    .debit(lightningAccountingPath, fee, { ...metadata, })
+    .debit(lightningAccountingPath, fee, { ...metadata })
     .credit(lndFee, fee, { ...metadata })
     .commit()
 
