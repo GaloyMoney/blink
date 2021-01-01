@@ -4,7 +4,7 @@ import { createHash, randomBytes } from "crypto";
 import moment from "moment";
 import { brokerLndPath, brokerPath, customerPath, lightningAccountingPath } from "./ledger";
 import { disposer, getAsyncRedisClient } from "./lock";
-import { getInsensitiveCaseUsername, InvoiceUser, MainBook, Transaction, User } from "./mongodb";
+import { InvoiceUser, MainBook, Transaction, User } from "./mongodb";
 import { sendInvoicePaidNotification } from "./notification";
 import { IAddInvoiceInternalRequest, IFeeRequest, IPaymentRequest } from "./types";
 import { getAuth, LoggedError, timeout } from "./utils";
@@ -307,7 +307,7 @@ export const LightningMixin = (superclass) => class extends superclass {
             throw new LoggedError(error)
           }
 
-          const payee = await User.findOne({ username: getInsensitiveCaseUsername({ username: input_username }) })
+          const payee = await User.findByUsername({ username: input_username })
           if (!payee) {
             const error = `this username doesn't exist`
             lightningLoggerOnUs.warn({ success: false, error }, error)
@@ -385,7 +385,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         const cashback = process.env.CASHBACK
         if (cashback && !params.isReward) {
 
-          const payee = await User.findOne({ username: getInsensitiveCaseUsername({ username }) })
+          const payee = await User.findByUsername({ username })
           const payeeIsBusiness = payee ? !!payee?.title : false
           const payerIsBusiness = !!this.user.title
 

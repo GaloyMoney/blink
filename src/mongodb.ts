@@ -65,18 +65,9 @@ invoiceUserSchema.index({ "uid": 1 })
 
 export const InvoiceUser = mongoose.model("InvoiceUser", invoiceUserSchema)
 
-// this regex is used to query username in mongodb without consideration of case
-export const getInsensitiveCaseUsername = ({username}) => {
-  // we are doing this test to avoid SQLlike injection
-  // as the username string could come raw from anyone  
-  if (typeof username !== "string" || !username.match(regexUsername)) {
-    return null
-  }
-
-  return new RegExp(`^${username}$`, 'i')
-}
-
 export const regexUsername = /(?!^(1|3|bc1|lnbc1))^[0-9a-z_]+$/i
+
+
 
 const UserSchema = new Schema({
   created_at: {
@@ -170,7 +161,18 @@ UserSchema.index({
   coordinate: 1,
 });
 
+
+UserSchema.statics.findByUsername = async function ({username}) {
+  if (typeof username !== "string" || !username.match(regexUsername)) {
+    return null
+  }
+
+  return this.findOne({ username: new RegExp(`^${username}$`, 'i')})
+}
+
 export const User = mongoose.model("User", UserSchema)
+
+
 
 
 // TODO: this DB should be capped.

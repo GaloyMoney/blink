@@ -3,7 +3,6 @@ import { customerPath } from "./ledger";
 import { MainBook, User } from "./mongodb";
 import { ITransaction } from "./types";
 import { LoggedError } from "./utils";
-import { getInsensitiveCaseUsername } from "./mongodb";
 
 const createCsvStringifier = require('csv-writer').createObjectCsvStringifier;
 
@@ -141,7 +140,7 @@ export abstract class UserWallet {
   }
 
   static async usernameExists({ username }): Promise<boolean> {
-    return await User.exists({ username: getInsensitiveCaseUsername({username}) })
+    return !!(await User.findByUsername({ username}))
   }
 
   async setUsername({ username }): Promise<boolean | Error> {
