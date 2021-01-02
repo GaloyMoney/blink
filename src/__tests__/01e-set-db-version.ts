@@ -49,7 +49,9 @@ it('applies version 9 upgrade correctly', async () => {
 
   const [journalId] = (await Transaction.find({ "accounts": lndFee }, { "_journal": 1 })).map(({ _journal }) => _journal)
 
+  console.log(await Transaction.find({ "accounts": lndFee }))
   await MainBook.void(journalId)
+  console.log(await Transaction.find({ "accounts": lndFee }))
 
   const { balance: expenseBalanceAfterVoid } = await MainBook.balance({
     account: lndFee,

@@ -2,7 +2,7 @@
  * @jest-environment node
  */
 import { AdminWallet } from "../AdminWallet";
-import { setupMongoConnection, MainBook } from "../mongodb";
+import { setupMongoConnection, MainBook, Transaction } from "../mongodb";
 import { checkIsBalanced, lndMain, lndOutside1, lndOutside2, RANDOM_ADDRESS, waitUntilBlockHeight, mockGetExchangeBalance } from "../tests/helper";
 import { baseLogger, bitcoindClient, nodeStats, sleep } from "../utils";
 import { lndFee } from "../ledger"
@@ -111,6 +111,7 @@ it('opens channel from lnd1 to lndOutside1', async () => {
 
 it('opens and closes channel from lnd1 to lndOutside1', async () => {
   const socket = `lnd-outside-1:9735`
+  console.log(await Transaction.find({ "accounts": lndFee }))
   await openChannel({ lnd: lndMain, other_lnd: lndOutside1, socket })
 
   const { channels } = await lnService.getChannels({ lnd: lndMain })
@@ -121,13 +122,15 @@ it('opens and closes channel from lnd1 to lndOutside1', async () => {
   })
 
   const sub = lnService.subscribeToChannels({ lnd: lndMain })
+  console.log(await Transaction.find({ "accounts": lndFee }))
   const closeChannelPromise = lnService.closeChannel({ lnd: lndMain, id: channels[0].id })
   const closeChannelEventPromise = sub.on('channel_closed', (channel) => onChannelClosed({ channel, lnd: lndMain }))
   const mineBlockPromise = mineBlockAndSync({ lnd: lndMain, other_lnd: lndOutside1, blockHeight: initBlockCount + newBlock })
+  console.log(await Transaction.find({ "accounts": lndFee }))
   await Promise.all([closeChannelPromise, mineBlockPromise])
 
   await sleep(10000)
-
+  console.log(await Transaction.find({ "accounts": lndFee }))
   const { balance: finalFeeInLedger } = await MainBook.balance({
     account: lndFee,
     currency: "BTC",
