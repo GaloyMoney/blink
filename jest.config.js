@@ -10,4 +10,5 @@ module.exports = {
   ],
   "testSequencer":"./jestTestSequencer.js",
   setupFilesAfterEnv: ['./jest.setup.js'],
+  "testEnvironment": "node"
 }

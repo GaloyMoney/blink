@@ -33,6 +33,7 @@
     "@google-cloud/storage": "^5.3.0",
     "apollo-server": "^2.18.2",
     "async-redis": "^1.1.7",
+    "axios": "^0.21.1",
     "bitcoin-core": "^3.0.0",
     "bluebird": "^3.7.2",
     "ccxt": "^1.36.95",
