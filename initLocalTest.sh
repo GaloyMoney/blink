@@ -143,7 +143,6 @@ then
   $INFRADIR/test-chart/
 
   echo $(kubectl get -n=$NAMESPACE pods)
-  echo "Waiting for test-pod and graphql-server to come alive"
 
 else
   helmUpgrade prometheus-client -f $INFRADIR/graphql-chart/prometheus-values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON $INFRADIR/graphql-chart/
