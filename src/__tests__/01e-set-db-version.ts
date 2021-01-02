@@ -1,9 +1,9 @@
 /**
  * @jest-environment node
  */
-import { setupMongoConnection, DbVersion, MainBook } from "../mongodb";
+import { setupMongoConnection, DbVersion, MainBook, Transaction } from "../mongodb";
 import { lightningAccountingPath, lndFee } from "../ledger"
-import { upgrade } from '../upgrade'
+import { fixChannelFeeTxns } from '../upgrade'
 const mongoose = require("mongoose");
 
 
@@ -31,7 +31,6 @@ it('applies version 9 upgrade correctly', async () => {
     .credit(lndFee, fee, { ...metadata })
     .commit()
 
-
   const { balance: wrongExpenseBalance } = await MainBook.balance({
     account: lndFee,
     currency: "BTC",
@@ -39,7 +38,7 @@ it('applies version 9 upgrade correctly', async () => {
 
   expect(wrongExpenseBalance).toBe(fee)
 
-  await upgrade()
+  await fixChannelFeeTxns()
 
   const { balance: expenseBalanceAfterUpgrade } = await MainBook.balance({
     account: lndFee,
@@ -47,4 +46,15 @@ it('applies version 9 upgrade correctly', async () => {
   })
 
   expect(expenseBalanceAfterUpgrade).toBe(fee * -1)
+
+  const [journalId] = (await Transaction.find({ "accounts": lndFee }, { "_journal": 1 })).map(({ _journal }) => _journal)
+
+  await MainBook.void(journalId)
+
+  const { balance: expenseBalanceAfterVoid } = await MainBook.balance({
+    account: lndFee,
+    currency: "BTC",
+  })
+
+  expect(expenseBalanceAfterUpgrade).toBe(0)
 })
