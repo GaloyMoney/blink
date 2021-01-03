@@ -44,8 +44,7 @@ const main = async () => {
     
     try {
       const price = new Price({ logger })
-      await price.update()
-      price_g.set(await price.lastCached())
+      price_g.set(await price.lastPrice())
     } catch (err) {
       logger.error({err}, `issue getting price`)
     }
