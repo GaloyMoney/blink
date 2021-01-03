@@ -1,8 +1,9 @@
 import { AdminWallet } from "./AdminWallet";
 import { setupMongoConnection, User } from "./mongodb";
 import { Price } from "./priceImpl";
-import { baseLogger } from "./utils";
+import { baseLogger, getBosScore } from "./utils";
 import { getBrokerWallet, getFunderWallet } from "./walletFactory";
+
 
 const logger = baseLogger.child({module: "prometheus"})
 
@@ -33,7 +34,8 @@ const leverage_g = new client.Gauge({ name: `${prefix}_leverage`, help: 'leverag
 const fundingRate_g = new client.Gauge({ name: `${prefix}_fundingRate`, help: 'FTX hourly funding rate' })
 const assetsLiabilitiesDifference_g = new client.Gauge({ name: `${prefix}_assetsEqLiabilities`, help: 'do we have a balanced book' })
 const bookingVersusRealWorldAssets_g = new client.Gauge({ name: `${prefix}_lndBalanceSync`, help: 'are lnd in syncs with our books' })
-// const price_g = new client.Gauge({ name: `${prefix}_price`, help: 'BTC/USD price' })
+const price_g = new client.Gauge({ name: `${prefix}_price`, help: 'BTC/USD price' })
+const bos_g = new client.Gauge({ name: `${prefix}_bos`, help: 'bos score' })
 
 const main = async () => {
 	const adminWallet = new AdminWallet()
@@ -42,10 +44,12 @@ const main = async () => {
     
     try {
       const price = new Price({ logger })
-      await price.update()
+      price_g.set(await price.lastCached())
     } catch (err) {
-      logger.error(`issue getting price: ${err}`)
+      logger.error({err}, `issue getting price`)
     }
+    
+    bos_g.set(await getBosScore())
     
     const { lightning, liabilities } = await adminWallet.getBalanceSheet()
     const { assetsLiabilitiesDifference, bookingVersusRealWorldAssets } = await adminWallet.balanceSheetIsBalanced()

@@ -106,7 +106,7 @@ const resolvers = {
         // TODO: maybe have a better way to reset the cache.
         // if we have 300 seconds of cache here, but we also only fetch from prometheus value only every 300 seconds
         // then the price value could be stale up to 600 seconds on the client side
-        mainCache.set( key, lastCached, [ 300 ] )
+        mainCache.set( key, lastCached, [ 30 ] )
         value = lastCached
       }
     
