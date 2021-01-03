@@ -165,6 +165,21 @@ export const onChannelOpened = async ({ channel, lnd }) => {
   logger.info({ success: true, channel, fee, ...metadata }, `open channel fee added to mongodb`)
 }
 
+const updatePrice = async () => {
+  const price = new Price({logger: baseLogger})
+
+  const _1minInterval = 1000 * 30
+
+  setInterval(async function() {
+    try {
+      await price.update()
+      await price.fastUpdate()
+    } catch (err) {
+      logger.error({err}, "can't update the price")
+    }
+  }, _1minInterval)
+}
+
 const main = async () => {
   const { lnd } = lnService.authenticatedLndGrpc(getAuth())
 
@@ -184,6 +199,7 @@ const main = async () => {
   const subBackups = subscribeToBackups({ lnd })
   subBackups.on('backup', ({ backup }) => uploadBackup(backup))
 
+  updatePrice()
 }
 
 const healthCheck = () => {

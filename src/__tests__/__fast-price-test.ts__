@@ -1,0 +1,25 @@
+/**
+ * @jest-environment node
+ */
+
+import { setupMongoConnection } from "../mongodb"
+
+import { Price } from "../priceImpl";
+import { baseLogger } from "../utils";
+const mongoose = require("mongoose");
+
+beforeAll(async () => {
+  // await mongoose.connection.dropDatabase()
+  await setupMongoConnection()
+})
+
+afterAll(async () => {
+  return await mongoose.connection.close()
+});
+
+it('fastUpdate', async () => {
+  const price = new Price({logger: baseLogger})
+  await price.update()
+  await price.fastUpdate()
+})
+
