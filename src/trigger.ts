@@ -91,7 +91,7 @@ export async function onchainTransactionEventHandler(tx) {
         return
       }
     } catch (error) {
-      onchainLogger.error({error}, "issue in onchainTransactionEventHandler to get User id attached to output_addresses")
+      onchainLogger.error({ error }, "issue in onchainTransactionEventHandler to get User id attached to output_addresses")
       throw error
     }
     const data: IDataNotification = {
@@ -186,10 +186,16 @@ export const onChannelClosed = async ({ channel, lnd }) => {
 
   const metadata = { currency: "BTC", txid: transaction_id, type: "fee" }
 
-  await MainBook.entry("channel closing onchain fee")
-    .credit(lightningAccountingPath, fee, { ...metadata, })
-    .debit(lndFee, fee, { ...metadata })
-    .commit()
+  try {
+    const mainBookEntryResult = await MainBook.entry("channel closing onchain fee")
+      .credit(lightningAccountingPath, fee, { ...metadata, })
+      .debit(lndFee, fee, { ...metadata })
+      .commit()
+    console.dir({ mainBookEntryResult })
+  } catch (err) {
+    console.dir({ err }, "err onChannelClosed")
+  }
+
 
   logger.info({ channel, fee, ...metadata }, `closed channel fee added to mongodb`)
 }
