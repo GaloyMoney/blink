@@ -389,15 +389,15 @@ export const setupMongoConnection = async () => {
 
   try {
     await mongoose.connect(path, {
-      // useNewUrlParser: true,
-      // useUnifiedTopology: true,
-      // useCreateIndex: true,
-      // useFindAndModify: false
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      useCreateIndex: true,
+      useFindAndModify: false
     })
-    // mongoose.set('runValidators', true)
-    // await User.syncIndexes()
-    // await Transaction.syncIndexes()
-    // await InvoiceUser.syncIndexes()
+    mongoose.set('runValidators', true)
+    await User.syncIndexes()
+    await Transaction.syncIndexes()
+    await InvoiceUser.syncIndexes()
   } catch (err) {
     baseLogger.fatal({err}, `error connecting to mongodb`)
     exit(1)
