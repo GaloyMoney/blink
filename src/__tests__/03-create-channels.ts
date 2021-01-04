@@ -11,8 +11,6 @@ const { once } = require('events');
 
 const lnService = require('ln-service')
 
-
-
 const local_tokens = 10000000
 
 let initBlockCount
