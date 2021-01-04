@@ -168,4 +168,7 @@ fi
 
 kubectlWait app=redis
 kubectlWait app.kubernetes.io/component=mongodb
+
+echo $(kubectl get -n=$NAMESPACE pods)
+
 kubectlWait app=graphql-server
