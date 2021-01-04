@@ -521,8 +521,6 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         } catch (err) {
 
-          console.log(typeof err[2]?.failures, "typeof err[2]")
-
           if (err.message === "Timeout") {
             lightningLogger.warn({ ...metadata, pending: true }, 'timeout payment')
 
@@ -545,14 +543,12 @@ export const LightningMixin = (superclass) => class extends superclass {
             throw new LoggedError(error)
           }
 
-          if (err[2]?.err?.details === "invoice is already paid") {
-            lightningLogger.warn({ ...metadata, pending: false }, 'invoice already paid')
-            return "already_paid"
-          }
+          const invoiceAlreadyPaidError = "invoice is already paid"
 
-          if(err[2]?.failures[0][2]?.err?.details === "invoice is already paid") {
+          if(invoiceAlreadyPaidError === (err[2]?.err?.details || err[2]?.failures[0][2]?.err?.details)) {
             lightningLogger.warn({ ...metadata, pending: false }, 'invoice already paid')
             return "already_paid"
+
           }
 
           throw new LoggedError(`Error paying invoice: ${util.inspect({ err }, false, Infinity)}`)
