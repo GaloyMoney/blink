@@ -1,5 +1,7 @@
 import { AdminWallet } from "../AdminWallet";
-import {User, setupMongoConnection} from "../mongodb"
+import { CSVAccountExport } from "../csvAccountExport";
+import { customerPath } from "../ledger";
+import {User, setupMongoConnection, MainBook} from "../mongodb"
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 
 // need to set MONGODB_ADDRESS to call the script
@@ -10,6 +12,38 @@ const main = async () => {
   await exportUsers()
   await exportBalances()
   await exportAllUserLedger()
+}
+
+
+const getBooks = async () => {
+  const accounts = await MainBook.listAccounts()
+
+  // used for debugging
+  const books = {}
+  for (const account of accounts) {
+    for (const currency of ["USD", "BTC"]) {
+      const { balance } = await MainBook.balance({
+        account,
+        currency,
+      })
+      if (!!balance) {
+        books[`${currency}:${account}`] = balance
+      }
+    }
+  }
+
+  // console.log(books, "status of our bookeeping")
+  return books
+}
+
+const exportAllUserLedger = async () => {
+  const csv = new CSVAccountExport()
+  
+  for await (const user of User.find({})) {
+    await csv.addAccount({account: customerPath(user._id)})
+  }
+
+  await csv.saveToDisk()
 }
 
 const exportUsers = async () => {
@@ -46,8 +80,7 @@ const exportUsers = async () => {
 }
 
 const exportBalances = async () => {
-  const adminWallet = new AdminWallet()
-  const books = await adminWallet.getBooks()
+  const books = await getBooks()
 
   console.log("csvWriter")
   const csvWriter = createCsvWriter({
@@ -68,11 +101,6 @@ const exportBalances = async () => {
     })
   }
   await csvWriter.writeRecords(records)
-}
-
-const exportAllUserLedger = async () => {
-  const adminWAllet = new AdminWallet()
-  await adminWAllet.exportAllUserLedger()
 }
 
 main().then(o => console.log(o)).catch(err => console.log(err))

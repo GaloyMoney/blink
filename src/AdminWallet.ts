@@ -24,16 +24,6 @@ export class AdminWallet {
     }
   }
 
-  async exportAllUserLedger() {
-    const csv = new CSVAccountExport()
-    
-    for await (const user of User.find({})) {
-      await csv.addAccount({account: customerPath(user._id)})
-    }
-
-    await csv.saveToDisk()
-  }
-
   async payCashBack() {
     const cashback = process.env.CASHBACK
     logger.info({cashback}, "cashback enabled?")
@@ -52,26 +42,6 @@ export class AdminWallet {
     }
   }
 
-  async getBooks() {
-    const accounts = await MainBook.listAccounts()
-
-    // used for debugging
-    const books = {}
-    for (const account of accounts) {
-      for (const currency of ["USD", "BTC"]) {
-        const { balance } = await MainBook.balance({
-          account,
-          currency,
-        })
-        if (!!balance) {
-          books[`${currency}:${account}`] = balance
-        }
-      }
-    }
-
-    logger.debug(books, "status of our bookeeping")
-    return books
-  }
 
   async getBalanceSheet() {    
     const { balance: assets } = await MainBook.balance({accounts: "Assets", currency: "BTC"}) 
