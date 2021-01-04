@@ -111,7 +111,13 @@ it('opens channel from lnd1 to lndOutside1', async () => {
 
 it('opens and closes channel from lnd1 to lndOutside1', async () => {
   const socket = `lnd-outside-1:9735`
-  console.log(await Transaction.find({ "accounts": lndFee }))
+  const { balance: balBeforeOpen } = await MainBook.balance({
+    account: lndFee,
+    currency: "BTC",
+  })
+
+  console.log({ balBeforeOpen })
+
   await openChannel({ lnd: lndMain, other_lnd: lndOutside1, socket })
 
   const { channels } = await lnService.getChannels({ lnd: lndMain })
@@ -120,6 +126,8 @@ it('opens and closes channel from lnd1 to lndOutside1', async () => {
     account: lndFee,
     currency: "BTC",
   })
+
+  console.log({ initFeeInLedger })
 
   const sub = lnService.subscribeToChannels({ lnd: lndMain })
   console.log(await Transaction.find({ "accounts": lndFee }))
@@ -135,6 +143,8 @@ it('opens and closes channel from lnd1 to lndOutside1', async () => {
     account: lndFee,
     currency: "BTC",
   })
+
+  console.log({ finalFeeInLedger })
 
   expect(finalFeeInLedger - initFeeInLedger).toBe(channelFee * -1)
 })
