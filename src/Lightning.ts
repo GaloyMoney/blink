@@ -521,7 +521,9 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         } catch (err) {
 
-          console.dir(err, "err paying invoice")
+          console.dir(err[2], "err paying invoice")
+          console.log(typeof err, "typeof err")
+          console.log(typeof err[2].err, "typeof err[2]")
 
           if (err.message === "Timeout") {
             lightningLogger.warn({ ...metadata, pending: true }, 'timeout payment')
