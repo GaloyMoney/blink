@@ -3,7 +3,7 @@ import { customerPath } from "./ledger";
 import { MainBook, User } from "./mongodb";
 import { ITransaction } from "./types";
 import { LoggedError } from "./utils";
-import { CSVExport } from "./csvExport"
+import { CSVAccountExport } from "./csvAccountExport"
 
 export abstract class UserWallet {
 
@@ -92,11 +92,9 @@ export abstract class UserWallet {
   }
 
   async getStringCsv() {
-    const csv = new CSVExport()
+    const csv = new CSVAccountExport()
     await csv.addAccount({account: customerPath(this.uid)})
     return csv.getBase64()
-
-  
   }
 
   async setLevel({ level }) {
