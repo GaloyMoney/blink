@@ -44,6 +44,7 @@ afterAll(async () => {
 
 const newBlock = 6
 
+//this is the fixed opening and closing channel fee on devnet
 const channelFee = 7637
 
 const openChannel = async ({ lnd, other_lnd, socket, is_private = false }) => {
