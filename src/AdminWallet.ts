@@ -1,5 +1,6 @@
 import { filter, sumBy } from "lodash";
-import { accountingExpenses, escrowAccountingPath, lightningAccountingPath, openChannelFees } from "./ledger";
+import { CSVAccountExport } from "./csvAccountExport";
+import { accountingExpenses, customerPath, escrowAccountingPath, lightningAccountingPath, openChannelFees } from "./ledger";
 import { InvoiceUser, MainBook, Transaction, User } from "./mongodb";
 import { baseLogger, getAuth } from "./utils";
 import { getBrokerWallet, getFunderWallet, WalletFactory } from "./walletFactory";
@@ -41,26 +42,6 @@ export class AdminWallet {
     }
   }
 
-  async getBooks() {
-    const accounts = await MainBook.listAccounts()
-
-    // used for debugging
-    const books = {}
-    for (const account of accounts) {
-      for (const currency of ["USD", "BTC"]) {
-        const { balance } = await MainBook.balance({
-          account,
-          currency,
-        })
-        if (!!balance) {
-          books[`${currency}:${account}`] = balance
-        }
-      }
-    }
-
-    logger.debug(books, "status of our bookeeping")
-    return books
-  }
 
   async getBalanceSheet() {    
     const { balance: assets } = await MainBook.balance({accounts: "Assets", currency: "BTC"}) 

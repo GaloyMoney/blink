@@ -146,6 +146,10 @@ const UserSchema = new Schema({
   coordinate: {
     type: pointSchema,
   },
+  excludeCashback: {
+    type: Boolean,
+    default: false
+  }
 
 })
 
@@ -395,7 +399,7 @@ export const setupMongoConnection = async () => {
     await Transaction.syncIndexes()
     await InvoiceUser.syncIndexes()
   } catch (err) {
-    baseLogger.fatal(`error connecting to mongodb ${err}`)
+    baseLogger.fatal({err}, `error connecting to mongodb`)
     exit(1)
   }
 }
