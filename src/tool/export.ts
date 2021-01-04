@@ -58,6 +58,7 @@ const exportUsers = async () => {
   const csvWriter = createCsvWriter({
     path: 'records_accounts.csv',
     header: [
+        {id: 'uid', title: 'uid'},
         {id: 'phone', title: 'Phone'},
         {id: 'username', title: 'Username'},
         {id: 'title', title: 'Title'},
@@ -68,6 +69,7 @@ const exportUsers = async () => {
 
   for (const user of users) {
     records.push({
+      uid: user._id,
       phone: user.phone,
       username: user.username,
       title: user.title
