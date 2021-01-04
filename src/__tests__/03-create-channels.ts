@@ -127,9 +127,9 @@ it('opens and closes channel from lnd1 to lndOutside1', async () => {
   const closeChannelEventPromise = sub.on('channel_closed', (channel) => onChannelClosed({ channel, lnd: lndMain }))
   const mineBlockPromise = mineBlockAndSync({ lnd: lndMain, other_lnd: lndOutside1, blockHeight: initBlockCount + newBlock })
   console.log(await Transaction.find({ "accounts": lndFee }))
-  await Promise.all([closeChannelPromise, mineBlockPromise])
-
   await sleep(10000)
+  await Promise.all([closeChannelPromise, mineBlockPromise, closeChannelEventPromise])
+
   console.log(await Transaction.find({ "accounts": lndFee }))
   const { balance: finalFeeInLedger } = await MainBook.balance({
     account: lndFee,
