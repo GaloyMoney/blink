@@ -535,7 +535,7 @@ export const LightningMixin = (superclass) => class extends superclass {
             // ie: when a payment is being retried
             await Transaction.updateMany({ hash: id }, { pending: false, error: err[1] })
             await MainBook.void(journal.journal._id, err[1])
-            lightningLogger.warn({ success: false, err, ...metadata }, `payment error`)
+            lightningLogger.warn({ success: false, err, ...metadata, journal }, `payment error`)
 
           } catch (err_fatal) {
             const error = `ERROR CANCELING PAYMENT ENTRY`
