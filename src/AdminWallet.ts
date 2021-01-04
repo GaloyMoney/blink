@@ -1,5 +1,6 @@
 import { filter, sumBy } from "lodash";
-import { accountingExpenses, escrowAccountingPath, lightningAccountingPath, openChannelFees } from "./ledger";
+import { CSVAccountExport } from "./csvAccountExport";
+import { accountingExpenses, customerPath, escrowAccountingPath, lightningAccountingPath, openChannelFees } from "./ledger";
 import { InvoiceUser, MainBook, Transaction, User } from "./mongodb";
 import { baseLogger, getAuth } from "./utils";
 import { getBrokerWallet, getFunderWallet, WalletFactory } from "./walletFactory";
@@ -21,6 +22,16 @@ export class AdminWallet {
       userWallet = await WalletFactory({user, uid: user._id, currency: user.currency, logger})
       await userWallet.updatePending()
     }
+  }
+
+  async exportAllUserLedger() {
+    const csv = new CSVAccountExport()
+    
+    for await (const user of User.find({})) {
+      await csv.addAccount({account: customerPath(user._id)})
+    }
+
+    await csv.saveToDisk()
   }
 
   async payCashBack() {

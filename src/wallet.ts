@@ -1,9 +1,9 @@
 import moment from "moment";
+import { CSVAccountExport } from "./csvAccountExport";
 import { customerPath } from "./ledger";
 import { MainBook, User } from "./mongodb";
 import { ITransaction } from "./types";
 import { LoggedError } from "./utils";
-import { CSVAccountExport } from "./csvAccountExport"
 
 export abstract class UserWallet {
 
