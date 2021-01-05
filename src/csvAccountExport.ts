@@ -1,4 +1,5 @@
 import { MainBook } from "./mongodb";
+import moment from "moment";
 
 const createCsvStringifier = require('csv-writer').createObjectCsvStringifier;
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
@@ -12,6 +13,8 @@ const header = [
   { id: 'debit', title: 'debit' },
   { id: '_journal', title: '_journal' },
   { id: 'book', title: 'book' },
+  { id: 'unix', title: 'unix' },
+  { id: 'date', title: 'date' },
   { id: 'datetime', title: 'datetime' },
   { id: 'currency', title: 'currency' },
   { id: 'username', title: 'username' },
@@ -60,11 +63,16 @@ export class CSVAccountExport {
   }
 
   async addAccount({account}): Promise<void> {
-    const { results: transactions } = await MainBook.ledger({
-      account
-    })
+    let transactions
 
+    ({ results: transactions } = await MainBook.ledger({
+      account
+    }))
+
+    transactions.forEach(tx => tx = tx.toObject())
     transactions.forEach(tx => tx.meta = JSON.stringify(tx.meta))
+    transactions.forEach(tx => tx.unix = moment(tx.datetime).unix())
+    transactions.forEach(tx => tx.date = moment(tx.datetime).format('L'))
 
     // @ts-ignore
     this.entries.push(...transactions);
