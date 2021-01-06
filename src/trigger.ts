@@ -140,15 +140,13 @@ export const onInvoiceUpdate = async invoice => {
   }
 }
 
-export const onChannelOpened = async ({ channel, lnd }) => {
-
+export const onChannelUpdated = async ({ channel, lnd, stateChange }: { channel: any, lnd: any, stateChange: "opened" | "closed" }) => {
   if (channel.is_partner_initiated) {
-    logger.info({ channel }, "channel opened to us")
+    logger.info({ channel }, `channel ${stateChange} to us`)
     return
   }
 
-  logger.info({ channel }, "channel opened by us")
-
+  logger.info({ channel }, `channel ${stateChange} by us`)
   const { transaction_id } = channel
 
   // TODO: dedupe from onchain
@@ -160,43 +158,12 @@ export const onChannelOpened = async ({ channel, lnd }) => {
 
   const metadata = { currency: "BTC", txid: transaction_id, type: "fee" }
 
-  await MainBook.entry("channel opening onchain fee")
+  await MainBook.entry(`channel ${stateChange} onchain fee`)
     .credit(lightningAccountingPath, fee, { ...metadata, })
     .debit(lndFee, fee, { ...metadata })
     .commit()
 
-  logger.info({ channel, fee, ...metadata }, `open channel fee added to mongodb`)
-}
-
-export const onChannelClosed = async ({ channel, lnd }) => {
-  if (channel.is_partner_initiated) {
-    logger.info({ channel }, "channel opened by partner was closed")
-    return
-  }
-
-  logger.info({ channel }, "channel opened by us was closed")
-
-  const { transaction_id } = channel
-
-  const { current_block_height } = await lnService.getHeight({ lnd })
-  const after = Math.max(0, current_block_height - LOOK_BACK) // this is necessary for tests, otherwise after may be negative
-  const { transactions } = await lnService.getChainTransactions({ lnd, after })
-
-  const { fee } = find(transactions, { id: transaction_id })
-
-  const metadata = { currency: "BTC", txid: transaction_id, type: "fee" }
-
-  try {
-    await MainBook.entry("channel closing onchain fee")
-      .credit(lightningAccountingPath, fee, { ...metadata, })
-      .debit(lndFee, fee, { ...metadata })
-      .commit()
-  } catch (err) {
-    logger.error({ err }, "error in onChannelClosed")
-  }
-
-
-  logger.info({ channel, fee, ...metadata }, `closed channel fee added to mongodb`)
+  logger.info({ channel, fee, ...metadata }, `${stateChange} channel fee added to mongodb`)
 }
 
 const updatePrice = async () => {
@@ -228,8 +195,8 @@ const main = async () => {
   subTransactions.on('chain_transaction', onchainTransactionEventHandler);
 
   const subChannels = subscribeToChannels({ lnd });
-  subChannels.on('channel_opened', (channel) => onChannelOpened({ channel, lnd }))
-  subChannels.on('channel_closed', (channel) => onChannelClosed({ channel, lnd }))
+  subChannels.on('channel_opened', (channel) => onChannelUpdated({ channel, lnd, stateChange: "opened" }))
+  subChannels.on('channel_closed', (channel) => onChannelUpdated({ channel, lnd, stateChange: "closed" }))
 
   const subBackups = subscribeToBackups({ lnd })
   subBackups.on('backup', ({ backup }) => uploadBackup(backup))

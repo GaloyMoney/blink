@@ -6,7 +6,7 @@ import { setupMongoConnection, MainBook, Transaction } from "../mongodb";
 import { checkIsBalanced, lndMain, lndOutside1, lndOutside2, RANDOM_ADDRESS, waitUntilBlockHeight, mockGetExchangeBalance } from "../tests/helper";
 import { baseLogger, bitcoindClient, nodeStats, sleep } from "../utils";
 import { lndFee } from "../ledger"
-import { onChannelOpened, uploadBackup, onChannelClosed } from '../trigger'
+import { onChannelUpdated } from '../trigger'
 const mongoose = require("mongoose");
 const { once } = require('events');
 
@@ -61,7 +61,7 @@ const openChannel = async ({ lnd, other_lnd, socket, is_private = false }) => {
   const sub = lnService.subscribeToChannels({ lnd })
 
   if (lnd === lndMain) {
-    sub.once('channel_opened', (channel) => onChannelOpened({ channel, lnd }))
+    sub.once('channel_opened', (channel) => onChannelUpdated({ channel, lnd, stateChange: "opened" }))
   }
 
   if (other_lnd === lndMain) {
@@ -88,9 +88,9 @@ const openChannel = async ({ lnd, other_lnd, socket, is_private = false }) => {
   sub.removeAllListeners()
 }
 
-const mineBlockAndSync = async ({ lnds, blockHeight }: {lnds: Array<any>, blockHeight: number}) => {
+const mineBlockAndSync = async ({ lnds, blockHeight }: { lnds: Array<any>, blockHeight: number }) => {
   await bitcoindClient.generateToAddress(newBlock, RANDOM_ADDRESS)
-  const promiseArray = []
+  const promiseArray: Array<Promise<any>> = []
   for (const lnd of lnds) {
     promiseArray.push(waitUntilBlockHeight({ lnd, blockHeight }))
   }
@@ -128,7 +128,7 @@ it('opens and closes channel from lnd1 to lndOutside1', async () => {
 
   const sub = lnService.subscribeToChannels({ lnd: lndMain })
   sub.on('channel_closed', async (channel) => {
-    await onChannelClosed({ channel, lnd: lndMain })
+    await onChannelUpdated({ channel, lnd: lndMain, stateChange: "closed" })
   })
   
   await lnService.closeChannel({ lnd: lndMain, id: channels[0].id })
