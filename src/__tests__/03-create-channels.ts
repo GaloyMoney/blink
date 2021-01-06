@@ -132,7 +132,8 @@ it('opens and closes channel from lnd1 to lndOutside1', async () => {
   })
   
   await lnService.closeChannel({ lnd: lndMain, id: channels[0].id })
-  await mineBlockAndSync({ lnds: [lndMain, lndOutside1], blockHeight: initBlockCount + newBlock })
+  const currentBlockCount = await bitcoindClient.getBlockCount()
+  await mineBlockAndSync({ lnds: [lndMain, lndOutside1], blockHeight: currentBlockCount + newBlock })
 
   sub.removeAllListeners()
   const { balance: finalFeeInLedger } = await MainBook.balance({
