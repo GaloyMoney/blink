@@ -47,9 +47,8 @@ it('applies version 9 upgrade correctly', async () => {
 
   expect(expenseBalanceAfterUpgrade).toBe(fee * -1)
 
-  const [journalId] = (await Transaction.findOne({ "accounts": lndFee }, { "_journal": 1 })).map(({ _journal }) => _journal)
-
-  await MainBook.void(journalId)
+  const journal = await Transaction.findOne({ "accounts": lndFee }, { "_journal": 1 })
+  await MainBook.void(journal._journal)
 
   const { balance: expenseBalanceAfterVoid } = await MainBook.balance({
     account: lndFee,
