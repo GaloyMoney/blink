@@ -56,7 +56,7 @@ export const getAmount = (request): number | undefined => {
 }
 
 export const btc2sat = (btc: number) => {
-  return btc * Math.pow(10, 8)
+  return Math.round(btc * Math.pow(10, 8))
 }
 
 export const sat2btc = (sat: number) => {
