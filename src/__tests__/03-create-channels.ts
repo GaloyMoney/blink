@@ -122,8 +122,6 @@ it('opens and closes channel from lnd1 to lndOutside1', async () => {
     currency: "BTC",
   })
 
-  console.log({ initFeeInLedger })
-
   const sub = lnService.subscribeToChannels({ lnd: lndMain })
   sub.on('channel_closed', async (channel) => {
     await onChannelClosed({ channel, lnd: lndMain })
@@ -138,8 +136,6 @@ it('opens and closes channel from lnd1 to lndOutside1', async () => {
     account: lndFee,
     currency: "BTC",
   })
-
-  console.log({ finalFeeInLedger })
 
   expect(finalFeeInLedger - initFeeInLedger).toBe(channelFee * -1)
 })

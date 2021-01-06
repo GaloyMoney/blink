@@ -191,9 +191,8 @@ export const onChannelClosed = async ({ channel, lnd }) => {
       .credit(lightningAccountingPath, fee, { ...metadata, })
       .debit(lndFee, fee, { ...metadata })
       .commit()
-    console.dir({ mainBookEntryResult })
   } catch (err) {
-    console.dir({ err }, "err onChannelClosed")
+    logger.error({ err, "error in onChannelClosed"})
   }
 
 
@@ -201,16 +200,16 @@ export const onChannelClosed = async ({ channel, lnd }) => {
 }
 
 const updatePrice = async () => {
-  const price = new Price({logger: baseLogger})
+  const price = new Price({ logger: baseLogger })
 
   const _1minInterval = 1000 * 30
 
-  setInterval(async function() {
+  setInterval(async function () {
     try {
       await price.update()
       await price.fastUpdate()
     } catch (err) {
-      logger.error({err}, "can't update the price")
+      logger.error({ err }, "can't update the price")
     }
   }, _1minInterval)
 }
@@ -244,7 +243,7 @@ const healthCheck = () => {
   const app = express()
   const port = 8888
   app.get('/health', (req, res) => {
-    lnService.getWalletInfo({ lnd }, (err,) => !err ? res.sendStatus(200) : res.sendStatus(500));
+    lnService.getWalletInfo({ lnd }, (err, ) => !err ? res.sendStatus(200) : res.sendStatus(500));
   })
   app.listen(port, () => logger.info(`Health check listening on port ${port}!`))
 }
