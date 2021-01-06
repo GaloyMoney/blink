@@ -129,7 +129,6 @@ it('opens and closes channel from lnd1 to lndOutside1', async () => {
   
   await lnService.closeChannel({ lnd: lndMain, id: channels[0].id })
   await mineBlockAndSync({ lnd: lndMain, other_lnd: lndOutside1, blockHeight: initBlockCount + newBlock })
-  await sleep(5000)
 
   sub.removeAllListeners()
   const { balance: finalFeeInLedger } = await MainBook.balance({
