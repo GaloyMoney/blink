@@ -192,7 +192,7 @@ export const onChannelClosed = async ({ channel, lnd }) => {
       .debit(lndFee, fee, { ...metadata })
       .commit()
   } catch (err) {
-    logger.error({ err, "error in onChannelClosed"})
+    logger.error({ err }, "error in onChannelClosed")
   }
 
 
