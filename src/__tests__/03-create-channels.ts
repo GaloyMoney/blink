@@ -112,12 +112,6 @@ it('opens channel from lnd1 to lndOutside1', async () => {
 
 it('opens and closes channel from lnd1 to lndOutside1', async () => {
   const socket = `lnd-outside-1:9735`
-  const { balance: balBeforeOpen } = await MainBook.balance({
-    account: lndFee,
-    currency: "BTC",
-  })
-
-  console.log({ balBeforeOpen })
 
   await openChannel({ lnd: lndMain, other_lnd: lndOutside1, socket })
 
@@ -131,15 +125,15 @@ it('opens and closes channel from lnd1 to lndOutside1', async () => {
   console.log({ initFeeInLedger })
 
   const sub = lnService.subscribeToChannels({ lnd: lndMain })
-  console.log(await Transaction.find({ "accounts": lndFee }))
-  const closeChannelPromise = lnService.closeChannel({ lnd: lndMain, id: channels[0].id })
-  const closeChannelEventPromise = sub.on('channel_closed', (channel) => onChannelClosed({ channel, lnd: lndMain }))
-  const mineBlockPromise = mineBlockAndSync({ lnd: lndMain, other_lnd: lndOutside1, blockHeight: initBlockCount + newBlock })
-  console.log(await Transaction.find({ "accounts": lndFee }))
-  await sleep(10000)
-  await Promise.all([closeChannelPromise, mineBlockPromise, closeChannelEventPromise])
+  sub.on('channel_closed', async (channel) => {
+    await onChannelClosed({ channel, lnd: lndMain })
+  })
+  
+  await lnService.closeChannel({ lnd: lndMain, id: channels[0].id })
+  await mineBlockAndSync({ lnd: lndMain, other_lnd: lndOutside1, blockHeight: initBlockCount + newBlock })
+  await sleep(5000)
 
-  console.log(await Transaction.find({ "accounts": lndFee }))
+  sub.removeAllListeners()
   const { balance: finalFeeInLedger } = await MainBook.balance({
     account: lndFee,
     currency: "BTC",
