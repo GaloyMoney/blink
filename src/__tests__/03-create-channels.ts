@@ -70,7 +70,7 @@ const openChannel = async ({ lnd, other_lnd, socket, is_private = false }) => {
 
   await once(sub, 'channel_opening')
 
-  await mineBlockAndSync({ lnd, other_lnd, blockHeight: initBlockCount + newBlock })
+  await mineBlockAndSync({ lnds: [lnd, other_lnd], blockHeight: initBlockCount + newBlock })
 
   baseLogger.debug("mining blocks and waiting for channel being opened")
 
@@ -79,7 +79,7 @@ const openChannel = async ({ lnd, other_lnd, socket, is_private = false }) => {
     // error: https://github.com/alexbosworth/ln-service/issues/122
     // need to investigate.
     // once(sub, 'channel_opened'),
-    mineBlockAndSync({ lnd, other_lnd, blockHeight: initBlockCount + newBlock }),
+    mineBlockAndSync({ lnds: [lnd, other_lnd], blockHeight: initBlockCount + newBlock }),
   ])
 
 
@@ -88,9 +88,13 @@ const openChannel = async ({ lnd, other_lnd, socket, is_private = false }) => {
   sub.removeAllListeners()
 }
 
-const mineBlockAndSync = async ({ lnd, other_lnd, blockHeight }) => {
+const mineBlockAndSync = async ({ lnds, blockHeight }: {lnds: Array<any>, blockHeight: number}) => {
   await bitcoindClient.generateToAddress(newBlock, RANDOM_ADDRESS)
-  await Promise.all([waitUntilBlockHeight({ lnd, blockHeight }), waitUntilBlockHeight({ lnd: other_lnd, blockHeight })])
+  const promiseArray = []
+  for (const lnd of lnds) {
+    promiseArray.push(waitUntilBlockHeight({ lnd, blockHeight }))
+  }
+  await Promise.all(promiseArray)
 }
 
 it('opens channel from lnd1 to lndOutside1', async () => {
@@ -128,7 +132,7 @@ it('opens and closes channel from lnd1 to lndOutside1', async () => {
   })
   
   await lnService.closeChannel({ lnd: lndMain, id: channels[0].id })
-  await mineBlockAndSync({ lnd: lndMain, other_lnd: lndOutside1, blockHeight: initBlockCount + newBlock })
+  await mineBlockAndSync({ lnds: [lndMain, lndOutside1], blockHeight: initBlockCount + newBlock })
 
   sub.removeAllListeners()
   const { balance: finalFeeInLedger } = await MainBook.balance({
