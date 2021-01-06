@@ -187,7 +187,7 @@ export const onChannelClosed = async ({ channel, lnd }) => {
   const metadata = { currency: "BTC", txid: transaction_id, type: "fee" }
 
   try {
-    const mainBookEntryResult = await MainBook.entry("channel closing onchain fee")
+    await MainBook.entry("channel closing onchain fee")
       .credit(lightningAccountingPath, fee, { ...metadata, })
       .debit(lndFee, fee, { ...metadata })
       .commit()
