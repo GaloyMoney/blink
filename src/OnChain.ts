@@ -6,7 +6,7 @@ import { customerPath, lightningAccountingPath } from "./ledger";
 import { disposer } from "./lock";
 import { MainBook, Transaction, User } from "./mongodb";
 import { ITransaction, IOnChainPayment, ISuccess } from "./types";
-import { amountOnVout, bitcoindClient, btc2sat, getAuth, LoggedError, LOOK_BACK, myOwnAddressesOnVout } from "./utils";
+import { amountOnVout, bitcoindDefaultClient, btc2sat, getAuth, LoggedError, LOOK_BACK, myOwnAddressesOnVout } from "./utils";
 
 const using = require('bluebird').using
 
@@ -327,7 +327,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
   // raw encoded transaction
   async getSatsAndAddress(tx) {
-    const {vout} = await bitcoindClient.decodeRawTransaction(tx)
+    const {vout} = await bitcoindDefaultClient.decodeRawTransaction(tx)
 
     //   vout: [
     //   {

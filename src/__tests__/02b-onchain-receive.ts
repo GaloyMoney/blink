@@ -7,7 +7,7 @@ import { setupMongoConnection, User } from "../mongodb";
 import { Price } from "../priceImpl";
 import { checkIsBalanced, getUserWallet, lndMain, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
 import { onchainTransactionEventHandler } from "../trigger";
-import { baseLogger, bitcoindClient, btc2sat, sleep } from "../utils";
+import { baseLogger, bitcoindDefaultClient, btc2sat, sleep } from "../utils";
 import { getFunderWallet } from "../walletFactory";
 
 
@@ -42,7 +42,7 @@ beforeEach(async () => {
 
   funderWallet = await getFunderWallet({ logger: baseLogger }) 
 
-  initBlockCount = await bitcoindClient.getBlockCount()
+  initBlockCount = await bitcoindDefaultClient.getBlockCount()
   initialBalanceUser0 = await walletUser0.getBalance()
 
   // TODO: seed the Math.random()
@@ -50,7 +50,7 @@ beforeEach(async () => {
 })
 
 afterEach(async () => {
-  await bitcoindClient.generateToAddress(3, RANDOM_ADDRESS)
+  await bitcoindDefaultClient.generateToAddress(3, RANDOM_ADDRESS)
   await sleep(250)
   await checkIsBalanced()
 })
@@ -93,8 +93,8 @@ const onchain_funding = async ({ walletDestination }) => {
 
   const fundLndWallet = async () => {
     await sleep(100)
-    await bitcoindClient.sendToAddress(address, amount_BTC)
-    await bitcoindClient.generateToAddress(6, RANDOM_ADDRESS)
+    await bitcoindDefaultClient.sendToAddress(address, amount_BTC)
+    await bitcoindDefaultClient.generateToAddress(6, RANDOM_ADDRESS)
   }
 
   await Promise.all([
@@ -120,7 +120,7 @@ it('identifies unconfirmed incoming on chain txn', async () => {
   
   await Promise.all([
     once(sub, 'chain_transaction'),
-    bitcoindClient.sendToAddress(address, amount_BTC)
+    bitcoindDefaultClient.sendToAddress(address, amount_BTC)
   ])
 
   await sleep(1000)
@@ -142,7 +142,7 @@ it('identifies unconfirmed incoming on chain txn', async () => {
   expect(sendNotification.mock.calls[0][0].title).toBe(`$${usd} | ${btc2sat(amount_BTC)} sats is on its way to your wallet`)
 
   await Promise.all([
-    bitcoindClient.generateToAddress(1, RANDOM_ADDRESS),
+    bitcoindDefaultClient.generateToAddress(1, RANDOM_ADDRESS),
     once(sub, 'chain_transaction'),
   ])
 
@@ -178,16 +178,16 @@ it('batch send transaction', async () => {
 
   const outputs = [output0, output1]
 
-  const {psbt} = await bitcoindClient.walletCreateFundedPsbt([], outputs)
-  // const decodedPsbt1 = await bitcoindClient.decodePsbt(psbt)
-  // const analysePsbt1 = await bitcoindClient.analyzePsbt(psbt)
-  const walletProcessPsbt = await bitcoindClient.walletProcessPsbt(psbt)
-  // const decodedPsbt2 = await bitcoindClient.decodePsbt(walletProcessPsbt.psbt)
-  // const analysePsbt2 = await bitcoindClient.analyzePsbt(walletProcessPsbt.psbt)
-  const finalizedPsbt = await bitcoindClient.finalizePsbt(walletProcessPsbt.psbt)
-  const txid = await bitcoindClient.sendRawTransaction(finalizedPsbt.hex) 
+  const {psbt} = await bitcoindDefaultClient.walletCreateFundedPsbt([], outputs)
+  // const decodedPsbt1 = await bitcoindDefaultClient.decodePsbt(psbt)
+  // const analysePsbt1 = await bitcoindDefaultClient.analyzePsbt(psbt)
+  const walletProcessPsbt = await bitcoindDefaultClient.walletProcessPsbt(psbt)
+  // const decodedPsbt2 = await bitcoindDefaultClient.decodePsbt(walletProcessPsbt.psbt)
+  // const analysePsbt2 = await bitcoindDefaultClient.analyzePsbt(walletProcessPsbt.psbt)
+  const finalizedPsbt = await bitcoindDefaultClient.finalizePsbt(walletProcessPsbt.psbt)
+  const txid = await bitcoindDefaultClient.sendRawTransaction(finalizedPsbt.hex) 
   
-  await bitcoindClient.generateToAddress(6, RANDOM_ADDRESS)
+  await bitcoindDefaultClient.generateToAddress(6, RANDOM_ADDRESS)
   await waitUntilBlockHeight({ lnd: lndMain, blockHeight: initBlockCount + 6 })
 
   {

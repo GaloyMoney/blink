@@ -3,7 +3,7 @@ import * as lnService from "ln-service"
 import { filter, find, includes, intersection, sumBy, union } from "lodash"
 import * as moment from 'moment'
 export const validate = require("validate.js")
-const BitcoindClient = require('bitcoin-core')
+const bitcoindClient = require('bitcoin-core')
 const {parsePaymentRequest} = require('invoices');
 const axios = require('axios').default;
 
@@ -31,9 +31,16 @@ export class LoggedError extends GraphQLError {
 }
 
 const connection_obj = {
-  network: process.env.NETWORK, username: 'rpcuser', password: 'rpcpass',
-  host: process.env.BITCOINDADDR, port: process.env.BITCOINDPORT
+  network: process.env.NETWORK, 
+  username: 'rpcuser',
+  password: 'rpcpass',
+  host: process.env.BITCOINDADDR,
+  port: process.env.BITCOINDPORT,
+  version: '0.20.1',
 }
+
+export const BitcoindClient = ({wallet = ""}) => new bitcoindClient({...connection_obj, wallet})
+export const bitcoindDefaultClient = BitcoindClient({})
 
 export const amountOnVout = ({ vout, onchain_addresses }): number => {
   // TODO: check if this is always [0], ie: there is always a single addresses for vout for lnd output
@@ -45,7 +52,6 @@ export const myOwnAddressesOnVout = ({ vout, onchain_addresses }) => {
   return intersection(union(vout.map(output => output.scriptPubKey.addresses[0])), onchain_addresses)
 }
 
-export const bitcoindClient = new BitcoindClient(connection_obj)
 
 export const getHash = (request) => {
   return parsePaymentRequest({request}).id

@@ -248,7 +248,8 @@ const transactionSchema = new Schema({
       "invoice", "payment", "on_us", "fee_reimbursement", // lightning
       "onchain_receipt", "onchain_payment", "onchain_on_us", // onchain
       "fee", "escrow", // channel-related
-      "exchange_rebalance"//
+      "exchange_rebalance", // for the broker
+      "bitcoind_rebalance" // for the cold storage
     ]
   },
 

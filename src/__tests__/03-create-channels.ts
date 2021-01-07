@@ -4,7 +4,7 @@
 import { AdminWallet } from "../AdminWallet";
 import { setupMongoConnection } from "../mongodb";
 import { checkIsBalanced, lndMain, lndOutside1, lndOutside2, RANDOM_ADDRESS, waitUntilBlockHeight, mockGetExchangeBalance } from "../tests/helper";
-import { baseLogger, bitcoindClient, nodeStats, sleep } from "../utils";
+import { baseLogger, bitcoindDefaultClient, nodeStats, sleep } from "../utils";
 import { onChannelOpened, uploadBackup } from '../trigger'
 const mongoose = require("mongoose");
 const { once } = require('events');
@@ -31,7 +31,7 @@ beforeAll(async () => {
 })
 
 beforeEach(async () => {
-  initBlockCount = await bitcoindClient.getBlockCount()
+  initBlockCount = await bitcoindDefaultClient.getBlockCount()
 })
 
 afterEach(async () => {
@@ -69,7 +69,7 @@ const openChannel = async ({ lnd, other_lnd, socket, is_private = false }) => {
   await once(sub, 'channel_opening')
 
   const mineBlock = async () => {
-    await bitcoindClient.generateToAddress(newBlock, RANDOM_ADDRESS)
+    await bitcoindDefaultClient.generateToAddress(newBlock, RANDOM_ADDRESS)
     await waitUntilBlockHeight({ lnd: lndMain, blockHeight: initBlockCount + newBlock })
     await waitUntilBlockHeight({ lnd: other_lnd, blockHeight: initBlockCount + newBlock })
   }
