@@ -139,7 +139,7 @@ it('opens and closes channel from lnd1 to lndOutside1', async () => {
     account: lndFee,
     currency: "BTC",
   })
-  await sleep(5000)
+  await sleep(10000)
   expect(finalFeeInLedger - initFeeInLedger).toBe(channelFee * -1)
   sub.removeAllListeners()
 })
