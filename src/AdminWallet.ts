@@ -1,6 +1,6 @@
 import { filter, sumBy } from "lodash";
 import { CSVAccountExport } from "./csvAccountExport";
-import { accountingExpenses, customerPath, escrowAccountingPath, lightningAccountingPath, openChannelFees } from "./ledger";
+import { accountingExpenses, customerPath, escrowAccountingPath, lightningAccountingPath, lndFee } from "./ledger";
 import { InvoiceUser, MainBook, Transaction, User } from "./mongodb";
 import { baseLogger, getAuth } from "./utils";
 import { getBrokerWallet, getFunderWallet, WalletFactory } from "./walletFactory";

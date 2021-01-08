@@ -7,7 +7,7 @@ import { disposer, getAsyncRedisClient } from "./lock";
 import { InvoiceUser, MainBook, Transaction, User } from "./mongodb";
 import { sendInvoicePaidNotification } from "./notification";
 import { IAddInvoiceInternalRequest, IFeeRequest, IPaymentRequest } from "./types";
-import { getAuth, LoggedError, timeout } from "./utils";
+import { getAuth, LoggedError, timeout, isInvoiceAlreadyPaidError } from "./utils";
 
 const util = require('util')
 
@@ -21,7 +21,7 @@ export const FEEMIN = 10 // sats
 export type ITxType = "invoice" | "payment" | "onchain_receipt" | "onchain_payment" | "on_us"
 export type payInvoiceResult = "success" | "failed" | "pending" | "already_paid"
 
-const addContact = async ({uid, username}) => {
+const addContact = async ({ uid, username }) => {
   // https://stackoverflow.com/questions/37427610/mongodb-update-or-insert-object-in-array
 
   const result = await User.update(
@@ -30,11 +30,11 @@ const addContact = async ({uid, username}) => {
       "contacts.id": username
     },
     {
-      $inc: {"contacts.$.transactionsCount": 1},
+      $inc: { "contacts.$.transactionsCount": 1 },
     },
   )
 
-  if(!result.nModified) {
+  if (!result.nModified) {
     await User.update(
       {
         _id: uid
@@ -195,7 +195,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     const value = JSON.stringify(route)
     await getAsyncRedisClient().set(key, value, 'EX', 60 * 5); // expires after 5 minutes
 
-    lightningLogger.info({redis: {key, value}, probingSuccess: true, success: true }, "succesfully found a route")
+    lightningLogger.info({ redis: { key, value }, probingSuccess: true, success: true }, "succesfully found a route")
     return route.fee
   }
 
@@ -354,7 +354,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         }
 
         await MainBook.entry(memoInvoice)
-          .debit(customerPath(payeeUid), value, { ...metadata, username: this.user.username})
+          .debit(customerPath(payeeUid), value, { ...metadata, username: this.user.username })
           .credit(this.accountPath, value, { ...metadata, memoPayer, username })
           .commit()
 
@@ -362,20 +362,20 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         if (!pushPayment) {
           const resultDeletion = await InvoiceUser.deleteOne({ _id: id })
-          this.logger.info({id, uid: this.uid, resultDeletion}, "invoice has been deleted from InvoiceUser following on_us transaction")
-          
+          this.logger.info({ id, uid: this.uid, resultDeletion }, "invoice has been deleted from InvoiceUser following on_us transaction")
+
           await lnService.cancelHodlInvoice({ lnd: this.lnd, id })
-          this.logger.info({id, uid: this.uid}, "canceling invoice on lnd")
+          this.logger.info({ id, uid: this.uid }, "canceling invoice on lnd")
         }
-        
+
         // adding contact for the payer
         if (!!username) {
-          await addContact({uid: this.user._id, username})
+          await addContact({ uid: this.user._id, username })
         }
-        
+
         // adding contact for the payee
         if (!!this.user.username) {
-          await addContact({uid: payeeUid, username: this.user.username})
+          await addContact({ uid: payeeUid, username: this.user.username })
         }
 
         lightningLoggerOnUs.info({ success: true, isReward: params.isReward ?? false, ...metadata }, "lightning payment success")
@@ -400,7 +400,7 @@ export const LightningMixin = (superclass) => class extends superclass {
               cashback: true
             })
 
-            lightningLogger.info({invoiceCashBack}, "adding invoice for cashback")
+            lightningLogger.info({ invoiceCashBack }, "adding invoice for cashback")
           }
         }
 
@@ -446,7 +446,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         const sats = tokens + fee
 
         lightningLogger = lightningLogger.child({ route, balance, fee, sats })
-        const metadata = { currency: this.currency, hash: id, type: "payment", pending: true, fee, feeKnownInAdvance, ...this.getCurrencyEquivalent({sats, fee }) }
+        const metadata = { currency: this.currency, hash: id, type: "payment", pending: true, fee, feeKnownInAdvance, ...this.getCurrencyEquivalent({ sats, fee }) }
 
         const value = this.isUSD ? metadata.usd : sats
 
@@ -535,7 +535,7 @@ export const LightningMixin = (superclass) => class extends superclass {
             // ie: when a payment is being retried
             await Transaction.updateMany({ hash: id }, { pending: false, error: err[1] })
             await MainBook.void(journal.journal._id, err[1])
-            lightningLogger.warn({ success: false, err, ...metadata }, `payment error`)
+            lightningLogger.warn({ success: false, err, ...metadata, journal }, `payment error`)
 
           } catch (err_fatal) {
             const error = `ERROR CANCELING PAYMENT ENTRY`
@@ -543,10 +543,10 @@ export const LightningMixin = (superclass) => class extends superclass {
             throw new LoggedError(error)
           }
 
-          // if (err[2]?.err?.details === "invoice is already paid") {
-          //   lightningLogger.warn({ ...metadata, pending: false }, 'invoice already paid')
-          //   return "already_paid"
-          // }
+          if (isInvoiceAlreadyPaidError(err)) {
+            lightningLogger.warn({ ...metadata, pending: false }, 'invoice already paid')
+            return "already_paid"
+          }
 
           throw new LoggedError(`Error paying invoice: ${util.inspect({ err }, false, Infinity)}`)
         }
@@ -575,7 +575,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     this.logger.info({ paymentResult, feeDifference, max_fee, actualFee: paymentResult.safe_fee, id }, "logging a fee difference")
 
-    const {usd} = this.getCurrencyEquivalent({sats: feeDifference})
+    const { usd } = this.getCurrencyEquivalent({ sats: feeDifference })
     const metadata = { currency: "BTC", hash: id, related_journal, type: "fee_reimbursement", usd }
 
     // todo: add a reference to the journal entry of the main tx
