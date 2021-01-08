@@ -12,6 +12,7 @@ then
   NETWORK="$1"
   NAMESPACE="$1"
   SERVICETYPE=ClusterIP
+  INFRADIR=~/GaloyApp/infrastructure
 else
   NETWORK="regtest"
   REDISPERSISTENCE="false"
@@ -19,8 +20,10 @@ else
     MINIKUBEIP=$(minikube ip)
     NAMESPACE="default"
     SERVICETYPE=LoadBalancer
+    INFRADIR=../../../infrastructure
   else 
     SERVICETYPE=ClusterIP
+    INFRADIR=~/GaloyApp/infrastructure
   fi
 fi
 
@@ -35,15 +38,15 @@ helmUpgrade () {
 monitoringDeploymentsUpgrade() {
   SECRET=alertmanager-keys
   local NAMESPACE=monitoring
-  helmUpgrade prometheus prometheus-community/prometheus -f ~/GaloyApp/backend/prometheus-server/values.yaml
+  helmUpgrade prometheus prometheus-community/prometheus -f $INFRADIR/prometheus-server/values.yaml
 
   export SLACK_API_URL=$(kubectl get secret -n $NAMESPACE $SECRET -o jsonpath="{.data.SLACK_API_URL}" | base64 -d)
   export SERVICE_KEY=$(kubectl get secret -n $NAMESPACE $SECRET -o jsonpath="{.data.SERVICE_KEY}" | base64 -d)
 
   kubectl -n $NAMESPACE get configmaps prometheus-alertmanager -o yaml | sed -e "s|SLACK_API_URL|$SLACK_API_URL|; s|SERVICE_KEY|$SERVICE_KEY|" | kubectl -n $NAMESPACE apply -f -
 
-  helmUpgrade grafana grafana/grafana -f ~/GaloyApp/backend/grafana/values.yaml
-  helmUpgrade mongo-exporter ~/GaloyApp/backend/mongo-exporter
+  helmUpgrade grafana grafana/grafana -f $INFRADIR/grafana/values.yaml
+  helmUpgrade mongo-exporter $INFRADIR/mongo-exporter
 }
 
 kubectlWait () {
@@ -80,7 +83,7 @@ createLoopConfigmaps() {
 }
 
 # bug with --wait: https://github.com/helm/helm/issues/7139 ?
-helmUpgrade bitcoind -f ../../bitcoind-chart/$NETWORK-values.yaml --set serviceType=$SERVICETYPE ../../bitcoind-chart/
+helmUpgrade bitcoind -f $INFRADIR/bitcoind-chart/$NETWORK-values.yaml --set serviceType=$SERVICETYPE $INFRADIR/bitcoind-chart/
 kubectlWait app=bitcoind-container
 
 # pod deletion has occured before the script started, but may not be completed yet
@@ -89,7 +92,7 @@ then
   kubectlLndDeletionWait
 fi
 
-helmUpgrade lnd -f ../../lnd-chart/$NETWORK-values.yaml --set lndService.serviceType=LoadBalancer,minikubeip=$MINIKUBEIP ../../lnd-chart/
+helmUpgrade lnd -f $INFRADIR/lnd-chart/$NETWORK-values.yaml --set lndService.serviceType=LoadBalancer,minikubeip=$MINIKUBEIP $INFRADIR/lnd-chart/
 
 # avoiding to spend time with circleci regtest with this condition
 if [ "$1" == "testnet" ] || [ "$1" == "mainnet" ];
@@ -114,7 +117,7 @@ then
 else
   export MONGODB_ROOT_PASSWORD=$(kubectl get secret -n $NAMESPACE mongodb -o jsonpath="{.data.mongodb-root-password}" | base64 -d)
   export MONGODB_REPLICA_SET_KEY=$(kubectl get secret -n $NAMESPACE mongodb -o jsonpath="{.data.mongodb-replica-set-key}" | base64 -d)
-  helmUpgrade mongodb -f ~/GaloyApp/backend/mongo-chart/custom-values.yaml bitnami/mongodb --set auth.rootPassword=$MONGODB_ROOT_PASSWORD,auth.replicaSetKey=$MONGODB_REPLICA_SET_KEY
+  helmUpgrade mongodb -f $INFRADIR/mongo-chart/custom-values.yaml bitnami/mongodb --set auth.rootPassword=$MONGODB_ROOT_PASSWORD,auth.replicaSetKey=$MONGODB_REPLICA_SET_KEY
 
   kubectl exec -n $NAMESPACE mongodb-0 -- bash -c "mongo admin -u root -p "$MONGODB_ROOT_PASSWORD" --eval \"db.adminCommand({setDefaultRWConcern:1,defaultWriteConcern:{'w':'majority'}})\""
   kubectl exec -n $NAMESPACE mongodb-0 -- bash -c "mongo admin -u root -p "$MONGODB_ROOT_PASSWORD" --eval \"c=rs.conf();c.writeConcernMajorityJournalDefault=false;rs.reconfig(c)\""
@@ -137,23 +140,22 @@ then
 
   helmUpgrade test-chart --set \
   macaroon=$MACAROON,macaroonoutside1=$MACAROONOUTSIDE1,macaroonoutside2=$MACAROONOUTSIDE2,image.tag=$CIRCLE_SHA1,tlsoutside1=$TLSOUTSIDE1,tlsoutside2=$TLSOUTSIDE2,tls=$TLS \
-  ~/GaloyApp/backend/test-chart/
+  $INFRADIR/test-chart/
 
   echo $(kubectl get -n=$NAMESPACE pods)
-  echo "Waiting for test-pod and graphql-server to come alive"
 
 else
-  helmUpgrade prometheus-client -f ~/GaloyApp/infrastructure/graphql-chart/prometheus-values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/infrastructure/graphql-chart/
-  helmUpgrade trigger --set image.tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/backend/trigger-chart/
+  helmUpgrade prometheus-client -f $INFRADIR/graphql-chart/prometheus-values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON $INFRADIR/graphql-chart/
+  helmUpgrade trigger --set image.tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON $INFRADIR/trigger-chart/
 
   createLoopConfigmaps
-  helmUpgrade loop-server -f ~/GaloyApp/backend/loop-server/$NETWORK-values.yaml ~/GaloyApp/backend/loop-server/
+  helmUpgrade loop-server -f $INFRADIR/loop-server/$NETWORK-values.yaml $INFRADIR/loop-server/
   # TODO: missing kubectlWait trigger and prometheus-client
 
-  helmUpgrade update-job -f ~/GaloyApp/infrastructure/update-job/$NETWORK-values.yaml --set image.tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/infrastructure/update-job/
+  helmUpgrade update-job -f $INFRADIR/update-job/$NETWORK-values.yaml --set image.tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON $INFRADIR/update-job/
 fi
 
-helmUpgrade graphql-server -f ~/GaloyApp/infrastructure/graphql-chart/$NETWORK-values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON ~/GaloyApp/infrastructure/graphql-chart/
+helmUpgrade graphql-server -f $INFRADIR/graphql-chart/$NETWORK-values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON $INFRADIR/graphql-chart/
 
 if [ "$NETWORK" == "regtest" ]
 then
@@ -165,4 +167,7 @@ fi
 
 kubectlWait app=redis
 kubectlWait app.kubernetes.io/component=mongodb
+
+echo $(kubectl get -n=$NAMESPACE pods)
+
 kubectlWait app=graphql-server

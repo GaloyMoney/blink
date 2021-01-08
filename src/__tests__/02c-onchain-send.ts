@@ -160,7 +160,6 @@ it('Sends onchain payment _with memo', async () => {
   const paymentResult = await userWallet0.onChainPay({ address, amount, memo })
   expect(paymentResult).toBe(true)
   const txs = await userWallet0.getTransactions()
-  console.log(first(txs))
   expect((first(txs) as any).description).toBe(memo)
 }, 10000)
 

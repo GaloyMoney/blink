@@ -1,14 +1,13 @@
 const lnService = require('ln-service');
 const assert = require('assert').strict;
 import { createHash, randomBytes } from "crypto";
+import moment from "moment";
 import { brokerLndPath, brokerPath, customerPath, lightningAccountingPath } from "./ledger";
 import { disposer, getAsyncRedisClient } from "./lock";
 import { InvoiceUser, MainBook, Transaction, User } from "./mongodb";
 import { sendInvoicePaidNotification } from "./notification";
-import { IAddInvoiceInternalRequest, IPaymentRequest, IFeeRequest } from "./types";
-import { getAuth, LoggedError, sleep, timeout } from "./utils";
-import { regExUsername } from "./wallet";
-import moment from "moment"
+import { IAddInvoiceInternalRequest, IFeeRequest, IPaymentRequest } from "./types";
+import { getAuth, LoggedError, timeout, isInvoiceAlreadyPaidError } from "./utils";
 
 const util = require('util')
 
@@ -21,6 +20,35 @@ export const FEEMIN = 10 // sats
 
 export type ITxType = "invoice" | "payment" | "onchain_receipt" | "onchain_payment" | "on_us"
 export type payInvoiceResult = "success" | "failed" | "pending" | "already_paid"
+
+const addContact = async ({ uid, username }) => {
+  // https://stackoverflow.com/questions/37427610/mongodb-update-or-insert-object-in-array
+
+  const result = await User.update(
+    {
+      _id: uid,
+      "contacts.id": username
+    },
+    {
+      $inc: { "contacts.$.transactionsCount": 1 },
+    },
+  )
+
+  if (!result.nModified) {
+    await User.update(
+      {
+        _id: uid
+      },
+      {
+        $addToSet: {
+          contacts: {
+            id: username
+          }
+        }
+      }
+    );
+  }
+}
 
 // this value is here so that it can get mocked.
 // there could probably be a better design
@@ -59,11 +87,10 @@ export const LightningMixin = (superclass) => class extends superclass {
   }
 
   getExpiration = (input) => {
-    // console.log(delay(this.currency).value, delay(this.currency).unit, "getExpiration unit")
     return input.add(delay(this.currency).value, delay(this.currency).unit)
   }
 
-  async addInvoiceInternal({ sats, usd, memo, selfGenerated }: IAddInvoiceInternalRequest): Promise<string> {
+  async addInvoiceInternal({ sats, usd, memo, selfGenerated, uid, cashback }: IAddInvoiceInternalRequest): Promise<string> {
     let request, id
 
     const expires_at = this.getExpiration(moment()).toDate()
@@ -73,7 +100,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         lnd: this.lnd,
         tokens: sats,
         description: memo,
-        expires_at
+        expires_at,
       })
       request = result.request
       id = result.id
@@ -86,10 +113,14 @@ export const LightningMixin = (superclass) => class extends superclass {
     try {
       const result = await new InvoiceUser({
         _id: id,
-        uid: this.uid,
+
+        // uid for cashback. to remove after cashback is finished
+        uid: uid || this.uid,
         usd,
+        username: this.user.username,
         currency: this.currency,
         selfGenerated,
+        cashback,
       }).save()
     } catch (err) {
       // FIXME if the mongodb connection has not been instanciated
@@ -164,7 +195,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     const value = JSON.stringify(route)
     await getAsyncRedisClient().set(key, value, 'EX', 60 * 5); // expires after 5 minutes
 
-    lightningLogger.info({redis: {key, value}, probingSuccess: true, success: true }, "succesfully found a route")
+    lightningLogger.info({ redis: { key, value }, probingSuccess: true, success: true }, "succesfully found a route")
     return route.fee
   }
 
@@ -244,7 +275,8 @@ export const LightningMixin = (superclass) => class extends superclass {
     let lightningLogger = this.logger.child({ topic: "payment", protocol: "lightning", transactionType: "payment" })
 
     const { tokens, mtokens, destination, pushPayment, id, routeHint, messages, memoInvoice, payment, cltv_delta, features, max_fee } = await this.validate(params, lightningLogger)
-    const { username, memo: memoPayer } = params
+    const { memo: memoPayer, username: input_username } = params
+    let username
 
     // not including message because it contains the preimage and we don't want to log this
     lightningLogger = lightningLogger.child({ decoded: { tokens, destination, pushPayment, id, routeHint, memoInvoice, memoPayer, payment, cltv_delta, features }, params })
@@ -268,13 +300,13 @@ export const LightningMixin = (superclass) => class extends superclass {
         let payeeUid, payeeCurrency
 
         if (pushPayment) {
-          if (!username) {
+          if (!input_username) {
             const error = 'a username is required for push payment to the ***REMOVED*** wallet'
             lightningLoggerOnUs.warn({ success: false, error }, error)
             throw new LoggedError(error)
           }
 
-          const payee = await User.findOne({ username: regExUsername({ username }) })
+          const payee = await User.findByUsername({ username: input_username })
           if (!payee) {
             const error = `this username doesn't exist`
             lightningLoggerOnUs.warn({ success: false, error }, error)
@@ -283,6 +315,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
           payeeUid = payee._id
           payeeCurrency = payee.currency
+          username = payee.username
         } else {
           // standard path, user scan another lightning wallet of bitcoin beach invoice
 
@@ -296,8 +329,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
           payeeUid = payeeInvoice.uid
           payeeCurrency = payeeInvoice.currency
-
-          // TODO: add invoice from username
+          username = payeeInvoice.username
         }
 
         if (payeeUid == this.uid) {
@@ -322,7 +354,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         }
 
         await MainBook.entry(memoInvoice)
-          .debit(customerPath(payeeUid), value, { ...metadata, username: this.user.username})
+          .debit(customerPath(payeeUid), value, { ...metadata, username: this.user.username })
           .credit(this.accountPath, value, { ...metadata, memoPayer, username })
           .commit()
 
@@ -330,39 +362,47 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         if (!pushPayment) {
           const resultDeletion = await InvoiceUser.deleteOne({ _id: id })
-          this.logger.info({id, uid: this.uid, resultDeletion}, "invoice has been deleted from InvoiceUser following on_us transaction")
-          
+          this.logger.info({ id, uid: this.uid, resultDeletion }, "invoice has been deleted from InvoiceUser following on_us transaction")
+
           await lnService.cancelHodlInvoice({ lnd: this.lnd, id })
-          this.logger.info({id, uid: this.uid}, "canceling invoice on lnd")
+          this.logger.info({ id, uid: this.uid }, "canceling invoice on lnd")
         }
-        
+
         // adding contact for the payer
         if (!!username) {
-          // TODO: check the pull/push work at intended
-          this.user.contacts.pull(username)
-          await this.user.save()
-          this.user.contacts.push({
-            $each: [username],
-            $position: 0
-          })
-          await this.user.save()
+          await addContact({ uid: this.user._id, username })
         }
-        
+
         // adding contact for the payee
         if (!!this.user.username) {
-          // we are ordering the query so that the last used username goes last
-          // so that last (and probably most frequent) users are shown at the top
-          await User.update(
-            { _id: payeeUid },
-            { $pull: { contacts: this.user.username }}
-          )
-          await User.update(
-            { _id: payeeUid },
-            { $push: { contacts: { "$each": [this.user.username] }}}
-          )
+          await addContact({ uid: payeeUid, username: this.user.username })
         }
 
         lightningLoggerOnUs.info({ success: true, isReward: params.isReward ?? false, ...metadata }, "lightning payment success")
+
+        // cash back // temporary
+        const cashback = process.env.CASHBACK
+        if (cashback && !params.isReward) {
+
+          const payee = await User.findByUsername({ username })
+          const payeeIsBusiness = payee ? !!payee?.title : false
+          const payerIsBusiness = !!this.user.title
+
+          if (payeeIsBusiness && !payerIsBusiness && !payee.excludeCashback) {
+            const cash_back_ratio = .2
+            const sats = Math.floor(value * cash_back_ratio)
+
+            const invoiceCashBack = await this.addInvoiceInternal({
+              uid: payee._id,
+              memo: `Bono de Navidad por usar Bitcoin en su negocio`,
+              sats,
+              usd: this.satsToUsd(sats),
+              cashback: true
+            })
+
+            lightningLogger.info({ invoiceCashBack }, "adding invoice for cashback")
+          }
+        }
 
         return "success"
       }
@@ -406,7 +446,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         const sats = tokens + fee
 
         lightningLogger = lightningLogger.child({ route, balance, fee, sats })
-        const metadata = { currency: this.currency, hash: id, type: "payment", pending: true, fee, feeKnownInAdvance, ...this.getCurrencyEquivalent({sats, fee }) }
+        const metadata = { currency: this.currency, hash: id, type: "payment", pending: true, fee, feeKnownInAdvance, ...this.getCurrencyEquivalent({ sats, fee }) }
 
         const value = this.isUSD ? metadata.usd : sats
 
@@ -495,7 +535,7 @@ export const LightningMixin = (superclass) => class extends superclass {
             // ie: when a payment is being retried
             await Transaction.updateMany({ hash: id }, { pending: false, error: err[1] })
             await MainBook.void(journal.journal._id, err[1])
-            lightningLogger.warn({ success: false, err, ...metadata }, `payment error`)
+            lightningLogger.warn({ success: false, err, ...metadata, journal }, `payment error`)
 
           } catch (err_fatal) {
             const error = `ERROR CANCELING PAYMENT ENTRY`
@@ -503,10 +543,10 @@ export const LightningMixin = (superclass) => class extends superclass {
             throw new LoggedError(error)
           }
 
-          // if (err[2]?.err?.details === "invoice is already paid") {
-          //   lightningLogger.warn({ ...metadata, pending: false }, 'invoice already paid')
-          //   return "already_paid"
-          // }
+          if (isInvoiceAlreadyPaidError(err)) {
+            lightningLogger.warn({ ...metadata, pending: false }, 'invoice already paid')
+            return "already_paid"
+          }
 
           throw new LoggedError(`Error paying invoice: ${util.inspect({ err }, false, Infinity)}`)
         }

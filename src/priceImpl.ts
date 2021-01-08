@@ -2,7 +2,7 @@ import { sat2btc } from "./utils"
 const mongoose = require("mongoose")
 import moment = require("moment")
 import { PriceHistory } from "./mongodb"
-import { last } from "lodash"
+import { dropRight, last } from "lodash"
 
 
 interface ITick {
@@ -14,16 +14,27 @@ interface ITick {
 export class Price {
   readonly pair
   readonly path
+  readonly ccxt
+  readonly exchange_string
   readonly exchange
   readonly logger: any
 
   constructor({logger}) {
-    const pair = "BTC/USD" // TODO: handle other pairs, eventually
-    this.pair = pair
-    this.exchange = "bitfinex"
+    this.exchange_string = "bitfinex"
+
+    const ccxt = require('ccxt');
+    this.exchange = new ccxt[this.exchange_string]({
+      'enableRateLimit': true,
+      'rateLimit': 2500,
+      'timeout': 5000,
+    })
+
+    this.ccxt = ccxt
+
+    this.pair = "BTC/USD"
     this.path = {
       "pair.name": this.pair,
-      "pair.exchange.name": this.exchange
+      "pair.exchange.name": this.exchange_string
     }
     this.logger = logger
   }
@@ -34,22 +45,17 @@ export class Price {
    */
   async getFromExchange({ since, limit, init }:
     { since: number, limit: number, init: Boolean }): Promise<Array<object>> {
-    const ccxt = require('ccxt');
-    const exchange = new ccxt[this.exchange]({
-      'enableRateLimit': init,
-      'rateLimit': 30000,
-      'timeout': 5000,
-    })
+
     this.logger.info("start fetching data from exchange")
     let ohlcv;
     try {
-      ohlcv = await exchange.fetchOHLCV(this.pair, "1h", since, limit);
+      ohlcv = await this.exchange.fetchOHLCV(this.pair, "1h", since, limit);
       this.logger.info("data fetched from exchange")
     }
     catch (e) {
-      if (e instanceof ccxt.NetworkError) {
+      if (e instanceof this.ccxt.NetworkError) {
         throw new Error(`fetchTicker failed due to a network error: ${e.message}`);
-      } else if (e instanceof ccxt.ExchangeError) {
+      } else if (e instanceof this.ccxt.ExchangeError) {
         throw new Error(`fetchTicker failed due to exchange error: ${e.message}`);
       } else {
         throw new Error(`issue with ref exchanges: ${e}`);
@@ -87,6 +93,59 @@ export class Price {
     return (last(lastCached) as ITick).o
   }
 
+  async eraseIfLastIsNotHourlyCandle({doc}) {
+    if (!doc.pair.exchange.price.length) {
+      this.logger.debug("empty price array")
+      return
+    }
+
+    // @ts-ignore
+    const lastEntryDate = moment(last(doc.pair.exchange.price)._id)
+
+    const isHourlyCandle = lastEntryDate.minutes() === 0 && 
+      lastEntryDate.seconds() === 0 && 
+      lastEntryDate.milliseconds() === 0
+    
+    console.log({isHourlyCandle})
+
+    if (!isHourlyCandle) {
+      doc.pair.exchange.price = dropRight(doc.pair.exchange.price)
+    }
+
+    await doc.save()
+  }
+
+  async fastUpdate() {
+    let lastPrice, datetime, doc
+
+    try {
+      doc = await PriceHistory.findOne(this.path)
+    } catch (err) {
+      this.logger.error({err}, "can't fetch price history from mongodb")
+      return
+    }
+
+    try {
+      ({ last: lastPrice, datetime } = await this.exchange.fetchTicker(this.pair))
+    } catch (err) {
+      this.logger.error({err}, "can't fetch ticker")
+      return
+    }
+
+    try {
+      await this.eraseIfLastIsNotHourlyCandle({doc})
+
+      this.logger.info({lastPrice, datetime}, "updating price")
+  
+      doc.pair.exchange.price.push({ _id: datetime, o: sat2btc(lastPrice) })
+      await doc.save()
+    } catch (err) {
+      this.logger.error({err}, "can't update the price on mongodb")
+      return
+    }
+  }
+
+
   async update(init = false): Promise<Boolean | Error> {
     const increment = 720 // how many candles
     const increment_ms = increment * 3600 * 1000
@@ -107,15 +166,31 @@ export class Price {
         pair: {
           name: "BTC/USD",
           exchange: {
-            name: this.exchange
+            name: this.exchange_string
           }
         }
       })
     }
 
+    await this.eraseIfLastIsNotHourlyCandle({doc})
+
+    // skip if it has not been an hour since last update
+    try {
+      // @ts-ignore
+      const diff = moment().diff(moment(last(doc.pair.exchange.price)._id))
+      console.log({diff})
+      if (diff < 1000 * 60 * 60) {
+        return false
+      }
+    } catch (err) {
+      this.logger.info({err}, "can't detect last price")
+    }
+
     while (currDate < endDate) {
       this.logger.debug({ currDate, endDate }, "loop to fetch data from exchange")
       const ohlcv = await this.getFromExchange({ since: currDate, limit, init })
+
+      console.log({ohlcv})
 
       try {
 
@@ -123,11 +198,15 @@ export class Price {
 
           // FIXME inefficient
           if (doc.pair.exchange.price.find(obj => obj._id.getTime() === value[0])) {
-            this.logger.debug("we already have those price datas in our database... continue")
+            // this.logger.debug({value0: value[0]}, "we already have those price datas in our database")
             continue
           }
-
+          
+          
+          this.logger.debug({value0: value[0]}, "adding entry to our price database")
           doc.pair.exchange.price.push({ _id: value[0], o: sat2btc(value[1]) })
+
+          console.log({price: doc.pair.exchange.price})
         }
 
         await doc.save()

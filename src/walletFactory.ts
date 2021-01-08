@@ -7,7 +7,6 @@ import { login, TEST_NUMBER } from "./text";
 import * as jwt from 'jsonwebtoken';
 import { baseLogger, LoggedError } from "./utils";
 import { getLastPrice } from "./cache";
-import { regExUsername } from "./wallet";
 
 export const WalletFactory = async ({ user, uid, logger, currency = "BTC" }: { user: any, uid: string, currency: string, logger: any }) => {
   const lastPrice = await getLastPrice()
@@ -21,7 +20,7 @@ export const WalletFactory = async ({ user, uid, logger, currency = "BTC" }: { u
 }
 
 export const WalletFromUsername = async ({ username, logger }: { username: string, logger: any }) => {
-  const user = await User.findOne({ username: regExUsername({username}) })
+  const user = await User.findByUsername({ username })
   if (!user) {
     const error = `User not found`
     logger.warn({username}, error)
@@ -35,8 +34,8 @@ export const WalletFromUsername = async ({ username, logger }: { username: strin
 }
 
 export const getFunderWallet = async ({ logger }) => {
-  const funder = await User.findOne({ role: "funder" })
-  return new LightningBtcWallet({ lastPrice: await getLastPrice(), user: funder, uid: funder._id, logger })
+  const funder = await User.findOne({ username: "***REMOVED***" })
+  return new LightningBtcWallet({ lastPrice: await getLastPrice(), uid: funder._id, user: funder, logger })
 }
 
 export const getBrokerWallet = async ({ logger }) => {
@@ -45,8 +44,14 @@ export const getBrokerWallet = async ({ logger }) => {
 }
 
 export const getTokenFromPhoneIndex = async (index) => {
-  const raw_token = await login({ ...TEST_NUMBER[index], logger: baseLogger })
+  const entry = {...TEST_NUMBER[index]}
+  const raw_token = await login({ ...entry, logger: baseLogger })
   const token = jwt.verify(raw_token, process.env.JWT_SECRET);
+
+  if (entry.username) {
+    const { uid } = token
+    await User.findOneAndUpdate({ _id: uid }, { username: entry.username })
+  }
   return token
 }
 

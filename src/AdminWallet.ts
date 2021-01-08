@@ -1,8 +1,9 @@
 import { filter, sumBy } from "lodash";
-import { accountingExpenses, escrowAccountingPath, lightningAccountingPath, openChannelFees } from "./ledger";
-import { MainBook, Transaction, User } from "./mongodb";
+import { CSVAccountExport } from "./csvAccountExport";
+import { accountingExpenses, customerPath, escrowAccountingPath, lightningAccountingPath, lndFee } from "./ledger";
+import { InvoiceUser, MainBook, Transaction, User } from "./mongodb";
 import { baseLogger, getAuth } from "./utils";
-import { getBrokerWallet, WalletFactory } from "./walletFactory";
+import { getBrokerWallet, getFunderWallet, WalletFactory } from "./walletFactory";
 const lnService = require('ln-service')
 
 const logger = baseLogger.child({module: "admin"})
@@ -23,26 +24,24 @@ export class AdminWallet {
     }
   }
 
-  async getBooks() {
-    const accounts = await MainBook.listAccounts()
+  async payCashBack() {
+    const cashback = process.env.CASHBACK
+    logger.info({cashback}, "cashback enabled?")
 
-    // used for debugging
-    const books = {}
-    for (const account of accounts) {
-      for (const currency of ["USD", "BTC"]) {
-        const { balance } = await MainBook.balance({
-          account,
-          currency,
-        })
-        if (!!balance) {
-          books[`${currency}:${account}`] = balance
-        }
-      }
+    if (!cashback) {
+      return
     }
 
-    logger.debug(books, "status of our bookeeping")
-    return books
+    const fundingWallet = await getFunderWallet({ logger })  
+
+    const invoices = await InvoiceUser.find({ cashback: true })
+    for (const invoice_db of invoices) {
+      const invoice = await lnService.getInvoice({ lnd: this.lnd, id: invoice_db._id })
+      const result = await fundingWallet.pay({invoice: invoice.request, isReward: true})
+      logger.info({invoice, invoice_db, result}, "cashback succesfully sent")
+    }
   }
+
 
   async getBalanceSheet() {    
     const { balance: assets } = await MainBook.balance({accounts: "Assets", currency: "BTC"}) 

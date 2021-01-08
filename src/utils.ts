@@ -1,10 +1,11 @@
 import * as jwt from 'jsonwebtoken'
 import * as lnService from "ln-service"
-import { filter, includes, intersection, sumBy, union } from "lodash"
+import { filter, find, includes, intersection, sumBy, union } from "lodash"
 import * as moment from 'moment'
 export const validate = require("validate.js")
 const BitcoindClient = require('bitcoin-core')
-const {parsePaymentRequest} = require('invoices');
+const { parsePaymentRequest } = require('invoices');
+const axios = require('axios').default;
 
 
 export const baseLogger = require('pino')({ level: process.env.LOGLEVEL || "info" })
@@ -47,15 +48,15 @@ export const myOwnAddressesOnVout = ({ vout, onchain_addresses }) => {
 export const bitcoindClient = new BitcoindClient(connection_obj)
 
 export const getHash = (request) => {
-  return parsePaymentRequest({request}).id
+  return parsePaymentRequest({ request }).id
 }
 
 export const getAmount = (request): number | undefined => {
-  return parsePaymentRequest({request}).tokens
+  return parsePaymentRequest({ request }).tokens
 }
 
 export const btc2sat = (btc: number) => {
-  return btc * Math.pow(10, 8)
+  return Math.round(btc * Math.pow(10, 8))
 }
 
 export const sat2btc = (sat: number) => {
@@ -145,4 +146,24 @@ export async function nodeStats({ lnd }) {
     channelsCount,
     id
   }
+}
+
+export async function getBosScore() {
+  try {
+    const { data } = await axios.get('https://bos.lightning.jorijn.com/data/export.json')
+
+    // FIXME: make it dynamic
+    const publicKey = "0325bb9bda523a85dc834b190289b7e25e8d92615ab2f2abffbe97983f0bb12ffb"
+    const bosScore = find(data.data, { publicKey })
+    return bosScore.score
+  } catch (err) {
+    baseLogger.error({ err, err2: err.toJson() }, `issue getting bos rank`)
+  }
+}
+
+export const isInvoiceAlreadyPaidError = (err) => {
+  if ("invoice is already paid" === (err[2]?.err?.details || err[2]?.failures[0]?.[2]?.err?.details)) {
+    return true
+  }
+  return false
 }

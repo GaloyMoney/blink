@@ -2,10 +2,11 @@ import dotenv from "dotenv";
 import { rule, shield } from 'graphql-shield';
 import { GraphQLServer } from 'graphql-yoga';
 import * as jwt from 'jsonwebtoken';
-import { chunk, startsWith } from "lodash";
+import { startsWith } from "lodash";
 import moment from "moment";
 import { v4 as uuidv4 } from 'uuid';
 import { getMinBuildNumber, mainCache } from "./cache";
+import { getAsyncRedisClient } from "./lock";
 import { setupMongoConnection, User } from "./mongodb";
 import { sendNotification } from "./notification";
 import { Price } from "./priceImpl";
@@ -17,6 +18,7 @@ import { UserWallet } from "./wallet";
 import { WalletFactory, WalletFromUsername } from "./walletFactory";
 const util = require('util')
 const lnService = require('ln-service')
+const mongoose = require("mongoose");
 import { insertMarkers } from "./tool/map_csv_to_mongodb"
 
 
@@ -104,11 +106,10 @@ const resolvers = {
         // TODO: maybe have a better way to reset the cache.
         // if we have 300 seconds of cache here, but we also only fetch from prometheus value only every 300 seconds
         // then the price value could be stale up to 600 seconds on the client side
-        mainCache.set( key, lastCached, [ 300 ] )
+        mainCache.set( key, lastCached, [ 30 ] )
         value = lastCached
       }
     
-      // console.log({value})
       return value.splice(-length)
     },
     earnList: async (_, __, { uid, user }) => {
@@ -158,7 +159,13 @@ const resolvers = {
       },
       setUsername: async ({ username }) => await wallet.setUsername({ username }),
       setLanguage: async ({ language }) => await wallet.setLanguage({ language })
-
+    }),
+    updateContact: async (_, __, { user }) => ({
+      setName: async ({ username, name }) => {
+        user.contacts.filter(item => item.id === username)[0].name = name
+        await user.save()
+        return true
+      }
     }),
     publicInvoice: async (_, { username }, { logger }) => {
       const wallet = await WalletFromUsername({ username, logger })
@@ -297,8 +304,10 @@ server.express.use(pino_http)
 
 
 // Health check
-server.express.get('/healthz', function(req, res) {
-  res.send('OK');
+server.express.get('/healthz', async function(req, res) {
+  const isMongoAlive = mongoose.connection.readyState == 1 ? true : false
+  const isRedisAlive = await getAsyncRedisClient().ping() === 'PONG'
+  res.status((isMongoAlive && isRedisAlive) ? 200 : 503).send();
 });
 
 const options = {
@@ -319,7 +328,7 @@ const options = {
 
 setupMongoConnection().then(() => {
   upgrade().then(() => {
-  insertMarkers(true).then(
+  insertMarkers().then(
   () => {
     server.start(options, ({ port }) =>
       graphqlLogger.info(

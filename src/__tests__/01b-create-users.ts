@@ -8,15 +8,11 @@ import { getUserWallet, username } from "../tests/helper"
 import { createBrokerUid, getTokenFromPhoneIndex } from "../walletFactory";
 import { UserWallet } from "../wallet"
 const mongoose = require("mongoose");
+import { insertMarkers } from "../tool/map_csv_to_mongodb"
+
 
 let userWallet0, userWallet1, userWallet2
 
-
-// change role to admin
-// FIXME there should be an API for this
-export async function promoteToFunder(uid) {
-  await User.findOneAndUpdate({ _id: uid }, { role: "funder" })
-}
 
 beforeAll(async () => {
   await setupMongoConnection()
@@ -38,8 +34,7 @@ it('add user0 without currency (old account)', async () => {
 
 
 it('add Funder', async () => {
-  const { uid } = await getTokenFromPhoneIndex(4)
-  await promoteToFunder(uid)
+  await getTokenFromPhoneIndex(4)
 })
 
 it('add Broker', async () => {
@@ -134,6 +129,16 @@ describe('username tests', () => {
     await expect(userWallet2.setUsername({ username })).rejects.toThrow()
   })
 
+})
+
+describe('business username', () => {
+  //userWallet2 is a business
+  it('check that userWallet has title set', async () => {
+    await insertMarkers()
+
+    userWallet2 = await getUserWallet(2)
+    await expect(userWallet2.user.title).toBeTruthy()
+  })
 })
 
 

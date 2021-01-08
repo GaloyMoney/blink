@@ -35,6 +35,8 @@ const invoiceUserSchema = new Schema({
   // optional, as BTC wallet doesn't have to set a sat amount when creating the invoice
   usd: Number,
 
+  username: String,
+
   // currency matchs the user account
   currency: {
     type: String,
@@ -50,6 +52,11 @@ const invoiceUserSchema = new Schema({
   selfGenerated: {
     type: Boolean,
     default: true
+  },
+
+  cashback: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -57,6 +64,8 @@ invoiceUserSchema.index({ "uid": 1 })
 
 
 export const InvoiceUser = mongoose.model("InvoiceUser", invoiceUserSchema)
+
+export const regexUsername = /(?!^(1|3|bc1|lnbc1))^[0-9a-z_]+$/i
 
 
 
@@ -71,10 +80,10 @@ const UserSchema = new Schema({
   },
   role: {
     type: String,
-    enum: ["user", "funder", "broker"],
+    enum: ["user", "broker"],
     required: true,
     default: "user"
-    // todo : enfore the fact there can be only one funder/broker
+    // todo : enfore the fact there can be only one broker
   },
   onchain_addresses: {
     type: [String],
@@ -90,7 +99,7 @@ const UserSchema = new Schema({
   },
   username: {
     type: String,
-    match: [/(?!^(1|3|bc1|lnbc1))^[0-9a-z_]+$/i, "Username can only have alphabets, numbers and underscores"],
+    match: [regexUsername, "Username can only have alphabets, numbers and underscores"],
     minlength: 3,
     maxlength: 50,
     index: {
@@ -110,8 +119,18 @@ const UserSchema = new Schema({
     required: true,
   },
   contacts: {
-    type: [String],
-    default: []
+    type: [{
+      id: {
+        type: String,
+        collation: {locale: "en", strength: 2},
+      },
+      name: String,
+      transactionsCount: {
+        type: Number,
+        default: 1,
+      }
+    }],
+    default: [],
   },
   language: {
     type: String,
@@ -127,6 +146,10 @@ const UserSchema = new Schema({
   coordinate: {
     type: pointSchema,
   },
+  excludeCashback: {
+    type: Boolean,
+    default: false
+  }
 
 })
 
@@ -142,7 +165,18 @@ UserSchema.index({
   coordinate: 1,
 });
 
+
+UserSchema.statics.findByUsername = async function ({username}) {
+  if (typeof username !== "string" || !username.match(regexUsername)) {
+    return null
+  }
+
+  return this.findOne({ username: new RegExp(`^${username}$`, 'i')})
+}
+
 export const User = mongoose.model("User", UserSchema)
+
+
 
 
 // TODO: this DB should be capped.
@@ -261,6 +295,7 @@ const transactionSchema = new Schema({
   },
 
   // when transaction with on_us transaction, this is the other party username
+  // TODO: refactor, define username as a type so that every property that should be an username can inherit from those parameters
   username: {
     type: String,
     match: [/(?!^(1|3|bc1|lnbc1))^[0-9a-z_]+$/i, "Username can only have alphabets, numbers and underscores"],
@@ -367,7 +402,7 @@ export const setupMongoConnection = async () => {
     await Transaction.syncIndexes()
     await InvoiceUser.syncIndexes()
   } catch (err) {
-    baseLogger.fatal(`error connecting to mongodb ${err}`)
+    baseLogger.fatal({err}, `error connecting to mongodb`)
     exit(1)
   }
 }
