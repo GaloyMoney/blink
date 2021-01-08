@@ -114,12 +114,12 @@ functionToTests.forEach(({fn, name, initialFee}) => {
   it(`fails when repaying invoice ${name}`, async () => {
     const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: amountInvoice })
     await fn(userWallet1)({ invoice: request })
-    const intermediateBalance = await userWallet1.getBalance()
+    const intermediateBalance = await userWallet1.getBalances()
     const result = await fn(userWallet1)({ invoice: request })
     expect(result).toBe("already_paid")
   
-    const finalBalance = await userWallet1.getBalance()
-    expect(finalBalance).toBe(intermediateBalance)
+    const finalBalance = await userWallet1.getBalances()
+    expect(finalBalance).toStrictEqual(intermediateBalance)
   })
 
   it(`payInvoice with High CLTV Delta ${name}`, async () => {

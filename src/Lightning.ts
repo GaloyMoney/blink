@@ -357,7 +357,7 @@ export const LightningMixin = (superclass) => class extends superclass {
           const payeeIsBusiness = payeeUser ? !!payeeUser?.title : false
           const payerIsBusiness = !!this.user.title
 
-          if (payeeIsBusiness && !payerIsBusiness && !payee.excludeCashback) {
+          if (payeeIsBusiness && !payerIsBusiness && !payeeUser.excludeCashback) {
             const cash_back_ratio = .2
             const sats = Math.floor(tokens * cash_back_ratio)
 

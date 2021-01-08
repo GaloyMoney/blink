@@ -44,23 +44,23 @@ export const getBrokerWallet = async ({ logger }) => {
   return WalletFactory({ user: broker, logger })
 }
 
+// utils function for test
 export const getTokenFromPhoneIndex = async (index) => {
-  const entry = {...TEST_NUMBER[index]}
+  const entry = TEST_NUMBER[index]
   const raw_token = await login({ ...entry, logger: baseLogger })
   const token = jwt.verify(raw_token, process.env.JWT_SECRET);
 
+  const { uid } = token
+
   if (entry.username) {
-    const { uid } = token
     await User.findOneAndUpdate({ _id: uid }, { username: entry.username })
   }
 
   if (entry.currencies) {
-    const { uid } = token
     await User.findOneAndUpdate({ _id: uid }, { currencies: entry.currencies })
   }
 
   if (entry.role) {
-    const { uid } = token
     await User.findOneAndUpdate({ _id: uid }, { role: entry.role })
   }
 

@@ -2,7 +2,7 @@
  * @jest-environment node
  */
 import { setupMongoConnection, DbVersion, MainBook, Transaction } from "../mongodb";
-import { lightningAccountingPath, lndFee } from "../ledger"
+import { lndAccountingPath, lndFee } from "../ledger"
 import { fixChannelFeeTxns } from '../upgrade'
 const mongoose = require("mongoose");
 
@@ -27,7 +27,7 @@ it('applies version 9 upgrade correctly', async () => {
   const fee = 1234
   const metadata = { currency: "BTC", txid: "xyz", type: "fee" }
   await MainBook.entry("channel closing onchain fee")
-    .debit(lightningAccountingPath, fee, { ...metadata })
+    .debit(lndAccountingPath, fee, { ...metadata })
     .credit(lndFee, fee, { ...metadata })
     .commit()
 
