@@ -8,7 +8,7 @@ import { InvoiceUser, MainBook, Transaction, User } from "./mongodb";
 import { sendInvoicePaidNotification } from "./notification";
 import { onUsPayment, payLnd, receiptLnd } from "./transaction";
 import { IAddInvoiceRequest, IFeeRequest, IPaymentRequest } from "./types";
-import { addContact, getAuth, LoggedError, timeout } from "./utils";
+import { addContact, getAuth, isInvoiceAlreadyPaidError, LoggedError, timeout } from "./utils";
 import { UserWallet } from "./wallet";
 
 const util = require('util')
@@ -22,6 +22,7 @@ export const FEEMIN = 10 // sats
 
 export type ITxType = "invoice" | "payment" | "onchain_receipt" | "onchain_payment" | "on_us"
 export type payInvoiceResult = "success" | "failed" | "pending" | "already_paid"
+
 
 // this value is here so that it can get mocked.
 // there could probably be a better design
@@ -172,7 +173,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     const value = JSON.stringify(route)
     await getAsyncRedisClient().set(key, value, 'EX', 60 * 5); // expires after 5 minutes
 
-    lightningLogger.info({redis: {key, value}, probingSuccess: true, success: true }, "succesfully found a route")
+    lightningLogger.info({ redis: { key, value }, probingSuccess: true, success: true }, "succesfully found a route")
     return route.fee
   }
 
@@ -332,17 +333,17 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         if (!pushPayment) {
           const resultDeletion = await InvoiceUser.deleteOne({ _id: id })
-          this.logger.info({id, uid: this.uid, resultDeletion}, "invoice has been deleted from InvoiceUser following on_us transaction")
-          
+          this.logger.info({ id, uid: this.uid, resultDeletion }, "invoice has been deleted from InvoiceUser following on_us transaction")
+
           await lnService.cancelHodlInvoice({ lnd: this.lnd, id })
-          this.logger.info({id, uid: this.uid}, "canceling invoice on lnd")
+          this.logger.info({ id, uid: this.uid }, "canceling invoice on lnd")
         }
-        
+
         // adding contact for the payer
         if (!!payeeUser.username) {
           await addContact({uid: this.uid, username: payeeUser.username})
         }
-        
+
         // adding contact for the payee
         if (!!this.user.username) {
           await addContact({uid: payeeUser._id, username: this.user.username})
@@ -356,7 +357,7 @@ export const LightningMixin = (superclass) => class extends superclass {
           const payeeIsBusiness = payeeUser ? !!payeeUser?.title : false
           const payerIsBusiness = !!this.user.title
 
-          if (payeeIsBusiness && !payerIsBusiness) {
+          if (payeeIsBusiness && !payerIsBusiness && !payee.excludeCashback) {
             const cash_back_ratio = .2
             const sats = Math.floor(tokens * cash_back_ratio)
 
@@ -368,7 +369,7 @@ export const LightningMixin = (superclass) => class extends superclass {
               cashback: true
             })
 
-            lightningLogger.info({invoiceCashBack}, "adding invoice for cashback")
+            lightningLogger.info({ invoiceCashBack }, "adding invoice for cashback")
           }
         }
 
@@ -505,7 +506,7 @@ export const LightningMixin = (superclass) => class extends superclass {
             // ie: when a payment is being retried
             await Transaction.updateMany({ hash: id }, { pending: false, error: err[1] })
             await MainBook.void(entry.journal._id, err[1])
-            lightningLogger.warn({ success: false, err, ...metadata }, `payment error`)
+            lightningLogger.warn({ success: false, err, ...metadata, entry }, `payment error`)
 
           } catch (err_fatal) {
             const error = `ERROR CANCELING PAYMENT ENTRY`
@@ -513,10 +514,10 @@ export const LightningMixin = (superclass) => class extends superclass {
             throw new LoggedError(error)
           }
 
-          // if (err[2]?.err?.details === "invoice is already paid") {
-          //   lightningLogger.warn({ ...metadata, pending: false }, 'invoice already paid')
-          //   return "already_paid"
-          // }
+          if (isInvoiceAlreadyPaidError(err)) {
+            lightningLogger.warn({ ...metadata, pending: false }, 'invoice already paid')
+            return "already_paid"
+          }
 
           throw new LoggedError(`Error paying invoice: ${util.inspect({ err }, false, Infinity)}`)
         }

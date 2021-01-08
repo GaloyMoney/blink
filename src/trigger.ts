@@ -1,18 +1,21 @@
-import express from 'express';
-import { subscribeToChannels, subscribeToInvoices, subscribeToTransactions, subscribeToBackups } from 'ln-service';
-import { Storage } from '@google-cloud/storage'
-import { find } from "lodash";
-import { InvoiceUser, setupMongoConnection, Transaction, User, MainBook } from "./mongodb";
-import { lndAccountingPath, openChannelFees } from "./ledger";
-import { sendInvoicePaidNotification, sendNotification } from "./notification";
-import { IDataNotification } from "./types";
-import { getAuth, baseLogger, LOOK_BACK } from './utils';
-import { WalletFactory } from "./walletFactory";
-import { Price } from "./priceImpl";
+import { Storage } from '@google-cloud/storage';
 import { Dropbox } from "dropbox";
+import express from 'express';
+import { subscribeToBackups, subscribeToChannels, subscribeToInvoices, subscribeToTransactions } from 'ln-service';
+import { find } from "lodash";
+import { lndAccountingPath, lndFee } from "./ledger";
+import { InvoiceUser, MainBook, setupMongoConnection, Transaction, User } from "./mongodb";
+import { sendInvoicePaidNotification, sendNotification } from "./notification";
+import { Price } from "./priceImpl";
+import { IDataNotification } from "./types";
+import { baseLogger, getAuth, LOOK_BACK } from './utils';
+import { WalletFactory } from "./walletFactory";
 
 const crypto = require("crypto")
 const lnService = require('ln-service');
+
+//millitokens per million
+const FEE_RATE = 2500
 
 const logger = baseLogger.child({ module: "trigger" })
 
@@ -88,7 +91,7 @@ export async function onchainTransactionEventHandler(tx) {
         return
       }
     } catch (error) {
-      onchainLogger.error({error}, "issue in onchainTransactionEventHandler to get User id attached to output_addresses")
+      onchainLogger.error({ error }, "issue in onchainTransactionEventHandler to get User id attached to output_addresses")
       throw error
     }
     const data: IDataNotification = {
@@ -137,15 +140,13 @@ export const onInvoiceUpdate = async invoice => {
   }
 }
 
-export const onChannelOpened = async ({ channel, lnd }) => {
-
+export const onChannelUpdated = async ({ channel, lnd, stateChange }: { channel: any, lnd: any, stateChange: "opened" | "closed" }) => {
   if (channel.is_partner_initiated) {
-    logger.info({ channel }, "channel opened to us")
+    logger.info({ channel }, `channel ${stateChange} to us`)
     return
   }
 
-  logger.info({ channel }, "channel opened by us")
-
+  logger.info({ channel }, `channel ${stateChange} by us`)
   const { transaction_id } = channel
 
   // TODO: dedupe from onchain
@@ -157,12 +158,27 @@ export const onChannelOpened = async ({ channel, lnd }) => {
 
   const metadata = { currency: "BTC", txid: transaction_id, type: "fee" }
 
-  await MainBook.entry("on chain fee")
-    .debit(lndAccountingPath, fee, { ...metadata, })
-    .credit(openChannelFees, fee, { ...metadata })
+  await MainBook.entry(`channel ${stateChange} onchain fee`)
+    .credit(lndAccountingPath, fee, { ...metadata })
+    .debit(lndFee, fee, { ...metadata })
     .commit()
 
-  logger.info({ success: true, channel, fee, ...metadata }, `open channel fee added to mongodb`)
+  logger.info({ channel, fee, ...metadata }, `${stateChange} channel fee added to mongodb`)
+}
+
+const updatePrice = async () => {
+  const price = new Price({ logger: baseLogger })
+
+  const _1minInterval = 1000 * 30
+
+  setInterval(async function () {
+    try {
+      await price.update()
+      await price.fastUpdate()
+    } catch (err) {
+      logger.error({ err }, "can't update the price")
+    }
+  }, _1minInterval)
 }
 
 const main = async () => {
@@ -179,11 +195,13 @@ const main = async () => {
   subTransactions.on('chain_transaction', onchainTransactionEventHandler);
 
   const subChannels = subscribeToChannels({ lnd });
-  subChannels.on('channel_opened', (channel) => onChannelOpened({ channel, lnd }))
+  subChannels.on('channel_opened', (channel) => onChannelUpdated({ channel, lnd, stateChange: "opened" }))
+  subChannels.on('channel_closed', (channel) => onChannelUpdated({ channel, lnd, stateChange: "closed" }))
 
   const subBackups = subscribeToBackups({ lnd })
   subBackups.on('backup', ({ backup }) => uploadBackup(backup))
 
+  updatePrice()
 }
 
 const healthCheck = () => {
@@ -192,7 +210,7 @@ const healthCheck = () => {
   const app = express()
   const port = 8888
   app.get('/health', (req, res) => {
-    lnService.getWalletInfo({ lnd }, (err,) => !err ? res.sendStatus(200) : res.sendStatus(500));
+    lnService.getWalletInfo({ lnd }, (err, ) => !err ? res.sendStatus(200) : res.sendStatus(500));
   })
   app.listen(port, () => logger.info(`Health check listening on port ${port}!`))
 }

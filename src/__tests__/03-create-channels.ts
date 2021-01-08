@@ -2,18 +2,17 @@
  * @jest-environment node
  */
 import { AdminWallet } from "../AdminWallet";
-import { setupMongoConnection } from "../mongodb";
+import { setupMongoConnection, MainBook, Transaction } from "../mongodb";
 import { checkIsBalanced, lndMain, lndOutside1, lndOutside2, RANDOM_ADDRESS, waitUntilBlockHeight, mockGetExchangeBalance } from "../tests/helper";
 import { baseLogger, bitcoindClient, nodeStats, sleep } from "../utils";
-import { onChannelOpened, uploadBackup } from '../trigger'
+import { lndFee } from "../ledger"
+import { onChannelUpdated } from '../trigger'
 const mongoose = require("mongoose");
 const { once } = require('events');
 
 const lnService = require('ln-service')
 
-
-
-const local_tokens = 10000000
+const local_tokens = 1000000
 
 let initBlockCount
 let adminWallet
@@ -45,6 +44,9 @@ afterAll(async () => {
 
 const newBlock = 6
 
+//this is the fixed opening and closing channel fee on devnet
+const channelFee = 7637
+
 const openChannel = async ({ lnd, other_lnd, socket, is_private = false }) => {
 
   await waitUntilBlockHeight({ lnd: lndMain, blockHeight: initBlockCount })
@@ -59,20 +61,16 @@ const openChannel = async ({ lnd, other_lnd, socket, is_private = false }) => {
   const sub = lnService.subscribeToChannels({ lnd })
 
   if (lnd === lndMain) {
-    sub.once('channel_opened', (channel) => onChannelOpened({ channel, lnd }))
+    sub.once('channel_opened', (channel) => onChannelUpdated({ channel, lnd, stateChange: "opened" }))
   }
 
   if (other_lnd === lndMain) {
-     sub.once('channel_opened', (channel) => expect(channel.is_partner_initiated).toBe(true))
+    sub.once('channel_opened', (channel) => expect(channel.is_partner_initiated).toBe(true))
   }
 
   await once(sub, 'channel_opening')
 
-  const mineBlock = async () => {
-    await bitcoindClient.generateToAddress(newBlock, RANDOM_ADDRESS)
-    await waitUntilBlockHeight({ lnd: lndMain, blockHeight: initBlockCount + newBlock })
-    await waitUntilBlockHeight({ lnd: other_lnd, blockHeight: initBlockCount + newBlock })
-  }
+  await mineBlockAndSync({ lnds: [lnd, other_lnd], blockHeight: initBlockCount + newBlock })
 
   baseLogger.debug("mining blocks and waiting for channel being opened")
 
@@ -81,22 +79,69 @@ const openChannel = async ({ lnd, other_lnd, socket, is_private = false }) => {
     // error: https://github.com/alexbosworth/ln-service/issues/122
     // need to investigate.
     // once(sub, 'channel_opened'),
-    mineBlock(),
+    mineBlockAndSync({ lnds: [lnd, other_lnd], blockHeight: initBlockCount + newBlock }),
   ])
 
-  
+
   await sleep(5000)
   await adminWallet.updateEscrows()
   sub.removeAllListeners()
 }
 
+const mineBlockAndSync = async ({ lnds, blockHeight }: { lnds: Array<any>, blockHeight: number }) => {
+  await bitcoindClient.generateToAddress(newBlock, RANDOM_ADDRESS)
+  const promiseArray: Array<Promise<any>> = []
+  for (const lnd of lnds) {
+    promiseArray.push(waitUntilBlockHeight({ lnd, blockHeight }))
+  }
+  await Promise.all(promiseArray)
+}
+
 it('opens channel from lnd1 to lndOutside1', async () => {
   const socket = `lnd-outside-1:9735`
+  const { balance: initFeeInLedger } = await MainBook.balance({
+    account: lndFee,
+    currency: "BTC",
+  })
   await openChannel({ lnd: lndMain, other_lnd: lndOutside1, socket })
 
   const { channels } = await lnService.getChannels({ lnd: lndMain })
   expect(channels.length).toEqual(channelLengthMain + 1)
+  const { balance: finalFeeInLedger } = await MainBook.balance({
+    account: lndFee,
+    currency: "BTC",
+  })
+  expect(finalFeeInLedger - initFeeInLedger).toBe(channelFee * -1)
+})
 
+it('opens and closes channel from lnd1 to lndOutside1', async () => {
+  const socket = `lnd-outside-1:9735`
+
+  await openChannel({ lnd: lndMain, other_lnd: lndOutside1, socket })
+
+  const { channels } = await lnService.getChannels({ lnd: lndMain })
+  expect(channels.length).toEqual(channelLengthMain + 2)
+  const { balance: initFeeInLedger } = await MainBook.balance({
+    account: lndFee,
+    currency: "BTC",
+  })
+
+  const sub = lnService.subscribeToChannels({ lnd: lndMain })
+  sub.on('channel_closed', async (channel) => {
+    await onChannelUpdated({ channel, lnd: lndMain, stateChange: "closed" })
+  })
+  
+  await lnService.closeChannel({ lnd: lndMain, id: channels[0].id })
+  const currentBlockCount = await bitcoindClient.getBlockCount()
+  await mineBlockAndSync({ lnds: [lndMain, lndOutside1], blockHeight: currentBlockCount + newBlock })
+
+  const { balance: finalFeeInLedger } = await MainBook.balance({
+    account: lndFee,
+    currency: "BTC",
+  })
+  await sleep(10000)
+  expect(finalFeeInLedger - initFeeInLedger).toBe(channelFee * -1)
+  sub.removeAllListeners()
 })
 
 it('opens private channel from lndOutside1 to lndOutside2', async () => {
