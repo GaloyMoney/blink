@@ -166,7 +166,7 @@ jobs:
     working_directory: ~/GaloyApp/backend
     docker:
       - image: kiwigrid/gcloud-kubectl-helm:latest
-    resource_class: small
+    resource_class: medium
     steps:
       - checkout:
           path: ~/GaloyApp
