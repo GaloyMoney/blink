@@ -9,7 +9,6 @@ const axios = require('axios').default;
 
 
 export const baseLogger = require('pino')({ level: process.env.LOGLEVEL || "info" })
-const util = require('util')
 
 // how many block are we looking back for getChainTransactions
 export const LOOK_BACK = 2016

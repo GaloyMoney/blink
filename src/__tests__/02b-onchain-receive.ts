@@ -15,7 +15,6 @@ const lnService = require('ln-service')
 
 const mongoose = require("mongoose");
 const { once } = require('events');
-const util = require('util')
 
 
 let funderWallet

@@ -5,8 +5,6 @@ import { OnChainMixin } from "./OnChain";
 import { ILightningWalletUser } from "./types";
 import { baseLogger, btc2sat, sleep } from "./utils";
 import { UserWallet } from "./wallet";
-const using = require('bluebird').using
-const util = require('util')
 const ccxt = require('ccxt')
 const assert = require('assert')
 
