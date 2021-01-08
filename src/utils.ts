@@ -166,3 +166,7 @@ export const isInvoiceAlreadyPaidError = (err) => {
   }
   return false
 }
+
+export const isUserActive = (uid) => {
+  
+}
