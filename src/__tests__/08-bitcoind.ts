@@ -6,18 +6,21 @@ import { getLastPrice } from "../cache";
 import { quit } from "../lock";
 import { setupMongoConnection, User } from "../mongodb";
 import { checkIsBalanced, getUserWallet, mockGetExchangeBalance, RANDOM_ADDRESS } from "../tests/helper";
-import { baseLogger, bitcoindDefaultClient, sat2btc } from "../utils";
+import { baseLogger, bitcoindDefaultClient, getAuth, sat2btc } from "../utils";
 import { getTokenFromPhoneIndex } from "../walletFactory";
+const lnService = require('ln-service');
 
 const mongoose = require("mongoose");
 
 let initBlockCount, bitcoindWallet
 
 jest.mock('../notification')
+let lnd
 
 beforeAll(async () => {
   await setupMongoConnection()
   mockGetExchangeBalance()
+  lnd = lnService.authenticatedLndGrpc(getAuth()).lnd
 })
 
 beforeEach(async () => {
@@ -56,9 +59,10 @@ it('createWallet', async () => {
   // expect(balance).toBe(0)
 })
 
-it('deposit test', async () => {
+it('deposit to bitcoind', async () => {
   const initBitcoindBalance = await bitcoindWallet.getBitcoindBalance()
-  
+  const { chain_balance: lndBalance } = await lnService.getChainBalance({ lnd })
+
   const sats = 1000
 
   await bitcoindWallet.rebalance({sats, depositOrWithdraw: "deposit" })
@@ -67,7 +71,27 @@ it('deposit test', async () => {
   const bitcoindBalance = await bitcoindWallet.getBitcoindBalance()
 
   console.log({initBitcoindBalance, bitcoindBalance})
-  expect(bitcoindBalance).toBe(sats + initBitcoindBalance)
+  expect(bitcoindBalance).toBe(initBitcoindBalance + sats)
+  expect(lndBalance).toBe(lndBalance - sats)
+
+})
+
+it('withdrawing from bitcoind', async () => {
+  const initBitcoindBalance = await bitcoindWallet.getBitcoindBalance()
+  const { chain_balance: initLndBalance } = await lnService.getChainBalance({ lnd })
+  
+  const sats = 1000
+  
+  await bitcoindWallet.rebalance({sats, depositOrWithdraw: "withdraw" })
+  await bitcoindDefaultClient.generateToAddress(3, RANDOM_ADDRESS)
+  
+  const bitcoindBalance = await bitcoindWallet.getBitcoindBalance()
+  
+  const { chain_balance: lndBalance } = await lnService.getChainBalance({ lnd })
+  
+  console.log({initBitcoindBalance, bitcoindBalance, lndBalance, initLndBalance})
+  expect(bitcoindBalance).toBe(initBitcoindBalance - sats)
+  expect(lndBalance).toBe(initLndBalance + sats)
 
   
   // const balance = await bitcoindWallet.listWallets()

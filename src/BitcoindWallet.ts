@@ -27,6 +27,16 @@ export class BitcoindWallet extends OnChainMixin(UserWallet) {
   }
 
   // for debugging
+  // to create the wallet from bitcoin-cli:
+  // bitcoin-cli --named createwallet wallet_name="coldstorage" disable_private_keys="true"
+  // 
+  // more info on: 
+  // https://github.com/BlockchainCommons/Learning-Bitcoin-from-the-Command-Line/blob/master/07_3_Integrating_with_Hardware_Wallets.md
+
+  // to import a descriptor:
+  // https://github.com/BlockchainCommons/Learning-Bitcoin-from-the-Command-Line/blob/master/03_5_Understanding_the_Descriptor.md
+  // bitcoin-cli importmulti `${descriptor}`
+
   async createWallet() {
     return this.bitcoindClient.createWallet({wallet_name: "coldstorage"})
   }
@@ -34,6 +44,9 @@ export class BitcoindWallet extends OnChainMixin(UserWallet) {
   async listWallets() {
     return this.bitcoindClient.listWallets()
   }
+
+
+
 
   async getAddressInfo({address}) {
     return this.bitcoindClient.getAddressInfo({address})
@@ -57,7 +70,6 @@ export class BitcoindWallet extends OnChainMixin(UserWallet) {
     if (depositOrWithdraw === "withdraw") {
       const memo = `withdrawal of ${sats} sats from ${this.wallet} bitcoind wallet`
 
-      // getLastOnChainAddress() could be used with whitelisting for more security
       const address = await this.getLastOnChainAddress()
 
       let withdrawalResult 
