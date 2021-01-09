@@ -2,6 +2,7 @@ import * as jwt from 'jsonwebtoken'
 import * as lnService from "ln-service"
 import { filter, find, includes, intersection, sumBy, union } from "lodash"
 import * as moment from 'moment'
+import { customerPath } from './ledger'
 export const validate = require("validate.js")
 const BitcoindClient = require('bitcoin-core')
 const { parsePaymentRequest } = require('invoices');
@@ -16,6 +17,7 @@ export const LOOK_BACK = 2016
 
 // @ts-ignore
 import { GraphQLError } from "graphql";
+import { Transaction } from './mongodb'
 
 // FIXME: super ugly hack.
 // for some reason LoggedError get casted as GraphQLError
@@ -74,8 +76,8 @@ export async function sleep(ms) {
 }
 
 export function timeout(delay, msg) {
-  return new Promise(function(resolve, reject) {
-    setTimeout(function() {
+  return new Promise(function (resolve, reject) {
+    setTimeout(function () {
       reject(new Error(msg));
     }, delay);
   });
@@ -101,11 +103,11 @@ export const createToken = ({ uid, currency, network }) => jwt.sign(
 validate.extend(validate.validators.datetime, {
   // The value is guaranteed not to be null or undefined but otherwise it
   // could be anything.
-  parse: function(value: any, options: any) {
+  parse: function (value: any, options: any) {
     return +moment.utc(value);
   },
   // Input is a unix timestamp
-  format: function(value: any, options: any) {
+  format: function (value: any, options: any) {
     const format = options.dateOnly ? "YYYY-MM-DD" : "YYYY-MM-DD hh:mm:ss";
     return moment.utc(value).format(format);
   }
@@ -167,6 +169,19 @@ export const isInvoiceAlreadyPaidError = (err) => {
   return false
 }
 
-export const isUserActive = (uid) => {
-  
+export const isUserActive = async (uid): Promise<boolean> => {
+  const userAccountPath = customerPath(uid)
+
+  //TODO: Maybe only consider txn for the past x number of days?
+  const { outgoingSats, incomingSats } = await Transaction.aggregate([
+    { $match: { "accounts": userAccountPath } },
+    {
+      $group: {
+        _id: null, outgoingSats: { $sum: "$credit" }, incomingSats: { $sum: "$debit" }
+      }
+    }
+  ])
+
+  if(outgoingSats > 1000 || incomingSats > 1000) return true
+  return false
 }

@@ -9,6 +9,7 @@ import { checkIsBalanced, getUserWallet, lndMain, mockGetExchangeBalance, RANDOM
 import { onchainTransactionEventHandler } from "../trigger";
 import { baseLogger, bitcoindClient, btc2sat, sleep } from "../utils";
 import { getFunderWallet } from "../walletFactory";
+import { sendBalanceToUser } from "../dailyBalanceNotification";
 
 
 const lnService = require('ln-service')
@@ -197,4 +198,9 @@ it('batch send transaction', async () => {
     expect(balance4).toBe(initBalanceUser4 + btc2sat(2))
   }
 
+})
+
+it('sends daily balance notification', async () => {
+  await sendBalanceToUser()
+  console.log(sendNotification.mock.calls, "mock call")
 })
