@@ -439,11 +439,6 @@ import { find, sumBy } from "lodash";
 export const MainBook = new book("MainBook")
 
 
-const TransactionWrapper = ({payee, payer, sats}) => {
-
-}
-
-
 // approach below doesn't work
 // find a way to make currency mandatory for balance and ledger
 
