@@ -156,7 +156,7 @@ export const onChannelUpdated = async ({ channel, lnd, stateChange }: { channel:
 
   const { fee } = find(transactions, { id: transaction_id })
 
-  const metadata = { currency: "BTC", txid: transaction_id, type: "fee" }
+  const metadata = { currency: "BTC", txid: transaction_id, type: "fee", pending: false }
 
   await MainBook.entry(`channel ${stateChange} onchain fee`)
     .credit(lightningAccountingPath, fee, { ...metadata, })

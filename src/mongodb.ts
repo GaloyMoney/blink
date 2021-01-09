@@ -253,10 +253,13 @@ const transactionSchema = new Schema({
   },
 
   // used to denote confirmation status of on and off chain txn
-  // for sending payment on lightning, pending will be true when sending an onchain transactio
+  // for sending payment on lightning, pending will be true in case of timeout
   // for sending payment on chain, pending will be true until the transaction get mined
   // pending is not used for receiving transaction.
-  pending: Boolean,
+  pending: {
+    type: Boolean,
+    required: true
+  },
 
   err: String,
   currency: {

@@ -93,7 +93,7 @@ export class AdminWallet {
   async updateEscrows() {
     const type = "escrow"
 
-    const metadata = { type, currency: "BTC" }
+    const metadata = { type, currency: "BTC", pending: false }
 
     const { channels } = await lnService.getChannels({lnd: this.lnd})
     const selfInitated = filter(channels, {is_partner_initiated: false})
