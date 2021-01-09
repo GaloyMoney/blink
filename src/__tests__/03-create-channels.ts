@@ -135,11 +135,11 @@ it('opens and closes channel from lnd1 to lndOutside1', async () => {
   const currentBlockCount = await bitcoindClient.getBlockCount()
   await mineBlockAndSync({ lnds: [lndMain, lndOutside1], blockHeight: currentBlockCount + newBlock })
 
+  await sleep(10000)
   const { balance: finalFeeInLedger } = await MainBook.balance({
     account: lndFee,
     currency: "BTC",
   })
-  await sleep(10000)
   expect(finalFeeInLedger - initFeeInLedger).toBe(channelFee * -1)
   sub.removeAllListeners()
 })
