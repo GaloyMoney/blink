@@ -191,8 +191,6 @@ it('fails to make onchain payment when insufficient balance', async () => {
   })
   const {BTC: initialBalanceUser3} = await userWallet3.getBalances();
 
-  console.log({initialBalanceUser3})
-
   //should fail because user does not have balance to pay for on-chain fee
   await expect(userWallet3.onChainPay({ address: address as string, amount: initialBalanceUser3 })).rejects.toThrow()
 })

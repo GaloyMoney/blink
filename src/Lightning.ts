@@ -6,7 +6,7 @@ import { brokerLndPath, lndAccountingPath } from "./ledger";
 import { disposer, getAsyncRedisClient } from "./lock";
 import { InvoiceUser, MainBook, Transaction, User } from "./mongodb";
 import { sendInvoicePaidNotification } from "./notification";
-import { onUsPayment, payLnd, receiptLnd } from "./transaction";
+import { onUsPayment, accountingLndPayment, accountingLndReceipt } from "./transaction";
 import { IAddInvoiceRequest, IFeeRequest, IPaymentRequest } from "./types";
 import { addContact, getAuth, isInvoiceAlreadyPaidError, LoggedError, timeout } from "./utils";
 import { UserWallet } from "./wallet";
@@ -108,7 +108,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       throw new LoggedError(error)
     }
 
-    this.logger.info({ value, memo, currency: this.currency, selfGenerated, id, uid: this.uid }, "a new invoice has been added")
+    this.logger.info({ value, memo, selfGenerated, id, uid: this.uid }, "a new invoice has been added")
 
     return request
   }
@@ -314,6 +314,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         const sats = tokens
         const metadata = { hash: id, type: "on_us", pending: false, ...UserWallet.getCurrencyEquivalent({ sats, fee: 0 }) }
 
+        // TODO: manage when paid fully in USD directly from USD balance to avoid conversion issue
         if (balance.total_in_BTC < sats) {
           const error = `balance is too low`
           lightningLoggerOnUs.warn({ balance, sats, success: false, error }, error)
@@ -432,7 +433,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         // reduce balance from customer first
 
-        entry = await payLnd({
+        entry = await accountingLndPayment({
           description: memoInvoice,
           payer: this,
           sats,
@@ -682,7 +683,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
           const metadata = { hash, type: "invoice", ...UserWallet.getCurrencyEquivalent({ sats, fee: 0 }) }
 
-          await receiptLnd({
+          await accountingLndReceipt({
             description: invoice.description,
             payee: this,
             metadata,

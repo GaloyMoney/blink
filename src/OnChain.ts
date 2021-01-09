@@ -18,6 +18,7 @@ const someAmount = 50000
 
 export const OnChainMixin = (superclass) => class extends superclass {
   lnd = lnService.authenticatedLndGrpc(getAuth()).lnd
+  private currency = "BTC"
 
   constructor(...args) {
     super(...args)
@@ -30,12 +31,12 @@ export const OnChainMixin = (superclass) => class extends superclass {
     ])
   }
 
-  async PayeeUser(address: string) { 
+  async UserFromAddress({address}: {address: string}) { 
     return User.findOne({ onchain_addresses: { $in: address } }) 
   }
 
   async getOnchainFee({address}: {address: string}): Promise<number | Error> {
-    const payeeUser = await this.PayeeUser(address)
+    const payeeUser = await this.userFromAddress({address})
 
     let fee
 
@@ -63,7 +64,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
       throw new LoggedError(error)
     }
 
-    const payeeUser = await this.PayeeUser(address)
+    const payeeUser = await this.userFromAddress({address})
 
     if (payeeUser) {
       const onchainLoggerOnUs = onchainLogger.child({onUs: true})
@@ -76,7 +77,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
       const sats = amount
       const metadata = { 
-        currency: this.currency, 
+        currency: this.currency,
         type: "onchain_on_us",
         pending: false,
         ...UserWallet.getCurrencyEquivalent({ sats, fee: 0 }),

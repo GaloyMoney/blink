@@ -64,5 +64,5 @@ it('add earn adds balance correctly', async () => {
   // yet, if we do it another time, the balance should not increase, 
   // because all the rewards has already been been consumed:
   await getAndVerifyRewards()
-}, 30000)
+})
 

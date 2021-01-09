@@ -4,7 +4,7 @@ import { MainBook } from "./mongodb"
 import { UserWallet } from "./wallet"
 
 
-export const receiptLnd = async ({description, payee, metadata, sats}) => { // payee: User
+export const accountingLndReceipt = async ({description, payee, metadata, sats}) => { // payee: User
   const brokerPath = await brokerLndPath()
   
   const entry = MainBook.entry(description)
@@ -33,7 +33,7 @@ export const receiptLnd = async ({description, payee, metadata, sats}) => { // p
 }
 
 
-export const payLnd = async ({description, sats, metadata, payer}) => {
+export const accountingLndPayment = async ({description, sats, metadata, payer}) => {
   const brokerPath = await brokerLndPath()
 
   const entry = MainBook.entry(description)

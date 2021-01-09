@@ -1,7 +1,7 @@
 import { brokerLndPath, customerPath, lndAccountingPath } from "../ledger"
 import { MainBook, setupMongoConnection, User } from "../mongodb"
 import { rebalance } from "../transaction"
-import { onUsPayment, payLnd, receiptLnd } from "../transaction"
+import { onUsPayment, accountingLndPayment, accountingLndReceipt } from "../transaction"
 import { UserWallet } from "../wallet"
 import { WalletFactory } from "../walletFactory"
 import { baseLogger } from "../utils";
@@ -64,7 +64,7 @@ describe('receipt', () => {
   
     const user = walletBTC
   
-    await receiptLnd({
+    await accountingLndReceipt({
       description: "transaction test",
       payee: user,
       metadata: { type: "invoice" },
@@ -79,7 +79,7 @@ describe('receipt', () => {
   
     const user = walletUSD
   
-    await receiptLnd({
+    await accountingLndReceipt({
       description: "transaction test",
       payee: user,
       metadata: { type: "invoice" },
@@ -98,7 +98,7 @@ describe('receipt', () => {
   
     const user = wallet5050
 
-    await receiptLnd({
+    await accountingLndReceipt({
       description: "transaction test",
       payee: user,
       metadata: { type: "invoice" },
@@ -123,7 +123,7 @@ describe('send outside', () => {
   
     const user = walletBTC
   
-    await payLnd({
+    await accountingLndPayment({
       description: "transaction test",
       payer: user,
       sats: 1000,
@@ -138,7 +138,7 @@ describe('send outside', () => {
 
     const user = walletUSD
   
-    await payLnd({
+    await accountingLndPayment({
       description: "transaction test",
       payer: user,
       sats: 1000,
@@ -156,7 +156,7 @@ describe('send outside', () => {
     
     const user = wallet5050
 
-    await payLnd({
+    await accountingLndPayment({
       description: "transaction test",
       payer: user,
       sats: 1000,
@@ -345,7 +345,7 @@ describe('rebalance', () => {
 
     const wallet = walletBTC
   
-    await receiptLnd({
+    await accountingLndReceipt({
       description: "first tx to have a balance",
       payee: walletBTC,
       metadata: { type: "invoice" },
@@ -370,7 +370,7 @@ describe('rebalance', () => {
 
     const wallet = walletBTC
   
-    await receiptLnd({
+    await accountingLndReceipt({
       description: "first tx to have a balance",
       payee: wallet,
       metadata: { type: "invoice" },
@@ -403,7 +403,7 @@ describe('rebalance', () => {
 
     const wallet = walletUSD
   
-    await receiptLnd({
+    await accountingLndReceipt({
       description: "first tx to have a balance",
       payee: wallet,
       metadata: { type: "invoice" },

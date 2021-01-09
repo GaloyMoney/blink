@@ -301,12 +301,12 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
   }
 
   async rebalance ({ btcAmount, depositOrWithdraw, logger }) {
-    const currency = this.currency
+    const currency = "BTC"
     const sats = btc2sat(btcAmount)
 
     const metadata = { type: "exchange_rebalance", currency, ...UserWallet.getCurrencyEquivalent({sats, fee: 0}) }
 
-    let subLogger = logger.child({...metadata, currency, btcAmount, depositOrWithdraw})
+    let subLogger = logger.child({...metadata, btcAmount, depositOrWithdraw})
 
 
     // deposit and withdraw are from the exchange point of view

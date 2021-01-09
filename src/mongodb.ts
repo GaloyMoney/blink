@@ -241,11 +241,6 @@ const transactionSchema = new Schema({
     type: Schema.Types.String,
     ref: 'InvoiceUser'
     // TODO: not always, use another hashOnchain?
-
-    // required: function() {
-    //   return this.currency === "BTC"
-    //   a ref only for Invoice. otherwise the hash is not linked
-    // }
   },
 
   // used for escrow transaction, to know which channel this transaction is associated with
