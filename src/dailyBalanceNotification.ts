@@ -12,7 +12,7 @@ const sendBalanceToUser = async () => {
     userWallet = await WalletFactory({ user, uid: user._id, currency: user.currency, logger })
     const balance = await userWallet.getBalance()
     logger.info("sending balance notification to user %o", user._id)
-    await sendNotification({uid: user._id, title: "Your balance",logger})
+    await sendNotification({uid: user._id, title: "Balance today", logger, body: `Your balance is ${balance}`})
   }
 }
 
