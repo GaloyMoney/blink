@@ -162,7 +162,7 @@ export async function getBosScore() {
 }
 
 export const isInvoiceAlreadyPaidError = (err) => {
-  if ("invoice is already paid" === (err[2]?.err?.details || err[2]?.failures[0]?.[2]?.err?.details)) {
+  if ("invoice is already paid" === (err[2]?.err?.details || err[2]?.failures?.[0]?.[2]?.err?.details)) {
     return true
   }
   return false
