@@ -320,7 +320,7 @@ export const LightningMixin = (superclass) => class extends superclass {
           description: memoInvoice,
           sats,
           metadata,
-          payer: this,
+          payerUser: this.user,
           payeeUser,
           memoPayer
         })
@@ -429,7 +429,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         entry = await accountingLndPayment({
           description: memoInvoice,
-          payer: this,
+          payerUser: this.user,
           sats,
           metadata,
         })
@@ -558,7 +558,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     await accountingLndReceipt({
      description: "fee reimbursement",
-     payee: this,
+     payeeUser: this.user,
      metadata,
      sats: feeDifference
     })
@@ -570,7 +570,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
   async updatePendingPayments() {
 
-    const query = { accounts: this.accountPath, type: "payment", pending: true }
+    const query = { accounts: this.user.accountPath, type: "payment", pending: true }
     const count = await Transaction.countDocuments(query)
 
     if (count === 0) {
@@ -687,7 +687,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
           await accountingLndReceipt({
             description: invoice.description,
-            payee: this,
+            payeeUser: this.user,
             metadata,
             sats
           })

@@ -17,10 +17,6 @@ export class LightningUserWallet extends OnChainMixin(LightningMixin(UserWallet)
     super({ ...args })
   }
 
-  get accountPath(): string {
-    return customerPath(this.uid)
-  }
-
   async addEarn(ids) {
 
     const lightningFundingWallet = await getFunderWallet({ logger: this.logger })

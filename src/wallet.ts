@@ -26,7 +26,9 @@ export abstract class UserWallet {
     UserWallet.lastPrice = price
   }
 
-  abstract get accountPath(): string
+  get accountPath(): string {
+    return this.user.accountPath
+  }
 
   get uid(): string {
     return this.user._id
@@ -52,7 +54,7 @@ export abstract class UserWallet {
     // TODO: make this code parrallel instead of serial
     for (const { id } of this.user.currencies) {
       const { balance } = await MainBook.balance({
-        account: this.accountPath,
+        account: this.user.accountPath,
         currency: id,
       })
 
@@ -94,7 +96,7 @@ export abstract class UserWallet {
       // TODO: manage currencies
 
       // currency: this.currency,
-      account: this.accountPath,
+      account: this.user.accountPath,
       // start_date: startDate,
       // end_date: endDate
     })
@@ -142,7 +144,8 @@ export abstract class UserWallet {
   }
 
   async setLevel({ level }) {
-    return await User.findOneAndUpdate({ _id: this.uid }, { level }, { new: true, upsert: true })
+    this.user.level = level
+    await this.user.save()
   }
 
   async setUsername({ username }): Promise<boolean | Error> {

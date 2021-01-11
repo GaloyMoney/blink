@@ -173,6 +173,10 @@ UserSchema.virtual('pctBtc').get(function (this: typeof UserSchema) {
   return find(this.currencies, {id: "BTC"})?.pct ?? 0
 });
 
+UserSchema.virtual('accountPath').get(function (this: typeof UserSchema) {
+  return customerPath(this._id)
+})
+
 UserSchema.index({
   title: 1,
   coordinate: 1,
@@ -442,6 +446,7 @@ export const setupMongoConnection = async () => {
 
 import { book } from "medici";
 import { find, sumBy } from "lodash";
+import { customerPath } from "./ledger";
 export const MainBook = new book("MainBook")
 
 

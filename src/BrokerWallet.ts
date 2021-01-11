@@ -35,10 +35,6 @@ export type IBuyOrSell = "sell" | "buy" | null
 export class BrokerWallet extends OnChainMixin(UserWallet) {
   ftx
   
-  get accountPath(): string {
-    return customerPath(this.uid)
-  }
-
   constructor({ user, logger }: ILightningWalletUser) {
     super({ user, logger })
     this.ftx = new ccxt.ftx({ apiKey, secret })
@@ -369,7 +365,7 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
         // updateOnchainReceipt() doing:
         // 
         // await MainBook.entry()
-        // .debit(this.accountPath, sats, metadata)
+        // .debit(this.user.accountPath, sats, metadata)
         // .credit(lndAccountingPath, sats, metadata)
         // .commit()
 
@@ -439,7 +435,7 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
       //
       // await MainBook.entry(memo)
       // .debit(lndAccountingPath, sats, metadata)
-      // .credit(this.accountPath, sats, metadata)
+      // .credit(this.user.accountPath, sats, metadata)
       // .commit()
       //
       // we're doing 2 transactions here on medici.

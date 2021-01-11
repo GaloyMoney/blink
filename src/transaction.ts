@@ -4,26 +4,26 @@ import { MainBook } from "./mongodb"
 import { UserWallet } from "./wallet"
 
 
-export const accountingLndReceipt = async ({description, payee, metadata, sats}) => { // payee: User
+export const accountingLndReceipt = async ({description, payeeUser, metadata, sats}) => {
   const brokerPath = await brokerLndPath()
   
   const entry = MainBook.entry(description)
 
   entry
-    .debit(payee.accountPath, sats * payee.user.pctBtc, { ...metadata, currency: "BTC" })
-    .debit(brokerPath, sats * payee.user.pctUsd, { ...metadata, currency: "BTC" })
+    .debit(payeeUser.accountPath, sats * payeeUser.pctBtc, { ...metadata, currency: "BTC" })
+    .debit(brokerPath, sats * payeeUser.pctUsd, { ...metadata, currency: "BTC" })
     
     // always 100%
     .credit(lndAccountingPath, sats, { ...metadata, currency: "BTC" })  
   
-  if (!!payee.user.pctUsd) {
-    const satsToConvert = sats * payee.user.pctUsd
+  if (!!payeeUser.pctUsd) {
+    const satsToConvert = sats * payeeUser.pctUsd
     
     // TODO: add spread
     const usdEquivalent = satsToConvert * UserWallet.lastPrice
 
     entry
-      .debit(payee.accountPath, usdEquivalent, { ...metadata, currency: "USD" })
+      .debit(payeeUser.accountPath, usdEquivalent, { ...metadata, currency: "USD" })
       .credit(brokerPath, usdEquivalent, { ...metadata, currency: "USD" })
   }
 
@@ -33,7 +33,7 @@ export const accountingLndReceipt = async ({description, payee, metadata, sats})
 }
 
 
-export const accountingLndPayment = async ({description, sats, metadata, payer}) => {
+export const accountingLndPayment = async ({description, sats, metadata, payerUser}) => {
   const brokerPath = await brokerLndPath()
 
   const entry = MainBook.entry(description)
@@ -42,16 +42,16 @@ export const accountingLndPayment = async ({description, sats, metadata, payer})
     // always 100%
     .debit(lndAccountingPath, sats, { ...metadata, currency: "BTC" })
 
-    .credit(payer.accountPath, sats * payer.user.pctBtc, { ...metadata, currency: "BTC" })
-    .credit(brokerPath, sats * payer.user.pctUsd, { ...metadata, currency: "BTC" })
+    .credit(payerUser.accountPath, sats * payerUser.pctBtc, { ...metadata, currency: "BTC" })
+    .credit(brokerPath, sats * payerUser.pctUsd, { ...metadata, currency: "BTC" })
 
-  if (!!payer.user.pctUsd) {
-    const satsToConvert = sats * payer.user.pctUsd
+  if (!!payerUser.pctUsd) {
+    const satsToConvert = sats * payerUser.pctUsd
     const usdEquivalent = satsToConvert * UserWallet.lastPrice
 
     entry
       .debit(brokerPath, usdEquivalent, { ...metadata, currency: "USD" })
-      .credit(payer.accountPath, usdEquivalent, { ...metadata, currency: "USD" })
+      .credit(payerUser.accountPath, usdEquivalent, { ...metadata, currency: "USD" })
   }
 
   await entry.commit()
@@ -59,32 +59,32 @@ export const accountingLndPayment = async ({description, sats, metadata, payer})
   return entry
 }
 
-export const onUsPayment = async ({description, sats, metadata, payer, payeeUser, memoPayer}) => {
+export const onUsPayment = async ({description, sats, metadata, payerUser, payeeUser, memoPayer}) => {
   const brokerPath = await brokerLndPath()
 
   const entry = MainBook.entry(description)
 
   entry
-    .debit(customerPath(payeeUser._id), sats * payeeUser.pctBtc, { ...metadata, username: payer.user.username, currency: "BTC"})
-    .credit(payer.accountPath, sats * payer.user.pctBtc, { ...metadata, memoPayer, username: payeeUser.username, currency: "BTC" })
+    .debit(customerPath(payeeUser._id), sats * payeeUser.pctBtc, { ...metadata, username: payerUser.username, currency: "BTC"})
+    .credit(payerUser.accountPath, sats * payerUser.pctBtc, { ...metadata, memoPayer, username: payeeUser.username, currency: "BTC" })
 
-  if (payeeUser.pctBtc > payer.user.pctBtc) {
-    entry.credit(brokerPath, sats * (payeeUser.pctBtc - payer.user.pctBtc), { ...metadata, currency: "BTC" })
-  } else if (payeeUser.pctBtc < payer.user.pctBtc) {
-    entry.debit(brokerPath, sats * (payer.user.pctBtc - payeeUser.pctBtc), { ...metadata, currency: "BTC" })
+  if (payeeUser.pctBtc > payerUser.pctBtc) {
+    entry.credit(brokerPath, sats * (payeeUser.pctBtc - payerUser.pctBtc), { ...metadata, currency: "BTC" })
+  } else if (payeeUser.pctBtc < payerUser.pctBtc) {
+    entry.debit(brokerPath, sats * (payerUser.pctBtc - payeeUser.pctBtc), { ...metadata, currency: "BTC" })
   }
 
-  if (!!payer.user.pctUsd || !!payeeUser.pctUsd) {
+  if (!!payerUser.pctUsd || !!payeeUser.pctUsd) {
     const usdEq = sats * UserWallet.lastPrice
 
     entry
-      .debit(customerPath(payeeUser._id), usdEq * payeeUser.pctUsd, { ...metadata, username: payer.user.username, currency: "USD"})
-      .credit(payer.accountPath, usdEq * payer.user.pctUsd, { ...metadata, memoPayer, username: payeeUser.username, currency: "USD" })
+      .debit(customerPath(payeeUser._id), usdEq * payeeUser.pctUsd, { ...metadata, username: payerUser.username, currency: "USD"})
+      .credit(payerUser.accountPath, usdEq * payerUser.pctUsd, { ...metadata, memoPayer, username: payeeUser.username, currency: "USD" })
 
-    if (payeeUser.pctUsd > payer.user.pctUsd) {
-      entry.credit(brokerPath, usdEq * (payeeUser.pctUsd - payer.user.pctUsd), { ...metadata, currency: "USD" })
-    } else if (payeeUser.pctUsd < payer.user.pctUsd) {
-      entry.debit(brokerPath, usdEq * (payer.user.pctUsd - payeeUser.pctUsd), { ...metadata, currency: "USD" })
+    if (payeeUser.pctUsd > payerUser.pctUsd) {
+      entry.credit(brokerPath, usdEq * (payeeUser.pctUsd - payerUser.pctUsd), { ...metadata, currency: "USD" })
+    } else if (payeeUser.pctUsd < payerUser.pctUsd) {
+      entry.debit(brokerPath, usdEq * (payerUser.pctUsd - payeeUser.pctUsd), { ...metadata, currency: "USD" })
     }
   }
 
@@ -112,18 +112,18 @@ export const rebalance = async ({description, metadata, wallet}) => {
   // user buy btc
   if (buyOrSell === "buy") {    
     entry
-      .debit(wallet.accountPath, btcAmount, { ...metadata, currency: "BTC" })
+      .debit(wallet.user.accountPath, btcAmount, { ...metadata, currency: "BTC" })
       .credit(brokerPath, btcAmount, { ...metadata, currency: "BTC" })
 
-      .credit(wallet.accountPath, usdAmount, { ...metadata, currency: "USD"})
+      .credit(wallet.user.accountPath, usdAmount, { ...metadata, currency: "USD"})
       .debit(brokerPath, usdAmount, { ...metadata, currency: "USD" })
   // user sell btc
   } else if (buyOrSell === "sell") {
     entry
-      .credit(wallet.accountPath, btcAmount, { ...metadata, currency: "BTC" })
+      .credit(wallet.user.accountPath, btcAmount, { ...metadata, currency: "BTC" })
       .debit(brokerPath, btcAmount, { ...metadata, currency: "BTC" })
 
-      .debit(wallet.accountPath, usdAmount, { ...metadata, currency: "USD"})
+      .debit(wallet.user.accountPath, usdAmount, { ...metadata, currency: "USD"})
       .credit(brokerPath, usdAmount, { ...metadata, currency: "USD" })
   } else {
     // no-op
