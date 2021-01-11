@@ -548,7 +548,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     this.logger.info({ paymentResult, feeDifference, max_fee, actualFee: paymentResult.safe_fee, id }, "logging a fee difference")
 
     const {usd} = UserWallet.getCurrencyEquivalent({sats: feeDifference})
-    const metadata = { currency: "BTC", hash: id, related_journal, type: "fee_reimbursement", usd }
+    const metadata = { currency: "BTC", hash: id, related_journal, type: "fee_reimbursement", usd, pending: false }
 
     // todo: add a reference to the journal entry of the main tx
     await MainBook.entry("fee reimbursement")
@@ -681,7 +681,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
           const sats = invoice.received
 
-          const metadata = { hash, type: "invoice", ...UserWallet.getCurrencyEquivalent({ sats, fee: 0 }) }
+          const metadata = { hash, type: "invoice", pending: false, ...UserWallet.getCurrencyEquivalent({ sats, fee: 0 }) }
 
           await accountingLndReceipt({
             description: invoice.description,

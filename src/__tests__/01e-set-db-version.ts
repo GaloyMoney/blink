@@ -25,7 +25,7 @@ it('db version', async () => {
 it('applies version 9 upgrade correctly', async () => {
 
   const fee = 1234
-  const metadata = { currency: "BTC", txid: "xyz", type: "fee" }
+  const metadata = { currency: "BTC", txid: "xyz", type: "fee", pending: false }
   await MainBook.entry("channel closing onchain fee")
     .debit(lndAccountingPath, fee, { ...metadata })
     .credit(lndFee, fee, { ...metadata })
