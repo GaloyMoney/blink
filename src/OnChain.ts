@@ -31,12 +31,13 @@ export const OnChainMixin = (superclass) => class extends superclass {
     ])
   }
 
+  // FIXME: should be static but doesn't work with mixin
   async UserFromAddress({address}: {address: string}) { 
     return User.findOne({ onchain_addresses: { $in: address } }) 
   }
 
   async getOnchainFee({address}: {address: string}): Promise<number | Error> {
-    const payeeUser = await this.userFromAddress({address})
+    const payeeUser = await this.UserFromAddress({address})
 
     let fee
 
@@ -64,7 +65,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
       throw new LoggedError(error)
     }
 
-    const payeeUser = await this.userFromAddress({address})
+    const payeeUser = await this.UserFromAddress({address})
 
     if (payeeUser) {
       const onchainLoggerOnUs = onchainLogger.child({onUs: true})

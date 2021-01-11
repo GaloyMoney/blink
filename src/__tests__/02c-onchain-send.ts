@@ -64,7 +64,7 @@ it('testing Fee', async () => {
     expect(fee).toBe(0)
   }
   
-}, 10000)
+})
 
 it('Sends onchain payment successfully', async () => {
   const { address } = await lnService.createChainAddress({ format: 'p2wpkh', lnd: lndOutside1 })
@@ -128,7 +128,7 @@ it('Sends onchain payment successfully', async () => {
 
 	const {BTC: finalBalance} = await userWallet0.getBalances()
 	expect(finalBalance).toBe(initialBalanceUser0 - amount - fee)
-}, 20000)
+})
 
 it('makes onchain on-us transaction', async () => {
   const user3Address = await userWallet3.getOnChainAddress()
@@ -149,7 +149,7 @@ it('makes onchain on-us transaction', async () => {
 	expect(feeUsd).toBe(0)
 
   await checkIsBalanced()
-}, 10000)
+})
 
 it('Sends onchain payment _with memo', async () => {
   const memo = "this is my onchain memo"
@@ -158,7 +158,7 @@ it('Sends onchain payment _with memo', async () => {
   expect(paymentResult).toBe(true)
   const txs = await userWallet0.getTransactions()
   expect((first(txs) as any).description).toBe(memo)
-}, 10000)
+})
 
 it('makes onchain on-us transaction with memo', async () => {
   const memo = "this is my onchain memo"
@@ -172,7 +172,7 @@ it('makes onchain on-us transaction with memo', async () => {
   // receiver should not know memo from sender
   const txsUser3 = await userWallet3.getTransactions()
   expect((first(txsUser3) as any).description).not.toBe(memo)
-}, 10000)
+})
 
 it('fails to make onchain payment to self', async () => {
   const address = await userWallet0.getOnChainAddress()

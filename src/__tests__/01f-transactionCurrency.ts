@@ -67,7 +67,7 @@ describe('receipt', () => {
     await accountingLndReceipt({
       description: "transaction test",
       payee: user,
-      metadata: { type: "invoice" },
+      metadata: { type: "invoice", pending: false },
       sats: 1000,
     })
   
@@ -82,7 +82,7 @@ describe('receipt', () => {
     await accountingLndReceipt({
       description: "transaction test",
       payee: user,
-      metadata: { type: "invoice" },
+      metadata: { type: "invoice", pending: false },
       sats: 1000,
     })
   
@@ -101,7 +101,7 @@ describe('receipt', () => {
     await accountingLndReceipt({
       description: "transaction test",
       payee: user,
-      metadata: { type: "invoice" },
+      metadata: { type: "invoice", pending: false },
       sats: 1000,
     })
   
@@ -185,7 +185,7 @@ describe('on us payment', () => {
     await onUsPayment({
       description: "desc",
       sats: 1000,
-      metadata: {type: "on_us"},
+      metadata: {type: "on_us", pending: false},
       payer,
       payeeUser: payee.user,
       memoPayer: null
@@ -205,7 +205,7 @@ describe('on us payment', () => {
     await onUsPayment({
       description: "desc",
       sats: 1000,
-      metadata: {type: "on_us"},
+      metadata: {type: "on_us", pending: false},
       payer,
       payeeUser: payee.user,
       memoPayer: null
@@ -225,7 +225,7 @@ describe('on us payment', () => {
     await onUsPayment({
       description: "desc",
       sats: 1000,
-      metadata: {type: "on_us"},
+      metadata: {type: "on_us", pending: false},
       payer,
       payeeUser: payee.user,
       memoPayer: null
@@ -248,7 +248,7 @@ describe('on us payment', () => {
     await onUsPayment({
       description: "desc",
       sats: 1000,
-      metadata: {type: "on_us"},
+      metadata: {type: "on_us", pending: false},
       payer,
       payeeUser: payee.user,
       memoPayer: null
@@ -271,7 +271,7 @@ describe('on us payment', () => {
     await onUsPayment({
       description: "desc",
       sats: 1000,
-      metadata: {type: "on_us"},
+      metadata: {type: "on_us", pending: false},
       payer,
       payeeUser: payee.user,
       memoPayer: null
@@ -296,7 +296,7 @@ describe('on us payment', () => {
     await onUsPayment({
       description: "desc",
       sats: 1000,
-      metadata: {type: "on_us"},
+      metadata: {type: "on_us", pending: false},
       payer,
       payeeUser: payee.user,
       memoPayer: null
@@ -321,7 +321,7 @@ describe('on us payment', () => {
     await onUsPayment({
       description: "desc",
       sats: 1000,
-      metadata: {type: "on_us"},
+      metadata: {type: "on_us", pending: false},
       payer,
       payeeUser: payee.user,
       memoPayer: null
@@ -348,7 +348,7 @@ describe('rebalance', () => {
     await accountingLndReceipt({
       description: "first tx to have a balance",
       payee: walletBTC,
-      metadata: { type: "invoice" },
+      metadata: { type: "invoice", pending: false },
       sats: 1000,
     })
 
@@ -373,7 +373,7 @@ describe('rebalance', () => {
     await accountingLndReceipt({
       description: "first tx to have a balance",
       payee: wallet,
-      metadata: { type: "invoice" },
+      metadata: { type: "invoice", pending: false },
       sats: 1000,
     })
 
@@ -386,7 +386,7 @@ describe('rebalance', () => {
 
     await rebalance({
       description: "rebalance",
-      metadata: {type: "user_rebalance"},
+      metadata: {type: "user_rebalance", pending: false},
       wallet,
     })
 
@@ -406,7 +406,7 @@ describe('rebalance', () => {
     await accountingLndReceipt({
       description: "first tx to have a balance",
       payee: wallet,
-      metadata: { type: "invoice" },
+      metadata: { type: "invoice", pending: false },
       sats: 1000,
     })
 
@@ -423,7 +423,7 @@ describe('rebalance', () => {
 
     await rebalance({
       description: "rebalance",
-      metadata: {type: "user_rebalance"},
+      metadata: {type: "user_rebalance", pending: false},
       wallet,
     })
 
