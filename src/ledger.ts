@@ -9,9 +9,16 @@ export const escrowAccountingPath = 'Assets:Reserve:Escrow' // TODO: rename to A
 // liabilities
 export const customerPath = (uid) => `Liabilities:Customer:${uid}`
 
-export const brokerLndPath = async () => {
+let cacheBrokerPath: string
+
+export const brokerMediciPath = async () => {
+  if (!!cacheBrokerPath) {
+    return cacheBrokerPath
+  }
+
   const broker = await User.findOne({ role: "broker" })
-  return customerPath(broker._id)
+  cacheBrokerPath = customerPath(broker._id)
+  return cacheBrokerPath
 }   
 
 // export const brokerPathLnd = `Liabilities:Customer:uid` --> normal account

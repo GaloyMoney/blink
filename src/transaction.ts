@@ -1,11 +1,10 @@
-import { find } from "lodash"
-import { brokerLndPath, customerPath, lndAccountingPath } from "./ledger"
+import { brokerMediciPath, customerPath, lndAccountingPath } from "./ledger"
 import { MainBook } from "./mongodb"
 import { UserWallet } from "./wallet"
 
 
 export const accountingLndReceipt = async ({description, payeeUser, metadata, sats}) => {
-  const brokerPath = await brokerLndPath()
+  const brokerPath = await brokerMediciPath()
   
   const entry = MainBook.entry(description)
 
@@ -34,7 +33,7 @@ export const accountingLndReceipt = async ({description, payeeUser, metadata, sa
 
 
 export const accountingLndPayment = async ({description, sats, metadata, payerUser}) => {
-  const brokerPath = await brokerLndPath()
+  const brokerPath = await brokerMediciPath()
 
   const entry = MainBook.entry(description)
 
@@ -60,7 +59,7 @@ export const accountingLndPayment = async ({description, sats, metadata, payerUs
 }
 
 export const onUsPayment = async ({description, sats, metadata, payerUser, payeeUser, memoPayer}) => {
-  const brokerPath = await brokerLndPath()
+  const brokerPath = await brokerMediciPath()
 
   const entry = MainBook.entry(description)
 
@@ -94,7 +93,7 @@ export const onUsPayment = async ({description, sats, metadata, payerUser, payee
 }
 
 export const rebalance = async ({description, metadata, wallet}) => {
-  const brokerPath = await brokerLndPath()
+  const brokerPath = await brokerMediciPath()
   
   const balances = await wallet.getBalances()
 

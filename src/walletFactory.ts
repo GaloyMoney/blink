@@ -28,9 +28,6 @@ export const WalletFromUsername = async ({ username, logger }: { username: strin
     throw new LoggedError(error)
   }
 
-  // FIXME: there are some duplication between user and uid/currency
-  const { _id } = user
-
   return WalletFactory({ user, logger })
 }
 
