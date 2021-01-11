@@ -4,6 +4,7 @@ import { customerPath } from "./ledger";
 import { MainBook, User, Transaction } from "./mongodb";
 import { ITransaction } from "./types";
 import { LoggedError } from "./utils";
+import { sendNotification } from "./notification";
 
 export abstract class UserWallet {
 
@@ -147,10 +148,6 @@ export abstract class UserWallet {
     return usdValue
   }
 
-  getBalanceUsd = async () => {
-    this.satsToUsd(await this.getBalance())
-  }
-
   isUserActive = async (uid): Promise<boolean> => {
     const timestamp30DaysAgo = new Date(Date.now() - (30 * 24 * 60 * 60 * 1000))
     const [result] = await Transaction.aggregate([
@@ -164,5 +161,14 @@ export abstract class UserWallet {
     const { incomingSats, outgoingSats } = result || {}
 
     return (outgoingSats > 1000 || incomingSats > 1000)
+  }
+
+  sendBalance = async () => {
+    if (await this.isUserActive) {
+      const balanceSats = await this.getBalance()
+      const balanceUsd = this.satsToUsd(balanceSats)
+      this.logger.info(`sending balance notification to user ${this.user._id} with balance ${balanceSats} and \$${balanceUsd}`)
+      await sendNotification({ uid: this.user._id, title: "Balance today", logger: this.logger, body: `Your balance is \$${balanceUsd} (${balanceSats} sats)` })
+    }
   }
 }
