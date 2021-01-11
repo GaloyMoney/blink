@@ -205,7 +205,7 @@ const resolvers = {
       pay: ({ address, amount, memo }) => ({ success: wallet.onChainPay({ address, amount, memo }) }),
       getFee: ({ address }) => wallet.getOnchainFee({ address }),
     }),
-    addDeviceToken: async (_, { deviceToken }, { uid, user }) => {
+    addDeviceToken: async (_, { deviceToken }, { user }) => {
       user.deviceToken.addToSet(deviceToken)
       // TODO: check if this is ok to shared a mongoose user instance and mutate it.
       await user.save()
@@ -213,10 +213,10 @@ const resolvers = {
     },
 
     // FIXME test
-    testMessage: async (_, __, { uid, logger }) => {
+    testMessage: async (_, __, { user, logger }) => {
       // throw new LoggedError("test error")
       await sendNotification({
-        uid,
+        user,
         title: "Title",
         body: `New message sent at ${moment.utc().format('YYYY-MM-DD HH:mm:ss')}`,
         logger

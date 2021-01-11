@@ -1,3 +1,5 @@
+import { User } from "./mongodb"
+
 export type Side = "buy" | "sell"
 export type Currency = "USD" | "BTC"
 
@@ -99,7 +101,7 @@ export interface IDataNotification {
 }
 
 export interface INotification {
-  uid: string,
+  user: typeof User,
   title: string,
   data?: IDataNotification
   body?: string,

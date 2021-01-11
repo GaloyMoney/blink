@@ -77,7 +77,9 @@ export async function onchainTransactionEventHandler(tx) {
       hash: tx.id,
       amount: tx.tokens,
     }
-    await sendNotification({ uid: entry.account_path[2], title, data, logger: onchainLogger })
+
+    const user = await User.findOne({"_id": entry.account_path[2]})
+    await sendNotification({ user, title, data, logger: onchainLogger })
   } else {
     // TODO: the same way Lightning is updating the wallet/accounting, 
     // this event should update the onchain wallet/account of the associated user
@@ -114,7 +116,7 @@ export async function onchainTransactionEventHandler(tx) {
     const title = tx.is_confirmed ?
       `You received $${usd} | ${tx.tokens} sats` :
       `$${usd} | ${tx.tokens} sats is on its way to your wallet`
-    await sendNotification({ title, uid: user._id, data, logger: onchainLogger })
+    await sendNotification({ title, user, data, logger: onchainLogger })
   }
 }
 
@@ -134,7 +136,7 @@ export const onInvoiceUpdate = async invoice => {
     const user = await User.findOne({_id: uid})
     const wallet = await WalletFactory({ user, logger })
     await wallet.updatePendingInvoice({ hash })
-    await sendInvoicePaidNotification({ amount: invoice.received, hash, uid, logger })
+    await sendInvoicePaidNotification({ amount: invoice.received, hash, user, logger })
   } else {
     logger.fatal({ invoice }, "we received an invoice but had no user attached to it")
   }

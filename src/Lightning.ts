@@ -330,7 +330,7 @@ export const LightningMixin = (superclass) => class extends superclass {
           memoPayer
         })
 
-        await sendInvoicePaidNotification({ amount: sats, uid: payeeUser._id, hash: id, logger: this.logger })
+        await sendInvoicePaidNotification({ amount: sats, user: payeeUser, hash: id, logger: this.logger })
 
         if (!pushPayment) {
           const resultDeletion = await InvoiceUser.deleteOne({ _id: id })
