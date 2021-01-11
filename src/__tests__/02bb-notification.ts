@@ -23,6 +23,6 @@ it('sends daily balance notification', async () => {
   await sendBalanceToUser()
   for (const [call] of sendNotification.mock.calls) {
     const { balance } = await MainBook.balance({ accounts: customerPath(call.uid) })
-    expect(call.body).toBe(`Your balance is \$${price * -balance}`)
+    expect(call.body).toBe(`Your balance is \$${price * -balance} (${-balance} sats)`)
   }
 })
