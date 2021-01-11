@@ -163,7 +163,6 @@ export abstract class UserWallet {
     ])
     const { incomingSats, outgoingSats } = result || {}
 
-    if (outgoingSats > 1000 || incomingSats > 1000) return true
-    return false
+    return (outgoingSats > 1000 || incomingSats > 1000)
   }
 }
