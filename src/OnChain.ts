@@ -374,10 +374,10 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
         // has the transaction has not been added yet to the user account?
         //
-        // note: the fact we fiter with `account_path: this.accountPathMedici` could create 
+        // note: the fact we fiter with `account_path: this.accountPath` could create 
         // double transaction for some non customer specific wallet. ie: if the path is different
         // for the broker. this is fixed now but something to think about.
-        const mongotx = await Transaction.findOne({ account_path: this.accountPathMedici, type, hash: matched_tx.id })
+        const mongotx = await Transaction.findOne({ accounts: this.accountPath, type, hash: matched_tx.id })
 
         // this.logger.debug({ matched_tx, mongotx }, "updateOnchainReceipt with user %o", this.uid)
 

@@ -28,10 +28,6 @@ export abstract class UserWallet {
 
   abstract get accountPath(): string
 
-  get accountPathMedici(): Array<string> {
-    return this.accountPath.split(":")
-  }
-
   get uid(): string {
     return this.user._id
   }
