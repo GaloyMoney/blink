@@ -199,8 +199,3 @@ it('batch send transaction', async () => {
   }
 
 })
-
-it('sends daily balance notification', async () => {
-  await sendBalanceToUser()
-  console.log(sendNotification.mock.calls, "mock call")
-})
