@@ -168,20 +168,3 @@ export const isInvoiceAlreadyPaidError = (err) => {
   }
   return false
 }
-
-export const isUserActive = async (uid): Promise<boolean> => {
-  const userAccountPath = customerPath(uid)
-  //TODO: Maybe only consider txn for the past x number of days?
-  const [result] = await Transaction.aggregate([
-    { $match: { "accounts": userAccountPath } },
-    {
-      $group: {
-        _id: null, outgoingSats: { $sum: "$credit" }, incomingSats: { $sum: "$debit" }
-      }
-    }
-  ])
-  const { incomingSats, outgoingSats } = result || {}
-
-  if (outgoingSats > 1000 || incomingSats > 1000) return true
-  return false
-}

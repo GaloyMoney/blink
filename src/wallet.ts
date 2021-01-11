@@ -1,7 +1,7 @@
 import moment from "moment";
 import { CSVAccountExport } from "./csvAccountExport";
 import { customerPath } from "./ledger";
-import { MainBook, User } from "./mongodb";
+import { MainBook, User, Transaction } from "./mongodb";
 import { ITransaction } from "./types";
 import { LoggedError } from "./utils";
 
@@ -28,7 +28,7 @@ export abstract class UserWallet {
   }
 
   static async usernameExists({ username }): Promise<boolean> {
-    return !!(await User.findByUsername({ username}))
+    return !!(await User.findByUsername({ username }))
   }
 
   // this needs to be here to be able to call / chain updatePending()
@@ -63,11 +63,11 @@ export abstract class UserWallet {
 
     const results_processed = rawTransactions.map(item => {
       const amount = item.debit - item.credit
-      const memoUsername = 
+      const memoUsername =
         item.username ?
           amount > 0 ?
-            `from ${item.username}`:
-            `to ${item.username}`:
+            `from ${item.username}` :
+            `to ${item.username}` :
           null
 
       return {
@@ -86,14 +86,15 @@ export abstract class UserWallet {
         id: item._id,
         currency: item.currency,
         addresses: item.payee_addresses,
-    }})
+      }
+    })
 
     return results_processed
   }
 
   async getStringCsv() {
     const csv = new CSVAccountExport()
-    await csv.addAccount({account: customerPath(this.uid)})
+    await csv.addAccount({ account: customerPath(this.uid) })
     return csv.getBase64()
   }
 
@@ -107,7 +108,7 @@ export abstract class UserWallet {
 
     if (!result) {
       const error = `Username is already set`
-      this.logger.error({result}, error)
+      this.logger.error({ result }, error)
       throw new LoggedError(error)
     }
 
@@ -120,7 +121,7 @@ export abstract class UserWallet {
 
     if (!result) {
       const error = `issue setting language preferences`
-      this.logger.error({result}, error)
+      this.logger.error({ result }, error)
       throw new LoggedError(error)
     }
 
@@ -130,19 +131,39 @@ export abstract class UserWallet {
   getCurrencyEquivalent({ sats, fee, usd }: { sats: number, fee: number, usd?: number }) {
     let _usd = usd
     let feeUsd
-  
+
     if (!usd) {
       _usd = this.satsToUsd(sats)
     }
-  
+
     // TODO: check if fee is always given in sats
     feeUsd = this.satsToUsd(fee)
-  
+
     return { fee, feeUsd, sats, usd: _usd }
   }
-  
+
   satsToUsd = sats => {
     const usdValue = this.lastPrice * sats
     return usdValue
+  }
+
+  getBalanceUsd = async () => {
+    this.satsToUsd(await this.getBalance())
+  }
+
+  isUserActive = async (uid): Promise<boolean> => {
+    const timestamp30DaysAgo = new Date(Date.now() - (30 * 24 * 60 * 60 * 1000))
+    const [result] = await Transaction.aggregate([
+      { $match: { "accounts": this.accountPath, "timestamp": { $gte: timestamp30DaysAgo } } },
+      {
+        $group: {
+          _id: null, outgoingSats: { $sum: "$credit" }, incomingSats: { $sum: "$debit" }
+        }
+      }
+    ])
+    const { incomingSats, outgoingSats } = result || {}
+
+    if (outgoingSats > 1000 || incomingSats > 1000) return true
+    return false
   }
 }
