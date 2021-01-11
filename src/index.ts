@@ -83,6 +83,9 @@ const resolvers = {
       csv: () => wallet.getStringCsv()
     }]),
 
+    // new way to return the balance
+    // balances are distinc between USD and BTC
+    // but transaction are common, because they could have rely both on USD/BTC
     wallet2: async (_, __, { wallet }) => {
       const balances = wallet.getBalances()
 

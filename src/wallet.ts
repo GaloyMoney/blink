@@ -1,3 +1,4 @@
+import { Balances } from "ccxt";
 import moment from "moment";
 import { CSVAccountExport } from "./csvAccountExport";
 import { customerPath } from "./ledger";
@@ -43,7 +44,7 @@ export abstract class UserWallet {
   // there may be better way to architecture this?
   async updatePending() { return }
 
-  async getBalances() {
+  async getBalances(): Promise<Balances> {
     await this.updatePending()
 
     const balances = {

@@ -173,6 +173,7 @@ UserSchema.virtual('pctBtc').get(function (this: typeof UserSchema) {
   return find(this.currencies, {id: "BTC"})?.pct ?? 0
 });
 
+// this is the accounting path in medici for this user
 UserSchema.virtual('accountPath').get(function (this: typeof UserSchema) {
   return customerPath(this._id)
 })
