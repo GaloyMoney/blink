@@ -24,7 +24,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
     super(...args)
   }
 
-  async updatePending(): Promise<void | Error> {
+  async updatePending(): Promise<void> {
     await Promise.all([
       this.updateOnchainReceipt(),
       super.updatePending()
@@ -36,7 +36,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
     return User.findOne({ onchain_addresses: { $in: address } }) 
   }
 
-  async getOnchainFee({address}: {address: string}): Promise<number | Error> {
+  async getOnchainFee({address}: {address: string}): Promise<number> {
     const payeeUser = await this.UserFromAddress({address})
 
     let fee
@@ -52,7 +52,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
   }
 
   // amount in sats
-  async onChainPay({ address, amount, memo }: IOnChainPayment): Promise<ISuccess | Error> {
+  async onChainPay({ address, amount, memo }: IOnChainPayment): Promise<ISuccess> {
     let onchainLogger = this.logger.child({ topic: "payment", protocol: "onchain", transactionType: "payment", address, amount, memo })
 
     const balance = await this.getBalances()
@@ -161,16 +161,16 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
   }
 
-  async getLastOnChainAddress(): Promise<String | Error | undefined> {
+  async getLastOnChainAddress(): Promise<string> {
     if (this.user.onchain_addresses.length === 0) {
       // FIXME this should not be done in a query but only in a mutation?
       await this.getOnChainAddress()
     }
-
-    return last(this.user.onchain_addresses)
+ 
+    return last(this.user.onchain_addresses) as string
   }
 
-  async getOnChainAddress(): Promise<string | Error> {
+  async getOnChainAddress(): Promise<string> {
     // another option to investigate is to have a master key / client
     // (maybe this could be saved in JWT)
     // and a way for them to derive new key

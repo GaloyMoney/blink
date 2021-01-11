@@ -174,7 +174,7 @@ it('batch send transaction', async () => {
   output0[address0] = 1
   
   const output1 = {}
-  output1[address4 as string] = 2
+  output1[address4] = 2
 
   const outputs = [output0, output1]
 
