@@ -2,11 +2,10 @@ const lnService = require('ln-service');
 const assert = require('assert').strict;
 import { createHash, randomBytes } from "crypto";
 import moment from "moment";
-import { brokerLndPath, lndAccountingPath } from "./ledger";
 import { disposer, getAsyncRedisClient } from "./lock";
 import { InvoiceUser, MainBook, Transaction, User } from "./mongodb";
 import { sendInvoicePaidNotification } from "./notification";
-import { onUsPayment, accountingLndPayment, accountingLndReceipt } from "./transaction";
+import { accountingLndPayment, accountingLndReceipt, onUsPayment } from "./transaction";
 import { IAddInvoiceRequest, IFeeRequest, IPaymentRequest } from "./types";
 import { addContact, getAuth, isInvoiceAlreadyPaidError, LoggedError, timeout } from "./utils";
 import { UserWallet } from "./wallet";
@@ -37,10 +36,6 @@ export const delay = (currency) => {
 export const LightningMixin = (superclass) => class extends superclass {
   lnd = lnService.authenticatedLndGrpc(getAuth()).lnd
   nodePubKey: string | null = null
-
-  // FIXME: need ! otherwise have `Property isUsd has no initializer and is not definitely assigned in the constructor`
-  // which doesn't seems to make sense
-  readonly isUsd!: boolean
 
   constructor(...args) {
     super(...args)
@@ -538,6 +533,16 @@ export const LightningMixin = (superclass) => class extends superclass {
     })
   }
 
+  // this method is used when the probing failed
+  // there are times when it's not possible to know in advance the fees
+  // this could be because the receiving doesn't respond to the fake payment
+  // or because there is no liquidity for a one-sum payment, but there could 
+  // be liquidity if the payment was using MPP
+  //
+  // in this scenario, we have withdrawal a percent of fee (`max_fee`)
+  // and once we know precisely how much the payment was
+  // we reimburse the difference
+  //
   async recordFeeDifference({ paymentResult, max_fee, id, related_journal }) {
     const feeDifference = max_fee - paymentResult.safe_fee
 
@@ -550,16 +555,14 @@ export const LightningMixin = (superclass) => class extends superclass {
     const metadata = { currency: "BTC", hash: id, related_journal, type: "fee_reimbursement", usd, pending: false }
 
     // todo: add a reference to the journal entry of the main tx
-    await MainBook.entry("fee reimbursement")
-      .debit(await this.path(), feeDifference, metadata)
-      .credit(lndAccountingPath, feeDifference, metadata)
-      .commit()
-  }
 
-  async path() {
-    // TODO: brokerLndPath should be cached
-    const path = this.isUSD ? await brokerLndPath() : this.accountPath
-    return path
+    await accountingLndReceipt({
+     description: "fee reimbursement",
+     payee: this,
+     metadata,
+     sats: feeDifference
+    })
+    //
   }
 
   // TODO manage the error case properly. right now there is a mix of string being return
@@ -689,7 +692,7 @@ export const LightningMixin = (superclass) => class extends superclass {
             sats
           })
 
-          this.logger.info({ topic: "payment", protocol: "lightning", transactionType: "receipt", onUs: false, success: true })
+          this.logger.info({ topic: "payment", protocol: "lightning", transactionType: "receipt", onUs: false, success: true, metadata })
 
           return true
         })
