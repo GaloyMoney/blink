@@ -1,10 +1,9 @@
-import { baseLogger } from "../utils";
-import { sendBalanceToUser } from "../dailyBalanceNotification"
-import { setupMongoConnection, MainBook } from "../mongodb";
-import { quit } from "../lock";
-import { WalletFactory } from "../walletFactory";
+import { sendBalanceToUser } from "../dailyBalanceNotification";
 import { customerPath } from "../ledger";
+import { quit } from "../lock";
+import { MainBook, setupMongoConnection } from "../mongodb";
 import { Price } from "../priceImpl";
+import { baseLogger } from "../utils";
 jest.mock('../notification')
 const { sendNotification } = require("../notification")
 let price
@@ -17,6 +16,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await quit()
+  jest.restoreAllMocks();
 });
 
 it('sends daily balance notification', async () => {
