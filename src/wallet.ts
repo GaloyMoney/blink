@@ -1,10 +1,10 @@
-import { Balances } from "ccxt";
 import moment from "moment";
 import { CSVAccountExport } from "./csvAccountExport";
 import { customerPath } from "./ledger";
 import { MainBook, User } from "./mongodb";
 import { ITransaction } from "./types";
 import { LoggedError } from "./utils";
+import { Balances } from "./interface"
 const assert = require('assert')
 
 export abstract class UserWallet {
@@ -49,7 +49,9 @@ export abstract class UserWallet {
 
     const balances = {
       "BTC": 0,
-      "USD": 0
+      "USD": 0,
+      total_in_BTC: NaN,
+      total_in_USD: NaN,
     }
 
     // TODO: make this code parrallel instead of serial
@@ -86,8 +88,8 @@ export abstract class UserWallet {
       value: BTC * balances["BTC"] + USD * balances["USD"]
     }))
 
-    balances["total_in_BTC"] = total.filter(item => item.id === "BTC")[0].value
-    balances["total_in_USD"] = total.filter(item => item.id === "USD")[0].value
+    balances.total_in_BTC = total.filter(item => item.id === "BTC")[0].value
+    balances.total_in_USD = total.filter(item => item.id === "USD")[0].value
 
     return balances
   }
