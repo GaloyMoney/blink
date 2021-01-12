@@ -32,7 +32,7 @@ helmUpgrade () {
   echo ""
   echo "---"
   echo "executing upgrade: helm upgrade -i -n=$NAMESPACE $@"
-  command helm upgrade -i --wait -n=$NAMESPACE "$@"
+  command helm upgrade -i -n=$NAMESPACE "$@"
 }
 
 monitoringDeploymentsUpgrade() {
