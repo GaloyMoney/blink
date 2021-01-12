@@ -164,11 +164,9 @@ export abstract class UserWallet {
   }
 
   sendBalance = async () => {
-    if (await this.isUserActive) {
-      const balanceSats = await this.getBalance()
-      const balanceUsd = this.satsToUsd(balanceSats)
-      this.logger.info(`sending balance notification to user ${this.user._id} with balance ${balanceSats} and \$${balanceUsd}`)
-      await sendNotification({ uid: this.user._id, title: "Balance today", logger: this.logger, body: `Your balance is \$${balanceUsd} (${balanceSats} sats)` })
-    }
+    const balanceSats = await this.getBalance()
+    const balanceUsd = this.satsToUsd(balanceSats)
+    this.logger.info({balanceSats, balanceUsd, uid: this.user._id}, `sending balance notification to user`)
+    await sendNotification({ uid: this.user._id, title: "Balance today", logger: this.logger, body: `Your balance is \$${balanceUsd} (${balanceSats} sats)` })
   }
 }
