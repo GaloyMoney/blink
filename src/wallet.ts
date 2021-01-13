@@ -47,6 +47,7 @@ export abstract class UserWallet {
   async getBalances(): Promise<Balances> {
     await this.updatePending()
 
+    // TODO: add effective ratio
     const balances = {
       "BTC": 0,
       "USD": 0,
@@ -61,12 +62,10 @@ export abstract class UserWallet {
         currency: id,
       })
 
-      // FIXME: is it the right place to have the - sign?
+      // balance shows an negative because they are a liability to the bank
       assert(balance <= 0)
       balances[id] = - balance
     }
-
-    // console.log({balances})
 
     const priceMap = [
       {
@@ -80,9 +79,10 @@ export abstract class UserWallet {
         USD: 1
       }
     ]
-
-    // TODO: check forEach return
-    // TODO: add pct
+    
+    // this array is used to know the total in USD and BTC
+    // the effective ratio may not be equal to the user ratio 
+    // as a result of price fluctuation
     let total = priceMap.map(({id, BTC, USD}) => ({
       id,
       value: BTC * balances["BTC"] + USD * balances["USD"]

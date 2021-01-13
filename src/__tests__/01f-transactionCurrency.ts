@@ -38,9 +38,9 @@ const expectBalance = async ({account, currency, balance}) => {
   expect(balanceResult).toBe(balance)
 }
 
-const fullBTCmeta = {currencies: [{id: "BTC", pct: 1}], phone: "1234"}
-const fullUSDmeta = {currencies: [{id: "USD", pct: 1}], phone: "2345"}
-const _5050meta = {currencies: [{id: "USD", pct: .5}, {id: "BTC", pct: .5}]}
+const fullBTCmeta = {currencies: [{id: "BTC", ratio: 1}], phone: "1234"}
+const fullUSDmeta = {currencies: [{id: "USD", ratio: 1}], phone: "2345"}
+const _5050meta = {currencies: [{id: "USD", ratio: .5}, {id: "BTC", ratio: .5}]}
 
 const walletBTC2 = new User(fullBTCmeta)
 const walletUSD2 = new User(fullUSDmeta)

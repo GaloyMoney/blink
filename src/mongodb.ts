@@ -107,7 +107,7 @@ const UserSchema = new Schema({
   currencies: {
     validate: {
       validator: function(v) {
-        return sumBy(v, 'pct') == 1
+        return sumBy(v, 'ratio') == 1
       },
     },
     type: [{
@@ -116,7 +116,7 @@ const UserSchema = new Schema({
         enum: ["BTC", "USD"],
         required: true
       },
-      pct: {
+      ratio: {
         type: Number,
         required: true,
         min: 0,
@@ -124,7 +124,7 @@ const UserSchema = new Schema({
       }
     }],
     required: true,
-    default: [{id: "BTC", pct: 1}]
+    default: [{id: "BTC", ratio: 1}]
   },
   contacts: {
     type: [{
@@ -161,16 +161,16 @@ const UserSchema = new Schema({
 
 })
 
-// Define getter for pctUsd
+// Define getter for ratioUsd
 // FIXME: this // An outer value of 'this' is shadowed by this container.
 // https://stackoverflow.com/questions/41944650/this-implicitly-has-type-any-because-it-does-not-have-a-type-annotation
-UserSchema.virtual('pctUsd').get(function (this: typeof UserSchema) {
-  return find(this.currencies, {id: "USD"})?.pct ?? 0
+UserSchema.virtual('ratioUsd').get(function (this: typeof UserSchema) {
+  return find(this.currencies, {id: "USD"})?.ratio ?? 0
 });
 
 // Define setter virtual method
-UserSchema.virtual('pctBtc').get(function (this: typeof UserSchema) {
-  return find(this.currencies, {id: "BTC"})?.pct ?? 0
+UserSchema.virtual('ratioBtc').get(function (this: typeof UserSchema) {
+  return find(this.currencies, {id: "BTC"})?.ratio ?? 0
 });
 
 // this is the accounting path in medici for this user
@@ -294,7 +294,7 @@ const transactionSchema = new Schema({
         enum: ["BTC", "USD"],
         required: true
       },
-      pct: {
+      ratio: {
         type: Number,
         required: true,
         min: 0,

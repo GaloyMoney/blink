@@ -29,7 +29,7 @@ beforeAll(async () => {
 
   userWalletUsd = await getUserWallet(5)
   expect(userWalletUsd.user.currencies[0]).toHaveProperty("id", "USD")
-  expect(userWalletUsd.user.currencies[0]).toHaveProperty("pct", 1)
+  expect(userWalletUsd.user.currencies[0]).toHaveProperty("ratio", 1)
 
   userWallet2 = await getUserWallet(2)
 

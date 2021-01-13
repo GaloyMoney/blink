@@ -30,7 +30,7 @@ it('add user0/funder/Broker', async () => {
   expect(broker.user.role).toBe("broker")
 
   const user5 = await getUserWallet(5)
-  expect(user5.user.currencies[0]).toMatchObject({id: "USD", pct: 1})
+  expect(user5.user.currencies[0]).toMatchObject({id: "USD", ratio: 1})
 })
 
 
