@@ -24,6 +24,7 @@ const lndOffChain_g = new client.Gauge({ name: `${prefix}_lnd_offchain`, help: '
 const lndOpeningChannelBalance_g = new client.Gauge({ name: `${prefix}_lnd_openingchannelbalance`, help: 'how much fund is pending following opening channel' })
 const lndClosingChannelBalance_g = new client.Gauge({ name: `${prefix}_lnd_closingchannelbalance`, help: 'how much fund is closing following force closed channel' })
 const usdShortPosition_g = new client.Gauge({ name: `${prefix}_usdShortPosition`, help: 'usd short position on ftx' })
+const totalAccountValue_g = new client.Gauge({ name: `${prefix}_totalAccountValue`, help: 'totalAccountValue on ftx' })
 const ftx_btc_g = new client.Gauge({ name: `${prefix}_ftxBtcBalance`, help: 'btc balance in ftx' })
 const ftx_usdPnl_g = new client.Gauge({ name: `${prefix}_ftxUsdPnl`, help: 'usd balance in FTX, which also represents the PNL' })
 const funder_balance_g = new client.Gauge({ name: `${prefix}_funderBalance`, help: 'funder balance' })
@@ -75,7 +76,7 @@ const main = async () => {
 
 
     const brokerWallet = await getBrokerWallet({ logger })
-    const { usd: usdShortPosition, leverage } = await brokerWallet.getAccountPosition()
+    const { usd: usdShortPosition, totalAccountValue, leverage } = await brokerWallet.getAccountPosition()
 
     ftx_btc_g.set((await brokerWallet.getExchangeBalance()).sats)
     ftx_usdPnl_g.set((await brokerWallet.getExchangeBalance()).usdPnl)
@@ -83,6 +84,7 @@ const main = async () => {
     broker_local_usd_g.set((await brokerWallet.getLocalLiabilities()).usd)
     broker_profit_g.set((await brokerWallet.getProfit()).usdProfit)
 
+    totalAccountValue_g.set(totalAccountValue)
     usdShortPosition_g.set(usdShortPosition)
     leverage_g.set(leverage)
 
