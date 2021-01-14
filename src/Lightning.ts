@@ -350,7 +350,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         // cash back // temporary
         const cashback = process.env.CASHBACK
         if (cashback && !params.isReward) {
-          const payeeIsBusiness = payeeUser ? !!payeeUser?.title : false
+          const payeeIsBusiness = !!payeeUser?.title
           const payerIsBusiness = !!this.user.title
 
           if (payeeIsBusiness && !payerIsBusiness && !payeeUser.excludeCashback) {
