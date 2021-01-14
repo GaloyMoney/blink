@@ -259,8 +259,6 @@ const permissions = shield({
     // requestPhoneCode: not(isAuthenticated),
     // login: not(isAuthenticated),
 
-    openChannel: isAuthenticated, // FIXME: this should be isAuthenticated && isAdmin
-
     onchain: isAuthenticated,
     invoice: isAuthenticated,
     earnCompleted: isAuthenticated,
