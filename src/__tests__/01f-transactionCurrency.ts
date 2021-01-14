@@ -336,7 +336,7 @@ describe('rebalancePortfolio', () => {
 
     await rebalancePortfolio({
       description: "rebalancePortfolio",
-      metadata: {type: "user_rebalancePortfolio"},
+      metadata: {type: "user_rebalance"},
       wallet,
     })
 
@@ -365,7 +365,7 @@ describe('rebalancePortfolio', () => {
 
     await rebalancePortfolio({
       description: "rebalancePortfolio",
-      metadata: {type: "user_rebalancePortfolio", pending: false},
+      metadata: {type: "user_rebalance", pending: false},
       wallet,
     })
 
@@ -402,7 +402,7 @@ describe('rebalancePortfolio', () => {
 
     await rebalancePortfolio({
       description: "rebalancePortfolio",
-      metadata: {type: "user_rebalancePortfolio", pending: false},
+      metadata: {type: "user_rebalance", pending: false},
       wallet,
     })
 
