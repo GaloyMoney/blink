@@ -1,6 +1,6 @@
 import { brokerMediciPath, lndAccountingPath } from "../ledger"
 import { MainBook, setupMongoConnection, User } from "../mongodb"
-import { accountingLndPayment, accountingLndReceipt, onUsPayment, rebalance } from "../transaction"
+import { addTransactionLndPayment, addTransactionLndReceipt, addTransactionOnUsPayment, rebalancePortfolio } from "../transaction"
 import { baseLogger } from "../utils"
 import { UserWallet } from "../wallet"
 import { WalletFactory } from "../walletFactory"
@@ -53,7 +53,7 @@ describe('receipt', () => {
 
   it('btcReceiptToLnd', async () => {
     
-    await accountingLndReceipt({
+    await addTransactionLndReceipt({
       description: "transaction test",
       payeeUser: walletBTC,
       metadata: { type: "invoice", pending: false },
@@ -66,7 +66,7 @@ describe('receipt', () => {
 
   it('usd receipt to lnd', async () => {
     
-    await accountingLndReceipt({
+    await addTransactionLndReceipt({
       description: "transaction test",
       payeeUser: walletUSD,
       metadata: { type: "invoice", pending: false },
@@ -83,7 +83,7 @@ describe('receipt', () => {
 
   it('50/50 usd/btc receipt to lnd', async () => {
   
-    await accountingLndReceipt({
+    await addTransactionLndReceipt({
       description: "transaction test",
       payeeUser: wallet5050,
       metadata: { type: "invoice", pending: false },
@@ -106,7 +106,7 @@ describe('payment with lnd', () => {
 
   it('btc send on lightning', async () => {
     
-    await accountingLndPayment({
+    await addTransactionLndPayment({
       description: "transaction test",
       payerUser: walletBTC,
       sats: 1000,
@@ -119,7 +119,7 @@ describe('payment with lnd', () => {
 
   it('btcSendFromUsdOnLightning', async () => {
   
-    await accountingLndPayment({
+    await addTransactionLndPayment({
       description: "transaction test",
       payerUser: walletUSD,
       sats: 1000,
@@ -135,7 +135,7 @@ describe('payment with lnd', () => {
 
   it('btcSend5050', async () => {
     
-    await accountingLndPayment({
+    await addTransactionLndPayment({
       description: "transaction test",
       payerUser: wallet5050,
       sats: 1000,
@@ -161,7 +161,7 @@ describe('on us payment', () => {
     const payer = walletBTC
     const payee = walletBTC2
   
-    await onUsPayment({
+    await addTransactionOnUsPayment({
       description: "desc",
       sats: 1000,
       metadata: {type: "on_us", pending: false},
@@ -181,7 +181,7 @@ describe('on us payment', () => {
     const payer = walletUSD
     const payee = walletUSD2
   
-    await onUsPayment({
+    await addTransactionOnUsPayment({
       description: "desc",
       sats: 1000,
       metadata: {type: "on_us", pending: false},
@@ -201,7 +201,7 @@ describe('on us payment', () => {
     const payer = walletBTC
     const payee = walletUSD
   
-    await onUsPayment({
+    await addTransactionOnUsPayment({
       description: "desc",
       sats: 1000,
       metadata: {type: "on_us", pending: false},
@@ -224,7 +224,7 @@ describe('on us payment', () => {
     const payer = walletBTC
     const payee = wallet5050
   
-    await onUsPayment({
+    await addTransactionOnUsPayment({
       description: "desc",
       sats: 1000,
       metadata: {type: "on_us", pending: false},
@@ -247,7 +247,7 @@ describe('on us payment', () => {
     const payer = wallet5050
     const payee = walletBTC
   
-    await onUsPayment({
+    await addTransactionOnUsPayment({
       description: "desc",
       sats: 1000,
       metadata: {type: "on_us", pending: false},
@@ -272,7 +272,7 @@ describe('on us payment', () => {
     const payer = walletUSD
     const payee = wallet5050
   
-    await onUsPayment({
+    await addTransactionOnUsPayment({
       description: "desc",
       sats: 1000,
       metadata: {type: "on_us", pending: false},
@@ -297,7 +297,7 @@ describe('on us payment', () => {
     const payer = wallet5050
     const payee = walletUSD
   
-    await onUsPayment({
+    await addTransactionOnUsPayment({
       description: "desc",
       sats: 1000,
       metadata: {type: "on_us", pending: false},
@@ -318,13 +318,13 @@ describe('on us payment', () => {
 
 })
 
-describe('rebalance', () => {
+describe('rebalancePortfolio', () => {
 
   it('BtcNoOp', async () => {
 
     const wallet = fullWalletBTC
   
-    await accountingLndReceipt({
+    await addTransactionLndReceipt({
       description: "first tx to have a balance",
       payeeUser: wallet.user,
       metadata: { type: "invoice", pending: false },
@@ -334,9 +334,9 @@ describe('rebalance', () => {
     await expectBalance({account: wallet.user.accountPath, currency: "BTC", balance: -1000})
     await expectBalance({account: lndAccountingPath, currency: "BTC", balance: 1000})
 
-    await rebalance({
-      description: "rebalance",
-      metadata: {type: "user_rebalance"},
+    await rebalancePortfolio({
+      description: "rebalancePortfolio",
+      metadata: {type: "user_rebalancePortfolio"},
       wallet,
     })
 
@@ -349,7 +349,7 @@ describe('rebalance', () => {
 
     const wallet = fullWalletBTC
   
-    await accountingLndReceipt({
+    await addTransactionLndReceipt({
       description: "first tx to have a balance",
       payeeUser: wallet.user,
       metadata: { type: "invoice", pending: false },
@@ -363,9 +363,9 @@ describe('rebalance', () => {
     const error = wallet.user.validateSync()
     expect(error).toBeFalsy()
 
-    await rebalance({
-      description: "rebalance",
-      metadata: {type: "user_rebalance", pending: false},
+    await rebalancePortfolio({
+      description: "rebalancePortfolio",
+      metadata: {type: "user_rebalancePortfolio", pending: false},
       wallet,
     })
 
@@ -382,7 +382,7 @@ describe('rebalance', () => {
 
     const wallet = fullWalletUSD
   
-    await accountingLndReceipt({
+    await addTransactionLndReceipt({
       description: "first tx to have a balance",
       payeeUser: wallet.user,
       metadata: { type: "invoice", pending: false },
@@ -400,9 +400,9 @@ describe('rebalance', () => {
     const error = wallet.user.validateSync()
     expect(error).toBeFalsy()
 
-    await rebalance({
-      description: "rebalance",
-      metadata: {type: "user_rebalance", pending: false},
+    await rebalancePortfolio({
+      description: "rebalancePortfolio",
+      metadata: {type: "user_rebalancePortfolio", pending: false},
       wallet,
     })
 

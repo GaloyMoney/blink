@@ -3,7 +3,7 @@ import { MainBook } from "./mongodb"
 import { UserWallet } from "./wallet"
 
 
-export const accountingLndReceipt = async ({description, payeeUser, metadata, sats}) => {
+export const addTransactionLndReceipt = async ({description, payeeUser, metadata, sats}) => {
   const brokerPath = await brokerMediciPath()
   
   const entry = MainBook.entry(description)
@@ -32,7 +32,7 @@ export const accountingLndReceipt = async ({description, payeeUser, metadata, sa
 }
 
 
-export const accountingLndPayment = async ({description, sats, metadata, payerUser}) => {
+export const addTransactionLndPayment = async ({description, sats, metadata, payerUser}) => {
   const brokerPath = await brokerMediciPath()
 
   const entry = MainBook.entry(description)
@@ -58,7 +58,7 @@ export const accountingLndPayment = async ({description, sats, metadata, payerUs
   return entry
 }
 
-export const onUsPayment = async ({description, sats, metadata, payerUser, payeeUser, memoPayer}) => {
+export const addTransactionOnUsPayment = async ({description, sats, metadata, payerUser, payeeUser, memoPayer}) => {
   const brokerPath = await brokerMediciPath()
 
   const entry = MainBook.entry(description)
@@ -92,7 +92,7 @@ export const onUsPayment = async ({description, sats, metadata, payerUser, payee
   return entry
 }
 
-export const rebalance = async ({description, metadata, wallet}) => {
+export const rebalancePortfolio = async ({description, metadata, wallet}) => {
   const brokerPath = await brokerMediciPath()
   
   const balances = await wallet.getBalances()

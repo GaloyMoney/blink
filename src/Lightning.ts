@@ -5,7 +5,7 @@ import moment from "moment";
 import { disposer, getAsyncRedisClient } from "./lock";
 import { InvoiceUser, MainBook, Transaction, User } from "./mongodb";
 import { sendInvoicePaidNotification } from "./notification";
-import { accountingLndPayment, accountingLndReceipt, onUsPayment } from "./transaction";
+import { addTransactionLndPayment, addTransactionLndReceipt, addTransactionOnUsPayment } from "./transaction";
 import { IAddInvoiceRequest, IFeeRequest, IPaymentRequest } from "./types";
 import { addContact, getAuth, isInvoiceAlreadyPaidError, LoggedError, timeout } from "./utils";
 import { UserWallet } from "./wallet";
@@ -316,7 +316,7 @@ export const LightningMixin = (superclass) => class extends superclass {
           throw new LoggedError(error)
         }
 
-        await onUsPayment({
+        await addTransactionOnUsPayment({
           description: memoInvoice,
           sats,
           metadata,
@@ -427,7 +427,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         // reduce balance from customer first
 
-        entry = await accountingLndPayment({
+        entry = await addTransactionLndPayment({
           description: memoInvoice,
           payerUser: this.user,
           sats,
@@ -556,7 +556,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     // todo: add a reference to the journal entry of the main tx
 
-    await accountingLndReceipt({
+    await addTransactionLndReceipt({
      description: "fee reimbursement",
      payeeUser: this.user,
      metadata,
@@ -685,7 +685,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
           const metadata = { hash, type: "invoice", pending: false, ...UserWallet.getCurrencyEquivalent({ sats, fee: 0 }) }
 
-          await accountingLndReceipt({
+          await addTransactionLndReceipt({
             description: invoice.description,
             payeeUser: this.user,
             metadata,
