@@ -168,7 +168,6 @@ UserSchema.virtual('ratioUsd').get(function (this: typeof UserSchema) {
   return find(this.currencies, {id: "USD"})?.ratio ?? 0
 });
 
-// Define setter virtual method
 UserSchema.virtual('ratioBtc').get(function (this: typeof UserSchema) {
   return find(this.currencies, {id: "BTC"})?.ratio ?? 0
 });

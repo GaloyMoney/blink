@@ -8,7 +8,7 @@ import { baseLogger, LoggedError } from "./utils";
 import { UserWallet } from "./wallet";
 
 
-export const WalletFactory = async ({ user, logger }: { user: any, logger: any }) => {
+export const WalletFactory = async ({ user, logger }: { user: typeof User, logger: any }) => {
   // FIXME: update price on event outside of the wallet factory
   const lastPrice = await getLastPrice()
   UserWallet.setCurrentPrice(lastPrice)

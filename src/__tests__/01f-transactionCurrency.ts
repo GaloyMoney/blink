@@ -102,7 +102,7 @@ describe('receipt', () => {
 
 
 
-describe('send outside', () => {
+describe('payment with lnd', () => {
 
   it('btc send on lightning', async () => {
     
@@ -212,11 +212,11 @@ describe('on us payment', () => {
   
     await expectBalance({account: payer.accountPath, currency: "BTC", balance: 1000})
     await expectBalance({account: brokerPath, currency: "BTC", balance: -1000})
-    await expectBalance({account: payer.accountPath, currency: "USD", balance: 0})
+    await expectBalance({account: payee.accountPath, currency: "BTC", balance: 0})
     
+    await expectBalance({account: payer.accountPath, currency: "USD", balance: 0})
     await expectBalance({account: brokerPath, currency: "USD", balance: 0.1})
     await expectBalance({account: payee.accountPath, currency: "USD", balance: -0.1})
-    await expectBalance({account: payee.accountPath, currency: "BTC", balance: 0})
   })
 
   it('onUsBtcTo5050', async () => {
