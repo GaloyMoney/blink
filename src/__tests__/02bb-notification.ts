@@ -4,7 +4,8 @@ import { quit } from "../lock";
 import { MainBook, setupMongoConnection, User, Transaction } from "../mongodb";
 import { Price } from "../priceImpl";
 import { baseLogger } from "../utils";
-import { WalletFactory } from "../walletFactory";
+import { WalletFactory, getFunderWallet } from "../walletFactory";
+import { getUserWallet } from "../tests/helper";
 jest.mock('../notification')
 const { sendNotification } = require("../notification")
 let price
@@ -22,10 +23,14 @@ afterAll(async () => {
 
 it('tests isUserActive', async () => {
   const initialActiveUsers = await getActiveUsers()
-
-  //user0 and funder wallet
-  expect(initialActiveUsers.length).toBe(2)
+  const userWallet0AccountPath = (await getUserWallet(0)).accountPath
+  const funderWalletAccountPath = (await getFunderWallet({ logger: baseLogger })).accountPath
   
+  //user0 and funder wallet are active users
+  expect(initialActiveUsers.length).toBe(2)
+  expect(initialActiveUsers.indexOf(userWallet0AccountPath)).toBeGreaterThan(-1)
+  expect(initialActiveUsers.indexOf(funderWalletAccountPath)).toBeGreaterThan(-1)
+
   for (const activeUserAccountPath of initialActiveUsers) {
     await Transaction.updateMany({ accounts: activeUserAccountPath }, { "$set": { "timestamp": new Date(Date.now() - (31 * 24 * 60 * 60 * 1000)) } })
   }
