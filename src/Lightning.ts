@@ -378,7 +378,7 @@ export const LightningMixin = (superclass) => class extends superclass {
           await addContact({ uid: payeeUid, username: this.user.username })
         }
 
-        lightningLoggerOnUs.info({ success: true, isReward: params.isReward ?? false, ...metadata }, "lightning payment success")
+        lightningLoggerOnUs.info({ pushPayment, success: true, isReward: params.isReward ?? false, ...metadata }, "lightning payment success")
 
         // cash back // temporary
         const cashback = process.env.CASHBACK

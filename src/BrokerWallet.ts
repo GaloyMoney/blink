@@ -188,13 +188,14 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
       // always be negative
       btc: - netSize,
 
-      // btc2sats because BTC is in the denominator... this is confusing.
       usd: - netSize * btcPrice,
       estimatedLiquidationPrice,
       collateralUsed, // USD
       maintenanceMarginRequirement, // start at 0.03 but increase with position side 
       
       collateral, // in USD
+
+      totalAccountValue: result.totalAccountValue,
 
       // if there is no collateral, marginFraction will be null. this is equivalent to infinite leverage. 
       leverage : marginFraction ? 1 / marginFraction : Number.POSITIVE_INFINITY,
