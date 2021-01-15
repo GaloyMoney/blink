@@ -32,6 +32,8 @@ it('sends daily balance notification', async () => {
 })
 
 it('tests isUserActive', async () => {
+  await getUserWallet(8)
+
   const initialActiveUsers = await getActiveUsers()
   const userWallet0AccountPath = (await getUserWallet(0)).accountPath
   const funderWalletAccountPath = (await getFunderWallet({ logger: baseLogger })).accountPath
