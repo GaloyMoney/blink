@@ -21,6 +21,16 @@ afterAll(async () => {
   jest.restoreAllMocks();
 });
 
+it('sends daily balance notification', async () => {
+  await sendBalanceToUser()
+  const numActiveUsers = (await getActiveUsers()).length
+  expect(sendNotification.mock.calls.length).toBe(numActiveUsers)
+  for (const [call] of sendNotification.mock.calls) {
+    const { balance } = await MainBook.balance({ accounts: customerPath(call.uid) })
+    expect(call.body).toBe(`Your balance is \$${price * -balance} (${-balance} sats)`)
+  }
+})
+
 it('tests isUserActive', async () => {
   const initialActiveUsers = await getActiveUsers()
   const userWallet0AccountPath = (await getUserWallet(0)).accountPath
@@ -36,16 +46,6 @@ it('tests isUserActive', async () => {
   }
   const finalNumActiveUsers = (await getActiveUsers()).length
   expect(finalNumActiveUsers).toBe(0)
-})
-
-it('sends daily balance notification', async () => {
-  await sendBalanceToUser()
-  const numActiveUsers = (await getActiveUsers()).length
-  expect(sendNotification.mock.calls.length).toBe(numActiveUsers)
-  for (const [call] of sendNotification.mock.calls) {
-    const { balance } = await MainBook.balance({ accounts: customerPath(call.uid) })
-    expect(call.body).toBe(`Your balance is \$${price * -balance} (${-balance} sats)`)
-  }
 })
 
 const getActiveUsers = async (): Promise<Array<string>> => {
