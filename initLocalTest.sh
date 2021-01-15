@@ -174,7 +174,7 @@ kubectlWait app.kubernetes.io/component=mongodb
 
 echo $(kubectl get -n=$NAMESPACE pods)
 
-kubectl rollout status deployment graphql-server
+kubectl -n $NAMESPACE rollout status deployment graphql-server
 if [[ "$?" -ne 0 ]] then
   echo "Deployment failed"
   exit 1
