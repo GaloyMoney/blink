@@ -22,7 +22,9 @@ afterAll(async () => {
 
 it('tests isUserActive', async () => {
   const initialActiveUsers = await getActiveUsers()
-  expect(initialActiveUsers.length).toBeGreaterThan(0)
+
+  //user0 and funder wallet
+  expect(initialActiveUsers.length).toBe(2)
   
   for (const activeUserAccountPath of initialActiveUsers) {
     await Transaction.updateMany({ accounts: activeUserAccountPath }, { "$set": { "timestamp": new Date(Date.now() - (31 * 24 * 60 * 60 * 1000)) } })
