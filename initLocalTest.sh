@@ -40,6 +40,7 @@ helmUpgrade () {
 monitoringDeploymentsUpgrade() {
   SECRET=alertmanager-keys
   local NAMESPACE=monitoring
+  kubectl -n $NAMESPACE delete deployment.apps prometheus-kube-state-metrics
   helmUpgrade prometheus prometheus-community/prometheus -f $INFRADIR/prometheus-server/values.yaml
 
   export SLACK_API_URL=$(kubectl get secret -n $NAMESPACE $SECRET -o jsonpath="{.data.SLACK_API_URL}" | base64 -d)
