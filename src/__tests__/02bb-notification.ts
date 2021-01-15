@@ -43,7 +43,7 @@ it('sends daily balance notification', async () => {
 
 const getActiveUsers = async (): Promise<Array<string>> => {
   const users = await User.find({})
-  const activeUsers = []
+  const activeUsers: Array<string> = []
   for (const user of users) {
     const userWallet = await WalletFactory({ user, uid: user._id, currency: user.currency, logger: baseLogger })
     if (await userWallet.isUserActive()) {
