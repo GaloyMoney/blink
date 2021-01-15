@@ -40,6 +40,7 @@ helmUpgrade () {
 monitoringDeploymentsUpgrade() {
   SECRET=alertmanager-keys
   local NAMESPACE=monitoring
+  kubectl -n $NAMESPACE delete deployment.apps prometheus-kube-state-metrics
   helmUpgrade prometheus prometheus-community/prometheus -f $INFRADIR/prometheus-server/values.yaml
 
   export SLACK_API_URL=$(kubectl get secret -n $NAMESPACE $SECRET -o jsonpath="{.data.SLACK_API_URL}" | base64 -d)
@@ -120,6 +121,7 @@ else
   export MONGODB_ROOT_PASSWORD=$(kubectl get secret -n $NAMESPACE mongodb -o jsonpath="{.data.mongodb-root-password}" | base64 -d)
   export MONGODB_REPLICA_SET_KEY=$(kubectl get secret -n $NAMESPACE mongodb -o jsonpath="{.data.mongodb-replica-set-key}" | base64 -d)
   helmUpgrade mongodb -f $INFRADIR/mongo-chart/custom-values.yaml -f $INFRADIR/mongo-chart/$NETWORK-values.yaml bitnami/mongodb --set auth.rootPassword=$MONGODB_ROOT_PASSWORD,auth.replicaSetKey=$MONGODB_REPLICA_SET_KEY
+  kubectl -n $NAMESPACE delete pod mongodb-2
 
   kubectl exec -n $NAMESPACE mongodb-0 -- bash -c "mongo admin -u root -p "$MONGODB_ROOT_PASSWORD" --eval \"db.adminCommand({setDefaultRWConcern:1,defaultWriteConcern:{'w':'majority'}})\""
   kubectl exec -n $NAMESPACE mongodb-0 -- bash -c "mongo admin -u root -p "$MONGODB_ROOT_PASSWORD" --eval \"c=rs.conf();c.writeConcernMajorityJournalDefault=false;rs.reconfig(c)\""
@@ -172,4 +174,8 @@ kubectlWait app.kubernetes.io/component=mongodb
 
 echo $(kubectl get -n=$NAMESPACE pods)
 
-kubectlWait app=graphql-server
+kubectl -n $NAMESPACE rollout status deployment graphql-server
+if [[ "$?" -ne 0 ]]; then
+  echo "Deployment failed"
+  exit 1
+fi
