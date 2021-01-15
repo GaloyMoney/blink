@@ -25,7 +25,7 @@ it('tests isUserActive', async () => {
   expect(initialActiveUsers.length).toBeGreaterThan(0)
   
   for (const activeUserAccountPath of initialActiveUsers) {
-    await Transaction.updateMany({ accounts: activeUserAccountPath }, { "$set": { "timestamp": new Date() } })
+    await Transaction.updateMany({ accounts: activeUserAccountPath }, { "$set": { "timestamp": new Date(Date.now() - (31 * 24 * 60 * 60 * 1000)) } })
   }
   const finalNumActiveUsers = (await getActiveUsers()).length
   expect(finalNumActiveUsers).toBe(0)
