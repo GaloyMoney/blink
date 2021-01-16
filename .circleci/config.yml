@@ -186,11 +186,11 @@ jobs:
       - run:
           name: Run jest test
           command: |
-            kubectl exec --namespace=$NAMESPACE test-pod -- bash -c "cd functions && yarn test --max_old_space_size=3000"
+            kubectl exec --namespace=$NAMESPACE test-pod -- bash -c "yarn test --max_old_space_size=3000"
       - run:
           name: Run postman test
           command: |
-            kubectl exec --namespace=$NAMESPACE test-pod -- bash -c "cd functions/ && yarn run postman"
+            kubectl exec --namespace=$NAMESPACE test-pod -- bash -c "yarn run postman"
       - run:
           name: Fetch test results
           command: kubectl cp --namespace=$NAMESPACE test-pod:/functions/artifacts/junit.xml ./reports/junit.xml
