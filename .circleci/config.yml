@@ -144,7 +144,7 @@ jobs:
       - run: git push -q https://${GITHUB_TOKEN}@github.com/nicolasburtey/galoy-app.git $CIRCLE_BRANCH
 
   build_test_image:
-    working_directory: ~/GaloyApp/backend/firebase
+    working_directory: ~/GaloyApp/backend/firebase/functions
     machine: true
     steps:
       - checkout:
