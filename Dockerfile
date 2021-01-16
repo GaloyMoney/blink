@@ -2,8 +2,7 @@ FROM node:12
 
 COPY "./package.json" "./tsconfig.json" "./yarn.lock" ./
 
-RUN cd functions \
-&& yarn install
+RUN yarn install
 
 COPY  "./src/" "./src/"
 
