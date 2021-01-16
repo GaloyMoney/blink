@@ -174,6 +174,18 @@ UserSchema.statics.findByUsername = async function ({ username }) {
   return this.findOne({ username: new RegExp(`^${username}$`, 'i') })
 }
 
+UserSchema.statics.getActiveUsers = async function () {
+  const users = await this.find({})
+  const activeUsers: Array<string> = []
+  for (const user of users) {
+    const userWallet = await WalletFactory({ user, uid: user._id, currency: user.currency, logger: baseLogger })
+    if (await userWallet.isUserActive()) {
+      activeUsers.push(userWallet.accountPath)
+    }
+  }
+  return activeUsers
+}
+
 export const User = mongoose.model("User", UserSchema)
 
 
@@ -411,6 +423,7 @@ export const setupMongoConnection = async () => {
 }
 
 import { book } from "medici";
+import { WalletFactory } from "./walletFactory";
 export const MainBook = new book("MainBook")
 
 
