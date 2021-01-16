@@ -1,4 +1,4 @@
-const twilioPhoneNumber = "***REMOVED***"
+const twilio = require('twilio');
 import moment from "moment"
 import { PhoneCode, User } from "./mongodb";
 
@@ -6,17 +6,13 @@ import { randomIntFromInterval, createToken, LoggedError } from "./utils"
 
 const projectName = "***REMOVED*** Wallet"
 
+const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER
 const getTwilioClient = () => {
-  // FIXME: replace with env variable
-  // and revoke credentials here
-  const accountSID = "***REMOVED***"
-  const authToken = "***REMOVED***"
+  const accountSid = process.env.TWILIO_ACCOUNT_SID
+  const apiKey = process.env.TWILIO_API_KEY
+  const apiSecret = process.env.TWILIO_API_SECRET
 
-  const client = require('twilio')(
-    accountSID,
-    authToken
-  )
-
+  const client = twilio(apiKey, apiSecret, { accountSid });
   return client
 }
 
