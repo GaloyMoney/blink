@@ -174,7 +174,7 @@ UserSchema.statics.findByUsername = async function ({ username }) {
   return this.findOne({ username: new RegExp(`^${username}$`, 'i') })
 }
 
-UserSchema.statics.getActiveUsers = async function () {
+UserSchema.statics.getActiveUsersAccountPath = async function () {
   const users = await this.find({})
   const activeUsers: Array<string> = []
   for (const user of users) {

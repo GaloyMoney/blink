@@ -23,7 +23,7 @@ afterAll(async () => {
 
 it('sends daily balance notification', async () => {
   await sendBalanceToUser()
-  const numActiveUsers = (await User.getActiveUsers()).length
+  const numActiveUsers = (await User.getActiveUsersAccountPath()).length
   expect(sendNotification.mock.calls.length).toBe(numActiveUsers)
   for (const [call] of sendNotification.mock.calls) {
     const { balance } = await MainBook.balance({ accounts: customerPath(call.uid) })
@@ -34,7 +34,7 @@ it('sends daily balance notification', async () => {
 it('tests isUserActive', async () => {
   await getUserWallet(8)
 
-  const initialActiveUsers = await User.getActiveUsers()
+  const initialActiveUsers = await User.getActiveUsersAccountPath()
   const userWallet0AccountPath = (await getUserWallet(0)).accountPath
   const funderWalletAccountPath = (await getFunderWallet({ logger: baseLogger })).accountPath
   
@@ -46,6 +46,6 @@ it('tests isUserActive', async () => {
   for (const activeUserAccountPath of initialActiveUsers) {
     await Transaction.updateMany({ accounts: activeUserAccountPath }, { "$set": { "timestamp": new Date(Date.now() - (31 * 24 * 60 * 60 * 1000)) } })
   }
-  const finalNumActiveUsers = (await User.getActiveUsers()).length
+  const finalNumActiveUsers = (await User.getActiveUsersAccountPath()).length
   expect(finalNumActiveUsers).toBe(0)
 })
