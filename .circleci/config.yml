@@ -152,8 +152,8 @@ jobs:
       - run:
           name: Write build params to docker image source
           command: |
-            echo "COMMITHASH=$CIRCLE_SHA1" >> ./functions/.env
-            echo "BUILDTIME=$(date -u '+%F-%T')" >> ./functions/.env
+            echo "COMMITHASH=$CIRCLE_SHA1" >> ./.env
+            echo "BUILDTIME=$(date -u '+%F-%T')" >> ./.env
       - gcp-gcr/build-image:
           image: test-image
           tag: $CIRCLE_SHA1
