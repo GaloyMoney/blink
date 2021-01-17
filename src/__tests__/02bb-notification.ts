@@ -34,18 +34,18 @@ it('sends daily balance notification', async () => {
 it('tests isUserActive', async () => {
   await getUserWallet(8)
 
-  const initialActiveUsers = await User.getActiveUsersAccountPath()
+  const initialActiveUsersAccountPath = (await User.getActiveUsers()).map(user => customerPath(user._id))
   const userWallet0AccountPath = (await getUserWallet(0)).accountPath
   const funderWalletAccountPath = (await getFunderWallet({ logger: baseLogger })).accountPath
-  
-  //user0 and funder wallet are active users
-  expect(initialActiveUsers.length).toBe(2)
-  expect(initialActiveUsers.indexOf(userWallet0AccountPath)).toBeGreaterThan(-1)
-  expect(initialActiveUsers.indexOf(funderWalletAccountPath)).toBeGreaterThan(-1)
 
-  for (const activeUserAccountPath of initialActiveUsers) {
+  //user0 and funder wallet are active users
+  expect(initialActiveUsersAccountPath.length).toBe(2)
+  expect(initialActiveUsersAccountPath.indexOf(userWallet0AccountPath)).toBeGreaterThan(-1)
+  expect(initialActiveUsersAccountPath.indexOf(funderWalletAccountPath)).toBeGreaterThan(-1)
+
+  for (const activeUserAccountPath of initialActiveUsersAccountPath) {
     await Transaction.updateMany({ accounts: activeUserAccountPath }, { "$set": { "timestamp": new Date(Date.now() - (31 * 24 * 60 * 60 * 1000)) } })
   }
-  const finalNumActiveUsers = (await User.getActiveUsersAccountPath()).length
+  const finalNumActiveUsers = (await User.getActiveUsers()).length
   expect(finalNumActiveUsers).toBe(0)
 })

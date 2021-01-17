@@ -174,16 +174,16 @@ UserSchema.statics.findByUsername = async function ({ username }) {
   return this.findOne({ username: new RegExp(`^${username}$`, 'i') })
 }
 
-UserSchema.statics.getActiveUsersAccountPath = async function (): Promise<Array<string>> {
+UserSchema.statics.getActiveUsers = async function (): Promise<Array<typeof User>> {
   const users = await this.find({})
-  const activeUsersAccountPath: Array<string> = []
+  const activeUsers: Array<typeof User> = []
   for (const user of users) {
     const userWallet = await WalletFactory({ user, uid: user._id, currency: user.currency, logger: baseLogger })
     if (await userWallet.isUserActive()) {
-      activeUsersAccountPath.push(userWallet.accountPath)
+      activeUsers.push(user)
     }
   }
-  return activeUsersAccountPath
+  return activeUsers
 }
 
 export const User = mongoose.model("User", UserSchema)
