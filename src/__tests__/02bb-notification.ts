@@ -23,7 +23,7 @@ afterAll(async () => {
 
 it('sends daily balance notification', async () => {
   await sendBalanceToUser()
-  const numActiveUsers = (await User.getActiveUsersAccountPath()).length
+  const numActiveUsers = (await User.getActiveUsers()).length
   expect(sendNotification.mock.calls.length).toBe(numActiveUsers)
   for (const [call] of sendNotification.mock.calls) {
     const { balance } = await MainBook.balance({ accounts: customerPath(call.uid) })
