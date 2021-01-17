@@ -144,7 +144,7 @@ jobs:
       - run: git push -q https://${GITHUB_TOKEN}@github.com/nicolasburtey/galoy-app.git $CIRCLE_BRANCH
 
   build_test_image:
-    working_directory: ~/GaloyApp/backend/firebase
+    working_directory: ~/GaloyApp/backend/firebase/functions
     machine: true
     steps:
       - checkout:
@@ -152,8 +152,8 @@ jobs:
       - run:
           name: Write build params to docker image source
           command: |
-            echo "COMMITHASH=$CIRCLE_SHA1" >> ./functions/.env
-            echo "BUILDTIME=$(date -u '+%F-%T')" >> ./functions/.env
+            echo "COMMITHASH=$CIRCLE_SHA1" >> ./.env
+            echo "BUILDTIME=$(date -u '+%F-%T')" >> ./.env
       - gcp-gcr/build-image:
           image: test-image
           tag: $CIRCLE_SHA1
@@ -186,11 +186,11 @@ jobs:
       - run:
           name: Run jest test
           command: |
-            kubectl exec --namespace=$NAMESPACE test-pod -- bash -c "cd functions && yarn test --max_old_space_size=3000"
+            kubectl exec --namespace=$NAMESPACE test-pod -- bash -c "yarn test --max_old_space_size=3000"
       - run:
           name: Run postman test
           command: |
-            kubectl exec --namespace=$NAMESPACE test-pod -- bash -c "cd functions/ && yarn run postman"
+            kubectl exec --namespace=$NAMESPACE test-pod -- bash -c "yarn run postman"
       - run:
           name: Fetch test results
           command: kubectl cp --namespace=$NAMESPACE test-pod:/functions/artifacts/junit.xml ./reports/junit.xml
