@@ -42,6 +42,7 @@ export const TEST_NUMBER = [
   { phone: "+***REMOVED***", code: 321321, currency: "BTC" }, // for manual testing
 ]
 
+// TODO: rate limit this method per phone with backoff
 export const requestPhoneCode = async ({ phone, logger }) => {
 
   // make it possible to bypass the auth for testing purpose
@@ -53,15 +54,21 @@ export const requestPhoneCode = async ({ phone, logger }) => {
   const body = `${code} is your verification code for ${projectName}`
 
   try {
-    // TODO: only one code per 30 seconds should be generated.
-    // otherwise an attack would be to call this enough time
-    // in a row and ultimately randomly find a code
+    const veryRecentCode = await PhoneCode.findOne({
+      phone,
+      created_at: {
+        $gte: moment().subtract(30, "seconds"),
+      }
+    })
+
+    if (!!veryRecentCode) {
+      return false
+    }
 
     await PhoneCode.create({ phone, code })
-
     await sendText({ body, to: phone })
   } catch (err) {
-    logger.error(err)
+    logger.error({err}, "impossible to send message")
     return false
   }
 
@@ -75,6 +82,7 @@ interface ILogin {
   logger: any
 }
 
+// TODO: rate limit this method per phone with backoff
 export const login = async ({ phone, code, currency = "BTC", logger }: ILogin) => {
   const subLogger = logger.child({topic: "login"})
 
