@@ -42,7 +42,6 @@ export const TEST_NUMBER = [
   { phone: "+***REMOVED***", code: 321321, currency: "BTC" }, // for manual testing
 ]
 
-// TODO: rate limit this method per phone with backoff
 export const requestPhoneCode = async ({ phone, logger }) => {
 
   // make it possible to bypass the auth for testing purpose
@@ -54,6 +53,9 @@ export const requestPhoneCode = async ({ phone, logger }) => {
   const body = `${code} is your verification code for ${projectName}`
 
   try {
+    // TODO: implement backoff strategy instead this native delay
+    // making sure someone can not call the API thousands time in a row,
+    // which would make finding a code very easy
     const veryRecentCode = await PhoneCode.findOne({
       phone,
       created_at: {
@@ -82,7 +84,6 @@ interface ILogin {
   logger: any
 }
 
-// TODO: rate limit this method per phone with backoff
 export const login = async ({ phone, code, currency = "BTC", logger }: ILogin) => {
   const subLogger = logger.child({topic: "login"})
 
@@ -95,6 +96,7 @@ export const login = async ({ phone, code, currency = "BTC", logger }: ILogin) =
   }
 
   try {
+    // TODO: rate limit this method per phone with backoff
     const codes = await PhoneCode.find({
       phone,
       created_at: {
