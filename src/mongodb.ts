@@ -195,10 +195,17 @@ export const User = mongoose.model("User", UserSchema)
 const PhoneCodeSchema = new Schema({
   created_at: {
     type: Date,
-    default: Date.now
+    default: Date.now,
+    required: true,
   },
-  phone: Number,
-  code: Number,
+  phone: { // TODO we should store country as a separate string
+    type: String,
+    required: true,
+  },
+  code: {
+    type: Number,
+    required: true,
+  }
 })
 
 export const PhoneCode = mongoose.model("PhoneCode", PhoneCodeSchema)

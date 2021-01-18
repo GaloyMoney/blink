@@ -53,15 +53,24 @@ export const requestPhoneCode = async ({ phone, logger }) => {
   const body = `${code} is your verification code for ${projectName}`
 
   try {
-    // TODO: only one code per 30 seconds should be generated.
-    // otherwise an attack would be to call this enough time
-    // in a row and ultimately randomly find a code
+    // TODO: implement backoff strategy instead this native delay
+    // making sure someone can not call the API thousands time in a row,
+    // which would make finding a code very easy
+    const veryRecentCode = await PhoneCode.findOne({
+      phone,
+      created_at: {
+        $gte: moment().subtract(30, "seconds"),
+      }
+    })
+
+    if (!!veryRecentCode) {
+      return false
+    }
 
     await PhoneCode.create({ phone, code })
-
     await sendText({ body, to: phone })
   } catch (err) {
-    logger.error(err)
+    logger.error({err}, "impossible to send message")
     return false
   }
 
@@ -87,6 +96,7 @@ export const login = async ({ phone, code, currency = "BTC", logger }: ILogin) =
   }
 
   try {
+    // TODO: rate limit this method per phone with backoff
     const codes = await PhoneCode.find({
       phone,
       created_at: {
