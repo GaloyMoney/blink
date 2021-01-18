@@ -7,7 +7,6 @@ import { MainBook, setupMongoConnection } from "../mongodb";
 import { checkIsBalanced, getUserWallet, lndMain, lndOutside1, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
 import { onchainTransactionEventHandler } from "../trigger";
 import { bitcoindClient, sleep } from "../utils";
-const util = require('util')
 
 const {once} = require('events');
 
