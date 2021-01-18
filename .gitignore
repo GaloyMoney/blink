@@ -8,3 +8,13 @@ typings/
 node_modules/
 
 yarn-error.log
+
+galoyapp-firebase-serviceaccont.json
+keys.json
+quokka.ts
+tmp*
+src/tool/records.csv
+src/tool/users_balance.csv
+src/tool/record_transactions_*.csv
+
+*.DS_Store
