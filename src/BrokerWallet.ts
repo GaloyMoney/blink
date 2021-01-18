@@ -142,7 +142,7 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
     const result = await this.ftx.privateGetAccount()
     this.logger.debug({ result }, "full result of this.ftx.privateGetAccount")    
 
-    const { result: { collateral, positions, chargeInterestOnNegativeUsd, marginFraction } } = result
+    const { result: { collateral, positions, chargeInterestOnNegativeUsd, marginFraction, totalAccountValue } } = result
     this.logger.debug({collateral, positions, chargeInterestOnNegativeUsd, marginFraction}, "value kept from this.ftx.privateGetAccount")
 
     const positionBtcPerp = find(positions, { future: symbol } )
@@ -195,7 +195,7 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
       
       collateral, // in USD
 
-      totalAccountValue: result.totalAccountValue,
+      totalAccountValue,
 
       // if there is no collateral, marginFraction will be null. this is equivalent to infinite leverage. 
       leverage : marginFraction ? 1 / marginFraction : Number.POSITIVE_INFINITY,
