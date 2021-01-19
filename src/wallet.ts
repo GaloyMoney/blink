@@ -145,7 +145,7 @@ export abstract class UserWallet {
 
   satsToUsd = sats => {
     const usdValue = this.lastPrice * sats
-    return usdValue
+    return usdValue.toLocaleString("en", { maximumFractionDigits: 2 })
   }
 
   isUserActive = async (): Promise<boolean> => {
@@ -164,9 +164,9 @@ export abstract class UserWallet {
   }
 
   sendBalance = async () => {
-    const balanceSats = await this.getBalance()
+    const balanceSats = (await this.getBalance()).toLocaleString("en")
     const balanceUsd = this.satsToUsd(balanceSats)
-    this.logger.info({balanceSats, balanceUsd, uid: this.user._id}, `sending balance notification to user`)
+    this.logger.info({ balanceSats, balanceUsd, uid: this.user._id }, `sending balance notification to user`)
     await sendNotification({ uid: this.user._id, title: "Balance today", logger: this.logger, body: `Your balance is \$${balanceUsd} (${balanceSats} sats)` })
   }
 }
