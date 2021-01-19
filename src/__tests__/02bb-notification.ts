@@ -29,7 +29,7 @@ it('sends daily balance notification', async () => {
     const { balance } = await MainBook.balance({ accounts: customerPath(call.uid) })
     const expectedUsdBalance = (price * -balance).toLocaleString("en", { maximumFractionDigits: 2 })
     const expectedSatsBalance = (-balance).toLocaleString("en", { maximumFractionDigits: 2 })
-    expect(call.body).toBe(`Your balance is \$${expectedUsdBalance} (${expectedSatsBalance} sats)`)
+    expect(call.title).toBe(`Your balance today is \$${expectedUsdBalance} (${expectedSatsBalance} sats)`)
   }
 })
 
