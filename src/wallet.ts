@@ -167,6 +167,6 @@ export abstract class UserWallet {
     const balanceSats = (await this.getBalance()).toLocaleString("en")
     const balanceUsd = this.satsToUsd(balanceSats).toLocaleString("en", { maximumFractionDigits: 2 })
     this.logger.info({ balanceSats, balanceUsd, uid: this.user._id }, `sending balance notification to user`)
-    await sendNotification({ uid: this.user._id, title: "Balance today", logger: this.logger, body: `Your balance is \$${balanceUsd} (${balanceSats} sats)` })
+    await sendNotification({ uid: this.user._id, title: `Your balance today is \$${balanceUsd} (${balanceSats} sats)`, logger: this.logger })
   }
 }
