@@ -1,8 +1,7 @@
 import { bitcoindAccountingPath, customerPath, lightningAccountingPath } from "./ledger";
 import { MainBook } from "./mongodb";
 import { OnChainMixin } from "./OnChain";
-import { ILightningWalletUser } from "./types";
-import { BitcoindClient, bitcoindDefaultClient, btc2sat, getAuth } from "./utils";
+import { BitcoindClient, btc2sat, getAuth, sat2btc } from "./utils";
 import { UserWallet } from "./wallet";
 
 export class BitcoindWallet extends OnChainMixin(UserWallet) {
@@ -63,7 +62,7 @@ export class BitcoindWallet extends OnChainMixin(UserWallet) {
   async rebalance ({ sats, depositOrWithdraw }) {
     const currency = this.currency
 
-    const metadata = { type: "bitcoind_rebalance", currency, ...this.getCurrencyEquivalent({sats, fee: 0}) }
+    const metadata = { type: "bitcoind_rebalance", currency, ...this.getCurrencyEquivalent({sats, fee: 0}), pending: false }
     let subLogger = this.logger.child({...metadata, currency, sats, depositOrWithdraw})
 
     // deposit and withdraw are from the bitcoind point of view
@@ -72,7 +71,7 @@ export class BitcoindWallet extends OnChainMixin(UserWallet) {
 
       const address = await this.getLastOnChainAddress()
 
-      let withdrawalResult 
+      let withdrawalResult
 
       subLogger = subLogger.child({memo, address})
 
@@ -80,9 +79,9 @@ export class BitcoindWallet extends OnChainMixin(UserWallet) {
         // TODO: won't work automatically with a cold storage wallet
         // make a PSBT instead accesible for further signing.
         // TODO: figure out a way to export the PSBT when there is a pending tx
-        withdrawalResult = await this.bitcoindClient.sendtoaddress(currency, sats, address)
+        withdrawalResult = await this.bitcoindClient.sendToAddress(address, sat2btc(sats))
       } catch(err) {
-        const error = "this.bitcoindClient.sendtoaddress() error"
+        const error = "this.bitcoindClient.sendToAddress() error"
         subLogger.error({withdrawalResult}, error)
         throw new Error(err)
       }

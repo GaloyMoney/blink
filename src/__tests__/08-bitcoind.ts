@@ -5,8 +5,8 @@ import { BitcoindWallet } from "../BitcoindWallet";
 import { getLastPrice } from "../cache";
 import { quit } from "../lock";
 import { setupMongoConnection, User } from "../mongodb";
-import { checkIsBalanced, getUserWallet, mockGetExchangeBalance, RANDOM_ADDRESS } from "../tests/helper";
-import { baseLogger, bitcoindDefaultClient, getAuth, sat2btc } from "../utils";
+import { checkIsBalanced, mockGetExchangeBalance, RANDOM_ADDRESS } from "../tests/helper";
+import { baseLogger, bitcoindDefaultClient, getAuth } from "../utils";
 import { getTokenFromPhoneIndex } from "../walletFactory";
 const lnService = require('ln-service');
 
@@ -82,7 +82,7 @@ it('withdrawing from bitcoind', async () => {
   
   const sats = 1000
   
-  await bitcoindWallet.rebalance({sats, depositOrWithdraw: "withdraw" })
+  await bitcoindWallet.rebalance({ sats, depositOrWithdraw: "withdraw" })
   await bitcoindDefaultClient.generateToAddress(3, RANDOM_ADDRESS)
   
   const bitcoindBalance = await bitcoindWallet.getBitcoindBalance()
