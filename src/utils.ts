@@ -1,22 +1,21 @@
+// @ts-ignore
+import { GraphQLError } from "graphql"
 import * as jwt from 'jsonwebtoken'
 import * as lnService from "ln-service"
 import { filter, find, includes, intersection, sumBy, union } from "lodash"
 import * as moment from 'moment'
 export const validate = require("validate.js")
 const bitcoindClient = require('bitcoin-core')
-const {parsePaymentRequest} = require('invoices');
+const { parsePaymentRequest } = require('invoices');
 const axios = require('axios').default;
 
 
 export const baseLogger = require('pino')({ level: process.env.LOGLEVEL || "info" })
-const util = require('util')
 
 // how many block are we looking back for getChainTransactions
 export const LOOK_BACK = 2016
 
 
-// @ts-ignore
-import { GraphQLError } from "graphql";
 
 // FIXME: super ugly hack.
 // for some reason LoggedError get casted as GraphQLError
@@ -54,11 +53,11 @@ export const myOwnAddressesOnVout = ({ vout, onchain_addresses }) => {
 
 
 export const getHash = (request) => {
-  return parsePaymentRequest({request}).id
+  return parsePaymentRequest({ request }).id
 }
 
 export const getAmount = (request): number | undefined => {
-  return parsePaymentRequest({request}).tokens
+  return parsePaymentRequest({ request }).tokens
 }
 
 export const btc2sat = (btc: number) => {
@@ -81,8 +80,8 @@ export async function sleep(ms) {
 }
 
 export function timeout(delay, msg) {
-  return new Promise(function(resolve, reject) {
-    setTimeout(function() {
+  return new Promise(function (resolve, reject) {
+    setTimeout(function () {
       reject(new Error(msg));
     }, delay);
   });
@@ -108,11 +107,11 @@ export const createToken = ({ uid, currency, network }) => jwt.sign(
 validate.extend(validate.validators.datetime, {
   // The value is guaranteed not to be null or undefined but otherwise it
   // could be anything.
-  parse: function(value: any, options: any) {
+  parse: function (value: any, options: any) {
     return +moment.utc(value);
   },
   // Input is a unix timestamp
-  format: function(value: any, options: any) {
+  format: function (value: any, options: any) {
     const format = options.dateOnly ? "YYYY-MM-DD" : "YYYY-MM-DD hh:mm:ss";
     return moment.utc(value).format(format);
   }
@@ -154,15 +153,22 @@ export async function nodeStats({ lnd }) {
   }
 }
 
-export async function getBosScore() { 
+export async function getBosScore() {
   try {
     const { data } = await axios.get('https://bos.lightning.jorijn.com/data/export.json')
-    
+
     // FIXME: make it dynamic
     const publicKey = "0325bb9bda523a85dc834b190289b7e25e8d92615ab2f2abffbe97983f0bb12ffb"
-    const bosScore = find(data.data, {publicKey})
+    const bosScore = find(data.data, { publicKey })
     return bosScore.score
   } catch (err) {
-    baseLogger.error({err, err2: err.toJson()}, `issue getting bos rank`)
+    baseLogger.error({ err, err2: err.toJson() }, `issue getting bos rank`)
   }
+}
+
+export const isInvoiceAlreadyPaidError = (err) => {
+  if ("invoice is already paid" === (err[2]?.err?.details || err[2]?.failures?.[0]?.[2]?.err?.details)) {
+    return true
+  }
+  return false
 }

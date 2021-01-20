@@ -3,7 +3,7 @@ import { subscribeToChannels, subscribeToInvoices, subscribeToTransactions, subs
 import { Storage } from '@google-cloud/storage'
 import { find } from "lodash";
 import { InvoiceUser, setupMongoConnection, Transaction, User, MainBook } from "./mongodb";
-import { lightningAccountingPath, openChannelFees } from "./ledger";
+import { lightningAccountingPath, lndFee } from "./ledger";
 import { sendInvoicePaidNotification, sendNotification } from "./notification";
 import { IDataNotification } from "./types";
 import { getAuth, baseLogger, LOOK_BACK } from './utils';
@@ -13,6 +13,9 @@ import { Dropbox } from "dropbox";
 
 const crypto = require("crypto")
 const lnService = require('ln-service');
+
+//millitokens per million
+const FEE_RATE = 2500
 
 const logger = baseLogger.child({ module: "trigger" })
 
@@ -88,7 +91,7 @@ export async function onchainTransactionEventHandler(tx) {
         return
       }
     } catch (error) {
-      onchainLogger.error({error}, "issue in onchainTransactionEventHandler to get User id attached to output_addresses")
+      onchainLogger.error({ error }, "issue in onchainTransactionEventHandler to get User id attached to output_addresses")
       throw error
     }
     const data: IDataNotification = {
@@ -137,15 +140,13 @@ export const onInvoiceUpdate = async invoice => {
   }
 }
 
-export const onChannelOpened = async ({ channel, lnd }) => {
-
+export const onChannelUpdated = async ({ channel, lnd, stateChange }: { channel: any, lnd: any, stateChange: "opened" | "closed" }) => {
   if (channel.is_partner_initiated) {
-    logger.info({ channel }, "channel opened to us")
+    logger.info({ channel }, `channel ${stateChange} to us`)
     return
   }
 
-  logger.info({ channel }, "channel opened by us")
-
+  logger.info({ channel }, `channel ${stateChange} by us`)
   const { transaction_id } = channel
 
   // TODO: dedupe from onchain
@@ -155,27 +156,27 @@ export const onChannelOpened = async ({ channel, lnd }) => {
 
   const { fee } = find(transactions, { id: transaction_id })
 
-  const metadata = { currency: "BTC", txid: transaction_id, type: "fee" }
+  const metadata = { currency: "BTC", txid: transaction_id, type: "fee", pending: false }
 
-  await MainBook.entry("on chain fee")
-    .debit(lightningAccountingPath, fee, { ...metadata, })
-    .credit(openChannelFees, fee, { ...metadata })
+  await MainBook.entry(`channel ${stateChange} onchain fee`)
+    .credit(lightningAccountingPath, fee, { ...metadata, })
+    .debit(lndFee, fee, { ...metadata })
     .commit()
 
-  logger.info({ success: true, channel, fee, ...metadata }, `open channel fee added to mongodb`)
+  logger.info({ channel, fee, ...metadata }, `${stateChange} channel fee added to mongodb`)
 }
 
 const updatePrice = async () => {
-  const price = new Price({logger: baseLogger})
+  const price = new Price({ logger: baseLogger })
 
   const _1minInterval = 1000 * 30
 
-  setInterval(async function() {
+  setInterval(async function () {
     try {
       await price.update()
       await price.fastUpdate()
     } catch (err) {
-      logger.error({err}, "can't update the price")
+      logger.error({ err }, "can't update the price")
     }
   }, _1minInterval)
 }
@@ -194,7 +195,8 @@ const main = async () => {
   subTransactions.on('chain_transaction', onchainTransactionEventHandler);
 
   const subChannels = subscribeToChannels({ lnd });
-  subChannels.on('channel_opened', (channel) => onChannelOpened({ channel, lnd }))
+  subChannels.on('channel_opened', (channel) => onChannelUpdated({ channel, lnd, stateChange: "opened" }))
+  subChannels.on('channel_closed', (channel) => onChannelUpdated({ channel, lnd, stateChange: "closed" }))
 
   const subBackups = subscribeToBackups({ lnd })
   subBackups.on('backup', ({ backup }) => uploadBackup(backup))
@@ -208,7 +210,7 @@ const healthCheck = () => {
   const app = express()
   const port = 8888
   app.get('/health', (req, res) => {
-    lnService.getWalletInfo({ lnd }, (err,) => !err ? res.sendStatus(200) : res.sendStatus(500));
+    lnService.getWalletInfo({ lnd }, (err, ) => !err ? res.sendStatus(200) : res.sendStatus(500));
   })
   app.listen(port, () => logger.info(`Health check listening on port ${port}!`))
 }

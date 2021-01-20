@@ -7,7 +7,6 @@ import { baseLogger } from "../utils";
 import { quit } from "../lock";
 import { getTokenFromPhoneIndex } from "../walletFactory";
 const mongoose = require("mongoose");
-const util = require('util')
 
 const fixtures = [{
   privateGetAccount: function() {

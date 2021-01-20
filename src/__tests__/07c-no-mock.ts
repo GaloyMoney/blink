@@ -5,7 +5,6 @@ import { quit } from "../lock";
 import { setupMongoConnection } from "../mongodb";
 import { getTokenFromPhoneIndex } from "../walletFactory";
 const mongoose = require("mongoose");
-const util = require('util')
 
 
 let uid

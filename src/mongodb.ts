@@ -104,7 +104,7 @@ const UserSchema = new Schema({
     maxlength: 50,
     index: {
       unique: true,
-      collation: {locale: "en", strength: 2},
+      collation: { locale: "en", strength: 2 },
       partialFilterExpression: { username: { $type: "string" } }
     }
   },
@@ -122,7 +122,7 @@ const UserSchema = new Schema({
     type: [{
       id: {
         type: String,
-        collation: {locale: "en", strength: 2},
+        collation: { locale: "en", strength: 2 },
       },
       name: String,
       transactionsCount: {
@@ -166,12 +166,24 @@ UserSchema.index({
 });
 
 
-UserSchema.statics.findByUsername = async function ({username}) {
+UserSchema.statics.findByUsername = async function ({ username }) {
   if (typeof username !== "string" || !username.match(regexUsername)) {
     return null
   }
 
-  return this.findOne({ username: new RegExp(`^${username}$`, 'i')})
+  return this.findOne({ username: new RegExp(`^${username}$`, 'i') })
+}
+
+UserSchema.statics.getActiveUsers = async function (): Promise<Array<typeof User>> {
+  const users = await this.find({})
+  const activeUsers: Array<typeof User> = []
+  for (const user of users) {
+    const userWallet = await WalletFactory({ user, uid: user._id, currency: user.currency, logger: baseLogger })
+    if (await userWallet.isUserActive()) {
+      activeUsers.push(user)
+    }
+  }
+  return activeUsers
 }
 
 export const User = mongoose.model("User", UserSchema)
@@ -183,10 +195,17 @@ export const User = mongoose.model("User", UserSchema)
 const PhoneCodeSchema = new Schema({
   created_at: {
     type: Date,
-    default: Date.now
+    default: Date.now,
+    required: true,
   },
-  phone: Number,
-  code: Number,
+  phone: { // TODO we should store country as a separate string
+    type: String,
+    required: true,
+  },
+  code: {
+    type: Number,
+    required: true,
+  }
 })
 
 export const PhoneCode = mongoose.model("PhoneCode", PhoneCodeSchema)
@@ -199,7 +218,7 @@ const FaucetSchema = new Schema({
   },
   hash: {
     type: String,
-    required: true 
+    required: true
   },
   used: {
     type: Boolean,
@@ -254,11 +273,14 @@ const transactionSchema = new Schema({
   },
 
   // used to denote confirmation status of on and off chain txn
-  // for sending payment on lightning, pending will be true when sending an onchain transactio
+  // for sending payment on lightning, pending will be true in case of timeout
   // for sending payment on chain, pending will be true until the transaction get mined
   // pending is not used for receiving transaction.
-  pending: Boolean, 
-  
+  pending: {
+    type: Boolean,
+    required: true
+  },
+
   err: String,
   currency: {
     // TODO: check if an upgrade is needed for this one
@@ -340,6 +362,9 @@ transactionSchema.index({ "hash": 1 })
 //we are setting them here manually because we are using a custom schema
 transactionSchema.index({ "_journal": 1 })
 transactionSchema.index({ "accounts": 1, "book": 1, "approved": 1, "datetime": -1, "timestamp": -1 });
+transactionSchema.index({ "account_path.0": 1, book: 1, approved: 1 });
+transactionSchema.index({ "account_path.0": 1, "account_path.1": 1, book: 1, approved: 1 });
+transactionSchema.index({ "account_path.0": 1, "account_path.1": 1, "account_path.2": 1, book: 1, approved: 1 });
 
 
 
@@ -400,12 +425,13 @@ export const setupMongoConnection = async () => {
     await Transaction.syncIndexes()
     await InvoiceUser.syncIndexes()
   } catch (err) {
-    baseLogger.fatal({err}, `error connecting to mongodb`)
+    baseLogger.fatal({ err }, `error connecting to mongodb`)
     exit(1)
   }
 }
 
 import { book } from "medici";
+import { WalletFactory } from "./walletFactory";
 export const MainBook = new book("MainBook")
 
 

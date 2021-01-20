@@ -9,13 +9,13 @@ import { checkIsBalanced, getUserWallet, lndMain, mockGetExchangeBalance, RANDOM
 import { onchainTransactionEventHandler } from "../trigger";
 import { baseLogger, bitcoindDefaultClient, btc2sat, sleep } from "../utils";
 import { getFunderWallet } from "../walletFactory";
+import { sendBalanceToUser } from "../dailyBalanceNotification";
 
 
 const lnService = require('ln-service')
 
 const mongoose = require("mongoose");
 const { once } = require('events');
-const util = require('util')
 
 
 let funderWallet

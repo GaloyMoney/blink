@@ -5,7 +5,7 @@ import moment from "moment";
 import { customerPath, lightningAccountingPath } from "./ledger";
 import { disposer } from "./lock";
 import { MainBook, Transaction, User } from "./mongodb";
-import { ITransaction, IOnChainPayment, ISuccess } from "./types";
+import { IOnChainPayment, ISuccess, ITransaction } from "./types";
 import { amountOnVout, bitcoindDefaultClient, btc2sat, getAuth, LoggedError, LOOK_BACK, myOwnAddressesOnVout } from "./utils";
 
 const using = require('bluebird').using

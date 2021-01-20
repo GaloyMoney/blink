@@ -1,6 +1,5 @@
 import { filter, sumBy } from "lodash";
-import { CSVAccountExport } from "./csvAccountExport";
-import { accountingExpenses, customerPath, escrowAccountingPath, lightningAccountingPath, openChannelFees } from "./ledger";
+import { accountingExpenses, escrowAccountingPath, lightningAccountingPath } from "./ledger";
 import { InvoiceUser, MainBook, Transaction, User } from "./mongodb";
 import { baseLogger, getAuth } from "./utils";
 import { getBrokerWallet, getFunderWallet, WalletFactory } from "./walletFactory";
@@ -93,7 +92,7 @@ export class AdminWallet {
   async updateEscrows() {
     const type = "escrow"
 
-    const metadata = { type, currency: "BTC" }
+    const metadata = { type, currency: "BTC", pending: false }
 
     const { channels } = await lnService.getChannels({lnd: this.lnd})
     const selfInitated = filter(channels, {is_partner_initiated: false})

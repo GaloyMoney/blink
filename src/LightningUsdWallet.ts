@@ -1,6 +1,5 @@
 import { customerPath } from "./ledger";
 import { LightningMixin } from "./Lightning";
-import { Price } from "./priceImpl";
 import { IAddUSDInvoiceRequest, ILightningWalletUser } from "./types";
 import { UserWallet } from "./wallet";
 

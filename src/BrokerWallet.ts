@@ -5,8 +5,6 @@ import { OnChainMixin } from "./OnChain";
 import { ILightningWalletUser } from "./types";
 import { baseLogger, btc2sat, sleep } from "./utils";
 import { UserWallet } from "./wallet";
-const using = require('bluebird').using
-const util = require('util')
 const ccxt = require('ccxt')
 const assert = require('assert')
 
@@ -144,7 +142,7 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
     const result = await this.ftx.privateGetAccount()
     this.logger.debug({ result }, "full result of this.ftx.privateGetAccount")    
 
-    const { result: { collateral, positions, chargeInterestOnNegativeUsd, marginFraction } } = result
+    const { result: { collateral, positions, chargeInterestOnNegativeUsd, marginFraction, totalAccountValue } } = result
     this.logger.debug({collateral, positions, chargeInterestOnNegativeUsd, marginFraction}, "value kept from this.ftx.privateGetAccount")
 
     const positionBtcPerp = find(positions, { future: symbol } )
@@ -190,13 +188,14 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
       // always be negative
       btc: - netSize,
 
-      // btc2sats because BTC is in the denominator... this is confusing.
       usd: - netSize * btcPrice,
       estimatedLiquidationPrice,
       collateralUsed, // USD
       maintenanceMarginRequirement, // start at 0.03 but increase with position side 
       
       collateral, // in USD
+
+      totalAccountValue,
 
       // if there is no collateral, marginFraction will be null. this is equivalent to infinite leverage. 
       leverage : marginFraction ? 1 / marginFraction : Number.POSITIVE_INFINITY,

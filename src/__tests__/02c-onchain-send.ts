@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-import { filter, first, last } from "lodash";
+import { filter, first } from "lodash";
 import { quit } from "../lock";
 import { MainBook, setupMongoConnection } from "../mongodb";
 import { checkIsBalanced, getUserWallet, lndMain, lndOutside1, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
@@ -24,8 +24,6 @@ jest.mock('../notification')
 const { sendNotification } = require("../notification");
 
 
-import { AdminWallet } from "../AdminWallet"
-import { BrokerWallet } from "../BrokerWallet";
 
 beforeAll(async () => {
   await setupMongoConnection()
