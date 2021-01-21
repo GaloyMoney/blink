@@ -2,7 +2,6 @@ set -e
 
 helm repo add stable --force-update https://charts.helm.sh/stable
 helm repo add bitnami https://charts.bitnami.com/bitnami
-helm repo add grafana https://grafana.github.io/helm-charts
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
 
@@ -45,7 +44,6 @@ monitoringDeploymentsUpgrade() {
 
   kubectl -n $NAMESPACE get configmaps prometheus-alertmanager -o yaml | sed -e "s|SLACK_API_URL|$SLACK_API_URL|; s|SERVICE_KEY|$SERVICE_KEY|" | kubectl -n $NAMESPACE apply -f -
 
-  helmUpgrade grafana grafana/grafana -f $INFRADIR/grafana/values.yaml
   helmUpgrade mongo-exporter $INFRADIR/mongo-exporter
 }
 
