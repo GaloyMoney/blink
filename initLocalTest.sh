@@ -5,6 +5,8 @@ helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
 
+cd ../../../infrastructure/graphql-chart && helm dependency build && cd -
+
 
 if [ "$1" == "testnet" ] || [ "$1" == "mainnet" ];
 then
@@ -152,7 +154,6 @@ else
   helmUpgrade update-job -f $INFRADIR/update-job/$NETWORK-values.yaml --set image.tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON $INFRADIR/update-job/
 fi
 
-cd ../../../infrastructure/graphql-chart && helm dependency build && cd -
 helmUpgrade graphql-server -f $INFRADIR/graphql-chart/$NETWORK-values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON $INFRADIR/graphql-chart/
 
 if [ "$NETWORK" == "regtest" ]
