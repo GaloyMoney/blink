@@ -95,13 +95,14 @@ then
   kubectlLndDeletionWait
 fi
 
-helmUpgrade lnd -f $INFRADIR/lnd-chart/$NETWORK-values.yaml --set lndService.serviceType=LoadBalancer,minikubeip=$MINIKUBEIP $INFRADIR/lnd-chart/
-
 # avoiding to spend time with circleci regtest with this condition
 if [ "$1" == "testnet" ] || [ "$1" == "mainnet" ];
 then
+  export staticIP=$(kubectl -n $NAMESPACE get configmaps lndip -o "jsonpath={.data.ip}")
+  helmUpgrade lnd -f $INFRADIR/lnd-chart/$NETWORK-values.yaml --set lndService.serviceType=LoadBalancer,staticIP=$staticIP $INFRADIR/lnd-chart/
   kubectlLndDeletionWait
-fi
+else
+  helmUpgrade lnd -f $INFRADIR/lnd-chart/$NETWORK-values.yaml --set lndService.serviceType=LoadBalancer,minikubeip=$MINIKUBEIP $INFRADIR/lnd-chart/
 
 # # add extra sleep time... seems lnd is quite long to show up some time
 sleep 15
