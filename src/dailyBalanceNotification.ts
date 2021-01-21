@@ -1,11 +1,10 @@
 import { setupMongoConnection, User } from "./mongodb"
-import { sendNotification } from "./notification"
 import { baseLogger } from "./utils"
 import { WalletFactory } from "./walletFactory"
 
 const logger = baseLogger.child({ module: "dailyBalanceNotification" })
 
-export const sendBalanceToUser = async () => {
+export const sendBalanceToUsers = async () => {
 
   const users = await User.find({})
   for (const user of users) {
@@ -22,5 +21,5 @@ export const sendBalanceToUser = async () => {
 }
 
 if (require.main === module) {
-  setupMongoConnection().then(sendBalanceToUser).catch((err) => logger.error(err))
+  setupMongoConnection().then(sendBalanceToUsers).catch((err) => logger.error(err))
 }
