@@ -61,18 +61,20 @@ it('createWallet', async () => {
 
 it('deposit to bitcoind', async () => {
   const initBitcoindBalance = await bitcoindWallet.getBitcoindBalance()
-  const { chain_balance: lndBalance } = await lnService.getChainBalance({ lnd })
-
-  const sats = 1000
-
+  const { chain_balance: initLndBalance } = await lnService.getChainBalance({ lnd })
+  
+  const sats = 10000
+  
   await bitcoindWallet.rebalance({sats, depositOrWithdraw: "deposit" })
   await bitcoindDefaultClient.generateToAddress(3, RANDOM_ADDRESS)
   
   const bitcoindBalance = await bitcoindWallet.getBitcoindBalance()
+  const { chain_balance: lndBalance } = await lnService.getChainBalance({ lnd })
 
-  console.log({initBitcoindBalance, bitcoindBalance})
   expect(bitcoindBalance).toBe(initBitcoindBalance + sats)
-  expect(lndBalance).toBe(lndBalance - sats)
+
+  const fees = 0 // FIXME fetch number dynamically
+  expect(lndBalance).toBe(initLndBalance - sats - fees)
 
 })
 
@@ -80,7 +82,7 @@ it('withdrawing from bitcoind', async () => {
   const initBitcoindBalance = await bitcoindWallet.getBitcoindBalance()
   const { chain_balance: initLndBalance } = await lnService.getChainBalance({ lnd })
   
-  const sats = 1000
+  const sats = 5000
   
   await bitcoindWallet.rebalance({ sats, depositOrWithdraw: "withdraw" })
   await bitcoindDefaultClient.generateToAddress(3, RANDOM_ADDRESS)

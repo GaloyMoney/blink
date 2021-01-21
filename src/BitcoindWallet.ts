@@ -1,4 +1,4 @@
-import { bitcoindAccountingPath, customerPath, lightningAccountingPath } from "./ledger";
+import { bitcoindAccountingPath, customerPath, lightningAccountingPath, lndFee } from "./ledger";
 import { MainBook } from "./mongodb";
 import { OnChainMixin } from "./OnChain";
 import { BitcoindClient, btc2sat, getAuth, sat2btc } from "./utils";
@@ -66,7 +66,42 @@ export class BitcoindWallet extends OnChainMixin(UserWallet) {
     let subLogger = this.logger.child({...metadata, currency, sats, depositOrWithdraw})
 
     // deposit and withdraw are from the bitcoind point of view
-    if (depositOrWithdraw === "withdraw") {
+    if (depositOrWithdraw === "deposit") {
+      const memo = `deposit of ${sats} btc to the cold storage wallet`
+      const address = await this.createDepositAddress()
+
+      // onChainPay is doing:
+      //
+      // await MainBook.entry(memo)
+      // .debit(lightningAccountingPath, sats, metadata)
+      // .credit(this.accountPath, sats, metadata)
+      // .commit()
+      //
+      // we're doing 2 transactions here on medici.
+      // explore a way to refactor this to make a single transaction.
+
+      
+      // FIXME: we are crediting the account first because 
+      // otherwise the balance will be negative
+      // FIXME: estimating the fee is not a good idea /practive here
+      const lnService = require('ln-service');
+      const { lnd } = lnService.authenticatedLndGrpc(getAuth())
+      
+      // FIXME: fee are an estimate. may not be what is actually paid
+      const { fee } = await lnService.getChainFeeEstimate({ lnd, send_to: [{ address, tokens: sats }] })
+
+      await MainBook.entry()
+        .debit(this.accountPath, sats + fee, {...metadata, memo })
+        .credit(lndFee, fee, {...metadata, memo })
+        .credit(bitcoindAccountingPath, sats, {...metadata, memo })
+        .commit()
+
+      await this.onChainPay({address, amount: sats, memo })
+
+      // TODO: add fees paid in an account
+
+      subLogger.info({memo, address}, "deposit rebalancing succesful")
+    } else if (depositOrWithdraw === "withdraw") {
       const memo = `withdrawal of ${sats} sats from ${this.wallet} bitcoind wallet`
 
       const address = await this.getLastOnChainAddress()
@@ -102,39 +137,7 @@ export class BitcoindWallet extends OnChainMixin(UserWallet) {
         subLogger.error({withdrawalResult}, `rebalancing withdrawal was not succesful`)
       }
 
-    } else if (depositOrWithdraw === "deposit") {
-      const memo = `deposit of ${sats} btc to the cold storage wallet`
-      const address = await this.createDepositAddress()
-
-      // onChainPay is doing:
-      //
-      // await MainBook.entry(memo)
-      // .debit(lightningAccountingPath, sats, metadata)
-      // .credit(this.accountPath, sats, metadata)
-      // .commit()
-      //
-      // we're doing 2 transactions here on medici.
-      // explore a way to refactor this to make a single transaction.
-
-      
-      // FIXME: we are crediting the account first because 
-      // otherwise the balance will be negative
-      // FIXME: estimating the fee is not a good idea /practive here
-      const lnService = require('ln-service');
-      const { lnd } = lnService.authenticatedLndGrpc(getAuth())
-      const { fee } = await lnService.getChainFeeEstimate({ lnd, send_to: [{ address, tokens: sats }] })
-
-      await MainBook.entry()
-        .debit(this.accountPath, sats + fee, {...metadata, memo })
-        .credit(bitcoindAccountingPath, sats + fee, {...metadata, memo })
-        .commit()
-
-      await this.onChainPay({address, amount: sats, memo })
-
-      // TODO: add fees paid in an account
-
-      subLogger.info({memo, address}, "deposit rebalancing succesful")
-    }
+    } 
   }
 
 }
