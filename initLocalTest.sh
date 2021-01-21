@@ -154,7 +154,7 @@ else
   helmUpgrade update-job -f $INFRADIR/update-job/$NETWORK-values.yaml --set image.tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON $INFRADIR/update-job/
 fi
 
-cd graphql-chart && helm dependency build && cd ..
+cd ../../../infrastructure/graphql-chart && helm dependency build && cd -
 helmUpgrade graphql-server -f $INFRADIR/graphql-chart/$NETWORK-values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON $INFRADIR/graphql-chart/
 
 if [ "$NETWORK" == "regtest" ]
