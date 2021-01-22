@@ -5,6 +5,12 @@ import { WalletFactory } from "./walletFactory"
 
 const logger = baseLogger.child({ module: "dailyBalanceNotification" })
 
+const main = async () => {
+  await sendBalanceToUser()
+  // FIXME: we probably needs to exit because we have a memleak of pending promise
+  process.exit(0)
+}
+
 export const sendBalanceToUser = async () => {
 
   const users = await User.find({})
@@ -17,10 +23,8 @@ export const sendBalanceToUser = async () => {
       logger.info({ uid: user._id }, 'not sending daily balance notification to inactive user')
     }
   }
-  // FIXME: we probably needs to exit because we have a memleak of pending promise
-  process.exit(0)
 }
 
 if (require.main === module) {
-  setupMongoConnection().then(sendBalanceToUser).catch((err) => logger.error(err))
+  setupMongoConnection().then(main).catch((err) => logger.error(err))
 }
