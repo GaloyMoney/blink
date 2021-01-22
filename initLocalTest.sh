@@ -137,10 +137,6 @@ then
   export TLSOUTSIDE1=$(kubectl -n $NAMESPACE exec lnd-container-outside-1-0 -c lnd-container -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
   export TLSOUTSIDE2=$(kubectl -n $NAMESPACE exec lnd-container-outside-2-0 -c lnd-container -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
 
-  helmUpgrade test-chart --set \
-  macaroon=$MACAROON,macaroonoutside1=$MACAROONOUTSIDE1,macaroonoutside2=$MACAROONOUTSIDE2,image.tag=$CIRCLE_SHA1,tlsoutside1=$TLSOUTSIDE1,tlsoutside2=$TLSOUTSIDE2,tls=$TLS \
-  $INFRADIR/test-chart/
-
   echo $(kubectl get -n=$NAMESPACE pods)
 
 else
@@ -150,11 +146,13 @@ else
   helmUpgrade loop-server -f $INFRADIR/loop-server/$NETWORK-values.yaml $INFRADIR/loop-server/
 fi
 
-helmUpgrade graphql-server -f $INFRADIR/graphql-chart/$NETWORK-values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON $INFRADIR/graphql-chart/
+helmUpgrade graphql-server -f $INFRADIR/graphql-chart/$NETWORK-values.yaml --set \ 
+  testpod.macaroonoutside1=$MACAROONOUTSIDE1,testpod.macaroonoutside2=$MACAROONOUTSIDE2,tag=$CIRCLE_SHA1,testpod.tlsoutside1=$TLSOUTSIDE1,testpod.tlsoutside2=$TLSOUTSIDE2,tls=$TLS,macaroon=$MACAROON \
+  $INFRADIR/graphql-chart/
 
 if [ "$NETWORK" == "regtest" ]
 then
-  kubectlWait app=test-chart
+
 elif [ "$NETWORK" == "testnet" ]
 then
   monitoringDeploymentsUpgrade
