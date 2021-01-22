@@ -145,13 +145,9 @@ then
 
 else
   helmUpgrade prometheus-client -f $INFRADIR/graphql-chart/prometheus-values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON $INFRADIR/graphql-chart/
-  helmUpgrade trigger --set image.tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON $INFRADIR/trigger-chart/
 
   createLoopConfigmaps
   helmUpgrade loop-server -f $INFRADIR/loop-server/$NETWORK-values.yaml $INFRADIR/loop-server/
-  # TODO: missing kubectlWait trigger and prometheus-client
-
-  helmUpgrade update-job -f $INFRADIR/update-job/$NETWORK-values.yaml --set image.tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON $INFRADIR/update-job/
 fi
 
 helmUpgrade graphql-server -f $INFRADIR/graphql-chart/$NETWORK-values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON $INFRADIR/graphql-chart/
