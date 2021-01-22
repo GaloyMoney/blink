@@ -8,6 +8,7 @@ helm repo add grafana https://grafana.github.io/helm-charts
 helm repo update
 
 cd ../../../infrastructure/graphql-chart && helm dependency build && cd -
+cd ../../../infrastructure/monitoring && helm dependency build && cd -
 
 
 if [ "$1" == "testnet" ] || [ "$1" == "mainnet" ];
@@ -41,14 +42,13 @@ monitoringDeploymentsUpgrade() {
   SECRET=alertmanager-keys
   local NAMESPACE=monitoring
   kubectl -n $NAMESPACE delete deployment.apps prometheus-kube-state-metrics
-  helmUpgrade prometheus prometheus-community/prometheus -f $INFRADIR/prometheus-server/values.yaml
 
   export SLACK_API_URL=$(kubectl get secret -n $NAMESPACE $SECRET -o jsonpath="{.data.SLACK_API_URL}" | base64 -d)
   export SERVICE_KEY=$(kubectl get secret -n $NAMESPACE $SECRET -o jsonpath="{.data.SERVICE_KEY}" | base64 -d)
 
   kubectl -n $NAMESPACE get configmaps prometheus-alertmanager -o yaml | sed -e "s|SLACK_API_URL|$SLACK_API_URL|; s|SERVICE_KEY|$SERVICE_KEY|" | kubectl -n $NAMESPACE apply -f -
 
-  helmUpgrade mongo-exporter $INFRADIR/mongo-exporter
+  helmUpgrade monitoring $INFRADIR/monitoring
 }
 
 kubectlWait () {
