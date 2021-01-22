@@ -103,7 +103,7 @@ then
   kubectlLndDeletionWait
 else
   helmUpgrade lnd -f $INFRADIR/lnd-chart/$NETWORK-values.yaml --set lndService.serviceType=LoadBalancer,minikubeip=$MINIKUBEIP $INFRADIR/lnd-chart/
-
+fi
 # # add extra sleep time... seems lnd is quite long to show up some time
 sleep 15
 kubectlWait type=lnd
