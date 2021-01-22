@@ -1,3 +1,6 @@
+// an accounting reminder:
+// https://en.wikipedia.org/wiki/Double-entry_bookkeeping
+
 // assets:
 
 import { User } from "./mongodb"
@@ -13,7 +16,7 @@ export const customerPath = (uid) => `Liabilities:Customer:${uid}`
 export const brokerLndPath = async () => {
   const broker = await User.findOne({ role: "broker" })
   return customerPath(broker._id)
-}   
+}
 
 // export const brokerPathLnd = `Liabilities:Customer:uid` --> normal account
 export const brokerPath = `Liabilities:Broker` // used for USD

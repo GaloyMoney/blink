@@ -268,7 +268,7 @@ const transactionSchema = new Schema({
       "onchain_receipt", "onchain_payment", "onchain_on_us", // onchain
       "fee", "escrow", // channel-related
       "exchange_rebalance", // for the broker
-      "bitcoind_rebalance" // for the cold storage
+      "to_cold_storage", "to_hot_wallet"
     ]
   },
 

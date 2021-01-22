@@ -29,10 +29,11 @@ export const OnChainMixin = (superclass) => class extends superclass {
     ])
   }
 
-  async PayeeUser(address: string) { return User.findOne({ onchain_addresses: { $in: address } }) }
+  // this would return a User if address belong to our wallet
+  async tentativelyGetPayeeUser({address}) { return User.findOne({ onchain_addresses: { $in: address } }) }
 
   async getOnchainFee({address}: {address: string}): Promise<number | Error> {
-    const payeeUser = await this.PayeeUser(address)
+    const payeeUser = await this.tentativelyGetPayeeUser({address})
 
     let fee
 
@@ -60,7 +61,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
       throw new LoggedError(error)
     }
 
-    const payeeUser = await this.PayeeUser(address)
+    const payeeUser = await this.tentativelyGetPayeeUser({address})
 
     if (payeeUser) {
       const onchainLoggerOnUs = onchainLogger.child({onUs: true})
@@ -114,6 +115,8 @@ export const OnChainMixin = (superclass) => class extends superclass {
     // case where there is not enough money available within lnd on-chain wallet
     if (onChainBalance < amount + estimatedFee) {
       const error = `insufficient onchain balance on the lnd node. rebalancing is needed`
+      
+      // TODO: add a page to initiate the rebalancing quickly
       onchainLogger.fatal({onChainBalance, amount, estimatedFee, sendTo, success: false }, error)
       throw new LoggedError(error)
     }
@@ -157,7 +160,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
   }
 
-  async getLastOnChainAddress(): Promise<String | Error | undefined> {
+  async getLastOnChainAddress(): Promise<String | undefined> {
     let user = this.user
 
     if (user.onchain_addresses.length === 0) {
