@@ -5,8 +5,6 @@ helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo add grafana https://grafana.github.io/helm-charts
 
-helm repo update
-
 cd ../../../infrastructure/graphql-chart && helm dependency build && cd -
 cd ../../../infrastructure/monitoring && helm dependency build && cd -
 
@@ -41,7 +39,7 @@ helmUpgrade () {
 monitoringDeploymentsUpgrade() {
   SECRET=alertmanager-keys
   local NAMESPACE=monitoring
-  kubectl -n $NAMESPACE delete deployment.apps prometheus-kube-state-metrics
+  # kubectl -n $NAMESPACE delete deployment.apps prometheus-kube-state-metrics
 
   export SLACK_API_URL=$(kubectl get secret -n $NAMESPACE $SECRET -o jsonpath="{.data.SLACK_API_URL}" | base64 -d)
   export SERVICE_KEY=$(kubectl get secret -n $NAMESPACE $SECRET -o jsonpath="{.data.SERVICE_KEY}" | base64 -d)
