@@ -1,23 +1,24 @@
 set -e
 
-helm repo rm stable
-helm repo add stable https://charts.helm.sh/stable
+helm repo add stable --force-update https://charts.helm.sh/stable
 helm repo add bitnami https://charts.bitnami.com/bitnami
-helm repo add grafana https://grafana.github.io/helm-charts
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo add grafana https://grafana.github.io/helm-charts
+
 helm repo update
+
+cd ../../../infrastructure/graphql-chart && helm dependency build && cd -
+cd ../../../infrastructure/monitoring && helm dependency build && cd -
 
 
 if [ "$1" == "testnet" ] || [ "$1" == "mainnet" ];
 then
-  REDISPERSISTENCE="true"
   NETWORK="$1"
   NAMESPACE="$1"
   SERVICETYPE=ClusterIP
   INFRADIR=~/GaloyApp/infrastructure
 else
   NETWORK="regtest"
-  REDISPERSISTENCE="false"
   if [ ${LOCAL} ]; then 
     MINIKUBEIP=$(minikube ip)
     NAMESPACE="default"
@@ -41,15 +42,13 @@ monitoringDeploymentsUpgrade() {
   SECRET=alertmanager-keys
   local NAMESPACE=monitoring
   kubectl -n $NAMESPACE delete deployment.apps prometheus-kube-state-metrics
-  helmUpgrade prometheus prometheus-community/prometheus -f $INFRADIR/prometheus-server/values.yaml
 
   export SLACK_API_URL=$(kubectl get secret -n $NAMESPACE $SECRET -o jsonpath="{.data.SLACK_API_URL}" | base64 -d)
   export SERVICE_KEY=$(kubectl get secret -n $NAMESPACE $SECRET -o jsonpath="{.data.SERVICE_KEY}" | base64 -d)
 
   kubectl -n $NAMESPACE get configmaps prometheus-alertmanager -o yaml | sed -e "s|SLACK_API_URL|$SLACK_API_URL|; s|SERVICE_KEY|$SERVICE_KEY|" | kubectl -n $NAMESPACE apply -f -
 
-  helmUpgrade grafana grafana/grafana -f $INFRADIR/grafana/values.yaml
-  helmUpgrade mongo-exporter $INFRADIR/mongo-exporter
+  helmUpgrade monitoring $INFRADIR/monitoring
 }
 
 kubectlWait () {
@@ -111,8 +110,6 @@ kubectlWait type=lnd
 exportMacaroon lnd-container-0 MACAROON
 export TLS=$(kubectl -n $NAMESPACE exec lnd-container-0 -c lnd-container -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
 
-helmUpgrade redis bitnami/redis --set=master.service.type=$SERVICETYPE --set=master.persistence.enabled=$REDISPERSISTENCE --set=usePassword=false --set=image.tag=6.0.8-debian-10-r0  --set=cluster.slaveCount=0
-
 # mongodb
 if [ "$NETWORK" == "regtest" ]
 then
@@ -169,7 +166,6 @@ then
   monitoringDeploymentsUpgrade
 fi
 
-kubectlWait app=redis
 kubectlWait app.kubernetes.io/component=mongodb
 
 echo $(kubectl get -n=$NAMESPACE pods)
