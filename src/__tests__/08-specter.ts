@@ -6,7 +6,7 @@ import { getLastPrice } from "../cache";
 import { quit } from "../lock";
 import { MainBook, setupMongoConnection, User } from "../mongodb";
 import { checkIsBalanced, mockGetExchangeBalance, RANDOM_ADDRESS } from "../tests/helper";
-import { baseLogger, bitcoindDefaultClient, getAuth } from "../utils";
+import { baseLogger, bitcoindDefaultClient, getAuth, sleep } from "../utils";
 import { getTokenFromPhoneIndex } from "../walletFactory";
 const lnService = require('ln-service');
 
@@ -18,6 +18,9 @@ jest.mock('../notification')
 let lnd
 
 beforeAll(async () => {
+  await bitcoindDefaultClient.generateToAddress(3, RANDOM_ADDRESS)
+  await sleep(1000)
+
   await setupMongoConnection()
   mockGetExchangeBalance()
   lnd = lnService.authenticatedLndGrpc(getAuth()).lnd
@@ -60,6 +63,8 @@ it('createWallet', async () => {
 })
 
 it('deposit to bitcoind', async () => {
+
+
   const initBitcoindBalance = await specterWallet.getBitcoindBalance()
   const { chain_balance: initLndBalance } = await lnService.getChainBalance({ lnd })
   
