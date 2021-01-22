@@ -140,8 +140,6 @@ then
   echo $(kubectl get -n=$NAMESPACE pods)
 
 else
-  helmUpgrade prometheus-client -f $INFRADIR/graphql-chart/prometheus-values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON $INFRADIR/graphql-chart/
-
   createLoopConfigmaps
   helmUpgrade loop-server -f $INFRADIR/loop-server/$NETWORK-values.yaml $INFRADIR/loop-server/
 fi
