@@ -165,8 +165,13 @@ export abstract class UserWallet {
 
   sendBalance = async () => {
     const balanceSats = await this.getBalance()
-    const balanceUsd = this.satsToUsd(balanceSats)
-    this.logger.info({balanceSats, balanceUsd, uid: this.user._id}, `sending balance notification to user`)
-    await sendNotification({ uid: this.user._id, title: "Balance today", logger: this.logger, body: `Your balance is \$${balanceUsd} (${balanceSats} sats)` })
+
+    // Add commas to balancesats
+    const balanceSatsPrettified = balanceSats.toLocaleString("en")
+    // Round balanceusd to 2 decimal places and add commas
+    const balanceUsd = this.satsToUsd(balanceSats).toLocaleString("en", { maximumFractionDigits: 2 })
+
+    this.logger.info({ balanceSatsPrettified, balanceUsd, uid: this.user._id }, `sending balance notification to user`)
+    await sendNotification({ uid: this.user._id, title: `Your balance today is \$${balanceUsd} (${balanceSatsPrettified} sats)`, logger: this.logger })
   }
 }
