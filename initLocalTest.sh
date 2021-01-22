@@ -144,7 +144,7 @@ else
   helmUpgrade loop-server -f $INFRADIR/loop-server/$NETWORK-values.yaml $INFRADIR/loop-server/
 fi
 
-helmUpgrade graphql-server -f $INFRADIR/graphql-chart/$NETWORK-values.yaml --set \ 
+helmUpgrade graphql-server -f $INFRADIR/graphql-chart/$NETWORK-values.yaml --set \
   testpod.macaroonoutside1=$MACAROONOUTSIDE1,testpod.macaroonoutside2=$MACAROONOUTSIDE2,tag=$CIRCLE_SHA1,testpod.tlsoutside1=$TLSOUTSIDE1,testpod.tlsoutside2=$TLSOUTSIDE2,tls=$TLS,macaroon=$MACAROON \
   $INFRADIR/graphql-chart/
 
