@@ -9,7 +9,6 @@ export class SpecterWallet extends OnChainMixin(UserWallet) {
   bitcoindClient 
   wallet = "coldstorage"
 
-  
   get accountPath(): string {
     return customerPath(this.uid)
   }
@@ -94,7 +93,11 @@ export class SpecterWallet extends OnChainMixin(UserWallet) {
       .credit(bitcoindAccountingPath, sats, {...metadata, memo })
       .commit()
 
-    await this.onChainPay({ address, amount: sats, memo })
+    try {
+      await this.onChainPay({ address, amount: sats, memo })
+    } catch (err) {
+      this.logger.fatal({err}, "could not send to deposit. accounting to be reverted")
+    }
 
     this.logger.info({...metadata, currency, sats, memo, address}, "deposit rebalancing succesful")
   }
