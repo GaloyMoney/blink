@@ -153,7 +153,7 @@ kubectlWait app=redis
 
 if [ ${LOCAL} ]
 then
-  exit(0)
+  exit 0
 fi
 
 if [ "$NETWORK" == "regtest" ]
