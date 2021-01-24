@@ -88,15 +88,10 @@ kubectlWait app=bitcoind-container
 
 sleep 2
 
-# pod deletion has occured before the script started, but may not be completed yet
-if [ ${LOCAL} ]
-then
-  kubectlLndDeletionWait
-fi
-
 if [ ${LOCAL} ] 
 then 
-localdevpath="-f $INFRADIR/lnd-chart/localdev.yaml"
+  kubectlLndDeletionWait
+  localdevpath="-f $INFRADIR/lnd-chart/localdev.yaml"
 fi 
 
 helmUpgrade lnd -f $INFRADIR/lnd-chart/$NETWORK-values.yaml $(eval echo $localdevpath) --set minikubeip=$MINIKUBEIP $INFRADIR/lnd-chart/
@@ -116,10 +111,8 @@ exportMacaroon lnd-container-0 MACAROON
 export TLS=$(kubectl -n $NAMESPACE exec lnd-container-0 -c lnd-container -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
 
 # mongodb
-if [ "$NETWORK" == "regtest" ]
+if [ "$1" == "testnet" ] || [ "$1" == "mainnet" ];
 then
-  echo "nothing to do"
-else
   export MONGODB_ROOT_PASSWORD=$(kubectl get secret -n $NAMESPACE mongodb -o jsonpath="{.data.mongodb-root-password}" | base64 -d)
   export MONGODB_REPLICA_SET_KEY=$(kubectl get secret -n $NAMESPACE mongodb -o jsonpath="{.data.mongodb-replica-set-key}" | base64 -d)
   helmUpgrade mongodb -f $INFRADIR/mongo-chart/custom-values.yaml -f $INFRADIR/mongo-chart/$NETWORK-values.yaml bitnami/mongodb --set auth.rootPassword=$MONGODB_ROOT_PASSWORD,auth.replicaSetKey=$MONGODB_REPLICA_SET_KEY
@@ -157,6 +150,16 @@ helmUpgrade graphql-server \
 
 kubectlWait app.kubernetes.io/component=mongodb
 kubectlWait app=redis
+
+if [ ${LOCAL} ]
+then
+  exit(0)
+fi
+
+if [ "$NETWORK" == "regtest" ]
+then
+  kubectlWait app=testpod
+fi
 
 if [ "$NETWORK" == "testnet" ]
 then
