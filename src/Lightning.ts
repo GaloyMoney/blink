@@ -95,18 +95,20 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     const expires_at = this.getExpiration(moment()).toDate()
 
+    let input
     try {
-      const result = await lnService.createInvoice({
+      input = {
         lnd: this.lnd,
         tokens: sats,
         description: memo,
         expires_at,
-      })
+      }
+      const result = await lnService.createInvoice(input)
       request = result.request
       id = result.id
     } catch (err) {
       const error = "impossible to create the invoice"
-      this.logger.error({ err }, error)
+      this.logger.error({ err, input }, error)
       throw new LoggedError(error)
     }
 

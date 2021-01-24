@@ -13,17 +13,14 @@ if [ "$1" == "testnet" ] || [ "$1" == "mainnet" ];
 then
   NETWORK="$1"
   NAMESPACE="$1"
-  SERVICETYPE=ClusterIP
   INFRADIR=~/GaloyApp/infrastructure
 else
   NETWORK="regtest"
   if [ ${LOCAL} ]; then 
     MINIKUBEIP=$(minikube ip)
     NAMESPACE="default"
-    SERVICETYPE=LoadBalancer
     INFRADIR=../../../infrastructure
   else 
-    SERVICETYPE=ClusterIP
     INFRADIR=~/GaloyApp/infrastructure
   fi
 fi
@@ -37,16 +34,14 @@ helmUpgrade () {
 }
 
 monitoringDeploymentsUpgrade() {
-  SECRET=alertmanager-keys
   local NAMESPACE=monitoring
-  # kubectl -n $NAMESPACE delete deployment.apps prometheus-kube-state-metrics
 
   export SLACK_API_URL=$(kubectl get secret -n $NAMESPACE $SECRET -o jsonpath="{.data.SLACK_API_URL}" | base64 -d)
   export SERVICE_KEY=$(kubectl get secret -n $NAMESPACE $SECRET -o jsonpath="{.data.SERVICE_KEY}" | base64 -d)
 
-  helmUpgrade monitoring $INFRADIR/monitoring
-
-  kubectl -n $NAMESPACE get configmaps monitoring-prometheus-alertmanager -o yaml | sed -e "s|SLACK_API_URL|$SLACK_API_URL|; s|SERVICE_KEY|$SERVICE_KEY|" | kubectl -n $NAMESPACE apply -f -
+  helmUpgrade monitoring $INFRADIR/monitoring --set \
+    prometheus.alertmanagerFiles."alertmanager.yml".global.slack_api_url=$SLACK_API_URL \
+    prometheus.alertmanagerFiles."alertmanager.yml".receivers[2].pagerduty_configs[0].service_key=$SERVICE_KEY
 }
 
 kubectlWait () {
@@ -82,8 +77,13 @@ createLoopConfigmaps() {
   kubectl create configmap lndmacaroon --from-file=./macaroon --dry-run -o yaml | kubectl -n $NETWORK apply -f -
 }
 
+if [ ${LOCAL} ] 
+then 
+localdevpath="-f $INFRADIR/bitcoind-chart/localdev.yaml"
+fi 
+helmUpgrade bitcoind -f $INFRADIR/bitcoind-chart/$NETWORK-values.yaml $(eval echo $localdevpath) $INFRADIR/bitcoind-chart/
+
 # bug with --wait: https://github.com/helm/helm/issues/7139 ?
-helmUpgrade bitcoind -f $INFRADIR/bitcoind-chart/$NETWORK-values.yaml --set serviceType=$SERVICETYPE $INFRADIR/bitcoind-chart/
 kubectlWait app=bitcoind-container
 
 # pod deletion has occured before the script started, but may not be completed yet
@@ -92,7 +92,12 @@ then
   kubectlLndDeletionWait
 fi
 
-helmUpgrade lnd -f $INFRADIR/lnd-chart/$NETWORK-values.yaml --set lndService.serviceType=LoadBalancer,minikubeip=$MINIKUBEIP $INFRADIR/lnd-chart/
+if [ ${LOCAL} ] 
+then 
+localdevpath="-f $INFRADIR/lnd-chart/localdev.yaml"
+fi 
+
+helmUpgrade lnd -f $INFRADIR/lnd-chart/$NETWORK-values.yaml $(eval echo $localdevpath) --set minikubeip=$MINIKUBEIP $INFRADIR/lnd-chart/
 
 # avoiding to spend time with circleci regtest with this condition
 if [ "$1" == "testnet" ] || [ "$1" == "mainnet" ];
@@ -111,21 +116,15 @@ export TLS=$(kubectl -n $NAMESPACE exec lnd-container-0 -c lnd-container -- base
 # mongodb
 if [ "$NETWORK" == "regtest" ]
 then
-  helmUpgrade mongodb --set auth.username=testGaloy,auth.password=testGaloy,auth.database=galoy,persistence.enabled=false,service.type=$SERVICETYPE bitnami/mongodb
+  echo "nothing to do"
 else
   export MONGODB_ROOT_PASSWORD=$(kubectl get secret -n $NAMESPACE mongodb -o jsonpath="{.data.mongodb-root-password}" | base64 -d)
   export MONGODB_REPLICA_SET_KEY=$(kubectl get secret -n $NAMESPACE mongodb -o jsonpath="{.data.mongodb-replica-set-key}" | base64 -d)
   helmUpgrade mongodb -f $INFRADIR/mongo-chart/custom-values.yaml -f $INFRADIR/mongo-chart/$NETWORK-values.yaml bitnami/mongodb --set auth.rootPassword=$MONGODB_ROOT_PASSWORD,auth.replicaSetKey=$MONGODB_REPLICA_SET_KEY
-  kubectl -n $NAMESPACE delete pod mongodb-2
 
+  # use initdbScripts instead
   kubectl exec -n $NAMESPACE mongodb-0 -- bash -c "mongo admin -u root -p "$MONGODB_ROOT_PASSWORD" --eval \"db.adminCommand({setDefaultRWConcern:1,defaultWriteConcern:{'w':'majority'}})\""
   kubectl exec -n $NAMESPACE mongodb-0 -- bash -c "mongo admin -u root -p "$MONGODB_ROOT_PASSWORD" --eval \"c=rs.conf();c.writeConcernMajorityJournalDefault=false;rs.reconfig(c)\""
-fi
-
-if [ ${LOCAL} ]
-then
-  kubectlWait app.kubernetes.io/component=mongodb
-  exit 0
 fi
 
 if [ "$NETWORK" == "regtest" ]
@@ -144,24 +143,28 @@ else
   helmUpgrade loop-server -f $INFRADIR/loop-server/$NETWORK-values.yaml $INFRADIR/loop-server/
 fi
 
-helmUpgrade graphql-server -f $INFRADIR/graphql-chart/$NETWORK-values.yaml --set \
-  testpod.macaroonoutside1=$MACAROONOUTSIDE1,testpod.macaroonoutside2=$MACAROONOUTSIDE2,tag=$CIRCLE_SHA1,testpod.tlsoutside1=$TLSOUTSIDE1,testpod.tlsoutside2=$TLSOUTSIDE2,tls=$TLS,macaroon=$MACAROON \
+if [ ${LOCAL} ]
+then
+localdevpath="-f $INFRADIR/graphql-chart/localdev.yaml"
+fi
+
+helmUpgrade graphql-server \
+  -f $INFRADIR/graphql-chart/$NETWORK.yaml $(eval echo $localdevpath) \
+  --set testpod.macaroonoutside1=$MACAROONOUTSIDE1,testpod.macaroonoutside2=$MACAROONOUTSIDE2,tag=$CIRCLE_SHA1,testpod.tlsoutside1=$TLSOUTSIDE1,testpod.tlsoutside2=$TLSOUTSIDE2,tls=$TLS,macaroon=$MACAROON \
   $INFRADIR/graphql-chart/
 
-if [ "$NETWORK" == "regtest" ]
-then
+kubectlWait app.kubernetes.io/component=mongodb
+kubectlWait app=redis
 
-elif [ "$NETWORK" == "testnet" ]
+if [ "$NETWORK" == "testnet" ]
 then
   monitoringDeploymentsUpgrade
 fi
 
-kubectlWait app.kubernetes.io/component=mongodb
-
 echo $(kubectl get -n=$NAMESPACE pods)
 
-kubectl -n $NAMESPACE rollout status deployment graphql-server
-if [[ "$?" -ne 0 ]]; then
-  echo "Deployment failed"
-  exit 1
-fi
+# kubectl -n $NAMESPACE rollout status deployment graphql-server
+# if [[ "$?" -ne 0 ]]; then
+#   echo "Deployment failed"
+#   exit 1
+# fi
