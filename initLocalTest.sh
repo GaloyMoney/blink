@@ -86,6 +86,8 @@ helmUpgrade bitcoind -f $INFRADIR/bitcoind-chart/$NETWORK-values.yaml $(eval ech
 # bug with --wait: https://github.com/helm/helm/issues/7139 ?
 kubectlWait app=bitcoind-container
 
+sleep 2
+
 # pod deletion has occured before the script started, but may not be completed yet
 if [ ${LOCAL} ]
 then
