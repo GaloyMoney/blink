@@ -9,7 +9,7 @@ cd ../../../infrastructure/graphql-chart && helm dependency build && cd -
 cd ../../../infrastructure/monitoring && helm dependency build && cd -
 
 
-if [ "$1" == "testnet" ] || [ "$1" == "mainnet" ];
+if [ "$NETWORK" == "testnet" ] || [ "$NETWORK" == "mainnet" ];
 then
   NETWORK="$1"
   NAMESPACE="$1"
@@ -81,7 +81,7 @@ if [ ${LOCAL} ]
 then 
 localdevpath="-f $INFRADIR/bitcoind-chart/localdev.yaml"
 fi 
-helmUpgrade bitcoind -f $INFRADIR/bitcoind-chart/$NETWORK-values.yaml $(eval echo $localdevpath) $INFRADIR/bitcoind-chart/
+helmUpgrade bitcoind -f $INFRADIR/bitcoind-chart/$NETWORK-values.yaml $localdevpath $INFRADIR/bitcoind-chart/
 
 # bug with --wait: https://github.com/helm/helm/issues/7139 ?
 kubectlWait app=bitcoind-container
@@ -94,10 +94,10 @@ then
   localdevpath="-f $INFRADIR/lnd-chart/localdev.yaml"
 fi 
 
-helmUpgrade lnd -f $INFRADIR/lnd-chart/$NETWORK-values.yaml $(eval echo $localdevpath) --set minikubeip=$MINIKUBEIP $INFRADIR/lnd-chart/
+helmUpgrade lnd -f $INFRADIR/lnd-chart/$NETWORK-values.yaml $localdevpath --set minikubeip=$MINIKUBEIP $INFRADIR/lnd-chart/
 
 # avoiding to spend time with circleci regtest with this condition
-if [ "$1" == "testnet" ] || [ "$1" == "mainnet" ];
+if [ "$NETWORK" == "testnet" ] || [ "$NETWORK" == "mainnet" ];
 then
   kubectlLndDeletionWait
 fi
@@ -111,7 +111,7 @@ exportMacaroon lnd-container-0 MACAROON
 export TLS=$(kubectl -n $NAMESPACE exec lnd-container-0 -c lnd-container -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
 
 # mongodb
-if [ "$1" == "testnet" ] || [ "$1" == "mainnet" ];
+if [ "$NETWORK" == "testnet" ] || [ "$NETWORK" == "mainnet" ];
 then
   export MONGODB_ROOT_PASSWORD=$(kubectl get secret -n $NAMESPACE mongodb -o jsonpath="{.data.mongodb-root-password}" | base64 -d)
   export MONGODB_REPLICA_SET_KEY=$(kubectl get secret -n $NAMESPACE mongodb -o jsonpath="{.data.mongodb-replica-set-key}" | base64 -d)
@@ -144,7 +144,7 @@ localdevpath="-f $INFRADIR/graphql-chart/localdev.yaml"
 fi
 
 helmUpgrade graphql-server \
-  -f $INFRADIR/graphql-chart/$NETWORK.yaml $(eval echo $localdevpath) \
+  -f $INFRADIR/graphql-chart/$NETWORK.yaml $localdevpath \
   --set testpod.macaroonoutside1=$MACAROONOUTSIDE1,testpod.macaroonoutside2=$MACAROONOUTSIDE2,tag=$CIRCLE_SHA1,testpod.tlsoutside1=$TLSOUTSIDE1,testpod.tlsoutside2=$TLSOUTSIDE2,tls=$TLS,macaroon=$MACAROON \
   $INFRADIR/graphql-chart/
 
