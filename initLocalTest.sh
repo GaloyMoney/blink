@@ -5,7 +5,7 @@ helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo add grafana https://grafana.github.io/helm-charts
 
-cd ../../../infrastructure/graphql-chart && helm dependency build && cd -
+cd ../../../infrastructure/galoy && helm dependency build && cd -
 cd ../../../infrastructure/monitoring && helm dependency build && cd -
 
 
@@ -140,13 +140,13 @@ fi
 
 if [ ${LOCAL} ]
 then
-localdevpath="-f $INFRADIR/graphql-chart/localdev.yaml"
+localdevpath="-f $INFRADIR/galoy/localdev.yaml"
 fi
 
-helmUpgrade graphql-server \
-  -f $INFRADIR/graphql-chart/$NETWORK.yaml $localdevpath \
+helmUpgrade galoy \
+  -f $INFRADIR/galoy/$NETWORK.yaml $localdevpath \
   --set testpod.macaroonoutside1=$MACAROONOUTSIDE1,testpod.macaroonoutside2=$MACAROONOUTSIDE2,tag=$CIRCLE_SHA1,testpod.tlsoutside1=$TLSOUTSIDE1,testpod.tlsoutside2=$TLSOUTSIDE2,tls=$TLS,macaroon=$MACAROON \
-  $INFRADIR/graphql-chart/
+  $INFRADIR/galoy/
 
 kubectlWait app.kubernetes.io/component=mongodb
 kubectlWait app=redis
@@ -168,7 +168,7 @@ fi
 
 echo $(kubectl get -n=$NAMESPACE pods)
 
-# kubectl -n $NAMESPACE rollout status deployment graphql-server
+# kubectl -n $NAMESPACE rollout status deployment galoy
 # if [[ "$?" -ne 0 ]]; then
 #   echo "Deployment failed"
 #   exit 1
