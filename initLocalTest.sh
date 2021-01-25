@@ -5,23 +5,23 @@ helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo add grafana https://grafana.github.io/helm-charts
 
-cd ../../../infrastructure/galoy && helm dependency build && cd -
-cd ../../../infrastructure/monitoring && helm dependency build && cd -
+cd ../../../infra/galoy && helm dependency build && cd -
+cd ../../../infra/monitoring && helm dependency build && cd -
 
 
 if [ "$NETWORK" == "testnet" ] || [ "$NETWORK" == "mainnet" ];
 then
   NETWORK="$1"
   NAMESPACE="$1"
-  INFRADIR=~/GaloyApp/infrastructure
+  INFRADIR=~/GaloyApp/infra
 else
   NETWORK="regtest"
   if [ ${LOCAL} ]; then 
     MINIKUBEIP=$(minikube ip)
     NAMESPACE="default"
-    INFRADIR=../../../infrastructure
+    INFRADIR=../../../infra
   else 
-    INFRADIR=~/GaloyApp/infrastructure
+    INFRADIR=~/GaloyApp/infra
   fi
 fi
 
@@ -79,22 +79,22 @@ createLoopConfigmaps() {
 
 if [ ${LOCAL} ] 
 then 
-localdevpath="-f $INFRADIR/bitcoind-chart/localdev.yaml"
+localdevpath="-f $INFRADIR/bitcoind/localdev.yaml"
 fi 
-helmUpgrade bitcoind -f $INFRADIR/bitcoind-chart/$NETWORK-values.yaml $localdevpath $INFRADIR/bitcoind-chart/
+helmUpgrade bitcoind -f $INFRADIR/bitcoind/$NETWORK.yaml $localdevpath $INFRADIR/bitcoind/
 
 # bug with --wait: https://github.com/helm/helm/issues/7139 ?
 kubectlWait app=bitcoind-container
 
-sleep 5
+sleep 8
 
 if [ ${LOCAL} ] 
 then 
   kubectlLndDeletionWait
-  localdevpath="-f $INFRADIR/lnd-chart/localdev.yaml"
+  localdevpath="-f $INFRADIR/lnd/localdev.yaml"
 fi 
 
-helmUpgrade lnd -f $INFRADIR/lnd-chart/$NETWORK-values.yaml $localdevpath --set minikubeip=$MINIKUBEIP $INFRADIR/lnd-chart/
+helmUpgrade lnd -f $INFRADIR/lnd/$NETWORK.yaml $localdevpath --set minikubeip=$MINIKUBEIP $INFRADIR/lnd/
 
 # avoiding to spend time with circleci regtest with this condition
 if [ "$NETWORK" == "testnet" ] || [ "$NETWORK" == "mainnet" ];
@@ -115,7 +115,7 @@ if [ "$NETWORK" == "testnet" ] || [ "$NETWORK" == "mainnet" ];
 then
   export MONGODB_ROOT_PASSWORD=$(kubectl get secret -n $NAMESPACE mongodb -o jsonpath="{.data.mongodb-root-password}" | base64 -d)
   export MONGODB_REPLICA_SET_KEY=$(kubectl get secret -n $NAMESPACE mongodb -o jsonpath="{.data.mongodb-replica-set-key}" | base64 -d)
-  helmUpgrade mongodb -f $INFRADIR/mongo-chart/custom-values.yaml -f $INFRADIR/mongo-chart/$NETWORK-values.yaml bitnami/mongodb --set auth.rootPassword=$MONGODB_ROOT_PASSWORD,auth.replicaSetKey=$MONGODB_REPLICA_SET_KEY
+  helmUpgrade mongodb -f $INFRADIR/mongo/custom.yaml -f $INFRADIR/mongo/$NETWORK.yaml bitnami/mongodb --set auth.rootPassword=$MONGODB_ROOT_PASSWORD,auth.replicaSetKey=$MONGODB_REPLICA_SET_KEY
 
   # use initdbScripts instead
   kubectl exec -n $NAMESPACE mongodb-0 -- bash -c "mongo admin -u root -p "$MONGODB_ROOT_PASSWORD" --eval \"db.adminCommand({setDefaultRWConcern:1,defaultWriteConcern:{'w':'majority'}})\""
@@ -135,7 +135,7 @@ then
 
 else
   createLoopConfigmaps
-  helmUpgrade loop-server -f $INFRADIR/loop-server/$NETWORK-values.yaml $INFRADIR/loop-server/
+  helmUpgrade loop-server -f $INFRADIR/loop-server/$NETWORK.yaml $INFRADIR/loop-server/
 fi
 
 if [ ${LOCAL} ]
