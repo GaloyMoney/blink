@@ -8,7 +8,7 @@ const lnService = require('ln-service')
 const logger = baseLogger.child({module: "admin"})
 
 
-export class AdminWallet {
+export class Cron {
   readonly lnd = lnService.authenticatedLndGrpc(getAuth()).lnd
 
   async updateUsersPendingPayment() {

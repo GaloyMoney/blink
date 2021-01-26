@@ -1,8 +1,7 @@
-import { sat2btc } from "./utils"
-const mongoose = require("mongoose")
-import moment = require("moment")
-import { PriceHistory } from "./mongodb"
 import { dropRight, last } from "lodash"
+import { PriceHistory } from "./mongodb"
+import { sat2btc } from "./utils"
+import moment = require("moment")
 
 
 interface ITick {

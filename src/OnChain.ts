@@ -8,6 +8,8 @@ import { MainBook, Transaction, User } from "./mongodb";
 import { ITransaction, IOnChainPayment, ISuccess } from "./types";
 import { amountOnVout, bitcoindClient, btc2sat, getAuth, LoggedError, LOOK_BACK, myOwnAddressesOnVout } from "./utils";
 import { UserWallet } from "./wallet";
+import { IOnChainPayment, ISuccess, ITransaction } from "./types";
+import { amountOnVout, bitcoindDefaultClient, btc2sat, getAuth, LoggedError, LOOK_BACK, myOwnAddressesOnVout } from "./utils";
 
 const using = require('bluebird').using
 
@@ -32,12 +34,13 @@ export const OnChainMixin = (superclass) => class extends superclass {
   }
 
   // FIXME: should be static but doesn't work with mixin
-  async getUserFromAddress({address}: {address: string}) { 
-    return User.findOne({ onchain_addresses: { $in: address } }) 
+  // this would return a User if address belong to our wallet
+  async tentativelyGetPayeeUser({address}) { 
+    return User.findOne({ onchain_addresses: { $in: address } })
   }
 
-  async getOnchainFee({address}: {address: string}): Promise<number> {
-    const payeeUser = await this.getUserFromAddress({address})
+  async getOnchainFee({address}: {address: string}): Promise<number | Error> {
+    const payeeUser = await this.tentativelyGetPayeeUser({address})
 
     let fee
 
@@ -65,7 +68,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
       throw new LoggedError(error)
     }
 
-    const payeeUser = await this.getUserFromAddress({address})
+    const payeeUser = await this.tentativelyGetPayeeUser({address})
 
     if (payeeUser) {
       const onchainLoggerOnUs = onchainLogger.child({onUs: true})
@@ -118,6 +121,8 @@ export const OnChainMixin = (superclass) => class extends superclass {
     // case where there is not enough money available within lnd on-chain wallet
     if (onChainBalance < amount + estimatedFee) {
       const error = `insufficient onchain balance on the lnd node. rebalancing is needed`
+      
+      // TODO: add a page to initiate the rebalancing quickly
       onchainLogger.fatal({onChainBalance, amount, estimatedFee, sendTo, success: false }, error)
       throw new LoggedError(error)
     }

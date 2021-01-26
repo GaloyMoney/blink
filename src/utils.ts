@@ -1,15 +1,16 @@
+// @ts-ignore
+import { GraphQLError } from "graphql"
 import * as jwt from 'jsonwebtoken'
 import * as lnService from "ln-service"
 import { filter, find, includes, intersection, sumBy, union } from "lodash"
 import * as moment from 'moment'
 export const validate = require("validate.js")
-const BitcoindClient = require('bitcoin-core')
+const bitcoindClient = require('bitcoin-core')
 const { parsePaymentRequest } = require('invoices');
 const axios = require('axios').default;
 
 
 export const baseLogger = require('pino')({ level: process.env.LOGLEVEL || "info" })
-const util = require('util')
 
 // how many block are we looking back for getChainTransactions
 export const LOOK_BACK = 2016
@@ -32,8 +33,12 @@ export class LoggedError extends GraphQLError {
 }
 
 const connection_obj = {
-  network: process.env.NETWORK, username: 'rpcuser', password: 'rpcpass',
-  host: process.env.BITCOINDADDR, port: process.env.BITCOINDPORT
+  network: process.env.NETWORK, 
+  username: 'rpcuser',
+  password: 'rpcpass',
+  host: process.env.BITCOINDADDR,
+  port: process.env.BITCOINDPORT,
+  version: '0.20.1',
 }
 
 
@@ -66,6 +71,8 @@ export const addContact = async ({uid, username}) => {
   }
 }
 
+export const BitcoindClient = ({wallet = ""}) => new bitcoindClient({...connection_obj, wallet})
+export const bitcoindDefaultClient = BitcoindClient({})
 
 export const amountOnVout = ({ vout, onchain_addresses }): number => {
   // TODO: check if this is always [0], ie: there is always a single addresses for vout for lnd output
@@ -77,7 +84,6 @@ export const myOwnAddressesOnVout = ({ vout, onchain_addresses }) => {
   return intersection(union(vout.map(output => output.scriptPubKey.addresses[0])), onchain_addresses)
 }
 
-export const bitcoindClient = new BitcoindClient(connection_obj)
 
 export const getHash = (request) => {
   return parsePaymentRequest({ request }).id
@@ -107,8 +113,8 @@ export async function sleep(ms) {
 }
 
 export function timeout(delay, msg) {
-  return new Promise(function(resolve, reject) {
-    setTimeout(function() {
+  return new Promise(function (resolve, reject) {
+    setTimeout(function () {
       reject(new Error(msg));
     }, delay);
   });
@@ -134,11 +140,11 @@ export const createToken = ({ uid, network }) => jwt.sign(
 validate.extend(validate.validators.datetime, {
   // The value is guaranteed not to be null or undefined but otherwise it
   // could be anything.
-  parse: function(value: any, options: any) {
+  parse: function (value: any, options: any) {
     return +moment.utc(value);
   },
   // Input is a unix timestamp
-  format: function(value: any, options: any) {
+  format: function (value: any, options: any) {
     const format = options.dateOnly ? "YYYY-MM-DD" : "YYYY-MM-DD hh:mm:ss";
     return moment.utc(value).format(format);
   }
@@ -152,6 +158,7 @@ export const getAuth = () => {
   const port = process.env.LNDRPCPORT ?? 10009
 
   if (!cert || !macaroon || !lndip) {
+    console.log({cert, macaroon, lndip})
     throw new Error('missing environment variable for lnd')
   }
 

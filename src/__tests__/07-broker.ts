@@ -8,7 +8,6 @@ import { quit } from "../lock";
 import { getTokenFromPhoneIndex } from "../walletFactory";
 import { UserWallet } from "../wallet";
 const mongoose = require("mongoose");
-const util = require('util')
 
 const fixtures = [{
   privateGetAccount: function() {

@@ -14,7 +14,7 @@ else
 	kubectl -n $NAMESPACE wait --for=condition=ready pod -l app.kubernetes.io/name=mongodb
 fi
 
-nohup ./portForward.sh &
+# nohup ./portForward.sh &
 
 export TLS=$(kubectl exec -n $NAMESPACE lnd-container-0  -c lnd-container -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
 export TLSOUTSIDE1=$(kubectl exec -n $NAMESPACE lnd-container-outside-1-0  -c lnd-container -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
@@ -25,26 +25,26 @@ export MACAROONOUTSIDE1=$(kubectl exec -n $NAMESPACE lnd-container-outside-1-0  
 export MACAROONOUTSIDE2=$(kubectl exec -n $NAMESPACE lnd-container-outside-2-0  -c lnd-container -- base64 /root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
 
 
-export LNDIP="localhost"
-export LNDRPCPORT=10009
+# export LNDIP="localhost"
+# export LNDRPCPORT=10009
 
 
-export BITCOINDPORT=18443
-export BITCOINDADDR="localhost"
+# export BITCOINDPORT=18443
+# export BITCOINDADDR="localhost"
 
 
-export LNDOUTSIDE1ADDR="localhost"
-export LNDOUTSIDE1RPCPORT=10010
+# export LNDOUTSIDE1ADDR="localhost"
+# export LNDOUTSIDE1RPCPORT=10010
 
 
-export MONGODB_ADDRESS="localhost:27019"
+# export MONGODB_ADDRESS="localhost:27019"
 
-export LNDOUTSIDE2ADDR="localhost"
-export LNDOUTSIDE2RPCPORT=10011
+# export LNDOUTSIDE2ADDR="localhost"
+# export LNDOUTSIDE2RPCPORT=10011
 
 
-export REDIS_PORT=6379
-export REDIS_IP=localhost
+# export REDIS_PORT=6379
+# export REDIS_IP=localhost
 
 export JWT_SECRET="jwt_secret"
 

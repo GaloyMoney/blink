@@ -1,5 +1,5 @@
 import { exit } from "process"
-import { baseLogger } from "./utils"
+import { baseLogger, sleep } from "./utils"
 
 const mongoose = require("mongoose");
 // mongoose.set("debug", true);
@@ -191,6 +191,18 @@ UserSchema.statics.findByUsername = async function ({ username }) {
   return this.findOne({ username: new RegExp(`^${username}$`, 'i') })
 }
 
+UserSchema.statics.getActiveUsers = async function (): Promise<Array<typeof User>> {
+  const users = await this.find({})
+  const activeUsers: Array<typeof User> = []
+  for (const user of users) {
+    const userWallet = await WalletFactory({ user, uid: user._id, currency: user.currency, logger: baseLogger })
+    if (await userWallet.isUserActive()) {
+      activeUsers.push(user)
+    }
+  }
+  return activeUsers
+}
+
 export const User = mongoose.model("User", UserSchema)
 
 
@@ -200,10 +212,17 @@ export const User = mongoose.model("User", UserSchema)
 const PhoneCodeSchema = new Schema({
   created_at: {
     type: Date,
-    default: Date.now
+    default: Date.now,
+    required: true,
   },
-  phone: Number,
-  code: Number,
+  phone: { // TODO we should store country as a separate string
+    type: String,
+    required: true,
+  },
+  code: {
+    type: Number,
+    required: true,
+  }
 })
 
 export const PhoneCode = mongoose.model("PhoneCode", PhoneCodeSchema)
@@ -261,7 +280,8 @@ const transactionSchema = new Schema({
       "onchain_receipt", "onchain_payment", "onchain_on_us", // onchain
       "fee", "escrow", // channel-related
       "exchange_rebalance", // send/receive btc from the exchange
-      "user_rebalance" // buy/sell btc in the user wallet
+      "user_rebalance", // buy/sell btc in the user wallet
+      "to_cold_storage", "to_hot_wallet"
     ]
   },
 
@@ -437,7 +457,8 @@ export const setupMongoConnection = async () => {
     await Transaction.syncIndexes()
     await InvoiceUser.syncIndexes()
   } catch (err) {
-    baseLogger.fatal({ err }, `error connecting to mongodb`)
+    baseLogger.fatal({ err, path }, `error connecting to mongodb`)
+    await sleep(100)
     exit(1)
   }
 
@@ -447,6 +468,7 @@ export const setupMongoConnection = async () => {
 import { book } from "medici";
 import { find, sumBy } from "lodash";
 import { customerPath } from "./ledger";
+import { WalletFactory } from "./walletFactory";
 export const MainBook = new book("MainBook")
 
 

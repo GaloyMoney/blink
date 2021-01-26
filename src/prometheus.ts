@@ -1,4 +1,4 @@
-import { AdminWallet } from "./AdminWallet";
+import { Cron } from "./CronClass";
 import { setupMongoConnection, User } from "./mongodb";
 import { Price } from "./priceImpl";
 import { baseLogger, getBosScore } from "./utils";
@@ -24,6 +24,7 @@ const lndOffChain_g = new client.Gauge({ name: `${prefix}_lnd_offchain`, help: '
 const lndOpeningChannelBalance_g = new client.Gauge({ name: `${prefix}_lnd_openingchannelbalance`, help: 'how much fund is pending following opening channel' })
 const lndClosingChannelBalance_g = new client.Gauge({ name: `${prefix}_lnd_closingchannelbalance`, help: 'how much fund is closing following force closed channel' })
 const usdShortPosition_g = new client.Gauge({ name: `${prefix}_usdShortPosition`, help: 'usd short position on ftx' })
+const totalAccountValue_g = new client.Gauge({ name: `${prefix}_totalAccountValue`, help: 'totalAccountValue on ftx' })
 const ftx_btc_g = new client.Gauge({ name: `${prefix}_ftxBtcBalance`, help: 'btc balance in ftx' })
 const ftx_usdPnl_g = new client.Gauge({ name: `${prefix}_ftxUsdPnl`, help: 'usd balance in FTX, which also represents the PNL' })
 const funder_balance_BTC_g = new client.Gauge({ name: `${prefix}_funderBalance_BTC`, help: 'funder balance BTC' })
@@ -38,7 +39,7 @@ const price_g = new client.Gauge({ name: `${prefix}_price`, help: 'BTC/USD price
 const bos_g = new client.Gauge({ name: `${prefix}_bos`, help: 'bos score' })
 
 const main = async () => {
-	const adminWallet = new AdminWallet()
+	const cron = new Cron()
 
   server.get('/metrics', async (req, res) => {
     
@@ -51,14 +52,14 @@ const main = async () => {
     
     bos_g.set(await getBosScore())
     
-    const { lightning, liabilities } = await adminWallet.getBalanceSheet()
-    const { assetsLiabilitiesDifference, bookingVersusRealWorldAssets } = await adminWallet.balanceSheetIsBalanced()
+    const { lightning, liabilities } = await cron.getBalanceSheet()
+    const { assetsLiabilitiesDifference, bookingVersusRealWorldAssets } = await cron.balanceSheetIsBalanced()
     liabilities_g.set(liabilities)
     lightning_g.set(lightning)
     assetsLiabilitiesDifference_g.set(assetsLiabilitiesDifference)
     bookingVersusRealWorldAssets_g.set(bookingVersusRealWorldAssets)
     
-    const { total, onChain, offChain, opening_channel_balance, closing_channel_balance } = await adminWallet.lndBalances()
+    const { total, onChain, offChain, opening_channel_balance, closing_channel_balance } = await cron.lndBalances()
     lnd_g.set(total)
     lndOnChain_g.set(onChain)
     lndOffChain_g.set(offChain)
@@ -75,7 +76,7 @@ const main = async () => {
 
 
     const brokerWallet = await getBrokerWallet({ logger })
-    const { usd: usdShortPosition, leverage } = await brokerWallet.getAccountPosition()
+    const { usd: usdShortPosition, totalAccountValue, leverage } = await brokerWallet.getAccountPosition()
 
     ftx_btc_g.set((await brokerWallet.getExchangeBalance()).sats)
     ftx_usdPnl_g.set((await brokerWallet.getExchangeBalance()).usdPnl)
@@ -83,6 +84,7 @@ const main = async () => {
     broker_local_usd_g.set((await brokerWallet.getLocalLiabilities()).usd)
     broker_profit_g.set((await brokerWallet.getProfit()).usdProfit)
 
+    totalAccountValue_g.set(totalAccountValue)
     usdShortPosition_g.set(usdShortPosition)
     leverage_g.set(leverage)
 
