@@ -1,12 +1,13 @@
 /**
  * @jest-environment node
  */
-import { filter, first, last } from "lodash";
+import { filter, first } from "lodash";
 import { quit } from "../lock";
 import { MainBook, setupMongoConnection } from "../mongodb";
 import { checkIsBalanced, getUserWallet, lndMain, lndOutside1, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
 import { onchainTransactionEventHandler } from "../trigger";
-import { bitcoindClient, sleep } from "../utils";
+import { bitcoindDefaultClient, sleep } from "../utils";
+const util = require('util')
 
 const {once} = require('events');
 
@@ -23,8 +24,6 @@ jest.mock('../notification')
 const { sendNotification } = require("../notification");
 
 
-import { AdminWallet } from "../AdminWallet"
-import { BrokerWallet } from "../BrokerWallet";
 
 beforeAll(async () => {
   await setupMongoConnection()
@@ -34,7 +33,7 @@ beforeAll(async () => {
 })
 
 beforeEach(async () => {
-  initBlockCount = await bitcoindClient.getBlockCount()
+  initBlockCount = await bitcoindDefaultClient.getBlockCount()
   initialBalanceUser0 = await userWallet0.getBalance()
 })
 
@@ -43,7 +42,7 @@ afterEach(async () => {
 })
 
 afterAll(async () => {
-  await bitcoindClient.generateToAddress(3, RANDOM_ADDRESS)
+  await bitcoindDefaultClient.generateToAddress(3, RANDOM_ADDRESS)
   await sleep(2000)
   jest.restoreAllMocks();
 	await mongoose.connection.close()
@@ -55,7 +54,7 @@ const amount = 10040 // sats
 
 it('testing Fee', async () => {
   {
-    const address = await bitcoindClient.getNewAddress()
+    const address = await bitcoindDefaultClient.getNewAddress()
     const fee = await userWallet0.getOnchainFee({address})
     expect(fee).toBeGreaterThan(0)
   }
@@ -107,7 +106,7 @@ it('Sends onchain payment successfully', async () => {
     await Promise.all([
       once(sub, 'chain_transaction'),
       waitUntilBlockHeight({ lnd: lndMain, blockHeight: initBlockCount + 6 }),
-      bitcoindClient.generateToAddress(6, RANDOM_ADDRESS),
+      bitcoindDefaultClient.generateToAddress(6, RANDOM_ADDRESS),
     ])
   }
 

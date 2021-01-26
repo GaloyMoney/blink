@@ -5,7 +5,7 @@ import { setupMongoConnection, User } from "../mongodb";
 const redis = require('redis')
 
 import {lndMain, lndOutside1, lndOutside2} from "../tests/helper"
-import { bitcoindClient } from "../utils";
+import { bitcoindDefaultClient } from "../utils";
 const mongoose = require("mongoose");
 
 //TODO: Choose between camel case or underscores for variable naming
@@ -13,7 +13,7 @@ const lnService = require('ln-service')
 
 
 it('I can connect to bitcoind', async () => {
-	const { chain } = await bitcoindClient.getBlockchainInfo()
+	const { chain } = await bitcoindDefaultClient.getBlockchainInfo()
 	expect(chain).toEqual('regtest')
 })
 
