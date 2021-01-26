@@ -11,4 +11,4 @@ kubectl -n $NAMESPACE port-forward bitcoind-container-0 18443 &
 kubectl -n $NAMESPACE port-forward lnd-container-outside-1-0 10010:10009 &
 kubectl -n $NAMESPACE port-forward $(kubectl -n $NAMESPACE get pod -l app.kubernetes.io/name=mongodb -o name) 27019:27017 &
 kubectl -n $NAMESPACE port-forward lnd-container-outside-2-0 10011:10009 &
-kubectl -n $NAMESPACE port-forward redis-master-0 6379 &
+kubectl -n $NAMESPACE port-forward galoy-redis-master-0 6379 &

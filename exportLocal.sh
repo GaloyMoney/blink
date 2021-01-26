@@ -27,7 +27,7 @@ export LNDOUTSIDE2RPCPORT=$(kubectl get services | awk '/lnd-outside-2/ {print $
 
 export MONGODB_ADDRESS="$MINIKUBEIP:"$(kubectl get services | awk '/mongodb/ {print $5}' | grep -Po '27017:\K[0-9]+')
 
-export REDIS_PORT=$(kubectl get services | awk '/edis-master/ {print $5}' | grep -Po '6379:\K[0-9]+')
+export REDIS_PORT=$(kubectl get services | awk '/redis-master/ {print $5}' | grep -Po '6379:\K[0-9]+')
 export REDIS_IP=$MINIKUBEIP
 
 export JWT_SECRET="jwt_secret"

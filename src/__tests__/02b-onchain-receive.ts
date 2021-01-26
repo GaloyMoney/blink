@@ -3,13 +3,12 @@
  */
 import { filter } from "lodash";
 import { quit } from "../lock";
-import { setupMongoConnection, User } from "../mongodb";
+import { setupMongoConnection } from "../mongodb";
 import { Price } from "../priceImpl";
 import { checkIsBalanced, getUserWallet, lndMain, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
 import { onchainTransactionEventHandler } from "../trigger";
 import { baseLogger, bitcoindClient, btc2sat, sleep } from "../utils";
 import { getFunderWallet } from "../walletFactory";
-import { sendBalanceToUser } from "../dailyBalanceNotification";
 
 
 const lnService = require('ln-service')

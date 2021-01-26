@@ -1,4 +1,4 @@
-import { sendBalanceToUser } from "../dailyBalanceNotification";
+import { sendBalanceToUsers } from "../dailyBalanceNotification";
 import { customerPath } from "../ledger";
 import { quit } from "../lock";
 import { MainBook, setupMongoConnection, User, Transaction } from "../mongodb";
@@ -22,7 +22,7 @@ afterAll(async () => {
 });
 
 it('sends daily balance notification', async () => {
-  await sendBalanceToUser()
+  await sendBalanceToUsers()
   const numActiveUsers = (await User.getActiveUsers()).length
   expect(sendNotification.mock.calls.length).toBe(numActiveUsers)
   for (const [call] of sendNotification.mock.calls) {

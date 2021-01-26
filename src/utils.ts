@@ -121,6 +121,7 @@ export const getAuth = () => {
   const port = process.env.LNDRPCPORT ?? 10009
 
   if (!cert || !macaroon || !lndip) {
+    console.log({cert, macaroon, lndip})
     throw new Error('missing environment variable for lnd')
   }
 

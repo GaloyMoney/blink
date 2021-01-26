@@ -1,5 +1,5 @@
 import { exit } from "process"
-import { baseLogger } from "./utils"
+import { baseLogger, sleep } from "./utils"
 
 const mongoose = require("mongoose");
 // mongoose.set("debug", true);
@@ -424,7 +424,8 @@ export const setupMongoConnection = async () => {
     await Transaction.syncIndexes()
     await InvoiceUser.syncIndexes()
   } catch (err) {
-    baseLogger.fatal({ err }, `error connecting to mongodb`)
+    baseLogger.fatal({ err, path }, `error connecting to mongodb`)
+    await sleep(100)
     exit(1)
   }
 }
