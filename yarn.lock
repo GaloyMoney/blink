@@ -889,17 +889,17 @@
     exec-sh "^0.3.2"
     minimist "^1.2.0"
 
-"@datastructures-js/heap@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@datastructures-js/heap/-/heap-2.0.0.tgz#581f7fe57a41e089e4f3ebbbee1c9fc6a1b54d39"
-  integrity sha512-LIbt3dAK7v7VPoDQ/hNO3KSlUdPLkO74m1A/c+guKhoBiY1192F2Nt0moHU0wyWw/sUV9zAnw1GPyGsS7401ZQ==
+"@datastructures-js/heap@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@datastructures-js/heap/-/heap-3.0.0.tgz#11eab8015b6b6490800792b758a103d4bca77193"
+  integrity sha512-CoOfZ4DtPQd0DiG9AKub51hwfEemWzkbrJD5EwOfSnEjJpmDI06POVpy63IOdAOLPAo4G18npxJz9WUPF9EvLA==
 
-"@datastructures-js/priority-queue@4.1.2":
-  version "4.1.2"
-  resolved "https://registry.yarnpkg.com/@datastructures-js/priority-queue/-/priority-queue-4.1.2.tgz#e9586caf77bef8228cbf4eceb2c1ee650c1ed0aa"
-  integrity sha512-S4fXJcsPdqEp2bbKZlH7suSiZ0lqmIs8n5BXqQXB+7/lA9LSK/Ng0hIehTjgETfe7n3g4ZVLoyjEUWHEbHJFdQ==
+"@datastructures-js/priority-queue@5.0.0":
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/@datastructures-js/priority-queue/-/priority-queue-5.0.0.tgz#3673f11a82945d5388d71ea1fb18419c78f1a99b"
+  integrity sha512-+hPNA4QsuGfkio0vuqkMTJleQ0YArYWOtTyciy2Vxv6UnmPMaTIqzR75daMwssUOa9CiBOshPU93SC9VKRnUiw==
   dependencies:
-    "@datastructures-js/heap" "^2.0.0"
+    "@datastructures-js/heap" "^3.0.0"
 
 "@firebase/app-types@0.6.1":
   version "0.6.1"
@@ -1019,10 +1019,10 @@
     stream-events "^1.0.1"
     xdg-basedir "^4.0.0"
 
-"@grpc/grpc-js@1.2.0":
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/@grpc/grpc-js/-/grpc-js-1.2.0.tgz#4ff1ac4cdf7eb2af80d3c67316be9c2308d8d9bf"
-  integrity sha512-09H50V7rmz0gFrGz6IbP49z9A8+2p4yZYcNDEb7bytr90vWn52VBQE1a+LMBlrucmNN0wSsiCr3TJx+dStHTng==
+"@grpc/grpc-js@1.2.5":
+  version "1.2.5"
+  resolved "https://registry.yarnpkg.com/@grpc/grpc-js/-/grpc-js-1.2.5.tgz#d1ef9ae8b99c3b46bb6cc8c82be1aa80080b7300"
+  integrity sha512-CBCNwedw8McnEBq9jvoiJikws16WN0OiHFejQPovY71XkFWSiIqgvydYiDwpvIYDJmhPQ7qZNzW9BPndhXbx1Q==
   dependencies:
     "@types/node" "^12.12.47"
     google-auth-library "^6.1.1"
@@ -1038,7 +1038,15 @@
     google-auth-library "^6.0.0"
     semver "^6.2.0"
 
-"@grpc/proto-loader@0.5.5", "@grpc/proto-loader@^0.5.1":
+"@grpc/proto-loader@0.5.6":
+  version "0.5.6"
+  resolved "https://registry.yarnpkg.com/@grpc/proto-loader/-/proto-loader-0.5.6.tgz#1dea4b8a6412b05e2d58514d507137b63a52a98d"
+  integrity sha512-DT14xgw3PSzPxwS13auTEwxhMMOoz33DPUKNtmYK/QYbBSpLXJy78FGGs5yVoxVobEqPm4iW9MOIoz0A3bLTRQ==
+  dependencies:
+    lodash.camelcase "^4.3.0"
+    protobufjs "^6.8.6"
+
+"@grpc/proto-loader@^0.5.1":
   version "0.5.5"
   resolved "https://registry.yarnpkg.com/@grpc/proto-loader/-/proto-loader-0.5.5.tgz#6725e7a1827bdf8e92e29fbf4e9ef0203c0906a9"
   integrity sha512-WwN9jVNdHRQoOBo9FDH7qU+mgfjPc8GygPYms3M+y3fbQLfnCe/Kv/E01t7JRgnrsOHH8euvSbed3mIalXhwqQ==
@@ -1592,6 +1600,11 @@
   version "10.12.18"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-10.12.18.tgz#1d3ca764718915584fcd9f6344621b7672665c67"
   integrity sha512-fh+pAqt4xRzPfqA6eh3Z2y6fyZavRIumvjhaCL753+TVkGKGhpPeyrJG2JftD0T9q4GF00KjefsQ+PQNDdWQaQ==
+
+"@types/node@14.14.22":
+  version "14.14.22"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-14.14.22.tgz#0d29f382472c4ccf3bd96ff0ce47daf5b7b84b18"
+  integrity sha512-g+f/qj/cNcqKkc3tFqlXOYjrmZA+jNBiDzbP3kH+B+otKFqAdPgVTGP1IeKRdMml/aE69as5S4FqtxAbl+LaMw==
 
 "@types/node@^10.1.0", "@types/node@^10.10.0":
   version "10.17.44"
@@ -5481,13 +5494,17 @@ levn@~0.3.0:
     prelude-ls "~1.1.2"
     type-check "~0.3.2"
 
-lightning@3.0.8:
-  version "3.0.8"
-  resolved "https://registry.yarnpkg.com/lightning/-/lightning-3.0.8.tgz#e3856884a2257cae1bc8e3ff683d3ed71e01c560"
-  integrity sha512-vfZ9CIKGZEFTYmOig4ONL9x0BJTSpT/MvkUYQnMxBZd7FgVb2R4j+53+ZXyGTii4T2kOSwqJyUjXhxKbjnvKrg==
+lightning@3.2.1:
+  version "3.2.1"
+  resolved "https://registry.yarnpkg.com/lightning/-/lightning-3.2.1.tgz#835538fac205695f58cf9f3a40970aac76448a41"
+  integrity sha512-ONm6xtTHdG1fhDW8miFJKUeBTkZ8fUJ4NmSB2Bhcu9yIMOau6PWW4EyBvgsH5iythIPL71vDtMsY3KX5v0LKQA==
   dependencies:
-    "@grpc/grpc-js" "1.2.0"
-    "@grpc/proto-loader" "0.5.5"
+    "@grpc/grpc-js" "1.2.5"
+    "@grpc/proto-loader" "0.5.6"
+    "@types/express" "4.17.11"
+    "@types/node" "14.14.22"
+    "@types/request" "2.48.5"
+    "@types/ws" "7.4.0"
     async "3.2.0"
     asyncjs-util "1.2.3"
     bitcoinjs-lib "5.2.0"
@@ -5510,12 +5527,12 @@ liquid-json@0.3.1:
   resolved "https://registry.yarnpkg.com/liquid-json/-/liquid-json-0.3.1.tgz#9155a18136d8a6b2615e5f16f9a2448ab6b50eea"
   integrity sha1-kVWhgTbYprJhXl8W+aJEira1Duo=
 
-ln-service@^50.3.0:
-  version "50.6.0"
-  resolved "https://registry.yarnpkg.com/ln-service/-/ln-service-50.6.0.tgz#9e618207bb9356e45cd34e7877a319cf66d379d4"
-  integrity sha512-qqsvBXj3Vq7UxhTpAABgZZAwP3IldbGV31qzRAR/WkVU9sO6WgMoQ8uY1DKEWqA7im1KMTvoIHNKtGeLrmp8/g==
+ln-service@^50.11.4:
+  version "50.11.4"
+  resolved "https://registry.yarnpkg.com/ln-service/-/ln-service-50.11.4.tgz#91f992afeb25f9afaf81a9984797b0af754da0b5"
+  integrity sha512-dlLYgcFxEboiJ6o4e/D1tdBz9sREexGCHrrBpV4nN2lOnfWnTSgANcixcGjAHaCOeYJYNOSbuEX+Moeds/0dXQ==
   dependencies:
-    "@datastructures-js/priority-queue" "4.1.2"
+    "@datastructures-js/priority-queue" "5.0.0"
     async "3.2.0"
     asyncjs-util "1.2.3"
     bitcoinjs-lib "5.2.0"
@@ -5526,7 +5543,7 @@ ln-service@^50.3.0:
     express "4.17.1"
     invoices "1.1.4"
     is-base64 "1.1.0"
-    lightning "3.0.8"
+    lightning "3.2.1"
     macaroon "3.0.4"
     morgan "1.10.0"
     ws "7.4.0"
