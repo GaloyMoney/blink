@@ -135,7 +135,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     return request
   }
 
-  async getLightningFee(params: IFeeRequest): Promise<Number | Error> {
+  async getLightningFee(params: IFeeRequest): Promise<Number> {
 
     // TODO:
     // we should also log the fact we have started the query
@@ -151,8 +151,15 @@ export const LightningMixin = (superclass) => class extends superclass {
     // TODO: if this is a node we are connected with, we may not even need a probe/round trip to redis
     // we could handle this from the front end directly.
 
-    const { mtokens, max_fee, destination, id, routeHint, messages, cltv_delta, features } = await this.validate(params, this.logger)
-    const lightningLogger = this.logger.child({ topic: "fee_estimation", protocol: "lightning", params, decoded: { mtokens, max_fee, destination, id, routeHint, messages, cltv_delta, features } })
+    const { mtokens, max_fee, destination, id, routeHint, messages, cltv_delta, features, payment } = 
+      await this.validate(params, this.logger)
+
+    const lightningLogger = this.logger.child({ 
+      topic: "fee_estimation",
+      protocol: "lightning",
+      params, 
+      decoded: { mtokens, max_fee, destination, id, routeHint, messages, cltv_delta, features, payment }
+    })
 
     const key = JSON.stringify({ id, mtokens })
 
@@ -163,8 +170,10 @@ export const LightningMixin = (superclass) => class extends superclass {
     }
 
 
-    // --> this should not happen as this is managed also in within RN
+    // safety check
+    // this should not happen as this check is done within RN
     if (destination === await this.getNodePubkey()) {
+      lightningLogger.warn("probe for self")
       return 0
     }
 
@@ -172,11 +181,16 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     try {
       ({ route } = await lnService.probeForRoute({
-        lnd: this.lnd, destination, mtokens, routes: routeHint, cltv_delta, features, max_fee, messages,
-
-        // FIXME: this fails for push payment. not adding this for now.
-        // payment, total_mtokens: mtokens,
-
+        lnd: this.lnd, 
+        destination, 
+        mtokens, 
+        routes: routeHint,
+        cltv_delta,
+        features,
+        max_fee,
+        messages,
+        payment,
+        total_mtokens: payment ? mtokens : undefined,
       }));
     } catch (err) {
       const error = "error getting route / probing for route"
@@ -199,8 +213,9 @@ export const LightningMixin = (superclass) => class extends superclass {
     return route.fee
   }
 
+  // FIXME this should be static
   async validate(params: IFeeRequest, lightningLogger) {
-
+  
     const keySendPreimageType = '5482373484';
     const preimageByteLength = 32;
 
@@ -506,6 +521,7 @@ export const LightningMixin = (superclass) => class extends superclass {
               max_fee,
               messages,
               mtokens,
+              payment,
               routes: routeHint,
             })
           }
