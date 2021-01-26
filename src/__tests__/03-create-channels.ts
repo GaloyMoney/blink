@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-import { AdminWallet } from "../AdminWallet";
+import { Cron } from "../CronClass";
 import { lndFee } from "../ledger";
 import { MainBook, setupMongoConnection } from "../mongodb";
 import { checkIsBalanced, lndMain, lndOutside1, lndOutside2, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
@@ -15,7 +15,7 @@ const lnService = require('ln-service')
 const local_tokens = 1000000
 
 let initBlockCount
-let adminWallet
+let cron
 let channelLengthMain, channelLengthOutside1
 
 
@@ -23,7 +23,7 @@ beforeAll(async () => {
   await setupMongoConnection()
   mockGetExchangeBalance()
 
-  adminWallet = new AdminWallet()
+  cron = new Cron()
 
   channelLengthMain = (await lnService.getChannels({ lnd: lndMain })).channels.length
   channelLengthOutside1 = (await lnService.getChannels({ lnd: lndOutside1 })).channels.length
@@ -84,7 +84,7 @@ const openChannel = async ({ lnd, other_lnd, socket, is_private = false }) => {
 
 
   await sleep(5000)
-  await adminWallet.updateEscrows()
+  await cron.updateEscrows()
   sub.removeAllListeners()
 }
 
@@ -180,11 +180,11 @@ it('returns correct nodeStats', async () => {
 })
 
 it('escrow update 1', async () => {
-  await adminWallet.updateEscrows()
+  await cron.updateEscrows()
   await checkIsBalanced()
 })
 
 it('escrow update 2', async () => {
-  await adminWallet.updateEscrows()
+  await cron.updateEscrows()
   await checkIsBalanced()
 })

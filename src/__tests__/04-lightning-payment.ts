@@ -2,7 +2,7 @@
  * @jest-environment node
  */
 import { createHash, randomBytes } from 'crypto';
-import { AdminWallet } from "../AdminWallet";
+import { Cron } from "../CronClass";
 import { FEECAP } from "../Lightning";
 import { quit } from "../lock";
 import { InvoiceUser, setupMongoConnection, Transaction } from "../mongodb";
@@ -237,8 +237,8 @@ functionToTests.forEach(({fn, name, initialFee}) => {
     
     if (process.env.CASHBACK) {
       const tx_count = await Transaction.countDocuments()
-      const adminWallet = new AdminWallet()
-      await adminWallet.payCashBack()
+      const cron = new Cron()
+      await cron.payCashBack()
       expect(await Transaction.countDocuments()).toBe(tx_count + 4)
     }
 
