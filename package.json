@@ -46,7 +46,7 @@
     "graphql-yoga": "^1.18.3",
     "invoices": "https://github.com/nicolasburtey/invoices#master",
     "jsonwebtoken": "^8.5.1",
-    "ln-service": "^50.3.0",
+    "ln-service": "^50.11.4",
     "lodash": "^4.17.20",
     "medici": "^4.0.1",
     "moment": "^2.29.1",
