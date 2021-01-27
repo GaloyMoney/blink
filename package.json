@@ -18,7 +18,7 @@
     "test-local": "yarn use-minikube && source exportLocal.sh && yarn jest --runInBand --verbose $TEST | pino-pretty -c -l",
     "test-cloud": ". ../../../infra/exportCloudDevnet.sh && yarn jest --runInBand --verbose $TEST | pino-pretty -c -l | pino-pretty -c -l",
     "watch-devnet": ". ../../../infra/exportCloudDevnet.sh && nodemon -V -e ts,graphql -w ./src -x yarn ts-node src/index.ts | pino-pretty -c -l",
-    "prometheus": "source exportLocal.sh && ts-node src/prometheus.ts",
+    "prometheus": "source exportLocal.sh && ts-node src/exporter.ts",
     "lnd-connection": "source exportLocal.sh && echo $MACAROON | base64 -d > ./macaroon && echo $TLS | base64 -d > ./tls.cert && lncli --network regtest --macaroonpath=./macaroon --tlscertpath=./tls.cert --rpcserver=${LNDIP}:${LNDRPCPORT} getinfo",
     "postman": "yarn node src/postman/newman.ts",
     "bitcoin-cli": "kubectl exec bitcoind-container-0 -- bitcoin-cli -rpcuser=rpcuser -rpcpassword=rpcpass -chain=regtest",
