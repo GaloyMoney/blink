@@ -89,7 +89,7 @@ export class SpecterWallet extends OnChainMixin(UserWallet) {
     await MainBook.entry()
       .debit(this.accountPath, sats + fee, {...metadata, memo })
       .credit(lndFee, fee, {...metadata, memo })
-      .credit(bitcoindAccountingPath, sats, {...metadata, memo })
+      .credit(bitcoindAccountingPath(this.wallet), sats, {...metadata, memo })
       .commit()
 
     try {
@@ -133,7 +133,7 @@ export class SpecterWallet extends OnChainMixin(UserWallet) {
 
       await MainBook.entry()
       .debit(lndAccountingPath, sats, {...metadata, memo })
-      .credit(bitcoindAccountingPath, sats, {...metadata, memo })
+      .credit(bitcoindAccountingPath(this.wallet), sats, {...metadata, memo })
       .commit()
 
       subLogger.info({withdrawalResult}, `rebalancing withdrawal was succesful`)

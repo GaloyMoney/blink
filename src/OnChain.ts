@@ -37,7 +37,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
     return User.findOne({ onchain_addresses: { $in: address } })
   }
 
-  async getOnchainFee({address}: {address: string}): Promise<number | Error> {
+  async getOnchainFee({address}: {address: string}): Promise<number> {
     const payeeUser = await this.tentativelyGetPayeeUser({address})
 
     let fee
