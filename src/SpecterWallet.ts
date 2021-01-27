@@ -1,11 +1,10 @@
-import { bitcoindAccountingPath, customerPath, lightningAccountingPath, lndFee } from "./ledger";
+import { bitcoindAccountingPath, customerPath, lndAccountingPath, lndFee } from "./ledger";
 import { MainBook } from "./mongodb";
 import { OnChainMixin } from "./OnChain";
 import { BitcoindClient, btc2sat, getAuth, sat2btc } from "./utils";
 import { UserWallet } from "./wallet";
 
 export class SpecterWallet extends OnChainMixin(UserWallet) {
-  readonly currency = "BTC"
   bitcoindClient 
   wallet = "coldstorage"
 
@@ -13,8 +12,8 @@ export class SpecterWallet extends OnChainMixin(UserWallet) {
     return customerPath(this.uid)
   }
 
-  constructor({ uid, user, logger, lastPrice }) {
-    super({ uid, user, logger, currency: "BTC", lastPrice })
+  constructor({ user, logger }) {
+    super({ user, logger })
     this.logger = logger.child({ topic: "bitcoind" })
 
     this.bitcoindClient = BitcoindClient({wallet: this.wallet})
@@ -59,7 +58,7 @@ export class SpecterWallet extends OnChainMixin(UserWallet) {
   }
 
   async toColdStorage({ sats }) {
-    const currency = this.currency
+    const currency = "BTC"
 
     const address = await this.createDepositAddress()
 
@@ -72,14 +71,14 @@ export class SpecterWallet extends OnChainMixin(UserWallet) {
     // FIXME: fee are an estimate. may not be what is actually paid
     const { fee } = await lnService.getChainFeeEstimate({ lnd, send_to: [{ address, tokens: sats }] })
 
-    const metadata = { type: "to_cold_storage", currency, ...this.getCurrencyEquivalent({sats, fee}), pending: false }
+    const metadata = { type: "to_cold_storage", currency, ...UserWallet.getCurrencyEquivalent({sats, fee}), pending: false }
     
     const memo = `deposit of ${sats} sats to the cold storage wallet`
 
     // onChainPay is doing:
     //
     // await MainBook.entry(memo)
-    // .debit(lightningAccountingPath, sats + fee, metadata)
+    // .debit(lndAccountingPath, sats + fee, metadata)
     // .credit(this.accountPath, sats + fee, metadata)
     // .commit()
     //
@@ -103,9 +102,9 @@ export class SpecterWallet extends OnChainMixin(UserWallet) {
   }
 
   async toLndWallet ({ sats }) {
-    const currency = this.currency
+    const currency = "BTC"
 
-    const metadata = { type: "to_hot_wallet", currency, ...this.getCurrencyEquivalent({sats, fee: 0}), pending: false }
+    const metadata = { type: "to_hot_wallet", currency, ...UserWallet.getCurrencyEquivalent({sats, fee: 0}), pending: false }
     let subLogger = this.logger.child({...metadata, currency, sats })
 
     const memo = `withdrawal of ${sats} sats from ${this.wallet} bitcoind wallet`
@@ -133,7 +132,7 @@ export class SpecterWallet extends OnChainMixin(UserWallet) {
     if (success) {
 
       await MainBook.entry()
-      .debit(lightningAccountingPath, sats, {...metadata, memo })
+      .debit(lndAccountingPath, sats, {...metadata, memo })
       .credit(bitcoindAccountingPath, sats, {...metadata, memo })
       .commit()
 
@@ -143,5 +142,5 @@ export class SpecterWallet extends OnChainMixin(UserWallet) {
       subLogger.error({withdrawalResult}, `rebalancing withdrawal was not succesful`)
     }
 
-  } 
+  }
 }

@@ -195,7 +195,7 @@ UserSchema.statics.getActiveUsers = async function (): Promise<Array<typeof User
   const users = await this.find({})
   const activeUsers: Array<typeof User> = []
   for (const user of users) {
-    const userWallet = await WalletFactory({ user, uid: user._id, currency: user.currency, logger: baseLogger })
+    const userWallet = await WalletFactory({ user, logger: baseLogger })
     if (await userWallet.isUserActive()) {
       activeUsers.push(user)
     }

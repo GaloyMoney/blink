@@ -6,7 +6,7 @@ import { setupMongoConnection } from "../mongodb";
 import { Price } from "../priceImpl";
 import { checkIsBalanced, getUserWallet, lndOutside1, mockGetExchangeBalance } from "../tests/helper";
 import { baseLogger } from "../utils";
-import { UserWallet } from "../wallet";
+// import { UserWallet } from "../wallet";
 
 
 const lnService = require('ln-service')
@@ -17,7 +17,7 @@ let userWallet2, initBalance2
 let lastPrice
 
 const satPrice = 1/10000
-UserWallet.setCurrentPrice(satPrice) // sats/USD. BTC at 10k
+// UserWallet.setCurrentPrice(satPrice) // sats/USD. BTC at 10k
 
 // const amountInvoiceUsd = 50
 const amountInvoiceReceive = 10000

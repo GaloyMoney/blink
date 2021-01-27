@@ -8,6 +8,7 @@ import { MainBook, setupMongoConnection, User } from "../mongodb";
 import { checkIsBalanced, mockGetExchangeBalance, RANDOM_ADDRESS } from "../tests/helper";
 import { baseLogger, bitcoindDefaultClient, getAuth, sleep } from "../utils";
 import { getTokenFromPhoneIndex } from "../walletFactory";
+import { UserWallet } from "../wallet";
 const lnService = require('ln-service');
 
 const mongoose = require("mongoose");
@@ -28,13 +29,11 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   // initBlockCount = await bitcoindDefaultClient.getBlockCount()
-  const lastPrice = await getLastPrice()
+  UserWallet.setCurrentPrice(10000)
 
-  // FIXME: define a proper user for this after merge with usd/btc branch
   const token = await getTokenFromPhoneIndex(11)
   const user = await User.findOne({_id: token.uid})
-  
-  specterWallet = new SpecterWallet({ uid: user._id, user: new User(), logger: baseLogger, lastPrice })
+  specterWallet = new SpecterWallet({ user, logger: baseLogger })
 })
 
 afterEach(async () => {

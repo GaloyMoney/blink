@@ -14,7 +14,7 @@ export const sendBalanceToUsers = async () => {
 
   const users = await User.find({})
   for (const user of users) {
-    const userWallet = await WalletFactory({ user, uid: user._id, currency: user.currency, logger })
+    const userWallet = await WalletFactory({ user, logger })
     if (await userWallet.isUserActive()) {
       await userWallet.sendBalance()
     }
