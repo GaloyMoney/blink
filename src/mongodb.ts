@@ -1,5 +1,7 @@
 import { exit } from "process"
 import { baseLogger, sleep } from "./utils"
+import { find, sumBy } from "lodash";
+import { customerPath } from "./ledger";
 
 const mongoose = require("mongoose");
 // mongoose.set("debug", true);
@@ -177,6 +179,22 @@ UserSchema.virtual('accountPath').get(function (this: typeof UserSchema) {
   return customerPath(this._id)
 })
 
+// user is considered active if there has been one transaction of more than 1000 sats in the last 30 days
+UserSchema.virtual('userIsActive').get(async function (this: typeof UserSchema) {
+  const timestamp30DaysAgo = new Date(Date.now() - (30 * 24 * 60 * 60 * 1000))
+  const [result] = await Transaction.aggregate([
+    { $match: { "accounts": this.accountPath, "timestamp": { $gte: timestamp30DaysAgo } } },
+    {
+      $group: {
+        _id: null, outgoingSats: { $sum: "$credit" }, incomingSats: { $sum: "$debit" }
+      }
+    }
+  ])
+  const { incomingSats, outgoingSats } = result || {}
+
+  return (outgoingSats > 1000 || incomingSats > 1000)
+})
+
 UserSchema.index({
   title: 1,
   coordinate: 1,
@@ -195,8 +213,7 @@ UserSchema.statics.getActiveUsers = async function (): Promise<Array<typeof User
   const users = await this.find({})
   const activeUsers: Array<typeof User> = []
   for (const user of users) {
-    const userWallet = await WalletFactory({ user, logger: baseLogger })
-    if (await userWallet.isUserActive()) {
+    if (await user.userIsActive) {
       activeUsers.push(user)
     }
   }
@@ -465,10 +482,9 @@ export const setupMongoConnection = async () => {
   return mongoose
 }
 
+
+// we have to import medici after Medici_Transaction
 import { book } from "medici";
-import { find, sumBy } from "lodash";
-import { customerPath } from "./ledger";
-import { WalletFactory } from "./walletFactory";
 export const MainBook = new book("MainBook")
 
 

@@ -193,22 +193,7 @@ export abstract class UserWallet {
     return usdValue
   }
 
-  isUserActive = async (): Promise<boolean> => {
-    const timestamp30DaysAgo = new Date(Date.now() - (30 * 24 * 60 * 60 * 1000))
-    const [result] = await Transaction.aggregate([
-      { $match: { "accounts": this.accountPath, "timestamp": { $gte: timestamp30DaysAgo } } },
-      {
-        $group: {
-          _id: null, outgoingSats: { $sum: "$credit" }, incomingSats: { $sum: "$debit" }
-        }
-      }
-    ])
-    const { incomingSats, outgoingSats } = result || {}
-
-    return (outgoingSats > 1000 || incomingSats > 1000)
-  }
-
-  sendBalance = async () => {
+  sendBalance = async (): Promise<void> => {
     const {BTC: balanceSats} = await this.getBalances()
 
     // Add commas to balancesats

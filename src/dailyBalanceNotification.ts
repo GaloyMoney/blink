@@ -11,16 +11,11 @@ const main = async () => {
 }
 
 export const sendBalanceToUsers = async () => {
+  const users = await User.getActiveUsers({})
 
-  const users = await User.find({})
   for (const user of users) {
     const userWallet = await WalletFactory({ user, logger })
-    if (await userWallet.isUserActive()) {
-      await userWallet.sendBalance()
-    }
-    else {
-      logger.info({ uid: user._id }, 'not sending daily balance notification to inactive user')
-    }
+    await userWallet.sendBalance()
   }
 }
 
