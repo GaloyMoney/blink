@@ -126,21 +126,7 @@ jobs:
             kubectl --namespace=mainnet wait --for=condition=complete --timeout=60s job/$JOB_DATE
             kubectl --namespace=mainnet delete job/$JOB_DATE
             cd ~/GaloyApp/backend/firebase/functions/ && ./initLocalTest.sh mainnet
-               
-  build_lnpage:
-    working_directory: ~/GaloyApp/lnpage
-    machine: true
-    steps:
-      - checkout:
-          path: ~/GaloyApp
-      - gcp-gcr/build-image:
-          image: lnpage
-          tag: $CIRCLE_SHA1
-      - gcp-gcr/gcr-auth
-      - gcp-gcr/push-image:
-          image: lnpage
-          tag: $CIRCLE_SHA1
-
+      
   update_lnpage:
     working_directory: ~/GaloyApp/infra
     docker:
@@ -157,20 +143,17 @@ jobs:
 
 
 workflows:
-  build_and_update_lnpage:
+  update_lnpage:
     jobs:
-      - hold_build_lnpage:
+      - hold_update_lnpage:
           type: approval
           # filters:
           #   branches:
           #     only:
           #       - master
-      - build_lnpage:
-          requires:
-            - hold_build_lnpage
       - update_lnpage:
           requires:
-            - build_lnpage
+            - hold_update_lnpage
   kube:
     jobs:
       - build_test_image
