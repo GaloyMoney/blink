@@ -145,7 +145,7 @@ jobs:
 workflows:
   update_lnpage:
     jobs:
-      - hold_build_lnpage:
+      - hold_update_lnpage:
           type: approval
           # filters:
           #   branches:
@@ -153,7 +153,7 @@ workflows:
           #       - master
       - update_lnpage:
           requires:
-            - build_lnpage
+            - hold_update_lnpage
   kube:
     jobs:
       - build_test_image
