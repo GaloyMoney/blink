@@ -39,7 +39,7 @@ export const getUserWallet = async userNumber => {
 export const checkIsBalanced = async () => {
 	const cron = new Cron()
   await cron.updateUsersPendingPayment()
-  const { assetsLiabilitiesDifference, bookingVersusRealWorldAssets } = await cron.balanceSheetIsBalanced()
+  const { assetsLiabilitiesDifference, bookingVersusRealWorldAssets } = await cron.balanceSheetReconciliation()
 	expect(assetsLiabilitiesDifference).toBeFalsy() // should be 0
   
   // FIXME: because safe_fees is doing rounding to the value up

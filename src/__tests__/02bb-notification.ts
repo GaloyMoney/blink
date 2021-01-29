@@ -27,8 +27,8 @@ it('sends daily balance notification', async () => {
   expect(sendNotification.mock.calls.length).toBe(numActiveUsers)
   for (const [call] of sendNotification.mock.calls) {    
     const { balance } = await MainBook.balance({ accounts: customerPath(call.user._id) })
-    const expectedUsdBalance = (price * -balance).toLocaleString("en", { maximumFractionDigits: 2 })
-    const expectedSatsBalance = (-balance).toLocaleString("en", { maximumFractionDigits: 2 })
+    const expectedUsdBalance = (price * balance).toLocaleString("en", { maximumFractionDigits: 2 })
+    const expectedSatsBalance = balance.toLocaleString("en", { maximumFractionDigits: 2 })
     expect(call.title).toBe(`Your balance today is \$${expectedUsdBalance} (${expectedSatsBalance} sats)`)
   }
 })

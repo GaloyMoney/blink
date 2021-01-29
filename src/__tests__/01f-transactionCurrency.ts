@@ -60,8 +60,8 @@ describe('receipt', () => {
       sats: 1000,
     })
   
-    await expectBalance({account: walletBTC.accountPath, currency: "BTC", balance: -1000})
-    await expectBalance({account: lndAccountingPath, currency: "BTC", balance: 1000})
+    await expectBalance({account: walletBTC.accountPath, currency: "BTC", balance: 1000})
+    await expectBalance({account: lndAccountingPath, currency: "BTC", balance: -1000})
   })
 
   it('usd receipt to lnd', async () => {
@@ -74,11 +74,11 @@ describe('receipt', () => {
     })
   
     await expectBalance({account: walletUSD.accountPath, currency: "BTC", balance: 0})
-    await expectBalance({account: brokerPath, currency: "BTC", balance: -1000})
-    await expectBalance({account: lndAccountingPath, currency: "BTC", balance: 1000})
+    await expectBalance({account: brokerPath, currency: "BTC", balance: 1000})
+    await expectBalance({account: lndAccountingPath, currency: "BTC", balance: -1000})
 
-    await expectBalance({account: walletUSD.accountPath, currency: "USD", balance: -0.10})
-    await expectBalance({account: brokerPath, currency: "USD", balance: 0.10})
+    await expectBalance({account: walletUSD.accountPath, currency: "USD", balance: 0.10})
+    await expectBalance({account: brokerPath, currency: "USD", balance: -0.10})
   })
 
   it('50/50 usd/btc receipt to lnd', async () => {
@@ -90,12 +90,12 @@ describe('receipt', () => {
       sats: 1000,
     })
   
-    await expectBalance({account: wallet5050.accountPath, currency: "BTC", balance: -500})
-    await expectBalance({account: brokerPath, currency: "BTC", balance: -500})
-    await expectBalance({account: lndAccountingPath, currency: "BTC", balance: 1000})
+    await expectBalance({account: wallet5050.accountPath, currency: "BTC", balance: 500})
+    await expectBalance({account: brokerPath, currency: "BTC", balance: 500})
+    await expectBalance({account: lndAccountingPath, currency: "BTC", balance: -1000})
 
-    await expectBalance({account: wallet5050.accountPath, currency: "USD", balance: -0.05})
-    await expectBalance({account: brokerPath, currency: "USD", balance: 0.05})
+    await expectBalance({account: wallet5050.accountPath, currency: "USD", balance: 0.05})
+    await expectBalance({account: brokerPath, currency: "USD", balance: -0.05})
   })
 })
 
@@ -113,8 +113,8 @@ describe('payment with lnd', () => {
       metadata: {type: "payment", pending: true}
     })
   
-    await expectBalance({account: walletBTC.accountPath, currency: "BTC", balance: 1000})
-    await expectBalance({account: lndAccountingPath, currency: "BTC", balance: -1000})
+    await expectBalance({account: walletBTC.accountPath, currency: "BTC", balance: -1000})
+    await expectBalance({account: lndAccountingPath, currency: "BTC", balance: 1000})
   })
 
   it('btcSendFromUsdOnLightning', async () => {
@@ -126,11 +126,11 @@ describe('payment with lnd', () => {
       metadata: {type: "payment", pending: true}
     })
   
-    await expectBalance({account: brokerPath, currency: "BTC", balance: 1000})
-    await expectBalance({account: lndAccountingPath, currency: "BTC", balance: -1000})
+    await expectBalance({account: brokerPath, currency: "BTC", balance: -1000})
+    await expectBalance({account: lndAccountingPath, currency: "BTC", balance: 1000})
 
-    await expectBalance({account: brokerPath, currency: "USD", balance: - 0.1})
-    await expectBalance({account: walletUSD.accountPath, currency: "USD", balance: 0.1})
+    await expectBalance({account: brokerPath, currency: "USD", balance: 0.1})
+    await expectBalance({account: walletUSD.accountPath, currency: "USD", balance: -0.1})
   })
 
   it('btcSend5050', async () => {
@@ -142,13 +142,13 @@ describe('payment with lnd', () => {
       metadata: {type: "payment", pending: true}
     })
   
-    await expectBalance({account: brokerPath, currency: "BTC", balance: 500})
-    await expectBalance({account: wallet5050.accountPath, currency: "BTC", balance: 500})
+    await expectBalance({account: brokerPath, currency: "BTC", balance: -500})
+    await expectBalance({account: wallet5050.accountPath, currency: "BTC", balance: -500})
 
-    await expectBalance({account: lndAccountingPath, currency: "BTC", balance: -1000})
+    await expectBalance({account: lndAccountingPath, currency: "BTC", balance: 1000})
 
-    await expectBalance({account: brokerPath, currency: "USD", balance: - 0.05})
-    await expectBalance({account: wallet5050.accountPath, currency: "USD", balance: 0.05})
+    await expectBalance({account: brokerPath, currency: "USD", balance: 0.05})
+    await expectBalance({account: wallet5050.accountPath, currency: "USD", balance: -0.05})
   })
 
 })
@@ -170,8 +170,8 @@ describe('on us payment', () => {
       memoPayer: null
     })
   
-    await expectBalance({account: payer.accountPath, currency: "BTC", balance: 1000})
-    await expectBalance({account: payee.accountPath, currency: "BTC", balance: -1000})
+    await expectBalance({account: payer.accountPath, currency: "BTC", balance: -1000})
+    await expectBalance({account: payee.accountPath, currency: "BTC", balance: 1000})
     await expectBalance({account: payer.accountPath, currency: "USD", balance: 0})
     await expectBalance({account: payee.accountPath, currency: "USD", balance: 0})
   })
@@ -190,8 +190,8 @@ describe('on us payment', () => {
       memoPayer: null
     })
   
-    await expectBalance({account: payer.accountPath, currency: "USD", balance: 0.1})
-    await expectBalance({account: payee.accountPath, currency: "USD", balance: -0.1})
+    await expectBalance({account: payer.accountPath, currency: "USD", balance: -0.1})
+    await expectBalance({account: payee.accountPath, currency: "USD", balance: 0.1})
     await expectBalance({account: payer.accountPath, currency: "BTC", balance: 0})
     await expectBalance({account: payee.accountPath, currency: "BTC", balance: 0})
   })
@@ -210,13 +210,13 @@ describe('on us payment', () => {
       memoPayer: null
     })
   
-    await expectBalance({account: payer.accountPath, currency: "BTC", balance: 1000})
-    await expectBalance({account: brokerPath, currency: "BTC", balance: -1000})
+    await expectBalance({account: payer.accountPath, currency: "BTC", balance: -1000})
+    await expectBalance({account: brokerPath, currency: "BTC", balance: 1000})
     await expectBalance({account: payee.accountPath, currency: "BTC", balance: 0})
     
     await expectBalance({account: payer.accountPath, currency: "USD", balance: 0})
-    await expectBalance({account: brokerPath, currency: "USD", balance: 0.1})
-    await expectBalance({account: payee.accountPath, currency: "USD", balance: -0.1})
+    await expectBalance({account: brokerPath, currency: "USD", balance: -0.1})
+    await expectBalance({account: payee.accountPath, currency: "USD", balance: 0.1})
   })
 
   it('onUsBtcTo5050', async () => {
@@ -233,13 +233,13 @@ describe('on us payment', () => {
       memoPayer: null
     })
   
-    await expectBalance({account: payer.accountPath, currency: "BTC", balance: 1000})
-    await expectBalance({account: brokerPath, currency: "BTC", balance: -500})
-    await expectBalance({account: payee.accountPath, currency: "BTC", balance: -500})
+    await expectBalance({account: payer.accountPath, currency: "BTC", balance: -1000})
+    await expectBalance({account: brokerPath, currency: "BTC", balance: 500})
+    await expectBalance({account: payee.accountPath, currency: "BTC", balance: 500})
     await expectBalance({account: payer.accountPath, currency: "USD", balance: 0})
     
-    await expectBalance({account: brokerPath, currency: "USD", balance: 0.05})
-    await expectBalance({account: payee.accountPath, currency: "USD", balance: -0.05})
+    await expectBalance({account: brokerPath, currency: "USD", balance: -0.05})
+    await expectBalance({account: payee.accountPath, currency: "USD", balance: 0.05})
   })
 
   it('onUs5050ToBtc', async () => {
@@ -256,13 +256,13 @@ describe('on us payment', () => {
       memoPayer: null
     })
   
-    await expectBalance({account: payer.accountPath, currency: "BTC", balance: 500})
+    await expectBalance({account: payer.accountPath, currency: "BTC", balance: -500})
 
-    await expectBalance({account: payer.accountPath, currency: "USD", balance: 0.05})
-    await expectBalance({account: brokerPath, currency: "USD", balance: -0.05})
-    await expectBalance({account: brokerPath, currency: "BTC", balance: 500})
+    await expectBalance({account: payer.accountPath, currency: "USD", balance: -0.05})
+    await expectBalance({account: brokerPath, currency: "USD", balance: 0.05})
+    await expectBalance({account: brokerPath, currency: "BTC", balance: -500})
 
-    await expectBalance({account: payee.accountPath, currency: "BTC", balance: -1000})
+    await expectBalance({account: payee.accountPath, currency: "BTC", balance: 1000})
     await expectBalance({account: payee.accountPath, currency: "USD", balance: 0})
   })
 
@@ -282,13 +282,13 @@ describe('on us payment', () => {
     })
   
     await expectBalance({account: payer.accountPath, currency: "BTC", balance: 0})
-    await expectBalance({account: payer.accountPath, currency: "USD", balance: 0.1})
+    await expectBalance({account: payer.accountPath, currency: "USD", balance: -0.1})
 
-    await expectBalance({account: brokerPath, currency: "USD", balance: -0.05})
-    await expectBalance({account: brokerPath, currency: "BTC", balance: 500})
+    await expectBalance({account: brokerPath, currency: "USD", balance: 0.05})
+    await expectBalance({account: brokerPath, currency: "BTC", balance: -500})
 
-    await expectBalance({account: payee.accountPath, currency: "BTC", balance: -500})
-    await expectBalance({account: payee.accountPath, currency: "USD", balance: -0.05})
+    await expectBalance({account: payee.accountPath, currency: "BTC", balance: 500})
+    await expectBalance({account: payee.accountPath, currency: "USD", balance: 0.05})
   })
 
 
@@ -306,14 +306,14 @@ describe('on us payment', () => {
       memoPayer: null
     })
   
-    await expectBalance({account: payer.accountPath, currency: "BTC", balance: 500})
-    await expectBalance({account: payer.accountPath, currency: "USD", balance: 0.05})
+    await expectBalance({account: payer.accountPath, currency: "BTC", balance: -500})
+    await expectBalance({account: payer.accountPath, currency: "USD", balance: -0.05})
 
-    await expectBalance({account: brokerPath, currency: "USD", balance: 0.05})
-    await expectBalance({account: brokerPath, currency: "BTC", balance: -500})
+    await expectBalance({account: brokerPath, currency: "USD", balance: -0.05})
+    await expectBalance({account: brokerPath, currency: "BTC", balance: 500})
 
     await expectBalance({account: payee.accountPath, currency: "BTC", balance: 0})
-    await expectBalance({account: payee.accountPath, currency: "USD", balance: -0.1})
+    await expectBalance({account: payee.accountPath, currency: "USD", balance: 0.1})
   })
 
 })
@@ -331,8 +331,8 @@ describe('rebalancePortfolio', () => {
       sats: 1000,
     })
 
-    await expectBalance({account: wallet.user.accountPath, currency: "BTC", balance: -1000})
-    await expectBalance({account: lndAccountingPath, currency: "BTC", balance: 1000})
+    await expectBalance({account: wallet.user.accountPath, currency: "BTC", balance: 1000})
+    await expectBalance({account: lndAccountingPath, currency: "BTC", balance: -1000})
 
     await rebalancePortfolio({
       description: "rebalancePortfolio",
@@ -340,8 +340,8 @@ describe('rebalancePortfolio', () => {
       wallet,
     })
 
-    await expectBalance({account: wallet.user.accountPath, currency: "BTC", balance: -1000})
-    await expectBalance({account: lndAccountingPath, currency: "BTC", balance: 1000})
+    await expectBalance({account: wallet.user.accountPath, currency: "BTC", balance: 1000})
+    await expectBalance({account: lndAccountingPath, currency: "BTC", balance: -1000})
 
   })
 
@@ -356,8 +356,8 @@ describe('rebalancePortfolio', () => {
       sats: 1000,
     })
 
-    await expectBalance({account: wallet.user.accountPath, currency: "BTC", balance: -1000})
-    await expectBalance({account: lndAccountingPath, currency: "BTC", balance: 1000})
+    await expectBalance({account: wallet.user.accountPath, currency: "BTC", balance: 1000})
+    await expectBalance({account: lndAccountingPath, currency: "BTC", balance: -1000})
 
     wallet.user.currencies = _5050meta.currencies
     const error = wallet.user.validateSync()
@@ -369,12 +369,12 @@ describe('rebalancePortfolio', () => {
       wallet,
     })
 
-    await expectBalance({account: wallet.user.accountPath, currency: "BTC", balance: -500})
-    await expectBalance({account: wallet.user.accountPath, currency: "USD", balance: -0.05})
+    await expectBalance({account: wallet.user.accountPath, currency: "BTC", balance: 500})
+    await expectBalance({account: wallet.user.accountPath, currency: "USD", balance: 0.05})
 
-    await expectBalance({account: brokerPath, currency: "BTC", balance: -500})
-    await expectBalance({account: brokerPath, currency: "USD", balance: 0.05})
-    await expectBalance({account: lndAccountingPath, currency: "BTC", balance: 1000})
+    await expectBalance({account: brokerPath, currency: "BTC", balance: 500})
+    await expectBalance({account: brokerPath, currency: "USD", balance: -0.05})
+    await expectBalance({account: lndAccountingPath, currency: "BTC", balance: -1000})
 
   })
 
@@ -390,11 +390,11 @@ describe('rebalancePortfolio', () => {
     })
 
     await expectBalance({account: wallet.user.accountPath, currency: "BTC", balance: 0})
-    await expectBalance({account: brokerPath, currency: "BTC", balance: -1000})
-    await expectBalance({account: lndAccountingPath, currency: "BTC", balance: 1000})
+    await expectBalance({account: brokerPath, currency: "BTC", balance: 1000})
+    await expectBalance({account: lndAccountingPath, currency: "BTC", balance: -1000})
 
-    await expectBalance({account: wallet.user.accountPath, currency: "USD", balance: -0.10})
-    await expectBalance({account: brokerPath, currency: "USD", balance: 0.10})
+    await expectBalance({account: wallet.user.accountPath, currency: "USD", balance: 0.10})
+    await expectBalance({account: brokerPath, currency: "USD", balance: -0.10})
 
     wallet.user.currencies = _5050meta.currencies
     const error = wallet.user.validateSync()
@@ -406,12 +406,12 @@ describe('rebalancePortfolio', () => {
       wallet,
     })
 
-    await expectBalance({account: wallet.user.accountPath, currency: "BTC", balance: -500})
-    await expectBalance({account: wallet.user.accountPath, currency: "USD", balance: -0.05})
+    await expectBalance({account: wallet.user.accountPath, currency: "BTC", balance: 500})
+    await expectBalance({account: wallet.user.accountPath, currency: "USD", balance: 0.05})
 
-    await expectBalance({account: brokerPath, currency: "BTC", balance: -500})
-    await expectBalance({account: brokerPath, currency: "USD", balance: 0.05})
-    await expectBalance({account: lndAccountingPath, currency: "BTC", balance: 1000})
+    await expectBalance({account: brokerPath, currency: "BTC", balance: 500})
+    await expectBalance({account: brokerPath, currency: "USD", balance: -0.05})
+    await expectBalance({account: lndAccountingPath, currency: "BTC", balance: -1000})
 
   })
 })

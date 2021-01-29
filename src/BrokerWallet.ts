@@ -364,13 +364,13 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
         // updateOnchainReceipt() doing:
         // 
         // await MainBook.entry()
-        // .debit(this.user.accountPath, sats, metadata)
-        // .credit(lndAccountingPath, sats, metadata)
+        // .credit(this.user.accountPath, sats, metadata)
+        // .debit(lndAccountingPath, sats, metadata)
         // .commit()
 
         await MainBook.entry()
-        .debit(accountBrokerFtxPath, sats, {...metadata, memo })
-        .credit(liabilitiesBrokerFtxPath, sats, {...metadata, memo })
+        .credit(accountBrokerFtxPath, sats, {...metadata, memo })
+        .debit(liabilitiesBrokerFtxPath, sats, {...metadata, memo })
         .commit()
 
         subLogger.info({withdrawalResult}, `rebalancing withdrawal was succesful`)
@@ -433,16 +433,16 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
       // onChainPay is doing:
       //
       // await MainBook.entry(memo)
-      // .debit(lndAccountingPath, sats, metadata)
-      // .credit(this.user.accountPath, sats, metadata)
+      // .credit(lndAccountingPath, sats, metadata)
+      // .debit(this.user.accountPath, sats, metadata)
       // .commit()
       //
       // we're doing 2 transactions here on medici.
       // explore a way to refactor this to make a single transaction.
 
       await MainBook.entry()
-        .debit(liabilitiesBrokerFtxPath, sats, {...metadata, memo })
-        .credit(accountBrokerFtxPath, sats, {...metadata, memo })
+        .credit(liabilitiesBrokerFtxPath, sats, {...metadata, memo })
+        .debit(accountBrokerFtxPath, sats, {...metadata, memo })
         .commit()
 
       subLogger.info({memo, address}, "deposit rebalancing succesful")

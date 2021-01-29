@@ -53,7 +53,7 @@ const main = async () => {
     bos_g.set(await getBosScore())
     
     const { lightning, liabilities } = await cron.getBalanceSheet()
-    const { assetsLiabilitiesDifference, bookingVersusRealWorldAssets } = await cron.balanceSheetIsBalanced()
+    const { assetsLiabilitiesDifference, bookingVersusRealWorldAssets } = await cron.balanceSheetReconciliation()
     liabilities_g.set(liabilities)
     lightning_g.set(lightning)
     assetsLiabilitiesDifference_g.set(assetsLiabilitiesDifference)

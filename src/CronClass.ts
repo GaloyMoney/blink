@@ -51,17 +51,21 @@ export class Cron {
     return {assets, liabilities, lightning, expenses }
   }
 
-  async balanceSheetIsBalanced() {
+  async balanceSheetReconciliation() {
     const {assets, liabilities, lightning, expenses } = await this.getBalanceSheet()
-    const { total: lnd } = await this.lndBalances() // doesnt include ercrow amount
+    const { total: lnd } = await this.lndBalances() // doesnt include escrow amount
 
     const brokerWallet = await getBrokerWallet({ logger })
     const { sats: ftx } = await brokerWallet.getExchangeBalance()
 
-    const assetsLiabilitiesDifference = assets + (liabilities + expenses)
-    const bookingVersusRealWorldAssets = (lnd + ftx) - lightning
+    const assetsLiabilitiesDifference = assets + liabilities + expenses
+    const bookingVersusRealWorldAssets = lnd + ftx + lightning
     if(!!bookingVersusRealWorldAssets) {
       logger.debug({lnd, lightning, bookingVersusRealWorldAssets, assets, liabilities, expenses}, `not balanced`)
+    }
+
+    if(!!assetsLiabilitiesDifference) {
+      logger.debug({assetsLiabilitiesDifference}, `assets and liabilities not equal`)
     }
 
     return { assetsLiabilitiesDifference, bookingVersusRealWorldAssets }
@@ -94,12 +98,13 @@ export class Cron {
 
     const metadata = { type, currency: "BTC", pending: false }
 
+    // TODO: need to removed closed channel from escrow
     const { channels } = await lnService.getChannels({lnd: this.lnd})
     const selfInitated = filter(channels, {is_partner_initiated: false})
 
     const mongotxs = await Transaction.aggregate([
       { $match: { type: "escrow", accounts: lndAccountingPath }}, 
-      { $group: {_id: "$txid", total: { "$sum": "$debit" } }},
+      { $group: {_id: "$txid", total: { "$sum": "$credit" } }},
     ])
 
     for (const channel of selfInitated) {
@@ -120,8 +125,8 @@ export class Cron {
       logger.debug({diff}, `update escrow with diff`)
 
       await MainBook.entry("escrow")
-        .debit(lndAccountingPath, diff, {...metadata, txid})
-        .credit(escrowAccountingPath, diff, {...metadata, txid})
+        .credit(lndAccountingPath, diff, {...metadata, txid})
+        .debit(escrowAccountingPath, diff, {...metadata, txid})
         .commit()
     }
 

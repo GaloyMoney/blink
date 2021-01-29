@@ -78,8 +78,8 @@ export class SpecterWallet extends OnChainMixin(UserWallet) {
     // onChainPay is doing:
     //
     // await MainBook.entry(memo)
-    // .debit(lndAccountingPath, sats + fee, metadata)
-    // .credit(this.accountPath, sats + fee, metadata)
+    // .credit(lndAccountingPath, sats + fee, metadata)
+    // .debit(this.accountPath, sats + fee, metadata)
     // .commit()
     //
     // we're doing 2 transactions here on medici.
@@ -87,9 +87,9 @@ export class SpecterWallet extends OnChainMixin(UserWallet) {
 
     
     await MainBook.entry()
-      .debit(this.accountPath, sats + fee, {...metadata, memo })
-      .credit(lndFee, fee, {...metadata, memo })
-      .credit(bitcoindAccountingPath(this.wallet), sats, {...metadata, memo })
+      .credit(this.accountPath, sats + fee, {...metadata, memo })
+      .debit(lndFee, fee, {...metadata, memo })
+      .debit(bitcoindAccountingPath(this.wallet), sats, {...metadata, memo })
       .commit()
 
     try {

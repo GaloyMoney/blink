@@ -147,6 +147,13 @@ export const onChannelUpdated = async ({ channel, lnd, stateChange }: { channel:
     logger.info({ channel }, `channel ${stateChange} to us`)
     return
   }
+  
+  // FIXME we are already accounting for close fee in the escrow.
+  // need to remove the associated escrow transaction to correctly account for fees
+  if (stateChange === "closed") {
+    return
+  }
+
 
   logger.info({ channel }, `channel ${stateChange} by us`)
   const { transaction_id } = channel
