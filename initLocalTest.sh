@@ -5,9 +5,12 @@ helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo add grafana https://grafana.github.io/helm-charts
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm repo add jetstack https://charts.jetstack.io
+
 
 cd ../../../infra/galoy && helm dependency build && cd -
 cd ../../../infra/monitoring && helm dependency build && cd -
+
 INGRESS_NAMESPACE="ingress-nginx"
 
 if [ "$NETWORK" == "testnet" ] || [ "$NETWORK" == "mainnet" ];
@@ -15,9 +18,12 @@ then
   NETWORK="$1"
   NAMESPACE="$1"
   INFRADIR=~/GaloyApp/infra
-  # create namespace if not exists
-  kubectl create namespace $INGRESS_NAMESPACE --dry-run -o yaml | kubectl apply -f -
 
+  # create namespaces if not exists
+  kubectl create namespace $INGRESS_NAMESPACE --dry-run=client -o yaml | kubectl apply -f -
+  kubectl create namespace cert-manager --dry-run=client -o yaml | kubectl apply -f -
+
+  helm -n cert-manager upgrade -i cert-manager jetstack/cert-manager --set installCRDs=true
   export STATIC_IP=$(gcloud compute addresses list | awk '/nginx-ingress/ {print $2}')
 
   helm -n $INGRESS_NAMESPACE upgrade -i ingress-nginx ingress-nginx/ingress-nginx --controller.service.loadBalancerIP=$STATIC_IP
