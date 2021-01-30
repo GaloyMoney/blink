@@ -21,6 +21,7 @@ then
   # helm upgrade ingress-nginx ingress-nginx/ingress-nginx
 else
   NETWORK="regtest"
+  echo $(gcloud compute addresses list)
   if [ ${LOCAL} ]; then 
     MINIKUBEIP=$(minikube ip)
     NAMESPACE="default"
