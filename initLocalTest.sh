@@ -24,6 +24,11 @@ then
   kubectl create namespace cert-manager --dry-run=client -o yaml | kubectl apply -f -
 
   helm -n cert-manager upgrade -i cert-manager jetstack/cert-manager --set installCRDs=true
+
+  # Uncomment the following line if not using Google cloud and enter a static ip obtained from your cloud provider
+  # export STATIC_IP=xxx.xxx.xxx.xxx
+
+  # Comment the following line if not using Google cloud
   export STATIC_IP=$(gcloud compute addresses list | awk '/nginx-ingress/ {print $2}')
 
   helm -n $INGRESS_NAMESPACE upgrade -i ingress-nginx ingress-nginx/ingress-nginx --controller.service.loadBalancerIP=$STATIC_IP
