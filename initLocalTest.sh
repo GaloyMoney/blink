@@ -16,6 +16,9 @@ then
   NETWORK="$1"
   NAMESPACE="$1"
   INFRADIR=~/GaloyApp/infra
+  # create namespace if not exists
+  kubectl create namespace ingress-nginx --dry-run -o yaml | kubectl apply -f -
+  # helm upgrade ingress-nginx ingress-nginx/ingress-nginx
 else
   NETWORK="regtest"
   if [ ${LOCAL} ]; then 
