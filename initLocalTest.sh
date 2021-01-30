@@ -4,6 +4,8 @@ helm repo add stable --force-update https://charts.helm.sh/stable
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo add grafana https://grafana.github.io/helm-charts
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm repo update
 
 cd ../../../infra/galoy && helm dependency build && cd -
 cd ../../../infra/monitoring && helm dependency build && cd -
