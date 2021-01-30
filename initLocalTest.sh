@@ -8,7 +8,7 @@ helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 
 cd ../../../infra/galoy && helm dependency build && cd -
 cd ../../../infra/monitoring && helm dependency build && cd -
-
+INGRESS_NAMESPACE="ingress-nginx"
 
 if [ "$NETWORK" == "testnet" ] || [ "$NETWORK" == "mainnet" ];
 then
@@ -16,11 +16,13 @@ then
   NAMESPACE="$1"
   INFRADIR=~/GaloyApp/infra
   # create namespace if not exists
-  kubectl create namespace ingress-nginx --dry-run -o yaml | kubectl apply -f -
-  # helm upgrade ingress-nginx ingress-nginx/ingress-nginx
+  kubectl create namespace $INGRESS_NAMESPACE --dry-run -o yaml | kubectl apply -f -
+
+  export STATIC_IP=$(gcloud compute addresses list | awk '/nginx-ingress/ {print $2}')
+
+  helm -n $INGRESS_NAMESPACE upgrade -i ingress-nginx ingress-nginx/ingress-nginx --controller.service.loadBalancerIP=$STATIC_IP
 else
   NETWORK="regtest"
-  echo $(gcloud compute addresses list)
   if [ ${LOCAL} ]; then 
     MINIKUBEIP=$(minikube ip)
     NAMESPACE="default"
