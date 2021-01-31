@@ -1,4 +1,4 @@
-import { AdminWallet } from "./AdminWallet";
+import { Cron } from "./CronClass";
 import { setupMongoConnection, User } from "./mongodb";
 import { Price } from "./priceImpl";
 import { baseLogger, getBosScore } from "./utils";
@@ -39,7 +39,7 @@ const price_g = new client.Gauge({ name: `${prefix}_price`, help: 'BTC/USD price
 const bos_g = new client.Gauge({ name: `${prefix}_bos`, help: 'bos score' })
 
 const main = async () => {
-	const adminWallet = new AdminWallet()
+	const cron = new Cron()
 
   server.get('/metrics', async (req, res) => {
     
@@ -52,14 +52,14 @@ const main = async () => {
     
     bos_g.set(await getBosScore())
     
-    const { lightning, liabilities } = await adminWallet.getBalanceSheet()
-    const { assetsLiabilitiesDifference, bookingVersusRealWorldAssets } = await adminWallet.balanceSheetIsBalanced()
+    const { lightning, liabilities } = await cron.getBalanceSheet()
+    const { assetsLiabilitiesDifference, bookingVersusRealWorldAssets } = await cron.balanceSheetIsBalanced()
     liabilities_g.set(liabilities)
     lightning_g.set(lightning)
     assetsLiabilitiesDifference_g.set(assetsLiabilitiesDifference)
     bookingVersusRealWorldAssets_g.set(bookingVersusRealWorldAssets)
     
-    const { total, onChain, offChain, opening_channel_balance, closing_channel_balance } = await adminWallet.lndBalances()
+    const { total, onChain, offChain, opening_channel_balance, closing_channel_balance } = await cron.lndBalances()
     lnd_g.set(total)
     lndOnChain_g.set(onChain)
     lndOffChain_g.set(offChain)

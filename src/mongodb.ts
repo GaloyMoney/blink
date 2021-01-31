@@ -1,5 +1,5 @@
 import { exit } from "process"
-import { baseLogger } from "./utils"
+import { baseLogger, sleep } from "./utils"
 
 const mongoose = require("mongoose");
 // mongoose.set("debug", true);
@@ -267,7 +267,8 @@ const transactionSchema = new Schema({
       "invoice", "payment", "on_us", "fee_reimbursement", // lightning
       "onchain_receipt", "onchain_payment", "onchain_on_us", // onchain
       "fee", "escrow", // channel-related
-      "exchange_rebalance"//
+      "exchange_rebalance", // for the broker
+      "to_cold_storage", "to_hot_wallet"
     ]
   },
 
@@ -424,7 +425,8 @@ export const setupMongoConnection = async () => {
     await Transaction.syncIndexes()
     await InvoiceUser.syncIndexes()
   } catch (err) {
-    baseLogger.fatal({ err }, `error connecting to mongodb`)
+    baseLogger.fatal({ err, path }, `error connecting to mongodb`)
+    await sleep(100)
     exit(1)
   }
 }

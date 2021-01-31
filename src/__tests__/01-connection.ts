@@ -5,22 +5,15 @@ import { setupMongoConnection, User } from "../mongodb";
 const redis = require('redis')
 
 import {lndMain, lndOutside1, lndOutside2} from "../tests/helper"
-import { bitcoindClient } from "../utils";
+import { bitcoindDefaultClient } from "../utils";
 const mongoose = require("mongoose");
 
 //TODO: Choose between camel case or underscores for variable naming
 const lnService = require('ln-service')
 
-beforeAll(async () => {
-	await setupMongoConnection()
-})
-
-afterAll(async () => {
-  await mongoose.connection.close()
-})
 
 it('I can connect to bitcoind', async () => {
-	const { chain } = await bitcoindClient.getBlockchainInfo()
+	const { chain } = await bitcoindDefaultClient.getBlockchainInfo()
 	expect(chain).toEqual('regtest')
 })
 
@@ -38,9 +31,11 @@ it('I can connect to outside lnds', async () => {
 })
 
 it('I can connect to mongodb', async () => {
+  await setupMongoConnection()
 	expect(mongoose.connection.readyState).toBe(1)
 	const users = await User.find()
-	expect(users).toEqual(expect.arrayContaining([]))
+  expect(users).toEqual(expect.arrayContaining([]))
+  await mongoose.connection.close()
 })
 
 it('I can connect to redis', async () => {

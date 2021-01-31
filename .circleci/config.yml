@@ -27,7 +27,7 @@ commands:
           command: |
             wget https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -O jq
             chmod +x ./jq
-            helm -n <<parameters.namespace>> upgrade -i --wait lnpage ./lnpage-chart -f ./lnpage-chart/<<parameters.namespace>>-values.yaml --set image.tag=$CIRCLE_SHA1
+            helm -n <<parameters.namespace>> upgrade -i --wait lnpage ./lnpage -f ./lnpage/<<parameters.namespace>>.yaml --set image.tag=$CIRCLE_SHA1
             kubectl -n << parameters.namespace >> wait --for=condition=ready pod -l app=lnpage
             LND_ADDR=$(kubectl -n <<parameters.namespace>> get services | awk '/lnd-service/ {print $4}')
             LND_PUB_KEY=$(kubectl -n <<parameters.namespace>> exec lnd-container-0 -- lncli -n <<parameters.namespace>> getinfo | ./jq -r '.identity_pubkey')
@@ -79,14 +79,14 @@ jobs:
       - run:
           name: Run jest test
           command: |
-            kubectl exec --namespace=$NAMESPACE test-pod -- bash -c "yarn test --max_old_space_size=3000"
+            kubectl exec --namespace=$NAMESPACE testpod -- bash -c "yarn test --max_old_space_size=3000"
       - run:
           name: Run postman test
           command: |
-            kubectl exec --namespace=$NAMESPACE test-pod -- bash -c "yarn run postman"
+            kubectl exec --namespace=$NAMESPACE testpod -- bash -c "yarn run postman"
       - run:
           name: Fetch test results
-          command: kubectl cp --namespace=$NAMESPACE test-pod:/functions/artifacts/junit.xml ./reports/junit.xml
+          command: kubectl cp --namespace=$NAMESPACE testpod:/functions/artifacts/junit.xml ./reports/junit.xml
           when: always
       # - run:
       #     name: sleep
@@ -126,23 +126,9 @@ jobs:
             kubectl --namespace=mainnet wait --for=condition=complete --timeout=60s job/$JOB_DATE
             kubectl --namespace=mainnet delete job/$JOB_DATE
             cd ~/GaloyApp/backend/firebase/functions/ && ./initLocalTest.sh mainnet
-               
-  build_lnpage:
-    working_directory: ~/GaloyApp/lnpage
-    machine: true
-    steps:
-      - checkout:
-          path: ~/GaloyApp
-      - gcp-gcr/build-image:
-          image: lnpage
-          tag: $CIRCLE_SHA1
-      - gcp-gcr/gcr-auth
-      - gcp-gcr/push-image:
-          image: lnpage
-          tag: $CIRCLE_SHA1
-
+      
   update_lnpage:
-    working_directory: ~/GaloyApp/infrastructure
+    working_directory: ~/GaloyApp/infra
     docker:
       - image: kiwigrid/gcloud-kubectl-helm:latest
     resource_class: small
@@ -157,20 +143,17 @@ jobs:
 
 
 workflows:
-  build_and_update_lnpage:
+  update_lnpage:
     jobs:
-      - hold_build_lnpage:
+      - hold_update_lnpage:
           type: approval
           # filters:
           #   branches:
           #     only:
           #       - master
-      - build_lnpage:
-          requires:
-            - hold_build_lnpage
       - update_lnpage:
           requires:
-            - build_lnpage
+            - hold_update_lnpage
   kube:
     jobs:
       - build_test_image
