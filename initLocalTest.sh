@@ -57,9 +57,9 @@ monitoringDeploymentsUpgrade() {
   export SLACK_API_URL=$(kubectl get secret -n $NAMESPACE $SECRET -o jsonpath="{.data.SLACK_API_URL}" | base64 -d)
   export SERVICE_KEY=$(kubectl get secret -n $NAMESPACE $SECRET -o jsonpath="{.data.SERVICE_KEY}" | base64 -d)
 
-  helmUpgrade monitoring $INFRADIR/monitoring --set \
-    prometheus.alertmanagerFiles."alertmanager.yml".global.slack_api_url=$SLACK_API_URL \
-    prometheus.alertmanagerFiles."alertmanager.yml".receivers[2].pagerduty_configs[0].service_key=$SERVICE_KEY
+  helmUpgrade monitoring $INFRADIR/monitoring
+
+  kubectl -n $NAMESPACE get configmaps monitoring-prometheus-alertmanager -o yaml | sed -e "s|SLACK_API_URL|$SLACK_API_URL|; s|SERVICE_KEY|$SERVICE_KEY|" | kubectl -n $NAMESPACE apply -f -
 }
 
 kubectlWait () {
