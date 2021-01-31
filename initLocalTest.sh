@@ -161,9 +161,12 @@ then
 localdevpath="-f $INFRADIR/galoy/localdev.yaml"
 fi
 
+export MONGODB_ROOT_PASSWORD=$(kubectl get secret -n $NAMESPACE galoy-mongodb -o jsonpath="{.data.mongodb-root-password}" | base64 -d)
+export MONGODB_REPLICA_SET_KEY=$(kubectl get secret -n $NAMESPACE galoy-mongodb -o jsonpath="{.data.mongodb-replica-set-key}" | base64 -d)
+
 helmUpgrade galoy \
   -f $INFRADIR/galoy/$NETWORK.yaml $localdevpath \
-  --set testpod.macaroonoutside1=$MACAROONOUTSIDE1,testpod.macaroonoutside2=$MACAROONOUTSIDE2,tag=$CIRCLE_SHA1,testpod.tlsoutside1=$TLSOUTSIDE1,testpod.tlsoutside2=$TLSOUTSIDE2,tls=$TLS,macaroon=$MACAROON \
+  --set testpod.macaroonoutside1=$MACAROONOUTSIDE1,testpod.macaroonoutside2=$MACAROONOUTSIDE2,tag=$CIRCLE_SHA1,testpod.tlsoutside1=$TLSOUTSIDE1,testpod.tlsoutside2=$TLSOUTSIDE2,tls=$TLS,macaroon=$MACAROON,mongodb.auth.rootPassword=$MONGODB_ROOT_PASSWORD,mongodb.auth.replicaSetKey=$MONGODB_REPLICA_SET_KEY \
   $INFRADIR/galoy/
 
 kubectlWait app.kubernetes.io/component=mongodb
