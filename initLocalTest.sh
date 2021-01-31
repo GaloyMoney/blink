@@ -13,7 +13,7 @@ cd ../../../infra/monitoring && helm dependency build && cd -
 
 INGRESS_NAMESPACE="ingress-nginx"
 
-if [ "$NETWORK" == "testnet" ] || [ "$NETWORK" == "mainnet" ];
+if [ "$1" == "testnet" ] || [ "$1" == "mainnet" ];
 then
   NETWORK="$1"
   NAMESPACE="$1"
