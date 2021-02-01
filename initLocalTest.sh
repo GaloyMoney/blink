@@ -153,7 +153,7 @@ then
 
 else
   createLoopConfigmaps
-  helmUpgrade loop-server -f $INFRADIR/loop-server/$NETWORK.yaml $INFRADIR/loop-server/
+  helmUpgrade loop-server $INFRADIR/lnd/charts/loop/
 fi
 
 if [ ${LOCAL} ]
