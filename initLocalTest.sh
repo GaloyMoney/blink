@@ -112,7 +112,7 @@ then
   localdevpath="-f $INFRADIR/lnd/localdev.yaml"
 fi 
 
-helmUpgrade lnd -f $INFRADIR/lnd/$NETWORK.yaml $localdevpath --set minikubeip=$MINIKUBEIP $INFRADIR/lnd/
+helmUpgrade lnd -f $INFRADIR/lnd/$NETWORK.yaml $localdevpath --set instances[0].staticIP=$MINIKUBEIP $INFRADIR/lnd/
 
 # avoiding to spend time with circleci regtest with this condition
 if [ "$NETWORK" == "testnet" ] || [ "$NETWORK" == "mainnet" ];
