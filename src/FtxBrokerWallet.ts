@@ -216,16 +216,16 @@ export class FtxBrokerWallet extends OnChainMixin(UserWallet) {
 
     // under leveraged
     // no imminent risk (beyond exchange custory risk)
-    if (leverage < yamlConfig.LOW_BOUND_LEVERAGE) {
-      const targetUsdCollateral = usdLiability / yamlConfig.LOW_SAFEBOUND_LEVERAGE
+    if (leverage < yamlConfig.hedging.LOW_BOUND_LEVERAGE) {
+      const targetUsdCollateral = usdLiability / yamlConfig.hedging.LOW_SAFEBOUND_LEVERAGE
       usdAmountDiff = usdCollateral - targetUsdCollateral
       depositOrWithdraw =  "withdraw"
     }
 
     // over leveraged
     // our collateral could get liquidated if we don't rebalance
-    else if (leverage  > yamlConfig.HIGH_BOUND_LEVERAGE) {
-      const targetUsdCollateral = usdLiability / yamlConfig.HIGH_SAFEBOUND_LEVERAGE
+    else if (leverage  > yamlConfig.hedging.HIGH_BOUND_LEVERAGE) {
+      const targetUsdCollateral = usdLiability / yamlConfig.hedging.HIGH_SAFEBOUND_LEVERAGE
       usdAmountDiff = targetUsdCollateral - usdCollateral
       depositOrWithdraw = "deposit"
     }
@@ -249,19 +249,21 @@ export class FtxBrokerWallet extends OnChainMixin(UserWallet) {
     let usdOrderAmount, btcAmount
     let buyOrSell: IBuyOrSell = null
 
+    yamlConfig.hedging.LOW_SAFEBOUND_RATIO_SHORTING
+
     try {
       // long (exposed to change in price in BTC)
       // will loose money if BTCUSD price drops
-      if (ratio < yamlConfig.LOW_BOUND_RATIO_SHORTING) {
-        const targetUsd = usdLiability * yamlConfig.LOW_SAFEBOUND_RATIO_SHORTING
+      if (ratio < yamlConfig.hedging.LOW_BOUND_RATIO_SHORTING) {
+        const targetUsd = usdLiability * yamlConfig.hedging.LOW_SAFEBOUND_RATIO_SHORTING
         usdOrderAmount = targetUsd - usdExposure
         buyOrSell = "sell"
       }
 
       // short (exposed to change in price in BTC)
       // will loose money if BTCUSD price increase
-      else if (ratio > yamlConfig.HIGH_BOUND_RATIO_SHORTING) {
-        const targetUsd = usdLiability * yamlConfig.HIGH_SAFEBOUND_RATIO_SHORTING
+      else if (ratio > yamlConfig.hedging.HIGH_BOUND_RATIO_SHORTING) {
+        const targetUsd = usdLiability * yamlConfig.hedging.HIGH_SAFEBOUND_RATIO_SHORTING
         usdOrderAmount = usdExposure - targetUsd
         buyOrSell = "buy"
       }
