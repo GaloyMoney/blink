@@ -2,7 +2,7 @@
  * @jest-environment node
  */
 import { setupMongoConnection, User } from "../mongodb"
-import { BrokerWallet } from "../BrokerWallet";
+import { FtxBrokerWallet } from "../FtxBrokerWallet";
 import { baseLogger } from "../utils";
 import { quit } from "../lock";
 import { getTokenFromPhoneIndex } from "../walletFactory";
@@ -220,8 +220,8 @@ beforeAll(async () => {
 
   ({ uid } = await getTokenFromPhoneIndex(7))
 
-  brokerWalletFixture0 = new BrokerWallet({ user: new User(), logger: baseLogger })
-  brokerWalletFixture1 = new BrokerWallet({ user: new User(), logger: baseLogger })
+  brokerWalletFixture0 = new FtxBrokerWallet({ user: new User(), logger: baseLogger })
+  brokerWalletFixture1 = new FtxBrokerWallet({ user: new User(), logger: baseLogger })
 })
 
 afterAll(async () => {

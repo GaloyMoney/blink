@@ -1,5 +1,5 @@
 import * as jwt from 'jsonwebtoken';
-import { BrokerWallet } from "./BrokerWallet";
+import { FtxBrokerWallet } from "./FtxBrokerWallet";
 import { getLastPrice } from "./cache";
 import { LightningUserWallet } from "./LightningUserWallet";
 import { User } from "./mongodb";
@@ -14,7 +14,7 @@ export const WalletFactory = async ({ user, logger }: { user: typeof User, logge
   UserWallet.setCurrentPrice(lastPrice)
 
   if (user.role === "broker") {
-    return new BrokerWallet({ user, logger })
+    return new FtxBrokerWallet({ user, logger })
   }
 
   return new LightningUserWallet({ user, logger })
