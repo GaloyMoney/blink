@@ -4,16 +4,34 @@ helm repo add stable --force-update https://charts.helm.sh/stable
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo add grafana https://grafana.github.io/helm-charts
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm repo add jetstack https://charts.jetstack.io
+
 
 cd ../../../infra/galoy && helm dependency build && cd -
 cd ../../../infra/monitoring && helm dependency build && cd -
 
+INGRESS_NAMESPACE="ingress-nginx"
 
-if [ "$NETWORK" == "testnet" ] || [ "$NETWORK" == "mainnet" ];
+if [ "$1" == "testnet" ] || [ "$1" == "mainnet" ];
 then
   NETWORK="$1"
   NAMESPACE="$1"
   INFRADIR=~/GaloyApp/infra
+
+  # create namespaces if not exists
+  kubectl create namespace $INGRESS_NAMESPACE --dry-run -o yaml | kubectl apply -f -
+  kubectl create namespace cert-manager --dry-run -o yaml | kubectl apply -f -
+
+  helm -n cert-manager upgrade -i cert-manager jetstack/cert-manager --set installCRDs=true
+
+  # Uncomment the following line if not using Google cloud and enter a static ip obtained from your cloud provider
+  # export STATIC_IP=xxx.xxx.xxx.xxx
+
+  # Comment the following line if not using Google cloud
+  export STATIC_IP=$(gcloud compute addresses list | awk '/nginx-ingress/ {print $2}')
+
+  helm -n $INGRESS_NAMESPACE upgrade -i ingress-nginx ingress-nginx/ingress-nginx --set controller.service.loadBalancerIP=$STATIC_IP
 else
   NETWORK="regtest"
   if [ ${LOCAL} ]; then 
@@ -39,9 +57,9 @@ monitoringDeploymentsUpgrade() {
   export SLACK_API_URL=$(kubectl get secret -n $NAMESPACE $SECRET -o jsonpath="{.data.SLACK_API_URL}" | base64 -d)
   export SERVICE_KEY=$(kubectl get secret -n $NAMESPACE $SECRET -o jsonpath="{.data.SERVICE_KEY}" | base64 -d)
 
-  helmUpgrade monitoring $INFRADIR/monitoring --set \
-    prometheus.alertmanagerFiles."alertmanager.yml".global.slack_api_url=$SLACK_API_URL \
-    prometheus.alertmanagerFiles."alertmanager.yml".receivers[2].pagerduty_configs[0].service_key=$SERVICE_KEY
+  helmUpgrade monitoring $INFRADIR/monitoring
+
+  kubectl -n $NAMESPACE get configmaps monitoring-prometheus-alertmanager -o yaml | sed -e "s|SLACK_API_URL|$SLACK_API_URL|; s|SERVICE_KEY|$SERVICE_KEY|" | kubectl -n $NAMESPACE apply -f -
 }
 
 kubectlWait () {
@@ -111,16 +129,16 @@ exportMacaroon lnd-container-0 MACAROON
 export TLS=$(kubectl -n $NAMESPACE exec lnd-container-0 -c lnd-container -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
 
 # mongodb
-if [ "$NETWORK" == "testnet" ] || [ "$NETWORK" == "mainnet" ];
-then
-  export MONGODB_ROOT_PASSWORD=$(kubectl get secret -n $NAMESPACE mongodb -o jsonpath="{.data.mongodb-root-password}" | base64 -d)
-  export MONGODB_REPLICA_SET_KEY=$(kubectl get secret -n $NAMESPACE mongodb -o jsonpath="{.data.mongodb-replica-set-key}" | base64 -d)
-  helmUpgrade mongodb -f $INFRADIR/mongo/custom.yaml -f $INFRADIR/mongo/$NETWORK.yaml bitnami/mongodb --set auth.rootPassword=$MONGODB_ROOT_PASSWORD,auth.replicaSetKey=$MONGODB_REPLICA_SET_KEY
+# if [ "$NETWORK" == "testnet" ] || [ "$NETWORK" == "mainnet" ];
+# then
+#   export MONGODB_ROOT_PASSWORD=$(kubectl get secret -n $NAMESPACE mongodb -o jsonpath="{.data.mongodb-root-password}" | base64 -d)
+#   export MONGODB_REPLICA_SET_KEY=$(kubectl get secret -n $NAMESPACE mongodb -o jsonpath="{.data.mongodb-replica-set-key}" | base64 -d)
+#   helmUpgrade mongodb -f $INFRADIR/mongo/custom.yaml -f $INFRADIR/mongo/$NETWORK.yaml bitnami/mongodb --set auth.rootPassword=$MONGODB_ROOT_PASSWORD,auth.replicaSetKey=$MONGODB_REPLICA_SET_KEY
 
-  # use initdbScripts instead
-  kubectl exec -n $NAMESPACE mongodb-0 -- bash -c "mongo admin -u root -p "$MONGODB_ROOT_PASSWORD" --eval \"db.adminCommand({setDefaultRWConcern:1,defaultWriteConcern:{'w':'majority'}})\""
-  kubectl exec -n $NAMESPACE mongodb-0 -- bash -c "mongo admin -u root -p "$MONGODB_ROOT_PASSWORD" --eval \"c=rs.conf();c.writeConcernMajorityJournalDefault=false;rs.reconfig(c)\""
-fi
+#   # use initdbScripts instead
+#   kubectl exec -n $NAMESPACE mongodb-0 -- bash -c "mongo admin -u root -p "$MONGODB_ROOT_PASSWORD" --eval \"db.adminCommand({setDefaultRWConcern:1,defaultWriteConcern:{'w':'majority'}})\""
+#   kubectl exec -n $NAMESPACE mongodb-0 -- bash -c "mongo admin -u root -p "$MONGODB_ROOT_PASSWORD" --eval \"c=rs.conf();c.writeConcernMajorityJournalDefault=false;rs.reconfig(c)\""
+# fi
 
 if [ "$NETWORK" == "regtest" ]
 then
@@ -135,7 +153,7 @@ then
 
 else
   createLoopConfigmaps
-  helmUpgrade loop-server -f $INFRADIR/loop-server/$NETWORK.yaml $INFRADIR/loop-server/
+  helmUpgrade loop-server $INFRADIR/lnd/charts/loop/
 fi
 
 if [ ${LOCAL} ]
@@ -143,9 +161,12 @@ then
 localdevpath="-f $INFRADIR/galoy/localdev.yaml"
 fi
 
+export MONGODB_ROOT_PASSWORD=$(kubectl get secret -n $NAMESPACE galoy-mongodb -o jsonpath="{.data.mongodb-root-password}" | base64 -d)
+export MONGODB_REPLICA_SET_KEY=$(kubectl get secret -n $NAMESPACE galoy-mongodb -o jsonpath="{.data.mongodb-replica-set-key}" | base64 -d)
+
 helmUpgrade galoy \
   -f $INFRADIR/galoy/$NETWORK.yaml $localdevpath \
-  --set testpod.macaroonoutside1=$MACAROONOUTSIDE1,testpod.macaroonoutside2=$MACAROONOUTSIDE2,tag=$CIRCLE_SHA1,testpod.tlsoutside1=$TLSOUTSIDE1,testpod.tlsoutside2=$TLSOUTSIDE2,tls=$TLS,macaroon=$MACAROON \
+  --set testpod.macaroonoutside1=$MACAROONOUTSIDE1,testpod.macaroonoutside2=$MACAROONOUTSIDE2,tag=$CIRCLE_SHA1,testpod.tlsoutside1=$TLSOUTSIDE1,testpod.tlsoutside2=$TLSOUTSIDE2,tls=$TLS,macaroon=$MACAROON,mongodb.auth.rootPassword=$MONGODB_ROOT_PASSWORD,mongodb.auth.replicaSetKey=$MONGODB_REPLICA_SET_KEY \
   $INFRADIR/galoy/
 
 kubectlWait app.kubernetes.io/component=mongodb
