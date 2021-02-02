@@ -122,8 +122,7 @@ helmUpgrade lnd -f $INFRADIR/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd/
 # avoiding to spend time with circleci regtest with this condition
 if [ "$NETWORK" == "testnet" ] || [ "$NETWORK" == "mainnet" ];
 then
-  export staticIP=$(kubectl -n $NAMESPACE get configmaps lndip -o "jsonpath={.data.ip}")
-  helmUpgrade lnd -f $INFRADIR/lnd-chart/$NETWORK-values.yaml --set lndService.serviceType=LoadBalancer,staticIP=$staticIP $INFRADIR/lnd-chart/
+  helmUpgrade lnd -f $INFRADIR/lnd-chart/$NETWORK-values.yaml --set lndService.serviceType=LoadBalancer $INFRADIR/lnd-chart/
   kubectlLndDeletionWait
 else
   helmUpgrade lnd -f $INFRADIR/lnd-chart/$NETWORK-values.yaml --set lndService.serviceType=LoadBalancer,minikubeip=$MINIKUBEIP $INFRADIR/lnd-chart/
