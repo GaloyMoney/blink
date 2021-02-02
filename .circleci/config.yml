@@ -79,7 +79,7 @@ jobs:
       - run:
           name: Run jest test
           command: |
-            kubectl exec --namespace=$NAMESPACE $(kubectl get pods -n <<parameters.namespace>> --selector=app=testpod --output=jsonpath={.items..metadata.name})" -- bash -c "yarn test --max_old_space_size=3000"
+            kubectl exec --namespace=$NAMESPACE $(kubectl get pods -n <<parameters.namespace>> --no-headers --selector=app=testpod -o custom-columns=":metadata.name") -- bash -c "yarn test --max_old_space_size=3000"
       - run:
           name: Run postman test
           command: |
