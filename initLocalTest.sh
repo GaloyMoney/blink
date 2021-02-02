@@ -122,10 +122,10 @@ helmUpgrade lnd -f $INFRADIR/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd/
 # avoiding to spend time with circleci regtest with this condition
 if [ "$NETWORK" == "testnet" ] || [ "$NETWORK" == "mainnet" ];
 then
-  helmUpgrade lnd -f $INFRADIR/lnd-chart/$NETWORK-values.yaml --set lndService.serviceType=LoadBalancer $INFRADIR/lnd-chart/
+  helmUpgrade lnd -f $INFRADIR/lnd/$NETWORK-values.yaml --set lndService.serviceType=LoadBalancer $INFRADIR/lnd/
   kubectlLndDeletionWait
 else
-  helmUpgrade lnd -f $INFRADIR/lnd-chart/$NETWORK-values.yaml --set lndService.serviceType=LoadBalancer,minikubeip=$MINIKUBEIP $INFRADIR/lnd-chart/
+  helmUpgrade lnd -f $INFRADIR/lnd/$NETWORK-values.yaml --set lndService.serviceType=LoadBalancer,minikubeip=$MINIKUBEIP $INFRADIR/lnd/
 fi
 # # add extra sleep time... seems lnd is quite long to show up some time
 sleep 15
