@@ -79,20 +79,17 @@ jobs:
       - run:
           name: Run jest test
           command: |
-            echo "export TESTPOD=$(kubectl get pods --selector=app=testpod --output=jsonpath={.items..metadata.name})" >> $BASH_ENV           
-            source $BASH_ENV
-            echo $TESTPOD
-            kubectl exec --namespace=$NAMESPACE $TESTPOD -- bash -c "yarn test --max_old_space_size=3000"
+            kubectl exec --namespace=$NAMESPACE $(kubectl get pods -n <<parameters.namespace>> --selector=app=testpod --output=jsonpath={.items..metadata.name})" -- bash -c "yarn test --max_old_space_size=3000"
       - run:
           name: Run postman test
           command: |
             source $BASH_ENV
-            kubectl exec --namespace=$NAMESPACE $TESTPOD -- bash -c "yarn run postman"
+            kubectl exec --namespace=$NAMESPACE $(kubectl get pods -n <<parameters.namespace>> --selector=app=testpod --output=jsonpath={.items..metadata.name})" -- bash -c "yarn run postman"
       - run:
           name: Fetch test results
           command: |
             source $BASH_ENV
-            kubectl cp --namespace=$NAMESPACE $TESTPOD:/functions/artifacts/junit.xml ./reports/junit.xml
+            kubectl cp --namespace=$NAMESPACE $(kubectl get pods -n <<parameters.namespace>> --selector=app=testpod --output=jsonpath={.items..metadata.name})":/functions/artifacts/junit.xml ./reports/junit.xml
           when: always
       # - run:
       #     name: sleep
