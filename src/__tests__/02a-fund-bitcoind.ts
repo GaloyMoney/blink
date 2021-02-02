@@ -3,7 +3,7 @@
  */
 import { setupMongoConnection } from "../mongodb";
 import { checkIsBalanced, lndMain, lndOutside1, lndOutside2, RANDOM_ADDRESS, waitUntilBlockHeight, mockGetExchangeBalance } from "../tests/helper";
-import { bitcoindClient } from "../utils";
+import { bitcoindDefaultClient } from "../utils";
 
 const lnService = require('ln-service')
 const mongoose = require("mongoose");
@@ -39,10 +39,10 @@ afterAll(async () => {
 })
 
 it('funds bitcoind wallet', async () => {
-	const bitcoindAddress = await bitcoindClient.getNewAddress()
-	await bitcoindClient.generateToAddress(numOfBlock, bitcoindAddress)
-	await bitcoindClient.generateToAddress(100, RANDOM_ADDRESS)
-	const balance = await bitcoindClient.getBalance()
+	const bitcoindAddress = await bitcoindDefaultClient.getNewAddress()
+	await bitcoindDefaultClient.generateToAddress(numOfBlock, bitcoindAddress)
+	await bitcoindDefaultClient.generateToAddress(100, RANDOM_ADDRESS)
+	const balance = await bitcoindDefaultClient.getBalance()
 	expect(balance).toBe(initialBitcoinWalletBalance + blockReward * numOfBlock)
 })
 
@@ -50,8 +50,8 @@ it('funds outside lnd node', async () => {
 	lndOutside1_wallet_addr = (await lnService.createChainAddress({ format: 'p2wpkh', lnd: lndOutside1 })).address
 	expect(lndOutside1_wallet_addr.substr(0, 4)).toBe("bcrt")
 
-	await bitcoindClient.sendToAddress(lndOutside1_wallet_addr, amount_BTC)
-	await bitcoindClient.generateToAddress(6, RANDOM_ADDRESS)
+	await bitcoindDefaultClient.sendToAddress(lndOutside1_wallet_addr, amount_BTC)
+	await bitcoindDefaultClient.generateToAddress(6, RANDOM_ADDRESS)
 
 	await waitUntilBlockHeight({ lnd: lndMain, blockHeight: 100 + numOfBlock + 6 })
 	await waitUntilBlockHeight({ lnd: lndOutside1, blockHeight: 100 + numOfBlock + 6 })

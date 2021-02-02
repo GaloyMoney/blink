@@ -1,12 +1,12 @@
 /**
  * @jest-environment node
  */
-import { AdminWallet } from "../AdminWallet";
-import { setupMongoConnection, MainBook, Transaction } from "../mongodb";
-import { checkIsBalanced, lndMain, lndOutside1, lndOutside2, RANDOM_ADDRESS, waitUntilBlockHeight, mockGetExchangeBalance } from "../tests/helper";
-import { baseLogger, bitcoindClient, nodeStats, sleep } from "../utils";
-import { lndFee } from "../ledger"
-import { onChannelUpdated } from '../trigger'
+import { Cron } from "../CronClass";
+import { lndFee } from "../ledger";
+import { MainBook, setupMongoConnection } from "../mongodb";
+import { checkIsBalanced, lndMain, lndOutside1, lndOutside2, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
+import { onChannelUpdated } from '../trigger';
+import { baseLogger, bitcoindDefaultClient, nodeStats, sleep } from "../utils";
 const mongoose = require("mongoose");
 const { once } = require('events');
 
@@ -15,7 +15,7 @@ const lnService = require('ln-service')
 const local_tokens = 1000000
 
 let initBlockCount
-let adminWallet
+let cron
 let channelLengthMain, channelLengthOutside1
 
 
@@ -23,14 +23,14 @@ beforeAll(async () => {
   await setupMongoConnection()
   mockGetExchangeBalance()
 
-  adminWallet = new AdminWallet()
+  cron = new Cron()
 
   channelLengthMain = (await lnService.getChannels({ lnd: lndMain })).channels.length
   channelLengthOutside1 = (await lnService.getChannels({ lnd: lndOutside1 })).channels.length
 })
 
 beforeEach(async () => {
-  initBlockCount = await bitcoindClient.getBlockCount()
+  initBlockCount = await bitcoindDefaultClient.getBlockCount()
 })
 
 afterEach(async () => {
@@ -84,12 +84,12 @@ const openChannel = async ({ lnd, other_lnd, socket, is_private = false }) => {
 
 
   await sleep(5000)
-  await adminWallet.updateEscrows()
+  await cron.updateEscrows()
   sub.removeAllListeners()
 }
 
 const mineBlockAndSync = async ({ lnds, blockHeight }: { lnds: Array<any>, blockHeight: number }) => {
-  await bitcoindClient.generateToAddress(newBlock, RANDOM_ADDRESS)
+  await bitcoindDefaultClient.generateToAddress(newBlock, RANDOM_ADDRESS)
   const promiseArray: Array<Promise<any>> = []
   for (const lnd of lnds) {
     promiseArray.push(waitUntilBlockHeight({ lnd, blockHeight }))
@@ -132,7 +132,7 @@ it('opens and closes channel from lnd1 to lndOutside1', async () => {
   })
   
   await lnService.closeChannel({ lnd: lndMain, id: channels[0].id })
-  const currentBlockCount = await bitcoindClient.getBlockCount()
+  const currentBlockCount = await bitcoindDefaultClient.getBlockCount()
   await mineBlockAndSync({ lnds: [lndMain, lndOutside1], blockHeight: currentBlockCount + newBlock })
 
   await sleep(10000)
@@ -180,11 +180,11 @@ it('returns correct nodeStats', async () => {
 })
 
 it('escrow update 1', async () => {
-  await adminWallet.updateEscrows()
+  await cron.updateEscrows()
   await checkIsBalanced()
 })
 
 it('escrow update 2', async () => {
-  await adminWallet.updateEscrows()
+  await cron.updateEscrows()
   await checkIsBalanced()
 })

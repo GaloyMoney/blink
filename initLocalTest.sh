@@ -1,31 +1,45 @@
 set -e
 
-helm repo rm stable
-helm repo add stable https://charts.helm.sh/stable
+helm repo add stable --force-update https://charts.helm.sh/stable
 helm repo add bitnami https://charts.bitnami.com/bitnami
-helm repo add grafana https://grafana.github.io/helm-charts
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-helm repo update
+helm repo add grafana https://grafana.github.io/helm-charts
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm repo add jetstack https://charts.jetstack.io
 
+
+cd ../../../infra/galoy && helm dependency build && cd -
+cd ../../../infra/monitoring && helm dependency build && cd -
+
+INGRESS_NAMESPACE="ingress-nginx"
 
 if [ "$1" == "testnet" ] || [ "$1" == "mainnet" ];
 then
-  REDISPERSISTENCE="true"
   NETWORK="$1"
   NAMESPACE="$1"
-  SERVICETYPE=ClusterIP
-  INFRADIR=~/GaloyApp/infrastructure
+  INFRADIR=~/GaloyApp/infra
+
+  # create namespaces if not exists
+  kubectl create namespace $INGRESS_NAMESPACE --dry-run -o yaml | kubectl apply -f -
+  kubectl create namespace cert-manager --dry-run -o yaml | kubectl apply -f -
+
+  helm -n cert-manager upgrade -i cert-manager jetstack/cert-manager --set installCRDs=true
+
+  # Uncomment the following line if not using Google cloud and enter a static ip obtained from your cloud provider
+  # export STATIC_IP=xxx.xxx.xxx.xxx
+
+  # Comment the following line if not using Google cloud
+  export STATIC_IP=$(gcloud compute addresses list | awk '/nginx-ingress/ {print $2}')
+
+  helm -n $INGRESS_NAMESPACE upgrade -i ingress-nginx ingress-nginx/ingress-nginx --set controller.service.loadBalancerIP=$STATIC_IP
 else
   NETWORK="regtest"
-  REDISPERSISTENCE="false"
   if [ ${LOCAL} ]; then 
     MINIKUBEIP=$(minikube ip)
     NAMESPACE="default"
-    SERVICETYPE=LoadBalancer
-    INFRADIR=../../../infrastructure
+    INFRADIR=../../../infra
   else 
-    SERVICETYPE=ClusterIP
-    INFRADIR=~/GaloyApp/infrastructure
+    INFRADIR=~/GaloyApp/infra
   fi
 fi
 
@@ -38,18 +52,14 @@ helmUpgrade () {
 }
 
 monitoringDeploymentsUpgrade() {
-  SECRET=alertmanager-keys
   local NAMESPACE=monitoring
-  kubectl -n $NAMESPACE delete deployment.apps prometheus-kube-state-metrics
-  helmUpgrade prometheus prometheus-community/prometheus -f $INFRADIR/prometheus-server/values.yaml
 
   export SLACK_API_URL=$(kubectl get secret -n $NAMESPACE $SECRET -o jsonpath="{.data.SLACK_API_URL}" | base64 -d)
   export SERVICE_KEY=$(kubectl get secret -n $NAMESPACE $SECRET -o jsonpath="{.data.SERVICE_KEY}" | base64 -d)
 
-  kubectl -n $NAMESPACE get configmaps prometheus-alertmanager -o yaml | sed -e "s|SLACK_API_URL|$SLACK_API_URL|; s|SERVICE_KEY|$SERVICE_KEY|" | kubectl -n $NAMESPACE apply -f -
+  helmUpgrade monitoring $INFRADIR/monitoring
 
-  helmUpgrade grafana grafana/grafana -f $INFRADIR/grafana/values.yaml
-  helmUpgrade mongo-exporter $INFRADIR/mongo-exporter
+  kubectl -n $NAMESPACE get configmaps monitoring-prometheus-alertmanager -o yaml | sed -e "s|SLACK_API_URL|$SLACK_API_URL|; s|SERVICE_KEY|$SERVICE_KEY|" | kubectl -n $NAMESPACE apply -f -
 }
 
 kubectlWait () {
@@ -85,18 +95,32 @@ createLoopConfigmaps() {
   kubectl create configmap lndmacaroon --from-file=./macaroon --dry-run -o yaml | kubectl -n $NETWORK apply -f -
 }
 
+if [ ${LOCAL} ] 
+then 
+localdevpath="-f $INFRADIR/bitcoind/localdev.yaml"
+fi 
+helmUpgrade bitcoind -f $INFRADIR/bitcoind/$NETWORK.yaml $localdevpath $INFRADIR/bitcoind/
+
 # bug with --wait: https://github.com/helm/helm/issues/7139 ?
-helmUpgrade bitcoind -f $INFRADIR/bitcoind-chart/$NETWORK-values.yaml --set serviceType=$SERVICETYPE $INFRADIR/bitcoind-chart/
 kubectlWait app=bitcoind-container
 
-# pod deletion has occured before the script started, but may not be completed yet
-if [ ${LOCAL} ]
-then
+sleep 8
+
+if [ ${LOCAL} ] 
+then 
   kubectlLndDeletionWait
+  localdevpath="-f $INFRADIR/lnd/localdev.yaml \
+    --set instances[0].staticIP=$MINIKUBEIP \
+    --set instances[1].staticIP=$MINIKUBEIP \
+    --set instances[2].staticIP=$MINIKUBEIP \
+    --set configmap[0].staticIP=$MINIKUBEIP \
+    --set configmap[1].staticIP=$MINIKUBEIP "
 fi
 
+helmUpgrade lnd -f $INFRADIR/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd/
+
 # avoiding to spend time with circleci regtest with this condition
-if [ "$1" == "testnet" ] || [ "$1" == "mainnet" ];
+if [ "$NETWORK" == "testnet" ] || [ "$NETWORK" == "mainnet" ];
 then
   export staticIP=$(kubectl -n $NAMESPACE get configmaps lndip -o "jsonpath={.data.ip}")
   helmUpgrade lnd -f $INFRADIR/lnd-chart/$NETWORK-values.yaml --set lndService.serviceType=LoadBalancer,staticIP=$staticIP $INFRADIR/lnd-chart/
@@ -112,27 +136,17 @@ kubectlWait type=lnd
 exportMacaroon lnd-container-0 MACAROON
 export TLS=$(kubectl -n $NAMESPACE exec lnd-container-0 -c lnd-container -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
 
-helmUpgrade redis bitnami/redis --set=master.service.type=$SERVICETYPE --set=master.persistence.enabled=$REDISPERSISTENCE --set=usePassword=false --set=image.tag=6.0.8-debian-10-r0  --set=cluster.slaveCount=0
-
 # mongodb
-if [ "$NETWORK" == "regtest" ]
-then
-  helmUpgrade mongodb --set auth.username=testGaloy,auth.password=testGaloy,auth.database=galoy,persistence.enabled=false,service.type=$SERVICETYPE bitnami/mongodb
-else
-  export MONGODB_ROOT_PASSWORD=$(kubectl get secret -n $NAMESPACE mongodb -o jsonpath="{.data.mongodb-root-password}" | base64 -d)
-  export MONGODB_REPLICA_SET_KEY=$(kubectl get secret -n $NAMESPACE mongodb -o jsonpath="{.data.mongodb-replica-set-key}" | base64 -d)
-  helmUpgrade mongodb -f $INFRADIR/mongo-chart/custom-values.yaml -f $INFRADIR/mongo-chart/$NETWORK-values.yaml bitnami/mongodb --set auth.rootPassword=$MONGODB_ROOT_PASSWORD,auth.replicaSetKey=$MONGODB_REPLICA_SET_KEY
-  kubectl -n $NAMESPACE delete pod mongodb-2
+# if [ "$NETWORK" == "testnet" ] || [ "$NETWORK" == "mainnet" ];
+# then
+#   export MONGODB_ROOT_PASSWORD=$(kubectl get secret -n $NAMESPACE mongodb -o jsonpath="{.data.mongodb-root-password}" | base64 -d)
+#   export MONGODB_REPLICA_SET_KEY=$(kubectl get secret -n $NAMESPACE mongodb -o jsonpath="{.data.mongodb-replica-set-key}" | base64 -d)
+#   helmUpgrade mongodb -f $INFRADIR/mongo/custom.yaml -f $INFRADIR/mongo/$NETWORK.yaml bitnami/mongodb --set auth.rootPassword=$MONGODB_ROOT_PASSWORD,auth.replicaSetKey=$MONGODB_REPLICA_SET_KEY
 
-  kubectl exec -n $NAMESPACE mongodb-0 -- bash -c "mongo admin -u root -p "$MONGODB_ROOT_PASSWORD" --eval \"db.adminCommand({setDefaultRWConcern:1,defaultWriteConcern:{'w':'majority'}})\""
-  kubectl exec -n $NAMESPACE mongodb-0 -- bash -c "mongo admin -u root -p "$MONGODB_ROOT_PASSWORD" --eval \"c=rs.conf();c.writeConcernMajorityJournalDefault=false;rs.reconfig(c)\""
-fi
-
-if [ ${LOCAL} ]
-then
-  kubectlWait app.kubernetes.io/component=mongodb
-  exit 0
-fi
+#   # use initdbScripts instead
+#   kubectl exec -n $NAMESPACE mongodb-0 -- bash -c "mongo admin -u root -p "$MONGODB_ROOT_PASSWORD" --eval \"db.adminCommand({setDefaultRWConcern:1,defaultWriteConcern:{'w':'majority'}})\""
+#   kubectl exec -n $NAMESPACE mongodb-0 -- bash -c "mongo admin -u root -p "$MONGODB_ROOT_PASSWORD" --eval \"c=rs.conf();c.writeConcernMajorityJournalDefault=false;rs.reconfig(c)\""
+# fi
 
 if [ "$NETWORK" == "regtest" ]
 then
@@ -143,40 +157,48 @@ then
   export TLSOUTSIDE1=$(kubectl -n $NAMESPACE exec lnd-container-outside-1-0 -c lnd-container -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
   export TLSOUTSIDE2=$(kubectl -n $NAMESPACE exec lnd-container-outside-2-0 -c lnd-container -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
 
-  helmUpgrade test-chart --set \
-  macaroon=$MACAROON,macaroonoutside1=$MACAROONOUTSIDE1,macaroonoutside2=$MACAROONOUTSIDE2,image.tag=$CIRCLE_SHA1,tlsoutside1=$TLSOUTSIDE1,tlsoutside2=$TLSOUTSIDE2,tls=$TLS \
-  $INFRADIR/test-chart/
-
   echo $(kubectl get -n=$NAMESPACE pods)
 
 else
-  helmUpgrade prometheus-client -f $INFRADIR/graphql-chart/prometheus-values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON $INFRADIR/graphql-chart/
-  helmUpgrade trigger --set image.tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON $INFRADIR/trigger-chart/
-
   createLoopConfigmaps
-  helmUpgrade loop-server -f $INFRADIR/loop-server/$NETWORK-values.yaml $INFRADIR/loop-server/
-  # TODO: missing kubectlWait trigger and prometheus-client
-
-  helmUpgrade update-job -f $INFRADIR/update-job/$NETWORK-values.yaml --set image.tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON $INFRADIR/update-job/
+  helmUpgrade loop-server $INFRADIR/lnd/charts/loop/
 fi
 
-helmUpgrade graphql-server -f $INFRADIR/graphql-chart/$NETWORK-values.yaml --set tag=$CIRCLE_SHA1,tls=$TLS,macaroon=$MACAROON $INFRADIR/graphql-chart/
+if [ ${LOCAL} ]
+then
+localdevpath="-f $INFRADIR/galoy/localdev.yaml"
+fi
+
+export MONGODB_ROOT_PASSWORD=$(kubectl get secret -n $NAMESPACE galoy-mongodb -o jsonpath="{.data.mongodb-root-password}" | base64 -d)
+export MONGODB_REPLICA_SET_KEY=$(kubectl get secret -n $NAMESPACE galoy-mongodb -o jsonpath="{.data.mongodb-replica-set-key}" | base64 -d)
+
+helmUpgrade galoy \
+  -f $INFRADIR/galoy/$NETWORK.yaml $localdevpath \
+  --set testpod.macaroonoutside1=$MACAROONOUTSIDE1,testpod.macaroonoutside2=$MACAROONOUTSIDE2,image.tag=$CIRCLE_SHA1,testpod.tlsoutside1=$TLSOUTSIDE1,testpod.tlsoutside2=$TLSOUTSIDE2,tls=$TLS,macaroon=$MACAROON,mongodb.auth.rootPassword=$MONGODB_ROOT_PASSWORD,mongodb.auth.replicaSetKey=$MONGODB_REPLICA_SET_KEY \
+  $INFRADIR/galoy/
+
+kubectlWait app.kubernetes.io/component=mongodb
+kubectlWait app=redis
+
+if [ ${LOCAL} ]
+then
+  exit 0
+fi
 
 if [ "$NETWORK" == "regtest" ]
 then
-  kubectlWait app=test-chart
-elif [ "$NETWORK" == "testnet" ]
+  kubectlWait app=testpod
+fi
+
+if [ "$NETWORK" == "testnet" ]
 then
   monitoringDeploymentsUpgrade
 fi
 
-kubectlWait app=redis
-kubectlWait app.kubernetes.io/component=mongodb
-
 echo $(kubectl get -n=$NAMESPACE pods)
 
-kubectl -n $NAMESPACE rollout status deployment graphql-server
-if [[ "$?" -ne 0 ]]; then
-  echo "Deployment failed"
-  exit 1
-fi
+# kubectl -n $NAMESPACE rollout status deployment galoy
+# if [[ "$?" -ne 0 ]]; then
+#   echo "Deployment failed"
+#   exit 1
+# fi

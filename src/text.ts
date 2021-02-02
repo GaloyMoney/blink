@@ -39,6 +39,8 @@ export const TEST_NUMBER = [
   { phone: "+16505554329", code: 321321, currency: "BTC" }, // postman
   { phone: "+16505554330", code: 321321, currency: "USD" }, // usd bis
 
+  { phone: "+16505554331", code: 321321, currency: "BTC" }, // coldstorage
+
   { phone: "+***REMOVED***", code: 321321, currency: "BTC" }, // for manual testing
 ]
 

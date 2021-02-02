@@ -1,17 +1,16 @@
 import { setupMongoConnection, User } from "./mongodb"
-import { sendNotification } from "./notification"
 import { baseLogger } from "./utils"
 import { WalletFactory } from "./walletFactory"
 
 const logger = baseLogger.child({ module: "dailyBalanceNotification" })
 
 const main = async () => {
-  await sendBalanceToUser()
+  await sendBalanceToUsers()
   // FIXME: we probably needs to exit because we have a memleak of pending promise
   process.exit(0)
 }
 
-export const sendBalanceToUser = async () => {
+export const sendBalanceToUsers = async () => {
 
   const users = await User.find({})
   for (const user of users) {
