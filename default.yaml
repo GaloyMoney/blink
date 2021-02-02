@@ -1,4 +1,6 @@
 
+name: "Galoy Banking"
+
 hedging:
   LOW_BOUND_RATIO_SHORTING: 0.95
   LOW_SAFEBOUND_RATIO_SHORTING: 0.98
