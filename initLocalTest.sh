@@ -109,10 +109,15 @@ sleep 8
 if [ ${LOCAL} ] 
 then 
   kubectlLndDeletionWait
-  localdevpath="-f $INFRADIR/lnd/localdev.yaml"
-fi 
+  localdevpath="-f $INFRADIR/lnd/localdev.yaml \
+    --set instances[0].staticIP=$MINIKUBEIP \
+    --set instances[1].staticIP=$MINIKUBEIP \
+    --set instances[2].staticIP=$MINIKUBEIP \
+    --set configmap[0].staticIP=$MINIKUBEIP \
+    --set configmap[1].staticIP=$MINIKUBEIP "
+fi
 
-helmUpgrade lnd -f $INFRADIR/lnd/$NETWORK.yaml $localdevpath --set minikubeip=$MINIKUBEIP $INFRADIR/lnd/
+helmUpgrade lnd -f $INFRADIR/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd/
 
 # avoiding to spend time with circleci regtest with this condition
 if [ "$NETWORK" == "testnet" ] || [ "$NETWORK" == "mainnet" ];
