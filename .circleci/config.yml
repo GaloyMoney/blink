@@ -77,20 +77,21 @@ jobs:
           command: |
             cd ~/GaloyApp/backend/firebase/functions/ && ./initLocalTest.sh 
       - run:
-          name: generate and export namespace name
-          command: |
-            echo "export TESTPOD=$(kubectl get pods --selector=app=testpod --output=jsonpath={.items..metadata.name})" >> $BASH_ENV           
-      - run:
           name: Run jest test
           command: |
+            echo "export TESTPOD=$(kubectl get pods --selector=app=testpod --output=jsonpath={.items..metadata.name})" >> $BASH_ENV           
+            source $BASH_ENV
             kubectl exec --namespace=$NAMESPACE $TESTPOD -- bash -c "yarn test --max_old_space_size=3000"
       - run:
           name: Run postman test
           command: |
+            source $BASH_ENV
             kubectl exec --namespace=$NAMESPACE $TESTPOD -- bash -c "yarn run postman"
       - run:
           name: Fetch test results
-          command: kubectl cp --namespace=$NAMESPACE $TESTPOD:/functions/artifacts/junit.xml ./reports/junit.xml
+          command: |
+            source $BASH_ENV
+            kubectl cp --namespace=$NAMESPACE $TESTPOD:/functions/artifacts/junit.xml ./reports/junit.xml
           when: always
       # - run:
       #     name: sleep
