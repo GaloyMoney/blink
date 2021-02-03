@@ -89,10 +89,10 @@ jobs:
           name: Fetch test results
           command: kubectl cp --namespace=$NAMESPACE testpod:/functions/artifacts/junit.xml ./reports/junit.xml
           when: always
-      # - run:
-      #     name: sleep
-      #     command: sleep 590 && echo "10 min" && sleep 590 && echo "20 min" && sleep 590 && echo "30 min"
-      #     when: always
+      - run:
+          name: sleep
+          command: sleep 590 && echo "10 min" && sleep 590 && echo "20 min" && sleep 590 && echo "30 min"
+          when: always
       - store_test_results:
           path: ./reports
       - store_artifacts:
