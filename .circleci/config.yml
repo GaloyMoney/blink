@@ -1,7 +1,8 @@
 version: 2.1
 
 orbs:
-  gcp-gke: circleci/gcp-gke@1.1.0
+  gcp-cli: circleci/gcp-cli@2.1.0
+  # gcp-gke: circleci/gcp-gke@1.1.0
   # helm: circleci/helm@1.2.0
   gcp-gcr: circleci/gcp-gcr@0.7.1
   slack: circleci/slack@3.4.2
@@ -110,10 +111,8 @@ jobs:
     steps:
       - checkout:
           path: ~/GaloyApp
+      - gcp-cli/install_and_initialize_cli
       - gke-auth
-      - gcp-gke/install
-      # Initialize the `gcloud` CLI.
-      - gcp-gke/init
       - run: curl https://baltocdn.com/helm/signing.asc | sudo apt-key add -
       - run: sudo apt-get install apt-transport-https --yes
       - run: echo "deb https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
