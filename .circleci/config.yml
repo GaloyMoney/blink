@@ -101,13 +101,20 @@ jobs:
           command: |
             kubectl delete namespaces $NAMESPACE
           when: always
-      - when:
-          condition:
-            equal: [ master, << pipeline.git.branch >> ]
-          steps:
-            - run: |
-                gcloud container clusters get-credentials testnet-cluster --region us-central1-a --project ${GOOGLE_PROJECT_ID}
-                cd ~/GaloyApp/backend/firebase/functions/ && ./initLocalTest.sh testnet            
+
+  testnet_deploy:
+    working_directory: ~/GaloyApp/backend
+    docker:
+      - image: kiwigrid/gcloud-kubectl-helm:latest     
+    resource_class: small
+    steps:
+      - checkout:
+          path: ~/GaloyApp
+      - gke-auth
+      - run:
+          name: Upgrade testnet deployments
+          command: |
+            cd ~/GaloyApp/backend/firebase/functions/ && ./initLocalTest.sh testnet
 
   mainnet_deploy:
     working_directory: ~/GaloyApp/backend
@@ -160,10 +167,17 @@ workflows:
       - test:
           requires:
             - build_test_image
+      - testnet_deploy:
+          requires:
+            - test
+          filters:
+            branches:
+              only:
+                - master  
       - approve_mainnet_deploy:
           type: approval
           requires:
-            - test
+            - testnet_deploy
           filters:
             branches:
               only:
