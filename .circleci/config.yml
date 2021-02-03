@@ -114,10 +114,13 @@ jobs:
       - gcp-cli/install
       - gke-auth
       - run: curl https://baltocdn.com/helm/signing.asc | sudo apt-key add -
-      - run: sudo apt-get install apt-transport-https --yes
+      - run: curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+      - run: sudo apt-get update && sudo apt-get install -y apt-transport-https gnupg2 curl
       - run: echo "deb https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+      - run: echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list
       - run: sudo apt-get update
-      - run: sudo apt-get install helm
+      - run: sudo apt-get install -y kubectl helm
+
       - run:
           name: Upgrade testnet deployments
           command: |
