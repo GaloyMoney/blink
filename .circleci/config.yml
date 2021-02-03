@@ -111,7 +111,8 @@ jobs:
     steps:
       - checkout:
           path: ~/GaloyApp
-      - gcp-cli/install_and_initialize_cli
+      - gcp-cli/install_and_initialize_cli:
+          executor: gcp-cli/default
       - gke-auth
       - run: curl https://baltocdn.com/helm/signing.asc | sudo apt-key add -
       - run: sudo apt-get install apt-transport-https --yes
