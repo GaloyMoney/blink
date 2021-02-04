@@ -38,8 +38,12 @@ afterAll(async () => {
   jest.restoreAllMocks()
 })
 
+
 it('funds bitcoind wallet', async () => {
-	const bitcoindAddress = await bitcoindDefaultClient.getNewAddress()
+  const {name} = await bitcoindDefaultClient.createWallet("")
+  expect(name).toBe("")
+
+  const bitcoindAddress = await bitcoindDefaultClient.getNewAddress()
 	await bitcoindDefaultClient.generateToAddress(numOfBlock, bitcoindAddress)
 	await bitcoindDefaultClient.generateToAddress(100, RANDOM_ADDRESS)
 	const balance = await bitcoindDefaultClient.getBalance()

@@ -39,7 +39,7 @@ const connection_obj = {
 }
 
 export const BitcoindClient = ({wallet = ""}) => new bitcoindClient({...connection_obj, wallet})
-export const bitcoindDefaultClient = BitcoindClient({})
+export const bitcoindDefaultClient = BitcoindClient({wallet: ""})
 
 export const amountOnVout = ({ vout, onchain_addresses }): number => {
   // TODO: check if this is always [0], ie: there is always a single addresses for vout for lnd output
