@@ -419,6 +419,7 @@ export const setupMongoConnection = async () => {
       useUnifiedTopology: true,
       useCreateIndex: true,
       useFindAndModify: false
+      // replset: {readPreference: 'secondary'}
     })
     mongoose.set('runValidators', true)
     await User.syncIndexes()
