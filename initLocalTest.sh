@@ -52,6 +52,7 @@ helmUpgrade () {
 }
 
 monitoringDeploymentsUpgrade() {
+  SECRET=alertmanager-keys
   local NAMESPACE=monitoring
 
   export SLACK_API_URL=$(kubectl get secret -n $NAMESPACE $SECRET -o jsonpath="{.data.SLACK_API_URL}" | base64 -d)

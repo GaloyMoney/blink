@@ -163,7 +163,8 @@ export async function getBosScore() {
     const bosScore = find(data.data, { publicKey })
     return bosScore.score
   } catch (err) {
-    baseLogger.error({ err, err2: err.toJson() }, `issue getting bos rank`)
+    // err2: err.toJson() does not work
+    baseLogger.error({ err }, `issue getting bos rank`)
   }
 }
 
