@@ -1,6 +1,5 @@
 set -e
 
-helm repo add stable --force-update https://charts.helm.sh/stable
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo add grafana https://grafana.github.io/helm-charts
@@ -109,13 +108,14 @@ sleep 8
 
 if [ ${LOCAL} ] 
 then 
-  kubectlLndDeletionWait
+  kubectlLndDeletionWait 
   localdevpath="-f $INFRADIR/lnd/localdev.yaml \
     --set instances[0].staticIP=$MINIKUBEIP \
     --set instances[1].staticIP=$MINIKUBEIP \
     --set instances[2].staticIP=$MINIKUBEIP \
     --set configmap[0].staticIP=$MINIKUBEIP \
-    --set configmap[1].staticIP=$MINIKUBEIP "
+    --set configmap[1].staticIP=$MINIKUBEIP"
+
 fi
 
 helmUpgrade lnd -f $INFRADIR/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd/
