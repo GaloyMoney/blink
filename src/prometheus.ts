@@ -50,7 +50,12 @@ const main = async () => {
       logger.error({err}, `issue getting price`)
     }
     
-    bos_g.set(await getBosScore())
+    try {
+      const bosScore = await getBosScore()
+      bos_g.set(bosScore)
+    } catch(err) {
+      logger.error({ err }, `error getting and setting bos score`)
+    }
     
     const { lightning, liabilities } = await cron.getBalanceSheet()
     const { assetsLiabilitiesDifference, bookingVersusRealWorldAssets } = await cron.balanceSheetIsBalanced()
