@@ -195,7 +195,7 @@ workflows:
       - slack/approval-notification:
           mentions: 'U011J7RCEFQ,U011KKL1L4B'
           requires:
-            - test
+            - testnet_deploy
           filters:
             branches:
               only:
