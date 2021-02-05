@@ -44,7 +44,7 @@ export const checkIsBalanced = async () => {
 	expect(assetsLiabilitiesDifference).toBeFalsy() // should be 0
   
   // FIXME: because safe_fees is doing rounding to the value up
-  // balance doesn't match any longer. need to go from sats to msats to manage this usecase
+  // balance doesn't match any longer. need to go from sats to msats to properly account for every msats spent
   expect(bookingVersusRealWorldAssets).toBeLessThan(5) // should be 0
 }
 
