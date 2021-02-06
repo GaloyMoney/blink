@@ -28,7 +28,7 @@ export class SpecterWallet {
     return bitcoindDefaultClient.createWallet({wallet_name: "specter/coldstorage"})
   }
 
-  async setBitcoindClient() {
+  async setBitcoindClient(): Promise<string> {
     const wallets = await SpecterWallet.listWallets()
 
     const pattern = "specter"
@@ -44,6 +44,8 @@ export class SpecterWallet {
     }
 
     this.bitcoindClient = BitcoindClient({wallet: specterWallets[0]})
+
+    return specterWallets[0]
   }
 
   async getColdStorageAddress() {

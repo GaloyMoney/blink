@@ -3,7 +3,7 @@ import { setupMongoConnection, User } from "./mongodb";
 import { Price } from "./priceImpl";
 import { baseLogger, getBosScore } from "./utils";
 import { getBrokerWallet, getFunderWallet } from "./walletFactory";
-
+import { SpecterWallet } from "./SpecterWallet"
 
 const logger = baseLogger.child({module: "prometheus"})
 
@@ -95,9 +95,10 @@ const main = async () => {
 
     fundingRate_g.set(await brokerWallet.getNextFundingRate())
 
-    const specterWallet = new SpecterWallet({ uid: user._id, user: new User(), logger: baseLogger, lastPrice })
-
-    getBitcoindBalance
+    const specterWallet = new SpecterWallet({ logger })
+    const walletName = await specterWallet.setBitcoindClient()
+    const specter_g = new client.Gauge({ name: `${prefix}_${walletName}`, help: 'amount in cold storage' })
+    specter_g.set(await specterWallet.getBitcoindBalance())
 
     res.set('Content-Type', register.contentType);
     res.end(register.metrics());
