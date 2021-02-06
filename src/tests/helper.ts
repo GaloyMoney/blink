@@ -3,8 +3,9 @@ import { Cron } from "../CronClass";
 import { BrokerWallet } from "../BrokerWallet";
 import { User } from "../mongodb";
 import { OnboardingEarn } from "../types";
-import { baseLogger, getAuth, sleep } from "../utils";
+import { baseLogger, sleep } from "../utils";
 import { getTokenFromPhoneIndex, WalletFactory } from "../walletFactory";
+import { lnd } from "../lndConfig";
 
 export const username = "user0"
 
@@ -14,7 +15,7 @@ const earnsToGet = ['buyFirstSats', 'debitCardActivation', 'firstCardSpending']
 export const onBoardingEarnAmt: number = Object.keys(OnboardingEarn).filter(k => find(earnsToGet, o => o === k) ).reduce((p, k) => p + OnboardingEarn[k], 0)
 export const onBoardingEarnIds: string[] = earnsToGet
 
-export const lndMain = lnService.authenticatedLndGrpc(getAuth()).lnd
+export const lndMain = lnd
 
 export const lndOutside1 = lnService.authenticatedLndGrpc({
   cert: process.env.TLSOUTSIDE1,

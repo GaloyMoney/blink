@@ -3,10 +3,11 @@ import { assert } from "console";
 import { intersection, last } from "lodash";
 import moment from "moment";
 import { customerPath, lightningAccountingPath } from "./ledger";
+import { lnd } from "./lndConfig";
 import { disposer } from "./lock";
 import { MainBook, Transaction, User } from "./mongodb";
 import { IOnChainPayment, ISuccess, ITransaction } from "./types";
-import { amountOnVout, bitcoindDefaultClient, btc2sat, getAuth, LoggedError, LOOK_BACK, myOwnAddressesOnVout } from "./utils";
+import { amountOnVout, bitcoindDefaultClient, btc2sat, LoggedError, LOOK_BACK, myOwnAddressesOnVout } from "./utils";
 
 const using = require('bluebird').using
 
@@ -16,8 +17,7 @@ const using = require('bluebird').using
 const someAmount = 50000
 
 export const OnChainMixin = (superclass) => class extends superclass {
-  lnd = lnService.authenticatedLndGrpc(getAuth()).lnd
-
+  
   constructor(...args) {
     super(...args)
   }
@@ -41,7 +41,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
       fee = 0
     } else {
       const sendTo = [{ address, tokens: someAmount }];
-      ({ fee } = await lnService.getChainFeeEstimate({ lnd: this.lnd, send_to: sendTo }))
+      ({ fee } = await lnService.getChainFeeEstimate({ lnd, send_to: sendTo }))
     }
 
     return fee
@@ -98,14 +98,14 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
     onchainLogger = onchainLogger.child({onUs: false})
 
-    const { chain_balance: onChainBalance } = await lnService.getChainBalance({ lnd: this.lnd })
+    const { chain_balance: onChainBalance } = await lnService.getChainBalance({ lnd })
 
     let estimatedFee, id
 
     const sendTo = [{ address, tokens: amount }]
 
     try {
-      ({ fee: estimatedFee } = await lnService.getChainFeeEstimate({ lnd: this.lnd, send_to: sendTo }))
+      ({ fee: estimatedFee } = await lnService.getChainFeeEstimate({ lnd, send_to: sendTo }))
     } catch (err) {
       const error = `Unable to estimate fee for on-chain transaction`
       onchainLogger.error({ err, sendTo, success: false }, error)
@@ -131,13 +131,13 @@ export const OnChainMixin = (superclass) => class extends superclass {
     return await using(disposer(this.uid), async (lock) => {
       
       try {
-        ({ id } = await lnService.sendToChainAddress({ address, lnd: this.lnd, tokens: amount }))
+        ({ id } = await lnService.sendToChainAddress({ address, lnd, tokens: amount }))
       } catch (err) {
         onchainLogger.error({ err, address, tokens: amount, success: false }, "Impossible to sendToChainAddress")
         return false
       }
 
-      const outgoingOnchainTxns = await this.getOnChainTransactions({ lnd: this.lnd, incoming: false })
+      const outgoingOnchainTxns = await this.getOnChainTransactions({ lnd, incoming: false })
 
       const [{ fee }] = outgoingOnchainTxns.filter(tx => tx.id === id)
 
@@ -188,7 +188,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
     try {
       const format = 'p2wpkh';
       const response = await lnService.createChainAddress({
-        lnd: this.lnd,
+        lnd,
         format,
       })
       address = response.address
@@ -224,7 +224,6 @@ export const OnChainMixin = (superclass) => class extends superclass {
       const after = Math.max(0, current_block_height - LOOK_BACK) // this is necessary for tests, otherwise after may be negative
       const { transactions } = await lnService.getChainTransactions({ lnd, after })
 
-
       return transactions.filter(tx => incoming === !tx.is_outgoing)
     } catch (err) {
       const error = `issue fetching transaction`
@@ -235,7 +234,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
   async getOnchainReceipt({confirmed}: {confirmed: boolean}) {
 
-    const lnd_incoming_txs = await this.getOnChainTransactions({ lnd: this.lnd, incoming: true })
+    const lnd_incoming_txs = await this.getOnChainTransactions({ lnd, incoming: true })
     
     //        { block_id: '0000000000000b1fa86d936adb8dea741a9ecd5f6a58fc075a1894795007bdbc',
     //          confirmation_count: 712,

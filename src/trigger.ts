@@ -1,15 +1,16 @@
-import express from 'express';
-import { subscribeToChannels, subscribeToInvoices, subscribeToTransactions, subscribeToBackups } from 'ln-service';
-import { Storage } from '@google-cloud/storage'
-import { find } from "lodash";
-import { InvoiceUser, setupMongoConnection, Transaction, User, MainBook } from "./mongodb";
-import { lightningAccountingPath, lndFee } from "./ledger";
-import { sendInvoicePaidNotification, sendNotification } from "./notification";
-import { IDataNotification } from "./types";
-import { getAuth, baseLogger, LOOK_BACK } from './utils';
-import { WalletFactory } from "./walletFactory";
-import { Price } from "./priceImpl";
+import { Storage } from '@google-cloud/storage';
 import { Dropbox } from "dropbox";
+import express from 'express';
+import { subscribeToBackups, subscribeToChannels, subscribeToInvoices, subscribeToTransactions } from 'ln-service';
+import { find } from "lodash";
+import { lightningAccountingPath, lndFee } from "./ledger";
+import { lnd } from "./lndConfig";
+import { InvoiceUser, MainBook, setupMongoConnection, Transaction, User } from "./mongodb";
+import { sendInvoicePaidNotification, sendNotification } from "./notification";
+import { Price } from "./priceImpl";
+import { IDataNotification } from "./types";
+import { baseLogger, LOOK_BACK } from './utils';
+import { WalletFactory } from "./walletFactory";
 
 const crypto = require("crypto")
 const lnService = require('ln-service');
@@ -182,8 +183,6 @@ const updatePrice = async () => {
 }
 
 const main = async () => {
-  const { lnd } = lnService.authenticatedLndGrpc(getAuth())
-
   lnService.getWalletInfo({ lnd }, (err, result) => {
     logger.debug({ err, result }, 'getWalletInfo')
   });
@@ -205,8 +204,6 @@ const main = async () => {
 }
 
 const healthCheck = () => {
-  const { lnd } = lnService.authenticatedLndGrpc(getAuth())
-
   const app = express()
   const port = 8888
   app.get('/health', (req, res) => {

@@ -117,22 +117,6 @@ validate.extend(validate.validators.datetime, {
   }
 })
 
-export const getAuth = () => {
-  // network = process.env.NETWORK // TODO
-  const cert = process.env.TLS
-  const macaroon = process.env.MACAROON
-  const lndip = process.env.LNDIP
-  const port = process.env.LNDRPCPORT ?? 10009
-
-  if (!cert || !macaroon || !lndip) {
-    console.log({cert, macaroon, lndip})
-    throw new Error('missing environment variable for lnd')
-  }
-
-  const socket = `${lndip}:${port}`
-
-  return { macaroon, cert, socket };
-}
 
 export async function measureTime(operation: Promise<any>): Promise<[any, number]> {
   const startTime = process.hrtime()

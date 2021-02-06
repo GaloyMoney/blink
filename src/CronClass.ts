@@ -1,16 +1,15 @@
 import { filter, sumBy } from "lodash";
 import { accountingExpenses, escrowAccountingPath, lightningAccountingPath } from "./ledger";
 import { InvoiceUser, MainBook, Transaction, User } from "./mongodb";
-import { baseLogger, getAuth } from "./utils";
+import { baseLogger } from "./utils";
 import { getBrokerWallet, getFunderWallet, WalletFactory } from "./walletFactory";
+import { lnd } from "./lndConfig"
 const lnService = require('ln-service')
 
 const logger = baseLogger.child({module: "admin"})
 
 
 export class Cron {
-  readonly lnd = lnService.authenticatedLndGrpc(getAuth()).lnd
-
   async updateUsersPendingPayment() {
     let userWallet
 
@@ -35,7 +34,7 @@ export class Cron {
 
     const invoices = await InvoiceUser.find({ cashback: true })
     for (const invoice_db of invoices) {
-      const invoice = await lnService.getInvoice({ lnd: this.lnd, id: invoice_db._id })
+      const invoice = await lnService.getInvoice({ lnd, id: invoice_db._id })
       const result = await fundingWallet.pay({invoice: invoice.request, isReward: true})
       logger.info({invoice, invoice_db, result}, "cashback succesfully sent")
     }
@@ -68,14 +67,14 @@ export class Cron {
   }
 
   async lndBalances () {
-    const { chain_balance } = await lnService.getChainBalance({lnd: this.lnd})
-    const { channel_balance, pending_balance: opening_channel_balance } = await lnService.getChannelBalance({lnd: this.lnd})
+    const { chain_balance } = await lnService.getChainBalance({lnd})
+    const { channel_balance, pending_balance: opening_channel_balance } = await lnService.getChannelBalance({lnd})
 
     //FIXME: This can cause incorrect balance to be reported in case an unconfirmed txn is later cancelled/double spent
     // bitcoind seems to have a way to report this correctly. does lnd have?
-    const { pending_chain_balance } = await lnService.getPendingChainBalance({lnd: this.lnd})
+    const { pending_chain_balance } = await lnService.getPendingChainBalance({lnd})
 
-    const { channels: closedChannels } = await lnService.getClosedChannels({lnd: this.lnd})
+    const { channels: closedChannels } = await lnService.getClosedChannels({lnd})
 
     // FIXME: calculation seem wrong (seeing the grafana graph, need to double check)
     logger.debug({closedChannels}, "lnService.getClosedChannels")
@@ -87,14 +86,14 @@ export class Cron {
     return { total, onChain: chain_balance + pending_chain_balance, offChain: channel_balance, opening_channel_balance, closing_channel_balance } 
   }
 
-  getInfo = async () => lnService.getWalletInfo({ lnd: this.lnd });
+  getInfo = async () => lnService.getWalletInfo({ lnd });
 
   async updateEscrows() {
     const type = "escrow"
 
     const metadata = { type, currency: "BTC", pending: false }
 
-    const { channels } = await lnService.getChannels({lnd: this.lnd})
+    const { channels } = await lnService.getChannels({lnd})
     const selfInitated = filter(channels, {is_partner_initiated: false})
 
     const mongotxs = await Transaction.aggregate([
