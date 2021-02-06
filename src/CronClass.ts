@@ -4,6 +4,7 @@ import { InvoiceUser, MainBook, Transaction, User } from "./mongodb";
 import { baseLogger } from "./utils";
 import { getBrokerWallet, getFunderWallet, WalletFactory } from "./walletFactory";
 import { lnd } from "./lndConfig"
+import { SpecterWallet } from "./SpecterWallet";
 const lnService = require('ln-service')
 
 const logger = baseLogger.child({module: "admin"})
@@ -57,8 +58,16 @@ export class Cron {
     const brokerWallet = await getBrokerWallet({ logger })
     const { sats: ftx } = await brokerWallet.getExchangeBalance()
 
+    const specterWallet = new SpecterWallet({ logger })
+    await specterWallet.setBitcoindClient()
+    let specter = await specterWallet.getBitcoindBalance()
+
+    if (isNaN(specter)) {
+      specter = 0
+    }
+
     const assetsLiabilitiesDifference = assets + (liabilities + expenses)
-    const bookingVersusRealWorldAssets = (lnd + ftx) - lightning
+    const bookingVersusRealWorldAssets = (lnd + ftx + specter) - lightning
     if(!!bookingVersusRealWorldAssets) {
       logger.debug({lnd, lightning, bookingVersusRealWorldAssets, assets, liabilities, expenses}, `not balanced`)
     }

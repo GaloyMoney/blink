@@ -4,7 +4,7 @@
 import { quit } from "../lock";
 import { MainBook, setupMongoConnection } from "../mongodb";
 import { SpecterWallet } from "../SpecterWallet";
-import { mockGetExchangeBalance, RANDOM_ADDRESS } from "../tests/helper";
+import { checkIsBalanced, mockGetExchangeBalance, RANDOM_ADDRESS } from "../tests/helper";
 import { baseLogger, bitcoindDefaultClient, sleep } from "../utils";
 import { lnd } from "../lndConfig";
 import { bitcoindAccountingPath } from "../ledger";
@@ -31,7 +31,7 @@ beforeEach(async () => {
 })
 
 afterEach(async () => {
-  // await checkIsBalanced()
+  await checkIsBalanced()
 })
 
 afterAll(async () => {

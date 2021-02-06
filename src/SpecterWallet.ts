@@ -39,7 +39,14 @@ export class SpecterWallet {
     // someone getting access to specter could create another 
     // hotkey-based specter wallet to bypass this check
 
-    if (specterWallets.length !== 1) {
+    if (specterWallets.length === 0) {
+      this.logger.warn("specter wallet has not been instanciated")
+      
+      // currently use for testing purpose. need to refactor
+      return ""
+    }
+
+    if (specterWallets.length > 1) {
       throw Error("only one specter wallet in bitcoind is currently supported")
     }
 
@@ -68,7 +75,11 @@ export class SpecterWallet {
     return this.bitcoindClient.getAddressInfo({address})
   }
 
-  async getBitcoindBalance() {
+  async getBitcoindBalance(): Promise<number> {
+    if (!this.bitcoindClient) {
+      return NaN
+    }
+
     return btc2sat(await this.bitcoindClient.getBalance())
   }
 
@@ -117,7 +128,7 @@ export class SpecterWallet {
 
     const memo = `withdrawal of ${sats} sats from specter wallet to lnd`
 
-    // TODO: unlike other address, this one will not be attached to an account
+    // TODO: unlike other address, this one will not be attached to a user account
     // check if it's possible to add a label to this address in lnd.
     const { address } = await lnService.createChainAddress({
       lnd,
