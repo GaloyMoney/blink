@@ -1,26 +1,52 @@
-import { bitcoindAccountingPath, customerPath, lightningAccountingPath, lndFee } from "./ledger";
+import { filter } from "lodash";
+import { bitcoindAccountingPath, lightningAccountingPath, lndFee } from "./ledger";
+import { lnd } from "./lndConfig";
 import { MainBook } from "./mongodb";
-import { OnChainMixin } from "./OnChain";
-import { BitcoindClient, btc2sat, getAuth, sat2btc } from "./utils";
-import { UserWallet } from "./wallet";
+import { getOnChainTransactions } from "./OnChain";
+import { BitcoindClient, bitcoindDefaultClient, btc2sat, sat2btc } from "./utils";
 
-export class SpecterWallet extends OnChainMixin(UserWallet) {
-  readonly currency = "BTC"
+const lnService = require('ln-service');
+
+
+// TODO: we should not rely on OnChainMixin/UserWallet for this "wallet"
+
+export class SpecterWallet {
   bitcoindClient 
-  wallet = "coldstorage"
+  logger
 
-  get accountPath(): string {
-    return customerPath(this.uid)
-  }
-
-  constructor({ uid, user, logger, lastPrice }) {
-    super({ uid, user, logger, currency: "BTC", lastPrice })
+  constructor({ logger }) {
     this.logger = logger.child({ topic: "bitcoind" })
-
-    this.bitcoindClient = BitcoindClient({wallet: this.wallet})
   }
 
-  async createDepositAddress() {
+  // static method are wallet agnostics
+
+  static async listWallets() {
+    return bitcoindDefaultClient.listWallets()
+  }
+
+  static async createWallet() {
+    return bitcoindDefaultClient.createWallet({wallet_name: "specter/coldstorage"})
+  }
+
+  async setBitcoindClient() {
+    const wallets = await SpecterWallet.listWallets()
+
+    const pattern = "specter"
+    const specterWallets = filter(wallets, item => item.startsWith(pattern))
+
+    // there should be only one specter wallet
+    // TODO/FIXME this is a weak security assumption
+    // someone getting access to specter could create another 
+    // hotkey-based specter wallet to bypass this check
+
+    if (specterWallets.length !== 1) {
+      throw Error("only one specter wallet in bitcoind is currently supported")
+    }
+
+    this.bitcoindClient = BitcoindClient({wallet: specterWallets[0]})
+  }
+
+  async getColdStorageAddress() {
     return this.bitcoindClient.getNewAddress()
   }
 
@@ -34,16 +60,6 @@ export class SpecterWallet extends OnChainMixin(UserWallet) {
   // to import a descriptor:
   // https://github.com/BlockchainCommons/Learning-Bitcoin-from-the-Command-Line/blob/master/03_5_Understanding_the_Descriptor.md
   // bitcoin-cli importmulti `${descriptor}`
-
-  async createWallet() {
-    return this.bitcoindClient.createWallet({wallet_name: "coldstorage"})
-  }
-
-  async listWallets() {
-    return this.bitcoindClient.listWallets()
-  }
-
-
 
 
   async getAddressInfo({address}) {
@@ -59,58 +75,52 @@ export class SpecterWallet extends OnChainMixin(UserWallet) {
   }
 
   async toColdStorage({ sats }) {
-    const currency = this.currency
-
-    const address = await this.createDepositAddress()
-
-    // FIXME: we are crediting the account first because 
-    // otherwise the balance will be negative
-    // FIXME: estimating the fee is not a good idea here. use actual fees.
-    const lnService = require('ln-service');
-    const { lnd } = lnService.authenticatedLndGrpc(getAuth())
+    const address = await this.getColdStorageAddress()
     
-    // FIXME: fee are an estimate. may not be what is actually paid
-    const { fee } = await lnService.getChainFeeEstimate({ lnd, send_to: [{ address, tokens: sats }] })
-
-    const metadata = { type: "to_cold_storage", currency, ...this.getCurrencyEquivalent({sats, fee}), pending: false }
-    
-    const memo = `deposit of ${sats} sats to the cold storage wallet`
-
-    // onChainPay is doing:
-    //
-    // await MainBook.entry(memo)
-    // .debit(lightningAccountingPath, sats + fee, metadata)
-    // .credit(this.accountPath, sats + fee, metadata)
-    // .commit()
-    //
-    // we're doing 2 transactions here on medici.
-    // explore a way to refactor this to make a single transaction.
-
-    
-    await MainBook.entry()
-      .debit(this.accountPath, sats + fee, {...metadata, memo })
-      .credit(lndFee, fee, {...metadata, memo })
-      .credit(bitcoindAccountingPath, sats, {...metadata, memo })
-      .commit()
+    let id
 
     try {
-      await this.onChainPay({ address, amount: sats, memo })
+      ({ id } = await lnService.sendToChainAddress({ address, lnd, tokens: sats }))
     } catch (err) {
       this.logger.fatal({err}, "could not send to deposit. accounting to be reverted")
     }
+    
+    const memo = `deposit of ${sats} sats to the cold storage wallet`
 
-    this.logger.info({...metadata, currency, sats, memo, address}, "deposit rebalancing succesful")
+    const outgoingOnchainTxns = await getOnChainTransactions({ lnd, incoming: false })
+    const [{ fee }] = outgoingOnchainTxns.filter(tx => tx.id === id)
+
+    // add ...UserWallet.getCurrencyEquivalent({sats, fee}), 
+    const metadata = { 
+      type: "to_cold_storage", 
+      currency: "BTC", 
+      pending: false,
+      hash: id,
+      fee
+    }
+
+    await MainBook.entry(memo)
+      .debit(lightningAccountingPath, sats + fee, {...metadata })
+      .credit(lndFee, fee, {...metadata })
+      .credit(bitcoindAccountingPath, sats, {...metadata })
+      .commit()
+
+    this.logger.info({...metadata, sats, memo, address, fee}, "deposit rebalancing successful")
   }
 
   async toLndWallet ({ sats }) {
-    const currency = this.currency
+    // ...this.getCurrencyEquivalent({sats, fee: 0}),
+    const metadata = { type: "to_hot_wallet", currency: "BTC", pending: false }
+    let subLogger = this.logger.child({...metadata, sats })
 
-    const metadata = { type: "to_hot_wallet", currency, ...this.getCurrencyEquivalent({sats, fee: 0}), pending: false }
-    let subLogger = this.logger.child({...metadata, currency, sats })
+    const memo = `withdrawal of ${sats} sats from specter wallet to lnd`
 
-    const memo = `withdrawal of ${sats} sats from ${this.wallet} bitcoind wallet`
-
-    const address = await this.getLastOnChainAddress()
+    // TODO: unlike other address, this one will not be attached to an account
+    // check if it's possible to add a label to this address in lnd.
+    const { address } = await lnService.createChainAddress({
+      lnd,
+      format: 'p2wpkh',
+    })
 
     let withdrawalResult
 

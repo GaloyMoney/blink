@@ -95,6 +95,10 @@ const main = async () => {
 
     fundingRate_g.set(await brokerWallet.getNextFundingRate())
 
+    const specterWallet = new SpecterWallet({ uid: user._id, user: new User(), logger: baseLogger, lastPrice })
+
+    getBitcoindBalance
+
     res.set('Content-Type', register.contentType);
     res.end(register.metrics());
   })

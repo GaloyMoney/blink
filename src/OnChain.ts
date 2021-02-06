@@ -7,7 +7,7 @@ import { lnd } from "./lndConfig";
 import { disposer } from "./lock";
 import { MainBook, Transaction, User } from "./mongodb";
 import { IOnChainPayment, ISuccess, ITransaction } from "./types";
-import { amountOnVout, bitcoindDefaultClient, btc2sat, LoggedError, LOOK_BACK, myOwnAddressesOnVout } from "./utils";
+import { amountOnVout, baseLogger, bitcoindDefaultClient, btc2sat, LoggedError, LOOK_BACK, myOwnAddressesOnVout } from "./utils";
 
 const using = require('bluebird').using
 
@@ -15,6 +15,21 @@ const using = require('bluebird').using
 // we don't want to go back and forth between RN and the backend if amount changes
 // but fees are the same
 const someAmount = 50000
+
+
+export const getOnChainTransactions = async ({ lnd, incoming }: { lnd: any, incoming: boolean }) => {
+  try {
+    const { current_block_height } = await lnService.getHeight({lnd})
+    const after = Math.max(0, current_block_height - LOOK_BACK) // this is necessary for tests, otherwise after may be negative
+    const { transactions } = await lnService.getChainTransactions({ lnd, after })
+
+    return transactions.filter(tx => incoming === !tx.is_outgoing)
+  } catch (err) {
+    const error = `issue fetching transaction`
+    baseLogger.error({err, incoming}, error)
+    throw new LoggedError(error)
+  }
+}
 
 export const OnChainMixin = (superclass) => class extends superclass {
   
@@ -137,7 +152,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
         return false
       }
 
-      const outgoingOnchainTxns = await this.getOnChainTransactions({ lnd, incoming: false })
+      const outgoingOnchainTxns = await getOnChainTransactions({ lnd, incoming: false })
 
       const [{ fee }] = outgoingOnchainTxns.filter(tx => tx.id === id)
 
@@ -218,23 +233,9 @@ export const OnChainMixin = (superclass) => class extends superclass {
     return address
   }
 
-  async getOnChainTransactions({ lnd, incoming }: { lnd: any, incoming: boolean }) {
-    try {
-      const { current_block_height } = await lnService.getHeight({lnd})
-      const after = Math.max(0, current_block_height - LOOK_BACK) // this is necessary for tests, otherwise after may be negative
-      const { transactions } = await lnService.getChainTransactions({ lnd, after })
-
-      return transactions.filter(tx => incoming === !tx.is_outgoing)
-    } catch (err) {
-      const error = `issue fetching transaction`
-      this.logger.error({err, incoming}, error)
-      throw new LoggedError(error)
-    }
-  }
-
   async getOnchainReceipt({confirmed}: {confirmed: boolean}) {
 
-    const lnd_incoming_txs = await this.getOnChainTransactions({ lnd, incoming: true })
+    const lnd_incoming_txs = await getOnChainTransactions({ lnd, incoming: true })
     
     //        { block_id: '0000000000000b1fa86d936adb8dea741a9ecd5f6a58fc075a1894795007bdbc',
     //          confirmation_count: 712,
