@@ -1,5 +1,5 @@
 import { find } from "lodash";
-import { Cron } from "../CronClass";
+import { balanceSheetIsBalanced, updateUsersPendingPayment } from "../balanceSheet";
 import { BrokerWallet } from "../BrokerWallet";
 import { User } from "../mongodb";
 import { OnboardingEarn } from "../types";
@@ -39,9 +39,8 @@ export const getUserWallet = async userNumber => {
 }
 
 export const checkIsBalanced = async () => {
-	const cron = new Cron()
-  await cron.updateUsersPendingPayment()
-  const { assetsLiabilitiesDifference, bookingVersusRealWorldAssets } = await cron.balanceSheetIsBalanced()
+  await updateUsersPendingPayment()
+  const { assetsLiabilitiesDifference, bookingVersusRealWorldAssets } = await balanceSheetIsBalanced()
 	expect(assetsLiabilitiesDifference).toBeFalsy() // should be 0
   
   // FIXME: because safe_fees is doing rounding to the value up

@@ -2,13 +2,13 @@
  * @jest-environment node
  */
 import { createHash, randomBytes } from 'crypto';
-import { Cron } from "../CronClass";
-import { FEECAP } from "../Lightning";
 import { quit } from "../lock";
 import { InvoiceUser, setupMongoConnection, Transaction } from "../mongodb";
 import { checkIsBalanced, getUserWallet, lndOutside1, lndOutside2, mockGetExchangeBalance, onBoardingEarnAmt, onBoardingEarnIds, username } from "../tests/helper";
 import { getHash, sleep } from "../utils";
 import { lnd } from "../lndConfig";
+import { payCashBack } from "../balanceSheet";
+import { FEECAP } from "../lndConfig"
 
 const lnService = require('ln-service')
 const mongoose = require("mongoose")
@@ -238,8 +238,7 @@ functionToTests.forEach(({fn, name, initialFee}) => {
     
     if (process.env.CASHBACK) {
       const tx_count = await Transaction.countDocuments()
-      const cron = new Cron()
-      await cron.payCashBack()
+      await payCashBack()
       expect(await Transaction.countDocuments()).toBe(tx_count + 4)
     }
 

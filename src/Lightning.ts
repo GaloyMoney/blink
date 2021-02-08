@@ -3,7 +3,7 @@ const assert = require('assert').strict;
 import { createHash, randomBytes } from "crypto";
 import moment from "moment";
 import { brokerLndPath, brokerPath, customerPath, lightningAccountingPath } from "./ledger";
-import { lnd } from "./lndConfig";
+import { FEECAP, FEEMIN, lnd, TIMEOUT_PAYMENT } from "./lndConfig";
 import { disposer, getAsyncRedisClient } from "./lock";
 import { InvoiceUser, MainBook, Transaction, User } from "./mongodb";
 import { sendInvoicePaidNotification } from "./notification";
@@ -13,11 +13,6 @@ import { isInvoiceAlreadyPaidError, LoggedError, timeout } from "./utils";
 const util = require('util')
 
 const using = require('bluebird').using
-
-const TIMEOUT_PAYMENT = process.env.NETWORK !== "regtest" ? 45000 : 3000
-
-export const FEECAP = 0.02 // = 2%
-export const FEEMIN = 10 // sats
 
 export type ITxType = "invoice" | "payment" | "onchain_receipt" | "onchain_payment" | "on_us"
 export type payInvoiceResult = "success" | "failed" | "pending" | "already_paid"

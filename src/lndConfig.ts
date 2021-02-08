@@ -1,3 +1,5 @@
+const lnService = require('ln-service');
+
 const getAuth = () => {
   // network = process.env.NETWORK // TODO
   const cert = process.env.TLS
@@ -15,5 +17,9 @@ const getAuth = () => {
   return { macaroon, cert, socket };
 }
 
-const lnService = require('ln-service');
 export const lnd = lnService.authenticatedLndGrpc(getAuth()).lnd
+
+export const TIMEOUT_PAYMENT = process.env.NETWORK !== "regtest" ? 45000 : 3000
+
+export const FEECAP = 0.02 // = 2%
+export const FEEMIN = 10 // sats

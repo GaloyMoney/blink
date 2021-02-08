@@ -1,9 +1,9 @@
-import { Cron } from "./CronClass";
 import { setupMongoConnection, User } from "./mongodb";
 import { Price } from "./priceImpl";
-import { baseLogger, getBosScore } from "./utils";
+import { baseLogger, getBosScore, lndBalances } from "./utils";
 import { getBrokerWallet, getFunderWallet } from "./walletFactory";
 import { SpecterWallet } from "./SpecterWallet"
+import { getBalanceSheet, balanceSheetIsBalanced } from "./balanceSheet"
 
 const logger = baseLogger.child({module: "prometheus"})
 
@@ -39,8 +39,6 @@ const price_g = new client.Gauge({ name: `${prefix}_price`, help: 'BTC/USD price
 const bos_g = new client.Gauge({ name: `${prefix}_bos`, help: 'bos score' })
 
 const main = async () => {
-	const cron = new Cron()
-
   server.get('/metrics', async (req, res) => {
     
     try {
@@ -57,14 +55,14 @@ const main = async () => {
       logger.error({ err }, `error getting and setting bos score`)
     }
     
-    const { lightning, liabilities } = await cron.getBalanceSheet()
-    const { assetsLiabilitiesDifference, bookingVersusRealWorldAssets } = await cron.balanceSheetIsBalanced()
+    const { lightning, liabilities } = await getBalanceSheet()
+    const { assetsLiabilitiesDifference, bookingVersusRealWorldAssets } = await balanceSheetIsBalanced()
     liabilities_g.set(liabilities)
     lightning_g.set(lightning)
     assetsLiabilitiesDifference_g.set(assetsLiabilitiesDifference)
     bookingVersusRealWorldAssets_g.set(bookingVersusRealWorldAssets)
     
-    const { total, onChain, offChain, opening_channel_balance, closing_channel_balance } = await cron.lndBalances()
+    const { total, onChain, offChain, opening_channel_balance, closing_channel_balance } = await lndBalances()
     lnd_g.set(total)
     lndOnChain_g.set(onChain)
     lndOffChain_g.set(offChain)
