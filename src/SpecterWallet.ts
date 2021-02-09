@@ -89,17 +89,17 @@ export class SpecterWallet {
     const lnd_holding_base = btc2sat(1)
 
     // we are need to move money from cold storage to the lnd wallet
-    const lowBoundLnd = lnd_holding_base * 70n / 100n
+    const lowBoundLnd = lnd_holding_base * 70 / 100
 
     // when we are moving money out of lnd to multisig storage
-    const targetHighBound = lnd_holding_base * 130n / 100n
+    const targetHighBound = lnd_holding_base * 130 / 100
 
     // what is the target lnd wallet holding when it reached the high bound
     // and we are getting bitcoin from the cold storage
-    const targetFromLowBound = lnd_holding_base * 90n / 100n
+    const targetFromLowBound = lnd_holding_base * 90 / 100
     
     // what is the target lnd wallet holding when it reached the high bound 
-    const targetFromHighBound = lnd_holding_base * 110n / 100n
+    const targetFromHighBound = lnd_holding_base * 110 / 100
 
     if (lndBalance > targetHighBound) {
       return { action: "deposit", amount: lndBalance - targetFromHighBound }
