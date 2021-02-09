@@ -94,7 +94,7 @@ const mineBlockAndSync = async ({ lnds, blockHeight }: { lnds: Array<any>, block
   await Promise.all(promiseArray)
 }
 
-it('opens channel from lnd1 to lndOutside1', async () => {
+it('opens channel from lnd1ToLndOutside1', async () => {
   const socket = `lnd-outside-1:9735`
   const { balance: initFeeInLedger } = await MainBook.balance({
     account: lndFee,
@@ -176,12 +176,12 @@ it('returns correct nodeStats', async () => {
   expect(channelsCount).toBe(channelLengthMain + 2)
 })
 
-it('escrow update 1', async () => {
+it('escrow update1', async () => {
   await updateEscrows()
   await checkIsBalanced()
 })
 
-it('escrow update 2', async () => {
+it('escrow update2', async () => {
   await updateEscrows()
   await checkIsBalanced()
 })

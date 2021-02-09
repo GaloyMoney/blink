@@ -45,7 +45,7 @@ export const checkIsBalanced = async () => {
   
   // FIXME: because safe_fees is doing rounding to the value up
   // balance doesn't match any longer. need to go from sats to msats to properly account for every msats spent
-  expect(bookingVersusRealWorldAssets).toBeLessThan(5) // should be 0
+  expect(Math.abs(bookingVersusRealWorldAssets)).toBeLessThan(5) // should be 0
 }
 
 export async function waitUntilBlockHeight({ lnd, blockHeight }) {

@@ -160,8 +160,9 @@ export const onChannelUpdated = async ({ channel, lnd, stateChange }: { channel:
   const metadata = { currency: "BTC", txid: transaction_id, type: "fee", pending: false }
 
   await MainBook.entry(`channel ${stateChange} onchain fee`)
-    .credit(lightningAccountingPath, fee, { ...metadata, })
-    .debit(lndFee, fee, { ...metadata })
+    // TODO: make sure to inverse when merging the fix on credit/debit
+    .credit(lndFee, fee, { ...metadata, })
+    .debit(lightningAccountingPath, fee, { ...metadata })
     .commit()
 
   logger.info({ channel, fee, ...metadata }, `${stateChange} channel fee added to mongodb`)

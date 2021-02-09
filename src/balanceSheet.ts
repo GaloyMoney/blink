@@ -70,8 +70,11 @@ export const balanceSheetIsBalanced = async () => {
     + liabilities /* liabilities is negative */
     + expenses /* expense is negative */
   const bookingVersusRealWorldAssets = (lnd + ftx + specter) - lightning
-  if(!!bookingVersusRealWorldAssets) {
-    logger.debug({lnd, lightning, bookingVersusRealWorldAssets, assets, liabilities, expenses}, `not balanced`)
+  if(!!bookingVersusRealWorldAssets || !!assetsLiabilitiesDifference) {
+    logger.debug({
+      assetsLiabilitiesDifference, bookingVersusRealWorldAssets,
+      lnd, lightning, assets, liabilities, expenses, ftx, specter
+    }, `not balanced`)
   }
 
   return { assetsLiabilitiesDifference, bookingVersusRealWorldAssets }

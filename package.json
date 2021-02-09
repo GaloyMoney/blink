@@ -20,6 +20,7 @@
     "watch-devnet": ". ../../../infra/exportCloudDevnet.sh && nodemon -V -e ts,graphql -w ./src -x yarn ts-node src/index.ts | pino-pretty -c -l",
     "prometheus": "source exportLocal.sh && ts-node src/prometheus.ts",
     "lnd-connection": "source exportLocal.sh && echo $MACAROON | base64 -d > ./macaroon && echo $TLS | base64 -d > ./tls.cert && lncli --network regtest --macaroonpath=./macaroon --tlscertpath=./tls.cert --rpcserver=${LNDIP}:${LNDRPCPORT} getinfo",
+    "lncli": "source exportLocal.sh && echo $MACAROON | base64 -d > ./macaroon && echo $TLS | base64 -d > ./tls.cert && lncli --network regtest --macaroonpath=./macaroon --tlscertpath=./tls.cert --rpcserver=${LNDIP}:${LNDRPCPORT}",
     "postman": "yarn node src/postman/newman.ts",
     "bitcoin-cli": "kubectl exec bitcoind-container-0 -- bitcoin-cli -rpcuser=rpcuser -rpcpassword=rpcpass -chain=regtest",
     "update-postman": "curl --location --request GET \"https://api.getpostman.com/collections/4e3fee88-7267-44e1-a316-b81e90b0bd2b\" --header \"X-Api-Key: $POSTMANAPIKEY\" | jq . > src/postman/graphql.postman_collection.json",
