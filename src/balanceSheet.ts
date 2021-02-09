@@ -1,5 +1,5 @@
 import { filter } from "lodash";
-import { accountingExpenses, escrowAccountingPath, lightningAccountingPath } from "./ledger";
+import { lndFee, escrowAccountingPath, lightningAccountingPath } from "./ledger";
 import { lnd } from "./lndConfig";
 import { InvoiceUser, MainBook, Transaction, User } from "./mongodb";
 import { SpecterWallet } from "./SpecterWallet";
@@ -42,10 +42,10 @@ export const payCashBack = async () => {
 
 
 export const getBalanceSheet = async () => {    
-  const { balance: assets } = await MainBook.balance({accounts: "Assets", currency: "BTC"}) 
-  const { balance: liabilities } = await MainBook.balance({accounts: "Liabilities", currency: "BTC"}) 
+  const { balance: assets } = await MainBook.balance({account_path: "Assets", currency: "BTC"}) 
+  const { balance: liabilities } = await MainBook.balance({account_path: "Liabilities", currency: "BTC"}) 
   const { balance: lightning } = await MainBook.balance({accounts: lightningAccountingPath, currency: "BTC"}) 
-  const { balance: expenses } = await MainBook.balance({accounts: accountingExpenses, currency: "BTC"}) 
+  const { balance: expenses } = await MainBook.balance({accounts: lndFee, currency: "BTC"}) 
 
   return {assets, liabilities, lightning, expenses }
 }
@@ -65,7 +65,10 @@ export const balanceSheetIsBalanced = async () => {
     specter = 0
   }
 
-  const assetsLiabilitiesDifference = assets + (liabilities + expenses)
+  const assetsLiabilitiesDifference = 
+    assets /* assets is positive */
+    + liabilities /* liabilities is negative */
+    + expenses /* expense is negative */
   const bookingVersusRealWorldAssets = (lnd + ftx + specter) - lightning
   if(!!bookingVersusRealWorldAssets) {
     logger.debug({lnd, lightning, bookingVersusRealWorldAssets, assets, liabilities, expenses}, `not balanced`)

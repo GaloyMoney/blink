@@ -23,7 +23,6 @@ export const brokerPath = `Liabilities:Broker` // used for USD
 export const liabilitiesBrokerFtxPath = `Liabilities:Broker:Ftx`
 
 // expenses
-export const accountingExpenses = "Expenses"
 export const lndFee = 'Expenses:Bitcoin:Fees'
 
 // revenue
