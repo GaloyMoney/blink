@@ -5,7 +5,7 @@ import { quit } from "../lock";
 import { MainBook, setupMongoConnection } from "../mongodb";
 import { SpecterWallet } from "../SpecterWallet";
 import { checkIsBalanced, mockGetExchangeBalance, RANDOM_ADDRESS } from "../tests/helper";
-import { baseLogger, bitcoindDefaultClient, sleep } from "../utils";
+import { baseLogger, bitcoindDefaultClient, btc2sat, sleep } from "../utils";
 import { lnd } from "../lndConfig";
 import { bitcoindAccountingPath } from "../ledger";
 const lnService = require('ln-service');
@@ -60,7 +60,7 @@ it('deposit to bitcoind', async () => {
   const initBitcoindBalance = await specterWallet.getBitcoindBalance()
   const { chain_balance: initLndBalance } = await lnService.getChainBalance({ lnd })
   
-  const sats = 10000
+  const sats = 10000n
   
   await specterWallet.toColdStorage({ sats })
   await bitcoindDefaultClient.generateToAddress(6, RANDOM_ADDRESS)
@@ -81,8 +81,15 @@ it('deposit to bitcoind', async () => {
 
 })
 
+
+it('deposit amount calculation', async () => {
+  const lndBalance = btc2sat(2)
+  const result = SpecterWallet.isRebalanceNeeded({ lndBalance})
+
+  expect(result).toStrictEqual({action: "deposit", amount: 90000000n})  
+})
+
 it('withdrawing from bitcoind', async () => {
-  await specterWallet.setBitcoindClient()
 
   const initBitcoindBalance = await specterWallet.getBitcoindBalance()
   const { chain_balance: initLndBalance } = await lnService.getChainBalance({ lnd })
@@ -94,7 +101,7 @@ it('withdrawing from bitcoind', async () => {
   
   const bitcoindBalance = await specterWallet.getBitcoindBalance()
   
-  const { chain_balance: lndBalance } = await lnService.getChainBalance({ lnd })
+  // const { chain_balance: lndBalance } = await lnService.getChainBalance({ lnd })
   
   // console.log({initBitcoindBalance, bitcoindBalance, lndBalance, initLndBalance})
   // expect(bitcoindBalance).toBe(initBitcoindBalance - sats)
