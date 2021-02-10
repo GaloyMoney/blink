@@ -3,7 +3,7 @@ import { bitcoindAccountingPath, lightningAccountingPath, lndFeePath, bitcoindFe
 import { lnd } from "./lndConfig";
 import { MainBook } from "./mongodb";
 import { getOnChainTransactions } from "./OnChain";
-import { BitcoindClient, bitcoindDefaultClient, btc2sat, sat2btc } from "./utils";
+import { BitcoindClient, bitcoindDefaultClient, btc2sat, sat2btc, lndBalances } from "./utils";
 
 const lnService = require('ln-service');
 
@@ -18,7 +18,7 @@ export class SpecterWallet {
     this.logger = logger.child({ topic: "bitcoind" })
   }
 
-  // static method are wallet agnostics
+  // below static method are {wallet} agnostics from bitcoin-core api perspective
 
   static async listWallets() {
     return bitcoindDefaultClient.listWallets()
@@ -77,16 +77,51 @@ export class SpecterWallet {
 
   async getBitcoindBalance(): Promise<number> {
     if (!this.bitcoindClient) {
-      return NaN
+      const wallet = await this.setBitcoindClient()
+      if (wallet === "") {
+        return 0
+      }
     }
 
     return btc2sat(await this.bitcoindClient.getBalance())
   }
 
-  //     const { total } = await lndBalances()
+  async tentativelyRebalance(): Promise<void> {
+    if (!this.bitcoindClient) {
+      const wallet = await this.setBitcoindClient()
+      if (wallet === "") {
+        return 
+      }
+    }
+
+    const { total, onChain } = await lndBalances()
+    const { action, sats } = SpecterWallet.isRebalanceNeeded({ lndBalance: total })
+
+    const logger = this.logger.error({sats, action, total, onChain})
+
+    if (onChain < total) {
+      logger.error("rebalancing is needed, but not enough money is onchain (versus offchain/lightning)")
+      return
+    }
+
+    if (action === "deposit") {
+      this.toColdStorage({ sats })
+      logger.info("rebalancing succesfull")
+    } else if (action === "withdraw") {
+      logger.error("rebalancing is needed, but need manual intervention")
+      // this.toLndWallet({ sats })
+    } else {
+      logger.info("no rebalancing needed")
+    }
+  }
+
   static isRebalanceNeeded({ lndBalance }) {
     // base number to calculate the different thresholds below
     const lnd_holding_base = btc2sat(1)
+
+    // TODO: we should be able to pass thoses variable from config.yaml
+    const ratioTargetDeposit = 1
+    const ratioTargetWithdraw = 1 
 
     // we are need to move money from cold storage to the lnd wallet
     const lowBoundLnd = lnd_holding_base * 70 / 100
@@ -94,25 +129,33 @@ export class SpecterWallet {
     // when we are moving money out of lnd to multisig storage
     const targetHighBound = lnd_holding_base * 130 / 100
 
-    // what is the target lnd wallet holding when it reached the high bound
-    // and we are getting bitcoin from the cold storage
-    const targetFromLowBound = lnd_holding_base * 90 / 100
+    // what is the target amount to be in lnd wallet holding
+    // when there is too much money in lnd and we need to deposit in cold storage 
+    const targetDeposit = lnd_holding_base * ratioTargetDeposit
     
-    // what is the target lnd wallet holding when it reached the high bound 
-    const targetFromHighBound = lnd_holding_base * 110 / 100
+    // what is the target amount to be in lnd wallet holding 
+    //when there is a not enough money in lnd and we need to withdraw from cold storage
+    const targetWithdraw = lnd_holding_base * ratioTargetWithdraw
 
     if (lndBalance > targetHighBound) {
-      return { action: "deposit", amount: lndBalance - targetFromHighBound }
+      return { action: "deposit", sats: lndBalance - targetDeposit }
     }
 
     if (lndBalance < lowBoundLnd) {
-      return { action: "withdraw", amount: targetFromLowBound - lndBalance}
+      return { action: "withdraw", sats: targetWithdraw - lndBalance}
     }
 
     return { action: undefined }
   }
 
   async toColdStorage({ sats }) {
+    if (!this.bitcoindClient) {
+      const wallet = await this.setBitcoindClient()
+      if (wallet === "") {
+        return 
+      }
+    }
+
     const address = await this.getColdStorageAddress()
     
     let id
@@ -147,6 +190,13 @@ export class SpecterWallet {
   }
 
   async toLndWallet ({ sats }) {
+    if (!this.bitcoindClient) {
+      const wallet = await this.setBitcoindClient()
+      if (wallet === "") {
+        return 
+      }
+    }
+
     // TODO: move to an event based as the transaction
     // would get done in specter
 

@@ -1,11 +1,10 @@
 import { filter } from "lodash";
-import { lndFeePath, escrowAccountingPath, lightningAccountingPath, bitcoindAccountingPath } from "./ledger";
+import { bitcoindAccountingPath, escrowAccountingPath, lightningAccountingPath, lndFeePath } from "./ledger";
 import { lnd } from "./lndConfig";
 import { InvoiceUser, MainBook, Transaction, User } from "./mongodb";
 import { SpecterWallet } from "./SpecterWallet";
-import { baseLogger } from "./utils";
-import { getBrokerWallet, getFunderWallet, WalletFactory } from "./walletFactory";
-import { lndBalances } from "./utils"
+import { baseLogger, lndBalances } from "./utils";
+import { getFunderWallet, WalletFactory } from "./walletFactory";
 const lnService = require('ln-service')
 
 const logger = baseLogger.child({module: "admin"})
@@ -59,7 +58,6 @@ export const balanceSheetIsBalanced = async () => {
   // const { sats: ftx } = await brokerWallet.getExchangeBalance()
 
   const specterWallet = new SpecterWallet({ logger })
-  await specterWallet.setBitcoindClient()
   let bitcoind = await specterWallet.getBitcoindBalance()
 
   if (isNaN(bitcoind)) {

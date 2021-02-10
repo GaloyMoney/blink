@@ -63,8 +63,6 @@ it('createWallet', async () => {
 })
 
 it('deposit to bitcoind', async () => {
-  await specterWallet.setBitcoindClient()
-
   const initBitcoindBalance = await specterWallet.getBitcoindBalance()
   const { chain_balance: initLndBalance } = await lnService.getChainBalance({ lnd })
   
@@ -89,18 +87,7 @@ it('deposit to bitcoind', async () => {
 
 })
 
-
-it('deposit amount calculation', async () => {
-  const lndBalance = btc2sat(2)
-  const result = SpecterWallet.isRebalanceNeeded({ lndBalance})
-
-  expect(result).toStrictEqual({action: "deposit", amount: 90000000})  
-})
-
 it('withdrawing from bitcoind', async () => {
-
-  await specterWallet.setBitcoindClient()
-
   const initBitcoindBalance = await specterWallet.getBitcoindBalance()
   const { chain_balance: initLndBalance } = await lnService.getChainBalance({ lnd })
   
