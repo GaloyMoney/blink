@@ -37,6 +37,8 @@ const assetsLiabilitiesDifference_g = new client.Gauge({ name: `${prefix}_assets
 const bookingVersusRealWorldAssets_g = new client.Gauge({ name: `${prefix}_lndBalanceSync`, help: 'are lnd in syncs with our books' })
 const price_g = new client.Gauge({ name: `${prefix}_price`, help: 'BTC/USD price' })
 const bos_g = new client.Gauge({ name: `${prefix}_bos`, help: 'bos score' })
+const specter_g = new client.Gauge({ name: `${prefix}_bitcoind`, help: 'amount in cold storage' })
+
 
 const main = async () => {
   server.get('/metrics', async (req, res) => {
@@ -94,8 +96,6 @@ const main = async () => {
     fundingRate_g.set(await brokerWallet.getNextFundingRate())
 
     const specterWallet = new SpecterWallet({ logger })
-    const walletName = await specterWallet.setBitcoindClient()
-    const specter_g = new client.Gauge({ name: `${prefix}_${walletName}`, help: 'amount in cold storage' })
     specter_g.set(await specterWallet.getBitcoindBalance())
 
     res.set('Content-Type', register.contentType);
