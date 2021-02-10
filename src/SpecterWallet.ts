@@ -97,7 +97,7 @@ export class SpecterWallet {
     const { total, onChain } = await lndBalances()
     const { action, sats } = SpecterWallet.isRebalanceNeeded({ lndBalance: total })
 
-    const logger = this.logger.error({sats, action, total, onChain})
+    const logger = this.logger.child({sats, action, total, onChain})
 
     if (action === undefined) {
       logger.info("no rebalancing needed")
