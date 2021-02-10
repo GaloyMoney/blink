@@ -50,6 +50,8 @@ export class SpecterWallet {
       throw Error("only one specter wallet in bitcoind is currently supported")
     }
 
+    this.logger.info({wallet: specterWallets[0]}, "setting BitcoindClient")
+
     this.bitcoindClient = BitcoindClient({wallet: specterWallets[0]})
 
     return specterWallets[0]
@@ -158,6 +160,7 @@ export class SpecterWallet {
     if (!this.bitcoindClient) {
       const wallet = await this.setBitcoindClient()
       if (wallet === "") {
+        this.logger.warn("no wallet has been setup")
         return 
       }
     }
