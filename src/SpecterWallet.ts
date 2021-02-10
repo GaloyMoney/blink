@@ -185,9 +185,9 @@ export class SpecterWallet {
     const fee = btc2sat(- tx.fee) /* fee is negative */
 
     await MainBook.entry()
-      .debit(lightningAccountingPath, sats + fee, {...metadata, memo })
-      .credit(bitcoindAccountingPath, sats, {...metadata, memo })
-      .credit(bitcoindFeePath, fee, {...metadata, memo })
+      .debit(lightningAccountingPath, sats , {...metadata, memo })
+      .debit(bitcoindFeePath, fee, {...metadata, memo })
+      .credit(bitcoindAccountingPath, sats + fee, {...metadata, memo })
       .commit()
 
     subLogger.info({txid, tx}, `rebalancing withdrawal was succesful`)
