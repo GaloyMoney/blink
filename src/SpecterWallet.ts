@@ -185,7 +185,7 @@ export class SpecterWallet {
     const fee = btc2sat(- tx.fee) /* fee is negative */
 
     await MainBook.entry()
-      .debit(lightningAccountingPath, sats - fee, {...metadata, memo })
+      .debit(lightningAccountingPath, sats + fee, {...metadata, memo })
       .credit(bitcoindAccountingPath, sats, {...metadata, memo })
       .credit(bitcoindFeePath, fee, {...metadata, memo })
       .commit()
