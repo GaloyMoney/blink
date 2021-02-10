@@ -99,7 +99,12 @@ export class SpecterWallet {
 
     const logger = this.logger.error({sats, action, total, onChain})
 
-    if (onChain < total) {
+    if (action === undefined) {
+      logger.info("no rebalancing needed")
+      return
+    }
+
+    if (onChain < sats!) {
       logger.error("rebalancing is needed, but not enough money is onchain (versus offchain/lightning)")
       return
     }
@@ -110,9 +115,7 @@ export class SpecterWallet {
     } else if (action === "withdraw") {
       logger.error("rebalancing is needed, but need manual intervention")
       // this.toLndWallet({ sats })
-    } else {
-      logger.info("no rebalancing needed")
-    }
+    } 
   }
 
   static isRebalanceNeeded({ lndBalance }) {
