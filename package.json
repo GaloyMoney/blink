@@ -1,5 +1,5 @@
 {
-  "name": "functions",
+  "name": "galoy",
   "scripts": {
     "lint": "tslint --project tsconfig.json",
     "build": "tsc",
@@ -20,13 +20,14 @@
     "watch-devnet": ". ../../../infra/exportCloudDevnet.sh && nodemon -V -e ts,graphql -w ./src -x yarn ts-node src/index.ts | pino-pretty -c -l",
     "prometheus": "source exportLocal.sh && ts-node src/exporter.ts",
     "lnd-connection": "source exportLocal.sh && echo $MACAROON | base64 -d > ./macaroon && echo $TLS | base64 -d > ./tls.cert && lncli --network regtest --macaroonpath=./macaroon --tlscertpath=./tls.cert --rpcserver=${LNDIP}:${LNDRPCPORT} getinfo",
+    "lncli": "source exportLocal.sh && echo $MACAROON | base64 -d > ./macaroon && echo $TLS | base64 -d > ./tls.cert && lncli --network regtest --macaroonpath=./macaroon --tlscertpath=./tls.cert --rpcserver=${LNDIP}:${LNDRPCPORT}",
     "postman": "yarn node src/postman/newman.ts",
     "bitcoin-cli": "kubectl exec bitcoind-container-0 -- bitcoin-cli -rpcuser=rpcuser -rpcpassword=rpcpass -chain=regtest",
     "update-postman": "curl --location --request GET \"https://api.getpostman.com/collections/4e3fee88-7267-44e1-a316-b81e90b0bd2b\" --header \"X-Api-Key: $POSTMANAPIKEY\" | jq . > src/postman/graphql.postman_collection.json",
     "autocannon-rn-no-auth": "yarn autocannon https://graphql.testnet.galoy.io:443/graphql -m POST -H Content-Type=application/json -b '{\"query\":\"query gql_query_anonymous {\n  prices {\n    __typename\n    id\n    o\n  }\n  earnList {\n    __typename\n    id\n    value\n  }\n  maps {\n    __typename\n    id\n    title\n    coordinate {\n        __typename\n        latitude\n        longitude\n    }\n  }\n}\",\"variables\":{}}' -c 20 -d 10"
   },
   "engines": {
-    "node": "12"
+    "node": "14"
   },
   "main": "src/index.js",
   "dependencies": {

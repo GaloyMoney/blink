@@ -13,14 +13,14 @@ import { Price } from "./priceImpl";
 import { login, requestPhoneCode } from "./text";
 import { OnboardingEarn } from "./types";
 import { upgrade } from "./upgrade";
-import { baseLogger, customLoggerPrefix, getAuth, nodeStats } from "./utils";
+import { baseLogger, customLoggerPrefix, nodeStats } from "./utils";
 import { UserWallet } from "./wallet";
 import { WalletFactory, WalletFromUsername } from "./walletFactory";
 const util = require('util')
 const lnService = require('ln-service')
 const mongoose = require("mongoose");
 import { insertMarkers } from "./tool/map_csv_to_mongodb"
-
+import {lnd} from "./lndConfig"
 
 const path = require("path");
 dotenv.config()
@@ -52,8 +52,6 @@ const pino_http = require('pino-http')({
     ignorePaths: ["/healthz"]
   }
 })
-
-const { lnd } = lnService.authenticatedLndGrpc(getAuth())
 
 const commitHash = process.env.COMMITHASH
 const buildTime = process.env.BUILDTIME

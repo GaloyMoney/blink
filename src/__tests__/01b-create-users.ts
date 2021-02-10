@@ -1,13 +1,12 @@
 /**
  * @jest-environment node
  */
-const lnService = require('ln-service')
 import { setupMongoConnection, User } from "../mongodb";
 import { getUserWallet } from "../tests/helper"
 import { getTokenFromPhoneIndex } from "../walletFactory";
 import { UserWallet } from "../wallet"
-const mongoose = require("mongoose");
 import { insertMarkers } from "../tool/map_csv_to_mongodb"
+const mongoose = require("mongoose");
 
 
 let userWallet0, userWallet1, userWallet2

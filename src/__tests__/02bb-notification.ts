@@ -1,11 +1,15 @@
+/**
+ * @jest-environment node
+ */
+
 import { sendBalanceToUsers } from "../dailyBalanceNotification";
 import { customerPath } from "../ledger";
 import { quit } from "../lock";
-import { MainBook, setupMongoConnection, User, Transaction } from "../mongodb";
+import { MainBook, setupMongoConnection, Transaction, User } from "../mongodb";
 import { Price } from "../priceImpl";
-import { baseLogger } from "../utils";
-import { WalletFactory, getFunderWallet } from "../walletFactory";
 import { getUserWallet } from "../tests/helper";
+import { baseLogger } from "../utils";
+import { getFunderWallet } from "../walletFactory";
 jest.mock('../notification')
 const { sendNotification } = require("../notification")
 let price

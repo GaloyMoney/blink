@@ -30,8 +30,11 @@ export const brokerPath = `Liabilities:Broker` // used for USD
 export const liabilitiesBrokerFtxPath = `Liabilities:Broker:Ftx`
 
 // expenses
-export const accountingExpenses = "Expenses"
-export const lndFee = 'Expenses:Bitcoin:Fees'
+
+// FIXME Bitcoin --> Lnd
+export const lndFeePath = 'Expenses:Bitcoin:Fees'
+
+export const bitcoindFeePath = 'Expenses:Bitcoin:Fees'
 
 // revenue
 // export const revenueFees = 'Revenue:Lightning:Fees'

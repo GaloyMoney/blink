@@ -2,12 +2,12 @@
  * @jest-environment node
  */
 import { createHash, randomBytes } from 'crypto';
-import { Cron } from "../CronClass";
-import { FEECAP } from "../Lightning";
+import { payCashBack } from "../balanceSheet";
+import { FEECAP, lnd } from "../lndConfig";
 import { quit } from "../lock";
 import { InvoiceUser, setupMongoConnection, Transaction } from "../mongodb";
 import { checkIsBalanced, getUserWallet, lndOutside1, lndOutside2, mockGetExchangeBalance } from "../tests/helper";
-import { getAuth, getHash, sleep } from "../utils";
+import { getHash, sleep } from "../utils";
 
 const lnService = require('ln-service')
 const mongoose = require("mongoose")
@@ -199,8 +199,7 @@ functionToTests.forEach(({fn, name, initialFee}) => {
     
     if (process.env.CASHBACK) {
       const tx_count = await Transaction.countDocuments()
-      const cron = new Cron()
-      await cron.payCashBack()
+      await payCashBack()
       expect(await Transaction.countDocuments()).toBe(tx_count + 4)
     }
 
@@ -302,7 +301,6 @@ const Lightning = require('../Lightning');
 
 it('expired payment', async () => {
   const memo = "payment that should expire"
-  const { lnd } = lnService.authenticatedLndGrpc(getAuth())
 
   const dbSetSpy = jest.spyOn(Lightning, 'delay').mockImplementation(() => ({value: 1, unit: 'seconds', "additional_delay_value": 0}))
 
@@ -348,7 +346,6 @@ it('expired payment', async () => {
   expect(await InvoiceUser.countDocuments({_id: id})).toBe(0)
   
   try {
-    const { lnd } = lnService.authenticatedLndGrpc(getAuth())
     await lnService.getInvoice({ lnd, id })
   } catch (err) {
     console.log({err}, "invoice should not exist any more")
