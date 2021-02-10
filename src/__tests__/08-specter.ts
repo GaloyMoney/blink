@@ -41,12 +41,20 @@ afterAll(async () => {
 })
 
 it('createWallet', async () => {
-  const wallets = await SpecterWallet.listWallets()
-  console.log({wallets})
 
-  if (wallets.length < 2) {
-    await SpecterWallet.createWallet()
+  {
+    const wallets = await SpecterWallet.listWallets()
+
+    if (wallets.length < 2) {
+      await SpecterWallet.createWallet()
+    }
   }
+
+  {
+    const wallets = await SpecterWallet.listWallets()
+    console.log({wallets})
+  }
+
 
   // console.log(await specterWallet.createDepositAddress())
   // console.log(await specterWallet.getAddressInfo({address: "bcrt1qhxdpmrcawcjz8zn2q3d4as23895yc8m9dal03m"}))
@@ -90,6 +98,8 @@ it('deposit amount calculation', async () => {
 })
 
 it('withdrawing from bitcoind', async () => {
+
+  await specterWallet.setBitcoindClient()
 
   const initBitcoindBalance = await specterWallet.getBitcoindBalance()
   const { chain_balance: initLndBalance } = await lnService.getChainBalance({ lnd })

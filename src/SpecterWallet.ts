@@ -1,5 +1,5 @@
 import { filter } from "lodash";
-import { bitcoindAccountingPath, lightningAccountingPath, lndFee } from "./ledger";
+import { bitcoindAccountingPath, lightningAccountingPath, lndFeePath, bitcoindFeePath } from "./ledger";
 import { lnd } from "./lndConfig";
 import { MainBook } from "./mongodb";
 import { getOnChainTransactions } from "./OnChain";
@@ -139,7 +139,7 @@ export class SpecterWallet {
 
     await MainBook.entry(memo)
       .debit(lightningAccountingPath, sats + fee, {...metadata })
-      .credit(lndFee, fee, {...metadata })
+      .credit(lndFeePath, fee, {...metadata })
       .credit(bitcoindAccountingPath, sats, {...metadata })
       .commit()
 
@@ -147,6 +147,12 @@ export class SpecterWallet {
   }
 
   async toLndWallet ({ sats }) {
+    // TODO: move to an event based as the transaction
+    // would get done in specter
+
+    // TODO: initiate transaction from here when this ticket is done
+    // https://github.com/cryptoadvance/specter-desktop/issues/895
+
     // ...this.getCurrencyEquivalent({sats, fee: 0}),
     const metadata = { type: "to_hot_wallet", currency: "BTC", pending: false }
     let subLogger = this.logger.child({...metadata, sats })
@@ -160,7 +166,7 @@ export class SpecterWallet {
       format: 'p2wpkh',
     })
 
-    let withdrawalResult
+    let txid
 
     subLogger = subLogger.child({memo, address})
 
@@ -168,28 +174,23 @@ export class SpecterWallet {
       // TODO: won't work automatically with a cold storage wallet
       // make a PSBT instead accesible for further signing.
       // TODO: figure out a way to export the PSBT when there is a pending tx
-      withdrawalResult = await this.bitcoindClient.sendToAddress(address, sat2btc(sats))
+      txid = await this.bitcoindClient.sendToAddress(address, sat2btc(sats))
     } catch(err) {
       const error = "this.bitcoindClient.sendToAddress() error"
-      subLogger.error({withdrawalResult}, error)
+      subLogger.error({txid}, error)
       throw new Error(err)
     }
 
-    // TODO
-    const success = true
+    const tx = await this.bitcoindClient.getTransaction(txid, true /* include_watchonly */ )
+    const fee = - tx.fee /* fee is negative */
 
-    if (success) {
-
-      await MainBook.entry()
-      .debit(lightningAccountingPath, sats, {...metadata, memo })
+    await MainBook.entry()
+      .debit(lightningAccountingPath, sats - fee, {...metadata, memo })
       .credit(bitcoindAccountingPath, sats, {...metadata, memo })
+      .credit(bitcoindFeePath, fee, {...metadata, memo })
       .commit()
 
-      subLogger.info({withdrawalResult}, `rebalancing withdrawal was succesful`)
-
-    } else {
-      subLogger.error({withdrawalResult}, `rebalancing withdrawal was not succesful`)
-    }
+    subLogger.info({txid}, `rebalancing withdrawal was succesful`)
 
   } 
 }

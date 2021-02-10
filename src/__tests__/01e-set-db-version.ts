@@ -1,9 +1,7 @@
 /**
  * @jest-environment node
  */
-import { setupMongoConnection, DbVersion, MainBook, Transaction } from "../mongodb";
-import { lightningAccountingPath, lndFee } from "../ledger"
-import { fixChannelFeeTxns } from '../upgrade'
+import { DbVersion, setupMongoConnection } from "../mongodb";
 const mongoose = require("mongoose");
 
 
