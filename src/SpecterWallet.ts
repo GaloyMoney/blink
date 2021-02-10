@@ -123,7 +123,7 @@ export class SpecterWallet {
 
   static isRebalanceNeeded({ lndBalance }) {
     // base number to calculate the different thresholds below
-    const lnd_holding_base = btc2sat(0.025)
+    const lnd_holding_base = btc2sat(0.03)
 
     // TODO: we should be able to pass thoses variable from config.yaml
     const ratioTargetDeposit = 1
