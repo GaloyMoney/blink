@@ -3,7 +3,7 @@ import { Dropbox } from "dropbox";
 import express from 'express';
 import { subscribeToBackups, subscribeToChannels, subscribeToInvoices, subscribeToTransactions } from 'ln-service';
 import { find } from "lodash";
-import { lightningAccountingPath, lndFeePath } from "./ledger";
+import { lndAccountingPath, lndFeePath } from "./ledger";
 import { lnd } from "./lndConfig";
 import { InvoiceUser, MainBook, setupMongoConnection, Transaction, User } from "./mongodb";
 import { sendInvoicePaidNotification, sendNotification } from "./notification";
@@ -164,7 +164,7 @@ export const onChannelUpdated = async ({ channel, lnd, stateChange }: { channel:
   await MainBook.entry(`channel ${stateChange} onchain fee`)
     // TODO: make sure to inverse when merging the fix on credit/debit
     .credit(lndFeePath, fee, { ...metadata, })
-    .debit(lightningAccountingPath, fee, { ...metadata })
+    .debit(lndAccountingPath, fee, { ...metadata })
     .commit()
 
   logger.info({ channel, fee, ...metadata }, `${stateChange} channel fee added to mongodb`)

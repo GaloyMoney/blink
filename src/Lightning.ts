@@ -67,7 +67,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     try {
       input = {
         lnd,
-        tokens: sats,
+        tokens: value,
         description: memo,
         expires_at,
       }

@@ -5,8 +5,8 @@
 
 import { User } from "./mongodb"
 
+export const bitcoindAccountingPath = 'Assets:Reserve:Bitcoind' // TODO: rename to Assets:Lnd
 export const lndAccountingPath = 'Assets:Reserve:Lightning' // TODO: rename to Assets:Lnd
-export const bitcoindAccountingPath = (walletName) => `Assets:Bitcoind:${walletName}` // TODO
 export const accountBrokerFtxPath = 'Assets:Broker:FTX' // this should be updated with a cron job taking into consideration profit/loss 
 export const escrowAccountingPath = 'Assets:Reserve:Escrow' // TODO: rename to Assets:Lnd:Escrow
 
@@ -24,6 +24,7 @@ export const brokerMediciPath = async () => {
   cacheBrokerPath = customerPath(broker._id)
   return cacheBrokerPath
 }   
+
 
 // export const brokerPathLnd = `Liabilities:Customer:uid` --> normal account
 export const brokerPath = `Liabilities:Broker` // used for USD
