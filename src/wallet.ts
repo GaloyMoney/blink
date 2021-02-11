@@ -11,6 +11,8 @@ import { sendNotification } from "./notification";
 export abstract class UserWallet {
 
   static lastPrice: number
+
+  // FIXME typing : https://thecodebarbarian.com/working-with-mongoose-in-typescript.html
   user: typeof User // mongoose object
   readonly logger: any
 
@@ -26,10 +28,6 @@ export abstract class UserWallet {
   // TODO: upgrade price automatically with a timer
   static setCurrentPrice(price) {
     UserWallet.lastPrice = price
-  }
-
-  get accountPath(): string {
-    return this.user.accountPath
   }
 
   get uid(): string {

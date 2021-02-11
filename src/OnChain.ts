@@ -273,15 +273,11 @@ export const OnChainMixin = (superclass) => class extends superclass {
     //   currency: item.currency
     //  })
 
-
-    // TODO: only get onchain transaction as of the last 14 days to make the query faster, for now.
-    // (transactions are ejected from mempool after 14 days by default)
-
     // TODO: should have outgoing unconfirmed transaction as well.
     // they are in medici, but not necessarily confirmed
+
     const unconfirmed = await this.getOnchainReceipt({confirmed: false})
 
-    
     // {
     //   block_id: undefined,
     //   confirmation_count: undefined,
