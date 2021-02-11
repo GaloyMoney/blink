@@ -115,7 +115,7 @@ export class SpecterWallet {
     // figure out the right heuristics for that
 
     if (action === "deposit") {
-      this.toColdStorage({ sats })
+      await this.toColdStorage({ sats })
       logger.info("rebalancing succesfull")
     } else if (action === "withdraw") {
       logger.error("rebalancing is needed, but need manual intervention")
