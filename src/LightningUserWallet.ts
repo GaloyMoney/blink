@@ -1,9 +1,8 @@
-import { customerPath } from "./ledger";
 import { LightningMixin } from "./Lightning";
 import { disposer } from "./lock";
 import { Faucet, User } from "./mongodb";
 import { OnChainMixin } from "./OnChain";
-import { IAddBTCInvoiceRequest, ILightningWalletUser, OnboardingEarn } from "./types";
+import { ILightningWalletUser, OnboardingEarn } from "./types";
 import { UserWallet } from "./wallet";
 import { getFunderWallet } from "./walletFactory";
 const using = require('bluebird').using

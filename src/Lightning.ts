@@ -36,6 +36,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     super(...args)
   }
 
+  // FIXME: this should be static
   async getNodePubkey() {
     this.nodePubKey = this.nodePubKey ?? (await lnService.getWalletInfo({ lnd })).public_key
     return this.nodePubKey
@@ -49,9 +50,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     ])
   }
 
-  getExpiration = (input) => {
-    // console.log(delay(this.currency).value, delay(this.currency).unit, "getExpiration unit")
-    
+  getExpiration = (input) => {    
     // TODO: manage USD shorter time
     const currency = "BTC"
 

@@ -99,7 +99,6 @@ export abstract class UserWallet {
     const { results } = await MainBook.ledger({
       // TODO: manage currencies
 
-      // currency: this.currency,
       account: this.user.accountPath,
       // start_date: startDate,
       // end_date: endDate

@@ -93,7 +93,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
       const sats = amount
       const metadata = { 
-        currency: this.currency,
+        currency: "BTC",
         type: "onchain_on_us",
         pending: false,
         ...UserWallet.getCurrencyEquivalent({ sats, fee: 0 }),
@@ -161,7 +161,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
       {
         const sats = amount + fee
-        const metadata = { currency: this.currency, hash: id, type: "onchain_payment", pending: true, ...UserWallet.getCurrencyEquivalent({ sats, fee }) }
+        const metadata = { currency: "BTC", hash: id, type: "onchain_payment", pending: true, ...UserWallet.getCurrencyEquivalent({ sats, fee }) }
 
         // TODO/FIXME refactor. add the transaction first and set the fees in a second tx.
         await MainBook.entry(memo)
@@ -390,7 +390,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
           assert(matched_tx.tokens >= sats)
 
           const metadata = { 
-            currency: this.currency,
+            currency: "BTC",
             type, hash: matched_tx.id,
             pending: false,
             ...UserWallet.getCurrencyEquivalent({ sats, fee: 0 }),
