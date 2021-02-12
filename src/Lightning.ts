@@ -2,22 +2,18 @@ const lnService = require('ln-service');
 const assert = require('assert').strict;
 import { createHash, randomBytes } from "crypto";
 import moment from "moment";
+import { FEECAP, FEEMIN, lnd, TIMEOUT_PAYMENT } from "./lndConfig";
 import { disposer, getAsyncRedisClient } from "./lock";
 import { InvoiceUser, MainBook, Transaction, User } from "./mongodb";
 import { sendInvoicePaidNotification } from "./notification";
 import { addTransactionLndPayment, addTransactionLndReceipt, addTransactionOnUsPayment } from "./transaction";
 import { IAddInvoiceRequest, IFeeRequest, IPaymentRequest } from "./types";
-import { addContact, getAuth, isInvoiceAlreadyPaidError, LoggedError, timeout } from "./utils";
+import { addContact, isInvoiceAlreadyPaidError, LoggedError, timeout } from "./utils";
 import { UserWallet } from "./wallet";
 
 const util = require('util')
 
 const using = require('bluebird').using
-
-const TIMEOUT_PAYMENT = process.env.NETWORK !== "regtest" ? 45000 : 3000
-
-export const FEECAP = 0.02 // = 2%
-export const FEEMIN = 10 // sats
 
 export type ITxType = "invoice" | "payment" | "onchain_receipt" | "onchain_payment" | "on_us"
 export type payInvoiceResult = "success" | "failed" | "pending" | "already_paid"
@@ -34,15 +30,15 @@ export const delay = (currency) => {
 }
 
 export const LightningMixin = (superclass) => class extends superclass {
-  lnd = lnService.authenticatedLndGrpc(getAuth()).lnd
   nodePubKey: string | null = null
 
   constructor(...args) {
     super(...args)
   }
 
+  // FIXME: this should be static
   async getNodePubkey() {
-    this.nodePubKey = this.nodePubKey ?? (await lnService.getWalletInfo({ lnd: this.lnd })).public_key
+    this.nodePubKey = this.nodePubKey ?? (await lnService.getWalletInfo({ lnd })).public_key
     return this.nodePubKey
   }
 
@@ -54,9 +50,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     ])
   }
 
-  getExpiration = (input) => {
-    // console.log(delay(this.currency).value, delay(this.currency).unit, "getExpiration unit")
-    
+  getExpiration = (input) => {    
     // TODO: manage USD shorter time
     const currency = "BTC"
 
@@ -71,7 +65,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     let input
     try {
       input = {
-        lnd: this.lnd,
+        lnd,
         tokens: value,
         description: memo,
         expires_at,
@@ -90,7 +84,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         _id: id,
 
         // uid for cashback. to remove after cashback is finished
-        uid: uid || this.uid,
+        uid: uid || this.user.id,
         
         // usd,
 
@@ -105,7 +99,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       throw new LoggedError(error)
     }
 
-    this.logger.info({ value, memo, selfGenerated, id, uid: this.uid }, "a new invoice has been added")
+    this.logger.info({ value, memo, selfGenerated, id, user: this.user }, "a new invoice has been added")
 
     return request
   }
@@ -156,7 +150,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     try {
       ({ route } = await lnService.probeForRoute({
-        lnd: this.lnd, 
+        lnd, 
         destination, 
         mtokens, 
         routes: routeHint,
@@ -209,7 +203,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       // TODO: use msat instead of sats for the db?
 
       try {
-        ({ id, safe_tokens: tokens, destination, description, routes: routeHint, payment, cltv_delta, expires_at, features } = await lnService.decodePaymentRequest({ lnd: this.lnd, request: params.invoice }))
+        ({ id, safe_tokens: tokens, destination, description, routes: routeHint, payment, cltv_delta, expires_at, features } = await lnService.decodePaymentRequest({ lnd, request: params.invoice }))
       } catch (err) {
         const error = `Error decoding the invoice`
         lightningLogger.error({ params, success: false, error }, error)
@@ -281,7 +275,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     // --> need a re-entrant mutex or another architecture to have balance within the lock
     const balance = await this.getBalances()
 
-    return await using(disposer(this.uid), async (lock) => {
+    return await using(disposer(this.user._id), async (lock) => {
       // On us transaction
       if (destination === await this.getNodePubkey()) {
         const lightningLoggerOnUs = lightningLogger.child({ onUs: true, fee: 0 })
@@ -317,7 +311,7 @@ export const LightningMixin = (superclass) => class extends superclass {
           throw new LoggedError(error)
         }
 
-        if (String(payeeUser._id) === String(this.uid)) {
+        if (String(payeeUser._id) === String(this.user._id)) {
           const error = 'User tried to pay himself'
           lightningLoggerOnUs.error({ success: false, error }, error)
           throw new LoggedError(error)
@@ -346,15 +340,15 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         if (!pushPayment) {
           const resultDeletion = await InvoiceUser.deleteOne({ _id: id })
-          this.logger.info({ id, uid: this.uid, resultDeletion }, "invoice has been deleted from InvoiceUser following on_us transaction")
+          this.logger.info({ id, user: this.user, resultDeletion }, "invoice has been deleted from InvoiceUser following on_us transaction")
 
-          await lnService.cancelHodlInvoice({ lnd: this.lnd, id })
-          this.logger.info({ id, uid: this.uid }, "canceling invoice on lnd")
+          await lnService.cancelHodlInvoice({ lnd, id })
+          this.logger.info({ id, user: this.user }, "canceling invoice on lnd")
         }
 
         // adding contact for the payer
         if (!!payeeUser.username) {
-          await addContact({uid: this.uid, username: payeeUser.username})
+          await addContact({uid: this.user._id, username: payeeUser.username})
         }
 
         // adding contact for the payee
@@ -473,7 +467,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
           // Fixme: seems to be leaking if it timeout.
           if (route) {
-            paymentPromise = lnService.payViaRoutes({ lnd: this.lnd, routes: [route], id })
+            paymentPromise = lnService.payViaRoutes({ lnd, routes: [route], id })
 
           } else {
 
@@ -481,7 +475,7 @@ export const LightningMixin = (superclass) => class extends superclass {
             // max_paths for MPP
             // max_timeout_height ??
             paymentPromise = lnService.payViaPaymentDetails({
-              lnd: this.lnd,
+              lnd,
               id,
               cltv_delta,
               destination,
@@ -599,7 +593,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     // we're doing the the Transaction.find after the lock to make sure there is no race condition
     // note: there might be another design that doesn't requiere a lock at the uid level but only at the hash level,
     // but will need to dig more into the cursor aspect of mongodb to see if there is a concurrency-safe way to do it.
-    return await using(disposer(this.uid), async (lock) => {
+    return await using(disposer(this.user._id), async (lock) => {
 
       const payments = await Transaction.find(query)
 
@@ -607,7 +601,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         let result
         try {
-          result = await lnService.getPayment({ lnd: this.lnd, id: payment.hash })
+          result = await lnService.getPayment({ lnd, id: payment.hash })
         } catch (err) {
           const error = 'issue fetching payment'
           this.logger.error({ err, payment }, error)
@@ -653,10 +647,10 @@ export const LightningMixin = (superclass) => class extends superclass {
       // but might not be a strong problem anyway
       // at least return same error if invoice not from user
       // or invoice doesn't exist. to preserve privacy and prevent DDOS attack.
-      invoice = await lnService.getInvoice({ lnd: this.lnd, id: hash })
+      invoice = await lnService.getInvoice({ lnd, id: hash })
 
       // TODO: we should not log/keep secret in the logs
-      this.logger.debug({ invoice, uid: this.uid }, "got invoice status")
+      this.logger.debug({ invoice, user: this.user }, "got invoice status")
     } catch (err) {
       const error = `issue fetching invoice`
       this.logger.error({ err, invoice }, error)
@@ -669,8 +663,8 @@ export const LightningMixin = (superclass) => class extends superclass {
     if (invoice.is_canceled) {
 
       // check what happen if we go to this loop twice?
-      const resultDeletion = await InvoiceUser.deleteOne({ _id: hash, uid: this.uid })
-      this.logger.info({ hash, uid: this.uid, resultDeletion }, "succesfully deleted cancelled invoice")
+      const resultDeletion = await InvoiceUser.deleteOne({ _id: hash, uid: this.user._id })
+      this.logger.info({ hash, user: this.user, resultDeletion }, "succesfully deleted cancelled invoice")
 
       // TODO: proper testing
       const result = await Transaction.findOne({ hash, type: "on_us", pending: false })
@@ -682,10 +676,10 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         return await using(disposer(hash), async (lock) => {
 
-          const invoiceUser = await InvoiceUser.findOne({ _id: hash, uid: this.uid })
+          const invoiceUser = await InvoiceUser.findOne({ _id: hash, uid: this.user._id })
 
           if (!invoiceUser) {
-            this.logger.info({ hash, uid: this.uid }, "invoice has already been processed")
+            this.logger.info({ hash, user: this.user._id }, "invoice has already been processed")
             return true
           }
 
@@ -696,8 +690,8 @@ export const LightningMixin = (superclass) => class extends superclass {
           // OR: use a an unique index account / hash / voided
           // may still not avoid issue from discrenpency between hash and the books
 
-          const resultDeletion = await InvoiceUser.deleteOne({ _id: hash, uid: this.uid })
-          this.logger.info({ hash, uid: this.uid, resultDeletion }, "invoice has been deleted")
+          const resultDeletion = await InvoiceUser.deleteOne({ _id: hash, uid: this.user._id })
+          this.logger.info({ hash, user: this.user._id, resultDeletion }, "invoice has been deleted")
 
           const sats = invoice.received
 
@@ -725,16 +719,16 @@ export const LightningMixin = (superclass) => class extends superclass {
       // maybe not needed after old invoice has been deleted?
 
       try {
-        await lnService.cancelHodlInvoice({ lnd: this.lnd, id: hash })
-        this.logger.info({ id: hash, uid: this.uid }, "canceling invoice")
+        await lnService.cancelHodlInvoice({ lnd, id: hash })
+        this.logger.info({ id: hash, user: this.user._id }, "canceling invoice")
 
       } catch (err) {
         const error = "error deleting invoice"
-        this.logger.error({ err, error, hash, uid: this.uid }, error)
+        this.logger.error({ err, error, hash, user: this.user._id }, error)
       }
 
-      const resultDeletion = await InvoiceUser.deleteOne({ _id: hash, uid: this.uid })
-      this.logger.info({ hash, uid: this.uid, resultDeletion }, "succesfully deleted expired invoice")
+      const resultDeletion = await InvoiceUser.deleteOne({ _id: hash, user: this.user._id })
+      this.logger.info({ hash, user: this.user._id, resultDeletion }, "succesfully deleted expired invoice")
 
     }
 
@@ -749,7 +743,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     const currency = "BTC"
 
     // TODO: hydrates invoices from User?
-    const invoices = await InvoiceUser.find({ uid: this.uid })
+    const invoices = await InvoiceUser.find({ uid: this.user._id })
 
     for (const invoice of invoices) {
       const { _id, timestamp } = invoice

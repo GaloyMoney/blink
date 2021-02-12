@@ -4,11 +4,11 @@ import * as jwt from 'jsonwebtoken'
 import * as lnService from "ln-service"
 import { filter, find, includes, intersection, sumBy, union } from "lodash"
 import * as moment from 'moment'
+import { lnd } from "./lndConfig"
 export const validate = require("validate.js")
 const bitcoindClient = require('bitcoin-core')
 const { parsePaymentRequest } = require('invoices');
 const axios = require('axios').default;
-
 
 export const baseLogger = require('pino')({ level: process.env.LOGLEVEL || "info" })
 
@@ -72,7 +72,7 @@ export const addContact = async ({uid, username}) => {
 }
 
 export const BitcoindClient = ({wallet = ""}) => new bitcoindClient({...connection_obj, wallet})
-export const bitcoindDefaultClient = BitcoindClient({})
+export const bitcoindDefaultClient = BitcoindClient({wallet: ""})
 
 export const amountOnVout = ({ vout, onchain_addresses }): number => {
   // TODO: check if this is always [0], ie: there is always a single addresses for vout for lnd output
@@ -84,6 +84,25 @@ export const myOwnAddressesOnVout = ({ vout, onchain_addresses }) => {
   return intersection(union(vout.map(output => output.scriptPubKey.addresses[0])), onchain_addresses)
 }
 
+export const lndBalances = async () => {
+  const { chain_balance } = await lnService.getChainBalance({lnd})
+  const { channel_balance, pending_balance: opening_channel_balance } = await lnService.getChannelBalance({lnd})
+
+  //FIXME: This can cause incorrect balance to be reported in case an unconfirmed txn is later cancelled/double spent
+  // bitcoind seems to have a way to report this correctly. does lnd have?
+  const { pending_chain_balance } = await lnService.getPendingChainBalance({lnd})
+
+  const { channels: closedChannels } = await lnService.getClosedChannels({lnd})
+
+  // FIXME: calculation seem wrong (seeing the grafana graph, need to double check)
+  baseLogger.debug({closedChannels}, "lnService.getClosedChannels")
+  const closing_channel_balance = sumBy(closedChannels, channel => sumBy(
+    (channel as any).close_payments, payment => (payment as any).is_pending ? (payment as any).tokens : 0 )
+  )
+  
+  const total = chain_balance + channel_balance + pending_chain_balance + opening_channel_balance + closing_channel_balance
+  return { total, onChain: chain_balance + pending_chain_balance, offChain: channel_balance, opening_channel_balance, closing_channel_balance } 
+}
 
 export const getHash = (request) => {
   return parsePaymentRequest({ request }).id
@@ -120,6 +139,9 @@ export function timeout(delay, msg) {
   });
 }
 
+// TODO: replace network by uri of the server
+// the uri will embed the network, ie: graphql.mainnet.server.io
+// and provide more information than just the network
 export const createToken = ({ uid, network }) => jwt.sign(
   { uid, network }, process.env.JWT_SECRET, {
   // TODO use asymetric signature
@@ -150,22 +172,6 @@ validate.extend(validate.validators.datetime, {
   }
 })
 
-export const getAuth = () => {
-  // network = process.env.NETWORK // TODO
-  const cert = process.env.TLS
-  const macaroon = process.env.MACAROON
-  const lndip = process.env.LNDIP
-  const port = process.env.LNDRPCPORT ?? 10009
-
-  if (!cert || !macaroon || !lndip) {
-    console.log({cert, macaroon, lndip})
-    throw new Error('missing environment variable for lnd')
-  }
-
-  const socket = `${lndip}:${port}`
-
-  return { macaroon, cert, socket };
-}
 
 export async function measureTime(operation: Promise<any>): Promise<[any, number]> {
   const startTime = process.hrtime()
@@ -196,7 +202,8 @@ export async function getBosScore() {
     const bosScore = find(data.data, { publicKey })
     return bosScore.score
   } catch (err) {
-    baseLogger.error({ err, err2: err.toJson() }, `issue getting bos rank`)
+    // err2: err.toJson() does not work
+    baseLogger.error({ err }, `issue getting bos rank`)
   }
 }
 

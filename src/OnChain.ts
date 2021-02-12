@@ -3,10 +3,11 @@ import { assert } from "console";
 import { intersection, last } from "lodash";
 import moment from "moment";
 import { customerPath, lndAccountingPath } from "./ledger";
+import { lnd } from "./lndConfig";
 import { disposer } from "./lock";
 import { MainBook, Transaction, User } from "./mongodb";
 import { IOnChainPayment, ISuccess, ITransaction } from "./types";
-import { amountOnVout, bitcoindDefaultClient, btc2sat, getAuth, LoggedError, LOOK_BACK, myOwnAddressesOnVout } from "./utils";
+import { amountOnVout, baseLogger, bitcoindDefaultClient, btc2sat, LoggedError, LOOK_BACK, myOwnAddressesOnVout } from "./utils";
 import { UserWallet } from "./wallet";
 
 const using = require('bluebird').using
@@ -16,10 +17,23 @@ const using = require('bluebird').using
 // but fees are the same
 const someAmount = 50000
 
-export const OnChainMixin = (superclass) => class extends superclass {
-  lnd = lnService.authenticatedLndGrpc(getAuth()).lnd
-  private currency = "BTC"
 
+export const getOnChainTransactions = async ({ lnd, incoming }: { lnd: any, incoming: boolean }) => {
+  try {
+    const { current_block_height } = await lnService.getHeight({lnd})
+    const after = Math.max(0, current_block_height - LOOK_BACK) // this is necessary for tests, otherwise after may be negative
+    const { transactions } = await lnService.getChainTransactions({ lnd, after })
+
+    return transactions.filter(tx => incoming === !tx.is_outgoing)
+  } catch (err) {
+    const error = `issue fetching transaction`
+    baseLogger.error({err, incoming}, error)
+    throw new LoggedError(error)
+  }
+}
+
+export const OnChainMixin = (superclass) => class extends superclass {
+  
   constructor(...args) {
     super(...args)
   }
@@ -46,7 +60,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
       fee = 0
     } else {
       const sendTo = [{ address, tokens: someAmount }];
-      ({ fee } = await lnService.getChainFeeEstimate({ lnd: this.lnd, send_to: sendTo }))
+      ({ fee } = await lnService.getChainFeeEstimate({ lnd, send_to: sendTo }))
     }
 
     return fee
@@ -71,7 +85,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
     if (payeeUser) {
       const onchainLoggerOnUs = onchainLogger.child({onUs: true})
 
-      if (String(payeeUser._id) === String(this.uid)) {
+      if (String(payeeUser._id) === String(this.user._id)) {
         const error = 'User tried to pay himself'
         this.logger.warn({ payeeUser, error, success: false }, error)
         throw new LoggedError(error)
@@ -79,15 +93,15 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
       const sats = amount
       const metadata = { 
-        currency: this.currency,
+        currency: "BTC",
         type: "onchain_on_us",
         pending: false,
         ...UserWallet.getCurrencyEquivalent({ sats, fee: 0 }),
         payee_addresses: [address]
       }
 
-      // FIXME: this lock seems useless
-      return await using(disposer(this.uid), async (lock) => {
+      // TODO: this lock seems useless
+      return await using(disposer(this.user._id), async (lock) => {
 
         await MainBook.entry()
           .credit(customerPath(payeeUser._id), sats, metadata)
@@ -102,14 +116,14 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
     onchainLogger = onchainLogger.child({onUs: false})
 
-    const { chain_balance: onChainBalance } = await lnService.getChainBalance({ lnd: this.lnd })
+    const { chain_balance: onChainBalance } = await lnService.getChainBalance({ lnd })
 
     let estimatedFee, id
 
     const sendTo = [{ address, tokens: amount }]
 
     try {
-      ({ fee: estimatedFee } = await lnService.getChainFeeEstimate({ lnd: this.lnd, send_to: sendTo }))
+      ({ fee: estimatedFee } = await lnService.getChainFeeEstimate({ lnd, send_to: sendTo }))
     } catch (err) {
       const error = `Unable to estimate fee for on-chain transaction`
       onchainLogger.error({ err, sendTo, success: false }, error)
@@ -132,22 +146,22 @@ export const OnChainMixin = (superclass) => class extends superclass {
       throw new LoggedError(error)
     }
 
-    return await using(disposer(this.uid), async (lock) => {
+    return await using(disposer(this.user._id), async (lock) => {
       
       try {
-        ({ id } = await lnService.sendToChainAddress({ address, lnd: this.lnd, tokens: amount }))
+        ({ id } = await lnService.sendToChainAddress({ address, lnd, tokens: amount }))
       } catch (err) {
         onchainLogger.error({ err, address, tokens: amount, success: false }, "Impossible to sendToChainAddress")
         return false
       }
 
-      const outgoingOnchainTxns = await this.getOnChainTransactions({ lnd: this.lnd, incoming: false })
+      const outgoingOnchainTxns = await getOnChainTransactions({ lnd, incoming: false })
 
       const [{ fee }] = outgoingOnchainTxns.filter(tx => tx.id === id)
 
       {
         const sats = amount + fee
-        const metadata = { currency: this.currency, hash: id, type: "onchain_payment", pending: true, ...UserWallet.getCurrencyEquivalent({ sats, fee }) }
+        const metadata = { currency: "BTC", hash: id, type: "onchain_payment", pending: true, ...UserWallet.getCurrencyEquivalent({ sats, fee }) }
 
         // TODO/FIXME refactor. add the transaction first and set the fees in a second tx.
         await MainBook.entry(memo)
@@ -186,7 +200,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
     try {
       const format = 'p2wpkh';
       const response = await lnService.createChainAddress({
-        lnd: this.lnd,
+        lnd,
         format,
       })
       address = response.address
@@ -209,21 +223,6 @@ export const OnChainMixin = (superclass) => class extends superclass {
     return address
   }
 
-  async getOnChainTransactions({ lnd, incoming }: { lnd: any, incoming: boolean }) {
-    try {
-      const { current_block_height } = await lnService.getHeight({lnd})
-      const after = Math.max(0, current_block_height - LOOK_BACK) // this is necessary for tests, otherwise after may be negative
-      const { transactions } = await lnService.getChainTransactions({ lnd, after })
-
-
-      return transactions.filter(tx => incoming === !tx.is_outgoing)
-    } catch (err) {
-      const error = `issue fetching transaction`
-      this.logger.error({err, incoming}, error)
-      throw new LoggedError(error)
-    }
-  }
-
   async getOnchainReceipt({confirmed}: {confirmed: boolean}) {
     
     // optimization to remove the need to fetch lnd when no address
@@ -234,7 +233,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
       return []
     }
 
-    const lnd_incoming_txs = await this.getOnChainTransactions({ lnd: this.lnd, incoming: true })
+    const lnd_incoming_txs = await getOnChainTransactions({ lnd, incoming: true })
     
     //        { block_id: '0000000000000b1fa86d936adb8dea741a9ecd5f6a58fc075a1894795007bdbc',
     //          confirmation_count: 712,
@@ -274,15 +273,11 @@ export const OnChainMixin = (superclass) => class extends superclass {
     //   currency: item.currency
     //  })
 
-
-    // TODO: only get onchain transaction as of the last 14 days to make the query faster, for now.
-    // (transactions are ejected from mempool after 14 days by default)
-
     // TODO: should have outgoing unconfirmed transaction as well.
     // they are in medici, but not necessarily confirmed
+
     const unconfirmed = await this.getOnchainReceipt({confirmed: false})
 
-    
     // {
     //   block_id: undefined,
     //   confirmation_count: undefined,
@@ -370,7 +365,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
     const type = "onchain_receipt"
 
-    return await using(disposer(this.uid), async (lock) => {
+    return await using(disposer(this.user._id), async (lock) => {
 
       // FIXME O(n) ^ 2. bad.
       for (const matched_tx of user_matched_txs) {
@@ -382,8 +377,6 @@ export const OnChainMixin = (superclass) => class extends superclass {
         // for the broker. this is fixed now but something to think about.
         const mongotx = await Transaction.findOne({ accounts: this.user.accountPath, type, hash: matched_tx.id })
 
-        // this.logger.debug({ matched_tx, mongotx }, "updateOnchainReceipt with user %o", this.uid)
-
         if (!mongotx) {
 
           const {sats, addresses} = await this.getSatsAndAddressPerTx(matched_tx.transaction)
@@ -391,7 +384,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
           assert(matched_tx.tokens >= sats)
 
           const metadata = { 
-            currency: this.currency,
+            currency: "BTC",
             type, hash: matched_tx.id,
             pending: false,
             ...UserWallet.getCurrencyEquivalent({ sats, fee: 0 }),

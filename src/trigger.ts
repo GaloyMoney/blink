@@ -3,12 +3,13 @@ import { Dropbox } from "dropbox";
 import express from 'express';
 import { subscribeToBackups, subscribeToChannels, subscribeToInvoices, subscribeToTransactions } from 'ln-service';
 import { find } from "lodash";
-import { lndAccountingPath, lndFee } from "./ledger";
+import { lndAccountingPath, lndFeePath } from "./ledger";
+import { lnd } from "./lndConfig";
 import { InvoiceUser, MainBook, setupMongoConnection, Transaction, User } from "./mongodb";
 import { sendInvoicePaidNotification, sendNotification } from "./notification";
 import { Price } from "./priceImpl";
 import { IDataNotification } from "./types";
-import { baseLogger, getAuth, LOOK_BACK } from './utils';
+import { baseLogger, LOOK_BACK } from './utils';
 import { WalletFactory } from "./walletFactory";
 
 const crypto = require("crypto")
@@ -168,8 +169,9 @@ export const onChannelUpdated = async ({ channel, lnd, stateChange }: { channel:
   const metadata = { currency: "BTC", txid: transaction_id, type: "fee", pending: false }
 
   await MainBook.entry(`channel ${stateChange} onchain fee`)
-    .credit(lndAccountingPath, fee, { ...metadata })
-    .debit(lndFee, fee, { ...metadata })
+    // TODO: make sure to inverse when merging the fix on credit/debit
+    .credit(lndFeePath, fee, { ...metadata, })
+    .debit(lndAccountingPath, fee, { ...metadata })
     .commit()
 
   logger.info({ channel, fee, ...metadata }, `${stateChange} channel fee added to mongodb`)
@@ -191,8 +193,6 @@ const updatePrice = async () => {
 }
 
 const main = async () => {
-  const { lnd } = lnService.authenticatedLndGrpc(getAuth())
-
   lnService.getWalletInfo({ lnd }, (err, result) => {
     logger.debug({ err, result }, 'getWalletInfo')
   });
@@ -214,8 +214,6 @@ const main = async () => {
 }
 
 const healthCheck = () => {
-  const { lnd } = lnService.authenticatedLndGrpc(getAuth())
-
   const app = express()
   const port = 8888
   app.get('/health', (req, res) => {

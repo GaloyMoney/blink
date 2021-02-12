@@ -315,7 +315,6 @@ const transactionSchema = new Schema({
   currency: {
     type: String,
     enum: ["USD", "BTC"],
-    default: "BTC",
     required: true
   },
 
@@ -468,6 +467,7 @@ export const setupMongoConnection = async () => {
       useUnifiedTopology: true,
       useCreateIndex: true,
       useFindAndModify: false
+      // replset: {readPreference: 'secondary'}
     })
     mongoose.set('runValidators', true)
     await User.syncIndexes()

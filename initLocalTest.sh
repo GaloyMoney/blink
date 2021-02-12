@@ -1,6 +1,5 @@
 set -e
 
-helm repo add stable --force-update https://charts.helm.sh/stable
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo add grafana https://grafana.github.io/helm-charts
@@ -52,6 +51,7 @@ helmUpgrade () {
 }
 
 monitoringDeploymentsUpgrade() {
+  SECRET=alertmanager-keys
   local NAMESPACE=monitoring
 
   export SLACK_API_URL=$(kubectl get secret -n $NAMESPACE $SECRET -o jsonpath="{.data.SLACK_API_URL}" | base64 -d)
@@ -108,11 +108,17 @@ sleep 8
 
 if [ ${LOCAL} ] 
 then 
-  kubectlLndDeletionWait
-  localdevpath="-f $INFRADIR/lnd/localdev.yaml"
-fi 
+  kubectlLndDeletionWait 
+  localdevpath="-f $INFRADIR/lnd/localdev.yaml \
+    --set instances[0].staticIP=$MINIKUBEIP \
+    --set instances[1].staticIP=$MINIKUBEIP \
+    --set instances[2].staticIP=$MINIKUBEIP \
+    --set configmap[0].staticIP=$MINIKUBEIP \
+    --set configmap[1].staticIP=$MINIKUBEIP"
 
-helmUpgrade lnd -f $INFRADIR/lnd/$NETWORK.yaml $localdevpath --set minikubeip=$MINIKUBEIP $INFRADIR/lnd/
+fi
+
+helmUpgrade lnd -f $INFRADIR/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd/
 
 # avoiding to spend time with circleci regtest with this condition
 if [ "$NETWORK" == "testnet" ] || [ "$NETWORK" == "mainnet" ];
@@ -166,7 +172,7 @@ export MONGODB_REPLICA_SET_KEY=$(kubectl get secret -n $NAMESPACE galoy-mongodb 
 
 helmUpgrade galoy \
   -f $INFRADIR/galoy/$NETWORK.yaml $localdevpath \
-  --set testpod.macaroonoutside1=$MACAROONOUTSIDE1,testpod.macaroonoutside2=$MACAROONOUTSIDE2,tag=$CIRCLE_SHA1,testpod.tlsoutside1=$TLSOUTSIDE1,testpod.tlsoutside2=$TLSOUTSIDE2,tls=$TLS,macaroon=$MACAROON,mongodb.auth.rootPassword=$MONGODB_ROOT_PASSWORD,mongodb.auth.replicaSetKey=$MONGODB_REPLICA_SET_KEY \
+  --set testpod.macaroonoutside1=$MACAROONOUTSIDE1,testpod.macaroonoutside2=$MACAROONOUTSIDE2,image.tag=$CIRCLE_SHA1,testpod.tlsoutside1=$TLSOUTSIDE1,testpod.tlsoutside2=$TLSOUTSIDE2,tls=$TLS,macaroon=$MACAROON,mongodb.auth.rootPassword=$MONGODB_ROOT_PASSWORD,mongodb.auth.replicaSetKey=$MONGODB_REPLICA_SET_KEY \
   $INFRADIR/galoy/
 
 kubectlWait app.kubernetes.io/component=mongodb
