@@ -82,6 +82,8 @@ export async function onchainTransactionEventHandler(tx) {
     const user = await User.findOne({"_id": entry.account_path[2]})
     await sendNotification({ user, title, data, logger: onchainLogger })
   } else {
+    // incoming transaction
+
     // TODO: the same way Lightning is updating the wallet/accounting, 
     // this event should update the onchain wallet/account of the associated user
 

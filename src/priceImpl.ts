@@ -105,8 +105,6 @@ export class Price {
       lastEntryDate.seconds() === 0 && 
       lastEntryDate.milliseconds() === 0
     
-    console.log({isHourlyCandle})
-
     if (!isHourlyCandle) {
       doc.pair.exchange.price = dropRight(doc.pair.exchange.price)
     }
@@ -177,7 +175,6 @@ export class Price {
     try {
       // @ts-ignore
       const diff = moment().diff(moment(last(doc.pair.exchange.price)._id))
-      console.log({diff})
       if (diff < 1000 * 60 * 60) {
         return false
       }
