@@ -1,4 +1,5 @@
 import { Storage } from '@google-cloud/storage';
+import { assert } from "console";
 import { Dropbox } from "dropbox";
 import express from 'express';
 import { subscribeToBackups, subscribeToChannels, subscribeToInvoices, subscribeToTransactions } from 'ln-service';
@@ -168,10 +169,11 @@ export const onChannelUpdated = async ({ channel, lnd, stateChange }: { channel:
 
   const metadata = { currency: "BTC", txid: transaction_id, type: "fee", pending: false }
 
+  assert(fee > 0)
+
   await MainBook.entry(`channel ${stateChange} onchain fee`)
-    // TODO: make sure to inverse when merging the fix on credit/debit
-    .credit(lndFeePath, fee, { ...metadata, })
-    .debit(lndAccountingPath, fee, { ...metadata })
+    .debit(lndFeePath, fee, { ...metadata, })
+    .credit(lndAccountingPath, fee, { ...metadata })
     .commit()
 
   logger.info({ channel, fee, ...metadata }, `${stateChange} channel fee added to mongodb`)

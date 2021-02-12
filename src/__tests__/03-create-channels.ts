@@ -103,25 +103,28 @@ it('opens channel from lnd1ToLndOutside1', async () => {
   await openChannel({ lnd: lndMain, other_lnd: lndOutside1, socket })
 
   const { channels } = await lnService.getChannels({ lnd: lndMain })
-  expect(channels.length).toEqual(channelLengthMainLnd + 1)
+  expect(channels.length).toEqual(channelLengthMain + 1)
   const { balance: finalFeeInLedger } = await MainBook.balance({
     account: lndFeePath,
     currency: "BTC",
   })
 
-  // FIXME: * -1 when reversing the credit/debit entries
-  expect(finalFeeInLedger - initFeeInLedger).toBe(channelFee /*     * -1 */ )
+  expect(finalFeeInLedger - initFeeInLedger).toBe(channelFee * -1 )
 })
 
 it('opensAndCloses channel from lnd1 to lndOutside1', async () => {
   const socket = `lnd-outside-1:9735`
 
-  const { channels } = await lnService.getChannels({ lnd: lndMain })
-  expect(channels.length).toEqual(channelLengthMainLnd + 1)
-  const { balance: initFeeInLedger } = await MainBook.balance({
-    account: lndFee,
-    currency: "BTC",
-  })
+  // TODO: need to fix escrow
+  // escrow should be removed, and fees should be added, 
+  // so that associated sats are not longer part of `Assets` but are in `Expenses` instead
+
+  await openChannel({ lnd: lndMain, other_lnd: lndOutside1, socket })
+
+  let channels
+
+  ({ channels } = await lnService.getChannels({ lnd: lndMain }));
+  expect(channels.length).toEqual(channelLengthMain + 1)
 
   const sub = lnService.subscribeToChannels({ lnd: lndMain })
   sub.on('channel_closed', async (channel) => {
@@ -133,16 +136,16 @@ it('opensAndCloses channel from lnd1 to lndOutside1', async () => {
   await mineBlockAndSync({ lnds: [lndMain, lndOutside1], blockHeight: currentBlockCount + newBlock })
 
   await sleep(10000)
-  const { balance: finalFeeInLedger } = await MainBook.balance({
-    account: lndFee,
-    currency: "BTC",
-  })
 
   // FIXME
   // expect(finalFeeInLedger - initFeeInLedger).toBe(channelFee * -1)
   sub.removeAllListeners()
 
-  await updateEscrows()
+  await updateEscrows();
+
+  ({ channels } = await lnService.getChannels({ lnd: lndMain }))
+  expect(channels.length).toEqual(channelLengthMain)
+
 })
 
 it('opens private channel from lndOutside1 to lndOutside2', async () => {
@@ -168,7 +171,7 @@ it('opens channel from lndOutside1 to lnd1', async () => {
 
   {
     const { channels } = await lnService.getChannels({ lnd: lndMain })
-    expect(channels.length).toEqual(channelLengthMainLnd + 1)
+    expect(channels.length).toEqual(channelLengthMain + 1)
   }
 
 })
