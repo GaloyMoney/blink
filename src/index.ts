@@ -74,9 +74,9 @@ const resolvers = {
 
     // legacy, before handling multi currency account
     wallet: async (_, __, { wallet }) => ([{
-      id: wallet.currency,
-      currency: wallet.currency,
-      balance: () => wallet.getBalances()["BTC"],
+      id: "BTC",
+      currency: "BTC",
+      balance: async () => (await wallet.getBalances())["BTC"],
       transactions: () => wallet.getTransactions(),
       csv: () => wallet.getStringCsv()
     }]),
@@ -85,7 +85,7 @@ const resolvers = {
     // balances are distinc between USD and BTC
     // but transaction are common, because they could have rely both on USD/BTC
     wallet2: async (_, __, { wallet }) => {
-      const balances = wallet.getBalances()
+      const balances = await wallet.getBalances()
 
       return {
         transactions: wallet.getTransactions(),
@@ -161,7 +161,7 @@ const resolvers = {
   },
   Mutation: {
     requestPhoneCode: async (_, { phone }, { logger }) => ({ success: requestPhoneCode({ phone, logger }) }),
-    login: async (_, { phone, code, currency }, { logger }) => ({ token: login({ phone, code, currency, logger }) }),
+    login: async (_, { phone, code }, { logger }) => ({ token: login({ phone, code, logger }) }),
     updateUser: async (_, __, { wallet }) => ({
       // FIXME manage uid
       // TODO only level for now
@@ -295,7 +295,7 @@ const server = new GraphQLServer({
     const user = !!uid ? await User.findOne({ _id: uid }) : null
     // @ts-ignore
     const logger = graphqlLogger.child({ token, id: context.request.id, body: context.request.body })
-    const wallet = !!uid ? await WalletFactory({ ...token, user, logger }) : null
+    const wallet = !!uid ? await WalletFactory({ user, logger }) : null
     return {
       ...context,
       logger,

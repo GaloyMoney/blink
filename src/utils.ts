@@ -139,6 +139,9 @@ export function timeout(delay, msg) {
   });
 }
 
+// TODO: replace network by uri of the server
+// the uri will embed the network, ie: graphql.mainnet.server.io
+// and provide more information than just the network
 export const createToken = ({ uid, network }) => jwt.sign(
   { uid, network }, process.env.JWT_SECRET, {
   // TODO use asymetric signature

@@ -85,7 +85,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
     if (payeeUser) {
       const onchainLoggerOnUs = onchainLogger.child({onUs: true})
 
-      if (String(payeeUser._id) === String(this.uid)) {
+      if (String(payeeUser._id) === String(this.user._id)) {
         const error = 'User tried to pay himself'
         this.logger.warn({ payeeUser, error, success: false }, error)
         throw new LoggedError(error)
@@ -101,7 +101,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
       }
 
       // TODO: this lock seems useless
-      return await using(disposer(this.uid), async (lock) => {
+      return await using(disposer(this.user._id), async (lock) => {
 
         await MainBook.entry()
           .debit(customerPath(payeeUser._id), sats, metadata)
@@ -146,7 +146,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
       throw new LoggedError(error)
     }
 
-    return await using(disposer(this.uid), async (lock) => {
+    return await using(disposer(this.user._id), async (lock) => {
       
       try {
         ({ id } = await lnService.sendToChainAddress({ address, lnd, tokens: amount }))
@@ -365,7 +365,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
     const type = "onchain_receipt"
 
-    return await using(disposer(this.uid), async (lock) => {
+    return await using(disposer(this.user._id), async (lock) => {
 
       // FIXME O(n) ^ 2. bad.
       for (const matched_tx of user_matched_txs) {
@@ -376,8 +376,6 @@ export const OnChainMixin = (superclass) => class extends superclass {
         // double transaction for some non customer specific wallet. ie: if the path is different
         // for the broker. this is fixed now but something to think about.
         const mongotx = await Transaction.findOne({ accounts: this.user.accountPath, type, hash: matched_tx.id })
-
-        // this.logger.debug({ matched_tx, mongotx }, "updateOnchainReceipt with user %o", this.uid)
 
         if (!mongotx) {
 

@@ -22,16 +22,12 @@ export abstract class UserWallet {
   }
 
   // async refreshUser() {
-  //   this.user = await User.findOne({ _id: this.uid })
+  //   this.user = await User.findOne({ _id: this.user._id })
   // }
 
   // TODO: upgrade price automatically with a timer
   static setCurrentPrice(price) {
     UserWallet.lastPrice = price
-  }
-
-  get uid(): string {
-    return this.user._id
   }
 
   static async usernameExists({ username }): Promise<boolean> {
@@ -141,7 +137,7 @@ export abstract class UserWallet {
 
   async getStringCsv() {
     const csv = new CSVAccountExport()
-    await csv.addAccount({ account: customerPath(this.uid) })
+    await csv.addAccount({ account: customerPath(this.user.id) })
     return csv.getBase64()
   }
 
@@ -152,7 +148,7 @@ export abstract class UserWallet {
 
   async setUsername({ username }): Promise<boolean | Error> {
 
-    const result = await User.findOneAndUpdate({ _id: this.uid, username: null }, { username })
+    const result = await User.findOneAndUpdate({ _id: this.user.id, username: null }, { username })
 
     if (!result) {
       const error = `Username is already set`
@@ -165,7 +161,7 @@ export abstract class UserWallet {
 
   async setLanguage({ language }): Promise<boolean | Error> {
 
-    const result = await User.findOneAndUpdate({ _id: this.uid, }, { language })
+    const result = await User.findOneAndUpdate({ _id: this.user.id, }, { language })
 
     if (!result) {
       const error = `issue setting language preferences`

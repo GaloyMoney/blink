@@ -54,21 +54,21 @@ it('add invoice', async () => {
   const request = await userWallet1.addInvoice({ value: 1000 })
   expect(request.startsWith("lnbcrt10")).toBeTruthy()
   const { uid } = await InvoiceUser.findById(getHash(request))
-  expect(String(uid)).toBe(String(userWallet1.uid))
+  expect(String(uid)).toBe(String(userWallet1.user._id))
 })
 
 it('add public invoice', async () => {
   const request = await userWallet1.addInvoice({ selfGenerated: false })
   expect(request.startsWith("lnbcrt1")).toBeTruthy()
   const { uid, selfGenerated } = await InvoiceUser.findById(getHash(request))
-  expect(String(uid)).toBe(String(userWallet1.uid))
+  expect(String(uid)).toBe(String(userWallet1.user._id))
   expect(selfGenerated).toBe(false)
 })
 
 it('add invoice with no amount', async () => {
   const request = await userWallet2.addInvoice({})
   const { uid } = await InvoiceUser.findById(getHash(request))
-  expect(String(uid)).toBe(String(userWallet2.uid))
+  expect(String(uid)).toBe(String(userWallet2.user._id))
 })
 
 const createInvoiceHash = () => {

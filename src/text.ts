@@ -81,7 +81,6 @@ export const requestPhoneCode = async ({ phone, logger }) => {
 interface ILogin {
   phone: string
   code: number
-  currency?: string
   logger: any
 }
 

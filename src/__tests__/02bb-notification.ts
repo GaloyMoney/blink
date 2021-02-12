@@ -44,8 +44,8 @@ it('tests isUserActive', async () => {
   let activeUsers = await User.getActiveUsers()
 
   const initialActiveUsersAccountPath = activeUsers.map(user => customerPath(user._id))
-  const userWallet0AccountPath = (await getUserWallet(0)).accountPath
-  const funderWalletAccountPath = (await getFunderWallet({ logger: baseLogger })).accountPath
+  const userWallet0AccountPath = (await getUserWallet(0)).user.accountPath
+  const funderWalletAccountPath = (await getFunderWallet({ logger: baseLogger })).user.accountPath
 
   //user0 and funder wallet are active users
   expect(initialActiveUsersAccountPath.length).toBe(2)

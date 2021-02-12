@@ -21,13 +21,13 @@ export class LightningUserWallet extends OnChainMixin(LightningMixin(UserWallet)
     const lightningFundingWallet = await getFunderWallet({ logger: this.logger })
     const result: object[] = []
 
-    return await using(disposer(this.uid), async (lock) => {
+    return await using(disposer(this.user._id), async (lock) => {
 
       for (const id of ids) {
         const amount = OnboardingEarn[id]
 
         const userPastState = await User.findOneAndUpdate(
-          { _id: this.uid },
+          { _id: this.user._id },
           { $push: { earn: id } },
           { upsert: true }
         )
