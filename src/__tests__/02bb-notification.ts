@@ -27,22 +27,25 @@ afterAll(async () => {
 
 it('sends daily balance notification', async () => {
   await sendBalanceToUsers()
-  const numActiveUsers = (await User.getActiveUsers()).length
+  const numActiveUsers = (await User.getActiveUsers()).length  
   expect(sendNotification.mock.calls.length).toBe(numActiveUsers)
-  for (const [call] of sendNotification.mock.calls) {
-    const { balance } = await MainBook.balance({ accounts: customerPath(call.uid) })
+  for (const [call] of sendNotification.mock.calls) {    
+    const { balance } = await MainBook.balance({ accounts: customerPath(call.user._id) })
     const expectedUsdBalance = (price * -balance).toLocaleString("en", { maximumFractionDigits: 2 })
     const expectedSatsBalance = (-balance).toLocaleString("en", { maximumFractionDigits: 2 })
     expect(call.title).toBe(`Your balance today is \$${expectedUsdBalance} (${expectedSatsBalance} sats)`)
   }
 })
 
+// FIXME make this test re-entrant
 it('tests isUserActive', async () => {
   await getUserWallet(8)
 
-  const initialActiveUsersAccountPath = (await User.getActiveUsers()).map(user => customerPath(user._id))
-  const userWallet0AccountPath = (await getUserWallet(0)).accountPath
-  const funderWalletAccountPath = (await getFunderWallet({ logger: baseLogger })).accountPath
+  let activeUsers = await User.getActiveUsers()
+
+  const initialActiveUsersAccountPath = activeUsers.map(user => customerPath(user._id))
+  const userWallet0AccountPath = (await getUserWallet(0)).user.accountPath
+  const funderWalletAccountPath = (await getFunderWallet({ logger: baseLogger })).user.accountPath
 
   //user0 and funder wallet are active users
   expect(initialActiveUsersAccountPath.length).toBe(2)

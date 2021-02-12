@@ -3,7 +3,7 @@ import { Dropbox } from "dropbox";
 import express from 'express';
 import { subscribeToBackups, subscribeToChannels, subscribeToInvoices, subscribeToTransactions } from 'ln-service';
 import { find } from "lodash";
-import { lightningAccountingPath, lndFeePath } from "./ledger";
+import { lndAccountingPath, lndFeePath } from "./ledger";
 import { lnd } from "./lndConfig";
 import { InvoiceUser, MainBook, setupMongoConnection, Transaction, User } from "./mongodb";
 import { sendInvoicePaidNotification, sendNotification } from "./notification";
@@ -78,7 +78,9 @@ export async function onchainTransactionEventHandler(tx) {
       hash: tx.id,
       amount: tx.tokens,
     }
-    await sendNotification({ uid: entry.account_path[2], title, data, logger: onchainLogger })
+
+    const user = await User.findOne({"_id": entry.account_path[2]})
+    await sendNotification({ user, title, data, logger: onchainLogger })
   } else {
     // TODO: the same way Lightning is updating the wallet/accounting, 
     // this event should update the onchain wallet/account of the associated user
@@ -105,7 +107,7 @@ export async function onchainTransactionEventHandler(tx) {
       onchainLogger.info({ transactionType: "receipt", pending: true }, "mempool apparence")
     } else {
       // onchain is currently only BTC
-      const wallet = await WalletFactory({ user, uid: user._id, currency: "BTC", logger: onchainLogger })
+      const wallet = await WalletFactory({ user, logger: onchainLogger })
       await wallet.updateOnchainReceipt()
     }
 
@@ -115,7 +117,7 @@ export async function onchainTransactionEventHandler(tx) {
     const title = tx.is_confirmed ?
       `You received $${usd} | ${tx.tokens} sats` :
       `$${usd} | ${tx.tokens} sats is on its way to your wallet`
-    await sendNotification({ title, uid: user._id, data, logger: onchainLogger })
+    await sendNotification({ title, user, data, logger: onchainLogger })
   }
 }
 
@@ -132,10 +134,10 @@ export const onInvoiceUpdate = async invoice => {
     const uid = invoiceUser.uid
     const hash = invoice.id as string
 
-    const user = await User.findOne({ _id: uid })
-    const wallet = await WalletFactory({ user, uid, currency: invoiceUser.currency, logger })
+    const user = await User.findOne({_id: uid})
+    const wallet = await WalletFactory({ user, logger })
     await wallet.updatePendingInvoice({ hash })
-    await sendInvoicePaidNotification({ amount: invoice.received, hash, uid, logger })
+    await sendInvoicePaidNotification({ amount: invoice.received, hash, user, logger })
   } else {
     logger.fatal({ invoice }, "we received an invoice but had no user attached to it")
   }
@@ -162,7 +164,7 @@ export const onChannelUpdated = async ({ channel, lnd, stateChange }: { channel:
   await MainBook.entry(`channel ${stateChange} onchain fee`)
     // TODO: make sure to inverse when merging the fix on credit/debit
     .credit(lndFeePath, fee, { ...metadata, })
-    .debit(lightningAccountingPath, fee, { ...metadata })
+    .debit(lndAccountingPath, fee, { ...metadata })
     .commit()
 
   logger.info({ channel, fee, ...metadata }, `${stateChange} channel fee added to mongodb`)

@@ -11,11 +11,14 @@
     "esModuleInterop": true,
     "rootDirs": [
       "src"
-    ]
+    ],
+    "types": ["jest", "node"],
+    "moduleResolution": "node"
   },
   "compileOnSave": true,
   "include": [
     "src/index.ts",
-    "src/prometheus.ts"
+    "src/exporter.ts",
+    "src/__tests__/*.ts"
   ]
 }

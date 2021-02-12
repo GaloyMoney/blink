@@ -1,13 +1,14 @@
 /**
  * @jest-environment node
  */
+import { bitcoindAccountingPath } from "../ledger";
+import { lnd } from "../lndConfig";
 import { quit } from "../lock";
 import { MainBook, setupMongoConnection } from "../mongodb";
 import { SpecterWallet } from "../SpecterWallet";
 import { checkIsBalanced, mockGetExchangeBalance, RANDOM_ADDRESS } from "../tests/helper";
-import { baseLogger, bitcoindDefaultClient, btc2sat, sleep } from "../utils";
-import { lnd } from "../lndConfig";
-import { bitcoindAccountingPath } from "../ledger";
+import { baseLogger, bitcoindDefaultClient, sleep } from "../utils";
+import { UserWallet } from "../wallet";
 const lnService = require('ln-service');
 
 const mongoose = require("mongoose");
@@ -26,7 +27,7 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   // initBlockCount = await bitcoindDefaultClient.getBlockCount()
-  
+  UserWallet.setCurrentPrice(10000)  
   specterWallet = new SpecterWallet({ logger: baseLogger })
 })
 

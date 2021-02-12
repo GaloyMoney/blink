@@ -1,9 +1,10 @@
 import { filter } from "lodash";
-import { bitcoindAccountingPath, lightningAccountingPath, lndFeePath, bitcoindFeePath } from "./ledger";
+import { bitcoindAccountingPath, lndAccountingPath, lndFeePath } from "./ledger";
 import { lnd } from "./lndConfig";
 import { MainBook } from "./mongodb";
 import { getOnChainTransactions } from "./OnChain";
-import { BitcoindClient, bitcoindDefaultClient, btc2sat, sat2btc, lndBalances } from "./utils";
+import { BitcoindClient, bitcoindDefaultClient, btc2sat, lndBalances, sat2btc } from "./utils";
+import { UserWallet } from "./wallet";
 
 const lnService = require('ln-service');
 
@@ -180,17 +181,17 @@ export class SpecterWallet {
     const outgoingOnchainTxns = await getOnChainTransactions({ lnd, incoming: false })
     const [{ fee }] = outgoingOnchainTxns.filter(tx => tx.id === id)
 
-    // add ...UserWallet.getCurrencyEquivalent({sats, fee}), 
     const metadata = { 
       type: "to_cold_storage", 
       currency: "BTC", 
       pending: false,
       hash: id,
-      fee
+      fee,
+      ...UserWallet.getCurrencyEquivalent({sats, fee})
     }
 
     await MainBook.entry(memo)
-      .debit(lightningAccountingPath, sats + fee, {...metadata })
+      .debit(lndAccountingPath, sats + fee, {...metadata })
       .credit(lndFeePath, fee, {...metadata })
       .credit(bitcoindAccountingPath, sats, {...metadata })
       .commit()
@@ -244,12 +245,12 @@ export class SpecterWallet {
     const fee = btc2sat(- tx.fee) /* fee is negative */
 
     await MainBook.entry(memo)
-      .credit(lightningAccountingPath, sats, {...metadata })
+      .credit(lndAccountingPath, sats, {...metadata })
       .credit(lndFeePath, fee, {...metadata })
       .debit(bitcoindAccountingPath, sats + fee, {...metadata })
       .commit()
 
     subLogger.info({txid, tx}, `rebalancing withdrawal was succesful`)
 
-  } 
+  }
 }

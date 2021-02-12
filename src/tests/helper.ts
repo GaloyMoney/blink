@@ -7,7 +7,6 @@ import { baseLogger, sleep } from "../utils";
 import { getTokenFromPhoneIndex, WalletFactory } from "../walletFactory";
 import { lnd } from "../lndConfig";
 
-export const username = "user0"
 
 const lnService = require('ln-service')
 
@@ -34,7 +33,7 @@ export const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
 export const getUserWallet = async userNumber => {
   const token = await getTokenFromPhoneIndex(userNumber)
   const user = await User.findOne({_id: token.uid})
-  const userWallet = await WalletFactory({...token, user, logger: baseLogger})
+  const userWallet = await WalletFactory({ user, logger: baseLogger})
   return userWallet
 }
 
