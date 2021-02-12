@@ -4,28 +4,30 @@ import { customerPath } from "./ledger";
 import { MainBook, User, Transaction } from "./mongodb";
 import { ITransaction } from "./types";
 import { LoggedError } from "./utils";
+import { Balances } from "./interface"
+const assert = require('assert')
 import { sendNotification } from "./notification";
 
 export abstract class UserWallet {
 
-  readonly lastPrice: number
-  readonly user: any // mongoose object
-  readonly uid: string
-  readonly currency: string
+  static lastPrice: number
+
+  // FIXME typing : https://thecodebarbarian.com/working-with-mongoose-in-typescript.html
+  user: typeof User // mongoose object
   readonly logger: any
 
-  constructor({ lastPrice, user, uid, currency, logger }) {
-    this.lastPrice = lastPrice
+  constructor({ user, logger }) {
     this.user = user
-    this.uid = uid
-    this.currency = currency
     this.logger = logger
   }
 
-  abstract get accountPath(): string
+  // async refreshUser() {
+  //   this.user = await User.findOne({ _id: this.user._id })
+  // }
 
-  get accountPathMedici(): Array<string> {
-    return this.accountPath.split(":")
+  // TODO: upgrade price automatically with a timer
+  static setCurrentPrice(price) {
+    UserWallet.lastPrice = price
   }
 
   static async usernameExists({ username }): Promise<boolean> {
@@ -37,21 +39,61 @@ export abstract class UserWallet {
   // there may be better way to architecture this?
   async updatePending() { return }
 
-  async getBalance() {
+  async getBalances(): Promise<Balances> {
     await this.updatePending()
 
-    const { balance } = await MainBook.balance({
-      account: this.accountPath,
-      currency: this.currency,
-    })
+    // TODO: add effective ratio
+    const balances = {
+      "BTC": 0,
+      "USD": 0,
+      total_in_BTC: NaN,
+      total_in_USD: NaN,
+    }
 
-    return - balance
+    // TODO: make this code parrallel instead of serial
+    for (const { id } of this.user.currencies) {
+      const { balance } = await MainBook.balance({
+        account: this.user.accountPath,
+        currency: id,
+      })
+
+      // balance shows an negative because they are a liability to the bank
+      assert(balance <= 0)
+      balances[id] = - balance
+    }
+
+    const priceMap = [
+      {
+        id: "BTC",
+        BTC: 1,
+        USD: 1/UserWallet.lastPrice, // TODO: check this should not be price
+      },
+      {
+        id: "USD",
+        BTC: UserWallet.lastPrice,
+        USD: 1
+      }
+    ]
+    
+    // this array is used to know the total in USD and BTC
+    // the effective ratio may not be equal to the user ratio 
+    // as a result of price fluctuation
+    let total = priceMap.map(({id, BTC, USD}) => ({
+      id,
+      value: BTC * balances["BTC"] + USD * balances["USD"]
+    }))
+
+    balances.total_in_BTC = total.filter(item => item.id === "BTC")[0].value
+    balances.total_in_USD = total.filter(item => item.id === "USD")[0].value
+
+    return balances
   }
 
   async getRawTransactions() {
     const { results } = await MainBook.ledger({
-      currency: this.currency,
-      account: this.accountPath,
+      // TODO: manage currencies
+
+      account: this.user.accountPath,
       // start_date: startDate,
       // end_date: endDate
     })
@@ -95,17 +137,18 @@ export abstract class UserWallet {
 
   async getStringCsv() {
     const csv = new CSVAccountExport()
-    await csv.addAccount({ account: customerPath(this.uid) })
+    await csv.addAccount({ account: customerPath(this.user.id) })
     return csv.getBase64()
   }
 
   async setLevel({ level }) {
-    return await User.findOneAndUpdate({ _id: this.uid }, { level }, { new: true, upsert: true })
+    this.user.level = level
+    await this.user.save()
   }
 
   async setUsername({ username }): Promise<boolean | Error> {
 
-    const result = await User.findOneAndUpdate({ _id: this.uid, username: null }, { username })
+    const result = await User.findOneAndUpdate({ _id: this.user.id, username: null }, { username })
 
     if (!result) {
       const error = `Username is already set`
@@ -118,7 +161,7 @@ export abstract class UserWallet {
 
   async setLanguage({ language }): Promise<boolean | Error> {
 
-    const result = await User.findOneAndUpdate({ _id: this.uid, }, { language })
+    const result = await User.findOneAndUpdate({ _id: this.user.id, }, { language })
 
     if (!result) {
       const error = `issue setting language preferences`
@@ -129,49 +172,29 @@ export abstract class UserWallet {
     return true
   }
 
-  getCurrencyEquivalent({ sats, fee, usd }: { sats: number, fee: number, usd?: number }) {
-    let _usd = usd
-    let feeUsd
-
-    if (!usd) {
-      _usd = this.satsToUsd(sats)
+  static getCurrencyEquivalent({ sats, fee, usd }: { sats: number, fee?: number, usd?: number }) {
+    return {
+      fee, 
+      feeUsd: fee ? UserWallet.satsToUsd(fee): undefined,
+      sats,
+      usd: usd ?? UserWallet.satsToUsd(sats)
     }
-
-    // TODO: check if fee is always given in sats
-    feeUsd = this.satsToUsd(fee)
-
-    return { fee, feeUsd, sats, usd: _usd }
   }
-
-  satsToUsd = sats => {
-    const usdValue = this.lastPrice * sats
+  
+  static satsToUsd = sats => {
+    const usdValue = UserWallet.lastPrice * sats
     return usdValue
   }
 
-  isUserActive = async (): Promise<boolean> => {
-    const timestamp30DaysAgo = new Date(Date.now() - (30 * 24 * 60 * 60 * 1000))
-    const [result] = await Transaction.aggregate([
-      { $match: { "accounts": this.accountPath, "timestamp": { $gte: timestamp30DaysAgo } } },
-      {
-        $group: {
-          _id: null, outgoingSats: { $sum: "$credit" }, incomingSats: { $sum: "$debit" }
-        }
-      }
-    ])
-    const { incomingSats, outgoingSats } = result || {}
-
-    return (outgoingSats > 1000 || incomingSats > 1000)
-  }
-
-  sendBalance = async () => {
-    const balanceSats = await this.getBalance()
+  sendBalance = async (): Promise<void> => {
+    const {BTC: balanceSats} = await this.getBalances()
 
     // Add commas to balancesats
     const balanceSatsPrettified = balanceSats.toLocaleString("en")
     // Round balanceusd to 2 decimal places and add commas
-    const balanceUsd = this.satsToUsd(balanceSats).toLocaleString("en", { maximumFractionDigits: 2 })
+    const balanceUsd = UserWallet.satsToUsd(balanceSats).toLocaleString("en", { maximumFractionDigits: 2 })
 
-    this.logger.info({ balanceSatsPrettified, balanceUsd, uid: this.user._id }, `sending balance notification to user`)
-    await sendNotification({ uid: this.user._id, title: `Your balance today is \$${balanceUsd} (${balanceSatsPrettified} sats)`, logger: this.logger })
+    this.logger.info({ balanceSatsPrettified, balanceUsd, user: this.user }, `sending balance notification to user`)
+    await sendNotification({ user: this.user, title: `Your balance today is \$${balanceUsd} (${balanceSatsPrettified} sats)`, logger: this.logger })
   }
 }

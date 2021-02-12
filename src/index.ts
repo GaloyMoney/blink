@@ -71,13 +71,30 @@ const resolvers = {
         language
       }
     },
+
+    // legacy, before handling multi currency account
     wallet: async (_, __, { wallet }) => ([{
-      id: wallet.currency,
-      currency: wallet.currency,
-      balance: () => wallet.getBalance(),
+      id: "BTC",
+      currency: "BTC",
+      balance: async () => (await wallet.getBalances())["BTC"],
       transactions: () => wallet.getTransactions(),
       csv: () => wallet.getStringCsv()
     }]),
+
+    // new way to return the balance
+    // balances are distinc between USD and BTC
+    // but transaction are common, because they could have rely both on USD/BTC
+    wallet2: async (_, __, { wallet }) => {
+      const balances = await wallet.getBalances()
+
+      return {
+        transactions: wallet.getTransactions(),
+        balances: wallet.user.currencies.map(item => ({
+          id: item.id,
+          balance: balances[item.id],
+        }))
+      }
+    },
     nodeStats: async () => nodeStats({lnd}),
     buildParameters: async () => {
       const { minBuildNumber, lastBuildNumber } = await getMinBuildNumber()
@@ -144,7 +161,7 @@ const resolvers = {
   },
   Mutation: {
     requestPhoneCode: async (_, { phone }, { logger }) => ({ success: requestPhoneCode({ phone, logger }) }),
-    login: async (_, { phone, code, currency }, { logger }) => ({ token: login({ phone, code, currency, logger }) }),
+    login: async (_, { phone, code }, { logger }) => ({ token: login({ phone, code, logger }) }),
     updateUser: async (_, __, { wallet }) => ({
       // FIXME manage uid
       // TODO only level for now
@@ -189,7 +206,7 @@ const resolvers = {
       pay: ({ address, amount, memo }) => ({ success: wallet.onChainPay({ address, amount, memo }) }),
       getFee: ({ address }) => wallet.getOnchainFee({ address }),
     }),
-    addDeviceToken: async (_, { deviceToken }, { uid, user }) => {
+    addDeviceToken: async (_, { deviceToken }, { user }) => {
       user.deviceToken.addToSet(deviceToken)
       // TODO: check if this is ok to shared a mongoose user instance and mutate it.
       await user.save()
@@ -197,10 +214,10 @@ const resolvers = {
     },
 
     // FIXME test
-    testMessage: async (_, __, { uid, logger }) => {
+    testMessage: async (_, __, { user, logger }) => {
       // throw new LoggedError("test error")
       await sendNotification({
-        uid,
+        user,
         title: "Title",
         body: `New message sent at ${moment.utc().format('YYYY-MM-DD HH:mm:ss')}`,
         logger
@@ -278,7 +295,7 @@ const server = new GraphQLServer({
     const user = !!uid ? await User.findOne({ _id: uid }) : null
     // @ts-ignore
     const logger = graphqlLogger.child({ token, id: context.request.id, body: context.request.body })
-    const wallet = !!uid ? await WalletFactory({ ...token, user, logger }) : null
+    const wallet = !!uid ? await WalletFactory({ user, logger }) : null
     return {
       ...context,
       logger,

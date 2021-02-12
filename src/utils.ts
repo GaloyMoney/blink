@@ -16,6 +16,9 @@ export const baseLogger = require('pino')({ level: process.env.LOGLEVEL || "info
 export const LOOK_BACK = 2016
 
 
+// @ts-ignore
+import { GraphQLError } from "graphql";
+import { User } from "./mongodb"
 
 // FIXME: super ugly hack.
 // for some reason LoggedError get casted as GraphQLError
@@ -36,6 +39,36 @@ const connection_obj = {
   host: process.env.BITCOINDADDR,
   port: process.env.BITCOINDPORT,
   version: '0.20.1',
+}
+
+
+export const addContact = async ({uid, username}) => {
+  // https://stackoverflow.com/questions/37427610/mongodb-update-or-insert-object-in-array
+
+  const result = await User.update(
+    {
+      _id: uid,
+      "contacts.id": username
+    },
+    {
+      $inc: {"contacts.$.transactionsCount": 1},
+    },
+  )
+
+  if(!result.nModified) {
+    await User.update(
+      {
+        _id: uid
+      },
+      {
+        $addToSet: {
+          contacts: {
+            id: username
+          }
+        }
+      }
+    );
+  }
 }
 
 export const BitcoindClient = ({wallet = ""}) => new bitcoindClient({...connection_obj, wallet})
@@ -106,8 +139,11 @@ export function timeout(delay, msg) {
   });
 }
 
-export const createToken = ({ uid, currency, network }) => jwt.sign(
-  { uid, network, currency }, process.env.JWT_SECRET, {
+// TODO: replace network by uri of the server
+// the uri will embed the network, ie: graphql.mainnet.server.io
+// and provide more information than just the network
+export const createToken = ({ uid, network }) => jwt.sign(
+  { uid, network }, process.env.JWT_SECRET, {
   // TODO use asymetric signature
   // and verify the signature from the client
   // otherwise we could get subject to DDos attack
