@@ -28,6 +28,7 @@ const header = [
   { id: 'memo', title: 'memo' },
   { id: 'memoPayer', title: 'memoPayer' },
   { id: 'meta', title: 'meta' },
+  { id: 'pending', title: 'pending' },
 ]
 
 export class CSVAccountExport {
