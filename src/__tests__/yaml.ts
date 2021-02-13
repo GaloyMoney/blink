@@ -1,4 +1,4 @@
-import { defaultConfig, customConfig } from "../config";
+import { defaultConfig } from "../config";
 
 
 it('test', async () => {
@@ -6,9 +6,6 @@ it('test', async () => {
     console.log(defaultConfig);
     expect(defaultConfig).toHaveProperty('hedging');
     expect(defaultConfig).toHaveProperty('name');
-
-    console.log(customConfig);
-    expect(customConfig).toHaveProperty('name');
   } catch (e) {
     console.log(e);
   }
