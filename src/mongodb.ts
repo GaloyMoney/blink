@@ -76,7 +76,7 @@ const UserSchema = new Schema({
     enum: ["user", "broker"],
     required: true,
     default: "user"
-    // todo : enfore the fact there can be only one broker
+    // TODO : enfore the fact there can be only one broker
   },
   onchain_addresses: {
     type: [String],
@@ -463,16 +463,16 @@ export const setupMongoConnection = async () => {
 
   try {
     await mongoose.connect(path, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      useCreateIndex: true,
-      useFindAndModify: false
-      // replset: {readPreference: 'secondary'}
+      // useNewUrlParser: true,
+      // useUnifiedTopology: true,
+      // useCreateIndex: true,
+      // useFindAndModify: false,
+      replset: {readPreference: 'secondary'}
     })
     mongoose.set('runValidators', true)
-    await User.syncIndexes()
-    await Transaction.syncIndexes()
-    await InvoiceUser.syncIndexes()
+    // await User.syncIndexes()
+    // await Transaction.syncIndexes()
+    // await InvoiceUser.syncIndexes()
   } catch (err) {
     baseLogger.fatal({ err, path }, `error connecting to mongodb`)
     await sleep(100)

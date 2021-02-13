@@ -3,8 +3,9 @@ import { bitcoindAccountingPath, lndAccountingPath, lndFeePath } from "./ledger"
 import { lnd } from "./lndConfig";
 import { MainBook } from "./mongodb";
 import { getOnChainTransactions } from "./OnChain";
-import { BitcoindClient, bitcoindDefaultClient, btc2sat, lndBalances, sat2btc } from "./utils";
+import { BitcoindClient, bitcoindDefaultClient, btc2sat, sat2btc } from "./utils";
 import { UserWallet } from "./wallet";
+import { lndBalances } from "./lndUtils"
 
 const lnService = require('ln-service');
 

@@ -3,8 +3,9 @@ import { bitcoindAccountingPath, escrowAccountingPath, lndAccountingPath, lndFee
 import { lnd } from "./lndConfig";
 import { InvoiceUser, MainBook, Transaction, User } from "./mongodb";
 import { SpecterWallet } from "./SpecterWallet";
-import { baseLogger, lndBalances } from "./utils";
+import { baseLogger } from "./utils";
 import { getFunderWallet, WalletFactory } from "./walletFactory";
+import { lndBalances } from "./lndUtils"
 const lnService = require('ln-service')
 
 const logger = baseLogger.child({module: "admin"})
