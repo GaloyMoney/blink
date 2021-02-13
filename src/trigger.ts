@@ -1,14 +1,16 @@
 import { Storage } from '@google-cloud/storage';
+import { assert } from "console";
 import { Dropbox } from "dropbox";
 import express from 'express';
 import { subscribeToBackups, subscribeToChannels, subscribeToInvoices, subscribeToTransactions } from 'ln-service';
 import { find } from "lodash";
-import { lndAccountingPath, lndFee } from "./ledger";
+import { lndAccountingPath, lndFeePath } from "./ledger";
+import { lnd } from "./lndConfig";
 import { InvoiceUser, MainBook, setupMongoConnection, Transaction, User } from "./mongodb";
 import { sendInvoicePaidNotification, sendNotification } from "./notification";
 import { Price } from "./priceImpl";
 import { IDataNotification } from "./types";
-import { baseLogger, getAuth, LOOK_BACK } from './utils';
+import { baseLogger, LOOK_BACK } from './utils';
 import { WalletFactory } from "./walletFactory";
 
 const crypto = require("crypto")
@@ -81,6 +83,8 @@ export async function onchainTransactionEventHandler(tx) {
     const user = await User.findOne({"_id": entry.account_path[2]})
     await sendNotification({ user, title, data, logger: onchainLogger })
   } else {
+    // incoming transaction
+
     // TODO: the same way Lightning is updating the wallet/accounting, 
     // this event should update the onchain wallet/account of the associated user
 
@@ -167,9 +171,11 @@ export const onChannelUpdated = async ({ channel, lnd, stateChange }: { channel:
 
   const metadata = { currency: "BTC", txid: transaction_id, type: "fee", pending: false }
 
+  assert(fee > 0)
+
   await MainBook.entry(`channel ${stateChange} onchain fee`)
+    .debit(lndFeePath, fee, { ...metadata, })
     .credit(lndAccountingPath, fee, { ...metadata })
-    .debit(lndFee, fee, { ...metadata })
     .commit()
 
   logger.info({ channel, fee, ...metadata }, `${stateChange} channel fee added to mongodb`)
@@ -191,8 +197,6 @@ const updatePrice = async () => {
 }
 
 const main = async () => {
-  const { lnd } = lnService.authenticatedLndGrpc(getAuth())
-
   lnService.getWalletInfo({ lnd }, (err, result) => {
     logger.debug({ err, result }, 'getWalletInfo')
   });
@@ -214,8 +218,6 @@ const main = async () => {
 }
 
 const healthCheck = () => {
-  const { lnd } = lnService.authenticatedLndGrpc(getAuth())
-
   const app = express()
   const port = 8888
   app.get('/health', (req, res) => {

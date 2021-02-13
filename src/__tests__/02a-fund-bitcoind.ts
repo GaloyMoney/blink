@@ -18,7 +18,7 @@ const numOfBlock = 10
 // so we generate 101 blocks to get access to the coinbase transaction from block #1.
 
 
-// !!! this test is no re-entrant !!!
+// !!! this test is not re-entrant !!!
 
 const amount_BTC = 1
 let lndOutside1_wallet_addr
@@ -38,8 +38,12 @@ afterAll(async () => {
   jest.restoreAllMocks()
 })
 
+
 it('funds bitcoind wallet', async () => {
-	const bitcoindAddress = await bitcoindDefaultClient.getNewAddress()
+  const {name} = await bitcoindDefaultClient.createWallet("")
+  expect(name).toBe("")
+
+  const bitcoindAddress = await bitcoindDefaultClient.getNewAddress()
 	await bitcoindDefaultClient.generateToAddress(numOfBlock, bitcoindAddress)
 	await bitcoindDefaultClient.generateToAddress(100, RANDOM_ADDRESS)
 	const balance = await bitcoindDefaultClient.getBalance()

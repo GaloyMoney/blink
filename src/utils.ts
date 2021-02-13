@@ -9,7 +9,6 @@ const bitcoindClient = require('bitcoin-core')
 const { parsePaymentRequest } = require('invoices');
 const axios = require('axios').default;
 
-
 export const baseLogger = require('pino')({ level: process.env.LOGLEVEL || "info" })
 
 // how many block are we looking back for getChainTransactions
@@ -72,7 +71,7 @@ export const addContact = async ({uid, username}) => {
 }
 
 export const BitcoindClient = ({wallet = ""}) => new bitcoindClient({...connection_obj, wallet})
-export const bitcoindDefaultClient = BitcoindClient({})
+export const bitcoindDefaultClient = BitcoindClient({wallet: ""})
 
 export const amountOnVout = ({ vout, onchain_addresses }): number => {
   // TODO: check if this is always [0], ie: there is always a single addresses for vout for lnd output
@@ -120,6 +119,9 @@ export function timeout(delay, msg) {
   });
 }
 
+// TODO: replace network by uri of the server
+// the uri will embed the network, ie: graphql.mainnet.server.io
+// and provide more information than just the network
 export const createToken = ({ uid, network }) => jwt.sign(
   { uid, network }, process.env.JWT_SECRET, {
   // TODO use asymetric signature
@@ -150,22 +152,6 @@ validate.extend(validate.validators.datetime, {
   }
 })
 
-export const getAuth = () => {
-  // network = process.env.NETWORK // TODO
-  const cert = process.env.TLS
-  const macaroon = process.env.MACAROON
-  const lndip = process.env.LNDIP
-  const port = process.env.LNDRPCPORT ?? 10009
-
-  if (!cert || !macaroon || !lndip) {
-    console.log({cert, macaroon, lndip})
-    throw new Error('missing environment variable for lnd')
-  }
-
-  const socket = `${lndip}:${port}`
-
-  return { macaroon, cert, socket };
-}
 
 export async function measureTime(operation: Promise<any>): Promise<[any, number]> {
   const startTime = process.hrtime()
@@ -196,7 +182,8 @@ export async function getBosScore() {
     const bosScore = find(data.data, { publicKey })
     return bosScore.score
   } catch (err) {
-    baseLogger.error({ err, err2: err.toJson() }, `issue getting bos rank`)
+    // err2: err.toJson() does not work
+    baseLogger.error({ err }, `issue getting bos rank`)
   }
 }
 

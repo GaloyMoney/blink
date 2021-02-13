@@ -76,7 +76,7 @@ const UserSchema = new Schema({
     enum: ["user", "broker"],
     required: true,
     default: "user"
-    // todo : enfore the fact there can be only one broker
+    // TODO : enfore the fact there can be only one broker
   },
   onchain_addresses: {
     type: [String],
@@ -315,7 +315,6 @@ const transactionSchema = new Schema({
   currency: {
     type: String,
     enum: ["USD", "BTC"],
-    default: "BTC",
     required: true
   },
 
@@ -467,7 +466,8 @@ export const setupMongoConnection = async () => {
       useNewUrlParser: true,
       useUnifiedTopology: true,
       useCreateIndex: true,
-      useFindAndModify: false
+      useFindAndModify: false,
+      // replset: {readPreference: 'secondary'}
     })
     mongoose.set('runValidators', true)
     await User.syncIndexes()

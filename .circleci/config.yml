@@ -1,8 +1,9 @@
 version: 2.1
 
 orbs:
-  gcp-gke: circleci/gcp-gke@1.1.0
-  helm: circleci/helm@0.2.3
+  gcp-cli: circleci/gcp-cli@2.1.0
+  # gcp-gke: circleci/gcp-gke@1.1.0
+  # helm: circleci/helm@1.2.0
   gcp-gcr: circleci/gcp-gcr@0.7.1
   slack: circleci/slack@3.4.2
 
@@ -27,7 +28,7 @@ commands:
           command: |
             wget https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -O jq
             chmod +x ./jq
-            helm -n <<parameters.namespace>> upgrade -i --wait lnpage ./lnpage -f ./lnpage/<<parameters.namespace>>.yaml --set image.tag=$CIRCLE_SHA1
+            helm -n <<parameters.namespace>> upgrade -i --wait lnpage ./galoy/charts/lnpage  -f ./galoy/charts/lnpage/<<parameters.namespace>>.yaml --set image.tag=$CIRCLE_SHA1
             kubectl -n << parameters.namespace >> wait --for=condition=ready pod -l app=lnpage
             LND_ADDR=$(kubectl -n <<parameters.namespace>> get services | awk '/lnd-service/ {print $4}')
             LND_PUB_KEY=$(kubectl -n <<parameters.namespace>> exec lnd-container-0 -- lncli -n <<parameters.namespace>> getinfo | ./jq -r '.identity_pubkey')
@@ -104,13 +105,29 @@ jobs:
           command: |
             kubectl delete namespaces $NAMESPACE
           when: always
-      - when:
-          condition:
-            equal: [ master, << pipeline.git.branch >> ]
-          steps:
-            - run: |
-                gcloud container clusters get-credentials testnet-cluster --region us-central1-a --project ${GOOGLE_PROJECT_ID}
-                cd ~/GaloyApp/backend/firebase/functions/ && ./initLocalTest.sh testnet            
+
+  testnet_deploy:
+    working_directory: ~/GaloyApp/backend
+    docker:
+      - image: cimg/base:2020.01     
+    resource_class: small
+    steps:
+      - checkout:
+          path: ~/GaloyApp
+      - gcp-cli/install
+      - gke-auth
+      - run: curl https://baltocdn.com/helm/signing.asc | sudo apt-key add -
+      - run: curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+      - run: sudo apt-get update && sudo apt-get install -y apt-transport-https gnupg2 curl
+      - run: echo "deb https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+      - run: echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list
+      - run: sudo apt-get update
+      - run: sudo apt-get install -y kubectl helm
+
+      - run:
+          name: Upgrade testnet deployments
+          command: |
+            cd ~/GaloyApp/backend/firebase/functions/ && ./initLocalTest.sh testnet
 
   mainnet_deploy:
     working_directory: ~/GaloyApp/backend
@@ -163,10 +180,17 @@ workflows:
       - test:
           requires:
             - build_test_image
+      - testnet_deploy:
+          requires:
+            - test
+          filters:
+            branches:
+              only:
+                - master  
       - approve_mainnet_deploy:
           type: approval
           requires:
-            - test
+            - testnet_deploy
           filters:
             branches:
               only:
@@ -174,7 +198,7 @@ workflows:
       - slack/approval-notification:
           mentions: 'U011J7RCEFQ,U011KKL1L4B'
           requires:
-            - test
+            - testnet_deploy
           filters:
             branches:
               only:

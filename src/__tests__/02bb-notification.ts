@@ -1,11 +1,15 @@
+/**
+ * @jest-environment node
+ */
+
 import { sendBalanceToUsers } from "../dailyBalanceNotification";
 import { customerPath } from "../ledger";
 import { quit } from "../lock";
-import { MainBook, setupMongoConnection, User, Transaction } from "../mongodb";
+import { MainBook, setupMongoConnection, Transaction, User } from "../mongodb";
 import { Price } from "../priceImpl";
-import { baseLogger } from "../utils";
-import { WalletFactory, getFunderWallet } from "../walletFactory";
 import { getUserWallet } from "../tests/helper";
+import { baseLogger } from "../utils";
+import { getFunderWallet } from "../walletFactory";
 jest.mock('../notification')
 const { sendNotification } = require("../notification")
 let price
@@ -40,8 +44,8 @@ it('tests isUserActive', async () => {
   let activeUsers = await User.getActiveUsers()
 
   const initialActiveUsersAccountPath = activeUsers.map(user => customerPath(user._id))
-  const userWallet0AccountPath = (await getUserWallet(0)).accountPath
-  const funderWalletAccountPath = (await getFunderWallet({ logger: baseLogger })).accountPath
+  const userWallet0AccountPath = (await getUserWallet(0)).user.accountPath
+  const funderWalletAccountPath = (await getFunderWallet({ logger: baseLogger })).user.accountPath
 
   //user0 and funder wallet are active users
   expect(initialActiveUsersAccountPath.length).toBe(2)
