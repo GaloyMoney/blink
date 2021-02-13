@@ -21,12 +21,12 @@ afterAll(async () => {
 })
 
 
-it('add user0/funder/Broker', async () => {
+it('add user0/funder/Dealer', async () => {
   await getUserWallet(0)
   await getUserWallet(4)
 
-  const broker = await getUserWallet(6)
-  expect(broker.user.role).toBe("broker")
+  const dealer = await getUserWallet(6)
+  expect(dealer.user.role).toBe("dealer")
 
   const user5 = await getUserWallet(5)
   expect(user5.user.currencies[0]).toMatchObject({id: "USD", ratio: 1})

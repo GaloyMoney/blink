@@ -33,7 +33,7 @@ export const TEST_NUMBER = [
   
   { phone: "+16505554326", code: 321321, currencies: [{id: "USD", ratio: 1}] }, // usd
   
-  { phone: "+16505554327", code: 321321, role: "broker" }, // broker //user6
+  { phone: "+16505554327", code: 321321, role: "dealer" }, // dealer //user6
   { phone: "+16505554328", code: 321321 }, // 
   { phone: "+16505554329", code: 321321 }, // postman
   { phone: "+16505554330", code: 321321, currencies: [{id: "USD", ratio: .5}, {id: "BTC", ratio: .5},] }, // usd bis

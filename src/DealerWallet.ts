@@ -1,6 +1,5 @@
 import { find } from "lodash";
-import { yamlConfig } from "./config";
-import { accountBrokerFtxPath, liabilitiesBrokerFtxPath } from "./ledger";
+import { accountDealerFtxPath, dealerPath, customerPath, liabilitiesDealerFtxPath } from "./ledger";
 import { MainBook } from "./mongodb";
 import { OnChainMixin } from "./OnChain";
 import { ILightningWalletUser } from "./types";
@@ -9,9 +8,21 @@ import { UserWallet } from "./wallet";
 const ccxt = require('ccxt')
 const assert = require('assert')
 
-
 const apiKey = process.env.FTX_KEY
 const secret = process.env.FTX_SECRET
+
+const LOW_BOUND_RATIO_SHORTING = 0.95
+const LOW_SAFEBOUND_RATIO_SHORTING = 0.98
+// average: 0.99
+const HIGH_SAFEBOUND_RATIO_SHORTING = 1
+const HIGH_BOUND_RATIO_SHORTING = 1.03
+
+// TODO: take a target leverage and safe parameter and calculate those bounding values dynamically.
+const LOW_BOUND_LEVERAGE = 1.2
+const LOW_SAFEBOUND_LEVERAGE = 1.8
+// average: 2
+const HIGH_SAFEBOUND_LEVERAGE = 2.25
+const HIGH_BOUND_LEVERAGE = 3
 
 const symbol = 'BTC-PERP'
 
@@ -19,23 +30,23 @@ const symbol = 'BTC-PERP'
 export type IBuyOrSell = "sell" | "buy" | null
 
 
-export class FtxBrokerWallet extends OnChainMixin(UserWallet) {
+export class DealerWallet extends OnChainMixin(UserWallet) {
   ftx
   
   constructor({ user, logger }: ILightningWalletUser) {
     super({ user, logger })
     this.ftx = new ccxt.ftx({ apiKey, secret })
-    this.logger = logger.child({ topic: "broker" })
+    this.logger = logger.child({ topic: "dealer" })
   }
 
   async getLocalLiabilities() { 
     // FIXME harmonize the capitalzation for USD/usd
     const { USD: usd, BTC: satsLnd } = await this.getBalances()
 
-    // TODO: calculate PnL for the broker
+    // TODO: calculate PnL for the dealer
     // this will influence this account.
     const { balance: satsFtx } = await MainBook.balance({
-      account: liabilitiesBrokerFtxPath,
+      account: liabilitiesDealerFtxPath,
       currency: "BTC", 
     })
 
@@ -134,7 +145,7 @@ export class FtxBrokerWallet extends OnChainMixin(UserWallet) {
     //   "pid": 97313,
     //   "hostname": "metrics-86dcdb9776-2cc7v",
     //   "module": "cron",
-    //   "topic": "broker",
+    //   "topic": "dealer",
     //   "positionBtcPerp": {
     //     "collateralUsed": 9.75111,
     //     "cost": -97.5111,
@@ -216,16 +227,16 @@ export class FtxBrokerWallet extends OnChainMixin(UserWallet) {
 
     // under leveraged
     // no imminent risk (beyond exchange custory risk)
-    if (leverage < yamlConfig.hedging.LOW_BOUND_LEVERAGE) {
-      const targetUsdCollateral = usdLiability / yamlConfig.hedging.LOW_SAFEBOUND_LEVERAGE
+    if (leverage < LOW_BOUND_LEVERAGE) {
+      const targetUsdCollateral = usdLiability / LOW_SAFEBOUND_LEVERAGE
       usdAmountDiff = usdCollateral - targetUsdCollateral
       depositOrWithdraw =  "withdraw"
     }
 
     // over leveraged
     // our collateral could get liquidated if we don't rebalance
-    else if (leverage  > yamlConfig.hedging.HIGH_BOUND_LEVERAGE) {
-      const targetUsdCollateral = usdLiability / yamlConfig.hedging.HIGH_SAFEBOUND_LEVERAGE
+    else if (leverage  > HIGH_BOUND_LEVERAGE) {
+      const targetUsdCollateral = usdLiability / HIGH_SAFEBOUND_LEVERAGE
       usdAmountDiff = targetUsdCollateral - usdCollateral
       depositOrWithdraw = "deposit"
     }
@@ -235,7 +246,7 @@ export class FtxBrokerWallet extends OnChainMixin(UserWallet) {
     if (!!depositOrWithdraw) {
       assert(btcAmount > 0)
       // amount more than 3x of collateral should not happen
-      // although it could happen the first time the broker is launched? 
+      // although it could happen the first time the dealer is launched? 
       assert(btcAmount < 3 * usdLiability * btcPrice)
     }
 
@@ -249,21 +260,19 @@ export class FtxBrokerWallet extends OnChainMixin(UserWallet) {
     let usdOrderAmount, btcAmount
     let buyOrSell: IBuyOrSell = null
 
-    yamlConfig.hedging.LOW_SAFEBOUND_RATIO_SHORTING
-
     try {
       // long (exposed to change in price in BTC)
       // will loose money if BTCUSD price drops
-      if (ratio < yamlConfig.hedging.LOW_BOUND_RATIO_SHORTING) {
-        const targetUsd = usdLiability * yamlConfig.hedging.LOW_SAFEBOUND_RATIO_SHORTING
+      if (ratio < LOW_BOUND_RATIO_SHORTING) {
+        const targetUsd = usdLiability * LOW_SAFEBOUND_RATIO_SHORTING
         usdOrderAmount = targetUsd - usdExposure
         buyOrSell = "sell"
       }
 
       // short (exposed to change in price in BTC)
       // will loose money if BTCUSD price increase
-      else if (ratio > yamlConfig.hedging.HIGH_BOUND_RATIO_SHORTING) {
-        const targetUsd = usdLiability * yamlConfig.hedging.HIGH_SAFEBOUND_RATIO_SHORTING
+      else if (ratio > HIGH_BOUND_RATIO_SHORTING) {
+        const targetUsd = usdLiability * HIGH_SAFEBOUND_RATIO_SHORTING
         usdOrderAmount = usdExposure - targetUsd
         buyOrSell = "buy"
       }
@@ -360,8 +369,8 @@ export class FtxBrokerWallet extends OnChainMixin(UserWallet) {
         // .commit()
 
         await MainBook.entry()
-        .credit(accountBrokerFtxPath, sats, {...metadata, memo })
-        .debit(liabilitiesBrokerFtxPath, sats, {...metadata, memo })
+        .credit(accountDealerFtxPath, sats, {...metadata, memo })
+        .debit(liabilitiesDealerFtxPath, sats, {...metadata, memo })
         .commit()
 
         subLogger.info({withdrawalResult}, `rebalancing withdrawal was succesful`)
@@ -374,7 +383,7 @@ export class FtxBrokerWallet extends OnChainMixin(UserWallet) {
         //   "pid": 213504,
         //   "hostname": "metrics-86dcdb9776-2cc7v",
         //   "module": "cron",
-        //   "topic": "broker",
+        //   "topic": "dealer",
         //   "usdExposure": 41.313841239888,
         //   "usdLiability": 40.31493016,
         //   "leverage": 0.9689446654606045,
@@ -432,8 +441,8 @@ export class FtxBrokerWallet extends OnChainMixin(UserWallet) {
       // explore a way to refactor this to make a single transaction.
 
       await MainBook.entry()
-        .credit(liabilitiesBrokerFtxPath, sats, {...metadata, memo })
-        .debit(accountBrokerFtxPath, sats, {...metadata, memo })
+        .credit(liabilitiesDealerFtxPath, sats, {...metadata, memo })
+        .debit(accountDealerFtxPath, sats, {...metadata, memo })
         .commit()
 
       subLogger.info({memo, address}, "deposit rebalancing succesful")
@@ -495,7 +504,7 @@ export class FtxBrokerWallet extends OnChainMixin(UserWallet) {
       //   "pid": 97313,
       //   "hostname": "metrics-86dcdb9776-2cc7v",
       //   "module": "cron",
-      //   "topic": "broker",
+      //   "topic": "dealer",
       //   "symbol": "BTC-PERP",
       //   "orderType": "market",
       //   "buyOrSell": "sell",
@@ -584,7 +593,7 @@ export class FtxBrokerWallet extends OnChainMixin(UserWallet) {
   
       subLogger = subLogger.child({ usdExposure, usdLiability, leverage, collateral, btcPrice })
 
-      const { btcAmount, buyOrSell } = FtxBrokerWallet.isOrderNeeded({ usdLiability, usdExposure, btcPrice })
+      const { btcAmount, buyOrSell } = DealerWallet.isOrderNeeded({ usdLiability, usdExposure, btcPrice })
       subLogger.debug({ btcAmount, buyOrSell }, "isOrderNeeded result")
 
       if (buyOrSell) {
@@ -594,7 +603,7 @@ export class FtxBrokerWallet extends OnChainMixin(UserWallet) {
         const {usd: updatedUsdExposure } = await this.getAccountPosition()
 
         subLogger.debug({ updatedUsdLiability, updatedUsdExposure, btcPrice }, "input for the updated isOrderNeeded after an order")
-        const { buyOrSell: newBuyOrSell } = FtxBrokerWallet.isOrderNeeded({ usdLiability: updatedUsdLiability, usdExposure: updatedUsdExposure, btcPrice })
+        const { buyOrSell: newBuyOrSell } = DealerWallet.isOrderNeeded({ usdLiability: updatedUsdLiability, usdExposure: updatedUsdExposure, btcPrice })
 
         subLogger.debug({ newBuyOrSell }, "output for the updated isOrderNeeded after an order")
         assert(!newBuyOrSell)
@@ -612,7 +621,7 @@ export class FtxBrokerWallet extends OnChainMixin(UserWallet) {
   
       subLogger = this.logger.child({ usdExposure, usdLiability, leverage, collateral, btcPrice })
 
-      const { btcAmount, depositOrWithdraw } = FtxBrokerWallet.isRebalanceNeeded({ usdLiability, btcPrice, usdCollateral: collateral })
+      const { btcAmount, depositOrWithdraw } = DealerWallet.isRebalanceNeeded({ usdLiability, btcPrice, usdCollateral: collateral })
       subLogger.debug({ btcAmount, depositOrWithdraw }, "isRebalanceNeeded result")
 
       await this.rebalance({ btcAmount, depositOrWithdraw, logger: subLogger })

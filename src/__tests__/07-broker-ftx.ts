@@ -2,7 +2,7 @@
  * @jest-environment node
  */
 import { setupMongoConnection, User } from "../mongodb"
-import { FtxBrokerWallet } from "../FtxBrokerWallet";
+import { FtxDealerWallet } from "../FtxDealerWallet";
 import { baseLogger } from "../utils";
 import { quit } from "../lock";
 import { getTokenFromPhoneIndex } from "../walletFactory";
@@ -213,15 +213,15 @@ jest.mock('ccxt', () => ({
   ftx: function() { return ftxMock() } 
 }))
 
-let brokerWalletFixture0, brokerWalletFixture1
+let dealerWalletFixture0, dealerWalletFixture1
 
 beforeAll(async () => {
   await setupMongoConnection();
 
   ({ uid } = await getTokenFromPhoneIndex(7))
 
-  brokerWalletFixture0 = new FtxBrokerWallet({ user: new User(), logger: baseLogger })
-  brokerWalletFixture1 = new FtxBrokerWallet({ user: new User(), logger: baseLogger })
+  dealerWalletFixture0 = new FtxDealerWallet({ user: new User(), logger: baseLogger })
+  dealerWalletFixture1 = new FtxDealerWallet({ user: new User(), logger: baseLogger })
 })
 
 afterAll(async () => {
@@ -230,19 +230,19 @@ afterAll(async () => {
 })
 
 it('future0', async () => {
-  const future = await brokerWalletFixture0.getAccountPosition()
+  const future = await dealerWalletFixture0.getAccountPosition()
   console.log({future})
 })
 
 it('future1', async () => {
-  const future = await brokerWalletFixture1.getAccountPosition()
+  const future = await dealerWalletFixture1.getAccountPosition()
   console.log({future})
 })
 
 it('getBalance', async () => {
-  await brokerWalletFixture1.getBalances()
+  await dealerWalletFixture1.getBalances()
 })
 
 it('getBalance', async () => {
-  await brokerWalletFixture1.getBalances()
+  await dealerWalletFixture1.getBalances()
 })

@@ -1,6 +1,6 @@
 import { find } from "lodash";
 import { balanceSheetIsBalanced, updateUsersPendingPayment } from "../balanceSheet";
-import { FtxBrokerWallet } from "../FtxBrokerWallet";
+import { FtxDealerWallet } from "../FtxDealerWallet";
 import { lnd } from "../lndConfig";
 import { User } from "../mongodb";
 import { OnboardingEarn } from "../types";
@@ -63,6 +63,6 @@ export async function waitUntilBlockHeight({ lnd, blockHeight }) {
   baseLogger.debug({ current_block_height, is_synced_to_chain }, `Seconds to sync blockheight ${blockHeight}: ${time / (1000 / ms)}`)
 }
 
-export const mockGetExchangeBalance = () => jest.spyOn(FtxBrokerWallet.prototype, 'getExchangeBalance').mockImplementation(() => new Promise((resolve, reject) => {
+export const mockGetExchangeBalance = () => jest.spyOn(FtxDealerWallet.prototype, 'getExchangeBalance').mockImplementation(() => new Promise((resolve, reject) => {
   resolve({ sats : 0, usdPnl: 0 }) 
 }));

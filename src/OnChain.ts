@@ -374,7 +374,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
         //
         // note: the fact we fiter with `account_path: this.user.accountPath` could create 
         // double transaction for some non customer specific wallet. ie: if the path is different
-        // for the broker. this is fixed now but something to think about.
+        // for the dealer. this is fixed now but something to think about.
         const mongotx = await Transaction.findOne({ accounts: this.user.accountPath, type, hash: matched_tx.id })
 
         if (!mongotx) {
