@@ -173,7 +173,7 @@ export MONGODB_REPLICA_SET_KEY=$(kubectl get secret -n $NAMESPACE galoy-mongodb 
 helmUpgrade galoy \
   -f $INFRADIR/galoy/$NETWORK.yaml $localdevpath \
   --set "customEnv={MACAROONOUTSIDE1:$MACAROONOUTSIDE1,MACAROONOUTSIDE2:$MACAROONOUTSIDE2,TLSOUTSIDE1:$TLSOUTSIDE1,TLSOUTSIDE2:$TLSOUTSIDE2}" \
-  --set tls=$TLS,macaroon=$MACAROON,mongodb.auth.rootPassword=$MONGODB_ROOT_PASSWORD,mongodb.auth.replicaSetKey=$MONGODB_REPLICA_SET_KEY,tag=$CIRCLE_SHA1 \
+  --set tls=$TLS,macaroon=$MACAROON,mongodb.auth.rootPassword=$MONGODB_ROOT_PASSWORD,mongodb.auth.replicaSetKey=$MONGODB_REPLICA_SET_KEY,image.tag=$CIRCLE_SHA1 \
   $INFRADIR/galoy/
 
 kubectlWait app.kubernetes.io/component=mongodb
