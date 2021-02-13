@@ -3,8 +3,9 @@ import { bitcoindAccountingPath, escrowAccountingPath, lndAccountingPath, lndFee
 import { lnd } from "./lndConfig";
 import { InvoiceUser, MainBook, Transaction, User } from "./mongodb";
 import { SpecterWallet } from "./SpecterWallet";
-import { baseLogger, lndBalances } from "./utils";
+import { baseLogger } from "./utils";
 import { getFunderWallet, WalletFactory } from "./walletFactory";
+import { lndBalances } from "./lndUtils"
 const lnService = require('ln-service')
 
 const logger = baseLogger.child({module: "admin"})
@@ -52,25 +53,18 @@ export const getBalanceSheet = async () => {
 
 export const balanceSheetIsBalanced = async () => {
   const {assets, liabilities, lightning, bitcoin, expenses } = await getBalanceSheet()
-  const { total: lnd } = await lndBalances() // doesnt include ercrow amount
-
-  // const brokerWallet = await getBrokerWallet({ logger })
-  // const { sats: ftx } = await brokerWallet.getExchangeBalance()
+  const { total: lnd } = await lndBalances() // doesnt include escrow amount
 
   const specterWallet = new SpecterWallet({ logger })
   let bitcoind = await specterWallet.getBitcoindBalance()
 
-  if (isNaN(bitcoind)) {
-    bitcoind = 0
-  }
-
   const assetsLiabilitiesDifference = 
-    assets /* assets is positive */
-    + liabilities /* liabilities is negative */
-    + expenses /* expense is negative */
+    assets /* assets is ___ */
+    + liabilities /* liabilities is ___ */
+    + expenses /* expense is positif */
 
   const bookingVersusRealWorldAssets = 
-    (lnd + bitcoind) - // physical assets or value of account at third party
+    (lnd + bitcoind) + // physical assets or value of account at third party
     (lightning + bitcoin) // value in accounting
   
   if(!!bookingVersusRealWorldAssets || !!assetsLiabilitiesDifference) {
@@ -94,8 +88,8 @@ export const updateEscrows = async () => {
   const selfInitated = filter(channels, {is_partner_initiated: false})
 
   const mongotxs = await Transaction.aggregate([
-    { $match: { type: "escrow", accounts: lndAccountingPath }}, 
-    { $group: {_id: "$txid", total: { "$sum": "$debit" } }},
+    { $match: { type, accounts: lndAccountingPath }}, 
+    { $group: {_id: "$txid", total: { "$sum": "$credit" } }},
   ])
 
   for (const channel of selfInitated) {
@@ -116,8 +110,8 @@ export const updateEscrows = async () => {
     logger.debug({diff}, `update escrow with diff`)
 
     await MainBook.entry("escrow")
-      .debit(lndAccountingPath, diff, {...metadata, txid})
-      .credit(escrowAccountingPath, diff, {...metadata, txid})
+      .credit(lndAccountingPath, diff, {...metadata, txid})
+      .debit(escrowAccountingPath, diff, {...metadata, txid})
       .commit()
   }
 

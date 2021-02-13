@@ -57,9 +57,8 @@ export abstract class UserWallet {
         currency: id,
       })
 
-      // balance shows an negative because they are a liability to the bank
-      assert(balance <= 0)
-      balances[id] = - balance
+      assert(balance >= 0)
+      balances[id] = balance
     }
 
     const priceMap = [
@@ -105,7 +104,7 @@ export abstract class UserWallet {
     const rawTransactions = await this.getRawTransactions()
 
     const results_processed = rawTransactions.map(item => {
-      const amount = item.debit - item.credit
+      const amount = item.credit - item.debit
       const memoUsername =
         item.username ?
           amount > 0 ?

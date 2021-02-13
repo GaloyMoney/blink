@@ -21,13 +21,13 @@ let channelLengthMain, channelLengthOutside1
 beforeAll(async () => {
   await setupMongoConnection()
   mockGetExchangeBalance()
-
-  channelLengthMain = (await lnService.getChannels({ lnd: lndMain })).channels.length
-  channelLengthOutside1 = (await lnService.getChannels({ lnd: lndOutside1 })).channels.length
 })
 
 beforeEach(async () => {
   initBlockCount = await bitcoindDefaultClient.getBlockCount()
+
+  channelLengthMain = (await lnService.getChannels({ lnd: lndMain })).channels.length
+  channelLengthOutside1 = (await lnService.getChannels({ lnd: lndOutside1 })).channels.length
 })
 
 afterEach(async () => {
@@ -109,41 +109,44 @@ it('opens channel from lnd1ToLndOutside1', async () => {
     currency: "BTC",
   })
 
-  // FIXME: * -1 when reversing the credit/debit entries
-  expect(finalFeeInLedger - initFeeInLedger).toBe(channelFee /*     * -1 */ )
+  expect(finalFeeInLedger - initFeeInLedger).toBe(channelFee * -1 )
 })
 
-// FIXME reactivate test on credit/debit PR is merged 
+it('opensAndCloses channel from lnd1 to lndOutside1', async () => {
+  const socket = `lnd-outside-1:9735`
 
-// it('opens and closes channel from lnd1 to lndOutside1', async () => {
-//   const socket = `lnd-outside-1:9735`
+  // TODO: need to fix escrow
+  // escrow should be removed, and fees should be added, 
+  // so that associated sats are not longer part of `Assets` but are in `Expenses` instead
 
-//   await openChannel({ lnd: lndMain, other_lnd: lndOutside1, socket })
+  await openChannel({ lnd: lndMain, other_lnd: lndOutside1, socket })
 
-//   const { channels } = await lnService.getChannels({ lnd: lndMain })
-//   // expect(channels.length).toEqual(channelLengthMain + 2)
-//   const { balance: initFeeInLedger } = await MainBook.balance({
-//     account: lndFeePath,
-//     currency: "BTC",
-//   })
+  let channels
 
-//   const sub = lnService.subscribeToChannels({ lnd: lndMain })
-//   sub.on('channel_closed', async (channel) => {
-//     await onChannelUpdated({ channel, lnd: lndMain, stateChange: "closed" })
-//   })
+  ({ channels } = await lnService.getChannels({ lnd: lndMain }));
+  expect(channels.length).toEqual(channelLengthMain + 1)
+
+  const sub = lnService.subscribeToChannels({ lnd: lndMain })
+  sub.on('channel_closed', async (channel) => {
+    await onChannelUpdated({ channel, lnd: lndMain, stateChange: "closed" })
+  })
   
-//   await lnService.closeChannel({ lnd: lndMain, id: channels[0].id })
-//   const currentBlockCount = await bitcoindDefaultClient.getBlockCount()
-//   await mineBlockAndSync({ lnds: [lndMain, lndOutside1], blockHeight: currentBlockCount + newBlock })
+  await lnService.closeChannel({ lnd: lndMain, id: channels[channels.length - 1].id })
+  const currentBlockCount = await bitcoindDefaultClient.getBlockCount()
+  await mineBlockAndSync({ lnds: [lndMain, lndOutside1], blockHeight: currentBlockCount + newBlock })
 
-//   await sleep(10000)
-//   const { balance: finalFeeInLedger } = await MainBook.balance({
-//     account: lndFeePath,
-//     currency: "BTC",
-//   })
-//   expect(finalFeeInLedger - initFeeInLedger).toBe(channelFee * -1)
-//   sub.removeAllListeners()
-// })
+  await sleep(10000)
+
+  // FIXME
+  // expect(finalFeeInLedger - initFeeInLedger).toBe(channelFee * -1)
+  sub.removeAllListeners()
+
+  await updateEscrows();
+
+  ({ channels } = await lnService.getChannels({ lnd: lndMain }))
+  expect(channels.length).toEqual(channelLengthMain)
+
+})
 
 it('opens private channel from lndOutside1 to lndOutside2', async () => {
   const socket = `lnd-outside-2:9735`
@@ -158,7 +161,7 @@ it('opens private channel from lndOutside1 to lndOutside2', async () => {
   subscription.removeAllListeners();
 
   const { channels } = await lnService.getChannels({ lnd: lndOutside1 })
-  expect(channels.length).toEqual(channelLengthOutside1 + 2)
+  expect(channels.length).toEqual(channelLengthOutside1 + 1)
   expect(channels.some(e => e.is_private))
 })
 
@@ -168,23 +171,17 @@ it('opens channel from lndOutside1 to lnd1', async () => {
 
   {
     const { channels } = await lnService.getChannels({ lnd: lndMain })
-    expect(channels.length).toEqual(channelLengthMain + 2)
+    expect(channels.length).toEqual(channelLengthMain + 1)
   }
 
 })
 
-it('returns correct nodeStats', async () => {
-  const { peersCount, channelsCount } = await nodeStats({ lnd: lndMain })
-  expect(peersCount).toBe(1)
-  expect(channelsCount).toBe(channelLengthMain + 2)
-})
-
-it('escrow update1', async () => {
+it('escrow update ', async () => {
   await updateEscrows()
   await checkIsBalanced()
-})
 
-it('escrow update2', async () => {
+  await sleep(100)
+
   await updateEscrows()
   await checkIsBalanced()
 })

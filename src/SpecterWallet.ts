@@ -3,8 +3,9 @@ import { bitcoindAccountingPath, lndAccountingPath, lndFeePath } from "./ledger"
 import { lnd } from "./lndConfig";
 import { MainBook } from "./mongodb";
 import { getOnChainTransactions } from "./OnChain";
-import { BitcoindClient, bitcoindDefaultClient, btc2sat, lndBalances, sat2btc } from "./utils";
+import { BitcoindClient, bitcoindDefaultClient, btc2sat, sat2btc } from "./utils";
 import { UserWallet } from "./wallet";
+import { lndBalances } from "./lndUtils"
 
 const lnService = require('ln-service');
 
@@ -191,9 +192,9 @@ export class SpecterWallet {
     }
 
     await MainBook.entry(memo)
-      .debit(lndAccountingPath, sats + fee, {...metadata })
-      .credit(lndFeePath, fee, {...metadata })
-      .credit(bitcoindAccountingPath, sats, {...metadata })
+      .credit(lndAccountingPath, sats + fee, {...metadata })
+      .debit(lndFeePath, fee, {...metadata })
+      .debit(bitcoindAccountingPath, sats, {...metadata })
       .commit()
 
     this.logger.info({...metadata, sats, memo, address, fee}, "deposit rebalancing successful")
@@ -245,9 +246,9 @@ export class SpecterWallet {
     const fee = btc2sat(- tx.fee) /* fee is negative */
 
     await MainBook.entry(memo)
-      .credit(lndAccountingPath, sats, {...metadata })
-      .credit(lndFeePath, fee, {...metadata })
-      .debit(bitcoindAccountingPath, sats + fee, {...metadata })
+      .debit(lndAccountingPath, sats, {...metadata })
+      .debit(lndFeePath, fee, {...metadata })
+      .credit(bitcoindAccountingPath, sats + fee, {...metadata })
       .commit()
 
     subLogger.info({txid, tx}, `rebalancing withdrawal was succesful`)

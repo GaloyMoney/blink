@@ -104,8 +104,8 @@ export const OnChainMixin = (superclass) => class extends superclass {
       return await using(disposer(this.user._id), async (lock) => {
 
         await MainBook.entry()
-          .debit(customerPath(payeeUser._id), sats, metadata)
-          .credit(this.user.accountPath, sats, {...metadata, memo})
+          .credit(customerPath(payeeUser._id), sats, metadata)
+          .debit(this.user.accountPath, sats, {...metadata, memo})
           .commit()
         
         onchainLoggerOnUs.info({ success: true, ...metadata }, "onchain payment succeed")
@@ -165,8 +165,8 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
         // TODO/FIXME refactor. add the transaction first and set the fees in a second tx.
         await MainBook.entry(memo)
-          .debit(lndAccountingPath, sats, metadata)
-          .credit(this.user.accountPath, sats, metadata)
+          .credit(lndAccountingPath, sats, metadata)
+          .debit(this.user.accountPath, sats, metadata)
           .commit()
 
         onchainLogger.info({success: true , ...metadata}, 'successfull onchain payment')
@@ -259,7 +259,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
     //  ({
     //   created_at: moment(item.timestamp).unix(),
-    //   amount: item.debit - item.credit,
+    //   amount: item.credit - item.debit,
     //   sat: item.sat,
     //   usd: item.usd,
     //   description: item.memoPayer || item.memo || item.type, // TODO remove `|| item.type` once users have upgraded
@@ -392,8 +392,8 @@ export const OnChainMixin = (superclass) => class extends superclass {
           }
 
           await MainBook.entry()
-            .debit(this.user.accountPath, sats, metadata)
-            .credit(lndAccountingPath, sats, metadata)
+            .credit(this.user.accountPath, sats, metadata)
+            .debit(lndAccountingPath, sats, metadata)
             .commit()
 
           const onchainLogger = this.logger.child({ topic: "payment", protocol: "onchain", transactionType: "receipt", onUs: false })

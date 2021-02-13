@@ -1,9 +1,10 @@
 import { setupMongoConnection, User } from "./mongodb";
 import { Price } from "./priceImpl";
-import { baseLogger, getBosScore, lndBalances } from "./utils";
+import { baseLogger, getBosScore } from "./utils";
 import { getBrokerWallet, getFunderWallet } from "./walletFactory";
 import { SpecterWallet } from "./SpecterWallet"
 import { getBalanceSheet, balanceSheetIsBalanced } from "./balanceSheet"
+import { lndBalances } from "./lndUtils"
 
 const logger = baseLogger.child({module: "prometheus"})
 

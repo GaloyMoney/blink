@@ -80,13 +80,13 @@ const onchain_funding = async ({ walletDestination }) => {
 
     const transactions = await walletDestination.getTransactions()
 
-
-    console.log({tx: transactions[transactions.length - 1]})
+    // last in at [0]?
+    // console.log({tx: transactions[0]})
 
     expect(transactions.length).toBe(initTransactions.length + 1)
-    expect(transactions[transactions.length - 1].type).toBe("onchain_receipt")
-    expect(transactions[transactions.length - 1].amount).toBe(btc2sat(amount_BTC))
-    expect(transactions[transactions.length - 1].addresses[0]).toBe(address)
+    expect(transactions[0].type).toBe("onchain_receipt")
+    expect(transactions[0].amount).toBe(btc2sat(amount_BTC))
+    expect(transactions[0].addresses[0]).toBe(address)
 
   }
 
