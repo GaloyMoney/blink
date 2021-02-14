@@ -4,7 +4,7 @@ WORKDIR /usr/src/app
 
 RUN apk update && apk add git
 
-COPY "./package.json" "./tsconfig.json" "./yarn.lock" ./
+COPY ./package.json ./tsconfig.json ./yarn.lock ./
 
 RUN yarn install --frozen-lockfile
 
@@ -14,6 +14,6 @@ WORKDIR /usr/src/app
 
 COPY --from=BUILD_IMAGE /usr/src/app/node_modules ./node_modules
 
-COPY "./src/" "./*.js" "./default.yaml" "./tsconfig.json" "./.env" ./
+COPY ./src/ ./*.js ./default.yaml ./package.json ./tsconfig.json ./yarn.lock ./.env ./
 
 CMD sleep infinity
