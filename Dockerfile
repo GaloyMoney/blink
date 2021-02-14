@@ -14,6 +14,7 @@ WORKDIR /usr/src/app
 
 COPY --from=BUILD_IMAGE /usr/src/app/node_modules ./node_modules
 
-COPY ./src/ ./*.js ./default.yaml ./package.json ./tsconfig.json ./yarn.lock ./.env ./
+COPY ./*.js ./default.yaml ./package.json ./tsconfig.json ./yarn.lock ./.env ./
+COPY "./src/" "./src"
 
 CMD sleep infinity
