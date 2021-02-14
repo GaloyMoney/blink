@@ -40,6 +40,7 @@ jobs:
   build_test_image:
     working_directory: ~/GaloyApp/backend/firebase/functions
     machine: true
+    docker_layer_caching: true
     steps:
       - checkout:
           path: ~/GaloyApp
