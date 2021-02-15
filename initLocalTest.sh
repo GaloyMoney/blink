@@ -97,9 +97,16 @@ createLoopConfigmaps() {
 
 if [ ${LOCAL} ] 
 then 
-localdevpath="-f $INFRADIR/bitcoind/localdev.yaml"
-fi 
-helmUpgrade bitcoind -f $INFRADIR/bitcoind/$NETWORK.yaml $localdevpath $INFRADIR/bitcoind/
+  localdevpath="-f $INFRADIR/bitcoind/localdev.yaml"
+fi
+
+if [ "$NETWORK" == "testnet" ] || [ "$NETWORK" == "mainnet" ];
+then
+  helmUpgrade bitcoind -f $INFRADIR/bitcoind/$NETWORK.yaml $INFRADIR/bitcoind/
+then
+  helmUpgrade bitcoind $localdevpath $INFRADIR/bitcoind/ \
+  --set global.network=$NETWORK,specter.enabled=false
+fi
 
 # bug with --wait: https://github.com/helm/helm/issues/7139 ?
 kubectlWait app=bitcoind-container
