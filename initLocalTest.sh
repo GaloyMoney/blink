@@ -96,7 +96,7 @@ createLoopConfigmaps() {
 }
 
 if [ ${LOCAL} ] 
-then 
+then
   localdevpath="-f $INFRADIR/bitcoind/localdev.yaml"
 fi
 
@@ -109,7 +109,7 @@ else
 fi
 
 # bug with --wait: https://github.com/helm/helm/issues/7139 ?
-kubectlWait app=bitcoind-container
+kubectlWait app.kubernetes.io/name=bitcoind
 
 sleep 8
 
