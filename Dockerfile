@@ -10,6 +10,8 @@ RUN yarn install --frozen-lockfile
 
 FROM node:14-alpine
 
+RUN apk update && apk add curl
+
 WORKDIR /usr/src/app
 
 COPY --from=BUILD_IMAGE /usr/src/app/node_modules ./node_modules
