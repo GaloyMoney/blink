@@ -7,28 +7,28 @@ import { User } from "./mongodb"
 
 export const bitcoindAccountingPath = 'Assets:Reserve:Bitcoind'
 export const lndAccountingPath = 'Assets:Reserve:Lightning' // TODO: rename to Assets:Lnd
-export const accountBrokerFtxPath = 'Assets:Broker:FTX' // this should be updated with a cron job taking into consideration profit/loss 
 export const escrowAccountingPath = 'Assets:Reserve:Escrow' // TODO: rename to Assets:Lnd:Escrow
+
+export const accountDealerFtxPath = 'Assets:Dealer:FTX' // this should be updated with a cron job taking into consideration profit/loss 
+
 
 // liabilities
 export const customerPath = (uid) => `Liabilities:Customer:${uid}`
 
-let cacheBrokerPath: string
+let cacheDealerPath: string
 
-export const brokerMediciPath = async () => {
-  if (!!cacheBrokerPath) {
-    return cacheBrokerPath
+export const dealerMediciPath = async () => {
+  if (!!cacheDealerPath) {
+    return cacheDealerPath
   }
 
-  const broker = await User.findOne({ role: "broker" })
-  cacheBrokerPath = customerPath(broker._id)
-  return cacheBrokerPath
+  const dealer = await User.findOne({ role: "dealer" })
+  cacheDealerPath = customerPath(dealer._id)
+  return cacheDealerPath
 }   
 
+export const liabilitiesDealerFtxPath = `Liabilities:Dealer:Ftx`
 
-// export const brokerPathLnd = `Liabilities:Customer:uid` --> normal account
-export const brokerPath = `Liabilities:Broker` // used for USD
-export const liabilitiesBrokerFtxPath = `Liabilities:Broker:Ftx`
 
 // expenses
 

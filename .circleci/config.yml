@@ -77,18 +77,20 @@ jobs:
       - run:
           name: install helm charts
           command: |
-            cd ~/GaloyApp/backend/firebase/functions/ && ./initLocalTest.sh            
+            cd ~/GaloyApp/backend/firebase/functions/ && ./initLocalTest.sh 
       - run:
           name: Run jest test
           command: |
-            kubectl exec --namespace=$NAMESPACE testpod -- sh -c "yarn test --max_old_space_size=3000"
+            kubectl exec --namespace=$NAMESPACE $(kubectl get pods --namespace=$NAMESPACE --selector=app=testpod --output=jsonpath={.items..metadata.name}) -- sh -c "yarn test --max_old_space_size=3000"
       - run:
           name: Run postman test
           command: |
-            kubectl exec --namespace=$NAMESPACE testpod -- sh -c "yarn run postman"
+            kubectl exec --namespace=$NAMESPACE $(kubectl get pods --namespace=$NAMESPACE --selector=app=testpod --output=jsonpath={.items..metadata.name}) -- sh -c "yarn run postman"
       - run:
           name: Fetch test results
-          command: kubectl cp --namespace=$NAMESPACE testpod:/functions/artifacts/junit.xml ./reports/junit.xml
+          # source $BASH_ENV
+          command: |
+            kubectl cp --namespace=$NAMESPACE $(kubectl get pods --namespace=$NAMESPACE --selector=app=testpod --output=jsonpath={.items..metadata.name}):/functions/artifacts/junit.xml ./reports/junit.xml
           when: always
       # - run:
       #     name: sleep

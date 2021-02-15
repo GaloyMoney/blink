@@ -57,7 +57,13 @@ export abstract class UserWallet {
         currency: id,
       })
 
-      assert(balance >= 0)
+      // the dealer is the only one that is allowed to be short USD
+      if (this.user.role === "dealer" && id === "USD") {
+        assert(balance <= 0)
+      } else {
+        assert(balance >= 0)
+      }
+
       balances[id] = balance
     }
 
