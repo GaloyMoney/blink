@@ -7,7 +7,6 @@ import { LoggedError } from "./utils";
 import { Balances } from "./interface"
 const assert = require('assert')
 import { sendNotification } from "./notification";
-import { AssetInstance } from "twilio/lib/rest/serverless/v1/service/asset";
 
 export abstract class UserWallet {
 

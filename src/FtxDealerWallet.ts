@@ -117,6 +117,9 @@ export class FtxDealerWallet extends OnChainMixin(UserWallet) {
     // and therefore the "inverse" make sense...?
     const btcPrice = btc2sat(this.lastPrice) 
 
+    this.logger.debug({ btcPrice }, "[DEBUG] is price set for the dealer?")    
+
+
     // TODO: what is being returned if no order had been placed?
     // probably an empty array
 
