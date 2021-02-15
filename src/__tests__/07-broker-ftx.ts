@@ -6,7 +6,7 @@ import { FtxDealerWallet } from "../FtxDealerWallet";
 import { baseLogger } from "../utils";
 import { quit } from "../lock";
 import { getTokenFromPhoneIndex } from "../walletFactory";
-import { UserWallet } from "../wallet";
+import { UserWallet } from "../userWallet";
 const mongoose = require("mongoose");
 
 const fixtures = [{

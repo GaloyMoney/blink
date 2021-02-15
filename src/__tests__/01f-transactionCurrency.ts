@@ -2,7 +2,7 @@ import { dealerMediciPath, lndAccountingPath } from "../ledger"
 import { MainBook, setupMongoConnection, User } from "../mongodb"
 import { addTransactionLndPayment, addTransactionLndReceipt, addTransactionOnUsPayment, rebalancePortfolio } from "../transaction"
 import { baseLogger } from "../utils"
-import { UserWallet } from "../wallet"
+import { UserWallet } from "../userWallet"
 import { WalletFactory } from "../walletFactory"
 
 

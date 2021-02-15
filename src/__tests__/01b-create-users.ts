@@ -4,7 +4,7 @@
 import { setupMongoConnection, User } from "../mongodb";
 import { getUserWallet } from "../tests/helper"
 import { getTokenFromPhoneIndex } from "../walletFactory";
-import { UserWallet } from "../wallet"
+import { UserWallet } from "../userWallet"
 import { insertMarkers } from "../tool/map_csv_to_mongodb"
 const mongoose = require("mongoose");
 
