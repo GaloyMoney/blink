@@ -339,9 +339,9 @@ it('expired payment', async () => {
   // await expect(lnService.pay({ lnd: lndOutside1, request })).rejects.toThrow()
   
 
-  await userWallet1.getBalances()
-
   await sleep(10000)
+
+  await userWallet1.getBalances()
     
   expect(await InvoiceUser.countDocuments({_id: id})).toBe(0)
   
