@@ -5,7 +5,7 @@ import { MainBook } from "./mongodb";
 import { OnChainMixin } from "./OnChain";
 import { ILightningWalletUser } from "./types";
 import { baseLogger, btc2sat, sleep } from "./utils";
-import { UserWallet } from "./wallet";
+import { UserWallet } from "./userWallet";
 const ccxt = require('ccxt')
 const assert = require('assert')
 
@@ -18,7 +18,9 @@ const symbol = 'BTC-PERP'
 
 export type IBuyOrSell = "sell" | "buy" | null
 
-
+// FtxDealer is a user of the wallet, therefore we are inheriting from UserWallet
+// FtxDealer is interacting with Ftx through bitcoin layer 1, 
+// so it is using the OnChain Mixin.
 export class FtxDealerWallet extends OnChainMixin(UserWallet) {
   ftx
   
@@ -360,9 +362,9 @@ export class FtxDealerWallet extends OnChainMixin(UserWallet) {
         // .commit()
 
         await MainBook.entry()
-        .credit(accountDealerFtxPath, sats, {...metadata, memo })
-        .debit(liabilitiesDealerFtxPath, sats, {...metadata, memo })
-        .commit()
+          .credit(accountDealerFtxPath, sats, {...metadata, memo })
+          .debit(liabilitiesDealerFtxPath, sats, {...metadata, memo })
+          .commit()
 
         subLogger.info({withdrawalResult}, `rebalancing withdrawal was succesful`)
 
@@ -424,9 +426,9 @@ export class FtxDealerWallet extends OnChainMixin(UserWallet) {
       // onChainPay is doing:
       //
       // await MainBook.entry(memo)
-      // .credit(lndAccountingPath, sats, metadata)
-      // .debit(this.user.accountPath, sats, metadata)
-      // .commit()
+      //   .credit(lndAccountingPath, sats, metadata)
+      //   .debit(this.user.accountPath, sats, metadata)
+      //   .commit()
       //
       // we're doing 2 transactions here on medici.
       // explore a way to refactor this to make a single transaction.

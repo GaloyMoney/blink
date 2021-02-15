@@ -5,7 +5,7 @@ import { LightningUserWallet } from "./LightningUserWallet";
 import { User } from "./mongodb";
 import { login, TEST_NUMBER } from "./text";
 import { baseLogger, LoggedError } from "./utils";
-import { UserWallet } from "./wallet";
+import { UserWallet } from "./userWallet";
 
 
 export const WalletFactory = async ({ user, logger }: { user: typeof User, logger: any }) => {

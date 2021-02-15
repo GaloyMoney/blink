@@ -7,8 +7,10 @@ import { User } from "./mongodb"
 
 export const bitcoindAccountingPath = 'Assets:Reserve:Bitcoind'
 export const lndAccountingPath = 'Assets:Reserve:Lightning' // TODO: rename to Assets:Lnd
-export const accountDealerFtxPath = 'Assets:Dealer:FTX' // this should be updated with a cron job taking into consideration profit/loss 
 export const escrowAccountingPath = 'Assets:Reserve:Escrow' // TODO: rename to Assets:Lnd:Escrow
+
+export const accountDealerFtxPath = 'Assets:Dealer:FTX' // this should be updated with a cron job taking into consideration profit/loss 
+
 
 // liabilities
 export const customerPath = (uid) => `Liabilities:Customer:${uid}`
@@ -25,10 +27,8 @@ export const dealerMediciPath = async () => {
   return cacheDealerPath
 }   
 
-
-// export const dealerPathLnd = `Liabilities:Customer:uid` --> normal account
-export const dealerPath = `Liabilities:Dealer` // used for USD
 export const liabilitiesDealerFtxPath = `Liabilities:Dealer:Ftx`
+
 
 // expenses
 

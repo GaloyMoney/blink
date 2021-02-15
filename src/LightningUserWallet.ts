@@ -3,7 +3,7 @@ import { disposer } from "./lock";
 import { Faucet, User } from "./mongodb";
 import { OnChainMixin } from "./OnChain";
 import { ILightningWalletUser, OnboardingEarn } from "./types";
-import { UserWallet } from "./wallet";
+import { UserWallet } from "./userWallet";
 import { getFunderWallet } from "./walletFactory";
 const using = require('bluebird').using
 

@@ -9,7 +9,7 @@ import { sendInvoicePaidNotification } from "./notification";
 import { addTransactionLndPayment, addTransactionLndReceipt, addTransactionOnUsPayment } from "./transaction";
 import { IAddInvoiceRequest, IFeeRequest, IPaymentRequest } from "./types";
 import { addContact, isInvoiceAlreadyPaidError, LoggedError, timeout } from "./utils";
-import { UserWallet } from "./wallet";
+import { UserWallet } from "./userWallet";
 
 const util = require('util')
 
