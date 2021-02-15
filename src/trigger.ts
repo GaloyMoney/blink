@@ -1,15 +1,17 @@
-import express from 'express';
-import { subscribeToChannels, subscribeToInvoices, subscribeToTransactions, subscribeToBackups } from 'ln-service';
-import { Storage } from '@google-cloud/storage'
-import { find } from "lodash";
-import { InvoiceUser, setupMongoConnection, Transaction, User, MainBook } from "./mongodb";
-import { lightningAccountingPath, lndFee } from "./ledger";
-import { sendInvoicePaidNotification, sendNotification } from "./notification";
-import { IDataNotification } from "./types";
-import { getAuth, baseLogger, LOOK_BACK } from './utils';
-import { WalletFactory } from "./walletFactory";
-import { Price } from "./priceImpl";
+import { Storage } from '@google-cloud/storage';
+import { assert } from "console";
 import { Dropbox } from "dropbox";
+import express from 'express';
+import { subscribeToBackups, subscribeToChannels, subscribeToInvoices, subscribeToTransactions } from 'ln-service';
+import { find } from "lodash";
+import { lndAccountingPath, lndFeePath } from "./ledger";
+import { lnd } from "./lndConfig";
+import { InvoiceUser, MainBook, setupMongoConnection, Transaction, User } from "./mongodb";
+import { sendInvoicePaidNotification, sendNotification } from "./notification";
+import { Price } from "./priceImpl";
+import { IDataNotification } from "./types";
+import { baseLogger, LOOK_BACK } from './utils';
+import { WalletFactory } from "./walletFactory";
 
 const crypto = require("crypto")
 const lnService = require('ln-service');
@@ -77,8 +79,12 @@ export async function onchainTransactionEventHandler(tx) {
       hash: tx.id,
       amount: tx.tokens,
     }
-    await sendNotification({ uid: entry.account_path[2], title, data, logger: onchainLogger })
+
+    const user = await User.findOne({"_id": entry.account_path[2]})
+    await sendNotification({ user, title, data, logger: onchainLogger })
   } else {
+    // incoming transaction
+
     // TODO: the same way Lightning is updating the wallet/accounting, 
     // this event should update the onchain wallet/account of the associated user
 
@@ -104,7 +110,7 @@ export async function onchainTransactionEventHandler(tx) {
       onchainLogger.info({ transactionType: "receipt", pending: true }, "mempool apparence")
     } else {
       // onchain is currently only BTC
-      const wallet = await WalletFactory({ user, uid: user._id, currency: "BTC", logger: onchainLogger })
+      const wallet = await WalletFactory({ user, logger: onchainLogger })
       await wallet.updateOnchainReceipt()
     }
 
@@ -114,7 +120,7 @@ export async function onchainTransactionEventHandler(tx) {
     const title = tx.is_confirmed ?
       `You received $${usd} | ${tx.tokens} sats` :
       `$${usd} | ${tx.tokens} sats is on its way to your wallet`
-    await sendNotification({ title, uid: user._id, data, logger: onchainLogger })
+    await sendNotification({ title, user, data, logger: onchainLogger })
   }
 }
 
@@ -131,10 +137,10 @@ export const onInvoiceUpdate = async invoice => {
     const uid = invoiceUser.uid
     const hash = invoice.id as string
 
-    const user = await User.findOne({ _id: uid })
-    const wallet = await WalletFactory({ user, uid, currency: invoiceUser.currency, logger })
+    const user = await User.findOne({_id: uid})
+    const wallet = await WalletFactory({ user, logger })
     await wallet.updatePendingInvoice({ hash })
-    await sendInvoicePaidNotification({ amount: invoice.received, hash, uid, logger })
+    await sendInvoicePaidNotification({ amount: invoice.received, hash, user, logger })
   } else {
     logger.fatal({ invoice }, "we received an invoice but had no user attached to it")
   }
@@ -145,6 +151,13 @@ export const onChannelUpdated = async ({ channel, lnd, stateChange }: { channel:
     logger.info({ channel }, `channel ${stateChange} to us`)
     return
   }
+  
+  // FIXME we are already accounting for close fee in the escrow.
+  // need to remove the associated escrow transaction to correctly account for fees
+  if (stateChange === "closed") {
+    return
+  }
+
 
   logger.info({ channel }, `channel ${stateChange} by us`)
   const { transaction_id } = channel
@@ -158,9 +171,11 @@ export const onChannelUpdated = async ({ channel, lnd, stateChange }: { channel:
 
   const metadata = { currency: "BTC", txid: transaction_id, type: "fee", pending: false }
 
+  assert(fee > 0)
+
   await MainBook.entry(`channel ${stateChange} onchain fee`)
-    .credit(lightningAccountingPath, fee, { ...metadata, })
-    .debit(lndFee, fee, { ...metadata })
+    .debit(lndFeePath, fee, { ...metadata, })
+    .credit(lndAccountingPath, fee, { ...metadata })
     .commit()
 
   logger.info({ channel, fee, ...metadata }, `${stateChange} channel fee added to mongodb`)
@@ -182,8 +197,6 @@ const updatePrice = async () => {
 }
 
 const main = async () => {
-  const { lnd } = lnService.authenticatedLndGrpc(getAuth())
-
   lnService.getWalletInfo({ lnd }, (err, result) => {
     logger.debug({ err, result }, 'getWalletInfo')
   });
@@ -205,8 +218,6 @@ const main = async () => {
 }
 
 const healthCheck = () => {
-  const { lnd } = lnService.authenticatedLndGrpc(getAuth())
-
   const app = express()
   const port = 8888
   app.get('/health', (req, res) => {

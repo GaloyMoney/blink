@@ -1,13 +1,14 @@
 /**
  * @jest-environment node
  */
-import { SpecterWallet } from "../SpecterWallet";
-import { getLastPrice } from "../cache";
+import { bitcoindAccountingPath } from "../ledger";
+import { lnd } from "../lndConfig";
 import { quit } from "../lock";
-import { MainBook, setupMongoConnection, User } from "../mongodb";
+import { MainBook, setupMongoConnection } from "../mongodb";
+import { SpecterWallet } from "../SpecterWallet";
 import { checkIsBalanced, mockGetExchangeBalance, RANDOM_ADDRESS } from "../tests/helper";
-import { baseLogger, bitcoindDefaultClient, getAuth, sleep } from "../utils";
-import { getTokenFromPhoneIndex } from "../walletFactory";
+import { baseLogger, bitcoindDefaultClient, sleep } from "../utils";
+import { UserWallet } from "../wallet";
 const lnService = require('ln-service');
 
 const mongoose = require("mongoose");
@@ -15,7 +16,6 @@ const mongoose = require("mongoose");
 let specterWallet
 
 jest.mock('../notification')
-let lnd
 
 beforeAll(async () => {
   await bitcoindDefaultClient.generateToAddress(3, RANDOM_ADDRESS)
@@ -23,22 +23,16 @@ beforeAll(async () => {
 
   await setupMongoConnection()
   mockGetExchangeBalance()
-  lnd = lnService.authenticatedLndGrpc(getAuth()).lnd
 })
 
 beforeEach(async () => {
   // initBlockCount = await bitcoindDefaultClient.getBlockCount()
-  const lastPrice = await getLastPrice()
-
-  // FIXME: define a proper user for this after merge with usd/btc branch
-  const token = await getTokenFromPhoneIndex(11)
-  const user = await User.findOne({_id: token.uid})
-  
-  specterWallet = new SpecterWallet({ uid: user._id, user: new User(), logger: baseLogger, lastPrice })
+  UserWallet.setCurrentPrice(10000)  
+  specterWallet = new SpecterWallet({ logger: baseLogger })
 })
 
 afterEach(async () => {
-  // await checkIsBalanced()
+  await checkIsBalanced()
 })
 
 afterAll(async () => {
@@ -48,24 +42,28 @@ afterAll(async () => {
 })
 
 it('createWallet', async () => {
-  const wallets = await specterWallet.listWallets()
 
-  // only the default wallet exist initllay
-  // TODO: the behavior change in 0.21
-  if (wallets.length < 2) {
-    await specterWallet.createWallet()
+  {
+    const wallets = await SpecterWallet.listWallets()
+
+    if (wallets.length < 2) {
+      await SpecterWallet.createWallet()
+    }
   }
 
-  console.log({wallets})
-  console.log(await specterWallet.createDepositAddress())
+  {
+    const wallets = await SpecterWallet.listWallets()
+    console.log({wallets})
+  }
+
+
+  // console.log(await specterWallet.createDepositAddress())
   // console.log(await specterWallet.getAddressInfo({address: "bcrt1qhxdpmrcawcjz8zn2q3d4as23895yc8m9dal03m"}))
-  // const balance = await specterWallet.listWallets()
+  // const balance = await SpecterWallet.listWallets()
   // expect(balance).toBe(0)
 })
 
 it('deposit to bitcoind', async () => {
-
-
   const initBitcoindBalance = await specterWallet.getBitcoindBalance()
   const { chain_balance: initLndBalance } = await lnService.getChainBalance({ lnd })
   
@@ -83,7 +81,7 @@ it('deposit to bitcoind', async () => {
 
   expect(bitcoindBalance).toBe(initBitcoindBalance + sats)
 
-  const { results: [{ fee }] } = await MainBook.ledger({ account: specterWallet.accountPath, type: "to_cold_storage" })
+  const { results: [{ fee }] } = await MainBook.ledger({ account: bitcoindAccountingPath, type: "to_cold_storage" })
   
   console.log({lndBalance, initLndBalance, sats, fee, bitcoindBalance, initBitcoindBalance})
   expect(lndBalance).toBe(initLndBalance - sats - fee)
@@ -101,13 +99,13 @@ it('withdrawing from bitcoind', async () => {
   
   const bitcoindBalance = await specterWallet.getBitcoindBalance()
   
-  const { chain_balance: lndBalance } = await lnService.getChainBalance({ lnd })
+  // const { chain_balance: lndBalance } = await lnService.getChainBalance({ lnd })
   
   // console.log({initBitcoindBalance, bitcoindBalance, lndBalance, initLndBalance})
   // expect(bitcoindBalance).toBe(initBitcoindBalance - sats)
   // expect(lndBalance).toBe(initLndBalance + sats)
 
   
-  // const balance = await specterWallet.listWallets()
+  // const balance = await SpecterWallet.listWallets()
   // expect(balance).toBe(0)
 })

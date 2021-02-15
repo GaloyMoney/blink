@@ -1,5 +1,7 @@
 import { exit } from "process"
 import { baseLogger, sleep } from "./utils"
+import { find, sumBy } from "lodash";
+import { customerPath } from "./ledger";
 
 const mongoose = require("mongoose");
 // mongoose.set("debug", true);
@@ -34,15 +36,6 @@ const invoiceUserSchema = new Schema({
   // usd equivalent. sats is attached in the invoice directly.
   // optional, as BTC wallet doesn't have to set a sat amount when creating the invoice
   usd: Number,
-
-  username: String,
-
-  // currency matchs the user account
-  currency: {
-    type: String,
-    enum: ["USD", "BTC"],
-    default: "BTC",
-  },
 
   timestamp: {
     type: Date,
@@ -83,7 +76,7 @@ const UserSchema = new Schema({
     enum: ["user", "broker"],
     required: true,
     default: "user"
-    // todo : enfore the fact there can be only one broker
+    // TODO : enfore the fact there can be only one broker
   },
   onchain_addresses: {
     type: [String],
@@ -96,6 +89,7 @@ const UserSchema = new Schema({
   phone: { // TODO we should store country as a separate string
     type: String,
     required: true,
+    unique: true,
   },
   username: {
     type: String,
@@ -112,11 +106,27 @@ const UserSchema = new Schema({
     type: [String],
     default: []
   },
-  currency: {
-    type: String,
-    enum: ["USD", "BTC"],
-    default: "BTC",
+  currencies: {
+    validate: {
+      validator: function(v) {
+        return sumBy(v, 'ratio') == 1
+      },
+    },
+    type: [{
+      id: {
+        type: String,
+        enum: ["BTC", "USD"],
+        required: true
+      },
+      ratio: {
+        type: Number,
+        required: true,
+        min: 0,
+        max: 1,
+      }
+    }],
     required: true,
+    default: [{id: "BTC", ratio: 1}]
   },
   contacts: {
     type: [{
@@ -153,12 +163,37 @@ const UserSchema = new Schema({
 
 })
 
-UserSchema.index({
-  phone: 1,
-  currency: 1,
-}, {
-  unique: true,
+// Define getter for ratioUsd
+// FIXME: this // An outer value of 'this' is shadowed by this container.
+// https://stackoverflow.com/questions/41944650/this-implicitly-has-type-any-because-it-does-not-have-a-type-annotation
+UserSchema.virtual('ratioUsd').get(function (this: typeof UserSchema) {
+  return find(this.currencies, {id: "USD"})?.ratio ?? 0
 });
+
+UserSchema.virtual('ratioBtc').get(function (this: typeof UserSchema) {
+  return find(this.currencies, {id: "BTC"})?.ratio ?? 0
+});
+
+// this is the accounting path in medici for this user
+UserSchema.virtual('accountPath').get(function (this: typeof UserSchema) {
+  return customerPath(this._id)
+})
+
+// user is considered active if there has been one transaction of more than 1000 sats in the last 30 days
+UserSchema.virtual('userIsActive').get(async function (this: typeof UserSchema) {
+  const timestamp30DaysAgo = new Date(Date.now() - (30 * 24 * 60 * 60 * 1000))
+  const [result] = await Transaction.aggregate([
+    { $match: { "accounts": this.accountPath, "timestamp": { $gte: timestamp30DaysAgo } } },
+    {
+      $group: {
+        _id: null, outgoingSats: { $sum: "$credit" }, incomingSats: { $sum: "$debit" }
+      }
+    }
+  ])
+  const { incomingSats, outgoingSats } = result || {}
+
+  return (outgoingSats > 1000 || incomingSats > 1000)
+})
 
 UserSchema.index({
   title: 1,
@@ -178,8 +213,7 @@ UserSchema.statics.getActiveUsers = async function (): Promise<Array<typeof User
   const users = await this.find({})
   const activeUsers: Array<typeof User> = []
   for (const user of users) {
-    const userWallet = await WalletFactory({ user, uid: user._id, currency: user.currency, logger: baseLogger })
-    if (await userWallet.isUserActive()) {
+    if (await user.userIsActive) {
       activeUsers.push(user)
     }
   }
@@ -247,11 +281,6 @@ const transactionSchema = new Schema({
     type: Schema.Types.String,
     ref: 'InvoiceUser'
     // TODO: not always, use another hashOnchain?
-
-    // required: function() {
-    //   return this.currency === "BTC"
-    //   a ref only for Invoice. otherwise the hash is not linked
-    // }
   },
 
   // used for escrow transaction, to know which channel this transaction is associated with
@@ -267,7 +296,8 @@ const transactionSchema = new Schema({
       "invoice", "payment", "on_us", "fee_reimbursement", // lightning
       "onchain_receipt", "onchain_payment", "onchain_on_us", // onchain
       "fee", "escrow", // channel-related
-      "exchange_rebalance", // for the broker
+      "exchange_rebalance", // send/receive btc from the exchange
+      "user_rebalance", // buy/sell btc in the user wallet
       "to_cold_storage", "to_hot_wallet"
     ]
   },
@@ -283,11 +313,29 @@ const transactionSchema = new Schema({
 
   err: String,
   currency: {
-    // TODO: check if an upgrade is needed for this one
     type: String,
     enum: ["USD", "BTC"],
-    default: "BTC",
     required: true
+  },
+
+  // used as metadata only to know for a particular transaction what was the split between
+  // USD and BTC
+  // TODO implement this to make it relevant for the user
+  currencies: {
+    // TODO: refactor with user
+    type: [{
+      id: {
+        type: String,
+        enum: ["BTC", "USD"],
+        required: true
+      },
+      ratio: {
+        type: Number,
+        required: true,
+        min: 0,
+        max: 1,
+      }
+    }],
   },
 
   fee: {
@@ -418,7 +466,8 @@ export const setupMongoConnection = async () => {
       useNewUrlParser: true,
       useUnifiedTopology: true,
       useCreateIndex: true,
-      useFindAndModify: false
+      useFindAndModify: false,
+      // replset: {readPreference: 'secondary'}
     })
     mongoose.set('runValidators', true)
     await User.syncIndexes()
@@ -429,10 +478,13 @@ export const setupMongoConnection = async () => {
     await sleep(100)
     exit(1)
   }
+
+  return mongoose
 }
 
+
+// we have to import medici after Medici_Transaction
 import { book } from "medici";
-import { WalletFactory } from "./walletFactory";
 export const MainBook = new book("MainBook")
 
 

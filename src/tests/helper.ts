@@ -1,12 +1,12 @@
 import { find } from "lodash";
-import { Cron } from "../CronClass";
+import { balanceSheetIsBalanced, updateUsersPendingPayment } from "../balanceSheet";
 import { BrokerWallet } from "../BrokerWallet";
 import { User } from "../mongodb";
 import { OnboardingEarn } from "../types";
-import { baseLogger, getAuth, sleep } from "../utils";
+import { baseLogger, sleep } from "../utils";
 import { getTokenFromPhoneIndex, WalletFactory } from "../walletFactory";
+import { lnd } from "../lndConfig";
 
-export const username = "user0"
 
 const lnService = require('ln-service')
 
@@ -14,7 +14,7 @@ const earnsToGet = ['buyFirstSats', 'debitCardActivation', 'firstCardSpending']
 export const onBoardingEarnAmt: number = Object.keys(OnboardingEarn).filter(k => find(earnsToGet, o => o === k) ).reduce((p, k) => p + OnboardingEarn[k], 0)
 export const onBoardingEarnIds: string[] = earnsToGet
 
-export const lndMain = lnService.authenticatedLndGrpc(getAuth()).lnd
+export const lndMain = lnd
 
 export const lndOutside1 = lnService.authenticatedLndGrpc({
   cert: process.env.TLSOUTSIDE1,
@@ -33,19 +33,18 @@ export const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
 export const getUserWallet = async userNumber => {
   const token = await getTokenFromPhoneIndex(userNumber)
   const user = await User.findOne({_id: token.uid})
-  const userWallet = await WalletFactory({...token, user, logger: baseLogger})
+  const userWallet = await WalletFactory({ user, logger: baseLogger})
   return userWallet
 }
 
 export const checkIsBalanced = async () => {
-	const cron = new Cron()
-  await cron.updateUsersPendingPayment()
-  const { assetsLiabilitiesDifference, bookingVersusRealWorldAssets } = await cron.balanceSheetIsBalanced()
+  await updateUsersPendingPayment()
+  const { assetsLiabilitiesDifference, bookingVersusRealWorldAssets } = await balanceSheetIsBalanced()
 	expect(assetsLiabilitiesDifference).toBeFalsy() // should be 0
   
   // FIXME: because safe_fees is doing rounding to the value up
-  // balance doesn't match any longer. need to go from sats to msats to manage this usecase
-  expect(bookingVersusRealWorldAssets).toBeLessThan(5) // should be 0
+  // balance doesn't match any longer. need to go from sats to msats to properly account for every msats spent
+  expect(Math.abs(bookingVersusRealWorldAssets)).toBeLessThan(5) // should be 0
 }
 
 export async function waitUntilBlockHeight({ lnd, blockHeight }) {

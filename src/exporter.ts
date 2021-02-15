@@ -1,9 +1,10 @@
-import { Cron } from "./CronClass";
 import { setupMongoConnection, User } from "./mongodb";
 import { Price } from "./priceImpl";
 import { baseLogger, getBosScore } from "./utils";
 import { getBrokerWallet, getFunderWallet } from "./walletFactory";
-
+import { SpecterWallet } from "./SpecterWallet"
+import { getBalanceSheet, balanceSheetIsBalanced } from "./balanceSheet"
+import { lndBalances } from "./lndUtils"
 
 const logger = baseLogger.child({module: "prometheus"})
 
@@ -27,7 +28,7 @@ const usdShortPosition_g = new client.Gauge({ name: `${prefix}_usdShortPosition`
 const totalAccountValue_g = new client.Gauge({ name: `${prefix}_totalAccountValue`, help: 'totalAccountValue on ftx' })
 const ftx_btc_g = new client.Gauge({ name: `${prefix}_ftxBtcBalance`, help: 'btc balance in ftx' })
 const ftx_usdPnl_g = new client.Gauge({ name: `${prefix}_ftxUsdPnl`, help: 'usd balance in FTX, which also represents the PNL' })
-const funder_balance_g = new client.Gauge({ name: `${prefix}_funderBalance`, help: 'funder balance' })
+const funder_balance_BTC_g = new client.Gauge({ name: `${prefix}_funderBalance_BTC`, help: 'funder balance BTC' })
 const broker_local_btc_g = new client.Gauge({ name: `${prefix}_brokerLocalBtcBalance`, help: 'btc balance in for the broker in the node' })
 const broker_local_usd_g = new client.Gauge({ name: `${prefix}_brokerLocalUsdBalance`, help: 'usd liabilities for the broker' })
 const broker_profit_g = new client.Gauge({ name: `${prefix}_brokerProfit`, help: 'profit of the broker wallet' })
@@ -37,10 +38,10 @@ const assetsLiabilitiesDifference_g = new client.Gauge({ name: `${prefix}_assets
 const bookingVersusRealWorldAssets_g = new client.Gauge({ name: `${prefix}_lndBalanceSync`, help: 'are lnd in syncs with our books' })
 const price_g = new client.Gauge({ name: `${prefix}_price`, help: 'BTC/USD price' })
 const bos_g = new client.Gauge({ name: `${prefix}_bos`, help: 'bos score' })
+const specter_g = new client.Gauge({ name: `${prefix}_bitcoind`, help: 'amount in cold storage' })
+
 
 const main = async () => {
-	const cron = new Cron()
-
   server.get('/metrics', async (req, res) => {
     
     try {
@@ -57,14 +58,14 @@ const main = async () => {
       logger.error({ err }, `error getting and setting bos score`)
     }
     
-    const { lightning, liabilities } = await cron.getBalanceSheet()
-    const { assetsLiabilitiesDifference, bookingVersusRealWorldAssets } = await cron.balanceSheetIsBalanced()
+    const { lightning, liabilities } = await getBalanceSheet()
+    const { assetsLiabilitiesDifference, bookingVersusRealWorldAssets } = await balanceSheetIsBalanced()
     liabilities_g.set(liabilities)
     lightning_g.set(lightning)
     assetsLiabilitiesDifference_g.set(assetsLiabilitiesDifference)
     bookingVersusRealWorldAssets_g.set(bookingVersusRealWorldAssets)
     
-    const { total, onChain, offChain, opening_channel_balance, closing_channel_balance } = await cron.lndBalances()
+    const { total, onChain, offChain, opening_channel_balance, closing_channel_balance } = await lndBalances()
     lnd_g.set(total)
     lndOnChain_g.set(onChain)
     lndOffChain_g.set(offChain)
@@ -76,8 +77,8 @@ const main = async () => {
     userCount_g.set(userCount)
     
     const funderWallet = await getFunderWallet({ logger })
-    const funderBalance = await funderWallet.getBalance()
-    funder_balance_g.set(funderBalance)
+    const { BTC: funderBalance } = await funderWallet.getBalances()
+    funder_balance_BTC_g.set(funderBalance)
 
 
     const brokerWallet = await getBrokerWallet({ logger })
@@ -94,6 +95,9 @@ const main = async () => {
     leverage_g.set(leverage)
 
     fundingRate_g.set(await brokerWallet.getNextFundingRate())
+
+    const specterWallet = new SpecterWallet({ logger })
+    specter_g.set(await specterWallet.getBitcoindBalance())
 
     res.set('Content-Type', register.contentType);
     res.end(register.metrics());

@@ -1,14 +1,12 @@
 /**
  * @jest-environment node
  */
-const lnService = require('ln-service')
 import { setupMongoConnection, User } from "../mongodb";
-import { TEST_NUMBER } from "../text";
-import { getUserWallet, username } from "../tests/helper"
-import { createBrokerUid, getTokenFromPhoneIndex } from "../walletFactory";
+import { getUserWallet } from "../tests/helper"
+import { getTokenFromPhoneIndex } from "../walletFactory";
 import { UserWallet } from "../wallet"
-const mongoose = require("mongoose");
 import { insertMarkers } from "../tool/map_csv_to_mongodb"
+const mongoose = require("mongoose");
 
 
 let userWallet0, userWallet1, userWallet2
@@ -23,37 +21,19 @@ afterAll(async () => {
 })
 
 
-it('add user0 without currency (old account)', async () => {
-  // TODO: query to add `currency` for exising users
-  await User.findOneAndUpdate({}, { phone: TEST_NUMBER[0].phone }, { upsert: true })
-  await User.updateMany({}, { $set: { currency: "BTC" } })
+it('add user0/funder/Broker', async () => {
+  await getUserWallet(0)
+  await getUserWallet(4)
 
-  const token = await getTokenFromPhoneIndex(0)
-  expect(token.currency).toBe("BTC")
+  const broker = await getUserWallet(6)
+  expect(broker.user.role).toBe("broker")
+
+  const user5 = await getUserWallet(5)
+  expect(user5.user.currencies[0]).toMatchObject({id: "USD", ratio: 1})
 })
 
 
-it('add Funder', async () => {
-  await getTokenFromPhoneIndex(4)
-})
-
-it('add Broker', async () => {
-  await createBrokerUid()
-})
-
-it('add user5 / usd user', async () => {
-  const user5 = await getTokenFromPhoneIndex(5)
-  expect(user5.currency).toBe("USD")
-
-  const user6 = await getTokenFromPhoneIndex(6)
-  expect(user6.currency).toBe("BTC")
-
-  expect(user5.uid).not.toBe(user6.uid)
-
-  const phoneUser5 = await User.findOne({ _id: user5.uid }, { phone: 1, _id: 0 })
-  const phoneUser6 = await User.findOne({ _id: user6.uid }, { phone: 1, _id: 0 })
-  expect(phoneUser5).toStrictEqual(phoneUser6)
-})
+const username = "user0"
 
 describe('username tests', () => {
   beforeAll(async () => {
@@ -82,7 +62,7 @@ describe('username tests', () => {
   })
 
   it('sets username for user0', async () => {
-    const result = await userWallet0.setUsername({ username })
+    const result = await userWallet0.setUsername({ username: "user0" })
     expect(!!result).toBeTruthy()
   })
   

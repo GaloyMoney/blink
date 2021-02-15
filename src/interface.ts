@@ -1,6 +1,13 @@
 
+export interface Balances {
+  BTC: number,
+  USD: number,
+  total_in_BTC: number,
+  total_in_USD: number,
+}
+
 export interface IWallet {
-  getBalance(): Promise<number>
+  getBalances(): Promise<Balances>
   getTransactions(): any // TODO
   getInfo(): Promise<object>
 }

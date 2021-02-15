@@ -2,12 +2,12 @@
  * @jest-environment node
  */
 import { createHash, randomBytes } from 'crypto';
-import { Cron } from "../CronClass";
-import { FEECAP } from "../Lightning";
+import { payCashBack } from "../balanceSheet";
+import { FEECAP, lnd } from "../lndConfig";
 import { quit } from "../lock";
 import { InvoiceUser, setupMongoConnection, Transaction } from "../mongodb";
-import { checkIsBalanced, getUserWallet, lndOutside1, lndOutside2, mockGetExchangeBalance, onBoardingEarnAmt, onBoardingEarnIds, username } from "../tests/helper";
-import { getAuth, getHash, sleep } from "../utils";
+import { checkIsBalanced, getUserWallet, lndOutside1, lndOutside2, mockGetExchangeBalance } from "../tests/helper";
+import { getHash, sleep } from "../utils";
 
 const lnService = require('ln-service')
 const mongoose = require("mongoose")
@@ -31,9 +31,9 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  initBalance0 = await userWallet0.getBalance()
-  initBalance1 = await userWallet1.getBalance()
-  initBalance2 = await userWallet2.getBalance()
+  ({BTC: initBalance0} = await userWallet0.getBalances());
+  ({BTC: initBalance1} = await userWallet1.getBalances());
+  ({BTC: initBalance2} = await userWallet2.getBalances());
 
   jest.clearAllMocks()
 })
@@ -43,22 +43,6 @@ afterEach(async () => {
 })
 
 afterAll(async () => {
-  
-  // to make this test re-entrant, we need to remove the fund from userWallet1 and delete the user
-  // uncomment when necessary
-  
-  // const finalBalance = await userWallet1.getBalance()
-  // const funderWallet = await getFunderWallet({ logger: baseLogger })
-
-  // if (!!finalBalance) {
-  //   const request = await funderWallet.addInvoice({ value: finalBalance })
-  //   await userWallet1.pay({ invoice: request })
-  // }
-
-  // await User.findOneAndRemove({ _id: userWallet1.uid })
-
-
-
   jest.restoreAllMocks();
 
   await mongoose.connection.close()
@@ -70,44 +54,22 @@ it('add invoice', async () => {
   const request = await userWallet1.addInvoice({ value: 1000 })
   expect(request.startsWith("lnbcrt10")).toBeTruthy()
   const { uid } = await InvoiceUser.findById(getHash(request))
-  expect(uid).toBe(userWallet1.uid)
+  expect(String(uid)).toBe(String(userWallet1.user._id))
 })
 
 it('add public invoice', async () => {
   const request = await userWallet1.addInvoice({ selfGenerated: false })
   expect(request.startsWith("lnbcrt1")).toBeTruthy()
   const { uid, selfGenerated } = await InvoiceUser.findById(getHash(request))
-  expect(uid).toBe(userWallet1.uid)
+  expect(String(uid)).toBe(String(userWallet1.user._id))
   expect(selfGenerated).toBe(false)
-})
-
-it('add invoice to different user', async () => {
-  const request = await userWallet2.addInvoice({ value: 1000000 })
-  const { uid } = await InvoiceUser.findById(getHash(request))
-  expect(uid).toBe(userWallet2.uid)
 })
 
 it('add invoice with no amount', async () => {
   const request = await userWallet2.addInvoice({})
   const { uid } = await InvoiceUser.findById(getHash(request))
-  expect(uid).toBe(userWallet2.uid)
+  expect(String(uid)).toBe(String(userWallet2.user._id))
 })
-
-it('add earn adds balance correctly', async () => {
-  const getAndVerifyRewards = async () => {
-    await userWallet1.addEarn(onBoardingEarnIds)
-    const finalBalance = await userWallet1.getBalance()
-    expect(finalBalance).toBe(onBoardingEarnAmt)
-    await checkIsBalanced()
-  }
-
-  await getAndVerifyRewards()
-
-  // yet, if we do it another time, the balance should not increase, 
-  // because all the rewards has already been been consumed:
-  await getAndVerifyRewards()
-}, 30000)
-
 
 const createInvoiceHash = () => {
   const randomSecret = () => randomBytes(32);
@@ -145,26 +107,26 @@ functionToTests.forEach(({fn, name, initialFee}) => {
     const result = await fn(userWallet1)({ invoice: request })
     expect(result).toBe("success")
   
-    const finalBalance = await userWallet1.getBalance()
+    const {BTC: finalBalance} = await userWallet1.getBalances()
     expect(finalBalance).toBe(initBalance1 - amountInvoice)
   })
 
   it(`fails when repaying invoice ${name}`, async () => {
     const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: amountInvoice })
     await fn(userWallet1)({ invoice: request })
-    const intermediateBalance = await userWallet1.getBalance()
+    const intermediateBalance = await userWallet1.getBalances()
     const result = await fn(userWallet1)({ invoice: request })
     expect(result).toBe("already_paid")
   
-    const finalBalance = await userWallet1.getBalance()
-    expect(finalBalance).toBe(intermediateBalance)
+    const finalBalance = await userWallet1.getBalances()
+    expect(finalBalance).toStrictEqual(intermediateBalance)
   })
 
   it(`payInvoice with High CLTV Delta ${name}`, async () => {
     const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: amountInvoice, cltv_delta: 200 })
     const result = await await fn(userWallet1)({ invoice: request })
     expect(result).toBe("success")
-    const finalBalance = await userWallet1.getBalance()
+    const {BTC: finalBalance} = await userWallet1.getBalances()
     expect(finalBalance).toBe(initBalance1 - amountInvoice)
   })
 
@@ -172,14 +134,14 @@ functionToTests.forEach(({fn, name, initialFee}) => {
     const memo = "my memo as a payer"
 
     const paymentOtherGaloyUser = async ({walletPayer, walletPayee}) => {
-      const payerInitialBalance = await walletPayer.getBalance()
-      const payeeInitialBalance = await walletPayee.getBalance()
+      const {BTC: payerInitialBalance} = await walletPayer.getBalances()
+      const {BTC: payeeInitialBalance} = await walletPayee.getBalances()
 
       const request = await walletPayee.addInvoice({ value: amountInvoice })
       await fn(walletPayer)({ invoice: request, memo })
   
-      const payerFinalBalance = await walletPayer.getBalance()
-      const payeeFinalBalance = await walletPayee.getBalance()
+      const {BTC: payerFinalBalance} = await walletPayer.getBalances()
+      const {BTC: payeeFinalBalance} = await walletPayee.getBalances()
   
       expect(payerFinalBalance).toBe(payerInitialBalance - amountInvoice)
       expect(payeeFinalBalance).toBe(payeeInitialBalance + amountInvoice)
@@ -237,8 +199,7 @@ functionToTests.forEach(({fn, name, initialFee}) => {
     
     if (process.env.CASHBACK) {
       const tx_count = await Transaction.countDocuments()
-      const cron = new Cron()
-      await cron.payCashBack()
+      await payCashBack()
       expect(await Transaction.countDocuments()).toBe(tx_count + 4)
     }
 
@@ -247,12 +208,12 @@ functionToTests.forEach(({fn, name, initialFee}) => {
   it(`payInvoice to lnd outside2 ${name}`, async () => {
     const { request } = await lnService.createInvoice({ lnd: lndOutside2, tokens: amountInvoice, is_including_private_channels: true })
     
-    const initialBalance = await userWallet1.getBalance()
+    const {BTC: initialBalance} = await userWallet1.getBalances()
     
     const result = await fn(userWallet1)({ invoice: request, memo: "pay an unconnected node" })
 
     expect(result).toBe("success")
-    const finalBalance = await userWallet1.getBalance()
+    const {BTC: finalBalance} = await userWallet1.getBalances()
     
     // const { id } = await lnService.decodePaymentRequest({ lnd: lndOutside2, request })
     // const { results: [{ fee }] } = await MainBook.ledger({ account: userWallet1.accountPath, hash: id })
@@ -272,7 +233,7 @@ functionToTests.forEach(({fn, name, initialFee}) => {
     const result = await fn(userWallet1)({ invoice: request })
 
     expect(result).toBe("pending")
-    const balanceBeforeSettlement = await userWallet1.getBalance()
+    const {BTC: balanceBeforeSettlement} = await userWallet1.getBalances()
     expect(balanceBeforeSettlement).toBe(initBalance1 - amountInvoice * (1 + initialFee))
     
     // FIXME: necessary to not have openHandler ?
@@ -281,7 +242,7 @@ functionToTests.forEach(({fn, name, initialFee}) => {
 
     await sleep(5000)
 
-    const finalBalance = await userWallet1.getBalance()
+    const {BTC: finalBalance} = await userWallet1.getBalances()
     expect(finalBalance).toBe(initBalance1 - amountInvoice)
   }, 60000)
 
@@ -294,7 +255,7 @@ functionToTests.forEach(({fn, name, initialFee}) => {
     expect(result).toBe("pending")
     console.log("payment has timeout. status is pending.")
 
-    const intermediateBalance = await userWallet1.getBalance()
+    const {BTC: intermediateBalance} = await userWallet1.getBalances()
     expect(intermediateBalance).toBe(initBalance1 - (amountInvoice * (1 + initialFee)))
 
     await lnService.cancelHodlInvoice({ id, lnd: lndOutside1 });
@@ -304,7 +265,7 @@ functionToTests.forEach(({fn, name, initialFee}) => {
     await sleep(5000)
     // await userWallet1.updatePendingPayments()
 
-    const finalBalance = await userWallet1.getBalance()
+    const {BTC: finalBalance} = await userWallet1.getBalances()
     expect(finalBalance).toBe(initBalance1)
   }, 60000)
 
@@ -322,7 +283,7 @@ it('receives payment from outside', async () => {
 
   const request = await userWallet1.addInvoice({ value: amountInvoice, memo })
   await lnService.pay({ lnd: lndOutside1, request })
-  const finalBalance = await userWallet1.getBalance()
+  const {BTC: finalBalance} = await userWallet1.getBalances()
   expect(finalBalance).toBe(initBalance1 + amountInvoice)
 
   const hash = getHash(request)
@@ -340,7 +301,6 @@ const Lightning = require('../Lightning');
 
 it('expired payment', async () => {
   const memo = "payment that should expire"
-  const { lnd } = lnService.authenticatedLndGrpc(getAuth())
 
   const dbSetSpy = jest.spyOn(Lightning, 'delay').mockImplementation(() => ({value: 1, unit: 'seconds', "additional_delay_value": 0}))
 
@@ -379,14 +339,13 @@ it('expired payment', async () => {
   // await expect(lnService.pay({ lnd: lndOutside1, request })).rejects.toThrow()
   
 
-  await userWallet1.getBalance()
+  await sleep(10000)
 
-  await sleep(1000)
+  await userWallet1.getBalances()
     
   expect(await InvoiceUser.countDocuments({_id: id})).toBe(0)
   
   try {
-    const { lnd } = lnService.authenticatedLndGrpc(getAuth())
     await lnService.getInvoice({ lnd, id })
   } catch (err) {
     console.log({err}, "invoice should not exist any more")
@@ -444,11 +403,11 @@ it('payInvoiceToSelf', async () => {
 
 it('onUs pushPayment', async () => {
   const destination = await userWallet0.getNodePubkey()
-  const res = await userWallet1.pay({ destination, username, amount: amountInvoice })
+  const res = await userWallet1.pay({ destination, username: userWallet0.user.username, amount: amountInvoice })
 
-  const finalBalance0 = await userWallet0.getBalance()
+  const {BTC: finalBalance0} = await userWallet0.getBalances()
   const userTransaction0 = await userWallet0.getTransactions()
-  const finalBalance1 = await userWallet1.getBalance()
+  const {BTC: finalBalance1} = await userWallet1.getBalances()
   const userTransaction1 = await userWallet1.getTransactions()
   
   expect(res).toBe("success")
@@ -471,7 +430,7 @@ it('onUs pushPayment', async () => {
 
 it('onUs pushPayment error for same user', async () => {
   const destination = await userWallet0.getNodePubkey()
-  await expect(userWallet0.pay({ destination, username, amount: amountInvoice })).rejects.toThrow()
+  await expect(userWallet0.pay({ destination, username: userWallet0.user.username, amount: amountInvoice })).rejects.toThrow()
   await checkIsBalanced()
 })
 
@@ -494,18 +453,18 @@ it('if fee are too high, payment is cancelled', async () => {
 
 it('pays zero amount invoice', async () => {
   const { request } = await lnService.createInvoice({ lnd: lndOutside1 })
-  const initialBalance = await userWallet1.getBalance()
+  const {BTC: initialBalance} = await userWallet1.getBalances()
   const result = await userWallet1.pay({ invoice: request, amount: amountInvoice })
   expect(result).toBe("success")
-  const finalBalance = await userWallet1.getBalance()
+  const {BTC: finalBalance} = await userWallet1.getBalances()
   expect(finalBalance).toBe(initialBalance - amountInvoice)
 })
 
 it('receive zero amount invoice', async () => {
-  const initialBalance = await userWallet1.getBalance()
+  const {BTC: initialBalance} = await userWallet1.getBalances()
   const invoice = await userWallet1.addInvoice({})
   await lnService.pay({ lnd: lndOutside1, request: invoice, tokens: amountInvoice })
-  const finalBalance = await userWallet1.getBalance()
+  const {BTC: finalBalance} = await userWallet1.getBalances()
   expect(finalBalance).toBe(initialBalance + amountInvoice)
 })
 

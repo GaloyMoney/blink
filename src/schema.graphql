@@ -37,6 +37,17 @@ type Wallet {
   csv: String
 }
 
+type Balance {
+  id: ID
+  balance: Int
+}
+
+type Wallet2 {
+  balances: [Balance]
+  csv: String
+  transactions: [Transaction]
+}
+
 type Contact {
   id: ID #username
   name: String #name can be set by the user
@@ -126,6 +137,7 @@ type Marker {
 type Query { 
   prices(length: Int): [Price]
   wallet: [Wallet]
+  wallet2: [Wallet2]
   earnList: [Earn]
   me: User
   maps: [Marker]
@@ -147,7 +159,7 @@ type UpdateContact {
 
 type Mutation {
   requestPhoneCode(phone: String): Success
-  login(phone: String, code: Int, currency: String): Token
+  login(phone: String, code: Int, currency: String): Token @deprecated(reason: "currency is no longer user. to be remove after mobile update")
   openChannel(local_tokens: Int, public_key: String, socket: String): OnchainTransaction
   publicInvoice(username: String!): Invoice
   onchain: OnChain

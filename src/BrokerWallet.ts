@@ -27,30 +27,21 @@ const HIGH_BOUND_LEVERAGE = 3
 const symbol = 'BTC-PERP'
 
 
+export type IBuyOrSell = "sell" | "buy" | null
+
+
 export class BrokerWallet extends OnChainMixin(UserWallet) {
-  readonly currency = "BTC" 
   ftx
   
-  get accountPath(): string {
-    return customerPath(this.uid)
-  }
-
-  constructor({ uid, user, logger, lastPrice }: ILightningWalletUser) {
-    super({ uid, user, logger, currency: "BTC", lastPrice })
+  constructor({ user, logger }: ILightningWalletUser) {
+    super({ user, logger })
     this.ftx = new ccxt.ftx({ apiKey, secret })
     this.logger = logger.child({ topic: "broker" })
   }
 
   async getLocalLiabilities() { 
-    const { balance: usd } = await MainBook.balance({
-      account: brokerPath,
-      currency: "USD", 
-    })
-
-    const { balance: satsLnd } = await MainBook.balance({
-      account: this.accountPath,
-      currency: "BTC", 
-    })
+    // FIXME harmonize the capitalzation for USD/usd
+    const { USD: usd, BTC: satsLnd } = await this.getBalances()
 
     // TODO: calculate PnL for the broker
     // this will influence this account.
@@ -266,8 +257,6 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
 
     const {ratio} = this.getExposureRatio({ usdLiability, usdExposure })
 
-    type IBuyOrSell = "sell" | "buy" | null
-
     let usdOrderAmount, btcAmount
     let buyOrSell: IBuyOrSell = null
 
@@ -307,12 +296,12 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
   }
 
   async rebalance ({ btcAmount, depositOrWithdraw, logger }) {
-    const currency = this.currency
+    const currency = "BTC"
     const sats = btc2sat(btcAmount)
 
-    const metadata = { type: "exchange_rebalance", currency, ...this.getCurrencyEquivalent({sats, fee: 0}) }
+    const metadata = { type: "exchange_rebalance", currency, ...UserWallet.getCurrencyEquivalent({sats, fee: 0}) }
 
-    let subLogger = logger.child({...metadata, currency, btcAmount, depositOrWithdraw})
+    let subLogger = logger.child({...metadata, btcAmount, depositOrWithdraw})
 
 
     // deposit and withdraw are from the exchange point of view
@@ -375,13 +364,13 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
         // updateOnchainReceipt() doing:
         // 
         // await MainBook.entry()
-        // .debit(this.accountPath, sats, metadata)
-        // .credit(lightningAccountingPath, sats, metadata)
+        // .credit(this.user.accountPath, sats, metadata)
+        // .debit(lndAccountingPath, sats, metadata)
         // .commit()
 
         await MainBook.entry()
-        .debit(accountBrokerFtxPath, sats, {...metadata, memo })
-        .credit(liabilitiesBrokerFtxPath, sats, {...metadata, memo })
+        .credit(accountBrokerFtxPath, sats, {...metadata, memo })
+        .debit(liabilitiesBrokerFtxPath, sats, {...metadata, memo })
         .commit()
 
         subLogger.info({withdrawalResult}, `rebalancing withdrawal was succesful`)
@@ -444,16 +433,16 @@ export class BrokerWallet extends OnChainMixin(UserWallet) {
       // onChainPay is doing:
       //
       // await MainBook.entry(memo)
-      // .debit(lightningAccountingPath, sats, metadata)
-      // .credit(this.accountPath, sats, metadata)
+      // .credit(lndAccountingPath, sats, metadata)
+      // .debit(this.user.accountPath, sats, metadata)
       // .commit()
       //
       // we're doing 2 transactions here on medici.
       // explore a way to refactor this to make a single transaction.
 
       await MainBook.entry()
-        .debit(liabilitiesBrokerFtxPath, sats, {...metadata, memo })
-        .credit(accountBrokerFtxPath, sats, {...metadata, memo })
+        .credit(liabilitiesBrokerFtxPath, sats, {...metadata, memo })
+        .debit(accountBrokerFtxPath, sats, {...metadata, memo })
         .commit()
 
       subLogger.info({memo, address}, "deposit rebalancing succesful")

@@ -25,19 +25,18 @@ export const sendText = async ({ body, to }) => {
 }
 
 export const TEST_NUMBER = [
-  { phone: "+16505554321", code: 321321, currency: "BTC" },
-  { phone: "+16505554322", code: 321321, currency: "BTC" },
-  { phone: "+16505554323", code: 321321, currency: "BTC" },
-  { phone: "+16505554324", code: 321321, currency: "BTC" },
-  { phone: "+16505554325", code: 321321, currency: "BTC", username: "***REMOVED***" }, // funder
+  { phone: "+16505554321", code: 321321 }, // user0
+  { phone: "+16505554322", code: 321321 }, // user1
+  { phone: "+16505554323", code: 321321 }, // user2
+  { phone: "+16505554324", code: 321321 }, // user3
+  { phone: "+16505554325", code: 321321, username: "***REMOVED***" }, // user4/ funder
   
-  { phone: "+16505554326", code: 321321, currency: "USD" }, // usd
-  { phone: "+16505554326", code: 321321, currency: "BTC" }, // btc
+  { phone: "+16505554326", code: 321321, currencies: [{id: "USD", ratio: 1}] }, // usd
   
-  { phone: "+16505554327", code: 321321, currency: "BTC" }, // broker
-  { phone: "+16505554328", code: 321321, currency: "BTC" }, // 
-  { phone: "+16505554329", code: 321321, currency: "BTC" }, // postman
-  { phone: "+16505554330", code: 321321, currency: "USD" }, // usd bis
+  { phone: "+16505554327", code: 321321, role: "broker" }, // broker //user6
+  { phone: "+16505554328", code: 321321 }, // 
+  { phone: "+16505554329", code: 321321 }, // postman
+  { phone: "+16505554330", code: 321321, currencies: [{id: "USD", ratio: .5}, {id: "BTC", ratio: .5},] }, // usd bis
 
   { phone: "+16505554331", code: 321321, currency: "BTC" }, // coldstorage
 
@@ -82,20 +81,11 @@ export const requestPhoneCode = async ({ phone, logger }) => {
 interface ILogin {
   phone: string
   code: number
-  currency?: string
   logger: any
 }
 
-export const login = async ({ phone, code, currency = "BTC", logger }: ILogin) => {
+export const login = async ({ phone, code, logger }: ILogin) => {
   const subLogger = logger.child({topic: "login"})
-
-  // TODO: not sure if graphql return null or undefined when a field is not passed
-  // adding this as an early catch for now
-  if (!currency) {
-    const err = `currency is not set. exiting login()`
-    subLogger.error({currency, phone}, err)
-    throw new LoggedError(err)
-  }
 
   try {
     // TODO: rate limit this method per phone with backoff
@@ -122,17 +112,17 @@ export const login = async ({ phone, code, currency = "BTC", logger }: ILogin) =
     // get User 
     let user
 
-    user = await User.findOne({ phone, currency })
+    user = await User.findOne({ phone })
 
     if (user) {
-      subLogger.info({ phone, currency }, "user logged in")
+      subLogger.info({ phone }, "user logged in")
     } else {
-      user = await User.findOneAndUpdate({ phone, currency }, {}, { upsert: true, new: true })
-      subLogger.info({ phone, currency } , "a new user has register")
+      user = await User.findOneAndUpdate({ phone }, {}, { upsert: true, new: true })
+      subLogger.info({ phone } , "a new user has register")
     }
 
     const network = process.env.NETWORK
-    return createToken({ uid: user._id, currency, network })
+    return createToken({ uid: user._id, network })
     
   } catch (err) {
     subLogger.error({err})

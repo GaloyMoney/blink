@@ -6,16 +6,19 @@
     "outDir": "lib",
     "sourceMap": true,
     "strict": true,
-    "target": "es2017",
+    "target": "es2020",
     "noImplicitAny": false,
     "esModuleInterop": true,
     "rootDirs": [
       "src"
-    ]
+    ],
+    "types": ["jest", "node"],
+    "moduleResolution": "node"
   },
   "compileOnSave": true,
   "include": [
     "src/index.ts",
-    "src/prometheus.ts"
+    "src/exporter.ts",
+    "src/__tests__/*.ts"
   ]
 }
