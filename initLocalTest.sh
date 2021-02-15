@@ -103,7 +103,7 @@ fi
 if [ "$NETWORK" == "testnet" ] || [ "$NETWORK" == "mainnet" ];
 then
   helmUpgrade bitcoind -f $INFRADIR/bitcoind/$NETWORK.yaml $INFRADIR/bitcoind/
-then
+else
   helmUpgrade bitcoind $localdevpath $INFRADIR/bitcoind/ \
   --set global.network=$NETWORK,specter.enabled=false
 fi
