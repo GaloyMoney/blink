@@ -39,7 +39,8 @@ commands:
 jobs:
   build_test_image:
     working_directory: ~/GaloyApp/backend/firebase/functions
-    machine: true
+    machine:
+      docker_layer_caching: true
     steps:
       - checkout:
           path: ~/GaloyApp
@@ -49,11 +50,11 @@ jobs:
             echo "COMMITHASH=$CIRCLE_SHA1" >> ./.env
             echo "BUILDTIME=$(date -u '+%F-%T')" >> ./.env
       - gcp-gcr/build-image:
-          image: test-image
+          image: galoy
           tag: $CIRCLE_SHA1
       - gcp-gcr/gcr-auth
       - gcp-gcr/push-image:
-          image: test-image
+          image: galoy
           tag: $CIRCLE_SHA1
           
   test:
