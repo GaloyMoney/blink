@@ -1,12 +1,20 @@
-FROM node:14
+FROM node:14-alpine AS BUILD_IMAGE
 
-COPY "./package.json" "./tsconfig.json" "./yarn.lock" ./
+WORKDIR /usr/src/app
 
-RUN yarn install
+RUN apk update && apk add git
 
-COPY  "./src/" "./src/"
+COPY ./package.json ./tsconfig.json ./yarn.lock ./
 
-COPY "./*.js" "./"
-COPY "./.env" "./.env"
+RUN yarn install --frozen-lockfile
+
+FROM node:14-alpine
+
+WORKDIR /usr/src/app
+
+COPY --from=BUILD_IMAGE /usr/src/app/node_modules ./node_modules
+
+COPY ./*.js ./default.yaml ./package.json ./tsconfig.json ./yarn.lock ./.env ./
+COPY "./src/" "./src"
 
 CMD sleep infinity
