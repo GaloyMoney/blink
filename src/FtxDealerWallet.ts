@@ -84,7 +84,7 @@ export class FtxDealerWallet extends OnChainMixin(UserWallet) {
 
   async getProfit() {
     const { total: sats, node, exchange } = await this.satsBalance()
-    const usdAssetsInBtc = sats * this.lastPrice
+    const usdAssetsInBtc = sats * UserWallet.lastPrice
     
     const { usd: usdLiabilities } = await this.getLocalLiabilities()
 
@@ -115,7 +115,7 @@ export class FtxDealerWallet extends OnChainMixin(UserWallet) {
     // FIXME this helper function is inverse?
     // or because price = usd/btc, usd/sats, sat or btc are in the denominator
     // and therefore the "inverse" make sense...?
-    const btcPrice = btc2sat(this.lastPrice) 
+    const btcPrice = btc2sat(UserWallet.lastPrice) 
 
     this.logger.debug({ btcPrice }, "[DEBUG] is price set for the dealer?")    
 
@@ -578,7 +578,7 @@ export class FtxDealerWallet extends OnChainMixin(UserWallet) {
   }
 
   async updatePositionAndLeverage() {
-    const btcPrice = btc2sat(this.lastPrice) 
+    const btcPrice = btc2sat(UserWallet.lastPrice) 
 
     let subLogger = this.logger
     this.logger.debug("starting with order loop")

@@ -6,7 +6,7 @@ import { SpecterWallet } from "./SpecterWallet"
 import { getBalanceSheet, balanceSheetIsBalanced } from "./balanceSheet"
 import { lndBalances } from "./lndUtils"
 
-const logger = baseLogger.child({module: "prometheus"})
+const logger = baseLogger.child({module: "exporter"})
 
 const express = require('express');
 const server = express();
