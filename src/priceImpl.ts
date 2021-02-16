@@ -73,17 +73,6 @@ export class Price {
       id: moment(value._id).unix(),
       o: value.o
     })).sort((a, b) => a.t - b.t).slice(- (24 * 366 + 1)) // 1y of hourly candles / FIXME use date instead.
-
-    const DEBUG = false
-    if (DEBUG) {
-      const fs = require('fs');
-      fs.writeFile("test.txt", JSON.stringify(result, null, 4), (err) => {
-        if (err) {
-          this.logger.error({ err }, "error writing test file (useless log?)")
-        }
-      })
-    }
-
     return result
   }
 
