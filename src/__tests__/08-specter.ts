@@ -8,7 +8,7 @@ import { MainBook, setupMongoConnection } from "../mongodb";
 import { SpecterWallet } from "../SpecterWallet";
 import { checkIsBalanced, mockGetExchangeBalance, RANDOM_ADDRESS } from "../tests/helper";
 import { baseLogger, bitcoindDefaultClient, sleep } from "../utils";
-import { UserWallet } from "../wallet";
+import { UserWallet } from "../userWallet";
 const lnService = require('ln-service');
 
 const mongoose = require("mongoose");

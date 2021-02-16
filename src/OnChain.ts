@@ -8,7 +8,7 @@ import { disposer } from "./lock";
 import { MainBook, Transaction, User } from "./mongodb";
 import { IOnChainPayment, ISuccess, ITransaction } from "./types";
 import { amountOnVout, baseLogger, bitcoindDefaultClient, btc2sat, LoggedError, LOOK_BACK, myOwnAddressesOnVout } from "./utils";
-import { UserWallet } from "./wallet";
+import { UserWallet } from "./userWallet";
 
 const using = require('bluebird').using
 
@@ -70,6 +70,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
   async onChainPay({ address, amount, memo }: IOnChainPayment): Promise<ISuccess> {
     let onchainLogger = this.logger.child({ topic: "payment", protocol: "onchain", transactionType: "payment", address, amount, memo })
 
+    // FIXME: lock should be here
     const balance = await this.getBalances()
     onchainLogger = onchainLogger.child({ balance })
 
@@ -374,7 +375,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
         //
         // note: the fact we fiter with `account_path: this.user.accountPath` could create 
         // double transaction for some non customer specific wallet. ie: if the path is different
-        // for the broker. this is fixed now but something to think about.
+        // for the dealer. this is fixed now but something to think about.
         const mongotx = await Transaction.findOne({ accounts: this.user.accountPath, type, hash: matched_tx.id })
 
         if (!mongotx) {

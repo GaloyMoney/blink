@@ -1,7 +1,7 @@
 import { setupMongoConnection, User } from "./mongodb";
 import { Price } from "./priceImpl";
 import { baseLogger, getBosScore } from "./utils";
-import { getBrokerWallet, getFunderWallet } from "./walletFactory";
+import { getDealerWallet, getFunderWallet } from "./walletFactory";
 import { SpecterWallet } from "./SpecterWallet"
 import { getBalanceSheet, balanceSheetIsBalanced } from "./balanceSheet"
 import { lndBalances } from "./lndUtils"
@@ -29,9 +29,9 @@ const totalAccountValue_g = new client.Gauge({ name: `${prefix}_totalAccountValu
 const ftx_btc_g = new client.Gauge({ name: `${prefix}_ftxBtcBalance`, help: 'btc balance in ftx' })
 const ftx_usdPnl_g = new client.Gauge({ name: `${prefix}_ftxUsdPnl`, help: 'usd balance in FTX, which also represents the PNL' })
 const funder_balance_BTC_g = new client.Gauge({ name: `${prefix}_funderBalance_BTC`, help: 'funder balance BTC' })
-const broker_local_btc_g = new client.Gauge({ name: `${prefix}_brokerLocalBtcBalance`, help: 'btc balance in for the broker in the node' })
-const broker_local_usd_g = new client.Gauge({ name: `${prefix}_brokerLocalUsdBalance`, help: 'usd liabilities for the broker' })
-const broker_profit_g = new client.Gauge({ name: `${prefix}_brokerProfit`, help: 'profit of the broker wallet' })
+const dealer_local_btc_g = new client.Gauge({ name: `${prefix}_dealerLocalBtcBalance`, help: 'btc balance in for the dealer in the node' })
+const dealer_local_usd_g = new client.Gauge({ name: `${prefix}_dealerLocalUsdBalance`, help: 'usd liabilities for the dealer' })
+const dealer_profit_g = new client.Gauge({ name: `${prefix}_dealerProfit`, help: 'profit of the dealer wallet' })
 const leverage_g = new client.Gauge({ name: `${prefix}_leverage`, help: 'leverage ratio on ftx' })
 const fundingRate_g = new client.Gauge({ name: `${prefix}_fundingRate`, help: 'FTX hourly funding rate' })
 const assetsLiabilitiesDifference_g = new client.Gauge({ name: `${prefix}_assetsEqLiabilities`, help: 'do we have a balanced book' })
@@ -81,20 +81,20 @@ const main = async () => {
     funder_balance_BTC_g.set(funderBalance)
 
 
-    const brokerWallet = await getBrokerWallet({ logger })
-    const { usd: usdShortPosition, totalAccountValue, leverage } = await brokerWallet.getAccountPosition()
+    const dealerWallet = await getDealerWallet({ logger })
+    const { usd: usdShortPosition, totalAccountValue, leverage } = await dealerWallet.getAccountPosition()
 
-    ftx_btc_g.set((await brokerWallet.getExchangeBalance()).sats)
-    ftx_usdPnl_g.set((await brokerWallet.getExchangeBalance()).usdPnl)
-    broker_local_btc_g.set((await brokerWallet.getLocalLiabilities()).satsLnd)
-    broker_local_usd_g.set((await brokerWallet.getLocalLiabilities()).usd)
-    broker_profit_g.set((await brokerWallet.getProfit()).usdProfit)
+    ftx_btc_g.set((await dealerWallet.getExchangeBalance()).sats)
+    ftx_usdPnl_g.set((await dealerWallet.getExchangeBalance()).usdPnl)
+    dealer_local_btc_g.set((await dealerWallet.getLocalLiabilities()).satsLnd)
+    dealer_local_usd_g.set((await dealerWallet.getLocalLiabilities()).usd)
+    dealer_profit_g.set((await dealerWallet.getProfit()).usdProfit)
 
     totalAccountValue_g.set(totalAccountValue)
     usdShortPosition_g.set(usdShortPosition)
     leverage_g.set(leverage)
 
-    fundingRate_g.set(await brokerWallet.getNextFundingRate())
+    fundingRate_g.set(await dealerWallet.getNextFundingRate())
 
     const specterWallet = new SpecterWallet({ logger })
     specter_g.set(await specterWallet.getBitcoindBalance())

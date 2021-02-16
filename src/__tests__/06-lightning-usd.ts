@@ -6,7 +6,7 @@ import { setupMongoConnection } from "../mongodb";
 import { Price } from "../priceImpl";
 import { checkIsBalanced, getUserWallet, lndOutside1, mockGetExchangeBalance } from "../tests/helper";
 import { baseLogger } from "../utils";
-// import { UserWallet } from "../wallet";
+// import { UserWallet } from "../userWallet";
 
 
 const lnService = require('ln-service')

@@ -1,16 +1,16 @@
-import { brokerMediciPath, customerPath, lndAccountingPath } from "./ledger"
+import { dealerMediciPath, customerPath, lndAccountingPath } from "./ledger"
 import { MainBook } from "./mongodb"
-import { UserWallet } from "./wallet"
+import { UserWallet } from "./userWallet"
 
 
 export const addTransactionLndReceipt = async ({description, payeeUser, metadata, sats}) => {
-  const brokerPath = await brokerMediciPath()
+  const dealerPath = await dealerMediciPath()
   
   const entry = MainBook.entry(description)
 
   entry
     .credit(payeeUser.accountPath, sats * payeeUser.ratioBtc, { ...metadata, currency: "BTC" })
-    .credit(brokerPath, sats * payeeUser.ratioUsd, { ...metadata, currency: "BTC" })
+    .credit(dealerPath, sats * payeeUser.ratioUsd, { ...metadata, currency: "BTC" })
     
     // always 100%
     .debit(lndAccountingPath, sats, { ...metadata, currency: "BTC" })  
@@ -23,7 +23,7 @@ export const addTransactionLndReceipt = async ({description, payeeUser, metadata
 
     entry
       .credit(payeeUser.accountPath, usdEquivalent, { ...metadata, currency: "USD" })
-      .debit(brokerPath, usdEquivalent, { ...metadata, currency: "USD" })
+      .debit(dealerPath, usdEquivalent, { ...metadata, currency: "USD" })
   }
 
   // TODO: log the exchange rate
@@ -33,7 +33,7 @@ export const addTransactionLndReceipt = async ({description, payeeUser, metadata
 
 
 export const addTransactionLndPayment = async ({description, sats, metadata, payerUser}) => {
-  const brokerPath = await brokerMediciPath()
+  const dealerPath = await dealerMediciPath()
 
   const entry = MainBook.entry(description)
 
@@ -42,14 +42,14 @@ export const addTransactionLndPayment = async ({description, sats, metadata, pay
     .credit(lndAccountingPath, sats, { ...metadata, currency: "BTC" })
 
     .debit(payerUser.accountPath, sats * payerUser.ratioBtc, { ...metadata, currency: "BTC" })
-    .debit(brokerPath, sats * payerUser.ratioUsd, { ...metadata, currency: "BTC" })
+    .debit(dealerPath, sats * payerUser.ratioUsd, { ...metadata, currency: "BTC" })
 
   if (!!payerUser.ratioUsd) {
     const satsToConvert = sats * payerUser.ratioUsd
     const usdEquivalent = satsToConvert * UserWallet.lastPrice
 
     entry
-      .credit(brokerPath, usdEquivalent, { ...metadata, currency: "USD" })
+      .credit(dealerPath, usdEquivalent, { ...metadata, currency: "USD" })
       .debit(payerUser.accountPath, usdEquivalent, { ...metadata, currency: "USD" })
   }
 
@@ -59,7 +59,7 @@ export const addTransactionLndPayment = async ({description, sats, metadata, pay
 }
 
 export const addTransactionOnUsPayment = async ({description, sats, metadata, payerUser, payeeUser, memoPayer}) => {
-  const brokerPath = await brokerMediciPath()
+  const dealerPath = await dealerMediciPath()
 
   const entry = MainBook.entry(description)
 
@@ -68,9 +68,9 @@ export const addTransactionOnUsPayment = async ({description, sats, metadata, pa
     .debit(payerUser.accountPath, sats * payerUser.ratioBtc, { ...metadata, memoPayer, username: payeeUser.username, currency: "BTC" })
 
   if (payeeUser.ratioBtc > payerUser.ratioBtc) {
-    entry.debit(brokerPath, sats * (payeeUser.ratioBtc - payerUser.ratioBtc), { ...metadata, currency: "BTC" })
+    entry.debit(dealerPath, sats * (payeeUser.ratioBtc - payerUser.ratioBtc), { ...metadata, currency: "BTC" })
   } else if (payeeUser.ratioBtc < payerUser.ratioBtc) {
-    entry.credit(brokerPath, sats * (payerUser.ratioBtc - payeeUser.ratioBtc), { ...metadata, currency: "BTC" })
+    entry.credit(dealerPath, sats * (payerUser.ratioBtc - payeeUser.ratioBtc), { ...metadata, currency: "BTC" })
   }
 
   if (!!payerUser.ratioUsd || !!payeeUser.ratioUsd) {
@@ -81,9 +81,9 @@ export const addTransactionOnUsPayment = async ({description, sats, metadata, pa
       .debit(payerUser.accountPath, usdEq * payerUser.ratioUsd, { ...metadata, memoPayer, username: payeeUser.username, currency: "USD" })
 
     if (payeeUser.ratioUsd > payerUser.ratioUsd) {
-      entry.debit(brokerPath, usdEq * (payeeUser.ratioUsd - payerUser.ratioUsd), { ...metadata, currency: "USD" })
+      entry.debit(dealerPath, usdEq * (payeeUser.ratioUsd - payerUser.ratioUsd), { ...metadata, currency: "USD" })
     } else if (payeeUser.ratioUsd < payerUser.ratioUsd) {
-      entry.credit(brokerPath, usdEq * (payerUser.ratioUsd - payeeUser.ratioUsd), { ...metadata, currency: "USD" })
+      entry.credit(dealerPath, usdEq * (payerUser.ratioUsd - payeeUser.ratioUsd), { ...metadata, currency: "USD" })
     }
   }
 
@@ -93,7 +93,7 @@ export const addTransactionOnUsPayment = async ({description, sats, metadata, pa
 }
 
 export const rebalancePortfolio = async ({description, metadata, wallet}) => {
-  const brokerPath = await brokerMediciPath()
+  const dealerPath = await dealerMediciPath()
   
   const balances = await wallet.getBalances()
 
@@ -112,18 +112,18 @@ export const rebalancePortfolio = async ({description, metadata, wallet}) => {
   if (buyOrSell === "buy") {    
     entry
       .credit(wallet.user.accountPath, btcAmount, { ...metadata, currency: "BTC" })
-      .debit(brokerPath, btcAmount, { ...metadata, currency: "BTC" })
+      .debit(dealerPath, btcAmount, { ...metadata, currency: "BTC" })
 
       .debit(wallet.user.accountPath, usdAmount, { ...metadata, currency: "USD"})
-      .credit(brokerPath, usdAmount, { ...metadata, currency: "USD" })
+      .credit(dealerPath, usdAmount, { ...metadata, currency: "USD" })
   // user sell btc
   } else if (buyOrSell === "sell") {
     entry
       .debit(wallet.user.accountPath, btcAmount, { ...metadata, currency: "BTC" })
-      .credit(brokerPath, btcAmount, { ...metadata, currency: "BTC" })
+      .credit(dealerPath, btcAmount, { ...metadata, currency: "BTC" })
 
       .credit(wallet.user.accountPath, usdAmount, { ...metadata, currency: "USD"})
-      .debit(brokerPath, usdAmount, { ...metadata, currency: "USD" })
+      .debit(dealerPath, usdAmount, { ...metadata, currency: "USD" })
   } else {
     // no-op
     return null

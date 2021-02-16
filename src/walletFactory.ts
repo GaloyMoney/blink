@@ -1,11 +1,11 @@
 import * as jwt from 'jsonwebtoken';
-import { BrokerWallet } from "./BrokerWallet";
+import { FtxDealerWallet } from "./FtxDealerWallet";
 import { getLastPrice } from "./cache";
 import { LightningUserWallet } from "./LightningUserWallet";
 import { User } from "./mongodb";
 import { login, TEST_NUMBER } from "./text";
 import { baseLogger, LoggedError } from "./utils";
-import { UserWallet } from "./wallet";
+import { UserWallet } from "./userWallet";
 
 
 export const WalletFactory = async ({ user, logger }: { user: typeof User, logger: any }) => {
@@ -13,8 +13,8 @@ export const WalletFactory = async ({ user, logger }: { user: typeof User, logge
   const lastPrice = await getLastPrice()
   UserWallet.setCurrentPrice(lastPrice)
 
-  if (user.role === "broker") {
-    return new BrokerWallet({ user, logger })
+  if (user.role === "dealer") {
+    return new FtxDealerWallet({ user, logger })
   }
 
   return new LightningUserWallet({ user, logger })
@@ -36,9 +36,9 @@ export const getFunderWallet = async ({ logger }) => {
   return WalletFactory({ user: funder, logger })
 }
 
-export const getBrokerWallet = async ({ logger }) => {
-  const broker = await User.findOne({ role: "broker" })
-  return WalletFactory({ user: broker, logger })
+export const getDealerWallet = async ({ logger }) => {
+  const dealer = await User.findOne({ role: "dealer" })
+  return WalletFactory({ user: dealer, logger })
 }
 
 // utils function for test

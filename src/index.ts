@@ -14,7 +14,7 @@ import { login, requestPhoneCode } from "./text";
 import { OnboardingEarn } from "./types";
 import { upgrade } from "./upgrade";
 import { baseLogger, customLoggerPrefix, nodeStats } from "./utils";
-import { UserWallet } from "./wallet";
+import { UserWallet } from "./userWallet";
 import { WalletFactory, WalletFromUsername } from "./walletFactory";
 const util = require('util')
 const lnService = require('ln-service')
