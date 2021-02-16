@@ -16,12 +16,19 @@ const getTwilioClient = () => {
   return client
 }
 
-export const sendText = async ({ body, to }) => {
-  await getTwilioClient().messages.create({
-    from: twilioPhoneNumber,
-    to,
-    body,
-  })
+export const sendText = async ({ body, to, logger }) => {
+  try {
+    await getTwilioClient().messages.create({
+      from: twilioPhoneNumber,
+      to,
+      body,
+    })
+  } catch (err) {
+    logger.fatal({err}, "impossible to send text")
+    return
+  }
+
+  logger.info({to}, "send text succesfully")
 }
 
 export const TEST_NUMBER = [
@@ -69,7 +76,7 @@ export const requestPhoneCode = async ({ phone, logger }) => {
     }
 
     await PhoneCode.create({ phone, code })
-    await sendText({ body, to: phone })
+    await sendText({ body, to: phone, logger })
   } catch (err) {
     logger.error({err}, "impossible to send message")
     return false
