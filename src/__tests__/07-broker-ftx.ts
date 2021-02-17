@@ -1,11 +1,12 @@
 /**
  * @jest-environment node
  */
-import { setupMongoConnection } from "../mongodb"
-import { BrokerWallet } from "../BrokerWallet";
+import { setupMongoConnection, User } from "../mongodb"
+import { FtxDealerWallet } from "../FtxDealerWallet";
 import { baseLogger } from "../utils";
 import { quit } from "../lock";
 import { getTokenFromPhoneIndex } from "../walletFactory";
+import { UserWallet } from "../userWallet";
 const mongoose = require("mongoose");
 
 const fixtures = [{
@@ -195,6 +196,8 @@ const ftxHas = {
   withdraw: true
 }
 
+const satPrice = 1/10000
+UserWallet.setCurrentPrice(satPrice) // sats/USD. BTC at 10k
 
 const ccxt = require('ccxt')
 
@@ -210,15 +213,15 @@ jest.mock('ccxt', () => ({
   ftx: function() { return ftxMock() } 
 }))
 
-let brokerWalletFixture0, brokerWalletFixture1
+let dealerWalletFixture0, dealerWalletFixture1
 
 beforeAll(async () => {
   await setupMongoConnection();
 
   ({ uid } = await getTokenFromPhoneIndex(7))
 
-  brokerWalletFixture0 = new BrokerWallet({ user: null, uid, logger: baseLogger, lastPrice: 10000 })
-  brokerWalletFixture1 = new BrokerWallet({ user: null, uid, logger: baseLogger, lastPrice: 10000 })
+  dealerWalletFixture0 = new FtxDealerWallet({ user: new User(), logger: baseLogger })
+  dealerWalletFixture1 = new FtxDealerWallet({ user: new User(), logger: baseLogger })
 })
 
 afterAll(async () => {
@@ -227,19 +230,19 @@ afterAll(async () => {
 })
 
 it('future0', async () => {
-  const future = await brokerWalletFixture0.getAccountPosition()
+  const future = await dealerWalletFixture0.getAccountPosition()
   console.log({future})
 })
 
 it('future1', async () => {
-  const future = await brokerWalletFixture1.getAccountPosition()
+  const future = await dealerWalletFixture1.getAccountPosition()
   console.log({future})
 })
 
 it('getBalance', async () => {
-  await brokerWalletFixture1.getBalance()
+  await dealerWalletFixture1.getBalances()
 })
 
 it('getBalance', async () => {
-  await brokerWalletFixture1.getBalance()
+  await dealerWalletFixture1.getBalances()
 })

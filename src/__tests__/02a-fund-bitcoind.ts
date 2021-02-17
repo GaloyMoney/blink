@@ -18,7 +18,7 @@ const numOfBlock = 10
 // so we generate 101 blocks to get access to the coinbase transaction from block #1.
 
 
-// !!! this test is no re-entrant !!!
+// !!! this test is not re-entrant !!!
 
 const amount_BTC = 1
 let lndOutside1_wallet_addr

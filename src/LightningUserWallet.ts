@@ -1,24 +1,19 @@
-import { customerPath } from "./ledger";
 import { LightningMixin } from "./Lightning";
 import { disposer } from "./lock";
 import { Faucet, User } from "./mongodb";
 import { OnChainMixin } from "./OnChain";
-import { IAddBTCInvoiceRequest, ILightningWalletUser, OnboardingEarn } from "./types";
-import { UserWallet } from "./wallet";
+import { ILightningWalletUser, OnboardingEarn } from "./types";
+import { UserWallet } from "./userWallet";
 import { getFunderWallet } from "./walletFactory";
 const using = require('bluebird').using
 
 /**
  * this represents a user wallet
  */
-export class LightningBtcWallet extends OnChainMixin(LightningMixin(UserWallet)) {
+export class LightningUserWallet extends OnChainMixin(LightningMixin(UserWallet)) {
   
   constructor(args: ILightningWalletUser) {
-    super({ currency: "BTC", ...args })
-  }
-
-  get accountPath(): string {
-    return customerPath(this.uid)
+    super({ ...args })
   }
 
   async addEarn(ids) {
@@ -26,13 +21,13 @@ export class LightningBtcWallet extends OnChainMixin(LightningMixin(UserWallet))
     const lightningFundingWallet = await getFunderWallet({ logger: this.logger })
     const result: object[] = []
 
-    return await using(disposer(this.uid), async (lock) => {
+    return await using(disposer(this.user._id), async (lock) => {
 
       for (const id of ids) {
         const amount = OnboardingEarn[id]
 
         const userPastState = await User.findOneAndUpdate(
-          { _id: this.uid },
+          { _id: this.user._id },
           { $push: { earn: id } },
           { upsert: true }
         )
@@ -77,22 +72,6 @@ export class LightningBtcWallet extends OnChainMixin(LightningMixin(UserWallet))
     }
 
     return {success, message}
-  }
-
-  async addInvoice({ value = undefined, memo = undefined, selfGenerated = true }: IAddBTCInvoiceRequest): Promise<string> {
-
-    let sats, usd
-
-    // value is not mandatory for btc currency
-    // the payer can set the amount himself
-    if (!!value) {
-      sats = value
-      usd = this.satsToUsd(sats)
-    }
-
-    const request = await super.addInvoiceInternal({sats, usd, memo, selfGenerated })
-
-    return request
   }
 
 }

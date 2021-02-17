@@ -1,12 +1,12 @@
 /**
  * @jest-environment node
  */
-import { getAuth } from "../utils";
 const lnService = require('ln-service')
 const mongoose = require("mongoose")
 const util = require('util')
 const {decode} = require('bip66');
 const {parsePaymentRequest, createUnsignedRequest} = require('invoices');
+import { lnd } from "../lndConfig";
 
 
 const logger = require('pino')({ level: "debug" })
@@ -25,8 +25,6 @@ it('add invoice', async () => {
 
   // const request = await userWallet1.addInvoice({ value: 1000, memo: "tx 1" })
   // expect(request.startsWith("lnbcrt10")).toBeTruthy()
-
-  const { lnd } = lnService.authenticatedLndGrpc(getAuth())
 
   const request_org = (await lnService.createInvoice({lnd, description: "abc"})).request
   const decoded = parsePaymentRequest({request: request_org});

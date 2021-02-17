@@ -15,7 +15,7 @@ if(process.env.GOOGLE_APPLICATION_CREDENTIALS) {
 }
 
 
-export const sendInvoicePaidNotification = async ({hash, amount, uid, logger}) => {
+export const sendInvoicePaidNotification = async ({hash, amount, user, logger}) => {
   const satsPrice = await new Price({ logger }).lastPrice()
 
   const data: IDataNotification = {
@@ -26,13 +26,11 @@ export const sendInvoicePaidNotification = async ({hash, amount, uid, logger}) =
 
   const usd = (amount * satsPrice).toFixed(2)
   // TODO dedupe from trigger.ts
-  await sendNotification({uid, title: `You received $${usd} | ${amount} sats`, data, logger})
+  await sendNotification({user, title: `You received $${usd} | ${amount} sats`, data, logger})
 }
 
 
-export const sendNotification = async ({uid, title, body, data, logger}: INotification) => {
-
-  const user = await User.findOne({ _id: uid })
+export const sendNotification = async ({user, title, body, data, logger}: INotification) => {
 
   const message = {
     // only string can be sent to notifications
@@ -57,16 +55,16 @@ export const sendNotification = async ({uid, title, body, data, logger}: INotifi
   }
 
   if (user.deviceToken.length === 1 && user.deviceToken[0] === "test") {
-    logger.info({message}, "test token. skipping notification for user %o", uid)
+    logger.info({message, user}, "test token. skipping notification")
     return
   }
 
   if (user.deviceToken.length === 0) {
-    logger.info({message}, "skipping notification for user %o as no deviceToken has been registered", uid)
+    logger.info({message, user}, "skipping notification as no deviceToken has been registered")
     return
   }
 
-  logger.info({message}, "sending notification for user %o", uid)
+  logger.info({message, user}, "sending notification")
 
   try {
     const response = await admin.messaging().sendToDevice(
@@ -79,9 +77,9 @@ export const sendNotification = async ({uid, title, body, data, logger}: INotifi
         // priority: 'high',
       })
 
-    logger.info({response, uid, title, body, data}, 'notification was sent successfully')
+    logger.info({response, user, title, body, data}, 'notification was sent successfully')
   } catch(err) {
-    logger.info({err, uid, title, body, data}, 'impossible to send notification')
+    logger.info({err, user, title, body, data}, 'impossible to send notification')
   }
 
   // FIXME: any as a workaround to https://github.com/Microsoft/TypeScript/issues/15300

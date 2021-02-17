@@ -1,3 +1,5 @@
+import { User } from "./mongodb"
+
 export type Side = "buy" | "sell"
 export type Currency = "USD" | "BTC"
 
@@ -5,17 +7,14 @@ export type Currency = "USD" | "BTC"
 export type ISuccess = boolean
 
 export interface ILightningWalletUser {
-  lastPrice: number
   user: any
-  uid: string
   logger: any
 }
 
 // Lightning
 
-export interface IAddInvoiceInternalRequest {
-  usd: number,
-  sats: number,
+export interface IAddInvoiceRequest {
+  value: number,
   memo: string | undefined,
   selfGenerated?: boolean,
 
@@ -102,7 +101,7 @@ export interface IDataNotification {
 }
 
 export interface INotification {
-  uid: string,
+  user: typeof User,
   title: string,
   data?: IDataNotification
   body?: string,

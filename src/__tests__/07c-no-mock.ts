@@ -25,17 +25,17 @@ it('test', () => expect(true).toBeTruthy())
 
 // it('getExchangeBalance', async () => {
 //   ({ uid } = await getTokenFromPhoneIndex(7))
-//   const wallet = new BrokerWallet({ uid, logger: baseLogger })
+//   const wallet = new DealerWallet({ uid, logger: baseLogger })
 //   const balance = await wallet.getExchangeBalance()
 //   console.log({balance})
 // })
 
 // it('getFunding', async () => {
-//   const brokerWalletNofixtures = new BrokerWallet({ uid, logger: baseLogger })
-//   console.log(await brokerWalletNofixtures.getNextFundingRate())
+//   const dealerWalletNofixtures = new DealerWallet({ uid, logger: baseLogger })
+//   console.log(await dealerWalletNofixtures.getNextFundingRate())
 // })
 
 // it('private Account', async () => {
-//   const broker = new BrokerWallet({ uid, logger: baseLogger })
-//   await broker.getAccountPosition()
+//   const dealer = new DealerWallet({ uid, logger: baseLogger })
+//   await dealer.getAccountPosition()
 // })
