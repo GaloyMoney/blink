@@ -105,7 +105,7 @@ then
   helmUpgrade bitcoind -f $INFRADIR/bitcoind/$NETWORK.yaml $INFRADIR/bitcoind/
 else
   helmUpgrade bitcoind $localdevpath $INFRADIR/bitcoind/ \
-  --set global.network=$NETWORK,specter.enabled=false
+  --set global.network=$NETWORK,specter.enabled=false,bitcoindCustomConfig.fallbackfee=0.0002
 fi
 
 # bug with --wait: https://github.com/helm/helm/issues/7139 ?
