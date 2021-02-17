@@ -125,7 +125,6 @@ if [ "$NETWORK" == "testnet" ] || [ "$NETWORK" == "mainnet" ];
 then
   kubectlLndDeletionWait
 fi
-
 # # add extra sleep time... seems lnd is quite long to show up some time
 sleep 15
 kubectlWait type=lnd
