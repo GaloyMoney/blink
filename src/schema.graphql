@@ -120,13 +120,6 @@ type Coordinate {
   longitude: Float
 }
 
-type FaucetResult {
-  success: Boolean
-  amount: Int
-  currency: String
-  message: String
-}
-
 type Marker {
   id: ID
   title: String
@@ -167,7 +160,6 @@ type Mutation {
   updateUser: UpdateUser
   updateContact: UpdateContact
   deleteUser: Boolean # TODO
-  faucet(hash: String): FaucetResult
   addDeviceToken(deviceToken: String): Success # to refactor with User?
   testMessage: Success # FIXME remove test
 }
