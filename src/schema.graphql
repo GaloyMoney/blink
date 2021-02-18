@@ -160,7 +160,6 @@ type UpdateContact {
 type Mutation {
   requestPhoneCode(phone: String): Success
   login(phone: String, code: Int, currency: String): Token @deprecated(reason: "currency is no longer user. to be remove after mobile update")
-  openChannel(local_tokens: Int, public_key: String, socket: String): OnchainTransaction
   publicInvoice(username: String!): Invoice
   onchain: OnChain
   invoice: Invoice
