@@ -54,11 +54,13 @@ monitoringDeploymentsUpgrade() {
   SECRET=alertmanager-keys
   local NAMESPACE=monitoring
 
+  helmUpgrade monitoring $INFRADIR/monitoring \
+    --set prometheus-blackbox-exporter.config.modules.walletTestnet.http.headers.Authorization="Bearer $TESTNET_TOKEN"
+    --set prometheus-blackbox-exporter.config.modules.walletMainnet.http.headers.Authorization="Bearer $MAINNET_TOKEN"
+
+  # FIXME: pass this directory to above command
   export SLACK_API_URL=$(kubectl get secret -n $NAMESPACE $SECRET -o jsonpath="{.data.SLACK_API_URL}" | base64 -d)
   export SERVICE_KEY=$(kubectl get secret -n $NAMESPACE $SECRET -o jsonpath="{.data.SERVICE_KEY}" | base64 -d)
-
-  helmUpgrade monitoring $INFRADIR/monitoring
-
   kubectl -n $NAMESPACE get configmaps monitoring-prometheus-alertmanager -o yaml | sed -e "s|SLACK_API_URL|$SLACK_API_URL|; s|SERVICE_KEY|$SERVICE_KEY|" | kubectl -n $NAMESPACE apply -f -
 }
 

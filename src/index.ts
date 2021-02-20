@@ -267,7 +267,9 @@ const permissions = shield({
     // prices: not(isAuthenticated),
     // earnList: isAuthenticated,
     wallet: isAuthenticated,
+    wallet2: isAuthenticated,
     me: isAuthenticated,
+    getLastOnChainAddress: isAuthenticated,
   },
   Mutation: {
     // requestPhoneCode: not(isAuthenticated),
@@ -277,6 +279,7 @@ const permissions = shield({
     invoice: isAuthenticated,
     earnCompleted: isAuthenticated,
     updateUser: isAuthenticated,
+    updateContact: isAuthenticated,
     deleteUser: isAuthenticated,
     addDeviceToken: isAuthenticated,
   },
