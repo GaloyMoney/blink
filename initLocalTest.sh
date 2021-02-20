@@ -55,7 +55,7 @@ monitoringDeploymentsUpgrade() {
   local NAMESPACE=monitoring
 
   helmUpgrade monitoring $INFRADIR/monitoring \
-    --set prometheus-blackbox-exporter.config.modules.walletTestnet.http.headers.Authorization="Bearer $TESTNET_TOKEN"
+    --set prometheus-blackbox-exporter.config.modules.walletTestnet.http.headers.Authorization="Bearer $TESTNET_TOKEN" \
     --set prometheus-blackbox-exporter.config.modules.walletMainnet.http.headers.Authorization="Bearer $MAINNET_TOKEN"
 
   # FIXME: pass this directory to above command
