@@ -123,11 +123,12 @@ jobs:
       - run: echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list
       - run: sudo apt-get update
       - run: sudo apt-get install -y kubectl helm
-
       - run:
           name: Upgrade testnet deployments
           command: |
             cd ~/GaloyApp/backend/firebase/functions/ && ./initLocalTest.sh testnet
+      - update-lnpage:
+          namespace: testnet
 
   mainnet_deploy:
     working_directory: ~/GaloyApp/backend
@@ -146,6 +147,9 @@ jobs:
             kubectl --namespace=mainnet wait --for=condition=complete --timeout=60s job/$JOB_DATE
             kubectl --namespace=mainnet delete job/$JOB_DATE
             cd ~/GaloyApp/backend/firebase/functions/ && ./initLocalTest.sh mainnet
+      - update-lnpage:
+          namespace: mainnet
+
       
   update_lnpage:
     working_directory: ~/GaloyApp/infra
