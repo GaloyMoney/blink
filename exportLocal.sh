@@ -11,7 +11,7 @@ export MACAROONOUTSIDE2=$(kubectl exec lnd-container-outside-2-0  -c lnd-contain
 
 # note: grep -P doesn't work on mac out of the box
 # workaround: https://stackoverflow.com/questions/16658333/grep-p-no-longer-works-how-can-i-rewrite-my-searches
-export BITCOINDPORT=$(kubectl get services | awk '/bitcoind-service/ {print $5}' | grep -Po '18443:\K[0-9]+')
+export BITCOINDPORT=$(kubectl get services | awk '/bitcoind/ {print $5}' | grep -Po '18443:\K[0-9]+')
 
 export MINIKUBEIP=$(minikube ip)
 export BITCOINDADDR=$MINIKUBEIP
