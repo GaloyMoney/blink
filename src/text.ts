@@ -1,8 +1,8 @@
-const twilio = require('twilio');
+import twilio from 'twilio';
 import moment from "moment"
-import { PhoneCode, User } from "./mongodb";
+import { PhoneCode, User } from "./schema";
 
-import { randomIntFromInterval, createToken, LoggedError } from "./utils"
+import { randomIntFromInterval, createToken } from "./utils"
 
 const projectName = "***REMOVED*** Wallet"
 

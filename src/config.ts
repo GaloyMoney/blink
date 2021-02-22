@@ -1,5 +1,5 @@
-const fs = require('fs');
-const yaml = require('js-yaml');
+import fs from 'fs';
+import yaml from 'js-yaml';
 
 let defaultContent = fs.readFileSync('./default.yaml', 'utf8');
 export const defaultConfig = yaml.load(defaultContent)
@@ -10,9 +10,11 @@ try {
   customContent = fs.readFileSync('/var/custom.yaml', 'utf8');
   customConfig = yaml.load(customContent)
 } catch (err) {
-  console.warn({err})
+  if (process.env.NETWORK !== "regtest") {
+    console.warn({err})
+  }
 }
 
-console.log({defaultConfig, customContent, customConfig})
+// console.log({defaultConfig, customContent, customConfig})
 
 export const yamlConfig = { ... defaultConfig, ...customConfig }

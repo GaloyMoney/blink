@@ -1,16 +1,18 @@
-const lnService = require('ln-service');
+import lnService from 'ln-service'
 import { assert } from "console";
-import { intersection, last } from "lodash";
+import _ from 'lodash';
 import moment from "moment";
 import { customerPath, lndAccountingPath } from "./ledger";
 import { lnd } from "./lndConfig";
 import { disposer } from "./lock";
-import { MainBook, Transaction, User } from "./mongodb";
+import { MainBook } from "./mongodb";
 import { IOnChainPayment, ISuccess, ITransaction } from "./types";
 import { amountOnVout, baseLogger, bitcoindDefaultClient, btc2sat, LoggedError, LOOK_BACK, myOwnAddressesOnVout } from "./utils";
 import { UserWallet } from "./userWallet";
+import { Transaction, User } from "./schema";
 
-const using = require('bluebird').using
+import bluebird from 'bluebird';
+const { using } = bluebird;
 
 // TODO: look if tokens/amount has an effect on the fees
 // we don't want to go back and forth between RN and the backend if amount changes
@@ -185,7 +187,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
       await this.getOnChainAddress()
     }
  
-    return last(this.user.onchain_addresses) as string
+    return _.last(this.user.onchain_addresses) as string
   }
 
   async getOnChainAddress(): Promise<string> {
@@ -250,7 +252,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
     const lnd_incoming_filtered = lnd_incoming_txs.filter(tx => tx.is_confirmed === confirmed)
 
-    const user_matched_txs = lnd_incoming_filtered.filter(tx => intersection(tx.output_addresses, this.user.onchain_addresses).length > 0)
+    const user_matched_txs = lnd_incoming_filtered.filter(tx => _.intersection(tx.output_addresses, this.user.onchain_addresses).length > 0)
 
     return user_matched_txs
   }

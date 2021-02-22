@@ -2,12 +2,12 @@ import dotenv from "dotenv";
 import { rule, shield } from 'graphql-shield';
 import { GraphQLServer } from 'graphql-yoga';
 import * as jwt from 'jsonwebtoken';
-import { startsWith } from "lodash";
+import _ from 'lodash';
 import moment from "moment";
 import { v4 as uuidv4 } from 'uuid';
 import { getMinBuildNumber, mainCache } from "./cache";
 import { getAsyncRedisClient } from "./lock";
-import { setupMongoConnection, User } from "./mongodb";
+import { setupMongoConnection } from "./mongodb";
 import { sendNotification } from "./notification";
 import { Price } from "./priceImpl";
 import { login, requestPhoneCode } from "./text";
@@ -16,19 +16,26 @@ import { upgrade } from "./upgrade";
 import { baseLogger, customLoggerPrefix, nodeStats } from "./utils";
 import { UserWallet } from "./userWallet";
 import { WalletFactory, WalletFromUsername } from "./walletFactory";
-const util = require('util')
-const lnService = require('ln-service')
-const mongoose = require("mongoose");
+import util from 'util'
+import mongoose from "mongoose";
 import { insertMarkers } from "./tool/map_csv_to_mongodb"
 import {lnd} from "./lndConfig"
+import { User } from "./schema";
 
-const path = require("path");
+import path from "path"
 dotenv.config()
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
-const pino = require('pino')
+import pino from 'pino'
 
-const pino_http = require('pino-http')({
+// https://nodejs.org/api/esm.html#esm_no_require_exports_module_exports_filename_dirname
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+
+import PinoHttp from "pino-http"
+const pino_http = PinoHttp({
   logger: graphqlLogger,
   wrapSerializers: false,
 
@@ -121,7 +128,7 @@ const resolvers = {
         // TODO: maybe have a better way to reset the cache.
         // if we have 300 seconds of cache here, but we also only fetch from prometheus value only every 300 seconds
         // then the price value could be stale up to 600 seconds on the client side
-        mainCache.set( key, lastCached, [ 30 ] )
+        mainCache.set( key, lastCached, 30 )
         value = lastCached
       }
     
@@ -197,6 +204,7 @@ const resolvers = {
       getFee: async ({ destination, amount, invoice, memo }) => wallet.getLightningFee({ destination, amount, invoice, memo })
     }),
     earnCompleted: async (_, { ids }, { wallet }) => wallet.addEarn(ids),
+    faucet: async (_, { hash }, { wallet }) => wallet.faucet(hash),
     deleteUser: () => {
       // TODO
     },
@@ -267,9 +275,7 @@ const permissions = shield({
     // prices: not(isAuthenticated),
     // earnList: isAuthenticated,
     wallet: isAuthenticated,
-    wallet2: isAuthenticated,
     me: isAuthenticated,
-    getLastOnChainAddress: isAuthenticated,
   },
   Mutation: {
     // requestPhoneCode: not(isAuthenticated),
@@ -279,9 +285,9 @@ const permissions = shield({
     invoice: isAuthenticated,
     earnCompleted: isAuthenticated,
     updateUser: isAuthenticated,
-    updateContact: isAuthenticated,
     deleteUser: isAuthenticated,
     addDeviceToken: isAuthenticated,
+    faucet: isAuthenticated,
   },
 }, { allowExternalErrors: true }) // TODO remove to not expose internal error
 
@@ -328,7 +334,7 @@ const options = {
   // tracing: true,
   formatError: err => {
     // FIXME
-    if (startsWith(err.message, customLoggerPrefix)) {
+    if (_.startsWith(err.message, customLoggerPrefix)) {
       err.message = err.message.slice(customLoggerPrefix.length)
     } else {
       baseLogger.error({err}, "graphql catch-all error"); 

@@ -5,12 +5,13 @@ import { createHash, randomBytes } from 'crypto';
 import { payCashBack } from "../balanceSheet";
 import { FEECAP, lnd } from "../lndConfig";
 import { quit } from "../lock";
-import { InvoiceUser, setupMongoConnection, Transaction } from "../mongodb";
+import { setupMongoConnection } from "../mongodb";
+import { InvoiceUser, Transaction } from "../schema";
 import { checkIsBalanced, getUserWallet, lndOutside1, lndOutside2, mockGetExchangeBalance } from "../tests/helper";
 import { getHash, sleep } from "../utils";
 
-const lnService = require('ln-service')
-const mongoose = require("mongoose")
+import lnService from 'ln-service'
+import mongoose from "mongoose"
 
 let userWallet0, userWallet1, userWallet2
 let initBalance0, initBalance1, initBalance2
@@ -18,7 +19,7 @@ let initBalance0, initBalance1, initBalance2
 const amountInvoice = 1000
 
 jest.mock('../notification')
-const { sendNotification } = require("../notification");
+import { sendNotification } from "../notification";
 
 
 beforeAll(async () => {
@@ -297,7 +298,7 @@ it('receives payment from outside', async () => {
 })
 
 // @ts-ignore
-const Lightning = require('../Lightning');
+import Lightning from '../Lightning';
 
 it('expired payment', async () => {
   const memo = "payment that should expire"

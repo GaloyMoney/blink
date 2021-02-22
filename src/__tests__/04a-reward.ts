@@ -6,7 +6,7 @@ import { setupMongoConnection } from "../mongodb";
 import { checkIsBalanced, getUserWallet, mockGetExchangeBalance, onBoardingEarnAmt, onBoardingEarnIds } from "../tests/helper";
 
 
-const mongoose = require("mongoose")
+import mongoose from "mongoose"
 
 let userWallet1
 let initBalance1

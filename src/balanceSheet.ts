@@ -1,12 +1,13 @@
 import { filter } from "lodash";
 import { bitcoindAccountingPath, escrowAccountingPath, lndAccountingPath, lndFeePath } from "./ledger";
 import { lnd } from "./lndConfig";
-import { InvoiceUser, MainBook, Transaction, User } from "./mongodb";
+import { MainBook } from "./mongodb";
 import { SpecterWallet } from "./SpecterWallet";
 import { baseLogger } from "./utils";
 import { getFunderWallet, WalletFactory } from "./walletFactory";
 import { lndBalances } from "./lndUtils"
-const lnService = require('ln-service')
+import { InvoiceUser, Transaction, User } from "./schema";
+import lnService from 'ln-service'
 
 const logger = baseLogger.child({module: "admin"})
 

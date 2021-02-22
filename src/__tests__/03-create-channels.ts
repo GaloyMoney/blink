@@ -7,10 +7,10 @@ import { MainBook, setupMongoConnection } from "../mongodb";
 import { checkIsBalanced, lndMain, lndOutside1, lndOutside2, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
 import { onChannelUpdated } from '../trigger';
 import { baseLogger, bitcoindDefaultClient, nodeStats, sleep } from "../utils";
-const mongoose = require("mongoose");
-const { once } = require('events');
+import mongoose from "mongoose";
+import { once } from 'events';
 
-const lnService = require('ln-service')
+import lnService from 'ln-service'
 
 const local_tokens = 1000000
 
@@ -166,7 +166,7 @@ it('opens private channel from lndOutside1 to lndOutside2', async () => {
 })
 
 it('opens channel from lndOutside1 to lnd1', async () => {
-  const socket = `lnd-service:9735`
+  const socket = `lnd-service-one:9735`
   await openChannel({ lnd: lndOutside1, other_lnd: lndMain, socket })
 
   {

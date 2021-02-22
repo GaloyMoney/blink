@@ -1,8 +1,7 @@
 import { MainBook } from "./mongodb";
 import moment from "moment";
 
-const createCsvStringifier = require('csv-writer').createObjectCsvStringifier;
-const createCsvWriter = require('csv-writer').createObjectCsvWriter;
+import {createObjectCsvStringifier, createObjectCsvWriter} from "csv-writer"
 
 const header = [
   { id: 'voided', title: 'voided' },
@@ -35,7 +34,7 @@ export class CSVAccountExport {
   entries = []
 
   getBase64(): string {
-    const csvWriter = createCsvStringifier({
+    const csvWriter = createObjectCsvStringifier({
       header
     })
 
@@ -54,7 +53,7 @@ export class CSVAccountExport {
   }
 
   async saveToDisk(): Promise<void> {
-    const csvWriter = createCsvWriter({
+    const csvWriter = createObjectCsvWriter({
       path: 'export_accounts.csv',
       header
     });

@@ -1,11 +1,9 @@
-import { User } from "../mongodb"
+import { User } from "../schema"
 import { sleep } from "../utils"
-const csv = require('csv-parser')
-const fs = require('fs')
+import csv from 'csv-parser'
+import fs from 'fs'
 
 // source ../../exportLocal.sh && ts-node ./import_and_pay.ts
-
-export const baseLogger = require('pino')()
 
 export const insertMarkers = async () => {
 
@@ -48,12 +46,13 @@ export const insertMarkers = async () => {
 }
 
 // only execute if it is the main module
-if (require.main === module) {
-  const fn = async () => {
-    await insertMarkers()
-  }
-  fn()
-}
+// FIXME: requiere doesn't work with target="esnext"
+// if (require.main === module) {
+//   const fn = async () => {
+//     await insertMarkers()
+//   }
+//   fn()
+// }
 
 
 

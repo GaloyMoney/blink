@@ -4,7 +4,7 @@
 import { quit } from "../lock";
 import { setupMongoConnection } from "../mongodb";
 import { getTokenFromPhoneIndex } from "../walletFactory";
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 
 let uid

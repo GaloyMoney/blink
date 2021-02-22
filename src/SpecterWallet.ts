@@ -1,4 +1,4 @@
-import { filter } from "lodash";
+import _ from "lodash";
 import { bitcoindAccountingPath, lndAccountingPath, lndFeePath } from "./ledger";
 import { lnd } from "./lndConfig";
 import { MainBook } from "./mongodb";
@@ -7,7 +7,7 @@ import { BitcoindClient, bitcoindDefaultClient, btc2sat, sat2btc } from "./utils
 import { UserWallet } from "./userWallet";
 import { lndBalances } from "./lndUtils"
 
-const lnService = require('ln-service');
+import lnService from 'ln-service'
 
 
 // TODO: we should not rely on OnChainMixin/UserWallet for this "wallet"
@@ -34,7 +34,7 @@ export class SpecterWallet {
     const wallets = await SpecterWallet.listWallets()
 
     const pattern = "specter"
-    const specterWallets = filter(wallets, item => item.startsWith(pattern))
+    const specterWallets = _.filter(wallets, item => item.startsWith(pattern))
 
     // there should be only one specter wallet
     // TODO/FIXME this is a weak security assumption

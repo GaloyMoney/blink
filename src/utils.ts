@@ -2,14 +2,18 @@
 import { GraphQLError } from "graphql"
 import * as jwt from 'jsonwebtoken'
 import * as lnService from "ln-service"
-import { filter, find, includes, intersection, sumBy, union } from "lodash"
-import * as moment from 'moment'
-export const validate = require("validate.js")
-const bitcoindClient = require('bitcoin-core')
-const { parsePaymentRequest } = require('invoices');
-const axios = require('axios').default;
+import pkg from 'lodash';
+const { filter, find, includes, intersection, sumBy, union } = pkg;
 
-export const baseLogger = require('pino')({ level: process.env.LOGLEVEL || "info" })
+import * as moment from 'moment'
+import validate from "validate.js"
+import bitcoindClient from 'bitcoin-core'
+import { parsePaymentRequest } from 'invoices';
+import { default as axios } from 'axios';
+import { lnd } from "./lndConfig";
+
+import pino from 'pino'
+export const baseLogger = pino({ level: process.env.LOGLEVEL || "info" })
 
 // how many block are we looking back for getChainTransactions
 export const LOOK_BACK = 2016
@@ -17,7 +21,8 @@ export const LOOK_BACK = 2016
 
 // @ts-ignore
 import { GraphQLError } from "graphql";
-import { User } from "./mongodb"
+import { User } from "./schema";
+
 
 // FIXME: super ugly hack.
 // for some reason LoggedError get casted as GraphQLError
@@ -37,7 +42,7 @@ const connection_obj = {
   password: 'rpcpass',
   host: process.env.BITCOINDADDR,
   port: process.env.BITCOINDPORT,
-  version: '0.20.1',
+  version: '0.21.0',
 }
 
 
@@ -177,8 +182,7 @@ export async function getBosScore() {
   try {
     const { data } = await axios.get('https://bos.lightning.jorijn.com/data/export.json')
 
-    // FIXME: make it dynamic
-    const publicKey = "0325bb9bda523a85dc834b190289b7e25e8d92615ab2f2abffbe97983f0bb12ffb"
+    const publicKey = (await lnService.getWalletInfo({lnd})).public_key;
     const bosScore = find(data.data, { publicKey })
     return bosScore.score
   } catch (err) {

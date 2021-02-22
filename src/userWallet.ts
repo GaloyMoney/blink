@@ -1,12 +1,13 @@
 import moment from "moment";
 import { CSVAccountExport } from "./csvAccountExport";
 import { customerPath } from "./ledger";
-import { MainBook, User, Transaction } from "./mongodb";
+import { MainBook } from "./mongodb";
 import { ITransaction } from "./types";
 import { LoggedError } from "./utils";
 import { Balances } from "./interface"
-const assert = require('assert')
+import assert from 'assert'
 import { sendNotification } from "./notification";
+import { User } from "./schema";
 
 export abstract class UserWallet {
 

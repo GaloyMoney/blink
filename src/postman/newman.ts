@@ -1,4 +1,4 @@
-const newman = require('newman');
+import newman from 'newman';
 const {collection} = require('./graphql.postman_collection.json')
 
 const environment = !!process.env.LOCAL ? require(`./devnet-local.postman_environment.json`) : require(`./devnet.postman_environment.json`)

@@ -5,8 +5,8 @@ import { quit } from "../lock";
 import { setupMongoConnection } from "../mongodb";
 import { getUserWallet } from "../tests/helper";
 
-const lnService = require('ln-service')
-const mongoose = require("mongoose")
+import lnService from 'ln-service'
+import mongoose from "mongoose"
 
 let userWallet
 

@@ -1,4 +1,5 @@
-import { setupMongoConnection, User } from "./mongodb"
+import { setupMongoConnection } from "./mongodb"
+import { User } from "./schema"
 import { baseLogger } from "./utils"
 import { WalletFactory } from "./walletFactory"
 

@@ -11,10 +11,10 @@ import { baseLogger, bitcoindDefaultClient, btc2sat, sleep } from "../utils";
 import { getFunderWallet } from "../walletFactory";
 
 
-const lnService = require('ln-service')
+import lnService from 'ln-service'
 
-const mongoose = require("mongoose");
-const { once } = require('events');
+import mongoose from "mongoose";
+import { once } from 'events'
 
 
 let funderWallet
@@ -147,7 +147,7 @@ it('identifies unconfirmed incoming on chain txn', async () => {
 
   await sleep(3000)
 
-  // const util = require('util')
+  // import util from 'util'
   // console.log(util.inspect(sendNotification.mock.calls, false, Infinity))
   // FIXME: the event is actually fired twice.
   // is it a lnd issue?

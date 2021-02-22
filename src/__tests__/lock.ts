@@ -3,9 +3,10 @@
  */
 
 import {disposer, quit, getResource} from "../lock"
-const using = require('bluebird').using;
+import bluebird from 'bluebird';
+const { using } = bluebird;
 import { sleep } from "../utils"
-const redis = require('redis')
+import redis from 'redis'
 
 const uid = "1234"
 

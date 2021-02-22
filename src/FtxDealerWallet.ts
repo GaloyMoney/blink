@@ -1,4 +1,4 @@
-import { find } from "lodash";
+import _ from 'lodash';
 import { yamlConfig } from "./config";
 import { accountDealerFtxPath, liabilitiesDealerFtxPath } from "./ledger";
 import { MainBook } from "./mongodb";
@@ -6,8 +6,8 @@ import { OnChainMixin } from "./OnChain";
 import { ILightningWalletUser } from "./types";
 import { baseLogger, btc2sat, sleep } from "./utils";
 import { UserWallet } from "./userWallet";
-const ccxt = require('ccxt')
-const assert = require('assert')
+import ccxt from 'ccxt'
+import assert from 'assert'
 
 
 const apiKey = process.env.FTX_KEY
@@ -130,7 +130,7 @@ export class FtxDealerWallet extends OnChainMixin(UserWallet) {
     const { result: { collateral, positions, chargeInterestOnNegativeUsd, marginFraction, totalAccountValue } } = result
     this.logger.debug({collateral, positions, chargeInterestOnNegativeUsd, marginFraction}, "value kept from this.ftx.privateGetAccount")
 
-    const positionBtcPerp = find(positions, { future: symbol } )
+    const positionBtcPerp = _.find(positions, { future: symbol } )
     this.logger.debug({positionBtcPerp}, "positionBtcPerp result")
 
     // {

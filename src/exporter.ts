@@ -1,18 +1,19 @@
-import { setupMongoConnection, User } from "./mongodb";
+import { setupMongoConnection } from "./mongodb";
 import { Price } from "./priceImpl";
 import { baseLogger, getBosScore } from "./utils";
 import { getDealerWallet, getFunderWallet } from "./walletFactory";
 import { SpecterWallet } from "./SpecterWallet"
 import { getBalanceSheet, balanceSheetIsBalanced } from "./balanceSheet"
 import { lndBalances } from "./lndUtils"
+import { User } from "./schema";
 
 const logger = baseLogger.child({module: "exporter"})
 
-const express = require('express');
+import express from 'express'
 const server = express();
 
-const client = require('prom-client');
-const register = require('prom-client').register
+import client from 'prom-client'
+import { register } from 'prom-client'
 
 const prefix = "galoy"
 

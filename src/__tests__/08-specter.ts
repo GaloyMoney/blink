@@ -9,9 +9,9 @@ import { SpecterWallet } from "../SpecterWallet";
 import { checkIsBalanced, mockGetExchangeBalance, RANDOM_ADDRESS } from "../tests/helper";
 import { baseLogger, bitcoindDefaultClient, sleep } from "../utils";
 import { UserWallet } from "../userWallet";
-const lnService = require('ln-service');
+import lnService from 'ln-service'
 
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 let specterWallet
 

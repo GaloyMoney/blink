@@ -1,7 +1,8 @@
-import { dropRight, last } from "lodash"
-import { PriceHistory } from "./mongodb"
+import _ from 'lodash';
 import { sat2btc } from "./utils"
-import moment = require("moment")
+import moment from "moment"
+import { PriceHistory } from "./schema";
+import ccxt from 'ccxt'
 
 
 interface ITick {
@@ -21,14 +22,11 @@ export class Price {
   constructor({logger}) {
     this.exchange_string = "bitfinex"
 
-    const ccxt = require('ccxt');
     this.exchange = new ccxt[this.exchange_string]({
       'enableRateLimit': true,
       'rateLimit': 2500,
       'timeout': 5000,
     })
-
-    this.ccxt = ccxt
 
     this.pair = "BTC/USD"
     this.path = {
@@ -52,9 +50,9 @@ export class Price {
       this.logger.info("data fetched from exchange")
     }
     catch (e) {
-      if (e instanceof this.ccxt.NetworkError) {
+      if (e instanceof ccxt.NetworkError) {
         throw new Error(`fetchTicker failed due to a network error: ${e.message}`);
-      } else if (e instanceof this.ccxt.ExchangeError) {
+      } else if (e instanceof ccxt.ExchangeError) {
         throw new Error(`fetchTicker failed due to exchange error: ${e.message}`);
       } else {
         throw new Error(`issue with ref exchanges: ${e}`);
@@ -78,7 +76,7 @@ export class Price {
 
   async lastPrice(): Promise<number> {
     const lastCached = await this.lastCached()
-    return (last(lastCached) as ITick).o
+    return (_.last(lastCached) as ITick).o
   }
 
   async eraseIfLastIsNotHourlyCandle({doc}) {
@@ -95,7 +93,7 @@ export class Price {
       lastEntryDate.milliseconds() === 0
     
     if (!isHourlyCandle) {
-      doc.pair.exchange.price = dropRight(doc.pair.exchange.price)
+      doc.pair.exchange.price = _.dropRight(doc.pair.exchange.price)
     }
 
     await doc.save()
@@ -162,8 +160,8 @@ export class Price {
 
     // skip if it has not been an hour since last update
     try {
-      // @ts-ignore
-      const diff = moment().diff(moment(last(doc.pair.exchange.price)._id))
+      //@ts-ignore
+      const diff = moment().diff(moment(_.last(doc.pair.exchange.price)._id))
       if (diff < 1000 * 60 * 60) {
         return false
       }
@@ -191,7 +189,7 @@ export class Price {
           this.logger.debug({value0: value[0]}, "adding entry to our price database")
           doc.pair.exchange.price.push({ _id: value[0], o: sat2btc(value[1]) })
 
-          console.log({price: doc.pair.exchange.price})
+          // console.log({price: doc.pair.exchange.price})
         }
 
         await doc.save()

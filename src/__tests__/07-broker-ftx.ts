@@ -1,13 +1,14 @@
 /**
  * @jest-environment node
  */
-import { setupMongoConnection, User } from "../mongodb"
+import { setupMongoConnection } from "../mongodb"
 import { FtxDealerWallet } from "../FtxDealerWallet";
 import { baseLogger } from "../utils";
 import { quit } from "../lock";
 import { getTokenFromPhoneIndex } from "../walletFactory";
 import { UserWallet } from "../userWallet";
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
+import { User } from "../schema";
 
 const fixtures = [{
   privateGetAccount: function() {
@@ -199,7 +200,7 @@ const ftxHas = {
 const satPrice = 1/10000
 UserWallet.setCurrentPrice(satPrice) // sats/USD. BTC at 10k
 
-const ccxt = require('ccxt')
+import ccxt from 'ccxt'
 
 const ftxMock = jest.fn();
 

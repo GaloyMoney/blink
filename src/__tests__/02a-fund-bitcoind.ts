@@ -5,8 +5,8 @@ import { setupMongoConnection } from "../mongodb";
 import { checkIsBalanced, lndMain, lndOutside1, lndOutside2, RANDOM_ADDRESS, waitUntilBlockHeight, mockGetExchangeBalance } from "../tests/helper";
 import { bitcoindDefaultClient } from "../utils";
 
-const lnService = require('ln-service')
-const mongoose = require("mongoose");
+import lnService from 'ln-service'
+import mongoose from "mongoose";
 
 const initialBitcoinWalletBalance = 0
 
@@ -40,13 +40,23 @@ afterAll(async () => {
 
 
 it('funds bitcoind wallet', async () => {
-  const {name} = await bitcoindDefaultClient.createWallet("")
-  expect(name).toBe("")
+  let balance
+
+  try {
+    // depend of bitcoind version. needed in < 0.20 but failed in 0.21?
+    const {name} = await bitcoindDefaultClient.createWallet("")
+    expect(name).toBe("")
+  } catch (err) {
+    console.log({err})
+  } 
+
+  balance = await bitcoindDefaultClient.getBalance()
+  console.log({balanceInit: balance})
 
   const bitcoindAddress = await bitcoindDefaultClient.getNewAddress()
 	await bitcoindDefaultClient.generateToAddress(numOfBlock, bitcoindAddress)
 	await bitcoindDefaultClient.generateToAddress(100, RANDOM_ADDRESS)
-	const balance = await bitcoindDefaultClient.getBalance()
+	balance = await bitcoindDefaultClient.getBalance()
 	expect(balance).toBe(initialBitcoinWalletBalance + blockReward * numOfBlock)
 })
 

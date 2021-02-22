@@ -1,15 +1,16 @@
 /**
  * @jest-environment node
  */
-import { setupMongoConnection, User } from "../mongodb";
-const redis = require('redis')
+import { setupMongoConnection } from "../mongodb";
+import redis from 'redis'
 
 import {lndMain, lndOutside1, lndOutside2} from "../tests/helper"
 import { bitcoindDefaultClient } from "../utils";
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
+import { User } from "../schema";
 
 //TODO: Choose between camel case or underscores for variable naming
-const lnService = require('ln-service')
+import lnService from 'ln-service'
 
 
 it('I can connect to bitcoind', async () => {

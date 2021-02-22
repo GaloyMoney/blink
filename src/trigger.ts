@@ -6,15 +6,16 @@ import { subscribeToBackups, subscribeToChannels, subscribeToInvoices, subscribe
 import { find } from "lodash";
 import { lndAccountingPath, lndFeePath } from "./ledger";
 import { lnd } from "./lndConfig";
-import { InvoiceUser, MainBook, setupMongoConnection, Transaction, User } from "./mongodb";
+import { MainBook, setupMongoConnection } from "./mongodb";
 import { sendInvoicePaidNotification, sendNotification } from "./notification";
 import { Price } from "./priceImpl";
 import { IDataNotification } from "./types";
 import { baseLogger, LOOK_BACK } from './utils';
 import { WalletFactory } from "./walletFactory";
 
-const crypto = require("crypto")
-const lnService = require('ln-service');
+import crypto from "crypto"
+import lnService from 'ln-service'
+import { InvoiceUser, Transaction, User } from "./schema";
 
 //millitokens per million
 const FEE_RATE = 2500

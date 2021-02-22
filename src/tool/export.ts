@@ -1,7 +1,9 @@
 import { CSVAccountExport } from "../csvAccountExport";
 import { customerPath } from "../ledger";
-import { MainBook, setupMongoConnection, User } from "../mongodb";
-const createCsvWriter = require('csv-writer').createObjectCsvWriter;
+import { MainBook, setupMongoConnection } from "../mongodb";
+import { User } from "../schema";
+import { createObjectCsvWriter} from "csv-writer"
+
 
 // need to set MONGODB_ADDRESS to call the script
 // ie: MONGODB_ADDRESS=localhost ts-node src/tool/export.ts
@@ -55,7 +57,7 @@ const exportUsers = async () => {
   }
 
   console.log("csvWriter")
-  const csvWriter = createCsvWriter({
+  const csvWriter = createObjectCsvWriter({
     path: 'records_accounts.csv',
     header: [
         {id: 'uid', title: 'uid'},
@@ -84,7 +86,7 @@ const exportBalances = async () => {
   const books = await getBooks()
 
   console.log("csvWriter")
-  const csvWriter = createCsvWriter({
+  const csvWriter = createObjectCsvWriter({
     path: 'users_balance.csv',
     header: [
       {id: 'account', title: 'Account'},
