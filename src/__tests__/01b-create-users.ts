@@ -1,12 +1,12 @@
 /**
  * @jest-environment node
  */
-import { setupMongoConnection, User } from "../mongodb";
+import { setupMongoConnection } from "../mongodb";
 import { getUserWallet } from "../tests/helper"
-import { getTokenFromPhoneIndex } from "../walletFactory";
 import { UserWallet } from "../userWallet"
 import { insertMarkers } from "../tool/map_csv_to_mongodb"
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
+import { User } from "../schema";
 
 
 let userWallet0, userWallet1, userWallet2

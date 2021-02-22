@@ -1,15 +1,12 @@
 /**
  * @jest-environment node
  */
-const lnService = require('ln-service')
-const mongoose = require("mongoose")
-const util = require('util')
-const {decode} = require('bip66');
-const {parsePaymentRequest, createUnsignedRequest} = require('invoices');
-import { lnd } from "../lndConfig";
+import { decode } from 'bip66'
+import { createUnsignedRequest, parsePaymentRequest } from 'invoices'
+import lnService from 'ln-service'
+import util from 'util'
+import { lnd } from "../lndConfig"
 
-
-const logger = require('pino')({ level: "debug" })
 
 beforeAll(async () => {
 

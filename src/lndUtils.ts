@@ -1,7 +1,7 @@
 import { sumBy } from "lodash";
 import { lnd } from "./lndConfig"
 import { baseLogger } from "./utils";
-const lnService = require('ln-service');
+import lnService from 'ln-service'
 
 export const lndBalances = async () => {
   const { chain_balance } = await lnService.getChainBalance({lnd})

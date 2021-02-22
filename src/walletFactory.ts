@@ -2,10 +2,10 @@ import * as jwt from 'jsonwebtoken';
 import { FtxDealerWallet } from "./FtxDealerWallet";
 import { getLastPrice } from "./cache";
 import { LightningUserWallet } from "./LightningUserWallet";
-import { User } from "./mongodb";
 import { login, TEST_NUMBER } from "./text";
 import { baseLogger, LoggedError } from "./utils";
 import { UserWallet } from "./userWallet";
+import { User } from "./schema";
 
 
 export const WalletFactory = async ({ user, logger }: { user: typeof User, logger: any }) => {

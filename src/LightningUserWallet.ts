@@ -1,11 +1,12 @@
 import { LightningMixin } from "./Lightning";
 import { disposer } from "./lock";
-import { User } from "./mongodb";
 import { OnChainMixin } from "./OnChain";
+import { Faucet, User } from "./schema";
 import { ILightningWalletUser, OnboardingEarn } from "./types";
 import { UserWallet } from "./userWallet";
 import { getFunderWallet } from "./walletFactory";
-const using = require('bluebird').using
+import bluebird from 'bluebird';
+const { using } = bluebird;
 
 /**
  * this represents a user wallet
@@ -43,6 +44,35 @@ export class LightningUserWallet extends OnChainMixin(LightningMixin(UserWallet)
 
       return result
     })
+  }
+
+  async faucet(hash) {
+    let success, message
+
+    const faucetPastState = await Faucet.findOneAndUpdate(
+      { hash },
+      { used: true },
+    )
+
+    if (!faucetPastState) {
+      success = false 
+    } else {
+      if (faucetPastState.used === false) {
+        const lightningFundingWallet = await getFunderWallet({ logger: this.logger })
+
+        // TODO: currency conversion if faucetPastState.currency === "USD"
+
+        const invoice = await this.addInvoice({memo: `faucet-${hash}`, value: faucetPastState.amount})
+        await lightningFundingWallet.pay({invoice, isReward: true})
+        
+        success = true
+        message = faucetPastState.message
+      } else {
+        success = false
+      }
+    }
+
+    return {success, message}
   }
 
 }

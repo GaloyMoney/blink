@@ -1,8 +1,9 @@
 /**
  * @jest-environment node
  */
-import { DbVersion, setupMongoConnection } from "../mongodb";
-const mongoose = require("mongoose");
+import { setupMongoConnection } from "../mongodb";
+import mongoose from "mongoose";
+import { DbVersion } from "../schema";
 
 
 beforeAll(async () => {

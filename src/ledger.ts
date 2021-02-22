@@ -1,9 +1,9 @@
 // an accounting reminder:
 // https://en.wikipedia.org/wiki/Double-entry_bookkeeping
 
-// assets:
+import { User } from "./schema"
 
-import { User } from "./mongodb"
+// assets:
 
 export const bitcoindAccountingPath = 'Assets:Reserve:Bitcoind'
 export const lndAccountingPath = 'Assets:Reserve:Lightning' // TODO: rename to Assets:Lnd

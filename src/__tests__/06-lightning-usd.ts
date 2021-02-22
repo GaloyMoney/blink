@@ -9,8 +9,8 @@ import { baseLogger } from "../utils";
 // import { UserWallet } from "../userWallet";
 
 
-const lnService = require('ln-service')
-const mongoose = require("mongoose")
+import lnService from 'ln-service'
+import mongoose from "mongoose"
 
 let userWalletUsd, initBalanceUsd
 let userWallet2, initBalance2

@@ -1,8 +1,8 @@
 import { baseLogger } from "./utils";
-const asyncRedis = require("async-redis");
+import asyncRedis from "async-redis";
 
-const redis = require('redis')
-const Redlock = require('redlock');
+import redis from "redis"
+import Redlock from 'redlock';
   
 // the maximum amount of time you want the resource locked,
 // keeping in mind that you can extend the lock up until

@@ -2,11 +2,11 @@
  * @jest-environment node
  */
 
-import { setupMongoConnection } from "../mongodb"
+import { setupMongoConnection } from "../mongodb";
 
 import { Price } from "../priceImpl";
 import { baseLogger } from "../utils";
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 let price
 
@@ -74,11 +74,11 @@ const priceResponse = [
 ]
 
 // make time current
-import { forEach, tail } from "lodash"
+import _ from "lodash"
 import moment from "moment";
 const priceResponseTimingCurrent: any[] = []
 const init = () => moment().subtract(4, 'hours').startOf('hour')
-forEach(priceResponse, (value, key) => priceResponseTimingCurrent.push([init().add(key, 'hours').unix() * 1000, ...tail(value)]))
+_.forEach(priceResponse, (value, key) => priceResponseTimingCurrent.push([init().add(key, 'hours').unix() * 1000, ..._.tail(value)]))
 
 export class bitfinex {
 

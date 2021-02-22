@@ -1,4 +1,4 @@
-const lnService = require('ln-service');
+import lnService from 'ln-service'
 
 const getAuth = () => {
   // network = process.env.NETWORK // TODO
@@ -6,9 +6,9 @@ const getAuth = () => {
   const macaroon = process.env.MACAROON
   const lndip = process.env.LNDIP
   const port = process.env.LNDRPCPORT ?? 10009
-
+  
   if (!cert || !macaroon || !lndip) {
-    console.log({cert, macaroon, lndip})
+    console.log({cert, macaroon, lndip, port})
     throw new Error('missing environment variable for lnd')
   }
 
@@ -18,6 +18,17 @@ const getAuth = () => {
 }
 
 export const lnd = lnService.authenticatedLndGrpc(getAuth()).lnd
+
+// export const lnds = [
+//   {
+//     pubkey: await lnService.getWalletInfo({lnd}).public_key,
+//     grpc: lnd
+//   },
+//   {
+//     pubkey: "0xde4f",
+//     grpc: lnd
+//   }  
+// ]
 
 export const TIMEOUT_PAYMENT = process.env.NETWORK !== "regtest" ? 45000 : 3000
 

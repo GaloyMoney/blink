@@ -7,13 +7,11 @@ import { MainBook, setupMongoConnection } from "../mongodb";
 import { checkIsBalanced, getUserWallet, lndMain, lndOutside1, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
 import { onchainTransactionEventHandler } from "../trigger";
 import { bitcoindDefaultClient, sleep } from "../utils";
-const util = require('util')
+import {once} from 'events';
 
-const {once} = require('events');
+import lnService from 'ln-service'
 
-const lnService = require('ln-service')
-
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 let initBlockCount
 let initialBalanceUser0
@@ -21,7 +19,7 @@ let userWallet0, userWallet3
 
 
 jest.mock('../notification')
-const { sendNotification } = require("../notification");
+const { sendNotification } = require("../notification")
 
 beforeAll(async () => {
   await setupMongoConnection()

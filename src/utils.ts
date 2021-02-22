@@ -2,14 +2,17 @@
 import { GraphQLError } from "graphql"
 import * as jwt from 'jsonwebtoken'
 import * as lnService from "ln-service"
-import { filter, find, includes, intersection, sumBy, union } from "lodash"
-import * as moment from 'moment'
-export const validate = require("validate.js")
-const bitcoindClient = require('bitcoin-core')
-const { parsePaymentRequest } = require('invoices');
-const axios = require('axios').default;
+import _ from 'lodash';
 
-export const baseLogger = require('pino')({ level: process.env.LOGLEVEL || "info" })
+import * as moment from 'moment'
+import validate from "validate.js"
+import bitcoindClient from 'bitcoin-core'
+import { parsePaymentRequest } from 'invoices';
+import { default as axios } from 'axios';
+import { lnd } from "./lndConfig";
+
+import pino from 'pino'
+export const baseLogger = pino({ level: process.env.LOGLEVEL || "info" })
 
 // how many block are we looking back for getChainTransactions
 export const LOOK_BACK = 2016
@@ -17,7 +20,8 @@ export const LOOK_BACK = 2016
 
 // @ts-ignore
 import { GraphQLError } from "graphql";
-import { User } from "./mongodb"
+import { User } from "./schema";
+
 
 // FIXME: super ugly hack.
 // for some reason LoggedError get casted as GraphQLError
@@ -37,7 +41,7 @@ const connection_obj = {
   password: 'rpcpass',
   host: process.env.BITCOINDADDR,
   port: process.env.BITCOINDPORT,
-  version: '0.20.1',
+  version: '0.21.0',
 }
 
 
@@ -75,12 +79,12 @@ export const bitcoindDefaultClient = BitcoindClient({wallet: ""})
 
 export const amountOnVout = ({ vout, onchain_addresses }): number => {
   // TODO: check if this is always [0], ie: there is always a single addresses for vout for lnd output
-  return sumBy(filter(vout, tx => includes(onchain_addresses, tx.scriptPubKey.addresses[0])), "value")
+  return _.sumBy(_.filter(vout, tx => _.includes(onchain_addresses, tx.scriptPubKey.addresses[0])), "value")
 }
 
 export const myOwnAddressesOnVout = ({ vout, onchain_addresses }) => {
   // TODO: check if this is always [0], ie: there is always a single addresses for vout for lnd output
-  return intersection(union(vout.map(output => output.scriptPubKey.addresses[0])), onchain_addresses)
+  return _.intersection(_.union(vout.map(output => output.scriptPubKey.addresses[0])), onchain_addresses)
 }
 
 
@@ -177,9 +181,8 @@ export async function getBosScore() {
   try {
     const { data } = await axios.get('https://bos.lightning.jorijn.com/data/export.json')
 
-    // FIXME: make it dynamic
-    const publicKey = "0325bb9bda523a85dc834b190289b7e25e8d92615ab2f2abffbe97983f0bb12ffb"
-    const bosScore = find(data.data, { publicKey })
+    const publicKey = (await lnService.getWalletInfo({lnd})).public_key;
+    const bosScore = _.find(data.data, { publicKey })
     return bosScore.score
   } catch (err) {
     // err2: err.toJson() does not work

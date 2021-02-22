@@ -1,8 +1,7 @@
 import * as admin from 'firebase-admin';
-import { User } from "./mongodb";
-import { IDataNotification, INotification } from "./types"
-import { mapValues } from "lodash";
+import _ from 'lodash';
 import { Price } from "./priceImpl";
+import { IDataNotification, INotification } from "./types";
 
 // The key GOOGLE_APPLICATION_CREDENTIALS should be set in production
 // This key defined the path of the config file that include the key
@@ -35,7 +34,7 @@ export const sendNotification = async ({user, title, body, data, logger}: INotif
   const message = {
     // only string can be sent to notifications
     data: {
-      ...mapValues(data, v => String(v)),
+      ..._.mapValues(data, v => String(v)),
       // title,
       // body,
     }, 

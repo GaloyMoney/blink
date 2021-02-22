@@ -1,19 +1,21 @@
-const lnService = require('ln-service');
-const assert = require('assert').strict;
+import lnService from 'ln-service'
+import assert from 'assert'
 import { createHash, randomBytes } from "crypto";
 import moment from "moment";
 import { FEECAP, FEEMIN, lnd, TIMEOUT_PAYMENT } from "./lndConfig";
 import { disposer, getAsyncRedisClient } from "./lock";
-import { InvoiceUser, MainBook, Transaction, User } from "./mongodb";
+import { MainBook } from "./mongodb";
 import { sendInvoicePaidNotification } from "./notification";
 import { addTransactionLndPayment, addTransactionLndReceipt, addTransactionOnUsPayment } from "./transaction";
 import { IAddInvoiceRequest, IFeeRequest, IPaymentRequest } from "./types";
 import { addContact, isInvoiceAlreadyPaidError, LoggedError, timeout } from "./utils";
 import { UserWallet } from "./userWallet";
+import { InvoiceUser, Transaction, User } from "./schema";
 
-const util = require('util')
+import util from 'util'
 
-const using = require('bluebird').using
+import bluebird from 'bluebird';
+const { using } = bluebird;
 
 export type ITxType = "invoice" | "payment" | "onchain_receipt" | "onchain_payment" | "on_us"
 export type payInvoiceResult = "success" | "failed" | "pending" | "already_paid"

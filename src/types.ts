@@ -1,4 +1,4 @@
-import { User } from "./mongodb"
+import { User } from "./schema"
 
 export type Side = "buy" | "sell"
 export type Currency = "USD" | "BTC"
