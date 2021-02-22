@@ -28,10 +28,12 @@ dotenv.config()
 const graphqlLogger = baseLogger.child({ module: "graphql" })
 import pino from 'pino'
 
+
 // https://nodejs.org/api/esm.html#esm_no_require_exports_module_exports_filename_dirname
-import { fileURLToPath } from 'url';
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// TODO: to use when switching to module
+// import { fileURLToPath } from 'url';
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
 
 
 import PinoHttp from "pino-http"
@@ -204,7 +206,6 @@ const resolvers = {
       getFee: async ({ destination, amount, invoice, memo }) => wallet.getLightningFee({ destination, amount, invoice, memo })
     }),
     earnCompleted: async (_, { ids }, { wallet }) => wallet.addEarn(ids),
-    faucet: async (_, { hash }, { wallet }) => wallet.faucet(hash),
     deleteUser: () => {
       // TODO
     },
@@ -287,7 +288,6 @@ const permissions = shield({
     updateUser: isAuthenticated,
     deleteUser: isAuthenticated,
     addDeviceToken: isAuthenticated,
-    faucet: isAuthenticated,
   },
 }, { allowExternalErrors: true }) // TODO remove to not expose internal error
 
