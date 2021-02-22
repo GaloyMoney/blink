@@ -298,7 +298,7 @@ it('receives payment from outside', async () => {
 })
 
 // @ts-ignore
-import Lightning from '../Lightning';
+const Lightning = require('../Lightning');
 
 it('expired payment', async () => {
   const memo = "payment that should expire"

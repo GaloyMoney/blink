@@ -166,7 +166,7 @@ it('opens private channel from lndOutside1 to lndOutside2', async () => {
 })
 
 it('opens channel from lndOutside1 to lnd1', async () => {
-  const socket = `lnd-service-one:9735`
+  const socket = `lnd-service:9735`
   await openChannel({ lnd: lndOutside1, other_lnd: lndMain, socket })
 
   {
