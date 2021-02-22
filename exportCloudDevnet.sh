@@ -16,13 +16,13 @@ fi
 
 # nohup ./portForward.sh &
 
-export TLS=$(kubectl exec -n $NAMESPACE lnd-container-0  -c lnd-container -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
-export TLSOUTSIDE1=$(kubectl exec -n $NAMESPACE lnd-container-outside-1-0  -c lnd-container -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
-export TLSOUTSIDE2=$(kubectl exec  -n $NAMESPACE lnd-container-outside-2-0  -c lnd-container -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
+export TLS=$(kubectl exec -n $NAMESPACE lnd-container-0  -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
+export TLSOUTSIDE1=$(kubectl exec -n $NAMESPACE lnd-container-outside-1-0  -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
+export TLSOUTSIDE2=$(kubectl exec  -n $NAMESPACE lnd-container-outside-2-0  -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
 
-export MACAROON=$(kubectl exec -n $NAMESPACE lnd-container-0  -c lnd-container -- base64 /root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
-export MACAROONOUTSIDE1=$(kubectl exec -n $NAMESPACE lnd-container-outside-1-0  -c lnd-container -- base64 /root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
-export MACAROONOUTSIDE2=$(kubectl exec -n $NAMESPACE lnd-container-outside-2-0  -c lnd-container -- base64 /root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
+export MACAROON=$(kubectl exec -n $NAMESPACE lnd-container-0  -- base64 /root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
+export MACAROONOUTSIDE1=$(kubectl exec -n $NAMESPACE lnd-container-outside-1-0  -- base64 /root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
+export MACAROONOUTSIDE2=$(kubectl exec -n $NAMESPACE lnd-container-outside-2-0  -- base64 /root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
 
 
 # export LNDIP="localhost"
