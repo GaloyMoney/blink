@@ -86,7 +86,7 @@ export class Price {
     }
 
     // @ts-ignore
-    const lastEntryDate = moment(last(doc.pair.exchange.price)._id)
+    const lastEntryDate = moment(_.last(doc.pair.exchange.price)._id)
 
     const isHourlyCandle = lastEntryDate.minutes() === 0 && 
       lastEntryDate.seconds() === 0 && 
