@@ -34,7 +34,7 @@ export class FtxDealerWallet extends OnChainMixin(UserWallet) {
 
   async getLocalLiabilities() { 
     // FIXME harmonize the capitalzation for USD/usd
-    const { USD: usd, BTC: satsLnd } = await this.getBalances()
+    const { USD, BTC: satsLnd } = await this.getBalances()
 
     // TODO: calculate PnL for the dealer
     // this will influence this account.
@@ -44,7 +44,9 @@ export class FtxDealerWallet extends OnChainMixin(UserWallet) {
     })
 
     return { 
-      usd,
+      // dealer is the only one account with the a negative balance for USD
+      // FIXME: look if there is a cleaner design than just have a - sign here
+      usd: - USD,
       satsLnd,
       satsFtx,
     }
@@ -238,6 +240,8 @@ export class FtxDealerWallet extends OnChainMixin(UserWallet) {
     }
 
     btcAmount = usdAmountDiff / btcPrice
+
+    console.log({btcAmount, usdAmountDiff, btcPrice, other: 3 * usdLiability * btcPrice})
 
     if (!!depositOrWithdraw) {
       assert(btcAmount > 0)
