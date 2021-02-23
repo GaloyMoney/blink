@@ -241,8 +241,6 @@ export class FtxDealerWallet extends OnChainMixin(UserWallet) {
 
     btcAmount = usdAmountDiff / btcPrice
 
-    console.log({btcAmount, usdAmountDiff, btcPrice, other: 3 * usdLiability * btcPrice})
-
     if (!!depositOrWithdraw) {
       assert(btcAmount > 0)
       // amount more than 3x of collateral should not happen
