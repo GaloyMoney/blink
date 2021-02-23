@@ -15,6 +15,8 @@ const secret = process.env.FTX_SECRET
 
 const symbol = 'BTC-PERP'
 
+// TODO: move to the yaml config
+const simulateOnly = true
 
 export type IBuyOrSell = "sell" | "buy" | null
 
@@ -592,7 +594,7 @@ export class FtxDealerWallet extends OnChainMixin(UserWallet) {
       const { btcAmount, buyOrSell } = FtxDealerWallet.isOrderNeeded({ usdLiability, usdExposure, btcPrice })
       subLogger.debug({ btcAmount, buyOrSell }, "isOrderNeeded result")
 
-      if (buyOrSell) {
+      if (buyOrSell && !simulateOnly) {
         await this.executeOrder({ btcAmount, buyOrSell })
 
         const {usd: updatedUsdLiability } = await this.getLocalLiabilities()
@@ -620,7 +622,9 @@ export class FtxDealerWallet extends OnChainMixin(UserWallet) {
       const { btcAmount, depositOrWithdraw } = FtxDealerWallet.isRebalanceNeeded({ usdLiability, btcPrice, usdCollateral: collateral })
       subLogger.debug({ btcAmount, depositOrWithdraw }, "isRebalanceNeeded result")
 
-      await this.rebalance({ btcAmount, depositOrWithdraw, logger: subLogger })
+      if (!simulateOnly) {
+        await this.rebalance({ btcAmount, depositOrWithdraw, logger: subLogger })
+      }
 
       // TODO: add a check that rebalancing is no longer needed. 
       // maybe with the block time, this is not as easy?
