@@ -1,5 +1,4 @@
-import pkg from 'lodash';
-const { find, sumBy } = pkg;
+import _ from 'lodash';
 
 import { customerPath } from "./ledger";
 
@@ -109,7 +108,7 @@ const UserSchema = new Schema({
   currencies: {
     validate: {
       validator: function(v) {
-        return sumBy(v, 'ratio') == 1
+        return _.sumBy(v, 'ratio') == 1
       },
     },
     type: [{
@@ -167,11 +166,11 @@ const UserSchema = new Schema({
 // FIXME: this // An outer value of 'this' is shadowed by this container.
 // https://stackoverflow.com/questions/41944650/this-implicitly-has-type-any-because-it-does-not-have-a-type-annotation
 UserSchema.virtual('ratioUsd').get(function (this: typeof UserSchema) {
-  return find(this.currencies, {id: "USD"})?.ratio ?? 0
+  return _.find(this.currencies, {id: "USD"})?.ratio ?? 0
 });
 
 UserSchema.virtual('ratioBtc').get(function (this: typeof UserSchema) {
-  return find(this.currencies, {id: "BTC"})?.ratio ?? 0
+  return _.find(this.currencies, {id: "BTC"})?.ratio ?? 0
 });
 
 // this is the accounting path in medici for this user
