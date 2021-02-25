@@ -103,7 +103,8 @@ then
   localdevpath="-f $INFRADIR/bitcoind/localdev.yaml"
 fi
 
-helmUpgrade bitcoind $localdevpath -f $INFRADIR/bitcoind/$NETWORK.yaml galoy/bitcoind
+git clone $CONFIG_REPO $INFRADIR/configs
+helmUpgrade bitcoind $localdevpath -f $INFRADIR/configs/bitcoind/$NETWORK.yaml galoy/bitcoind
 
 # bug with --wait: https://github.com/helm/helm/issues/7139 ?
 kubectlWait app.kubernetes.io/name=bitcoind
