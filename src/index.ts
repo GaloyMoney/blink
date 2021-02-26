@@ -21,6 +21,8 @@ import mongoose from "mongoose";
 import { insertMarkers } from "./tool/map_csv_to_mongodb"
 import {lnd} from "./lndConfig"
 import { User } from "./schema";
+const swStats = require('swagger-stats');    
+
 
 import path from "path"
 dotenv.config()
@@ -321,7 +323,15 @@ server.express.use(function(req, res, next) {
 });
 
 server.express.use(pino_http)
-
+server.express.use(swStats.getMiddleware({
+  uriPath: "/swagger",
+  authentication: true,
+  onAuthenticate: function(req,username,password){
+    // FIXME credentials
+    return((username==='swagger-user') 
+        && (password==='swagger-pass'));
+  }
+}))
 
 // Health check
 server.express.get('/healthz', async function(req, res) {
