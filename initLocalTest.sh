@@ -5,6 +5,7 @@ helm repo add prometheus-community https://prometheus-community.github.io/helm-c
 helm repo add grafana https://grafana.github.io/helm-charts
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 helm repo add jetstack https://charts.jetstack.io
+helm repo add galoy https://galoymoney.github.io/charts/
 
 
 cd ../../../infra/galoy && helm dependency build && cd -
@@ -102,7 +103,8 @@ then
   localdevpath="-f $INFRADIR/bitcoind/localdev.yaml"
 fi
 
-helmUpgrade bitcoind $localdevpath -f $INFRADIR/bitcoind/$NETWORK.yaml $INFRADIR/bitcoind/
+git clone $CONFIG_REPO $INFRADIR/configs
+helmUpgrade bitcoind $localdevpath -f $INFRADIR/configs/bitcoind/$NETWORK.yaml galoy/bitcoind
 
 # bug with --wait: https://github.com/helm/helm/issues/7139 ?
 kubectlWait app.kubernetes.io/name=bitcoind
