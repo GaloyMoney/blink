@@ -56,8 +56,8 @@ monitoringDeploymentsUpgrade() {
   local NAMESPACE=monitoring
 
   helmUpgrade monitoring $INFRADIR/monitoring \
-    --set prometheus-blackbox-exporter.config.modules.walletTestnet.http.headers.Authorization="Bearer $TESTNET_TOKEN" \
-    --set prometheus-blackbox-exporter.config.modules.walletMainnet.http.headers.Authorization="Bearer $MAINNET_TOKEN"
+    --set prometheus-blackbox-exporter.config.modules.walletTestnetAuth.http.headers.Authorization="Bearer $TESTNET_TOKEN" \
+    --set prometheus-blackbox-exporter.config.modules.walletMainnetAuth.http.headers.Authorization="Bearer $MAINNET_TOKEN"
 
   # FIXME: pass this directory to above command
   export SLACK_API_URL=$(kubectl get secret -n $NAMESPACE $SECRET -o jsonpath="{.data.SLACK_API_URL}" | base64 -d)
