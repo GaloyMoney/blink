@@ -51,7 +51,7 @@
     "jsonwebtoken": "^8.5.1",
     "ln-service": "^50.11.4",
     "lodash": "^4.17.20",
-    "medici": "^4.0.1",
+    "medici": "https://github.com/GaloyMoney/medici/#4.0.2",
     "moment": "^2.29.1",
     "mongoose": "^5.10.11",
     "node-cache": "^5.1.2",
