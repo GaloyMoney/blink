@@ -2,7 +2,7 @@
  * @jest-environment node
  */
 
-import { sendBalanceToUsers } from "../dailyBalanceNotification";
+import { sendBalanceToUsers } from "../entrypoint/dailyBalanceNotification";
 import { customerPath } from "../ledger";
 import { quit } from "../lock";
 import { MainBook, setupMongoConnection } from "../mongodb";

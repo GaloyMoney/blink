@@ -100,9 +100,10 @@ createLoopConfigmaps() {
 
 if [ ${LOCAL} ] 
 then
-  localdevpath="-f $INFRADIR/bitcoind/localdev.yaml"
+  localdevpath="-f $INFRADIR/configs/bitcoind/localdev.yaml"
 fi
 
+rm -rf $INFRADIR/configs
 git clone $CONFIG_REPO $INFRADIR/configs
 helmUpgrade bitcoind $localdevpath -f $INFRADIR/configs/bitcoind/$NETWORK.yaml galoy/bitcoind
 

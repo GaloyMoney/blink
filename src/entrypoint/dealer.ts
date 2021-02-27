@@ -1,6 +1,6 @@
-import { setupMongoConnection } from "./mongodb";
-import { baseLogger } from "./utils";
-import { getDealerWallet } from "./walletFactory";
+import { setupMongoConnection } from "../mongodb";
+import { baseLogger } from "../utils";
+import { getDealerWallet } from "../walletFactory";
 
 const main = async () => {
   const dealer = await getDealerWallet({ logger: baseLogger.child({module: "cron" }) })

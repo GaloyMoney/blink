@@ -17,8 +17,7 @@
   },
   "compileOnSave": true,
   "include": [
-    "src/index.ts",
-    "src/exporter.ts",
+    "src/entrypoint/*.ts",
     "src/__tests__/*.ts"
   ]
 }
