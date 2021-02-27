@@ -34,3 +34,5 @@ export JWT_SECRET="jwt_secret"
 
 export LOGLEVEL="debug"
 export HELMREVISION=1
+
+export CONFIG_REPO="https://github.com/GaloyMoney/configs"

@@ -2,7 +2,7 @@
  * @jest-environment node
  */
 import { setupMongoConnection } from "../mongodb";
-import { checkIsBalanced, lndMain, lndOutside1, lndOutside2, RANDOM_ADDRESS, waitUntilBlockHeight, mockGetExchangeBalance } from "../tests/helper";
+import { checkIsBalanced, lndMain, lndOutside1, lndOutside2, RANDOM_ADDRESS, waitUntilBlockHeight, mockGetExchangeBalance } from "./helper";
 import { bitcoindDefaultClient } from "../utils";
 
 import lnService from 'ln-service'

@@ -15,7 +15,7 @@ export const MainBook = new book("MainBook")
 
 export const setupMongoConnection = async () => {
   const user = process.env.MONGODB_USER ?? "testGaloy"
-  const password = process.env.MONGODB_ROOT_PASSWORD ?? "testGaloy"
+  const password = process.env.MONGODB_PASSWORD ?? "testGaloy"
   const address = process.env.MONGODB_ADDRESS ?? "mongodb"
   const db = process.env.MONGODB_DATABASE ?? "galoy"
 
@@ -42,18 +42,3 @@ export const setupMongoConnection = async () => {
   return mongoose
 }
 
-
-// approach below doesn't work
-// find a way to make currency mandatory for balance and ledger
-
-// MainBook.balance = function(_super) {
-//   return function() {
-//     if (!arguments[0].currency) {
-//       throw Error("currency is missing to get the balance")
-//     }
-//     // @ts-ignore
-//     return _super.apply(this, arguments);
-//   };
-// }
-
-// TODO: .ledger() as well

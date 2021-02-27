@@ -31,6 +31,10 @@ afterEach(async () => {
   await mongoose.connection.db.dropCollection("medici_transactions")
 })
 
+afterAll(async () => {
+  await mongoose.connection.close()
+})
+
 const expectBalance = async ({account, currency, balance}) => {
   const { balance: balanceResult } = await MainBook.balance({
     account,

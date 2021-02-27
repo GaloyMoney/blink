@@ -4,8 +4,8 @@
 import { filter, first } from "lodash";
 import { quit } from "../lock";
 import { MainBook, setupMongoConnection } from "../mongodb";
-import { checkIsBalanced, getUserWallet, lndMain, lndOutside1, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
-import { onchainTransactionEventHandler } from "../trigger";
+import { checkIsBalanced, getUserWallet, lndMain, lndOutside1, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "./helper";
+import { onchainTransactionEventHandler } from "../entrypoint/trigger";
 import { bitcoindDefaultClient, sleep } from "../utils";
 import {once} from 'events';
 

@@ -9,7 +9,7 @@ export const insertMarkers = async () => {
 
   let results: any[] = [];
 
-  fs.createReadStream('./src/tool/bitcoin beach maps - Sheet1.csv')
+  fs.createReadStream('./src/debug/bitcoin beach maps - Sheet1.csv')
   .pipe(csv())
   .on('data', (data) => results.push(data))
   .on('end', async () => {

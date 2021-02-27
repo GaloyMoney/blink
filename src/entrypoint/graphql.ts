@@ -5,22 +5,22 @@ import * as jwt from 'jsonwebtoken';
 import _ from 'lodash';
 import moment from "moment";
 import { v4 as uuidv4 } from 'uuid';
-import { getMinBuildNumber, mainCache } from "./cache";
-import { getAsyncRedisClient } from "./lock";
-import { setupMongoConnection } from "./mongodb";
-import { sendNotification } from "./notification";
-import { Price } from "./priceImpl";
-import { login, requestPhoneCode } from "./text";
-import { OnboardingEarn } from "./types";
-import { upgrade } from "./upgrade";
-import { baseLogger, customLoggerPrefix, nodeStats } from "./utils";
-import { UserWallet } from "./userWallet";
-import { WalletFactory, WalletFromUsername } from "./walletFactory";
+import { getMinBuildNumber, mainCache } from "../cache";
+import { getAsyncRedisClient } from "../lock";
+import { setupMongoConnection } from "../mongodb";
+import { sendNotification } from "../notification";
+import { Price } from "../priceImpl";
+import { login, requestPhoneCode } from "../text";
+import { OnboardingEarn } from "../types";
+import { upgrade } from "../upgrade";
+import { baseLogger, customLoggerPrefix, nodeStats } from "../utils";
+import { UserWallet } from "../userWallet";
+import { WalletFactory, WalletFromUsername } from "../walletFactory";
 import util from 'util'
 import mongoose from "mongoose";
-import { insertMarkers } from "./tool/map_csv_to_mongodb"
-import {lnd} from "./lndConfig"
-import { User } from "./schema";
+import { insertMarkers } from "../debug/map_csv_to_mongodb"
+import {lnd} from "../lndConfig"
+import { User } from "../schema";
 
 import path from "path"
 dotenv.config()
@@ -314,6 +314,7 @@ const server = new GraphQLServer({
 })
 
 // injecting unique id to the request for correlating different logs messages
+// TODO: use a jaeger standard instead to be able to do distributed tracing 
 server.express.use(function(req, res, next) {
   // @ts-ignore
   req.id = uuidv4();

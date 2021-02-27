@@ -2,7 +2,7 @@
  * @jest-environment node
  */
 import { setupMongoConnection } from "../mongodb"
-import { FtxDealerWallet } from "../FtxDealerWallet";
+import { FtxDealerWallet } from "../dealer/FtxDealerWallet";
 import { baseLogger } from "../utils";
 import { quit } from "../lock";
 import { getTokenFromPhoneIndex } from "../walletFactory";

@@ -7,7 +7,7 @@ import { FEECAP, lnd } from "../lndConfig";
 import { quit } from "../lock";
 import { setupMongoConnection } from "../mongodb";
 import { InvoiceUser, Transaction } from "../schema";
-import { checkIsBalanced, getUserWallet, lndOutside1, lndOutside2, mockGetExchangeBalance } from "../tests/helper";
+import { checkIsBalanced, getUserWallet, lndOutside1, lndOutside2, mockGetExchangeBalance } from "./helper";
 import { getHash, sleep } from "../utils";
 
 import lnService from 'ln-service'
