@@ -4,7 +4,7 @@ import { Dropbox } from "dropbox";
 import express from 'express';
 import { subscribeToBackups, subscribeToChannels, subscribeToInvoices, subscribeToTransactions } from 'ln-service';
 import { find } from "lodash";
-import { lndAccountingPath, lndFeePath } from "../ledger";
+import { lndAccountingPath, lndFeePath } from "../ledger/ledger";
 import { lnd } from "../lndConfig";
 import { MainBook, setupMongoConnection } from "../mongodb";
 import { sendInvoicePaidNotification, sendNotification } from "../notification";

@@ -3,7 +3,7 @@
  */
 
 import { sendBalanceToUsers } from "../entrypoint/dailyBalanceNotification";
-import { customerPath } from "../ledger";
+import { customerPath } from "../ledger/ledger";
 import { quit } from "../lock";
 import { MainBook, setupMongoConnection } from "../mongodb";
 import { Price } from "../priceImpl";

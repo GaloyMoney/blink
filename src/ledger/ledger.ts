@@ -1,7 +1,7 @@
 // an accounting reminder:
 // https://en.wikipedia.org/wiki/Double-entry_bookkeeping
 
-import { User } from "./schema"
+import { User } from "../schema"
 
 // assets:
 

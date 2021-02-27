@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-import { bitcoindAccountingPath } from "../ledger";
+import { bitcoindAccountingPath } from "../ledger/ledger";
 import { lnd } from "../lndConfig";
 import { quit } from "../lock";
 import { MainBook, setupMongoConnection } from "../mongodb";

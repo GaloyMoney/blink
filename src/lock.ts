@@ -21,7 +21,7 @@ function unlockErrorHandler(err) {
 
 let redlock, clientLock, clientAsync
 
-// FIXME: refactor with a single client
+// FIXME: refactor by using a single client, whether the lock is sync or async
 
 const getClient = () => {
   clientLock = clientLock ?? redis.createClient(process.env.REDIS_PORT, process.env.REDIS_IP)

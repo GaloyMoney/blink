@@ -1,6 +1,6 @@
 import moment from "moment";
 import { CSVAccountExport } from "./csvAccountExport";
-import { customerPath } from "./ledger";
+import { customerPath } from "./ledger/ledger";
 import { MainBook } from "./mongodb";
 import { ITransaction } from "./types";
 import { LoggedError } from "./utils";
