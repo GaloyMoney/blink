@@ -5,7 +5,7 @@
     "build": "tsc",
     "start": "source exportLocal.sh && ts-node src/entrypoint/graphql.ts | pino-pretty -c -l",
     "trigger": "source exportLocal.sh && ts-node src/entrypoint/trigger.ts | pino-pretty -c -l",
-    "test": "export JEST_JUNIT_OUTPUT_DIR=\"./artifacts\" && jest --ci --reporters=default --reporters=jest-junit",
+    "test": "export JEST_JUNIT_OUTPUT_DIR=\"./artifacts\" && jest --ci --reporters=default --reporters=jest-junit --forceExit",
     "watch": "source exportLocal.sh && nodemon -V -e ts,graphql -w ./src -x yarn run start",
     "watch-trigger": "source exportLocal.sh && nodemon -V -e ts,graphql -w ./src -x yarn trigger",
     "kill-graphql": "kill $(lsof -t -i:4000)",
