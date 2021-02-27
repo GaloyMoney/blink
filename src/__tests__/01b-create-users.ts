@@ -4,7 +4,7 @@
 import { setupMongoConnection } from "../mongodb";
 import { getUserWallet } from "./helper"
 import { UserWallet } from "../userWallet"
-import { insertMarkers } from "../tool/map_csv_to_mongodb"
+import { insertMarkers } from "../debug/map_csv_to_mongodb"
 import mongoose from "mongoose";
 import { User } from "../schema";
 
