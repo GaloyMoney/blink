@@ -5,7 +5,7 @@ import { updateEscrows } from "../balanceSheet";
 import { lndFeePath } from "../ledger";
 import { MainBook, setupMongoConnection } from "../mongodb";
 import { checkIsBalanced, lndMain, lndOutside1, lndOutside2, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
-import { onChannelUpdated } from '../trigger';
+import { onChannelUpdated } from '../entrypoint/trigger';
 import { baseLogger, bitcoindDefaultClient, nodeStats, sleep } from "../utils";
 import mongoose from "mongoose";
 import { once } from 'events';
