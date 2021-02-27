@@ -4,6 +4,8 @@ import { updateEscrows, updateUsersPendingPayment, payCashBack } from "../balanc
 import { SpecterWallet } from "../SpecterWallet";
 
 const main = async () => {
+  const mongoose = await setupMongoConnection()
+
 	await updateEscrows()
   await updateUsersPendingPayment()
   await payCashBack()
@@ -11,8 +13,14 @@ const main = async () => {
   const specterWallet =  new SpecterWallet({ logger: baseLogger })
   await specterWallet.tentativelyRebalance()
 
-  // FIXME: we probably needs to exit because we have a memleak of pending promise
+  await mongoose.connection.close()
+
+  // FIXME: we need to exit because we may have some pending promise
 	process.exit(0)
 }
 
-setupMongoConnection().then(main).catch((err) => baseLogger.error(err))
+try {
+  main()
+} catch (err) {
+  baseLogger.warn({err}, "error in the cron job")
+}

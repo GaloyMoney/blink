@@ -6,9 +6,12 @@ import { WalletFactory } from "../walletFactory"
 const logger = baseLogger.child({ module: "dailyBalanceNotification" })
 
 const main = async () => {
+  const mongoose = await setupMongoConnection()
   await sendBalanceToUsers()
-  // FIXME: we probably needs to exit because we have a memleak of pending promise
-  process.exit(0)
+
+  await mongoose.connection.close()
+  // FIXME: we need to exit because we may have some pending promise
+	process.exit(0)
 }
 
 export const sendBalanceToUsers = async () => {
@@ -21,5 +24,9 @@ export const sendBalanceToUsers = async () => {
 }
 
 if (require.main === module) {
-  setupMongoConnection().then(main).catch((err) => logger.error(err))
+  try {
+    main()
+  } catch (err) {
+    baseLogger.warn({err}, "error in the dailyBalanceNotification job")
+  }  
 }
