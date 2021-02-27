@@ -4,7 +4,7 @@
 import { quit } from "../lock";
 import { setupMongoConnection } from "../mongodb";
 import { Price } from "../priceImpl";
-import { checkIsBalanced, getUserWallet, lndOutside1, mockGetExchangeBalance } from "../tests/helper";
+import { checkIsBalanced, getUserWallet, lndOutside1, mockGetExchangeBalance } from "./helper";
 import { baseLogger } from "../utils";
 // import { UserWallet } from "../userWallet";
 

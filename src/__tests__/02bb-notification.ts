@@ -8,7 +8,7 @@ import { quit } from "../lock";
 import { MainBook, setupMongoConnection } from "../mongodb";
 import { Price } from "../priceImpl";
 import { Transaction, User } from "../schema";
-import { getUserWallet } from "../tests/helper";
+import { getUserWallet } from "./helper";
 import { baseLogger } from "../utils";
 import { getFunderWallet } from "../walletFactory";
 jest.mock('../notification')

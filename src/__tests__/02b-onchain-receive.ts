@@ -5,7 +5,7 @@ import { filter } from "lodash";
 import { quit } from "../lock";
 import { setupMongoConnection } from "../mongodb";
 import { Price } from "../priceImpl";
-import { checkIsBalanced, getUserWallet, lndMain, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
+import { checkIsBalanced, getUserWallet, lndMain, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "./helper";
 import { onchainTransactionEventHandler } from "../entrypoint/trigger";
 import { baseLogger, bitcoindDefaultClient, btc2sat, sleep } from "../utils";
 import { getFunderWallet } from "../walletFactory";

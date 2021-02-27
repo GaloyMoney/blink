@@ -1,5 +1,5 @@
 import * as jwt from 'jsonwebtoken';
-import { FtxDealerWallet } from "./FtxDealerWallet";
+import { FtxDealerWallet } from "./dealer/FtxDealerWallet";
 import { getLastPrice } from "./cache";
 import { LightningUserWallet } from "./LightningUserWallet";
 import { login, TEST_NUMBER } from "./text";

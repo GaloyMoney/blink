@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-import { FtxDealerWallet } from "../FtxDealerWallet";
+import { FtxDealerWallet } from "../dealer/FtxDealerWallet";
 
 it('init-order', async () => {
   const { btcAmount, buyOrSell } = FtxDealerWallet.isOrderNeeded({ usdLiability: 100, usdExposure: 0, btcPrice: 10000 })

@@ -1,5 +1,5 @@
 import { btc2sat, sat2btc, isInvoiceAlreadyPaidError } from "../utils"
-import { lndOutside1, lndOutside2 } from "../tests/helper"
+import { lndOutside1, lndOutside2 } from "./helper"
 import lnService from "ln-service"
 
 it('btc2sat', async () => {

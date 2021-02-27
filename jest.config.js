@@ -6,7 +6,7 @@ module.exports = {
     "^.+\\.(ts)$": "ts-jest"
   },
   "testPathIgnorePatterns": [
-    // "example-file",
+    "helper.ts",
   ],
   "testSequencer":"./jestTestSequencer.js",
   setupFilesAfterEnv: ['./jest.setup.js'],
