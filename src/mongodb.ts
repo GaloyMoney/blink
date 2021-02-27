@@ -42,18 +42,3 @@ export const setupMongoConnection = async () => {
   return mongoose
 }
 
-
-// approach below doesn't work
-// find a way to make currency mandatory for balance and ledger
-
-// MainBook.balance = function(_super) {
-//   return function() {
-//     if (!arguments[0].currency) {
-//       throw Error("currency is missing to get the balance")
-//     }
-//     // @ts-ignore
-//     return _super.apply(this, arguments);
-//   };
-// }
-
-// TODO: .ledger() as well

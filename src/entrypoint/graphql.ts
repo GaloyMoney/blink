@@ -18,7 +18,7 @@ import { UserWallet } from "../userWallet";
 import { WalletFactory, WalletFromUsername } from "../walletFactory";
 import util from 'util'
 import mongoose from "mongoose";
-import { insertMarkers } from "../tool/map_csv_to_mongodb"
+import { insertMarkers } from "../debug/map_csv_to_mongodb"
 import {lnd} from "../lndConfig"
 import { User } from "../schema";
 
