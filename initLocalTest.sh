@@ -188,8 +188,20 @@ fi
 
 echo $(kubectl get -n=$NAMESPACE pods)
 
-# kubectl -n $NAMESPACE rollout status deployment galoy
-# if [[ "$?" -ne 0 ]]; then
-#   echo "Deployment failed"
-#   exit 1
-# fi
+kubectl -n $NAMESPACE rollout status deployments/graphql
+if [[ "$?" -ne 0 ]]; then
+  echo "Deployment for graphql failed"
+  exit 1
+fi
+
+kubectl -n $NAMESPACE rollout status deployments/trigger
+if [[ "$?" -ne 0 ]]; then
+  echo "Deployment for trigger failed"
+  exit 1
+fi
+
+kubectl -n $NAMESPACE rollout status deployments/metrics
+if [[ "$?" -ne 0 ]]; then
+  echo "Deployment for metrics failed"
+  exit 1
+fi
