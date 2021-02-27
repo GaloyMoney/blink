@@ -169,8 +169,7 @@ helmUpgrade galoy \
   --set tls=$TLS,macaroon=$MACAROON,mongodb.auth.rootPassword=$MONGODB_ROOT_PASSWORD,mongodb.auth.replicaSetKey=$MONGODB_REPLICA_SET_KEY,image.tag=$CIRCLE_SHA1 \
   $INFRADIR/galoy/
 
-kubectlWait app.kubernetes.io/component=mongodb
-kubectlWait app=redis
+kubectlWait app.kubernetes.io/instance=galoy
 
 if [ ${LOCAL} ]
 then
