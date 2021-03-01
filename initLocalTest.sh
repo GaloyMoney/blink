@@ -124,7 +124,10 @@ then
 
 fi
 
-helmUpgrade lnd -f $INFRADIR/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd/
+rm -rf $INFRADIR/lnd
+helm pull galoy/lnd -d $INFRADIR/ --untar
+cp "$INFRADIR/configs/lnd/RTL-Config.json" $INFRADIR/lnd/charts/rtl
+helmUpgrade lnd -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd/
 
 # avoiding to spend time with circleci regtest with this condition
 if [ "$NETWORK" == "testnet" ] || [ "$NETWORK" == "mainnet" ];
