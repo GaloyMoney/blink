@@ -1,14 +1,14 @@
 /**
  * @jest-environment node
  */
-import { setupMongoConnection } from "../mongodb"
-import { FtxDealerWallet } from "../dealer/FtxDealerWallet";
-import { baseLogger } from "../utils";
-import { quit } from "../lock";
-import { getTokenFromPhoneIndex } from "../walletFactory";
-import { UserWallet } from "../userWallet";
+import { setupMongoConnection } from "../../mongodb"
+import { FtxDealerWallet } from "../FtxDealerWallet";
+import { baseLogger } from "../../utils";
+import { quit } from "../../lock";
+import { getTokenFromPhoneIndex } from "../../walletFactory";
+import { UserWallet } from "../../userWallet";
 import mongoose from "mongoose";
-import { User } from "../schema";
+import { User } from "../../schema";
 
 const fixtures = [{
   privateGetAccount: function() {
