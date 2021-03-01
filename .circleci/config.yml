@@ -29,8 +29,8 @@ commands:
             wget https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -O jq
             chmod +x ./jq
             kubectl -n << parameters.namespace >> wait --for=condition=ready pod -l app=lnpage
-            LND_ADDR=$(kubectl -n <<parameters.namespace>> get services | awk '/lnd-service/ {print $4}')
-            LND_PUB_KEY=$(kubectl -n <<parameters.namespace>> exec lnd-container-0 -- lncli -n <<parameters.namespace>> getinfo | ./jq -r '.identity_pubkey')
+            LND_ADDR=$(kubectl -n <<parameters.namespace>> get services | awk '/lnd/ {print $4}')
+            LND_PUB_KEY=$(kubectl -n <<parameters.namespace>> exec lnd-0 -- lncli -n <<parameters.namespace>> getinfo | ./jq -r '.identity_pubkey')
             GRAPHQL_URI=https://graphql.<<parameters.namespace>>.galoy.io/graphql
             echo "window.env={'LND_PUB_KEY':'$LND_PUB_KEY','LND_ADDR':'$LND_ADDR','GRAPHQL_URI':'$GRAPHQL_URI'}" > env.js
             kubectl -n <<parameters.namespace>> cp ./env.js $(kubectl -n <<parameters.namespace>> get pods -l app=lnpage --no-headers -o custom-columns=":metadata.name"):/usr/share/nginx/html/env.js

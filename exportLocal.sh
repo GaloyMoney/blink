@@ -1,11 +1,11 @@
 export NETWORK=regtest
-export TLS=$(kubectl exec lnd-container-0  -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
-export TLSOUTSIDE1=$(kubectl exec lnd-container-outside-1-0  -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
-export TLSOUTSIDE2=$(kubectl exec lnd-container-outside-2-0  -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
+export TLS=$(kubectl exec lnd-0  -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
+export TLSOUTSIDE1=$(kubectl exec lnd-outside-1-0  -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
+export TLSOUTSIDE2=$(kubectl exec lnd-outside-2-0  -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
 
-export MACAROON=$(kubectl exec lnd-container-0  -- base64 /root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
-export MACAROONOUTSIDE1=$(kubectl exec lnd-container-outside-1-0  -- base64 /root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
-export MACAROONOUTSIDE2=$(kubectl exec lnd-container-outside-2-0  -- base64 /root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
+export MACAROON=$(kubectl exec lnd-0  -- base64 /root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
+export MACAROONOUTSIDE1=$(kubectl exec lnd-outside-1-0  -- base64 /root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
+export MACAROONOUTSIDE2=$(kubectl exec lnd-outside-2-0  -- base64 /root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
 
 # change 18443 to 18332 for testnet below
 
@@ -17,7 +17,7 @@ export MINIKUBEIP=$(minikube ip)
 export BITCOINDADDR=$MINIKUBEIP
 
 export LNDIP=$MINIKUBEIP
-export LNDRPCPORT=$(kubectl get services | awk '/lnd-service/ {print $5}' | grep -Po '10009:\K[0-9]+')
+export LNDRPCPORT=$(kubectl get services | awk '/lnd/ {print $5}' | grep -Po '10009:\K[0-9]+')
 
 export LNDOUTSIDE1ADDR=$MINIKUBEIP
 export LNDOUTSIDE1RPCPORT=$(kubectl get services | awk '/lnd-outside-1/ {print $5}' | grep -Po '10009:\K[0-9]+')
