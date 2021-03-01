@@ -73,7 +73,7 @@ kubectlWait () {
 
 kubectlLndDeletionWait () {
 # if the lnd pod needs upgrade, we want to make sure we wait for it to be removed. 
-# otherwise it could be seen as ready by `kubectlWait app=lnd-container` while it could just have been in the process of still winding down
+# otherwise it could be seen as ready by `kubectlWait app=lnd` while it could just have been in the process of still winding down
 # we use || : to not return an error if the pod doesn't exist, or if no update is requiered (will timeout in this case)
 # TODO: using --wait on upgrade would simplify this upgrade, but is currently running into some issues
   echo "waiting for pod deletion"
@@ -85,16 +85,16 @@ exportMacaroon() {
 }
 
 createLoopConfigmaps() {
-  kubectl -n $NETWORK cp lnd-container-0:/root/.lnd/tls.cert ./tls.cert
+  kubectl -n $NETWORK cp lnd-0:/root/.lnd/tls.cert ./tls.cert
   kubectl create configmap lndtls --from-file=./tls.cert --dry-run -o yaml | kubectl -n $NETWORK apply -f -
 
-  kubectl -n $NETWORK cp lnd-container-0:/root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon ./macaroon/admin.macaroon
-  kubectl -n $NETWORK cp lnd-container-0:/root/.lnd/data/chain/bitcoin/$NETWORK/readonly.macaroon ./macaroon/readonly.macaroon
-  kubectl -n $NETWORK cp lnd-container-0:/root/.lnd/data/chain/bitcoin/$NETWORK/invoices.macaroon ./macaroon/invoices.macaroon
-  kubectl -n $NETWORK cp lnd-container-0:/root/.lnd/data/chain/bitcoin/$NETWORK/chainnotifier.macaroon ./macaroon/chainnotifier.macaroon
-  kubectl -n $NETWORK cp lnd-container-0:/root/.lnd/data/chain/bitcoin/$NETWORK/signer.macaroon ./macaroon/signer.macaroon
-  kubectl -n $NETWORK cp lnd-container-0:/root/.lnd/data/chain/bitcoin/$NETWORK/walletkit.macaroon ./macaroon/walletkit.macaroon
-  kubectl -n $NETWORK cp lnd-container-0:/root/.lnd/data/chain/bitcoin/$NETWORK/router.macaroon ./macaroon/router.macaroon
+  kubectl -n $NETWORK cp lnd-0:/root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon ./macaroon/admin.macaroon
+  kubectl -n $NETWORK cp lnd-0:/root/.lnd/data/chain/bitcoin/$NETWORK/readonly.macaroon ./macaroon/readonly.macaroon
+  kubectl -n $NETWORK cp lnd-0:/root/.lnd/data/chain/bitcoin/$NETWORK/invoices.macaroon ./macaroon/invoices.macaroon
+  kubectl -n $NETWORK cp lnd-0:/root/.lnd/data/chain/bitcoin/$NETWORK/chainnotifier.macaroon ./macaroon/chainnotifier.macaroon
+  kubectl -n $NETWORK cp lnd-0:/root/.lnd/data/chain/bitcoin/$NETWORK/signer.macaroon ./macaroon/signer.macaroon
+  kubectl -n $NETWORK cp lnd-0:/root/.lnd/data/chain/bitcoin/$NETWORK/walletkit.macaroon ./macaroon/walletkit.macaroon
+  kubectl -n $NETWORK cp lnd-0:/root/.lnd/data/chain/bitcoin/$NETWORK/router.macaroon ./macaroon/router.macaroon
   kubectl create configmap lndmacaroon --from-file=./macaroon --dry-run -o yaml | kubectl -n $NETWORK apply -f -
 }
 
@@ -136,17 +136,17 @@ sleep 15
 kubectlWait type=lnd
 
 
-exportMacaroon lnd-container-0 MACAROON
-export TLS=$(kubectl -n $NAMESPACE exec lnd-container-0 -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
+exportMacaroon lnd-0 MACAROON
+export TLS=$(kubectl -n $NAMESPACE exec lnd-0 -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
 
 if [ "$NETWORK" == "regtest" ]
 then
-  exportMacaroon lnd-container-outside-1-0 MACAROONOUTSIDE1
-  exportMacaroon lnd-container-outside-2-0 MACAROONOUTSIDE2
+  exportMacaroon lnd-outside-1-0 MACAROONOUTSIDE1
+  exportMacaroon lnd-outside-2-0 MACAROONOUTSIDE2
   
   # Todo: refactor
-  export TLSOUTSIDE1=$(kubectl -n $NAMESPACE exec lnd-container-outside-1-0 -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
-  export TLSOUTSIDE2=$(kubectl -n $NAMESPACE exec lnd-container-outside-2-0 -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
+  export TLSOUTSIDE1=$(kubectl -n $NAMESPACE exec lnd-outside-1-0 -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
+  export TLSOUTSIDE2=$(kubectl -n $NAMESPACE exec lnd-outside-2-0 -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
 
   echo $(kubectl get -n=$NAMESPACE pods)
 
