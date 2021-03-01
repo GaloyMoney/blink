@@ -1,8 +1,9 @@
 import twilio from 'twilio';
 import moment from "moment"
 import { PhoneCode, User } from "./schema";
+import { createToken } from "./jwt"
 
-import { randomIntFromInterval, createToken } from "./utils"
+import { randomIntFromInterval } from "./utils"
 
 const projectName = "***REMOVED*** Wallet"
 

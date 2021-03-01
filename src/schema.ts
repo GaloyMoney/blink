@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-import { customerPath } from "./ledger";
+import { customerPath } from "./ledger/ledger";
 
 import mongoose from "mongoose";
 // mongoose.set("debug", true);

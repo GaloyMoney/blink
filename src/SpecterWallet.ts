@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { bitcoindAccountingPath, lndAccountingPath, lndFeePath } from "./ledger";
+import { bitcoindAccountingPath, lndAccountingPath, lndFeePath } from "./ledger/ledger";
 import { lnd } from "./lndConfig";
 import { MainBook } from "./mongodb";
 import { getOnChainTransactions } from "./OnChain";

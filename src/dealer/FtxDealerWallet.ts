@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { yamlConfig } from "../config";
-import { accountDealerFtxPath, liabilitiesDealerFtxPath } from "../ledger";
+import { accountDealerFtxPath, liabilitiesDealerFtxPath } from "../ledger/ledger";
 import { MainBook } from "../mongodb";
 import { OnChainMixin } from "../OnChain";
 import { ILightningWalletUser } from "../types";

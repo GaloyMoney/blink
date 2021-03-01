@@ -2,7 +2,7 @@
  * @jest-environment node
  */
 import { updateEscrows } from "../balanceSheet";
-import { lndFeePath } from "../ledger";
+import { lndFeePath } from "../ledger/ledger";
 import { MainBook, setupMongoConnection } from "../mongodb";
 import { checkIsBalanced, lndMain, lndOutside1, lndOutside2, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "./helper";
 import { onChannelUpdated } from '../entrypoint/trigger';

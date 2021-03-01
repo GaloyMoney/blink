@@ -18,6 +18,7 @@
   "compileOnSave": true,
   "include": [
     "src/entrypoint/*.ts",
-    "src/__tests__/*.ts"
+    "src/__tests__/*.ts",
+    "src/**/__tests__/.ts"
   ]
 }

@@ -1,6 +1,6 @@
 import { dealerMediciPath, customerPath, lndAccountingPath } from "./ledger"
-import { MainBook } from "./mongodb"
-import { UserWallet } from "./userWallet"
+import { MainBook } from "../mongodb"
+import { UserWallet } from "../userWallet"
 
 
 export const addTransactionLndReceipt = async ({description, payeeUser, metadata, sats}) => {

@@ -12,7 +12,6 @@ import { sendNotification } from "../notification";
 import { Price } from "../priceImpl";
 import { login, requestPhoneCode } from "../text";
 import { OnboardingEarn } from "../types";
-import { upgrade } from "../upgrade";
 import { baseLogger, customLoggerPrefix, nodeStats } from "../utils";
 import { UserWallet } from "../userWallet";
 import { WalletFactory, WalletFromUsername } from "../walletFactory";
@@ -348,14 +347,12 @@ const options = {
 }
 
 setupMongoConnection().then(() => {
-  upgrade().then(() => {
-  insertMarkers().then(
-  () => {
+  insertMarkers().then(() => {
     server.start(options, ({ port }) =>
       graphqlLogger.info(
         `Server started, listening on port ${port} for incoming requests.`,
       ),
     )
-  })})
+  })
 }).catch((err) => graphqlLogger.error(err, "server error"))
 
