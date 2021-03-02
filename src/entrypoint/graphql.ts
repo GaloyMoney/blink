@@ -13,6 +13,7 @@ import pino from 'pino';
 // const __filename = fileURLToPath(import.meta.url);
 // const __dirname = path.dirname(__filename);
 import PinoHttp from "pino-http";
+import swStats from 'swagger-stats';
 import util from 'util';
 import { v4 as uuidv4 } from 'uuid';
 import { getMinBuildNumber, mainCache } from "../cache";
@@ -28,7 +29,6 @@ import { WalletFactory, WalletFromUsername } from "../walletFactory";
 import { lnd } from "./lndConfig";
 import { User } from "./schema";
 import { insertMarkers } from "./tool/map_csv_to_mongodb";
-const swStats = require('swagger-stats');    
 
 
 dotenv.config()
@@ -325,9 +325,8 @@ server.express.use(swStats.getMiddleware({
   uriPath: "/swagger",
   authentication: true,
   onAuthenticate: function(req,username,password){
-    // FIXME credentials
     return((username==='swagger-user') 
-        && (password==='swagger-pass'));
+        && (password===(process.env.SWAGGER_PASSWORD ?? 'swagger-password')));
   }
 }))
 
