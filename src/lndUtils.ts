@@ -1,4 +1,4 @@
-import { sumBy } from "lodash";
+import _ from "lodash";
 import { lnd } from "./lndConfig"
 import { baseLogger } from "./utils";
 import * as lnService from "ln-service"
@@ -17,7 +17,7 @@ export const lndBalances = async () => {
 
   // FIXME: calculation seem wrong (seeing the grafana graph, need to double check)
   baseLogger.debug({closedChannels}, "lnService.getClosedChannels")
-  const closing_channel_balance = sumBy(closedChannels, channel => sumBy(
+  const closing_channel_balance = _.sumBy(closedChannels, channel => _.sumBy(
     (channel as any).close_payments, payment => (payment as any).is_pending ? (payment as any).tokens : 0 )
   )
   
