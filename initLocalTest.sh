@@ -9,8 +9,8 @@ helm repo add galoy https://galoymoney.github.io/charts/
 helm repo update
 
 
-cd ../../../infra/galoy && helm dependency build && cd -
-cd ../../../infra/monitoring && helm dependency build && cd -
+cd ../../../charts/galoy && helm dependency build && cd -
+cd ../../../charts/monitoring && helm dependency build && cd -
 
 INGRESS_NAMESPACE="ingress-nginx"
 
@@ -18,7 +18,7 @@ if [ "$1" == "testnet" ] || [ "$1" == "mainnet" ];
 then
   NETWORK="$1"
   NAMESPACE="$1"
-  INFRADIR=~/GaloyApp/infra
+  INFRADIR=~/GaloyApp/charts
 
   # create namespaces if not exists
   kubectl create namespace $INGRESS_NAMESPACE --dry-run -o yaml | kubectl apply -f -
@@ -38,9 +38,9 @@ else
   if [ ${LOCAL} ]; then 
     MINIKUBEIP=$(minikube ip)
     NAMESPACE="default"
-    INFRADIR=../../../infra
+    INFRADIR=../../../charts
   else 
-    INFRADIR=~/GaloyApp/infra
+    INFRADIR=~/GaloyApp/charts
   fi
 fi
 

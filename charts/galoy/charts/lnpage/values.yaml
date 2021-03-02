@@ -1,0 +1,11 @@
+image:
+  name: gcr.io/galoyapp/lnpage
+  tag: latest
+
+deployment:
+  name: lnpage
+
+service:
+  name: lnpage-service
+  port: 80
+  targetPort: 80

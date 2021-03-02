@@ -1,0 +1,196 @@
+{{- range $.Values.deployment }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .name }}
+  labels:
+    app: {{ .name }}
+    app.kubernetes.io/managed-by: Helm
+    kube-monkey/enabled: enabled
+    kube-monkey/identifier: {{.name}}
+    kube-monkey/kill-mode: fixed
+    kube-monkey/kill-value: "1"
+    kube-monkey/mtbf: "8"
+spec: 
+  replicas: {{ .replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .name }}
+  template:
+    metadata:
+      name: {{ .name }} 
+      labels:
+        app: {{ .name }}
+        kube-monkey/enabled: enabled
+        kube-monkey/identifier: {{.name}}
+      {{- if eq .name "metrics"}}
+      annotations:
+        prometheus.io/path: /metrics
+        prometheus.io/port: "3000"
+        prometheus.io/scrape: "true"
+      {{- end}}
+    spec:
+      containers:
+        - name: {{ .name }}
+          image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag }}"
+          {{- if .command }}
+          command: ["/bin/sh","-c", {{ .command }}]
+          {{- end }}
+          volumeMounts:
+          {{- if $.Values.needFirebaseServiceAccount }}
+          - name: firebase-serviceaccount
+            mountPath: "/tmp/firebase-serviceaccount"
+            readOnly: true
+          {{- end}}
+          {{- if eq .name "trigger" }}
+          - name: "service-account"
+            mountPath: "/var/secret/cloud.google.com"
+          {{- end}}
+          - name: "custom-yaml"
+            mountPath: "/var/"
+          {{- if .targetPort }}
+          ports:
+            - name: http
+              containerPort: {{ .targetPort }}
+              protocol: TCP
+          {{- end }}
+          resources:
+            requests:
+              cpu: 100m
+            limits:
+              cpu: 1000m
+          env:
+            - name: HELMREVISION
+              value: {{ $.Release.Revision | quote}}
+            - name: MONGODB_PASSWORD
+              value: "testGaloy"
+            - name: MONGODB_USER
+              value: "testGaloy"
+            - name: MONGODB_ADDRESS
+              value: {{ $.Values.mongodbaddress }}
+            - name: LNDIP
+              value: "lnd"
+            - name: MACAROON
+              value: {{ $.Values.macaroon }}
+            - name: TLS
+              value: {{ $.Values.tls }}
+            - name: BITCOINDADDR
+              value: "bitcoind"
+            - name: BITCOINDPORT
+              value: {{ $.Values.bitcoind.port | quote }}
+            {{- if $.Values.loglevel}}
+            - name: LOGLEVEL
+              value: {{ $.Values.loglevel }}
+            {{- end}}
+            - name: JWT_SECRET
+            {{- if $.Values.jwtSecret}}
+              value: {{ $.Values.jwtSecret }}
+            {{- else}}
+              valueFrom:
+                secretKeyRef:
+                  name: jwt-secret
+                  key: secret
+            {{- end}}
+            - name: NETWORK
+              valueFrom:
+                secretKeyRef:
+                  name: network
+                  key: network
+            {{- if eq .name "metrics" }}
+            - name: FTX_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ftx-secret
+                  key: key
+            - name: FTX_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: ftx-secret
+                  key: secret
+            {{- end}}
+            - name: REDIS_PORT
+              value: "6379"
+            - name: REDIS_IP
+              value: "galoy-redis-master"
+            {{- if $.Values.needFirebaseServiceAccount }}
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: "/tmp/firebase-serviceaccount/galoyapp-firebase-serviceaccont.json"
+            {{- end }}
+            {{- if eq .name "trigger" }}
+            - name: "GCS_APPLICATION_CREDENTIALS"
+              value: "/var/secret/cloud.google.com/galoyapp-31518a00082f.json"
+            - name: DROPBOX_ACCESS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: dropbox-access-token
+                  key: token
+            {{- end }}
+            {{- if ne $.Values.network "regtest" }}
+            - name: TWILIO_PHONE_NUMBER
+              valueFrom:
+                secretKeyRef:
+                  name: twilio-secret
+                  key: TWILIO_PHONE_NUMBER
+            - name: TWILIO_ACCOUNT_SID
+              valueFrom:
+                secretKeyRef:
+                  name: twilio-secret
+                  key: TWILIO_ACCOUNT_SID
+            - name: TWILIO_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: twilio-secret
+                  key: TWILIO_API_KEY
+            - name: TWILIO_API_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: twilio-secret
+                  key: TWILIO_API_SECRET
+            {{- end }}
+            - name: CASHBACK
+              value: "true"
+            {{- range  .customYamlEnv }}
+            {{- range  $index, $value := . }}
+            - name: {{ $index }}
+              value: {{ $value | quote }}
+            {{- end }}
+            {{- end }}
+            {{- range  $.Values.customCmdlineEnv }}
+            {{- $value := split ":" . }}
+            - name: {{ $value._0 }}
+              value: {{ $value._1 }}
+            {{- end }}
+          {{- if .healthz }}
+          livenessProbe:
+            exec:
+              command:
+              - curl
+              - {{ .healthz }}
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            failureThreshold: 5
+          readinessProbe:
+            exec:
+              command:
+              - curl
+              - {{ .healthz }}
+            initialDelaySeconds: 5
+            failureThreshold: 5
+            successThreshold: 2
+          {{- end }}
+      volumes:
+      {{- if $.Values.needFirebaseServiceAccount }}
+      - name: firebase-serviceaccount
+        secret:
+          secretName: galoyapp-firebase-serviceaccount
+      {{- end}}
+      {{- if eq .name "trigger" }}
+      - name: "service-account"
+        secret:
+          secretName: "gcs-sa-key"
+      {{- end}}
+      - name: "custom-yaml"
+        configMap:
+          name: "galoy-config-map"
+---
+{{- end }}

@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: galoy-config-map
+  labels:
+    app: galoy
+    app.kubernetes.io/managed-by: Helm
+data:
+  custom.yaml: |
+    name: "***REMOVED*** Wallet"

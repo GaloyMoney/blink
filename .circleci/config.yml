@@ -151,7 +151,7 @@ jobs:
 
       
   update_lnpage:
-    working_directory: ~/GaloyApp/infra
+    working_directory: ~/GaloyApp/charts
     docker:
       - image: kiwigrid/gcloud-kubectl-helm:latest
     resource_class: small
