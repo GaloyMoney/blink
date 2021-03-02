@@ -3,8 +3,14 @@
  */
 import { quit } from "../lock";
 import { setupMongoConnection } from "../mongodb";
-import { checkIsBalanced, getUserWallet, mockGetExchangeBalance, onBoardingEarnAmt, onBoardingEarnIds } from "../tests/helper";
+import { checkIsBalanced, getUserWallet, mockGetExchangeBalance } from "./helper";
+import { OnboardingEarn } from "../types";
+import { find } from "lodash";
 
+
+const earnsToGet = ['buyFirstSats', 'debitCardActivation', 'firstCardSpending']
+export const onBoardingEarnAmt: number = Object.keys(OnboardingEarn).filter(k => find(earnsToGet, o => o === k) ).reduce((p, k) => p + OnboardingEarn[k], 0)
+export const onBoardingEarnIds: string[] = earnsToGet
 
 import mongoose from "mongoose"
 

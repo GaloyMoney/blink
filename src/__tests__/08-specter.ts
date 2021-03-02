@@ -1,12 +1,12 @@
 /**
  * @jest-environment node
  */
-import { bitcoindAccountingPath } from "../ledger";
+import { bitcoindAccountingPath } from "../ledger/ledger";
 import { lnd } from "../lndConfig";
 import { quit } from "../lock";
 import { MainBook, setupMongoConnection } from "../mongodb";
 import { SpecterWallet } from "../SpecterWallet";
-import { checkIsBalanced, mockGetExchangeBalance, RANDOM_ADDRESS } from "../tests/helper";
+import { checkIsBalanced, mockGetExchangeBalance, RANDOM_ADDRESS } from "./helper";
 import { baseLogger, bitcoindDefaultClient, sleep } from "../utils";
 import { UserWallet } from "../userWallet";
 import lnService from 'ln-service'

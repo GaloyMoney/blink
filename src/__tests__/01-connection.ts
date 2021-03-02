@@ -4,7 +4,7 @@
 import { setupMongoConnection } from "../mongodb";
 import redis from 'redis'
 
-import {lndMain, lndOutside1, lndOutside2} from "../tests/helper"
+import {lndMain, lndOutside1, lndOutside2} from "./helper"
 import { bitcoindDefaultClient } from "../utils";
 import mongoose from "mongoose";
 import { User } from "../schema";

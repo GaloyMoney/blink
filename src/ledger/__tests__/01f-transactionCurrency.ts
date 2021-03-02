@@ -1,10 +1,10 @@
 import { dealerMediciPath, lndAccountingPath } from "../ledger"
-import { MainBook, setupMongoConnection } from "../mongodb"
+import { MainBook, setupMongoConnection } from "../../mongodb"
 import { addTransactionLndPayment, addTransactionLndReceipt, addTransactionOnUsPayment, rebalancePortfolio } from "../transaction"
-import { baseLogger } from "../utils"
-import { UserWallet } from "../userWallet"
-import { WalletFactory } from "../walletFactory"
-import { User } from "../schema"
+import { baseLogger } from "../../utils"
+import { UserWallet } from "../../userWallet"
+import { WalletFactory } from "../../walletFactory"
+import { User } from "../../schema"
 
 
 let mongoose
@@ -19,6 +19,9 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
+  await mongoose.connection.db.dropCollection("medici_journals")
+  await mongoose.connection.db.dropCollection("medici_transactions")
+
   fullWalletBTC = await WalletFactory({user: new User(fullBTCmeta), logger: baseLogger})
   fullWalletUSD = await WalletFactory({user: new User(fullUSDmeta), logger: baseLogger})
 
@@ -26,9 +29,8 @@ beforeEach(async () => {
   UserWallet.setCurrentPrice(0.0001) // sats/USD. BTC at 10k
 })
 
-afterEach(async () => {
-  await mongoose.connection.db.dropCollection("medici_journals")
-  await mongoose.connection.db.dropCollection("medici_transactions")
+afterAll(async () => {
+  await mongoose.connection.close()
 })
 
 const expectBalance = async ({account, currency, balance}) => {

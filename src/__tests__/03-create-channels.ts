@@ -2,10 +2,10 @@
  * @jest-environment node
  */
 import { updateEscrows } from "../balanceSheet";
-import { lndFeePath } from "../ledger";
+import { lndFeePath } from "../ledger/ledger";
 import { MainBook, setupMongoConnection } from "../mongodb";
-import { checkIsBalanced, lndMain, lndOutside1, lndOutside2, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "../tests/helper";
-import { onChannelUpdated } from '../trigger';
+import { checkIsBalanced, lndMain, lndOutside1, lndOutside2, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "./helper";
+import { onChannelUpdated } from '../entrypoint/trigger';
 import { baseLogger, bitcoindDefaultClient, nodeStats, sleep } from "../utils";
 import mongoose from "mongoose";
 import { once } from 'events';
@@ -166,7 +166,7 @@ it('opens private channel from lndOutside1 to lndOutside2', async () => {
 })
 
 it('opens channel from lndOutside1 to lnd1', async () => {
-  const socket = `lnd-service:9735`
+  const socket = `lnd:9735`
   await openChannel({ lnd: lndOutside1, other_lnd: lndMain, socket })
 
   {

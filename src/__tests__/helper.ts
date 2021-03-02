@@ -1,18 +1,12 @@
-import { find } from "lodash";
 import { balanceSheetIsBalanced, updateUsersPendingPayment } from "../balanceSheet";
-import { FtxDealerWallet } from "../FtxDealerWallet";
+import { FtxDealerWallet } from "../dealer/FtxDealerWallet";
 import { lnd } from "../lndConfig";
 import { User } from "../schema";
-import { OnboardingEarn } from "../types";
 import { baseLogger, sleep } from "../utils";
 import { getTokenFromPhoneIndex, WalletFactory } from "../walletFactory";
 
 
 import lnService from 'ln-service'
-
-const earnsToGet = ['buyFirstSats', 'debitCardActivation', 'firstCardSpending']
-export const onBoardingEarnAmt: number = Object.keys(OnboardingEarn).filter(k => find(earnsToGet, o => o === k) ).reduce((p, k) => p + OnboardingEarn[k], 0)
-export const onBoardingEarnIds: string[] = earnsToGet
 
 export const lndMain = lnd
 

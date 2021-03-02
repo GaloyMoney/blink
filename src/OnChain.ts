@@ -2,7 +2,7 @@ import lnService from 'ln-service'
 import { assert } from "console";
 import _ from 'lodash';
 import moment from "moment";
-import { customerPath, lndAccountingPath } from "./ledger";
+import { customerPath, lndAccountingPath } from "./ledger/ledger";
 import { lnd } from "./lndConfig";
 import { disposer } from "./lock";
 import { MainBook } from "./mongodb";

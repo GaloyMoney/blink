@@ -4,41 +4,38 @@ import { GraphQLServer } from 'graphql-yoga';
 import * as jwt from 'jsonwebtoken';
 import _ from 'lodash';
 import moment from "moment";
-import { v4 as uuidv4 } from 'uuid';
-import { getMinBuildNumber, mainCache } from "./cache";
-import { getAsyncRedisClient } from "./lock";
-import { setupMongoConnection } from "./mongodb";
-import { sendNotification } from "./notification";
-import { Price } from "./priceImpl";
-import { login, requestPhoneCode } from "./text";
-import { OnboardingEarn } from "./types";
-import { upgrade } from "./upgrade";
-import { baseLogger, customLoggerPrefix, nodeStats } from "./utils";
-import { UserWallet } from "./userWallet";
-import { WalletFactory, WalletFromUsername } from "./walletFactory";
-import util from 'util'
 import mongoose from "mongoose";
-import { insertMarkers } from "./tool/map_csv_to_mongodb"
-import {lnd} from "./lndConfig"
-import { User } from "./schema";
-const swStats = require('swagger-stats');    
-
-
-import path from "path"
-dotenv.config()
-
-const graphqlLogger = baseLogger.child({ module: "graphql" })
-import pino from 'pino'
-
-
+import path from "path";
+import pino from 'pino';
 // https://nodejs.org/api/esm.html#esm_no_require_exports_module_exports_filename_dirname
 // TODO: to use when switching to module
 // import { fileURLToPath } from 'url';
 // const __filename = fileURLToPath(import.meta.url);
 // const __dirname = path.dirname(__filename);
+import PinoHttp from "pino-http";
+import util from 'util';
+import { v4 as uuidv4 } from 'uuid';
+import { getMinBuildNumber, mainCache } from "../cache";
+import { getAsyncRedisClient } from "../lock";
+import { setupMongoConnection } from "../mongodb";
+import { sendNotification } from "../notification";
+import { Price } from "../priceImpl";
+import { login, requestPhoneCode } from "../text";
+import { OnboardingEarn } from "../types";
+import { UserWallet } from "../userWallet";
+import { baseLogger, customLoggerPrefix, nodeStats } from "../utils";
+import { WalletFactory, WalletFromUsername } from "../walletFactory";
+import { lnd } from "./lndConfig";
+import { User } from "./schema";
+import { insertMarkers } from "./tool/map_csv_to_mongodb";
+const swStats = require('swagger-stats');    
 
 
-import PinoHttp from "pino-http"
+dotenv.config()
+
+const graphqlLogger = baseLogger.child({ module: "graphql" })
+
+
 const pino_http = PinoHttp({
   logger: graphqlLogger,
   wrapSerializers: false,
@@ -295,7 +292,7 @@ const permissions = shield({
 
 
 const server = new GraphQLServer({
-  typeDefs: path.join(__dirname, "schema.graphql"),
+  typeDefs: path.join(__dirname, "../schema.graphql"),
   resolvers,
   middlewares: [permissions],
   context: async (context) => {
@@ -316,6 +313,7 @@ const server = new GraphQLServer({
 })
 
 // injecting unique id to the request for correlating different logs messages
+// TODO: use a jaeger standard instead to be able to do distributed tracing 
 server.express.use(function(req, res, next) {
   // @ts-ignore
   req.id = uuidv4();
@@ -357,14 +355,12 @@ const options = {
 }
 
 setupMongoConnection().then(() => {
-  upgrade().then(() => {
-  insertMarkers().then(
-  () => {
+  insertMarkers().then(() => {
     server.start(options, ({ port }) =>
       graphqlLogger.info(
         `Server started, listening on port ${port} for incoming requests.`,
       ),
     )
-  })})
+  })
 }).catch((err) => graphqlLogger.error(err, "server error"))
 
