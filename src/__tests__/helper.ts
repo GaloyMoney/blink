@@ -1,4 +1,4 @@
-import { balanceSheetIsBalanced, updateUsersPendingPayment } from "../balanceSheet";
+import { balanceSheetIsBalanced, updateUsersPendingPayment } from "../ledger/balanceSheet";
 import { FtxDealerWallet } from "../dealer/FtxDealerWallet";
 import { lnd } from "../lndConfig";
 import { User } from "../schema";

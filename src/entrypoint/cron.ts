@@ -1,6 +1,6 @@
 import { setupMongoConnection } from "../mongodb";
 import { baseLogger } from "../utils";
-import { updateEscrows, updateUsersPendingPayment, payCashBack } from "../balanceSheet"
+import { updateEscrows, updateUsersPendingPayment, payCashBack } from "../ledger/balanceSheet"
 import { SpecterWallet } from "../SpecterWallet";
 
 const main = async () => {

@@ -12,7 +12,7 @@ import { sendNotification } from "../notification";
 import { Price } from "../priceImpl";
 import { login, requestPhoneCode } from "../text";
 import { OnboardingEarn } from "../types";
-import { baseLogger, customLoggerPrefix, nodeStats } from "../utils";
+import { baseLogger, customLoggerPrefix } from "../utils";
 import { UserWallet } from "../userWallet";
 import { WalletFactory, WalletFromUsername } from "../walletFactory";
 import util from 'util'
@@ -36,6 +36,7 @@ import pino from 'pino'
 
 
 import PinoHttp from "pino-http"
+import { nodeStats } from "../lndUtils";
 const pino_http = PinoHttp({
   logger: graphqlLogger,
   wrapSerializers: false,

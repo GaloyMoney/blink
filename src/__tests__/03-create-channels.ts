@@ -1,12 +1,12 @@
 /**
  * @jest-environment node
  */
-import { updateEscrows } from "../balanceSheet";
+import { updateEscrows } from "../ledger/balanceSheet";
 import { lndFeePath } from "../ledger/ledger";
 import { MainBook, setupMongoConnection } from "../mongodb";
 import { checkIsBalanced, lndMain, lndOutside1, lndOutside2, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "./helper";
 import { onChannelUpdated } from '../entrypoint/trigger';
-import { baseLogger, bitcoindDefaultClient, nodeStats, sleep } from "../utils";
+import { baseLogger, bitcoindDefaultClient, sleep } from "../utils";
 import mongoose from "mongoose";
 import { once } from 'events';
 
