@@ -2,7 +2,7 @@
  * @jest-environment node
  */
 import { createHash, randomBytes } from 'crypto';
-import { payCashBack } from "../balanceSheet";
+import { payCashBack } from "../ledger/balanceSheet";
 import { FEECAP, lnd } from "../lndConfig";
 import { quit } from "../lock";
 import { setupMongoConnection } from "../mongodb";

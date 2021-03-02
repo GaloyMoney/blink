@@ -3,7 +3,7 @@ import { Price } from "../priceImpl";
 import { baseLogger, getBosScore } from "../utils";
 import { getDealerWallet, getFunderWallet } from "../walletFactory";
 import { SpecterWallet } from "../SpecterWallet"
-import { getBalanceSheet, balanceSheetIsBalanced } from "../balanceSheet"
+import { getBalanceSheet, balanceSheetIsBalanced } from "../ledger/balanceSheet"
 import { lndBalances } from "../lndUtils"
 import { User } from "../schema";
 

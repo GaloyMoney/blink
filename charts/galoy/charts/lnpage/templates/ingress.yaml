@@ -1,0 +1,24 @@
+{{- if .Values.enabled }}
+{{- if .Values.ingress }}
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: {{ printf "%s-lnpage-ingress" .Release.Name }}
+  labels:
+    app: {{ printf "%s-lnpage-ingress" .Release.Name }}
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    kubernetes.io/ingress.class: gce
+    kubernetes.io/ingress.allow-http: "false"
+    networking.gke.io/managed-certificates: {{.Values.ingress.certName | quote}}
+    kubernetes.io/ingress.global-static-ip-name: {{.Values.ingress.staticIpName}}
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /*
+        backend:
+          serviceName: {{.Values.service.name}}
+          servicePort: 80
+{{ end }}
+{{ end }}

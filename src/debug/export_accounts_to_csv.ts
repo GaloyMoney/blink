@@ -1,15 +1,15 @@
 import { CSVAccountExport } from "../csvAccountExport";
-import { customerPath } from "../ledger";
-import { MainBook, setupMongoConnection } from "../mongodb";
+import { customerPath } from "../ledger/ledger";
+import { MainBook, setupMongoConnectionSecondary } from "../mongodb";
 import { User } from "../schema";
 import { createObjectCsvWriter} from "csv-writer"
 
 
 // need to set MONGODB_ADDRESS to call the script
-// ie: MONGODB_ADDRESS=localhost ts-node src/debug/export.ts
+// ie: MONGODB_ADDRESS=localhost ts-node src/debug/export_accounts_to_csv.ts
 
 const main = async () => {
-  await setupMongoConnection()
+  await setupMongoConnectionSecondary()
   await exportUsers()
   await exportBalances()
   await exportAllUserLedger()

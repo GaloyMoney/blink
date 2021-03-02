@@ -1,0 +1,412 @@
+
+grafana:
+  persistence:
+    enabled: true
+    existingClaim: "grafana-pvc"
+  ingress:
+    path: ""
+    enabled: true
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      cert-manager.io/cluster-issuer: ca-issuer
+    hosts:
+      - grafana.galoy.io
+    tls:
+    - hosts:
+      - grafana.galoy.io
+      secretName: grafana-tls
+  deploymentStrategy:
+    type: Recreate
+
+  plugins:
+    - https://github.com/doitintl/bigquery-grafana/archive/master.zip;doit-bigquery-datasource
+  
+  grafana.ini:
+    plugins:
+      allow_loading_unsigned_plugins: "doitintl-bigquery-datasource"
+
+#TODO: Add script to fetch mongodb plugin from github
+# extraInitContainers: |
+#   - name: mongodb-plugin-installer
+#     image: alpine:3.12
+
+
+prometheus:
+  nodeExporter:
+    enabled: true
+
+  alertmanager:
+    enabled: true
+    strategy:
+      type: Recreate
+
+  configmapReload:
+    alertmanager:
+      enabled: false
+
+  kubeStateMetrics:
+    enabled: true
+
+  ## kube-state-metrics sub-chart configurable values
+  ## Please see https://github.com/helm/charts/tree/master/stable/kube-state-metrics
+  ##
+  kube-state-metrics:
+    podAnnotations:
+      prometheus.io/path: /metrics
+      prometheus.io/scrape: "true"
+      prometheus.io/port: "8080"
+
+  server:
+    statefulSet:
+      enabled: true
+
+    retention: "180d"
+
+  pushgateway:
+    enabled: false
+
+  ## alertmanager ConfigMap entries
+  ##
+  alertmanagerFiles:
+    alertmanager.yml:
+      global:
+        slack_api_url: SLACK_API_URL
+        pagerduty_url: 'https://events.pagerduty.com/v2/enqueue'
+
+      receivers:
+        - name: default
+        - name: slack-notifications
+          slack_configs:
+          - channel: '#prometheus-alerts'
+            send_resolved: true
+            title: "{{range .Alerts}}{{.Annotations.summary}}\n{{end}}"
+        - name: slack-pagerduty
+          pagerduty_configs:
+          - service_key: SERVICE_KEY
+            send_resolved: true
+          slack_configs:
+          - channel: '#prometheus-alerts'
+            send_resolved: true
+            title: "{{range .Alerts}}{{.Annotations.summary}}\n{{end}}"
+
+      route:
+        group_wait: 10s
+        group_interval: 10m
+        receiver: default
+        repeat_interval: 8000h
+        routes:
+        - match:
+            severity: warning
+          receiver: slack-notifications
+          repeat_interval: 6h
+        - match:
+            severity: critical
+          receiver: slack-pagerduty
+          repeat_interval: 8000h
+          group_interval: 2m
+
+  ## Prometheus server ConfigMap entries
+  ##
+  serverFiles:
+
+    alerts:
+      groups:
+      - name: Testnet
+        rules:
+        - alert: TestnetPodRestart
+          expr: increase(kube_pod_container_status_restarts_total{namespace='testnet'}[2m]) >= 3
+          labels:
+            severity: warning
+          annotations:
+            summary: "Testnet: {{$labels.container}} restarted too many times"
+        - alert: TestnetPodStartupError
+          for: 2m
+          expr: kube_pod_container_status_waiting_reason{reason!="ContainerCreating",namespace='testnet'} == 1
+          labels:
+            severity: warning
+          annotations:
+            summary: "Testnet: {{$labels.container}} is unable to start"
+        - alert: TestnetGraphqlDown
+          for: 3m
+          expr: probe_success{job="prometheus-blackbox-exporter-testnet"} == 0
+          labels:
+            severity: warning
+          annotations:
+            summary: "Testnet graphql is down"
+        - alert: TestnetGraphqlNoAuthIssue
+          for: 3m
+          expr: probe_success{namespace="testnet", job="prometheus-blackbox-exporter-noauth"} == 0
+          labels:
+            severity: warning
+          annotations:
+            summary: "Testnet graphql is down"
+      - name: Mainnet
+        rules:
+        - alert: MainnetPodRestart
+          expr: increase(kube_pod_container_status_restarts_total{namespace='mainnet',container!='loop-container'}[10m]) >= 2
+          labels:
+            severity: critical
+          annotations:
+            summary: "Mainnet: {{$labels.container}} restarted too many times"
+        - alert: MainnetPodStartupError
+          for: 1m
+          expr: kube_pod_container_status_waiting_reason{reason!="ContainerCreating",namespace='mainnet',container!='loop-container'} == 1
+          labels:
+            severity: critical
+          annotations:
+            summary: "Mainnet: {{$labels.container}} is unable to start"
+        - alert: MainnetGraphqlIssue
+          for: 3m
+          expr: probe_success{job="prometheus-blackbox-exporter-mainnet"} == 0
+          labels:
+            severity: critical
+          annotations:
+            summary: "Mainnet graphql is down"
+        - alert: MainnetGraphqlNoAuthIssue
+          for: 3m
+          expr: probe_success{namespace="mainnet", job="prometheus-blackbox-exporter-noauth"} == 0
+          labels:
+            severity: critical
+          annotations:
+            summary: "Mainnet graphql is down"
+
+
+    prometheus.yml:
+      rule_files:
+        - /etc/config/recording_rules.yml
+        - /etc/config/alerting_rules.yml
+      ## Below two files are DEPRECATED will be removed from this default values file
+        - /etc/config/rules
+        - /etc/config/alerts
+
+      scrape_configs:
+        - job_name: 'kube-state-metrics'
+
+          scrape_interval: 5s
+          scrape_timeout: 4s
+
+          kubernetes_sd_configs:
+            - role: pod
+
+          relabel_configs:
+            - source_labels: [__meta_kubernetes_pod_name]
+              regex: 'prometheus-kube-state-metrics-.*'
+              action: keep
+
+        - job_name: 'kubernetes-service-endpoints'
+
+          kubernetes_sd_configs:
+            - role: endpoints
+
+          relabel_configs:
+            - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape]
+              action: keep
+              regex: true
+            - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_path]
+              action: replace
+              target_label: __metrics_path__
+              regex: (.+)
+            - source_labels: [__address__, __meta_kubernetes_service_annotation_prometheus_io_port]
+              action: replace
+              target_label: __address__
+              regex: ([^:]+)(?::\d+)?;(\d+)
+              replacement: $1:$2
+            - action: labelmap
+              regex: __meta_kubernetes_service_label_(.+)
+            - source_labels: [__meta_kubernetes_namespace]
+              action: replace
+              target_label: kubernetes_namespace
+            - source_labels: [__meta_kubernetes_service_name]
+              action: replace
+              target_label: kubernetes_name
+            - source_labels: [__meta_kubernetes_pod_node_name]
+              action: replace
+              target_label: kubernetes_node
+            - source_labels: [__meta_kubernetes_pod_name]
+              regex: 'prometheus-kube-state-metrics-.*'
+              action: drop
+
+        - job_name: 'kubernetes-service-endpoints-with-password'
+
+          basic_auth:
+            username: 'swagger-user'
+            password: {{ (lookup "v1" "Secret" .Release.Namespace "swagger").data.swaggerPassword }}
+
+          kubernetes_sd_configs:
+            - role: endpoints
+
+          relabel_configs:
+            - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape_with_password]
+              action: keep
+              regex: true
+            - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_path]
+              action: replace
+              target_label: __metrics_path__
+              regex: (.+)
+            - source_labels: [__address__, __meta_kubernetes_service_annotation_prometheus_io_port]
+              action: replace
+              target_label: __address__
+              regex: ([^:]+)(?::\d+)?;(\d+)
+              replacement: $1:$2
+            - action: labelmap
+              regex: __meta_kubernetes_service_label_(.+)
+            - source_labels: [__meta_kubernetes_namespace]
+              action: replace
+              target_label: kubernetes_namespace
+            - source_labels: [__meta_kubernetes_service_name]
+              action: replace
+              target_label: kubernetes_name
+            - source_labels: [__meta_kubernetes_pod_node_name]
+              action: replace
+              target_label: kubernetes_node
+            - source_labels: [__meta_kubernetes_pod_name]
+              regex: 'prometheus-kube-state-metrics-.*'
+              action: drop
+
+
+
+        - job_name: 'kubernetes-pods'
+
+          scrape_interval: 10m
+          scrape_timeout: 45s
+
+          kubernetes_sd_configs:
+            - role: pod
+
+          relabel_configs:
+            - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+              action: keep
+              regex: true
+            - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+              action: replace
+              target_label: __metrics_path__
+              regex: (.+)
+            - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+              action: replace
+              regex: ([^:]+)(?::\d+)?;(\d+)
+              replacement: $1:$2
+              target_label: __address__
+            - action: labelmap
+              regex: __meta_kubernetes_pod_label_(.+)
+            - source_labels: [__meta_kubernetes_namespace]
+              action: replace
+              target_label: kubernetes_namespace
+            - source_labels: [__meta_kubernetes_pod_name]
+              action: replace
+              target_label: kubernetes_pod_name
+            - source_labels: [__meta_kubernetes_pod_name]
+              regex: 'prometheus-kube-state-metrics-.*'
+              action: drop
+
+        # - job_name: 'kubernetes-services'
+
+        #   metrics_path: /probe
+        #   params:
+        #     module: [http_2xx]
+
+        #   kubernetes_sd_configs:
+        #     - role: service
+
+        #   relabel_configs:
+        #     - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_probe]
+        #       action: keep
+        #       regex: true
+        #     - source_labels: [__address__]
+        #       target_label: __param_target
+        #     - target_label: __address__
+        #       replacement: blackbox
+        #     - source_labels: [__param_target]
+        #       target_label: instance
+        #     - action: labelmap
+        #       regex: __meta_kubernetes_service_label_(.+)
+        #     - source_labels: [__meta_kubernetes_namespace]
+        #       target_label: kubernetes_namespace
+        #     - source_labels: [__meta_kubernetes_service_name]
+        #       target_label: kubernetes_name
+
+  # adds additional scrape configs to prometheus.yml
+  # must be a string so you have to add a | after extraScrapeConfigs:
+  # example adds prometheus-blackbox-exporter scrape config
+  extraScrapeConfigs: |
+    - job_name: 'prometheus-blackbox-exporter-noauth'
+      metrics_path: /probe
+      params:
+        module: [buildParameters]
+      static_configs:
+        - targets:
+          - https://graphql.testnet.galoy.io:443/graphql
+          - https://graphql.mainnet.galoy.io:443/graphql
+      relabel_configs:
+        - source_labels: [__address__]
+          target_label: __param_target
+        - source_labels: [__param_target]
+          target_label: instance
+        - target_label: __address__
+          replacement: monitoring-prometheus-blackbox-exporter:9115
+        - source_labels: [__meta_kubernetes_namespace]
+          target_label: namespace
+    - job_name: 'prometheus-blackbox-exporter-testnet'
+      scrape_timeout: 30s
+      metrics_path: /probe
+      params:
+        module: [walletTestnetAuth]
+      static_configs:
+        - targets:
+          - https://graphql.testnet.galoy.io:443/graphql
+      relabel_configs:
+        - source_labels: [__address__]
+          target_label: __param_target
+        - source_labels: [__param_target]
+          target_label: instance
+        - target_label: __address__
+          replacement: monitoring-prometheus-blackbox-exporter:9115
+    - job_name: 'prometheus-blackbox-exporter-mainnet'
+      scrape_timeout: 30s
+      metrics_path: /probe
+      params:
+        module: [walletMainnetAuth]
+      static_configs:
+        - targets:
+          - https://graphql.mainnet.galoy.io:443/graphql
+      relabel_configs:
+        - source_labels: [__address__]
+          target_label: __param_target
+        - source_labels: [__param_target]
+          target_label: instance
+        - target_label: __address__
+          replacement: monitoring-prometheus-blackbox-exporter:9115
+
+prometheus-blackbox-exporter:
+  secretConfig: true
+  config:
+    modules:
+      buildParameters:
+        prober: http
+        timeout: 3s
+        http:
+          method: POST
+          headers:
+            Content-Type: application/json
+          body: '{"query":"query buildParameters {\n    buildParameters {\n        id\n        commitHash\n        buildTime\n        helmRevision\n        minBuildNumberAndroid\n        minBuildNumberIos\n        lastBuildNumberAndroid\n        lastBuildNumberIos\n    }\n}","variables":{}}'
+      walletTestnetAuth:
+        prober: http
+        timeout: 30s
+        http:
+          method: POST
+          fail_if_body_matches_regexp:
+            - "errors+"
+          headers:
+            Content-Type: application/json
+            # add token with --set prometheus-blackbox-exporter.config.modules.walletTestnetAuth.http.headers.Authorization
+          body: '{"query":"query gql_query_logged {\n  prices {\n    __typename\n    id\n    o\n  }\n  earnList {\n    __typename\n    id\n    value\n    completed\n  }\n  wallet {\n    __typename\n    id\n    balance\n    currency\n    transactions {\n      __typename\n      id\n      amount\n      description\n      created_at\n      hash\n      type\n      usd\n      fee\n      feeUsd\n      pending\n    }\n  }\n  getLastOnChainAddress {\n    __typename\n    id\n  }\n  me {\n    __typename\n    id\n    level\n    username\n    phone\n  }\n  maps {\n    __typename\n    id\n    title\n    coordinate {\n        __typename\n        latitude\n        longitude\n    }\n  }\n  nodeStats {\n    __typename\n    id\n  }\n}","variables":{}}'
+      walletMainnetAuth:
+        prober: http
+        timeout: 30s
+        http:
+          method: POST
+          fail_if_body_matches_regexp:
+            - "errors+"
+          headers:
+            Content-Type: application/json
+            # add token with --set prometheus-blackbox-exporter.config.modules.walletMainnetAuth.http.headers.Authorization
+          body: '{"query":"query gql_query_logged {\n  prices {\n    __typename\n    id\n    o\n  }\n  earnList {\n    __typename\n    id\n    value\n    completed\n  }\n  wallet {\n    __typename\n    id\n    balance\n    currency\n    transactions {\n      __typename\n      id\n      amount\n      description\n      created_at\n      hash\n      type\n      usd\n      fee\n      feeUsd\n      pending\n    }\n  }\n  getLastOnChainAddress {\n    __typename\n    id\n  }\n  me {\n    __typename\n    id\n    level\n    username\n    phone\n  }\n  maps {\n    __typename\n    id\n    title\n    coordinate {\n        __typename\n        latitude\n        longitude\n    }\n  }\n  nodeStats {\n    __typename\n    id\n  }\n}","variables":{}}'

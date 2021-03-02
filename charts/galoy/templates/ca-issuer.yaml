@@ -1,0 +1,19 @@
+{{ if .Values.ca.enabled }}
+apiVersion: cert-manager.io/v1alpha2
+kind: ClusterIssuer
+metadata:
+  name: ca-issuer
+  labels:
+    app.kubernetes.io/managed-by: Helm
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: {{.Values.ca.CAEmail}}
+    privateKeySecretRef:
+      name: ca-issuer
+    solvers:
+    - selector: {}
+      http01:
+        ingress:
+          class: nginx
+{{ end }}
