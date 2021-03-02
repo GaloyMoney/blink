@@ -1,0 +1,93 @@
+{{- range .Values.cron }}
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: {{ .name }}
+  labels:
+    app.kubernetes.io/managed-by: Helm
+spec:
+  schedule: {{ .schedule }}
+  jobTemplate:
+    spec:
+      activeDeadlineSeconds: 300
+      template:
+        spec:
+          containers:
+          - name: {{ .name }}
+            image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag }}"
+            command: ["/bin/sh","-c", {{ .command | quote }}]
+            volumeMounts:
+            - name: firebase-serviceaccount
+              mountPath: "/tmp/firebase-serviceaccount"
+              readOnly: true
+            {{- if eq .name "mongo-backup"}}
+            - name: mongo-backup-configmap
+              mountPath: "/var"
+            - name: "service-account"
+              mountPath: "/var/secret/cloud.google.com"
+            {{- end}}
+            env:
+            - name: NETWORK
+              value: {{$.Values.network}}
+            - name: MONGODB_PASSWORD
+              value: "testGaloy"
+            - name: MONGODB_USER
+              value: "testGaloy"
+            - name: MONGODB_ADDRESS
+              value: {{ $.Values.mongodbaddress }}
+            - name: MONGODB_PORT
+              value: "27017"
+            - name: MONGODB_DB
+              value: "galoy"
+            - name: LNDIP
+              value: "lnd"
+            - name: MACAROON
+              value: {{ $.Values.macaroon }}
+            - name: TLS
+              value: {{ $.Values.tls }}
+            - name: REDIS_PORT
+              value: "6379"
+            - name: REDIS_IP
+              value: "galoy-redis-master"
+            - name: BITCOINDADDR
+              value: "bitcoind"
+            - name: BITCOINDPORT
+              value: {{ $.Values.bitcoind.port | quote }}
+            - name: LOGLEVEL
+              value: debug
+            - name: FTX_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ftx-secret
+                  key: key
+            - name: FTX_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: ftx-secret
+                  key: secret
+            - name: CASHBACK
+              value: "true"
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: "/tmp/firebase-serviceaccount/galoyapp-firebase-serviceaccont.json"
+            - name: DROPBOX_ACCESS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: dropbox-access-token
+                  key: token
+          restartPolicy: OnFailure
+          volumes:
+          - name: firebase-serviceaccount
+            secret:
+              secretName: galoyapp-firebase-serviceaccount
+          {{- if eq .name "mongo-backup"}}
+          - name: mongo-backup-configmap
+            configMap:
+              name: mongo-backup-configmap
+              defaultMode: 484
+          - name: "service-account"
+            secret:
+              secretName: "gcs-sa-key"
+          {{- end}}
+      
+---
+{{- end }}

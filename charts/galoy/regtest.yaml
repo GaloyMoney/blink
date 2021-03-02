@@ -1,0 +1,46 @@
+network: regtest
+
+jwtSecret: "my_non_secured_secret"
+
+bitcoind:
+  port: 
+    18443
+
+redis:
+  master:
+    persistence: 
+      enabled: false
+  metrics:
+    enabled: false
+
+lnpage:
+  enabled: false
+
+mongodb:
+  persistence:
+    enabled: false
+  replicaCount: 1
+  metrics:
+    enabled: false
+  initDbScripts: {}
+
+cron: []
+deployment:
+- name: graphql
+  command: "yarn run ts-node ./src/entrypoint/graphql.ts"
+  healthz: 127.0.0.1:4000/healthz
+  targetPort: 4000
+  replicaCount: 2
+- name: testpod
+  replicaCount: 1
+  customYamlEnv:
+  - LNDRPCPORT: 10009
+  - LNDOUTSIDE1RPCPORT: 10009
+  - LNDOUTSIDE2RPCPORT: 10009
+  - LNDOUTSIDE1ADDR: "lnd-outside-1"
+  - LNDOUTSIDE2ADDR: "lnd-outside-2"
+
+needFirebaseServiceAccount: false
+twilio: false
+
+mongodbaddress: "galoy-mongodb-headless"

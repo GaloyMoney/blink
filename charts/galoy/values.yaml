@@ -1,0 +1,153 @@
+app:
+  name: "***REMOVED*** Wallet"
+
+  hedging:
+    LOW_BOUND_RATIO_SHORTING: 0.95
+    LOW_SAFEBOUND_RATIO_SHORTING: 0.98
+  # average: 0.99
+    HIGH_SAFEBOUND_RATIO_SHORTING: 1
+    HIGH_BOUND_RATIO_SHORTING: 1.03
+
+  # take a target leverage and safe parameter and calculate those bounding values dynamically.
+    LOW_BOUND_LEVERAGE: 1.2
+    LOW_SAFEBOUND_LEVERAGE: 1.8
+  #  // average: 2
+    HIGH_SAFEBOUND_LEVERAGE: 2.25
+    HIGH_BOUND_LEVERAGE: 3
+
+ca:
+  CAEmail: krtk6160@galoy.io
+
+image:
+  repository: gcr.io/galoyapp/galoy
+
+deployment:
+- name: graphql
+  command: "yarn run ts-node ./src/entrypoint/graphql.ts"
+  healthz: 127.0.0.1:4000/healthz
+  targetPort: 4000
+  replicaCount: 2
+- name: metrics
+  command: "yarn run ts-node ./src/entrypoint/exporter.ts"
+  healthz: 127.0.0.1:3000/healthz
+  targetPort: 3000
+  replicaCount: 1
+- name: trigger
+  command: "yarn run ts-node ./src/entrypoint/trigger.ts"
+  healthz: 127.0.0.1:8888/healthz
+  targetPort: 8888
+  replicaCount: 1 #TODO: zero for regtest
+  # cpu request: 0.001
+
+service:
+- name: graphql
+  type: NodePort
+  targetPort: 4000
+  port: 4000
+- name: metrics
+  type: NodePort
+  targetPort: 3000
+  port: 3000
+
+cron:
+- name: cronjob
+  command: "yarn ts-node src/entrypoint/cron.ts"
+  schedule: "0 2 * * *"
+- name: balance-notif
+  command: "yarn ts-node src/entrypoint/dailyBalanceNotification.ts"
+  schedule: "0 14 * * *"
+- name: dealer-update
+  command: "yarn ts-node src/entrypoint/dealer.ts"
+  schedule: "0,10,20,30,40,50 * * * *"
+- name: mongo-backup
+  command: "/var/backup.sh"
+  schedule: "0 4 * * *"
+
+
+mongobackup:
+  bucketName: galoy-mongodb-backups
+  mongoToolsVersion: 4.2.9-r0
+
+loglevel: debug
+
+needFirebaseServiceAccount: true
+twilio: true
+
+# value can be set here, or override with helm,
+# ie: helm upgrade -i --set twilio.TWILIO_PHONE_NUMBER=6505550001,TWILIO_ACCOUNT_SID=AKBQWN...
+# twilio:
+#   TWILIO_PHONE_NUMBER: "phone"
+#   TWILIO_ACCOUNT_SID: sid
+#   TWILIO_API_KEY: apikey
+#   TWILIO_API_SECRET: apisecret
+
+
+redis:
+  master:
+    persistence: 
+      enabled: true
+    service:
+      type: ClusterIP
+  usePassword: false
+  cluster:
+    slaveCount: 0
+  metrics:
+    enabled: true
+
+lnpage:
+  enabled: true
+
+mongodbaddress: "galoy-mongodb-0.galoy-mongodb-headless,galoy-mongodb-1.galoy-mongodb-headless,galoy-mongodb-2.galoy-mongodb-headless"
+
+mongodb:
+  architecture: replicaset
+
+  auth:
+    username: testGaloy
+    password: testGaloy
+    database: galoy
+
+  labels:
+    kube-monkey/enabled: enabled
+    kube-monkey/identifier: mongodb
+    kube-monkey/kill-mode: fixed
+    kube-monkey/kill-value: "1"
+    kube-monkey/mtbf: "8"
+
+  podLabels:
+    kube-monkey/enabled: enabled
+    kube-monkey/identifier: mongodb
+
+  replicaCount: 3
+
+  persistence:
+    enabled: true
+
+  arbiter:
+    enabled: false
+
+  readinessProbe:
+    enabled: false
+  customReadinessProbe:
+    exec:
+      command:
+        - mongo
+        - --disableImplicitSessions
+        - --eval
+        - "db.adminCommand('ping')"
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 6
+    successThreshold: 1
+
+  ## Prometheus Exporter / Metrics
+  ## TODO: Could be useful for having mongo metrics
+  metrics:
+    enabled: true
+  
+  initDbScripts:
+    init.sh: |
+      #!/bin/bash
+      "mongo admin -u root -p "$MONGODB_ROOT_PASSWORD" --eval \"db.adminCommand({setDefaultRWConcern:1,defaultWriteConcern:{'w':'majority'}})\""
+      "mongo admin -u root -p "$MONGODB_ROOT_PASSWORD" --eval \"c=rs.conf();c.writeConcernMajorityJournalDefault=false;rs.reconfig(c)\""

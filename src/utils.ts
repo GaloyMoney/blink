@@ -1,14 +1,11 @@
 // @ts-ignore
 import { GraphQLError } from "graphql"
-import * as lnService from "ln-service"
 import _ from 'lodash';
 
 import * as moment from 'moment'
 import validate from "validate.js"
 import bitcoindClient from 'bitcoin-core'
 import { parsePaymentRequest } from 'invoices';
-import { default as axios } from 'axios';
-import { lnd } from "./lndConfig";
 
 import pino from 'pino'
 export const baseLogger = pino({ level: process.env.LOGLEVEL || "info" })
@@ -144,31 +141,6 @@ export async function measureTime(operation: Promise<any>): Promise<[any, number
   const timeElapsed = process.hrtime(startTime)
   const timeElapsedms = timeElapsed[0] * 1000 + timeElapsed[1] / 1000000
   return [result, timeElapsedms]
-}
-
-export async function nodeStats({ lnd }) {
-  const result = await lnService.getWalletInfo({ lnd })
-  const peersCount = result.peers_count
-  const channelsCount = result.active_channels_count
-  const id = result.public_key
-  return {
-    peersCount,
-    channelsCount,
-    id
-  }
-}
-
-export async function getBosScore() {
-  try {
-    const { data } = await axios.get('https://bos.lightning.jorijn.com/data/export.json')
-
-    const publicKey = (await lnService.getWalletInfo({lnd})).public_key;
-    const bosScore = _.find(data.data, { publicKey })
-    return bosScore.score
-  } catch (err) {
-    // err2: err.toJson() does not work
-    baseLogger.error({ err }, `issue getting bos rank`)
-  }
 }
 
 export const isInvoiceAlreadyPaidError = (err) => {

@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $.Chart.Name }}
+  labels:
+    app: {{ $.Chart.Name }}
+    app.kubernetes.io/managed-by: Helm
+    kube-monkey/enabled: enabled
+    kube-monkey/identifier: {{ $.Chart.Name }} 
+    kube-monkey/kill-mode: fixed
+    kube-monkey/kill-value: "1"
+    kube-monkey/mtbf: "8"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ $.Chart.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ $.Chart.Name }}
+        kube-monkey/enabled: enabled
+        kube-monkey/identifier: {{ $.Chart.Name }}
+    spec:
+      containers:
+        - name: {{ $.Chart.Name }}-container
+          image: gkatzioura/mongodb-grafana_mongo-proxy:1.0
+          command: ["/bin/sh","-c", "npm run server"]
+          resources:
+            requests:
+              cpu: 1m
+            limits:
+              cpu: 200m
+          ports:
+            - name: {{.Values.service.name}}
+              containerPort: {{.Values.service.port}}
