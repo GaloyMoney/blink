@@ -123,13 +123,6 @@ spec:
                   name: dropbox-access-token
                   key: token
             {{- end }}
-            {{- if eq .name "graphql" }}
-            - name: SWAGGER_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: swagger
-                  key: swaggerPassword
-            {{- end }}
             {{- if ne $.Values.network "regtest" }}
             - name: TWILIO_PHONE_NUMBER
               valueFrom:
