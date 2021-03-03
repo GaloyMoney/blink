@@ -1,6 +1,6 @@
 import express from 'express';
 import client, { register } from 'prom-client';
-import { balanceSheetIsBalanced, getBalanceSheet } from "../balanceSheet";
+import { balanceSheetIsBalanced, getBalanceSheet } from "../ledger/balanceSheet";
 import { getBosScore, lndBalances } from "../lndUtils";
 import { setupMongoConnection } from "../mongodb";
 import { Price } from "../priceImpl";
