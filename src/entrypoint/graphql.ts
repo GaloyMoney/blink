@@ -17,19 +17,19 @@ import swStats from 'swagger-stats';
 import util from 'util';
 import { v4 as uuidv4 } from 'uuid';
 import { getMinBuildNumber, mainCache } from "../cache";
+import { insertMarkers } from "../debug/map_csv_to_mongodb";
 import { nodeStats } from "../lndUtils";
 import { getAsyncRedisClient } from "../lock";
 import { setupMongoConnection } from "../mongodb";
 import { sendNotification } from "../notification";
 import { Price } from "../priceImpl";
+import { User } from "../schema";
 import { login, requestPhoneCode } from "../text";
 import { OnboardingEarn } from "../types";
 import { UserWallet } from "../userWallet";
 import { baseLogger, customLoggerPrefix } from "../utils";
 import { WalletFactory, WalletFromUsername } from "../walletFactory";
-import { lnd } from "./lndConfig";
-import { User } from "./schema";
-import { insertMarkers } from "./tool/map_csv_to_mongodb";
+import { lnd } from "../lndConfig"
 
 
 dotenv.config()
