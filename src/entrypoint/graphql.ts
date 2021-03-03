@@ -4,39 +4,39 @@ import { GraphQLServer } from 'graphql-yoga';
 import * as jwt from 'jsonwebtoken';
 import _ from 'lodash';
 import moment from "moment";
+import mongoose from "mongoose";
+import path from "path";
+import pino from 'pino';
+// https://nodejs.org/api/esm.html#esm_no_require_exports_module_exports_filename_dirname
+// TODO: to use when switching to module
+// import { fileURLToPath } from 'url';
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
+import PinoHttp from "pino-http";
+import swStats from 'swagger-stats';
+import util from 'util';
 import { v4 as uuidv4 } from 'uuid';
 import { getMinBuildNumber, mainCache } from "../cache";
+import { nodeStats } from "../lndUtils";
 import { getAsyncRedisClient } from "../lock";
 import { setupMongoConnection } from "../mongodb";
 import { sendNotification } from "../notification";
 import { Price } from "../priceImpl";
 import { login, requestPhoneCode } from "../text";
 import { OnboardingEarn } from "../types";
-import { baseLogger, customLoggerPrefix } from "../utils";
 import { UserWallet } from "../userWallet";
+import { baseLogger, customLoggerPrefix } from "../utils";
 import { WalletFactory, WalletFromUsername } from "../walletFactory";
-import util from 'util'
-import mongoose from "mongoose";
-import { insertMarkers } from "../debug/map_csv_to_mongodb"
-import {lnd} from "../lndConfig"
-import { User } from "../schema";
+import { lnd } from "./lndConfig";
+import { User } from "./schema";
+import { insertMarkers } from "./tool/map_csv_to_mongodb";
 
-import path from "path"
+
 dotenv.config()
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
-import pino from 'pino'
 
 
-// https://nodejs.org/api/esm.html#esm_no_require_exports_module_exports_filename_dirname
-// TODO: to use when switching to module
-// import { fileURLToPath } from 'url';
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
-
-
-import PinoHttp from "pino-http"
-import { nodeStats } from "../lndUtils";
 const pino_http = PinoHttp({
   logger: graphqlLogger,
   wrapSerializers: false,
@@ -322,7 +322,14 @@ server.express.use(function(req, res, next) {
 });
 
 server.express.use(pino_http)
-
+server.express.use(swStats.getMiddleware({
+  uriPath: "/swagger",
+  authentication: true,
+  onAuthenticate: function(req,username,password){
+    return((username==='swagger-user') 
+        && (password===(process.env.SWAGGER_PASSWORD ?? 'swagger-password')));
+  }
+}))
 
 // Health check
 server.express.get('/healthz', async function(req, res) {

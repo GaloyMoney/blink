@@ -23,12 +23,10 @@ spec:
         app: {{ .name }}
         kube-monkey/enabled: enabled
         kube-monkey/identifier: {{.name}}
-      {{- if eq .name "metrics"}}
+    {{- with .podAnnotations }}
       annotations:
-        prometheus.io/path: /metrics
-        prometheus.io/port: "3000"
-        prometheus.io/scrape: "true"
-      {{- end}}
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
     spec:
       containers:
         - name: {{ .name }}
@@ -96,7 +94,7 @@ spec:
                 secretKeyRef:
                   name: network
                   key: network
-            {{- if eq .name "metrics" }}
+            {{- if eq .name "exporter" }}
             - name: FTX_KEY
               valueFrom:
                 secretKeyRef:
@@ -124,6 +122,13 @@ spec:
                 secretKeyRef:
                   name: dropbox-access-token
                   key: token
+            {{- end }}
+            {{- if eq .name "graphql" }}
+            - name: SWAGGER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: swagger
+                  key: swaggerPassword
             {{- end }}
             {{- if ne $.Values.network "regtest" }}
             - name: TWILIO_PHONE_NUMBER

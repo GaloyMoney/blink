@@ -106,6 +106,8 @@ fi
 
 rm -rf $INFRADIR/configs
 git clone $CONFIG_REPO $INFRADIR/configs
+
+
 helmUpgrade bitcoind $localdevpath -f $INFRADIR/configs/bitcoind/$NETWORK.yaml galoy/bitcoind
 
 # bug with --wait: https://github.com/helm/helm/issues/7139 ?
@@ -116,7 +118,7 @@ sleep 8
 if [ ${LOCAL} ] 
 then 
   kubectlLndDeletionWait 
-  localdevpath="-f $INFRADIR/lnd/localdev.yaml \
+  localdevpath="-f $INFRADIR/configs/lnd/localdev.yaml \
     --set instances[0].staticIP=$MINIKUBEIP \
     --set instances[1].staticIP=$MINIKUBEIP \
     --set instances[2].staticIP=$MINIKUBEIP \
