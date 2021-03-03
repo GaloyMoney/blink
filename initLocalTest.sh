@@ -209,9 +209,9 @@ then
     exit 1
   fi
 
-  kubectl -n $NAMESPACE rollout status deployments/metrics
+  kubectl -n $NAMESPACE rollout status deployments/exporter
   if [[ "$?" -ne 0 ]]; then
-    echo "Deployment for metrics failed"
+    echo "Deployment for exporter failed"
     exit 1
   fi
 fi
