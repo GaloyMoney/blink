@@ -12,7 +12,6 @@ metadata:
     nginx.ingress.kubernetes.io/limit-rpm: "12"
     nginx.ingress.kubernetes.io/server-snippet: |-
       location /swagger {
-          allow x.x.x.x;
           deny all;
 
           proxy_http_version 1.1;
