@@ -52,19 +52,6 @@ helmUpgrade () {
   command helm upgrade -i -n=$NAMESPACE "$@"
 }
 
-monitoringDeploymentsUpgrade() {
-  SECRET=alertmanager-keys
-  local NAMESPACE=monitoring
-
-  helmUpgrade monitoring $INFRADIR/monitoring \
-    --set prometheus-blackbox-exporter.config.modules.walletTestnetAuth.http.headers.Authorization="Bearer $TESTNET_TOKEN" \
-    --set prometheus-blackbox-exporter.config.modules.walletMainnetAuth.http.headers.Authorization="Bearer $MAINNET_TOKEN"
-
-  # FIXME: pass this directory to above command
-  export SLACK_API_URL=$(kubectl get secret -n $NAMESPACE $SECRET -o jsonpath="{.data.SLACK_API_URL}" | base64 -d)
-  export SERVICE_KEY=$(kubectl get secret -n $NAMESPACE $SECRET -o jsonpath="{.data.SERVICE_KEY}" | base64 -d)
-  kubectl -n $NAMESPACE get configmaps monitoring-prometheus-alertmanager -o yaml | sed -e "s|SLACK_API_URL|$SLACK_API_URL|; s|SERVICE_KEY|$SERVICE_KEY|" | kubectl -n $NAMESPACE apply -f -
-}
 
 kubectlWait () {
   echo "waiting for -n=$NAMESPACE -l $@"
@@ -189,6 +176,21 @@ fi
 
 if [ "$NETWORK" == "testnet" ]
 then
+
+  monitoringDeploymentsUpgrade() {
+    SECRET=alertmanager-keys
+    local NAMESPACE=monitoring
+
+    helmUpgrade monitoring $INFRADIR/monitoring \
+      --set prometheus-blackbox-exporter.config.modules.walletTestnetAuth.http.headers.Authorization="Bearer $TESTNET_TOKEN" \
+      --set prometheus-blackbox-exporter.config.modules.walletMainnetAuth.http.headers.Authorization="Bearer $MAINNET_TOKEN"
+
+    # FIXME: pass this directory to above command
+    export SLACK_API_URL=$(kubectl get secret -n $NAMESPACE $SECRET -o jsonpath="{.data.SLACK_API_URL}" | base64 -d)
+    export SERVICE_KEY=$(kubectl get secret -n $NAMESPACE $SECRET -o jsonpath="{.data.SERVICE_KEY}" | base64 -d)
+    kubectl -n $NAMESPACE get configmaps monitoring-prometheus-alertmanager -o yaml | sed -e "s|SLACK_API_URL|$SLACK_API_URL|; s|SERVICE_KEY|$SERVICE_KEY|" | kubectl -n $NAMESPACE apply -f -
+  }
+
   monitoringDeploymentsUpgrade
 fi
 

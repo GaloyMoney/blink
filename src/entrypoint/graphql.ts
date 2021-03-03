@@ -324,11 +324,8 @@ server.express.use(function(req, res, next) {
 server.express.use(pino_http)
 server.express.use(swStats.getMiddleware({
   uriPath: "/swagger",
-  authentication: true,
-  onAuthenticate: function(req,username,password){
-    return((username==='swagger-user') 
-        && (password===(process.env.SWAGGER_PASSWORD ?? 'swagger-password')));
-  }
+  // no authentication but /swagger/* should be protected from access outside the cluster
+  // this is done with nginx 
 }))
 
 // Health check

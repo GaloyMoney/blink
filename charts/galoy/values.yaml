@@ -31,9 +31,6 @@ deployment:
     prometheus.io/path: /swagger/metrics
     prometheus.io/port: "4000"
     prometheus.io/scrape: "true"
-    # FIXME credential
-    prometheus.io/basic_auth.username: 'swagger-user'
-    prometheus.io/basic_auth.password: 'swagger-pass'
 - name: exporter
   command: "yarn run ts-node ./src/entrypoint/exporter.ts"
   healthz: 127.0.0.1:3000/healthz
