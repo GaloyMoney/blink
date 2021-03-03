@@ -17,7 +17,7 @@ export MINIKUBEIP=$(minikube ip)
 export BITCOINDADDR=$MINIKUBEIP
 
 export LNDIP=$MINIKUBEIP
-export LNDRPCPORT=$(kubectl get services | awk '/lnd/ {print $5}' | grep -Po '10009:\K[0-9]+')
+export LNDRPCPORT=$(kubectl get services | awk '/lnd-0/ {print $5}' | grep -Po '10009:\K[0-9]+')
 
 export LNDOUTSIDE1ADDR=$MINIKUBEIP
 export LNDOUTSIDE1RPCPORT=$(kubectl get services | awk '/lnd-outside-1/ {print $5}' | grep -Po '10009:\K[0-9]+')
