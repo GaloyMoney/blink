@@ -13,19 +13,6 @@ metadata:
     nginx.ingress.kubernetes.io/server-snippet: |-
       location /swagger {
           deny all;
-
-          proxy_http_version 1.1;
-          proxy_redirect off;
-          proxy_intercept_errors on;
-          proxy_set_header Connection "";
-          proxy_set_header X-CF-Visitor $http_cf_visitor;
-          proxy_set_header Host $host;
-          proxy_set_header X-Real-IP $remote_addr;
-          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-          proxy_set_header X-Forwarded-Host $host;
-          proxy_set_header X-Forwarded-Port $server_port;
-          proxy_set_header X-Forwarded-Proto $scheme;
-          proxy_pass http://devns-quests-ingress-dev.example.com-some-service;
       }
 spec:
   tls:
