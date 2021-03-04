@@ -11,8 +11,8 @@ metadata:
     cert-manager.io/cluster-issuer: ca-issuer
     nginx.ingress.kubernetes.io/limit-rpm: "12"
     nginx.ingress.kubernetes.io/server-snippet: |-
-      location /swagger {
-          deny all;
+      location /swagger/ {
+        deny all;
       }
 spec:
   tls:
@@ -23,10 +23,6 @@ spec:
   - host: {{.Values.ingress.host}}
     http:
       paths:
-      - path: /swagger
-        backend:
-          serviceName: graphql
-          servicePort: 4000
       - path: /
         backend:
           serviceName: graphql
