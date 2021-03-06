@@ -111,90 +111,90 @@ it('funding funder with onchain tx from bitcoind', async () => {
   await onchain_funding({ walletDestination: funderWallet })
 })
 
-it('identifies unconfirmed incoming on chain txn', async () => {
-  const address = await walletUser0.getOnChainAddress()
+// it('identifies unconfirmed incoming on chain txn', async () => {
+//   const address = await walletUser0.getOnChainAddress()
 
-  const sub = await lnService.subscribeToTransactions({ lnd: lndMain })
-  sub.on('chain_transaction', onchainTransactionEventHandler)
+//   const sub = await lnService.subscribeToTransactions({ lnd: lndMain })
+//   sub.on('chain_transaction', onchainTransactionEventHandler)
   
-  await Promise.all([
-    once(sub, 'chain_transaction'),
-    bitcoindDefaultClient.sendToAddress(address, amount_BTC)
-  ])
+//   await Promise.all([
+//     once(sub, 'chain_transaction'),
+//     bitcoindDefaultClient.sendToAddress(address, amount_BTC)
+//   ])
 
-  await sleep(1000)
+//   await sleep(1000)
 
-  const txs = (await walletUser0.getTransactions())
-  const pendingTxs = filter(txs, {pending: true})
-  expect(pendingTxs.length).toBe(1)
-  expect(pendingTxs[0].amount).toBe(btc2sat(amount_BTC))
-  expect(pendingTxs[0].addresses[0]).toBe(address)
+//   const txs = (await walletUser0.getTransactions())
+//   const pendingTxs = filter(txs, {pending: true})
+//   expect(pendingTxs.length).toBe(1)
+//   expect(pendingTxs[0].amount).toBe(btc2sat(amount_BTC))
+//   expect(pendingTxs[0].addresses[0]).toBe(address)
 
-  await sleep(1000)
+//   await sleep(1000)
 
-  expect(sendNotification.mock.calls.length).toBe(1)
-  expect(sendNotification.mock.calls[0][0].data.type).toBe("onchain_receipt")
+//   expect(sendNotification.mock.calls.length).toBe(1)
+//   expect(sendNotification.mock.calls[0][0].data.type).toBe("onchain_receipt")
 
-  const satsPrice = await new Price({ logger: baseLogger }).lastPrice()
-  const usd = (btc2sat(amount_BTC) * satsPrice).toFixed(2)
+//   const satsPrice = await new Price({ logger: baseLogger }).lastPrice()
+//   const usd = (btc2sat(amount_BTC) * satsPrice).toFixed(2)
 
-  expect(sendNotification.mock.calls[0][0].title).toBe(`$${usd} | ${btc2sat(amount_BTC)} sats is on its way to your wallet`)
+//   expect(sendNotification.mock.calls[0][0].title).toBe(`$${usd} | ${btc2sat(amount_BTC)} sats is on its way to your wallet`)
 
-  await Promise.all([
-    bitcoindDefaultClient.generateToAddress(1, RANDOM_ADDRESS),
-    once(sub, 'chain_transaction'),
-  ])
+//   await Promise.all([
+//     bitcoindDefaultClient.generateToAddress(1, RANDOM_ADDRESS),
+//     once(sub, 'chain_transaction'),
+//   ])
 
-  await sleep(3000)
+//   await sleep(3000)
 
-  // import util from 'util'
-  // console.log(util.inspect(sendNotification.mock.calls, false, Infinity))
-  // FIXME: the event is actually fired twice.
-  // is it a lnd issue?
-  // a workaround: use a hash of the event and store in redis 
-  // to not replay if it has already been handled?
-  //
-  // expect(notification.sendNotification.mock.calls.length).toBe(2)
-  // expect(notification.sendNotification.mock.calls[1][0].data.type).toBe("onchain_receipt")
-  // expect(notification.sendNotification.mock.calls[1][0].title).toBe(
-  //   `Your wallet has been credited with ${btc2sat(amount_BTC)} sats`)
+//   // import util from 'util'
+//   // console.log(util.inspect(sendNotification.mock.calls, false, Infinity))
+//   // FIXME: the event is actually fired twice.
+//   // is it a lnd issue?
+//   // a workaround: use a hash of the event and store in redis 
+//   // to not replay if it has already been handled?
+//   //
+//   // expect(notification.sendNotification.mock.calls.length).toBe(2)
+//   // expect(notification.sendNotification.mock.calls[1][0].data.type).toBe("onchain_receipt")
+//   // expect(notification.sendNotification.mock.calls[1][0].title).toBe(
+//   //   `Your wallet has been credited with ${btc2sat(amount_BTC)} sats`)
 
-})
+// })
 
-it('batch send transaction', async () => {
-  const address0 = await walletUser0.getOnChainAddress()
-  const walletUser4 = await getUserWallet(4)
-  const address4 = await walletUser4.getOnChainAddress()
+// it('batch send transaction', async () => {
+//   const address0 = await walletUser0.getOnChainAddress()
+//   const walletUser4 = await getUserWallet(4)
+//   const address4 = await walletUser4.getOnChainAddress()
 
-  const {BTC: initBalanceUser4} = await walletUser4.getBalances()
-  console.log({initBalanceUser4, initialBalanceUser0})
+//   const {BTC: initBalanceUser4} = await walletUser4.getBalances()
+//   console.log({initBalanceUser4, initialBalanceUser0})
   
-  const output0 = {}
-  output0[address0] = 1
+//   const output0 = {}
+//   output0[address0] = 1
   
-  const output1 = {}
-  output1[address4] = 2
+//   const output1 = {}
+//   output1[address4] = 2
 
-  const outputs = [output0, output1]
+//   const outputs = [output0, output1]
 
-  const {psbt} = await bitcoindDefaultClient.walletCreateFundedPsbt([], outputs)
-  // const decodedPsbt1 = await bitcoindDefaultClient.decodePsbt(psbt)
-  // const analysePsbt1 = await bitcoindDefaultClient.analyzePsbt(psbt)
-  const walletProcessPsbt = await bitcoindDefaultClient.walletProcessPsbt(psbt)
-  // const decodedPsbt2 = await bitcoindDefaultClient.decodePsbt(walletProcessPsbt.psbt)
-  // const analysePsbt2 = await bitcoindDefaultClient.analyzePsbt(walletProcessPsbt.psbt)
-  const finalizedPsbt = await bitcoindDefaultClient.finalizePsbt(walletProcessPsbt.psbt)
-  const txid = await bitcoindDefaultClient.sendRawTransaction(finalizedPsbt.hex) 
+//   const {psbt} = await bitcoindDefaultClient.walletCreateFundedPsbt([], outputs)
+//   // const decodedPsbt1 = await bitcoindDefaultClient.decodePsbt(psbt)
+//   // const analysePsbt1 = await bitcoindDefaultClient.analyzePsbt(psbt)
+//   const walletProcessPsbt = await bitcoindDefaultClient.walletProcessPsbt(psbt)
+//   // const decodedPsbt2 = await bitcoindDefaultClient.decodePsbt(walletProcessPsbt.psbt)
+//   // const analysePsbt2 = await bitcoindDefaultClient.analyzePsbt(walletProcessPsbt.psbt)
+//   const finalizedPsbt = await bitcoindDefaultClient.finalizePsbt(walletProcessPsbt.psbt)
+//   const txid = await bitcoindDefaultClient.sendRawTransaction(finalizedPsbt.hex) 
   
-  await bitcoindDefaultClient.generateToAddress(6, RANDOM_ADDRESS)
-  await waitUntilBlockHeight({ lnd: lndMain, blockHeight: initBlockCount + 6 })
+//   await bitcoindDefaultClient.generateToAddress(6, RANDOM_ADDRESS)
+//   await waitUntilBlockHeight({ lnd: lndMain, blockHeight: initBlockCount + 6 })
 
-  {
-    const {BTC: balance0} = await walletUser0.getBalances()
-    const {BTC: balance4} = await walletUser4.getBalances()
+//   {
+//     const {BTC: balance0} = await walletUser0.getBalances()
+//     const {BTC: balance4} = await walletUser4.getBalances()
 
-    expect(balance0).toBe(initialBalanceUser0 + btc2sat(1))
-    expect(balance4).toBe(initBalanceUser4 + btc2sat(2))
-  }
+//     expect(balance0).toBe(initialBalanceUser0 + btc2sat(1))
+//     expect(balance4).toBe(initBalanceUser4 + btc2sat(2))
+//   }
 
-})
+// })
