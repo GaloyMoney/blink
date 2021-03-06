@@ -108,7 +108,7 @@ export async function onchainTransactionEventHandler(tx) {
     }
 
     if (tx.is_confirmed === false) {
-      onchainLogger.info({ transactionType: "receipt", pending: true }, "mempool apparence")
+      onchainLogger.info({ transactionType: "receipt", pending: true }, "mempool appearence")
     } else {
       // onchain is currently only BTC
       const wallet = await WalletFactory({ user, logger: onchainLogger })
