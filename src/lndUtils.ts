@@ -11,7 +11,6 @@ export const lndBalances = async () => {
 
   //FIXME: This can cause incorrect balance to be reported in case an unconfirmed txn is later cancelled/double spent
   // bitcoind seems to have a way to report this correctly. does lnd have?
-  // pending_chain_balance is not part of total balance being returned by this function
   const { pending_chain_balance } = await lnService.getPendingChainBalance({lnd})
 
   const { channels: closedChannels } = await lnService.getClosedChannels({lnd})
@@ -22,8 +21,8 @@ export const lndBalances = async () => {
     (channel as any).close_payments, payment => (payment as any).is_pending ? (payment as any).tokens : 0 )
   )
   
-  const total = chain_balance + channel_balance + opening_channel_balance + closing_channel_balance
-  return { total, onChain: chain_balance + pending_chain_balance, offChain: channel_balance, opening_channel_balance, closing_channel_balance, pending_chain_balance } 
+  const total = chain_balance + channel_balance + pending_chain_balance + opening_channel_balance + closing_channel_balance
+  return { total, onChain: chain_balance + pending_chain_balance, offChain: channel_balance, opening_channel_balance, closing_channel_balance } 
 }
 
 export async function nodeStats({ lnd }) {
