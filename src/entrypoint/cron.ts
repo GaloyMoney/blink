@@ -1,6 +1,6 @@
 import { setupMongoConnection } from "../mongodb";
 import { baseLogger } from "../utils";
-import { updateEscrows, updateUsersPendingPayment, payCashBack } from "../ledger/balanceSheet"
+import { updateEscrows, updateUsersPendingPayment } from "../ledger/balanceSheet"
 import { SpecterWallet } from "../SpecterWallet";
 
 const main = async () => {
@@ -8,7 +8,6 @@ const main = async () => {
 
 	await updateEscrows()
   await updateUsersPendingPayment()
-  await payCashBack()
 
   const specterWallet =  new SpecterWallet({ logger: baseLogger })
   await specterWallet.tentativelyRebalance()

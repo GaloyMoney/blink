@@ -2,7 +2,6 @@
  * @jest-environment node
  */
 import { createHash, randomBytes } from 'crypto';
-import { payCashBack } from "../ledger/balanceSheet";
 import { FEECAP, lnd } from "../lndConfig";
 import { quit } from "../lock";
 import { setupMongoConnection } from "../mongodb";
@@ -165,31 +164,17 @@ functionToTests.forEach(({fn, name, initialFee}) => {
       expect(await walletPayer.updatePendingInvoice({ hash })).toBeTruthy()
       expect(await walletPayee.updatePendingInvoice({ hash })).toBeTruthy()
     }
-
-    const init_cashback = await InvoiceUser.countDocuments({cashback: true})
     
     // a cashback tx
     await paymentOtherGaloyUser({walletPayee: userWallet2, walletPayer: userWallet1})
-    
-    if (process.env.CASHBACK) {
-      expect(await InvoiceUser.countDocuments({cashback: true})).toBe(init_cashback + 1)
-    }
     
     // a cashback tx
     await paymentOtherGaloyUser({walletPayee: userWallet2, walletPayer: userWallet0})
     
     await sleep(5000)
     
-    if (process.env.CASHBACK) {
-      expect(await InvoiceUser.countDocuments({cashback: true})).toBe(init_cashback + 2)
-    }
-    
     // not a cashback transaction
     await paymentOtherGaloyUser({walletPayee: userWallet1, walletPayer: userWallet2})
-    if (process.env.CASHBACK) {
-      expect(await InvoiceUser.countDocuments({cashback: true})).toBe(init_cashback + 2)
-    }
-    
 
     userWallet0 = await getUserWallet(0)
     userWallet1 = await getUserWallet(1)
@@ -198,12 +183,6 @@ functionToTests.forEach(({fn, name, initialFee}) => {
     expect(userWallet0.user.contacts.length).toBe(1)
     expect(userWallet0.user.contacts[0]).toHaveProperty("id", userWallet2.user.username)
     
-    if (process.env.CASHBACK) {
-      const tx_count = await Transaction.countDocuments()
-      await payCashBack()
-      expect(await Transaction.countDocuments()).toBe(tx_count + 4)
-    }
-
   })
 
   it(`payInvoice to lnd outside2 ${name}`, async () => {

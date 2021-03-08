@@ -65,8 +65,6 @@ spec:
                 secretKeyRef:
                   name: ftx-secret
                   key: secret
-            - name: CASHBACK
-              value: "true"
             - name: GOOGLE_APPLICATION_CREDENTIALS
               value: "/tmp/firebase-serviceaccount/galoyapp-firebase-serviceaccont.json"
             - name: DROPBOX_ACCESS_TOKEN

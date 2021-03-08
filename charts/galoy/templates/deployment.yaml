@@ -145,8 +145,6 @@ spec:
                   name: twilio-secret
                   key: TWILIO_API_SECRET
             {{- end }}
-            - name: CASHBACK
-              value: "true"
             {{- range  .customYamlEnv }}
             {{- range  $index, $value := . }}
             - name: {{ $index }}

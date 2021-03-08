@@ -46,10 +46,6 @@ const invoiceUserSchema = new Schema({
     default: true
   },
 
-  cashback: {
-    type: Boolean,
-    default: false
-  }
 })
 
 invoiceUserSchema.index({ "uid": 1 })
@@ -155,6 +151,7 @@ const UserSchema = new Schema({
   coordinate: {
     type: pointSchema,
   },
+  
   excludeCashback: {
     type: Boolean,
     default: false
