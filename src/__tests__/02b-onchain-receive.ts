@@ -161,40 +161,40 @@ it('identifies unconfirmed incoming on chain txn', async () => {
 
 })
 
-// it('batch send transaction', async () => {
-//   const address0 = await walletUser0.getOnChainAddress()
-//   const walletUser4 = await getUserWallet(4)
-//   const address4 = await walletUser4.getOnChainAddress()
+it('batch send transaction', async () => {
+  const address0 = await walletUser0.getOnChainAddress()
+  const walletUser4 = await getUserWallet(4)
+  const address4 = await walletUser4.getOnChainAddress()
 
-//   const {BTC: initBalanceUser4} = await walletUser4.getBalances()
-//   console.log({initBalanceUser4, initialBalanceUser0})
+  const {BTC: initBalanceUser4} = await walletUser4.getBalances()
+  console.log({initBalanceUser4, initialBalanceUser0})
   
-//   const output0 = {}
-//   output0[address0] = 1
+  const output0 = {}
+  output0[address0] = 1
   
-//   const output1 = {}
-//   output1[address4] = 2
+  const output1 = {}
+  output1[address4] = 2
 
-//   const outputs = [output0, output1]
+  const outputs = [output0, output1]
 
-//   const {psbt} = await bitcoindDefaultClient.walletCreateFundedPsbt([], outputs)
-//   // const decodedPsbt1 = await bitcoindDefaultClient.decodePsbt(psbt)
-//   // const analysePsbt1 = await bitcoindDefaultClient.analyzePsbt(psbt)
-//   const walletProcessPsbt = await bitcoindDefaultClient.walletProcessPsbt(psbt)
-//   // const decodedPsbt2 = await bitcoindDefaultClient.decodePsbt(walletProcessPsbt.psbt)
-//   // const analysePsbt2 = await bitcoindDefaultClient.analyzePsbt(walletProcessPsbt.psbt)
-//   const finalizedPsbt = await bitcoindDefaultClient.finalizePsbt(walletProcessPsbt.psbt)
-//   const txid = await bitcoindDefaultClient.sendRawTransaction(finalizedPsbt.hex) 
+  const {psbt} = await bitcoindDefaultClient.walletCreateFundedPsbt([], outputs)
+  // const decodedPsbt1 = await bitcoindDefaultClient.decodePsbt(psbt)
+  // const analysePsbt1 = await bitcoindDefaultClient.analyzePsbt(psbt)
+  const walletProcessPsbt = await bitcoindDefaultClient.walletProcessPsbt(psbt)
+  // const decodedPsbt2 = await bitcoindDefaultClient.decodePsbt(walletProcessPsbt.psbt)
+  // const analysePsbt2 = await bitcoindDefaultClient.analyzePsbt(walletProcessPsbt.psbt)
+  const finalizedPsbt = await bitcoindDefaultClient.finalizePsbt(walletProcessPsbt.psbt)
+  const txid = await bitcoindDefaultClient.sendRawTransaction(finalizedPsbt.hex) 
   
-//   await bitcoindDefaultClient.generateToAddress(6, RANDOM_ADDRESS)
-//   await waitUntilBlockHeight({ lnd: lndMain, blockHeight: initBlockCount + 6 })
+  await bitcoindDefaultClient.generateToAddress(6, RANDOM_ADDRESS)
+  await waitUntilBlockHeight({ lnd: lndMain, blockHeight: initBlockCount + 6 })
 
-//   {
-//     const {BTC: balance0} = await walletUser0.getBalances()
-//     const {BTC: balance4} = await walletUser4.getBalances()
+  {
+    const {BTC: balance0} = await walletUser0.getBalances()
+    const {BTC: balance4} = await walletUser4.getBalances()
 
-//     expect(balance0).toBe(initialBalanceUser0 + btc2sat(1))
-//     expect(balance4).toBe(initBalanceUser4 + btc2sat(2))
-//   }
+    expect(balance0).toBe(initialBalanceUser0 + btc2sat(1))
+    expect(balance4).toBe(initBalanceUser4 + btc2sat(2))
+  }
 
-// })
+})
