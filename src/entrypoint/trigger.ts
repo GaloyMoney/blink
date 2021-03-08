@@ -2,7 +2,7 @@ import { Storage } from '@google-cloud/storage';
 import { assert } from "console";
 import { Dropbox } from "dropbox";
 import express from 'express';
-import { subscribeToBackups, subscribeToChannels, subscribeToInvoices, subscribeToTransactions } from 'ln-service';
+import { subscribeToBackups, subscribeToChannels, subscribeToInvoices, subscribeToTransactions, subscribeToBlocks } from 'ln-service';
 import { find } from "lodash";
 import { lndAccountingPath, lndFeePath } from "../ledger/ledger";
 import { lnd } from "../lndConfig";
@@ -16,6 +16,7 @@ import { WalletFactory } from "../walletFactory";
 import crypto from "crypto"
 import lnService from 'ln-service'
 import { InvoiceUser, Transaction, User } from "../schema";
+import { updateUsersPendingPayment } from '../ledger/balanceSheet';
 
 //millitokens per million
 const FEE_RATE = 2500
@@ -214,6 +215,9 @@ const main = async () => {
 
   const subBackups = subscribeToBackups({ lnd })
   subBackups.on('backup', ({ backup }) => uploadBackup(backup))
+
+  const subBlocks = subscribeToBlocks({ lnd })
+  subBlocks.on('block', updateUsersPendingPayment)
 
   updatePrice()
 }
