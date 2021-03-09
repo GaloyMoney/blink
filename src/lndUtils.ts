@@ -2,11 +2,12 @@ import _ from "lodash";
 import { lnd } from "./lndConfig"
 import { baseLogger } from "./utils";
 import * as lnService from "ln-service"
+const { getChainBalance } = require("lightning/lnd_methods")
 import { default as axios } from 'axios';
 
 
 export const lndBalances = async () => {
-  const { chain_balance } = await lnService.getChainBalance({lnd})
+  const { chain_balance } = await getChainBalance({lnd})
   const { channel_balance, pending_balance: opening_channel_balance } = await lnService.getChannelBalance({lnd})
 
   //FIXME: This can cause incorrect balance to be reported in case an unconfirmed txn is later cancelled/double spent

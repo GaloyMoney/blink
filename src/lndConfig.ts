@@ -1,4 +1,4 @@
-import lnService from 'ln-service'
+import {authenticatedLndGrpc} from 'lightning';
 
 const getAuth = () => {
   // network = process.env.NETWORK // TODO
@@ -17,7 +17,7 @@ const getAuth = () => {
   return { macaroon, cert, socket };
 }
 
-export const lnd = lnService.authenticatedLndGrpc(getAuth()).lnd
+export const lnd = authenticatedLndGrpc(getAuth()).lnd
 
 // export const lnds = [
 //   {
