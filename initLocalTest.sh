@@ -106,11 +106,11 @@ if [ ${LOCAL} ]
 then 
   kubectlLndDeletionWait 
   localdevpath="-f $INFRADIR/configs/lnd/localdev.yaml \
-    --set instances[0].staticIP=$MINIKUBEIP \
-    --set instances[1].staticIP=$MINIKUBEIP \
-    --set instances[2].staticIP=$MINIKUBEIP \
-    --set configmap[0].staticIP=$MINIKUBEIP \
-    --set configmap[1].staticIP=$MINIKUBEIP"
+    --set instances[0].service.staticIP=$MINIKUBEIP \
+    --set instances[1].service.staticIP=$MINIKUBEIP \
+    --set instances[2].service.staticIP=$MINIKUBEIP \
+    --set configmap[0].service.staticIP=$MINIKUBEIP \
+    --set configmap[1].service.staticIP=$MINIKUBEIP"
 
 fi
 
