@@ -1,15 +1,12 @@
-metrics:
-    port: 10254
+controller:
+  metrics: 
     enabled: false
     service:
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "10254"
-      servicePort: 9913
-      type: ClusterIP
     prometheusRule:
       enabled: true
-      additionalLabels: {}
       rules:
         - alert: NGINXTooMany500s
           expr: 100 * ( sum( nginx_ingress_controller_requests{status=~"5.+"} ) / sum(nginx_ingress_controller_requests) ) > 5
