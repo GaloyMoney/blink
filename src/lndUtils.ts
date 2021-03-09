@@ -6,16 +6,20 @@ import { default as axios } from 'axios';
 
 
 export const lndBalances = async () => {
+  // Onchain
   const { chain_balance } = await lnService.getChainBalance({lnd})
-  const { channel_balance, pending_balance: opening_channel_balance } = await lnService.getChannelBalance({lnd})
-
   //FIXME: This can cause incorrect balance to be reported in case an unconfirmed txn is later cancelled/double spent
   // bitcoind seems to have a way to report this correctly. does lnd have?
   const { pending_chain_balance } = await lnService.getPendingChainBalance({lnd})
 
+  // offchain
+  const { channel_balance, pending_balance: opening_channel_balance } = await lnService.getChannelBalance({lnd})
+
+  // get pending closed
   const { channels: closedChannels } = await lnService.getClosedChannels({lnd})
 
-  // FIXME: calculation seem wrong (seeing the grafana graph, need to double check)
+  // FIXME: there can be issue with channel not closed completely from lnd 
+  // https://github.com/alexbosworth/ln-service/issues/139
   baseLogger.debug({closedChannels}, "lnService.getClosedChannels")
   const closing_channel_balance = _.sumBy(closedChannels, channel => _.sumBy(
     (channel as any).close_payments, payment => (payment as any).is_pending ? (payment as any).tokens : 0 )
