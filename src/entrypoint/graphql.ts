@@ -17,7 +17,6 @@ import swStats from 'swagger-stats';
 import util from 'util';
 import { v4 as uuidv4 } from 'uuid';
 import { getMinBuildNumber, mainCache } from "../cache";
-import { insertMarkers } from "../debug/map_csv_to_mongodb";
 import { nodeStats } from "../lndUtils";
 import { getAsyncRedisClient } from "../lock";
 import { setupMongoConnection } from "../mongodb";
@@ -352,12 +351,10 @@ const options = {
 }
 
 setupMongoConnection().then(() => {
-  insertMarkers().then(() => {
-    server.start(options, ({ port }) =>
-      graphqlLogger.info(
-        `Server started, listening on port ${port} for incoming requests.`,
-      ),
-    )
-  })
+  server.start(options, ({ port }) =>
+    graphqlLogger.info(
+      `Server started, listening on port ${port} for incoming requests.`,
+    ),
+  )
 }).catch((err) => graphqlLogger.error(err, "server error"))
 
