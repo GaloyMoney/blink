@@ -7,7 +7,7 @@ Galoy is bitcoin banking platform.
 To give it a try: 
 
 ```
-helm repo add https://galoymoney.github.io/charts/
+helm repo add galoy https://galoymoney.github.io/charts/
 helm install bitcoin galoy/bitcoin
 helm install lnd galoy/lnd
 helm install galoy galoy/galoy
