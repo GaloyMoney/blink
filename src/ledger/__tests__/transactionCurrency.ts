@@ -5,7 +5,6 @@ import { baseLogger } from "../../utils"
 import { UserWallet } from "../../userWallet"
 import { WalletFactory } from "../../walletFactory"
 import { User } from "../../schema"
-import { exit } from "process"
 
 
 let mongoose
