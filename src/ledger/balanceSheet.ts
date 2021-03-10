@@ -1,13 +1,13 @@
+import { getChannels } from 'lightning';
 import { filter } from "lodash";
-import { bitcoindAccountingPath, escrowAccountingPath, lndAccountingPath, lndFeePath } from "./ledger";
 import { lnd } from "../lndConfig";
+import { lndBalances } from "../lndUtils";
 import { MainBook } from "../mongodb";
+import { Transaction, User } from "../schema";
 import { SpecterWallet } from "../SpecterWallet";
 import { baseLogger } from "../utils";
-import { getFunderWallet, WalletFactory } from "../walletFactory";
-import { lndBalances } from "../lndUtils"
-import { InvoiceUser, Transaction, User } from "../schema";
-import { getInvoice, getChannels } from 'lightning'
+import { WalletFactory } from "../walletFactory";
+import { bitcoindAccountingPath, escrowAccountingPath, lndAccountingPath, lndFeePath } from "./ledger";
 
 const logger = baseLogger.child({module: "admin"})
 
@@ -22,25 +22,6 @@ export const updateUsersPendingPayment = async () => {
     await userWallet.updatePending()
   }
 }
-
-export const payCashBack = async () => {
-  const cashback = process.env.CASHBACK
-  logger.info({cashback}, "cashback enabled?")
-
-  if (!cashback) {
-    return
-  }
-
-  const fundingWallet = await getFunderWallet({ logger })  
-
-  const invoices = await InvoiceUser.find({ cashback: true })
-  for (const invoice_db of invoices) {
-    const invoice = await getInvoice({ lnd, id: invoice_db._id })
-    const result = await fundingWallet.pay({invoice: invoice.request, isReward: true})
-    logger.info({invoice, invoice_db, result}, "cashback succesfully sent")
-  }
-}
-
 
 export const getBalanceSheet = async () => {    
   const { balance: assets } = await MainBook.balance({account_path: "Assets", currency: "BTC"}) 

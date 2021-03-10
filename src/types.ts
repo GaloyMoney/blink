@@ -17,10 +17,6 @@ export interface IAddInvoiceRequest {
   value: number,
   memo: string | undefined,
   selfGenerated?: boolean,
-
-  // for cashback. 
-  cashback?: boolean,
-  uid?: string
 }
 
 export interface IAddBTCInvoiceRequest {
