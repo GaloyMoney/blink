@@ -198,8 +198,8 @@ export const LightningMixin = (superclass) => class extends superclass {
     let cltv_delta
     let payment
     let destination, id, description
-    let routeHint = []
-    let messages: Object[] = []
+    let routeHint 
+    let messages
 
     if (params.invoice) {
       // TODO: replace this with invoices/bolt11/parsePaymentRequest function?
