@@ -21,7 +21,7 @@ export const lnd = authenticatedLndGrpc(getAuth()).lnd
 
 // export const lnds = [
 //   {
-//     pubkey: await lnService.getWalletInfo({lnd}).public_key,
+//     pubkey: await getWalletInfo({lnd}).public_key,
 //     grpc: lnd
 //   },
 //   {

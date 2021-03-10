@@ -7,7 +7,7 @@ import { baseLogger } from "../utils";
 import { getFunderWallet, WalletFactory } from "../walletFactory";
 import { lndBalances } from "../lndUtils"
 import { InvoiceUser, Transaction, User } from "../schema";
-import lnService from 'ln-service'
+import { getInvoice, getChannels } from 'lightning'
 
 const logger = baseLogger.child({module: "admin"})
 
@@ -35,7 +35,7 @@ export const payCashBack = async () => {
 
   const invoices = await InvoiceUser.find({ cashback: true })
   for (const invoice_db of invoices) {
-    const invoice = await lnService.getInvoice({ lnd, id: invoice_db._id })
+    const invoice = await getInvoice({ lnd, id: invoice_db._id })
     const result = await fundingWallet.pay({invoice: invoice.request, isReward: true})
     logger.info({invoice, invoice_db, result}, "cashback succesfully sent")
   }
@@ -85,7 +85,7 @@ export const updateEscrows = async () => {
 
   const metadata = { type, currency: "BTC", pending: false }
 
-  const { channels } = await lnService.getChannels({lnd})
+  const { channels } = await getChannels({lnd})
   const selfInitated = filter(channels, {is_partner_initiated: false})
 
   const mongotxs = await Transaction.aggregate([

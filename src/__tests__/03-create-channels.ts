@@ -11,6 +11,7 @@ import mongoose from "mongoose";
 import { once } from 'events';
 
 import lnService from 'ln-service'
+import { getChannels, getWalletInfo, subscribeToChannels, subscribeToGraph } from 'lightning'
 
 const local_tokens = 1000000
 
@@ -26,8 +27,8 @@ beforeAll(async () => {
 beforeEach(async () => {
   initBlockCount = await bitcoindDefaultClient.getBlockCount()
 
-  channelLengthMain = (await lnService.getChannels({ lnd: lndMain })).channels.length
-  channelLengthOutside1 = (await lnService.getChannels({ lnd: lndOutside1 })).channels.length
+  channelLengthMain = (await getChannels({ lnd: lndMain })).channels.length
+  channelLengthOutside1 = (await getChannels({ lnd: lndOutside1 })).channels.length
 })
 
 afterEach(async () => {
@@ -49,13 +50,13 @@ const openChannel = async ({ lnd, other_lnd, socket, is_private = false }) => {
   await waitUntilBlockHeight({ lnd: lndMain, blockHeight: initBlockCount })
   await waitUntilBlockHeight({ lnd: other_lnd, blockHeight: initBlockCount })
 
-  const { public_key: partner_public_key } = await lnService.getWalletInfo({ lnd: other_lnd })
+  const { public_key: partner_public_key } = await getWalletInfo({ lnd: other_lnd })
 
   let openChannelPromise = lnService.openChannel({
     lnd, local_tokens, is_private, partner_public_key, partner_socket: socket
   })
 
-  const sub = lnService.subscribeToChannels({ lnd })
+  const sub = subscribeToChannels({ lnd })
 
   if (lnd === lndMain) {
     sub.once('channel_opened', (channel) => onChannelUpdated({ channel, lnd, stateChange: "opened" }))
@@ -102,7 +103,7 @@ it('opens channel from lnd1ToLndOutside1', async () => {
   })
   await openChannel({ lnd: lndMain, other_lnd: lndOutside1, socket })
 
-  const { channels } = await lnService.getChannels({ lnd: lndMain })
+  const { channels } = await getChannels({ lnd: lndMain })
   expect(channels.length).toEqual(channelLengthMain + 1)
   const { balance: finalFeeInLedger } = await MainBook.balance({
     account: lndFeePath,
@@ -123,10 +124,10 @@ it('opensAndCloses channel from lnd1 to lndOutside1', async () => {
 
   let channels
 
-  ({ channels } = await lnService.getChannels({ lnd: lndMain }));
+  ({ channels } = await getChannels({ lnd: lndMain }));
   expect(channels.length).toEqual(channelLengthMain + 1)
 
-  const sub = lnService.subscribeToChannels({ lnd: lndMain })
+  const sub = subscribeToChannels({ lnd: lndMain })
   sub.on('channel_closed', async (channel) => {
     await onChannelUpdated({ channel, lnd: lndMain, stateChange: "closed" })
   })
@@ -143,7 +144,7 @@ it('opensAndCloses channel from lnd1 to lndOutside1', async () => {
 
   await updateEscrows();
 
-  ({ channels } = await lnService.getChannels({ lnd: lndMain }))
+  ({ channels } = await getChannels({ lnd: lndMain }))
   expect(channels.length).toEqual(channelLengthMain)
 
 })
@@ -151,7 +152,7 @@ it('opensAndCloses channel from lnd1 to lndOutside1', async () => {
 it('opens private channel from lndOutside1 to lndOutside2', async () => {
   const socket = `lnd-outside-2:9735`
 
-  const subscription = lnService.subscribeToGraph({ lnd: lndOutside1 });
+  const subscription = subscribeToGraph({ lnd: lndOutside1 });
 
   await Promise.all([
     openChannel({ lnd: lndOutside1, other_lnd: lndOutside2, socket, is_private: true }),
@@ -160,7 +161,7 @@ it('opens private channel from lndOutside1 to lndOutside2', async () => {
 
   subscription.removeAllListeners();
 
-  const { channels } = await lnService.getChannels({ lnd: lndOutside1 })
+  const { channels } = await getChannels({ lnd: lndOutside1 })
   expect(channels.length).toEqual(channelLengthOutside1 + 1)
   expect(channels.some(e => e.is_private))
 })
@@ -170,7 +171,7 @@ it('opens channel from lndOutside1 to lnd1', async () => {
   await openChannel({ lnd: lndOutside1, other_lnd: lndMain, socket })
 
   {
-    const { channels } = await lnService.getChannels({ lnd: lndMain })
+    const { channels } = await getChannels({ lnd: lndMain })
     expect(channels.length).toEqual(channelLengthMain + 1)
   }
 

@@ -15,6 +15,7 @@ import { WalletFactory } from "../walletFactory";
 
 import crypto from "crypto"
 import lnService from 'ln-service'
+import { getHeight, getWalletInfo } from 'lightning'
 import { InvoiceUser, Transaction, User } from "../schema";
 
 //millitokens per million
@@ -164,7 +165,7 @@ export const onChannelUpdated = async ({ channel, lnd, stateChange }: { channel:
   const { transaction_id } = channel
 
   // TODO: dedupe from onchain
-  const { current_block_height } = await lnService.getHeight({ lnd })
+  const { current_block_height } = await getHeight({ lnd })
   const after = Math.max(0, current_block_height - LOOK_BACK) // this is necessary for tests, otherwise after may be negative
   const { transactions } = await lnService.getChainTransactions({ lnd, after })
 
@@ -198,7 +199,7 @@ const updatePrice = async () => {
 }
 
 const main = async () => {
-  lnService.getWalletInfo({ lnd }, (err, result) => {
+  getWalletInfo({ lnd }, (err, result) => {
     logger.debug({ err, result }, 'getWalletInfo')
   });
 
@@ -222,7 +223,7 @@ const healthCheck = () => {
   const app = express()
   const port = 8888
   app.get('/health', (req, res) => {
-    lnService.getWalletInfo({ lnd }, (err, ) => !err ? res.sendStatus(200) : res.sendStatus(500));
+    getWalletInfo({ lnd }, (err, ) => !err ? res.sendStatus(200) : res.sendStatus(500));
   })
   app.listen(port, () => logger.info(`Health check listening on port ${port}!`))
 }

@@ -70,7 +70,7 @@ it('add invoice with no amount', async () => {
 
 it('receives payment from outside', async () => {
   // const request = await userWalletUsd.addInvoice({ value: amountInvoiceUsd })
-  // await lnService.pay({ lnd: lndOutside1, request })
+  // await pay({ lnd: lndOutside1, request })
 
   // const finalBalance = await userWalletUsd.getBalance()
   // expect(finalBalance).toBe(initBalanceUsd + amountInvoiceUsd)
@@ -95,7 +95,7 @@ it('receives payment from outside', async () => {
 
 
 it('payInvoice', async () => {
-  // const { request } = await lnService.createInvoice({ lnd: lndOutside1, tokens: amountInvoice })
+  // const { request } = await createInvoice({ lnd: lndOutside1, tokens: amountInvoice })
   // const result = await userWalletUsd.pay({ invoice: request })
   // expect(result).toBe("success")
   // const finalBalance = await userWalletUsd.getBalance()

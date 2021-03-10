@@ -1,6 +1,6 @@
 import { btc2sat, sat2btc, isInvoiceAlreadyPaidError } from "../utils"
 import { lndOutside1, lndOutside2 } from "./helper"
-import lnService from "ln-service"
+import { createInvoice, pay } from "lightning"
 
 it('btc2sat', async () => {
   const BTC = 1.2
@@ -13,10 +13,10 @@ it('sat2btc', async () => {
 })
 
 it('decodes lnservice error correctly', async () => {
-  const { request } = await lnService.createInvoice({ lnd: lndOutside2, tokens: 1000 })
-  await lnService.pay({ lnd: lndOutside1, request })
+  const { request } = await createInvoice({ lnd: lndOutside2, tokens: 1000 })
+  await pay({ lnd: lndOutside1, request })
   try {
-    await lnService.pay({ lnd: lndOutside1, request })
+    await pay({ lnd: lndOutside1, request })
   } catch (err) {
     expect(isInvoiceAlreadyPaidError(err)).toBeTruthy()
   }
