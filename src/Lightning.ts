@@ -253,7 +253,8 @@ export const LightningMixin = (superclass) => class extends superclass {
     const max_fee = Math.floor(Math.max(FEECAP * tokens, FEEMIN))
 
     return {
-      tokens, mtokens: tokens * 1000, destination, pushPayment, id, routeHint, messages, max_fee,
+      // FIXME String: https://github.com/alexbosworth/lightning/issues/24
+      tokens, mtokens: String(tokens * 1000), destination, pushPayment, id, routeHint, messages, max_fee,
       memoInvoice: description, payment, cltv_delta, expires_at, features,
     }
   }
