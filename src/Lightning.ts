@@ -11,6 +11,7 @@ import { IAddInvoiceRequest, IFeeRequest, IPaymentRequest } from "./types";
 import { addContact, isInvoiceAlreadyPaidError, LoggedError, timeout } from "./utils";
 import { UserWallet } from "./userWallet";
 import { InvoiceUser, Transaction, User } from "./schema";
+import { createInvoice, getWalletInfo, decodePaymentRequest, cancelHodlInvoice, payViaPaymentDetails, payViaRoutes, getPayment, getInvoice } from "lightning"
 
 import util from 'util'
 
@@ -40,7 +41,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
   // FIXME: this should be static
   async getNodePubkey() {
-    this.nodePubKey = this.nodePubKey ?? (await lnService.getWalletInfo({ lnd })).public_key
+    this.nodePubKey = this.nodePubKey ?? (await getWalletInfo({ lnd })).public_key
     return this.nodePubKey
   }
 
@@ -72,7 +73,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         description: memo,
         expires_at,
       }
-      const result = await lnService.createInvoice(input)
+      const result = await createInvoice(input)
       request = result.request
       id = result.id
     } catch (err) {
@@ -191,15 +192,15 @@ export const LightningMixin = (superclass) => class extends superclass {
     let cltv_delta
     let payment
     let destination, id, description
-    let routeHint = []
-    let messages: Object[] = []
+    let routeHint 
+    let messages
 
     if (params.invoice) {
       // TODO: replace this with invoices/bolt11/parsePaymentRequest function?
       // TODO: use msat instead of sats for the db?
 
       try {
-        ({ id, safe_tokens: tokens, destination, description, routes: routeHint, payment, cltv_delta, expires_at, features } = await lnService.decodePaymentRequest({ lnd, request: params.invoice }))
+        ({ id, safe_tokens: tokens, destination, description, routes: routeHint, payment, cltv_delta, expires_at, features } = await decodePaymentRequest({ lnd, request: params.invoice }))
       } catch (err) {
         const error = `Error decoding the invoice`
         lightningLogger.error({ params, success: false, error }, error)
@@ -246,7 +247,8 @@ export const LightningMixin = (superclass) => class extends superclass {
     const max_fee = Math.floor(Math.max(FEECAP * tokens, FEEMIN))
 
     return {
-      tokens, mtokens: tokens * 1000, destination, pushPayment, id, routeHint, messages, max_fee,
+      // FIXME String: https://github.com/alexbosworth/lightning/issues/24
+      tokens, mtokens: String(tokens * 1000), destination, pushPayment, id, routeHint, messages, max_fee,
       memoInvoice: description, payment, cltv_delta, expires_at, features,
     }
   }
@@ -338,7 +340,7 @@ export const LightningMixin = (superclass) => class extends superclass {
           const resultDeletion = await InvoiceUser.deleteOne({ _id: id })
           this.logger.info({ id, user: this.user, resultDeletion }, "invoice has been deleted from InvoiceUser following on_us transaction")
 
-          await lnService.cancelHodlInvoice({ lnd, id })
+          await cancelHodlInvoice({ lnd, id })
           this.logger.info({ id, user: this.user }, "canceling invoice on lnd")
         }
 
@@ -442,14 +444,14 @@ export const LightningMixin = (superclass) => class extends superclass {
 
           // Fixme: seems to be leaking if it timeout.
           if (route) {
-            paymentPromise = lnService.payViaRoutes({ lnd, routes: [route], id })
+            paymentPromise = payViaRoutes({ lnd, routes: [route], id })
 
           } else {
 
             // incoming_peer?
             // max_paths for MPP
             // max_timeout_height ??
-            paymentPromise = lnService.payViaPaymentDetails({
+            paymentPromise = payViaPaymentDetails({
               lnd,
               id,
               cltv_delta,
@@ -576,7 +578,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         let result
         try {
-          result = await lnService.getPayment({ lnd, id: payment.hash })
+          result = await getPayment({ lnd, id: payment.hash })
         } catch (err) {
           const error = 'issue fetching payment'
           this.logger.error({ err, payment }, error)
@@ -622,7 +624,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       // but might not be a strong problem anyway
       // at least return same error if invoice not from user
       // or invoice doesn't exist. to preserve privacy and prevent DDOS attack.
-      invoice = await lnService.getInvoice({ lnd, id: hash })
+      invoice = await getInvoice({ lnd, id: hash })
 
       // TODO: we should not log/keep secret in the logs
       this.logger.debug({ invoice, user: this.user }, "got invoice status")
@@ -694,7 +696,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       // maybe not needed after old invoice has been deleted?
 
       try {
-        await lnService.cancelHodlInvoice({ lnd, id: hash })
+        await cancelHodlInvoice({ lnd, id: hash })
         this.logger.info({ id: hash, user: this.user._id }, "canceling invoice")
 
       } catch (err) {

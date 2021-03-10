@@ -4,19 +4,20 @@ import { lnd } from "../lndConfig";
 import { User } from "../schema";
 import { baseLogger, sleep } from "../utils";
 import { getTokenFromPhoneIndex, WalletFactory } from "../walletFactory";
+import {authenticatedLndGrpc} from 'lightning';
 
 
-import lnService from 'ln-service'
+import { getWalletInfo } from 'lightning'
 
 export const lndMain = lnd
 
-export const lndOutside1 = lnService.authenticatedLndGrpc({
+export const lndOutside1 = authenticatedLndGrpc({
   cert: process.env.TLSOUTSIDE1,
   macaroon: process.env.MACAROONOUTSIDE1,
   socket: `${process.env.LNDOUTSIDE1ADDR}:${process.env.LNDOUTSIDE1RPCPORT}`,
 }).lnd;
 
-export const lndOutside2 = lnService.authenticatedLndGrpc({
+export const lndOutside2 = authenticatedLndGrpc({
   cert: process.env.TLSOUTSIDE2,
   macaroon: process.env.MACAROONOUTSIDE2,
   socket: `${process.env.LNDOUTSIDE2ADDR}:${process.env.LNDOUTSIDE2RPCPORT}`,
@@ -43,13 +44,13 @@ export const checkIsBalanced = async () => {
 
 export async function waitUntilBlockHeight({ lnd, blockHeight }) {
   let current_block_height, is_synced_to_chain
-  ({ current_block_height, is_synced_to_chain } = await lnService.getWalletInfo({ lnd }))
+  ({ current_block_height, is_synced_to_chain } = await getWalletInfo({ lnd }))
 
   let time = 0
   const ms = 50
   while (current_block_height < blockHeight || !is_synced_to_chain) {
       await sleep(ms);
-      ({ current_block_height, is_synced_to_chain } = await lnService.getWalletInfo({ lnd }))
+      ({ current_block_height, is_synced_to_chain } = await getWalletInfo({ lnd }))
       // logger.debug({ current_block_height, is_synced_to_chain})
       time++
   }

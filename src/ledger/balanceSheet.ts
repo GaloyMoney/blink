@@ -1,4 +1,4 @@
-import lnService from 'ln-service';
+import { getChannels } from 'lightning';
 import { filter } from "lodash";
 import { lnd } from "../lndConfig";
 import { lndBalances } from "../lndUtils";
@@ -66,7 +66,7 @@ export const updateEscrows = async () => {
 
   const metadata = { type, currency: "BTC", pending: false }
 
-  const { channels } = await lnService.getChannels({lnd})
+  const { channels } = await getChannels({lnd})
   const selfInitated = filter(channels, {is_partner_initiated: false})
 
   const mongotxs = await Transaction.aggregate([

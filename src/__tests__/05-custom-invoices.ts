@@ -4,6 +4,7 @@
 import { decode } from 'bip66'
 import { createUnsignedRequest, parsePaymentRequest } from 'invoices'
 import lnService from 'ln-service'
+import { createInvoice, signBytes } from 'lightning'
 import util from 'util'
 import { lnd } from "../lndConfig"
 
@@ -23,14 +24,14 @@ it('add invoice', async () => {
   // const request = await userWallet1.addInvoice({ value: 1000, memo: "tx 1" })
   // expect(request.startsWith("lnbcrt10")).toBeTruthy()
 
-  const request_org = (await lnService.createInvoice({lnd, description: "abc"})).request
+  const request_org = (await createInvoice({lnd, description: "abc"})).request
   const decoded = parsePaymentRequest({request: request_org});
 
   decoded["username"] = username
 
   const { preimage, hash, hrp, tags } = createUnsignedRequest(decoded);
 
-  const {signature} = await lnService.signBytes({
+  const {signature} = await signBytes({
     key_family: 6,
     key_index: 0,
     lnd,

@@ -889,6 +889,11 @@
     exec-sh "^0.3.2"
     minimist "^1.2.0"
 
+"@cto.af/textdecoder@^0.0.0":
+  version "0.0.0"
+  resolved "https://registry.yarnpkg.com/@cto.af/textdecoder/-/textdecoder-0.0.0.tgz#e1e8d84c936c30a0f4619971f19ca41941af9fdc"
+  integrity sha512-sJpx3F5xcVV/9jNYJQtvimo4Vfld/nD3ph+ZWtQzZ03Zo8rJC7QKQTRcIGS13Rcz80DwFNthCWMrd58vpY4ZAQ==
+
 "@datastructures-js/heap@^3.0.0":
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/@datastructures-js/heap/-/heap-3.0.0.tgz#11eab8015b6b6490800792b758a103d4bca77193"
@@ -1018,6 +1023,15 @@
     snakeize "^0.1.0"
     stream-events "^1.0.1"
     xdg-basedir "^4.0.0"
+
+"@grpc/grpc-js@1.2.10":
+  version "1.2.10"
+  resolved "https://registry.yarnpkg.com/@grpc/grpc-js/-/grpc-js-1.2.10.tgz#f316d29a45fcc324e923d593cb849d292b1ed598"
+  integrity sha512-wj6GkNiorWYaPiIZ767xImmw7avMMVUweTvPFg4mJWOxz2180DKwfuxhJJZ7rpc1+7D3mX/v8vJdxTuIo71Ieg==
+  dependencies:
+    "@types/node" ">=12.12.47"
+    google-auth-library "^6.1.1"
+    semver "^6.2.0"
 
 "@grpc/grpc-js@1.2.5":
   version "1.2.5"
@@ -1629,6 +1643,11 @@
   version "14.14.22"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-14.14.22.tgz#0d29f382472c4ccf3bd96ff0ce47daf5b7b84b18"
   integrity sha512-g+f/qj/cNcqKkc3tFqlXOYjrmZA+jNBiDzbP3kH+B+otKFqAdPgVTGP1IeKRdMml/aE69as5S4FqtxAbl+LaMw==
+
+"@types/node@14.14.32", "@types/node@>=12.12.47":
+  version "14.14.32"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-14.14.32.tgz#90c5c4a8d72bbbfe53033f122341343249183448"
+  integrity sha512-/Ctrftx/zp4m8JOujM5ZhwzlWLx22nbQJiVqz8/zE15gOeEW+uly3FSX4fGFpcfEvFzXcMCJwq9lGVWgyARXhg==
 
 "@types/node@^10.1.0", "@types/node@^10.10.0":
   version "10.17.44"
@@ -2397,6 +2416,11 @@ bech32@1.1.4, bech32@^1.1.2:
   resolved "https://registry.yarnpkg.com/bech32/-/bech32-1.1.4.tgz#e38c9f37bf179b8eb16ae3a772b40c356d4832e9"
   integrity sha512-s0IrSOzLlbvX7yp4WBfPITzpAU8sqQcpsmwXDiKwrG4r491vwCO/XpejasRNl0piBMe/DvP4Tz0mIS/X1DPJBQ==
 
+bech32@2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/bech32/-/bech32-2.0.0.tgz#078d3686535075c8c79709f054b1b226a133b355"
+  integrity sha512-LcknSilhIGatDAsY1ak2I8VtGaHNhgMSYVxFrGLXv+xLHytaKZKcaUJJUE7qmBr7h33o5YQwP55pMI0xmkpJwg==
+
 bignumber.js@^4.0.0:
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/bignumber.js/-/bignumber.js-4.1.0.tgz#db6f14067c140bd46624815a7916c92d9b6c24b1"
@@ -2511,6 +2535,11 @@ bn.js@5.1.3:
   resolved "https://registry.yarnpkg.com/bn.js/-/bn.js-5.1.3.tgz#beca005408f642ebebea80b042b4d18d2ac0ee6b"
   integrity sha512-GkTiFpjFtUzU9CbMeJ5iazkCzGL3jrhzerzZIuqLABjbwRaFt33I9tUdSNryIptM+RxDet6OKm2WnLXzW51KsQ==
 
+bn.js@5.2.0:
+  version "5.2.0"
+  resolved "https://registry.yarnpkg.com/bn.js/-/bn.js-5.2.0.tgz#358860674396c6997771a9d051fcc1b57d4ae002"
+  integrity sha512-D7iWRBvnZE8ecXiLj/9wbxH7Tk79fAh8IHaTNq1RWRixsS02W+5qS+iE9yq6RYl0asXx5tw0bLhmT5pIfbSquw==
+
 bn.js@^4.11.8, bn.js@^4.4.0:
   version "4.11.9"
   resolved "https://registry.yarnpkg.com/bn.js/-/bn.js-4.11.9.tgz#26d556829458f9d1e81fc48952493d0ba3507828"
@@ -2545,6 +2574,13 @@ bolt07@1.6.0, bolt07@^1.6.0:
   integrity sha512-c+o1FdDxsmrCmrcqW6YRpk/dHDXk3frqHd1552b0JMXM2Kp6K74dbj74vioeYYUTzwyXB3zZFh9g2OZBg3JcYQ==
   dependencies:
     bn.js "5.1.3"
+
+bolt07@1.7.1:
+  version "1.7.1"
+  resolved "https://registry.yarnpkg.com/bolt07/-/bolt07-1.7.1.tgz#edfdf30ec69bde805b99dd9e136dafd02a4e6c77"
+  integrity sha512-vZCX56PB0274YW8BuCE91xWgqCPkfndBkknYYZFajX6Zr/KByMDXKQ2t1KKSYVkzzTL0rqeLWyQKdL6gJU1zHA==
+  dependencies:
+    bn.js "5.2.0"
 
 bolt09@0.1.2:
   version "0.1.2"
@@ -2762,6 +2798,14 @@ cbor@6.0.1:
   dependencies:
     bignumber.js "^9.0.1"
     nofilter "^1.0.4"
+
+cbor@7.0.3:
+  version "7.0.3"
+  resolved "https://registry.yarnpkg.com/cbor/-/cbor-7.0.3.tgz#216d292f2aedd1bb61414a8f949b63e4de11b33b"
+  integrity sha512-Io+lJytjYBJKgJqZQUz2bFaMPj+HtlsnT9kHSUiIJFqzWa05lm5/ycQ+NiZWpks3DR2Fz7j7axiTGeT57w/syg==
+  dependencies:
+    "@cto.af/textdecoder" "^0.0.0"
+    nofilter "^2.0.3"
 
 ccxt@^1.36.95:
   version "1.37.69"
@@ -4662,6 +4706,18 @@ invoices@1.1.4, "invoices@https://github.com/nicolasburtey/invoices#master":
     bolt09 "0.1.2"
     secp256k1 "4.0.2"
 
+invoices@1.1.6:
+  version "1.1.6"
+  resolved "https://registry.yarnpkg.com/invoices/-/invoices-1.1.6.tgz#7838c43f4e5c0584ed3be6ff2f8fd5793acf3e13"
+  integrity sha512-/rNd9R/qcq+4QakROCQGnOJbiQ9BKwtOVF+OWu+3pYVYgPydnAMA++VCcKxZYFCGDC70Ee+9oUvIlXI8UQoiqQ==
+  dependencies:
+    bech32 "2.0.0"
+    bitcoinjs-lib "5.2.0"
+    bn.js "5.2.0"
+    bolt07 "1.7.1"
+    bolt09 "0.1.3"
+    secp256k1 "4.0.2"
+
 ip-regex@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/ip-regex/-/ip-regex-2.1.0.tgz#fa78bf5d2e6913c911ce9f819ee5146bb6d844e9"
@@ -5597,6 +5653,29 @@ lightning@3.2.1:
     invoices "1.1.4"
     psbt "1.1.7"
 
+lightning@^3.2.20:
+  version "3.2.20"
+  resolved "https://registry.yarnpkg.com/lightning/-/lightning-3.2.20.tgz#c6b8608fea3eb0c37ad58c67304ad2888de56d4e"
+  integrity sha512-VbuYUKrESdUd2mWzFannAn/Bd0DZ0fkO73LeemJ7JS2JaIItXHoEZTAHWg+Ekf+r2rk4+v7NLurrfCmGpNdD8A==
+  dependencies:
+    "@grpc/grpc-js" "1.2.10"
+    "@grpc/proto-loader" "0.5.6"
+    "@types/express" "4.17.11"
+    "@types/node" "14.14.32"
+    "@types/request" "2.48.5"
+    "@types/ws" "7.4.0"
+    async "3.2.0"
+    asyncjs-util "1.2.3"
+    bitcoinjs-lib "5.2.0"
+    bn.js "5.2.0"
+    body-parser "1.19.0"
+    bolt07 "1.7.1"
+    bolt09 "0.1.3"
+    cbor "7.0.3"
+    express "4.17.1"
+    invoices "1.1.6"
+    psbt "1.1.8"
+
 lines-and-columns@^1.1.6:
   version "1.1.6"
   resolved "https://registry.yarnpkg.com/lines-and-columns/-/lines-and-columns-1.1.6.tgz#1c00c743b433cd0a4e80758f7b64a57440d9ff00"
@@ -6176,6 +6255,13 @@ nofilter@^1.0.4:
   resolved "https://registry.yarnpkg.com/nofilter/-/nofilter-1.0.4.tgz#78d6f4b6a613e7ced8b015cec534625f7667006e"
   integrity sha512-N8lidFp+fCz+TD51+haYdbDGrcBWwuHX40F5+z0qkUjMJ5Tp+rdSuAkMJ9N9eoolDlEVTf6u5icM+cNKkKW2mA==
 
+nofilter@^2.0.3:
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/nofilter/-/nofilter-2.0.3.tgz#f5460f3cb33147005883e3f5d4476239501fa187"
+  integrity sha512-FbuXC+lK+GU2+63D1kC1ETiZo+Z7SIi7B+mxKTCH1byrh6WFvfBCN/wpherFz0a0bjGd7EKTst/cz0yLeNngug==
+  dependencies:
+    "@cto.af/textdecoder" "^0.0.0"
+
 normalize-package-data@^2.5.0:
   version "2.5.0"
   resolved "https://registry.yarnpkg.com/normalize-package-data/-/normalize-package-data-2.5.0.tgz#e66db1838b200c1dfc233225d12cb36520e234a8"
@@ -6734,6 +6820,18 @@ psbt@1.1.7:
     bitcoin-ops "1.4.1"
     bitcoinjs-lib "5.2.0"
     bn.js "5.1.3"
+    pushdata-bitcoin "1.0.1"
+    varuint-bitcoin "1.1.2"
+
+psbt@1.1.8:
+  version "1.1.8"
+  resolved "https://registry.yarnpkg.com/psbt/-/psbt-1.1.8.tgz#4a0b47059452fc95f6369a245164270380779950"
+  integrity sha512-gnGq1ikGhvcsJij9BU2DZWBfXp09yRi/72+790hNwPaMPobgWrdlQ6sg6rNyDNYf+lwzYV8WIyHOLk2zH/7fGg==
+  dependencies:
+    bip66 "1.1.5"
+    bitcoin-ops "1.4.1"
+    bitcoinjs-lib "5.2.0"
+    bn.js "5.2.0"
     pushdata-bitcoin "1.0.1"
     varuint-bitcoin "1.1.2"
 

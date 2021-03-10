@@ -10,6 +10,7 @@ import { IOnChainPayment, ISuccess, ITransaction } from "./types";
 import { amountOnVout, baseLogger, bitcoindDefaultClient, btc2sat, LoggedError, LOOK_BACK, myOwnAddressesOnVout } from "./utils";
 import { UserWallet } from "./userWallet";
 import { Transaction, User } from "./schema";
+import { getHeight } from "lightning"
 
 import bluebird from 'bluebird';
 const { using } = bluebird;
@@ -22,7 +23,7 @@ const someAmount = 50000
 
 export const getOnChainTransactions = async ({ lnd, incoming }: { lnd: any, incoming: boolean }) => {
   try {
-    const { current_block_height } = await lnService.getHeight({lnd})
+    const { current_block_height } = await getHeight({lnd})
     const after = Math.max(0, current_block_height - LOOK_BACK) // this is necessary for tests, otherwise after may be negative
     const { transactions } = await lnService.getChainTransactions({ lnd, after })
 

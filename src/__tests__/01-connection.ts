@@ -10,7 +10,7 @@ import mongoose from "mongoose";
 import { User } from "../schema";
 
 //TODO: Choose between camel case or underscores for variable naming
-import lnService from 'ln-service'
+import { getWalletInfo } from 'lightning'
 
 
 it('I can connect to bitcoind', async () => {
@@ -19,14 +19,14 @@ it('I can connect to bitcoind', async () => {
 })
 
 it('I can connect to bank lnd', async () => {
-	const { public_key } = await lnService.getWalletInfo({ lnd: lndMain })
+	const { public_key } = await getWalletInfo({ lnd: lndMain })
 	expect(public_key.length).toBe(64 + 2)
 })
 
 it('I can connect to outside lnds', async () => {
 	const lnds = [lndOutside1, lndOutside2]
 	for (const lnd of lnds) {
-		const { public_key } = await lnService.getWalletInfo({ lnd })
+		const { public_key } = await getWalletInfo({ lnd })
     expect(public_key.length).toBe(64 + 2)
 	}
 })
