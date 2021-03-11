@@ -9,7 +9,7 @@ export const insertMarkers = async () => {
 
   let results: any[] = [];
 
-  fs.createReadStream('./src/debug/bitcoin beach maps - Sheet1.csv')
+  fs.createReadStream('./src/debug/maps - Sheet1.csv')
   .pipe(csv())
   .on('data', (data) => results.push(data))
   .on('end', async () => {
@@ -19,7 +19,7 @@ export const insertMarkers = async () => {
         type: 'Point',
         coordinates: [Number(item.latitude), Number(item.longitude)],
       },
-      username: item["***REMOVED*** username"]
+      username: item["username"]
     }))
 
     for(const result of results) {

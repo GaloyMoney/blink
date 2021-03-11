@@ -33,7 +33,7 @@ export const WalletFromUsername = async ({ username, logger }: { username: strin
 }
 
 export const getFunderWallet = async ({ logger }) => {
-  const funder = await User.findOne({ username: "***REMOVED***" })
+  const funder = await User.findOne({ username: yamlConfig.funderWallet })
   return WalletFactory({ user: funder, logger })
 }
 

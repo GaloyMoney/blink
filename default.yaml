@@ -1,6 +1,9 @@
 
 name: "Galoy Banking"
 
+# username of the account that will be used to fund rewards
+funder: "FunderWallet"
+
 hedging:
   LOW_BOUND_RATIO_SHORTING: 0.95
   LOW_SAFEBOUND_RATIO_SHORTING: 0.98
@@ -26,7 +29,7 @@ test_accounts:
   code: 321321
 - phone: "+16505554325" # user4/ funder
   code: 321321
-  username: "***REMOVED***"
+  username: "FunderWallet"
 - phone: "+16505554326"
   code: 321321
   currencies: [{id: "USD", ratio: 1}]
