@@ -14,3 +14,35 @@ hedging:
 #  // average: 2
   HIGH_SAFEBOUND_LEVERAGE: 2.25
   HIGH_BOUND_LEVERAGE: 3
+
+test_accounts: 
+- phone: "+16505554321" # user0
+  code: 321321
+- phone: "+16505554322" # user1
+  code: 321321
+- phone: "+16505554323" # user2
+  code: 321321
+- phone: "+16505554324" # user3
+  code: 321321
+- phone: "+16505554325" # user4/ funder
+  code: 321321
+  username: "***REMOVED***"
+- phone: "+16505554326"
+  code: 321321
+  currencies: [{id: "USD", ratio: 1}]
+- phone: "+16505554327"
+  code: 321321
+  role: "dealer"
+- phone: "+16505554328"
+  code: 321321
+- phone: "+16505554329" # postman
+  code: 321321 
+- phone: "+16505554330"
+  code: 321321
+  currencies: [{id: "USD", ratio: .5}, {id: "BTC", ratio: .5},]
+- phone: "+16505554331" # coldstorage
+  code: 321321
+  currency: "BTC"
+- phone: "+***REMOVED***"
+  code: 321321
+  currency: "BTC"

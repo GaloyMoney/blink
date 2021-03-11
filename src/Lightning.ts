@@ -13,9 +13,11 @@ import { UserWallet } from "./userWallet";
 import { InvoiceUser, Transaction, User } from "./schema";
 import { createInvoice, getWalletInfo, decodePaymentRequest, cancelHodlInvoice, payViaPaymentDetails, payViaRoutes, getPayment, getInvoice } from "lightning"
 
+
 import util from 'util'
 
 import bluebird from 'bluebird';
+import { yamlConfig } from "./config";
 const { using } = bluebird;
 
 export type ITxType = "invoice" | "payment" | "onchain_receipt" | "onchain_payment" | "on_us"
@@ -284,18 +286,18 @@ export const LightningMixin = (superclass) => class extends superclass {
           // pay through username
           
           if (!input_username) {
-            const error = 'a username is required for push payment to the ***REMOVED*** wallet'
+            const error = `a username is required for push payment to the ${ yamlConfig.name }`
             lightningLoggerOnUs.warn({ success: false, error }, error)
             throw new LoggedError(error)
           }
           payeeUser = await User.findByUsername({ username: input_username })
 
         } else {
-          // standard path, user scan another lightning wallet of bitcoin beach invoice
+          // standard path, user scan another lightning wallet of our own wallet but through an invoice
 
           const payeeInvoice = await InvoiceUser.findOne({ _id: id })
           if (!payeeInvoice) {
-            const error = 'User tried to pay invoice from ***REMOVED*** wallet, but it was already paid or does not exist'
+            const error = `User tried to pay invoice from ${ yamlConfig.name }, but it was already paid or does not exist`
             lightningLoggerOnUs.error({ success: false, error }, error)
             throw new LoggedError(error)
           }

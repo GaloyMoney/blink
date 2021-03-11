@@ -1,20 +1,6 @@
 app:
   name: "***REMOVED*** Wallet"
 
-  hedging:
-    LOW_BOUND_RATIO_SHORTING: 0.95
-    LOW_SAFEBOUND_RATIO_SHORTING: 0.98
-  # average: 0.99
-    HIGH_SAFEBOUND_RATIO_SHORTING: 1
-    HIGH_BOUND_RATIO_SHORTING: 1.03
-
-  # take a target leverage and safe parameter and calculate those bounding values dynamically.
-    LOW_BOUND_LEVERAGE: 1.2
-    LOW_SAFEBOUND_LEVERAGE: 1.8
-  #  // average: 2
-    HIGH_SAFEBOUND_LEVERAGE: 2.25
-    HIGH_BOUND_LEVERAGE: 3
-
 ca:
   CAEmail: krtk6160@galoy.io
 

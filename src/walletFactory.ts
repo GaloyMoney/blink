@@ -2,10 +2,11 @@ import * as jwt from 'jsonwebtoken';
 import { FtxDealerWallet } from "./dealer/FtxDealerWallet";
 import { getLastPrice } from "./cache";
 import { LightningUserWallet } from "./LightningUserWallet";
-import { login, TEST_NUMBER } from "./text";
+import { login } from "./text";
 import { baseLogger, LoggedError } from "./utils";
 import { UserWallet } from "./userWallet";
 import { User } from "./schema";
+import { yamlConfig } from "./config";
 
 
 export const WalletFactory = async ({ user, logger }: { user: typeof User, logger: any }) => {
@@ -43,7 +44,7 @@ export const getDealerWallet = async ({ logger }) => {
 
 // utils function for test
 export const getTokenFromPhoneIndex = async (index) => {
-  const entry = TEST_NUMBER[index]
+  const entry = yamlConfig.test_accounts[index]
   const raw_token = await login({ ...entry, logger: baseLogger })
   const token = jwt.verify(raw_token, process.env.JWT_SECRET);
 
