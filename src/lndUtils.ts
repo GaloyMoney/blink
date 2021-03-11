@@ -7,6 +7,7 @@ import { getChannelBalance, getClosedChannels, getWalletInfo } from "lightning"
 
 
 export const lndBalances = async () => {
+  // Onchain
   const { chain_balance } = await lnService.getChainBalance({lnd})
   const { channel_balance, pending_balance: opening_channel_balance } = await getChannelBalance({lnd})
 
@@ -14,9 +15,11 @@ export const lndBalances = async () => {
   // bitcoind seems to have a way to report this correctly. does lnd have?
   const { pending_chain_balance } = await lnService.getPendingChainBalance({lnd})
 
+  // get pending closed
   const { channels: closedChannels } = await getClosedChannels({lnd})
 
-  // FIXME: calculation seem wrong (seeing the grafana graph, need to double check)
+  // FIXME: there can be issue with channel not closed completely from lnd 
+  // https://github.com/alexbosworth/ln-service/issues/139
   baseLogger.debug({closedChannels}, "getClosedChannels")
   const closing_channel_balance = _.sumBy(closedChannels, channel => _.sumBy(
     (channel as any).close_payments, payment => (payment as any).is_pending ? (payment as any).tokens : 0 )

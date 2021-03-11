@@ -239,19 +239,44 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
     const lnd_incoming_txs = await getOnChainTransactions({ lnd, incoming: true })
     
-    //        { block_id: '0000000000000b1fa86d936adb8dea741a9ecd5f6a58fc075a1894795007bdbc',
-    //          confirmation_count: 712,
-    //          confirmation_height: 1744148,
-    //          created_at: '2020-05-14T01:47:22.000Z',
-    //          fee: undefined,
-    //          id: '5e3d3f679bbe703131b028056e37aee35a193f28c38d337a4aeb6600e5767feb',
-    //          is_confirmed: true,
-    //          is_outgoing: false,
-    //          output_addresses: [Array],
-    //          tokens: 10775,
-    //          transaction: '020000000001.....' } ] }
+    // for unconfirmed tx: 
+    // { block_id: undefined,
+    //   confirmation_count: undefined,
+    //   confirmation_height: undefined,
+    //   created_at: '2021-03-09T12:55:09.000Z',
+    //   description: undefined,
+    //   fee: undefined,
+    //   id: '60dfde7a0c5209c1a8438a5c47bb5e56249eae6d0894d140996ec0dcbbbb5f83',
+    //   is_confirmed: false,
+    //   is_outgoing: false,
+    //   output_addresses: [Array],
+    //   tokens: 100000000,
+    //   transaction: '02000000000...' }
 
-    const lnd_incoming_filtered = lnd_incoming_txs.filter(tx => tx.is_confirmed === confirmed)
+    // for confirmed tx
+    // { block_id: '0000000000000b1fa86d936adb8dea741a9ecd5f6a58fc075a1894795007bdbc',
+    //   confirmation_count: 712,
+    //   confirmation_height: 1744148,
+    //   created_at: '2020-05-14T01:47:22.000Z',
+    //   fee: undefined,
+    //   id: '5e3d3f679bbe703131b028056e37aee35a193f28c38d337a4aeb6600e5767feb',
+    //   is_confirmed: true,
+    //   is_outgoing: false,
+    //   output_addresses: [Array],
+    //   tokens: 10775,
+    //   transaction: '020000000001.....' }
+
+    let lnd_incoming_filtered
+
+    // TODO: expose to the yaml
+    const min_confirmation = 2
+
+    if(confirmed) {
+      lnd_incoming_filtered = lnd_incoming_txs.filter(tx => tx.confirmation_count >= min_confirmation)
+    } else {
+      lnd_incoming_filtered = lnd_incoming_txs.filter(
+        tx => (tx.confirmation_count < min_confirmation) || !tx.confirmation_count)
+    }
 
     const user_matched_txs = lnd_incoming_filtered.filter(tx => _.intersection(tx.output_addresses, this.user.onchain_addresses).length > 0)
 
