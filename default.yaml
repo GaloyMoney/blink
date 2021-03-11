@@ -43,6 +43,4 @@ test_accounts:
 - phone: "+16505554331" # coldstorage
   code: 321321
   currency: "BTC"
-- phone: "+***REMOVED***"
-  code: 321321
-  currency: "BTC"
+
