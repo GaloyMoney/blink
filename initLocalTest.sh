@@ -32,7 +32,8 @@ then
   # Comment the following line if not using Google cloud
   export STATIC_IP=$(gcloud compute addresses list | awk '/nginx-ingress/ {print $2}')
 
-  helm -n $INGRESS_NAMESPACE upgrade -i ingress-nginx ingress-nginx/ingress-nginx --set controller.service.loadBalancerIP=$STATIC_IP
+  helm -n $INGRESS_NAMESPACE upgrade -i ingress-nginx ingress-nginx/ingress-nginx --set controller.service.loadBalancerIP=$STATIC_IP \
+  -f $INFRADIR/ingress-nginx-values.yaml
 else
   NETWORK="regtest"
   if [ ${LOCAL} ]; then 
