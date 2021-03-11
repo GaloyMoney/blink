@@ -6,5 +6,5 @@ metadata:
     app: galoy
     app.kubernetes.io/managed-by: Helm
 data:
-  custom.yaml: |
-    name: "***REMOVED*** Wallet"
+  custom.yaml: |-
+    {{- include "common.tplvalues.render" (dict "value" .Values.galoy "context" $) | nindent 4 }}
