@@ -123,11 +123,11 @@ then
   kubectlLndDeletionWait
 else
   if [ ${LOCAL} ]; then
-    helmUpgrade lnd-outside-1 --version="1.0.2" -f $INFRADIR/configs/lnd/$NETWORK.yaml -f $localdevpathOutside $INFRADIR/lnd/
-    helmUpgrade lnd-outside-2 --version="1.0.2" -f $INFRADIR/configs/lnd/$NETWORK.yaml -f $localdevpathOutside $INFRADIR/lnd/
+    helmUpgrade lnd-outside-1 --version="1.0.2" -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpathOutside $INFRADIR/lnd/
+    helmUpgrade lnd-outside-2 --version="1.0.2" -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpathOutside $INFRADIR/lnd/
   else
-    helmUpgrade lnd-outside-1 --version="1.0.2" -f $INFRADIR/configs/lnd/$NETWORK.yaml -f $INFRADIR/configs/lnd/$NETWORK-outside.yaml $INFRADIR/lnd/
-    helmUpgrade lnd-outside-2 --version="1.0.2" -f $INFRADIR/configs/lnd/$NETWORK.yaml -f $INFRADIR/configs/lnd/$NETWORK-outside.yaml $INFRADIR/lnd/
+    helmUpgrade lnd-outside-1 --version="1.0.2" -f $INFRADIR/configs/lnd/$NETWORK.yaml $INFRADIR/lnd/
+    helmUpgrade lnd-outside-2 --version="1.0.2" -f $INFRADIR/configs/lnd/$NETWORK.yaml $INFRADIR/lnd/
   fi
 fi
 # # add extra sleep time... seems lnd is quite long to show up some time
