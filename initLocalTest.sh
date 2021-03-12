@@ -111,7 +111,12 @@ then
     --set instances[2].service.staticIP=$MINIKUBEIP \
     --set configmap[0].service.staticIP=$MINIKUBEIP \
     --set configmap[1].service.staticIP=$MINIKUBEIP"
-
+  localdevpathOutside="-f $INFRADIR/configs/lnd/localdev-outside.yaml \
+    --set instances[0].service.staticIP=$MINIKUBEIP \
+    --set instances[1].service.staticIP=$MINIKUBEIP \
+    --set instances[2].service.staticIP=$MINIKUBEIP \
+    --set configmap[0].service.staticIP=$MINIKUBEIP \
+    --set configmap[1].service.staticIP=$MINIKUBEIP"
 fi
 
 rm -rf $INFRADIR/lnd
@@ -125,8 +130,8 @@ if [ "$NETWORK" == "testnet" ] || [ "$NETWORK" == "mainnet" ];
 then
   kubectlLndDeletionWait
 else
-  helmUpgrade lnd-outside-1 --version="1.0.2" -f $INFRADIR/configs/lnd/$NETWORK.yaml -f $INFRADIR/configs/lnd/$NETWORK-outside.yaml $localdevpath $INFRADIR/lnd/
-  helmUpgrade lnd-outside-2 --version="1.0.2" -f $INFRADIR/configs/lnd/$NETWORK.yaml -f $INFRADIR/configs/lnd/$NETWORK-outside.yaml $localdevpath $INFRADIR/lnd/
+  helmUpgrade lnd-outside-1 --version="1.0.2" -f $INFRADIR/configs/lnd/$NETWORK.yaml -f $INFRADIR/configs/lnd/$NETWORK-outside.yaml "$localdevpathOutside" $INFRADIR/lnd/
+  helmUpgrade lnd-outside-2 --version="1.0.2" -f $INFRADIR/configs/lnd/$NETWORK.yaml -f $INFRADIR/configs/lnd/$NETWORK-outside.yaml $localdevpathOutside $INFRADIR/lnd/
 fi
 # # add extra sleep time... seems lnd is quite long to show up some time
 sleep 15
