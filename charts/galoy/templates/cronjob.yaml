@@ -89,8 +89,8 @@ spec:
               secretName: "gcs-sa-key"
           {{- end}}
           - name: "custom-yaml"
-            configMap:
-              name: "galoy-config-map"
+            secret:
+              secretName: "galoy-config-map"
       
 ---
 {{- end }}
