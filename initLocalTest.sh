@@ -66,7 +66,7 @@ kubectlLndDeletionWait () {
 # we use || : to not return an error if the pod doesn't exist, or if no update is requiered (will timeout in this case)
 # TODO: using --wait on upgrade would simplify this upgrade, but is currently running into some issues
   echo "waiting for pod deletion"
-  kubectl wait -n=$NAMESPACE --for=delete --timeout=45s pod -l type=lnd || :
+  kubectl wait -n=$NAMESPACE --for=delete --timeout=45s pod -l app.kubernetes.io/name=lnd || :
 }
 
 exportMacaroon() {
