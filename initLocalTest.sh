@@ -119,15 +119,15 @@ rm -rf $INFRADIR/lnd
 helm pull galoy/lnd -d $INFRADIR/ --untar
 cp "$INFRADIR/configs/lnd/RTL-Config.json" $INFRADIR/lnd/charts/rtl
 kubectl apply -f $INFRADIR/configs/lnd/templates
-helmUpgrade lnd -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd/
+helmUpgrade lnd --version="1.0.2" -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd/
 
 # avoiding to spend time with circleci regtest with this condition
 if [ "$NETWORK" == "testnet" ] || [ "$NETWORK" == "mainnet" ];
 then
   kubectlLndDeletionWait
 else
-  helmUpgrade lnd-outside-1 -f $INFRADIR/configs/lnd/$NETWORK.yaml -f $INFRADIR/configs/lnd/$NETWORK-outside.yaml $localdevpath $INFRADIR/lnd/
-  helmUpgrade lnd-outside-2 -f $INFRADIR/configs/lnd/$NETWORK.yaml -f $INFRADIR/configs/lnd/$NETWORK-outside.yaml $localdevpath $INFRADIR/lnd/
+  helmUpgrade lnd-outside-1 --version="1.0.2" -f $INFRADIR/configs/lnd/$NETWORK.yaml -f $INFRADIR/configs/lnd/$NETWORK-outside.yaml $localdevpath $INFRADIR/lnd/
+  helmUpgrade lnd-outside-2 --version="1.0.2" -f $INFRADIR/configs/lnd/$NETWORK.yaml -f $INFRADIR/configs/lnd/$NETWORK-outside.yaml $localdevpath $INFRADIR/lnd/
 fi
 # # add extra sleep time... seems lnd is quite long to show up some time
 sleep 15
