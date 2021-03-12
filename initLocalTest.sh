@@ -93,7 +93,7 @@ then
 fi
 
 rm -rf $INFRADIR/configs
-git clone --single-branch --branch lnd-refactor $CONFIG_REPO $INFRADIR/configs 
+git clone --single-branch --branch lnd_refactor $CONFIG_REPO $INFRADIR/configs 
 
 
 helmUpgrade bitcoind $localdevpath -f $INFRADIR/configs/bitcoind/$NETWORK.yaml galoy/bitcoind
