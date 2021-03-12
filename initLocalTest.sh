@@ -36,11 +36,11 @@ then
   -f $INFRADIR/ingress-nginx-values.yaml
 else
   NETWORK="regtest"
-  if [ ${LOCAL} ]; then 
+  if [ ${LOCAL} ]; then
     MINIKUBEIP=$(minikube ip)
     NAMESPACE="default"
     INFRADIR=../../../charts
-  else 
+  else
     INFRADIR=~/GaloyApp/charts
   fi
 fi
@@ -61,7 +61,7 @@ kubectlWait () {
 }
 
 kubectlLndDeletionWait () {
-# if the lnd pod needs upgrade, we want to make sure we wait for it to be removed. 
+# if the lnd pod needs upgrade, we want to make sure we wait for it to be removed.
 # otherwise it could be seen as ready by `kubectlWait app=lnd` while it could just have been in the process of still winding down
 # we use || : to not return an error if the pod doesn't exist, or if no update is requiered (will timeout in this case)
 # TODO: using --wait on upgrade would simplify this upgrade, but is currently running into some issues
@@ -87,13 +87,13 @@ createLoopConfigmaps() {
   kubectl create configmap lndmacaroon --from-file=./macaroon --dry-run -o yaml | kubectl -n $NETWORK apply -f -
 }
 
-if [ ${LOCAL} ] 
+if [ ${LOCAL} ]
 then
   localdevpath="-f $INFRADIR/configs/bitcoind/localdev.yaml"
 fi
 
 rm -rf $INFRADIR/configs
-git clone $CONFIG_REPO $INFRADIR/configs
+git clone --single-branch --branch lnd_refactor $CONFIG_REPO $INFRADIR/configs 
 
 
 helmUpgrade bitcoind $localdevpath -f $INFRADIR/configs/bitcoind/$NETWORK.yaml galoy/bitcoind
@@ -103,9 +103,9 @@ kubectlWait app.kubernetes.io/name=bitcoind
 
 sleep 8
 
-if [ ${LOCAL} ] 
-then 
-  kubectlLndDeletionWait 
+if [ ${LOCAL} ]
+then
+  kubectlLndDeletionWait
   localdevpath="-f $INFRADIR/configs/lnd/localdev.yaml \
     --set instances[0].service.staticIP=$MINIKUBEIP \
     --set instances[1].service.staticIP=$MINIKUBEIP \
@@ -118,17 +118,20 @@ fi
 rm -rf $INFRADIR/lnd
 helm pull galoy/lnd -d $INFRADIR/ --untar
 cp "$INFRADIR/configs/lnd/RTL-Config.json" $INFRADIR/lnd/charts/rtl
-helmUpgrade lnd --version="1.0.1" -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd/
+kubectl apply -f $INFRADIR/configs/lnd/templates
+helmUpgrade lnd --version="1.0.2" -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd/
 
 # avoiding to spend time with circleci regtest with this condition
 if [ "$NETWORK" == "testnet" ] || [ "$NETWORK" == "mainnet" ];
 then
   kubectlLndDeletionWait
+else
+  helmUpgrade lnd-outside-1 --version="1.0.2" -f $INFRADIR/configs/lnd/$NETWORK.yaml -f $INFRADIR/configs/lnd/$NETWORK-outside.yaml $localdevpath $INFRADIR/lnd/
+  helmUpgrade lnd-outside-2 --version="1.0.2" -f $INFRADIR/configs/lnd/$NETWORK.yaml -f $INFRADIR/configs/lnd/$NETWORK-outside.yaml $localdevpath $INFRADIR/lnd/
 fi
 # # add extra sleep time... seems lnd is quite long to show up some time
 sleep 15
-kubectlWait type=lnd
-
+kubectlWait app.kubernetes.io/name=lnd
 
 exportMacaroon lnd-0 MACAROON
 export TLS=$(kubectl -n $NAMESPACE exec lnd-0 -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
@@ -137,7 +140,7 @@ if [ "$NETWORK" == "regtest" ]
 then
   exportMacaroon lnd-outside-1-0 MACAROONOUTSIDE1
   exportMacaroon lnd-outside-2-0 MACAROONOUTSIDE2
-  
+
   # Todo: refactor
   export TLSOUTSIDE1=$(kubectl -n $NAMESPACE exec lnd-outside-1-0 -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
   export TLSOUTSIDE2=$(kubectl -n $NAMESPACE exec lnd-outside-2-0 -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
