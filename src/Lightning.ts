@@ -525,15 +525,14 @@ export const LightningMixin = (superclass) => class extends superclass {
   }
 
   // this method is used when the probing failed
+  //
   // there are times when it's not possible to know in advance the fees
-  // this could be because the receiving doesn't respond to the fake payment
+  // this could be because the receiving doesn't respond to the fake payment hash
   // or because there is no liquidity for a one-sum payment, but there could 
   // be liquidity if the payment was using MPP
   //
   // in this scenario, we have withdrawal a percent of fee (`max_fee`)
-  // and once we know precisely how much the payment was
-  // we reimburse the difference
-  //
+  // and once we know precisely how much the payment was we reimburse the difference
   async recordFeeDifference({ paymentResult, max_fee, id, related_journal }) {
     const feeDifference = max_fee - paymentResult.safe_fee
 

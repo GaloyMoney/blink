@@ -141,7 +141,7 @@ it('identifies unconfirmed incoming on chain txn', async () => {
   expect(sendNotification.mock.calls[0][0].title).toBe(`$${usd} | ${btc2sat(amount_BTC)} sats is on its way to your wallet`)
 
   await Promise.all([
-    bitcoindDefaultClient.generateToAddress(1, RANDOM_ADDRESS),
+    bitcoindDefaultClient.generateToAddress(3, RANDOM_ADDRESS),
     once(sub, 'chain_transaction'),
   ])
 
