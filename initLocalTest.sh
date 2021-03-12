@@ -9,7 +9,7 @@ helm repo add galoy https://galoymoney.github.io/charts/
 helm repo update
 
 
-cd ../../../charts/galoy && helm dependency build && cd -
+cd ../../../charts/galoy && cd -
 cd ../../../charts/monitoring && helm dependency build && cd -
 
 INGRESS_NAMESPACE="ingress-nginx"
