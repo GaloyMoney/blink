@@ -131,7 +131,7 @@ else
 fi
 # # add extra sleep time... seems lnd is quite long to show up some time
 sleep 15
-kubectlWait app.kubernetes.io/name: lnd
+kubectlWait app.kubernetes.io/name=lnd
 
 exportMacaroon lnd-0 MACAROON
 export TLS=$(kubectl -n $NAMESPACE exec lnd-0 -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
