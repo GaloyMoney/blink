@@ -118,6 +118,7 @@ fi
 rm -rf $INFRADIR/lnd
 helm pull galoy/lnd -d $INFRADIR/ --untar
 cp "$INFRADIR/configs/lnd/RTL-Config.json" $INFRADIR/lnd/charts/rtl
+kubectl apply -f $INFRADIR/configs/lnd/templates
 helmUpgrade lnd -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd/
 
 # avoiding to spend time with circleci regtest with this condition
