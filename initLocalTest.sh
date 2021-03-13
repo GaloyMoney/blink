@@ -8,6 +8,7 @@ helm repo add jetstack https://charts.jetstack.io
 helm repo add galoy https://galoymoney.github.io/charts/
 helm repo update
 
+lndVersion="1.0.4"
 
 cd ../../../charts/galoy && helm dependency build && cd -
 cd ../../../charts/monitoring && helm dependency build && cd -
@@ -115,7 +116,7 @@ rm -rf $INFRADIR/lnd
 helm pull galoy/lnd -d $INFRADIR/ --untar
 cp "$INFRADIR/configs/lnd/RTL-Config.json" $INFRADIR/lnd/charts/rtl
 kubectl apply -f $INFRADIR/configs/lnd/templates
-helmUpgrade lnd --version="1.0.2" -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd/
+helmUpgrade lnd --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd/
 
 # avoiding to spend time with circleci regtest with this condition
 if [ "$NETWORK" == "testnet" ] || [ "$NETWORK" == "mainnet" ];
@@ -123,11 +124,11 @@ then
   kubectlLndDeletionWait
 else
   if [ ${LOCAL} ]; then
-    helmUpgrade lnd-outside-1 --version="1.0.2" -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpathOutside $INFRADIR/lnd/
-    helmUpgrade lnd-outside-2 --version="1.0.2" -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpathOutside $INFRADIR/lnd/
+    helmUpgrade lnd-outside-1 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpathOutside $INFRADIR/lnd/
+    helmUpgrade lnd-outside-2 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpathOutside $INFRADIR/lnd/
   else
-    helmUpgrade lnd-outside-1 --version="1.0.2" -f $INFRADIR/configs/lnd/$NETWORK.yaml $INFRADIR/lnd/
-    helmUpgrade lnd-outside-2 --version="1.0.2" -f $INFRADIR/configs/lnd/$NETWORK.yaml $INFRADIR/lnd/
+    helmUpgrade lnd-outside-1 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $INFRADIR/lnd/
+    helmUpgrade lnd-outside-2 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $INFRADIR/lnd/
   fi
 fi
 # # add extra sleep time... seems lnd is quite long to show up some time
