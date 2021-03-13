@@ -10,7 +10,7 @@ helm repo update
 
 lndVersion="1.0.4"
 
-cd ../../../charts/galoy && cd -
+cd ../../../charts/galoy && helm dependency build && cd -
 cd ../../../charts/monitoring && helm dependency build && cd -
 
 INGRESS_NAMESPACE="ingress-nginx"
