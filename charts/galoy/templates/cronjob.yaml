@@ -26,6 +26,8 @@ spec:
             - name: "service-account"
               mountPath: "/var/secret/cloud.google.com"
             {{- end}}
+            - name: "custom-yaml"
+              mountPath: "/var/"
             env:
             - name: NETWORK
               value: {{$.Values.network}}
@@ -65,8 +67,6 @@ spec:
                 secretKeyRef:
                   name: ftx-secret
                   key: secret
-            - name: "custom-yaml"
-              mountPath: "/var/"
             - name: GOOGLE_APPLICATION_CREDENTIALS
               value: "/tmp/firebase-serviceaccount/galoyapp-firebase-serviceaccont.json"
             - name: DROPBOX_ACCESS_TOKEN
