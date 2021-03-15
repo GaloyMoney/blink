@@ -113,7 +113,7 @@ then
 fi
 
 rm -rf $INFRADIR/lnd
-helm pull galoy/lnd -d $INFRADIR/ --untar
+helm pull --version=$lndVersion galoy/lnd -d $INFRADIR/ --untar
 cp "$INFRADIR/configs/lnd/RTL-Config.json" $INFRADIR/lnd/charts/rtl
 kubectl apply -f $INFRADIR/configs/lnd/templates
 helmUpgrade lnd --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd/
