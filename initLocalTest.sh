@@ -123,14 +123,10 @@ if [ "$NETWORK" == "testnet" ] || [ "$NETWORK" == "mainnet" ];
 then
   kubectlLndDeletionWait
 else
-  if [ ${LOCAL} ]; then
-    helmUpgrade lnd-outside-1 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpathOutside $INFRADIR/lnd/
-    helmUpgrade lnd-outside-2 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpathOutside $INFRADIR/lnd/
-  else
-    helmUpgrade lnd-outside-1 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $INFRADIR/lnd/
-    helmUpgrade lnd-outside-2 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $INFRADIR/lnd/
-  fi
+  helmUpgrade lnd-outside-1 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpathOutside $INFRADIR/lnd/
+  helmUpgrade lnd-outside-2 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpathOutside $INFRADIR/lnd/
 fi
+
 # # add extra sleep time... seems lnd is quite long to show up some time
 sleep 15
 kubectlWait app.kubernetes.io/name=lnd
@@ -159,11 +155,18 @@ then
 localdevpath="-f $INFRADIR/galoy/localdev.yaml"
 fi
 
+if [ "$NETWORK" == "testnet" ] || [ "$NETWORK" == "mainnet" ];
+then
+  networkpath="-f $INFRADIR/configs/galoy/$NETWORK.yaml"
+else
+  networkpath="-f $INFRADIR/galoy/$NETWORK.yaml"
+fi
+
 export MONGODB_ROOT_PASSWORD=$(kubectl get secret -n $NAMESPACE galoy-mongodb -o jsonpath="{.data.mongodb-root-password}" | base64 -d)
 export MONGODB_REPLICA_SET_KEY=$(kubectl get secret -n $NAMESPACE galoy-mongodb -o jsonpath="{.data.mongodb-replica-set-key}" | base64 -d)
 
 helmUpgrade galoy \
-  -f $INFRADIR/galoy/$NETWORK.yaml $localdevpath \
+  $networkpath $localdevpath \
   --set "customCmdlineEnv={MACAROONOUTSIDE1:$MACAROONOUTSIDE1,MACAROONOUTSIDE2:$MACAROONOUTSIDE2,TLSOUTSIDE1:$TLSOUTSIDE1,TLSOUTSIDE2:$TLSOUTSIDE2}" \
   --set tls=$TLS,macaroon=$MACAROON,mongodb.auth.rootPassword=$MONGODB_ROOT_PASSWORD,mongodb.auth.replicaSetKey=$MONGODB_REPLICA_SET_KEY,image.tag=$CIRCLE_SHA1 \
   $INFRADIR/galoy/
