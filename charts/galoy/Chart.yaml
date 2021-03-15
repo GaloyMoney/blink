@@ -29,3 +29,6 @@ dependencies:
   - name: mongodb
     repository: https://charts.bitnami.com/bitnami
     version: x.x.x
+  - name: common
+    version: 0.x.x
+    repository: https://charts.bitnami.com/bitnami

@@ -1,10 +1,10 @@
 apiVersion: v1
-kind: ConfigMap
+kind: Secret
 metadata:
   name: galoy-config-map
   labels:
     app: galoy
     app.kubernetes.io/managed-by: Helm
-data:
-  custom.yaml: |
-    name: "***REMOVED*** Wallet"
+stringData:
+  custom.yaml: |-
+    {{- include "common.tplvalues.render" (dict "value" .Values.galoy "context" $) | nindent 4 }}

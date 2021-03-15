@@ -65,6 +65,8 @@ spec:
                 secretKeyRef:
                   name: ftx-secret
                   key: secret
+            - name: "custom-yaml"
+              mountPath: "/var/"
             - name: GOOGLE_APPLICATION_CREDENTIALS
               value: "/tmp/firebase-serviceaccount/galoyapp-firebase-serviceaccont.json"
             - name: DROPBOX_ACCESS_TOKEN
@@ -86,6 +88,9 @@ spec:
             secret:
               secretName: "gcs-sa-key"
           {{- end}}
+          - name: "custom-yaml"
+            secret:
+              secretName: "galoy-config-map"
       
 ---
 {{- end }}

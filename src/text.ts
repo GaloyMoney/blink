@@ -2,10 +2,9 @@ import twilio from 'twilio';
 import moment from "moment"
 import { PhoneCode, User } from "./schema";
 import { createToken } from "./jwt"
+import { yamlConfig } from "./config";
 
 import { randomIntFromInterval } from "./utils"
-
-const projectName = "***REMOVED*** Wallet"
 
 const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER
 const getTwilioClient = () => {
@@ -32,34 +31,15 @@ export const sendText = async ({ body, to, logger }) => {
   logger.info({to}, "send text succesfully")
 }
 
-export const TEST_NUMBER = [
-  { phone: "+16505554321", code: 321321 }, // user0
-  { phone: "+16505554322", code: 321321 }, // user1
-  { phone: "+16505554323", code: 321321 }, // user2
-  { phone: "+16505554324", code: 321321 }, // user3
-  { phone: "+16505554325", code: 321321, username: "***REMOVED***" }, // user4/ funder
-  
-  { phone: "+16505554326", code: 321321, currencies: [{id: "USD", ratio: 1}] }, // usd
-  
-  { phone: "+16505554327", code: 321321, role: "dealer" }, // dealer //user6
-  { phone: "+16505554328", code: 321321 }, // 
-  { phone: "+16505554329", code: 321321 }, // postman
-  { phone: "+16505554330", code: 321321, currencies: [{id: "USD", ratio: .5}, {id: "BTC", ratio: .5},] }, // usd bis
-
-  { phone: "+16505554331", code: 321321, currency: "BTC" }, // coldstorage
-
-  { phone: "+***REMOVED***", code: 321321, currency: "BTC" }, // for manual testing
-]
-
 export const requestPhoneCode = async ({ phone, logger }) => {
 
   // make it possible to bypass the auth for testing purpose
-  if (TEST_NUMBER.findIndex(item => item.phone === phone) !== -1) {
+  if (yamlConfig.test_accounts.findIndex(item => item.phone === phone) !== -1) {
     return true
   }
 
   const code = randomIntFromInterval(100000, 999999)
-  const body = `${code} is your verification code for ${projectName}`
+  const body = `${code} is your verification code for ${yamlConfig.name}`
 
   try {
     // TODO: implement backoff strategy instead this native delay
@@ -105,8 +85,8 @@ export const login = async ({ phone, code, logger }: ILogin) => {
     })
 
     // is it a test account?
-    if (TEST_NUMBER.findIndex(item => item.phone === phone) !== -1 &&
-      TEST_NUMBER.filter(item => item.phone === phone)[0].code === code) {
+    if (yamlConfig.test_accounts.findIndex(item => item.phone === phone) !== -1 &&
+      yamlConfig.test_accounts.filter(item => item.phone === phone)[0].code === code) {
       // we are in this branch if phone is a test account + code is correct
     } else if (codes.findIndex(item => item.code === code) === -1) {
       // this branch is both relevant for test and non-test accounts
