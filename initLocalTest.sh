@@ -14,12 +14,13 @@ cd ./charts/galoy && helm dependency build && cd -
 cd ./charts/monitoring && helm dependency build && cd -
 
 INGRESS_NAMESPACE="ingress-nginx"
+INFRADIR=./charts
+
 
 if [ "$1" == "testnet" ] || [ "$1" == "mainnet" ];
 then
   NETWORK="$1"
   NAMESPACE="$1"
-  INFRADIR=~/GaloyApp/charts
 
   # create namespaces if not exists
   kubectl create namespace $INGRESS_NAMESPACE --dry-run -o yaml | kubectl apply -f -
@@ -40,9 +41,6 @@ else
   if [ ${LOCAL} ]; then
     MINIKUBEIP=$(minikube ip)
     NAMESPACE="default"
-    INFRADIR=./charts
-  else
-    INFRADIR=./charts
   fi
 fi
 
