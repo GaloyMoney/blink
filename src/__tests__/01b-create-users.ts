@@ -78,6 +78,9 @@ describe('username tests', () => {
   it('sets username for user2', async () => {
     const result = await userWallet2.setUsername({ username: "lily" })
     expect(!!result).toBeTruthy()
+
+    
+    expect(userWallet2.user.title).toBeTruthy()
   })
 
   it('does not allow re-setting username', async () => {
@@ -109,16 +112,6 @@ describe('username tests', () => {
     await expect(userWallet2.setUsername({ username })).rejects.toThrow()
   })
 
-})
-
-describe('business username', () => {
-  //userWallet2 is a business
-  it('check that userWallet has title set', async () => {
-    await insertMarkers()
-
-    userWallet2 = await getUserWallet(2)
-    await expect(userWallet2.user.title).toBeTruthy()
-  })
 })
 
 

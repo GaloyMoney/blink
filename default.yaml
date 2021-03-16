@@ -25,6 +25,7 @@ test_accounts:
   code: 321321
 - phone: "+16505554323" # user2
   code: 321321
+  title: business
 - phone: "+16505554324" # user3
   code: 321321
 - phone: "+16505554325" # user4/ funder

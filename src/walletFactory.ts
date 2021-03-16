@@ -62,5 +62,9 @@ export const getTokenFromPhoneIndex = async (index) => {
     await User.findOneAndUpdate({ _id: uid }, { role: entry.role })
   }
 
+  if (entry.title) {
+    await User.findOneAndUpdate({ _id: uid }, { title: entry.title })
+  }
+
   return token
 }

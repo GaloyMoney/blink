@@ -4,10 +4,7 @@ import { lnd } from "../lndConfig";
 import { User } from "../schema";
 import { baseLogger, sleep } from "../utils";
 import { getTokenFromPhoneIndex, WalletFactory } from "../walletFactory";
-import {authenticatedLndGrpc} from 'lightning';
-
-
-import { getWalletInfo } from 'lightning'
+import {authenticatedLndGrpc, getWalletInfo} from 'lightning';
 
 export const lndMain = lnd
 
