@@ -157,16 +157,16 @@ fi
 
 if [ "$NETWORK" == "testnet" ] || [ "$NETWORK" == "mainnet" ];
 then
-  networkpath="-f $INFRADIR/configs/galoy/$NETWORK.yaml"
+  configpath="-f $INFRADIR/configs/galoy/$NETWORK.yaml"
 else
-  networkpath="-f $INFRADIR/galoy/$NETWORK.yaml"
+  configpath="-f $INFRADIR/galoy/$NETWORK.yaml"
 fi
 
 export MONGODB_ROOT_PASSWORD=$(kubectl get secret -n $NAMESPACE galoy-mongodb -o jsonpath="{.data.mongodb-root-password}" | base64 -d)
 export MONGODB_REPLICA_SET_KEY=$(kubectl get secret -n $NAMESPACE galoy-mongodb -o jsonpath="{.data.mongodb-replica-set-key}" | base64 -d)
 
 helmUpgrade galoy \
-  $networkpath $localdevpath \
+  $configpath $localdevpath \
   --set "customCmdlineEnv={MACAROONOUTSIDE1:$MACAROONOUTSIDE1,MACAROONOUTSIDE2:$MACAROONOUTSIDE2,TLSOUTSIDE1:$TLSOUTSIDE1,TLSOUTSIDE2:$TLSOUTSIDE2}" \
   --set tls=$TLS,macaroon=$MACAROON,mongodb.auth.rootPassword=$MONGODB_ROOT_PASSWORD,mongodb.auth.replicaSetKey=$MONGODB_REPLICA_SET_KEY,image.tag=$CIRCLE_SHA1 \
   $INFRADIR/galoy/
