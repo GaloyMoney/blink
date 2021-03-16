@@ -10,8 +10,8 @@ helm repo update
 
 lndVersion="1.0.4"
 
-cd ../../../charts/galoy && helm dependency build && cd -
-cd ../../../charts/monitoring && helm dependency build && cd -
+cd ./charts/galoy && helm dependency build && cd -
+cd ./charts/monitoring && helm dependency build && cd -
 
 INGRESS_NAMESPACE="ingress-nginx"
 
@@ -40,9 +40,9 @@ else
   if [ ${LOCAL} ]; then
     MINIKUBEIP=$(minikube ip)
     NAMESPACE="default"
-    INFRADIR=../../../charts
+    INFRADIR=./charts
   else
-    INFRADIR=~/GaloyApp/charts
+    INFRADIR=./charts
   fi
 fi
 
