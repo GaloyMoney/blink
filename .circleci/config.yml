@@ -162,7 +162,7 @@ workflows:
           # filters:
           #   branches:
           #     only:
-          #       - master
+          #       - main
       - update_lnpage:
           requires:
             - hold_update_lnpage
@@ -178,7 +178,7 @@ workflows:
           filters:
             branches:
               only:
-                - master  
+                - main  
       - approve_mainnet_deploy:
           type: approval
           requires:
@@ -186,7 +186,7 @@ workflows:
           filters:
             branches:
               only:
-                - master
+                - main
       - slack/approval-notification:
           mentions: 'U011J7RCEFQ,U011KKL1L4B'
           requires:
@@ -194,11 +194,11 @@ workflows:
           filters:
             branches:
               only:
-                - master
+                - main
       - mainnet_deploy:
           requires:
             - approve_mainnet_deploy
           filters:
             branches:
               only:
-                - master
+                - main
