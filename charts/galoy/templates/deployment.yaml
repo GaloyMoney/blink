@@ -129,7 +129,28 @@ spec:
                   name: dropbox-access-token
                   key: token
             {{- end }}
-            {{- if ne $.Values.network "regtest" }}
+            {{- if eq $.Values.network "regtest" }}
+            - name: MACAROONOUTSIDE1
+              valueFrom:
+                secretKeyRef:
+                  name: lnd-outside-1-macaroon
+                  key: admin.macaroon
+            - name: TLSOUTSIDE1
+              valueFrom:
+                secretKeyRef:
+                  name: lnd-outside-1-tls
+                  key: tls.cert
+            - name: MACAROONOUTSIDE2
+              valueFrom:
+                secretKeyRef:
+                  name: lnd-outside-2-macaroon
+                  key: admin.macaroon
+            - name: TLSOUTSIDE2
+              valueFrom:
+                secretKeyRef:
+                  name: lnd-outside-2-tls
+                  key: tls.cert
+            {{- else }}
             - name: TWILIO_PHONE_NUMBER
               valueFrom:
                 secretKeyRef:
