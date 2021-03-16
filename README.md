@@ -1,5 +1,10 @@
 # Galoy
 
+### Responsible disclosure 
+Found critical bugs/vulnerabilities? 
+Please email them security@galoy.io Thanks!
+
+
 ### TLDR
 
 Galoy is a bitcoin banking platform. 
