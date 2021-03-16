@@ -7,7 +7,7 @@ Please email them security@galoy.io Thanks!
 
 ### TLDR
 
-Galoy is a bitcoin banking platform. 
+Galoy is an opinionated bitcoin banking platform. 
 
 To give it a try: 
 
@@ -15,7 +15,8 @@ To give it a try:
 helm repo add galoy https://galoymoney.github.io/charts/
 helm install bitcoin galoy/bitcoin
 helm install lnd galoy/lnd
-helm install galoy galoy/galoy
+
+TODO: helm install galoy galoy/galoy
 ```
 Note: Helm v3 is required to install the Galoy charts. Instructions can be found [here](https://helm.sh/docs/intro/install/)
 
