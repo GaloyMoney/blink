@@ -170,7 +170,7 @@ helmUpgrade galoy \
   $INFRADIR/galoy/
 
 kubectlWait app.kubernetes.io/instance=galoy
-kubectl annotate deployment/graphql kubernetes.io/change-cause="$CIRCLE_SHA1-$(date -u)"
+kubectl -n $NAMESPACE annotate deployment graphql kubernetes.io/change-cause="$CIRCLE_SHA1-$(date -u)"
 
 if [ ${LOCAL} ]
 then
