@@ -18,6 +18,7 @@ import util from 'util'
 
 import bluebird from 'bluebird';
 import { yamlConfig } from "./config";
+import { IUpdatePending } from "./interface";
 const { using } = bluebird;
 
 export type ITxType = "invoice" | "payment" | "onchain_receipt" | "onchain_payment" | "on_us"
