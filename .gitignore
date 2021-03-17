@@ -19,3 +19,5 @@ src/tool/record_transactions_*.csv
 
 *.DS_Store
 configs
+
+coverage
