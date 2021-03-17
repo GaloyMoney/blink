@@ -4,7 +4,7 @@ import { customerPath } from "./ledger/ledger";
 import { MainBook } from "./mongodb";
 import { ITransaction } from "./types";
 import { LoggedError } from "./utils";
-import { Balances } from "./interface"
+import { Balances, IUpdatePending } from "./interface"
 import assert from 'assert'
 import { sendNotification } from "./notification";
 import { User } from "./schema";
@@ -38,10 +38,10 @@ export abstract class UserWallet {
   // this needs to be here to be able to call / chain updatePending()
   // otherwise super.updatePending() would result in an error
   // there may be better way to architecture this?
-  async updatePending() { return }
+  async updatePending({after, onchain}: IUpdatePending = {}) { return }
 
   async getBalances(): Promise<Balances> {
-    await this.updatePending()
+    await this.updatePending({onchain: false, after: undefined})
 
     // TODO: add effective ratio
     const balances = {

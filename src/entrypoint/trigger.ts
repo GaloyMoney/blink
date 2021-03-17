@@ -218,9 +218,19 @@ const main = async () => {
   subBackups.on('backup', ({ backup }) => uploadBackup(backup))
 
   const subBlocks = subscribeToBlocks({ lnd })
-  subBlocks.on('block', updateUsersPendingPayment)
+
+  // TODO: save the last processed block so that if lnd/bitcoind restart
+  // and trigger is not yet active, we know which block has been processed
+  // this is not necessary because we still have a cron loop that would fetch validated
+  // onchain transaction anyway. but it would help make the medici balance sheet tidy.
+  subBlocks.on('block', onNewBlock)
 
   updatePrice()
+}
+
+const onNewBlock = async ({id, block}) => {
+  logger.info({block, id}, "processing new block")
+  updateUsersPendingPayment({ after: block - 1 })
 }
 
 const healthCheck = () => {

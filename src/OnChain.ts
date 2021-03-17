@@ -13,6 +13,7 @@ import { Transaction, User } from "./schema";
 import { getHeight } from "lightning"
 
 import bluebird from 'bluebird';
+import { IUpdatePending } from "./interface";
 const { using } = bluebird;
 
 // TODO: look if tokens/amount has an effect on the fees
@@ -21,11 +22,13 @@ const { using } = bluebird;
 const someAmount = 50000
 
 
-export const getOnChainTransactions = async ({ lnd, incoming }: { lnd: any, incoming: boolean }) => {
+export const getOnChainTransactions = async ({ lnd, incoming, after }: { lnd: any, incoming: boolean, after?: undefined | number }) => {
   try {
     const { current_block_height } = await getHeight({lnd})
-    const after = Math.max(0, current_block_height - LOOK_BACK) // this is necessary for tests, otherwise after may be negative
-    const { transactions } = await lnService.getChainTransactions({ lnd, after })
+    // `Math.max(0, ...)` is necessary for tests, otherwise `after` may be negative
+    const _after = after ?? Math.max(0, current_block_height - LOOK_BACK) 
+
+    const { transactions } = await lnService.getChainTransactions({ lnd, after: _after })
 
     return transactions.filter(tx => incoming === !tx.is_outgoing)
   } catch (err) {
@@ -36,16 +39,16 @@ export const getOnChainTransactions = async ({ lnd, incoming }: { lnd: any, inco
 }
 
 export const OnChainMixin = (superclass) => class extends superclass {
-  
   constructor(...args) {
     super(...args)
   }
 
-  async updatePending(): Promise<void> {
-    await Promise.all([
-      this.updateOnchainReceipt(),
-      super.updatePending()
-    ])
+  async updatePending({after, onchain}: IUpdatePending): Promise<void> {
+    let promises = [super.updatePending({after, onchain})]
+    if (onchain) {
+      promises.push(this.updateOnchainReceipt({after}))
+    }
+    await Promise.all(promises)
   }
 
   // FIXME: should be static but doesn't work with mixin
@@ -227,7 +230,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
     return address
   }
 
-  async getOnchainReceipt({confirmed}: {confirmed: boolean}) {
+  async getOnchainReceipt({confirmed, after}: {confirmed: boolean, after?: undefined | number}) {
     
     // optimization to remove the need to fetch lnd when no address
     // mainly useful for testing purpose
@@ -237,7 +240,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
       return []
     }
 
-    const lnd_incoming_txs = await getOnChainTransactions({ lnd, incoming: true })
+    const lnd_incoming_txs = await getOnChainTransactions({ lnd, incoming: true, after })
     
     // for unconfirmed tx: 
     // { block_id: undefined,
@@ -389,8 +392,8 @@ export const OnChainMixin = (superclass) => class extends superclass {
     return { sats, addresses }
   }
 
-  async updateOnchainReceipt() {
-    const user_matched_txs = await this.getOnchainReceipt({confirmed: true})
+  async updateOnchainReceipt({after}: {after?: number | undefined} = {after: undefined}) {
+    const user_matched_txs = await this.getOnchainReceipt({after, confirmed: true})
 
     const type = "onchain_receipt"
 

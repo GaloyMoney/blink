@@ -12,6 +12,11 @@ export interface IWallet {
   getInfo(): Promise<object>
 }
 
+export interface IUpdatePending {
+  after?: number | undefined,
+  onchain?: boolean | undefined
+}
+
 export interface ILightningWallet extends IWallet {
   payInvoice({invoice: string}): Promise<any> // TODO
   addInvoice(IAddBTCInvoiceRequest): Promise<any> // TODO

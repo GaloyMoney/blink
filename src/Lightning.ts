@@ -47,11 +47,11 @@ export const LightningMixin = (superclass) => class extends superclass {
     return this.nodePubKey
   }
 
-  async updatePending() {
+  async updatePending({after, onchain}: IUpdatePending) {
     await Promise.all([
       this.updatePendingInvoices(),
       this.updatePendingPayments(),
-      super.updatePending(),
+      super.updatePending({after, onchain}),
     ])
   }
 

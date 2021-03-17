@@ -11,7 +11,7 @@ import { bitcoindAccountingPath, escrowAccountingPath, lndAccountingPath, lndFee
 
 const logger = baseLogger.child({module: "admin"})
 
-export const updateUsersPendingPayment = async () => {
+export const updateUsersPendingPayment = async ({ after }: {after?: undefined | number } = {after: undefined}) => {
   let userWallet
 
   for await (const user of User.find({})) {
@@ -19,7 +19,7 @@ export const updateUsersPendingPayment = async () => {
 
     // A better approach would be to just loop over pending: true invoice/payment
     userWallet = await WalletFactory({user, logger})
-    await userWallet.updatePending()
+    await userWallet.updatePending({ after, onchain: true })
   }
 }
 

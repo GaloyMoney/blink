@@ -15,6 +15,7 @@ import lnService from 'ln-service'
 
 import mongoose from "mongoose";
 import { once } from 'events'
+import { updateUsersPendingPayment } from "../ledger/balanceSheet";
 
 
 let funderWallet
@@ -190,6 +191,7 @@ it('batch send transaction', async () => {
   await waitUntilBlockHeight({ lnd: lndMain, blockHeight: initBlockCount + 6 })
 
   {
+    await updateUsersPendingPayment()
     const {BTC: balance0} = await walletUser0.getBalances()
     const {BTC: balance4} = await walletUser4.getBalances()
 
