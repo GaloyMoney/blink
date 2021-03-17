@@ -46,7 +46,7 @@ service:
 cron:
 - name: cronjob
   command: "yarn ts-node src/entrypoint/cron.ts"
-  schedule: "0 2 * * *"
+  schedule: "0 2,10,18 * * *"
 - name: balance-notif
   command: "yarn ts-node src/entrypoint/dailyBalanceNotification.ts"
   schedule: "0 14 * * *"
