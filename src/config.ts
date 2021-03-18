@@ -8,7 +8,7 @@ export const defaultConfig = yaml.load(defaultContent)
 let customContent, customConfig
 
 try {
-  customContent = fs.readFileSync('/var/custom.yaml', 'utf8');
+  customContent = fs.readFileSync('/var/yaml/custom.yaml', 'utf8');
   customConfig = yaml.load(customContent)
 } catch (err) {
   if (process.env.NETWORK !== "regtest") {

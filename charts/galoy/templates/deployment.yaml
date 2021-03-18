@@ -45,7 +45,7 @@ spec:
             mountPath: "/var/secret/cloud.google.com"
           {{- end}}
           - name: "custom-yaml"
-            mountPath: "/var/"
+            mountPath: "/var/yaml/"
           {{- if .targetPort }}
           ports:
             - name: http
