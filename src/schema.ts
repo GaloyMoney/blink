@@ -261,7 +261,7 @@ const transactionSchema = new Schema({
       // TODO: merge with the Interface located in types.ts?
       "invoice", "payment", "on_us", "fee_reimbursement", // lightning
       "onchain_receipt", "onchain_payment", "onchain_on_us", // onchain
-      "fee", "escrow", // channel-related
+      "fee", "escrow", "routing_fee", // channel-related
       "exchange_rebalance", // send/receive btc from the exchange
       "user_rebalance", // buy/sell btc in the user wallet
       "to_cold_storage", "to_hot_wallet"
