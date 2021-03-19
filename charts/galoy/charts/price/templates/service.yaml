@@ -7,13 +7,13 @@ metadata:
 spec:
   type: {{ .Values.service.type }}
   ports:
-    - port: {{ .Values.service.prometheus }}
-      targetPort: prometheus
-      protocol: TCP
-      name: prometheus
     - port: {{ .Values.service.grpc }}
       targetPort: grpc
       protocol: TCP
       name: grpc
+    - port: {{ .Values.service.prometheus }}
+      targetPort: prometheus
+      protocol: TCP
+      name: prometheus
   selector:
     {{- include "price.selectorLabels" . | nindent 4 }}
