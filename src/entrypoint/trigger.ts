@@ -1,23 +1,22 @@
 import { Storage } from '@google-cloud/storage';
 import { assert } from "console";
+import crypto from "crypto";
 import { Dropbox } from "dropbox";
 import express from 'express';
-import { subscribeToBackups, subscribeToChannels, subscribeToInvoices, subscribeToTransactions, subscribeToBlocks } from 'ln-service';
+import { getHeight, getWalletInfo, subscribeToForwards } from 'lightning';
+import lnService, { subscribeToBackups, subscribeToBlocks, subscribeToChannels, subscribeToInvoices, subscribeToTransactions } from 'ln-service';
 import { find } from "lodash";
-import { lndAccountingPath, lndFeePath } from "../ledger/ledger";
+import { updateUsersPendingPayment } from '../ledger/balanceSheet';
+import { lndAccountingPath, lndFeePath, revenueFeePath } from "../ledger/ledger";
 import { lnd } from "../lndConfig";
 import { MainBook, setupMongoConnection } from "../mongodb";
 import { sendInvoicePaidNotification, sendNotification } from "../notification";
 import { Price } from "../priceImpl";
+import { InvoiceUser, Transaction, User } from "../schema";
 import { IDataNotification } from "../types";
 import { baseLogger, LOOK_BACK } from '../utils';
 import { WalletFactory } from "../walletFactory";
 
-import crypto from "crypto"
-import lnService from 'ln-service'
-import { getHeight, getWalletInfo } from 'lightning'
-import { InvoiceUser, Transaction, User } from "../schema";
-import { updateUsersPendingPayment } from '../ledger/balanceSheet';
 
 //millitokens per million
 const FEE_RATE = 2500
@@ -66,9 +65,9 @@ export async function onchainTransactionEventHandler(tx) {
   if (tx.is_outgoing) {
     if (!tx.is_confirmed) {
       return
-      // FIXME 
+      // FIXME
       // we have to return here because we will not know whose user the the txid belond to
-      // this is because of limitation for lnd onchain wallet. we only know the txid after the 
+      // this is because of limitation for lnd onchain wallet. we only know the txid after the
       // transaction has been sent. and this events is trigger before
     }
 
@@ -88,7 +87,7 @@ export async function onchainTransactionEventHandler(tx) {
   } else {
     // incoming transaction
 
-    // TODO: the same way Lightning is updating the wallet/accounting, 
+    // TODO: the same way Lightning is updating the wallet/accounting,
     // this event should update the onchain wallet/account of the associated user
 
     let user
@@ -154,7 +153,7 @@ export const onChannelUpdated = async ({ channel, lnd, stateChange }: { channel:
     logger.info({ channel }, `channel ${stateChange} to us`)
     return
   }
-  
+
   // FIXME we are already accounting for close fee in the escrow.
   // need to remove the associated escrow transaction to correctly account for fees
   if (stateChange === "closed") {
@@ -199,6 +198,21 @@ const updatePrice = async () => {
   }, _1minInterval)
 }
 
+export const onPaymentForwarded = async ({forward}) => {
+  if (!forward.is_confirmed || forward.is_receive || forward.is_send) {
+    return;
+  }
+
+  const type = "routing_fee"
+  const metadata = { type, currency: "BTC", pending: false }
+  const fee_mtokens = {forward}
+
+  await MainBook.entry("routing fee")
+    .credit(revenueFeePath, +fee_mtokens / 1000, {...metadata})
+    .debit(lndAccountingPath, +fee_mtokens / 1000, {...metadata})
+    .commit()
+}
+
 const main = async () => {
   getWalletInfo({ lnd }, (err, result) => {
     logger.debug({ err, result }, 'getWalletInfo')
@@ -219,6 +233,9 @@ const main = async () => {
 
   const subBlocks = subscribeToBlocks({ lnd })
   subBlocks.on('block', updateUsersPendingPayment)
+
+  const subForward = subscribeToForwards({ lnd })
+  subForward.on('forward', onPaymentForwarded)
 
   updatePrice()
 }

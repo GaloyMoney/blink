@@ -23,12 +23,12 @@ export const updateUsersPendingPayment = async () => {
   }
 }
 
-export const getBalanceSheet = async () => {    
-  const { balance: assets } = await MainBook.balance({account_path: "Assets", currency: "BTC"}) 
-  const { balance: liabilities } = await MainBook.balance({account_path: "Liabilities", currency: "BTC"}) 
-  const { balance: lightning } = await MainBook.balance({accounts: lndAccountingPath, currency: "BTC"}) 
-  const { balance: bitcoin } = await MainBook.balance({accounts: bitcoindAccountingPath, currency: "BTC"}) 
-  const { balance: expenses } = await MainBook.balance({accounts: lndFeePath, currency: "BTC"}) 
+export const getBalanceSheet = async () => {
+  const { balance: assets } = await MainBook.balance({account_path: "Assets", currency: "BTC"})
+  const { balance: liabilities } = await MainBook.balance({account_path: "Liabilities", currency: "BTC"})
+  const { balance: lightning } = await MainBook.balance({accounts: lndAccountingPath, currency: "BTC"})
+  const { balance: bitcoin } = await MainBook.balance({accounts: bitcoindAccountingPath, currency: "BTC"})
+  const { balance: expenses } = await MainBook.balance({accounts: lndFeePath, currency: "BTC"})
 
   return {assets, liabilities, lightning, expenses, bitcoin }
 }
@@ -40,20 +40,20 @@ export const balanceSheetIsBalanced = async () => {
   const specterWallet = new SpecterWallet({ logger })
   let bitcoind = await specterWallet.getBitcoindBalance()
 
-  const assetsLiabilitiesDifference = 
+  const assetsLiabilitiesDifference =
     assets /* assets is ___ */
     + liabilities /* liabilities is ___ */
     + expenses /* expense is positif */
 
-  const bookingVersusRealWorldAssets = 
+  const bookingVersusRealWorldAssets =
     (lnd + bitcoind) + // physical assets or value of account at third party
     (lightning + bitcoin) // value in accounting
-  
+
   if(!!bookingVersusRealWorldAssets || !!assetsLiabilitiesDifference) {
     logger.debug({
       assetsLiabilitiesDifference, bookingVersusRealWorldAssets,
-      assets, liabilities, expenses,  
-      lnd, lightning, 
+      assets, liabilities, expenses,
+      lnd, lightning,
       bitcoind, bitcoin
     }, `not balanced`)
   }
@@ -70,14 +70,14 @@ export const updateEscrows = async () => {
   const selfInitated = filter(channels, {is_partner_initiated: false})
 
   const mongotxs = await Transaction.aggregate([
-    { $match: { type, accounts: lndAccountingPath }}, 
+    { $match: { type, accounts: lndAccountingPath }},
     { $group: {_id: "$txid", total: { "$sum": "$credit" } }},
   ])
 
   for (const channel of selfInitated) {
 
     const txid = `${channel.transaction_id}:${channel.transaction_vout}`
-    
+
     const mongotx = filter(mongotxs, {_id: txid})[0] ?? { total: 0 }
 
     logger.debug({mongotx, channel}, "need escrow?")
