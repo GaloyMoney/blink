@@ -170,7 +170,6 @@ helmUpgrade galoy \
   $INFRADIR/galoy/
 
 kubectlWait app.kubernetes.io/instance=galoy
-kubectl -n $NAMESPACE annotate deployment graphql kubernetes.io/change-cause="$CIRCLE_SHA1-$(date -u)"
 
 if [ ${LOCAL} ]
 then
@@ -211,6 +210,9 @@ fi
 
 if [ "$NETWORK" == "testnet" ] || [ "$NETWORK" == "mainnet" ];
 then
+
+  kubectl -n $NAMESPACE annotate deployment graphql kubernetes.io/change-cause="$CIRCLE_SHA1-$(date -u)"
+
   kubectl -n $NAMESPACE rollout status deployments/trigger
   if [[ "$?" -ne 0 ]]; then
     echo "Deployment for trigger failed"
