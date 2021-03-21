@@ -8,7 +8,7 @@ helm repo add jetstack https://charts.jetstack.io
 helm repo add galoy https://galoymoney.github.io/charts/
 helm repo update
 
-lndVersion="1.0.4"
+lndVersion="1.0.10"
 
 cd ./charts/galoy && helm dependency build && cd -
 cd ./charts/monitoring && helm dependency build && cd -
@@ -68,24 +68,6 @@ kubectlLndDeletionWait () {
   kubectl wait -n=$NAMESPACE --for=delete --timeout=45s pod -l app.kubernetes.io/name=lnd || :
 }
 
-exportMacaroon() {
-  export "$2"=$(kubectl exec -n=$NAMESPACE $1 -- base64 /root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
-}
-
-createLoopConfigmaps() {
-  kubectl -n $NETWORK cp lnd-0:/root/.lnd/tls.cert ./tls.cert
-  kubectl create configmap lndtls --from-file=./tls.cert --dry-run -o yaml | kubectl -n $NETWORK apply -f -
-
-  kubectl -n $NETWORK cp lnd-0:/root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon ./macaroon/admin.macaroon
-  kubectl -n $NETWORK cp lnd-0:/root/.lnd/data/chain/bitcoin/$NETWORK/readonly.macaroon ./macaroon/readonly.macaroon
-  kubectl -n $NETWORK cp lnd-0:/root/.lnd/data/chain/bitcoin/$NETWORK/invoices.macaroon ./macaroon/invoices.macaroon
-  kubectl -n $NETWORK cp lnd-0:/root/.lnd/data/chain/bitcoin/$NETWORK/chainnotifier.macaroon ./macaroon/chainnotifier.macaroon
-  kubectl -n $NETWORK cp lnd-0:/root/.lnd/data/chain/bitcoin/$NETWORK/signer.macaroon ./macaroon/signer.macaroon
-  kubectl -n $NETWORK cp lnd-0:/root/.lnd/data/chain/bitcoin/$NETWORK/walletkit.macaroon ./macaroon/walletkit.macaroon
-  kubectl -n $NETWORK cp lnd-0:/root/.lnd/data/chain/bitcoin/$NETWORK/router.macaroon ./macaroon/router.macaroon
-  kubectl create configmap lndmacaroon --from-file=./macaroon --dry-run -o yaml | kubectl -n $NETWORK apply -f -
-}
-
 if [ ${LOCAL} ]
 then
   localdevpath="-f $INFRADIR/configs/bitcoind/localdev.yaml"
@@ -129,25 +111,6 @@ fi
 sleep 15
 kubectlWait app.kubernetes.io/name=lnd
 
-exportMacaroon lnd-0 MACAROON
-export TLS=$(kubectl -n $NAMESPACE exec lnd-0 -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
-
-if [ "$NETWORK" == "regtest" ]
-then
-  exportMacaroon lnd-outside-1-0 MACAROONOUTSIDE1
-  exportMacaroon lnd-outside-2-0 MACAROONOUTSIDE2
-
-  # Todo: refactor
-  export TLSOUTSIDE1=$(kubectl -n $NAMESPACE exec lnd-outside-1-0 -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
-  export TLSOUTSIDE2=$(kubectl -n $NAMESPACE exec lnd-outside-2-0 -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
-
-  echo $(kubectl get -n=$NAMESPACE pods)
-
-else
-  createLoopConfigmaps
-  helmUpgrade loop-server $INFRADIR/lnd/charts/loop/
-fi
-
 if [ ${LOCAL} ]
 then
 localdevpath="-f $INFRADIR/galoy/localdev.yaml"
@@ -165,8 +128,7 @@ export MONGODB_REPLICA_SET_KEY=$(kubectl get secret -n $NAMESPACE galoy-mongodb 
 
 helmUpgrade galoy \
   $configpath $localdevpath \
-  --set "customCmdlineEnv={MACAROONOUTSIDE1:$MACAROONOUTSIDE1,MACAROONOUTSIDE2:$MACAROONOUTSIDE2,TLSOUTSIDE1:$TLSOUTSIDE1,TLSOUTSIDE2:$TLSOUTSIDE2}" \
-  --set tls=$TLS,macaroon=$MACAROON,mongodb.auth.rootPassword=$MONGODB_ROOT_PASSWORD,mongodb.auth.replicaSetKey=$MONGODB_REPLICA_SET_KEY,image.tag=$CIRCLE_SHA1 \
+  --set mongodb.auth.rootPassword=$MONGODB_ROOT_PASSWORD,mongodb.auth.replicaSetKey=$MONGODB_REPLICA_SET_KEY,image.tag=$CIRCLE_SHA1 \
   $INFRADIR/galoy/
 
 kubectlWait app.kubernetes.io/instance=galoy

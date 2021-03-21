@@ -6,7 +6,7 @@ const getAuth = () => {
   const macaroon = process.env.MACAROON
   const lndip = process.env.LNDIP
   const port = process.env.LNDRPCPORT ?? 10009
-  
+
   if (!cert || !macaroon || !lndip) {
     console.log({cert, macaroon, lndip, port})
     throw new Error('missing environment variable for lnd')
@@ -27,7 +27,7 @@ export const lnd = authenticatedLndGrpc(getAuth()).lnd
 //   {
 //     pubkey: "0xde4f",
 //     grpc: lnd
-//   }  
+//   }
 // ]
 
 export const TIMEOUT_PAYMENT = process.env.NETWORK !== "regtest" ? 45000 : 3000
