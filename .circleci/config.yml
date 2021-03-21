@@ -18,22 +18,6 @@ commands:
             gcloud auth activate-service-account --key-file=gcloud-service-key.json
             gcloud config set project ${GOOGLE_PROJECT_ID}
             gcloud container clusters get-credentials testnet-cluster --region us-central1-a --project ${GOOGLE_PROJECT_ID}
-  update-lnpage:
-    parameters:
-      namespace:
-        type: string
-    steps:
-      - run:
-          name: Update lnpage
-          command: |
-            wget https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -O jq
-            chmod +x ./jq
-            kubectl -n << parameters.namespace >> wait --for=condition=ready pod -l app=lnpage
-            LND_ADDR=$(kubectl -n <<parameters.namespace>> get services | awk '/lnd/ {print $4}')
-            LND_PUB_KEY=$(kubectl -n <<parameters.namespace>> exec lnd-0 -- lncli -n <<parameters.namespace>> getinfo | ./jq -r '.identity_pubkey')
-            GRAPHQL_URI=https://graphql.<<parameters.namespace>>.galoy.io/graphql
-            echo "window.env={'LND_PUB_KEY':'$LND_PUB_KEY','LND_ADDR':'$LND_ADDR','GRAPHQL_URI':'$GRAPHQL_URI'}" > env.js
-            kubectl -n <<parameters.namespace>> cp ./env.js $(kubectl -n <<parameters.namespace>> get pods -l app=lnpage --no-headers -o custom-columns=":metadata.name"):/usr/share/nginx/html/env.js
 
 jobs:
   build_test_image:
@@ -53,7 +37,7 @@ jobs:
       - gcp-gcr/push-image:
           image: galoy
           tag: $CIRCLE_SHA1
-          
+
   test:
     docker:
       - image: kiwigrid/gcloud-kubectl-helm:latest
@@ -71,7 +55,7 @@ jobs:
             kubectl create namespace $NAMESPACE
       - run:
           name: install helm charts
-          command: ./initLocalTest.sh 
+          command: ./initLocalTest.sh
       - run:
           name: Run jest test
           command: |
@@ -102,7 +86,7 @@ jobs:
 
   testnet_deploy:
     docker:
-      - image: cimg/base:2020.01     
+      - image: cimg/base:2020.01
     resource_class: small
     steps:
       - checkout
@@ -118,12 +102,10 @@ jobs:
       - run:
           name: Upgrade testnet deployments
           command: ./initLocalTest.sh testnet
-      - update-lnpage:
-          namespace: testnet
 
   mainnet_deploy:
     docker:
-      - image: kiwigrid/gcloud-kubectl-helm:latest     
+      - image: kiwigrid/gcloud-kubectl-helm:latest
     resource_class: small
     steps:
       - checkout
@@ -136,36 +118,8 @@ jobs:
             kubectl --namespace=mainnet wait --for=condition=complete --timeout=60s job/$JOB_DATE
             kubectl --namespace=mainnet delete job/$JOB_DATE
             ./initLocalTest.sh mainnet
-      - update-lnpage:
-          namespace: mainnet
-
-      
-  update_lnpage:
-    working_directory: ~/charts
-    docker:
-      - image: kiwigrid/gcloud-kubectl-helm:latest
-    resource_class: small
-    steps:
-      - checkout
-      - gke-auth
-      - update-lnpage:
-          namespace: testnet
-      - update-lnpage:
-          namespace: mainnet
-
 
 workflows:
-  update_lnpage:
-    jobs:
-      - hold_update_lnpage:
-          type: approval
-          # filters:
-          #   branches:
-          #     only:
-          #       - main
-      - update_lnpage:
-          requires:
-            - hold_update_lnpage
   kube:
     jobs:
       - build_test_image
@@ -178,7 +132,7 @@ workflows:
           filters:
             branches:
               only:
-                - main  
+                - main
       - approve_mainnet_deploy:
           type: approval
           requires:

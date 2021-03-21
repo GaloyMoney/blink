@@ -129,7 +129,7 @@ spec:
                   name: dropbox-access-token
                   key: token
             {{- end }}
-            {{- if eq $.Values.network "regtest" }}
+            {{- if eq $.Values.global.network "regtest" }}
             - name: MACAROONOUTSIDE1
               valueFrom:
                 secretKeyRef:
