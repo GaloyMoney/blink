@@ -117,18 +117,18 @@ nginx:
     server {
       listen 8080;
       location /.well-known/ {
-        root   /usr/share/nginx/html;
+        root   /opt/bitnami/nginx/html;
         add_header  Content-Type    application/json;
         try_files $uri =404;
       }
       location / {
-        root   /usr/share/nginx/html;
+        root   /opt/bitnami/nginx/html;
         index  index.html index.htm;
         try_files $uri $uri/ /index.html;
       }
       error_page 500 502 503 504 /50x.html;
       location = /50x.html {
-        root  /usr/share/nginx/html;
+        root  /opt/bitnami/nginx/html;
       }
     }
 
