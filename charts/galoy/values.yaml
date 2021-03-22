@@ -113,6 +113,24 @@ nginx:
   podLabels:
     app: lnpage
   command: ['/bin/sh', '-c' , 'echo "window.env={\"GRAPHQL_URI\":\"https://graphql.{{.Values.global.network}}.galoy.io/graphql\"}" > /app/env.js && /opt/bitnami/scripts/nginx/entrypoint.sh /opt/bitnami/scripts/nginx/run.sh']
+  serverBlock: |-
+    server {
+      listen 80;
+      location /.well-known/ {
+        root   /usr/share/nginx/html;
+        add_header  Content-Type    application/json;
+        try_files $uri =404;
+      }
+      location / {
+        root   /usr/share/nginx/html;
+        index  index.html index.htm;
+        try_files $uri $uri/ /index.html;
+      }
+      error_page 500 502 503 504 /50x.html;
+      location = /50x.html {
+        root  /usr/share/nginx/html;
+      }
+    }
 
 mongodbaddress: "galoy-mongodb-0.galoy-mongodb-headless,galoy-mongodb-1.galoy-mongodb-headless,galoy-mongodb-2.galoy-mongodb-headless"
 
