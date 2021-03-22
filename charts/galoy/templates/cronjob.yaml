@@ -30,7 +30,10 @@ spec:
               mountPath: "/var/yaml/"
             env:
             - name: NETWORK
-              value: {{$.Values.network}}
+              valueFrom:
+                secretKeyRef:
+                  name: network
+                  key: network
             - name: MONGODB_PASSWORD
               value: "testGaloy"
             - name: MONGODB_USER
