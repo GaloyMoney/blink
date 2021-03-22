@@ -1,19 +1,20 @@
-network: regtest
+global:
+  network: regtest
 
 jwtSecret: "my_non_secured_secret"
 
 bitcoind:
-  port: 
+  port:
     18443
 
 redis:
   master:
-    persistence: 
+    persistence:
       enabled: false
   metrics:
     enabled: false
 
-lnpage:
+nginx:
   enabled: false
 
 mongodb:

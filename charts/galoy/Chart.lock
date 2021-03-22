@@ -8,5 +8,8 @@ dependencies:
 - name: common
   repository: https://charts.bitnami.com/bitnami
   version: 0.10.0
-digest: sha256:cbfb6534275e982cd4bb081d5a0b89f5817d393c1311e969fb57e3d0b84229a9
-generated: "2021-03-15T17:08:30.878553+01:00"
+- name: nginx
+  repository: https://charts.bitnami.com/bitnami
+  version: 8.7.1
+digest: sha256:b7c533af2aad378da87f51ad2e0c6ad825d3319a5c7761968cda5c77794c7cad
+generated: "2021-03-17T01:41:06.0398036+05:30"

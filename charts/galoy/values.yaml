@@ -1,5 +1,13 @@
+global:
+  network: mainnet
+
 galoy:
   name: "Galoy Wallet"
+
+# todo: this should be injected in a configmap from bitcoind
+bitcoind:
+  port:
+    8332
 
 ca:
   CAEmail: krtk6160@galoy.io
@@ -30,7 +38,7 @@ deployment:
   command: "yarn run ts-node ./src/entrypoint/trigger.ts"
   healthz: 127.0.0.1:8888/healthz
   targetPort: 8888
-  replicaCount: 1 
+  replicaCount: 1
   # cpu request: 0.001
 
 service:
@@ -78,7 +86,7 @@ twilio: true
 
 redis:
   master:
-    persistence: 
+    persistence:
       enabled: true
     service:
       type: ClusterIP
@@ -90,6 +98,21 @@ redis:
 
 lnpage:
   enabled: true
+
+nginx:
+  enabled: false
+  cloneStaticSiteFromGit:
+    enabled: true
+    repository: https://github.com/GaloyMoney/lnpage.git
+    branch: build
+  podSecurityContext:
+    enabled: true
+    runAsUser: 1001
+  ingress:
+    enabled: false
+  podLabels:
+    app: lnpage
+  command: ['/bin/sh', '-c' , 'echo "window.env={\"GRAPHQL_URI\":\"https://graphql.{{.Values.global.network}}.galoy.io/graphql\"}" > /app/env.js && /opt/bitnami/scripts/nginx/entrypoint.sh /opt/bitnami/scripts/nginx/run.sh']
 
 mongodbaddress: "galoy-mongodb-0.galoy-mongodb-headless,galoy-mongodb-1.galoy-mongodb-headless,galoy-mongodb-2.galoy-mongodb-headless"
 
@@ -139,7 +162,7 @@ mongodb:
   ## TODO: Could be useful for having mongo metrics
   metrics:
     enabled: true
-  
+
   initDbScripts:
     init.sh: |
       #!/bin/bash

@@ -32,3 +32,6 @@ dependencies:
   - name: common
     version: 0.x.x
     repository: https://charts.bitnami.com/bitnami
+  - name: nginx
+    repository: https://charts.bitnami.com/bitnami
+    version: 8.x.x
