@@ -16,11 +16,11 @@ import PinoHttp from "pino-http";
 import swStats from 'swagger-stats';
 import util from 'util';
 import { v4 as uuidv4 } from 'uuid';
-import { getMinBuildNumber, mainCache } from "../cache";
+import { getCurrentPrice, getMinBuildNumber, mainCache } from "../cache";
 import { nodeStats } from "../lndUtils";
 import { getAsyncRedisClient } from "../lock";
 import { setupMongoConnection } from "../mongodb";
-import { sendNotification } from "../notification";
+import { sendNotification } from "../notifications/notification";
 import { Price } from "../priceImpl";
 import { User } from "../schema";
 import { login, requestPhoneCode } from "../text";
@@ -126,13 +126,17 @@ const resolvers = {
       if ( value === undefined ){
         const price = new Price({logger})
         const lastCached = await price.lastCached()
-        // TODO: maybe have a better way to reset the cache.
-        // if we have 300 seconds of cache here, but we also only fetch from prometheus value only every 300 seconds
-        // then the price value could be stale up to 600 seconds on the client side
-        mainCache.set( key, lastCached, 30 )
+        mainCache.set( key, lastCached, 300 )
         value = lastCached
       }
     
+      // adding the current price as the lat index array
+      // use by the mobile application to convert prices
+      value.push({
+        id: moment().unix(),
+        o: getCurrentPrice()
+      })
+
       return value.splice(-length)
     },
     earnList: async (_, __, { uid, user }) => {

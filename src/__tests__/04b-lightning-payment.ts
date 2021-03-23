@@ -18,8 +18,10 @@ let initBalance0, initBalance1, initBalance2
 
 const amountInvoice = 1000
 
-jest.mock('../notification')
-import { sendNotification } from "../notification";
+jest.mock('../notifications/notification')
+import { sendNotification } from "../notifications/notification";
+jest.mock('../cache')
+
 
 
 beforeAll(async () => {

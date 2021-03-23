@@ -1,23 +1,21 @@
 import { Storage } from '@google-cloud/storage';
 import { assert } from "console";
+import crypto from "crypto";
 import { Dropbox } from "dropbox";
 import express from 'express';
-import { subscribeToBackups, subscribeToChannels, subscribeToInvoices, subscribeToTransactions, subscribeToBlocks } from 'ln-service';
+import { getHeight, getWalletInfo } from 'lightning';
+import lnService, { subscribeToBackups, subscribeToBlocks, subscribeToChannels, subscribeToInvoices, subscribeToTransactions } from 'ln-service';
 import { find } from "lodash";
+import { updateUsersPendingPayment } from '../ledger/balanceSheet';
 import { lndAccountingPath, lndFeePath } from "../ledger/ledger";
 import { lnd } from "../lndConfig";
 import { MainBook, setupMongoConnection } from "../mongodb";
-import { sendInvoicePaidNotification, sendNotification } from "../notification";
+import { transactionNotification } from "../notifications/payment";
 import { Price } from "../priceImpl";
-import { IDataNotification } from "../types";
+import { InvoiceUser, Transaction, User } from "../schema";
 import { baseLogger, LOOK_BACK } from '../utils';
 import { WalletFactory } from "../walletFactory";
 
-import crypto from "crypto"
-import lnService from 'ln-service'
-import { getHeight, getWalletInfo } from 'lightning'
-import { InvoiceUser, Transaction, User } from "../schema";
-import { updateUsersPendingPayment } from '../ledger/balanceSheet';
 
 //millitokens per million
 const FEE_RATE = 2500
@@ -67,7 +65,7 @@ export async function onchainTransactionEventHandler(tx) {
     if (!tx.is_confirmed) {
       return
       // FIXME 
-      // we have to return here because we will not know whose user the the txid belond to
+      // we have to return here because we will not know whose user the the txid belong to
       // this is because of limitation for lnd onchain wallet. we only know the txid after the 
       // transaction has been sent. and this events is trigger before
     }
@@ -76,15 +74,8 @@ export async function onchainTransactionEventHandler(tx) {
     onchainLogger.info({ success: true, pending: false, transactionType: "payment" }, "payment completed")
     const entry = await Transaction.findOne({ account_path: { $all: ["Liabilities", "Customer"] }, hash: tx.id })
 
-    const title = `Your on-chain transaction has been confirmed`
-    const data: IDataNotification = {
-      type: "onchain_payment",
-      hash: tx.id,
-      amount: tx.tokens,
-    }
-
     const user = await User.findOne({"_id": entry.account_path[2]})
-    await sendNotification({ user, title, data, logger: onchainLogger })
+    await transactionNotification({ type: "onchain_payment", user, amount: Number(tx.tokens) - tx.fee, txid: tx.id, logger: onchainLogger })
   } else {
     // incoming transaction
 
@@ -103,11 +94,6 @@ export async function onchainTransactionEventHandler(tx) {
       onchainLogger.error({ error }, "issue in onchainTransactionEventHandler to get User id attached to output_addresses")
       throw error
     }
-    const data: IDataNotification = {
-      type: "onchain_receipt",
-      amount: Number(tx.tokens),
-      txid: tx.id
-    }
 
     if (tx.is_confirmed === false) {
       onchainLogger.info({ transactionType: "receipt", pending: true }, "mempool appearence")
@@ -117,13 +103,8 @@ export async function onchainTransactionEventHandler(tx) {
       await wallet.updateOnchainReceipt()
     }
 
-    const satsPrice = await new Price({ logger: onchainLogger }).lastPrice()
-    const usd = (tx.tokens * satsPrice).toFixed(2)
-
-    const title = tx.is_confirmed ?
-      `You received $${usd} | ${tx.tokens} sats` :
-      `$${usd} | ${tx.tokens} sats is on its way to your wallet`
-    await sendNotification({ title, user, data, logger: onchainLogger })
+    const type = tx.is_confirmed ? "onchain_receipt" : "onchain_receipt_pending"
+    await transactionNotification({ type, user, logger: onchainLogger, amount: Number(tx.tokens), txid: tx.id })
   }
 }
 
@@ -143,7 +124,7 @@ export const onInvoiceUpdate = async invoice => {
     const user = await User.findOne({_id: uid})
     const wallet = await WalletFactory({ user, logger })
     await wallet.updatePendingInvoice({ hash })
-    await sendInvoicePaidNotification({ amount: invoice.received, hash, user, logger })
+    await transactionNotification({ type: "paid-invoice", amount: invoice.received, hash, user, logger })
   } else {
     logger.fatal({ invoice }, "we received an invoice but had no user attached to it")
   }
@@ -192,7 +173,6 @@ const updatePrice = async () => {
   setInterval(async function () {
     try {
       await price.update()
-      await price.fastUpdate()
     } catch (err) {
       logger.error({ err }, "can't update the price")
     }

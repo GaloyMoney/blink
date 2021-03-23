@@ -8,6 +8,9 @@ import { bitcoindDefaultClient } from "../utils";
 import lnService from 'ln-service'
 import mongoose from "mongoose";
 
+jest.mock('../cache')
+
+
 const initialBitcoinWalletBalance = 0
 
 const blockReward = 50

@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+service PriceFeed {
+  rpc GetPrice(PriceQuery) returns (PriceResponse) {}
+}
+
+message PriceResponse {
+  float price = 1;
+}
+
+message PriceQuery {}

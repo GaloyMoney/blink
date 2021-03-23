@@ -1,13 +1,13 @@
 /**
  * @jest-environment node
  */
-import { setupMongoConnection } from "../mongodb";
-import { getUserWallet } from "./helper"
-import { UserWallet } from "../userWallet"
-import { insertMarkers } from "../debug/map_csv_to_mongodb"
 import mongoose from "mongoose";
+import { setupMongoConnection } from "../mongodb";
 import { User } from "../schema";
+import { UserWallet } from "../userWallet";
+import { getUserWallet } from "./helper";
 
+jest.mock('../cache')
 
 let userWallet0, userWallet1, userWallet2
 

@@ -1,17 +1,19 @@
 /**
  * @jest-environment node
  */
+import { once } from 'events';
+import { getChannels, getWalletInfo, subscribeToChannels, subscribeToGraph } from 'lightning';
+import lnService from 'ln-service';
+import mongoose from "mongoose";
+import { onChannelUpdated } from '../entrypoint/trigger';
 import { updateEscrows } from "../ledger/balanceSheet";
 import { lndFeePath } from "../ledger/ledger";
 import { MainBook, setupMongoConnection } from "../mongodb";
-import { checkIsBalanced, lndMain, lndOutside1, lndOutside2, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "./helper";
-import { onChannelUpdated } from '../entrypoint/trigger';
 import { baseLogger, bitcoindDefaultClient, sleep } from "../utils";
-import mongoose from "mongoose";
-import { once } from 'events';
+import { checkIsBalanced, lndMain, lndOutside1, lndOutside2, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "./helper";
 
-import lnService from 'ln-service'
-import { getChannels, getWalletInfo, subscribeToChannels, subscribeToGraph } from 'lightning'
+jest.mock('../cache')
+
 
 const local_tokens = 1000000
 

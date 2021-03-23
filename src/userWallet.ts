@@ -6,7 +6,7 @@ import { ITransaction } from "./types";
 import { LoggedError } from "./utils";
 import { Balances } from "./interface"
 import assert from 'assert'
-import { sendNotification } from "./notification";
+import { sendNotification } from "./notifications/notification";
 import { User } from "./schema";
 
 export abstract class UserWallet {
@@ -201,6 +201,6 @@ export abstract class UserWallet {
     const balanceUsd = UserWallet.satsToUsd(balanceSats).toLocaleString("en", { maximumFractionDigits: 2 })
 
     this.logger.info({ balanceSatsPrettified, balanceUsd, user: this.user }, `sending balance notification to user`)
-    await sendNotification({ user: this.user, title: `Your balance today is \$${balanceUsd} (${balanceSatsPrettified} sats)`, logger: this.logger })
+    await sendNotification({ user: this.user, title: `Your balance is \$${balanceUsd} (${balanceSatsPrettified} sats)`, logger: this.logger })
   }
 }

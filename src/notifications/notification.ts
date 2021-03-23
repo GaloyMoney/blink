@@ -1,7 +1,6 @@
 import * as admin from 'firebase-admin';
 import _ from 'lodash';
-import { Price } from "./priceImpl";
-import { IDataNotification, INotification } from "./types";
+import { INotification } from "../types";
 
 // The key GOOGLE_APPLICATION_CREDENTIALS should be set in production
 // This key defined the path of the config file that include the key
@@ -13,23 +12,8 @@ if(process.env.GOOGLE_APPLICATION_CREDENTIALS) {
   })
 }
 
+export const sendNotification = async ({ title, user, body, data, logger}: INotification) => {
 
-export const sendInvoicePaidNotification = async ({hash, amount, user, logger}) => {
-  const satsPrice = await new Price({ logger }).lastPrice()
-
-  const data: IDataNotification = {
-    type: "paid-invoice",
-    hash,
-    amount,
-  }
-
-  const usd = (amount * satsPrice).toFixed(2)
-  // TODO dedupe from trigger.ts
-  await sendNotification({user, title: `You received $${usd} | ${amount} sats`, data, logger})
-}
-
-
-export const sendNotification = async ({user, title, body, data, logger}: INotification) => {
 
   const message = {
     // only string can be sent to notifications
