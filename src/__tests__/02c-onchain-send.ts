@@ -113,8 +113,8 @@ it('Sends onchain payment successfully', async () => {
 
   // expect(sendNotification.mock.calls.length).toBe(2)  // FIXME: should be 1
 
-  
-  expect(sendNotification.mock.calls[0][0].title).toBe(getTitle["onchain_payment"]({amount: amount + pendingTxs[0].fee}))
+
+  expect(sendNotification.mock.calls[0][0].title).toBe(getTitle["onchain_payment"]({amount}))
   expect(sendNotification.mock.calls[0][0].data.type).toBe("onchain_payment")
 
   const { results: [{ pending, fee, feeUsd }] } = await MainBook.ledger({ account: userWallet0.accountPath, hash: pendingTxn.hash })
