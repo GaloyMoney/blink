@@ -37,3 +37,6 @@ export LOGLEVEL="debug"
 export HELMREVISION=1
 
 export CONFIG_REPO="https://github.com/GaloyMoney/configs"
+
+export PRICE_ADDRESS=$MINIKUBEIP
+export PRICE_PORT=$(kubectl get services | awk '/galoy-price/ {print $5}' | grep -Po '50051:\K[0-9]+')

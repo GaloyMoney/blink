@@ -6,7 +6,10 @@ import { baseLogger } from "./utils";
 export const mainCache = new NodeCache();
 
 export const getCurrentPrice = async (): Promise<number | undefined> => {
-  const client = new protoDescriptor.PriceFeed('price:50051', grpc.credentials.createInsecure());
+  const priceUrl = process.env.PRICE_ADDRESS ?? 'galoy-price'
+  const pricePort = process.env.PRICE_PORT ??'50051'
+
+  const client = new protoDescriptor.PriceFeed(`${priceUrl}:${pricePort}`, grpc.credentials.createInsecure());
 
   const promise = new Promise((resolve, reject): Promise<number | undefined> => 
     client.getPrice({}, (err, {price}) => {
