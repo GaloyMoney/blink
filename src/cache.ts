@@ -2,14 +2,15 @@ import { DbVersion } from "./schema";
 import { protoDescriptor } from "./grpc";
 const grpc = require('@grpc/grpc-js');
 import NodeCache from "node-cache";
-import { baseLogger } from "./utils";
+import { baseLogger, sat2btc } from "./utils";
 export const mainCache = new NodeCache();
 
 export const getCurrentPrice = async (): Promise<number | undefined> => {
   const priceUrl = process.env.PRICE_ADDRESS ?? 'galoy-price'
   const pricePort = process.env.PRICE_PORT ??'50051'
+  const fullUrl = `${priceUrl}:${pricePort}`
 
-  const client = new protoDescriptor.PriceFeed(`${priceUrl}:${pricePort}`, grpc.credentials.createInsecure());
+  const client = new protoDescriptor.PriceFeed(fullUrl, grpc.credentials.createInsecure());
 
   const promise = new Promise((resolve, reject): Promise<number | undefined> => 
     client.getPrice({}, (err, {price}) => {
@@ -30,7 +31,7 @@ export const getCurrentPrice = async (): Promise<number | undefined> => {
     return undefined
   }
 
-  return price
+  return sat2btc(price)
 }
 
 export const getMinBuildNumber = async () => {
