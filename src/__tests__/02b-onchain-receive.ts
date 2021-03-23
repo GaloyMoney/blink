@@ -1,20 +1,21 @@
 /**
  * @jest-environment node
  */
+import { once } from 'events';
+import lnService from 'ln-service';
 import { filter } from "lodash";
+import mongoose from "mongoose";
+import { getCurrentPrice } from "../cache";
+import { onchainTransactionEventHandler } from "../entrypoint/trigger";
 import { quit } from "../lock";
 import { setupMongoConnection } from "../mongodb";
-import { Price } from "../priceImpl";
-import { checkIsBalanced, getUserWallet, lndMain, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "./helper";
-import { onchainTransactionEventHandler } from "../entrypoint/trigger";
+import { getTitle } from "../notifications/payment";
 import { baseLogger, bitcoindDefaultClient, btc2sat, sleep } from "../utils";
 import { getFunderWallet } from "../walletFactory";
+import { checkIsBalanced, getUserWallet, lndMain, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "./helper";
 
+jest.mock('../cache')
 
-import lnService from 'ln-service'
-
-import mongoose from "mongoose";
-import { once } from 'events'
 
 
 let funderWallet
@@ -26,9 +27,8 @@ const min_height = 1
 let amount_BTC
 
 
-
-jest.mock('../notification')
-const { sendNotification } = require("../notification");
+jest.mock('../notifications/notification')
+const { sendNotification } = require("../notifications/notification")
 
 
 beforeAll(async () => {
@@ -133,12 +133,12 @@ it('identifies unconfirmed incoming on chain txn', async () => {
   await sleep(1000)
 
   expect(sendNotification.mock.calls.length).toBe(1)
-  expect(sendNotification.mock.calls[0][0].data.type).toBe("onchain_receipt")
+  expect(sendNotification.mock.calls[0][0].data.type).toBe("onchain_receipt_pending")
 
-  const satsPrice = await new Price({ logger: baseLogger }).lastPrice()
-  const usd = (btc2sat(amount_BTC) * satsPrice).toFixed(2)
+  const satsPrice = await getCurrentPrice()
+  const usd = (btc2sat(amount_BTC) * satsPrice!).toFixed(2)
 
-  expect(sendNotification.mock.calls[0][0].title).toBe(`$${usd} | ${btc2sat(amount_BTC)} sats is on its way to your wallet`)
+  expect(sendNotification.mock.calls[0][0].title).toBe(getTitle["onchain_receipt_pending"]({usd, amount: btc2sat(amount_BTC)}))
 
   await Promise.all([
     bitcoindDefaultClient.generateToAddress(3, RANDOM_ADDRESS),

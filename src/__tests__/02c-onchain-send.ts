@@ -1,25 +1,27 @@
 /**
  * @jest-environment node
  */
+import { once } from 'events';
+import lnService from 'ln-service';
 import { filter, first } from "lodash";
+import mongoose from "mongoose";
+import { onchainTransactionEventHandler } from "../entrypoint/trigger";
 import { quit } from "../lock";
 import { MainBook, setupMongoConnection } from "../mongodb";
-import { checkIsBalanced, getUserWallet, lndMain, lndOutside1, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "./helper";
-import { onchainTransactionEventHandler } from "../entrypoint/trigger";
+import { getTitle } from "../notifications/payment";
 import { bitcoindDefaultClient, sleep } from "../utils";
-import {once} from 'events';
+import { checkIsBalanced, getUserWallet, lndMain, lndOutside1, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "./helper";
 
-import lnService from 'ln-service'
+jest.mock('../cache')
 
-import mongoose from "mongoose";
 
 let initBlockCount
 let initialBalanceUser0
 let userWallet0, userWallet3
 
 
-jest.mock('../notification')
-const { sendNotification } = require("../notification")
+jest.mock('../notifications/notification')
+const { sendNotification } = require("../notifications/notification")
 
 beforeAll(async () => {
   await setupMongoConnection()
@@ -110,7 +112,9 @@ it('Sends onchain payment successfully', async () => {
   console.log(JSON.stringify(sendNotification.mock.calls))
 
   // expect(sendNotification.mock.calls.length).toBe(2)  // FIXME: should be 1
-  expect(sendNotification.mock.calls[0][0].title).toBe(`Your on-chain transaction has been confirmed`)
+
+  
+  expect(sendNotification.mock.calls[0][0].title).toBe(getTitle["onchain_payment"]({amount: amount + pendingTxs[0].fee}))
   expect(sendNotification.mock.calls[0][0].data.type).toBe("onchain_payment")
 
   const { results: [{ pending, fee, feeUsd }] } = await MainBook.ledger({ account: userWallet0.accountPath, hash: pendingTxn.hash })

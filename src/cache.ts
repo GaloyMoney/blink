@@ -1,22 +1,33 @@
-import { Price } from "./priceImpl";
 import { DbVersion } from "./schema";
-import { baseLogger } from "./utils";
-
+import { protoDescriptor } from "./grpc";
+const grpc = require('@grpc/grpc-js');
 import NodeCache from "node-cache";
+import { baseLogger } from "./utils";
 export const mainCache = new NodeCache();
 
+export const getCurrentPrice = async (): Promise<number | undefined> => {
+  const client = new protoDescriptor.PriceFeed('price:50051', grpc.credentials.createInsecure());
 
-export const getLastPrice = async (): Promise<number> => {
-  const key = "lastPrices"
-  let lastPrice
+  const promise = new Promise((resolve, reject): Promise<number | undefined> => 
+    client.getPrice({}, (err, {price}) => {
+      if (err) {
+        baseLogger.error({err}, "impossible to fetch most recent price")
+        reject(err)
+      }
+      resolve(price)
+  }))
 
-  lastPrice = mainCache.get(key);
-  if ( lastPrice === undefined ){
-    lastPrice = await new Price({ logger: baseLogger }).lastPrice()
-    mainCache.set( key, lastPrice, 60 )
+  let price
+
+  try {
+    price = await promise
+  } catch (err) {
+    // TODO use caching and fail after 60 sec of stale data
+
+    return undefined
   }
 
-  return lastPrice
+  return price
 }
 
 export const getMinBuildNumber = async () => {

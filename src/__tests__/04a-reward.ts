@@ -17,7 +17,9 @@ import mongoose from "mongoose"
 let userWallet1
 let initBalance1
 
-jest.mock('../notification')
+jest.mock('../notifications/notification')
+jest.mock('../cache')
+
 
 beforeAll(async () => {
   await setupMongoConnection()

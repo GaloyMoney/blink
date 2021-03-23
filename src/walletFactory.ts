@@ -1,6 +1,6 @@
 import * as jwt from 'jsonwebtoken';
 import { FtxDealerWallet } from "./dealer/FtxDealerWallet";
-import { getLastPrice } from "./cache";
+import { getCurrentPrice } from "./cache";
 import { LightningUserWallet } from "./LightningUserWallet";
 import { login } from "./text";
 import { baseLogger, LoggedError } from "./utils";
@@ -11,7 +11,7 @@ import { yamlConfig } from "./config";
 
 export const WalletFactory = async ({ user, logger }: { user: typeof User, logger: any }) => {
   // FIXME: update price on event outside of the wallet factory
-  const lastPrice = await getLastPrice()
+  const lastPrice = await getCurrentPrice()
   UserWallet.setCurrentPrice(lastPrice)
 
   if (user.role === "dealer") {

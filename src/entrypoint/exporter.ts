@@ -1,5 +1,6 @@
 import express from 'express';
 import client, { register } from 'prom-client';
+import { getCurrentPrice } from "../cache";
 import { balanceSheetIsBalanced, getBalanceSheet } from "../ledger/balanceSheet";
 import { getBosScore, lndBalances } from "../lndUtils";
 import { setupMongoConnection } from "../mongodb";
@@ -46,7 +47,7 @@ const main = async () => {
     
     try {
       const price = new Price({ logger })
-      price_g.set(await price.lastPrice())
+      price_g.set(await getCurrentPrice())
     } catch (err) {
       logger.error({err}, `issue getting price`)
     }

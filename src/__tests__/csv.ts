@@ -4,9 +4,8 @@
 import { quit } from "../lock";
 import { setupMongoConnection } from "../mongodb";
 import { getUserWallet } from "./helper";
-
-import lnService from 'ln-service'
 import mongoose from "mongoose"
+jest.mock('../cache')
 
 let userWallet
 

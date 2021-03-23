@@ -74,62 +74,6 @@ export class Price {
     return result
   }
 
-  async lastPrice(): Promise<number> {
-    const lastCached = await this.lastCached()
-    return (_.last(lastCached) as ITick).o
-  }
-
-  async eraseIfLastIsNotHourlyCandle({doc}) {
-    if (!doc.pair.exchange.price.length) {
-      this.logger.debug("empty price array")
-      return
-    }
-
-    // @ts-ignore
-    const lastEntryDate = moment(_.last(doc.pair.exchange.price)._id)
-
-    const isHourlyCandle = lastEntryDate.minutes() === 0 && 
-      lastEntryDate.seconds() === 0 && 
-      lastEntryDate.milliseconds() === 0
-    
-    if (!isHourlyCandle) {
-      doc.pair.exchange.price = _.dropRight(doc.pair.exchange.price)
-    }
-
-    await doc.save()
-  }
-
-  async fastUpdate() {
-    let lastPrice, datetime, doc
-
-    try {
-      doc = await PriceHistory.findOne(this.path)
-    } catch (err) {
-      this.logger.error({err}, "can't fetch price history from mongodb")
-      return
-    }
-
-    try {
-      ({ last: lastPrice, datetime } = await this.exchange.fetchTicker(this.pair))
-    } catch (err) {
-      this.logger.error({err}, "can't fetch ticker")
-      return
-    }
-
-    try {
-      await this.eraseIfLastIsNotHourlyCandle({doc})
-
-      this.logger.info({lastPrice, datetime}, "updating price")
-  
-      doc.pair.exchange.price.push({ _id: datetime, o: sat2btc(lastPrice) })
-      await doc.save()
-    } catch (err) {
-      this.logger.error({err}, "can't update the price on mongodb")
-      return
-    }
-  }
-
-
   async update(init = false): Promise<Boolean | Error> {
     const increment = 720 // how many candles
     const increment_ms = increment * 3600 * 1000
@@ -155,8 +99,6 @@ export class Price {
         }
       })
     }
-
-    await this.eraseIfLastIsNotHourlyCandle({doc})
 
     // skip if it has not been an hour since last update
     try {

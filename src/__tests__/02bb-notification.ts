@@ -2,22 +2,26 @@
  * @jest-environment node
  */
 
+import { getCurrentPrice } from "../cache";
 import { sendBalanceToUsers } from "../entrypoint/dailyBalanceNotification";
 import { customerPath } from "../ledger/ledger";
 import { quit } from "../lock";
 import { MainBook, setupMongoConnection } from "../mongodb";
-import { Price } from "../priceImpl";
 import { Transaction, User } from "../schema";
-import { getUserWallet } from "./helper";
 import { baseLogger } from "../utils";
 import { getFunderWallet } from "../walletFactory";
-jest.mock('../notification')
-const { sendNotification } = require("../notification")
+import { getUserWallet } from "./helper";
+jest.mock('../notifications/notification')
+const { sendNotification } = require("../notifications/notification")
+
+jest.mock('../cache')
+
+
 let price
 
 beforeAll(async () => {
   await setupMongoConnection()
-  price = await new Price({ logger: baseLogger }).lastPrice()
+  price = await getCurrentPrice()
 })
 
 
@@ -34,7 +38,7 @@ it('sends daily balance notification', async () => {
     const { balance } = await MainBook.balance({ accounts: customerPath(call.user._id) })
     const expectedUsdBalance = (price * balance).toLocaleString("en", { maximumFractionDigits: 2 })
     const expectedSatsBalance = balance.toLocaleString("en", { maximumFractionDigits: 2 })
-    expect(call.title).toBe(`Your balance today is \$${expectedUsdBalance} (${expectedSatsBalance} sats)`)
+    expect(call.title).toBe(`Your balance is \$${expectedUsdBalance} (${expectedSatsBalance} sats)`)
   }
 })
 
