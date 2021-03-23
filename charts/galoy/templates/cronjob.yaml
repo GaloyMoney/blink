@@ -47,9 +47,15 @@ spec:
             - name: LNDIP
               value: "lnd"
             - name: MACAROON
-              value: {{ $.Values.macaroon }}
+              valueFrom:
+                secretKeyRef:
+                  name: lnd-macaroon
+                  key: admin.macaroon
             - name: TLS
-              value: {{ $.Values.tls }}
+              valueFrom:
+                secretKeyRef:
+                  name: lnd-tls
+                  key: tls.cert
             - name: REDIS_PORT
               value: "6379"
             - name: REDIS_IP
