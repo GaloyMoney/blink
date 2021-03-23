@@ -6,6 +6,8 @@ import { UserWallet } from "../../userWallet"
 import { WalletFactory } from "../../walletFactory"
 import { User } from "../../schema"
 
+jest.mock('../../cache')
+
 
 let mongoose
 
