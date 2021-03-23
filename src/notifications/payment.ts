@@ -18,7 +18,7 @@ export const getTitleNoUsd = {
 }
 
 
-export const sendPaymentNotification = async ({ amount, type, user, logger, hash, txid }: IPaymentNotification) => {
+export const transactionNotification = async ({ amount, type, user, logger, hash, txid }: IPaymentNotification) => {
   const satsPrice = await getCurrentPrice()
 
   let title
