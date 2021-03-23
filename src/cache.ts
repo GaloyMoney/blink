@@ -7,7 +7,7 @@ export const mainCache = new NodeCache();
 
 export const getCurrentPrice = async (): Promise<number | undefined> => {
   const priceUrl = process.env.PRICE_ADDRESS ?? 'galoy-price'
-  const pricePort = process.env.PRICE_PORT ??'50051'
+  const pricePort = process.env.PRICE_PORT ?? '50051'
 
   const client = new protoDescriptor.PriceFeed(`${priceUrl}:${pricePort}`, grpc.credentials.createInsecure());
 
