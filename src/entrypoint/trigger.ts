@@ -10,7 +10,7 @@ import { updateUsersPendingPayment } from '../ledger/balanceSheet';
 import { lndAccountingPath, lndFeePath } from "../ledger/ledger";
 import { lnd } from "../lndConfig";
 import { MainBook, setupMongoConnection } from "../mongodb";
-import { sendPaymentNotification } from "../notifications/payment";
+import { transactionNotification } from "../notifications/payment";
 import { Price } from "../priceImpl";
 import { InvoiceUser, Transaction, User } from "../schema";
 import { baseLogger, LOOK_BACK } from '../utils';
@@ -75,7 +75,7 @@ export async function onchainTransactionEventHandler(tx) {
     const entry = await Transaction.findOne({ account_path: { $all: ["Liabilities", "Customer"] }, hash: tx.id })
 
     const user = await User.findOne({"_id": entry.account_path[2]})
-    await sendPaymentNotification({ type: "onchain_payment", user, amount: Number(tx.tokens) - tx.fee, txid: tx.id, logger: onchainLogger })
+    await transactionNotification({ type: "onchain_payment", user, amount: Number(tx.tokens) - tx.fee, txid: tx.id, logger: onchainLogger })
   } else {
     // incoming transaction
 
@@ -104,7 +104,7 @@ export async function onchainTransactionEventHandler(tx) {
     }
 
     const type = tx.is_confirmed ? "onchain_receipt" : "onchain_receipt_pending"
-    await sendPaymentNotification({ type, user, logger: onchainLogger, amount: Number(tx.tokens), txid: tx.id })
+    await transactionNotification({ type, user, logger: onchainLogger, amount: Number(tx.tokens), txid: tx.id })
   }
 }
 
@@ -124,7 +124,7 @@ export const onInvoiceUpdate = async invoice => {
     const user = await User.findOne({_id: uid})
     const wallet = await WalletFactory({ user, logger })
     await wallet.updatePendingInvoice({ hash })
-    await sendPaymentNotification({ type: "paid-invoice", amount: invoice.received, hash, user, logger })
+    await transactionNotification({ type: "paid-invoice", amount: invoice.received, hash, user, logger })
   } else {
     logger.fatal({ invoice }, "we received an invoice but had no user attached to it")
   }

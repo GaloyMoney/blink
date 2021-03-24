@@ -37,21 +37,13 @@ const leverage_g = new client.Gauge({ name: `${prefix}_leverage`, help: 'leverag
 const fundingRate_g = new client.Gauge({ name: `${prefix}_fundingRate`, help: 'FTX hourly funding rate' })
 const assetsLiabilitiesDifference_g = new client.Gauge({ name: `${prefix}_assetsEqLiabilities`, help: 'do we have a balanced book' })
 const bookingVersusRealWorldAssets_g = new client.Gauge({ name: `${prefix}_lndBalanceSync`, help: 'are lnd in syncs with our books' })
-const price_g = new client.Gauge({ name: `${prefix}_price`, help: 'BTC/USD price' })
 const bos_g = new client.Gauge({ name: `${prefix}_bos`, help: 'bos score' })
 const specter_g = new client.Gauge({ name: `${prefix}_bitcoind`, help: 'amount in cold storage' })
 
 
 const main = async () => {
   server.get('/metrics', async (req, res) => {
-    
-    try {
-      const price = new Price({ logger })
-      price_g.set(await getCurrentPrice())
-    } catch (err) {
-      logger.error({err}, `issue getting price`)
-    }
-    
+        
     try {
       const bosScore = await getBosScore()
       bos_g.set(bosScore)

@@ -5,7 +5,7 @@ import moment from "moment";
 import { FEECAP, FEEMIN, lnd, TIMEOUT_PAYMENT } from "./lndConfig";
 import { disposer, getAsyncRedisClient } from "./lock";
 import { MainBook } from "./mongodb";
-import { sendPaymentNotification } from "./notifications/payment";
+import { transactionNotification } from "./notifications/payment";
 import { addTransactionLndPayment, addTransactionLndReceipt, addTransactionOnUsPayment } from "./ledger/transaction";
 import { IAddInvoiceRequest, IFeeRequest, IPaymentRequest } from "./types";
 import { addContact, isInvoiceAlreadyPaidError, LoggedError, timeout } from "./utils";
@@ -336,7 +336,7 @@ export const LightningMixin = (superclass) => class extends superclass {
           memoPayer
         })
 
-        await sendPaymentNotification({ amount: sats, user: payeeUser, hash: id, logger: this.logger, type: "paid-invoice" })
+        await transactionNotification({ amount: sats, user: payeeUser, hash: id, logger: this.logger, type: "paid-invoice" })
 
         if (!pushPayment) {
           const resultDeletion = await InvoiceUser.deleteOne({ _id: id })
