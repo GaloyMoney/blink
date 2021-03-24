@@ -249,8 +249,10 @@ const permissions = shield({
   Query: {
     // prices: not(isAuthenticated),
     // earnList: isAuthenticated,
-    wallet: isAuthenticated,
     me: isAuthenticated,
+    wallet: isAuthenticated,
+    wallet2: isAuthenticated,
+    getLastOnChainAddress: isAuthenticated,
   },
   Mutation: {
     // requestPhoneCode: not(isAuthenticated),
@@ -260,8 +262,10 @@ const permissions = shield({
     invoice: isAuthenticated,
     earnCompleted: isAuthenticated,
     updateUser: isAuthenticated,
+    updateContact: isAuthenticated,
     deleteUser: isAuthenticated,
     addDeviceToken: isAuthenticated,
+    testMessage: isAuthenticated,
   },
 }, { allowExternalErrors: true }) // TODO remove to not expose internal error
 
