@@ -33,7 +33,7 @@ export const getCurrentPrice = async (): Promise<number | undefined> => {
   } catch (err) {
     price = mainCache.get(key);
     if (!!price) {
-      throw Error("price is not available")
+      throw new Error("price is not available")
     }
   }
 
