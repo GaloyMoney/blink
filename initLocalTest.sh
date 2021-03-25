@@ -10,8 +10,8 @@ helm repo update
 
 lndVersion="1.1.4"
 
-cd ./charts/galoy && helm dependency build --skip-refresh && cd -
-cd ./charts/monitoring && helm dependency --skip-refresh build && cd -
+cd ./charts/galoy && helm dep build --skip-refresh && cd -
+cd ./charts/monitoring && helm dep build --skip-refresh && cd -
 
 INGRESS_NAMESPACE="ingress-nginx"
 INFRADIR=./charts
