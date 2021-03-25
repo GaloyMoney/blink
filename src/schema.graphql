@@ -163,3 +163,7 @@ type Mutation {
   addDeviceToken(deviceToken: String): Success # to refactor with User?
   testMessage: Success # FIXME remove test
 }
+
+type Subscription {
+  price: Price
+}

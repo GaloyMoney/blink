@@ -1,8 +1,13 @@
+import { PubSub } from 'apollo-server';
 import { ApolloServer } from 'apollo-server-express';
-import { importSchema } from 'graphql-import'
-import express from 'express';
 import dotenv from "dotenv";
+import express from 'express';
+import expressJwt from "express-jwt";
+import { importSchema } from 'graphql-import';
+import { applyMiddleware } from "graphql-middleware";
 import { rule, shield } from 'graphql-shield';
+import { makeExecutableSchema } from "graphql-tools";
+import http from 'http';
 import _ from 'lodash';
 import moment from "moment";
 import mongoose from "mongoose";
@@ -30,9 +35,8 @@ import { OnboardingEarn } from "../types";
 import { UserWallet } from "../userWallet";
 import { baseLogger, customLoggerPrefix } from "../utils";
 import { WalletFactory, WalletFromUsername } from "../walletFactory";
-import expressJwt from "express-jwt";
-import { applyMiddleware } from "graphql-middleware";
-import { makeExecutableSchema } from "graphql-tools";
+
+const pubsub = new PubSub();
 
 dotenv.config()
 
@@ -232,7 +236,19 @@ const resolvers = {
       })
       return { success: true }
     },
-  }
+  },
+  Subscription: {
+    price: {
+      subscribe: () => { 
+        try {
+          return pubsub.asyncIterator(['PRICE_UPDATE'])
+        } catch (err) {
+          baseLogger.warn({err}, "error with subscribe")
+          return null
+        }
+      },
+    },
+  },
 }
 
 
@@ -269,6 +285,32 @@ const permissions = shield({
   },
 }, { allowExternalErrors: true }) // TODO remove to not expose internal error
 
+async function priceLoop() {
+  let timer;
+          
+  function startTimer() {
+      timer = setInterval(async function() { 
+        const price = {
+          id: moment().unix(),
+          o: await getCurrentPrice()
+        }
+        
+        baseLogger.debug({price}, "update price")
+        pubsub.publish('PRICE_UPDATE', { price });
+      }, 5000);
+  }
+  
+
+  // TODO: call stopTimer on exit
+  function stopTimer() {
+      alert("Timer stopped");
+      clearInterval(timer); 
+  }
+
+  startTimer()
+}
+
+
 
 async function startApolloServer() {
   const app = express();
@@ -283,22 +325,41 @@ async function startApolloServer() {
 
   const server = new ApolloServer({
     schema,
+    subscriptions: {
+      onConnect: (connectionParams, webSocket, context) => {
+        baseLogger.trace('Connected!')
+      },
+      onDisconnect: (webSocket, context) => {
+        baseLogger.trace('Disconnected!')
+      },
+      path: '/subscriptions',
+    },
     playground: process.env.NETWORK !== 'mainnet',
     introspection: process.env.NETWORK !== 'mainnet',
-    context: async (context) => {
-      // @ts-ignore
-      const token = context.req?.token ?? null
-      const uid = token?.uid ?? null
-      const user = !!uid ? await User.findOne({ _id: uid }) : null
-      // @ts-ignore
-      const logger = graphqlLogger.child({ token, id: context.req.id, body: context.req.body })
-      const wallet = !!uid ? await WalletFactory({ user, logger }) : null
-      return {
-        ...context,
-        logger,
-        uid,
-        wallet,
-        user
+    context: async ({ req, connection }) => {
+      if (connection) {
+        // websocket connection
+        // no authentication for now. just broadcast price
+        return {}
+      } else {
+        // http connection
+
+        // @ts-ignore
+        const token = req.token ?? null
+        const uid = token?.uid ?? null
+        const user = !!uid ? await User.findOne({ _id: uid }) : null
+        
+        // @ts-ignore
+        const logger = graphqlLogger.child({ token, id: req.id, body: req.body })
+        const wallet = !!uid ? await WalletFactory({ user, logger }) : null
+        return {
+          req,
+          connection,
+          logger,
+          uid,
+          wallet,
+          user
+        }
       }
     },
     formatError: err => {
@@ -352,11 +413,20 @@ async function startApolloServer() {
 
   server.applyMiddleware({ app });
 
-  // @ts-ignore
-  await new Promise(resolve => app.listen({ port: 4000 }, resolve));
+  const httpServer = http.createServer(app);
+  server.installSubscriptionHandlers(httpServer);
 
-  console.log(`🚀 Server ready at http://localhost:4000${server.graphqlPath}`);
-  return { server, app };
+  const port = 4000;
+
+  // @ts-ignore
+  await new Promise(resolve => httpServer.listen({ port }, resolve));
+
+  baseLogger.info(`🚀 Server ready at http://localhost:${port}${server.graphqlPath}`);
+  baseLogger.info(`🚀 Subscriptions ready at ws://localhost:${port}${server.subscriptionsPath}`);
+
+  priceLoop()
+
+  return { server, app, httpServer };
 }
 
 
