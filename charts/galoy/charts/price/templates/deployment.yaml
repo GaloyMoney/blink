@@ -51,10 +51,14 @@ spec:
             httpGet:
               path: /metrics
               port: prometheus
+            initialDelaySeconds: 5
+            timeoutSeconds: 2
           readinessProbe:
             httpGet:
               path: /metrics
               port: prometheus
+            initialDelaySeconds: 5
+            timeoutSeconds: 2
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
