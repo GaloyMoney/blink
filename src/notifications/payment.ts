@@ -4,9 +4,9 @@ import { IDataNotification, IPaymentNotification, TransactionType } from "../typ
 import { sendNotification } from "./notification"
 
 export const getTitle = {
-  "paid-invoice":    ({usd, amount}) => `+${usd} | ${amount} sats`,
-  "onchain_receipt": ({usd, amount}) => `+${usd} | ${amount} sats`,
-  "onchain_receipt_pending": ({usd, amount}) => `pending +${usd} | ${amount} sats`,
+  "paid-invoice":    ({usd, amount}) => `+$${usd} | ${amount} sats`,
+  "onchain_receipt": ({usd, amount}) => `+$${usd} | ${amount} sats`,
+  "onchain_receipt_pending": ({usd, amount}) => `pending +$${usd} | ${amount} sats`,
   "onchain_payment": ({ amount }) => `Sent onchain payment of ${amount} sats confirmed`,
 }
 
