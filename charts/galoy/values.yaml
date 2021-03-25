@@ -101,6 +101,8 @@ lnpage:
 
 nginx:
   enabled: false
+  service:
+    type: ClusterIP
   cloneStaticSiteFromGit:
     enabled: true
     repository: https://github.com/GaloyMoney/lnpage.git
