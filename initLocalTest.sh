@@ -8,7 +8,7 @@ helm repo add jetstack https://charts.jetstack.io
 helm repo add galoy https://galoymoney.github.io/charts/
 helm repo update
 
-lndVersion="1.1.4"
+lndVersion="1.1.5"
 
 cd ./charts/galoy && helm dep build --skip-refresh && cd -
 cd ./charts/monitoring && helm dep build --skip-refresh && cd -
