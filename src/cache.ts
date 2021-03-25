@@ -6,9 +6,15 @@ import { baseLogger, sat2btc } from "./utils";
 export const mainCache = new NodeCache();
 
 export const getCurrentPrice = async (): Promise<number | undefined> => {
+  // keep price in cache for 1 min in case the price pod is not online
+
   const priceUrl = process.env.PRICE_ADDRESS ?? 'galoy-price'
   const pricePort = process.env.PRICE_PORT ?? '50051'
   const fullUrl = `${priceUrl}:${pricePort}`
+  const key = "realtimePrice"
+
+
+  let price
 
   const client = new protoDescriptor.PriceFeed(fullUrl, grpc.credentials.createInsecure());
 
@@ -21,14 +27,14 @@ export const getCurrentPrice = async (): Promise<number | undefined> => {
       resolve(price)
   }))
 
-  let price
-
   try {
     price = await promise
+    mainCache.set( key, price, 60 )
   } catch (err) {
-    // TODO use caching and fail after 60 sec of stale data
-
-    return undefined
+    price = mainCache.get(key);
+    if (!!price) {
+      throw Error("price is not available")
+    }
   }
 
   return sat2btc(price)
