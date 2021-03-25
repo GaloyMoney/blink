@@ -18,7 +18,7 @@ export const getCurrentPrice = async (): Promise<number | undefined> => {
 
   const client = new protoDescriptor.PriceFeed(fullUrl, grpc.credentials.createInsecure());
 
-  const promise = new Promise((resolve, reject): Promise<number | undefined> => 
+  const promise = new Promise((resolve, reject): Promise<number> => 
     client.getPrice({}, (err, {price}) => {
       if (err) {
         baseLogger.error({err}, "impossible to fetch most recent price")
