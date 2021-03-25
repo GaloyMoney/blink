@@ -14,7 +14,7 @@ export const WalletFactory = async ({ user, logger }: { user: typeof User, logge
   const lastPrice = await getCurrentPrice()
   UserWallet.setCurrentPrice(lastPrice)
 
-  if (user.role === "dealer") {
+  if (user?.role === "dealer") {
     return new FtxDealerWallet({ user, logger })
   }
 

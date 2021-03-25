@@ -1,7 +1,8 @@
+import { ApolloServer } from 'apollo-server-express';
+import { importSchema } from 'graphql-import'
+import express from 'express';
 import dotenv from "dotenv";
 import { rule, shield } from 'graphql-shield';
-import { GraphQLServer } from 'graphql-yoga';
-import * as jwt from 'jsonwebtoken';
 import _ from 'lodash';
 import moment from "moment";
 import mongoose from "mongoose";
@@ -17,6 +18,7 @@ import swStats from 'swagger-stats';
 import util from 'util';
 import { v4 as uuidv4 } from 'uuid';
 import { getCurrentPrice, getMinBuildNumber, mainCache } from "../cache";
+import { lnd } from "../lndConfig";
 import { nodeStats } from "../lndUtils";
 import { getAsyncRedisClient } from "../lock";
 import { setupMongoConnection } from "../mongodb";
@@ -28,8 +30,9 @@ import { OnboardingEarn } from "../types";
 import { UserWallet } from "../userWallet";
 import { baseLogger, customLoggerPrefix } from "../utils";
 import { WalletFactory, WalletFromUsername } from "../walletFactory";
-import { lnd } from "../lndConfig"
-
+import expressJwt from "express-jwt";
+import { applyMiddleware } from "graphql-middleware";
+import { makeExecutableSchema } from "graphql-tools";
 
 dotenv.config()
 
@@ -49,12 +52,6 @@ const pino_http = PinoHttp({
       body: res.req.body,
       ...pino.stdSerializers.res(res)
     })
-  },
-  reqCustomProps: function(req) {
-    return {
-      // FIXME: duplicate parsing from graphql context.
-      token: verifyToken(req)
-    }
   },
   autoLogging: {
     ignorePaths: ["/healthz"]
@@ -239,32 +236,6 @@ const resolvers = {
 }
 
 
-function verifyToken(req) {
-
-  let token
-  try {
-    const auth = req.get('Authorization')
-
-    if (!auth) {
-      return null
-    }
-
-    if (auth.split(" ")[0] !== "Bearer") {
-      throw Error("not a bearer token")
-    }
-
-    const raw_token = auth.split(" ")[1]
-    token = jwt.verify(raw_token, process.env.JWT_SECRET);
-
-    // TODO assert bitcoin network
-  } catch (err) {
-    return null
-    // TODO return new AuthenticationError("Not authorised"); ?
-    // ie: differenciate between non authenticated, and not authorized
-  }
-  return token
-}
-
 const isAuthenticated = rule({ cache: 'contextual' })(
   async (parent, args, ctx, info) => {
     if(ctx.uid === null) {
@@ -278,8 +249,10 @@ const permissions = shield({
   Query: {
     // prices: not(isAuthenticated),
     // earnList: isAuthenticated,
-    wallet: isAuthenticated,
     me: isAuthenticated,
+    wallet: isAuthenticated,
+    wallet2: isAuthenticated,
+    getLastOnChainAddress: isAuthenticated,
   },
   Mutation: {
     // requestPhoneCode: not(isAuthenticated),
@@ -289,76 +262,105 @@ const permissions = shield({
     invoice: isAuthenticated,
     earnCompleted: isAuthenticated,
     updateUser: isAuthenticated,
+    updateContact: isAuthenticated,
     deleteUser: isAuthenticated,
     addDeviceToken: isAuthenticated,
+    testMessage: isAuthenticated,
   },
 }, { allowExternalErrors: true }) // TODO remove to not expose internal error
 
 
-const server = new GraphQLServer({
-  typeDefs: path.join(__dirname, "../schema.graphql"),
-  resolvers,
-  middlewares: [permissions],
-  context: async (context) => {
-    const token = verifyToken(context.request)
-    const uid = token?.uid ?? null
-    const user = !!uid ? await User.findOne({ _id: uid }) : null
+async function startApolloServer() {
+  const app = express();
+
+  const schema = applyMiddleware(
+    makeExecutableSchema({
+      typeDefs: importSchema(path.join(__dirname, "../schema.graphql")),
+      resolvers,
+    }),
+    permissions
+);
+
+  const server = new ApolloServer({
+    schema,
+    playground: process.env.NETWORK !== 'mainnet',
+    introspection: process.env.NETWORK !== 'mainnet',
+    context: async (context) => {
+      // @ts-ignore
+      const token = context.req?.token ?? null
+      const uid = token?.uid ?? null
+      const user = !!uid ? await User.findOne({ _id: uid }) : null
+      // @ts-ignore
+      const logger = graphqlLogger.child({ token, id: context.req.id, body: context.req.body })
+      const wallet = !!uid ? await WalletFactory({ user, logger }) : null
+      return {
+        ...context,
+        logger,
+        uid,
+        wallet,
+        user
+      }
+    },
+    formatError: err => {
+      // FIXME
+      if (_.startsWith(err.message, customLoggerPrefix)) {
+        err.message = err.message.slice(customLoggerPrefix.length)
+      } else {
+        baseLogger.error({err}, "graphql catch-all error"); 
+      }
+      // return defaultErrorFormatter(err)
+      return err
+    },
+  })
+
+
+  // injecting unique id to the request for correlating different logs messages
+  // TODO: use a jaeger standard instead to be able to do distributed tracing 
+  app.use(function(req, res, next) {
     // @ts-ignore
-    const logger = graphqlLogger.child({ token, id: context.request.id, body: context.request.body })
-    const wallet = !!uid ? await WalletFactory({ user, logger }) : null
-    return {
-      ...context,
-      logger,
-      uid,
-      wallet,
-      user
-    }
-  }
-})
+    req.id = uuidv4();
+    next();
+  });
 
-// injecting unique id to the request for correlating different logs messages
-// TODO: use a jaeger standard instead to be able to do distributed tracing 
-server.express.use(function(req, res, next) {
+  app.use(pino_http)
+
+  app.use(
+    expressJwt({
+      secret: process.env.JWT_SECRET,
+      algorithms: ["HS256"],
+      credentialsRequired: false,
+      requestProperty: 'token'
+  }))
+
+  app.use(swStats.getMiddleware({
+    uriPath: "/swagger",
+    // no authentication but /swagger/* should be protected from access outside the cluster
+    // this is done with nginx 
+  }))
+
+  // Health check
+  app.get('/healthz', async function(req, res) {
+    const isMongoAlive = mongoose.connection.readyState == 1 ? true : false
+    const isRedisAlive = await getAsyncRedisClient().ping() === 'PONG'
+    res.status((isMongoAlive && isRedisAlive) ? 200 : 503).send();
+  });
+
+
+  // Mount Apollo middleware here.
+  // server.applyMiddleware({ app: permissions });
+  // middlewares: [permissions],
+
+  server.applyMiddleware({ app });
+
   // @ts-ignore
-  req.id = uuidv4();
-  next();
-});
+  await new Promise(resolve => app.listen({ port: 4000 }, resolve));
 
-server.express.use(pino_http)
-server.express.use(swStats.getMiddleware({
-  uriPath: "/swagger",
-  // no authentication but /swagger/* should be protected from access outside the cluster
-  // this is done with nginx 
-}))
-
-// Health check
-server.express.get('/healthz', async function(req, res) {
-  const isMongoAlive = mongoose.connection.readyState == 1 ? true : false
-  const isRedisAlive = await getAsyncRedisClient().ping() === 'PONG'
-  res.status((isMongoAlive && isRedisAlive) ? 200 : 503).send();
-});
-
-const options = {
-  // tracing: true,
-  formatError: err => {
-    // FIXME
-    if (_.startsWith(err.message, customLoggerPrefix)) {
-      err.message = err.message.slice(customLoggerPrefix.length)
-    } else {
-      baseLogger.error({err}, "graphql catch-all error"); 
-    }
-    // return defaultErrorFormatter(err)
-    return err
-  },
-  endpoint: '/graphql',
-  playground: process.env.NETWORK === 'mainnet' ? 'false' : '/'
+  console.log(`🚀 Server ready at http://localhost:4000${server.graphqlPath}`);
+  return { server, app };
 }
 
-setupMongoConnection().then(() => {
-  server.start(options, ({ port }) =>
-    graphqlLogger.info(
-      `Server started, listening on port ${port} for incoming requests.`,
-    ),
-  )
+
+setupMongoConnection().then(async () => {
+  await startApolloServer()
 }).catch((err) => graphqlLogger.error(err, "server error"))
 
