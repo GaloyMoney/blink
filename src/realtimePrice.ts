@@ -1,7 +1,7 @@
 import NodeCache from "node-cache";
 import { protoDescriptor } from "./grpc";
 import { baseLogger, sat2btc } from "./utils";
-import grpc from '@grpc/grpc-js';
+import { credentials } from '@grpc/grpc-js';
 export const mainCache = new NodeCache();
 
 const priceUrl = process.env.PRICE_ADDRESS ?? 'galoy-price'
@@ -9,7 +9,7 @@ const pricePort = process.env.PRICE_PORT ?? '50051'
 const fullUrl = `${priceUrl}:${pricePort}`
 const key = "realtimePrice"
 
-const client = new protoDescriptor.PriceFeed(fullUrl, grpc.credentials.createInsecure());
+const client = new protoDescriptor.PriceFeed(fullUrl, credentials.createInsecure());
 
 export const getCurrentPrice = async (): Promise<number | undefined> => {
   // keep price in cache for 1 min in case the price pod is not online
@@ -27,6 +27,9 @@ export const getCurrentPrice = async (): Promise<number | undefined> => {
 
   try {
     price = await promise
+    if (!price) {
+      throw new Error("price can't be null")
+    }
     mainCache.set( key, price, 60 )
   } catch (err) {
     price = mainCache.get(key);
