@@ -10,7 +10,7 @@ import { UserWallet } from "../../userWallet";
 import mongoose from "mongoose";
 import { User } from "../../schema";
 
-jest.mock('../realtimePrice')
+jest.mock('../../realtimePrice')
 
 
 const fixtures = [{
