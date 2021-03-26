@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { getCurrentPrice } from "../cache";
+import { getCurrentPrice } from "../realtimePrice";
 import { IDataNotification, IPaymentNotification, TransactionType } from "../types";
 import { sendNotification } from "./notification"
 

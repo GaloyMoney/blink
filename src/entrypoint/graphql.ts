@@ -17,7 +17,7 @@ import PinoHttp from "pino-http";
 import swStats from 'swagger-stats';
 import util from 'util';
 import { v4 as uuidv4 } from 'uuid';
-import { getCurrentPrice, getMinBuildNumber, mainCache } from "../cache";
+import { getMinBuildNumber, mainCache } from "../cache";
 import { lnd } from "../lndConfig";
 import { nodeStats } from "../lndUtils";
 import { getAsyncRedisClient } from "../lock";
@@ -33,6 +33,7 @@ import { WalletFactory, WalletFromUsername } from "../walletFactory";
 import expressJwt from "express-jwt";
 import { applyMiddleware } from "graphql-middleware";
 import { makeExecutableSchema } from "graphql-tools";
+import { getCurrentPrice } from "../realtimePrice";
 
 dotenv.config()
 

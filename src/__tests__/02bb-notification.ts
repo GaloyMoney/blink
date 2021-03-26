@@ -2,7 +2,7 @@
  * @jest-environment node
  */
 
-import { getCurrentPrice } from "../cache";
+import { getCurrentPrice } from "../realtimePrice";
 import { sendBalanceToUsers } from "../entrypoint/dailyBalanceNotification";
 import { customerPath } from "../ledger/ledger";
 import { quit } from "../lock";
