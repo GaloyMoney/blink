@@ -51,7 +51,7 @@ spec:
             httpGet:
               path: /metrics
               port: prometheus
-            initialDelaySeconds: 10
+            initialDelaySeconds: 30
             timeoutSeconds: 2
           readinessProbe:
             httpGet:
