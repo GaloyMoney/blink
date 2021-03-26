@@ -12,7 +12,8 @@ metadata:
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
-  type: Recreate
+  strategy:
+    type: Recreate
   {{- end }}
   selector:
     matchLabels:
