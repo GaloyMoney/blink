@@ -10,6 +10,9 @@ import { UserWallet } from "../../userWallet";
 import mongoose from "mongoose";
 import { User } from "../../schema";
 
+jest.mock('../realtimePrice')
+
+
 const fixtures = [{
   privateGetAccount: function() {
     return new Promise((resolve, reject) => {

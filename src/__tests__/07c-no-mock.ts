@@ -6,6 +6,7 @@ import { setupMongoConnection } from "../mongodb";
 import { getTokenFromPhoneIndex } from "../walletFactory";
 import mongoose from "mongoose";
 
+jest.mock('../realtimePrice')
 
 let uid
 
