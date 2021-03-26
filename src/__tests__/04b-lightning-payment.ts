@@ -20,7 +20,7 @@ const amountInvoice = 1000
 
 jest.mock('../notifications/notification')
 import { sendNotification } from "../notifications/notification";
-jest.mock('../cache')
+jest.mock('../realtimePrice')
 
 
 

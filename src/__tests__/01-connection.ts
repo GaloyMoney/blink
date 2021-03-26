@@ -12,6 +12,8 @@ import { User } from "../schema";
 //TODO: Choose between camel case or underscores for variable naming
 import { getWalletInfo } from 'lightning'
 
+jest.mock('../realtimePrice')
+
 
 it('I can connect to bitcoind', async () => {
 	const { chain } = await bitcoindDefaultClient.getBlockchainInfo()

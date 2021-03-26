@@ -1,10 +1,8 @@
 import express from 'express';
 import client, { register } from 'prom-client';
-import { getCurrentPrice } from "../cache";
 import { balanceSheetIsBalanced, getBalanceSheet } from "../ledger/balanceSheet";
 import { getBosScore, lndBalances } from "../lndUtils";
 import { setupMongoConnection } from "../mongodb";
-import { Price } from "../priceImpl";
 import { User } from "../schema";
 import { SpecterWallet } from "../SpecterWallet";
 import { baseLogger } from "../utils";

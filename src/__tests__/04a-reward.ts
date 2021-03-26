@@ -18,7 +18,7 @@ let userWallet1
 let initBalance1
 
 jest.mock('../notifications/notification')
-jest.mock('../cache')
+jest.mock('../realtimePrice')
 
 
 beforeAll(async () => {

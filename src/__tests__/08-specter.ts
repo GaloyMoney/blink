@@ -16,7 +16,7 @@ import mongoose from "mongoose";
 let specterWallet
 
 jest.mock('../notifications/notification')
-jest.mock('../cache')
+jest.mock('../realtimePrice')
 
 beforeAll(async () => {
   await bitcoindDefaultClient.generateToAddress(3, RANDOM_ADDRESS)

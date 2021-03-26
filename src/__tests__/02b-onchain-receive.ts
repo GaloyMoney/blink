@@ -5,7 +5,7 @@ import { once } from 'events';
 import lnService from 'ln-service';
 import { filter } from "lodash";
 import mongoose from "mongoose";
-import { getCurrentPrice } from "../cache";
+import { getCurrentPrice } from "../realtimePrice";
 import { onchainTransactionEventHandler } from "../entrypoint/trigger";
 import { quit } from "../lock";
 import { setupMongoConnection } from "../mongodb";
@@ -14,7 +14,7 @@ import { baseLogger, bitcoindDefaultClient, btc2sat, sleep } from "../utils";
 import { getFunderWallet } from "../walletFactory";
 import { checkIsBalanced, getUserWallet, lndMain, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "./helper";
 
-jest.mock('../cache')
+jest.mock('../realtimePrice')
 
 
 

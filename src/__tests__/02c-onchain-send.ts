@@ -12,7 +12,7 @@ import { getTitle } from "../notifications/payment";
 import { bitcoindDefaultClient, sleep } from "../utils";
 import { checkIsBalanced, getUserWallet, lndMain, lndOutside1, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "./helper";
 
-jest.mock('../cache')
+jest.mock('../realtimePrice')
 
 
 let initBlockCount

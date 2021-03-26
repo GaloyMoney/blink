@@ -5,7 +5,7 @@ import { quit } from "../lock";
 import { setupMongoConnection } from "../mongodb";
 import { getUserWallet } from "./helper";
 import mongoose from "mongoose"
-jest.mock('../cache')
+jest.mock('../realtimePrice')
 
 let userWallet
 
