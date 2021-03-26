@@ -14,7 +14,7 @@ import { getUserWallet } from "./helper";
 jest.mock('../notifications/notification')
 const { sendNotification } = require("../notifications/notification")
 
-jest.mock('../cache')
+jest.mock('../realtimePrice')
 
 
 let price

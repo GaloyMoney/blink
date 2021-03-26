@@ -7,7 +7,7 @@ import { User } from "../schema";
 import { UserWallet } from "../userWallet";
 import { getUserWallet } from "./helper";
 
-jest.mock('../cache')
+jest.mock('../realtimePrice')
 
 let userWallet0, userWallet1, userWallet2
 
