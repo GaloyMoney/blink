@@ -12,6 +12,7 @@ metadata:
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
+  type: Recreate
   {{- end }}
   selector:
     matchLabels:
