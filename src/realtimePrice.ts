@@ -10,6 +10,7 @@ const key = "realtimePrice"
 
 const client = new protoDescriptor.PriceFeed(fullUrl, credentials.createInsecure());
 
+// TODO: pass logger for better logging
 export const getCurrentPrice = async (): Promise<number | undefined> => {
   // keep price in cache for 1 min in case the price pod is not online
 
@@ -29,12 +30,14 @@ export const getCurrentPrice = async (): Promise<number | undefined> => {
     if (!price) {
       throw new Error("price can't be null")
     }
-    mainCache.set( key, price, 60 )
+    // FIXME switch back to 60 once price pod stop crashing 
+    mainCache.set( key, price, 600 )
   } catch (err) {
     price = mainCache.get(key);
     if (!!price) {
       throw new Error("price is not available")
     }
+    baseLogger.info({price}, "using stale price")
   }
 
   return sat2btc(price)
