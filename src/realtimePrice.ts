@@ -1,8 +1,7 @@
-import NodeCache from "node-cache";
 import { protoDescriptor } from "./grpc";
 import { baseLogger, sat2btc } from "./utils";
 import { credentials } from '@grpc/grpc-js';
-export const mainCache = new NodeCache();
+import { mainCache } from "./localCache";
 
 const priceUrl = process.env.PRICE_ADDRESS ?? 'galoy-price'
 const pricePort = process.env.PRICE_PORT ?? '50051'

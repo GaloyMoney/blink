@@ -3,7 +3,6 @@
  */
 import { createHash, randomBytes } from 'crypto';
 import { FEECAP, lnd } from "../lndConfig";
-import { quit } from "../lock";
 import { setupMongoConnection } from "../mongodb";
 import { InvoiceUser, Transaction } from "../schema";
 import { checkIsBalanced, getUserWallet, lndOutside1, lndOutside2, mockGetExchangeBalance } from "./helper";
@@ -49,7 +48,6 @@ afterAll(async () => {
   jest.restoreAllMocks();
 
   await mongoose.connection.close()
-  await quit()
 });
 
 

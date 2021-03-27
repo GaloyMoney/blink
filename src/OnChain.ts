@@ -4,7 +4,7 @@ import _ from 'lodash';
 import moment from "moment";
 import { customerPath, lndAccountingPath } from "./ledger/ledger";
 import { lnd } from "./lndConfig";
-import { disposer } from "./lock";
+import { redlock } from "./lock";
 import { MainBook } from "./mongodb";
 import { IOnChainPayment, ISuccess, ITransaction } from "./types";
 import { amountOnVout, baseLogger, bitcoindDefaultClient, btc2sat, LoggedError, LOOK_BACK, myOwnAddressesOnVout } from "./utils";
@@ -41,10 +41,10 @@ export const OnChainMixin = (superclass) => class extends superclass {
     super(...args)
   }
 
-  async updatePending(): Promise<void> {
+  async updatePending(lock): Promise<void> {
     await Promise.all([
-      this.updateOnchainReceipt(),
-      super.updatePending()
+      this.updateOnchainReceipt(lock),
+      super.updatePending(lock)
     ])
   }
 
@@ -73,39 +73,37 @@ export const OnChainMixin = (superclass) => class extends superclass {
   async onChainPay({ address, amount, memo }: IOnChainPayment): Promise<ISuccess> {
     let onchainLogger = this.logger.child({ topic: "payment", protocol: "onchain", transactionType: "payment", address, amount, memo })
 
-    // FIXME: lock should be here
-    const balance = await this.getBalances()
-    onchainLogger = onchainLogger.child({ balance })
+    return await redlock({ path: this.user._id, logger: onchainLogger }, async (lock) => {
 
-    // quit early if balance is not enough
-    if (balance.total_in_BTC < amount) {
-      const error = `balance is too low`
-      onchainLogger.warn({ success: false, error }, error)
-      throw new LoggedError(error)
-    }
+      const balance = await this.getBalances(lock)
+      onchainLogger = onchainLogger.child({ balance })
 
-    const payeeUser = await this.tentativelyGetPayeeUser({address})
-
-    if (payeeUser) {
-      const onchainLoggerOnUs = onchainLogger.child({onUs: true})
-
-      if (String(payeeUser._id) === String(this.user._id)) {
-        const error = 'User tried to pay himself'
-        this.logger.warn({ payeeUser, error, success: false }, error)
+      // quit early if balance is not enough
+      if (balance.total_in_BTC < amount) {
+        const error = `balance is too low`
+        onchainLogger.warn({ success: false, error }, error)
         throw new LoggedError(error)
       }
 
-      const sats = amount
-      const metadata = { 
-        currency: "BTC",
-        type: "onchain_on_us",
-        pending: false,
-        ...UserWallet.getCurrencyEquivalent({ sats, fee: 0 }),
-        payee_addresses: [address]
-      }
+      const payeeUser = await this.tentativelyGetPayeeUser({address})
 
-      // TODO: this lock seems useless
-      return await using(disposer(this.user._id), async (lock) => {
+      if (payeeUser) {
+        const onchainLoggerOnUs = onchainLogger.child({onUs: true})
+
+        if (String(payeeUser._id) === String(this.user._id)) {
+          const error = 'User tried to pay himself'
+          this.logger.warn({ payeeUser, error, success: false }, error)
+          throw new LoggedError(error)
+        }
+
+        const sats = amount
+        const metadata = { 
+          currency: "BTC",
+          type: "onchain_on_us",
+          pending: false,
+          ...UserWallet.getCurrencyEquivalent({ sats, fee: 0 }),
+          payee_addresses: [address]
+        }
 
         await MainBook.entry()
           .credit(customerPath(payeeUser._id), sats, metadata)
@@ -115,42 +113,39 @@ export const OnChainMixin = (superclass) => class extends superclass {
         onchainLoggerOnUs.info({ success: true, ...metadata }, "onchain payment succeed")
 
         return true
-      })
-    }
+      }
 
-    onchainLogger = onchainLogger.child({onUs: false})
+      onchainLogger = onchainLogger.child({onUs: false})
 
-    const { chain_balance: onChainBalance } = await lnService.getChainBalance({ lnd })
+      const { chain_balance: onChainBalance } = await lnService.getChainBalance({ lnd })
 
-    let estimatedFee, id
+      let estimatedFee, id
 
-    const sendTo = [{ address, tokens: amount }]
+      const sendTo = [{ address, tokens: amount }]
 
-    try {
-      ({ fee: estimatedFee } = await lnService.getChainFeeEstimate({ lnd, send_to: sendTo }))
-    } catch (err) {
-      const error = `Unable to estimate fee for on-chain transaction`
-      onchainLogger.error({ err, sendTo, success: false }, error)
-      throw new LoggedError(error)
-    }
+      try {
+        ({ fee: estimatedFee } = await lnService.getChainFeeEstimate({ lnd, send_to: sendTo }))
+      } catch (err) {
+        const error = `Unable to estimate fee for on-chain transaction`
+        onchainLogger.error({ err, sendTo, success: false }, error)
+        throw new LoggedError(error)
+      }
 
-    // case where there is not enough money available within lnd on-chain wallet
-    if (onChainBalance < amount + estimatedFee) {
-      const error = `insufficient onchain balance on the lnd node. rebalancing is needed`
-      
-      // TODO: add a page to initiate the rebalancing quickly
-      onchainLogger.fatal({onChainBalance, amount, estimatedFee, sendTo, success: false }, error)
-      throw new LoggedError(error)
-    }
+      // case where there is not enough money available within lnd on-chain wallet
+      if (onChainBalance < amount + estimatedFee) {
+        const error = `insufficient onchain balance on the lnd node. rebalancing is needed`
+        
+        // TODO: add a page to initiate the rebalancing quickly
+        onchainLogger.fatal({onChainBalance, amount, estimatedFee, sendTo, success: false }, error)
+        throw new LoggedError(error)
+      }
 
-    // case where the user doesn't have enough money
-    if (balance.total_in_BTC < amount + estimatedFee) {
-      const error = `balance is too low. have: ${balance} sats, need ${amount + estimatedFee}`
-      onchainLogger.warn({balance, amount, estimatedFee, sendTo, success: false }, error)
-      throw new LoggedError(error)
-    }
-
-    return await using(disposer(this.user._id), async (lock) => {
+      // case where the user doesn't have enough money
+      if (balance.total_in_BTC < amount + estimatedFee) {
+        const error = `balance is too low. have: ${balance} sats, need ${amount + estimatedFee}`
+        onchainLogger.warn({balance, amount, estimatedFee, sendTo, success: false }, error)
+        throw new LoggedError(error)
+      }
       
       try {
         ({ id } = await lnService.sendToChainAddress({ address, lnd, tokens: amount }))
@@ -389,12 +384,12 @@ export const OnChainMixin = (superclass) => class extends superclass {
     return { sats, addresses }
   }
 
-  async updateOnchainReceipt() {
+  async updateOnchainReceipt(lock?) {
     const user_matched_txs = await this.getOnchainReceipt({confirmed: true})
 
     const type = "onchain_receipt"
 
-    return await using(disposer(this.user._id), async (lock) => {
+    await redlock({ path: this.user._id, logger: baseLogger /* FIXME */, lock }, async () => {
 
       // FIXME O(n) ^ 2. bad.
       for (const matched_tx of user_matched_txs) {

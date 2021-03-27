@@ -7,7 +7,7 @@ export interface Balances {
 }
 
 export interface IWallet {
-  getBalances(): Promise<Balances>
+  getBalances(lock?): Promise<Balances>
   getTransactions(): any // TODO
   getInfo(): Promise<object>
 }

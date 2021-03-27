@@ -3,7 +3,7 @@ import assert from 'assert'
 import { createHash, randomBytes } from "crypto";
 import moment from "moment";
 import { FEECAP, FEEMIN, lnd, TIMEOUT_PAYMENT } from "./lndConfig";
-import { disposer, getAsyncRedisClient } from "./lock";
+import { redlock } from "./lock";
 import { MainBook } from "./mongodb";
 import { transactionNotification } from "./notifications/payment";
 import { addTransactionLndPayment, addTransactionLndReceipt, addTransactionOnUsPayment } from "./ledger/transaction";
@@ -12,13 +12,13 @@ import { addContact, isInvoiceAlreadyPaidError, LoggedError, timeout } from "./u
 import { UserWallet } from "./userWallet";
 import { InvoiceUser, Transaction, User } from "./schema";
 import { createInvoice, getWalletInfo, decodePaymentRequest, cancelHodlInvoice, payViaPaymentDetails, payViaRoutes, getPayment, getInvoice } from "lightning"
-
+import { getAsyncRedisClient } from "./redis"
 
 import util from 'util'
 
 import bluebird from 'bluebird';
-import { yamlConfig } from "./config";
 const { using } = bluebird;
+import { yamlConfig } from "./config";
 
 export type ITxType = "invoice" | "payment" | "onchain_receipt" | "onchain_payment" | "on_us"
 export type payInvoiceResult = "success" | "failed" | "pending" | "already_paid"
@@ -47,11 +47,11 @@ export const LightningMixin = (superclass) => class extends superclass {
     return this.nodePubKey
   }
 
-  async updatePending() {
+  async updatePending(lock) {
     await Promise.all([
-      this.updatePendingInvoices(),
-      this.updatePendingPayments(),
-      super.updatePending(),
+      this.updatePendingInvoices(lock),
+      this.updatePendingPayments(lock),
+      super.updatePending(lock),
     ])
   }
 
@@ -269,13 +269,9 @@ export const LightningMixin = (superclass) => class extends superclass {
     let paymentPromise
     let feeKnownInAdvance
 
+    return await redlock({ path: this.user._id, logger: lightningLogger }, async (lock) => {
+      const balance = await this.getBalances(lock)
 
-    // TODO: this should be inside the lock.
-    // but getBalance is currently also getting the lock. 
-    // --> need a re-entrant mutex or another architecture to have balance within the lock
-    const balance = await this.getBalances()
-
-    return await using(disposer(this.user._id), async (lock) => {
       // On us transaction
       if (destination === await this.getNodePubkey()) {
         const lightningLoggerOnUs = lightningLogger.child({ onUs: true, fee: 0 })
@@ -558,7 +554,7 @@ export const LightningMixin = (superclass) => class extends superclass {
   // TODO manage the error case properly. right now there is a mix of string being return
   // or error being thrown. Not sure how this is handled by GraphQL
 
-  async updatePendingPayments() {
+  async updatePendingPayments(lock) {
 
     const query = { accounts: this.user.accountPath, type: "payment", pending: true }
     const count = await Transaction.countDocuments(query)
@@ -567,11 +563,13 @@ export const LightningMixin = (superclass) => class extends superclass {
       return
     }
 
+    const lightningLogger = this.logger.child({ topic: "payment", protocol: "lightning", transactionType: "payment", onUs: false })
+
     // we only lock the account if there is some pending payment transaction, which would typically be unlikely
     // we're doing the the Transaction.find after the lock to make sure there is no race condition
     // note: there might be another design that doesn't requiere a lock at the uid level but only at the hash level,
     // but will need to dig more into the cursor aspect of mongodb to see if there is a concurrency-safe way to do it.
-    return await using(disposer(this.user._id), async (lock) => {
+    await redlock({ path: this.user._id, logger: lightningLogger, lock }, async (lock) => {
 
       const payments = await Transaction.find(query)
 
@@ -590,8 +588,6 @@ export const LightningMixin = (superclass) => class extends superclass {
           payment.pending = false
           await payment.save()
         }
-
-        const lightningLogger = this.logger.child({ topic: "payment", protocol: "lightning", transactionType: "payment", onUs: false })
 
         if (result.is_confirmed) {
           lightningLogger.info({ success: true, id: payment.hash, payment }, 'payment has been confirmed')
@@ -617,7 +613,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     })
   }
 
-  async updatePendingInvoice({ hash, expired = false }) {
+  async updatePendingInvoice({ hash, expired = false, lock }) {
     let invoice
 
     try {
@@ -652,12 +648,14 @@ export const LightningMixin = (superclass) => class extends superclass {
 
       try {
 
-        return await using(disposer(hash), async (lock) => {
+        const lightningLogger = this.logger.child({ hash, user: this.user._id, topic: "payment", protocol: "lightning", transactionType: "receipt", onUs: false })
+
+        return await redlock({ path: hash, logger: lightningLogger, lock }, async () => {
 
           const invoiceUser = await InvoiceUser.findOne({ _id: hash, uid: this.user._id })
 
           if (!invoiceUser) {
-            this.logger.info({ hash, user: this.user._id }, "invoice has already been processed")
+            lightningLogger.info("invoice has already been processed")
             return true
           }
 
@@ -669,7 +667,7 @@ export const LightningMixin = (superclass) => class extends superclass {
           // may still not avoid issue from discrenpency between hash and the books
 
           const resultDeletion = await InvoiceUser.deleteOne({ _id: hash, uid: this.user._id })
-          this.logger.info({ hash, user: this.user._id, resultDeletion }, "invoice has been deleted")
+          lightningLogger.info({resultDeletion }, "invoice has been deleted")
 
           const sats = invoice.received
 
@@ -682,7 +680,7 @@ export const LightningMixin = (superclass) => class extends superclass {
             sats
           })
 
-          this.logger.info({ topic: "payment", protocol: "lightning", transactionType: "receipt", onUs: false, success: true, metadata })
+          this.logger.info({ metadata, success: true }, "long standing payment succeeded")
 
           return true
         })
@@ -715,7 +713,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
   // should be run regularly with a cronjob
   // TODO: move to an "admin/ops" wallet
-  async updatePendingInvoices() {
+  async updatePendingInvoices(lock) {
 
     // TODO
     const currency = "BTC"
@@ -733,7 +731,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       const expired = moment() > this.getExpiration(moment(timestamp)
         .add(delay(currency).additional_delay_value, "hours")
       )
-      await this.updatePendingInvoice({ hash: _id, expired })
+      await this.updatePendingInvoice({ hash: _id, expired, lock })
     }
   }
 
