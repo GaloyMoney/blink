@@ -384,7 +384,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
     return { sats, addresses }
   }
 
-  async updateOnchainReceipt(lock) {
+  async updateOnchainReceipt(lock?) {
     const user_matched_txs = await this.getOnchainReceipt({confirmed: true})
 
     const type = "onchain_receipt"
