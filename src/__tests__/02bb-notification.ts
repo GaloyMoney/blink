@@ -5,7 +5,6 @@
 import { getCurrentPrice } from "../realtimePrice";
 import { sendBalanceToUsers } from "../entrypoint/dailyBalanceNotification";
 import { customerPath } from "../ledger/ledger";
-import { quit } from "../lock";
 import { MainBook, setupMongoConnection } from "../mongodb";
 import { Transaction, User } from "../schema";
 import { baseLogger } from "../utils";
@@ -26,7 +25,6 @@ beforeAll(async () => {
 
 
 afterAll(async () => {
-  await quit()
   jest.restoreAllMocks();
 });
 

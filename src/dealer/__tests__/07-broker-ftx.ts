@@ -4,7 +4,6 @@
 import { setupMongoConnection } from "../../mongodb"
 import { FtxDealerWallet } from "../FtxDealerWallet";
 import { baseLogger } from "../../utils";
-import { quit } from "../../lock";
 import { getTokenFromPhoneIndex } from "../../walletFactory";
 import { UserWallet } from "../../userWallet";
 import mongoose from "mongoose";
@@ -230,7 +229,6 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await mongoose.connection.close()
-  await quit()
 })
 
 it('future0', async () => {

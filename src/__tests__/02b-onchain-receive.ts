@@ -7,7 +7,6 @@ import { filter } from "lodash";
 import mongoose from "mongoose";
 import { getCurrentPrice } from "../realtimePrice";
 import { onchainTransactionEventHandler } from "../entrypoint/trigger";
-import { quit } from "../lock";
 import { setupMongoConnection } from "../mongodb";
 import { getTitle } from "../notifications/payment";
 import { baseLogger, bitcoindDefaultClient, btc2sat, sleep } from "../utils";
@@ -57,7 +56,6 @@ afterEach(async () => {
 afterAll(async () => {
   jest.restoreAllMocks();
   await mongoose.connection.close()
-  await quit()
 })
 
 const onchain_funding = async ({ walletDestination }) => {
