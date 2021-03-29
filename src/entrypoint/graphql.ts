@@ -164,7 +164,7 @@ const resolvers = {
       if(!phone && !username) {
         throw new LoggedError("Either phone or username is required");
       }
-      return await UserWallet.getUserDetails({ phone, username });
+      return UserWallet.getUserDetails({ phone, username });
     },
   },
   Mutation: {
