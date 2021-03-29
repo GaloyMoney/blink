@@ -2,7 +2,7 @@ import { ApolloServer } from 'apollo-server-express';
 import { importSchema } from 'graphql-import'
 import express from 'express';
 import dotenv from "dotenv";
-import { rule, shield } from 'graphql-shield';
+import { rule, shield, and } from 'graphql-shield';
 import _ from 'lodash';
 import moment from "moment";
 import mongoose from "mongoose";
@@ -28,7 +28,7 @@ import { User } from "../schema";
 import { login, requestPhoneCode } from "../text";
 import { OnboardingEarn } from "../types";
 import { UserWallet } from "../userWallet";
-import { baseLogger, customLoggerPrefix } from "../utils";
+import { baseLogger, customLoggerPrefix, parseUser } from "../utils";
 import { WalletFactory, WalletFromUsername } from "../walletFactory";
 import expressJwt from "express-jwt";
 import { applyMiddleware } from "graphql-middleware";
@@ -100,7 +100,7 @@ const resolvers = {
         }))
       }
     },
-    nodeStats: async () => nodeStats({lnd}),
+    nodeStats: async () => nodeStats({ lnd }),
     buildParameters: async () => {
       const { minBuildNumber, lastBuildNumber } = await getMinBuildNumber()
       return {
@@ -114,19 +114,19 @@ const resolvers = {
         lastBuildNumberIos: lastBuildNumber,
       }
     },
-    prices: async (_, { length = 365 * 24 * 10 }, {logger}) => {
+    prices: async (_, { length = 365 * 24 * 10 }, { logger }) => {
 
       const key = "lastCached"
       let value
-    
+
       value = mainCache.get(key);
-      if ( value === undefined ){
-        const price = new Price({logger})
+      if(value === undefined) {
+        const price = new Price({ logger })
         const lastCached = await price.lastCached()
-        mainCache.set( key, lastCached, 300 )
+        mainCache.set(key, lastCached, 300)
         value = lastCached
       }
-    
+
       // adding the current price as the lat index array
       // use by the mobile application to convert prices
       value.push({
@@ -140,7 +140,7 @@ const resolvers = {
       const response: Object[] = []
       const earned = user?.earn || []
 
-      for (const [id, value] of Object.entries(OnboardingEarn)) {
+      for(const [id, value] of Object.entries(OnboardingEarn)) {
         response.push({
           id,
           value,
@@ -151,22 +151,21 @@ const resolvers = {
       return response
     },
     getLastOnChainAddress: async (_, __, { wallet }) => ({ id: wallet.getLastOnChainAddress() }),
-
     maps: async () => {
       // TODO: caching
-      const users = await User.find({ title: { $exists: true }, coordinate: { $exists: true }}, {username: 1, title: 1, coordinate: 1})
-      return users.map(item => ({
-        id: item.username,
-        username: item.username,
-        title: item.title,
-        coordinate: {
-          latitude: item.coordinate.coordinates[0],
-          longitude: item.coordinate.coordinates[1]
-        }
-      }))
+      const users = await User.find(
+        { title: { $exists: true }, coordinate: { $exists: true } },
+        { username: 1, title: 1, coordinate: 1 }
+      );
+      return users.map((user) => parseUser(user));
     },
-    usernameExists: async (_, { username }) => await UserWallet.usernameExists({ username })
-
+    usernameExists: async (_, { username }) => await UserWallet.usernameExists({ username }),
+    getUserDetails: async (_, { phone, username }, { logger }) => {
+      if(!phone && !username) {
+        throw new logger.error("Either phone or username is required");
+      }
+      return await UserWallet.getUserDetails({ phone, username });
+    },
   },
   Mutation: {
     requestPhoneCode: async (_, { phone }, { logger }) => ({ success: requestPhoneCode({ phone, logger }) }),
@@ -232,9 +231,11 @@ const resolvers = {
       })
       return { success: true }
     },
+    addToMap: async (_, { username, title, latitude, longitude }, { }) => {
+      return await UserWallet.addToMap({ username, title, latitude, longitude });
+    },
   }
 }
-
 
 const isAuthenticated = rule({ cache: 'contextual' })(
   async (parent, args, ctx, info) => {
@@ -287,7 +288,7 @@ async function startApolloServer() {
       resolvers,
     }),
     permissions
-);
+  );
 
   const server = new ApolloServer({
     schema,
@@ -311,10 +312,10 @@ async function startApolloServer() {
     },
     formatError: err => {
       // FIXME
-      if (_.startsWith(err.message, customLoggerPrefix)) {
+      if(_.startsWith(err.message, customLoggerPrefix)) {
         err.message = err.message.slice(customLoggerPrefix.length)
       } else {
-        baseLogger.error({err}, "graphql catch-all error"); 
+        baseLogger.error({ err }, "graphql catch-all error");
       }
       // return defaultErrorFormatter(err)
       return err
@@ -338,7 +339,7 @@ async function startApolloServer() {
       algorithms: ["HS256"],
       credentialsRequired: false,
       requestProperty: 'token'
-  }))
+    }))
 
   app.use(swStats.getMiddleware({
     uriPath: "/swagger",
