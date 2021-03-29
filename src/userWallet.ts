@@ -3,7 +3,7 @@ import { CSVAccountExport } from "./csvAccountExport";
 import { customerPath } from "./ledger/ledger";
 import { MainBook } from "./mongodb";
 import { ITransaction } from "./types";
-import { LoggedError } from "./utils";
+import { LoggedError, parseUser } from "./utils";
 import { Balances } from "./interface"
 import assert from 'assert'
 import { sendNotification } from "./notifications/notification";
@@ -52,14 +52,14 @@ export abstract class UserWallet {
     }
 
     // TODO: make this code parrallel instead of serial
-    for (const { id } of this.user.currencies) {
+    for(const { id } of this.user.currencies) {
       const { balance } = await MainBook.balance({
         account: this.user.accountPath,
         currency: id,
       })
 
       // the dealer is the only one that is allowed to be short USD
-      if (this.user.role === "dealer" && id === "USD") {
+      if(this.user.role === "dealer" && id === "USD") {
         assert(balance <= 0)
       } else {
         assert(balance >= 0)
@@ -72,7 +72,7 @@ export abstract class UserWallet {
       {
         id: "BTC",
         BTC: 1,
-        USD: 1/UserWallet.lastPrice, // TODO: check this should not be price
+        USD: 1 / UserWallet.lastPrice, // TODO: check this should not be price
       },
       {
         id: "USD",
@@ -80,11 +80,11 @@ export abstract class UserWallet {
         USD: 1
       }
     ]
-    
+
     // this array is used to know the total in USD and BTC
     // the effective ratio may not be equal to the user ratio 
     // as a result of price fluctuation
-    let total = priceMap.map(({id, BTC, USD}) => ({
+    let total = priceMap.map(({ id, BTC, USD }) => ({
       id,
       value: BTC * balances["BTC"] + USD * balances["USD"]
     }))
@@ -156,7 +156,7 @@ export abstract class UserWallet {
 
     const result = await User.findOneAndUpdate({ _id: this.user.id, username: null }, { username })
 
-    if (!result) {
+    if(!result) {
       const error = `Username is already set`
       this.logger.error({ result }, error)
       throw new LoggedError(error)
@@ -169,7 +169,7 @@ export abstract class UserWallet {
 
     const result = await User.findOneAndUpdate({ _id: this.user.id, }, { language })
 
-    if (!result) {
+    if(!result) {
       const error = `issue setting language preferences`
       this.logger.error({ result }, error)
       throw new LoggedError(error)
@@ -180,20 +180,20 @@ export abstract class UserWallet {
 
   static getCurrencyEquivalent({ sats, fee, usd }: { sats: number, fee?: number, usd?: number }) {
     return {
-      fee, 
-      feeUsd: fee ? UserWallet.satsToUsd(fee): undefined,
+      fee,
+      feeUsd: fee ? UserWallet.satsToUsd(fee) : undefined,
       sats,
       usd: usd ?? UserWallet.satsToUsd(sats)
     }
   }
-  
+
   static satsToUsd = sats => {
     const usdValue = UserWallet.lastPrice * sats
     return usdValue
   }
 
   sendBalance = async (): Promise<void> => {
-    const {BTC: balanceSats} = await this.getBalances()
+    const { BTC: balanceSats } = await this.getBalances()
 
     // Add commas to balancesats
     const balanceSatsPrettified = balanceSats.toLocaleString("en")
@@ -202,5 +202,44 @@ export abstract class UserWallet {
 
     this.logger.info({ balanceSatsPrettified, balanceUsd, user: this.user }, `sending balance notification to user`)
     await sendNotification({ user: this.user, title: `Your balance is \$${balanceUsd} (${balanceSatsPrettified} sats)`, logger: this.logger })
+  }
+
+  static async getUserDetails({ phone, username }): Promise<{}> {
+    let user;
+
+    if(phone) {
+      user = await User.findOne(
+        { phone },
+        { phone: 1, level: 1, created_at: 1, username: 1, title: 1, coordinate: 1 }
+      );
+    } else if(this.usernameExists({ username })) {
+      user = await User.findOne(
+        { username },
+        { phone: 1, level: 1, created_at: 1, username: 1, title: 1, coordinate: 1 }
+      );
+    }
+
+    if(!user) {
+      throw new LoggedError("User not found");
+    }
+
+    return parseUser(user);
+  }
+
+  static async addToMap({ username, latitude, longitude, title, }): Promise<boolean> {
+    const user = await User.findByUsername({ username });
+    if(!user) {
+      throw new LoggedError(`The user ${username} does not exist`);
+    } else if(!latitude || !longitude || !title) {
+      throw new LoggedError(`missing input for ${username}: ${latitude}, ${longitude}, ${title}`);
+    }
+
+    user.coordinate = {
+      type: "Point",
+      coordinates: [Number(latitude), Number(longitude)],
+    };
+
+    user.title = title;
+    return !!(await user.save());
   }
 }
