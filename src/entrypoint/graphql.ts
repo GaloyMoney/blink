@@ -28,7 +28,7 @@ import { User } from "../schema";
 import { login, requestPhoneCode } from "../text";
 import { OnboardingEarn } from "../types";
 import { UserWallet } from "../userWallet";
-import { baseLogger, customLoggerPrefix, parseUser } from "../utils";
+import { baseLogger, customLoggerPrefix, LoggedError, parseUser } from "../utils";
 import { WalletFactory, WalletFromUsername } from "../walletFactory";
 import expressJwt from "express-jwt";
 import { applyMiddleware } from "graphql-middleware";
@@ -162,7 +162,7 @@ const resolvers = {
     usernameExists: async (_, { username }) => await UserWallet.usernameExists({ username }),
     getUserDetails: async (_, { phone, username }, { logger }) => {
       if(!phone && !username) {
-        throw new logger.error("Either phone or username is required");
+        throw new LoggedError("Either phone or username is required");
       }
       return await UserWallet.getUserDetails({ phone, username });
     },
