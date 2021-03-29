@@ -32,7 +32,7 @@ export class LoggedError extends GraphQLError {
 }
 
 const connection_obj = {
-  network: process.env.NETWORK, 
+  network: process.env.NETWORK,
   username: 'rpcuser',
   password: 'rpcpass',
   host: process.env.BITCOINDADDR,
@@ -41,7 +41,7 @@ const connection_obj = {
 }
 
 
-export const addContact = async ({uid, username}) => {
+export const addContact = async ({ uid, username }) => {
   // https://stackoverflow.com/questions/37427610/mongodb-update-or-insert-object-in-array
 
   const result = await User.update(
@@ -50,7 +50,7 @@ export const addContact = async ({uid, username}) => {
       "contacts.id": username
     },
     {
-      $inc: {"contacts.$.transactionsCount": 1},
+      $inc: { "contacts.$.transactionsCount": 1 },
     },
   )
 
@@ -70,8 +70,8 @@ export const addContact = async ({uid, username}) => {
   }
 }
 
-export const BitcoindClient = ({wallet = ""}) => new bitcoindClient({...connection_obj, wallet})
-export const bitcoindDefaultClient = BitcoindClient({wallet: ""})
+export const BitcoindClient = ({ wallet = "" }) => new bitcoindClient({ ...connection_obj, wallet })
+export const bitcoindDefaultClient = BitcoindClient({ wallet: "" })
 
 export const amountOnVout = ({ vout, onchain_addresses }): number => {
   // TODO: check if this is always [0], ie: there is always a single addresses for vout for lnd output
@@ -144,8 +144,17 @@ export async function measureTime(operation: Promise<any>): Promise<[any, number
 }
 
 export const isInvoiceAlreadyPaidError = (err) => {
-  if ("invoice is already paid" === (err[2]?.err?.details || err[2]?.failures?.[0]?.[2]?.err?.details)) {
+  if("invoice is already paid" === (err[2]?.err?.details || err[2]?.failures?.[0]?.[2]?.err?.details)) {
     return true
   }
   return false
 }
+
+export const parseUser = (user) => ({
+  ...user._doc,
+  id: user.username,
+  coordinate: {
+    latitude: user.coordinate?.coordinates[0],
+    longitude: user.coordinate?.coordinates[1],
+  },
+});
