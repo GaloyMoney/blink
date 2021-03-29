@@ -245,6 +245,12 @@ const isAuthenticated = rule({ cache: 'contextual' })(
   },
 )
 
+const isEditor = rule({ cache: "contextual" })(
+  async (parent, args, ctx, info) => {
+    return ctx.user.role === "editor";
+  }
+);
+
 const permissions = shield({
   Query: {
     // prices: not(isAuthenticated),
@@ -253,6 +259,7 @@ const permissions = shield({
     wallet: isAuthenticated,
     wallet2: isAuthenticated,
     getLastOnChainAddress: isAuthenticated,
+    getUserDetails: and(isAuthenticated, isEditor),
   },
   Mutation: {
     // requestPhoneCode: not(isAuthenticated),
@@ -266,6 +273,7 @@ const permissions = shield({
     deleteUser: isAuthenticated,
     addDeviceToken: isAuthenticated,
     testMessage: isAuthenticated,
+    addToMap: and(isAuthenticated, isEditor),
   },
 }, { allowExternalErrors: true }) // TODO remove to not expose internal error
 
