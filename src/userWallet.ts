@@ -227,11 +227,14 @@ export abstract class UserWallet {
   }
 
   static async addToMap({ username, latitude, longitude, title, }): Promise<boolean> {
+    if(!latitude || !longitude || !title) {
+      throw new LoggedError(`missing input for ${username}: ${latitude}, ${longitude}, ${title}`);
+    }
+
     const user = await User.findByUsername({ username });
+
     if(!user) {
       throw new LoggedError(`The user ${username} does not exist`);
-    } else if(!latitude || !longitude || !title) {
-      throw new LoggedError(`missing input for ${username}: ${latitude}, ${longitude}, ${title}`);
     }
 
     user.coordinate = {
