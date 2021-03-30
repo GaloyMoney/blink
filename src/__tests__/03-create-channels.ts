@@ -12,7 +12,7 @@ import { MainBook, setupMongoConnection } from "../mongodb";
 import { baseLogger, bitcoindDefaultClient, sleep } from "../utils";
 import { checkIsBalanced, lndMain, lndOutside1, lndOutside2, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "./helper";
 
-jest.mock('../cache')
+jest.mock('../realtimePrice')
 
 
 const local_tokens = 1000000

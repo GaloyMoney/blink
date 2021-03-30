@@ -20,19 +20,19 @@ import PinoHttp from "pino-http";
 import swStats from 'swagger-stats';
 import util from 'util';
 import { v4 as uuidv4 } from 'uuid';
-import { getCurrentPrice, getMinBuildNumber, mainCache } from "../cache";
+import { getMinBuildNumber, getHourlyPrice } from "../localCache";
 import { lnd } from "../lndConfig";
 import { nodeStats } from "../lndUtils";
-import { getAsyncRedisClient } from "../lock";
 import { setupMongoConnection } from "../mongodb";
 import { sendNotification } from "../notifications/notification";
-import { Price } from "../priceImpl";
 import { User } from "../schema";
 import { login, requestPhoneCode } from "../text";
 import { OnboardingEarn } from "../types";
 import { UserWallet } from "../userWallet";
 import { baseLogger, customLoggerPrefix, LoggedError } from "../utils";
 import { WalletFactory, WalletFromUsername } from "../walletFactory";
+import { getCurrentPrice } from "../realtimePrice";
+import { getAsyncRedisClient } from "../redis";
 
 dotenv.config()
 
@@ -114,27 +114,17 @@ const resolvers = {
         lastBuildNumberIos: lastBuildNumber,
       }
     },
-    prices: async (_, { length = 365 * 24 * 10 }, { logger }) => {
-
-      const key = "lastCached"
-      let value
-
-      value = mainCache.get(key);
-      if(value === undefined) {
-        const price = new Price({ logger })
-        const lastCached = await price.lastCached()
-        mainCache.set(key, lastCached, 300)
-        value = lastCached
-      }
+    prices: async (_, { length = 365 * 24 * 10 }, {logger}) => {
+      const hourly = await getHourlyPrice({ logger })
 
       // adding the current price as the lat index array
       // use by the mobile application to convert prices
-      value.push({
+      hourly.push({
         id: moment().unix(),
         o: getCurrentPrice()
       })
 
-      return value.splice(-length)
+      return hourly.splice(-length)
     },
     earnList: async (_, __, { uid, user }) => {
       const response: Object[] = []

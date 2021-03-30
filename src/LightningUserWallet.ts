@@ -1,5 +1,5 @@
 import { LightningMixin } from "./Lightning";
-import { disposer } from "./lock";
+import { redlock } from "./lock";
 import { OnChainMixin } from "./OnChain";
 import { User } from "./schema";
 import { ILightningWalletUser, OnboardingEarn } from "./types";
@@ -20,9 +20,10 @@ export class LightningUserWallet extends OnChainMixin(LightningMixin(UserWallet)
   async addEarn(ids) {
 
     const lightningFundingWallet = await getFunderWallet({ logger: this.logger })
-    const result: object[] = []
 
-    return await using(disposer(this.user._id), async (lock) => {
+    return await redlock({ path: this.user._id, logger: this.logger }, async () => {
+
+      const result: object[] = []
 
       for (const id of ids) {
         const amount = OnboardingEarn[id]

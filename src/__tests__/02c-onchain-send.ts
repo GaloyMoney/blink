@@ -6,13 +6,12 @@ import lnService from 'ln-service';
 import { filter, first } from "lodash";
 import mongoose from "mongoose";
 import { onchainTransactionEventHandler } from "../entrypoint/trigger";
-import { quit } from "../lock";
 import { MainBook, setupMongoConnection } from "../mongodb";
 import { getTitle } from "../notifications/payment";
 import { bitcoindDefaultClient, sleep } from "../utils";
 import { checkIsBalanced, getUserWallet, lndMain, lndOutside1, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "./helper";
 
-jest.mock('../cache')
+jest.mock('../realtimePrice')
 
 
 let initBlockCount
@@ -44,7 +43,6 @@ afterAll(async () => {
   await sleep(2000)
   jest.restoreAllMocks();
 	await mongoose.connection.close()
-	await quit()
 })
 
 const amount = 10040 // sats

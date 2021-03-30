@@ -1,6 +1,6 @@
 import * as jwt from 'jsonwebtoken';
 import { FtxDealerWallet } from "./dealer/FtxDealerWallet";
-import { getCurrentPrice } from "./cache";
+import { getCurrentPrice } from "./realtimePrice";
 import { LightningUserWallet } from "./LightningUserWallet";
 import { login } from "./text";
 import { baseLogger, LoggedError } from "./utils";

@@ -3,7 +3,6 @@
  */
 import { createHash, randomBytes } from 'crypto';
 import { FEECAP, lnd } from "../lndConfig";
-import { quit } from "../lock";
 import { setupMongoConnection } from "../mongodb";
 import { InvoiceUser, Transaction } from "../schema";
 import { checkIsBalanced, getUserWallet, lndOutside1, lndOutside2, mockGetExchangeBalance } from "./helper";
@@ -20,7 +19,7 @@ const amountInvoice = 1000
 
 jest.mock('../notifications/notification')
 import { sendNotification } from "../notifications/notification";
-jest.mock('../cache')
+jest.mock('../realtimePrice')
 
 
 
@@ -49,7 +48,6 @@ afterAll(async () => {
   jest.restoreAllMocks();
 
   await mongoose.connection.close()
-  await quit()
 });
 
 

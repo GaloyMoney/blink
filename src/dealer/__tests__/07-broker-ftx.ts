@@ -4,11 +4,13 @@
 import { setupMongoConnection } from "../../mongodb"
 import { FtxDealerWallet } from "../FtxDealerWallet";
 import { baseLogger } from "../../utils";
-import { quit } from "../../lock";
 import { getTokenFromPhoneIndex } from "../../walletFactory";
 import { UserWallet } from "../../userWallet";
 import mongoose from "mongoose";
 import { User } from "../../schema";
+
+jest.mock('../../realtimePrice')
+
 
 const fixtures = [{
   privateGetAccount: function() {
@@ -227,7 +229,6 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await mongoose.connection.close()
-  await quit()
 })
 
 it('future0', async () => {

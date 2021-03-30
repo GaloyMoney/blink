@@ -2,37 +2,57 @@
  * @jest-environment node
  */
 
-import {disposer, quit, getResource} from "../lock"
+import {redlock, getResource} from "../lock"
 import bluebird from 'bluebird';
 const { using } = bluebird;
-import { sleep } from "../utils"
+import { baseLogger, sleep } from "../utils"
 import redis from 'redis'
 
 const uid = "1234"
 
-afterAll(async () => {
-  await quit()
-});
 
-
-it('return value from using are passed with a promise', async () => {
-  const result = await using(disposer(uid), function(lock) {
+it('return value from `using` are passed with a promise', async () => {
+  const result = await redlock({ path: uid, logger: baseLogger }, async function(lock) {
     return "r"
   });
 
   expect (result).toBe("r")
 })
 
+it('use lock if this exist', async () => {
+  const result = await redlock({ path: uid, logger: baseLogger }, async function(lock) {
+
+    return redlock({ path: uid, logger: baseLogger, lock }, async function(lock) {
+      return "r"
+    })
+
+  });
+
+  expect (result).toBe("r")
+})
+
+it('relocking fail if lock is not passed down the tree', async () => {
+  await expect(
+    redlock({ path: uid, logger: baseLogger }, async function(lock) {
+  
+      return await redlock({ path: uid, logger: baseLogger }, async function(lock) {
+        return "r"
+      })
+
+    })
+  ).rejects.toThrow()
+})
+
 it('second loop start after first loop has ended', async () => {
   let order: number[] = []
 
   await Promise.all([
-    using(disposer(uid), async function(lock) {
+    redlock({ path: uid, logger: baseLogger }, async function(lock) {
       order.push(1)
       await sleep(1000)
       order.push(2)
     }),
-    using(disposer(uid), async function(lock) {
+    redlock({ path: uid, logger: baseLogger }, async function(lock) {
       order.push(3)
       await sleep(1000)
       order.push(4)
@@ -51,7 +71,7 @@ it('throwing error releases the lock', async () => {
   });
 
   try {
-    await using(disposer(uid), async function(lock) {  
+    await redlock({ path: uid, logger: baseLogger }, async function(lock) {  
       expectLockToBe(res => expect(res).toBeTruthy())
       await sleep(500)
       throw Error("dummy error")
@@ -64,5 +84,4 @@ it('throwing error releases the lock', async () => {
 
   // TODO: properly use callback to avoid sleep
   await sleep(500)
-  client.quit()
 })

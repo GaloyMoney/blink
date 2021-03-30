@@ -2,6 +2,9 @@ import { btc2sat, sat2btc, isInvoiceAlreadyPaidError } from "../utils"
 import { lndOutside1, lndOutside2 } from "./helper"
 import { createInvoice, pay } from "lightning"
 
+jest.mock('../realtimePrice')
+
+
 it('btc2sat', async () => {
   const BTC = 1.2
   expect(btc2sat(BTC)).toEqual(120000000)

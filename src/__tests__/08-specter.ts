@@ -3,7 +3,6 @@
  */
 import { bitcoindAccountingPath } from "../ledger/ledger";
 import { lnd } from "../lndConfig";
-import { quit } from "../lock";
 import { MainBook, setupMongoConnection } from "../mongodb";
 import { SpecterWallet } from "../SpecterWallet";
 import { checkIsBalanced, mockGetExchangeBalance, RANDOM_ADDRESS } from "./helper";
@@ -16,7 +15,7 @@ import mongoose from "mongoose";
 let specterWallet
 
 jest.mock('../notifications/notification')
-jest.mock('../cache')
+jest.mock('../realtimePrice')
 
 beforeAll(async () => {
   await bitcoindDefaultClient.generateToAddress(3, RANDOM_ADDRESS)
@@ -39,7 +38,6 @@ afterEach(async () => {
 afterAll(async () => {
   jest.restoreAllMocks();
 	await mongoose.connection.close()
-  await quit()
 })
 
 it('createWallet', async () => {

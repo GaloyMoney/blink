@@ -12,6 +12,8 @@ metadata:
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
+  strategy:
+    type: Recreate
   {{- end }}
   selector:
     matchLabels:
@@ -48,16 +50,13 @@ spec:
               containerPort: {{ .Values.service.prometheus }}
               protocol: TCP
           livenessProbe:
-            httpGet:
-              path: /metrics
-              port: prometheus
-            initialDelaySeconds: 5
+            exec:
+              command: ["/bin/grpc_health_probe", "-addr=:50051"]
+            initialDelaySeconds: 45
             timeoutSeconds: 2
           readinessProbe:
-            httpGet:
-              path: /metrics
-              port: prometheus
-            initialDelaySeconds: 5
+            exec:
+              command: ["/bin/grpc_health_probe", "-addr=:50051"]
             timeoutSeconds: 2
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
