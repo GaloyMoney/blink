@@ -149,12 +149,3 @@ export const isInvoiceAlreadyPaidError = (err) => {
   }
   return false
 }
-
-export const parseUser = (user) => ({
-  ...user._doc,
-  id: user.username,
-  coordinate: {
-    latitude: user.coordinate?.coordinates[0],
-    longitude: user.coordinate?.coordinates[1],
-  },
-});

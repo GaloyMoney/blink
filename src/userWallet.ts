@@ -1,13 +1,13 @@
+import assert from 'assert';
 import moment from "moment";
 import { CSVAccountExport } from "./csvAccountExport";
+import { Balances } from "./interface";
 import { customerPath } from "./ledger/ledger";
 import { MainBook } from "./mongodb";
-import { ITransaction } from "./types";
-import { LoggedError, parseUser } from "./utils";
-import { Balances } from "./interface"
-import assert from 'assert'
 import { sendNotification } from "./notifications/notification";
 import { User } from "./schema";
+import { ITransaction } from "./types";
+import { LoggedError } from "./utils";
 
 export abstract class UserWallet {
 
@@ -223,7 +223,7 @@ export abstract class UserWallet {
       throw new LoggedError("User not found");
     }
 
-    return parseUser(user);
+    return user;
   }
 
   static async addToMap({ username, latitude, longitude, title, }): Promise<boolean> {
@@ -238,8 +238,8 @@ export abstract class UserWallet {
     }
 
     user.coordinate = {
-      type: "Point",
-      coordinates: [Number(latitude), Number(longitude)],
+      latitude,
+      longitude
     };
 
     user.title = title;

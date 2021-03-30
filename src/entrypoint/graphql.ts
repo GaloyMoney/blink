@@ -157,7 +157,11 @@ const resolvers = {
         { title: { $exists: true }, coordinate: { $exists: true } },
         { username: 1, title: 1, coordinate: 1 }
       );
-      return users.map((user) => user.getParsedUser);
+
+      return users.map((user) => ({
+        ...user._doc,
+        id: user.username
+      }))
     },
     usernameExists: async (_, { username }) => await UserWallet.usernameExists({ username }),
     getUserDetails: async (_, { phone, username }, { logger }) => {

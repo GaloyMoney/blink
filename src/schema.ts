@@ -7,17 +7,7 @@ import mongoose from "mongoose";
 
 const Schema = mongoose.Schema;
 
-const pointSchema = new mongoose.Schema({
-  type: {
-    type: String,
-    enum: ['Point'],
-    required: true
-  },
-  coordinates: {
-    type: [Number],
-    required: true
-  }
-});
+
 
 
 const dbVersionSchema = new Schema({
@@ -121,7 +111,7 @@ const UserSchema = new Schema({
       }
     }],
     required: true,
-    default: [{id: "BTC", ratio: 1}]
+    default: [{ id: "BTC", ratio: 1 }]
   },
   contacts: {
     type: [{
@@ -149,9 +139,16 @@ const UserSchema = new Schema({
 
   title: String,
   coordinate: {
-    type: pointSchema,
+    type: {
+      latitude: {
+        type: Number
+      },
+      longitude: {
+        type: Number
+      }
+    },
   },
-  
+
   excludeCashback: {
     type: Boolean,
     default: false
@@ -162,21 +159,21 @@ const UserSchema = new Schema({
 // Define getter for ratioUsd
 // FIXME: this // An outer value of 'this' is shadowed by this container.
 // https://stackoverflow.com/questions/41944650/this-implicitly-has-type-any-because-it-does-not-have-a-type-annotation
-UserSchema.virtual('ratioUsd').get(function (this: typeof UserSchema) {
-  return _.find(this.currencies, {id: "USD"})?.ratio ?? 0
+UserSchema.virtual('ratioUsd').get(function(this: typeof UserSchema) {
+  return _.find(this.currencies, { id: "USD" })?.ratio ?? 0
 });
 
-UserSchema.virtual('ratioBtc').get(function (this: typeof UserSchema) {
-  return _.find(this.currencies, {id: "BTC"})?.ratio ?? 0
+UserSchema.virtual('ratioBtc').get(function(this: typeof UserSchema) {
+  return _.find(this.currencies, { id: "BTC" })?.ratio ?? 0
 });
 
 // this is the accounting path in medici for this user
-UserSchema.virtual('accountPath').get(function (this: typeof UserSchema) {
+UserSchema.virtual('accountPath').get(function(this: typeof UserSchema) {
   return customerPath(this._id)
 })
 
 // user is considered active if there has been one transaction of more than 1000 sats in the last 30 days
-UserSchema.virtual('userIsActive').get(async function (this: typeof UserSchema) {
+UserSchema.virtual('userIsActive').get(async function(this: typeof UserSchema) {
   const timestamp30DaysAgo = new Date(Date.now() - (30 * 24 * 60 * 60 * 1000))
   const [result] = await Transaction.aggregate([
     { $match: { "accounts": this.accountPath, "timestamp": { $gte: timestamp30DaysAgo } } },
@@ -197,19 +194,19 @@ UserSchema.index({
 });
 
 
-UserSchema.statics.findByUsername = async function ({ username }) {
-  if (typeof username !== "string" || !username.match(regexUsername)) {
+UserSchema.statics.findByUsername = async function({ username }) {
+  if(typeof username !== "string" || !username.match(regexUsername)) {
     return null
   }
 
   return this.findOne({ username: new RegExp(`^${username}$`, 'i') })
 }
 
-UserSchema.statics.getActiveUsers = async function (): Promise<Array<typeof User>> {
+UserSchema.statics.getActiveUsers = async function(): Promise<Array<typeof User>> {
   const users = await this.find({})
   const activeUsers: Array<typeof User> = []
-  for (const user of users) {
-    if (await user.userIsActive) {
+  for(const user of users) {
+    if(await user.userIsActive) {
       activeUsers.push(user)
     }
   }
