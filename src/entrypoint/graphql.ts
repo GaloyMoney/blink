@@ -1,8 +1,11 @@
 import { ApolloServer } from 'apollo-server-express';
-import { importSchema } from 'graphql-import'
-import express from 'express';
 import dotenv from "dotenv";
-import { rule, shield, and } from 'graphql-shield';
+import express from 'express';
+import expressJwt from "express-jwt";
+import { importSchema } from 'graphql-import';
+import { applyMiddleware } from "graphql-middleware";
+import { and, rule, shield } from 'graphql-shield';
+import { makeExecutableSchema } from "graphql-tools";
 import _ from 'lodash';
 import moment from "moment";
 import mongoose from "mongoose";
@@ -28,11 +31,8 @@ import { User } from "../schema";
 import { login, requestPhoneCode } from "../text";
 import { OnboardingEarn } from "../types";
 import { UserWallet } from "../userWallet";
-import { baseLogger, customLoggerPrefix, LoggedError, parseUser } from "../utils";
+import { baseLogger, customLoggerPrefix, LoggedError } from "../utils";
 import { WalletFactory, WalletFromUsername } from "../walletFactory";
-import expressJwt from "express-jwt";
-import { applyMiddleware } from "graphql-middleware";
-import { makeExecutableSchema } from "graphql-tools";
 
 dotenv.config()
 
@@ -157,7 +157,7 @@ const resolvers = {
         { title: { $exists: true }, coordinate: { $exists: true } },
         { username: 1, title: 1, coordinate: 1 }
       );
-      return users.map((user) => parseUser(user));
+      return users.map((user) => user.getParsedUser);
     },
     usernameExists: async (_, { username }) => await UserWallet.usernameExists({ username }),
     getUserDetails: async (_, { phone, username }, { logger }) => {
