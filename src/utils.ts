@@ -112,8 +112,8 @@ export async function sleep(ms) {
 }
 
 export function timeout(delay, msg) {
-  return new Promise(function (resolve, reject) {
-    setTimeout(function () {
+  return new Promise(function(resolve, reject) {
+    setTimeout(function() {
       reject(new Error(msg));
     }, delay);
   });
@@ -124,11 +124,11 @@ export function timeout(delay, msg) {
 validate.extend(validate.validators.datetime, {
   // The value is guaranteed not to be null or undefined but otherwise it
   // could be anything.
-  parse: function (value: any, options: any) {
+  parse: function(value: any, options: any) {
     return +moment.utc(value);
   },
   // Input is a unix timestamp
-  format: function (value: any, options: any) {
+  format: function(value: any, options: any) {
     const format = options.dateOnly ? "YYYY-MM-DD" : "YYYY-MM-DD hh:mm:ss";
     return moment.utc(value).format(format);
   }
@@ -148,4 +148,8 @@ export const isInvoiceAlreadyPaidError = (err) => {
     return true
   }
   return false
+}
+
+export const caseInsensitiveUsername = (username) => {
+  return new RegExp(`^${username}$`, 'i')
 }
