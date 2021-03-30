@@ -205,6 +205,9 @@ export abstract class UserWallet {
   }
 
   static async getUserDetails({ phone, username }): Promise<{}> {
+    if(!(!phone != !username)) {
+      throw new LoggedError("Either phone or username is required, but not both");
+    }
     let user;
 
     if(phone) {

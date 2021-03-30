@@ -114,7 +114,7 @@ const resolvers = {
         lastBuildNumberIos: lastBuildNumber,
       }
     },
-    prices: async (_, { length = 365 * 24 * 10 }, {logger}) => {
+    prices: async (_, { length = 365 * 24 * 10 }, { logger }) => {
       const hourly = await getHourlyPrice({ logger })
 
       // adding the current price as the lat index array
@@ -155,9 +155,6 @@ const resolvers = {
     },
     usernameExists: async (_, { username }) => await UserWallet.usernameExists({ username }),
     getUserDetails: async (_, { phone, username }, { logger }) => {
-      if(!phone && !username) {
-        throw new LoggedError("Either phone or username is required");
-      }
       return UserWallet.getUserDetails({ phone, username });
     },
   },
