@@ -214,7 +214,7 @@ export abstract class UserWallet {
       );
     } else if(this.usernameExists({ username })) {
       user = await User.findOne(
-        { username },
+        { username: new RegExp(`^${username}$`, 'i') },
         { phone: 1, level: 1, created_at: 1, username: 1, title: 1, coordinate: 1 }
       );
     }
