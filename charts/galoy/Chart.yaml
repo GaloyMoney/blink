@@ -37,6 +37,6 @@ dependencies:
     repository: https://charts.bitnami.com/bitnami
     version: 8.x.x
   - name: nginx
-    alias: adminDashboard
+    alias: adminPanel
     repository: https://charts.bitnami.com/bitnami
     version: 8.x.x

@@ -96,7 +96,7 @@ redis:
   metrics:
     enabled: true
 
-adminDashboard:
+adminPanel:
   enabled: false
   service:
     type: ClusterIP
