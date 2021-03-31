@@ -204,7 +204,7 @@ export abstract class UserWallet {
     await sendNotification({ user: this.user, title: `Your balance is \$${balanceUsd} (${balanceSatsPrettified} sats)`, logger: this.logger })
   }
 
-  static async getUserDetails({ phone, username }): Promise<{}> {
+  static async getUserDetails({ phone, username }): Promise<typeof User> {
     if(!(!phone != !username)) {
       throw new LoggedError("Either phone or username is required, but not both");
     }
