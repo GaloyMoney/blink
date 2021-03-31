@@ -151,32 +151,37 @@ const UserSchema = new Schema({
   coordinate: {
     type: pointSchema,
   },
-  
+
   excludeCashback: {
     type: Boolean,
     default: false
-  }
+  },
 
+  status: {
+    type: String,
+    enum: ["active", "locked"],
+    default: "active"
+  }
 })
 
 // Define getter for ratioUsd
 // FIXME: this // An outer value of 'this' is shadowed by this container.
 // https://stackoverflow.com/questions/41944650/this-implicitly-has-type-any-because-it-does-not-have-a-type-annotation
-UserSchema.virtual('ratioUsd').get(function (this: typeof UserSchema) {
-  return _.find(this.currencies, {id: "USD"})?.ratio ?? 0
+UserSchema.virtual('ratioUsd').get(function(this: typeof UserSchema) {
+  return _.find(this.currencies, { id: "USD" })?.ratio ?? 0
 });
 
-UserSchema.virtual('ratioBtc').get(function (this: typeof UserSchema) {
-  return _.find(this.currencies, {id: "BTC"})?.ratio ?? 0
+UserSchema.virtual('ratioBtc').get(function(this: typeof UserSchema) {
+  return _.find(this.currencies, { id: "BTC" })?.ratio ?? 0
 });
 
 // this is the accounting path in medici for this user
-UserSchema.virtual('accountPath').get(function (this: typeof UserSchema) {
+UserSchema.virtual('accountPath').get(function(this: typeof UserSchema) {
   return customerPath(this._id)
 })
 
 // user is considered active if there has been one transaction of more than 1000 sats in the last 30 days
-UserSchema.virtual('userIsActive').get(async function (this: typeof UserSchema) {
+UserSchema.virtual('userIsActive').get(async function(this: typeof UserSchema) {
   const timestamp30DaysAgo = new Date(Date.now() - (30 * 24 * 60 * 60 * 1000))
   const [result] = await Transaction.aggregate([
     { $match: { "accounts": this.accountPath, "timestamp": { $gte: timestamp30DaysAgo } } },
