@@ -3,21 +3,12 @@ import _ from 'lodash';
 import { customerPath } from "./ledger/ledger";
 
 import mongoose from "mongoose";
+import { caseInsensitiveUsername } from './utils';
 // mongoose.set("debug", true);
 
 const Schema = mongoose.Schema;
 
-const pointSchema = new mongoose.Schema({
-  type: {
-    type: String,
-    enum: ['Point'],
-    required: true
-  },
-  coordinates: {
-    type: [Number],
-    required: true
-  }
-});
+
 
 
 const dbVersionSchema = new Schema({
@@ -121,7 +112,7 @@ const UserSchema = new Schema({
       }
     }],
     required: true,
-    default: [{id: "BTC", ratio: 1}]
+    default: [{ id: "BTC", ratio: 1 }]
   },
   contacts: {
     type: [{
@@ -149,7 +140,14 @@ const UserSchema = new Schema({
 
   title: String,
   coordinate: {
-    type: pointSchema,
+    type: {
+      latitude: {
+        type: Number
+      },
+      longitude: {
+        type: Number
+      }
+    },
   },
 
   excludeCashback: {
@@ -202,19 +200,19 @@ UserSchema.index({
 });
 
 
-UserSchema.statics.findByUsername = async function ({ username }) {
-  if (typeof username !== "string" || !username.match(regexUsername)) {
+UserSchema.statics.findByUsername = async function({ username }) {
+  if(typeof username !== "string" || !username.match(regexUsername)) {
     return null
   }
 
-  return this.findOne({ username: new RegExp(`^${username}$`, 'i') })
+  return this.findOne({ username: caseInsensitiveUsername(username) })
 }
 
-UserSchema.statics.getActiveUsers = async function (): Promise<Array<typeof User>> {
+UserSchema.statics.getActiveUsers = async function(): Promise<Array<typeof User>> {
   const users = await this.find({})
   const activeUsers: Array<typeof User> = []
-  for (const user of users) {
-    if (await user.userIsActive) {
+  for(const user of users) {
+    if(await user.userIsActive) {
       activeUsers.push(user)
     }
   }

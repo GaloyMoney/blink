@@ -1,16 +1,16 @@
 type Transaction {
   id: ID!
-  amount: Int!,
-  description: String!,
+  amount: Int!
+  description: String!
   fee: Int
-  created_at: Int!, # TODO create a Date scalar
+  created_at: Int! # TODO create a Date scalar
   # https://www.apollographql.com/docs/graphql-tools/scalars/
-  hash: String,
-  usd: Float, #TODO use Int and * 100
-  sat: Int,
-  pending: Boolean,
-  type: String!,
-  feeUsd: Float, # TODO: move to Int 
+  hash: String
+  usd: Float #TODO use Int and * 100
+  sat: Int
+  pending: Boolean
+  type: String!
+  feeUsd: Float # TODO: move to Int
   addresses: [String]
   username: String
 }
@@ -83,6 +83,9 @@ type User {
   phone: String
   contacts: [Contact]
   language: String
+  title: String
+  created_at: String
+  coordinate: Coordinate
 }
 
 input InputUser {
@@ -127,7 +130,7 @@ type Marker {
   username: String
 }
 
-type Query { 
+type Query {
   prices(length: Int): [Price]
   wallet: [Wallet]
   wallet2: [Wallet2]
@@ -138,6 +141,7 @@ type Query {
   nodeStats: NodeStats
   getLastOnChainAddress: LastOnChainAddress
   usernameExists(username: String!): Boolean
+  getUserDetails(phone: String, username: String): User
 }
 
 type UpdateUser {
@@ -152,7 +156,8 @@ type UpdateContact {
 
 type Mutation {
   requestPhoneCode(phone: String): Success
-  login(phone: String, code: Int, currency: String): Token @deprecated(reason: "currency is no longer user. to be remove after mobile update")
+  login(phone: String, code: Int, currency: String): Token
+    @deprecated(reason: "currency is no longer user. to be remove after mobile update")
   publicInvoice(username: String!): Invoice
   onchain: OnChain
   invoice: Invoice
@@ -162,4 +167,5 @@ type Mutation {
   deleteUser: Boolean # TODO
   addDeviceToken(deviceToken: String): Success # to refactor with User?
   testMessage: Success # FIXME remove test
+  addToMap(username: String!, title: String!, latitude: Float!, longitude: Float!): Boolean
 }

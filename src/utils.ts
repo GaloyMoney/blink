@@ -32,7 +32,7 @@ export class LoggedError extends GraphQLError {
 }
 
 const connection_obj = {
-  network: process.env.NETWORK, 
+  network: process.env.NETWORK,
   username: 'rpcuser',
   password: 'rpcpass',
   host: process.env.BITCOINDADDR,
@@ -41,7 +41,7 @@ const connection_obj = {
 }
 
 
-export const addContact = async ({uid, username}) => {
+export const addContact = async ({ uid, username }) => {
   // https://stackoverflow.com/questions/37427610/mongodb-update-or-insert-object-in-array
 
   const result = await User.update(
@@ -50,7 +50,7 @@ export const addContact = async ({uid, username}) => {
       "contacts.id": username
     },
     {
-      $inc: {"contacts.$.transactionsCount": 1},
+      $inc: { "contacts.$.transactionsCount": 1 },
     },
   )
 
@@ -70,8 +70,8 @@ export const addContact = async ({uid, username}) => {
   }
 }
 
-export const BitcoindClient = ({wallet = ""}) => new bitcoindClient({...connection_obj, wallet})
-export const bitcoindDefaultClient = BitcoindClient({wallet: ""})
+export const BitcoindClient = ({ wallet = "" }) => new bitcoindClient({ ...connection_obj, wallet })
+export const bitcoindDefaultClient = BitcoindClient({ wallet: "" })
 
 export const amountOnVout = ({ vout, onchain_addresses }): number => {
   // TODO: check if this is always [0], ie: there is always a single addresses for vout for lnd output
@@ -112,8 +112,8 @@ export async function sleep(ms) {
 }
 
 export function timeout(delay, msg) {
-  return new Promise(function (resolve, reject) {
-    setTimeout(function () {
+  return new Promise(function(resolve, reject) {
+    setTimeout(function() {
       reject(new Error(msg));
     }, delay);
   });
@@ -124,11 +124,11 @@ export function timeout(delay, msg) {
 validate.extend(validate.validators.datetime, {
   // The value is guaranteed not to be null or undefined but otherwise it
   // could be anything.
-  parse: function (value: any, options: any) {
+  parse: function(value: any, options: any) {
     return +moment.utc(value);
   },
   // Input is a unix timestamp
-  format: function (value: any, options: any) {
+  format: function(value: any, options: any) {
     const format = options.dateOnly ? "YYYY-MM-DD" : "YYYY-MM-DD hh:mm:ss";
     return moment.utc(value).format(format);
   }
@@ -144,8 +144,12 @@ export async function measureTime(operation: Promise<any>): Promise<[any, number
 }
 
 export const isInvoiceAlreadyPaidError = (err) => {
-  if ("invoice is already paid" === (err[2]?.err?.details || err[2]?.failures?.[0]?.[2]?.err?.details)) {
+  if("invoice is already paid" === (err[2]?.err?.details || err[2]?.failures?.[0]?.[2]?.err?.details)) {
     return true
   }
   return false
+}
+
+export const caseInsensitiveUsername = (username) => {
+  return new RegExp(`^${username}$`, 'i')
 }
