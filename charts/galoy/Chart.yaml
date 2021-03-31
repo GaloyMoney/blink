@@ -33,5 +33,10 @@ dependencies:
     version: 0.x.x
     repository: https://charts.bitnami.com/bitnami
   - name: nginx
+    alias: lnpage
+    repository: https://charts.bitnami.com/bitnami
+    version: 8.x.x
+  - name: nginx
+    alias: admin-panel
     repository: https://charts.bitnami.com/bitnami
     version: 8.x.x

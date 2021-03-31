@@ -1,15 +1,18 @@
 dependencies:
 - name: redis
   repository: https://charts.bitnami.com/bitnami
-  version: 12.8.3
+  version: 12.10.0
 - name: mongodb
   repository: https://charts.bitnami.com/bitnami
-  version: 10.10.2
+  version: 10.11.1
 - name: common
   repository: https://charts.bitnami.com/bitnami
   version: 0.10.0
 - name: nginx
   repository: https://charts.bitnami.com/bitnami
-  version: 8.7.1
-digest: sha256:b7c533af2aad378da87f51ad2e0c6ad825d3319a5c7761968cda5c77794c7cad
-generated: "2021-03-17T01:41:06.0398036+05:30"
+  version: 8.8.1
+- name: nginx
+  repository: https://charts.bitnami.com/bitnami
+  version: 8.8.1
+digest: sha256:cbb9bc9a38d12c920a7ccea555a4268ab7e8dfcf3c6272e5dc33adc8cd5cdb84
+generated: "2021-04-01T01:49:23.652632517+05:30"
