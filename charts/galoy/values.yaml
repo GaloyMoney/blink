@@ -96,10 +96,42 @@ redis:
   metrics:
     enabled: true
 
-lnpage:
-  enabled: true
+adminDashboard:
+  enabled: false
+  service:
+    type: ClusterIP
+  cloneStaticSiteFromGit:
+    enabled: true
+    repository: https://github.com/GaloyMoney/admin-dashboard.git
+    branch: build
+  podSecurityContext:
+    enabled: true
+    runAsUser: 1001
+  ingress:
+    enabled: false
+  podLabels:
+    app: admin-dashboard
+  command: ['/bin/sh', '-c' , 'echo "window.env={\"GRAPHQL_URI\":\"https://graphql.{{.Values.global.network}}.galoy.io/graphql\"}" > /app/env.js && /opt/bitnami/scripts/nginx/entrypoint.sh /opt/bitnami/scripts/nginx/run.sh']
+  serverBlock: |-
+    server {
+      listen 8080;
+      location /.well-known/ {
+        root   /opt/bitnami/nginx/html;
+        add_header  Content-Type    application/json;
+        try_files $uri =404;
+      }
+      location / {
+        root   /opt/bitnami/nginx/html;
+        index  index.html index.htm;
+        try_files $uri $uri/ /index.html;
+      }
+      error_page 500 502 503 504 /50x.html;
+      location = /50x.html {
+        root  /opt/bitnami/nginx/html;
+      }
+    }
 
-nginx:
+lnpage:
   enabled: false
   service:
     type: ClusterIP
