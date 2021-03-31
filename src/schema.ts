@@ -153,8 +153,13 @@ const UserSchema = new Schema({
   excludeCashback: {
     type: Boolean,
     default: false
-  }
+  },
 
+  status: {
+    type: String,
+    enum: ["active", "locked"],
+    default: "active"
+  }
 })
 
 // Define getter for ratioUsd
