@@ -102,7 +102,7 @@ adminPanel:
     type: ClusterIP
   cloneStaticSiteFromGit:
     enabled: true
-    repository: https://github.com/GaloyMoney/admin-dashboard.git
+    repository: https://github.com/GaloyMoney/admin-panel.git
     branch: build
   podSecurityContext:
     enabled: true
