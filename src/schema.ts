@@ -59,7 +59,7 @@ const UserSchema = new Schema({
   },
   role: {
     type: String,
-    enum: ["user", "dealer"],
+    enum: ["user", "dealer", "editor"],
     required: true,
     default: "user"
     // TODO : enfore the fact there can be only one dealer
