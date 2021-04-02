@@ -300,7 +300,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
     // TODO: should have outgoing unconfirmed transaction as well.
     // they are in medici, but not necessarily confirmed
 
-    const unconfirmed = await this.getOnchainReceipt({confirmed: false})
+    const unconfirmed_all = await this.getOnchainReceipt({confirmed: false})
 
     // {
     //   block_id: undefined,
@@ -317,15 +317,15 @@ export const OnChainMixin = (superclass) => class extends superclass {
     //   transaction: '020000000001019b5e33c844cc72b093683cec8f743f1ddbcf075077e5851cc8a598a844e684850100000000feffffff022054380c0100000016001499294eb1f4936f15472a891ba400dc09bfd0aa7b00e1f505000000001600146107c29ed16bf7712347ddb731af713e68f1a50702473044022016c03d070341b8954fe8f956ed1273bb3852d3b4ba0d798e090bb5fddde9321a022028dad050cac2e06fb20fad5b5bb6f1d2786306d90a1d8d82bf91e03a85e46fa70121024e3c0b200723dda6862327135ab70941a94d4f353c51f83921fcf4b5935eb80495000000'
     // }
 
-    const unconfirmed_promise = unconfirmed.map(async ({ transaction, id, created_at }) => {
+    const unconfirmed_promises = unconfirmed_all.map(async ({ transaction, id, created_at }) => {
       const { sats, addresses } = await this.getSatsAndAddressPerTx(transaction)
       return { sats, addresses, id, created_at }
     })
 
-    const unconfirmed_meta: any[] = await Promise.all(unconfirmed_promise)
+    const unconfirmed: any[] = await Promise.all(unconfirmed_promises)
 
     return [
-      ...unconfirmed_meta.map(({ sats, addresses, id, created_at }) => ({
+      ...unconfirmed.map(({ sats, addresses, id, created_at }) => ({
         id, 
         amount: sats,
         pending: true,
