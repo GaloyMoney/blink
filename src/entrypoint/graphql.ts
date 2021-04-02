@@ -154,9 +154,13 @@ const resolvers = {
       }))
     },
     usernameExists: async (_, { username }) => await UserWallet.usernameExists({ username }),
-    getUserDetails: async (_, { phone, username }, { logger }) => {
+    getUserDetails: async (_, { phone, username }) => {
       return UserWallet.getUserDetails({ phone, username });
     },
+    updatePendingInvoice: async (_, { hash, username }, { logger }) => {
+      const wallet = await WalletFromUsername({ username, logger })
+      return wallet.updatePendingInvoice({ hash })
+    }
   },
   Mutation: {
     requestPhoneCode: async (_, { phone }, { logger }) => ({ success: requestPhoneCode({ phone, logger }) }),
@@ -185,11 +189,11 @@ const resolvers = {
       const wallet = await WalletFromUsername({ username, logger })
       return {
         addInvoice: async ({ value, memo }) => wallet.addInvoice({ value, memo, selfGenerated: false }),
-        updatePendingInvoice: async ({ hash }) => wallet.updatePendingInvoice({ hash })
       }
     },
     invoice: async (_, __, { wallet }) => ({
       addInvoice: async ({ value, memo }) => wallet.addInvoice({ value, memo }),
+      // FIXME: move to query
       updatePendingInvoice: async ({ hash }) => wallet.updatePendingInvoice({ hash }),
       payInvoice: async ({ invoice, amount, memo }) => wallet.pay({ invoice, amount, memo }),
       payKeysendUsername: async ({ destination, username, amount, memo }) => wallet.pay({ destination, username, amount, memo }),
