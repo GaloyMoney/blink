@@ -7,7 +7,7 @@ import { MainBook } from "./mongodb";
 import { sendNotification } from "./notifications/notification";
 import { User } from "./schema";
 import { ITransaction } from "./types";
-import { caseInsensitiveUsername, LoggedError } from "./utils";
+import { caseInsensitiveRegex, LoggedError, inputXOR } from "./utils";
 
 export abstract class UserWallet {
 
@@ -205,9 +205,8 @@ export abstract class UserWallet {
   }
 
   static async getUserDetails({ phone, username }): Promise<typeof User> {
-    if(!(!phone != !username)) {
-      throw new LoggedError("Either phone or username is required, but not both");
-    }
+    inputXOR({ phone }, { username })
+
     let user;
 
     if(phone) {
@@ -217,8 +216,8 @@ export abstract class UserWallet {
       );
     } else if(this.usernameExists({ username })) {
       user = await User.findOne(
-        { username: caseInsensitiveUsername(username) },
-        { phone: 1, level: 1, created_at: 1, username: 1, title: 1, coordinate: 1 }
+        { username: caseInsensitiveRegex(username) },
+        { phone: 1, level: 1, created_at: 1, username: 1, title: 1, coordinate: 1, status: 1 }
       );
     }
 

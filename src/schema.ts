@@ -3,7 +3,7 @@ import _ from 'lodash';
 import { customerPath } from "./ledger/ledger";
 
 import mongoose from "mongoose";
-import { caseInsensitiveUsername } from './utils';
+import { caseInsensitiveRegex } from './utils';
 // mongoose.set("debug", true);
 
 const Schema = mongoose.Schema;
@@ -205,7 +205,7 @@ UserSchema.statics.findByUsername = async function({ username }) {
     return null
   }
 
-  return this.findOne({ username: caseInsensitiveUsername(username) })
+  return this.findOne({ username: caseInsensitiveRegex(username) })
 }
 
 UserSchema.statics.getActiveUsers = async function(): Promise<Array<typeof User>> {
