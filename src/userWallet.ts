@@ -245,7 +245,25 @@ export abstract class UserWallet {
       longitude
     };
 
-    user.title = title;
+    user.title = title
     return !!(await user.save());
   }
+
+  static async setAccountStatus({ username, phone, status }): Promise<boolean> {
+    let user
+
+    if(phone) {
+      user = User.findOne({ phone })
+    } else if(this.usernameExists({ username })) {
+      user = await User.findOne({ username: caseInsensitiveRegex(username) });
+    }
+
+    if(!user) {
+      throw new LoggedError("User not found");
+    }
+
+    user.status = status
+    return !!await user.save()
+  }
+
 }

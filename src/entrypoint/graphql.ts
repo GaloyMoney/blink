@@ -223,8 +223,9 @@ const resolvers = {
       return { success: true }
     },
     addToMap: async (_, { username, title, latitude, longitude }, { }) => {
-      return await UserWallet.addToMap({ username, title, latitude, longitude });
+      return UserWallet.addToMap({ username, title, latitude, longitude });
     },
+    setAccountStatus: async (_, { username, phone, status }, { }) => UserWallet.setAccountStatus({ username, phone, status })
   }
 }
 
