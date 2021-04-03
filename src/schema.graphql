@@ -142,6 +142,7 @@ type Query {
   getLastOnChainAddress: LastOnChainAddress
   usernameExists(username: String!): Boolean
   getUserDetails(phone: String, username: String): User
+  updatePendingInvoice(username: String!, hash: String!): Boolean
 }
 
 type UpdateUser {
