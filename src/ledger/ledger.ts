@@ -18,14 +18,14 @@ export const customerPath = (uid) => `Liabilities:Customer:${uid}`
 let cacheDealerPath: string
 
 export const dealerMediciPath = async () => {
-  if (!!cacheDealerPath) {
+  if(!!cacheDealerPath) {
     return cacheDealerPath
   }
 
   const dealer = await User.findOne({ role: "dealer" })
   cacheDealerPath = customerPath(dealer._id)
   return cacheDealerPath
-}   
+}
 
 export const liabilitiesDealerFtxPath = `Liabilities:Dealer:Ftx`
 
@@ -38,4 +38,4 @@ export const lndFeePath = 'Expenses:Bitcoin:Fees'
 export const bitcoindFeePath = 'Expenses:Bitcoin:Fees'
 
 // revenue
-// export const revenueFees = 'Revenue:Lightning:Fees'
+export const revenueFeePath = 'Revenue:Lightning:Fees'
