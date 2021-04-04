@@ -8,9 +8,6 @@ import { caseInsensitiveUsername } from './utils';
 
 const Schema = mongoose.Schema;
 
-
-
-
 const dbVersionSchema = new Schema({
   version: Number,
   minBuildNumber: Number,
@@ -18,6 +15,11 @@ const dbVersionSchema = new Schema({
 })
 export const DbVersion = mongoose.model("DbVersion", dbVersionSchema)
 
+const jobScheduleSchema = new Schema({
+  lastDay: String
+})
+
+export const jobSchedule = mongoose.model("JobSchedule", jobScheduleSchema)
 
 const invoiceUserSchema = new Schema({
   _id: String, // hash of invoice
