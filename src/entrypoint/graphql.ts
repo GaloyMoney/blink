@@ -157,7 +157,7 @@ const resolvers = {
     getUserDetails: async (_, { phone, username }) => {
       return UserWallet.getUserDetails({ phone, username });
     },
-    updatePendingInvoice: async (_, { hash, username }, { logger }) => {
+    noauthUpdatePendingInvoice: async (_, { hash, username }, { logger }) => {
       const wallet = await WalletFromUsername({ username, logger })
       return wallet.updatePendingInvoice({ hash })
     }
@@ -185,7 +185,7 @@ const resolvers = {
         return true
       }
     }),
-    publicInvoice: async (_, { username }, { logger }) => {
+    noauthAddInvoice: async (_, { username }, { logger }) => {
       const wallet = await WalletFromUsername({ username, logger })
       return {
         addInvoice: async ({ value, memo }) => wallet.addInvoice({ value, memo, selfGenerated: false }),
