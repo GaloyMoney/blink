@@ -88,11 +88,6 @@ type User {
   coordinate: Coordinate
 }
 
-input InputUser {
-  id: ID
-  level: Int
-}
-
 type Success {
   success: Boolean
 }
@@ -145,9 +140,10 @@ type Query {
 }
 
 type UpdateUser {
-  setLanguage(language: String): Boolean
-  setLevel(user: InputUser): User
-  setUsername(username: String!): Boolean
+  setLanguage(language: String): Boolean @deprecated
+  setUsername(username: String!): Boolean @deprecated
+  updateLanguage(language: String!): User
+  updateUsername(username: String!): User
 }
 
 type UpdateContact {

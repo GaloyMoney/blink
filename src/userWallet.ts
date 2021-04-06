@@ -7,7 +7,7 @@ import { MainBook } from "./mongodb";
 import { sendNotification } from "./notifications/notification";
 import { User } from "./schema";
 import { ITransaction } from "./types";
-import { caseInsensitiveUsername, LoggedError } from "./utils";
+import { caseInsensitiveUsername, LoggedError, sleep } from "./utils";
 
 export abstract class UserWallet {
 
@@ -152,6 +152,7 @@ export abstract class UserWallet {
     await this.user.save()
   }
 
+  // deprecated
   async setUsername({ username }): Promise<boolean | Error> {
 
     const result = await User.findOneAndUpdate({ _id: this.user.id, username: null }, { username })
@@ -165,7 +166,8 @@ export abstract class UserWallet {
     return true
   }
 
-  async setLanguage({ language }): Promise<boolean | Error> {
+  // deprecated
+  async setLanguage({ language }): Promise<boolean> {
 
     const result = await User.findOneAndUpdate({ _id: this.user.id, }, { language })
 
@@ -176,6 +178,29 @@ export abstract class UserWallet {
     }
 
     return true
+  }
+
+  async updateUsername({ username }): Promise<{username: string | undefined, id: string}> {
+    try {
+      const result = await User.findOneAndUpdate({ _id: this.user.id, username: null }, { username })
+      if(!result) {
+        throw new LoggedError(`Username is already set, result: ${result}`)
+      }
+      return { username, id: this.user.id }
+    } catch (err) {
+      this.logger.error({err}, "error updating username")
+      return {username: undefined, id: this.user.id }
+    }
+  }
+
+  async updateLanguage({ language }): Promise<{language: string | undefined, id: string}> {
+    try {
+      await User.findOneAndUpdate({ _id: this.user.id }, { language })
+      return { language, id: this.user.id }
+    } catch (err) {
+      this.logger.error({err}, "error updating language")
+      return {language: undefined, id: this.user.id }
+    }
   }
 
   static getCurrencyEquivalent({ sats, fee, usd }: { sats: number, fee?: number, usd?: number }) {

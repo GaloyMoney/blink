@@ -130,8 +130,8 @@ const UserSchema = new Schema({
   },
   language: {
     type: String,
-    enum: ["en", "es", null],
-    default: null // will use OS preference settings
+    enum: ["en", "es", ""],
+    default: ""
   },
   // firstName,
   // lastName,
