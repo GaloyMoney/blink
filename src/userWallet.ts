@@ -204,30 +204,6 @@ export abstract class UserWallet {
     await sendNotification({ user: this.user, title: `Your balance is \$${balanceUsd} (${balanceSatsPrettified} sats)`, logger: this.logger })
   }
 
-  static async getUserDetails({ phone, username }): Promise<typeof User> {
-    inputXOR({ phone }, { username })
-
-    let user;
-
-    if(phone) {
-      user = await User.findOne(
-        { phone },
-        { phone: 1, level: 1, created_at: 1, username: 1, title: 1, coordinate: 1 }
-      );
-    } else if(this.usernameExists({ username })) {
-      user = await User.findOne(
-        { username: caseInsensitiveRegex(username) },
-        { phone: 1, level: 1, created_at: 1, username: 1, title: 1, coordinate: 1, status: 1 }
-      );
-    }
-
-    if(!user) {
-      throw new LoggedError("User not found");
-    }
-
-    return user;
-  }
-
   static async addToMap({ username, latitude, longitude, title, }): Promise<boolean> {
     if(!latitude || !longitude || !title) {
       throw new LoggedError(`missing input for ${username}: ${latitude}, ${longitude}, ${title}`);
@@ -248,18 +224,8 @@ export abstract class UserWallet {
     return !!(await user.save());
   }
 
-  static async setAccountStatus({ username, phone, status }): Promise<boolean> {
-    let user
-
-    if(phone) {
-      user = User.findOne({ phone })
-    } else if(this.usernameExists({ username })) {
-      user = await User.findOne({ username: caseInsensitiveRegex(username) });
-    }
-
-    if(!user) {
-      throw new LoggedError("User not found");
-    }
+  static async setAccountStatus({ uid, status }): Promise<boolean> {
+    const user = await User.findOne({ _id: uid })
 
     user.status = status
     return !!await user.save()

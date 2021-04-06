@@ -3,7 +3,7 @@ import _ from 'lodash';
 import { customerPath } from "./ledger/ledger";
 
 import mongoose from "mongoose";
-import { caseInsensitiveRegex } from './utils';
+import { caseInsensitiveRegex, inputXOR, LoggedError } from './utils';
 // mongoose.set("debug", true);
 
 const Schema = mongoose.Schema;
@@ -199,7 +199,24 @@ UserSchema.index({
   coordinate: 1,
 });
 
+UserSchema.statics.getUser = async function({ username, phone }) {
+  inputXOR({ phone }, { username })
+  let user;
 
+  if(phone) {
+    user = await this.findOne({ phone })
+  } else {
+    user = await this.findByUsername({ username })
+  }
+
+  if(!user) {
+    throw new LoggedError("User not found");
+  }
+
+  return user;
+}
+
+// FIXME: Merge findByUsername and getUser
 UserSchema.statics.findByUsername = async function({ username }) {
   if(typeof username !== "string" || !username.match(regexUsername)) {
     return null
