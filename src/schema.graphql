@@ -142,6 +142,7 @@ type Query {
   getLastOnChainAddress: LastOnChainAddress
   usernameExists(username: String!): Boolean
   getUserDetails(phone: String, username: String): User
+  noauthUpdatePendingInvoice(username: String!, hash: String!): Boolean
 }
 
 type UpdateUser {
@@ -158,7 +159,7 @@ type Mutation {
   requestPhoneCode(phone: String): Success
   login(phone: String, code: Int, currency: String): Token
     @deprecated(reason: "currency is no longer user. to be remove after mobile update")
-  publicInvoice(username: String!): Invoice
+  noauthAddInvoice(username: String!): String
   onchain: OnChain
   invoice: Invoice
   earnCompleted(ids: [ID]): [Earn]
