@@ -154,7 +154,7 @@ const resolvers = {
       }))
     },
     usernameExists: async (_, { username }) => UserWallet.usernameExists({ username }),
-    getUserDetails: async (_, { phone, username }) => User.getUser({ phone, username })
+    getUserDetails: async (_, { phone, username }) => User.getUser({ phone, username }),
     noauthUpdatePendingInvoice: async (_, { hash, username }, { logger }) => {
       const wallet = await WalletFromUsername({ username, logger })
       return wallet.updatePendingInvoice({ hash })
