@@ -224,11 +224,11 @@ export abstract class UserWallet {
     return !!(await user.save());
   }
 
-  static async setAccountStatus({ uid, status }): Promise<boolean> {
+  static async setAccountStatus({ uid, status }): Promise<typeof User> {
     const user = await User.findOne({ _id: uid })
 
     user.status = status
-    return !!await user.save()
+    return await user.save()
   }
 
 }

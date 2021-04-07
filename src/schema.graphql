@@ -174,5 +174,5 @@ type Mutation {
   addDeviceToken(deviceToken: String): Success # to refactor with User?
   testMessage: Success # FIXME remove test
   addToMap(username: String!, title: String!, latitude: Float!, longitude: Float!): Boolean
-  setAccountStatus(phone: String, username: String, status: AccountStatus!): Boolean
+  setAccountStatus(phone: String, username: String, status: AccountStatus!): User
 }
