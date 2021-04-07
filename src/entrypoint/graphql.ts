@@ -153,10 +153,8 @@ const resolvers = {
         id: user.username
       }))
     },
-    usernameExists: async (_, { username }) => await UserWallet.usernameExists({ username }),
-    getUserDetails: async (_, { phone, username }, { logger }) => {
-      return UserWallet.getUserDetails({ phone, username });
-    },
+    usernameExists: async (_, { username }) => UserWallet.usernameExists({ username }),
+    getUserDetails: async (_, { phone, username }) => User.getUser({ phone, username })
   },
   Mutation: {
     requestPhoneCode: async (_, { phone }, { logger }) => ({ success: requestPhoneCode({ phone, logger }) }),
@@ -225,7 +223,10 @@ const resolvers = {
     addToMap: async (_, { username, title, latitude, longitude }, { }) => {
       return UserWallet.addToMap({ username, title, latitude, longitude });
     },
-    setAccountStatus: async (_, { username, phone, status }, { }) => UserWallet.setAccountStatus({ username, phone, status })
+    setAccountStatus: async (_, { username, phone, status }, { }) => {
+      const { _id: uid } = await User.getUser({ username, phone })
+      return UserWallet.setAccountStatus({ uid, status })
+    }
   }
 }
 
