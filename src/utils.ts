@@ -150,6 +150,15 @@ export const isInvoiceAlreadyPaidError = (err) => {
   return false
 }
 
-export const caseInsensitiveUsername = (username) => {
-  return new RegExp(`^${username}$`, 'i')
+export const caseInsensitiveRegex = (input) => {
+  return new RegExp(`^${input}$`, 'i')
+}
+
+// Throws an error if neither or both value1 and value2 are provided
+export const inputXOR = (arg1, arg2) => {
+  const [[key1, value1]] = Object.entries(arg1)
+  const [[key2, value2]] = Object.entries(arg2)
+  if(!(!value1 != !value2)) {
+    throw new LoggedError(`Either ${key1} or ${key2} is required, but not both`);
+  }
 }

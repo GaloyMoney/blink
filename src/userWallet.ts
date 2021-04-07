@@ -7,7 +7,7 @@ import { MainBook } from "./mongodb";
 import { sendNotification } from "./notifications/notification";
 import { User } from "./schema";
 import { ITransaction } from "./types";
-import { caseInsensitiveUsername, LoggedError } from "./utils";
+import { caseInsensitiveRegex, LoggedError, inputXOR } from "./utils";
 
 export abstract class UserWallet {
 
@@ -204,31 +204,6 @@ export abstract class UserWallet {
     await sendNotification({ user: this.user, title: `Your balance is \$${balanceUsd} (${balanceSatsPrettified} sats)`, logger: this.logger })
   }
 
-  static async getUserDetails({ phone, username }): Promise<typeof User> {
-    if(!(!phone != !username)) {
-      throw new LoggedError("Either phone or username is required, but not both");
-    }
-    let user;
-
-    if(phone) {
-      user = await User.findOne(
-        { phone },
-        { phone: 1, level: 1, created_at: 1, username: 1, title: 1, coordinate: 1 }
-      );
-    } else if(this.usernameExists({ username })) {
-      user = await User.findOne(
-        { username: caseInsensitiveUsername(username) },
-        { phone: 1, level: 1, created_at: 1, username: 1, title: 1, coordinate: 1 }
-      );
-    }
-
-    if(!user) {
-      throw new LoggedError("User not found");
-    }
-
-    return user;
-  }
-
   static async addToMap({ username, latitude, longitude, title, }): Promise<boolean> {
     if(!latitude || !longitude || !title) {
       throw new LoggedError(`missing input for ${username}: ${latitude}, ${longitude}, ${title}`);
@@ -245,7 +220,15 @@ export abstract class UserWallet {
       longitude
     };
 
-    user.title = title;
+    user.title = title
     return !!(await user.save());
   }
+
+  static async setAccountStatus({ uid, status }): Promise<typeof User> {
+    const user = await User.findOne({ _id: uid })
+
+    user.status = status
+    return user.save()
+  }
+
 }

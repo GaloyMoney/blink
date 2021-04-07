@@ -153,10 +153,8 @@ const resolvers = {
         id: user.username
       }))
     },
-    usernameExists: async (_, { username }) => await UserWallet.usernameExists({ username }),
-    getUserDetails: async (_, { phone, username }) => {
-      return UserWallet.getUserDetails({ phone, username });
-    },
+    usernameExists: async (_, { username }) => UserWallet.usernameExists({ username }),
+    getUserDetails: async (_, { phone, username }) => User.getUser({ phone, username }),
     noauthUpdatePendingInvoice: async (_, { hash, username }, { logger }) => {
       const wallet = await WalletFromUsername({ username, logger })
       return wallet.updatePendingInvoice({ hash })
@@ -225,8 +223,12 @@ const resolvers = {
       return { success: true }
     },
     addToMap: async (_, { username, title, latitude, longitude }, { }) => {
-      return await UserWallet.addToMap({ username, title, latitude, longitude });
+      return UserWallet.addToMap({ username, title, latitude, longitude });
     },
+    setAccountStatus: async (_, { username, phone, status }, { }) => {
+      const { _id: uid } = await User.getUser({ username, phone })
+      return UserWallet.setAccountStatus({ uid, status })
+    }
   }
 }
 

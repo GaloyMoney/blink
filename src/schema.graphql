@@ -86,6 +86,7 @@ type User {
   title: String
   created_at: String
   coordinate: Coordinate
+  status: AccountStatus
 }
 
 input InputUser {
@@ -155,6 +156,11 @@ type UpdateContact {
   setName(username: String, name: String): Boolean
 }
 
+enum AccountStatus {
+  active
+  locked
+}
+
 type Mutation {
   requestPhoneCode(phone: String): Success
   login(phone: String, code: Int, currency: String): Token
@@ -169,4 +175,5 @@ type Mutation {
   addDeviceToken(deviceToken: String): Success # to refactor with User?
   testMessage: Success # FIXME remove test
   addToMap(username: String!, title: String!, latitude: Float!, longitude: Float!): Boolean
+  setAccountStatus(phone: String, username: String, status: AccountStatus!): User
 }
