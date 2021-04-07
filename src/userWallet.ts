@@ -228,7 +228,7 @@ export abstract class UserWallet {
     const user = await User.findOne({ _id: uid })
 
     user.status = status
-    return await user.save()
+    return user.save()
   }
 
 }
