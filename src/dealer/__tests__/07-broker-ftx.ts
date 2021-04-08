@@ -4,10 +4,10 @@
 import { setupMongoConnection } from "../../mongodb"
 import { FtxDealerWallet } from "../FtxDealerWallet";
 import { baseLogger } from "../../utils";
-import { getTokenFromPhoneIndex } from "../../walletFactory";
 import { UserWallet } from "../../userWallet";
 import mongoose from "mongoose";
 import { User } from "../../schema";
+import { getTokenFromPhoneIndex } from "../../__tests__/helper"
 
 jest.mock('../../realtimePrice')
 

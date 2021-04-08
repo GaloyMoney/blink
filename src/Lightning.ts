@@ -196,6 +196,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     let destination, id, description
     let routeHint 
     let messages
+    let username
 
     if (params.invoice) {
       // TODO: replace this with invoices/bolt11/parsePaymentRequest function?
@@ -218,14 +219,15 @@ export const LightningMixin = (superclass) => class extends superclass {
       }
 
     } else {
-      if (!params.destination) {
-        const error = 'Pay requires either invoice or destination to be specified'
-        lightningLogger.error({ invoice: params.invoice, destination, success: false, error }, error)
+      if (!params.username) {
+        const error = `a username is required for push payment to the ${ yamlConfig.name }`
+        lightningLogger.warn({ success: false, error }, error)
         throw new LoggedError(error)
       }
 
       pushPayment = true
       destination = params.destination
+      username = params.username
 
       const preimage = randomBytes(preimageByteLength);
       id = createHash('sha256').update(preimage).digest().toString('hex');
@@ -251,15 +253,15 @@ export const LightningMixin = (superclass) => class extends superclass {
     return {
       // FIXME String: https://github.com/alexbosworth/lightning/issues/24
       tokens, mtokens: String(tokens * 1000), destination, pushPayment, id, routeHint, messages, max_fee,
-      memoInvoice: description, payment, cltv_delta, expires_at, features,
+      memoInvoice: description, payment, cltv_delta, expires_at, features, username
     }
   }
 
   async pay(params: IPaymentRequest): Promise<payInvoiceResult | Error> {
     let lightningLogger = this.logger.child({ topic: "payment", protocol: "lightning", transactionType: "payment" })
 
-    const { tokens, mtokens, destination, pushPayment, id, routeHint, messages, memoInvoice, payment, cltv_delta, features, max_fee } = await this.validate(params, lightningLogger)
-    const { memo: memoPayer, username: input_username } = params
+    const { tokens, mtokens, username: input_username, destination, pushPayment, id, routeHint, messages, memoInvoice, payment, cltv_delta, features, max_fee } = await this.validate(params, lightningLogger)
+    const { memo: memoPayer } = params
 
     // not including message because it contains the preimage and we don't want to log this
     lightningLogger = lightningLogger.child({ decoded: { tokens, destination, pushPayment, id, routeHint, memoInvoice, memoPayer, payment, cltv_delta, features }, params })
@@ -273,19 +275,14 @@ export const LightningMixin = (superclass) => class extends superclass {
       const balance = await this.getBalances(lock)
 
       // On us transaction
-      if (destination === await this.getNodePubkey()) {
+      // if destination is empty, we consider this is also an on-us transaction
+      if (destination === await this.getNodePubkey() || destination === "") {
         const lightningLoggerOnUs = lightningLogger.child({ onUs: true, fee: 0 })
 
         let payeeUser
 
         if (pushPayment) {
           // pay through username
-          
-          if (!input_username) {
-            const error = `a username is required for push payment to the ${ yamlConfig.name }`
-            lightningLoggerOnUs.warn({ success: false, error }, error)
-            throw new LoggedError(error)
-          }
           payeeUser = await User.findByUsername({ username: input_username })
 
         } else {

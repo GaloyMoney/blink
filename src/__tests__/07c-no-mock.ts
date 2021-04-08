@@ -2,8 +2,8 @@
  * @jest-environment node
  */
 import { setupMongoConnection } from "../mongodb";
-import { getTokenFromPhoneIndex } from "../walletFactory";
 import mongoose from "mongoose";
+import { getTokenFromPhoneIndex } from "./helper";
 
 jest.mock('../realtimePrice')
 

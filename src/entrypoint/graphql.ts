@@ -164,17 +164,10 @@ const resolvers = {
     requestPhoneCode: async (_, { phone }, { logger }) => ({ success: requestPhoneCode({ phone, logger }) }),
     login: async (_, { phone, code }, { logger }) => ({ token: login({ phone, code, logger }) }),
     updateUser: async (_, __, { wallet }) => ({
-      // FIXME manage uid
-      // TODO only level for now
-      setLevel: async () => {
-        const result = await wallet.setLevel({ level: 1 })
-        return {
-          id: wallet.uid,
-          level: result.level,
-        }
-      },
       setUsername: async ({ username }) => await wallet.setUsername({ username }),
-      setLanguage: async ({ language }) => await wallet.setLanguage({ language })
+      setLanguage: async ({ language }) => await wallet.setLanguage({ language }),
+      updateUsername: (input) => wallet.updateUsername(input),
+      updateLanguage: (input) => wallet.updateLanguage(input),
     }),
     updateContact: async (_, __, { user }) => ({
       setName: async ({ username, name }) => {
@@ -296,7 +289,7 @@ async function startApolloServer() {
       const user = !!uid ? await User.findOne({ _id: uid }) : null
       // @ts-ignore
       const logger = graphqlLogger.child({ token, id: context.req.id, body: context.req.body })
-      const wallet = (!!uid && user.status !== "locked") ? await WalletFactory({ user, logger }) : null
+      const wallet = (!!user && user.status !== "locked") ? await WalletFactory({ user, logger }) : null
       return {
         ...context,
         logger,
