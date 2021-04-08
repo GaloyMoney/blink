@@ -89,11 +89,6 @@ type User {
   status: AccountStatus
 }
 
-input InputUser {
-  id: ID
-  level: Int
-}
-
 type Success {
   success: Boolean
 }
@@ -138,7 +133,7 @@ type Query {
   earnList: [Earn]
   me: User
   maps: [Marker]
-  buildParameters(appVersion: String, buildVersion: String, os: String): BuildParameter
+  buildParameters(appVersion: String @deprecated, buildVersion: String @deprecated, os: String @deprecated): BuildParameter
   nodeStats: NodeStats
   getLastOnChainAddress: LastOnChainAddress
   usernameExists(username: String!): Boolean
@@ -147,9 +142,10 @@ type Query {
 }
 
 type UpdateUser {
-  setLanguage(language: String): Boolean
-  setLevel(user: InputUser): User
-  setUsername(username: String!): Boolean
+  setLanguage(language: String): Boolean @deprecated
+  setUsername(username: String!): Boolean @deprecated
+  updateLanguage(language: String!): User
+  updateUsername(username: String!): User
 }
 
 type UpdateContact {
