@@ -26,7 +26,7 @@ then
   kubectl create namespace $INGRESS_NAMESPACE --dry-run -o yaml | kubectl apply -f -
   kubectl create namespace cert-manager --dry-run -o yaml | kubectl apply -f -
 
-  helm -n cert-manager upgrade -i cert-manager jetstack/cert-manager --set installCRDs=true ---version=v1.2.0
+  helm -n cert-manager upgrade -i cert-manager jetstack/cert-manager --set installCRDs=true --version=v1.2.0
 
   # Uncomment the following line if not using Google cloud and enter a static ip obtained from your cloud provider
   # export STATIC_IP=xxx.xxx.xxx.xxx
