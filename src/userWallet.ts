@@ -7,7 +7,7 @@ import { MainBook } from "./mongodb";
 import { sendNotification } from "./notifications/notification";
 import { User } from "./schema";
 import { ITransaction } from "./types";
-import { caseInsensitiveUsername, LoggedError, sleep } from "./utils";
+import { caseInsensitiveUsername, LoggedError } from "./utils";
 
 export abstract class UserWallet {
 
