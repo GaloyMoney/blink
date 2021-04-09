@@ -165,10 +165,10 @@ export const inputXOR = (arg1, arg2) => {
 
 export const withdrawalLimitHit = async ({accountPath}): Promise<boolean> => {
   const timestampYesterday = new Date(Date.now() - (24 * 60 * 60 * 1000))
-  const [result] = await Transaction.aggregate(
+  const [result] = await Transaction.aggregate([
     {$match: {"accounts": accountPath, type: {$ne: 'on_us'}, "timestamp": { $gte: timestampYesterday }}},
     {$group: {_id: null, outgoingSats: { $sum: "$debit" }}}
-    )
+  ])
   const { outgoingSats } = result || {}
   if(outgoingSats >= 1000000) {
     return true
