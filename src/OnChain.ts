@@ -77,10 +77,6 @@ export const OnChainMixin = (superclass) => class extends superclass {
       throw Error("amount can't be negative")
     }
 
-    if (!this.user.oldEnoughForWithdrawal) {
-      throw Error("new account can't withdraw")
-    }
-
     return await redlock({ path: this.user._id, logger: onchainLogger }, async (lock) => {
 
       const balance = await this.getBalances(lock)
@@ -124,8 +120,12 @@ export const OnChainMixin = (superclass) => class extends superclass {
       }
 
       onchainLogger = onchainLogger.child({onUs: false})
+      
+      if (!this.user.oldEnoughForWithdrawal) {
+        throw Error("new account can't withdraw")
+      }
 
-      if(await withdrawalLimitHit({accountPath: this.user.accountPath, amount})) {
+      if (await this.user.withdrawalLimitHit()) {
         const error = "Cannot withdraw more than 1m sats in 24 hours"
         onchainLogger.error({ success: false }, error)
         throw new LoggedError(error)
