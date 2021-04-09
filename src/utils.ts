@@ -162,16 +162,3 @@ export const inputXOR = (arg1, arg2) => {
     throw new LoggedError(`Either ${key1} or ${key2} is required, but not both`);
   }
 }
-
-export const withdrawalLimitHit = async ({accountPath, amount}): Promise<boolean> => {
-  const timestampYesterday = new Date(Date.now() - (24 * 60 * 60 * 1000))
-  const [result] = await Transaction.aggregate([
-    {$match: {"accounts": accountPath, type: {$ne: 'on_us'}, "timestamp": { $gte: timestampYesterday }}},
-    {$group: {_id: null, outgoingSats: { $sum: "$debit" }}}
-  ])
-  const { outgoingSats } = result || {}
-  if(outgoingSats + amount >= 1000000) {
-    return true
-  }
-  return false
-}

@@ -7,7 +7,7 @@ import { lnd } from "./lndConfig";
 import { redlock } from "./lock";
 import { MainBook } from "./mongodb";
 import { IOnChainPayment, ISuccess, ITransaction } from "./types";
-import { amountOnVout, baseLogger, bitcoindDefaultClient, btc2sat, LoggedError, LOOK_BACK, myOwnAddressesOnVout, withdrawalLimitHit } from "./utils";
+import { amountOnVout, baseLogger, bitcoindDefaultClient, btc2sat, LoggedError, LOOK_BACK, myOwnAddressesOnVout } from "./utils";
 import { UserWallet } from "./userWallet";
 import { Transaction, User } from "./schema";
 import { getHeight } from "lightning"
