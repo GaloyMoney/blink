@@ -212,3 +212,11 @@ it('negative amount should be rejected', async () => {
   const { address } = await lnService.createChainAddress({ format: 'p2wpkh', lnd: lndOutside1 })
   await expect(userWallet0.onChainPay({ address, amount })).rejects.toThrow()
 })
+
+it('fails to make onchain payment when withdrawLimit hit', async () => {
+  const { address } = await lnService.createChainAddress({
+    lnd: lndOutside1,
+    format: 'p2wpkh',
+  })
+  await expect(userWallet0.onChainPay({ address, amount: 1e6 })).rejects.toThrow()
+})
