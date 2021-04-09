@@ -359,7 +359,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       }
 
       // "normal" transaction: paying another lightning node
-      if(await withdrawalLimitHit({accountPath: this.user.accountPath})) {
+      if(await withdrawalLimitHit({accountPath: this.user.accountPath, amount: tokens})) {
         const error = "Cannot withdraw more than 1m sats in 24 hours"
         lightningLogger.error({ success: false }, error)
         throw new LoggedError(error)

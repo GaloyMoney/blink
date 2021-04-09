@@ -125,7 +125,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
       onchainLogger = onchainLogger.child({onUs: false})
 
-      if(await withdrawalLimitHit({accountPath: this.user.accountPath})) {
+      if(await withdrawalLimitHit({accountPath: this.user.accountPath, amount})) {
         const error = "Cannot withdraw more than 1m sats in 24 hours"
         onchainLogger.error({ success: false }, error)
         throw new LoggedError(error)
