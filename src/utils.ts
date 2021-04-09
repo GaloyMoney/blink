@@ -16,7 +16,7 @@ export const LOOK_BACK = 2016
 
 // @ts-ignore
 import { GraphQLError } from "graphql";
-import { User } from "./schema";
+import { Transaction, User } from "./schema";
 
 
 // FIXME: super ugly hack.

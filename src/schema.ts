@@ -183,6 +183,19 @@ UserSchema.virtual('oldEnoughForWithdrawal').get(function(this: typeof UserSchem
   return (Date.now() - this.created_at) > 1000 * 60 * 60 * 24 * 7
 })
 
+UserSchema.methods.withdrawalLimitHit = async function({amount}) {
+  const timestampYesterday = new Date(Date.now() - (24 * 60 * 60 * 1000))
+  const [result] = await Transaction.aggregate([
+    {$match: {"accounts": this.accountPath, type: {$ne: 'on_us'}, "timestamp": { $gte: timestampYesterday }}},
+    {$group: {_id: null, outgoingSats: { $sum: "$debit" }}}
+  ])
+  const { outgoingSats } = result || {outgoingSats: 0}
+  if(outgoingSats + amount >= 1000000) {
+    return true
+  }
+  return false
+}
+
 // user is considered active if there has been one transaction of more than 1000 sats in the last 30 days
 UserSchema.virtual('userIsActive').get(async function(this: typeof UserSchema) {
   const timestamp30DaysAgo = new Date(Date.now() - (30 * 24 * 60 * 60 * 1000))
