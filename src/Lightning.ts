@@ -8,7 +8,7 @@ import { MainBook } from "./mongodb";
 import { transactionNotification } from "./notifications/payment";
 import { addTransactionLndPayment, addTransactionLndReceipt, addTransactionOnUsPayment } from "./ledger/transaction";
 import { IAddInvoiceRequest, IFeeRequest, IPaymentRequest } from "./types";
-import { addContact, isInvoiceAlreadyPaidError, LoggedError, timeout } from "./utils";
+import { addContact, isInvoiceAlreadyPaidError, LoggedError, timeout, withdrawalLimitHit } from "./utils";
 import { UserWallet } from "./userWallet";
 import { InvoiceUser, Transaction, User } from "./schema";
 import { createInvoice, getWalletInfo, decodePaymentRequest, cancelHodlInvoice, payViaPaymentDetails, payViaRoutes, getPayment, getInvoice } from "lightning"
@@ -359,7 +359,11 @@ export const LightningMixin = (superclass) => class extends superclass {
       }
 
       // "normal" transaction: paying another lightning node
-
+      if(await withdrawalLimitHit({accountPath: this.user.accountPath})) {
+        const error = "Cannot withdraw more than 1m sats in 24 hours"
+        lightningLogger.error({ success: false }, error)
+        throw new LoggedError(error)
+      }
       // TODO: manage push payment for other node as well
       if (pushPayment) {
         const error = "no push payment to other wallet (yet)"

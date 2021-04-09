@@ -16,7 +16,7 @@ export const LOOK_BACK = 2016
 
 // @ts-ignore
 import { GraphQLError } from "graphql";
-import { User } from "./schema";
+import { Transaction, User } from "./schema";
 
 
 // FIXME: super ugly hack.
@@ -161,4 +161,17 @@ export const inputXOR = (arg1, arg2) => {
   if(!(!value1 != !value2)) {
     throw new LoggedError(`Either ${key1} or ${key2} is required, but not both`);
   }
+}
+
+export const withdrawalLimitHit = async ({accountPath}): Promise<boolean> => {
+  const timestampYesterday = new Date(Date.now() - (24 * 60 * 60 * 1000))
+  const [result] = await Transaction.aggregate(
+    {$match: {"accounts": accountPath, type: {$ne: 'on_us'}, "timestamp": { $gte: timestampYesterday }}},
+    {$group: {_id: null, outgoingSats: { $sum: "$debit" }}}
+    )
+  const { outgoingSats } = result || {}
+  if(outgoingSats >= 1000000) {
+    return true
+  }
+  return false
 }

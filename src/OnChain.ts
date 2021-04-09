@@ -7,7 +7,7 @@ import { lnd } from "./lndConfig";
 import { redlock } from "./lock";
 import { MainBook } from "./mongodb";
 import { IOnChainPayment, ISuccess, ITransaction } from "./types";
-import { amountOnVout, baseLogger, bitcoindDefaultClient, btc2sat, LoggedError, LOOK_BACK, myOwnAddressesOnVout } from "./utils";
+import { amountOnVout, baseLogger, bitcoindDefaultClient, btc2sat, LoggedError, LOOK_BACK, myOwnAddressesOnVout, withdrawalLimitHit } from "./utils";
 import { UserWallet } from "./userWallet";
 import { Transaction, User } from "./schema";
 import { getHeight } from "lightning"
@@ -120,6 +120,12 @@ export const OnChainMixin = (superclass) => class extends superclass {
       }
 
       onchainLogger = onchainLogger.child({onUs: false})
+
+      if(await withdrawalLimitHit({accountPath: this.user.accountPath})) {
+        const error = "Cannot withdraw more than 1m sats in 24 hours"
+        onchainLogger.error({ success: false }, error)
+        throw new LoggedError(error)
+      }
 
       const { chain_balance: onChainBalance } = await lnService.getChainBalance({ lnd })
 
