@@ -13,6 +13,14 @@ import { checkIsBalanced, getUserWallet, lndMain, lndOutside1, mockGetExchangeBa
 
 jest.mock('../realtimePrice')
 
+const date = Date.now() + 1000 * 60 * 60 * 24 * 8
+
+jest
+.spyOn(global.Date, 'now')
+.mockImplementation(() =>
+new Date(date).valueOf()
+);
+
 
 let initBlockCount
 let initialBalanceUser0
@@ -163,6 +171,7 @@ it('Sends onchain payment _with memo', async () => {
   expect((first(txs) as any).description).toBe(memo)
 })
 
+
 it('makes onchain on-us transaction with memo', async () => {
   const memo = "this is my onchain memo"
   const user3Address = await userWallet3.getOnChainAddress()
@@ -196,4 +205,10 @@ it('fails to make onchain payment when insufficient balance', async () => {
 
   //should fail because user does not have balance to pay for on-chain fee
   await expect(userWallet3.onChainPay({ address: address as string, amount: initialBalanceUser3 })).rejects.toThrow()
+})
+
+it('negative amount should be rejected', async () => {
+  const amount = - 1000
+  const { address } = await lnService.createChainAddress({ format: 'p2wpkh', lnd: lndOutside1 })
+  await expect(userWallet0.onChainPay({ address, amount })).rejects.toThrow()
 })

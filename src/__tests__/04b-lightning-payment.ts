@@ -21,6 +21,14 @@ jest.mock('../notifications/notification')
 import { sendNotification } from "../notifications/notification";
 jest.mock('../realtimePrice')
 
+const date = Date.now() + 1000 * 60 * 60 * 24 * 8
+
+jest
+.spyOn(global.Date, 'now')
+.mockImplementation(() =>
+new Date(date).valueOf()
+);
+
 
 
 beforeAll(async () => {
@@ -383,6 +391,11 @@ it('payInvoice_ToAnotherGaloyUserWith2DifferentMemo', async () => {
 it('payInvoiceToSelf', async () => {
   const invoice = await userWallet1.addInvoice({ value: 1000, memo: "self payment" })
   await expect(userWallet1.pay({ invoice })).rejects.toThrow()
+})
+
+it('negative amount should be rejected', async () => {
+  const destination = await userWallet0.getNodePubkey()
+  expect(userWallet1.pay({ destination, username: userWallet0.user.username, amount: - amountInvoice })).rejects.toThrow()
 })
 
 it('onUs pushPayment', async () => {

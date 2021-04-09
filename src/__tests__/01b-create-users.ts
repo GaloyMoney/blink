@@ -83,6 +83,38 @@ describe('username tests', () => {
     expect(userWallet2.user.title).toBeTruthy()
   })
 
+  it('new user cannot withdraw', async () => {
+    expect(userWallet2.user.oldEnoughForWithdrawal).toBeFalsy()
+
+    // in 6 days:
+    const date = Date.now() + 1000 * 60 * 60 * 24 * 6
+
+    jest
+      .spyOn(global.Date, 'now')
+      .mockImplementationOnce(() =>
+      new Date(date).valueOf()
+    );
+
+    expect(userWallet2.user.oldEnoughForWithdrawal).toBeFalsy()
+  })
+
+  it('old user can withdraw', async () => {
+    expect(userWallet2.user.oldEnoughForWithdrawal).toBeFalsy()
+
+    // TODO make this configurable
+    // in 8 days:
+    const date = Date.now() + 1000 * 60 * 60 * 24 * 8
+
+    jest
+      .spyOn(global.Date, 'now')
+      .mockImplementationOnce(() =>
+      new Date(date).valueOf()
+    );
+
+    expect(userWallet2.user.oldEnoughForWithdrawal).toBeTruthy()
+  })
+
+
   it('does not allow re-setting username', async () => {
     await expect(userWallet0.setUsername({ username: "abc" })).rejects.toThrow()
   })
