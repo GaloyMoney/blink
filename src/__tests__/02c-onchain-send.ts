@@ -218,5 +218,5 @@ it('fails to make onchain payment when withdrawLimit hit', async () => {
     lnd: lndOutside1,
     format: 'p2wpkh',
   })
-  await expect(userWallet0.onChainPay({ address, amount: 1e6 })).rejects.toThrow()
+  await expect(userWallet0.onChainPay({ address, amount: 2e6 })).rejects.toThrow()
 })

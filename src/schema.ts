@@ -1,6 +1,7 @@
 import _ from 'lodash';
 
 import { customerPath } from "./ledger/ledger";
+import { yamlConfig } from "./config"
 
 import mongoose from "mongoose";
 import { caseInsensitiveRegex, inputXOR, LoggedError } from './utils';
@@ -190,7 +191,7 @@ UserSchema.methods.withdrawalLimitHit = async function({amount}) {
     {$group: {_id: null, outgoingSats: { $sum: "$debit" }}}
   ])
   const { outgoingSats } = result || {outgoingSats: 0}
-  if(outgoingSats + amount >= 1000000) {
+  if(outgoingSats + amount >= yamlConfig.withdrawLimit) {
     return true
   }
   return false

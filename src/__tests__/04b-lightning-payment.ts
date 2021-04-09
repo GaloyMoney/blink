@@ -476,7 +476,7 @@ it('fails to pay regular invoice with separate amt', async () => {
 })
 
 it('fails to pay when withdrawLimit exceeded', async () => {
-  const { request } = await createInvoice({ lnd: lndOutside1, tokens: 1e6 })
+  const { request } = await createInvoice({ lnd: lndOutside1, tokens: 2e6 })
   await expect(userWallet0.pay({ invoice: request })).rejects.toThrow()
 })
 
