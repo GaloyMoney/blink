@@ -359,14 +359,14 @@ export const LightningMixin = (superclass) => class extends superclass {
       }
 
       // "normal" transaction: paying another lightning node
-      if(await withdrawalLimitHit({accountPath: this.user.accountPath, amount: tokens})) {
+      if (!this.user.oldEnoughForWithdrawal) {
+        throw Error("new account can't withdraw")
+      }
+
+      if (await this.user.withdrawalLimitHit()) {
         const error = "Cannot withdraw more than 1m sats in 24 hours"
         lightningLogger.error({ success: false }, error)
         throw new LoggedError(error)
-      }
-
-      if (!this.user.oldEnoughForWithdrawal) {
-        throw Error("new account can't withdraw")
       }
 
       // TODO: manage push payment for other node as well
