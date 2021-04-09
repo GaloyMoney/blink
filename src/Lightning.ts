@@ -247,6 +247,10 @@ export const LightningMixin = (superclass) => class extends superclass {
     }
 
     tokens = !!tokens ? tokens : params.amount
+  
+    if (tokens <= 0) {
+      throw Error("amount can't be negative")
+    }
 
     const max_fee = Math.floor(Math.max(FEECAP * tokens, FEEMIN))
 
