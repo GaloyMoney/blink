@@ -73,6 +73,10 @@ export const OnChainMixin = (superclass) => class extends superclass {
   async onChainPay({ address, amount, memo }: IOnChainPayment): Promise<ISuccess> {
     let onchainLogger = this.logger.child({ topic: "payment", protocol: "onchain", transactionType: "payment", address, amount, memo })
 
+    if (amount <= 0) {
+      throw Error("amount can't be negative")
+    }
+
     return await redlock({ path: this.user._id, logger: onchainLogger }, async (lock) => {
 
       const balance = await this.getBalances(lock)
