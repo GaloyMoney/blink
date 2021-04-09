@@ -189,7 +189,7 @@ UserSchema.methods.withdrawalLimitHit = async function({amount}) {
     {$match: {"accounts": this.accountPath, type: {$ne: 'on_us'}, "timestamp": { $gte: timestampYesterday }}},
     {$group: {_id: null, outgoingSats: { $sum: "$debit" }}}
   ])
-  const { outgoingSats } = result || {}
+  const { outgoingSats } = result || {outgoingSats: 0}
   if(outgoingSats + amount >= 1000000) {
     return true
   }
