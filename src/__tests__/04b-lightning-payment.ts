@@ -385,6 +385,11 @@ it('payInvoiceToSelf', async () => {
   await expect(userWallet1.pay({ invoice })).rejects.toThrow()
 })
 
+it('negative amount should be rejected', async () => {
+  const destination = await userWallet0.getNodePubkey()
+  expect(userWallet1.pay({ destination, username: userWallet0.user.username, amount: - amountInvoice })).rejects.toThrow()
+})
+
 it('onUs pushPayment', async () => {
   const destination = await userWallet0.getNodePubkey()
   const res = await userWallet1.pay({ destination, username: userWallet0.user.username, amount: amountInvoice })

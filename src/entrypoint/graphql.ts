@@ -302,11 +302,13 @@ async function startApolloServer() {
       // FIXME
       if(_.startsWith(err.message, customLoggerPrefix)) {
         err.message = err.message.slice(customLoggerPrefix.length)
-      } else {
-        baseLogger.error({ err }, "graphql catch-all error");
-      }
+      } 
+      
+      baseLogger.error({ err }, "graphql catch-all error");
+      
       // return defaultErrorFormatter(err)
-      return err
+      // return err
+      return new Error('Internal server error');
     },
   })
 
