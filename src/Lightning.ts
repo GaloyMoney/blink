@@ -360,6 +360,10 @@ export const LightningMixin = (superclass) => class extends superclass {
 
       // "normal" transaction: paying another lightning node
 
+      if (!this.user.oldEnoughForWithdrawal) {
+        throw Error("new account can't withdraw")
+      }
+
       // TODO: manage push payment for other node as well
       if (pushPayment) {
         const error = "no push payment to other wallet (yet)"

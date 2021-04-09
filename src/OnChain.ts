@@ -77,6 +77,10 @@ export const OnChainMixin = (superclass) => class extends superclass {
       throw Error("amount can't be negative")
     }
 
+    if (!this.user.oldEnoughForWithdrawal) {
+      throw Error("new account can't withdraw")
+    }
+
     return await redlock({ path: this.user._id, logger: onchainLogger }, async (lock) => {
 
       const balance = await this.getBalances(lock)

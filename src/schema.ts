@@ -178,6 +178,11 @@ UserSchema.virtual('accountPath').get(function(this: typeof UserSchema) {
   return customerPath(this._id)
 })
 
+UserSchema.virtual('oldEnoughForWithdrawal').get(function(this: typeof UserSchema) {
+  // TODO make this configurable
+  return (Date.now() - this.created_at) > 1000 * 60 * 60 * 24 * 7
+})
+
 // user is considered active if there has been one transaction of more than 1000 sats in the last 30 days
 UserSchema.virtual('userIsActive').get(async function(this: typeof UserSchema) {
   const timestamp30DaysAgo = new Date(Date.now() - (30 * 24 * 60 * 60 * 1000))
