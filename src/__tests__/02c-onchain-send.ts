@@ -13,6 +13,14 @@ import { checkIsBalanced, getUserWallet, lndMain, lndOutside1, mockGetExchangeBa
 
 jest.mock('../realtimePrice')
 
+const date = Date.now() + 1000 * 60 * 60 * 24 * 8
+
+jest
+.spyOn(global.Date, 'now')
+.mockImplementation(() =>
+new Date(date).valueOf()
+);
+
 
 let initBlockCount
 let initialBalanceUser0
