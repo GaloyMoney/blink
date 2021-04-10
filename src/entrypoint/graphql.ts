@@ -289,7 +289,7 @@ async function startApolloServer() {
       const user = !!uid ? await User.findOne({ _id: uid }) : null
       // @ts-ignore
       const logger = graphqlLogger.child({ token, id: context.req.id, body: context.req.body })
-      const wallet = (!!user && user.status !== "locked") ? await WalletFactory({ user, logger }) : null
+      const wallet = (!!user && user.status === "active") ? await WalletFactory({ user, logger }) : null
       return {
         ...context,
         logger,
