@@ -4,7 +4,7 @@ import { PhoneCode, User } from "./schema";
 import { createToken } from "./jwt"
 import { yamlConfig } from "./config";
 
-import { randomIntFromInterval } from "./utils"
+import { baseLogger, randomIntFromInterval } from "./utils"
 
 const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER
 const getTwilioClient = () => {
@@ -29,6 +29,12 @@ export const sendText = async ({ body, to, logger }) => {
   }
 
   logger.info({to}, "send text succesfully")
+}
+
+export const getCarrier = async (phone: string) => {
+  const result = await getTwilioClient().lookups.phoneNumbers(phone).fetch({type: ['carrier']})
+  baseLogger.info({result}, "result carrier info")
+  return result
 }
 
 export const requestPhoneCode = async ({ phone, logger }) => {
@@ -109,11 +115,27 @@ export const login = async ({ phone, code, logger }: ILogin) => {
       subLogger.info({ phone } , "a new user has register")
     }
 
+    // TODO
+    // if (yamlConfig.carrierRegexFilter)  {
+    // 
+    // }
+    //
+    // only fetch info once
+    if (user.twilio.countryCode == undefined) {
+      try {
+        const result = await getCarrier(phone)
+        user.twilio = result
+        await user.save()
+      } catch (err) {
+        subLogger.error({err}, "impossible to fetch carrier")
+      }
+    }
+
     const network = process.env.NETWORK
     return createToken({ uid: user._id, network })
     
   } catch (err) {
-    subLogger.error({err})
+    subLogger.error({err}, "login issue")
     throw err
   }
 }

@@ -73,11 +73,27 @@ const UserSchema = new Schema({
     type: Number,
     default: 1
   },
+
+  // TODO: refactor, have phone and twilio metadata in the same sub-object.
   phone: { // TODO we should store country as a separate string
     type: String,
     required: true,
     unique: true,
   },
+  twilio: {
+    carrier: {
+      error_code: String , // check this is the right syntax
+      mobile_country_code: String,
+      mobile_network_code: String,
+      name: String,
+      type: {
+        types: String,
+        enum: ["landline", "voip", "mobile"]
+      }
+    },
+    countryCode: String,
+  },
+
   username: {
     type: String,
     match: [regexUsername, "Username can only have alphabets, numbers and underscores"],
