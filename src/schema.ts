@@ -207,7 +207,7 @@ UserSchema.methods.withdrawalLimitHit = async function({amount}) {
     {$group: {_id: null, outgoingSats: { $sum: "$debit" }}}
   ])
   const { outgoingSats } = result || {outgoingSats: 0}
-  if(outgoingSats + amount >= yamlConfig.withdrawLimit) {
+  if(outgoingSats + amount >= yamlConfig.withdrawalLimit) {
     return true
   }
   return false

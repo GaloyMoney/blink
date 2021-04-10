@@ -8,7 +8,9 @@ import mongoose from "mongoose";
 import { onchainTransactionEventHandler } from "../entrypoint/trigger";
 import { MainBook, setupMongoConnection } from "../mongodb";
 import { getTitle } from "../notifications/payment";
+import { Transaction } from '../schema';
 import { bitcoindDefaultClient, sleep } from "../utils";
+import { yamlConfig } from "../config"
 import { checkIsBalanced, getUserWallet, lndMain, lndOutside1, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "./helper";
 
 jest.mock('../realtimePrice')
@@ -213,10 +215,19 @@ it('negative amount should be rejected', async () => {
   await expect(userWallet0.onChainPay({ address, amount })).rejects.toThrow()
 })
 
-it('fails to make onchain payment when withdrawLimit hit', async () => {
+it('fails to make onchain payment when withdrawalLimit hit', async () => {
   const { address } = await lnService.createChainAddress({
     lnd: lndOutside1,
     format: 'p2wpkh',
   })
-  await expect(userWallet0.onChainPay({ address, amount: 2e6 })).rejects.toThrow()
+
+  const timestampYesterday = new Date(Date.now() - (24 * 60 * 60 * 1000))
+  const [result] = await Transaction.aggregate([
+    {$match: {"accounts": userWallet0.accountPath, type: {$ne: 'on_us'}, "timestamp": { $gte: timestampYesterday }}},
+    {$group: {_id: null, outgoingSats: { $sum: "$debit" }}}
+  ])
+  const { outgoingSats } = result || {outgoingSats: 0}
+  const amount = yamlConfig.withdrawalLimit - outgoingSats
+
+  await expect(userWallet0.onChainPay({ address, amount })).rejects.toThrow()
 })
