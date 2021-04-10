@@ -1,6 +1,7 @@
 import _ from 'lodash';
 
 import { customerPath } from "./ledger/ledger";
+import { yamlConfig } from "./config"
 
 import mongoose from "mongoose";
 import { caseInsensitiveRegex, inputXOR, LoggedError } from './utils';
@@ -182,6 +183,19 @@ UserSchema.virtual('oldEnoughForWithdrawal').get(function(this: typeof UserSchem
   // TODO make this configurable
   return (Date.now() - this.created_at) > 1000 * 60 * 60 * 24 * 7
 })
+
+UserSchema.methods.withdrawalLimitHit = async function({amount}) {
+  const timestampYesterday = new Date(Date.now() - (24 * 60 * 60 * 1000))
+  const [result] = await Transaction.aggregate([
+    {$match: {"accounts": this.accountPath, type: {$ne: 'on_us'}, "timestamp": { $gte: timestampYesterday }}},
+    {$group: {_id: null, outgoingSats: { $sum: "$debit" }}}
+  ])
+  const { outgoingSats } = result || {outgoingSats: 0}
+  if(outgoingSats + amount >= yamlConfig.withdrawLimit) {
+    return true
+  }
+  return false
+}
 
 // user is considered active if there has been one transaction of more than 1000 sats in the last 30 days
 UserSchema.virtual('userIsActive').get(async function(this: typeof UserSchema) {

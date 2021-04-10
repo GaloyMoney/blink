@@ -475,6 +475,10 @@ it('fails to pay regular invoice with separate amt', async () => {
   await expect(userWallet1.pay({ invoice: request, amount: amountInvoice })).rejects.toThrow()
 })
 
+it('fails to pay when withdrawLimit exceeded', async () => {
+  const { request } = await createInvoice({ lnd: lndOutside1, tokens: 2e6 })
+  await expect(userWallet0.pay({ invoice: request })).rejects.toThrow()
+})
 
 // it('testDbTransaction', async () => {
 //   //TODO try to fetch simulataneously (ie: with Premise.all[])

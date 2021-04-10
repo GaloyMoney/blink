@@ -17,4 +17,3 @@ try {
 }
 
 export const yamlConfig = { ... defaultConfig, ...customConfig }
-baseLogger.info({yamlConfig}, "config loaded")
