@@ -63,7 +63,7 @@ cron:
   schedule: "0,10,20,30,40,50 * * * *"
 - name: mongo-backup
   command: "/var/backup.sh"
-  schedule: "0 4 * * *"
+  schedule: "0 * * * *"
 
 
 mongobackup:
