@@ -48,7 +48,7 @@ test_accounts:
   code: 321321
   currency: "BTC"
 
-withdrawLimit: 2000000
+withdrawalLimit: 2000000
 
 # TODO
 # carrierRegexFilter: ""
