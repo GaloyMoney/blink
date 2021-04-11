@@ -66,8 +66,7 @@ const resolvers = {
   Query: {
     me: async (_, __, { uid, user }) => {
       const { phone, username, contacts, language } = user
-      user.lastConnection = new Date()
-      await user.save()
+
       return {
         id: uid,
         level: 1,
