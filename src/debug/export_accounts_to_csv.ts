@@ -3,8 +3,7 @@ import { customerPath } from "../ledger/ledger";
 import { MainBook, setupMongoConnectionSecondary } from "../mongodb";
 import { Transaction, User } from "../schema";
 import { createObjectCsvWriter} from "csv-writer"
-import { baseLogger } from "../utils";
-import _ from "lodash"
+import * as _ from "lodash"
 
 // need to set MONGODB_ADDRESS to call the script
 // ie: MONGODB_ADDRESS=localhost ts-node src/debug/export_accounts_to_csv.ts
@@ -79,7 +78,7 @@ const exportUsers = async () => {
   const records: any[] = []
 
   // TODO filter with USD / BTC currency
-  const result = await Transaction.aggregate([
+  const aggregateTxs = await Transaction.aggregate([
     {
       $group: {
         _id: "$accounts",
@@ -90,9 +89,9 @@ const exportUsers = async () => {
     }
   ])
   
-  baseLogger.info({result})
-
   for (const user of users) {
+
+    console.log(`processing ${user._id}`)
 
     const record = {
       uid: user._id,
@@ -115,7 +114,7 @@ const exportUsers = async () => {
 
     
     try {
-      const { totalDebit, totalCredit, countTxs } = _.find(result, {"_id": user.accountPath})
+      const { totalDebit, totalCredit, countTxs } = _.find(aggregateTxs, {"_id": user.accountPath})
       record["totalDebit"] = totalDebit
       record["totalCredit"] = totalCredit
       record["countTxs"] = countTxs
