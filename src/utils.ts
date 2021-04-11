@@ -33,7 +33,7 @@ export class LoggedError extends GraphQLError {
   }
 }
 
-const PROXY_CHECK_APIKEY = yamlConfig.PROXY_CHECK_APIKEY
+const PROXY_CHECK_APIKEY = yamlConfig?.PROXY_CHECK_APIKEY
 
 const connection_obj = {
   network: process.env.NETWORK,
