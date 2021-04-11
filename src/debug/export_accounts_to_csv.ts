@@ -1,9 +1,10 @@
 import { CSVAccountExport } from "../csvAccountExport";
 import { customerPath } from "../ledger/ledger";
 import { MainBook, setupMongoConnectionSecondary } from "../mongodb";
-import { User } from "../schema";
+import { Transaction, User } from "../schema";
 import { createObjectCsvWriter} from "csv-writer"
-
+import { baseLogger } from "../utils";
+import _ from "lodash"
 
 // need to set MONGODB_ADDRESS to call the script
 // ie: MONGODB_ADDRESS=localhost ts-node src/debug/export_accounts_to_csv.ts
@@ -64,18 +65,65 @@ const exportUsers = async () => {
         {id: 'phone', title: 'Phone'},
         {id: 'username', title: 'Username'},
         {id: 'title', title: 'Title'},
+        {id: 'balanceUSD', title: 'balanceUSD'},
+        {id: 'balanceBTC', title: 'balanceBTC'},
+        {id: 'carrier_name', title: 'carrier_name'},
+        {id: 'carrier_type', title: 'carrier_type'},
+        {id: 'created_at', title: 'created_at'},
+        {id: 'totalCredit', title: 'totalCredit'},
+        {id: 'totalDebit', title: 'totalDebit'},
+        {id: 'countTxs', title: 'countTxs'},
     ]
   });
 
   const records: any[] = []
 
+  // TODO filter with USD / BTC currency
+  const result = await Transaction.aggregate([
+    {
+      $group: {
+        _id: "$accounts",
+        totalDebit: { $sum: "$debit" },
+        totalCredit: { $sum: "$credit" },
+        countTxs: { $sum: 1 }
+      }
+    }
+  ])
+  
+  baseLogger.info({result})
+
   for (const user of users) {
-    records.push({
+
+    const record = {
       uid: user._id,
       phone: user.phone,
       username: user.username,
-      title: user.title
-    })
+      title: user.title,
+      created_at: user.created_at,
+      carrier_name: user.twilio?.carrier?.name,
+      carrier_type: user.twilio?.carrier?.type,
+    }
+
+    for (const currency of ["USD", "BTC"]) {
+      const { balance } = await MainBook.balance({
+        account: user.accountPath,
+        currency,
+      })
+
+      record[`balance${currency}`] = balance
+    }
+
+    
+    try {
+      const { totalDebit, totalCredit, countTxs } = _.find(result, {"_id": user.accountPath})
+      record["totalDebit"] = totalDebit
+      record["totalCredit"] = totalCredit
+      record["countTxs"] = countTxs
+    } catch (err) {
+      console.log({err})
+    }
+
+    records.push(record)
   }
 
   console.log(records)
