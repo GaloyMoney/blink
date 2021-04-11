@@ -74,6 +74,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
     let onchainLogger = this.logger.child({ topic: "payment", protocol: "onchain", transactionType: "payment", address, amount, memo })
 
     if (amount <= 0) {
+      onchainLogger.error('A negative amount was passed')
       throw Error("amount can't be negative")
     }
 
