@@ -249,6 +249,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     tokens = !!tokens ? tokens : params.amount
   
     if (tokens <= 0) {
+      lightningLogger.error('A negative amount was passed')
       throw Error("amount can't be negative")
     }
 
