@@ -51,6 +51,7 @@ export const regexUsername = /(?!^(1|3|bc1|lnbc1))^[0-9a-z_]+$/i
 
 const UserSchema = new Schema({
   lastConnection: Date,
+  ip: String,
   created_at: {
     type: Date,
     default: Date.now
