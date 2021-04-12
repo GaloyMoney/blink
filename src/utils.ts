@@ -17,6 +17,8 @@ export const LOOK_BACK = 2016
 // @ts-ignore
 import { GraphQLError } from "graphql";
 import { Transaction, User } from "./schema";
+import axios from "axios";
+import { yamlConfig } from "./config";
 
 
 // FIXME: super ugly hack.
@@ -30,6 +32,8 @@ export class LoggedError extends GraphQLError {
     super(`${customLoggerPrefix}${message}`);
   }
 }
+
+const PROXY_CHECK_APIKEY = yamlConfig?.PROXY_CHECK_APIKEY
 
 const connection_obj = {
   network: process.env.NETWORK,
@@ -160,5 +164,18 @@ export const inputXOR = (arg1, arg2) => {
   const [[key2, value2]] = Object.entries(arg2)
   if(!(!value1 != !value2)) {
     throw new LoggedError(`Either ${key1} or ${key2} is required, but not both`);
+  }
+}
+
+export const fetchIPDetails = async ({currentIP, user, logger}) => {
+  if(user.lastIPs.some(ipObject => ipObject.ip === currentIP)) {
+    return
+  }
+  try {
+    const {data} = await axios.get(`http://proxycheck.io/v2/${currentIP}?key=${PROXY_CHECK_APIKEY}&vpn=1&asn=1`)
+    const ipinfo = (({provider, country, region, city, type}) => ({provider, country, region, city, type}))(data[currentIP])
+    return await User.updateOne({_id: user._id}, {$push: {lastIPs: ipinfo}})
+  } catch (error) {
+    return logger.error({error}, 'Failed to fetch ip details')
   }
 }

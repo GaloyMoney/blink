@@ -9,9 +9,6 @@ import { caseInsensitiveRegex, inputXOR, LoggedError } from './utils';
 
 const Schema = mongoose.Schema;
 
-
-
-
 const dbVersionSchema = new Schema({
   version: Number,
   minBuildNumber: Number,
@@ -51,7 +48,22 @@ export const regexUsername = /(?!^(1|3|bc1|lnbc1))^[0-9a-z_]+$/i
 
 const UserSchema = new Schema({
   lastConnection: Date,
-  lastIP: String,
+  lastIPs: {
+    type: [{
+      ip: String,
+      provider: String,
+      country: String,
+      region: String,
+      city: String,
+      //using Type instead of type due to its special status in mongoose
+      Type: String,
+      timestamp: {
+        type: Date,
+        default: Date.now
+      }
+    }],
+    default: []
+  },
   created_at: {
     type: Date,
     default: Date.now

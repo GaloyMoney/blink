@@ -29,7 +29,7 @@ import { User } from "../schema";
 import { login, requestPhoneCode } from "../text";
 import { OnboardingEarn } from "../types";
 import { UserWallet } from "../userWallet";
-import { baseLogger, customLoggerPrefix, LoggedError } from "../utils";
+import { baseLogger, customLoggerPrefix, fetchIPDetails, LoggedError } from "../utils";
 import { WalletFactory, WalletFromUsername } from "../walletFactory";
 import { getCurrentPrice } from "../realtimePrice";
 import { getAsyncRedisClient } from "../redis";
@@ -286,9 +286,10 @@ async function startApolloServer() {
       // @ts-ignore
       const token = context.req?.token ?? null
       const uid = token?.uid ?? null
-      const user = !!uid ? await User.findOneAndUpdate({ _id: uid },{ lastConnection: new Date(), lastIP: context.req.headers['x-real-ip'] }, {new: true}) : null
+      const user = !!uid ? await User.findOneAndUpdate({ _id: uid },{ lastConnection: new Date() }, {new: true}) : null
       // @ts-ignore
       const logger = graphqlLogger.child({ token, id: context.req.id, body: context.req.body })
+      fetchIPDetails({currentIP: context.req.headers['x-real-ip'], user, logger})
       const wallet = (!!user && user.status === "active") ? await WalletFactory({ user, logger }) : null
       return {
         ...context,
