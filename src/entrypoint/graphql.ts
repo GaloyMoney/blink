@@ -158,7 +158,11 @@ const resolvers = {
     noauthUpdatePendingInvoice: async (_, { hash, username }, { logger }) => {
       const wallet = await WalletFromUsername({ username, logger })
       return wallet.updatePendingInvoice({ hash })
-    }
+    },
+    getUid: async (_, { username, phone }, { }) => {
+      const { _id: uid } = await User.getUser({ username, phone })
+      return uid
+    },
   },
   Mutation: {
     requestPhoneCode: async (_, { phone }, { logger }) => ({ success: requestPhoneCode({ phone, logger }) }),
