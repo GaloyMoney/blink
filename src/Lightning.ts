@@ -221,7 +221,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     } else {
       if (!params.username) {
         const error = `a username is required for push payment to the ${ yamlConfig.name }`
-        lightningLogger.warn({ success: false, error }, error)
+        lightningLogger.warn({ success: false, error })
         throw new LoggedError(error)
       }
 
@@ -296,7 +296,7 @@ export const LightningMixin = (superclass) => class extends superclass {
           const payeeInvoice = await InvoiceUser.findOne({ _id: id })
           if (!payeeInvoice) {
             const error = `User tried to pay invoice from ${ yamlConfig.name }, but it was already paid or does not exist`
-            lightningLoggerOnUs.error({ success: false, error }, error)
+            lightningLoggerOnUs.error({ success: false, error })
             throw new LoggedError(error)
           }
 
@@ -305,13 +305,13 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         if (!payeeUser) {
           const error = `this user doesn't exist`
-          lightningLoggerOnUs.warn({ success: false, error }, error)
+          lightningLoggerOnUs.warn({ success: false, error })
           throw new LoggedError(error)
         }
 
         if (String(payeeUser._id) === String(this.user._id)) {
           const error = 'User tried to pay himself'
-          lightningLoggerOnUs.error({ success: false, error }, error)
+          lightningLoggerOnUs.error({ success: false, error })
           throw new LoggedError(error)
         }
 
@@ -321,7 +321,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         // TODO: manage when paid fully in USD directly from USD balance to avoid conversion issue
         if (balance.total_in_BTC < sats) {
           const error = `balance is too low`
-          lightningLoggerOnUs.warn({ balance, sats, success: false, error }, error)
+          lightningLoggerOnUs.warn({ balance, sats, success: false, error })
           throw new LoggedError(error)
         }
 
@@ -418,7 +418,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         if (balance.total_in_BTC < sats) {
           const error = `balance is too low`
-          lightningLogger.warn({ success: false, error }, error)
+          lightningLogger.warn({ success: false, error })
           throw new LoggedError(error)
         }
 
