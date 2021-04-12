@@ -51,7 +51,7 @@ export const sendNotification = async ({ title, user, body, data, logger}: INoti
 
   try {
     const response = await admin.messaging().sendToDevice(
-      user.deviceToken,
+      user.deviceToken.filter(token => token.length === 163),
       message as any,
       {
         // Required for background/quit data-only messages on iOS
