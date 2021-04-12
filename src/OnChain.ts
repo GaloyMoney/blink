@@ -13,6 +13,7 @@ import { Transaction, User } from "./schema";
 import { getHeight } from "lightning"
 
 import bluebird from 'bluebird';
+import { yamlConfig } from "./config";
 const { using } = bluebird;
 
 // TODO: look if tokens/amount has an effect on the fees
@@ -127,7 +128,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
       }
 
       if (await this.user.withdrawalLimitHit({amount})) {
-        const error = "Cannot withdraw more than 1m sats in 24 hours"
+        const error = `Cannot withdraw more than ${yamlConfig.withdrawalLimit} sats in 24 hours`
         onchainLogger.error({ success: false }, error)
         throw new LoggedError(error)
       }

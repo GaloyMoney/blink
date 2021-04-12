@@ -365,7 +365,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       }
 
       if (await this.user.withdrawalLimitHit({amount:tokens})) {
-        const error = "Cannot withdraw more than 1m sats in 24 hours"
+        const error = `Cannot withdraw more than ${yamlConfig.withdrawalLimit} sats in 24 hours`
         lightningLogger.error({ success: false }, error)
         throw new LoggedError(error)
       }
