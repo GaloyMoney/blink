@@ -147,9 +147,8 @@ export abstract class UserWallet {
     return csv.getBase64()
   }
 
-  async setLevel({ level }) {
-    this.user.level = level
-    await this.user.save()
+  static async setLevel({ uid, level }) {
+    return User.findOneAndUpdate({ _id: uid }, { $set: { level } }, {new: true})
   }
 
   // deprecated
