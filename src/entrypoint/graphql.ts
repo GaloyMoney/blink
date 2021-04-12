@@ -287,9 +287,9 @@ async function startApolloServer() {
       const token = context.req?.token ?? null
       const uid = token?.uid ?? null
       const user = !!uid ? await User.findOneAndUpdate({ _id: uid },{ lastConnection: new Date() }, {new: true}) : null
-      fetchIPDetails({currentIP: context.req.headers['x-real-ip'], user})
       // @ts-ignore
       const logger = graphqlLogger.child({ token, id: context.req.id, body: context.req.body })
+      fetchIPDetails({currentIP: context.req.headers['x-real-ip'], user, logger})
       const wallet = (!!user && user.status === "active") ? await WalletFactory({ user, logger }) : null
       return {
         ...context,

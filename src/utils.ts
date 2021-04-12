@@ -167,13 +167,16 @@ export const inputXOR = (arg1, arg2) => {
   }
 }
 
-export const fetchIPDetails = ({currentIP, user}) => {
+export const fetchIPDetails = async ({currentIP, user, logger}) => {
   if(user.lastIPs.some(ipObject => ipObject.ip === currentIP)) {
     return
   }
-  axios.get(`http://proxycheck.io/v2/${currentIP}?key=${PROXY_CHECK_APIKEY}&vpn=1&asn=1`).then(({data}) => {
+  try {
+    const {data} = await axios.get(`http://proxycheck.io/v2/${currentIP}?key=${PROXY_CHECK_APIKEY}&vpn=1&asn=1`)
     const ipinfo = (({provider, country, region, city, type}) => ({provider, country, region, city, type}))(data[currentIP])
     user.lastIPs.push({...ipinfo, ip: currentIP, Type: ipinfo.type})
-    user.save()
-  })
+    await user.save()
+  } catch (error) {
+    return logger.error({error}, 'Failed to fetch ip details')
+  }
 }
