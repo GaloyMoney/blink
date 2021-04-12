@@ -173,6 +173,9 @@ const resolvers = {
       updateUsername: (input) => wallet.updateUsername(input),
       updateLanguage: (input) => wallet.updateLanguage(input),
     }),
+    setLevel: async (_, { uid, level }, { }) => {
+      return UserWallet.setLevel({ uid, level })
+    },
     updateContact: async (_, __, { user }) => ({
       setName: async ({ username, name }) => {
         user.contacts.filter(item => item.id === username)[0].name = name
@@ -180,8 +183,9 @@ const resolvers = {
         return true
       }
     }),
-    noauthAddInvoice: async (_, { username }, { logger }) => {
-      const wallet = await WalletFromUsername({ username, logger })
+    noauthAddInvoice: async (_, { uid }, { logger }) => {
+      const user = await User.findOne({_id: uid})
+      const wallet = await WalletFactory({ user, logger })
       return wallet.addInvoice({ selfGenerated: false })
     },
     invoice: async (_, __, { wallet }) => ({
