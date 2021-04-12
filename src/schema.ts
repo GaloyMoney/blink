@@ -214,6 +214,10 @@ UserSchema.virtual('oldEnoughForWithdrawal').get(function(this: typeof UserSchem
   return (Date.now() - this.created_at) > 1000 * 60 * 60 * 24 * 7
 })
 
+UserSchema.methods.onUsLimitHit = function({amount}) {
+  return amount > yamlConfig.onUsLimits.level[this.level]
+}
+
 UserSchema.methods.withdrawalLimitHit = async function({amount}) {
   const timestampYesterday = new Date(Date.now() - (24 * 60 * 60 * 1000))
   const [result] = await Transaction.aggregate([

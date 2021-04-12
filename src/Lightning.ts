@@ -284,6 +284,12 @@ export const LightningMixin = (superclass) => class extends superclass {
       if (destination === await this.getNodePubkey() || destination === "") {
         const lightningLoggerOnUs = lightningLogger.child({ onUs: true, fee: 0 })
 
+        if(this.user.onUsLimitHit({amount: tokens})) {
+          const error = `User tried to transfer more than their onUs limit`
+          lightningLoggerOnUs.warn({ success: false, error })
+          throw new LoggedError(error)
+        }
+
         let payeeUser
 
         if (pushPayment) {

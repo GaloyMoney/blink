@@ -50,6 +50,11 @@ test_accounts:
 
 withdrawalLimit: 2000000
 
+onUsLimits:
+  level:
+    1: 5000000
+    2: 100000000
+
 # TODO
 # carrierRegexFilter: ""
 
