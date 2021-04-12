@@ -137,8 +137,9 @@ type Query {
   nodeStats: NodeStats
   getLastOnChainAddress: LastOnChainAddress
   usernameExists(username: String!): Boolean
-  getUserDetails(phone: String, username: String): User
+  getUserDetails(uid: ID!): User
   noauthUpdatePendingInvoice(username: String!, hash: String!): Boolean
+  getUid(username: String, phone: String): ID
 }
 
 type UpdateUser {
@@ -161,7 +162,7 @@ type Mutation {
   requestPhoneCode(phone: String): Success
   login(phone: String, code: Int, currency: String): Token
     @deprecated(reason: "currency is no longer user. to be remove after mobile update")
-  noauthAddInvoice(username: String!): String
+  noauthAddInvoice(uid: ID!): String
   onchain: OnChain
   invoice: Invoice
   earnCompleted(ids: [ID]): [Earn]
@@ -171,5 +172,6 @@ type Mutation {
   addDeviceToken(deviceToken: String): Success # to refactor with User?
   testMessage: Success # FIXME remove test
   addToMap(username: String!, title: String!, latitude: Float!, longitude: Float!): Boolean
-  setAccountStatus(phone: String, username: String, status: AccountStatus!): User
+  setAccountStatus(uid: ID!, status: AccountStatus!): User
+  setLevel(uid: ID!, level: Int!): User
 }

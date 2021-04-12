@@ -226,8 +226,8 @@ const resolvers = {
     addToMap: async (_, { username, title, latitude, longitude }, { }) => {
       return UserWallet.addToMap({ username, title, latitude, longitude });
     },
-    setAccountStatus: async (_, { username, phone, status }, { }) => {
-      const { _id: uid } = await User.getUser({ username, phone })
+    setAccountStatus: async (_, { uid, status }, { }) => {
+      const user = await User.findOne({_id: uid})
       return UserWallet.setAccountStatus({ uid, status })
     }
   }
@@ -257,6 +257,7 @@ const permissions = shield({
     wallet2: isAuthenticated,
     getLastOnChainAddress: isAuthenticated,
     getUserDetails: and(isAuthenticated, isEditor),
+    getUid: and(isAuthenticated, isEditor)
   },
   Mutation: {
     // requestPhoneCode: not(isAuthenticated),
@@ -271,6 +272,7 @@ const permissions = shield({
     addDeviceToken: isAuthenticated,
     testMessage: isAuthenticated,
     addToMap: and(isAuthenticated, isEditor),
+    setLevel: and(isAuthenticated, isEditor),
   },
 }, { allowExternalErrors: true }) // TODO remove to not expose internal error
 
