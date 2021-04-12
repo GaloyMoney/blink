@@ -48,7 +48,9 @@ test_accounts:
   code: 321321
   currency: "BTC"
 
-withdrawalLimit: 2000000
+withdrawalLimits: 
+  1: 2000000
+  2: 100000000
 
 onUsLimits:
   level:

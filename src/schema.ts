@@ -218,6 +218,7 @@ UserSchema.methods.onUsLimitHit = function({amount}) {
   return amount > yamlConfig.onUsLimits.level[this.level]
 }
 
+//FIXME: Use a better name instead of withdrawalLimit
 UserSchema.methods.withdrawalLimitHit = async function({amount}) {
   const timestampYesterday = new Date(Date.now() - (24 * 60 * 60 * 1000))
   const [result] = await Transaction.aggregate([
@@ -225,7 +226,7 @@ UserSchema.methods.withdrawalLimitHit = async function({amount}) {
     {$group: {_id: null, outgoingSats: { $sum: "$debit" }}}
   ])
   const { outgoingSats } = result || {outgoingSats: 0}
-  if(outgoingSats + amount >= yamlConfig.withdrawalLimit) {
+  if(outgoingSats + amount >= yamlConfig.withdrawalLimits.level[this.level]) {
     return true
   }
   return false
