@@ -93,7 +93,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
       this.logger.info({ result, value, memo, selfGenerated, id, user: this.user }, "a new invoice has been added")
     } catch (err) {
-      // FIXME if the mongodb connection has not been instanciated
+      // FIXME if the mongodb connection has not been instantiated
       // this fails silently
       const error = `error storing invoice to db`
       this.logger.error({ err }, error)
