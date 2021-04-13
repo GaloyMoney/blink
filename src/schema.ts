@@ -217,7 +217,7 @@ UserSchema.virtual('oldEnoughForWithdrawal').get(function(this: typeof UserSchem
 })
 
 UserSchema.methods.limitHit = async function({on_us, amount}: {on_us: boolean, amount: number}) {
-  const timestampYesterday = new Date(Date.now() - MS_PER_DAY)
+  const timestampYesterday = Date.now() - MS_PER_DAY
 
   const txnType = on_us ? [{type: 'on_us'},{type: 'onchain_on_us'}] : [{type:{$ne: 'on_us'}}] 
 
