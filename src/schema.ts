@@ -219,7 +219,7 @@ UserSchema.virtual('oldEnoughForWithdrawal').get(function(this: typeof UserSchem
 UserSchema.methods.limitHit = async function({on_us, amount}: {on_us: boolean, amount: number}) {
   const timestampYesterday = new Date(Date.now() - MS_PER_DAY)
 
-  const txnType = on_us ? {$eq: 'on_us'} : {$ne: 'on_us'} 
+  const txnType = on_us ? [{type: 'on_us'},{type: 'onchain_on_us'}] : [{type:{$ne: 'on_us'}}] 
 
   const limit = yamlConfig.limits[on_us ? 'onUs' : 'withdrawal'].level[this.level]
   
@@ -230,9 +230,9 @@ UserSchema.methods.limitHit = async function({on_us, amount}: {on_us: boolean, a
   return outgoingSats + amount > limit
 }
 
-UserSchema.statics.getVolume = async function({before = Date.now(), after = 0, accounts, txnType}) {
+UserSchema.statics.getVolume = async function({before = Date.now(), after, accounts, txnType}) {
   const [result] = await Transaction.aggregate([
-    {$match: {accounts, type: txnType, $and: [{timestamp: { $gte: after }}, {timestamp: { $lte: before }}] } },
+    {$match: {accounts, $or: txnType, $and: [{timestamp: { $gte: new Date(after) }}, {timestamp: { $lte: new  Date(before) }}] } },
     {$group: {_id: null, outgoingSats: { $sum: "$debit" }, incomingSats: { $sum: "$credit" } } }
   ])
   return result
@@ -240,18 +240,13 @@ UserSchema.statics.getVolume = async function({before = Date.now(), after = 0, a
 
 // user is considered active if there has been one transaction of more than 1000 sats in the last 30 days
 UserSchema.virtual('userIsActive').get(async function(this: typeof UserSchema) {
-  const timestamp30DaysAgo = new Date(Date.now() - (30 * 24 * 60 * 60 * 1000))
-  const [result] = await Transaction.aggregate([
-    { $match: { "accounts": this.accountPath, "timestamp": { $gte: timestamp30DaysAgo } } },
-    {
-      $group: {
-        _id: null, outgoingSats: { $sum: "$credit" }, incomingSats: { $sum: "$debit" }
-      }
-    }
-  ])
-  const { incomingSats, outgoingSats } = result || {}
+  const timestamp30DaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000)
 
-  return (outgoingSats > 1000 || incomingSats > 1000)
+  const volume = await User.getVolume({
+    after: timestamp30DaysAgo, txnType: [{type:{$exists: true}}], accounts: this.accountPath
+  })
+
+  return (volume?.outgoingSats > 1000 || volume?.incomingSats > 1000)
 })
 
 UserSchema.index({
