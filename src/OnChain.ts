@@ -13,6 +13,7 @@ import { Transaction, User } from "./schema";
 import { getHeight } from "lightning"
 
 import bluebird from 'bluebird';
+import { yamlConfig } from "./config";
 const { using } = bluebird;
 
 // TODO: look if tokens/amount has an effect on the fees
