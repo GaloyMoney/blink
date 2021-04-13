@@ -482,7 +482,7 @@ it('fails to pay when withdrawalLimit exceeded', async () => {
 })
 
 it('fails to pay when amount exceeds onUs limit', async() => {
-  const level1Limit = yamlConfig.onUsLimits.level['1']
+  const level1Limit = yamlConfig.limits.onUs.level['1']
   const request = await userWallet1.addInvoice({ value: level1Limit + 1 })
   await expect(userWallet0.pay({ invoice: request })).rejects.toThrow()
 })
