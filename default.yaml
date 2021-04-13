@@ -48,12 +48,15 @@ test_accounts:
   code: 321321
   currency: "BTC"
 
-withdrawalLimit: 2000000
-
-onUsLimits:
-  level:
-    1: 5000000
-    2: 100000000
+limits:
+  withdrawal:
+    level:
+      1: 2000000
+      2: 100000000
+  onUs:
+    level:
+      1: 5000000
+      2: 100000000
 
 # TODO
 # carrierRegexFilter: ""

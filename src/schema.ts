@@ -5,6 +5,7 @@ import { yamlConfig } from "./config"
 
 import mongoose from "mongoose";
 import { caseInsensitiveRegex, inputXOR, LoggedError } from './utils';
+import { UserWallet } from './userWallet';
 // mongoose.set("debug", true);
 
 const Schema = mongoose.Schema;
@@ -16,6 +17,7 @@ const dbVersionSchema = new Schema({
 })
 export const DbVersion = mongoose.model("DbVersion", dbVersionSchema)
 
+const MS_PER_DAY = 24 * 60 * 60 * 1000
 
 const invoiceUserSchema = new Schema({
   _id: String, // hash of invoice
@@ -214,21 +216,26 @@ UserSchema.virtual('oldEnoughForWithdrawal').get(function(this: typeof UserSchem
   return (Date.now() - this.created_at) > 1000 * 60 * 60 * 24 * 7
 })
 
-UserSchema.methods.onUsLimitHit = function({amount}) {
-  return amount > yamlConfig.onUsLimits.level[this.level]
+UserSchema.methods.limitHit = async function({on_us, amount}: {on_us: boolean, amount: number}) {
+  const timestampYesterday = new Date(Date.now() - MS_PER_DAY)
+
+  const txnType = on_us ? {$eq: 'on_us'} : {$ne: 'on_us'} 
+
+  const limit = yamlConfig.limits[on_us ? 'onUs' : 'withdrawal'].level[this.level]
+  
+  const outgoingSats = (await User.getVolume({
+    after: timestampYesterday, txnType, accounts: this.accountPath
+  }))?.outgoingSats ?? 0
+
+  return outgoingSats + amount > limit
 }
 
-UserSchema.methods.withdrawalLimitHit = async function({amount}) {
-  const timestampYesterday = new Date(Date.now() - (24 * 60 * 60 * 1000))
+UserSchema.statics.getVolume = async function({before = Date.now(), after = 0, accounts, txnType}) {
   const [result] = await Transaction.aggregate([
-    {$match: {"accounts": this.accountPath, type: {$ne: 'on_us'}, "timestamp": { $gte: timestampYesterday }}},
-    {$group: {_id: null, outgoingSats: { $sum: "$debit" }}}
+    {$match: {accounts, type: txnType, $and: [{timestamp: { $gte: after }}, {timestamp: { $lte: before }}] } },
+    {$group: {_id: null, outgoingSats: { $sum: "$debit" }, incomingSats: { $sum: "$credit" } } }
   ])
-  const { outgoingSats } = result || {outgoingSats: 0}
-  if(outgoingSats + amount >= yamlConfig.withdrawalLimit) {
-    return true
-  }
-  return false
+  return result
 }
 
 // user is considered active if there has been one transaction of more than 1000 sats in the last 30 days

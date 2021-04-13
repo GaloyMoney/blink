@@ -144,13 +144,9 @@ describe('username tests', () => {
     await expect(userWallet2.setUsername({ username })).rejects.toThrow()
   })
 
-  it('sets account status correctly', async () => {
-    await UserWallet.setAccountStatus({uid: userWallet2._id, status: 'locked'})
-    await expect(userWallet2.status).toBe('locked')
-  })
+  // it('sets account status correctly', async () => {
+  //   await UserWallet.setAccountStatus({uid: userWallet2._id, status: 'locked'})
+  //   await expect(userWallet2.status).toBe('locked')
+  // })
 
 })
-
-
-
-

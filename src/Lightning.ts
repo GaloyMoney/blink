@@ -284,7 +284,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       if (destination === await this.getNodePubkey() || destination === "") {
         const lightningLoggerOnUs = lightningLogger.child({ onUs: true, fee: 0 })
 
-        if(this.user.onUsLimitHit({amount: tokens})) {
+        if(await this.user.limitHit({on_us: true, amount: tokens})) {
           const error = `User tried to transfer more than their onUs limit`
           lightningLoggerOnUs.warn({ success: false, error })
           throw new LoggedError(error)
@@ -370,7 +370,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         throw Error("new account can't withdraw")
       }
 
-      if (await this.user.withdrawalLimitHit({amount:tokens})) {
+      if (await this.user.limitHit({on_us: false, amount:tokens})) {
         const error = "Cannot withdraw more than 1m sats in 24 hours"
         lightningLogger.error({ success: false }, error)
         throw new LoggedError(error)
