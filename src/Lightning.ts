@@ -367,7 +367,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
       // "normal" transaction: paying another lightning node
       if (!this.user.oldEnoughForWithdrawal) {
-        throw Error("new account can't withdraw")
+        throw Error(`new account have to wait ${yamlConfig.limits.oldEnoughForWithdrawal} before withdrawing`)
       }
 
       if (await this.user.limitHit({on_us: false, amount:tokens})) {
