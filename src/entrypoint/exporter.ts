@@ -21,9 +21,9 @@ const prefix = "galoy"
 const liabilities_g = new client.Gauge({ name: `${prefix}_liabilities`, help: 'how much money customers has' })
 const lightning_g = new client.Gauge({ name: `${prefix}_lightning`, help: 'how much money there is our books for lnd' })
 const userCount_g = new client.Gauge({ name: `${prefix}_userCount`, help: 'how much users have registered' })
-const totalChannels_g = new client.Gauge({ name: `${prefix}_lnd`, help: 'how much money in our node' })
-const activeChannels_g = new client.Gauge({ name: `${prefix}_lnd`, help: 'how much money in our node' })
-const pendingHtlc_g = new client.Gauge({ name: `${prefix}_lnd`, help: 'how much money in our node' })
+const totalChannels_g = new client.Gauge({ name: `${prefix}_lnd`, help: 'total number of channels our node has' })
+const activeChannels_g = new client.Gauge({ name: `${prefix}_lnd`, help: 'number of active channels our node has' })
+const pendingHtlc_g = new client.Gauge({ name: `${prefix}_lnd`, help: 'number of pending HTLC our node has' })
 const lnd_g = new client.Gauge({ name: `${prefix}_lnd`, help: 'how much money in our node' })
 const lndOnChain_g = new client.Gauge({ name: `${prefix}_lnd_onchain`, help: 'how much fund is onChain in lnd' })
 const lndOffChain_g = new client.Gauge({ name: `${prefix}_lnd_offchain`, help: 'how much fund is offChain in our node' })
@@ -91,7 +91,7 @@ const main = async () => {
 
     const { channels } = await getChannels({ lnd })
     totalChannels_g.set(channels.length)
-    activeChannels_g.set(channels.filter(channel => channel.is_active === true).length)
+    activeChannels_g.set(channels.filter(channel => channel.is_active).length)
     pendingHtlc_g.set(_.sum(_.forEach(channels, channel => channel.pending_payments.length)))
 
     fundingRate_g.set(await dealerWallet.getNextFundingRate())
