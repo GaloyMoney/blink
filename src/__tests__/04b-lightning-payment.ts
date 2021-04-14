@@ -19,6 +19,7 @@ const amountInvoice = 1000
 
 jest.mock('../notifications/notification')
 import { sendNotification } from "../notifications/notification";
+import { yamlConfig } from '../config';
 jest.mock('../realtimePrice')
 
 const date = Date.now() + 1000 * 60 * 60 * 24 * 8
@@ -477,6 +478,12 @@ it('fails to pay regular invoice with separate amt', async () => {
 
 it('fails to pay when withdrawalLimit exceeded', async () => {
   const { request } = await createInvoice({ lnd: lndOutside1, tokens: 2e6 })
+  await expect(userWallet0.pay({ invoice: request })).rejects.toThrow()
+})
+
+it('fails to pay when amount exceeds onUs limit', async() => {
+  const level1Limit = yamlConfig.limits.onUs.level['1']
+  const request = await userWallet1.addInvoice({ value: level1Limit + 1 })
   await expect(userWallet0.pay({ invoice: request })).rejects.toThrow()
 })
 

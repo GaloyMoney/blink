@@ -96,6 +96,12 @@ export const OnChainMixin = (superclass) => class extends superclass {
       if (payeeUser) {
         const onchainLoggerOnUs = onchainLogger.child({onUs: true})
 
+        if (await this.user.limitHit({on_us: true, amount})) {
+          const error = `Cannot transfer more than ${yamlConfig.limits.onUs.level[this.user.level]} sats in 24 hours`
+          onchainLoggerOnUs.error({ success: false }, error)
+          throw new LoggedError(error)
+        }
+
         if (String(payeeUser._id) === String(this.user._id)) {
           const error = 'User tried to pay himself'
           this.logger.warn({ payeeUser, error, success: false }, error)
@@ -127,8 +133,8 @@ export const OnChainMixin = (superclass) => class extends superclass {
         throw Error("new account can't withdraw")
       }
 
-      if (await this.user.withdrawalLimitHit({amount})) {
-        const error = `Cannot withdraw more than ${yamlConfig.withdrawalLimit} sats in 24 hours`
+      if (await this.user.limitHit({on_us: false, amount})) {
+        const error = `Cannot withdraw more than ${yamlConfig.limits.withdrawal.level[this.user.level]} sats in 24 hours`
         onchainLogger.error({ success: false }, error)
         throw new LoggedError(error)
       }
