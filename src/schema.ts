@@ -230,9 +230,10 @@ UserSchema.methods.limitHit = async function({on_us, amount}: {on_us: boolean, a
   return outgoingSats + amount > limit
 }
 
-UserSchema.statics.getVolume = async function({before = Date.now(), after, accounts, txnType}) {
+UserSchema.statics.getVolume = async function({before, after, accounts, txnType}: {before?:number, after: number, accounts: string, txnType: [string]}) {
+  const timeBounds = before ? [{timestamp: { $gte: new Date(after) }}, {timestamp: { $lte: new Date(before) }}] : [{timestamp: { $gte: new Date(after) }}]
   const [result] = await Transaction.aggregate([
-    {$match: {accounts, $or: txnType, $and: [{timestamp: { $gte: new Date(after) }}, {timestamp: { $lte: new  Date(before) }}] } },
+    {$match: {accounts, $or: txnType, $and: timeBounds } },
     {$group: {_id: null, outgoingSats: { $sum: "$debit" }, incomingSats: { $sum: "$credit" } } }
   ])
   return result
