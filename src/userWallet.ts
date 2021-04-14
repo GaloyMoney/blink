@@ -147,7 +147,12 @@ export abstract class UserWallet {
     return csv.getBase64()
   }
 
-  static async setLevel({ uid, level }) {
+  static async setLevel({ uid, level, logger }) {
+    if(Levels.indexOf(level) < 0) {
+      const error = `${level} is not a valid user level`
+      logger.error(error)
+      throw new LoggedError(error)
+    }
     return User.findOneAndUpdate({ _id: uid }, { $set: { level } }, {new: true})
   }
 
