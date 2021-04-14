@@ -212,8 +212,7 @@ UserSchema.virtual('accountPath').get(function(this: typeof UserSchema) {
 })
 
 UserSchema.virtual('oldEnoughForWithdrawal').get(function(this: typeof UserSchema) {
-  // TODO make this configurable
-  return (Date.now() - this.created_at) > 1000 * 60 * 60 * 24 * 7
+  return (Date.now() - this.created_at) > yamlConfig.oldEnoughForWithdrawal
 })
 
 UserSchema.methods.limitHit = async function({on_us, amount}: {on_us: boolean, amount: number}) {
