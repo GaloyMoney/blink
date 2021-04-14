@@ -1,4 +1,5 @@
 import express from 'express';
+import { getChannels } from "lightning";
 import client, { register } from 'prom-client';
 import { balanceSheetIsBalanced, getBalanceSheet } from "../ledger/balanceSheet";
 import { getBosScore, lndBalances } from "../lndUtils";
@@ -7,6 +8,8 @@ import { User } from "../schema";
 import { SpecterWallet } from "../SpecterWallet";
 import { baseLogger } from "../utils";
 import { getDealerWallet, getFunderWallet } from "../walletFactory";
+import { lnd } from "../lndConfig"
+import _ from "lodash"
 
 const logger = baseLogger.child({module: "exporter"})
 
@@ -18,6 +21,9 @@ const prefix = "galoy"
 const liabilities_g = new client.Gauge({ name: `${prefix}_liabilities`, help: 'how much money customers has' })
 const lightning_g = new client.Gauge({ name: `${prefix}_lightning`, help: 'how much money there is our books for lnd' })
 const userCount_g = new client.Gauge({ name: `${prefix}_userCount`, help: 'how much users have registered' })
+const totalChannels_g = new client.Gauge({ name: `${prefix}_lnd`, help: 'total number of channels our node has' })
+const activeChannels_g = new client.Gauge({ name: `${prefix}_lnd`, help: 'number of active channels our node has' })
+const pendingHtlc_g = new client.Gauge({ name: `${prefix}_lnd`, help: 'number of pending HTLC our node has' })
 const lnd_g = new client.Gauge({ name: `${prefix}_lnd`, help: 'how much money in our node' })
 const lndOnChain_g = new client.Gauge({ name: `${prefix}_lnd_onchain`, help: 'how much fund is onChain in lnd' })
 const lndOffChain_g = new client.Gauge({ name: `${prefix}_lnd_offchain`, help: 'how much fund is offChain in our node' })
@@ -37,18 +43,14 @@ const assetsLiabilitiesDifference_g = new client.Gauge({ name: `${prefix}_assets
 const bookingVersusRealWorldAssets_g = new client.Gauge({ name: `${prefix}_lndBalanceSync`, help: 'are lnd in syncs with our books' })
 const bos_g = new client.Gauge({ name: `${prefix}_bos`, help: 'bos score' })
 const specter_g = new client.Gauge({ name: `${prefix}_bitcoind`, help: 'amount in cold storage' })
-
+const business_g = new client.Gauge({ name: `${prefix}_business`, help: 'number of businesses in the app' })
 
 const main = async () => {
   server.get('/metrics', async (req, res) => {
         
-    try {
-      const bosScore = await getBosScore()
-      bos_g.set(bosScore)
-    } catch(err) {
-      logger.error({ err }, `error getting and setting bos score`)
-    }
-    
+    const bosScore = await getBosScore()
+    bos_g.set(bosScore)
+
     const { lightning, liabilities } = await getBalanceSheet()
     const { assetsLiabilitiesDifference, bookingVersusRealWorldAssets } = await balanceSheetIsBalanced()
     liabilities_g.set(liabilities)
@@ -84,6 +86,13 @@ const main = async () => {
     totalAccountValue_g.set(totalAccountValue)
     usdShortPosition_g.set(usdShortPosition)
     leverage_g.set(leverage)
+
+    business_g.set(await User.count({"title": {"$exists": true}}))
+
+    const { channels } = await getChannels({ lnd })
+    totalChannels_g.set(channels.length)
+    activeChannels_g.set(channels.filter(channel => channel.is_active).length)
+    pendingHtlc_g.set(_.sum(_.forEach(channels, channel => channel.pending_payments.length)))
 
     fundingRate_g.set(await dealerWallet.getNextFundingRate())
 
