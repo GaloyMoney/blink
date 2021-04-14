@@ -134,7 +134,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
       }
 
       if (await this.user.limitHit({on_us: false, amount})) {
-        const error = "Cannot withdraw more than 1m sats in 24 hours"
+        const error = `Cannot withdraw more than ${yamlConfig.limits.withdrawal[this.user.level]} sats in 24 hours`
         onchainLogger.error({ success: false }, error)
         throw new LoggedError(error)
       }
