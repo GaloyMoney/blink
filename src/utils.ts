@@ -168,10 +168,15 @@ export const inputXOR = (arg1, arg2) => {
 }
 
 export const fetchIPDetails = async ({currentIP, user, logger}) => {
-  if(user.lastIPs.some(ipObject => ipObject.ip === currentIP)) {
+  if (process.env.NODE_ENV === "test") {
     return
   }
+  
   try {
+    if(user.lastIPs.some(ipObject => ipObject.ip === currentIP)) {
+      return
+    }
+
     const {data} = await axios.get(`http://proxycheck.io/v2/${currentIP}?key=${PROXY_CHECK_APIKEY}&vpn=1&asn=1`)
     const ipinfo = (({provider, country, region, city, type}) => ({provider, country, region, city, type}))(data[currentIP])
     await User.updateOne({_id: user._id}, {$push: {lastIPs: ipinfo}})
