@@ -258,7 +258,8 @@ const permissions = shield({
     wallet2: isAuthenticated,
     getLastOnChainAddress: isAuthenticated,
     getUserDetails: and(isAuthenticated, isEditor),
-    getUid: and(isAuthenticated, isEditor)
+    getUid: and(isAuthenticated, isEditor),
+    getLevels: and(isAuthenticated, isEditor)
   },
   Mutation: {
     // requestPhoneCode: not(isAuthenticated),

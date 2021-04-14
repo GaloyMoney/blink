@@ -6,6 +6,7 @@ import { yamlConfig } from "./config"
 import mongoose from "mongoose";
 import { caseInsensitiveRegex, inputXOR, LoggedError } from './utils';
 import { UserWallet } from './userWallet';
+import { Levels } from './types';
 // mongoose.set("debug", true);
 
 const Schema = mongoose.Schema;
@@ -87,6 +88,7 @@ const UserSchema = new Schema({
   },
   level: {
     type: Number,
+    enum: Levels,
     default: 1
   },
 
