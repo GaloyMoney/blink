@@ -285,7 +285,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         const lightningLoggerOnUs = lightningLogger.child({ onUs: true, fee: 0 })
 
         if(await this.user.limitHit({on_us: true, amount: tokens})) {
-          const error = `User tried to transfer more than their onUs limit`
+          const error = `Cannot transfer more than ${yamlConfig.limits.onUs.level[this.user.level]} sats in 24 hours`
           lightningLoggerOnUs.warn({ success: false, error })
           throw new LoggedError(error)
         }
@@ -371,7 +371,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       }
 
       if (await this.user.limitHit({on_us: false, amount:tokens})) {
-        const error = `Cannot withdraw more than ${yamlConfig.limits.withdrawal[this.user.level]} sats in 24 hours`
+        const error = `Cannot transfer more than ${yamlConfig.limits.withdrawal.level[this.user.level]} sats in 24 hours`
         lightningLogger.error({ success: false }, error)
         throw new LoggedError(error)
       }
