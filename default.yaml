@@ -49,7 +49,7 @@ test_accounts:
   currency: "BTC"
 
 limits:
-  oldEnoughForWithdrawal: 172800000 # 1000 * 60 * 60 * 24 * 2 ms # 2 days
+  oldEnoughForWithdrawal: 172800000 # 1000 * 60 * 60 * 24 * 2, in ms # 2 days
   withdrawal:
     level:
       1: 2000000
