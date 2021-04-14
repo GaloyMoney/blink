@@ -407,8 +407,14 @@ const transactionSchema = new Schema({
   },
 
   // original property from medici
-  credit: Number,
-  debit: Number,
+  credit: {
+    type: Number,
+    min: 0
+  },
+  debit: {
+    type: Number,
+    min: 0
+  },
   meta: Schema.Types.Mixed,
   datetime: Date,
   account_path: [String],
