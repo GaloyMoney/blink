@@ -6,8 +6,8 @@ import { customerPath } from "./ledger/ledger";
 import { MainBook } from "./mongodb";
 import { sendNotification } from "./notifications/notification";
 import { User } from "./schema";
-import { ITransaction } from "./types";
-import { caseInsensitiveRegex, LoggedError, inputXOR } from "./utils";
+import { ITransaction, Levels } from "./types";
+import { caseInsensitiveRegex, LoggedError } from "./utils";
 
 export abstract class UserWallet {
 
