@@ -2,6 +2,7 @@
  * @jest-environment node
  */
 import mongoose from "mongoose";
+import { yamlConfig } from "../config";
 import { setupMongoConnection } from "../mongodb";
 import { User } from "../schema";
 import { UserWallet } from "../userWallet";
@@ -79,7 +80,6 @@ describe('username tests', () => {
     const result = await userWallet2.setUsername({ username: "lily" })
     expect(!!result).toBeTruthy()
 
-    
     expect(userWallet2.user.title).toBeTruthy()
   })
 
@@ -87,7 +87,7 @@ describe('username tests', () => {
     expect(userWallet2.user.oldEnoughForWithdrawal).toBeFalsy()
 
     // in 6 days:
-    const date = Date.now() + 1000 * 60 * 60 * 24 * 6
+    const date = Date.now() + yamlConfig.limits.oldEnoughForWithdrawal - 60 * 60 * 1000
 
     jest
       .spyOn(global.Date, 'now')
@@ -103,7 +103,7 @@ describe('username tests', () => {
 
     // TODO make this configurable
     // in 8 days:
-    const date = Date.now() + 1000 * 60 * 60 * 24 * 8
+    const date = Date.now() + yamlConfig.limits.oldEnoughForWithdrawal + 60 * 60 * 1000
 
     jest
       .spyOn(global.Date, 'now')

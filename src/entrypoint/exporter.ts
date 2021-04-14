@@ -92,7 +92,7 @@ const main = async () => {
     const { channels } = await getChannels({ lnd })
     totalChannels_g.set(channels.length)
     activeChannels_g.set(channels.filter(channel => channel.is_active).length)
-    pendingHtlc_g.set(_.sum(_.forEach(channels, channel => channel.pending_payments.length)))
+    pendingHtlc_g.set(_.sum(channels.map(channel => channel.pending_payments.length)))
 
     fundingRate_g.set(await dealerWallet.getNextFundingRate())
 
