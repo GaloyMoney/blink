@@ -140,6 +140,7 @@ type Query {
   getUserDetails(uid: ID!): User
   noauthUpdatePendingInvoice(username: String!, hash: String!): Boolean
   getUid(username: String, phone: String): ID
+  getLevels: [Int]
 }
 
 type UpdateUser {

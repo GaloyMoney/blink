@@ -27,7 +27,7 @@ import { setupMongoConnection } from "../mongodb";
 import { sendNotification } from "../notifications/notification";
 import { User } from "../schema";
 import { login, requestPhoneCode } from "../text";
-import { OnboardingEarn } from "../types";
+import { Levels, OnboardingEarn } from "../types";
 import { UserWallet } from "../userWallet";
 import { baseLogger, customLoggerPrefix, fetchIPDetails, LoggedError } from "../utils";
 import { WalletFactory, WalletFromUsername } from "../walletFactory";
@@ -65,11 +65,11 @@ const helmRevision = process.env.HELMREVISION
 const resolvers = {
   Query: {
     me: async (_, __, { uid, user }) => {
-      const { phone, username, contacts, language } = user
+      const { phone, username, contacts, language, level } = user
 
       return {
         id: uid,
-        level: 1,
+        level,
         phone,
         username,
         contacts,
@@ -154,7 +154,7 @@ const resolvers = {
       }))
     },
     usernameExists: async (_, { username }) => UserWallet.usernameExists({ username }),
-    getUserDetails: async (_, { phone, username }) => User.getUser({ phone, username }),
+    getUserDetails: async (_, { uid }) => User.findOne({_id: uid}),
     noauthUpdatePendingInvoice: async (_, { hash, username }, { logger }) => {
       const wallet = await WalletFromUsername({ username, logger })
       return wallet.updatePendingInvoice({ hash })
@@ -163,6 +163,7 @@ const resolvers = {
       const { _id: uid } = await User.getUser({ username, phone })
       return uid
     },
+    getLevels: () => Levels
   },
   Mutation: {
     requestPhoneCode: async (_, { phone }, { logger }) => ({ success: requestPhoneCode({ phone, logger }) }),
@@ -173,8 +174,8 @@ const resolvers = {
       updateUsername: (input) => wallet.updateUsername(input),
       updateLanguage: (input) => wallet.updateLanguage(input),
     }),
-    setLevel: async (_, { uid, level }, { }) => {
-      return UserWallet.setLevel({ uid, level })
+    setLevel: async (_, { uid, level }, { logger }) => {
+      return UserWallet.setLevel({ uid, level, logger })
     },
     updateContact: async (_, __, { user }) => ({
       setName: async ({ username, name }) => {
