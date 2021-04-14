@@ -33,6 +33,7 @@ import { baseLogger, customLoggerPrefix, fetchIPDetails, LoggedError } from "../
 import { WalletFactory, WalletFromUsername } from "../walletFactory";
 import { getCurrentPrice } from "../realtimePrice";
 import { getAsyncRedisClient } from "../redis";
+import { yamlConfig } from '../config';
 
 dotenv.config()
 
@@ -158,6 +159,13 @@ const resolvers = {
     noauthUpdatePendingInvoice: async (_, { hash, username }, { logger }) => {
       const wallet = await WalletFromUsername({ username, logger })
       return wallet.updatePendingInvoice({ hash })
+    },
+    getLimits: () => { 
+      return {
+        oldEnoughForWithdrawal: yamlConfig.limits.oldEnoughForWithdrawal,
+        withdrawal: Object.values(yamlConfig.limits.withdrawal.level),
+        onUs: Object.values(yamlConfig.limits.onUs.level)
+      }
     }
   },
   Mutation: {
