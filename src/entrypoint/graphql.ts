@@ -275,6 +275,7 @@ const permissions = shield({
     testMessage: isAuthenticated,
     addToMap: and(isAuthenticated, isEditor),
     setLevel: and(isAuthenticated, isEditor),
+    setAccountStatus: and(isAuthenticated, isEditor)
   },
 }, { allowExternalErrors: true }) // TODO remove to not expose internal error
 
