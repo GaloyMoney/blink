@@ -65,7 +65,7 @@ type Invoice {
 type OnChain {
   getNewAddress: String
   pay(address: String!, amount: Int!, memo: String): Success
-  getFee(address: String!): Int # sats
+  getFee(address: String!, amount: Int): Int # sats
 }
 
 type LastOnChainAddress {
@@ -141,6 +141,13 @@ type Query {
   noauthUpdatePendingInvoice(username: String!, hash: String!): Boolean
   getUid(username: String, phone: String): ID
   getLevels: [Int]
+  getLimits: Limits
+}
+
+type Limits {
+  oldEnoughForWithdrawal: Int
+  withdrawal: Int
+  onUs: Int
 }
 
 type UpdateUser {

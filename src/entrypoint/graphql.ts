@@ -33,6 +33,7 @@ import { baseLogger, customLoggerPrefix, fetchIPDetails, LoggedError } from "../
 import { WalletFactory, WalletFromUsername } from "../walletFactory";
 import { getCurrentPrice } from "../realtimePrice";
 import { getAsyncRedisClient } from "../redis";
+import { yamlConfig } from '../config';
 
 dotenv.config()
 
@@ -163,7 +164,14 @@ const resolvers = {
       const { _id: uid } = await User.getUser({ username, phone })
       return uid
     },
-    getLevels: () => Levels
+    getLevels: () => Levels,
+    getLimits: (_, __, {user}) => {
+      return {
+        oldEnoughForWithdrawal: yamlConfig.limits.oldEnoughForWithdrawal,
+        withdrawal: yamlConfig.limits.withdrawal.level[user.level],
+        onUs: yamlConfig.limits.onUs.level[user.level]
+      }
+    }
   },
   Mutation: {
     requestPhoneCode: async (_, { phone }, { logger }) => ({ success: requestPhoneCode({ phone, logger }) }),
@@ -204,7 +212,7 @@ const resolvers = {
     onchain: async (_, __, { wallet }) => ({
       getNewAddress: () => wallet.getOnChainAddress(),
       pay: ({ address, amount, memo }) => ({ success: wallet.onChainPay({ address, amount, memo }) }),
-      getFee: ({ address }) => wallet.getOnchainFee({ address }),
+      getFee: ({ address, amount }) => wallet.getOnchainFee({ address, amount }),
     }),
     addDeviceToken: async (_, { deviceToken }, { user }) => {
       user.deviceToken.addToSet(deviceToken)
@@ -280,7 +288,7 @@ const permissions = shield({
 }, { allowExternalErrors: true }) // TODO remove to not expose internal error
 
 
-async function startApolloServer() {
+export async function startApolloServer() {
   const app = express();
 
   const schema = applyMiddleware(
@@ -299,11 +307,19 @@ async function startApolloServer() {
       // @ts-ignore
       const token = context.req?.token ?? null
       const uid = token?.uid ?? null
-      const user = !!uid ? await User.findOneAndUpdate({ _id: uid },{ lastConnection: new Date() }, {new: true}) : null
+
+      let wallet, user
+
+      // TODO move from id: uuidv4() to a Jaeger standard 
+      const logger = graphqlLogger.child({ token, id: uuidv4(), body: context.req?.body })
+
+      if (!!uid) {
+        user = await User.findOneAndUpdate({ _id: uid },{ lastConnection: new Date() }, {new: true})
+        fetchIPDetails({currentIP: context.req?.headers['x-real-ip'], user, logger})
+        wallet = (!!user && user.status === "active") ? await WalletFactory({ user, logger }) : null
+      }
+
       // @ts-ignore
-      const logger = graphqlLogger.child({ token, id: context.req.id, body: context.req.body })
-      fetchIPDetails({currentIP: context.req.headers['x-real-ip'], user, logger})
-      const wallet = (!!user && user.status === "active") ? await WalletFactory({ user, logger }) : null
       return {
         ...context,
         logger,
@@ -325,15 +341,6 @@ async function startApolloServer() {
       return new Error('Internal server error');
     },
   })
-
-
-  // injecting unique id to the request for correlating different logs messages
-  // TODO: use a jaeger standard instead to be able to do distributed tracing 
-  app.use(function(req, res, next) {
-    // @ts-ignore
-    req.id = uuidv4();
-    next();
-  });
 
   app.use(pino_http)
 

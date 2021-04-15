@@ -16,12 +16,6 @@ import bluebird from 'bluebird';
 import { yamlConfig } from "./config";
 const { using } = bluebird;
 
-// TODO: look if tokens/amount has an effect on the fees
-// we don't want to go back and forth between RN and the backend if amount changes
-// but fees are the same
-const someAmount = 50000
-
-
 export const getOnChainTransactions = async ({ lnd, incoming }: { lnd: any, incoming: boolean }) => {
   try {
     const { current_block_height } = await getHeight({lnd})
@@ -55,15 +49,17 @@ export const OnChainMixin = (superclass) => class extends superclass {
     return User.findOne({ onchain_addresses: { $in: address } })
   }
 
-  async getOnchainFee({address}: {address: string}): Promise<number> {
+  async getOnchainFee({address, amount}: {address: string, amount: number | null}): Promise<number> {
     const payeeUser = await this.tentativelyGetPayeeUser({address})
 
     let fee
 
+    const defaultAmount = 300000
+
     if (payeeUser) {
       fee = 0
     } else {
-      const sendTo = [{ address, tokens: someAmount }];
+      const sendTo = [{ address, tokens: amount ?? defaultAmount }];
       ({ fee } = await lnService.getChainFeeEstimate({ lnd, send_to: sendTo }))
     }
 
