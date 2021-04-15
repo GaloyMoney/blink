@@ -58,7 +58,6 @@ limits:
     level:
       1: 5000000
       2: 100000000
-  PROXY_CHECK_APIKEY: "66765p-107289-2a0137-32r193"
 
 # TODO
 # carrierRegexFilter: ""
