@@ -148,7 +148,7 @@ export abstract class UserWallet {
   }
 
   static async setLevel({ uid, level, logger }) {
-    if(Levels.indexOf(level) < 0) {
+    if(Levels.indexOf(level) === -1) {
       const error = `${level} is not a valid user level`
       logger.error(error)
       throw new LoggedError(error)
