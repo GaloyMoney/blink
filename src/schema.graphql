@@ -139,6 +139,13 @@ type Query {
   usernameExists(username: String!): Boolean
   getUserDetails(phone: String, username: String): User
   noauthUpdatePendingInvoice(username: String!, hash: String!): Boolean
+  getLimits: Limits
+}
+
+type Limits {
+  oldEnoughForWithdrawal: Int
+  withdrawal: Int
+  onUs: Int
 }
 
 type UpdateUser {
