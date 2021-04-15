@@ -160,11 +160,11 @@ const resolvers = {
       const wallet = await WalletFromUsername({ username, logger })
       return wallet.updatePendingInvoice({ hash })
     },
-    getLimits: () => { 
+    getLimits: (_, __, {user}) => {
       return {
         oldEnoughForWithdrawal: yamlConfig.limits.oldEnoughForWithdrawal,
-        withdrawal: Object.values(yamlConfig.limits.withdrawal.level),
-        onUs: Object.values(yamlConfig.limits.onUs.level)
+        withdrawal: yamlConfig.limits.withdrawal.level[user.level],
+        onUs: yamlConfig.limits.onUs.level[user.level]
       }
     }
   },
