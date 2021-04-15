@@ -65,7 +65,7 @@ type Invoice {
 type OnChain {
   getNewAddress: String
   pay(address: String!, amount: Int!, memo: String): Success
-  getFee(address: String!): Int # sats
+  getFee(address: String!, amount: Int): Int # sats
 }
 
 type LastOnChainAddress {
