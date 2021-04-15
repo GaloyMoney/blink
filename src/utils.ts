@@ -179,7 +179,7 @@ export const fetchIPDetails = async ({currentIP, user, logger}) => {
 
     const {data} = await axios.get(`http://proxycheck.io/v2/${currentIP}?key=${PROXY_CHECK_APIKEY}&vpn=1&asn=1`)
     const ipinfo = (({provider, country, region, city, type}) => ({provider, country, region, city, type}))(data[currentIP])
-    await User.updateOne({_id: user._id}, {$push: {lastIPs: ipinfo}})
+    await User.updateOne({_id: user._id}, {$push: {lastIPs: { ip: currentIP, ...ipinfo }}})
   } catch (error) {
     logger.info({error}, 'Failed to fetch ip details')
   }
