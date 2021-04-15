@@ -2,6 +2,7 @@
  * @jest-environment node
  */
 import mongoose from "mongoose";
+import { AdminWallet } from "../adminWallet";
 import { yamlConfig } from "../config";
 import { setupMongoConnection } from "../mongodb";
 import { User } from "../schema";
@@ -120,17 +121,17 @@ describe('username tests', () => {
   })
 
   it('usernameExists returns true if username already exists', async () => {
-    const result = await UserWallet.usernameExists({ username })
+    const result = await AdminWallet.usernameExists({ username })
     expect(result).toBe(true)
   })
 
   it('usernameExists returns true for other capitalization', async () => {
-    const result = await UserWallet.usernameExists({ username })
+    const result = await AdminWallet.usernameExists({ username })
     expect(result).toBe(true)
   })
 
   it('usernameExists returns true if username already exists', async () => {
-    const result = await UserWallet.usernameExists({ username: username.toLocaleUpperCase() })
+    const result = await AdminWallet.usernameExists({ username: username.toLocaleUpperCase() })
     expect(result).toBe(true)
   })
 
@@ -146,7 +147,7 @@ describe('username tests', () => {
 
   // FIXME: failing for some reason
   // it('sets account status correctly', async () => {
-  //   await UserWallet.setAccountStatus({uid: userWallet2._id, status: 'locked'})
+  //   await AdminWallet.setAccountStatus({uid: userWallet2._id, status: 'locked'})
   //   await expect(userWallet2.status).toBe('locked')
   // })
 
