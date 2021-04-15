@@ -13,7 +13,7 @@ RUN apk update && apk add curl
 
 WORKDIR /usr/src/app
 
-USER 1000
+# USER 1000
 
 COPY --from=BUILD_IMAGE /usr/src/app/node_modules ./node_modules
 
