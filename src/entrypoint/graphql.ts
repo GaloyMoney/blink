@@ -236,7 +236,6 @@ const resolvers = {
       return UserWallet.addToMap({ username, title, latitude, longitude });
     },
     setAccountStatus: async (_, { uid, status }, { }) => {
-      const user = await User.findOne({_id: uid})
       return UserWallet.setAccountStatus({ uid, status })
     }
   }

@@ -150,7 +150,6 @@ export abstract class UserWallet {
   static async setLevel({ uid, level, logger }) {
     if(Levels.indexOf(level) === -1) {
       const error = `${level} is not a valid user level`
-      logger.error(error)
       throw new LoggedError(error)
     }
     return User.findOneAndUpdate({ _id: uid }, { $set: { level } }, {new: true})
