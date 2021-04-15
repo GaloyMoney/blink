@@ -19,8 +19,8 @@ export class LightningUserWallet extends OnChainMixin(LightningMixin(UserWallet)
 
   async addEarn(ids) {
 
-    if (this.twilio?.carrier?.type === "void") {
-      throw new Error("reward can only be given on non void phone based")
+    if (this.twilio?.carrier?.type === "voip") {
+      throw new Error("reward can only be given on non voip-based phone")
     }
 
     const lightningFundingWallet = await getFunderWallet({ logger: this.logger })
