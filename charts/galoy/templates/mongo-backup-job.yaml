@@ -11,7 +11,13 @@ metadata:
     "helm.sh/hook-weight": "-5"
     "helm.sh/hook-delete-policy": hook-succeeded
 spec:
-  jobTemplate:
+  template:
+    metadata:
+      name: "mongo-backup"
+      labels:
+        app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+        helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     spec:
       # TODO: refactor with the cronjob backup
       activeDeadlineSeconds: 300
