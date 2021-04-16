@@ -113,10 +113,6 @@ jobs:
       - run:
           name: Upgrade mainnet deployments
           command: |
-            JOB_DATE=$(date -u '+%s')
-            kubectl --namespace=mainnet create job --from=cronjob/mongo-backup "$JOB_DATE"
-            kubectl --namespace=mainnet wait --for=condition=complete --timeout=120s job/$JOB_DATE
-            kubectl --namespace=mainnet delete job/$JOB_DATE
             ./initLocalTest.sh mainnet
 
 workflows:
