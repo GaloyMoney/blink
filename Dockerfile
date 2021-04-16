@@ -13,6 +13,8 @@ FROM node:14-alpine
 RUN apk update && apk add curl
 
 WORKDIR /usr/src/app
+RUN mkdir artifacts
+RUN chown 1000:1000 artifacts
 
 COPY --from=BUILD_IMAGE /usr/src/app/node_modules ./node_modules
 
