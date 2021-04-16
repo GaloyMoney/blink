@@ -20,12 +20,6 @@ spec:
             - name: firebase-serviceaccount
               mountPath: "/tmp/firebase-serviceaccount"
               readOnly: true
-            {{- if eq .name "mongo-backup"}}
-            - name: mongo-backup-configmap
-              mountPath: "/var"
-            - name: "service-account"
-              mountPath: "/var/secret/cloud.google.com"
-            {{- end}}
             - name: "custom-yaml"
               mountPath: "/var/yaml/"
             env:
@@ -88,15 +82,6 @@ spec:
           - name: firebase-serviceaccount
             secret:
               secretName: galoyapp-firebase-serviceaccount
-          {{- if eq .name "mongo-backup"}}
-          - name: mongo-backup-configmap
-            configMap:
-              name: mongo-backup-configmap
-              defaultMode: 484
-          - name: "service-account"
-            secret:
-              secretName: "gcs-sa-key"
-          {{- end}}
           - name: "custom-yaml"
             secret:
               secretName: "galoy-config-map"
