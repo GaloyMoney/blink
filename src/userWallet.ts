@@ -6,8 +6,8 @@ import { customerPath } from "./ledger/ledger";
 import { MainBook } from "./mongodb";
 import { sendNotification } from "./notifications/notification";
 import { User } from "./schema";
-import { ITransaction } from "./types";
-import { caseInsensitiveRegex, LoggedError, inputXOR } from "./utils";
+import { ITransaction, Levels } from "./types";
+import { caseInsensitiveRegex, LoggedError } from "./utils";
 
 export abstract class UserWallet {
 
@@ -29,10 +29,6 @@ export abstract class UserWallet {
   // TODO: upgrade price automatically with a timer
   static setCurrentPrice(price) {
     UserWallet.lastPrice = price
-  }
-
-  static async usernameExists({ username }): Promise<boolean> {
-    return !!(await User.findByUsername({ username }))
   }
 
   // this needs to be here to be able to call / chain updatePending()
@@ -147,11 +143,6 @@ export abstract class UserWallet {
     return csv.getBase64()
   }
 
-  async setLevel({ level }) {
-    this.user.level = level
-    await this.user.save()
-  }
-
   // deprecated
   async setUsername({ username }): Promise<boolean | Error> {
 
@@ -227,33 +218,6 @@ export abstract class UserWallet {
 
     this.logger.info({ balanceSatsPrettified, balanceUsd, user: this.user }, `sending balance notification to user`)
     await sendNotification({ user: this.user, title: `Your balance is \$${balanceUsd} (${balanceSatsPrettified} sats)`, logger: this.logger })
-  }
-
-  static async addToMap({ username, latitude, longitude, title, }): Promise<boolean> {
-    if(!latitude || !longitude || !title) {
-      throw new LoggedError(`missing input for ${username}: ${latitude}, ${longitude}, ${title}`);
-    }
-
-    const user = await User.findByUsername({ username });
-
-    if(!user) {
-      throw new LoggedError(`The user ${username} does not exist`);
-    }
-
-    user.coordinate = {
-      latitude,
-      longitude
-    };
-
-    user.title = title
-    return !!(await user.save());
-  }
-
-  static async setAccountStatus({ uid, status }): Promise<typeof User> {
-    const user = await User.findOne({ _id: uid })
-
-    user.status = status
-    return user.save()
   }
 
 }
