@@ -1,0 +1,58 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "mongo-backup"
+  labels:
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  jobTemplate:
+    spec:
+      # TODO: refactor with the cronjob backup
+      activeDeadlineSeconds: 300
+      template:
+        spec:
+          containers:
+          - name: "mongodb-backup"
+            image: gcr.io/google.com/cloudsdktool/cloud-sdk:alpine
+            command: ["/bin/sh","-c", "/var/backup.sh"]
+            volumeMounts:
+            - name: mongo-backup-configmap
+              mountPath: "/var"
+            - name: "service-account"
+              mountPath: "/var/secret/cloud.google.com"
+            env:
+            - name: NETWORK
+              valueFrom:
+                secretKeyRef:
+                  name: network
+                  key: network
+            - name: MONGODB_PASSWORD
+              value: "testGaloy"
+            - name: MONGODB_USER
+              value: "testGaloy"
+            - name: MONGODB_ADDRESS
+              value: {{ $.Values.mongodbaddress }}
+            - name: MONGODB_PORT
+              value: "27017"
+            - name: MONGODB_DB
+              value: "galoy"
+            - name: DROPBOX_ACCESS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: dropbox-access-token
+                  key: token
+          restartPolicy: OnFailure
+          volumes:
+          - name: mongo-backup-configmap
+            configMap:
+              name: mongo-backup-configmap
+              defaultMode: 484
+          - name: "service-account"
+            secret:
+              secretName: "gcs-sa-key"
