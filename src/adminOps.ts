@@ -2,7 +2,7 @@ import { User } from "./schema";
 import { Levels } from "./types";
 import { LoggedError } from "./utils";
 
-export abstract class AdminWallet {
+export abstract class AdminOps {
 
   static async usernameExists({ username }): Promise<boolean> {
     return !!(await User.findByUsername({ username }))

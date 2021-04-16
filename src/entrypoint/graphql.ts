@@ -29,7 +29,7 @@ import { User } from "../schema";
 import { login, requestPhoneCode } from "../text";
 import { Levels, OnboardingEarn } from "../types";
 import { UserWallet } from "../userWallet";
-import { AdminWallet } from "../adminWallet"
+import { AdminOps } from "../AdminOps"
 import { baseLogger, customLoggerPrefix, fetchIPDetails, LoggedError } from "../utils";
 import { WalletFactory, WalletFromUsername } from "../walletFactory";
 import { getCurrentPrice } from "../realtimePrice";
@@ -155,7 +155,7 @@ const resolvers = {
         id: user.username
       }))
     },
-    usernameExists: async (_, { username }) => AdminWallet.usernameExists({ username }),
+    usernameExists: async (_, { username }) => AdminOps.usernameExists({ username }),
     getUserDetails: async (_, { uid }) => User.findOne({_id: uid}),
     noauthUpdatePendingInvoice: async (_, { hash, username }, { logger }) => {
       const wallet = await WalletFromUsername({ username, logger })
@@ -184,7 +184,7 @@ const resolvers = {
       updateLanguage: (input) => wallet.updateLanguage(input),
     }),
     setLevel: async (_, { uid, level }) => {
-      return AdminWallet.setLevel({ uid, level })
+      return AdminOps.setLevel({ uid, level })
     },
     updateContact: async (_, __, { user }) => ({
       setName: async ({ username, name }) => {
@@ -234,10 +234,10 @@ const resolvers = {
       return { success: true }
     },
     addToMap: async (_, { username, title, latitude, longitude }, { }) => {
-      return AdminWallet.addToMap({ username, title, latitude, longitude });
+      return AdminOps.addToMap({ username, title, latitude, longitude });
     },
     setAccountStatus: async (_, { uid, status }, { }) => {
-      return AdminWallet.setAccountStatus({ uid, status })
+      return AdminOps.setAccountStatus({ uid, status })
     }
   }
 }
