@@ -19,5 +19,6 @@ COPY --from=BUILD_IMAGE /usr/src/app/node_modules ./node_modules
 
 COPY ./*.js ./default.yaml ./package.json ./tsconfig.json ./yarn.lock ./.env ./
 COPY "./src/" "./src"
+RUN mkdir artifacts
 
 CMD sleep infinity
