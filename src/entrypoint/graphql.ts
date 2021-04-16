@@ -27,7 +27,7 @@ import { setupMongoConnection } from "../mongodb";
 import { sendNotification } from "../notifications/notification";
 import { User } from "../schema";
 import { login, requestPhoneCode } from "../text";
-import { Levels, OnboardingEarn } from "../types";
+import { ErrorCodes, Levels, OnboardingEarn } from "../types";
 import { UserWallet } from "../userWallet";
 import { AdminOps } from "../AdminOps"
 import { baseLogger, customLoggerPrefix, fetchIPDetails, LoggedError } from "../utils";
@@ -330,12 +330,11 @@ export async function startApolloServer() {
     },
     formatError: err => {
       // FIXME
-      if(_.startsWith(err.message, customLoggerPrefix)) {
-        err.message = err.message.slice(customLoggerPrefix.length)
-      } 
-      
-      baseLogger.error({ err }, "graphql catch-all error");
-      
+      err.extensions?.exception?.logger?.error({err: err.message})
+
+      if(ErrorCodes.includes(err.extensions?.exception?.code)) {
+        return new Error(err.message)
+      }
       // return defaultErrorFormatter(err)
       // return err
       return new Error('Internal server error');

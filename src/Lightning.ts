@@ -286,8 +286,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         if(await this.user.limitHit({on_us: true, amount: tokens})) {
           const error = `Cannot transfer more than ${yamlConfig.limits.onUs.level[this.user.level]} sats in 24 hours`
-          lightningLoggerOnUs.warn({ success: false, error })
-          throw new LoggedError(error)
+          throw new LoggedError({message: error, code: 'LIMIT_REACHED', logger: lightningLoggerOnUs})
         }
 
         let payeeUser
