@@ -1,7 +1,7 @@
 apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
-  name: "mongodb-backup"
+  name: "mongo-backup"
   labels:
     app.kubernetes.io/managed-by: Helm
 spec:
