@@ -5,9 +5,8 @@ metadata:
   labels:
     app: galoy
   annotations:
-    "helm.sh/hook": post-install
+    "helm.sh/hook": post-upgrade
     "helm.sh/hook-weight": "0"
-    "helm.sh/hook-delete-policy": hook-succeeded
 data:
   backup.sh: |
     echo "backup script starts"
