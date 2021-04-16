@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: "mongo-backup"
+  name: "mongo-backup-preinstall"
   labels:
     app.kubernetes.io/managed-by: Helm
   annotations:
@@ -13,7 +13,7 @@ metadata:
 spec:
   template:
     metadata:
-      name: "mongo-backup"
+      name: "mongo-backup-preinstall"
       labels:
         app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
         app.kubernetes.io/instance: {{ .Release.Name | quote }}
