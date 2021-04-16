@@ -8,7 +8,7 @@ metadata:
     # This is what defines this resource as a hook. Without this line, the
     # job is considered part of the release.
     "helm.sh/hook": pre-upgrade
-    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-weight": "1"
     "helm.sh/hook-delete-policy": hook-succeeded
 spec:
   template:
@@ -20,12 +20,13 @@ spec:
         helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     spec:
       # TODO: refactor with the cronjob backup
+        restartPolicy: OnFailure
         containers:
         - name: "mongodb-backup"
           image: gcr.io/google.com/cloudsdktool/cloud-sdk:alpine
           command: ["/bin/sh","-c", "/var/backup.sh"]
           volumeMounts:
-          - name: mongo-backup-configmap
+          - name: mongo-backup-configmap-job
             mountPath: "/var"
           - name: "service-account"
             mountPath: "/var/secret/cloud.google.com"
@@ -50,11 +51,10 @@ spec:
               secretKeyRef:
                 name: dropbox-access-token
                 key: token
-        restartPolicy: OnFailure
         volumes:
-        - name: mongo-backup-configmap
+        - name: mongo-backup-configmap-job
           configMap:
-            name: mongo-backup-configmap
+            name: mongo-backup-configmap-job
             defaultMode: 484
         - name: "service-account"
           secret:
