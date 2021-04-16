@@ -126,7 +126,8 @@ export const OnChainMixin = (superclass) => class extends superclass {
       onchainLogger = onchainLogger.child({onUs: false})
       
       if (!this.user.oldEnoughForWithdrawal) {
-        throw Error(`new account have to wait ${yamlConfig.limits.oldEnoughForWithdrawal} before withdrawing`)
+        const error = `new account have to wait ${yamlConfig.limits.oldEnoughForWithdrawal / 60 * 60 * 1000}h before withdrawing`
+        throw Error(error)
       }
 
       if (await this.user.limitHit({on_us: false, amount})) {
