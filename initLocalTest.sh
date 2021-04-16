@@ -29,8 +29,6 @@ then
   NETWORK="$1"
   NAMESPACE="$1"
 
-  backupMongodb
-
   # create namespaces if not exists
   kubectl create namespace $INGRESS_NAMESPACE --dry-run -o yaml | kubectl apply -f -
   kubectl create namespace cert-manager --dry-run -o yaml | kubectl apply -f -
@@ -139,6 +137,9 @@ helmUpgrade galoy \
   $configpath $localdevpath \
   --set mongodb.auth.rootPassword=$MONGODB_ROOT_PASSWORD,mongodb.auth.replicaSetKey=$MONGODB_REPLICA_SET_KEY,image.tag=$CIRCLE_SHA1 \
   $INFRADIR/galoy/
+
+# FIXME: Should be a pre-hook
+backupMongodb
 
 kubectlWait app.kubernetes.io/instance=galoy
 
