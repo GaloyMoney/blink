@@ -29,7 +29,7 @@ then
   NETWORK="$1"
   NAMESPACE="$1"
 
-  backupMongodb()
+  backupMongodb
 
   # create namespaces if not exists
   kubectl create namespace $INGRESS_NAMESPACE --dry-run -o yaml | kubectl apply -f -
