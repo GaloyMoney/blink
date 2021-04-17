@@ -259,6 +259,19 @@ functionToTests.forEach(({fn, name, initialFee}) => {
     expect(finalBalance).toBe(initBalance1)
   }, 60000)
 
+  it(`doesn't allow more active payments than the limit - ${name}`, async () => {
+    for (let i=0; i < yamlConfig.limits.activePayments.level['1']; i++) {
+      const { id } = createInvoiceHash()
+      const { request } = await createHodlInvoice({ id, lnd: lndOutside1, tokens: amountInvoice });
+      const result = await fn(userWallet1)({invoice: request})
+      expect(result).toBe("pending")
+    }
+
+    const { id } = createInvoiceHash()
+    const { request } = await createHodlInvoice({ id, lnd: lndOutside1, tokens: amountInvoice });
+    await expect(userWallet1.pay({invoice: request})).rejects.toThrow()
+  })
+
 })
 
 it(`fails to pay when user has insufficient balance`, async () => {
