@@ -371,6 +371,12 @@ export const LightningMixin = (superclass) => class extends superclass {
         throw Error(error)
       }
 
+      if ((await this.user.activePayments) > yamlConfig.limits.activePayments.level[this.user.level]) {
+        const error = `Cannot have more than ${yamlConfig.limits.activePayments.level[this.user.level]} pending payments`
+        lightningLogger.error({ success: false }, error)
+        throw new LoggedError(error)
+      }
+
       if (await this.user.limitHit({on_us: false, amount:tokens})) {
         const error = `Cannot transfer more than ${yamlConfig.limits.withdrawal.level[this.user.level]} sats in 24 hours`
         lightningLogger.error({ success: false }, error)
