@@ -14,11 +14,11 @@ data:
     LOG_TIME=$(date +%s)
     BACKUP_NAME="$NETWORK-$LOG_TIME.gz"
     echo "Activating service account"
-    # gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
+    gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
     echo "Backing up mongodb"
     mongodump --host=$MONGODB_ADDRESS --port=$MONGODB_PORT --username=$MONGODB_USER --password=$MONGODB_PASSWORD --gzip --archive=$BACKUP_NAME -d=$MONGODB_DB --readPreference=secondary
     echo "Uploading backup $BACKUP_NAME to dropbox"
     curl -X POST https://content.dropboxapi.com/2/files/upload --header "Authorization: Bearer $DROPBOX_ACCESS_TOKEN" --header "Dropbox-API-Arg: {\"path\": \"/mongo/$BACKUP_NAME\"}" --header "Content-Type: application/octet-stream" --data-binary $BACKUP_NAME
     echo "Uploading backup $BACKUP_NAME to gcs"
-    # gsutil cp $BACKUP_NAME gs://$BUCKET_NAME/$BACKUP_NAME 2>&1
+    gsutil cp $BACKUP_NAME gs://$BUCKET_NAME/$BACKUP_NAME 2>&1
     echo "Uploaded backup successfully"

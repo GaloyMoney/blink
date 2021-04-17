@@ -18,7 +18,8 @@ spec:
             command: ["/bin/sh","-c", "/var/backup.sh"]
             volumeMounts:
             - name: mongo-backup-configmap
-              mountPath: "/var"
+              mountPath: "/var/backup.sh"
+              subPath: backup.sh
             - name: "service-account"
               mountPath: "/var/secret/cloud.google.com"
             env:
@@ -42,6 +43,8 @@ spec:
                 secretKeyRef:
                   name: dropbox-access-token
                   key: token
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: "/var/secret/cloud.google.com/galoyapp-31518a00082f.json"
           volumes:
           - name: mongo-backup-configmap
             configMap:
