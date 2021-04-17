@@ -112,6 +112,22 @@ const functionToTests = [
 ]
 
 functionToTests.forEach(({fn, name, initialFee}) => {
+  // it(`doesn't allow more active payments than the limit - ${name}`, async () => {
+  //   let secrets = []
+  //   for (let i=0; i < yamlConfig.limits.activePayments.level['1']; i++) {
+  //     const { id, secret } = createInvoiceHash()
+  //     const { request } = await createHodlInvoice({ id, lnd: lndOutside1, tokens: amountInvoice });
+  //     secrets.push[secret]
+  //     const result = await fn(userWallet1)({invoice: request})
+  //     expect(result).toBe("pending")
+  //   }
+
+  //   const { id } = createInvoiceHash()
+  //   const { request } = await createHodlInvoice({ id, lnd: lndOutside1, tokens: amountInvoice });
+  //   await expect(userWallet1.pay({invoice: request})).rejects.toThrow()
+
+  // })
+
   it(`simple payInvoice ${name}`, async () => {
     const { request } = await createInvoice({ lnd: lndOutside1, tokens: amountInvoice })
     const result = await fn(userWallet1)({ invoice: request })
@@ -258,19 +274,6 @@ functionToTests.forEach(({fn, name, initialFee}) => {
     const {BTC: finalBalance} = await userWallet1.getBalances()
     expect(finalBalance).toBe(initBalance1)
   }, 60000)
-
-  it(`doesn't allow more active payments than the limit - ${name}`, async () => {
-    for (let i=0; i < yamlConfig.limits.activePayments.level['1']; i++) {
-      const { id } = createInvoiceHash()
-      const { request } = await createHodlInvoice({ id, lnd: lndOutside1, tokens: amountInvoice });
-      const result = await fn(userWallet1)({invoice: request})
-      expect(result).toBe("pending")
-    }
-
-    const { id } = createInvoiceHash()
-    const { request } = await createHodlInvoice({ id, lnd: lndOutside1, tokens: amountInvoice });
-    await expect(userWallet1.pay({invoice: request})).rejects.toThrow()
-  })
 
 })
 
