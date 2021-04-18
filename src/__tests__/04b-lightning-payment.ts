@@ -19,7 +19,16 @@ const amountInvoice = 1000
 
 jest.mock('../notifications/notification')
 import { sendNotification } from "../notifications/notification";
+import { yamlConfig } from '../config';
 jest.mock('../realtimePrice')
+
+const date = Date.now() + 1000 * 60 * 60 * 24 * 8
+
+jest
+.spyOn(global.Date, 'now')
+.mockImplementation(() =>
+new Date(date).valueOf()
+);
 
 
 
@@ -385,6 +394,11 @@ it('payInvoiceToSelf', async () => {
   await expect(userWallet1.pay({ invoice })).rejects.toThrow()
 })
 
+it('negative amount should be rejected', async () => {
+  const destination = await userWallet0.getNodePubkey()
+  expect(userWallet1.pay({ destination, username: userWallet0.user.username, amount: - amountInvoice })).rejects.toThrow()
+})
+
 it('onUs pushPayment', async () => {
   const destination = await userWallet0.getNodePubkey()
   const res = await userWallet1.pay({ destination, username: userWallet0.user.username, amount: amountInvoice })
@@ -462,6 +476,16 @@ it('fails to pay regular invoice with separate amt', async () => {
   await expect(userWallet1.pay({ invoice: request, amount: amountInvoice })).rejects.toThrow()
 })
 
+it('fails to pay when withdrawalLimit exceeded', async () => {
+  const { request } = await createInvoice({ lnd: lndOutside1, tokens: 2e6 })
+  await expect(userWallet0.pay({ invoice: request })).rejects.toThrow()
+})
+
+it('fails to pay when amount exceeds onUs limit', async() => {
+  const level1Limit = yamlConfig.limits.onUs.level['1']
+  const request = await userWallet1.addInvoice({ value: level1Limit + 1 })
+  await expect(userWallet0.pay({ invoice: request })).rejects.toThrow()
+})
 
 // it('testDbTransaction', async () => {
 //   //TODO try to fetch simulataneously (ie: with Premise.all[])

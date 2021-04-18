@@ -51,7 +51,6 @@ export const uploadBackup = async (backup) => {
 export async function onchainTransactionEventHandler(tx) {
 
   // workaround for https://github.com/lightningnetwork/lnd/issues/2267
-  // a lock might be necessary
   const hash = crypto.createHash('sha256').update(JSON.stringify(tx)).digest('base64');
   if (txsReceived.has(hash)) {
     return

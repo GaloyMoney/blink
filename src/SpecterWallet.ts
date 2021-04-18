@@ -42,7 +42,7 @@ export class SpecterWallet {
     // hotkey-based specter wallet to bypass this check
 
     if (specterWallets.length === 0) {
-      this.logger.info("specter wallet has not been instanciated")
+      this.logger.info("specter wallet has not been instantiated")
       
       // currently use for testing purpose. need to refactor
       return ""

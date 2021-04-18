@@ -27,12 +27,14 @@ import { setupMongoConnection } from "../mongodb";
 import { sendNotification } from "../notifications/notification";
 import { User } from "../schema";
 import { login, requestPhoneCode } from "../text";
-import { OnboardingEarn } from "../types";
+import { Levels, OnboardingEarn } from "../types";
 import { UserWallet } from "../userWallet";
-import { baseLogger, customLoggerPrefix, LoggedError } from "../utils";
+import { AdminOps } from "../AdminOps"
+import { baseLogger, customLoggerPrefix, fetchIPDetails, LoggedError } from "../utils";
 import { WalletFactory, WalletFromUsername } from "../walletFactory";
 import { getCurrentPrice } from "../realtimePrice";
 import { getAsyncRedisClient } from "../redis";
+import { yamlConfig } from '../config';
 
 dotenv.config()
 
@@ -65,11 +67,11 @@ const helmRevision = process.env.HELMREVISION
 const resolvers = {
   Query: {
     me: async (_, __, { uid, user }) => {
-      const { phone, username, contacts, language } = user
+      const { phone, username, contacts, language, level } = user
 
       return {
         id: uid,
-        level: 1,
+        level,
         phone,
         username,
         contacts,
@@ -153,27 +155,37 @@ const resolvers = {
         id: user.username
       }))
     },
-    usernameExists: async (_, { username }) => await UserWallet.usernameExists({ username }),
-    getUserDetails: async (_, { phone, username }, { logger }) => {
-      return UserWallet.getUserDetails({ phone, username });
+    usernameExists: async (_, { username }) => AdminOps.usernameExists({ username }),
+    getUserDetails: async (_, { uid }) => User.findOne({_id: uid}),
+    noauthUpdatePendingInvoice: async (_, { hash, username }, { logger }) => {
+      const wallet = await WalletFromUsername({ username, logger })
+      return wallet.updatePendingInvoice({ hash })
     },
+    getUid: async (_, { username, phone }) => {
+      const { _id: uid } = await User.getUser({ username, phone })
+      return uid
+    },
+    getLevels: () => Levels,
+    getLimits: (_, __, {user}) => {
+      return {
+        oldEnoughForWithdrawal: yamlConfig.limits.oldEnoughForWithdrawal,
+        withdrawal: yamlConfig.limits.withdrawal.level[user.level],
+        onUs: yamlConfig.limits.onUs.level[user.level]
+      }
+    }
   },
   Mutation: {
     requestPhoneCode: async (_, { phone }, { logger }) => ({ success: requestPhoneCode({ phone, logger }) }),
     login: async (_, { phone, code }, { logger }) => ({ token: login({ phone, code, logger }) }),
     updateUser: async (_, __, { wallet }) => ({
-      // FIXME manage uid
-      // TODO only level for now
-      setLevel: async () => {
-        const result = await wallet.setLevel({ level: 1 })
-        return {
-          id: wallet.uid,
-          level: result.level,
-        }
-      },
       setUsername: async ({ username }) => await wallet.setUsername({ username }),
-      setLanguage: async ({ language }) => await wallet.setLanguage({ language })
+      setLanguage: async ({ language }) => await wallet.setLanguage({ language }),
+      updateUsername: (input) => wallet.updateUsername(input),
+      updateLanguage: (input) => wallet.updateLanguage(input),
     }),
+    setLevel: async (_, { uid, level }) => {
+      return AdminOps.setLevel({ uid, level })
+    },
     updateContact: async (_, __, { user }) => ({
       setName: async ({ username, name }) => {
         user.contacts.filter(item => item.id === username)[0].name = name
@@ -181,15 +193,14 @@ const resolvers = {
         return true
       }
     }),
-    publicInvoice: async (_, { username }, { logger }) => {
-      const wallet = await WalletFromUsername({ username, logger })
-      return {
-        addInvoice: async ({ value, memo }) => wallet.addInvoice({ value, memo, selfGenerated: false }),
-        updatePendingInvoice: async ({ hash }) => wallet.updatePendingInvoice({ hash })
-      }
+    noauthAddInvoice: async (_, { uid }, { logger }) => {
+      const user = await User.findOne({_id: uid})
+      const wallet = await WalletFactory({ user, logger })
+      return wallet.addInvoice({ selfGenerated: false })
     },
     invoice: async (_, __, { wallet }) => ({
       addInvoice: async ({ value, memo }) => wallet.addInvoice({ value, memo }),
+      // FIXME: move to query
       updatePendingInvoice: async ({ hash }) => wallet.updatePendingInvoice({ hash }),
       payInvoice: async ({ invoice, amount, memo }) => wallet.pay({ invoice, amount, memo }),
       payKeysendUsername: async ({ destination, username, amount, memo }) => wallet.pay({ destination, username, amount, memo }),
@@ -202,7 +213,7 @@ const resolvers = {
     onchain: async (_, __, { wallet }) => ({
       getNewAddress: () => wallet.getOnChainAddress(),
       pay: ({ address, amount, memo }) => ({ success: wallet.onChainPay({ address, amount, memo }) }),
-      getFee: ({ address }) => wallet.getOnchainFee({ address }),
+      getFee: ({ address, amount }) => wallet.getOnchainFee({ address, amount }),
     }),
     addDeviceToken: async (_, { deviceToken }, { user }) => {
       user.deviceToken.addToSet(deviceToken)
@@ -223,8 +234,11 @@ const resolvers = {
       return { success: true }
     },
     addToMap: async (_, { username, title, latitude, longitude }, { }) => {
-      return await UserWallet.addToMap({ username, title, latitude, longitude });
+      return AdminOps.addToMap({ username, title, latitude, longitude });
     },
+    setAccountStatus: async (_, { uid, status }, { }) => {
+      return AdminOps.setAccountStatus({ uid, status })
+    }
   }
 }
 
@@ -252,6 +266,8 @@ const permissions = shield({
     wallet2: isAuthenticated,
     getLastOnChainAddress: isAuthenticated,
     getUserDetails: and(isAuthenticated, isEditor),
+    getUid: and(isAuthenticated, isEditor),
+    getLevels: and(isAuthenticated, isEditor)
   },
   Mutation: {
     // requestPhoneCode: not(isAuthenticated),
@@ -266,11 +282,13 @@ const permissions = shield({
     addDeviceToken: isAuthenticated,
     testMessage: isAuthenticated,
     addToMap: and(isAuthenticated, isEditor),
+    setLevel: and(isAuthenticated, isEditor),
+    setAccountStatus: and(isAuthenticated, isEditor)
   },
 }, { allowExternalErrors: true }) // TODO remove to not expose internal error
 
 
-async function startApolloServer() {
+export async function startApolloServer() {
   const app = express();
 
   const schema = applyMiddleware(
@@ -289,10 +307,19 @@ async function startApolloServer() {
       // @ts-ignore
       const token = context.req?.token ?? null
       const uid = token?.uid ?? null
-      const user = !!uid ? await User.findOne({ _id: uid }) : null
+
+      let wallet, user
+
+      // TODO move from id: uuidv4() to a Jaeger standard 
+      const logger = graphqlLogger.child({ token, id: uuidv4(), body: context.req?.body })
+
+      if (!!uid) {
+        user = await User.findOneAndUpdate({ _id: uid },{ lastConnection: new Date() }, {new: true})
+        fetchIPDetails({currentIP: context.req?.headers['x-real-ip'], user, logger})
+        wallet = (!!user && user.status === "active") ? await WalletFactory({ user, logger }) : null
+      }
+
       // @ts-ignore
-      const logger = graphqlLogger.child({ token, id: context.req.id, body: context.req.body })
-      const wallet = (!!uid && user.status !== "locked") ? await WalletFactory({ user, logger }) : null
       return {
         ...context,
         logger,
@@ -305,22 +332,15 @@ async function startApolloServer() {
       // FIXME
       if(_.startsWith(err.message, customLoggerPrefix)) {
         err.message = err.message.slice(customLoggerPrefix.length)
-      } else {
-        baseLogger.error({ err }, "graphql catch-all error");
-      }
+      } 
+      
+      baseLogger.error({ err }, "graphql catch-all error");
+      
       // return defaultErrorFormatter(err)
-      return err
+      // return err
+      return new Error('Internal server error');
     },
   })
-
-
-  // injecting unique id to the request for correlating different logs messages
-  // TODO: use a jaeger standard instead to be able to do distributed tracing 
-  app.use(function(req, res, next) {
-    // @ts-ignore
-    req.id = uuidv4();
-    next();
-  });
 
   app.use(pino_http)
 

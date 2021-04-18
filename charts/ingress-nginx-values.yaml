@@ -1,4 +1,6 @@
 controller:
+  service:
+    externalTrafficPolicy: Local
   metrics: 
     enabled: true
     service:

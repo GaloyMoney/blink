@@ -1,9 +1,12 @@
 import _ from 'lodash';
 
 import { customerPath } from "./ledger/ledger";
+import { yamlConfig } from "./config"
 
 import mongoose from "mongoose";
-import { caseInsensitiveUsername } from './utils';
+import { caseInsensitiveRegex, inputXOR, LoggedError } from './utils';
+import { UserWallet } from './userWallet';
+import { Levels } from './types';
 // mongoose.set("debug", true);
 
 const Schema = mongoose.Schema;
@@ -14,6 +17,8 @@ const dbVersionSchema = new Schema({
   lastBuildNumber: Number,
 })
 export const DbVersion = mongoose.model("DbVersion", dbVersionSchema)
+
+const MS_PER_DAY = 24 * 60 * 60 * 1000
 
 const jobScheduleSchema = new Schema({
   lastDay: String
@@ -51,6 +56,23 @@ export const regexUsername = /(?!^(1|3|bc1|lnbc1))^[0-9a-z_]+$/i
 
 
 const UserSchema = new Schema({
+  lastConnection: Date,
+  lastIPs: {
+    type: [{
+      ip: String,
+      provider: String,
+      country: String,
+      region: String,
+      city: String,
+      //using Type instead of type due to its special status in mongoose
+      Type: String,
+      timestamp: {
+        type: Date,
+        default: Date.now
+      }
+    }],
+    default: []
+  },
   created_at: {
     type: Date,
     default: Date.now
@@ -72,13 +94,30 @@ const UserSchema = new Schema({
   },
   level: {
     type: Number,
+    enum: Levels,
     default: 1
   },
+
+  // TODO: refactor, have phone and twilio metadata in the same sub-object.
   phone: { // TODO we should store country as a separate string
     type: String,
     required: true,
     unique: true,
   },
+  twilio: {
+    carrier: {
+      error_code: String , // check this is the right syntax
+      mobile_country_code: String,
+      mobile_network_code: String,
+      name: String,
+      type: {
+        types: String,
+        enum: ["landline", "voip", "mobile"]
+      }
+    },
+    countryCode: String,
+  },
+
   username: {
     type: String,
     match: [regexUsername, "Username can only have alphabets, numbers and underscores"],
@@ -132,8 +171,8 @@ const UserSchema = new Schema({
   },
   language: {
     type: String,
-    enum: ["en", "es", null],
-    default: null // will use OS preference settings
+    enum: ["en", "es", ""],
+    default: ""
   },
   // firstName,
   // lastName,
@@ -180,20 +219,44 @@ UserSchema.virtual('accountPath').get(function(this: typeof UserSchema) {
   return customerPath(this._id)
 })
 
+UserSchema.virtual('oldEnoughForWithdrawal').get(function(this: typeof UserSchema) {
+  const d = Date.now()
+  // console.log({d, created_at: this.created_at.getTime(), oldEnough: yamlConfig.limits.oldEnoughForWithdrawal})
+  return (d - this.created_at.getTime()) > yamlConfig.limits.oldEnoughForWithdrawal
+})
+
+UserSchema.methods.limitHit = async function({on_us, amount}: {on_us: boolean, amount: number}) {
+  const timestampYesterday = Date.now() - MS_PER_DAY
+
+  const txnType = on_us ? [{type: 'on_us'},{type: 'onchain_on_us'}] : [{type:{$ne: 'on_us'}}] 
+
+  const limit = yamlConfig.limits[on_us ? 'onUs' : 'withdrawal'].level[this.level]
+  
+  const outgoingSats = (await User.getVolume({
+    after: timestampYesterday, txnType, accounts: this.accountPath
+  }))?.outgoingSats ?? 0
+
+  return outgoingSats + amount > limit
+}
+
+UserSchema.statics.getVolume = async function({before, after, accounts, txnType}: {before?:number, after: number, accounts: string, txnType: [string]}) {
+  const timeBounds = before ? [{timestamp: { $gte: new Date(after) }}, {timestamp: { $lte: new Date(before) }}] : [{timestamp: { $gte: new Date(after) }}]
+  const [result] = await Transaction.aggregate([
+    {$match: {accounts, $or: txnType, $and: timeBounds } },
+    {$group: {_id: null, outgoingSats: { $sum: "$debit" }, incomingSats: { $sum: "$credit" } } }
+  ])
+  return result
+}
+
 // user is considered active if there has been one transaction of more than 1000 sats in the last 30 days
 UserSchema.virtual('userIsActive').get(async function(this: typeof UserSchema) {
-  const timestamp30DaysAgo = new Date(Date.now() - (30 * 24 * 60 * 60 * 1000))
-  const [result] = await Transaction.aggregate([
-    { $match: { "accounts": this.accountPath, "timestamp": { $gte: timestamp30DaysAgo } } },
-    {
-      $group: {
-        _id: null, outgoingSats: { $sum: "$credit" }, incomingSats: { $sum: "$debit" }
-      }
-    }
-  ])
-  const { incomingSats, outgoingSats } = result || {}
+  const timestamp30DaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000)
 
-  return (outgoingSats > 1000 || incomingSats > 1000)
+  const volume = await User.getVolume({
+    after: timestamp30DaysAgo, txnType: [{type:{$exists: true}}], accounts: this.accountPath
+  })
+
+  return (volume?.outgoingSats > 1000 || volume?.incomingSats > 1000)
 })
 
 UserSchema.index({
@@ -201,13 +264,30 @@ UserSchema.index({
   coordinate: 1,
 });
 
+UserSchema.statics.getUser = async function({ username, phone }) {
+  inputXOR({ phone }, { username })
+  let user;
 
+  if(phone) {
+    user = await this.findOne({ phone })
+  } else {
+    user = await this.findByUsername({ username })
+  }
+
+  if(!user) {
+    throw new LoggedError("User not found");
+  }
+
+  return user;
+}
+
+// FIXME: Merge findByUsername and getUser
 UserSchema.statics.findByUsername = async function({ username }) {
   if(typeof username !== "string" || !username.match(regexUsername)) {
     return null
   }
 
-  return this.findOne({ username: caseInsensitiveUsername(username) })
+  return this.findOne({ username: caseInsensitiveRegex(username) })
 }
 
 UserSchema.statics.getActiveUsers = async function(): Promise<Array<typeof User>> {
@@ -343,8 +423,14 @@ const transactionSchema = new Schema({
   },
 
   // original property from medici
-  credit: Number,
-  debit: Number,
+  credit: {
+    type: Number,
+    min: 0
+  },
+  debit: {
+    type: Number,
+    min: 0
+  },
   meta: Schema.Types.Mixed,
   datetime: Date,
   account_path: [String],

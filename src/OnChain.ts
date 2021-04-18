@@ -13,13 +13,8 @@ import { Transaction, User } from "./schema";
 import { getHeight } from "lightning"
 
 import bluebird from 'bluebird';
+import { yamlConfig } from "./config";
 const { using } = bluebird;
-
-// TODO: look if tokens/amount has an effect on the fees
-// we don't want to go back and forth between RN and the backend if amount changes
-// but fees are the same
-const someAmount = 50000
-
 
 export const getOnChainTransactions = async ({ lnd, incoming }: { lnd: any, incoming: boolean }) => {
   try {
@@ -54,15 +49,17 @@ export const OnChainMixin = (superclass) => class extends superclass {
     return User.findOne({ onchain_addresses: { $in: address } })
   }
 
-  async getOnchainFee({address}: {address: string}): Promise<number> {
+  async getOnchainFee({address, amount}: {address: string, amount: number | null}): Promise<number> {
     const payeeUser = await this.tentativelyGetPayeeUser({address})
 
     let fee
 
+    const defaultAmount = 300000
+
     if (payeeUser) {
       fee = 0
     } else {
-      const sendTo = [{ address, tokens: someAmount }];
+      const sendTo = [{ address, tokens: amount ?? defaultAmount }];
       ({ fee } = await lnService.getChainFeeEstimate({ lnd, send_to: sendTo }))
     }
 
@@ -72,6 +69,11 @@ export const OnChainMixin = (superclass) => class extends superclass {
   // amount in sats
   async onChainPay({ address, amount, memo }: IOnChainPayment): Promise<ISuccess> {
     let onchainLogger = this.logger.child({ topic: "payment", protocol: "onchain", transactionType: "payment", address, amount, memo })
+
+    if (amount <= 0) {
+      onchainLogger.error('A negative amount was passed')
+      throw Error("amount can't be negative")
+    }
 
     return await redlock({ path: this.user._id, logger: onchainLogger }, async (lock) => {
 
@@ -89,6 +91,12 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
       if (payeeUser) {
         const onchainLoggerOnUs = onchainLogger.child({onUs: true})
+
+        if (await this.user.limitHit({on_us: true, amount})) {
+          const error = `Cannot transfer more than ${yamlConfig.limits.onUs.level[this.user.level]} sats in 24 hours`
+          onchainLoggerOnUs.error({ success: false }, error)
+          throw new LoggedError(error)
+        }
 
         if (String(payeeUser._id) === String(this.user._id)) {
           const error = 'User tried to pay himself'
@@ -116,6 +124,17 @@ export const OnChainMixin = (superclass) => class extends superclass {
       }
 
       onchainLogger = onchainLogger.child({onUs: false})
+      
+      if (!this.user.oldEnoughForWithdrawal) {
+        const error = `new account have to wait ${yamlConfig.limits.oldEnoughForWithdrawal / 60 * 60 * 1000}h before withdrawing`
+        throw Error(error)
+      }
+
+      if (await this.user.limitHit({on_us: false, amount})) {
+        const error = `Cannot withdraw more than ${yamlConfig.limits.withdrawal.level[this.user.level]} sats in 24 hours`
+        onchainLogger.error({ success: false }, error)
+        throw new LoggedError(error)
+      }
 
       const { chain_balance: onChainBalance } = await lnService.getChainBalance({ lnd })
 
@@ -300,7 +319,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
     // TODO: should have outgoing unconfirmed transaction as well.
     // they are in medici, but not necessarily confirmed
 
-    const unconfirmed = await this.getOnchainReceipt({confirmed: false})
+    const unconfirmed_all = await this.getOnchainReceipt({confirmed: false})
 
     // {
     //   block_id: undefined,
@@ -317,15 +336,15 @@ export const OnChainMixin = (superclass) => class extends superclass {
     //   transaction: '020000000001019b5e33c844cc72b093683cec8f743f1ddbcf075077e5851cc8a598a844e684850100000000feffffff022054380c0100000016001499294eb1f4936f15472a891ba400dc09bfd0aa7b00e1f505000000001600146107c29ed16bf7712347ddb731af713e68f1a50702473044022016c03d070341b8954fe8f956ed1273bb3852d3b4ba0d798e090bb5fddde9321a022028dad050cac2e06fb20fad5b5bb6f1d2786306d90a1d8d82bf91e03a85e46fa70121024e3c0b200723dda6862327135ab70941a94d4f353c51f83921fcf4b5935eb80495000000'
     // }
 
-    const unconfirmed_promise = unconfirmed.map(async ({ transaction, id, created_at }) => {
+    const unconfirmed_promises = unconfirmed_all.map(async ({ transaction, id, created_at }) => {
       const { sats, addresses } = await this.getSatsAndAddressPerTx(transaction)
       return { sats, addresses, id, created_at }
     })
 
-    const unconfirmed_meta: any[] = await Promise.all(unconfirmed_promise)
+    const unconfirmed: any[] = await Promise.all(unconfirmed_promises)
 
     return [
-      ...unconfirmed_meta.map(({ sats, addresses, id, created_at }) => ({
+      ...unconfirmed.map(({ sats, addresses, id, created_at }) => ({
         id, 
         amount: sats,
         pending: true,

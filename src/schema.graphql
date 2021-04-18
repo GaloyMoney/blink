@@ -65,7 +65,7 @@ type Invoice {
 type OnChain {
   getNewAddress: String
   pay(address: String!, amount: Int!, memo: String): Success
-  getFee(address: String!): Int # sats
+  getFee(address: String!, amount: Int): Int # sats
 }
 
 type LastOnChainAddress {
@@ -86,11 +86,7 @@ type User {
   title: String
   created_at: String
   coordinate: Coordinate
-}
-
-input InputUser {
-  id: ID
-  level: Int
+  status: AccountStatus
 }
 
 type Success {
@@ -137,28 +133,44 @@ type Query {
   earnList: [Earn]
   me: User
   maps: [Marker]
-  buildParameters(appVersion: String, buildVersion: String, os: String): BuildParameter
+  buildParameters(appVersion: String @deprecated, buildVersion: String @deprecated, os: String @deprecated): BuildParameter
   nodeStats: NodeStats
   getLastOnChainAddress: LastOnChainAddress
   usernameExists(username: String!): Boolean
-  getUserDetails(phone: String, username: String): User
+  getUserDetails(uid: ID!): User
+  noauthUpdatePendingInvoice(username: String!, hash: String!): Boolean
+  getUid(username: String, phone: String): ID
+  getLevels: [Int]
+  getLimits: Limits
+}
+
+type Limits {
+  oldEnoughForWithdrawal: Int
+  withdrawal: Int
+  onUs: Int
 }
 
 type UpdateUser {
-  setLanguage(language: String): Boolean
-  setLevel(user: InputUser): User
-  setUsername(username: String!): Boolean
+  setLanguage(language: String): Boolean @deprecated
+  setUsername(username: String!): Boolean @deprecated
+  updateLanguage(language: String!): User
+  updateUsername(username: String!): User
 }
 
 type UpdateContact {
   setName(username: String, name: String): Boolean
 }
 
+enum AccountStatus {
+  active
+  locked
+}
+
 type Mutation {
   requestPhoneCode(phone: String): Success
   login(phone: String, code: Int, currency: String): Token
     @deprecated(reason: "currency is no longer user. to be remove after mobile update")
-  publicInvoice(username: String!): Invoice
+  noauthAddInvoice(uid: ID!): String
   onchain: OnChain
   invoice: Invoice
   earnCompleted(ids: [ID]): [Earn]
@@ -168,4 +180,6 @@ type Mutation {
   addDeviceToken(deviceToken: String): Success # to refactor with User?
   testMessage: Success # FIXME remove test
   addToMap(username: String!, title: String!, latitude: Float!, longitude: Float!): Boolean
+  setAccountStatus(uid: ID!, status: AccountStatus!): User
+  setLevel(uid: ID!, level: Int!): User
 }

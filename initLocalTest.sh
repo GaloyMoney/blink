@@ -8,7 +8,7 @@ helm repo add jetstack https://charts.jetstack.io
 helm repo add galoy https://galoymoney.github.io/charts/
 helm repo update
 
-lndVersion="1.1.7"
+lndVersion="1.1.12"
 
 cd ./charts/galoy && helm dependency build && cd -
 cd ./charts/monitoring && helm dependency build && cd -
@@ -16,17 +16,26 @@ cd ./charts/monitoring && helm dependency build && cd -
 INGRESS_NAMESPACE="ingress-nginx"
 INFRADIR=./charts
 
+backupMongodb () {
+  JOB_DATE=$(date -u '+%s')
+  kubectl -n=$NAMESPACE create job --from=cronjob/mongo-backup "$JOB_DATE"
+  kubectl -n=$NAMESPACE wait --for=condition=complete --timeout=120s job/$JOB_DATE
+  kubectl -n=$NAMESPACE delete job/$JOB_DATE
+}
+
 
 if [ "$1" == "testnet" ] || [ "$1" == "mainnet" ];
 then
   NETWORK="$1"
   NAMESPACE="$1"
 
+  backupMongodb
+
   # create namespaces if not exists
   kubectl create namespace $INGRESS_NAMESPACE --dry-run -o yaml | kubectl apply -f -
   kubectl create namespace cert-manager --dry-run -o yaml | kubectl apply -f -
 
-  helm -n cert-manager upgrade -i cert-manager jetstack/cert-manager --set installCRDs=true
+  helm -n cert-manager upgrade -i cert-manager jetstack/cert-manager --set installCRDs=true --version=v1.2.0
 
   # Uncomment the following line if not using Google cloud and enter a static ip obtained from your cloud provider
   # export STATIC_IP=xxx.xxx.xxx.xxx

@@ -6,8 +6,8 @@ import { customerPath } from "./ledger/ledger";
 import { MainBook } from "./mongodb";
 import { sendNotification } from "./notifications/notification";
 import { User } from "./schema";
-import { ITransaction } from "./types";
-import { caseInsensitiveUsername, LoggedError } from "./utils";
+import { ITransaction, Levels } from "./types";
+import { caseInsensitiveRegex, LoggedError } from "./utils";
 
 export abstract class UserWallet {
 
@@ -29,10 +29,6 @@ export abstract class UserWallet {
   // TODO: upgrade price automatically with a timer
   static setCurrentPrice(price) {
     UserWallet.lastPrice = price
-  }
-
-  static async usernameExists({ username }): Promise<boolean> {
-    return !!(await User.findByUsername({ username }))
   }
 
   // this needs to be here to be able to call / chain updatePending()
@@ -147,11 +143,7 @@ export abstract class UserWallet {
     return csv.getBase64()
   }
 
-  async setLevel({ level }) {
-    this.user.level = level
-    await this.user.save()
-  }
-
+  // deprecated
   async setUsername({ username }): Promise<boolean | Error> {
 
     const result = await User.findOneAndUpdate({ _id: this.user.id, username: null }, { username })
@@ -165,7 +157,8 @@ export abstract class UserWallet {
     return true
   }
 
-  async setLanguage({ language }): Promise<boolean | Error> {
+  // deprecated
+  async setLanguage({ language }): Promise<boolean> {
 
     const result = await User.findOneAndUpdate({ _id: this.user.id, }, { language })
 
@@ -176,6 +169,29 @@ export abstract class UserWallet {
     }
 
     return true
+  }
+
+  async updateUsername({ username }): Promise<{username: string | undefined, id: string}> {
+    try {
+      const result = await User.findOneAndUpdate({ _id: this.user.id, username: null }, { username })
+      if(!result) {
+        throw new LoggedError(`Username is already set, result: ${result}`)
+      }
+      return { username, id: this.user.id }
+    } catch (err) {
+      this.logger.error({err}, "error updating username")
+      return {username: undefined, id: this.user.id }
+    }
+  }
+
+  async updateLanguage({ language }): Promise<{language: string | undefined, id: string}> {
+    try {
+      await User.findOneAndUpdate({ _id: this.user.id }, { language })
+      return { language, id: this.user.id }
+    } catch (err) {
+      this.logger.error({err}, "error updating language")
+      return {language: undefined, id: this.user.id }
+    }
   }
 
   static getCurrencyEquivalent({ sats, fee, usd }: { sats: number, fee?: number, usd?: number }) {
@@ -204,48 +220,4 @@ export abstract class UserWallet {
     await sendNotification({ user: this.user, title: `Your balance is \$${balanceUsd} (${balanceSatsPrettified} sats)`, logger: this.logger })
   }
 
-  static async getUserDetails({ phone, username }): Promise<typeof User> {
-    if(!(!phone != !username)) {
-      throw new LoggedError("Either phone or username is required, but not both");
-    }
-    let user;
-
-    if(phone) {
-      user = await User.findOne(
-        { phone },
-        { phone: 1, level: 1, created_at: 1, username: 1, title: 1, coordinate: 1 }
-      );
-    } else if(this.usernameExists({ username })) {
-      user = await User.findOne(
-        { username: caseInsensitiveUsername(username) },
-        { phone: 1, level: 1, created_at: 1, username: 1, title: 1, coordinate: 1 }
-      );
-    }
-
-    if(!user) {
-      throw new LoggedError("User not found");
-    }
-
-    return user;
-  }
-
-  static async addToMap({ username, latitude, longitude, title, }): Promise<boolean> {
-    if(!latitude || !longitude || !title) {
-      throw new LoggedError(`missing input for ${username}: ${latitude}, ${longitude}, ${title}`);
-    }
-
-    const user = await User.findByUsername({ username });
-
-    if(!user) {
-      throw new LoggedError(`The user ${username} does not exist`);
-    }
-
-    user.coordinate = {
-      latitude,
-      longitude
-    };
-
-    user.title = title;
-    return !!(await user.save());
-  }
 }

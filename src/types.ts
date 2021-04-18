@@ -47,6 +47,8 @@ export type TransactionType = "payment" | "paid-invoice" | "on_us" |
   "fee" | "escrow" | "routing_fee" |
   "onchain_receipt_pending" // only for notification, not persistent in mongodb
 
+export const Levels = [1, 2]
+
 export interface IOnChainPayment {
   address: string,
   amount: number,

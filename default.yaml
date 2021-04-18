@@ -48,3 +48,17 @@ test_accounts:
   code: 321321
   currency: "BTC"
 
+limits:
+  oldEnoughForWithdrawal: 172800000 # 1000 * 60 * 60 * 24 * 2, in ms # 2 days
+  withdrawal:
+    level:
+      1: 2000000
+      2: 100000000
+  onUs:
+    level:
+      1: 5000000
+      2: 100000000
+
+# TODO
+# carrierRegexFilter: ""
+

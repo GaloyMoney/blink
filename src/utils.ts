@@ -16,7 +16,9 @@ export const LOOK_BACK = 2016
 
 // @ts-ignore
 import { GraphQLError } from "graphql";
-import { User } from "./schema";
+import { Transaction, User } from "./schema";
+import axios from "axios";
+import { yamlConfig } from "./config";
 
 
 // FIXME: super ugly hack.
@@ -30,6 +32,8 @@ export class LoggedError extends GraphQLError {
     super(`${customLoggerPrefix}${message}`);
   }
 }
+
+const PROXY_CHECK_APIKEY = yamlConfig?.PROXY_CHECK_APIKEY
 
 const connection_obj = {
   network: process.env.NETWORK,
@@ -150,6 +154,33 @@ export const isInvoiceAlreadyPaidError = (err) => {
   return false
 }
 
-export const caseInsensitiveUsername = (username) => {
-  return new RegExp(`^${username}$`, 'i')
+export const caseInsensitiveRegex = (input) => {
+  return new RegExp(`^${input}$`, 'i')
+}
+
+// Throws an error if neither or both value1 and value2 are provided
+export const inputXOR = (arg1, arg2) => {
+  const [[key1, value1]] = Object.entries(arg1)
+  const [[key2, value2]] = Object.entries(arg2)
+  if(!(!value1 != !value2)) {
+    throw new LoggedError(`Either ${key1} or ${key2} is required, but not both`);
+  }
+}
+
+export const fetchIPDetails = async ({currentIP, user, logger}) => {
+  if (process.env.NODE_ENV === "test") {
+    return
+  }
+  
+  try {
+    if(user.lastIPs.some(ipObject => ipObject.ip === currentIP)) {
+      return
+    }
+
+    const {data} = await axios.get(`http://proxycheck.io/v2/${currentIP}?key=${PROXY_CHECK_APIKEY}&vpn=1&asn=1`)
+    const ipinfo = (({provider, country, region, city, type}) => ({provider, country, region, city, type}))(data[currentIP])
+    await User.updateOne({_id: user._id}, {$push: {lastIPs: { ip: currentIP, ...ipinfo }}})
+  } catch (error) {
+    logger.info({error}, 'Failed to fetch ip details')
+  }
 }

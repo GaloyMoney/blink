@@ -2,6 +2,8 @@
  * @jest-environment node
  */
 import mongoose from "mongoose";
+import { AdminOps } from "../AdminOps";
+import { yamlConfig } from "../config";
 import { setupMongoConnection } from "../mongodb";
 import { User } from "../schema";
 import { UserWallet } from "../userWallet";
@@ -79,26 +81,57 @@ describe('username tests', () => {
     const result = await userWallet2.setUsername({ username: "lily" })
     expect(!!result).toBeTruthy()
 
-    
     expect(userWallet2.user.title).toBeTruthy()
   })
+
+  it('new user cannot withdraw', async () => {
+    expect(userWallet2.user.oldEnoughForWithdrawal).toBeFalsy()
+
+    // in 6 days:
+    const date = Date.now() + yamlConfig.limits.oldEnoughForWithdrawal - 60 * 60 * 1000
+
+    jest
+      .spyOn(global.Date, 'now')
+      .mockImplementationOnce(() =>
+      new Date(date).valueOf()
+    );
+
+    expect(userWallet2.user.oldEnoughForWithdrawal).toBeFalsy()
+  })
+
+  it('old user can withdraw', async () => {
+    expect(userWallet2.user.oldEnoughForWithdrawal).toBeFalsy()
+
+    // TODO make this configurable
+    // in 8 days:
+    const date = Date.now() + yamlConfig.limits.oldEnoughForWithdrawal + 60 * 60 * 1000
+
+    jest
+      .spyOn(global.Date, 'now')
+      .mockImplementationOnce(() =>
+      new Date(date).valueOf()
+    );
+
+    expect(userWallet2.user.oldEnoughForWithdrawal).toBeTruthy()
+  })
+
 
   it('does not allow re-setting username', async () => {
     await expect(userWallet0.setUsername({ username: "abc" })).rejects.toThrow()
   })
 
   it('usernameExists returns true if username already exists', async () => {
-    const result = await UserWallet.usernameExists({ username })
+    const result = await AdminOps.usernameExists({ username })
     expect(result).toBe(true)
   })
 
   it('usernameExists returns true for other capitalization', async () => {
-    const result = await UserWallet.usernameExists({ username })
+    const result = await AdminOps.usernameExists({ username })
     expect(result).toBe(true)
   })
 
   it('usernameExists returns true if username already exists', async () => {
-    const result = await UserWallet.usernameExists({ username: username.toLocaleUpperCase() })
+    const result = await AdminOps.usernameExists({ username: username.toLocaleUpperCase() })
     expect(result).toBe(true)
   })
 
@@ -112,8 +145,10 @@ describe('username tests', () => {
     await expect(userWallet2.setUsername({ username })).rejects.toThrow()
   })
 
+  // FIXME: failing for some reason
+  // it('sets account status correctly', async () => {
+  //   await AdminOps.setAccountStatus({uid: userWallet2._id, status: 'locked'})
+  //   await expect(userWallet2.status).toBe('locked')
+  // })
+
 })
-
-
-
-

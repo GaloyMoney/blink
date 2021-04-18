@@ -44,13 +44,14 @@ export async function nodeStats({ lnd }) {
 export async function getBosScore() {
   try {
     const { data } = await axios.get('https://bos.lightning.jorijn.com/data/export.json')
-
-    const publicKey = (await getWalletInfo({ lnd })).public_key;
+    const publicKey = (await getWalletInfo({lnd})).public_key;
     const bosScore = _.find(data.data, { publicKey })
+    if (!bosScore) {
+      baseLogger.info("key is not in bos list")
+    }
     return bosScore.score
-  } catch(err) {
-    // err2: err.toJson() does not work
-    baseLogger.error({ err }, `issue getting bos rank`)
+  } catch (err) {
+    return 0
   }
 }
 
