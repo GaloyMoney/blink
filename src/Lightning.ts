@@ -19,6 +19,7 @@ import util from 'util'
 import bluebird from 'bluebird';
 const { using } = bluebird;
 import { yamlConfig } from "./config";
+import { InsufficientBalanceError, TransactionRestrictedError } from './error';
 
 export type ITxType = "invoice" | "payment" | "onchain_receipt" | "onchain_payment" | "on_us"
 export type payInvoiceResult = "success" | "failed" | "pending" | "already_paid"
@@ -286,7 +287,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         if(await this.user.limitHit({on_us: true, amount: tokens})) {
           const error = `Cannot transfer more than ${yamlConfig.limits.onUs.level[this.user.level]} sats in 24 hours`
-          throw new LoggedError({message: error, code: 'LIMIT_REACHED', logger: lightningLoggerOnUs})
+          throw new TransactionRestrictedError(error, true, lightningLoggerOnUs)
         }
 
         let payeeUser
@@ -326,8 +327,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         // TODO: manage when paid fully in USD directly from USD balance to avoid conversion issue
         if (balance.total_in_BTC < sats) {
           const error = `balance is too low`
-          lightningLoggerOnUs.warn({ balance, sats, success: false, error })
-          throw new LoggedError(error)
+          throw new InsufficientBalanceError(error, true, lightningLoggerOnUs)
         }
 
         await addTransactionOnUsPayment({
@@ -366,13 +366,13 @@ export const LightningMixin = (superclass) => class extends superclass {
 
       // "normal" transaction: paying another lightning node
       if (!this.user.oldEnoughForWithdrawal) {
-        throw Error(`new account have to wait ${yamlConfig.limits.oldEnoughForWithdrawal} before withdrawing`)
+        const error = `new account have to wait ${yamlConfig.limits.oldEnoughForWithdrawal} before withdrawing`
+        throw new TransactionRestrictedError(error, true, lightningLogger)
       }
 
       if (await this.user.limitHit({on_us: false, amount:tokens})) {
         const error = `Cannot transfer more than ${yamlConfig.limits.withdrawal.level[this.user.level]} sats in 24 hours`
-        lightningLogger.error({ success: false }, error)
-        throw new LoggedError(error)
+        throw new TransactionRestrictedError(error, true, lightningLogger)
       }
 
       // TODO: manage push payment for other node as well
@@ -423,8 +423,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         if (balance.total_in_BTC < sats) {
           const error = `balance is too low`
-          lightningLogger.warn({ success: false, error })
-          throw new LoggedError(error)
+          throw new InsufficientBalanceError(error, true, lightningLogger)
         }
 
         // reduce balance from customer first
