@@ -329,14 +329,17 @@ export async function startApolloServer() {
       }
     },
     formatError: err => {
-      // FIXME
-      err.extensions?.exception?.logger?.error({err: err.message})
-
-      if(ErrorCodes.includes(err.extensions?.exception?.code)) {
-        return new Error(err.message)
+      let logger
+      
+      if((logger = err.extensions?.exception?.logger)) {
+        logger.error({error:{message: err.message, code: err.extensions.code}})
+        if(err.extensions.exception.forwardToClient) {
+          return err
+        }
+      } else {
+        graphqlLogger.error(err)
       }
-      // return defaultErrorFormatter(err)
-      // return err
+
       return new Error('Internal server error');
     },
   })
