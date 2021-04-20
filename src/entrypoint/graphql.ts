@@ -27,10 +27,9 @@ import { setupMongoConnection } from "../mongodb";
 import { sendNotification } from "../notifications/notification";
 import { User } from "../schema";
 import { login, requestPhoneCode } from "../text";
-import { ErrorCodes, Levels, OnboardingEarn } from "../types";
-import { UserWallet } from "../userWallet";
+import { Levels, OnboardingEarn } from "../types";
 import { AdminOps } from "../AdminOps"
-import { baseLogger, customLoggerPrefix, fetchIPDetails, LoggedError } from "../utils";
+import { baseLogger, fetchIPDetails } from "../utils";
 import { WalletFactory, WalletFromUsername } from "../walletFactory";
 import { getCurrentPrice } from "../realtimePrice";
 import { getAsyncRedisClient } from "../redis";

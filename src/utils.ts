@@ -28,13 +28,9 @@ import { yamlConfig } from "./config";
 export const customLoggerPrefix = `custom: `
 
 export class LoggedError extends GraphQLError {
-  logger
-  code
-
-  constructor({message, code, logger}:{message: string, code?: string, logger: any}) {
+  
+  constructor(message) {
     super(`${customLoggerPrefix}${message}`);
-    this.logger = logger
-    this.code = code
   }
 }
 
