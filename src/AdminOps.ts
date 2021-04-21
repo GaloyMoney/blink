@@ -1,6 +1,9 @@
+import { NotFoundError, ValidationError } from "./error";
 import { User } from "./schema";
 import { Levels } from "./types";
-import { LoggedError } from "./utils";
+import { baseLogger } from "./utils";
+
+const logger = baseLogger.child({module: "admin"})
 
 export abstract class AdminOps {
 
