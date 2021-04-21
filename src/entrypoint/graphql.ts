@@ -328,10 +328,10 @@ export async function startApolloServer() {
       }
     },
     formatError: err => {
-      let logger
+      let log
       
-      if((logger = err.extensions?.exception?.logger)) {
-        logger.error({error:{message: err.message, code: err.extensions.code}})
+      if((log = err.extensions?.exception?.log)) {
+        log({error:{message: err.message, code: err.extensions.code}})
         if(err.extensions.exception.forwardToClient) {
           return err
         }

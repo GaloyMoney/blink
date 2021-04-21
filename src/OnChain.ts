@@ -84,7 +84,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
       // quit early if balance is not enough
       if (balance.total_in_BTC < amount) {
         const error = `balance is too low`
-        throw new InsufficientBalanceError(error, true, onchainLogger)
+        throw new InsufficientBalanceError(error, {forwardToClient: true, log: onchainLogger.error.bind(onchainLogger)})
       }
 
       const payeeUser = await this.tentativelyGetPayeeUser({address})
@@ -94,7 +94,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
         if (await this.user.limitHit({on_us: true, amount})) {
           const error = `Cannot transfer more than ${yamlConfig.limits.onUs.level[this.user.level]} sats in 24 hours`
-          throw new TransactionRestrictedError(error, true, onchainLoggerOnUs)
+          throw new TransactionRestrictedError(error,{forwardToClient: true, log: onchainLoggerOnUs.error.bind(onchainLoggerOnUs)})
         }
 
         if (String(payeeUser._id) === String(this.user._id)) {
@@ -126,12 +126,12 @@ export const OnChainMixin = (superclass) => class extends superclass {
       
       if (!this.user.oldEnoughForWithdrawal) {
         const error = `new account have to wait ${yamlConfig.limits.oldEnoughForWithdrawal} before withdrawing`
-        throw new TransactionRestrictedError(error, true, onchainLogger)
+        throw new TransactionRestrictedError(error,{forwardToClient: true, log: onchainLogger.error.bind(onchainLogger)})
       }
 
       if (await this.user.limitHit({on_us: false, amount})) {
         const error = `Cannot withdraw more than ${yamlConfig.limits.withdrawal.level[this.user.level]} sats in 24 hours`
-        throw new TransactionRestrictedError(error, true, onchainLogger)
+        throw new TransactionRestrictedError(error,{forwardToClient: true, log: onchainLogger.error.bind(onchainLogger)})
       }
 
       const { chain_balance: onChainBalance } = await lnService.getChainBalance({ lnd })
@@ -160,7 +160,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
       // case where the user doesn't have enough money
       if (balance.total_in_BTC < amount + estimatedFee) {
         const error = `balance is too low. have: ${balance} sats, need ${amount + estimatedFee}`
-        throw new InsufficientBalanceError(error, true, onchainLogger)
+        throw new InsufficientBalanceError(error, {forwardToClient: true, log: onchainLogger.error.bind(onchainLogger)})
       }
       
       try {

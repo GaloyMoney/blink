@@ -1,30 +1,30 @@
 import { ApolloError } from 'apollo-server-errors';
 
 export class CustomError extends ApolloError {
-  logger
+  log
   forwardToClient
 
-  constructor(message, code, forwardToClient, logger) {
+  constructor(message, code, {forwardToClient, log}) {
     super(message, code)
-    this.logger = logger
+    this.log = log
     this.forwardToClient = forwardToClient
   }
 }
 
 export class TransactionRestrictedError extends CustomError {
-  constructor(message, forwardToClient, logger) {
-    super(message, 'TRANSACTION_RESTRICTED', forwardToClient, logger)
+  constructor(message, {forwardToClient, log}) {
+    super(message, 'TRANSACTION_RESTRICTED', {forwardToClient, log})
   }
 }
 
 export class InsufficientBalanceError extends CustomError {
-  constructor(message, forwardToClient, logger) {
-    super(message, 'INSUFFICIENT_BALANCE', forwardToClient, logger)
+  constructor(message, {forwardToClient, log}) {
+    super(message, 'INSUFFICIENT_BALANCE', {forwardToClient, log})
   }
 }
 
 export class ValidationError extends CustomError {
-  constructor(message, forwardToClient, logger) {
-    super(message, 'INVALID_INPUT', forwardToClient, logger)
+  constructor(message, {forwardToClient, log}) {
+    super(message, 'INVALID_INPUT', {forwardToClient, log})
   }
 }
