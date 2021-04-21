@@ -4,9 +4,10 @@ import { customerPath } from "./ledger/ledger";
 import { yamlConfig } from "./config"
 
 import mongoose from "mongoose";
-import { caseInsensitiveRegex, inputXOR, LoggedError } from './utils';
+import { baseLogger, caseInsensitiveRegex, inputXOR } from './utils';
 import { UserWallet } from './userWallet';
 import { Levels } from './types';
+import { NotFoundError } from './error';
 // mongoose.set("debug", true);
 
 const Schema = mongoose.Schema;
@@ -269,7 +270,7 @@ UserSchema.statics.getUser = async function({ username, phone }) {
   }
 
   if(!user) {
-    throw new LoggedError("User not found");
+    throw new NotFoundError("User not found", {forwardToClient: true, logger: baseLogger, level: 'warn'})
   }
 
   return user;

@@ -4,27 +4,33 @@ export class CustomError extends ApolloError {
   log
   forwardToClient
 
-  constructor(message, code, {forwardToClient, log}) {
+  constructor(message, code, {forwardToClient, logger, level}) {
     super(message, code)
-    this.log = log
+    this.log = logger[level].bind(logger)
     this.forwardToClient = forwardToClient
   }
 }
 
 export class TransactionRestrictedError extends CustomError {
-  constructor(message, {forwardToClient, log}) {
-    super(message, 'TRANSACTION_RESTRICTED', {forwardToClient, log})
+  constructor(message, {forwardToClient, logger, level}) {
+    super(message, 'TRANSACTION_RESTRICTED', {forwardToClient, logger, level})
   }
 }
 
 export class InsufficientBalanceError extends CustomError {
-  constructor(message, {forwardToClient, log}) {
-    super(message, 'INSUFFICIENT_BALANCE', {forwardToClient, log})
+  constructor(message, {forwardToClient, logger, level}) {
+    super(message, 'INSUFFICIENT_BALANCE', {forwardToClient, logger, level})
   }
 }
 
 export class ValidationError extends CustomError {
-  constructor(message, {forwardToClient, log}) {
-    super(message, 'INVALID_INPUT', {forwardToClient, log})
+  constructor(message, {forwardToClient, logger, level}) {
+    super(message, 'INVALID_INPUT', {forwardToClient, logger, level})
   }
+}
+
+export class NotFoundError extends CustomError {
+  constructor(message, {forwardToClient, logger, level}) {
+    super(message, 'NOT_FOUND', {forwardToClient, logger, level})
+  }c
 }
