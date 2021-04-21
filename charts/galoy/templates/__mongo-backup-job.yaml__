@@ -1,27 +1,20 @@
-apiVersion: batch/v1beta1
-kind: CronJob
+apiVersion: batch/v1
+kind: Job
 metadata:
-  name: "mongo-backup"
-  labels:
-    app.kubernetes.io/managed-by: Helm
+  name: "mongo-backup-preinstall"
 spec:
-  schedule: "0 * * * *"
-  jobTemplate:
+  template:
     spec:
-      activeDeadlineSeconds: 300
-      template:
-        spec:
           restartPolicy: OnFailure
           containers:
           - name: "mongodb-backup"
             image: gcr.io/google.com/cloudsdktool/cloud-sdk:alpine
-            command: ["/bin/sh","-c", "/var/backup.sh"]
+            command: ["/bin/sh","-c", "/script/backup.sh"]
             volumeMounts:
-            - name: mongo-backup-configmap
-              mountPath: "/var/backup.sh"
-              subPath: backup.sh
+            - name: mongo-backup-configmap-job
+              mountPath: "/script"
             - name: "service-account"
-              mountPath: "/var/secret/cloud.google.com"
+              mountPath: "/script/secret/cloud.google.com"
             env:
             - name: NETWORK
               valueFrom:
@@ -32,8 +25,8 @@ spec:
               value: "testGaloy"
             - name: MONGODB_USER
               value: "testGaloy"
-            - name: MONGODB_ADDRESS
-              value: {{ $.Values.mongodbaddress }}
+            # - name: MONGODB_ADDRESS
+              # value: {{ $.Values.mongodbaddress }}
             - name: MONGODB_PORT
               value: "27017"
             - name: MONGODB_DB
@@ -43,12 +36,10 @@ spec:
                 secretKeyRef:
                   name: dropbox-access-token
                   key: token
-            - name: GOOGLE_APPLICATION_CREDENTIALS
-              value: "/var/secret/cloud.google.com/galoyapp-31518a00082f.json"
           volumes:
-          - name: mongo-backup-configmap
+          - name: mongo-backup-configmap-job
             configMap:
-              name: mongo-backup-configmap
+              name: mongo-backup-configmap-job
               defaultMode: 484
           - name: "service-account"
             secret:

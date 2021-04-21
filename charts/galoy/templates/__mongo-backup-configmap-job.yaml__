@@ -1,16 +1,21 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: mongo-backup-configmap
+  name: mongo-backup-configmap-job
   labels:
     app: galoy
+  annotations:
+    "helm.sh/hook": post-upgrade
+    "helm.sh/hook-weight": "0"
 data:
   backup.sh: |
     echo "backup script starts"
-    export BUCKET_NAME="{{ .Values.mongobackup.bucketName }}"
-    MONGO_TOOLS_VERSION="{{ .Values.mongobackup.mongoToolsVersion }}"
-    apk add --update --no-cache mongodb-tools=${MONGO_TOOLS_VERSION} --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
     set -e
+    apk update
+    echo "apk update done"
+    export BUCKET_NAME="{{ .Values.mongobackup.bucketName }}"
+    MONGO_TOOLS_VERSION="4.2.9-r0"
+    apk add --update --no-cache mongodb-tools=${MONGO_TOOLS_VERSION} --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
     LOG_TIME=$(date +%s)
     BACKUP_NAME="$NETWORK-$LOG_TIME.gz"
     echo "Activating service account"
