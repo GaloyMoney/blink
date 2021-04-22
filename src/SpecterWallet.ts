@@ -6,6 +6,7 @@ import { getOnChainTransactions } from "./OnChain";
 import { BitcoindClient, bitcoindDefaultClient, btc2sat, sat2btc } from "./utils";
 import { UserWallet } from "./userWallet";
 import { lndBalances } from "./lndUtils"
+import { yamlConfig } from "./config"
 
 import lnService from 'ln-service'
 
@@ -108,13 +109,16 @@ export class SpecterWallet {
       return
     }
 
-    if (onChain < sats!) {
-      logger.error("rebalancing is needed, but not enough money is onchain (versus offchain/lightning)")
+    if (!sats) {
+      logger.info("sats is null")
       return
     }
 
-    // TODO: we should still make sure that at least some amount of sats would be available onchain on the lnd wallet
-    // figure out the right heuristics for that
+    const minOnchainRatio = yamlConfig.rebalancing.minOnchainRatio
+    if (onChain * minOnchainRatio < sats) {
+      logger.warn({onChain, sats, minOnchainRatio}, "rebalancing is needed, but not enough money is onchain. loop might be needed")
+      return
+    }
 
     if (action === "deposit") {
       await this.toColdStorage({ sats })
@@ -127,31 +131,30 @@ export class SpecterWallet {
 
   static isRebalanceNeeded({ lndBalance }) {
     // base number to calculate the different thresholds below
-    const lnd_holding_base = btc2sat(1)
+    const lndHoldingBase = yamlConfig.rebalancing.lndHoldingBase
 
-    // TODO: we should be able to pass thoses variable from config.yaml
-    const ratioTargetDeposit = 1
-    const ratioTargetWithdraw = 1 
+    const ratioTargetDeposit = yamlConfig.rebalancing.ratioTargetDeposit
+    const ratioTargetWithdraw = yamlConfig.rebalancing.ratioTargetWithdraw
 
-    // we are need to move money from cold storage to the lnd wallet
-    const lowBoundLnd = lnd_holding_base * 70 / 100
+    // threshold for when we need to move money from cold storage to the lnd wallet
+    const thresholdLowBound = lndHoldingBase * 70 / 100
 
-    // when we are moving money out of lnd to multisig storage
-    const targetHighBound = lnd_holding_base * 130 / 100
+    // threshold for when we need to move money out of lnd to multisig storage
+    const thresholdHighBound = lndHoldingBase * 130 / 100
 
     // what is the target amount to be in lnd wallet holding
     // when there is too much money in lnd and we need to deposit in cold storage 
-    const targetDeposit = lnd_holding_base * ratioTargetDeposit
+    const targetDeposit = lndHoldingBase * ratioTargetDeposit
     
     // what is the target amount to be in lnd wallet holding 
     //when there is a not enough money in lnd and we need to withdraw from cold storage
-    const targetWithdraw = lnd_holding_base * ratioTargetWithdraw
+    const targetWithdraw = lndHoldingBase * ratioTargetWithdraw
 
-    if (lndBalance > targetHighBound) {
+    if (lndBalance > thresholdHighBound) {
       return { action: "deposit", sats: lndBalance - targetDeposit }
     }
 
-    if (lndBalance < lowBoundLnd) {
+    if (lndBalance < thresholdLowBound) {
       return { action: "withdraw", sats: targetWithdraw - lndBalance}
     }
 
