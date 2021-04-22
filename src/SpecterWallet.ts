@@ -92,6 +92,8 @@ export class SpecterWallet {
   }
 
   async tentativelyRebalance(): Promise<void> {
+    this.logger.info("entering tentatively rebalance")
+
     if (!this.bitcoindClient) {
       const wallet = await this.setBitcoindClient()
       if (wallet === "") {
