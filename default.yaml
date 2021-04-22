@@ -58,7 +58,7 @@ limits:
     level:
       1: 5000000
       2: 100000000
-  activePayments:
+  pendingPayments:
     level:
       1: 6
       2: 7

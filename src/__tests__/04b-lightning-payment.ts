@@ -12,7 +12,7 @@ import lnService from 'ln-service'
 import { createInvoice, createHodlInvoice, settleHodlInvoice, cancelHodlInvoice, pay, decodePaymentRequest } from 'lightning'
 import mongoose from "mongoose"
 
-let userWallet0, userWallet1, userWallet2
+let userWallet0, userWallet1, userWallet2, userWallet3
 let initBalance0, initBalance1, initBalance2
 
 const amountInvoice = 1000
@@ -39,6 +39,7 @@ beforeAll(async () => {
   userWallet0 = await getUserWallet(0)
   userWallet1 = await getUserWallet(1)
   userWallet2 = await getUserWallet(2)
+  userWallet3 = await getUserWallet(3)
 });
 
 beforeEach(async () => {
@@ -112,21 +113,19 @@ const functionToTests = [
 ]
 
 functionToTests.forEach(({fn, name, initialFee}) => {
-  // it(`doesn't allow more active payments than the limit - ${name}`, async () => {
-  //   let secrets = []
-  //   for (let i=0; i < yamlConfig.limits.activePayments.level['1']; i++) {
-  //     const { id, secret } = createInvoiceHash()
-  //     const { request } = await createHodlInvoice({ id, lnd: lndOutside1, tokens: amountInvoice });
-  //     secrets.push[secret]
-  //     const result = await fn(userWallet1)({invoice: request})
-  //     expect(result).toBe("pending")
-  //   }
+  it(`doesn't allow more active payments than the limit - ${name}`, async () => {
+    const currentPendingPayments = await userWallet3.user.pendingPayments
+    for (let i=0; i < yamlConfig.limits.pendingPayments.level[userWallet3.user.level] - currentPendingPayments; i++) {
+      const { id, secret } = createInvoiceHash()
+      const { request } = await createHodlInvoice({ id, lnd: lndOutside1, tokens: amountInvoice });
+      const result = await fn(userWallet3)({invoice: request})
+      expect(result).toBe("pending")
+    }
 
-  //   const { id } = createInvoiceHash()
-  //   const { request } = await createHodlInvoice({ id, lnd: lndOutside1, tokens: amountInvoice });
-  //   await expect(userWallet1.pay({invoice: request})).rejects.toThrow()
+    const { request } = await createInvoice({ lnd: lndOutside1, tokens: amountInvoice });
+    await expect(userWallet3.pay({invoice: request})).rejects.toThrow()
 
-  // })
+  })
 
   it(`simple payInvoice ${name}`, async () => {
     const { request } = await createInvoice({ lnd: lndOutside1, tokens: amountInvoice })

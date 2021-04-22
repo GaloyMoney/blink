@@ -219,7 +219,7 @@ UserSchema.virtual('oldEnoughForWithdrawal').get(function(this: typeof UserSchem
   return (d - this.created_at.getTime()) > yamlConfig.limits.oldEnoughForWithdrawal
 })
 
-UserSchema.virtual('activePayments').get(async function (this: typeof UserSchema) {
+UserSchema.virtual('pendingPayments').get(async function (this: typeof UserSchema) {
   return Transaction.countDocuments({accounts: this.accountPath, pending: true})
 })
 
