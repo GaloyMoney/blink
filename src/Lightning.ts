@@ -129,7 +129,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       decoded: { mtokens, max_fee, destination, id, routeHint, messages, cltv_delta, features, payment }
     })
 
-    const key = JSON.stringify({ id, mtokens })
+    const key = JSON.stringify({ uid: this.user._id, id, mtokens })
 
     const cacheProbe = await getAsyncRedisClient().get(key)
     if (cacheProbe) {
@@ -371,7 +371,10 @@ export const LightningMixin = (superclass) => class extends superclass {
         throw Error(error)
       }
 
-      if ((await this.user.pendingPayments) >= yamlConfig.limits.pendingPayments.level[this.user.level]) {
+      const pendingPayments = await this.user.pendingPayments
+      const activeProbes = (await getAsyncRedisClient().scan(0, 'MATCH', `*uid*${this.user._id}*`))[1].length
+
+      if (pendingPayments + activeProbes >= yamlConfig.limits.pendingPayments.level[this.user.level]) {
         const error = `Cannot have more than ${yamlConfig.limits.pendingPayments.level[this.user.level]} pending payments`
         lightningLogger.error({ success: false }, error)
         throw new LoggedError(error)
