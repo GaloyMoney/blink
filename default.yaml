@@ -60,7 +60,7 @@ limits:
       2: 100000000
   activePayments:
     level:
-      1: 5
+      1: 6
       2: 7
 
 # TODO

@@ -371,7 +371,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         throw Error(error)
       }
 
-      if ((await this.user.activePayments) > yamlConfig.limits.activePayments.level[this.user.level]) {
+      if ((await this.user.activePayments) >= yamlConfig.limits.activePayments.level[this.user.level]) {
         const error = `Cannot have more than ${yamlConfig.limits.activePayments.level[this.user.level]} pending payments`
         lightningLogger.error({ success: false }, error)
         throw new LoggedError(error)
