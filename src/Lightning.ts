@@ -566,7 +566,6 @@ export const LightningMixin = (superclass) => class extends superclass {
      metadata,
      sats: feeDifference
     })
-    //
   }
 
   // TODO manage the error case properly. right now there is a mix of string being return

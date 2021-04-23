@@ -2,8 +2,7 @@
  * @jest-environment node
  */
 import { once } from 'events';
-import { getChannels, getWalletInfo, subscribeToChannels, subscribeToGraph } from 'lightning';
-import lnService from 'ln-service';
+import { closeChannel, getChannels, getWalletInfo, subscribeToChannels, subscribeToGraph } from 'lightning';
 import mongoose from "mongoose";
 import { onChannelUpdated } from '../entrypoint/trigger';
 import { updateEscrows } from "../ledger/balanceSheet";
@@ -54,7 +53,7 @@ const openChannel = async ({ lnd, other_lnd, socket, is_private = false }) => {
 
   const { public_key: partner_public_key } = await getWalletInfo({ lnd: other_lnd })
 
-  let openChannelPromise = lnService.openChannel({
+  let openChannelPromise = openChannel({
     lnd, local_tokens, is_private, partner_public_key, partner_socket: socket
   })
 
@@ -134,7 +133,7 @@ it('opensAndCloses channel from lnd1 to lndOutside1', async () => {
     await onChannelUpdated({ channel, lnd: lndMain, stateChange: "closed" })
   })
   
-  await lnService.closeChannel({ lnd: lndMain, id: channels[channels.length - 1].id })
+  await closeChannel({ lnd: lndMain, id: channels[channels.length - 1].id })
   const currentBlockCount = await bitcoindDefaultClient.getBlockCount()
   await mineBlockAndSync({ lnds: [lndMain, lndOutside1], blockHeight: currentBlockCount + newBlock })
 

@@ -1,4 +1,3 @@
-import lnService from 'ln-service'
 import { assert } from "console";
 import _ from 'lodash';
 import moment from "moment";
@@ -10,7 +9,7 @@ import { IOnChainPayment, ISuccess, ITransaction } from "./types";
 import { amountOnVout, baseLogger, bitcoindDefaultClient, btc2sat, LoggedError, LOOK_BACK, myOwnAddressesOnVout } from "./utils";
 import { UserWallet } from "./userWallet";
 import { Transaction, User } from "./schema";
-import { getHeight } from "lightning"
+import { createChainAddress, getChainBalance, getChainFeeEstimate, getChainTransactions, getHeight, sendToChainAddress } from "lightning"
 
 import bluebird from 'bluebird';
 import { yamlConfig } from "./config";
@@ -20,7 +19,7 @@ export const getOnChainTransactions = async ({ lnd, incoming }: { lnd: any, inco
   try {
     const { current_block_height } = await getHeight({lnd})
     const after = Math.max(0, current_block_height - LOOK_BACK) // this is necessary for tests, otherwise after may be negative
-    const { transactions } = await lnService.getChainTransactions({ lnd, after })
+    const { transactions } = await getChainTransactions({ lnd, after })
 
     return transactions.filter(tx => incoming === !tx.is_outgoing)
   } catch (err) {
@@ -60,7 +59,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
       fee = 0
     } else {
       const sendTo = [{ address, tokens: amount ?? defaultAmount }];
-      ({ fee } = await lnService.getChainFeeEstimate({ lnd, send_to: sendTo }))
+      ({ fee } = await getChainFeeEstimate({ lnd, send_to: sendTo }))
     }
 
     return fee
@@ -136,14 +135,14 @@ export const OnChainMixin = (superclass) => class extends superclass {
         throw new LoggedError(error)
       }
 
-      const { chain_balance: onChainBalance } = await lnService.getChainBalance({ lnd })
+      const { chain_balance: onChainBalance } = await getChainBalance({ lnd })
 
       let estimatedFee, id
 
       const sendTo = [{ address, tokens: amount }]
 
       try {
-        ({ fee: estimatedFee } = await lnService.getChainFeeEstimate({ lnd, send_to: sendTo }))
+        ({ fee: estimatedFee } = await getChainFeeEstimate({ lnd, send_to: sendTo }))
       } catch (err) {
         const error = `Unable to estimate fee for on-chain transaction`
         onchainLogger.error({ err, sendTo, success: false }, error)
@@ -167,7 +166,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
       }
       
       try {
-        ({ id } = await lnService.sendToChainAddress({ address, lnd, tokens: amount }))
+        ({ id } = await sendToChainAddress({ address, lnd, tokens: amount }))
       } catch (err) {
         onchainLogger.error({ err, address, tokens: amount, success: false }, "Impossible to sendToChainAddress")
         return false
@@ -217,7 +216,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
     try {
       const format = 'p2wpkh';
-      const response = await lnService.createChainAddress({
+      const response = await createChainAddress({
         lnd,
         format,
       })

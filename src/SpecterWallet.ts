@@ -7,8 +7,7 @@ import { BitcoindClient, bitcoindDefaultClient, btc2sat, sat2btc } from "./utils
 import { UserWallet } from "./userWallet";
 import { lndBalances } from "./lndUtils"
 import { yamlConfig } from "./config"
-
-import lnService from 'ln-service'
+import { createChainAddress, sendToChainAddress } from "lightning";
 
 
 // TODO: we should not rely on OnChainMixin/UserWallet for this "wallet"
@@ -177,7 +176,7 @@ export class SpecterWallet {
     let id
 
     try {
-      ({ id } = await lnService.sendToChainAddress({ address, lnd, tokens: sats }))
+      ({ id } = await sendToChainAddress({ address, lnd, tokens: sats }))
     } catch (err) {
       this.logger.fatal({err}, "could not send to deposit. accounting to be reverted")
     }
@@ -227,7 +226,7 @@ export class SpecterWallet {
 
     // TODO: unlike other address, this one will not be attached to a user account
     // check if it's possible to add a label to this address in lnd.
-    const { address } = await lnService.createChainAddress({
+    const { address } = await createChainAddress({
       lnd,
       format: 'p2wpkh',
     })

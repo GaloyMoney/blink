@@ -2,7 +2,6 @@
  * @jest-environment node
  */
 import { once } from 'events';
-import lnService from 'ln-service';
 import { filter } from "lodash";
 import mongoose from "mongoose";
 import { getCurrentPrice } from "../realtimePrice";
@@ -12,6 +11,7 @@ import { getTitle } from "../notifications/payment";
 import { baseLogger, bitcoindDefaultClient, btc2sat, sleep } from "../utils";
 import { getFunderWallet } from "../walletFactory";
 import { checkIsBalanced, getUserWallet, lndMain, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "./helper";
+import { subscribeToChainAddress, subscribeToTransactions } from "lightning";
 
 jest.mock('../realtimePrice')
 
@@ -66,7 +66,7 @@ const onchain_funding = async ({ walletDestination }) => {
   expect(address.substr(0, 4)).toBe("bcrt")
 
   const checkBalance = async () => {
-    const sub = lnService.subscribeToChainAddress({ lnd: lndMain, bech32_address: address, min_height })
+    const sub = subscribeToChainAddress({ lnd: lndMain, bech32_address: address, min_height })
     await once(sub, 'confirmation')
     sub.removeAllListeners();
 
@@ -88,7 +88,7 @@ const onchain_funding = async ({ walletDestination }) => {
 
   }
 
-  const fundLndWallet = async () => {
+  const fundWallet = async () => {
     await sleep(100)
     await bitcoindDefaultClient.sendToAddress(address, amount_BTC)
     await bitcoindDefaultClient.generateToAddress(6, RANDOM_ADDRESS)
@@ -96,7 +96,7 @@ const onchain_funding = async ({ walletDestination }) => {
 
   await Promise.all([
     checkBalance(),
-    fundLndWallet()
+    fundWallet()
   ])
 }
 
@@ -112,7 +112,7 @@ it('funding funder with onchain tx from bitcoind', async () => {
 it('identifies unconfirmed incoming on chain txn', async () => {
   const address = await walletUser0.getOnChainAddress()
 
-  const sub = await lnService.subscribeToTransactions({ lnd: lndMain })
+  const sub = await subscribeToTransactions({ lnd: lndMain })
   sub.on('chain_transaction', onchainTransactionEventHandler)
   
   await Promise.all([

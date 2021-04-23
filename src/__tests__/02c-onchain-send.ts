@@ -2,7 +2,6 @@
  * @jest-environment node
  */
 import { once } from 'events';
-import lnService from 'ln-service';
 import { filter, first } from "lodash";
 import mongoose from "mongoose";
 import { onchainTransactionEventHandler } from "../entrypoint/trigger";
@@ -12,6 +11,7 @@ import { Transaction } from '../schema';
 import { bitcoindDefaultClient, sleep } from "../utils";
 import { yamlConfig } from "../config"
 import { checkIsBalanced, getUserWallet, lndMain, lndOutside1, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "./helper";
+import { createChainAddress, subscribeToTransactions } from "lightning";
 
 jest.mock('../realtimePrice')
 
@@ -37,6 +37,8 @@ beforeAll(async () => {
   userWallet0 = await getUserWallet(0)
   userWallet3 = await getUserWallet(3)
   mockGetExchangeBalance()
+
+  console.log({balance: await userWallet0.getBalances()})
 })
 
 beforeEach(async () => {
@@ -58,25 +60,10 @@ afterAll(async () => {
 const amount = 10040 // sats
 
 
-it('testing Fee', async () => {
-  {
-    const address = await bitcoindDefaultClient.getNewAddress()
-    const fee = await userWallet0.getOnchainFee({address})
-    expect(fee).toBeGreaterThan(0)
-  }
-  
-  {
-    const address = await userWallet3.getOnChainAddress()
-    const fee = await userWallet0.getOnchainFee({address})
-    expect(fee).toBe(0)
-  }
-  
-})
-
 it('Sends onchain payment successfully', async () => {
-  const { address } = await lnService.createChainAddress({ format: 'p2wpkh', lnd: lndOutside1 })
+  const { address } = await createChainAddress({ format: 'p2wpkh', lnd: lndOutside1 })
 
-  const sub = lnService.subscribeToTransactions({ lnd: lndMain })
+  const sub = subscribeToTransactions({ lnd: lndMain })
   sub.on('chain_transaction', onchainTransactionEventHandler)
 
   {
@@ -106,7 +93,7 @@ it('Sends onchain payment successfully', async () => {
   expect(pendingTxs.length).toBe(1)
   expect(pendingTxs[0].amount).toBe(-amount - pendingTxs[0].fee)
 
-  // const subSpend = lnService.subscribeToChainSpend({ lnd: lndMain, bech32_address: address, min_height: 1 })
+  // const subSpend = subscribeToChainSpend({ lnd: lndMain, bech32_address: address, min_height: 1 })
 
   {
     await Promise.all([
@@ -166,7 +153,7 @@ it('makes onchain on-us transaction', async () => {
 
 it('Sends onchain payment _with memo', async () => {
   const memo = "this is my onchain memo"
-  const { address } = await lnService.createChainAddress({ format: 'p2wpkh', lnd: lndOutside1 })
+  const { address } = await createChainAddress({ format: 'p2wpkh', lnd: lndOutside1 })
   const paymentResult = await userWallet0.onChainPay({ address, amount, memo })
   expect(paymentResult).toBe(true)
   const txs = await userWallet0.getTransactions()
@@ -199,7 +186,7 @@ it('fails to make on-us onchain payment when insufficient balance', async () => 
 })
 
 it('fails to make onchain payment when insufficient balance', async () => {
-  const { address } = await lnService.createChainAddress({
+  const { address } = await createChainAddress({
     lnd: lndOutside1,
     format: 'p2wpkh',
   })
@@ -211,12 +198,12 @@ it('fails to make onchain payment when insufficient balance', async () => {
 
 it('negative amount should be rejected', async () => {
   const amount = - 1000
-  const { address } = await lnService.createChainAddress({ format: 'p2wpkh', lnd: lndOutside1 })
+  const { address } = await createChainAddress({ format: 'p2wpkh', lnd: lndOutside1 })
   await expect(userWallet0.onChainPay({ address, amount })).rejects.toThrow()
 })
 
 it('fails to make onchain payment when withdrawalLimit hit', async () => {
-  const { address } = await lnService.createChainAddress({
+  const { address } = await createChainAddress({
     lnd: lndOutside1,
     format: 'p2wpkh',
   })
@@ -230,4 +217,18 @@ it('fails to make onchain payment when withdrawalLimit hit', async () => {
   const amount = yamlConfig.withdrawalLimit - outgoingSats
 
   await expect(userWallet0.onChainPay({ address, amount })).rejects.toThrow()
+})
+
+it('testing Fee', async () => {
+  {
+    const address = await bitcoindDefaultClient.getNewAddress()
+    const fee = await userWallet0.getOnchainFee({address})
+    expect(fee).toBeGreaterThan(0)
+  }
+  
+  {
+    const address = await userWallet3.getOnChainAddress()
+    const fee = await userWallet0.getOnchainFee({address})
+    expect(fee).toBe(0)
+  }
 })
