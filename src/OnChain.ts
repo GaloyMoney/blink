@@ -174,7 +174,12 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
       const outgoingOnchainTxns = await getOnChainTransactions({ lnd, incoming: false })
 
-      const [{ fee }] = outgoingOnchainTxns.filter(tx => tx.id === id)
+      let [{ fee }] = outgoingOnchainTxns.filter(tx => tx.id === id)
+
+      if (!fee) {
+        onchainLogger.fatal("fee is undefined")
+        fee = 0
+      }
 
       {
         const sats = amount + fee
