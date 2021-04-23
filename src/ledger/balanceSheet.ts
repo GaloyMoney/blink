@@ -3,7 +3,7 @@ import * as _ from "lodash";
 import { lnd } from "../lndConfig";
 import { lndBalances } from "../lndUtils";
 import { MainBook } from "../mongodb";
-import { Transaction, User } from "../schema";
+import { User } from "../schema";
 import { SpecterWallet } from "../SpecterWallet";
 import { baseLogger } from "../utils";
 import { WalletFactory } from "../walletFactory";
@@ -70,7 +70,7 @@ export const updateEscrows = async () => {
   const escrowInLnd = _.sumBy(selfInitatedChannels, 'commit_transaction_fee')
 
   const { balance: escrowInMongodb } = await MainBook.balance({
-    account: lndAccountingPath,
+    account: escrowAccountingPath,
     currency: "BTC",
   })
 
