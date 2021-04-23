@@ -74,7 +74,9 @@ export const updateEscrows = async () => {
     currency: "BTC",
   })
 
-  const diff = escrowInLnd - escrowInMongodb
+  // escrowInMongodb is negative
+  // diff will equal 0 if there is no change
+  const diff = escrowInLnd + escrowInMongodb
 
   logger.info({diff, escrowInLnd, escrowInMongodb, channels}, "escrow recording")
 
