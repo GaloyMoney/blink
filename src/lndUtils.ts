@@ -55,12 +55,10 @@ export async function getBosScore() {
   }
 }
 
-export const getRoutingFees = async ({ lnd, before, after }): Promise<number> => {
+export const getRoutingFees = async ({ lnd, before, after }): Promise<Record<string, number>> => {
   const forwardsList = await getForwards({ lnd, before, after })
   let next = forwardsList.next
   let forwards = forwardsList.forwards
-
-  console.log(forwardsList)
 
   let finishedFetching = false
   if(!next || !forwards || forwards.length <= 0) {
@@ -77,5 +75,5 @@ export const getRoutingFees = async ({ lnd, before, after }): Promise<number> =>
     }
   }
 
-  return forwards.reduce((sum, { fee_mtokens }) => sum + +fee_mtokens, 0) / 1000
+  return _(forwards).groupBy(e => new Date(e.created_at).toDateString()).mapValues(e => e.reduce((sum, {fee_mtokens}) => sum + +fee_mtokens, 0) / 1000).value()
 }
