@@ -11,9 +11,9 @@ import _ from "lodash";
 const MS_PER_DAY = 864e5
 
 const updateRoutingFees = async () => {
-  const lastDay = await DbMetadata.findOne({})
+  const dbMetadata = await DbMetadata.findOne({})
 
-  const lastDate = new Date(lastDay?.lastDay ?? 0)
+  const lastDate = new Date(dbMetadata?.routingFeeCronJobLastRun ?? 0)
 
   // Done to remove effect of timezone
   lastDate.setUTCHours(0, 0, 0, 0)
@@ -52,7 +52,7 @@ const updateRoutingFees = async () => {
   
   endDate.setDate(endDate.getDate() + 1)
   const endDay = endDate.toDateString()
-  await DbMetadata.findOneAndUpdate({}, { $set: { lastDay: endDay } }, { upsert: true })
+  await DbMetadata.findOneAndUpdate({}, { $set: { routingFeeCronJobLastRun: endDay } }, { upsert: true })
 }
 
 const main = async () => {
