@@ -1,5 +1,5 @@
 import { getChannels } from 'lightning';
-import { filter } from "lodash";
+import * as _ from "lodash";
 import { lnd } from "../lndConfig";
 import { lndBalances } from "../lndUtils";
 import { MainBook } from "../mongodb";
@@ -63,38 +63,30 @@ export const balanceSheetIsBalanced = async () => {
 
 export const updateEscrows = async () => {
   const type = "escrow"
-
   const metadata = { type, currency: "BTC", pending: false }
 
   const { channels } = await getChannels({lnd})
-  const selfInitated = filter(channels, {is_partner_initiated: false})
+  const selfInitatedChannels = _.filter(channels, {is_partner_initiated: false})
+  const escrowInLnd = _.sumBy(selfInitatedChannels, 'commit_transaction_fee')
 
-  const mongotxs = await Transaction.aggregate([
-    { $match: { type, accounts: lndAccountingPath }}, 
-    { $group: {_id: "$txid", total: { "$sum": "$credit" } }},
-  ])
+  const { balance: escrowInMongodb } = await MainBook.balance({
+    account: lndAccountingPath,
+    currency: "BTC",
+  })
 
-  for (const channel of selfInitated) {
+  const diff = escrowInLnd - escrowInMongodb
 
-    const txid = `${channel.transaction_id}:${channel.transaction_vout}`
-    
-    const mongotx = filter(mongotxs, {_id: txid})[0] ?? { total: 0 }
+  logger.info({diff, escrowInLnd, escrowInMongodb, channels}, "escrow recording")
 
-    logger.debug({mongotx, channel}, "need escrow?")
-
-    if (mongotx?.total === channel.commit_transaction_fee) {
-      continue
-    }
-
-    //log can be located by searching for 'update escrow' in gke logs
-    //FIXME: Remove once escrow bug is fixed
-    const diff = channel.commit_transaction_fee - (mongotx?.total)
-    logger.debug({diff}, `update escrow with diff`)
-
+  if (diff > 0) {
     await MainBook.entry("escrow")
-      .credit(lndAccountingPath, diff, {...metadata, txid})
-      .debit(escrowAccountingPath, diff, {...metadata, txid})
+      .credit(lndAccountingPath, diff, {...metadata})
+      .debit(escrowAccountingPath, diff, {...metadata})
+      .commit()
+  } else if (diff < 0) {
+    await MainBook.entry("escrow")
+      .debit(lndAccountingPath, - diff, {...metadata})
+      .credit(escrowAccountingPath, - diff, {...metadata})
       .commit()
   }
-
 }
