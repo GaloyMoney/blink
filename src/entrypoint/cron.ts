@@ -2,7 +2,7 @@ import { MainBook, setupMongoConnection } from "../mongodb";
 import { baseLogger, LoggedError } from "../utils";
 import { updateEscrows, updateUsersPendingPayment } from "../ledger/balanceSheet"
 import { SpecterWallet } from "../SpecterWallet";
-import { jobSchedule } from "../schema";
+import { DbMetadata } from "../schema";
 import { lnd } from "../lndConfig";
 import { getRoutingFees } from "../lndUtils"
 import { lndAccountingPath, revenueFeePath } from "../ledger/ledger";
@@ -11,7 +11,7 @@ import _ from "lodash";
 const MS_PER_DAY = 864e5
 
 const updateRoutingFees = async () => {
-  const lastDay = await jobSchedule.findOne({})
+  const lastDay = await DbMetadata.findOne({})
 
   const lastDate = new Date(lastDay?.lastDay ?? 0)
 
@@ -50,11 +50,9 @@ const updateRoutingFees = async () => {
     }
   })
   
-  
-
   endDate.setDate(endDate.getDate() + 1)
   const endDay = endDate.toDateString()
-  await jobSchedule.findOneAndUpdate({}, { lastDay: endDay }, { upsert: true })
+  await DbMetadata.findOneAndUpdate({}, { $set: { lastDay: endDay } }, { upsert: true })
 }
 
 const main = async () => {

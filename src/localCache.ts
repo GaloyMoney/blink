@@ -1,6 +1,6 @@
 import NodeCache from "node-cache";
 import { Price } from "./priceImpl";
-import { DbVersion } from "./schema";
+import { DbMetadata } from "./schema";
 export const mainCache = new NodeCache();
 
 export const getMinBuildNumber = async () => {
@@ -9,7 +9,7 @@ export const getMinBuildNumber = async () => {
 
   value = mainCache.get(key);
   if ( value === undefined ){
-    const { minBuildNumber, lastBuildNumber } = await DbVersion.findOne({}, { minBuildNumber: 1, lastBuildNumber: 1, _id: 0 })
+    const { minBuildNumber, lastBuildNumber } = await DbMetadata.findOne({}, { minBuildNumber: 1, lastBuildNumber: 1, _id: 0 })
     mainCache.set( key, { minBuildNumber, lastBuildNumber }, 3600 )
     value = { minBuildNumber, lastBuildNumber }
   }

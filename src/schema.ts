@@ -11,20 +11,15 @@ import { Levels } from './types';
 
 const Schema = mongoose.Schema;
 
-const dbVersionSchema = new Schema({
+const dbMetadataSchema = new Schema({
   version: Number,
   minBuildNumber: Number,
   lastBuildNumber: Number,
+  routingFeeCronJobLastRun: Date
 })
-export const DbVersion = mongoose.model("DbVersion", dbVersionSchema)
+export const DbMetadata = mongoose.model("DbMetadata", dbMetadataSchema)
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000
-
-const jobScheduleSchema = new Schema({
-  lastDay: String
-})
-
-export const jobSchedule = mongoose.model("JobSchedule", jobScheduleSchema)
 
 const invoiceUserSchema = new Schema({
   _id: String, // hash of invoice
