@@ -13,7 +13,7 @@ import { MainBook, setupMongoConnection } from "../mongodb";
 import { transactionNotification } from "../notifications/payment";
 import { Price } from "../priceImpl";
 import { InvoiceUser, Transaction, User } from "../schema";
-import { baseLogger, LOOK_BACK } from '../utils';
+import { baseLogger, bitcoindDefaultClient, LOOK_BACK, sleep } from '../utils';
 import { WalletFactory } from "../walletFactory";
 
 
@@ -114,7 +114,6 @@ export const onInvoiceUpdate = async invoice => {
     return
   }
 
-  // FIXME: we're making 2x the request to Invoice User here. One in trigger, one in lighning.
   const invoiceUser = await InvoiceUser.findOne({ _id: invoice.id })
   if (invoiceUser) {
     const uid = invoiceUser.uid
@@ -135,6 +134,11 @@ export const onChannelUpdated = async ({ channel, lnd, stateChange }: { channel:
   if (channel.is_partner_initiated) {
     return
   }
+
+  if (stateChange === "closed") {
+    // FIXME: need to account for channel closing
+    return
+  }
   
   let txid
 
@@ -143,13 +147,24 @@ export const onChannelUpdated = async ({ channel, lnd, stateChange }: { channel:
   } else if (stateChange === "closed") {
     ({ close_transaction_id: txid } = channel)
   }
-
+  
   // TODO: dedupe from onchain
   const { current_block_height } = await getHeight({ lnd })
   const after = Math.max(0, current_block_height - LOOK_BACK) // this is necessary for tests, otherwise after may be negative
   const { transactions } = await lnService.getChainTransactions({ lnd, after })
 
   const { fee } = find(transactions, { id: txid })
+
+  // let tx
+  // try {
+  //   tx = await bitcoindDefaultClient.getRawTransaction(txid, true /* include_watchonly */ )
+  // } catch (err) {
+  //   logger.error({err}, "can't fetch fee for closing tx")
+  // }
+  
+  // TODO: there is no fee currently given by bitcoind for raw transaction
+  // either calculate it from the input, or use an indexer 
+  // const { fee } = tx.fee
 
   const metadata = { currency: "BTC", txid, type: "fee", pending: false }
 
