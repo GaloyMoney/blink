@@ -117,7 +117,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       throw new LoggedError(limitHitError)
     }
 
-    const semaphore = new Semaphore(ioredis, this.user._id, pendingPaymentsLimit - pendingPayments, {
+    const semaphore = new Semaphore(ioredis, `${this.user._id}`, pendingPaymentsLimit - pendingPayments, {
       acquireTimeout: 1000
     })
 
@@ -407,7 +407,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       if(pendingPayments === pendingPaymentsLimit) {
         pendingPaymentsLimitHit = true
       } else {
-        const semaphore = new Semaphore(ioredis, this.user._id, pendingPaymentsLimit - pendingPayments, {
+        const semaphore = new Semaphore(ioredis, `${this.user._id}`, pendingPaymentsLimit - pendingPayments, {
           acquireTimeout: 1000
         })
 
