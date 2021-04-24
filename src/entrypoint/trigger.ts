@@ -130,29 +130,28 @@ export const onInvoiceUpdate = async invoice => {
 }
 
 export const onChannelUpdated = async ({ channel, lnd, stateChange }: { channel: any, lnd: any, stateChange: "opened" | "closed" }) => {
+  logger.info({ channel, stateChange }, `channel update`)
+
   if (channel.is_partner_initiated) {
-    logger.info({ channel }, `channel ${stateChange} to us`)
     return
   }
   
-  // FIXME we are already accounting for close fee in the escrow.
-  // need to remove the associated escrow transaction to correctly account for fees
-  if (stateChange === "closed") {
-    return
+  let txid
+
+  if (stateChange === "opened") {
+    ({ transaction_id: txid } = channel)
+  } else if (stateChange === "closed") {
+    ({ close_transaction_id: txid } = channel)
   }
-
-
-  logger.info({ channel }, `channel ${stateChange} by us`)
-  const { transaction_id } = channel
 
   // TODO: dedupe from onchain
   const { current_block_height } = await getHeight({ lnd })
   const after = Math.max(0, current_block_height - LOOK_BACK) // this is necessary for tests, otherwise after may be negative
   const { transactions } = await lnService.getChainTransactions({ lnd, after })
 
-  const { fee } = find(transactions, { id: transaction_id })
+  const { fee } = find(transactions, { id: txid })
 
-  const metadata = { currency: "BTC", txid: transaction_id, type: "fee", pending: false }
+  const metadata = { currency: "BTC", txid, type: "fee", pending: false }
 
   assert(fee > 0)
 
