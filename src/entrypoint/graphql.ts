@@ -332,9 +332,10 @@ export async function startApolloServer() {
       //An err object needs to necessarily have the forwardToClient field to be forwarded
       // i.e. catch-all errors will not be forwarded
       if(log = err.extensions?.exception?.log) {
-        log({error:{message: err.message, code: err.extensions.code}})
+        const errObj = { message: err.message, code: err.extensions.code }
+        log(errObj)
         if(err.extensions.exception.forwardToClient) {
-          return err
+          return errObj
         }
       } else {
         graphqlLogger.error(err)
