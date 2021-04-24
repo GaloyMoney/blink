@@ -14,7 +14,7 @@ import { getHeight } from "lightning"
 
 import bluebird from 'bluebird';
 import { yamlConfig } from "./config";
-import { InsufficientBalanceError, TransactionRestrictedError } from './error';
+import { InsufficientBalanceError, NewAccountWithdrawalError, TransactionRestrictedError } from './error';
 const { using } = bluebird;
 
 export const getOnChainTransactions = async ({ lnd, incoming }: { lnd: any, incoming: boolean }) => {
@@ -125,8 +125,8 @@ export const OnChainMixin = (superclass) => class extends superclass {
       onchainLogger = onchainLogger.child({onUs: false})
       
       if (!this.user.oldEnoughForWithdrawal) {
-        const error = `new account have to wait ${yamlConfig.limits.oldEnoughForWithdrawal / 60 * 60 * 1000}h before withdrawing`
-        throw new TransactionRestrictedError(error,{forwardToClient: true, logger: onchainLogger, level: 'error'})
+        const error = `New accounts have to wait ${yamlConfig.limits.oldEnoughForWithdrawal / 60 * 60 * 1000}h before withdrawing`
+        throw new NewAccountWithdrawalError(error,{forwardToClient: true, logger: onchainLogger, level: 'error'})
       }
 
       if (await this.user.limitHit({on_us: false, amount})) {

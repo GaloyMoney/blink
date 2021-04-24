@@ -19,7 +19,7 @@ import util from 'util'
 import bluebird from 'bluebird';
 const { using } = bluebird;
 import { yamlConfig } from "./config";
-import { InsufficientBalanceError, NotFoundError, TransactionRestrictedError, ValidationError } from './error';
+import { InsufficientBalanceError, NewAccountWithdrawalError, NotFoundError, TransactionRestrictedError, ValidationError } from './error';
 
 export type ITxType = "invoice" | "payment" | "onchain_receipt" | "onchain_payment" | "on_us"
 export type payInvoiceResult = "success" | "failed" | "pending" | "already_paid"
@@ -362,8 +362,8 @@ export const LightningMixin = (superclass) => class extends superclass {
 
       // "normal" transaction: paying another lightning node
       if (!this.user.oldEnoughForWithdrawal) {
-        const error = `new account have to wait ${yamlConfig.limits.oldEnoughForWithdrawal / (60 * 60 * 1000)}h before withdrawing`
-        throw new TransactionRestrictedError(error,{forwardToClient: true, logger: lightningLogger, level: 'error'})
+        const error = `New accounts have to wait ${yamlConfig.limits.oldEnoughForWithdrawal / (60 * 60 * 1000)}h before withdrawing`
+        throw new NewAccountWithdrawalError(error, {forwardToClient: true, logger: lightningLogger, level: 'error'})
       }
 
       if (await this.user.limitHit({on_us: false, amount:tokens})) {

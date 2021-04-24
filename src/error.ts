@@ -32,5 +32,11 @@ export class ValidationError extends CustomError {
 export class NotFoundError extends CustomError {
   constructor(message, {forwardToClient, logger, level}) {
     super(message, 'NOT_FOUND', {forwardToClient, logger, level})
-  }c
+  }
+}
+
+export class NewAccountWithdrawalError extends CustomError {
+  constructor(message, {forwardToClient, logger, level}) {
+    super(message, 'NEW_ACCOUNT_WITHDRAWAL_RESTRICTED', {forwardToClient, logger, level})
+  }
 }
