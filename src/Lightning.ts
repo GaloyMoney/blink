@@ -215,15 +215,13 @@ export const LightningMixin = (superclass) => class extends superclass {
 
       if (!!params.amount && tokens !== 0) {
         const error = `Invoice contains non-zero amount, but amount was also passed separately`
-        lightningLogger.error({ tokens, params, success: false, error }, error)
         throw new ValidationError(error, {forwardToClient: true, logger: lightningLogger, level: 'error'})
       }
 
     } else {
       if (!params.username) {
         const error = `a username is required for push payment to the ${ yamlConfig.name }`
-        lightningLogger.warn({ success: false, error })
-        throw new ValidationError(error, {forwardToClient: true, logger: lightningLogger, level: 'error'})
+        throw new ValidationError(error, {forwardToClient: true, logger: lightningLogger, level: 'warn'})
       }
 
       pushPayment = true
