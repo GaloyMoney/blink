@@ -331,7 +331,7 @@ export async function startApolloServer() {
       
       //An err object needs to necessarily have the forwardToClient field to be forwarded
       // i.e. catch-all errors will not be forwarded
-      if((log = err.extensions?.exception?.log)) {
+      if(log = err.extensions?.exception?.log) {
         log({error:{message: err.message, code: err.extensions.code}})
         if(err.extensions.exception.forwardToClient) {
           return err
