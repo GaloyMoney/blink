@@ -184,3 +184,11 @@ export const fetchIPDetails = async ({currentIP, user, logger}) => {
     logger.info({error}, 'Failed to fetch ip details')
   }
 }
+
+export const pendingPaymentsLimitHit = async ({user, pendingPayments}) => {
+  const pendingPaymentsLimit = yamlConfig.limits.pendingPayments.level[user.level]
+  if(pendingPayments >= pendingPaymentsLimit) {
+    return true
+  }
+  return false
+}
