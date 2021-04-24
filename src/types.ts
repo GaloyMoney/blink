@@ -49,8 +49,6 @@ export type TransactionType = "payment" | "paid-invoice" | "on_us" |
 
 export const Levels = [1, 2]
 
-export const ErrorCodes = ['LIMIT_REACHED']
-
 export interface IOnChainPayment {
   address: string,
   amount: number,
