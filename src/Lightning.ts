@@ -1,4 +1,6 @@
 import lnService from 'ln-service'
+import { Semaphore } from 'redis-semaphore';
+import {ioredis} from './redis'
 import assert from 'assert'
 import { createHash, randomBytes } from "crypto";
 import moment from "moment";
@@ -8,7 +10,7 @@ import { MainBook } from "./mongodb";
 import { transactionNotification } from "./notifications/payment";
 import { addTransactionLndPayment, addTransactionLndReceipt, addTransactionOnUsPayment } from "./ledger/transaction";
 import { IAddInvoiceRequest, IFeeRequest, IPaymentRequest } from "./types";
-import { addContact, isInvoiceAlreadyPaidError, LoggedError, timeout } from "./utils";
+import { addContact, isInvoiceAlreadyPaidError, LoggedError, pendingPaymentsLimitHit, timeout } from "./utils";
 import { UserWallet } from "./userWallet";
 import { InvoiceUser, Transaction, User } from "./schema";
 import { createInvoice, getWalletInfo, decodePaymentRequest, cancelHodlInvoice, payViaPaymentDetails, payViaRoutes, getPayment, getInvoice } from "lightning"
@@ -105,80 +107,107 @@ export const LightningMixin = (superclass) => class extends superclass {
 
   async getLightningFee(params: IFeeRequest): Promise<Number> {
 
-    // TODO:
-    // we should also log the fact we have started the query
-    // if (await getAsyncRedisClient().get(JSON.stringify(params))) {
-    //   return
-    // }
-    //
-    // OR: add a lock
+    const pendingPayments = await this.user.pendingPayments
+    const pendingPaymentsLimit = yamlConfig.limits.pendingPayments.level[this.user.level]
+    const limitHitError = `Cannot have more than ${yamlConfig.limits.pendingPayments.level[this.user.level]} pending payments`
 
-    // TODO: do a balance check, so that we don't probe needlessly if the user doesn't have the 
-    // probably make sense to used a cached balance here. 
+    // exit early if in-flight (non-probe) payments by themselves hit the active payments limit
+    if(await pendingPaymentsLimitHit({pendingPayments ,user: this.user})) {
+      this.logger.error({ success: false }, limitHitError)
+      throw new LoggedError(limitHitError)
+    }
 
-    // TODO: if this is a node we are connected with, we may not even need a probe/round trip to redis
-    // we could handle this from the front end directly.
-
-    const { mtokens, max_fee, destination, id, routeHint, messages, cltv_delta, features, payment } = 
-      await this.validate(params, this.logger)
-
-    const lightningLogger = this.logger.child({ 
-      topic: "fee_estimation",
-      protocol: "lightning",
-      params, 
-      decoded: { mtokens, max_fee, destination, id, routeHint, messages, cltv_delta, features, payment }
+    const semaphore = new Semaphore(ioredis, this.user._id, pendingPaymentsLimit - pendingPayments, {
+      acquireTimeout: 1000
     })
 
-    const key = JSON.stringify({ uid: this.user._id, id, mtokens })
-
-    const cacheProbe = await getAsyncRedisClient().get(key)
-    if (cacheProbe) {
-      lightningLogger.info("route result in cache")
-      return JSON.parse(cacheProbe).fee
-    }
-
-
-    // safety check
-    // this should not happen as this check is done within RN
-    if (destination === await this.getNodePubkey()) {
-      lightningLogger.warn("probe for self")
-      return 0
-    }
-
-    let route
-
     try {
-      ({ route } = await lnService.probeForRoute({
-        lnd, 
-        destination, 
-        mtokens, 
-        routes: routeHint,
-        cltv_delta,
-        features,
-        max_fee,
-        messages,
-        payment,
-        total_mtokens: payment ? mtokens : undefined,
-      }));
+      await semaphore.acquire()
+    
+      // TODO:
+      // we should also log the fact we have started the query
+      // if (await getAsyncRedisClient().get(JSON.stringify(params))) {
+      //   return
+      // }
+      //
+      // OR: add a lock
+
+      // TODO: do a balance check, so that we don't probe needlessly if the user doesn't have the 
+      // probably make sense to used a cached balance here. 
+
+      // TODO: if this is a node we are connected with, we may not even need a probe/round trip to redis
+      // we could handle this from the front end directly.  
+
+      const { mtokens, max_fee, destination, id, routeHint, messages, cltv_delta, features, payment } = 
+      await this.validate(params, this.logger)
+
+      const lightningLogger = this.logger.child({ 
+        topic: "fee_estimation",
+        protocol: "lightning",
+        params, 
+        decoded: { mtokens, max_fee, destination, id, routeHint, messages, cltv_delta, features, payment }
+      })
+
+      const key = JSON.stringify({ uid: this.user._id, id, mtokens })
+
+      const cacheProbe = await getAsyncRedisClient().get(key)
+      if (cacheProbe) {
+        lightningLogger.info("route result in cache")
+        return JSON.parse(cacheProbe).fee
+      }
+
+
+      // safety check
+      // this should not happen as this check is done within RN
+      if (destination === await this.getNodePubkey()) {
+        lightningLogger.warn("probe for self")
+        return 0
+      }
+
+      let route
+
+      try {
+        ({ route } = await lnService.probeForRoute({
+          lnd, 
+          destination, 
+          mtokens, 
+          routes: routeHint,
+          cltv_delta,
+          features,
+          max_fee,
+          messages,
+          payment,
+          total_mtokens: payment ? mtokens : undefined,
+        }));
+      } catch (err) {
+        const error = "error getting route / probing for route"
+        lightningLogger.error({ err, max_fee, probingSuccess: false, success: false }, error)
+        throw new LoggedError(error)
+      }
+
+      if (!route) {
+        // TODO: check if the error is irrecovable or not.
+
+        const error = "there is no potential route for payment"
+        lightningLogger.warn({ probingSuccess: false, success: false }, error)
+        throw new LoggedError(error)
+      }
+
+      const value = JSON.stringify(route)
+      await getAsyncRedisClient().set(key, value, 'EX', 60 * 5); // expires after 5 minutes
+
+      lightningLogger.info({ redis: { key, value }, probingSuccess: true, success: true }, "succesfully found a route")
+      return route.fee
+
     } catch (err) {
-      const error = "error getting route / probing for route"
-      lightningLogger.error({ err, max_fee, probingSuccess: false, success: false }, error)
-      throw new LoggedError(error)
+      if(err.constructor.name === "TimeoutError") {
+        this.logger.error(limitHitError)
+        throw new LoggedError(limitHitError)
+      }
+      throw err
+    } finally {
+      await semaphore.release()
     }
-
-    if (!route) {
-      // TODO: check if the error is irrecovable or not.
-
-      const error = "there is no potential route for payment"
-      lightningLogger.warn({ probingSuccess: false, success: false }, error)
-      throw new LoggedError(error)
-    }
-
-    const value = JSON.stringify(route)
-    await getAsyncRedisClient().set(key, value, 'EX', 60 * 5); // expires after 5 minutes
-
-    lightningLogger.info({ redis: { key, value }, probingSuccess: true, success: true }, "succesfully found a route")
-    return route.fee
   }
 
   // FIXME this should be static
@@ -370,11 +399,28 @@ export const LightningMixin = (superclass) => class extends superclass {
         const error = `new account have to wait ${yamlConfig.limits.oldEnoughForWithdrawal / 60 * 60 * 1000}h before withdrawing`
         throw Error(error)
       }
-
+      
       const pendingPayments = await this.user.pendingPayments
-      const activeProbes = (await getAsyncRedisClient().scan(0, 'MATCH', `*uid*${this.user._id}*`))[1].length
+      const pendingPaymentsLimit = yamlConfig.limits.pendingPayments.level[this.user.level]
+      let pendingPaymentsLimitHit
 
-      if (pendingPayments + activeProbes >= yamlConfig.limits.pendingPayments.level[this.user.level]) {
+      if(pendingPayments === pendingPaymentsLimit) {
+        pendingPaymentsLimitHit = true
+      } else {
+        const semaphore = new Semaphore(ioredis, this.user._id, pendingPaymentsLimit - pendingPayments, {
+          acquireTimeout: 1000
+        })
+
+        try {
+          await semaphore.acquire()
+        } catch(err) {
+          pendingPaymentsLimitHit = true
+        } finally {
+          await semaphore.release()
+        }
+      }
+
+      if(pendingPaymentsLimitHit) {
         const error = `Cannot have more than ${yamlConfig.limits.pendingPayments.level[this.user.level]} pending payments`
         lightningLogger.error({ success: false }, error)
         throw new LoggedError(error)
