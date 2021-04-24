@@ -148,7 +148,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         decoded: { mtokens, max_fee, destination, id, routeHint, messages, cltv_delta, features, payment }
       })
 
-      const key = JSON.stringify({ uid: this.user._id, id, mtokens })
+      const key = JSON.stringify({ id, mtokens })
 
       const cacheProbe = await getAsyncRedisClient().get(key)
       if (cacheProbe) {
