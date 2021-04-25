@@ -1,13 +1,19 @@
 import assert from 'assert';
 import moment from "moment";
+import { Semaphore } from 'redis-semaphore';
+import { yamlConfig } from './config';
 import { CSVAccountExport } from "./csvAccountExport";
 import { Balances } from "./interface";
 import { customerPath } from "./ledger/ledger";
 import { MainBook } from "./mongodb";
 import { sendNotification } from "./notifications/notification";
+import { ioredis } from './redis';
 import { User } from "./schema";
 import { ITransaction } from "./types";
 import { LoggedError } from "./utils";
+
+// auto release semaphore after 30 mins
+const lockTimeout = yamlConfig.limits.pendingPayments.semaphoreLockTimeout
 
 export abstract class UserWallet {
 
@@ -219,5 +225,18 @@ export abstract class UserWallet {
     this.logger.info({ balanceSatsPrettified, balanceUsd, user: this.user }, `sending balance notification to user`)
     await sendNotification({ user: this.user, title: `Your balance is \$${balanceUsd} (${balanceSatsPrettified} sats)`, logger: this.logger })
   }
+
+  static getProbeSemaphore = async ({user, logger}) => {
+    const paymentsAllowed = await user.paymentsAllowed
+    console.log({paymentsAllowed})
+    if(!paymentsAllowed) {
+      const limitHitError = `Cannot have more than ${yamlConfig.limits.pendingPayments.level[user.level]} pending payments`
+      logger.error({ success: false }, limitHitError)
+      throw new LoggedError(limitHitError)
+    }
+    return new Semaphore(ioredis, `semaphore:${user._id}`, paymentsAllowed, {
+      acquireTimeout: 1000,
+      lockTimeout
+    })
 
 }

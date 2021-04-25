@@ -16,11 +16,9 @@ export const LOOK_BACK = 2016
 
 // @ts-ignore
 import { GraphQLError } from "graphql";
-import { Transaction, User } from "./schema";
+import { User } from "./schema";
 import axios from "axios";
 import { yamlConfig } from "./config";
-import { Semaphore } from "redis-semaphore";
-import { ioredis } from "./redis";
 
 
 // FIXME: super ugly hack.
@@ -34,9 +32,6 @@ export class LoggedError extends GraphQLError {
     super(`${customLoggerPrefix}${message}`);
   }
 }
-
-// auto release semaphore after 30 mins
-const lockTimeout = yamlConfig.limits.pendingPayments.semaphoreLockTimeout
 
 const PROXY_CHECK_APIKEY = yamlConfig?.PROXY_CHECK_APIKEY
 
@@ -188,18 +183,4 @@ export const fetchIPDetails = async ({currentIP, user, logger}) => {
   } catch (error) {
     logger.info({error}, 'Failed to fetch ip details')
   }
-}
-
-export const getProbeSemaphore = async ({user, logger}) => {
-  const paymentsAllowed = await user.paymentsAllowed
-  console.log({paymentsAllowed})
-  if(!paymentsAllowed) {
-    const limitHitError = `Cannot have more than ${yamlConfig.limits.pendingPayments.level[user.level]} pending payments`
-    logger.error({ success: false }, limitHitError)
-    throw new LoggedError(limitHitError)
-  }
-  return new Semaphore(ioredis, `semaphore:${user._id}`, paymentsAllowed, {
-    acquireTimeout: 1000,
-    lockTimeout
-  })
 }

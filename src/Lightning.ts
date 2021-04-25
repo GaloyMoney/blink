@@ -10,7 +10,7 @@ import { MainBook } from "./mongodb";
 import { transactionNotification } from "./notifications/payment";
 import { addTransactionLndPayment, addTransactionLndReceipt, addTransactionOnUsPayment } from "./ledger/transaction";
 import { IAddInvoiceRequest, IFeeRequest, IPaymentRequest } from "./types";
-import { addContact, getProbeSemaphore, isInvoiceAlreadyPaidError, LoggedError, timeout } from "./utils";
+import { addContact, isInvoiceAlreadyPaidError, LoggedError, timeout } from "./utils";
 import { UserWallet } from "./userWallet";
 import { InvoiceUser, Transaction, User } from "./schema";
 import { createInvoice, getWalletInfo, decodePaymentRequest, cancelHodlInvoice, payViaPaymentDetails, payViaRoutes, getPayment, getInvoice } from "lightning"
@@ -107,7 +107,7 @@ export const LightningMixin = (superclass) => class extends superclass {
   async getLightningFee(params: IFeeRequest): Promise<Number> {
 
     // will throw an error if in-flight (non-probe) payments by themselves hit the active payments limit
-    const semaphore = await getProbeSemaphore({user: this.user, logger: this.logger})
+    const semaphore = await UserWallet.getProbeSemaphore({user: this.user, logger: this.logger})
     
     try {
       await semaphore.acquire()
@@ -390,7 +390,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         throw Error(error)
       }
 
-      const semaphore = await getProbeSemaphore({user: this.user, logger: lightningLogger})
+      const semaphore = await UserWallet.getProbeSemaphore({user: this.user, logger: lightningLogger})
 
       try {
         await semaphore.acquire()
