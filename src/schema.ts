@@ -219,8 +219,15 @@ UserSchema.virtual('oldEnoughForWithdrawal').get(function(this: typeof UserSchem
   return (d - this.created_at.getTime()) > yamlConfig.limits.oldEnoughForWithdrawal
 })
 
-UserSchema.virtual('pendingPayments').get(async function (this: typeof UserSchema) {
+UserSchema.virtual('pendingPayments').get(async function(this: typeof UserSchema) {
   return Transaction.countDocuments({accounts: this.accountPath, pending: true})
+})
+
+UserSchema.virtual('paymentsAllowed').get(async function(this: typeof UserSchema) {
+  const pendingPaymentsLimit = yamlConfig.limits.pendingPayments.level[this.level]
+  const pendingPayments = await this.pendingPayments
+  const pendingPaymentsAndLimitDiff = pendingPaymentsLimit - pendingPayments
+  return Math.max(pendingPaymentsAndLimitDiff, 0)
 })
 
 UserSchema.methods.limitHit = async function({on_us, amount}: {on_us: boolean, amount: number}) {

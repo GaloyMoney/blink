@@ -10,7 +10,7 @@ import { MainBook } from "./mongodb";
 import { transactionNotification } from "./notifications/payment";
 import { addTransactionLndPayment, addTransactionLndReceipt, addTransactionOnUsPayment } from "./ledger/transaction";
 import { IAddInvoiceRequest, IFeeRequest, IPaymentRequest } from "./types";
-import { addContact, isInvoiceAlreadyPaidError, LoggedError, pendingPaymentsLimitHit, timeout } from "./utils";
+import { addContact, getProbeSemaphore, isInvoiceAlreadyPaidError, LoggedError, timeout } from "./utils";
 import { UserWallet } from "./userWallet";
 import { InvoiceUser, Transaction, User } from "./schema";
 import { createInvoice, getWalletInfo, decodePaymentRequest, cancelHodlInvoice, payViaPaymentDetails, payViaRoutes, getPayment, getInvoice } from "lightning"
@@ -24,9 +24,6 @@ import { yamlConfig } from "./config";
 
 export type ITxType = "invoice" | "payment" | "onchain_receipt" | "onchain_payment" | "on_us"
 export type payInvoiceResult = "success" | "failed" | "pending" | "already_paid"
-
-// auto release semaphore after 30 mins
-const lockTimeout = yamlConfig.limits.pendingPayments.semaphoreLockTimeout
 
 // this value is here so that it can get mocked.
 // there could probably be a better design
@@ -109,21 +106,9 @@ export const LightningMixin = (superclass) => class extends superclass {
 
   async getLightningFee(params: IFeeRequest): Promise<Number> {
 
-    const pendingPayments = await this.user.pendingPayments
-    const pendingPaymentsLimit = yamlConfig.limits.pendingPayments.level[this.user.level]
-    const limitHitError = `Cannot have more than ${yamlConfig.limits.pendingPayments.level[this.user.level]} pending payments`
-
-    // exit early if in-flight (non-probe) payments by themselves hit the active payments limit
-    if(await pendingPaymentsLimitHit({pendingPayments ,user: this.user})) {
-      this.logger.error({ success: false }, limitHitError)
-      throw new LoggedError(limitHitError)
-    }
-
-    const semaphore = new Semaphore(ioredis, `${this.user._id}`, pendingPaymentsLimit - pendingPayments, {
-      acquireTimeout: 1000,
-      lockTimeout
-    })
-
+    // will throw an error if in-flight (non-probe) payments by themselves hit the active payments limit
+    const semaphore = await getProbeSemaphore({user: this.user, logger: this.logger})
+    
     try {
       await semaphore.acquire()
     
@@ -204,6 +189,8 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     } catch (err) {
       if(err.constructor.name === "TimeoutError") {
+        // FIXME: dedupe from utils.ts
+        const limitHitError = `Cannot have more than ${yamlConfig.limits.pendingPayments.level[this.user.level]} pending payments`
         this.logger.error(limitHitError)
         throw new LoggedError(limitHitError)
       }
@@ -402,35 +389,21 @@ export const LightningMixin = (superclass) => class extends superclass {
         const error = `new account have to wait ${yamlConfig.limits.oldEnoughForWithdrawal / 60 * 60 * 1000}h before withdrawing`
         throw Error(error)
       }
-      
-      const pendingPayments = await this.user.pendingPayments
-      const pendingPaymentsLimit = yamlConfig.limits.pendingPayments.level[this.user.level]
-      let pendingPaymentsLimitHit
 
-      if(pendingPayments === pendingPaymentsLimit) {
-        pendingPaymentsLimitHit = true
-      } else {
-        const semaphore = new Semaphore(ioredis, `${this.user._id}`, pendingPaymentsLimit - pendingPayments, {
-          acquireTimeout: 1000,
-          lockTimeout
-        })
+      const semaphore = await getProbeSemaphore({user: this.user, logger: lightningLogger})
 
-        try {
-          await semaphore.acquire()
-        } catch(err) {
-          pendingPaymentsLimitHit = true
-        } finally {
-          await semaphore.release()
-        }
-      }
-
-      if(pendingPaymentsLimitHit) {
+      try {
+        await semaphore.acquire()
+      } catch(err) {
+        //FIXME: dedupe from utils.ts
         const error = `Cannot have more than ${yamlConfig.limits.pendingPayments.level[this.user.level]} pending payments`
         lightningLogger.error({ success: false }, error)
         throw new LoggedError(error)
+      } finally {
+        await semaphore.release()
       }
 
-      if (await this.user.limitHit({on_us: false, amount:tokens})) {
+      if (await this.user.limitHit({on_us: false, amount: tokens})) {
         const error = `Cannot transfer more than ${yamlConfig.limits.withdrawal.level[this.user.level]} sats in 24 hours`
         lightningLogger.error({ success: false }, error)
         throw new LoggedError(error)
