@@ -59,6 +59,7 @@ limits:
       1: 5000000
       2: 100000000
   pendingPayments:
+    semaphoreLockTimeout: 1800000 # 30 mins 
     level:
       1: 6
       2: 7

@@ -25,6 +25,8 @@ import { yamlConfig } from "./config";
 export type ITxType = "invoice" | "payment" | "onchain_receipt" | "onchain_payment" | "on_us"
 export type payInvoiceResult = "success" | "failed" | "pending" | "already_paid"
 
+// auto release semaphore after 30 mins
+const lockTimeout = yamlConfig.limits.pendingPayments.semaphoreLockTimeout
 
 // this value is here so that it can get mocked.
 // there could probably be a better design
@@ -118,7 +120,8 @@ export const LightningMixin = (superclass) => class extends superclass {
     }
 
     const semaphore = new Semaphore(ioredis, `${this.user._id}`, pendingPaymentsLimit - pendingPayments, {
-      acquireTimeout: 1000
+      acquireTimeout: 1000,
+      lockTimeout
     })
 
     try {
@@ -408,7 +411,8 @@ export const LightningMixin = (superclass) => class extends superclass {
         pendingPaymentsLimitHit = true
       } else {
         const semaphore = new Semaphore(ioredis, `${this.user._id}`, pendingPaymentsLimit - pendingPayments, {
-          acquireTimeout: 1000
+          acquireTimeout: 1000,
+          lockTimeout
         })
 
         try {
