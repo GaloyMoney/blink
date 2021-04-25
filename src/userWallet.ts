@@ -238,5 +238,5 @@ export abstract class UserWallet {
       acquireTimeout: 1000,
       lockTimeout
     })
-
+  }
 }
