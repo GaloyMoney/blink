@@ -19,6 +19,7 @@ import util from 'util'
 import bluebird from 'bluebird';
 const { using } = bluebird;
 import { yamlConfig } from "./config";
+import { InsufficientBalanceError, NewAccountWithdrawalError, NotFoundError, TransactionRestrictedError, ValidationError } from './error';
 
 export type ITxType = "invoice" | "payment" | "onchain_receipt" | "onchain_payment" | "on_us"
 export type payInvoiceResult = "success" | "failed" | "pending" | "already_paid"
@@ -214,15 +215,13 @@ export const LightningMixin = (superclass) => class extends superclass {
 
       if (!!params.amount && tokens !== 0) {
         const error = `Invoice contains non-zero amount, but amount was also passed separately`
-        lightningLogger.error({ tokens, params, success: false, error }, error)
-        throw new LoggedError(error)
+        throw new ValidationError(error, {forwardToClient: true, logger: lightningLogger, level: 'error'})
       }
 
     } else {
       if (!params.username) {
         const error = `a username is required for push payment to the ${ yamlConfig.name }`
-        lightningLogger.warn({ success: false, error })
-        throw new LoggedError(error)
+        throw new ValidationError(error, {forwardToClient: true, logger: lightningLogger, level: 'warn'})
       }
 
       pushPayment = true
@@ -242,8 +241,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     if (!params.amount && tokens === 0) {
       const error = 'Invoice is a zero-amount invoice, or pushPayment is being used, but no amount was passed separately'
-      lightningLogger.error({ tokens, params, success: false, error }, error)
-      throw new LoggedError(error)
+      throw new ValidationError(error, {forwardToClient: true, logger: lightningLogger, level: 'error'})
     }
 
     tokens = !!tokens ? tokens : params.amount
@@ -286,8 +284,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         if(await this.user.limitHit({on_us: true, amount: tokens})) {
           const error = `Cannot transfer more than ${yamlConfig.limits.onUs.level[this.user.level]} sats in 24 hours`
-          lightningLoggerOnUs.warn({ success: false, error })
-          throw new LoggedError(error)
+          throw new TransactionRestrictedError(error, {forwardToClient: true, logger: lightningLoggerOnUs, level: 'error'})
         }
 
         let payeeUser
@@ -311,8 +308,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         if (!payeeUser) {
           const error = `this user doesn't exist`
-          lightningLoggerOnUs.warn({ success: false, error })
-          throw new LoggedError(error)
+          throw new NotFoundError(error, {forwardToClient: true, logger: lightningLoggerOnUs, level: 'warn'})
         }
 
         if (String(payeeUser._id) === String(this.user._id)) {
@@ -327,8 +323,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         // TODO: manage when paid fully in USD directly from USD balance to avoid conversion issue
         if (balance.total_in_BTC < sats) {
           const error = `balance is too low`
-          lightningLoggerOnUs.warn({ balance, sats, success: false, error })
-          throw new LoggedError(error)
+          throw new InsufficientBalanceError(error,{forwardToClient: true, logger: lightningLoggerOnUs, level: 'error'})
         }
 
         await addTransactionOnUsPayment({
@@ -367,14 +362,13 @@ export const LightningMixin = (superclass) => class extends superclass {
 
       // "normal" transaction: paying another lightning node
       if (!this.user.oldEnoughForWithdrawal) {
-        const error = `new account have to wait ${yamlConfig.limits.oldEnoughForWithdrawal / (60 * 60 * 1000)}h before withdrawing`
-        throw Error(error)
+        const error = `New accounts have to wait ${yamlConfig.limits.oldEnoughForWithdrawal / (60 * 60 * 1000)}h before withdrawing`
+        throw new NewAccountWithdrawalError(error, {forwardToClient: true, logger: lightningLogger, level: 'error'})
       }
 
       if (await this.user.limitHit({on_us: false, amount:tokens})) {
         const error = `Cannot transfer more than ${yamlConfig.limits.withdrawal.level[this.user.level]} sats in 24 hours`
-        lightningLogger.error({ success: false }, error)
-        throw new LoggedError(error)
+        throw new TransactionRestrictedError(error,{forwardToClient: true, logger: lightningLogger, level: 'error'})
       }
 
       // TODO: manage push payment for other node as well
@@ -425,8 +419,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         if (balance.total_in_BTC < sats) {
           const error = `balance is too low`
-          lightningLogger.warn({ success: false, error })
-          throw new LoggedError(error)
+          throw new InsufficientBalanceError(error,{forwardToClient: true, logger: lightningLogger, level: 'error'})
         }
 
         // reduce balance from customer first

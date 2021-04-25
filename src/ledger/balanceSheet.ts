@@ -9,7 +9,7 @@ import { baseLogger } from "../utils";
 import { WalletFactory } from "../walletFactory";
 import { bitcoindAccountingPath, escrowAccountingPath, lndAccountingPath, lndFeePath } from "./ledger";
 
-const logger = baseLogger.child({module: "admin"})
+const logger = baseLogger.child({module: "balanceSheet"})
 
 export const updateUsersPendingPayment = async () => {
   let userWallet

@@ -28,7 +28,7 @@ export const sendText = async ({ body, to, logger }) => {
     return
   }
 
-  logger.info({to}, "send text succesfully")
+  logger.info({to}, "sent text successfully")
 }
 
 export const getCarrier = async (phone: string) => {

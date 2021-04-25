@@ -28,9 +28,8 @@ import { sendNotification } from "../notifications/notification";
 import { User } from "../schema";
 import { login, requestPhoneCode } from "../text";
 import { Levels, OnboardingEarn } from "../types";
-import { UserWallet } from "../userWallet";
 import { AdminOps } from "../AdminOps"
-import { baseLogger, customLoggerPrefix, fetchIPDetails, LoggedError } from "../utils";
+import { baseLogger, fetchIPDetails } from "../utils";
 import { WalletFactory, WalletFromUsername } from "../walletFactory";
 import { getCurrentPrice } from "../realtimePrice";
 import { getAsyncRedisClient } from "../redis";
@@ -328,15 +327,20 @@ export async function startApolloServer() {
       }
     },
     formatError: err => {
-      // FIXME
-      if(_.startsWith(err.message, customLoggerPrefix)) {
-        err.message = err.message.slice(customLoggerPrefix.length)
-      } 
+      let log
       
-      baseLogger.error({ err }, "graphql catch-all error");
-      
-      // return defaultErrorFormatter(err)
-      // return err
+      //An err object needs to necessarily have the forwardToClient field to be forwarded
+      // i.e. catch-all errors will not be forwarded
+      if(log = err.extensions?.exception?.log) {
+        const errObj = { message: err.message, code: err.extensions.code }
+        log(errObj)
+        if(err.extensions.exception.forwardToClient) {
+          return errObj
+        }
+      } else {
+        graphqlLogger.error(err)
+      }
+
       return new Error('Internal server error');
     },
   })
