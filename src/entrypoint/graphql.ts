@@ -192,9 +192,9 @@ const resolvers = {
         return true
       }
     }),
-    noauthAddInvoice: async (_, { username }, { logger }) => {
+    noauthAddInvoice: async (_, { username, value }, { logger }) => {
       const wallet = await WalletFromUsername({username, logger})
-      return wallet.addInvoice({ selfGenerated: false })
+      return wallet.addInvoice({ selfGenerated: false, value })
     },
     invoice: async (_, __, { wallet }) => ({
       addInvoice: async ({ value, memo }) => wallet.addInvoice({ value, memo }),

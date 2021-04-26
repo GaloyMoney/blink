@@ -1,13 +1,12 @@
-import _ from 'lodash';
-
-import { customerPath } from "./ledger/ledger";
-import { yamlConfig } from "./config"
-
-import mongoose from "mongoose";
-import { baseLogger, caseInsensitiveRegex, inputXOR } from './utils';
-import { UserWallet } from './userWallet';
-import { Levels } from './types';
+import * as _ from 'lodash';
+import * as mongoose from "mongoose";
+import { yamlConfig } from "./config";
 import { NotFoundError } from './error';
+import { customerPath } from "./ledger/ledger";
+import { Levels } from './types';
+import { baseLogger, caseInsensitiveRegex, inputXOR } from './utils';
+
+
 // mongoose.set("debug", true);
 
 const Schema = mongoose.Schema;
