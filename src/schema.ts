@@ -5,7 +5,6 @@ import { yamlConfig } from "./config"
 
 import mongoose from "mongoose";
 import { caseInsensitiveRegex, inputXOR, LoggedError } from './utils';
-import { UserWallet } from './userWallet';
 import { Levels } from './types';
 // mongoose.set("debug", true);
 
