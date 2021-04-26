@@ -14,6 +14,7 @@ import { getHeight } from "lightning"
 
 import bluebird from 'bluebird';
 import { yamlConfig } from "./config";
+import { InsufficientBalanceError, NewAccountWithdrawalError, TransactionRestrictedError } from './error';
 const { using } = bluebird;
 
 export const getOnChainTransactions = async ({ lnd, incoming }: { lnd: any, incoming: boolean }) => {
@@ -83,8 +84,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
       // quit early if balance is not enough
       if (balance.total_in_BTC < amount) {
         const error = `balance is too low`
-        onchainLogger.warn({ success: false, error }, error)
-        throw new LoggedError(error)
+        throw new InsufficientBalanceError(error, {forwardToClient: true, logger: onchainLogger, level: 'error'})
       }
 
       const payeeUser = await this.tentativelyGetPayeeUser({address})
@@ -94,8 +94,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
         if (await this.user.limitHit({on_us: true, amount})) {
           const error = `Cannot transfer more than ${yamlConfig.limits.onUs.level[this.user.level]} sats in 24 hours`
-          onchainLoggerOnUs.error({ success: false }, error)
-          throw new LoggedError(error)
+          throw new TransactionRestrictedError(error,{forwardToClient: true, logger: onchainLoggerOnUs, level: 'error'})
         }
 
         if (String(payeeUser._id) === String(this.user._id)) {
@@ -126,14 +125,13 @@ export const OnChainMixin = (superclass) => class extends superclass {
       onchainLogger = onchainLogger.child({onUs: false})
       
       if (!this.user.oldEnoughForWithdrawal) {
-        const error = `new account have to wait ${yamlConfig.limits.oldEnoughForWithdrawal / 60 * 60 * 1000}h before withdrawing`
-        throw Error(error)
+        const error = `New accounts have to wait ${yamlConfig.limits.oldEnoughForWithdrawal / 60 * 60 * 1000}h before withdrawing`
+        throw new NewAccountWithdrawalError(error,{forwardToClient: true, logger: onchainLogger, level: 'error'})
       }
 
       if (await this.user.limitHit({on_us: false, amount})) {
         const error = `Cannot withdraw more than ${yamlConfig.limits.withdrawal.level[this.user.level]} sats in 24 hours`
-        onchainLogger.error({ success: false }, error)
-        throw new LoggedError(error)
+        throw new TransactionRestrictedError(error,{forwardToClient: true, logger: onchainLogger, level: 'error'})
       }
 
       const { chain_balance: onChainBalance } = await lnService.getChainBalance({ lnd })
@@ -162,8 +160,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
       // case where the user doesn't have enough money
       if (balance.total_in_BTC < amount + estimatedFee) {
         const error = `balance is too low. have: ${balance} sats, need ${amount + estimatedFee}`
-        onchainLogger.warn({balance, amount, estimatedFee, sendTo, success: false }, error)
-        throw new LoggedError(error)
+        throw new InsufficientBalanceError(error, {forwardToClient: true, logger: onchainLogger, level: 'error'})
       }
       
       try {

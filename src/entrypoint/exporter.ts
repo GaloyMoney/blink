@@ -1,5 +1,5 @@
 import express from 'express';
-import { getChannels } from "lightning";
+import { getChannelBalance, getChannels } from "lightning";
 import client, { register } from 'prom-client';
 import { balanceSheetIsBalanced, getBalanceSheet } from "../ledger/balanceSheet";
 import { getBosScore, lndBalances } from "../lndUtils";
@@ -29,6 +29,7 @@ const lndOnChain_g = new client.Gauge({ name: `${prefix}_lnd_onchain`, help: 'ho
 const lndOffChain_g = new client.Gauge({ name: `${prefix}_lnd_offchain`, help: 'how much fund is offChain in our node' })
 const lndOpeningChannelBalance_g = new client.Gauge({ name: `${prefix}_lnd_openingchannelbalance`, help: 'how much fund is pending following opening channel' })
 const lndClosingChannelBalance_g = new client.Gauge({ name: `${prefix}_lnd_closingchannelbalance`, help: 'how much fund is closing following force closed channel' })
+const receivingCapacity_g = new client.Gauge({ name: `${prefix}_lnd_inboundcapacity`, help: 'inbound capacity of the lightning node' })
 const usdShortPosition_g = new client.Gauge({ name: `${prefix}_usdShortPosition`, help: 'usd short position on ftx' })
 const totalAccountValue_g = new client.Gauge({ name: `${prefix}_totalAccountValue`, help: 'totalAccountValue on ftx' })
 const ftx_btc_g = new client.Gauge({ name: `${prefix}_ftxBtcBalance`, help: 'btc balance in ftx' })
@@ -93,6 +94,9 @@ const main = async () => {
     totalChannels_g.set(channels.length)
     activeChannels_g.set(channels.filter(channel => channel.is_active).length)
     pendingHtlc_g.set(_.sum(channels.map(channel => channel.pending_payments.length)))
+
+    const { inbound } = await getChannelBalance({ lnd })
+    receivingCapacity_g.set(inbound ?? 0)
 
     fundingRate_g.set(await dealerWallet.getNextFundingRate())
 

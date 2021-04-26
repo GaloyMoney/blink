@@ -18,6 +18,12 @@ hedging:
   HIGH_SAFEBOUND_LEVERAGE: 2.25
   HIGH_BOUND_LEVERAGE: 3
 
+rebalancing:
+  lndHoldingBase: 50000000
+  ratioTargetDeposit: 1
+  ratioTargetWithdraw: 1
+  minOnchainRatio: 1.2
+
 test_accounts: 
 - phone: "+16505554321" # user0
   code: 321321
@@ -63,6 +69,9 @@ limits:
     level:
       1: 6
       2: 7
+
+proxyChecking:
+  enabled: true
 
 # TODO
 # carrierRegexFilter: ""
