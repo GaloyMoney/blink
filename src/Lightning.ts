@@ -190,10 +190,8 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     } catch (err) {
       if(err.constructor.name === "TimeoutError") {
-        // FIXME: dedupe from utils.ts
-        const limitHitError = `Cannot have more than ${yamlConfig.limits.pendingPayments.level[this.user.level]} pending payments`
-        this.logger.error(limitHitError)
-        throw new LoggedError(limitHitError)
+        const error = `Cannot have more than ${yamlConfig.limits.pendingPayments.level[this.user.level]} pending payments`
+        throw new TransactionRestrictedError(error, {forwardToClient: true, logger: this.logger, level: 'error'})
       }
       throw err
     } finally {
@@ -390,10 +388,8 @@ export const LightningMixin = (superclass) => class extends superclass {
       try {
         await semaphore.acquire()
       } catch(err) {
-        //FIXME: dedupe from utils.ts
         const error = `Cannot have more than ${yamlConfig.limits.pendingPayments.level[this.user.level]} pending payments`
-        lightningLogger.error({ success: false }, error)
-        throw new LoggedError(error)
+        throw new TransactionRestrictedError(error, {forwardToClient: true, logger: lightningLogger, level: 'error'})
       } finally {
         await semaphore.release()
       }

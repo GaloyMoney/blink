@@ -3,6 +3,7 @@ import moment from "moment";
 import { Semaphore } from 'redis-semaphore';
 import { yamlConfig } from './config';
 import { CSVAccountExport } from "./csvAccountExport";
+import { TransactionRestrictedError } from './error';
 import { Balances } from "./interface";
 import { customerPath } from "./ledger/ledger";
 import { MainBook } from "./mongodb";
@@ -230,9 +231,8 @@ export abstract class UserWallet {
     const paymentsAllowed = await user.paymentsAllowed
     console.log({paymentsAllowed})
     if(!paymentsAllowed) {
-      const limitHitError = `Cannot have more than ${yamlConfig.limits.pendingPayments.level[user.level]} pending payments`
-      logger.error({ success: false }, limitHitError)
-      throw new LoggedError(limitHitError)
+      const error = `Cannot have more than ${yamlConfig.limits.pendingPayments.level[user.level]} pending payments`
+      throw new TransactionRestrictedError(error, {forwardToClient: true, logger, level: 'error'})
     }
     return new Semaphore(ioredis, `semaphore:${user._id}`, paymentsAllowed, {
       acquireTimeout: 1000,
