@@ -75,7 +75,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     const expires_at = this.getExpiration(moment()).toDate()
     
     try {
-      let input = {
+      input = {
         lnd,
         tokens: value,
         expires_at,
