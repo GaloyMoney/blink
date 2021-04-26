@@ -65,6 +65,9 @@ limits:
       1: 5000000
       2: 100000000
 
+proxyChecking:
+  enabled: true
+
 # TODO
 # carrierRegexFilter: ""
 

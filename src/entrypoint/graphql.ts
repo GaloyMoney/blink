@@ -313,7 +313,9 @@ export async function startApolloServer() {
 
       if (!!uid) {
         user = await User.findOneAndUpdate({ _id: uid },{ lastConnection: new Date() }, {new: true})
-        fetchIPDetails({currentIP: context.req?.headers['x-real-ip'], user, logger})
+        if(yamlConfig.proxyChecking.enabled) {
+          fetchIPDetails({currentIP: context.req?.headers['x-real-ip'], user, logger})
+        }
         wallet = (!!user && user.status === "active") ? await WalletFactory({ user, logger }) : null
       }
 
