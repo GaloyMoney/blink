@@ -67,7 +67,7 @@ limits:
   pendingPayments:
     semaphoreLockTimeout: 1800000 # 30 mins 
     level:
-      1: 6
+      1: 3
       2: 7
 
 proxyChecking:

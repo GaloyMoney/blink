@@ -221,7 +221,7 @@ UserSchema.virtual('oldEnoughForWithdrawal').get(function(this: typeof UserSchem
 })
 
 UserSchema.virtual('pendingPayments').get(async function(this: typeof UserSchema) {
-  return Transaction.countDocuments({accounts: this.accountPath, pending: true})
+  return Transaction.countDocuments({type: 'payment', accounts: this.accountPath, pending: true})
 })
 
 UserSchema.virtual('remainingPaymentsAllowed').get(async function(this: typeof UserSchema) {
