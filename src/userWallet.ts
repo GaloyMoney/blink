@@ -228,13 +228,13 @@ export abstract class UserWallet {
   }
 
   static getProbeSemaphore = async ({user, logger}) => {
-    const paymentsAllowed = await user.paymentsAllowed
-    console.log({paymentsAllowed})
-    if(!paymentsAllowed) {
+    const remainingPaymentsAllowed = await user.remainingPaymentsAllowed
+
+    if(!remainingPaymentsAllowed) {
       const error = `Cannot have more than ${yamlConfig.limits.pendingPayments.level[user.level]} pending payments`
       throw new TransactionRestrictedError(error, {forwardToClient: true, logger, level: 'error'})
     }
-    return new Semaphore(ioredis, `semaphore:${user._id}`, paymentsAllowed, {
+    return new Semaphore(ioredis, `semaphore:${user._id}`, remainingPaymentsAllowed, {
       acquireTimeout: 1000,
       lockTimeout
     })

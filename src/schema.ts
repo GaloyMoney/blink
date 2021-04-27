@@ -224,7 +224,7 @@ UserSchema.virtual('pendingPayments').get(async function(this: typeof UserSchema
   return Transaction.countDocuments({accounts: this.accountPath, pending: true})
 })
 
-UserSchema.virtual('paymentsAllowed').get(async function(this: typeof UserSchema) {
+UserSchema.virtual('remainingPaymentsAllowed').get(async function(this: typeof UserSchema) {
   const pendingPaymentsLimit = yamlConfig.limits.pendingPayments.level[this.level]
   const pendingPayments = await this.pendingPayments
   const pendingPaymentsAndLimitDiff = pendingPaymentsLimit - pendingPayments
