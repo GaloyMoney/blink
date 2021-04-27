@@ -2,7 +2,7 @@ import lnService from 'ln-service'
 import { assert } from "console";
 import _ from 'lodash';
 import moment from "moment";
-import { customerPath, lndAccountingPath } from "./ledger/ledger";
+import { customerPath, lndAccountingPath, onchainRevenueFeePath } from "./ledger/ledger";
 import { lnd } from "./lndConfig";
 import { redlock } from "./lock";
 import { MainBook } from "./mongodb";
@@ -16,6 +16,8 @@ import bluebird from 'bluebird';
 import { yamlConfig } from "./config";
 import { InsufficientBalanceError, NewAccountWithdrawalError, TransactionRestrictedError } from './error';
 const { using } = bluebird;
+
+const percentDepositFee = yamlConfig.fees.deposit
 
 export const getOnChainTransactions = async ({ lnd, incoming }: { lnd: any, incoming: boolean }) => {
   try {
@@ -420,20 +422,26 @@ export const OnChainMixin = (superclass) => class extends superclass {
         if (!mongotx) {
 
           const {sats, addresses} = await this.getSatsAndAddressPerTx(matched_tx.transaction)
-
           assert(matched_tx.tokens >= sats)
+
+          const fee = sats * (percentDepositFee / 100)
 
           const metadata = { 
             currency: "BTC",
             type, hash: matched_tx.id,
             pending: false,
-            ...UserWallet.getCurrencyEquivalent({ sats, fee: 0 }),
+            ...UserWallet.getCurrencyEquivalent({ sats, fee }),
             payee_addresses: addresses
           }
 
+          await MainBook.entry("onchain deposit fee")
+          .credit(onchainRevenueFeePath, fee, metadata)
+          .debit(lndAccountingPath, fee, metadata)
+          .commit()
+
           await MainBook.entry()
-            .credit(this.user.accountPath, sats, metadata)
-            .debit(lndAccountingPath, sats, metadata)
+            .credit(this.user.accountPath, sats - fee, metadata)
+            .debit(lndAccountingPath, sats - fee, metadata)
             .commit()
 
           const onchainLogger = this.logger.child({ topic: "payment", protocol: "onchain", transactionType: "receipt", onUs: false })
