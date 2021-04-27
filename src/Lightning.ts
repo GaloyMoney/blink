@@ -65,7 +65,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     return input.add(delay(currency).value, delay(currency).unit)
   }
 
-  async addInvoice({ value, memo, selfGenerated = false }: IAddInvoiceRequest): Promise<string> {
+  async addInvoice({ value, memo, selfGenerated = true }: IAddInvoiceRequest): Promise<string> {
     if (!!value && value < 0) {
       throw new Error("value can't be negative")
     }
