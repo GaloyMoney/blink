@@ -20,9 +20,13 @@ const amountInvoice = 1000
 jest.mock('../notifications/notification')
 import { sendNotification } from "../notifications/notification";
 import { yamlConfig } from '../config';
+import { TransactionRestrictedError } from '../error';
 jest.mock('../realtimePrice')
 
 const date = Date.now() + 1000 * 60 * 60 * 24 * 8
+
+let userWallet1Limit, userWallet0Limit
+
 
 jest
 .spyOn(global.Date, 'now')
@@ -40,6 +44,8 @@ beforeAll(async () => {
   userWallet1 = await getUserWallet(1)
   userWallet2 = await getUserWallet(2)
   userWallet3 = await getUserWallet(3)
+  userWallet1Limit = yamlConfig.limits.onUs.level[userWallet1.user.level]
+  userWallet0Limit = yamlConfig.limits.onUs.level[userWallet0.user.level]
 });
 
 beforeEach(async () => {
@@ -492,14 +498,13 @@ it('fails to pay regular invoice with separate amt', async () => {
 })
 
 it('fails to pay when withdrawalLimit exceeded', async () => {
-  const { request } = await createInvoice({ lnd: lndOutside1, tokens: 2e6 })
-  await expect(userWallet0.pay({ invoice: request })).rejects.toThrow()
+  const { request } = await createInvoice({ lnd: lndOutside1, tokens: userWallet0Limit })
+  await expect(userWallet0.pay({ invoice: request })).rejects.toThrow(TransactionRestrictedError)
 })
 
 it('fails to pay when amount exceeds onUs limit', async() => {
-  const level1Limit = yamlConfig.limits.onUs.level['1']
-  const request = await userWallet1.addInvoice({ value: level1Limit + 1 })
-  await expect(userWallet0.pay({ invoice: request })).rejects.toThrow()
+  const request = await userWallet1.addInvoice({ value: userWallet0Limit + 1 })
+  await expect(userWallet0.pay({ invoice: request })).rejects.toThrow(TransactionRestrictedError)
 })
 
 // it('testDbTransaction', async () => {
