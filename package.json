@@ -79,6 +79,7 @@
     "@types/lodash": "^4.14.163",
     "@types/node": "^14.14.6",
     "@types/uuid": "^8.3.0",
+    "apollo-server-testing": "^2.23.0",
     "autocannon": "^6.5.0",
     "bolt07": "^1.6.0",
     "csv-parser": "^2.3.3",
