@@ -12,10 +12,11 @@ import { getTitle } from "../notifications/payment";
 import { baseLogger, bitcoindDefaultClient, btc2sat, sleep } from "../utils";
 import { getFunderWallet } from "../walletFactory";
 import { checkIsBalanced, getUserWallet, lndMain, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "./helper";
+import { yamlConfig } from '../config';
 
 jest.mock('../realtimePrice')
 
-
+const percentDepositFee = yamlConfig.fees.deposit
 
 let funderWallet
 let initBlockCount
@@ -74,7 +75,7 @@ const onchain_funding = async ({ walletDestination }) => {
     await checkIsBalanced()
 
     const {BTC: balance} = await walletDestination.getBalances()
-    expect(balance).toBe(initialBalance + btc2sat(amount_BTC))
+    expect(balance).toBe(initialBalance + btc2sat(amount_BTC) * (1 - (percentDepositFee / 100)))
 
     const transactions = await walletDestination.getTransactions()
 
