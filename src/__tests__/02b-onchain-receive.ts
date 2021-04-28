@@ -198,3 +198,13 @@ it('batch send transaction', async () => {
   }
 
 })
+
+it('allows fee exemption for specific users', async () => {
+  const walletUser2 = await getUserWallet(2)
+  walletUser2.user.depositFeeMultiplier = 0
+  await walletUser2.user.save()
+  const {BTC: initBalanceUser2} = await walletUser2.getBalances()
+  await onchain_funding({walletDestination: walletUser2})
+  const {BTC: finalBalanceUser2} = await walletUser2.getBalances()
+  expect(finalBalanceUser2).toBe(initBalanceUser2 + btc2sat(1))
+})
