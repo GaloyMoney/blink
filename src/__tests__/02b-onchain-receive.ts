@@ -30,6 +30,7 @@ let amount_BTC
 jest.mock('../notifications/notification')
 const { sendNotification } = require("../notifications/notification")
 
+const amountAfterFeeDeduction = (amount) => btc2sat(amount) * (1 - (percentDepositFee / 100))
 
 beforeAll(async () => {
   await setupMongoConnection()
@@ -67,6 +68,7 @@ const onchain_funding = async ({ walletDestination }) => {
   expect(address.substr(0, 4)).toBe("bcrt")
 
   const checkBalance = async () => {
+    
     const sub = lnService.subscribeToChainAddress({ lnd: lndMain, bech32_address: address, min_height })
     await once(sub, 'confirmation')
     sub.removeAllListeners();
@@ -75,7 +77,7 @@ const onchain_funding = async ({ walletDestination }) => {
     await checkIsBalanced()
 
     const {BTC: balance} = await walletDestination.getBalances()
-    expect(balance).toBe(initialBalance + btc2sat(amount_BTC) * (1 - (percentDepositFee / 100)))
+    expect(balance).toBe(initialBalance + amountAfterFeeDeduction(amount_BTC))
 
     const transactions = await walletDestination.getTransactions()
 
@@ -84,7 +86,7 @@ const onchain_funding = async ({ walletDestination }) => {
 
     expect(transactions.length).toBe(initTransactions.length + 1)
     expect(transactions[0].type).toBe("onchain_receipt")
-    expect(transactions[0].amount).toBe(btc2sat(amount_BTC))
+    expect(transactions[0].amount).toBe(amountAfterFeeDeduction(amount_BTC))
     expect(transactions[0].addresses[0]).toBe(address)
 
   }
@@ -161,6 +163,7 @@ it('identifies unconfirmed incoming on chain txn', async () => {
 })
 
 it('batch send transaction', async () => {
+
   const address0 = await walletUser0.getOnChainAddress()
   const walletUser4 = await getUserWallet(4)
   const address4 = await walletUser4.getOnChainAddress()
@@ -183,7 +186,7 @@ it('batch send transaction', async () => {
   // const decodedPsbt2 = await bitcoindDefaultClient.decodePsbt(walletProcessPsbt.psbt)
   // const analysePsbt2 = await bitcoindDefaultClient.analyzePsbt(walletProcessPsbt.psbt)
   const finalizedPsbt = await bitcoindDefaultClient.finalizePsbt(walletProcessPsbt.psbt)
-  const txid = await bitcoindDefaultClient.sendRawTransaction(finalizedPsbt.hex) 
+  await bitcoindDefaultClient.sendRawTransaction(finalizedPsbt.hex) 
   
   await bitcoindDefaultClient.generateToAddress(6, RANDOM_ADDRESS)
   await waitUntilBlockHeight({ lnd: lndMain, blockHeight: initBlockCount + 6 })
@@ -192,8 +195,8 @@ it('batch send transaction', async () => {
     const {BTC: balance0} = await walletUser0.getBalances()
     const {BTC: balance4} = await walletUser4.getBalances()
 
-    expect(balance0).toBe(initialBalanceUser0 + btc2sat(1))
-    expect(balance4).toBe(initBalanceUser4 + btc2sat(2))
+    expect(balance0).toBe(initialBalanceUser0 + amountAfterFeeDeduction(1))
+    expect(balance4).toBe(initBalanceUser4 + amountAfterFeeDeduction(2))
   }
 
 })
