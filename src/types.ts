@@ -44,7 +44,7 @@ export type ChainType = "lightning" | "onchain"
 export type TransactionType = "payment" | "paid-invoice" | "on_us" | 
   "onchain_receipt" | "onchain_payment" | "onchain_on_us" | 
   "exchange_rebalance" | 
-  "fee" | "escrow" |
+  "fee" | "escrow" | "deposit_fee"
   "onchain_receipt_pending" // only for notification, not persistent in mongodb
 
 export const Levels = [1, 2]

@@ -2,7 +2,7 @@ import lnService from 'ln-service'
 import { assert } from "console";
 import _ from 'lodash';
 import moment from "moment";
-import { customerPath, lndAccountingPath, onchainRevenueFeePath } from "./ledger/ledger";
+import { customerPath, lndAccountingPath, onchainRevenuePath } from "./ledger/ledger";
 import { lnd } from "./lndConfig";
 import { redlock } from "./lock";
 import { MainBook } from "./mongodb";
@@ -434,15 +434,11 @@ export const OnChainMixin = (superclass) => class extends superclass {
             payee_addresses: addresses
           }
 
-          await MainBook.entry("onchain deposit fee")
-          .credit(onchainRevenueFeePath, fee, metadata)
-          .debit(lndAccountingPath, fee, metadata)
-          .commit()
-
           await MainBook.entry()
-            .credit(this.user.accountPath, sats - fee, metadata)
-            .debit(lndAccountingPath, sats - fee, metadata)
-            .commit()
+          .credit(onchainRevenuePath, fee, { ...metadata, type: 'deposit_fee'})
+          .credit(this.user.accountPath, sats - fee, metadata)
+          .debit(lndAccountingPath, sats, metadata)
+          .commit()
 
           const onchainLogger = this.logger.child({ topic: "payment", protocol: "onchain", transactionType: "receipt", onUs: false })
           onchainLogger.info({ success: true, ...metadata })
