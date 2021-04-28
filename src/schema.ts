@@ -53,7 +53,8 @@ export const regexUsername = /(?!^(1|3|bc1|lnbc1))^[0-9a-z_]+$/i
 const UserSchema = new Schema({
   depositFeeMultiplier: {
     type: Number,
-    default: yamlConfig.fees.deposit
+    default: yamlConfig.fees.deposit,
+    min: 0
   },
   lastConnection: Date,
   lastIPs: {
