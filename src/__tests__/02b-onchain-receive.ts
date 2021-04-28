@@ -9,7 +9,8 @@ import { getCurrentPrice } from "../realtimePrice";
 import { onchainTransactionEventHandler } from "../entrypoint/trigger";
 import { setupMongoConnection } from "../mongodb";
 import { getTitle } from "../notifications/payment";
-import { baseLogger, bitcoindDefaultClient, btc2sat, sleep } from "../utils";
+import { bitcoindDefaultClient, btc2sat, sleep } from "../utils";
+import { baseLogger } from '../logger'
 import { getFunderWallet } from "../walletFactory";
 import { checkIsBalanced, getUserWallet, lndMain, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "./helper";
 import { yamlConfig } from '../config';

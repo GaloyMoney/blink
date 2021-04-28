@@ -13,7 +13,8 @@ import { MainBook, setupMongoConnection } from "../mongodb";
 import { transactionNotification } from "../notifications/payment";
 import { Price } from "../priceImpl";
 import { InvoiceUser, Transaction, User } from "../schema";
-import { baseLogger, LOOK_BACK } from '../utils';
+import { LOOK_BACK } from '../utils';
+import { baseLogger } from '../logger'
 import { WalletFactory } from "../walletFactory";
 
 

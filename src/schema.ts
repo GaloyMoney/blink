@@ -4,8 +4,8 @@ import { customerPath } from "./ledger/ledger";
 import { yamlConfig } from "./config"
 
 import mongoose from "mongoose";
-import { baseLogger, caseInsensitiveRegex, inputXOR } from './utils';
-import { UserWallet } from './userWallet';
+import { caseInsensitiveRegex, inputXOR } from './utils';
+import { baseLogger } from './logger'
 import { Levels } from './types';
 import { NotFoundError } from './error';
 // mongoose.set("debug", true);

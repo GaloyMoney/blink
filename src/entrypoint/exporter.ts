@@ -6,7 +6,7 @@ import { getBosScore, lndBalances } from "../lndUtils";
 import { setupMongoConnection } from "../mongodb";
 import { User } from "../schema";
 import { SpecterWallet } from "../SpecterWallet";
-import { baseLogger } from "../utils";
+import { baseLogger } from "../logger";
 import { getDealerWallet, getFunderWallet } from "../walletFactory";
 import { lnd } from "../lndConfig"
 import _ from "lodash"

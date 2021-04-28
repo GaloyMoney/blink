@@ -7,7 +7,7 @@ import { sendBalanceToUsers } from "../entrypoint/dailyBalanceNotification";
 import { customerPath } from "../ledger/ledger";
 import { MainBook, setupMongoConnection } from "../mongodb";
 import { Transaction, User } from "../schema";
-import { baseLogger } from "../utils";
+import { baseLogger } from "../logger";
 import { getFunderWallet } from "../walletFactory";
 import { getUserWallet } from "./helper";
 jest.mock('../notifications/notification')

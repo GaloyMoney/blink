@@ -5,7 +5,7 @@ import { lndBalances } from "../lndUtils";
 import { MainBook } from "../mongodb";
 import { Transaction, User } from "../schema";
 import { SpecterWallet } from "../SpecterWallet";
-import { baseLogger } from "../utils";
+import { baseLogger } from '../logger'
 import { WalletFactory } from "../walletFactory";
 import { bitcoindAccountingPath, escrowAccountingPath, lndAccountingPath, lndFeePath } from "./ledger";
 
