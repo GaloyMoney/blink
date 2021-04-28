@@ -29,12 +29,13 @@ export const getBalanceSheet = async () => {
   const { balance: lightning } = await MainBook.balance({accounts: lndAccountingPath, currency: "BTC"}) 
   const { balance: bitcoin } = await MainBook.balance({accounts: bitcoindAccountingPath, currency: "BTC"}) 
   const { balance: expenses } = await MainBook.balance({accounts: lndFeePath, currency: "BTC"}) 
+  const { balance: revenue } = await MainBook.balance({account_path: "Revenue", currency: "BTC"})
 
-  return {assets, liabilities, lightning, expenses, bitcoin }
+  return {assets, liabilities, lightning, expenses, bitcoin, revenue }
 }
 
 export const balanceSheetIsBalanced = async () => {
-  const {assets, liabilities, lightning, bitcoin, expenses } = await getBalanceSheet()
+  const {assets, liabilities, lightning, bitcoin, expenses, revenue } = await getBalanceSheet()
   const { total: lnd } = await lndBalances() // doesnt include escrow amount
 
   const specterWallet = new SpecterWallet({ logger })
@@ -44,6 +45,7 @@ export const balanceSheetIsBalanced = async () => {
     assets /* assets is ___ */
     + liabilities /* liabilities is ___ */
     + expenses /* expense is positif */
+    + revenue /* revenue is ___ */
 
   const bookingVersusRealWorldAssets = 
     (lnd + bitcoind) + // physical assets or value of account at third party
@@ -52,7 +54,7 @@ export const balanceSheetIsBalanced = async () => {
   if(!!bookingVersusRealWorldAssets || !!assetsLiabilitiesDifference) {
     logger.debug({
       assetsLiabilitiesDifference, bookingVersusRealWorldAssets,
-      assets, liabilities, expenses,  
+      assets, liabilities, expenses, revenue, 
       lnd, lightning, 
       bitcoind, bitcoin
     }, `not balanced`)
