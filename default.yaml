@@ -69,7 +69,8 @@ proxyChecking:
   enabled: true
 
 fees:
-  deposit: 0.3 # percent
+  deposit: 0.003 # 3 percent
+
 # TODO
 # carrierRegexFilter: ""
 

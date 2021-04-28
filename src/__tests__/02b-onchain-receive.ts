@@ -16,7 +16,7 @@ import { yamlConfig } from '../config';
 
 jest.mock('../realtimePrice')
 
-const percentDepositFee = yamlConfig.fees.deposit
+const depositFeeMultiplier = yamlConfig.fees.deposit
 
 let funderWallet
 let initBlockCount
@@ -30,7 +30,7 @@ let amount_BTC
 jest.mock('../notifications/notification')
 const { sendNotification } = require("../notifications/notification")
 
-const amountAfterFeeDeduction = (amount) => btc2sat(amount) * (1 - (percentDepositFee / 100))
+const amountAfterFeeDeduction = (amount) => btc2sat(amount) * (1 - depositFeeMultiplier)
 
 beforeAll(async () => {
   await setupMongoConnection()

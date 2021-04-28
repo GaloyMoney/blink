@@ -17,8 +17,6 @@ import { yamlConfig } from "./config";
 import { InsufficientBalanceError, NewAccountWithdrawalError, TransactionRestrictedError } from './error';
 const { using } = bluebird;
 
-const percentDepositFee = yamlConfig.fees.deposit
-
 export const getOnChainTransactions = async ({ lnd, incoming }: { lnd: any, incoming: boolean }) => {
   try {
     const { current_block_height } = await getHeight({lnd})
@@ -424,9 +422,9 @@ export const OnChainMixin = (superclass) => class extends superclass {
           const {sats, addresses} = await this.getSatsAndAddressPerTx(matched_tx.transaction)
           assert(matched_tx.tokens >= sats)
 
-          const fee = sats * (percentDepositFee / 100)
+          const fee = sats * this.user.depositFeeMultiplier
 
-          const metadata = { 
+          const metadata = {
             currency: "BTC",
             type, hash: matched_tx.id,
             pending: false,
