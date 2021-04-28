@@ -43,6 +43,7 @@ const fundingRate_g = new client.Gauge({ name: `${prefix}_fundingRate`, help: 'F
 const assetsLiabilitiesDifference_g = new client.Gauge({ name: `${prefix}_assetsEqLiabilities`, help: 'do we have a balanced book' })
 const bookingVersusRealWorldAssets_g = new client.Gauge({ name: `${prefix}_lndBalanceSync`, help: 'are lnd in syncs with our books' })
 const bos_g = new client.Gauge({ name: `${prefix}_bos`, help: 'bos score' })
+const bitcoin_g = new client.Gauge({ name: `${prefix}_bitcoin`, help: 'amount in accounting for cold storage' })
 const specter_g = new client.Gauge({ name: `${prefix}_bitcoind`, help: 'amount in cold storage' })
 const business_g = new client.Gauge({ name: `${prefix}_business`, help: 'number of businesses in the app' })
 
@@ -52,10 +53,11 @@ const main = async () => {
     const bosScore = await getBosScore()
     bos_g.set(bosScore)
 
-    const { lightning, liabilities } = await getBalanceSheet()
+    const { lightning, liabilities, bitcoin } = await getBalanceSheet()
     const { assetsLiabilitiesDifference, bookingVersusRealWorldAssets } = await balanceSheetIsBalanced()
     liabilities_g.set(liabilities)
     lightning_g.set(lightning)
+    bitcoin_g.set(bitcoin)
     assetsLiabilitiesDifference_g.set(assetsLiabilitiesDifference)
     bookingVersusRealWorldAssets_g.set(bookingVersusRealWorldAssets)
     
