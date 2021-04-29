@@ -28,7 +28,7 @@ podAnnotations: {}
 podSecurityContext: {}
   # fsGroup: 2000
 
-securityContext: {}
+securityContext: 
   # capabilities:
   #   drop:
   #   - ALL
@@ -48,7 +48,7 @@ ingress:
     # kubernetes.io/tls-acme: "true"
   hosts:
     - lnpay.mainnet.galoy.io
-  tls: []
+  tls:
    - secretName: lnpay-tls
      hosts:
        - lnpay.mainnet.galoy.io
