@@ -65,7 +65,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
       ({ fee } = await lnService.getChainFeeEstimate({ lnd, send_to: sendTo }))
     }
 
-    return fee
+    return fee + this.user.withdrawFee
   }
 
   // amount in sats
@@ -158,6 +158,9 @@ export const OnChainMixin = (superclass) => class extends superclass {
         throw new LoggedError(error)
       }
 
+      //add a flat fee on top of onchain miner fees
+      estimatedFee += this.user.withdrawFee
+
       // case where the user doesn't have enough money
       if (balance.total_in_BTC < amount + estimatedFee) {
         const error = `balance is too low. have: ${balance} sats, need ${amount + estimatedFee}`
@@ -177,15 +180,16 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
       {
         const sats = amount + fee
-        const metadata = { currency: "BTC", hash: id, type: "onchain_payment", pending: true, ...UserWallet.getCurrencyEquivalent({ sats, fee }) }
+        const metadata = { currency: "BTC", hash: id, type: "onchain_payment", pending: true, ...UserWallet.getCurrencyEquivalent({ sats, fee: fee + this.user.withdrawFee }) }
 
         // TODO/FIXME refactor. add the transaction first and set the fees in a second tx.
         await MainBook.entry(memo)
           .credit(lndAccountingPath, sats, metadata)
-          .debit(this.user.accountPath, sats, metadata)
+          .credit(onchainRevenuePath, this.user.withdrawFee, metadata)
+          .debit(this.user.accountPath, sats + this.user.withdrawFee, metadata)
           .commit()
 
-        onchainLogger.info({success: true , ...metadata}, 'successfull onchain payment')
+        onchainLogger.info({success: true , ...metadata}, 'successful onchain payment')
       }
 
       return true
