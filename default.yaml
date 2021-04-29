@@ -69,7 +69,7 @@ proxyChecking:
   enabled: true
 
 fees:
-  deposit: 0.003 # 3 percent
+  deposit: 0 #TODO: make 3 percent (0.003) after mobile app update
 
 # TODO
 # carrierRegexFilter: ""
