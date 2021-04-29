@@ -1,6 +1,7 @@
 const { createTestClient } = require('apollo-server-testing');
 import { startApolloServer } from "../entrypoint/graphql"
-import { baseLogger, sleep } from "../utils";
+import { sleep } from "../utils";
+import { baseLogger } from '../logger'
 
 it('start server', async () => {
   const { server } = await startApolloServer()
