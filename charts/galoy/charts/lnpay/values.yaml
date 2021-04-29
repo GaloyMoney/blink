@@ -47,14 +47,13 @@ ingress:
     cert-manager.io/cluster-issuer: ca-issuer
     # kubernetes.io/tls-acme: "true"
   hosts:
-    - lnpay.mainnet.galoy.io
-  hosts:
     - host: lnpay.mainnet.galoy.io
-      paths: ["/"]
-  tls:
-   - secretName: lnpay-tls
-     hosts:
-       - lnpay.mainnet.galoy.io
+      paths: 
+        - path: "/"
+  tls: 
+    - secretName: lnpay-mainnet-tls
+      hosts:
+        - lnpay.mainnet.galoy.io
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
