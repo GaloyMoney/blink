@@ -40,17 +40,10 @@ jobs:
 
   test:
     docker:
-      - image: gcr.io/google.com/cloudsdktool/cloud-sdk:alpine
+      - image: kiwigrid/gcloud-kubectl-helm:latest
     resource_class: small
     steps:
       - checkout
-      - run: apk update
-      - run: apk upgrade 
-      - run: apk add helm
-      - run:
-          name: generate and export namespace name
-          command: |
-            echo "export NAMESPACE=devnet-$CIRCLE_SHA1" >> $BASH_ENV
       - run:
           name: generate and export namespace name
           command: |
