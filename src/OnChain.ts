@@ -63,9 +63,10 @@ export const OnChainMixin = (superclass) => class extends superclass {
     } else {
       const sendTo = [{ address, tokens: amount ?? defaultAmount }];
       ({ fee } = await lnService.getChainFeeEstimate({ lnd, send_to: sendTo }))
+      fee += this.user.withdrawFee
     }
 
-    return fee + this.user.withdrawFee
+    return fee
   }
 
   // amount in sats
