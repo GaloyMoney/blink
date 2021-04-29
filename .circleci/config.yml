@@ -40,12 +40,13 @@ jobs:
 
   test:
     docker:
-      - image: kiwigrid/gcloud-kubectl-helm:latest
+      - image: gcr.io/google.com/cloudsdktool/cloud-sdk:alpine
     resource_class: small
     steps:
       - checkout
       - run: apk update
       - run: apk upgrade 
+      - run: apk add helm
       - run:
           name: generate and export namespace name
           command: |
