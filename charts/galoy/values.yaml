@@ -170,7 +170,6 @@ mongodb:
 
   auth:
     username: testGaloy
-    password: testGaloy
     database: galoy
 
   labels:
