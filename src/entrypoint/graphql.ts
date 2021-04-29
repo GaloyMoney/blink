@@ -172,7 +172,10 @@ const resolvers = {
         withdrawal: yamlConfig.limits.withdrawal.level[user.level],
         onUs: yamlConfig.limits.onUs.level[user.level]
       }
-    }
+    },
+    getWalletFees: () => ({
+      deposit: yamlConfig.fees.deposit
+    })
   },
   Mutation: {
     requestPhoneCode: async (_, { phone }, { logger }) => ({ success: requestPhoneCode({ phone, logger }) }),
