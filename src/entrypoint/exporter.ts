@@ -46,7 +46,7 @@ const bos_g = new client.Gauge({ name: `${prefix}_bos`, help: 'bos score' })
 const bitcoin_g = new client.Gauge({ name: `${prefix}_bitcoin`, help: 'amount in accounting for cold storage' })
 const specter_g = new client.Gauge({ name: `${prefix}_bitcoind`, help: 'amount in cold storage' })
 const business_g = new client.Gauge({ name: `${prefix}_business`, help: 'number of businesses in the app' })
-const onchainDepositFee_g = new client.Gauge({ name:`${prefix}_onchainDepositFee`, help: 'onchain deposit fee collected' })
+const onchainDepositFees_g = new client.Gauge({ name:`${prefix}_onchainDepositFees`, help: 'onchain deposit fees collected' })
 
 const main = async () => {
   server.get('/metrics', async (req, res) => {
@@ -110,7 +110,7 @@ const main = async () => {
       {$match: { accounts: 'Revenue:Bitcoin:Fees', type:'onchain_receipt' }},
       {$group: { _id: null, totalDepositFees: { $sum: "$credit" } } }
     ])
-    onchainDepositFee_g.set(totalDepositFees)
+    onchainDepositFees_g.set(totalDepositFees)
 
     res.set('Content-Type', register.contentType);
     res.end(register.metrics());
