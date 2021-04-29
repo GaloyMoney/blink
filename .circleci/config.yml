@@ -44,6 +44,12 @@ jobs:
     resource_class: small
     steps:
       - checkout
+      - run: apk update
+      - run: apk upgrade 
+      - run:
+          name: generate and export namespace name
+          command: |
+            echo "export NAMESPACE=devnet-$CIRCLE_SHA1" >> $BASH_ENV
       - run:
           name: generate and export namespace name
           command: |
