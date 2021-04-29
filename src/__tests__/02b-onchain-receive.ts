@@ -28,7 +28,7 @@ let amount_BTC
 jest.mock('../notifications/notification')
 const { sendNotification } = require("../notifications/notification")
 
-const amountAfterFeeDeduction = ({amount, user}) => btc2sat(amount) * (1 - user.depositFeeRatio)
+const amountAfterFeeDeduction = ({amount, depositFeeRatio}) => btc2sat(amount) * (1 - depositFeeRatio)
 
 beforeAll(async () => {
   await setupMongoConnection()
@@ -75,7 +75,7 @@ const onchain_funding = async ({ walletDestination }) => {
     await checkIsBalanced()
 
     const {BTC: balance} = await walletDestination.getBalances()
-    expect(balance).toBe(initialBalance + amountAfterFeeDeduction({ amount: amount_BTC, user: walletDestination.user }))
+    expect(balance).toBe(initialBalance + amountAfterFeeDeduction({ amount: amount_BTC, depositFeeRatio: walletDestination.user.depositFeeRatio }))
 
     const transactions = await walletDestination.getTransactions()
 
@@ -84,7 +84,7 @@ const onchain_funding = async ({ walletDestination }) => {
 
     expect(transactions.length).toBe(initTransactions.length + 1)
     expect(transactions[0].type).toBe("onchain_receipt")
-    expect(transactions[0].amount).toBe(amountAfterFeeDeduction({ amount: amount_BTC, user: walletDestination.user }))
+    expect(transactions[0].amount).toBe(amountAfterFeeDeduction({ amount: amount_BTC, depositFeeRatio: walletDestination.user.depositFeeRatio }))
     expect(transactions[0].addresses[0]).toBe(address)
 
   }
@@ -193,8 +193,8 @@ it('batch send transaction', async () => {
     const {BTC: balance0} = await walletUser0.getBalances()
     const {BTC: balance4} = await walletUser4.getBalances()
 
-    expect(balance0).toBe(initialBalanceUser0 + amountAfterFeeDeduction({amount: 1, user: walletUser0.user}))
-    expect(balance4).toBe(initBalanceUser4 + amountAfterFeeDeduction({ amount: 2, user: walletUser4.user }))
+    expect(balance0).toBe(initialBalanceUser0 + amountAfterFeeDeduction({amount: 1, depositFeeRatio: walletUser0.user.depositFeeRatio}))
+    expect(balance4).toBe(initBalanceUser4 + amountAfterFeeDeduction({ amount: 2, depositFeeRatio: walletUser4.user.depositFeeRatio }))
   }
 
 })

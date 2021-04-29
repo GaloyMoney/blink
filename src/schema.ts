@@ -54,7 +54,8 @@ const UserSchema = new Schema({
   depositFeeRatio: {
     type: Number,
     default: yamlConfig.fees.deposit,
-    min: 0
+    min: 0,
+    max: 1
   },
   lastConnection: Date,
   lastIPs: {
