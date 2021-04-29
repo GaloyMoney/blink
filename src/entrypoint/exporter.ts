@@ -4,7 +4,7 @@ import client, { register } from 'prom-client';
 import { balanceSheetIsBalanced, getBalanceSheet } from "../ledger/balanceSheet";
 import { getBosScore, lndBalances } from "../lndUtils";
 import { setupMongoConnection } from "../mongodb";
-import { User } from "../schema";
+import { Transaction, User } from "../schema";
 import { SpecterWallet } from "../SpecterWallet";
 import { baseLogger } from "../logger";
 import { getDealerWallet, getFunderWallet } from "../walletFactory";
@@ -46,6 +46,7 @@ const bos_g = new client.Gauge({ name: `${prefix}_bos`, help: 'bos score' })
 const bitcoin_g = new client.Gauge({ name: `${prefix}_bitcoin`, help: 'amount in accounting for cold storage' })
 const specter_g = new client.Gauge({ name: `${prefix}_bitcoind`, help: 'amount in cold storage' })
 const business_g = new client.Gauge({ name: `${prefix}_business`, help: 'number of businesses in the app' })
+const onchainWithdrawFees_g = new client.Gauge({ name: `${prefix}_onchainWithdrawFees`, help: 'onchain withdraw fees collected' })
 
 const main = async () => {
   server.get('/metrics', async (req, res) => {
@@ -104,6 +105,12 @@ const main = async () => {
 
     const specterWallet = new SpecterWallet({ logger })
     specter_g.set(await specterWallet.getBitcoindBalance())
+
+    const { totalWithdrawFees } = await Transaction.aggregate([
+      {$match: {accounts: 'Revenue:Bitcoin:Fees', type:'onchain_payment'}},
+      {$group: {_id: null, totalWithdrawFees: { $sum: "$credit" } } }
+    ])
+    onchainWithdrawFees_g.set(totalWithdrawFees)
 
     res.set('Content-Type', register.contentType);
     res.end(register.metrics());
