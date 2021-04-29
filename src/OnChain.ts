@@ -423,7 +423,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
           const {sats, addresses} = await this.getSatsAndAddressPerTx(matched_tx.transaction)
           assert(matched_tx.tokens >= sats)
 
-          const fee = sats * this.user.depositFeeMultiplier
+          const fee = sats * this.user.depositFeeRatio
 
           const metadata = {
             currency: "BTC",

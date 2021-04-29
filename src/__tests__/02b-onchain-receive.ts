@@ -28,7 +28,7 @@ let amount_BTC
 jest.mock('../notifications/notification')
 const { sendNotification } = require("../notifications/notification")
 
-const amountAfterFeeDeduction = ({amount, user}) => btc2sat(amount) * (1 - user.depositFeeMultiplier)
+const amountAfterFeeDeduction = ({amount, user}) => btc2sat(amount) * (1 - user.depositFeeRatio)
 
 beforeAll(async () => {
   await setupMongoConnection()
@@ -201,7 +201,7 @@ it('batch send transaction', async () => {
 
 it('allows fee exemption for specific users', async () => {
   const walletUser2 = await getUserWallet(2)
-  walletUser2.user.depositFeeMultiplier = 0
+  walletUser2.user.depositFeeRatio = 0
   await walletUser2.user.save()
   const {BTC: initBalanceUser2} = await walletUser2.getBalances()
   await onchain_funding({walletDestination: walletUser2})
