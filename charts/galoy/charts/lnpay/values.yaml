@@ -8,7 +8,8 @@ image:
   repository: gcr.io/galoyapp/lnpay
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  # FIXME: handle versioning
+  tag: "latest"
 
 imagePullSecrets: []
 nameOverride: ""
