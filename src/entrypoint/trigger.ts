@@ -13,7 +13,8 @@ import { MainBook, setupMongoConnection } from "../mongodb";
 import { transactionNotification } from "../notifications/payment";
 import { Price } from "../priceImpl";
 import { InvoiceUser, Transaction, User } from "../schema";
-import { baseLogger, bitcoindDefaultClient, LOOK_BACK, sleep } from '../utils';
+import { baseLogger } from '../logger'
+import { bitcoindDefaultClient, LOOK_BACK, sleep } from '../utils';
 import { WalletFactory } from "../walletFactory";
 
 

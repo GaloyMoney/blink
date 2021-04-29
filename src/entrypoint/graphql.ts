@@ -29,7 +29,8 @@ import { User } from "../schema";
 import { login, requestPhoneCode } from "../text";
 import { Levels, OnboardingEarn } from "../types";
 import { AdminOps } from "../AdminOps"
-import { baseLogger, fetchIPDetails } from "../utils";
+import { fetchIPDetails } from "../utils";
+import { baseLogger } from '../logger'
 import { WalletFactory, WalletFromUsername } from "../walletFactory";
 import { getCurrentPrice } from "../realtimePrice";
 import { getAsyncRedisClient } from "../redis";
@@ -171,7 +172,10 @@ const resolvers = {
         withdrawal: yamlConfig.limits.withdrawal.level[user.level],
         onUs: yamlConfig.limits.onUs.level[user.level]
       }
-    }
+    },
+    getWalletFees: () => ({
+      deposit: yamlConfig.fees.deposit
+    })
   },
   Mutation: {
     requestPhoneCode: async (_, { phone }, { logger }) => ({ success: requestPhoneCode({ phone, logger }) }),

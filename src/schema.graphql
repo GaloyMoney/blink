@@ -142,6 +142,11 @@ type Query {
   getUid(username: String, phone: String): ID
   getLevels: [Int]
   getLimits: Limits
+  getWalletFees: WalletFees
+}
+
+type WalletFees {
+  deposit: Float
 }
 
 type Limits {

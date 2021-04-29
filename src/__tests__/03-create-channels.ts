@@ -9,7 +9,8 @@ import { onChannelUpdated } from '../entrypoint/trigger';
 import { updateEscrows } from "../ledger/balanceSheet";
 import { lndFeePath } from "../ledger/ledger";
 import { MainBook, setupMongoConnection } from "../mongodb";
-import { baseLogger, bitcoindDefaultClient, sleep } from "../utils";
+import { bitcoindDefaultClient, sleep } from "../utils";
+import { baseLogger } from '../logger'
 import { checkIsBalanced, lndMain, lndOutside1, lndOutside2, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "./helper";
 
 jest.mock('../realtimePrice')
