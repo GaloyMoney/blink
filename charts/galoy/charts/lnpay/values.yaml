@@ -48,6 +48,9 @@ ingress:
     # kubernetes.io/tls-acme: "true"
   hosts:
     - lnpay.mainnet.galoy.io
+  hosts:
+    - host: lnpay.mainnet.galoy.io
+      paths: ["/"]
   tls:
    - secretName: lnpay-tls
      hosts:
