@@ -144,8 +144,8 @@ const resolvers = {
     getLastOnChainAddress: async (_, __, { wallet }) => ({ id: wallet.getLastOnChainAddress() }),
     maps: async () => {
       // TODO: caching
-      const users = await User.find(
-        { title: { $exists: true }, coordinate: { $exists: true } },
+      const users = await User.find({ 
+        title: { $exists: true }, coordinate: { $exists: true } },
         { username: 1, title: 1, coordinate: 1 }
       );
 
@@ -165,13 +165,11 @@ const resolvers = {
       return uid
     },
     getLevels: () => Levels,
-    getLimits: (_, __, {user}) => {
-      return {
-        oldEnoughForWithdrawal: yamlConfig.limits.oldEnoughForWithdrawal,
-        withdrawal: yamlConfig.limits.withdrawal.level[user.level],
-        onUs: yamlConfig.limits.onUs.level[user.level]
-      }
-    }
+    getLimits: (_, __, {user}) => ({
+      oldEnoughForWithdrawal: yamlConfig.limits.oldEnoughForWithdrawal,
+      withdrawal: yamlConfig.limits.withdrawal.level[user.level],
+      onUs: yamlConfig.limits.onUs.level[user.level]
+    })
   },
   Mutation: {
     requestPhoneCode: async (_, { phone }, { logger }) => ({ success: requestPhoneCode({ phone, logger }) }),
