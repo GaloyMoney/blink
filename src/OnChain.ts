@@ -434,7 +434,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
           }
 
           await MainBook.entry()
-          .credit(onchainRevenuePath, fee, { ...metadata, type: 'deposit_fee'})
+          .credit(onchainRevenuePath, fee, metadata)
           .credit(this.user.accountPath, sats - fee, metadata)
           .debit(lndAccountingPath, sats, metadata)
           .commit()
