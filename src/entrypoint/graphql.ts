@@ -29,7 +29,8 @@ import { User } from "../schema";
 import { login, requestPhoneCode } from "../text";
 import { Levels, OnboardingEarn } from "../types";
 import { AdminOps } from "../AdminOps"
-import { baseLogger, fetchIPDetails } from "../utils";
+import { fetchIPDetails } from "../utils";
+import { baseLogger } from '../logger'
 import { WalletFactory, WalletFromUsername } from "../walletFactory";
 import { getCurrentPrice } from "../realtimePrice";
 import { getAsyncRedisClient } from "../redis";
@@ -165,10 +166,15 @@ const resolvers = {
       return uid
     },
     getLevels: () => Levels,
-    getLimits: (_, __, {user}) => ({
-      oldEnoughForWithdrawal: yamlConfig.limits.oldEnoughForWithdrawal,
-      withdrawal: yamlConfig.limits.withdrawal.level[user.level],
-      onUs: yamlConfig.limits.onUs.level[user.level]
+    getLimits: (_, __, {user}) => {
+      return {
+        oldEnoughForWithdrawal: yamlConfig.limits.oldEnoughForWithdrawal,
+        withdrawal: yamlConfig.limits.withdrawal.level[user.level],
+        onUs: yamlConfig.limits.onUs.level[user.level]
+      }
+    },
+    getWalletFees: () => ({
+      deposit: yamlConfig.fees.deposit
     })
   },
   Mutation: {
@@ -311,7 +317,9 @@ export async function startApolloServer() {
 
       if (!!uid) {
         user = await User.findOneAndUpdate({ _id: uid },{ lastConnection: new Date() }, {new: true})
-        fetchIPDetails({currentIP: context.req?.headers['x-real-ip'], user, logger})
+        if(yamlConfig.proxyChecking.enabled) {
+          fetchIPDetails({currentIP: context.req?.headers['x-real-ip'], user, logger})
+        }
         wallet = (!!user && user.status === "active") ? await WalletFactory({ user, logger }) : null
       }
 

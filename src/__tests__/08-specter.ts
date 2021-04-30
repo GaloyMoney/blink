@@ -6,7 +6,8 @@ import { lnd } from "../lndConfig";
 import { MainBook, setupMongoConnection } from "../mongodb";
 import { SpecterWallet } from "../SpecterWallet";
 import { checkIsBalanced, mockGetExchangeBalance, RANDOM_ADDRESS } from "./helper";
-import { baseLogger, bitcoindDefaultClient, sleep } from "../utils";
+import { bitcoindDefaultClient, sleep } from "../utils";
+import { baseLogger } from '../logger'
 import { UserWallet } from "../userWallet";
 import lnService from 'ln-service'
 

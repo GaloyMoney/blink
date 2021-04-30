@@ -2,7 +2,8 @@ import { balanceSheetIsBalanced, updateUsersPendingPayment } from "../ledger/bal
 import { FtxDealerWallet } from "../dealer/FtxDealerWallet";
 import { lnd } from "../lndConfig";
 import { User } from "../schema";
-import { baseLogger, sleep } from "../utils";
+import { sleep } from "../utils";
+import { baseLogger } from '../logger'
 import { WalletFactory } from "../walletFactory";
 import {authenticatedLndGrpc, getWalletInfo} from 'lightning';
 import { yamlConfig } from "../config";
