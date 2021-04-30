@@ -145,8 +145,8 @@ const resolvers = {
     getLastOnChainAddress: async (_, __, { wallet }) => ({ id: wallet.getLastOnChainAddress() }),
     maps: async () => {
       // TODO: caching
-      const users = await User.find(
-        { title: { $exists: true }, coordinate: { $exists: true } },
+      const users = await User.find({ 
+        title: { $exists: true }, coordinate: { $exists: true } },
         { username: 1, title: 1, coordinate: 1 }
       );
 
@@ -196,9 +196,9 @@ const resolvers = {
         return true
       }
     }),
-    noauthAddInvoice: async (_, { username }, { logger }) => {
+    noauthAddInvoice: async (_, { username, value }, { logger }) => {
       const wallet = await WalletFromUsername({username, logger})
-      return wallet.addInvoice({ selfGenerated: false })
+      return wallet.addInvoice({ selfGenerated: false, value })
     },
     invoice: async (_, __, { wallet }) => ({
       addInvoice: async ({ value, memo }) => wallet.addInvoice({ value, memo }),
