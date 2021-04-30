@@ -42,19 +42,19 @@ service:
   port: 3000
 
 ingress:
-  enabled: true
-  annotations: 
-    kubernetes.io/ingress.class: nginx
-    cert-manager.io/cluster-issuer: ca-issuer
-    # kubernetes.io/tls-acme: "true"
-  hosts:
-    - host: lnpay.mainnet.galoy.io
-      paths: 
-        - path: "/"
-  tls: 
-    - secretName: lnpay-mainnet-tls
-      hosts:
-        - lnpay.mainnet.galoy.io
+  enabled: false
+  # annotations: 
+  #   kubernetes.io/ingress.class: nginx
+  #   cert-manager.io/cluster-issuer: ca-issuer
+  #   kubernetes.io/tls-acme: "true"
+  # hosts:
+  #   - host: lnpay.mainnet.galoy.io
+  #     paths: 
+  #       - path: "/"
+  # tls: 
+  #   - secretName: lnpay-mainnet-tls
+  #     hosts:
+  #       - lnpay.mainnet.galoy.io
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
