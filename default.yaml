@@ -22,7 +22,7 @@ rebalancing:
   lndHoldingBase: 50000000
   ratioTargetDeposit: 1
   ratioTargetWithdraw: 1
-  minOnchainRatio: 1.2
+  minOnchain: 10000000
 
 test_accounts: 
 - phone: "+16505554321" # user0
