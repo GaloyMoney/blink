@@ -180,14 +180,14 @@ export const OnChainMixin = (superclass) => class extends superclass {
       const [{ fee }] = outgoingOnchainTxns.filter(tx => tx.id === id)
 
       {
-        const sats = amount + fee
-        const metadata = { currency: "BTC", hash: id, type: "onchain_payment", pending: true, ...UserWallet.getCurrencyEquivalent({ sats, fee: fee + this.user.withdrawFee }) }
+        const sats = amount + fee + this.user.withdrawFee
+        const metadata = { currency: "BTC", hash: id, type: "onchain_payment", pending: true, ...UserWallet.getCurrencyEquivalent({ sats, fee }) }
 
         // TODO/FIXME refactor. add the transaction first and set the fees in a second tx.
         await MainBook.entry(memo)
-          .credit(lndAccountingPath, sats, metadata)
+          .credit(lndAccountingPath, sats - this.user.withdrawFee, metadata)
           .credit(onchainRevenuePath, this.user.withdrawFee, metadata)
-          .debit(this.user.accountPath, sats + this.user.withdrawFee, metadata)
+          .debit(this.user.accountPath, sats, metadata)
           .commit()
 
         onchainLogger.info({success: true , ...metadata}, 'successful onchain payment')
