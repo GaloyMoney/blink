@@ -38,4 +38,5 @@ export const lndFeePath = 'Expenses:Bitcoin:Fees'
 export const bitcoindFeePath = 'Expenses:Bitcoin:Fees'
 
 // revenue
+export const onchainRevenuePath = 'Revenue:Bitcoin:Fees'
 export const revenueFeePath = 'Revenue:Lightning:Fees'

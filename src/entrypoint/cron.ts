@@ -1,5 +1,5 @@
 import { MainBook, setupMongoConnection } from "../mongodb";
-import { baseLogger, LoggedError } from "../utils";
+import { baseLogger } from "../logger";
 import { updateEscrows, updateUsersPendingPayment } from "../ledger/balanceSheet"
 import { SpecterWallet } from "../SpecterWallet";
 import { DbMetadata } from "../schema";

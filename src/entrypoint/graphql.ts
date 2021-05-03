@@ -28,9 +28,9 @@ import { sendNotification } from "../notifications/notification";
 import { User } from "../schema";
 import { login, requestPhoneCode } from "../text";
 import { Levels, OnboardingEarn } from "../types";
-import { UserWallet } from "../userWallet";
 import { AdminOps } from "../AdminOps"
-import { baseLogger, customLoggerPrefix, fetchIPDetails, LoggedError } from "../utils";
+import { fetchIPDetails } from "../utils";
+import { baseLogger } from '../logger'
 import { WalletFactory, WalletFromUsername } from "../walletFactory";
 import { getCurrentPrice } from "../realtimePrice";
 import { getAsyncRedisClient } from "../redis";
@@ -145,8 +145,8 @@ const resolvers = {
     getLastOnChainAddress: async (_, __, { wallet }) => ({ id: wallet.getLastOnChainAddress() }),
     maps: async () => {
       // TODO: caching
-      const users = await User.find(
-        { title: { $exists: true }, coordinate: { $exists: true } },
+      const users = await User.find({ 
+        title: { $exists: true }, coordinate: { $exists: true } },
         { username: 1, title: 1, coordinate: 1 }
       );
 
@@ -172,7 +172,10 @@ const resolvers = {
         withdrawal: yamlConfig.limits.withdrawal.level[user.level],
         onUs: yamlConfig.limits.onUs.level[user.level]
       }
-    }
+    },
+    getWalletFees: () => ({
+      deposit: yamlConfig.fees.deposit
+    })
   },
   Mutation: {
     requestPhoneCode: async (_, { phone }, { logger }) => ({ success: requestPhoneCode({ phone, logger }) }),
@@ -193,10 +196,9 @@ const resolvers = {
         return true
       }
     }),
-    noauthAddInvoice: async (_, { uid }, { logger }) => {
-      const user = await User.findOne({_id: uid})
-      const wallet = await WalletFactory({ user, logger })
-      return wallet.addInvoice({ selfGenerated: false })
+    noauthAddInvoice: async (_, { username, value }, { logger }) => {
+      const wallet = await WalletFromUsername({username, logger})
+      return wallet.addInvoice({ selfGenerated: false, value })
     },
     invoice: async (_, __, { wallet }) => ({
       addInvoice: async ({ value, memo }) => wallet.addInvoice({ value, memo }),
@@ -315,7 +317,9 @@ export async function startApolloServer() {
 
       if (!!uid) {
         user = await User.findOneAndUpdate({ _id: uid },{ lastConnection: new Date() }, {new: true})
-        fetchIPDetails({currentIP: context.req?.headers['x-real-ip'], user, logger})
+        if(yamlConfig.proxyChecking.enabled) {
+          fetchIPDetails({currentIP: context.req?.headers['x-real-ip'], user, logger})
+        }
         wallet = (!!user && user.status === "active") ? await WalletFactory({ user, logger }) : null
       }
 
@@ -329,15 +333,20 @@ export async function startApolloServer() {
       }
     },
     formatError: err => {
-      // FIXME
-      if(_.startsWith(err.message, customLoggerPrefix)) {
-        err.message = err.message.slice(customLoggerPrefix.length)
-      } 
+      let log
       
-      baseLogger.error({ err }, "graphql catch-all error");
-      
-      // return defaultErrorFormatter(err)
-      // return err
+      //An err object needs to necessarily have the forwardToClient field to be forwarded
+      // i.e. catch-all errors will not be forwarded
+      if(log = err.extensions?.exception?.log) {
+        const errObj = { message: err.message, code: err.extensions.code }
+        log(errObj)
+        if(err.extensions.exception.forwardToClient) {
+          return errObj
+        }
+      } else {
+        graphqlLogger.error(err)
+      }
+
       return new Error('Internal server error');
     },
   })

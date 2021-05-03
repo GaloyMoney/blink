@@ -9,13 +9,12 @@ import { getCurrentPrice } from "../realtimePrice";
 import { onchainTransactionEventHandler } from "../entrypoint/trigger";
 import { setupMongoConnection } from "../mongodb";
 import { getTitle } from "../notifications/payment";
-import { baseLogger, bitcoindDefaultClient, btc2sat, sleep } from "../utils";
+import { bitcoindDefaultClient, btc2sat, sleep } from "../utils";
+import { baseLogger } from '../logger'
 import { getFunderWallet } from "../walletFactory";
 import { checkIsBalanced, getUserWallet, lndMain, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "./helper";
 
 jest.mock('../realtimePrice')
-
-
 
 let funderWallet
 let initBlockCount
@@ -29,6 +28,7 @@ let amount_BTC
 jest.mock('../notifications/notification')
 const { sendNotification } = require("../notifications/notification")
 
+const amountAfterFeeDeduction = ({amount, depositFeeRatio}) => btc2sat(amount) * (1 - depositFeeRatio)
 
 beforeAll(async () => {
   await setupMongoConnection()
@@ -66,6 +66,7 @@ const onchain_funding = async ({ walletDestination }) => {
   expect(address.substr(0, 4)).toBe("bcrt")
 
   const checkBalance = async () => {
+    
     const sub = lnService.subscribeToChainAddress({ lnd: lndMain, bech32_address: address, min_height })
     await once(sub, 'confirmation')
     sub.removeAllListeners();
@@ -74,7 +75,7 @@ const onchain_funding = async ({ walletDestination }) => {
     await checkIsBalanced()
 
     const {BTC: balance} = await walletDestination.getBalances()
-    expect(balance).toBe(initialBalance + btc2sat(amount_BTC))
+    expect(balance).toBe(initialBalance + amountAfterFeeDeduction({ amount: amount_BTC, depositFeeRatio: walletDestination.user.depositFeeRatio }))
 
     const transactions = await walletDestination.getTransactions()
 
@@ -83,7 +84,7 @@ const onchain_funding = async ({ walletDestination }) => {
 
     expect(transactions.length).toBe(initTransactions.length + 1)
     expect(transactions[0].type).toBe("onchain_receipt")
-    expect(transactions[0].amount).toBe(btc2sat(amount_BTC))
+    expect(transactions[0].amount).toBe(amountAfterFeeDeduction({ amount: amount_BTC, depositFeeRatio: walletDestination.user.depositFeeRatio }))
     expect(transactions[0].addresses[0]).toBe(address)
 
   }
@@ -160,6 +161,7 @@ it('identifies unconfirmed incoming on chain txn', async () => {
 })
 
 it('batch send transaction', async () => {
+
   const address0 = await walletUser0.getOnChainAddress()
   const walletUser4 = await getUserWallet(4)
   const address4 = await walletUser4.getOnChainAddress()
@@ -182,7 +184,7 @@ it('batch send transaction', async () => {
   // const decodedPsbt2 = await bitcoindDefaultClient.decodePsbt(walletProcessPsbt.psbt)
   // const analysePsbt2 = await bitcoindDefaultClient.analyzePsbt(walletProcessPsbt.psbt)
   const finalizedPsbt = await bitcoindDefaultClient.finalizePsbt(walletProcessPsbt.psbt)
-  const txid = await bitcoindDefaultClient.sendRawTransaction(finalizedPsbt.hex) 
+  await bitcoindDefaultClient.sendRawTransaction(finalizedPsbt.hex) 
   
   await bitcoindDefaultClient.generateToAddress(6, RANDOM_ADDRESS)
   await waitUntilBlockHeight({ lnd: lndMain, blockHeight: initBlockCount + 6 })
@@ -191,8 +193,18 @@ it('batch send transaction', async () => {
     const {BTC: balance0} = await walletUser0.getBalances()
     const {BTC: balance4} = await walletUser4.getBalances()
 
-    expect(balance0).toBe(initialBalanceUser0 + btc2sat(1))
-    expect(balance4).toBe(initBalanceUser4 + btc2sat(2))
+    expect(balance0).toBe(initialBalanceUser0 + amountAfterFeeDeduction({amount: 1, depositFeeRatio: walletUser0.user.depositFeeRatio}))
+    expect(balance4).toBe(initBalanceUser4 + amountAfterFeeDeduction({ amount: 2, depositFeeRatio: walletUser4.user.depositFeeRatio }))
   }
 
+})
+
+it('allows fee exemption for specific users', async () => {
+  const walletUser2 = await getUserWallet(2)
+  walletUser2.user.depositFeeRatio = 0
+  await walletUser2.user.save()
+  const {BTC: initBalanceUser2} = await walletUser2.getBalances()
+  await onchain_funding({walletDestination: walletUser2})
+  const {BTC: finalBalanceUser2} = await walletUser2.getBalances()
+  expect(finalBalanceUser2).toBe(initBalanceUser2 + btc2sat(1))
 })

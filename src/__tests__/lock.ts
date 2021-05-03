@@ -5,7 +5,8 @@
 import {redlock, getResource} from "../lock"
 import bluebird from 'bluebird';
 const { using } = bluebird;
-import { baseLogger, sleep } from "../utils"
+import { sleep } from "../utils"
+import { baseLogger } from '../logger'
 import redis from 'redis'
 
 const uid = "1234"

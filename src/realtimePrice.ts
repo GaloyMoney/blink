@@ -1,5 +1,6 @@
 import { protoDescriptor } from "./grpc";
-import { baseLogger, sat2btc } from "./utils";
+import { sat2btc } from "./utils";
+import { baseLogger } from './logger'
 import { credentials } from '@grpc/grpc-js';
 import { mainCache } from "./localCache";
 

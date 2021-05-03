@@ -1,6 +1,6 @@
 import { setupMongoConnection } from "../mongodb";
 import { User } from "../schema";
-import { baseLogger } from "../utils";
+import { baseLogger } from "../logger";
 import mongoose from "mongoose";
 
 const resp = {

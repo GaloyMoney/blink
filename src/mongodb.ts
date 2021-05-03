@@ -1,5 +1,6 @@
 import { exit } from "process"
-import { baseLogger, sleep } from "./utils"
+import { sleep } from "./utils"
+import { baseLogger } from './logger'
 
 import mongoose from "mongoose";
 
