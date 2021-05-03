@@ -128,14 +128,6 @@ export const LightningMixin = (superclass) => class extends superclass {
     
     try {
       await semaphore.acquire()
-    
-      // TODO:
-      // we should also log the fact we have started the query
-      // if (await getAsyncRedisClient().get(JSON.stringify(params))) {
-      //   return
-      // }
-      //
-      // OR: add a lock
 
       // TODO: do a balance check, so that we don't probe needlessly if the user doesn't have the 
       // probably make sense to used a cached balance here. 
