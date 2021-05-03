@@ -177,9 +177,10 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
       const outgoingOnchainTxns = await getOnChainTransactions({ lnd, incoming: false })
 
-      const [{ fee }] = outgoingOnchainTxns.filter(tx => tx.id === id)
+      let [{ fee }] = outgoingOnchainTxns.filter(tx => tx.id === id)
 
       {
+        fee += this.user.withdrawFee
         const sats = amount + fee + this.user.withdrawFee
         const metadata = { currency: "BTC", hash: id, type: "onchain_payment", pending: true, ...UserWallet.getCurrencyEquivalent({ sats, fee }) }
 
