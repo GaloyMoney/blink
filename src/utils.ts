@@ -7,9 +7,6 @@ import validate from "validate.js"
 import bitcoindClient from 'bitcoin-core'
 import { parsePaymentRequest } from 'invoices';
 
-import pino from 'pino'
-export const baseLogger = pino({ level: process.env.LOGLEVEL || "info" })
-
 // how many block are we looking back for getChainTransactions
 export const LOOK_BACK = 2016
 

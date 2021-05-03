@@ -2,12 +2,13 @@ import lnService from 'ln-service'
 import { assert } from "console";
 import _ from 'lodash';
 import moment from "moment";
-import { customerPath, lndAccountingPath } from "./ledger/ledger";
+import { customerPath, lndAccountingPath, onchainRevenuePath } from "./ledger/ledger";
 import { lnd } from "./lndConfig";
 import { redlock } from "./lock";
 import { MainBook } from "./mongodb";
 import { IOnChainPayment, ISuccess, ITransaction } from "./types";
-import { amountOnVout, baseLogger, bitcoindDefaultClient, btc2sat, LoggedError, LOOK_BACK, myOwnAddressesOnVout } from "./utils";
+import { amountOnVout, bitcoindDefaultClient, btc2sat, LoggedError, LOOK_BACK, myOwnAddressesOnVout } from "./utils";
+import { baseLogger } from './logger'
 import { UserWallet } from "./userWallet";
 import { Transaction, User } from "./schema";
 import { getHeight } from "lightning"
@@ -420,21 +421,23 @@ export const OnChainMixin = (superclass) => class extends superclass {
         if (!mongotx) {
 
           const {sats, addresses} = await this.getSatsAndAddressPerTx(matched_tx.transaction)
-
           assert(matched_tx.tokens >= sats)
 
-          const metadata = { 
+          const fee = sats * this.user.depositFeeRatio
+
+          const metadata = {
             currency: "BTC",
             type, hash: matched_tx.id,
             pending: false,
-            ...UserWallet.getCurrencyEquivalent({ sats, fee: 0 }),
+            ...UserWallet.getCurrencyEquivalent({ sats, fee }),
             payee_addresses: addresses
           }
 
           await MainBook.entry()
-            .credit(this.user.accountPath, sats, metadata)
-            .debit(lndAccountingPath, sats, metadata)
-            .commit()
+          .credit(onchainRevenuePath, fee, metadata)
+          .credit(this.user.accountPath, sats - fee, metadata)
+          .debit(lndAccountingPath, sats, metadata)
+          .commit()
 
           const onchainLogger = this.logger.child({ topic: "payment", protocol: "onchain", transactionType: "receipt", onUs: false })
           onchainLogger.info({ success: true, ...metadata })

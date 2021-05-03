@@ -1,5 +1,9 @@
 set -e
 
+# for helm < 3.4
+# https://helm.sh/blog/new-location-stable-incubator-charts/
+helm repo add stable https://charts.helm.sh/stable --force-update
+
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo add grafana https://grafana.github.io/helm-charts
@@ -10,8 +14,13 @@ helm repo update
 
 lndVersion="1.1.12"
 
-cd ./charts/galoy && helm dependency build && cd -
-cd ./charts/monitoring && helm dependency build && cd -
+cd ./charts/galoy
+helm dependency build
+cd -
+
+cd ./charts/monitoring
+helm dependency build
+cd -
 
 INGRESS_NAMESPACE="ingress-nginx"
 INFRADIR=./charts
@@ -132,12 +141,14 @@ else
   configpath="-f $INFRADIR/galoy/$NETWORK.yaml"
 fi
 
+#FIXME: Fetch the entire secret once, then extract and decode the necessary fields
 export MONGODB_ROOT_PASSWORD=$(kubectl get secret -n $NAMESPACE galoy-mongodb -o jsonpath="{.data.mongodb-root-password}" | base64 -d)
+export MONGODB_PASSWORD=$(kubectl get secret -n $NAMESPACE galoy-mongodb -o jsonpath="{.data.mongodb-password}" | base64 -d)
 export MONGODB_REPLICA_SET_KEY=$(kubectl get secret -n $NAMESPACE galoy-mongodb -o jsonpath="{.data.mongodb-replica-set-key}" | base64 -d)
 
 helmUpgrade galoy \
   $configpath $localdevpath \
-  --set mongodb.auth.rootPassword=$MONGODB_ROOT_PASSWORD,mongodb.auth.replicaSetKey=$MONGODB_REPLICA_SET_KEY,image.tag=$CIRCLE_SHA1 \
+  --set mongodb.auth.password=$MONGODB_PASSWORD,mongodb.auth.rootPassword=$MONGODB_ROOT_PASSWORD,mongodb.auth.replicaSetKey=$MONGODB_REPLICA_SET_KEY,image.tag=$CIRCLE_SHA1 \
   $INFRADIR/galoy/
 
 kubectlWait app.kubernetes.io/instance=galoy

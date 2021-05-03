@@ -29,7 +29,10 @@ spec:
                   name: network
                   key: network
             - name: MONGODB_PASSWORD
-              value: "testGaloy"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Release.Name }}-mongodb
+                  key: "mongodb-password"
             - name: MONGODB_USER
               value: "testGaloy"
             - name: MONGODB_ADDRESS

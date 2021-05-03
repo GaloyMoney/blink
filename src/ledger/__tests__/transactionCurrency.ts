@@ -1,7 +1,7 @@
 import { dealerMediciPath, lndAccountingPath } from "../ledger"
 import { MainBook, setupMongoConnection } from "../../mongodb"
 import { addTransactionLndPayment, addTransactionLndReceipt, addTransactionOnUsPayment, rebalancePortfolio } from "../transaction"
-import { baseLogger } from "../../utils"
+import { baseLogger } from "../../logger"
 import { UserWallet } from "../../userWallet"
 import { WalletFactory } from "../../walletFactory"
 import { User } from "../../schema"

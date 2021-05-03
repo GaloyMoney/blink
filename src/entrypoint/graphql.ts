@@ -29,7 +29,8 @@ import { User } from "../schema";
 import { login, requestPhoneCode } from "../text";
 import { Levels, OnboardingEarn } from "../types";
 import { AdminOps } from "../AdminOps"
-import { baseLogger, fetchIPDetails } from "../utils";
+import { fetchIPDetails } from "../utils";
+import { baseLogger } from '../logger'
 import { WalletFactory, WalletFromUsername } from "../walletFactory";
 import { getCurrentPrice } from "../realtimePrice";
 import { getAsyncRedisClient } from "../redis";
@@ -144,8 +145,8 @@ const resolvers = {
     getLastOnChainAddress: async (_, __, { wallet }) => ({ id: wallet.getLastOnChainAddress() }),
     maps: async () => {
       // TODO: caching
-      const users = await User.find(
-        { title: { $exists: true }, coordinate: { $exists: true } },
+      const users = await User.find({ 
+        title: { $exists: true }, coordinate: { $exists: true } },
         { username: 1, title: 1, coordinate: 1 }
       );
 
@@ -171,7 +172,10 @@ const resolvers = {
         withdrawal: yamlConfig.limits.withdrawal.level[user.level],
         onUs: yamlConfig.limits.onUs.level[user.level]
       }
-    }
+    },
+    getWalletFees: () => ({
+      deposit: yamlConfig.fees.deposit
+    })
   },
   Mutation: {
     requestPhoneCode: async (_, { phone }, { logger }) => ({ success: requestPhoneCode({ phone, logger }) }),
@@ -192,9 +196,9 @@ const resolvers = {
         return true
       }
     }),
-    noauthAddInvoice: async (_, { username }, { logger }) => {
+    noauthAddInvoice: async (_, { username, value }, { logger }) => {
       const wallet = await WalletFromUsername({username, logger})
-      return wallet.addInvoice({ selfGenerated: false })
+      return wallet.addInvoice({ selfGenerated: false, value })
     },
     invoice: async (_, __, { wallet }) => ({
       addInvoice: async ({ value, memo }) => wallet.addInvoice({ value, memo }),
