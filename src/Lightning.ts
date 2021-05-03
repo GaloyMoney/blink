@@ -127,10 +127,14 @@ export const LightningMixin = (superclass) => class extends superclass {
     const semaphore = await UserWallet.getProbeSemaphore({user: this.user, logger: this.logger})
     
     try {
-      await semaphore.acquire()
+      const { BTC: balance } = await this.getBalances()
+      // skip probe if balance is low
+      if(params.amount && balance < params.amount) {
+        const error = `Balance is insufficient`
+        throw new InsufficientBalanceError(error, {forwardToClient: true, logger: this.logger, level: 'warn'})
+      }
 
-      // TODO: do a balance check, so that we don't probe needlessly if the user doesn't have the 
-      // probably make sense to used a cached balance here. 
+      await semaphore.acquire()
 
       const { mtokens, max_fee, destination, id, routeHint, messages, cltv_delta, features, payment } = 
       await this.validate(params, this.logger)
@@ -194,7 +198,9 @@ export const LightningMixin = (superclass) => class extends superclass {
       return route.fee
 
     } catch (err) {
-      if(err.constructor.name === "TimeoutError") {
+
+      // TimeoutError occurs when semaphore cannot be acquired within timeout period
+      if(err.constructor?.name === "TimeoutError") {
         const error = `Cannot have more than ${yamlConfig.limits.pendingPayments.level[this.user.level]} pending payments`
         throw new TransactionRestrictedError(error, {forwardToClient: true, logger: this.logger, level: 'warn'})
       }
