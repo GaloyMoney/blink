@@ -47,6 +47,7 @@ const bitcoin_g = new client.Gauge({ name: `${prefix}_bitcoin`, help: 'amount in
 const specter_g = new client.Gauge({ name: `${prefix}_bitcoind`, help: 'amount in cold storage' })
 const business_g = new client.Gauge({ name: `${prefix}_business`, help: 'number of businesses in the app' })
 const onchainWithdrawFees_g = new client.Gauge({ name: `${prefix}_onchainWithdrawFees`, help: 'onchain withdraw fees collected' })
+const onchainDepositFees_g = new client.Gauge({ name:`${prefix}_onchainDepositFees`, help: 'onchain deposit fees collected' })
 
 const main = async () => {
   server.get('/metrics', async (req, res) => {
@@ -106,11 +107,12 @@ const main = async () => {
     const specterWallet = new SpecterWallet({ logger })
     specter_g.set(await specterWallet.getBitcoindBalance())
 
-    const { totalWithdrawFees } = await Transaction.aggregate([
-      {$match: {accounts: 'Revenue:Bitcoin:Fees', type:'onchain_payment'}},
-      {$group: {_id: null, totalWithdrawFees: { $sum: "$credit" } } }
+    const [result] = await Transaction.aggregate([
+      {$match: { accounts: 'Revenue:Bitcoin:Fees', type:'onchain_receipt' }},
+      {$group: { _id: null, totalDepositFees: { $sum: "$credit" } } }
     ])
-    onchainWithdrawFees_g.set(totalWithdrawFees)
+    const {totalDepositFees = 0} = result || {}
+    onchainDepositFees_g.set(totalDepositFees)
 
     res.set('Content-Type', register.contentType);
     res.end(register.metrics());

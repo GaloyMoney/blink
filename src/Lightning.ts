@@ -13,6 +13,8 @@ import { UserWallet } from "./userWallet";
 import { InvoiceUser, Transaction, User } from "./schema";
 import { createInvoice, getWalletInfo, decodePaymentRequest, cancelHodlInvoice, payViaPaymentDetails, payViaRoutes, getPayment, getInvoice } from "lightning"
 import { getAsyncRedisClient } from "./redis"
+import crypto from "crypto";
+
 
 import util from 'util'
 
@@ -63,19 +65,33 @@ export const LightningMixin = (superclass) => class extends superclass {
     return input.add(delay(currency).value, delay(currency).unit)
   }
 
-  async addInvoice({ value, memo, selfGenerated }: IAddInvoiceRequest): Promise<string> {
-    let request, id
+  async addInvoice({ value, memo, selfGenerated = true }: IAddInvoiceRequest): Promise<string> {
+    if (!!value && value < 0) {
+      throw new Error("value can't be negative")
+    }
+    
+    let request, id, input
 
     const expires_at = this.getExpiration(moment()).toDate()
-
-    let input
+    
     try {
       input = {
         lnd,
         tokens: value,
-        description: memo,
         expires_at,
       }
+      
+      if (selfGenerated) {
+      // generated through the mobile app
+        input["description"] = memo
+      } else {
+      // lnpay // static invoice
+        const description_string = `pay ${this.user.username}`
+        const sha256 = crypto.createHash("sha256");
+        const description_hash = sha256.update(description_string).digest("hex");
+        input["description_hash"] = description_hash
+      }
+
       const result = await createInvoice(input)
       request = result.request
       id = result.id
