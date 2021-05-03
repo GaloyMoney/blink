@@ -196,7 +196,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     } catch (err) {
       if(err.constructor.name === "TimeoutError") {
         const error = `Cannot have more than ${yamlConfig.limits.pendingPayments.level[this.user.level]} pending payments`
-        throw new TransactionRestrictedError(error, {forwardToClient: true, logger: this.logger, level: 'error'})
+        throw new TransactionRestrictedError(error, {forwardToClient: true, logger: this.logger, level: 'warn'})
       }
       throw err
     } finally {
