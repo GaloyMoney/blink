@@ -87,7 +87,7 @@ export const lockExtendOrThrow = async ({lock, logger}, async_fn): Promise<any> 
   
       const result = await async_fn()
       console.log({result}, "result async")
-      return resolve(result)
+      resolve(result)
     })
   })
 }
