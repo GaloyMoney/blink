@@ -15,7 +15,7 @@ import { getHeight } from "lightning"
 
 import bluebird from 'bluebird';
 import { yamlConfig } from "./config";
-import { InsufficientBalanceError, NewAccountWithdrawalError, TransactionRestrictedError } from './error';
+import { InsufficientBalanceError, NewAccountWithdrawalError, SelfPaymentError, TransactionRestrictedError } from './error';
 const { using } = bluebird;
 
 export const getOnChainTransactions = async ({ lnd, incoming }: { lnd: any, incoming: boolean }) => {
@@ -100,8 +100,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
         if (String(payeeUser._id) === String(this.user._id)) {
           const error = 'User tried to pay himself'
-          onchainLoggerOnUs.warn({ payeeUser, error, success: false }, error)
-          throw new LoggedError(error)
+          throw new SelfPaymentError(error, {forwardToClient: true, logger: onchainLoggerOnUs, level: 'warn'})
         }
 
         const sats = amount
