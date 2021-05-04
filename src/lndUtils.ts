@@ -75,5 +75,9 @@ export const getRoutingFees = async ({ lnd, before, after }): Promise<Record<str
     }
   }
 
-  return _(forwards).groupBy(e => new Date(e.created_at).toDateString()).mapValues(e => e.reduce((sum, {fee_mtokens}) => sum + +fee_mtokens, 0) / 1000).value()
+  // groups each forward object by date
+  const dateGroupedForwards = _.groupBy(forwards, e => new Date(e.created_at).toDateString())
+
+  // returns revenue for each date by reducing all forwards for each date
+  return (_.mapValues(dateGroupedForwards, e => e.reduce((sum, {fee_mtokens}) => sum + +fee_mtokens, 0) / 1000))
 }
