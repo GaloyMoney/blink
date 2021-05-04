@@ -75,17 +75,21 @@ const logLockTimeout = ({logger, lock}) => {
 export const lockExtendOrThrow = async ({lock, logger}, async_fn): Promise<any> => {
   logLockTimeout({logger, lock})
 
-  lock.extend(120000, async (err, extended_lock) => {
-    // if we can't extend the lock, typically because it would have expired
-    // then we throw an error
-    if (!!err) {
-      const error = "unable to extend the lock"
-      logger.error({err}, error)
-      throw new Error(error)
-    }
-
-    return async_fn()
-  }
-)}
+  return new Promise(async (resolve, reject) => {
+    lock.extend(120000, async (err, extended_lock) => {
+      // if we can't extend the lock, typically because it would have expired
+      // then we throw an error
+      if (!!err) {
+        const error = "unable to extend the lock"
+        logger.error({err}, error)
+        throw new Error(error)
+      }
+  
+      const result = await async_fn()
+      console.log({result}, "result async")
+      return resolve(result)
+    })
+  })
+}
 
 

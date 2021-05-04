@@ -438,9 +438,9 @@ export const LightningMixin = (superclass) => class extends superclass {
           throw new InsufficientBalanceError(error,{forwardToClient: true, logger: lightningLogger, level: 'error'})
         }
 
-        await lockExtendOrThrow({lock, logger: lightningLogger}, async () => {
+        entry = await lockExtendOrThrow({lock, logger: lightningLogger}, async () => {
           // reduce balance from customer first
-          entry = await addTransactionLndPayment({
+          return addTransactionLndPayment({
             description: memoInvoice,
             payerUser: this.user,
             sats,
@@ -448,6 +448,8 @@ export const LightningMixin = (superclass) => class extends superclass {
           })
         })
         
+        console.log({entry})
+
         if (pushPayment) {
           route.messages = messages
         }
@@ -512,6 +514,9 @@ export const LightningMixin = (superclass) => class extends superclass {
             // FIXME: this query may not make sense 
             // where multiple payment have the same hash
             // ie: when a payment is being retried
+
+            console.log({entry}, "entry if error")
+
             await Transaction.updateMany({ hash: id }, { pending: false, error: err[1] })
             await MainBook.void(entry.journal._id, err[1])
             lightningLogger.warn({ success: false, err, ...metadata, entry }, `payment error`)
