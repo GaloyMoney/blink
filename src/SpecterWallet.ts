@@ -182,7 +182,7 @@ export class SpecterWallet {
     let id
 
     try {
-      ({ id } = await lnService.sendToChainAddress({ address, lnd, tokens: sats }))
+      ({ id } = await lnService.sendToChainAddress({ address, lnd, tokens: sats, target_confirmations: 1000 }))
     } catch (err) {
       this.logger.fatal({err}, "could not send to deposit. accounting to be reverted")
     }
