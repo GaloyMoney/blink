@@ -3,7 +3,7 @@ import assert from 'assert'
 import { createHash, randomBytes } from "crypto";
 import moment from "moment";
 import { FEECAP, FEEMIN, lnd, TIMEOUT_PAYMENT } from "./lndConfig";
-import { redlock } from "./lock";
+import { lockExtendOrThrow, redlock } from "./lock";
 import { MainBook } from "./mongodb";
 import { transactionNotification } from "./notifications/payment";
 import { addTransactionLndPayment, addTransactionLndReceipt, addTransactionOnUsPayment } from "./ledger/transaction";
@@ -340,14 +340,8 @@ export const LightningMixin = (superclass) => class extends superclass {
           throw new InsufficientBalanceError(error, {forwardToClient: true, logger: lightningLoggerOnUs, level: 'warn'})
         }
 
-        lock.extend(30000).then(async (err, extended_lock) => {
-          if (!!err) {
-            const error = "unable to extend the lock"
-            lightningLoggerOnUs.error({err}, error)
-            throw new Error(error)
-          }
-
-          await addTransactionOnUsPayment({
+        await lockExtendOrThrow({lock, logger: lightningLoggerOnUs}, async () => {
+          addTransactionOnUsPayment({
             description: memoInvoice,
             sats,
             metadata,
@@ -356,7 +350,7 @@ export const LightningMixin = (superclass) => class extends superclass {
             memoPayer
           })
         })
-
+        
         await transactionNotification({ amount: sats, user: payeeUser, hash: id, logger: this.logger, type: "paid-invoice" })
 
         if (!pushPayment) {
@@ -444,20 +438,19 @@ export const LightningMixin = (superclass) => class extends superclass {
           throw new InsufficientBalanceError(error,{forwardToClient: true, logger: lightningLogger, level: 'error'})
         }
 
-        // reduce balance from customer first
-
-        entry = await addTransactionLndPayment({
-          description: memoInvoice,
-          payerUser: this.user,
-          sats,
-          metadata,
+        await lockExtendOrThrow({lock, logger: lightningLogger}, async () => {
+          // reduce balance from customer first
+          entry = await addTransactionLndPayment({
+            description: memoInvoice,
+            payerUser: this.user,
+            sats,
+            metadata,
+          })
         })
-
-
+        
         if (pushPayment) {
           route.messages = messages
         }
-
 
         // there is 3 scenarios for a payment.
         // 1/ payment succeed (function return before TIMEOUT_PAYMENT) and:

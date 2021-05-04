@@ -64,3 +64,28 @@ export const redlock = async ({path, logger, lock}: IRedLock, async_fn: (arg0: t
     return await async_fn(lock)
   })
 }
+
+const logLockTimeout = ({logger, lock}) => {
+  const expiration = lock.expiration
+  const now = new Date().getTime()
+  const remaining = expiration - now
+  logger.debug({expiration, now, remaining}, "lock status")
+}
+
+export const lockExtendOrThrow = async ({lock, logger}, async_fn): Promise<any> => {
+  logLockTimeout({logger, lock})
+
+  lock.extend(120000, async (err, extended_lock) => {
+    // if we can't extend the lock, typically because it would have expired
+    // then we throw an error
+    if (!!err) {
+      const error = "unable to extend the lock"
+      logger.error({err}, error)
+      throw new Error(error)
+    }
+
+    return async_fn()
+  }
+)}
+
+

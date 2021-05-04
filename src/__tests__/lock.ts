@@ -3,8 +3,6 @@
  */
 
 import {redlock, getResource} from "../lock"
-import bluebird from 'bluebird';
-const { using } = bluebird;
 import { sleep } from "../utils"
 import { baseLogger } from '../logger'
 import redis from 'redis'
@@ -12,7 +10,7 @@ import redis from 'redis'
 const uid = "1234"
 
 
-it('return value from `using` are passed with a promise', async () => {
+it('return value are passed with a promise', async () => {
   const result = await redlock({ path: uid, logger: baseLogger }, async function(lock) {
     return "r"
   });
@@ -66,14 +64,15 @@ it('second loop start after first loop has ended', async () => {
 it('throwing error releases the lock', async () => {
   const client = redis.createClient(process.env.REDIS_PORT, process.env.REDIS_IP)
 
-  const expectLockToBe = (fn) => client.get(getResource(uid), (err, res) => {
-    console.log({res})
-    fn(res)
-  });
+  const checkLockExist = () => new Promise((resolve, reject) => 
+    client.get(getResource(uid), (err, res) => {
+      console.log({res, err})
+      resolve(!!res)
+  }))
 
   try {
     await redlock({ path: uid, logger: baseLogger }, async function(lock) {  
-      expectLockToBe(res => expect(res).toBeTruthy())
+      expect(await checkLockExist()).toBeTruthy()
       await sleep(500)
       throw Error("dummy error")
     });
@@ -81,8 +80,20 @@ it('throwing error releases the lock', async () => {
     console.log(`error is being catched ${err}`)
   }
 
-  expectLockToBe(res => expect(res).toBeFalsy())
+  expect(await checkLockExist()).toBeFalsy()
+})
 
-  // TODO: properly use callback to avoid sleep
-  await sleep(500)
+it('fail to extend after the lock timed out', async () => {
+  const client = redis.createClient(process.env.REDIS_PORT, process.env.REDIS_IP)
+
+  await redlock({ path: uid, logger: baseLogger }, async function(lock) {  
+    await sleep(11000)
+
+    lock.extend(1000, async (err, extended_lock) => {
+      console.log({err, extended_lock}, "could extend?")
+      expect(err.name).toBe("LockError")
+    })
+
+  });
+
 })
