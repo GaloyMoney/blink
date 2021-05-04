@@ -8,7 +8,7 @@ const { using } = bluebird;
 // keeping in mind that you can extend the lock up until
 // the point when it expires
 // TODO: use TIMEOUTs env variable 
-const ttl = process.env.NETWORK !== "regtest" ? 60000 : 10000
+const ttl = process.env.NETWORK !== "regtest" ? 180000 : 10000
 
 function errorWrapper({logger}) {
   return function unlockErrorHandler(err) {
@@ -34,10 +34,10 @@ const getRedLock = () => {
 
     // the max number of times Redlock will attempt
     // to lock a resource before erroring
-    retryCount:  15,
+    retryCount:  5,
 
     // the time in ms between attempts
-    retryDelay:  250, // time in ms
+    retryDelay:  400, // time in ms
 
     // the max time in ms randomly added to retries
     // to improve performance under high contention
@@ -64,3 +64,32 @@ export const redlock = async ({path, logger, lock}: IRedLock, async_fn: (arg0: t
     return await async_fn(lock)
   })
 }
+
+const logLockTimeout = ({logger, lock}) => {
+  const expiration = lock.expiration
+  const now = new Date().getTime()
+  const remaining = expiration - now
+  logger.debug({expiration, now, remaining}, "lock status")
+}
+
+export const lockExtendOrThrow = async ({lock, logger}, async_fn): Promise<any> => {
+  logLockTimeout({logger, lock})
+
+  return new Promise(async (resolve, reject) => {
+    lock.extend(120000, async (err, extended_lock) => {
+      // if we can't extend the lock, typically because it would have expired
+      // then we throw an error
+      if (!!err) {
+        const error = "unable to extend the lock"
+        logger.error({err}, error)
+        throw new Error(error)
+      }
+  
+      const result = await async_fn()
+      console.log({result}, "result async")
+      resolve(result)
+    })
+  })
+}
+
+

@@ -23,6 +23,12 @@ export class InsufficientBalanceError extends CustomError {
   }
 }
 
+export class SelfPaymentError extends CustomError {
+  constructor(message, {forwardToClient, logger, level}) {
+    super(message, 'CANT_PAY_SELF', {forwardToClient, logger, level})
+  }
+}
+
 export class ValidationError extends CustomError {
   constructor(message, {forwardToClient, logger, level}) {
     super(message, 'INVALID_INPUT', {forwardToClient, logger, level})
