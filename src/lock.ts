@@ -8,7 +8,7 @@ const { using } = bluebird;
 // keeping in mind that you can extend the lock up until
 // the point when it expires
 // TODO: use TIMEOUTs env variable 
-const ttl = process.env.NETWORK !== "regtest" ? 60000 : 10000
+const ttl = process.env.NETWORK !== "regtest" ? 180000 : 10000
 
 function errorWrapper({logger}) {
   return function unlockErrorHandler(err) {
