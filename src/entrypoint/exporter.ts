@@ -107,12 +107,19 @@ const main = async () => {
     const specterWallet = new SpecterWallet({ logger })
     specter_g.set(await specterWallet.getBitcoindBalance())
 
-    const [result] = await Transaction.aggregate([
+    const [depositFeeEntry] = await Transaction.aggregate([
       {$match: { accounts: 'Revenue:Bitcoin:Fees', type:'onchain_receipt' }},
       {$group: { _id: null, totalDepositFees: { $sum: "$credit" } } }
     ])
-    const {totalDepositFees = 0} = result || {}
+    const {totalDepositFees = 0} = depositFeeEntry || {}
     onchainDepositFees_g.set(totalDepositFees)
+    
+    const [withdrawFeeEntry] = await Transaction.aggregate([
+      {$match: { accounts: 'Revenue:Bitcoin:Fees', type:'onchain_payment' }},
+      {$group: { _id: null, totalWithdrawFees: { $sum: "$credit" } } }
+    ])
+    const {totalWithdrawFees = 0} = withdrawFeeEntry || {}
+    onchainWithdrawFees_g.set(totalWithdrawFees)
 
     res.set('Content-Type', register.contentType);
     res.end(register.metrics());
