@@ -3,7 +3,7 @@ import assert from 'assert'
 import { createHash, randomBytes } from "crypto";
 import moment from "moment";
 import { FEECAP, FEEMIN, lnd, TIMEOUT_PAYMENT } from "./lndConfig";
-import { redlock } from "./lock";
+import { lockExtendOrThrow, redlock } from "./lock";
 import { MainBook } from "./mongodb";
 import { transactionNotification } from "./notifications/payment";
 import { addTransactionLndPayment, addTransactionLndReceipt, addTransactionOnUsPayment } from "./ledger/transaction";
@@ -19,9 +19,8 @@ import crypto from "crypto";
 import util from 'util'
 
 import bluebird from 'bluebird';
-const { using } = bluebird;
 import { yamlConfig } from "./config";
-import { InsufficientBalanceError, NewAccountWithdrawalError, NotFoundError, TransactionRestrictedError, ValidationError } from './error';
+import { InsufficientBalanceError, NewAccountWithdrawalError, NotFoundError, SelfPaymentError, TransactionRestrictedError, ValidationError } from './error';
 
 export type ITxType = "invoice" | "payment" | "onchain_receipt" | "onchain_payment" | "on_us"
 export type payInvoiceResult = "success" | "failed" | "pending" | "already_paid"
@@ -329,8 +328,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         if (String(payeeUser._id) === String(this.user._id)) {
           const error = 'User tried to pay himself'
-          lightningLoggerOnUs.error({ success: false, error })
-          throw new LoggedError(error)
+          throw new SelfPaymentError(error, {forwardToClient: true, logger: lightningLoggerOnUs, level: 'warn'})
         }
 
         const sats = tokens
@@ -339,18 +337,20 @@ export const LightningMixin = (superclass) => class extends superclass {
         // TODO: manage when paid fully in USD directly from USD balance to avoid conversion issue
         if (balance.total_in_BTC < sats) {
           const error = `balance is too low`
-          throw new InsufficientBalanceError(error,{forwardToClient: true, logger: lightningLoggerOnUs, level: 'error'})
+          throw new InsufficientBalanceError(error, {forwardToClient: true, logger: lightningLoggerOnUs, level: 'warn'})
         }
 
-        await addTransactionOnUsPayment({
-          description: memoInvoice,
-          sats,
-          metadata,
-          payerUser: this.user,
-          payeeUser,
-          memoPayer
+        await lockExtendOrThrow({lock, logger: lightningLoggerOnUs}, async () => {
+          addTransactionOnUsPayment({
+            description: memoInvoice,
+            sats,
+            metadata,
+            payerUser: this.user,
+            payeeUser,
+            memoPayer
+          })
         })
-
+        
         await transactionNotification({ amount: sats, user: payeeUser, hash: id, logger: this.logger, type: "paid-invoice" })
 
         if (!pushPayment) {
@@ -438,20 +438,21 @@ export const LightningMixin = (superclass) => class extends superclass {
           throw new InsufficientBalanceError(error,{forwardToClient: true, logger: lightningLogger, level: 'error'})
         }
 
-        // reduce balance from customer first
-
-        entry = await addTransactionLndPayment({
-          description: memoInvoice,
-          payerUser: this.user,
-          sats,
-          metadata,
+        entry = await lockExtendOrThrow({lock, logger: lightningLogger}, async () => {
+          // reduce balance from customer first
+          return addTransactionLndPayment({
+            description: memoInvoice,
+            payerUser: this.user,
+            sats,
+            metadata,
+          })
         })
-
+        
+        console.log({entry})
 
         if (pushPayment) {
           route.messages = messages
         }
-
 
         // there is 3 scenarios for a payment.
         // 1/ payment succeed (function return before TIMEOUT_PAYMENT) and:
@@ -513,6 +514,9 @@ export const LightningMixin = (superclass) => class extends superclass {
             // FIXME: this query may not make sense 
             // where multiple payment have the same hash
             // ie: when a payment is being retried
+
+            console.log({entry}, "entry if error")
+
             await Transaction.updateMany({ hash: id }, { pending: false, error: err[1] })
             await MainBook.void(entry.journal._id, err[1])
             lightningLogger.warn({ success: false, err, ...metadata, entry }, `payment error`)
