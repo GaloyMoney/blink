@@ -19,9 +19,8 @@ import crypto from "crypto";
 import util from 'util'
 
 import bluebird from 'bluebird';
-const { using } = bluebird;
 import { yamlConfig } from "./config";
-import { InsufficientBalanceError, NewAccountWithdrawalError, NotFoundError, TransactionRestrictedError, ValidationError } from './error';
+import { InsufficientBalanceError, NewAccountWithdrawalError, NotFoundError, SelfPaymentError, TransactionRestrictedError, ValidationError } from './error';
 
 export type ITxType = "invoice" | "payment" | "onchain_receipt" | "onchain_payment" | "on_us"
 export type payInvoiceResult = "success" | "failed" | "pending" | "already_paid"
@@ -329,8 +328,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         if (String(payeeUser._id) === String(this.user._id)) {
           const error = 'User tried to pay himself'
-          lightningLoggerOnUs.error({ success: false, error })
-          throw new LoggedError(error)
+          throw new SelfPaymentError(error, {forwardToClient: true, logger: lightningLoggerOnUs, level: 'warn'})
         }
 
         const sats = tokens
@@ -339,16 +337,24 @@ export const LightningMixin = (superclass) => class extends superclass {
         // TODO: manage when paid fully in USD directly from USD balance to avoid conversion issue
         if (balance.total_in_BTC < sats) {
           const error = `balance is too low`
-          throw new InsufficientBalanceError(error,{forwardToClient: true, logger: lightningLoggerOnUs, level: 'error'})
+          throw new InsufficientBalanceError(error, {forwardToClient: true, logger: lightningLoggerOnUs, level: 'warn'})
         }
 
-        await addTransactionOnUsPayment({
-          description: memoInvoice,
-          sats,
-          metadata,
-          payerUser: this.user,
-          payeeUser,
-          memoPayer
+        lock.extend(30000).then(async (err, extended_lock) => {
+          if (!!err) {
+            const error = "unable to extend the lock"
+            lightningLoggerOnUs.error({err}, error)
+            throw new Error(error)
+          }
+
+          await addTransactionOnUsPayment({
+            description: memoInvoice,
+            sats,
+            metadata,
+            payerUser: this.user,
+            payeeUser,
+            memoPayer
+          })
         })
 
         await transactionNotification({ amount: sats, user: payeeUser, hash: id, logger: this.logger, type: "paid-invoice" })

@@ -8,7 +8,7 @@ const { using } = bluebird;
 // keeping in mind that you can extend the lock up until
 // the point when it expires
 // TODO: use TIMEOUTs env variable 
-const ttl = process.env.NETWORK !== "regtest" ? 60000 : 10000
+const ttl = process.env.NETWORK !== "regtest" ? 120000 : 10000
 
 function errorWrapper({logger}) {
   return function unlockErrorHandler(err) {
@@ -34,10 +34,10 @@ const getRedLock = () => {
 
     // the max number of times Redlock will attempt
     // to lock a resource before erroring
-    retryCount:  15,
+    retryCount:  5,
 
     // the time in ms between attempts
-    retryDelay:  250, // time in ms
+    retryDelay:  400, // time in ms
 
     // the max time in ms randomly added to retries
     // to improve performance under high contention
