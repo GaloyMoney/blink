@@ -17,7 +17,7 @@ const dbMetadataSchema = new Schema({
   version: Number,
   minBuildNumber: Number,
   lastBuildNumber: Number,
-  routingFeeCronJobLastRun: Date
+  routingFeeLastEntry: Date
 })
 export const DbMetadata = mongoose.model("DbMetadata", dbMetadataSchema)
 

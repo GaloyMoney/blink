@@ -7,13 +7,21 @@ import { lnd } from "../lndConfig";
 import { getRoutingFees } from "../lndUtils"
 import { lndAccountingPath, revenueFeePath } from "../ledger/ledger";
 import _ from "lodash";
+import { DbError } from "../error";
 
 const MS_PER_DAY = 864e5
 
 const updateRoutingFees = async () => {
   const dbMetadata = await DbMetadata.findOne({})
 
-  const lastDate = new Date(dbMetadata?.routingFeeCronJobLastRun ?? 0)
+  let lastDate
+
+  if(dbMetadata.routingFeeLastEntry) {
+    lastDate = new Date(dbMetadata.routingFeeLastEntry)
+  } else {
+    lastDate = new Date(0)
+    baseLogger.info('Running the routing fee revenue cronjob for the first time')
+  }
 
   // Done to remove effect of timezone
   lastDate.setUTCHours(0, 0, 0, 0)
@@ -46,13 +54,13 @@ const updateRoutingFees = async () => {
       .debit(lndAccountingPath, fee, { ...metadata, feesCollectedOn: day })
       .commit()
     } catch(err) {
-      throw new LoggedError(`${err}\n Failed to record fee:${fee} sats for day:${day}`)
+      throw new DbError('Unable to record routing revenue', {forwardToClient: false, logger: baseLogger, level: 'error'})
     }
   })
   
   endDate.setDate(endDate.getDate() + 1)
   const endDay = endDate.toDateString()
-  await DbMetadata.findOneAndUpdate({}, { $set: { routingFeeCronJobLastRun: endDay } }, { upsert: true })
+  await DbMetadata.findOneAndUpdate({}, { $set: { routingFeeLastEntry: endDay } }, { upsert: true })
 }
 
 const main = async () => {
