@@ -182,6 +182,6 @@ export const fetchIPDetails = async ({currentIP, user, logger}) => {
   } catch (error) {
     logger.info({error}, 'Failed to fetch ip details')
   } finally {
-    await User.updateOne({_id: user._id}, {$push: {lastIPs: { ip: currentIP, ...ipinfo, Type: ipinfo.type }}})
+    await User.updateOne({_id: user._id}, {$push: {lastIPs: { ip: currentIP, ...ipinfo, Type: ipinfo?.type }}})
   }
 }
