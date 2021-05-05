@@ -2,8 +2,7 @@
  * @jest-environment node
  */
 import { once } from 'events';
-import { getChannels, getWalletInfo, subscribeToChannels, subscribeToGraph } from 'lightning';
-import lnService from 'ln-service';
+import { closeChannel, getChannels, getWalletInfo, openChannel, subscribeToChannels, subscribeToGraph } from 'lightning';
 import mongoose from "mongoose";
 import { onChannelUpdated } from '../entrypoint/trigger';
 import { updateEscrows } from "../ledger/balanceSheet";
@@ -48,14 +47,14 @@ const newBlock = 6
 //this is the fixed opening and closing channel fee on devnet
 const channelFee = 7637
 
-const openChannel = async ({ lnd, other_lnd, socket, is_private = false }) => {
+const openChannelTesting = async ({ lnd, other_lnd, socket, is_private = false }) => {
 
   await waitUntilBlockHeight({ lnd: lndMain, blockHeight: initBlockCount })
   await waitUntilBlockHeight({ lnd: other_lnd, blockHeight: initBlockCount })
 
   const { public_key: partner_public_key } = await getWalletInfo({ lnd: other_lnd })
 
-  let openChannelPromise = lnService.openChannel({
+  let openChannelPromise = openChannel({
     lnd, local_tokens, is_private, partner_public_key, partner_socket: socket
   })
 
@@ -104,7 +103,7 @@ it('opens channel from lnd1ToLndOutside1', async () => {
     account: lndFeePath,
     currency: "BTC",
   })
-  await openChannel({ lnd: lndMain, other_lnd: lndOutside1, socket })
+  await openChannelTesting({ lnd: lndMain, other_lnd: lndOutside1, socket })
 
   const { channels } = await getChannels({ lnd: lndMain })
   expect(channels.length).toEqual(channelLengthMain + 1)
@@ -125,7 +124,7 @@ it('opens channel from lnd1ToLndOutside1', async () => {
 //   try {
 //     const socket = `lnd-outside-1:9735`
   
-//     await openChannel({ lnd: lndMain, other_lnd: lndOutside1, socket })
+//     await openChannelTesting({ lnd: lndMain, other_lnd: lndOutside1, socket })
   
 //     let channels
   
@@ -162,7 +161,7 @@ it('opens private channel from lndOutside1 to lndOutside2', async () => {
   const subscription = subscribeToGraph({ lnd: lndOutside1 });
 
   await Promise.all([
-    openChannel({ lnd: lndOutside1, other_lnd: lndOutside2, socket, is_private: true }),
+    openChannelTesting({ lnd: lndOutside1, other_lnd: lndOutside2, socket, is_private: true }),
     once(subscription, 'channel_updated')
   ])
 
@@ -175,7 +174,7 @@ it('opens private channel from lndOutside1 to lndOutside2', async () => {
 
 it('opens channel from lndOutside1 to lnd1', async () => {
   const socket = `lnd:9735`
-  await openChannel({ lnd: lndOutside1, other_lnd: lndMain, socket })
+  await openChannelTesting({ lnd: lndOutside1, other_lnd: lndMain, socket })
 
   {
     const { channels } = await getChannels({ lnd: lndMain })

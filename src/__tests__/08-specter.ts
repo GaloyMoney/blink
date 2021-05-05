@@ -9,9 +9,9 @@ import { checkIsBalanced, mockGetExchangeBalance, RANDOM_ADDRESS } from "./helpe
 import { bitcoindDefaultClient, sleep } from "../utils";
 import { baseLogger } from '../logger'
 import { UserWallet } from "../userWallet";
-import lnService from 'ln-service'
 
 import mongoose from "mongoose";
+import { getChainBalance } from "lightning";
 
 let specterWallet
 
@@ -65,7 +65,7 @@ it('createWallet', async () => {
 
 it('deposit to bitcoind', async () => {
   const initBitcoindBalance = await specterWallet.getBitcoindBalance()
-  const { chain_balance: initLndBalance } = await lnService.getChainBalance({ lnd })
+  const { chain_balance: initLndBalance } = await getChainBalance({ lnd })
   
   const sats = 10000
   
@@ -77,7 +77,7 @@ it('deposit to bitcoind', async () => {
   await sleep(1000)
   
   const bitcoindBalance = await specterWallet.getBitcoindBalance()
-  const { chain_balance: lndBalance } = await lnService.getChainBalance({ lnd })
+  const { chain_balance: lndBalance } = await getChainBalance({ lnd })
 
   expect(bitcoindBalance).toBe(initBitcoindBalance + sats)
 
@@ -90,7 +90,7 @@ it('deposit to bitcoind', async () => {
 
 it('withdrawing from bitcoind', async () => {
   const initBitcoindBalance = await specterWallet.getBitcoindBalance()
-  const { chain_balance: initLndBalance } = await lnService.getChainBalance({ lnd })
+  const { chain_balance: initLndBalance } = await getChainBalance({ lnd })
   
   const sats = 5000
   
@@ -99,7 +99,7 @@ it('withdrawing from bitcoind', async () => {
   
   const bitcoindBalance = await specterWallet.getBitcoindBalance()
   
-  // const { chain_balance: lndBalance } = await lnService.getChainBalance({ lnd })
+  // const { chain_balance: lndBalance } = await getChainBalance({ lnd })
   
   // console.log({initBitcoindBalance, bitcoindBalance, lndBalance, initLndBalance})
   // expect(bitcoindBalance).toBe(initBitcoindBalance - sats)

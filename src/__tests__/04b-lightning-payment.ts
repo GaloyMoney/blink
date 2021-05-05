@@ -8,7 +8,6 @@ import { InvoiceUser, Transaction } from "../schema";
 import { checkIsBalanced, getUserWallet, lndOutside1, lndOutside2, mockGetExchangeBalance } from "./helper";
 import { getHash, sleep } from "../utils";
 
-import lnService from 'ln-service'
 import { createInvoice, createHodlInvoice, settleHodlInvoice, cancelHodlInvoice, pay, decodePaymentRequest } from 'lightning'
 import mongoose from "mongoose"
 
