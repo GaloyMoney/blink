@@ -1,15 +1,15 @@
 import { getChannels } from 'lightning';
-import { filter } from "lodash";
+import * as _ from "lodash";
 import { lnd } from "../lndConfig";
 import { lndBalances } from "../lndUtils";
 import { MainBook } from "../mongodb";
-import { Transaction, User } from "../schema";
+import { User } from "../schema";
 import { SpecterWallet } from "../SpecterWallet";
-import { baseLogger } from "../utils";
+import { baseLogger } from '../logger'
 import { WalletFactory } from "../walletFactory";
 import { bitcoindAccountingPath, escrowAccountingPath, lndAccountingPath, lndFeePath } from "./ledger";
 
-const logger = baseLogger.child({module: "admin"})
+const logger = baseLogger.child({module: "balanceSheet"})
 
 export const updateUsersPendingPayment = async () => {
   let userWallet
@@ -29,12 +29,13 @@ export const getBalanceSheet = async () => {
   const { balance: lightning } = await MainBook.balance({accounts: lndAccountingPath, currency: "BTC"}) 
   const { balance: bitcoin } = await MainBook.balance({accounts: bitcoindAccountingPath, currency: "BTC"}) 
   const { balance: expenses } = await MainBook.balance({accounts: lndFeePath, currency: "BTC"}) 
+  const { balance: revenue } = await MainBook.balance({account_path: "Revenue", currency: "BTC"})
 
-  return {assets, liabilities, lightning, expenses, bitcoin }
+  return {assets, liabilities, lightning, expenses, bitcoin, revenue }
 }
 
 export const balanceSheetIsBalanced = async () => {
-  const {assets, liabilities, lightning, bitcoin, expenses } = await getBalanceSheet()
+  const {assets, liabilities, lightning, bitcoin, expenses, revenue } = await getBalanceSheet()
   const { total: lnd } = await lndBalances() // doesnt include escrow amount
 
   const specterWallet = new SpecterWallet({ logger })
@@ -44,6 +45,7 @@ export const balanceSheetIsBalanced = async () => {
     assets /* assets is ___ */
     + liabilities /* liabilities is ___ */
     + expenses /* expense is positif */
+    + revenue /* revenue is ___ */
 
   const bookingVersusRealWorldAssets = 
     (lnd + bitcoind) + // physical assets or value of account at third party
@@ -52,7 +54,7 @@ export const balanceSheetIsBalanced = async () => {
   if(!!bookingVersusRealWorldAssets || !!assetsLiabilitiesDifference) {
     logger.debug({
       assetsLiabilitiesDifference, bookingVersusRealWorldAssets,
-      assets, liabilities, expenses,  
+      assets, liabilities, expenses, revenue, 
       lnd, lightning, 
       bitcoind, bitcoin
     }, `not balanced`)
@@ -63,38 +65,32 @@ export const balanceSheetIsBalanced = async () => {
 
 export const updateEscrows = async () => {
   const type = "escrow"
-
   const metadata = { type, currency: "BTC", pending: false }
 
   const { channels } = await getChannels({lnd})
-  const selfInitated = filter(channels, {is_partner_initiated: false})
+  const selfInitatedChannels = _.filter(channels, {is_partner_initiated: false})
+  const escrowInLnd = _.sumBy(selfInitatedChannels, 'commit_transaction_fee')
 
-  const mongotxs = await Transaction.aggregate([
-    { $match: { type, accounts: lndAccountingPath }}, 
-    { $group: {_id: "$txid", total: { "$sum": "$credit" } }},
-  ])
+  const { balance: escrowInMongodb } = await MainBook.balance({
+    account: escrowAccountingPath,
+    currency: "BTC",
+  })
 
-  for (const channel of selfInitated) {
+  // escrowInMongodb is negative
+  // diff will equal 0 if there is no change
+  const diff = escrowInLnd + escrowInMongodb
 
-    const txid = `${channel.transaction_id}:${channel.transaction_vout}`
-    
-    const mongotx = filter(mongotxs, {_id: txid})[0] ?? { total: 0 }
+  logger.info({diff, escrowInLnd, escrowInMongodb, channels}, "escrow recording")
 
-    logger.debug({mongotx, channel}, "need escrow?")
-
-    if (mongotx?.total === channel.commit_transaction_fee) {
-      continue
-    }
-
-    //log can be located by searching for 'update escrow' in gke logs
-    //FIXME: Remove once escrow bug is fixed
-    const diff = channel.commit_transaction_fee - (mongotx?.total)
-    logger.debug({diff}, `update escrow with diff`)
-
+  if (diff > 0) {
     await MainBook.entry("escrow")
-      .credit(lndAccountingPath, diff, {...metadata, txid})
-      .debit(escrowAccountingPath, diff, {...metadata, txid})
+      .credit(lndAccountingPath, diff, {...metadata})
+      .debit(escrowAccountingPath, diff, {...metadata})
+      .commit()
+  } else if (diff < 0) {
+    await MainBook.entry("escrow")
+      .debit(lndAccountingPath, - diff, {...metadata})
+      .credit(escrowAccountingPath, - diff, {...metadata})
       .commit()
   }
-
 }
