@@ -36,7 +36,7 @@ export abstract class UserWallet {
   // there may be better way to architecture this?
   async updatePending({after, onchain, lock}: IUpdatePending = {}) { return }
 
-  async getBalances({lock}): Promise<Balances> {
+  async getBalances({lock} : {lock?: any} = {}): Promise<Balances> {
     await this.updatePending({lock, onchain: false, after: undefined})
 
     // TODO: add effective ratio

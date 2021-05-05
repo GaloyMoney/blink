@@ -12,6 +12,7 @@ import { baseLogger } from './logger'
 import { UserWallet } from "./userWallet";
 import { Transaction, User } from "./schema";
 import { getHeight } from "lightning"
+import { IUpdatePending } from "./interface"
 
 import bluebird from 'bluebird';
 import { yamlConfig } from "./config";

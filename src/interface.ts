@@ -14,7 +14,8 @@ export interface IWallet {
 
 export interface IUpdatePending {
   after?: number | undefined,
-  onchain?: boolean | undefined
+  onchain?: boolean | undefined,
+  lock?: any /* FIXME */ | undefined,
 }
 
 export interface ILightningWallet extends IWallet {
