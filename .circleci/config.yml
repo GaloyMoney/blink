@@ -59,7 +59,7 @@ jobs:
       - run:
           name: Run jest test
           command: |
-            kubectl run --image=gcr.io/galoyapp/galoy:$CIRCLE_SHA1 test -- ./node_modules/.bin/jest
+            kubectl run --generator=run-pod/v1 --image=gcr.io/galoyapp/galoy:$CIRCLE_SHA1 test -it -- ./node_modules/.bin/jest
       - run:
           name: Run postman test
           command: |
