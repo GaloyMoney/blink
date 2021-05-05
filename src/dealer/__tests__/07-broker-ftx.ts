@@ -216,6 +216,8 @@ jest.mock('ccxt', () => ({
 
 let dealerWalletFixture0, dealerWalletFixture1
 
+let uid
+
 beforeAll(async () => {
   await setupMongoConnection();
 

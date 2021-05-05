@@ -34,6 +34,9 @@ spec:
           {{- if .command }}
           command: ["/bin/sh","-c", {{ .command }}]
           {{- end }}
+          {{- if .args }}
+          args: {{ .args }}
+          {{- end }}
           volumeMounts:
           {{- if $.Values.needFirebaseServiceAccount }}
           - name: firebase-serviceaccount
