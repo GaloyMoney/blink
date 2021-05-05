@@ -44,7 +44,10 @@ export type ChainType = "lightning" | "onchain"
 export type TransactionType = "payment" | "paid-invoice" | "on_us" | 
   "onchain_receipt" | "onchain_payment" | "onchain_on_us" | 
   "exchange_rebalance" | 
-  "fee" | "escrow"
+  "fee" | "escrow" | "deposit_fee" |
+  "onchain_receipt_pending" // only for notification, not persistent in mongodb
+
+export const Levels = [1, 2]
 
 export interface IOnChainPayment {
   address: string,
@@ -94,6 +97,15 @@ export interface IDataNotification {
   amount: number
   hash?: string,
   txid?: string, // FIXME in mongodb, there is no differenciation between hash and txid?
+}
+
+export interface IPaymentNotification {
+  amount: number,
+  type: string,
+  user: typeof User,
+  logger: any,
+  hash?: string,
+  txid?: string,
 }
 
 export interface INotification {

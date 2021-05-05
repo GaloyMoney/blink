@@ -9,7 +9,7 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: nginx
     cert-manager.io/cluster-issuer: ca-issuer
-    nginx.ingress.kubernetes.io/limit-rpm: "12"
+    nginx.ingress.kubernetes.io/limit-rpm: "40"
     nginx.ingress.kubernetes.io/server-snippet: |-
       location /swagger/ {
         deny all;
@@ -18,7 +18,7 @@ spec:
   tls:
   - hosts:
     - {{.Values.ingress.host}}
-    secretName: {{.Values.network}}-tls
+    secretName: {{.Values.global.network}}-tls
   rules:
   - host: {{.Values.ingress.host}}
     http:

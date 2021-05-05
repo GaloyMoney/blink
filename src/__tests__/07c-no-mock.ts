@@ -1,11 +1,11 @@
 /**
  * @jest-environment node
  */
-import { quit } from "../lock";
 import { setupMongoConnection } from "../mongodb";
-import { getTokenFromPhoneIndex } from "../walletFactory";
 import mongoose from "mongoose";
+import { getTokenFromPhoneIndex } from "./helper";
 
+jest.mock('../realtimePrice')
 
 let uid
 
@@ -16,7 +16,6 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await mongoose.connection.close()
-  await quit()
 })
 
 // to not have jest failing because there is no test in the file

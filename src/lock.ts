@@ -1,48 +1,32 @@
-import { baseLogger } from "./utils";
-import asyncRedis from "async-redis";
-
+import Redlock, { Lock } from 'redlock';
 import redis from "redis"
-import Redlock from 'redlock';
+import bluebird from 'bluebird';
+const { using } = bluebird;
+
   
 // the maximum amount of time you want the resource locked,
 // keeping in mind that you can extend the lock up until
 // the point when it expires
 // TODO: use TIMEOUTs env variable 
-const ttl = process.env.NETWORK !== "regtest" ? 60000 : 10000
+const ttl = process.env.NETWORK !== "regtest" ? 180000 : 10000
 
-// if we weren't able to reach redis, your lock will eventually
-// expire, but you probably want to do something like log that
-// an error occurred; if you don't pass a handler, this error
-// will be ignored
-function unlockErrorHandler(err) {
-  baseLogger.error(err, `unable to release redis lock`);
-  // throw Error(err)
+function errorWrapper({logger}) {
+  return function unlockErrorHandler(err) {
+    logger.error(err, `unable to release redis lock`);
+  }
 }
 
-let redlock, clientLock, clientAsync
-
-// FIXME: refactor by using a single client, whether the lock is sync or async
-
-const getClient = () => {
-  clientLock = clientLock ?? redis.createClient(process.env.REDIS_PORT, process.env.REDIS_IP)
-  return clientLock
-}
-
-export const getAsyncRedisClient = () => {
-  clientAsync = clientAsync ?? asyncRedis.decorate(redis.createClient(process.env.REDIS_PORT, process.env.REDIS_IP));
-  return clientAsync
-}
-
+let redlock_singleton
 
 const getRedLock = () => {
-  if (redlock) { 
-    return redlock
+  if (redlock_singleton) { 
+    return redlock_singleton
   } 
   
-  redlock = new Redlock(
+  redlock_singleton = new Redlock(
   // you should have one client for each independent redis node
   // or cluster
-  [getClient()],
+  [redis.createClient(process.env.REDIS_PORT, process.env.REDIS_IP)],
   {
     // the expected clock drift; for more details
     // see http://redis.io/topics/distlock
@@ -50,10 +34,10 @@ const getRedLock = () => {
 
     // the max number of times Redlock will attempt
     // to lock a resource before erroring
-    retryCount:  15,
+    retryCount:  5,
 
     // the time in ms between attempts
-    retryDelay:  250, // time in ms
+    retryDelay:  400, // time in ms
 
     // the max time in ms randomly added to retries
     // to improve performance under high contention
@@ -61,15 +45,51 @@ const getRedLock = () => {
     retryJitter:  200 // time in ms
   })
 
-  return redlock
+  return redlock_singleton
 }
 
 export const getResource = path => `locks:account:${path}`;
 
-export const disposer = (path) => {
-  return getRedLock().disposer(getResource(path), ttl, unlockErrorHandler)
+interface IRedLock {
+  path: string,
+  logger: any,
+  lock?: typeof Lock
 }
 
-// export const quit = async () => await getRedLock().quit()
-// TODO see why above function doesn't work
-export const quit = async () => getClient().quit()
+export const redlock = async ({path, logger, lock}: IRedLock, async_fn: (arg0: typeof Lock) => Promise<any>) => {
+  if (!!lock && lock.expiration > Date.now()) {
+    return await async_fn(lock)
+  }
+  return await using(getRedLock().disposer(getResource(path), ttl, errorWrapper({logger})), async (lock) => {
+    return await async_fn(lock)
+  })
+}
+
+const logLockTimeout = ({logger, lock}) => {
+  const expiration = lock.expiration
+  const now = new Date().getTime()
+  const remaining = expiration - now
+  logger.debug({expiration, now, remaining}, "lock status")
+}
+
+export const lockExtendOrThrow = async ({lock, logger}, async_fn): Promise<any> => {
+  logLockTimeout({logger, lock})
+
+  return new Promise((resolve, reject) => {
+    lock.extend(120000, async (err, extended_lock) => {
+      // if we can't extend the lock, typically because it would have expired
+      // then we throw an error
+      if (!!err) {
+        const error = "unable to extend the lock"
+        logger.error({err}, error)
+        reject( new Error(error) )
+        return
+      }
+  
+      const result = await async_fn()
+      resolve(result)
+    })
+  })
+}
+
+

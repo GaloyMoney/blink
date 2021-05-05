@@ -1,25 +1,36 @@
 /**
  * @jest-environment node
  */
+import { once } from 'events';
+import lnService from 'ln-service';
 import { filter, first } from "lodash";
-import { quit } from "../lock";
-import { MainBook, setupMongoConnection } from "../mongodb";
-import { checkIsBalanced, getUserWallet, lndMain, lndOutside1, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "./helper";
-import { onchainTransactionEventHandler } from "../entrypoint/trigger";
-import { bitcoindDefaultClient, sleep } from "../utils";
-import {once} from 'events';
-
-import lnService from 'ln-service'
-
 import mongoose from "mongoose";
+import { onchainTransactionEventHandler } from "../entrypoint/trigger";
+import { MainBook, setupMongoConnection } from "../mongodb";
+import { getTitle } from "../notifications/payment";
+import { Transaction } from '../schema';
+import { bitcoindDefaultClient, sleep } from "../utils";
+import { yamlConfig } from "../config"
+import { checkIsBalanced, getUserWallet, lndMain, lndOutside1, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "./helper";
+
+jest.mock('../realtimePrice')
+
+const date = Date.now() + 1000 * 60 * 60 * 24 * 8
+
+jest
+  .spyOn(global.Date, 'now')
+  .mockImplementation(() =>
+    new Date(date).valueOf()
+);
+
 
 let initBlockCount
 let initialBalanceUser0
 let userWallet0, userWallet3
 
 
-jest.mock('../notification')
-const { sendNotification } = require("../notification")
+jest.mock('../notifications/notification')
+const { sendNotification } = require("../notifications/notification")
 
 beforeAll(async () => {
   await setupMongoConnection()
@@ -42,7 +53,6 @@ afterAll(async () => {
   await sleep(2000)
   jest.restoreAllMocks();
 	await mongoose.connection.close()
-	await quit()
 })
 
 const amount = 10040 // sats
@@ -110,7 +120,9 @@ it('Sends onchain payment successfully', async () => {
   console.log(JSON.stringify(sendNotification.mock.calls))
 
   // expect(sendNotification.mock.calls.length).toBe(2)  // FIXME: should be 1
-  expect(sendNotification.mock.calls[0][0].title).toBe(`Your on-chain transaction has been confirmed`)
+
+
+  expect(sendNotification.mock.calls[0][0].title).toBe(getTitle["onchain_payment"]({amount}))
   expect(sendNotification.mock.calls[0][0].data.type).toBe("onchain_payment")
 
   const { results: [{ pending, fee, feeUsd }] } = await MainBook.ledger({ account: userWallet0.accountPath, hash: pendingTxn.hash })
@@ -161,6 +173,7 @@ it('Sends onchain payment _with memo', async () => {
   expect((first(txs) as any).description).toBe(memo)
 })
 
+
 it('makes onchain on-us transaction with memo', async () => {
   const memo = "this is my onchain memo"
   const user3Address = await userWallet3.getOnChainAddress()
@@ -194,4 +207,27 @@ it('fails to make onchain payment when insufficient balance', async () => {
 
   //should fail because user does not have balance to pay for on-chain fee
   await expect(userWallet3.onChainPay({ address: address as string, amount: initialBalanceUser3 })).rejects.toThrow()
+})
+
+it('negative amount should be rejected', async () => {
+  const amount = - 1000
+  const { address } = await lnService.createChainAddress({ format: 'p2wpkh', lnd: lndOutside1 })
+  await expect(userWallet0.onChainPay({ address, amount })).rejects.toThrow()
+})
+
+it('fails to make onchain payment when withdrawalLimit hit', async () => {
+  const { address } = await lnService.createChainAddress({
+    lnd: lndOutside1,
+    format: 'p2wpkh',
+  })
+
+  const timestampYesterday = new Date(Date.now() - (24 * 60 * 60 * 1000))
+  const [result] = await Transaction.aggregate([
+    {$match: {"accounts": userWallet0.accountPath, type: {$ne: 'on_us'}, "timestamp": { $gte: timestampYesterday }}},
+    {$group: {_id: null, outgoingSats: { $sum: "$debit" }}}
+  ])
+  const { outgoingSats } = result || {outgoingSats: 0}
+  const amount = yamlConfig.withdrawalLimit - outgoingSats
+
+  await expect(userWallet0.onChainPay({ address, amount })).rejects.toThrow()
 })

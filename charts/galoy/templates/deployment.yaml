@@ -11,14 +11,14 @@ metadata:
     kube-monkey/kill-mode: fixed
     kube-monkey/kill-value: "1"
     kube-monkey/mtbf: "8"
-spec: 
+spec:
   replicas: {{ .replicaCount }}
   selector:
     matchLabels:
       app: {{ .name }}
   template:
     metadata:
-      name: {{ .name }} 
+      name: {{ .name }}
       labels:
         app: {{ .name }}
         kube-monkey/enabled: enabled
@@ -45,7 +45,7 @@ spec:
             mountPath: "/var/secret/cloud.google.com"
           {{- end}}
           - name: "custom-yaml"
-            mountPath: "/var/"
+            mountPath: "/var/yaml/"
           {{- if .targetPort }}
           ports:
             - name: http
@@ -61,7 +61,10 @@ spec:
             - name: HELMREVISION
               value: {{ $.Release.Revision | quote}}
             - name: MONGODB_PASSWORD
-              value: "testGaloy"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Release.Name }}-mongodb
+                  key: "mongodb-password"
             - name: MONGODB_USER
               value: "testGaloy"
             - name: MONGODB_ADDRESS
@@ -69,9 +72,15 @@ spec:
             - name: LNDIP
               value: "lnd"
             - name: MACAROON
-              value: {{ $.Values.macaroon }}
+              valueFrom:
+                secretKeyRef:
+                  name: lnd-macaroon
+                  key: admin.macaroon
             - name: TLS
-              value: {{ $.Values.tls }}
+              valueFrom:
+                secretKeyRef:
+                  name: lnd-tls
+                  key: tls.cert
             - name: BITCOINDADDR
               value: "bitcoind"
             - name: BITCOINDPORT
@@ -123,7 +132,28 @@ spec:
                   name: dropbox-access-token
                   key: token
             {{- end }}
-            {{- if ne $.Values.network "regtest" }}
+            {{- if eq $.Values.global.network "regtest" }}
+            - name: MACAROONOUTSIDE1
+              valueFrom:
+                secretKeyRef:
+                  name: lnd-outside-1-macaroon
+                  key: admin.macaroon
+            - name: TLSOUTSIDE1
+              valueFrom:
+                secretKeyRef:
+                  name: lnd-outside-1-tls
+                  key: tls.cert
+            - name: MACAROONOUTSIDE2
+              valueFrom:
+                secretKeyRef:
+                  name: lnd-outside-2-macaroon
+                  key: admin.macaroon
+            - name: TLSOUTSIDE2
+              valueFrom:
+                secretKeyRef:
+                  name: lnd-outside-2-tls
+                  key: tls.cert
+            {{- else }}
             - name: TWILIO_PHONE_NUMBER
               valueFrom:
                 secretKeyRef:

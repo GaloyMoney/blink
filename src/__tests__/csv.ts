@@ -1,12 +1,10 @@
 /**
  * @jest-environment node
  */
-import { quit } from "../lock";
 import { setupMongoConnection } from "../mongodb";
 import { getUserWallet } from "./helper";
-
-import lnService from 'ln-service'
 import mongoose from "mongoose"
+jest.mock('../realtimePrice')
 
 let userWallet
 
@@ -17,7 +15,6 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await mongoose.connection.close()
-  await quit()
 });
 
 it('export account to csv', async () => {

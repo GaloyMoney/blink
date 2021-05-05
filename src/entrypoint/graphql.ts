@@ -1,7 +1,11 @@
+import { ApolloServer } from 'apollo-server-express';
 import dotenv from "dotenv";
-import { rule, shield } from 'graphql-shield';
-import { GraphQLServer } from 'graphql-yoga';
-import * as jwt from 'jsonwebtoken';
+import express from 'express';
+import expressJwt from "express-jwt";
+import { importSchema } from 'graphql-import';
+import { applyMiddleware } from "graphql-middleware";
+import { and, rule, shield } from 'graphql-shield';
+import { makeExecutableSchema } from "graphql-tools";
 import _ from 'lodash';
 import moment from "moment";
 import mongoose from "mongoose";
@@ -16,20 +20,21 @@ import PinoHttp from "pino-http";
 import swStats from 'swagger-stats';
 import util from 'util';
 import { v4 as uuidv4 } from 'uuid';
-import { getMinBuildNumber, mainCache } from "../cache";
+import { getMinBuildNumber, getHourlyPrice } from "../localCache";
+import { lnd } from "../lndConfig";
 import { nodeStats } from "../lndUtils";
-import { getAsyncRedisClient } from "../lock";
 import { setupMongoConnection } from "../mongodb";
-import { sendNotification } from "../notification";
-import { Price } from "../priceImpl";
+import { sendNotification } from "../notifications/notification";
 import { User } from "../schema";
 import { login, requestPhoneCode } from "../text";
-import { OnboardingEarn } from "../types";
-import { UserWallet } from "../userWallet";
-import { baseLogger, customLoggerPrefix } from "../utils";
+import { Levels, OnboardingEarn } from "../types";
+import { AdminOps } from "../AdminOps"
+import { fetchIPDetails } from "../utils";
+import { baseLogger } from '../logger'
 import { WalletFactory, WalletFromUsername } from "../walletFactory";
-import { lnd } from "../lndConfig"
-
+import { getCurrentPrice } from "../realtimePrice";
+import { getAsyncRedisClient } from "../redis";
+import { yamlConfig } from '../config';
 
 dotenv.config()
 
@@ -50,12 +55,6 @@ const pino_http = PinoHttp({
       ...pino.stdSerializers.res(res)
     })
   },
-  reqCustomProps: function(req) {
-    return {
-      // FIXME: duplicate parsing from graphql context.
-      token: verifyToken(req)
-    }
-  },
   autoLogging: {
     ignorePaths: ["/healthz"]
   }
@@ -68,11 +67,11 @@ const helmRevision = process.env.HELMREVISION
 const resolvers = {
   Query: {
     me: async (_, __, { uid, user }) => {
-      const { phone, username, contacts, language } = user
+      const { phone, username, contacts, language, level } = user
 
       return {
         id: uid,
-        level: 1,
+        level,
         phone,
         username,
         contacts,
@@ -103,7 +102,7 @@ const resolvers = {
         }))
       }
     },
-    nodeStats: async () => nodeStats({lnd}),
+    nodeStats: async () => nodeStats({ lnd }),
     buildParameters: async () => {
       const { minBuildNumber, lastBuildNumber } = await getMinBuildNumber()
       return {
@@ -117,29 +116,23 @@ const resolvers = {
         lastBuildNumberIos: lastBuildNumber,
       }
     },
-    prices: async (_, { length = 365 * 24 * 10 }, {logger}) => {
+    prices: async (_, { length = 365 * 24 * 10 }, { logger }) => {
+      const hourly = await getHourlyPrice({ logger })
 
-      const key = "lastCached"
-      let value
-    
-      value = mainCache.get(key);
-      if ( value === undefined ){
-        const price = new Price({logger})
-        const lastCached = await price.lastCached()
-        // TODO: maybe have a better way to reset the cache.
-        // if we have 300 seconds of cache here, but we also only fetch from prometheus value only every 300 seconds
-        // then the price value could be stale up to 600 seconds on the client side
-        mainCache.set( key, lastCached, 30 )
-        value = lastCached
-      }
-    
-      return value.splice(-length)
+      // adding the current price as the lat index array
+      // use by the mobile application to convert prices
+      hourly.push({
+        id: moment().unix(),
+        o: getCurrentPrice()
+      })
+
+      return hourly.splice(-length)
     },
     earnList: async (_, __, { uid, user }) => {
       const response: Object[] = []
       const earned = user?.earn || []
 
-      for (const [id, value] of Object.entries(OnboardingEarn)) {
+      for(const [id, value] of Object.entries(OnboardingEarn)) {
         response.push({
           id,
           value,
@@ -150,39 +143,52 @@ const resolvers = {
       return response
     },
     getLastOnChainAddress: async (_, __, { wallet }) => ({ id: wallet.getLastOnChainAddress() }),
-
     maps: async () => {
       // TODO: caching
-      const users = await User.find({ title: { $exists: true }, coordinate: { $exists: true }}, {username: 1, title: 1, coordinate: 1})
-      return users.map(item => ({
-        id: item.username,
-        username: item.username,
-        title: item.title,
-        coordinate: {
-          latitude: item.coordinate.coordinates[0],
-          longitude: item.coordinate.coordinates[1]
-        }
+      const users = await User.find({ 
+        title: { $exists: true }, coordinate: { $exists: true } },
+        { username: 1, title: 1, coordinate: 1 }
+      );
+
+      return users.map((user) => ({
+        ...user._doc,
+        id: user.username
       }))
     },
-    usernameExists: async (_, { username }) => await UserWallet.usernameExists({ username })
-
+    usernameExists: async (_, { username }) => AdminOps.usernameExists({ username }),
+    getUserDetails: async (_, { uid }) => User.findOne({_id: uid}),
+    noauthUpdatePendingInvoice: async (_, { hash, username }, { logger }) => {
+      const wallet = await WalletFromUsername({ username, logger })
+      return wallet.updatePendingInvoice({ hash })
+    },
+    getUid: async (_, { username, phone }) => {
+      const { _id: uid } = await User.getUser({ username, phone })
+      return uid
+    },
+    getLevels: () => Levels,
+    getLimits: (_, __, {user}) => {
+      return {
+        oldEnoughForWithdrawal: yamlConfig.limits.oldEnoughForWithdrawal,
+        withdrawal: yamlConfig.limits.withdrawal.level[user.level],
+        onUs: yamlConfig.limits.onUs.level[user.level]
+      }
+    },
+    getWalletFees: () => ({
+      deposit: yamlConfig.fees.deposit
+    })
   },
   Mutation: {
     requestPhoneCode: async (_, { phone }, { logger }) => ({ success: requestPhoneCode({ phone, logger }) }),
     login: async (_, { phone, code }, { logger }) => ({ token: login({ phone, code, logger }) }),
     updateUser: async (_, __, { wallet }) => ({
-      // FIXME manage uid
-      // TODO only level for now
-      setLevel: async () => {
-        const result = await wallet.setLevel({ level: 1 })
-        return {
-          id: wallet.uid,
-          level: result.level,
-        }
-      },
       setUsername: async ({ username }) => await wallet.setUsername({ username }),
-      setLanguage: async ({ language }) => await wallet.setLanguage({ language })
+      setLanguage: async ({ language }) => await wallet.setLanguage({ language }),
+      updateUsername: (input) => wallet.updateUsername(input),
+      updateLanguage: (input) => wallet.updateLanguage(input),
     }),
+    setLevel: async (_, { uid, level }) => {
+      return AdminOps.setLevel({ uid, level })
+    },
     updateContact: async (_, __, { user }) => ({
       setName: async ({ username, name }) => {
         user.contacts.filter(item => item.id === username)[0].name = name
@@ -190,15 +196,13 @@ const resolvers = {
         return true
       }
     }),
-    publicInvoice: async (_, { username }, { logger }) => {
-      const wallet = await WalletFromUsername({ username, logger })
-      return {
-        addInvoice: async ({ value, memo }) => wallet.addInvoice({ value, memo, selfGenerated: false }),
-        updatePendingInvoice: async ({ hash }) => wallet.updatePendingInvoice({ hash })
-      }
+    noauthAddInvoice: async (_, { username, value }, { logger }) => {
+      const wallet = await WalletFromUsername({username, logger})
+      return wallet.addInvoice({ selfGenerated: false, value })
     },
     invoice: async (_, __, { wallet }) => ({
       addInvoice: async ({ value, memo }) => wallet.addInvoice({ value, memo }),
+      // FIXME: move to query
       updatePendingInvoice: async ({ hash }) => wallet.updatePendingInvoice({ hash }),
       payInvoice: async ({ invoice, amount, memo }) => wallet.pay({ invoice, amount, memo }),
       payKeysendUsername: async ({ destination, username, amount, memo }) => wallet.pay({ destination, username, amount, memo }),
@@ -211,7 +215,7 @@ const resolvers = {
     onchain: async (_, __, { wallet }) => ({
       getNewAddress: () => wallet.getOnChainAddress(),
       pay: ({ address, amount, memo }) => ({ success: wallet.onChainPay({ address, amount, memo }) }),
-      getFee: ({ address }) => wallet.getOnchainFee({ address }),
+      getFee: ({ address, amount }) => wallet.getOnchainFee({ address, amount }),
     }),
     addDeviceToken: async (_, { deviceToken }, { user }) => {
       user.deviceToken.addToSet(deviceToken)
@@ -231,34 +235,13 @@ const resolvers = {
       })
       return { success: true }
     },
-  }
-}
-
-
-function verifyToken(req) {
-
-  let token
-  try {
-    const auth = req.get('Authorization')
-
-    if (!auth) {
-      return null
+    addToMap: async (_, { username, title, latitude, longitude }, { }) => {
+      return AdminOps.addToMap({ username, title, latitude, longitude });
+    },
+    setAccountStatus: async (_, { uid, status }, { }) => {
+      return AdminOps.setAccountStatus({ uid, status })
     }
-
-    if (auth.split(" ")[0] !== "Bearer") {
-      throw Error("not a bearer token")
-    }
-
-    const raw_token = auth.split(" ")[1]
-    token = jwt.verify(raw_token, process.env.JWT_SECRET);
-
-    // TODO assert bitcoin network
-  } catch (err) {
-    return null
-    // TODO return new AuthenticationError("Not authorised"); ?
-    // ie: differenciate between non authenticated, and not authorized
   }
-  return token
 }
 
 const isAuthenticated = rule({ cache: 'contextual' })(
@@ -270,12 +253,23 @@ const isAuthenticated = rule({ cache: 'contextual' })(
   },
 )
 
+const isEditor = rule({ cache: "contextual" })(
+  async (parent, args, ctx, info) => {
+    return ctx.user.role === "editor";
+  }
+);
+
 const permissions = shield({
   Query: {
     // prices: not(isAuthenticated),
     // earnList: isAuthenticated,
-    wallet: isAuthenticated,
     me: isAuthenticated,
+    wallet: isAuthenticated,
+    wallet2: isAuthenticated,
+    getLastOnChainAddress: isAuthenticated,
+    getUserDetails: and(isAuthenticated, isEditor),
+    getUid: and(isAuthenticated, isEditor),
+    getLevels: and(isAuthenticated, isEditor)
   },
   Mutation: {
     // requestPhoneCode: not(isAuthenticated),
@@ -285,76 +279,117 @@ const permissions = shield({
     invoice: isAuthenticated,
     earnCompleted: isAuthenticated,
     updateUser: isAuthenticated,
+    updateContact: isAuthenticated,
     deleteUser: isAuthenticated,
     addDeviceToken: isAuthenticated,
+    testMessage: isAuthenticated,
+    addToMap: and(isAuthenticated, isEditor),
+    setLevel: and(isAuthenticated, isEditor),
+    setAccountStatus: and(isAuthenticated, isEditor)
   },
 }, { allowExternalErrors: true }) // TODO remove to not expose internal error
 
 
-const server = new GraphQLServer({
-  typeDefs: path.join(__dirname, "../schema.graphql"),
-  resolvers,
-  middlewares: [permissions],
-  context: async (context) => {
-    const token = verifyToken(context.request)
-    const uid = token?.uid ?? null
-    const user = !!uid ? await User.findOne({ _id: uid }) : null
-    // @ts-ignore
-    const logger = graphqlLogger.child({ token, id: context.request.id, body: context.request.body })
-    const wallet = !!uid ? await WalletFactory({ user, logger }) : null
-    return {
-      ...context,
-      logger,
-      uid,
-      wallet,
-      user
-    }
-  }
-})
+export async function startApolloServer() {
+  const app = express();
 
-// injecting unique id to the request for correlating different logs messages
-// TODO: use a jaeger standard instead to be able to do distributed tracing 
-server.express.use(function(req, res, next) {
+  const schema = applyMiddleware(
+    makeExecutableSchema({
+      typeDefs: importSchema(path.join(__dirname, "../schema.graphql")),
+      resolvers,
+    }),
+    permissions
+  );
+
+  const server = new ApolloServer({
+    schema,
+    playground: process.env.NETWORK !== 'mainnet',
+    introspection: process.env.NETWORK !== 'mainnet',
+    context: async (context) => {
+      // @ts-ignore
+      const token = context.req?.token ?? null
+      const uid = token?.uid ?? null
+
+      let wallet, user
+
+      // TODO move from id: uuidv4() to a Jaeger standard 
+      const logger = graphqlLogger.child({ token, id: uuidv4(), body: context.req?.body })
+
+      if (!!uid) {
+        user = await User.findOneAndUpdate({ _id: uid },{ lastConnection: new Date() }, {new: true})
+        if(yamlConfig.proxyChecking.enabled) {
+          fetchIPDetails({currentIP: context.req?.headers['x-real-ip'], user, logger})
+        }
+        wallet = (!!user && user.status === "active") ? await WalletFactory({ user, logger }) : null
+      }
+
+      // @ts-ignore
+      return {
+        ...context,
+        logger,
+        uid,
+        wallet,
+        user
+      }
+    },
+    formatError: err => {
+      let log
+      
+      //An err object needs to necessarily have the forwardToClient field to be forwarded
+      // i.e. catch-all errors will not be forwarded
+      if(log = err.extensions?.exception?.log) {
+        const errObj = { message: err.message, code: err.extensions.code }
+        log(errObj)
+        if(err.extensions.exception.forwardToClient) {
+          return errObj
+        }
+      } else {
+        graphqlLogger.error(err)
+      }
+
+      return new Error('Internal server error');
+    },
+  })
+
+  app.use(pino_http)
+
+  app.use(
+    expressJwt({
+      secret: process.env.JWT_SECRET,
+      algorithms: ["HS256"],
+      credentialsRequired: false,
+      requestProperty: 'token'
+    }))
+
+  app.use(swStats.getMiddleware({
+    uriPath: "/swagger",
+    // no authentication but /swagger/* should be protected from access outside the cluster
+    // this is done with nginx 
+  }))
+
+  // Health check
+  app.get('/healthz', async function(req, res) {
+    const isMongoAlive = mongoose.connection.readyState == 1 ? true : false
+    const isRedisAlive = await getAsyncRedisClient().ping() === 'PONG'
+    res.status((isMongoAlive && isRedisAlive) ? 200 : 503).send();
+  });
+
+
+  // Mount Apollo middleware here.
+  // server.applyMiddleware({ app: permissions });
+  // middlewares: [permissions],
+
+  server.applyMiddleware({ app });
+
   // @ts-ignore
-  req.id = uuidv4();
-  next();
-});
+  await new Promise(resolve => app.listen({ port: 4000 }, resolve));
 
-server.express.use(pino_http)
-server.express.use(swStats.getMiddleware({
-  uriPath: "/swagger",
-  // no authentication but /swagger/* should be protected from access outside the cluster
-  // this is done with nginx 
-}))
-
-// Health check
-server.express.get('/healthz', async function(req, res) {
-  const isMongoAlive = mongoose.connection.readyState == 1 ? true : false
-  const isRedisAlive = await getAsyncRedisClient().ping() === 'PONG'
-  res.status((isMongoAlive && isRedisAlive) ? 200 : 503).send();
-});
-
-const options = {
-  // tracing: true,
-  formatError: err => {
-    // FIXME
-    if (_.startsWith(err.message, customLoggerPrefix)) {
-      err.message = err.message.slice(customLoggerPrefix.length)
-    } else {
-      baseLogger.error({err}, "graphql catch-all error"); 
-    }
-    // return defaultErrorFormatter(err)
-    return err
-  },
-  endpoint: '/graphql',
-  playground: process.env.NETWORK === 'mainnet' ? 'false' : '/'
+  console.log(`🚀 Server ready at http://localhost:4000${server.graphqlPath}`);
+  return { server, app };
 }
 
-setupMongoConnection().then(() => {
-  server.start(options, ({ port }) =>
-    graphqlLogger.info(
-      `Server started, listening on port ${port} for incoming requests.`,
-    ),
-  )
+
+setupMongoConnection().then(async () => {
+  await startApolloServer()
 }).catch((err) => graphqlLogger.error(err, "server error"))
 

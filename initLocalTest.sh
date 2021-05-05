@@ -1,5 +1,9 @@
 set -e
 
+# for helm < 3.4
+# https://helm.sh/blog/new-location-stable-incubator-charts/
+helm repo add stable https://charts.helm.sh/stable --force-update
+
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo add grafana https://grafana.github.io/helm-charts
@@ -8,13 +12,25 @@ helm repo add jetstack https://charts.jetstack.io
 helm repo add galoy https://galoymoney.github.io/charts/
 helm repo update
 
-lndVersion="1.0.4"
+lndVersion="1.1.14"
 
-cd ./charts/galoy && helm dependency build && cd -
-cd ./charts/monitoring && helm dependency build && cd -
+cd ./charts/galoy
+helm dependency build
+cd -
+
+cd ./charts/monitoring
+helm dependency build
+cd -
 
 INGRESS_NAMESPACE="ingress-nginx"
 INFRADIR=./charts
+
+backupMongodb () {
+  JOB_DATE=$(date -u '+%s')
+  kubectl -n=$NAMESPACE create job --from=cronjob/mongo-backup "$JOB_DATE"
+  kubectl -n=$NAMESPACE wait --for=condition=complete --timeout=120s job/$JOB_DATE
+  kubectl -n=$NAMESPACE delete job/$JOB_DATE
+}
 
 
 if [ "$1" == "testnet" ] || [ "$1" == "mainnet" ];
@@ -22,11 +38,13 @@ then
   NETWORK="$1"
   NAMESPACE="$1"
 
+  backupMongodb
+
   # create namespaces if not exists
   kubectl create namespace $INGRESS_NAMESPACE --dry-run -o yaml | kubectl apply -f -
   kubectl create namespace cert-manager --dry-run -o yaml | kubectl apply -f -
 
-  helm -n cert-manager upgrade -i cert-manager jetstack/cert-manager --set installCRDs=true
+  helm -n cert-manager upgrade -i cert-manager jetstack/cert-manager --set installCRDs=true --version=v1.2.0
 
   # Uncomment the following line if not using Google cloud and enter a static ip obtained from your cloud provider
   # export STATIC_IP=xxx.xxx.xxx.xxx
@@ -66,24 +84,6 @@ kubectlLndDeletionWait () {
 # TODO: using --wait on upgrade would simplify this upgrade, but is currently running into some issues
   echo "waiting for pod deletion"
   kubectl wait -n=$NAMESPACE --for=delete --timeout=45s pod -l app.kubernetes.io/name=lnd || :
-}
-
-exportMacaroon() {
-  export "$2"=$(kubectl exec -n=$NAMESPACE $1 -- base64 /root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
-}
-
-createLoopConfigmaps() {
-  kubectl -n $NETWORK cp lnd-0:/root/.lnd/tls.cert ./tls.cert
-  kubectl create configmap lndtls --from-file=./tls.cert --dry-run -o yaml | kubectl -n $NETWORK apply -f -
-
-  kubectl -n $NETWORK cp lnd-0:/root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon ./macaroon/admin.macaroon
-  kubectl -n $NETWORK cp lnd-0:/root/.lnd/data/chain/bitcoin/$NETWORK/readonly.macaroon ./macaroon/readonly.macaroon
-  kubectl -n $NETWORK cp lnd-0:/root/.lnd/data/chain/bitcoin/$NETWORK/invoices.macaroon ./macaroon/invoices.macaroon
-  kubectl -n $NETWORK cp lnd-0:/root/.lnd/data/chain/bitcoin/$NETWORK/chainnotifier.macaroon ./macaroon/chainnotifier.macaroon
-  kubectl -n $NETWORK cp lnd-0:/root/.lnd/data/chain/bitcoin/$NETWORK/signer.macaroon ./macaroon/signer.macaroon
-  kubectl -n $NETWORK cp lnd-0:/root/.lnd/data/chain/bitcoin/$NETWORK/walletkit.macaroon ./macaroon/walletkit.macaroon
-  kubectl -n $NETWORK cp lnd-0:/root/.lnd/data/chain/bitcoin/$NETWORK/router.macaroon ./macaroon/router.macaroon
-  kubectl create configmap lndmacaroon --from-file=./macaroon --dry-run -o yaml | kubectl -n $NETWORK apply -f -
 }
 
 if [ ${LOCAL} ]
@@ -129,25 +129,6 @@ fi
 sleep 15
 kubectlWait app.kubernetes.io/name=lnd
 
-exportMacaroon lnd-0 MACAROON
-export TLS=$(kubectl -n $NAMESPACE exec lnd-0 -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
-
-if [ "$NETWORK" == "regtest" ]
-then
-  exportMacaroon lnd-outside-1-0 MACAROONOUTSIDE1
-  exportMacaroon lnd-outside-2-0 MACAROONOUTSIDE2
-
-  # Todo: refactor
-  export TLSOUTSIDE1=$(kubectl -n $NAMESPACE exec lnd-outside-1-0 -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
-  export TLSOUTSIDE2=$(kubectl -n $NAMESPACE exec lnd-outside-2-0 -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
-
-  echo $(kubectl get -n=$NAMESPACE pods)
-
-else
-  createLoopConfigmaps
-  helmUpgrade loop-server $INFRADIR/lnd/charts/loop/
-fi
-
 if [ ${LOCAL} ]
 then
 localdevpath="-f $INFRADIR/galoy/localdev.yaml"
@@ -160,17 +141,17 @@ else
   configpath="-f $INFRADIR/galoy/$NETWORK.yaml"
 fi
 
+#FIXME: Fetch the entire secret once, then extract and decode the necessary fields
 export MONGODB_ROOT_PASSWORD=$(kubectl get secret -n $NAMESPACE galoy-mongodb -o jsonpath="{.data.mongodb-root-password}" | base64 -d)
+export MONGODB_PASSWORD=$(kubectl get secret -n $NAMESPACE galoy-mongodb -o jsonpath="{.data.mongodb-password}" | base64 -d)
 export MONGODB_REPLICA_SET_KEY=$(kubectl get secret -n $NAMESPACE galoy-mongodb -o jsonpath="{.data.mongodb-replica-set-key}" | base64 -d)
 
 helmUpgrade galoy \
   $configpath $localdevpath \
-  --set "customCmdlineEnv={MACAROONOUTSIDE1:$MACAROONOUTSIDE1,MACAROONOUTSIDE2:$MACAROONOUTSIDE2,TLSOUTSIDE1:$TLSOUTSIDE1,TLSOUTSIDE2:$TLSOUTSIDE2}" \
-  --set tls=$TLS,macaroon=$MACAROON,mongodb.auth.rootPassword=$MONGODB_ROOT_PASSWORD,mongodb.auth.replicaSetKey=$MONGODB_REPLICA_SET_KEY,image.tag=$CIRCLE_SHA1 \
+  --set mongodb.auth.password=$MONGODB_PASSWORD,mongodb.auth.rootPassword=$MONGODB_ROOT_PASSWORD,mongodb.auth.replicaSetKey=$MONGODB_REPLICA_SET_KEY,image.tag=$CIRCLE_SHA1 \
   $INFRADIR/galoy/
 
 kubectlWait app.kubernetes.io/instance=galoy
-kubectl -n $NAMESPACE annotate deployment graphql kubernetes.io/change-cause="$CIRCLE_SHA1-$(date -u)"
 
 if [ ${LOCAL} ]
 then
@@ -211,6 +192,9 @@ fi
 
 if [ "$NETWORK" == "testnet" ] || [ "$NETWORK" == "mainnet" ];
 then
+
+  kubectl -n $NAMESPACE annotate deployment graphql kubernetes.io/change-cause="$CIRCLE_SHA1-$(date -u)"
+
   kubectl -n $NAMESPACE rollout status deployments/trigger
   if [[ "$?" -ne 0 ]]; then
     echo "Deployment for trigger failed"

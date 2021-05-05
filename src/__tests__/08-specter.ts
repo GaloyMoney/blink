@@ -3,11 +3,11 @@
  */
 import { bitcoindAccountingPath } from "../ledger/ledger";
 import { lnd } from "../lndConfig";
-import { quit } from "../lock";
 import { MainBook, setupMongoConnection } from "../mongodb";
 import { SpecterWallet } from "../SpecterWallet";
 import { checkIsBalanced, mockGetExchangeBalance, RANDOM_ADDRESS } from "./helper";
-import { baseLogger, bitcoindDefaultClient, sleep } from "../utils";
+import { bitcoindDefaultClient, sleep } from "../utils";
+import { baseLogger } from '../logger'
 import { UserWallet } from "../userWallet";
 import lnService from 'ln-service'
 
@@ -15,7 +15,8 @@ import mongoose from "mongoose";
 
 let specterWallet
 
-jest.mock('../notification')
+jest.mock('../notifications/notification')
+jest.mock('../realtimePrice')
 
 beforeAll(async () => {
   await bitcoindDefaultClient.generateToAddress(3, RANDOM_ADDRESS)
@@ -38,7 +39,6 @@ afterEach(async () => {
 afterAll(async () => {
   jest.restoreAllMocks();
 	await mongoose.connection.close()
-  await quit()
 })
 
 it('createWallet', async () => {

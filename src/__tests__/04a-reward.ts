@@ -1,7 +1,6 @@
 /**
  * @jest-environment node
  */
-import { quit } from "../lock";
 import { setupMongoConnection } from "../mongodb";
 import { checkIsBalanced, getUserWallet, mockGetExchangeBalance } from "./helper";
 import { OnboardingEarn } from "../types";
@@ -17,7 +16,9 @@ import mongoose from "mongoose"
 let userWallet1
 let initBalance1
 
-jest.mock('../notification')
+jest.mock('../notifications/notification')
+jest.mock('../realtimePrice')
+
 
 beforeAll(async () => {
   await setupMongoConnection()
@@ -52,7 +53,6 @@ afterAll(async () => {
   jest.restoreAllMocks();
 
   await mongoose.connection.close()
-  await quit()
 });
 
 

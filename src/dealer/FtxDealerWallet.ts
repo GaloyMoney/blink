@@ -4,7 +4,8 @@ import { accountDealerFtxPath, liabilitiesDealerFtxPath } from "../ledger/ledger
 import { MainBook } from "../mongodb";
 import { OnChainMixin } from "../OnChain";
 import { ILightningWalletUser } from "../types";
-import { baseLogger, btc2sat, sleep } from "../utils";
+import { btc2sat, sleep } from "../utils";
+import { baseLogger } from '../logger'
 import { UserWallet } from "../userWallet";
 import ccxt from 'ccxt'
 import assert from 'assert'

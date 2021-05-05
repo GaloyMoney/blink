@@ -2,9 +2,13 @@ import { balanceSheetIsBalanced, updateUsersPendingPayment } from "../ledger/bal
 import { FtxDealerWallet } from "../dealer/FtxDealerWallet";
 import { lnd } from "../lndConfig";
 import { User } from "../schema";
-import { baseLogger, sleep } from "../utils";
-import { getTokenFromPhoneIndex, WalletFactory } from "../walletFactory";
+import { sleep } from "../utils";
+import { baseLogger } from '../logger'
+import { WalletFactory } from "../walletFactory";
 import {authenticatedLndGrpc, getWalletInfo} from 'lightning';
+import { yamlConfig } from "../config";
+import { login } from "../text";
+import * as jwt from 'jsonwebtoken'
 
 export const lndMain = lnd
 
@@ -21,6 +25,32 @@ export const lndOutside2 = authenticatedLndGrpc({
 }).lnd;
 
 export const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
+
+export const getTokenFromPhoneIndex = async (index) => {
+  const entry = yamlConfig.test_accounts[index]
+  const raw_token = await login({ ...entry, logger: baseLogger })
+  const token = jwt.verify(raw_token, process.env.JWT_SECRET);
+
+  const { uid } = token
+
+  if (entry.username) {
+    await User.findOneAndUpdate({ _id: uid }, { username: entry.username })
+  }
+
+  if (entry.currencies) {
+    await User.findOneAndUpdate({ _id: uid }, { currencies: entry.currencies })
+  }
+
+  if (entry.role) {
+    await User.findOneAndUpdate({ _id: uid }, { role: entry.role })
+  }
+
+  if (entry.title) {
+    await User.findOneAndUpdate({ _id: uid }, { title: entry.title })
+  }
+
+  return token
+}
 
 export const getUserWallet = async userNumber => {
   const token = await getTokenFromPhoneIndex(userNumber)

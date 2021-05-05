@@ -1,6 +1,6 @@
 import _ from "lodash";
 import { lnd } from "./lndConfig"
-import { baseLogger } from "./utils";
+import { baseLogger } from "./logger";
 import * as lnService from "ln-service"
 import { default as axios } from 'axios';
 import { getChannelBalance, getClosedChannels, getWalletInfo } from "lightning"
@@ -44,12 +44,13 @@ export async function nodeStats({ lnd }) {
 export async function getBosScore() {
   try {
     const { data } = await axios.get('https://bos.lightning.jorijn.com/data/export.json')
-
     const publicKey = (await getWalletInfo({lnd})).public_key;
     const bosScore = _.find(data.data, { publicKey })
+    if (!bosScore) {
+      baseLogger.info("key is not in bos list")
+    }
     return bosScore.score
   } catch (err) {
-    // err2: err.toJson() does not work
-    baseLogger.error({ err }, `issue getting bos rank`)
+    return 0
   }
 }

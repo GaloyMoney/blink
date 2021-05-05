@@ -1,24 +1,17 @@
-import _ from 'lodash';
-
+import * as _ from 'lodash';
+import * as mongoose from "mongoose";
+import { yamlConfig } from "./config";
+import { NotFoundError } from './error';
 import { customerPath } from "./ledger/ledger";
+import { baseLogger } from './logger';
+import { Levels } from './types';
+import { caseInsensitiveRegex, inputXOR } from './utils';
 
-import mongoose from "mongoose";
+
+
 // mongoose.set("debug", true);
 
 const Schema = mongoose.Schema;
-
-const pointSchema = new mongoose.Schema({
-  type: {
-    type: String,
-    enum: ['Point'],
-    required: true
-  },
-  coordinates: {
-    type: [Number],
-    required: true
-  }
-});
-
 
 const dbVersionSchema = new Schema({
   version: Number,
@@ -27,6 +20,7 @@ const dbVersionSchema = new Schema({
 })
 export const DbVersion = mongoose.model("DbVersion", dbVersionSchema)
 
+const MS_PER_DAY = 24 * 60 * 60 * 1000
 
 const invoiceUserSchema = new Schema({
   _id: String, // hash of invoice
@@ -58,6 +52,29 @@ export const regexUsername = /(?!^(1|3|bc1|lnbc1))^[0-9a-z_]+$/i
 
 
 const UserSchema = new Schema({
+  depositFeeRatio: {
+    type: Number,
+    default: yamlConfig.fees.deposit,
+    min: 0,
+    max: 1
+  },
+  lastConnection: Date,
+  lastIPs: {
+    type: [{
+      ip: String,
+      provider: String,
+      country: String,
+      region: String,
+      city: String,
+      //using Type instead of type due to its special status in mongoose
+      Type: String,
+      timestamp: {
+        type: Date,
+        default: Date.now
+      }
+    }],
+    default: []
+  },
   created_at: {
     type: Date,
     default: Date.now
@@ -68,7 +85,7 @@ const UserSchema = new Schema({
   },
   role: {
     type: String,
-    enum: ["user", "dealer"],
+    enum: ["user", "dealer", "editor"],
     required: true,
     default: "user"
     // TODO : enfore the fact there can be only one dealer
@@ -79,13 +96,30 @@ const UserSchema = new Schema({
   },
   level: {
     type: Number,
+    enum: Levels,
     default: 1
   },
+
+  // TODO: refactor, have phone and twilio metadata in the same sub-object.
   phone: { // TODO we should store country as a separate string
     type: String,
     required: true,
     unique: true,
   },
+  twilio: {
+    carrier: {
+      error_code: String , // check this is the right syntax
+      mobile_country_code: String,
+      mobile_network_code: String,
+      name: String,
+      type: {
+        types: String,
+        enum: ["landline", "voip", "mobile"]
+      }
+    },
+    countryCode: String,
+  },
+
   username: {
     type: String,
     match: [regexUsername, "Username can only have alphabets, numbers and underscores"],
@@ -121,7 +155,7 @@ const UserSchema = new Schema({
       }
     }],
     required: true,
-    default: [{id: "BTC", ratio: 1}]
+    default: [{ id: "BTC", ratio: 1 }]
   },
   contacts: {
     type: [{
@@ -139,8 +173,8 @@ const UserSchema = new Schema({
   },
   language: {
     type: String,
-    enum: ["en", "es", null],
-    default: null // will use OS preference settings
+    enum: ["en", "es", ""],
+    default: ""
   },
   // firstName,
   // lastName,
@@ -149,46 +183,82 @@ const UserSchema = new Schema({
 
   title: String,
   coordinate: {
-    type: pointSchema,
+    type: {
+      latitude: {
+        type: Number
+      },
+      longitude: {
+        type: Number
+      }
+    },
   },
-  
+
   excludeCashback: {
     type: Boolean,
     default: false
-  }
+  },
 
+  status: {
+    type: String,
+    enum: ["active", "locked"],
+    default: "active"
+  }
 })
 
 // Define getter for ratioUsd
 // FIXME: this // An outer value of 'this' is shadowed by this container.
 // https://stackoverflow.com/questions/41944650/this-implicitly-has-type-any-because-it-does-not-have-a-type-annotation
-UserSchema.virtual('ratioUsd').get(function (this: typeof UserSchema) {
-  return _.find(this.currencies, {id: "USD"})?.ratio ?? 0
+UserSchema.virtual('ratioUsd').get(function(this: typeof UserSchema) {
+  return _.find(this.currencies, { id: "USD" })?.ratio ?? 0
 });
 
-UserSchema.virtual('ratioBtc').get(function (this: typeof UserSchema) {
-  return _.find(this.currencies, {id: "BTC"})?.ratio ?? 0
+UserSchema.virtual('ratioBtc').get(function(this: typeof UserSchema) {
+  return _.find(this.currencies, { id: "BTC" })?.ratio ?? 0
 });
 
 // this is the accounting path in medici for this user
-UserSchema.virtual('accountPath').get(function (this: typeof UserSchema) {
+UserSchema.virtual('accountPath').get(function(this: typeof UserSchema) {
   return customerPath(this._id)
 })
 
-// user is considered active if there has been one transaction of more than 1000 sats in the last 30 days
-UserSchema.virtual('userIsActive').get(async function (this: typeof UserSchema) {
-  const timestamp30DaysAgo = new Date(Date.now() - (30 * 24 * 60 * 60 * 1000))
-  const [result] = await Transaction.aggregate([
-    { $match: { "accounts": this.accountPath, "timestamp": { $gte: timestamp30DaysAgo } } },
-    {
-      $group: {
-        _id: null, outgoingSats: { $sum: "$credit" }, incomingSats: { $sum: "$debit" }
-      }
-    }
-  ])
-  const { incomingSats, outgoingSats } = result || {}
+UserSchema.virtual('oldEnoughForWithdrawal').get(function(this: typeof UserSchema) {
+  const d = Date.now()
+  // console.log({d, created_at: this.created_at.getTime(), oldEnough: yamlConfig.limits.oldEnoughForWithdrawal})
+  return (d - this.created_at.getTime()) > yamlConfig.limits.oldEnoughForWithdrawal
+})
 
-  return (outgoingSats > 1000 || incomingSats > 1000)
+UserSchema.methods.limitHit = async function({on_us, amount}: {on_us: boolean, amount: number}) {
+  const timestampYesterday = Date.now() - MS_PER_DAY
+
+  const txnType = on_us ? [{type: 'on_us'},{type: 'onchain_on_us'}] : [{type:{$ne: 'on_us'}}] 
+
+  const limit = yamlConfig.limits[on_us ? 'onUs' : 'withdrawal'].level[this.level]
+  
+  const outgoingSats = (await User.getVolume({
+    after: timestampYesterday, txnType, accounts: this.accountPath
+  }))?.outgoingSats ?? 0
+
+  return outgoingSats + amount > limit
+}
+
+UserSchema.statics.getVolume = async function({before, after, accounts, txnType}: {before?:number, after: number, accounts: string, txnType: [string]}) {
+  const timeBounds = before ? [{timestamp: { $gte: new Date(after) }}, {timestamp: { $lte: new Date(before) }}] : [{timestamp: { $gte: new Date(after) }}]
+  const [result] = await Transaction.aggregate([
+    {$match: {accounts, $or: txnType, $and: timeBounds } },
+    {$group: {_id: null, outgoingSats: { $sum: "$debit" }, incomingSats: { $sum: "$credit" } } }
+  ])
+  return result
+}
+
+// user is considered active if there has been one transaction of more than 1000 sats in the last 30 days
+UserSchema.virtual('userIsActive').get(async function(this: typeof UserSchema) {
+  const timestamp30DaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000)
+
+  const volume = await User.getVolume({
+    after: timestamp30DaysAgo, txnType: [{type:{$exists: true}}], accounts: this.accountPath
+  })
+
+  return (volume?.outgoingSats > 1000 || volume?.incomingSats > 1000)
 })
 
 UserSchema.index({
@@ -196,20 +266,37 @@ UserSchema.index({
   coordinate: 1,
 });
 
+UserSchema.statics.getUser = async function({ username, phone }) {
+  inputXOR({ phone }, { username })
+  let user;
 
-UserSchema.statics.findByUsername = async function ({ username }) {
-  if (typeof username !== "string" || !username.match(regexUsername)) {
+  if(phone) {
+    user = await this.findOne({ phone })
+  } else {
+    user = await this.findByUsername({ username })
+  }
+
+  if(!user) {
+    throw new NotFoundError("User not found", {forwardToClient: true, logger: baseLogger, level: 'warn'})
+  }
+
+  return user;
+}
+
+// FIXME: Merge findByUsername and getUser
+UserSchema.statics.findByUsername = async function({ username }) {
+  if(typeof username !== "string" || !username.match(regexUsername)) {
     return null
   }
 
-  return this.findOne({ username: new RegExp(`^${username}$`, 'i') })
+  return this.findOne({ username: caseInsensitiveRegex(username) })
 }
 
-UserSchema.statics.getActiveUsers = async function (): Promise<Array<typeof User>> {
+UserSchema.statics.getActiveUsers = async function(): Promise<Array<typeof User>> {
   const users = await this.find({})
   const activeUsers: Array<typeof User> = []
-  for (const user of users) {
-    if (await user.userIsActive) {
+  for(const user of users) {
+    if(await user.userIsActive) {
       activeUsers.push(user)
     }
   }
@@ -260,7 +347,7 @@ const transactionSchema = new Schema({
     enum: [
       // TODO: merge with the Interface located in types.ts?
       "invoice", "payment", "on_us", "fee_reimbursement", // lightning
-      "onchain_receipt", "onchain_payment", "onchain_on_us", // onchain
+      "onchain_receipt", "onchain_payment", "onchain_on_us", "deposit_fee", // onchain
       "fee", "escrow", // channel-related
       "exchange_rebalance", // send/receive btc from the exchange
       "user_rebalance", // buy/sell btc in the user wallet
@@ -338,8 +425,14 @@ const transactionSchema = new Schema({
   },
 
   // original property from medici
-  credit: Number,
-  debit: Number,
+  credit: {
+    type: Number,
+    min: 0
+  },
+  debit: {
+    type: Number,
+    min: 0
+  },
   meta: Schema.Types.Mixed,
   datetime: Date,
   account_path: [String],

@@ -1,16 +1,16 @@
 type Transaction {
   id: ID!
-  amount: Int!,
-  description: String!,
+  amount: Int!
+  description: String!
   fee: Int
-  created_at: Int!, # TODO create a Date scalar
+  created_at: Int! # TODO create a Date scalar
   # https://www.apollographql.com/docs/graphql-tools/scalars/
-  hash: String,
-  usd: Float, #TODO use Int and * 100
-  sat: Int,
-  pending: Boolean,
-  type: String!,
-  feeUsd: Float, # TODO: move to Int 
+  hash: String
+  usd: Float #TODO use Int and * 100
+  sat: Int
+  pending: Boolean
+  type: String!
+  feeUsd: Float # TODO: move to Int
   addresses: [String]
   username: String
 }
@@ -65,7 +65,7 @@ type Invoice {
 type OnChain {
   getNewAddress: String
   pay(address: String!, amount: Int!, memo: String): Success
-  getFee(address: String!): Int # sats
+  getFee(address: String!, amount: Int): Int # sats
 }
 
 type LastOnChainAddress {
@@ -83,11 +83,10 @@ type User {
   phone: String
   contacts: [Contact]
   language: String
-}
-
-input InputUser {
-  id: ID
-  level: Int
+  title: String
+  created_at: String
+  coordinate: Coordinate
+  status: AccountStatus
 }
 
 type Success {
@@ -127,33 +126,56 @@ type Marker {
   username: String
 }
 
-type Query { 
+type Query {
   prices(length: Int): [Price]
   wallet: [Wallet]
   wallet2: [Wallet2]
   earnList: [Earn]
   me: User
   maps: [Marker]
-  buildParameters(appVersion: String, buildVersion: String, os: String): BuildParameter
+  buildParameters(appVersion: String @deprecated, buildVersion: String @deprecated, os: String @deprecated): BuildParameter
   nodeStats: NodeStats
   getLastOnChainAddress: LastOnChainAddress
   usernameExists(username: String!): Boolean
+  getUserDetails(uid: ID!): User
+  noauthUpdatePendingInvoice(username: String!, hash: String!): Boolean
+  getUid(username: String, phone: String): ID
+  getLevels: [Int]
+  getLimits: Limits
+  getWalletFees: WalletFees
+}
+
+type WalletFees {
+  deposit: Float
+}
+
+type Limits {
+  oldEnoughForWithdrawal: Int
+  withdrawal: Int
+  onUs: Int
 }
 
 type UpdateUser {
-  setLanguage(language: String): Boolean
-  setLevel(user: InputUser): User
-  setUsername(username: String!): Boolean
+  setLanguage(language: String): Boolean @deprecated
+  setUsername(username: String!): Boolean @deprecated
+  updateLanguage(language: String!): User
+  updateUsername(username: String!): User
 }
 
 type UpdateContact {
   setName(username: String, name: String): Boolean
 }
 
+enum AccountStatus {
+  active
+  locked
+}
+
 type Mutation {
   requestPhoneCode(phone: String): Success
-  login(phone: String, code: Int, currency: String): Token @deprecated(reason: "currency is no longer user. to be remove after mobile update")
-  publicInvoice(username: String!): Invoice
+  login(phone: String, code: Int, currency: String): Token
+    @deprecated(reason: "currency is no longer user. to be remove after mobile update")
+  noauthAddInvoice(username: String!, value: Int): String
   onchain: OnChain
   invoice: Invoice
   earnCompleted(ids: [ID]): [Earn]
@@ -162,4 +184,7 @@ type Mutation {
   deleteUser: Boolean # TODO
   addDeviceToken(deviceToken: String): Success # to refactor with User?
   testMessage: Success # FIXME remove test
+  addToMap(username: String!, title: String!, latitude: Float!, longitude: Float!): Boolean
+  setAccountStatus(uid: ID!, status: AccountStatus!): User
+  setLevel(uid: ID!, level: Int!): User
 }

@@ -1,13 +1,13 @@
+import assert from 'assert';
 import moment from "moment";
 import { CSVAccountExport } from "./csvAccountExport";
+import { Balances, IUpdatePending } from "./interface";
 import { customerPath } from "./ledger/ledger";
 import { MainBook } from "./mongodb";
+import { sendNotification } from "./notifications/notification";
+import { User } from "./schema";
 import { ITransaction } from "./types";
 import { LoggedError } from "./utils";
-import { Balances, IUpdatePending } from "./interface"
-import assert from 'assert'
-import { sendNotification } from "./notification";
-import { User } from "./schema";
 
 export abstract class UserWallet {
 
@@ -31,17 +31,13 @@ export abstract class UserWallet {
     UserWallet.lastPrice = price
   }
 
-  static async usernameExists({ username }): Promise<boolean> {
-    return !!(await User.findByUsername({ username }))
-  }
-
   // this needs to be here to be able to call / chain updatePending()
   // otherwise super.updatePending() would result in an error
   // there may be better way to architecture this?
-  async updatePending({after, onchain}: IUpdatePending = {}) { return }
+  async updatePending({after, onchain, lock}: IUpdatePending = {}) { return }
 
-  async getBalances(): Promise<Balances> {
-    await this.updatePending({onchain: false, after: undefined})
+  async getBalances({lock}): Promise<Balances> {
+    await this.updatePending({lock, onchain: false, after: undefined})
 
     // TODO: add effective ratio
     const balances = {
@@ -52,14 +48,14 @@ export abstract class UserWallet {
     }
 
     // TODO: make this code parrallel instead of serial
-    for (const { id } of this.user.currencies) {
+    for(const { id } of this.user.currencies) {
       const { balance } = await MainBook.balance({
         account: this.user.accountPath,
         currency: id,
       })
 
       // the dealer is the only one that is allowed to be short USD
-      if (this.user.role === "dealer" && id === "USD") {
+      if(this.user.role === "dealer" && id === "USD") {
         assert(balance <= 0)
       } else {
         assert(balance >= 0)
@@ -72,7 +68,7 @@ export abstract class UserWallet {
       {
         id: "BTC",
         BTC: 1,
-        USD: 1/UserWallet.lastPrice, // TODO: check this should not be price
+        USD: 1 / UserWallet.lastPrice, // TODO: check this should not be price
       },
       {
         id: "USD",
@@ -80,11 +76,11 @@ export abstract class UserWallet {
         USD: 1
       }
     ]
-    
+
     // this array is used to know the total in USD and BTC
     // the effective ratio may not be equal to the user ratio 
     // as a result of price fluctuation
-    let total = priceMap.map(({id, BTC, USD}) => ({
+    let total = priceMap.map(({ id, BTC, USD }) => ({
       id,
       value: BTC * balances["BTC"] + USD * balances["USD"]
     }))
@@ -147,16 +143,12 @@ export abstract class UserWallet {
     return csv.getBase64()
   }
 
-  async setLevel({ level }) {
-    this.user.level = level
-    await this.user.save()
-  }
-
+  // deprecated
   async setUsername({ username }): Promise<boolean | Error> {
 
     const result = await User.findOneAndUpdate({ _id: this.user.id, username: null }, { username })
 
-    if (!result) {
+    if(!result) {
       const error = `Username is already set`
       this.logger.error({ result }, error)
       throw new LoggedError(error)
@@ -165,11 +157,12 @@ export abstract class UserWallet {
     return true
   }
 
-  async setLanguage({ language }): Promise<boolean | Error> {
+  // deprecated
+  async setLanguage({ language }): Promise<boolean> {
 
     const result = await User.findOneAndUpdate({ _id: this.user.id, }, { language })
 
-    if (!result) {
+    if(!result) {
       const error = `issue setting language preferences`
       this.logger.error({ result }, error)
       throw new LoggedError(error)
@@ -178,22 +171,45 @@ export abstract class UserWallet {
     return true
   }
 
+  async updateUsername({ username }): Promise<{username: string | undefined, id: string}> {
+    try {
+      const result = await User.findOneAndUpdate({ _id: this.user.id, username: null }, { username })
+      if(!result) {
+        throw new LoggedError(`Username is already set, result: ${result}`)
+      }
+      return { username, id: this.user.id }
+    } catch (err) {
+      this.logger.error({err}, "error updating username")
+      return {username: undefined, id: this.user.id }
+    }
+  }
+
+  async updateLanguage({ language }): Promise<{language: string | undefined, id: string}> {
+    try {
+      await User.findOneAndUpdate({ _id: this.user.id }, { language })
+      return { language, id: this.user.id }
+    } catch (err) {
+      this.logger.error({err}, "error updating language")
+      return {language: undefined, id: this.user.id }
+    }
+  }
+
   static getCurrencyEquivalent({ sats, fee, usd }: { sats: number, fee?: number, usd?: number }) {
     return {
-      fee, 
-      feeUsd: fee ? UserWallet.satsToUsd(fee): undefined,
+      fee,
+      feeUsd: fee ? UserWallet.satsToUsd(fee) : undefined,
       sats,
       usd: usd ?? UserWallet.satsToUsd(sats)
     }
   }
-  
+
   static satsToUsd = sats => {
     const usdValue = UserWallet.lastPrice * sats
     return usdValue
   }
 
   sendBalance = async (): Promise<void> => {
-    const {BTC: balanceSats} = await this.getBalances()
+    const { BTC: balanceSats } = await this.getBalances()
 
     // Add commas to balancesats
     const balanceSatsPrettified = balanceSats.toLocaleString("en")
@@ -201,6 +217,7 @@ export abstract class UserWallet {
     const balanceUsd = UserWallet.satsToUsd(balanceSats).toLocaleString("en", { maximumFractionDigits: 2 })
 
     this.logger.info({ balanceSatsPrettified, balanceUsd, user: this.user }, `sending balance notification to user`)
-    await sendNotification({ user: this.user, title: `Your balance today is \$${balanceUsd} (${balanceSatsPrettified} sats)`, logger: this.logger })
+    await sendNotification({ user: this.user, title: `Your balance is \$${balanceUsd} (${balanceSatsPrettified} sats)`, logger: this.logger })
   }
+
 }
