@@ -2,18 +2,20 @@ import lnService from 'ln-service'
 import { assert } from "console";
 import _ from 'lodash';
 import moment from "moment";
-import { customerPath, lndAccountingPath } from "./ledger/ledger";
+import { customerPath, lndAccountingPath, onchainRevenuePath } from "./ledger/ledger";
 import { lnd } from "./lndConfig";
-import { redlock } from "./lock";
+import { lockExtendOrThrow, redlock } from "./lock";
 import { MainBook } from "./mongodb";
 import { IOnChainPayment, ISuccess, ITransaction } from "./types";
-import { amountOnVout, baseLogger, bitcoindDefaultClient, btc2sat, LoggedError, LOOK_BACK, myOwnAddressesOnVout } from "./utils";
+import { amountOnVout, bitcoindDefaultClient, btc2sat, LoggedError, LOOK_BACK, myOwnAddressesOnVout } from "./utils";
+import { baseLogger } from './logger'
 import { UserWallet } from "./userWallet";
 import { Transaction, User } from "./schema";
 import { getHeight } from "lightning"
 
 import bluebird from 'bluebird';
 import { yamlConfig } from "./config";
+import { InsufficientBalanceError, NewAccountWithdrawalError, SelfPaymentError, TransactionRestrictedError } from './error';
 const { using } = bluebird;
 
 export const getOnChainTransactions = async ({ lnd, incoming }: { lnd: any, incoming: boolean }) => {
@@ -83,8 +85,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
       // quit early if balance is not enough
       if (balance.total_in_BTC < amount) {
         const error = `balance is too low`
-        onchainLogger.warn({ success: false, error }, error)
-        throw new LoggedError(error)
+        throw new InsufficientBalanceError(error, {forwardToClient: true, logger: onchainLogger, level: 'error'})
       }
 
       const payeeUser = await this.tentativelyGetPayeeUser({address})
@@ -94,14 +95,12 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
         if (await this.user.limitHit({on_us: true, amount})) {
           const error = `Cannot transfer more than ${yamlConfig.limits.onUs.level[this.user.level]} sats in 24 hours`
-          onchainLoggerOnUs.error({ success: false }, error)
-          throw new LoggedError(error)
+          throw new TransactionRestrictedError(error,{forwardToClient: true, logger: onchainLoggerOnUs, level: 'error'})
         }
 
         if (String(payeeUser._id) === String(this.user._id)) {
           const error = 'User tried to pay himself'
-          this.logger.warn({ payeeUser, error, success: false }, error)
-          throw new LoggedError(error)
+          throw new SelfPaymentError(error, {forwardToClient: true, logger: onchainLoggerOnUs, level: 'warn'})
         }
 
         const sats = amount
@@ -113,10 +112,12 @@ export const OnChainMixin = (superclass) => class extends superclass {
           payee_addresses: [address]
         }
 
-        await MainBook.entry()
-          .credit(customerPath(payeeUser._id), sats, metadata)
-          .debit(this.user.accountPath, sats, {...metadata, memo})
-          .commit()
+        await lockExtendOrThrow({lock, logger: onchainLoggerOnUs}, async () => {
+          MainBook.entry()
+            .credit(customerPath(payeeUser._id), sats, metadata)
+            .debit(this.user.accountPath, sats, {...metadata, memo})
+            .commit()
+        })
         
         onchainLoggerOnUs.info({ success: true, ...metadata }, "onchain payment succeed")
 
@@ -126,13 +127,13 @@ export const OnChainMixin = (superclass) => class extends superclass {
       onchainLogger = onchainLogger.child({onUs: false})
       
       if (!this.user.oldEnoughForWithdrawal) {
-        throw Error(`new account have to wait ${yamlConfig.limits.oldEnoughForWithdrawal} before withdrawing`)
+        const error = `New accounts have to wait ${yamlConfig.limits.oldEnoughForWithdrawal / 60 * 60 * 1000}h before withdrawing`
+        throw new NewAccountWithdrawalError(error,{forwardToClient: true, logger: onchainLogger, level: 'error'})
       }
 
       if (await this.user.limitHit({on_us: false, amount})) {
         const error = `Cannot withdraw more than ${yamlConfig.limits.withdrawal.level[this.user.level]} sats in 24 hours`
-        onchainLogger.error({ success: false }, error)
-        throw new LoggedError(error)
+        throw new TransactionRestrictedError(error,{forwardToClient: true, logger: onchainLogger, level: 'error'})
       }
 
       const { chain_balance: onChainBalance } = await lnService.getChainBalance({ lnd })
@@ -161,40 +162,49 @@ export const OnChainMixin = (superclass) => class extends superclass {
       // case where the user doesn't have enough money
       if (balance.total_in_BTC < amount + estimatedFee) {
         const error = `balance is too low. have: ${balance} sats, need ${amount + estimatedFee}`
-        onchainLogger.warn({balance, amount, estimatedFee, sendTo, success: false }, error)
-        throw new LoggedError(error)
+        throw new InsufficientBalanceError(error, {forwardToClient: true, logger: onchainLogger, level: 'error'})
       }
       
-      try {
-        ({ id } = await lnService.sendToChainAddress({ address, lnd, tokens: amount }))
-      } catch (err) {
-        onchainLogger.error({ err, address, tokens: amount, success: false }, "Impossible to sendToChainAddress")
-        return false
-      }
 
-      const outgoingOnchainTxns = await getOnChainTransactions({ lnd, incoming: false })
+      return lockExtendOrThrow({lock, logger: onchainLogger}, async () => {
 
-      const [{ fee }] = outgoingOnchainTxns.filter(tx => tx.id === id)
+        try {
+          ({ id } = await lnService.sendToChainAddress({ address, lnd, tokens: amount }))
+        } catch (err) {
+          onchainLogger.error({ err, address, tokens: amount, success: false }, "Impossible to sendToChainAddress")
+          return false
+        }
 
-      {
-        const sats = amount + fee
-        const metadata = { currency: "BTC", hash: id, type: "onchain_payment", pending: true, ...UserWallet.getCurrencyEquivalent({ sats, fee }) }
+        let fee
+        try {
+          const outgoingOnchainTxns = await getOnChainTransactions({ lnd, incoming: false })
+          const [{ fee: fee_ }] = outgoingOnchainTxns.filter(tx => tx.id === id)
+          fee = fee_
+        } catch (err) {
+          onchainLogger.fatal({err}, "impossible to get fee for onchain payment")
+          fee = 0
+        }
 
-        // TODO/FIXME refactor. add the transaction first and set the fees in a second tx.
-        await MainBook.entry(memo)
-          .credit(lndAccountingPath, sats, metadata)
-          .debit(this.user.accountPath, sats, metadata)
-          .commit()
+        {
+          const sats = amount + fee
+          const metadata = { currency: "BTC", hash: id, type: "onchain_payment", pending: true, ...UserWallet.getCurrencyEquivalent({ sats, fee }) }
 
-        onchainLogger.info({success: true , ...metadata}, 'successfull onchain payment')
-      }
+          // TODO/FIXME refactor. add the transaction first and set the fees in a second tx.
+          // this would be easier with fixed fees
+          
+          await MainBook.entry(memo)
+            .credit(lndAccountingPath, sats, metadata)
+            .debit(this.user.accountPath, sats, metadata)
+            .commit()
 
-      return true
+          onchainLogger.info({success: true , ...metadata}, 'successfull onchain payment')
+        }
 
+        return true
+      })
     })
-
   }
-
+  
   async getLastOnChainAddress(): Promise<string> {
     if (this.user.onchain_addresses.length === 0) {
       // FIXME this should not be done in a query but only in a mutation?
@@ -422,21 +432,23 @@ export const OnChainMixin = (superclass) => class extends superclass {
         if (!mongotx) {
 
           const {sats, addresses} = await this.getSatsAndAddressPerTx(matched_tx.transaction)
-
           assert(matched_tx.tokens >= sats)
 
-          const metadata = { 
+          const fee = sats * this.user.depositFeeRatio
+
+          const metadata = {
             currency: "BTC",
             type, hash: matched_tx.id,
             pending: false,
-            ...UserWallet.getCurrencyEquivalent({ sats, fee: 0 }),
+            ...UserWallet.getCurrencyEquivalent({ sats, fee }),
             payee_addresses: addresses
           }
 
           await MainBook.entry()
-            .credit(this.user.accountPath, sats, metadata)
-            .debit(lndAccountingPath, sats, metadata)
-            .commit()
+          .credit(onchainRevenuePath, fee, metadata)
+          .credit(this.user.accountPath, sats - fee, metadata)
+          .debit(lndAccountingPath, sats, metadata)
+          .commit()
 
           const onchainLogger = this.logger.child({ topic: "payment", protocol: "onchain", transactionType: "receipt", onUs: false })
           onchainLogger.info({ success: true, ...metadata })

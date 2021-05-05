@@ -1,6 +1,6 @@
 import fs from 'fs';
 import yaml from 'js-yaml';
-import { baseLogger } from "./utils";
+import { baseLogger } from "./logger";
 
 let defaultContent = fs.readFileSync('./default.yaml', 'utf8');
 export const defaultConfig = yaml.load(defaultContent)

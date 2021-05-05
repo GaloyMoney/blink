@@ -1,5 +1,6 @@
 import { protoDescriptor } from "./grpc";
-import { baseLogger, sat2btc } from "./utils";
+import { sat2btc } from "./utils";
+import { baseLogger } from './logger'
 import { credentials } from '@grpc/grpc-js';
 import { mainCache } from "./localCache";
 
@@ -14,18 +15,19 @@ const client = new protoDescriptor.PriceFeed(fullUrl, credentials.createInsecure
 export const getCurrentPrice = async (): Promise<number | undefined> => {
   // keep price in cache for 1 min in case the price pod is not online
 
+
   let price
 
-  const promise = new Promise((resolve, reject): Promise<number> => 
-    client.getPrice({}, (err, {price}) => {
-      if (err) {
-        baseLogger.error({err}, "impossible to fetch most recent price")
-        reject(err)
-      }
-      resolve(price)
-  }))
-
   try {
+    const promise = new Promise((resolve, reject): Promise<number> => 
+      client.getPrice({}, (err, {price}) => {
+        if (err) {
+          baseLogger.error({err}, "impossible to fetch most recent price")
+          reject(err)
+        }
+        resolve(price)
+    }))
+
     price = await promise
     if (!price) {
       throw new Error("price can't be null")

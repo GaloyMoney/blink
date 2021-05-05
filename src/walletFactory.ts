@@ -1,12 +1,10 @@
-import * as jwt from 'jsonwebtoken';
-import { FtxDealerWallet } from "./dealer/FtxDealerWallet";
-import { getCurrentPrice } from "./realtimePrice";
-import { LightningUserWallet } from "./LightningUserWallet";
-import { login } from "./text";
-import { baseLogger, LoggedError } from "./utils";
-import { UserWallet } from "./userWallet";
-import { User } from "./schema";
 import { yamlConfig } from "./config";
+import { FtxDealerWallet } from "./dealer/FtxDealerWallet";
+import { NotFoundError } from './error';
+import { LightningUserWallet } from "./LightningUserWallet";
+import { getCurrentPrice } from "./realtimePrice";
+import { User } from "./schema";
+import { UserWallet } from "./userWallet";
 
 
 export const WalletFactory = async ({ user, logger }: { user: typeof User, logger: any }) => {
@@ -25,8 +23,7 @@ export const WalletFromUsername = async ({ username, logger }: { username: strin
   const user = await User.findByUsername({ username })
   if (!user) {
     const error = `User not found`
-    logger.warn({username}, error)
-    throw new LoggedError(error)
+    throw new NotFoundError(error, {forwardToClient: true, logger, level: 'warn'})
   }
 
   return WalletFactory({ user, logger })
