@@ -294,10 +294,12 @@ export const OnChainMixin = (superclass) => class extends superclass {
     const min_confirmation = 2
 
     if(confirmed) {
-      lnd_incoming_filtered = lnd_incoming_txs.filter(tx => tx.confirmation_count >= min_confirmation)
+      lnd_incoming_filtered = lnd_incoming_txs.filter(tx => 
+        !!tx.confirmation_count && tx.confirmation_count >= min_confirmation
+      )
     } else {
       lnd_incoming_filtered = lnd_incoming_txs.filter(
-        tx => (tx.confirmation_count < min_confirmation) || !tx.confirmation_count)
+        tx => (!!tx.confirmation_count && tx.confirmation_count < min_confirmation) || !tx.confirmation_count)
     }
 
     const user_matched_txs = lnd_incoming_filtered.filter(tx => _.intersection(tx.output_addresses, this.user.onchain_addresses).length > 0)

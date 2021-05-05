@@ -155,12 +155,14 @@ export const onChannelUpdated = async ({ channel, lnd, stateChange }: { channel:
   const { transactions } = await getChainTransactions({ lnd, after })
   // end dedupe
 
-  const tx = find(transactions, { id: transaction_id })
+  const tx = find(transactions, { id: txid })
 
   if (!tx?.fee) {
     logger.error({transactions}, "fee doesn't exist")
     return
   }
+
+  const fee = tx.fee
 
   // let tx
   // try {
