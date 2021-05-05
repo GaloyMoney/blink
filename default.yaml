@@ -18,6 +18,12 @@ hedging:
   HIGH_SAFEBOUND_LEVERAGE: 2.25
   HIGH_BOUND_LEVERAGE: 3
 
+rebalancing:
+  lndHoldingBase: 50000000 # 0.5
+  ratioTargetDeposit: 1
+  ratioTargetWithdraw: 1
+  minOnchain: 10000000 # 0.1
+
 test_accounts: 
 - phone: "+16505554321" # user0
   code: 321321
@@ -58,6 +64,12 @@ limits:
     level:
       1: 5000000
       2: 100000000
+
+proxyChecking:
+  enabled: true
+
+fees:
+  deposit: 0 #TODO: make 3 percent (0.003) after mobile app update
 
 # TODO
 # carrierRegexFilter: ""

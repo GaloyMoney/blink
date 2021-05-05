@@ -3,7 +3,7 @@
  */
 import { setupMongoConnection } from "../../mongodb"
 import { FtxDealerWallet } from "../FtxDealerWallet";
-import { baseLogger } from "../../utils";
+import { baseLogger } from "../../logger";
 import { UserWallet } from "../../userWallet";
 import mongoose from "mongoose";
 import { User } from "../../schema";

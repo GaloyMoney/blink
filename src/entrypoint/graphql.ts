@@ -27,9 +27,10 @@ import { setupMongoConnection } from "../mongodb";
 import { sendNotification } from "../notifications/notification";
 import { User } from "../schema";
 import { login, requestPhoneCode } from "../text";
-import { OnboardingEarn } from "../types";
-import { UserWallet } from "../userWallet";
-import { baseLogger, customLoggerPrefix, fetchIPDetails, LoggedError } from "../utils";
+import { Levels, OnboardingEarn } from "../types";
+import { AdminOps } from "../AdminOps"
+import { fetchIPDetails } from "../utils";
+import { baseLogger } from '../logger'
 import { WalletFactory, WalletFromUsername } from "../walletFactory";
 import { getCurrentPrice } from "../realtimePrice";
 import { getAsyncRedisClient } from "../redis";
@@ -66,11 +67,11 @@ const helmRevision = process.env.HELMREVISION
 const resolvers = {
   Query: {
     me: async (_, __, { uid, user }) => {
-      const { phone, username, contacts, language } = user
+      const { phone, username, contacts, language, level } = user
 
       return {
         id: uid,
-        level: 1,
+        level,
         phone,
         username,
         contacts,
@@ -144,8 +145,8 @@ const resolvers = {
     getLastOnChainAddress: async (_, __, { wallet }) => ({ id: wallet.getLastOnChainAddress() }),
     maps: async () => {
       // TODO: caching
-      const users = await User.find(
-        { title: { $exists: true }, coordinate: { $exists: true } },
+      const users = await User.find({ 
+        title: { $exists: true }, coordinate: { $exists: true } },
         { username: 1, title: 1, coordinate: 1 }
       );
 
@@ -154,19 +155,27 @@ const resolvers = {
         id: user.username
       }))
     },
-    usernameExists: async (_, { username }) => UserWallet.usernameExists({ username }),
-    getUserDetails: async (_, { phone, username }) => User.getUser({ phone, username }),
+    usernameExists: async (_, { username }) => AdminOps.usernameExists({ username }),
+    getUserDetails: async (_, { uid }) => User.findOne({_id: uid}),
     noauthUpdatePendingInvoice: async (_, { hash, username }, { logger }) => {
       const wallet = await WalletFromUsername({ username, logger })
       return wallet.updatePendingInvoice({ hash })
     },
+    getUid: async (_, { username, phone }) => {
+      const { _id: uid } = await User.getUser({ username, phone })
+      return uid
+    },
+    getLevels: () => Levels,
     getLimits: (_, __, {user}) => {
       return {
         oldEnoughForWithdrawal: yamlConfig.limits.oldEnoughForWithdrawal,
         withdrawal: yamlConfig.limits.withdrawal.level[user.level],
         onUs: yamlConfig.limits.onUs.level[user.level]
       }
-    }
+    },
+    getWalletFees: () => ({
+      deposit: yamlConfig.fees.deposit
+    })
   },
   Mutation: {
     requestPhoneCode: async (_, { phone }, { logger }) => ({ success: requestPhoneCode({ phone, logger }) }),
@@ -177,6 +186,9 @@ const resolvers = {
       updateUsername: (input) => wallet.updateUsername(input),
       updateLanguage: (input) => wallet.updateLanguage(input),
     }),
+    setLevel: async (_, { uid, level }) => {
+      return AdminOps.setLevel({ uid, level })
+    },
     updateContact: async (_, __, { user }) => ({
       setName: async ({ username, name }) => {
         user.contacts.filter(item => item.id === username)[0].name = name
@@ -184,9 +196,9 @@ const resolvers = {
         return true
       }
     }),
-    noauthAddInvoice: async (_, { username }, { logger }) => {
-      const wallet = await WalletFromUsername({ username, logger })
-      return wallet.addInvoice({ selfGenerated: false })
+    noauthAddInvoice: async (_, { username, value }, { logger }) => {
+      const wallet = await WalletFromUsername({username, logger})
+      return wallet.addInvoice({ selfGenerated: false, value })
     },
     invoice: async (_, __, { wallet }) => ({
       addInvoice: async ({ value, memo }) => wallet.addInvoice({ value, memo }),
@@ -224,11 +236,10 @@ const resolvers = {
       return { success: true }
     },
     addToMap: async (_, { username, title, latitude, longitude }, { }) => {
-      return UserWallet.addToMap({ username, title, latitude, longitude });
+      return AdminOps.addToMap({ username, title, latitude, longitude });
     },
-    setAccountStatus: async (_, { username, phone, status }, { }) => {
-      const { _id: uid } = await User.getUser({ username, phone })
-      return UserWallet.setAccountStatus({ uid, status })
+    setAccountStatus: async (_, { uid, status }, { }) => {
+      return AdminOps.setAccountStatus({ uid, status })
     }
   }
 }
@@ -257,6 +268,8 @@ const permissions = shield({
     wallet2: isAuthenticated,
     getLastOnChainAddress: isAuthenticated,
     getUserDetails: and(isAuthenticated, isEditor),
+    getUid: and(isAuthenticated, isEditor),
+    getLevels: and(isAuthenticated, isEditor)
   },
   Mutation: {
     // requestPhoneCode: not(isAuthenticated),
@@ -271,6 +284,8 @@ const permissions = shield({
     addDeviceToken: isAuthenticated,
     testMessage: isAuthenticated,
     addToMap: and(isAuthenticated, isEditor),
+    setLevel: and(isAuthenticated, isEditor),
+    setAccountStatus: and(isAuthenticated, isEditor)
   },
 }, { allowExternalErrors: true }) // TODO remove to not expose internal error
 
@@ -302,7 +317,9 @@ export async function startApolloServer() {
 
       if (!!uid) {
         user = await User.findOneAndUpdate({ _id: uid },{ lastConnection: new Date() }, {new: true})
-        fetchIPDetails({currentIP: context.req?.headers['x-real-ip'], user, logger})
+        if(yamlConfig.proxyChecking.enabled) {
+          fetchIPDetails({currentIP: context.req?.headers['x-real-ip'], user, logger})
+        }
         wallet = (!!user && user.status === "active") ? await WalletFactory({ user, logger }) : null
       }
 
@@ -316,15 +333,20 @@ export async function startApolloServer() {
       }
     },
     formatError: err => {
-      // FIXME
-      if(_.startsWith(err.message, customLoggerPrefix)) {
-        err.message = err.message.slice(customLoggerPrefix.length)
-      } 
+      let log
       
-      baseLogger.error({ err }, "graphql catch-all error");
-      
-      // return defaultErrorFormatter(err)
-      // return err
+      //An err object needs to necessarily have the forwardToClient field to be forwarded
+      // i.e. catch-all errors will not be forwarded
+      if(log = err.extensions?.exception?.log) {
+        const errObj = { message: err.message, code: err.extensions.code }
+        log(errObj)
+        if(err.extensions.exception.forwardToClient) {
+          return errObj
+        }
+      } else {
+        graphqlLogger.error(err)
+      }
+
       return new Error('Internal server error');
     },
   })

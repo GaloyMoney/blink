@@ -7,7 +7,7 @@ import { sendBalanceToUsers } from "../entrypoint/dailyBalanceNotification";
 import { customerPath } from "../ledger/ledger";
 import { MainBook, setupMongoConnection } from "../mongodb";
 import { Transaction, User } from "../schema";
-import { baseLogger } from "../utils";
+import { baseLogger } from "../logger";
 import { getFunderWallet } from "../walletFactory";
 import { getUserWallet } from "./helper";
 jest.mock('../notifications/notification')
@@ -50,8 +50,8 @@ it('tests isUserActive', async () => {
   const userWallet0AccountPath = (await getUserWallet(0)).user.accountPath
   const funderWalletAccountPath = (await getFunderWallet({ logger: baseLogger })).user.accountPath
 
-  //user0 and funder wallet are active users
-  expect(initialActiveUsersAccountPath.length).toBe(2)
+  //user0, user2 and funder wallet are active users
+  expect(initialActiveUsersAccountPath.length).toBe(3)
   expect(initialActiveUsersAccountPath.indexOf(userWallet0AccountPath)).toBeGreaterThan(-1)
   expect(initialActiveUsersAccountPath.indexOf(funderWalletAccountPath)).toBeGreaterThan(-1)
 

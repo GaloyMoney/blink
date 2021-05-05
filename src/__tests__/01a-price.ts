@@ -5,7 +5,7 @@
 import { setupMongoConnection } from "../mongodb";
 
 import { Price } from "../priceImpl";
-import { baseLogger } from "../utils";
+import { baseLogger } from "../logger";
 import mongoose from "mongoose";
 
 let price

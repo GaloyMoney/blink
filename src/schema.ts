@@ -1,11 +1,14 @@
-import _ from 'lodash';
-
+import * as _ from 'lodash';
+import * as mongoose from "mongoose";
+import { yamlConfig } from "./config";
+import { NotFoundError } from './error';
 import { customerPath } from "./ledger/ledger";
-import { yamlConfig } from "./config"
+import { baseLogger } from './logger';
+import { Levels } from './types';
+import { caseInsensitiveRegex, inputXOR } from './utils';
 
-import mongoose from "mongoose";
-import { caseInsensitiveRegex, inputXOR, LoggedError } from './utils';
-import { UserWallet } from './userWallet';
+
+
 // mongoose.set("debug", true);
 
 const Schema = mongoose.Schema;
@@ -49,6 +52,12 @@ export const regexUsername = /(?!^(1|3|bc1|lnbc1))^[0-9a-z_]+$/i
 
 
 const UserSchema = new Schema({
+  depositFeeRatio: {
+    type: Number,
+    default: yamlConfig.fees.deposit,
+    min: 0,
+    max: 1
+  },
   lastConnection: Date,
   lastIPs: {
     type: [{
@@ -87,6 +96,7 @@ const UserSchema = new Schema({
   },
   level: {
     type: Number,
+    enum: Levels,
     default: 1
   },
 
@@ -267,7 +277,7 @@ UserSchema.statics.getUser = async function({ username, phone }) {
   }
 
   if(!user) {
-    throw new LoggedError("User not found");
+    throw new NotFoundError("User not found", {forwardToClient: true, logger: baseLogger, level: 'warn'})
   }
 
   return user;
@@ -337,7 +347,7 @@ const transactionSchema = new Schema({
     enum: [
       // TODO: merge with the Interface located in types.ts?
       "invoice", "payment", "on_us", "fee_reimbursement", // lightning
-      "onchain_receipt", "onchain_payment", "onchain_on_us", // onchain
+      "onchain_receipt", "onchain_payment", "onchain_on_us", "deposit_fee", // onchain
       "fee", "escrow", // channel-related
       "exchange_rebalance", // send/receive btc from the exchange
       "user_rebalance", // buy/sell btc in the user wallet

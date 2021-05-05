@@ -1,6 +1,6 @@
 apiVersion: v2
 name: galoy
-description: A Helm chart for galoy graphql server
+description: A Helm chart for galoy servers
 
 # A chart can be either an 'application' or a 'library' chart.
 #

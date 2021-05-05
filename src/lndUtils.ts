@@ -1,6 +1,6 @@
 import _ from "lodash";
 import { lnd } from "./lndConfig"
-import { baseLogger } from "./utils";
+import { baseLogger } from "./logger";
 import * as lnService from "ln-service"
 import { default as axios } from 'axios';
 import { getChannelBalance, getClosedChannels, getWalletInfo } from "lightning"

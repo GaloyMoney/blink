@@ -1,5 +1,9 @@
 set -e
 
+# for helm < 3.4
+# https://helm.sh/blog/new-location-stable-incubator-charts/
+helm repo add stable https://charts.helm.sh/stable --force-update
+
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo add grafana https://grafana.github.io/helm-charts
@@ -8,19 +12,33 @@ helm repo add jetstack https://charts.jetstack.io
 helm repo add galoy https://galoymoney.github.io/charts/
 helm repo update
 
-lndVersion="1.1.7"
+lndVersion="1.1.14"
 
-cd ./charts/galoy && helm dependency build && cd -
-cd ./charts/monitoring && helm dependency build && cd -
+cd ./charts/galoy
+helm dependency build
+cd -
+
+cd ./charts/monitoring
+helm dependency build
+cd -
 
 INGRESS_NAMESPACE="ingress-nginx"
 INFRADIR=./charts
+
+backupMongodb () {
+  JOB_DATE=$(date -u '+%s')
+  kubectl -n=$NAMESPACE create job --from=cronjob/mongo-backup "$JOB_DATE"
+  kubectl -n=$NAMESPACE wait --for=condition=complete --timeout=120s job/$JOB_DATE
+  kubectl -n=$NAMESPACE delete job/$JOB_DATE
+}
 
 
 if [ "$1" == "testnet" ] || [ "$1" == "mainnet" ];
 then
   NETWORK="$1"
   NAMESPACE="$1"
+
+  backupMongodb
 
   # create namespaces if not exists
   kubectl create namespace $INGRESS_NAMESPACE --dry-run -o yaml | kubectl apply -f -
@@ -123,12 +141,14 @@ else
   configpath="-f $INFRADIR/galoy/$NETWORK.yaml"
 fi
 
+#FIXME: Fetch the entire secret once, then extract and decode the necessary fields
 export MONGODB_ROOT_PASSWORD=$(kubectl get secret -n $NAMESPACE galoy-mongodb -o jsonpath="{.data.mongodb-root-password}" | base64 -d)
+export MONGODB_PASSWORD=$(kubectl get secret -n $NAMESPACE galoy-mongodb -o jsonpath="{.data.mongodb-password}" | base64 -d)
 export MONGODB_REPLICA_SET_KEY=$(kubectl get secret -n $NAMESPACE galoy-mongodb -o jsonpath="{.data.mongodb-replica-set-key}" | base64 -d)
 
 helmUpgrade galoy \
   $configpath $localdevpath \
-  --set mongodb.auth.rootPassword=$MONGODB_ROOT_PASSWORD,mongodb.auth.replicaSetKey=$MONGODB_REPLICA_SET_KEY,image.tag=$CIRCLE_SHA1 \
+  --set mongodb.auth.password=$MONGODB_PASSWORD,mongodb.auth.rootPassword=$MONGODB_ROOT_PASSWORD,mongodb.auth.replicaSetKey=$MONGODB_REPLICA_SET_KEY,image.tag=$CIRCLE_SHA1 \
   $INFRADIR/galoy/
 
 kubectlWait app.kubernetes.io/instance=galoy
