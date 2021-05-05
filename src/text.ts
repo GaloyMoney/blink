@@ -3,8 +3,8 @@ import moment from "moment"
 import { PhoneCode, User } from "./schema";
 import { createToken } from "./jwt"
 import { yamlConfig } from "./config";
-
-import { baseLogger, randomIntFromInterval } from "./utils"
+import { baseLogger } from './logger'
+import { randomIntFromInterval } from "./utils"
 
 const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER
 const getTwilioClient = () => {
@@ -28,7 +28,7 @@ export const sendText = async ({ body, to, logger }) => {
     return
   }
 
-  logger.info({to}, "send text succesfully")
+  logger.info({to}, "sent text successfully")
 }
 
 export const getCarrier = async (phone: string) => {

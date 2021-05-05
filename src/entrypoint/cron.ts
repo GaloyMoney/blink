@@ -1,5 +1,5 @@
 import { setupMongoConnection } from "../mongodb";
-import { baseLogger } from "../utils";
+import { baseLogger } from "../logger";
 import { updateEscrows, updateUsersPendingPayment } from "../ledger/balanceSheet"
 import { SpecterWallet } from "../SpecterWallet";
 

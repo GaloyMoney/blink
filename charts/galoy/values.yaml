@@ -61,9 +61,6 @@ cron:
 - name: dealer-update
   command: "yarn ts-node src/entrypoint/dealer.ts"
   schedule: "0,10,20,30,40,50 * * * *"
-- name: mongo-backup
-  command: "/var/backup.sh"
-  schedule: "0 * * * *"
 
 
 mongobackup:
@@ -173,7 +170,6 @@ mongodb:
 
   auth:
     username: testGaloy
-    password: testGaloy
     database: galoy
 
   labels:
