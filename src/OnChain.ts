@@ -1,6 +1,5 @@
 import { assert } from "console";
-import { getHeight } from "lightning";
-import lnService from 'ln-service';
+import { createChainAddress, getChainBalance, getChainFeeEstimate, getChainTransactions, getHeight, sendToChainAddress } from "lightning";
 import _ from 'lodash';
 import moment from "moment";
 import { yamlConfig } from "./config";
@@ -23,7 +22,7 @@ export const getOnChainTransactions = async ({ lnd, incoming, after }: { lnd: an
     // `Math.max(0, ...)` is necessary for tests, otherwise `after` may be negative
     const _after = after ?? Math.max(0, current_block_height - LOOK_BACK) 
 
-    const { transactions } = await lnService.getChainTransactions({ lnd, after: _after })
+    const { transactions } = await getChainTransactions({ lnd, after: _after })
 
     return transactions.filter(tx => incoming === !tx.is_outgoing)
   } catch (err) {
@@ -63,7 +62,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
       fee = 0
     } else {
       const sendTo = [{ address, tokens: amount ?? defaultAmount }];
-      ({ fee } = await lnService.getChainFeeEstimate({ lnd, send_to: sendTo }))
+      ({ fee } = await getChainFeeEstimate({ lnd, send_to: sendTo }))
     }
 
     return fee
@@ -137,14 +136,14 @@ export const OnChainMixin = (superclass) => class extends superclass {
         throw new TransactionRestrictedError(error,{forwardToClient: true, logger: onchainLogger, level: 'error'})
       }
 
-      const { chain_balance: onChainBalance } = await lnService.getChainBalance({ lnd })
+      const { chain_balance: onChainBalance } = await getChainBalance({ lnd })
 
       let estimatedFee, id
 
       const sendTo = [{ address, tokens: amount }]
 
       try {
-        ({ fee: estimatedFee } = await lnService.getChainFeeEstimate({ lnd, send_to: sendTo }))
+        ({ fee: estimatedFee } = await getChainFeeEstimate({ lnd, send_to: sendTo }))
       } catch (err) {
         const error = `Unable to estimate fee for on-chain transaction`
         onchainLogger.error({ err, sendTo, success: false }, error)
@@ -170,7 +169,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
       return lockExtendOrThrow({lock, logger: onchainLogger}, async () => {
 
         try {
-          ({ id } = await lnService.sendToChainAddress({ address, lnd, tokens: amount }))
+          ({ id } = await sendToChainAddress({ address, lnd, tokens: amount }))
         } catch (err) {
           onchainLogger.error({ err, address, tokens: amount, success: false }, "Impossible to sendToChainAddress")
           return false
@@ -227,7 +226,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
     try {
       const format = 'p2wpkh';
-      const response = await lnService.createChainAddress({
+      const response = await createChainAddress({
         lnd,
         format,
       })
@@ -296,10 +295,12 @@ export const OnChainMixin = (superclass) => class extends superclass {
     const min_confirmation = 2
 
     if(confirmed) {
-      lnd_incoming_filtered = lnd_incoming_txs.filter(tx => tx.confirmation_count >= min_confirmation)
+      lnd_incoming_filtered = lnd_incoming_txs.filter(tx => 
+        !!tx.confirmation_count && tx.confirmation_count >= min_confirmation
+      )
     } else {
       lnd_incoming_filtered = lnd_incoming_txs.filter(
-        tx => (tx.confirmation_count < min_confirmation) || !tx.confirmation_count)
+        tx => (!!tx.confirmation_count && tx.confirmation_count < min_confirmation) || !tx.confirmation_count)
     }
 
     const user_matched_txs = lnd_incoming_filtered.filter(tx => _.intersection(tx.output_addresses, this.user.onchain_addresses).length > 0)
