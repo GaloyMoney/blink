@@ -208,8 +208,6 @@ const ftxMock = jest.fn();
 
 // fixtures.forEach()
 
-let uid 
-
 ftxMock.mockReturnValueOnce(fixtures[1]).mockReturnValueOnce(fixtures[0]);
 
 jest.mock('ccxt', () => ({

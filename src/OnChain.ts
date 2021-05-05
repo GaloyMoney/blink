@@ -16,7 +16,6 @@ import { getHeight } from "lightning"
 import bluebird from 'bluebird';
 import { yamlConfig } from "./config";
 import { InsufficientBalanceError, NewAccountWithdrawalError, SelfPaymentError, TransactionRestrictedError } from './error';
-const { using } = bluebird;
 
 export const getOnChainTransactions = async ({ lnd, incoming }: { lnd: any, incoming: boolean }) => {
   try {
