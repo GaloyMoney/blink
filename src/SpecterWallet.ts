@@ -101,23 +101,17 @@ export class SpecterWallet {
     }
 
     const { total, onChain } = await lndBalances()
-    const { action, sats } = SpecterWallet.isRebalanceNeeded({ lndBalance: total })
+    const { action, sats, reason } = SpecterWallet.isRebalanceNeeded({ lndBalance: total, onChain })
 
     const logger = this.logger.child({sats, action, total, onChain})
 
     if (action === undefined) {
-      logger.info("no rebalancing needed")
+      logger.info({reason}, "no rebalancing needed or possible")
       return
     }
 
     if (!sats) {
       logger.info("sats is null")
-      return
-    }
-
-    const minOnchainRatio = yamlConfig.rebalancing.minOnchainRatio
-    if (onChain * minOnchainRatio < sats) {
-      logger.warn({onChain, sats, minOnchainRatio}, "rebalancing is needed, but not enough money is onchain. loop might be needed")
       return
     }
 
@@ -130,7 +124,7 @@ export class SpecterWallet {
     } 
   }
 
-  static isRebalanceNeeded({ lndBalance }) {
+  static isRebalanceNeeded({ lndBalance, onChain }) {
     // base number to calculate the different thresholds below
     const lndHoldingBase = yamlConfig.rebalancing.lndHoldingBase
 
@@ -152,7 +146,18 @@ export class SpecterWallet {
     const targetWithdraw = lndHoldingBase * ratioTargetWithdraw
 
     if (lndBalance > thresholdHighBound) {
-      return { action: "deposit", sats: lndBalance - targetDeposit }
+      const sats = lndBalance - targetDeposit
+      let action: string | undefined = "deposit"
+      let reason: string | undefined
+
+      const minOnchain = yamlConfig.rebalancing.minOnchain
+
+      if (onChain - sats < minOnchain) {
+        action = undefined
+        reason = "rebalancing is needed, but not enough money is onchain. loop might be needed"
+      }
+
+      return { action, sats, reason }
     }
 
     if (lndBalance < thresholdLowBound) {
@@ -176,7 +181,7 @@ export class SpecterWallet {
     let id
 
     try {
-      ({ id } = await sendToChainAddress({ address, lnd, tokens: sats }))
+      ({ id } = await sendToChainAddress({ address, lnd, tokens: sats,  target_confirmations: 1000 }))
     } catch (err) {
       this.logger.fatal({err}, "could not send to deposit. accounting to be reverted")
     }

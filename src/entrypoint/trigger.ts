@@ -13,7 +13,8 @@ import { MainBook, setupMongoConnection } from "../mongodb";
 import { transactionNotification } from "../notifications/payment";
 import { Price } from "../priceImpl";
 import { InvoiceUser, Transaction, User } from "../schema";
-import { baseLogger, LOOK_BACK } from '../utils';
+import { baseLogger } from '../logger'
+import { bitcoindDefaultClient, LOOK_BACK, sleep } from '../utils';
 import { WalletFactory } from "../walletFactory";
 
 
@@ -114,7 +115,6 @@ export const onInvoiceUpdate = async invoice => {
     return
   }
 
-  // FIXME: we're making 2x the request to Invoice User here. One in trigger, one in lighning.
   const invoiceUser = await InvoiceUser.findOne({ _id: invoice.id })
   if (invoiceUser) {
     const uid = invoiceUser.uid
@@ -130,19 +130,25 @@ export const onInvoiceUpdate = async invoice => {
 }
 
 export const onChannelUpdated = async ({ channel, lnd, stateChange }: { channel: any, lnd: any, stateChange: "opened" | "closed" }) => {
+  logger.info({ channel, stateChange }, `channel update`)
+
   if (channel.is_partner_initiated) {
-    logger.info({ channel }, `channel ${stateChange} to us`)
+    return
+  }
+
+  if (stateChange === "closed") {
+    // FIXME: need to account for channel closing
     return
   }
   
-  // FIXME we are already accounting for close fee in the escrow.
-  // need to remove the associated escrow transaction to correctly account for fees
-  if (stateChange === "closed") {
-    return
-  }
-  logger.info({ channel }, `channel ${stateChange} by us`)
-  const { transaction_id } = channel
+  let txid
 
+  if (stateChange === "opened") {
+    ({ transaction_id: txid } = channel)
+  } else if (stateChange === "closed") {
+    ({ close_transaction_id: txid } = channel)
+  }
+  
   // TODO: dedupe from onchain
   const { current_block_height } = await getHeight({ lnd })
   const after = Math.max(0, current_block_height - LOOK_BACK) // this is necessary for tests, otherwise after may be negative
@@ -156,9 +162,18 @@ export const onChannelUpdated = async ({ channel, lnd, stateChange }: { channel:
     return
   }
 
-  const fee = tx!.fee
+  // let tx
+  // try {
+  //   tx = await bitcoindDefaultClient.getRawTransaction(txid, true /* include_watchonly */ )
+  // } catch (err) {
+  //   logger.error({err}, "can't fetch fee for closing tx")
+  // }
+  
+  // TODO: there is no fee currently given by bitcoind for raw transaction
+  // either calculate it from the input, or use an indexer 
+  // const { fee } = tx.fee
 
-  const metadata = { currency: "BTC", txid: transaction_id, type: "fee", pending: false }
+  const metadata = { currency: "BTC", txid, type: "fee", pending: false }
 
   assert(fee > 0)
 

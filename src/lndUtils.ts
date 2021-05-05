@@ -1,8 +1,8 @@
-import _ from "lodash";
-import { lnd } from "./lndConfig"
-import { baseLogger } from "./utils";
 import { default as axios } from 'axios';
-import { getChainBalance, getChannelBalance, getClosedChannels, getPendingChainBalance, getWalletInfo } from "lightning"
+import { getChainBalance, getChannelBalance, getClosedChannels, getPendingChainBalance, getWalletInfo } from "lightning";
+import _ from "lodash";
+import { lnd } from "./lndConfig";
+import { baseLogger } from "./logger";
 
 
 export const lndBalances = async () => {

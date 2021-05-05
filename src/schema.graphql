@@ -142,6 +142,11 @@ type Query {
   getUid(username: String, phone: String): ID
   getLevels: [Int]
   getLimits: Limits
+  getWalletFees: WalletFees
+}
+
+type WalletFees {
+  deposit: Float
 }
 
 type Limits {
@@ -170,7 +175,7 @@ type Mutation {
   requestPhoneCode(phone: String): Success
   login(phone: String, code: Int, currency: String): Token
     @deprecated(reason: "currency is no longer user. to be remove after mobile update")
-  noauthAddInvoice(username: String!): String
+  noauthAddInvoice(username: String!, value: Int): String
   onchain: OnChain
   invoice: Invoice
   earnCompleted(ids: [ID]): [Earn]

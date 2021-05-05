@@ -1,6 +1,6 @@
 apiVersion: v2
-name: galoy
-description: A Helm chart for galoy servers
+name: lnpay
+description: A Helm chart for Kubernetes
 
 # A chart can be either an 'application' or a 'library' chart.
 #
@@ -20,23 +20,5 @@ version: 0.1.0
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
-appVersion: 0.9.0
-
-dependencies:
-  - name: redis
-    repository: https://charts.bitnami.com/bitnami
-    version: 12.x.x
-  - name: mongodb
-    repository: https://charts.bitnami.com/bitnami
-    version: x.x.x
-  - name: common
-    version: 0.x.x
-    repository: https://charts.bitnami.com/bitnami
-  - name: nginx
-    alias: lnpage
-    repository: https://charts.bitnami.com/bitnami
-    version: 8.x.x
-  - name: nginx
-    alias: admin-panel
-    repository: https://charts.bitnami.com/bitnami
-    version: 8.x.x
+# It is recommended to use it with quotes.
+appVersion: "1.16.0"
