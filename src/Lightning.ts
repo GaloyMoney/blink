@@ -48,11 +48,11 @@ export const LightningMixin = (superclass) => class extends superclass {
     return this.nodePubKey
   }
 
-  async updatePending({after, onchain, lock}: IUpdatePending) {
+  async updatePending({after, includeOnchain, lock}: IUpdatePending) {
     await Promise.all([
       this.updatePendingInvoices({lock}),
       this.updatePendingPayments({lock}),
-      super.updatePending({after, onchain, lock}),
+      super.updatePending({after, includeOnchain, lock}),
     ])
   }
 
@@ -584,7 +584,7 @@ export const LightningMixin = (superclass) => class extends superclass {
   // TODO manage the error case properly. right now there is a mix of string being return
   // or error being thrown. Not sure how this is handled by GraphQL
 
-  async updatePendingPayments(lock) {
+  async updatePendingPayments({lock}) {
 
     const query = { accounts: this.user.accountPath, type: "payment", pending: true }
     const count = await Transaction.countDocuments(query)
@@ -743,7 +743,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
   // should be run regularly with a cronjob
   // TODO: move to an "admin/ops" wallet
-  async updatePendingInvoices(lock) {
+  async updatePendingInvoices({lock}) {
 
     // TODO
     const currency = "BTC"

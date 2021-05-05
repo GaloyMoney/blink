@@ -19,7 +19,7 @@ export const updateUsersPendingPayment = async ({ after }: {after?: undefined | 
 
     // A better approach would be to just loop over pending: true invoice/payment
     userWallet = await WalletFactory({user, logger})
-    await userWallet.updatePending({ after, onchain: true })
+    await userWallet.updatePending({ after, includeOnchain: true })
   }
 }
 

@@ -1,22 +1,21 @@
-import lnService from 'ln-service'
 import { assert } from "console";
+import { getHeight } from "lightning";
+import lnService from 'ln-service';
 import _ from 'lodash';
 import moment from "moment";
+import { yamlConfig } from "./config";
+import { InsufficientBalanceError, NewAccountWithdrawalError, SelfPaymentError, TransactionRestrictedError } from './error';
+import { IUpdatePending } from "./interface";
 import { customerPath, lndAccountingPath, onchainRevenuePath } from "./ledger/ledger";
 import { lnd } from "./lndConfig";
 import { lockExtendOrThrow, redlock } from "./lock";
+import { baseLogger } from './logger';
 import { MainBook } from "./mongodb";
-import { IOnChainPayment, ISuccess, ITransaction } from "./types";
-import { amountOnVout, bitcoindDefaultClient, btc2sat, LoggedError, LOOK_BACK, myOwnAddressesOnVout } from "./utils";
-import { baseLogger } from './logger'
-import { UserWallet } from "./userWallet";
 import { Transaction, User } from "./schema";
-import { getHeight } from "lightning"
-import { IUpdatePending } from "./interface"
+import { IOnChainPayment, ISuccess, ITransaction } from "./types";
+import { UserWallet } from "./userWallet";
+import { amountOnVout, bitcoindDefaultClient, btc2sat, LoggedError, LOOK_BACK, myOwnAddressesOnVout } from "./utils";
 
-import bluebird from 'bluebird';
-import { yamlConfig } from "./config";
-import { InsufficientBalanceError, NewAccountWithdrawalError, SelfPaymentError, TransactionRestrictedError } from './error';
 
 export const getOnChainTransactions = async ({ lnd, incoming, after }: { lnd: any, incoming: boolean, after?: undefined | number }) => {
   try {
@@ -39,9 +38,9 @@ export const OnChainMixin = (superclass) => class extends superclass {
     super(...args)
   }
 
-  async updatePending({after, onchain, lock}: IUpdatePending): Promise<void> {
-    let promises = [super.updatePending({after, onchain, lock})]
-    if (onchain) {
+  async updatePending({after, includeOnchain, lock}: IUpdatePending): Promise<void> {
+    let promises = [super.updatePending({after, includeOnchain, lock})]
+    if (includeOnchain) {
       promises.push(this.updateOnchainReceipt({after, lock}))
     }
     await Promise.all(promises)
