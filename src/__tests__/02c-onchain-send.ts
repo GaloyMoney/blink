@@ -37,8 +37,6 @@ beforeAll(async () => {
   userWallet0 = await getUserWallet(0)
   userWallet3 = await getUserWallet(3)
   mockGetExchangeBalance()
-
-  console.log({balance: await userWallet0.getBalances()})
 })
 
 beforeEach(async () => {
