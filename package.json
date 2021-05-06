@@ -2,7 +2,7 @@
   "name": "galoy",
   "scripts": {
     "lint": "tslint --project tsconfig.json",
-    "build": "tsc",
+    "build": "tsc && cp -R src/protos lib/protos",
     "start": "yarn build && source exportLocal.sh && node lib/entrypoint/graphql.js | pino-pretty -c -l",
     "trigger": "yarn build && source exportLocal.sh && node lib/entrypoint/trigger.js | pino-pretty -c -l",
     "test": "export JEST_JUNIT_OUTPUT_DIR=\"./artifacts\" && jest --ci --reporters=default --reporters=jest-junit --forceExit",

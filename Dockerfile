@@ -9,7 +9,7 @@ COPY ./package.json ./tsconfig.json ./yarn.lock ./
 RUN yarn install --frozen-lockfile
 
 COPY ./src ./src
-RUN yarn tsc
+RUN yarn build
 
 FROM gcr.io/distroless/nodejs:14
 COPY --from=BUILD_IMAGE /app/lib /app/lib
