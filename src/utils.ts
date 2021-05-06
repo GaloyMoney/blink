@@ -10,13 +10,11 @@ import { parsePaymentRequest } from 'invoices';
 // how many block are we looking back for getChainTransactions
 export const LOOK_BACK = 2016
 
-
 // @ts-ignore
 import { GraphQLError } from "graphql";
 import { User } from "./schema";
 import axios from "axios";
 import { yamlConfig } from "./config";
-
 
 // FIXME: super ugly hack.
 // for some reason LoggedError get casted as GraphQLError

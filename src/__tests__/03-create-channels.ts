@@ -2,21 +2,14 @@
  * @jest-environment node
  */
 import { once } from 'events';
-import { getChannels, getWalletInfo, subscribeToChannels, subscribeToGraph } from 'lightning';
-import lnService from 'ln-service';
-import mongoose from "mongoose";
-import { onChannelUpdated } from '../entrypoint/trigger';
+import { getChannels, subscribeToGraph } from 'lightning';
 import { updateEscrows } from "../ledger/balanceSheet";
 import { lndFeePath } from "../ledger/ledger";
 import { MainBook, setupMongoConnection } from "../mongodb";
 import { bitcoindDefaultClient, sleep } from "../utils";
-import { baseLogger } from '../logger'
-import { checkIsBalanced, lndMain, lndOutside1, lndOutside2, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "./helper";
+import { checkIsBalanced, lndMain, lndOutside1, lndOutside2, mockGetExchangeBalance, openChannelTesting } from "./helper";
 
 jest.mock('../realtimePrice')
-
-
-const local_tokens = 1000000
 
 let initBlockCount
 let channelLengthMain, channelLengthOutside1
@@ -43,60 +36,8 @@ afterAll(async () => {
   // return await mongoose.connection.close()
 })
 
-const newBlock = 6
-
 //this is the fixed opening and closing channel fee on devnet
 const channelFee = 7637
-
-const openChannel = async ({ lnd, other_lnd, socket, is_private = false }) => {
-
-  await waitUntilBlockHeight({ lnd: lndMain, blockHeight: initBlockCount })
-  await waitUntilBlockHeight({ lnd: other_lnd, blockHeight: initBlockCount })
-
-  const { public_key: partner_public_key } = await getWalletInfo({ lnd: other_lnd })
-
-  let openChannelPromise = lnService.openChannel({
-    lnd, local_tokens, is_private, partner_public_key, partner_socket: socket
-  })
-
-  const sub = subscribeToChannels({ lnd })
-
-  if (lnd === lndMain) {
-    sub.once('channel_opened', (channel) => onChannelUpdated({ channel, lnd, stateChange: "opened" }))
-  }
-
-  if (other_lnd === lndMain) {
-    sub.once('channel_opened', (channel) => expect(channel.is_partner_initiated).toBe(true))
-  }
-
-  await once(sub, 'channel_opening')
-
-  await mineBlockAndSync({ lnds: [lnd, other_lnd], blockHeight: initBlockCount + newBlock })
-
-  baseLogger.debug("mining blocks and waiting for channel being opened")
-
-  await Promise.all([
-    openChannelPromise,
-    // error: https://github.com/alexbosworth/ln-service/issues/122
-    // need to investigate.
-    // once(sub, 'channel_opened'),
-    mineBlockAndSync({ lnds: [lnd, other_lnd], blockHeight: initBlockCount + newBlock }),
-  ])
-
-
-  await sleep(5000)
-  await updateEscrows()
-  sub.removeAllListeners()
-}
-
-const mineBlockAndSync = async ({ lnds, blockHeight }: { lnds: Array<any>, blockHeight: number }) => {
-  await bitcoindDefaultClient.generateToAddress(newBlock, RANDOM_ADDRESS)
-  const promiseArray: Array<Promise<any>> = []
-  for (const lnd of lnds) {
-    promiseArray.push(waitUntilBlockHeight({ lnd, blockHeight }))
-  }
-  await Promise.all(promiseArray)
-}
 
 it('opens channel from lnd1ToLndOutside1', async () => {
   const socket = `lnd-outside-1:9735`
@@ -104,7 +45,7 @@ it('opens channel from lnd1ToLndOutside1', async () => {
     account: lndFeePath,
     currency: "BTC",
   })
-  await openChannel({ lnd: lndMain, other_lnd: lndOutside1, socket })
+  await openChannelTesting({ lnd: lndMain, other_lnd: lndOutside1, socket })
 
   const { channels } = await getChannels({ lnd: lndMain })
   expect(channels.length).toEqual(channelLengthMain + 1)
@@ -162,7 +103,7 @@ it('opens private channel from lndOutside1 to lndOutside2', async () => {
   const subscription = subscribeToGraph({ lnd: lndOutside1 });
 
   await Promise.all([
-    openChannel({ lnd: lndOutside1, other_lnd: lndOutside2, socket, is_private: true }),
+    openChannelTesting({ lnd: lndOutside1, other_lnd: lndOutside2, socket, is_private: true }),
     once(subscription, 'channel_updated')
   ])
 
@@ -175,7 +116,7 @@ it('opens private channel from lndOutside1 to lndOutside2', async () => {
 
 it('opens channel from lndOutside1 to lnd1', async () => {
   const socket = `lnd:9735`
-  await openChannel({ lnd: lndOutside1, other_lnd: lndMain, socket })
+  await openChannelTesting({ lnd: lndOutside1, other_lnd: lndMain, socket })
 
   {
     const { channels } = await getChannels({ lnd: lndMain })

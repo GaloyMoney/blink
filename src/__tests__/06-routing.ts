@@ -2,7 +2,7 @@ import { mineBlockAndSync, openChannelTesting } from './helper'
 import {closeChannel, createInvoice, getChannels, openChannel, pay} from 'lightning'
 import { lndMain, lndOutside1, lndOutside2 } from './helper'
 import { bitcoindDefaultClient, sleep } from '../utils'
-import { updateRoutingFees } from '../utils'
+import { updateRoutingFees } from '../lndUtils'
 import { MainBook, setupMongoConnection } from '../mongodb'
 import { revenueFeePath } from '../ledger/ledger'
 

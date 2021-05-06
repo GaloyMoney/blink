@@ -4,7 +4,13 @@ import { baseLogger } from "./logger";
 import * as lnService from "ln-service"
 import { default as axios } from 'axios';
 import { getChannelBalance, getClosedChannels, getWalletInfo, getForwards } from "lightning"
+import { DbMetadata } from "./schema";
+import { MainBook } from "./mongodb";
+import { lndAccountingPath, revenueFeePath } from "./ledger/ledger";
+import { DbError } from "./error";
 
+// milliseconds in a day
+const MS_PER_DAY = 864e5
 
 export const lndBalances = async () => {
   // Onchain
@@ -80,4 +86,57 @@ export const getRoutingFees = async ({ lnd, before, after }): Promise<Record<str
 
   // returns revenue for each date by reducing all forwards for each date
   return (_.mapValues(dateGroupedForwards, e => e.reduce((sum, {fee_mtokens}) => sum + +fee_mtokens, 0) / 1000))
+}
+
+export const updateRoutingFees = async () => {
+  
+  const dbMetadata = await DbMetadata.findOne({})
+  let lastDate
+
+  if(dbMetadata?.routingFeeLastEntry) {
+    lastDate = new Date(dbMetadata.routingFeeLastEntry)
+  } else {
+    lastDate = new Date(0)
+    baseLogger.info('Running the routing fee revenue cronjob for the first time')
+  }
+
+  // Done to remove effect of timezone
+  lastDate.setUTCHours(0, 0, 0, 0)
+
+  const after = lastDate.toISOString()
+
+  const endDate = new Date(Date.now() - MS_PER_DAY);
+  
+  // Done to remove effect of timezone
+  endDate.setUTCHours(0, 0, 0, 0)
+
+  const before = endDate.toISOString()
+  
+  // Only record fee if it has been 1d+ since last record
+  if((endDate.getTime() - lastDate.getTime()) / MS_PER_DAY < 1) {
+    return
+  }
+  
+  const type = "routing_fee"
+  const metadata = { type, currency: "BTC", pending: false }
+
+  console.log({after, before})
+  // get fee collected day wise
+  const forwards = await getRoutingFees({ lnd, before, after })
+
+  // iterate over object and record fee day wise in our books
+  _.forOwn(forwards, async (fee, day) => {
+    try {
+      await MainBook.entry("routing fee")
+      .credit(revenueFeePath, fee, { ...metadata, feesCollectedOn: day})
+      .debit(lndAccountingPath, fee, { ...metadata, feesCollectedOn: day })
+      .commit()
+    } catch(err) {
+      throw new DbError('Unable to record routing revenue', {forwardToClient: false, logger: baseLogger, level: 'error'})
+    }
+  })
+  
+  endDate.setDate(endDate.getDate() + 1)
+  const endDay = endDate.toDateString()
+  await DbMetadata.findOneAndUpdate({}, { $set: { routingFeeLastEntry: endDay } }, { upsert: true })
 }
