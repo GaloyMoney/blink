@@ -7,6 +7,7 @@ module.exports = {
   },
   "testPathIgnorePatterns": [
     "helper.ts",
+    "helper.js",
   ],
   "testSequencer":"./jestTestSequencer.js",
   setupFilesAfterEnv: ['./jest.setup.js'],

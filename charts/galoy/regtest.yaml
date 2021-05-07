@@ -31,15 +31,10 @@ deployment:
   args: ["/lib/entrypoint/graphql.js"]
   healthz: 127.0.0.1:4000/healthz
   targetPort: 4000
-  replicaCount: 2
+  replicaCount: 1
 - name: testpod
   replicaCount: 1
-  customYamlEnv:
-  - LNDRPCPORT: 10009
-  - LNDOUTSIDE1RPCPORT: 10009
-  - LNDOUTSIDE2RPCPORT: 10009
-  - LNDOUTSIDE1ADDR: "lnd-outside-1"
-  - LNDOUTSIDE2ADDR: "lnd-outside-2"
+  debugContainer: "true"
 
 needFirebaseServiceAccount: false
 twilio: false

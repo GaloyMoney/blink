@@ -30,7 +30,7 @@ spec:
     spec:
       containers:
         - name: {{ .name }}
-          image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag }}"
+          image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag }}{{- if .debugContainer -}}-debug{{- end -}}"
           {{- if .command }}
           command: ["/bin/sh","-c", {{ .command }}]
           {{- end }}
@@ -88,10 +88,6 @@ spec:
               value: "bitcoind"
             - name: BITCOINDPORT
               value: {{ $.Values.bitcoind.port | quote }}
-            {{- if $.Values.loglevel}}
-            - name: LOGLEVEL
-              value: {{ $.Values.loglevel }}
-            {{- end}}
             - name: JWT_SECRET
             {{- if $.Values.jwtSecret}}
               value: {{ $.Values.jwtSecret }}
@@ -106,6 +102,10 @@ spec:
                 secretKeyRef:
                   name: network
                   key: network
+            - name: REDIS_PORT
+              value: "6379"
+            - name: REDIS_IP
+              value: "galoy-redis-master"
             {{- if eq .name "exporter" }}
             - name: FTX_KEY
               valueFrom:
@@ -118,10 +118,10 @@ spec:
                   name: ftx-secret
                   key: secret
             {{- end}}
-            - name: REDIS_PORT
-              value: "6379"
-            - name: REDIS_IP
-              value: "galoy-redis-master"
+            {{- if $.Values.loglevel}}
+            - name: LOGLEVEL
+              value: {{ $.Values.loglevel }}
+            {{- end}}
             {{- if $.Values.needFirebaseServiceAccount }}
             - name: GOOGLE_APPLICATION_CREDENTIALS
               value: "/tmp/firebase-serviceaccount/galoyapp-firebase-serviceaccont.json"
@@ -156,6 +156,16 @@ spec:
                 secretKeyRef:
                   name: lnd-outside-2-tls
                   key: tls.cert
+            - name: LNDRPCPORT
+              value: "10009"
+            - name: LNDOUTSIDE1RPCPORT
+              value: "10009"
+            - name: LNDOUTSIDE2RPCPORT
+              value: "10009"
+            - name: LNDOUTSIDE1ADDR
+              value: "lnd-outside-1"
+            - name: LNDOUTSIDE2ADDR
+              value: "lnd-outside-2"
             {{- else }}
             - name: TWILIO_PHONE_NUMBER
               valueFrom:
@@ -177,17 +187,6 @@ spec:
                 secretKeyRef:
                   name: twilio-secret
                   key: TWILIO_API_SECRET
-            {{- end }}
-            {{- range  .customYamlEnv }}
-            {{- range  $index, $value := . }}
-            - name: {{ $index }}
-              value: {{ $value | quote }}
-            {{- end }}
-            {{- end }}
-            {{- range  $.Values.customCmdlineEnv }}
-            {{- $value := split ":" . }}
-            - name: {{ $value._0 }}
-              value: {{ $value._1 }}
             {{- end }}
           {{- if .healthz }}
           livenessProbe:

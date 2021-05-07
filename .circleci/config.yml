@@ -33,10 +33,17 @@ jobs:
       - gcp-gcr/build-image:
           image: galoy
           tag: $CIRCLE_SHA1
+      - gcp-gcr/build-image:
+          image: galoy
+          dockerfile: Dockerfile-debug
+          tag: $CIRCLE_SHA1-debug
       - gcp-gcr/gcr-auth
       - gcp-gcr/push-image:
           image: galoy
           tag: $CIRCLE_SHA1
+      - gcp-gcr/push-image:
+          image: galoy
+          tag: $CIRCLE_SHA1-debug
 
   test:
     docker:
@@ -59,7 +66,11 @@ jobs:
       - run:
           name: Run jest test
           command: |
-            kubectl run --generator=run-pod/v1 --image=gcr.io/galoyapp/galoy:$CIRCLE_SHA1 test -it -- ./node_modules/.bin/jest
+            kubectl exec --namespace=$NAMESPACE $(kubectl get pods --namespace=$NAMESPACE --selector=app=testpod --output=jsonpath={.items..metadata.name}) -- /nodejs/bin/node node_modules/.bin/jest
+            # kubectl run --generator=run-pod/v1 --image=gcr.io/galoyapp/galoy:$CIRCLE_SHA1-debug test -it -- ./node_modules/.bin/jest
+            # kubectl exec --namespace=$NAMESPACE $(kubectl get pods --namespace=$NAMESPACE --selector=app=testpod --output=jsonpath={.items..metadata.name}) -- sh -c "yarn test --max_old_space_size=3000"
+            # kubectl run --image=gcr.io/galoyapp/galoy:$CIRCLE_SHA1 test -it --overrides='{"spec":{"containers[0]":[{"env":[{"name":"MONGODB_PASSWORD","valueFrom":{"secretKeyRef":{"name":"galoy-mongodb","key":"mongodb-password"}}},{"name":"MONGODB_USER","value":"testGaloy"},{"name":"MONGODB_ADDRESS","value":"galoy-mongodb-headless"},{"name":"LNDIP","value":"lnd"},{"name":"MACAROON","valueFrom":{"secretKeyRef":{"name":"lnd-macaroon","key":"admin.macaroon"}}},{"name":"TLS","valueFrom":{"secretKeyRef":{"name":"lnd-tls","key":"tls.cert"}}},{"name":"BITCOINDADDR","value":"bitcoind"},{"name":"BITCOINDPORT","value":"18443"},{"name":"JWT_SECRET","value":"my-secret"},{"name":"NETWORK","valueFrom":{"secretKeyRef":{"name":"network","key":"network"}}},{"name":"REDIS_PORT","value":"6379"},{"name":"REDIS_IP","value":"galoy-redis-master"},{"name":"MACAROONOUTSIDE1","valueFrom":{"secretKeyRef":{"name":"lnd-outside-1-macaroon","key":"admin.macaroon"}}},{"name":"TLSOUTSIDE1","valueFrom":{"secretKeyRef":{"name":"lnd-outside-1-tls","key":"tls.cert"}}},{"name":"MACAROONOUTSIDE2","valueFrom":{"secretKeyRef":{"name":"lnd-outside-2-macaroon","key":"admin.macaroon"}}},{"name":"TLSOUTSIDE2","valueFrom":{"secretKeyRef":{"name":"lnd-outside-2-tls","key":"tls.cert"}}},{"name":"LNDRPCPORT","value":"10009"},{"name":"LNDOUTSIDE1RPCPORT","value":"10009"},{"name":"LNDOUTSIDE2RPCPORT","value":"10009"},{"name":"LNDOUTSIDE1ADDR","value":"lnd-outside-1"},{"name":"LNDOUTSIDE2ADDR","value":"lnd-outside-2"}]}]}}' -- ./node_modules/.bin/jest
+            # kubectl run -it --restart=Never --image=notused --overrides='{"spec":{"containers":[{"name":"graphql","image":"gcr.io/galoyapp/galoy:391b62193b3707ce86c33c2ea3a3c79e1d347677","args":["./node_modules/.bin/jest"],"volumeMounts":[{"name":"custom-yaml","mountPath":"/var/yaml/"}],"ports":[{"name":"http","containerPort":4000,"protocol":"TCP"}],"resources":{"requests":{"cpu":"100m"},"limits":{"cpu":"1000m"}},"env":[{"name":"HELMREVISION","value":"1"},{"name":"MONGODB_PASSWORD","valueFrom":{"secretKeyRef":{"name":"galoy-mongodb","key":"mongodb-password"}}},{"name":"MONGODB_USER","value":"testGaloy"},{"name":"MONGODB_ADDRESS","value":"galoy-mongodb"},{"name":"LNDIP","value":"lnd"},{"name":"MACAROON","valueFrom":{"secretKeyRef":{"name":"lnd-macaroon","key":"admin.macaroon"}}},{"name":"TLS","valueFrom":{"secretKeyRef":{"name":"lnd-tls","key":"tls.cert"}}},{"name":"BITCOINDADDR","value":"bitcoind"},{"name":"BITCOINDPORT","value":"18443"},{"name":"JWT_SECRET","value":"my_secret"},{"name":"NETWORK","valueFrom":{"secretKeyRef":{"name":"network","key":"network"}}},{"name":"REDIS_PORT","value":"6379"},{"name":"REDIS_IP","value":"galoy-redis-master"},{"name":"LOGLEVEL","value":"debug"},{"name":"MACAROONOUTSIDE1","valueFrom":{"secretKeyRef":{"name":"lnd-outside-1-macaroon","key":"admin.macaroon"}}},{"name":"TLSOUTSIDE1","valueFrom":{"secretKeyRef":{"name":"lnd-outside-1-tls","key":"tls.cert"}}},{"name":"MACAROONOUTSIDE2","valueFrom":{"secretKeyRef":{"name":"lnd-outside-2-macaroon","key":"admin.macaroon"}}},{"name":"TLSOUTSIDE2","valueFrom":{"secretKeyRef":{"name":"lnd-outside-2-tls","key":"tls.cert"}}},{"name":"LNDRPCPORT","value":"10009"},{"name":"LNDOUTSIDE1RPCPORT","value":"10009"},{"name":"LNDOUTSIDE2RPCPORT","value":"10009"},{"name":"LNDOUTSIDE1ADDR","value":"lnd-outside-1"},{"name":"LNDOUTSIDE2ADDR","value":"lnd-outside-2"}]}],"volumes":[{"name":"custom-yaml","secret":{"secretName":"galoy-config-map"}}]}}' test
       - run:
           name: Run postman test
           command: |
