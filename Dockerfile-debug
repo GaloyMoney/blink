@@ -16,8 +16,7 @@ COPY --from=BUILD_IMAGE /app/lib /app/lib
 COPY --from=BUILD_IMAGE /app/node_modules /app/node_modules
 
 WORKDIR /app
-COPY ./*.js ./default.yaml ./package.json ./tsconfig.json ./yarn.lock ./.env ./
-RUN touch junit.xml
+COPY ./*.js ./default.yaml ./package.json ./tsconfig.json ./yarn.lock ./.env ./junit.xml ./
 
 USER 1000
 
