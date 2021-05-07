@@ -2,7 +2,6 @@
  * @jest-environment node
  */
 import { once } from 'events';
-import lnService from 'ln-service';
 import { filter } from "lodash";
 import mongoose from "mongoose";
 import { getCurrentPrice } from "../realtimePrice";
@@ -13,6 +12,7 @@ import { bitcoindDefaultClient, btc2sat, sleep } from "../utils";
 import { baseLogger } from '../logger'
 import { getFunderWallet } from "../walletFactory";
 import { checkIsBalanced, getUserWallet, lndMain, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "./helper";
+import { subscribeToChainAddress, subscribeToTransactions } from "lightning";
 
 jest.mock('../realtimePrice')
 
@@ -26,7 +26,7 @@ let amount_BTC
 
 
 jest.mock('../notifications/notification')
-import { sendNotification } from "../notifications/notification"
+const { sendNotification } = require("../notifications/notification")
 
 const amountAfterFeeDeduction = ({amount, depositFeeRatio}) => btc2sat(amount) * (1 - depositFeeRatio)
 
@@ -66,8 +66,7 @@ const onchain_funding = async ({ walletDestination }) => {
   expect(address.substr(0, 4)).toBe("bcrt")
 
   const checkBalance = async () => {
-    
-    const sub = lnService.subscribeToChainAddress({ lnd: lndMain, bech32_address: address, min_height })
+    const sub = subscribeToChainAddress({ lnd: lndMain, bech32_address: address, min_height })
     await once(sub, 'confirmation')
     sub.removeAllListeners();
 
@@ -89,7 +88,7 @@ const onchain_funding = async ({ walletDestination }) => {
 
   }
 
-  const fundLndWallet = async () => {
+  const fundWallet = async () => {
     await sleep(100)
     await bitcoindDefaultClient.sendToAddress(address, amount_BTC)
     await bitcoindDefaultClient.generateToAddress(6, RANDOM_ADDRESS)
@@ -97,7 +96,7 @@ const onchain_funding = async ({ walletDestination }) => {
 
   await Promise.all([
     checkBalance(),
-    fundLndWallet()
+    fundWallet()
   ])
 }
 
@@ -113,7 +112,7 @@ it('funding funder with onchain tx from bitcoind', async () => {
 it('identifies unconfirmed incoming on chain txn', async () => {
   const address = await walletUser0.getOnChainAddress()
 
-  const sub = await lnService.subscribeToTransactions({ lnd: lndMain })
+  const sub = await subscribeToTransactions({ lnd: lndMain })
   sub.on('chain_transaction', onchainTransactionEventHandler)
   
   await Promise.all([
@@ -129,7 +128,7 @@ it('identifies unconfirmed incoming on chain txn', async () => {
   expect(pendingTxs[0].amount).toBe(btc2sat(amount_BTC))
   expect(pendingTxs[0].addresses[0]).toBe(address)
 
-  await sleep(2000)
+  await sleep(1000)
 
   expect(sendNotification.mock.calls.length).toBe(1)
   expect(sendNotification.mock.calls[0][0].data.type).toBe("onchain_receipt_pending")
