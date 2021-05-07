@@ -13,6 +13,7 @@ import { bitcoindDefaultClient, btc2sat, sleep } from "../utils";
 import { baseLogger } from '../logger'
 import { getFunderWallet } from "../walletFactory";
 import { checkIsBalanced, getUserWallet, lndMain, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "./helper";
+import { sendNotification } from "../notifications/notification"
 
 jest.mock('../realtimePrice')
 
@@ -26,7 +27,6 @@ let amount_BTC
 
 
 jest.mock('../notifications/notification')
-const { sendNotification } = require("../notifications/notification")
 
 const amountAfterFeeDeduction = ({amount, depositFeeRatio}) => btc2sat(amount) * (1 - depositFeeRatio)
 
