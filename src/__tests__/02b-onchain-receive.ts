@@ -13,9 +13,7 @@ import { bitcoindDefaultClient, btc2sat, sleep } from "../utils";
 import { baseLogger } from '../logger'
 import { getFunderWallet } from "../walletFactory";
 import { checkIsBalanced, getUserWallet, lndMain, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "./helper";
-import { sendNotification } from "../notifications/notification"
 
-jest.mock('../notifications/notification')
 jest.mock('../realtimePrice')
 
 let funderWallet
@@ -26,6 +24,9 @@ const min_height = 1
 
 let amount_BTC
 
+
+jest.mock('../notifications/notification')
+import { sendNotification } from "../notifications/notification"
 
 const amountAfterFeeDeduction = ({amount, depositFeeRatio}) => btc2sat(amount) * (1 - depositFeeRatio)
 
@@ -130,13 +131,13 @@ it('identifies unconfirmed incoming on chain txn', async () => {
 
   await sleep(2000)
 
-  expect((sendNotification as jest.Mock).mock.calls.length).toBe(1)
-  expect((sendNotification as jest.Mock).mock.calls[0][0].data.type).toBe("onchain_receipt_pending")
+  expect(sendNotification.mock.calls.length).toBe(1)
+  expect(sendNotification.mock.calls[0][0].data.type).toBe("onchain_receipt_pending")
 
   const satsPrice = await getCurrentPrice()
   const usd = (btc2sat(amount_BTC) * satsPrice!).toFixed(2)
 
-  expect((sendNotification as jest.Mock).mock.calls[0][0].title).toBe(getTitle["onchain_receipt_pending"]({usd, amount: btc2sat(amount_BTC)}))
+  expect(sendNotification.mock.calls[0][0].title).toBe(getTitle["onchain_receipt_pending"]({usd, amount: btc2sat(amount_BTC)}))
 
   await Promise.all([
     bitcoindDefaultClient.generateToAddress(3, RANDOM_ADDRESS),
