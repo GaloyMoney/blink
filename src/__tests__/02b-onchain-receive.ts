@@ -129,7 +129,7 @@ it('identifies unconfirmed incoming on chain txn', async () => {
   expect(pendingTxs[0].amount).toBe(btc2sat(amount_BTC))
   expect(pendingTxs[0].addresses[0]).toBe(address)
 
-  await sleep(1000)
+  await sleep(2000)
 
   expect(sendNotification.mock.calls.length).toBe(1)
   expect(sendNotification.mock.calls[0][0].data.type).toBe("onchain_receipt_pending")
