@@ -5,8 +5,8 @@ import { setupMongoConnection } from "../mongodb";
 import { checkIsBalanced, lndMain, lndOutside1, lndOutside2, RANDOM_ADDRESS, waitUntilBlockHeight, mockGetExchangeBalance } from "./helper";
 import { bitcoindDefaultClient } from "../utils";
 
-import lnService from 'ln-service'
 import mongoose from "mongoose";
+import { createChainAddress } from "lightning";
 
 jest.mock('../realtimePrice')
 
@@ -64,7 +64,7 @@ it('funds bitcoind wallet', async () => {
 })
 
 it('funds outside lnd node', async () => {
-	lndOutside1_wallet_addr = (await lnService.createChainAddress({ format: 'p2wpkh', lnd: lndOutside1 })).address
+	lndOutside1_wallet_addr = (await createChainAddress({ format: 'p2wpkh', lnd: lndOutside1 })).address
 	expect(lndOutside1_wallet_addr.substr(0, 4)).toBe("bcrt")
 
 	await bitcoindDefaultClient.sendToAddress(lndOutside1_wallet_addr, amount_BTC)

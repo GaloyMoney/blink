@@ -3,8 +3,8 @@ import { assert } from "console";
 import crypto from "crypto";
 import { Dropbox } from "dropbox";
 import express from 'express';
-import { getHeight, getWalletInfo } from 'lightning';
-import lnService, { subscribeToBackups, subscribeToBlocks, subscribeToChannels, subscribeToInvoices, subscribeToTransactions } from 'ln-service';
+import { getChainTransactions, getHeight, getWalletInfo,  } from 'lightning';
+import { subscribeToBackups, subscribeToBlocks, subscribeToChannels, subscribeToInvoices, subscribeToTransactions } from 'lightning';
 import { find } from "lodash";
 import { updateUsersPendingPayment } from '../ledger/balanceSheet';
 import { lndAccountingPath, lndFeePath } from "../ledger/ledger";
@@ -149,9 +149,17 @@ export const onChannelUpdated = async ({ channel, lnd, stateChange }: { channel:
   // TODO: dedupe from onchain
   const { current_block_height } = await getHeight({ lnd })
   const after = Math.max(0, current_block_height - LOOK_BACK) // this is necessary for tests, otherwise after may be negative
-  const { transactions } = await lnService.getChainTransactions({ lnd, after })
+  const { transactions } = await getChainTransactions({ lnd, after })
+  // end dedupe
 
-  const { fee } = find(transactions, { id: txid })
+  const tx = find(transactions, { id: txid })
+
+  if (!tx?.fee) {
+    logger.error({transactions}, "fee doesn't exist")
+    return
+  }
+
+  const fee = tx.fee
 
   // let tx
   // try {
@@ -176,10 +184,10 @@ export const onChannelUpdated = async ({ channel, lnd, stateChange }: { channel:
   logger.info({ channel, fee, ...metadata }, `${stateChange} channel fee added to mongodb`)
 }
 
-const updatePrice = async () => {
+const updatePriceForChart = async () => {
   const price = new Price({ logger: baseLogger })
 
-  const _1minInterval = 1000 * 30
+  const interval = 1000 * 30
 
   setInterval(async function () {
     try {
@@ -187,7 +195,7 @@ const updatePrice = async () => {
     } catch (err) {
       logger.error({ err }, "can't update the price")
     }
-  }, _1minInterval)
+  }, interval)
 }
 
 const main = async () => {
@@ -211,7 +219,7 @@ const main = async () => {
   const subBlocks = subscribeToBlocks({ lnd })
   subBlocks.on('block', updateUsersPendingPayment)
 
-  updatePrice()
+  updatePriceForChart()
 }
 
 const healthCheck = () => {
