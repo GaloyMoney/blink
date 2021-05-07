@@ -16,10 +16,13 @@ COPY --from=BUILD_IMAGE /app/lib /app/lib
 COPY --from=BUILD_IMAGE /app/node_modules /app/node_modules
 
 WORKDIR /app
-COPY ./*.js ./default.yaml ./package.json ./tsconfig.json ./yarn.lock ./.env ./junit.xml ./
+COPY ./*.js ./default.yaml ./package.json ./tsconfig.json ./yarn.lock ./.env ./
+
+### debug only
+COPY --from=BUILD_IMAGE /app/src /app/src
+COPY ./junit.xml ./
+###
 
 USER 1000
 
 ENTRYPOINT ["/busybox/sleep", "1d"]
-
-# /nodejs/bin/node lib/entrypoint/graphql.js

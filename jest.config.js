@@ -1,13 +1,12 @@
 module.exports = {
   "roots": [
-    "<rootDir>/lib"
+    "<rootDir>/src"
   ],
-  // "transform": {
-  //   "^.+\\.(ts)$": "ts-jest"
-  // },
+  "transform": {
+    "^.+\\.(ts)$": "ts-jest"
+  },
   "testPathIgnorePatterns": [
     "helper.ts",
-    "helper.js",
   ],
   "testSequencer":"./jestTestSequencer.js",
   setupFilesAfterEnv: ['./jest.setup.js'],
