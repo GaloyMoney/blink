@@ -190,10 +190,9 @@ spec:
             {{- end }}
           {{- if .healthz }}
           livenessProbe:
-            exec:
-              command:
-              - curl
-              - {{ .healthz }}
+            httpGet:
+              path: /healthz
+              port: {{ .targetPort }}
             initialDelaySeconds: 60
             periodSeconds: 10
             failureThreshold: 5

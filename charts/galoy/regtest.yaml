@@ -29,7 +29,7 @@ cron: []
 deployment:
 - name: graphql
   args: ["/lib/entrypoint/graphql.js"]
-  healthz: 127.0.0.1:4000/healthz
+  healthz: true
   targetPort: 4000
   replicaCount: 1
 - name: testpod
