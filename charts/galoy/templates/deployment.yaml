@@ -197,10 +197,9 @@ spec:
             periodSeconds: 10
             failureThreshold: 5
           readinessProbe:
-            exec:
-              command:
-              - curl
-              - {{ .healthz }}
+            httpGet:
+              path: /healthz
+              port: {{ .targetPort }}
             initialDelaySeconds: 5
             failureThreshold: 5
             successThreshold: 2
