@@ -2,9 +2,9 @@ module.exports = {
   "roots": [
     "<rootDir>/lib"
   ],
-  "transform": {
-    "^.+\\.(ts)$": "ts-jest"
-  },
+  // "transform": {
+  //   "^.+\\.(ts)$": "ts-jest"
+  // },
   "testPathIgnorePatterns": [
     "helper.ts",
     "helper.js",
