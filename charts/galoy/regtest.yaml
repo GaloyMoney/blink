@@ -28,7 +28,7 @@ mongodb:
 cron: []
 deployment:
 - name: graphql
-  args: ["/lib/entrypoint/graphql.js"]
+  args: ["lib/entrypoint/graphql.js"]
   healthz: true
   targetPort: 4000
   replicaCount: 1
