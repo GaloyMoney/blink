@@ -4,11 +4,15 @@ WORKDIR /app
 
 RUN apk update && apk add git
 
-COPY ./package.json ./tsconfig.json ./yarn.lock ./
+COPY ./*.json ./yarn.lock ./
 
-RUN yarn install --frozen-lockfile
+RUN yarn install --frozen-lockfile  --production
 
 COPY ./src ./src
+
+RUN yarn global add typescript
+RUN find ./src -type d -depth -name '__tests__' -exec rm -r {} \; -prune
+
 RUN yarn build
 
 FROM gcr.io/distroless/nodejs:14
