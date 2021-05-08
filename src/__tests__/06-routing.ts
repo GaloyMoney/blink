@@ -12,14 +12,14 @@ beforeAll(async () => {
   const { channels } = await getChannels({ lnd: lndOutside2 })
   await closeChannel({ lnd: lndOutside2, id: channels[channels.length - 1].id })
 
-  const currentBlockCount = await bitcoindDefaultClient.getBlockCount()
-  await mineBlockAndSync({ lnds: [lndOutside2, lndOutside1], blockHeight: currentBlockCount + 6 })
-  await sleep(10000)
-  
   // open channel from lndMain to lndOutside2
   // So that we have a route from lndOutside 1 to lndOutside2 via lndMain
   const socket = `lnd-outside-2:9735`
   await openChannelTesting({ lnd: lndMain, other_lnd: lndOutside2, socket })
+
+  let currentBlockCount = await bitcoindDefaultClient.getBlockCount()
+  await mineBlockAndSync({ lnds: [lndOutside2, lndOutside1, lndMain], blockHeight: currentBlockCount + 6 })
+  await sleep(10000)
 })
 
 afterAll(async () => {
@@ -27,7 +27,7 @@ afterAll(async () => {
 })
 
 it('records routing fee correctly', async () => {
-  const { request } = await createInvoice({ lnd: lndOutside2, tokens: 100000 })
+  const { request } = await createInvoice({ lnd: lndOutside2, tokens: 1000 })
   
   await pay({ lnd: lndOutside1, request })
 
@@ -44,5 +44,5 @@ it('records routing fee correctly', async () => {
     accounts: revenueFeePath
   })
 
-  expect(balance).toBe(1.1)
+  expect(balance).toBe(1.001)
 })
