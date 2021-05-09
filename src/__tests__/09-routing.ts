@@ -8,18 +8,10 @@ import { revenueFeePath } from '../ledger/ledger'
 
 beforeAll(async () => {
   await setupMongoConnection()
-  // remove direct connection between lndoutside1 and lndoutside2
-  const { channels } = await getChannels({ lnd: lndOutside2 })
-  await closeChannel({ lnd: lndOutside2, id: channels[channels.length - 1].id })
-
-  // open channel from lndMain to lndOutside2
-  // So that we have a route from lndOutside 1 to lndOutside2 via lndMain
-  const socket = `lnd-outside-2:9735`
-  await openChannelTesting({ lnd: lndMain, other_lnd: lndOutside2, socket })
-
-  let currentBlockCount = await bitcoindDefaultClient.getBlockCount()
-  await mineBlockAndSync({ lnds: [lndOutside2, lndOutside1, lndMain], blockHeight: currentBlockCount + 6 })
-  await sleep(10000)
+  
+  // let currentBlockCount = await bitcoindDefaultClient.getBlockCount()
+  // await mineBlockAndSync({ lnds: [lndOutside2, lndOutside1, lndMain], blockHeight: currentBlockCount + 6 })
+  // await sleep(10000)
 })
 
 afterAll(async () => {

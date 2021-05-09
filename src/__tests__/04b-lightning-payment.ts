@@ -5,10 +5,10 @@ import { createHash, randomBytes } from 'crypto';
 import { FEECAP, lnd } from "../lndConfig";
 import { setupMongoConnection } from "../mongodb";
 import { InvoiceUser, Transaction } from "../schema";
-import { checkIsBalanced, getUserWallet, lndOutside1, lndOutside2, mockGetExchangeBalance } from "./helper";
+import { checkIsBalanced, getUserWallet, lndMain, lndOutside1, lndOutside2, mockGetExchangeBalance, openChannelTesting } from "./helper";
 import { getHash, sleep } from "../utils";
 
-import { createInvoice, createHodlInvoice, settleHodlInvoice, cancelHodlInvoice, pay, decodePaymentRequest } from 'lightning'
+import { createInvoice, createHodlInvoice, settleHodlInvoice, cancelHodlInvoice, pay, decodePaymentRequest, getChannels, closeChannel } from 'lightning'
 import mongoose from "mongoose"
 
 let userWallet0, userWallet1, userWallet2
@@ -54,7 +54,14 @@ afterEach(async () => {
 
 afterAll(async () => {
   jest.restoreAllMocks();
+  // remove direct connection between lndoutside1 and lndoutside2
+  const { channels } = await getChannels({ lnd: lndOutside2 })
+  await closeChannel({ lnd: lndOutside2, id: channels[channels.length - 1].id })
 
+  // open channel from lndMain to lndOutside2
+  // So that we have a route from lndOutside 1 to lndOutside2 via lndMain
+  const socket = `lnd-outside-2:9735`
+  await openChannelTesting({ lnd: lndMain, other_lnd: lndOutside2, socket })
   await mongoose.connection.close()
 });
 
