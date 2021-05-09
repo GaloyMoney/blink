@@ -1,11 +1,8 @@
 import { default as axios } from 'axios';
-import { getChainBalance, getChannelBalance, getClosedChannels, getPendingChainBalance, getWalletInfo } from "lightning";
+import { getChainBalance, getChannelBalance, getClosedChannels, getForwards, getPendingChainBalance, getWalletInfo } from "lightning";
 import _ from "lodash";
 import { lnd } from "./lndConfig";
 import { baseLogger } from "./logger";
-import * as lnService from "ln-service"
-import { default as axios } from 'axios';
-import { getChannelBalance, getClosedChannels, getWalletInfo, getForwards } from "lightning"
 import { DbMetadata } from "./schema";
 import { MainBook } from "./mongodb";
 import { lndAccountingPath, revenueFeePath } from "./ledger/ledger";
