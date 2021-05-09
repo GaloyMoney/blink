@@ -66,7 +66,7 @@ it('opens channel from lnd1ToLndOutside1', async () => {
 //   try {
 //     const socket = `lnd-outside-1:9735`
   
-//     await openChannel({ lnd: lndMain, other_lnd: lndOutside1, socket })
+//     await openChannelTesting({ lnd: lndMain, other_lnd: lndOutside1, socket })
   
 //     let channels
   

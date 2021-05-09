@@ -1,5 +1,7 @@
+import { default as axios } from 'axios';
+import { getChainBalance, getChannelBalance, getClosedChannels, getPendingChainBalance, getWalletInfo } from "lightning";
 import _ from "lodash";
-import { lnd } from "./lndConfig"
+import { lnd } from "./lndConfig";
 import { baseLogger } from "./logger";
 import * as lnService from "ln-service"
 import { default as axios } from 'axios';
@@ -14,12 +16,12 @@ const MS_PER_DAY = 864e5
 
 export const lndBalances = async () => {
   // Onchain
-  const { chain_balance } = await lnService.getChainBalance({ lnd })
-  const { channel_balance, pending_balance: opening_channel_balance } = await getChannelBalance({ lnd })
+  const { chain_balance } = await getChainBalance({lnd})
+  const { channel_balance, pending_balance: opening_channel_balance } = await getChannelBalance({lnd})
 
   //FIXME: This can cause incorrect balance to be reported in case an unconfirmed txn is later cancelled/double spent
   // bitcoind seems to have a way to report this correctly. does lnd have?
-  const { pending_chain_balance } = await lnService.getPendingChainBalance({ lnd })
+  const { pending_chain_balance } = await getPendingChainBalance({lnd})
 
   // get pending closed
   const { channels: closedChannels } = await getClosedChannels({ lnd })
