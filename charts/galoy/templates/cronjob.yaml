@@ -15,12 +15,7 @@ spec:
           containers:
           - name: {{ .name }}
             image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag }}"
-            {{- if .command }}
             command: ["/bin/sh","-c", {{ .command | quote }}]
-            {{- end }}
-            {{- if .args }}
-            args: {{ .args }}
-            {{- end }}
             volumeMounts:
             - name: firebase-serviceaccount
               mountPath: "/tmp/firebase-serviceaccount"
