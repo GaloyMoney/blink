@@ -53,13 +53,13 @@ service:
 
 cron:
 - name: cronjob
-  command: "yarn ts-node src/entrypoint/cron.ts"
+  args: ["lib/entrypoint/cron.js"]
   schedule: "0 2 * * *"
 - name: balance-notif
-  command: "yarn ts-node src/entrypoint/dailyBalanceNotification.ts"
+  args: ["lib/entrypoint/dailyBalanceNotification.js"]
   schedule: "0 14 * * *"
 - name: dealer-update
-  command: "yarn ts-node src/entrypoint/dealer.ts"
+  args: ["lib/entrypoint/dealer.js"]
   schedule: "0,10,20,30,40,50 * * * *"
 
 
