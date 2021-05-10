@@ -225,7 +225,7 @@ const main = async () => {
 const healthCheck = () => {
   const app = express()
   const port = 8888
-  app.get('/health', (req, res) => {
+  app.get('/healthz', (req, res) => {
     getWalletInfo({ lnd }, (err, ) => !err ? res.sendStatus(200) : res.sendStatus(500));
   })
   app.listen(port, () => logger.info(`Health check listening on port ${port}!`))
