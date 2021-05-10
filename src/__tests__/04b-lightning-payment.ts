@@ -121,7 +121,7 @@ functionToTests.forEach(({fn, name, initialFee}) => {
   it(`doesn't allow more active payments than the limit - ${name}`, async () => {
     const currentPendingPayments = await userWallet3.user.pendingPayments
     for (let i=0; i < yamlConfig.limits.pendingPayments.level[userWallet3.user.level] - currentPendingPayments; i++) {
-      const { id, secret } = createInvoiceHash()
+      const { id } = createInvoiceHash()
       const { request } = await createHodlInvoice({ id, lnd: lndOutside1, tokens: amountInvoice });
       const result = await fn(userWallet3)({invoice: request})
       expect(result).toBe("pending")
