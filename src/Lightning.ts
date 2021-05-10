@@ -515,8 +515,6 @@ export const LightningMixin = (superclass) => class extends superclass {
             // where multiple payment have the same hash
             // ie: when a payment is being retried
 
-            console.log({entry}, "entry if error")
-
             await Transaction.updateMany({ hash: id }, { pending: false, error: err[1] })
             await MainBook.void(entry.journal._id, err[1])
             lightningLogger.warn({ success: false, err, ...metadata, entry }, `payment error`)
