@@ -51,7 +51,7 @@ service:
   targetPort: 3000
   port: 3000
 - name: trigger
-  type: NodePort
+  type: ClusterIP
   targetPort: 8888
   port: 8888
 
