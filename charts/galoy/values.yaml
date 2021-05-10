@@ -17,7 +17,7 @@ image:
 
 deployment:
 - name: graphql
-  command: "yarn run ts-node ./src/entrypoint/graphql.ts"
+  args: ["lib/entrypoint/graphql.js"]
   healthz: true
   targetPort: 4000
   replicaCount: 2
@@ -26,7 +26,7 @@ deployment:
     prometheus.io/port: "4000"
     prometheus.io/scrape: "true"
 - name: exporter
-  command: "yarn run ts-node ./src/entrypoint/exporter.ts"
+  args: ["lib/entrypoint/exporter.js"]
   healthz: true
   targetPort: 3000
   replicaCount: 1
@@ -35,7 +35,7 @@ deployment:
     prometheus.io/port: "3000"
     prometheus.io/scrape: "true"
 - name: trigger
-  command: "yarn run ts-node ./src/entrypoint/trigger.ts"
+  args: ["lib/entrypoint/trigger.js"]
   healthz: true
   targetPort: 8888
   replicaCount: 1
