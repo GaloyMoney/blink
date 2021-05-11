@@ -55,11 +55,33 @@ type Contact {
 }
 
 type Invoice {
-  addInvoice(value: Int, memo: String): String
-  updatePendingInvoice(hash: String!): Boolean
-  payInvoice(invoice: String!, amount: Int, memo: String): String #FIXME: use a more precise type
-  payKeysendUsername(amount: Int!, destination: String!, username: String!, memo: String): String
-  getFee(destination: String, amount: Int, invoice: String, memo: String): Int # sats
+  addInvoice(
+    value: Int @range(min: 0, policy: THROW),
+    memo: String @stringLength(max: 1024, policy: THROW) # TODO: add limit on the mobile app
+  ):String @pattern(regexp: "^ln")
+  
+  updatePendingInvoice(
+    hash: String! @stringLength(min: 64, max: 64, policy: THROW) @pattern(regexp: "^[A-Fa-f0-9]+$", policy: THROW)
+  ): Boolean
+
+  payInvoice(
+    invoice: String! @pattern(regexp: "^ln",  policy: THROW),
+    amount: Int @range(min: 0, policy: THROW),
+    memo: String
+  ): String #FIXME: use a more precise type
+
+  payKeysendUsername(
+    amount: Int! @range(min: 0, policy: THROW),
+    destination: String!, 
+    username: String! @pattern(regexp: "^[A-Za-z0-9]+$", policy: THROW),
+    memo: String @stringLength(max: 1024, policy: THROW) # TODO: add limit on the mobile app
+  ): String
+
+  getFee(
+    destination: String,
+    amount: Int! @range(min: 0, policy: THROW),
+    invoice: String! @pattern(regexp: "^ln",  policy: THROW),
+  ): Int # sats
 }
 
 type OnChain {

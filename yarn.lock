@@ -2170,6 +2170,14 @@
   dependencies:
     safe-buffer "^5.0.1"
 
+"@profusion/apollo-validation-directives@^2.1.3":
+  version "2.1.3"
+  resolved "https://registry.yarnpkg.com/@profusion/apollo-validation-directives/-/apollo-validation-directives-2.1.3.tgz#e6dc1028e3574e3f7b0a842be01044ac824c94be"
+  integrity sha512-HwX/zTBJwNogtzg8un4rz4ewCoInlow/pgpoDyNM/KFt+Cxp7NAD0Zmt7esoGimLUgj6hIEakf0GWZObdgEP7Q==
+  dependencies:
+    graphql-tag "^2.11.0"
+    graphql-tools "^4.0.8"
+
 "@protobufjs/aspromise@^1.1.1", "@protobufjs/aspromise@^1.1.2":
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/@protobufjs/aspromise/-/aspromise-1.1.2.tgz#9b8b0cc663d669a7d8f6f5d0893a14d348f30fbf"

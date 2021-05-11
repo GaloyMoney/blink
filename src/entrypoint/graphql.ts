@@ -35,6 +35,7 @@ import { WalletFactory, WalletFromUsername } from "../walletFactory";
 import { getCurrentPrice } from "../realtimePrice";
 import { getAsyncRedisClient } from "../redis";
 import { yamlConfig } from '../config';
+import { range, pattern, stringLength, ValidateDirectiveVisitor } from '@profusion/apollo-validation-directives';
 
 dotenv.config()
 
@@ -200,13 +201,17 @@ const resolvers = {
       const wallet = await WalletFromUsername({username, logger})
       return wallet.addInvoice({ selfGenerated: false, value })
     },
-    invoice: async (_, __, { wallet }) => ({
-      addInvoice: async ({ value, memo }) => wallet.addInvoice({ value, memo }),
+    invoice: async (_, __, { wallet, validationErrors }) => ({
+      addInvoice: async ({ value, memo }) => {
+        console.log({value, memo, validationErrors})
+        // return "result"
+        return wallet.addInvoice({ value, memo })
+      },
       // FIXME: move to query
       updatePendingInvoice: async ({ hash }) => wallet.updatePendingInvoice({ hash }),
       payInvoice: async ({ invoice, amount, memo }) => wallet.pay({ invoice, amount, memo }),
       payKeysendUsername: async ({ destination, username, amount, memo }) => wallet.pay({ destination, username, amount, memo }),
-      getFee: async ({ destination, amount, invoice, memo }) => wallet.getLightningFee({ destination, amount, invoice, memo })
+      getFee: async ({ destination, amount, invoice }) => wallet.getLightningFee({ destination, amount, invoice })
     }),
     earnCompleted: async (_, { ids }, { wallet }) => wallet.addEarn(ids),
     deleteUser: () => {
@@ -293,16 +298,37 @@ const permissions = shield({
 export async function startApolloServer() {
   const app = express();
 
-  const schema = applyMiddleware(
-    makeExecutableSchema({
-      typeDefs: importSchema(path.join(__dirname, "../schema.graphql")),
-      resolvers,
-    }),
-    permissions
-  );
+    // try load file sync instead
+
+  // const myTypeDefs = importSchema(path.join(__dirname, "../schema.graphql"))
+  const fs = require('fs');
+
+  const myTypeDefs = fs.readFileSync(path.join(__dirname, "../schema.graphql"),
+            {encoding:'utf8', flag:'r'});
+
+  const execSchema = makeExecutableSchema({
+    typeDefs: [
+      myTypeDefs,
+      ...ValidateDirectiveVisitor.getMissingCommonTypeDefs(),
+      ...range.getTypeDefs(),
+      ...pattern.getTypeDefs(),
+      ...stringLength.getTypeDefs(),
+    ],
+    // @ts-ignore
+    schemaDirectives: { pattern, range, stringLength },
+    resolvers,
+  })
+
+  ValidateDirectiveVisitor.addValidationResolversToSchema(execSchema);
+
+  // const schema = applyMiddleware(
+  //   execSchema,
+  //   permissions
+  // );
 
   const server = new ApolloServer({
-    schema,
+    schema: execSchema,
+    // schema,
     playground: process.env.NETWORK !== 'mainnet',
     introspection: process.env.NETWORK !== 'mainnet',
     context: async (context) => {
