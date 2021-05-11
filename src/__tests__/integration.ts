@@ -35,9 +35,10 @@ it('rate limit limiterRequestPhoneCode', async () => {
   }`
 
   // exhaust the limiter
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 4; i++) {
     console.log(i);
-    await mutate({mutation, variables: {phone}})
+    const result = await mutate({mutation, variables: {phone}})
+    expect(result.errors).toBeFalsy()
   }
   
   try {
