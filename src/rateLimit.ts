@@ -15,3 +15,11 @@ export const limiterRequestPhoneCode = new RateLimiterRedis({
   duration: yamlConfig.limits.requestPhoneCode.duration,
   blockDuration: yamlConfig.limits.requestPhoneCode.blockDuration, 
 });
+
+export const limiterLoginAttempt = new RateLimiterRedis({
+  redis: redisClient,
+  keyPrefix: 'request_phone_code',
+  points: yamlConfig.limits.loginAttempt.points,
+  duration: yamlConfig.limits.loginAttempt.duration,
+  blockDuration: yamlConfig.limits.loginAttempt.blockDuration, 
+});

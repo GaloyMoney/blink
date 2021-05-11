@@ -5,7 +5,7 @@ import { createToken } from "./jwt"
 import { yamlConfig } from "./config";
 import { baseLogger } from './logger'
 import { randomIntFromInterval } from "./utils"
-import { limiterRequestPhoneCode } from "./rateLimit"
+import { limiterLoginAttempt, limiterRequestPhoneCode } from "./rateLimit"
 import { TooManyRequestError } from "./error";
 
 const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER
@@ -41,13 +41,8 @@ export const getCarrier = async (phone: string) => {
 
 export const requestPhoneCode = async ({ phone, logger }: {phone: string, logger: any}): Promise<Boolean> => {
 
-  const rl = await limiterRequestPhoneCode.get(phone);
-  if (rl !== null && rl.consumedPoints > yamlConfig.limits.requestPhoneCode.points) {
-    throw new TooManyRequestError({ logger })
-  }
-
   try {
-    await rl.consume(phone);
+    await limiterRequestPhoneCode.consume(phone);
   } catch(err) {
     if (err instanceof Error) {
       throw err;
@@ -95,8 +90,22 @@ interface ILogin {
 export const login = async ({ phone, code, logger }: ILogin) => {
   const subLogger = logger.child({topic: "login"})
 
+  const rlResult = await limiterLoginAttempt.get(phone);
+  if (rlResult !== null && rlResult.consumedPoints > yamlConfig.limits.requestPhoneCode.points) {
+    throw new TooManyRequestError({ logger })
+  }
+
   try {
-    // TODO: rate limit this method per phone with backoff
+    await limiterLoginAttempt.consume(phone);
+  } catch(err) {
+    if (err instanceof Error) {
+      throw err;
+    } else {
+      throw new TooManyRequestError({ logger })
+    }
+  }
+
+  try {
     const codes = await PhoneCode.find({
       phone,
       created_at: {
@@ -116,7 +125,10 @@ export const login = async ({ phone, code, logger }: ILogin) => {
     }
 
     // code is correct
-    
+
+    // reseting the limiter for this phone
+    limiterLoginAttempt.delete(phone) // no need to await the promise
+
     // get User 
     let user
 
