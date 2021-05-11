@@ -200,12 +200,8 @@ const resolvers = {
       const wallet = await WalletFromUsername({username, logger})
       return wallet.addInvoice({ selfGenerated: false, value })
     },
-    invoice: async (_, __, { wallet, validationErrors }) => ({
-      addInvoice: async ({ value, memo }) => {
-        console.log({value, memo, validationErrors})
-        // return "result"
-        return wallet.addInvoice({ value, memo })
-      },
+    invoice: async (_, __, { wallet }) => ({
+      addInvoice: async ({ value, memo }) => wallet.addInvoice({ value, memo }),
       // FIXME: move to query
       updatePendingInvoice: async ({ hash }) => wallet.updatePendingInvoice({ hash }),
       payInvoice: async ({ invoice, amount, memo }) => wallet.pay({ invoice, amount, memo }),
