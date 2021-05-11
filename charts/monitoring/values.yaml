@@ -25,7 +25,7 @@ grafana:
     plugins:
       allow_loading_unsigned_plugins: "doitintl-bigquery-datasource"
 
-#TODO: Add script to fetch mongodb plugin from github
+# TODO: Add script to fetch mongodb plugin from github
 # extraInitContainers: |
 #   - name: mongodb-plugin-installer
 #     image: alpine:3.12

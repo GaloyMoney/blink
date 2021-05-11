@@ -9,17 +9,14 @@ import { find } from "lodash";
 import { updateUsersPendingPayment } from '../ledger/balanceSheet';
 import { lndAccountingPath, lndFeePath } from "../ledger/ledger";
 import { lnd } from "../lndConfig";
+import { baseLogger } from '../logger';
 import { MainBook, setupMongoConnection } from "../mongodb";
 import { transactionNotification } from "../notifications/payment";
 import { Price } from "../priceImpl";
 import { InvoiceUser, Transaction, User } from "../schema";
-import { baseLogger } from '../logger'
-import { bitcoindDefaultClient, LOOK_BACK, sleep } from '../utils';
+import { LOOK_BACK } from '../utils';
 import { WalletFactory } from "../walletFactory";
 
-
-//millitokens per million
-const FEE_RATE = 2500
 
 const logger = baseLogger.child({ module: "trigger" })
 
@@ -228,7 +225,7 @@ const main = async () => {
 const healthCheck = () => {
   const app = express()
   const port = 8888
-  app.get('/health', (req, res) => {
+  app.get('/healthz', (req, res) => {
     getWalletInfo({ lnd }, (err, ) => !err ? res.sendStatus(200) : res.sendStatus(500));
   })
   app.listen(port, () => logger.info(`Health check listening on port ${port}!`))

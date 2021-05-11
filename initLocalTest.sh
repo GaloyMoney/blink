@@ -70,6 +70,13 @@ helmUpgrade () {
   command helm upgrade -i -n=$NAMESPACE "$@"
 }
 
+helmUpgradeDebug () {
+  echo ""
+  echo ""
+  echo "---"
+  echo "executing upgrade: helm install --dry-run --debug -n=$NAMESPACE $@ > debug.yaml"
+  command helm install --dry-run --debug -n=$NAMESPACE "$@" > debug.yaml
+}
 
 kubectlWait () {
   echo "waiting for -n=$NAMESPACE -l $@"
@@ -145,6 +152,11 @@ fi
 export MONGODB_ROOT_PASSWORD=$(kubectl get secret -n $NAMESPACE galoy-mongodb -o jsonpath="{.data.mongodb-root-password}" | base64 -d)
 export MONGODB_PASSWORD=$(kubectl get secret -n $NAMESPACE galoy-mongodb -o jsonpath="{.data.mongodb-password}" | base64 -d)
 export MONGODB_REPLICA_SET_KEY=$(kubectl get secret -n $NAMESPACE galoy-mongodb -o jsonpath="{.data.mongodb-replica-set-key}" | base64 -d)
+
+# helmUpgradeDebug galoy \
+#   $configpath $localdevpath \
+#   --set mongodb.auth.password=$MONGODB_PASSWORD,mongodb.auth.rootPassword=$MONGODB_ROOT_PASSWORD,mongodb.auth.replicaSetKey=$MONGODB_REPLICA_SET_KEY,image.tag=$CIRCLE_SHA1 \
+#   $INFRADIR/galoy/
 
 helmUpgrade galoy \
   $configpath $localdevpath \
