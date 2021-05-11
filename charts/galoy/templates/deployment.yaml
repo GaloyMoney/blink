@@ -196,6 +196,7 @@ spec:
             initialDelaySeconds: 60
             periodSeconds: 10
             failureThreshold: 5
+            timeoutSeconds: {{ .timeoutSeconds | default 1 }}
           readinessProbe:
             httpGet:
               path: /healthz
@@ -203,6 +204,7 @@ spec:
             initialDelaySeconds: 5
             failureThreshold: 5
             successThreshold: 2
+            timeoutSeconds: {{ .timeoutSeconds | default 1 }}
           {{- end }}
       volumes:
       {{- if $.Values.needFirebaseServiceAccount }}

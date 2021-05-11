@@ -10,7 +10,7 @@ bitcoind:
     8332
 
 ca:
-  CAEmail: krtk6160@galoy.io
+  CAEmail: dev@galoy.io
 
 image:
   repository: gcr.io/galoyapp/galoy
@@ -39,6 +39,7 @@ deployment:
   healthz: true
   targetPort: 8888
   replicaCount: 1
+  timeoutSeconds: 5
   # cpu request: 0.001
 
 service:

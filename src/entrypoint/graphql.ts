@@ -2,7 +2,6 @@ import { ApolloServer } from 'apollo-server-express';
 import dotenv from "dotenv";
 import express from 'express';
 import expressJwt from "express-jwt";
-import { importSchema } from 'graphql-import';
 import { applyMiddleware } from "graphql-middleware";
 import { and, rule, shield } from 'graphql-shield';
 import { makeExecutableSchema } from "graphql-tools";
@@ -35,6 +34,7 @@ import { WalletFactory, WalletFromUsername } from "../walletFactory";
 import { getCurrentPrice } from "../realtimePrice";
 import { getAsyncRedisClient } from "../redis";
 import { yamlConfig } from '../config';
+import { range, pattern, stringLength, ValidateDirectiveVisitor } from '@profusion/apollo-validation-directives';
 
 dotenv.config()
 
@@ -206,12 +206,9 @@ const resolvers = {
       updatePendingInvoice: async ({ hash }) => wallet.updatePendingInvoice({ hash }),
       payInvoice: async ({ invoice, amount, memo }) => wallet.pay({ invoice, amount, memo }),
       payKeysendUsername: async ({ destination, username, amount, memo }) => wallet.pay({ destination, username, amount, memo }),
-      getFee: async ({ destination, amount, invoice, memo }) => wallet.getLightningFee({ destination, amount, invoice, memo })
+      getFee: async ({ destination, amount, invoice }) => wallet.getLightningFee({ destination, amount, invoice })
     }),
     earnCompleted: async (_, { ids }, { wallet }) => wallet.addEarn(ids),
-    deleteUser: () => {
-      // TODO
-    },
     onchain: async (_, __, { wallet }) => ({
       getNewAddress: () => wallet.getOnChainAddress(),
       pay: ({ address, amount, memo }) => ({ success: wallet.onChainPay({ address, amount, memo }) }),
@@ -280,7 +277,6 @@ const permissions = shield({
     earnCompleted: isAuthenticated,
     updateUser: isAuthenticated,
     updateContact: isAuthenticated,
-    deleteUser: isAuthenticated,
     addDeviceToken: isAuthenticated,
     testMessage: isAuthenticated,
     addToMap: and(isAuthenticated, isEditor),
@@ -293,11 +289,31 @@ const permissions = shield({
 export async function startApolloServer() {
   const app = express();
 
+    // try load file sync instead
+
+  // const myTypeDefs = importSchema(path.join(__dirname, "../schema.graphql"))
+  const fs = require('fs');
+
+  const myTypeDefs = fs.readFileSync(path.join(__dirname, "../schema.graphql"),
+            {encoding:'utf8', flag:'r'});
+
+  const execSchema = makeExecutableSchema({
+    typeDefs: [
+      myTypeDefs,
+      ...ValidateDirectiveVisitor.getMissingCommonTypeDefs(),
+      ...range.getTypeDefs(),
+      ...pattern.getTypeDefs(),
+      ...stringLength.getTypeDefs(),
+    ],
+    // @ts-ignore
+    schemaDirectives: { pattern, range, stringLength },
+    resolvers,
+  })
+
+  ValidateDirectiveVisitor.addValidationResolversToSchema(execSchema);
+
   const schema = applyMiddleware(
-    makeExecutableSchema({
-      typeDefs: importSchema(path.join(__dirname, "../schema.graphql")),
-      resolvers,
-    }),
+    execSchema,
     permissions
   );
 
