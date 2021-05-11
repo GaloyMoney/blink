@@ -2,7 +2,6 @@ import { ApolloServer } from 'apollo-server-express';
 import dotenv from "dotenv";
 import express from 'express';
 import expressJwt from "express-jwt";
-import { importSchema } from 'graphql-import';
 import { applyMiddleware } from "graphql-middleware";
 import { and, rule, shield } from 'graphql-shield';
 import { makeExecutableSchema } from "graphql-tools";

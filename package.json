@@ -49,7 +49,6 @@
     "express-jwt": "^6.0.0",
     "firebase-admin": "^9.3.0",
     "graphql": "^15.5.0",
-    "graphql-import": "^1.0.2",
     "graphql-middleware": "^6.0.4",
     "graphql-shield": "^7.3.8",
     "graphql-tools": "^7.0.4",
