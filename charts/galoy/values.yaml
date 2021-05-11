@@ -10,7 +10,7 @@ bitcoind:
     8332
 
 ca:
-  CAEmail: krtk6160@galoy.io
+  CAEmail: dev@galoy.io
 
 image:
   repository: gcr.io/galoyapp/galoy
