@@ -12,7 +12,6 @@ import { UserWallet } from "./userWallet";
 import { Transaction, User } from "./schema";
 import { createChainAddress, getChainBalance, getChainFeeEstimate, getChainTransactions, getHeight, sendToChainAddress } from "lightning"
 
-import bluebird from 'bluebird';
 import { yamlConfig } from "./config";
 import { InsufficientBalanceError, NewAccountWithdrawalError, SelfPaymentError, TransactionRestrictedError } from './error';
 
@@ -189,7 +188,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
         {
           fee += this.user.withdrawFee
-          const sats = amount + fee + this.user.withdrawFee
+          const sats = amount + fee
           const metadata = { currency: "BTC", hash: id, type: "onchain_payment", pending: true, ...UserWallet.getCurrencyEquivalent({ sats, fee }) }
   
           // TODO/FIXME refactor. add the transaction first and set the fees in a second tx.
