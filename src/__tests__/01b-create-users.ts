@@ -6,7 +6,6 @@ import { AdminOps } from "../AdminOps";
 import { yamlConfig } from "../config";
 import { setupMongoConnection } from "../mongodb";
 import { User } from "../schema";
-import { UserWallet } from "../userWallet";
 import { getUserWallet } from "./helper";
 
 jest.mock('../realtimePrice')
