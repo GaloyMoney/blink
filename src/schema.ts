@@ -60,7 +60,7 @@ const UserSchema = new Schema({
   },
   withdrawFee: {
     type: Number,
-    default: yamlConfig.fees.deposit,
+    default: yamlConfig.fees.withdraw,
     min: 0
   },
   lastConnection: Date,
