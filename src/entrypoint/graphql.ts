@@ -213,9 +213,6 @@ const resolvers = {
       getFee: async ({ destination, amount, invoice }) => wallet.getLightningFee({ destination, amount, invoice })
     }),
     earnCompleted: async (_, { ids }, { wallet }) => wallet.addEarn(ids),
-    deleteUser: () => {
-      // TODO
-    },
     onchain: async (_, __, { wallet }) => ({
       getNewAddress: () => wallet.getOnChainAddress(),
       pay: ({ address, amount, memo }) => ({ success: wallet.onChainPay({ address, amount, memo }) }),
@@ -284,7 +281,6 @@ const permissions = shield({
     earnCompleted: isAuthenticated,
     updateUser: isAuthenticated,
     updateContact: isAuthenticated,
-    deleteUser: isAuthenticated,
     addDeviceToken: isAuthenticated,
     testMessage: isAuthenticated,
     addToMap: and(isAuthenticated, isEditor),
@@ -320,13 +316,13 @@ export async function startApolloServer() {
 
   ValidateDirectiveVisitor.addValidationResolversToSchema(execSchema);
 
-  // const schema = applyMiddleware(
-  //   execSchema,
-  //   permissions
-  // );
+  const schema = applyMiddleware(
+    execSchema,
+    permissions
+  );
 
   const server = new ApolloServer({
-    schema: execSchema,
+    schema,
     // schema,
     playground: process.env.NETWORK !== 'mainnet',
     introspection: process.env.NETWORK !== 'mainnet',
