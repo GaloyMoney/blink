@@ -6,7 +6,6 @@ import {redlock, getResource, lockExtendOrThrow} from "../lock"
 import { sleep } from "../utils"
 import { baseLogger } from '../logger'
 import redis from 'redis'
-import { captureRejectionSymbol } from "events"
 
 const uid = "1234"
 

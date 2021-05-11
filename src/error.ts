@@ -46,3 +46,10 @@ export class NewAccountWithdrawalError extends CustomError {
     super(message, 'NEW_ACCOUNT_WITHDRAWAL_RESTRICTED', {forwardToClient, logger, level})
   }
 }
+
+export class TooManyRequestError extends CustomError {
+  constructor({forwardToClient = true, logger, level = "warn"}) {
+    const message = "too many request"
+    super(message, 'TOO_MANY_REQUEST', {forwardToClient, logger, level})
+  }
+}

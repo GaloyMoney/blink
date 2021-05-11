@@ -55,6 +55,10 @@ test_accounts:
   currency: "BTC"
 
 limits:
+  requestPhoneCode:
+    points: 3
+    durations: 10800 # 60 * 60 * 3
+    blockDuration: 3600 # 60 * 60
   oldEnoughForWithdrawal: 172800000 # 1000 * 60 * 60 * 24 * 2, in ms # 2 days
   withdrawal:
     level:

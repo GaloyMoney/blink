@@ -5,6 +5,8 @@ import { createToken } from "./jwt"
 import { yamlConfig } from "./config";
 import { baseLogger } from './logger'
 import { randomIntFromInterval } from "./utils"
+import { limiterRequestPhoneCode } from "./rateLimit"
+import { TooManyRequestError } from "./error";
 
 const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER
 const getTwilioClient = () => {
@@ -37,7 +39,22 @@ export const getCarrier = async (phone: string) => {
   return result
 }
 
-export const requestPhoneCode = async ({ phone, logger }) => {
+export const requestPhoneCode = async ({ phone, logger }: {phone: string, logger: any}): Promise<Boolean> => {
+
+  const rl = await limiterRequestPhoneCode.get(phone);
+  if (rl !== null && rl.consumedPoints > yamlConfig.limits.requestPhoneCode.points) {
+    throw new TooManyRequestError({ logger })
+  }
+
+  try {
+    await rl.consume(phone);
+  } catch(err) {
+    if (err instanceof Error) {
+      throw err;
+    } else {
+      throw new TooManyRequestError({ logger })
+    }
+  }
 
   // make it possible to bypass the auth for testing purpose
   if (yamlConfig.test_accounts.findIndex(item => item.phone === phone) !== -1) {
@@ -48,9 +65,6 @@ export const requestPhoneCode = async ({ phone, logger }) => {
   const body = `${code} is your verification code for ${yamlConfig.name}`
 
   try {
-    // TODO: implement backoff strategy instead this native delay
-    // making sure someone can not call the API thousands time in a row,
-    // which would make finding a code very easy
     const veryRecentCode = await PhoneCode.findOne({
       phone,
       created_at: {
