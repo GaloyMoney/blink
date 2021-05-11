@@ -138,7 +138,10 @@ kubectlWait app.kubernetes.io/name=lnd
 
 if [ ${LOCAL} ]
 then
-localdevpath="-f $INFRADIR/galoy/localdev.yaml"
+localdevpath="-f $INFRADIR/galoy/localdev.yaml --set image.repository=galoy"
+## FIXME: kind of a hack because it won't load the current version but the last one pushed on gcr
+## but still useful is some scenario
+export CIRCLE_SHA1="latest"
 fi
 
 if [ "$NETWORK" == "testnet" ] || [ "$NETWORK" == "mainnet" ];

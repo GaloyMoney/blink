@@ -8,4 +8,4 @@ mongodb:
     type: LoadBalancer
   architecture: standalone
 
-deployment: []
+# deployment: []

@@ -30,6 +30,9 @@ spec:
     spec:
       containers:
         - name: {{ .name }}
+          {{- if eq $.Values.global.network "regtest" }}
+          imagePullPolicy: Never
+          {{- end }}
           image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag }}{{- if .debugContainer -}}-debug{{- end -}}"
           {{- if .command }}
           command: ["/bin/sh","-c", {{ .command }}]

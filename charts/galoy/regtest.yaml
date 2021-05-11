@@ -39,7 +39,7 @@ deployment:
 needFirebaseServiceAccount: false
 twilio: false
 
-mongodbaddress: "galoy-mongodb-headless"
+mongodbaddress: "galoy-mongodb"
 
 price:
   service:
