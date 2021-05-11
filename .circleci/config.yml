@@ -33,10 +33,17 @@ jobs:
       - gcp-gcr/build-image:
           image: galoy
           tag: $CIRCLE_SHA1
+      - gcp-gcr/build-image:
+          image: galoy
+          dockerfile: Dockerfile-debug
+          tag: $CIRCLE_SHA1-debug
       - gcp-gcr/gcr-auth
       - gcp-gcr/push-image:
           image: galoy
           tag: $CIRCLE_SHA1
+      - gcp-gcr/push-image:
+          image: galoy
+          tag: $CIRCLE_SHA1-debug
 
   test:
     docker:
@@ -59,16 +66,17 @@ jobs:
       - run:
           name: Run jest test
           command: |
-            kubectl exec --namespace=$NAMESPACE $(kubectl get pods --namespace=$NAMESPACE --selector=app=testpod --output=jsonpath={.items..metadata.name}) -- sh -c "yarn test --max_old_space_size=3000"
+            kubectl exec --namespace=$NAMESPACE $(kubectl get pods --namespace=$NAMESPACE --selector=app=testpod --output=jsonpath={.items..metadata.name}) -- /nodejs/bin/node node_modules/.bin/jest --ci --reporters=default --reporters=jest-junit --forceExit
+            # export JEST_JUNIT_OUTPUT_DIR=\"./artifacts\" && jest --ci --reporters=default --reporters=jest-junit --forceExit
       - run:
           name: Run postman test
           command: |
-            kubectl exec --namespace=$NAMESPACE $(kubectl get pods --namespace=$NAMESPACE --selector=app=testpod --output=jsonpath={.items..metadata.name}) -- sh -c "yarn run postman"
+            kubectl exec --namespace=$NAMESPACE $(kubectl get pods --namespace=$NAMESPACE --selector=app=testpod --output=jsonpath={.items..metadata.name}) -- /nodejs/bin/node node_modules/.bin/ts-node src/postman/newman.ts
       - run:
           name: Fetch test results
           # source $BASH_ENV
           command: |
-            kubectl cp --namespace=$NAMESPACE $(kubectl get pods --namespace=$NAMESPACE --selector=app=testpod --output=jsonpath={.items..metadata.name}):/artifacts/junit.xml ./reports/junit.xml
+            kubectl cp --namespace=$NAMESPACE $(kubectl get pods --namespace=$NAMESPACE --selector=app=testpod --output=jsonpath={.items..metadata.name}):/app/junit.xml ./reports/junit.xml
           when: always
       # - run:
       #     name: sleep
