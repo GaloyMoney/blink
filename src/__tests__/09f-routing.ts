@@ -1,17 +1,14 @@
 import { mineBlockAndSync, openChannelTesting } from './helper'
-import {closeChannel, createInvoice, getChannels, openChannel, pay} from 'lightning'
+import {closeChannel, createInvoice, getChannels, getNetworkGraph, getPendingChannels, getNetworkInfo, getWalletInfo, openChannel, pay} from 'lightning'
 import { lndMain, lndOutside1, lndOutside2 } from './helper'
 import { bitcoindDefaultClient, sleep } from '../utils'
+import { addPeer } from 'ln-service'
 import { updateRoutingFees } from '../lndUtils'
 import { MainBook, setupMongoConnection } from '../mongodb'
 import { revenueFeePath } from '../ledger/ledger'
 
 beforeAll(async () => {
   await setupMongoConnection()
-  
-  // let currentBlockCount = await bitcoindDefaultClient.getBlockCount()
-  // await mineBlockAndSync({ lnds: [lndOutside2, lndOutside1, lndMain], blockHeight: currentBlockCount + 6 })
-  // await sleep(10000)
 })
 
 afterAll(async () => {
@@ -19,6 +16,14 @@ afterAll(async () => {
 })
 
 it('records routing fee correctly', async () => {
+  console.log(await getNetworkGraph({lnd: lndOutside1}))
+  console.log(await getNetworkGraph({lnd: lndOutside2}))
+  console.log(await getNetworkGraph({lnd: lndMain}))
+
+  console.log(await getNetworkInfo({lnd: lndOutside1}))
+  console.log(await getNetworkInfo({lnd: lndOutside2}))
+  console.log(await getNetworkInfo({lnd: lndMain}))
+
   const { request } = await createInvoice({ lnd: lndOutside2, tokens: 1000 })
   
   await pay({ lnd: lndOutside1, request })

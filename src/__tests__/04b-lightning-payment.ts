@@ -17,7 +17,6 @@ let initBalance0, initBalance1, initBalance2
 const amountInvoice = 1000
 
 jest.mock('../notifications/notification')
-import { sendNotification } from "../notifications/notification";
 import { yamlConfig } from '../config';
 jest.mock('../realtimePrice')
 
