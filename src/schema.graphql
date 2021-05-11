@@ -58,7 +58,7 @@ type Invoice {
   addInvoice(
     value: Int @range(min: 0, policy: THROW),
     memo: String @stringLength(max: 1024, policy: THROW) # TODO: add limit on the mobile app
-  ):String @pattern(regexp: "^ln")
+  ): String @pattern(regexp: "^ln")
   
   updatePendingInvoice(
     hash: String! @stringLength(min: 64, max: 64, policy: THROW) @pattern(regexp: "^[A-Fa-f0-9]+$", policy: THROW)
@@ -80,7 +80,7 @@ type Invoice {
   getFee(
     destination: String,
     amount: Int! @range(min: 0, policy: THROW),
-    invoice: String! @pattern(regexp: "^ln",  policy: THROW),
+    invoice: String! @pattern(regexp: "^ln",  policy: THROW)
   ): Int # sats
 }
 
@@ -155,7 +155,13 @@ type Query {
   earnList: [Earn]
   me: User
   maps: [Marker]
-  buildParameters(appVersion: String @deprecated, buildVersion: String @deprecated, os: String @deprecated): BuildParameter
+  buildParameters(appVersion: String
+    # @deprecated
+   , buildVersion: String
+    # @deprecated
+    , os: String 
+    # @deprecated
+    ): BuildParameter
   nodeStats: NodeStats
   getLastOnChainAddress: LastOnChainAddress
   usernameExists(username: String!): Boolean
@@ -178,8 +184,12 @@ type Limits {
 }
 
 type UpdateUser {
-  setLanguage(language: String): Boolean @deprecated
-  setUsername(username: String!): Boolean @deprecated
+  setLanguage(language: String): Boolean 
+  # @deprecated 
+
+  setUsername(username: String!): Boolean 
+  # @deprecated 
+
   updateLanguage(language: String!): User
   updateUsername(username: String!): User
 }
@@ -196,7 +206,7 @@ enum AccountStatus {
 type Mutation {
   requestPhoneCode(phone: String): Success
   login(phone: String, code: Int, currency: String): Token
-    @deprecated(reason: "currency is no longer user. to be remove after mobile update")
+    # @deprecated(reason: "currency is no longer user. to be remove after mobile update")
   noauthAddInvoice(username: String!, value: Int): String
   onchain: OnChain
   invoice: Invoice
