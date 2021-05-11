@@ -2,8 +2,6 @@
 import { GraphQLError } from "graphql"
 import _ from 'lodash';
 
-import * as moment from 'moment'
-import validate from "validate.js"
 import bitcoindClient from 'bitcoin-core'
 import { parsePaymentRequest } from 'invoices';
 
@@ -120,21 +118,6 @@ export function timeout(delay, msg) {
     }, delay);
   });
 }
-
-// we are extending validate so that we can validate dates
-// which are not supported date by default
-validate.extend(validate.validators.datetime, {
-  // The value is guaranteed not to be null or undefined but otherwise it
-  // could be anything.
-  parse: function(value: any, options: any) {
-    return +moment.utc(value);
-  },
-  // Input is a unix timestamp
-  format: function(value: any, options: any) {
-    const format = options.dateOnly ? "YYYY-MM-DD" : "YYYY-MM-DD hh:mm:ss";
-    return moment.utc(value).format(format);
-  }
-})
 
 
 export async function measureTime(operation: Promise<any>): Promise<[any, number]> {
