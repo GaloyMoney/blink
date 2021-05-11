@@ -188,7 +188,7 @@ type Query {
   
   getUid(
     username: String @pattern(regexp: "^[A-Za-z0-9]+$", policy: THROW) @stringLength(min: 3, max: 50, policy: THROW),
-    phone: String
+    phone: String @pattern(regexp: "^\\+[0-9]+$", policy: THROW)
   ): ID
   getLevels: [Int]
   getLimits: Limits
