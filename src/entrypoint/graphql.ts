@@ -319,7 +319,6 @@ export async function startApolloServer() {
 
   const server = new ApolloServer({
     schema,
-    // schema,
     playground: process.env.NETWORK !== 'mainnet',
     introspection: process.env.NETWORK !== 'mainnet',
     context: async (context) => {
