@@ -5,7 +5,7 @@ import { createToken } from "./jwt"
 import { yamlConfig } from "./config";
 import { baseLogger } from './logger'
 import { randomIntFromInterval } from "./utils"
-import { limiterLoginAttempt, limiterRequestPhoneCode } from "./rateLimit"
+import { failedAttemptPerIp, limiterLoginAttempt, limiterRequestPhoneCode } from "./rateLimit"
 import { TooManyRequestError } from "./error";
 
 const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER
@@ -85,12 +85,13 @@ interface ILogin {
   phone: string
   code: number
   logger: any
+  ip: string
 }
 
-export const login = async ({ phone, code, logger }: ILogin) => {
+export const login = async ({ phone, code, logger, ip }: ILogin): Promise<string | null> => {
   const subLogger = logger.child({topic: "login"})
 
-  const rlResult = await limiterLoginAttempt.get(phone);
+  const rlResult = await failedAttemptPerIp.get(ip);
   if (rlResult !== null && rlResult.consumedPoints > yamlConfig.limits.loginAttempt.points) {
     throw new TooManyRequestError({ logger })
   }
@@ -121,6 +122,13 @@ export const login = async ({ phone, code, logger }: ILogin) => {
       // this branch is both relevant for test and non-test accounts
       // for when the code is not correct
       subLogger.warn({ phone, code }, `user enter incorrect code`)
+
+      try {
+        await failedAttemptPerIp.consume(ip);
+      } catch (err) {
+        logger.error({ip}, "impossible to consume failedAttemptPerIp")
+      }
+
       return null
     }
 

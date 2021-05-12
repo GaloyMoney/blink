@@ -57,12 +57,16 @@ test_accounts:
 limits:
   requestPhoneCode:
     points: 4
-    duration: 10800 # 60 * 60 * 3
-    blockDuration: 3600 # 60 * 60
+    duration: 10800 # 60 * 60 * 3 s
+    blockDuration: 3600 # 60 * 60 s
   loginAttempt:
     points: 8
-    duration: 1200 # 60 * 20
-    blockDuration: 3600 # 60 * 60
+    duration: 1200 # 60 * 20 s
+    blockDuration: 3600 # 60 * 60 s 
+  failedAttemptPerIp:
+    points: 30
+    duration: 21600 # 60 * 60 * 6 s 
+    blockDuration: 86400 # 60 * 60 * 24 s
   oldEnoughForWithdrawal: 172800000 # 1000 * 60 * 60 * 24 * 2, in ms # 2 days
   withdrawal:
     level:
