@@ -58,14 +58,14 @@ type Invoice {
   addInvoice(
     value: Int @range(min: 0, policy: THROW),
     memo: String @stringLength(max: 1024, policy: THROW) # TODO: add limit on the mobile app
-  ): String @pattern(regexp: "^ln[A-Za-z0-9_]+$")
+  ): String @pattern(regexp: "^ln[A-Za-z0-9]+$")
   
   updatePendingInvoice(
     hash: String! @stringLength(min: 64, max: 64, policy: THROW) @pattern(regexp: "^[A-Fa-f0-9]+$", policy: THROW)
   ): Boolean
 
   payInvoice(
-    invoice: String! @pattern(regexp: "^ln[A-Za-z0-9_]+$",  policy: THROW),
+    invoice: String! @pattern(regexp: "^ln[A-Za-z0-9]+$",  policy: THROW),
     amount: Int @range(min: 0, policy: THROW),
     memo: String @stringLength(max: 1024, policy: THROW) # TODO: add limit on the mobile app
   ): String #FIXME: use a more precise type
@@ -80,7 +80,7 @@ type Invoice {
   getFee(
     destination: String,
     amount: Int @range(min: 0, policy: THROW),
-    invoice: String @pattern(regexp: "^ln[A-Za-z0-9_]+$",  policy: THROW)
+    invoice: String @pattern(regexp: "^ln[A-Za-z0-9]+$",  policy: THROW)
   ): Int # sats
 }
 
@@ -88,13 +88,13 @@ type OnChain {
   getNewAddress: String
   
   pay(
-    address: String! @pattern(regexp: "^[A-Za-z0-9_]+$", policy: THROW),
+    address: String! @pattern(regexp: "^[A-Za-z0-9]+$", policy: THROW),
     amount: Int! @range(min: 0, policy: THROW),
     memo: String @stringLength(max: 1024, policy: THROW) # TODO: add limit on the mobile app
   ): Success
 
   getFee(
-    address: String! @pattern(regexp: "^[A-Za-z0-9_]+$", policy: THROW),
+    address: String! @pattern(regexp: "^[A-Za-z0-9]+$", policy: THROW),
     amount: Int @range(min: 0, policy: THROW)
   ): Int # sats
 }
