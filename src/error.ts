@@ -53,3 +53,9 @@ export class TooManyRequestError extends CustomError {
     super(message, 'TOO_MANY_REQUEST', {forwardToClient, logger, level})
   }
 }
+
+export class DbError extends CustomError {
+  constructor(message, {forwardToClient, logger, level}) {
+    super(message, 'DB_ERROR', {forwardToClient, logger, level})
+  }
+}
