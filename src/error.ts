@@ -46,3 +46,9 @@ export class NewAccountWithdrawalError extends CustomError {
     super(message, 'NEW_ACCOUNT_WITHDRAWAL_RESTRICTED', {forwardToClient, logger, level})
   }
 }
+
+export class DbError extends CustomError {
+  constructor(message, {forwardToClient, logger, level}) {
+    super(message, 'DB_ERROR', {forwardToClient, logger, level})
+  }
+}

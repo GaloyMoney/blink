@@ -13,12 +13,13 @@ import { caseInsensitiveRegex, inputXOR } from './utils';
 
 const Schema = mongoose.Schema;
 
-const dbVersionSchema = new Schema({
+const dbMetadataSchema = new Schema({
   version: Number,
   minBuildNumber: Number,
   lastBuildNumber: Number,
+  routingFeeLastEntry: Date
 })
-export const DbVersion = mongoose.model("DbVersion", dbVersionSchema)
+export const DbMetadata = mongoose.model("DbMetadata", dbMetadataSchema)
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000
 
@@ -352,8 +353,8 @@ const transactionSchema = new Schema({
     enum: [
       // TODO: merge with the Interface located in types.ts?
       "invoice", "payment", "on_us", "fee_reimbursement", // lightning
-      "onchain_receipt", "onchain_payment", "onchain_on_us", // onchain
-      "fee", "escrow", // channel-related
+      "onchain_receipt", "onchain_payment", "onchain_on_us", "deposit_fee",// onchain
+      "fee", "escrow", "routing_fee", // channel-related
       "exchange_rebalance", // send/receive btc from the exchange
       "user_rebalance", // buy/sell btc in the user wallet
       "to_cold_storage", "to_hot_wallet"
