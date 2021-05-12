@@ -91,7 +91,7 @@ export const login = async ({ phone, code, logger }: ILogin) => {
   const subLogger = logger.child({topic: "login"})
 
   const rlResult = await limiterLoginAttempt.get(phone);
-  if (rlResult !== null && rlResult.consumedPoints > yamlConfig.limits.requestPhoneCode.points) {
+  if (rlResult !== null && rlResult.consumedPoints > yamlConfig.limits.loginAttempt.points) {
     throw new TooManyRequestError({ logger })
   }
 
