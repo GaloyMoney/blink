@@ -82,7 +82,7 @@ const onchain_funding = async ({ walletDestination }) => {
 
     expect(transactions.length).toBe(initTransactions.length + 1)
     expect(transactions[0].type).toBe("onchain_receipt")
-    expect(transactions[0].type.fee).toBe(Math.round(transactions[0].fee))
+    expect(transactions[0].fee).toBe(Math.round(transactions[0].fee))
     expect(transactions[0].amount).toBe(amountAfterFeeDeduction({ amount: amount_BTC, depositFeeRatio: walletDestination.user.depositFeeRatio }))
     expect(transactions[0].addresses[0]).toBe(address)
 
