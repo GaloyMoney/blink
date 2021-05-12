@@ -28,7 +28,7 @@ let amount_BTC
 jest.mock('../notifications/notification')
 const { sendNotification } = require("../notifications/notification")
 
-const amountAfterFeeDeduction = ({amount, depositFeeRatio}) => btc2sat(amount) * (1 - depositFeeRatio)
+const amountAfterFeeDeduction = ({amount, depositFeeRatio}) => Math.round(btc2sat(amount) * (1 - depositFeeRatio))
 
 beforeAll(async () => {
   await setupMongoConnection()
@@ -43,8 +43,7 @@ beforeEach(async () => {
   initBlockCount = await bitcoindDefaultClient.getBlockCount()
   initialBalanceUser0 = (await walletUser0.getBalances()).BTC
 
-  // TODO: seed the Math.random()
-  amount_BTC = Math.floor(1 + Math.floor(Math.random() * 100)/100)
+  amount_BTC = +(1 + Math.random()).toPrecision(9)
 })
 
 afterEach(async () => {
@@ -83,6 +82,7 @@ const onchain_funding = async ({ walletDestination }) => {
 
     expect(transactions.length).toBe(initTransactions.length + 1)
     expect(transactions[0].type).toBe("onchain_receipt")
+    expect(transactions[0].type.fee).toBe(Math.round(transactions[0].fee))
     expect(transactions[0].amount).toBe(amountAfterFeeDeduction({ amount: amount_BTC, depositFeeRatio: walletDestination.user.depositFeeRatio }))
     expect(transactions[0].addresses[0]).toBe(address)
 
@@ -205,5 +205,5 @@ it('allows fee exemption for specific users', async () => {
   const {BTC: initBalanceUser2} = await walletUser2.getBalances()
   await onchain_funding({walletDestination: walletUser2})
   const {BTC: finalBalanceUser2} = await walletUser2.getBalances()
-  expect(finalBalanceUser2).toBe(initBalanceUser2 + btc2sat(1))
+  expect(finalBalanceUser2).toBe(initBalanceUser2 + btc2sat(amount_BTC))
 })
