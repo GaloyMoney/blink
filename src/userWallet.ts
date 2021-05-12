@@ -8,6 +8,8 @@ import { sendNotification } from "./notifications/notification";
 import { User } from "./schema";
 import { ITransaction } from "./types";
 import { LoggedError } from "./utils";
+import { verifyToken, generateSecret } from "node-2fa";
+import { yamlConfig } from "./config";
 
 export abstract class UserWallet {
 
@@ -203,6 +205,7 @@ export abstract class UserWallet {
     }
   }
 
+  // FIXME: no longer use UserWallet.lastPrice
   static satsToUsd = sats => {
     const usdValue = UserWallet.lastPrice * sats
     return usdValue
@@ -218,6 +221,63 @@ export abstract class UserWallet {
 
     this.logger.info({ balanceSatsPrettified, balanceUsd, user: this.user }, `sending balance notification to user`)
     await sendNotification({ user: this.user, title: `Your balance is \$${balanceUsd} (${balanceSatsPrettified} sats)`, logger: this.logger })
+  }
+  
+  generate2fa = () => {
+    const { secret, uri } = generateSecret({ name: yamlConfig.name, account: this.user.phone });
+    /*
+    { secret: 'XDQXYCP5AC6FA32FQXDGJSPBIDYNKK5W',
+      uri: 'otpauth://totp/My%20Awesome%20App:johndoe?secret=XDQXYCP5AC6FA32FQXDGJSPBIDYNKK5W&issuer=My%20Awesome%20App',
+      qr: 'https://chart.googleapis.com/chart?chs=166x166&chld=L|0&cht=qr&chl=otpauth://totp/My%20Awesome%20App:johndoe%3Fsecret=XDQXYCP5AC6FA32FQXDGJSPBIDYNKK5W%26issuer=My%20Awesome%20App'
+    }
+    */
+  
+    return { secret, uri }
+  }
+
+  save2fa = async ({ secret, code }): Promise<boolean> => {
+    const codeIsCorrect = verifyToken(secret, code);
+
+    if (!codeIsCorrect) {
+      this.logger.warn({code}, "incorrect code")
+      return false
+    }
+
+    this.user.authenticator = secret
+    console.log({secret, user: this.user})
+
+    try {
+      await this.user.save()
+      return true 
+    } catch (err) {
+      this.logger.warn({err}, "impossible to save secret")
+      return false
+    }
+  }
+
+  validate2fa = async ({ code }): Promise<boolean> => {
+    const token = this.user.authenticator
+
+    if (!token) {
+      this.logger.warn("no 2fa has been set")
+      return false
+    }
+
+    return verifyToken(token, code);
+  }
+
+  delete2fa = async (): Promise<boolean> => {
+    // TODO: may want a code before deleting 2FA for security reason?
+
+    this.user.authenticator = undefined
+
+    try {
+      await this.user.save()
+      return true 
+    } catch (err) {
+      this.logger.warn({err}, "impossible to save secret")
+      return false
+    }
   }
 
 }

@@ -208,6 +208,11 @@ const UserSchema = new Schema({
     type: String,
     enum: ["active", "locked"],
     default: "active"
+  },
+
+  authenticator: {
+    type: String,
+    length: 32,
   }
 })
 

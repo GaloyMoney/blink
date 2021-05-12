@@ -59,6 +59,7 @@
     "medici": "^4.0.1",
     "moment": "^2.29.1",
     "mongoose": "^5.10.11",
+    "node-2fa": "^2.0.2",
     "node-cache": "^5.1.2",
     "pino": "^6.7.0",
     "pino-http": "^5.3.0",
