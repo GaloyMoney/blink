@@ -79,7 +79,7 @@ type Invoice {
 
   getFee(
     destination: String,
-    amount: Int! @range(min: 0, policy: THROW),
+    amount: Int @range(min: 0, policy: THROW),
     invoice: String! @pattern(regexp: "^ln[A-Za-z0-9]+$",  policy: THROW)
   ): Int # sats
 }
@@ -95,7 +95,7 @@ type OnChain {
 
   getFee(
     address: String! @pattern(regexp: "^[A-Za-z0-9]+$", policy: THROW),
-    amount: Int! @range(min: 0, policy: THROW)
+    amount: Int @range(min: 0, policy: THROW)
   ): Int # sats
 }
 
