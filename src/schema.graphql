@@ -80,7 +80,7 @@ type Invoice {
   getFee(
     destination: String,
     amount: Int @range(min: 0, policy: THROW),
-    invoice: String! @pattern(regexp: "^ln[A-Za-z0-9]+$",  policy: THROW)
+    invoice: String @pattern(regexp: "^ln[A-Za-z0-9]+$",  policy: THROW)
   ): Int # sats
 }
 
@@ -109,7 +109,7 @@ type OnchainTransaction {
 
 type User {
   id: ID
-  username: String! @pattern(regexp: "^[A-Za-z0-9]+$"),
+  username: String @pattern(regexp: "^[A-Za-z0-9]+$"),
   level: Int!
   phone: String
   contacts: [Contact]
@@ -222,7 +222,7 @@ type UpdateUser {
 
 type UpdateContact {
   setName(
-    username: String! @pattern(regexp: "^[A-Za-z0-9]+$", policy: THROW) @stringLength(min: 3, max: 50, policy: THROW),
+    username: String @pattern(regexp: "^[A-Za-z0-9]+$", policy: THROW) @stringLength(min: 3, max: 50, policy: THROW),
     name: String @stringLength(min: 3, max: 50, policy: THROW) # TODO: integrate constraint in the mobile app
   ): Boolean
 }
