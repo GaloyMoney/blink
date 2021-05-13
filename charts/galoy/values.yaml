@@ -90,11 +90,10 @@ redis:
   master:
     persistence:
       enabled: true
-    service:
-      type: ClusterIP
-  usePassword: false
-  cluster:
-    slaveCount: 0
+  auth:
+    enabled: false
+  sentinel:
+    enabled: true
   metrics:
     enabled: true
 
@@ -109,6 +108,9 @@ admin-panel:
   podSecurityContext:
     enabled: true
     runAsUser: 1001
+    # there seems to be inconsistency on sysctls on bitnami
+    # sometimes it's a map, sometimes an array
+    sysctls: []
   ingress:
     enabled: false
   podLabels:
@@ -144,6 +146,7 @@ lnpage:
   podSecurityContext:
     enabled: true
     runAsUser: 1001
+    sysctls: []
   ingress:
     enabled: false
   podLabels:
