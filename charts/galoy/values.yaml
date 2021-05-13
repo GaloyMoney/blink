@@ -39,7 +39,7 @@ deployment:
   healthz: true
   targetPort: 8888
   replicaCount: 1
-  timeoutSeconds: 10
+  timeoutSeconds: 30
   # cpu request: 0.001
 
 service:
