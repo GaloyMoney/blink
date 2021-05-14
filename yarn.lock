@@ -8138,6 +8138,11 @@ range-parser@~1.2.1:
   resolved "https://registry.yarnpkg.com/range-parser/-/range-parser-1.2.1.tgz#3cf37023d199e1c24d1a55b84800c2f3e6468031"
   integrity sha512-Hrgsx+orqoygnmhFbKaHE6c296J+HTAQXoxEF6gNupROmmGJRoyzfG3ccAveqCBrwr/2yxQ5BVd/GTl5agOwSg==
 
+rate-limiter-flexible@^2.2.2:
+  version "2.2.2"
+  resolved "https://registry.yarnpkg.com/rate-limiter-flexible/-/rate-limiter-flexible-2.2.2.tgz#7b5cab0a26cde2bb08b2807437c221249fd0bad3"
+  integrity sha512-8qpJC/Zc/0dM9BW21/JyROt6eUeLZ8l06vrSWZFwgNV9IpthIJe6Pcuowpzxe0PJ3vYDaECiqvF/1J/+Nh5wgA==
+
 raw-body@2.4.0:
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/raw-body/-/raw-body-2.4.0.tgz#a1ce6fb9c9bc356ca52e89256ab59059e13d0332"
