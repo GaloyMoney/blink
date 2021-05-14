@@ -92,7 +92,7 @@ export const login = async ({ phone, code, logger, ip }: ILogin): Promise<string
   const subLogger = logger.child({topic: "login"})
 
   const rlResult = await failedAttemptPerIp.get(ip);
-  if (rlResult !== null && rlResult.consumedPoints > yamlConfig.limits.loginAttempt.points) {
+  if (rlResult !== null && rlResult.consumedPoints > yamlConfig.limits.failedAttemptPerIp.points) {
     throw new TooManyRequestError({ logger })
   }
 

@@ -50,7 +50,7 @@ test_accounts:
 - phone: "+16505554330"
   code: 321321
   currencies: [{id: "USD", ratio: .5}, {id: "BTC", ratio: .5},]
-- phone: "+16505554331" # coldstorage
+- phone: "+16505554331" # login fail attempt
   code: 321321
   currency: "BTC"
 
