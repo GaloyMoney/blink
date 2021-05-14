@@ -77,14 +77,12 @@ it('rate limit login', async () => {
 
   // exhaust the limiter
   for (let i = 0; i < yamlConfig.limits.loginAttempt.points; i++) {
-    console.log(i);
     const result = await mutate({mutation, variables: {phone, code: bad_code}})
     expect(result.errors).toBeFalsy()
   }
   
   try {
     const result = await mutate({mutation, variables: {phone, code: correct_code}})
-    baseLogger.info({result})
     expect(result.errors[0].code).toBe("TOO_MANY_REQUEST")
     expect(result.data.login.token).toBeFalsy()
   } catch (err) {
