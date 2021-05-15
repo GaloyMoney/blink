@@ -1,6 +1,5 @@
 import { getChannels } from 'lightning';
 import * as _ from "lodash";
-import { lnd } from "../lndConfig";
 import { lndBalances } from "../lndUtils";
 import { MainBook } from "../mongodb";
 import { User } from "../schema";
@@ -8,6 +7,7 @@ import { SpecterWallet } from "../SpecterWallet";
 import { baseLogger } from '../logger'
 import { WalletFactory } from "../walletFactory";
 import { bitcoindAccountingPath, escrowAccountingPath, lndAccountingPath, lndFeePath } from "./ledger";
+import { getActiveLnd } from "../lndConfig";
 
 const logger = baseLogger.child({module: "balanceSheet"})
 
@@ -67,7 +67,10 @@ export const updateEscrows = async () => {
   const type = "escrow"
   const metadata = { type, currency: "BTC", pending: false }
 
+  // FIXME: update escrow of all the node
+  const { lnd } = getActiveLnd()
   const { channels } = await getChannels({lnd})
+
   const selfInitatedChannels = _.filter(channels, {is_partner_initiated: false})
   const escrowInLnd = _.sumBy(selfInitatedChannels, 'commit_transaction_fee')
 

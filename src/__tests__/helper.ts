@@ -1,6 +1,5 @@
 import { balanceSheetIsBalanced, updateEscrows, updateUsersPendingPayment } from "../ledger/balanceSheet";
 import { FtxDealerWallet } from "../dealer/FtxDealerWallet";
-import { lnd } from "../lndConfig";
 import { User } from "../schema";
 import { bitcoindDefaultClient, sleep } from "../utils";
 import { baseLogger } from '../logger'
@@ -11,8 +10,9 @@ import { login } from "../text";
 import * as jwt from 'jsonwebtoken'
 import { once } from "events";
 import { onChannelUpdated } from "../entrypoint/trigger";
+import { getActiveLnd } from "../lndConfig";
 
-export const lndMain = lnd
+export const lndMain = getActiveLnd().lnd
 
 export const lndOutside1 = authenticatedLndGrpc({
   cert: process.env.TLSOUTSIDE1,
@@ -115,8 +115,6 @@ export const openChannelTesting = async ({ lnd, other_lnd, socket, is_private = 
   }
 
   await once(sub, 'channel_opening')
-
-  await mineBlockAndSync({ lnds: [lnd, other_lnd], blockHeight: initBlockCount + newBlock })
 
   baseLogger.debug("mining blocks and waiting for channel being opened")
 

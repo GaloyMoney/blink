@@ -41,6 +41,12 @@ const invoiceUserSchema = new Schema({
     default: true
   },
 
+  // TODO: update current invoice with legacy node
+  node: {
+    type: String,
+    require: true,
+  }
+
 })
 
 invoiceUserSchema.index({ "uid": 1 })
@@ -428,6 +434,12 @@ const transactionSchema = new Schema({
     match: [/(?!^(1|3|bc1|lnbc1))^[0-9a-z_]+$/i, "Username can only have alphabets, numbers and underscores"],
     minlength: 3,
     maxlength: 50,
+  },
+
+  // which lnd node this transaction relates to
+  node: {
+    type: String,
+    // require: true,
   },
 
   // original property from medici

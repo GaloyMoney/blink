@@ -2,7 +2,6 @@
  * @jest-environment node
  */
 import { bitcoindAccountingPath } from "../ledger/ledger";
-import { lnd } from "../lndConfig";
 import { MainBook, setupMongoConnection } from "../mongodb";
 import { SpecterWallet } from "../SpecterWallet";
 import { checkIsBalanced, mockGetExchangeBalance, RANDOM_ADDRESS } from "./helper";
@@ -12,8 +11,11 @@ import { UserWallet } from "../userWallet";
 
 import mongoose from "mongoose";
 import { getChainBalance } from "lightning";
+import { getOnchainLnd } from "../lndConfig";
 
 let specterWallet
+
+const lnd = getOnchainLnd()
 
 jest.mock('../notifications/notification')
 jest.mock('../realtimePrice')

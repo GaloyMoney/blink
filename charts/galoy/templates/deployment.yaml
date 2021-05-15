@@ -72,7 +72,7 @@ spec:
               value: "testGaloy"
             - name: MONGODB_ADDRESS
               value: {{ $.Values.mongodbaddress }}
-            - name: LNDIP
+            - name: LNDDNS
               value: "lnd"
             - name: MACAROON
               valueFrom:

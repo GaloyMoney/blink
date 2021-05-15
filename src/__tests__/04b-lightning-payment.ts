@@ -2,7 +2,7 @@
  * @jest-environment node
  */
 import { createHash, randomBytes } from 'crypto';
-import { FEECAP, lnd } from "../lndConfig";
+import { FEECAP, getOnchainLnd } from "../lndConfig";
 import { setupMongoConnection } from "../mongodb";
 import { InvoiceUser, Transaction } from "../schema";
 import { checkIsBalanced, getUserWallet, lndMain, lndOutside1, lndOutside2, mockGetExchangeBalance, openChannelTesting } from "./helper";
@@ -173,11 +173,14 @@ functionToTests.forEach(({fn, name, initialFee}) => {
       const user1OnUsTxn = user1Txn.filter(matchTx)
       expect(user1OnUsTxn[0].type).toBe('on_us')
   
+
+      const { node } = getOnchainLnd()
+
       // making request twice because there is a cancel state, and this should be re-entrant
-      expect(await walletPayer.updatePendingInvoice({ hash })).toBeTruthy()
-      expect(await walletPayee.updatePendingInvoice({ hash })).toBeTruthy()
-      expect(await walletPayer.updatePendingInvoice({ hash })).toBeTruthy()
-      expect(await walletPayee.updatePendingInvoice({ hash })).toBeTruthy()
+      expect(await walletPayer.updatePendingInvoice({ hash, node })).toBeTruthy()
+      expect(await walletPayee.updatePendingInvoice({ hash, node })).toBeTruthy()
+      expect(await walletPayer.updatePendingInvoice({ hash, node })).toBeTruthy()
+      expect(await walletPayee.updatePendingInvoice({ hash, node })).toBeTruthy()
     }
     
     // a cashback tx
@@ -286,8 +289,12 @@ it('receives payment from outside', async () => {
   const mongotx = await Transaction.findOne({ hash })
   expect(mongotx.memo).toBe(memo)
 
-  expect(await userWallet1.updatePendingInvoice({ hash })).toBeTruthy()
-  expect(await userWallet1.updatePendingInvoice({ hash })).toBeTruthy()
+
+  // FIXME: manage multi node
+  const { node } = getOnchainLnd()
+
+  expect(await userWallet1.updatePendingInvoice({ hash, node })).toBeTruthy()
+  expect(await userWallet1.updatePendingInvoice({ hash, node })).toBeTruthy()
 
 })
 
@@ -298,6 +305,8 @@ it('expired payment', async () => {
   const memo = "payment that should expire"
 
   const dbSetSpy = jest.spyOn(Lightning, 'delay').mockImplementation(() => ({value: 1, unit: 'seconds', "additional_delay_value": 0}))
+
+  const { lnd } = getOnchainLnd()
 
   const request = await userWallet1.addInvoice({ value: amountInvoice, memo })
   const { id } = await decodePaymentRequest({ lnd, request })

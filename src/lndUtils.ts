@@ -1,7 +1,7 @@
 import { default as axios } from 'axios';
 import { getChainBalance, getChannelBalance, getClosedChannels, getForwards, getPendingChainBalance, getWalletInfo } from "lightning";
 import _ from "lodash";
-import { lnd } from "./lndConfig";
+import { getActiveLnd } from "./lndConfig";
 import { baseLogger } from "./logger";
 import { DbMetadata } from "./schema";
 import { MainBook } from "./mongodb";
@@ -12,6 +12,8 @@ import { DbError } from "./error";
 const MS_PER_DAY = 864e5
 
 export const lndBalances = async () => {
+  const { lnd } = getActiveLnd()
+  
   // Onchain
   const { chain_balance } = await getChainBalance({lnd})
   const { channel_balance, pending_balance: opening_channel_balance } = await getChannelBalance({lnd})
@@ -49,6 +51,9 @@ export async function nodeStats({ lnd }) {
 export async function getBosScore() {
   try {
     const { data } = await axios.get('https://bos.lightning.jorijn.com/data/export.json')
+
+    // FIXME: manage multiple nodes
+    const { lnd } = getActiveLnd()
     const publicKey = (await getWalletInfo({lnd})).public_key;
     const bosScore = _.find(data.data, { publicKey })
     if (!bosScore) {
@@ -121,7 +126,7 @@ export const updateRoutingFees = async () => {
 
   console.log({after, before})
   // get fee collected day wise
-  const forwards = await getRoutingFees({ lnd, before, after })
+  const forwards = await getRoutingFees({ lnd: getActiveLnd(), before, after })
 
   // iterate over object and record fee day wise in our books
   _.forOwn(forwards, async (fee, day) => {

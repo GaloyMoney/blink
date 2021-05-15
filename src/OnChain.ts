@@ -2,7 +2,6 @@ import { assert } from "console";
 import _ from 'lodash';
 import moment from "moment";
 import { customerPath, lndAccountingPath, onchainRevenuePath } from "./ledger/ledger";
-import { lnd } from "./lndConfig";
 import { lockExtendOrThrow, redlock } from "./lock";
 import { MainBook } from "./mongodb";
 import { IOnChainPayment, ISuccess, ITransaction } from "./types";
@@ -14,6 +13,7 @@ import { createChainAddress, getChainBalance, getChainFeeEstimate, getChainTrans
 
 import { yamlConfig } from "./config";
 import { InsufficientBalanceError, NewAccountWithdrawalError, SelfPaymentError, TransactionRestrictedError } from './error';
+import { getOnchainLnd } from "./lndConfig";
 
 export const getOnChainTransactions = async ({ lnd, incoming }: { lnd: any, incoming: boolean }) => {
   try {
@@ -51,6 +51,9 @@ export const OnChainMixin = (superclass) => class extends superclass {
   async getOnchainFee({address, amount}: {address: string, amount: number | null}): Promise<number> {
     const payeeUser = await this.tentativelyGetPayeeUser({address})
 
+    // FIXME: this can lead to a wrong fee is using another node when doing a payment afterwards
+    const {lnd} = getOnchainLnd()
+    
     let fee
 
     const defaultAmount = 300000
@@ -76,6 +79,9 @@ export const OnChainMixin = (superclass) => class extends superclass {
     }
 
     return await redlock({ path: this.user._id, logger: onchainLogger }, async (lock) => {
+
+      // FIXME get smarter on how to choose lnd
+      const {lnd} = getOnchainLnd()
 
       const balance = await this.getBalances(lock)
       onchainLogger = onchainLogger.child({ balance })
@@ -216,6 +222,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
   }
 
   async getOnChainAddress(): Promise<string> {
+    // TODO
     // another option to investigate is to have a master key / client
     // (maybe this could be saved in JWT)
     // and a way for them to derive new key
@@ -224,6 +231,8 @@ export const OnChainMixin = (superclass) => class extends superclass {
     // every time you want to show a QR code.
 
     let address
+
+    const { lnd, node } = getOnchainLnd()
 
     try {
       const format = 'p2wpkh';
@@ -260,6 +269,8 @@ export const OnChainMixin = (superclass) => class extends superclass {
     if (!this.user.onchain_addresses.length) {
       return []
     }
+
+    const { lnd } = getOnchainLnd()
 
     const lnd_incoming_txs = await getOnChainTransactions({ lnd, incoming: true })
     
