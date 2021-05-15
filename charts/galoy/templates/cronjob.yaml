@@ -68,7 +68,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: bitcoind-rpcpassword
-                  key: tls.cert
+                  key: password
             - name: BITCOINDPORT
               value: {{ $.Values.bitcoind.port | quote }}
             - name: LOGLEVEL
