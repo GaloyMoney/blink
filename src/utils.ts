@@ -32,7 +32,7 @@ const PROXY_CHECK_APIKEY = yamlConfig?.PROXY_CHECK_APIKEY
 const connection_obj = {
   network: process.env.NETWORK,
   username: 'rpcuser',
-  password: 'rpcpass',
+  password: process.env.BITCOINDRPCPASS,
   host: process.env.BITCOINDADDR,
   port: process.env.BITCOINDPORT,
   version: '0.21.0',

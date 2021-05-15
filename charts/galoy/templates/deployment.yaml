@@ -86,6 +86,11 @@ spec:
                   key: tls.cert
             - name: BITCOINDADDR
               value: "bitcoind"
+            - name: BITCOINDRPCPASS
+              valueFrom:
+                secretKeyRef:
+                  name: bitcoind-rpcpassword
+                  key: tls.cert
             - name: BITCOINDPORT
               value: {{ $.Values.bitcoind.port | quote }}
             - name: JWT_SECRET

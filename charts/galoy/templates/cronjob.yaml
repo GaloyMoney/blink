@@ -64,6 +64,11 @@ spec:
               value: "galoy-redis-master"
             - name: BITCOINDADDR
               value: "bitcoind"
+            - name: BITCOINDRPCPASS
+              valueFrom:
+                secretKeyRef:
+                  name: bitcoind-rpcpassword
+                  key: tls.cert
             - name: BITCOINDPORT
               value: {{ $.Values.bitcoind.port | quote }}
             - name: LOGLEVEL
