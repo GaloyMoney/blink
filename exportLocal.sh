@@ -15,6 +15,7 @@ export BITCOINDPORT=$(kubectl get services | awk '/bitcoind/ {print $5}' | grep 
 
 export MINIKUBEIP=$(minikube ip)
 export BITCOINDADDR=$MINIKUBEIP
+export BITCOINDRPCPASS=$(kubectl get secret bitcoind-rpcpassword --template={{.data.password}} | base64 -d)
 
 export LNDIP=$MINIKUBEIP
 # FIXME hacky ;exit; TODO: need to rename lnd to lnd-main such that it can be filtered properly
