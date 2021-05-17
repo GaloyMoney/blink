@@ -8,7 +8,7 @@ import { subscribeToBackups, subscribeToBlocks, subscribeToChannels, subscribeTo
 import { find } from "lodash";
 import { updateUsersPendingPayment } from '../ledger/balanceSheet';
 import { lndAccountingPath, lndFeePath } from "../ledger/ledger";
-import { lnd } from "../lndConfig";
+import { getActiveLnd } from "../lndConfig";
 import { baseLogger } from '../logger';
 import { MainBook, setupMongoConnection } from "../mongodb";
 import { transactionNotification } from "../notifications/payment";
@@ -198,7 +198,9 @@ const updatePriceForChart = async () => {
   }, interval)
 }
 
+const { lnd } = getActiveLnd()
 const main = async () => {
+
   getWalletInfo({ lnd }, (err, result) => {
     logger.debug({ err, result }, 'getWalletInfo')
   });

@@ -8,8 +8,8 @@ import { Transaction, User } from "../schema";
 import { SpecterWallet } from "../SpecterWallet";
 import { baseLogger } from "../logger";
 import { getDealerWallet, getFunderWallet } from "../walletFactory";
-import { lnd } from "../lndConfig"
 import _ from "lodash"
+import { getOnchainLnd } from "../lndConfig";
 
 const logger = baseLogger.child({module: "exporter"})
 
@@ -93,6 +93,8 @@ const main = async () => {
     leverage_g.set(leverage)
 
     business_g.set(await User.count({"title": {"$exists": true}}))
+
+    const {lnd} = getOnchainLnd()
 
     const { channels } = await getChannels({ lnd })
     totalChannels_g.set(channels.length)

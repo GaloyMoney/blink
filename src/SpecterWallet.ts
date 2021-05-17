@@ -1,6 +1,5 @@
 import _ from "lodash";
 import { bitcoindAccountingPath, lndAccountingPath, lndFeePath } from "./ledger/ledger";
-import { lnd } from "./lndConfig";
 import { MainBook } from "./mongodb";
 import { getOnChainTransactions } from "./OnChain";
 import { BitcoindClient, bitcoindDefaultClient, btc2sat, sat2btc } from "./utils";
@@ -8,9 +7,12 @@ import { UserWallet } from "./userWallet";
 import { lndBalances } from "./lndUtils"
 import { yamlConfig } from "./config"
 import { createChainAddress, sendToChainAddress } from "lightning";
+import { getOnchainLnd } from "./lndConfig";
 
 
 // TODO: we should not rely on OnChainMixin/UserWallet for this "wallet"
+
+const { lnd } = getOnchainLnd()
 
 export class SpecterWallet {
   bitcoindClient 
