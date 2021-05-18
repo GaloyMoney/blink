@@ -104,8 +104,12 @@ const main = async () => {
 
     fundingRate_g.set(await dealerWallet.getNextFundingRate())
 
-    const specterWallet = new SpecterWallet({ logger })
-    specter_g.set(await specterWallet.getBitcoindBalance())
+    try {
+      const specterWallet = new SpecterWallet({ logger })
+      specter_g.set(await specterWallet.getBitcoindBalance())
+    } catch (err) {
+      logger.error({err}, "error setting bitcoind/specter balance")
+    }
 
     const [depositFeeEntry] = await Transaction.aggregate([
       {$match: { accounts: 'Revenue:Bitcoin:Fees', type:'onchain_receipt' }},
