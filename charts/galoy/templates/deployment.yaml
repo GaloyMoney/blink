@@ -72,18 +72,20 @@ spec:
               value: "testGaloy"
             - name: MONGODB_ADDRESS
               value: {{ $.Values.mongodbaddress }}
-            - name: LNDDNS
+
+            - name: LND_1_DNS
               value: "lnd"
-            - name: MACAROON
+            - name: LND_1_MACAROON
               valueFrom:
                 secretKeyRef:
                   name: lnd-macaroon
                   key: admin.macaroon
-            - name: TLS
+            - name: LND_1_TLS
               valueFrom:
                 secretKeyRef:
                   name: lnd-tls
                   key: tls.cert
+                  
             - name: BITCOINDADDR
               value: "bitcoind"
             - name: BITCOINDPORT
@@ -156,12 +158,6 @@ spec:
                 secretKeyRef:
                   name: lnd-outside-2-tls
                   key: tls.cert
-            - name: LNDRPCPORT
-              value: "10009"
-            - name: LNDOUTSIDE1RPCPORT
-              value: "10009"
-            - name: LNDOUTSIDE2RPCPORT
-              value: "10009"
             - name: LNDOUTSIDE1ADDR
               value: "lnd-outside-1"
             - name: LNDOUTSIDE2ADDR

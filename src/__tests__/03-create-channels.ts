@@ -7,7 +7,7 @@ import { updateEscrows } from "../ledger/balanceSheet";
 import { lndFeePath } from "../ledger/ledger";
 import { MainBook, setupMongoConnection } from "../mongodb";
 import { bitcoindDefaultClient, sleep } from "../utils";
-import { checkIsBalanced, lndMain, lndOutside1, lndOutside2, mockGetExchangeBalance, openChannelTesting } from "./helper";
+import { checkIsBalanced, lnd1, lndOutside1, lndOutside2, mockGetExchangeBalance, openChannelTesting } from "./helper";
 
 jest.mock('../realtimePrice')
 
@@ -23,7 +23,7 @@ beforeAll(async () => {
 beforeEach(async () => {
   initBlockCount = await bitcoindDefaultClient.getBlockCount()
 
-  channelLengthMain = (await getChannels({ lnd: lndMain })).channels.length
+  channelLengthMain = (await getChannels({ lnd: lnd1 })).channels.length
   channelLengthOutside1 = (await getChannels({ lnd: lndOutside1 })).channels.length
 })
 
@@ -45,9 +45,9 @@ it('opens channel from lnd1ToLndOutside1', async () => {
     account: lndFeePath,
     currency: "BTC",
   })
-  await openChannelTesting({ lnd: lndMain, other_lnd: lndOutside1, socket })
+  await openChannelTesting({ lnd: lnd1, other_lnd: lndOutside1, socket })
 
-  const { channels } = await getChannels({ lnd: lndMain })
+  const { channels } = await getChannels({ lnd: lnd1 })
   expect(channels.length).toEqual(channelLengthMain + 1)
   const { balance: finalFeeInLedger } = await MainBook.balance({
     account: lndFeePath,
@@ -66,21 +66,21 @@ it('opens channel from lnd1ToLndOutside1', async () => {
 //   try {
 //     const socket = `lnd-outside-1:9735`
   
-//     await openChannelTesting({ lnd: lndMain, other_lnd: lndOutside1, socket })
+//     await openChannelTesting({ lnd: lnd1, other_lnd: lndOutside1, socket })
   
 //     let channels
   
-//     ({ channels } = await getChannels({ lnd: lndMain }));
+//     ({ channels } = await getChannels({ lnd: lnd1 }));
 //     expect(channels.length).toEqual(channelLengthMain + 1)
   
-//     const sub = subscribeToChannels({ lnd: lndMain })
+//     const sub = subscribeToChannels({ lnd: lnd1 })
 //     sub.on('channel_closed', async (channel) => {
-//       // onChannelUpdated({ channel, lnd: lndMain, stateChange: "closed" })
+//       // onChannelUpdated({ channel, lnd: lnd1, stateChange: "closed" })
 //     })
     
-//     await lnService.closeChannel({ lnd: lndMain, id: channels[channels.length - 1].id })
+//     await lnService.closeChannel({ lnd: lnd1, id: channels[channels.length - 1].id })
 //     const currentBlockCount = await bitcoindDefaultClient.getBlockCount()
-//     await mineBlockAndSync({ lnds: [lndMain, lndOutside1], blockHeight: currentBlockCount + newBlock })
+//     await mineBlockAndSync({ lnds: [lnd1, lndOutside1], blockHeight: currentBlockCount + newBlock })
   
 //     await sleep(10000)
   
@@ -90,7 +90,7 @@ it('opens channel from lnd1ToLndOutside1', async () => {
   
 //     await updateEscrows();
   
-//     ({ channels } = await getChannels({ lnd: lndMain }))
+//     ({ channels } = await getChannels({ lnd: lnd1 }))
 //     expect(channels.length).toEqual(channelLengthMain)
 //   } catch (err) {
 //     console.log({err}, "error with opensAndCloses")
@@ -116,10 +116,10 @@ it('opens private channel from lndOutside1 to lndOutside2', async () => {
 
 it('opens channel from lndOutside1 to lnd1', async () => {
   const socket = `lnd:9735`
-  await openChannelTesting({ lnd: lndOutside1, other_lnd: lndMain, socket })
+  await openChannelTesting({ lnd: lndOutside1, other_lnd: lnd1, socket })
 
   {
-    const { channels } = await getChannels({ lnd: lndMain })
+    const { channels } = await getChannels({ lnd: lnd1 })
     expect(channels.length).toEqual(channelLengthMain + 1)
   }
 

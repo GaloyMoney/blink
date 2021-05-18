@@ -3,7 +3,7 @@
  */
 import { setupMongoConnection } from "../mongodb";
 
-import {lndMain, lndOutside1, lndOutside2} from "./helper"
+import {lnd1, lnd2, lndonchain, lndOutside1, lndOutside2} from "./helper"
 import { bitcoindDefaultClient } from "../utils";
 import mongoose from "mongoose";
 import { User } from "../schema";
@@ -20,10 +20,13 @@ it('I can connect to bitcoind', async () => {
 	expect(chain).toEqual('regtest')
 })
 
-it('I can connect to bank lnd', async () => {
-	const { public_key } = await getWalletInfo({ lnd: lndMain })
-	expect(public_key.length).toBe(64 + 2)
-})
+const lnds = [lnd1, lnd2, lndonchain]
+for (let item in lnds) {
+  it(`I can connect to lnd index ${item}`, async () => {
+    const { public_key } = await getWalletInfo({ lnd: lnds[item] })
+    expect(public_key.length).toBe(64 + 2)
+  })
+}
 
 it('I can connect to outside lnds', async () => {
 	const lnds = [lndOutside1, lndOutside2]

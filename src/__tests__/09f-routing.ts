@@ -1,6 +1,6 @@
 import { mineBlockAndSync, openChannelTesting } from './helper'
 import {closeChannel, createInvoice, getChannels, getNetworkGraph, getPendingChannels, getNetworkInfo, getWalletInfo, openChannel, pay} from 'lightning'
-import { lndMain, lndOutside1, lndOutside2 } from './helper'
+import { lnd1, lndOutside1, lndOutside2 } from './helper'
 import { bitcoindDefaultClient, sleep } from '../utils'
 import { addPeer } from 'ln-service'
 import { updateRoutingFees } from '../lndUtils'
@@ -18,11 +18,11 @@ afterAll(async () => {
 it('records routing fee correctly', async () => {
   console.log(await getNetworkGraph({lnd: lndOutside1}))
   console.log(await getNetworkGraph({lnd: lndOutside2}))
-  console.log(await getNetworkGraph({lnd: lndMain}))
+  console.log(await getNetworkGraph({lnd: lnd1}))
 
   console.log(await getNetworkInfo({lnd: lndOutside1}))
   console.log(await getNetworkInfo({lnd: lndOutside2}))
-  console.log(await getNetworkInfo({lnd: lndMain}))
+  console.log(await getNetworkInfo({lnd: lnd1}))
 
   const { request } = await createInvoice({ lnd: lndOutside2, tokens: 1000 })
   

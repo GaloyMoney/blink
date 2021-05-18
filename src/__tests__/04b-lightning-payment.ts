@@ -5,7 +5,7 @@ import { createHash, randomBytes } from 'crypto';
 import { FEECAP, getOnchainLnd } from "../lndConfig";
 import { setupMongoConnection } from "../mongodb";
 import { InvoiceUser, Transaction } from "../schema";
-import { checkIsBalanced, getUserWallet, lndMain, lndOutside1, lndOutside2, mockGetExchangeBalance, openChannelTesting } from "./helper";
+import { checkIsBalanced, getUserWallet, lnd1, lndOutside1, lndOutside2, mockGetExchangeBalance, openChannelTesting } from "./helper";
 import { getHash, sleep } from "../utils";
 
 import { createInvoice, createHodlInvoice, settleHodlInvoice, cancelHodlInvoice, pay, decodePaymentRequest, getChannels, closeChannel } from 'lightning'
@@ -57,10 +57,10 @@ afterAll(async () => {
   const { channels } = await getChannels({ lnd: lndOutside2 })
   await closeChannel({ lnd: lndOutside2, id: channels[channels.length - 1].id })
 
-  // open channel from lndMain to lndOutside2
-  // So that we have a route from lndOutside 1 to lndOutside2 via lndMain
+  // open channel from lnd1 to lndOutside2
+  // So that we have a route from lndOutside 1 to lndOutside2 via lnd1
   const socket = `lnd-outside-2:9735`
-  await openChannelTesting({ lnd: lndMain, other_lnd: lndOutside2, socket })
+  await openChannelTesting({ lnd: lnd1, other_lnd: lndOutside2, socket })
   await mongoose.connection.close()
 });
 

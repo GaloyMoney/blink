@@ -1,9 +1,15 @@
 export NETWORK=regtest
-export TLS=$(kubectl exec lnd-0  -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
+export LND_1_TLS=$(kubectl exec lnd1-0  -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
+export LND_2_TLS=$(kubectl exec lnd2-0  -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
+export LND_ONCHAIN_TLS=$(kubectl exec lndonchain-0  -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
+
 export TLSOUTSIDE1=$(kubectl exec lnd-outside-1-0  -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
 export TLSOUTSIDE2=$(kubectl exec lnd-outside-2-0  -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
 
-export MACAROON=$(kubectl exec lnd-0  -- base64 /root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
+export LND_1_MACAROON=$(kubectl exec lnd1-0  -- base64 /root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
+export LND_2_MACAROON=$(kubectl exec lnd2-0  -- base64 /root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
+export LND_ONCHAIN_MACAROON=$(kubectl exec lndonchain-0  -- base64 /root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
+
 export MACAROONOUTSIDE1=$(kubectl exec lnd-outside-1-0  -- base64 /root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
 export MACAROONOUTSIDE2=$(kubectl exec lnd-outside-2-0  -- base64 /root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
 
@@ -16,9 +22,14 @@ export BITCOINDPORT=$(kubectl get services | awk '/bitcoind/ {print $5}' | grep 
 export MINIKUBEIP=$(minikube ip)
 export BITCOINDADDR=$MINIKUBEIP
 
-export LNDDNS=$MINIKUBEIP
+export LND_1_DNS=$MINIKUBEIP
+export LND_2_DNS=$MINIKUBEIP
+export LND_ONCHAIN_DNS=$MINIKUBEIP
+
 # FIXME hacky ;exit; TODO: need to rename lnd to lnd-main such that it can be filtered properly
-export LNDRPCPORT=$(kubectl get services | awk '/lnd/ {print $5;exit;}' | grep -Po '10009:\K[0-9]+')
+export LND_1_RPCPORT=$(kubectl get services | awk '/lnd1/ {print $5;exit;}' | grep -Po '10009:\K[0-9]+')
+export LND_2_RPCPORT=$(kubectl get services | awk '/lnd2/ {print $5;exit;}' | grep -Po '10009:\K[0-9]+')
+export LND_ONCHAIN_RPCPORT=$(kubectl get services | awk '/lndonchain/ {print $5;exit;}' | grep -Po '10009:\K[0-9]+')
 
 export LNDOUTSIDE1ADDR=$MINIKUBEIP
 export LNDOUTSIDE1RPCPORT=$(kubectl get services | awk '/lnd-outside-1/ {print $5}' | grep -Po '10009:\K[0-9]+')

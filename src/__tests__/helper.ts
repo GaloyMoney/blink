@@ -10,9 +10,11 @@ import { login } from "../text";
 import * as jwt from 'jsonwebtoken'
 import { once } from "events";
 import { onChannelUpdated } from "../entrypoint/trigger";
-import { getActiveLnd } from "../lndConfig";
+import { lndsGrpc } from "../lndConfig";
 
-export const lndMain = getActiveLnd().lnd
+export const lnd1 = lndsGrpc[0]
+export const lnd2 = lndsGrpc[1]
+export const lndonchain = lndsGrpc[2]
 
 export const lndOutside1 = authenticatedLndGrpc({
   cert: process.env.TLSOUTSIDE1,
@@ -95,7 +97,7 @@ export const openChannelTesting = async ({ lnd, other_lnd, socket, is_private = 
   const local_tokens = 1000000
   const initBlockCount = await bitcoindDefaultClient.getBlockCount()
 
-  await waitUntilBlockHeight({ lnd: lndMain, blockHeight: initBlockCount })
+  await waitUntilBlockHeight({ lnd: lnd1, blockHeight: initBlockCount })
   await waitUntilBlockHeight({ lnd: other_lnd, blockHeight: initBlockCount })
 
   const { public_key: partner_public_key } = await getWalletInfo({ lnd: other_lnd })
@@ -106,11 +108,11 @@ export const openChannelTesting = async ({ lnd, other_lnd, socket, is_private = 
 
   const sub = subscribeToChannels({ lnd })
 
-  if (lnd === lndMain) {
+  if (lnd === lnd1) {
     sub.once('channel_opened', (channel) => onChannelUpdated({ channel, lnd, stateChange: "opened" }))
   }
 
-  if (other_lnd === lndMain) {
+  if (other_lnd === lnd1) {
     sub.once('channel_opened', (channel) => expect(channel.is_partner_initiated).toBe(true))
   }
 

@@ -2,7 +2,7 @@
  * @jest-environment node
  */
 import { setupMongoConnection } from "../mongodb";
-import { checkIsBalanced, lndMain, lndOutside1, lndOutside2, RANDOM_ADDRESS, waitUntilBlockHeight, mockGetExchangeBalance } from "./helper";
+import { checkIsBalanced, lnd1, lndOutside1, lndOutside2, RANDOM_ADDRESS, waitUntilBlockHeight, mockGetExchangeBalance } from "./helper";
 import { bitcoindDefaultClient } from "../utils";
 
 import mongoose from "mongoose";
@@ -70,7 +70,7 @@ it('funds outside lnd node', async () => {
 	await bitcoindDefaultClient.sendToAddress(lndOutside1_wallet_addr, amount_BTC)
 	await bitcoindDefaultClient.generateToAddress(6, RANDOM_ADDRESS)
 
-	await waitUntilBlockHeight({ lnd: lndMain, blockHeight: 100 + numOfBlock + 6 })
+	await waitUntilBlockHeight({ lnd: lnd1, blockHeight: 100 + numOfBlock + 6 })
 	await waitUntilBlockHeight({ lnd: lndOutside1, blockHeight: 100 + numOfBlock + 6 })
 	await waitUntilBlockHeight({ lnd: lndOutside2, blockHeight: 100 + numOfBlock + 6 })
 })

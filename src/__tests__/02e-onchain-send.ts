@@ -10,7 +10,7 @@ import { getTitle } from "../notifications/payment";
 import { Transaction } from '../schema';
 import { bitcoindDefaultClient, sleep } from "../utils";
 import { yamlConfig } from "../config"
-import { checkIsBalanced, getUserWallet, lndMain, lndOutside1, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "./helper";
+import { checkIsBalanced, getUserWallet, lndonchain, lndOutside1, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "./helper";
 import { createChainAddress, subscribeToTransactions } from "lightning";
 
 jest.mock('../realtimePrice')
@@ -61,7 +61,7 @@ const amount = 10040 // sats
 it('Sends onchain payment successfully', async () => {
   const { address } = await createChainAddress({ format: 'p2wpkh', lnd: lndOutside1 })
 
-  const sub = subscribeToTransactions({ lnd: lndMain })
+  const sub = subscribeToTransactions({ lnd: lndonchain })
   sub.on('chain_transaction', onchainTransactionEventHandler)
 
   {
@@ -91,12 +91,12 @@ it('Sends onchain payment successfully', async () => {
   expect(pendingTxs.length).toBe(1)
   expect(pendingTxs[0].amount).toBe(-amount - pendingTxs[0].fee)
 
-  // const subSpend = subscribeToChainSpend({ lnd: lndMain, bech32_address: address, min_height: 1 })
+  // const subSpend = subscribeToChainSpend({ lnd: lndonchain, bech32_address: address, min_height: 1 })
 
   {
     await Promise.all([
       once(sub, 'chain_transaction'),
-      waitUntilBlockHeight({ lnd: lndMain, blockHeight: initBlockCount + 6 }),
+      waitUntilBlockHeight({ lnd: lndonchain, blockHeight: initBlockCount + 6 }),
       bitcoindDefaultClient.generateToAddress(6, RANDOM_ADDRESS),
     ])
   }
