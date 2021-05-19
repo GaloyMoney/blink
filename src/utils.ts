@@ -154,6 +154,7 @@ export const fetchIPDetails = async ({ip, user, logger}): Promise<void> => {
   let ipinfo
 
   try {
+    // skip axios.get call if ip already exists in user object
     if(user.lastIPs.some(ipObject => ipObject.ip === ip)) {
       return
     }
@@ -163,6 +164,15 @@ export const fetchIPDetails = async ({ip, user, logger}): Promise<void> => {
   } catch (error) {
     logger.info({error}, 'Failed to fetch ip details')
   } finally {
-    await User.updateOne({_id: user._id}, {$push: {lastIPs: { ip, ...ipinfo, Type: ipinfo?.type }}})
+    const res = await User.updateOne(
+      { _id: user._id, "lastIPs.ip": ip },
+      { "$set": { "lastIPs.$.lastConnection" : Date.now() } },
+    )
+    if(!res.nModified) {
+      await User.findOneAndUpdate(
+        { _id: user._id, "lastIPs.ip": {"$ne": ip} },
+        { $push: { lastIPs: { ip, ...ipinfo, Type: ipinfo?.type }}}
+      )
+    }
   }
 }
