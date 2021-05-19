@@ -13,7 +13,7 @@ helm repo add galoy https://galoymoney.github.io/charts/
 helm repo update
 
 lndVersion="1.1.17"
-bitcoindVersion="0.1.14"
+bitcoindVersion="0.1.15"
 
 cd ./charts/galoy
 helm dependency build
