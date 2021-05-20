@@ -56,12 +56,17 @@ const main = async () => {
     bos_g.set(bosScore)
 
     const { lightning, liabilities, bitcoin } = await getBalanceSheet()
-    const { assetsLiabilitiesDifference, bookingVersusRealWorldAssets } = await balanceSheetIsBalanced()
     liabilities_g.set(liabilities)
     lightning_g.set(lightning)
     bitcoin_g.set(bitcoin)
-    assetsLiabilitiesDifference_g.set(assetsLiabilitiesDifference)
-    bookingVersusRealWorldAssets_g.set(bookingVersusRealWorldAssets)
+
+    try {
+      const { assetsLiabilitiesDifference, bookingVersusRealWorldAssets } = await balanceSheetIsBalanced()
+      assetsLiabilitiesDifference_g.set(assetsLiabilitiesDifference)
+      bookingVersusRealWorldAssets_g.set(bookingVersusRealWorldAssets)
+    } catch (err) {
+      logger.error({err}, "impossible to calculate balance sheet")
+    }
     
     const { total, onChain, offChain, opening_channel_balance, closing_channel_balance } = await lndBalances()
     lnd_g.set(total)
@@ -106,8 +111,12 @@ const main = async () => {
 
     fundingRate_g.set(await dealerWallet.getNextFundingRate())
 
-    const specterWallet = new SpecterWallet({ logger })
-    specter_g.set(await specterWallet.getBitcoindBalance())
+    try {
+      const specterWallet = new SpecterWallet({ logger })
+      specter_g.set(await specterWallet.getBitcoindBalance())
+    } catch (err) {
+      logger.error({err}, "error setting bitcoind/specter balance")
+    }
 
     const [depositFeeEntry] = await Transaction.aggregate([
       {$match: { accounts: 'Revenue:Bitcoin:Fees', type:'onchain_receipt' }},

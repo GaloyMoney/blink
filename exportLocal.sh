@@ -21,6 +21,7 @@ export BITCOINDPORT=$(kubectl get services | awk '/bitcoind/ {print $5}' | grep 
 
 export MINIKUBEIP=$(minikube ip)
 export BITCOINDADDR=$MINIKUBEIP
+export BITCOINDRPCPASS=$(kubectl get secret bitcoind-rpcpassword --template={{.data.password}} | base64 -d)
 
 export LND_1_DNS=$MINIKUBEIP
 export LND_2_DNS=$MINIKUBEIP

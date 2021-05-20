@@ -80,10 +80,11 @@ const UserSchema = new Schema({
       city: String,
       //using Type instead of type due to its special status in mongoose
       Type: String,
-      timestamp: {
+      firstConnection: {
         type: Date,
         default: Date.now
-      }
+      },
+      lastConnection: Date
     }],
     default: []
   },
