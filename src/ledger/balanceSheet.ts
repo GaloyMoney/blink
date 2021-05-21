@@ -1,13 +1,13 @@
 import { getChannels } from 'lightning';
 import * as _ from "lodash";
+import { getBalance as getBitcoindBalance } from "../bitcoind";
+import { getActiveLnd } from "../lndConfig";
 import { lndBalances } from "../lndUtils";
+import { baseLogger } from '../logger';
 import { MainBook } from "../mongodb";
 import { User } from "../schema";
-import { SpecterWallet } from "../SpecterWallet";
-import { baseLogger } from '../logger'
 import { WalletFactory } from "../walletFactory";
 import { bitcoindAccountingPath, escrowAccountingPath, lndAccountingPath, lndFeePath } from "./ledger";
-import { getActiveLnd } from "../lndConfig";
 
 const logger = baseLogger.child({module: "balanceSheet"})
 
@@ -38,8 +38,7 @@ export const balanceSheetIsBalanced = async () => {
   const {assets, liabilities, lightning, bitcoin, expenses, revenue } = await getBalanceSheet()
   const { total: lnd } = await lndBalances() // doesnt include escrow amount
 
-  const specterWallet = new SpecterWallet({ logger })
-  let bitcoind = await specterWallet.getBitcoindBalance()
+  let bitcoind = await getBitcoindBalance()
 
   const assetsLiabilitiesDifference = 
     assets /* assets is ___ */

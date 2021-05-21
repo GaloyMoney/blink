@@ -35,8 +35,8 @@ export class SpecterWallet {
   async setBitcoindClient(): Promise<string> {
     const wallets = await SpecterWallet.listWallets()
 
-    const pattern = "specter"
-    const specterWallets = _.filter(wallets, item => item.startsWith(pattern))
+    const pattern = yamlConfig.rebalancing.onchainWallet ?? "specter"
+    const specterWallets = _.filter(wallets, item => item.includes(pattern))
 
     // there should be only one specter wallet
     // TODO/FIXME this is a weak security assumption
@@ -51,7 +51,7 @@ export class SpecterWallet {
     }
 
     if (specterWallets.length > 1) {
-      throw Error("only one specter wallet in bitcoind is currently supported")
+      throw Error("currently one wallet can be selected for cold storage rebalancing")
     }
 
     this.logger.info({wallet: specterWallets[0]}, "setting BitcoindClient")
