@@ -73,18 +73,24 @@ spec:
             - name: MONGODB_ADDRESS
               value: {{ $.Values.mongodbaddress }}
 
+            # TODO: refactor with a yaml template
             - name: LND_1_DNS
-              value: "lnd"
+              value: "lnd1"
             - name: LND_1_MACAROON
               valueFrom:
                 secretKeyRef:
-                  name: lnd-macaroon
+                  name: lnd1-macaroon
                   key: admin.macaroon
             - name: LND_1_TLS
               valueFrom:
                 secretKeyRef:
-                  name: lnd-tls
+                  name: lnd1-tls
                   key: tls.cert
+            - name: LND_1_PUBKEY
+              valueFrom:
+                secretKeyRef:
+                  name: lnd1-pubkey
+                  key: pubkey
                   
             - name: BITCOINDADDR
               value: "bitcoind"

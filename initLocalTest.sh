@@ -12,7 +12,7 @@ helm repo add jetstack https://charts.jetstack.io
 helm repo add galoy https://galoymoney.github.io/charts/
 helm repo update
 
-lndVersion="1.1.18"
+lndVersion="1.2.0"
 bitcoindVersion="0.1.15"
 
 cd ./charts/galoy
@@ -122,21 +122,29 @@ then
 fi
 
 rm -rf $INFRADIR/lnd
-helm pull --version=$lndVersion galoy/lnd -d $INFRADIR/ --untar
-cp "$INFRADIR/configs/lnd/RTL-Config.json" $INFRADIR/lnd/charts/rtl
-kubectl apply -f $INFRADIR/configs/lnd/templates
 
-helmUpgrade lnd1 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd/
-helmUpgrade lnd2 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd/
-helmUpgrade lndonchain --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd/
+
+# helm pull --version=$lndVersion galoy/lnd -d $INFRADIR/ --untar
+# cp "$INFRADIR/configs/lnd/RTL-Config.json" $INFRADIR/lnd/charts/rtl
+# kubectl apply -f $INFRADIR/configs/lnd/templates
+
+# for local development
+cp -R ../charts/charts/lnd/ $INFRADIR/lnd/
+cd charts/lnd
+helm dependency build
+cd -
+
+helmUpgrade lnd1 -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd/
+helmUpgrade lnd2 -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd/
+helmUpgrade lndonchain -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd/
 
 # avoiding to spend time with circleci regtest with this condition
 if [ "$NETWORK" == "testnet" ] || [ "$NETWORK" == "mainnet" ];
 then
   kubectlLndDeletionWait
 else
-  helmUpgrade lnd-outside-1 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpathOutside $INFRADIR/lnd/
-  helmUpgrade lnd-outside-2 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpathOutside $INFRADIR/lnd/
+  helmUpgrade lnd-outside-1 -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpathOutside $INFRADIR/lnd/
+  helmUpgrade lnd-outside-2 -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpathOutside $INFRADIR/lnd/
 fi
 
 # # add extra sleep time... seems lnd is quite long to show up some time

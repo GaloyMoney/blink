@@ -1,7 +1,7 @@
 import { default as axios } from 'axios';
 import { getChainBalance, getChannelBalance, getClosedChannels, getForwards, getPendingChainBalance, getWalletInfo } from "lightning";
 import _ from "lodash";
-import { getActiveLnd } from "./lndConfig";
+import { getActiveLnd, getAllLnd, getAllOffchainLnd } from "./lndConfig";
 import { baseLogger } from "./logger";
 import { DbMetadata } from "./schema";
 import { MainBook } from "./mongodb";
@@ -11,9 +11,18 @@ import { DbError } from "./error";
 // milliseconds in a day
 const MS_PER_DAY = 864e5
 
-export const lndBalances = async () => {
-  const { lnd } = getActiveLnd()
-  
+export const lndsBalances = async () => {
+  const data = await Promise.all(getAllLnd().map(({lnd}) => lndBalances({lnd})))
+  return { 
+    total: _.sumBy(data, "total"), 
+    onChain: _.sumBy(data, "onChain"), 
+    offChain: _.sumBy(data, "offChain"), 
+    opening_channel_balance: _.sumBy(data, "opening_channel_balance"), 
+    closing_channel_balance: _.sumBy(data, "closing_channel_balance")
+  }
+}
+
+export const lndBalances = async ({ lnd }) => {
   // Onchain
   const { chain_balance } = await getChainBalance({lnd})
   const { channel_balance, pending_balance: opening_channel_balance } = await getChannelBalance({lnd})
@@ -33,7 +42,7 @@ export const lndBalances = async () => {
   )
 
   const total = chain_balance + channel_balance + pending_chain_balance + opening_channel_balance + closing_channel_balance
-  return { total, onChain: chain_balance + pending_chain_balance, offChain: channel_balance, opening_channel_balance, closing_channel_balance }
+  return { total: total, onChain: chain_balance + pending_chain_balance, offChain: channel_balance, opening_channel_balance, closing_channel_balance }
 }
 
 export async function nodeStats({ lnd }) {
@@ -46,6 +55,12 @@ export async function nodeStats({ lnd }) {
     channelsCount,
     id
   }
+}
+
+export const nodesStats = async () => {
+  const data = getAllOffchainLnd().map(({lnd}) => nodeStats({lnd}))
+  // TODO: try if we don't need a Promise.all()
+  return await Promise.all(data)
 }
 
 export async function getBosScore() {

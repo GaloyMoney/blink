@@ -20,7 +20,7 @@ import swStats from 'swagger-stats';
 import util from 'util';
 import { v4 as uuidv4 } from 'uuid';
 import { getMinBuildNumber, getHourlyPrice } from "../localCache";
-import { nodeStats } from "../lndUtils";
+import { nodesStats, nodeStats } from "../lndUtils";
 import { setupMongoConnection } from "../mongodb";
 import { sendNotification } from "../notifications/notification";
 import { User } from "../schema";
@@ -64,10 +64,6 @@ const commitHash = process.env.COMMITHASH
 const buildTime = process.env.BUILDTIME
 const helmRevision = process.env.HELMREVISION
 
-
-// FIXME: need an array
-const { lnd } = getActiveLnd()
-
 const resolvers = {
   Query: {
     me: async (_, __, { uid, user }) => {
@@ -106,8 +102,12 @@ const resolvers = {
         }))
       }
     },
-    // FIXME: need an array
-    nodeStats: async () => nodeStats({ lnd }),
+    // deprecated
+    nodeStats: async () => {
+      const { lnd } = getActiveLnd()
+      return nodeStats({ lnd })
+    },
+    nodesStats: async () => nodesStats(),
     buildParameters: async () => {
       const { minBuildNumber, lastBuildNumber } = await getMinBuildNumber()
       return {

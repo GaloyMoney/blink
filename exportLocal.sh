@@ -13,6 +13,9 @@ export LND_ONCHAIN_MACAROON=$(kubectl exec lndonchain-0  -- base64 /root/.lnd/da
 export MACAROONOUTSIDE1=$(kubectl exec lnd-outside-1-0  -- base64 /root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
 export MACAROONOUTSIDE2=$(kubectl exec lnd-outside-2-0  -- base64 /root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
 
+export LND_1_PUBKEY=$(kubectl get secret lnd1-pubkey --template={{.data.pubkey}} | base64 -d)
+export LND_2_PUBKEY=$(kubectl get secret lnd2-pubkey --template={{.data.pubkey}} | base64 -d)
+
 # change 18443 to 18332 for testnet below
 
 # note: grep -P doesn't work on mac out of the box

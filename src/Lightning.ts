@@ -1,25 +1,24 @@
-import lnService from 'ln-service'
-import assert from 'assert'
-import { createHash, randomBytes } from "crypto";
+import assert from 'assert';
+import crypto, { createHash, randomBytes } from "crypto";
+import { cancelHodlInvoice, createInvoice, decodePaymentRequest, getInvoice, getPayment, payViaPaymentDetails, payViaRoutes } from "lightning";
+import lnService from 'ln-service';
 import moment from "moment";
-import { FEECAP, FEEMIN, getActiveLnd, getLndFromNode, TIMEOUT_PAYMENT } from "./lndConfig";
+import util from 'util';
+import { yamlConfig } from "./config";
+import { InsufficientBalanceError, NewAccountWithdrawalError, NotFoundError, SelfPaymentError, TransactionRestrictedError, ValidationError } from './error';
+import { addTransactionLndPayment, addTransactionLndReceipt, addTransactionOnUsPayment } from "./ledger/transaction";
+import { FEECAP, FEEMIN, getActiveLnd, getLndFromNode, isMyNode, TIMEOUT_PAYMENT } from "./lndConfig";
 import { lockExtendOrThrow, redlock } from "./lock";
 import { MainBook } from "./mongodb";
 import { transactionNotification } from "./notifications/payment";
-import { addTransactionLndPayment, addTransactionLndReceipt, addTransactionOnUsPayment } from "./ledger/transaction";
-import { IAddInvoiceRequest, IFeeRequest, IPaymentRequest } from "./types";
-import { addContact, isInvoiceAlreadyPaidError, LoggedError, timeout } from "./utils";
-import { UserWallet } from "./userWallet";
+import { getAsyncRedisClient } from "./redis";
 import { InvoiceUser, Transaction, User } from "./schema";
-import { createInvoice, getWalletInfo, decodePaymentRequest, cancelHodlInvoice, payViaPaymentDetails, payViaRoutes, getPayment, getInvoice } from "lightning"
-import { getAsyncRedisClient } from "./redis"
-import crypto from "crypto";
+import { IAddInvoiceRequest, IFeeRequest, IPaymentRequest } from "./types";
+import { UserWallet } from "./userWallet";
+import { addContact, isInvoiceAlreadyPaidError, LoggedError, timeout } from "./utils";
 
 
-import util from 'util'
 
-import { yamlConfig } from "./config";
-import { InsufficientBalanceError, NewAccountWithdrawalError, NotFoundError, SelfPaymentError, TransactionRestrictedError, ValidationError } from './error';
 
 export type ITxType = "invoice" | "payment" | "onchain_receipt" | "onchain_payment" | "on_us"
 export type payInvoiceResult = "success" | "failed" | "pending" | "already_paid"
@@ -36,18 +35,8 @@ export const delay = (currency) => {
 }
 
 export const LightningMixin = (superclass) => class extends superclass {
-  nodePubKey: string | null = null
-
   constructor(...args) {
     super(...args)
-  }
-
-  // FIXME: this should be static
-  // FIXME: save pubkey
-  async getNodePubkey() {
-    const { lnd } = getActiveLnd()
-    this.nodePubKey = this.nodePubKey ?? (await getWalletInfo({ lnd })).public_key
-    return this.nodePubKey
   }
 
   async updatePending(lock) {
@@ -169,7 +158,10 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     // safety check
     // this should not happen as this check is done within RN
-    if (destination === await this.getNodePubkey()) {
+
+    // TODO: mobile side should also haev a list of array instead of a single node
+
+    if (isMyNode({pubkey: destination})) {
       lightningLogger.warn("probe for self")
       return 0
     }
@@ -311,7 +303,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
       // On us transaction
       // if destination is empty, we consider this is also an on-us transaction
-      if (destination === await this.getNodePubkey() || destination === "") {
+      if (isMyNode({pubkey: destination}) || destination === "") {
         const lightningLoggerOnUs = lightningLogger.child({ onUs: true, fee: 0 })
 
         if(await this.user.limitHit({on_us: true, amount: tokens})) {
@@ -372,14 +364,21 @@ export const LightningMixin = (superclass) => class extends superclass {
         transactionNotification({ amount: sats, user: payeeUser, hash: id, logger: this.logger, type: "paid-invoice" })
 
         if (!pushPayment) {
-          const resultDeletion = await InvoiceUser.deleteOne({ _id: id })
-          this.logger.info({ id, user: this.user, resultDeletion }, "invoice has been deleted from InvoiceUser following on_us transaction")
-
           const lnd = getLndFromNode({ node })
           // TODO: manage case node if offline
 
-          await cancelHodlInvoice({ lnd, id })
-          this.logger.info({ id, user: this.user }, "canceling invoice on lnd")
+          try {
+            // trying to delete the invoice first from lnd
+            // if we failed to do it, the invoice would still be present in InvoiceUser
+            // in case the invoice were to be paid independantly (unlikely outcome)
+            await cancelHodlInvoice({ lnd, id })
+            this.logger.info({ id, user: this.user }, "canceling invoice on lnd")
+
+            const resultDeletion = await InvoiceUser.deleteOne({ _id: id })
+            this.logger.info({ id, user: this.user, resultDeletion }, "invoice has been deleted from InvoiceUser following on_us transaction")
+          } catch(err) {
+            this.logger.error({ id, user: this.user, err}, "issue deleting invoice")
+          }
         }
 
         // adding contact for the payer

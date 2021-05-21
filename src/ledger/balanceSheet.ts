@@ -2,7 +2,7 @@ import { getChannels } from 'lightning';
 import * as _ from "lodash";
 import { getBalance as getBitcoindBalance } from "../bitcoind";
 import { getActiveLnd } from "../lndConfig";
-import { lndBalances } from "../lndUtils";
+import { lndsBalances } from "../lndUtils";
 import { baseLogger } from '../logger';
 import { MainBook } from "../mongodb";
 import { User } from "../schema";
@@ -36,7 +36,7 @@ export const getBalanceSheet = async () => {
 
 export const balanceSheetIsBalanced = async () => {
   const {assets, liabilities, lightning, bitcoin, expenses, revenue } = await getBalanceSheet()
-  const { total: lnd } = await lndBalances() // doesnt include escrow amount
+  const { total: lnd } = await lndsBalances() // doesnt include escrow amount
 
   let bitcoind = await getBitcoindBalance()
 
