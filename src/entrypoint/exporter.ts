@@ -5,7 +5,7 @@ import client, { register } from 'prom-client';
 import { getBalancesDetail } from "../bitcoind";
 import { balanceSheetIsBalanced, getBalanceSheet } from "../ledger/balanceSheet";
 import { getOnchainLnd } from "../lndConfig";
-import { getBosScore, lndBalances } from "../lndUtils";
+import { getBosScore, lndBalances, lndsBalances } from "../lndUtils";
 import { baseLogger } from "../logger";
 import { setupMongoConnection } from "../mongodb";
 import { Transaction, User } from "../schema";
@@ -67,7 +67,7 @@ const main = async () => {
       logger.error({err}, "impossible to calculate balance sheet")
     }
     
-    const { total, onChain, offChain, opening_channel_balance, closing_channel_balance } = await lndBalances()
+    const { total, onChain, offChain, opening_channel_balance, closing_channel_balance } = await lndsBalances()
     lnd_g.set(total)
     lndOnChain_g.set(onChain)
     lndOffChain_g.set(offChain)
