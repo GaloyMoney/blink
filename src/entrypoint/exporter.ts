@@ -111,7 +111,8 @@ const main = async () => {
     try {
       const balances = await getBalancesDetail()
       for (const {wallet, balance} of balances) {
-        const gauge = new client.Gauge({ name: `${prefix}_bitcoind_${wallet}`, help: `amount in wallet ${wallet}` })
+        const walletSanitized = wallet.replace("/", "_")
+        const gauge = new client.Gauge({ name: `${prefix}_bitcoind_${walletSanitized}`, help: `amount in wallet ${wallet}` })
         gauge.set(balance)
       }
     } catch (err) {
