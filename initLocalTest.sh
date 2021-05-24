@@ -124,15 +124,15 @@ fi
 rm -rf $INFRADIR/lnd
 
 
-# helm pull --version=$lndVersion galoy/lnd -d $INFRADIR/ --untar
-# cp "$INFRADIR/configs/lnd/RTL-Config.json" $INFRADIR/lnd/charts/rtl
-# kubectl apply -f $INFRADIR/configs/lnd/templates
+helm pull --version=$lndVersion galoy/lnd -d $INFRADIR/ --untar
+cp "$INFRADIR/configs/lnd/RTL-Config.json" $INFRADIR/lnd/charts/rtl
+kubectl apply -f $INFRADIR/configs/lnd/templates
 
 # for local development
-cp -R ../charts/charts/lnd/ $INFRADIR/lnd/
-cd charts/lnd
-helm dependency build
-cd -
+# cp -R ../charts/charts/lnd/ $INFRADIR/lnd/
+# cd charts/lnd
+# helm dependency build
+# cd -
 
 helmUpgrade lnd1 -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd/
 helmUpgrade lnd2 -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd/
