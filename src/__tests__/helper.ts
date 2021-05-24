@@ -1,4 +1,4 @@
-import { balanceSheetIsBalanced, updateEscrows, updateUsersPendingPayment } from "../ledger/balanceSheet";
+import { balanceSheetIsBalanced, updateUsersPendingPayment } from "../ledger/balanceSheet";
 import { FtxDealerWallet } from "../dealer/FtxDealerWallet";
 import { User } from "../schema";
 import { bitcoindDefaultClient, sleep } from "../utils";
@@ -11,6 +11,7 @@ import * as jwt from 'jsonwebtoken'
 import { once } from "events";
 import { onChannelUpdated } from "../entrypoint/trigger";
 import { lndsGrpc } from "../lndConfig";
+import { updateEscrows } from "../lndUtils";
 
 export const lnd1 = lndsGrpc[0]
 export const lnd2 = lndsGrpc[1]

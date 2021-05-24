@@ -96,7 +96,7 @@ it('receivesPaymentFromOutside', async () => {
   expect(mongotx.memo).toBe(memo)
 
   // FIXME: manage multi node
-  const { node } = getActiveLnd()
+  const { node } = getActiveLnd
 
   expect(await userWallet1.updatePendingInvoice({ hash, node })).toBeTruthy()
   expect(await userWallet1.updatePendingInvoice({ hash, node })).toBeTruthy()
@@ -505,13 +505,13 @@ it('fails to pay when amount exceeds onUs limit', async() => {
 
 
 
-// it('close channel (related to fee calculation in 09f)', async () => {
-//   const { channels } = await getChannels({ lnd: lndOutside2 })
-//   await closeChannel({ lnd: lndOutside2, id: channels[channels.length - 1].id })
+it('close channel (related to fee calculation in 09f)', async () => {
+  const { channels } = await getChannels({ lnd: lndOutside2 })
+  await closeChannel({ lnd: lndOutside2, id: channels[channels.length - 1].id })
 
-//   // open channel from lnd1 to lndOutside2
-//   // So that we have a route from lndOutside 1 to lndOutside2 via lnd1
-//   const socket = `lnd-outside-2:9735`
-//   await openChannelTesting({ lnd: lnd1, other_lnd: lndOutside2, socket })
-//   await mongoose.connection.close()
-// })
+  // open channel from lnd1 to lndOutside2
+  // So that we have a route from lndOutside 1 to lndOutside2 via lnd1
+  const socket = `lnd-outside-2:9735`
+  await openChannelTesting({ lnd: lnd1, other_lnd: lndOutside2, socket })
+  await mongoose.connection.close()
+})

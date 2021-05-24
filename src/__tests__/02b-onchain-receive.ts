@@ -6,13 +6,15 @@ import { filter } from "lodash";
 import mongoose from "mongoose";
 import { getCurrentPrice } from "../realtimePrice";
 import { onchainTransactionEventHandler } from "../entrypoint/trigger";
-import { setupMongoConnection } from "../mongodb";
+import { MainBook, setupMongoConnection } from "../mongodb";
 import { getTitle } from "../notifications/payment";
-import { bitcoindDefaultClient, btc2sat, sleep } from "../utils";
+import { bitcoindDefaultClient, btc2sat, sat2btc, sleep } from "../utils";
 import { baseLogger } from '../logger'
 import { getFunderWallet } from "../walletFactory";
 import { checkIsBalanced, getUserWallet, lnd1, lndonchain, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "./helper";
-import { subscribeToChainAddress, subscribeToTransactions } from "lightning";
+import { createChainAddress, subscribeToChainAddress, subscribeToTransactions } from "lightning";
+import { getAllLnd } from "../lndConfig";
+import { liabilitiesReserve, lndAccountingPath } from "../ledger/ledger";
 
 jest.mock('../realtimePrice')
 
@@ -57,7 +59,9 @@ afterAll(async () => {
   await mongoose.connection.close()
 })
 
-const onchain_funding = async ({ walletDestination, lnd }) => {
+const onchain_funding = async ({ walletDestination }) => {
+  const lnd = lndonchain
+
   const {BTC: initialBalance} = await walletDestination.getBalances()
   const initTransactions = await walletDestination.getTransactions()
 
@@ -101,11 +105,31 @@ const onchain_funding = async ({ walletDestination, lnd }) => {
 }
 
 it('user0 is credited for on chain transaction', async () => {
-  await onchain_funding({ walletDestination: walletUser0, lnd: lndonchain })
+  await onchain_funding({ walletDestination: walletUser0 })
 })
 
 it('funding funder with onchain tx from bitcoind', async () => {
-  await onchain_funding({ walletDestination: funderWallet, lnd: lnd1 })
+  await onchain_funding({ walletDestination: funderWallet })
+})
+
+it('crediting lnd1 with some fund to be able to create a channel', async () => {
+  const {lnd} = getAllLnd[0]
+  const { address } = await createChainAddress({
+    lnd,
+    format: 'p2wpkh',
+  })
+
+  const amount = 1
+  await bitcoindDefaultClient.sendToAddress(address, amount)
+  await bitcoindDefaultClient.generateToAddress(6, RANDOM_ADDRESS)
+
+  const sats = btc2sat(amount)
+  const metadata = { type: "onchain_receipt", currency: "BTC", pending: "false" }
+
+  await MainBook.entry("funding tx")
+    .credit(liabilitiesReserve, sats, metadata)    
+    .debit(lndAccountingPath, sats, metadata)
+    .commit()
 })
 
 it('identifies unconfirmed incoming on chain txn', async () => {
@@ -202,7 +226,7 @@ it('allows fee exemption for specific users', async () => {
   walletUser2.user.depositFeeRatio = 0
   await walletUser2.user.save()
   const {BTC: initBalanceUser2} = await walletUser2.getBalances()
-  await onchain_funding({walletDestination: walletUser2, lnd: lndonchain})
+  await onchain_funding({walletDestination: walletUser2})
   const {BTC: finalBalanceUser2} = await walletUser2.getBalances()
   expect(finalBalanceUser2).toBe(initBalanceUser2 + btc2sat(amount_BTC))
 })

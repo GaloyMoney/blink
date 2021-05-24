@@ -229,12 +229,10 @@ export const OnChainMixin = (superclass) => class extends superclass {
     let address
 
     try {
-      const format = 'p2wpkh';
-      const response = await createChainAddress({
+      ({ address } = await createChainAddress({
         lnd,
-        format,
-      })
-      address = response.address
+        format: 'p2wpkh',
+      }))
     } catch (err) {
       const error = `error getting on chain address`
       this.logger.error({err}, error)

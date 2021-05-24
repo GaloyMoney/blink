@@ -29,6 +29,10 @@ export const dealerMediciPath = async () => {
 
 export const liabilitiesDealerFtxPath = `Liabilities:Dealer:Ftx`
 
+// use for topping up lightning node that doesn't act at bitcoin wallet
+// only used during test for now
+export const liabilitiesReserve = `Liabilities:Reserve:Lightning`
+
 
 // expenses
 

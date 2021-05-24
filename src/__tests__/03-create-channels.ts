@@ -3,8 +3,8 @@
  */
 import { once } from 'events';
 import { getChannels, subscribeToGraph } from 'lightning';
-import { updateEscrows } from "../ledger/balanceSheet";
 import { lndFeePath } from "../ledger/ledger";
+import { updateEscrows } from "../lndUtils";
 import { MainBook, setupMongoConnection } from "../mongodb";
 import { bitcoindDefaultClient, sleep } from "../utils";
 import { checkIsBalanced, lnd1, lndOutside1, lndOutside2, mockGetExchangeBalance, openChannelTesting } from "./helper";
@@ -40,26 +40,23 @@ afterAll(async () => {
 const channelFee = 7637
 
 
-// FIXME: 
-// issue is that lnd1 is a offchain only wallet
-// so it can't open a channel
-// it('opens channel from lnd1ToLndOutside1', async () => {
-//   const socket = `lnd-outside-1:9735`
-//   const { balance: initFeeInLedger } = await MainBook.balance({
-//     account: lndFeePath,
-//     currency: "BTC",
-//   })
-//   await openChannelTesting({ lnd: lnd1, other_lnd: lndOutside1, socket })
+it('opens channel from lnd1ToLndOutside1', async () => {
+  const socket = `lnd-outside-1:9735`
+  const { balance: initFeeInLedger } = await MainBook.balance({
+    account: lndFeePath,
+    currency: "BTC",
+  })
+  await openChannelTesting({ lnd: lnd1, other_lnd: lndOutside1, socket })
 
-//   const { channels } = await getChannels({ lnd: lnd1 })
-//   expect(channels.length).toEqual(channelLengthMain + 1)
-//   const { balance: finalFeeInLedger } = await MainBook.balance({
-//     account: lndFeePath,
-//     currency: "BTC",
-//   })
+  const { channels } = await getChannels({ lnd: lnd1 })
+  expect(channels.length).toEqual(channelLengthMain + 1)
+  const { balance: finalFeeInLedger } = await MainBook.balance({
+    account: lndFeePath,
+    currency: "BTC",
+  })
 
-//   expect(finalFeeInLedger - initFeeInLedger).toBe(channelFee * -1 )
-// })
+  expect(finalFeeInLedger - initFeeInLedger).toBe(channelFee * -1 )
+})
 
 
 

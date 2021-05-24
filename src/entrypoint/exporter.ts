@@ -3,7 +3,7 @@ import { getChannelBalance, getChannels } from "lightning";
 import _ from "lodash";
 import client, { register } from 'prom-client';
 import { getBalancesDetail } from "../bitcoind";
-import { balanceSheetIsBalanced, getBalanceSheet } from "../ledger/balanceSheet";
+import { balanceSheetIsBalanced, getLedgerAccounts } from "../ledger/balanceSheet";
 import { getOnchainLnd } from "../lndConfig";
 import { getBosScore, lndBalances, lndsBalances } from "../lndUtils";
 import { baseLogger } from "../logger";
@@ -54,7 +54,7 @@ const main = async () => {
     const bosScore = await getBosScore()
     bos_g.set(bosScore)
 
-    const { lightning, liabilities, bitcoin } = await getBalanceSheet()
+    const { lightning, liabilities, bitcoin } = await getLedgerAccounts()
     liabilities_g.set(liabilities)
     lightning_g.set(lightning)
     bitcoin_g.set(bitcoin)

@@ -7,7 +7,7 @@ import lnService from 'ln-service'
 import { createInvoice, signBytes } from 'lightning'
 import util from 'util'
 import { getActiveLnd } from "../lndConfig"
-const {lnd} = getActiveLnd()
+const {lnd} = getActiveLnd
 
 
 it('add invoice', async () => {

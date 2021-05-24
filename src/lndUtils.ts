@@ -1,18 +1,18 @@
 import { default as axios } from 'axios';
-import { getChainBalance, getChannelBalance, getClosedChannels, getForwards, getPendingChainBalance, getWalletInfo } from "lightning";
+import { getChainBalance, getChannelBalance, getChannels, getClosedChannels, getForwards, getPendingChainBalance, getWalletInfo } from "lightning";
 import _ from "lodash";
 import { getActiveLnd, getAllLnd, getAllOffchainLnd } from "./lndConfig";
 import { baseLogger } from "./logger";
 import { DbMetadata } from "./schema";
 import { MainBook } from "./mongodb";
-import { lndAccountingPath, revenueFeePath } from "./ledger/ledger";
+import { escrowAccountingPath, lndAccountingPath, revenueFeePath } from "./ledger/ledger";
 import { DbError } from "./error";
 
 // milliseconds in a day
 const MS_PER_DAY = 864e5
 
 export const lndsBalances = async () => {
-  const data = await Promise.all(getAllLnd().map(({lnd}) => lndBalances({lnd})))
+  const data = await Promise.all(getAllLnd.map(({lnd}) => lndBalances({lnd})))
   return { 
     total: _.sumBy(data, "total"), 
     onChain: _.sumBy(data, "onChain"), 
@@ -58,7 +58,7 @@ export async function nodeStats({ lnd }) {
 }
 
 export const nodesStats = async () => {
-  const data = getAllOffchainLnd().map(({lnd}) => nodeStats({lnd}))
+  const data = getAllOffchainLnd.map(({lnd}) => nodeStats({lnd}))
   // TODO: try if we don't need a Promise.all()
   return await Promise.all(data)
 }
@@ -68,7 +68,7 @@ export async function getBosScore() {
     const { data } = await axios.get('https://bos.lightning.jorijn.com/data/export.json')
 
     // FIXME: manage multiple nodes
-    const { lnd } = getActiveLnd()
+    const { lnd } = getActiveLnd
     const publicKey = (await getWalletInfo({lnd})).public_key;
     const bosScore = _.find(data.data, { publicKey })
     if (!bosScore) {
@@ -141,7 +141,7 @@ export const updateRoutingFees = async () => {
 
   console.log({after, before})
   // get fee collected day wise
-  const forwards = await getRoutingFees({ lnd: getActiveLnd(), before, after })
+  const forwards = await getRoutingFees({ lnd: getActiveLnd, before, after })
 
   // iterate over object and record fee day wise in our books
   _.forOwn(forwards, async (fee, day) => {
@@ -158,4 +158,40 @@ export const updateRoutingFees = async () => {
   endDate.setDate(endDate.getDate() + 1)
   const endDay = endDate.toDateString()
   await DbMetadata.findOneAndUpdate({}, { $set: { routingFeeLastEntry: endDay } }, { upsert: true })
+}
+
+
+export const updateEscrows = async () => {
+  const type = "escrow"
+  const metadata = { type, currency: "BTC", pending: false }
+
+  // FIXME: update escrow of all the node
+  const { lnd } = getActiveLnd
+  const { channels } = await getChannels({lnd})
+
+  const selfInitatedChannels = _.filter(channels, {is_partner_initiated: false})
+  const escrowInLnd = _.sumBy(selfInitatedChannels, 'commit_transaction_fee')
+
+  const { balance: escrowInMongodb } = await MainBook.balance({
+    account: escrowAccountingPath,
+    currency: "BTC",
+  })
+
+  // escrowInMongodb is negative
+  // diff will equal 0 if there is no change
+  const diff = escrowInLnd + escrowInMongodb
+
+  baseLogger.info({diff, escrowInLnd, escrowInMongodb, channels}, "escrow recording")
+
+  if (diff > 0) {
+    await MainBook.entry("escrow")
+      .credit(lndAccountingPath, diff, {...metadata})
+      .debit(escrowAccountingPath, diff, {...metadata})
+      .commit()
+  } else if (diff < 0) {
+    await MainBook.entry("escrow")
+      .debit(lndAccountingPath, - diff, {...metadata})
+      .credit(escrowAccountingPath, - diff, {...metadata})
+      .commit()
+  }
 }

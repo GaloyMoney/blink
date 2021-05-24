@@ -1,13 +1,10 @@
-import { getChannels } from 'lightning';
-import * as _ from "lodash";
 import { getBalance as getBitcoindBalance } from "../bitcoind";
-import { getActiveLnd } from "../lndConfig";
 import { lndsBalances } from "../lndUtils";
 import { baseLogger } from '../logger';
 import { MainBook } from "../mongodb";
 import { User } from "../schema";
 import { WalletFactory } from "../walletFactory";
-import { bitcoindAccountingPath, escrowAccountingPath, lndAccountingPath, lndFeePath } from "./ledger";
+import { bitcoindAccountingPath, lndAccountingPath, lndFeePath } from "./ledger";
 
 const logger = baseLogger.child({module: "balanceSheet"})
 
@@ -23,7 +20,7 @@ export const updateUsersPendingPayment = async () => {
   }
 }
 
-export const getBalanceSheet = async () => {    
+export const getLedgerAccounts = async () => {    
   const { balance: assets } = await MainBook.balance({account_path: "Assets", currency: "BTC"}) 
   const { balance: liabilities } = await MainBook.balance({account_path: "Liabilities", currency: "BTC"}) 
   const { balance: lightning } = await MainBook.balance({accounts: lndAccountingPath, currency: "BTC"}) 
@@ -35,7 +32,7 @@ export const getBalanceSheet = async () => {
 }
 
 export const balanceSheetIsBalanced = async () => {
-  const {assets, liabilities, lightning, bitcoin, expenses, revenue } = await getBalanceSheet()
+  const {assets, liabilities, lightning, bitcoin, expenses, revenue } = await getLedgerAccounts()
   const { total: lnd } = await lndsBalances() // doesnt include escrow amount
 
   let bitcoind = await getBitcoindBalance()
@@ -60,39 +57,4 @@ export const balanceSheetIsBalanced = async () => {
   }
 
   return { assetsLiabilitiesDifference, bookingVersusRealWorldAssets }
-}
-
-export const updateEscrows = async () => {
-  const type = "escrow"
-  const metadata = { type, currency: "BTC", pending: false }
-
-  // FIXME: update escrow of all the node
-  const { lnd } = getActiveLnd()
-  const { channels } = await getChannels({lnd})
-
-  const selfInitatedChannels = _.filter(channels, {is_partner_initiated: false})
-  const escrowInLnd = _.sumBy(selfInitatedChannels, 'commit_transaction_fee')
-
-  const { balance: escrowInMongodb } = await MainBook.balance({
-    account: escrowAccountingPath,
-    currency: "BTC",
-  })
-
-  // escrowInMongodb is negative
-  // diff will equal 0 if there is no change
-  const diff = escrowInLnd + escrowInMongodb
-
-  logger.info({diff, escrowInLnd, escrowInMongodb, channels}, "escrow recording")
-
-  if (diff > 0) {
-    await MainBook.entry("escrow")
-      .credit(lndAccountingPath, diff, {...metadata})
-      .debit(escrowAccountingPath, diff, {...metadata})
-      .commit()
-  } else if (diff < 0) {
-    await MainBook.entry("escrow")
-      .debit(lndAccountingPath, - diff, {...metadata})
-      .credit(escrowAccountingPath, - diff, {...metadata})
-      .commit()
-  }
 }

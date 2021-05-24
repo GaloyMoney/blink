@@ -34,17 +34,17 @@ export const lndsGrpc = params.map(item => authenticatedLndGrpc(item).lnd)
 // TODO: make a more versatile function for lnd selection.
 // ie : { active: true } or { type: "offchain "}. 
 
-export const getActiveLnd = () => ({ lnd: lndsGrpc[0], node: params[0].node })
-export const getAllOffchainLnd = () => ([
+export const getActiveLnd = { lnd: lndsGrpc[0], node: params[0].node }
+export const getAllOffchainLnd = [
   { lnd: lndsGrpc[0], node: params[0].node },
   { lnd: lndsGrpc[1], node: params[1].node }
-])
+]
 
-export const getAllLnd = () => ([
+export const getAllLnd = [
   { lnd: lndsGrpc[0], node: params[0].node },
   { lnd: lndsGrpc[1], node: params[1].node },
   { lnd: lndsGrpc[2], node: params[2].node }
-])
+]
 
 // only doing onchain from one node to get started
 // we probably want to use bitcoind instead of lnd for onchain tx anyway
