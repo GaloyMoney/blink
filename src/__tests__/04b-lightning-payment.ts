@@ -2,14 +2,14 @@
  * @jest-environment node
  */
 import { createHash, randomBytes } from 'crypto';
+import { cancelHodlInvoice, closeChannel, createHodlInvoice, createInvoice, decodePaymentRequest, getChannels, pay, settleHodlInvoice } from 'lightning';
+import { yamlConfig } from '../config';
 import { FEECAP, getActiveLnd, getOnchainLnd, nodesPubKey } from "../lndConfig";
 import { setupMongoConnection } from "../mongodb";
 import { InvoiceUser, Transaction } from "../schema";
-import { checkIsBalanced, getUserWallet, lnd1, lndOutside1, lndOutside2, mockGetExchangeBalance, openChannelTesting } from "./helper";
 import { getHash, sleep } from "../utils";
+import { checkIsBalanced, getUserWallet, lnd1, lndOutside1, lndOutside2, mockGetExchangeBalance, openChannelTesting } from "./helper";
 
-import { createInvoice, createHodlInvoice, settleHodlInvoice, cancelHodlInvoice, pay, decodePaymentRequest, getChannels, closeChannel } from 'lightning'
-import mongoose from "mongoose"
 
 let userWallet0, userWallet1, userWallet2
 let initBalance0, initBalance1, initBalance2
@@ -17,7 +17,6 @@ let initBalance0, initBalance1, initBalance2
 const amountInvoice = 1000
 
 jest.mock('../notifications/notification')
-import { yamlConfig } from '../config';
 jest.mock('../realtimePrice')
 
 const date = Date.now() + 1000 * 60 * 60 * 24 * 8
@@ -513,5 +512,4 @@ it('close channel (related to fee calculation in 09f)', async () => {
   // So that we have a route from lndOutside 1 to lndOutside2 via lnd1
   const socket = `lnd-outside-2:9735`
   await openChannelTesting({ lnd: lnd1, other_lnd: lndOutside2, socket })
-  await mongoose.connection.close()
 })

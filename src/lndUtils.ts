@@ -139,9 +139,10 @@ export const updateRoutingFees = async () => {
   const type = "routing_fee"
   const metadata = { type, currency: "BTC", pending: false }
 
-  console.log({after, before})
+  // console.log({after, before})
   // get fee collected day wise
-  const forwards = await getRoutingFees({ lnd: getActiveLnd, before, after })
+  const { lnd } = getActiveLnd 
+  const forwards = await getRoutingFees({ lnd, before, after })
 
   // iterate over object and record fee day wise in our books
   _.forOwn(forwards, async (fee, day) => {
