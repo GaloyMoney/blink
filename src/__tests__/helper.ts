@@ -97,7 +97,7 @@ export const openChannelTesting = async ({ lnd, other_lnd, socket, is_private = 
   const local_tokens = 1000000
   const initBlockCount = await bitcoindDefaultClient.getBlockCount()
 
-  await waitUntilBlockHeight({ lnd: lnd1, blockHeight: initBlockCount })
+  await waitUntilBlockHeight({ lnd, blockHeight: initBlockCount })
   await waitUntilBlockHeight({ lnd: other_lnd, blockHeight: initBlockCount })
 
   const { public_key: partner_public_key } = await getWalletInfo({ lnd: other_lnd })

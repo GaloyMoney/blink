@@ -4,7 +4,7 @@ import { MainBook } from "./mongodb";
 import { getOnChainTransactions } from "./OnChain";
 import { BitcoindClient, bitcoindDefaultClient, btc2sat, sat2btc } from "./utils";
 import { UserWallet } from "./userWallet";
-import { lndBalances } from "./lndUtils"
+import { lndBalances, lndsBalances } from "./lndUtils"
 import { yamlConfig } from "./config"
 import { createChainAddress, sendToChainAddress } from "lightning";
 import { getOnchainLnd } from "./lndConfig";
@@ -102,7 +102,7 @@ export class SpecterWallet {
       }
     }
 
-    const { total, onChain } = await lndBalances()
+    const { total, onChain } = await lndsBalances()
     const { action, sats, reason } = SpecterWallet.isRebalanceNeeded({ lndBalance: total, onChain })
 
     const logger = this.logger.child({sats, action, total, onChain})

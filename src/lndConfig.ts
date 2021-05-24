@@ -29,8 +29,6 @@ const params = [{
   type: ["onchain"]
 }]
 
-console.log({params})
-
 export const lndsGrpc = params.map(item => authenticatedLndGrpc(item).lnd)
 
 // TODO: make a more versatile function for lnd selection.
@@ -52,8 +50,8 @@ export const getAllLnd = () => ([
 // we probably want to use bitcoind instead of lnd for onchain tx anyway
 export const getOnchainLnd = () => ({ lnd: lndsGrpc[2], node: params[2].node })
 
-const nodesPubKey = () => _.filter(params, {type: ["offchain"]}).map(item => item.pubkey)
-export const isMyNode = ({pubkey}) => _.includes(nodesPubKey(), pubkey)
+export const nodesPubKey = _.filter(params, {type: ["offchain"]}).map(item => item.pubkey)
+export const isMyNode = ({pubkey}) => _.includes(nodesPubKey, pubkey)
 
 export const getLndFromNode = ({ node }: {node: string}) => lndsGrpc[_.findIndex(params, { node })]
 

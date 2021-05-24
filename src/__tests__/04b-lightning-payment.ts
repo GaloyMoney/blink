@@ -2,7 +2,7 @@
  * @jest-environment node
  */
 import { createHash, randomBytes } from 'crypto';
-import { FEECAP, getOnchainLnd } from "../lndConfig";
+import { FEECAP, getActiveLnd, getOnchainLnd, nodesPubKey } from "../lndConfig";
 import { setupMongoConnection } from "../mongodb";
 import { InvoiceUser, Transaction } from "../schema";
 import { checkIsBalanced, getUserWallet, lnd1, lndOutside1, lndOutside2, mockGetExchangeBalance, openChannelTesting } from "./helper";
@@ -54,25 +54,17 @@ afterEach(async () => {
 afterAll(async () => {
   jest.restoreAllMocks();
   // remove direct connection between lndoutside1 and lndoutside2
-  const { channels } = await getChannels({ lnd: lndOutside2 })
-  await closeChannel({ lnd: lndOutside2, id: channels[channels.length - 1].id })
-
-  // open channel from lnd1 to lndOutside2
-  // So that we have a route from lndOutside 1 to lndOutside2 via lnd1
-  const socket = `lnd-outside-2:9735`
-  await openChannelTesting({ lnd: lnd1, other_lnd: lndOutside2, socket })
-  await mongoose.connection.close()
 });
 
 
-it('add invoice', async () => {
+it('addInvoice', async () => {
   const request = await userWallet1.addInvoice({ value: 1000 })
   expect(request.startsWith("lnbcrt10")).toBeTruthy()
   const { uid } = await InvoiceUser.findById(getHash(request))
   expect(String(uid)).toBe(String(userWallet1.user._id))
 })
 
-it('add public invoice', async () => {
+it('addPublicInvoice', async () => {
   const request = await userWallet1.addInvoice({ selfGenerated: false })
   expect(request.startsWith("lnbcrt1")).toBeTruthy()
   const { uid, selfGenerated } = await InvoiceUser.findById(getHash(request))
@@ -80,10 +72,35 @@ it('add public invoice', async () => {
   expect(selfGenerated).toBe(false)
 })
 
-it('add invoice with no amount', async () => {
+it('addInvoiceWithNoAmount', async () => {
   const request = await userWallet2.addInvoice({})
   const { uid } = await InvoiceUser.findById(getHash(request))
   expect(String(uid)).toBe(String(userWallet2.user._id))
+})
+
+
+it('receivesPaymentFromOutside', async () => {
+  const memo = "myMemo"
+
+  // larger amount to not fall below the escrow limit
+  const amount = 50000
+
+  const request = await userWallet1.addInvoice({ value: amount, memo })
+  await pay({ lnd: lndOutside1, request })
+  const {BTC: finalBalance} = await userWallet1.getBalances()
+  expect(finalBalance).toBe(initBalance1 + amount)
+
+  const hash = getHash(request)
+
+  const mongotx = await Transaction.findOne({ hash })
+  expect(mongotx.memo).toBe(memo)
+
+  // FIXME: manage multi node
+  const { node } = getActiveLnd()
+
+  expect(await userWallet1.updatePendingInvoice({ hash, node })).toBeTruthy()
+  expect(await userWallet1.updatePendingInvoice({ hash, node })).toBeTruthy()
+
 })
 
 const createInvoiceHash = () => {
@@ -96,7 +113,7 @@ const createInvoiceHash = () => {
 
 const functionToTests = [
   { 
-    name: "getFee+Pay",
+    name: "getFeeAndPay",
     initialFee: 0,
     fn: function fn(wallet) {
       return async (input) => {
@@ -276,27 +293,6 @@ it(`fails to pay when user has insufficient balance`, async () => {
 })
 
 
-it('receives payment from outside', async () => {
-  const memo = "myMemo"
-
-  const request = await userWallet1.addInvoice({ value: amountInvoice, memo })
-  await pay({ lnd: lndOutside1, request })
-  const {BTC: finalBalance} = await userWallet1.getBalances()
-  expect(finalBalance).toBe(initBalance1 + amountInvoice)
-
-  const hash = getHash(request)
-
-  const mongotx = await Transaction.findOne({ hash })
-  expect(mongotx.memo).toBe(memo)
-
-
-  // FIXME: manage multi node
-  const { node } = getOnchainLnd()
-
-  expect(await userWallet1.updatePendingInvoice({ hash, node })).toBeTruthy()
-  expect(await userWallet1.updatePendingInvoice({ hash, node })).toBeTruthy()
-
-})
 
 // @ts-ignore
 const Lightning = require('../Lightning');
@@ -409,12 +405,12 @@ it('payInvoiceToSelf', async () => {
 })
 
 it('negative amount should be rejected', async () => {
-  const destination = await userWallet0.getNodePubkey()
+  const destination = nodesPubKey[0]
   expect(userWallet1.pay({ destination, username: userWallet0.user.username, amount: - amountInvoice })).rejects.toThrow()
 })
 
 it('onUs pushPayment', async () => {
-  const destination = await userWallet0.getNodePubkey()
+  const destination = nodesPubKey[0]
   const res = await userWallet1.pay({ destination, username: userWallet0.user.username, amount: amountInvoice })
 
   const {BTC: finalBalance0} = await userWallet0.getBalances()
@@ -441,7 +437,7 @@ it('onUs pushPayment', async () => {
 })
 
 it('onUs pushPayment error for same user', async () => {
-  const destination = await userWallet0.getNodePubkey()
+  const destination = nodesPubKey[0]
   await expect(userWallet0.pay({ destination, username: userWallet0.user.username, amount: amountInvoice })).rejects.toThrow()
   await checkIsBalanced()
 })
@@ -505,4 +501,17 @@ it('fails to pay when amount exceeds onUs limit', async() => {
 //   //TODO try to fetch simulataneously (ie: with Premise.all[])
 //   // balances with pending but settled transaction to see if 
 //   // we can create a race condition in the DB
+// })
+
+
+
+// it('close channel (related to fee calculation in 09f)', async () => {
+//   const { channels } = await getChannels({ lnd: lndOutside2 })
+//   await closeChannel({ lnd: lndOutside2, id: channels[channels.length - 1].id })
+
+//   // open channel from lnd1 to lndOutside2
+//   // So that we have a route from lndOutside 1 to lndOutside2 via lnd1
+//   const socket = `lnd-outside-2:9735`
+//   await openChannelTesting({ lnd: lnd1, other_lnd: lndOutside2, socket })
+//   await mongoose.connection.close()
 // })

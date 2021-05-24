@@ -39,23 +39,29 @@ afterAll(async () => {
 //this is the fixed opening and closing channel fee on devnet
 const channelFee = 7637
 
-it('opens channel from lnd1ToLndOutside1', async () => {
-  const socket = `lnd-outside-1:9735`
-  const { balance: initFeeInLedger } = await MainBook.balance({
-    account: lndFeePath,
-    currency: "BTC",
-  })
-  await openChannelTesting({ lnd: lnd1, other_lnd: lndOutside1, socket })
 
-  const { channels } = await getChannels({ lnd: lnd1 })
-  expect(channels.length).toEqual(channelLengthMain + 1)
-  const { balance: finalFeeInLedger } = await MainBook.balance({
-    account: lndFeePath,
-    currency: "BTC",
-  })
+// FIXME: 
+// issue is that lnd1 is a offchain only wallet
+// so it can't open a channel
+// it('opens channel from lnd1ToLndOutside1', async () => {
+//   const socket = `lnd-outside-1:9735`
+//   const { balance: initFeeInLedger } = await MainBook.balance({
+//     account: lndFeePath,
+//     currency: "BTC",
+//   })
+//   await openChannelTesting({ lnd: lnd1, other_lnd: lndOutside1, socket })
 
-  expect(finalFeeInLedger - initFeeInLedger).toBe(channelFee * -1 )
-})
+//   const { channels } = await getChannels({ lnd: lnd1 })
+//   expect(channels.length).toEqual(channelLengthMain + 1)
+//   const { balance: finalFeeInLedger } = await MainBook.balance({
+//     account: lndFeePath,
+//     currency: "BTC",
+//   })
+
+//   expect(finalFeeInLedger - initFeeInLedger).toBe(channelFee * -1 )
+// })
+
+
 
 // FIXME: we need a way to calculate the closing fee 
 // lnd doesn't give it back to us (undefined)
@@ -115,7 +121,7 @@ it('opens private channel from lndOutside1 to lndOutside2', async () => {
 })
 
 it('opens channel from lndOutside1 to lnd1', async () => {
-  const socket = `lnd:9735`
+  const socket = `lnd1:9735`
   await openChannelTesting({ lnd: lndOutside1, other_lnd: lnd1, socket })
 
   {
