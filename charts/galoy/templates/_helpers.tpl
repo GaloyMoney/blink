@@ -5,8 +5,8 @@
 {{/*
    Reusing current password since secret exists
 */}}
-{{-  $secret.data.jwtSecret | b64dec -}}
-{{- else if .Values.password -}}
+{{-  $secret.data.secret | b64dec -}}
+{{- else if .Values.jwtSecret -}}
 {{ .Values.jwtSecret | b64enc }}
 {{- else -}}
 {{/*

@@ -97,7 +97,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: jwt-secret
-                  key: jwtSecret
+                  key: secret
             - name: NETWORK
               valueFrom:
                 secretKeyRef:
