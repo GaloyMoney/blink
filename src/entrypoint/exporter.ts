@@ -5,10 +5,10 @@ import { balanceSheetIsBalanced, getBalanceSheet } from "../ledger/balanceSheet"
 import { getBosScore, lndBalances } from "../lndUtils";
 import { setupMongoConnection } from "../mongodb";
 import { Transaction, User } from "../schema";
-import { SpecterWallet } from "../SpecterWallet";
 import { baseLogger } from "../logger";
 import { getDealerWallet, getFunderWallet } from "../walletFactory";
 import { lnd } from "../lndConfig"
+import { getBalancesDetail } from "../bitcoind"
 import _ from "lodash"
 
 const logger = baseLogger.child({module: "exporter"})
@@ -44,7 +44,6 @@ const assetsLiabilitiesDifference_g = new client.Gauge({ name: `${prefix}_assets
 const bookingVersusRealWorldAssets_g = new client.Gauge({ name: `${prefix}_lndBalanceSync`, help: 'are lnd in syncs with our books' })
 const bos_g = new client.Gauge({ name: `${prefix}_bos`, help: 'bos score' })
 const bitcoin_g = new client.Gauge({ name: `${prefix}_bitcoin`, help: 'amount in accounting for cold storage' })
-const specter_g = new client.Gauge({ name: `${prefix}_bitcoind`, help: 'amount in cold storage' })
 const business_g = new client.Gauge({ name: `${prefix}_business`, help: 'number of businesses in the app' })
 const onchainWithdrawFees_g = new client.Gauge({ name: `${prefix}_onchainWithdrawFees`, help: 'onchain withdraw fees collected' })
 const onchainDepositFees_g = new client.Gauge({ name:`${prefix}_onchainDepositFees`, help: 'onchain deposit fees collected' })
@@ -110,8 +109,12 @@ const main = async () => {
     fundingRate_g.set(await dealerWallet.getNextFundingRate())
 
     try {
-      const specterWallet = new SpecterWallet({ logger })
-      specter_g.set(await specterWallet.getBitcoindBalance())
+      const balances = await getBalancesDetail()
+      for (const {wallet, balance} of balances) {
+        const walletSanitized = wallet.replace("/", "_")
+        const gauge = new client.Gauge({ name: `${prefix}_bitcoind_${walletSanitized}`, help: `amount in wallet ${wallet}` })
+        gauge.set(balance)
+      }
     } catch (err) {
       logger.error({err}, "error setting bitcoind/specter balance")
     }

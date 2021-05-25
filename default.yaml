@@ -24,6 +24,12 @@ rebalancing:
   ratioTargetWithdraw: 1
   minOnchain: 10000000 # 0.1
 
+  # select which bitcoind wallet is used for rebalancing
+  # string.include() is being used as a filter
+  # 
+  # specter wallet always 
+  onchainWallet: "specter"
+
 test_accounts: 
 - phone: "+16505554321" # user0
   code: 321321
