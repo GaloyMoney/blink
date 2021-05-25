@@ -91,7 +91,25 @@ spec:
                 secretKeyRef:
                   name: lnd1-pubkey
                   key: pubkey
-                  
+
+            - name: LND_2_DNS
+              value: "lnd2"
+            - name: LND_2_MACAROON
+              valueFrom:
+                secretKeyRef:
+                  name: lnd2-credentials
+                  key: admin_macaroon_base64
+            - name: LND_2_TLS
+              valueFrom:
+                secretKeyRef:
+                  name: lnd2-credentials
+                  key: tls_base64
+            - name: LND_2_PUBKEY
+              valueFrom:
+                secretKeyRef:
+                  name: lnd2-pubkey
+                  key: pubkey
+
             - name: BITCOINDADDR
               value: "bitcoind"
             - name: BITCOINDRPCPASS
