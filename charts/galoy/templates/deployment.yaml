@@ -144,22 +144,22 @@ spec:
             - name: MACAROONOUTSIDE1
               valueFrom:
                 secretKeyRef:
-                  name: lnd-outside-1-macaroon
-                  key: admin.macaroon
+                  name: lnd-outside-1-credentials
+                  key: admin_macaroon_base64
             - name: TLSOUTSIDE1
               valueFrom:
                 secretKeyRef:
-                  name: lnd-outside-1-tls
+                  name: lnd-outside-1-credentials
                   key: tls_base64
             - name: MACAROONOUTSIDE2
               valueFrom:
                 secretKeyRef:
-                  name: lnd-outside-2-macaroon
-                  key: admin.macaroon
+                  name: lnd-outside-2-credentials
+                  key: admin_macaroon_base64
             - name: TLSOUTSIDE2
               valueFrom:
                 secretKeyRef:
-                  name: lnd-outside-2-tls
+                  name: lnd-outside-2-credentials
                   key: tls_base64
             - name: LNDRPCPORT
               value: "10009"
