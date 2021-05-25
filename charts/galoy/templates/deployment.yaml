@@ -110,6 +110,24 @@ spec:
                   name: lnd2-pubkey
                   key: pubkey
 
+            - name: LND_ONCHAIN_DNS
+              value: "lndonchain"
+            - name: LND_ONCHAIN_MACAROON
+              valueFrom:
+                secretKeyRef:
+                  name: lndonchain-credentials
+                  key: admin_macaroon_base64
+            - name: LND_ONCHAIN_TLS
+              valueFrom:
+                secretKeyRef:
+                  name: lndonchain-credentials
+                  key: tls_base64
+            - name: LND_ONCHAIN_PUBKEY
+              valueFrom:
+                secretKeyRef:
+                  name: lndonchain-pubkey
+                  key: pubkey
+
             - name: BITCOINDADDR
               value: "bitcoind"
             - name: BITCOINDRPCPASS
