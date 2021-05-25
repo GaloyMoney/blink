@@ -94,14 +94,10 @@ spec:
             - name: BITCOINDPORT
               value: {{ $.Values.bitcoind.port | quote }}
             - name: JWT_SECRET
-            {{- if $.Values.jwtSecret}}
-              value: {{ $.Values.jwtSecret }}
-            {{- else}}
               valueFrom:
                 secretKeyRef:
                   name: jwt-secret
                   key: secret
-            {{- end}}
             - name: NETWORK
               valueFrom:
                 secretKeyRef:
