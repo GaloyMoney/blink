@@ -17,16 +17,17 @@ export const lnd1 = lndsGrpc[0]
 export const lnd2 = lndsGrpc[1]
 export const lndonchain = lndsGrpc[2]
 
+// TODO: this could be refactored with lndConfig 
 export const lndOutside1 = authenticatedLndGrpc({
   cert: process.env.TLSOUTSIDE1,
   macaroon: process.env.MACAROONOUTSIDE1,
-  socket: `${process.env.LNDOUTSIDE1ADDR}:${process.env.LNDOUTSIDE1RPCPORT}`,
+  socket: `${process.env.LNDOUTSIDE1ADDR}:${process.env.LNDOUTSIDE1RPCPORT ?? 10009}`,
 }).lnd;
 
 export const lndOutside2 = authenticatedLndGrpc({
   cert: process.env.TLSOUTSIDE2,
   macaroon: process.env.MACAROONOUTSIDE2,
-  socket: `${process.env.LNDOUTSIDE2ADDR}:${process.env.LNDOUTSIDE2RPCPORT}`,
+  socket: `${process.env.LNDOUTSIDE2ADDR}:${process.env.LNDOUTSIDE2RPCPORT ?? 10009}`,
 }).lnd;
 
 export const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
