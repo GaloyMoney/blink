@@ -79,12 +79,12 @@ spec:
             - name: LND_1_MACAROON
               valueFrom:
                 secretKeyRef:
-                  name: lnd1-macaroon
+                  name: lnd1-credentials
                   key: admin.macaroon
             - name: LND_1_TLS
               valueFrom:
                 secretKeyRef:
-                  name: lnd1-tls
+                  name: lnd1-credentials
                   key: tls.cert
             - name: LND_1_PUBKEY
               valueFrom:
@@ -152,22 +152,22 @@ spec:
             - name: MACAROONOUTSIDE1
               valueFrom:
                 secretKeyRef:
-                  name: lnd-outside-1-macaroon
+                  name: lnd-outside-1-credentials
                   key: admin.macaroon
             - name: TLSOUTSIDE1
               valueFrom:
                 secretKeyRef:
-                  name: lnd-outside-1-tls
+                  name: lnd-outside-1-credentials
                   key: tls.cert
             - name: MACAROONOUTSIDE2
               valueFrom:
                 secretKeyRef:
-                  name: lnd-outside-2-macaroon
+                  name: lnd-outside-2-credentials
                   key: admin.macaroon
             - name: TLSOUTSIDE2
               valueFrom:
                 secretKeyRef:
-                  name: lnd-outside-2-tls
+                  name: lnd-outside-2-credentials
                   key: tls.cert
             - name: LNDOUTSIDE1ADDR
               value: "lnd-outside-1"
