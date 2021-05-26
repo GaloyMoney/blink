@@ -3,7 +3,7 @@
  */
 import { setupMongoConnection } from "../mongodb";
 import { checkIsBalanced, lnd1, lndOutside1, lndOutside2, RANDOM_ADDRESS, waitUntilBlockHeight, mockGetExchangeBalance } from "./helper";
-import { bitcoindDefaultClient } from "../utils";
+import { bitcoindDefaultClient, sleep } from "../utils";
 
 import mongoose from "mongoose";
 import { createChainAddress } from "lightning";
@@ -54,7 +54,6 @@ it('funds bitcoind wallet', async () => {
   } 
 
   balance = await bitcoindDefaultClient.getBalance()
-  console.log({balanceInit: balance})
 
   const bitcoindAddress = await bitcoindDefaultClient.getNewAddress()
 	await bitcoindDefaultClient.generateToAddress(numOfBlock, bitcoindAddress)

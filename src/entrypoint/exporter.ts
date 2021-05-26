@@ -98,7 +98,7 @@ const main = async () => {
 
     business_g.set(await User.count({"title": {"$exists": true}}))
 
-    const {lnd} = getOnchainLnd()
+    const { lnd } = getOnchainLnd
 
     const { channels } = await getChannels({ lnd })
     totalChannels_g.set(channels.length)

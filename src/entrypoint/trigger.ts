@@ -198,7 +198,7 @@ const updatePriceForChart = async () => {
   }, interval)
 }
 
-const { lnd } = getActiveLnd
+const { lnd } = getActiveLnd() 
 const main = async () => {
 
   getWalletInfo({ lnd }, (err, result) => {

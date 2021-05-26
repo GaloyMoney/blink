@@ -15,7 +15,7 @@ import { getOnchainLnd } from "../lndConfig";
 
 let specterWallet
 
-const {lnd} = getOnchainLnd()
+const {lnd} = getOnchainLnd
 
 jest.mock('../notifications/notification')
 jest.mock('../realtimePrice')

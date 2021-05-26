@@ -63,7 +63,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     const expires_at = this.getExpiration(moment()).toDate()
     
-    const { lnd, node } = getActiveLnd
+    const { lnd, node } = getActiveLnd()
 
     if (!lnd) {
       throw new Error("no active lnd")
@@ -130,7 +130,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     // TODO: if this is a node we are connected with, we may not even need a probe/round trip to redis
     // we could handle this from the front end directly.
 
-    const { lnd, node } = getActiveLnd
+    const { lnd, node } = getActiveLnd() 
 
     if (!lnd) {
       throw new Error("no active lnd")
@@ -224,7 +224,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       // TODO: replace this with invoices/bolt11/parsePaymentRequest function?
       // TODO: use msat instead of sats for the db?
 
-      const { lnd } = getActiveLnd
+      const { lnd } = getActiveLnd() 
 
       try {
         // it doesn't matter which node we fetch the decodePaymentRequest, this operation is stateless and every node should return the same value
@@ -364,7 +364,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         transactionNotification({ amount: sats, user: payeeUser, hash: id, logger: this.logger, type: "paid-invoice" })
 
         if (!pushPayment) {
-          const lnd = getLndFromNode({ node })
+          const {lnd} = getLndFromNode({ node })
           // TODO: manage case node if offline
 
           try {
@@ -445,7 +445,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         const sats = tokens + fee
 
         // XXX FIXME: choose the right node if this is from a route 
-        const { node, lnd } = getActiveLnd
+        const { node, lnd } = getActiveLnd() 
 
         const metadata = {
           hash: id, type: "payment", pending: true, node,
@@ -626,7 +626,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       for (const payment of payments) {
 
         console.log({payment}, "payment")
-        const lnd = getLndFromNode({ node: payment.node })
+        const {lnd} = getLndFromNode({ node: payment.node })
 
         if (!lnd) {
           lightningLogger.warn("node is offline. not verifying payment for now")
@@ -674,10 +674,10 @@ export const LightningMixin = (superclass) => class extends superclass {
   async updatePendingInvoice({ hash, expired = false, lock, node }) {
     let invoice
 
-    const lnd = getLndFromNode({ node })
+    const {lnd} = getLndFromNode({ node })
 
     if (!lnd) {
-      this.logger.warn("node is offline. not verifying invoice for now")
+      this.logger.warn("node is offline. not verifying invoice")
       return
     }
 

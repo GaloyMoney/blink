@@ -95,7 +95,7 @@ it('receivesPaymentFromOutside', async () => {
   expect(mongotx.memo).toBe(memo)
 
   // FIXME: manage multi node
-  const { node } = getActiveLnd
+  const { node } = getActiveLnd() 
 
   expect(await userWallet1.updatePendingInvoice({ hash, node })).toBeTruthy()
   expect(await userWallet1.updatePendingInvoice({ hash, node })).toBeTruthy()
@@ -190,7 +190,7 @@ functionToTests.forEach(({fn, name, initialFee}) => {
       expect(user1OnUsTxn[0].type).toBe('on_us')
   
 
-      const { node } = getOnchainLnd()
+      const { node } = getOnchainLnd
 
       // making request twice because there is a cancel state, and this should be re-entrant
       expect(await walletPayer.updatePendingInvoice({ hash, node })).toBeTruthy()
@@ -301,7 +301,7 @@ it('expired payment', async () => {
 
   const dbSetSpy = jest.spyOn(Lightning, 'delay').mockImplementation(() => ({value: 1, unit: 'seconds', "additional_delay_value": 0}))
 
-  const { lnd } = getOnchainLnd()
+  const { lnd } = getOnchainLnd
 
   const request = await userWallet1.addInvoice({ value: amountInvoice, memo })
   const { id } = await decodePaymentRequest({ lnd, request })

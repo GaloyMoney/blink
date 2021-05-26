@@ -104,7 +104,7 @@ const resolvers = {
     },
     // deprecated
     nodeStats: async () => {
-      const { lnd } = getActiveLnd
+      const { lnd } = getActiveLnd() 
       return nodeStats({ lnd })
     },
     nodesStats: async () => nodesStats(),

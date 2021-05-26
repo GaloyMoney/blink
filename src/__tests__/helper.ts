@@ -10,12 +10,12 @@ import { login } from "../text";
 import * as jwt from 'jsonwebtoken'
 import { once } from "events";
 import { onChannelUpdated } from "../entrypoint/trigger";
-import { lndsGrpc } from "../lndConfig";
 import { updateEscrows } from "../lndUtils";
+import { getLnds } from "../lndConfig";
 
-export const lnd1 = lndsGrpc[0]
-export const lnd2 = lndsGrpc[1]
-export const lndonchain = lndsGrpc[2]
+export const lnd1 = getLnds()[0].lnd
+export const lnd2 = getLnds()[1].lnd
+export const lndonchain = getLnds()[2].lnd
 
 // TODO: this could be refactored with lndConfig 
 export const lndOutside1 = authenticatedLndGrpc({

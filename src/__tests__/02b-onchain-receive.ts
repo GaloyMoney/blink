@@ -2,19 +2,19 @@
  * @jest-environment node
  */
 import { once } from 'events';
+import { createChainAddress, subscribeToChainAddress, subscribeToTransactions } from "lightning";
 import { filter } from "lodash";
 import mongoose from "mongoose";
-import { getCurrentPrice } from "../realtimePrice";
 import { onchainTransactionEventHandler } from "../entrypoint/trigger";
+import { liabilitiesReserve, lndAccountingPath } from "../ledger/ledger";
+import { getLnds } from "../lndConfig";
+import { baseLogger } from '../logger';
 import { MainBook, setupMongoConnection } from "../mongodb";
 import { getTitle } from "../notifications/payment";
-import { bitcoindDefaultClient, btc2sat, sat2btc, sleep } from "../utils";
-import { baseLogger } from '../logger'
+import { getCurrentPrice } from "../realtimePrice";
+import { bitcoindDefaultClient, btc2sat, sleep } from "../utils";
 import { getFunderWallet } from "../walletFactory";
-import { checkIsBalanced, getUserWallet, lnd1, lndonchain, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "./helper";
-import { createChainAddress, subscribeToChainAddress, subscribeToTransactions } from "lightning";
-import { getAllLnd } from "../lndConfig";
-import { liabilitiesReserve, lndAccountingPath } from "../ledger/ledger";
+import { checkIsBalanced, getUserWallet, lndonchain, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "./helper";
 
 jest.mock('../realtimePrice')
 
@@ -45,7 +45,8 @@ beforeEach(async () => {
   initBlockCount = await bitcoindDefaultClient.getBlockCount()
   initialBalanceUser0 = (await walletUser0.getBalances()).BTC
 
-  amount_BTC = +(1 + Math.random()).toPrecision(9)
+  // amount_BTC = +(1 + Math.random()).toPrecision(9)
+  amount_BTC = 1
 })
 
 afterEach(async () => {
@@ -113,7 +114,7 @@ it('funding funder with onchain tx from bitcoind', async () => {
 })
 
 it('crediting lnd1 with some fund to be able to create a channel', async () => {
-  const {lnd} = getAllLnd[0]
+  const {lnd} = getLnds()[0]
   const { address } = await createChainAddress({
     lnd,
     format: 'p2wpkh',
