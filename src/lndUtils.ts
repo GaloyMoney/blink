@@ -1,12 +1,14 @@
 import { default as axios } from 'axios';
-import { getChainBalance, getChannelBalance, getChannels, getClosedChannels, getForwards, getPendingChainBalance, getWalletInfo } from "lightning";
+import { getChainBalance, getChainTransactions, getChannelBalance, getChannels, getClosedChannels, getForwards, getHeight, getPendingChainBalance, getWalletInfo } from "lightning";
 import _ from "lodash";
 import { getActiveLnd, getLnds, getAllOffchainLnd } from "./lndConfig";
 import { baseLogger } from "./logger";
 import { DbMetadata } from "./schema";
 import { MainBook } from "./mongodb";
-import { escrowAccountingPath, lndAccountingPath, revenueFeePath } from "./ledger/ledger";
+import { escrowAccountingPath, lndAccountingPath, lndFeePath, revenueFeePath } from "./ledger/ledger";
 import { DbError } from "./error";
+import { LOOK_BACK } from "./utils";
+import assert from 'assert';
 
 // milliseconds in a day
 const MS_PER_DAY = 864e5
@@ -195,4 +197,63 @@ export const updateEscrows = async () => {
       .credit(escrowAccountingPath, - diff, {...metadata})
       .commit()
   }
+}
+
+
+export const onChannelUpdated = async ({ channel, lnd, stateChange }: { channel: any, lnd: any, stateChange: "opened" | "closed" }) => {
+  baseLogger.info({ channel, stateChange }, `channel update`)
+
+  if (channel.is_partner_initiated) {
+    return
+  }
+
+  if (stateChange === "closed") {
+    // FIXME: need to account for channel closing
+    return
+  }
+  
+  let txid
+
+  if (stateChange === "opened") {
+    ({ transaction_id: txid } = channel)
+  } else if (stateChange === "closed") {
+    ({ close_transaction_id: txid } = channel)
+  }
+  
+  // TODO: dedupe from onchain
+  const { current_block_height } = await getHeight({ lnd })
+  const after = Math.max(0, current_block_height - LOOK_BACK) // this is necessary for tests, otherwise after may be negative
+  const { transactions } = await getChainTransactions({ lnd, after })
+  // end dedupe
+
+  const tx = _.find(transactions, { id: txid })
+
+  if (!tx?.fee) {
+    baseLogger.error({transactions}, "fee doesn't exist")
+    return
+  }
+
+  const fee = tx.fee
+
+  // let tx
+  // try {
+  //   tx = await bitcoindDefaultClient.getRawTransaction(txid, true /* include_watchonly */ )
+  // } catch (err) {
+  //   logger.error({err}, "can't fetch fee for closing tx")
+  // }
+  
+  // TODO: there is no fee currently given by bitcoind for raw transaction
+  // either calculate it from the input, or use an indexer 
+  // const { fee } = tx.fee
+
+  const metadata = { currency: "BTC", txid, type: "fee", pending: false }
+
+  assert(fee > 0)
+
+  await MainBook.entry(`channel ${stateChange} onchain fee`)
+    .debit(lndFeePath, fee, { ...metadata, })
+    .credit(lndAccountingPath, fee, { ...metadata })
+    .commit()
+
+  baseLogger.info({ channel, fee, ...metadata }, `${stateChange} channel fee added to mongodb`)
 }

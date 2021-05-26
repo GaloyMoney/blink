@@ -1,20 +1,16 @@
 import { Storage } from '@google-cloud/storage';
-import { assert } from "console";
 import crypto from "crypto";
 import { Dropbox } from "dropbox";
 import express from 'express';
-import { getChainTransactions, getHeight, getWalletInfo,  } from 'lightning';
-import { subscribeToBackups, subscribeToBlocks, subscribeToChannels, subscribeToInvoices, subscribeToTransactions } from 'lightning';
-import { find } from "lodash";
+import { getWalletInfo, subscribeToBackups, subscribeToBlocks, subscribeToChannels, subscribeToInvoices, subscribeToTransactions } from 'lightning';
 import { updateUsersPendingPayment } from '../ledger/balanceSheet';
-import { lndAccountingPath, lndFeePath } from "../ledger/ledger";
 import { getActiveLnd } from "../lndConfig";
+import { onChannelUpdated } from "../lndUtils";
 import { baseLogger } from '../logger';
-import { MainBook, setupMongoConnection } from "../mongodb";
+import { setupMongoConnection } from "../mongodb";
 import { transactionNotification } from "../notifications/payment";
 import { Price } from "../priceImpl";
 import { InvoiceUser, Transaction, User } from "../schema";
-import { LOOK_BACK } from '../utils';
 import { WalletFactory } from "../walletFactory";
 
 
@@ -126,64 +122,6 @@ export const onInvoiceUpdate = async invoice => {
   }
 }
 
-export const onChannelUpdated = async ({ channel, lnd, stateChange }: { channel: any, lnd: any, stateChange: "opened" | "closed" }) => {
-  logger.info({ channel, stateChange }, `channel update`)
-
-  if (channel.is_partner_initiated) {
-    return
-  }
-
-  if (stateChange === "closed") {
-    // FIXME: need to account for channel closing
-    return
-  }
-  
-  let txid
-
-  if (stateChange === "opened") {
-    ({ transaction_id: txid } = channel)
-  } else if (stateChange === "closed") {
-    ({ close_transaction_id: txid } = channel)
-  }
-  
-  // TODO: dedupe from onchain
-  const { current_block_height } = await getHeight({ lnd })
-  const after = Math.max(0, current_block_height - LOOK_BACK) // this is necessary for tests, otherwise after may be negative
-  const { transactions } = await getChainTransactions({ lnd, after })
-  // end dedupe
-
-  const tx = find(transactions, { id: txid })
-
-  if (!tx?.fee) {
-    logger.error({transactions}, "fee doesn't exist")
-    return
-  }
-
-  const fee = tx.fee
-
-  // let tx
-  // try {
-  //   tx = await bitcoindDefaultClient.getRawTransaction(txid, true /* include_watchonly */ )
-  // } catch (err) {
-  //   logger.error({err}, "can't fetch fee for closing tx")
-  // }
-  
-  // TODO: there is no fee currently given by bitcoind for raw transaction
-  // either calculate it from the input, or use an indexer 
-  // const { fee } = tx.fee
-
-  const metadata = { currency: "BTC", txid, type: "fee", pending: false }
-
-  assert(fee > 0)
-
-  await MainBook.entry(`channel ${stateChange} onchain fee`)
-    .debit(lndFeePath, fee, { ...metadata, })
-    .credit(lndAccountingPath, fee, { ...metadata })
-    .commit()
-
-  logger.info({ channel, fee, ...metadata }, `${stateChange} channel fee added to mongodb`)
-}
-
 const updatePriceForChart = async () => {
   const price = new Price({ logger: baseLogger })
 
@@ -198,7 +136,10 @@ const updatePriceForChart = async () => {
   }, interval)
 }
 
+// FIXME: 1 trigger / lnd?
+// or 1 trigger for all lnds?
 const { lnd } = getActiveLnd() 
+
 const main = async () => {
 
   getWalletInfo({ lnd }, (err, result) => {

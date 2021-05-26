@@ -9,8 +9,7 @@ import { yamlConfig } from "../config";
 import { login } from "../text";
 import * as jwt from 'jsonwebtoken'
 import { once } from "events";
-import { onChannelUpdated } from "../entrypoint/trigger";
-import { updateEscrows } from "../lndUtils";
+import { onChannelUpdated, updateEscrows } from "../lndUtils";
 import { getLnds } from "../lndConfig";
 
 export const lnd1 = getLnds()[0].lnd

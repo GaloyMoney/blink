@@ -51,9 +51,7 @@ const params = input.map(input => {
     ...input,
     socket,
     lnd: authenticatedLndGrpc({...input, socket}).lnd,
-
-    // FIXME active should be false first
-    active: true,
+    active: false,
   }
 })
 
@@ -73,7 +71,7 @@ export const getLnds = ({type, active}: {type?: nodeType, active?: boolean} = {}
 
 export const getAllOffchainLnd = getLnds({type: "offchain"})
 
-// only one for now
+// only returning the first one for now
 export const getActiveLnd = () => {
   const lnds = getLnds({active: true})
   if (!lnds) {
@@ -82,7 +80,7 @@ export const getActiveLnd = () => {
   return lnds[0]
 }
 
-// only one for now
+// there is only one lnd responsible for onchain tx
 export const getOnchainLnd = getLnds({type: "onchain"})[0]
 
 export const nodesPubKey = getAllOffchainLnd.map(item => item.pubkey)
@@ -94,32 +92,43 @@ export const TIMEOUT_PAYMENT = process.env.NETWORK !== "regtest" ? 45000 : 3000
 export const FEECAP = 0.02 // = 2%
 export const FEEMIN = 10 // sats
 
-const refresh_time = 30000 // ms
+const refresh_time = 5000 // ms
 
-const loop = async ({lnd, socket}: {lnd: AuthenticatedLnd, socket: string}) => {
+const loop = async ({socket}: {socket: string}) => {
   try {
-    const active = await isUp({lnd})
-    _.find(params, {socket})!.active = active
-    baseLogger.info({socket, active}, "lnd pulse")
-  } catch (err) {
-    baseLogger.warn({err}, "issue updating lnd status")
+    await isUp({socket})
   } finally {
     setTimeout(async function () {
       // TODO check if this could lead to a stack overflow
-      loop({lnd, socket})
+      loop({socket})
     }, refresh_time);
   }
 }
 
-export const isUp = async ({lnd}) => {
+export const isUp = async ({socket}): Promise<void> => {
+  let active
   try {
-    getWalletInfo({lnd})
+    // @ts-ignore
+    const { lnd } = _.find(params, {socket})
+
+    // will throw if there is an error
+    await getWalletInfo({lnd})
+    active = true
   } catch (err) {
-    baseLogger.warn({err}, `can't get wallet info from ${lnd}`)
-    return false
+    baseLogger.warn({err}, `can't get wallet info from ${socket}`)
+
+    // if we get disconnected, we need to recreate the lnd object
+    const paramIndex = _.findIndex(params, {socket})
+    params[paramIndex] = {
+      ...params[paramIndex],
+      lnd: authenticatedLndGrpc(params[paramIndex]).lnd
+    }
+
+    active = false
   }
-  return true
+  _.find(params, {socket})!.active = active
+  baseLogger.info({socket, active}, "lnd pulse")
 }
 
 // launching a loop to update whether lnd are active or not
-// params.forEach(loop)
+params.forEach(loop)
