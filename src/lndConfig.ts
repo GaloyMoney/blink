@@ -45,13 +45,14 @@ const input: IParams[] = [{
   pubkey: undefined,
 }]
 
-const params = input.map(input => {
+// FIXME remove export
+export const params = input.map(input => {
   const socket = `${input.node}:${input.port}`
   return {
     ...input,
     socket,
     lnd: authenticatedLndGrpc({...input, socket}).lnd,
-    active: false,
+    active: true,
   }
 })
 
@@ -131,4 +132,4 @@ export const isUp = async ({socket}): Promise<void> => {
 }
 
 // launching a loop to update whether lnd are active or not
-params.forEach(loop)
+// params.forEach(loop)

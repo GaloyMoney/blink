@@ -1,16 +1,17 @@
 /**
  * @jest-environment node
  */
-import { setupMongoConnection } from "../mongodb";
-
-import {lnd1, lnd2, lndonchain, lndOutside1, lndOutside2} from "./helper"
-import { bitcoindDefaultClient } from "../utils";
-import mongoose from "mongoose";
-import { User } from "../schema";
-
 //TODO: Choose between camel case or underscores for variable naming
-import { getWalletInfo } from 'lightning'
+import { authenticatedLndGrpc, getWalletInfo } from 'lightning';
+import mongoose from "mongoose";
+import { params } from "../lndConfig";
+import { setupMongoConnection } from "../mongodb";
 import { redisClient } from "../redis";
+import { User } from "../schema";
+import { bitcoindDefaultClient, sleep } from "../utils";
+import { lnd1, lnd2, lndonchain, lndOutside1, lndOutside2 } from "./helper";
+
+
 
 jest.mock('../realtimePrice')
 
@@ -27,6 +28,19 @@ for (let item in lnds) {
     expect(public_key.length).toBe(64 + 2)
   })
 }
+
+// it('reconnect', async () => {
+//   while (true) {
+//     const {lnd} = authenticatedLndGrpc(params[0])
+//     try {
+//       await getWalletInfo({ lnd })
+//       console.log("ok")
+//     } catch (err) {
+//       console.log({err}, "nok")
+//     }
+//     await sleep(1000)
+//   }
+// }, 120000)
 
 it('I can connect to outside lnds', async () => {
 	const lnds = [lndOutside1, lndOutside2]

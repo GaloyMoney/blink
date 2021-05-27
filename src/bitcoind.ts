@@ -1,12 +1,8 @@
 import _ from "lodash"
 import { BitcoindClient, bitcoindDefaultClient, btc2sat } from "./utils";
 
-const listWallets = async () => {
-  return bitcoindDefaultClient.listWallets()
-}
-
 export const getBalancesDetail = async (): Promise<{wallet: string, balance: number}[]> => {
-  const wallets = await listWallets()
+  const wallets = await bitcoindDefaultClient.listWallets()
 
   const balances: {wallet: string, balance: number}[] = []
 
