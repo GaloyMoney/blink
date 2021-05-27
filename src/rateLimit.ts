@@ -25,7 +25,7 @@ export const limiterLoginAttempt = new RateLimiterRedis({
 });
 
 // TODO:
-// add fibonachi on failed login
+// add fibonacci on failed login
 // https://github.com/animir/node-rate-limiter-flexible/wiki/Overall-example#dynamic-block-duration
 
 export const failedAttemptPerIp = new RateLimiterRedis({
@@ -35,3 +35,11 @@ export const failedAttemptPerIp = new RateLimiterRedis({
   duration: yamlConfig.limits.failedAttemptPerIp.duration,
   blockDuration: yamlConfig.limits.failedAttemptPerIp.blockDuration, 
 });
+
+export const getProbeLimiter = async ({user}) => new RateLimiterRedis({
+  redis: redisClient,
+  keyPrefix: 'payment_probe',
+  points: yamlConfig.limits.pendingPayments.level[user.level] - await user.pendingPayments,
+  duration: yamlConfig.limits.pendingPayments.duration,
+  blockDuration: yamlConfig.limits.pendingPayments.blockDuration
+})

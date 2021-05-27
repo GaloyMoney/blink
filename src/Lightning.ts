@@ -1,6 +1,4 @@
 import lnService from 'ln-service'
-import { Semaphore } from 'redis-semaphore';
-import {ioredis} from './redis'
 import assert from 'assert'
 import { createHash, randomBytes } from "crypto";
 import moment from "moment";
@@ -22,6 +20,8 @@ import util from 'util'
 
 import { yamlConfig } from "./config";
 import { InsufficientBalanceError, NewAccountWithdrawalError, NotFoundError, SelfPaymentError, TransactionRestrictedError, ValidationError } from './error';
+import { getProbeLimiter } from './rateLimit';
+import { GraphQLError } from 'graphql';
 
 export type ITxType = "invoice" | "payment" | "onchain_receipt" | "onchain_payment" | "on_us"
 export type payInvoiceResult = "success" | "failed" | "pending" | "already_paid"
@@ -119,8 +119,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
   async getLightningFee(params: IFeeRequest): Promise<Number> {
 
-    // will throw an error if in-flight (non-probe) payments by themselves hit the active payments limit
-    const semaphore = await UserWallet.getProbeSemaphore({user: this.user, logger: this.logger})
+    const limiterProbe = await getProbeLimiter({user: this.user})
     
     try {
       const { BTC: balance } = await this.getBalances()
@@ -130,7 +129,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         throw new InsufficientBalanceError(error, {forwardToClient: true, logger: this.logger, level: 'warn'})
       }
 
-      await semaphore.acquire()
+      await limiterProbe.consume(this.user._id)
 
       const { mtokens, max_fee, destination, id, routeHint, messages, cltv_delta, features, payment } = 
       await this.validate(params, this.logger)
@@ -190,19 +189,27 @@ export const LightningMixin = (superclass) => class extends superclass {
       const value = JSON.stringify(route)
       await getAsyncRedisClient().set(key, value, 'EX', 60 * 5); // expires after 5 minutes
 
-      lightningLogger.info({ redis: { key, value }, probingSuccess: true, success: true }, "succesfully found a route")
+      lightningLogger.info({ redis: { key, value }, probingSuccess: true, success: true }, "successfully found a route")
       return route.fee
 
     } catch (err) {
+      if(err instanceof GraphQLError) {
+        throw err
+      }
 
-      // TimeoutError occurs when semaphore cannot be acquired within timeout period
-      if(err.constructor?.name === "TimeoutError") {
+      if(err.remainingPoints === 0) {
         const error = `Cannot have more than ${yamlConfig.limits.pendingPayments.level[this.user.level]} pending payments`
         throw new TransactionRestrictedError(error, {forwardToClient: true, logger: this.logger, level: 'warn'})
       }
+
+      // consume an additional point in case of unrecognized error 
+      // because one point will always be freed in the finally block
+      await limiterProbe.consume(this.user._id)
       throw err
     } finally {
-      await semaphore.release()
+      const { consumedPoints } = await limiterProbe.get(this.user._id)
+      // reduce consumed points by one irrespective of try catch result
+      await limiterProbe.set(this.user._id, consumedPoints - 1)
     }
   }
 
@@ -391,15 +398,11 @@ export const LightningMixin = (superclass) => class extends superclass {
         throw new NewAccountWithdrawalError(error, {forwardToClient: true, logger: lightningLogger, level: 'error'})
       }
 
-      const semaphore = await UserWallet.getProbeSemaphore({user: this.user, logger: lightningLogger})
-
-      try {
-        await semaphore.acquire()
-      } catch(err) {
+      const limiterProbe = await getProbeLimiter({ user: this.user })
+      const limiterProbeRes = await limiterProbe.get(this.user._id)
+      if (limiterProbeRes?.consumedPoints > yamlConfig.limits.pendingPayments.level[this.user.level]) {
         const error = `Cannot have more than ${yamlConfig.limits.pendingPayments.level[this.user.level]} pending payments`
         throw new TransactionRestrictedError(error, {forwardToClient: true, logger: lightningLogger, level: 'error'})
-      } finally {
-        await semaphore.release()
       }
 
       if (await this.user.limitHit({on_us: false, amount: tokens})) {

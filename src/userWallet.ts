@@ -1,6 +1,5 @@
 import assert from 'assert';
 import moment from "moment";
-import { Semaphore } from 'redis-semaphore';
 import { yamlConfig } from './config';
 import { CSVAccountExport } from "./csvAccountExport";
 import { TransactionRestrictedError } from './error';
@@ -227,16 +226,4 @@ export abstract class UserWallet {
     await sendNotification({ user: this.user, title: `Your balance is \$${balanceUsd} (${balanceSatsPrettified} sats)`, logger: this.logger })
   }
 
-  static getProbeSemaphore = async ({user, logger}) => {
-    const remainingPaymentsAllowed = await user.remainingPaymentsAllowed
-
-    if(!remainingPaymentsAllowed) {
-      const error = `Cannot have more than ${yamlConfig.limits.pendingPayments.level[user.level]} pending payments`
-      throw new TransactionRestrictedError(error, {forwardToClient: true, logger, level: 'error'})
-    }
-    return new Semaphore(ioredis, `semaphore:${user._id}`, remainingPaymentsAllowed, {
-      acquireTimeout: 1000,
-      lockTimeout
-    })
-  }
 }
