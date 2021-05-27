@@ -189,8 +189,7 @@ functionToTests.forEach(({fn, name, initialFee}) => {
       const user1OnUsTxn = user1Txn.filter(matchTx)
       expect(user1OnUsTxn[0].type).toBe('on_us')
   
-
-      const { node } = getOnchainLnd
+      const { node } = getActiveLnd()
 
       // making request twice because there is a cancel state, and this should be re-entrant
       expect(await walletPayer.updatePendingInvoice({ hash, node })).toBeTruthy()
