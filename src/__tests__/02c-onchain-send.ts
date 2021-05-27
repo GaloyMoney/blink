@@ -113,7 +113,7 @@ it('Sends onchain payment successfully', async () => {
   const { results: [{ pending, fee, feeUsd }] } = await MainBook.ledger({ account: userWallet0.accountPath, hash: pendingTxn.hash })
 
 	expect(pending).toBe(false)
-	expect(fee).toBeGreaterThan(0)
+	expect(fee).toBe(yamlConfig.fees.withdraw + 7050)
 	expect(feeUsd).toBeGreaterThan(0)
 
 	const [txn] = (await userWallet0.getTransactions()).filter(tx => tx.hash === pendingTxn.hash)

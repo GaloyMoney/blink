@@ -5,10 +5,10 @@ import { balanceSheetIsBalanced, getBalanceSheet } from "../ledger/balanceSheet"
 import { getBosScore, lndBalances } from "../lndUtils";
 import { setupMongoConnection } from "../mongodb";
 import { Transaction, User } from "../schema";
-import { SpecterWallet } from "../SpecterWallet";
 import { baseLogger } from "../logger";
 import { getDealerWallet, getFunderWallet } from "../walletFactory";
 import { lnd } from "../lndConfig"
+import { getBalancesDetail } from "../bitcoind"
 import _ from "lodash"
 
 const logger = baseLogger.child({module: "exporter"})
@@ -44,8 +44,8 @@ const assetsLiabilitiesDifference_g = new client.Gauge({ name: `${prefix}_assets
 const bookingVersusRealWorldAssets_g = new client.Gauge({ name: `${prefix}_lndBalanceSync`, help: 'are lnd in syncs with our books' })
 const bos_g = new client.Gauge({ name: `${prefix}_bos`, help: 'bos score' })
 const bitcoin_g = new client.Gauge({ name: `${prefix}_bitcoin`, help: 'amount in accounting for cold storage' })
-const specter_g = new client.Gauge({ name: `${prefix}_bitcoind`, help: 'amount in cold storage' })
 const business_g = new client.Gauge({ name: `${prefix}_business`, help: 'number of businesses in the app' })
+const onchainWithdrawFees_g = new client.Gauge({ name: `${prefix}_onchainWithdrawFees`, help: 'onchain withdraw fees collected' })
 const onchainDepositFees_g = new client.Gauge({ name:`${prefix}_onchainDepositFees`, help: 'onchain deposit fees collected' })
 
 const main = async () => {
@@ -55,12 +55,17 @@ const main = async () => {
     bos_g.set(bosScore)
 
     const { lightning, liabilities, bitcoin } = await getBalanceSheet()
-    const { assetsLiabilitiesDifference, bookingVersusRealWorldAssets } = await balanceSheetIsBalanced()
     liabilities_g.set(liabilities)
     lightning_g.set(lightning)
     bitcoin_g.set(bitcoin)
-    assetsLiabilitiesDifference_g.set(assetsLiabilitiesDifference)
-    bookingVersusRealWorldAssets_g.set(bookingVersusRealWorldAssets)
+
+    try {
+      const { assetsLiabilitiesDifference, bookingVersusRealWorldAssets } = await balanceSheetIsBalanced()
+      assetsLiabilitiesDifference_g.set(assetsLiabilitiesDifference)
+      bookingVersusRealWorldAssets_g.set(bookingVersusRealWorldAssets)
+    } catch (err) {
+      logger.error({err}, "impossible to calculate balance sheet")
+    }
     
     const { total, onChain, offChain, opening_channel_balance, closing_channel_balance } = await lndBalances()
     lnd_g.set(total)
@@ -103,15 +108,30 @@ const main = async () => {
 
     fundingRate_g.set(await dealerWallet.getNextFundingRate())
 
-    const specterWallet = new SpecterWallet({ logger })
-    specter_g.set(await specterWallet.getBitcoindBalance())
+    try {
+      const balances = await getBalancesDetail()
+      for (const {wallet, balance} of balances) {
+        const walletSanitized = wallet.replace("/", "_")
+        const gauge = new client.Gauge({ name: `${prefix}_bitcoind_${walletSanitized}`, help: `amount in wallet ${wallet}` })
+        gauge.set(balance)
+      }
+    } catch (err) {
+      logger.error({err}, "error setting bitcoind/specter balance")
+    }
 
-    const [result] = await Transaction.aggregate([
+    const [depositFeeEntry] = await Transaction.aggregate([
       {$match: { accounts: 'Revenue:Bitcoin:Fees', type:'onchain_receipt' }},
       {$group: { _id: null, totalDepositFees: { $sum: "$credit" } } }
     ])
-    const {totalDepositFees = 0} = result || {}
+    const {totalDepositFees = 0} = depositFeeEntry || {}
     onchainDepositFees_g.set(totalDepositFees)
+    
+    const [withdrawFeeEntry] = await Transaction.aggregate([
+      {$match: { accounts: 'Revenue:Bitcoin:Fees', type:'onchain_payment' }},
+      {$group: { _id: null, totalWithdrawFees: { $sum: "$credit" } } }
+    ])
+    const {totalWithdrawFees = 0} = withdrawFeeEntry || {}
+    onchainWithdrawFees_g.set(totalWithdrawFees)
 
     res.set('Content-Type', register.contentType);
     res.end(register.metrics());

@@ -12,7 +12,8 @@ helm repo add jetstack https://charts.jetstack.io
 helm repo add galoy https://galoymoney.github.io/charts/
 helm repo update
 
-lndVersion="1.1.14"
+lndVersion="1.1.17"
+bitcoindVersion="0.1.15"
 
 cd ./charts/galoy
 helm dependency build
@@ -70,6 +71,13 @@ helmUpgrade () {
   command helm upgrade -i -n=$NAMESPACE "$@"
 }
 
+helmUpgradeDebug () {
+  echo ""
+  echo ""
+  echo "---"
+  echo "executing upgrade: helm install --dry-run --debug -n=$NAMESPACE $@ > debug.yaml"
+  command helm install --dry-run --debug -n=$NAMESPACE "$@" > debug.yaml
+}
 
 kubectlWait () {
   echo "waiting for -n=$NAMESPACE -l $@"
@@ -94,7 +102,7 @@ fi
 rm -rf $INFRADIR/configs
 git clone $CONFIG_REPO $INFRADIR/configs
 
-helmUpgrade bitcoind $localdevpath -f $INFRADIR/configs/bitcoind/$NETWORK.yaml galoy/bitcoind
+helmUpgrade bitcoind $localdevpath -f $INFRADIR/configs/bitcoind/$NETWORK.yaml galoy/bitcoind --version=$bitcoindVersion 
 
 # bug with --wait: https://github.com/helm/helm/issues/7139 ?
 kubectlWait app.kubernetes.io/name=bitcoind
@@ -145,6 +153,11 @@ fi
 export MONGODB_ROOT_PASSWORD=$(kubectl get secret -n $NAMESPACE galoy-mongodb -o jsonpath="{.data.mongodb-root-password}" | base64 -d)
 export MONGODB_PASSWORD=$(kubectl get secret -n $NAMESPACE galoy-mongodb -o jsonpath="{.data.mongodb-password}" | base64 -d)
 export MONGODB_REPLICA_SET_KEY=$(kubectl get secret -n $NAMESPACE galoy-mongodb -o jsonpath="{.data.mongodb-replica-set-key}" | base64 -d)
+
+# helmUpgradeDebug galoy \
+#   $configpath $localdevpath \
+#   --set mongodb.auth.password=$MONGODB_PASSWORD,mongodb.auth.rootPassword=$MONGODB_ROOT_PASSWORD,mongodb.auth.replicaSetKey=$MONGODB_REPLICA_SET_KEY,image.tag=$CIRCLE_SHA1 \
+#   $INFRADIR/galoy/
 
 helmUpgrade galoy \
   $configpath $localdevpath \

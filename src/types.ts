@@ -41,10 +41,10 @@ export type ChainType = "lightning" | "onchain"
 // to 2 different variables.
 // also log have renamed "paid-invoice" --> "receipt"
 
-export type TransactionType = "payment" | "paid-invoice" | "on_us" | 
-  "onchain_receipt" | "onchain_payment" | "onchain_on_us" | 
-  "exchange_rebalance" | 
-  "fee" | "escrow" | "deposit_fee" |
+export type TransactionType = "payment" | "paid-invoice" | "on_us" |
+  "onchain_receipt" | "onchain_payment" | "onchain_on_us" |
+  "exchange_rebalance" |
+  "fee" | "escrow" | "deposit_fee" | "routing_fee" |
   "onchain_receipt_pending" // only for notification, not persistent in mongodb
 
 export const Levels = [1, 2]

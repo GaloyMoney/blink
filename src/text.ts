@@ -5,6 +5,8 @@ import { createToken } from "./jwt"
 import { yamlConfig } from "./config";
 import { baseLogger } from './logger'
 import { randomIntFromInterval } from "./utils"
+import { failedAttemptPerIp, limiterLoginAttempt, limiterRequestPhoneCode } from "./rateLimit"
+import { TooManyRequestError } from "./error";
 
 const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER
 const getTwilioClient = () => {
@@ -37,7 +39,17 @@ export const getCarrier = async (phone: string) => {
   return result
 }
 
-export const requestPhoneCode = async ({ phone, logger }) => {
+export const requestPhoneCode = async ({ phone, logger }: {phone: string, logger: any}): Promise<Boolean> => {
+
+  try {
+    await limiterRequestPhoneCode.consume(phone);
+  } catch(err) {
+    if (err instanceof Error) {
+      throw err;
+    } else {
+      throw new TooManyRequestError({ logger })
+    }
+  }
 
   // make it possible to bypass the auth for testing purpose
   if (yamlConfig.test_accounts.findIndex(item => item.phone === phone) !== -1) {
@@ -48,9 +60,6 @@ export const requestPhoneCode = async ({ phone, logger }) => {
   const body = `${code} is your verification code for ${yamlConfig.name}`
 
   try {
-    // TODO: implement backoff strategy instead this native delay
-    // making sure someone can not call the API thousands time in a row,
-    // which would make finding a code very easy
     const veryRecentCode = await PhoneCode.findOne({
       phone,
       created_at: {
@@ -76,13 +85,28 @@ interface ILogin {
   phone: string
   code: number
   logger: any
+  ip: string
 }
 
-export const login = async ({ phone, code, logger }: ILogin) => {
+export const login = async ({ phone, code, logger, ip }: ILogin): Promise<string | null> => {
   const subLogger = logger.child({topic: "login"})
 
+  const rlResult = await failedAttemptPerIp.get(ip);
+  if (rlResult !== null && rlResult.consumedPoints > yamlConfig.limits.failedAttemptPerIp.points) {
+    throw new TooManyRequestError({ logger })
+  }
+
   try {
-    // TODO: rate limit this method per phone with backoff
+    await limiterLoginAttempt.consume(phone);
+  } catch(err) {
+    if (err instanceof Error) {
+      throw err;
+    } else {
+      throw new TooManyRequestError({ logger })
+    }
+  }
+
+  try {
     const codes = await PhoneCode.find({
       phone,
       created_at: {
@@ -98,11 +122,21 @@ export const login = async ({ phone, code, logger }: ILogin) => {
       // this branch is both relevant for test and non-test accounts
       // for when the code is not correct
       subLogger.warn({ phone, code }, `user enter incorrect code`)
+
+      try {
+        await failedAttemptPerIp.consume(ip);
+      } catch (err) {
+        logger.error({ip}, "impossible to consume failedAttemptPerIp")
+      }
+
       return null
     }
 
     // code is correct
-    
+
+    // reseting the limiter for this phone
+    limiterLoginAttempt.delete(phone) // no need to await the promise
+
     // get User 
     let user
 

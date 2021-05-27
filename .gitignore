@@ -21,3 +21,4 @@ src/tool/record_transactions_*.csv
 configs
 
 coverage
+lib

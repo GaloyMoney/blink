@@ -2,7 +2,6 @@ import { ApolloServer } from 'apollo-server-express';
 import dotenv from "dotenv";
 import express from 'express';
 import expressJwt from "express-jwt";
-import { importSchema } from 'graphql-import';
 import { applyMiddleware } from "graphql-middleware";
 import { and, rule, shield } from 'graphql-shield';
 import { makeExecutableSchema } from "graphql-tools";
@@ -35,6 +34,7 @@ import { WalletFactory, WalletFromUsername } from "../walletFactory";
 import { getCurrentPrice } from "../realtimePrice";
 import { getAsyncRedisClient } from "../redis";
 import { yamlConfig } from '../config';
+import { range, pattern, stringLength, ValidateDirectiveVisitor } from '@profusion/apollo-validation-directives';
 
 dotenv.config()
 
@@ -179,7 +179,7 @@ const resolvers = {
   },
   Mutation: {
     requestPhoneCode: async (_, { phone }, { logger }) => ({ success: requestPhoneCode({ phone, logger }) }),
-    login: async (_, { phone, code }, { logger }) => ({ token: login({ phone, code, logger }) }),
+    login: async (_, { phone, code }, { logger, ip }) => ({ token: login({ phone, code, logger, ip }) }),
     updateUser: async (_, __, { wallet }) => ({
       setUsername: async ({ username }) => await wallet.setUsername({ username }),
       setLanguage: async ({ language }) => await wallet.setLanguage({ language }),
@@ -206,12 +206,9 @@ const resolvers = {
       updatePendingInvoice: async ({ hash }) => wallet.updatePendingInvoice({ hash }),
       payInvoice: async ({ invoice, amount, memo }) => wallet.pay({ invoice, amount, memo }),
       payKeysendUsername: async ({ destination, username, amount, memo }) => wallet.pay({ destination, username, amount, memo }),
-      getFee: async ({ destination, amount, invoice, memo }) => wallet.getLightningFee({ destination, amount, invoice, memo })
+      getFee: async ({ destination, amount, invoice }) => wallet.getLightningFee({ destination, amount, invoice })
     }),
     earnCompleted: async (_, { ids }, { wallet }) => wallet.addEarn(ids),
-    deleteUser: () => {
-      // TODO
-    },
     onchain: async (_, __, { wallet }) => ({
       getNewAddress: () => wallet.getOnChainAddress(),
       pay: ({ address, amount, memo }) => ({ success: wallet.onChainPay({ address, amount, memo }) }),
@@ -280,7 +277,6 @@ const permissions = shield({
     earnCompleted: isAuthenticated,
     updateUser: isAuthenticated,
     updateContact: isAuthenticated,
-    deleteUser: isAuthenticated,
     addDeviceToken: isAuthenticated,
     testMessage: isAuthenticated,
     addToMap: and(isAuthenticated, isEditor),
@@ -293,11 +289,31 @@ const permissions = shield({
 export async function startApolloServer() {
   const app = express();
 
+    // try load file sync instead
+
+  // const myTypeDefs = importSchema(path.join(__dirname, "../schema.graphql"))
+  const fs = require('fs');
+
+  const myTypeDefs = fs.readFileSync(path.join(__dirname, "../schema.graphql"),
+            {encoding:'utf8', flag:'r'});
+
+  const execSchema = makeExecutableSchema({
+    typeDefs: [
+      myTypeDefs,
+      ...ValidateDirectiveVisitor.getMissingCommonTypeDefs(),
+      ...range.getTypeDefs(),
+      ...pattern.getTypeDefs(),
+      ...stringLength.getTypeDefs(),
+    ],
+    // @ts-ignore
+    schemaDirectives: { pattern, range, stringLength },
+    resolvers,
+  })
+
+  ValidateDirectiveVisitor.addValidationResolversToSchema(execSchema);
+
   const schema = applyMiddleware(
-    makeExecutableSchema({
-      typeDefs: importSchema(path.join(__dirname, "../schema.graphql")),
-      resolvers,
-    }),
+    execSchema,
     permissions
   );
 
@@ -309,6 +325,7 @@ export async function startApolloServer() {
       // @ts-ignore
       const token = context.req?.token ?? null
       const uid = token?.uid ?? null
+      const ip = context.req?.headers['x-real-ip']
 
       let wallet, user
 
@@ -318,7 +335,7 @@ export async function startApolloServer() {
       if (!!uid) {
         user = await User.findOneAndUpdate({ _id: uid },{ lastConnection: new Date() }, {new: true})
         if(yamlConfig.proxyChecking.enabled) {
-          fetchIPDetails({currentIP: context.req?.headers['x-real-ip'], user, logger})
+          fetchIPDetails({ip, user, logger})
         }
         wallet = (!!user && user.status === "active") ? await WalletFactory({ user, logger }) : null
       }
@@ -329,7 +346,8 @@ export async function startApolloServer() {
         logger,
         uid,
         wallet,
-        user
+        user,
+        ip
       }
     },
     formatError: err => {

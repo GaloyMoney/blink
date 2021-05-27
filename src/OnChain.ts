@@ -12,10 +12,8 @@ import { UserWallet } from "./userWallet";
 import { Transaction, User } from "./schema";
 import { createChainAddress, getChainBalance, getChainFeeEstimate, getChainTransactions, getHeight, sendToChainAddress } from "lightning"
 
-import bluebird from 'bluebird';
 import { yamlConfig } from "./config";
 import { InsufficientBalanceError, NewAccountWithdrawalError, SelfPaymentError, TransactionRestrictedError } from './error';
-const { using } = bluebird;
 
 export const getOnChainTransactions = async ({ lnd, incoming }: { lnd: any, incoming: boolean }) => {
   try {
@@ -62,6 +60,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
     } else {
       const sendTo = [{ address, tokens: amount ?? defaultAmount }];
       ({ fee } = await getChainFeeEstimate({ lnd, send_to: sendTo }))
+      fee += this.user.withdrawFee
     }
 
     return fee
@@ -158,6 +157,9 @@ export const OnChainMixin = (superclass) => class extends superclass {
         throw new LoggedError(error)
       }
 
+      //add a flat fee on top of onchain miner fees
+      estimatedFee += this.user.withdrawFee
+
       // case where the user doesn't have enough money
       if (balance.total_in_BTC < amount + estimatedFee) {
         const error = `balance is too low. have: ${balance} sats, need ${amount + estimatedFee}`
@@ -185,18 +187,18 @@ export const OnChainMixin = (superclass) => class extends superclass {
         }
 
         {
+          fee += this.user.withdrawFee
           const sats = amount + fee
           const metadata = { currency: "BTC", hash: id, type: "onchain_payment", pending: true, ...UserWallet.getCurrencyEquivalent({ sats, fee }) }
-
+  
           // TODO/FIXME refactor. add the transaction first and set the fees in a second tx.
-          // this would be easier with fixed fees
-          
           await MainBook.entry(memo)
-            .credit(lndAccountingPath, sats, metadata)
+            .credit(lndAccountingPath, sats - this.user.withdrawFee, metadata)
+            .credit(onchainRevenuePath, this.user.withdrawFee, metadata)
             .debit(this.user.accountPath, sats, metadata)
             .commit()
-
-          onchainLogger.info({success: true , ...metadata}, 'successfull onchain payment')
+  
+          onchainLogger.info({success: true , ...metadata}, 'successful onchain payment')
         }
 
         return true
@@ -435,7 +437,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
           const {sats, addresses} = await this.getSatsAndAddressPerTx(matched_tx.transaction)
           assert(matched_tx.tokens >= sats)
 
-          const fee = sats * this.user.depositFeeRatio
+          const fee = Math.round(sats * this.user.depositFeeRatio)
 
           const metadata = {
             currency: "BTC",

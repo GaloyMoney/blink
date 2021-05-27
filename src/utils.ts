@@ -2,21 +2,17 @@
 import { GraphQLError } from "graphql"
 import _ from 'lodash';
 
-import * as moment from 'moment'
-import validate from "validate.js"
 import bitcoindClient from 'bitcoin-core'
 import { parsePaymentRequest } from 'invoices';
 
 // how many block are we looking back for getChainTransactions
 export const LOOK_BACK = 2016
 
-
 // @ts-ignore
 import { GraphQLError } from "graphql";
 import { User } from "./schema";
 import axios from "axios";
 import { yamlConfig } from "./config";
-
 
 // FIXME: super ugly hack.
 // for some reason LoggedError get casted as GraphQLError
@@ -36,7 +32,7 @@ const PROXY_CHECK_APIKEY = yamlConfig?.PROXY_CHECK_APIKEY
 const connection_obj = {
   network: process.env.NETWORK,
   username: 'rpcuser',
-  password: 'rpcpass',
+  password: process.env.BITCOINDRPCPASS,
   host: process.env.BITCOINDADDR,
   port: process.env.BITCOINDPORT,
   version: '0.21.0',
@@ -121,21 +117,6 @@ export function timeout(delay, msg) {
   });
 }
 
-// we are extending validate so that we can validate dates
-// which are not supported date by default
-validate.extend(validate.validators.datetime, {
-  // The value is guaranteed not to be null or undefined but otherwise it
-  // could be anything.
-  parse: function(value: any, options: any) {
-    return +moment.utc(value);
-  },
-  // Input is a unix timestamp
-  format: function(value: any, options: any) {
-    const format = options.dateOnly ? "YYYY-MM-DD" : "YYYY-MM-DD hh:mm:ss";
-    return moment.utc(value).format(format);
-  }
-})
-
 
 export async function measureTime(operation: Promise<any>): Promise<[any, number]> {
   const startTime = process.hrtime()
@@ -165,7 +146,7 @@ export const inputXOR = (arg1, arg2) => {
   }
 }
 
-export const fetchIPDetails = async ({currentIP, user, logger}) => {
+export const fetchIPDetails = async ({ip, user, logger}): Promise<void> => {
   if (process.env.NODE_ENV === "test") {
     return
   }
@@ -173,15 +154,25 @@ export const fetchIPDetails = async ({currentIP, user, logger}) => {
   let ipinfo
 
   try {
-    if(user.lastIPs.some(ipObject => ipObject.ip === currentIP)) {
+    // skip axios.get call if ip already exists in user object
+    if(user.lastIPs.some(ipObject => ipObject.ip === ip)) {
       return
     }
 
-    const {data} = await axios.get(`http://proxycheck.io/v2/${currentIP}?key=${PROXY_CHECK_APIKEY}&vpn=1&asn=1`)
-    ipinfo = data[currentIP]
+    const {data} = await axios.get(`http://proxycheck.io/v2/${ip}?key=${PROXY_CHECK_APIKEY}&vpn=1&asn=1`)
+    ipinfo = data[ip]
   } catch (error) {
     logger.info({error}, 'Failed to fetch ip details')
   } finally {
-    await User.updateOne({_id: user._id}, {$push: {lastIPs: { ip: currentIP, ...ipinfo, Type: ipinfo?.type }}})
+    const res = await User.updateOne(
+      { _id: user._id, "lastIPs.ip": ip },
+      { "$set": { "lastIPs.$.lastConnection" : Date.now() } },
+    )
+    if(!res.nModified) {
+      await User.findOneAndUpdate(
+        { _id: user._id, "lastIPs.ip": {"$ne": ip} },
+        { $push: { lastIPs: { ip, ...ipinfo, Type: ipinfo?.type }}}
+      )
+    }
   }
 }
