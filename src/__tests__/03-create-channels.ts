@@ -2,12 +2,14 @@
  * @jest-environment node
  */
 import { once } from 'events';
-import { getChannels, subscribeToGraph } from 'lightning';
+import { getChannels, subscribeToGraph, updateRoutingFees } from 'lightning';
 import { lndFeePath } from "../ledger/ledger";
 import { updateEscrows } from "../lndUtils";
 import { MainBook, setupMongoConnection } from "../mongodb";
 import { bitcoindDefaultClient, sleep } from "../utils";
-import { checkIsBalanced, lnd1, lndOutside1, lndOutside2, mockGetExchangeBalance, openChannelTesting } from "./helper";
+import { checkIsBalanced, lnd1, lnd2, lndOutside1, lndOutside2, mockGetExchangeBalance, openChannelTesting } from "./helper";
+import _ from "lodash"
+import { getLnds } from "../lndConfig";
 
 jest.mock('../realtimePrice')
 
@@ -126,6 +128,22 @@ it('opens channel from lndOutside1 to lnd1', async () => {
     expect(channels.length).toEqual(channelLengthMain + 1)
   }
 
+})
+
+it('opens channel from lnd1 to lnd2', async () => {
+  const socket = `lnd2:9735`
+  await openChannelTesting({ lnd: lnd1, other_lnd: lnd2, socket })
+
+  const { channels } = await getChannels({ lnd: lnd1 })
+  expect(channels.length).toEqual(channelLengthMain + 1)
+  
+  const channel = _.find(channels, {partner_public_key: getLnds()[1].pubkey})
+  console.log({channel, channels})
+
+  const input = {fee_rate: 0, base_fee_tokens: 0, transaction_id: channel!.transaction_id, transaction_vout: channel!.transaction_vout}
+
+  await updateRoutingFees({lnd: lnd1, ...input});
+  await updateRoutingFees({lnd: lnd2, ...input});
 })
 
 it('escrow update ', async () => {
