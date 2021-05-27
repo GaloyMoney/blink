@@ -51,13 +51,13 @@ spec:
             - name: MACAROON
               valueFrom:
                 secretKeyRef:
-                  name: lnd-macaroon
-                  key: admin.macaroon
+                  name: lnd-credentials
+                  key: admin_macaroon_base64
             - name: TLS
               valueFrom:
                 secretKeyRef:
-                  name: lnd-tls
-                  key: tls.cert
+                  name: lnd-credentials
+                  key: tls_base64
             - name: REDIS_PORT
               value: "6379"
             - name: REDIS_IP
