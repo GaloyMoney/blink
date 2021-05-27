@@ -400,7 +400,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
       const limiterProbe = await getProbeLimiter({ user: this.user })
       const limiterProbeRes = await limiterProbe.get(this.user._id)
-      if (limiterProbeRes?.consumedPoints > yamlConfig.limits.pendingPayments.level[this.user.level]) {
+      if (limiterProbeRes?.consumedPoints >= yamlConfig.limits.pendingPayments.level[this.user.level]) {
         const error = `Cannot have more than ${yamlConfig.limits.pendingPayments.level[this.user.level]} pending payments`
         throw new TransactionRestrictedError(error, {forwardToClient: true, logger: lightningLogger, level: 'error'})
       }
