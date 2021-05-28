@@ -8,7 +8,7 @@ import { escrowAccountingPath, lndAccountingPath, lndFeePath, revenueFeePath } f
 import { DbError } from "./error";
 import { LOOK_BACK } from "./utils";
 import assert from 'assert';
-import { ILndParamsAuthed, nodeType, params } from "./lndConfig";
+import { ILndParamsAuthed, nodeType, params } from "./lndAuth";
 
 // milliseconds in a day
 const MS_PER_DAY = 864e5

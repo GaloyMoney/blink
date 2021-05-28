@@ -4,7 +4,7 @@
 //TODO: Choose between camel case or underscores for variable naming
 import { authenticatedLndGrpc, getWalletInfo } from 'lightning';
 import mongoose from "mongoose";
-import { params } from "../lndConfig";
+import { params } from "../lndAuth";
 import { setupMongoConnection } from "../mongodb";
 import { redisClient } from "../redis";
 import { User } from "../schema";

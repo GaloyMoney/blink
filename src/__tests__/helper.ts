@@ -15,7 +15,7 @@ export const lnd1 = getLnds()[0].lnd
 export const lnd2 = getLnds()[1].lnd
 export const lndonchain = getLnds()[2].lnd
 
-// TODO: this could be refactored with lndConfig 
+// TODO: this could be refactored with lndAuth 
 export const lndOutside1 = authenticatedLndGrpc({
   cert: process.env.TLSOUTSIDE1,
   macaroon: process.env.MACAROONOUTSIDE1,

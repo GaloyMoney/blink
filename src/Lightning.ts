@@ -7,7 +7,7 @@ import util from 'util';
 import { yamlConfig } from "./config";
 import { InsufficientBalanceError, NewAccountWithdrawalError, NotFoundError, SelfPaymentError, TransactionRestrictedError, ValidationError } from './error';
 import { addTransactionLndPayment, addTransactionLndReceipt, addTransactionOnUsPayment } from "./ledger/transaction";
-import { FEECAP, FEEMIN, TIMEOUT_PAYMENT } from "./lndConfig";
+import { FEECAP, FEEMIN, TIMEOUT_PAYMENT } from "./lndAuth";
 import { getActiveLnd, getLndFromPubkey, isMyNode } from "./lndUtils";
 import { lockExtendOrThrow, redlock } from "./lock";
 import { MainBook } from "./mongodb";

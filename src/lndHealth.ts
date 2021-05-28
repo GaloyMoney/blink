@@ -1,7 +1,7 @@
 import { authenticatedLndGrpc, getWalletInfo } from 'lightning';
 import _ from "lodash";
 import { baseLogger } from "./logger";
-import { ILndParamsAuthed } from "./lndConfig"
+import { ILndParamsAuthed } from "./lndAuth"
 
 const refresh_time = 5000 // ms
 

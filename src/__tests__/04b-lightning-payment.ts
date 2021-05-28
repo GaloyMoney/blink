@@ -4,7 +4,7 @@
 import { createHash, randomBytes } from 'crypto';
 import { cancelHodlInvoice, closeChannel, createHodlInvoice, createInvoice, decodePaymentRequest, getChannels, pay, settleHodlInvoice } from 'lightning';
 import { yamlConfig } from '../config';
-import { addProps, FEECAP, inputs, params } from "../lndConfig";
+import { addProps, FEECAP, inputs, params } from "../lndAuth";
 import { getActiveLnd, nodesPubKey } from "../lndUtils";
 import { setupMongoConnection } from "../mongodb";
 import { InvoiceUser, Transaction } from "../schema";
@@ -197,7 +197,7 @@ functionToTests.forEach(({fn, name, initialFee}) => {
     await paymentOtherGaloyUser({walletPayee: userWallet2, walletPayer: userWallet0})
     await paymentOtherGaloyUser({walletPayee: userWallet1, walletPayer: userWallet2})
 
-    // jest.mock("../lndConfig", () => ({
+    // jest.mock("../lndAuth", () => ({
     //   // remove first lnd so that ActiveLnd return the second lnd
     //   params: jest
     //     .fn() 
@@ -549,7 +549,7 @@ it('close channel (related to fee calculation in 09f)', async () => {
 //     expect(await walletPayee.updatePendingInvoice({ hash })).toBeTruthy()
 //   }
   
-//   jest.mock("../lndConfig", () => ({
+//   jest.mock("../lndAuth", () => ({
 //     // remove first lnd so that ActiveLnd return the second lnd
 //     params: jest
 //       .fn() 
