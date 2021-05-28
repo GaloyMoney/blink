@@ -4,8 +4,7 @@ import _ from "lodash";
 import client, { register } from 'prom-client';
 import { getBalancesDetail } from "../bitcoind";
 import { balanceSheetIsBalanced, getLedgerAccounts } from "../ledger/balanceSheet";
-import { getOnchainLnd } from "../lndConfig";
-import { getBosScore, lndBalances, lndsBalances } from "../lndUtils";
+import { getActiveLnd, getBosScore, getOnchainLnd, lndsBalances } from "../lndUtils";
 import { baseLogger } from "../logger";
 import { setupMongoConnection } from "../mongodb";
 import { Transaction, User } from "../schema";
@@ -98,7 +97,8 @@ const main = async () => {
 
     business_g.set(await User.count({"title": {"$exists": true}}))
 
-    const { lnd } = getOnchainLnd
+    // FIXME: get the other lnds
+    const { lnd } = getActiveLnd()
 
     const { channels } = await getChannels({ lnd })
     totalChannels_g.set(channels.length)
