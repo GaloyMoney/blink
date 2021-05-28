@@ -17,7 +17,6 @@ import crypto from "crypto";
 
 import util from 'util'
 
-import bluebird from 'bluebird';
 import { yamlConfig } from "./config";
 import { InsufficientBalanceError, NewAccountWithdrawalError, NotFoundError, SelfPaymentError, TransactionRestrictedError, ValidationError } from './error';
 import { redis } from "./redis";

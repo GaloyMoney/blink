@@ -179,7 +179,7 @@ const resolvers = {
   },
   Mutation: {
     requestPhoneCode: async (_, { phone }, { logger }) => ({ success: requestPhoneCode({ phone, logger }) }),
-    login: async (_, { phone, code }, { logger }) => ({ token: login({ phone, code, logger }) }),
+    login: async (_, { phone, code }, { logger, ip }) => ({ token: login({ phone, code, logger, ip }) }),
     updateUser: async (_, __, { wallet }) => ({
       setUsername: async ({ username }) => await wallet.setUsername({ username }),
       setLanguage: async ({ language }) => await wallet.setLanguage({ language }),
@@ -325,6 +325,7 @@ export async function startApolloServer() {
       // @ts-ignore
       const token = context.req?.token ?? null
       const uid = token?.uid ?? null
+      const ip = context.req?.headers['x-real-ip']
 
       let wallet, user
 
@@ -334,7 +335,7 @@ export async function startApolloServer() {
       if (!!uid) {
         user = await User.findOneAndUpdate({ _id: uid },{ lastConnection: new Date() }, {new: true})
         if(yamlConfig.proxyChecking.enabled) {
-          fetchIPDetails({currentIP: context.req?.headers['x-real-ip'], user, logger})
+          fetchIPDetails({ip, user, logger})
         }
         wallet = (!!user && user.status === "active") ? await WalletFactory({ user, logger }) : null
       }
@@ -345,7 +346,8 @@ export async function startApolloServer() {
         logger,
         uid,
         wallet,
-        user
+        user,
+        ip
       }
     },
     formatError: err => {

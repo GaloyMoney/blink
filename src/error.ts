@@ -47,6 +47,13 @@ export class NewAccountWithdrawalError extends CustomError {
   }
 }
 
+export class TooManyRequestError extends CustomError {
+  constructor({forwardToClient = true, logger, level = "warn"}) {
+    const message = "too many request"
+    super(message, 'TOO_MANY_REQUEST', {forwardToClient, logger, level})
+  }
+}
+
 export class DbError extends CustomError {
   constructor(message, {forwardToClient, logger, level}) {
     super(message, 'DB_ERROR', {forwardToClient, logger, level})

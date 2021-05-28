@@ -12,7 +12,8 @@ helm repo add jetstack https://charts.jetstack.io
 helm repo add galoy https://galoymoney.github.io/charts/
 helm repo update
 
-lndVersion="1.1.14"
+lndVersion="1.2.0"
+bitcoindVersion="0.1.15"
 
 cd ./charts/galoy
 helm dependency build
@@ -101,7 +102,7 @@ fi
 rm -rf $INFRADIR/configs
 git clone $CONFIG_REPO $INFRADIR/configs
 
-helmUpgrade bitcoind $localdevpath -f $INFRADIR/configs/bitcoind/$NETWORK.yaml galoy/bitcoind
+helmUpgrade bitcoind $localdevpath -f $INFRADIR/configs/bitcoind/$NETWORK.yaml galoy/bitcoind --version=$bitcoindVersion 
 
 # bug with --wait: https://github.com/helm/helm/issues/7139 ?
 kubectlWait app.kubernetes.io/name=bitcoind
