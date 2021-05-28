@@ -4,7 +4,7 @@
 import { createHash, randomBytes } from 'crypto';
 import { cancelHodlInvoice, closeChannel, createHodlInvoice, createInvoice, decodePaymentRequest, getChannels, pay, settleHodlInvoice } from 'lightning';
 import { yamlConfig } from '../config';
-import { addProps, FEECAP, inputs, params } from "../lndAuth";
+import { FEECAP } from "../lndAuth";
 import { getActiveLnd, nodesPubKey } from "../lndUtils";
 import { setupMongoConnection } from "../mongodb";
 import { InvoiceUser, Transaction } from "../schema";

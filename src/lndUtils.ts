@@ -290,4 +290,12 @@ export const getOnchainLnd = getLnds({type: "onchain"})[0]
 export const nodesPubKey = getAllOffchainLnd.map(item => item.pubkey)
 export const isMyNode = ({pubkey}) => _.includes(nodesPubKey, pubkey)
 
-export const getLndFromPubkey = ({ pubkey }: {pubkey: string}) => getLnds()[_.findIndex(params, { pubkey })]
+export const getLndFromPubkey = ({ pubkey }: {pubkey: string}) => {
+  const lnds = getLnds({active: true})
+  const lnd = _.filter(lnds, { pubkey })
+  if (!lnd) {
+    throw Error("lnd is offline")
+  } else {
+    return lnd[0]
+  }
+}
