@@ -1,19 +1,13 @@
 import assert from 'assert';
 import moment from "moment";
-import { yamlConfig } from './config';
 import { CSVAccountExport } from "./csvAccountExport";
-import { TransactionRestrictedError } from './error';
 import { Balances } from "./interface";
 import { customerPath } from "./ledger/ledger";
 import { MainBook } from "./mongodb";
 import { sendNotification } from "./notifications/notification";
-import { ioredis } from './redis';
 import { User } from "./schema";
 import { ITransaction } from "./types";
 import { LoggedError } from "./utils";
-
-// auto release semaphore after 30 mins
-const lockTimeout = yamlConfig.limits.pendingPayments.semaphoreLockTimeout
 
 export abstract class UserWallet {
 
