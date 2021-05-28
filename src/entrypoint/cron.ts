@@ -10,7 +10,7 @@ import { deleteFailedPayments } from "ln-service"
 
 const deleteExpiredInvoices = async () => {
   // this should be longer than the invoice validity time
-  const delta = 14 // days
+  const delta = 2 // days
   const date = new Date();
   date.setDate(date.getDate() - delta);
   InvoiceUser.deleteMany({timestamp: {lt: date}})

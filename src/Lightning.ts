@@ -30,8 +30,8 @@ export type payInvoiceResult = "success" | "failed" | "pending" | "already_paid"
 // but mocking on mixin is tricky
 export const delay = (currency) => {
   return {
-    "BTC": { value: 1, unit: 'days', "additional_delay_value": 1 },
-    "USD": { value: 2, unit: 'mins', "additional_delay_value": 1 },
+    "BTC": { value: 1, unit: 'days' },
+    "USD": { value: 2, unit: 'mins' },
   }[currency]
 }
 
@@ -683,7 +683,9 @@ export const LightningMixin = (superclass) => class extends superclass {
   // return whether the invoice has been paid of not
   async updatePendingInvoice({ hash, lock, pubkey }: {hash: string, lock: any, pubkey?: string}): Promise<boolean> {
     let invoice, pubkey_
-
+    
+    // if a pubkey has been provided, it means the invoice has not been set as paid in mongodb
+    // so not need for a round back trip to mongodb
     if (!pubkey) {
       let paid
       ({ pubkey: pubkey_, paid } = await InvoiceUser.findOne({ _id: hash }));
@@ -719,14 +721,14 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     // invoice that are on_us will be cancelled but not confirmed
     if (invoice.is_canceled) {
-      this.logger.warn({ hash, user: this.user }, "cancelled invoice")
+      this.logger.warn({ hash, user: this.user }, "cancelled invoice. nothing to do. this should not happen(?)")
+      return false
     } else if (invoice.is_confirmed) {
 
-      try {
-
-        const lightningLogger = this.logger.child({ hash, user: this.user._id, topic: "payment", protocol: "lightning", transactionType: "receipt", onUs: false })
-
-        return await redlock({ path: hash, logger: lightningLogger, lock }, async () => {
+      const lightningLogger = this.logger.child({ hash, user: this.user._id, topic: "payment", protocol: "lightning", transactionType: "receipt", onUs: false })
+      
+      return await redlock({ path: hash, logger: lightningLogger, lock }, async () => {
+        try {
 
           const invoiceUser = await InvoiceUser.findOne({ _id: hash, uid: this.user._id, paid: false })
 
@@ -760,16 +762,13 @@ export const LightningMixin = (superclass) => class extends superclass {
           this.logger.info({ metadata, success: true }, "long standing payment succeeded")
 
           return true
-        })
-
-      } catch (err) {
-        const error = `issue updating invoice`
-        this.logger.error({ err, invoice }, error)
-        throw new LoggedError(error)
-      }
-    }
-
-    return false
+        } catch (err) {
+          const error = `issue updating invoice`
+          this.logger.error({ err, invoice }, error)
+          return false
+        }
+      })
+    } 
   }
 
   async updatePendingInvoices(lock) {
