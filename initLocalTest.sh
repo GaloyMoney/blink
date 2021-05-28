@@ -16,11 +16,11 @@ lndVersion="1.1.17"
 bitcoindVersion="0.1.15"
 
 cd ./charts/galoy
-helm dependency build --skip-refresh
+helm dependency build
 cd -
 
 cd ./charts/monitoring
-helm dependency build --skip-refresh
+helm dependency build
 cd -
 
 INGRESS_NAMESPACE="ingress-nginx"
