@@ -42,14 +42,20 @@ const invoiceUserSchema = new Schema({
   },
 
   // TODO: update current invoice with legacy node
-  node: {
+  // which node is associated with this invoice
+  pubkey: {
     type: String,
     require: true,
+  },
+
+  paid: {
+    type: Boolean,
+    default: false
   }
 
 })
 
-invoiceUserSchema.index({ "uid": 1 })
+invoiceUserSchema.index({ "uid": 1, paid: 1 })
 
 
 export const InvoiceUser = mongoose.model("InvoiceUser", invoiceUserSchema)
@@ -438,10 +444,7 @@ const transactionSchema = new Schema({
   },
 
   // which lnd node this transaction relates to
-  node: {
-    type: String,
-    // require: true,
-  },
+  pubkey: String,
 
   // original property from medici
   credit: {

@@ -6,7 +6,7 @@ import { createUnsignedRequest, parsePaymentRequest } from 'invoices'
 import lnService from 'ln-service'
 import { createInvoice, signBytes } from 'lightning'
 import util from 'util'
-import { getActiveLnd } from "../lndConfig"
+import { getActiveLnd } from "../lndUtils"
 const {lnd} = getActiveLnd() 
 
 

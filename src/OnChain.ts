@@ -13,8 +13,8 @@ import { createChainAddress, getChainBalance, getChainFeeEstimate, getChainTrans
 
 import { yamlConfig } from "./config";
 import { InsufficientBalanceError, NewAccountWithdrawalError, SelfPaymentError, TransactionRestrictedError } from './error';
+import { getOnchainLnd } from "./lndUtils";
 
-import { getOnchainLnd } from "./lndConfig";
 const { lnd } = getOnchainLnd
 
 export const getOnChainTransactions = async ({ lnd, incoming }: { lnd: any, incoming: boolean }) => {

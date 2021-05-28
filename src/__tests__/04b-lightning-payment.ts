@@ -4,12 +4,12 @@
 import { createHash, randomBytes } from 'crypto';
 import { cancelHodlInvoice, closeChannel, createHodlInvoice, createInvoice, decodePaymentRequest, getChannels, pay, settleHodlInvoice } from 'lightning';
 import { yamlConfig } from '../config';
-import { FEECAP, getActiveLnd, getOnchainLnd, nodesPubKey } from "../lndConfig";
+import { addProps, FEECAP, inputs, params } from "../lndConfig";
+import { getActiveLnd, nodesPubKey } from "../lndUtils";
 import { setupMongoConnection } from "../mongodb";
 import { InvoiceUser, Transaction } from "../schema";
 import { getHash, sleep } from "../utils";
 import { checkIsBalanced, getUserWallet, lnd1, lndOutside1, lndOutside2, mockGetExchangeBalance, openChannelTesting } from "./helper";
-
 
 let userWallet0, userWallet1, userWallet2
 let initBalance0, initBalance1, initBalance2
@@ -94,11 +94,8 @@ it('receivesPaymentFromOutside', async () => {
   const mongotx = await Transaction.findOne({ hash })
   expect(mongotx.memo).toBe(memo)
 
-  // FIXME: manage multi node
-  const { node } = getActiveLnd() 
-
-  expect(await userWallet1.updatePendingInvoice({ hash, node })).toBeTruthy()
-  expect(await userWallet1.updatePendingInvoice({ hash, node })).toBeTruthy()
+  expect(await userWallet1.updatePendingInvoice({ hash })).toBeTruthy()
+  expect(await userWallet1.updatePendingInvoice({ hash })).toBeTruthy()
 
 })
 
@@ -189,25 +186,24 @@ functionToTests.forEach(({fn, name, initialFee}) => {
       const user1OnUsTxn = user1Txn.filter(matchTx)
       expect(user1OnUsTxn[0].type).toBe('on_us')
   
-      const { node } = getActiveLnd()
-
       // making request twice because there is a cancel state, and this should be re-entrant
-      expect(await walletPayer.updatePendingInvoice({ hash, node })).toBeTruthy()
-      expect(await walletPayee.updatePendingInvoice({ hash, node })).toBeTruthy()
-      expect(await walletPayer.updatePendingInvoice({ hash, node })).toBeTruthy()
-      expect(await walletPayee.updatePendingInvoice({ hash, node })).toBeTruthy()
+      expect(await walletPayer.updatePendingInvoice({ hash })).toBeTruthy()
+      expect(await walletPayee.updatePendingInvoice({ hash })).toBeTruthy()
+      expect(await walletPayer.updatePendingInvoice({ hash })).toBeTruthy()
+      expect(await walletPayee.updatePendingInvoice({ hash })).toBeTruthy()
     }
     
-    // a cashback tx
     await paymentOtherGaloyUser({walletPayee: userWallet2, walletPayer: userWallet1})
-    
-    // a cashback tx
     await paymentOtherGaloyUser({walletPayee: userWallet2, walletPayer: userWallet0})
-    
-    await sleep(5000)
-    
-    // not a cashback transaction
     await paymentOtherGaloyUser({walletPayee: userWallet1, walletPayer: userWallet2})
+
+    // jest.mock("../lndConfig", () => ({
+    //   // remove first lnd so that ActiveLnd return the second lnd
+    //   params: jest
+    //     .fn() 
+    //     .mockReturnValueOnce(addProps(inputs.shift()))
+    // }))
+    // await paymentOtherGaloyUser({walletPayee: userWallet1, walletPayer: userWallet2})
 
     userWallet0 = await getUserWallet(0)
     userWallet1 = await getUserWallet(1)
@@ -215,7 +211,6 @@ functionToTests.forEach(({fn, name, initialFee}) => {
 
     expect(userWallet0.user.contacts.length).toBe(1)
     expect(userWallet0.user.contacts[0]).toHaveProperty("id", userWallet2.user.username)
-    
   })
 
   it(`payInvoice to lnd outside2 ${name}`, async () => {
@@ -300,7 +295,7 @@ it('expired payment', async () => {
 
   const dbSetSpy = jest.spyOn(Lightning, 'delay').mockImplementation(() => ({value: 1, unit: 'seconds', "additional_delay_value": 0}))
 
-  const { lnd } = getOnchainLnd
+  const { lnd } = getActiveLnd()
 
   const request = await userWallet1.addInvoice({ value: amountInvoice, memo })
   const { id } = await decodePaymentRequest({ lnd, request })
@@ -512,3 +507,54 @@ it('close channel (related to fee calculation in 09f)', async () => {
   const socket = `lnd-outside-2:9735`
   await openChannelTesting({ lnd: lnd1, other_lnd: lndOutside2, socket })
 })
+
+// it(`test123`, async () => {
+//   const fn = function fn(wallet) {
+//     return async (input) => {
+//       return wallet.pay(input)
+//     }
+//   }
+
+//   const memo = "my memo as a payer"
+
+//   const paymentOtherGaloyUser = async ({walletPayer, walletPayee}) => {
+//     const {BTC: payerInitialBalance} = await walletPayer.getBalances()
+//     const {BTC: payeeInitialBalance} = await walletPayee.getBalances()
+
+//     const request = await walletPayee.addInvoice({ value: amountInvoice })
+//     await fn(walletPayer)({ invoice: request, memo })
+
+//     const {BTC: payerFinalBalance} = await walletPayer.getBalances()
+//     const {BTC: payeeFinalBalance} = await walletPayee.getBalances()
+
+//     expect(payerFinalBalance).toBe(payerInitialBalance - amountInvoice)
+//     expect(payeeFinalBalance).toBe(payeeInitialBalance + amountInvoice)
+
+//     const hash = getHash(request)
+//     const matchTx = tx => tx.type === 'on_us' && tx.hash === hash
+
+//     const user2Txn = await walletPayee.getTransactions()
+//     const user2OnUsTxn = user2Txn.filter(matchTx)
+//     expect(user2OnUsTxn[0].type).toBe('on_us')
+//     await checkIsBalanced()
+
+//     const user1Txn = await walletPayer.getTransactions()
+//     const user1OnUsTxn = user1Txn.filter(matchTx)
+//     expect(user1OnUsTxn[0].type).toBe('on_us')
+
+//     // making request twice because there is a cancel state, and this should be re-entrant
+//     expect(await walletPayer.updatePendingInvoice({ hash })).toBeTruthy()
+//     expect(await walletPayee.updatePendingInvoice({ hash })).toBeTruthy()
+//     expect(await walletPayer.updatePendingInvoice({ hash })).toBeTruthy()
+//     expect(await walletPayee.updatePendingInvoice({ hash })).toBeTruthy()
+//   }
+  
+//   jest.mock("../lndConfig", () => ({
+//     // remove first lnd so that ActiveLnd return the second lnd
+//     params: jest
+//       .fn() 
+//       .mockReturnValueOnce(addProps(inputs.shift()))
+//   }))
+//   await paymentOtherGaloyUser({walletPayee: userWallet1, walletPayer: userWallet2})
+
+// })

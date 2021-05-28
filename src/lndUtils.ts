@@ -1,7 +1,6 @@
 import { default as axios } from 'axios';
 import { getChainBalance, getChainTransactions, getChannelBalance, getChannels, getClosedChannels, getForwards, getHeight, getPendingChainBalance, getWalletInfo } from "lightning";
 import _ from "lodash";
-import { getActiveLnd, getLnds, getAllOffchainLnd } from "./lndConfig";
 import { baseLogger } from "./logger";
 import { DbMetadata } from "./schema";
 import { MainBook } from "./mongodb";
@@ -9,6 +8,7 @@ import { escrowAccountingPath, lndAccountingPath, lndFeePath, revenueFeePath } f
 import { DbError } from "./error";
 import { LOOK_BACK } from "./utils";
 import assert from 'assert';
+import { ILndParamsAuthed, nodeType, params } from "./lndConfig";
 
 // milliseconds in a day
 const MS_PER_DAY = 864e5
@@ -257,3 +257,37 @@ export const onChannelUpdated = async ({ channel, lnd, stateChange }: { channel:
 
   baseLogger.info({ channel, fee, ...metadata }, `${stateChange} channel fee added to mongodb`)
 }
+
+
+export const getLnds = ({type, active}: {type?: nodeType, active?: boolean} = {}): ILndParamsAuthed[] => {
+  let result = params
+
+  if (!!type) {
+    result = _.filter(result, item => item.type.some(item => item === type))
+  }
+
+  if (!!active) {
+    result = _.filter(result, {active})
+  }
+
+  return result
+}
+
+export const getAllOffchainLnd = getLnds({type: "offchain"})
+
+// only returning the first one for now
+export const getActiveLnd = () => {
+  const lnds = getLnds({active: true, type: "offchain"})
+  if (!lnds) {
+    throw Error("no active lnd to send/receive a payment")
+  }
+  return lnds[0]
+}
+
+// there is only one lnd responsible for onchain tx
+export const getOnchainLnd = getLnds({type: "onchain"})[0]
+
+export const nodesPubKey = getAllOffchainLnd.map(item => item.pubkey)
+export const isMyNode = ({pubkey}) => _.includes(nodesPubKey, pubkey)
+
+export const getLndFromPubkey = ({ pubkey }: {pubkey: string}) => getLnds()[_.findIndex(params, { pubkey })]

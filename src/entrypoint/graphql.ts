@@ -20,13 +20,12 @@ import swStats from 'swagger-stats';
 import util from 'util';
 import { v4 as uuidv4 } from 'uuid';
 import { getMinBuildNumber, getHourlyPrice } from "../localCache";
-import { nodesStats, nodeStats } from "../lndUtils";
+import { getActiveLnd, nodesStats, nodeStats } from "../lndUtils";
 import { setupMongoConnection } from "../mongodb";
 import { sendNotification } from "../notifications/notification";
 import { User } from "../schema";
 import { login, requestPhoneCode } from "../text";
 import { Levels, OnboardingEarn } from "../types";
-import { AdminOps } from "../AdminOps"
 import { fetchIPDetails } from "../utils";
 import { baseLogger } from '../logger'
 import { WalletFactory, WalletFromUsername } from "../walletFactory";
@@ -34,7 +33,7 @@ import { getCurrentPrice } from "../realtimePrice";
 import { getAsyncRedisClient } from "../redis";
 import { yamlConfig } from '../config';
 import { range, pattern, stringLength, ValidateDirectiveVisitor } from '@profusion/apollo-validation-directives';
-import { getActiveLnd } from "../lndConfig";
+import { addToMap, setAccountStatus, setLevel, usernameExists } from "../AdminOps";
 
 dotenv.config()
 
@@ -160,7 +159,7 @@ const resolvers = {
         id: user.username
       }))
     },
-    usernameExists: async (_, { username }) => AdminOps.usernameExists({ username }),
+    usernameExists: async (_, { username }) => usernameExists({ username }),
     getUserDetails: async (_, { uid }) => User.findOne({_id: uid}),
     noauthUpdatePendingInvoice: async (_, { hash, username }, { logger }) => {
       const wallet = await WalletFromUsername({ username, logger })
@@ -192,7 +191,7 @@ const resolvers = {
       updateLanguage: (input) => wallet.updateLanguage(input),
     }),
     setLevel: async (_, { uid, level }) => {
-      return AdminOps.setLevel({ uid, level })
+      return setLevel({ uid, level })
     },
     updateContact: async (_, __, { user }) => ({
       setName: async ({ username, name }) => {
@@ -238,10 +237,10 @@ const resolvers = {
       return { success: true }
     },
     addToMap: async (_, { username, title, latitude, longitude }, { }) => {
-      return AdminOps.addToMap({ username, title, latitude, longitude });
+      return addToMap({ username, title, latitude, longitude });
     },
     setAccountStatus: async (_, { uid, status }, { }) => {
-      return AdminOps.setAccountStatus({ uid, status })
+      return setAccountStatus({ uid, status })
     }
   }
 }

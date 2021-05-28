@@ -11,7 +11,7 @@ import { UserWallet } from "../userWallet";
 
 import mongoose from "mongoose";
 import { getChainBalance } from "lightning";
-import { getOnchainLnd } from "../lndConfig";
+import { getOnchainLnd } from "../lndUtils";
 
 let specterWallet
 

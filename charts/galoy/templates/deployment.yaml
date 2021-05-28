@@ -127,7 +127,6 @@ spec:
                 secretKeyRef:
                   name: lndonchain-pubkey
                   key: pubkey
-
             - name: BITCOINDADDR
               value: "bitcoind"
             - name: BITCOINDRPCPASS

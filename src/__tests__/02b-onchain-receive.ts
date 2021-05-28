@@ -7,7 +7,7 @@ import { filter } from "lodash";
 import mongoose from "mongoose";
 import { onchainTransactionEventHandler } from "../entrypoint/trigger";
 import { liabilitiesReserve, lndAccountingPath } from "../ledger/ledger";
-import { getLnds } from "../lndConfig";
+import { getLnds } from "../lndUtils";
 import { baseLogger } from '../logger';
 import { MainBook, setupMongoConnection } from "../mongodb";
 import { getTitle } from "../notifications/payment";

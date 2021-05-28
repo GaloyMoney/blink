@@ -53,7 +53,7 @@
     "invoices": "https://github.com/nicolasburtey/invoices#master",
     "js-yaml": "^4.0.0",
     "jsonwebtoken": "^8.5.1",
-    "lightning": "^3.3.5",
+    "lightning": "^3.3.8",
     "ln-service": "^51.5.0",
     "lodash": "^4.17.21",
     "medici": "^4.0.1",

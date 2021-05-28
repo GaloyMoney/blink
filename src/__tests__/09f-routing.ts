@@ -13,13 +13,13 @@ afterAll(async () => {
 })
 
 it('records routing fee correctly', async () => {
-  console.log(await getNetworkGraph({lnd: lndOutside1}))
-  console.log(await getNetworkGraph({lnd: lndOutside2}))
-  console.log(await getNetworkGraph({lnd: lnd1}))
+  // console.log(await getNetworkGraph({lnd: lndOutside1}))
+  // console.log(await getNetworkGraph({lnd: lndOutside2}))
+  // console.log(await getNetworkGraph({lnd: lnd1}))
 
-  console.log(await getNetworkInfo({lnd: lndOutside1}))
-  console.log(await getNetworkInfo({lnd: lndOutside2}))
-  console.log(await getNetworkInfo({lnd: lnd1}))
+  // console.log(await getNetworkInfo({lnd: lndOutside1}))
+  // console.log(await getNetworkInfo({lnd: lndOutside2}))
+  // console.log(await getNetworkInfo({lnd: lnd1}))
 
   const { request } = await createInvoice({ lnd: lndOutside2, tokens: 1000 })
   

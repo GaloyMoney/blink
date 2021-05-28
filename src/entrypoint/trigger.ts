@@ -4,8 +4,7 @@ import { Dropbox } from "dropbox";
 import express from 'express';
 import { getWalletInfo, subscribeToBackups, subscribeToBlocks, subscribeToChannels, subscribeToInvoices, subscribeToTransactions } from 'lightning';
 import { updateUsersPendingPayment } from '../ledger/balanceSheet';
-import { getActiveLnd } from "../lndConfig";
-import { onChannelUpdated } from "../lndUtils";
+import { getActiveLnd, onChannelUpdated } from "../lndUtils";
 import { baseLogger } from '../logger';
 import { setupMongoConnection } from "../mongodb";
 import { transactionNotification } from "../notifications/payment";
@@ -111,11 +110,11 @@ export const onInvoiceUpdate = async invoice => {
   const invoiceUser = await InvoiceUser.findOne({ _id: invoice.id })
   if (invoiceUser) {
     const uid = invoiceUser.uid
-    const hash = invoice.id as string
+    const hash = invoice.id
 
     const user = await User.findOne({_id: uid})
     const wallet = await WalletFactory({ user, logger })
-    await wallet.updatePendingInvoice({ hash })
+    await wallet.updatePendingInvoice({ hash, pubkey: invoiceUser.pubkey })
     await transactionNotification({ type: "paid-invoice", amount: invoice.received, hash, user, logger })
   } else {
     logger.fatal({ invoice }, "we received an invoice but had no user attached to it")
