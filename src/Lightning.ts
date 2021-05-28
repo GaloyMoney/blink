@@ -672,7 +672,7 @@ export const LightningMixin = (superclass) => class extends superclass {
   }
 
   // return whether the invoice has been paid of not
-  async updatePendingInvoice({ hash, expired = false, lock, pubkey }: {hash: string, expired?: boolean, lock: any, pubkey?: string}): Promise<boolean> {
+  async updatePendingInvoice({ hash, lock, pubkey }: {hash: string, lock: any, pubkey?: string}): Promise<boolean> {
     let invoice, pubkey_
 
     if (!pubkey) {
@@ -691,8 +691,6 @@ export const LightningMixin = (superclass) => class extends superclass {
     }
 
     try {
-      console.log({lnd}, "pendingInvoice")
-
       // FIXME we should only be able to look at User invoice, 
       // but might not be a strong problem anyway
       // at least return same error if invoice not from user
@@ -708,18 +706,8 @@ export const LightningMixin = (superclass) => class extends superclass {
     }
 
     // invoice that are on_us will be cancelled but not confirmed
-    // so we need a branch to return true in case the payment 
-    // has been managed off lnd.
     if (invoice.is_canceled) {
-
-      // check what happen if we go to this loop twice?
-      const resultUpdate = await InvoiceUser.updateOne({ _id: hash, uid: this.user._id }, {paid: true})
-      this.logger.info({ hash, user: this.user, resultUpdate }, "invoice has been updated from InvoiceUser on updatePendingInvoice")
-
-      // TODO: proper testing
-      const result = await Transaction.findOne({ hash, type: "on_us", pending: false })
-      return !!result
-
+      this.logger.warn({ hash, user: this.user }, "cancelled invoice")
     } else if (invoice.is_confirmed) {
 
       try {
@@ -767,21 +755,6 @@ export const LightningMixin = (superclass) => class extends superclass {
         this.logger.error({ err, invoice }, error)
         throw new LoggedError(error)
       }
-    } else if (expired) {
-
-      // maybe not needed after old invoice has been deleted?
-
-      try {
-        await cancelHodlInvoice({ lnd, id: hash })
-        this.logger.info({ id: hash, user: this.user._id }, "canceling invoice")
-
-      } catch (err) {
-        const error = "error deleting invoice"
-        this.logger.error({ err, error, hash, user: this.user._id }, error)
-      }
-
-      const resultUpdate = await InvoiceUser.updateOne({ _id: hash, uid: this.user._id }, {paid: true})
-      this.logger.info({ hash, user: this.user, resultUpdate }, "invoice has been updated from InvoiceUser following on_us transaction")
     }
 
     return false
@@ -794,20 +767,11 @@ export const LightningMixin = (superclass) => class extends superclass {
     // TODO
     const currency = "BTC"
 
-    // TODO: hydrates invoices from User?
     const invoices = await InvoiceUser.find({ uid: this.user._id, paid: false })
 
     for (const invoice of invoices) {
-      const { _id, timestamp, pubkey } = invoice
-
-      // FIXME
-      // adding a time-buffer on the expiration before we delete the invoice 
-      // because it seems lnd still can accept invoice even if they have expired
-      // see more: https://github.com/lightningnetwork/lnd/pull/3694
-      const expired = moment() > this.getExpiration(moment(timestamp)
-        .add(delay(currency).additional_delay_value, "hours")
-      )
-      await this.updatePendingInvoice({ hash: _id, expired, lock, pubkey })
+      const { _id, pubkey } = invoice
+      await this.updatePendingInvoice({ hash: _id, lock, pubkey })
     }
   }
 
