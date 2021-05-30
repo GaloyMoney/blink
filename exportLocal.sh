@@ -30,7 +30,23 @@ export LNDOUTSIDE2RPCPORT=$(kubectl get services | awk '/lnd-outside-2/ {print $
 export MONGODB_ADDRESS="$MINIKUBEIP:"$(kubectl get services | awk '/mongodb/ {print $5}' | grep -Po '27017:\K[0-9]+')
 export MONGODB_PASSWORD=$(kubectl get secret galoy-mongodb -o=go-template='{{index .data "mongodb-password" | base64decode}}')
 
-export REDIS_PORT=$(kubectl get services | awk '/galoy-redis-node-1/ {print $5}' | grep -Po '26379:\K[0-9]+')
+
+kubectl expose pod galoy-redis-node-0 --load-balancer-ip='' --port=26379 --port=6379 --type="LoadBalancer"
+kubectl expose pod galoy-redis-node-1 --load-balancer-ip='' --port=26379 --type="LoadBalancer"
+kubectl expose pod galoy-redis-node-2 --load-balancer-ip='' --port=26379 --type="LoadBalancer"
+
+export REDIS_0_SENTINEL_PORT=$(kubectl get services | awk '/galoy-redis-node-0/ {print $5}' | grep -Po '26379:\K[0-9]+')
+export REDIS_1_SENTINEL_PORT=$(kubectl get services | awk '/galoy-redis-node-1/ {print $5}' | grep -Po '26379:\K[0-9]+')
+export REDIS_2_SENTINEL_PORT=$(kubectl get services | awk '/galoy-redis-node-2/ {print $5}' | grep -Po '26379:\K[0-9]+')
+
+export REDIS_0_PORT=$(kubectl get services | awk '/galoy-redis-node-0/ {print $5}' | grep -Po '\b6379:\K[0-9]+')
+export REDIS_1_PORT=$(kubectl get services | awk '/galoy-redis-node-1/ {print $5}' | grep -Po '\b6379:\K[0-9]+')
+export REDIS_2_PORT=$(kubectl get services | awk '/galoy-redis-node-2/ {print $5}' | grep -Po '\b6379:\K[0-9]+')
+
+export REDIS_0_INTERNAL_IP=$(kubectl get pod galoy-redis-node-0 -o wide | awk '{print $6}' | tail -1)
+export REDIS_1_INTERNAL_IP=$(kubectl get pod galoy-redis-node-1 -o wide | awk '{print $6}' | tail -1)
+export REDIS_2_INTERNAL_IP=$(kubectl get pod galoy-redis-node-2 -o wide | awk '{print $6}' | tail -1)
+
 export REDIS_NODE=$MINIKUBEIP
 
 export JWT_SECRET="jwt_secret"
@@ -42,3 +58,5 @@ export CONFIG_REPO="https://github.com/GaloyMoney/configs"
 
 export PRICE_ADDRESS=$MINIKUBEIP
 export PRICE_PORT=$(kubectl get services | awk '/galoy-price/ {print $5}' | grep -Po '50051:\K[0-9]+')
+
+export LOCAL=true
