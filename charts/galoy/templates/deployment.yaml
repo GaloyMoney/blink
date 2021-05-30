@@ -77,13 +77,13 @@ spec:
             - name: MACAROON
               valueFrom:
                 secretKeyRef:
-                  name: lnd-macaroon
-                  key: admin.macaroon
+                  name: lnd-credentials
+                  key: admin_macaroon_base64
             - name: TLS
               valueFrom:
                 secretKeyRef:
-                  name: lnd-tls
-                  key: tls.cert
+                  name: lnd-credentials
+                  key: tls_base64
             - name: BITCOINDADDR
               value: "bitcoind"
             - name: BITCOINDRPCPASS
@@ -140,23 +140,23 @@ spec:
             - name: MACAROONOUTSIDE1
               valueFrom:
                 secretKeyRef:
-                  name: lnd-outside-1-macaroon
-                  key: admin.macaroon
+                  name: lnd-outside-1-credentials
+                  key: admin_macaroon_base64
             - name: TLSOUTSIDE1
               valueFrom:
                 secretKeyRef:
-                  name: lnd-outside-1-tls
-                  key: tls.cert
+                  name: lnd-outside-1-credentials
+                  key: tls_base64
             - name: MACAROONOUTSIDE2
               valueFrom:
                 secretKeyRef:
-                  name: lnd-outside-2-macaroon
-                  key: admin.macaroon
+                  name: lnd-outside-2-credentials
+                  key: admin_macaroon_base64
             - name: TLSOUTSIDE2
               valueFrom:
                 secretKeyRef:
-                  name: lnd-outside-2-tls
-                  key: tls.cert
+                  name: lnd-outside-2-credentials
+                  key: tls_base64
             - name: LNDRPCPORT
               value: "10009"
             - name: LNDOUTSIDE1RPCPORT
