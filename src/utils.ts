@@ -38,6 +38,9 @@ const connection_obj = {
   version: '0.21.0',
 }
 
+export const BitcoindClient = ({ wallet = "" }) => new bitcoindClient({ ...connection_obj, wallet })
+export const bitcoindDefaultClient = BitcoindClient({ wallet: "" })
+
 
 export const addContact = async ({ uid, username }) => {
   // https://stackoverflow.com/questions/37427610/mongodb-update-or-insert-object-in-array
@@ -67,9 +70,6 @@ export const addContact = async ({ uid, username }) => {
     );
   }
 }
-
-export const BitcoindClient = ({ wallet = "" }) => new bitcoindClient({ ...connection_obj, wallet })
-export const bitcoindDefaultClient = BitcoindClient({ wallet: "" })
 
 export const amountOnVout = ({ vout, onchain_addresses }): number => {
   // TODO: check if this is always [0], ie: there is always a single addresses for vout for lnd output
