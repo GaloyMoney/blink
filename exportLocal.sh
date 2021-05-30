@@ -47,7 +47,9 @@ export REDIS_0_INTERNAL_IP=$(kubectl get pod galoy-redis-node-0 -o wide | awk '{
 export REDIS_1_INTERNAL_IP=$(kubectl get pod galoy-redis-node-1 -o wide | awk '{print $6}' | tail -1)
 export REDIS_2_INTERNAL_IP=$(kubectl get pod galoy-redis-node-2 -o wide | awk '{print $6}' | tail -1)
 
-export REDIS_NODE=$MINIKUBEIP
+export REDIS_0_DNS=$MINIKUBEIP
+export REDIS_1_DNS=$MINIKUBEIP
+export REDIS_2_DNS=$MINIKUBEIP
 
 export JWT_SECRET="jwt_secret"
 

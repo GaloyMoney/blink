@@ -103,15 +103,17 @@ spec:
                 secretKeyRef:
                   name: network
                   key: network
-            - name: REDIS_0_PORT
+            - name: REDIS_MASTER_NAME
+              value: "mymaster"
+            - name: REDIS_0_SENTINEL_PORT
               value: "26379"
             - name: REDIS_0_DNS
               value: "galoy-redis-node-0.galoy-redis-headless"
-            - name: REDIS_1_PORT
+            - name: REDIS_1_SENTINEL_PORT
               value: "26379"
             - name: REDIS_1_DNS
               value: "galoy-redis-node-1.galoy-redis-headless"
-            - name: REDIS_2_PORT
+            - name: REDIS_2_SENTINEL_PORT
               value: "26379"
             - name: REDIS_2_DNS
               value: "galoy-redis-node-2.galoy-redis-headless"
