@@ -448,14 +448,11 @@ it('onUs pushPayment', async () => {
 
   expect(userWallet0.user.contacts[userWallet0.user.contacts.length - 1]).toHaveProperty("id", userWallet1.user.username)
   expect(userWallet1.user.contacts[userWallet1.user.contacts.length - 1]).toHaveProperty("id", userWallet0.user.username)
-
-  await checkIsBalanced()
 })
 
 it('onUs pushPayment error for same user', async () => {
   const destination = await userWallet0.getNodePubkey()
   await expect(userWallet0.pay({ destination, username: userWallet0.user.username, amount: amountInvoice })).rejects.toThrow()
-  await checkIsBalanced()
 })
 
 // it('pushPayment payment other node', async () => {
