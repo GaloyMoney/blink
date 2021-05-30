@@ -103,10 +103,18 @@ spec:
                 secretKeyRef:
                   name: network
                   key: network
-            - name: REDIS_PORT
+            - name: REDIS_0_PORT
               value: "6379"
-            - name: REDIS_IP
-              value: "galoy-redis-master"
+            - name: REDIS_0_DNS
+              value: "galoy-redis-node-0.galoy-redis-headless"
+            - name: REDIS_1_PORT
+              value: "6379"
+            - name: REDIS_1_DNS
+              value: "galoy-redis-node-1.galoy-redis-headless"
+            - name: REDIS_2_PORT
+              value: "6379"
+            - name: REDIS_2_DNS
+              value: "galoy-redis-node-2.galoy-redis-headless"
             {{- if eq .name "exporter" }}
             - name: FTX_KEY
               valueFrom:
