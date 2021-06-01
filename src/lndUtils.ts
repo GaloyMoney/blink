@@ -44,7 +44,7 @@ export const lndBalances = async ({ lnd }) => {
   )
 
   const total = chain_balance + channel_balance + pending_chain_balance + opening_channel_balance + closing_channel_balance
-  return { total: total, onChain: chain_balance + pending_chain_balance, offChain: channel_balance, opening_channel_balance, closing_channel_balance }
+  return { total, onChain: chain_balance + pending_chain_balance, offChain: channel_balance, opening_channel_balance, closing_channel_balance }
 }
 
 export async function nodeStats({ lnd }) {

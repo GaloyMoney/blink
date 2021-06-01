@@ -45,8 +45,8 @@ beforeEach(async () => {
   initBlockCount = await bitcoindDefaultClient.getBlockCount()
   initialBalanceUser0 = (await walletUser0.getBalances()).BTC
 
-  // amount_BTC = +(1 + Math.random()).toPrecision(9)
-  amount_BTC = 1
+  amount_BTC = +(1 + Math.random()).toPrecision(9)
+  // amount_BTC = 1
 })
 
 afterEach(async () => {

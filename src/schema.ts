@@ -55,7 +55,7 @@ const invoiceUserSchema = new Schema({
 
 })
 
-invoiceUserSchema.index({ "uid": 1, paid: 1 })
+invoiceUserSchema.index({ uid: 1, paid: 1 })
 
 
 export const InvoiceUser = mongoose.model("InvoiceUser", invoiceUserSchema)

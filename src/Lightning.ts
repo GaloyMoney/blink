@@ -768,7 +768,10 @@ export const LightningMixin = (superclass) => class extends superclass {
           return false
         }
       })
-    } 
+    // this should not happen
+    } else {
+      return false
+    }
   }
 
   async updatePendingInvoices(lock) {

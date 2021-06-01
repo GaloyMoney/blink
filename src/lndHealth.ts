@@ -1,24 +1,12 @@
 import { authenticatedLndGrpc, getWalletInfo } from 'lightning';
 import _ from "lodash";
 import { baseLogger } from "./logger";
-import { ILndParamsAuthed } from "./lndAuth"
 
 const refresh_time = 5000 // ms
 
 // TODO replace with
 // const asyncForever = require('async/forever');
-const loop = async ({socket, params}: {socket: string, params: ILndParamsAuthed}) => {
-  try {
-    await isUp({socket, params})
-  } finally {
-    setTimeout(async function () {
-      // TODO check if this could lead to a stack overflow
-      loop({socket, params})
-    }, refresh_time);
-  }
-}
-
-export const isUp = async ({socket, params}): Promise<void> => {
+export const isUpLoop = async ({socket, params}): Promise<void> => {
   let active
   try {
     // @ts-ignore
@@ -39,9 +27,14 @@ export const isUp = async ({socket, params}): Promise<void> => {
 
     active = false
   }
-  _.find(params, {socket})!.active = active
+  _.find(params, {socket}).active = active
   baseLogger.info({socket, active}, "lnd pulse")
+
+  setTimeout(async function () {
+    // TODO check if this could lead to a stack overflow
+    isUpLoop({socket, params})
+  }, refresh_time);
 }
 
 // launching a loop to update whether lnd are active or not
-// params.forEach(loop)
+// params.forEach(isUpLoop)
