@@ -34,9 +34,9 @@ it('records routing fee correctly', async () => {
 
   await updateRoutingFees()
 
-  // const {balance} = await MainBook.balance({
-  //   accounts: revenueFeePath
-  // })
+  const {balance} = await MainBook.balance({
+    accounts: revenueFeePath
+  })
 
-  // expect(balance).toBe(1.001)
+  expect(balance).toBe(1.001)
 })
