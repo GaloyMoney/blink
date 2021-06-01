@@ -165,8 +165,6 @@ helmUpgrade galoy \
   $INFRADIR/galoy/
 
 kubectlWait app.kubernetes.io/instance=galoy
-kubectlWait statefulset.kubernetes.io/pod-name=galoy-redis-node-1
-kubectlWait statefulset.kubernetes.io/pod-name=galoy-redis-node-2
 
 if [ ${LOCAL} ]
 then
