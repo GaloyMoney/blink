@@ -13,6 +13,7 @@
     "add-charts": "export LOCAL=true && source ./exportLocal.sh && ./initLocalTest.sh",
     "forward-mongodb": "kubectl port-forward $(kubectl get pods -l app.kubernetes.io/name=mongodb | awk '/mongo/ {print $1}') 27017",
     "restart-charts": "yarn remove-charts || : && sleep 5 && yarn run add-charts",
+    "test-local-restart": "./deletePods.sh && source ./exportLocal.sh && yarn run test-local",
     "use-minikube": "kubectl config use-context minikube",
     "test-local-clean": "yarn use-minikube && yarn run restart-charts && yarn jest --clearCache && yarn run test-local",
     "test-local": "yarn use-minikube && source ./exportLocal.sh && yarn jest --runInBand --verbose $TEST | pino-pretty -c -l",
