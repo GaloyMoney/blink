@@ -9,14 +9,18 @@ interface ILndParams {
   macaroon: string;
   node: string;
   port: string | number;
-  pubkey: string | undefined;
   type: nodeType[];
+  pubkey: string | undefined;
 }
 
 export interface ILndParamsAuthed extends ILndParams {
   lnd: AuthenticatedLnd,
   socket: string;
   active: boolean,
+}
+
+export interface ILndParamsLightningAuthed extends ILndParamsAuthed {
+  pubkey: string
 }
 
 export const inputs: ILndParams[] = [{

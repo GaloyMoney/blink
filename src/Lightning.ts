@@ -3,6 +3,7 @@ import crypto, { createHash, randomBytes } from "crypto";
 import { AuthenticatedLnd, cancelHodlInvoice, createInvoice, decodePaymentRequest, getInvoice, getPayment, payViaPaymentDetails, payViaRoutes } from "lightning";
 import lnService from 'ln-service';
 import moment from "moment";
+import { Logger } from "pino";
 import util from 'util';
 import { yamlConfig } from "./config";
 import { InsufficientBalanceError, NewAccountWithdrawalError, NotFoundError, SelfPaymentError, TransactionRestrictedError, ValidationError } from './error';
@@ -67,7 +68,6 @@ export const LightningMixin = (superclass) => class extends superclass {
     let lnd: AuthenticatedLnd, pubkey: string
 
     try {
-      // @ts-ignore
       ({ lnd, pubkey } = getActiveLnd())
     } catch (err) {
       this.logger.error("no active lnd to create an invoice")
@@ -203,7 +203,7 @@ export const LightningMixin = (superclass) => class extends superclass {
   }
 
   // FIXME this should be static
-  async validate({params, logger}: {params: IFeeRequest, logger: any}) {
+  async validate({params, logger}: {params: IFeeRequest, logger: Logger}) {
   
     const keySendPreimageType = '5482373484';
     const preimageByteLength = 32;
@@ -444,8 +444,6 @@ export const LightningMixin = (superclass) => class extends superclass {
         lightningLogger = lightningLogger.child({ routing: "payViaPaymentDetails" })
         fee = max_fee
         feeKnownInAdvance = false;
-
-        // @ts-ignore pubkey is defined for offchain // FIXME type for pubkey
         ({ pubkey, lnd } = getActiveLnd());
       }
 

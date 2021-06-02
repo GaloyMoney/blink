@@ -11,9 +11,23 @@ import { deleteFailedPayments } from "ln-service"
 const deleteExpiredInvoices = async () => {
   // this should be longer than the invoice validity time
   const delta = 2 // days
+  
   const date = new Date();
   date.setDate(date.getDate() - delta);
   InvoiceUser.deleteMany({timestamp: {lt: date}})
+}
+
+const deleteFailedPaymentsAllLnds = async () => {
+  try {
+    const lnds = getAllOffchainLnd
+    for (const {lnd} of lnds) {
+      // FIXME
+      baseLogger.warn("only run deleteFailedPayments on lnd 0.13")
+      // await deleteFailedPayments({lnd})
+    }
+  } catch (err) {
+    baseLogger.warn({err}, "error deleting failed payment")
+  }
 }
 
 const main = async () => {
@@ -23,15 +37,7 @@ const main = async () => {
   await updateUsersPendingPayment()
   
   await deleteExpiredInvoices()
-
-  try {
-    const lnds = getAllOffchainLnd
-    for (const {lnd} of lnds) {
-      await deleteFailedPayments({lnd})
-    }
-  } catch (err) {
-    baseLogger.warn({err}, "error deleting failed payment")
-  }
+  await deleteFailedPaymentsAllLnds()
 
   const specterWallet = new SpecterWallet({ logger: baseLogger })
   await specterWallet.tentativelyRebalance()

@@ -8,7 +8,7 @@ import { escrowAccountingPath, lndAccountingPath, lndFeePath, revenueFeePath } f
 import { DbError } from "./error";
 import { LOOK_BACK } from "./utils";
 import assert from 'assert';
-import { ILndParamsAuthed, nodeType, params } from "./lndAuth";
+import { ILndParamsAuthed, ILndParamsLightningAuthed, nodeType, params } from "./lndAuth";
 
 // milliseconds in a day
 const MS_PER_DAY = 864e5
@@ -273,7 +273,7 @@ export const getLnds = ({type, active}: {type?: nodeType, active?: boolean} = {}
   return result
 }
 
-export const getAllOffchainLnd = getLnds({type: "offchain"})
+export const getAllOffchainLnd = getLnds({type: "offchain"}) as ILndParamsLightningAuthed[]
 
 // only returning the first one for now
 export const getActiveLnd = () => {
@@ -281,7 +281,7 @@ export const getActiveLnd = () => {
   if (!lnds) {
     throw Error("no active lnd to send/receive a payment")
   }
-  return lnds[0]
+  return lnds[0] as ILndParamsLightningAuthed
 }
 
 // there is only one lnd responsible for onchain tx

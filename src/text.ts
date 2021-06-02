@@ -7,6 +7,7 @@ import { baseLogger } from './logger'
 import { randomIntFromInterval } from "./utils"
 import { failedAttemptPerIp, limiterLoginAttempt, limiterRequestPhoneCode } from "./rateLimit"
 import { TooManyRequestError } from "./error";
+import { Logger } from "pino";
 
 const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER
 const getTwilioClient = () => {
@@ -39,7 +40,7 @@ export const getCarrier = async (phone: string) => {
   return result
 }
 
-export const requestPhoneCode = async ({ phone, logger }: {phone: string, logger: any}): Promise<Boolean> => {
+export const requestPhoneCode = async ({ phone, logger }: {phone: string, logger: Logger}): Promise<Boolean> => {
 
   try {
     await limiterRequestPhoneCode.consume(phone);
