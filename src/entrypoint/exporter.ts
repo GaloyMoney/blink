@@ -97,17 +97,6 @@ const main = async () => {
 
     business_g.set(await User.count({"title": {"$exists": true}}))
 
-    // FIXME: get the other lnds
-    const { lnd } = getActiveLnd()
-
-    const { channels } = await getChannels({ lnd })
-    totalChannels_g.set(channels.length)
-    activeChannels_g.set(channels.filter(channel => channel.is_active).length)
-    pendingHtlc_g.set(_.sum(channels.map(channel => channel.pending_payments.length)))
-
-    const { inbound } = await getChannelBalance({ lnd })
-    receivingCapacity_g.set(inbound ?? 0)
-
     fundingRate_g.set(await dealerWallet.getNextFundingRate())
 
     try {
