@@ -26,4 +26,4 @@ connectionObj = {
 }
 
 export const redis = new Redis(connectionObj);
-export const rateLimiterRedis = new Redis({ ...connectionObj, enable_offline_queue: false })
+export const rateLimiterRedis = new Redis({ ...connectionObj, enableOfflineQueue: false })
