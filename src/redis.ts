@@ -23,7 +23,7 @@ connectionObj = {
 }
 
 export const redis = new Redis(connectionObj);
-redis.on('error', (err) => baseLogger.fatal("Redis error", err))
+redis.on('error', (err) => baseLogger.error({ err }, "Redis error"))
 
 export const rateLimiterRedis = new Redis({ ...connectionObj, enableOfflineQueue: false })
-rateLimiterRedis.on('error', (err) => baseLogger.fatal("Rate limiter redis error", err))
+rateLimiterRedis.on('error', (err) => baseLogger.error({ err }, "Rate limiter redis error"))
