@@ -8,7 +8,7 @@ import { bitcoindAccountingPath, lndAccountingPath, lndFeePath } from "./ledger"
 
 const logger = baseLogger.child({module: "balanceSheet"})
 
-export const updateUsersPendingPayment = async () => {
+export const updateUsersPendingPayment = async ({onchainOnly}: {onchainOnly?: boolean} = {}) => {
   let userWallet
 
   for await (const user of User.find({})) {
@@ -16,7 +16,12 @@ export const updateUsersPendingPayment = async () => {
 
     // A better approach would be to just loop over pending: true invoice/payment
     userWallet = await WalletFactory({user, logger})
-    await userWallet.updatePending()
+
+    if (onchainOnly) {
+      await userWallet.updateOnchainReceipt()
+    } else {
+      await userWallet.updatePending()
+    }
   }
 }
 

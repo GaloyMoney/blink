@@ -48,13 +48,21 @@ export const inputs: ILndParams[] = [{
   pubkey: undefined,
 }]
 
+// FIXME
+const isTrigger = require.main!.filename.indexOf("trigger") !== -1
+
 export const addProps = (array) => array.map(input => {
   const socket = `${input.node}:${input.port}`
   return {
     ...input,
     socket,
     lnd: authenticatedLndGrpc({...input, socket}).lnd,
-    active: true,
+
+    // FIXME: should be inactive first
+    // find a way to mock this up for jest
+    // for now only trigger is active = false at start 
+    // because trigger will start listening to lnd event on lnd start/restart
+    active: !isTrigger,
   }
 })
 

@@ -1,17 +1,17 @@
 import { authenticatedLndGrpc, getWalletInfo } from 'lightning';
 import _ from "lodash";
 import { baseLogger } from "./logger";
+import { params } from "./lndAuth"
 
 const refresh_time = 5000 // ms
 
 // TODO replace with
 // const asyncForever = require('async/forever');
-export const isUpLoop = async ({socket, params}): Promise<void> => {
+export const isUpLoop = async (param): Promise<void> => {
   let active
-  try {
-    // @ts-ignore
-    const { lnd } = _.find(params, {socket})
+  const { lnd, socket } = param
 
+  try {
     // will throw if there is an error
     await getWalletInfo({lnd})
     active = true
@@ -19,22 +19,33 @@ export const isUpLoop = async ({socket, params}): Promise<void> => {
     baseLogger.warn({err}, `can't get wallet info from ${socket}`)
 
     // if we get disconnected, we need to recreate the lnd object
-    const paramIndex = _.findIndex(params, {socket})
-    params[paramIndex] = {
-      ...params[paramIndex],
-      lnd: authenticatedLndGrpc(params[paramIndex]).lnd
-    }
+    param.lnd = authenticatedLndGrpc(param).lnd
 
     active = false
   }
-  _.find(params, {socket}).active = active
+
+  console.log({active, param: param.active})
+
+  if (active && !param.active) {
+    lndStatusEvent.emit("started", param)
+  }
+
+  if (!active && param.active) {
+    lndStatusEvent.emit("stopped", param)
+  }
+
+  param.active = active
   baseLogger.info({socket, active}, "lnd pulse")
 
   setTimeout(async function () {
     // TODO check if this could lead to a stack overflow
-    isUpLoop({socket, params})
+    isUpLoop(param)
   }, refresh_time);
 }
 
 // launching a loop to update whether lnd are active or not
-// params.forEach(isUpLoop)
+export const activateLndHealthCheck = () => params.forEach(isUpLoop)
+
+const EventEmitter = require('events');
+class LndStatusEventEmitter extends EventEmitter{}
+export const lndStatusEvent = new LndStatusEventEmitter();

@@ -2,9 +2,10 @@ import { Storage } from '@google-cloud/storage';
 import crypto from "crypto";
 import { Dropbox } from "dropbox";
 import express from 'express';
-import { getWalletInfo, subscribeToBackups, subscribeToBlocks, subscribeToChannels, subscribeToInvoices, subscribeToTransactions } from 'lightning';
-import { updateUsersPendingPayment } from '../ledger/balanceSheet';
-import { getActiveLnd, onChannelUpdated } from "../lndUtils";
+import { subscribeToBackups, subscribeToBlocks, subscribeToChannels, subscribeToInvoices, subscribeToTransactions } from 'lightning';
+import { updateUsersPendingPayment } from "../ledger/balanceSheet";
+import { activateLndHealthCheck, lndStatusEvent } from "../lndHealth";
+import { onChannelUpdated } from "../lndUtils";
 import { baseLogger } from '../logger';
 import { setupMongoConnection } from "../mongodb";
 import { transactionNotification } from "../notifications/payment";
@@ -12,16 +13,17 @@ import { Price } from "../priceImpl";
 import { InvoiceUser, Transaction, User } from "../schema";
 import { WalletFactory } from "../walletFactory";
 
-
 const logger = baseLogger.child({ module: "trigger" })
 
 const txsReceived = new Set()
 
-export const uploadBackup = async (backup) => {
+export const uploadBackup = async ({backup, pubkey}) => {
   logger.debug({ backup }, "updating scb on dbx")
+  const filename = `${process.env.NETWORK}_lnd_scb_${pubkey}`
+
   try {
     const dbx = new Dropbox({ accessToken: process.env.DROPBOX_ACCESS_TOKEN })
-    await dbx.filesUpload({ path: `/${process.env.NETWORK}_lnd_scb`, contents: backup })
+    await dbx.filesUpload({ path: `/${filename}`, contents: backup })
     logger.info({ backup }, "scb backed up on dbx successfully")
   } catch (error) {
     logger.error({ error }, "scb backup to dbx failed")
@@ -31,7 +33,7 @@ export const uploadBackup = async (backup) => {
   try {
     const storage = new Storage({ keyFilename: process.env.GCS_APPLICATION_CREDENTIALS })
     const bucket = storage.bucket('lnd-static-channel-backups')
-    const file = bucket.file(`${process.env.NETWORK}_lnd_scb`)
+    const file = bucket.file(`${filename}`)
     await file.save(backup)
     logger.info({ backup }, "scb backed up on gcs successfully")
   } catch (error) {
@@ -101,7 +103,7 @@ export async function onchainTransactionEventHandler(tx) {
 }
 
 export const onInvoiceUpdate = async invoice => {
-  logger.debug(invoice)
+  logger.debug({invoice}, "onInvoiceUpdate")
 
   if (!invoice.is_confirmed) {
     return
@@ -135,41 +137,75 @@ const updatePriceForChart = async () => {
   }, interval)
 }
 
-// FIXME: 1 trigger / lnd?
-// or 1 trigger for all lnds?
-const { lnd } = getActiveLnd() 
-
-const main = async () => {
-
-  getWalletInfo({ lnd }, (err, result) => {
-    logger.debug({ err, result }, 'getWalletInfo')
-  });
-
-  const subInvoices = subscribeToInvoices({ lnd });
-  subInvoices.on('invoice_updated', onInvoiceUpdate)
+const listenerOnchain = ({ lnd }) => {
 
   const subTransactions = subscribeToTransactions({ lnd });
   subTransactions.on('chain_transaction', onchainTransactionEventHandler);
 
+  subTransactions.on('error', err => {
+    baseLogger.info({err}, "error subTransactions")
+    subTransactions.removeAllListeners()
+  })
+  
+  const subBlocks = subscribeToBlocks({ lnd })
+  subBlocks.on('block', () => updateUsersPendingPayment({onchainOnly: true}))
+
+  subBlocks.on('error', err => {
+    console.log({err}, "error subBlocks")
+  })
+}
+
+const listenerOffchain = ({ lnd, pubkey }) => {
+  const subInvoices = subscribeToInvoices({ lnd });
+  subInvoices.on('invoice_updated', onInvoiceUpdate)
+  subInvoices.on('error', err => {
+    baseLogger.info({err}, "error subInvoices")
+    subInvoices.removeAllListeners()
+  })
+
   const subChannels = subscribeToChannels({ lnd });
   subChannels.on('channel_opened', (channel) => onChannelUpdated({ channel, lnd, stateChange: "opened" }))
   subChannels.on('channel_closed', (channel) => onChannelUpdated({ channel, lnd, stateChange: "closed" }))
-
+  subChannels.on('error', err => {
+    baseLogger.info({err}, "error subChannels")
+    subChannels.removeAllListeners()
+  })
+  
   const subBackups = subscribeToBackups({ lnd })
-  subBackups.on('backup', ({ backup }) => uploadBackup(backup))
+  subBackups.on('backup', ({ backup }) => uploadBackup({backup, pubkey}))
+  subBackups.on('error', err => {
+    baseLogger.info({err}, "error subBackups")
+    subBackups.removeAllListeners()
+  })
+  
+}
 
-  const subBlocks = subscribeToBlocks({ lnd })
-  subBlocks.on('block', updateUsersPendingPayment)
+const main = async () => {
 
+  lndStatusEvent.on('started', ({lnd, pubkey, socket, type}) => {
+    baseLogger.info({socket}, "lnd started")
+
+    if(type.indexOf("onchain") !== -1) {
+      listenerOnchain({lnd})
+    }
+
+    if(type.indexOf("offchain") !== -1) {
+      listenerOffchain({lnd, pubkey})
+    }
+  });
+
+  lndStatusEvent.on('stopped', ({socket}) => {
+    baseLogger.info({socket}, "lnd stopped")
+  });
+
+  activateLndHealthCheck()
   updatePriceForChart()
 }
 
 const healthCheck = () => {
   const app = express()
   const port = 8888
-  app.get('/healthz', (req, res) => {
-    getWalletInfo({ lnd }, (err, ) => !err ? res.sendStatus(200) : res.sendStatus(500));
-  })
+  app.get('/healthz', (req, res) => res.sendStatus(200))
   app.listen(port, () => logger.info(`Health check listening on port ${port}!`))
 }
 

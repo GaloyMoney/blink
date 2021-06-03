@@ -29,18 +29,6 @@ for (let item in lnds) {
   })
 }
 
-// it('reconnect', async () => {
-//   while (true) {
-//     const {lnd} = authenticatedLndGrpc(params[0])
-//     try {
-//       await getWalletInfo({ lnd })
-//       console.log("ok")
-//     } catch (err) {
-//       console.log({err}, "nok")
-//     }
-//     await sleep(1000)
-//   }
-// }, 120000)
 
 it('I can connect to outside lnds', async () => {
 	const lnds = [lndOutside1, lndOutside2]
@@ -71,3 +59,20 @@ it('I can connect to redis', async () => {
 		});
 	});
 })
+
+
+// uncomment this test for testing if node can reconnect succesfully upon lnd restart
+// this test is only run manually 
+
+// it('reconnect', async () => {
+//   while (true) {
+//     const {lnd} = authenticatedLndGrpc(params[0])
+//     try {
+//       await getWalletInfo({ lnd })
+//       console.log("ok")
+//     } catch (err) {
+//       console.log({err}, "nok")
+//     }
+//     await sleep(1000)
+//   }
+// }, 120000)
