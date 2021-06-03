@@ -396,7 +396,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       lightningLogger = lightningLogger.child({ onUs: false, max_fee })
 
       const key = JSON.stringify({ id, mtokens })
-      route = JSON.parse(await redis.get(key))
+      route = JSON.parse(await redis.get(key) as string)
       this.logger.info({ route }, "route from redis")
 
       if (!!route) {

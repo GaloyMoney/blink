@@ -1,16 +1,13 @@
 import Redis from "ioredis"
+import { baseLogger } from "./logger"
 
 let connectionObj = {}, natMap = {}
 
 if(process.env.LOCAL === 'true') {
-  const REDIS_0_INTERNAL_IP = `${process.env.REDIS_0_INTERNAL_IP}:6379` 
-  const REDIS_1_INTERNAL_IP = `${process.env.REDIS_1_INTERNAL_IP}:6379`
-  const REDIS_2_INTERNAL_IP = `${process.env.REDIS_2_INTERNAL_IP}:6379`
+  const REDIS_0_INTERNAL_IP = `${process.env.REDIS_0_INTERNAL_IP}:6379`
   
   natMap = {
-    [REDIS_0_INTERNAL_IP]: { host: process.env.REDIS_0_DNS, port: process.env.REDIS_0_PORT },
-    [REDIS_1_INTERNAL_IP]: { host: process.env.REDIS_1_DNS, port: process.env.REDIS_1_PORT },
-    [REDIS_2_INTERNAL_IP]: { host: process.env.REDIS_2_DNS, port: process.env.REDIS_2_PORT }
+    [REDIS_0_INTERNAL_IP]: { host: process.env.REDIS_0_DNS, port: process.env.REDIS_0_PORT }
   }
 
 }
@@ -26,4 +23,7 @@ connectionObj = {
 }
 
 export const redis = new Redis(connectionObj);
+redis.on('error', (err) => baseLogger.fatal("Redis error", err))
+
 export const rateLimiterRedis = new Redis({ ...connectionObj, enableOfflineQueue: false })
+rateLimiterRedis.on('error', (err) => baseLogger.fatal("Rate limiter redis error", err))
