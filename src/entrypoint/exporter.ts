@@ -1,10 +1,8 @@
 import express from 'express';
-import { getChannelBalance, getChannels } from "lightning";
-import _ from "lodash";
 import client, { register } from 'prom-client';
 import { getBalancesDetail } from "../bitcoind";
 import { balanceSheetIsBalanced, getLedgerAccounts } from "../ledger/balanceSheet";
-import { getActiveLnd, getBosScore, getOnchainLnd, lndsBalances } from "../lndUtils";
+import { getBosScore, lndsBalances } from "../lndUtils";
 import { baseLogger } from "../logger";
 import { setupMongoConnection } from "../mongodb";
 import { Transaction, User } from "../schema";
@@ -24,7 +22,7 @@ const totalChannels_g = new client.Gauge({ name: `${prefix}_totalChannels`, help
 const activeChannels_g = new client.Gauge({ name: `${prefix}_activeChannels`, help: 'number of active channels our node has' })
 const pendingHtlc_g = new client.Gauge({ name: `${prefix}_pendingHtlcs`, help: 'number of pending HTLC our node has' })
 const lnd_g = new client.Gauge({ name: `${prefix}_lnd`, help: 'how much money in our node' })
-const lndOnChain_g = new client.Gauge({ name: `${prefix}_lnd_onchain`, help: 'how much fund is onChain in lnd' })
+const lndOnChain_g = new client.Gauge({ name: `${prefix}_LNDONCHAIN`, help: 'how much fund is onChain in lnd' })
 const lndOffChain_g = new client.Gauge({ name: `${prefix}_lnd_offchain`, help: 'how much fund is offChain in our node' })
 const lndOpeningChannelBalance_g = new client.Gauge({ name: `${prefix}_lnd_openingchannelbalance`, help: 'how much fund is pending following opening channel' })
 const lndClosingChannelBalance_g = new client.Gauge({ name: `${prefix}_lnd_closingchannelbalance`, help: 'how much fund is closing following force closed channel' })

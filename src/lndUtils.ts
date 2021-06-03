@@ -281,7 +281,12 @@ export const getActiveLnd = () => {
   if (!lnds) {
     throw Error("no active lnd to send/receive a payment")
   }
+  // this favor lnd1
   return lnds[0] as ILndParamsLightningAuthed
+
+  // an alternative that would load balance would be: 
+  // const index = Math.floor(Math.random() * lnds.length)
+  // return lnds[index]
 }
 
 // there is only one lnd responsible for onchain tx

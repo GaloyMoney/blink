@@ -34,6 +34,7 @@ import { getAsyncRedisClient } from "../redis";
 import { yamlConfig } from '../config';
 import { range, pattern, stringLength, ValidateDirectiveVisitor } from '@profusion/apollo-validation-directives';
 import { addToMap, setAccountStatus, setLevel, usernameExists } from "../AdminOps";
+import { activateLndHealthCheck } from "../lndHealth";
 
 dotenv.config()
 
@@ -293,8 +294,6 @@ const permissions = shield({
 export async function startApolloServer() {
   const app = express();
 
-    // try load file sync instead
-
   // const myTypeDefs = importSchema(path.join(__dirname, "../schema.graphql"))
   const fs = require('fs');
 
@@ -344,7 +343,6 @@ export async function startApolloServer() {
         wallet = (!!user && user.status === "active") ? await WalletFactory({ user, logger }) : null
       }
 
-      // @ts-ignore
       return {
         ...context,
         logger,
@@ -413,5 +411,6 @@ export async function startApolloServer() {
 
 setupMongoConnection().then(async () => {
   await startApolloServer()
+  activateLndHealthCheck()
 }).catch((err) => graphqlLogger.error(err, "server error"))
 

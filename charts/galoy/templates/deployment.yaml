@@ -74,55 +74,55 @@ spec:
               value: {{ $.Values.mongodbaddress }}
 
             # TODO: refactor with a yaml template
-            - name: LND_1_DNS
+            - name: LND1_DNS
               value: "lnd1"
-            - name: LND_1_MACAROON
+            - name: LND1_MACAROON
               valueFrom:
                 secretKeyRef:
                   name: lnd1-credentials
                   key: admin_macaroon_base64
-            - name: LND_1_TLS
+            - name: LND1_TLS
               valueFrom:
                 secretKeyRef:
                   name: lnd1-credentials
                   key: tls_base64
-            - name: LND_1_PUBKEY
+            - name: LND1_PUBKEY
               valueFrom:
                 secretKeyRef:
                   name: lnd1-pubkey
                   key: pubkey
 
-            - name: LND_2_DNS
+            - name: LND2_DNS
               value: "lnd2"
-            - name: LND_2_MACAROON
+            - name: LND2_MACAROON
               valueFrom:
                 secretKeyRef:
                   name: lnd2-credentials
                   key: admin_macaroon_base64
-            - name: LND_2_TLS
+            - name: LND2_TLS
               valueFrom:
                 secretKeyRef:
                   name: lnd2-credentials
                   key: tls_base64
-            - name: LND_2_PUBKEY
+            - name: LND2_PUBKEY
               valueFrom:
                 secretKeyRef:
                   name: lnd2-pubkey
                   key: pubkey
 
-            - name: LND_ONCHAIN_DNS
+            - name: LNDONCHAIN_DNS
               value: "lndonchain"
-            - name: LND_ONCHAIN_MACAROON
+            - name: LNDONCHAIN_MACAROON
               valueFrom:
                 secretKeyRef:
                   name: lndonchain-credentials
                   key: admin_macaroon_base64
-            - name: LND_ONCHAIN_TLS
+            - name: LNDONCHAIN_TLS
               valueFrom:
                 secretKeyRef:
                   name: lndonchain-credentials
                   key: tls_base64
-            - name: LND_ONCHAIN_PUBKEY
+            - name: LNDONCHAIN_PUBKEY
               valueFrom:
                 secretKeyRef:
                   name: lndonchain-pubkey

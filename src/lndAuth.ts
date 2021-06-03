@@ -1,6 +1,6 @@
 import { AuthenticatedLnd, authenticatedLndGrpc } from 'lightning';
-import _ from "lodash";
 import { exit } from "process";
+import { yamlConfig } from "./config";
 
 export type nodeType = "offchain" | "onchain"
 
@@ -23,30 +23,14 @@ export interface ILndParamsLightningAuthed extends ILndParamsAuthed {
   pubkey: string
 }
 
-export const inputs: ILndParams[] = [{
-  cert: process.env.LND_1_TLS || exit(1),
-  macaroon: process.env.LND_1_MACAROON || exit(1),
-  node: process.env.LND_1_DNS || exit(1),
-  port: process.env.LND_1_RPCPORT ?? 10009,
-  type: ["offchain"],
-  pubkey: process.env.LND_1_PUBKEY,
-},
-{
-  cert: process.env.LND_2_TLS || exit(1),
-  macaroon: process.env.LND_2_MACAROON || exit(1),
-  node: process.env.LND_2_DNS || exit(1),
-  port: process.env.LND_2_RPCPORT ?? 10009,
-  type: ["offchain"],
-  pubkey: process.env.LND_2_PUBKEY,
-},
-{
-  cert: process.env.LND_ONCHAIN_TLS || exit(1),
-  macaroon: process.env.LND_ONCHAIN_MACAROON || exit(1),
-  node: process.env.LND_ONCHAIN_DNS || exit(1),
-  port: process.env.LND_ONCHAIN_RPCPORT ?? 10009,
-  type: ["onchain"],
-  pubkey: undefined,
-}]
+const inputs: ILndParams[] = yamlConfig.lnds.map(input => ({
+  cert: process.env[`${input.name}_TLS`] || exit(1),
+  macaroon: process.env[`${input.name}_MACAROON`] || exit(1),
+  node: process.env[`${input.name}_DNS`] || exit(1),
+  port: process.env[`${input.name}_RPCPORT`] ?? 10009,
+  type: input.type,
+  pubkey: process.env[`${input.name}_PUBKEY`],
+}))
 
 // FIXME
 const isTrigger = require.main!.filename.indexOf("trigger") !== -1

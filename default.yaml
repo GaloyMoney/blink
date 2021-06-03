@@ -90,6 +90,14 @@ fees:
   withdraw: 2000 # 2000 sats flat per tx
   deposit: 0.003 # 0.3 percent
 
+lnds: 
+  - name: LND1
+    type: ["offchain"]
+  - name: LND2  
+    type: ["offchain"]
+  - name: LNDONCHAIN
+    type: ["onchain"]
+
 # TODO
 # carrierRegexFilter: ""
 

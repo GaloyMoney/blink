@@ -24,8 +24,6 @@ export const isUpLoop = async (param): Promise<void> => {
     active = false
   }
 
-  console.log({active, param: param.active})
-
   if (active && !param.active) {
     lndStatusEvent.emit("started", param)
   }
@@ -35,7 +33,7 @@ export const isUpLoop = async (param): Promise<void> => {
   }
 
   param.active = active
-  baseLogger.info({socket, active}, "lnd pulse")
+  baseLogger.debug({socket, active}, "lnd pulse")
 
   setTimeout(async function () {
     // TODO check if this could lead to a stack overflow
