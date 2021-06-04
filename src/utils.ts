@@ -164,15 +164,19 @@ export const fetchIPDetails = async ({ip, user, logger}): Promise<void> => {
   } catch (error) {
     logger.info({error}, 'Failed to fetch ip details')
   } finally {
-    const res = await User.updateOne(
-      { _id: user._id, "lastIPs.ip": ip },
-      { "$set": { "lastIPs.$.lastConnection" : Date.now() } },
-    )
-    if(!res.nModified) {
-      await User.findOneAndUpdate(
-        { _id: user._id, "lastIPs.ip": {"$ne": ip} },
-        { $push: { lastIPs: { ip, ...ipinfo, Type: ipinfo?.type }}}
+    try {
+      const res = await User.updateOne(
+        { _id: user._id, "lastIPs.ip": ip },
+        { "$set": { "lastIPs.$.lastConnection" : Date.now() } },
       )
+      if(!res.nModified) {
+        await User.findOneAndUpdate(
+          { _id: user._id, "lastIPs.ip": {"$ne": ip} },
+          { $push: { lastIPs: { ip, ...ipinfo, Type: ipinfo?.type }}}
+        )
+      }
+    } catch (err) {
+      logger.warn({err}, "error setting last ip")
     }
   }
 }
