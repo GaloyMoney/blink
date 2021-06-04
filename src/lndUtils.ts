@@ -278,7 +278,7 @@ export const getAllOffchainLnd = getLnds({type: "offchain"}) as ILndParamsLightn
 // only returning the first one for now
 export const getActiveLnd = () => {
   const lnds = getLnds({active: true, type: "offchain"})
-  if (!lnds) {
+  if (lnds.length === 0) {
     throw Error("no active lnd to send/receive a payment")
   }
   // this favor lnd1
