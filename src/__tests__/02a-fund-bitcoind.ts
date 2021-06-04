@@ -1,12 +1,12 @@
 /**
  * @jest-environment node
  */
-import { setupMongoConnection } from "../mongodb";
-import { checkIsBalanced, lnd1, lndOutside1, lndOutside2, RANDOM_ADDRESS, waitUntilBlockHeight, mockGetExchangeBalance } from "./helper";
-import { bitcoindDefaultClient, sleep } from "../utils";
-
-import mongoose from "mongoose";
 import { createChainAddress } from "lightning";
+import mongoose from "mongoose";
+import { setupMongoConnection } from "../mongodb";
+import { bitcoindDefaultClient } from "../utils";
+import { checkIsBalanced, lnd1, lndOutside1, lndOutside2, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "./helper";
+
 
 jest.mock('../realtimePrice')
 

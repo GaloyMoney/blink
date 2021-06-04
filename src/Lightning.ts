@@ -18,6 +18,7 @@ import { InvoiceUser, Transaction, User } from "./schema";
 import { IAddInvoiceRequest, IFeeRequest, IPaymentRequest } from "./types";
 import { UserWallet } from "./userWallet";
 import { addContact, isInvoiceAlreadyPaidError, LoggedError, timeout } from "./utils";
+import {parsePaymentRequest} from 'invoices';
 
 
 
@@ -220,15 +221,10 @@ export const LightningMixin = (superclass) => class extends superclass {
     let username
 
     if (params.invoice) {
-      // TODO: replace this with invoices/bolt11/parsePaymentRequest function?
       // TODO: use msat instead of sats for the db?
 
-      
-      // it doesn't matter which node we fetch the decodePaymentRequest, this operation is stateless and every node should return the same value
-      const { lnd } = getActiveLnd() 
-
       try {
-        ({ id, safe_tokens: tokens, destination, description, routes: routeHint, payment, cltv_delta, expires_at, features } = await decodePaymentRequest({ lnd, request: params.invoice }))
+        ({ id, safe_tokens: tokens, destination, description, routes: routeHint, payment, cltv_delta, expires_at, features } = await parsePaymentRequest({ request: params.invoice }))
       } catch (err) {
         const error = `Error decoding the invoice`
         logger.error({ params, success: false, error }, error)
@@ -322,7 +318,13 @@ export const LightningMixin = (superclass) => class extends superclass {
 
           const payeeInvoice = await InvoiceUser.findOne({ _id: id })
           if (!payeeInvoice) {
-            const error = `User tried to pay invoice from ${ yamlConfig.name }, but it was already paid or does not exist`
+            const error = `User tried to pay invoice from ${ yamlConfig.name }, but it does not exist`
+            lightningLoggerOnUs.error({ success: false, error })
+            throw new LoggedError(error)
+          }
+
+          if (payeeInvoice.paid) {
+            const error = `Invoice is already paid`
             lightningLoggerOnUs.error({ success: false, error })
             throw new LoggedError(error)
           }

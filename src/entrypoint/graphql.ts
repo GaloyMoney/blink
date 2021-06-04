@@ -394,11 +394,6 @@ export async function startApolloServer() {
     res.status((isMongoAlive && isRedisAlive) ? 200 : 503).send();
   });
 
-
-  // Mount Apollo middleware here.
-  // server.applyMiddleware({ app: permissions });
-  // middlewares: [permissions],
-
   server.applyMiddleware({ app });
 
   // @ts-ignore

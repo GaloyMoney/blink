@@ -2,13 +2,12 @@
  * @jest-environment node
  */
 //TODO: Choose between camel case or underscores for variable naming
-import { authenticatedLndGrpc, getWalletInfo } from 'lightning';
+import { getWalletInfo } from 'lightning';
 import mongoose from "mongoose";
-import { params } from "../lndAuth";
 import { setupMongoConnection } from "../mongodb";
 import { redisClient } from "../redis";
 import { User } from "../schema";
-import { bitcoindDefaultClient, sleep } from "../utils";
+import { bitcoindDefaultClient } from "../utils";
 import { lnd1, lnd2, lndonchain, lndOutside1, lndOutside2 } from "./helper";
 
 

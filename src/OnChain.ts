@@ -332,7 +332,13 @@ export const OnChainMixin = (superclass) => class extends superclass {
     // TODO: should have outgoing unconfirmed transaction as well.
     // they are in medici, but not necessarily confirmed
 
-    const unconfirmed_all = await this.getOnchainReceipt({confirmed: false})
+    let unconfirmed_all
+    try {
+      unconfirmed_all = await this.getOnchainReceipt({confirmed: false})
+    } catch (err) {
+      baseLogger.warn({user: this.user}, "impossible to fetch transactions")
+      unconfirmed_all = []
+    }
 
     // {
     //   block_id: undefined,
@@ -354,7 +360,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
       return { sats, addresses, id, created_at }
     })
 
-    const unconfirmed: any[] = await Promise.all(unconfirmed_promises)
+    const unconfirmed: { sats, addresses, id, created_at }[] = await Promise.all(unconfirmed_promises)
 
     return [
       ...unconfirmed.map(({ sats, addresses, id, created_at }) => ({

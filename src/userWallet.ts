@@ -37,7 +37,11 @@ export abstract class UserWallet {
   async updatePending(lock) { return }
 
   async getBalances(lock?): Promise<Balances> {
-    await this.updatePending(lock)
+    try {
+      await this.updatePending(lock)
+    } catch (err) {
+      this.logger.warn({user: this.user}, "impossible to update potentially confirmed transaction")
+    }
 
     // TODO: add effective ratio
     const balances = {
@@ -47,7 +51,7 @@ export abstract class UserWallet {
       total_in_USD: NaN,
     }
 
-    // TODO: make this code parrallel instead of serial
+    // TODO: run this code in parrallel 
     for(const { id } of this.user.currencies) {
       const { balance } = await MainBook.balance({
         account: this.user.accountPath,
