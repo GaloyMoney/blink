@@ -223,8 +223,12 @@ export const LightningMixin = (superclass) => class extends superclass {
     if (params.invoice) {
       // TODO: use msat instead of sats for the db?
 
+      // used as an alternative to parsePaymentRequest
+      // const {lnd} = getActiveLnd()
+
       try {
         ({ id, safe_tokens: tokens, destination, description, routes: routeHint, payment, cltv_delta, expires_at, features } = await parsePaymentRequest({ request: params.invoice }))
+        // ({ id, safe_tokens: tokens, destination, description, routes: routeHint, payment, cltv_delta, expires_at, features } = await decodePaymentRequest({ lnd, request: params.invoice }))
       } catch (err) {
         const error = `Error decoding the invoice`
         logger.error({ params, success: false, error }, error)
@@ -233,7 +237,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
       // TODO: if expired_at expired, thrown an error
 
-      if (!!params.amount && tokens !== 0) {
+      if (!!params.amount && !!tokens) {
         const error = `Invoice contains non-zero amount, but amount was also passed separately`
         throw new ValidationError(error, {forwardToClient: true, logger: logger, level: 'error'})
       }
@@ -259,7 +263,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     }
 
-    if (!params.amount && tokens === 0) {
+    if (!params.amount && !tokens) {
       const error = 'Invoice is a zero-amount invoice, or pushPayment is being used, but no amount was passed separately'
       throw new ValidationError(error, {forwardToClient: true, logger: logger, level: 'error'})
     }

@@ -452,7 +452,7 @@ it('if fee are too high, payment is cancelled', async () => {
   // TODO
 })
 
-it('pays zero amount invoice', async () => {
+it('paysZeroAmountInvoice', async () => {
   const { request } = await createInvoice({ lnd: lndOutside1 })
   const {BTC: initialBalance} = await userWallet1.getBalances()
   const result = await userWallet1.pay({ invoice: request, amount: amountInvoice })
