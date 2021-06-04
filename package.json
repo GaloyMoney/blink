@@ -12,6 +12,7 @@
     "remove-charts": "helm uninstall lnd | helm uninstall lnd-outside-1 | helm uninstall lnd-outside-2 | helm uninstall bitcoind | helm uninstall galoy",
     "add-charts": "export LOCAL=true && source ./exportLocal.sh && ./initLocalTest.sh",
     "forward-mongodb": "kubectl port-forward $(kubectl get pods -l app.kubernetes.io/name=mongodb | awk '/mongo/ {print $1}') 27017",
+    "test-local-restart": "./deletePods.sh && source ./exportLocal.sh && yarn run test-local",
     "restart-charts": "yarn use-minikube && yarn remove-charts || : && sleep 5 && yarn run add-charts",
     "use-minikube": "kubectl config use-context minikube",
     "test-local-clean": "yarn run restart-charts && yarn jest --clearCache && yarn run test-local",
