@@ -13,7 +13,7 @@ import { Transaction, User } from "./schema";
 import { createChainAddress, getChainBalance, getChainFeeEstimate, getChainTransactions, getHeight, sendToChainAddress } from "lightning"
 
 import { yamlConfig } from "./config";
-import { InsufficientBalanceError, NewAccountWithdrawalError, SelfPaymentError, TransactionRestrictedError } from './error';
+import { DbError, InsufficientBalanceError, NewAccountWithdrawalError, RebalanceNeededError, SelfPaymentError, TransactionRestrictedError } from './error';
 
 export const getOnChainTransactions = async ({ lnd, incoming }: { lnd: any, incoming: boolean }) => {
   try {
@@ -150,11 +150,10 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
       // case where there is not enough money available within lnd on-chain wallet
       if (onChainBalance < amount + estimatedFee) {
-        const error = `insufficient onchain balance on the lnd node. rebalancing is needed`
+        const error = `Insufficient onchain balance on lnd`
         
         // TODO: add a page to initiate the rebalancing quickly
-        onchainLogger.fatal({onChainBalance, amount, estimatedFee, sendTo, success: false }, error)
-        throw new LoggedError(error)
+        throw new RebalanceNeededError(error, {logger: onchainLogger, onChainBalance, amount, estimatedFee, sendTo, success: false})
       }
 
       //add a flat fee on top of onchain miner fees
@@ -244,8 +243,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
     } catch (err) {
       const error = `error storing new onchain address to db`
-      this.logger.error({err}, error)
-      throw new LoggedError(error)
+      throw new DbError(error, {forwardToClient: false, logger: this.logger, level: 'warn', err})
     }
 
     return address

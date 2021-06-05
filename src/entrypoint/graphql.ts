@@ -357,7 +357,7 @@ export async function startApolloServer() {
       // i.e. catch-all errors will not be forwarded
       if(log = err.extensions?.exception?.log) {
         const errObj = { message: err.message, code: err.extensions.code }
-        log(errObj)
+        log({...errObj, ...err.extensions.metadata})
         if(err.extensions.exception.forwardToClient) {
           return errObj
         }
