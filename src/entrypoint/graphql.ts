@@ -32,9 +32,9 @@ import { fetchIPDetails } from "../utils";
 import { baseLogger } from '../logger'
 import { WalletFactory, WalletFromUsername } from "../walletFactory";
 import { getCurrentPrice } from "../realtimePrice";
-import { getAsyncRedisClient } from "../redis";
 import { yamlConfig } from '../config';
 import { range, pattern, stringLength, ValidateDirectiveVisitor } from '@profusion/apollo-validation-directives';
+import { redis } from "../redis";
 
 dotenv.config()
 
@@ -388,7 +388,7 @@ export async function startApolloServer() {
   // Health check
   app.get('/healthz', async function(req, res) {
     const isMongoAlive = mongoose.connection.readyState == 1 ? true : false
-    const isRedisAlive = await getAsyncRedisClient().ping() === 'PONG'
+    const isRedisAlive = await redis.ping() === 'PONG'
     res.status((isMongoAlive && isRedisAlive) ? 200 : 503).send();
   });
 
