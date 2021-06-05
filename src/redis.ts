@@ -1,4 +1,3 @@
-import { once } from "events"
 import Redis from "ioredis"
 import { baseLogger } from "./logger"
 
@@ -25,10 +24,3 @@ connectionObj = {
 
 export const redis = new Redis(connectionObj);
 redis.on('error', (err) => baseLogger.error({ err }, "Redis error"))
-
-export const rateLimiterRedis = (async () => {
-  const redis = new Redis({ ...connectionObj, enableOfflineQueue: false, enableReadyCheck: true })
-  await once(redis, 'ready')
-  redis.on('error', (err) => baseLogger.error({ err }, "Rate limiter redis error"))
-  return redis
-})()
