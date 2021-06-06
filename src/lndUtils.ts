@@ -87,7 +87,7 @@ export const getRoutingFees = async ({ lnd, before, after }): Promise<Array<Reco
   const feePerDate = _.mapValues(dateGroupedForwards, e => e.reduce((sum, {fee_mtokens}) => sum + +fee_mtokens, 0) / 1000)
 
   // returns an array of objects where each object has key = date and value = fees
-  return (_.map(feePerDate, (v, k) => ({[k]: v})))
+  return _.map(feePerDate, (v, k) => ({[k]: v}))
 }
 
 export const updateRoutingFees = async () => {
