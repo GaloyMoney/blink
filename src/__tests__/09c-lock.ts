@@ -2,10 +2,10 @@
  * @jest-environment node
  */
 
-import {redlock, getResource, lockExtendOrThrow} from "../lock"
+import { redlock, getResource, lockExtendOrThrow } from "../lock"
 import { sleep } from "../utils"
 import { baseLogger } from '../logger'
-import redis from 'redis'
+import { redis } from '../redis'
 
 const uid = "1234"
 
@@ -68,11 +68,10 @@ it('second loop start after first loop has ended', async () => {
 })
 
 it('throwing error releases the lock', async () => {
-  const client = redis.createClient(process.env.REDIS_PORT, process.env.REDIS_IP)
 
   try {
     await redlock({ path: uid, logger: baseLogger }, async function(lock) {  
-      expect(await checkLockExist(client)).toBeTruthy()
+      expect(await checkLockExist(redis)).toBeTruthy()
       await sleep(500)
       throw Error("dummy error")
     });
@@ -80,7 +79,7 @@ it('throwing error releases the lock', async () => {
     console.log(`error is being catched ${err}`)
   }
 
-  expect(await checkLockExist(client)).toBeFalsy()
+  expect(await checkLockExist(redis)).toBeFalsy()
 })
 
 
@@ -122,7 +121,6 @@ it('can extend before the lock timed out', async () => {
 
 
 it('if lock has expired and another thread has take it, it should not extend', async () => {
-  const client = redis.createClient(process.env.REDIS_PORT, process.env.REDIS_IP)
 
   await Promise.race([
     redlock({ path: uid, logger: baseLogger }, async function(lock) {  
@@ -143,7 +141,7 @@ it('if lock has expired and another thread has take it, it should not extend', a
       // first lock should have expired
       await sleep(10500)
       await redlock({ path: uid, logger: baseLogger }, async function(lock) {  
-        expect(await checkLockExist(client)).toBeTruthy()
+        expect(await checkLockExist(redis)).toBeTruthy()
         expect(true).toBeTruthy()
         await sleep(2000)
         accept(true)
