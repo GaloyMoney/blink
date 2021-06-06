@@ -12,7 +12,6 @@ import { addContact, isInvoiceAlreadyPaidError, LoggedError, timeout } from "./u
 import { UserWallet } from "./userWallet";
 import { InvoiceUser, Transaction, User } from "./schema";
 import { createInvoice, getWalletInfo, decodePaymentRequest, cancelHodlInvoice, payViaPaymentDetails, payViaRoutes, getPayment, getInvoice } from "lightning"
-import { getAsyncRedisClient } from "./redis"
 import crypto from "crypto";
 
 
@@ -20,6 +19,7 @@ import util from 'util'
 
 import { yamlConfig } from "./config";
 import { InsufficientBalanceError, NewAccountWithdrawalError, NotFoundError, SelfPaymentError, TransactionRestrictedError, ValidationError } from './error';
+import { redis } from "./redis";
 
 export type ITxType = "invoice" | "payment" | "onchain_receipt" | "onchain_payment" | "on_us"
 export type payInvoiceResult = "success" | "failed" | "pending" | "already_paid"
@@ -129,9 +129,6 @@ export const LightningMixin = (superclass) => class extends superclass {
     // TODO: do a balance check, so that we don't probe needlessly if the user doesn't have the 
     // probably make sense to used a cached balance here. 
 
-    // TODO: if this is a node we are connected with, we may not even need a probe/round trip to redis
-    // we could handle this from the front end directly.
-
     const { mtokens, max_fee, destination, id, routeHint, messages, cltv_delta, features, payment } = 
       await this.validate(params, this.logger)
 
@@ -144,7 +141,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     const key = JSON.stringify({ id, mtokens })
 
-    const cacheProbe = await getAsyncRedisClient().get(key)
+    const cacheProbe = await redis.get(key)
     if (cacheProbe) {
       lightningLogger.info("route result in cache")
       return JSON.parse(cacheProbe).fee
@@ -188,7 +185,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     }
 
     const value = JSON.stringify(route)
-    await getAsyncRedisClient().set(key, value, 'EX', 60 * 5); // expires after 5 minutes
+    await redis.set(key, value, 'EX', 60 * 5); // expires after 5 minutes
 
     lightningLogger.info({ redis: { key, value }, probingSuccess: true, success: true }, "succesfully found a route")
     return route.fee
@@ -399,7 +396,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       lightningLogger = lightningLogger.child({ onUs: false, max_fee })
 
       const key = JSON.stringify({ id, mtokens })
-      route = JSON.parse(await getAsyncRedisClient().get(key))
+      route = JSON.parse(await redis.get(key) as string)
       this.logger.info({ route }, "route from redis")
 
       if (!!route) {
