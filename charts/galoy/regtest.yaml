@@ -8,6 +8,8 @@ bitcoind:
     18443
 
 redis:
+  replica:
+    replicaCount: 1
   master:
     persistence:
       enabled: false
