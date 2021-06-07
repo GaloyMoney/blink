@@ -661,12 +661,12 @@ export const LightningMixin = (superclass) => class extends superclass {
       return !!result
 
     } else if (invoice.is_confirmed) {
-
-      try {
-
-        const lightningLogger = this.logger.child({ hash, user: this.user._id, topic: "payment", protocol: "lightning", transactionType: "receipt", onUs: false })
-
-        return await redlock({ path: hash, logger: lightningLogger, lock }, async () => {
+      
+      const lightningLogger = this.logger.child({ hash, user: this.user._id, topic: "payment", protocol: "lightning", transactionType: "receipt", onUs: false })
+      
+      return await redlock({ path: hash, logger: lightningLogger, lock }, async () => {
+        
+        try {
 
           const invoiceUser = await InvoiceUser.findOne({ _id: hash, uid: this.user._id })
 
@@ -685,6 +685,12 @@ export const LightningMixin = (superclass) => class extends superclass {
           const resultDeletion = await InvoiceUser.deleteOne({ _id: hash, uid: this.user._id })
           lightningLogger.info({resultDeletion }, "invoice has been deleted")
 
+        } catch (err) {
+          const error = `issue updating invoice`
+          throw new DbError(error, {forwardToClient: true, logger: this.logger, level: 'error', err, invoice})
+        }
+
+        try {
           const sats = invoice.received
 
           const metadata = { hash, type: "invoice", pending: false, ...UserWallet.getCurrencyEquivalent({ sats, fee: 0 }) }
@@ -699,12 +705,14 @@ export const LightningMixin = (superclass) => class extends superclass {
           this.logger.info({ metadata, success: true }, "long standing payment succeeded")
 
           return true
-        })
 
-      } catch (err) {
-        const error = `issue updating invoice`
-        throw new DbError(error, {forwardToClient: true, logger: this.logger, level: 'error', err, invoice})
-      }
+        } catch(err) {
+          const error = `addTransactionLndReceipt failed`
+          throw new DbError(error, {forwardToClient: false, logger: this.logger, level: 'error', err, invoice})
+        }
+        
+      })  
+
     } else if (expired) {
 
       // maybe not needed after old invoice has been deleted?
