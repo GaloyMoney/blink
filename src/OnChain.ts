@@ -13,7 +13,7 @@ import { Transaction, User } from "./schema";
 import { createChainAddress, getChainBalance, getChainFeeEstimate, getChainTransactions, getHeight, sendToChainAddress } from "lightning"
 
 import { yamlConfig } from "./config";
-import { DbError, InsufficientBalanceError, NewAccountWithdrawalError, RebalanceNeededError, SelfPaymentError, TransactionRestrictedError } from './error';
+import { DbError, DustAmountError, InsufficientBalanceError, NewAccountWithdrawalError, RebalanceNeededError, SelfPaymentError, TransactionRestrictedError, ValidationError } from './error';
 
 export const getOnChainTransactions = async ({ lnd, incoming }: { lnd: any, incoming: boolean }) => {
   try {
@@ -71,8 +71,13 @@ export const OnChainMixin = (superclass) => class extends superclass {
     let onchainLogger = this.logger.child({ topic: "payment", protocol: "onchain", transactionType: "payment", address, amount, memo })
 
     if (amount <= 0) {
-      onchainLogger.error('A negative amount was passed')
-      throw Error("amount can't be negative")
+      const error = "Amount can't be negative"
+      throw new ValidationError(error, {forwardToClient: true, logger: onchainLogger, level: 'warn'})
+    }
+
+    if(amount < yamlConfig.onchainDustAmount) {
+      const error = `Use lightning to send amounts less than ${yamlConfig.onchainDustAmount}`
+      throw new DustAmountError(error, {forwardToClient: true, logger: onchainLogger})
     }
 
     return await redlock({ path: this.user._id, logger: onchainLogger }, async (lock) => {

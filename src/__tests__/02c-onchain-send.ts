@@ -230,3 +230,8 @@ it('testing Fee', async () => {
     expect(fee).toBe(0)
   }
 })
+
+it('throws dust amount error', async () => {
+  const address = await bitcoindDefaultClient.getNewAddress()
+  expect(await userWallet0.onChainPay({address, amount: yamlConfig.onchainDustAmount})).rejects.toThrow()
+})

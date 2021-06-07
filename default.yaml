@@ -90,6 +90,7 @@ fees:
   withdraw: 2000 # 2000 sats flat per tx
   deposit: 0.003 # 0.3 percent
 
+onchainDustAmount: 5000
 # TODO
 # carrierRegexFilter: ""
 

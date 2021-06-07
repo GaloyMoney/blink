@@ -77,3 +77,9 @@ export class RebalanceNeededError extends CustomError {
     super(message, 'REBALANCE_NEEDED', {forwardToClient, logger, level, metadata})
   }
 }
+
+export class DustAmountError extends CustomError {
+  constructor(message, {forwardToClient = false, logger, level = 'warn', ...metadata}) {
+    super(message, 'ENTERED_DUST_AMOUNT', {forwardToClient, logger, level, metadata})
+  }
+}
