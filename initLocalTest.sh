@@ -15,21 +15,18 @@ helm repo update
 lndVersion="1.2.3"
 bitcoindVersion="0.1.15"
 
-if [ ${LOCAL} ]; then
-  cd ./charts/galoy
-  helm dependency build --skip-refresh
-  cd -
-  cd ./charts/monitoring
-  helm dependency build --skip-refresh
-  cd -
-else
-  cd ./charts/galoy
-  helm dependency build
-  cd -
-  cd ./charts/monitoring
-  helm dependency build
-  cd -
+if [ ${LOCAL} ]
+then
+  localdevpath="--skip-refresh"
 fi
+
+cd ./charts/galoy
+helm dependency build $localdevpath
+cd -
+
+cd ./charts/monitoring
+helm dependency build $localdevpath
+cd -
 
 INGRESS_NAMESPACE="ingress-nginx"
 INFRADIR=./charts
