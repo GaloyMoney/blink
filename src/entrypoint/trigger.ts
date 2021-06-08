@@ -73,12 +73,9 @@ export async function onchainTransactionEventHandler(tx) {
   } else {
     // incoming transaction
 
-    // TODO: the same way Lightning is updating the wallet/accounting, 
-    // this event should update the onchain wallet/account of the associated user
-
     let user
     try {
-      user = await User.findOne({ onchain_addresses: { $in: tx.output_addresses } })
+      user = await User.findOne({ "onchain.address": tx.output_addresses })
       if (!user) {
         //FIXME: Log the onchain address, need to first find which of the tx.output_addresses belongs to us
         onchainLogger.fatal(`No user associated with the onchain address`)

@@ -15,12 +15,17 @@ helm repo update
 lndVersion="1.2.4"
 bitcoindVersion="0.1.15"
 
+if [ ${LOCAL} ]
+then
+  localdevpath="--skip-refresh"
+fi
+
 cd ./charts/galoy
-helm dependency build
+helm dependency build $localdevpath
 cd -
 
 cd ./charts/monitoring
-helm dependency build
+helm dependency build $localdevpath
 cd -
 
 INGRESS_NAMESPACE="ingress-nginx"
@@ -102,8 +107,8 @@ then
   localdevpath="-f $INFRADIR/configs/bitcoind/localdev.yaml"
 fi
 
-rm -rf $INFRADIR/configs
-git clone $CONFIG_REPO $INFRADIR/configs
+# rm -rf $INFRADIR/configs
+# git clone $CONFIG_REPO $INFRADIR/configs
 
 helmUpgrade bitcoind $localdevpath -f $INFRADIR/configs/bitcoind/$NETWORK.yaml galoy/bitcoind --version=$bitcoindVersion 
 

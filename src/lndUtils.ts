@@ -8,7 +8,7 @@ import { escrowAccountingPath, lndAccountingPath, lndFeePath, revenueFeePath } f
 import { DbError } from "./error";
 import { LOOK_BACK } from "./utils";
 import assert from 'assert';
-import { ILndParamsAuthed, ILndParamsLightningAuthed, nodeType, params } from "./lndAuth";
+import { ILndParamsAuthed, nodeType, params } from "./lndAuth";
 
 // milliseconds in a day
 const MS_PER_DAY = 864e5
@@ -60,7 +60,7 @@ export async function nodeStats({ lnd }) {
 }
 
 export const nodesStats = async () => {
-  const data = getAllOffchainLnd.map(({lnd}) => nodeStats({lnd}))
+  const data = offchainLnds.map(({lnd}) => nodeStats({lnd}))
   // TODO: try if we don't need a Promise.all()
   return await Promise.all(data)
 }
@@ -273,26 +273,27 @@ export const getLnds = ({type, active}: {type?: nodeType, active?: boolean} = {}
   return result
 }
 
-export const getAllOffchainLnd = getLnds({type: "offchain"}) as ILndParamsLightningAuthed[]
+export const offchainLnds = getLnds({type: "offchain"}) 
 
 // only returning the first one for now
 export const getActiveLnd = () => {
   const lnds = getLnds({active: true, type: "offchain"})
   if (lnds.length === 0) {
-    throw Error("no active lnd to send/receive a payment")
+    throw Error("no active lnd to send/receive a payment offchain")
   }
   // this favor lnd1
-  return lnds[0] as ILndParamsLightningAuthed
+  return lnds[0]
 
   // an alternative that would load balance would be: 
   // const index = Math.floor(Math.random() * lnds.length)
   // return lnds[index]
 }
 
-// there is only one lnd responsible for onchain tx
-export const getOnchainLnd = getLnds({type: "onchain"})[0]
+export const getActiveOnchainLnd = () => getLnds({type: "onchain", active: true})[0]
 
-export const nodesPubKey = getAllOffchainLnd.map(item => item.pubkey)
+export const onchainLnds = getLnds({type: "onchain"})
+
+export const nodesPubKey = offchainLnds.map(item => item.pubkey)
 export const isMyNode = ({pubkey}) => _.includes(nodesPubKey, pubkey)
 
 export const getLndFromPubkey = ({ pubkey }: {pubkey: string}) => {

@@ -10,7 +10,7 @@ interface ILndParams {
   node: string;
   port: string | number;
   type: nodeType[];
-  pubkey: string | undefined;
+  pubkey: string;
 }
 
 export interface ILndParamsAuthed extends ILndParams {
@@ -19,9 +19,6 @@ export interface ILndParamsAuthed extends ILndParams {
   active: boolean,
 }
 
-export interface ILndParamsLightningAuthed extends ILndParamsAuthed {
-  pubkey: string
-}
 
 const inputs: ILndParams[] = yamlConfig.lnds.map(input => ({
   cert: process.env[`${input.name}_TLS`] || exit(1),

@@ -1,3 +1,4 @@
+import { ITransaction } from "./types";
 
 export interface Balances {
   BTC: number,
@@ -8,7 +9,7 @@ export interface Balances {
 
 export interface IWallet {
   getBalances(lock?): Promise<Balances>
-  getTransactions(): any // TODO
+  getTransactions(): Promise<Array<ITransaction>>
   getInfo(): Promise<object>
 }
 

@@ -15,6 +15,7 @@ export MACAROONOUTSIDE2=$(kubectl exec lnd-outside-2-0  -- base64 /data/.lnd/dat
 
 export LND1_PUBKEY=$(kubectl get secret lnd1-pubkey --template={{.data.pubkey}} | base64 -d)
 export LND2_PUBKEY=$(kubectl get secret lnd2-pubkey --template={{.data.pubkey}} | base64 -d)
+export LNDONCHAIN_PUBKEY=$(kubectl get secret lndonchain-pubkey --template={{.data.pubkey}} | base64 -d)
 
 # change 18443 to 18332 for testnet below
 

@@ -28,16 +28,16 @@ it('filter0', async () => {
     }
   ]
 
-  const onchain_addresses = ["bcrt1qv92q9t24ahdm6m7nffdrqw9slj8ycmpd4nu8nx","bcrt1qqmxaqvvhd3d7t36f4lm9qs6gw78y4gsu4g6wq7","bcrt1qa5tm90t3j9cf5a5wffkmzg7xwuj2e6j3pwgmek","bcrt1qq506g7kv02xgah7sl5lf4avkk9mvpzkf099jth","bcrt1qfzyt3xdksme9t8rmpvauesf6rcdtjzur7d3kqd"]
+  const addresses = ["bcrt1qv92q9t24ahdm6m7nffdrqw9slj8ycmpd4nu8nx","bcrt1qqmxaqvvhd3d7t36f4lm9qs6gw78y4gsu4g6wq7","bcrt1qa5tm90t3j9cf5a5wffkmzg7xwuj2e6j3pwgmek","bcrt1qq506g7kv02xgah7sl5lf4avkk9mvpzkf099jth","bcrt1qfzyt3xdksme9t8rmpvauesf6rcdtjzur7d3kqd"]
   
-  const f = amountOnVout({vout, onchain_addresses})
+  const f = amountOnVout({vout, addresses})
   expect(f).toBe(1)
 
 })
 
 it('filter1', async () => {
 
-  const onchain_addresses = ["bcrt1q8psckhj450a4qs6jy7f4n0rec9h5qp3e4zllve","bcrt1qg5h7khnuvyk3hrmkwhcde7ntdjd4aj63ta4jcr","bcrt1q72nxdjsh0zsdyd0e9zreh9e6npcutcqsqscfvw"]
+  const addresses = ["bcrt1q8psckhj450a4qs6jy7f4n0rec9h5qp3e4zllve","bcrt1qg5h7khnuvyk3hrmkwhcde7ntdjd4aj63ta4jcr","bcrt1q72nxdjsh0zsdyd0e9zreh9e6npcutcqsqscfvw"]
   
   const vout = [
     {
@@ -64,14 +64,14 @@ it('filter1', async () => {
     }
   ]
 
-  const f = amountOnVout({vout, onchain_addresses})
+  const f = amountOnVout({vout, addresses})
   expect(f).toBe(1)
 
 })
 
 it('filter address', async () => {
 
-  const onchain_addresses = ["bcrt1q8psckhj450a4qs6jy7f4n0rec9h5qp3e4zllve","bcrt1qg5h7khnuvyk3hrmkwhcde7ntdjd4aj63ta4jcr","bcrt1q72nxdjsh0zsdyd0e9zreh9e6npcutcqsqscfvw"]
+  const addresses = ["bcrt1q8psckhj450a4qs6jy7f4n0rec9h5qp3e4zllve","bcrt1qg5h7khnuvyk3hrmkwhcde7ntdjd4aj63ta4jcr","bcrt1q72nxdjsh0zsdyd0e9zreh9e6npcutcqsqscfvw"]
   
   const vout = [
     {
@@ -98,7 +98,7 @@ it('filter address', async () => {
     }
   ]
 
-  const addresses = myOwnAddressesOnVout({vout, onchain_addresses})
-  expect(addresses).toStrictEqual(["bcrt1q72nxdjsh0zsdyd0e9zreh9e6npcutcqsqscfvw"])
+  const myAddresses = myOwnAddressesOnVout({vout, addresses})
+  expect(myAddresses).toStrictEqual(["bcrt1q72nxdjsh0zsdyd0e9zreh9e6npcutcqsqscfvw"])
 })
 

@@ -2,16 +2,13 @@ import { createChainAddress, sendToChainAddress } from "lightning";
 import _ from "lodash";
 import { yamlConfig } from "./config";
 import { bitcoindAccountingPath, lndAccountingPath, lndFeePath } from "./ledger/ledger";
-import { getOnchainLnd, lndsBalances } from "./lndUtils";
+import { onchainLnds, lndsBalances, getActiveOnchainLnd } from "./lndUtils";
 import { MainBook } from "./mongodb";
 import { getOnChainTransactions } from "./OnChain";
 import { UserWallet } from "./userWallet";
 import { BitcoindClient, bitcoindDefaultClient, btc2sat, sat2btc } from "./utils";
 
 
-// TODO: we should not rely on OnChainMixin/UserWallet for this "wallet"
-
-const { lnd } = getOnchainLnd
 
 export class SpecterWallet {
   bitcoindClient 
@@ -177,6 +174,8 @@ export class SpecterWallet {
       }
     }
 
+    const { lnd } = getActiveOnchainLnd()
+
     const address = await this.getColdStorageAddress()
     
     let id
@@ -217,6 +216,8 @@ export class SpecterWallet {
         return 
       }
     }
+
+    const { lnd } = getActiveOnchainLnd()
 
     // TODO: move to an event based as the transaction
     // would get done in specter

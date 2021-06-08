@@ -109,9 +109,22 @@ const UserSchema = new Schema({
     default: "user"
     // TODO : enfore the fact there can be only one dealer
   },
-  onchain_addresses: {
-    type: [String],
-    default: []
+  
+  // FIXME: upgrade from object to array
+  // onchain_addresses: [String], default []
+
+  onchain: {
+    type: [{
+      pubkey: {
+        type: String,
+        required: true
+      },
+      address: {
+        type: String,
+        required: true,
+      }
+    }],
+    default: [],
   },
   level: {
     type: Number,
@@ -269,6 +282,17 @@ UserSchema.statics.getVolume = async function({before, after, accounts, txnType}
   return result
 }
 
+// FIXME: for onchain wallet from multiple wallet
+// refactor with bitcoind wallet
+UserSchema.virtual('onchain_addresses').get(function(this: typeof UserSchema) {
+  return this.onchain.map(item => item.address)
+})
+
+// return the list of nodes that this user has address associated to
+UserSchema.virtual('onchain_pubkey').get(function(this: typeof UserSchema) {
+  return _.uniq(this.onchain.map(item => item.pubkey))
+})
+
 // user is considered active if there has been one transaction of more than 1000 sats in the last 30 days
 UserSchema.virtual('userIsActive').get(async function(this: typeof UserSchema) {
   const timestamp30DaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000)
@@ -279,11 +303,6 @@ UserSchema.virtual('userIsActive').get(async function(this: typeof UserSchema) {
 
   return (volume?.outgoingSats > 1000 || volume?.incomingSats > 1000)
 })
-
-UserSchema.index({
-  title: 1,
-  coordinate: 1,
-});
 
 UserSchema.statics.getUser = async function({ username, phone }) {
   inputXOR({ phone }, { username })
@@ -300,6 +319,10 @@ UserSchema.statics.getUser = async function({ username, phone }) {
   }
 
   return user;
+}
+
+UserSchema.statics.getUserByAddress = async function({ address }) {
+  return this.findOne({ "onchain.address": address })
 }
 
 // FIXME: Merge findByUsername and getUser
@@ -321,6 +344,12 @@ UserSchema.statics.getActiveUsers = async function(): Promise<Array<typeof User>
   }
   return activeUsers
 }
+
+
+UserSchema.index({
+  title: 1,
+  coordinate: 1,
+});
 
 export const User = mongoose.model("User", UserSchema)
 

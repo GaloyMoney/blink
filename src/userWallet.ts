@@ -110,7 +110,7 @@ export abstract class UserWallet {
   async getTransactions(): Promise<Array<ITransaction>> {
     const rawTransactions = await this.getRawTransactions()
 
-    const results_processed = rawTransactions.map(item => {
+    return rawTransactions.map(item => {
       const amount = item.credit - item.debit
       const memoUsername =
         item.username ?
@@ -137,8 +137,6 @@ export abstract class UserWallet {
         addresses: item.payee_addresses,
       }
     })
-
-    return results_processed
   }
 
   async getStringCsv() {

@@ -2,7 +2,7 @@ import { setupMongoConnection } from "../mongodb";
 import { baseLogger } from "../logger";
 import { updateUsersPendingPayment } from "../ledger/balanceSheet"
 import { SpecterWallet } from "../SpecterWallet";
-import { getAllOffchainLnd, updateEscrows, updateRoutingFees } from "../lndUtils";
+import { offchainLnds, updateEscrows, updateRoutingFees } from "../lndUtils";
 import { InvoiceUser } from "../schema";
 
 // FIXME use lightning instead
@@ -19,7 +19,7 @@ const deleteExpiredInvoices = async () => {
 
 const deleteFailedPaymentsAllLnds = async () => {
   try {
-    const lnds = getAllOffchainLnd
+    const lnds = offchainLnds
     for (const {lnd} of lnds) {
       // FIXME
       baseLogger.warn("only run deleteFailedPayments on lnd 0.13")

@@ -11,11 +11,11 @@ import { UserWallet } from "../userWallet";
 
 import mongoose from "mongoose";
 import { getChainBalance } from "lightning";
-import { getOnchainLnd } from "../lndUtils";
+import { getActiveOnchainLnd } from "../lndUtils";
 
 let specterWallet
 
-const {lnd} = getOnchainLnd
+const {lnd} = getActiveOnchainLnd()
 
 jest.mock('../notifications/notification')
 jest.mock('../realtimePrice')

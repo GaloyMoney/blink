@@ -3,11 +3,11 @@ import _ from "lodash";
 import { baseLogger } from "./logger";
 import { params } from "./lndAuth"
 
-const refresh_time = 5000 // ms
+const refresh_time = 10000 // ms
 
-// TODO replace with
-// const asyncForever = require('async/forever');
-export const isUpLoop = async (param): Promise<void> => {
+const isUpLoop = (param) => setInterval(() => isUp(param), refresh_time);
+
+export const isUp = async (param): Promise<void> => {
   let active
   const { lnd, socket } = param
 
@@ -17,10 +17,6 @@ export const isUpLoop = async (param): Promise<void> => {
     active = true
   } catch (err) {
     baseLogger.warn({err}, `can't get wallet info from ${socket}`)
-
-    // if we get disconnected, we need to recreate the lnd object
-    param.lnd = authenticatedLndGrpc(param).lnd
-
     active = false
   }
 
@@ -34,11 +30,6 @@ export const isUpLoop = async (param): Promise<void> => {
 
   param.active = active
   baseLogger.debug({socket, active}, "lnd pulse")
-
-  setTimeout(async function () {
-    // TODO check if this could lead to a stack overflow
-    isUpLoop(param)
-  }, refresh_time);
 }
 
 // launching a loop to update whether lnd are active or not

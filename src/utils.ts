@@ -71,14 +71,14 @@ export const addContact = async ({ uid, username }) => {
 export const BitcoindClient = ({ wallet = "" }) => new bitcoindClient({ ...connection_obj, wallet })
 export const bitcoindDefaultClient = BitcoindClient({ wallet: "" })
 
-export const amountOnVout = ({ vout, onchain_addresses }): number => {
+export const amountOnVout = ({ vout, addresses }): number => {
   // TODO: check if this is always [0], ie: there is always a single addresses for vout for lnd output
-  return _.sumBy(_.filter(vout, tx => _.includes(onchain_addresses, tx.scriptPubKey.addresses[0])), "value")
+  return _.sumBy(_.filter(vout, tx => _.includes(addresses, tx.scriptPubKey.addresses[0])), "value")
 }
 
-export const myOwnAddressesOnVout = ({ vout, onchain_addresses }) => {
+export const myOwnAddressesOnVout = ({ vout, addresses }): string[] => {
   // TODO: check if this is always [0], ie: there is always a single addresses for vout for lnd output
-  return _.intersection(_.union(vout.map(output => output.scriptPubKey.addresses[0])), onchain_addresses)
+  return _.intersection(_.union(vout.map(output => output.scriptPubKey.addresses[0])), addresses)
 }
 
 
