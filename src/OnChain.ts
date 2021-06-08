@@ -72,12 +72,11 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
     if (amount <= 0) {
       const error = "Amount can't be negative"
-      throw new ValidationError(error, {forwardToClient: true, logger: onchainLogger, level: 'warn'})
+      throw new ValidationError(error, {logger: onchainLogger})
     }
 
     if(amount < yamlConfig.onchainDustAmount) {
-      const error = `Use lightning to send amounts less than ${yamlConfig.onchainDustAmount}`
-      throw new DustAmountError(error, {forwardToClient: true, logger: onchainLogger})
+      throw new DustAmountError(undefined, {logger: onchainLogger})
     }
 
     return await redlock({ path: this.user._id, logger: onchainLogger }, async (lock) => {
@@ -87,8 +86,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
       // quit early if balance is not enough
       if (balance.total_in_BTC < amount) {
-        const error = `balance is too low`
-        throw new InsufficientBalanceError(error, {forwardToClient: true, logger: onchainLogger, level: 'error'})
+        throw new InsufficientBalanceError(undefined, {logger: onchainLogger})
       }
 
       const payeeUser = await this.tentativelyGetPayeeUser({address})
@@ -98,12 +96,12 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
         if (await this.user.limitHit({on_us: true, amount})) {
           const error = `Cannot transfer more than ${yamlConfig.limits.onUs.level[this.user.level]} sats in 24 hours`
-          throw new TransactionRestrictedError(error,{forwardToClient: true, logger: onchainLoggerOnUs, level: 'error'})
+          throw new TransactionRestrictedError(error,{logger: onchainLoggerOnUs})
         }
 
         if (String(payeeUser._id) === String(this.user._id)) {
           const error = 'User tried to pay himself'
-          throw new SelfPaymentError(error, {forwardToClient: true, logger: onchainLoggerOnUs, level: 'warn'})
+          throw new SelfPaymentError(error, {logger: onchainLoggerOnUs})
         }
 
         const sats = amount
@@ -131,12 +129,12 @@ export const OnChainMixin = (superclass) => class extends superclass {
       
       if (!this.user.oldEnoughForWithdrawal) {
         const error = `New accounts have to wait ${yamlConfig.limits.oldEnoughForWithdrawal / (60 * 60 * 1000)}h before withdrawing`
-        throw new NewAccountWithdrawalError(error,{forwardToClient: true, logger: onchainLogger, level: 'error'})
+        throw new NewAccountWithdrawalError(error,{logger: onchainLogger})
       }
 
       if (await this.user.limitHit({on_us: false, amount})) {
         const error = `Cannot withdraw more than ${yamlConfig.limits.withdrawal.level[this.user.level]} sats in 24 hours`
-        throw new TransactionRestrictedError(error,{forwardToClient: true, logger: onchainLogger, level: 'error'})
+        throw new TransactionRestrictedError(error,{logger: onchainLogger})
       }
 
       const { chain_balance: onChainBalance } = await getChainBalance({ lnd })
@@ -155,10 +153,8 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
       // case where there is not enough money available within lnd on-chain wallet
       if (onChainBalance < amount + estimatedFee) {
-        const error = `Insufficient onchain balance on lnd`
-        
         // TODO: add a page to initiate the rebalancing quickly
-        throw new RebalanceNeededError(error, {logger: onchainLogger, onChainBalance, amount, estimatedFee, sendTo, success: false})
+        throw new RebalanceNeededError(undefined, {logger: onchainLogger, onChainBalance, amount, estimatedFee, sendTo, success: false})
       }
 
       //add a flat fee on top of onchain miner fees
@@ -166,8 +162,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
       // case where the user doesn't have enough money
       if (balance.total_in_BTC < amount + estimatedFee) {
-        const error = `balance is too low. have: ${balance} sats, need ${amount + estimatedFee}`
-        throw new InsufficientBalanceError(error, {forwardToClient: true, logger: onchainLogger, level: 'error'})
+        throw new InsufficientBalanceError(undefined, {logger: onchainLogger})
       }
       
 

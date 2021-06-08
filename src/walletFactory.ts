@@ -23,7 +23,7 @@ export const WalletFromUsername = async ({ username, logger }: { username: strin
   const user = await User.findByUsername({ username })
   if (!user) {
     const error = `User not found`
-    throw new NotFoundError(error, {forwardToClient: true, logger, level: 'warn'})
+    throw new NotFoundError(error, {logger})
   }
 
   return WalletFactory({ user, logger })

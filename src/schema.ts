@@ -284,7 +284,7 @@ UserSchema.statics.getUser = async function({ username, phone }) {
   }
 
   if(!user) {
-    throw new NotFoundError("User not found", {forwardToClient: true, logger: baseLogger, level: 'warn'})
+    throw new NotFoundError("User not found", {logger: baseLogger})
   }
 
   return user;
