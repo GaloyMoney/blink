@@ -1,3 +1,4 @@
+import { pattern, range, stringLength, ValidateDirectiveVisitor } from '@profusion/apollo-validation-directives';
 import { ApolloServer } from 'apollo-server-express';
 import dotenv from "dotenv";
 import express from 'express';
@@ -5,7 +6,6 @@ import expressJwt from "express-jwt";
 import { applyMiddleware } from "graphql-middleware";
 import { and, rule, shield } from 'graphql-shield';
 import { makeExecutableSchema } from "graphql-tools";
-import _ from 'lodash';
 import moment from "moment";
 import mongoose from "mongoose";
 import path from "path";
@@ -19,22 +19,21 @@ import PinoHttp from "pino-http";
 import swStats from 'swagger-stats';
 import util from 'util';
 import { v4 as uuidv4 } from 'uuid';
-import { getMinBuildNumber, getHourlyPrice } from "../localCache";
+import { addToMap, setAccountStatus, setLevel, usernameExists } from "../AdminOps";
+import { yamlConfig } from '../config';
+import { activateLndHealthCheck } from "../lndHealth";
 import { getActiveLnd, nodesStats, nodeStats } from "../lndUtils";
+import { getHourlyPrice, getMinBuildNumber } from "../localCache";
+import { baseLogger } from '../logger';
 import { setupMongoConnection } from "../mongodb";
 import { sendNotification } from "../notifications/notification";
+import { getCurrentPrice } from "../realtimePrice";
+import { redis } from "../redis";
 import { User } from "../schema";
 import { login, requestPhoneCode } from "../text";
 import { Levels, OnboardingEarn } from "../types";
 import { fetchIPDetails } from "../utils";
-import { baseLogger } from '../logger'
 import { WalletFactory, WalletFromUsername } from "../walletFactory";
-import { getCurrentPrice } from "../realtimePrice";
-import { getAsyncRedisClient } from "../redis";
-import { yamlConfig } from '../config';
-import { range, pattern, stringLength, ValidateDirectiveVisitor } from '@profusion/apollo-validation-directives';
-import { addToMap, setAccountStatus, setLevel, usernameExists } from "../AdminOps";
-import { activateLndHealthCheck } from "../lndHealth";
 
 dotenv.config()
 
@@ -237,8 +236,8 @@ const resolvers = {
       })
       return { success: true }
     },
-    addToMap: async (_, { username, title, latitude, longitude }, { }) => {
-      return addToMap({ username, title, latitude, longitude });
+    addToMap: async (_, { username, title, latitude, longitude }, { logger }) => {
+      return addToMap({ username, title, latitude, longitude, logger });
     },
     setAccountStatus: async (_, { uid, status }, { }) => {
       return setAccountStatus({ uid, status })
@@ -359,7 +358,12 @@ export async function startApolloServer() {
       // i.e. catch-all errors will not be forwarded
       if(log = err.extensions?.exception?.log) {
         const errObj = { message: err.message, code: err.extensions.code }
-        log(errObj)
+
+        // we are logging additional details but not sending those to the client
+        // ex: fields that indicate whether a payment succeeded or not, or stacktraces, that are required
+        // for metrics or debugging
+        // the err.extensions.metadata field contains such fields
+        log({...errObj, ...err.extensions.metadata})
         if(err.extensions.exception.forwardToClient) {
           return errObj
         }
@@ -390,7 +394,7 @@ export async function startApolloServer() {
   // Health check
   app.get('/healthz', async function(req, res) {
     const isMongoAlive = mongoose.connection.readyState == 1 ? true : false
-    const isRedisAlive = await getAsyncRedisClient().ping() === 'PONG'
+    const isRedisAlive = await redis.ping() === 'PONG'
     res.status((isMongoAlive && isRedisAlive) ? 200 : 503).send();
   });
 

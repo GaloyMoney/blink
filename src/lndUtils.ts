@@ -82,7 +82,7 @@ export async function getBosScore() {
   }
 }
 
-export const getRoutingFees = async ({ lnd, before, after }): Promise<Record<string, number>> => {
+export const getRoutingFees = async ({ lnd, before, after }): Promise<Array<Record<string, number>>> => {
   const forwardsList = await getForwards({ lnd, before, after })
   let next = forwardsList.next
   let forwards = forwardsList.forwards
@@ -106,7 +106,10 @@ export const getRoutingFees = async ({ lnd, before, after }): Promise<Record<str
   const dateGroupedForwards = _.groupBy(forwards, e => new Date(e.created_at).toDateString())
 
   // returns revenue for each date by reducing all forwards for each date
-  return (_.mapValues(dateGroupedForwards, e => e.reduce((sum, {fee_mtokens}) => sum + +fee_mtokens, 0) / 1000))
+  const feePerDate = _.mapValues(dateGroupedForwards, e => e.reduce((sum, {fee_mtokens}) => sum + +fee_mtokens, 0) / 1000)
+
+  // returns an array of objects where each object has key = date and value = fees
+  return _.map(feePerDate, (v, k) => ({[k]: v}))
 }
 
 export const updateRoutingFees = async () => {
@@ -141,13 +144,12 @@ export const updateRoutingFees = async () => {
   const type = "routing_fee"
   const metadata = { type, currency: "BTC", pending: false }
 
-  // console.log({after, before})
   // get fee collected day wise
   const { lnd } = getActiveLnd()  
   const forwards = await getRoutingFees({ lnd, before, after })
 
-  // iterate over object and record fee day wise in our books
-  _.forOwn(forwards, async (fee, day) => {
+  for (const forward of forwards) {
+    const [[day, fee]] = Object.entries(forward)
     try {
       await MainBook.entry("routing fee")
       .credit(revenueFeePath, fee, { ...metadata, feesCollectedOn: day})
@@ -156,7 +158,7 @@ export const updateRoutingFees = async () => {
     } catch(err) {
       throw new DbError('Unable to record routing revenue', {forwardToClient: false, logger: baseLogger, level: 'error'})
     }
-  })
+  }
   
   endDate.setDate(endDate.getDate() + 1)
   const endDay = endDate.toDateString()

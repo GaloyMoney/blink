@@ -3,7 +3,7 @@ import { AuthenticatedLnd, createChainAddress, getChainBalance, getChainFeeEstim
 import _ from 'lodash';
 import moment from "moment";
 import { yamlConfig } from "./config";
-import { InsufficientBalanceError, NewAccountWithdrawalError, SelfPaymentError, TransactionRestrictedError } from './error';
+import { DbError, DustAmountError, InsufficientBalanceError, NewAccountWithdrawalError, RebalanceNeededError, SelfPaymentError, TransactionRestrictedError, ValidationError } from './error';
 import { customerPath, lndAccountingPath, onchainRevenuePath } from "./ledger/ledger";
 import { getActiveOnchainLnd, getLndFromPubkey } from "./lndUtils";
 import { lockExtendOrThrow, redlock } from "./lock";
@@ -70,8 +70,12 @@ export const OnChainMixin = (superclass) => class extends superclass {
     let onchainLogger = this.logger.child({ topic: "payment", protocol: "onchain", transactionType: "payment", address, amount, memo })
 
     if (amount <= 0) {
-      onchainLogger.error('A negative amount was passed')
-      throw Error("amount can't be negative")
+      const error = "Amount can't be negative"
+      throw new ValidationError(error, {logger: onchainLogger})
+    }
+
+    if(amount < yamlConfig.onchainDustAmount) {
+      throw new DustAmountError(undefined, {logger: onchainLogger})
     }
 
     return await redlock({ path: this.user._id, logger: onchainLogger }, async (lock) => {
@@ -81,8 +85,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
       // quit early if balance is not enough
       if (balance.total_in_BTC < amount) {
-        const error = `balance is too low`
-        throw new InsufficientBalanceError(error, {forwardToClient: true, logger: onchainLogger, level: 'error'})
+        throw new InsufficientBalanceError(undefined, {logger: onchainLogger})
       }
 
       const payeeUser = await User.getUserByAddress({address})
@@ -93,12 +96,12 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
         if (await this.user.limitHit({on_us: true, amount})) {
           const error = `Cannot transfer more than ${yamlConfig.limits.onUs.level[this.user.level]} sats in 24 hours`
-          throw new TransactionRestrictedError(error,{forwardToClient: true, logger: onchainLoggerOnUs, level: 'error'})
+          throw new TransactionRestrictedError(error,{logger: onchainLoggerOnUs})
         }
 
         if (String(payeeUser._id) === String(this.user._id)) {
           const error = 'User tried to pay himself'
-          throw new SelfPaymentError(error, {forwardToClient: true, logger: onchainLoggerOnUs, level: 'warn'})
+          throw new SelfPaymentError(error, {logger: onchainLoggerOnUs})
         }
 
         const sats = amount
@@ -128,12 +131,12 @@ export const OnChainMixin = (superclass) => class extends superclass {
       
       if (!this.user.oldEnoughForWithdrawal) {
         const error = `New accounts have to wait ${yamlConfig.limits.oldEnoughForWithdrawal / (60 * 60 * 1000)}h before withdrawing`
-        throw new NewAccountWithdrawalError(error,{forwardToClient: true, logger: onchainLogger, level: 'error'})
+        throw new NewAccountWithdrawalError(error,{logger: onchainLogger})
       }
 
       if (await this.user.limitHit({on_us: false, amount})) {
         const error = `Cannot withdraw more than ${yamlConfig.limits.withdrawal.level[this.user.level]} sats in 24 hours`
-        throw new TransactionRestrictedError(error,{forwardToClient: true, logger: onchainLogger, level: 'error'})
+        throw new TransactionRestrictedError(error,{logger: onchainLogger})
       }
 
       const { lnd } = getActiveOnchainLnd()
@@ -154,11 +157,8 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
       // case where there is not enough money available within lnd on-chain wallet
       if (onChainBalance < amount + estimatedFee) {
-        const error = `insufficient onchain balance on the lnd node. rebalancing is needed`
-        
         // TODO: add a page to initiate the rebalancing quickly
-        onchainLogger.fatal({onChainBalance, amount, estimatedFee, sendTo, success: false }, error)
-        throw new LoggedError(error)
+        throw new RebalanceNeededError(undefined, {logger: onchainLogger, onChainBalance, amount, estimatedFee, sendTo, success: false})
       }
 
       //add a flat fee on top of onchain miner fees
@@ -166,8 +166,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
       // case where the user doesn't have enough money
       if (balance.total_in_BTC < amount + estimatedFee) {
-        const error = `balance is too low. have: ${balance} sats, need ${amount + estimatedFee}`
-        throw new InsufficientBalanceError(error, {forwardToClient: true, logger: onchainLogger, level: 'error'})
+        throw new InsufficientBalanceError(undefined, {logger: onchainLogger})
       }
       
 
@@ -249,8 +248,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
     } catch (err) {
       const error = `error storing new onchain address to db`
-      this.logger.error({err}, error)
-      throw new LoggedError(error)
+      throw new DbError(error, {forwardToClient: false, logger: this.logger, level: 'warn', err})
     }
 
     return address

@@ -17,15 +17,15 @@ export const setLevel = async ({ uid, level }) => {
   return User.findOneAndUpdate({ _id: uid }, { $set: { level } }, {new: true})
 }
 
-export const addToMap = async ({ username, latitude, longitude, title, }): Promise<boolean> => {
+export const addToMap = async ({ username, latitude, longitude, title, logger }): Promise<boolean> => {
   if(!username || !latitude || !longitude || !title) {
-    throw new ValidationError(`username, latitude, longitude and title are all required arguments`, {forwardToClient: true, logger, level: 'warn'})
+    throw new ValidationError(`username, latitude, longitude and title are all required arguments`, {logger})
   }
 
   const user = await User.findByUsername({ username });
 
   if(!user) {
-    throw new NotFoundError(`The user ${username} does not exist`, {forwardToClient: true, logger, level: 'warn'})
+    throw new NotFoundError(`The user ${username} does not exist`, {logger})
   }
 
   user.coordinate = {
