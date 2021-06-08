@@ -5,7 +5,7 @@
 import { getWalletInfo } from 'lightning';
 import mongoose from "mongoose";
 import { setupMongoConnection } from "../mongodb";
-import { redis, redisClient } from "../redis";
+import { redis } from "../redis";
 import { User } from "../schema";
 import { bitcoindDefaultClient } from "../utils";
 import { lnd1, lnd2, lndonchain, lndOutside1, lndOutside2 } from "./helper";

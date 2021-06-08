@@ -1,33 +1,26 @@
 import assert from 'assert';
 import crypto, { createHash, randomBytes } from "crypto";
-import { AuthenticatedLnd, cancelHodlInvoice, createInvoice, decodePaymentRequest, getInvoice, getPayment, payViaPaymentDetails, payViaRoutes } from "lightning";
+import { parsePaymentRequest } from 'invoices';
+import { AuthenticatedLnd, cancelHodlInvoice, createInvoice, getInvoice, getPayment, payViaPaymentDetails, payViaRoutes } from "lightning";
 import lnService from 'ln-service';
 import moment from "moment";
 import { Logger } from "pino";
-import util from 'util';
 import { yamlConfig } from "./config";
-import { InsufficientBalanceError, NewAccountWithdrawalError, NotFoundError, SelfPaymentError, TransactionRestrictedError, ValidationError } from './error';
+import { DbError, InsufficientBalanceError, LightningPaymentError, NewAccountWithdrawalError, NotFoundError, RouteFindingError, SelfPaymentError, TransactionRestrictedError, ValidationError } from './error';
 import { addTransactionLndPayment, addTransactionLndReceipt, addTransactionOnUsPayment } from "./ledger/transaction";
 import { FEECAP, FEEMIN, TIMEOUT_PAYMENT } from "./lndAuth";
 import { getActiveLnd, getLndFromPubkey, isMyNode } from "./lndUtils";
 import { lockExtendOrThrow, redlock } from "./lock";
 import { MainBook } from "./mongodb";
 import { transactionNotification } from "./notifications/payment";
-import { getAsyncRedisClient } from "./redis";
+import { redis } from "./redis";
 import { InvoiceUser, Transaction, User } from "./schema";
 import { IAddInvoiceRequest, IFeeRequest, IPaymentRequest } from "./types";
 import { UserWallet } from "./userWallet";
 import { addContact, isInvoiceAlreadyPaidError, LoggedError, timeout } from "./utils";
-import {parsePaymentRequest} from 'invoices';
-import { InvoiceUser, Transaction, User } from "./schema";
-import { createInvoice, getWalletInfo, decodePaymentRequest, cancelHodlInvoice, payViaPaymentDetails, payViaRoutes, getPayment, getInvoice } from "lightning"
-import crypto from "crypto";
 
 
 
-import { yamlConfig } from "./config";
-import { DbError, InsufficientBalanceError, LightningPaymentError, NewAccountWithdrawalError, NotFoundError, SelfPaymentError, RouteFindingError, TransactionRestrictedError, ValidationError } from './error';
-import { redis } from "./redis";
 
 export type ITxType = "invoice" | "payment" | "onchain_receipt" | "onchain_payment" | "on_us"
 export type payInvoiceResult = "success" | "failed" | "pending" | "already_paid"
@@ -130,7 +123,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     // TODO:
     // we should also log the fact we have started the query
-    // if (await getAsyncRedisClient().get(JSON.stringify(params))) {
+    // if (await redis.get(JSON.stringify(params))) {
     //   return
     // }
     //
@@ -436,7 +429,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         } catch (err) {
           // lnd may have gone offline since the probe has been done.
           // deleting entry so that subsequent payment attempt could succeed
-          await getAsyncRedisClient().delete(key)
+          await redis.del(key)
           throw err
         }
       } else {
