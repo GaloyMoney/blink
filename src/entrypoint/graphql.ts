@@ -357,6 +357,11 @@ export async function startApolloServer() {
       // i.e. catch-all errors will not be forwarded
       if(log = err.extensions?.exception?.log) {
         const errObj = { message: err.message, code: err.extensions.code }
+
+        // we are logging additional details but not sending those to the client
+        // ex: fields that indicate whether a payment succeeded or not, or stacktraces, that are required
+        // for metrics or debugging
+        // the err.extensions.metadata field contains such fields
         log({...errObj, ...err.extensions.metadata})
         if(err.extensions.exception.forwardToClient) {
           return errObj
