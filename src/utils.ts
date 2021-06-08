@@ -13,6 +13,8 @@ import { GraphQLError } from "graphql";
 import { User } from "./schema";
 import axios from "axios";
 import { yamlConfig } from "./config";
+import { ValidationError } from "./error";
+import { baseLogger } from "./logger";
 
 // FIXME: super ugly hack.
 // for some reason LoggedError get casted as GraphQLError
@@ -142,7 +144,7 @@ export const inputXOR = (arg1, arg2) => {
   const [[key1, value1]] = Object.entries(arg1)
   const [[key2, value2]] = Object.entries(arg2)
   if(!(!value1 != !value2)) {
-    throw new LoggedError(`Either ${key1} or ${key2} is required, but not both`);
+    throw new ValidationError(`Either ${key1} or ${key2} is required, but not both`, {logger: baseLogger});
   }
 }
 

@@ -18,7 +18,7 @@ import crypto from "crypto";
 import util from 'util'
 
 import { yamlConfig } from "./config";
-import { InsufficientBalanceError, NewAccountWithdrawalError, NotFoundError, SelfPaymentError, TransactionRestrictedError, ValidationError } from './error';
+import { DbError, InsufficientBalanceError, LightningPaymentError, NewAccountWithdrawalError, NotFoundError, SelfPaymentError, RouteFindingError, TransactionRestrictedError, ValidationError } from './error';
 import { redis } from "./redis";
 
 export type ITxType = "invoice" | "payment" | "onchain_receipt" | "onchain_payment" | "on_us"
@@ -110,7 +110,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       // FIXME if the mongodb connection has not been instantiated
       // this fails silently
       const error = `error storing invoice to db`
-      throw new LoggedError(error)
+      throw new DbError(error, {logger: this.logger, level: 'error'})
     }
 
     return request
@@ -171,23 +171,18 @@ export const LightningMixin = (superclass) => class extends superclass {
         total_mtokens: payment ? mtokens : undefined,
       }));
     } catch (err) {
-      const error = "error getting route / probing for route"
-      lightningLogger.error({ err, max_fee, probingSuccess: false, success: false }, error)
-      throw new LoggedError(error)
+      throw new RouteFindingError(undefined, {logger: lightningLogger, probingSuccess: false, success: false})
     }
 
     if (!route) {
-      // TODO: check if the error is irrecovable or not.
-
-      const error = "there is no potential route for payment"
-      lightningLogger.warn({ probingSuccess: false, success: false }, error)
-      throw new LoggedError(error)
+      // TODO: check if the error is irrecoverable or not.
+      throw new RouteFindingError(undefined, {logger: lightningLogger, probingSuccess: false, success: false})
     }
 
     const value = JSON.stringify(route)
     await redis.set(key, value, 'EX', 60 * 5); // expires after 5 minutes
 
-    lightningLogger.info({ redis: { key, value }, probingSuccess: true, success: true }, "succesfully found a route")
+    lightningLogger.info({ redis: { key, value }, probingSuccess: true, success: true }, "successfully found a route")
     return route.fee
   }
 
@@ -224,13 +219,13 @@ export const LightningMixin = (superclass) => class extends superclass {
 
       if (!!params.amount && tokens !== 0) {
         const error = `Invoice contains non-zero amount, but amount was also passed separately`
-        throw new ValidationError(error, {forwardToClient: true, logger: lightningLogger, level: 'error'})
+        throw new ValidationError(error, {logger: lightningLogger})
       }
 
     } else {
       if (!params.username) {
         const error = `a username is required for push payment to the ${ yamlConfig.name }`
-        throw new ValidationError(error, {forwardToClient: true, logger: lightningLogger, level: 'warn'})
+        throw new ValidationError(error, {logger: lightningLogger})
       }
 
       pushPayment = true
@@ -250,7 +245,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     if (!params.amount && tokens === 0) {
       const error = 'Invoice is a zero-amount invoice, or pushPayment is being used, but no amount was passed separately'
-      throw new ValidationError(error, {forwardToClient: true, logger: lightningLogger, level: 'error'})
+      throw new ValidationError(error, {logger: lightningLogger})
     }
 
     tokens = !!tokens ? tokens : params.amount
@@ -293,7 +288,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         if(await this.user.limitHit({on_us: true, amount: tokens})) {
           const error = `Cannot transfer more than ${yamlConfig.limits.onUs.level[this.user.level]} sats in 24 hours`
-          throw new TransactionRestrictedError(error, {forwardToClient: true, logger: lightningLoggerOnUs, level: 'error'})
+          throw new TransactionRestrictedError(error, {logger: lightningLoggerOnUs})
         }
 
         let payeeUser
@@ -307,9 +302,8 @@ export const LightningMixin = (superclass) => class extends superclass {
 
           const payeeInvoice = await InvoiceUser.findOne({ _id: id })
           if (!payeeInvoice) {
-            const error = `User tried to pay invoice from ${ yamlConfig.name }, but it was already paid or does not exist`
-            lightningLoggerOnUs.error({ success: false, error })
-            throw new LoggedError(error)
+            const error = `Invoice already paid or does not exist`
+            throw new LightningPaymentError(error, {logger: lightningLoggerOnUs, success: false})
           }
 
           payeeUser = await User.findOne({ _id: payeeInvoice.uid })
@@ -317,12 +311,12 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         if (!payeeUser) {
           const error = `this user doesn't exist`
-          throw new NotFoundError(error, {forwardToClient: true, logger: lightningLoggerOnUs, level: 'warn'})
+          throw new NotFoundError(error, {logger: lightningLoggerOnUs})
         }
 
         if (String(payeeUser._id) === String(this.user._id)) {
-          const error = 'User tried to pay himself'
-          throw new SelfPaymentError(error, {forwardToClient: true, logger: lightningLoggerOnUs, level: 'warn'})
+          const error = 'User tried to pay themselves'
+          throw new SelfPaymentError(error, {logger: lightningLoggerOnUs})
         }
 
         const sats = tokens
@@ -330,8 +324,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
         // TODO: manage when paid fully in USD directly from USD balance to avoid conversion issue
         if (balance.total_in_BTC < sats) {
-          const error = `balance is too low`
-          throw new InsufficientBalanceError(error, {forwardToClient: true, logger: lightningLoggerOnUs, level: 'warn'})
+          throw new InsufficientBalanceError(undefined, {logger: lightningLoggerOnUs})
         }
 
         await lockExtendOrThrow({lock, logger: lightningLoggerOnUs}, async () => {
@@ -373,20 +366,20 @@ export const LightningMixin = (superclass) => class extends superclass {
       // "normal" transaction: paying another lightning node
       if (!this.user.oldEnoughForWithdrawal) {
         const error = `New accounts have to wait ${yamlConfig.limits.oldEnoughForWithdrawal / (60 * 60 * 1000)}h before withdrawing`
-        throw new NewAccountWithdrawalError(error, {forwardToClient: true, logger: lightningLogger, level: 'error'})
+        throw new NewAccountWithdrawalError(error, {logger: lightningLogger})
       }
 
       if (await this.user.limitHit({on_us: false, amount:tokens})) {
         const error = `Cannot transfer more than ${yamlConfig.limits.withdrawal.level[this.user.level]} sats in 24 hours`
-        throw new TransactionRestrictedError(error,{forwardToClient: true, logger: lightningLogger, level: 'error'})
+        throw new TransactionRestrictedError(error,{logger: lightningLogger})
       }
 
       // TODO: manage push payment for other node as well
       if (pushPayment) {
-        const error = "no push payment to other wallet (yet)"
+        const error = "Push payment to another wallet not yet supported"
         lightningLogger.error({ success: false }, error)
-        throw new LoggedError(error)
-      }
+        throw new LightningPaymentError(error, {logger: lightningLogger})
+      } 
 
       // TODO: fine tune those values:
       // const probe_timeout_ms
@@ -428,8 +421,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         // TODO usd management for balance
 
         if (balance.total_in_BTC < sats) {
-          const error = `balance is too low`
-          throw new InsufficientBalanceError(error,{forwardToClient: true, logger: lightningLogger, level: 'error'})
+          throw new InsufficientBalanceError(undefined, {logger: lightningLogger})
         }
 
         entry = await lockExtendOrThrow({lock, logger: lightningLogger}, async () => {
@@ -515,8 +507,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
           } catch (err_fatal) {
             const error = `ERROR CANCELING PAYMENT ENTRY`
-            lightningLogger.fatal({ err, err_fatal, entry }, error)
-            throw new LoggedError(error)
+            throw new DbError(error, {logger: lightningLogger, level: 'fatal'})
           }
 
           if (isInvoiceAlreadyPaidError(err)) {
@@ -524,7 +515,7 @@ export const LightningMixin = (superclass) => class extends superclass {
             return "already_paid"
           }
 
-          throw new LoggedError(`Error paying invoice: ${util.inspect({ err }, false, Infinity)}`)
+          throw new LightningPaymentError('Error paying invoice', {logger: lightningLogger, err, success: false})
         }
 
         // success
@@ -626,8 +617,7 @@ export const LightningMixin = (superclass) => class extends superclass {
             lightningLogger.info({ success: false, id: payment.hash, payment, result }, 'payment has been canceled')
           } catch (err) {
             const error = `error canceling payment entry`
-            this.logger.fatal({ err, payment, result }, error)
-            throw new LoggedError(error)
+            throw new DbError(error, {logger: this.logger, level: 'fatal'})
           }
         }
       }
@@ -667,12 +657,12 @@ export const LightningMixin = (superclass) => class extends superclass {
       return !!result
 
     } else if (invoice.is_confirmed) {
-
-      try {
-
-        const lightningLogger = this.logger.child({ hash, user: this.user._id, topic: "payment", protocol: "lightning", transactionType: "receipt", onUs: false })
-
-        return await redlock({ path: hash, logger: lightningLogger, lock }, async () => {
+      
+      const lightningLogger = this.logger.child({ hash, user: this.user._id, topic: "payment", protocol: "lightning", transactionType: "receipt", onUs: false })
+      
+      return await redlock({ path: hash, logger: lightningLogger, lock }, async () => {
+        
+        try {
 
           const invoiceUser = await InvoiceUser.findOne({ _id: hash, uid: this.user._id })
 
@@ -691,6 +681,12 @@ export const LightningMixin = (superclass) => class extends superclass {
           const resultDeletion = await InvoiceUser.deleteOne({ _id: hash, uid: this.user._id })
           lightningLogger.info({resultDeletion }, "invoice has been deleted")
 
+        } catch (err) {
+          const error = `issue updating invoice`
+          throw new DbError(error, {logger: this.logger, level: 'error', err, invoice})
+        }
+
+        try {
           const sats = invoice.received
 
           const metadata = { hash, type: "invoice", pending: false, ...UserWallet.getCurrencyEquivalent({ sats, fee: 0 }) }
@@ -705,13 +701,14 @@ export const LightningMixin = (superclass) => class extends superclass {
           this.logger.info({ metadata, success: true }, "long standing payment succeeded")
 
           return true
-        })
 
-      } catch (err) {
-        const error = `issue updating invoice`
-        this.logger.error({ err, invoice }, error)
-        throw new LoggedError(error)
-      }
+        } catch(err) {
+          const error = `addTransactionLndReceipt failed`
+          throw new DbError(error, {logger: this.logger, level: 'error', err, invoice})
+        }
+        
+      })  
+
     } else if (expired) {
 
       // maybe not needed after old invoice has been deleted?

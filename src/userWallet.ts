@@ -1,13 +1,13 @@
 import assert from 'assert';
 import moment from "moment";
 import { CSVAccountExport } from "./csvAccountExport";
+import { DbError } from './error';
 import { Balances } from "./interface";
 import { customerPath } from "./ledger/ledger";
 import { MainBook } from "./mongodb";
 import { sendNotification } from "./notifications/notification";
 import { User } from "./schema";
 import { ITransaction } from "./types";
-import { LoggedError } from "./utils";
 
 export abstract class UserWallet {
 
@@ -150,8 +150,7 @@ export abstract class UserWallet {
 
     if(!result) {
       const error = `Username is already set`
-      this.logger.error({ result }, error)
-      throw new LoggedError(error)
+      throw new DbError(error, {forwardToClient: true, logger: this.logger, level: 'warn'})
     }
 
     return true
@@ -164,8 +163,7 @@ export abstract class UserWallet {
 
     if(!result) {
       const error = `issue setting language preferences`
-      this.logger.error({ result }, error)
-      throw new LoggedError(error)
+      throw new DbError(error, {forwardToClient: false, logger: this.logger, level: 'warn', result})
     }
 
     return true
@@ -175,12 +173,12 @@ export abstract class UserWallet {
     try {
       const result = await User.findOneAndUpdate({ _id: this.user.id, username: null }, { username })
       if(!result) {
-        throw new LoggedError(`Username is already set, result: ${result}`)
+        throw new DbError(`Username is already set`, {forwardToClient: true, logger: this.logger, level: 'warn'})
       }
       return { username, id: this.user.id }
     } catch (err) {
-      this.logger.error({err}, "error updating username")
-      return {username: undefined, id: this.user.id }
+      this.logger.error({err}, )
+      throw new DbError("error updating username", {forwardToClient: false, logger: this.logger, level: 'error', err})
     }
   }
 

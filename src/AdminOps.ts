@@ -14,20 +14,20 @@ export abstract class AdminOps {
   static async setLevel({ uid, level }) {
     if(Levels.indexOf(level) === -1) {
       const error = `${level} is not a valid user level`
-      throw new ValidationError(error, {forwardToClient: true, logger, level: 'warn'})
+      throw new ValidationError(error, {logger})
     }
     return User.findOneAndUpdate({ _id: uid }, { $set: { level } }, {new: true})
   }
 
   static async addToMap({ username, latitude, longitude, title, }): Promise<boolean> {
     if(!username || !latitude || !longitude || !title) {
-      throw new ValidationError(`username, latitude, longitude and title are all required arguments`, {forwardToClient: true, logger, level: 'warn'})
+      throw new ValidationError(`username, latitude, longitude and title are all required arguments`, {logger})
     }
 
     const user = await User.findByUsername({ username });
 
     if(!user) {
-      throw new NotFoundError(`The user ${username} does not exist`, {forwardToClient: true, logger, level: 'warn'})
+      throw new NotFoundError(`The user ${username} does not exist`, {logger})
     }
 
     user.coordinate = {
