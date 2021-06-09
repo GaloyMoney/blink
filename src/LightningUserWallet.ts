@@ -6,6 +6,7 @@ import { ILightningWalletUser, OnboardingEarn } from "./types";
 import { UserWallet } from "./userWallet";
 import { getFunderWallet } from "./walletFactory";
 import bluebird from 'bluebird';
+import { CustomError } from "./error";
 const { using } = bluebird;
 
 /**
@@ -20,7 +21,7 @@ export class LightningUserWallet extends OnChainMixin(LightningMixin(UserWallet)
   async addEarn(ids) {
 
     if (this.user?.twilio?.carrier?.type === "voip") {
-      throw new Error("reward can only be given on non voip-based phone")
+      throw new CustomError("reward can only be given on non voip-based phone", "VOIP_REWARD_RESTRICTED", {forwardToClient: true, logger: this.logger, level: 'warn', metadata: undefined})
     }
 
     const lightningFundingWallet = await getFunderWallet({ logger: this.logger })
