@@ -315,8 +315,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         }
 
         if (String(payeeUser._id) === String(this.user._id)) {
-          const error = 'User tried to pay themselves'
-          throw new SelfPaymentError(error, {logger: lightningLoggerOnUs})
+          throw new SelfPaymentError(undefined, {logger: lightningLoggerOnUs})
         }
 
         const sats = tokens

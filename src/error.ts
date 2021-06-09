@@ -25,7 +25,7 @@ export class InsufficientBalanceError extends CustomError {
 }
 
 export class SelfPaymentError extends CustomError {
-  constructor(message, {forwardToClient = true, logger, level = 'warn', ...metadata}) {
+  constructor(message = 'User tried to pay themselves', {forwardToClient = true, logger, level = 'warn', ...metadata}) {
     super(message, 'CANT_PAY_SELF', {forwardToClient, logger, level, metadata})
   }
 }

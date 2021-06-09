@@ -100,8 +100,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
         }
 
         if (String(payeeUser._id) === String(this.user._id)) {
-          const error = 'User tried to pay himself'
-          throw new SelfPaymentError(error, {logger: onchainLoggerOnUs})
+          throw new SelfPaymentError(undefined, {logger: onchainLoggerOnUs})
         }
 
         const sats = amount
