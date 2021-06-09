@@ -13,7 +13,7 @@ To give it a try:
 
 ```
 helm repo add galoy https://galoymoney.github.io/charts/
-helm install bitcoin galoy/bitcoin
+helm install bitcoind galoy/bitcoind
 helm install lnd galoy/lnd
 
 TODO: helm install galoy galoy/galoy
