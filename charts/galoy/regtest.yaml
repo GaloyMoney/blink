@@ -22,6 +22,7 @@ nginx:
 mongodb:
   persistence:
     enabled: false
+  architecture: standalone
   replicaCount: 1
   metrics:
     enabled: false
