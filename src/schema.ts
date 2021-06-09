@@ -11,22 +11,15 @@ import { caseInsensitiveRegex, inputXOR } from './utils';
 
 // mongoose.set("debug", true);
 
-interface IDbMetadata {
-  version: number,
-  minBuildNumber: number,
-  lastBuildNumber: number,
-  routingFeeLastEntry: Date
-}
-
 const Schema = mongoose.Schema;
 
-const dbMetadataSchema = new Schema<IDbMetadata>({
+const dbMetadataSchema = new Schema({
   version: Number,
   minBuildNumber: Number,
   lastBuildNumber: Number,
   routingFeeLastEntry: Date
 })
-export const DbMetadata = mongoose.model<IDbMetadata>("DbMetadata", dbMetadataSchema)
+export const DbMetadata = mongoose.model("DbMetadata", dbMetadataSchema)
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000
 
