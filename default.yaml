@@ -93,10 +93,13 @@ fees:
 lnds: 
   - name: LND1
     type: ["offchain"]
+    priority: 1 # lower is higher priority
   - name: LND2  
     type: ["offchain"]
+    priority: 2
   - name: LNDONCHAIN
     type: ["onchain"]
+    priority: 3
 
 onchainDustAmount: 5000
 # TODO

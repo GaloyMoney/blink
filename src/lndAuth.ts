@@ -1,4 +1,5 @@
 import { AuthenticatedLnd, authenticatedLndGrpc } from 'lightning';
+import _ from "lodash";
 import { exit } from "process";
 import { yamlConfig } from "./config";
 
@@ -25,8 +26,9 @@ const inputs: ILndParams[] = yamlConfig.lnds.map(input => ({
   macaroon: process.env[`${input.name}_MACAROON`] || exit(1),
   node: process.env[`${input.name}_DNS`] || exit(1),
   port: process.env[`${input.name}_RPCPORT`] ?? 10009,
-  type: input.type,
   pubkey: process.env[`${input.name}_PUBKEY`],
+  priority: 1,
+  ...input,
 }))
 
 // FIXME
@@ -47,7 +49,7 @@ export const addProps = (array) => array.map(input => {
   }
 })
 
-export const params = addProps(inputs)
+export const params = addProps(_.sortBy(inputs, ['priority']))
 
 export const TIMEOUT_PAYMENT = process.env.NETWORK !== "regtest" ? 45000 : 3000
 export const FEECAP = 0.02 // = 2%
