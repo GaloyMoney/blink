@@ -139,16 +139,16 @@ kubectl apply -f $INFRADIR/configs/lnd/templates
 # helm dependency build
 # cd -
 
-helmUpgrade lnd1 -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd/
-helmUpgrade lnd2 -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd/
-helmUpgrade lndonchain -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd/
+helmUpgrade lnd1 -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd/ & \
+helmUpgrade lnd2 -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd/ & \
+helmUpgrade lndonchain -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd
 
 # avoiding to spend time with circleci regtest with this condition
 if [ "$NETWORK" == "testnet" ] || [ "$NETWORK" == "mainnet" ];
 then
   kubectlLndDeletionWait
 else
-  helmUpgrade lnd-outside-1 -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpathOutside $INFRADIR/lnd/
+  helmUpgrade lnd-outside-1 -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpathOutside $INFRADIR/lnd/ & \
   helmUpgrade lnd-outside-2 -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpathOutside $INFRADIR/lnd/
 fi
 
@@ -187,6 +187,8 @@ kubectlWait app.kubernetes.io/instance=galoy
 
 if [ ${LOCAL} ]
 then
+  # FIXME: integrate to the helm chart instead
+  kubectl expose pod galoy-redis-node-0 --load-balancer-ip='' --port=26379 --port=6379 --type="LoadBalancer" || : 
   exit 0
 fi
 

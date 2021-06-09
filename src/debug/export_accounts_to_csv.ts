@@ -6,6 +6,7 @@ import { createObjectCsvWriter} from "csv-writer"
 import * as _ from "lodash"
 
 // need to set MONGODB_ADDRESS to call the script
+// export MONGODB_PASSWORD=$(kubectl get secret galoy-mongodb -o=go-template='{{index .data "mongodb-password" | base64decode}}') -n mainnet
 // ie: MONGODB_ADDRESS=localhost ts-node src/debug/export_accounts_to_csv.ts
 
 const main = async () => {
