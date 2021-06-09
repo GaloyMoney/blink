@@ -17,7 +17,6 @@ import pino from 'pino';
 // const __dirname = path.dirname(__filename);
 import PinoHttp from "pino-http";
 import swStats from 'swagger-stats';
-import util from 'util';
 import { v4 as uuidv4 } from 'uuid';
 import { getMinBuildNumber, getHourlyPrice } from "../localCache";
 import { lnd } from "../lndConfig";
@@ -245,7 +244,7 @@ const resolvers = {
 const isAuthenticated = rule({ cache: 'contextual' })(
   async (parent, args, ctx, info) => {
     if(ctx.uid === null) {
-      throw new AuthorizationError(undefined, {logger: baseLogger, request: ctx.request.body})
+      throw new AuthorizationError(undefined, {logger: graphqlLogger, request: ctx.request.body})
     }
     return true
   },
