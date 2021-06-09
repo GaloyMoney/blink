@@ -84,3 +84,9 @@ export class DustAmountError extends CustomError {
     super(message, 'ENTERED_DUST_AMOUNT', {forwardToClient, logger, level, metadata})
   }
 }
+
+export class AuthorizationError extends CustomError {
+  constructor(message = `Not authorized!`, {forwardToClient = true, logger, level = 'warn', ...metadata}) {
+    super(message, 'NOT_AUTHORIZED', {forwardToClient, logger, level, metadata})
+  }
+}
