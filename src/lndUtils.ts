@@ -48,6 +48,8 @@ export const lndBalances = async ({ lnd }) => {
 }
 
 export async function nodeStats({ lnd }) {
+  // FIXME: only return the public key from process.env
+  // this would avoid a round trip to lnd
   const result = await getWalletInfo({ lnd })
   const peersCount = result.peers_count
   const channelsCount = result.active_channels_count
