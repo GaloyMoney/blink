@@ -181,7 +181,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     }
 
     if (!route) {
-      // TODO: check if the error is irrecovable or not.
+      // TODO: check if the error is irrecoverable or not.
       throw new RouteFindingError(undefined, {logger: lightningLogger, probingSuccess: false, success: false})
     }
 
