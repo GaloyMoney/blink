@@ -64,6 +64,10 @@ jobs:
           name: install helm charts
           command: ./initLocalTest.sh
       - run:
+          name: sleep
+          command: sleep 590 && echo "10 min" && sleep 590 && echo "20 min" && sleep 590 && echo "30 min"
+          when: always
+      - run:
           name: Run jest test
           command: |
             kubectl exec --namespace=$NAMESPACE $(kubectl get pods --namespace=$NAMESPACE --selector=app=testpod --output=jsonpath={.items..metadata.name}) -- /nodejs/bin/node node_modules/.bin/jest --ci --reporters=default --reporters=jest-junit --forceExit
@@ -77,10 +81,6 @@ jobs:
           # source $BASH_ENV
           command: |
             kubectl cp --namespace=$NAMESPACE $(kubectl get pods --namespace=$NAMESPACE --selector=app=testpod --output=jsonpath={.items..metadata.name}):/app/junit.xml ./reports/junit.xml
-          when: always
-      - run:
-          name: sleep
-          command: sleep 590 && echo "10 min" && sleep 590 && echo "20 min" && sleep 590 && echo "30 min"
           when: always
       - store_test_results:
           path: ./reports
