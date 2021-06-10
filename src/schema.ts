@@ -41,8 +41,6 @@ const invoiceUserSchema = new Schema({
     default: true
   },
 
-  // TODO: update current invoice with legacy node
-  // which node is associated with this invoice
   pubkey: {
     type: String,
     require: true,
@@ -110,9 +108,6 @@ const UserSchema = new Schema({
     // TODO : enfore the fact there can be only one dealer
   },
   
-  // FIXME: upgrade from object to array
-  // onchain_addresses: [String], default []
-
   onchain: {
     type: [{
       pubkey: {
