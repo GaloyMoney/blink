@@ -18,7 +18,10 @@ src/tool/users_balance.csv
 src/tool/record_transactions_*.csv
 
 *.DS_Store
-configs
+charts/configs/*
+!charts/configs/lnd
+charts/configs/lnd/*
+!charts/configs/lnd/regtest.yaml
 
 coverage
 lib
