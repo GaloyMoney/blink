@@ -1,0 +1,17 @@
+global:
+  network: regtest
+
+replicas: 1
+
+service:
+  type: LoadBalancer
+
+persistence:
+  enabled: false
+configmap:
+  customValues:
+  - bitcoin.regtest=true
+  - bitcoin.defaultchanconfs=0
+  - noseedbackup=1
+  - bitcoind.rpchost=bitcoind:18443
+  - keysend-hold-time=2s

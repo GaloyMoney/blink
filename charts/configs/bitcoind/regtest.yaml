@@ -1,0 +1,21 @@
+global:
+  network: regtest
+  service:
+    ports:
+      rpc: 18443
+
+bitcoindCustomConfig:
+  fallbackfee: "0.0002"
+
+prometheus-exporter:
+  replicaCount: 0
+
+specter:
+  enabled: false
+
+persistence:
+  enabled: false
+
+service:
+  ports:
+    p2p: 18444
