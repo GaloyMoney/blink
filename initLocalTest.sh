@@ -20,6 +20,8 @@ then
   localdevpath="--skip-refresh"
 fi
 
+git clean -fX
+
 cd ./charts/galoy
 helm dependency build $localdevpath
 cd -
@@ -105,7 +107,6 @@ then
 fi
 
 set +e
-git clean -fX
 mkdir tmp
 git clone https://github.com/galoymoney/configs ./tmp
 cp -R ./tmp/* ./configs
