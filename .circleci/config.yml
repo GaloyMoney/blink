@@ -51,9 +51,6 @@ jobs:
           tag: $CIRCLE_SHA1-debug
 
   test:
-    environment:
-      GOOGLE_CLUSTER: $GOOGLE_CLUSTER
-      GOOGLE_COMPUTE_ZONE: $GOOGLE_COMPUTE_ZONE
     docker:
       - image: kiwigrid/gcloud-kubectl-helm:latest
     resource_class: small
@@ -73,10 +70,6 @@ jobs:
       - run:
           name: install helm charts
           command: ./initLocalTest.sh
-      # - run:
-      #     name: sleep
-      #     command: sleep 590 && echo "10 min" && sleep 590 && echo "20 min" && sleep 590 && echo "30 min"
-      #     when: always
       - run:
           name: Run jest test
           command: |
