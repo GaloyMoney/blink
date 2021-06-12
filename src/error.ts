@@ -1,5 +1,6 @@
 import { ApolloError } from 'apollo-server-errors';
 import { yamlConfig } from './config';
+import { baseLogger } from "./logger";
 
 export class CustomError extends ApolloError {
   log
@@ -82,5 +83,11 @@ export class RebalanceNeededError extends CustomError {
 export class DustAmountError extends CustomError {
   constructor(message = `Use lightning to send amounts less than ${yamlConfig.onchainDustAmount}`, {forwardToClient = true, logger, level = 'warn', ...metadata}) {
     super(message, 'ENTERED_DUST_AMOUNT', {forwardToClient, logger, level, metadata})
+  }
+}
+
+export class LndOfflineError extends CustomError {
+  constructor(message, {forwardToClient = true, logger = baseLogger, level = 'warn', ...metadata} = {}) {
+    super(message, 'LND_OFFLINE', {forwardToClient, logger, level, metadata})
   }
 }

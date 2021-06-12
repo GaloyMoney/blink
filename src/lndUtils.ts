@@ -2,16 +2,48 @@ import { default as axios } from 'axios';
 import { getChainBalance, getChainTransactions, getChannelBalance, getChannels, getClosedChannels, getForwards, getHeight, getPendingChainBalance, getWalletInfo } from "lightning";
 import _ from "lodash";
 import { baseLogger } from "./logger";
-import { DbMetadata } from "./schema";
+import { DbMetadata, InvoiceUser } from "./schema";
 import { MainBook } from "./mongodb";
 import { escrowAccountingPath, lndAccountingPath, lndFeePath, revenueFeePath } from "./ledger/ledger";
-import { DbError } from "./error";
-import { LOOK_BACK } from "./utils";
+import { DbError, LndOfflineError } from "./error";
+import { LoggedError, LOOK_BACK } from "./utils";
 import assert from 'assert';
-import { ILndParamsAuthed, nodeType, params } from "./lndAuth";
+import { FEECAP, FEEMIN, ILndParamsAuthed, nodeType, params } from "./lndAuth";
+import { deleteFailedPayments } from "ln-service"
+import { Logger } from "pino";
+import { IFeeRequest } from "./types";
+import { ValidationError } from "apollo-server-express";
+import { yamlConfig } from "./config";
+import { createHash, randomBytes } from "crypto";
+import { parsePaymentRequest } from 'invoices';
 
 // milliseconds in a day
 const MS_PER_DAY = 864e5
+
+// FIXME use lightning instead
+
+export const deleteExpiredInvoices = async () => {
+  // this should be longer than the invoice validity time
+  const delta = 2 // days
+  
+  const date = new Date();
+  date.setDate(date.getDate() - delta);
+  InvoiceUser.deleteMany({timestamp: {lt: date}})
+}
+
+export const deleteFailedPaymentsAllLnds = async () => {
+  try {
+    const lnds = offchainLnds
+    for (const {lnd} of lnds) {
+      // FIXME
+      baseLogger.warn("only run deleteFailedPayments on lnd 0.13")
+      // await deleteFailedPayments({lnd})
+    }
+  } catch (err) {
+    baseLogger.warn({err}, "error deleting failed payment")
+  }
+}
+
 
 export const lndsBalances = async () => {
   const data = await Promise.all(getLnds().map(({lnd}) => lndBalances({lnd})))
@@ -283,9 +315,8 @@ export const offchainLnds = getLnds({type: "offchain"})
 export const getActiveLnd = () => {
   const lnds = getLnds({active: true, type: "offchain"})
   if (lnds.length === 0) {
-    throw Error("no active lnd to send/receive a payment offchain")
+    throw new LndOfflineError("no active lightning node (for offchain)")
   }
-  // this favor lnd1
   return lnds[0]
 
   // an alternative that would load balance would be: 
@@ -293,7 +324,13 @@ export const getActiveLnd = () => {
   // return lnds[index]
 }
 
-export const getActiveOnchainLnd = () => getLnds({type: "onchain", active: true})[0]
+export const getActiveOnchainLnd = () => {
+  const lnds = getLnds({active: true, type: "onchain"})
+  if (lnds.length === 0) {
+    throw new LndOfflineError("no active lightning node (for onchain)")
+  }  
+  return lnds[0]
+}
 
 export const onchainLnds = getLnds({type: "onchain"})
 
@@ -304,8 +341,98 @@ export const getLndFromPubkey = ({ pubkey }: {pubkey: string}) => {
   const lnds = getLnds({active: true})
   const lnd = _.filter(lnds, { pubkey })
   if (!lnd) {
-    throw Error("lnd is offline")
+    throw new LndOfflineError(`lnd with pubkey:${pubkey} is offline`)
   } else {
     return lnd[0]
   }
 }
+
+export const validate = async ({params, logger}: {params: IFeeRequest, logger: Logger}) => {
+  
+  const keySendPreimageType = '5482373484';
+  const preimageByteLength = 32;
+
+  let pushPayment = false
+  let tokens
+  let expires_at
+  let features
+  let cltv_delta
+  let payment
+  let destination, id, description
+  let routeHint 
+  let messages
+  let username
+
+  if (params.invoice) {
+    // TODO: use msat instead of sats for the db?
+
+    // used as an alternative to parsePaymentRequest
+    // const {lnd} = getActiveLnd()
+
+    try {
+      ({ id, safe_tokens: tokens, destination, description, routes: routeHint, payment, cltv_delta, expires_at, features } = await parsePaymentRequest({ request: params.invoice }))
+      // ({ id, safe_tokens: tokens, destination, description, routes: routeHint, payment, cltv_delta, expires_at, features } = await decodePaymentRequest({ lnd, request: params.invoice }))
+    } catch (err) {
+      const error = `Error decoding the invoice`
+      logger.error({ params, success: false, error }, error)
+      throw new LoggedError(error)
+    }
+
+    // TODO: if expired_at expired, thrown an error
+
+    if (!!params.amount && !!tokens) {
+      const error = `Invoice contains non-zero amount, but amount was also passed separately`
+      // FIXME: create a new error. this is a not a graphl error.
+      // throw new ValidationError(error, {logger})
+    
+      throw new ValidationError(error)
+    }
+
+  } else {
+    if (!params.username) {
+      // FIXME: create a new error. this is a not a graphl error.
+      // throw new ValidationError(error, {logger})
+    
+      const error = `a username is required for push payment to the ${ yamlConfig.name }`
+      throw new ValidationError(error)
+    }
+
+    pushPayment = true
+    destination = params.destination
+    username = params.username
+
+    const preimage = randomBytes(preimageByteLength);
+    id = createHash('sha256').update(preimage).digest().toString('hex');
+    const secret = preimage.toString('hex');
+    messages = [{ type: keySendPreimageType, value: secret }]
+
+    // TODO: should it be id or secret?
+    // check from keysend invoices generated by lnd
+    // payment = payment ?? secret
+
+  }
+
+  if (!params.amount && !tokens) {
+    const error = 'Invoice is a zero-amount invoice, or pushPayment is being used, but no amount was passed separately'
+    // FIXME: create a new error. this is a not a graphl error.
+    // throw new ValidationError(error, {logger})
+    
+    throw new ValidationError(error)
+  }
+
+  tokens = !!tokens ? tokens : params.amount
+
+  if (tokens <= 0) {
+    logger.error('A negative amount was passed')
+    throw Error("amount can't be negative")
+  }
+
+  const max_fee = Math.floor(Math.max(FEECAP * tokens, FEEMIN))
+
+  return {
+    // FIXME String: https://github.com/alexbosworth/lightning/issues/24
+    tokens, mtokens: String(tokens * 1000), destination, pushPayment, id, routeHint, messages, max_fee,
+    memoInvoice: description, payment, cltv_delta, expires_at, features, username
+  }
+}
+
