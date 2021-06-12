@@ -105,9 +105,10 @@ then
 fi
 
 set +e
+git clean -fX
 mkdir tmp
 git clone https://github.com/galoymoney/configs ./tmp
-cp -R ./tmp ./configs
+cp -R ./tmp/* ./configs
 set -e
 
 helmUpgrade bitcoind $localdevpath -f $INFRADIR/configs/bitcoind/$NETWORK.yaml galoy/bitcoind --version=$bitcoindVersion 
