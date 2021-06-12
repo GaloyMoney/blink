@@ -46,6 +46,9 @@ jobs:
           tag: $CIRCLE_SHA1-debug
 
   test:
+    environment:
+      GOOGLE_CLUSTER: $GOOGLE_CLUSTER
+      GOOGLE_COMPUTE_ZONE: $GOOGLE_COMPUTE_ZONE
     docker:
       - image: kiwigrid/gcloud-kubectl-helm:latest
     resource_class: small
@@ -94,8 +97,8 @@ jobs:
 
   testnet_deploy:
     environment:
-      GOOGLE_CLUSTER: ${GOOGLE_CLUSTER_MAIN}
-      GOOGLE_COMPUTE_ZONE: ${GOOGLE_COMPUTE_ZONE_MAIN}
+      GOOGLE_CLUSTER: $GOOGLE_CLUSTER_MAIN
+      GOOGLE_COMPUTE_ZONE: $GOOGLE_COMPUTE_ZONE_MAIN
     docker:
       - image: cimg/base:2020.01
     resource_class: small
@@ -116,8 +119,8 @@ jobs:
 
   mainnet_deploy:
     environment:
-      GOOGLE_CLUSTER: ${GOOGLE_CLUSTER_MAIN}
-      GOOGLE_COMPUTE_ZONE: ${GOOGLE_COMPUTE_ZONE_MAIN}
+      GOOGLE_CLUSTER: $GOOGLE_CLUSTER_MAIN
+      GOOGLE_COMPUTE_ZONE: $GOOGLE_COMPUTE_ZONE_MAIN
     docker:
       - image: kiwigrid/gcloud-kubectl-helm:latest
     resource_class: small
