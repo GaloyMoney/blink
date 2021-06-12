@@ -12,7 +12,7 @@ https://twitter.com/memenetes/status/1366826625531342856?s=20
 
 ### Deps
 
-Galoy relies on bitcoind and lnd to process transactions. Those dependencies can be installed conveniently from the following [helm chart](https://github.com/GaloyMoney/galoy-mobile)
+Galoy relies on bitcoind and lnd to process transactions. Those dependencies can be installed conveniently from the following [helm chart](https://github.com/GaloyMoney/charts)
 
 Currently Galoy relies on a single lnd instance, but the goal is to be able to manage several lnd instances at the same time, so that lnd can be recycled when needed, and also provide reliability when downtime is needed or to provide multi-region redundancy.
 
