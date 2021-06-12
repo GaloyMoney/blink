@@ -22,6 +22,14 @@ charts/configs/*
 !charts/configs/lnd
 charts/configs/lnd/*
 !charts/configs/lnd/regtest.yaml
+!charts/configs/lnd/regtest-outside.yaml
+!charts/configs/lnd/localdev.yaml
+!charts/configs/lnd/localdev-outside.yaml
+
+!charts/configs/bitcoind
+charts/configs/bitcoind/*
+!charts/configs/bitcoind/regtest.yaml
+!charts/configs/bitcoind/localdev.yaml
 
 coverage
 lib
