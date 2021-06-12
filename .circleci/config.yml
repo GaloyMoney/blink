@@ -17,7 +17,7 @@ commands:
             echo ${GCLOUD_SERVICE_KEY} > gcloud-service-key.json
             gcloud auth activate-service-account --key-file=gcloud-service-key.json
             gcloud config set project ${GOOGLE_PROJECT_ID}
-            gcloud container clusters get-credentials testnet-cluster --region us-central1-a --project ${GOOGLE_PROJECT_ID}
+            gcloud container clusters get-credentials ${GOOGLE_CLUSTER} --region ${GOOGLE_COMPUTE_ZONE} --project ${GOOGLE_PROJECT_ID}
 
 jobs:
   build_test_image:
@@ -63,6 +63,10 @@ jobs:
       - run:
           name: install helm charts
           command: ./initLocalTest.sh
+      # - run:
+      #     name: sleep
+      #     command: sleep 590 && echo "10 min" && sleep 590 && echo "20 min" && sleep 590 && echo "30 min"
+      #     when: always
       - run:
           name: Run jest test
           command: |
@@ -78,10 +82,6 @@ jobs:
           command: |
             kubectl cp --namespace=$NAMESPACE $(kubectl get pods --namespace=$NAMESPACE --selector=app=testpod --output=jsonpath={.items..metadata.name}):/app/junit.xml ./reports/junit.xml
           when: always
-      # - run:
-      #     name: sleep
-      #     command: sleep 590 && echo "10 min" && sleep 590 && echo "20 min" && sleep 590 && echo "30 min"
-      #     when: always
       - store_test_results:
           path: ./reports
       - store_artifacts:
