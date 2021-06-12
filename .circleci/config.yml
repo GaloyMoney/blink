@@ -17,7 +17,7 @@ commands:
             echo ${GCLOUD_SERVICE_KEY} > gcloud-service-key.json
             gcloud auth activate-service-account --key-file=gcloud-service-key.json
             gcloud config set project ${GOOGLE_PROJECT_ID}
-            gcloud container clusters get-credentials testnet-cluster --region ${GOOGLE_COMPUTE_ZONE} --project ${GOOGLE_PROJECT_ID}
+            gcloud container clusters get-credentials ${GOOGLE_CLUSTER} --region ${GOOGLE_COMPUTE_ZONE} --project ${GOOGLE_PROJECT_ID}
 
 jobs:
   build_test_image:
