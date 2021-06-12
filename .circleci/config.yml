@@ -103,16 +103,15 @@ jobs:
           when: always
 
   testnet_deploy:
-    environment:
-      GOOGLE_CLUSTER: $GOOGLE_CLUSTER_MAIN
-      GOOGLE_COMPUTE_ZONE: $GOOGLE_COMPUTE_ZONE_MAIN
     docker:
       - image: cimg/base:2020.01
     resource_class: small
     steps:
       - checkout
       - gcp-cli/install
-      - gke-auth
+      - gke-auth:
+          google_compute_zone: $GOOGLE_COMPUTE_ZONE_MAIN
+          google_cluster: $GOOGLE_CLUSTER_MAIN
       - run: curl https://baltocdn.com/helm/signing.asc | sudo apt-key add -
       - run: curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
       - run: sudo apt-get update && sudo apt-get install -y apt-transport-https gnupg2 curl
@@ -125,15 +124,14 @@ jobs:
           command: ./initLocalTest.sh testnet
 
   mainnet_deploy:
-    environment:
-      GOOGLE_CLUSTER: $GOOGLE_CLUSTER_MAIN
-      GOOGLE_COMPUTE_ZONE: $GOOGLE_COMPUTE_ZONE_MAIN
     docker:
       - image: kiwigrid/gcloud-kubectl-helm:latest
     resource_class: small
     steps:
       - checkout
-      - gke-auth
+      - gke-auth:
+          google_compute_zone: $GOOGLE_COMPUTE_ZONE_MAIN
+          google_cluster: $GOOGLE_CLUSTER_MAIN
       - run:
           name: Upgrade mainnet deployments
           command: |
