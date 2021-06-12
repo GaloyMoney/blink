@@ -63,10 +63,6 @@ jobs:
       - run:
           name: install helm charts
           command: ./initLocalTest.sh
-      # - run:
-      #     name: sleep
-      #     command: sleep 590 && echo "10 min" && sleep 590 && echo "20 min" && sleep 590 && echo "30 min"
-      #     when: always
       - run:
           name: Run jest test
           command: |
