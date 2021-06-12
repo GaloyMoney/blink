@@ -1,4 +1,5 @@
 import { ApolloError } from 'apollo-server-errors';
+import { yamlConfig } from './config';
 
 export class CustomError extends ApolloError {
   log
@@ -79,7 +80,7 @@ export class RebalanceNeededError extends CustomError {
 }
 
 export class DustAmountError extends CustomError {
-  constructor(message = `Use lightning to send amounts less than 5000`, {forwardToClient = true, logger, level = 'warn', ...metadata}) {
+  constructor(message = `Use lightning to send amounts less than ${yamlConfig.onchainDustAmount}`, {forwardToClient = true, logger, level = 'warn', ...metadata}) {
     super(message, 'ENTERED_DUST_AMOUNT', {forwardToClient, logger, level, metadata})
   }
 }

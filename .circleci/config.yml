@@ -10,6 +10,11 @@ orbs:
 
 commands:
   gke-auth:
+    parameters:
+      google_compute_zone:
+        type: string
+      google_cluster:
+        type: string
     steps:
       - run:
           name: Authenticate on gcloud
@@ -17,7 +22,7 @@ commands:
             echo ${GCLOUD_SERVICE_KEY} > gcloud-service-key.json
             gcloud auth activate-service-account --key-file=gcloud-service-key.json
             gcloud config set project ${GOOGLE_PROJECT_ID}
-            gcloud container clusters get-credentials ${GOOGLE_CLUSTER} --region ${GOOGLE_COMPUTE_ZONE} --project ${GOOGLE_PROJECT_ID}
+            gcloud container clusters get-credentials << parameters.google_cluster >> --region << parameters.google_compute_zone >> --project ${GOOGLE_PROJECT_ID}
 
 jobs:
   build_test_image:
@@ -55,7 +60,9 @@ jobs:
           name: generate and export namespace name
           command: |
             echo "export NAMESPACE=devnet-$CIRCLE_SHA1" >> $BASH_ENV
-      - gke-auth
+      - gke-auth:
+          google_compute_zone: $GOOGLE_COMPUTE_ZONE
+          google_cluster: $GOOGLE_CLUSTER
       - run:
           name: create namespace
           command: |
@@ -95,7 +102,9 @@ jobs:
     steps:
       - checkout
       - gcp-cli/install
-      - gke-auth
+      - gke-auth:
+          google_compute_zone: $GOOGLE_COMPUTE_ZONE_MAIN
+          google_cluster: $GOOGLE_CLUSTER_MAIN
       - run: curl https://baltocdn.com/helm/signing.asc | sudo apt-key add -
       - run: curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
       - run: sudo apt-get update && sudo apt-get install -y apt-transport-https gnupg2 curl
@@ -113,7 +122,9 @@ jobs:
     resource_class: small
     steps:
       - checkout
-      - gke-auth
+      - gke-auth:
+          google_compute_zone: $GOOGLE_COMPUTE_ZONE_MAIN
+          google_cluster: $GOOGLE_CLUSTER_MAIN
       - run:
           name: Upgrade mainnet deployments
           command: |
