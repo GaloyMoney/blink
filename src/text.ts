@@ -161,7 +161,10 @@ export const login = async ({ phone, code, logger, ip }: ILogin): Promise<string
         user.twilio = result
         await user.save()
       } catch (err) {
-        subLogger.error({err}, "impossible to fetch carrier")
+        // Carrier fetching is a non-critical operation
+        // Primarily useful for analytics
+        // Hence failure should be handled with a warn instead of an error
+        subLogger.warn({err}, "impossible to fetch carrier")
       }
     }
 

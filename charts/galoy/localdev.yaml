@@ -6,6 +6,5 @@ redis:
 mongodb:
   service:
     type: LoadBalancer
-  architecture: standalone
 
 deployment: []

@@ -17,7 +17,6 @@ import pino from 'pino';
 // const __dirname = path.dirname(__filename);
 import PinoHttp from "pino-http";
 import swStats from 'swagger-stats';
-import util from 'util';
 import { v4 as uuidv4 } from 'uuid';
 import { getMinBuildNumber, getHourlyPrice } from "../localCache";
 import { lnd } from "../lndConfig";
@@ -35,6 +34,7 @@ import { getCurrentPrice } from "../realtimePrice";
 import { yamlConfig } from '../config';
 import { range, pattern, stringLength, ValidateDirectiveVisitor } from '@profusion/apollo-validation-directives';
 import { redis } from "../redis";
+import { AuthorizationError } from '../error';
 
 dotenv.config()
 
@@ -244,7 +244,7 @@ const resolvers = {
 const isAuthenticated = rule({ cache: 'contextual' })(
   async (parent, args, ctx, info) => {
     if(ctx.uid === null) {
-      return new Error(`${util.inspect({ message: 'Not authorised!', request: ctx.request.body }, false, Infinity)}`)
+      throw new AuthorizationError(undefined, {logger: graphqlLogger, request: ctx.request.body})
     }
     return true
   },
