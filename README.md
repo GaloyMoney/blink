@@ -13,7 +13,7 @@ To give it a try:
 
 ```
 helm repo add galoy https://galoymoney.github.io/charts/
-helm install bitcoin galoy/bitcoin
+helm install bitcoind galoy/bitcoind
 helm install lnd galoy/lnd
 
 TODO: helm install galoy galoy/galoy
@@ -52,7 +52,7 @@ Those banks could be launched by anyone around the world because plugging into t
 
 ## Status of the project
 
-While the poject is already deployed in a village in El Salvadaor and used by 1,000+ people, one should consider this project still in alpha stage.
+While the project is already deployed in a village in El Salvadaor and used by 1,000+ people, one should consider this project still in alpha stage.
 
 The wallet is currently deployed in Google Cloud. The entire architecture is open source software so there should be no blocker to deploy on other cloud services that are Kubernetes compatible.
 
