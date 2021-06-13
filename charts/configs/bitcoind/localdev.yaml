@@ -1,2 +1,3 @@
+# A loadbalancer svc type is needed for minikube to expose it to the host
 service:
   type: LoadBalancer
