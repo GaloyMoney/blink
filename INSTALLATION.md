@@ -8,6 +8,8 @@ There are multiple ways to install the galoy servers. We recommend first trying 
 1. Node.js
 2. Yarn
 3. Docker
+4. [Helm v3](https://helm.sh/docs/intro/install/)
+
 
 ### Steps
 
