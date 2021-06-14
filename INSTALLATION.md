@@ -20,7 +20,7 @@ There are multiple ways to install the galoy servers. We recommend first trying 
 This will setup all the required pods. Note that this will setup the environment in **regtest** mode. Read more about regtest mode [here](https://developer.bitcoin.org/examples/testing.html#regtest-mode).
 
 #### Caveats
-1. If installing on macOS, this script will clash with the default grep, [here is a workaround](https://stackoverflow.com/questions/16658333/grep-p-no-longer-works-how-can-i-rewrite-my-searches)
+1. If installing on macOS, this script will clash with the default grep, [here is a workaround](https://stackoverflow.com/questions/16658333/grep-p-no-longer-works-how-can-i-rewrite-my-searches): `brew install grep`
 
 #### Running the test suite
 
