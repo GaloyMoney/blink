@@ -19,3 +19,12 @@ There are multiple ways to install the galoy servers. We recommend first trying 
 4. Run `yarn add-charts`
 
 This will setup all the required pods. Note that this will setup the environment in **regtest** mode. Read more about regtest mode [here](https://developer.bitcoin.org/examples/testing.html#regtest-mode).
+#### Running the test suite
+
+Follow the instructions [above](#steps), then run `yarn test-local`
+
+#### Running the graphql server
+
+Follow the instructions [above](#steps), then run `yarn start`. 
+
+Alternatively, to start the server in watch mode with hot reloading, run `yarn watch`.
