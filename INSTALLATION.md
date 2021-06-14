@@ -9,11 +9,12 @@ There are multiple ways to install the galoy servers. We recommend first trying 
 2. Yarn
 3. Docker
 4. [Helm v3](https://helm.sh/docs/intro/install/)
+5. [Minikube](https://minikube.sigs.k8s.io/docs/start/)
 
 
 ### Steps
 
-1. Install [minikube](https://minikube.sigs.k8s.io/docs/start/) and make sure you're able to deploy the hello-world starter application
+1. Make sure minikube is working correctly by deploying the hello-world starter application
 2. Run `git clone https://github.com/galoymoney/galoy && cd galoy`
 3. Run `yarn install`
 4. Run `yarn add-charts`
