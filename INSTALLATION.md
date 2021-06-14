@@ -7,8 +7,8 @@ There are multiple ways to install the galoy servers. We recommend first trying 
 ### Prerequisites
 1. Node.js
 2. Yarn
-4. [Helm v3](https://helm.sh/docs/intro/install/)
-5. [Minikube](https://minikube.sigs.k8s.io/docs/start/)
+3. [Helm v3](https://helm.sh/docs/intro/install/)
+4. [Minikube](https://minikube.sigs.k8s.io/docs/start/)
 
 
 ### Steps
