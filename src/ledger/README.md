@@ -2,7 +2,7 @@
 
 Galoy relies on a ledger as the source of truth to maintain accounts of the users.
 
-From a 10000 foot view, this is how this looks like: 
+From a 10000 foot view, this is how this looks like:
 
 wallet Type | Assets | Liablities
 --- | --- | ---
@@ -31,7 +31,7 @@ Because funds are typically stored in a cold wallet, there are also onchain fees
 Also, there are channel escrow. The escrow varies depending on the current market fee on the bitcoin network. This also needs to be handled to have real time reconciliation of all the accounts.
 
 
-Lightning wallet also generate revenues, in the form of routing fees, or capital lending (Pool). 
+Lightning wallet also generate revenues, in the form of routing fees, or capital lending (Pool).
 
 Additionally, banks may decide to charge additional fees on top of the layer 1 and layer 2 as a way to generate income and maintain server costs, payroll, etc.
 
@@ -47,6 +47,6 @@ It's intended in a future version of the app to have a proof of solvency such th
 
 ## Ledger
 
-The ledger is using mongodb and relies on the [medici](https://github.com/flash-oss/medici) package. 
+The ledger is using mongodb and relies on the [medici](https://github.com/flash-oss/medici) package.
 
 Medici is enforcing the fact that every journal entry must have `debit = credit` to be valid.

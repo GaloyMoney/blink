@@ -23,7 +23,7 @@ export const lndBalances = async () => {
   // get pending closed
   const { channels: closedChannels } = await getClosedChannels({ lnd })
 
-  // FIXME: there can be issue with channel not closed completely from lnd 
+  // FIXME: there can be issue with channel not closed completely from lnd
   // https://github.com/alexbosworth/ln-service/issues/139
   baseLogger.debug({ closedChannels }, "getClosedChannels")
   const closing_channel_balance = _.sumBy(closedChannels, channel => _.sumBy(
@@ -91,7 +91,7 @@ export const getRoutingFees = async ({ lnd, before, after }): Promise<Array<Reco
 }
 
 export const updateRoutingFees = async () => {
-  
+
   const dbMetadata = await DbMetadata.findOne({})
   let lastDate
 
@@ -108,17 +108,17 @@ export const updateRoutingFees = async () => {
   const after = lastDate.toISOString()
 
   const endDate = new Date(Date.now() - MS_PER_DAY);
-  
+
   // Done to remove effect of timezone
   endDate.setUTCHours(0, 0, 0, 0)
 
   const before = endDate.toISOString()
-  
+
   // Only record fee if it has been 1d+ since last record
   if((endDate.getTime() - lastDate.getTime()) / MS_PER_DAY < 1) {
     return
   }
-  
+
   const type = "routing_fee"
   const metadata = { type, currency: "BTC", pending: false }
 
@@ -136,7 +136,7 @@ export const updateRoutingFees = async () => {
       throw new DbError('Unable to record routing revenue', {forwardToClient: false, logger: baseLogger, level: 'error'})
     }
   }
-  
+
   endDate.setDate(endDate.getDate() + 1)
   const endDay = endDate.toDateString()
   await DbMetadata.findOneAndUpdate({}, { $set: { routingFeeLastEntry: endDay } }, { upsert: true })

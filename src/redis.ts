@@ -5,7 +5,7 @@ let connectionObj = {}, natMap = {}
 
 if(process.env.LOCAL === 'true') {
   const REDIS_0_INTERNAL_IP = `${process.env.REDIS_0_INTERNAL_IP}:6379`
-  
+
   natMap = {
     [REDIS_0_INTERNAL_IP]: { host: process.env.REDIS_0_DNS, port: process.env.REDIS_0_PORT }
   }

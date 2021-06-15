@@ -57,7 +57,7 @@ it('opens channel from lnd1ToLndOutside1', async () => {
   expect(finalFeeInLedger - initFeeInLedger).toBe(channelFee * -1 )
 })
 
-// FIXME: we need a way to calculate the closing fee 
+// FIXME: we need a way to calculate the closing fee
 // lnd doesn't give it back to us (undefined)
 // and bitcoind doesn't give fee for "outside" wallet
 
@@ -65,31 +65,31 @@ it('opens channel from lnd1ToLndOutside1', async () => {
 
 //   try {
 //     const socket = `lnd-outside-1:9735`
-  
+
 //     await openChannelTesting({ lnd: lndMain, other_lnd: lndOutside1, socket })
-  
+
 //     let channels
-  
+
 //     ({ channels } = await getChannels({ lnd: lndMain }));
 //     expect(channels.length).toEqual(channelLengthMain + 1)
-  
+
 //     const sub = subscribeToChannels({ lnd: lndMain })
 //     sub.on('channel_closed', async (channel) => {
 //       // onChannelUpdated({ channel, lnd: lndMain, stateChange: "closed" })
 //     })
-    
+
 //     await lnService.closeChannel({ lnd: lndMain, id: channels[channels.length - 1].id })
 //     const currentBlockCount = await bitcoindDefaultClient.getBlockCount()
 //     await mineBlockAndSync({ lnds: [lndMain, lndOutside1], blockHeight: currentBlockCount + newBlock })
-  
+
 //     await sleep(10000)
-  
+
 //     // FIXME
 //     // expect(finalFeeInLedger - initFeeInLedger).toBe(channelFee * -1)
 //     sub.removeAllListeners()
-  
+
 //     await updateEscrows();
-  
+
 //     ({ channels } = await getChannels({ lnd: lndMain }))
 //     expect(channels.length).toEqual(channelLengthMain)
 //   } catch (err) {

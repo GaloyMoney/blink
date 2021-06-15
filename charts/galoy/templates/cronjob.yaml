@@ -108,6 +108,6 @@ spec:
           - name: "custom-yaml"
             secret:
               secretName: "galoy-config-map"
-      
+
 ---
 {{- end }}

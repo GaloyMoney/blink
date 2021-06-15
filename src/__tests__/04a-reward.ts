@@ -39,7 +39,7 @@ afterAll(async () => {
 
     // to make this test re-entrant, we need to remove the fund from userWallet1 and delete the user
   // uncomment when necessary
-  
+
   // const finalBalance = await userWallet1.getBalances()
   // const funderWallet = await getFunderWallet({ logger: baseLogger })
 
@@ -67,8 +67,7 @@ it('add earn adds balance correctly', async () => {
 
   await getAndVerifyRewards()
 
-  // yet, if we do it another time, the balance should not increase, 
+  // yet, if we do it another time, the balance should not increase,
   // because all the rewards has already been been consumed:
   await getAndVerifyRewards()
 })
-

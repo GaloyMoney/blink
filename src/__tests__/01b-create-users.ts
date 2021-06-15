@@ -66,7 +66,7 @@ describe('username tests', () => {
     const result = await userWallet0.setUsername({ username: "user0" })
     expect(!!result).toBeTruthy()
   })
-  
+
   it('sets username for user1', async () => {
     const result = await userWallet1.setUsername({ username: "user1" })
     expect(!!result).toBeTruthy()

@@ -95,7 +95,7 @@ const createInvoiceHash = () => {
 }
 
 const functionToTests = [
-  { 
+  {
     name: "getFee+Pay",
     initialFee: 0,
     fn: function fn(wallet) {
@@ -121,7 +121,7 @@ functionToTests.forEach(({fn, name, initialFee}) => {
     const { request } = await createInvoice({ lnd: lndOutside1, tokens: amountInvoice })
     const result = await fn(userWallet1)({ invoice: request })
     expect(result).toBe("success")
-  
+
     const {BTC: finalBalance} = await userWallet1.getBalances()
     expect(finalBalance).toBe(initBalance1 - amountInvoice)
   })
@@ -132,7 +132,7 @@ functionToTests.forEach(({fn, name, initialFee}) => {
     const intermediateBalance = await userWallet1.getBalances()
     const result = await fn(userWallet1)({ invoice: request })
     expect(result).toBe("already_paid")
-  
+
     const finalBalance = await userWallet1.getBalances()
     expect(finalBalance).toStrictEqual(intermediateBalance)
   })
@@ -154,40 +154,40 @@ functionToTests.forEach(({fn, name, initialFee}) => {
 
       const request = await walletPayee.addInvoice({ value: amountInvoice })
       await fn(walletPayer)({ invoice: request, memo })
-  
+
       const {BTC: payerFinalBalance} = await walletPayer.getBalances()
       const {BTC: payeeFinalBalance} = await walletPayee.getBalances()
-  
+
       expect(payerFinalBalance).toBe(payerInitialBalance - amountInvoice)
       expect(payeeFinalBalance).toBe(payeeInitialBalance + amountInvoice)
-  
+
       const hash = getHash(request)
       const matchTx = tx => tx.type === 'on_us' && tx.hash === hash
-  
+
       const user2Txn = await walletPayee.getTransactions()
       const user2OnUsTxn = user2Txn.filter(matchTx)
       expect(user2OnUsTxn[0].type).toBe('on_us')
       await checkIsBalanced()
-  
+
       const user1Txn = await walletPayer.getTransactions()
       const user1OnUsTxn = user1Txn.filter(matchTx)
       expect(user1OnUsTxn[0].type).toBe('on_us')
-  
+
       // making request twice because there is a cancel state, and this should be re-entrant
       expect(await walletPayer.updatePendingInvoice({ hash })).toBeTruthy()
       expect(await walletPayee.updatePendingInvoice({ hash })).toBeTruthy()
       expect(await walletPayer.updatePendingInvoice({ hash })).toBeTruthy()
       expect(await walletPayee.updatePendingInvoice({ hash })).toBeTruthy()
     }
-    
+
     // a cashback tx
     await paymentOtherGaloyUser({walletPayee: userWallet2, walletPayer: userWallet1})
-    
+
     // a cashback tx
     await paymentOtherGaloyUser({walletPayee: userWallet2, walletPayer: userWallet0})
-    
+
     await sleep(5000)
-    
+
     // not a cashback transaction
     await paymentOtherGaloyUser({walletPayee: userWallet1, walletPayer: userWallet2})
 
@@ -197,27 +197,27 @@ functionToTests.forEach(({fn, name, initialFee}) => {
 
     expect(userWallet0.user.contacts.length).toBe(1)
     expect(userWallet0.user.contacts[0]).toHaveProperty("id", userWallet2.user.username)
-    
+
   })
 
   it(`payInvoice to lnd outside2 ${name}`, async () => {
     const { request } = await createInvoice({ lnd: lndOutside2, tokens: amountInvoice, is_including_private_channels: true })
-    
+
     const {BTC: initialBalance} = await userWallet1.getBalances()
-    
+
     const result = await fn(userWallet1)({ invoice: request, memo: "pay an unconnected node" })
 
     expect(result).toBe("success")
     const {BTC: finalBalance} = await userWallet1.getBalances()
-    
+
     // const { id } = await decodePaymentRequest({ lnd: lndOutside2, request })
     // const { results: [{ fee }] } = await MainBook.ledger({ account: userWallet1.accountPath, hash: id })
     // ^^^^ this fetch the wrong transaction
-    
+
     // TODO: have a way to do this more programatically?
     // base rate: 1, fee Rate: 1
     const fee = 2
-  
+
     expect(finalBalance).toBe(initialBalance - amountInvoice - fee)
   })
 
@@ -230,7 +230,7 @@ functionToTests.forEach(({fn, name, initialFee}) => {
     expect(result).toBe("pending")
     const {BTC: balanceBeforeSettlement} = await userWallet1.getBalances()
     expect(balanceBeforeSettlement).toBe(initBalance1 - amountInvoice * (1 + initialFee))
-    
+
     // FIXME: necessary to not have openHandler ?
     // https://github.com/alexbosworth/ln-service/issues/122
     await settleHodlInvoice({ lnd: lndOutside1, secret });
@@ -246,7 +246,7 @@ functionToTests.forEach(({fn, name, initialFee}) => {
 
     const { request } = await createHodlInvoice({ id, lnd: lndOutside1, tokens: amountInvoice });
     const result = await fn(userWallet1)({ invoice: request })
-    
+
     expect(result).toBe("pending")
     console.log("payment has timeout. status is pending.")
 
@@ -308,8 +308,8 @@ it('expired payment', async () => {
   // console.log({res}, "cancelHodlInvoice result")
 
   await sleep(5000)
-  
-  // hacky way to test if an invoice has expired 
+
+  // hacky way to test if an invoice has expired
   // without having to to have a big timeout.
   // let i = 30
   // let hasExpired = false
@@ -324,7 +324,7 @@ it('expired payment', async () => {
   //   i--
   //   await sleep(1000)
   // }
-  
+
   // try {
   //   await pay({ lnd: lndOutside1, request })
   // } catch (err) {
@@ -332,17 +332,17 @@ it('expired payment', async () => {
   // }
 
   // await expect(pay({ lnd: lndOutside1, request })).rejects.toThrow()
-  
+
 
   // await sleep(1000)
 
   await userWallet1.getBalances()
-    
+
   // FIXME: test is failing.
   // lnd doens't always delete invoice just after they have expired
 
   // expect(await InvoiceUser.countDocuments({_id: id})).toBe(0)
-  
+
   // try {
   //   await getInvoice({ lnd, id })
   // } catch (err) {
@@ -350,7 +350,7 @@ it('expired payment', async () => {
   // }
 
   // expect(await userWallet1.updatePendingInvoice({ hash: id })).toBeFalsy()
-  
+
 }, 150000)
 
 it('fails to pay when user has insufficient balance', async () => {
@@ -412,7 +412,7 @@ it('onUs pushPayment', async () => {
   const userTransaction0 = await userWallet0.getTransactions()
   const {BTC: finalBalance1} = await userWallet1.getBalances()
   const userTransaction1 = await userWallet1.getTransactions()
-  
+
   expect(res).toBe("success")
   expect(finalBalance0).toBe(initBalance0 + amountInvoice)
   expect(finalBalance1).toBe(initBalance1 - amountInvoice)
@@ -494,6 +494,6 @@ it('fails to pay when amount exceeds onUs limit', async() => {
 
 // it('testDbTransaction', async () => {
 //   //TODO try to fetch simulataneously (ie: with Premise.all[])
-//   // balances with pending but settled transaction to see if 
+//   // balances with pending but settled transaction to see if
 //   // we can create a race condition in the DB
 // })

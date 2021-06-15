@@ -18,7 +18,7 @@ export interface ILightningWallet extends IWallet {
 }
 
 export interface FiatTransaction {
-  amount: number, 
+  amount: number,
   date: number,
   icon: string,
   name: string,

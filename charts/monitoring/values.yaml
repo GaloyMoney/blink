@@ -20,7 +20,7 @@ grafana:
 
   plugins:
     - https://github.com/doitintl/bigquery-grafana/archive/master.zip;doit-bigquery-datasource
-  
+
   grafana.ini:
     plugins:
       allow_loading_unsigned_plugins: "doitintl-bigquery-datasource"

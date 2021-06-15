@@ -13,7 +13,7 @@ beforeAll(async () => {
 
 it('start server', async () => {
   const { query, mutate } = createTestClient(server)
-  
+
   const rest = await query({query: `query nodeStats {
     nodeStats {
         id
@@ -34,14 +34,14 @@ it('rate limit limiterRequestPhoneCode', async () => {
         success
     }
   }`
-  
+
   // exhaust the limiter
   for (let i = 0; i < yamlConfig.limits.requestPhoneCode.points; i++) {
     console.log(i);
     const result = await mutate({mutation, variables: {phone}})
     expect(result.errors).toBeFalsy()
   }
-  
+
   try {
     const { errors: [{code}]} = await mutate({mutation, variables: {phone}})
     expect(code).toBe("TOO_MANY_REQUEST")
@@ -64,14 +64,14 @@ it('rate limit login', async () => {
 
   const { data: { login: { token: tokenNull } }} = await mutate({mutation, variables: {phone, code: bad_code}})
   expect(tokenNull).toBeFalsy()
-  
+
   // will do with iosredis
   // expect(await redis.get(`login:${phone}`))
   // to exist
-  
+
   const { data: { login: { token } }} = await mutate({mutation, variables: {phone, code: correct_code}})
   expect(token).toBeTruthy()
-    
+
   // expect(await redis.get(`login:${phone}`))
   // to not exist
 
@@ -80,7 +80,7 @@ it('rate limit login', async () => {
     const result = await mutate({mutation, variables: {phone, code: bad_code}})
     expect(result.errors).toBeFalsy()
   }
-  
+
   try {
     const result = await mutate({mutation, variables: {phone, code: correct_code}})
     expect(result.errors[0].code).toBe("TOO_MANY_REQUEST")

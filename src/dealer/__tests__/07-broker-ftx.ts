@@ -211,7 +211,7 @@ const ftxMock = jest.fn();
 ftxMock.mockReturnValueOnce(fixtures[1]).mockReturnValueOnce(fixtures[0]);
 
 jest.mock('ccxt', () => ({
-  ftx: function() { return ftxMock() } 
+  ftx: function() { return ftxMock() }
 }))
 
 let dealerWalletFixture0, dealerWalletFixture1

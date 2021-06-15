@@ -23,12 +23,12 @@ export const updateUsersPendingPayment = async () => {
   }
 }
 
-export const getBalanceSheet = async () => {    
-  const { balance: assets } = await MainBook.balance({account_path: "Assets", currency: "BTC"}) 
-  const { balance: liabilities } = await MainBook.balance({account_path: "Liabilities", currency: "BTC"}) 
-  const { balance: lightning } = await MainBook.balance({accounts: lndAccountingPath, currency: "BTC"}) 
-  const { balance: bitcoin } = await MainBook.balance({accounts: bitcoindAccountingPath, currency: "BTC"}) 
-  const { balance: expenses } = await MainBook.balance({accounts: lndFeePath, currency: "BTC"}) 
+export const getBalanceSheet = async () => {
+  const { balance: assets } = await MainBook.balance({account_path: "Assets", currency: "BTC"})
+  const { balance: liabilities } = await MainBook.balance({account_path: "Liabilities", currency: "BTC"})
+  const { balance: lightning } = await MainBook.balance({accounts: lndAccountingPath, currency: "BTC"})
+  const { balance: bitcoin } = await MainBook.balance({accounts: bitcoindAccountingPath, currency: "BTC"})
+  const { balance: expenses } = await MainBook.balance({accounts: lndFeePath, currency: "BTC"})
   const { balance: revenue } = await MainBook.balance({account_path: "Revenue", currency: "BTC"})
 
   return {assets, liabilities, lightning, expenses, bitcoin, revenue }
@@ -40,21 +40,21 @@ export const balanceSheetIsBalanced = async () => {
 
   let bitcoind = await getBitcoindBalance()
 
-  const assetsLiabilitiesDifference = 
+  const assetsLiabilitiesDifference =
     assets /* assets is ___ */
     + liabilities /* liabilities is ___ */
     + expenses /* expense is positif */
     + revenue /* revenue is ___ */
 
-  const bookingVersusRealWorldAssets = 
+  const bookingVersusRealWorldAssets =
     (lnd + bitcoind) + // physical assets or value of account at third party
     (lightning + bitcoin) // value in accounting
-  
+
   if(!!bookingVersusRealWorldAssets || !!assetsLiabilitiesDifference) {
     logger.debug({
       assetsLiabilitiesDifference, bookingVersusRealWorldAssets,
-      assets, liabilities, expenses, revenue, 
-      lnd, lightning, 
+      assets, liabilities, expenses, revenue,
+      lnd, lightning,
       bitcoind, bitcoin
     }, `not balanced`)
   }

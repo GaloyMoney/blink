@@ -48,7 +48,7 @@ it('add invoice', async () => {
     signature: Buffer.concat([rValue, s]).toString('hex'),
     tags,
   });
-  
+
   // console.log({request_org, request_new: request })
   // console.log(util.inspect({ decoded, signature, hash, request_org, request_new: request }, false, Infinity))
   // console.log(util.inspect({ requestDetails }, false, Infinity))

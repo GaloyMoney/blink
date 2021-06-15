@@ -16,8 +16,8 @@ const initialBitcoinWalletBalance = 0
 const blockReward = 50
 const numOfBlock = 10
 // from: https://developer.bitcoin.org/examples/testing.html
-// Unlike mainnet, in regtest mode only the first 150 blocks pay a reward of 50 bitcoins. 
-// However, a block must have 100 confirmations before that reward can be spent, 
+// Unlike mainnet, in regtest mode only the first 150 blocks pay a reward of 50 bitcoins.
+// However, a block must have 100 confirmations before that reward can be spent,
 // so we generate 101 blocks to get access to the coinbase transaction from block #1.
 
 
@@ -51,7 +51,7 @@ it('funds bitcoind wallet', async () => {
     expect(name).toBe("")
   } catch (err) {
     console.log({err})
-  } 
+  }
 
   balance = await bitcoindDefaultClient.getBalance()
   console.log({balanceInit: balance})

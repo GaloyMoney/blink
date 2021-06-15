@@ -65,7 +65,7 @@ export const checkIsBalanced = async () => {
   await updateUsersPendingPayment()
   const { assetsLiabilitiesDifference, bookingVersusRealWorldAssets } = await balanceSheetIsBalanced()
 	expect(assetsLiabilitiesDifference).toBeFalsy() // should be 0
-  
+
   // FIXME: because safe_fees is doing rounding to the value up
   // balance doesn't match any longer. need to go from sats to msats to properly account for every msats spent
   expect(Math.abs(bookingVersusRealWorldAssets)).toBeLessThan(5) // should be 0
@@ -88,7 +88,7 @@ export async function waitUntilBlockHeight({ lnd, blockHeight }) {
 }
 
 export const mockGetExchangeBalance = () => jest.spyOn(FtxDealerWallet.prototype, 'getExchangeBalance').mockImplementation(() => new Promise((resolve, reject) => {
-  resolve({ sats : 0, usdPnl: 0 }) 
+  resolve({ sats : 0, usdPnl: 0 })
 }));
 
 export const openChannelTesting = async ({ lnd, other_lnd, socket, is_private = false }) => {

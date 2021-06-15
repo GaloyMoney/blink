@@ -25,6 +25,6 @@ export const getBalancesDetail = async (): Promise<{wallet: string, balance: num
 }
 
 export const getBalance = async (): Promise<number> => {
-  const balanceObj = await getBalancesDetail() 
+  const balanceObj = await getBalancesDetail()
   return _.sumBy(balanceObj, 'balance');
 }

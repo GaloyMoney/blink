@@ -137,7 +137,7 @@ export const login = async ({ phone, code, logger, ip }: ILogin): Promise<string
     // reseting the limiter for this phone
     limiterLoginAttempt.delete(phone) // no need to await the promise
 
-    // get User 
+    // get User
     let user
 
     user = await User.findOne({ phone })
@@ -151,7 +151,7 @@ export const login = async ({ phone, code, logger, ip }: ILogin): Promise<string
 
     // TODO
     // if (yamlConfig.carrierRegexFilter)  {
-    // 
+    //
     // }
     //
     // only fetch info once
@@ -170,7 +170,7 @@ export const login = async ({ phone, code, logger, ip }: ILogin): Promise<string
 
     const network = process.env.NETWORK
     return createToken({ uid: user._id, network })
-    
+
   } catch (err) {
     subLogger.error({err}, "login issue")
     throw err

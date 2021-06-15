@@ -22,5 +22,5 @@ if (require.main === module) {
     main()
   } catch (err) {
     baseLogger.warn({err}, "error in the dealer job")
-  }  
+  }
 }

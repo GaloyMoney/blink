@@ -2,7 +2,7 @@ import { defaultConfig } from "../config";
 
 
 it('test', async () => {
-  try {  
+  try {
     console.log(defaultConfig);
     expect(defaultConfig).toHaveProperty('hedging');
     expect(defaultConfig).toHaveProperty('name');

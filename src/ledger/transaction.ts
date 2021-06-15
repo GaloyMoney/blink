@@ -5,19 +5,19 @@ import { UserWallet } from "../userWallet"
 
 export const addTransactionLndReceipt = async ({description, payeeUser, metadata, sats}) => {
   const dealerPath = await dealerMediciPath()
-  
+
   const entry = MainBook.entry(description)
 
   entry
     .credit(payeeUser.accountPath, sats * payeeUser.ratioBtc, { ...metadata, currency: "BTC" })
     .credit(dealerPath, sats * payeeUser.ratioUsd, { ...metadata, currency: "BTC" })
-    
+
     // always 100%
-    .debit(lndAccountingPath, sats, { ...metadata, currency: "BTC" })  
-  
+    .debit(lndAccountingPath, sats, { ...metadata, currency: "BTC" })
+
   if (!!payeeUser.ratioUsd) {
     const satsToConvert = sats * payeeUser.ratioUsd
-    
+
     // TODO: add spread
     const usdEquivalent = satsToConvert * UserWallet.lastPrice
 
@@ -37,7 +37,7 @@ export const addTransactionLndPayment = async ({description, sats, metadata, pay
 
   const entry = MainBook.entry(description)
 
-  entry 
+  entry
     // always 100%
     .credit(lndAccountingPath, sats, { ...metadata, currency: "BTC" })
 
@@ -94,7 +94,7 @@ export const addTransactionOnUsPayment = async ({description, sats, metadata, pa
 
 export const rebalancePortfolio = async ({description, metadata, wallet}) => {
   const dealerPath = await dealerMediciPath()
-  
+
   const balances = await wallet.getBalances()
 
   const expectedBtc = wallet.user.ratioBtc * balances.total_in_BTC
@@ -104,12 +104,12 @@ export const rebalancePortfolio = async ({description, metadata, wallet}) => {
   const btcAmount = Math.abs(diffBtc)
   const usdAmount = Math.abs(expectedUsd - balances.USD)
 
-  const buyOrSell = !!diffBtc ? diffBtc > 0 ? "buy": "sell": null 
+  const buyOrSell = !!diffBtc ? diffBtc > 0 ? "buy": "sell": null
 
   const entry = MainBook.entry(description)
 
   // user buy btc
-  if (buyOrSell === "buy") {    
+  if (buyOrSell === "buy") {
     entry
       .credit(wallet.user.accountPath, btcAmount, { ...metadata, currency: "BTC" })
       .debit(dealerPath, btcAmount, { ...metadata, currency: "BTC" })

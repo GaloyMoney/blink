@@ -77,5 +77,5 @@ export class CSVAccountExport {
     // @ts-ignore
     this.entries.push(...transactions);
   }
-  
+
 }

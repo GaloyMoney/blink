@@ -52,14 +52,14 @@ it('test fetching carrier and adding this info to User', async () => {
     const user = await User.findOneAndUpdate({ phone }, {}, { upsert: true, new: true })
     // console.log({twilio: user.twilio})
     expect(user.twilio.countryCode == undefined).toBeTruthy()
-    
+
     user.twilio = result
-    
+
     baseLogger.info({user})
-    
+
     await user.save()
     expect(user.twilio.countryCode == undefined).toBeFalsy()
-    
+
   } catch (err) {
     console.error({err}, "error fetching carrier info")
     fail('there was an error fetching carrier info');

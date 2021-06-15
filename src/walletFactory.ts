@@ -38,4 +38,3 @@ export const getDealerWallet = async ({ logger }) => {
   const dealer = await User.findOne({ role: "dealer" })
   return WalletFactory({ user: dealer, logger })
 }
-

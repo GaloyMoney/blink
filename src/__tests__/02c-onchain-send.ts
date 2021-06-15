@@ -85,7 +85,7 @@ it('Sends onchain payment successfully', async () => {
 	const {BTC: interimBalance} = await userWallet0.getBalances()
 	expect(interimBalance).toBe(initialBalanceUser0 - amount - pendingTxn.fee)
   await checkIsBalanced()
-  
+
   const txs = await userWallet0.getTransactions()
   const pendingTxs = filter(txs, {pending: true})
   expect(pendingTxs.length).toBe(1)
@@ -128,18 +128,18 @@ it('makes onchain on-us transaction', async () => {
   try {
     const user3Address = await userWallet3.getOnChainAddress()
     const {BTC: initialBalanceUser3} = await userWallet3.getBalances()
-  
+
     const paymentResult = await userWallet0.onChainPay({ address: user3Address, amount })
-  
+
     const {BTC: finalBalanceUser0} = await userWallet0.getBalances()
     const {BTC: finalBalanceUser3} = await userWallet3.getBalances()
-  
+
     console.log({initialBalanceUser0, finalBalanceUser0, initialBalanceUser3, finalBalanceUser3})
-  
+
     expect(paymentResult).toBe(true)
     expect(finalBalanceUser0).toBe(initialBalanceUser0 - amount)
     expect(finalBalanceUser3).toBe(initialBalanceUser3 + amount)
-  
+
     const { results: [{ pending, fee, feeUsd }] } = await MainBook.ledger({ account: userWallet0.accountPath, type: "onchain_on_us" })
     expect(pending).toBe(false)
     expect(fee).toBe(0)
@@ -164,10 +164,10 @@ it('makes onchain on-us transaction with memo', async () => {
   const user3Address = await userWallet3.getOnChainAddress()
   const paymentResult = await userWallet0.onChainPay({ address: user3Address as string, amount, memo })
   expect(paymentResult).toBe(true)
-  
+
   const txs = await userWallet0.getTransactions()
   expect((first(txs) as any).description).toBe(memo)
-  
+
   // receiver should not know memo from sender
   const txsUser3 = await userWallet3.getTransactions()
   expect((first(txsUser3) as any).description).not.toBe(memo)
@@ -223,7 +223,7 @@ it('testing Fee', async () => {
     const fee = await userWallet0.getOnchainFee({address})
     expect(fee).toBeGreaterThan(0)
   }
-  
+
   {
     const address = await userWallet3.getOnChainAddress()
     const fee = await userWallet0.getOnchainFee({address})

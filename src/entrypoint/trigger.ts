@@ -61,9 +61,9 @@ export async function onchainTransactionEventHandler(tx) {
   if (tx.is_outgoing) {
     if (!tx.is_confirmed) {
       return
-      // FIXME 
+      // FIXME
       // we have to return here because we will not know whose user the the txid belong to
-      // this is because of limitation for lnd onchain wallet. we only know the txid after the 
+      // this is because of limitation for lnd onchain wallet. we only know the txid after the
       // transaction has been sent. and this events is trigger before
     }
 
@@ -76,7 +76,7 @@ export async function onchainTransactionEventHandler(tx) {
   } else {
     // incoming transaction
 
-    // TODO: the same way Lightning is updating the wallet/accounting, 
+    // TODO: the same way Lightning is updating the wallet/accounting,
     // this event should update the onchain wallet/account of the associated user
 
     let user
@@ -137,7 +137,7 @@ export const onChannelUpdated = async ({ channel, lnd, stateChange }: { channel:
     // FIXME: need to account for channel closing
     return
   }
-  
+
   let txid
 
   if (stateChange === "opened") {
@@ -145,7 +145,7 @@ export const onChannelUpdated = async ({ channel, lnd, stateChange }: { channel:
   } else if (stateChange === "closed") {
     ({ close_transaction_id: txid } = channel)
   }
-  
+
   // TODO: dedupe from onchain
   const { current_block_height } = await getHeight({ lnd })
   const after = Math.max(0, current_block_height - LOOK_BACK) // this is necessary for tests, otherwise after may be negative
@@ -167,9 +167,9 @@ export const onChannelUpdated = async ({ channel, lnd, stateChange }: { channel:
   // } catch (err) {
   //   logger.error({err}, "can't fetch fee for closing tx")
   // }
-  
+
   // TODO: there is no fee currently given by bitcoind for raw transaction
-  // either calculate it from the input, or use an indexer 
+  // either calculate it from the input, or use an indexer
   // const { fee } = tx.fee
 
   const metadata = { currency: "BTC", txid, type: "fee", pending: false }

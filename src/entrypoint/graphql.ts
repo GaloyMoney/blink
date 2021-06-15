@@ -145,7 +145,7 @@ const resolvers = {
     getLastOnChainAddress: async (_, __, { wallet }) => ({ id: wallet.getLastOnChainAddress() }),
     maps: async () => {
       // TODO: caching
-      const users = await User.find({ 
+      const users = await User.find({
         title: { $exists: true }, coordinate: { $exists: true } },
         { username: 1, title: 1, coordinate: 1 }
       );
@@ -329,7 +329,7 @@ export async function startApolloServer() {
 
       let wallet, user
 
-      // TODO move from id: uuidv4() to a Jaeger standard 
+      // TODO move from id: uuidv4() to a Jaeger standard
       const logger = graphqlLogger.child({ token, id: uuidv4(), body: context.req?.body })
 
       if (!!uid) {
@@ -352,7 +352,7 @@ export async function startApolloServer() {
     },
     formatError: err => {
       let log
-      
+
       //An err object needs to necessarily have the forwardToClient field to be forwarded
       // i.e. catch-all errors will not be forwarded
       if(log = err.extensions?.exception?.log) {
@@ -387,7 +387,7 @@ export async function startApolloServer() {
   app.use(swStats.getMiddleware({
     uriPath: "/swagger",
     // no authentication but /swagger/* should be protected from access outside the cluster
-    // this is done with nginx 
+    // this is done with nginx
   }))
 
   // Health check
@@ -415,4 +415,3 @@ export async function startApolloServer() {
 setupMongoConnection().then(async () => {
   await startApolloServer()
 }).catch((err) => graphqlLogger.error(err, "server error"))
-

@@ -19,7 +19,7 @@ export const getCurrentPrice = async (): Promise<number | undefined> => {
   let price
 
   try {
-    const promise = new Promise((resolve, reject): Promise<number> => 
+    const promise = new Promise((resolve, reject): Promise<number> =>
       client.getPrice({}, (err, {price}) => {
         if (err) {
           baseLogger.error({err}, "impossible to fetch most recent price")
@@ -32,7 +32,7 @@ export const getCurrentPrice = async (): Promise<number | undefined> => {
     if (!price) {
       throw new Error("price can't be null")
     }
-    // FIXME switch back to 60 once price pod stop crashing 
+    // FIXME switch back to 60 once price pod stop crashing
     mainCache.set( key, price, 600 )
   } catch (err) {
     price = mainCache.get(key);

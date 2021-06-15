@@ -126,8 +126,8 @@ export class Price {
             // this.logger.debug({value0: value[0]}, "we already have those price datas in our database")
             continue
           }
-          
-          
+
+
           this.logger.debug({value0: value[0]}, "adding entry to our price database")
           doc.pair.exchange.price.push({ _id: value[0], o: sat2btc(value[1]) })
 

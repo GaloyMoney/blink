@@ -30,9 +30,9 @@ afterAll(async () => {
 
 it('sends daily balance notification', async () => {
   await sendBalanceToUsers()
-  const numActiveUsers = (await User.getActiveUsers()).length  
+  const numActiveUsers = (await User.getActiveUsers()).length
   expect(sendNotification.mock.calls.length).toBe(numActiveUsers)
-  for (const [call] of sendNotification.mock.calls) {    
+  for (const [call] of sendNotification.mock.calls) {
     const { balance } = await MainBook.balance({ accounts: customerPath(call.user._id) })
     const expectedUsdBalance = (price * balance).toLocaleString("en", { maximumFractionDigits: 2 })
     const expectedSatsBalance = balance.toLocaleString("en", { maximumFractionDigits: 2 })

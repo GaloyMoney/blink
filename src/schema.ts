@@ -237,10 +237,10 @@ UserSchema.virtual('oldEnoughForWithdrawal').get(function(this: typeof UserSchem
 UserSchema.methods.limitHit = async function({on_us, amount}: {on_us: boolean, amount: number}) {
   const timestampYesterday = Date.now() - MS_PER_DAY
 
-  const txnType = on_us ? [{type: 'on_us'},{type: 'onchain_on_us'}] : [{type:{$ne: 'on_us'}}] 
+  const txnType = on_us ? [{type: 'on_us'},{type: 'onchain_on_us'}] : [{type:{$ne: 'on_us'}}]
 
   const limit = yamlConfig.limits[on_us ? 'onUs' : 'withdrawal'].level[this.level]
-  
+
   const outgoingSats = (await User.getVolume({
     after: timestampYesterday, txnType, accounts: this.accountPath
   }))?.outgoingSats ?? 0
@@ -488,8 +488,8 @@ export const Transaction = mongoose.model("Medici_Transaction", transactionSchem
 
 const priceSchema = new Schema({
   // TODO:
-  // split array in days instead of one big array. 
-  // More background here: 
+  // split array in days instead of one big array.
+  // More background here:
   // https://www.mongodb.com/blog/post/time-series-data-and-mongodb-part-2-schema-design-best-practices
   _id: {
     type: Date, // TODO does _id would prevent having several key (ie: Date) for other exchanges?

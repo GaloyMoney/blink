@@ -39,7 +39,7 @@ const getBooks = async () => {
 
 const exportAllUserLedger = async () => {
   const csv = new CSVAccountExport()
-  
+
   for await (const user of User.find({})) {
     await csv.addAccount({account: customerPath(user._id)})
   }
@@ -88,7 +88,7 @@ const exportUsers = async () => {
       }
     }
   ])
-  
+
   for (const user of users) {
 
     console.log(`processing ${user._id}`)
@@ -112,7 +112,7 @@ const exportUsers = async () => {
       record[`balance${currency}`] = balance
     }
 
-    
+
     try {
       const { totalDebit, totalCredit, countTxs } = _.find(aggregateTxs, {"_id": user.accountPath})
       record["totalDebit"] = totalDebit

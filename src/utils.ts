@@ -23,7 +23,7 @@ import { baseLogger } from "./logger";
 export const customLoggerPrefix = `custom: `
 
 export class LoggedError extends GraphQLError {
-  
+
   constructor(message) {
     super(`${customLoggerPrefix}${message}`);
   }

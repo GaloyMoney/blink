@@ -6,7 +6,7 @@ metadata:
     app: {{ $.Chart.Name }}
     app.kubernetes.io/managed-by: Helm
     kube-monkey/enabled: enabled
-    kube-monkey/identifier: {{ $.Chart.Name }} 
+    kube-monkey/identifier: {{ $.Chart.Name }}
     kube-monkey/kill-mode: fixed
     kube-monkey/kill-value: "1"
     kube-monkey/mtbf: "8"

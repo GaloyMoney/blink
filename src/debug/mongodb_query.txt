@@ -6,5 +6,5 @@ db.getCollection('medici_transactions').aggregate([
 
     // reimbursement is done on both transaction attached to the journal
     // so need to be more than 2 to match the "issue"
-    {$match : { count : { $gt : 2 } }} 
+    {$match : { count : { $gt : 2 } }}
 ])

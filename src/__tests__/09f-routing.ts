@@ -25,7 +25,7 @@ it('records routing fee correctly', async () => {
   console.log(await getNetworkInfo({lnd: lndMain}))
 
   const { request } = await createInvoice({ lnd: lndOutside2, tokens: 1000 })
-  
+
   await pay({ lnd: lndOutside1, request })
 
   const date = Date.now() + 60 * 60 * 1000 * 24 * 2

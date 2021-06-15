@@ -13,7 +13,7 @@ const { using } = bluebird;
  * this represents a user wallet
  */
 export class LightningUserWallet extends OnChainMixin(LightningMixin(UserWallet)) {
-  
+
   constructor(args: ILightningWalletUser) {
     super({ ...args })
   }

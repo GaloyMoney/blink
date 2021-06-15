@@ -1,7 +1,7 @@
 controller:
   service:
     externalTrafficPolicy: Local
-  metrics: 
+  metrics:
     enabled: true
     service:
       annotations:

@@ -7,7 +7,7 @@ export const limiterRequestPhoneCode = new RateLimiterRedis({
   keyPrefix: 'request_phone_code',
   points: yamlConfig.limits.requestPhoneCode.points,
   duration: yamlConfig.limits.requestPhoneCode.duration,
-  blockDuration: yamlConfig.limits.requestPhoneCode.blockDuration, 
+  blockDuration: yamlConfig.limits.requestPhoneCode.blockDuration,
 });
 
 export const limiterLoginAttempt = new RateLimiterRedis({
@@ -15,7 +15,7 @@ export const limiterLoginAttempt = new RateLimiterRedis({
   keyPrefix: 'login',
   points: yamlConfig.limits.loginAttempt.points,
   duration: yamlConfig.limits.loginAttempt.duration,
-  blockDuration: yamlConfig.limits.loginAttempt.blockDuration, 
+  blockDuration: yamlConfig.limits.loginAttempt.blockDuration,
 });
 
 // TODO:
@@ -27,5 +27,5 @@ export const failedAttemptPerIp = new RateLimiterRedis({
   keyPrefix: 'failed_attempt_ip',
   points: yamlConfig.limits.failedAttemptPerIp.points,
   duration: yamlConfig.limits.failedAttemptPerIp.duration,
-  blockDuration: yamlConfig.limits.failedAttemptPerIp.blockDuration, 
+  blockDuration: yamlConfig.limits.failedAttemptPerIp.blockDuration,
 });

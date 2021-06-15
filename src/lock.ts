@@ -3,11 +3,11 @@ import bluebird from 'bluebird';
 import { redis } from "./redis";
 const { using } = bluebird;
 
-  
+
 // the maximum amount of time you want the resource locked,
 // keeping in mind that you can extend the lock up until
 // the point when it expires
-// TODO: use TIMEOUTs env variable 
+// TODO: use TIMEOUTs env variable
 const ttl = process.env.NETWORK !== "regtest" ? 180000 : 10000
 
 function errorWrapper({logger}) {
@@ -15,7 +15,7 @@ function errorWrapper({logger}) {
     logger.error(err, `unable to release redis lock`);
   }
 }
-  
+
 const redlockClient = new Redlock(
 // you should have one client for each independent redis node
 // or cluster
@@ -76,11 +76,9 @@ export const lockExtendOrThrow = async ({lock, logger}, async_fn): Promise<any> 
         reject( new Error(error) )
         return
       }
-  
+
       const result = await async_fn()
       resolve(result)
     })
   })
 }
-
-

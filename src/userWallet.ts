@@ -78,7 +78,7 @@ export abstract class UserWallet {
     ]
 
     // this array is used to know the total in USD and BTC
-    // the effective ratio may not be equal to the user ratio 
+    // the effective ratio may not be equal to the user ratio
     // as a result of price fluctuation
     let total = priceMap.map(({ id, BTC, USD }) => ({
       id,

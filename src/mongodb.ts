@@ -55,4 +55,3 @@ export const setupMongoConnectionSecondary = async () => {
 
   return mongoose
 }
-

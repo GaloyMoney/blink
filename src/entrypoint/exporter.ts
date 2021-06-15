@@ -50,7 +50,7 @@ const onchainDepositFees_g = new client.Gauge({ name:`${prefix}_onchainDepositFe
 
 const main = async () => {
   server.get('/metrics', async (req, res) => {
-        
+
     const bosScore = await getBosScore()
     bos_g.set(bosScore)
 
@@ -66,7 +66,7 @@ const main = async () => {
     } catch (err) {
       logger.error({err}, "impossible to calculate balance sheet")
     }
-    
+
     const { total, onChain, offChain, opening_channel_balance, closing_channel_balance } = await lndBalances()
     lnd_g.set(total)
     lndOnChain_g.set(onChain)
@@ -74,10 +74,10 @@ const main = async () => {
     lndOpeningChannelBalance_g.set(opening_channel_balance)
     lndClosingChannelBalance_g.set(closing_channel_balance)
     // price_g.set(price)
-      
+
     const userCount = await User.countDocuments()
     userCount_g.set(userCount)
-    
+
     const funderWallet = await getFunderWallet({ logger })
     const { BTC: funderBalance } = await funderWallet.getBalances()
     funder_balance_BTC_g.set(funderBalance)
@@ -125,7 +125,7 @@ const main = async () => {
     ])
     const {totalDepositFees = 0} = depositFeeEntry || {}
     onchainDepositFees_g.set(totalDepositFees)
-    
+
     const [withdrawFeeEntry] = await Transaction.aggregate([
       {$match: { accounts: 'Revenue:Bitcoin:Fees', type:'onchain_payment' }},
       {$group: { _id: null, totalWithdrawFees: { $sum: "$credit" } } }
@@ -140,7 +140,7 @@ const main = async () => {
   server.get('/healthz', async (req, res) => {
     res.send('OK')
   })
-    
+
   const port = process.env.PORT || 3000;
   logger.info(
     `Server listening to ${port}, metrics exposed on /metrics endpoint`,
