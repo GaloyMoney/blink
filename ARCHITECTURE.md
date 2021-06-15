@@ -2,7 +2,7 @@
 
 To operate, Lightning nodes have to have at least some funds with keys online. We also keep funds online for a portion of the onchain wallet for users who want to send funds over the layer 1. all the hot wallet are currently using lnd. 
 
-The cold storage is done with a multi sig. this wallet is being operated by bitcoind. the orchestration of the signature is done with Specter.
+The cold storage is done with a multi sig wallet. This wallet is operated by bitcoind, and the orchestration of the signature is done with Specter.
 
 ## Kubernetes
 
@@ -36,27 +36,27 @@ The state of the wallet is shared among 4 differences sources:
 
 ### bitcoin-core
 
-bitcoin core handle the cold storage. 
+Bitcoin core handles the cold storage.
 
-there is typically a very low load transaction wise in regard to the wallet. maybe 1 transaction per week when a rebalancing is needed.
+There is typically a very low load transaction wise in regard to the wallet. Typically 1 transaction per week when a rebalancing is needed.
 
 ### lnd 
 
-lnd handle all of the transactions the users run.
-lnd stores itself the data in a bbolt database.
+Lnd handles all of the transactions the users make.
+Lnd stores the data in a bbolt database internally.
 
-every succesful payment within lnd is being recorded on mongodb.
+Every successful payment within lnd is being recorded on mongodb.
 
-offchain-wise, nothing is needed within the lnd side to present a transaction to a user after it has been executed.
-onchain-wise, it's possible that a user shared an onchain address. this is currently tied to lnd. (we intend to not use lnd for onchain transaction to remove this dependancy and simplify lnd instance recyling)
+Offchain-wise, nothing is needed within the lnd side to present a transaction to a user after it has been executed.
+Onchain-wise, it's possible that a user shared an onchain address. This is currently tied to lnd. (we intend to not use lnd for onchain transaction to remove this dependancy and simplify lnd instance recyling)
 
 ### Mongodb
 
-Mongodb is the database storing all users transactions. It's the source of truth for the customers' accounts.
+Mongodb is the database storing all users' transactions. It's the source of truth for the customers' accounts.
 
-To achieve strong consistency, it's currently setup with:
-- Write access need to be valided by 2-out-of-3 pods before being considered succesful
-- Schema on write with mongoose. 
+To achieve strong consistency, it's currently setup in the following way:
+- Write access needs to be valided by 2-out-of-3 pods before being considered successful
+- Schema on write with mongoose
 
 The accounting part is being done by [medici](https://github.com/flash-oss/medici/commits/master).
 
@@ -64,7 +64,7 @@ There is no transaction used yet (the main inconsistency if this were to happen 
 
 ### Redis
 
-Redis is used a distributed lock, such that the number of replicas for the node/graphql can be scaled as needed.
-Redis is also used for query rate limiting , and to store ephemeral data such as result of route probing.
+Redis is used for a distributed lock, such that the number of replicas for the node/graphql can be scaled as needed.
+Redis is also used for query rate limiting, and to store ephemeral data such as result of route probing.
 
-Redis can be though as a cache. The data can be deleted as needed (it would reset the lock, so some attention needed to be paid on this if some live queries are running)
+Redis can be thought of as a cache. The data can be deleted as needed (it would reset the lock, so some attention needs to be paid to this if some live queries are running)
