@@ -1,12 +1,12 @@
 /**
  * @jest-environment node
  */
-import mongoose from "mongoose";
-import { AdminOps } from "../AdminOps";
-import { yamlConfig } from "../config";
-import { setupMongoConnection } from "../mongodb";
-import { User } from "../schema";
-import { getUserWallet } from "./helper";
+import mongoose from "mongoose"
+import { AdminOps } from "../AdminOps"
+import { yamlConfig } from "../config"
+import { setupMongoConnection } from "../mongodb"
+import { User } from "../schema"
+import { getUserWallet } from "./helper"
 
 jest.mock('../realtimePrice')
 
@@ -66,7 +66,7 @@ describe('username tests', () => {
     const result = await userWallet0.setUsername({ username: "user0" })
     expect(!!result).toBeTruthy()
   })
-  
+
   it('sets username for user1', async () => {
     const result = await userWallet1.setUsername({ username: "user1" })
     expect(!!result).toBeTruthy()
@@ -93,7 +93,7 @@ describe('username tests', () => {
       .spyOn(global.Date, 'now')
       .mockImplementationOnce(() =>
       new Date(date).valueOf()
-    );
+    )
 
     expect(userWallet2.user.oldEnoughForWithdrawal).toBeFalsy()
   })
@@ -109,7 +109,7 @@ describe('username tests', () => {
       .spyOn(global.Date, 'now')
       .mockImplementationOnce(() =>
       new Date(date).valueOf()
-    );
+    )
 
     expect(userWallet2.user.oldEnoughForWithdrawal).toBeTruthy()
   })
@@ -140,7 +140,7 @@ describe('username tests', () => {
   })
 
   it('does not set username if already taken', async () => {
-    const userWallet2 = await getUserWallet(2)
+    await getUserWallet(2)
     await expect(userWallet2.setUsername({ username })).rejects.toThrow()
   })
 

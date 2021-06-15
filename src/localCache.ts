@@ -1,13 +1,13 @@
-import NodeCache from "node-cache";
-import { Price } from "./priceImpl";
-import { DbMetadata } from "./schema";
-export const mainCache = new NodeCache();
+import NodeCache from "node-cache"
+import { Price } from "./priceImpl"
+import { DbMetadata } from "./schema"
+export const mainCache = new NodeCache()
 
 export const getMinBuildNumber = async () => {
   const key = "minBuildNumber"
   let value
 
-  value = mainCache.get(key);
+  value = mainCache.get(key)
   if ( value === undefined ){
     const { minBuildNumber, lastBuildNumber } = await DbMetadata.findOne({}, { minBuildNumber: 1, lastBuildNumber: 1, _id: 0 })
     mainCache.set( key, { minBuildNumber, lastBuildNumber }, 3600 )
@@ -21,7 +21,7 @@ export const getHourlyPrice = async ({logger}) => {
   const key = "lastCached"
   let value
 
-  value = mainCache.get(key);
+  value = mainCache.get(key)
   if ( value === undefined ){
     const price = new Price({logger})
     const lastCached = await price.lastCached()

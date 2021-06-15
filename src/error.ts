@@ -1,5 +1,5 @@
-import { ApolloError } from 'apollo-server-errors';
-import { yamlConfig } from './config';
+import { ApolloError } from 'apollo-server-errors'
+import { yamlConfig } from './config'
 
 export class CustomError extends ApolloError {
   log

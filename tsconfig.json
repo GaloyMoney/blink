@@ -18,8 +18,10 @@
   "compileOnSave": true,
   "include": [
     "src/entrypoint/*.ts",
-    "src/__tests__/*.ts",
+    "src/postman/*.ts",
+    "src/**/__tests__/*.ts",
+    "src/__mocks__/*.ts",
     "src/debug/*.ts",
-    "src/**/__tests__/.ts"
+    "src/*.d.ts",
   ]
 }

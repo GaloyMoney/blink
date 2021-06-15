@@ -1,14 +1,14 @@
-import fs from 'fs';
-import yaml from 'js-yaml';
-import { baseLogger } from "./logger";
+import fs from 'fs'
+import yaml from 'js-yaml'
+import { baseLogger } from "./logger"
 
-let defaultContent = fs.readFileSync('./default.yaml', 'utf8');
+const defaultContent = fs.readFileSync('./default.yaml', 'utf8')
 export const defaultConfig = yaml.load(defaultContent)
 
 let customContent, customConfig
 
 try {
-  customContent = fs.readFileSync('/var/yaml/custom.yaml', 'utf8');
+  customContent = fs.readFileSync('/var/yaml/custom.yaml', 'utf8')
   customConfig = yaml.load(customContent)
 } catch (err) {
   if (process.env.NETWORK !== "regtest") {

@@ -1,0 +1,64 @@
+{
+  "env": {
+    "browser": true,
+    "es6": true,
+    "node": true
+  },
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "project": "tsconfig.json",
+    "sourceType": "module"
+  },
+  "plugins": ["eslint-plugin-import", "@typescript-eslint"],
+  "rules": {
+    "@typescript-eslint/adjacent-overload-signatures": "error",
+    "@typescript-eslint/no-empty-function": "error",
+    "@typescript-eslint/no-empty-interface": "warn",
+    "@typescript-eslint/no-namespace": "error",
+    "@typescript-eslint/prefer-for-of": "warn",
+    "@typescript-eslint/triple-slash-reference": "error",
+    "@typescript-eslint/unified-signatures": "warn",
+    "constructor-super": "error",
+    "eqeqeq": ["warn", "always"],
+    "import/no-deprecated": "warn",
+    "import/no-extraneous-dependencies": "error",
+    "import/no-unassigned-import": "warn",
+    "no-cond-assign": "error",
+    "no-duplicate-case": "error",
+    "no-duplicate-imports": "error",
+    "no-empty": [
+      "error",
+      {
+        "allowEmptyCatch": true
+      }
+    ],
+    "no-empty-function": "error",
+    "no-new-wrappers": "error",
+    "no-param-reassign": "error",
+    "no-redeclare": "error",
+    "no-sequences": "error",
+    "no-throw-literal": "error",
+    "no-unsafe-finally": "error",
+    "no-unused-labels": "error",
+    "no-var": "error",
+    "no-void": "error",
+    "prefer-const": "error",
+
+    "no-unused-vars": "error",
+    "comma-dangle": ["error", "always-multiline"],
+    "semi": ["error", "never"],
+    "no-trailing-spaces": "error",
+    "eol-last": "error"
+
+    // TODO: Fix or remove
+    // "@typescript-eslint/no-shadow": [
+    //   "error",
+    //   {
+    //     "hoist": "all"
+    //   }
+    // ]
+    // "@typescript-eslint/no-unnecessary-type-assertion": "error"
+    // "@typescript-eslint/no-floating-promises": "error"
+    // "no-invalid-this": "error"
+  }
+}

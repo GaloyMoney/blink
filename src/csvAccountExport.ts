@@ -1,5 +1,5 @@
-import { MainBook } from "./mongodb";
-import moment from "moment";
+import { MainBook } from "./mongodb"
+import moment from "moment"
 
 import {createObjectCsvStringifier, createObjectCsvWriter} from "csv-writer"
 
@@ -35,19 +35,19 @@ export class CSVAccountExport {
 
   getBase64(): string {
     const csvWriter = createObjectCsvStringifier({
-      header
+      header,
     })
 
-    const header_stringify = csvWriter.getHeaderString();
+    const header_stringify = csvWriter.getHeaderString()
     const records = csvWriter.stringifyRecords(this.entries)
 
     const str = header_stringify + records
 
     // create buffer from string
-    const binaryData = Buffer.from(str, "utf8");
+    const binaryData = Buffer.from(str, "utf8")
 
     // decode buffer as base64
-    const base64Data = binaryData.toString("base64");
+    const base64Data = binaryData.toString("base64")
 
     return base64Data
   }
@@ -55,27 +55,28 @@ export class CSVAccountExport {
   async saveToDisk(): Promise<void> {
     const csvWriter = createObjectCsvWriter({
       path: 'export_accounts.csv',
-      header
-    });
+      header,
+    })
 
     await csvWriter.writeRecords(this.entries)
     console.log("saving complete")
   }
 
   async addAccount({account}): Promise<void> {
-    let transactions
+    const ledger = await MainBook.ledger({
+      account,
+    })
 
-    ({ results: transactions } = await MainBook.ledger({
-      account
-    }))
-
-    transactions.forEach(tx => tx = tx.toObject())
-    transactions.forEach(tx => tx.meta = JSON.stringify(tx.meta))
-    transactions.forEach(tx => tx.unix = moment(tx.datetime).unix())
-    transactions.forEach(tx => tx.date = moment(tx.datetime).format('L'))
+    const transactions = ledger.results.map(tx => {
+      const newTx = tx.toObject()
+      newTx.meta = JSON.stringify(newTx.meta)
+      newTx.unix = moment(newTx.datetime).unix()
+      newTx.date = moment(newTx.datetime).format('L')
+      return newTx
+    })
 
     // @ts-ignore
-    this.entries.push(...transactions);
+    this.entries.push(...transactions)
   }
-  
+
 }

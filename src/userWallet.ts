@@ -1,13 +1,13 @@
-import assert from 'assert';
-import moment from "moment";
-import { CSVAccountExport } from "./csvAccountExport";
-import { DbError } from './error';
-import { Balances } from "./interface";
-import { customerPath } from "./ledger/ledger";
-import { MainBook } from "./mongodb";
-import { sendNotification } from "./notifications/notification";
-import { User } from "./schema";
-import { ITransaction } from "./types";
+import assert from 'assert'
+import moment from "moment"
+import { CSVAccountExport } from "./csvAccountExport"
+import { DbError } from './error'
+import { Balances } from "./interface"
+import { customerPath } from "./ledger/ledger"
+import { MainBook } from "./mongodb"
+import { sendNotification } from "./notifications/notification"
+import { User } from "./schema"
+import { ITransaction } from "./types"
 
 export abstract class UserWallet {
 
@@ -34,6 +34,7 @@ export abstract class UserWallet {
   // this needs to be here to be able to call / chain updatePending()
   // otherwise super.updatePending() would result in an error
   // there may be better way to architecture this?
+  // eslint-disable-next-line no-unused-vars
   async updatePending(lock) { return }
 
   async getBalances(lock?): Promise<Balances> {
@@ -73,16 +74,16 @@ export abstract class UserWallet {
       {
         id: "USD",
         BTC: UserWallet.lastPrice,
-        USD: 1
-      }
+        USD: 1,
+      },
     ]
 
     // this array is used to know the total in USD and BTC
-    // the effective ratio may not be equal to the user ratio 
+    // the effective ratio may not be equal to the user ratio
     // as a result of price fluctuation
-    let total = priceMap.map(({ id, BTC, USD }) => ({
+    const total = priceMap.map(({ id, BTC, USD }) => ({
       id,
-      value: BTC * balances["BTC"] + USD * balances["USD"]
+      value: BTC * balances["BTC"] + USD * balances["USD"],
     }))
 
     balances.total_in_BTC = total.filter(item => item.id === "BTC")[0].value
@@ -159,7 +160,7 @@ export abstract class UserWallet {
   // deprecated
   async setLanguage({ language }): Promise<boolean> {
 
-    const result = await User.findOneAndUpdate({ _id: this.user.id, }, { language })
+    const result = await User.findOneAndUpdate({ _id: this.user.id }, { language })
 
     if(!result) {
       const error = `issue setting language preferences`
@@ -197,7 +198,7 @@ export abstract class UserWallet {
       fee,
       feeUsd: fee ? UserWallet.satsToUsd(fee) : undefined,
       sats,
-      usd: usd ?? UserWallet.satsToUsd(sats)
+      usd: usd ?? UserWallet.satsToUsd(sats),
     }
   }
 

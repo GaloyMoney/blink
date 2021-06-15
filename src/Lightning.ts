@@ -1,25 +1,21 @@
 import lnService from 'ln-service'
 import assert from 'assert'
-import { createHash, randomBytes } from "crypto";
-import moment from "moment";
-import { FEECAP, FEEMIN, lnd, TIMEOUT_PAYMENT } from "./lndConfig";
-import { lockExtendOrThrow, redlock } from "./lock";
-import { MainBook } from "./mongodb";
-import { transactionNotification } from "./notifications/payment";
-import { addTransactionLndPayment, addTransactionLndReceipt, addTransactionOnUsPayment } from "./ledger/transaction";
-import { IAddInvoiceRequest, IFeeRequest, IPaymentRequest } from "./types";
-import { addContact, isInvoiceAlreadyPaidError, LoggedError, timeout } from "./utils";
-import { UserWallet } from "./userWallet";
-import { InvoiceUser, Transaction, User } from "./schema";
+import { createHash, randomBytes } from "crypto"
+import moment from "moment"
+import { FEECAP, FEEMIN, lnd, TIMEOUT_PAYMENT } from "./lndConfig"
+import { lockExtendOrThrow, redlock } from "./lock"
+import { MainBook } from "./mongodb"
+import { transactionNotification } from "./notifications/payment"
+import { addTransactionLndPayment, addTransactionLndReceipt, addTransactionOnUsPayment } from "./ledger/transaction"
+import { IAddInvoiceRequest, IFeeRequest, IPaymentRequest } from "./types"
+import { addContact, isInvoiceAlreadyPaidError, LoggedError, timeout } from "./utils"
+import { UserWallet } from "./userWallet"
+import { InvoiceUser, Transaction, User } from "./schema"
 import { createInvoice, getWalletInfo, decodePaymentRequest, cancelHodlInvoice, payViaPaymentDetails, payViaRoutes, getPayment, getInvoice } from "lightning"
-import crypto from "crypto";
 
-
-import util from 'util'
-
-import { yamlConfig } from "./config";
-import { DbError, InsufficientBalanceError, LightningPaymentError, NewAccountWithdrawalError, NotFoundError, SelfPaymentError, RouteFindingError, TransactionRestrictedError, ValidationError } from './error';
-import { redis } from "./redis";
+import { yamlConfig } from "./config"
+import { DbError, InsufficientBalanceError, LightningPaymentError, NewAccountWithdrawalError, NotFoundError, SelfPaymentError, RouteFindingError, TransactionRestrictedError, ValidationError } from './error'
+import { redis } from "./redis"
 
 export type ITxType = "invoice" | "payment" | "onchain_receipt" | "onchain_payment" | "on_us"
 export type payInvoiceResult = "success" | "failed" | "pending" | "already_paid"
@@ -56,7 +52,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     ])
   }
 
-  getExpiration = (input) => {    
+  getExpiration = (input) => {
     // TODO: manage USD shorter time
     const currency = "BTC"
 
@@ -67,26 +63,26 @@ export const LightningMixin = (superclass) => class extends superclass {
     if (!!value && value < 0) {
       throw new Error("value can't be negative")
     }
-    
+
     let request, id, input
 
     const expires_at = this.getExpiration(moment()).toDate()
-    
+
     try {
       input = {
         lnd,
         tokens: value,
         expires_at,
       }
-      
+
       if (selfGenerated) {
       // generated through the mobile app
         input["description"] = memo
       } else {
       // lnpay // static invoice
         const description_string = `pay ${this.user.username}`
-        const sha256 = crypto.createHash("sha256");
-        const description_hash = sha256.update(description_string).digest("hex");
+        const sha256 = createHash("sha256")
+        const description_hash = sha256.update(description_string).digest("hex")
         input["description_hash"] = description_hash
       }
 
@@ -126,17 +122,17 @@ export const LightningMixin = (superclass) => class extends superclass {
     //
     // OR: add a lock
 
-    // TODO: do a balance check, so that we don't probe needlessly if the user doesn't have the 
-    // probably make sense to used a cached balance here. 
+    // TODO: do a balance check, so that we don't probe needlessly if the user doesn't have the
+    // probably make sense to used a cached balance here.
 
-    const { mtokens, max_fee, destination, id, routeHint, messages, cltv_delta, features, payment } = 
+    const { mtokens, max_fee, destination, id, routeHint, messages, cltv_delta, features, payment } =
       await this.validate(params, this.logger)
 
-    const lightningLogger = this.logger.child({ 
+    const lightningLogger = this.logger.child({
       topic: "fee_estimation",
       protocol: "lightning",
-      params, 
-      decoded: { mtokens, max_fee, destination, id, routeHint, messages, cltv_delta, features, payment }
+      params,
+      decoded: { mtokens, max_fee, destination, id, routeHint, messages, cltv_delta, features, payment },
     })
 
     const key = JSON.stringify({ id, mtokens })
@@ -159,9 +155,9 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     try {
       ({ route } = await lnService.probeForRoute({
-        lnd, 
-        destination, 
-        mtokens, 
+        lnd,
+        destination,
+        mtokens,
         routes: routeHint,
         cltv_delta,
         features,
@@ -169,7 +165,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         messages,
         payment,
         total_mtokens: payment ? mtokens : undefined,
-      }));
+      }))
     } catch (err) {
       throw new RouteFindingError(undefined, {logger: lightningLogger, probingSuccess: false, success: false})
     }
@@ -180,7 +176,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     }
 
     const value = JSON.stringify(route)
-    await redis.set(key, value, 'EX', 60 * 5); // expires after 5 minutes
+    await redis.set(key, value, 'EX', 60 * 5) // expires after 5 minutes
 
     lightningLogger.info({ redis: { key, value }, probingSuccess: true, success: true }, "successfully found a route")
     return route.fee
@@ -188,9 +184,9 @@ export const LightningMixin = (superclass) => class extends superclass {
 
   // FIXME this should be static
   async validate(params: IFeeRequest, lightningLogger) {
-  
-    const keySendPreimageType = '5482373484';
-    const preimageByteLength = 32;
+
+    const keySendPreimageType = '5482373484'
+    const preimageByteLength = 32
 
     let pushPayment = false
     let tokens
@@ -199,7 +195,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     let cltv_delta
     let payment
     let destination, id, description
-    let routeHint 
+    let routeHint
     let messages
     let username
 
@@ -232,9 +228,9 @@ export const LightningMixin = (superclass) => class extends superclass {
       destination = params.destination
       username = params.username
 
-      const preimage = randomBytes(preimageByteLength);
-      id = createHash('sha256').update(preimage).digest().toString('hex');
-      const secret = preimage.toString('hex');
+      const preimage = randomBytes(preimageByteLength)
+      id = createHash('sha256').update(preimage).digest().toString('hex')
+      const secret = preimage.toString('hex')
       messages = [{ type: keySendPreimageType, value: secret }]
 
       // TODO: should it be id or secret?
@@ -249,7 +245,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     }
 
     tokens = !!tokens ? tokens : params.amount
-  
+
     if (tokens <= 0) {
       lightningLogger.error('A negative amount was passed')
       throw Error("amount can't be negative")
@@ -260,7 +256,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     return {
       // FIXME String: https://github.com/alexbosworth/lightning/issues/24
       tokens, mtokens: String(tokens * 1000), destination, pushPayment, id, routeHint, messages, max_fee,
-      memoInvoice: description, payment, cltv_delta, expires_at, features, username
+      memoInvoice: description, payment, cltv_delta, expires_at, features, username,
     }
   }
 
@@ -333,10 +329,10 @@ export const LightningMixin = (superclass) => class extends superclass {
             metadata,
             payerUser: this.user,
             payeeUser,
-            memoPayer
+            memoPayer,
           })
         })
-        
+
         await transactionNotification({ amount: sats, user: payeeUser, hash: id, logger: this.logger, type: "paid-invoice" })
 
         if (!pushPayment) {
@@ -378,7 +374,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         const error = "Push payment to another wallet not yet supported"
         lightningLogger.error({ success: false }, error)
         throw new LightningPaymentError(error, {logger: lightningLogger})
-      } 
+      }
 
       // TODO: fine tune those values:
       // const probe_timeout_ms
@@ -407,12 +403,12 @@ export const LightningMixin = (superclass) => class extends superclass {
       let entry
 
       {
-        
+
         const sats = tokens + fee
 
         const metadata = {
-          hash: id, type: "payment", pending: true,  
-          feeKnownInAdvance, ...UserWallet.getCurrencyEquivalent({ sats, fee })
+          hash: id, type: "payment", pending: true,
+          feeKnownInAdvance, ...UserWallet.getCurrencyEquivalent({ sats, fee }),
         }
 
         lightningLogger = lightningLogger.child({ route, balance, ...metadata })
@@ -432,7 +428,7 @@ export const LightningMixin = (superclass) => class extends superclass {
             metadata,
           })
         })
-        
+
         console.log({entry})
 
         if (pushPayment) {
@@ -491,12 +487,12 @@ export const LightningMixin = (superclass) => class extends superclass {
             lightningLogger.warn({ ...metadata, pending: true }, 'timeout payment')
 
             return "pending"
-            // pending in-flight payment are being handled either by a cron job 
+            // pending in-flight payment are being handled either by a cron job
             // or payment update when the user query his balance
           }
 
           try {
-            // FIXME: this query may not make sense 
+            // FIXME: this query may not make sense
             // where multiple payment have the same hash
             // ie: when a payment is being retried
 
@@ -537,7 +533,7 @@ export const LightningMixin = (superclass) => class extends superclass {
   //
   // there are times when it's not possible to know in advance the fees
   // this could be because the receiving doesn't respond to the fake payment hash
-  // or because there is no liquidity for a one-sum payment, but there could 
+  // or because there is no liquidity for a one-sum payment, but there could
   // be liquidity if the payment was using MPP
   //
   // in this scenario, we have withdrawal a percent of fee (`max_fee`)
@@ -559,7 +555,7 @@ export const LightningMixin = (superclass) => class extends superclass {
      description: "fee reimbursement",
      payeeUser: this.user,
      metadata,
-     sats: feeDifference
+     sats: feeDifference,
     })
   }
 
@@ -581,7 +577,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     // we're doing the the Transaction.find after the lock to make sure there is no race condition
     // note: there might be another design that doesn't requiere a lock at the uid level but only at the hash level,
     // but will need to dig more into the cursor aspect of mongodb to see if there is a concurrency-safe way to do it.
-    await redlock({ path: this.user._id, logger: lightningLogger, lock }, async (lock) => {
+    await redlock({ path: this.user._id, logger: lightningLogger, lock }, async () => {
 
       const payments = await Transaction.find(query)
 
@@ -628,7 +624,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     let invoice
 
     try {
-      // FIXME we should only be able to look at User invoice, 
+      // FIXME we should only be able to look at User invoice,
       // but might not be a strong problem anyway
       // at least return same error if invoice not from user
       // or invoice doesn't exist. to preserve privacy and prevent DDOS attack.
@@ -643,7 +639,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     }
 
     // invoice that are on_us will be cancelled but not confirmed
-    // so we need a branch to return true in case the payment 
+    // so we need a branch to return true in case the payment
     // has been managed off lnd.
     if (invoice.is_canceled) {
 
@@ -656,11 +652,11 @@ export const LightningMixin = (superclass) => class extends superclass {
       return !!result
 
     } else if (invoice.is_confirmed) {
-      
+
       const lightningLogger = this.logger.child({ hash, user: this.user._id, topic: "payment", protocol: "lightning", transactionType: "receipt", onUs: false })
-      
+
       return await redlock({ path: hash, logger: lightningLogger, lock }, async () => {
-        
+
         try {
 
           const invoiceUser = await InvoiceUser.findOne({ _id: hash, uid: this.user._id })
@@ -694,7 +690,7 @@ export const LightningMixin = (superclass) => class extends superclass {
             description: invoice.description,
             payeeUser: this.user,
             metadata,
-            sats
+            sats,
           })
 
           this.logger.info({ metadata, success: true }, "long standing payment succeeded")
@@ -705,8 +701,8 @@ export const LightningMixin = (superclass) => class extends superclass {
           const error = `addTransactionLndReceipt failed`
           throw new DbError(error, {logger: this.logger, level: 'error', err, invoice})
         }
-        
-      })  
+
+      })
 
     } else if (expired) {
 
@@ -743,7 +739,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       const { _id, timestamp } = invoice
 
       // FIXME
-      // adding a time-buffer on the expiration before we delete the invoice 
+      // adding a time-buffer on the expiration before we delete the invoice
       // because it seems lnd still can accept invoice even if they have expired
       // see more: https://github.com/lightningnetwork/lnd/pull/3694
       const expired = moment() > this.getExpiration(moment(timestamp)
