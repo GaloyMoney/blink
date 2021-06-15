@@ -3790,9 +3790,9 @@ cbor@7.0.5:
     nofilter "^2.0.3"
 
 ccxt@^1.36.95:
-  version "1.37.69"
-  resolved "https://registry.yarnpkg.com/ccxt/-/ccxt-1.37.69.tgz#cf9b3639dd0247a3ef83b9ecf77260a934ac5192"
-  integrity sha512-Qbe4E8Ek6OdPhHn/ikpKpbof6r/sQQ8ghwBQDuwoUWulSdgvaGxnO1IXl/9+auX5FNC16YvI850uZKEPIh8vRA==
+  version "1.51.47"
+  resolved "https://registry.yarnpkg.com/ccxt/-/ccxt-1.51.47.tgz#528d44e653421ab5311af0e0c6f909e900381bd9"
+  integrity sha512-3jJToZr3zUqFMvkvA/e7dbbpCyD1K2bEsIYqMcD+gz6x8R7SZTV+anIdLwe4ltCJ9FODGyFeuE1oSxD2lyBcvg==
 
 chalk@2.4.2, chalk@^2.0.0, chalk@^2.3.0, chalk@^2.4.1, chalk@^2.4.2:
   version "2.4.2"
