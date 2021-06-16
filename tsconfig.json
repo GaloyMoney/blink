@@ -17,11 +17,6 @@
   },
   "compileOnSave": true,
   "include": [
-    "src/entrypoint/*.ts",
-    "src/postman/*.ts",
-    "src/**/__tests__/*.ts",
-    "src/__mocks__/*.ts",
-    "src/debug/*.ts",
-    "src/*.d.ts",
+    "src/**/*"
   ]
 }

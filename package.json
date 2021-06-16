@@ -1,7 +1,7 @@
 {
   "name": "galoy",
   "scripts": {
-    "lint": "eslint src/ --ext .js,.jsx,.ts,.tsx",
+    "lint": "eslint \"src/**/*.ts\"",
     "build": "tsc -p tsconfig-build.json && cp -R src/protos lib && cp src/schema.graphql lib",
     "start": "yarn build && source ./exportLocal.sh && node lib/entrypoint/graphql.js | pino-pretty -c -l",
     "trigger": "yarn build && source ./exportLocal.sh && node lib/entrypoint/trigger.js | pino-pretty -c -l",

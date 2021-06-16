@@ -28,6 +28,6 @@ Follow the instructions [above](#steps), then run `yarn test-local`
 
 #### Running the graphql server
 
-Follow the instructions [above](#steps), then run `yarn start`. 
+Follow the instructions [above](#steps), then run `yarn start`.
 
 Alternatively, to start the server in watch mode with hot reloading, run `yarn watch`.
