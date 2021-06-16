@@ -9,7 +9,7 @@ spec:
   schedule: {{ .schedule }}
   jobTemplate:
     spec:
-      activeDeadlineSeconds: 3600
+      activeDeadlineSeconds: 7200
       template:
         spec:
           containers:
