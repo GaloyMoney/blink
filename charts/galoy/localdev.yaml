@@ -4,6 +4,7 @@ redis:
       type: LoadBalancer
 
 mongodb:
+  architecture: standalone
   service:
     type: LoadBalancer
 
