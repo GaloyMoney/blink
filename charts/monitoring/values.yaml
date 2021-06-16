@@ -60,7 +60,7 @@ prometheus:
     statefulSet:
       enabled: true
 
-    retention: "180d"
+    retention: "365d"
 
   pushgateway:
     enabled: false
