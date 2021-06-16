@@ -25,7 +25,7 @@ const date = Date.now() + 1000 * 60 * 60 * 24 * 8
 jest
 .spyOn(global.Date, 'now')
 .mockImplementation(() =>
-new Date(date).valueOf()
+new Date(date).valueOf(),
 )
 
 beforeAll(async () => {
@@ -38,7 +38,7 @@ beforeAll(async () => {
 })
 
 beforeEach(async () => {
-  ({BTC: initBalance0} = await userWallet0.getBalances())
+  ({BTC: initBalance0} = await userWallet0.getBalances());
   ({BTC: initBalance1} = await userWallet1.getBalances())
   await userWallet2.getBalances()
 
@@ -289,7 +289,7 @@ it('receives payment from outside', async () => {
 
 })
 
-// @ts-ignore
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const Lightning = require('../Lightning')
 
 it('expired payment', async () => {

@@ -29,7 +29,7 @@ it('records routing fee correctly', async () => {
   jest
       .spyOn(global.Date, 'now')
       .mockImplementation(() =>
-      new Date(date).valueOf()
+      new Date(date).valueOf(),
     )
 
   await updateRoutingFees()

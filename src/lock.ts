@@ -71,7 +71,7 @@ export const lockExtendOrThrow = async ({lock, logger}, async_fn): Promise<any> 
     lock.extend(120000, async (err) => {
       // if we can't extend the lock, typically because it would have expired
       // then we throw an error
-      if (!!err) {
+      if (err) {
         const error = "unable to extend the lock"
         logger.error({err}, error)
         reject( new Error(error) )

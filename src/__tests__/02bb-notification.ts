@@ -11,6 +11,7 @@ import { baseLogger } from "../logger"
 import { getFunderWallet } from "../walletFactory"
 import { getUserWallet } from "./helper"
 jest.mock('../notifications/notification')
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const { sendNotification } = require("../notifications/notification")
 
 jest.mock('../realtimePrice')
@@ -36,7 +37,7 @@ it('sends daily balance notification', async () => {
     const { balance } = await MainBook.balance({ accounts: customerPath(call.user._id) })
     const expectedUsdBalance = (price * balance).toLocaleString("en", { maximumFractionDigits: 2 })
     const expectedSatsBalance = balance.toLocaleString("en", { maximumFractionDigits: 2 })
-    expect(call.title).toBe(`Your balance is \$${expectedUsdBalance} (${expectedSatsBalance} sats)`)
+    expect(call.title).toBe(`Your balance is $${expectedUsdBalance} (${expectedSatsBalance} sats)`)
   }
 })
 

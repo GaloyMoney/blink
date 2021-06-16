@@ -41,7 +41,7 @@ export class Price {
    * only used for unit test
    */
   async getFromExchange({ since, limit }:
-    { since: number, limit: number, init: Boolean }): Promise<Array<object>> {
+    { since: number, limit: number, init: boolean }): Promise<Array<Record<string, unknown>>> {
 
     this.logger.info("start fetching data from exchange")
     let ohlcv
@@ -74,7 +74,7 @@ export class Price {
     return result
   }
 
-  async update(init = false): Promise<Boolean | Error> {
+  async update(init = false): Promise<boolean | Error> {
     const increment = 720 // how many candles
     const increment_ms = increment * 3600 * 1000
     const endDate = new Date().valueOf() - 3600 * 1000
@@ -102,7 +102,7 @@ export class Price {
 
     // skip if it has not been an hour since last update
     try {
-      //@ts-ignore
+      // @ts-expect-error: TODO
       const diff = moment().diff(moment(_.last(doc.pair.exchange.price)._id))
       if (diff < 1000 * 60 * 60) {
         return false
@@ -129,6 +129,7 @@ export class Price {
 
 
           this.logger.debug({value0: value[0]}, "adding entry to our price database")
+          // @ts-expect-error: TODO
           doc.pair.exchange.price.push({ _id: value[0], o: sat2btc(value[1]) })
 
           // console.log({price: doc.pair.exchange.price})

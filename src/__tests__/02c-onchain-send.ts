@@ -20,7 +20,7 @@ const date = Date.now() + 1000 * 60 * 60 * 24 * 8
 jest
   .spyOn(global.Date, 'now')
   .mockImplementation(() =>
-    new Date(date).valueOf()
+    new Date(date).valueOf(),
 )
 
 
@@ -30,6 +30,7 @@ let userWallet0, userWallet3
 
 
 jest.mock('../notifications/notification')
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const { sendNotification } = require("../notifications/notification")
 
 beforeAll(async () => {
@@ -40,7 +41,7 @@ beforeAll(async () => {
 })
 
 beforeEach(async () => {
-  initBlockCount = await bitcoindDefaultClient.getBlockCount()
+  initBlockCount = await bitcoindDefaultClient.getBlockCount();
   ({BTC: initialBalanceUser0} = await userWallet0.getBalances())
 })
 

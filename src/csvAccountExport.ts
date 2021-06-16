@@ -67,7 +67,7 @@ export class CSVAccountExport {
       account,
     })
 
-    const transactions = ledger.results.map(tx => {
+    const transactions:[] = ledger.results.map(tx => {
       const newTx = tx.toObject()
       newTx.meta = JSON.stringify(newTx.meta)
       newTx.unix = moment(newTx.datetime).unix()
@@ -75,7 +75,6 @@ export class CSVAccountExport {
       return newTx
     })
 
-    // @ts-ignore
     this.entries.push(...transactions)
   }
 

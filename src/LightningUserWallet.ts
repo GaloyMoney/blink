@@ -26,7 +26,7 @@ export class LightningUserWallet extends OnChainMixin(LightningMixin(UserWallet)
 
     return await redlock({ path: this.user._id, logger: this.logger }, async () => {
 
-      const result: object[] = []
+      const result: Record<string, unknown>[] = []
 
       for (const id of ids) {
         const amount = OnboardingEarn[id]
@@ -34,7 +34,7 @@ export class LightningUserWallet extends OnChainMixin(LightningMixin(UserWallet)
         const userPastState = await User.findOneAndUpdate(
           { _id: this.user._id },
           { $push: { earn: id } },
-          { upsert: true }
+          { upsert: true },
         )
 
         if (userPastState.earn.findIndex(item => item === id) === -1) {

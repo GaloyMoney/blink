@@ -64,7 +64,7 @@ export const addContact = async ({ uid, username }) => {
             id: username,
           },
         },
-      }
+      },
     )
   }
 }
@@ -168,7 +168,7 @@ export const fetchIPDetails = async ({ip, user, logger}): Promise<void> => {
     if(!res.nModified) {
       await User.findOneAndUpdate(
         { _id: user._id, "lastIPs.ip": {"$ne": ip} },
-        { $push: { lastIPs: { ip, ...ipinfo, Type: ipinfo?.type }}}
+        { $push: { lastIPs: { ip, ...ipinfo, Type: ipinfo?.type }}},
       )
     }
   }

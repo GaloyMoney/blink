@@ -294,7 +294,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
     if(confirmed) {
       lnd_incoming_filtered = lnd_incoming_txs.filter(tx =>
-        !!tx.confirmation_count && tx.confirmation_count >= min_confirmation
+        !!tx.confirmation_count && tx.confirmation_count >= min_confirmation,
       )
     } else {
       lnd_incoming_filtered = lnd_incoming_txs.filter(

@@ -9,7 +9,7 @@ export interface Balances {
 export interface IWallet {
   getBalances(): Promise<Balances>
   getTransactions(): any // TODO
-  getInfo(): Promise<object>
+  getInfo(): Promise<Record<string, unknown>>
 }
 
 export interface ILightningWallet extends IWallet {

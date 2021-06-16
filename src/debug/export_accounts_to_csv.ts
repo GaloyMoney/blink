@@ -27,7 +27,7 @@ const getBooks = async () => {
         account,
         currency,
       })
-      if (!!balance) {
+      if (balance) {
         books[`${currency}:${account}`] = balance
       }
     }

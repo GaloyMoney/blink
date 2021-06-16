@@ -15,7 +15,7 @@ export const addTransactionLndReceipt = async ({description, payeeUser, metadata
     // always 100%
     .debit(lndAccountingPath, sats, { ...metadata, currency: "BTC" })
 
-  if (!!payeeUser.ratioUsd) {
+  if (payeeUser.ratioUsd) {
     const satsToConvert = sats * payeeUser.ratioUsd
 
     // TODO: add spread
@@ -44,7 +44,7 @@ export const addTransactionLndPayment = async ({description, sats, metadata, pay
     .debit(payerUser.accountPath, sats * payerUser.ratioBtc, { ...metadata, currency: "BTC" })
     .debit(dealerPath, sats * payerUser.ratioUsd, { ...metadata, currency: "BTC" })
 
-  if (!!payerUser.ratioUsd) {
+  if (payerUser.ratioUsd) {
     const satsToConvert = sats * payerUser.ratioUsd
     const usdEquivalent = satsToConvert * UserWallet.lastPrice
 
@@ -104,7 +104,7 @@ export const rebalancePortfolio = async ({description, metadata, wallet}) => {
   const btcAmount = Math.abs(diffBtc)
   const usdAmount = Math.abs(expectedUsd - balances.USD)
 
-  const buyOrSell = !!diffBtc ? diffBtc > 0 ? "buy": "sell": null
+  const buyOrSell = diffBtc ? diffBtc > 0 ? "buy": "sell": null
 
   const entry = MainBook.entry(description)
 

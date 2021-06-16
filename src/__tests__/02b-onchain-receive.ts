@@ -26,6 +26,7 @@ let amount_BTC
 
 
 jest.mock('../notifications/notification')
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const { sendNotification } = require("../notifications/notification")
 
 const amountAfterFeeDeduction = ({amount, depositFeeRatio}) => Math.round(btc2sat(amount) * (1 - depositFeeRatio))

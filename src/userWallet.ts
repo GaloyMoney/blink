@@ -178,7 +178,7 @@ export abstract class UserWallet {
       }
       return { username, id: this.user.id }
     } catch (err) {
-      this.logger.error({err}, )
+      this.logger.error({err})
       throw new DbError("error updating username", {forwardToClient: false, logger: this.logger, level: 'error', err})
     }
   }
@@ -216,7 +216,7 @@ export abstract class UserWallet {
     const balanceUsd = UserWallet.satsToUsd(balanceSats).toLocaleString("en", { maximumFractionDigits: 2 })
 
     this.logger.info({ balanceSatsPrettified, balanceUsd, user: this.user }, `sending balance notification to user`)
-    await sendNotification({ user: this.user, title: `Your balance is \$${balanceUsd} (${balanceSatsPrettified} sats)`, logger: this.logger })
+    await sendNotification({ user: this.user, title: `Your balance is $${balanceUsd} (${balanceSatsPrettified} sats)`, logger: this.logger })
   }
 
 }

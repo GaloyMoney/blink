@@ -242,7 +242,7 @@ export class FtxDealerWallet extends OnChainMixin(UserWallet) {
 
     // btcAmount = usdAmountDiff / btcPrice
 
-    if (!!depositOrWithdraw) {
+    if (depositOrWithdraw) {
       assert(btcAmount > 0)
       // amount more than 3x of collateral should not happen
       // although it could happen the first time the dealer is launched?
@@ -287,7 +287,7 @@ export class FtxDealerWallet extends OnChainMixin(UserWallet) {
 
     const btcAmount = usdOrderAmount / btcPrice
 
-    if (!!buyOrSell) {
+    if (buyOrSell) {
       assert(btcAmount >= 0)
       // assert(usdOrderAmount < usdLiability)
       // TODO: should be reduce only

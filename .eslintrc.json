@@ -10,55 +10,35 @@
     "sourceType": "module"
   },
   "plugins": ["eslint-plugin-import", "@typescript-eslint"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:import/recommended",
+    "plugin:import/typescript",
+    "plugin:@typescript-eslint/recommended"
+  ],
   "rules": {
-    "@typescript-eslint/adjacent-overload-signatures": "error",
-    "@typescript-eslint/no-empty-function": "error",
-    "@typescript-eslint/no-empty-interface": "warn",
-    "@typescript-eslint/no-namespace": "error",
-    "@typescript-eslint/prefer-for-of": "warn",
-    "@typescript-eslint/triple-slash-reference": "error",
-    "@typescript-eslint/unified-signatures": "warn",
-    "constructor-super": "error",
-    "eqeqeq": ["warn", "always"],
-    "import/no-deprecated": "warn",
+    // Customized rules
+    "@typescript-eslint/prefer-for-of": "error",
+    "@typescript-eslint/unified-signatures": "error",
+    "import/no-deprecated": "error",
     "import/no-extraneous-dependencies": "error",
-    "import/no-unassigned-import": "warn",
-    "no-cond-assign": "error",
-    "no-duplicate-case": "error",
+    "import/no-unassigned-import": "error",
     "no-duplicate-imports": "error",
-    "no-empty": [
-      "error",
-      {
-        "allowEmptyCatch": true
-      }
-    ],
+    "no-empty": ["error", { "allowEmptyCatch": true }],
     "no-empty-function": "error",
     "no-new-wrappers": "error",
     "no-param-reassign": "error",
-    "no-redeclare": "error",
     "no-sequences": "error",
     "no-throw-literal": "error",
-    "no-unsafe-finally": "error",
-    "no-unused-labels": "error",
-    "no-var": "error",
     "no-void": "error",
-    "prefer-const": "error",
-
-    "no-unused-vars": "error",
     "comma-dangle": ["error", "always-multiline"],
     "semi": ["error", "never"],
-    "no-trailing-spaces": "error",
-    "eol-last": "error"
+    "@typescript-eslint/no-unused-vars": "off", // Duplicate
 
-    // TODO: Fix or remove
-    // "@typescript-eslint/no-shadow": [
-    //   "error",
-    //   {
-    //     "hoist": "all"
-    //   }
-    // ]
-    // "@typescript-eslint/no-unnecessary-type-assertion": "error"
-    // "@typescript-eslint/no-floating-promises": "error"
-    // "no-invalid-this": "error"
+    // Temporarily disabled recommended rules
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "no-async-promise-executor": "off"
   }
 }

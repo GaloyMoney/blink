@@ -1,4 +1,4 @@
-const { createTestClient } = require('apollo-server-testing')
+import { createTestClient } from 'apollo-server-testing'
 import { startApolloServer } from "../entrypoint/graphql"
 import { sleep } from "../utils"
 import { baseLogger } from '../logger'
@@ -43,6 +43,7 @@ it('rate limit limiterRequestPhoneCode', async () => {
   }
 
   try {
+    // @ts-expect-error: TODO
     const { errors: [{code}]} = await mutate({mutation, variables: {phone}})
     expect(code).toBe("TOO_MANY_REQUEST")
   } catch (err) {
@@ -83,6 +84,7 @@ it('rate limit login', async () => {
 
   try {
     const result = await mutate({mutation, variables: {phone, code: correct_code}})
+    // @ts-expect-error: TODO
     expect(result.errors[0].code).toBe("TOO_MANY_REQUEST")
     expect(result.data.login.token).toBeFalsy()
   } catch (err) {

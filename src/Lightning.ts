@@ -112,7 +112,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     return request
   }
 
-  async getLightningFee(params: IFeeRequest): Promise<Number> {
+  async getLightningFee(params: IFeeRequest): Promise<number> {
 
     // TODO:
     // we should also log the fact we have started the query
@@ -244,7 +244,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       throw new ValidationError(error, {logger: lightningLogger})
     }
 
-    tokens = !!tokens ? tokens : params.amount
+    tokens = tokens ? tokens : params.amount
 
     if (tokens <= 0) {
       lightningLogger.error('A negative amount was passed')
@@ -344,12 +344,12 @@ export const LightningMixin = (superclass) => class extends superclass {
         }
 
         // adding contact for the payer
-        if (!!payeeUser.username) {
+        if (payeeUser.username) {
           await addContact({uid: this.user._id, username: payeeUser.username})
         }
 
         // adding contact for the payee
-        if (!!this.user.username) {
+        if (this.user.username) {
           await addContact({uid: payeeUser._id, username: this.user.username})
         }
 
@@ -387,7 +387,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       route = JSON.parse(await redis.get(key) as string)
       this.logger.info({ route }, "route from redis")
 
-      if (!!route) {
+      if (route) {
         lightningLogger = lightningLogger.child({ routing: "payViaRoutes", route })
         fee = route.safe_fee
         feeKnownInAdvance = true
@@ -743,7 +743,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       // because it seems lnd still can accept invoice even if they have expired
       // see more: https://github.com/lightningnetwork/lnd/pull/3694
       const expired = moment() > this.getExpiration(moment(timestamp)
-        .add(delay(currency).additional_delay_value, "hours")
+        .add(delay(currency).additional_delay_value, "hours"),
       )
       await this.updatePendingInvoice({ hash: _id, expired, lock })
     }

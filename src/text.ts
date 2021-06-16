@@ -39,7 +39,7 @@ export const getCarrier = async (phone: string) => {
   return result
 }
 
-export const requestPhoneCode = async ({ phone, logger }: {phone: string, logger: any}): Promise<Boolean> => {
+export const requestPhoneCode = async ({ phone, logger }: {phone: string, logger: any}): Promise<boolean> => {
 
   try {
     await limiterRequestPhoneCode.consume(phone)
@@ -67,7 +67,7 @@ export const requestPhoneCode = async ({ phone, logger }: {phone: string, logger
       },
     })
 
-    if (!!veryRecentCode) {
+    if (veryRecentCode) {
       return false
     }
 
@@ -155,7 +155,7 @@ export const login = async ({ phone, code, logger, ip }: ILogin): Promise<string
     // }
     //
     // only fetch info once
-    if (user.twilio.countryCode === undefined) {
+    if (user.twilio.countryCode === undefined || user.twilio.countryCode === null) {
       try {
         const result = await getCarrier(phone)
         user.twilio = result

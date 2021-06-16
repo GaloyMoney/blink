@@ -22,6 +22,10 @@ This will setup all the required pods. Note that this will setup the environment
 #### Caveats
 1. If installing on macOS, this script will clash with the default grep, [here is a workaround](https://stackoverflow.com/questions/16658333/grep-p-no-longer-works-how-can-i-rewrite-my-searches): `brew install grep`
 
+#### Running ESLint
+
+Follow the instructions [above](#steps), then run `yarn lint`. This has to pass for the CI build to be accepted. It's recommended that you run this task in a pre-commit hook. The repo has a `husky` script for that.
+
 #### Running the test suite
 
 Follow the instructions [above](#steps), then run `yarn test-local`

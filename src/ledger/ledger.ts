@@ -18,7 +18,7 @@ export const customerPath = (uid) => `Liabilities:Customer:${uid}`
 let cacheDealerPath: string
 
 export const dealerMediciPath = async () => {
-  if(!!cacheDealerPath) {
+  if(cacheDealerPath) {
     return cacheDealerPath
   }
 

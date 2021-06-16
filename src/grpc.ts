@@ -1,7 +1,7 @@
-const PROTO_PATH = __dirname + '/protos/price.proto'
+import grpc from '@grpc/grpc-js'
+import protoLoader from '@grpc/proto-loader'
 
-const grpc = require('@grpc/grpc-js')
-const protoLoader = require('@grpc/proto-loader')
+const PROTO_PATH = __dirname + '/protos/price.proto'
 
 // Suggested options for similarity to existing grpc.load behavior
 const packageDefinition = protoLoader.loadSync(

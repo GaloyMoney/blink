@@ -1,3 +1,4 @@
+import fs from 'fs'
 import { ApolloServer } from 'apollo-server-express'
 import dotenv from "dotenv"
 import express from 'express'
@@ -128,7 +129,7 @@ const resolvers = {
       return hourly.splice(-length)
     },
     earnList: async (_, __, { user }) => {
-      const response: Object[] = []
+      const response: Record<string, any>[] = []
       const earned = user?.earn || []
 
       for(const [id, value] of Object.entries(OnboardingEarn)) {
@@ -146,7 +147,7 @@ const resolvers = {
       // TODO: caching
       const users = await User.find({
         title: { $exists: true }, coordinate: { $exists: true } },
-        { username: 1, title: 1, coordinate: 1 }
+        { username: 1, title: 1, coordinate: 1 },
       )
 
       return users.map((user) => ({
@@ -231,10 +232,10 @@ const resolvers = {
       })
       return { success: true }
     },
-    addToMap: async (_, { username, title, latitude, longitude }, { }) => {
+    addToMap: async (_, { username, title, latitude, longitude }) => {
       return AdminOps.addToMap({ username, title, latitude, longitude })
     },
-    setAccountStatus: async (_, { uid, status }, { }) => {
+    setAccountStatus: async (_, { uid, status }) => {
       return AdminOps.setAccountStatus({ uid, status })
     },
   },
@@ -252,7 +253,7 @@ const isAuthenticated = rule({ cache: 'contextual' })(
 const isEditor = rule({ cache: "contextual" })(
   async (parent, args, ctx) => {
     return ctx.user.role === "editor"
-  }
+  },
 )
 
 const permissions = shield({
@@ -288,13 +289,11 @@ const permissions = shield({
 export async function startApolloServer() {
   const app = express()
 
-    // try load file sync instead
+  // try load file sync instead
 
   // const myTypeDefs = importSchema(path.join(__dirname, "../schema.graphql"))
-  const fs = require('fs')
 
-  const myTypeDefs = fs.readFileSync(path.join(__dirname, "../schema.graphql"),
-            {encoding:'utf8', flag:'r'})
+  const myTypeDefs = fs.readFileSync(path.join(__dirname, "../schema.graphql"), {encoding:'utf8', flag:'r'})
 
   const execSchema = makeExecutableSchema({
     typeDefs: [
@@ -304,7 +303,7 @@ export async function startApolloServer() {
       ...pattern.getTypeDefs(),
       ...stringLength.getTypeDefs(),
     ],
-    // @ts-ignore
+    // @ts-expect-error: TODO
     schemaDirectives: { pattern, range, stringLength },
     resolvers,
   })
@@ -313,7 +312,7 @@ export async function startApolloServer() {
 
   const schema = applyMiddleware(
     execSchema,
-    permissions
+    permissions,
   )
 
   const server = new ApolloServer({
@@ -321,7 +320,7 @@ export async function startApolloServer() {
     playground: process.env.NETWORK !== 'mainnet',
     introspection: process.env.NETWORK !== 'mainnet',
     context: async (context) => {
-      // @ts-ignore
+      // @ts-expect-error: TODO
       const token = context.req?.token ?? null
       const uid = token?.uid ?? null
       const ip = context.req?.headers['x-real-ip']
@@ -331,7 +330,7 @@ export async function startApolloServer() {
       // TODO move from id: uuidv4() to a Jaeger standard
       const logger = graphqlLogger.child({ token, id: uuidv4(), body: context.req?.body })
 
-      if (!!uid) {
+      if (uid) {
         user = await User.findOneAndUpdate({ _id: uid },{ lastConnection: new Date() }, {new: true})
         if(yamlConfig.proxyChecking.enabled) {
           fetchIPDetails({ip, user, logger})
@@ -339,7 +338,6 @@ export async function startApolloServer() {
         wallet = (!!user && user.status === "active") ? await WalletFactory({ user, logger }) : null
       }
 
-      // @ts-ignore
       return {
         ...context,
         logger,
@@ -403,8 +401,7 @@ export async function startApolloServer() {
 
   server.applyMiddleware({ app })
 
-  // @ts-ignore
-  await new Promise(resolve => app.listen({ port: 4000 }, resolve))
+  await app.listen({ port: 4000 })
 
   console.log(`🚀 Server ready at http://localhost:4000${server.graphqlPath}`)
   return { server, app }

@@ -92,7 +92,7 @@ describe('username tests', () => {
     jest
       .spyOn(global.Date, 'now')
       .mockImplementationOnce(() =>
-      new Date(date).valueOf()
+      new Date(date).valueOf(),
     )
 
     expect(userWallet2.user.oldEnoughForWithdrawal).toBeFalsy()
@@ -108,7 +108,7 @@ describe('username tests', () => {
     jest
       .spyOn(global.Date, 'now')
       .mockImplementationOnce(() =>
-      new Date(date).valueOf()
+      new Date(date).valueOf(),
     )
 
     expect(userWallet2.user.oldEnoughForWithdrawal).toBeTruthy()

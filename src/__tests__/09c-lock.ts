@@ -43,7 +43,7 @@ it('relocking fail if lock is not passed down the tree', async () => {
         return "r"
       })
 
-    })
+    }),
   ).rejects.toThrow()
 })
 

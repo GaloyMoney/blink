@@ -1,8 +1,9 @@
-const { RateLimiterRedis } = require('rate-limiter-flexible')
+import { RateLimiterRedis } from 'rate-limiter-flexible'
 import { yamlConfig } from "./config"
 import { redis } from './redis'
 
 export const limiterRequestPhoneCode = new RateLimiterRedis({
+  // @ts-expect-error: TODO
   redis,
   keyPrefix: 'request_phone_code',
   points: yamlConfig.limits.requestPhoneCode.points,
@@ -11,6 +12,7 @@ export const limiterRequestPhoneCode = new RateLimiterRedis({
 })
 
 export const limiterLoginAttempt = new RateLimiterRedis({
+  // @ts-expect-error: TODO
   redis,
   keyPrefix: 'login',
   points: yamlConfig.limits.loginAttempt.points,
@@ -23,6 +25,7 @@ export const limiterLoginAttempt = new RateLimiterRedis({
 // https://github.com/animir/node-rate-limiter-flexible/wiki/Overall-example#dynamic-block-duration
 
 export const failedAttemptPerIp = new RateLimiterRedis({
+  // @ts-expect-error: TODO
   redis,
   keyPrefix: 'failed_attempt_ip',
   points: yamlConfig.limits.failedAttemptPerIp.points,

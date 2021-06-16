@@ -13,7 +13,8 @@
       "src"
     ],
     "types": ["jest", "node"],
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "resolveJsonModule": true
   },
   "compileOnSave": true,
   "include": [
