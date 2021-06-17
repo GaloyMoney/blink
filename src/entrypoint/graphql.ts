@@ -349,6 +349,10 @@ export async function startApolloServer() {
       const uid = token?.uid ?? null
       const ip = context.req?.headers["x-real-ip"]
 
+      if(yamlConfig.blacklistedIPs?.includes(ip)) {
+        throw new LoggedError(`Rejected request from blacklisted IP ${ip}`)
+      }
+
       let wallet, user
 
       // TODO move from id: uuidv4() to a Jaeger standard
