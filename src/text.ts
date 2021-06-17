@@ -41,6 +41,8 @@ export const getCarrier = async (phone: string) => {
 
 export const requestPhoneCode = async ({ phone, logger, ip }: {phone: string, logger: any, ip: string}): Promise<Boolean> => {
 
+  logger.info({phone, ip}, "RequestPhoneCode called")
+
   try {
     await limiterRequestPhoneCode.consume(phone);
   } catch(err) {
