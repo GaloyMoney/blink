@@ -84,17 +84,23 @@ const main = async () => {
 
 
     const dealerWallet = await getDealerWallet({ logger })
-    const { usd: usdShortPosition, totalAccountValue, leverage } = await dealerWallet.getAccountPosition()
-
-    ftx_btc_g.set((await dealerWallet.getExchangeBalance()).sats)
-    ftx_usdPnl_g.set((await dealerWallet.getExchangeBalance()).usdPnl)
-    dealer_local_btc_g.set((await dealerWallet.getLocalLiabilities()).satsLnd)
-    dealer_local_usd_g.set((await dealerWallet.getLocalLiabilities()).usd)
-    dealer_profit_g.set((await dealerWallet.getProfit()).usdProfit)
-
-    totalAccountValue_g.set(totalAccountValue)
-    usdShortPosition_g.set(usdShortPosition)
-    leverage_g.set(leverage)
+    
+    try {
+      const { usd: usdShortPosition, totalAccountValue, leverage } = await dealerWallet.getAccountPosition()
+  
+      ftx_btc_g.set((await dealerWallet.getExchangeBalance()).sats)
+      ftx_usdPnl_g.set((await dealerWallet.getExchangeBalance()).usdPnl)
+      dealer_local_btc_g.set((await dealerWallet.getLocalLiabilities()).satsLnd)
+      dealer_local_usd_g.set((await dealerWallet.getLocalLiabilities()).usd)
+      dealer_profit_g.set((await dealerWallet.getProfit()).usdProfit)
+  
+      totalAccountValue_g.set(totalAccountValue)
+      usdShortPosition_g.set(usdShortPosition)
+      leverage_g.set(leverage)
+      fundingRate_g.set(await dealerWallet.getNextFundingRate())
+    } catch(error) {
+      logger.error("Couldn't set dealer wallet metrics")
+    }
 
     business_g.set(await User.count({"title": {"$exists": true}}))
 
@@ -106,7 +112,6 @@ const main = async () => {
     const { inbound } = await getChannelBalance({ lnd })
     receivingCapacity_g.set(inbound ?? 0)
 
-    fundingRate_g.set(await dealerWallet.getNextFundingRate())
 
     try {
       const balances = await getBalancesDetail()
