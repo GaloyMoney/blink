@@ -27,7 +27,7 @@ import { User } from "../schema";
 import { login, requestPhoneCode } from "../text";
 import { Levels, OnboardingEarn } from "../types";
 import { AdminOps } from "../AdminOps"
-import { fetchIPDetails } from "../utils";
+import { fetchIPDetails, LoggedError } from "../utils";
 import { baseLogger } from '../logger'
 import { WalletFactory, WalletFromUsername } from "../walletFactory";
 import { getCurrentPrice } from "../realtimePrice";
@@ -326,6 +326,10 @@ export async function startApolloServer() {
       const token = context.req?.token ?? null
       const uid = token?.uid ?? null
       const ip = context.req?.headers['x-real-ip']
+
+      if(yamlConfig.blacklistedIPs?.includes(ip)) {
+        throw new LoggedError(`Rejected request from blacklisted IP ${ip}`)
+      }
 
       let wallet, user
 
