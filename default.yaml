@@ -63,8 +63,12 @@ test_accounts:
 limits:
   requestPhoneCode:
     points: 4
-    duration: 10800 # 60 * 60 * 3 s
-    blockDuration: 3600 # 60 * 60 s
+    duration: 3600 # 60 * 60 * 3 s
+    blockDuration: 10800 # 60 * 60 s
+  requestPhoneCodeIp:
+    points: 4
+    duration: 3600 # 60 * 60 * 3 s
+    blockDuration: 86400 # 60 * 60 s
   loginAttempt:
     points: 8
     duration: 1200 # 60 * 20 s
