@@ -4,7 +4,7 @@ import { PhoneCode, User } from "./schema";
 import { createToken } from "./jwt"
 import { yamlConfig } from "./config";
 import { baseLogger } from './logger'
-import { randomIntFromInterval } from "./utils"
+import { fetchIP, randomIntFromInterval } from "./utils"
 import { failedAttemptPerIp, limiterLoginAttempt, limiterRequestPhoneCode } from "./rateLimit"
 import { TooManyRequestError } from "./error";
 
@@ -39,7 +39,7 @@ export const getCarrier = async (phone: string) => {
   return result
 }
 
-export const requestPhoneCode = async ({ phone, logger }: {phone: string, logger: any}): Promise<Boolean> => {
+export const requestPhoneCode = async ({ phone, logger, ip }: {phone: string, logger: any, ip: string}): Promise<Boolean> => {
 
   try {
     await limiterRequestPhoneCode.consume(phone);
@@ -54,6 +54,16 @@ export const requestPhoneCode = async ({ phone, logger }: {phone: string, logger
   // make it possible to bypass the auth for testing purpose
   if (yamlConfig.test_accounts.findIndex(item => item.phone === phone) !== -1) {
     return true
+  }
+
+  try {
+    const ipDetails = await fetchIP({ip})
+    if(ipDetails?.type == "VPN") {
+      logger.warn({ip}, "RequestPhoneCode: called by a VPN IP")
+      return false
+    }
+  } catch(err) {
+    logger.warn({err}, "RequestPhoneCode: Couldn't fetch ip details")
   }
 
   const code = randomIntFromInterval(100000, 999999)
