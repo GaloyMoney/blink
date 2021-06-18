@@ -1,5 +1,20 @@
 # Dev environment
 
+## Setup
+
+This setup was last tested with the following tools:
+```
+$ node --version
+v14.17.0
+$ yarn --version
+1.22.10
+$ direnv --version
+2.28.0
+$ docker --version
+Docker version 20.10.7, build f0df350
+```
+
+Don't forget to add the (direnv hook)[https://direnv.net/docs/hook.html] to your `shell.rc` file.
 
 Clone the repo and install dependencies:
 ```
@@ -7,6 +22,8 @@ $ git clone git@github.com:GaloyMoney/galoy.git
 $ cd galoy
 $ yarn install
 ```
+
+## Testing
 
 We use [direnv](https://direnv.net) to load environment variables needed for running the integration tests.
 ```
