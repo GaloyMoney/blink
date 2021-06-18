@@ -14,24 +14,21 @@ $ docker --version
 Docker version 20.10.7, build f0df350
 ```
 
-Don't forget to add the (direnv hook)[https://direnv.net/docs/hook.html] to your `shell.rc` file.
+We use [direnv](https://direnv.net) to load environment variables needed for running the integration tests.
+Don't forget to add the [direnv hook](https://direnv.net/docs/hook.html) to your `shell.rc` file.
 
 Clone the repo and install dependencies:
 ```
 $ git clone git@github.com:GaloyMoney/galoy.git
 $ cd galoy
-$ yarn install
-```
-
-## Testing
-
-We use [direnv](https://direnv.net) to load environment variables needed for running the integration tests.
-```
 $ direnv allow
 direnv reload
 direnv: direnv: loading ~/projects/GaloyMoney/galoy/.envrc
 (...)
+$ yarn install
 ```
+
+## Testing
 
 To execute the test suite runtime dependencies must be running.
 ```
