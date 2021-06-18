@@ -71,7 +71,7 @@ export const requestPhoneCode = async ({ phone, logger, ip }: {phone: string, lo
   try {
     const ipDetails = await fetchIP({ip})
     if(ipDetails?.type == "VPN") {
-      logger.warn({ip}, "RequestPhoneCode: called by a VPN IP")
+      logger.warn({ip, type: ipDetails?.type}, "RequestPhoneCode: IP type not supported")
       return false
     }
   } catch(err) {
