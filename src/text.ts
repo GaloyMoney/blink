@@ -68,16 +68,6 @@ export const requestPhoneCode = async ({ phone, logger, ip }: {phone: string, lo
     return true
   }
 
-  try {
-    const ipDetails = await fetchIP({ip})
-    if(ipDetails?.type == "VPN") {
-      logger.warn({ip}, "RequestPhoneCode: called by a VPN IP")
-      return false
-    }
-  } catch(err) {
-    logger.warn({err}, "RequestPhoneCode: Couldn't fetch ip details")
-  }
-
   const code = randomIntFromInterval(100000, 999999)
   const body = `${code} is your verification code for ${yamlConfig.name}`
 
