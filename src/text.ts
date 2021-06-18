@@ -1,12 +1,13 @@
-import twilio from 'twilio'
-import moment from "moment"
-import { PhoneCode, User } from "./schema"
-import { createToken } from "./jwt"
-import { yamlConfig } from "./config"
-import { baseLogger } from './logger'
-import { randomIntFromInterval } from "./utils"
-import { failedAttemptPerIp, limiterLoginAttempt, limiterRequestPhoneCode } from "./rateLimit"
-import { TooManyRequestError } from "./error"
+import moment from "moment";
+import { Logger } from "pino";
+import twilio from 'twilio';
+import { yamlConfig } from "./config";
+import { TooManyRequestError } from "./error";
+import { createToken } from "./jwt";
+import { baseLogger } from './logger';
+import { failedAttemptPerIp, limiterLoginAttempt, limiterRequestPhoneCode, limiterRequestPhoneCodeIp } from "./rateLimit";
+import { PhoneCode, User } from "./schema";
+import { fetchIP, randomIntFromInterval } from "./utils";
 
 const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER
 const getTwilioClient = () => {
@@ -39,10 +40,21 @@ export const getCarrier = async (phone: string) => {
   return result
 }
 
-export const requestPhoneCode = async ({ phone, logger }: {phone: string, logger: any}): Promise<boolean> => {
+export const requestPhoneCode = async ({ phone, logger, ip }: {phone: string, logger: Logger, ip: string}): Promise<boolean> => {
+  logger.info({phone, ip}, "RequestPhoneCode called")
 
   try {
     await limiterRequestPhoneCode.consume(phone)
+  } catch(err) {
+    if (err instanceof Error) {
+      throw err
+    } else {
+      throw new TooManyRequestError({ logger })
+    }
+  }
+
+  try {
+    await limiterRequestPhoneCodeIp.consume(ip)
   } catch(err) {
     if (err instanceof Error) {
       throw err
@@ -136,6 +148,9 @@ export const login = async ({ phone, code, logger, ip }: ILogin): Promise<string
 
     // reseting the limiter for this phone
     limiterLoginAttempt.delete(phone) // no need to await the promise
+
+    // rewarding the ip address at the request code level
+    limiterRequestPhoneCodeIp.reward(ip)
 
     // get User
     let user

@@ -178,7 +178,7 @@ const resolvers = {
     }),
   },
   Mutation: {
-    requestPhoneCode: async (_, { phone }, { logger }) => ({ success: requestPhoneCode({ phone, logger }) }),
+    requestPhoneCode: async (_, { phone }, { logger, ip }) => ({ success: requestPhoneCode({ phone, logger, ip }) }),
     login: async (_, { phone, code }, { logger, ip }) => ({ token: login({ phone, code, logger, ip }) }),
     updateUser: async (_, __, { wallet }) => ({
       setUsername: async ({ username }) => await wallet.setUsername({ username }),
