@@ -5,9 +5,9 @@ let connectionObj = {}, natMap = {}
 
 if(process.env.LOCAL === 'true') {
   const REDIS_0_INTERNAL_IP = `${process.env.REDIS_0_INTERNAL_IP}:6379`
-  
+
   natMap = {
-    [REDIS_0_INTERNAL_IP]: { host: process.env.REDIS_0_DNS, port: process.env.REDIS_0_PORT }
+    [REDIS_0_INTERNAL_IP]: { host: process.env.REDIS_0_DNS, port: process.env.REDIS_0_PORT },
   }
 
 }
@@ -19,8 +19,8 @@ connectionObj = {
     { host: `${process.env.REDIS_2_DNS}`, port: process.env.REDIS_2_SENTINEL_PORT || 26379 },
   ],
   name: process.env.REDIS_MASTER_NAME ?? "mymaster",
-  natMap
+  natMap,
 }
 
-export const redis = new Redis(connectionObj);
+export const redis = new Redis(connectionObj)
 redis.on('error', (err) => baseLogger.error({ err }, "Redis error"))

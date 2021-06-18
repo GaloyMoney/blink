@@ -2,11 +2,11 @@
  * @jest-environment node
  */
 import { setupMongoConnection } from "../../mongodb"
-import { FtxDealerWallet } from "../FtxDealerWallet";
-import { baseLogger } from "../../logger";
-import { UserWallet } from "../../userWallet";
-import mongoose from "mongoose";
-import { User } from "../../schema";
+import { FtxDealerWallet } from "../FtxDealerWallet"
+import { baseLogger } from "../../logger"
+import { UserWallet } from "../../userWallet"
+import mongoose from "mongoose"
+import { User } from "../../schema"
 import { getTokenFromPhoneIndex } from "../../__tests__/helper"
 
 jest.mock('../../realtimePrice')
@@ -14,7 +14,7 @@ jest.mock('../../realtimePrice')
 
 const fixtures = [{
   privateGetAccount: function() {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       resolve({
         result: {
           marginFraction: null,
@@ -23,25 +23,25 @@ const fixtures = [{
           positions: [],
 
         },
-      success: true
+      success: true,
     })
   })},
   createMarketBuyOrder: () => ({ }),
   getBalance: () => ({
     info: {
       result: [],
-      success: true
+      success: true,
     },
     USDT: { free: 0, used: 0, total: 0 },
     USD: { free: 0.0000123, used: 0.002345, total: 0.0001234},
     BTC: { free: 0.005430, used: 0, total: 0.005430 },
     free: { USDT: 0, USD: 0.002345, BTC: 0.005430 },
     used: { USDT: 0, USD: 0.001234, BTC: 0 },
-    total: { USDT: 0, USD: 0.002345, BTC: 0.005430 }
-  })
+    total: { USDT: 0, USD: 0.002345, BTC: 0.005430 },
+  }),
 }, {
   privateGetAccount: function() {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       resolve({
         result: {
           backstopProvider: false,
@@ -72,16 +72,16 @@ const fixtures = [{
             shortOrderSize: 0,
             side: 'sell',
             size: 0.0001,
-            unrealizedPnl: 0.0006
+            unrealizedPnl: 0.0006,
           }],
           spotLendingEnabled: false,
           spotMarginEnabled: false,
           takerFee: 0.0007,
           totalAccountValue: 96.06484715052996,
           totalPositionSize: 202.1541,
-          useFttCollateral: true
+          useFttCollateral: true,
       },
-      success: true
+      success: true,
     })
   })},
   createMarketBuyOrder: () => ({
@@ -103,7 +103,7 @@ const fixtures = [{
         side: 'buy',
         size: 0.0001,
         status: 'closed',
-        type: 'market'
+        type: 'market',
       },
       id: '6103637365',
       clientOrderId: undefined,
@@ -121,8 +121,8 @@ const fixtures = [{
       remaining: 0,
       status: 'closed',
       fee: undefined,
-      trades: undefined
-    }
+      trades: undefined,
+    },
   }),
   getBalance: () => ({
     info: {
@@ -138,90 +138,85 @@ const fixtures = [{
           coin: 'BTC',
           free: 0.005430,
           total: 0.005430934,
-          usdValue: 50.12345
-        }
+          usdValue: 50.12345,
+        },
       ],
-      success: true
+      success: true,
     },
     USDT: { free: 0, used: 0, total: 0 },
     USD: { free: 0.0000123, used: 0.002345, total: 0.0001234},
     BTC: { free: 0.005430, used: 0, total: 0.005430 },
     free: { USDT: 0, USD: 0.002345, BTC: 0.005430 },
     used: { USDT: 0, USD: 0.001234, BTC: 0 },
-    total: { USDT: 0, USD: 0.002345, BTC: 0.005430 }
-  })
+    total: { USDT: 0, USD: 0.002345, BTC: 0.005430 },
+  }),
 }]
 
-
-const createMarketBuyOrderError = {error: "Size too small", success: false}
-
-const ftxHas = {
-  cancelAllOrders: true,
-  cancelOrder: true,
-  cancelOrders: false,
-  CORS: false,
-  createDepositAddress: false,
-  createLimitOrder: true,
-  createMarketOrder: true,
-  createOrder: true,
-  deposit: false,
-  editOrder: 'emulated',
-  fetchBalance: true,
-  fetchBidsAsks: false,
-  fetchClosedOrders: false,
-  fetchCurrencies: true,
-  fetchDepositAddress: true,
-  fetchDeposits: true,
-  fetchFundingFees: false,
-  fetchL2OrderBook: true,
-  fetchLedger: false,
-  fetchMarkets: true,
-  fetchMyTrades: true,
-  fetchOHLCV: true,
-  fetchOpenOrders: true,
-  fetchOrder: true,
-  fetchOrderBook: true,
-  fetchOrderBooks: false,
-  fetchOrders: true,
-  fetchOrderTrades: false,
-  fetchStatus: 'emulated',
-  fetchTicker: true,
-  fetchTickers: true,
-  fetchTime: false,
-  fetchTrades: true,
-  fetchTradingFee: false,
-  fetchTradingFees: true,
-  fetchTradingLimits: false,
-  fetchTransactions: false,
-  fetchWithdrawals: true,
-  privateAPI: true,
-  publicAPI: true,
-  withdraw: true
-}
+// TODO: Use or remove
+// const createMarketBuyOrderError = {error: "Size too small", success: false}
+// const ftxHas = {
+//   cancelAllOrders: true,
+//   cancelOrder: true,
+//   cancelOrders: false,
+//   CORS: false,
+//   createDepositAddress: false,
+//   createLimitOrder: true,
+//   createMarketOrder: true,
+//   createOrder: true,
+//   deposit: false,
+//   editOrder: 'emulated',
+//   fetchBalance: true,
+//   fetchBidsAsks: false,
+//   fetchClosedOrders: false,
+//   fetchCurrencies: true,
+//   fetchDepositAddress: true,
+//   fetchDeposits: true,
+//   fetchFundingFees: false,
+//   fetchL2OrderBook: true,
+//   fetchLedger: false,
+//   fetchMarkets: true,
+//   fetchMyTrades: true,
+//   fetchOHLCV: true,
+//   fetchOpenOrders: true,
+//   fetchOrder: true,
+//   fetchOrderBook: true,
+//   fetchOrderBooks: false,
+//   fetchOrders: true,
+//   fetchOrderTrades: false,
+//   fetchStatus: 'emulated',
+//   fetchTicker: true,
+//   fetchTickers: true,
+//   fetchTime: false,
+//   fetchTrades: true,
+//   fetchTradingFee: false,
+//   fetchTradingFees: true,
+//   fetchTradingLimits: false,
+//   fetchTransactions: false,
+//   fetchWithdrawals: true,
+//   privateAPI: true,
+//   publicAPI: true,
+//   withdraw: true
+// }
 
 const satPrice = 1/10000
 UserWallet.setCurrentPrice(satPrice) // sats/USD. BTC at 10k
 
-import ccxt from 'ccxt'
-
-const ftxMock = jest.fn();
+const ftxMock = jest.fn()
 
 // fixtures.forEach()
 
-ftxMock.mockReturnValueOnce(fixtures[1]).mockReturnValueOnce(fixtures[0]);
+ftxMock.mockReturnValueOnce(fixtures[1]).mockReturnValueOnce(fixtures[0])
 
 jest.mock('ccxt', () => ({
-  ftx: function() { return ftxMock() } 
+  ftx: function() { return ftxMock() },
 }))
 
 let dealerWalletFixture0, dealerWalletFixture1
 
-let uid
-
 beforeAll(async () => {
-  await setupMongoConnection();
+  await setupMongoConnection()
 
-  ({ uid } = await getTokenFromPhoneIndex(7))
+  await getTokenFromPhoneIndex(7)
 
   dealerWalletFixture0 = new FtxDealerWallet({ user: new User(), logger: baseLogger })
   dealerWalletFixture1 = new FtxDealerWallet({ user: new User(), logger: baseLogger })

@@ -1,20 +1,19 @@
-import express from 'express';
-import { getChannelBalance, getChannels } from "lightning";
-import client, { register } from 'prom-client';
-import { balanceSheetIsBalanced, getBalanceSheet } from "../ledger/balanceSheet";
-import { getBosScore, lndBalances } from "../lndUtils";
-import { setupMongoConnection } from "../mongodb";
-import { Transaction, User } from "../schema";
-import { baseLogger } from "../logger";
-import { getDealerWallet, getFunderWallet } from "../walletFactory";
+import express from 'express'
+import { getChannelBalance, getChannels } from "lightning"
+import client, { register } from 'prom-client'
+import { balanceSheetIsBalanced, getBalanceSheet } from "../ledger/balanceSheet"
+import { getBosScore, lndBalances } from "../lndUtils"
+import { setupMongoConnection } from "../mongodb"
+import { Transaction, User } from "../schema"
+import { baseLogger } from "../logger"
+import { getDealerWallet, getFunderWallet } from "../walletFactory"
 import { lnd } from "../lndConfig"
 import { getBalancesDetail } from "../bitcoind"
 import _ from "lodash"
 
 const logger = baseLogger.child({module: "exporter"})
 
-const server = express();
-
+const server = express()
 
 const prefix = "galoy"
 
@@ -50,7 +49,7 @@ const onchainDepositFees_g = new client.Gauge({ name:`${prefix}_onchainDepositFe
 
 const main = async () => {
   server.get('/metrics', async (req, res) => {
-        
+
     const bosScore = await getBosScore()
     bos_g.set(bosScore)
 
@@ -66,7 +65,7 @@ const main = async () => {
     } catch (err) {
       logger.error({err}, "impossible to calculate balance sheet")
     }
-    
+
     const { total, onChain, offChain, opening_channel_balance, closing_channel_balance } = await lndBalances()
     lnd_g.set(total)
     lndOnChain_g.set(onChain)
@@ -74,26 +73,25 @@ const main = async () => {
     lndOpeningChannelBalance_g.set(opening_channel_balance)
     lndClosingChannelBalance_g.set(closing_channel_balance)
     // price_g.set(price)
-      
+
     const userCount = await User.countDocuments()
     userCount_g.set(userCount)
-    
+
     const funderWallet = await getFunderWallet({ logger })
     const { BTC: funderBalance } = await funderWallet.getBalances()
     funder_balance_BTC_g.set(funderBalance)
 
 
     const dealerWallet = await getDealerWallet({ logger })
-    
+
     try {
       const { usd: usdShortPosition, totalAccountValue, leverage } = await dealerWallet.getAccountPosition()
-  
+
       ftx_btc_g.set((await dealerWallet.getExchangeBalance()).sats)
       ftx_usdPnl_g.set((await dealerWallet.getExchangeBalance()).usdPnl)
       dealer_local_btc_g.set((await dealerWallet.getLocalLiabilities()).satsLnd)
       dealer_local_usd_g.set((await dealerWallet.getLocalLiabilities()).usd)
       dealer_profit_g.set((await dealerWallet.getProfit()).usdProfit)
-  
       totalAccountValue_g.set(totalAccountValue)
       usdShortPosition_g.set(usdShortPosition)
       leverage_g.set(leverage)
@@ -126,31 +124,31 @@ const main = async () => {
 
     const [depositFeeEntry] = await Transaction.aggregate([
       {$match: { accounts: 'Revenue:Bitcoin:Fees', type:'onchain_receipt' }},
-      {$group: { _id: null, totalDepositFees: { $sum: "$credit" } } }
+      {$group: { _id: null, totalDepositFees: { $sum: "$credit" } } },
     ])
     const {totalDepositFees = 0} = depositFeeEntry || {}
     onchainDepositFees_g.set(totalDepositFees)
-    
+
     const [withdrawFeeEntry] = await Transaction.aggregate([
       {$match: { accounts: 'Revenue:Bitcoin:Fees', type:'onchain_payment' }},
-      {$group: { _id: null, totalWithdrawFees: { $sum: "$credit" } } }
+      {$group: { _id: null, totalWithdrawFees: { $sum: "$credit" } } },
     ])
     const {totalWithdrawFees = 0} = withdrawFeeEntry || {}
     onchainWithdrawFees_g.set(totalWithdrawFees)
 
-    res.set('Content-Type', register.contentType);
-    res.end(register.metrics());
+    res.set('Content-Type', register.contentType)
+    res.end(register.metrics())
   })
 
   server.get('/healthz', async (req, res) => {
     res.send('OK')
   })
-    
-  const port = process.env.PORT || 3000;
+
+  const port = process.env.PORT || 3000
   logger.info(
     `Server listening to ${port}, metrics exposed on /metrics endpoint`,
   )
-  server.listen(port);
+  server.listen(port)
 }
 
 setupMongoConnection().then(() => main()).catch((err) => logger.error(err))

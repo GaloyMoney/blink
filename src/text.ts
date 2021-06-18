@@ -1,13 +1,13 @@
-import moment from "moment";
-import { Logger } from "pino";
-import twilio from 'twilio';
-import { yamlConfig } from "./config";
-import { TooManyRequestError } from "./error";
-import { createToken } from "./jwt";
-import { baseLogger } from './logger';
-import { failedAttemptPerIp, limiterLoginAttempt, limiterRequestPhoneCode, limiterRequestPhoneCodeIp } from "./rateLimit";
-import { PhoneCode, User } from "./schema";
-import { fetchIP, randomIntFromInterval } from "./utils";
+import moment from "moment"
+import { Logger } from "pino"
+import twilio from 'twilio'
+import { yamlConfig } from "./config"
+import { TooManyRequestError } from "./error"
+import { createToken } from "./jwt"
+import { baseLogger } from './logger'
+import { failedAttemptPerIp, limiterLoginAttempt, limiterRequestPhoneCode, limiterRequestPhoneCodeIp } from "./rateLimit"
+import { PhoneCode, User } from "./schema"
+import { fetchIP, randomIntFromInterval } from "./utils"
 
 const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER
 const getTwilioClient = () => {
@@ -15,7 +15,7 @@ const getTwilioClient = () => {
   const apiKey = process.env.TWILIO_API_KEY
   const apiSecret = process.env.TWILIO_API_SECRET
 
-  const client = twilio(apiKey, apiSecret, { accountSid });
+  const client = twilio(apiKey, apiSecret, { accountSid })
   return client
 }
 
@@ -44,10 +44,10 @@ export const requestPhoneCode = async ({ phone, logger, ip }: {phone: string, lo
   logger.info({phone, ip}, "RequestPhoneCode called")
 
   try {
-    await limiterRequestPhoneCode.consume(phone);
+    await limiterRequestPhoneCode.consume(phone)
   } catch(err) {
     if (err instanceof Error) {
-      throw err;
+      throw err
     } else {
       throw new TooManyRequestError({ logger })
     }
@@ -76,10 +76,10 @@ export const requestPhoneCode = async ({ phone, logger, ip }: {phone: string, lo
       phone,
       created_at: {
         $gte: moment().subtract(30, "seconds"),
-      }
+      },
     })
 
-    if (!!veryRecentCode) {
+    if (veryRecentCode) {
       return false
     }
 
@@ -103,16 +103,16 @@ interface ILogin {
 export const login = async ({ phone, code, logger, ip }: ILogin): Promise<string | null> => {
   const subLogger = logger.child({topic: "login"})
 
-  const rlResult = await failedAttemptPerIp.get(ip);
+  const rlResult = await failedAttemptPerIp.get(ip)
   if (rlResult !== null && rlResult.consumedPoints > yamlConfig.limits.failedAttemptPerIp.points) {
     throw new TooManyRequestError({ logger })
   }
 
   try {
-    await limiterLoginAttempt.consume(phone);
+    await limiterLoginAttempt.consume(phone)
   } catch(err) {
     if (err instanceof Error) {
-      throw err;
+      throw err
     } else {
       throw new TooManyRequestError({ logger })
     }
@@ -123,7 +123,7 @@ export const login = async ({ phone, code, logger, ip }: ILogin): Promise<string
       phone,
       created_at: {
         $gte: moment().subtract(20, "minutes"),
-      }
+      },
     })
 
     // is it a test account?
@@ -136,7 +136,7 @@ export const login = async ({ phone, code, logger, ip }: ILogin): Promise<string
       subLogger.warn({ phone, code }, `user enter incorrect code`)
 
       try {
-        await failedAttemptPerIp.consume(ip);
+        await failedAttemptPerIp.consume(ip)
       } catch (err) {
         logger.error({ip}, "impossible to consume failedAttemptPerIp")
       }
@@ -166,11 +166,11 @@ export const login = async ({ phone, code, logger, ip }: ILogin): Promise<string
 
     // TODO
     // if (yamlConfig.carrierRegexFilter)  {
-    // 
+    //
     // }
     //
     // only fetch info once
-    if (user.twilio.countryCode == undefined) {
+    if (user.twilio.countryCode === undefined || user.twilio.countryCode === null) {
       try {
         const result = await getCarrier(phone)
         user.twilio = result
@@ -185,7 +185,7 @@ export const login = async ({ phone, code, logger, ip }: ILogin): Promise<string
 
     const network = process.env.NETWORK
     return createToken({ uid: user._id, network })
-    
+
   } catch (err) {
     subLogger.error({err}, "login issue")
     throw err

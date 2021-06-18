@@ -1,16 +1,16 @@
 /**
  * @jest-environment node
  */
-import { setupMongoConnection } from "../mongodb";
+import { setupMongoConnection } from "../mongodb"
 
 import {lndMain, lndOutside1, lndOutside2} from "./helper"
-import { bitcoindDefaultClient } from "../utils";
-import mongoose from "mongoose";
-import { User } from "../schema";
+import { bitcoindDefaultClient } from "../utils"
+import mongoose from "mongoose"
+import { User } from "../schema"
 
 //TODO: Choose between camel case or underscores for variable naming
 import { getWalletInfo } from 'lightning'
-import { redis } from "../redis";
+import { redis } from "../redis"
 
 jest.mock('../realtimePrice')
 

@@ -2,12 +2,12 @@ import { exit } from "process"
 import { sleep } from "./utils"
 import { baseLogger } from './logger'
 
-import mongoose from "mongoose";
+import mongoose from "mongoose"
 
 import { User, Transaction, InvoiceUser } from './schema'
 
 // we have to import schema before medici
-import { book } from "medici";
+import { book } from "medici"
 
 export const MainBook = new book("MainBook")
 
@@ -44,7 +44,7 @@ export const setupMongoConnection = async () => {
 export const setupMongoConnectionSecondary = async () => {
   try {
     await mongoose.connect(path, {
-      replset: {readPreference: 'secondary'}
+      replset: {readPreference: 'secondary'},
     })
     mongoose.set('runValidators', true)
   } catch (err) {
@@ -55,4 +55,3 @@ export const setupMongoConnectionSecondary = async () => {
 
   return mongoose
 }
-
