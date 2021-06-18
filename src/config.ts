@@ -1,5 +1,6 @@
 import fs from 'fs';
 import yaml from 'js-yaml';
+import _ from "lodash";
 import { baseLogger } from "./logger";
 
 let defaultContent = fs.readFileSync('./default.yaml', 'utf8');
@@ -16,4 +17,4 @@ try {
   }
 }
 
-export const yamlConfig = { ... defaultConfig, ...customConfig }
+export const yamlConfig = _.merge(defaultConfig, customConfig)
