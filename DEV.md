@@ -12,6 +12,8 @@ $ direnv --version
 2.28.0
 $ docker --version
 Docker version 20.10.7, build f0df350
+$ docker-compose --version
+docker-compose version 1.29.2, build unknown
 ```
 
 We use [direnv](https://direnv.net) to load environment variables needed for running the integration tests.
