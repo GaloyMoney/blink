@@ -12,6 +12,7 @@ export const limiterRequestPhoneCode = new RateLimiterRedis({
 })
 
 export const limiterRequestPhoneCodeIp = new RateLimiterRedis({
+  // @ts-expect-error: TODO
   redis,
   keyPrefix: 'request_phone_code_ip',
   points: yamlConfig.limits.requestPhoneCodeIp.points,

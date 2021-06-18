@@ -1,7 +1,8 @@
-import grpc from '@grpc/grpc-js'
-import protoLoader from '@grpc/proto-loader'
-
+/* eslint-disable @typescript-eslint/no-var-requires */
 const PROTO_PATH = __dirname + '/protos/price.proto'
+
+const grpc = require('@grpc/grpc-js')
+const protoLoader = require('@grpc/proto-loader')
 
 // Suggested options for similarity to existing grpc.load behavior
 const packageDefinition = protoLoader.loadSync(

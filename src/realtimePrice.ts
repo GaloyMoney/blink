@@ -9,7 +9,6 @@ const pricePort = process.env.PRICE_PORT ?? '50051'
 const fullUrl = `${priceUrl}:${pricePort}`
 const key = "realtimePrice"
 
-// @ts-expect-error: TODO
 const client = new protoDescriptor.PriceFeed(fullUrl, credentials.createInsecure())
 
 // TODO: pass logger for better logging

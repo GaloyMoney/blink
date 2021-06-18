@@ -15,7 +15,6 @@ const logger = baseLogger.child({module: "exporter"})
 
 const server = express()
 
-
 const prefix = "galoy"
 
 const liabilities_g = new client.Gauge({ name: `${prefix}_liabilities`, help: 'how much money customers has' })
@@ -84,16 +83,15 @@ const main = async () => {
 
 
     const dealerWallet = await getDealerWallet({ logger })
-    
+
     try {
       const { usd: usdShortPosition, totalAccountValue, leverage } = await dealerWallet.getAccountPosition()
-  
+
       ftx_btc_g.set((await dealerWallet.getExchangeBalance()).sats)
       ftx_usdPnl_g.set((await dealerWallet.getExchangeBalance()).usdPnl)
       dealer_local_btc_g.set((await dealerWallet.getLocalLiabilities()).satsLnd)
       dealer_local_usd_g.set((await dealerWallet.getLocalLiabilities()).usd)
       dealer_profit_g.set((await dealerWallet.getProfit()).usdProfit)
-  
       totalAccountValue_g.set(totalAccountValue)
       usdShortPosition_g.set(usdShortPosition)
       leverage_g.set(leverage)

@@ -209,7 +209,7 @@ export class FtxDealerWallet extends OnChainMixin(UserWallet) {
 
     type IDepositOrWithdraw = "withdraw" | "deposit" | null
 
-    let btcAmount
+    let usdAmountDiff
     let depositOrWithdraw: IDepositOrWithdraw = null
 
     if (!usdLiability) {
@@ -227,20 +227,20 @@ export class FtxDealerWallet extends OnChainMixin(UserWallet) {
     // under leveraged
     // no imminent risk (beyond exchange custory risk)
     if (leverage < yamlConfig.hedging.LOW_BOUND_LEVERAGE) {
-      // const targetUsdCollateral = usdLiability / yamlConfig.hedging.LOW_SAFEBOUND_LEVERAGE
-      // usdAmountDiff = usdCollateral - targetUsdCollateral
+      const targetUsdCollateral = usdLiability / yamlConfig.hedging.LOW_SAFEBOUND_LEVERAGE
+      usdAmountDiff = usdCollateral - targetUsdCollateral
       depositOrWithdraw =  "withdraw"
     }
 
     // over leveraged
     // our collateral could get liquidated if we don't rebalance
     else if (leverage  > yamlConfig.hedging.HIGH_BOUND_LEVERAGE) {
-      // const targetUsdCollateral = usdLiability / yamlConfig.hedging.HIGH_SAFEBOUND_LEVERAGE
-      // usdAmountDiff = targetUsdCollateral - usdCollateral
+      const targetUsdCollateral = usdLiability / yamlConfig.hedging.HIGH_SAFEBOUND_LEVERAGE
+      usdAmountDiff = targetUsdCollateral - usdCollateral
       depositOrWithdraw = "deposit"
     }
 
-    // btcAmount = usdAmountDiff / btcPrice
+    const btcAmount = usdAmountDiff / btcPrice
 
     if (depositOrWithdraw) {
       assert(btcAmount > 0)

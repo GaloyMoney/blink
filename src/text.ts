@@ -1,13 +1,13 @@
-import moment from "moment";
-import { Logger } from "pino";
-import twilio from 'twilio';
-import { yamlConfig } from "./config";
-import { TooManyRequestError } from "./error";
-import { createToken } from "./jwt";
-import { baseLogger } from './logger';
-import { failedAttemptPerIp, limiterLoginAttempt, limiterRequestPhoneCode, limiterRequestPhoneCodeIp } from "./rateLimit";
-import { PhoneCode, User } from "./schema";
-import { fetchIP, randomIntFromInterval } from "./utils";
+import moment from "moment"
+import { Logger } from "pino"
+import twilio from 'twilio'
+import { yamlConfig } from "./config"
+import { TooManyRequestError } from "./error"
+import { createToken } from "./jwt"
+import { baseLogger } from './logger'
+import { failedAttemptPerIp, limiterLoginAttempt, limiterRequestPhoneCode, limiterRequestPhoneCodeIp } from "./rateLimit"
+import { PhoneCode, User } from "./schema"
+import { fetchIP, randomIntFromInterval } from "./utils"
 
 const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER
 const getTwilioClient = () => {
