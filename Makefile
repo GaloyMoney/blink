@@ -1,9 +1,9 @@
 start-deps:
-	docker compose up -d
+	docker-compose up -d
 	direnv reload
 
 clean-deps:
-	docker compose rm -sfv
+	docker-compose rm -sfv
 
 reset-deps: clean-deps start-deps
 
