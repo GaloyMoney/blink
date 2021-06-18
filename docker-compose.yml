@@ -1,4 +1,4 @@
-version: "3.9"
+version: "2"
 services:
   redis:
     image: bitnami/redis:6.2
