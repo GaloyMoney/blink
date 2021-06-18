@@ -1,5 +1,7 @@
 # Galoy
 
+Want to contribute? Checkout the [dev documentation](./DEV.md).
+
 ### Responsible disclosure 
 Found critical bugs/vulnerabilities? 
 Please email them security@galoy.io Thanks!
