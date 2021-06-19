@@ -71,9 +71,9 @@ jobs:
           name: install helm charts
           command: ./initLocalTest.sh
       - run:
-          name: Run ESLint
+          name: Run jest test
           command: |
-            yarn lint
+            kubectl exec --namespace=$NAMESPACE $(kubectl get pods --namespace=$NAMESPACE --selector=app=testpod --output=jsonpath={.items..metadata.name}) -- /nodejs/bin/yarn lint
       - run:
           name: Run jest test
           command: |
