@@ -27,14 +27,14 @@ import { User } from "../schema"
 import { login, requestPhoneCode } from "../text"
 import { Levels, OnboardingEarn } from "../types"
 import { AdminOps } from "../AdminOps"
-import { fetchIP, fetchIPDetails, LoggedError } from "../utils";
+import { fetchIPDetails, isIPAllowed } from "../utils";
 import { baseLogger } from '../logger'
 import { WalletFactory, WalletFromUsername } from "../walletFactory"
 import { getCurrentPrice } from "../realtimePrice"
 import { yamlConfig } from '../config'
 import { range, pattern, stringLength, ValidateDirectiveVisitor } from '@profusion/apollo-validation-directives'
 import { redis } from "../redis"
-import { AuthorizationError } from '../error'
+import { AuthorizationError, IPBlacklistedError } from '../error'
 
 dotenv.config()
 
@@ -325,8 +325,8 @@ export async function startApolloServer() {
       const uid = token?.uid ?? null
       const ip = context.req?.headers['x-real-ip']
 
-      if(yamlConfig.blacklistedIPs?.includes(ip)) {
-        throw new LoggedError(`Rejected request from blacklisted IP ${ip}`)
+      if(!isIPAllowed({ip})) {
+        throw new IPBlacklistedError("IP Blacklisted", {logger: graphqlLogger, ip})
       }
 
       let wallet, user
