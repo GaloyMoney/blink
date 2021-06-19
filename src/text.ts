@@ -7,7 +7,7 @@ import { createToken } from "./jwt"
 import { baseLogger } from './logger'
 import { failedAttemptPerIp, limiterLoginAttempt, limiterRequestPhoneCode, limiterRequestPhoneCodeIp } from "./rateLimit"
 import { PhoneCode, User } from "./schema"
-import { fetchIP, randomIntFromInterval } from "./utils"
+import { fetchIP, isIPAllowed, randomIntFromInterval } from "./utils"
 
 const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER
 const getTwilioClient = () => {
@@ -42,6 +42,14 @@ export const getCarrier = async (phone: string) => {
 
 export const requestPhoneCode = async ({ phone, logger, ip }: {phone: string, logger: Logger, ip: string}): Promise<boolean> => {
   logger.info({phone, ip}, "RequestPhoneCode called")
+
+  let ipDetails
+
+  try {
+    await isIPAllowed({ip, logger})
+  } catch(err) {
+    logger.warn({err}, "RequestPhoneCode: isIPAllowed check failed")
+  }
 
   try {
     await limiterRequestPhoneCode.consume(phone)
