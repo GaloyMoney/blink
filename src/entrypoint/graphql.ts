@@ -37,8 +37,10 @@ import { getCurrentPrice } from "../realtimePrice"
 import { redis } from "../redis"
 import { User } from "../schema"
 import { login, requestPhoneCode } from "../text"
-import { Levels, OnboardingEarn, Primitive } from "../types"
-import { fetchIPDetails } from "../utils"
+import { Levels, OnboardingEarn } from "../types"
+import { AdminOps } from "../AdminOps"
+import { fetchIP, fetchIPDetails, LoggedError } from "../utils";
+import { baseLogger } from '../logger'
 import { WalletFactory, WalletFromUsername } from "../walletFactory"
 
 dotenv.config()

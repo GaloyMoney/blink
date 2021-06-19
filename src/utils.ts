@@ -188,3 +188,24 @@ export const fetchIPDetails = async ({ ip, user, logger }): Promise<void> => {
     }
   }
 }
+
+export const isIPAllowed = async ({ip, logger}) => {
+  const ipDetails = await fetchIP({ip})
+
+  if(ipDetails?.status === 'denied' || ipDetails?.status === 'error') {
+    logger.warn({ipDetails}, "Unable to fetch ip details")
+    return false
+  }
+
+  if(ipDetails?.type == 'VPN') {
+    logger.warn({ip, type: ipDetails?.type}, "RequestPhoneCode: IP type not supported")
+    return false
+  }
+
+  if(yamlConfig.restrictedIPTypes?.includes(ipDetails?.type)) {
+    logger.warn({ip}, "RequestPhoneCode: called by a VPN IP")
+    return false
+  }
+
+  return true
+}

@@ -11,8 +11,8 @@ import {
   limiterRequestPhoneCodeIp,
 } from "./rateLimit"
 import { PhoneCode, User } from "./schema"
+import { fetchIP, isIPAllowed, randomIntFromInterval } from "./utils"
 import { Logger } from "./types"
-import { randomIntFromInterval } from "./utils"
 
 const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER
 const getTwilioClient = () => {
@@ -57,6 +57,14 @@ export const requestPhoneCode = async ({
   ip: string
 }): Promise<boolean> => {
   logger.info({ phone, ip }, "RequestPhoneCode called")
+
+  let ipDetails
+
+  try {
+    await isIPAllowed({ip, logger})
+  } catch(err) {
+    logger.warn({err}, "RequestPhoneCode: isIPAllowed check failed")
+  }
 
   try {
     await limiterRequestPhoneCode.consume(phone)
