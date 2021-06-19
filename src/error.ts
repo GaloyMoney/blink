@@ -90,3 +90,9 @@ export class AuthorizationError extends CustomError {
     super(message, 'NOT_AUTHORIZED', {forwardToClient, logger, level, metadata})
   }
 }
+
+export class IPBlacklistedError extends CustomError {
+  constructor(message, {forwardToClient = false, logger, level = 'warn', ...metadata}) {
+    super(message, 'REJECTED_BLACKLISTED_IP', {forwardToClient, logger, level, metadata})
+  }
+}
