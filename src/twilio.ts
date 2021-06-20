@@ -1,5 +1,5 @@
 import { baseLogger } from './logger'
-import twilio from 'twilio';
+import twilio from 'twilio'
 
 
 const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER
@@ -8,7 +8,7 @@ const getTwilioClient = () => {
   const apiKey = process.env.TWILIO_API_KEY
   const apiSecret = process.env.TWILIO_API_SECRET
 
-  const client = twilio(apiKey, apiSecret, { accountSid });
+  const client = twilio(apiKey, apiSecret, { accountSid })
   return client
 }
 

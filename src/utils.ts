@@ -180,4 +180,4 @@ export const updateIPDetails = async ({ip, user, logger}): Promise<void> => {
 
 export const isIPTypeBlacklisted = ({type}) => yamlConfig.blacklistedIPTypes?.includes(type)
 
-export const isIPBlacklisted = ({ip}) => yamlConfig.blacklistedIPs?.includes(ip) 
+export const isIPBlacklisted = ({ip}) => yamlConfig.blacklistedIPs?.includes(ip)

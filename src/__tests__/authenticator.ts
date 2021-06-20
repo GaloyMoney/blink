@@ -1,11 +1,11 @@
 /**
  * @jest-environment node
  */
- import mongoose from "mongoose";
-import { setupMongoConnection } from "../mongodb";
-import { getUserWallet } from "./helper";
-import { generateToken } from "node-2fa" 
-import { sleep } from "../utils";
+ import mongoose from "mongoose"
+import { setupMongoConnection } from "../mongodb"
+import { getUserWallet } from "./helper"
+import { generateToken } from "node-2fa"
+import { sleep } from "../utils"
 
 jest.mock('../twilio')
 jest.mock('../realtimePrice')
@@ -24,11 +24,11 @@ beforeEach(async () => {
 afterAll(async () => {
   await mongoose.connection.close()
 })
- 
+
 it('set 2fa for user0', async () => {
   const { secret } = await userWallet0.generate2fa()
   expect(!!secret).toBeTruthy()
-  
+
   const result = generateToken(secret)
   expect(await userWallet0.save2fa({ secret, code: result!.token })).toBeTruthy()
 
