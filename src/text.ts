@@ -58,11 +58,12 @@ export const requestPhoneCode = async ({
 }): Promise<boolean> => {
   logger.info({ phone, ip }, "RequestPhoneCode called")
 
-  if(!isIPAllowed({ip})) {
+  if(isIPBlacklisted({ip})) {
     throw new IPBlacklistedError("IP Blacklisted", {logger, ip})
   }
 
   let ipDetails
+
   try {
     ipDetails = await fetchIP({ip})
   } catch(err) {
@@ -73,7 +74,7 @@ export const requestPhoneCode = async ({
     logger.warn({ipDetails}, "Unable to fetch ip details")
   }
 
-  if(!isIPTypeAllowed({type: ipDetails?.type})) {
+  if(isIPTypeBlacklisted({type: ipDetails?.type})) {
     throw new IPBlacklistedError("IP type Blacklisted", {logger, ipDetails})
   }
 

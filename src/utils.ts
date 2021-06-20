@@ -145,14 +145,12 @@ export const inputXOR = (arg1, arg2) => {
   }
 }
 
-export const fetchIP = async ({ ip }) => {
-  const { data } = await axios.get(
-    `http://proxycheck.io/v2/${ip}?key=${PROXY_CHECK_APIKEY}&vpn=1&asn=1`,
-  )
-  return data[ip]
+export const fetchIP = async ({ip}) => {
+  const {data} = await axios.get(`http://proxycheck.io/v2/${ip}?key=${PROXY_CHECK_APIKEY}&vpn=1&asn=1`)
+  return { ...data[ip], status: data.status }
 }
 
-export const fetchIPDetails = async ({ ip, user, logger }): Promise<void> => {
+export const updateIPDetails = async ({ip, user, logger}): Promise<void> => {
   if (process.env.NODE_ENV === "test") {
     return
   }
@@ -165,10 +163,7 @@ export const fetchIPDetails = async ({ ip, user, logger }): Promise<void> => {
       return
     }
 
-    // const {data} = await axios.get(`http://proxycheck.io/v2/${ip}?key=${PROXY_CHECK_APIKEY}&vpn=1&asn=1`)
-    // ipinfo = data[ip]
-
-    ipinfo = await fetchIP({ ip })
+    ipinfo = await fetchIP({ip})
   } catch (error) {
     logger.info({ error }, "Failed to fetch ip details")
   } finally {
@@ -189,6 +184,6 @@ export const fetchIPDetails = async ({ ip, user, logger }): Promise<void> => {
   }
 }
 
-export const isIPTypeAllowed = ({type}) => !yamlConfig.blacklistedIPTypes?.includes(type)
+export const isIPTypeBlacklisted = ({type}) => yamlConfig.blacklistedIPTypes?.includes(type)
 
-export const isIPAllowed = ({ip}) => !yamlConfig.blacklistedIPs?.includes(ip) 
+export const isIPBlacklisted = ({ip}) => yamlConfig.blacklistedIPs?.includes(ip) 
