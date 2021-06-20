@@ -12,14 +12,22 @@ helm repo add jetstack https://charts.jetstack.io
 helm repo add galoy https://galoymoney.github.io/charts/
 helm repo update
 
-lndVersion="1.1.14"
+lndVersion="1.2.5"
+bitcoindVersion="0.1.15"
+
+if [ ${LOCAL} ]
+then
+  localdevpath="--skip-refresh"
+fi
+
+git clean -fX
 
 cd ./charts/galoy
-helm dependency build
+helm dependency build $localdevpath
 cd -
 
 cd ./charts/monitoring
-helm dependency build
+helm dependency build $localdevpath
 cd -
 
 INGRESS_NAMESPACE="ingress-nginx"
@@ -98,10 +106,13 @@ then
   localdevpath="-f $INFRADIR/configs/bitcoind/localdev.yaml"
 fi
 
-rm -rf $INFRADIR/configs
-git clone $CONFIG_REPO $INFRADIR/configs
+set +e
+mkdir tmp
+git clone https://github.com/galoymoney/configs ./tmp
+cp -R ./tmp/* $INFRADIR/configs/
+set -e
 
-helmUpgrade bitcoind $localdevpath -f $INFRADIR/configs/bitcoind/$NETWORK.yaml galoy/bitcoind
+helmUpgrade bitcoind $localdevpath -f $INFRADIR/configs/bitcoind/$NETWORK.yaml galoy/bitcoind --version=$bitcoindVersion
 
 # bug with --wait: https://github.com/helm/helm/issues/7139 ?
 kubectlWait app.kubernetes.io/name=bitcoind
@@ -117,19 +128,18 @@ then
     --set service.staticIP=$MINIKUBEIP"
 fi
 
-rm -rf $INFRADIR/lnd
-helm pull --version=$lndVersion galoy/lnd -d $INFRADIR/ --untar
-cp "$INFRADIR/configs/lnd/RTL-Config.json" $INFRADIR/lnd/charts/rtl
+set +e
 kubectl apply -f $INFRADIR/configs/lnd/templates
-helmUpgrade lnd --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd/
+set -e
+helmUpgrade lnd --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath galoy/lnd
 
 # avoiding to spend time with circleci regtest with this condition
 if [ "$NETWORK" == "testnet" ] || [ "$NETWORK" == "mainnet" ];
 then
   kubectlLndDeletionWait
 else
-  helmUpgrade lnd-outside-1 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpathOutside $INFRADIR/lnd/
-  helmUpgrade lnd-outside-2 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpathOutside $INFRADIR/lnd/
+  helmUpgrade lnd-outside-1 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpathOutside galoy/lnd
+  helmUpgrade lnd-outside-2 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpathOutside galoy/lnd
 fi
 
 # # add extra sleep time... seems lnd is quite long to show up some time

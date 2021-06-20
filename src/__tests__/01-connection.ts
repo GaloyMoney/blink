@@ -1,16 +1,16 @@
 /**
  * @jest-environment node
  */
-import { setupMongoConnection } from "../mongodb";
+import { setupMongoConnection } from "../mongodb"
 
 import {lndMain, lndOutside1, lndOutside2} from "./helper"
-import { bitcoindDefaultClient } from "../utils";
-import mongoose from "mongoose";
-import { User } from "../schema";
+import { bitcoindDefaultClient } from "../utils"
+import mongoose from "mongoose"
+import { User } from "../schema"
 
 //TODO: Choose between camel case or underscores for variable naming
 import { getWalletInfo } from 'lightning'
-import { redisClient } from "../redis";
+import { redis } from "../redis"
 
 jest.mock('../realtimePrice')
 
@@ -44,13 +44,13 @@ it('I can connect to mongodb', async () => {
 it('I can connect to redis', async () => {
 	const value = "value"
 
-	redisClient.on("error", function(error) {
-		throw new Error("redis issue");
+	redis.on("error", function(error) {
+    console.log({error})
+    // expect(true).toBeFalsy()
 	})
 
-	redisClient.set("key", value, (err, res) => {
-		redisClient.get("key", (err, res) => {
-			expect(res).toBe(value)
-		});
-	});
+	await redis.set("key", value)
+	const result = await redis.get("key")
+
+  expect(result).toBe(value)
 })

@@ -1,28 +1,19 @@
 # Galoy
 
-### Responsible disclosure 
-Found critical bugs/vulnerabilities? 
+### Responsible disclosure
+Found critical bugs/vulnerabilities?
 Please email them security@galoy.io Thanks!
 
 
 ### TLDR
 
-Galoy is an opinionated bitcoin banking platform. 
+Galoy is an opinionated bitcoin banking platform.
 
-To give it a try: 
-
-```
-helm repo add galoy https://galoymoney.github.io/charts/
-helm install bitcoin galoy/bitcoin
-helm install lnd galoy/lnd
-
-TODO: helm install galoy galoy/galoy
-```
-Note: Helm v3 is required to install the Galoy charts. Instructions can be found [here](https://helm.sh/docs/intro/install/)
+To give it a try headover to [INSTALLATION.md](https://github.com/GaloyMoney/galoy/blob/main/INSTALLATION.md):
 
 ## Genesis
 
-Today’s wallets are typically on two ends of a spectrum: either custodial, managed by an exchange and often large, regulated corporations, or non-custodial, open source wallets. 
+Today’s wallets are typically on two ends of a spectrum: either custodial, managed by an exchange and often large, regulated corporations, or non-custodial, open source wallets.
 
 There is really not much in the middle: a custodial wallet that is open source and one that can be deployed for a local community. This would enable any tech-savvy person to deploy a union-bitcoin-bank for their own community, anywhere in the world.
 
@@ -31,9 +22,9 @@ Galoy aims to bring this type of wallets to the bitcoin world.
 This quote from [Hal Finney](https://bitcointalk.org/index.php?topic=2500.msg34211#msg34211) probably echoes best the vision in which Galoy would operates:
 
 > Actually there is a very good reason for Bitcoin-backed banks to exist, issuing their own digital cash currency, redeemable for bitcoins. Bitcoin itself cannot scale to have every single financial transaction in the world be broadcast to everyone and included in the block chain. There needs to be a secondary level of payment systems which is lighter weight and more efficient. Likewise, the time needed for Bitcoin transactions to finalize will be impractical for medium to large value purchases.
-> 
+>
 > Bitcoin backed banks will solve these problems. They can work like banks did before nationalization of currency. Different banks can have different policies, some more aggressive, some more conservative. Some would be fractional reserve while others may be 100% Bitcoin backed. Interest rates may vary. Cash from some banks may trade at a discount to that from others.
-> 
+>
 > George Selgin has worked out the theory of competitive free banking in detail, and he argues that such a system would be stable, inflation resistant and self-regulating.
 >
 > I believe this will be the ultimate fate of Bitcoin, to be the "high-powered money" that serves as a reserve currency for banks that issue their own digital cash. Most Bitcoin transactions will occur between banks, to settle net transfers. Bitcoin transactions by private individuals will be as rare as... well, as Bitcoin based purchases are today.
@@ -52,7 +43,7 @@ Those banks could be launched by anyone around the world because plugging into t
 
 ## Status of the project
 
-While the poject is already deployed in a village in El Salvadaor (***REMOVED***) and used by 1,000+ people, one should consider this project still in alpha stage.
+While the project is already deployed in a village in El Salvadaor and used by 1,000+ people, one should consider this project still in alpha stage.
 
 The wallet is currently deployed in Google Cloud. The entire architecture is open source software so there should be no blocker to deploy on other cloud services that are Kubernetes compatible.
 

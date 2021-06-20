@@ -9,7 +9,7 @@ export const bitcoindAccountingPath = 'Assets:Reserve:Bitcoind'
 export const lndAccountingPath = 'Assets:Reserve:Lightning' // TODO: rename to Assets:Lnd
 export const escrowAccountingPath = 'Assets:Reserve:Escrow' // TODO: rename to Assets:Lnd:Escrow
 
-export const accountDealerFtxPath = 'Assets:Dealer:FTX' // this should be updated with a cron job taking into consideration profit/loss 
+export const accountDealerFtxPath = 'Assets:Dealer:FTX' // this should be updated with a cron job taking into consideration profit/loss
 
 
 // liabilities
@@ -18,7 +18,7 @@ export const customerPath = (uid) => `Liabilities:Customer:${uid}`
 let cacheDealerPath: string
 
 export const dealerMediciPath = async () => {
-  if(!!cacheDealerPath) {
+  if(cacheDealerPath) {
     return cacheDealerPath
   }
 

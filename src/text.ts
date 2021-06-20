@@ -1,11 +1,87 @@
 import moment from "moment"
-import { PhoneCode, User } from "./schema";
+import { Logger } from "pino"
+import twilio from 'twilio'
+import { yamlConfig } from "./config"
+import { IPBlacklistedError, TooManyRequestError } from "./error"
 import { createToken } from "./jwt"
-import { yamlConfig } from "./config";
-import { randomIntFromInterval } from "./utils"
-import { sendText, getCarrier } from "./twilio"
+import { baseLogger } from './logger'
+import { failedAttemptPerIp, limiterLoginAttempt, limiterRequestPhoneCode, limiterRequestPhoneCodeIp } from "./rateLimit"
+import { PhoneCode, User } from "./schema"
+import { fetchIP, isIPBlacklisted, isIPTypeBlacklisted, randomIntFromInterval } from "./utils"
 
-export const requestPhoneCode = async ({ phone, logger }) => {
+const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER
+const getTwilioClient = () => {
+  const accountSid = process.env.TWILIO_ACCOUNT_SID
+  const apiKey = process.env.TWILIO_API_KEY
+  const apiSecret = process.env.TWILIO_API_SECRET
+
+  const client = twilio(apiKey, apiSecret, { accountSid })
+  return client
+}
+
+export const sendText = async ({ body, to, logger }) => {
+  try {
+    await getTwilioClient().messages.create({
+      from: twilioPhoneNumber,
+      to,
+      body,
+    })
+  } catch (err) {
+    logger.fatal({err}, "impossible to send text")
+    return
+  }
+
+  logger.info({to}, "sent text successfully")
+}
+
+export const getCarrier = async (phone: string) => {
+  const result = await getTwilioClient().lookups.phoneNumbers(phone).fetch({type: ['carrier']})
+  baseLogger.info({result}, "result carrier info")
+  return result
+}
+
+export const requestPhoneCode = async ({ phone, logger, ip }: {phone: string, logger: Logger, ip: string}): Promise<boolean> => {
+  logger.info({phone, ip}, "RequestPhoneCode called")
+
+  if(isIPBlacklisted({ip})) {
+    throw new IPBlacklistedError("IP Blacklisted", {logger, ip})
+  }
+
+  let ipDetails
+
+  try {
+    ipDetails = await fetchIP({ip})
+  } catch(err) {
+    logger.warn({err}, "Unable to fetch ip details")
+  }
+
+  if(!ipDetails || ipDetails.status === 'denied' || ipDetails.status === 'error') {
+    logger.warn({ipDetails}, "Unable to fetch ip details")
+  }
+
+  if(isIPTypeBlacklisted({type: ipDetails?.type})) {
+    throw new IPBlacklistedError("IP type Blacklisted", {logger, ipDetails})
+  }
+
+  try {
+    await limiterRequestPhoneCode.consume(phone)
+  } catch(err) {
+    if (err instanceof Error) {
+      throw err
+    } else {
+      throw new TooManyRequestError({ logger })
+    }
+  }
+
+  try {
+    await limiterRequestPhoneCodeIp.consume(ip)
+  } catch(err) {
+    if (err instanceof Error) {
+      throw err
+    } else {
+      throw new TooManyRequestError({ logger })
+    }
+  }
 
   // make it possible to bypass the auth for testing purpose
   if (yamlConfig.test_accounts.findIndex(item => item.phone === phone) !== -1) {
@@ -16,17 +92,14 @@ export const requestPhoneCode = async ({ phone, logger }) => {
   const body = `${code} is your verification code for ${yamlConfig.name}`
 
   try {
-    // TODO: implement backoff strategy instead this native delay
-    // making sure someone can not call the API thousands time in a row,
-    // which would make finding a code very easy
     const veryRecentCode = await PhoneCode.findOne({
       phone,
       created_at: {
         $gte: moment().subtract(30, "seconds"),
-      }
+      },
     })
 
-    if (!!veryRecentCode) {
+    if (veryRecentCode) {
       return false
     }
 
@@ -44,18 +117,33 @@ interface ILogin {
   phone: string
   code: number
   logger: any
+  ip: string
 }
 
-export const login = async ({ phone, code, logger }: ILogin) => {
+export const login = async ({ phone, code, logger, ip }: ILogin): Promise<string | null> => {
   const subLogger = logger.child({topic: "login"})
 
+  const rlResult = await failedAttemptPerIp.get(ip)
+  if (rlResult !== null && rlResult.consumedPoints > yamlConfig.limits.failedAttemptPerIp.points) {
+    throw new TooManyRequestError({ logger })
+  }
+
   try {
-    // TODO: rate limit this method per phone with backoff
+    await limiterLoginAttempt.consume(phone)
+  } catch(err) {
+    if (err instanceof Error) {
+      throw err
+    } else {
+      throw new TooManyRequestError({ logger })
+    }
+  }
+
+  try {
     const codes = await PhoneCode.find({
       phone,
       created_at: {
         $gte: moment().subtract(20, "minutes"),
-      }
+      },
     })
 
     // is it a test account?
@@ -66,12 +154,25 @@ export const login = async ({ phone, code, logger }: ILogin) => {
       // this branch is both relevant for test and non-test accounts
       // for when the code is not correct
       subLogger.warn({ phone, code }, `user enter incorrect code`)
+
+      try {
+        await failedAttemptPerIp.consume(ip)
+      } catch (err) {
+        logger.error({ip}, "impossible to consume failedAttemptPerIp")
+      }
+
       return null
     }
 
     // code is correct
-    
-    // get User 
+
+    // reseting the limiter for this phone
+    limiterLoginAttempt.delete(phone) // no need to await the promise
+
+    // rewarding the ip address at the request code level
+    limiterRequestPhoneCodeIp.reward(ip)
+
+    // get User
     let user
 
     user = await User.findOne({ phone })
@@ -85,23 +186,26 @@ export const login = async ({ phone, code, logger }: ILogin) => {
 
     // TODO
     // if (yamlConfig.carrierRegexFilter)  {
-    // 
+    //
     // }
     //
     // only fetch info once
-    if (user.twilio.countryCode == undefined) {
+    if (user.twilio.countryCode === undefined || user.twilio.countryCode === null) {
       try {
         const result = await getCarrier(phone)
         user.twilio = result
         await user.save()
       } catch (err) {
-        subLogger.error({err}, "impossible to fetch carrier")
+        // Carrier fetching is a non-critical operation
+        // Primarily useful for analytics
+        // Hence failure should be handled with a warn instead of an error
+        subLogger.warn({err}, "impossible to fetch carrier")
       }
     }
 
     const network = process.env.NETWORK
     return createToken({ uid: user._id, network })
-    
+
   } catch (err) {
     subLogger.error({err}, "login issue")
     throw err

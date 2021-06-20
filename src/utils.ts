@@ -1,18 +1,17 @@
-// @ts-ignore
 import { GraphQLError } from "graphql"
-import _ from 'lodash';
+import _ from 'lodash'
 
 import bitcoindClient from 'bitcoin-core'
-import { parsePaymentRequest } from 'invoices';
+import { parsePaymentRequest } from 'invoices'
 
 // how many block are we looking back for getChainTransactions
 export const LOOK_BACK = 2016
 
-// @ts-ignore
-import { GraphQLError } from "graphql";
-import { User } from "./schema";
-import axios from "axios";
-import { yamlConfig } from "./config";
+import { User } from "./schema"
+import axios from "axios"
+import { yamlConfig } from "./config"
+import { ValidationError } from "./error"
+import { baseLogger } from "./logger"
 
 // FIXME: super ugly hack.
 // for some reason LoggedError get casted as GraphQLError
@@ -21,9 +20,8 @@ import { yamlConfig } from "./config";
 export const customLoggerPrefix = `custom: `
 
 export class LoggedError extends GraphQLError {
-  
   constructor(message) {
-    super(`${customLoggerPrefix}${message}`);
+    super(`${customLoggerPrefix}${message}`)
   }
 }
 
@@ -32,11 +30,14 @@ const PROXY_CHECK_APIKEY = yamlConfig?.PROXY_CHECK_APIKEY
 const connection_obj = {
   network: process.env.NETWORK,
   username: 'rpcuser',
-  password: 'rpcpass',
+  password: process.env.BITCOINDRPCPASS,
   host: process.env.BITCOINDADDR,
   port: process.env.BITCOINDPORT,
   version: '0.21.0',
 }
+
+export const BitcoindClient = ({ wallet = "" }) => new bitcoindClient({ ...connection_obj, wallet })
+export const bitcoindDefaultClient = BitcoindClient({ wallet: "" })
 
 
 export const addContact = async ({ uid, username }) => {
@@ -45,7 +46,7 @@ export const addContact = async ({ uid, username }) => {
   const result = await User.update(
     {
       _id: uid,
-      "contacts.id": username
+      "contacts.id": username,
     },
     {
       $inc: { "contacts.$.transactionsCount": 1 },
@@ -55,21 +56,18 @@ export const addContact = async ({ uid, username }) => {
   if(!result.nModified) {
     await User.update(
       {
-        _id: uid
+        _id: uid,
       },
       {
         $addToSet: {
           contacts: {
-            id: username
-          }
-        }
-      }
-    );
+            id: username,
+          },
+        },
+      },
+    )
   }
 }
-
-export const BitcoindClient = ({ wallet = "" }) => new bitcoindClient({ ...connection_obj, wallet })
-export const bitcoindDefaultClient = BitcoindClient({ wallet: "" })
 
 export const amountOnVout = ({ vout, onchain_addresses }): number => {
   // TODO: check if this is always [0], ie: there is always a single addresses for vout for lnd output
@@ -106,17 +104,16 @@ export const randomIntFromInterval = (min, max) =>
   Math.floor(Math.random() * (max - min + 1) + min)
 
 export async function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 export function timeout(delay, msg) {
   return new Promise(function(resolve, reject) {
     setTimeout(function() {
-      reject(new Error(msg));
-    }, delay);
-  });
+      reject(new Error(msg))
+    }, delay)
+  })
 }
-
 
 export async function measureTime(operation: Promise<any>): Promise<[any, number]> {
   const startTime = process.hrtime()
@@ -141,12 +138,17 @@ export const caseInsensitiveRegex = (input) => {
 export const inputXOR = (arg1, arg2) => {
   const [[key1, value1]] = Object.entries(arg1)
   const [[key2, value2]] = Object.entries(arg2)
-  if(!(!value1 != !value2)) {
-    throw new LoggedError(`Either ${key1} or ${key2} is required, but not both`);
+  if(!(!value1 !== !value2)) {
+    throw new ValidationError(`Either ${key1} or ${key2} is required, but not both`, {logger: baseLogger})
   }
 }
 
-export const fetchIPDetails = async ({currentIP, user, logger}) => {
+export const fetchIP = async ({ip}) => {
+  const {data} = await axios.get(`http://proxycheck.io/v2/${ip}?key=${PROXY_CHECK_APIKEY}&vpn=1&asn=1`)
+  return { ...data[ip], status: data.status }
+}
+
+export const updateIPDetails = async ({ip, user, logger}): Promise<void> => {
   if (process.env.NODE_ENV === "test") {
     return
   }
@@ -154,15 +156,28 @@ export const fetchIPDetails = async ({currentIP, user, logger}) => {
   let ipinfo
 
   try {
-    if(user.lastIPs.some(ipObject => ipObject.ip === currentIP)) {
+    // skip axios.get call if ip already exists in user object
+    if(user.lastIPs.some(ipObject => ipObject.ip === ip)) {
       return
     }
 
-    const {data} = await axios.get(`http://proxycheck.io/v2/${currentIP}?key=${PROXY_CHECK_APIKEY}&vpn=1&asn=1`)
-    ipinfo = data[currentIP]
+    ipinfo = await fetchIP({ip})
   } catch (error) {
     logger.info({error}, 'Failed to fetch ip details')
   } finally {
-    await User.updateOne({_id: user._id}, {$push: {lastIPs: { ip: currentIP, ...ipinfo, Type: ipinfo?.type }}})
+    const res = await User.updateOne(
+      { _id: user._id, "lastIPs.ip": ip },
+      { "$set": { "lastIPs.$.lastConnection" : Date.now() } },
+    )
+    if(!res.nModified) {
+      await User.findOneAndUpdate(
+        { _id: user._id, "lastIPs.ip": {"$ne": ip} },
+        { $push: { lastIPs: { ip, ...ipinfo, Type: ipinfo?.type }}},
+      )
+    }
   }
 }
+
+export const isIPTypeBlacklisted = ({type}) => yamlConfig.blacklistedIPTypes?.includes(type)
+
+export const isIPBlacklisted = ({ip}) => yamlConfig.blacklistedIPs?.includes(ip) 

@@ -77,35 +77,40 @@ spec:
             - name: MACAROON
               valueFrom:
                 secretKeyRef:
-                  name: lnd-macaroon
-                  key: admin.macaroon
+                  name: lnd-credentials
+                  key: admin_macaroon_base64
             - name: TLS
               valueFrom:
                 secretKeyRef:
-                  name: lnd-tls
-                  key: tls.cert
+                  name: lnd-credentials
+                  key: tls_base64
             - name: BITCOINDADDR
               value: "bitcoind"
+            - name: BITCOINDRPCPASS
+              valueFrom:
+                secretKeyRef:
+                  name: bitcoind-rpcpassword
+                  key: password
             - name: BITCOINDPORT
               value: {{ $.Values.bitcoind.port | quote }}
             - name: JWT_SECRET
-            {{- if $.Values.jwtSecret}}
-              value: {{ $.Values.jwtSecret }}
-            {{- else}}
               valueFrom:
                 secretKeyRef:
                   name: jwt-secret
                   key: secret
-            {{- end}}
             - name: NETWORK
               valueFrom:
                 secretKeyRef:
                   name: network
                   key: network
-            - name: REDIS_PORT
-              value: "6379"
-            - name: REDIS_IP
-              value: "galoy-redis-master"
+            - name: REDIS_MASTER_NAME
+              value: "mymaster"
+            - name: REDIS_0_DNS
+              value: "galoy-redis-node-0.galoy-redis-headless"
+            - name: REDIS_1_DNS
+              value: "galoy-redis-node-1.galoy-redis-headless"
+            - name: REDIS_2_DNS
+              value: "galoy-redis-node-2.galoy-redis-headless"
             {{- if eq .name "exporter" }}
             - name: FTX_KEY
               valueFrom:
@@ -139,23 +144,23 @@ spec:
             - name: MACAROONOUTSIDE1
               valueFrom:
                 secretKeyRef:
-                  name: lnd-outside-1-macaroon
-                  key: admin.macaroon
+                  name: lnd-outside-1-credentials
+                  key: admin_macaroon_base64
             - name: TLSOUTSIDE1
               valueFrom:
                 secretKeyRef:
-                  name: lnd-outside-1-tls
-                  key: tls.cert
+                  name: lnd-outside-1-credentials
+                  key: tls_base64
             - name: MACAROONOUTSIDE2
               valueFrom:
                 secretKeyRef:
-                  name: lnd-outside-2-macaroon
-                  key: admin.macaroon
+                  name: lnd-outside-2-credentials
+                  key: admin_macaroon_base64
             - name: TLSOUTSIDE2
               valueFrom:
                 secretKeyRef:
-                  name: lnd-outside-2-tls
-                  key: tls.cert
+                  name: lnd-outside-2-credentials
+                  key: tls_base64
             - name: LNDRPCPORT
               value: "10009"
             - name: LNDOUTSIDE1RPCPORT

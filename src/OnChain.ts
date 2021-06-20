@@ -1,19 +1,19 @@
-import { assert } from "console";
-import _ from 'lodash';
-import moment from "moment";
-import { customerPath, lndAccountingPath, onchainRevenuePath } from "./ledger/ledger";
-import { lnd } from "./lndConfig";
-import { lockExtendOrThrow, redlock } from "./lock";
-import { MainBook } from "./mongodb";
-import { IOnChainPayment, ISuccess, ITransaction } from "./types";
-import { amountOnVout, bitcoindDefaultClient, btc2sat, LoggedError, LOOK_BACK, myOwnAddressesOnVout } from "./utils";
+import { assert } from "console"
+import _ from 'lodash'
+import moment from "moment"
+import { customerPath, lndAccountingPath, onchainRevenuePath } from "./ledger/ledger"
+import { lnd } from "./lndConfig"
+import { lockExtendOrThrow, redlock } from "./lock"
+import { MainBook } from "./mongodb"
+import { IOnChainPayment, ISuccess, ITransaction } from "./types"
+import { amountOnVout, bitcoindDefaultClient, btc2sat, LoggedError, LOOK_BACK, myOwnAddressesOnVout } from "./utils"
 import { baseLogger } from './logger'
-import { UserWallet } from "./userWallet";
-import { Transaction, User } from "./schema";
+import { UserWallet } from "./userWallet"
+import { Transaction, User } from "./schema"
 import { createChainAddress, getChainBalance, getChainFeeEstimate, getChainTransactions, getHeight, sendToChainAddress } from "lightning"
 
-import { yamlConfig } from "./config";
-import { InsufficientBalanceError, NewAccountWithdrawalError, SelfPaymentError, TransactionRestrictedError } from './error';
+import { yamlConfig } from "./config"
+import { DbError, DustAmountError, InsufficientBalanceError, NewAccountWithdrawalError, RebalanceNeededError, SelfPaymentError, TransactionRestrictedError, ValidationError } from './error'
 
 export const getOnChainTransactions = async ({ lnd, incoming }: { lnd: any, incoming: boolean }) => {
   try {
@@ -30,7 +30,7 @@ export const getOnChainTransactions = async ({ lnd, incoming }: { lnd: any, inco
 }
 
 export const OnChainMixin = (superclass) => class extends superclass {
-  
+
   constructor(...args) {
     super(...args)
   }
@@ -38,13 +38,13 @@ export const OnChainMixin = (superclass) => class extends superclass {
   async updatePending(lock): Promise<void> {
     await Promise.all([
       this.updateOnchainReceipt(lock),
-      super.updatePending(lock)
+      super.updatePending(lock),
     ])
   }
 
   // FIXME: should be static but doesn't work with mixin
   // this would return a User if address belong to our wallet
-  async tentativelyGetPayeeUser({address}) { 
+  async tentativelyGetPayeeUser({address}) {
     return User.findOne({ onchain_addresses: { $in: address } })
   }
 
@@ -71,8 +71,12 @@ export const OnChainMixin = (superclass) => class extends superclass {
     let onchainLogger = this.logger.child({ topic: "payment", protocol: "onchain", transactionType: "payment", address, amount, memo })
 
     if (amount <= 0) {
-      onchainLogger.error('A negative amount was passed')
-      throw Error("amount can't be negative")
+      const error = "Amount can't be negative"
+      throw new ValidationError(error, {logger: onchainLogger})
+    }
+
+    if(amount < yamlConfig.onchainDustAmount) {
+      throw new DustAmountError(undefined, {logger: onchainLogger})
     }
 
     return await redlock({ path: this.user._id, logger: onchainLogger }, async (lock) => {
@@ -82,8 +86,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
       // quit early if balance is not enough
       if (balance.total_in_BTC < amount) {
-        const error = `balance is too low`
-        throw new InsufficientBalanceError(error, {forwardToClient: true, logger: onchainLogger, level: 'error'})
+        throw new InsufficientBalanceError(undefined, {logger: onchainLogger})
       }
 
       const payeeUser = await this.tentativelyGetPayeeUser({address})
@@ -93,21 +96,20 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
         if (await this.user.limitHit({on_us: true, amount})) {
           const error = `Cannot transfer more than ${yamlConfig.limits.onUs.level[this.user.level]} sats in 24 hours`
-          throw new TransactionRestrictedError(error,{forwardToClient: true, logger: onchainLoggerOnUs, level: 'error'})
+          throw new TransactionRestrictedError(error,{logger: onchainLoggerOnUs})
         }
 
         if (String(payeeUser._id) === String(this.user._id)) {
-          const error = 'User tried to pay himself'
-          throw new SelfPaymentError(error, {forwardToClient: true, logger: onchainLoggerOnUs, level: 'warn'})
+          throw new SelfPaymentError(undefined, {logger: onchainLoggerOnUs})
         }
 
         const sats = amount
-        const metadata = { 
+        const metadata = {
           currency: "BTC",
           type: "onchain_on_us",
           pending: false,
           ...UserWallet.getCurrencyEquivalent({ sats, fee: 0 }),
-          payee_addresses: [address]
+          payee_addresses: [address],
         }
 
         await lockExtendOrThrow({lock, logger: onchainLoggerOnUs}, async () => {
@@ -116,22 +118,22 @@ export const OnChainMixin = (superclass) => class extends superclass {
             .debit(this.user.accountPath, sats, {...metadata, memo})
             .commit()
         })
-        
+
         onchainLoggerOnUs.info({ success: true, ...metadata }, "onchain payment succeed")
 
         return true
       }
 
       onchainLogger = onchainLogger.child({onUs: false})
-      
+
       if (!this.user.oldEnoughForWithdrawal) {
         const error = `New accounts have to wait ${yamlConfig.limits.oldEnoughForWithdrawal / (60 * 60 * 1000)}h before withdrawing`
-        throw new NewAccountWithdrawalError(error,{forwardToClient: true, logger: onchainLogger, level: 'error'})
+        throw new NewAccountWithdrawalError(error,{logger: onchainLogger})
       }
 
       if (await this.user.limitHit({on_us: false, amount})) {
         const error = `Cannot withdraw more than ${yamlConfig.limits.withdrawal.level[this.user.level]} sats in 24 hours`
-        throw new TransactionRestrictedError(error,{forwardToClient: true, logger: onchainLogger, level: 'error'})
+        throw new TransactionRestrictedError(error,{logger: onchainLogger})
       }
 
       const { chain_balance: onChainBalance } = await getChainBalance({ lnd })
@@ -150,11 +152,8 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
       // case where there is not enough money available within lnd on-chain wallet
       if (onChainBalance < amount + estimatedFee) {
-        const error = `insufficient onchain balance on the lnd node. rebalancing is needed`
-        
         // TODO: add a page to initiate the rebalancing quickly
-        onchainLogger.fatal({onChainBalance, amount, estimatedFee, sendTo, success: false }, error)
-        throw new LoggedError(error)
+        throw new RebalanceNeededError(undefined, {logger: onchainLogger, onChainBalance, amount, estimatedFee, sendTo, success: false})
       }
 
       //add a flat fee on top of onchain miner fees
@@ -162,10 +161,9 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
       // case where the user doesn't have enough money
       if (balance.total_in_BTC < amount + estimatedFee) {
-        const error = `balance is too low. have: ${balance} sats, need ${amount + estimatedFee}`
-        throw new InsufficientBalanceError(error, {forwardToClient: true, logger: onchainLogger, level: 'error'})
+        throw new InsufficientBalanceError(undefined, {logger: onchainLogger})
       }
-      
+
 
       return lockExtendOrThrow({lock, logger: onchainLogger}, async () => {
 
@@ -190,14 +188,14 @@ export const OnChainMixin = (superclass) => class extends superclass {
           fee += this.user.withdrawFee
           const sats = amount + fee
           const metadata = { currency: "BTC", hash: id, type: "onchain_payment", pending: true, ...UserWallet.getCurrencyEquivalent({ sats, fee }) }
-  
+
           // TODO/FIXME refactor. add the transaction first and set the fees in a second tx.
           await MainBook.entry(memo)
             .credit(lndAccountingPath, sats - this.user.withdrawFee, metadata)
             .credit(onchainRevenuePath, this.user.withdrawFee, metadata)
             .debit(this.user.accountPath, sats, metadata)
             .commit()
-  
+
           onchainLogger.info({success: true , ...metadata}, 'successful onchain payment')
         }
 
@@ -205,13 +203,13 @@ export const OnChainMixin = (superclass) => class extends superclass {
       })
     })
   }
-  
+
   async getLastOnChainAddress(): Promise<string> {
     if (this.user.onchain_addresses.length === 0) {
       // FIXME this should not be done in a query but only in a mutation?
       await this.getOnChainAddress()
     }
- 
+
     return _.last(this.user.onchain_addresses) as string
   }
 
@@ -219,14 +217,14 @@ export const OnChainMixin = (superclass) => class extends superclass {
     // another option to investigate is to have a master key / client
     // (maybe this could be saved in JWT)
     // and a way for them to derive new key
-    // 
-    // this would avoid a communication to the server 
+    //
+    // this would avoid a communication to the server
     // every time you want to show a QR code.
 
     let address
 
     try {
-      const format = 'p2wpkh';
+      const format = 'p2wpkh'
       const response = await createChainAddress({
         lnd,
         format,
@@ -244,15 +242,14 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
     } catch (err) {
       const error = `error storing new onchain address to db`
-      this.logger.error({err}, error)
-      throw new LoggedError(error)
+      throw new DbError(error, {forwardToClient: false, logger: this.logger, level: 'warn', err})
     }
 
     return address
   }
 
   async getOnchainReceipt({confirmed}: {confirmed: boolean}) {
-    
+
     // optimization to remove the need to fetch lnd when no address
     // mainly useful for testing purpose
     // we could only generate an onchain_address the first time the client request it
@@ -262,8 +259,8 @@ export const OnChainMixin = (superclass) => class extends superclass {
     }
 
     const lnd_incoming_txs = await getOnChainTransactions({ lnd, incoming: true })
-    
-    // for unconfirmed tx: 
+
+    // for unconfirmed tx:
     // { block_id: undefined,
     //   confirmation_count: undefined,
     //   confirmation_height: undefined,
@@ -296,8 +293,8 @@ export const OnChainMixin = (superclass) => class extends superclass {
     const min_confirmation = 2
 
     if(confirmed) {
-      lnd_incoming_filtered = lnd_incoming_txs.filter(tx => 
-        !!tx.confirmation_count && tx.confirmation_count >= min_confirmation
+      lnd_incoming_filtered = lnd_incoming_txs.filter(tx =>
+        !!tx.confirmation_count && tx.confirmation_count >= min_confirmation,
       )
     } else {
       lnd_incoming_filtered = lnd_incoming_txs.filter(
@@ -357,7 +354,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
     return [
       ...unconfirmed.map(({ sats, addresses, id, created_at }) => ({
-        id, 
+        id,
         amount: sats,
         pending: true,
         created_at: moment(created_at).unix(),
@@ -369,9 +366,9 @@ export const OnChainMixin = (superclass) => class extends superclass {
         currency: "BTC",
         fee: 0,
         feeUsd: 0,
-        addresses
+        addresses,
       })),
-      ...confirmed
+      ...confirmed,
     ]
   }
 
@@ -427,7 +424,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
         // has the transaction has not been added yet to the user account?
         //
-        // note: the fact we fiter with `account_path: this.user.accountPath` could create 
+        // note: the fact we fiter with `account_path: this.user.accountPath` could create
         // double transaction for some non customer specific wallet. ie: if the path is different
         // for the dealer. this is fixed now but something to think about.
         const mongotx = await Transaction.findOne({ accounts: this.user.accountPath, type, hash: matched_tx.id })
@@ -437,14 +434,14 @@ export const OnChainMixin = (superclass) => class extends superclass {
           const {sats, addresses} = await this.getSatsAndAddressPerTx(matched_tx.transaction)
           assert(matched_tx.tokens >= sats)
 
-          const fee = sats * this.user.depositFeeRatio
+          const fee = Math.round(sats * this.user.depositFeeRatio)
 
           const metadata = {
             currency: "BTC",
             type, hash: matched_tx.id,
             pending: false,
             ...UserWallet.getCurrencyEquivalent({ sats, fee }),
-            payee_addresses: addresses
+            payee_addresses: addresses,
           }
 
           await MainBook.entry()
@@ -462,4 +459,4 @@ export const OnChainMixin = (superclass) => class extends superclass {
     })
   }
 
-};
+}

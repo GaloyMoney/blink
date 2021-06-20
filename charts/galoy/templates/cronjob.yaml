@@ -9,7 +9,7 @@ spec:
   schedule: {{ .schedule }}
   jobTemplate:
     spec:
-      activeDeadlineSeconds: 3600
+      activeDeadlineSeconds: 7200
       template:
         spec:
           containers:
@@ -51,19 +51,34 @@ spec:
             - name: MACAROON
               valueFrom:
                 secretKeyRef:
-                  name: lnd-macaroon
-                  key: admin.macaroon
+                  name: lnd-credentials
+                  key: admin_macaroon_base64
             - name: TLS
               valueFrom:
                 secretKeyRef:
-                  name: lnd-tls
-                  key: tls.cert
-            - name: REDIS_PORT
-              value: "6379"
-            - name: REDIS_IP
-              value: "galoy-redis-master"
+                  name: lnd-credentials
+                  key: tls_base64
+            - name: REDIS_MASTER_NAME
+              value: "mymaster"
+            - name: REDIS_0_SENTINEL_PORT
+              value: "26379"
+            - name: REDIS_0_DNS
+              value: "galoy-redis-node-0.galoy-redis-headless"
+            - name: REDIS_1_SENTINEL_PORT
+              value: "26379"
+            - name: REDIS_1_DNS
+              value: "galoy-redis-node-1.galoy-redis-headless"
+            - name: REDIS_2_SENTINEL_PORT
+              value: "26379"
+            - name: REDIS_2_DNS
+              value: "galoy-redis-node-2.galoy-redis-headless"
             - name: BITCOINDADDR
               value: "bitcoind"
+            - name: BITCOINDRPCPASS
+              valueFrom:
+                secretKeyRef:
+                  name: bitcoind-rpcpassword
+                  key: password
             - name: BITCOINDPORT
               value: {{ $.Values.bitcoind.port | quote }}
             - name: LOGLEVEL

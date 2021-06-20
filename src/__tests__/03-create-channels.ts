@@ -1,19 +1,17 @@
 /**
  * @jest-environment node
  */
-import { once } from 'events';
-import { getChannels, subscribeToGraph } from 'lightning';
-import { updateEscrows } from "../ledger/balanceSheet";
-import { lndFeePath } from "../ledger/ledger";
-import { MainBook, setupMongoConnection } from "../mongodb";
-import { bitcoindDefaultClient, sleep } from "../utils";
-import { checkIsBalanced, lndMain, lndOutside1, lndOutside2, mockGetExchangeBalance, openChannelTesting } from "./helper";
+import { once } from 'events'
+import { getChannels, subscribeToGraph } from 'lightning'
+import { updateEscrows } from "../ledger/balanceSheet"
+import { lndFeePath } from "../ledger/ledger"
+import { MainBook, setupMongoConnection } from "../mongodb"
+import { bitcoindDefaultClient, sleep } from "../utils"
+import { checkIsBalanced, lndMain, lndOutside1, lndOutside2, mockGetExchangeBalance, openChannelTesting } from "./helper"
 
 jest.mock('../realtimePrice')
 
-let initBlockCount
 let channelLengthMain, channelLengthOutside1
-
 
 beforeAll(async () => {
   await setupMongoConnection()
@@ -21,7 +19,7 @@ beforeAll(async () => {
 })
 
 beforeEach(async () => {
-  initBlockCount = await bitcoindDefaultClient.getBlockCount()
+  await bitcoindDefaultClient.getBlockCount()
 
   channelLengthMain = (await getChannels({ lnd: lndMain })).channels.length
   channelLengthOutside1 = (await getChannels({ lnd: lndOutside1 })).channels.length
@@ -32,7 +30,7 @@ afterEach(async () => {
 })
 
 afterAll(async () => {
-  jest.restoreAllMocks();
+  jest.restoreAllMocks()
   // return await mongoose.connection.close()
 })
 
@@ -57,7 +55,7 @@ it('opens channel from lnd1ToLndOutside1', async () => {
   expect(finalFeeInLedger - initFeeInLedger).toBe(channelFee * -1 )
 })
 
-// FIXME: we need a way to calculate the closing fee 
+// FIXME: we need a way to calculate the closing fee
 // lnd doesn't give it back to us (undefined)
 // and bitcoind doesn't give fee for "outside" wallet
 
@@ -65,31 +63,31 @@ it('opens channel from lnd1ToLndOutside1', async () => {
 
 //   try {
 //     const socket = `lnd-outside-1:9735`
-  
+
 //     await openChannelTesting({ lnd: lndMain, other_lnd: lndOutside1, socket })
-  
+
 //     let channels
-  
+
 //     ({ channels } = await getChannels({ lnd: lndMain }));
 //     expect(channels.length).toEqual(channelLengthMain + 1)
-  
+
 //     const sub = subscribeToChannels({ lnd: lndMain })
 //     sub.on('channel_closed', async (channel) => {
 //       // onChannelUpdated({ channel, lnd: lndMain, stateChange: "closed" })
 //     })
-    
+
 //     await lnService.closeChannel({ lnd: lndMain, id: channels[channels.length - 1].id })
 //     const currentBlockCount = await bitcoindDefaultClient.getBlockCount()
 //     await mineBlockAndSync({ lnds: [lndMain, lndOutside1], blockHeight: currentBlockCount + newBlock })
-  
+
 //     await sleep(10000)
-  
+
 //     // FIXME
 //     // expect(finalFeeInLedger - initFeeInLedger).toBe(channelFee * -1)
 //     sub.removeAllListeners()
-  
+
 //     await updateEscrows();
-  
+
 //     ({ channels } = await getChannels({ lnd: lndMain }))
 //     expect(channels.length).toEqual(channelLengthMain)
 //   } catch (err) {
@@ -100,14 +98,14 @@ it('opens channel from lnd1ToLndOutside1', async () => {
 it('opens private channel from lndOutside1 to lndOutside2', async () => {
   const socket = `lnd-outside-2:9735`
 
-  const subscription = subscribeToGraph({ lnd: lndOutside1 });
+  const subscription = subscribeToGraph({ lnd: lndOutside1 })
 
   await Promise.all([
     openChannelTesting({ lnd: lndOutside1, other_lnd: lndOutside2, socket, is_private: true }),
-    once(subscription, 'channel_updated')
+    once(subscription, 'channel_updated'),
   ])
 
-  subscription.removeAllListeners();
+  subscription.removeAllListeners()
 
   const { channels } = await getChannels({ lnd: lndOutside1 })
   expect(channels.length).toEqual(channelLengthOutside1 + 1)

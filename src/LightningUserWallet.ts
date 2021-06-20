@@ -1,18 +1,17 @@
-import { LightningMixin } from "./Lightning";
-import { redlock } from "./lock";
-import { OnChainMixin } from "./OnChain";
-import { User } from "./schema";
-import { ILightningWalletUser, OnboardingEarn } from "./types";
-import { UserWallet } from "./userWallet";
-import { getFunderWallet } from "./walletFactory";
-import bluebird from 'bluebird';
-const { using } = bluebird;
+import { LightningMixin } from "./Lightning"
+import { redlock } from "./lock"
+import { OnChainMixin } from "./OnChain"
+import { User } from "./schema"
+import { ILightningWalletUser, OnboardingEarn } from "./types"
+import { UserWallet } from "./userWallet"
+import { getFunderWallet } from "./walletFactory"
+import { CustomError } from "./error"
 
 /**
  * this represents a user wallet
  */
 export class LightningUserWallet extends OnChainMixin(LightningMixin(UserWallet)) {
-  
+
   constructor(args: ILightningWalletUser) {
     super({ ...args })
   }
@@ -20,14 +19,14 @@ export class LightningUserWallet extends OnChainMixin(LightningMixin(UserWallet)
   async addEarn(ids) {
 
     if (this.user?.twilio?.carrier?.type === "voip") {
-      throw new Error("reward can only be given on non voip-based phone")
+      throw new CustomError("reward can only be given on non voip-based phone", "VOIP_REWARD_RESTRICTED", {forwardToClient: true, logger: this.logger, level: 'warn', metadata: undefined})
     }
 
     const lightningFundingWallet = await getFunderWallet({ logger: this.logger })
 
     return await redlock({ path: this.user._id, logger: this.logger }, async () => {
 
-      const result: object[] = []
+      const result: Record<string, unknown>[] = []
 
       for (const id of ids) {
         const amount = OnboardingEarn[id]
@@ -35,7 +34,7 @@ export class LightningUserWallet extends OnChainMixin(LightningMixin(UserWallet)
         const userPastState = await User.findOneAndUpdate(
           { _id: this.user._id },
           { $push: { earn: id } },
-          { upsert: true }
+          { upsert: true },
         )
 
         if (userPastState.earn.findIndex(item => item === id) === -1) {

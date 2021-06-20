@@ -1,17 +1,15 @@
 /**
  * @jest-environment node
  */
-import { setupMongoConnection } from "../mongodb";
-import mongoose from "mongoose";
-import { getTokenFromPhoneIndex } from "./helper";
+import { setupMongoConnection } from "../mongodb"
+import mongoose from "mongoose"
+import { getTokenFromPhoneIndex } from "./helper"
 
 jest.mock('../realtimePrice')
 
-let uid
-
 beforeAll(async () => {
-  await setupMongoConnection();
-  ({ uid } = await getTokenFromPhoneIndex(7))
+  await setupMongoConnection()
+  await getTokenFromPhoneIndex(7)
 })
 
 afterAll(async () => {

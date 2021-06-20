@@ -1,19 +1,16 @@
-import _ from "lodash";
-import { bitcoindAccountingPath, lndAccountingPath, lndFeePath } from "./ledger/ledger";
-import { lnd } from "./lndConfig";
-import { MainBook } from "./mongodb";
-import { getOnChainTransactions } from "./OnChain";
-import { BitcoindClient, bitcoindDefaultClient, btc2sat, sat2btc } from "./utils";
-import { UserWallet } from "./userWallet";
+import _ from "lodash"
+import { bitcoindAccountingPath, lndAccountingPath, lndFeePath } from "./ledger/ledger"
+import { lnd } from "./lndConfig"
+import { MainBook } from "./mongodb"
+import { getOnChainTransactions } from "./OnChain"
+import { BitcoindClient, bitcoindDefaultClient, btc2sat, sat2btc } from "./utils"
+import { UserWallet } from "./userWallet"
 import { lndBalances } from "./lndUtils"
 import { yamlConfig } from "./config"
-import { createChainAddress, sendToChainAddress } from "lightning";
-
-
-// TODO: we should not rely on OnChainMixin/UserWallet for this "wallet"
+import { createChainAddress, sendToChainAddress } from "lightning"
 
 export class SpecterWallet {
-  bitcoindClient 
+  bitcoindClient
   logger
 
   constructor({ logger }) {
@@ -33,23 +30,23 @@ export class SpecterWallet {
   async setBitcoindClient(): Promise<string> {
     const wallets = await SpecterWallet.listWallets()
 
-    const pattern = "specter"
-    const specterWallets = _.filter(wallets, item => item.startsWith(pattern))
+    const pattern = yamlConfig.rebalancing.onchainWallet ?? "specter"
+    const specterWallets = _.filter(wallets, item => item.includes(pattern))
 
     // there should be only one specter wallet
     // TODO/FIXME this is a weak security assumption
-    // someone getting access to specter could create another 
+    // someone getting access to specter could create another
     // hotkey-based specter wallet to bypass this check
 
     if (specterWallets.length === 0) {
       this.logger.info("specter wallet has not been instantiated")
-      
+
       // currently use for testing purpose. need to refactor
       return ""
     }
 
     if (specterWallets.length > 1) {
-      throw Error("only one specter wallet in bitcoind is currently supported")
+      throw Error("currently one wallet can be selected for cold storage rebalancing")
     }
 
     this.logger.info({wallet: specterWallets[0]}, "setting BitcoindClient")
@@ -66,8 +63,8 @@ export class SpecterWallet {
   // for debugging
   // to create the wallet from bitcoin-cli:
   // bitcoin-cli --named createwallet wallet_name="coldstorage" disable_private_keys="true"
-  // 
-  // more info on: 
+  //
+  // more info on:
   // https://github.com/BlockchainCommons/Learning-Bitcoin-from-the-Command-Line/blob/master/07_3_Integrating_with_Hardware_Wallets.md
 
   // to import a descriptor:
@@ -96,7 +93,7 @@ export class SpecterWallet {
     if (!this.bitcoindClient) {
       const wallet = await this.setBitcoindClient()
       if (wallet === "") {
-        return 
+        return
       }
     }
 
@@ -121,7 +118,7 @@ export class SpecterWallet {
     } else if (action === "withdraw") {
       logger.error("rebalancing is needed, but need manual intervention")
       // this.toLndWallet({ sats })
-    } 
+    }
   }
 
   static isRebalanceNeeded({ lndBalance, onChain }) {
@@ -138,10 +135,10 @@ export class SpecterWallet {
     const thresholdHighBound = lndHoldingBase * 130 / 100
 
     // what is the target amount to be in lnd wallet holding
-    // when there is too much money in lnd and we need to deposit in cold storage 
+    // when there is too much money in lnd and we need to deposit in cold storage
     const targetDeposit = lndHoldingBase * ratioTargetDeposit
-    
-    // what is the target amount to be in lnd wallet holding 
+
+    // what is the target amount to be in lnd wallet holding
     //when there is a not enough money in lnd and we need to withdraw from cold storage
     const targetWithdraw = lndHoldingBase * ratioTargetWithdraw
 
@@ -172,12 +169,12 @@ export class SpecterWallet {
       const wallet = await this.setBitcoindClient()
       if (wallet === "") {
         this.logger.warn("no wallet has been setup")
-        return 
+        return
       }
     }
 
     const address = await this.getColdStorageAddress()
-    
+
     let id
 
     try {
@@ -185,19 +182,19 @@ export class SpecterWallet {
     } catch (err) {
       this.logger.fatal({err}, "could not send to deposit. accounting to be reverted")
     }
-    
+
     const memo = `deposit of ${sats} sats to the cold storage wallet`
 
     const outgoingOnchainTxns = await getOnChainTransactions({ lnd, incoming: false })
     const [{ fee }] = outgoingOnchainTxns.filter(tx => tx.id === id)
 
-    const metadata = { 
-      type: "to_cold_storage", 
-      currency: "BTC", 
+    const metadata = {
+      type: "to_cold_storage",
+      currency: "BTC",
       pending: false,
       hash: id,
       fee,
-      ...UserWallet.getCurrencyEquivalent({sats, fee})
+      ...UserWallet.getCurrencyEquivalent({sats, fee}),
     }
 
     await MainBook.entry(memo)
@@ -213,7 +210,7 @@ export class SpecterWallet {
     if (!this.bitcoindClient) {
       const wallet = await this.setBitcoindClient()
       if (wallet === "") {
-        return 
+        return
       }
     }
 

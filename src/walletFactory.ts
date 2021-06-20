@@ -1,10 +1,10 @@
-import { yamlConfig } from "./config";
-import { FtxDealerWallet } from "./dealer/FtxDealerWallet";
-import { NotFoundError } from './error';
-import { LightningUserWallet } from "./LightningUserWallet";
-import { getCurrentPrice } from "./realtimePrice";
-import { User } from "./schema";
-import { UserWallet } from "./userWallet";
+import { yamlConfig } from "./config"
+import { FtxDealerWallet } from "./dealer/FtxDealerWallet"
+import { NotFoundError } from './error'
+import { LightningUserWallet } from "./LightningUserWallet"
+import { getCurrentPrice } from "./realtimePrice"
+import { User } from "./schema"
+import { UserWallet } from "./userWallet"
 
 
 export const WalletFactory = async ({ user, logger }: { user: typeof User, logger: any }) => {
@@ -23,7 +23,7 @@ export const WalletFromUsername = async ({ username, logger }: { username: strin
   const user = await User.findByUsername({ username })
   if (!user) {
     const error = `User not found`
-    throw new NotFoundError(error, {forwardToClient: true, logger, level: 'warn'})
+    throw new NotFoundError(error, {logger})
   }
 
   return WalletFactory({ user, logger })
