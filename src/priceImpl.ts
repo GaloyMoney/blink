@@ -1,7 +1,7 @@
-import _ from 'lodash';
+import _ from 'lodash'
 import { sat2btc } from "./utils"
 import moment from "moment"
-import { PriceHistory } from "./schema";
+import { PriceHistory } from "./schema"
 import ccxt from 'ccxt'
 
 
@@ -31,7 +31,7 @@ export class Price {
     this.pair = "BTC/USD"
     this.path = {
       "pair.name": this.pair,
-      "pair.exchange.name": this.exchange_string
+      "pair.exchange.name": this.exchange_string,
     }
     this.logger = logger
   }
@@ -40,22 +40,22 @@ export class Price {
    * favor lastCached
    * only used for unit test
    */
-  async getFromExchange({ since, limit, init }:
-    { since: number, limit: number, init: Boolean }): Promise<Array<object>> {
+  async getFromExchange({ since, limit }:
+    { since: number, limit: number, init: boolean }): Promise<Array<Record<string, unknown>>> {
 
     this.logger.info("start fetching data from exchange")
-    let ohlcv;
+    let ohlcv
     try {
-      ohlcv = await this.exchange.fetchOHLCV(this.pair, "1h", since, limit);
+      ohlcv = await this.exchange.fetchOHLCV(this.pair, "1h", since, limit)
       this.logger.info("data fetched from exchange")
     }
     catch (e) {
       if (e instanceof ccxt.NetworkError) {
-        throw new Error(`fetchTicker failed due to a network error: ${e.message}`);
+        throw new Error(`fetchTicker failed due to a network error: ${e.message}`)
       } else if (e instanceof ccxt.ExchangeError) {
-        throw new Error(`fetchTicker failed due to exchange error: ${e.message}`);
+        throw new Error(`fetchTicker failed due to exchange error: ${e.message}`)
       } else {
-        throw new Error(`issue with ref exchanges: ${e}`);
+        throw new Error(`issue with ref exchanges: ${e}`)
       }
     }
 
@@ -69,12 +69,12 @@ export class Price {
     const data = ohlcv.pair.exchange.price
     const result = data.map(value => ({
       id: moment(value._id).unix(),
-      o: value.o
+      o: value.o,
     })).sort((a, b) => a.t - b.t).slice(- (24 * 366 + 1)) // 1y of hourly candles / FIXME use date instead.
     return result
   }
 
-  async update(init = false): Promise<Boolean | Error> {
+  async update(init = false): Promise<boolean | Error> {
     const increment = 720 // how many candles
     const increment_ms = increment * 3600 * 1000
     const endDate = new Date().valueOf() - 3600 * 1000
@@ -94,15 +94,15 @@ export class Price {
         pair: {
           name: "BTC/USD",
           exchange: {
-            name: this.exchange_string
-          }
-        }
+            name: this.exchange_string,
+          },
+        },
       })
     }
 
     // skip if it has not been an hour since last update
     try {
-      //@ts-ignore
+      // @ts-ignore-error: TODO
       const diff = moment().diff(moment(_.last(doc.pair.exchange.price)._id))
       if (diff < 1000 * 60 * 60) {
         return false
@@ -126,9 +126,10 @@ export class Price {
             // this.logger.debug({value0: value[0]}, "we already have those price datas in our database")
             continue
           }
-          
-          
+
+
           this.logger.debug({value0: value[0]}, "adding entry to our price database")
+          // @ts-expect-error: TODO
           doc.pair.exchange.price.push({ _id: value[0], o: sat2btc(value[1]) })
 
           // console.log({price: doc.pair.exchange.price})
@@ -149,13 +150,13 @@ export class Price {
   // async updateSpot(): Promise<void> {
   //     await this.initDb()
 
-  //     const price = await this.getFromExchange();
+  //     const price = await this.getFromExchange()
   //     const priceDb = new this.PriceHistoryModel({ price }); // FIXME
   //     try {
-  //         await priceDb.save();
+  //         await priceDb.save()
   //     }
   //     catch (err) {
-  //         throw new functions.https.HttpsError('internal', 'cannot save to db: ' + err.toString());
+  //         throw new functions.https.HttpsError('internal', 'cannot save to db: ' + err.toString())
   //     }
   // }
 }

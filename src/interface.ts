@@ -7,18 +7,18 @@ export interface Balances {
 }
 
 export interface IWallet {
-  getBalances(lock?): Promise<Balances>
+  getBalances(): Promise<Balances>
   getTransactions(): any // TODO
-  getInfo(): Promise<object>
+  getInfo(): Promise<Record<string, unknown>>
 }
 
 export interface ILightningWallet extends IWallet {
-  payInvoice({invoice: string}): Promise<any> // TODO
-  addInvoice(IAddBTCInvoiceRequest): Promise<any> // TODO
+  payInvoice(): Promise<any> // TODO
+  addInvoice(): Promise<any> // TODO
 }
 
 export interface FiatTransaction {
-  amount: number, 
+  amount: number,
   date: number,
   icon: string,
   name: string,

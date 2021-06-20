@@ -1,6 +1,6 @@
-import { setupMongoConnection } from "../mongodb";
-import { baseLogger } from "../logger";
-import { getDealerWallet } from "../walletFactory";
+import { setupMongoConnection } from "../mongodb"
+import { baseLogger } from "../logger"
+import { getDealerWallet } from "../walletFactory"
 
 const main = async () => {
   const mongoose = await setupMongoConnection()
@@ -22,5 +22,5 @@ if (require.main === module) {
     main()
   } catch (err) {
     baseLogger.warn({err}, "error in the dealer job")
-  }  
+  }
 }

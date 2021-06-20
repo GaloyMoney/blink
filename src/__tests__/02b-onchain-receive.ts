@@ -1,18 +1,18 @@
 /**
  * @jest-environment node
  */
-import { once } from 'events';
-import { filter } from "lodash";
-import mongoose from "mongoose";
-import { getCurrentPrice } from "../realtimePrice";
-import { onchainTransactionEventHandler } from "../entrypoint/trigger";
-import { setupMongoConnection } from "../mongodb";
-import { getTitle } from "../notifications/payment";
-import { bitcoindDefaultClient, btc2sat, sleep } from "../utils";
+import { once } from 'events'
+import { filter } from "lodash"
+import mongoose from "mongoose"
+import { getCurrentPrice } from "../realtimePrice"
+import { onchainTransactionEventHandler } from "../entrypoint/trigger"
+import { setupMongoConnection } from "../mongodb"
+import { getTitle } from "../notifications/payment"
+import { bitcoindDefaultClient, btc2sat, sleep } from "../utils"
 import { baseLogger } from '../logger'
-import { getFunderWallet } from "../walletFactory";
-import { checkIsBalanced, getUserWallet, lndMain, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "./helper";
-import { subscribeToChainAddress, subscribeToTransactions } from "lightning";
+import { getFunderWallet } from "../walletFactory"
+import { checkIsBalanced, getUserWallet, lndMain, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "./helper"
+import { subscribeToChainAddress, subscribeToTransactions } from "lightning"
 
 jest.mock('../realtimePrice')
 
@@ -26,6 +26,7 @@ let amount_BTC
 
 
 jest.mock('../notifications/notification')
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const { sendNotification } = require("../notifications/notification")
 
 const amountAfterFeeDeduction = ({amount, depositFeeRatio}) => Math.round(btc2sat(amount) * (1 - depositFeeRatio))
@@ -38,7 +39,7 @@ beforeAll(async () => {
 beforeEach(async () => {
   walletUser0 = await getUserWallet(0)
 
-  funderWallet = await getFunderWallet({ logger: baseLogger }) 
+  funderWallet = await getFunderWallet({ logger: baseLogger })
 
   initBlockCount = await bitcoindDefaultClient.getBlockCount()
   initialBalanceUser0 = (await walletUser0.getBalances()).BTC
@@ -53,7 +54,7 @@ afterEach(async () => {
 })
 
 afterAll(async () => {
-  jest.restoreAllMocks();
+  jest.restoreAllMocks()
   await mongoose.connection.close()
 })
 
@@ -67,7 +68,7 @@ const onchain_funding = async ({ walletDestination }) => {
   const checkBalance = async () => {
     const sub = subscribeToChainAddress({ lnd: lndMain, bech32_address: address, min_height })
     await once(sub, 'confirmation')
-    sub.removeAllListeners();
+    sub.removeAllListeners()
 
     await waitUntilBlockHeight({ lnd: lndMain, blockHeight: initBlockCount + 6 })
     await checkIsBalanced()
@@ -96,7 +97,7 @@ const onchain_funding = async ({ walletDestination }) => {
 
   await Promise.all([
     checkBalance(),
-    fundWallet()
+    fundWallet(),
   ])
 }
 
@@ -114,10 +115,10 @@ it('identifies unconfirmed incoming on chain txn', async () => {
 
   const sub = await subscribeToTransactions({ lnd: lndMain })
   sub.on('chain_transaction', onchainTransactionEventHandler)
-  
+
   await Promise.all([
     once(sub, 'chain_transaction'),
-    bitcoindDefaultClient.sendToAddress(address, amount_BTC)
+    bitcoindDefaultClient.sendToAddress(address, amount_BTC),
   ])
 
   await sleep(1000)
@@ -149,7 +150,7 @@ it('identifies unconfirmed incoming on chain txn', async () => {
   // console.log(util.inspect(sendNotification.mock.calls, false, Infinity))
   // FIXME: the event is actually fired twice.
   // is it a lnd issue?
-  // a workaround: use a hash of the event and store in redis 
+  // a workaround: use a hash of the event and store in redis
   // to not replay if it has already been handled?
   //
   // expect(notification.sendNotification.mock.calls.length).toBe(2)
@@ -167,10 +168,10 @@ it('batch send transaction', async () => {
 
   const {BTC: initBalanceUser4} = await walletUser4.getBalances()
   console.log({initBalanceUser4, initialBalanceUser0})
-  
+
   const output0 = {}
   output0[address0] = 1
-  
+
   const output1 = {}
   output1[address4] = 2
 
@@ -183,8 +184,8 @@ it('batch send transaction', async () => {
   // const decodedPsbt2 = await bitcoindDefaultClient.decodePsbt(walletProcessPsbt.psbt)
   // const analysePsbt2 = await bitcoindDefaultClient.analyzePsbt(walletProcessPsbt.psbt)
   const finalizedPsbt = await bitcoindDefaultClient.finalizePsbt(walletProcessPsbt.psbt)
-  await bitcoindDefaultClient.sendRawTransaction(finalizedPsbt.hex) 
-  
+  await bitcoindDefaultClient.sendRawTransaction(finalizedPsbt.hex)
+
   await bitcoindDefaultClient.generateToAddress(6, RANDOM_ADDRESS)
   await waitUntilBlockHeight({ lnd: lndMain, blockHeight: initBlockCount + 6 })
 

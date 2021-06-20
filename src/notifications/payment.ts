@@ -1,6 +1,5 @@
-import _ from 'lodash';
-import { getCurrentPrice } from "../realtimePrice";
-import { IDataNotification, IPaymentNotification, TransactionType } from "../types";
+import { getCurrentPrice } from "../realtimePrice"
+import { IDataNotification, IPaymentNotification, TransactionType } from "../types"
 import { sendNotification } from "./notification"
 
 export const getTitle = {
@@ -23,7 +22,7 @@ export const transactionNotification = async ({ amount, type, user, logger, hash
 
   let title
 
-  if (!!satsPrice) {
+  if (satsPrice) {
     const usd = (amount * satsPrice!).toFixed(2)
     title = getTitle[type]({usd, amount})
   } else {

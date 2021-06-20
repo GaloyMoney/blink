@@ -1,6 +1,6 @@
 ## Wallets
 
-To operate, Lightning nodes have to have at least some funds with keys online. We also keep funds online for a portion of the onchain wallet for users who want to send funds over the layer 1. all the hot wallet are currently using lnd. 
+To operate, Lightning nodes have to have at least some funds with keys online. We also keep funds online for a portion of the onchain wallet for users who want to send funds over the layer 1. all the hot wallet are currently using lnd.
 
 The cold storage is done with a multi sig wallet. This wallet is operated by bitcoind, and the orchestration of the signature is done with Specter.
 
@@ -8,9 +8,9 @@ The cold storage is done with a multi sig wallet. This wallet is operated by bit
 
 Galoy focuses on reliability and redundancy. This is why we are relying on kubernetes for orchestrating the different services we are using.
 
-Cloud platforms are the best way to maintain reliability. This also comes with a security tradeoff of having keys on servers physically controlled by a third party. We are mitigating this with a cold storage strategy. 
+Cloud platforms are the best way to maintain reliability. This also comes with a security tradeoff of having keys on servers physically controlled by a third party. We are mitigating this with a cold storage strategy.
 
-Kubernetes comes with some overhead, and while we have not tried to run on low-cost devices such as a raspberry pi, we assume this may not be the best platform to run a bitcoin bank that may have thousands of users, or more. However if you want to give it a try, we'll be glad to see how it goes! 
+Kubernetes comes with some overhead, and while we have not tried to run on low-cost devices such as a raspberry pi, we assume this may not be the best platform to run a bitcoin bank that may have thousands of users, or more. However if you want to give it a try, we'll be glad to see how it goes!
 
 https://twitter.com/memenetes/status/1366826625531342856?s=20
 
@@ -24,15 +24,15 @@ Lnd itself is also adding etcd as another backend option to bring more resilicen
 
 ### Main pods
 
-The main service is run through a graphql server. 
+The main service is run through a graphql server.
 
 The graphql server can scale horizontally with additional pods.
 
-Redis is being used as a distributed lock such that several accounts can't be modified at the same time by different instances. 
+Redis is being used as a distributed lock such that several accounts can't be modified at the same time by different instances.
 
 ## Database
 
-The state of the wallet is shared among 4 differences sources: 
+The state of the wallet is shared among 4 differences sources:
 
 ### bitcoin-core
 
@@ -40,7 +40,7 @@ Bitcoin core handles the cold storage.
 
 There is typically a very low load transaction wise in regard to the wallet. Typically 1 transaction per week when a rebalancing is needed.
 
-### lnd 
+### lnd
 
 Lnd handles all of the transactions the users make.
 Lnd stores the data in a bbolt database internally.
@@ -60,7 +60,7 @@ To achieve strong consistency, it's currently setup in the following way:
 
 The accounting part is being done by [medici](https://github.com/flash-oss/medici/commits/master).
 
-There is no transaction used yet (the main inconsistency if this were to happen would be between the journal entries and the transaction entries). A [contribution on this](https://github.com/flash-oss/medici/issues/23) is welcome. It has not been a focus yet because there hasn't been any issue on this yet. 
+There is no transaction used yet (the main inconsistency if this were to happen would be between the journal entries and the transaction entries). A [contribution on this](https://github.com/flash-oss/medici/issues/23) is welcome. It has not been a focus yet because there hasn't been any issue on this yet.
 
 ### Redis
 

@@ -1,21 +1,21 @@
-import Redlock, { Lock } from 'redlock';
-import bluebird from 'bluebird';
-import { redis } from "./redis";
-const { using } = bluebird;
+import Redlock, { Lock } from 'redlock'
+import bluebird from 'bluebird'
+import { redis } from "./redis"
+const { using } = bluebird
 
-  
+
 // the maximum amount of time you want the resource locked,
 // keeping in mind that you can extend the lock up until
 // the point when it expires
-// TODO: use TIMEOUTs env variable 
+// TODO: use TIMEOUTs env variable
 const ttl = process.env.NETWORK !== "regtest" ? 180000 : 10000
 
 function errorWrapper({logger}) {
   return function unlockErrorHandler(err) {
-    logger.error(err, `unable to release redis lock`);
+    logger.error(err, `unable to release redis lock`)
   }
 }
-  
+
 const redlockClient = new Redlock(
 // you should have one client for each independent redis node
 // or cluster
@@ -35,11 +35,11 @@ const redlockClient = new Redlock(
   // the max time in ms randomly added to retries
   // to improve performance under high contention
   // see https://www.awsarchitectureblog.com/2015/03/backoff.html
-  retryJitter:  200 // time in ms
+  retryJitter:  200, // time in ms
 })
 
 
-export const getResource = path => `locks:account:${path}`;
+export const getResource = path => `locks:account:${path}`
 
 interface IRedLock {
   path: string,
@@ -47,6 +47,7 @@ interface IRedLock {
   lock?: typeof Lock
 }
 
+// eslint-disable-next-line no-unused-vars
 export const redlock = async ({path, logger, lock}: IRedLock, async_fn: (arg0: typeof Lock) => Promise<any>) => {
   if (!!lock && lock.expiration > Date.now()) {
     return await async_fn(lock)
@@ -67,20 +68,18 @@ export const lockExtendOrThrow = async ({lock, logger}, async_fn): Promise<any> 
   logLockTimeout({logger, lock})
 
   return new Promise((resolve, reject) => {
-    lock.extend(120000, async (err, extended_lock) => {
+    lock.extend(120000, async (err) => {
       // if we can't extend the lock, typically because it would have expired
       // then we throw an error
-      if (!!err) {
+      if (err) {
         const error = "unable to extend the lock"
         logger.error({err}, error)
         reject( new Error(error) )
         return
       }
-  
+
       const result = await async_fn()
       resolve(result)
     })
   })
 }
-
-

@@ -1,17 +1,17 @@
 /**
  * @jest-environment node
  */
-import { once } from 'events';
-import { filter, first } from "lodash";
-import mongoose from "mongoose";
-import { onchainTransactionEventHandler } from "../entrypoint/trigger";
-import { MainBook, setupMongoConnection } from "../mongodb";
-import { getTitle } from "../notifications/payment";
-import { Transaction } from '../schema';
-import { bitcoindDefaultClient, sleep } from "../utils";
+import { once } from 'events'
+import { filter, first } from "lodash"
+import mongoose from "mongoose"
+import { onchainTransactionEventHandler } from "../entrypoint/trigger"
+import { MainBook, setupMongoConnection } from "../mongodb"
+import { getTitle } from "../notifications/payment"
+import { Transaction } from '../schema'
+import { bitcoindDefaultClient, sleep } from "../utils"
 import { yamlConfig } from "../config"
-import { checkIsBalanced, getUserWallet, lndMain, lndOutside1, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "./helper";
-import { createChainAddress, subscribeToTransactions } from "lightning";
+import { checkIsBalanced, getUserWallet, lndMain, lndOutside1, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "./helper"
+import { createChainAddress, subscribeToTransactions } from "lightning"
 
 jest.mock('../realtimePrice')
 
@@ -20,8 +20,8 @@ const date = Date.now() + 1000 * 60 * 60 * 24 * 8
 jest
   .spyOn(global.Date, 'now')
   .mockImplementation(() =>
-    new Date(date).valueOf()
-);
+    new Date(date).valueOf(),
+)
 
 
 let initBlockCount
@@ -30,6 +30,7 @@ let userWallet0, userWallet3
 
 
 jest.mock('../notifications/notification')
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const { sendNotification } = require("../notifications/notification")
 
 beforeAll(async () => {
@@ -51,12 +52,11 @@ afterEach(async () => {
 afterAll(async () => {
   await bitcoindDefaultClient.generateToAddress(3, RANDOM_ADDRESS)
   await sleep(2000)
-  jest.restoreAllMocks();
+  jest.restoreAllMocks()
 	await mongoose.connection.close()
 })
 
 const amount = 10040 // sats
-
 
 it('Sends onchain payment successfully', async () => {
   const { address } = await createChainAddress({ format: 'p2wpkh', lnd: lndOutside1 })
@@ -85,7 +85,7 @@ it('Sends onchain payment successfully', async () => {
 	const {BTC: interimBalance} = await userWallet0.getBalances()
 	expect(interimBalance).toBe(initialBalanceUser0 - amount - pendingTxn.fee)
   await checkIsBalanced()
-  
+
   const txs = await userWallet0.getTransactions()
   const pendingTxs = filter(txs, {pending: true})
   expect(pendingTxs.length).toBe(1)
@@ -128,18 +128,18 @@ it('makes onchain on-us transaction', async () => {
   try {
     const user3Address = await userWallet3.getOnChainAddress()
     const {BTC: initialBalanceUser3} = await userWallet3.getBalances()
-  
+
     const paymentResult = await userWallet0.onChainPay({ address: user3Address, amount })
-  
+
     const {BTC: finalBalanceUser0} = await userWallet0.getBalances()
     const {BTC: finalBalanceUser3} = await userWallet3.getBalances()
-  
+
     console.log({initialBalanceUser0, finalBalanceUser0, initialBalanceUser3, finalBalanceUser3})
-  
+
     expect(paymentResult).toBe(true)
     expect(finalBalanceUser0).toBe(initialBalanceUser0 - amount)
     expect(finalBalanceUser3).toBe(initialBalanceUser3 + amount)
-  
+
     const { results: [{ pending, fee, feeUsd }] } = await MainBook.ledger({ account: userWallet0.accountPath, type: "onchain_on_us" })
     expect(pending).toBe(false)
     expect(fee).toBe(0)
@@ -164,10 +164,10 @@ it('makes onchain on-us transaction with memo', async () => {
   const user3Address = await userWallet3.getOnChainAddress()
   const paymentResult = await userWallet0.onChainPay({ address: user3Address as string, amount, memo })
   expect(paymentResult).toBe(true)
-  
+
   const txs = await userWallet0.getTransactions()
   expect((first(txs) as any).description).toBe(memo)
-  
+
   // receiver should not know memo from sender
   const txsUser3 = await userWallet3.getTransactions()
   expect((first(txsUser3) as any).description).not.toBe(memo)
@@ -188,7 +188,7 @@ it('fails to make onchain payment when insufficient balance', async () => {
     lnd: lndOutside1,
     format: 'p2wpkh',
   })
-  const {BTC: initialBalanceUser3} = await userWallet3.getBalances();
+  const {BTC: initialBalanceUser3} = await userWallet3.getBalances()
 
   //should fail because user does not have balance to pay for on-chain fee
   await expect(userWallet3.onChainPay({ address: address as string, amount: initialBalanceUser3 })).rejects.toThrow()
@@ -209,7 +209,7 @@ it('fails to make onchain payment when withdrawalLimit hit', async () => {
   const timestampYesterday = new Date(Date.now() - (24 * 60 * 60 * 1000))
   const [result] = await Transaction.aggregate([
     {$match: {"accounts": userWallet0.accountPath, type: {$ne: 'on_us'}, "timestamp": { $gte: timestampYesterday }}},
-    {$group: {_id: null, outgoingSats: { $sum: "$debit" }}}
+    {$group: {_id: null, outgoingSats: { $sum: "$debit" }}},
   ])
   const { outgoingSats } = result || {outgoingSats: 0}
   const amount = yamlConfig.withdrawalLimit - outgoingSats
@@ -223,7 +223,7 @@ it('testing Fee', async () => {
     const fee = await userWallet0.getOnchainFee({address})
     expect(fee).toBeGreaterThan(0)
   }
-  
+
   {
     const address = await userWallet3.getOnChainAddress()
     const fee = await userWallet0.getOnchainFee({address})

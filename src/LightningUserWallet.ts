@@ -1,19 +1,17 @@
-import { LightningMixin } from "./Lightning";
-import { redlock } from "./lock";
-import { OnChainMixin } from "./OnChain";
-import { User } from "./schema";
-import { ILightningWalletUser, OnboardingEarn } from "./types";
-import { UserWallet } from "./userWallet";
-import { getFunderWallet } from "./walletFactory";
-import bluebird from 'bluebird';
-import { CustomError } from "./error";
-const { using } = bluebird;
+import { LightningMixin } from "./Lightning"
+import { redlock } from "./lock"
+import { OnChainMixin } from "./OnChain"
+import { User } from "./schema"
+import { ILightningWalletUser, OnboardingEarn } from "./types"
+import { UserWallet } from "./userWallet"
+import { getFunderWallet } from "./walletFactory"
+import { CustomError } from "./error"
 
 /**
  * this represents a user wallet
  */
 export class LightningUserWallet extends OnChainMixin(LightningMixin(UserWallet)) {
-  
+
   constructor(args: ILightningWalletUser) {
     super({ ...args })
   }
@@ -28,7 +26,7 @@ export class LightningUserWallet extends OnChainMixin(LightningMixin(UserWallet)
 
     return await redlock({ path: this.user._id, logger: this.logger }, async () => {
 
-      const result: object[] = []
+      const result: Record<string, unknown>[] = []
 
       for (const id of ids) {
         const amount = OnboardingEarn[id]
@@ -36,7 +34,7 @@ export class LightningUserWallet extends OnChainMixin(LightningMixin(UserWallet)
         const userPastState = await User.findOneAndUpdate(
           { _id: this.user._id },
           { $push: { earn: id } },
-          { upsert: true }
+          { upsert: true },
         )
 
         if (userPastState.earn.findIndex(item => item === id) === -1) {

@@ -26,11 +26,11 @@ rebalancing:
 
   # select which bitcoind wallet is used for rebalancing
   # string.include() is being used as a filter
-  # 
-  # specter wallet always 
+  #
+  # specter wallet always
   onchainWallet: "specter"
 
-test_accounts: 
+test_accounts:
 - phone: "+16505554321" # user0
   code: 321321
 - phone: "+16505554322" # user1
@@ -52,7 +52,7 @@ test_accounts:
 - phone: "+16505554328"
   code: 321321
 - phone: "+16505554329" # postman
-  code: 321321 
+  code: 321321
 - phone: "+16505554330"
   code: 321321
   currencies: [{id: "USD", ratio: .5}, {id: "BTC", ratio: .5},]
@@ -72,10 +72,10 @@ limits:
   loginAttempt:
     points: 8
     duration: 1200 # 60 * 20 s
-    blockDuration: 3600 # 60 * 60 s 
+    blockDuration: 3600 # 60 * 60 s
   failedAttemptPerIp:
     points: 30
-    duration: 21600 # 60 * 60 * 6 s 
+    duration: 21600 # 60 * 60 * 6 s
     blockDuration: 86400 # 60 * 60 * 24 s
   oldEnoughForWithdrawal: 172800000 # 1000 * 60 * 60 * 24 * 2, in ms # 2 days
   withdrawal:
@@ -97,4 +97,3 @@ fees:
 onchainDustAmount: 5000
 # TODO
 # carrierRegexFilter: ""
-
