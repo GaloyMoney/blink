@@ -27,7 +27,7 @@ import { User } from "../schema"
 import { login, requestPhoneCode } from "../text"
 import { Levels, OnboardingEarn } from "../types"
 import { AdminOps } from "../AdminOps"
-import { fetchIPDetails, isIPAllowed } from "../utils";
+import { updateIPDetails, isIPBlacklisted } from "../utils";
 import { baseLogger } from '../logger'
 import { WalletFactory, WalletFromUsername } from "../walletFactory"
 import { getCurrentPrice } from "../realtimePrice"
@@ -325,7 +325,7 @@ export async function startApolloServer() {
       const uid = token?.uid ?? null
       const ip = context.req?.headers['x-real-ip']
 
-      if(!isIPAllowed({ip})) {
+      if(isIPBlacklisted({ip})) {
         throw new IPBlacklistedError("IP Blacklisted", {logger: graphqlLogger, ip})
       }
 
@@ -337,7 +337,7 @@ export async function startApolloServer() {
       if (uid) {
         user = await User.findOneAndUpdate({ _id: uid },{ lastConnection: new Date() }, {new: true})
         if(yamlConfig.proxyChecking.enabled) {
-          fetchIPDetails({ip, user, logger})
+          updateIPDetails({ip, user, logger})
         }
         wallet = (!!user && user.status === "active") ? await WalletFactory({ user, logger }) : null
       }

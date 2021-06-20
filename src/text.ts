@@ -7,7 +7,7 @@ import { createToken } from "./jwt"
 import { baseLogger } from './logger'
 import { failedAttemptPerIp, limiterLoginAttempt, limiterRequestPhoneCode, limiterRequestPhoneCodeIp } from "./rateLimit"
 import { PhoneCode, User } from "./schema"
-import { fetchIP, isIPAllowed, isIPTypeAllowed, randomIntFromInterval } from "./utils"
+import { fetchIP, isIPBlacklisted, isIPTypeBlacklisted, randomIntFromInterval } from "./utils"
 
 const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER
 const getTwilioClient = () => {
@@ -43,11 +43,12 @@ export const getCarrier = async (phone: string) => {
 export const requestPhoneCode = async ({ phone, logger, ip }: {phone: string, logger: Logger, ip: string}): Promise<boolean> => {
   logger.info({phone, ip}, "RequestPhoneCode called")
 
-  if(!isIPAllowed({ip})) {
+  if(isIPBlacklisted({ip})) {
     throw new IPBlacklistedError("IP Blacklisted", {logger, ip})
   }
 
   let ipDetails
+
   try {
     ipDetails = await fetchIP({ip})
   } catch(err) {
@@ -58,7 +59,7 @@ export const requestPhoneCode = async ({ phone, logger, ip }: {phone: string, lo
     logger.warn({ipDetails}, "Unable to fetch ip details")
   }
 
-  if(!isIPTypeAllowed({type: ipDetails?.type})) {
+  if(isIPTypeBlacklisted({type: ipDetails?.type})) {
     throw new IPBlacklistedError("IP type Blacklisted", {logger, ipDetails})
   }
 
