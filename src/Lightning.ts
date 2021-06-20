@@ -7,7 +7,7 @@ import { yamlConfig } from "./config";
 import { DbError, InsufficientBalanceError, LightningPaymentError, LndOfflineError, NewAccountWithdrawalError, NotFoundError, RouteFindingError, SelfPaymentError, TransactionRestrictedError } from './error';
 import { addTransactionLndPayment, addTransactionLndReceipt, addTransactionOnUsPayment } from "./ledger/transaction";
 import { TIMEOUT_PAYMENT } from "./lndAuth";
-import { getActiveLnd, getLndFromPubkey, isMyNode } from "./lndUtils";
+import { getActiveLnd, getLndFromPubkey, isMyNode, validate } from "./lndUtils";
 import { lockExtendOrThrow, redlock } from "./lock";
 import { MainBook } from "./mongodb";
 import { transactionNotification } from "./notifications/payment";
@@ -128,8 +128,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     // TODO: do a balance check, so that we don't probe needlessly if the user doesn't have the
     // probably make sense to used a cached balance here.
 
-    const { mtokens, max_fee, destination, id, routeHint, messages, cltv_delta, features, payment } = 
-      await this.validate({params, logger: this.logger})
+    const { mtokens, max_fee, destination, id, routeHint, messages, cltv_delta, features, payment } = await validate({params, logger: this.logger})
 
     const lightningLogger = this.logger.child({
       topic: "fee_estimation",
@@ -191,7 +190,7 @@ export const LightningMixin = (superclass) => class extends superclass {
   async pay(params: IPaymentRequest): Promise<payInvoiceResult | Error> {
     let lightningLogger = this.logger.child({ topic: "payment", protocol: "lightning", transactionType: "payment" })
 
-    const { tokens, mtokens, username: input_username, destination, pushPayment, id, routeHint, messages, memoInvoice, payment, cltv_delta, features, max_fee } = await this.validate({params, logger: lightningLogger})
+    const { tokens, mtokens, username: input_username, destination, pushPayment, id, routeHint, messages, memoInvoice, payment, cltv_delta, features, max_fee } = await validate({params, logger: lightningLogger})
     const { memo: memoPayer } = params
 
     // not including message because it contains the preimage and we don't want to log this
