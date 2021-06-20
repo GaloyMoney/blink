@@ -96,3 +96,9 @@ export class IPBlacklistedError extends CustomError {
     super(message, 'REJECTED_BLACKLISTED_IP', {forwardToClient, logger, level, metadata})
   }
 }
+
+export class TwoFactorError extends CustomError {
+  constructor(message = 'Incorrect code', {forwardToClient = true, logger, level = 'warn', ...metadata}) {
+    super(message, '2FA_ERROR', {forwardToClient, logger, level, metadata})
+  }
+}
