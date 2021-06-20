@@ -118,6 +118,7 @@ type User {
   created_at: String
   coordinate: Coordinate
   status: AccountStatus
+  twoFactorEnabled: Boolean
 }
 
 type Success {
@@ -193,6 +194,12 @@ type Query {
   getLevels: [Int]
   getLimits: Limits
   getWalletFees: WalletFees
+  generate2fa: TwoFactorSecret
+}
+ 
+type TwoFactorSecret {
+  secret: String
+  uri: String
 }
 
 type WalletFees {
@@ -272,4 +279,10 @@ type Mutation {
   setAccountStatus(uid: ID!, status: AccountStatus!): User
   
   setLevel(uid: ID!, level: Int!): User
+
+  save2fa(secret: String!, token: String!): Boolean
+
+  delete2fa(token: String!): Boolean
+
+  validate2fa(token: String!): Boolean
 }

@@ -211,10 +211,10 @@ const UserSchema = new Schema({
     default: "active",
   },
 
-  authenticator: {
+  twoFactorSecret: {
     type: String,
     length: 32,
-  }
+  },
 })
 
 // Define getter for ratioUsd

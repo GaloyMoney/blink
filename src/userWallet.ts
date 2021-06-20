@@ -1,9 +1,9 @@
 import assert from 'assert'
 import moment from "moment"
-import { generateSecret, verifyToken } from 'node-2fa'
+import { generateSecret, generateToken, verifyToken } from 'node-2fa'
 import { yamlConfig } from './config'
 import { CSVAccountExport } from "./csvAccountExport"
-import { DbError } from './error'
+import { DbError, TwoFactorError } from './error'
 import { Balances } from "./interface"
 import { customerPath } from "./ledger/ledger"
 import { MainBook } from "./mongodb"
@@ -221,61 +221,59 @@ export abstract class UserWallet {
     this.logger.info({ balanceSatsPrettified, balanceUsd, user: this.user }, `sending balance notification to user`)
     await sendNotification({ user: this.user, title: `Your balance is $${balanceUsd} (${balanceSatsPrettified} sats)`, logger: this.logger })
   }
-  
+
   generate2fa = () => {
-    const { secret, uri } = generateSecret({ name: yamlConfig.name, account: this.user.phone });
+    const { secret, uri, qr } = generateSecret({ name: yamlConfig.name, account: this.user.phone })
     /*
     { secret: 'XDQXYCP5AC6FA32FQXDGJSPBIDYNKK5W',
       uri: 'otpauth://totp/My%20Awesome%20App:johndoe?secret=XDQXYCP5AC6FA32FQXDGJSPBIDYNKK5W&issuer=My%20Awesome%20App',
       qr: 'https://chart.googleapis.com/chart?chs=166x166&chld=L|0&cht=qr&chl=otpauth://totp/My%20Awesome%20App:johndoe%3Fsecret=XDQXYCP5AC6FA32FQXDGJSPBIDYNKK5W%26issuer=My%20Awesome%20App'
     }
     */
-  
     return { secret, uri }
   }
 
-  save2fa = async ({ secret, code }): Promise<boolean> => {
-    const codeIsCorrect = verifyToken(secret, code);
+  save2fa = async ({ secret, token }): Promise<boolean> => {
+    const tokenIsValid = verifyToken(secret, token)
 
-    if (!codeIsCorrect) {
-      this.logger.warn({code}, "incorrect code")
-      return false
+    if (!tokenIsValid) {
+      throw new TwoFactorError(undefined, {logger: this.logger})
     }
 
-    this.user.authenticator = secret
-    console.log({secret, user: this.user})
+    this.user.twoFactorSecret = secret
 
     try {
       await this.user.save()
-      return true 
+      return true
     } catch (err) {
-      this.logger.warn({err}, "impossible to save secret")
-      return false
+      throw new DbError("Unable to save 2fa secret", {forwardToClient: true, logger: this.logger, level: 'error', err})
     }
   }
 
-  validate2fa = async ({ code }): Promise<boolean> => {
-    const token = this.user.authenticator
+  validate2fa = async ({ token }): Promise<boolean> => {
+    const secret = this.user.twoFactorSecret
 
-    if (!token) {
-      this.logger.warn("no 2fa has been set")
-      return false
+    if (!secret) {
+      throw new TwoFactorError("no 2fa has been set", {logger: this.logger})
     }
 
-    return verifyToken(token, code);
+    if(verifyToken(secret, token)) {
+      return true
+    }
+
+    throw new TwoFactorError(undefined, {logger: this.logger})
   }
 
-  delete2fa = async (): Promise<boolean> => {
-    // TODO: may want a code before deleting 2FA for security reason?
+  delete2fa = async ({ token }): Promise<boolean> => {
+    this.validate2fa({ token })
 
-    this.user.authenticator = undefined
+    this.user.twoFactorSecret = undefined
 
     try {
       await this.user.save()
-      return true 
+      return true
     } catch (err) {
-      this.logger.warn({err}, "impossible to save secret")
-      return false
+      throw new DbError("Unable to delete 2fa secret", {forwardToClient: true, logger: this.logger, level: 'error', err})
     }
   }
 
