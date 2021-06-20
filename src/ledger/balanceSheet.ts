@@ -40,24 +40,24 @@ export const balanceSheetIsBalanced = async () => {
   const {assets, liabilities, lightning, bitcoin, expenses, revenue } = await getLedgerAccounts()
   const { total: lnd } = await lndsBalances() // doesnt include escrow amount
 
-  let bitcoind = await getBitcoindBalance()
+  const bitcoind = await getBitcoindBalance()
 
-  const assetsLiabilitiesDifference = 
+  const assetsLiabilitiesDifference =
     assets /* assets is ___ */
     + liabilities /* liabilities is ___ */
     + expenses /* expense is positif */
     + revenue /* revenue is ___ */
 
-  const bookingVersusRealWorldAssets = 
+  const bookingVersusRealWorldAssets =
     (lnd + bitcoind) + // physical assets or value of account at third party
     (lightning + bitcoin) // value in accounting
-  
+
   if(!!bookingVersusRealWorldAssets || !!assetsLiabilitiesDifference) {
     logger.debug({
       assetsLiabilitiesDifference, bookingVersusRealWorldAssets,
-      assets, liabilities, expenses, revenue, 
-      lnd, lightning, 
-      bitcoind, bitcoin
+      assets, liabilities, expenses, revenue,
+      lnd, lightning,
+      bitcoind, bitcoin,
     }, `not balanced`)
   }
 

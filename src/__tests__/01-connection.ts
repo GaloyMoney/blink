@@ -12,6 +12,8 @@ import { lnd1, lnd2, lndonchain, lndOutside1, lndOutside2 } from "./helper";
 
 
 
+
+
 jest.mock('../realtimePrice')
 
 
@@ -58,20 +60,3 @@ it('I can connect to redis', async () => {
 
   expect(result).toBe(value)
 })
-
-
-// uncomment this test for testing if node can reconnect succesfully upon lnd restart
-// this test is only run manually 
-
-// it('reconnect', async () => {
-//   while (true) {
-//     const {lnd} = authenticatedLndGrpc(params[0])
-//     try {
-//       await getWalletInfo({ lnd })
-//       console.log("ok")
-//     } catch (err) {
-//       console.log({err}, "nok")
-//     }
-//     await sleep(1000)
-//   }
-// }, 120000)

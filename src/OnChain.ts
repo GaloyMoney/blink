@@ -15,6 +15,7 @@ import { UserWallet } from "./userWallet";
 import { amountOnVout, bitcoindDefaultClient, btc2sat, LoggedError, LOOK_BACK, myOwnAddressesOnVout } from "./utils";
 
 
+
 export const getOnChainTransactions = async ({ lnd, incoming }: { lnd: AuthenticatedLnd, incoming: boolean }) => {
   try {
     const { current_block_height } = await getHeight({lnd})
@@ -30,7 +31,7 @@ export const getOnChainTransactions = async ({ lnd, incoming }: { lnd: Authentic
 }
 
 export const OnChainMixin = (superclass) => class extends superclass {
-  
+
   constructor(...args) {
     super(...args)
   }
@@ -38,7 +39,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
   async updatePending(lock): Promise<void> {
     await Promise.all([
       this.updateOnchainReceipt(lock),
-      super.updatePending(lock)
+      super.updatePending(lock),
     ])
   }
 
@@ -100,17 +101,16 @@ export const OnChainMixin = (superclass) => class extends superclass {
         }
 
         if (String(payeeUser._id) === String(this.user._id)) {
-          const error = 'User tried to pay himself'
-          throw new SelfPaymentError(error, {logger: onchainLoggerOnUs})
+          throw new SelfPaymentError(undefined, {logger: onchainLoggerOnUs})
         }
 
         const sats = amount
-        const metadata = { 
+        const metadata = {
           currency: "BTC",
           type: "onchain_on_us",
           pending: false,
           ...UserWallet.getCurrencyEquivalent({ sats, fee: 0 }),
-          payee_addresses: [address]
+          payee_addresses: [address],
         }
 
         await lockExtendOrThrow({lock, logger: onchainLoggerOnUs}, async () => {
@@ -119,7 +119,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
             .debit(this.user.accountPath, sats, {...metadata, memo})
             .commit()
         })
-        
+
         onchainLoggerOnUs.info({ success: true, ...metadata }, "onchain payment succeed")
 
         return true
@@ -128,7 +128,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
       // normal onchain payment path
 
       onchainLogger = onchainLogger.child({onUs: false})
-      
+
       if (!this.user.oldEnoughForWithdrawal) {
         const error = `New accounts have to wait ${yamlConfig.limits.oldEnoughForWithdrawal / (60 * 60 * 1000)}h before withdrawing`
         throw new NewAccountWithdrawalError(error,{logger: onchainLogger})
@@ -168,7 +168,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
       if (balance.total_in_BTC < amount + estimatedFee) {
         throw new InsufficientBalanceError(undefined, {logger: onchainLogger})
       }
-      
+
 
       return lockExtendOrThrow({lock, logger: onchainLogger}, async () => {
 
@@ -193,14 +193,14 @@ export const OnChainMixin = (superclass) => class extends superclass {
           fee += this.user.withdrawFee
           const sats = amount + fee
           const metadata = { currency: "BTC", hash: id, type: "onchain_payment", pending: true, ...UserWallet.getCurrencyEquivalent({ sats, fee }) }
-  
+
           // TODO/FIXME refactor. add the transaction first and set the fees in a second tx.
           await MainBook.entry(memo)
             .credit(lndAccountingPath, sats - this.user.withdrawFee, metadata)
             .credit(onchainRevenuePath, this.user.withdrawFee, metadata)
             .debit(this.user.accountPath, sats, metadata)
             .commit()
-  
+
           onchainLogger.info({success: true , ...metadata}, 'successful onchain payment')
         }
 
@@ -208,7 +208,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
       })
     })
   }
-  
+
   async getLastOnChainAddress(): Promise<string> {
     if (this.user.onchain.length === 0) {
       // FIXME this should not be done in a query but only in a mutation?
@@ -223,8 +223,8 @@ export const OnChainMixin = (superclass) => class extends superclass {
     // another option to investigate is to have a master key / client
     // (maybe this could be saved in JWT)
     // and a way for them to derive new key
-    // 
-    // this would avoid a communication to the server 
+    //
+    // this would avoid a communication to the server
     // every time you want to show a QR code.
 
     let address
@@ -378,7 +378,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
     return [
       ...unconfirmed.map(({ sats, addresses, id, created_at }) => ({
-        id, 
+        id,
         amount: sats,
         pending: true,
         created_at: moment(created_at).unix(),
@@ -390,9 +390,9 @@ export const OnChainMixin = (superclass) => class extends superclass {
         currency: "BTC",
         fee: 0,
         feeUsd: 0,
-        addresses
+        addresses,
       })),
-      ...confirmed
+      ...confirmed,
     ]
   }
 
@@ -448,7 +448,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
         // has the transaction has not been added yet to the user account?
         //
-        // note: the fact we fiter with `account_path: this.user.accountPath` could create 
+        // note: the fact we fiter with `account_path: this.user.accountPath` could create
         // double transaction for some non customer specific wallet. ie: if the path is different
         // for the dealer. this is fixed now but something to think about.
         const mongotx = await Transaction.findOne({ accounts: this.user.accountPath, type, hash: matched_tx.id })
@@ -465,7 +465,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
             type, hash: matched_tx.id,
             pending: false,
             ...UserWallet.getCurrencyEquivalent({ sats, fee }),
-            payee_addresses: addresses
+            payee_addresses: addresses,
           }
 
           await MainBook.entry()
@@ -483,4 +483,4 @@ export const OnChainMixin = (superclass) => class extends superclass {
     })
   }
 
-};
+}

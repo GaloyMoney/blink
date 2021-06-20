@@ -7,7 +7,7 @@ import { SpecterWallet } from "../SpecterWallet";
 
 const main = async () => {
   const mongoose = await setupMongoConnection()
-  
+
   await updateEscrows()
   await updateUsersPendingPayment()
   
@@ -16,7 +16,7 @@ const main = async () => {
 
   const specterWallet = new SpecterWallet({ logger: baseLogger })
   await specterWallet.tentativelyRebalance()
-  
+
   await updateRoutingFees()
 
   await mongoose.connection.close()

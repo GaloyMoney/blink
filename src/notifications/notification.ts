@@ -1,12 +1,12 @@
-import * as admin from 'firebase-admin';
-import _ from 'lodash';
-import { INotification } from "../types";
+import * as admin from 'firebase-admin'
+import _ from 'lodash'
+import { INotification } from "../types"
 
 // The key GOOGLE_APPLICATION_CREDENTIALS should be set in production
 // This key defined the path of the config file that include the key
 // more info at https://firebase.google.com/docs/admin/setup
 // TODO: mock up the function for devnet
-if(process.env.GOOGLE_APPLICATION_CREDENTIALS) { 
+if(process.env.GOOGLE_APPLICATION_CREDENTIALS) {
   admin.initializeApp({
     credential: admin.credential.applicationDefault(),
   })
@@ -21,13 +21,13 @@ export const sendNotification = async ({ title, user, body, data, logger}: INoti
       ..._.mapValues(data, v => String(v)),
       // title,
       // body,
-    }, 
+    },
 
-    // if we set notification, it will appears on both background and quit stage for iOS. 
+    // if we set notification, it will appears on both background and quit stage for iOS.
     // if we don't set notidications, this will appear for background but not quit stage
     // we may be able to use data only, but this should be implemented first:
     // https://rnfirebase.io/messaging/usage#background-application-state
-    // 
+    //
     notification: {
       title,
     },

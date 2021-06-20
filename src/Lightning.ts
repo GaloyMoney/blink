@@ -1,5 +1,5 @@
 import assert from 'assert';
-import crypto from "crypto";
+import { createHash } from "crypto";
 import { AuthenticatedLnd, cancelHodlInvoice, createInvoice, getInvoice, getPayment, payViaPaymentDetails, payViaRoutes } from "lightning";
 import lnService from 'ln-service';
 import moment from "moment";
@@ -18,7 +18,6 @@ import { UserWallet } from "./userWallet";
 import { addContact, isInvoiceAlreadyPaidError, LoggedError, timeout } from "./utils";
 
 
-∏
 
 export type ITxType = "invoice" | "payment" | "onchain_receipt" | "onchain_payment" | "on_us"
 export type payInvoiceResult = "success" | "failed" | "pending" | "already_paid"
@@ -47,7 +46,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     ])
   }
 
-  getExpiration = (input) => {    
+  getExpiration = (input) => {
     // TODO: manage USD shorter time
     const currency = "BTC"
 
@@ -58,7 +57,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     if (!!value && value < 0) {
       throw new Error("value can't be negative")
     }
-    
+
     let request, id, input
 
     const expires_at = this.getExpiration(moment()).toDate()
@@ -77,15 +76,15 @@ export const LightningMixin = (superclass) => class extends superclass {
         tokens: value,
         expires_at,
       }
-      
+
       if (selfGenerated) {
       // generated through the mobile app
         input["description"] = memo
       } else {
       // lnpay // static invoice
         const description_string = `pay ${this.user.username}`
-        const sha256 = crypto.createHash("sha256");
-        const description_hash = sha256.update(description_string).digest("hex");
+        const sha256 = createHash("sha256")
+        const description_hash = sha256.update(description_string).digest("hex")
         input["description_hash"] = description_hash
       }
 
@@ -116,7 +115,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     return request
   }
 
-  async getLightningFee(params: IFeeRequest): Promise<Number> {
+  async getLightningFee(params: IFeeRequest): Promise<number> {
 
     // TODO:
     // we should also log the fact we have started the query
@@ -126,17 +125,17 @@ export const LightningMixin = (superclass) => class extends superclass {
     //
     // OR: add a lock
 
-    // TODO: do a balance check, so that we don't probe needlessly if the user doesn't have the 
-    // probably make sense to used a cached balance here. 
+    // TODO: do a balance check, so that we don't probe needlessly if the user doesn't have the
+    // probably make sense to used a cached balance here.
 
     const { mtokens, max_fee, destination, id, routeHint, messages, cltv_delta, features, payment } = 
       await this.validate({params, logger: this.logger})
 
-    const lightningLogger = this.logger.child({ 
+    const lightningLogger = this.logger.child({
       topic: "fee_estimation",
       protocol: "lightning",
-      params, 
-      decoded: { mtokens, max_fee, destination, id, routeHint, messages, cltv_delta, features, payment }
+      params,
+      decoded: { mtokens, max_fee, destination, id, routeHint, messages, cltv_delta, features, payment },
     })
 
     // safety check
@@ -162,9 +161,9 @@ export const LightningMixin = (superclass) => class extends superclass {
 
     try {
       ({ route } = await lnService.probeForRoute({
-        lnd, 
-        destination, 
-        mtokens, 
+        lnd,
+        destination,
+        mtokens,
         routes: routeHint,
         cltv_delta,
         features,
@@ -172,7 +171,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         messages,
         payment,
         total_mtokens: payment ? mtokens : undefined,
-      }));
+      }))
     } catch (err) {
       throw new RouteFindingError(undefined, {logger: lightningLogger, probingSuccess: false, success: false})
     }
@@ -246,8 +245,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         }
 
         if (String(payeeUser._id) === String(this.user._id)) {
-          const error = 'User tried to pay themselves'
-          throw new SelfPaymentError(error, {logger: lightningLoggerOnUs})
+          throw new SelfPaymentError(undefined, {logger: lightningLoggerOnUs})
         }
 
         const sats = tokens
@@ -265,7 +263,7 @@ export const LightningMixin = (superclass) => class extends superclass {
             metadata,
             payerUser: this.user,
             payeeUser,
-            memoPayer
+            memoPayer,
           })
         })
         
@@ -289,12 +287,12 @@ export const LightningMixin = (superclass) => class extends superclass {
         }
 
         // adding contact for the payer
-        if (!!payeeUser.username) {
+        if (payeeUser.username) {
           await addContact({uid: this.user._id, username: payeeUser.username})
         }
 
         // adding contact for the payee
-        if (!!this.user.username) {
+        if (this.user.username) {
           await addContact({uid: payeeUser._id, username: this.user.username})
         }
 
@@ -319,7 +317,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         const error = "Push payment to another wallet not yet supported"
         lightningLogger.error({ success: false }, error)
         throw new LightningPaymentError(error, {logger: lightningLogger})
-      } 
+      }
 
       // TODO: fine tune those values:
       // const probe_timeout_ms
@@ -334,6 +332,7 @@ export const LightningMixin = (superclass) => class extends superclass {
 
       let pubkey: string, lnd: AuthenticatedLnd
 
+      // TODO: check if route is not an array and we shouldn't use .length instead
       if (!!route) {
         lightningLogger = lightningLogger.child({ routing: "payViaRoutes", route })
         fee = route.safe_fee
@@ -443,12 +442,12 @@ export const LightningMixin = (superclass) => class extends superclass {
             lightningLogger.warn({ ...metadata, pending: true }, 'timeout payment')
 
             return "pending"
-            // pending in-flight payment are being handled either by a cron job 
+            // pending in-flight payment are being handled either by a cron job
             // or payment update when the user query his balance
           }
 
           try {
-            // FIXME: this query may not make sense 
+            // FIXME: this query may not make sense
             // where multiple payment have the same hash
             // ie: when a payment is being retried
 
@@ -489,7 +488,7 @@ export const LightningMixin = (superclass) => class extends superclass {
   //
   // there are times when it's not possible to know in advance the fees
   // this could be because the receiving doesn't respond to the fake payment hash
-  // or because there is no liquidity for a one-sum payment, but there could 
+  // or because there is no liquidity for a one-sum payment, but there could
   // be liquidity if the payment was using MPP
   //
   // in this scenario, we have withdrawal a percent of fee (`max_fee`)
@@ -511,7 +510,7 @@ export const LightningMixin = (superclass) => class extends superclass {
      description: "fee reimbursement",
      payeeUser: this.user,
      metadata,
-     sats: feeDifference
+     sats: feeDifference,
     })
   }
 
@@ -533,7 +532,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     // we're doing the the Transaction.find after the lock to make sure there is no race condition
     // note: there might be another design that doesn't requiere a lock at the uid level but only at the hash level,
     // but will need to dig more into the cursor aspect of mongodb to see if there is a concurrency-safe way to do it.
-    await redlock({ path: this.user._id, logger: lightningLogger, lock }, async (lock) => {
+    await redlock({ path: this.user._id, logger: lightningLogger, lock }, async () => {
 
       const payments = await Transaction.find(query)
 
@@ -608,7 +607,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     }
 
     try {
-      // FIXME we should only be able to look at User invoice, 
+      // FIXME we should only be able to look at User invoice,
       // but might not be a strong problem anyway
       // at least return same error if invoice not from user
       // or invoice doesn't exist. to preserve privacy and prevent DDOS attack.
@@ -623,15 +622,17 @@ export const LightningMixin = (superclass) => class extends superclass {
     }
 
     // invoice that are on_us will be cancelled but not confirmed
+    // so we need a branch to return true in case the payment
+    // has been managed off lnd.
     if (invoice.is_canceled) {
       this.logger.warn({ hash, user: this.user }, "cancelled invoice. nothing to do. this should not happen(?)")
       return false
     } else if (invoice.is_confirmed) {
-      
+
       const lightningLogger = this.logger.child({ hash, user: this.user._id, topic: "payment", protocol: "lightning", transactionType: "receipt", onUs: false })
-      
+
       return await redlock({ path: hash, logger: lightningLogger, lock }, async () => {
-        
+
         try {
 
           const invoiceUser = await InvoiceUser.findOne({ _id: hash, uid: this.user._id, paid: false })
@@ -666,7 +667,7 @@ export const LightningMixin = (superclass) => class extends superclass {
             description: invoice.description,
             payeeUser: this.user,
             metadata,
-            sats
+            sats,
           })
 
           this.logger.info({ metadata, success: true }, "long standing payment succeeded")
@@ -680,6 +681,27 @@ export const LightningMixin = (superclass) => class extends superclass {
     // this should not happen
     } else {
       return false
+
+    //   })
+    
+    // TODO: part of the merge. check this should be deleted
+
+    // } else if (expired) {
+
+    //   // maybe not needed after old invoice has been deleted?
+
+    //   try {
+    //     await cancelHodlInvoice({ lnd, id: hash })
+    //     this.logger.info({ id: hash, user: this.user._id }, "canceling invoice")
+
+    //   } catch (err) {
+    //     const error = "error deleting invoice"
+    //     this.logger.error({ err, error, hash, user: this.user._id }, error)
+    //   }
+
+    //   const resultDeletion = await InvoiceUser.deleteOne({ _id: hash, user: this.user._id })
+    //   this.logger.info({ hash, user: this.user._id, resultDeletion }, "succesfully deleted expired invoice")
+
     }
   }
 

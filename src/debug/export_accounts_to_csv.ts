@@ -1,7 +1,7 @@
-import { CSVAccountExport } from "../csvAccountExport";
-import { customerPath } from "../ledger/ledger";
-import { MainBook, setupMongoConnectionSecondary } from "../mongodb";
-import { Transaction, User } from "../schema";
+import { CSVAccountExport } from "../csvAccountExport"
+import { customerPath } from "../ledger/ledger"
+import { MainBook, setupMongoConnectionSecondary } from "../mongodb"
+import { Transaction, User } from "../schema"
 import { createObjectCsvWriter} from "csv-writer"
 import * as _ from "lodash"
 
@@ -28,7 +28,7 @@ const getBooks = async () => {
         account,
         currency,
       })
-      if (!!balance) {
+      if (balance) {
         books[`${currency}:${account}`] = balance
       }
     }
@@ -40,7 +40,7 @@ const getBooks = async () => {
 
 const exportAllUserLedger = async () => {
   const csv = new CSVAccountExport()
-  
+
   for await (const user of User.find({})) {
     await csv.addAccount({account: customerPath(user._id)})
   }
@@ -73,8 +73,8 @@ const exportUsers = async () => {
         {id: 'totalCredit', title: 'totalCredit'},
         {id: 'totalDebit', title: 'totalDebit'},
         {id: 'countTxs', title: 'countTxs'},
-    ]
-  });
+    ],
+  })
 
   const records: any[] = []
 
@@ -85,11 +85,11 @@ const exportUsers = async () => {
         _id: "$accounts",
         totalDebit: { $sum: "$debit" },
         totalCredit: { $sum: "$credit" },
-        countTxs: { $sum: 1 }
-      }
-    }
+        countTxs: { $sum: 1 },
+      },
+    },
   ])
-  
+
   for (const user of users) {
 
     console.log(`processing ${user._id}`)
@@ -113,7 +113,7 @@ const exportUsers = async () => {
       record[`balance${currency}`] = balance
     }
 
-    
+
     try {
       const { totalDebit, totalCredit, countTxs } = _.find(aggregateTxs, {"_id": user.accountPath})
       record["totalDebit"] = totalDebit
@@ -139,8 +139,8 @@ const exportBalances = async () => {
     header: [
       {id: 'account', title: 'Account'},
       {id: 'balance', title: 'Balance'},
-    ]
-  });
+    ],
+  })
 
   console.log({books})
   const records: any[] = []
@@ -148,7 +148,7 @@ const exportBalances = async () => {
   for (const account in books) {
     records.push({
       account: account,
-      balance: books[account]
+      balance: books[account],
     })
   }
   await csvWriter.writeRecords(records)

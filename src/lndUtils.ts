@@ -1,21 +1,20 @@
-import { default as axios } from 'axios';
-import { getChainBalance, getChainTransactions, getChannelBalance, getChannels, getClosedChannels, getForwards, getHeight, getPendingChainBalance, getWalletInfo } from "lightning";
-import _ from "lodash";
-import { baseLogger } from "./logger";
-import { DbMetadata, InvoiceUser } from "./schema";
-import { MainBook } from "./mongodb";
-import { escrowAccountingPath, lndAccountingPath, lndFeePath, revenueFeePath } from "./ledger/ledger";
-import { DbError, LndOfflineError } from "./error";
-import { LoggedError, LOOK_BACK } from "./utils";
-import assert from 'assert';
-import { FEECAP, FEEMIN, ILndParamsAuthed, nodeType, params } from "./lndAuth";
-import { deleteFailedPayments } from "ln-service"
-import { Logger } from "pino";
-import { IFeeRequest } from "./types";
 import { ValidationError } from "apollo-server-express";
-import { yamlConfig } from "./config";
+import assert from 'assert';
+import { default as axios } from 'axios';
 import { createHash, randomBytes } from "crypto";
 import { parsePaymentRequest } from 'invoices';
+import { getChainBalance, getChainTransactions, getChannelBalance, getChannels, getClosedChannels, getForwards, getHeight, getPendingChainBalance, getWalletInfo } from "lightning";
+import _ from "lodash";
+import { Logger } from "pino";
+import { yamlConfig } from "./config";
+import { DbError, LndOfflineError } from "./error";
+import { escrowAccountingPath, lndAccountingPath, lndFeePath, revenueFeePath } from "./ledger/ledger";
+import { FEECAP, FEEMIN, ILndParamsAuthed, nodeType, params } from "./lndAuth";
+import { baseLogger } from "./logger";
+import { MainBook } from "./mongodb";
+import { DbMetadata, InvoiceUser } from "./schema";
+import { IFeeRequest } from "./types";
+import { LoggedError, LOOK_BACK } from "./utils";
 
 // milliseconds in a day
 const MS_PER_DAY = 864e5
@@ -68,11 +67,11 @@ export const lndBalances = async ({ lnd }) => {
   // get pending closed
   const { channels: closedChannels } = await getClosedChannels({ lnd })
 
-  // FIXME: there can be issue with channel not closed completely from lnd 
+  // FIXME: there can be issue with channel not closed completely from lnd
   // https://github.com/alexbosworth/ln-service/issues/139
   baseLogger.debug({ closedChannels }, "getClosedChannels")
   const closing_channel_balance = _.sumBy(closedChannels, channel => _.sumBy(
-    (channel as any).close_payments, payment => (payment as any).is_pending ? (payment as any).tokens : 0)
+    (channel as any).close_payments, payment => (payment as any).is_pending ? (payment as any).tokens : 0),
   )
 
   const total = chain_balance + channel_balance + pending_chain_balance + opening_channel_balance + closing_channel_balance
@@ -89,7 +88,7 @@ export async function nodeStats({ lnd }) {
   return {
     peersCount,
     channelsCount,
-    id
+    id,
   }
 }
 
@@ -123,16 +122,16 @@ export const getRoutingFees = async ({ lnd, before, after }): Promise<Array<Reco
 
   let finishedFetching = false
   if(!next || !forwards || forwards.length <= 0) {
-    finishedFetching = true;
+    finishedFetching = true
   }
 
   while(!finishedFetching) {
     if(next) {
       const moreForwards = await getForwards({ lnd, token: next })
-      forwards = [...forwards, ...moreForwards.forwards];
-      next = moreForwards.next;
+      forwards = [...forwards, ...moreForwards.forwards]
+      next = moreForwards.next
     } else {
-      finishedFetching = true;
+      finishedFetching = true
     }
   }
 
@@ -147,7 +146,7 @@ export const getRoutingFees = async ({ lnd, before, after }): Promise<Array<Reco
 }
 
 export const updateRoutingFees = async () => {
-  
+
   const dbMetadata = await DbMetadata.findOne({})
   let lastDate
 
@@ -163,18 +162,18 @@ export const updateRoutingFees = async () => {
 
   const after = lastDate.toISOString()
 
-  const endDate = new Date(Date.now() - MS_PER_DAY);
-  
+  const endDate = new Date(Date.now() - MS_PER_DAY)
+
   // Done to remove effect of timezone
   endDate.setUTCHours(0, 0, 0, 0)
 
   const before = endDate.toISOString()
-  
+
   // Only record fee if it has been 1d+ since last record
   if((endDate.getTime() - lastDate.getTime()) / MS_PER_DAY < 1) {
     return
   }
-  
+
   const type = "routing_fee"
   const metadata = { type, currency: "BTC", pending: false }
 
@@ -193,7 +192,7 @@ export const updateRoutingFees = async () => {
       throw new DbError('Unable to record routing revenue', {forwardToClient: false, logger: baseLogger, level: 'error'})
     }
   }
-  
+
   endDate.setDate(endDate.getDate() + 1)
   const endDay = endDate.toDateString()
   await DbMetadata.findOneAndUpdate({}, { $set: { routingFeeLastEntry: endDay } }, { upsert: true })

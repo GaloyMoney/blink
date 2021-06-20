@@ -46,7 +46,7 @@ export const uploadBackup = async ({backup, pubkey}) => {
 export async function onchainTransactionEventHandler(tx) {
 
   // workaround for https://github.com/lightningnetwork/lnd/issues/2267
-  const hash = crypto.createHash('sha256').update(JSON.stringify(tx)).digest('base64');
+  const hash = crypto.createHash('sha256').update(JSON.stringify(tx)).digest('base64')
   if (txsReceived.has(hash)) {
     return
   }
@@ -58,9 +58,9 @@ export async function onchainTransactionEventHandler(tx) {
   if (tx.is_outgoing) {
     if (!tx.is_confirmed) {
       return
-      // FIXME 
+      // FIXME
       // we have to return here because we will not know whose user the the txid belong to
-      // this is because of limitation for lnd onchain wallet. we only know the txid after the 
+      // this is because of limitation for lnd onchain wallet. we only know the txid after the
       // transaction has been sent. and this events is trigger before
     }
 
@@ -136,8 +136,8 @@ const updatePriceForChart = async () => {
 
 const listenerOnchain = ({ lnd }) => {
 
-  const subTransactions = subscribeToTransactions({ lnd });
-  subTransactions.on('chain_transaction', onchainTransactionEventHandler);
+  const subTransactions = subscribeToTransactions({ lnd })
+  subTransactions.on('chain_transaction', onchainTransactionEventHandler)
 
   subTransactions.on('error', err => {
     baseLogger.info({err}, "error subTransactions")

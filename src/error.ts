@@ -26,7 +26,7 @@ export class InsufficientBalanceError extends CustomError {
 }
 
 export class SelfPaymentError extends CustomError {
-  constructor(message, {forwardToClient = true, logger, level = 'warn', ...metadata}) {
+  constructor(message = 'User tried to pay themselves', {forwardToClient = true, logger, level = 'warn', ...metadata}) {
     super(message, 'CANT_PAY_SELF', {forwardToClient, logger, level, metadata})
   }
 }
@@ -89,5 +89,11 @@ export class DustAmountError extends CustomError {
 export class LndOfflineError extends CustomError {
   constructor(message, {forwardToClient = true, logger = baseLogger, level = 'warn', ...metadata} = {}) {
     super(message, 'LND_OFFLINE', {forwardToClient, logger, level, metadata})
+  }
+}
+
+export class AuthorizationError extends CustomError {
+  constructor(message = `Not authorized!`, {forwardToClient = true, logger, level = 'warn', ...metadata}) {
+    super(message, 'NOT_AUTHORIZED', {forwardToClient, logger, level, metadata})
   }
 }

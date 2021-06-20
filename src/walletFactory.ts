@@ -1,10 +1,10 @@
-import { yamlConfig } from "./config";
-import { FtxDealerWallet } from "./dealer/FtxDealerWallet";
-import { NotFoundError } from './error';
-import { LightningUserWallet } from "./LightningUserWallet";
-import { getCurrentPrice } from "./realtimePrice";
-import { User } from "./schema";
-import { UserWallet } from "./userWallet";
+import { yamlConfig } from "./config"
+import { FtxDealerWallet } from "./dealer/FtxDealerWallet"
+import { NotFoundError } from './error'
+import { LightningUserWallet } from "./LightningUserWallet"
+import { getCurrentPrice } from "./realtimePrice"
+import { User } from "./schema"
+import { UserWallet } from "./userWallet"
 
 
 export const WalletFactory = async ({ user, logger }: { user: typeof User, logger: any }) => {

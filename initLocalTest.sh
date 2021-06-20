@@ -20,6 +20,8 @@ then
   localdevpath="--skip-refresh"
 fi
 
+git clean -fX
+
 cd ./charts/galoy
 helm dependency build $localdevpath
 cd -
@@ -107,10 +109,13 @@ then
   localdevpath="-f $INFRADIR/configs/bitcoind/localdev.yaml"
 fi
 
-rm -rf $INFRADIR/configs
-git clone $CONFIG_REPO $INFRADIR/configs
+set +e
+mkdir tmp
+git clone https://github.com/galoymoney/configs ./tmp
+cp -R ./tmp/* $INFRADIR/configs/
+set -e
 
-helmUpgrade bitcoind $localdevpath -f $INFRADIR/configs/bitcoind/$NETWORK.yaml galoy/bitcoind --version=$bitcoindVersion 
+helmUpgrade bitcoind $localdevpath -f $INFRADIR/configs/bitcoind/$NETWORK.yaml galoy/bitcoind --version=$bitcoindVersion
 
 # bug with --wait: https://github.com/helm/helm/issues/7139 ?
 kubectlWait app.kubernetes.io/name=bitcoind
@@ -128,10 +133,13 @@ fi
 
 rm -rf $INFRADIR/lnd
 
-
 helm pull --version=$lndVersion galoy/lnd -d $INFRADIR/ --untar
 cp "$INFRADIR/configs/lnd/RTL-Config.json" $INFRADIR/lnd/charts/rtl
+
+set +e
 kubectl apply -f $INFRADIR/configs/lnd/templates
+set -e
+
 
 # for local development
 # cp -R ../charts/charts/lnd/ $INFRADIR/lnd/
@@ -139,17 +147,17 @@ kubectl apply -f $INFRADIR/configs/lnd/templates
 # helm dependency build
 # cd -
 
-helmUpgrade lnd1 -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd/ & \
-helmUpgrade lnd2 -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd/ & \
-helmUpgrade lndonchain -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd
+helmUpgrade lnd1 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd/ & \
+helmUpgrade lnd2 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd/ & \
+helmUpgrade lndonchain --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd
 
 # avoiding to spend time with circleci regtest with this condition
 if [ "$NETWORK" == "testnet" ] || [ "$NETWORK" == "mainnet" ];
 then
   kubectlLndDeletionWait
 else
-  helmUpgrade lnd-outside-1 -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpathOutside $INFRADIR/lnd/ & \
-  helmUpgrade lnd-outside-2 -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpathOutside $INFRADIR/lnd/
+  helmUpgrade lnd-outside-1 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpathOutside galoy/lnd
+  helmUpgrade lnd-outside-2 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpathOutside galoy/lnd
 fi
 
 # # add extra sleep time... seems lnd is quite long to show up some time

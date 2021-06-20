@@ -3,18 +3,16 @@
  */
 import { once } from 'events';
 import { getChannels, subscribeToGraph, updateRoutingFees } from 'lightning';
+import _ from "lodash";
 import { lndFeePath } from "../ledger/ledger";
 import { getLnds, updateEscrows } from "../lndUtils";
 import { MainBook, setupMongoConnection } from "../mongodb";
 import { bitcoindDefaultClient, sleep } from "../utils";
 import { checkIsBalanced, lnd1, lnd2, lndOutside1, lndOutside2, mockGetExchangeBalance, openChannelTesting } from "./helper";
-import _ from "lodash"
 
 jest.mock('../realtimePrice')
 
-let initBlockCount
 let channelLengthMain, channelLengthOutside1
-
 
 beforeAll(async () => {
   await setupMongoConnection()
@@ -22,7 +20,7 @@ beforeAll(async () => {
 })
 
 beforeEach(async () => {
-  initBlockCount = await bitcoindDefaultClient.getBlockCount()
+  await bitcoindDefaultClient.getBlockCount()
 
   channelLengthMain = (await getChannels({ lnd: lnd1 })).channels.length
   channelLengthOutside1 = (await getChannels({ lnd: lndOutside1 })).channels.length
@@ -33,7 +31,7 @@ afterEach(async () => {
 })
 
 afterAll(async () => {
-  jest.restoreAllMocks();
+  jest.restoreAllMocks()
   // return await mongoose.connection.close()
 })
 
@@ -87,11 +85,11 @@ it('opens channel from lnd1ToLndOutside1', async () => {
 //     await mineBlockAndSync({ lnds: [lnd1, lndOutside1], blockHeight: currentBlockCount + newBlock })
   
 //     await sleep(10000)
-  
+
 //     // FIXME
 //     // expect(finalFeeInLedger - initFeeInLedger).toBe(channelFee * -1)
 //     sub.removeAllListeners()
-  
+
 //     await updateEscrows();
   
 //     ({ channels } = await getChannels({ lnd: lnd1 }))
@@ -104,14 +102,14 @@ it('opens channel from lnd1ToLndOutside1', async () => {
 it('opens private channel from lndOutside1 to lndOutside2', async () => {
   const socket = `lnd-outside-2:9735`
 
-  const subscription = subscribeToGraph({ lnd: lndOutside1 });
+  const subscription = subscribeToGraph({ lnd: lndOutside1 })
 
   await Promise.all([
     openChannelTesting({ lnd: lndOutside1, other_lnd: lndOutside2, socket, is_private: true }),
-    once(subscription, 'channel_updated')
+    once(subscription, 'channel_updated'),
   ])
 
-  subscription.removeAllListeners();
+  subscription.removeAllListeners()
 
   const { channels } = await getChannels({ lnd: lndOutside1 })
   expect(channels.length).toEqual(channelLengthOutside1 + 1)

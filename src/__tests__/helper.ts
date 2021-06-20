@@ -1,15 +1,15 @@
-import { balanceSheetIsBalanced, updateUsersPendingPayment } from "../ledger/balanceSheet";
-import { FtxDealerWallet } from "../dealer/FtxDealerWallet";
-import { User } from "../schema";
-import { bitcoindDefaultClient, sleep } from "../utils";
-import { baseLogger } from '../logger'
-import { WalletFactory } from "../walletFactory";
-import {authenticatedLndGrpc, getWalletInfo, openChannel, subscribeToChannels} from 'lightning';
-import { yamlConfig } from "../config";
-import { login } from "../text";
-import * as jwt from 'jsonwebtoken'
 import { once } from "events";
+import * as jwt from 'jsonwebtoken';
+import { authenticatedLndGrpc, getWalletInfo, openChannel, subscribeToChannels } from 'lightning';
+import { yamlConfig } from "../config";
+import { FtxDealerWallet } from "../dealer/FtxDealerWallet";
+import { balanceSheetIsBalanced, updateUsersPendingPayment } from "../ledger/balanceSheet";
 import { getLnds, onChannelUpdated, updateEscrows } from "../lndUtils";
+import { baseLogger } from '../logger';
+import { User } from "../schema";
+import { login } from "../text";
+import { bitcoindDefaultClient, sleep } from "../utils";
+import { WalletFactory } from "../walletFactory";
 
 export const lnd1 = getLnds()[0].lnd
 export const lnd2 = getLnds()[1].lnd
@@ -33,7 +33,7 @@ export const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
 export const getTokenFromPhoneIndex = async (index) => {
   const entry = yamlConfig.test_accounts[index]
   const raw_token = await login({ ...entry, logger: baseLogger, ip: "127.0.0.1" })
-  const token = jwt.verify(raw_token, process.env.JWT_SECRET);
+  const token = jwt.verify(raw_token, process.env.JWT_SECRET)
 
   const { uid } = token
 
@@ -67,7 +67,7 @@ export const checkIsBalanced = async () => {
   await updateUsersPendingPayment()
   const { assetsLiabilitiesDifference, bookingVersusRealWorldAssets } = await balanceSheetIsBalanced()
 	expect(assetsLiabilitiesDifference).toBeFalsy() // should be 0
-  
+
   // FIXME: because safe_fees is doing rounding to the value up
   // balance doesn't match any longer. need to go from sats to msats to properly account for every msats spent
   expect(Math.abs(bookingVersusRealWorldAssets)).toBeLessThan(5) // should be 0
@@ -89,9 +89,9 @@ export async function waitUntilBlockHeight({ lnd, blockHeight }) {
   baseLogger.debug({ current_block_height, is_synced_to_chain }, `Seconds to sync blockheight ${blockHeight}: ${time / (1000 / ms)}`)
 }
 
-export const mockGetExchangeBalance = () => jest.spyOn(FtxDealerWallet.prototype, 'getExchangeBalance').mockImplementation(() => new Promise((resolve, reject) => {
-  resolve({ sats : 0, usdPnl: 0 }) 
-}));
+export const mockGetExchangeBalance = () => jest.spyOn(FtxDealerWallet.prototype, 'getExchangeBalance').mockImplementation(() => new Promise((resolve) => {
+  resolve({ sats : 0, usdPnl: 0 })
+}))
 
 export const openChannelTesting = async ({ lnd, other_lnd, socket, is_private = false }) => {
   const local_tokens = 1000000
@@ -102,8 +102,8 @@ export const openChannelTesting = async ({ lnd, other_lnd, socket, is_private = 
 
   const { public_key: partner_public_key } = await getWalletInfo({ lnd: other_lnd })
 
-  let openChannelPromise = openChannel({
-    lnd, local_tokens, is_private, partner_public_key, partner_socket: socket
+  const openChannelPromise = openChannel({
+    lnd, local_tokens, is_private, partner_public_key, partner_socket: socket,
   })
 
   const sub = subscribeToChannels({ lnd })

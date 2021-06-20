@@ -2,11 +2,11 @@
  * @jest-environment node
  */
 
-import { setupMongoConnection } from "../mongodb";
+import { setupMongoConnection } from "../mongodb"
 
-import { Price } from "../priceImpl";
-import { baseLogger } from "../logger";
-import mongoose from "mongoose";
+import { Price } from "../priceImpl"
+import { baseLogger } from "../logger"
+import mongoose from "mongoose"
 
 let price
 
@@ -19,7 +19,7 @@ const priceResponse = [
     9560,
     9532.543735,
     9533.632496,
-    153.55108745
+    153.55108745,
   ],
   [1595466000000, 9533.9, 9547.5, 9524.4, 9547, 35.2271581],
   [1595469600000, 9544.8, 9551.9, 9525.9, 9528.67346509, 73.89652209],
@@ -41,7 +41,7 @@ const priceResponse = [
     9550,
     9501.1,
     9549.86370793,
-    102.35260218
+    102.35260218,
   ],
   [
     1595520000000,
@@ -49,7 +49,7 @@ const priceResponse = [
     9644,
     9539.98337618,
     9642.1,
-    406.53829462
+    406.53829462,
   ],
   [
     1595523600000,
@@ -57,7 +57,7 @@ const priceResponse = [
     9685.43228684,
     9596.5,
     9623.23531914,
-    1923.65931188
+    1923.65931188,
   ],
   [
     1595527200000,
@@ -65,40 +65,35 @@ const priceResponse = [
     9626.48231128,
     9580,
     9595.5,
-    160.28741716
+    160.28741716,
   ],
   [1595530800000, 9595.7, 9608.8, 9587.2, 9608.71945707, 52.3883769],
   [1595534400000, 9608.71945707, 9608.8, 9582.6, 9590.6, 79.62352906],
   [1595538000000, 9591.3, 9618.5, 9585.23211966, 9618.5, 65.22280458],
-  [1595541600000, 9618.5, 9618.5, 9604.4, 9614, 97.54861275]
+  [1595541600000, 9618.5, 9618.5, 9604.4, 9614, 97.54861275],
 ]
 
 // make time current
 import _ from "lodash"
-import moment from "moment";
+import moment from "moment"
 const priceResponseTimingCurrent: any[] = []
 const init = () => moment().subtract(4, 'hours').startOf('hour')
 _.forEach(priceResponse, (value, key) => priceResponseTimingCurrent.push([init().add(key, 'hours').unix() * 1000, ..._.tail(value)]))
 
 export class bitfinex {
-
-  constructor() { }
-
   fetchOHLCV() {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       resolve(priceResponseTimingCurrent)
     })
   }
-
 }
 
 beforeAll(async () => {
-
-  //this is called here to prevent hoisting issue that is caused by setupMongoConnection
+  // this is called here to prevent hoisting issue that is caused by setupMongoConnection
   // being called before ccxt is mocked. setupMongoConnection in turn calls ccxt and thus
   // jest throws an error
   jest.mock('ccxt', () => ({
-    bitfinex
+    bitfinex,
   }))
   // await mongoose.connection.dropDatabase()
   await setupMongoConnection()
@@ -107,17 +102,17 @@ beforeAll(async () => {
 
 afterAll(async () => {
   return await mongoose.connection.close()
-});
+})
 
 it('test updating price', async () => {
   await price.update()
   // test it doesn't throw an error
 })
 
-it('test fetching last 24 hours', async () => {
-  const priceHistory = await price.lastCached()
-  // expect(priceHistory.length).toBe(25)
-})
+// it('test fetching last 24 hours', async () => {
+//   const priceHistory = await price.lastCached()
+//   expect(priceHistory.length).toBe(25)
+// })
 
 // it('test getting price', async () => {
 //   const currPrice = await price.getFromExchange()

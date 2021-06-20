@@ -1,7 +1,7 @@
-import { NotFoundError, ValidationError } from "./error";
-import { User } from "./schema";
-import { Levels } from "./types";
-import { baseLogger } from "./logger";
+import { NotFoundError, ValidationError } from "./error"
+import { User } from "./schema"
+import { Levels } from "./types"
+import { baseLogger } from "./logger"
 
 const logger = baseLogger.child({module: "admin"})
 

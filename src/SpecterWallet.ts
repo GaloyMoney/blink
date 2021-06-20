@@ -2,7 +2,7 @@ import { createChainAddress, sendToChainAddress } from "lightning";
 import _ from "lodash";
 import { yamlConfig } from "./config";
 import { bitcoindAccountingPath, lndAccountingPath, lndFeePath } from "./ledger/ledger";
-import { onchainLnds, lndsBalances, getActiveOnchainLnd } from "./lndUtils";
+import { getActiveOnchainLnd, lndsBalances } from "./lndUtils";
 import { MainBook } from "./mongodb";
 import { getOnChainTransactions } from "./OnChain";
 import { UserWallet } from "./userWallet";
@@ -11,7 +11,7 @@ import { BitcoindClient, bitcoindDefaultClient, btc2sat, sat2btc } from "./utils
 
 
 export class SpecterWallet {
-  bitcoindClient 
+  bitcoindClient
   logger
 
   constructor({ logger }) {
@@ -36,12 +36,12 @@ export class SpecterWallet {
 
     // there should be only one specter wallet
     // TODO/FIXME this is a weak security assumption
-    // someone getting access to specter could create another 
+    // someone getting access to specter could create another
     // hotkey-based specter wallet to bypass this check
 
     if (specterWallets.length === 0) {
       this.logger.info("specter wallet has not been instantiated")
-      
+
       // currently use for testing purpose. need to refactor
       return ""
     }
@@ -64,8 +64,8 @@ export class SpecterWallet {
   // for debugging
   // to create the wallet from bitcoin-cli:
   // bitcoin-cli --named createwallet wallet_name="coldstorage" disable_private_keys="true"
-  // 
-  // more info on: 
+  //
+  // more info on:
   // https://github.com/BlockchainCommons/Learning-Bitcoin-from-the-Command-Line/blob/master/07_3_Integrating_with_Hardware_Wallets.md
 
   // to import a descriptor:
@@ -94,7 +94,7 @@ export class SpecterWallet {
     if (!this.bitcoindClient) {
       const wallet = await this.setBitcoindClient()
       if (wallet === "") {
-        return 
+        return
       }
     }
 
@@ -119,7 +119,7 @@ export class SpecterWallet {
     } else if (action === "withdraw") {
       logger.error("rebalancing is needed, but need manual intervention")
       // this.toLndWallet({ sats })
-    } 
+    }
   }
 
   static isRebalanceNeeded({ lndBalance, onChain }) {
@@ -136,10 +136,10 @@ export class SpecterWallet {
     const thresholdHighBound = lndHoldingBase * 130 / 100
 
     // what is the target amount to be in lnd wallet holding
-    // when there is too much money in lnd and we need to deposit in cold storage 
+    // when there is too much money in lnd and we need to deposit in cold storage
     const targetDeposit = lndHoldingBase * ratioTargetDeposit
-    
-    // what is the target amount to be in lnd wallet holding 
+
+    // what is the target amount to be in lnd wallet holding
     //when there is a not enough money in lnd and we need to withdraw from cold storage
     const targetWithdraw = lndHoldingBase * ratioTargetWithdraw
 
@@ -170,14 +170,14 @@ export class SpecterWallet {
       const wallet = await this.setBitcoindClient()
       if (wallet === "") {
         this.logger.warn("no wallet has been setup")
-        return 
+        return
       }
     }
 
     const { lnd } = getActiveOnchainLnd()
 
     const address = await this.getColdStorageAddress()
-    
+
     let id
 
     try {
@@ -185,19 +185,19 @@ export class SpecterWallet {
     } catch (err) {
       this.logger.fatal({err}, "could not send to deposit. accounting to be reverted")
     }
-    
+
     const memo = `deposit of ${sats} sats to the cold storage wallet`
 
     const outgoingOnchainTxns = await getOnChainTransactions({ lnd, incoming: false })
     const [{ fee }] = outgoingOnchainTxns.filter(tx => tx.id === id)
 
-    const metadata = { 
-      type: "to_cold_storage", 
-      currency: "BTC", 
+    const metadata = {
+      type: "to_cold_storage",
+      currency: "BTC",
       pending: false,
       hash: id,
       fee,
-      ...UserWallet.getCurrencyEquivalent({sats, fee})
+      ...UserWallet.getCurrencyEquivalent({sats, fee}),
     }
 
     await MainBook.entry(memo)
@@ -213,7 +213,7 @@ export class SpecterWallet {
     if (!this.bitcoindClient) {
       const wallet = await this.setBitcoindClient()
       if (wallet === "") {
-        return 
+        return
       }
     }
 

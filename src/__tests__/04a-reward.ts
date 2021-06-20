@@ -1,10 +1,10 @@
 /**
  * @jest-environment node
  */
-import { setupMongoConnection } from "../mongodb";
-import { checkIsBalanced, getUserWallet, mockGetExchangeBalance } from "./helper";
-import { OnboardingEarn } from "../types";
-import { find } from "lodash";
+import { setupMongoConnection } from "../mongodb"
+import { checkIsBalanced, getUserWallet, mockGetExchangeBalance } from "./helper"
+import { OnboardingEarn } from "../types"
+import { find } from "lodash"
 
 
 const earnsToGet = ['buyFirstSats', 'debitCardActivation', 'firstCardSpending']
@@ -14,7 +14,6 @@ export const onBoardingEarnIds: string[] = earnsToGet
 import mongoose from "mongoose"
 
 let userWallet1
-let initBalance1
 
 jest.mock('../notifications/notification')
 jest.mock('../realtimePrice')
@@ -24,10 +23,10 @@ beforeAll(async () => {
   await setupMongoConnection()
   mockGetExchangeBalance()
   userWallet1 = await getUserWallet(1)
-});
+})
 
 beforeEach(async () => {
-  ({BTC: initBalance1} = await userWallet1.getBalances())
+  await userWallet1.getBalances()
   jest.clearAllMocks()
 })
 
@@ -39,7 +38,7 @@ afterAll(async () => {
 
     // to make this test re-entrant, we need to remove the fund from userWallet1 and delete the user
   // uncomment when necessary
-  
+
   // const finalBalance = await userWallet1.getBalances()
   // const funderWallet = await getFunderWallet({ logger: baseLogger })
 
@@ -50,10 +49,10 @@ afterAll(async () => {
 
   // await User.findOneAndRemove({ _id: userWallet1.uid })
 
-  jest.restoreAllMocks();
+  jest.restoreAllMocks()
 
   await mongoose.connection.close()
-});
+})
 
 
 it('add earn adds balance correctly', async () => {
@@ -67,8 +66,7 @@ it('add earn adds balance correctly', async () => {
 
   await getAndVerifyRewards()
 
-  // yet, if we do it another time, the balance should not increase, 
+  // yet, if we do it another time, the balance should not increase,
   // because all the rewards has already been been consumed:
   await getAndVerifyRewards()
 })
-

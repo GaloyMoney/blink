@@ -11,8 +11,9 @@ import { InvoiceUser, Transaction } from "../schema";
 import { getHash, sleep } from "../utils";
 import { checkIsBalanced, getUserWallet, lnd1, lndOutside1, lndOutside2, mockGetExchangeBalance, openChannelTesting } from "./helper";
 
+
 let userWallet0, userWallet1, userWallet2
-let initBalance0, initBalance1, initBalance2
+let initBalance0, initBalance1
 
 const amountInvoice = 1000
 
@@ -24,10 +25,8 @@ const date = Date.now() + 1000 * 60 * 60 * 24 * 8
 jest
 .spyOn(global.Date, 'now')
 .mockImplementation(() =>
-new Date(date).valueOf()
-);
-
-
+new Date(date).valueOf(),
+)
 
 beforeAll(async () => {
   await setupMongoConnection()
@@ -36,12 +35,12 @@ beforeAll(async () => {
   userWallet0 = await getUserWallet(0)
   userWallet1 = await getUserWallet(1)
   userWallet2 = await getUserWallet(2)
-});
+})
 
 beforeEach(async () => {
   ({BTC: initBalance0} = await userWallet0.getBalances());
-  ({BTC: initBalance1} = await userWallet1.getBalances());
-  ({BTC: initBalance2} = await userWallet2.getBalances());
+  ({BTC: initBalance1} = await userWallet1.getBalances())
+  await userWallet2.getBalances()
 
   jest.clearAllMocks()
 })
@@ -51,7 +50,7 @@ afterEach(async () => {
 })
 
 afterAll(async () => {
-  jest.restoreAllMocks();
+  jest.restoreAllMocks()
   // remove direct connection between lndoutside1 and lndoutside2
 });
 
@@ -100,10 +99,10 @@ it('receivesPaymentFromOutside', async () => {
 })
 
 const createInvoiceHash = () => {
-  const randomSecret = () => randomBytes(32);
-  const sha256 = buffer => createHash('sha256').update(buffer).digest('hex');
-  const secret = randomSecret();
-  const id = sha256(secret);
+  const randomSecret = () => randomBytes(32)
+  const sha256 = buffer => createHash('sha256').update(buffer).digest('hex')
+  const secret = randomSecret()
+  const id = sha256(secret)
   return {id, secret: secret.toString('hex')}
 }
 
@@ -113,10 +112,10 @@ const functionToTests = [
     initialFee: 0,
     fn: function fn(wallet) {
       return async (input) => {
-        await wallet.getLightningFee(input);
+        await wallet.getLightningFee(input)
         return wallet.pay(input)
       }
-    }
+    },
   },
   {
     name: "directPay",
@@ -126,7 +125,7 @@ const functionToTests = [
         return wallet.pay(input)
       }
     },
-  }
+  },
 ]
 
 functionToTests.forEach(({fn, name, initialFee}) => {
@@ -134,7 +133,7 @@ functionToTests.forEach(({fn, name, initialFee}) => {
     const { request } = await createInvoice({ lnd: lndOutside1, tokens: amountInvoice })
     const result = await fn(userWallet1)({ invoice: request })
     expect(result).toBe("success")
-  
+
     const {BTC: finalBalance} = await userWallet1.getBalances()
     expect(finalBalance).toBe(initBalance1 - amountInvoice)
   })
@@ -145,7 +144,7 @@ functionToTests.forEach(({fn, name, initialFee}) => {
     const intermediateBalance = await userWallet1.getBalances()
     const result = await fn(userWallet1)({ invoice: request })
     expect(result).toBe("already_paid")
-  
+
     const finalBalance = await userWallet1.getBalances()
     expect(finalBalance).toStrictEqual(intermediateBalance)
   })
@@ -167,25 +166,25 @@ functionToTests.forEach(({fn, name, initialFee}) => {
 
       const request = await walletPayee.addInvoice({ value: amountInvoice })
       await fn(walletPayer)({ invoice: request, memo })
-  
+
       const {BTC: payerFinalBalance} = await walletPayer.getBalances()
       const {BTC: payeeFinalBalance} = await walletPayee.getBalances()
-  
+
       expect(payerFinalBalance).toBe(payerInitialBalance - amountInvoice)
       expect(payeeFinalBalance).toBe(payeeInitialBalance + amountInvoice)
-  
+
       const hash = getHash(request)
       const matchTx = tx => tx.type === 'on_us' && tx.hash === hash
-  
+
       const user2Txn = await walletPayee.getTransactions()
       const user2OnUsTxn = user2Txn.filter(matchTx)
       expect(user2OnUsTxn[0].type).toBe('on_us')
       await checkIsBalanced()
-  
+
       const user1Txn = await walletPayer.getTransactions()
       const user1OnUsTxn = user1Txn.filter(matchTx)
       expect(user1OnUsTxn[0].type).toBe('on_us')
-  
+
       // making request twice because there is a cancel state, and this should be re-entrant
       expect(await walletPayer.updatePendingInvoice({ hash })).toBeTruthy()
       expect(await walletPayee.updatePendingInvoice({ hash })).toBeTruthy()
@@ -215,38 +214,38 @@ functionToTests.forEach(({fn, name, initialFee}) => {
 
   it(`payInvoice to lnd outside2 ${name}`, async () => {
     const { request } = await createInvoice({ lnd: lndOutside2, tokens: amountInvoice, is_including_private_channels: true })
-    
+
     const {BTC: initialBalance} = await userWallet1.getBalances()
-    
+
     const result = await fn(userWallet1)({ invoice: request, memo: "pay an unconnected node" })
 
     expect(result).toBe("success")
     const {BTC: finalBalance} = await userWallet1.getBalances()
-    
+
     // const { id } = await decodePaymentRequest({ lnd: lndOutside2, request })
     // const { results: [{ fee }] } = await MainBook.ledger({ account: userWallet1.accountPath, hash: id })
     // ^^^^ this fetch the wrong transaction
-    
+
     // TODO: have a way to do this more programatically?
     // base rate: 1, fee Rate: 1
     const fee = 2
-  
+
     expect(finalBalance).toBe(initialBalance - amountInvoice - fee)
   })
 
   it(`payHodlInvoice-${name}`, async () => {
     const {id, secret} = createInvoiceHash()
 
-    const { request } = await createHodlInvoice({ id, lnd: lndOutside1, tokens: amountInvoice });
+    const { request } = await createHodlInvoice({ id, lnd: lndOutside1, tokens: amountInvoice })
     const result = await fn(userWallet1)({ invoice: request })
 
     expect(result).toBe("pending")
     const {BTC: balanceBeforeSettlement} = await userWallet1.getBalances()
     expect(balanceBeforeSettlement).toBe(initBalance1 - amountInvoice * (1 + initialFee))
-    
+
     // FIXME: necessary to not have openHandler ?
     // https://github.com/alexbosworth/ln-service/issues/122
-    await settleHodlInvoice({ lnd: lndOutside1, secret });
+    await settleHodlInvoice({ lnd: lndOutside1, secret })
 
     await sleep(5000)
 
@@ -257,16 +256,16 @@ functionToTests.forEach(({fn, name, initialFee}) => {
   it(`don't settle hodl invoice ${name}`, async () => {
     const {id} = createInvoiceHash()
 
-    const { request } = await createHodlInvoice({ id, lnd: lndOutside1, tokens: amountInvoice });
+    const { request } = await createHodlInvoice({ id, lnd: lndOutside1, tokens: amountInvoice })
     const result = await fn(userWallet1)({ invoice: request })
-    
+
     expect(result).toBe("pending")
     console.log("payment has timeout. status is pending.")
 
     const {BTC: intermediateBalance} = await userWallet1.getBalances()
     expect(intermediateBalance).toBe(initBalance1 - (amountInvoice * (1 + initialFee)))
 
-    await cancelHodlInvoice({ id, lnd: lndOutside1 });
+    await cancelHodlInvoice({ id, lnd: lndOutside1 })
 
     // making sure it's propagating back to lnd0.
     // use an event to do it deterministically
@@ -287,13 +286,13 @@ it(`fails to pay when user has insufficient balance`, async () => {
 
 
 
-// @ts-ignore
-const Lightning = require('../Lightning');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const Lightning = require('../Lightning')
 
 it('expired payment', async () => {
   const memo = "payment that should expire"
 
-  const dbSetSpy = jest.spyOn(Lightning, 'delay').mockImplementation(() => ({value: 1, unit: 'seconds', "additional_delay_value": 0}))
+  jest.spyOn(Lightning, 'delay').mockImplementation(() => ({value: 1, unit: 'seconds', "additional_delay_value": 0}))
 
   const { lnd } = getActiveLnd()
 
@@ -306,8 +305,8 @@ it('expired payment', async () => {
   // console.log({res}, "cancelHodlInvoice result")
 
   await sleep(5000)
-  
-  // hacky way to test if an invoice has expired 
+
+  // hacky way to test if an invoice has expired
   // without having to to have a big timeout.
   // let i = 30
   // let hasExpired = false
@@ -322,7 +321,7 @@ it('expired payment', async () => {
   //   i--
   //   await sleep(1000)
   // }
-  
+
   // try {
   //   await pay({ lnd: lndOutside1, request })
   // } catch (err) {
@@ -330,17 +329,17 @@ it('expired payment', async () => {
   // }
 
   // await expect(pay({ lnd: lndOutside1, request })).rejects.toThrow()
-  
+
 
   // await sleep(1000)
 
   await userWallet1.getBalances()
-    
+
   // FIXME: test is failing.
   // lnd doens't always delete invoice just after they have expired
 
   // expect(await InvoiceUser.countDocuments({_id: id})).toBe(0)
-  
+
   // try {
   //   await getInvoice({ lnd, id })
   // } catch (err) {
@@ -348,7 +347,7 @@ it('expired payment', async () => {
   // }
 
   // expect(await userWallet1.updatePendingInvoice({ hash: id })).toBeFalsy()
-  
+
 }, 150000)
 
 it('fails to pay when user has insufficient balance', async () => {
@@ -410,7 +409,7 @@ it('onUs pushPayment', async () => {
   const userTransaction0 = await userWallet0.getTransactions()
   const {BTC: finalBalance1} = await userWallet1.getBalances()
   const userTransaction1 = await userWallet1.getTransactions()
-  
+
   expect(res).toBe("success")
   expect(finalBalance0).toBe(initBalance0 + amountInvoice)
   expect(finalBalance1).toBe(initBalance1 - amountInvoice)
@@ -492,7 +491,7 @@ it('fails to pay when amount exceeds onUs limit', async() => {
 
 // it('testDbTransaction', async () => {
 //   //TODO try to fetch simulataneously (ie: with Premise.all[])
-//   // balances with pending but settled transaction to see if 
+//   // balances with pending but settled transaction to see if
 //   // we can create a race condition in the DB
 // })
 
