@@ -1,7 +1,9 @@
 # Galoy
 
-### Responsible disclosure
-Found critical bugs/vulnerabilities?
+Want to contribute? Checkout the [dev documentation](./DEV.md).
+
+### Responsible disclosure 
+Found critical bugs/vulnerabilities? 
 Please email them security@galoy.io Thanks!
 
 
