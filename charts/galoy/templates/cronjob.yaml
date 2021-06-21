@@ -47,7 +47,7 @@ spec:
             - name: MONGODB_DB
               value: "galoy"
             - name: LNDIP
-              value: "lnd"
+              value: "lnd1"
             - name: MACAROON
               valueFrom:
                 secretKeyRef:

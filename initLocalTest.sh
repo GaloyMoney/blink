@@ -131,7 +131,7 @@ fi
 set +e
 kubectl apply -f $INFRADIR/configs/lnd/templates
 set -e
-helmUpgrade lnd --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath galoy/lnd
+helmUpgrade lnd1 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath galoy/lnd
 
 # avoiding to spend time with circleci regtest with this condition
 if [ "$NETWORK" == "testnet" ] || [ "$NETWORK" == "mainnet" ];
