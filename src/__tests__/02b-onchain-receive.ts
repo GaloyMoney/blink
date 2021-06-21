@@ -106,15 +106,15 @@ const onchain_funding = async ({ walletDestination }) => {
   ])
 }
 
-it('user0 is credited for on chain transaction', async () => {
+it('user0IsCreditedForOnChainTransaction', async () => {
   await onchain_funding({ walletDestination: walletUser0 })
 })
 
-it('funding funder with onchain tx from bitcoind', async () => {
+it('fundingFunderWithOnchainTxFromBitcoind', async () => {
   await onchain_funding({ walletDestination: funderWallet })
 })
 
-it('crediting lnd1 with some fund to be able to create a channel', async () => {
+it('creditingLnd1WithSomeFundToCreateAChannel', async () => {
   const {lnd} = getLnds()[0]
   const { address } = await createChainAddress({
     lnd,
@@ -134,11 +134,12 @@ it('crediting lnd1 with some fund to be able to create a channel', async () => {
     .commit()
 })
 
-it('identifies unconfirmed incoming on chain txn', async () => {
+it('identifiesUnconfirmedIncomingOnChainTxn', async () => {
   const address = await walletUser0.getOnChainAddress()
 
-  const sub = await subscribeToTransactions({ lnd: lndonchain })
+  const sub = subscribeToTransactions({ lnd: lndonchain })
   sub.on('chain_transaction', onchainTransactionEventHandler)
+
 
   await Promise.all([
     once(sub, 'chain_transaction'),
@@ -146,7 +147,6 @@ it('identifies unconfirmed incoming on chain txn', async () => {
   ])
 
   await sleep(1000)
-
   const txs = (await walletUser0.getTransactions())
   const pendingTxs = filter(txs, {pending: true})
   expect(pendingTxs.length).toBe(1)
@@ -157,17 +157,17 @@ it('identifies unconfirmed incoming on chain txn', async () => {
 
   expect(sendNotification.mock.calls.length).toBe(1)
   expect(sendNotification.mock.calls[0][0].data.type).toBe("onchain_receipt_pending")
-
+  
   const satsPrice = await getCurrentPrice()
   const usd = (btc2sat(amount_BTC) * satsPrice!).toFixed(2)
-
+  
   expect(sendNotification.mock.calls[0][0].title).toBe(getTitle["onchain_receipt_pending"]({usd, amount: btc2sat(amount_BTC)}))
-
+  
   await Promise.all([
     bitcoindDefaultClient.generateToAddress(3, RANDOM_ADDRESS),
     once(sub, 'chain_transaction'),
   ])
-
+  
   await sleep(3000)
 
   // import util from 'util'

@@ -4,16 +4,16 @@ import { authenticatedLndGrpc, getWalletInfo, openChannel, subscribeToChannels }
 import { yamlConfig } from "../config";
 import { FtxDealerWallet } from "../dealer/FtxDealerWallet";
 import { balanceSheetIsBalanced, updateUsersPendingPayment } from "../ledger/balanceSheet";
-import { getLnds, onChannelUpdated, updateEscrows } from "../lndUtils";
+import { getLnds, offchainLnds, onchainLnds, onChannelUpdated, updateEscrows } from "../lndUtils";
 import { baseLogger } from '../logger';
 import { User } from "../schema";
 import { login } from "../text";
 import { bitcoindDefaultClient, sleep } from "../utils";
 import { WalletFactory } from "../walletFactory";
 
-export const lnd1 = getLnds()[0].lnd
-export const lnd2 = getLnds()[1].lnd
-export const lndonchain = getLnds()[2].lnd
+export const lnd1 = offchainLnds[0].lnd
+export const lnd2 = offchainLnds[1].lnd
+export const lndonchain = onchainLnds[0].lnd
 
 // TODO: this could be refactored with lndAuth 
 export const lndOutside1 = authenticatedLndGrpc({
