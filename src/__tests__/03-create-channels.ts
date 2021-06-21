@@ -5,7 +5,7 @@ import { once } from 'events';
 import { getChannels, subscribeToGraph, updateRoutingFees } from 'lightning';
 import _ from "lodash";
 import { lndFeePath } from "../ledger/ledger";
-import { getLnds, updateEscrows } from "../lndUtils";
+import { getLnds, offchainLnds, updateEscrows } from "../lndUtils";
 import { MainBook, setupMongoConnection } from "../mongodb";
 import { bitcoindDefaultClient, sleep } from "../utils";
 import { checkIsBalanced, lnd1, lnd2, lndOutside1, lndOutside2, mockGetExchangeBalance, openChannelTesting } from "./helper";
@@ -130,11 +130,12 @@ it('opens channel from lndOutside1 to lnd1', async () => {
 it('opens channel from lnd1 to lnd2', async () => {
   const socket = `lnd2:9735`
   await openChannelTesting({ lnd: lnd1, other_lnd: lnd2, socket })
+  const partner_public_key = offchainLnds[2].pubkey
 
   const { channels } = await getChannels({ lnd: lnd1 })
   expect(channels.length).toEqual(channelLengthMain + 1)
   
-  const channel = _.find(channels, {partner_public_key: getLnds()[1].pubkey})
+  const channel = _.find(channels, {partner_public_key})
   const input = {fee_rate: 0, base_fee_tokens: 0, transaction_id: channel!.transaction_id, transaction_vout: channel!.transaction_vout}
 
   await updateRoutingFees({lnd: lnd1, ...input});
