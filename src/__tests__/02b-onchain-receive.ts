@@ -14,7 +14,7 @@ import { getTitle } from "../notifications/payment";
 import { getCurrentPrice } from "../realtimePrice";
 import { bitcoindDefaultClient, btc2sat, sleep } from "../utils";
 import { getFunderWallet } from "../walletFactory";
-import { checkIsBalanced, getUserWallet, lndonchain, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "./helper";
+import { checkIsBalanced, getUserWallet, lnd1, lndonchain, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "./helper";
 
 jest.mock('../realtimePrice')
 
@@ -115,9 +115,8 @@ it('fundingFunderWithOnchainTxFromBitcoind', async () => {
 })
 
 it('creditingLnd1WithSomeFundToCreateAChannel', async () => {
-  const {lnd} = getLnds()[0]
   const { address } = await createChainAddress({
-    lnd,
+    lnd: lnd1,
     format: 'p2wpkh',
   })
 
