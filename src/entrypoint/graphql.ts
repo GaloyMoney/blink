@@ -1,40 +1,40 @@
-import { pattern, range, stringLength, ValidateDirectiveVisitor } from '@profusion/apollo-validation-directives';
-import { ApolloServer } from 'apollo-server-express';
-import dotenv from "dotenv";
-import express from 'express';
-import expressJwt from "express-jwt";
-import fs from 'fs';
-import { applyMiddleware } from "graphql-middleware";
-import { and, rule, shield } from 'graphql-shield';
-import { makeExecutableSchema } from "graphql-tools";
-import moment from "moment";
-import mongoose from "mongoose";
-import path from "path";
-import pino from 'pino';
+import { pattern, range, stringLength, ValidateDirectiveVisitor } from '@profusion/apollo-validation-directives'
+import { ApolloServer } from 'apollo-server-express'
+import dotenv from "dotenv"
+import express from 'express'
+import expressJwt from "express-jwt"
+import fs from 'fs'
+import { applyMiddleware } from "graphql-middleware"
+import { and, rule, shield } from 'graphql-shield'
+import { makeExecutableSchema } from "graphql-tools"
+import moment from "moment"
+import mongoose from "mongoose"
+import path from "path"
+import pino from 'pino'
 // https://nodejs.org/api/esm.html#esm_no_require_exports_module_exports_filename_dirname
 // TODO: to use when switching to module
 // import { fileURLToPath } from 'url';
 // const __filename = fileURLToPath(import.meta.url);
 // const __dirname = path.dirname(__filename);
-import PinoHttp from "pino-http";
-import swStats from 'swagger-stats';
-import { v4 as uuidv4 } from 'uuid';
-import { addToMap, setAccountStatus, setLevel, usernameExists } from "../AdminOps";
-import { yamlConfig } from '../config';
-import { AuthorizationError } from '../error';
-import { activateLndHealthCheck } from "../lndHealth";
-import { getActiveLnd, nodesStats, nodeStats } from "../lndUtils";
-import { getHourlyPrice, getMinBuildNumber } from "../localCache";
-import { baseLogger } from '../logger';
-import { setupMongoConnection } from "../mongodb";
-import { sendNotification } from "../notifications/notification";
-import { getCurrentPrice } from "../realtimePrice";
-import { redis } from "../redis";
-import { User } from "../schema";
-import { login, requestPhoneCode } from "../text";
-import { Levels, OnboardingEarn } from "../types";
-import { fetchIPDetails } from "../utils";
-import { WalletFactory, WalletFromUsername } from "../walletFactory";
+import PinoHttp from "pino-http"
+import swStats from 'swagger-stats'
+import { v4 as uuidv4 } from 'uuid'
+import { addToMap, setAccountStatus, setLevel, usernameExists } from "../AdminOps"
+import { yamlConfig } from '../config'
+import { AuthorizationError } from '../error'
+import { activateLndHealthCheck } from "../lndHealth"
+import { getActiveLnd, nodesStats, nodeStats } from "../lndUtils"
+import { getHourlyPrice, getMinBuildNumber } from "../localCache"
+import { baseLogger } from '../logger'
+import { setupMongoConnection } from "../mongodb"
+import { sendNotification } from "../notifications/notification"
+import { getCurrentPrice } from "../realtimePrice"
+import { redis } from "../redis"
+import { User } from "../schema"
+import { login, requestPhoneCode } from "../text"
+import { Levels, OnboardingEarn } from "../types"
+import { fetchIPDetails } from "../utils"
+import { WalletFactory, WalletFromUsername } from "../walletFactory"
 
 dotenv.config()
 
@@ -104,7 +104,7 @@ const resolvers = {
     },
     // deprecated
     nodeStats: async () => {
-      const { lnd } = getActiveLnd() 
+      const { lnd } = getActiveLnd()
       return nodeStats({ lnd })
     },
     nodesStats: async () => nodesStats(),
@@ -238,12 +238,12 @@ const resolvers = {
       return { success: true }
     },
     addToMap: async (_, { username, title, latitude, longitude }, { logger }) => {
-      return addToMap({ username, title, latitude, longitude, logger });
+      return addToMap({ username, title, latitude, longitude, logger })
     },
     setAccountStatus: async (_, { uid, status }, { }) => {
       return setAccountStatus({ uid, status })
-    }
-  }
+    },
+  },
 }
 
 const isAuthenticated = rule({ cache: 'contextual' })(
@@ -397,7 +397,7 @@ export async function startApolloServer() {
     res.status((isMongoAlive && isRedisAlive) ? 200 : 503).send()
   })
 
-  server.applyMiddleware({ app });
+  server.applyMiddleware({ app })
 
   await app.listen({ port: 4000 })
 

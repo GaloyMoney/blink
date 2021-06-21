@@ -1,20 +1,20 @@
 /**
  * @jest-environment node
  */
-import { once } from 'events';
-import { createChainAddress, subscribeToChainAddress, subscribeToTransactions } from "lightning";
-import { filter } from "lodash";
-import mongoose from "mongoose";
-import { onchainTransactionEventHandler } from "../entrypoint/trigger";
-import { liabilitiesReserve, lndAccountingPath } from "../ledger/ledger";
-import { getLnds } from "../lndUtils";
-import { baseLogger } from '../logger';
-import { MainBook, setupMongoConnection } from "../mongodb";
-import { getTitle } from "../notifications/payment";
-import { getCurrentPrice } from "../realtimePrice";
-import { bitcoindDefaultClient, btc2sat, sleep } from "../utils";
-import { getFunderWallet } from "../walletFactory";
-import { checkIsBalanced, getUserWallet, lnd1, lndonchain, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "./helper";
+import { once } from 'events'
+import { createChainAddress, subscribeToChainAddress, subscribeToTransactions } from "lightning"
+import { filter } from "lodash"
+import mongoose from "mongoose"
+import { onchainTransactionEventHandler } from "../entrypoint/trigger"
+import { liabilitiesReserve, lndAccountingPath } from "../ledger/ledger"
+import { getLnds } from "../lndUtils"
+import { baseLogger } from '../logger'
+import { MainBook, setupMongoConnection } from "../mongodb"
+import { getTitle } from "../notifications/payment"
+import { getCurrentPrice } from "../realtimePrice"
+import { bitcoindDefaultClient, btc2sat, sleep } from "../utils"
+import { getFunderWallet } from "../walletFactory"
+import { checkIsBalanced, getUserWallet, lnd1, lndonchain, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "./helper"
 
 jest.mock('../realtimePrice')
 
@@ -128,7 +128,7 @@ it('creditingLnd1WithSomeFundToCreateAChannel', async () => {
   const metadata = { type: "onchain_receipt", currency: "BTC", pending: "false" }
 
   await MainBook.entry("funding tx")
-    .credit(liabilitiesReserve, sats, metadata)    
+    .credit(liabilitiesReserve, sats, metadata)
     .debit(lndAccountingPath, sats, metadata)
     .commit()
 })
@@ -156,17 +156,17 @@ it('identifiesUnconfirmedIncomingOnChainTxn', async () => {
 
   expect(sendNotification.mock.calls.length).toBe(1)
   expect(sendNotification.mock.calls[0][0].data.type).toBe("onchain_receipt_pending")
-  
+
   const satsPrice = await getCurrentPrice()
   const usd = (btc2sat(amount_BTC) * satsPrice!).toFixed(2)
-  
+
   expect(sendNotification.mock.calls[0][0].title).toBe(getTitle["onchain_receipt_pending"]({usd, amount: btc2sat(amount_BTC)}))
-  
+
   await Promise.all([
     bitcoindDefaultClient.generateToAddress(3, RANDOM_ADDRESS),
     once(sub, 'chain_transaction'),
   ])
-  
+
   await sleep(3000)
 
   // import util from 'util'

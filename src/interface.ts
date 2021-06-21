@@ -1,4 +1,4 @@
-import { ITransaction } from "./types";
+import { ITransaction } from "./types"
 
 export interface Balances {
   BTC: number,

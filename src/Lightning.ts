@@ -1,21 +1,21 @@
-import assert from 'assert';
-import { createHash } from "crypto";
-import { AuthenticatedLnd, cancelHodlInvoice, createInvoice, getInvoice, getPayment, payViaPaymentDetails, payViaRoutes } from "lightning";
-import lnService from 'ln-service';
-import moment from "moment";
-import { yamlConfig } from "./config";
-import { DbError, InsufficientBalanceError, LightningPaymentError, LndOfflineError, NewAccountWithdrawalError, NotFoundError, RouteFindingError, SelfPaymentError, TransactionRestrictedError } from './error';
-import { addTransactionLndPayment, addTransactionLndReceipt, addTransactionOnUsPayment } from "./ledger/transaction";
-import { TIMEOUT_PAYMENT } from "./lndAuth";
-import { getActiveLnd, getLndFromPubkey, isMyNode, validate } from "./lndUtils";
-import { lockExtendOrThrow, redlock } from "./lock";
-import { MainBook } from "./mongodb";
-import { transactionNotification } from "./notifications/payment";
-import { redis } from "./redis";
-import { InvoiceUser, Transaction, User } from "./schema";
-import { IAddInvoiceRequest, IFeeRequest, IPaymentRequest } from "./types";
-import { UserWallet } from "./userWallet";
-import { addContact, isInvoiceAlreadyPaidError, LoggedError, timeout } from "./utils";
+import assert from 'assert'
+import { createHash } from "crypto"
+import { AuthenticatedLnd, cancelHodlInvoice, createInvoice, getInvoice, getPayment, payViaPaymentDetails, payViaRoutes } from "lightning"
+import lnService from 'ln-service'
+import moment from "moment"
+import { yamlConfig } from "./config"
+import { DbError, InsufficientBalanceError, LightningPaymentError, LndOfflineError, NewAccountWithdrawalError, NotFoundError, RouteFindingError, SelfPaymentError, TransactionRestrictedError } from './error'
+import { addTransactionLndPayment, addTransactionLndReceipt, addTransactionOnUsPayment } from "./ledger/transaction"
+import { TIMEOUT_PAYMENT } from "./lndAuth"
+import { getActiveLnd, getLndFromPubkey, isMyNode, validate } from "./lndUtils"
+import { lockExtendOrThrow, redlock } from "./lock"
+import { MainBook } from "./mongodb"
+import { transactionNotification } from "./notifications/payment"
+import { redis } from "./redis"
+import { InvoiceUser, Transaction, User } from "./schema"
+import { IAddInvoiceRequest, IFeeRequest, IPaymentRequest } from "./types"
+import { UserWallet } from "./userWallet"
+import { addContact, isInvoiceAlreadyPaidError, LoggedError, timeout } from "./utils"
 
 
 
@@ -61,7 +61,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     let request, id, input
 
     const expires_at = this.getExpiration(moment()).toDate()
-    
+
     let lnd: AuthenticatedLnd, pubkey: string
 
     try {
@@ -146,7 +146,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       return 0
     }
 
-    const { lnd, pubkey } = getActiveLnd() 
+    const { lnd, pubkey } = getActiveLnd()
 
     const key = JSON.stringify({ id, mtokens })
 
@@ -181,7 +181,7 @@ export const LightningMixin = (superclass) => class extends superclass {
     }
 
     const value = JSON.stringify({...route, pubkey})
-    await redis.set(key, value, 'EX', 60 * 5); // expires after 5 minutes
+    await redis.set(key, value, 'EX', 60 * 5) // expires after 5 minutes
 
     lightningLogger.info({ redis: { key, value }, probingSuccess: true, success: true }, "successfully found a route")
     return route.fee
@@ -265,7 +265,7 @@ export const LightningMixin = (superclass) => class extends superclass {
             memoPayer,
           })
         })
-        
+
         transactionNotification({ amount: sats, user: payeeUser, hash: id, logger: this.logger, type: "paid-invoice" })
 
         if (!pushPayment) {
@@ -332,14 +332,14 @@ export const LightningMixin = (superclass) => class extends superclass {
       let pubkey: string, lnd: AuthenticatedLnd
 
       // TODO: check if route is not an array and we shouldn't use .length instead
-      if (!!route) {
+      if (route) {
         lightningLogger = lightningLogger.child({ routing: "payViaRoutes", route })
         fee = route.safe_fee
-        feeKnownInAdvance = true;
-        pubkey = route.pubkey;
+        feeKnownInAdvance = true
+        pubkey = route.pubkey
 
         try {
-          ({ lnd } = getLndFromPubkey({pubkey}));
+          ({ lnd } = getLndFromPubkey({pubkey}))
         } catch (err) {
           // lnd may have gone offline since the probe has been done.
           // deleting entry so that subsequent payment attempt could succeed
@@ -350,7 +350,7 @@ export const LightningMixin = (superclass) => class extends superclass {
         lightningLogger = lightningLogger.child({ routing: "payViaPaymentDetails" })
         fee = max_fee
         feeKnownInAdvance = false;
-        ({ pubkey, lnd } = getActiveLnd());
+        ({ pubkey, lnd } = getActiveLnd())
       }
 
       // we are confident enough that there is a possible payment route. let's move forward
@@ -358,12 +358,12 @@ export const LightningMixin = (superclass) => class extends superclass {
 
       let entry
 
-      {        
+      {
         const sats = tokens + fee
 
         const metadata = {
           hash: id, type: "payment", pending: true, pubkey,
-          feeKnownInAdvance, ...UserWallet.getCurrencyEquivalent({ sats, fee })
+          feeKnownInAdvance, ...UserWallet.getCurrencyEquivalent({ sats, fee }),
         }
 
         lightningLogger = lightningLogger.child({ route, balance, ...metadata })
@@ -383,7 +383,7 @@ export const LightningMixin = (superclass) => class extends superclass {
             metadata,
           })
         })
-        
+
         if (pushPayment) {
           route.messages = messages
         }
@@ -584,12 +584,12 @@ export const LightningMixin = (superclass) => class extends superclass {
   // return whether the invoice has been paid of not
   async updatePendingInvoice({ hash, lock, pubkey }: {hash: string, lock: any, pubkey?: string}): Promise<boolean> {
     let invoice, pubkey_
-    
+
     // if a pubkey has been provided, it means the invoice has not been set as paid in mongodb
     // so not need for a round back trip to mongodb
     if (!pubkey) {
       let paid
-      ({ pubkey: pubkey_, paid } = await InvoiceUser.findOne({ _id: hash }));
+      ({ pubkey: pubkey_, paid } = await InvoiceUser.findOne({ _id: hash }))
 
       if (paid) {
         return true
@@ -682,7 +682,7 @@ export const LightningMixin = (superclass) => class extends superclass {
       return false
 
     //   })
-    
+
     // TODO: part of the merge. check this should be deleted
 
     // } else if (expired) {

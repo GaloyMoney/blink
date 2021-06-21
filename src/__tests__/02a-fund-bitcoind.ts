@@ -1,11 +1,11 @@
 /**
  * @jest-environment node
  */
-import { createChainAddress } from "lightning";
-import mongoose from "mongoose";
-import { setupMongoConnection } from "../mongodb";
-import { bitcoindDefaultClient } from "../utils";
-import { checkIsBalanced, lnd1, lndOutside1, lndOutside2, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "./helper";
+import { createChainAddress } from "lightning"
+import mongoose from "mongoose"
+import { setupMongoConnection } from "../mongodb"
+import { bitcoindDefaultClient } from "../utils"
+import { checkIsBalanced, lnd1, lndOutside1, lndOutside2, mockGetExchangeBalance, RANDOM_ADDRESS, waitUntilBlockHeight } from "./helper"
 
 
 

@@ -2,13 +2,13 @@
  * @jest-environment node
  */
 //TODO: Choose between camel case or underscores for variable naming
-import { getWalletInfo } from 'lightning';
-import mongoose from "mongoose";
-import { setupMongoConnection } from "../mongodb";
-import { redis } from "../redis";
-import { User } from "../schema";
-import { bitcoindDefaultClient } from "../utils";
-import { lnd1, lnd2, lndonchain, lndOutside1, lndOutside2 } from "./helper";
+import { getWalletInfo } from 'lightning'
+import mongoose from "mongoose"
+import { setupMongoConnection } from "../mongodb"
+import { redis } from "../redis"
+import { User } from "../schema"
+import { bitcoindDefaultClient } from "../utils"
+import { lnd1, lnd2, lndonchain, lndOutside1, lndOutside2 } from "./helper"
 
 
 
@@ -23,7 +23,7 @@ it('I can connect to bitcoind', async () => {
 })
 
 const lnds = [lnd1, lnd2, lndonchain]
-for (let item in lnds) {
+for (const item in lnds) {
   it(`I can connect to lnd index ${item}`, async () => {
     const { public_key } = await getWalletInfo({ lnd: lnds[item] })
     expect(public_key.length).toBe(64 + 2)

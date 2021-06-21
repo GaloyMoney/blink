@@ -1,12 +1,12 @@
-import express from 'express';
-import client, { register } from 'prom-client';
-import { getBalancesDetail } from "../bitcoind";
-import { balanceSheetIsBalanced, getLedgerAccounts } from "../ledger/balanceSheet";
-import { getBosScore, lndsBalances } from "../lndUtils";
-import { baseLogger } from "../logger";
-import { setupMongoConnection } from "../mongodb";
-import { Transaction, User } from "../schema";
-import { getDealerWallet, getFunderWallet } from "../walletFactory";
+import express from 'express'
+import client, { register } from 'prom-client'
+import { getBalancesDetail } from "../bitcoind"
+import { balanceSheetIsBalanced, getLedgerAccounts } from "../ledger/balanceSheet"
+import { getBosScore, lndsBalances } from "../lndUtils"
+import { baseLogger } from "../logger"
+import { setupMongoConnection } from "../mongodb"
+import { Transaction, User } from "../schema"
+import { getDealerWallet, getFunderWallet } from "../walletFactory"
 
 const logger = baseLogger.child({module: "exporter"})
 
@@ -62,7 +62,7 @@ const main = async () => {
     } catch (err) {
       logger.error({err}, "impossible to calculate balance sheet")
     }
-    
+
     const { total, onChain, offChain, opening_channel_balance, closing_channel_balance } = await lndsBalances()
     lnd_g.set(total)
     lndOnChain_g.set(onChain)

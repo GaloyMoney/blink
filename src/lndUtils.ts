@@ -1,20 +1,20 @@
-import { ValidationError } from "apollo-server-express";
-import assert from 'assert';
-import { default as axios } from 'axios';
-import { createHash, randomBytes } from "crypto";
-import { parsePaymentRequest } from 'invoices';
-import { getChainBalance, getChainTransactions, getChannelBalance, getChannels, getClosedChannels, getForwards, getHeight, getPendingChainBalance, getWalletInfo } from "lightning";
-import _ from "lodash";
-import { Logger } from "pino";
-import { yamlConfig } from "./config";
-import { DbError, LndOfflineError } from "./error";
-import { escrowAccountingPath, lndAccountingPath, lndFeePath, revenueFeePath } from "./ledger/ledger";
-import { FEECAP, FEEMIN, ILndParamsAuthed, nodeType, params } from "./lndAuth";
-import { baseLogger } from "./logger";
-import { MainBook } from "./mongodb";
-import { DbMetadata, InvoiceUser } from "./schema";
-import { IFeeRequest } from "./types";
-import { LoggedError, LOOK_BACK } from "./utils";
+import { ValidationError } from "apollo-server-express"
+import assert from 'assert'
+import { default as axios } from 'axios'
+import { createHash, randomBytes } from "crypto"
+import { parsePaymentRequest } from 'invoices'
+import { getChainBalance, getChainTransactions, getChannelBalance, getChannels, getClosedChannels, getForwards, getHeight, getPendingChainBalance, getWalletInfo } from "lightning"
+import _ from "lodash"
+import { Logger } from "pino"
+import { yamlConfig } from "./config"
+import { DbError, LndOfflineError } from "./error"
+import { escrowAccountingPath, lndAccountingPath, lndFeePath, revenueFeePath } from "./ledger/ledger"
+import { FEECAP, FEEMIN, ILndParamsAuthed, nodeType, params } from "./lndAuth"
+import { baseLogger } from "./logger"
+import { MainBook } from "./mongodb"
+import { DbMetadata, InvoiceUser } from "./schema"
+import { IFeeRequest } from "./types"
+import { LoggedError, LOOK_BACK } from "./utils"
 
 // milliseconds in a day
 const MS_PER_DAY = 864e5
@@ -24,9 +24,9 @@ const MS_PER_DAY = 864e5
 export const deleteExpiredInvoices = async () => {
   // this should be longer than the invoice validity time
   const delta = 2 // days
-  
-  const date = new Date();
-  date.setDate(date.getDate() - delta);
+
+  const date = new Date()
+  date.setDate(date.getDate() - delta)
   InvoiceUser.deleteMany({timestamp: {lt: date}})
 }
 
@@ -46,12 +46,12 @@ export const deleteFailedPaymentsAllLnds = async () => {
 
 export const lndsBalances = async () => {
   const data = await Promise.all(getLnds().map(({lnd}) => lndBalances({lnd})))
-  return { 
-    total: _.sumBy(data, "total"), 
-    onChain: _.sumBy(data, "onChain"), 
-    offChain: _.sumBy(data, "offChain"), 
-    opening_channel_balance: _.sumBy(data, "opening_channel_balance"), 
-    closing_channel_balance: _.sumBy(data, "closing_channel_balance")
+  return {
+    total: _.sumBy(data, "total"),
+    onChain: _.sumBy(data, "onChain"),
+    offChain: _.sumBy(data, "offChain"),
+    opening_channel_balance: _.sumBy(data, "opening_channel_balance"),
+    closing_channel_balance: _.sumBy(data, "closing_channel_balance"),
   }
 }
 
@@ -103,8 +103,8 @@ export async function getBosScore() {
     const { data } = await axios.get('https://bos.lightning.jorijn.com/data/export.json')
 
     // FIXME: manage multiple nodes
-    const { lnd } = getActiveLnd() 
-    const publicKey = (await getWalletInfo({lnd})).public_key;
+    const { lnd } = getActiveLnd()
+    const publicKey = (await getWalletInfo({lnd})).public_key
     const bosScore = _.find(data.data, { publicKey })
     if (!bosScore) {
       baseLogger.info("key is not in bos list")
@@ -178,7 +178,7 @@ export const updateRoutingFees = async () => {
   const metadata = { type, currency: "BTC", pending: false }
 
   // get fee collected day wise
-  const { lnd } = getActiveLnd()  
+  const { lnd } = getActiveLnd()
   const forwards = await getRoutingFees({ lnd, before, after })
 
   for (const forward of forwards) {
@@ -246,7 +246,7 @@ export const onChannelUpdated = async ({ channel, lnd, stateChange }: { channel:
     // FIXME: need to account for channel closing
     return
   }
-  
+
   let txid
 
   if (stateChange === "opened") {
@@ -254,7 +254,7 @@ export const onChannelUpdated = async ({ channel, lnd, stateChange }: { channel:
   } else if (stateChange === "closed") {
     ({ close_transaction_id: txid } = channel)
   }
-  
+
   // TODO: dedupe from onchain
   const { current_block_height } = await getHeight({ lnd })
   const after = Math.max(0, current_block_height - LOOK_BACK) // this is necessary for tests, otherwise after may be negative
@@ -276,9 +276,9 @@ export const onChannelUpdated = async ({ channel, lnd, stateChange }: { channel:
   // } catch (err) {
   //   logger.error({err}, "can't fetch fee for closing tx")
   // }
-  
+
   // TODO: there is no fee currently given by bitcoind for raw transaction
-  // either calculate it from the input, or use an indexer 
+  // either calculate it from the input, or use an indexer
   // const { fee } = tx.fee
 
   const metadata = { currency: "BTC", txid, type: "fee", pending: false }
@@ -286,7 +286,7 @@ export const onChannelUpdated = async ({ channel, lnd, stateChange }: { channel:
   assert(fee > 0)
 
   await MainBook.entry(`channel ${stateChange} onchain fee`)
-    .debit(lndFeePath, fee, { ...metadata, })
+    .debit(lndFeePath, fee, { ...metadata })
     .credit(lndAccountingPath, fee, { ...metadata })
     .commit()
 
@@ -297,18 +297,18 @@ export const onChannelUpdated = async ({ channel, lnd, stateChange }: { channel:
 export const getLnds = ({type, active}: {type?: nodeType, active?: boolean} = {}): ILndParamsAuthed[] => {
   let result = params
 
-  if (!!type) {
+  if (type) {
     result = _.filter(result, item => item.type.some(item => item === type))
   }
 
-  if (!!active) {
+  if (active) {
     result = _.filter(result, {active})
   }
 
   return result
 }
 
-export const offchainLnds = getLnds({type: "offchain"}) 
+export const offchainLnds = getLnds({type: "offchain"})
 
 // only returning the first one for now
 export const getActiveLnd = () => {
@@ -318,7 +318,7 @@ export const getActiveLnd = () => {
   }
   return lnds[0]
 
-  // an alternative that would load balance would be: 
+  // an alternative that would load balance would be:
   // const index = Math.floor(Math.random() * lnds.length)
   // return lnds[index]
 }
@@ -327,7 +327,7 @@ export const getActiveOnchainLnd = () => {
   const lnds = getLnds({active: true, type: "onchain"})
   if (lnds.length === 0) {
     throw new LndOfflineError("no active lightning node (for onchain)")
-  }  
+  }
   return lnds[0]
 }
 
@@ -347,9 +347,9 @@ export const getLndFromPubkey = ({ pubkey }: {pubkey: string}) => {
 }
 
 export const validate = async ({params, logger}: {params: IFeeRequest, logger: Logger}) => {
-  
-  const keySendPreimageType = '5482373484';
-  const preimageByteLength = 32;
+
+  const keySendPreimageType = '5482373484'
+  const preimageByteLength = 32
 
   let pushPayment = false
   let tokens
@@ -358,7 +358,7 @@ export const validate = async ({params, logger}: {params: IFeeRequest, logger: L
   let cltv_delta
   let payment
   let destination, id, description
-  let routeHint 
+  let routeHint
   let messages
   let username
 
@@ -383,7 +383,7 @@ export const validate = async ({params, logger}: {params: IFeeRequest, logger: L
       const error = `Invoice contains non-zero amount, but amount was also passed separately`
       // FIXME: create a new error. this is a not a graphl error.
       // throw new ValidationError(error, {logger})
-    
+
       throw new ValidationError(error)
     }
 
@@ -391,7 +391,7 @@ export const validate = async ({params, logger}: {params: IFeeRequest, logger: L
     if (!params.username) {
       // FIXME: create a new error. this is a not a graphl error.
       // throw new ValidationError(error, {logger})
-    
+
       const error = `a username is required for push payment to the ${ yamlConfig.name }`
       throw new ValidationError(error)
     }
@@ -400,9 +400,9 @@ export const validate = async ({params, logger}: {params: IFeeRequest, logger: L
     destination = params.destination
     username = params.username
 
-    const preimage = randomBytes(preimageByteLength);
-    id = createHash('sha256').update(preimage).digest().toString('hex');
-    const secret = preimage.toString('hex');
+    const preimage = randomBytes(preimageByteLength)
+    id = createHash('sha256').update(preimage).digest().toString('hex')
+    const secret = preimage.toString('hex')
     messages = [{ type: keySendPreimageType, value: secret }]
 
     // TODO: should it be id or secret?
@@ -415,11 +415,11 @@ export const validate = async ({params, logger}: {params: IFeeRequest, logger: L
     const error = 'Invoice is a zero-amount invoice, or pushPayment is being used, but no amount was passed separately'
     // FIXME: create a new error. this is a not a graphl error.
     // throw new ValidationError(error, {logger})
-    
+
     throw new ValidationError(error)
   }
 
-  tokens = !!tokens ? tokens : params.amount
+  tokens = tokens ? tokens : params.amount
 
   if (tokens <= 0) {
     logger.error('A negative amount was passed')
@@ -431,7 +431,7 @@ export const validate = async ({params, logger}: {params: IFeeRequest, logger: L
   return {
     // FIXME String: https://github.com/alexbosworth/lightning/issues/24
     tokens, mtokens: String(tokens * 1000), destination, pushPayment, id, routeHint, messages, max_fee,
-    memoInvoice: description, payment, cltv_delta, expires_at, features, username
+    memoInvoice: description, payment, cltv_delta, expires_at, features, username,
   }
 }
 

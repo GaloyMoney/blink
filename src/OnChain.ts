@@ -1,18 +1,18 @@
-import { assert } from "console";
-import { AuthenticatedLnd, createChainAddress, getChainBalance, getChainFeeEstimate, getChainTransactions, GetChainTransactionsResult, getHeight, sendToChainAddress } from "lightning";
-import _ from 'lodash';
-import moment from "moment";
-import { yamlConfig } from "./config";
-import { DbError, DustAmountError, InsufficientBalanceError, NewAccountWithdrawalError, RebalanceNeededError, SelfPaymentError, TransactionRestrictedError, ValidationError } from './error';
-import { customerPath, lndAccountingPath, onchainRevenuePath } from "./ledger/ledger";
-import { getActiveOnchainLnd, getLndFromPubkey } from "./lndUtils";
-import { lockExtendOrThrow, redlock } from "./lock";
-import { baseLogger } from './logger';
-import { MainBook } from "./mongodb";
-import { Transaction, User } from "./schema";
-import { IOnChainPayment, ISuccess, ITransaction } from "./types";
-import { UserWallet } from "./userWallet";
-import { amountOnVout, bitcoindDefaultClient, btc2sat, LoggedError, LOOK_BACK, myOwnAddressesOnVout } from "./utils";
+import { assert } from "console"
+import { AuthenticatedLnd, createChainAddress, getChainBalance, getChainFeeEstimate, getChainTransactions, GetChainTransactionsResult, getHeight, sendToChainAddress } from "lightning"
+import _ from 'lodash'
+import moment from "moment"
+import { yamlConfig } from "./config"
+import { DbError, DustAmountError, InsufficientBalanceError, NewAccountWithdrawalError, RebalanceNeededError, SelfPaymentError, TransactionRestrictedError, ValidationError } from './error'
+import { customerPath, lndAccountingPath, onchainRevenuePath } from "./ledger/ledger"
+import { getActiveOnchainLnd, getLndFromPubkey } from "./lndUtils"
+import { lockExtendOrThrow, redlock } from "./lock"
+import { baseLogger } from './logger'
+import { MainBook } from "./mongodb"
+import { Transaction, User } from "./schema"
+import { IOnChainPayment, ISuccess, ITransaction } from "./types"
+import { UserWallet } from "./userWallet"
+import { amountOnVout, bitcoindDefaultClient, btc2sat, LoggedError, LOOK_BACK, myOwnAddressesOnVout } from "./utils"
 
 
 
@@ -45,7 +45,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
 
   async getOnchainFee({address, amount}: {address: string, amount: number | null}): Promise<number> {
     const payeeUser = await User.getUserByAddress({address})
-    
+
     let fee
 
     // FIXME: legacy. is this still necessary?
@@ -214,7 +214,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
       // FIXME this should not be done in a query but only in a mutation?
       await this.getOnChainAddress()
     }
- 
+
     return _.last(this.user.onchain_addresses as string[])!
   }
 
@@ -255,7 +255,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
   }
 
   async getOnchainReceipt({confirmed}: {confirmed: boolean}) {
-    
+
     const pubkeys: string[] = this.user.onchain_pubkey
     let user_matched_txs: GetChainTransactionsResult["transactions"] = []
 
@@ -274,8 +274,8 @@ export const OnChainMixin = (superclass) => class extends superclass {
       }
 
       const lnd_incoming_txs = await getOnChainTransactions({ lnd, incoming: true })
-    
-      // for unconfirmed tx: 
+
+      // for unconfirmed tx:
       // { block_id: undefined,
       //   confirmation_count: undefined,
       //   confirmation_height: undefined,
@@ -288,7 +288,7 @@ export const OnChainMixin = (superclass) => class extends superclass {
       //   output_addresses: [Array],
       //   tokens: 100000000,
       //   transaction: '02000000000...' }
-  
+
       // for confirmed tx
       // { block_id: '0000000000000b1fa86d936adb8dea741a9ecd5f6a58fc075a1894795007bdbc',
       //   confirmation_count: 712,
@@ -301,23 +301,23 @@ export const OnChainMixin = (superclass) => class extends superclass {
       //   output_addresses: [Array],
       //   tokens: 10775,
       //   transaction: '020000000001.....' }
-  
-      let lnd_incoming_filtered: GetChainTransactionsResult["transactions"];
-  
+
+      let lnd_incoming_filtered: GetChainTransactionsResult["transactions"]
+
       // TODO: expose to the yaml
       const min_confirmation = 2
-  
+
       if(confirmed) {
-        lnd_incoming_filtered = lnd_incoming_txs.filter(tx => 
-          !!tx.confirmation_count && tx.confirmation_count >= min_confirmation
+        lnd_incoming_filtered = lnd_incoming_txs.filter(tx =>
+          !!tx.confirmation_count && tx.confirmation_count >= min_confirmation,
         )
       } else {
         lnd_incoming_filtered = lnd_incoming_txs.filter(
           tx => (!!tx.confirmation_count && tx.confirmation_count < min_confirmation) || !tx.confirmation_count)
       }
-  
+
       user_matched_txs = [...user_matched_txs, ...lnd_incoming_filtered.filter(tx => _.intersection(tx.output_addresses, addresses).length > 0)]
-  
+
     }
 
     return user_matched_txs
@@ -428,10 +428,10 @@ export const OnChainMixin = (superclass) => class extends superclass {
     // we have to look at the precise vout because lnd sums up the value at the transaction level, not at the vout level.
     // ie: if an attacker send 10 to user A at Galoy, and 10 to user B at galoy in a sinle transaction,
     // both would be credited 20, unless we do the below filtering.
-    const value = amountOnVout({vout, addresses: this.user.onchain_addresses}) 
+    const value = amountOnVout({vout, addresses: this.user.onchain_addresses})
     const sats = btc2sat(value)
 
-    const addresses = myOwnAddressesOnVout({vout, addresses: this.user.onchain_addresses}) 
+    const addresses = myOwnAddressesOnVout({vout, addresses: this.user.onchain_addresses})
 
     return { sats, addresses }
   }

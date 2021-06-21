@@ -1,17 +1,17 @@
-import { Storage } from '@google-cloud/storage';
-import crypto from "crypto";
-import { Dropbox } from "dropbox";
-import express from 'express';
-import { subscribeToBackups, subscribeToBlocks, subscribeToChannels, subscribeToInvoices, subscribeToTransactions } from 'lightning';
-import { updateUsersPendingPayment } from "../ledger/balanceSheet";
-import { activateLndHealthCheck, lndStatusEvent } from "../lndHealth";
-import { onChannelUpdated } from "../lndUtils";
-import { baseLogger } from '../logger';
-import { setupMongoConnection } from "../mongodb";
-import { transactionNotification } from "../notifications/payment";
-import { Price } from "../priceImpl";
-import { InvoiceUser, Transaction, User } from "../schema";
-import { WalletFactory } from "../walletFactory";
+import { Storage } from '@google-cloud/storage'
+import crypto from "crypto"
+import { Dropbox } from "dropbox"
+import express from 'express'
+import { subscribeToBackups, subscribeToBlocks, subscribeToChannels, subscribeToInvoices, subscribeToTransactions } from 'lightning'
+import { updateUsersPendingPayment } from "../ledger/balanceSheet"
+import { activateLndHealthCheck, lndStatusEvent } from "../lndHealth"
+import { onChannelUpdated } from "../lndUtils"
+import { baseLogger } from '../logger'
+import { setupMongoConnection } from "../mongodb"
+import { transactionNotification } from "../notifications/payment"
+import { Price } from "../priceImpl"
+import { InvoiceUser, Transaction, User } from "../schema"
+import { WalletFactory } from "../walletFactory"
 
 const logger = baseLogger.child({ module: "trigger" })
 
@@ -143,7 +143,7 @@ const listenerOnchain = ({ lnd }) => {
     baseLogger.info({err}, "error subTransactions")
     subTransactions.removeAllListeners()
   })
-  
+
   const subBlocks = subscribeToBlocks({ lnd })
   subBlocks.on('block', () => updateUsersPendingPayment({onchainOnly: true}))
 
@@ -153,28 +153,28 @@ const listenerOnchain = ({ lnd }) => {
 }
 
 const listenerOffchain = ({ lnd, pubkey }) => {
-  const subInvoices = subscribeToInvoices({ lnd });
+  const subInvoices = subscribeToInvoices({ lnd })
   subInvoices.on('invoice_updated', onInvoiceUpdate)
   subInvoices.on('error', err => {
     baseLogger.info({err}, "error subInvoices")
     subInvoices.removeAllListeners()
   })
 
-  const subChannels = subscribeToChannels({ lnd });
+  const subChannels = subscribeToChannels({ lnd })
   subChannels.on('channel_opened', (channel) => onChannelUpdated({ channel, lnd, stateChange: "opened" }))
   subChannels.on('channel_closed', (channel) => onChannelUpdated({ channel, lnd, stateChange: "closed" }))
   subChannels.on('error', err => {
     baseLogger.info({err}, "error subChannels")
     subChannels.removeAllListeners()
   })
-  
+
   const subBackups = subscribeToBackups({ lnd })
   subBackups.on('backup', ({ backup }) => uploadBackup({backup, pubkey}))
   subBackups.on('error', err => {
     baseLogger.info({err}, "error subBackups")
     subBackups.removeAllListeners()
   })
-  
+
 }
 
 const main = async () => {
@@ -189,11 +189,11 @@ const main = async () => {
     if(type.indexOf("offchain") !== -1) {
       listenerOffchain({lnd, pubkey})
     }
-  });
+  })
 
   lndStatusEvent.on('stopped', ({socket}) => {
     baseLogger.info({socket}, "lnd stopped")
-  });
+  })
 
   activateLndHealthCheck()
   updatePriceForChart()

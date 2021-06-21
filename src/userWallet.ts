@@ -52,7 +52,7 @@ export abstract class UserWallet {
       total_in_USD: NaN,
     }
 
-    // TODO: run this code in parrallel 
+    // TODO: run this code in parrallel
     for(const { id } of this.user.currencies) {
       const { balance } = await MainBook.balance({
         account: this.user.accountPath,

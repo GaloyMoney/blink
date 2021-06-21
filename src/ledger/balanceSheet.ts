@@ -1,10 +1,10 @@
-import { getBalance as getBitcoindBalance } from "../bitcoind";
-import { lndsBalances } from "../lndUtils";
-import { baseLogger } from '../logger';
-import { MainBook } from "../mongodb";
-import { User } from "../schema";
-import { WalletFactory } from "../walletFactory";
-import { bitcoindAccountingPath, lndAccountingPath, lndFeePath } from "./ledger";
+import { getBalance as getBitcoindBalance } from "../bitcoind"
+import { lndsBalances } from "../lndUtils"
+import { baseLogger } from '../logger'
+import { MainBook } from "../mongodb"
+import { User } from "../schema"
+import { WalletFactory } from "../walletFactory"
+import { bitcoindAccountingPath, lndAccountingPath, lndFeePath } from "./ledger"
 
 const logger = baseLogger.child({module: "balanceSheet"})
 
@@ -25,12 +25,12 @@ export const updateUsersPendingPayment = async ({onchainOnly}: {onchainOnly?: bo
   }
 }
 
-export const getLedgerAccounts = async () => {    
-  const { balance: assets } = await MainBook.balance({account_path: "Assets", currency: "BTC"}) 
-  const { balance: liabilities } = await MainBook.balance({account_path: "Liabilities", currency: "BTC"}) 
-  const { balance: lightning } = await MainBook.balance({accounts: lndAccountingPath, currency: "BTC"}) 
-  const { balance: bitcoin } = await MainBook.balance({accounts: bitcoindAccountingPath, currency: "BTC"}) 
-  const { balance: expenses } = await MainBook.balance({accounts: lndFeePath, currency: "BTC"}) 
+export const getLedgerAccounts = async () => {
+  const { balance: assets } = await MainBook.balance({account_path: "Assets", currency: "BTC"})
+  const { balance: liabilities } = await MainBook.balance({account_path: "Liabilities", currency: "BTC"})
+  const { balance: lightning } = await MainBook.balance({accounts: lndAccountingPath, currency: "BTC"})
+  const { balance: bitcoin } = await MainBook.balance({accounts: bitcoindAccountingPath, currency: "BTC"})
+  const { balance: expenses } = await MainBook.balance({accounts: lndFeePath, currency: "BTC"})
   const { balance: revenue } = await MainBook.balance({account_path: "Revenue", currency: "BTC"})
 
   return {assets, liabilities, lightning, expenses, bitcoin, revenue }

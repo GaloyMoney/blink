@@ -1,15 +1,15 @@
 /**
  * @jest-environment node
  */
-import { createHash, randomBytes } from 'crypto';
-import { cancelHodlInvoice, closeChannel, createHodlInvoice, createInvoice, decodePaymentRequest, getChannels, pay, settleHodlInvoice } from 'lightning';
-import { yamlConfig } from '../config';
-import { FEECAP } from "../lndAuth";
-import { getActiveLnd, nodesPubKey } from "../lndUtils";
-import { setupMongoConnection } from "../mongodb";
-import { InvoiceUser, Transaction } from "../schema";
-import { getHash, sleep } from "../utils";
-import { checkIsBalanced, getUserWallet, lnd1, lndOutside1, lndOutside2, mockGetExchangeBalance, openChannelTesting } from "./helper";
+import { createHash, randomBytes } from 'crypto'
+import { cancelHodlInvoice, closeChannel, createHodlInvoice, createInvoice, decodePaymentRequest, getChannels, pay, settleHodlInvoice } from 'lightning'
+import { yamlConfig } from '../config'
+import { FEECAP } from "../lndAuth"
+import { getActiveLnd, nodesPubKey } from "../lndUtils"
+import { setupMongoConnection } from "../mongodb"
+import { InvoiceUser, Transaction } from "../schema"
+import { getHash, sleep } from "../utils"
+import { checkIsBalanced, getUserWallet, lnd1, lndOutside1, lndOutside2, mockGetExchangeBalance, openChannelTesting } from "./helper"
 
 
 let userWallet0, userWallet1, userWallet2
@@ -52,7 +52,7 @@ afterEach(async () => {
 afterAll(async () => {
   jest.restoreAllMocks()
   // remove direct connection between lndoutside1 and lndoutside2
-});
+})
 
 
 it('addInvoice', async () => {
@@ -107,7 +107,7 @@ const createInvoiceHash = () => {
 }
 
 const functionToTests = [
-  { 
+  {
     name: "getFeeAndPay",
     initialFee: 0,
     fn: function fn(wallet) {
@@ -191,7 +191,7 @@ functionToTests.forEach(({fn, name, initialFee}) => {
       expect(await walletPayer.updatePendingInvoice({ hash })).toBeTruthy()
       expect(await walletPayee.updatePendingInvoice({ hash })).toBeTruthy()
     }
-    
+
     await paymentOtherGaloyUser({walletPayee: userWallet2, walletPayer: userWallet1})
     await paymentOtherGaloyUser({walletPayee: userWallet2, walletPayer: userWallet0})
     await paymentOtherGaloyUser({walletPayee: userWallet1, walletPayer: userWallet2})
@@ -199,7 +199,7 @@ functionToTests.forEach(({fn, name, initialFee}) => {
     // jest.mock("../lndAuth", () => ({
     //   // remove first lnd so that ActiveLnd return the second lnd
     //   params: jest
-    //     .fn() 
+    //     .fn()
     //     .mockReturnValueOnce(addProps(inputs.shift()))
     // }))
     // await paymentOtherGaloyUser({walletPayee: userWallet1, walletPayer: userWallet2})
@@ -547,11 +547,11 @@ it('close channel (related to fee calculation in 09f)', async () => {
 //     expect(await walletPayer.updatePendingInvoice({ hash })).toBeTruthy()
 //     expect(await walletPayee.updatePendingInvoice({ hash })).toBeTruthy()
 //   }
-  
+
 //   jest.mock("../lndAuth", () => ({
 //     // remove first lnd so that ActiveLnd return the second lnd
 //     params: jest
-//       .fn() 
+//       .fn()
 //       .mockReturnValueOnce(addProps(inputs.shift()))
 //   }))
 //   await paymentOtherGaloyUser({walletPayee: userWallet1, walletPayer: userWallet2})

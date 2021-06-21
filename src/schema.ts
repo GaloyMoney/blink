@@ -48,8 +48,8 @@ const invoiceUserSchema = new Schema({
 
   paid: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 
 })
 
@@ -107,17 +107,17 @@ const UserSchema = new Schema({
     default: "user",
     // TODO : enfore the fact there can be only one dealer
   },
-  
+
   onchain: {
     type: [{
       pubkey: {
         type: String,
-        required: true
+        required: true,
       },
       address: {
         type: String,
         required: true,
-      }
+      },
     }],
     default: [],
   },
@@ -349,7 +349,7 @@ UserSchema.statics.getActiveUsers = async function(): Promise<Array<typeof User>
 UserSchema.index({
   title: 1,
   coordinate: 1,
-});
+})
 
 export const User = mongoose.model("User", UserSchema)
 

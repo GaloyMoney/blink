@@ -5,9 +5,9 @@ module.exports = {
 
     await db.collection('invoiceuser').updateMany({}, {$set: {pubkey}})
 
-    const cursor = db.collection('users').find();
+    const cursor = db.collection('users').find()
     while (await cursor.hasNext()) {
-      let doc = await cursor.next();
+      const doc = await cursor.next()
       const onchain_addresses = doc.onchain_addresses
 
       if (!onchain_addresses) {
@@ -23,5 +23,5 @@ module.exports = {
     // TODO write the statements to rollback your migration (if possible)
     // Example:
     // await db.collection('albums').updateOne({artist: 'The Beatles'}, {$set: {blacklisted: false}});
-  }
-};
+  },
+}

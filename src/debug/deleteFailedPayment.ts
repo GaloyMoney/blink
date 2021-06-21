@@ -1,4 +1,4 @@
-import { getWalletInfo } from "lightning";
+import { getWalletInfo } from "lightning"
 import { deleteFailedPayments, authenticatedLndGrpc } from "ln-service"
 
 // export LND1_TLS=$(kubectl exec lnd-0 -n mainnet  -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
@@ -11,7 +11,7 @@ const fn = async () => {
       macaroon: process.env.LND1_MACAROON,
       node: "localhost",
       port: 10009,
-    });
+    })
     console.log(await deleteFailedPayments({lnd}))
   } catch (err) {
     console.log({err})

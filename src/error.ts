@@ -1,6 +1,6 @@
-import { ApolloError } from 'apollo-server-errors';
-import { yamlConfig } from './config';
-import { baseLogger } from "./logger";
+import { ApolloError } from 'apollo-server-errors'
+import { yamlConfig } from './config'
+import { baseLogger } from "./logger"
 
 export class CustomError extends ApolloError {
   log

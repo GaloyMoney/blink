@@ -1,14 +1,14 @@
 /**
  * @jest-environment node
  */
-import { once } from 'events';
-import { getChannels, subscribeToGraph, updateRoutingFees } from 'lightning';
-import _ from "lodash";
-import { lndFeePath } from "../ledger/ledger";
-import { getLnds, offchainLnds, updateEscrows } from "../lndUtils";
-import { MainBook, setupMongoConnection } from "../mongodb";
-import { bitcoindDefaultClient, sleep } from "../utils";
-import { checkIsBalanced, lnd1, lnd2, lndOutside1, lndOutside2, mockGetExchangeBalance, openChannelTesting } from "./helper";
+import { once } from 'events'
+import { getChannels, subscribeToGraph, updateRoutingFees } from 'lightning'
+import _ from "lodash"
+import { lndFeePath } from "../ledger/ledger"
+import { getLnds, offchainLnds, updateEscrows } from "../lndUtils"
+import { MainBook, setupMongoConnection } from "../mongodb"
+import { bitcoindDefaultClient, sleep } from "../utils"
+import { checkIsBalanced, lnd1, lnd2, lndOutside1, lndOutside2, mockGetExchangeBalance, openChannelTesting } from "./helper"
 
 jest.mock('../realtimePrice')
 
@@ -59,7 +59,7 @@ it('opens channel from lnd1ToLndOutside1', async () => {
 
 
 
-// FIXME: we need a way to calculate the closing fee 
+// FIXME: we need a way to calculate the closing fee
 // lnd doesn't give it back to us (undefined)
 // and bitcoind doesn't give fee for "outside" wallet
 
@@ -67,23 +67,23 @@ it('opens channel from lnd1ToLndOutside1', async () => {
 
 //   try {
 //     const socket = `lnd-outside-1:9735`
-  
+
 //     await openChannelTesting({ lnd: lnd1, other_lnd: lndOutside1, socket })
-  
+
 //     let channels
-  
+
 //     ({ channels } = await getChannels({ lnd: lnd1 }));
 //     expect(channels.length).toEqual(channelLengthMain + 1)
-  
+
 //     const sub = subscribeToChannels({ lnd: lnd1 })
 //     sub.on('channel_closed', async (channel) => {
 //       // onChannelUpdated({ channel, lnd: lnd1, stateChange: "closed" })
 //     })
-    
+
 //     await lnService.closeChannel({ lnd: lnd1, id: channels[channels.length - 1].id })
 //     const currentBlockCount = await bitcoindDefaultClient.getBlockCount()
 //     await mineBlockAndSync({ lnds: [lnd1, lndOutside1], blockHeight: currentBlockCount + newBlock })
-  
+
 //     await sleep(10000)
 
 //     // FIXME
@@ -91,7 +91,7 @@ it('opens channel from lnd1ToLndOutside1', async () => {
 //     sub.removeAllListeners()
 
 //     await updateEscrows();
-  
+
 //     ({ channels } = await getChannels({ lnd: lnd1 }))
 //     expect(channels.length).toEqual(channelLengthMain)
 //   } catch (err) {
@@ -134,12 +134,12 @@ it('opens channel from lnd1 to lnd2', async () => {
 
   const { channels } = await getChannels({ lnd: lnd1 })
   expect(channels.length).toEqual(channelLengthMain + 1)
-  
+
   const channel = _.find(channels, {partner_public_key})
   const input = {fee_rate: 0, base_fee_tokens: 0, transaction_id: channel!.transaction_id, transaction_vout: channel!.transaction_vout}
 
-  await updateRoutingFees({lnd: lnd1, ...input});
-  await updateRoutingFees({lnd: lnd2, ...input});
+  await updateRoutingFees({lnd: lnd1, ...input})
+  await updateRoutingFees({lnd: lnd2, ...input})
 })
 
 it('escrow update ', async () => {

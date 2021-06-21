@@ -1,32 +1,32 @@
-import { once } from "events";
-import * as jwt from 'jsonwebtoken';
-import { authenticatedLndGrpc, getWalletInfo, openChannel, subscribeToChannels } from 'lightning';
-import { yamlConfig } from "../config";
-import { FtxDealerWallet } from "../dealer/FtxDealerWallet";
-import { balanceSheetIsBalanced, updateUsersPendingPayment } from "../ledger/balanceSheet";
-import { getLnds, offchainLnds, onchainLnds, onChannelUpdated, updateEscrows } from "../lndUtils";
-import { baseLogger } from '../logger';
-import { User } from "../schema";
-import { login } from "../text";
-import { bitcoindDefaultClient, sleep } from "../utils";
-import { WalletFactory } from "../walletFactory";
+import { once } from "events"
+import * as jwt from 'jsonwebtoken'
+import { authenticatedLndGrpc, getWalletInfo, openChannel, subscribeToChannels } from 'lightning'
+import { yamlConfig } from "../config"
+import { FtxDealerWallet } from "../dealer/FtxDealerWallet"
+import { balanceSheetIsBalanced, updateUsersPendingPayment } from "../ledger/balanceSheet"
+import { getLnds, offchainLnds, onchainLnds, onChannelUpdated, updateEscrows } from "../lndUtils"
+import { baseLogger } from '../logger'
+import { User } from "../schema"
+import { login } from "../text"
+import { bitcoindDefaultClient, sleep } from "../utils"
+import { WalletFactory } from "../walletFactory"
 
 export const lnd1 = offchainLnds[0].lnd
 export const lnd2 = offchainLnds[1].lnd
 export const lndonchain = onchainLnds[0].lnd
 
-// TODO: this could be refactored with lndAuth 
+// TODO: this could be refactored with lndAuth
 export const lndOutside1 = authenticatedLndGrpc({
   cert: process.env.TLSOUTSIDE1,
   macaroon: process.env.MACAROONOUTSIDE1,
   socket: `${process.env.LNDOUTSIDE1ADDR}:${process.env.LNDOUTSIDE1RPCPORT ?? 10009}`,
-}).lnd;
+}).lnd
 
 export const lndOutside2 = authenticatedLndGrpc({
   cert: process.env.TLSOUTSIDE2,
   macaroon: process.env.MACAROONOUTSIDE2,
   socket: `${process.env.LNDOUTSIDE2ADDR}:${process.env.LNDOUTSIDE2RPCPORT ?? 10009}`,
-}).lnd;
+}).lnd
 
 export const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
 

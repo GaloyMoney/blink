@@ -56,7 +56,7 @@ export interface IOnChainPayment {
 }
 
 export interface ITransaction {
-  created_at: number // unix 
+  created_at: number // unix
   amount: number
   sat: number,
   usd: number,

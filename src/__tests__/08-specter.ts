@@ -1,16 +1,16 @@
 /**
  * @jest-environment node
  */
-import { getChainBalance } from "lightning";
-import mongoose from "mongoose";
-import { bitcoindAccountingPath } from "../ledger/ledger";
-import { getActiveOnchainLnd } from "../lndUtils";
-import { baseLogger } from '../logger';
-import { MainBook, setupMongoConnection } from "../mongodb";
-import { SpecterWallet } from "../SpecterWallet";
-import { UserWallet } from "../userWallet";
-import { bitcoindDefaultClient, sleep } from "../utils";
-import { checkIsBalanced, mockGetExchangeBalance, RANDOM_ADDRESS } from "./helper";
+import { getChainBalance } from "lightning"
+import mongoose from "mongoose"
+import { bitcoindAccountingPath } from "../ledger/ledger"
+import { getActiveOnchainLnd } from "../lndUtils"
+import { baseLogger } from '../logger'
+import { MainBook, setupMongoConnection } from "../mongodb"
+import { SpecterWallet } from "../SpecterWallet"
+import { UserWallet } from "../userWallet"
+import { bitcoindDefaultClient, sleep } from "../utils"
+import { checkIsBalanced, mockGetExchangeBalance, RANDOM_ADDRESS } from "./helper"
 
 
 let specterWallet

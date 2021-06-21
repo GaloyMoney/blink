@@ -22,7 +22,7 @@ export const addToMap = async ({ username, latitude, longitude, title, logger })
     throw new ValidationError(`username, latitude, longitude and title are all required arguments`, {logger})
   }
 
-  const user = await User.findByUsername({ username });
+  const user = await User.findByUsername({ username })
 
   if(!user) {
     throw new NotFoundError(`The user ${username} does not exist`, {logger})
@@ -30,11 +30,11 @@ export const addToMap = async ({ username, latitude, longitude, title, logger })
 
   user.coordinate = {
     latitude,
-    longitude
-  };
+    longitude,
+  }
 
   user.title = title
-  return !!(await user.save());
+  return !!(await user.save())
 }
 
 export const setAccountStatus = async ({ uid, status }): Promise<typeof User> => {
