@@ -14,4 +14,5 @@ test-in-ci:
 	node_modules/.bin/jest --ci --bail --runInBand --reporters=default --reporters=jest-junit --forceExit
 
 check-code:
-	echo "Hello GitHub Action"
+	yarn tsc-check
+	yarn eslint-check
