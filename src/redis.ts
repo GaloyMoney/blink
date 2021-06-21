@@ -14,7 +14,7 @@ if (process.env.LOCAL === 'docker-compose') {
     const REDIS_0_INTERNAL_IP = `${process.env.REDIS_0_INTERNAL_IP}:6379`
 
     natMap = {
-      [REDIS_0_INTERNAL_IP]: { host: process.env.REDIS_0_DNS, port: process.env.REDIS_0_PORT }
+      [REDIS_0_INTERNAL_IP]: { host: process.env.REDIS_0_DNS, port: process.env.REDIS_0_PORT },
     }
   }
 
@@ -25,10 +25,10 @@ if (process.env.LOCAL === 'docker-compose') {
       { host: `${process.env.REDIS_2_DNS}`, port: process.env.REDIS_2_SENTINEL_PORT || 26379 },
     ],
     name: process.env.REDIS_MASTER_NAME ?? "mymaster",
-    natMap
+    natMap,
   }
 }
 
 
-export const redis = new Redis(connectionObj);
+export const redis = new Redis(connectionObj)
 redis.on('error', (err) => baseLogger.error({ err }, "Redis error"))
