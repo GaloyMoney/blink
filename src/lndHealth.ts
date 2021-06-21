@@ -3,6 +3,9 @@ import _ from "lodash"
 import { baseLogger } from "./logger"
 import { params } from "./lndAuth"
 
+/* eslint-disable @typescript-eslint/no-var-requires */
+const EventEmitter = require('events')
+
 const refresh_time = 10000 // ms
 
 const isUpLoop = (param) => setInterval(() => isUp(param), refresh_time)
@@ -35,6 +38,5 @@ export const isUp = async (param): Promise<void> => {
 // launching a loop to update whether lnd are active or not
 export const activateLndHealthCheck = () => params.forEach(isUpLoop)
 
-const EventEmitter = require('events')
 class LndStatusEventEmitter extends EventEmitter{}
 export const lndStatusEvent = new LndStatusEventEmitter()

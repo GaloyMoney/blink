@@ -240,7 +240,7 @@ const resolvers = {
     addToMap: async (_, { username, title, latitude, longitude }, { logger }) => {
       return addToMap({ username, title, latitude, longitude, logger })
     },
-    setAccountStatus: async (_, { uid, status }, { }) => {
+    setAccountStatus: async (_, { uid, status }) => {
       return setAccountStatus({ uid, status })
     },
   },
