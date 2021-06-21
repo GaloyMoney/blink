@@ -1,6 +1,6 @@
 # Galoy
 
-Want to contribute? Checkout the [dev documentation](./DEV.md).
+Want to contribute? Checkout the [dev documentation](./DEV.md) and [join our community Slack](https://join.slack.com/t/galoymoney-workspace/shared_invite/zt-rvnhsdb5-72AZCD_jzw6_Q05aCs0SgA).
 
 ### Responsible disclosure 
 Found critical bugs/vulnerabilities? 

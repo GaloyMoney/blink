@@ -55,3 +55,8 @@ $ make reset-deps
 (...)
 $ make integration
 ```
+
+## Contributing
+
+When opening a PR please pay attention to having a [clean git history](https://medium.com/@catalinaturlea/clean-git-history-a-step-by-step-guide-eefc0ad8696d) with good [commit messages](https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html).
+It is the responsibility of the PR author to resolve merge conflicts before a merge can happen. If the PR is open for a long time a rebase may be requested.
