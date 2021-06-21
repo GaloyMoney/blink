@@ -38,7 +38,7 @@ export REDIS_0_INTERNAL_IP=$(kubectl get pod galoy-redis-node-0 -o wide | awk '{
 
 export REDIS_0_DNS=$MINIKUBEIP
 
-export JWT_SECRET="jwt_secret"
+export JWT_SECRET=$(kubectl get secrets/jwt-secret --template={{.data.secret}} | base64 -d)
 
 export LOGLEVEL="debug"
 export HELMREVISION=1

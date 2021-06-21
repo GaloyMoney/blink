@@ -1,8 +1,6 @@
 global:
   network: regtest
 
-jwtSecret: "my_non_secured_secret"
-
 bitcoind:
   port:
     18443

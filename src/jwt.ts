@@ -5,15 +5,15 @@ import * as jwt from 'jsonwebtoken'
 // and provide more information than just the network
 export const createToken = ({ uid, network }) => jwt.sign(
   { uid, network }, process.env.JWT_SECRET, {
-  // TODO use asymetric signature
-  // and verify the signature from the client
+  // TODO verify the signature from the client
   // otherwise we could get subject to DDos attack
   //
-  // we will also need access token for this to work
+  // we will also need access token (/.well-known/jwks.json) for this to work
   // otherwise, the client could still receive a fake invoice/on chain address
   // from a malicious address and the client app would not be able to
   // verify signature
   //
   // see: https://www.theregister.com/2018/04/24/myetherwallet_dns_hijack/
-  algorithm: 'HS256',
+  // see: https://github.com/auth0/node-jwks-rsa
+  algorithm: 'RS256',
 })

@@ -18,6 +18,7 @@ import pino from 'pino'
 import PinoHttp from "pino-http"
 import swStats from 'swagger-stats'
 import { v4 as uuidv4 } from 'uuid'
+import jose from 'node-jose'
 import { getMinBuildNumber, getHourlyPrice } from "../localCache"
 import { lnd } from "../lndConfig"
 import { nodeStats } from "../lndUtils"
@@ -56,7 +57,7 @@ const pino_http = PinoHttp({
     }),
   },
   autoLogging: {
-    ignorePaths: ["/healthz"],
+    ignorePaths: ["/healthz", "/.well-known/jwks.json"],
   },
 })
 
@@ -376,10 +377,16 @@ export async function startApolloServer() {
   app.use(
     expressJwt({
       secret: process.env.JWT_SECRET,
-      algorithms: ["HS256"],
+      algorithms: ["RS256"],
       credentialsRequired: false,
       requestProperty: 'token',
     }))
+
+  // JWKS endpoint to allow clients to verify jwt tokens
+  app.get("/.well-known/jwks.json", async function(req, res) {
+    const jwks = await jose.JWK.asKey(process.env.JWT_SECRET, 'pem')
+    res.json(jwks.keystore.toJSON())
+  })
 
   app.use(swStats.getMiddleware({
     uriPath: "/swagger",

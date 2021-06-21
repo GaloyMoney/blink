@@ -11,6 +11,6 @@
 {{/*
     Generate new password
 */}}
-{{- (randAlpha 24) | b64enc -}}
+{{- (genPrivateKey "rsa") | b64enc -}}
 {{- end -}}
 {{- end -}}
