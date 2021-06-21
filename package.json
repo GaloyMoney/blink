@@ -1,8 +1,8 @@
 {
   "name": "galoy",
   "scripts": {
-    "lint": "eslint \"src/**/*.ts\"",
-    "prepare": "husky install",
+    "tsc-check": "tsc --noEmit --skipLibCheck",
+    "eslint-check": "eslint \"src/**/*.ts\"",
     "build": "tsc -p tsconfig-build.json && cp -R src/protos lib && cp src/schema.graphql lib",
     "start": "yarn build && source ./exportLocal.sh && node lib/entrypoint/graphql.js | pino-pretty -c -l",
     "trigger": "yarn build && source ./exportLocal.sh && node lib/entrypoint/trigger.js | pino-pretty -c -l",

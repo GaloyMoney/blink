@@ -1,8 +1,6 @@
 {
   "compilerOptions": {
     "module": "CommonJS",
-    "noImplicitReturns": true,
-    "noUnusedLocals": false, // FIXME
     "outDir": "lib",
     "sourceMap": true,
     "strict": true,
@@ -12,7 +10,6 @@
     "rootDirs": [
       "src"
     ],
-    "types": ["jest", "node"],
     "moduleResolution": "node",
     "resolveJsonModule": true
   },
