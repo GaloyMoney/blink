@@ -5,10 +5,12 @@ const listWallets = async () => {
   return bitcoindDefaultClient.listWallets()
 }
 
-export const getBalancesDetail = async (): Promise<{wallet: string, balance: number}[]> => {
+export const getBalancesDetail = async (): Promise<
+  { wallet: string; balance: number }[]
+> => {
   const wallets = await listWallets()
 
-  const balances: {wallet: string, balance: number}[] = []
+  const balances: { wallet: string; balance: number }[] = []
 
   for await (const wallet of wallets) {
     // do not use the default wallet for now (expect for testing).
@@ -18,7 +20,7 @@ export const getBalancesDetail = async (): Promise<{wallet: string, balance: num
 
     const client = BitcoindClient({ wallet })
     const balance = btc2sat(await client.getBalance())
-    balances.push({wallet, balance})
+    balances.push({ wallet, balance })
   }
 
   return balances
@@ -26,5 +28,5 @@ export const getBalancesDetail = async (): Promise<{wallet: string, balance: num
 
 export const getBalance = async (): Promise<number> => {
   const balanceObj = await getBalancesDetail()
-  return _.sumBy(balanceObj, 'balance')
+  return _.sumBy(balanceObj, "balance")
 }

@@ -23,6 +23,6 @@ const main = async () => {
 
 try {
   main()
-} catch(err) {
+} catch (err) {
   baseLogger.warn({ err }, "error in the cron job")
 }

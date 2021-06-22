@@ -5,18 +5,18 @@ import mongoose from "mongoose"
 
 const resp = {
   callerName: null,
-  countryCode: 'US',
-  phoneNumber: '+1650555000',
-  nationalFormat: '(650) 555-0000',
+  countryCode: "US",
+  phoneNumber: "+1650555000",
+  nationalFormat: "(650) 555-0000",
   carrier: {
-    mobile_country_code: '123',
-    mobile_network_code: '123',
-    name: 'carrier',
-    type: 'voip',
+    mobile_country_code: "123",
+    mobile_network_code: "123",
+    name: "carrier",
+    type: "voip",
     error_code: null,
   },
   addOns: null,
-  url: 'https://lookups.twilio.com/v1/PhoneNumbers/+1650555000?Type=carrier',
+  url: "https://lookups.twilio.com/v1/PhoneNumbers/+1650555000?Type=carrier",
 }
 
 beforeAll(async () => {
@@ -24,26 +24,28 @@ beforeAll(async () => {
 })
 
 afterAll(async () => {
-	await mongoose.connection.close()
+  await mongoose.connection.close()
 })
 
 // const phone = "add phone number here with extension (ie: +1...)"
 
-it('test sending text. not run as part of the continuous integration', async () => {
+it("test sending text. not run as part of the continuous integration", async () => {
   // uncomment to run the test locally
 
   try {
     // await sendText({body: "test text", to: phone})
   } catch (err) {
-    fail('there was an error sending the text')
+    fail("there was an error sending the text")
   }
 
   expect(true).toBe(true)
 })
 
-
-it('test fetching carrier and adding this info to User', async () => {
-  const getCarrier = () => new Promise(function (resolve) { resolve(resp) })
+it("test fetching carrier and adding this info to User", async () => {
+  const getCarrier = () =>
+    new Promise(function (resolve) {
+      resolve(resp)
+    })
 
   try {
     const phone = "+1650555000"
@@ -55,13 +57,12 @@ it('test fetching carrier and adding this info to User', async () => {
 
     user.twilio = result
 
-    baseLogger.info({user})
+    baseLogger.info({ user })
 
     await user.save()
     expect(user.twilio.countryCode === undefined).toBeFalsy()
-
   } catch (err) {
-    console.error({err}, "error fetching carrier info")
-    fail('there was an error fetching carrier info')
+    console.error({ err }, "error fetching carrier info")
+    fail("there was an error fetching carrier info")
   }
 })
