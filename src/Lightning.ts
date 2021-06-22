@@ -14,7 +14,7 @@ import { InvoiceUser, Transaction, User } from "./schema"
 import { createInvoice, getWalletInfo, decodePaymentRequest, cancelHodlInvoice, payViaPaymentDetails, payViaRoutes, getPayment, getInvoice } from "lightning"
 
 import { yamlConfig } from "./config"
-import { DbError, InsufficientBalanceError, LightningPaymentError, NewAccountWithdrawalError, NotFoundError, SelfPaymentError, RouteFindingError, TransactionRestrictedError, ValidationError } from './error'
+import { DbError, InsufficientBalanceError, LightningPaymentError, NewAccountWithdrawalError, NotFoundError, SelfPaymentError, RouteFindingError, TransactionRestrictedError, ValidationError, TwoFactorError } from './error'
 import { redis } from "./redis"
 
 export type ITxType = "invoice" | "payment" | "onchain_receipt" | "onchain_payment" | "on_us"
@@ -263,11 +263,20 @@ export const LightningMixin = (superclass) => class extends superclass {
   async pay(params: IPaymentRequest): Promise<payInvoiceResult | Error> {
     let lightningLogger = this.logger.child({ topic: "payment", protocol: "lightning", transactionType: "payment" })
 
+
     const { tokens, mtokens, username: input_username, destination, pushPayment, id, routeHint, messages, memoInvoice, payment, cltv_delta, features, max_fee } = await this.validate(params, lightningLogger)
-    const { memo: memoPayer } = params
+    const { memo: memoPayer, twoFactorToken: token } = params
 
     // not including message because it contains the preimage and we don't want to log this
     lightningLogger = lightningLogger.child({ decoded: { tokens, destination, pushPayment, id, routeHint, memoInvoice, memoPayer, payment, cltv_delta, features }, params })
+
+    if(yamlConfig.twoFactor?.enabled && this.user.twoFactor.secret && tokens > this.user.twoFactor.threshold) {
+      if(!token) {
+        throw new TwoFactorError("Need a 2FA code to proceed with the payment", {logger: lightningLogger})
+      }
+
+      UserWallet.validate2fa({ token, logger: lightningLogger, secret: this.user.twoFactor.secret })
+    }
 
     let fee
     let route
