@@ -5,7 +5,7 @@ import { createHash, randomBytes } from 'crypto'
 import { FEECAP, lnd } from "../lndConfig"
 import { setupMongoConnection } from "../mongodb"
 import { InvoiceUser, Transaction } from "../schema"
-import { checkIsBalanced, getUserWallet, lndMain, lndOutside1, lndOutside2, mockGetExchangeBalance, openChannelTesting } from "./helper"
+import { checkIsBalanced, getUserWallet, lndMain, lndOutside1, lndOutside2, mockGetExchangeBalance, openChannelTesting, set2FA } from "./helper"
 import { getHash, sleep } from "../utils"
 
 import { createInvoice, createHodlInvoice, settleHodlInvoice, cancelHodlInvoice, pay, decodePaymentRequest, getChannels, closeChannel } from 'lightning'
@@ -18,6 +18,7 @@ const amountInvoice = 1000
 
 jest.mock('../notifications/notification')
 import { yamlConfig } from '../config'
+import { generateToken } from 'node-2fa'
 jest.mock('../realtimePrice')
 
 const date = Date.now() + 1000 * 60 * 60 * 24 * 8
@@ -263,13 +264,26 @@ functionToTests.forEach(({fn, name, initialFee}) => {
   }, 60000)
 
   it(`fails to pay above 2fa threshold without 2fa token`, async () => {
-    const { request } = await createInvoice({ lnd: lndOutside1, tokens: userWallet1.user.twoFactor.threshold + 1})
-    await expect(fn(userWallet1)({ invoice: request })).rejects.toThrow()
+    const {secret} = userWallet0.generate2fa()
 
-    const {BTC: finalBalance} = await userWallet1.getBalances()
-    expect(finalBalance).toBe(initBalance1)
+    // this is needed because this test runs twice
+    if(!userWallet0.user.twoFactor.secret) {
+      await set2FA({wallet: userWallet0, secret })
+    }
+
+    const { request } = await createInvoice({ lnd: lndOutside1, tokens: userWallet0.user.twoFactor.threshold + 1})
+    await expect(fn(userWallet0)({ invoice: request })).rejects.toThrow()
+
+    const {BTC: finalBalance} = await userWallet0.getBalances()
+    expect(finalBalance).toBe(initBalance0)
   })
 
+  it(`Makes large payment with a 2fa code`, async () => {
+    const { request } = await createInvoice({ lnd: lndOutside1, tokens: userWallet0.user.twoFactor.threshold + 1})
+    
+    const token = generateToken(userWallet0.user.twoFactor.secret)!.token
+    expect(await fn(userWallet0)({ invoice: request, twoFactorToken: token })).toBe("success")
+  })
 })
 
 it(`fails to pay when user has insufficient balance`, async () => {

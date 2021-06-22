@@ -11,6 +11,7 @@ import { login } from "../text"
 import * as jwt from 'jsonwebtoken'
 import { once } from "events"
 import { onChannelUpdated } from "../entrypoint/trigger"
+import { generateToken } from "node-2fa"
 
 export const lndMain = lnd
 
@@ -142,4 +143,10 @@ export const mineBlockAndSync = async ({ lnds, blockHeight }: { lnds: Array<any>
     promiseArray.push(waitUntilBlockHeight({ lnd, blockHeight }))
   }
   await Promise.all(promiseArray)
+}
+
+export const set2FA = async ({ wallet, secret }) => {
+  const token = generateToken(secret)!.token
+  
+  await wallet.save2fa({ secret, token })
 }
