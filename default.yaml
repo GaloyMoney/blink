@@ -98,6 +98,10 @@ fees:
   withdraw: 2000 # 2000 sats flat per tx
   deposit: 0.003 # 0.3 percent
 
+twoFactor:
+  enabled: true
+  threshold: 300000
+
 onchainDustAmount: 5000
 # TODO
 # carrierRegexFilter: ""
