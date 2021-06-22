@@ -36,6 +36,7 @@
     "no-trailing-spaces": "error",
     "eol-last": "error",
     "@typescript-eslint/no-unused-vars": "off", // Duplicate
+    "@typescript-eslint/no-extra-semi": "off", // Prettier work
 
     // Temporarily disabled recommended rules
     "@typescript-eslint/explicit-module-boundary-types": "off",

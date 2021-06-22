@@ -1,2 +1,10 @@
 build
 coverage
+lib
+tmp
+charts
+.vscode
+
+**/*.yaml
+**/*.yml
+**/*.md
