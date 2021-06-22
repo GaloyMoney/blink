@@ -56,6 +56,25 @@ $ make reset-deps
 $ make integration
 ```
 
+## Running checks
+
+It's recommended that you use plugins in your editor to run ESLint checks and perform Prettier formatting on-save.
+
+To run all the checks required for the code to pass GitHub actions check:
+
+```
+$ make check-code
+(...)
+$ echo $?
+0
+```
+
+If you need to run Prettier through the command line, you can use:
+
+```
+$ yarn prettier -w .
+```
+
 ## Contributing
 
 When opening a PR please pay attention to having a [clean git history](https://medium.com/@catalinaturlea/clean-git-history-a-step-by-step-guide-eefc0ad8696d) with good [commit messages](https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html).

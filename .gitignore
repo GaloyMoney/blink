@@ -10,6 +10,7 @@ src/tool/records.csv
 src/tool/users_balance.csv
 src/tool/record_transactions_*.csv
 
+.vscode
 *.DS_Store
 charts/configs/*
 !charts/configs/lnd

@@ -1,5 +1,9 @@
 coverage
 lib
 tmp
+charts
+.vscode
 
-*.yaml
+**/*.yaml
+**/*.yml
+**/*.md
