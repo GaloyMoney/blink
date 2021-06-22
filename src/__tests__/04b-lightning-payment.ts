@@ -262,6 +262,14 @@ functionToTests.forEach(({fn, name, initialFee}) => {
     expect(finalBalance).toBe(initBalance1)
   }, 60000)
 
+  it(`fails to pay above 2fa threshold without 2fa token`, async () => {
+    const { request } = await createInvoice({ lnd: lndOutside1, tokens: userWallet1.user.twoFactor.threshold + 1})
+    await expect(fn(userWallet1)({ invoice: request })).rejects.toThrow()
+
+    const {BTC: finalBalance} = await userWallet1.getBalances()
+    expect(finalBalance).toBe(initBalance1)
+  })
+
 })
 
 it(`fails to pay when user has insufficient balance`, async () => {
