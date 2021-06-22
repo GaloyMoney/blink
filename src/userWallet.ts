@@ -240,7 +240,7 @@ export abstract class UserWallet {
       throw new TwoFactorError(undefined, {logger: this.logger})
     }
 
-    this.user.twoFactorSecret = secret
+    this.user.twoFactor.secret = secret
 
     try {
       await this.user.save()

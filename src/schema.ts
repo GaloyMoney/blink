@@ -211,9 +211,21 @@ const UserSchema = new Schema({
     default: "active",
   },
 
-  twoFactorSecret: {
-    type: String,
-    length: 32,
+  twoFactor: {
+    type: {
+      secret: {
+        type: String,
+        length: 32,
+      },
+      threshold: {
+        type: Number,
+        min: 0,
+      },
+    },
+    default: {
+      secret: undefined,
+      threshold: yamlConfig.twoFactor.threshold,
+    },
   },
 })
 

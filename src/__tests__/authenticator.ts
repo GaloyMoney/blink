@@ -31,18 +31,18 @@ it('set 2fa for user0', async () => {
   await sleep(1000)
   userWallet0 = await getUserWallet(0)
   console.log({user: userWallet0.user})
-  expect(userWallet0.user.twoFactorSecret).toBeTruthy()
+  expect(userWallet0.user.twoFactor.secret).toBeTruthy()
 })
 
 it('validate 2fa for user0', async () => {
-  const token = generateToken(userWallet0.user.twoFactorSecret)?.token
+  const token = generateToken(userWallet0.user.twoFactor.secret)?.token
   expect(userWallet0.validate2fa({token})).toBeTruthy()
 })
 
 it('delete 2fa for user0', async () => {
-  const token = generateToken(userWallet0.user.twoFactorSecret)?.token
+  const token = generateToken(userWallet0.user.twoFactor.secret)?.token
   const result = await userWallet0.delete2fa({token})
   expect(result).toBeTruthy()
 
-  expect(userWallet0.user.twoFactorSecret).toBeFalsy()
+  expect(userWallet0.user.twoFactor.secret).toBeFalsy()
 })
