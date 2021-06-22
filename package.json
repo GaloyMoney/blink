@@ -1,8 +1,9 @@
 {
   "name": "galoy",
   "scripts": {
-    "lint": "eslint \"src/**/*.ts\"",
-    "prepare": "husky install",
+    "tsc-check": "tsc --noEmit --skipLibCheck",
+    "eslint-check": "eslint \"src/**/*.ts\"",
+    "prettier-check": "prettier --check .",
     "build": "tsc -p tsconfig-build.json && cp -R src/protos lib && cp src/schema.graphql lib",
     "start": "yarn build && source ./exportLocal.sh && node lib/entrypoint/graphql.js | pino-pretty -c -l",
     "trigger": "yarn build && source ./exportLocal.sh && node lib/entrypoint/trigger.js | pino-pretty -c -l",
@@ -99,7 +100,7 @@
     "migrate-mongo": "^8.2.2",
     "newman": "^5.2.3",
     "pino-pretty": "^4.3.0",
-    "prettier": "2.3.1",
+    "prettier": "^2.3.1",
     "ts-jest": "^26.4.3",
     "ts-node": "^9.0.0",
     "tsconfig-paths": "^3.9.0",

@@ -31,10 +31,6 @@
     "no-sequences": "error",
     "no-throw-literal": "error",
     "no-void": "error",
-    "comma-dangle": ["error", "always-multiline"],
-    "semi": ["error", "never"],
-    "no-trailing-spaces": "error",
-    "eol-last": "error",
     "@typescript-eslint/no-unused-vars": "off", // Duplicate
     "@typescript-eslint/no-extra-semi": "off", // Prettier work
 

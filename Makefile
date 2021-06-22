@@ -13,3 +13,7 @@ integration:
 test-in-ci:
 	node_modules/.bin/jest --ci --bail --runInBand --reporters=default --reporters=jest-junit --forceExit
 
+check-code:
+	yarn tsc-check
+	yarn eslint-check
+	yarn prettier-check
