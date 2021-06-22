@@ -73,16 +73,16 @@ spec:
             - name: MONGODB_ADDRESS
               value: {{ $.Values.mongodbaddress }}
             - name: LNDIP
-              value: "lnd"
+              value: "lnd1"
             - name: MACAROON
               valueFrom:
                 secretKeyRef:
-                  name: lnd-credentials
+                  name: lnd1-credentials
                   key: admin_macaroon_base64
             - name: TLS
               valueFrom:
                 secretKeyRef:
-                  name: lnd-credentials
+                  name: lnd1-credentials
                   key: tls_base64
             - name: BITCOINDADDR
               value: "bitcoind"
