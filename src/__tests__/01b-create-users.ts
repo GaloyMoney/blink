@@ -158,13 +158,13 @@ describe('username tests', () => {
     userWallet0 = await getUserWallet(0)
     expect(userWallet0.user.twoFactor.secret).toBe(secret)
   })
-  
+
   it('validate 2fa for user0', async () => {
     const secret = userWallet0.user.twoFactor.secret
     const token = generateToken(secret)?.token
     expect(UserWallet.validate2fa({token, logger: baseLogger, secret })).toBeTruthy()
   })
-  
+
   it('delete 2fa for user0', async () => {
     const token = generateToken(userWallet0.user.twoFactor.secret)?.token
     const result = await userWallet0.delete2fa({token})
@@ -172,5 +172,5 @@ describe('username tests', () => {
     userWallet0 = await getUserWallet(0)
     expect(userWallet0.user.twoFactor.secret).toBeFalsy()
   })
-  
+
 })

@@ -280,7 +280,7 @@ functionToTests.forEach(({fn, name, initialFee}) => {
 
   it(`Makes large payment with a 2fa code`, async () => {
     const { request } = await createInvoice({ lnd: lndOutside1, tokens: userWallet0.user.twoFactor.threshold + 1})
-    
+
     const token = generateToken(userWallet0.user.twoFactor.secret)!.token
     expect(await fn(userWallet0)({ invoice: request, twoFactorToken: token })).toBe("success")
   })

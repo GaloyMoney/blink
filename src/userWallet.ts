@@ -245,7 +245,7 @@ export abstract class UserWallet {
     }
 
     this.user.twoFactor.secret = secret
-    
+
     try {
       await this.user.save()
       return true
@@ -269,7 +269,7 @@ export abstract class UserWallet {
 
   delete2fa = async ({ token }): Promise<boolean> => {
     UserWallet.validate2fa({ token, secret: this.user.twoFactor.secret, logger: this.logger })
-    
+
     try {
       this.user.twoFactor.secret = undefined
       await this.user.save()
