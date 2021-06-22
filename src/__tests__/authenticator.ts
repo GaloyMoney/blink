@@ -21,31 +21,28 @@ beforeEach(async () => {
   userWallet0 = await getUserWallet(0)
 })
 
-afterAll(async () => {
-  await mongoose.connection.close()
-})
-
 it('set 2fa for user0', async () => {
   const { secret } = await userWallet0.generate2fa()
   expect(!!secret).toBeTruthy()
 
-  const result = generateToken(secret)
-  expect(await userWallet0.save2fa({ secret, code: result!.token })).toBeTruthy()
+  const token = generateToken(secret)?.token
+  expect(await userWallet0.save2fa({ secret, token })).toBeTruthy()
 
   await sleep(1000)
   userWallet0 = await getUserWallet(0)
   console.log({user: userWallet0.user})
-  expect(userWallet0.user.authenticator).toBeTruthy()
+  expect(userWallet0.user.twoFactorSecret).toBeTruthy()
 })
 
 it('validate 2fa for user0', async () => {
-  const code = generateToken(userWallet0.user.authenticator)
-  expect(userWallet0.validate2fa({code})).toBeTruthy()
+  const token = generateToken(userWallet0.user.twoFactorSecret)?.token
+  expect(userWallet0.validate2fa({token})).toBeTruthy()
 })
 
 it('delete 2fa for user0', async () => {
-  const result = await userWallet0.delete2fa()
+  const token = generateToken(userWallet0.user.twoFactorSecret)?.token
+  const result = await userWallet0.delete2fa({token})
   expect(result).toBeTruthy()
 
-  expect(userWallet0.user.authenticator).toBeFalsy()
+  expect(userWallet0.user.twoFactorSecret).toBeFalsy()
 })
