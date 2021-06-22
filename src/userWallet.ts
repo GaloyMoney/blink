@@ -250,24 +250,23 @@ export abstract class UserWallet {
     }
   }
 
-  validate2fa = async ({ token }): Promise<boolean> => {
-    const secret = this.user.twoFactorSecret
+  static validate2fa = ({ secret, token, logger }): boolean => {
 
     if (!secret) {
-      throw new TwoFactorError("no 2fa has been set", {logger: this.logger})
+      throw new TwoFactorError("no 2fa has been set", {logger})
     }
 
     if(verifyToken(secret, token)) {
       return true
     }
 
-    throw new TwoFactorError(undefined, {logger: this.logger})
+    throw new TwoFactorError(undefined, {logger})
   }
 
   delete2fa = async ({ token }): Promise<boolean> => {
-    this.validate2fa({ token })
+    UserWallet.validate2fa({ token, secret: this.user.twoFactor.secret, logger: this.logger })
 
-    this.user.twoFactorSecret = undefined
+    this.user.twoFactor.secret = undefined
 
     try {
       await this.user.save()
