@@ -212,21 +212,15 @@ const UserSchema = new Schema({
   },
 
   twoFactor: {
-    type: {
-      secret: {
-        type: String,
-        length: 32,
-      },
-      threshold: {
-        type: Number,
-        min: 0,
-      },
+    secret: {
+      type: String,
+      default: undefined
     },
-    default: {
-      secret: undefined,
-      threshold: yamlConfig.twoFactor.threshold,
-    },
-  },
+    threshold: {
+      type: Number,
+      default: yamlConfig.twoFactor.threshold
+    }
+  }
 })
 
 // Define getter for ratioUsd
