@@ -14,3 +14,6 @@ test-in-ci:
 	docker-compose up -d
 	. ./.envrc && yarn jest --forceExit --bail --runInBand --verbose $$TEST | yarn pino-pretty -c -l
 
+check-code:
+	yarn tsc-check
+	yarn eslint-check
