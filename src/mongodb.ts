@@ -1,10 +1,10 @@
 import { exit } from "process"
 import { sleep } from "./utils"
-import { baseLogger } from './logger'
+import { baseLogger } from "./logger"
 
 import mongoose from "mongoose"
 
-import { User, Transaction, InvoiceUser } from './schema'
+import { User, Transaction, InvoiceUser } from "./schema"
 
 // we have to import schema before medici
 import { book } from "medici"
@@ -29,7 +29,7 @@ export const setupMongoConnection = async () => {
       useCreateIndex: true,
       useFindAndModify: false,
     })
-    mongoose.set('runValidators', true)
+    mongoose.set("runValidators", true)
     await User.syncIndexes()
     await Transaction.syncIndexes()
     await InvoiceUser.syncIndexes()
@@ -44,9 +44,9 @@ export const setupMongoConnection = async () => {
 export const setupMongoConnectionSecondary = async () => {
   try {
     await mongoose.connect(path, {
-      replset: {readPreference: 'secondary'},
+      replset: { readPreference: "secondary" },
     })
-    mongoose.set('runValidators', true)
+    mongoose.set("runValidators", true)
   } catch (err) {
     baseLogger.fatal({ err, path }, `error connecting to secondary mongodb`)
     await sleep(100)

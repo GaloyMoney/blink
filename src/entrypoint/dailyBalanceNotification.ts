@@ -11,7 +11,7 @@ const main = async () => {
 
   await mongoose.connection.close()
   // FIXME: we need to exit because we may have some pending promise
-	process.exit(0)
+  process.exit(0)
 }
 
 export const sendBalanceToUsers = async () => {
@@ -27,6 +27,6 @@ if (require.main === module) {
   try {
     main()
   } catch (err) {
-    baseLogger.warn({err}, "error in the dailyBalanceNotification job")
+    baseLogger.warn({ err }, "error in the dailyBalanceNotification job")
   }
 }

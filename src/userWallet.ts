@@ -1,7 +1,7 @@
-import assert from 'assert'
+import assert from "assert"
 import moment from "moment"
 import { CSVAccountExport } from "./csvAccountExport"
-import { DbError } from './error'
+import { DbError } from "./error"
 import { Balances } from "./interface"
 import { customerPath } from "./ledger/ledger"
 import { MainBook } from "./mongodb"
@@ -10,7 +10,6 @@ import { User } from "./schema"
 import { ITransaction } from "./types"
 
 export abstract class UserWallet {
-
   static lastPrice: number
 
   // FIXME typing : https://thecodebarbarian.com/working-with-mongoose-in-typescript.html
@@ -35,28 +34,30 @@ export abstract class UserWallet {
   // otherwise super.updatePending() would result in an error
   // there may be better way to architecture this?
   // eslint-disable-next-line no-unused-vars
-  async updatePending(lock) { return }
+  async updatePending(lock) {
+    return
+  }
 
   async getBalances(lock?): Promise<Balances> {
     await this.updatePending(lock)
 
     // TODO: add effective ratio
     const balances = {
-      "BTC": 0,
-      "USD": 0,
+      BTC: 0,
+      USD: 0,
       total_in_BTC: NaN,
       total_in_USD: NaN,
     }
 
     // TODO: make this code parrallel instead of serial
-    for(const { id } of this.user.currencies) {
+    for (const { id } of this.user.currencies) {
       const { balance } = await MainBook.balance({
         account: this.user.accountPath,
         currency: id,
       })
 
       // the dealer is the only one that is allowed to be short USD
-      if(this.user.role === "dealer" && id === "USD") {
+      if (this.user.role === "dealer" && id === "USD") {
         assert(balance <= 0)
       } else {
         assert(balance >= 0)
@@ -86,8 +87,8 @@ export abstract class UserWallet {
       value: BTC * balances["BTC"] + USD * balances["USD"],
     }))
 
-    balances.total_in_BTC = total.filter(item => item.id === "BTC")[0].value
-    balances.total_in_USD = total.filter(item => item.id === "USD")[0].value
+    balances.total_in_BTC = total.filter((item) => item.id === "BTC")[0].value
+    balances.total_in_USD = total.filter((item) => item.id === "USD")[0].value
 
     return balances
   }
@@ -107,14 +108,13 @@ export abstract class UserWallet {
   async getTransactions(): Promise<Array<ITransaction>> {
     const rawTransactions = await this.getRawTransactions()
 
-    const results_processed = rawTransactions.map(item => {
+    const results_processed = rawTransactions.map((item) => {
       const amount = item.credit - item.debit
-      const memoUsername =
-        item.username ?
-          amount > 0 ?
-            `from ${item.username}` :
-            `to ${item.username}` :
-          null
+      const memoUsername = item.username
+        ? amount > 0
+          ? `from ${item.username}`
+          : `to ${item.username}`
+        : null
 
       return {
         created_at: moment(item.timestamp).unix(),
@@ -146,12 +146,18 @@ export abstract class UserWallet {
 
   // deprecated
   async setUsername({ username }): Promise<boolean | Error> {
+    const result = await User.findOneAndUpdate(
+      { _id: this.user.id, username: null },
+      { username },
+    )
 
-    const result = await User.findOneAndUpdate({ _id: this.user.id, username: null }, { username })
-
-    if(!result) {
+    if (!result) {
       const error = `Username is already set`
-      throw new DbError(error, {forwardToClient: true, logger: this.logger, level: 'warn'})
+      throw new DbError(error, {
+        forwardToClient: true,
+        logger: this.logger,
+        level: "warn",
+      })
     }
 
     return true
@@ -159,41 +165,69 @@ export abstract class UserWallet {
 
   // deprecated
   async setLanguage({ language }): Promise<boolean> {
-
     const result = await User.findOneAndUpdate({ _id: this.user.id }, { language })
 
-    if(!result) {
+    if (!result) {
       const error = `issue setting language preferences`
-      throw new DbError(error, {forwardToClient: false, logger: this.logger, level: 'warn', result})
+      throw new DbError(error, {
+        forwardToClient: false,
+        logger: this.logger,
+        level: "warn",
+        result,
+      })
     }
 
     return true
   }
 
-  async updateUsername({ username }): Promise<{username: string | undefined, id: string}> {
+  async updateUsername({
+    username,
+  }): Promise<{ username: string | undefined; id: string }> {
     try {
-      const result = await User.findOneAndUpdate({ _id: this.user.id, username: null }, { username })
-      if(!result) {
-        throw new DbError(`Username is already set`, {forwardToClient: true, logger: this.logger, level: 'warn'})
+      const result = await User.findOneAndUpdate(
+        { _id: this.user.id, username: null },
+        { username },
+      )
+      if (!result) {
+        throw new DbError(`Username is already set`, {
+          forwardToClient: true,
+          logger: this.logger,
+          level: "warn",
+        })
       }
       return { username, id: this.user.id }
     } catch (err) {
-      this.logger.error({err})
-      throw new DbError("error updating username", {forwardToClient: false, logger: this.logger, level: 'error', err})
+      this.logger.error({ err })
+      throw new DbError("error updating username", {
+        forwardToClient: false,
+        logger: this.logger,
+        level: "error",
+        err,
+      })
     }
   }
 
-  async updateLanguage({ language }): Promise<{language: string | undefined, id: string}> {
+  async updateLanguage({
+    language,
+  }): Promise<{ language: string | undefined; id: string }> {
     try {
       await User.findOneAndUpdate({ _id: this.user.id }, { language })
       return { language, id: this.user.id }
     } catch (err) {
-      this.logger.error({err}, "error updating language")
-      return {language: undefined, id: this.user.id }
+      this.logger.error({ err }, "error updating language")
+      return { language: undefined, id: this.user.id }
     }
   }
 
-  static getCurrencyEquivalent({ sats, fee, usd }: { sats: number, fee?: number, usd?: number }) {
+  static getCurrencyEquivalent({
+    sats,
+    fee,
+    usd,
+  }: {
+    sats: number
+    fee?: number
+    usd?: number
+  }) {
     return {
       fee,
       feeUsd: fee ? UserWallet.satsToUsd(fee) : undefined,
@@ -202,7 +236,7 @@ export abstract class UserWallet {
     }
   }
 
-  static satsToUsd = sats => {
+  static satsToUsd = (sats) => {
     const usdValue = UserWallet.lastPrice * sats
     return usdValue
   }
@@ -213,10 +247,18 @@ export abstract class UserWallet {
     // Add commas to balancesats
     const balanceSatsPrettified = balanceSats.toLocaleString("en")
     // Round balanceusd to 2 decimal places and add commas
-    const balanceUsd = UserWallet.satsToUsd(balanceSats).toLocaleString("en", { maximumFractionDigits: 2 })
+    const balanceUsd = UserWallet.satsToUsd(balanceSats).toLocaleString("en", {
+      maximumFractionDigits: 2,
+    })
 
-    this.logger.info({ balanceSatsPrettified, balanceUsd, user: this.user }, `sending balance notification to user`)
-    await sendNotification({ user: this.user, title: `Your balance is $${balanceUsd} (${balanceSatsPrettified} sats)`, logger: this.logger })
+    this.logger.info(
+      { balanceSatsPrettified, balanceUsd, user: this.user },
+      `sending balance notification to user`,
+    )
+    await sendNotification({
+      user: this.user,
+      title: `Your balance is $${balanceUsd} (${balanceSatsPrettified} sats)`,
+      logger: this.logger,
+    })
   }
-
 }

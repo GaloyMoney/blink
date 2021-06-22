@@ -1,4 +1,4 @@
-import {authenticatedLndGrpc} from 'lightning'
+import { authenticatedLndGrpc } from "lightning"
 
 const getAuth = () => {
   // network = process.env.NETWORK // TODO
@@ -8,8 +8,8 @@ const getAuth = () => {
   const port = process.env.LNDRPCPORT ?? 10009
 
   if (!cert || !macaroon || !lndip) {
-    console.log({cert, macaroon, lndip, port})
-    throw new Error('missing environment variable for lnd')
+    console.log({ cert, macaroon, lndip, port })
+    throw new Error("missing environment variable for lnd")
   }
 
   const socket = `${lndip}:${port}`

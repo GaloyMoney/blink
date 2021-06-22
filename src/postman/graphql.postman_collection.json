@@ -37,13 +37,9 @@
                       "url": {
                         "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
                         "protocol": "{{protocol}}",
-                        "host": [
-                          "{{domain}}"
-                        ],
+                        "host": ["{{domain}}"],
                         "port": "{{port}}",
-                        "path": [
-                          "graphql"
-                        ]
+                        "path": ["graphql"]
                       }
                     },
                     "response": []
@@ -92,13 +88,9 @@
                       "url": {
                         "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
                         "protocol": "{{protocol}}",
-                        "host": [
-                          "{{domain}}"
-                        ],
+                        "host": ["{{domain}}"],
                         "port": "{{port}}",
-                        "path": [
-                          "graphql"
-                        ]
+                        "path": ["graphql"]
                       }
                     },
                     "response": []
@@ -145,13 +137,9 @@
                       "url": {
                         "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
                         "protocol": "{{protocol}}",
-                        "host": [
-                          "{{domain}}"
-                        ],
+                        "host": ["{{domain}}"],
                         "port": "{{port}}",
-                        "path": [
-                          "graphql"
-                        ]
+                        "path": ["graphql"]
                       }
                     },
                     "response": []
@@ -178,13 +166,9 @@
                       "url": {
                         "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
                         "protocol": "{{protocol}}",
-                        "host": [
-                          "{{domain}}"
-                        ],
+                        "host": ["{{domain}}"],
                         "port": "{{port}}",
-                        "path": [
-                          "graphql"
-                        ]
+                        "path": ["graphql"]
                       }
                     },
                     "response": []
@@ -228,13 +212,9 @@
                       "url": {
                         "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
                         "protocol": "{{protocol}}",
-                        "host": [
-                          "{{domain}}"
-                        ],
+                        "host": ["{{domain}}"],
                         "port": "{{port}}",
-                        "path": [
-                          "graphql"
-                        ]
+                        "path": ["graphql"]
                       }
                     },
                     "response": []
@@ -285,13 +265,9 @@
                       "url": {
                         "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
                         "protocol": "{{protocol}}",
-                        "host": [
-                          "{{domain}}"
-                        ],
+                        "host": ["{{domain}}"],
                         "port": "{{port}}",
-                        "path": [
-                          "graphql"
-                        ]
+                        "path": ["graphql"]
                       }
                     },
                     "response": []
@@ -335,13 +311,9 @@
                       "url": {
                         "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
                         "protocol": "{{protocol}}",
-                        "host": [
-                          "{{domain}}"
-                        ],
+                        "host": ["{{domain}}"],
                         "port": "{{port}}",
-                        "path": [
-                          "graphql"
-                        ]
+                        "path": ["graphql"]
                       }
                     },
                     "response": []
@@ -387,13 +359,9 @@
                       "url": {
                         "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
                         "protocol": "{{protocol}}",
-                        "host": [
-                          "{{domain}}"
-                        ],
+                        "host": ["{{domain}}"],
                         "port": "{{port}}",
-                        "path": [
-                          "graphql"
-                        ]
+                        "path": ["graphql"]
                       }
                     },
                     "response": []
@@ -439,13 +407,9 @@
                       "url": {
                         "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
                         "protocol": "{{protocol}}",
-                        "host": [
-                          "{{domain}}"
-                        ],
+                        "host": ["{{domain}}"],
                         "port": "{{port}}",
-                        "path": [
-                          "graphql"
-                        ]
+                        "path": ["graphql"]
                       }
                     },
                     "response": []
@@ -486,13 +450,9 @@
                       "url": {
                         "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
                         "protocol": "{{protocol}}",
-                        "host": [
-                          "{{domain}}"
-                        ],
+                        "host": ["{{domain}}"],
                         "port": "{{port}}",
-                        "path": [
-                          "graphql"
-                        ]
+                        "path": ["graphql"]
                       }
                     },
                     "response": []
@@ -519,13 +479,9 @@
                       "url": {
                         "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
                         "protocol": "{{protocol}}",
-                        "host": [
-                          "{{domain}}"
-                        ],
+                        "host": ["{{domain}}"],
                         "port": "{{port}}",
-                        "path": [
-                          "graphql"
-                        ]
+                        "path": ["graphql"]
                       }
                     },
                     "response": []
@@ -552,13 +508,9 @@
                       "url": {
                         "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
                         "protocol": "{{protocol}}",
-                        "host": [
-                          "{{domain}}"
-                        ],
+                        "host": ["{{domain}}"],
                         "port": "{{port}}",
-                        "path": [
-                          "graphql"
-                        ]
+                        "path": ["graphql"]
                       }
                     },
                     "response": []
@@ -595,13 +547,9 @@
                       "url": {
                         "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
                         "protocol": "{{protocol}}",
-                        "host": [
-                          "{{domain}}"
-                        ],
+                        "host": ["{{domain}}"],
                         "port": "{{port}}",
-                        "path": [
-                          "graphql"
-                        ]
+                        "path": ["graphql"]
                       }
                     },
                     "response": []
@@ -635,13 +583,9 @@
                       "url": {
                         "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
                         "protocol": "{{protocol}}",
-                        "host": [
-                          "{{domain}}"
-                        ],
+                        "host": ["{{domain}}"],
                         "port": "{{port}}",
-                        "path": [
-                          "graphql"
-                        ]
+                        "path": ["graphql"]
                       }
                     },
                     "response": []
@@ -668,13 +612,9 @@
                       "url": {
                         "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
                         "protocol": "{{protocol}}",
-                        "host": [
-                          "{{domain}}"
-                        ],
+                        "host": ["{{domain}}"],
                         "port": "{{port}}",
-                        "path": [
-                          "graphql"
-                        ]
+                        "path": ["graphql"]
                       }
                     },
                     "response": []
@@ -711,13 +651,9 @@
                       "url": {
                         "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
                         "protocol": "{{protocol}}",
-                        "host": [
-                          "{{domain}}"
-                        ],
+                        "host": ["{{domain}}"],
                         "port": "{{port}}",
-                        "path": [
-                          "graphql"
-                        ]
+                        "path": ["graphql"]
                       }
                     },
                     "response": []
@@ -754,13 +690,9 @@
                       "url": {
                         "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
                         "protocol": "{{protocol}}",
-                        "host": [
-                          "{{domain}}"
-                        ],
+                        "host": ["{{domain}}"],
                         "port": "{{port}}",
-                        "path": [
-                          "graphql"
-                        ]
+                        "path": ["graphql"]
                       }
                     },
                     "response": []
@@ -803,13 +735,9 @@
                       "url": {
                         "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
                         "protocol": "{{protocol}}",
-                        "host": [
-                          "{{domain}}"
-                        ],
+                        "host": ["{{domain}}"],
                         "port": "{{port}}",
-                        "path": [
-                          "graphql"
-                        ]
+                        "path": ["graphql"]
                       }
                     },
                     "response": []
@@ -852,13 +780,9 @@
                       "url": {
                         "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
                         "protocol": "{{protocol}}",
-                        "host": [
-                          "{{domain}}"
-                        ],
+                        "host": ["{{domain}}"],
                         "port": "{{port}}",
-                        "path": [
-                          "graphql"
-                        ]
+                        "path": ["graphql"]
                       }
                     },
                     "response": []
@@ -895,13 +819,9 @@
                       "url": {
                         "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
                         "protocol": "{{protocol}}",
-                        "host": [
-                          "{{domain}}"
-                        ],
+                        "host": ["{{domain}}"],
                         "port": "{{port}}",
-                        "path": [
-                          "graphql"
-                        ]
+                        "path": ["graphql"]
                       }
                     },
                     "response": []
@@ -957,13 +877,9 @@
                       "url": {
                         "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
                         "protocol": "{{protocol}}",
-                        "host": [
-                          "{{domain}}"
-                        ],
+                        "host": ["{{domain}}"],
                         "port": "{{port}}",
-                        "path": [
-                          "graphql"
-                        ]
+                        "path": ["graphql"]
                       }
                     },
                     "response": []
@@ -976,9 +892,7 @@
                     "script": {
                       "id": "6d48e29c-60ad-43cf-af0b-acfd16c9bf22",
                       "type": "text/javascript",
-                      "exec": [
-                        ""
-                      ]
+                      "exec": [""]
                     }
                   },
                   {
@@ -986,9 +900,7 @@
                     "script": {
                       "id": "daba0420-4cc7-47e6-9fc5-caa8eadd157f",
                       "type": "text/javascript",
-                      "exec": [
-                        ""
-                      ]
+                      "exec": [""]
                     }
                   }
                 ],
@@ -1012,9 +924,7 @@
                 "script": {
                   "id": "be58a9be-82f9-46c4-be28-648ca5fc7b8d",
                   "type": "text/javascript",
-                  "exec": [
-                    ""
-                  ]
+                  "exec": [""]
                 }
               },
               {
@@ -1022,9 +932,7 @@
                 "script": {
                   "id": "4249ed6e-da04-469f-ab0a-a702c7f3ad69",
                   "type": "text/javascript",
-                  "exec": [
-                    ""
-                  ]
+                  "exec": [""]
                 }
               }
             ],
@@ -1038,9 +946,7 @@
             "script": {
               "id": "7cefffb5-2eb6-4259-ae99-23c371b80a60",
               "type": "text/javascript",
-              "exec": [
-                ""
-              ]
+              "exec": [""]
             }
           },
           {
@@ -1087,13 +993,9 @@
               "url": {
                 "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
                 "protocol": "{{protocol}}",
-                "host": [
-                  "{{domain}}"
-                ],
+                "host": ["{{domain}}"],
                 "port": "{{port}}",
-                "path": [
-                  "graphql"
-                ]
+                "path": ["graphql"]
               }
             },
             "response": []
@@ -1120,13 +1022,9 @@
               "url": {
                 "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
                 "protocol": "{{protocol}}",
-                "host": [
-                  "{{domain}}"
-                ],
+                "host": ["{{domain}}"],
                 "port": "{{port}}",
-                "path": [
-                  "graphql"
-                ]
+                "path": ["graphql"]
               }
             },
             "response": []
@@ -1153,13 +1051,9 @@
               "url": {
                 "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
                 "protocol": "{{protocol}}",
-                "host": [
-                  "{{domain}}"
-                ],
+                "host": ["{{domain}}"],
                 "port": "{{port}}",
-                "path": [
-                  "graphql"
-                ]
+                "path": ["graphql"]
               }
             },
             "response": []
@@ -1201,13 +1095,9 @@
               "url": {
                 "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
                 "protocol": "{{protocol}}",
-                "host": [
-                  "{{domain}}"
-                ],
+                "host": ["{{domain}}"],
                 "port": "{{port}}",
-                "path": [
-                  "graphql"
-                ]
+                "path": ["graphql"]
               }
             },
             "response": []
@@ -1234,13 +1124,9 @@
               "url": {
                 "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
                 "protocol": "{{protocol}}",
-                "host": [
-                  "{{domain}}"
-                ],
+                "host": ["{{domain}}"],
                 "port": "{{port}}",
-                "path": [
-                  "graphql"
-                ]
+                "path": ["graphql"]
               }
             },
             "response": []
@@ -1277,13 +1163,9 @@
               "url": {
                 "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
                 "protocol": "{{protocol}}",
-                "host": [
-                  "{{domain}}"
-                ],
+                "host": ["{{domain}}"],
                 "port": "{{port}}",
-                "path": [
-                  "graphql"
-                ]
+                "path": ["graphql"]
               }
             },
             "response": []
@@ -1320,13 +1202,9 @@
               "url": {
                 "raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
                 "protocol": "{{protocol}}",
-                "host": [
-                  "{{domain}}"
-                ],
+                "host": ["{{domain}}"],
                 "port": "{{port}}",
-                "path": [
-                  "graphql"
-                ]
+                "path": ["graphql"]
               }
             },
             "response": []
@@ -1349,9 +1227,7 @@
             "script": {
               "id": "cbe9c2a3-8b43-4021-bafc-813d735002ac",
               "type": "text/javascript",
-              "exec": [
-                ""
-              ]
+              "exec": [""]
             }
           },
           {
@@ -1359,9 +1235,7 @@
             "script": {
               "id": "a94178ba-0051-4668-bd7a-7baa08ed4b0b",
               "type": "text/javascript",
-              "exec": [
-                ""
-              ]
+              "exec": [""]
             }
           }
         ]
@@ -1373,9 +1247,7 @@
         "script": {
           "id": "eb604db2-49a2-4c0b-9b78-7adc76c5f1d8",
           "type": "text/javascript",
-          "exec": [
-            ""
-          ]
+          "exec": [""]
         }
       },
       {
@@ -1383,9 +1255,7 @@
         "script": {
           "id": "b405e411-7ef7-4649-9b1c-21c39e080538",
           "type": "text/javascript",
-          "exec": [
-            ""
-          ]
+          "exec": [""]
         }
       }
     ]

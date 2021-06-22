@@ -2,14 +2,21 @@
  * @jest-environment node
  */
 import { setupMongoConnection } from "../mongodb"
-import { checkIsBalanced, lndMain, lndOutside1, lndOutside2, RANDOM_ADDRESS, waitUntilBlockHeight, mockGetExchangeBalance } from "./helper"
+import {
+  checkIsBalanced,
+  lndMain,
+  lndOutside1,
+  lndOutside2,
+  RANDOM_ADDRESS,
+  waitUntilBlockHeight,
+  mockGetExchangeBalance,
+} from "./helper"
 import { bitcoindDefaultClient } from "../utils"
 
 import mongoose from "mongoose"
 import { createChainAddress } from "lightning"
 
-jest.mock('../realtimePrice')
-
+jest.mock("../realtimePrice")
 
 const initialBitcoinWalletBalance = 0
 
@@ -20,12 +27,10 @@ const numOfBlock = 10
 // However, a block must have 100 confirmations before that reward can be spent,
 // so we generate 101 blocks to get access to the coinbase transaction from block #1.
 
-
 // !!! this test is not re-entrant !!!
 
 const amount_BTC = 1
 let lndOutside1_wallet_addr
-
 
 beforeAll(async () => {
   await setupMongoConnection()
@@ -41,36 +46,37 @@ afterAll(async () => {
   jest.restoreAllMocks()
 })
 
-
-it('funds bitcoind wallet', async () => {
+it("funds bitcoind wallet", async () => {
   let balance
 
   try {
     // depend of bitcoind version. needed in < 0.20 but failed in 0.21?
-    const {name} = await bitcoindDefaultClient.createWallet("")
+    const { name } = await bitcoindDefaultClient.createWallet("")
     expect(name).toBe("")
   } catch (err) {
-    console.log({err})
+    console.log({ err })
   }
 
   balance = await bitcoindDefaultClient.getBalance()
-  console.log({balanceInit: balance})
+  console.log({ balanceInit: balance })
 
   const bitcoindAddress = await bitcoindDefaultClient.getNewAddress()
-	await bitcoindDefaultClient.generateToAddress(numOfBlock, bitcoindAddress)
-	await bitcoindDefaultClient.generateToAddress(100, RANDOM_ADDRESS)
-	balance = await bitcoindDefaultClient.getBalance()
-	expect(balance).toBe(initialBitcoinWalletBalance + blockReward * numOfBlock)
+  await bitcoindDefaultClient.generateToAddress(numOfBlock, bitcoindAddress)
+  await bitcoindDefaultClient.generateToAddress(100, RANDOM_ADDRESS)
+  balance = await bitcoindDefaultClient.getBalance()
+  expect(balance).toBe(initialBitcoinWalletBalance + blockReward * numOfBlock)
 })
 
-it('funds outside lnd node', async () => {
-	lndOutside1_wallet_addr = (await createChainAddress({ format: 'p2wpkh', lnd: lndOutside1 })).address
-	expect(lndOutside1_wallet_addr.substr(0, 4)).toBe("bcrt")
+it("funds outside lnd node", async () => {
+  lndOutside1_wallet_addr = (
+    await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
+  ).address
+  expect(lndOutside1_wallet_addr.substr(0, 4)).toBe("bcrt")
 
-	await bitcoindDefaultClient.sendToAddress(lndOutside1_wallet_addr, amount_BTC)
-	await bitcoindDefaultClient.generateToAddress(6, RANDOM_ADDRESS)
+  await bitcoindDefaultClient.sendToAddress(lndOutside1_wallet_addr, amount_BTC)
+  await bitcoindDefaultClient.generateToAddress(6, RANDOM_ADDRESS)
 
-	await waitUntilBlockHeight({ lnd: lndMain, blockHeight: 100 + numOfBlock + 6 })
-	await waitUntilBlockHeight({ lnd: lndOutside1, blockHeight: 100 + numOfBlock + 6 })
-	await waitUntilBlockHeight({ lnd: lndOutside2, blockHeight: 100 + numOfBlock + 6 })
+  await waitUntilBlockHeight({ lnd: lndMain, blockHeight: 100 + numOfBlock + 6 })
+  await waitUntilBlockHeight({ lnd: lndOutside1, blockHeight: 100 + numOfBlock + 6 })
+  await waitUntilBlockHeight({ lnd: lndOutside2, blockHeight: 100 + numOfBlock + 6 })
 })

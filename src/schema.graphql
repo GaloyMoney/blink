@@ -56,45 +56,45 @@ type Contact {
 
 type Invoice {
   addInvoice(
-    value: Int @range(min: 0, policy: THROW),
+    value: Int @range(min: 0, policy: THROW)
     memo: String @stringLength(max: 1024, policy: THROW) # TODO: add limit on the mobile app
   ): String @pattern(regexp: "^ln[A-Za-z0-9]+$")
-  
+
   updatePendingInvoice(
-    hash: String! @stringLength(min: 64, max: 64, policy: THROW) @pattern(regexp: "^[A-Fa-f0-9]+$", policy: THROW)
+    hash: String!
+      @stringLength(min: 64, max: 64, policy: THROW)
+      @pattern(regexp: "^[A-Fa-f0-9]+$", policy: THROW)
   ): Boolean
 
   payInvoice(
-    invoice: String! @pattern(regexp: "^ln[A-Za-z0-9]+$",  policy: THROW),
-    amount: Int @range(min: 0, policy: THROW),
+    invoice: String! @pattern(regexp: "^ln[A-Za-z0-9]+$", policy: THROW)
+    amount: Int @range(min: 0, policy: THROW)
     memo: String @stringLength(max: 1024, policy: THROW) # TODO: add limit on the mobile app
   ): String #FIXME: use a more precise type
-
   payKeysendUsername(
-    amount: Int! @range(min: 0, policy: THROW),
-    destination: String!, 
-    username: String! @pattern(regexp: "^[A-Za-z0-9_]+$", policy: THROW),
+    amount: Int! @range(min: 0, policy: THROW)
+    destination: String!
+    username: String! @pattern(regexp: "^[A-Za-z0-9_]+$", policy: THROW)
     memo: String @stringLength(max: 1024, policy: THROW) # TODO: add limit on the mobile app
   ): String #FIXME: use a more precise type
-
   getFee(
-    destination: String,
-    amount: Int @range(min: 0, policy: THROW),
-    invoice: String @pattern(regexp: "^ln[A-Za-z0-9]+$",  policy: THROW)
+    destination: String
+    amount: Int @range(min: 0, policy: THROW)
+    invoice: String @pattern(regexp: "^ln[A-Za-z0-9]+$", policy: THROW)
   ): Int # sats
 }
 
 type OnChain {
   getNewAddress: String
-  
+
   pay(
-    address: String! @pattern(regexp: "^[A-Za-z0-9]+$", policy: THROW),
-    amount: Int! @range(min: 0, policy: THROW),
+    address: String! @pattern(regexp: "^[A-Za-z0-9]+$", policy: THROW)
+    amount: Int! @range(min: 0, policy: THROW)
     memo: String @stringLength(max: 1024, policy: THROW) # TODO: add limit on the mobile app
   ): Success
 
   getFee(
-    address: String! @pattern(regexp: "^[A-Za-z0-9]+$", policy: THROW),
+    address: String! @pattern(regexp: "^[A-Za-z0-9]+$", policy: THROW)
     amount: Int @range(min: 0, policy: THROW)
   ): Int # sats
 }
@@ -109,7 +109,7 @@ type OnchainTransaction {
 
 type User {
   id: ID
-  username: String @pattern(regexp: "^[A-Za-z0-9_]+$"),
+  username: String @pattern(regexp: "^[A-Za-z0-9_]+$")
   level: Int!
   phone: String
   contacts: [Contact]
@@ -164,30 +164,38 @@ type Query {
   earnList: [Earn]
   me: User
   maps: [Marker]
-  buildParameters(appVersion: String
+  buildParameters(
+    appVersion: String
     # @deprecated
-   , buildVersion: String
+    buildVersion: String
     # @deprecated
-    , os: String 
-    # @deprecated
-    ): BuildParameter
+    os: String # @deprecated
+  ): BuildParameter
   nodeStats: NodeStats
-  
+
   getLastOnChainAddress: LastOnChainAddress
-  
+
   usernameExists(
-    username: String! @pattern(regexp: "^[A-Za-z0-9_]+$", policy: THROW) @stringLength(min: 3, max: 50, policy: THROW)
+    username: String!
+      @pattern(regexp: "^[A-Za-z0-9_]+$", policy: THROW)
+      @stringLength(min: 3, max: 50, policy: THROW)
   ): Boolean
 
   getUserDetails(uid: ID!): User
-  
+
   noauthUpdatePendingInvoice(
-    username: String! @pattern(regexp: "^[A-Za-z0-9_]+$", policy: THROW) @stringLength(min: 3, max: 50, policy: THROW)
-    hash: String! @stringLength(min: 64, max: 64, policy: THROW) @pattern(regexp: "^[A-Fa-f0-9]+$", policy: THROW)
+    username: String!
+      @pattern(regexp: "^[A-Za-z0-9_]+$", policy: THROW)
+      @stringLength(min: 3, max: 50, policy: THROW)
+    hash: String!
+      @stringLength(min: 64, max: 64, policy: THROW)
+      @pattern(regexp: "^[A-Fa-f0-9]+$", policy: THROW)
   ): Boolean
-  
+
   getUid(
-    username: String @pattern(regexp: "^[A-Za-z0-9_]+$", policy: THROW) @stringLength(min: 3, max: 50, policy: THROW),
+    username: String
+      @pattern(regexp: "^[A-Za-z0-9_]+$", policy: THROW)
+      @stringLength(min: 3, max: 50, policy: THROW)
     phone: String @pattern(regexp: "^\\+[0-9]+$", policy: THROW)
   ): ID
   getLevels: [Int]
@@ -206,23 +214,29 @@ type Limits {
 }
 
 type UpdateUser {
-  setLanguage(language: String): Boolean 
-  # @deprecated 
+  setLanguage(language: String): Boolean
+  # @deprecated
 
   setUsername(
-    username: String! @pattern(regexp: "^[A-Za-z0-9_]+$", policy: THROW) @stringLength(min: 3, max: 50, policy: THROW)
-  ): Boolean 
-  # @deprecated 
+    username: String!
+      @pattern(regexp: "^[A-Za-z0-9_]+$", policy: THROW)
+      @stringLength(min: 3, max: 50, policy: THROW)
+  ): Boolean
+  # @deprecated
 
   updateLanguage(language: String!): User
   updateUsername(
-    username: String! @pattern(regexp: "^[A-Za-z0-9_]+$", policy: THROW) @stringLength(min: 3, max: 50, policy: THROW)
+    username: String!
+      @pattern(regexp: "^[A-Za-z0-9_]+$", policy: THROW)
+      @stringLength(min: 3, max: 50, policy: THROW)
   ): User
 }
 
 type UpdateContact {
   setName(
-    username: String @pattern(regexp: "^[A-Za-z0-9_]+$", policy: THROW) @stringLength(min: 3, max: 50, policy: THROW),
+    username: String
+      @pattern(regexp: "^[A-Za-z0-9_]+$", policy: THROW)
+      @stringLength(min: 3, max: 50, policy: THROW)
     name: String @stringLength(min: 3, max: 50, policy: THROW) # TODO: integrate constraint in the mobile app
   ): Boolean
 }
@@ -233,43 +247,43 @@ enum AccountStatus {
 }
 
 type Mutation {
-  requestPhoneCode(
-    phone: String @pattern(regexp: "^\\+[0-9]+$", policy: THROW)
-  ): Success
-  
+  requestPhoneCode(phone: String @pattern(regexp: "^\\+[0-9]+$", policy: THROW)): Success
+
   login(
-    phone: String @pattern(regexp: "^\\+[0-9]+$", policy: THROW),
-    code: Int @range(min: 100000, max: 999999),
-    currency: String  # @deprecated(reason: "currency is no longer user. to be remove after mobile update")
+    phone: String @pattern(regexp: "^\\+[0-9]+$", policy: THROW)
+    code: Int @range(min: 100000, max: 999999)
+    currency: String # @deprecated(reason: "currency is no longer user. to be remove after mobile update")
   ): Token
-  
+
   noauthAddInvoice(
-    username: String! @pattern(regexp: "^[A-Za-z0-9_]+$", policy: THROW) @stringLength(min: 3, max: 50, policy: THROW),
+    username: String!
+      @pattern(regexp: "^[A-Za-z0-9_]+$", policy: THROW)
+      @stringLength(min: 3, max: 50, policy: THROW)
     value: Int @range(min: 0, policy: THROW)
   ): String
-  
+
   onchain: OnChain
-  
+
   invoice: Invoice
-  
+
   earnCompleted(ids: [ID]): [Earn]
-  
+
   updateUser: UpdateUser
-  
+
   updateContact: UpdateContact
-    
+
   addDeviceToken(deviceToken: String): Success # to refactor with User?
-  
   testMessage: Success # FIXME remove test
-  
   addToMap(
-    username: String! @pattern(regexp: "^[A-Za-z0-9_]+$", policy: THROW) @stringLength(min: 3, max: 50, policy: THROW)
-    title: String!,
-    latitude: Float!,
+    username: String!
+      @pattern(regexp: "^[A-Za-z0-9_]+$", policy: THROW)
+      @stringLength(min: 3, max: 50, policy: THROW)
+    title: String!
+    latitude: Float!
     longitude: Float!
   ): Boolean
 
   setAccountStatus(uid: ID!, status: AccountStatus!): User
-  
+
   setLevel(uid: ID!, level: Int!): User
 }

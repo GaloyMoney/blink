@@ -6,18 +6,18 @@ import { checkIsBalanced, getUserWallet, mockGetExchangeBalance } from "./helper
 import { OnboardingEarn } from "../types"
 import { find } from "lodash"
 
-
-const earnsToGet = ['buyFirstSats', 'debitCardActivation', 'firstCardSpending']
-export const onBoardingEarnAmt: number = Object.keys(OnboardingEarn).filter(k => find(earnsToGet, o => o === k) ).reduce((p, k) => p + OnboardingEarn[k], 0)
+const earnsToGet = ["buyFirstSats", "debitCardActivation", "firstCardSpending"]
+export const onBoardingEarnAmt: number = Object.keys(OnboardingEarn)
+  .filter((k) => find(earnsToGet, (o) => o === k))
+  .reduce((p, k) => p + OnboardingEarn[k], 0)
 export const onBoardingEarnIds: string[] = earnsToGet
 
 import mongoose from "mongoose"
 
 let userWallet1
 
-jest.mock('../notifications/notification')
-jest.mock('../realtimePrice')
-
+jest.mock("../notifications/notification")
+jest.mock("../realtimePrice")
 
 beforeAll(async () => {
   await setupMongoConnection()
@@ -35,8 +35,7 @@ afterEach(async () => {
 })
 
 afterAll(async () => {
-
-    // to make this test re-entrant, we need to remove the fund from userWallet1 and delete the user
+  // to make this test re-entrant, we need to remove the fund from userWallet1 and delete the user
   // uncomment when necessary
 
   // const finalBalance = await userWallet1.getBalances()
@@ -54,11 +53,10 @@ afterAll(async () => {
   await mongoose.connection.close()
 })
 
-
-it('add earn adds balance correctly', async () => {
+it("add earn adds balance correctly", async () => {
   const getAndVerifyRewards = async () => {
     await userWallet1.addEarn(onBoardingEarnIds)
-    const {BTC: finalBalance} = await userWallet1.getBalances()
+    const { BTC: finalBalance } = await userWallet1.getBalances()
 
     expect(finalBalance).toBe(onBoardingEarnAmt)
     await checkIsBalanced()
