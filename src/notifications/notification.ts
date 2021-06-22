@@ -19,7 +19,8 @@ export const sendNotification = async ({
   data,
   logger,
 }: INotification) => {
-  const message = {
+  // TODO: Figure out the unknown type here
+  const message: Record<string, Record<string, unknown>> = {
     // only string can be sent to notifications
     data: {
       ..._.mapValues(data, (v) => String(v)),
@@ -59,7 +60,7 @@ export const sendNotification = async ({
   try {
     const response = await admin.messaging().sendToDevice(
       user.deviceToken.filter((token) => token.length === 163),
-      message as any,
+      message,
       {
         // Required for background/quit data-only messages on iOS
         // contentAvailable: true,

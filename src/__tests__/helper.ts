@@ -10,6 +10,7 @@ import { bitcoindDefaultClient, sleep } from "../utils"
 import { baseLogger } from "../logger"
 import { WalletFactory } from "../walletFactory"
 import {
+  AuthenticatedLnd,
   authenticatedLndGrpc,
   getWalletInfo,
   openChannel,
@@ -171,11 +172,11 @@ export const mineBlockAndSync = async ({
   lnds,
   blockHeight,
 }: {
-  lnds: Array<any>
+  lnds: Array<AuthenticatedLnd>
   blockHeight: number
 }) => {
   await bitcoindDefaultClient.generateToAddress(newBlock, RANDOM_ADDRESS)
-  const promiseArray: Array<Promise<any>> = []
+  const promiseArray: Array<Promise<void>> = []
   for (const lnd of lnds) {
     promiseArray.push(waitUntilBlockHeight({ lnd, blockHeight }))
   }

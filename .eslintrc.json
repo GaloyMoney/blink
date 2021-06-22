@@ -32,14 +32,10 @@
     "no-sequences": "error",
     "no-throw-literal": "error",
     "no-void": "error",
-    "@typescript-eslint/no-unused-vars": "off", // Duplicate
     "@typescript-eslint/no-extra-semi": "off", // Prettier work
 
     // Temporarily disabled recommended rules
     "@typescript-eslint/explicit-module-boundary-types": "off",
-    "@typescript-eslint/no-explicit-any": "off",
-    "@typescript-eslint/no-non-null-assertion": "off",
-    "no-async-promise-executor": "off",
-    "@typescript-eslint/ban-ts-comment": "off"
+    "no-async-promise-executor": "off"
   }
 }

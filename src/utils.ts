@@ -120,7 +120,10 @@ export function timeout(delay, msg) {
   })
 }
 
-export async function measureTime(operation: Promise<any>): Promise<[any, number]> {
+// FIXME: This function is not used anywhere. Delete?
+export async function measureTime(
+  operation: Promise<unknown>,
+): Promise<[unknown, number]> {
   const startTime = process.hrtime()
   const result = await operation
   const timeElapsed = process.hrtime(startTime)

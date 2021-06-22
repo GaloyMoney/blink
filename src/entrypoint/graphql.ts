@@ -135,7 +135,7 @@ const resolvers = {
       return hourly.splice(-length)
     },
     earnList: async (_, __, { user }) => {
-      const response: Record<string, any>[] = []
+      const response: Record<string, primitive>[] = []
       const earned = user?.earn || []
 
       for (const [id, value] of Object.entries(OnboardingEarn)) {

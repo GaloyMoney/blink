@@ -74,7 +74,7 @@ const exportUsers = async () => {
     ],
   })
 
-  const records: any[] = []
+  const records: Record<string, primitive>[] = []
 
   // TODO filter with USD / BTC currency
   const aggregateTxs = await Transaction.aggregate([
@@ -141,7 +141,7 @@ const exportBalances = async () => {
   })
 
   console.log({ books })
-  const records: any[] = []
+  const records: Record<string, primitive>[] = []
 
   for (const account in books) {
     records.push({
