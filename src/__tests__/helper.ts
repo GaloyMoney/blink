@@ -145,8 +145,3 @@ export const mineBlockAndSync = async ({ lnds, blockHeight }: { lnds: Array<any>
   await Promise.all(promiseArray)
 }
 
-export const set2FA = async ({ wallet, secret }) => {
-  const token = generateToken(secret)!.token
-
-  await wallet.save2fa({ secret, token })
-}

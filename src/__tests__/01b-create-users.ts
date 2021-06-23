@@ -9,7 +9,7 @@ import { baseLogger } from "../logger"
 import { setupMongoConnection } from "../mongodb"
 import { User } from "../schema"
 import { UserWallet } from "../userWallet"
-import { getUserWallet, set2FA } from "./helper"
+import { getUserWallet } from "./helper"
 
 jest.mock('../realtimePrice')
 
@@ -154,7 +154,9 @@ describe('username tests', () => {
 
   it('set 2fa for user0', async () => {
     const {secret} = userWallet0.generate2fa()
-    await set2FA({wallet: userWallet0, secret })
+    const token = generateToken(secret)!.token
+    await userWallet0.save2fa({ secret, token })
+
     userWallet0 = await getUserWallet(0)
     expect(userWallet0.user.twoFactor.secret).toBe(secret)
   })

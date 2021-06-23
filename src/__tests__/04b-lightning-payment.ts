@@ -5,7 +5,7 @@ import { createHash, randomBytes } from 'crypto'
 import { FEECAP, lnd } from "../lndConfig"
 import { setupMongoConnection } from "../mongodb"
 import { InvoiceUser, Transaction } from "../schema"
-import { checkIsBalanced, getUserWallet, lndMain, lndOutside1, lndOutside2, mockGetExchangeBalance, openChannelTesting, set2FA } from "./helper"
+import { checkIsBalanced, getUserWallet, lndMain, lndOutside1, lndOutside2, mockGetExchangeBalance, openChannelTesting } from "./helper"
 import { getHash, sleep } from "../utils"
 
 import { createInvoice, createHodlInvoice, settleHodlInvoice, cancelHodlInvoice, pay, decodePaymentRequest, getChannels, closeChannel } from 'lightning'
@@ -264,11 +264,12 @@ functionToTests.forEach(({fn, name, initialFee}) => {
   }, 60000)
 
   it(`fails to pay above 2fa threshold without 2fa token`, async () => {
-    const {secret} = userWallet0.generate2fa()
-
+    
     // this is needed because this test runs twice
     if(!userWallet0.user.twoFactor.secret) {
-      await set2FA({wallet: userWallet0, secret })
+      const {secret} = userWallet0.generate2fa() 
+      const token = generateToken(secret)!.token
+      await userWallet0.save2fa({ secret, token })
     }
 
     const { request } = await createInvoice({ lnd: lndOutside1, tokens: userWallet0.user.twoFactor.threshold + 1})

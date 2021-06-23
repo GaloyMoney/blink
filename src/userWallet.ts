@@ -254,6 +254,8 @@ export abstract class UserWallet {
     }
   }
 
+  // FIXME: Validate 2fa is made static so that it can be called from within lightning.ts
+  // This needs to improved as it is probably not the best design
   static validate2fa = ({ secret, token, logger }): boolean => {
 
     if (!secret) {
