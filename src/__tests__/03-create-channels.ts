@@ -139,7 +139,7 @@ it("opens channel from lndOutside1 to lnd1", async () => {
 it("opens channel from lnd1 to lnd2", async () => {
   const socket = `lnd2:9735`
   await openChannelTesting({ lnd: lnd1, other_lnd: lnd2, socket })
-  const partner_public_key = offchainLnds[2].pubkey
+  const partner_public_key = offchainLnds[1].pubkey
 
   const { channels } = await getChannels({ lnd: lnd1 })
   expect(channels.length).toEqual(channelLengthMain + 1)
