@@ -169,9 +169,8 @@ type Query {
     # @deprecated
     buildVersion: String
     # @deprecated
-    os: String
-  ): # @deprecated
-  BuildParameter
+    os: String # @deprecated
+  ): BuildParameter
   nodeStats: NodeStats @deprecated
   nodesStats: [NodeStats]
 

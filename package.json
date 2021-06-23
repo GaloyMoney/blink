@@ -3,7 +3,9 @@
   "scripts": {
     "tsc-check": "tsc --noEmit --skipLibCheck",
     "eslint-check": "eslint \"src/**/*.ts\"",
+    "eslint-fix": "eslint \"src/**/*.ts\" --fix",
     "prettier-check": "prettier --check .",
+    "prettier-write": "prettier --write .",
     "build": "tsc -p tsconfig-build.json && cp -R src/protos lib && cp src/schema.graphql lib",
     "start": "yarn build && source ./exportLocal.sh && node lib/entrypoint/graphql.js | pino-pretty -c -l",
     "trigger": "yarn build && source ./exportLocal.sh && node lib/entrypoint/trigger.js | pino-pretty -c -l",
