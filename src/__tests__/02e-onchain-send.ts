@@ -170,8 +170,12 @@ it("sendsOnchainPaymentWithMemo", async () => {
   const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
   const paymentResult = await userWallet0.onChainPay({ address, amount, memo })
   expect(paymentResult).toBe(true)
-  const txs = await userWallet0.getTransactions()
-  expect((first(txs) as any).description).toBe(memo)
+  const txs: Record<string, string>[] = await userWallet0.getTransactions()
+  const firstTxs = first(txs)
+  if (!firstTxs) {
+    throw Error("No transactions found")
+  }
+  expect(firstTxs.description).toBe(memo)
 })
 
 it("makesOnchainOnUsTransactionWithMemo", async () => {
@@ -184,12 +188,22 @@ it("makesOnchainOnUsTransactionWithMemo", async () => {
   })
   expect(paymentResult).toBe(true)
 
-  const txs = await userWallet0.getTransactions()
-  expect((first(txs) as any).description).toBe(memo)
+  let firstTxs
+
+  const txs: Record<string, string>[] = await userWallet0.getTransactions()
+  firstTxs = first(txs)
+  if (!firstTxs) {
+    throw Error("No transactions found")
+  }
+  expect(firstTxs.description).toBe(memo)
 
   // receiver should not know memo from sender
   const txsUser3 = await userWallet3.getTransactions()
-  expect((first(txsUser3) as any).description).not.toBe(memo)
+  firstTxs = first(txsUser3)
+  if (!firstTxs) {
+    throw Error("No transactions found")
+  }
+  expect(firstTxs.description).not.toBe(memo)
 })
 
 it("failsToMakeOnchainPaymentToSelf", async () => {

@@ -15,7 +15,7 @@ export class Price {
   readonly ccxt
   readonly exchange_string
   readonly exchange
-  readonly logger: any
+  readonly logger
 
   constructor({ logger }) {
     this.exchange_string = "bitfinex"
@@ -107,8 +107,7 @@ export class Price {
 
     // skip if it has not been an hour since last update
     try {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore-error: TODO
+      // @ts-expect-error: TODO
       const diff = moment().diff(moment(_.last(doc.pair.exchange.price)._id))
       if (diff < 1000 * 60 * 60) {
         return false

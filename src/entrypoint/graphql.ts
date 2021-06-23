@@ -2,7 +2,7 @@ import {
   pattern,
   range,
   stringLength,
-  ValidateDirectiveVisitor,
+  ValidateDirectiveVisitor
 } from "@profusion/apollo-validation-directives"
 import { ApolloServer } from "apollo-server-express"
 import dotenv from "dotenv"
@@ -37,7 +37,7 @@ import { getCurrentPrice } from "../realtimePrice"
 import { redis } from "../redis"
 import { User } from "../schema"
 import { login, requestPhoneCode } from "../text"
-import { Levels, OnboardingEarn } from "../types"
+import { Levels, OnboardingEarn, Primitive } from "../types"
 import { fetchIPDetails } from "../utils"
 import { WalletFactory, WalletFromUsername } from "../walletFactory"
 
@@ -140,7 +140,7 @@ const resolvers = {
       return hourly.splice(-length)
     },
     earnList: async (_, __, { user }) => {
-      const response: Record<string, any>[] = []
+      const response: Record<string, Primitive>[] = []
       const earned = user?.earn || []
 
       for (const [id, value] of Object.entries(OnboardingEarn)) {

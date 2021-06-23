@@ -1,3 +1,4 @@
+import { Logger as PinoLogger } from "pino"
 import { User } from "./schema"
 
 export type Side = "buy" | "sell"
@@ -5,9 +6,14 @@ export type Currency = "USD" | "BTC"
 
 export type ISuccess = boolean
 
+export type Logger = PinoLogger
+
+export type Primitive = string | boolean | number
+
 export interface ILightningWalletUser {
-  user: any
-  logger: any
+  // FIXME: Add a type for user here.
+  user: unknown
+  logger: Logger
 }
 
 // Lightning
@@ -117,7 +123,7 @@ export interface IPaymentNotification {
   amount: number
   type: string
   user: typeof User
-  logger: any
+  logger: Logger
   hash?: string
   txid?: string
 }
@@ -127,7 +133,7 @@ export interface INotification {
   title: string
   data?: IDataNotification
   body?: string
-  logger: any
+  logger: Logger
 }
 
 // onboarding
