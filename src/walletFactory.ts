@@ -4,6 +4,7 @@ import { NotFoundError } from "./error"
 import { LightningUserWallet } from "./LightningUserWallet"
 import { getCurrentPrice } from "./realtimePrice"
 import { User } from "./schema"
+import { Logger } from "./types"
 import { UserWallet } from "./userWallet"
 
 export const WalletFactory = async ({
@@ -11,7 +12,7 @@ export const WalletFactory = async ({
   logger,
 }: {
   user: typeof User
-  logger: any
+  logger: Logger
 }) => {
   // FIXME: update price on event outside of the wallet factory
   const lastPrice = await getCurrentPrice()
@@ -29,7 +30,7 @@ export const WalletFromUsername = async ({
   logger,
 }: {
   username: string
-  logger: any
+  logger: Logger
 }) => {
   const user = await User.findByUsername({ username })
   if (!user) {

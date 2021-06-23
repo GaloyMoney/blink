@@ -1,5 +1,4 @@
 import moment from "moment"
-import { Logger } from "pino"
 import twilio from "twilio"
 import { yamlConfig } from "./config"
 import { TooManyRequestError } from "./error"
@@ -12,7 +11,8 @@ import {
   limiterRequestPhoneCodeIp,
 } from "./rateLimit"
 import { PhoneCode, User } from "./schema"
-import { fetchIP, randomIntFromInterval } from "./utils"
+import { Logger } from "./types"
+import { randomIntFromInterval } from "./utils"
 
 const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER
 const getTwilioClient = () => {
@@ -111,7 +111,7 @@ export const requestPhoneCode = async ({
 interface ILogin {
   phone: string
   code: number
-  logger: any
+  logger: Logger
   ip: string
 }
 
