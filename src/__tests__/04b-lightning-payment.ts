@@ -264,10 +264,10 @@ functionToTests.forEach(({fn, name, initialFee}) => {
   }, 60000)
 
   it(`fails to pay above 2fa threshold without 2fa token`, async () => {
-    
+
     // this is needed because this test runs twice
     if(!userWallet0.user.twoFactor.secret) {
-      const {secret} = userWallet0.generate2fa() 
+      const {secret} = userWallet0.generate2fa()
       const token = generateToken(secret)!.token
       await userWallet0.save2fa({ secret, token })
     }
