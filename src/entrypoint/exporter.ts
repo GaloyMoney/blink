@@ -26,18 +26,6 @@ const userCount_g = new client.Gauge({
   name: `${prefix}_userCount`,
   help: "how much users have registered",
 })
-const totalChannels_g = new client.Gauge({
-  name: `${prefix}_totalChannels`,
-  help: "total number of channels our node has",
-})
-const activeChannels_g = new client.Gauge({
-  name: `${prefix}_activeChannels`,
-  help: "number of active channels our node has",
-})
-const pendingHtlc_g = new client.Gauge({
-  name: `${prefix}_pendingHtlcs`,
-  help: "number of pending HTLC our node has",
-})
 const lnd_g = new client.Gauge({
   name: `${prefix}_lnd`,
   help: "how much money in our node",
@@ -57,10 +45,6 @@ const lndOpeningChannelBalance_g = new client.Gauge({
 const lndClosingChannelBalance_g = new client.Gauge({
   name: `${prefix}_lnd_closingchannelbalance`,
   help: "how much fund is closing following force closed channel",
-})
-const receivingCapacity_g = new client.Gauge({
-  name: `${prefix}_lnd_inboundcapacity`,
-  help: "inbound capacity of the lightning node",
 })
 const usdShortPosition_g = new client.Gauge({
   name: `${prefix}_usdShortPosition`,

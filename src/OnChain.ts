@@ -285,7 +285,7 @@ export const OnChainMixin = (superclass) =>
         await this.getOnChainAddress()
       }
 
-      return _.last(this.user.onchain_addresses as string[])!
+      return _.last(this.user.onchain_addresses) as string
     }
 
     async getOnChainAddress(): Promise<string> {

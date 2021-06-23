@@ -1,5 +1,3 @@
-import { ITransaction } from "./types"
-
 export interface Balances {
   BTC: number
   USD: number

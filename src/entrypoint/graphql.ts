@@ -2,7 +2,7 @@ import {
   pattern,
   range,
   stringLength,
-  ValidateDirectiveVisitor
+  ValidateDirectiveVisitor,
 } from "@profusion/apollo-validation-directives"
 import { ApolloServer } from "apollo-server-express"
 import dotenv from "dotenv"

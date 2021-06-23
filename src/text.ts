@@ -8,7 +8,7 @@ import {
   failedAttemptPerIp,
   limiterLoginAttempt,
   limiterRequestPhoneCode,
-  limiterRequestPhoneCodeIp
+  limiterRequestPhoneCodeIp,
 } from "./rateLimit"
 import { PhoneCode, User } from "./schema"
 import { Logger } from "./types"

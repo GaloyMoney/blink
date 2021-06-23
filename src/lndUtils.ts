@@ -4,6 +4,7 @@ import { default as axios } from "axios"
 import { createHash, randomBytes } from "crypto"
 import { parsePaymentRequest } from "invoices"
 import {
+  AuthenticatedLnd,
   getChainBalance,
   getChainTransactions,
   getChannelBalance,
@@ -13,6 +14,8 @@ import {
   getHeight,
   getPendingChainBalance,
   getWalletInfo,
+  SubscribeToChannelsChannelClosedEvent,
+  SubscribeToChannelsChannelOpenedEvent,
 } from "lightning"
 import _ from "lodash"
 import { Logger } from "pino"
@@ -46,16 +49,15 @@ export const deleteExpiredInvoices = async () => {
 }
 
 export const deleteFailedPaymentsAllLnds = async () => {
-  try {
-    const lnds = offchainLnds
-    for (const { lnd } of lnds) {
-      // FIXME
-      baseLogger.warn("only run deleteFailedPayments on lnd 0.13")
-      // await deleteFailedPayments({lnd})
-    }
-  } catch (err) {
-    baseLogger.warn({ err }, "error deleting failed payment")
-  }
+  baseLogger.warn("only run deleteFailedPayments on lnd 0.13")
+  // try {
+  //   const lnds = offchainLnds
+  //   for (const { lnd } of lnds)
+  //     await deleteFailedPayments({lnd})
+  //   }
+  // } catch (err) {
+  //   baseLogger.warn({ err }, "error deleting failed payment")
+  // }
 }
 
 export const lndsBalances = async () => {
@@ -282,8 +284,8 @@ export const onChannelUpdated = async ({
   lnd,
   stateChange,
 }: {
-  channel: any
-  lnd: any
+  channel: SubscribeToChannelsChannelClosedEvent | SubscribeToChannelsChannelOpenedEvent
+  lnd: AuthenticatedLnd
   stateChange: "opened" | "closed"
 }) => {
   baseLogger.info({ channel, stateChange }, `channel update`)
@@ -300,9 +302,9 @@ export const onChannelUpdated = async ({
   let txid
 
   if (stateChange === "opened") {
-    ;({ transaction_id: txid } = channel)
+    ;({ transaction_id: txid } = channel as SubscribeToChannelsChannelOpenedEvent)
   } else if (stateChange === "closed") {
-    ;({ close_transaction_id: txid } = channel)
+    ;({ close_transaction_id: txid } = channel as SubscribeToChannelsChannelClosedEvent)
   }
 
   // TODO: dedupe from onchain
@@ -324,7 +326,7 @@ export const onChannelUpdated = async ({
   // try {
   //   tx = await bitcoindDefaultClient.getRawTransaction(txid, true /* include_watchonly */ )
   // } catch (err) {
-  //   logger.error({err}, "can't fetch fee for closing tx")
+  //   baseLogger.error({err}, "can't fetch fee for closing tx")
   // }
 
   // TODO: there is no fee currently given by bitcoind for raw transaction

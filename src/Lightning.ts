@@ -769,7 +769,7 @@ export const LightningMixin = (superclass) =>
       pubkey,
     }: {
       hash: string
-      lock: any
+      lock
       pubkey?: string
     }): Promise<boolean> {
       let invoice, pubkey_
@@ -930,7 +930,7 @@ export const LightningMixin = (superclass) =>
 
     async updatePendingInvoices(lock) {
       // TODO
-      const currency = "BTC"
+      // const currency = "BTC"
 
       const invoices = await InvoiceUser.find({ uid: this.user._id, paid: false })
 

@@ -1,7 +1,6 @@
-import { authenticatedLndGrpc, getWalletInfo } from "lightning"
-import _ from "lodash"
-import { baseLogger } from "./logger"
+import { getWalletInfo } from "lightning"
 import { params } from "./lndAuth"
+import { baseLogger } from "./logger"
 
 /* eslint-disable @typescript-eslint/no-var-requires */
 const EventEmitter = require("events")

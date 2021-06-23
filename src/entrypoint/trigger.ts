@@ -3,12 +3,6 @@ import crypto from "crypto"
 import { Dropbox } from "dropbox"
 import express from "express"
 import {
-  SubscribeToChannelsChannelClosedEvent,
-  SubscribeToChannelsChannelOpenedEvent,
-  AuthenticatedLnd,
-  getChainTransactions,
-  getHeight,
-  getWalletInfo,
   subscribeToBackups,
   subscribeToBlocks,
   subscribeToChannels,

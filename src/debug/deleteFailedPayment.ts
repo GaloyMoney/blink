@@ -1,5 +1,4 @@
-import { getWalletInfo } from "lightning"
-import { deleteFailedPayments, authenticatedLndGrpc } from "ln-service"
+import { authenticatedLndGrpc, deleteFailedPayments } from "ln-service"
 
 // export LND1_TLS=$(kubectl exec lnd-0 -n mainnet  -- base64 /root/.lnd/tls.cert | tr -d '\n\r')
 // export LND1_MACAROON=$(kubectl exec lnd-0 -n mainnet -- base64 /root/.lnd/data/chain/bitcoin/mainnet/admin.macaroon | tr -d '\n\r')
