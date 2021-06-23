@@ -100,7 +100,7 @@ fees:
 
 twoFactor:
   enabled: true
-  threshold: 300000
+  threshold: 300000 # sats
 
 onchainDustAmount: 5000
 # TODO
