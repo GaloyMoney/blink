@@ -4,6 +4,7 @@
     "es6": true,
     "node": true
   },
+  "ignorePatterns": ["/*.js", "lib", "coverage"],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "project": "tsconfig.json",
@@ -38,6 +39,7 @@
     "@typescript-eslint/explicit-module-boundary-types": "off",
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-non-null-assertion": "off",
-    "no-async-promise-executor": "off"
+    "no-async-promise-executor": "off",
+    "@typescript-eslint/ban-ts-comment": "off"
   }
 }

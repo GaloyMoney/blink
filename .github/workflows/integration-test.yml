@@ -1,0 +1,17 @@
+name: "Integration test"
+
+on:
+  push:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  integration:
+    name: Integration test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v2
+    - run: yarn install
+    - name: Run integration tests
+      run: make test-in-ci

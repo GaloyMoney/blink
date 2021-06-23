@@ -9,13 +9,7 @@ import {
 import { yamlConfig } from "../config"
 import { FtxDealerWallet } from "../dealer/FtxDealerWallet"
 import { balanceSheetIsBalanced, updateUsersPendingPayment } from "../ledger/balanceSheet"
-import {
-  getLnds,
-  offchainLnds,
-  onchainLnds,
-  onChannelUpdated,
-  updateEscrows,
-} from "../lndUtils"
+import { offchainLnds, onchainLnds, onChannelUpdated, updateEscrows } from "../lndUtils"
 import { baseLogger } from "../logger"
 import { User } from "../schema"
 import { login } from "../text"

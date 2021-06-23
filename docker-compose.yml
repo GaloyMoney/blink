@@ -21,7 +21,7 @@ services:
       - "18443:18443"
     volumes:
     - ${PWD}/dev/bitcoind/bitcoin.conf:/data/.bitcoin/bitcoin.conf
-  lnd:
+  lnd1:
     image: lncm/lnd:v0.12.1-monitoring
     ports:
       - "10009:10009"

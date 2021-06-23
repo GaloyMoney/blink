@@ -110,6 +110,7 @@ then
 fi
 
 set +e
+rm -rf tmp
 mkdir tmp
 git clone https://github.com/galoymoney/configs ./tmp
 cp -R ./tmp/* $INFRADIR/configs/

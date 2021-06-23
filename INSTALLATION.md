@@ -24,7 +24,7 @@ This will setup all the required pods. Note that this will setup the environment
 
 #### Running ESLint
 
-Follow the instructions [above](#steps), then run `yarn lint`. This has to pass for the CI build to be accepted. It's recommended that you run this task in a pre-commit hook. The repo has a `husky` script for that.
+Follow the instructions [above](#steps), then run `yarn eslint-check`. This has to pass for the CI build to be accepted. It's recommended that you install an ESLint plugin in your editor and/or run this task in a local pre-commit hook.
 
 #### Running the test suite
 

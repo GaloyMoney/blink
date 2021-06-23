@@ -5,7 +5,7 @@ import { once } from "events"
 import { getChannels, subscribeToGraph, updateRoutingFees } from "lightning"
 import _ from "lodash"
 import { lndFeePath } from "../ledger/ledger"
-import { getLnds, offchainLnds, updateEscrows } from "../lndUtils"
+import { offchainLnds, updateEscrows } from "../lndUtils"
 import { MainBook, setupMongoConnection } from "../mongodb"
 import { bitcoindDefaultClient, sleep } from "../utils"
 import {
