@@ -1,10 +1,10 @@
-import { authenticatedLndGrpc, getWalletInfo } from 'lightning'
+import { authenticatedLndGrpc, getWalletInfo } from "lightning"
 import _ from "lodash"
 import { baseLogger } from "./logger"
 import { params } from "./lndAuth"
 
 /* eslint-disable @typescript-eslint/no-var-requires */
-const EventEmitter = require('events')
+const EventEmitter = require("events")
 
 const refresh_time = 10000 // ms
 
@@ -16,10 +16,10 @@ export const isUp = async (param): Promise<void> => {
 
   try {
     // will throw if there is an error
-    await getWalletInfo({lnd})
+    await getWalletInfo({ lnd })
     active = true
   } catch (err) {
-    baseLogger.warn({err}, `can't get wallet info from ${socket}`)
+    baseLogger.warn({ err }, `can't get wallet info from ${socket}`)
     active = false
   }
 
@@ -32,11 +32,11 @@ export const isUp = async (param): Promise<void> => {
   }
 
   param.active = active
-  baseLogger.debug({socket, active}, "lnd pulse")
+  baseLogger.debug({ socket, active }, "lnd pulse")
 }
 
 // launching a loop to update whether lnd are active or not
 export const activateLndHealthCheck = () => params.forEach(isUpLoop)
 
-class LndStatusEventEmitter extends EventEmitter{}
+class LndStatusEventEmitter extends EventEmitter {}
 export const lndStatusEvent = new LndStatusEventEmitter()

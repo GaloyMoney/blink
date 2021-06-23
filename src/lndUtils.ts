@@ -1,14 +1,29 @@
 import { ValidationError } from "apollo-server-express"
-import assert from 'assert'
-import { default as axios } from 'axios'
+import assert from "assert"
+import { default as axios } from "axios"
 import { createHash, randomBytes } from "crypto"
-import { parsePaymentRequest } from 'invoices'
-import { getChainBalance, getChainTransactions, getChannelBalance, getChannels, getClosedChannels, getForwards, getHeight, getPendingChainBalance, getWalletInfo } from "lightning"
+import { parsePaymentRequest } from "invoices"
+import {
+  getChainBalance,
+  getChainTransactions,
+  getChannelBalance,
+  getChannels,
+  getClosedChannels,
+  getForwards,
+  getHeight,
+  getPendingChainBalance,
+  getWalletInfo,
+} from "lightning"
 import _ from "lodash"
 import { Logger } from "pino"
 import { yamlConfig } from "./config"
 import { DbError, LndOfflineError } from "./error"
-import { escrowAccountingPath, lndAccountingPath, lndFeePath, revenueFeePath } from "./ledger/ledger"
+import {
+  escrowAccountingPath,
+  lndAccountingPath,
+  lndFeePath,
+  revenueFeePath,
+} from "./ledger/ledger"
 import { FEECAP, FEEMIN, ILndParamsAuthed, nodeType, params } from "./lndAuth"
 import { baseLogger } from "./logger"
 import { MainBook } from "./mongodb"
@@ -27,25 +42,24 @@ export const deleteExpiredInvoices = async () => {
 
   const date = new Date()
   date.setDate(date.getDate() - delta)
-  InvoiceUser.deleteMany({timestamp: {lt: date}})
+  InvoiceUser.deleteMany({ timestamp: { lt: date } })
 }
 
 export const deleteFailedPaymentsAllLnds = async () => {
   try {
     const lnds = offchainLnds
-    for (const {lnd} of lnds) {
+    for (const { lnd } of lnds) {
       // FIXME
       baseLogger.warn("only run deleteFailedPayments on lnd 0.13")
       // await deleteFailedPayments({lnd})
     }
   } catch (err) {
-    baseLogger.warn({err}, "error deleting failed payment")
+    baseLogger.warn({ err }, "error deleting failed payment")
   }
 }
 
-
 export const lndsBalances = async () => {
-  const data = await Promise.all(getLnds().map(({lnd}) => lndBalances({lnd})))
+  const data = await Promise.all(getLnds().map(({ lnd }) => lndBalances({ lnd })))
   return {
     total: _.sumBy(data, "total"),
     onChain: _.sumBy(data, "onChain"),
@@ -57,12 +71,13 @@ export const lndsBalances = async () => {
 
 export const lndBalances = async ({ lnd }) => {
   // Onchain
-  const { chain_balance } = await getChainBalance({lnd})
-  const { channel_balance, pending_balance: opening_channel_balance } = await getChannelBalance({lnd})
+  const { chain_balance } = await getChainBalance({ lnd })
+  const { channel_balance, pending_balance: opening_channel_balance } =
+    await getChannelBalance({ lnd })
 
   //FIXME: This can cause incorrect balance to be reported in case an unconfirmed txn is later cancelled/double spent
   // bitcoind seems to have a way to report this correctly. does lnd have?
-  const { pending_chain_balance } = await getPendingChainBalance({lnd})
+  const { pending_chain_balance } = await getPendingChainBalance({ lnd })
 
   // get pending closed
   const { channels: closedChannels } = await getClosedChannels({ lnd })
@@ -70,12 +85,25 @@ export const lndBalances = async ({ lnd }) => {
   // FIXME: there can be issue with channel not closed completely from lnd
   // https://github.com/alexbosworth/ln-service/issues/139
   baseLogger.debug({ closedChannels }, "getClosedChannels")
-  const closing_channel_balance = _.sumBy(closedChannels, channel => _.sumBy(
-    (channel as any).close_payments, payment => (payment as any).is_pending ? (payment as any).tokens : 0),
+  const closing_channel_balance = _.sumBy(closedChannels, (channel) =>
+    _.sumBy((channel as any).close_payments, (payment) =>
+      (payment as any).is_pending ? (payment as any).tokens : 0,
+    ),
   )
 
-  const total = chain_balance + channel_balance + pending_chain_balance + opening_channel_balance + closing_channel_balance
-  return { total, onChain: chain_balance + pending_chain_balance, offChain: channel_balance, opening_channel_balance, closing_channel_balance }
+  const total =
+    chain_balance +
+    channel_balance +
+    pending_chain_balance +
+    opening_channel_balance +
+    closing_channel_balance
+  return {
+    total,
+    onChain: chain_balance + pending_chain_balance,
+    offChain: channel_balance,
+    opening_channel_balance,
+    closing_channel_balance,
+  }
 }
 
 export async function nodeStats({ lnd }) {
@@ -93,18 +121,18 @@ export async function nodeStats({ lnd }) {
 }
 
 export const nodesStats = async () => {
-  const data = offchainLnds.map(({lnd}) => nodeStats({lnd}))
+  const data = offchainLnds.map(({ lnd }) => nodeStats({ lnd }))
   // TODO: try if we don't need a Promise.all()
   return await Promise.all(data)
 }
 
 export async function getBosScore() {
   try {
-    const { data } = await axios.get('https://bos.lightning.jorijn.com/data/export.json')
+    const { data } = await axios.get("https://bos.lightning.jorijn.com/data/export.json")
 
     // FIXME: manage multiple nodes
     const { lnd } = getActiveLnd()
-    const publicKey = (await getWalletInfo({lnd})).public_key
+    const publicKey = (await getWalletInfo({ lnd })).public_key
     const bosScore = _.find(data.data, { publicKey })
     if (!bosScore) {
       baseLogger.info("key is not in bos list")
@@ -115,18 +143,22 @@ export async function getBosScore() {
   }
 }
 
-export const getRoutingFees = async ({ lnd, before, after }): Promise<Array<Record<string, number>>> => {
+export const getRoutingFees = async ({
+  lnd,
+  before,
+  after,
+}): Promise<Array<Record<string, number>>> => {
   const forwardsList = await getForwards({ lnd, before, after })
   let next = forwardsList.next
   let forwards = forwardsList.forwards
 
   let finishedFetching = false
-  if(!next || !forwards || forwards.length <= 0) {
+  if (!next || !forwards || forwards.length <= 0) {
     finishedFetching = true
   }
 
-  while(!finishedFetching) {
-    if(next) {
+  while (!finishedFetching) {
+    if (next) {
       const moreForwards = await getForwards({ lnd, token: next })
       forwards = [...forwards, ...moreForwards.forwards]
       next = moreForwards.next
@@ -136,25 +168,29 @@ export const getRoutingFees = async ({ lnd, before, after }): Promise<Array<Reco
   }
 
   // groups each forward object by date
-  const dateGroupedForwards = _.groupBy(forwards, e => new Date(e.created_at).toDateString())
+  const dateGroupedForwards = _.groupBy(forwards, (e) =>
+    new Date(e.created_at).toDateString(),
+  )
 
   // returns revenue for each date by reducing all forwards for each date
-  const feePerDate = _.mapValues(dateGroupedForwards, e => e.reduce((sum, {fee_mtokens}) => sum + +fee_mtokens, 0) / 1000)
+  const feePerDate = _.mapValues(
+    dateGroupedForwards,
+    (e) => e.reduce((sum, { fee_mtokens }) => sum + +fee_mtokens, 0) / 1000,
+  )
 
   // returns an array of objects where each object has key = date and value = fees
-  return _.map(feePerDate, (v, k) => ({[k]: v}))
+  return _.map(feePerDate, (v, k) => ({ [k]: v }))
 }
 
 export const updateRoutingFees = async () => {
-
   const dbMetadata = await DbMetadata.findOne({})
   let lastDate
 
-  if(dbMetadata?.routingFeeLastEntry) {
+  if (dbMetadata?.routingFeeLastEntry) {
     lastDate = new Date(dbMetadata.routingFeeLastEntry)
   } else {
     lastDate = new Date(0)
-    baseLogger.info('Running the routing fee revenue cronjob for the first time')
+    baseLogger.info("Running the routing fee revenue cronjob for the first time")
   }
 
   // Done to remove effect of timezone
@@ -170,7 +206,7 @@ export const updateRoutingFees = async () => {
   const before = endDate.toISOString()
 
   // Only record fee if it has been 1d+ since last record
-  if((endDate.getTime() - lastDate.getTime()) / MS_PER_DAY < 1) {
+  if ((endDate.getTime() - lastDate.getTime()) / MS_PER_DAY < 1) {
     return
   }
 
@@ -185,19 +221,26 @@ export const updateRoutingFees = async () => {
     const [[day, fee]] = Object.entries(forward)
     try {
       await MainBook.entry("routing fee")
-      .credit(revenueFeePath, fee, { ...metadata, feesCollectedOn: day})
-      .debit(lndAccountingPath, fee, { ...metadata, feesCollectedOn: day })
-      .commit()
-    } catch(err) {
-      throw new DbError('Unable to record routing revenue', {forwardToClient: false, logger: baseLogger, level: 'error'})
+        .credit(revenueFeePath, fee, { ...metadata, feesCollectedOn: day })
+        .debit(lndAccountingPath, fee, { ...metadata, feesCollectedOn: day })
+        .commit()
+    } catch (err) {
+      throw new DbError("Unable to record routing revenue", {
+        forwardToClient: false,
+        logger: baseLogger,
+        level: "error",
+      })
     }
   }
 
   endDate.setDate(endDate.getDate() + 1)
   const endDay = endDate.toDateString()
-  await DbMetadata.findOneAndUpdate({}, { $set: { routingFeeLastEntry: endDay } }, { upsert: true })
+  await DbMetadata.findOneAndUpdate(
+    {},
+    { $set: { routingFeeLastEntry: endDay } },
+    { upsert: true },
+  )
 }
-
 
 export const updateEscrows = async () => {
   const type = "escrow"
@@ -205,10 +248,10 @@ export const updateEscrows = async () => {
 
   // FIXME: update escrow of all the node
   const { lnd } = getActiveLnd()
-  const { channels } = await getChannels({lnd})
+  const { channels } = await getChannels({ lnd })
 
-  const selfInitatedChannels = _.filter(channels, {is_partner_initiated: false})
-  const escrowInLnd = _.sumBy(selfInitatedChannels, 'commit_transaction_fee')
+  const selfInitatedChannels = _.filter(channels, { is_partner_initiated: false })
+  const escrowInLnd = _.sumBy(selfInitatedChannels, "commit_transaction_fee")
 
   const { balance: escrowInMongodb } = await MainBook.balance({
     account: escrowAccountingPath,
@@ -219,23 +262,30 @@ export const updateEscrows = async () => {
   // diff will equal 0 if there is no change
   const diff = escrowInLnd + escrowInMongodb
 
-  baseLogger.info({diff, escrowInLnd, escrowInMongodb, channels}, "escrow recording")
+  baseLogger.info({ diff, escrowInLnd, escrowInMongodb, channels }, "escrow recording")
 
   if (diff > 0) {
     await MainBook.entry("escrow")
-      .credit(lndAccountingPath, diff, {...metadata})
-      .debit(escrowAccountingPath, diff, {...metadata})
+      .credit(lndAccountingPath, diff, { ...metadata })
+      .debit(escrowAccountingPath, diff, { ...metadata })
       .commit()
   } else if (diff < 0) {
     await MainBook.entry("escrow")
-      .debit(lndAccountingPath, - diff, {...metadata})
-      .credit(escrowAccountingPath, - diff, {...metadata})
+      .debit(lndAccountingPath, -diff, { ...metadata })
+      .credit(escrowAccountingPath, -diff, { ...metadata })
       .commit()
   }
 }
 
-
-export const onChannelUpdated = async ({ channel, lnd, stateChange }: { channel: any, lnd: any, stateChange: "opened" | "closed" }) => {
+export const onChannelUpdated = async ({
+  channel,
+  lnd,
+  stateChange,
+}: {
+  channel: any
+  lnd: any
+  stateChange: "opened" | "closed"
+}) => {
   baseLogger.info({ channel, stateChange }, `channel update`)
 
   if (channel.is_partner_initiated) {
@@ -250,9 +300,9 @@ export const onChannelUpdated = async ({ channel, lnd, stateChange }: { channel:
   let txid
 
   if (stateChange === "opened") {
-    ({ transaction_id: txid } = channel)
+    ;({ transaction_id: txid } = channel)
   } else if (stateChange === "closed") {
-    ({ close_transaction_id: txid } = channel)
+    ;({ close_transaction_id: txid } = channel)
   }
 
   // TODO: dedupe from onchain
@@ -264,7 +314,7 @@ export const onChannelUpdated = async ({ channel, lnd, stateChange }: { channel:
   const tx = _.find(transactions, { id: txid })
 
   if (!tx?.fee) {
-    baseLogger.error({transactions}, "fee doesn't exist")
+    baseLogger.error({ transactions }, "fee doesn't exist")
     return
   }
 
@@ -290,29 +340,34 @@ export const onChannelUpdated = async ({ channel, lnd, stateChange }: { channel:
     .credit(lndAccountingPath, fee, { ...metadata })
     .commit()
 
-  baseLogger.info({ channel, fee, ...metadata }, `${stateChange} channel fee added to mongodb`)
+  baseLogger.info(
+    { channel, fee, ...metadata },
+    `${stateChange} channel fee added to mongodb`,
+  )
 }
 
-
-export const getLnds = ({type, active}: {type?: nodeType, active?: boolean} = {}): ILndParamsAuthed[] => {
+export const getLnds = ({
+  type,
+  active,
+}: { type?: nodeType; active?: boolean } = {}): ILndParamsAuthed[] => {
   let result = params
 
   if (type) {
-    result = _.filter(result, item => item.type.some(item => item === type))
+    result = _.filter(result, (item) => item.type.some((item) => item === type))
   }
 
   if (active) {
-    result = _.filter(result, {active})
+    result = _.filter(result, { active })
   }
 
   return result
 }
 
-export const offchainLnds = getLnds({type: "offchain"})
+export const offchainLnds = getLnds({ type: "offchain" })
 
 // only returning the first one for now
 export const getActiveLnd = () => {
-  const lnds = getLnds({active: true, type: "offchain"})
+  const lnds = getLnds({ active: true, type: "offchain" })
   if (lnds.length === 0) {
     throw new LndOfflineError("no active lightning node (for offchain)")
   }
@@ -324,20 +379,20 @@ export const getActiveLnd = () => {
 }
 
 export const getActiveOnchainLnd = () => {
-  const lnds = getLnds({active: true, type: "onchain"})
+  const lnds = getLnds({ active: true, type: "onchain" })
   if (lnds.length === 0) {
     throw new LndOfflineError("no active lightning node (for onchain)")
   }
   return lnds[0]
 }
 
-export const onchainLnds = getLnds({type: "onchain"})
+export const onchainLnds = getLnds({ type: "onchain" })
 
-export const nodesPubKey = offchainLnds.map(item => item.pubkey)
-export const isMyNode = ({pubkey}) => _.includes(nodesPubKey, pubkey)
+export const nodesPubKey = offchainLnds.map((item) => item.pubkey)
+export const isMyNode = ({ pubkey }) => _.includes(nodesPubKey, pubkey)
 
-export const getLndFromPubkey = ({ pubkey }: {pubkey: string}) => {
-  const lnds = getLnds({active: true})
+export const getLndFromPubkey = ({ pubkey }: { pubkey: string }) => {
+  const lnds = getLnds({ active: true })
   const lnd = _.filter(lnds, { pubkey })
   if (!lnd) {
     throw new LndOfflineError(`lnd with pubkey:${pubkey} is offline`)
@@ -346,9 +401,14 @@ export const getLndFromPubkey = ({ pubkey }: {pubkey: string}) => {
   }
 }
 
-export const validate = async ({params, logger}: {params: IFeeRequest, logger: Logger}) => {
-
-  const keySendPreimageType = '5482373484'
+export const validate = async ({
+  params,
+  logger,
+}: {
+  params: IFeeRequest
+  logger: Logger
+}) => {
+  const keySendPreimageType = "5482373484"
   const preimageByteLength = 32
 
   let pushPayment = false
@@ -369,7 +429,17 @@ export const validate = async ({params, logger}: {params: IFeeRequest, logger: L
     // const {lnd} = getActiveLnd()
 
     try {
-      ({ id, safe_tokens: tokens, destination, description, routes: routeHint, payment, cltv_delta, expires_at, features } = await parsePaymentRequest({ request: params.invoice }))
+      ;({
+        id,
+        safe_tokens: tokens,
+        destination,
+        description,
+        routes: routeHint,
+        payment,
+        cltv_delta,
+        expires_at,
+        features,
+      } = await parsePaymentRequest({ request: params.invoice }))
       // ({ id, safe_tokens: tokens, destination, description, routes: routeHint, payment, cltv_delta, expires_at, features } = await decodePaymentRequest({ lnd, request: params.invoice }))
     } catch (err) {
       const error = `Error decoding the invoice`
@@ -386,13 +456,12 @@ export const validate = async ({params, logger}: {params: IFeeRequest, logger: L
 
       throw new ValidationError(error)
     }
-
   } else {
     if (!params.username) {
       // FIXME: create a new error. this is a not a graphl error.
       // throw new ValidationError(error, {logger})
 
-      const error = `a username is required for push payment to the ${ yamlConfig.name }`
+      const error = `a username is required for push payment to the ${yamlConfig.name}`
       throw new ValidationError(error)
     }
 
@@ -401,18 +470,18 @@ export const validate = async ({params, logger}: {params: IFeeRequest, logger: L
     username = params.username
 
     const preimage = randomBytes(preimageByteLength)
-    id = createHash('sha256').update(preimage).digest().toString('hex')
-    const secret = preimage.toString('hex')
+    id = createHash("sha256").update(preimage).digest().toString("hex")
+    const secret = preimage.toString("hex")
     messages = [{ type: keySendPreimageType, value: secret }]
 
     // TODO: should it be id or secret?
     // check from keysend invoices generated by lnd
     // payment = payment ?? secret
-
   }
 
   if (!params.amount && !tokens) {
-    const error = 'Invoice is a zero-amount invoice, or pushPayment is being used, but no amount was passed separately'
+    const error =
+      "Invoice is a zero-amount invoice, or pushPayment is being used, but no amount was passed separately"
     // FIXME: create a new error. this is a not a graphl error.
     // throw new ValidationError(error, {logger})
 
@@ -422,7 +491,7 @@ export const validate = async ({params, logger}: {params: IFeeRequest, logger: L
   tokens = tokens ? tokens : params.amount
 
   if (tokens <= 0) {
-    logger.error('A negative amount was passed')
+    logger.error("A negative amount was passed")
     throw Error("amount can't be negative")
   }
 
@@ -430,8 +499,19 @@ export const validate = async ({params, logger}: {params: IFeeRequest, logger: L
 
   return {
     // FIXME String: https://github.com/alexbosworth/lightning/issues/24
-    tokens, mtokens: String(tokens * 1000), destination, pushPayment, id, routeHint, messages, max_fee,
-    memoInvoice: description, payment, cltv_delta, expires_at, features, username,
+    tokens,
+    mtokens: String(tokens * 1000),
+    destination,
+    pushPayment,
+    id,
+    routeHint,
+    messages,
+    max_fee,
+    memoInvoice: description,
+    payment,
+    cltv_delta,
+    expires_at,
+    features,
+    username,
   }
 }
-

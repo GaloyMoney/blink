@@ -9,15 +9,11 @@
     "target": "es2020",
     "noImplicitAny": false,
     "esModuleInterop": true,
-    "rootDirs": [
-      "src"
-    ],
+    "rootDirs": ["src"],
     "types": ["jest", "node"],
     "moduleResolution": "node",
     "resolveJsonModule": true
   },
   "compileOnSave": true,
-  "include": [
-    "src/**/*"
-  ]
+  "include": ["src/**/*"]
 }

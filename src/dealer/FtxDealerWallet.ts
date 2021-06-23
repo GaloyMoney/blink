@@ -1,20 +1,19 @@
-import _ from 'lodash'
+import _ from "lodash"
 import { yamlConfig } from "../config"
 import { accountDealerFtxPath, liabilitiesDealerFtxPath } from "../ledger/ledger"
 import { MainBook } from "../mongodb"
 import { OnChainMixin } from "../OnChain"
 import { ILightningWalletUser } from "../types"
 import { btc2sat, sleep } from "../utils"
-import { baseLogger } from '../logger'
+import { baseLogger } from "../logger"
 import { UserWallet } from "../userWallet"
-import ccxt from 'ccxt'
-import assert from 'assert'
-
+import ccxt from "ccxt"
+import assert from "assert"
 
 const apiKey = process.env.FTX_KEY
 const secret = process.env.FTX_SECRET
 
-const symbol = 'BTC-PERP'
+const symbol = "BTC-PERP"
 
 // TODO: move to the yaml config
 const simulateOnly = true
@@ -47,7 +46,7 @@ export class FtxDealerWallet extends OnChainMixin(UserWallet) {
     return {
       // dealer is the only one account with the a negative balance for USD
       // FIXME: look if there is a cleaner design than just have a - sign here
-      usd: - USD,
+      usd: -USD,
       satsLnd,
       satsFtx,
     }
@@ -61,7 +60,7 @@ export class FtxDealerWallet extends OnChainMixin(UserWallet) {
     // create a new address
     // is not enabled on FTX
     // return this.ftx.createDepositAddress("BTC")
-    return Error('not implemented')
+    return Error("not implemented")
   }
 
   async exchangeDepositAddress() {
@@ -72,7 +71,7 @@ export class FtxDealerWallet extends OnChainMixin(UserWallet) {
 
   async satsBalance() {
     const { satsLnd: nodeLiabilities } = await this.getLocalLiabilities()
-    const node = - nodeLiabilities
+    const node = -nodeLiabilities
 
     // at least on FTX. interest will be charged when below -$30,000.
     // TODO: manage this part
@@ -112,7 +111,9 @@ export class FtxDealerWallet extends OnChainMixin(UserWallet) {
   }
 
   async getNextFundingRate() {
-    const { result: {nextFundingRate} } = await this.ftx.publicGetFuturesFutureNameStats({ future_name: symbol })
+    const {
+      result: { nextFundingRate },
+    } = await this.ftx.publicGetFuturesFutureNameStats({ future_name: symbol })
     return nextFundingRate
   }
 
@@ -124,7 +125,6 @@ export class FtxDealerWallet extends OnChainMixin(UserWallet) {
 
     this.logger.debug({ btcPrice }, "[DEBUG] is price set for the dealer?")
 
-
     // TODO: what is being returned if no order had been placed?
     // probably an empty array
 
@@ -132,11 +132,22 @@ export class FtxDealerWallet extends OnChainMixin(UserWallet) {
     const result = await this.ftx.privateGetAccount()
     this.logger.debug({ result }, "full result of this.ftx.privateGetAccount")
 
-    const { result: { collateral, positions, chargeInterestOnNegativeUsd, marginFraction, totalAccountValue } } = result
-    this.logger.debug({collateral, positions, chargeInterestOnNegativeUsd, marginFraction}, "value kept from this.ftx.privateGetAccount")
+    const {
+      result: {
+        collateral,
+        positions,
+        chargeInterestOnNegativeUsd,
+        marginFraction,
+        totalAccountValue,
+      },
+    } = result
+    this.logger.debug(
+      { collateral, positions, chargeInterestOnNegativeUsd, marginFraction },
+      "value kept from this.ftx.privateGetAccount",
+    )
 
-    const positionBtcPerp = _.find(positions, { future: symbol } )
-    this.logger.debug({positionBtcPerp}, "positionBtcPerp result")
+    const positionBtcPerp = _.find(positions, { future: symbol })
+    this.logger.debug({ positionBtcPerp }, "positionBtcPerp result")
 
     // {
     //   "level": 20,
@@ -165,7 +176,12 @@ export class FtxDealerWallet extends OnChainMixin(UserWallet) {
     //   "msg": "positionBtcPerp result"
     // }
 
-    const { netSize = 0, estimatedLiquidationPrice, collateralUsed, maintenanceMarginRequirement } = positionBtcPerp ?? {}
+    const {
+      netSize = 0,
+      estimatedLiquidationPrice,
+      collateralUsed,
+      maintenanceMarginRequirement,
+    } = positionBtcPerp ?? {}
 
     // TODO: check this is the intended settings
     assert(chargeInterestOnNegativeUsd === true)
@@ -176,9 +192,9 @@ export class FtxDealerWallet extends OnChainMixin(UserWallet) {
       // making netSize positive to simplify calculation
       // we should always be short so netSize should initially
       // always be negative
-      btc: - netSize,
+      btc: -netSize,
 
-      usd: - netSize * btcPrice,
+      usd: -netSize * btcPrice,
       estimatedLiquidationPrice,
       collateralUsed, // USD
       maintenanceMarginRequirement, // start at 0.03 but increase with position side
@@ -188,7 +204,7 @@ export class FtxDealerWallet extends OnChainMixin(UserWallet) {
       totalAccountValue,
 
       // if there is no collateral, marginFraction will be null. this is equivalent to infinite leverage.
-      leverage : marginFraction ? 1 / marginFraction : Number.POSITIVE_INFINITY,
+      leverage: marginFraction ? 1 / marginFraction : Number.POSITIVE_INFINITY,
     }
   }
 
@@ -206,7 +222,6 @@ export class FtxDealerWallet extends OnChainMixin(UserWallet) {
   // the account won't be at the irsk of being liquidated in this case
   // but then the custody risk of the exchange increases
   static isRebalanceNeeded({ usdLiability, btcPrice, usdCollateral }) {
-
     type IDepositOrWithdraw = "withdraw" | "deposit" | null
 
     let usdAmountDiff
@@ -229,13 +244,14 @@ export class FtxDealerWallet extends OnChainMixin(UserWallet) {
     if (leverage < yamlConfig.hedging.LOW_BOUND_LEVERAGE) {
       const targetUsdCollateral = usdLiability / yamlConfig.hedging.LOW_SAFEBOUND_LEVERAGE
       usdAmountDiff = usdCollateral - targetUsdCollateral
-      depositOrWithdraw =  "withdraw"
+      depositOrWithdraw = "withdraw"
     }
 
     // over leveraged
     // our collateral could get liquidated if we don't rebalance
-    else if (leverage  > yamlConfig.hedging.HIGH_BOUND_LEVERAGE) {
-      const targetUsdCollateral = usdLiability / yamlConfig.hedging.HIGH_SAFEBOUND_LEVERAGE
+    else if (leverage > yamlConfig.hedging.HIGH_BOUND_LEVERAGE) {
+      const targetUsdCollateral =
+        usdLiability / yamlConfig.hedging.HIGH_SAFEBOUND_LEVERAGE
       usdAmountDiff = targetUsdCollateral - usdCollateral
       depositOrWithdraw = "deposit"
     }
@@ -253,8 +269,7 @@ export class FtxDealerWallet extends OnChainMixin(UserWallet) {
   }
 
   static isOrderNeeded({ usdLiability, usdExposure, btcPrice }) {
-
-    const {ratio} = this.getExposureRatio({ usdLiability, usdExposure })
+    const { ratio } = this.getExposureRatio({ usdLiability, usdExposure })
 
     let usdOrderAmount
     let buyOrSell: IBuyOrSell = null
@@ -280,7 +295,6 @@ export class FtxDealerWallet extends OnChainMixin(UserWallet) {
 
       // else:
       // we have no, or next to none, exposure to change in price in BTC
-
     } catch (err) {
       throw Error("can't calculate hedging value")
     }
@@ -296,14 +310,17 @@ export class FtxDealerWallet extends OnChainMixin(UserWallet) {
     return { btcAmount, buyOrSell }
   }
 
-  async rebalance ({ btcAmount, depositOrWithdraw, logger }) {
+  async rebalance({ btcAmount, depositOrWithdraw, logger }) {
     const currency = "BTC"
     const sats = btc2sat(btcAmount)
 
-    const metadata = { type: "exchange_rebalance", currency, ...UserWallet.getCurrencyEquivalent({sats, fee: 0}) }
+    const metadata = {
+      type: "exchange_rebalance",
+      currency,
+      ...UserWallet.getCurrencyEquivalent({ sats, fee: 0 }),
+    }
 
-    let subLogger = logger.child({...metadata, btcAmount, depositOrWithdraw})
-
+    let subLogger = logger.child({ ...metadata, btcAmount, depositOrWithdraw })
 
     // deposit and withdraw are from the exchange point of view
     if (depositOrWithdraw === "withdraw") {
@@ -320,13 +337,13 @@ export class FtxDealerWallet extends OnChainMixin(UserWallet) {
 
       let withdrawalResult
 
-      subLogger = subLogger.child({memo, address})
+      subLogger = subLogger.child({ memo, address })
 
       try {
         withdrawalResult = await this.ftx.withdraw(currency, btcAmount, address)
-      } catch(err) {
+      } catch (err) {
         const error = "this.ftx.withdraw() error issue"
-        subLogger.error({withdrawalResult}, error)
+        subLogger.error({ withdrawalResult }, error)
         throw new Error(err)
       }
 
@@ -359,7 +376,6 @@ export class FtxDealerWallet extends OnChainMixin(UserWallet) {
       // }
 
       if (withdrawalResult.status === "requested") {
-
         // TODO: wait until request succeed before updating tx
 
         // updateOnchainReceipt() doing:
@@ -370,14 +386,12 @@ export class FtxDealerWallet extends OnChainMixin(UserWallet) {
         // .commit()
 
         await MainBook.entry()
-          .credit(accountDealerFtxPath, sats, {...metadata, memo })
-          .debit(liabilitiesDealerFtxPath, sats, {...metadata, memo })
+          .credit(accountDealerFtxPath, sats, { ...metadata, memo })
+          .debit(liabilitiesDealerFtxPath, sats, { ...metadata, memo })
           .commit()
 
-        subLogger.info({withdrawalResult}, `rebalancing withdrawal was succesful`)
-
+        subLogger.info({ withdrawalResult }, `rebalancing withdrawal was succesful`)
       } else {
-
         // {
         //   "level": 50,
         //   "time": 1603075865330,
@@ -423,13 +437,12 @@ export class FtxDealerWallet extends OnChainMixin(UserWallet) {
         //   "msg": "withdrawal was not succesful"
         // }
 
-        subLogger.error({withdrawalResult}, `rebalancing withdrawal was not succesful`)
+        subLogger.error({ withdrawalResult }, `rebalancing withdrawal was not succesful`)
       }
-
     } else if (depositOrWithdraw === "deposit") {
       const memo = `deposit of ${btcAmount} btc to ${this.ftx.name}`
       const address = await this.exchangeDepositAddress()
-      await this.onChainPay({address, amount: sats, memo })
+      await this.onChainPay({ address, amount: sats, memo })
 
       // onChainPay is doing:
       //
@@ -442,34 +455,31 @@ export class FtxDealerWallet extends OnChainMixin(UserWallet) {
       // explore a way to refactor this to make a single transaction.
 
       await MainBook.entry()
-        .credit(liabilitiesDealerFtxPath, sats, {...metadata, memo })
-        .debit(accountDealerFtxPath, sats, {...metadata, memo })
+        .credit(liabilitiesDealerFtxPath, sats, { ...metadata, memo })
+        .debit(accountDealerFtxPath, sats, { ...metadata, memo })
         .commit()
 
-      subLogger.info({memo, address}, "deposit rebalancing succesful")
-
+      subLogger.info({ memo, address }, "deposit rebalancing succesful")
     }
   }
 
   async executeOrder({ buyOrSell, btcAmount }) {
-
     let order, orderStatus
 
     // let orderId = 6103637365
     // let orderId
 
     // TODO: limit order
-    const orderType = 'market'
+    const orderType = "market"
 
-    const logOrder = this.logger.child({symbol, orderType, buyOrSell, btcAmount})
+    const logOrder = this.logger.child({ symbol, orderType, buyOrSell, btcAmount })
 
     // TODO: min order size could be dynamically fetched from
     // https://docs.ftx.com/#get-future
     const minOrderSize = 0.0001
 
-
     if (btcAmount < minOrderSize) {
-      logOrder.info({minOrderSize}, "order amount is too small, skipping order")
+      logOrder.info({ minOrderSize }, "order amount is too small, skipping order")
     }
 
     // TODO:
@@ -478,7 +488,7 @@ export class FtxDealerWallet extends OnChainMixin(UserWallet) {
     try {
       order = await this.ftx.createOrder(symbol, orderType, buyOrSell, btcAmount)
     } catch (err) {
-      logOrder.error({err}, "error placing an order")
+      logOrder.error({ err }, "error placing an order")
       throw err
     }
 
@@ -495,10 +505,9 @@ export class FtxDealerWallet extends OnChainMixin(UserWallet) {
     }
 
     if (orderStatus.status !== "closed") {
-      logOrder.error({ order, orderStatus}, "market order has not been fullfilled")
+      logOrder.error({ order, orderStatus }, "market order has not been fullfilled")
       // Pager
     } else {
-
       // {
       //   "level": 30,
       //   "time": 1602973199649,
@@ -589,40 +598,69 @@ export class FtxDealerWallet extends OnChainMixin(UserWallet) {
     this.logger.debug("starting with order loop")
 
     try {
-      const {usd: usdLiability} = await this.getLocalLiabilities()
-      const {usd: usdExposure, leverage, collateral} = await this.getAccountPosition()
+      const { usd: usdLiability } = await this.getLocalLiabilities()
+      const { usd: usdExposure, leverage, collateral } = await this.getAccountPosition()
 
-      subLogger = subLogger.child({ usdExposure, usdLiability, leverage, collateral, btcPrice })
+      subLogger = subLogger.child({
+        usdExposure,
+        usdLiability,
+        leverage,
+        collateral,
+        btcPrice,
+      })
 
-      const { btcAmount, buyOrSell } = FtxDealerWallet.isOrderNeeded({ usdLiability, usdExposure, btcPrice })
+      const { btcAmount, buyOrSell } = FtxDealerWallet.isOrderNeeded({
+        usdLiability,
+        usdExposure,
+        btcPrice,
+      })
       subLogger.debug({ btcAmount, buyOrSell }, "isOrderNeeded result")
 
       if (buyOrSell && !simulateOnly) {
         await this.executeOrder({ btcAmount, buyOrSell })
 
-        const {usd: updatedUsdLiability } = await this.getLocalLiabilities()
-        const {usd: updatedUsdExposure } = await this.getAccountPosition()
+        const { usd: updatedUsdLiability } = await this.getLocalLiabilities()
+        const { usd: updatedUsdExposure } = await this.getAccountPosition()
 
-        subLogger.debug({ updatedUsdLiability, updatedUsdExposure, btcPrice }, "input for the updated isOrderNeeded after an order")
-        const { buyOrSell: newBuyOrSell } = FtxDealerWallet.isOrderNeeded({ usdLiability: updatedUsdLiability, usdExposure: updatedUsdExposure, btcPrice })
+        subLogger.debug(
+          { updatedUsdLiability, updatedUsdExposure, btcPrice },
+          "input for the updated isOrderNeeded after an order",
+        )
+        const { buyOrSell: newBuyOrSell } = FtxDealerWallet.isOrderNeeded({
+          usdLiability: updatedUsdLiability,
+          usdExposure: updatedUsdExposure,
+          btcPrice,
+        })
 
-        subLogger.debug({ newBuyOrSell }, "output for the updated isOrderNeeded after an order")
+        subLogger.debug(
+          { newBuyOrSell },
+          "output for the updated isOrderNeeded after an order",
+        )
         assert(!newBuyOrSell)
       }
-
     } catch (err) {
-      subLogger.error({err}, "error in the order loop")
+      subLogger.error({ err }, "error in the order loop")
     }
 
     this.logger.debug("starting with rebalance loop")
 
     try {
-      const {usd: usdLiability} = await this.getLocalLiabilities()
-      const {usd: usdExposure, leverage, collateral} = await this.getAccountPosition()
+      const { usd: usdLiability } = await this.getLocalLiabilities()
+      const { usd: usdExposure, leverage, collateral } = await this.getAccountPosition()
 
-      subLogger = this.logger.child({ usdExposure, usdLiability, leverage, collateral, btcPrice })
+      subLogger = this.logger.child({
+        usdExposure,
+        usdLiability,
+        leverage,
+        collateral,
+        btcPrice,
+      })
 
-      const { btcAmount, depositOrWithdraw } = FtxDealerWallet.isRebalanceNeeded({ usdLiability, btcPrice, usdCollateral: collateral })
+      const { btcAmount, depositOrWithdraw } = FtxDealerWallet.isRebalanceNeeded({
+        usdLiability,
+        btcPrice,
+        usdCollateral: collateral,
+      })
       subLogger.debug({ btcAmount, depositOrWithdraw }, "isRebalanceNeeded result")
 
       if (!simulateOnly) {
@@ -632,11 +670,9 @@ export class FtxDealerWallet extends OnChainMixin(UserWallet) {
       // TODO: add a check that rebalancing is no longer needed.
       // maybe with the block time, this is not as easy?
     } catch (err) {
-      subLogger.error({err}, "error in the rebalance loop")
+      subLogger.error({ err }, "error in the rebalance loop")
     }
-
   }
-
 
   protected async getFtxMethods() {
     // 0: "isBrowser"
@@ -1257,6 +1293,4 @@ export class FtxDealerWallet extends OnChainMixin(UserWallet) {
     // 615: "executeRestRequest"
     baseLogger.info(Object.keys(this.ftx))
   }
-
-
 }

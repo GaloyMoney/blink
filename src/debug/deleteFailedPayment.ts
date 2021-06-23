@@ -6,15 +6,15 @@ import { deleteFailedPayments, authenticatedLndGrpc } from "ln-service"
 
 const fn = async () => {
   try {
-    const {lnd} = authenticatedLndGrpc({
+    const { lnd } = authenticatedLndGrpc({
       cert: process.env.LND1_TLS,
       macaroon: process.env.LND1_MACAROON,
       node: "localhost",
       port: 10009,
     })
-    console.log(await deleteFailedPayments({lnd}))
+    console.log(await deleteFailedPayments({ lnd }))
   } catch (err) {
-    console.log({err})
+    console.log({ err })
   }
 }
 

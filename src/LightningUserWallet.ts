@@ -11,21 +11,27 @@ import { getFunderWallet } from "./walletFactory"
  * this represents a user wallet
  */
 export class LightningUserWallet extends OnChainMixin(LightningMixin(UserWallet)) {
-
   constructor(args: ILightningWalletUser) {
     super({ ...args })
   }
 
   async addEarn(ids) {
-
     if (this.user?.twilio?.carrier?.type === "voip") {
-      throw new CustomError("reward can only be given on non voip-based phone", "VOIP_REWARD_RESTRICTED", {forwardToClient: true, logger: this.logger, level: 'warn', metadata: undefined})
+      throw new CustomError(
+        "reward can only be given on non voip-based phone",
+        "VOIP_REWARD_RESTRICTED",
+        {
+          forwardToClient: true,
+          logger: this.logger,
+          level: "warn",
+          metadata: undefined,
+        },
+      )
     }
 
     const lightningFundingWallet = await getFunderWallet({ logger: this.logger })
 
     return await redlock({ path: this.user._id, logger: this.logger }, async () => {
-
       const result: Record<string, unknown>[] = []
 
       for (const id of ids) {
@@ -37,11 +43,10 @@ export class LightningUserWallet extends OnChainMixin(LightningMixin(UserWallet)
           { upsert: true },
         )
 
-        if (userPastState.earn.findIndex(item => item === id) === -1) {
-
+        if (userPastState.earn.findIndex((item) => item === id) === -1) {
           // FIXME: use pay by username instead
-          const invoice = await this.addInvoice({memo: id, value: amount})
-          await lightningFundingWallet.pay({invoice, isReward: true})
+          const invoice = await this.addInvoice({ memo: id, value: amount })
+          await lightningFundingWallet.pay({ invoice, isReward: true })
         }
 
         result.push({ id, value: amount, completed: true })
@@ -50,5 +55,4 @@ export class LightningUserWallet extends OnChainMixin(LightningMixin(UserWallet)
       return result
     })
   }
-
 }

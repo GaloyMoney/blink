@@ -1,11 +1,16 @@
 import moment from "moment"
 import { Logger } from "pino"
-import twilio from 'twilio'
+import twilio from "twilio"
 import { yamlConfig } from "./config"
 import { TooManyRequestError } from "./error"
 import { createToken } from "./jwt"
-import { baseLogger } from './logger'
-import { failedAttemptPerIp, limiterLoginAttempt, limiterRequestPhoneCode, limiterRequestPhoneCodeIp } from "./rateLimit"
+import { baseLogger } from "./logger"
+import {
+  failedAttemptPerIp,
+  limiterLoginAttempt,
+  limiterRequestPhoneCode,
+  limiterRequestPhoneCodeIp,
+} from "./rateLimit"
 import { PhoneCode, User } from "./schema"
 import { randomIntFromInterval } from "./utils"
 
@@ -27,25 +32,35 @@ export const sendText = async ({ body, to, logger }) => {
       body,
     })
   } catch (err) {
-    logger.fatal({err}, "impossible to send text")
+    logger.fatal({ err }, "impossible to send text")
     return
   }
 
-  logger.info({to}, "sent text successfully")
+  logger.info({ to }, "sent text successfully")
 }
 
 export const getCarrier = async (phone: string) => {
-  const result = await getTwilioClient().lookups.phoneNumbers(phone).fetch({type: ['carrier']})
-  baseLogger.info({result}, "result carrier info")
+  const result = await getTwilioClient()
+    .lookups.phoneNumbers(phone)
+    .fetch({ type: ["carrier"] })
+  baseLogger.info({ result }, "result carrier info")
   return result
 }
 
-export const requestPhoneCode = async ({ phone, logger, ip }: {phone: string, logger: Logger, ip: string}): Promise<boolean> => {
-  logger.info({phone, ip}, "RequestPhoneCode called")
+export const requestPhoneCode = async ({
+  phone,
+  logger,
+  ip,
+}: {
+  phone: string
+  logger: Logger
+  ip: string
+}): Promise<boolean> => {
+  logger.info({ phone, ip }, "RequestPhoneCode called")
 
   try {
     await limiterRequestPhoneCode.consume(phone)
-  } catch(err) {
+  } catch (err) {
     if (err instanceof Error) {
       throw err
     } else {
@@ -55,7 +70,7 @@ export const requestPhoneCode = async ({ phone, logger, ip }: {phone: string, lo
 
   try {
     await limiterRequestPhoneCodeIp.consume(ip)
-  } catch(err) {
+  } catch (err) {
     if (err instanceof Error) {
       throw err
     } else {
@@ -64,7 +79,7 @@ export const requestPhoneCode = async ({ phone, logger, ip }: {phone: string, lo
   }
 
   // make it possible to bypass the auth for testing purpose
-  if (yamlConfig.test_accounts.findIndex(item => item.phone === phone) !== -1) {
+  if (yamlConfig.test_accounts.findIndex((item) => item.phone === phone) !== -1) {
     return true
   }
 
@@ -86,7 +101,7 @@ export const requestPhoneCode = async ({ phone, logger, ip }: {phone: string, lo
     await PhoneCode.create({ phone, code })
     await sendText({ body, to: phone, logger })
   } catch (err) {
-    logger.error({err}, "impossible to send message")
+    logger.error({ err }, "impossible to send message")
     return false
   }
 
@@ -100,17 +115,25 @@ interface ILogin {
   ip: string
 }
 
-export const login = async ({ phone, code, logger, ip }: ILogin): Promise<string | null> => {
-  const subLogger = logger.child({topic: "login"})
+export const login = async ({
+  phone,
+  code,
+  logger,
+  ip,
+}: ILogin): Promise<string | null> => {
+  const subLogger = logger.child({ topic: "login" })
 
   const rlResult = await failedAttemptPerIp.get(ip)
-  if (rlResult !== null && rlResult.consumedPoints > yamlConfig.limits.failedAttemptPerIp.points) {
+  if (
+    rlResult !== null &&
+    rlResult.consumedPoints > yamlConfig.limits.failedAttemptPerIp.points
+  ) {
     throw new TooManyRequestError({ logger })
   }
 
   try {
     await limiterLoginAttempt.consume(phone)
-  } catch(err) {
+  } catch (err) {
     if (err instanceof Error) {
       throw err
     } else {
@@ -127,10 +150,12 @@ export const login = async ({ phone, code, logger, ip }: ILogin): Promise<string
     })
 
     // is it a test account?
-    if (yamlConfig.test_accounts.findIndex(item => item.phone === phone) !== -1 &&
-      yamlConfig.test_accounts.filter(item => item.phone === phone)[0].code === code) {
+    if (
+      yamlConfig.test_accounts.findIndex((item) => item.phone === phone) !== -1 &&
+      yamlConfig.test_accounts.filter((item) => item.phone === phone)[0].code === code
+    ) {
       // we are in this branch if phone is a test account + code is correct
-    } else if (codes.findIndex(item => item.code === code) === -1) {
+    } else if (codes.findIndex((item) => item.code === code) === -1) {
       // this branch is both relevant for test and non-test accounts
       // for when the code is not correct
       subLogger.warn({ phone, code }, `user enter incorrect code`)
@@ -138,7 +163,7 @@ export const login = async ({ phone, code, logger, ip }: ILogin): Promise<string
       try {
         await failedAttemptPerIp.consume(ip)
       } catch (err) {
-        logger.error({ip}, "impossible to consume failedAttemptPerIp")
+        logger.error({ ip }, "impossible to consume failedAttemptPerIp")
       }
 
       return null
@@ -161,7 +186,7 @@ export const login = async ({ phone, code, logger, ip }: ILogin): Promise<string
       subLogger.info({ phone }, "user logged in")
     } else {
       user = await User.findOneAndUpdate({ phone }, {}, { upsert: true, new: true })
-      subLogger.info({ phone } , "a new user has register")
+      subLogger.info({ phone }, "a new user has register")
     }
 
     // TODO
@@ -179,15 +204,14 @@ export const login = async ({ phone, code, logger, ip }: ILogin): Promise<string
         // Carrier fetching is a non-critical operation
         // Primarily useful for analytics
         // Hence failure should be handled with a warn instead of an error
-        subLogger.warn({err}, "impossible to fetch carrier")
+        subLogger.warn({ err }, "impossible to fetch carrier")
       }
     }
 
     const network = process.env.NETWORK
     return createToken({ uid: user._id, network })
-
   } catch (err) {
-    subLogger.error({err}, "login issue")
+    subLogger.error({ err }, "login issue")
     throw err
   }
 }

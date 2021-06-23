@@ -1,31 +1,36 @@
-import { pattern, range, stringLength, ValidateDirectiveVisitor } from '@profusion/apollo-validation-directives'
-import { ApolloServer } from 'apollo-server-express'
+import {
+  pattern,
+  range,
+  stringLength,
+  ValidateDirectiveVisitor,
+} from "@profusion/apollo-validation-directives"
+import { ApolloServer } from "apollo-server-express"
 import dotenv from "dotenv"
-import express from 'express'
+import express from "express"
 import expressJwt from "express-jwt"
-import fs from 'fs'
+import fs from "fs"
 import { applyMiddleware } from "graphql-middleware"
-import { and, rule, shield } from 'graphql-shield'
+import { and, rule, shield } from "graphql-shield"
 import { makeExecutableSchema } from "graphql-tools"
 import moment from "moment"
 import mongoose from "mongoose"
 import path from "path"
-import pino from 'pino'
+import pino from "pino"
 // https://nodejs.org/api/esm.html#esm_no_require_exports_module_exports_filename_dirname
 // TODO: to use when switching to module
 // import { fileURLToPath } from 'url';
 // const __filename = fileURLToPath(import.meta.url);
 // const __dirname = path.dirname(__filename);
 import PinoHttp from "pino-http"
-import swStats from 'swagger-stats'
-import { v4 as uuidv4 } from 'uuid'
+import swStats from "swagger-stats"
+import { v4 as uuidv4 } from "uuid"
 import { addToMap, setAccountStatus, setLevel, usernameExists } from "../AdminOps"
-import { yamlConfig } from '../config'
-import { AuthorizationError } from '../error'
+import { yamlConfig } from "../config"
+import { AuthorizationError } from "../error"
 import { activateLndHealthCheck } from "../lndHealth"
 import { getActiveLnd, nodesStats, nodeStats } from "../lndUtils"
 import { getHourlyPrice, getMinBuildNumber } from "../localCache"
-import { baseLogger } from '../logger'
+import { baseLogger } from "../logger"
 import { setupMongoConnection } from "../mongodb"
 import { sendNotification } from "../notifications/notification"
 import { getCurrentPrice } from "../realtimePrice"
@@ -39,7 +44,6 @@ import { WalletFactory, WalletFromUsername } from "../walletFactory"
 dotenv.config()
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
-
 
 const pino_http = PinoHttp({
   logger: graphqlLogger,
@@ -80,13 +84,15 @@ const resolvers = {
     },
 
     // legacy, before handling multi currency account
-    wallet: async (_, __, { wallet }) => ([{
-      id: "BTC",
-      currency: "BTC",
-      balance: async () => (await wallet.getBalances())["BTC"],
-      transactions: () => wallet.getTransactions(),
-      csv: () => wallet.getStringCsv(),
-    }]),
+    wallet: async (_, __, { wallet }) => [
+      {
+        id: "BTC",
+        currency: "BTC",
+        balance: async () => (await wallet.getBalances())["BTC"],
+        transactions: () => wallet.getTransactions(),
+        csv: () => wallet.getStringCsv(),
+      },
+    ],
 
     // new way to return the balance
     // balances are distinc between USD and BTC
@@ -96,7 +102,7 @@ const resolvers = {
 
       return {
         transactions: wallet.getTransactions(),
-        balances: wallet.user.currencies.map(item => ({
+        balances: wallet.user.currencies.map((item) => ({
           id: item.id,
           balance: balances[item.id],
         })),
@@ -137,21 +143,26 @@ const resolvers = {
       const response: Record<string, any>[] = []
       const earned = user?.earn || []
 
-      for(const [id, value] of Object.entries(OnboardingEarn)) {
+      for (const [id, value] of Object.entries(OnboardingEarn)) {
         response.push({
           id,
           value,
-          completed: earned.findIndex(item => item === id) !== -1,
+          completed: earned.findIndex((item) => item === id) !== -1,
         })
       }
 
       return response
     },
-    getLastOnChainAddress: async (_, __, { wallet }) => ({ id: wallet.getLastOnChainAddress() }),
+    getLastOnChainAddress: async (_, __, { wallet }) => ({
+      id: wallet.getLastOnChainAddress(),
+    }),
     maps: async () => {
       // TODO: caching
-      const users = await User.find({
-        title: { $exists: true }, coordinate: { $exists: true } },
+      const users = await User.find(
+        {
+          title: { $exists: true },
+          coordinate: { $exists: true },
+        },
         { username: 1, title: 1, coordinate: 1 },
       )
 
@@ -161,7 +172,7 @@ const resolvers = {
       }))
     },
     usernameExists: async (_, { username }) => usernameExists({ username }),
-    getUserDetails: async (_, { uid }) => User.findOne({_id: uid}),
+    getUserDetails: async (_, { uid }) => User.findOne({ _id: uid }),
     noauthUpdatePendingInvoice: async (_, { hash, username }, { logger }) => {
       const wallet = await WalletFromUsername({ username, logger })
       return wallet.updatePendingInvoice({ hash })
@@ -171,7 +182,7 @@ const resolvers = {
       return uid
     },
     getLevels: () => Levels,
-    getLimits: (_, __, {user}) => {
+    getLimits: (_, __, { user }) => {
       return {
         oldEnoughForWithdrawal: yamlConfig.limits.oldEnoughForWithdrawal,
         withdrawal: yamlConfig.limits.withdrawal.level[user.level],
@@ -183,8 +194,12 @@ const resolvers = {
     }),
   },
   Mutation: {
-    requestPhoneCode: async (_, { phone }, { logger, ip }) => ({ success: requestPhoneCode({ phone, logger, ip }) }),
-    login: async (_, { phone, code }, { logger, ip }) => ({ token: login({ phone, code, logger, ip }) }),
+    requestPhoneCode: async (_, { phone }, { logger, ip }) => ({
+      success: requestPhoneCode({ phone, logger, ip }),
+    }),
+    login: async (_, { phone, code }, { logger, ip }) => ({
+      token: login({ phone, code, logger, ip }),
+    }),
     updateUser: async (_, __, { wallet }) => ({
       setUsername: async ({ username }) => await wallet.setUsername({ username }),
       setLanguage: async ({ language }) => await wallet.setLanguage({ language }),
@@ -196,27 +211,32 @@ const resolvers = {
     },
     updateContact: async (_, __, { user }) => ({
       setName: async ({ username, name }) => {
-        user.contacts.filter(item => item.id === username)[0].name = name
+        user.contacts.filter((item) => item.id === username)[0].name = name
         await user.save()
         return true
       },
     }),
     noauthAddInvoice: async (_, { username, value }, { logger }) => {
-      const wallet = await WalletFromUsername({username, logger})
+      const wallet = await WalletFromUsername({ username, logger })
       return wallet.addInvoice({ selfGenerated: false, value })
     },
     invoice: async (_, __, { wallet }) => ({
       addInvoice: async ({ value, memo }) => wallet.addInvoice({ value, memo }),
       // FIXME: move to query
       updatePendingInvoice: async ({ hash }) => wallet.updatePendingInvoice({ hash }),
-      payInvoice: async ({ invoice, amount, memo }) => wallet.pay({ invoice, amount, memo }),
-      payKeysendUsername: async ({ destination, username, amount, memo }) => wallet.pay({ destination, username, amount, memo }),
-      getFee: async ({ destination, amount, invoice }) => wallet.getLightningFee({ destination, amount, invoice }),
+      payInvoice: async ({ invoice, amount, memo }) =>
+        wallet.pay({ invoice, amount, memo }),
+      payKeysendUsername: async ({ destination, username, amount, memo }) =>
+        wallet.pay({ destination, username, amount, memo }),
+      getFee: async ({ destination, amount, invoice }) =>
+        wallet.getLightningFee({ destination, amount, invoice }),
     }),
     earnCompleted: async (_, { ids }, { wallet }) => wallet.addEarn(ids),
     onchain: async (_, __, { wallet }) => ({
       getNewAddress: () => wallet.getOnChainAddress(),
-      pay: ({ address, amount, memo }) => ({ success: wallet.onChainPay({ address, amount, memo }) }),
+      pay: ({ address, amount, memo }) => ({
+        success: wallet.onChainPay({ address, amount, memo }),
+      }),
       getFee: ({ address, amount }) => wallet.getOnchainFee({ address, amount }),
     }),
     addDeviceToken: async (_, { deviceToken }, { user }) => {
@@ -232,7 +252,7 @@ const resolvers = {
       await sendNotification({
         user,
         title: "Title",
-        body: `New message sent at ${moment.utc().format('YYYY-MM-DD HH:mm:ss')}`,
+        body: `New message sent at ${moment.utc().format("YYYY-MM-DD HH:mm:ss")}`,
         logger,
       })
       return { success: true }
@@ -246,57 +266,61 @@ const resolvers = {
   },
 }
 
-const isAuthenticated = rule({ cache: 'contextual' })(
-  async (parent, args, ctx) => {
-    if(ctx.uid === null) {
-      throw new AuthorizationError(undefined, {logger: graphqlLogger, request: ctx.request.body})
-    }
-    return true
-  },
-)
+const isAuthenticated = rule({ cache: "contextual" })(async (parent, args, ctx) => {
+  if (ctx.uid === null) {
+    throw new AuthorizationError(undefined, {
+      logger: graphqlLogger,
+      request: ctx.request.body,
+    })
+  }
+  return true
+})
 
-const isEditor = rule({ cache: "contextual" })(
-  async (parent, args, ctx) => {
-    return ctx.user.role === "editor"
-  },
-)
+const isEditor = rule({ cache: "contextual" })(async (parent, args, ctx) => {
+  return ctx.user.role === "editor"
+})
 
-const permissions = shield({
-  Query: {
-    // prices: not(isAuthenticated),
-    // earnList: isAuthenticated,
-    me: isAuthenticated,
-    wallet: isAuthenticated,
-    wallet2: isAuthenticated,
-    getLastOnChainAddress: isAuthenticated,
-    getUserDetails: and(isAuthenticated, isEditor),
-    getUid: and(isAuthenticated, isEditor),
-    getLevels: and(isAuthenticated, isEditor),
-  },
-  Mutation: {
-    // requestPhoneCode: not(isAuthenticated),
-    // login: not(isAuthenticated),
+const permissions = shield(
+  {
+    Query: {
+      // prices: not(isAuthenticated),
+      // earnList: isAuthenticated,
+      me: isAuthenticated,
+      wallet: isAuthenticated,
+      wallet2: isAuthenticated,
+      getLastOnChainAddress: isAuthenticated,
+      getUserDetails: and(isAuthenticated, isEditor),
+      getUid: and(isAuthenticated, isEditor),
+      getLevels: and(isAuthenticated, isEditor),
+    },
+    Mutation: {
+      // requestPhoneCode: not(isAuthenticated),
+      // login: not(isAuthenticated),
 
-    onchain: isAuthenticated,
-    invoice: isAuthenticated,
-    earnCompleted: isAuthenticated,
-    updateUser: isAuthenticated,
-    updateContact: isAuthenticated,
-    addDeviceToken: isAuthenticated,
-    testMessage: isAuthenticated,
-    addToMap: and(isAuthenticated, isEditor),
-    setLevel: and(isAuthenticated, isEditor),
-    setAccountStatus: and(isAuthenticated, isEditor),
+      onchain: isAuthenticated,
+      invoice: isAuthenticated,
+      earnCompleted: isAuthenticated,
+      updateUser: isAuthenticated,
+      updateContact: isAuthenticated,
+      addDeviceToken: isAuthenticated,
+      testMessage: isAuthenticated,
+      addToMap: and(isAuthenticated, isEditor),
+      setLevel: and(isAuthenticated, isEditor),
+      setAccountStatus: and(isAuthenticated, isEditor),
+    },
   },
-}, { allowExternalErrors: true }) // TODO remove to not expose internal error
-
+  { allowExternalErrors: true },
+) // TODO remove to not expose internal error
 
 export async function startApolloServer() {
   const app = express()
 
   // const myTypeDefs = importSchema(path.join(__dirname, "../schema.graphql"))
 
-  const myTypeDefs = fs.readFileSync(path.join(__dirname, "../schema.graphql"), {encoding:'utf8', flag:'r'})
+  const myTypeDefs = fs.readFileSync(path.join(__dirname, "../schema.graphql"), {
+    encoding: "utf8",
+    flag: "r",
+  })
 
   const execSchema = makeExecutableSchema({
     typeDefs: [
@@ -313,20 +337,17 @@ export async function startApolloServer() {
 
   ValidateDirectiveVisitor.addValidationResolversToSchema(execSchema)
 
-  const schema = applyMiddleware(
-    execSchema,
-    permissions,
-  )
+  const schema = applyMiddleware(execSchema, permissions)
 
   const server = new ApolloServer({
     schema,
-    playground: process.env.NETWORK !== 'mainnet',
-    introspection: process.env.NETWORK !== 'mainnet',
+    playground: process.env.NETWORK !== "mainnet",
+    introspection: process.env.NETWORK !== "mainnet",
     context: async (context) => {
       // @ts-expect-error: TODO
       const token = context.req?.token ?? null
       const uid = token?.uid ?? null
-      const ip = context.req?.headers['x-real-ip']
+      const ip = context.req?.headers["x-real-ip"]
 
       let wallet, user
 
@@ -334,11 +355,18 @@ export async function startApolloServer() {
       const logger = graphqlLogger.child({ token, id: uuidv4(), body: context.req?.body })
 
       if (uid) {
-        user = await User.findOneAndUpdate({ _id: uid },{ lastConnection: new Date() }, {new: true})
-        if(yamlConfig.proxyChecking.enabled) {
-          fetchIPDetails({ip, user, logger})
+        user = await User.findOneAndUpdate(
+          { _id: uid },
+          { lastConnection: new Date() },
+          { new: true },
+        )
+        if (yamlConfig.proxyChecking.enabled) {
+          fetchIPDetails({ ip, user, logger })
         }
-        wallet = (!!user && user.status === "active") ? await WalletFactory({ user, logger }) : null
+        wallet =
+          !!user && user.status === "active"
+            ? await WalletFactory({ user, logger })
+            : null
       }
 
       return {
@@ -350,7 +378,7 @@ export async function startApolloServer() {
         ip,
       }
     },
-    formatError: err => {
+    formatError: (err) => {
       const log = err.extensions?.exception?.log
 
       // An err object needs to necessarily have the forwardToClient field to be forwarded
@@ -362,15 +390,15 @@ export async function startApolloServer() {
         // ex: fields that indicate whether a payment succeeded or not, or stacktraces, that are required
         // for metrics or debugging
         // the err.extensions.metadata field contains such fields
-        log({...errObj, ...err.extensions?.metadata})
-        if(err.extensions?.exception.forwardToClient) {
+        log({ ...errObj, ...err.extensions?.metadata })
+        if (err.extensions?.exception.forwardToClient) {
           return errObj
         }
       } else {
         graphqlLogger.error(err)
       }
 
-      return new Error('Internal server error')
+      return new Error("Internal server error")
     },
   })
 
@@ -381,20 +409,23 @@ export async function startApolloServer() {
       secret: process.env.JWT_SECRET,
       algorithms: ["HS256"],
       credentialsRequired: false,
-      requestProperty: 'token',
-    }))
+      requestProperty: "token",
+    }),
+  )
 
-  app.use(swStats.getMiddleware({
-    uriPath: "/swagger",
-    // no authentication but /swagger/* should be protected from access outside the cluster
-    // this is done with nginx
-  }))
+  app.use(
+    swStats.getMiddleware({
+      uriPath: "/swagger",
+      // no authentication but /swagger/* should be protected from access outside the cluster
+      // this is done with nginx
+    }),
+  )
 
   // Health check
-  app.get('/healthz', async function(req, res) {
+  app.get("/healthz", async function (req, res) {
     const isMongoAlive = mongoose.connection.readyState === 1 ? true : false
-    const isRedisAlive = await redis.ping() === 'PONG'
-    res.status((isMongoAlive && isRedisAlive) ? 200 : 503).send()
+    const isRedisAlive = (await redis.ping()) === "PONG"
+    res.status(isMongoAlive && isRedisAlive ? 200 : 503).send()
   })
 
   server.applyMiddleware({ app })
@@ -405,8 +436,9 @@ export async function startApolloServer() {
   return { server, app }
 }
 
-
-setupMongoConnection().then(async () => {
-  await startApolloServer()
-  activateLndHealthCheck()
-}).catch((err) => graphqlLogger.error(err, "server error"))
+setupMongoConnection()
+  .then(async () => {
+    await startApolloServer()
+    activateLndHealthCheck()
+  })
+  .catch((err) => graphqlLogger.error(err, "server error"))

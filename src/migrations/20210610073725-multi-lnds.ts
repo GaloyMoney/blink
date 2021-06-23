@@ -1,11 +1,10 @@
 module.exports = {
   async up(db, client) {
-
     const pubkey = process.env[`LND1_PUBKEY`]
 
-    await db.collection('invoiceuser').updateMany({}, {$set: {pubkey}})
+    await db.collection("invoiceuser").updateMany({}, { $set: { pubkey } })
 
-    const cursor = db.collection('users').find()
+    const cursor = db.collection("users").find()
     while (await cursor.hasNext()) {
       const doc = await cursor.next()
       const onchain_addresses = doc.onchain_addresses
@@ -14,8 +13,8 @@ module.exports = {
         continue
       }
 
-      const onchain = onchain_addresses.map(address => ({address, pubkey}))
-      await db.collection('users').updateOne({"_id":doc._id}, {$set: {onchain}})
+      const onchain = onchain_addresses.map((address) => ({ address, pubkey }))
+      await db.collection("users").updateOne({ _id: doc._id }, { $set: { onchain } })
     }
   },
 

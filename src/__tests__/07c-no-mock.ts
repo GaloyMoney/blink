@@ -5,7 +5,7 @@ import { setupMongoConnection } from "../mongodb"
 import mongoose from "mongoose"
 import { getTokenFromPhoneIndex } from "./helper"
 
-jest.mock('../realtimePrice')
+jest.mock("../realtimePrice")
 
 beforeAll(async () => {
   await setupMongoConnection()
@@ -17,8 +17,7 @@ afterAll(async () => {
 })
 
 // to not have jest failing because there is no test in the file
-it('test', () => expect(true).toBeTruthy())
-
+it("test", () => expect(true).toBeTruthy())
 
 // it('getExchangeBalance', async () => {
 //   ({ uid } = await getTokenFromPhoneIndex(7))

@@ -4,7 +4,7 @@
 import { setupMongoConnection } from "../mongodb"
 import { getUserWallet } from "./helper"
 import mongoose from "mongoose"
-jest.mock('../realtimePrice')
+jest.mock("../realtimePrice")
 
 let userWallet
 
@@ -17,6 +17,6 @@ afterAll(async () => {
   await mongoose.connection.close()
 })
 
-it('export account to csv', async () => {
+it("export account to csv", async () => {
   await userWallet.getStringCsv()
 })

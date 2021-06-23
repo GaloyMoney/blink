@@ -1,9 +1,7 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "types": ["node"],
+    "types": ["node"]
   },
-  "include": [
-    "src/entrypoint/*.ts",
-  ]
+  "include": ["src/entrypoint/*.ts"]
 }

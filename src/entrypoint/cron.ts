@@ -1,9 +1,13 @@
 import { updateUsersPendingPayment } from "../ledger/balanceSheet"
-import { deleteExpiredInvoices, deleteFailedPaymentsAllLnds, updateEscrows, updateRoutingFees } from "../lndUtils"
+import {
+  deleteExpiredInvoices,
+  deleteFailedPaymentsAllLnds,
+  updateEscrows,
+  updateRoutingFees,
+} from "../lndUtils"
 import { baseLogger } from "../logger"
 import { setupMongoConnection } from "../mongodb"
 import { SpecterWallet } from "../SpecterWallet"
-
 
 const main = async () => {
   const mongoose = await setupMongoConnection()
@@ -27,6 +31,6 @@ const main = async () => {
 
 try {
   main()
-} catch(err) {
+} catch (err) {
   baseLogger.warn({ err }, "error in the cron job")
 }

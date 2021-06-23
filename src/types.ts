@@ -3,7 +3,6 @@ import { User } from "./schema"
 export type Side = "buy" | "sell"
 export type Currency = "USD" | "BTC"
 
-
 export type ISuccess = boolean
 
 export interface ILightningWalletUser {
@@ -14,19 +13,19 @@ export interface ILightningWalletUser {
 // Lightning
 
 export interface IAddInvoiceRequest {
-  value: number,
-  memo: string | undefined,
-  selfGenerated?: boolean,
+  value: number
+  memo: string | undefined
+  selfGenerated?: boolean
 }
 
 export interface IAddBTCInvoiceRequest {
-  value: number | undefined,
-  memo?: string | undefined,
+  value: number | undefined
+  memo?: string | undefined
   selfGenerated?: boolean
 }
 
 export interface IAddUSDInvoiceRequest {
-  value: number,
+  value: number
   memo: string | undefined
 }
 
@@ -41,52 +40,60 @@ export type ChainType = "lightning" | "onchain"
 // to 2 different variables.
 // also log have renamed "paid-invoice" --> "receipt"
 
-export type TransactionType = "payment" | "paid-invoice" | "on_us" |
-  "onchain_receipt" | "onchain_payment" | "onchain_on_us" |
-  "exchange_rebalance" |
-  "fee" | "escrow" | "deposit_fee" | "routing_fee" |
-  "onchain_receipt_pending" // only for notification, not persistent in mongodb
+export type TransactionType =
+  | "payment"
+  | "paid-invoice"
+  | "on_us"
+  | "onchain_receipt"
+  | "onchain_payment"
+  | "onchain_on_us"
+  | "exchange_rebalance"
+  | "fee"
+  | "escrow"
+  | "deposit_fee"
+  | "routing_fee"
+  | "onchain_receipt_pending" // only for notification, not persistent in mongodb
 
 export const Levels = [1, 2]
 
 export interface IOnChainPayment {
-  address: string,
-  amount: number,
+  address: string
+  amount: number
   memo?: string
 }
 
 export interface ITransaction {
   created_at: number // unix
   amount: number
-  sat: number,
-  usd: number,
+  sat: number
+  usd: number
   description: string
   type: TransactionType
   hash?: string
-  fee: number,
-  feeUsd: number,
-  username: string,
+  fee: number
+  feeUsd: number
+  username: string
   // destination?: string
   pending: boolean
-  id: string,
-  currency: string,
+  id: string
+  currency: string
   addresses?: string[]
 }
 
 export interface IFeeRequest {
-  destination?: string,
-  amount?: number,
-  invoice?: string,
+  destination?: string
+  amount?: number
+  invoice?: string
   username?: string
 }
 
 export interface IPaymentRequest {
-  destination?: string,
-  username?: string,
-  amount?: number,
-  invoice?: string,
-  memo?: string,
-  isReward?: boolean,
+  destination?: string
+  username?: string
+  amount?: number
+  invoice?: string
+  memo?: string
+  isReward?: boolean
 }
 
 export type IPayInvoice = {
@@ -94,32 +101,32 @@ export type IPayInvoice = {
 }
 
 export interface IQuoteRequest {
-  side: Side,
-  satAmount?: number, // sell
-  invoice?: string,   // buy
+  side: Side
+  satAmount?: number // sell
+  invoice?: string // buy
 }
 
 export interface IDataNotification {
-  type: TransactionType,
+  type: TransactionType
   amount: number
-  hash?: string,
-  txid?: string, // FIXME in mongodb, there is no differenciation between hash and txid?
+  hash?: string
+  txid?: string // FIXME in mongodb, there is no differenciation between hash and txid?
 }
 
 export interface IPaymentNotification {
-  amount: number,
-  type: string,
-  user: typeof User,
-  logger: any,
-  hash?: string,
-  txid?: string,
+  amount: number
+  type: string
+  user: typeof User
+  logger: any
+  hash?: string
+  txid?: string
 }
 
 export interface INotification {
-  user: typeof User,
-  title: string,
+  user: typeof User
+  title: string
   data?: IDataNotification
-  body?: string,
+  body?: string
   logger: any
 }
 
@@ -150,7 +157,6 @@ export const OnboardingEarn = {
   HighlyDivisible: 20,
   securePartOne: 20,
   securePartTwo: 20,
-
 
   freeMoney: 50,
   custody: 100,
