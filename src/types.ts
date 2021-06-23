@@ -8,6 +8,8 @@ export type ISuccess = boolean
 
 export type Logger = PinoLogger
 
+export type Primitive = string | boolean | number
+
 export interface ILightningWalletUser {
   // FIXME: Add a type for user here.
   user: unknown

@@ -120,17 +120,6 @@ export function timeout(delay, msg) {
   })
 }
 
-// FIXME: This function is not used anywhere. Delete?
-export async function measureTime(
-  operation: Promise<unknown>,
-): Promise<[unknown, number]> {
-  const startTime = process.hrtime()
-  const result = await operation
-  const timeElapsed = process.hrtime(startTime)
-  const timeElapsedms = timeElapsed[0] * 1000 + timeElapsed[1] / 1000000
-  return [result, timeElapsedms]
-}
-
 export const isInvoiceAlreadyPaidError = (err) => {
   if (
     "invoice is already paid" ===
