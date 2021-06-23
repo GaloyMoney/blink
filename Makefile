@@ -12,7 +12,6 @@ integration:
 
 test-in-ci:
 	docker-compose up -d
-	sleep 5
 	. ./.envrc && \
 		node_modules/.bin/jest --bail --runInBand --ci --reporters=default --reporters=jest-junit --forceExit
 
