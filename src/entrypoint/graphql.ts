@@ -25,7 +25,7 @@ import { setupMongoConnection } from "../mongodb"
 import { sendNotification } from "../notifications/notification"
 import { User } from "../schema"
 import { login, requestPhoneCode } from "../text"
-import { Levels, OnboardingEarn } from "../types"
+import { Levels, OnboardingEarn, Primitive } from "../types"
 import { AdminOps } from "../AdminOps"
 import { fetchIPDetails } from "../utils"
 import { baseLogger } from "../logger"
@@ -135,7 +135,7 @@ const resolvers = {
       return hourly.splice(-length)
     },
     earnList: async (_, __, { user }) => {
-      const response: Record<string, any>[] = []
+      const response: Record<string, Primitive>[] = []
       const earned = user?.earn || []
 
       for (const [id, value] of Object.entries(OnboardingEarn)) {

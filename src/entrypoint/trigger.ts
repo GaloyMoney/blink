@@ -4,6 +4,9 @@ import crypto from "crypto"
 import { Dropbox } from "dropbox"
 import express from "express"
 import {
+  SubscribeToChannelsChannelClosedEvent,
+  SubscribeToChannelsChannelOpenedEvent,
+  AuthenticatedLnd,
   getChainTransactions,
   getHeight,
   getWalletInfo,
@@ -170,8 +173,8 @@ export const onChannelUpdated = async ({
   lnd,
   stateChange,
 }: {
-  channel: any
-  lnd: any
+  channel: SubscribeToChannelsChannelClosedEvent | SubscribeToChannelsChannelOpenedEvent
+  lnd: AuthenticatedLnd
   stateChange: "opened" | "closed"
 }) => {
   logger.info({ channel, stateChange }, `channel update`)
@@ -188,9 +191,9 @@ export const onChannelUpdated = async ({
   let txid
 
   if (stateChange === "opened") {
-    ;({ transaction_id: txid } = channel)
+    ;({ transaction_id: txid } = channel as SubscribeToChannelsChannelOpenedEvent)
   } else if (stateChange === "closed") {
-    ;({ close_transaction_id: txid } = channel)
+    ;({ close_transaction_id: txid } = channel as SubscribeToChannelsChannelClosedEvent)
   }
 
   // TODO: dedupe from onchain
