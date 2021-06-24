@@ -11,7 +11,12 @@ import {
   limiterRequestPhoneCodeIp,
 } from "./rateLimit"
 import { PhoneCode, User } from "./schema"
-import { fetchIP, isIPBlacklisted, isIPTypeBlacklisted, randomIntFromInterval } from "./utils"
+import {
+  fetchIP,
+  isIPBlacklisted,
+  isIPTypeBlacklisted,
+  randomIntFromInterval,
+} from "./utils"
 import { Logger } from "./types"
 
 const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER
@@ -58,24 +63,24 @@ export const requestPhoneCode = async ({
 }): Promise<boolean> => {
   logger.info({ phone, ip }, "RequestPhoneCode called")
 
-  if(isIPBlacklisted({ip})) {
-    throw new IPBlacklistedError("IP Blacklisted", {logger, ip})
+  if (isIPBlacklisted({ ip })) {
+    throw new IPBlacklistedError("IP Blacklisted", { logger, ip })
   }
 
   let ipDetails
 
   try {
-    ipDetails = await fetchIP({ip})
-  } catch(err) {
-    logger.warn({err}, "Unable to fetch ip details")
+    ipDetails = await fetchIP({ ip })
+  } catch (err) {
+    logger.warn({ err }, "Unable to fetch ip details")
   }
 
-  if(!ipDetails || ipDetails.status === 'denied' || ipDetails.status === 'error') {
-    logger.warn({ipDetails}, "Unable to fetch ip details")
+  if (!ipDetails || ipDetails.status === "denied" || ipDetails.status === "error") {
+    logger.warn({ ipDetails }, "Unable to fetch ip details")
   }
 
-  if(isIPTypeBlacklisted({type: ipDetails?.type})) {
-    throw new IPBlacklistedError("IP type Blacklisted", {logger, ipDetails})
+  if (isIPTypeBlacklisted({ type: ipDetails?.type })) {
+    throw new IPBlacklistedError("IP type Blacklisted", { logger, ipDetails })
   }
 
   try {

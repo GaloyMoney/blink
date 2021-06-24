@@ -39,14 +39,14 @@ import { User } from "../schema"
 import { login, requestPhoneCode } from "../text"
 import { Levels, OnboardingEarn } from "../types"
 import { AdminOps } from "../AdminOps"
-import { updateIPDetails, isIPBlacklisted } from "../utils";
-import { baseLogger } from '../logger'
+import { updateIPDetails, isIPBlacklisted } from "../utils"
+import { baseLogger } from "../logger"
 import { WalletFactory, WalletFromUsername } from "../walletFactory"
 import { getCurrentPrice } from "../realtimePrice"
 import { yamlConfig } from '../config'
 import { range, pattern, stringLength, ValidateDirectiveVisitor } from '@profusion/apollo-validation-directives'
 import { redis } from "../redis"
-import { AuthorizationError, IPBlacklistedError } from '../error'
+import { AuthorizationError, IPBlacklistedError } from "../error"
 
 dotenv.config()
 
@@ -356,8 +356,8 @@ export async function startApolloServer() {
       const uid = token?.uid ?? null
       const ip = context.req?.headers["x-real-ip"]
 
-      if(isIPBlacklisted({ip})) {
-        throw new IPBlacklistedError("IP Blacklisted", {logger: graphqlLogger, ip})
+      if (isIPBlacklisted({ ip })) {
+        throw new IPBlacklistedError("IP Blacklisted", { logger: graphqlLogger, ip })
       }
 
       let wallet, user
@@ -366,9 +366,13 @@ export async function startApolloServer() {
       const logger = graphqlLogger.child({ token, id: uuidv4(), body: context.req?.body })
 
       if (uid) {
-        user = await User.findOneAndUpdate({ _id: uid },{ lastConnection: new Date() }, {new: true})
-        if(yamlConfig.proxyChecking.enabled) {
-          updateIPDetails({ip, user, logger})
+        user = await User.findOneAndUpdate(
+          { _id: uid },
+          { lastConnection: new Date() },
+          { new: true },
+        )
+        if (yamlConfig.proxyChecking.enabled) {
+          updateIPDetails({ ip, user, logger })
         }
         wallet =
           !!user && user.status === "active"

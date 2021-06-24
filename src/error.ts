@@ -130,7 +130,12 @@ export class AuthorizationError extends CustomError {
 }
 
 export class IPBlacklistedError extends CustomError {
-  constructor(message, {forwardToClient = false, logger, level = 'warn', ...metadata}) {
-    super(message, 'REJECTED_BLACKLISTED_IP', {forwardToClient, logger, level, metadata})
+  constructor(message, { forwardToClient = false, logger, level = "warn", ...metadata }) {
+    super(message, "REJECTED_BLACKLISTED_IP", {
+      forwardToClient,
+      logger,
+      level,
+      metadata,
+    })
   }
 }
