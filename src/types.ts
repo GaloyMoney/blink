@@ -64,7 +64,7 @@ export const Levels = [1, 2]
 
 export interface IOnChainPayment {
   address: string
-  amount: number
+  amount: number // sats
   memo?: string
 }
 
