@@ -41,7 +41,7 @@ const priceResponse = [
 // make time current
 import _ from "lodash"
 import moment from "moment"
-const priceResponseTimingCurrent: number[][] = []
+const priceResponseTimingCurrent: any[] = []
 const init = () => moment().subtract(4, "hours").startOf("hour")
 _.forEach(priceResponse, (value, key) =>
   priceResponseTimingCurrent.push([

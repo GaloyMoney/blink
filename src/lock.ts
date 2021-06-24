@@ -1,7 +1,6 @@
 import Redlock, { Lock } from "redlock"
 import bluebird from "bluebird"
 import { redis } from "./redis"
-import { Logger } from "./types"
 const { using } = bluebird
 
 // the maximum amount of time you want the resource locked,
@@ -43,11 +42,15 @@ export const getResource = (path) => `locks:account:${path}`
 
 interface IRedLock {
   path: string
-  logger: Logger
+  logger: any
   lock?: typeof Lock
 }
 
-export const redlock = async ({ path, logger, lock }: IRedLock, async_fn) => {
+// eslint-disable-next-line no-unused-vars
+export const redlock = async (
+  { path, logger, lock }: IRedLock,
+  async_fn: (arg0: typeof Lock) => Promise<any>,
+) => {
   if (!!lock && lock.expiration > Date.now()) {
     return await async_fn(lock)
   }
@@ -66,7 +69,7 @@ const logLockTimeout = ({ logger, lock }) => {
   logger.debug({ expiration, now, remaining }, "lock status")
 }
 
-export const lockExtendOrThrow = async ({ lock, logger }, async_fn) => {
+export const lockExtendOrThrow = async ({ lock, logger }, async_fn): Promise<any> => {
   logLockTimeout({ logger, lock })
 
   return new Promise((resolve, reject) => {

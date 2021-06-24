@@ -18,7 +18,6 @@ import { baseLogger } from "./logger"
 import { UserWallet } from "./userWallet"
 import { Transaction, User } from "./schema"
 import {
-  AuthenticatedLnd,
   createChainAddress,
   getChainBalance,
   getChainFeeEstimate,
@@ -43,7 +42,7 @@ export const getOnChainTransactions = async ({
   lnd,
   incoming,
 }: {
-  lnd: AuthenticatedLnd
+  lnd: any
   incoming: boolean
 }) => {
   try {
@@ -432,8 +431,7 @@ export const OnChainMixin = (superclass) =>
         },
       )
 
-      type unconfirmedType = { sats; addresses; id; created_at }
-      const unconfirmed: unconfirmedType[] = await Promise.all(unconfirmed_promises)
+      const unconfirmed: any[] = await Promise.all(unconfirmed_promises)
 
       return [
         ...unconfirmed.map(({ sats, addresses, id, created_at }) => ({

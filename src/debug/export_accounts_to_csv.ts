@@ -2,7 +2,6 @@ import { CSVAccountExport } from "../csvAccountExport"
 import { customerPath } from "../ledger/ledger"
 import { MainBook, setupMongoConnectionSecondary } from "../mongodb"
 import { Transaction, User } from "../schema"
-import { Primitive } from "../types"
 import { createObjectCsvWriter } from "csv-writer"
 import * as _ from "lodash"
 
@@ -75,7 +74,7 @@ const exportUsers = async () => {
     ],
   })
 
-  const records: Record<string, Primitive>[] = []
+  const records: any[] = []
 
   // TODO filter with USD / BTC currency
   const aggregateTxs = await Transaction.aggregate([
@@ -142,7 +141,7 @@ const exportBalances = async () => {
   })
 
   console.log({ books })
-  const records: Record<string, Primitive>[] = []
+  const records: any[] = []
 
   for (const account in books) {
     records.push({

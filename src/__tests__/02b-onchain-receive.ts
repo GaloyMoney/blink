@@ -152,10 +152,7 @@ it("identifies unconfirmed incoming on chain txn", async () => {
   expect(sendNotification.mock.calls[0][0].data.type).toBe("onchain_receipt_pending")
 
   const satsPrice = await getCurrentPrice()
-  if (!satsPrice) {
-    throw Error(`satsPrice is not set`)
-  }
-  const usd = (btc2sat(amount_BTC) * satsPrice).toFixed(2)
+  const usd = (btc2sat(amount_BTC) * satsPrice!).toFixed(2)
 
   expect(sendNotification.mock.calls[0][0].title).toBe(
     getTitle["onchain_receipt_pending"]({ usd, amount: btc2sat(amount_BTC) }),

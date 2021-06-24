@@ -35,8 +35,8 @@ export const lndBalances = async () => {
   // https://github.com/alexbosworth/ln-service/issues/139
   baseLogger.debug({ closedChannels }, "getClosedChannels")
   const closing_channel_balance = _.sumBy(closedChannels, (channel) =>
-    _.sumBy(channel.close_payments, (payment) =>
-      payment.is_pending ? payment.tokens : 0,
+    _.sumBy((channel as any).close_payments, (payment) =>
+      (payment as any).is_pending ? (payment as any).tokens : 0,
     ),
   )
 

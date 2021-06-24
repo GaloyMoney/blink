@@ -7,14 +7,14 @@ import { customerPath } from "./ledger/ledger"
 import { MainBook } from "./mongodb"
 import { sendNotification } from "./notifications/notification"
 import { User } from "./schema"
-import { ITransaction, Logger } from "./types"
+import { ITransaction } from "./types"
 
 export abstract class UserWallet {
   static lastPrice: number
 
   // FIXME typing : https://thecodebarbarian.com/working-with-mongoose-in-typescript.html
   user: typeof User // mongoose object
-  readonly logger: Logger
+  readonly logger: any
 
   constructor({ user, logger }) {
     this.user = user
@@ -33,12 +33,13 @@ export abstract class UserWallet {
   // this needs to be here to be able to call / chain updatePending()
   // otherwise super.updatePending() would result in an error
   // there may be better way to architecture this?
-  async updatePending() {
+  // eslint-disable-next-line no-unused-vars
+  async updatePending(lock) {
     return
   }
 
-  async getBalances(): Promise<Balances> {
-    await this.updatePending()
+  async getBalances(lock?): Promise<Balances> {
+    await this.updatePending(lock)
 
     // TODO: add effective ratio
     const balances = {

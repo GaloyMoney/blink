@@ -29,7 +29,7 @@ export const transactionNotification = async ({
   let title
 
   if (satsPrice) {
-    const usd = (amount * satsPrice).toFixed(2)
+    const usd = (amount * satsPrice!).toFixed(2)
     title = getTitle[type]({ usd, amount })
   } else {
     title = getTitleNoUsd[type]({ amount })
