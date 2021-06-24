@@ -33,12 +33,12 @@ export abstract class UserWallet {
   // this needs to be here to be able to call / chain updatePending()
   // otherwise super.updatePending() would result in an error
   // there may be better way to architecture this?
-  async updatePending() {
+  async updatePending(lock) {
     return
   }
 
-  async getBalances(): Promise<Balances> {
-    await this.updatePending()
+  async getBalances(lock?): Promise<Balances> {
+    await this.updatePending(lock)
 
     // TODO: add effective ratio
     const balances = {
