@@ -18,3 +18,4 @@ check-code:
 	yarn tsc-check
 	yarn eslint-check
 	yarn prettier-check
+	yarn build
