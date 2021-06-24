@@ -11,7 +11,7 @@ import {
   limiterRequestPhoneCodeIp,
 } from "./rateLimit"
 import { PhoneCode, User } from "./schema"
-import { fetchIP, isIPAllowed, isIPTypeAllowed, randomIntFromInterval } from "./utils"
+import { fetchIP, isIPBlacklisted, isIPTypeBlacklisted, randomIntFromInterval } from "./utils"
 import { Logger } from "./types"
 
 const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER
