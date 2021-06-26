@@ -16,7 +16,7 @@ test-in-ci:
 		node_modules/.bin/jest --bail --runInBand --ci --reporters=default --reporters=jest-junit --forceExit
 
 check-code:
-	yarn tsc-check --skipLibCheck
+	yarn tsc-check
 	yarn eslint-check
 	yarn prettier-check
 	yarn build
