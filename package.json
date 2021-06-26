@@ -4,7 +4,7 @@
     "tsc-check": "tsc --noEmit --skipLibCheck",
     "eslint-check": "eslint \"src/**/*.ts\"",
     "prettier-check": "prettier --check .",
-    "build": "tsc -p tsconfig-build.json && cp -R src/protos lib && cp src/schema.graphql lib",
+    "build": "tsc -p tsconfig-build.json --skipLibCheck && cp -R src/protos lib && cp src/schema.graphql lib",
     "start": "yarn build && source ./exportLocal.sh && node lib/entrypoint/graphql.js | pino-pretty -c -l",
     "trigger": "yarn build && source ./exportLocal.sh && node lib/entrypoint/trigger.js | pino-pretty -c -l",
     "test": "export JEST_JUNIT_OUTPUT_DIR=\"./artifacts\" && jest --ci --reporters=default --reporters=jest-junit --forceExit",

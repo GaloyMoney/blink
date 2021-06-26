@@ -15,7 +15,7 @@ test-in-ci:
 	. ./.envrc && yarn jest --forceExit --bail --runInBand --verbose $$TEST | yarn pino-pretty -c -l
 
 check-code:
-	yarn tsc-check
+	yarn tsc-check --skipLibCheck
 	yarn eslint-check
 	yarn prettier-check
 	yarn build
