@@ -6,7 +6,7 @@
     "eslint-fix": "eslint \"src/**/*.ts\" --fix",
     "prettier-check": "prettier --check .",
     "prettier-write": "prettier --write .",
-    "build": "tsc -p tsconfig-build.json && cp -R src/protos lib && cp src/schema.graphql lib",
+    "build": "tsc -p tsconfig-build.json --skipLibCheck && cp -R src/protos lib && cp src/schema.graphql lib",
     "start": "yarn build && source ./exportLocal.sh && node lib/entrypoint/graphql.js | pino-pretty -c -l",
     "trigger": "yarn build && source ./exportLocal.sh && node lib/entrypoint/trigger.js | pino-pretty -c -l",
     "test": "export JEST_JUNIT_OUTPUT_DIR=\"./artifacts\" && jest --ci --reporters=default --reporters=jest-junit --forceExit",
@@ -106,7 +106,7 @@
     "ts-jest": "^26.4.3",
     "ts-node": "^9.0.0",
     "tsconfig-paths": "^3.9.0",
-    "typescript": "^4.0.5"
+    "typescript": "^4.3.4"
   },
   "private": true
 }
