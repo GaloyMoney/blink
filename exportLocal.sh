@@ -1,9 +1,9 @@
 export NETWORK=regtest
-export TLS=$(kubectl exec lnd-0  -- base64 /data/.lnd/tls.cert | tr -d '\n\r')
+export TLS=$(kubectl exec lnd1-0  -- base64 /data/.lnd/tls.cert | tr -d '\n\r')
 export TLSOUTSIDE1=$(kubectl exec lnd-outside-1-0  -- base64 /data/.lnd/tls.cert | tr -d '\n\r')
 export TLSOUTSIDE2=$(kubectl exec lnd-outside-2-0  -- base64 /data/.lnd/tls.cert | tr -d '\n\r')
 
-export MACAROON=$(kubectl exec lnd-0  -- base64 /data/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
+export MACAROON=$(kubectl exec lnd1-0  -- base64 /data/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
 export MACAROONOUTSIDE1=$(kubectl exec lnd-outside-1-0  -- base64 /data/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
 export MACAROONOUTSIDE2=$(kubectl exec lnd-outside-2-0  -- base64 /data/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
 
@@ -19,7 +19,7 @@ export BITCOINDRPCPASS=$(kubectl get secret bitcoind-rpcpassword --template={{.d
 
 export LNDIP=$MINIKUBEIP
 # FIXME hacky ;exit; TODO: need to rename lnd to lnd-main such that it can be filtered properly
-export LNDRPCPORT=$(kubectl get services | awk '/lnd/ {print $5;exit;}' | grep -Po '10009:\K[0-9]+')
+export LNDRPCPORT=$(kubectl get services | awk '/lnd1/ {print $5;exit;}' | grep -Po '10009:\K[0-9]+')
 
 export LNDOUTSIDE1ADDR=$MINIKUBEIP
 export LNDOUTSIDE1RPCPORT=$(kubectl get services | awk '/lnd-outside-1/ {print $5}' | grep -Po '10009:\K[0-9]+')

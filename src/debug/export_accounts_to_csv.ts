@@ -2,7 +2,8 @@ import { CSVAccountExport } from "../csvAccountExport"
 import { customerPath } from "../ledger/ledger"
 import { MainBook, setupMongoConnectionSecondary } from "../mongodb"
 import { Transaction, User } from "../schema"
-import { createObjectCsvWriter} from "csv-writer"
+import { Primitive } from "../types"
+import { createObjectCsvWriter } from "csv-writer"
 import * as _ from "lodash"
 
 // need to set MONGODB_ADDRESS to call the script
@@ -14,7 +15,6 @@ const main = async () => {
   await exportBalances()
   await exportAllUserLedger()
 }
-
 
 const getBooks = async () => {
   const accounts = await MainBook.listAccounts()
@@ -41,7 +41,7 @@ const exportAllUserLedger = async () => {
   const csv = new CSVAccountExport()
 
   for await (const user of User.find({})) {
-    await csv.addAccount({account: customerPath(user._id)})
+    await csv.addAccount({ account: customerPath(user._id) })
   }
 
   await csv.saveToDisk()
@@ -51,31 +51,31 @@ const exportUsers = async () => {
   let users
 
   try {
-    users = await User.find({"phone": {"$exists": 1}})
+    users = await User.find({ phone: { $exists: 1 } })
   } catch (err) {
     console.log(err)
   }
 
   console.log("csvWriter")
   const csvWriter = createObjectCsvWriter({
-    path: 'records_accounts.csv',
+    path: "records_accounts.csv",
     header: [
-        {id: 'uid', title: 'uid'},
-        {id: 'phone', title: 'Phone'},
-        {id: 'username', title: 'Username'},
-        {id: 'title', title: 'Title'},
-        {id: 'balanceUSD', title: 'balanceUSD'},
-        {id: 'balanceBTC', title: 'balanceBTC'},
-        {id: 'carrier_name', title: 'carrier_name'},
-        {id: 'carrier_type', title: 'carrier_type'},
-        {id: 'created_at', title: 'created_at'},
-        {id: 'totalCredit', title: 'totalCredit'},
-        {id: 'totalDebit', title: 'totalDebit'},
-        {id: 'countTxs', title: 'countTxs'},
+      { id: "uid", title: "uid" },
+      { id: "phone", title: "Phone" },
+      { id: "username", title: "Username" },
+      { id: "title", title: "Title" },
+      { id: "balanceUSD", title: "balanceUSD" },
+      { id: "balanceBTC", title: "balanceBTC" },
+      { id: "carrier_name", title: "carrier_name" },
+      { id: "carrier_type", title: "carrier_type" },
+      { id: "created_at", title: "created_at" },
+      { id: "totalCredit", title: "totalCredit" },
+      { id: "totalDebit", title: "totalDebit" },
+      { id: "countTxs", title: "countTxs" },
     ],
   })
 
-  const records: any[] = []
+  const records: Record<string, Primitive>[] = []
 
   // TODO filter with USD / BTC currency
   const aggregateTxs = await Transaction.aggregate([
@@ -90,7 +90,6 @@ const exportUsers = async () => {
   ])
 
   for (const user of users) {
-
     console.log(`processing ${user._id}`)
 
     const record = {
@@ -112,14 +111,15 @@ const exportUsers = async () => {
       record[`balance${currency}`] = balance
     }
 
-
     try {
-      const { totalDebit, totalCredit, countTxs } = _.find(aggregateTxs, {"_id": user.accountPath})
+      const { totalDebit, totalCredit, countTxs } = _.find(aggregateTxs, {
+        _id: user.accountPath,
+      })
       record["totalDebit"] = totalDebit
       record["totalCredit"] = totalCredit
       record["countTxs"] = countTxs
     } catch (err) {
-      console.log({err})
+      console.log({ err })
     }
 
     records.push(record)
@@ -134,15 +134,15 @@ const exportBalances = async () => {
 
   console.log("csvWriter")
   const csvWriter = createObjectCsvWriter({
-    path: 'users_balance.csv',
+    path: "users_balance.csv",
     header: [
-      {id: 'account', title: 'Account'},
-      {id: 'balance', title: 'Balance'},
+      { id: "account", title: "Account" },
+      { id: "balance", title: "Balance" },
     ],
   })
 
-  console.log({books})
-  const records: any[] = []
+  console.log({ books })
+  const records: Record<string, Primitive>[] = []
 
   for (const account in books) {
     records.push({
@@ -153,5 +153,7 @@ const exportBalances = async () => {
   await csvWriter.writeRecords(records)
 }
 
-main().then(o => console.log(o)).catch(err => console.log(err))
+main()
+  .then((o) => console.log(o))
+  .catch((err) => console.log(err))
 console.log("end")

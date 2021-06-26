@@ -1,15 +1,22 @@
 /**
  * @jest-environment node
  */
-import { once } from 'events'
-import { getChannels, subscribeToGraph } from 'lightning'
+import { once } from "events"
+import { getChannels, subscribeToGraph } from "lightning"
 import { updateEscrows } from "../ledger/balanceSheet"
 import { lndFeePath } from "../ledger/ledger"
 import { MainBook, setupMongoConnection } from "../mongodb"
 import { bitcoindDefaultClient, sleep } from "../utils"
-import { checkIsBalanced, lndMain, lndOutside1, lndOutside2, mockGetExchangeBalance, openChannelTesting } from "./helper"
+import {
+  checkIsBalanced,
+  lndMain,
+  lndOutside1,
+  lndOutside2,
+  mockGetExchangeBalance,
+  openChannelTesting,
+} from "./helper"
 
-jest.mock('../realtimePrice')
+jest.mock("../realtimePrice")
 
 let channelLengthMain, channelLengthOutside1
 
@@ -37,7 +44,7 @@ afterAll(async () => {
 //this is the fixed opening and closing channel fee on devnet
 const channelFee = 7637
 
-it('opens channel from lnd1ToLndOutside1', async () => {
+it("opens channel from lnd1ToLndOutside1", async () => {
   const socket = `lnd-outside-1:9735`
   const { balance: initFeeInLedger } = await MainBook.balance({
     account: lndFeePath,
@@ -52,7 +59,7 @@ it('opens channel from lnd1ToLndOutside1', async () => {
     currency: "BTC",
   })
 
-  expect(finalFeeInLedger - initFeeInLedger).toBe(channelFee * -1 )
+  expect(finalFeeInLedger - initFeeInLedger).toBe(channelFee * -1)
 })
 
 // FIXME: we need a way to calculate the closing fee
@@ -95,35 +102,39 @@ it('opens channel from lnd1ToLndOutside1', async () => {
 //   }
 // })
 
-it('opens private channel from lndOutside1 to lndOutside2', async () => {
+it("opens private channel from lndOutside1 to lndOutside2", async () => {
   const socket = `lnd-outside-2:9735`
 
   const subscription = subscribeToGraph({ lnd: lndOutside1 })
 
   await Promise.all([
-    openChannelTesting({ lnd: lndOutside1, other_lnd: lndOutside2, socket, is_private: true }),
-    once(subscription, 'channel_updated'),
+    openChannelTesting({
+      lnd: lndOutside1,
+      other_lnd: lndOutside2,
+      socket,
+      is_private: true,
+    }),
+    once(subscription, "channel_updated"),
   ])
 
   subscription.removeAllListeners()
 
   const { channels } = await getChannels({ lnd: lndOutside1 })
   expect(channels.length).toEqual(channelLengthOutside1 + 1)
-  expect(channels.some(e => e.is_private))
+  expect(channels.some((e) => e.is_private))
 })
 
-it('opens channel from lndOutside1 to lnd1', async () => {
-  const socket = `lnd:9735`
+it("opens channel from lndOutside1 to lnd1", async () => {
+  const socket = `lnd1:9735`
   await openChannelTesting({ lnd: lndOutside1, other_lnd: lndMain, socket })
 
   {
     const { channels } = await getChannels({ lnd: lndMain })
     expect(channels.length).toEqual(channelLengthMain + 1)
   }
-
 })
 
-it('escrow update ', async () => {
+it("escrow update ", async () => {
   await updateEscrows()
   await checkIsBalanced()
 

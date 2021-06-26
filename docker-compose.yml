@@ -1,0 +1,50 @@
+version: "2"
+services:
+  redis:
+    image: bitnami/redis:6.2
+    ports:
+    - '6379:6379'
+    environment:
+    - ALLOW_EMPTY_PASSWORD=yes
+    - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+  mongodb:
+    image: bitnami/mongodb:4.4.6-debian-10-r0
+    ports:
+    - "27017:27017"
+    environment:
+    - MONGODB_PASSWORD=password
+    - MONGODB_USERNAME=testGaloy
+    - MONGODB_DATABASE=galoy
+  bitcoind:
+    image: lncm/bitcoind:v0.21.1
+    ports:
+      - "18443:18443"
+    volumes:
+    - ${PWD}/dev/bitcoind/bitcoin.conf:/data/.bitcoin/bitcoin.conf
+  lnd1:
+    image: lncm/lnd:v0.12.1-monitoring
+    ports:
+      - "10009:10009"
+    volumes:
+    - ${PWD}/dev/lnd/lnd.conf:/data/.lnd/lnd.conf
+    - ${PWD}/dev/lnd/tls.key:/data/.lnd/tls.key
+    - ${PWD}/dev/lnd/tls.cert:/data/.lnd/tls.cert
+    depends_on: [bitcoind]
+  lnd-outside-1:
+    image: lncm/lnd:v0.12.1-monitoring
+    ports:
+      - "10010:10009"
+    volumes:
+    - ${PWD}/dev/lnd/lnd.conf:/data/.lnd/lnd.conf
+    - ${PWD}/dev/lnd/tls.key:/data/.lnd/tls.key
+    - ${PWD}/dev/lnd/tls.cert:/data/.lnd/tls.cert
+    depends_on: [bitcoind]
+  lnd-outside-2:
+    image: lncm/lnd:v0.12.1-monitoring
+    ports:
+      - "10011:10009"
+    volumes:
+    - ${PWD}/dev/lnd/lnd.conf:/data/.lnd/lnd.conf
+    - ${PWD}/dev/lnd/tls.key:/data/.lnd/tls.key
+    - ${PWD}/dev/lnd/tls.cert:/data/.lnd/tls.cert
+    depends_on: [bitcoind]

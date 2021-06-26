@@ -1,24 +1,29 @@
-import * as admin from 'firebase-admin'
-import _ from 'lodash'
+import * as admin from "firebase-admin"
+import _ from "lodash"
 import { INotification } from "../types"
 
 // The key GOOGLE_APPLICATION_CREDENTIALS should be set in production
 // This key defined the path of the config file that include the key
 // more info at https://firebase.google.com/docs/admin/setup
 // TODO: mock up the function for devnet
-if(process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
   admin.initializeApp({
     credential: admin.credential.applicationDefault(),
   })
 }
 
-export const sendNotification = async ({ title, user, body, data, logger}: INotification) => {
-
-
-  const message = {
+export const sendNotification = async ({
+  title,
+  user,
+  body,
+  data,
+  logger,
+}: INotification) => {
+  // TODO: Figure out the unknown type here
+  const message: Record<string, Record<string, unknown>> = {
     // only string can be sent to notifications
     data: {
-      ..._.mapValues(data, v => String(v)),
+      ..._.mapValues(data, (v) => String(v)),
       // title,
       // body,
     },
@@ -34,35 +39,42 @@ export const sendNotification = async ({ title, user, body, data, logger}: INoti
   }
 
   if (body) {
-    message['notification']['body'] = body
+    message["notification"]["body"] = body
   }
 
   if (user.deviceToken.length === 1 && user.deviceToken[0] === "test") {
-    logger.info({message, user}, "test token. skipping notification")
+    logger.info({ message, user }, "test token. skipping notification")
     return
   }
 
   if (user.deviceToken.length === 0) {
-    logger.info({message, user}, "skipping notification as no deviceToken has been registered")
+    logger.info(
+      { message, user },
+      "skipping notification as no deviceToken has been registered",
+    )
     return
   }
 
-  logger.info({message, user}, "sending notification")
+  logger.info({ message, user }, "sending notification")
 
   try {
     const response = await admin.messaging().sendToDevice(
-      user.deviceToken.filter(token => token.length === 163),
-      message as any,
+      user.deviceToken.filter((token) => token.length === 163),
+      message,
       {
         // Required for background/quit data-only messages on iOS
         // contentAvailable: true,
         // Required for background/quit data-only messages on Android
         // priority: 'high',
-      })
+      },
+    )
 
-    logger.info({response, user, title, body, data}, 'notification was sent successfully')
-  } catch(err) {
-    logger.info({err, user, title, body, data}, 'impossible to send notification')
+    logger.info(
+      { response, user, title, body, data },
+      "notification was sent successfully",
+    )
+  } catch (err) {
+    logger.info({ err, user, title, body, data }, "impossible to send notification")
   }
 
   // FIXME: any as a workaround to https://github.com/Microsoft/TypeScript/issues/15300

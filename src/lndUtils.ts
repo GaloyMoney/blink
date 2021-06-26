@@ -1,5 +1,12 @@
-import { default as axios } from 'axios'
-import { getChainBalance, getChannelBalance, getClosedChannels, getForwards, getPendingChainBalance, getWalletInfo } from "lightning"
+import { default as axios } from "axios"
+import {
+  getChainBalance,
+  getChannelBalance,
+  getClosedChannels,
+  getForwards,
+  getPendingChainBalance,
+  getWalletInfo,
+} from "lightning"
 import _ from "lodash"
 import { lnd } from "./lndConfig"
 import { baseLogger } from "./logger"
@@ -13,12 +20,13 @@ const MS_PER_DAY = 864e5
 
 export const lndBalances = async () => {
   // Onchain
-  const { chain_balance } = await getChainBalance({lnd})
-  const { channel_balance, pending_balance: opening_channel_balance } = await getChannelBalance({lnd})
+  const { chain_balance } = await getChainBalance({ lnd })
+  const { channel_balance, pending_balance: opening_channel_balance } =
+    await getChannelBalance({ lnd })
 
   //FIXME: This can cause incorrect balance to be reported in case an unconfirmed txn is later cancelled/double spent
   // bitcoind seems to have a way to report this correctly. does lnd have?
-  const { pending_chain_balance } = await getPendingChainBalance({lnd})
+  const { pending_chain_balance } = await getPendingChainBalance({ lnd })
 
   // get pending closed
   const { channels: closedChannels } = await getClosedChannels({ lnd })
@@ -26,12 +34,25 @@ export const lndBalances = async () => {
   // FIXME: there can be issue with channel not closed completely from lnd
   // https://github.com/alexbosworth/ln-service/issues/139
   baseLogger.debug({ closedChannels }, "getClosedChannels")
-  const closing_channel_balance = _.sumBy(closedChannels, channel => _.sumBy(
-    (channel as any).close_payments, payment => (payment as any).is_pending ? (payment as any).tokens : 0),
+  const closing_channel_balance = _.sumBy(closedChannels, (channel) =>
+    _.sumBy(channel.close_payments, (payment) =>
+      payment.is_pending ? payment.tokens : 0,
+    ),
   )
 
-  const total = chain_balance + channel_balance + pending_chain_balance + opening_channel_balance + closing_channel_balance
-  return { total, onChain: chain_balance + pending_chain_balance, offChain: channel_balance, opening_channel_balance, closing_channel_balance }
+  const total =
+    chain_balance +
+    channel_balance +
+    pending_chain_balance +
+    opening_channel_balance +
+    closing_channel_balance
+  return {
+    total,
+    onChain: chain_balance + pending_chain_balance,
+    offChain: channel_balance,
+    opening_channel_balance,
+    closing_channel_balance,
+  }
 }
 
 export async function nodeStats({ lnd }) {
@@ -48,8 +69,8 @@ export async function nodeStats({ lnd }) {
 
 export async function getBosScore() {
   try {
-    const { data } = await axios.get('https://bos.lightning.jorijn.com/data/export.json')
-    const publicKey = (await getWalletInfo({lnd})).public_key
+    const { data } = await axios.get("https://bos.lightning.jorijn.com/data/export.json")
+    const publicKey = (await getWalletInfo({ lnd })).public_key
     const bosScore = _.find(data.data, { publicKey })
     if (!bosScore) {
       baseLogger.info("key is not in bos list")
@@ -60,18 +81,22 @@ export async function getBosScore() {
   }
 }
 
-export const getRoutingFees = async ({ lnd, before, after }): Promise<Array<Record<string, number>>> => {
+export const getRoutingFees = async ({
+  lnd,
+  before,
+  after,
+}): Promise<Array<Record<string, number>>> => {
   const forwardsList = await getForwards({ lnd, before, after })
   let next = forwardsList.next
   let forwards = forwardsList.forwards
 
   let finishedFetching = false
-  if(!next || !forwards || forwards.length <= 0) {
+  if (!next || !forwards || forwards.length <= 0) {
     finishedFetching = true
   }
 
-  while(!finishedFetching) {
-    if(next) {
+  while (!finishedFetching) {
+    if (next) {
       const moreForwards = await getForwards({ lnd, token: next })
       forwards = [...forwards, ...moreForwards.forwards]
       next = moreForwards.next
@@ -81,25 +106,29 @@ export const getRoutingFees = async ({ lnd, before, after }): Promise<Array<Reco
   }
 
   // groups each forward object by date
-  const dateGroupedForwards = _.groupBy(forwards, e => new Date(e.created_at).toDateString())
+  const dateGroupedForwards = _.groupBy(forwards, (e) =>
+    new Date(e.created_at).toDateString(),
+  )
 
   // returns revenue for each date by reducing all forwards for each date
-  const feePerDate = _.mapValues(dateGroupedForwards, e => e.reduce((sum, {fee_mtokens}) => sum + +fee_mtokens, 0) / 1000)
+  const feePerDate = _.mapValues(
+    dateGroupedForwards,
+    (e) => e.reduce((sum, { fee_mtokens }) => sum + +fee_mtokens, 0) / 1000,
+  )
 
   // returns an array of objects where each object has key = date and value = fees
-  return _.map(feePerDate, (v, k) => ({[k]: v}))
+  return _.map(feePerDate, (v, k) => ({ [k]: v }))
 }
 
 export const updateRoutingFees = async () => {
-
   const dbMetadata = await DbMetadata.findOne({})
   let lastDate
 
-  if(dbMetadata?.routingFeeLastEntry) {
+  if (dbMetadata?.routingFeeLastEntry) {
     lastDate = new Date(dbMetadata.routingFeeLastEntry)
   } else {
     lastDate = new Date(0)
-    baseLogger.info('Running the routing fee revenue cronjob for the first time')
+    baseLogger.info("Running the routing fee revenue cronjob for the first time")
   }
 
   // Done to remove effect of timezone
@@ -115,7 +144,7 @@ export const updateRoutingFees = async () => {
   const before = endDate.toISOString()
 
   // Only record fee if it has been 1d+ since last record
-  if((endDate.getTime() - lastDate.getTime()) / MS_PER_DAY < 1) {
+  if ((endDate.getTime() - lastDate.getTime()) / MS_PER_DAY < 1) {
     return
   }
 
@@ -129,15 +158,23 @@ export const updateRoutingFees = async () => {
     const [[day, fee]] = Object.entries(forward)
     try {
       await MainBook.entry("routing fee")
-      .credit(revenueFeePath, fee, { ...metadata, feesCollectedOn: day})
-      .debit(lndAccountingPath, fee, { ...metadata, feesCollectedOn: day })
-      .commit()
-    } catch(err) {
-      throw new DbError('Unable to record routing revenue', {forwardToClient: false, logger: baseLogger, level: 'error'})
+        .credit(revenueFeePath, fee, { ...metadata, feesCollectedOn: day })
+        .debit(lndAccountingPath, fee, { ...metadata, feesCollectedOn: day })
+        .commit()
+    } catch (err) {
+      throw new DbError("Unable to record routing revenue", {
+        forwardToClient: false,
+        logger: baseLogger,
+        level: "error",
+      })
     }
   }
 
   endDate.setDate(endDate.getDate() + 1)
   const endDay = endDate.toDateString()
-  await DbMetadata.findOneAndUpdate({}, { $set: { routingFeeLastEntry: endDay } }, { upsert: true })
+  await DbMetadata.findOneAndUpdate(
+    {},
+    { $set: { routingFeeLastEntry: endDay } },
+    { upsert: true },
+  )
 }

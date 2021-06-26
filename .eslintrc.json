@@ -4,6 +4,7 @@
     "es6": true,
     "node": true
   },
+  "ignorePatterns": ["/*.js", "lib", "coverage"],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "project": "tsconfig.json",
@@ -31,16 +32,10 @@
     "no-sequences": "error",
     "no-throw-literal": "error",
     "no-void": "error",
-    "comma-dangle": ["error", "always-multiline"],
-    "semi": ["error", "never"],
-    "no-trailing-spaces": "error",
-    "eol-last": "error",
-    "@typescript-eslint/no-unused-vars": "off", // Duplicate
+    "@typescript-eslint/no-extra-semi": "off", // Prettier work
 
     // Temporarily disabled recommended rules
     "@typescript-eslint/explicit-module-boundary-types": "off",
-    "@typescript-eslint/no-explicit-any": "off",
-    "@typescript-eslint/no-non-null-assertion": "off",
     "no-async-promise-executor": "off"
   }
 }

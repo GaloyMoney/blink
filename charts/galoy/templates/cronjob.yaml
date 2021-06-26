@@ -47,16 +47,16 @@ spec:
             - name: MONGODB_DB
               value: "galoy"
             - name: LNDIP
-              value: "lnd"
+              value: "lnd1"
             - name: MACAROON
               valueFrom:
                 secretKeyRef:
-                  name: lnd-credentials
+                  name: lnd1-credentials
                   key: admin_macaroon_base64
             - name: TLS
               valueFrom:
                 secretKeyRef:
-                  name: lnd-credentials
+                  name: lnd1-credentials
                   key: tls_base64
             - name: REDIS_MASTER_NAME
               value: "mymaster"

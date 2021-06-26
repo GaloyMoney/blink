@@ -1,13 +1,11 @@
-import * as _ from 'lodash'
+import * as _ from "lodash"
 import * as mongoose from "mongoose"
 import { yamlConfig } from "./config"
-import { NotFoundError } from './error'
+import { NotFoundError } from "./error"
 import { customerPath } from "./ledger/ledger"
-import { baseLogger } from './logger'
-import { Levels } from './types'
-import { caseInsensitiveRegex, inputXOR } from './utils'
-
-
+import { baseLogger } from "./logger"
+import { Levels } from "./types"
+import { caseInsensitiveRegex, inputXOR } from "./utils"
 
 // mongoose.set("debug", true)
 
@@ -40,17 +38,13 @@ const invoiceUserSchema = new Schema({
     type: Boolean,
     default: true,
   },
-
 })
 
-invoiceUserSchema.index({ "uid": 1 })
-
+invoiceUserSchema.index({ uid: 1 })
 
 export const InvoiceUser = mongoose.model("InvoiceUser", invoiceUserSchema)
 
 export const regexUsername = /(?!^(1|3|bc1|lnbc1))^[0-9a-z_]+$/i
-
-
 
 const UserSchema = new Schema({
   depositFeeRatio: {
@@ -66,20 +60,22 @@ const UserSchema = new Schema({
   },
   lastConnection: Date,
   lastIPs: {
-    type: [{
-      ip: String,
-      provider: String,
-      country: String,
-      region: String,
-      city: String,
-      //using Type instead of type due to its special status in mongoose
-      Type: String,
-      firstConnection: {
-        type: Date,
-        default: Date.now,
+    type: [
+      {
+        ip: String,
+        provider: String,
+        country: String,
+        region: String,
+        city: String,
+        //using Type instead of type due to its special status in mongoose
+        Type: String,
+        firstConnection: {
+          type: Date,
+          default: Date.now,
+        },
+        lastConnection: Date,
       },
-      lastConnection: Date,
-    }],
+    ],
     default: [],
   },
   created_at: {
@@ -108,14 +104,15 @@ const UserSchema = new Schema({
   },
 
   // TODO: refactor, have phone and twilio metadata in the same sub-object.
-  phone: { // TODO we should store country as a separate string
+  phone: {
+    // TODO we should store country as a separate string
     type: String,
     required: true,
     unique: true,
   },
   twilio: {
     carrier: {
-      error_code: String , // check this is the right syntax
+      error_code: String, // check this is the right syntax
       mobile_country_code: String,
       mobile_network_code: String,
       name: String,
@@ -144,38 +141,42 @@ const UserSchema = new Schema({
   },
   currencies: {
     validate: {
-      validator: function(v) {
-        return _.sumBy(v, 'ratio') === 1
+      validator: function (v) {
+        return _.sumBy(v, "ratio") === 1
       },
     },
-    type: [{
-      id: {
-        type: String,
-        enum: ["BTC", "USD"],
-        required: true,
+    type: [
+      {
+        id: {
+          type: String,
+          enum: ["BTC", "USD"],
+          required: true,
+        },
+        ratio: {
+          type: Number,
+          required: true,
+          min: 0,
+          max: 1,
+        },
       },
-      ratio: {
-        type: Number,
-        required: true,
-        min: 0,
-        max: 1,
-      },
-    }],
+    ],
     required: true,
     default: [{ id: "BTC", ratio: 1 }],
   },
   contacts: {
-    type: [{
-      id: {
-        type: String,
-        collation: { locale: "en", strength: 2 },
+    type: [
+      {
+        id: {
+          type: String,
+          collation: { locale: "en", strength: 2 },
+        },
+        name: String,
+        transactionsCount: {
+          type: Number,
+          default: 1,
+        },
       },
-      name: String,
-      transactionsCount: {
-        type: Number,
-        default: 1,
-      },
-    }],
+    ],
     default: [],
   },
   language: {
@@ -216,61 +217,97 @@ const UserSchema = new Schema({
 // FIXME: this // An outer value of 'this' is shadowed by this container.
 // https://stackoverflow.com/questions/41944650/this-implicitly-has-type-any-because-it-does-not-have-a-type-annotation
 // eslint-disable-next-line no-unused-vars
-UserSchema.virtual('ratioUsd').get(function(this: typeof UserSchema) {
+UserSchema.virtual("ratioUsd").get(function (this: typeof UserSchema) {
   return _.find(this.currencies, { id: "USD" })?.ratio ?? 0
 })
 
 // eslint-disable-next-line no-unused-vars
-UserSchema.virtual('ratioBtc').get(function(this: typeof UserSchema) {
+UserSchema.virtual("ratioBtc").get(function (this: typeof UserSchema) {
   return _.find(this.currencies, { id: "BTC" })?.ratio ?? 0
 })
 
 // this is the accounting path in medici for this user
 // eslint-disable-next-line no-unused-vars
-UserSchema.virtual('accountPath').get(function(this: typeof UserSchema) {
+UserSchema.virtual("accountPath").get(function (this: typeof UserSchema) {
   return customerPath(this._id)
 })
 
 // eslint-disable-next-line no-unused-vars
-UserSchema.virtual('oldEnoughForWithdrawal').get(function(this: typeof UserSchema) {
+UserSchema.virtual("oldEnoughForWithdrawal").get(function (this: typeof UserSchema) {
   const d = Date.now()
   // console.log({d, created_at: this.created_at.getTime(), oldEnough: yamlConfig.limits.oldEnoughForWithdrawal})
-  return (d - this.created_at.getTime()) > yamlConfig.limits.oldEnoughForWithdrawal
+  return d - this.created_at.getTime() > yamlConfig.limits.oldEnoughForWithdrawal
 })
 
-UserSchema.methods.limitHit = async function({on_us, amount}: {on_us: boolean, amount: number}) {
+UserSchema.methods.limitHit = async function ({
+  on_us,
+  amount,
+}: {
+  on_us: boolean
+  amount: number
+}) {
   const timestampYesterday = Date.now() - MS_PER_DAY
 
-  const txnType = on_us ? [{type: 'on_us'},{type: 'onchain_on_us'}] : [{type:{$ne: 'on_us'}}]
+  const txnType = on_us
+    ? [{ type: "on_us" }, { type: "onchain_on_us" }]
+    : [{ type: { $ne: "on_us" } }]
 
-  const limit = yamlConfig.limits[on_us ? 'onUs' : 'withdrawal'].level[this.level]
+  const limit = yamlConfig.limits[on_us ? "onUs" : "withdrawal"].level[this.level]
 
-  const outgoingSats = (await User.getVolume({
-    after: timestampYesterday, txnType, accounts: this.accountPath,
-  }))?.outgoingSats ?? 0
+  const outgoingSats =
+    (
+      await User.getVolume({
+        after: timestampYesterday,
+        txnType,
+        accounts: this.accountPath,
+      })
+    )?.outgoingSats ?? 0
 
   return outgoingSats + amount > limit
 }
 
-UserSchema.statics.getVolume = async function({before, after, accounts, txnType}: {before?:number, after: number, accounts: string, txnType: [string]}) {
-  const timeBounds = before ? [{timestamp: { $gte: new Date(after) }}, {timestamp: { $lte: new Date(before) }}] : [{timestamp: { $gte: new Date(after) }}]
+UserSchema.statics.getVolume = async function ({
+  before,
+  after,
+  accounts,
+  txnType,
+}: {
+  before?: number
+  after: number
+  accounts: string
+  txnType: [string]
+}) {
+  const timeBounds = before
+    ? [
+        { timestamp: { $gte: new Date(after) } },
+        { timestamp: { $lte: new Date(before) } },
+      ]
+    : [{ timestamp: { $gte: new Date(after) } }]
   const [result] = await Transaction.aggregate([
-    {$match: {accounts, $or: txnType, $and: timeBounds } },
-    {$group: {_id: null, outgoingSats: { $sum: "$debit" }, incomingSats: { $sum: "$credit" } } },
+    { $match: { accounts, $or: txnType, $and: timeBounds } },
+    {
+      $group: {
+        _id: null,
+        outgoingSats: { $sum: "$debit" },
+        incomingSats: { $sum: "$credit" },
+      },
+    },
   ])
   return result
 }
 
 // user is considered active if there has been one transaction of more than 1000 sats in the last 30 days
 // eslint-disable-next-line no-unused-vars
-UserSchema.virtual('userIsActive').get(async function(this: typeof UserSchema) {
-  const timestamp30DaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000)
+UserSchema.virtual("userIsActive").get(async function (this: typeof UserSchema) {
+  const timestamp30DaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000
 
   const volume = await User.getVolume({
-    after: timestamp30DaysAgo, txnType: [{type:{$exists: true}}], accounts: this.accountPath,
+    after: timestamp30DaysAgo,
+    txnType: [{ type: { $exists: true } }],
+    accounts: this.accountPath,
   })
 
-  return (volume?.outgoingSats > 1000 || volume?.incomingSats > 1000)
+  return volume?.outgoingSats > 1000 || volume?.incomingSats > 1000
 })
 
 UserSchema.index({
@@ -278,37 +315,37 @@ UserSchema.index({
   coordinate: 1,
 })
 
-UserSchema.statics.getUser = async function({ username, phone }) {
+UserSchema.statics.getUser = async function ({ username, phone }) {
   inputXOR({ phone }, { username })
   let user
 
-  if(phone) {
+  if (phone) {
     user = await this.findOne({ phone })
   } else {
     user = await this.findByUsername({ username })
   }
 
-  if(!user) {
-    throw new NotFoundError("User not found", {logger: baseLogger})
+  if (!user) {
+    throw new NotFoundError("User not found", { logger: baseLogger })
   }
 
   return user
 }
 
 // FIXME: Merge findByUsername and getUser
-UserSchema.statics.findByUsername = async function({ username }) {
-  if(typeof username !== "string" || !username.match(regexUsername)) {
+UserSchema.statics.findByUsername = async function ({ username }) {
+  if (typeof username !== "string" || !username.match(regexUsername)) {
     return null
   }
 
   return this.findOne({ username: caseInsensitiveRegex(username) })
 }
 
-UserSchema.statics.getActiveUsers = async function(): Promise<Array<typeof User>> {
+UserSchema.statics.getActiveUsers = async function (): Promise<Array<typeof User>> {
   const users = await this.find({})
   const activeUsers: Array<typeof User> = []
-  for(const user of users) {
-    if(await user.userIsActive) {
+  for (const user of users) {
+    if (await user.userIsActive) {
       activeUsers.push(user)
     }
   }
@@ -317,9 +354,6 @@ UserSchema.statics.getActiveUsers = async function(): Promise<Array<typeof User>
 
 export const User = mongoose.model("User", UserSchema)
 
-
-
-
 // TODO: this DB should be capped.
 const PhoneCodeSchema = new Schema({
   created_at: {
@@ -327,7 +361,8 @@ const PhoneCodeSchema = new Schema({
     default: Date.now,
     required: true,
   },
-  phone: { // TODO we should store country as a separate string
+  phone: {
+    // TODO we should store country as a separate string
     type: String,
     required: true,
   },
@@ -339,12 +374,10 @@ const PhoneCodeSchema = new Schema({
 
 export const PhoneCode = mongoose.model("PhoneCode", PhoneCodeSchema)
 
-
 const transactionSchema = new Schema({
-
   hash: {
     type: Schema.Types.String,
-    ref: 'InvoiceUser',
+    ref: "InvoiceUser",
     // TODO: not always, use another hashOnchain?
   },
 
@@ -358,12 +391,21 @@ const transactionSchema = new Schema({
     type: String,
     enum: [
       // TODO: merge with the Interface located in types.ts?
-      "invoice", "payment", "on_us", "fee_reimbursement", // lightning
-      "onchain_receipt", "onchain_payment", "onchain_on_us", "deposit_fee",// onchain
-      "fee", "escrow", "routing_fee", // channel-related
+      "invoice",
+      "payment",
+      "on_us",
+      "fee_reimbursement", // lightning
+      "onchain_receipt",
+      "onchain_payment",
+      "onchain_on_us",
+      "deposit_fee", // onchain
+      "fee",
+      "escrow",
+      "routing_fee", // channel-related
       "exchange_rebalance", // send/receive btc from the exchange
       "user_rebalance", // buy/sell btc in the user wallet
-      "to_cold_storage", "to_hot_wallet",
+      "to_cold_storage",
+      "to_hot_wallet",
     ],
   },
 
@@ -388,19 +430,21 @@ const transactionSchema = new Schema({
   // TODO implement this to make it relevant for the user
   currencies: {
     // TODO: refactor with user
-    type: [{
-      id: {
-        type: String,
-        enum: ["BTC", "USD"],
-        required: true,
+    type: [
+      {
+        id: {
+          type: String,
+          enum: ["BTC", "USD"],
+          required: true,
+        },
+        ratio: {
+          type: Number,
+          required: true,
+          min: 0,
+          max: 1,
+        },
       },
-      ratio: {
-        type: Number,
-        required: true,
-        min: 0,
-        max: 1,
-      },
-    }],
+    ],
   },
 
   fee: {
@@ -431,7 +475,10 @@ const transactionSchema = new Schema({
   // TODO: refactor, define username as a type so that every property that should be an username can inherit from those parameters
   username: {
     type: String,
-    match: [/(?!^(1|3|bc1|lnbc1))^[0-9a-z_]+$/i, "Username can only have alphabets, numbers and underscores"],
+    match: [
+      /(?!^(1|3|bc1|lnbc1))^[0-9a-z_]+$/i,
+      "Username can only have alphabets, numbers and underscores",
+    ],
     minlength: 3,
     maxlength: 50,
   },
@@ -473,23 +520,36 @@ const transactionSchema = new Schema({
 })
 
 //indexes used by our queries
-transactionSchema.index({ "type": 1, "pending": 1, "account_path": 1 })
-transactionSchema.index({ "account_path": 1 })
-transactionSchema.index({ "hash": 1 })
+transactionSchema.index({ type: 1, pending: 1, account_path: 1 })
+transactionSchema.index({ account_path: 1 })
+transactionSchema.index({ hash: 1 })
 
 //indexes used by medici internally, and also set by default
 //we are setting them here manually because we are using a custom schema
-transactionSchema.index({ "_journal": 1 })
-transactionSchema.index({ "accounts": 1, "book": 1, "approved": 1, "datetime": -1, "timestamp": -1 })
-transactionSchema.index({ "account_path.0": 1, book: 1, approved: 1 })
-transactionSchema.index({ "account_path.0": 1, "account_path.1": 1, book: 1, approved: 1 })
-transactionSchema.index({ "account_path.0": 1, "account_path.1": 1, "account_path.2": 1, book: 1, approved: 1 })
-
-
+transactionSchema.index({ _journal: 1 })
+transactionSchema.index({
+  accounts: 1,
+  book: 1,
+  approved: 1,
+  datetime: -1,
+  timestamp: -1,
+})
+transactionSchema.index({ "account_path.0": 1, "book": 1, "approved": 1 })
+transactionSchema.index({
+  "account_path.0": 1,
+  "account_path.1": 1,
+  "book": 1,
+  "approved": 1,
+})
+transactionSchema.index({
+  "account_path.0": 1,
+  "account_path.1": 1,
+  "account_path.2": 1,
+  "book": 1,
+  "approved": 1,
+})
 
 export const Transaction = mongoose.model("Medici_Transaction", transactionSchema)
-
-
 
 const priceSchema = new Schema({
   // TODO:

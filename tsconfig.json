@@ -1,23 +1,16 @@
 {
   "compilerOptions": {
     "module": "CommonJS",
-    "noImplicitReturns": true,
-    "noUnusedLocals": false, // FIXME
     "outDir": "lib",
     "sourceMap": true,
     "strict": true,
     "target": "es2020",
     "noImplicitAny": false,
     "esModuleInterop": true,
-    "rootDirs": [
-      "src"
-    ],
-    "types": ["jest", "node"],
+    "rootDirs": ["src"],
     "moduleResolution": "node",
     "resolveJsonModule": true
   },
   "compileOnSave": true,
-  "include": [
-    "src/**/*"
-  ]
+  "include": ["src/**/*"]
 }
