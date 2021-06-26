@@ -411,19 +411,12 @@ export async function startApolloServer() {
     }),
   )
 
-<<<<<<< HEAD
   // JWKS endpoint to allow clients to verify jwt tokens
   app.get("/.well-known/jwks.json", async function(req, res) {
     const jwks = await jose.JWK.asKey(process.env.JWT_SECRET, 'pem')
     res.json(jwks.keystore.toJSON())
   })
 
-  app.use(swStats.getMiddleware({
-    uriPath: "/swagger",
-    // no authentication but /swagger/* should be protected from access outside the cluster
-    // this is done with nginx
-  }))
-=======
   app.use(
     swStats.getMiddleware({
       uriPath: "/swagger",
@@ -431,7 +424,6 @@ export async function startApolloServer() {
       // this is done with nginx
     }),
   )
->>>>>>> main
 
   // Health check
   app.get("/healthz", async function (req, res) {
