@@ -155,7 +155,7 @@ if [ "$NETWORK" == "testnet" ] || [ "$NETWORK" == "mainnet" ];
 then
   kubectlLndDeletionWait
 else
-  helmUpgrade lnd-outside-1 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpathOutside galoy/lnd
+  helmUpgrade lnd-outside-1 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpathOutside galoy/lnd & \
   helmUpgrade lnd-outside-2 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpathOutside galoy/lnd
 fi
 
