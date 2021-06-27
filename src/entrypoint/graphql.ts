@@ -358,9 +358,8 @@ export async function startApolloServer() {
           { new: true },
         )
 
-        if (yamlConfig.ipChecking.enabled) {
-          const checkProxy = yamlConfig.ipChecking.proxyChecking.enabled
-          fetchIPDetails({ ip, user, logger, checkProxy })
+        if (yamlConfig.ipRecording.enabled) {
+          fetchIPDetails({ ip, user, logger })
         }
 
         wallet =

@@ -152,7 +152,7 @@ export const fetchIP = async ({ ip }) => {
   return data[ip]
 }
 
-export const fetchIPDetails = async ({ ip, user, logger, checkProxy }): Promise<void> => {
+export const fetchIPDetails = async ({ ip, user, logger }): Promise<void> => {
   if (process.env.NODE_ENV === "test") {
     return
   }
@@ -165,7 +165,7 @@ export const fetchIPDetails = async ({ ip, user, logger, checkProxy }): Promise<
       return
     }
 
-    if (checkProxy) {
+    if (yamlConfig.ipRecording.proxyChecking.enabled) {
       ipinfo = await fetchIP({ ip })
     }
   } catch (error) {

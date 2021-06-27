@@ -87,7 +87,7 @@ limits:
       1: 5000000
       2: 100000000
 
-ipChecking:
+ipRecording:
   enabled: true
   proxyChecking:
     enabled: true
