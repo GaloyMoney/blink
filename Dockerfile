@@ -6,14 +6,15 @@ RUN apk update && apk add git
 
 COPY ./*.json ./yarn.lock ./
 
-RUN yarn install --frozen-lockfile  --production
+RUN yarn install --frozen-lockfile
 
 COPY ./src ./src
 
-RUN yarn global add typescript
 RUN find ./src -type d -depth -name '__tests__' -exec rm -r {} \; -prune
 
 RUN yarn build
+
+RUN yarn install --frozen-lockfile --production
 
 FROM gcr.io/distroless/nodejs:14
 COPY --from=BUILD_IMAGE /app/lib /app/lib
