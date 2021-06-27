@@ -87,8 +87,10 @@ limits:
       1: 5000000
       2: 100000000
 
-proxyChecking:
+ipChecking:
   enabled: true
+  proxyChecking:
+    enabled: true
 
 fees:
   withdraw: 2000 # 2000 sats flat per tx

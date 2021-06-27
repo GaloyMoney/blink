@@ -152,7 +152,7 @@ export const fetchIP = async ({ ip }) => {
   return data[ip]
 }
 
-export const fetchIPDetails = async ({ ip, user, logger }): Promise<void> => {
+export const fetchIPDetails = async ({ ip, user, logger, checkProxy }): Promise<void> => {
   if (process.env.NODE_ENV === "test") {
     return
   }
@@ -160,15 +160,14 @@ export const fetchIPDetails = async ({ ip, user, logger }): Promise<void> => {
   let ipinfo
 
   try {
-    // skip axios.get call if ip already exists in user object
+    // skip proxy check call if ip already exists in user object
     if (user.lastIPs.some((ipObject) => ipObject.ip === ip)) {
       return
     }
 
-    // const {data} = await axios.get(`http://proxycheck.io/v2/${ip}?key=${PROXY_CHECK_APIKEY}&vpn=1&asn=1`)
-    // ipinfo = data[ip]
-
-    ipinfo = await fetchIP({ ip })
+    if (checkProxy) {
+      ipinfo = await fetchIP({ ip })
+    }
   } catch (error) {
     logger.info({ error }, "Failed to fetch ip details")
   } finally {
