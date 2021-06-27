@@ -359,7 +359,7 @@ export async function startApolloServer() {
         )
 
         if (yamlConfig.ipChecking.enabled) {
-          let checkProxy = yamlConfig.ipChecking.proxyChecking.enabled
+          const checkProxy = yamlConfig.ipChecking.proxyChecking.enabled
           fetchIPDetails({ ip, user, logger, checkProxy })
         }
 
