@@ -366,9 +366,11 @@ export async function startApolloServer() {
           { lastConnection: new Date() },
           { new: true },
         )
-        if (yamlConfig.proxyChecking.enabled) {
+
+        if (yamlConfig.ipRecording.enabled) {
           updateIPDetails({ ip, user, logger })
         }
+
         wallet =
           !!user && user.status === "active"
             ? await WalletFactory({ user, logger })

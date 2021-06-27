@@ -160,12 +160,14 @@ export const updateIPDetails = async ({ ip, user, logger }): Promise<void> => {
   let ipinfo
 
   try {
-    // skip axios.get call if ip already exists in user object
+    // skip proxy check call if ip already exists in user object
     if (user.lastIPs.some((ipObject) => ipObject.ip === ip)) {
       return
     }
 
-    ipinfo = await fetchIP({ ip })
+    if (yamlConfig.ipRecording.proxyChecking.enabled) {
+      ipinfo = await fetchIP({ ip })
+    }
   } catch (error) {
     logger.info({ error }, "Failed to fetch ip details")
   } finally {
