@@ -101,7 +101,6 @@ kubectlLndDeletionWait () {
   sleep 5
   kubectl wait -n=$NAMESPACE --for=delete --timeout=5s pod -l app.kubernetes.io/instance=lnd1 || :
   kubectl wait -n=$NAMESPACE --for=delete --timeout=5s pod -l app.kubernetes.io/instance=lnd2 || :
-  kubectl wait -n=$NAMESPACE --for=delete --timeout=5s pod -l app.kubernetes.io/instance=lndonchain || :
 }
 
 if [ ${LOCAL} ]
@@ -150,7 +149,6 @@ set -e
 
 helmUpgrade lnd1 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd/ & \
 helmUpgrade lnd2 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd/ & \
-helmUpgrade lndonchain --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd
 
 # avoiding to spend time with circleci regtest with this condition
 if [ "$NETWORK" == "testnet" ] || [ "$NETWORK" == "mainnet" ];

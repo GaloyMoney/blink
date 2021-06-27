@@ -13,7 +13,7 @@
     "watch": "nodemon -V -e ts,graphql -w ./src -x yarn run start",
     "watch-trigger": "nodemon -V -e ts,graphql -w ./src -x yarn trigger",
     "kill-graphql": "kill $(lsof -t -i:4000)",
-    "uninstall-charts-helm": "helm uninstall lnd1 | helm uninstall lnd2 | helm uninstall lndonchain | helm uninstall lnd-outside-1 | helm uninstall lnd-outside-2 | helm uninstall bitcoind | helm uninstall galoy",
+    "uninstall-charts-helm": "helm uninstall lnd1 | helm uninstall lnd2 | helm uninstall lnd-outside-1 | helm uninstall lnd-outside-2 | helm uninstall bitcoind | helm uninstall galoy",
     "uninstall-charts": "yarn uninstall-charts-helm || : && sleep 15 && kubectl delete --all pvc",
     "add-charts": "export LOCAL=true && source ./exportLocal.sh && ./initLocalTest.sh",
     "forward-mongodb": "kubectl port-forward $(kubectl get pods -l app.kubernetes.io/name=mongodb | awk '/mongo/ {print $1}') 27017",
