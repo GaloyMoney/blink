@@ -1,16 +1,19 @@
 {{- define "galoy.jwtSecret" -}}
-{{- $secret := (lookup "v1" "Secret" .Release.Namespace "jwt-secret") -}}
-{{- if $secret -}}
-{{/*
-   Reusing current password since secret exists
-*/}}
-{{- $secret.data.secret -}}
-{{- else if .Values.jwtSecret -}}
-{{ .Values.jwtSecret | b64enc }}
+
+{{- $jwtSecret := (lookup "v1" "Secret" .Release.Namespace "jwt-secret") -}}
+{{- $valSecret := (coalesce .Values.jwtSecret (genPrivateKey "rsa")) | b64enc -}}
+{{- $valRsaSecret := (coalesce .Values.jwtRsaSecret (genPrivateKey "rsa")) | b64enc -}}
+
+{{- if $jwtSecret -}}
+  {{- $secret := coalesce $jwtSecret.data.secret $valSecret -}}
+  {{- $rsaSecret := coalesce $jwtSecret.data.rsaSecret $valRsaSecret -}}
+  {{- /*
+      LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQ = "-----BEGIN RSA PRIVATE KEY-----" | b64enc
+  */ -}}
+  secret: {{ $secret | quote }}
+  {{ if not (hasPrefix "LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQ" $secret) }}rsaSecret: {{ $rsaSecret | quote }}{{ end }}
 {{- else -}}
-{{/*
-    Generate new password
-*/}}
-{{- (genPrivateKey "rsa") | b64enc -}}
+  secret: {{ $valSecret | quote }}
 {{- end -}}
+
 {{- end -}}

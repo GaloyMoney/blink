@@ -2,7 +2,6 @@ import fs from "fs"
 import { ApolloServer } from "apollo-server-express"
 import dotenv from "dotenv"
 import express from "express"
-import expressJwt from "express-jwt"
 import { applyMiddleware } from "graphql-middleware"
 import { and, rule, shield } from "graphql-shield"
 import { makeExecutableSchema } from "graphql-tools"
@@ -18,7 +17,7 @@ import pino from "pino"
 import PinoHttp from "pino-http"
 import swStats from "swagger-stats"
 import { v4 as uuidv4 } from "uuid"
-import jose from "node-jose"
+import { authMiddleware, jwks } from "../jwt"
 import { getMinBuildNumber, getHourlyPrice } from "../localCache"
 import { lnd } from "../lndConfig"
 import { nodeStats } from "../lndUtils"
@@ -402,20 +401,10 @@ export async function startApolloServer() {
 
   app.use(pino_http)
 
-  app.use(
-    expressJwt({
-      secret: process.env.JWT_SECRET,
-      algorithms: ["RS256"],
-      credentialsRequired: false,
-      requestProperty: "token",
-    }),
-  )
+  app.use(authMiddleware())
 
   // JWKS endpoint to allow clients to verify jwt tokens
-  app.get("/.well-known/jwks.json", async function(req, res) {
-    const jwks = await jose.JWK.asKey(process.env.JWT_SECRET, 'pem')
-    res.json(jwks.keystore.toJSON())
-  })
+  app.get("/.well-known/jwks.json", jwks)
 
   app.use(
     swStats.getMiddleware({

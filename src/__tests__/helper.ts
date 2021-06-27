@@ -41,7 +41,8 @@ export const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
 export const getTokenFromPhoneIndex = async (index) => {
   const entry = yamlConfig.test_accounts[index]
   const raw_token = await login({ ...entry, logger: baseLogger, ip: "127.0.0.1" })
-  const token = jwt.verify(raw_token, process.env.JWT_SECRET, { algorithms: ['RS256'] })
+  const secret = process.env.JWT_RSA_SECRET || process.env.JWT_SECRET
+  const token = jwt.verify(raw_token, secret, { algorithms: ["RS256"] })
 
   const { uid } = token
 

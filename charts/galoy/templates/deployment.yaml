@@ -98,6 +98,11 @@ spec:
                 secretKeyRef:
                   name: jwt-secret
                   key: secret
+            - name: JWT_RSA_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: jwt-secret
+                  key: rsaSecret
             - name: NETWORK
               valueFrom:
                 secretKeyRef:
