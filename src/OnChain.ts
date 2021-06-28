@@ -236,6 +236,29 @@ export const OnChainMixin = (superclass) =>
               throw new InsufficientBalanceError(undefined, { logger: onchainLogger })
             }
           }
+          // when sendAll the amount to sendToChainAddress is the whole balance minus the fees
+          else {
+            amountToSend = balance.total_in_BTC - estimatedFee - this.user.withdrawFee
+
+            // case where there is not enough money available within lnd on-chain wallet
+            if (onChainBalance < amountToSend) {
+              // TODO: add a page to initiate the rebalancing quickly
+              throw new RebalanceNeededError(undefined, {
+                logger: onchainLogger,
+                onChainBalance,
+                amountToSend,
+                sendAll,
+                estimatedFee,
+                sendTo,
+                success: false,
+              })
+            }
+
+            // case where the user doesn't have enough money (fees are more than the whole balance)
+            if (amountToSend < 0) {
+              throw new InsufficientBalanceError(undefined, { logger: onchainLogger })
+            }
+          }
 
           return lockExtendOrThrow({ lock, logger: onchainLogger }, async () => {
             try {
