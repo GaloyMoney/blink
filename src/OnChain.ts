@@ -98,7 +98,7 @@ export const OnChainMixin = (superclass) =>
       return fee
     }
 
-    async onChainPay({ address, amount, memo }: IOnChainPayment): Promise<ISuccess> {
+    async onChainPay({ address, amount, memo, sendAll = false }: IOnChainPayment): Promise<ISuccess> {
       let onchainLogger = this.logger.child({
         topic: "payment",
         protocol: "onchain",
