@@ -107,7 +107,8 @@ export class Price {
 
     // skip if it has not been an hour since last update
     try {
-      // @ts-expect-error: TODO
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore-error: TODO
       const diff = moment().diff(moment(_.last(doc.pair.exchange.price)._id))
       if (diff < 1000 * 60 * 60) {
         return false
