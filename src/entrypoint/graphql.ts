@@ -229,8 +229,8 @@ const resolvers = {
     earnCompleted: async (_, { ids }, { wallet }) => wallet.addEarn(ids),
     onchain: async (_, __, { wallet }) => ({
       getNewAddress: () => wallet.getOnChainAddress(),
-      pay: ({ address, amount, memo }) => ({
-        success: wallet.onChainPay({ address, amount, memo }),
+      pay: ({ address, amount, memo, sendAll }) => ({
+        success: wallet.onChainPay({ address, amount, memo, sendAll }),
       }),
       getFee: ({ address, amount }) => wallet.getOnchainFee({ address, amount }),
     }),
