@@ -281,15 +281,25 @@ export const OnChainMixin = (superclass) =>
               fee = 0
             }
 
+            fee += this.user.withdrawFee
+
             {
-              fee += this.user.withdrawFee
-              const sats = amount + fee
+              let sats // full amount debited from account
+              if (!sendAll) {
+                sats = amount + fee
+              }
+              // when sendAll the amount debited from the account is the whole balance
+              else {
+                sats = balance.total_in_BTC
+              }
+              
               const metadata = {
                 currency: "BTC",
                 hash: id,
                 type: "onchain_payment",
                 pending: true,
                 ...UserWallet.getCurrencyEquivalent({ sats, fee }),
+                sendAll,
               }
 
               // TODO/FIXME refactor. add the transaction first and set the fees in a second tx.
