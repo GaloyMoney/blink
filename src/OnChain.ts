@@ -199,7 +199,7 @@ export const OnChainMixin = (superclass) =>
 
           const { chain_balance: onChainBalance } = await getChainBalance({ lnd })
 
-          let estimatedFee, id
+          let estimatedFee, id, amountToSend
 
           const sendTo = [{ address, tokens: amount }]
 
@@ -211,33 +211,35 @@ export const OnChainMixin = (superclass) =>
             throw new LoggedError(error)
           }
 
-          // case where there is not enough money available within lnd on-chain wallet
-          if (onChainBalance < amount + estimatedFee) {
-            // TODO: add a page to initiate the rebalancing quickly
-            throw new RebalanceNeededError(undefined, {
-              logger: onchainLogger,
-              onChainBalance,
-              amount,
-              estimatedFee,
-              sendTo,
-              success: false,
-            })
-          }
+          if (!sendAll) {
+            amountToSend = amount
 
-          //add a flat fee on top of onchain miner fees
-          estimatedFee += this.user.withdrawFee
+            // case where there is not enough money available within lnd on-chain wallet
+            if (onChainBalance < amount + estimatedFee) {
+              // TODO: add a page to initiate the rebalancing quickly
+              throw new RebalanceNeededError(undefined, {
+                logger: onchainLogger,
+                onChainBalance,
+                amountToSend,
+                sendAll,
+                estimatedFee,
+                sendTo,
+                success: false,
+              })
+            }
 
-          // case where the user doesn't have enough money
-          if (balance.total_in_BTC < amount + estimatedFee) {
-            throw new InsufficientBalanceError(undefined, { logger: onchainLogger })
+            // case where the user doesn't have enough money
+            if (balance.total_in_BTC < amountToSend + estimatedFee + this.user.withdrawFee) {
+              throw new InsufficientBalanceError(undefined, { logger: onchainLogger })
+            }
           }
 
           return lockExtendOrThrow({ lock, logger: onchainLogger }, async () => {
             try {
-              ;({ id } = await sendToChainAddress({ address, lnd, tokens: amount }))
+              ;({ id } = await sendToChainAddress({ address, lnd, tokens: amountToSend }))
             } catch (err) {
               onchainLogger.error(
-                { err, address, tokens: amount, success: false },
+                { err, address, tokens: amountToSend, success: false },
                 "Impossible to sendToChainAddress",
               )
               return false
