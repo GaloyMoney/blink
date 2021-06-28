@@ -38,9 +38,19 @@ const invoiceUserSchema = new Schema({
     type: Boolean,
     default: true,
   },
+
+  pubkey: {
+    type: String,
+    require: true,
+  },
+
+  paid: {
+    type: Boolean,
+    default: false,
+  },
 })
 
-invoiceUserSchema.index({ uid: 1 })
+invoiceUserSchema.index({ uid: 1, paid: 1 })
 
 export const InvoiceUser = mongoose.model("InvoiceUser", invoiceUserSchema)
 
@@ -93,8 +103,20 @@ const UserSchema = new Schema({
     default: "user",
     // TODO : enfore the fact there can be only one dealer
   },
-  onchain_addresses: {
-    type: [String],
+
+  onchain: {
+    type: [
+      {
+        pubkey: {
+          type: String,
+          required: true,
+        },
+        address: {
+          type: String,
+          required: true,
+        },
+      },
+    ],
     default: [],
   },
   level: {
@@ -296,6 +318,17 @@ UserSchema.statics.getVolume = async function ({
   return result
 }
 
+// FIXME: for onchain wallet from multiple wallet
+// refactor with bitcoind wallet
+UserSchema.virtual("onchain_addresses").get(function (this: typeof UserSchema) {
+  return this.onchain.map((item) => item.address)
+})
+
+// return the list of nodes that this user has address associated to
+UserSchema.virtual("onchain_pubkey").get(function (this: typeof UserSchema) {
+  return _.uniq(this.onchain.map((item) => item.pubkey))
+})
+
 // user is considered active if there has been one transaction of more than 1000 sats in the last 30 days
 // eslint-disable-next-line no-unused-vars
 UserSchema.virtual("userIsActive").get(async function (this: typeof UserSchema) {
@@ -308,11 +341,6 @@ UserSchema.virtual("userIsActive").get(async function (this: typeof UserSchema) 
   })
 
   return volume?.outgoingSats > 1000 || volume?.incomingSats > 1000
-})
-
-UserSchema.index({
-  title: 1,
-  coordinate: 1,
 })
 
 UserSchema.statics.getUser = async function ({ username, phone }) {
@@ -330,6 +358,10 @@ UserSchema.statics.getUser = async function ({ username, phone }) {
   }
 
   return user
+}
+
+UserSchema.statics.getUserByAddress = async function ({ address }) {
+  return this.findOne({ "onchain.address": address })
 }
 
 // FIXME: Merge findByUsername and getUser
@@ -351,6 +383,11 @@ UserSchema.statics.getActiveUsers = async function (): Promise<Array<typeof User
   }
   return activeUsers
 }
+
+UserSchema.index({
+  title: 1,
+  coordinate: 1,
+})
 
 export const User = mongoose.model("User", UserSchema)
 
@@ -482,6 +519,9 @@ const transactionSchema = new Schema({
     minlength: 3,
     maxlength: 50,
   },
+
+  // which lnd node this transaction relates to
+  pubkey: String,
 
   // original property from medici
   credit: {

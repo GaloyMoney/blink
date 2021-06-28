@@ -64,19 +64,26 @@ export const Levels = [1, 2]
 
 export interface IOnChainPayment {
   address: string
-  amount: number
+  amount: number // sats
   memo?: string
 }
 
 export interface ITransaction {
+  created_at: number // unix
   amount: number
+  sat: number
+  usd: number
   description: string
-  created_at: Date
-  hash?: string
-  destination?: string
   type: TransactionType
+  hash?: string
+  fee: number
+  feeUsd: number
+  username: string
+  // destination?: string
   pending: boolean
-  addresses?: [string]
+  id: string
+  currency: string
+  addresses?: string[]
 }
 
 export interface IFeeRequest {

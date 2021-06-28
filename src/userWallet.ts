@@ -48,7 +48,7 @@ export abstract class UserWallet {
       total_in_USD: NaN,
     }
 
-    // TODO: make this code parrallel instead of serial
+    // TODO: run this code in parrallel
     for (const { id } of this.user.currencies) {
       const { balance } = await MainBook.balance({
         account: this.user.accountPath,
@@ -107,7 +107,7 @@ export abstract class UserWallet {
   async getTransactions(): Promise<Array<ITransaction>> {
     const rawTransactions = await this.getRawTransactions()
 
-    const results_processed = rawTransactions.map((item) => {
+    return rawTransactions.map((item) => {
       const amount = item.credit - item.debit
       const memoUsername = item.username
         ? amount > 0
@@ -133,8 +133,6 @@ export abstract class UserWallet {
         addresses: item.payee_addresses,
       }
     })
-
-    return results_processed
   }
 
   async getStringCsv() {

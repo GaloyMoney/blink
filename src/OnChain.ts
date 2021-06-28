@@ -1,32 +1,16 @@
 import { assert } from "console"
-import _ from "lodash"
-import moment from "moment"
-import { customerPath, lndAccountingPath, onchainRevenuePath } from "./ledger/ledger"
-import { lnd } from "./lndConfig"
-import { lockExtendOrThrow, redlock } from "./lock"
-import { MainBook } from "./mongodb"
-import { IOnChainPayment, ISuccess, ITransaction } from "./types"
-import {
-  amountOnVout,
-  bitcoindDefaultClient,
-  btc2sat,
-  LoggedError,
-  LOOK_BACK,
-  myOwnAddressesOnVout,
-} from "./utils"
-import { baseLogger } from "./logger"
-import { UserWallet } from "./userWallet"
-import { Transaction, User } from "./schema"
 import {
   AuthenticatedLnd,
   createChainAddress,
   getChainBalance,
   getChainFeeEstimate,
   getChainTransactions,
+  GetChainTransactionsResult,
   getHeight,
   sendToChainAddress,
 } from "lightning"
-
+import _ from "lodash"
+import moment from "moment"
 import { yamlConfig } from "./config"
 import {
   DbError,
@@ -38,6 +22,22 @@ import {
   TransactionRestrictedError,
   ValidationError,
 } from "./error"
+import { customerPath, lndAccountingPath, onchainRevenuePath } from "./ledger/ledger"
+import { getActiveOnchainLnd, getLndFromPubkey } from "./lndUtils"
+import { lockExtendOrThrow, redlock } from "./lock"
+import { baseLogger } from "./logger"
+import { MainBook } from "./mongodb"
+import { Transaction, User } from "./schema"
+import { IOnChainPayment, ISuccess, ITransaction } from "./types"
+import { UserWallet } from "./userWallet"
+import {
+  amountOnVout,
+  bitcoindDefaultClient,
+  btc2sat,
+  LoggedError,
+  LOOK_BACK,
+  myOwnAddressesOnVout,
+} from "./utils"
 
 export const getOnChainTransactions = async ({
   lnd,
@@ -69,12 +69,6 @@ export const OnChainMixin = (superclass) =>
       await Promise.all([this.updateOnchainReceipt(lock), super.updatePending(lock)])
     }
 
-    // FIXME: should be static but doesn't work with mixin
-    // this would return a User if address belong to our wallet
-    async tentativelyGetPayeeUser({ address }) {
-      return User.findOne({ onchain_addresses: { $in: address } })
-    }
-
     async getOnchainFee({
       address,
       amount,
@@ -82,15 +76,20 @@ export const OnChainMixin = (superclass) =>
       address: string
       amount: number | null
     }): Promise<number> {
-      const payeeUser = await this.tentativelyGetPayeeUser({ address })
+      const payeeUser = await User.getUserByAddress({ address })
 
       let fee
 
+      // FIXME: legacy. is this still necessary?
       const defaultAmount = 300000
 
       if (payeeUser) {
         fee = 0
       } else {
+        // FIXME there is a transition if a node get offline for which the fee could be wrong
+        // if send by a new node in the meantime. (low probability and low side effect)
+        const { lnd } = getActiveOnchainLnd()
+
         const sendTo = [{ address, tokens: amount ?? defaultAmount }]
         ;({ fee } = await getChainFeeEstimate({ lnd, send_to: sendTo }))
         fee += this.user.withdrawFee
@@ -99,7 +98,6 @@ export const OnChainMixin = (superclass) =>
       return fee
     }
 
-    // amount in sats
     async onChainPay({ address, amount, memo }: IOnChainPayment): Promise<ISuccess> {
       let onchainLogger = this.logger.child({
         topic: "payment",
@@ -130,8 +128,9 @@ export const OnChainMixin = (superclass) =>
             throw new InsufficientBalanceError(undefined, { logger: onchainLogger })
           }
 
-          const payeeUser = await this.tentativelyGetPayeeUser({ address })
+          const payeeUser = await User.getUserByAddress({ address })
 
+          // on us onchain transaction
           if (payeeUser) {
             const onchainLoggerOnUs = onchainLogger.child({ onUs: true })
 
@@ -170,6 +169,8 @@ export const OnChainMixin = (superclass) =>
             return true
           }
 
+          // normal onchain payment path
+
           onchainLogger = onchainLogger.child({ onUs: false })
 
           if (!this.user.oldEnoughForWithdrawal) {
@@ -185,6 +186,8 @@ export const OnChainMixin = (superclass) =>
             } sats in 24 hours`
             throw new TransactionRestrictedError(error, { logger: onchainLogger })
           }
+
+          const { lnd } = getActiveOnchainLnd()
 
           const { chain_balance: onChainBalance } = await getChainBalance({ lnd })
 
@@ -276,7 +279,7 @@ export const OnChainMixin = (superclass) =>
     }
 
     async getLastOnChainAddress(): Promise<string> {
-      if (this.user.onchain_addresses.length === 0) {
+      if (this.user.onchain.length === 0) {
         // FIXME this should not be done in a query but only in a mutation?
         await this.getOnChainAddress()
       }
@@ -285,6 +288,7 @@ export const OnChainMixin = (superclass) =>
     }
 
     async getOnChainAddress(): Promise<string> {
+      // TODO
       // another option to investigate is to have a master key / client
       // (maybe this could be saved in JWT)
       // and a way for them to derive new key
@@ -294,13 +298,13 @@ export const OnChainMixin = (superclass) =>
 
       let address
 
+      const { lnd, pubkey } = getActiveOnchainLnd()
+
       try {
-        const format = "p2wpkh"
-        const response = await createChainAddress({
+        ;({ address } = await createChainAddress({
           lnd,
-          format,
-        })
-        address = response.address
+          format: "p2wpkh",
+        }))
       } catch (err) {
         const error = `error getting on chain address`
         this.logger.error({ err }, error)
@@ -308,7 +312,7 @@ export const OnChainMixin = (superclass) =>
       }
 
       try {
-        this.user.onchain_addresses.push(address)
+        this.user.onchain.push({ address, pubkey })
         await this.user.save()
       } catch (err) {
         const error = `error storing new onchain address to db`
@@ -324,70 +328,84 @@ export const OnChainMixin = (superclass) =>
     }
 
     async getOnchainReceipt({ confirmed }: { confirmed: boolean }) {
-      // optimization to remove the need to fetch lnd when no address
-      // mainly useful for testing purpose
-      // we could only generate an onchain_address the first time the client request it
-      // as opposed to the first time the client log in
-      if (!this.user.onchain_addresses.length) {
-        return []
+      const pubkeys: string[] = this.user.onchain_pubkey
+      let user_matched_txs: GetChainTransactionsResult["transactions"] = []
+
+      for (const pubkey of pubkeys) {
+        // TODO: optimize the data structure
+        const addresses = this.user.onchain
+          .filter((item) => (item.pubkey = pubkey))
+          .map((item) => item.address)
+
+        let lnd: AuthenticatedLnd
+
+        try {
+          ;({ lnd } = getLndFromPubkey({ pubkey }))
+        } catch (err) {
+          // FIXME pass logger
+          baseLogger.warn({ pubkey }, "node is offline")
+          continue
+        }
+
+        const lnd_incoming_txs = await getOnChainTransactions({ lnd, incoming: true })
+
+        // for unconfirmed tx:
+        // { block_id: undefined,
+        //   confirmation_count: undefined,
+        //   confirmation_height: undefined,
+        //   created_at: '2021-03-09T12:55:09.000Z',
+        //   description: undefined,
+        //   fee: undefined,
+        //   id: '60dfde7a0c5209c1a8438a5c47bb5e56249eae6d0894d140996ec0dcbbbb5f83',
+        //   is_confirmed: false,
+        //   is_outgoing: false,
+        //   output_addresses: [Array],
+        //   tokens: 100000000,
+        //   transaction: '02000000000...' }
+
+        // for confirmed tx
+        // { block_id: '0000000000000b1fa86d936adb8dea741a9ecd5f6a58fc075a1894795007bdbc',
+        //   confirmation_count: 712,
+        //   confirmation_height: 1744148,
+        //   created_at: '2020-05-14T01:47:22.000Z',
+        //   fee: undefined,
+        //   id: '5e3d3f679bbe703131b028056e37aee35a193f28c38d337a4aeb6600e5767feb',
+        //   is_confirmed: true,
+        //   is_outgoing: false,
+        //   output_addresses: [Array],
+        //   tokens: 10775,
+        //   transaction: '020000000001.....' }
+
+        let lnd_incoming_filtered: GetChainTransactionsResult["transactions"]
+
+        // TODO: expose to the yaml
+        const min_confirmation = 2
+
+        if (confirmed) {
+          lnd_incoming_filtered = lnd_incoming_txs.filter(
+            (tx) => !!tx.confirmation_count && tx.confirmation_count >= min_confirmation,
+          )
+        } else {
+          lnd_incoming_filtered = lnd_incoming_txs.filter(
+            (tx) =>
+              (!!tx.confirmation_count && tx.confirmation_count < min_confirmation) ||
+              !tx.confirmation_count,
+          )
+        }
+
+        user_matched_txs = [
+          ...user_matched_txs,
+          ...lnd_incoming_filtered.filter(
+            (tx) => _.intersection(tx.output_addresses, addresses).length > 0,
+          ),
+        ]
       }
-
-      const lnd_incoming_txs = await getOnChainTransactions({ lnd, incoming: true })
-
-      // for unconfirmed tx:
-      // { block_id: undefined,
-      //   confirmation_count: undefined,
-      //   confirmation_height: undefined,
-      //   created_at: '2021-03-09T12:55:09.000Z',
-      //   description: undefined,
-      //   fee: undefined,
-      //   id: '60dfde7a0c5209c1a8438a5c47bb5e56249eae6d0894d140996ec0dcbbbb5f83',
-      //   is_confirmed: false,
-      //   is_outgoing: false,
-      //   output_addresses: [Array],
-      //   tokens: 100000000,
-      //   transaction: '02000000000...' }
-
-      // for confirmed tx
-      // { block_id: '0000000000000b1fa86d936adb8dea741a9ecd5f6a58fc075a1894795007bdbc',
-      //   confirmation_count: 712,
-      //   confirmation_height: 1744148,
-      //   created_at: '2020-05-14T01:47:22.000Z',
-      //   fee: undefined,
-      //   id: '5e3d3f679bbe703131b028056e37aee35a193f28c38d337a4aeb6600e5767feb',
-      //   is_confirmed: true,
-      //   is_outgoing: false,
-      //   output_addresses: [Array],
-      //   tokens: 10775,
-      //   transaction: '020000000001.....' }
-
-      let lnd_incoming_filtered
-
-      // TODO: expose to the yaml
-      const min_confirmation = 2
-
-      if (confirmed) {
-        lnd_incoming_filtered = lnd_incoming_txs.filter(
-          (tx) => !!tx.confirmation_count && tx.confirmation_count >= min_confirmation,
-        )
-      } else {
-        lnd_incoming_filtered = lnd_incoming_txs.filter(
-          (tx) =>
-            (!!tx.confirmation_count && tx.confirmation_count < min_confirmation) ||
-            !tx.confirmation_count,
-        )
-      }
-
-      const user_matched_txs = lnd_incoming_filtered.filter(
-        (tx) =>
-          _.intersection(tx.output_addresses, this.user.onchain_addresses).length > 0,
-      )
 
       return user_matched_txs
     }
 
-    async getTransactions(): Promise<Array<ITransaction>> {
-      const confirmed = await super.getTransactions()
+    async getTransactions() {
+      const confirmed: ITransaction[] = await super.getTransactions()
 
       //  ({
       //   created_at: moment(item.timestamp).unix(),
@@ -408,7 +426,14 @@ export const OnChainMixin = (superclass) =>
       // TODO: should have outgoing unconfirmed transaction as well.
       // they are in medici, but not necessarily confirmed
 
-      const unconfirmed_all = await this.getOnchainReceipt({ confirmed: false })
+      let unconfirmed_user: GetChainTransactionsResult["transactions"] = []
+
+      try {
+        unconfirmed_user = await this.getOnchainReceipt({ confirmed: false })
+      } catch (err) {
+        baseLogger.warn({ user: this.user }, "impossible to fetch transactions")
+        unconfirmed_user = []
+      }
 
       // {
       //   block_id: undefined,
@@ -425,7 +450,7 @@ export const OnChainMixin = (superclass) =>
       //   transaction: '020000000001019b5e33c844cc72b093683cec8f743f1ddbcf075077e5851cc8a598a844e684850100000000feffffff022054380c0100000016001499294eb1f4936f15472a891ba400dc09bfd0aa7b00e1f505000000001600146107c29ed16bf7712347ddb731af713e68f1a50702473044022016c03d070341b8954fe8f956ed1273bb3852d3b4ba0d798e090bb5fddde9321a022028dad050cac2e06fb20fad5b5bb6f1d2786306d90a1d8d82bf91e03a85e46fa70121024e3c0b200723dda6862327135ab70941a94d4f353c51f83921fcf4b5935eb80495000000'
       // }
 
-      const unconfirmed_promises = unconfirmed_all.map(
+      const unconfirmed_promises = unconfirmed_user.map(
         async ({ transaction, id, created_at }) => {
           const { sats, addresses } = await this.getSatsAndAddressPerTx(transaction)
           return { sats, addresses, id, created_at }
@@ -444,7 +469,7 @@ export const OnChainMixin = (superclass) =>
           sat: sats,
           usd: UserWallet.satsToUsd(sats),
           description: "pending",
-          type: "onchain_receipt",
+          type: "onchain_receipt" as const,
           hash: id,
           currency: "BTC",
           fee: 0,
@@ -456,7 +481,7 @@ export const OnChainMixin = (superclass) =>
     }
 
     // raw encoded transaction
-    async getSatsAndAddressPerTx(tx) {
+    async getSatsAndAddressPerTx(tx): Promise<{ sats: number; addresses: string[] }> {
       const { vout } = await bitcoindDefaultClient.decodeRawTransaction(tx)
 
       //   vout: [
@@ -487,12 +512,12 @@ export const OnChainMixin = (superclass) =>
       // we have to look at the precise vout because lnd sums up the value at the transaction level, not at the vout level.
       // ie: if an attacker send 10 to user A at Galoy, and 10 to user B at galoy in a sinle transaction,
       // both would be credited 20, unless we do the below filtering.
-      const value = amountOnVout({ vout, onchain_addresses: this.user.onchain_addresses })
+      const value = amountOnVout({ vout, addresses: this.user.onchain_addresses })
       const sats = btc2sat(value)
 
       const addresses = myOwnAddressesOnVout({
         vout,
-        onchain_addresses: this.user.onchain_addresses,
+        addresses: this.user.onchain_addresses,
       })
 
       return { sats, addresses }

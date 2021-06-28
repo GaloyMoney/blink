@@ -1,13 +1,12 @@
+import { createChainAddress, sendToChainAddress } from "lightning"
 import _ from "lodash"
+import { yamlConfig } from "./config"
 import { bitcoindAccountingPath, lndAccountingPath, lndFeePath } from "./ledger/ledger"
-import { lnd } from "./lndConfig"
+import { getActiveOnchainLnd, lndsBalances } from "./lndUtils"
 import { MainBook } from "./mongodb"
 import { getOnChainTransactions } from "./OnChain"
-import { BitcoindClient, bitcoindDefaultClient, btc2sat, sat2btc } from "./utils"
 import { UserWallet } from "./userWallet"
-import { lndBalances } from "./lndUtils"
-import { yamlConfig } from "./config"
-import { createChainAddress, sendToChainAddress } from "lightning"
+import { BitcoindClient, bitcoindDefaultClient, btc2sat, sat2btc } from "./utils"
 
 export class SpecterWallet {
   bitcoindClient
@@ -96,7 +95,7 @@ export class SpecterWallet {
       }
     }
 
-    const { total, onChain } = await lndBalances()
+    const { total, onChain } = await lndsBalances()
     const { action, sats, reason } = SpecterWallet.isRebalanceNeeded({
       lndBalance: total,
       onChain,
@@ -176,6 +175,8 @@ export class SpecterWallet {
       }
     }
 
+    const { lnd } = getActiveOnchainLnd()
+
     const address = await this.getColdStorageAddress()
 
     let id
@@ -224,6 +225,8 @@ export class SpecterWallet {
         return
       }
     }
+
+    const { lnd } = getActiveOnchainLnd()
 
     // TODO: move to an event based as the transaction
     // would get done in specter

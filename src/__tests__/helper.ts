@@ -1,14 +1,5 @@
-import {
-  balanceSheetIsBalanced,
-  updateEscrows,
-  updateUsersPendingPayment,
-} from "../ledger/balanceSheet"
-import { FtxDealerWallet } from "../dealer/FtxDealerWallet"
-import { lnd } from "../lndConfig"
-import { User } from "../schema"
-import { bitcoindDefaultClient, sleep } from "../utils"
-import { baseLogger } from "../logger"
-import { WalletFactory } from "../walletFactory"
+import { once } from "events"
+import * as jwt from "jsonwebtoken"
 import {
   AuthenticatedLnd,
   authenticatedLndGrpc,
@@ -17,23 +8,30 @@ import {
   subscribeToChannels,
 } from "lightning"
 import { yamlConfig } from "../config"
+import { FtxDealerWallet } from "../dealer/FtxDealerWallet"
+import { balanceSheetIsBalanced, updateUsersPendingPayment } from "../ledger/balanceSheet"
+import { offchainLnds, onchainLnds, onChannelUpdated, updateEscrows } from "../lndUtils"
+import { baseLogger } from "../logger"
+import { User } from "../schema"
 import { login } from "../text"
-import * as jwt from "jsonwebtoken"
-import { once } from "events"
-import { onChannelUpdated } from "../entrypoint/trigger"
+import { bitcoindDefaultClient, sleep } from "../utils"
+import { WalletFactory } from "../walletFactory"
 
-export const lndMain = lnd
+export const lnd1 = offchainLnds[0].lnd
+export const lnd2 = offchainLnds[1].lnd
+export const lndonchain = onchainLnds[0].lnd
 
+// TODO: this could be refactored with lndAuth
 export const lndOutside1 = authenticatedLndGrpc({
   cert: process.env.TLSOUTSIDE1,
   macaroon: process.env.MACAROONOUTSIDE1,
-  socket: `${process.env.LNDOUTSIDE1ADDR}:${process.env.LNDOUTSIDE1RPCPORT}`,
+  socket: `${process.env.LNDOUTSIDE1ADDR}:${process.env.LNDOUTSIDE1RPCPORT ?? 10009}`,
 }).lnd
 
 export const lndOutside2 = authenticatedLndGrpc({
   cert: process.env.TLSOUTSIDE2,
   macaroon: process.env.MACAROONOUTSIDE2,
-  socket: `${process.env.LNDOUTSIDE2ADDR}:${process.env.LNDOUTSIDE2RPCPORT}`,
+  socket: `${process.env.LNDOUTSIDE2ADDR}:${process.env.LNDOUTSIDE2RPCPORT ?? 10009}`,
 }).lnd
 
 export const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
@@ -118,7 +116,7 @@ export const openChannelTesting = async ({
   const local_tokens = 1000000
   const initBlockCount = await bitcoindDefaultClient.getBlockCount()
 
-  await waitUntilBlockHeight({ lnd: lndMain, blockHeight: initBlockCount })
+  await waitUntilBlockHeight({ lnd, blockHeight: initBlockCount })
   await waitUntilBlockHeight({ lnd: other_lnd, blockHeight: initBlockCount })
 
   const { public_key: partner_public_key } = await getWalletInfo({ lnd: other_lnd })
@@ -133,24 +131,19 @@ export const openChannelTesting = async ({
 
   const sub = subscribeToChannels({ lnd })
 
-  if (lnd === lndMain) {
+  if (lnd === lnd1) {
     sub.once("channel_opened", (channel) =>
       onChannelUpdated({ channel, lnd, stateChange: "opened" }),
     )
   }
 
-  if (other_lnd === lndMain) {
+  if (other_lnd === lnd1) {
     sub.once("channel_opened", (channel) =>
       expect(channel.is_partner_initiated).toBe(true),
     )
   }
 
   await once(sub, "channel_opening")
-
-  await mineBlockAndSync({
-    lnds: [lnd, other_lnd],
-    blockHeight: initBlockCount + newBlock,
-  })
 
   baseLogger.debug("mining blocks and waiting for channel being opened")
 

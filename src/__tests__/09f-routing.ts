@@ -1,8 +1,8 @@
-import { createInvoice, getNetworkGraph, getNetworkInfo, pay } from "lightning"
-import { lndMain, lndOutside1, lndOutside2 } from "./helper"
+import { createInvoice, pay } from "lightning"
+import { revenueFeePath } from "../ledger/ledger"
 import { updateRoutingFees } from "../lndUtils"
 import { MainBook, setupMongoConnection } from "../mongodb"
-import { revenueFeePath } from "../ledger/ledger"
+import { lndOutside1, lndOutside2 } from "./helper"
 
 beforeAll(async () => {
   await setupMongoConnection()
@@ -13,13 +13,13 @@ afterAll(async () => {
 })
 
 it("records routing fee correctly", async () => {
-  console.log(await getNetworkGraph({ lnd: lndOutside1 }))
-  console.log(await getNetworkGraph({ lnd: lndOutside2 }))
-  console.log(await getNetworkGraph({ lnd: lndMain }))
+  // console.log(await getNetworkGraph({lnd: lndOutside1}))
+  // console.log(await getNetworkGraph({lnd: lndOutside2}))
+  // console.log(await getNetworkGraph({lnd: lnd1}))
 
-  console.log(await getNetworkInfo({ lnd: lndOutside1 }))
-  console.log(await getNetworkInfo({ lnd: lndOutside2 }))
-  console.log(await getNetworkInfo({ lnd: lndMain }))
+  // console.log(await getNetworkInfo({lnd: lndOutside1}))
+  // console.log(await getNetworkInfo({lnd: lndOutside2}))
+  // console.log(await getNetworkInfo({lnd: lnd1}))
 
   const { request } = await createInvoice({ lnd: lndOutside2, tokens: 1000 })
 

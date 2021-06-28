@@ -2,24 +2,30 @@
  * @jest-environment node
  */
 import { once } from "events"
+import {
+  createChainAddress,
+  subscribeToChainAddress,
+  subscribeToTransactions,
+} from "lightning"
 import { filter } from "lodash"
 import mongoose from "mongoose"
-import { getCurrentPrice } from "../realtimePrice"
 import { onchainTransactionEventHandler } from "../entrypoint/trigger"
-import { setupMongoConnection } from "../mongodb"
-import { getTitle } from "../notifications/payment"
-import { bitcoindDefaultClient, btc2sat, sleep } from "../utils"
+import { liabilitiesReserve, lndAccountingPath } from "../ledger/ledger"
 import { baseLogger } from "../logger"
+import { MainBook, setupMongoConnection } from "../mongodb"
+import { getTitle } from "../notifications/payment"
+import { getCurrentPrice } from "../realtimePrice"
+import { bitcoindDefaultClient, btc2sat, sleep } from "../utils"
 import { getFunderWallet } from "../walletFactory"
 import {
   checkIsBalanced,
   getUserWallet,
-  lndMain,
+  lnd1,
+  lndonchain,
   mockGetExchangeBalance,
   RANDOM_ADDRESS,
   waitUntilBlockHeight,
 } from "./helper"
-import { subscribeToChainAddress, subscribeToTransactions } from "lightning"
 
 jest.mock("../realtimePrice")
 
@@ -52,6 +58,7 @@ beforeEach(async () => {
   initialBalanceUser0 = (await walletUser0.getBalances()).BTC
 
   amount_BTC = +(1 + Math.random()).toPrecision(9)
+  // amount_BTC = 1
 })
 
 afterEach(async () => {
@@ -66,6 +73,8 @@ afterAll(async () => {
 })
 
 const onchain_funding = async ({ walletDestination }) => {
+  const lnd = lndonchain
+
   const { BTC: initialBalance } = await walletDestination.getBalances()
   const initTransactions = await walletDestination.getTransactions()
 
@@ -73,15 +82,11 @@ const onchain_funding = async ({ walletDestination }) => {
   expect(address.substr(0, 4)).toBe("bcrt")
 
   const checkBalance = async () => {
-    const sub = subscribeToChainAddress({
-      lnd: lndMain,
-      bech32_address: address,
-      min_height,
-    })
+    const sub = subscribeToChainAddress({ lnd, bech32_address: address, min_height })
     await once(sub, "confirmation")
     sub.removeAllListeners()
 
-    await waitUntilBlockHeight({ lnd: lndMain, blockHeight: initBlockCount + 6 })
+    await waitUntilBlockHeight({ lnd, blockHeight: initBlockCount + 6 })
     await checkIsBalanced()
 
     const { BTC: balance } = await walletDestination.getBalances()
@@ -119,18 +124,37 @@ const onchain_funding = async ({ walletDestination }) => {
   await Promise.all([checkBalance(), fundWallet()])
 }
 
-it("user0 is credited for on chain transaction", async () => {
+it("user0IsCreditedForOnChainTransaction", async () => {
   await onchain_funding({ walletDestination: walletUser0 })
 })
 
-it("funding funder with onchain tx from bitcoind", async () => {
+it("fundingFunderWithOnchainTxFromBitcoind", async () => {
   await onchain_funding({ walletDestination: funderWallet })
 })
 
-it("identifies unconfirmed incoming on chain txn", async () => {
+it("creditingLnd1WithSomeFundToCreateAChannel", async () => {
+  const { address } = await createChainAddress({
+    lnd: lnd1,
+    format: "p2wpkh",
+  })
+
+  const amount = 1
+  await bitcoindDefaultClient.sendToAddress(address, amount)
+  await bitcoindDefaultClient.generateToAddress(6, RANDOM_ADDRESS)
+
+  const sats = btc2sat(amount)
+  const metadata = { type: "onchain_receipt", currency: "BTC", pending: "false" }
+
+  await MainBook.entry("funding tx")
+    .credit(liabilitiesReserve, sats, metadata)
+    .debit(lndAccountingPath, sats, metadata)
+    .commit()
+})
+
+it("identifiesUnconfirmedIncomingOnChainTxn", async () => {
   const address = await walletUser0.getOnChainAddress()
 
-  const sub = await subscribeToTransactions({ lnd: lndMain })
+  const sub = subscribeToTransactions({ lnd: lndonchain })
   sub.on("chain_transaction", onchainTransactionEventHandler)
 
   await Promise.all([
@@ -139,7 +163,6 @@ it("identifies unconfirmed incoming on chain txn", async () => {
   ])
 
   await sleep(1000)
-
   const txs = await walletUser0.getTransactions()
   const pendingTxs = filter(txs, { pending: true })
   expect(pendingTxs.length).toBe(1)
@@ -207,7 +230,7 @@ it("batch send transaction", async () => {
   await bitcoindDefaultClient.sendRawTransaction(finalizedPsbt.hex)
 
   await bitcoindDefaultClient.generateToAddress(6, RANDOM_ADDRESS)
-  await waitUntilBlockHeight({ lnd: lndMain, blockHeight: initBlockCount + 6 })
+  await waitUntilBlockHeight({ lnd: lndonchain, blockHeight: initBlockCount + 6 })
 
   {
     const { BTC: balance0 } = await walletUser0.getBalances()

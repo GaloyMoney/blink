@@ -107,6 +107,6 @@ it("filter address", async () => {
     },
   ]
 
-  const result = myOwnAddressesOnVout({ vout, addresses })
-  expect(result).toStrictEqual(["bcrt1q72nxdjsh0zsdyd0e9zreh9e6npcutcqsqscfvw"])
+  const myAddresses = myOwnAddressesOnVout({ vout, addresses })
+  expect(myAddresses).toStrictEqual(["bcrt1q72nxdjsh0zsdyd0e9zreh9e6npcutcqsqscfvw"])
 })

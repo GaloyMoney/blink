@@ -72,18 +72,44 @@ spec:
               value: "testGaloy"
             - name: MONGODB_ADDRESS
               value: {{ $.Values.mongodbaddress }}
-            - name: LNDIP
+
+            # TODO: refactor with a yaml template
+            - name: LND1_DNS
               value: "lnd1"
-            - name: MACAROON
+            - name: LND1_MACAROON
               valueFrom:
                 secretKeyRef:
                   name: lnd1-credentials
                   key: admin_macaroon_base64
-            - name: TLS
+            - name: LND1_TLS
               valueFrom:
                 secretKeyRef:
                   name: lnd1-credentials
                   key: tls_base64
+            - name: LND1_PUBKEY
+              valueFrom:
+                secretKeyRef:
+                  name: lnd1-pubkey
+                  key: pubkey
+
+            - name: LND2_DNS
+              value: "lnd2"
+            - name: LND2_MACAROON
+              valueFrom:
+                secretKeyRef:
+                  name: lnd2-credentials
+                  key: admin_macaroon_base64
+            - name: LND2_TLS
+              valueFrom:
+                secretKeyRef:
+                  name: lnd2-credentials
+                  key: tls_base64
+            - name: LND2_PUBKEY
+              valueFrom:
+                secretKeyRef:
+                  name: lnd2-pubkey
+                  key: pubkey
+
             - name: BITCOINDADDR
               value: "bitcoind"
             - name: BITCOINDRPCPASS
@@ -161,12 +187,6 @@ spec:
                 secretKeyRef:
                   name: lnd-outside-2-credentials
                   key: tls_base64
-            - name: LNDRPCPORT
-              value: "10009"
-            - name: LNDOUTSIDE1RPCPORT
-              value: "10009"
-            - name: LNDOUTSIDE2RPCPORT
-              value: "10009"
             - name: LNDOUTSIDE1ADDR
               value: "lnd-outside-1"
             - name: LNDOUTSIDE2ADDR

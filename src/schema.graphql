@@ -171,7 +171,8 @@ type Query {
     # @deprecated
     os: String # @deprecated
   ): BuildParameter
-  nodeStats: NodeStats
+  nodeStats: NodeStats @deprecated
+  nodesStats: [NodeStats]
 
   getLastOnChainAddress: LastOnChainAddress
 

@@ -30,7 +30,7 @@ services:
     - ${PWD}/dev/lnd/tls.key:/data/.lnd/tls.key
     - ${PWD}/dev/lnd/tls.cert:/data/.lnd/tls.cert
     depends_on: [bitcoind]
-  lnd-outside-1:
+  lnd2:
     image: lncm/lnd:v0.12.1-monitoring
     ports:
       - "10010:10009"
@@ -39,10 +39,19 @@ services:
     - ${PWD}/dev/lnd/tls.key:/data/.lnd/tls.key
     - ${PWD}/dev/lnd/tls.cert:/data/.lnd/tls.cert
     depends_on: [bitcoind]
+  lnd-outside-1:
+    image: lncm/lnd:v0.12.1-monitoring
+    ports:
+      - "10012:10009"
+    volumes:
+    - ${PWD}/dev/lnd/lnd.conf:/data/.lnd/lnd.conf
+    - ${PWD}/dev/lnd/tls.key:/data/.lnd/tls.key
+    - ${PWD}/dev/lnd/tls.cert:/data/.lnd/tls.cert
+    depends_on: [bitcoind]
   lnd-outside-2:
     image: lncm/lnd:v0.12.1-monitoring
     ports:
-      - "10011:10009"
+      - "10013:10009"
     volumes:
     - ${PWD}/dev/lnd/lnd.conf:/data/.lnd/lnd.conf
     - ${PWD}/dev/lnd/tls.key:/data/.lnd/tls.key

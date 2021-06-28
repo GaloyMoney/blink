@@ -6,7 +6,8 @@ import { createUnsignedRequest, parsePaymentRequest } from "invoices"
 import lnService from "ln-service"
 import { createInvoice, signBytes } from "lightning"
 import util from "util"
-import { lnd } from "../lndConfig"
+import { getActiveLnd } from "../lndUtils"
+const { lnd } = getActiveLnd()
 
 it("add invoice", async () => {
   const username = "abcdef"

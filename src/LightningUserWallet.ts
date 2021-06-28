@@ -1,3 +1,4 @@
+import { CustomError } from "./error"
 import { LightningMixin } from "./Lightning"
 import { redlock } from "./lock"
 import { OnChainMixin } from "./OnChain"
@@ -5,7 +6,6 @@ import { User } from "./schema"
 import { ILightningWalletUser, OnboardingEarn } from "./types"
 import { UserWallet } from "./userWallet"
 import { getFunderWallet } from "./walletFactory"
-import { CustomError } from "./error"
 
 /**
  * this represents a user wallet
@@ -44,6 +44,7 @@ export class LightningUserWallet extends OnChainMixin(LightningMixin(UserWallet)
         )
 
         if (userPastState.earn.findIndex((item) => item === id) === -1) {
+          // FIXME: use pay by username instead
           const invoice = await this.addInvoice({ memo: id, value: amount })
           await lightningFundingWallet.pay({ invoice, isReward: true })
         }

@@ -12,7 +12,8 @@ integration:
 
 test-in-ci:
 	docker-compose up -d
-	. ./.envrc && yarn jest --forceExit --bail --runInBand --verbose $$TEST | yarn pino-pretty -c -l
+	. ./.envrc && \
+		node_modules/.bin/jest --bail --runInBand --ci --reporters=default --reporters=jest-junit --forceExit
 
 check-code:
 	yarn tsc-check

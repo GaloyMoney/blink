@@ -1,20 +1,19 @@
 /**
  * @jest-environment node
  */
+import { createChainAddress } from "lightning"
+import mongoose from "mongoose"
 import { setupMongoConnection } from "../mongodb"
+import { bitcoindDefaultClient } from "../utils"
 import {
   checkIsBalanced,
-  lndMain,
+  lnd1,
   lndOutside1,
   lndOutside2,
+  mockGetExchangeBalance,
   RANDOM_ADDRESS,
   waitUntilBlockHeight,
-  mockGetExchangeBalance,
 } from "./helper"
-import { bitcoindDefaultClient } from "../utils"
-
-import mongoose from "mongoose"
-import { createChainAddress } from "lightning"
 
 jest.mock("../realtimePrice")
 
@@ -58,7 +57,6 @@ it("funds bitcoind wallet", async () => {
   }
 
   balance = await bitcoindDefaultClient.getBalance()
-  console.log({ balanceInit: balance })
 
   const bitcoindAddress = await bitcoindDefaultClient.getNewAddress()
   await bitcoindDefaultClient.generateToAddress(numOfBlock, bitcoindAddress)
@@ -76,7 +74,7 @@ it("funds outside lnd node", async () => {
   await bitcoindDefaultClient.sendToAddress(lndOutside1_wallet_addr, amount_BTC)
   await bitcoindDefaultClient.generateToAddress(6, RANDOM_ADDRESS)
 
-  await waitUntilBlockHeight({ lnd: lndMain, blockHeight: 100 + numOfBlock + 6 })
+  await waitUntilBlockHeight({ lnd: lnd1, blockHeight: 100 + numOfBlock + 6 })
   await waitUntilBlockHeight({ lnd: lndOutside1, blockHeight: 100 + numOfBlock + 6 })
   await waitUntilBlockHeight({ lnd: lndOutside2, blockHeight: 100 + numOfBlock + 6 })
 })

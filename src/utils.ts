@@ -69,19 +69,19 @@ export const addContact = async ({ uid, username }) => {
   }
 }
 
-export const amountOnVout = ({ vout, onchain_addresses }): number => {
+export const amountOnVout = ({ vout, addresses }): number => {
   // TODO: check if this is always [0], ie: there is always a single addresses for vout for lnd output
   return _.sumBy(
-    _.filter(vout, (tx) => _.includes(onchain_addresses, tx.scriptPubKey.addresses[0])),
+    _.filter(vout, (tx) => _.includes(addresses, tx.scriptPubKey.addresses[0])),
     "value",
   )
 }
 
-export const myOwnAddressesOnVout = ({ vout, onchain_addresses }) => {
+export const myOwnAddressesOnVout = ({ vout, addresses }): string[] => {
   // TODO: check if this is always [0], ie: there is always a single addresses for vout for lnd output
   return _.intersection(
     _.union(vout.map((output) => output.scriptPubKey.addresses[0])),
-    onchain_addresses,
+    addresses,
   )
 }
 
@@ -172,15 +172,19 @@ export const fetchIPDetails = async ({ ip, user, logger }): Promise<void> => {
   } catch (error) {
     logger.info({ error }, "Failed to fetch ip details")
   } finally {
-    const res = await User.updateOne(
-      { "_id": user._id, "lastIPs.ip": ip },
-      { $set: { "lastIPs.$.lastConnection": Date.now() } },
-    )
-    if (!res.nModified) {
-      await User.findOneAndUpdate(
-        { "_id": user._id, "lastIPs.ip": { $ne: ip } },
-        { $push: { lastIPs: { ip, ...ipinfo, Type: ipinfo?.type } } },
+    try {
+      const res = await User.updateOne(
+        { "_id": user._id, "lastIPs.ip": ip },
+        { $set: { "lastIPs.$.lastConnection": Date.now() } },
       )
+      if (!res.nModified) {
+        await User.findOneAndUpdate(
+          { "_id": user._id, "lastIPs.ip": { $ne: ip } },
+          { $push: { lastIPs: { ip, ...ipinfo, Type: ipinfo?.type } } },
+        )
+      }
+    } catch (err) {
+      logger.warn({ err }, "error setting last ip")
     }
   }
 }

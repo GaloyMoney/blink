@@ -46,7 +46,7 @@ spec:
               value: "27017"
             - name: MONGODB_DB
               value: "galoy"
-            - name: LNDIP
+            - name: LNDDNS
               value: "lnd1"
             - name: MACAROON
               valueFrom:

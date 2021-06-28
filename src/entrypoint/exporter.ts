@@ -1,15 +1,12 @@
 import express from "express"
-import { getChannelBalance, getChannels } from "lightning"
 import client, { register } from "prom-client"
-import { balanceSheetIsBalanced, getBalanceSheet } from "../ledger/balanceSheet"
-import { getBosScore, lndBalances } from "../lndUtils"
+import { getBalancesDetail } from "../bitcoind"
+import { balanceSheetIsBalanced, getLedgerAccounts } from "../ledger/balanceSheet"
+import { getBosScore, lndsBalances } from "../lndUtils"
+import { baseLogger } from "../logger"
 import { setupMongoConnection } from "../mongodb"
 import { Transaction, User } from "../schema"
-import { baseLogger } from "../logger"
 import { getDealerWallet, getFunderWallet } from "../walletFactory"
-import { lnd } from "../lndConfig"
-import { getBalancesDetail } from "../bitcoind"
-import _ from "lodash"
 
 const logger = baseLogger.child({ module: "exporter" })
 
@@ -29,24 +26,12 @@ const userCount_g = new client.Gauge({
   name: `${prefix}_userCount`,
   help: "how much users have registered",
 })
-const totalChannels_g = new client.Gauge({
-  name: `${prefix}_totalChannels`,
-  help: "total number of channels our node has",
-})
-const activeChannels_g = new client.Gauge({
-  name: `${prefix}_activeChannels`,
-  help: "number of active channels our node has",
-})
-const pendingHtlc_g = new client.Gauge({
-  name: `${prefix}_pendingHtlcs`,
-  help: "number of pending HTLC our node has",
-})
 const lnd_g = new client.Gauge({
   name: `${prefix}_lnd`,
   help: "how much money in our node",
 })
 const lndOnChain_g = new client.Gauge({
-  name: `${prefix}_lnd_onchain`,
+  name: `${prefix}_LNDONCHAIN`,
   help: "how much fund is onChain in lnd",
 })
 const lndOffChain_g = new client.Gauge({
@@ -60,10 +45,6 @@ const lndOpeningChannelBalance_g = new client.Gauge({
 const lndClosingChannelBalance_g = new client.Gauge({
   name: `${prefix}_lnd_closingchannelbalance`,
   help: "how much fund is closing following force closed channel",
-})
-const receivingCapacity_g = new client.Gauge({
-  name: `${prefix}_lnd_inboundcapacity`,
-  help: "inbound capacity of the lightning node",
 })
 const usdShortPosition_g = new client.Gauge({
   name: `${prefix}_usdShortPosition`,
@@ -136,7 +117,7 @@ const main = async () => {
     const bosScore = await getBosScore()
     bos_g.set(bosScore)
 
-    const { lightning, liabilities, bitcoin } = await getBalanceSheet()
+    const { lightning, liabilities, bitcoin } = await getLedgerAccounts()
     liabilities_g.set(liabilities)
     lightning_g.set(lightning)
     bitcoin_g.set(bitcoin)
@@ -151,7 +132,7 @@ const main = async () => {
     }
 
     const { total, onChain, offChain, opening_channel_balance, closing_channel_balance } =
-      await lndBalances()
+      await lndsBalances()
     lnd_g.set(total)
     lndOnChain_g.set(onChain)
     lndOffChain_g.set(offChain)
@@ -190,13 +171,7 @@ const main = async () => {
 
     business_g.set(await User.count({ title: { $exists: true } }))
 
-    const { channels } = await getChannels({ lnd })
-    totalChannels_g.set(channels.length)
-    activeChannels_g.set(channels.filter((channel) => channel.is_active).length)
-    pendingHtlc_g.set(_.sum(channels.map((channel) => channel.pending_payments.length)))
-
-    const { inbound } = await getChannelBalance({ lnd })
-    receivingCapacity_g.set(inbound ?? 0)
+    fundingRate_g.set(await dealerWallet.getNextFundingRate())
 
     try {
       const balances = await getBalancesDetail()

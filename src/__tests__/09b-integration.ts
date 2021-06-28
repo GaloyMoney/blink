@@ -46,7 +46,8 @@ it("rate limit limiterRequestPhoneCode", async () => {
 
   try {
     const {
-      // @ts-expect-error: TODO
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore-error: TODO
       errors: [{ code }],
     } = await mutate({ mutation, variables: { phone } })
     expect(code).toBe("TOO_MANY_REQUEST")

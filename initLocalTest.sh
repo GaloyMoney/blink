@@ -98,7 +98,9 @@ kubectlLndDeletionWait () {
 # we use || : to not return an error if the pod doesn't exist, or if no update is requiered (will timeout in this case)
 # TODO: using --wait on upgrade would simplify this upgrade, but is currently running into some issues
   echo "waiting for pod deletion"
-  kubectl wait -n=$NAMESPACE --for=delete --timeout=45s pod -l app.kubernetes.io/name=lnd || :
+  sleep 5
+  kubectl wait -n=$NAMESPACE --for=delete --timeout=5s pod -l app.kubernetes.io/instance=lnd1 || :
+  kubectl wait -n=$NAMESPACE --for=delete --timeout=5s pod -l app.kubernetes.io/instance=lnd2 || :
 }
 
 if [ ${LOCAL} ]
@@ -129,17 +131,31 @@ then
     --set service.staticIP=$MINIKUBEIP"
 fi
 
+rm -rf $INFRADIR/lnd
+
+helm pull --version=$lndVersion galoy/lnd -d $INFRADIR/ --untar
+cp "$INFRADIR/configs/lnd/RTL-Config.json" $INFRADIR/lnd/charts/rtl
+
 set +e
 kubectl apply -f $INFRADIR/configs/lnd/templates
 set -e
-helmUpgrade lnd1 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath galoy/lnd
+
+
+# for local development
+# cp -R ../charts/charts/lnd/ $INFRADIR/lnd/
+# cd charts/lnd
+# helm dependency build
+# cd -
+
+helmUpgrade lnd1 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd/ & \
+helmUpgrade lnd2 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd/ & \
 
 # avoiding to spend time with circleci regtest with this condition
 if [ "$NETWORK" == "testnet" ] || [ "$NETWORK" == "mainnet" ];
 then
   kubectlLndDeletionWait
 else
-  helmUpgrade lnd-outside-1 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpathOutside galoy/lnd
+  helmUpgrade lnd-outside-1 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpathOutside galoy/lnd & \
   helmUpgrade lnd-outside-2 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpathOutside galoy/lnd
 fi
 
@@ -178,6 +194,8 @@ kubectlWait app.kubernetes.io/instance=galoy
 
 if [ ${LOCAL} ]
 then
+  # FIXME: integrate to the helm chart instead
+  kubectl expose pod galoy-redis-node-0 --load-balancer-ip='' --port=26379 --port=6379 --type="LoadBalancer" || : 
   exit 0
 fi
 

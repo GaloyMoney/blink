@@ -1,44 +1,43 @@
-import lnService from "ln-service"
 import assert from "assert"
-import { createHash, randomBytes } from "crypto"
-import moment from "moment"
-import { FEECAP, FEEMIN, lnd, TIMEOUT_PAYMENT } from "./lndConfig"
-import { lockExtendOrThrow, redlock } from "./lock"
-import { MainBook } from "./mongodb"
-import { transactionNotification } from "./notifications/payment"
+import { createHash } from "crypto"
 import {
-  addTransactionLndPayment,
-  addTransactionLndReceipt,
-  addTransactionOnUsPayment,
-} from "./ledger/transaction"
-import { IAddInvoiceRequest, IFeeRequest, IPaymentRequest } from "./types"
-import { addContact, isInvoiceAlreadyPaidError, LoggedError, timeout } from "./utils"
-import { UserWallet } from "./userWallet"
-import { InvoiceUser, Transaction, User } from "./schema"
-import {
-  createInvoice,
-  getWalletInfo,
-  decodePaymentRequest,
+  AuthenticatedLnd,
   cancelHodlInvoice,
+  createInvoice,
+  getInvoice,
+  getPayment,
   payViaPaymentDetails,
   payViaRoutes,
-  getPayment,
-  getInvoice,
 } from "lightning"
-
+import lnService from "ln-service"
+import moment from "moment"
 import { yamlConfig } from "./config"
 import {
   DbError,
   InsufficientBalanceError,
   LightningPaymentError,
+  LndOfflineError,
   NewAccountWithdrawalError,
   NotFoundError,
-  SelfPaymentError,
   RouteFindingError,
+  SelfPaymentError,
   TransactionRestrictedError,
-  ValidationError,
 } from "./error"
+import {
+  addTransactionLndPayment,
+  addTransactionLndReceipt,
+  addTransactionOnUsPayment,
+} from "./ledger/transaction"
+import { TIMEOUT_PAYMENT } from "./lndAuth"
+import { getActiveLnd, getLndFromPubkey, isMyNode, validate } from "./lndUtils"
+import { lockExtendOrThrow, redlock } from "./lock"
+import { MainBook } from "./mongodb"
+import { transactionNotification } from "./notifications/payment"
 import { redis } from "./redis"
+import { InvoiceUser, Transaction, User } from "./schema"
+import { IAddInvoiceRequest, IFeeRequest, IPaymentRequest } from "./types"
+import { UserWallet } from "./userWallet"
+import { addContact, isInvoiceAlreadyPaidError, LoggedError, timeout } from "./utils"
 
 export type ITxType =
   | "invoice"
@@ -53,23 +52,15 @@ export type payInvoiceResult = "success" | "failed" | "pending" | "already_paid"
 // but mocking on mixin is tricky
 export const delay = (currency) => {
   return {
-    BTC: { value: 1, unit: "days", additional_delay_value: 1 },
-    USD: { value: 2, unit: "mins", additional_delay_value: 1 },
+    BTC: { value: 1, unit: "days" },
+    USD: { value: 2, unit: "mins" },
   }[currency]
 }
 
 export const LightningMixin = (superclass) =>
   class extends superclass {
-    nodePubKey: string | null = null
-
     constructor(...args) {
       super(...args)
-    }
-
-    // FIXME: this should be static
-    async getNodePubkey() {
-      this.nodePubKey = this.nodePubKey ?? (await getWalletInfo({ lnd })).public_key
-      return this.nodePubKey
     }
 
     async updatePending(lock) {
@@ -99,6 +90,14 @@ export const LightningMixin = (superclass) =>
       let request, id, input
 
       const expires_at = this.getExpiration(moment()).toDate()
+
+      let lnd: AuthenticatedLnd, pubkey: string
+
+      try {
+        ;({ lnd, pubkey } = getActiveLnd())
+      } catch (err) {
+        throw new LndOfflineError("no active lnd to create an invoice")
+      }
 
       try {
         input = {
@@ -131,10 +130,11 @@ export const LightningMixin = (superclass) =>
           _id: id,
           uid: this.user.id,
           selfGenerated,
+          pubkey,
         }).save()
 
         this.logger.info(
-          { result, value, memo, selfGenerated, id, user: this.user },
+          { pubkey, result, value, memo, selfGenerated, id, user: this.user },
           "a new invoice has been added",
         )
       } catch (err) {
@@ -150,7 +150,7 @@ export const LightningMixin = (superclass) =>
     async getLightningFee(params: IFeeRequest): Promise<number> {
       // TODO:
       // we should also log the fact we have started the query
-      // if (await getAsyncRedisClient().get(JSON.stringify(params))) {
+      // if (await redis.get(JSON.stringify(params))) {
       //   return
       // }
       //
@@ -169,7 +169,7 @@ export const LightningMixin = (superclass) =>
         cltv_delta,
         features,
         payment,
-      } = await this.validate(params, this.logger)
+      } = await validate({ params, logger: this.logger })
 
       const lightningLogger = this.logger.child({
         topic: "fee_estimation",
@@ -188,19 +188,23 @@ export const LightningMixin = (superclass) =>
         },
       })
 
+      // safety check
+      // this should not happen as this check is done within RN
+
+      // TODO: mobile side should also haev a list of array instead of a single node
+      if (isMyNode({ pubkey: destination })) {
+        lightningLogger.warn("probe for self")
+        return 0
+      }
+
+      const { lnd, pubkey } = getActiveLnd()
+
       const key = JSON.stringify({ id, mtokens })
 
       const cacheProbe = await redis.get(key)
       if (cacheProbe) {
         lightningLogger.info("route result in cache")
         return JSON.parse(cacheProbe).fee
-      }
-
-      // safety check
-      // this should not happen as this check is done within RN
-      if (destination === (await this.getNodePubkey())) {
-        lightningLogger.warn("probe for self")
-        return 0
       }
 
       let route
@@ -235,7 +239,7 @@ export const LightningMixin = (superclass) =>
         })
       }
 
-      const value = JSON.stringify(route)
+      const value = JSON.stringify({ ...route, pubkey })
       await redis.set(key, value, "EX", 60 * 5) // expires after 5 minutes
 
       lightningLogger.info(
@@ -243,104 +247,6 @@ export const LightningMixin = (superclass) =>
         "successfully found a route",
       )
       return route.fee
-    }
-
-    // FIXME this should be static
-    async validate(params: IFeeRequest, lightningLogger) {
-      const keySendPreimageType = "5482373484"
-      const preimageByteLength = 32
-
-      let pushPayment = false
-      let tokens
-      let expires_at
-      let features
-      let cltv_delta
-      let payment
-      let destination, id, description
-      let routeHint
-      let messages
-      let username
-
-      if (params.invoice) {
-        // TODO: replace this with invoices/bolt11/parsePaymentRequest function?
-        // TODO: use msat instead of sats for the db?
-
-        try {
-          ;({
-            id,
-            safe_tokens: tokens,
-            destination,
-            description,
-            routes: routeHint,
-            payment,
-            cltv_delta,
-            expires_at,
-            features,
-          } = await decodePaymentRequest({ lnd, request: params.invoice }))
-        } catch (err) {
-          const error = `Error decoding the invoice`
-          lightningLogger.error({ params, success: false, error }, error)
-          throw new LoggedError(error)
-        }
-
-        // TODO: if expired_at expired, thrown an error
-
-        if (!!params.amount && tokens !== 0) {
-          const error = `Invoice contains non-zero amount, but amount was also passed separately`
-          throw new ValidationError(error, { logger: lightningLogger })
-        }
-      } else {
-        if (!params.username) {
-          const error = `a username is required for push payment to the ${yamlConfig.name}`
-          throw new ValidationError(error, { logger: lightningLogger })
-        }
-
-        pushPayment = true
-        destination = params.destination
-        username = params.username
-
-        const preimage = randomBytes(preimageByteLength)
-        id = createHash("sha256").update(preimage).digest().toString("hex")
-        const secret = preimage.toString("hex")
-        messages = [{ type: keySendPreimageType, value: secret }]
-
-        // TODO: should it be id or secret?
-        // check from keysend invoices generated by lnd
-        // payment = payment ?? secret
-      }
-
-      if (!params.amount && tokens === 0) {
-        const error =
-          "Invoice is a zero-amount invoice, or pushPayment is being used, but no amount was passed separately"
-        throw new ValidationError(error, { logger: lightningLogger })
-      }
-
-      tokens = tokens ? tokens : params.amount
-
-      if (tokens <= 0) {
-        lightningLogger.error("A negative amount was passed")
-        throw Error("amount can't be negative")
-      }
-
-      const max_fee = Math.floor(Math.max(FEECAP * tokens, FEEMIN))
-
-      return {
-        // FIXME String: https://github.com/alexbosworth/lightning/issues/24
-        tokens,
-        mtokens: String(tokens * 1000),
-        destination,
-        pushPayment,
-        id,
-        routeHint,
-        messages,
-        max_fee,
-        memoInvoice: description,
-        payment,
-        cltv_delta,
-        expires_at,
-        features,
-        username,
-      }
     }
 
     async pay(params: IPaymentRequest): Promise<payInvoiceResult | Error> {
@@ -364,7 +270,7 @@ export const LightningMixin = (superclass) =>
         cltv_delta,
         features,
         max_fee,
-      } = await this.validate(params, lightningLogger)
+      } = await validate({ params, logger: lightningLogger })
       const { memo: memoPayer } = params
 
       // not including message because it contains the preimage and we don't want to log this
@@ -396,7 +302,7 @@ export const LightningMixin = (superclass) =>
 
           // On us transaction
           // if destination is empty, we consider this is also an on-us transaction
-          if (destination === (await this.getNodePubkey()) || destination === "") {
+          if (isMyNode({ pubkey: destination }) || destination === "") {
             const lightningLoggerOnUs = lightningLogger.child({ onUs: true, fee: 0 })
 
             if (await this.user.limitHit({ on_us: true, amount: tokens })) {
@@ -406,23 +312,32 @@ export const LightningMixin = (superclass) =>
               throw new TransactionRestrictedError(error, { logger: lightningLoggerOnUs })
             }
 
-            let payeeUser
+            let payeeUser, pubkey
 
             if (pushPayment) {
               // pay through username
               payeeUser = await User.findByUsername({ username: input_username })
             } else {
-              // standard path, user scan another lightning wallet of our own wallet but through an invoice
+              // standard path, user scan a lightning invoice of our own wallet from another user
 
               const payeeInvoice = await InvoiceUser.findOne({ _id: id })
               if (!payeeInvoice) {
-                const error = `Invoice already paid or does not exist`
+                const error = `User tried to pay invoice from ${yamlConfig.name}, but it does not exist`
                 throw new LightningPaymentError(error, {
                   logger: lightningLoggerOnUs,
                   success: false,
                 })
               }
 
+              if (payeeInvoice.paid) {
+                const error = `Invoice is already paid`
+                throw new LightningPaymentError(error, {
+                  logger: lightningLoggerOnUs,
+                  success: false,
+                })
+              }
+
+              ;({ pubkey } = payeeInvoice)
               payeeUser = await User.findOne({ _id: payeeInvoice.uid })
             }
 
@@ -438,6 +353,7 @@ export const LightningMixin = (superclass) =>
             const sats = tokens
             const metadata = {
               hash: id,
+              pubkey,
               type: "on_us",
               pending: false,
               ...UserWallet.getCurrencyEquivalent({ sats, fee: 0 }),
@@ -461,7 +377,7 @@ export const LightningMixin = (superclass) =>
               })
             })
 
-            await transactionNotification({
+            transactionNotification({
               amount: sats,
               user: payeeUser,
               hash: id,
@@ -470,14 +386,26 @@ export const LightningMixin = (superclass) =>
             })
 
             if (!pushPayment) {
-              const resultDeletion = await InvoiceUser.deleteOne({ _id: id })
-              this.logger.info(
-                { id, user: this.user, resultDeletion },
-                "invoice has been deleted from InvoiceUser following on_us transaction",
-              )
+              // trying to delete the invoice first from lnd
+              // if we failed to do it, the invoice would still be present in InvoiceUser
+              // in case the invoice were to be paid another time independantly (unlikely outcome)
+              try {
+                const { lnd } = getLndFromPubkey({ pubkey })
 
-              await cancelHodlInvoice({ lnd, id })
-              this.logger.info({ id, user: this.user }, "canceling invoice on lnd")
+                await cancelHodlInvoice({ lnd, id })
+                this.logger.info({ id, user: this.user }, "canceling invoice on lnd")
+
+                const resultUpdate = await InvoiceUser.updateOne(
+                  { _id: id },
+                  { paid: true },
+                )
+                this.logger.info(
+                  { id, user: this.user, resultUpdate },
+                  "invoice has been updated from InvoiceUser following on_us transaction",
+                )
+              } catch (err) {
+                this.logger.error({ id, user: this.user, err }, "issue deleting invoice")
+              }
             }
 
             // adding contact for the payer
@@ -536,14 +464,28 @@ export const LightningMixin = (superclass) =>
           route = JSON.parse((await redis.get(key)) as string)
           this.logger.info({ route }, "route from redis")
 
+          let pubkey: string, lnd: AuthenticatedLnd
+
+          // TODO: check if route is not an array and we shouldn't use .length instead
           if (route) {
             lightningLogger = lightningLogger.child({ routing: "payViaRoutes", route })
             fee = route.safe_fee
             feeKnownInAdvance = true
+            pubkey = route.pubkey
+
+            try {
+              ;({ lnd } = getLndFromPubkey({ pubkey }))
+            } catch (err) {
+              // lnd may have gone offline since the probe has been done.
+              // deleting entry so that subsequent payment attempt could succeed
+              await redis.del(key)
+              throw err
+            }
           } else {
             lightningLogger = lightningLogger.child({ routing: "payViaPaymentDetails" })
             fee = max_fee
             feeKnownInAdvance = false
+            ;({ pubkey, lnd } = getActiveLnd())
           }
 
           // we are confident enough that there is a possible payment route. let's move forward
@@ -558,6 +500,7 @@ export const LightningMixin = (superclass) =>
               hash: id,
               type: "payment",
               pending: true,
+              pubkey,
               feeKnownInAdvance,
               ...UserWallet.getCurrencyEquivalent({ sats, fee }),
             }
@@ -582,8 +525,6 @@ export const LightningMixin = (superclass) =>
                 })
               },
             )
-
-            console.log({ entry })
 
             if (pushPayment) {
               route.messages = messages
@@ -764,12 +705,23 @@ export const LightningMixin = (superclass) =>
         const payments = await Transaction.find(query)
 
         for (const payment of payments) {
+          let lnd
+          try {
+            ;({ lnd } = getLndFromPubkey({ pubkey: payment.pubkey }))
+          } catch (err) {
+            lightningLogger.warn(
+              { payment },
+              "node is offline. skipping payment verification for now",
+            )
+            continue
+          }
+
           let result
           try {
             result = await getPayment({ lnd, id: payment.hash })
           } catch (err) {
             const error = "issue fetching payment"
-            this.logger.error({ err, payment }, error)
+            this.logger.error({ lnd, err, payment }, error)
             throw new LoggedError(error)
           }
 
@@ -810,8 +762,40 @@ export const LightningMixin = (superclass) =>
       })
     }
 
-    async updatePendingInvoice({ hash, expired = false, lock }) {
-      let invoice
+    // return whether the invoice has been paid of not
+    async updatePendingInvoice({
+      hash,
+      lock,
+      pubkey,
+    }: {
+      hash: string
+      lock
+      pubkey?: string
+    }): Promise<boolean> {
+      let invoice, pubkey_
+
+      // if a pubkey has been provided, it means the invoice has not been set as paid in mongodb
+      // so not need for a round back trip to mongodb
+      if (!pubkey) {
+        let paid
+        ;({ pubkey: pubkey_, paid } = await InvoiceUser.findOne({ _id: hash }))
+
+        if (paid) {
+          return true
+        }
+      }
+
+      let lnd
+      try {
+        ;({ lnd } = getLndFromPubkey({ pubkey: pubkey ?? pubkey_ }))
+      } catch (err) {
+        // TODO: send a status to the user showing the infrastructure is not fully operational
+        this.logger.warn(
+          { pubkey: pubkey ?? pubkey_, hash },
+          "node is offline. can't verify invoice status",
+        )
+        return false
+      }
 
       try {
         // FIXME we should only be able to look at User invoice,
@@ -832,19 +816,11 @@ export const LightningMixin = (superclass) =>
       // so we need a branch to return true in case the payment
       // has been managed off lnd.
       if (invoice.is_canceled) {
-        // check what happen if we go to this loop twice?
-        const resultDeletion = await InvoiceUser.deleteOne({
-          _id: hash,
-          uid: this.user._id,
-        })
-        this.logger.info(
-          { hash, user: this.user, resultDeletion },
-          "succesfully deleted cancelled invoice",
+        this.logger.warn(
+          { hash, user: this.user },
+          "cancelled invoice. nothing to do. this should not happen(?)",
         )
-
-        // TODO: proper testing
-        const result = await Transaction.findOne({ hash, type: "on_us", pending: false })
-        return !!result
+        return false
       } else if (invoice.is_confirmed) {
         const lightningLogger = this.logger.child({
           hash,
@@ -860,6 +836,7 @@ export const LightningMixin = (superclass) =>
             const invoiceUser = await InvoiceUser.findOne({
               _id: hash,
               uid: this.user._id,
+              paid: false,
             })
 
             if (!invoiceUser) {
@@ -874,11 +851,14 @@ export const LightningMixin = (superclass) =>
             // OR: use a an unique index account / hash / voided
             // may still not avoid issue from discrenpency between hash and the books
 
-            const resultDeletion = await InvoiceUser.deleteOne({
-              _id: hash,
-              uid: this.user._id,
-            })
-            lightningLogger.info({ resultDeletion }, "invoice has been deleted")
+            const resultUpdate = await InvoiceUser.updateOne(
+              { _id: hash, uid: this.user._id },
+              { paid: true },
+            )
+            this.logger.info(
+              { hash, user: this.user, resultUpdate },
+              "invoice has been updated from InvoiceUser following on_us transaction",
+            )
           } catch (err) {
             const error = `issue updating invoice`
             throw new DbError(error, {
@@ -922,52 +902,40 @@ export const LightningMixin = (superclass) =>
             })
           }
         })
-      } else if (expired) {
-        // maybe not needed after old invoice has been deleted?
+        // this should not happen
+      } else {
+        return false
 
-        try {
-          await cancelHodlInvoice({ lnd, id: hash })
-          this.logger.info({ id: hash, user: this.user._id }, "canceling invoice")
-        } catch (err) {
-          const error = "error deleting invoice"
-          this.logger.error({ err, error, hash, user: this.user._id }, error)
-        }
+        //   })
 
-        const resultDeletion = await InvoiceUser.deleteOne({
-          _id: hash,
-          user: this.user._id,
-        })
-        this.logger.info(
-          { hash, user: this.user._id, resultDeletion },
-          "succesfully deleted expired invoice",
-        )
+        // TODO: part of the merge. check this should be deleted
+
+        // } else if (expired) {
+
+        //   // maybe not needed after old invoice has been deleted?
+
+        //   try {
+        //     await cancelHodlInvoice({ lnd, id: hash })
+        //     this.logger.info({ id: hash, user: this.user._id }, "canceling invoice")
+
+        //   } catch (err) {
+        //     const error = "error deleting invoice"
+        //     this.logger.error({ err, error, hash, user: this.user._id }, error)
+        //   }
+
+        //   const resultDeletion = await InvoiceUser.deleteOne({ _id: hash, user: this.user._id })
+        //   this.logger.info({ hash, user: this.user._id, resultDeletion }, "succesfully deleted expired invoice")
       }
-
-      return false
     }
 
-    // should be run regularly with a cronjob
-    // TODO: move to an "admin/ops" wallet
     async updatePendingInvoices(lock) {
       // TODO
-      const currency = "BTC"
+      // const currency = "BTC"
 
-      // TODO: hydrates invoices from User?
-      const invoices = await InvoiceUser.find({ uid: this.user._id })
+      const invoices = await InvoiceUser.find({ uid: this.user._id, paid: false })
 
-      for (const invoice of invoices) {
-        const { _id, timestamp } = invoice
-
-        // FIXME
-        // adding a time-buffer on the expiration before we delete the invoice
-        // because it seems lnd still can accept invoice even if they have expired
-        // see more: https://github.com/lightningnetwork/lnd/pull/3694
-        const expired =
-          moment() >
-          this.getExpiration(
-            moment(timestamp).add(delay(currency).additional_delay_value, "hours"),
-          )
-        await this.updatePendingInvoice({ hash: _id, expired, lock })
+      for (const { _id: hash, pubkey } of invoices) {
+        await this.updatePendingInvoice({ hash, lock, pubkey })
       }
     }
   }

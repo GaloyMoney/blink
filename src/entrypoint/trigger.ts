@@ -1,42 +1,35 @@
 import { Storage } from "@google-cloud/storage"
-import { assert } from "console"
 import crypto from "crypto"
 import { Dropbox } from "dropbox"
 import express from "express"
 import {
-  SubscribeToChannelsChannelClosedEvent,
-  SubscribeToChannelsChannelOpenedEvent,
-  AuthenticatedLnd,
-  getChainTransactions,
-  getHeight,
-  getWalletInfo,
   subscribeToBackups,
   subscribeToBlocks,
   subscribeToChannels,
   subscribeToInvoices,
   subscribeToTransactions,
 } from "lightning"
-import { find } from "lodash"
 import { updateUsersPendingPayment } from "../ledger/balanceSheet"
-import { lndAccountingPath, lndFeePath } from "../ledger/ledger"
-import { lnd } from "../lndConfig"
+import { activateLndHealthCheck, lndStatusEvent } from "../lndHealth"
+import { onChannelUpdated } from "../lndUtils"
 import { baseLogger } from "../logger"
-import { MainBook, setupMongoConnection } from "../mongodb"
+import { setupMongoConnection } from "../mongodb"
 import { transactionNotification } from "../notifications/payment"
 import { Price } from "../priceImpl"
 import { InvoiceUser, Transaction, User } from "../schema"
-import { LOOK_BACK } from "../utils"
 import { WalletFactory } from "../walletFactory"
 
 const logger = baseLogger.child({ module: "trigger" })
 
 const txsReceived = new Set()
 
-export const uploadBackup = async (backup) => {
+export const uploadBackup = async ({ backup, pubkey }) => {
   logger.debug({ backup }, "updating scb on dbx")
+  const filename = `${process.env.NETWORK}_lnd_scb_${pubkey}`
+
   try {
     const dbx = new Dropbox({ accessToken: process.env.DROPBOX_ACCESS_TOKEN })
-    await dbx.filesUpload({ path: `/${process.env.NETWORK}_lnd_scb`, contents: backup })
+    await dbx.filesUpload({ path: `/${filename}`, contents: backup })
     logger.info({ backup }, "scb backed up on dbx successfully")
   } catch (error) {
     logger.error({ error }, "scb backup to dbx failed")
@@ -46,7 +39,7 @@ export const uploadBackup = async (backup) => {
   try {
     const storage = new Storage({ keyFilename: process.env.GCS_APPLICATION_CREDENTIALS })
     const bucket = storage.bucket("lnd-static-channel-backups")
-    const file = bucket.file(`${process.env.NETWORK}_lnd_scb`)
+    const file = bucket.file(`${filename}`)
     await file.save(backup)
     logger.info({ backup }, "scb backed up on gcs successfully")
   } catch (error) {
@@ -100,12 +93,9 @@ export async function onchainTransactionEventHandler(tx) {
   } else {
     // incoming transaction
 
-    // TODO: the same way Lightning is updating the wallet/accounting,
-    // this event should update the onchain wallet/account of the associated user
-
     let user
     try {
-      user = await User.findOne({ onchain_addresses: { $in: tx.output_addresses } })
+      user = await User.findOne({ "onchain.address": tx.output_addresses })
       if (!user) {
         //FIXME: Log the onchain address, need to first find which of the tx.output_addresses belongs to us
         onchainLogger.fatal(`No user associated with the onchain address`)
@@ -142,7 +132,7 @@ export async function onchainTransactionEventHandler(tx) {
 }
 
 export const onInvoiceUpdate = async (invoice) => {
-  logger.debug(invoice)
+  logger.debug({ invoice }, "onInvoiceUpdate")
 
   if (!invoice.is_confirmed) {
     return
@@ -151,11 +141,11 @@ export const onInvoiceUpdate = async (invoice) => {
   const invoiceUser = await InvoiceUser.findOne({ _id: invoice.id })
   if (invoiceUser) {
     const uid = invoiceUser.uid
-    const hash = invoice.id as string
+    const hash = invoice.id
 
     const user = await User.findOne({ _id: uid })
     const wallet = await WalletFactory({ user, logger })
-    await wallet.updatePendingInvoice({ hash })
+    await wallet.updatePendingInvoice({ hash, pubkey: invoiceUser.pubkey })
     await transactionNotification({
       type: "paid-invoice",
       amount: invoice.received,
@@ -166,75 +156,6 @@ export const onInvoiceUpdate = async (invoice) => {
   } else {
     logger.fatal({ invoice }, "we received an invoice but had no user attached to it")
   }
-}
-
-export const onChannelUpdated = async ({
-  channel,
-  lnd,
-  stateChange,
-}: {
-  channel: SubscribeToChannelsChannelClosedEvent | SubscribeToChannelsChannelOpenedEvent
-  lnd: AuthenticatedLnd
-  stateChange: "opened" | "closed"
-}) => {
-  logger.info({ channel, stateChange }, `channel update`)
-
-  if (channel.is_partner_initiated) {
-    return
-  }
-
-  if (stateChange === "closed") {
-    // FIXME: need to account for channel closing
-    return
-  }
-
-  let txid
-
-  if (stateChange === "opened") {
-    ;({ transaction_id: txid } = channel as SubscribeToChannelsChannelOpenedEvent)
-  } else if (stateChange === "closed") {
-    ;({ close_transaction_id: txid } = channel as SubscribeToChannelsChannelClosedEvent)
-  }
-
-  // TODO: dedupe from onchain
-  const { current_block_height } = await getHeight({ lnd })
-  const after = Math.max(0, current_block_height - LOOK_BACK) // this is necessary for tests, otherwise after may be negative
-  const { transactions } = await getChainTransactions({ lnd, after })
-  // end dedupe
-
-  const tx = find(transactions, { id: txid })
-
-  if (!tx?.fee) {
-    logger.error({ transactions }, "fee doesn't exist")
-    return
-  }
-
-  const fee = tx.fee
-
-  // let tx
-  // try {
-  //   tx = await bitcoindDefaultClient.getRawTransaction(txid, true /* include_watchonly */ )
-  // } catch (err) {
-  //   logger.error({err}, "can't fetch fee for closing tx")
-  // }
-
-  // TODO: there is no fee currently given by bitcoind for raw transaction
-  // either calculate it from the input, or use an indexer
-  // const { fee } = tx.fee
-
-  const metadata = { currency: "BTC", txid, type: "fee", pending: false }
-
-  assert(fee > 0)
-
-  await MainBook.entry(`channel ${stateChange} onchain fee`)
-    .debit(lndFeePath, fee, { ...metadata })
-    .credit(lndAccountingPath, fee, { ...metadata })
-    .commit()
-
-  logger.info(
-    { channel, fee, ...metadata },
-    `${stateChange} channel fee added to mongodb`,
-  )
 }
 
 const updatePriceForChart = async () => {
@@ -251,16 +172,30 @@ const updatePriceForChart = async () => {
   }, interval)
 }
 
-const main = async () => {
-  getWalletInfo({ lnd }, (err, result) => {
-    logger.debug({ err, result }, "getWalletInfo")
-  })
-
-  const subInvoices = subscribeToInvoices({ lnd })
-  subInvoices.on("invoice_updated", onInvoiceUpdate)
-
+const listenerOnchain = ({ lnd }) => {
   const subTransactions = subscribeToTransactions({ lnd })
   subTransactions.on("chain_transaction", onchainTransactionEventHandler)
+
+  subTransactions.on("error", (err) => {
+    baseLogger.info({ err }, "error subTransactions")
+    subTransactions.removeAllListeners()
+  })
+
+  const subBlocks = subscribeToBlocks({ lnd })
+  subBlocks.on("block", () => updateUsersPendingPayment({ onchainOnly: true }))
+
+  subBlocks.on("error", (err) => {
+    console.log({ err }, "error subBlocks")
+  })
+}
+
+const listenerOffchain = ({ lnd, pubkey }) => {
+  const subInvoices = subscribeToInvoices({ lnd })
+  subInvoices.on("invoice_updated", onInvoiceUpdate)
+  subInvoices.on("error", (err) => {
+    baseLogger.info({ err }, "error subInvoices")
+    subInvoices.removeAllListeners()
+  })
 
   const subChannels = subscribeToChannels({ lnd })
   subChannels.on("channel_opened", (channel) =>
@@ -269,22 +204,44 @@ const main = async () => {
   subChannels.on("channel_closed", (channel) =>
     onChannelUpdated({ channel, lnd, stateChange: "closed" }),
   )
+  subChannels.on("error", (err) => {
+    baseLogger.info({ err }, "error subChannels")
+    subChannels.removeAllListeners()
+  })
 
   const subBackups = subscribeToBackups({ lnd })
-  subBackups.on("backup", ({ backup }) => uploadBackup(backup))
+  subBackups.on("backup", ({ backup }) => uploadBackup({ backup, pubkey }))
+  subBackups.on("error", (err) => {
+    baseLogger.info({ err }, "error subBackups")
+    subBackups.removeAllListeners()
+  })
+}
 
-  const subBlocks = subscribeToBlocks({ lnd })
-  subBlocks.on("block", updateUsersPendingPayment)
+const main = async () => {
+  lndStatusEvent.on("started", ({ lnd, pubkey, socket, type }) => {
+    baseLogger.info({ socket }, "lnd started")
 
+    if (type.indexOf("onchain") !== -1) {
+      listenerOnchain({ lnd })
+    }
+
+    if (type.indexOf("offchain") !== -1) {
+      listenerOffchain({ lnd, pubkey })
+    }
+  })
+
+  lndStatusEvent.on("stopped", ({ socket }) => {
+    baseLogger.info({ socket }, "lnd stopped")
+  })
+
+  activateLndHealthCheck()
   updatePriceForChart()
 }
 
 const healthCheck = () => {
   const app = express()
   const port = 8888
-  app.get("/healthz", (req, res) => {
-    getWalletInfo({ lnd }, (err) => (!err ? res.sendStatus(200) : res.sendStatus(500)))
-  })
+  app.get("/healthz", (req, res) => res.sendStatus(200))
   app.listen(port, () => logger.info(`Health check listening on port ${port}!`))
 }
 

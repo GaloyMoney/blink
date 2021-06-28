@@ -1,8 +1,14 @@
-import fs from "fs"
+import {
+  pattern,
+  range,
+  stringLength,
+  ValidateDirectiveVisitor,
+} from "@profusion/apollo-validation-directives"
 import { ApolloServer } from "apollo-server-express"
 import dotenv from "dotenv"
 import express from "express"
 import expressJwt from "express-jwt"
+import fs from "fs"
 import { applyMiddleware } from "graphql-middleware"
 import { and, rule, shield } from "graphql-shield"
 import { makeExecutableSchema } from "graphql-tools"
@@ -12,34 +18,28 @@ import path from "path"
 import pino from "pino"
 // https://nodejs.org/api/esm.html#esm_no_require_exports_module_exports_filename_dirname
 // TODO: to use when switching to module
-// import { fileURLToPath } from 'url'
-// const __filename = fileURLToPath(import.meta.url)
-// const __dirname = path.dirname(__filename)
+// import { fileURLToPath } from 'url';
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
 import PinoHttp from "pino-http"
 import swStats from "swagger-stats"
 import { v4 as uuidv4 } from "uuid"
-import { getMinBuildNumber, getHourlyPrice } from "../localCache"
-import { lnd } from "../lndConfig"
-import { nodeStats } from "../lndUtils"
+import { addToMap, setAccountStatus, setLevel, usernameExists } from "../AdminOps"
+import { yamlConfig } from "../config"
+import { AuthorizationError } from "../error"
+import { activateLndHealthCheck } from "../lndHealth"
+import { getActiveLnd, nodesStats, nodeStats } from "../lndUtils"
+import { getHourlyPrice, getMinBuildNumber } from "../localCache"
+import { baseLogger } from "../logger"
 import { setupMongoConnection } from "../mongodb"
 import { sendNotification } from "../notifications/notification"
+import { getCurrentPrice } from "../realtimePrice"
+import { redis } from "../redis"
 import { User } from "../schema"
 import { login, requestPhoneCode } from "../text"
 import { Levels, OnboardingEarn, Primitive } from "../types"
-import { AdminOps } from "../AdminOps"
 import { fetchIPDetails } from "../utils"
-import { baseLogger } from "../logger"
 import { WalletFactory, WalletFromUsername } from "../walletFactory"
-import { getCurrentPrice } from "../realtimePrice"
-import { yamlConfig } from "../config"
-import {
-  range,
-  pattern,
-  stringLength,
-  ValidateDirectiveVisitor,
-} from "@profusion/apollo-validation-directives"
-import { redis } from "../redis"
-import { AuthorizationError } from "../error"
 
 dotenv.config()
 
@@ -108,7 +108,12 @@ const resolvers = {
         })),
       }
     },
-    nodeStats: async () => nodeStats({ lnd }),
+    // deprecated
+    nodeStats: async () => {
+      const { lnd } = getActiveLnd()
+      return nodeStats({ lnd })
+    },
+    nodesStats: async () => nodesStats(),
     buildParameters: async () => {
       const { minBuildNumber, lastBuildNumber } = await getMinBuildNumber()
       return {
@@ -166,7 +171,7 @@ const resolvers = {
         id: user.username,
       }))
     },
-    usernameExists: async (_, { username }) => AdminOps.usernameExists({ username }),
+    usernameExists: async (_, { username }) => usernameExists({ username }),
     getUserDetails: async (_, { uid }) => User.findOne({ _id: uid }),
     noauthUpdatePendingInvoice: async (_, { hash, username }, { logger }) => {
       const wallet = await WalletFromUsername({ username, logger })
@@ -202,7 +207,7 @@ const resolvers = {
       updateLanguage: (input) => wallet.updateLanguage(input),
     }),
     setLevel: async (_, { uid, level }) => {
-      return AdminOps.setLevel({ uid, level })
+      return setLevel({ uid, level })
     },
     updateContact: async (_, __, { user }) => ({
       setName: async ({ username, name }) => {
@@ -252,11 +257,11 @@ const resolvers = {
       })
       return { success: true }
     },
-    addToMap: async (_, { username, title, latitude, longitude }) => {
-      return AdminOps.addToMap({ username, title, latitude, longitude })
+    addToMap: async (_, { username, title, latitude, longitude }, { logger }) => {
+      return addToMap({ username, title, latitude, longitude, logger })
     },
     setAccountStatus: async (_, { uid, status }) => {
-      return AdminOps.setAccountStatus({ uid, status })
+      return setAccountStatus({ uid, status })
     },
   },
 }
@@ -309,8 +314,6 @@ const permissions = shield(
 
 export async function startApolloServer() {
   const app = express()
-
-  // try load file sync instead
 
   // const myTypeDefs = importSchema(path.join(__dirname, "../schema.graphql"))
 
@@ -425,10 +428,6 @@ export async function startApolloServer() {
     res.status(isMongoAlive && isRedisAlive ? 200 : 503).send()
   })
 
-  // Mount Apollo middleware here.
-  // server.applyMiddleware({ app: permissions })
-  // middlewares: [permissions],
-
   server.applyMiddleware({ app })
 
   await app.listen({ port: 4000 })
@@ -440,5 +439,6 @@ export async function startApolloServer() {
 setupMongoConnection()
   .then(async () => {
     await startApolloServer()
+    activateLndHealthCheck()
   })
   .catch((err) => graphqlLogger.error(err, "server error"))
