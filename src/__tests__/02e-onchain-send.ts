@@ -29,7 +29,7 @@ jest.spyOn(global.Date, "now").mockImplementation(() => new Date(date).valueOf()
 
 let initBlockCount
 let initialBalanceUser0
-let userWallet0, userWallet3
+let userWallet0, userWallet1, userWallet2, userWallet3 // using userWallet1 and userWallet2 to sendAll
 
 jest.mock("../notifications/notification")
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -38,6 +38,8 @@ const { sendNotification } = require("../notifications/notification")
 beforeAll(async () => {
   await setupMongoConnection()
   userWallet0 = await getUserWallet(0)
+  userWallet1 = await getUserWallet(1)
+  userWallet2 = await getUserWallet(2)
   userWallet3 = await getUserWallet(3)
   mockGetExchangeBalance()
 })

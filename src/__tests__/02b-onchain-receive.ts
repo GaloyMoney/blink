@@ -33,6 +33,8 @@ let funderWallet
 let initBlockCount
 let initialBalanceUser0
 let walletUser0
+let walletUser1
+let walletUser2
 const min_height = 1
 
 let amount_BTC
@@ -126,6 +128,13 @@ const onchain_funding = async ({ walletDestination }) => {
 
 it("user0IsCreditedForOnChainTransaction", async () => {
   await onchain_funding({ walletDestination: walletUser0 })
+})
+
+it("user1AndUser2AreCreditedForOnChainSendAllTransactions", async () => {
+  walletUser1 = await getUserWallet(1)
+  walletUser2 = await getUserWallet(2)
+  await onchain_funding({ walletDestination: walletUser1 })
+  await onchain_funding({ walletDestination: walletUser2 })
 })
 
 it("fundingFunderWithOnchainTxFromBitcoind", async () => {
