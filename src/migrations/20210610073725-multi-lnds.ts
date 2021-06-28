@@ -18,9 +18,20 @@ module.exports = {
     }
   },
 
-  // async down(db, client) {
-  // TODO write the statements to rollback your migration (if possible)
-  // Example:
-  // await db.collection('albums').updateOne({artist: 'The Beatles'}, {$set: {blacklisted: false}});
-  // },
+  async down(db) {
+    await db.collection("invoiceuser").updateMany({}, { $unset: { pubkey: "" } })
+
+    const cursor = db.collection("users").find()
+    while (await cursor.hasNext()) {
+      const doc = await cursor.next()
+      const onchain = doc.onchain
+      
+      if (!onchain) {
+        continue
+      }
+
+      const onchain_addresses = onchain.map(({address}) => address)
+      await db.collection("users").updateOne({ _id: doc._id }, { $set: { onchain_addresses } })
+    }
+  },
 }
