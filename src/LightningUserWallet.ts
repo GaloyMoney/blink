@@ -46,7 +46,7 @@ export class LightningUserWallet extends OnChainMixin(LightningMixin(UserWallet)
         if (userPastState.earn.findIndex((item) => item === id) === -1) {
           if (this.user.username) {
             await lightningFundingWallet.pay({
-              destination: this.getNodePubkey(),
+              destination: await this.getNodePubkey(),
               username: this.user.username,
               amount,
               isReward: true,
