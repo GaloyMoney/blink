@@ -133,7 +133,114 @@ it("SendsOnchainPaymentSuccessfully", async () => {
   expect(finalBalance).toBe(initialBalanceUser0 - amount - fee)
 })
 
+// TODO
+it("SendsOnchainSendAllPaymentSuccessfully", async () => {
+  const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
+
+  const sub = subscribeToTransactions({ lnd: lndonchain })
+  sub.on("chain_transaction", onchainTransactionEventHandler)
+
+  {
+    const results = await Promise.all([
+      once(sub, "chain_transaction"),
+      userWallet0.onChainPay({ address, amount }),
+    ])
+
+    expect(results[1]).toBeTruthy()
+    await onchainTransactionEventHandler(results[0][0])
+  }
+
+  // we don't send a notification for send transaction for now
+  // expect(sendNotification.mock.calls.length).toBe(1)
+  // expect(sendNotification.mock.calls[0][0].data.type).toBe("onchain_payment")
+  // expect(sendNotification.mock.calls[0][0].data.title).toBe(`Your transaction has been sent. It may takes some time before it is confirmed`)
+
+  // FIXME: does this syntax always take the first match item in the array? (which is waht we want, items are return as newest first)
+  const {
+    results: [pendingTxn],
+  } = await MainBook.ledger({ account: userWallet0.accountPath, pending: true })
+
+  const { BTC: interimBalance } = await userWallet0.getBalances()
+  expect(interimBalance).toBe(initialBalanceUser0 - amount - pendingTxn.fee)
+  await checkIsBalanced()
+
+  const txs = await userWallet0.getTransactions()
+  const pendingTxs = filter(txs, { pending: true })
+  expect(pendingTxs.length).toBe(1)
+  expect(pendingTxs[0].amount).toBe(-amount - pendingTxs[0].fee)
+
+  // const subSpend = subscribeToChainSpend({ lnd: lndonchain, bech32_address: address, min_height: 1 })
+
+  {
+    await Promise.all([
+      once(sub, "chain_transaction"),
+      waitUntilBlockHeight({ lnd: lndonchain, blockHeight: initBlockCount + 6 }),
+      bitcoindDefaultClient.generateToAddress(6, RANDOM_ADDRESS),
+    ])
+  }
+
+  await sleep(1000)
+  console.log(JSON.stringify(sendNotification.mock.calls))
+
+  // expect(sendNotification.mock.calls.length).toBe(2)  // FIXME: should be 1
+
+  expect(sendNotification.mock.calls[0][0].title).toBe(
+    getTitle["onchain_payment"]({ amount }),
+  )
+  expect(sendNotification.mock.calls[0][0].data.type).toBe("onchain_payment")
+
+  const {
+    results: [{ pending, fee, feeUsd }],
+  } = await MainBook.ledger({ account: userWallet0.accountPath, hash: pendingTxn.hash })
+
+  expect(pending).toBe(false)
+  expect(fee).toBe(yamlConfig.fees.withdraw + 7050)
+  expect(feeUsd).toBeGreaterThan(0)
+
+  const [txn] = (await userWallet0.getTransactions()).filter(
+    (tx) => tx.hash === pendingTxn.hash,
+  )
+  expect(txn.amount).toBe(-amount - fee)
+  expect(txn.type).toBe("onchain_payment")
+
+  const { BTC: finalBalance } = await userWallet0.getBalances()
+  expect(finalBalance).toBe(initialBalanceUser0 - amount - fee)
+})
+
 it("makesOnchainOnUsTransaction", async () => {
+  try {
+    const user3Address = await userWallet3.getOnChainAddress()
+    const { BTC: initialBalanceUser3 } = await userWallet3.getBalances()
+
+    const paymentResult = await userWallet0.onChainPay({ address: user3Address, amount })
+
+    const { BTC: finalBalanceUser0 } = await userWallet0.getBalances()
+    const { BTC: finalBalanceUser3 } = await userWallet3.getBalances()
+
+    console.log({
+      initialBalanceUser0,
+      finalBalanceUser0,
+      initialBalanceUser3,
+      finalBalanceUser3,
+    })
+
+    expect(paymentResult).toBe(true)
+    expect(finalBalanceUser0).toBe(initialBalanceUser0 - amount)
+    expect(finalBalanceUser3).toBe(initialBalanceUser3 + amount)
+
+    const {
+      results: [{ pending, fee, feeUsd }],
+    } = await MainBook.ledger({ account: userWallet0.accountPath, type: "onchain_on_us" })
+    expect(pending).toBe(false)
+    expect(fee).toBe(0)
+    expect(feeUsd).toBe(0)
+  } catch (err) {
+    console.log({ err }, "error with onchain")
+  }
+})
+
+// TODO
+it("makesOnchainOnUsSendAllTransaction", async () => {
   try {
     const user3Address = await userWallet3.getOnChainAddress()
     const { BTC: initialBalanceUser3 } = await userWallet3.getBalances()
