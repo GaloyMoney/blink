@@ -167,7 +167,8 @@ fi
 
 # # add extra sleep time... seems lnd is quite long to show up some time
 sleep 15
-kubectlWait app.kubernetes.io/name=lnd
+# kubectlWait app.kubernetes.io/name=lnd
+kubectlWait app.kubernetes.io/instance=lnd1
 
 if [ ${LOCAL} ]
 then
