@@ -171,8 +171,6 @@ const main = async () => {
 
     business_g.set(await User.count({ title: { $exists: true } }))
 
-    fundingRate_g.set(await dealerWallet.getNextFundingRate())
-
     try {
       const balances = await getBalancesDetail()
       for (const { wallet, balance } of balances) {
