@@ -147,13 +147,8 @@ set -e
 # helm dependency build
 # cd -
 
-helmUpgrade lnd1 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd/ 
-
-# tmp fix. do not deploy lnd2 on testnet
-if [ "$NETWORK" == "regtest" ]
-then
-  helmUpgrade lnd2 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath --set persistence.existingClaim="" $INFRADIR/lnd/
-fi
+helmUpgrade lnd1 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd/ & \
+helmUpgrade lnd2 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath --set persistence.existingClaim="" $INFRADIR/lnd/ 
 
 
 # avoiding to spend time with circleci regtest with this condition
@@ -167,8 +162,7 @@ fi
 
 # # add extra sleep time... seems lnd is quite long to show up some time
 sleep 15
-# kubectlWait app.kubernetes.io/name=lnd
-kubectlWait app.kubernetes.io/instance=lnd1
+kubectlWait app.kubernetes.io/name=lnd
 
 if [ ${LOCAL} ]
 then
