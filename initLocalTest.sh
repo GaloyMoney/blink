@@ -147,8 +147,14 @@ set -e
 # helm dependency build
 # cd -
 
-helmUpgrade lnd1 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd/ & \
-helmUpgrade lnd2 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath --set persistence.existingClaim="" $INFRADIR/lnd/ & \
+helmUpgrade lnd1 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath $INFRADIR/lnd/ 
+
+# tmp fix. do not deploy lnd2 on testnet
+if [ "$NETWORK" == "regtest" ]
+then
+  helmUpgrade lnd2 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpath --set persistence.existingClaim="" $INFRADIR/lnd/
+fi
+
 
 # avoiding to spend time with circleci regtest with this condition
 if [ "$NETWORK" == "testnet" ] || [ "$NETWORK" == "mainnet" ];
