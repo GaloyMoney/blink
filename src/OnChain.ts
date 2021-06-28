@@ -106,6 +106,7 @@ export const OnChainMixin = (superclass) =>
         address,
         amount,
         memo,
+        sendAll,
       })
 
       if (amount <= 0) {
@@ -132,9 +133,18 @@ export const OnChainMixin = (superclass) =>
 
           // on us onchain transaction
           if (payeeUser) {
+            let amountToSendPayeeUser // fee = 0
+            if (!sendAll) {
+              amountToSendPayeeUser = amount
+            }
+            // when sendAll the amount to send payeeUser is the whole balance
+            else {
+              amountToSendPayeeUser = balance.total_in_BTC
+            }
+
             const onchainLoggerOnUs = onchainLogger.child({ onUs: true })
 
-            if (await this.user.limitHit({ on_us: true, amount })) {
+            if (await this.user.limitHit({ on_us: true, amountToSendPayeeUser })) {
               const error = `Cannot transfer more than ${
                 yamlConfig.limits.onUs.level[this.user.level]
               } sats in 24 hours`
@@ -145,13 +155,14 @@ export const OnChainMixin = (superclass) =>
               throw new SelfPaymentError(undefined, { logger: onchainLoggerOnUs })
             }
 
-            const sats = amount
+            const sats = amountToSendPayeeUser
             const metadata = {
               currency: "BTC",
               type: "onchain_on_us",
               pending: false,
               ...UserWallet.getCurrencyEquivalent({ sats, fee: 0 }),
               payee_addresses: [address],
+              sendAll,
             }
 
             await lockExtendOrThrow({ lock, logger: onchainLoggerOnUs }, async () => {
