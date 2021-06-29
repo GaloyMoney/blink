@@ -218,7 +218,7 @@ export const OnChainMixin = (superclass) =>
             amountToSend = amount
 
             // case where there is not enough money available within lnd on-chain wallet
-            if (onChainBalance < amount + estimatedFee) {
+            if (onChainBalance < amountToSend + estimatedFee) {
               // TODO: add a page to initiate the rebalancing quickly
               throw new RebalanceNeededError(undefined, {
                 logger: onchainLogger,
