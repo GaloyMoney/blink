@@ -31,7 +31,7 @@ const lnd_g = new client.Gauge({
   help: "how much money in our node",
 })
 const lndOnChain_g = new client.Gauge({
-  name: `${prefix}_LNDONCHAIN`,
+  name: `${prefix}_lnd_onchain`,
   help: "how much fund is onChain in lnd",
 })
 const lndOffChain_g = new client.Gauge({
