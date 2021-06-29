@@ -28,14 +28,21 @@ afterAll(async () => {
 })
 
 // const phone = "add phone number here with extension (ie: +1...)"
+// import { sendTwilioText, sendSMSalaText } from "../text"
 
 it("test sending text. not run as part of the continuous integration", async () => {
   // uncomment to run the test locally
 
   try {
-    // await sendText({body: "test text", to: phone})
+    // await sendTwilioText({body: "test text", to: phone, logger: baseLogger})
   } catch (err) {
-    fail("there was an error sending the text")
+    fail("there was an error sending the Twilio text")
+  }
+
+  try {
+    // await sendSMSalaText({ body: "test text", to: phone, logger: baseLogger })
+  } catch (err) {
+    fail("there was an error sending the SMSala text")
   }
 
   expect(true).toBe(true)

@@ -60,6 +60,8 @@ test_accounts:
   code: 321321
   currency: "BTC"
 
+sms_provider: "Twilio"
+
 limits:
   requestPhoneCode:
     points: 4
