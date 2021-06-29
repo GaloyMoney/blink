@@ -144,7 +144,7 @@ export const OnChainMixin = (superclass) =>
 
             const onchainLoggerOnUs = onchainLogger.child({ onUs: true })
 
-            if (await this.user.limitHit({ on_us: true, amountToSendPayeeUser })) {
+            if (await this.user.limitHit({ on_us: true, amount: amountToSendPayeeUser })) {
               const error = `Cannot transfer more than ${
                 yamlConfig.limits.onUs.level[this.user.level]
               } sats in 24 hours`
@@ -223,7 +223,7 @@ export const OnChainMixin = (superclass) =>
               throw new RebalanceNeededError(undefined, {
                 logger: onchainLogger,
                 onChainBalance,
-                amountToSend,
+                amount: amountToSend,
                 sendAll,
                 estimatedFee,
                 sendTo,
@@ -246,7 +246,7 @@ export const OnChainMixin = (superclass) =>
               throw new RebalanceNeededError(undefined, {
                 logger: onchainLogger,
                 onChainBalance,
-                amountToSend,
+                amount: amountToSend,
                 sendAll,
                 estimatedFee,
                 sendTo,
