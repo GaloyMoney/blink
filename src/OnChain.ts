@@ -109,11 +109,13 @@ export const OnChainMixin = (superclass) =>
         sendAll,
       })
 
+      // TODO: still using 'amount' here
       if (amount <= 0) {
         const error = "Amount can't be negative"
         throw new ValidationError(error, { logger: onchainLogger })
       }
 
+      // TODO: still using 'amount' here
       if (amount < yamlConfig.onchainDustAmount) {
         throw new DustAmountError(undefined, { logger: onchainLogger })
       }
@@ -124,6 +126,7 @@ export const OnChainMixin = (superclass) =>
           const balance = await this.getBalances(lock)
           onchainLogger = onchainLogger.child({ balance })
 
+          // TODO: still using 'amount' here
           // quit early if balance is not enough
           if (balance.total_in_BTC < amount) {
             throw new InsufficientBalanceError(undefined, { logger: onchainLogger })
@@ -191,6 +194,7 @@ export const OnChainMixin = (superclass) =>
             throw new NewAccountWithdrawalError(error, { logger: onchainLogger })
           }
 
+          // TODO: still using 'amount' here
           if (await this.user.limitHit({ on_us: false, amount })) {
             const error = `Cannot withdraw more than ${
               yamlConfig.limits.withdrawal.level[this.user.level]
@@ -204,6 +208,7 @@ export const OnChainMixin = (superclass) =>
 
           let estimatedFee, id, amountToSend
 
+          // TODO: still using 'amount' here
           const sendTo = [{ address, tokens: amount }]
 
           try {
