@@ -61,6 +61,8 @@ spec:
             limits:
               cpu: 1000m
           env:
+            # TODO: refactor with a yaml template
+            # dedupe with cronjob.yaml
             - name: HELMREVISION
               value: {{ $.Release.Revision | quote}}
             - name: MONGODB_PASSWORD
@@ -73,7 +75,6 @@ spec:
             - name: MONGODB_ADDRESS
               value: {{ $.Values.mongodbaddress }}
 
-            # TODO: refactor with a yaml template
             - name: LND1_DNS
               value: "lnd1"
             - name: LND1_MACAROON
@@ -119,6 +120,16 @@ spec:
                   key: password
             - name: BITCOINDPORT
               value: {{ $.Values.bitcoind.port | quote }}
+
+            - name: REDIS_MASTER_NAME
+              value: "mymaster"
+            - name: REDIS_0_DNS
+              value: "galoy-redis-node-0.galoy-redis-headless"
+            - name: REDIS_1_DNS
+              value: "galoy-redis-node-1.galoy-redis-headless"
+            - name: REDIS_2_DNS
+              value: "galoy-redis-node-2.galoy-redis-headless"
+
             - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
@@ -129,14 +140,7 @@ spec:
                 secretKeyRef:
                   name: network
                   key: network
-            - name: REDIS_MASTER_NAME
-              value: "mymaster"
-            - name: REDIS_0_DNS
-              value: "galoy-redis-node-0.galoy-redis-headless"
-            - name: REDIS_1_DNS
-              value: "galoy-redis-node-1.galoy-redis-headless"
-            - name: REDIS_2_DNS
-              value: "galoy-redis-node-2.galoy-redis-headless"
+
             {{- if eq .name "exporter" }}
             - name: FTX_KEY
               valueFrom:

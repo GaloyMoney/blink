@@ -28,11 +28,10 @@ spec:
             - name: "custom-yaml"
               mountPath: "/var/yaml/"
             env:
-            - name: NETWORK
-              valueFrom:
-                secretKeyRef:
-                  name: network
-                  key: network
+            # TODO: refactor with a yaml template
+            # dedupe with deployment.yaml
+            - name: HELMREVISION
+              value: {{ $.Release.Revision | quote}}
             - name: MONGODB_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -42,36 +41,41 @@ spec:
               value: "testGaloy"
             - name: MONGODB_ADDRESS
               value: {{ $.Values.mongodbaddress }}
-            - name: MONGODB_PORT
-              value: "27017"
-            - name: MONGODB_DB
-              value: "galoy"
-            - name: LNDDNS
-              value: "lnd1"
-            - name: MACAROON
+
+            - name: LND1_MACAROON
               valueFrom:
                 secretKeyRef:
                   name: lnd1-credentials
                   key: admin_macaroon_base64
-            - name: TLS
+            - name: LND1_TLS
               valueFrom:
                 secretKeyRef:
                   name: lnd1-credentials
                   key: tls_base64
-            - name: REDIS_MASTER_NAME
-              value: "mymaster"
-            - name: REDIS_0_SENTINEL_PORT
-              value: "26379"
-            - name: REDIS_0_DNS
-              value: "galoy-redis-node-0.galoy-redis-headless"
-            - name: REDIS_1_SENTINEL_PORT
-              value: "26379"
-            - name: REDIS_1_DNS
-              value: "galoy-redis-node-1.galoy-redis-headless"
-            - name: REDIS_2_SENTINEL_PORT
-              value: "26379"
-            - name: REDIS_2_DNS
-              value: "galoy-redis-node-2.galoy-redis-headless"
+            - name: LND1_PUBKEY
+              valueFrom:
+                secretKeyRef:
+                  name: lnd1-pubkey
+                  key: pubkey
+
+            - name: LND2_DNS
+              value: "lnd2"
+            - name: LND2_MACAROON
+              valueFrom:
+                secretKeyRef:
+                  name: lnd2-credentials
+                  key: admin_macaroon_base64
+            - name: LND2_TLS
+              valueFrom:
+                secretKeyRef:
+                  name: lnd2-credentials
+                  key: tls_base64
+            - name: LND2_PUBKEY
+              valueFrom:
+                secretKeyRef:
+                  name: lnd2-pubkey
+                  key: pubkey
+
             - name: BITCOINDADDR
               value: "bitcoind"
             - name: BITCOINDRPCPASS
@@ -81,6 +85,16 @@ spec:
                   key: password
             - name: BITCOINDPORT
               value: {{ $.Values.bitcoind.port | quote }}
+
+            - name: REDIS_MASTER_NAME
+              value: "mymaster"
+            - name: REDIS_0_DNS
+              value: "galoy-redis-node-0.galoy-redis-headless"
+            - name: REDIS_1_DNS
+              value: "galoy-redis-node-1.galoy-redis-headless"
+            - name: REDIS_2_DNS
+              value: "galoy-redis-node-2.galoy-redis-headless"
+
             - name: LOGLEVEL
               value: debug
             - name: FTX_KEY
