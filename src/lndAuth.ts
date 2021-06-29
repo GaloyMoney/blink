@@ -21,11 +21,11 @@ export interface ILndParamsAuthed extends ILndParams {
 }
 
 const inputs: ILndParams[] = yamlConfig.lnds.map((input) => ({
-  cert: process.env[`${input.name}_TLS`] || exit(1),
-  macaroon: process.env[`${input.name}_MACAROON`] || exit(1),
-  node: process.env[`${input.name}_DNS`] || exit(1),
+  cert: process.env[`${input.name}_TLS`] || exit(98),
+  macaroon: process.env[`${input.name}_MACAROON`] || exit(98),
+  node: process.env[`${input.name}_DNS`] || exit(98),
   port: process.env[`${input.name}_RPCPORT`] ?? 10009,
-  pubkey: process.env[`${input.name}_PUBKEY`],
+  pubkey: process.env[`${input.name}_PUBKEY`] || exit(98),
   priority: 1,
   ...input,
 }))

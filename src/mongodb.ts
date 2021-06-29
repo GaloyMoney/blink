@@ -36,7 +36,7 @@ export const setupMongoConnection = async () => {
   } catch (err) {
     baseLogger.fatal({ err, path }, `error connecting to mongodb`)
     await sleep(100)
-    exit(1)
+    exit(99)
   }
 
   return mongoose
@@ -50,7 +50,7 @@ export const setupMongoConnectionSecondary = async () => {
   } catch (err) {
     baseLogger.fatal({ err, path }, `error connecting to secondary mongodb`)
     await sleep(100)
-    exit(1)
+    exit(99)
   }
 
   return mongoose
