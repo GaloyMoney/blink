@@ -77,7 +77,7 @@ prometheus:
         - name: default
         - name: slack-notifications
           slack_configs:
-          - channel: '#prometheus-alerts'
+          - channel: '#alerts'
             send_resolved: true
             title: "{{range .Alerts}}{{.Annotations.summary}}\n{{end}}"
         - name: slack-pagerduty
@@ -85,7 +85,7 @@ prometheus:
           - service_key: SERVICE_KEY
             send_resolved: true
           slack_configs:
-          - channel: '#prometheus-alerts'
+          - channel: '#alerts'
             send_resolved: true
             title: "{{range .Alerts}}{{.Annotations.summary}}\n{{end}}"
 
