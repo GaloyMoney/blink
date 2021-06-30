@@ -203,6 +203,10 @@ export const OnChainMixin = (superclass) =>
 
           // normal onchain payment path
 
+          if (amount < yamlConfig.onchainDustAmount) {
+            throw new DustAmountError(undefined, { logger: onchainLogger })
+          }
+
           onchainLogger = onchainLogger.child({ onUs: false })
 
           if (!this.user.oldEnoughForWithdrawal) {
