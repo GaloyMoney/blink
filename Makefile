@@ -3,7 +3,7 @@ start-deps:
 	direnv reload
 
 start: start-deps
-	yarn build && node lib/entrypoint/graphql.js | yarn pino-pretty -c -l
+	. ./.envrc && yarn build && node lib/entrypoint/graphql.js | yarn pino-pretty -c -l
 
 watch:
 	yarn nodemon -V -e ts,graphql -w ./src -x make start
@@ -13,9 +13,7 @@ clean-deps:
 
 reset-deps: clean-deps start-deps
 
-restart-integration: reset-deps integration
-
-integration:
+integration: reset-deps
 	. ./.envrc && yarn jest --forceExit --bail --runInBand --verbose $$TEST | yarn pino-pretty -c -l
 
 test-in-ci:
