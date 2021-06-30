@@ -5,7 +5,7 @@ module.exports = {
   async up(db) {
     const pubkey = process.env[`LND1_PUBKEY`]
 
-    console.log({pubkey})
+    console.log({ pubkey })
 
     if (!pubkey) {
       throw Error("pubkey mandatory")
