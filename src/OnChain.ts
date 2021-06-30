@@ -87,6 +87,10 @@ export const OnChainMixin = (superclass) =>
       if (payeeUser) {
         fee = 0
       } else {
+        if (amount && amount < yamlConfig.onchainDustAmount) {
+          throw new DustAmountError(undefined, { logger: this.logger })
+        }
+
         // FIXME there is a transition if a node get offline for which the fee could be wrong
         // if send by a new node in the meantime. (low probability and low side effect)
         const { lnd } = getActiveOnchainLnd()
