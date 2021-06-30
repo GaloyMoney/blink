@@ -396,6 +396,7 @@ export const OnChainMixin = (superclass) =>
         user_matched_txs = [
           ...user_matched_txs,
           ...lnd_incoming_filtered.filter(
+            // only return transactions for addresses that belond to the user
             (tx) => _.intersection(tx.output_addresses, addresses).length > 0,
           ),
         ]

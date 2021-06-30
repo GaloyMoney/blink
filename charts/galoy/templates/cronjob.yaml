@@ -42,6 +42,8 @@ spec:
             - name: MONGODB_ADDRESS
               value: {{ $.Values.mongodbaddress }}
 
+            - name: LND1_DNS
+              value: "lnd1"
             - name: LND1_MACAROON
               valueFrom:
                 secretKeyRef:
