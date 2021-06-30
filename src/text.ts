@@ -26,6 +26,7 @@ const getTwilioClient = () => {
 }
 
 export const sendTwilioText = async ({ body, to, logger }) => {
+  const provider = "twilio"
   try {
     await getTwilioClient().messages.create({
       from: twilioPhoneNumber,
@@ -33,14 +34,15 @@ export const sendTwilioText = async ({ body, to, logger }) => {
       body,
     })
   } catch (err) {
-    logger.error({ err, provider: "twilio" }, "impossible to send text")
+    logger.error({ err, provider }, "impossible to send text")
     return
   }
 
-  logger.info({ to, provider: "twilio" }, "sent text successfully")
+  logger.info({ to, provider }, "sent text successfully")
 }
 
 export const sendSMSalaText = async({ body, to, logger }) => {
+  const provider = "smsala"
   try {
     const base_url = "http://api.smsala.com/api/SendSMS"
     const api_id = process.env.SMSALA_API_ID
@@ -56,11 +58,11 @@ export const sendSMSalaText = async({ body, to, logger }) => {
     url = url + `&phonenumber=${phoneNumber}&textmessage=${body}`
     await axios.get(url)
   } catch (err) {
-    logger.error({ err, provider: "smsala" }, "impossible to send text")
+    logger.error({ err, provider }, "impossible to send text")
     return
   }
 
-  logger.info({ to, provider: "smsala" }, "sent text successfully")
+  logger.info({ to, provider }, "sent text successfully")
 }
 
 export const getCarrier = async (phone: string) => {
@@ -125,11 +127,11 @@ export const requestPhoneCode = async ({
 
     await PhoneCode.create({ phone, code, sms_provider })
 
-    
+    const sendTextArguments = { body, to: phone, logger }
     if (sms_provider === "twilio") {
-      await sendTwilioText({ body, to: phone, logger })
+      await sendTwilioText(sendTextArguments)
     } else if (sms_provider === "smsala") {
-      await sendSMSalaText({ body, to: phone, logger })
+      await sendSMSalaText(sendTextArguments)
     } else {
       // sms provider in yaml did not match any sms implementation
       return false
@@ -228,7 +230,7 @@ export const login = async ({
     //
     // }
 
-    if (yamlConfig.sms_provider === "Twilio") {
+    if (yamlConfig.sms_provider.toLowerCase() === "twilio") {
       // only fetch info once
       if (user.twilio.countryCode === undefined || user.twilio.countryCode === null) {
         try {
