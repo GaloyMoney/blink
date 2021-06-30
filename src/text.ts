@@ -33,11 +33,11 @@ export const sendTwilioText = async ({ body, to, logger }) => {
       body,
     })
   } catch (err) {
-    logger.fatal({ err }, "impossible to send text through Twilio")
+    logger.error({ err, provider: "twilio" }, "impossible to send text")
     return
   }
 
-  logger.info({ to }, "sent text through Twilio successfully")
+  logger.info({ to, provider: "twilio" }, "sent text successfully")
 }
 
 export const sendSMSalaText = async({ body, to, logger }) => {
@@ -48,6 +48,7 @@ export const sendSMSalaText = async({ body, to, logger }) => {
     const sms_type = "T"
     const encoding = "T"
     const sender_id = process.env.SMSALA_SENDER_ID
+    // SMSala api does not acccept nonnumeric characters like '+'
     const phoneNumber = to.replace(/\D/g,'')
 
     let url = `${base_url}?api_id=${api_id}&api_password=${api_password}`
@@ -55,11 +56,11 @@ export const sendSMSalaText = async({ body, to, logger }) => {
     url = url + `&phonenumber=${phoneNumber}&textmessage=${body}`
     await axios.get(url)
   } catch (err) {
-    logger.fatal({ err }, "impossible to send text through SMSala")
+    logger.error({ err, provider: "smsala" }, "impossible to send text")
     return
   }
 
-  logger.info({ to }, "sent text through SMSala successfully")
+  logger.info({ to, provider: "smsala" }, "sent text successfully")
 }
 
 export const getCarrier = async (phone: string) => {
@@ -108,6 +109,7 @@ export const requestPhoneCode = async ({
 
   const code = randomIntFromInterval(100000, 999999)
   const body = `${code} is your verification code for ${yamlConfig.name}`
+  const sms_provider = yamlConfig.sms_provider.toLowerCase()
 
   try {
     const veryRecentCode = await PhoneCode.findOne({
@@ -121,12 +123,12 @@ export const requestPhoneCode = async ({
       return false
     }
 
-    await PhoneCode.create({ phone, code })
+    await PhoneCode.create({ phone, code, sms_provider })
 
     
-    if (yamlConfig.sms_provider === "Twilio") {
+    if (sms_provider === "twilio") {
       await sendTwilioText({ body, to: phone, logger })
-    } else if (yamlConfig.sms_provider === "SMSala") {
+    } else if (sms_provider === "smsala") {
       await sendSMSalaText({ body, to: phone, logger })
     } else {
       // sms provider in yaml did not match any sms implementation

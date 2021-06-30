@@ -60,7 +60,7 @@ test_accounts:
   code: 321321
   currency: "BTC"
 
-sms_provider: "Twilio"
+sms_provider: "twilio"
 
 limits:
   requestPhoneCode:

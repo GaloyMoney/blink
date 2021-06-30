@@ -407,6 +407,7 @@ const PhoneCodeSchema = new Schema({
     type: Number,
     required: true,
   },
+  sms_provider: String,
 })
 
 export const PhoneCode = mongoose.model("PhoneCode", PhoneCodeSchema)
