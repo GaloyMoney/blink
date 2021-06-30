@@ -99,6 +99,7 @@ export const OnChainMixin = (superclass) =>
     }
 
     async onChainPay({ address, amount, memo, sendAll = false }: IOnChainPayment): Promise<ISuccess> {
+      // TODO: if sendAll, what will amount be? 0, account total, or what else?
       let onchainLogger = this.logger.child({
         topic: "payment",
         protocol: "onchain",

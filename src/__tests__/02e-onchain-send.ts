@@ -135,7 +135,6 @@ it("SendsOnchainPaymentSuccessfully", async () => {
   expect(finalBalance).toBe(initialBalanceUser0 - amount - fee)
 })
 
-// TODO
 it("SendsOnchainSendAllPaymentSuccessfully", async () => {
   const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
 
@@ -244,7 +243,6 @@ it("makesOnchainOnUsTransaction", async () => {
   }
 })
 
-// TODO
 it("makesOnchainOnUsSendAllTransaction", async () => {
   try {
     const { BTC: initialBalanceUser2 } = await userWallet2.getBalances()
