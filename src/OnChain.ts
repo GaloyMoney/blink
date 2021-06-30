@@ -17,6 +17,7 @@ import {
   DustAmountError,
   InsufficientBalanceError,
   NewAccountWithdrawalError,
+  OnChainFeeEstimationError,
   RebalanceNeededError,
   SelfPaymentError,
   TransactionRestrictedError,
@@ -91,7 +92,13 @@ export const OnChainMixin = (superclass) =>
         const { lnd } = getActiveOnchainLnd()
 
         const sendTo = [{ address, tokens: amount ?? defaultAmount }]
-        ;({ fee } = await getChainFeeEstimate({ lnd, send_to: sendTo }))
+        try {
+          ;({ fee } = await getChainFeeEstimate({ lnd, send_to: sendTo }))
+        } catch (err) {
+          throw new OnChainFeeEstimationError(undefined, {
+            logger: this.logger,
+          })
+        }
         fee += this.user.withdrawFee
       }
 
