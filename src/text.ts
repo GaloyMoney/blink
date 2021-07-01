@@ -230,19 +230,17 @@ export const login = async ({
     //
     // }
 
-    if (yamlConfig.sms_provider.toLowerCase() === "twilio") {
-      // only fetch info once
-      if (user.twilio.countryCode === undefined || user.twilio.countryCode === null) {
-        try {
-          const result = await getCarrier(phone)
-          user.twilio = result
-          await user.save()
-        } catch (err) {
-          // Carrier fetching is a non-critical operation
-          // Primarily useful for analytics
-          // Hence failure should be handled with a warn instead of an error
-          subLogger.warn({ err }, "impossible to fetch carrier")
-        }
+    // only fetch info once
+    if (user.twilio.countryCode === undefined || user.twilio.countryCode === null) {
+      try {
+        const result = await getCarrier(phone)
+        user.twilio = result
+        await user.save()
+      } catch (err) {
+        // Carrier fetching is a non-critical operation
+        // Primarily useful for analytics
+        // Hence failure should be handled with a warn instead of an error
+        subLogger.warn({ err }, "impossible to fetch carrier")
       }
     }
 

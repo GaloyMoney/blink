@@ -212,6 +212,21 @@ spec:
                 secretKeyRef:
                   name: twilio-secret
                   key: TWILIO_API_SECRET
+            - name: SMSALA_SENDER_ID
+              valueFrom:
+                secretKeyRef:
+                  name: smsala-secret
+                  key: SMSALA_SENDER_ID
+            - name: SMSALA_API_ID
+              valueFrom:
+                secretKeyRef:
+                  name: smsala-secret
+                  key: SMSALA_API_ID
+            - name: SMSALA_API_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: smsala-secret
+                  key: SMSALA_API_PASSWORD
             {{- end }}
           {{- if .healthz }}
           livenessProbe:
