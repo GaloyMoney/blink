@@ -79,7 +79,7 @@ export class DealerWallet extends OnChainMixin(UserWallet) {
     async createDepositAddress() {
         // create a new address
         // is not enabled on FTX
-        // return this.ftx.createDepositAddress("BTC")
+        // return this.exchange.createDepositAddress("BTC")
         return Error("not implemented")
     }
 
@@ -123,7 +123,7 @@ export class DealerWallet extends OnChainMixin(UserWallet) {
 
     async getExchangeBalance() {
         const balance = await this.exchange.fetchBalance()
-        this.logger.debug({ balance }, "this.ftx.fetchBalance result")
+        this.logger.debug({ balance }, "this.exchange.fetchBalance result")
         return {
             sats: btc2sat(balance.total.BTC ?? 0),
             usdPnl: balance.total.USD,
@@ -150,7 +150,7 @@ export class DealerWallet extends OnChainMixin(UserWallet) {
 
         // tmp for log
         const result = await this.exchange.privateGetAccount()
-        this.logger.debug({ result }, "full result of this.ftx.privateGetAccount")
+        this.logger.debug({ result }, "full result of this.exchange.privateGetAccount")
 
         const {
             result: {
@@ -163,7 +163,7 @@ export class DealerWallet extends OnChainMixin(UserWallet) {
         } = result
         this.logger.debug(
             { collateral, positions, chargeInterestOnNegativeUsd, marginFraction },
-            "value kept from this.ftx.privateGetAccount",
+            "value kept from this.exchange.privateGetAccount",
         )
 
         const positionBtcPerp = _.find(positions, { future: this.symbol })
@@ -335,7 +335,7 @@ export class DealerWallet extends OnChainMixin(UserWallet) {
             try {
                 withdrawalResult = await this.exchange.withdraw(currency, btcAmount, address)
             } catch (err) {
-                const error = "this.ftx.withdraw() error issue"
+                const error = "this.exchange.withdraw() error issue"
                 subLogger.error({ withdrawalResult }, error)
                 throw new Error(err)
             }
