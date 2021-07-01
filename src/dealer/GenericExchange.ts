@@ -1,3 +1,4 @@
+import { sleep } from "../utils"
 import ccxt, { ExchangeId, Order } from "ccxt";
 
 export enum SupportedExchanges {
@@ -116,7 +117,7 @@ export class GenericExchange {
         const markets = await this.exchange.loadMarkets(true);
         let data = "";
 
-        for (let symbol in markets) {
+        for (const symbol in markets) {
             try {
                 if (!symbol.includes("MOVE")) {
                     const market = markets[symbol];
@@ -126,7 +127,7 @@ export class GenericExchange {
                             data += `symbol = ${symbol}\n`;
                             data += `Market = ${JSON.stringify(market)}\n`;
                             data += `Ticker = ${JSON.stringify(ticker)}\n`;
-                            await (ccxt as any).sleep(this.exchange.rateLimit);
+                            await sleep(this.exchange.rateLimit);
                         }
                 }
             } catch (error) {
