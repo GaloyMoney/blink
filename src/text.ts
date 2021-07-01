@@ -41,7 +41,7 @@ export const sendTwilioText = async ({ body, to, logger }) => {
   logger.info({ to, provider }, "sent text successfully")
 }
 
-export const sendSMSalaText = async({ body, to, logger }) => {
+export const sendSMSalaText = async ({ body, to, logger }) => {
   const provider = "smsala"
   try {
     const base_url = "http://api.smsala.com/api/SendSMS"
@@ -51,7 +51,7 @@ export const sendSMSalaText = async({ body, to, logger }) => {
     const encoding = "T"
     const sender_id = process.env.SMSALA_SENDER_ID
     // SMSala api does not acccept nonnumeric characters like '+'
-    const phoneNumber = to.replace(/\D/g,'')
+    const phoneNumber = to.replace(/\D/g, "")
 
     let url = `${base_url}?api_id=${api_id}&api_password=${api_password}`
     url = url + `&sms_type=${sms_type}&encoding=${encoding}&sender_id=${sender_id}`
