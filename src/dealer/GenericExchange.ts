@@ -2,11 +2,13 @@ import ccxt, { ExchangeId, Order } from "ccxt";
 
 export enum SupportedExchanges {
     FTX = "ftx",
-    OKEX = "okex5",
+    OKEXv3 = "okex",
+    OKEXv5 = "okex5",
 }
 
 export class ApiConfig {
     constructor(
+        public exchangeId: SupportedExchanges | undefined,
         public apiKey: string | undefined,
         public secret: string | undefined,
         public password: string | undefined
@@ -16,23 +18,17 @@ export class ApiConfig {
 }
 
 export class GenericExchange {
-    exchangeName;
+    exchangeId: ExchangeId;
     exchange;
-    symbol;
+    defaultSymbol;
 
-    constructor(
-        exchangeName: string,
-        apiConfig: ApiConfig,
-        symbol: string
-    ) {
-        this.exchangeName = exchangeName;
-        this.symbol = symbol;
-        const exchangeId = this.exchangeName as ExchangeId;
-        const exchangeClass = ccxt[exchangeId];
+    constructor(apiConfig: ApiConfig) {
+        this.exchangeId = apiConfig.exchangeId as ExchangeId;
+        const exchangeClass = ccxt[this.exchangeId];
         this.exchange = new exchangeClass({
             apiKey: apiConfig.apiKey,
             secret: apiConfig.secret,
-            password: apiConfig.password,
+            password: apiConfig.password
         });
 
         // Should we check at init that we have required credentials?
@@ -40,10 +36,22 @@ export class GenericExchange {
     }
 
     public GetSymbol() {
-        // Should resolve best instrument to used given the exchange and the market conditions.
-        const optimalSymbol = this.symbol;
-        this.symbol = optimalSymbol;
-        return this.symbol;
+        // TODO: Should resolve best instrument to used given the exchange and the market conditions.
+        // const optimalSymbol = this.getOptimalSymbol;
+        // this.defaultSymbol = optimalSymbol;
+
+        const ftxDefaultSymbol = 'BTC-PERP';
+        const okexDefaultSymbol = 'BTC-USD-211231';
+
+        if (this.exchangeId === SupportedExchanges.FTX) {
+            this.defaultSymbol = ftxDefaultSymbol
+        } else if (this.exchangeId === SupportedExchanges.OKEXv3) {
+            this.defaultSymbol = okexDefaultSymbol
+        } else if (this.exchangeId === SupportedExchanges.OKEXv5) {
+            this.defaultSymbol = okexDefaultSymbol
+        }
+
+        return this.defaultSymbol;
     }
 
     public has() {
@@ -77,7 +85,7 @@ export class GenericExchange {
     }
 
     public async fetchOrder(id: string) {
-        const order = await this.exchange.fetchOrder(id, this.symbol)
+        const order = await this.exchange.fetchOrder(id, this.defaultSymbol)
         return order;
     }
 
@@ -130,20 +138,26 @@ export class GenericExchange {
     }
 
     public async getNextFundingRate(symbol: string) {
-        if (this.exchangeName === "ftx") {
+        if (this.exchangeId === SupportedExchanges.FTX) {
             const result = await this.exchange.publicGetFuturesFutureNameStats({ future_name: symbol });
             return result;
-        } else if (this.exchangeName === "okex" || this.exchangeName === "okex5") {
+        } else if (this.exchangeId === SupportedExchanges.OKEXv3) {
+            const result = await this.exchange.publicGetFuturesFutureNameStats({ future_name: symbol });
+            return result;
+        } else if (this.exchangeId === SupportedExchanges.OKEXv5) {
             const result = await this.exchange.publicGetFuturesFutureNameStats({ future_name: symbol });
             return result;
         }
     }
 
     public async privateGetAccount() {
-        if (this.exchangeName === "ftx") {
+        if (this.exchangeId === SupportedExchanges.FTX) {
             const result = await this.exchange.privateGetAccount();
             return result;
-        } else if (this.exchangeName === "okex" || this.exchangeName === "okex5") {
+        } else if (this.exchangeId === SupportedExchanges.OKEXv3) {
+            const result = await this.exchange.privateGetAccount();
+            return result;
+        } else if (this.exchangeId === SupportedExchanges.OKEXv5) {
             const result = await this.exchange.privateGetAccount();
             return result;
         }
@@ -151,14 +165,18 @@ export class GenericExchange {
 
     public async getStats() {
         let data = "";
-        if (this.exchangeName === "ftx") {
+        if (this.exchangeId === SupportedExchanges.FTX) {
             data = this.exchange.publicGetFuturesFutureNameStats({
-                future_name: this.symbol,
+                future_name: this.defaultSymbol,
             });
 
-        } else if (this.exchangeName === "okex" || this.exchangeName === "okex5") {
+        } else if (this.exchangeId === SupportedExchanges.OKEXv3) {
             data = this.exchange.fetchFundingFees({
-                future_name: this.symbol,
+                future_name: this.defaultSymbol,
+            });
+        } else if (this.exchangeId === SupportedExchanges.OKEXv5) {
+            data = this.exchange.fetchFundingFees({
+                future_name: this.defaultSymbol,
             });
         }
         return data;

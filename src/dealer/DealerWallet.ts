@@ -14,26 +14,25 @@ import { GenericExchange, SupportedExchanges, ApiConfig } from "./GenericExchang
 
 const activeExchangeId = SupportedExchanges.FTX;
 
-const activeApiConfig = new ApiConfig(undefined, undefined, undefined);
+const activeApiConfig = new ApiConfig(activeExchangeId, undefined, undefined, undefined, undefined);
 
 switch (activeExchangeId as SupportedExchanges) {
     case SupportedExchanges.FTX:
-        activeApiConfig.apiKey = process.env.FTX_KEY
-        activeApiConfig.secret = process.env.FTX_SECRET
-        activeApiConfig.password = process.env.FTX_PASSWORD
+        activeApiConfig.apiKey = process.env.FTX_KEY;
+        activeApiConfig.secret = process.env.FTX_SECRET;
+        activeApiConfig.password = process.env.FTX_PASSWORD;
         break;
 
     case SupportedExchanges.OKEX:
-        activeApiConfig.apiKey = process.env.OKEX_KEY
-        activeApiConfig.secret = process.env.OKEX_SECRET
-        activeApiConfig.password = process.env.OKEX_PASSWORD
+        activeApiConfig.apiKey = process.env.OKEX_KEY;
+        activeApiConfig.secret = process.env.OKEX_SECRET;
+        activeApiConfig.password = process.env.OKEX_PASSWORD;
         break;
 
     default:
         break;
 }
 
-const defaultSymbol = "BTC-PERP"
 
 // TODO: move to the yaml config
 const simulateOnly = true
@@ -49,7 +48,7 @@ export class DealerWallet extends OnChainMixin(UserWallet) {
 
     constructor({ user, logger }: ILightningWalletUser) {
         super({ user, logger })
-        this.exchange = new GenericExchange(activeExchangeId, activeApiConfig, defaultSymbol);
+        this.exchange = new GenericExchange(activeApiConfig);
         this.symbol = this.exchange.GetSymbol();
         this.logger = logger.child({ topic: "dealer" })
     }
