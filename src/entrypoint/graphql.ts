@@ -1,8 +1,8 @@
 import {
-  pattern,
-  range,
   stringLength,
   ValidateDirectiveVisitor,
+  range,
+  pattern,
 } from "@profusion/apollo-validation-directives"
 import { ApolloServer } from "apollo-server-express"
 import dotenv from "dotenv"
@@ -26,7 +26,7 @@ import swStats from "swagger-stats"
 import { v4 as uuidv4 } from "uuid"
 import { addToMap, setAccountStatus, setLevel, usernameExists } from "../AdminOps"
 import { yamlConfig } from "../config"
-import { AuthorizationError } from "../error"
+import { AuthorizationError, IPBlacklistedError } from "../error"
 import { activateLndHealthCheck } from "../lndHealth"
 import { getActiveLnd, nodesStats, nodeStats } from "../lndUtils"
 import { getHourlyPrice, getMinBuildNumber } from "../localCache"
@@ -37,16 +37,11 @@ import { getCurrentPrice } from "../realtimePrice"
 import { redis } from "../redis"
 import { User } from "../schema"
 import { login, requestPhoneCode } from "../text"
-import { Levels, OnboardingEarn } from "../types"
-import { AdminOps } from "../AdminOps"
+import { Levels, OnboardingEarn, Primitive } from "../types"
+
 import { updateIPDetails, isIPBlacklisted } from "../utils"
-import { baseLogger } from "../logger"
+
 import { WalletFactory, WalletFromUsername } from "../walletFactory"
-import { getCurrentPrice } from "../realtimePrice"
-import { yamlConfig } from '../config'
-import { range, pattern, stringLength, ValidateDirectiveVisitor } from '@profusion/apollo-validation-directives'
-import { redis } from "../redis"
-import { AuthorizationError, IPBlacklistedError } from "../error"
 
 dotenv.config()
 
