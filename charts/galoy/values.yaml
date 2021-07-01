@@ -90,11 +90,6 @@ redis:
     enabled: false
   sentinel:
     enabled: true
-    
-    # localdev
-    service:
-      type: LoadBalancer
-
   metrics:
     enabled: true
 
