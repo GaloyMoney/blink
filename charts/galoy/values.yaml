@@ -47,10 +47,6 @@ service:
   type: NodePort
   targetPort: 4000
   port: 4000
-- name: metrics
-  type: NodePort
-  targetPort: 3000
-  port: 3000
 - name: trigger
   type: ClusterIP
   targetPort: 8888
