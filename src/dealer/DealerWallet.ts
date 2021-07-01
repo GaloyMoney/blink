@@ -10,25 +10,20 @@ import { UserWallet } from "../userWallet"
 import ccxt from "ccxt"
 import assert from "assert"
 
-import { GenericExchange, ApiConfig } from "./GenericExchange";
+import { GenericExchange, SupportedExchanges, ApiConfig } from "./GenericExchange";
 
-enum Exchanges {
-    FTX = "ftx",
-    OKEX = "okex5",
-}
-
-const activeExchangeId = Exchanges.FTX;
+const activeExchangeId = SupportedExchanges.FTX;
 
 const activeApiConfig = new ApiConfig(undefined, undefined, undefined);
 
-switch (activeExchangeId as Exchanges) {
-    case Exchanges.FTX:
+switch (activeExchangeId as SupportedExchanges) {
+    case SupportedExchanges.FTX:
         activeApiConfig.apiKey = process.env.FTX_KEY
         activeApiConfig.secret = process.env.FTX_SECRET
         activeApiConfig.password = process.env.FTX_PASSWORD
         break;
 
-    case Exchanges.OKEX:
+    case SupportedExchanges.OKEX:
         activeApiConfig.apiKey = process.env.OKEX_KEY
         activeApiConfig.secret = process.env.OKEX_SECRET
         activeApiConfig.password = process.env.OKEX_PASSWORD

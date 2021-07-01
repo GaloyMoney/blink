@@ -1,5 +1,10 @@
 import ccxt, { ExchangeId, Order } from "ccxt";
 
+export enum SupportedExchanges {
+    FTX = "ftx",
+    OKEX = "okex5",
+}
+
 export class ApiConfig {
     constructor(
         public apiKey: string | undefined,
