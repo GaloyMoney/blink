@@ -201,7 +201,7 @@ prometheus:
         - job_name: 'lnd'
 
           scrape_interval: 300s
-          scrape_timeout: 15s
+          scrape_timeout: 60s
 
           kubernetes_sd_configs:
             - role: pod
