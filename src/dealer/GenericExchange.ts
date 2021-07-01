@@ -102,7 +102,7 @@ export class GenericExchange {
 
   public async fetchBalance() {
     const balances = await this.exchange.fetchBalance()
-    return balances.info
+    return balances
   }
 
   public async getBtcSpot() {
@@ -145,19 +145,16 @@ export class GenericExchange {
 
   public async getNextFundingRate(symbol: string) {
     if (this.exchangeId === SupportedExchanges.FTX) {
-      const result = await this.exchange.publicGetFuturesFutureNameStats({
-        future_name: symbol,
-      })
+      const arg = { future_name: symbol }
+      const result = await this.exchange.publicGetFuturesFutureNameStats(arg)
       return result
     } else if (this.exchangeId === SupportedExchanges.OKEXv3) {
-      const result = await this.exchange.publicGetFuturesFutureNameStats({
-        future_name: symbol,
-      })
+      const arg = { instId: symbol }
+      const result = await this.exchange.publicGetPublicFundingRate(arg)
       return result
     } else if (this.exchangeId === SupportedExchanges.OKEXv5) {
-      const result = await this.exchange.publicGetFuturesFutureNameStats({
-        future_name: symbol,
-      })
+      const arg = { instId: symbol }
+      const result = await this.exchange.publicGetPublicFundingRate(arg)
       return result
     }
   }
@@ -173,24 +170,6 @@ export class GenericExchange {
       const result = await this.exchange.privateGetAccount()
       return result
     }
-  }
-
-  public async getStats() {
-    let data = ""
-    if (this.exchangeId === SupportedExchanges.FTX) {
-      data = this.exchange.publicGetFuturesFutureNameStats({
-        future_name: this.defaultSymbol,
-      })
-    } else if (this.exchangeId === SupportedExchanges.OKEXv3) {
-      data = this.exchange.fetchFundingFees({
-        future_name: this.defaultSymbol,
-      })
-    } else if (this.exchangeId === SupportedExchanges.OKEXv5) {
-      data = this.exchange.fetchFundingFees({
-        future_name: this.defaultSymbol,
-      })
-    }
-    return data
   }
 
   public async getMethods() {
