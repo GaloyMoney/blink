@@ -101,6 +101,7 @@
     "jest-junit": "^12.0.0",
     "migrate-mongo": "^8.2.2",
     "newman": "^5.2.3",
+    "nodemon": "^2.0.9",
     "pino-pretty": "^4.3.0",
     "prettier": "^2.3.1",
     "ts-jest": "^26.4.3",
