@@ -7,14 +7,13 @@ import { ILightningWalletUser } from "../types"
 import { btc2sat, sleep } from "../utils"
 import { baseLogger } from "../logger"
 import { UserWallet } from "../userWallet"
-import ccxt from "ccxt"
 import assert from "assert"
 
 import { GenericExchange, SupportedExchanges, ApiConfig } from "./GenericExchange";
 
 const activeExchangeId = SupportedExchanges.FTX;
 
-const activeApiConfig = new ApiConfig(activeExchangeId, undefined, undefined, undefined, undefined);
+const activeApiConfig = new ApiConfig(activeExchangeId, undefined, undefined, undefined);
 
 switch (activeExchangeId as SupportedExchanges) {
     case SupportedExchanges.FTX:
@@ -23,7 +22,7 @@ switch (activeExchangeId as SupportedExchanges) {
         activeApiConfig.password = process.env.FTX_PASSWORD;
         break;
 
-    case SupportedExchanges.OKEX:
+    case SupportedExchanges.OKEXv5:
         activeApiConfig.apiKey = process.env.OKEX_KEY;
         activeApiConfig.secret = process.env.OKEX_SECRET;
         activeApiConfig.password = process.env.OKEX_PASSWORD;

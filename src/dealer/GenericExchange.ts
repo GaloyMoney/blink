@@ -100,14 +100,14 @@ export class GenericExchange {
     }
 
     public async getBtcSpot() {
-        return this.getInstrument("BTC", "spot");
+        return this.getFilteredInstrument("BTC", "spot");
     }
 
     public async getBtcFutures() {
-        return this.getInstrument("BTC", "future");
+        return this.getFilteredInstrument("BTC", "future");
     }
 
-    public async getInstrument(base: string, type: string) {
+    public async loadMarkets() {
         const markets = await this.exchange.loadMarkets(true);
         return markets;
     }
