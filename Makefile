@@ -13,8 +13,10 @@ clean-deps:
 
 reset-deps: clean-deps start-deps
 
-integration: reset-deps
+integration:
 	. ./.envrc && yarn jest --forceExit --bail --runInBand --verbose $$TEST | yarn pino-pretty -c -l
+
+reset-integration: reset-deps integration
 
 test-in-ci:
 	docker-compose up -d
