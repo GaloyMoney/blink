@@ -54,8 +54,8 @@ it("tests isUserActive", async () => {
   const funderWalletAccountPath = (await getFunderWallet({ logger: baseLogger })).user
     .accountPath
 
-  // user0, user1, user2 and funder wallet are active users
-  expect(initialActiveUsersAccountPath.length).toBe(4)
+  // user0, user2, user11, user12 and funder wallet are active users
+  expect(initialActiveUsersAccountPath.length).toBe(5)
   expect(initialActiveUsersAccountPath.indexOf(userWallet0AccountPath)).toBeGreaterThan(
     -1,
   )

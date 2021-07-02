@@ -29,7 +29,7 @@ jest.spyOn(global.Date, "now").mockImplementation(() => new Date(date).valueOf()
 
 let initBlockCount
 let initialBalanceUser0
-let userWallet0, userWallet1, userWallet2, userWallet3 // using userWallet1 and userWallet2 to sendAll
+let userWallet0, userWallet3, userWallet11, userWallet12 // using userWallet11 and userWallet12 to sendAll
 
 jest.mock("../notifications/notification")
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -38,9 +38,9 @@ const { sendNotification } = require("../notifications/notification")
 beforeAll(async () => {
   await setupMongoConnection()
   userWallet0 = await getUserWallet(0)
-  userWallet1 = await getUserWallet(1)
-  userWallet2 = await getUserWallet(2)
   userWallet3 = await getUserWallet(3)
+  userWallet11 = await getUserWallet(11)
+  userWallet12 = await getUserWallet(12)
   mockGetExchangeBalance()
 })
 
@@ -141,12 +141,12 @@ it("SendsOnchainSendAllPaymentSuccessfully", async () => {
   const sub = subscribeToTransactions({ lnd: lndonchain })
   sub.on("chain_transaction", onchainTransactionEventHandler)
 
-  const { BTC: initialBalanceUser1 } = await userWallet1.getBalances()
+  const { BTC: initialBalanceUser11 } = await userWallet11.getBalances()
 
   {
     const results = await Promise.all([
       once(sub, "chain_transaction"),
-      userWallet1.onChainPay({ address, amount: 0, sendAll: true }),
+      userWallet11.onChainPay({ address, amount: 0, sendAll: true }),
     ])
 
     expect(results[1]).toBeTruthy()
@@ -161,16 +161,16 @@ it("SendsOnchainSendAllPaymentSuccessfully", async () => {
   // FIXME: does this syntax always take the first match item in the array? (which is waht we want, items are return as newest first)
   const {
     results: [pendingTxn],
-  } = await MainBook.ledger({ account: userWallet1.accountPath, pending: true })
+  } = await MainBook.ledger({ account: userWallet11.accountPath, pending: true })
 
-  const { BTC: interimBalance } = await userWallet1.getBalances()
+  const { BTC: interimBalance } = await userWallet11.getBalances()
   expect(interimBalance).toBe(0)
   await checkIsBalanced()
 
-  const txs = await userWallet1.getTransactions()
+  const txs = await userWallet11.getTransactions()
   const pendingTxs = filter(txs, { pending: true })
   expect(pendingTxs.length).toBe(1)
-  expect(pendingTxs[0].amount).toBe(-initialBalanceUser1)
+  expect(pendingTxs[0].amount).toBe(-initialBalanceUser11)
 
   // const subSpend = subscribeToChainSpend({ lnd: lndonchain, bech32_address: address, min_height: 1 })
 
@@ -195,19 +195,19 @@ it("SendsOnchainSendAllPaymentSuccessfully", async () => {
 
   const {
     results: [{ pending, fee, feeUsd }],
-  } = await MainBook.ledger({ account: userWallet1.accountPath, hash: pendingTxn.hash })
+  } = await MainBook.ledger({ account: userWallet11.accountPath, hash: pendingTxn.hash })
 
   expect(pending).toBe(false)
   expect(fee).toBe(yamlConfig.fees.withdraw + 7050) // 7050?
   expect(feeUsd).toBeGreaterThan(0)
 
-  const [txn] = (await userWallet1.getTransactions()).filter(
+  const [txn] = (await userWallet11.getTransactions()).filter(
     (tx) => tx.hash === pendingTxn.hash,
   )
-  expect(txn.amount).toBe(-initialBalanceUser1)
+  expect(txn.amount).toBe(-initialBalanceUser11)
   expect(txn.type).toBe("onchain_payment")
 
-  const { BTC: finalBalance } = await userWallet1.getBalances()
+  const { BTC: finalBalance } = await userWallet11.getBalances()
   expect(finalBalance).toBe(0)
 })
 
@@ -240,30 +240,30 @@ it("makesOnchainOnUsTransaction", async () => {
 })
 
 it("makesOnchainOnUsSendAllTransaction", async () => {
-  const { BTC: initialBalanceUser2 } = await userWallet2.getBalances()
+  const { BTC: initialBalanceUser12 } = await userWallet12.getBalances()
 
   const user3Address = await userWallet3.getOnChainAddress()
   const { BTC: initialBalanceUser3 } = await userWallet3.getBalances()
 
-  const paymentResult = await userWallet2.onChainPay({ address: user3Address, amount: 0, sendAll: true })
+  const paymentResult = await userWallet12.onChainPay({ address: user3Address, amount: 0, sendAll: true })
 
-  const { BTC: finalBalanceUser2 } = await userWallet2.getBalances()
+  const { BTC: finalBalanceUser12 } = await userWallet12.getBalances()
   const { BTC: finalBalanceUser3 } = await userWallet3.getBalances()
 
   console.log({
-    initialBalanceUser2,
-    finalBalanceUser2,
+    initialBalanceUser12,
+    finalBalanceUser12,
     initialBalanceUser3,
     finalBalanceUser3,
   })
 
   expect(paymentResult).toBe(true)
-  expect(finalBalanceUser2).toBe(0)
-  expect(finalBalanceUser3).toBe(initialBalanceUser3 + initialBalanceUser2)
+  expect(finalBalanceUser12).toBe(0)
+  expect(finalBalanceUser3).toBe(initialBalanceUser3 + initialBalanceUser12)
 
   const {
     results: [{ pending, fee, feeUsd }],
-  } = await MainBook.ledger({ account: userWallet2.accountPath, type: "onchain_on_us" })
+  } = await MainBook.ledger({ account: userWallet12.accountPath, type: "onchain_on_us" })
   expect(pending).toBe(false)
   expect(fee).toBe(0)
   expect(feeUsd).toBe(0)
