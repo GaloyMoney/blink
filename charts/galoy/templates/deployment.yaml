@@ -4,13 +4,10 @@ kind: Deployment
 metadata:
   name: {{ .name }}
   labels:
-    app: {{ .name }}
-    app.kubernetes.io/managed-by: Helm
-    kube-monkey/enabled: enabled
-    kube-monkey/identifier: {{.name}}
-    kube-monkey/kill-mode: fixed
-    kube-monkey/kill-value: "1"
-    kube-monkey/mtbf: "8"
+    {{- include "galoy.labels" . | nindent 4 }}
+    {{- if .Values.labels }}
+    {{- include "common.tplvalues.render" (dict "value" .Values.labels "context" $) | nindent 4 }}
+    {{- end }}
 spec:
   replicas: {{ .replicaCount }}
   selector:
@@ -20,9 +17,10 @@ spec:
     metadata:
       name: {{ .name }}
       labels:
-        app: {{ .name }}
-        kube-monkey/enabled: enabled
-        kube-monkey/identifier: {{.name}}
+        {{- include "galoy.selectorLabels" . | nindent 8 }}
+        {{- if .Values.podLabels }}
+        {{- include "common.tplvalues.render" (dict "value" .Values.podLabels "context" $) | nindent 8 }}
+        {{- end }}
     {{- with .podAnnotations }}
       annotations:
         {{- toYaml . | nindent 8 }}

@@ -57,8 +57,17 @@ prometheus:
       prometheus.io/port: "8080"
 
   server:
+    podLabels:
+      kube-monkey/enabled: enabled
+      kube-monkey/identifier: prometheus
     statefulSet:
       enabled: true
+      labels:
+        kube-monkey/enabled: enabled
+        kube-monkey/identifier: redis
+        kube-monkey/kill-mode: fixed
+        kube-monkey/kill-value: "1"
+        kube-monkey/mtbf: "8"    
 
     retention: "365d"
 

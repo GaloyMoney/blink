@@ -4,11 +4,9 @@ metadata:
   name: {{ include "price.fullname" . }}
   labels:
     {{- include "price.labels" . | nindent 4 }}
-    kube-monkey/enabled: enabled
-    kube-monkey/identifier: price
-    kube-monkey/kill-mode: fixed
-    kube-monkey/kill-value: "1"
-    kube-monkey/mtbf: "8"
+    {{- if .Values.labels }}
+    {{- include "common.tplvalues.render" (dict "value" .Values.labels "context" $) | nindent 4 }}
+    {{- end }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
@@ -26,8 +24,9 @@ spec:
       {{- end }}
       labels:
         {{- include "price.selectorLabels" . | nindent 8 }}
-        kube-monkey/enabled: enabled
-        kube-monkey/identifier: price
+        {{- if .Values.podLabels }}
+        {{- include "common.tplvalues.render" (dict "value" .Values.podLabels "context" $) | nindent 8 }}
+        {{- end }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
