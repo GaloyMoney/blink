@@ -12,11 +12,12 @@ spec:
   replicas: {{ .replicaCount }}
   selector:
     matchLabels:
-      {{- include "galoy.selectorLabels" $ | nindent 6 }}
+      app: {{ .name }}
   template:
     metadata:
       name: {{ .name }}
       labels:
+        {{ .name }}
         {{- include "galoy.selectorLabels" $ | nindent 8 }}
         {{- if $.Values.podLabels }}
         {{- include "common.tplvalues.render" (dict "value" .Values.podLabels "context" $) | nindent 8 }}
