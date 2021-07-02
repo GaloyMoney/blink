@@ -245,7 +245,11 @@ it("makesOnchainOnUsSendAllTransaction", async () => {
   const user3Address = await userWallet3.getOnChainAddress()
   const { BTC: initialBalanceUser3 } = await userWallet3.getBalances()
 
-  const paymentResult = await userWallet12.onChainPay({ address: user3Address, amount: 0, sendAll: true })
+  const paymentResult = await userWallet12.onChainPay({
+    address: user3Address,
+    amount: 0,
+    sendAll: true,
+  })
 
   const { BTC: finalBalanceUser12 } = await userWallet12.getBalances()
   const { BTC: finalBalanceUser3 } = await userWallet3.getBalances()
@@ -317,7 +321,9 @@ it("failsToMakeOnchainPaymentToSelf", async () => {
 
 it("failsToMakeOnchainSendAllPaymentWithNonZeroAmount", async () => {
   const address = await userWallet3.getOnChainAddress()
-  await expect(userWallet0.onChainPay({ address, amount, sendAll: true })).rejects.toThrow()
+  await expect(
+    userWallet0.onChainPay({ address, amount, sendAll: true }),
+  ).rejects.toThrow()
 })
 
 it("failsToMakeOnUsOnchainPaymentWhenInsufficientBalance", async () => {

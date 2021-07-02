@@ -98,7 +98,12 @@ export const OnChainMixin = (superclass) =>
       return fee
     }
 
-    async onChainPay({ address, amount, memo, sendAll = false }: IOnChainPayment): Promise<ISuccess> {
+    async onChainPay({
+      address,
+      amount,
+      memo,
+      sendAll = false,
+    }: IOnChainPayment): Promise<ISuccess> {
       let onchainLogger = this.logger.child({
         topic: "payment",
         protocol: "onchain",
@@ -151,7 +156,9 @@ export const OnChainMixin = (superclass) =>
 
             const onchainLoggerOnUs = onchainLogger.child({ onUs: true })
 
-            if (await this.user.limitHit({ on_us: true, amount: amountToSendPayeeUser })) {
+            if (
+              await this.user.limitHit({ on_us: true, amount: amountToSendPayeeUser })
+            ) {
               const error = `Cannot transfer more than ${
                 yamlConfig.limits.onUs.level[this.user.level]
               } sats in 24 hours`
@@ -199,7 +206,9 @@ export const OnChainMixin = (superclass) =>
           }
 
           /// when sendAll the amount is closer to the final one by deducting the withdrawFee
-          const checksAmount = sendAll ? (balance.total_in_BTC - this.user.withdrawFee) : amount
+          const checksAmount = sendAll
+            ? balance.total_in_BTC - this.user.withdrawFee
+            : amount
 
           if (await this.user.limitHit({ on_us: false, amount: checksAmount })) {
             const error = `Cannot withdraw more than ${
@@ -242,7 +251,10 @@ export const OnChainMixin = (superclass) =>
             }
 
             // case where the user doesn't have enough money
-            if (balance.total_in_BTC < amountToSend + estimatedFee + this.user.withdrawFee) {
+            if (
+              balance.total_in_BTC <
+              amountToSend + estimatedFee + this.user.withdrawFee
+            ) {
               throw new InsufficientBalanceError(undefined, { logger: onchainLogger })
             }
           }
@@ -305,7 +317,7 @@ export const OnChainMixin = (superclass) =>
               else {
                 sats = balance.total_in_BTC
               }
-              
+
               const metadata = {
                 currency: "BTC",
                 hash: id,
