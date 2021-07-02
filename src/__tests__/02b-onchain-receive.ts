@@ -9,13 +9,14 @@ import {
 } from "lightning"
 import { filter } from "lodash"
 import mongoose from "mongoose"
+import { yamlConfig } from "../config"
 import { onchainTransactionEventHandler } from "../entrypoint/trigger"
 import { liabilitiesReserve, lndAccountingPath } from "../ledger/ledger"
 import { baseLogger } from "../logger"
 import { MainBook, setupMongoConnection } from "../mongodb"
 import { getTitle } from "../notifications/payment"
 import { getCurrentPrice } from "../realtimePrice"
-import { bitcoindDefaultClient, btc2sat, sleep } from "../utils"
+import { bitcoindDefaultClient, btc2sat, sat2btc, sleep } from "../utils"
 import { getFunderWallet } from "../walletFactory"
 import {
   checkIsBalanced,
@@ -131,6 +132,9 @@ it("user0IsCreditedForOnChainTransaction", async () => {
 })
 
 it("user1AndUser2AreCreditedForOnChainSendAllTransactions", async () => {
+  // TODO? add sendAll tests in which the user has more than the limit?
+  const level1WithdrawalLimit = yamlConfig.limits.withdrawal.level["1"] // sats
+  amount_BTC = sat2btc(level1WithdrawalLimit)
   walletUser1 = await getUserWallet(1)
   walletUser2 = await getUserWallet(2)
   await onchain_funding({ walletDestination: walletUser1 })
