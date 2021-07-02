@@ -9,6 +9,10 @@ bitcoind:
   port:
     8332
 
+podLabels: {}
+
+labels: {}
+
 ca:
   CAEmail: dev@galoy.io
 
