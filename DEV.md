@@ -30,6 +30,19 @@ direnv: direnv: loading ~/projects/GaloyMoney/galoy/.envrc
 $ yarn install
 ```
 
+## Development
+
+To start the GraphQL server and its dependencies:
+```
+$ make start
+```
+
+
+Alernatively, to start the GraphQL server in watch mode (with automatic restart on changes):
+```
+$ make watch
+```
+
 ## Testing
 
 To execute the test suite runtime dependencies must be running.
@@ -49,11 +62,9 @@ $ echo $?
 0
 ```
 
-The tests are *not* idempotent (yet) so currently to re-run the tests you must reset the dependencies:
+The tests are *not* idempotent (yet) so currently to re-run the tests, run:
 ```
-$ make reset-deps
-(...)
-$ make integration
+$ make reset-integration
 ```
 
 ## Running checks
