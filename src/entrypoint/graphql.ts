@@ -1,8 +1,8 @@
 import {
-  pattern,
-  range,
   stringLength,
   ValidateDirectiveVisitor,
+  range,
+  pattern,
 } from "@profusion/apollo-validation-directives"
 import { ApolloServer } from "apollo-server-express"
 import dotenv from "dotenv"
@@ -26,7 +26,7 @@ import swStats from "swagger-stats"
 import { v4 as uuidv4 } from "uuid"
 import { addToMap, setAccountStatus, setLevel, usernameExists } from "../AdminOps"
 import { yamlConfig } from "../config"
-import { AuthorizationError } from "../error"
+import { AuthorizationError, IPBlacklistedError } from "../error"
 import { activateLndHealthCheck } from "../lndHealth"
 import { getActiveLnd, nodesStats, nodeStats } from "../lndUtils"
 import { getHourlyPrice, getMinBuildNumber } from "../localCache"
@@ -38,7 +38,9 @@ import { redis } from "../redis"
 import { User } from "../schema"
 import { login, requestPhoneCode } from "../text"
 import { Levels, OnboardingEarn, Primitive } from "../types"
-import { fetchIPDetails } from "../utils"
+
+import { updateIPDetails, isIPBlacklisted } from "../utils"
+
 import { WalletFactory, WalletFromUsername } from "../walletFactory"
 
 dotenv.config()
@@ -349,6 +351,10 @@ export async function startApolloServer() {
       const uid = token?.uid ?? null
       const ip = context.req?.headers["x-real-ip"]
 
+      if (isIPBlacklisted({ ip })) {
+        throw new IPBlacklistedError("IP Blacklisted", { logger: graphqlLogger, ip })
+      }
+
       let wallet, user
 
       // TODO move from id: uuidv4() to a Jaeger standard
@@ -361,7 +367,7 @@ export async function startApolloServer() {
           { new: true },
         )
         if (yamlConfig.proxyChecking.enabled) {
-          fetchIPDetails({ ip, user, logger })
+          updateIPDetails({ ip, user, logger })
         }
         wallet =
           !!user && user.status === "active"

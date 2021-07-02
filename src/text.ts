@@ -1,7 +1,7 @@
 import moment from "moment"
 import twilio from "twilio"
 import { yamlConfig } from "./config"
-import { TooManyRequestError } from "./error"
+import { IPBlacklistedError, TooManyRequestError } from "./error"
 import { createToken } from "./jwt"
 import { baseLogger } from "./logger"
 import {
@@ -11,8 +11,13 @@ import {
   limiterRequestPhoneCodeIp,
 } from "./rateLimit"
 import { PhoneCode, User } from "./schema"
+import {
+  fetchIP,
+  isIPBlacklisted,
+  isIPTypeBlacklisted,
+  randomIntFromInterval,
+} from "./utils"
 import { Logger } from "./types"
-import { randomIntFromInterval } from "./utils"
 
 const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER
 const getTwilioClient = () => {
@@ -57,6 +62,26 @@ export const requestPhoneCode = async ({
   ip: string
 }): Promise<boolean> => {
   logger.info({ phone, ip }, "RequestPhoneCode called")
+
+  if (isIPBlacklisted({ ip })) {
+    throw new IPBlacklistedError("IP Blacklisted", { logger, ip })
+  }
+
+  let ipDetails
+
+  try {
+    ipDetails = await fetchIP({ ip })
+  } catch (err) {
+    logger.warn({ err }, "Unable to fetch ip details")
+  }
+
+  if (!ipDetails || ipDetails.status === "denied" || ipDetails.status === "error") {
+    logger.warn({ ipDetails }, "Unable to fetch ip details")
+  }
+
+  if (isIPTypeBlacklisted({ type: ipDetails?.type })) {
+    throw new IPBlacklistedError("IP type Blacklisted", { logger, ipDetails })
+  }
 
   try {
     await limiterRequestPhoneCode.consume(phone)
