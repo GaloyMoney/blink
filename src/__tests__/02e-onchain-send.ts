@@ -323,6 +323,11 @@ it("failsToMakeOnchainPaymentToSelf", async () => {
   await expect(userWallet0.onChainPay({ address, amount })).rejects.toThrow()
 })
 
+it("failsToMakeOnchainSendAllPaymentWithNonZeroAmount", async () => {
+  const address = await userWallet3.getOnChainAddress()
+  await expect(userWallet0.onChainPay({ address, amount, sendAll: true })).rejects.toThrow()
+})
+
 it("failsToMakeOnUsOnchainPaymentWhenInsufficientBalance", async () => {
   const address = await userWallet3.getOnChainAddress()
   await expect(
