@@ -12,7 +12,7 @@ spec:
   replicas: {{ .replicaCount }}
   selector:
     matchLabels:
-      app: {{ .name }}
+      {{- include "galoy.selectorLabels" $ | nindent 6 }}
   template:
     metadata:
       name: {{ .name }}
