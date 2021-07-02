@@ -59,6 +59,10 @@ test_accounts:
 - phone: "+16505554331" # login fail attempt
   code: 321321
   currency: "BTC"
+- phone: "+16505554332" # user11
+  code: 321321
+- phone: "+16505554333" # user12
+  code: 321321
 
 limits:
   requestPhoneCode:
