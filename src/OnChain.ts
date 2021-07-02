@@ -111,7 +111,7 @@ export const OnChainMixin = (superclass) =>
 
       if (!sendAll) {
         if (amount <= 0) {
-          const error = "Amount can't be negative"
+          const error = "Amount can't be negative, and can only be zero if sendAll = true"
           throw new ValidationError(error, { logger: onchainLogger })
         }
 
