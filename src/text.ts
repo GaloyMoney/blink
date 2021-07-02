@@ -1,3 +1,4 @@
+import axios from "axios"
 import moment from "moment"
 import twilio from "twilio"
 import { yamlConfig } from "./config"
@@ -29,7 +30,8 @@ const getTwilioClient = () => {
   return client
 }
 
-export const sendText = async ({ body, to, logger }) => {
+export const sendTwilioText = async ({ body, to, logger }) => {
+  const provider = "twilio"
   try {
     await getTwilioClient().messages.create({
       from: twilioPhoneNumber,
@@ -37,11 +39,35 @@ export const sendText = async ({ body, to, logger }) => {
       body,
     })
   } catch (err) {
-    logger.fatal({ err }, "impossible to send text")
+    logger.error({ err, provider }, "impossible to send text")
     return
   }
 
-  logger.info({ to }, "sent text successfully")
+  logger.info({ to, provider }, "sent text successfully")
+}
+
+export const sendSMSalaText = async ({ body, to, logger }) => {
+  const provider = "smsala"
+  try {
+    const base_url = "http://api.smsala.com/api/SendSMS"
+    const api_id = process.env.SMSALA_API_ID
+    const api_password = process.env.SMSALA_API_PASSWORD
+    const sms_type = "T"
+    const encoding = "T"
+    const sender_id = process.env.SMSALA_SENDER_ID
+    // SMSala api does not acccept nonnumeric characters like '+'
+    const phoneNumber = to.replace(/\D/g, "")
+
+    let url = `${base_url}?api_id=${api_id}&api_password=${api_password}`
+    url = url + `&sms_type=${sms_type}&encoding=${encoding}&sender_id=${sender_id}`
+    url = url + `&phonenumber=${phoneNumber}&textmessage=${body}`
+    await axios.get(url)
+  } catch (err) {
+    logger.error({ err, provider }, "impossible to send text")
+    return
+  }
+
+  logger.info({ to, provider }, "sent text successfully")
 }
 
 export const getCarrier = async (phone: string) => {
@@ -110,6 +136,7 @@ export const requestPhoneCode = async ({
 
   const code = randomIntFromInterval(100000, 999999)
   const body = `${code} is your verification code for ${yamlConfig.name}`
+  const sms_provider = yamlConfig.sms_provider.toLowerCase()
 
   try {
     const veryRecentCode = await PhoneCode.findOne({
@@ -123,8 +150,17 @@ export const requestPhoneCode = async ({
       return false
     }
 
-    await PhoneCode.create({ phone, code })
-    await sendText({ body, to: phone, logger })
+    await PhoneCode.create({ phone, code, sms_provider })
+
+    const sendTextArguments = { body, to: phone, logger }
+    if (sms_provider === "twilio") {
+      await sendTwilioText(sendTextArguments)
+    } else if (sms_provider === "smsala") {
+      await sendSMSalaText(sendTextArguments)
+    } else {
+      // sms provider in yaml did not match any sms implementation
+      return false
+    }
   } catch (err) {
     logger.error({ err }, "impossible to send message")
     return false
@@ -218,7 +254,7 @@ export const login = async ({
     // if (yamlConfig.carrierRegexFilter)  {
     //
     // }
-    //
+
     // only fetch info once
     if (user.twilio.countryCode === undefined || user.twilio.countryCode === null) {
       try {
