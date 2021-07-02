@@ -99,7 +99,6 @@ export const OnChainMixin = (superclass) =>
     }
 
     async onChainPay({ address, amount, memo, sendAll = false }: IOnChainPayment): Promise<ISuccess> {
-      // TODO: if sendAll, what will amount be? 0, account total, or what else?
       let onchainLogger = this.logger.child({
         topic: "payment",
         protocol: "onchain",
@@ -110,15 +109,20 @@ export const OnChainMixin = (superclass) =>
         sendAll,
       })
 
-      // TODO: still using 'amount' here
-      if (amount <= 0) {
-        const error = "Amount can't be negative"
-        throw new ValidationError(error, { logger: onchainLogger })
-      }
+      if (!sendAll) {
+        if (amount <= 0) {
+          const error = "Amount can't be negative"
+          throw new ValidationError(error, { logger: onchainLogger })
+        }
 
-      // TODO: still using 'amount' here
-      if (amount < yamlConfig.onchainDustAmount) {
-        throw new DustAmountError(undefined, { logger: onchainLogger })
+        if (amount < yamlConfig.onchainDustAmount) {
+          throw new DustAmountError(undefined, { logger: onchainLogger })
+        }
+      }
+      // when sendAll the amount should be 0
+      else {
+        assert(amount === 0)
+        // TODO: unable to check balance.total_in_BTC vs yamlConfig.onchainDustAmount at this point...
       }
 
       return await redlock(
