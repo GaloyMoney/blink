@@ -146,7 +146,7 @@ it("SendsOnchainSendAllPaymentSuccessfully", async () => {
   {
     const results = await Promise.all([
       once(sub, "chain_transaction"),
-      userWallet1.onChainPay({ address, amount, sendAll: true }),
+      userWallet1.onChainPay({ address, amount: 0, sendAll: true }),
     ])
 
     expect(results[1]).toBeTruthy()
@@ -250,7 +250,7 @@ it("makesOnchainOnUsSendAllTransaction", async () => {
     const user3Address = await userWallet3.getOnChainAddress()
     const { BTC: initialBalanceUser3 } = await userWallet3.getBalances()
 
-    const paymentResult = await userWallet2.onChainPay({ address: user3Address, amount, sendAll: true })
+    const paymentResult = await userWallet2.onChainPay({ address: user3Address, amount: 0, sendAll: true })
 
     const { BTC: finalBalanceUser2 } = await userWallet2.getBalances()
     const { BTC: finalBalanceUser3 } = await userWallet3.getBalances()

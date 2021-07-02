@@ -234,6 +234,7 @@ const resolvers = {
     earnCompleted: async (_, { ids }, { wallet }) => wallet.addEarn(ids),
     onchain: async (_, __, { wallet }) => ({
       getNewAddress: () => wallet.getOnChainAddress(),
+      // if sendAll is true, then amount should be 0
       pay: ({ address, amount, memo, sendAll }) => ({
         success: wallet.onChainPay({ address, amount, memo, sendAll }),
       }),
