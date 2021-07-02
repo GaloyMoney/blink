@@ -132,7 +132,7 @@ it("user0IsCreditedForOnChainTransaction", async () => {
 })
 
 it("user1AndUser2AreCreditedForOnChainSendAllTransactions", async () => {
-  // TODO? add sendAll tests in which the user has more than the limit?
+  /// TODO? add sendAll tests in which the user has more than the limit?
   const level1WithdrawalLimit = yamlConfig.limits.withdrawal.level["1"] // sats
   amount_BTC = sat2btc(level1WithdrawalLimit)
   walletUser1 = await getUserWallet(1)

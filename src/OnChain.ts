@@ -122,7 +122,7 @@ export const OnChainMixin = (superclass) =>
       // when sendAll the amount should be 0
       else {
         assert(amount === 0)
-        // TODO: unable to check balance.total_in_BTC vs yamlConfig.onchainDustAmount at this point...
+        /// TODO: unable to check balance.total_in_BTC vs yamlConfig.onchainDustAmount at this point...
       }
 
       return await redlock(
@@ -198,7 +198,7 @@ export const OnChainMixin = (superclass) =>
             throw new NewAccountWithdrawalError(error, { logger: onchainLogger })
           }
 
-          // when sendAll the amount is closer to the final one by deducting the withdrawFee
+          /// when sendAll the amount is closer to the final one by deducting the withdrawFee
           const checksAmount = sendAll ? (balance.total_in_BTC - this.user.withdrawFee) : amount
 
           if (await this.user.limitHit({ on_us: false, amount: checksAmount })) {
