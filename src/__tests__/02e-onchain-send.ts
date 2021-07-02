@@ -212,69 +212,61 @@ it("SendsOnchainSendAllPaymentSuccessfully", async () => {
 })
 
 it("makesOnchainOnUsTransaction", async () => {
-  try {
-    const user3Address = await userWallet3.getOnChainAddress()
-    const { BTC: initialBalanceUser3 } = await userWallet3.getBalances()
+  const user3Address = await userWallet3.getOnChainAddress()
+  const { BTC: initialBalanceUser3 } = await userWallet3.getBalances()
 
-    const paymentResult = await userWallet0.onChainPay({ address: user3Address, amount })
+  const paymentResult = await userWallet0.onChainPay({ address: user3Address, amount })
 
-    const { BTC: finalBalanceUser0 } = await userWallet0.getBalances()
-    const { BTC: finalBalanceUser3 } = await userWallet3.getBalances()
+  const { BTC: finalBalanceUser0 } = await userWallet0.getBalances()
+  const { BTC: finalBalanceUser3 } = await userWallet3.getBalances()
 
-    console.log({
-      initialBalanceUser0,
-      finalBalanceUser0,
-      initialBalanceUser3,
-      finalBalanceUser3,
-    })
+  console.log({
+    initialBalanceUser0,
+    finalBalanceUser0,
+    initialBalanceUser3,
+    finalBalanceUser3,
+  })
 
-    expect(paymentResult).toBe(true)
-    expect(finalBalanceUser0).toBe(initialBalanceUser0 - amount)
-    expect(finalBalanceUser3).toBe(initialBalanceUser3 + amount)
+  expect(paymentResult).toBe(true)
+  expect(finalBalanceUser0).toBe(initialBalanceUser0 - amount)
+  expect(finalBalanceUser3).toBe(initialBalanceUser3 + amount)
 
-    const {
-      results: [{ pending, fee, feeUsd }],
-    } = await MainBook.ledger({ account: userWallet0.accountPath, type: "onchain_on_us" })
-    expect(pending).toBe(false)
-    expect(fee).toBe(0)
-    expect(feeUsd).toBe(0)
-  } catch (err) {
-    console.log({ err }, "error with onchain")
-  }
+  const {
+    results: [{ pending, fee, feeUsd }],
+  } = await MainBook.ledger({ account: userWallet0.accountPath, type: "onchain_on_us" })
+  expect(pending).toBe(false)
+  expect(fee).toBe(0)
+  expect(feeUsd).toBe(0)
 })
 
 it("makesOnchainOnUsSendAllTransaction", async () => {
-  try {
-    const { BTC: initialBalanceUser2 } = await userWallet2.getBalances()
+  const { BTC: initialBalanceUser2 } = await userWallet2.getBalances()
 
-    const user3Address = await userWallet3.getOnChainAddress()
-    const { BTC: initialBalanceUser3 } = await userWallet3.getBalances()
+  const user3Address = await userWallet3.getOnChainAddress()
+  const { BTC: initialBalanceUser3 } = await userWallet3.getBalances()
 
-    const paymentResult = await userWallet2.onChainPay({ address: user3Address, amount: 0, sendAll: true })
+  const paymentResult = await userWallet2.onChainPay({ address: user3Address, amount: 0, sendAll: true })
 
-    const { BTC: finalBalanceUser2 } = await userWallet2.getBalances()
-    const { BTC: finalBalanceUser3 } = await userWallet3.getBalances()
+  const { BTC: finalBalanceUser2 } = await userWallet2.getBalances()
+  const { BTC: finalBalanceUser3 } = await userWallet3.getBalances()
 
-    console.log({
-      initialBalanceUser2,
-      finalBalanceUser2,
-      initialBalanceUser3,
-      finalBalanceUser3,
-    })
+  console.log({
+    initialBalanceUser2,
+    finalBalanceUser2,
+    initialBalanceUser3,
+    finalBalanceUser3,
+  })
 
-    expect(paymentResult).toBe(true)
-    expect(finalBalanceUser2).toBe(0)
-    expect(finalBalanceUser3).toBe(initialBalanceUser3 + initialBalanceUser2)
+  expect(paymentResult).toBe(true)
+  expect(finalBalanceUser2).toBe(0)
+  expect(finalBalanceUser3).toBe(initialBalanceUser3 + initialBalanceUser2)
 
-    const {
-      results: [{ pending, fee, feeUsd }],
-    } = await MainBook.ledger({ account: userWallet2.accountPath, type: "onchain_on_us" })
-    expect(pending).toBe(false)
-    expect(fee).toBe(0)
-    expect(feeUsd).toBe(0)
-  } catch (err) {
-    console.log({ err }, "error with onchain on-us sendAll")
-  }
+  const {
+    results: [{ pending, fee, feeUsd }],
+  } = await MainBook.ledger({ account: userWallet2.accountPath, type: "onchain_on_us" })
+  expect(pending).toBe(false)
+  expect(fee).toBe(0)
+  expect(feeUsd).toBe(0)
 })
 
 it("sendsOnchainPaymentWithMemo", async () => {
