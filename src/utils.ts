@@ -165,7 +165,9 @@ export const updateIPDetails = async ({ ip, user, logger }): Promise<void> => {
       return
     }
 
-    ipinfo = await fetchIP({ ip })
+    if (yamlConfig.ipRecording.proxyChecking.enabled) {
+      ipinfo = await fetchIP({ ip })
+    }
   } catch (error) {
     logger.info({ error }, "Failed to fetch ip details")
   } finally {

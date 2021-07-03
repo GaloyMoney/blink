@@ -89,8 +89,10 @@ limits:
       1: 5000000
       2: 100000000
 
-proxyChecking:
+ipRecording:
   enabled: true
+  proxyChecking:
+    enabled: true
 
 # blacklistedIPTypes: ['VPN', 'Compromised Server']
 
