@@ -30,7 +30,12 @@ const inputs: ILndParams[] = yamlConfig.lnds.map((input) => ({
   ...input,
 }))
 
-// FIXME
+// is this file being imported from trigger.ts?
+// FIXME: this is a hacky workaround to get active = true
+// for params to make the tests working.
+// otherwise the tests will have to probe before being able to call lnd
+// TODO: use a mock instead.
+// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const isTrigger = require.main!.filename.indexOf("trigger") !== -1
 
 export const addProps = (array) =>

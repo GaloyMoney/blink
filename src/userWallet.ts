@@ -33,6 +33,10 @@ export abstract class UserWallet {
   // this needs to be here to be able to call / chain updatePending()
   // otherwise super.updatePending() would result in an error
   // there may be better way to architecture this?
+
+  // we need to ignore typescript warning because even is lock is not used
+  // an input needs to be set because updatePending is being overrided
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async updatePending(lock) {
     return
   }

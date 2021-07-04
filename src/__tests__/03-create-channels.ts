@@ -148,7 +148,9 @@ it("opens channel from lnd1 to lnd2", async () => {
   const input = {
     fee_rate: 0,
     base_fee_tokens: 0,
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     transaction_id: channel!.transaction_id,
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     transaction_vout: channel!.transaction_vout,
   }
 
