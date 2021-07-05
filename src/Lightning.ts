@@ -822,7 +822,7 @@ export const LightningMixin = (superclass) =>
         )
         ;(async () => {
           try {
-            InvoiceUser.deleteOne({ _id: hash, user: this.user._id })
+            await InvoiceUser.deleteOne({ _id: hash, user: this.user._id })
           } catch (err) {
             this.logger.error({ invoice }, "impossible to delete InvoiceUser entry")
           }
