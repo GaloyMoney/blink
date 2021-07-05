@@ -66,6 +66,7 @@ export interface IOnChainPayment {
   address: string
   amount: number // sats
   memo?: string
+  sendAll?: boolean
 }
 
 export interface ITransaction {

@@ -1,4 +1,4 @@
-import { assert } from "console"
+import assert from "assert"
 import {
   AuthenticatedLnd,
   createChainAddress,
@@ -98,7 +98,12 @@ export const OnChainMixin = (superclass) =>
       return fee
     }
 
-    async onChainPay({ address, amount, memo }: IOnChainPayment): Promise<ISuccess> {
+    async onChainPay({
+      address,
+      amount,
+      memo,
+      sendAll = false,
+    }: IOnChainPayment): Promise<ISuccess> {
       let onchainLogger = this.logger.child({
         topic: "payment",
         protocol: "onchain",
@@ -106,15 +111,23 @@ export const OnChainMixin = (superclass) =>
         address,
         amount,
         memo,
+        sendAll,
       })
 
-      if (amount <= 0) {
-        const error = "Amount can't be negative"
-        throw new ValidationError(error, { logger: onchainLogger })
-      }
+      if (!sendAll) {
+        if (amount <= 0) {
+          const error = "Amount can't be negative, and can only be zero if sendAll = true"
+          throw new ValidationError(error, { logger: onchainLogger })
+        }
 
-      if (amount < yamlConfig.onchainDustAmount) {
-        throw new DustAmountError(undefined, { logger: onchainLogger })
+        if (amount < yamlConfig.onchainDustAmount) {
+          throw new DustAmountError(undefined, { logger: onchainLogger })
+        }
+      }
+      // when sendAll the amount should be 0
+      else {
+        assert(amount === 0)
+        /// TODO: unable to check balance.total_in_BTC vs yamlConfig.onchainDustAmount at this point...
       }
 
       return await redlock(
@@ -132,9 +145,20 @@ export const OnChainMixin = (superclass) =>
 
           // on us onchain transaction
           if (payeeUser) {
+            let amountToSendPayeeUser // fee = 0
+            if (!sendAll) {
+              amountToSendPayeeUser = amount
+            }
+            // when sendAll the amount to send payeeUser is the whole balance
+            else {
+              amountToSendPayeeUser = balance.total_in_BTC
+            }
+
             const onchainLoggerOnUs = onchainLogger.child({ onUs: true })
 
-            if (await this.user.limitHit({ on_us: true, amount })) {
+            if (
+              await this.user.limitHit({ on_us: true, amount: amountToSendPayeeUser })
+            ) {
               const error = `Cannot transfer more than ${
                 yamlConfig.limits.onUs.level[this.user.level]
               } sats in 24 hours`
@@ -145,13 +169,14 @@ export const OnChainMixin = (superclass) =>
               throw new SelfPaymentError(undefined, { logger: onchainLoggerOnUs })
             }
 
-            const sats = amount
+            const sats = amountToSendPayeeUser
             const metadata = {
               currency: "BTC",
               type: "onchain_on_us",
               pending: false,
               ...UserWallet.getCurrencyEquivalent({ sats, fee: 0 }),
               payee_addresses: [address],
+              sendAll,
             }
 
             await lockExtendOrThrow({ lock, logger: onchainLoggerOnUs }, async () => {
@@ -180,7 +205,12 @@ export const OnChainMixin = (superclass) =>
             throw new NewAccountWithdrawalError(error, { logger: onchainLogger })
           }
 
-          if (await this.user.limitHit({ on_us: false, amount })) {
+          /// when sendAll the amount is closer to the final one by deducting the withdrawFee
+          const checksAmount = sendAll
+            ? balance.total_in_BTC - this.user.withdrawFee
+            : amount
+
+          if (await this.user.limitHit({ on_us: false, amount: checksAmount })) {
             const error = `Cannot withdraw more than ${
               yamlConfig.limits.withdrawal.level[this.user.level]
             } sats in 24 hours`
@@ -191,9 +221,9 @@ export const OnChainMixin = (superclass) =>
 
           const { chain_balance: onChainBalance } = await getChainBalance({ lnd })
 
-          let estimatedFee, id
+          let estimatedFee, id, amountToSend
 
-          const sendTo = [{ address, tokens: amount }]
+          const sendTo = [{ address, tokens: checksAmount }]
 
           try {
             ;({ fee: estimatedFee } = await getChainFeeEstimate({ lnd, send_to: sendTo }))
@@ -203,33 +233,61 @@ export const OnChainMixin = (superclass) =>
             throw new LoggedError(error)
           }
 
-          // case where there is not enough money available within lnd on-chain wallet
-          if (onChainBalance < amount + estimatedFee) {
-            // TODO: add a page to initiate the rebalancing quickly
-            throw new RebalanceNeededError(undefined, {
-              logger: onchainLogger,
-              onChainBalance,
-              amount,
-              estimatedFee,
-              sendTo,
-              success: false,
-            })
+          if (!sendAll) {
+            amountToSend = amount
+
+            // case where there is not enough money available within lnd on-chain wallet
+            if (onChainBalance < amountToSend + estimatedFee) {
+              // TODO: add a page to initiate the rebalancing quickly
+              throw new RebalanceNeededError(undefined, {
+                logger: onchainLogger,
+                onChainBalance,
+                amount: amountToSend,
+                sendAll,
+                estimatedFee,
+                sendTo,
+                success: false,
+              })
+            }
+
+            // case where the user doesn't have enough money
+            if (
+              balance.total_in_BTC <
+              amountToSend + estimatedFee + this.user.withdrawFee
+            ) {
+              throw new InsufficientBalanceError(undefined, { logger: onchainLogger })
+            }
           }
+          // when sendAll the amount to sendToChainAddress is the whole balance minus the fees
+          else {
+            amountToSend = balance.total_in_BTC - estimatedFee - this.user.withdrawFee
 
-          //add a flat fee on top of onchain miner fees
-          estimatedFee += this.user.withdrawFee
+            // case where there is not enough money available within lnd on-chain wallet
+            if (onChainBalance < amountToSend) {
+              // TODO: add a page to initiate the rebalancing quickly
+              throw new RebalanceNeededError(undefined, {
+                logger: onchainLogger,
+                onChainBalance,
+                amount: amountToSend,
+                sendAll,
+                estimatedFee,
+                sendTo,
+                success: false,
+              })
+            }
 
-          // case where the user doesn't have enough money
-          if (balance.total_in_BTC < amount + estimatedFee) {
-            throw new InsufficientBalanceError(undefined, { logger: onchainLogger })
+            // case where the user doesn't have enough money (fees are more than the whole balance)
+            if (amountToSend < 0) {
+              throw new InsufficientBalanceError(undefined, { logger: onchainLogger })
+            }
           }
 
           return lockExtendOrThrow({ lock, logger: onchainLogger }, async () => {
             try {
-              ;({ id } = await sendToChainAddress({ address, lnd, tokens: amount }))
+              ;({ id } = await sendToChainAddress({ address, lnd, tokens: amountToSend }))
             } catch (err) {
               onchainLogger.error(
-                { err, address, tokens: amount, success: false },
+                { err, address, tokens: amountToSend, success: false },
                 "Impossible to sendToChainAddress",
               )
               return false
@@ -248,15 +306,25 @@ export const OnChainMixin = (superclass) =>
               fee = 0
             }
 
+            fee += this.user.withdrawFee
+
             {
-              fee += this.user.withdrawFee
-              const sats = amount + fee
+              let sats // full amount debited from account
+              if (!sendAll) {
+                sats = amount + fee
+              }
+              // when sendAll the amount debited from the account is the whole balance
+              else {
+                sats = balance.total_in_BTC
+              }
+
               const metadata = {
                 currency: "BTC",
                 hash: id,
                 type: "onchain_payment",
                 pending: true,
                 ...UserWallet.getCurrencyEquivalent({ sats, fee }),
+                sendAll,
               }
 
               // TODO/FIXME refactor. add the transaction first and set the fees in a second tx.

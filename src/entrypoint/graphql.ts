@@ -239,6 +239,9 @@ const resolvers = {
       pay: ({ address, amount, memo }) => ({
         success: wallet.onChainPay({ address, amount, memo }),
       }),
+      payAll: ({ address, memo }) => ({
+        success: wallet.onChainPay({ address, amount: 0, memo, sendAll: true }),
+      }),
       getFee: ({ address, amount }) => wallet.getOnchainFee({ address, amount }),
     }),
     addDeviceToken: async (_, { deviceToken }, { user }) => {
