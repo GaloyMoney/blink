@@ -75,8 +75,7 @@ afterAll(async () => {
 })
 
 it("test updating price", async () => {
-  expect(true).toBeTruthy()
-  // await price.update()
+  await price.update()
   // test it doesn't throw an error
 })
 
