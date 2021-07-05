@@ -91,7 +91,11 @@ type OnChain {
     address: String! @pattern(regexp: "^[A-Za-z0-9]+$", policy: THROW)
     amount: Int! @range(min: 0, policy: THROW)
     memo: String @stringLength(max: 1024, policy: THROW) # TODO: add limit on the mobile app
-    sendAll: Boolean
+  ): Success
+
+  payAll(
+    address: String! @pattern(regexp: "^[A-Za-z0-9]+$", policy: THROW)
+    memo: String @stringLength(max: 1024, policy: THROW) # TODO: add limit on the mobile app
   ): Success
 
   getFee(
