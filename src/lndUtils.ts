@@ -37,11 +37,12 @@ import { LoggedError, LOOK_BACK } from "./utils"
 // milliseconds in a day
 const MS_PER_DAY = 864e5
 
-// FIXME use lightning instead
-
 export const deleteExpiredInvoices = async () => {
   // this should be longer than the invoice validity time
-  const delta = 2 // days
+  // only useful for users that have not logged in back
+  // because the expired invoices are otherwise deleted on the fly
+  // from lnd, and the InvoiceUser collection are being deleted on user request
+  const delta = 30 // days
 
   const date = new Date()
   date.setDate(date.getDate() - delta)
