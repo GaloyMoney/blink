@@ -57,6 +57,7 @@
     "graphql-middleware": "^6.0.10",
     "graphql-shield": "^7.5.0",
     "graphql-tools": "^7.0.5",
+    "helmet": "^4.6.0",
     "invoices": "https://github.com/nicolasburtey/invoices#master",
     "ioredis": "^4.27.3",
     "js-yaml": "^4.0.0",

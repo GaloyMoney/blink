@@ -38,7 +38,7 @@ import { redis } from "../redis"
 import { User } from "../schema"
 import { login, requestPhoneCode } from "../text"
 import { Levels, OnboardingEarn, Primitive } from "../types"
-
+import helmet from "helmet"
 import { updateIPDetails, isIPBlacklisted } from "../utils"
 
 import { WalletFactory, WalletFromUsername } from "../walletFactory"
@@ -410,6 +410,8 @@ export async function startApolloServer() {
       return new Error("Internal server error")
     },
   })
+
+  app.use(helmet())
 
   app.use(pino_http)
 
