@@ -413,6 +413,10 @@ export async function startApolloServer() {
 
   app.use(pino_http)
 
+  if (!process.env.JWT_SECRET) {
+    throw new Error("JWT_SECRET is not set")
+  }
+
   app.use(
     expressJwt({
       secret: process.env.JWT_SECRET,
