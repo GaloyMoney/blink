@@ -910,7 +910,7 @@ export const LightningMixin = (superclass) =>
           }
         })
       } else {
-        this.logger.error({ invoice }, "there is no reason to be in this branch")
+        this.logger.debug({ invoice }, "invoice has not been paid")
         return false
       }
     }
