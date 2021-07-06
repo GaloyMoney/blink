@@ -816,10 +816,17 @@ export const LightningMixin = (superclass) =>
       // so we need a branch to return true in case the payment
       // has been managed off lnd.
       if (invoice.is_canceled) {
-        this.logger.warn(
-          { hash, user: this.user },
-          "cancelled invoice. nothing to do. this should not happen(?)",
+        this.logger.info(
+          { hash, invoice, user: this.user },
+          "cancelled invoice. deleting associated InvoiceUser entry",
         )
+        ;(async () => {
+          try {
+            await InvoiceUser.deleteOne({ _id: hash, user: this.user._id })
+          } catch (err) {
+            this.logger.error({ invoice }, "impossible to delete InvoiceUser entry")
+          }
+        })()
         return false
       } else if (invoice.is_confirmed) {
         const lightningLogger = this.logger.child({
@@ -902,29 +909,9 @@ export const LightningMixin = (superclass) =>
             })
           }
         })
-        // this should not happen
       } else {
+        this.logger.error({ invoice }, "there is no reason to be in this branch")
         return false
-
-        //   })
-
-        // TODO: part of the merge. check this should be deleted
-
-        // } else if (expired) {
-
-        //   // maybe not needed after old invoice has been deleted?
-
-        //   try {
-        //     await cancelHodlInvoice({ lnd, id: hash })
-        //     this.logger.info({ id: hash, user: this.user._id }, "canceling invoice")
-
-        //   } catch (err) {
-        //     const error = "error deleting invoice"
-        //     this.logger.error({ err, error, hash, user: this.user._id }, error)
-        //   }
-
-        //   const resultDeletion = await InvoiceUser.deleteOne({ _id: hash, user: this.user._id })
-        //   this.logger.info({ hash, user: this.user._id, resultDeletion }, "succesfully deleted expired invoice")
       }
     }
 
