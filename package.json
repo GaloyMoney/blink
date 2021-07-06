@@ -109,5 +109,9 @@
     "tsconfig-paths": "^3.9.0",
     "typescript": "^4.3.5"
   },
+  "resolutions": {
+    "**/**/ws": ">=7.4.6",
+    "**/**/json-bigint": ">=1.0.0"
+  },
   "private": true
 }
