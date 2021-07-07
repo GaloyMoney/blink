@@ -11,26 +11,17 @@ import assert from "assert"
 
 import { GenericExchange, SupportedExchanges, ApiConfig } from "./GenericExchange"
 
-const activeExchangeId = SupportedExchanges.FTX
+const activeExchangeId: SupportedExchanges = "ftx"
 
-const activeApiConfig = new ApiConfig(activeExchangeId, undefined, undefined, undefined)
+const key = process.env[`${activeExchangeId.toUpperCase()}_KEY`]
+const secret = process.env[`${activeExchangeId.toUpperCase()}_SECRET`]
+const password = process.env[`${activeExchangeId.toUpperCase()}_PASSWORD`]
 
-switch (activeExchangeId as SupportedExchanges) {
-  case SupportedExchanges.FTX:
-    activeApiConfig.apiKey = process.env.FTX_KEY
-    activeApiConfig.secret = process.env.FTX_SECRET
-    activeApiConfig.password = process.env.FTX_PASSWORD
-    break
-
-  case SupportedExchanges.OKEXv5:
-    activeApiConfig.apiKey = process.env.OKEX_KEY
-    activeApiConfig.secret = process.env.OKEX_SECRET
-    activeApiConfig.password = process.env.OKEX_PASSWORD
-    break
-
-  default:
-    break
+if (!key || !secret || !password) {
+  throw new Error(`Missing ${activeExchangeId} exchange environment variables`)
 }
+
+const activeApiConfig = new ApiConfig(activeExchangeId, key, secret, password)
 
 // TODO: move to the yaml config
 const simulateOnly = true
@@ -42,12 +33,10 @@ export type IBuyOrSell = "sell" | "buy" | null
 // so it is using the OnChain Mixin.
 export class DealerWallet extends OnChainMixin(UserWallet) {
   exchange
-  symbol
 
   constructor({ user, logger }: ILightningWalletUser) {
     super({ user, logger })
     this.exchange = new GenericExchange(activeApiConfig)
-    this.symbol = this.exchange.GetSymbol()
     this.logger = logger.child({ topic: "dealer" })
   }
 
@@ -132,7 +121,7 @@ export class DealerWallet extends OnChainMixin(UserWallet) {
   async getNextFundingRate() {
     const {
       result: { nextFundingRate },
-    } = await this.exchange.getNextFundingRate(this.symbol)
+    } = await this.exchange.getNextFundingRate()
     return nextFundingRate
   }
 
@@ -165,7 +154,8 @@ export class DealerWallet extends OnChainMixin(UserWallet) {
       "value kept from this.exchange.privateGetAccount",
     )
 
-    const positionBtcPerp = _.find(positions, { future: this.symbol })
+    // getPositions() instead ?!?
+    const positionBtcPerp = _.find(positions, { future: this.exchange.symbol })
     this.logger.debug({ positionBtcPerp }, "positionBtcPerp result")
 
     const {
@@ -392,7 +382,7 @@ export class DealerWallet extends OnChainMixin(UserWallet) {
     const orderType = "market"
 
     const logOrder = this.logger.child({
-      symbol: this.symbol,
+      symbol: this.exchange.symbol,
       orderType,
       buyOrSell,
       btcAmount,
@@ -410,12 +400,7 @@ export class DealerWallet extends OnChainMixin(UserWallet) {
     // buy should be "reduceOnly":true
 
     try {
-      order = await this.exchange.createOrder(
-        this.symbol,
-        orderType,
-        buyOrSell,
-        btcAmount,
-      )
+      order = await this.exchange.createOrder(orderType, buyOrSell, btcAmount)
     } catch (err) {
       logOrder.error({ err }, "error placing an order")
       throw err

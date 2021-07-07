@@ -1,18 +1,14 @@
 import { sleep } from "../utils"
 import ccxt, { ExchangeId, Order } from "ccxt"
 
-export enum SupportedExchanges {
-  FTX = "ftx",
-  OKEXv3 = "okex",
-  OKEXv5 = "okex5",
-}
+export type SupportedExchanges = "ftx" | "okex5"
 
 export class ApiConfig {
   constructor(
-    public exchangeId: SupportedExchanges | undefined,
-    public apiKey: string | undefined,
-    public secret: string | undefined,
-    public password: string | undefined,
+    public exchangeId: SupportedExchanges,
+    public apiKey: string,
+    public secret: string,
+    public password: string,
   ) {
     this.exchangeId = exchangeId
   }
@@ -21,7 +17,7 @@ export class ApiConfig {
 export class GenericExchange {
   exchangeId: ExchangeId
   exchange
-  defaultSymbol
+  public symbol
 
   constructor(apiConfig: ApiConfig) {
     this.exchangeId = apiConfig.exchangeId as ExchangeId
@@ -32,27 +28,23 @@ export class GenericExchange {
       password: apiConfig.password,
     })
 
+    this.SetSymbol()
+
     // Should we check at init that we have required credentials?
     this.exchange.checkRequiredCredentials()
   }
 
-  public GetSymbol() {
+  public SetSymbol() {
     // TODO: Should resolve best instrument to used given the exchange and the market conditions.
     // const optimalSymbol = this.getOptimalSymbol;
     // this.defaultSymbol = optimalSymbol;
 
-    const ftxDefaultSymbol = "BTC-PERP"
-    const okexDefaultSymbol = "BTC-USD-211231"
-
-    if (this.exchangeId === SupportedExchanges.FTX) {
-      this.defaultSymbol = ftxDefaultSymbol
-    } else if (this.exchangeId === SupportedExchanges.OKEXv3) {
-      this.defaultSymbol = okexDefaultSymbol
-    } else if (this.exchangeId === SupportedExchanges.OKEXv5) {
-      this.defaultSymbol = okexDefaultSymbol
+    const exchangeMapping = {
+      ftx: "BTC-PERP",
+      okexv5: "BTC-USD-211231",
     }
 
-    return this.defaultSymbol
+    this.symbol = exchangeMapping[this.exchangeId]
   }
 
   public has() {
@@ -71,27 +63,19 @@ export class GenericExchange {
   }
 
   async fetchDepositAddress(currency: string) {
-    const address = await this.exchange.fetchDepositAddress(currency)
-    return address
+    return this.exchange.fetchDepositAddress(currency)
   }
 
   public async withdraw(currency: string, amount: number, address: string) {
-    const withdrawalResult = await this.exchange.withdraw(currency, amount, address)
-    return withdrawalResult
+    return this.exchange.withdraw(currency, amount, address)
   }
 
-  public async createOrder(
-    symbol: string,
-    type: Order["type"],
-    side: Order["side"],
-    amount: number,
-  ) {
-    const order = await this.exchange.createOrder(symbol, type, side, amount)
-    return order
+  public async createOrder(type: Order["type"], side: Order["side"], amount: number) {
+    return this.exchange.createOrder(this.symbol, type, side, amount)
   }
 
   public async fetchOrder(id: string) {
-    const order = await this.exchange.fetchOrder(id, this.defaultSymbol)
+    const order = await this.exchange.fetchOrder(id, this.symbol)
     return order
   }
 
@@ -101,8 +85,7 @@ export class GenericExchange {
   }
 
   public async fetchBalance() {
-    const balances = await this.exchange.fetchBalance()
-    return balances
+    return this.exchange.fetchBalance()
   }
 
   public async getBtcSpot() {
@@ -114,8 +97,7 @@ export class GenericExchange {
   }
 
   public async loadMarkets() {
-    const markets = await this.exchange.loadMarkets(true)
-    return markets
+    return await this.exchange.loadMarkets(true)
   }
 
   public async getFilteredInstrument(base: string, type: string) {
@@ -143,33 +125,35 @@ export class GenericExchange {
     return data
   }
 
-  public async getNextFundingRate(symbol: string) {
-    if (this.exchangeId === SupportedExchanges.FTX) {
-      const arg = { future_name: symbol }
-      const result = await this.exchange.publicGetFuturesFutureNameStats(arg)
-      return result
-    } else if (this.exchangeId === SupportedExchanges.OKEXv3) {
-      const arg = { instId: symbol }
-      const result = await this.exchange.publicGetPublicFundingRate(arg)
-      return result
-    } else if (this.exchangeId === SupportedExchanges.OKEXv5) {
-      const arg = { instId: symbol }
-      const result = await this.exchange.publicGetPublicFundingRate(arg)
-      return result
+  public async getNextFundingRate() {
+    // type it SupportedExchanges: func
+    const getNextFundingRateMapping = {
+      ftx: {
+        func: this.exchange.publicGetFuturesFutureNameStats,
+        arg: { future_name: this.symbol },
+      },
+      okex5: {
+        func: this.exchange.publicGetPublicFundingRate,
+        arg: { instId: this.symbol },
+      },
     }
+
+    const func = getNextFundingRateMapping[this.exchangeId].func
+    const arg = getNextFundingRateMapping[this.exchangeId].arg
+    return func(arg)
   }
 
   public async privateGetAccount() {
-    if (this.exchangeId === SupportedExchanges.FTX) {
-      const result = await this.exchange.privateGetAccount()
-      return result
-    } else if (this.exchangeId === SupportedExchanges.OKEXv3) {
-      const result = await this.exchange.privateGetAccount()
-      return result
-    } else if (this.exchangeId === SupportedExchanges.OKEXv5) {
-      const result = await this.exchange.privateGetAccount()
-      return result
+    const privateGetAccountMapping = {
+      ftx: {
+        func: this.exchange.privateGetAccount,
+      },
+      okex5: {
+        func: this.exchange.privateGetAccount,
+      },
     }
+    const func = privateGetAccountMapping[this.exchangeId].func
+    return func()
   }
 
   public async getMethods() {
