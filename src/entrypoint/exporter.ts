@@ -6,7 +6,9 @@ import { balanceSheetIsBalanced, getLedgerAccounts } from "../balance-sheet"
 import { getBosScore, lndsBalances } from "../lndUtils"
 import { baseLogger } from "../logger"
 import { setupMongoConnection } from "../mongodb"
-import { User } from "../schema"
+import { Transaction, User } from "../schema"
+import { getDealerWallet, getFunderWallet } from "../walletFactory"
+import { recordMessageStatus } from "../text"
 
 const logger = baseLogger.child({ module: "exporter" })
 
@@ -137,6 +139,15 @@ const main = async () => {
 
   server.get("/healthz", (req, res) => {
     res.send("OK")
+  })
+
+  server.post("twilioMessageStatus", async (req, res) => {
+    const twilioMessageSid = req.body.MessageSid
+    const twilioMessageStatus = req.body.MessageStatus
+
+    recordMessageStatus({ twilioMessageSid, twilioMessageStatus })
+
+    res.sendStatus(200)
   })
 
   const port = process.env.PORT || 3000

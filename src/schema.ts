@@ -412,6 +412,8 @@ const PhoneCodeSchema = new Schema({
     required: true,
   },
   sms_provider: String,
+  twilioMessageSid: String,
+  twilioMessageStatus: String,
 })
 
 export const PhoneCode = mongoose.model("PhoneCode", PhoneCodeSchema)

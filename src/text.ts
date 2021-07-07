@@ -16,6 +16,94 @@ import {
   isIPTypeBlacklisted,
   randomIntFromInterval,
 } from "./utils"
+import { Logger } from "./types"
+
+// const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER
+const twilioPhoneNumber = "+15005550006"
+const getTwilioClient = () => {
+  const accountSid = process.env.TWILIO_ACCOUNT_SID
+  const apiKey = process.env.TWILIO_API_KEY
+  const apiSecret = process.env.TWILIO_API_SECRET
+
+  const testAccountSid = ""
+  const testAuthToken = ""
+
+  // const client = twilio(apiKey, apiSecret, { accountSid })
+  const client = twilio(testAccountSid, testAuthToken)
+  return client
+}
+
+interface OSendTwilioText {
+  success: boolean
+  sid: string,
+  status: string
+}
+
+export const sendTwilioText = async ({ body, to, logger }): Promise<OSendTwilioText> => {
+  let twilioStatusCallbackUri
+
+  const port = process.env.PORT || 3000
+  if (process.env.NETWORK === "MAINNET") {
+    twilioStatusCallbackUri = `https://twilio.mainnet.galoy.io:${port}/twilioMessageStatus`
+  } else if (process.env.NETWORK === "TESTNET") {
+    twilioStatusCallbackUri = `https://twilio.testnet.galoy.io/${port}/twilioMessageStatus`
+  } else if (process.env.NETWORK === "REGTEST") {
+    twilioStatusCallbackUri = `http://localhost:${port}/twilioMessageStatus`
+  }
+
+  const provider = "twilio"
+  let sid
+  let status
+  try {
+    const response = await getTwilioClient().messages.create({
+      from: twilioPhoneNumber,
+      to,
+      body,
+      statusCallback: twilioStatusCallbackUri,
+    })
+
+    sid = response.sid
+    status = response.status
+  } catch (err) {
+    logger.error({ err, provider }, "impossible to send text")
+    return { success: false, sid: "", status: "" }
+  }
+
+  logger.info({ to, provider }, "sent text successfully")
+  return { success: true, sid, status }
+}
+
+export const sendSMSalaText = async ({ body, to, logger }) => {
+  const provider = "smsala"
+  try {
+    const base_url = "http://api.smsala.com/api/SendSMS"
+    const api_id = process.env.SMSALA_API_ID
+    const api_password = process.env.SMSALA_API_PASSWORD
+    const sms_type = "T"
+    const encoding = "T"
+    const sender_id = process.env.SMSALA_SENDER_ID
+    // SMSala api does not acccept nonnumeric characters like '+'
+    const phoneNumber = to.replace(/\D/g, "")
+
+    let url = `${base_url}?api_id=${api_id}&api_password=${api_password}`
+    url = url + `&sms_type=${sms_type}&encoding=${encoding}&sender_id=${sender_id}`
+    url = url + `&phonenumber=${phoneNumber}&textmessage=${body}`
+    await axios.get(url)
+  } catch (err) {
+    logger.error({ err, provider }, "impossible to send text")
+    return
+  }
+
+  logger.info({ to, provider }, "sent text successfully")
+}
+
+export const getCarrier = async (phone: string) => {
+  const result = await getTwilioClient()
+    .lookups.phoneNumbers(phone)
+    .fetch({ type: ["carrier"] })
+  baseLogger.info({ result }, "result carrier info")
+  return result
+}
 
 export const requestPhoneCode = async ({
   phone,
@@ -93,7 +181,16 @@ export const requestPhoneCode = async ({
 
     const sendTextArguments = { body, to: phone, logger }
     if (sms_provider === "twilio") {
-      await sendTwilioText(sendTextArguments)
+      const oSendTwilioText = await sendTwilioText(sendTextArguments)
+      if (oSendTwilioText.success) {
+        await PhoneCode.findOneAndUpdate(
+          { phone, code },
+          { 
+            twilioMessageSid: oSendTwilioText.sid,
+            twilioMessageStatus: oSendTwilioText.status
+          }
+        )
+      }
     } else if (sms_provider === "smsala") {
       await sendSMSalaText(sendTextArguments)
     } else {
@@ -106,6 +203,18 @@ export const requestPhoneCode = async ({
   }
 
   return true
+}
+
+interface IRecordMessageStatus {
+  twilioMessageSid: string,
+  twilioMessageStatus: string,
+}
+
+export const recordMessageStatus = async ({
+  twilioMessageSid,
+  twilioMessageStatus
+}: IRecordMessageStatus) => {
+  await PhoneCode.findOneAndUpdate({ twilioMessageSid }, { twilioMessageStatus })
 }
 
 interface ILogin {
