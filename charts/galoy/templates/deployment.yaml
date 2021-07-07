@@ -140,22 +140,6 @@ spec:
                 secretKeyRef:
                   name: network
                   key: network
-            {{- if eq .name "graphql" }}
-            - name: APOLLO_GRAPH_VARIANT
-              value: current
-            - name: APOLLO_SCHEMA_REPORTING
-              value: true
-            - name: APOLLO_GRAPH_ID
-              valueFrom:
-                secretKeyRef:
-                  name: apollo-secret
-                  key: id
-            - name: APOLLO_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: apollo-secret
-                  key: key
-            {{- end}}
             {{- if eq .name "exporter" }}
             - name: FTX_KEY
               valueFrom:
@@ -211,6 +195,22 @@ spec:
             - name: LNDOUTSIDE2ADDR
               value: "lnd-outside-2"
             {{- else }}
+            {{- if eq .name "graphql" }}
+            - name: APOLLO_GRAPH_VARIANT
+              value: current
+            - name: APOLLO_SCHEMA_REPORTING
+              value: true
+            - name: APOLLO_GRAPH_ID
+              valueFrom:
+                secretKeyRef:
+                  name: galoy-apollo-secret
+                  key: id
+            - name: APOLLO_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: galoy-apollo-secret
+                  key: key
+            {{- end}}
             - name: TWILIO_PHONE_NUMBER
               valueFrom:
                 secretKeyRef:
