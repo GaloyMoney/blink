@@ -9,7 +9,10 @@ import {
 } from "lightning"
 import { yamlConfig } from "src/config"
 import { FtxDealerWallet } from "src/dealer/FtxDealerWallet"
-import { balanceSheetIsBalanced, updateUsersPendingPayment } from "src/ledger/balanceSheet"
+import {
+  balanceSheetIsBalanced,
+  updateUsersPendingPayment,
+} from "src/ledger/balanceSheet"
 import { offchainLnds, onchainLnds, onChannelUpdated, updateEscrows } from "src/lndUtils"
 import { baseLogger } from "src/logger"
 import { User } from "src/schema"

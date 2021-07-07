@@ -1,9 +1,5 @@
 module.exports = {
-  moduleFileExtensions: [
-    "js",
-    "json",
-    "ts"
-  ],
+  moduleFileExtensions: ["js", "json", "ts"],
   rootDir: ".",
   roots: ["<rootDir>/test"],
   transform: {
@@ -14,6 +10,6 @@ module.exports = {
   setupFilesAfterEnv: ["./jest.setup.js"],
   testEnvironment: "node",
   moduleNameMapper: {
-    "^src/(.*)$": "<rootDir>/src/$1"
-  }
+    "^src/(.*)$": "<rootDir>/src/$1",
+  },
 }
