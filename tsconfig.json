@@ -7,10 +7,10 @@
     "target": "es2020",
     "noImplicitAny": false,
     "esModuleInterop": true,
-    "rootDirs": ["src"],
+    "baseUrl": "./",
     "moduleResolution": "node",
     "resolveJsonModule": true
   },
   "compileOnSave": true,
-  "include": ["src/**/*"]
+  "include": ["src/**/*", "test/**/*"]
 }
