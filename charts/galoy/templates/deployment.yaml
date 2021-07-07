@@ -199,7 +199,7 @@ spec:
             - name: APOLLO_GRAPH_VARIANT
               value: current
             - name: APOLLO_SCHEMA_REPORTING
-              value: true
+              value: "true"
             - name: APOLLO_GRAPH_ID
               valueFrom:
                 secretKeyRef:
