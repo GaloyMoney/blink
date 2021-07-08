@@ -80,7 +80,7 @@ export const addTransactionOnUsPayment = async ({
   payerUser,
   payeeUser,
   memoPayer,
-  shareMemoWithPayee
+  shareMemoWithPayee,
 }: IAddTransactionOnUsPayment) => {
   const dealerPath = await dealerMediciPath()
 
