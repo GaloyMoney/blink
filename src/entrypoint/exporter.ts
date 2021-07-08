@@ -200,7 +200,7 @@ const main = async () => {
     onchainWithdrawFees_g.set(totalWithdrawFees)
 
     res.set("Content-Type", register.contentType)
-    res.end(register.metrics())
+    res.end(await register.metrics())
   })
 
   server.get("/healthz", async (req, res) => {
