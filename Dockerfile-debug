@@ -10,6 +10,8 @@ RUN yarn install --frozen-lockfile
 
 COPY ./src ./src
 
+COPY ./test ./test
+
 RUN yarn build
 
 FROM gcr.io/distroless/nodejs:14-debug
