@@ -118,6 +118,7 @@ export const addTransactionOnUsPayment = async ({
     entry
       .credit(customerPath(payeeUser._id), usdEq * payeeUser.ratioUsd, {
         ...metadata,
+        memoPayer: shareMemoWithPayee ? memoPayer : null,
         username: payerUser.username,
         currency: "USD",
       })
