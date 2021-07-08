@@ -9,7 +9,6 @@ COPY ./*.json ./yarn.lock ./
 RUN yarn install --frozen-lockfile
 
 COPY ./src ./src
-
 COPY ./test ./test
 
 RUN yarn build
@@ -23,6 +22,7 @@ COPY ./*.js ./default.yaml ./package.json ./tsconfig.json ./yarn.lock ./.env ./
 
 ### debug only
 COPY --from=BUILD_IMAGE /app/src /app/src
+COPY --from=BUILD_IMAGE /app/test /app/test
 COPY ./junit.xml ./
 ###
 
