@@ -211,3 +211,14 @@ export const OnboardingEarn = {
   moneyLaundering: 500,
   tweet: 1000,
 }
+
+// TODO: Add types for payer, payee and metadata
+export type IAddTransactionOnUsPayment = {
+  description: string,
+  sats: number,
+  metadata: {},
+  payerUser: any,
+  payeeUser: any,
+  memoPayer?: string,
+  shareMemoWithPayee?: boolean
+}
