@@ -1,10 +1,15 @@
 module.exports = {
-  roots: ["<rootDir>/src"],
+  moduleFileExtensions: ["js", "json", "ts"],
+  rootDir: ".",
+  roots: ["<rootDir>/test"],
   transform: {
     "^.+\\.(ts)$": "ts-jest",
   },
-  testPathIgnorePatterns: ["helper.ts"],
+  testRegex: ".*\\.spec\\.ts$",
   testSequencer: "./jestTestSequencer.js",
   setupFilesAfterEnv: ["./jest.setup.js"],
   testEnvironment: "node",
+  moduleNameMapper: {
+    "^src/(.*)$": "<rootDir>/src/$1",
+  },
 }

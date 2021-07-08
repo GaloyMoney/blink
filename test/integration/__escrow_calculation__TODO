@@ -1,0 +1,56 @@
+/**
+ * @jest-environment node
+ */
+import { setupMongoConnection } from "src/mongodb"
+// this import needs to be before medici
+
+import { LightningAdminWallet } from "src/LightningAdminImpl"
+import { sleep, waitUntilBlockHeight } from "src/utils"
+const mongoose = require("mongoose");
+const { once } = require('events');
+const lnService = require('ln-service')
+
+import {lndMain, lndOutside1, lndOutside2, bitcoindClient, RANDOM_ADDRESS, checkIsBalanced} from "src/tests_utils/import"
+
+const User = mongoose.model("User")
+
+const blockHeightInit = 120
+
+let adminWallet
+
+beforeAll(async () => {
+	await setupMongoConnection()
+	const admin = await User.findOne({role: "admin"})
+	adminWallet = new LightningAdminWallet({uid: admin._id})
+})
+
+afterAll(async () => {
+	return await mongoose.connection.close()
+})
+
+it('funds?', async () => {
+	// console.log(await bitcoindClient.getBalance())
+	// await bitcoindClient.generateToAddress(1, RANDOM_ADDRESS)
+	// bitcoindClient.getMempoolInfo()
+	console.log(await bitcoindClient.estimateSmartFee(6))
+})
+
+it('increaseFees', async () => {
+	console.log(await bitcoindClient.estimateSmartFee(1))
+	console.log(await bitcoindClient.estimateSmartFee(3))
+
+	const range = n => Array.from({length: n}, (value, key) => key)
+
+	let txs = {}
+
+	for (const _ in range(2000)) {
+		const address = await bitcoindClient.getNewAddress()
+		txs[address] = 0.00001
+	}
+
+	for (const _ in range(1)) {
+		await bitcoindClient.sendMany("", txs)
+	}
+
+	console.log(await bitcoindClient.getMempoolInfo())
+}, 60000)
