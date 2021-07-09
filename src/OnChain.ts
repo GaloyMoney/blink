@@ -314,7 +314,7 @@ export const OnChainMixin = (superclass) =>
               return false
             }
 
-            let fee
+            let fee, fee2
             try {
               const outgoingOnchainTxns = await getOnChainTransactions({
                 lnd,
@@ -322,6 +322,11 @@ export const OnChainMixin = (superclass) =>
               })
               const [{ fee: fee_ }] = outgoingOnchainTxns.filter((tx) => tx.id === id)
               fee = fee_
+
+              // Getting the fee from transaction directly
+              const txn = await bitcoindDefaultClient.getTransaction(id2) //, null, true) // verbose true
+              fee2 = btc2sat(-txn.fee) // fee comes in BTC and negative
+              
             } catch (err) {
               onchainLogger.fatal({ err }, "impossible to get fee for onchain payment")
               fee = 0
