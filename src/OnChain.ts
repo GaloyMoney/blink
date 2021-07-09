@@ -239,7 +239,6 @@ export const OnChainMixin = (superclass) =>
             const confTarget = 1 // same with 1 // 6
             // TODO: estimate_mode
             estimatedFee2 = await bitcoindDefaultClient.estimateSmartFee(confTarget)
-
           } catch (err) {
             const error = `Unable to estimate fee for on-chain transaction`
             onchainLogger.error({ err, sendTo, success: false }, error)
@@ -300,12 +299,11 @@ export const OnChainMixin = (superclass) =>
               ;({ id } = await sendToChainAddress({ address, lnd, tokens: amountToSend }))
 
               const amountToSendBtc = sat2btc(amountToSend)
-              console.log(`amountToSendBtc: ${amountToSendBtc}`);
+              console.log(`amountToSendBtc: ${amountToSendBtc}`)
               // TODO? which other args? replaceable? avoid_reuse? ...
               id2 = await bitcoindDefaultClient.sendToAddress(address, amountToSendBtc)
-              console.log(`id2: ${id2}`); // non-verbose: 3641dfdb930521afa710f1816f502c61001993104e50d684da78b449cd7a569f
+              console.log(`id2: ${id2}`) // non-verbose: 3641dfdb930521afa710f1816f502c61001993104e50d684da78b449cd7a569f
               // console.log(`JSON.stringify(id2): ${JSON.stringify(id2)}`); // verbose: {"txid":"d86489ecf3ffe48c4cde71da0c3466115df342abcdd7d7e4511b1c8e002a1ef0","fee_reason":"Fallback fee"}
-
             } catch (err) {
               onchainLogger.error(
                 { err, address, tokens: amountToSend, success: false },
@@ -326,7 +324,6 @@ export const OnChainMixin = (superclass) =>
               // Getting the fee from transaction directly
               const txn = await bitcoindDefaultClient.getTransaction(id2) //, null, true) // verbose true
               fee2 = btc2sat(-txn.fee) // fee comes in BTC and negative
-              
             } catch (err) {
               onchainLogger.fatal({ err }, "impossible to get fee for onchain payment")
               fee = 0
