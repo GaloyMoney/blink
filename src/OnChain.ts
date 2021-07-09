@@ -223,13 +223,22 @@ export const OnChainMixin = (superclass) =>
           const { lnd } = getActiveOnchainLnd()
 
           const { chain_balance: onChainBalance } = await getChainBalance({ lnd })
+          const onChainBalance2Btc = await bitcoindHotWalletClient.getBalance()
+          const onChainBalance2 = btc2sat(onChainBalance2Btc)
 
           let estimatedFee, id, amountToSend
+          let estimatedFee2, id2
 
           const sendTo = [{ address, tokens: checksAmount }]
 
           try {
             ;({ fee: estimatedFee } = await getChainFeeEstimate({ lnd, send_to: sendTo }))
+
+            // TODO! estimatedFee2: {"errors":["Insufficient data or no feerate found"],"blocks":2}
+            const confTarget = 1 // same with 1 // 6
+            // TODO: estimate_mode
+            estimatedFee2 = await bitcoindDefaultClient.estimateSmartFee(confTarget)
+
           } catch (err) {
             const error = `Unable to estimate fee for on-chain transaction`
             onchainLogger.error({ err, sendTo, success: false }, error)
