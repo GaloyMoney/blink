@@ -34,6 +34,7 @@ import {
   amountOnVout,
   bitcoindDefaultClient,
   btc2sat,
+  sat2btc,
   LoggedError,
   LOOK_BACK,
   myOwnAddressesOnVout,
@@ -297,6 +298,14 @@ export const OnChainMixin = (superclass) =>
           return lockExtendOrThrow({ lock, logger: onchainLogger }, async () => {
             try {
               ;({ id } = await sendToChainAddress({ address, lnd, tokens: amountToSend }))
+
+              const amountToSendBtc = sat2btc(amountToSend)
+              console.log(`amountToSendBtc: ${amountToSendBtc}`);
+              // TODO? which other args? replaceable? avoid_reuse? ...
+              id2 = await bitcoindDefaultClient.sendToAddress(address, amountToSendBtc)
+              console.log(`id2: ${id2}`); // non-verbose: 3641dfdb930521afa710f1816f502c61001993104e50d684da78b449cd7a569f
+              // console.log(`JSON.stringify(id2): ${JSON.stringify(id2)}`); // verbose: {"txid":"d86489ecf3ffe48c4cde71da0c3466115df342abcdd7d7e4511b1c8e002a1ef0","fee_reason":"Fallback fee"}
+
             } catch (err) {
               onchainLogger.error(
                 { err, address, tokens: amountToSend, success: false },
