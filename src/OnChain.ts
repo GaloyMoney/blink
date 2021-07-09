@@ -114,6 +114,9 @@ export const OnChainMixin = (superclass) =>
         sendAll,
       })
 
+      // TODO
+      const bitcoindHotWalletClient = bitcoindDefaultClient
+
       if (!sendAll) {
         if (amount <= 0) {
           const error = "Amount can't be negative, and can only be zero if sendAll = true"
