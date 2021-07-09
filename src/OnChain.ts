@@ -332,6 +332,23 @@ export const OnChainMixin = (superclass) =>
               fee = 0
             }
 
+            console.log(`vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv`);
+            console.log(`vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv`);
+            console.log(`vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv`);
+            console.log(`onChainBalance: ${onChainBalance}`);
+            console.log(`onChainBalance2: ${onChainBalance2}`);
+            console.log(`estimatedFee: ${estimatedFee}`);
+            // console.log(`estimatedFee2: ${JSON.stringify(estimatedFee2)}`); // {"errors":["Insufficient data or no feerate found"],"blocks":2}
+            console.log(`this.user.withdrawFee: ${this.user.withdrawFee}`);
+            console.log(`balance.total_in_BTC: ${balance.total_in_BTC}`);
+            console.log(`fee: ${fee}`);
+            console.log(`fee2: ${fee2}`);
+            console.log(`amount: ${amount}`);
+            console.log(`amountToSend: ${amountToSend}`);
+            console.log(`vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv`);
+            console.log(`vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv`);
+            console.log(`vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv`);
+
             fee += this.user.withdrawFee
 
             {
