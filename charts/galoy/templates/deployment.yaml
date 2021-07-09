@@ -123,6 +123,8 @@ spec:
 
             - name: REDIS_MASTER_NAME
               value: "mymaster"
+            - name: REDIS_PASSWORD
+              value: {{ $.Values.redis.auth.password }}
             - name: REDIS_0_DNS
               value: "galoy-redis-node-0.galoy-redis-headless"
             - name: REDIS_1_DNS

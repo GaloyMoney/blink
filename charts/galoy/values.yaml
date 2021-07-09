@@ -87,7 +87,7 @@ redis:
     persistence:
       enabled: true
   auth:
-    enabled: false
+    password: password
   sentinel:
     enabled: true
   metrics:

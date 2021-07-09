@@ -9,6 +9,7 @@ if (process.env.LOCAL === "docker-compose") {
     name: process.env.REDIS_MASTER_NAME ?? "mymaster",
     host: process.env.REDIS_0_INTERNAL_IP,
     port: process.env.REDIS_0_PORT,
+    password: process.env.REDIS_PASSWORD
   }
 } else {
   if (process.env.LOCAL === "true") {
@@ -23,6 +24,7 @@ if (process.env.LOCAL === "docker-compose") {
   }
 
   connectionObj = {
+    sentinelPassword: process.env.REDIS_PASSWORD,
     sentinels: [
       {
         host: `${process.env.REDIS_0_DNS}`,
@@ -38,6 +40,7 @@ if (process.env.LOCAL === "docker-compose") {
       },
     ],
     name: process.env.REDIS_MASTER_NAME ?? "mymaster",
+    password: process.env.REDIS_PASSWORD,
     natMap,
   }
 }
