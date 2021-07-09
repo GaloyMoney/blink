@@ -13,8 +13,13 @@ clean-deps:
 
 reset-deps: clean-deps start-deps
 
+test: unit integration
+
+unit:
+	yarn test:unit
+
 integration:
-	. ./.envrc && yarn jest --forceExit --bail --runInBand --verbose $$TEST | yarn pino-pretty -c -l
+	yarn test:integration
 
 reset-integration: reset-deps integration
 
