@@ -34,10 +34,10 @@ import {
   amountOnVout,
   bitcoindDefaultClient,
   btc2sat,
-  sat2btc,
   LoggedError,
   LOOK_BACK,
   myOwnAddressesOnVout,
+  sat2btc,
 } from "./utils"
 
 export const getOnChainTransactions = async ({
