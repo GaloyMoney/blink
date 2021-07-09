@@ -225,6 +225,7 @@ export const OnChainMixin = (superclass) =>
 
           const { chain_balance: onChainBalance } = await getChainBalance({ lnd })
           const onChainBalance2Btc = await bitcoindHotWalletClient.getBalance()
+          // eslint-disable-next-line
           const onChainBalance2 = btc2sat(onChainBalance2Btc)
 
           let estimatedFee, id, amountToSend
@@ -238,6 +239,7 @@ export const OnChainMixin = (superclass) =>
             // TODO! estimatedFee2: {"errors":["Insufficient data or no feerate found"],"blocks":2}
             const confTarget = 1 // same with 1 // 6
             // TODO: estimate_mode
+            // eslint-disable-next-line
             estimatedFee2 = await bitcoindDefaultClient.estimateSmartFee(confTarget)
           } catch (err) {
             const error = `Unable to estimate fee for on-chain transaction`
@@ -323,6 +325,7 @@ export const OnChainMixin = (superclass) =>
 
               // Getting the fee from transaction directly
               const txn = await bitcoindDefaultClient.getTransaction(id2) //, null, true) // verbose true
+              // eslint-disable-next-line
               fee2 = btc2sat(-txn.fee) // fee comes in BTC and negative
             } catch (err) {
               onchainLogger.fatal({ err }, "impossible to get fee for onchain payment")
