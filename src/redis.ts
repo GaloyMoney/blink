@@ -9,7 +9,7 @@ if (process.env.LOCAL === "docker-compose") {
     name: process.env.REDIS_MASTER_NAME ?? "mymaster",
     host: process.env.REDIS_0_INTERNAL_IP,
     port: process.env.REDIS_0_PORT,
-    password: process.env.REDIS_PASSWORD
+    password: process.env.REDIS_PASSWORD,
   }
 } else {
   if (process.env.LOCAL === "true") {
