@@ -56,10 +56,18 @@ Everytime the dependencies are re-started the environment must be reloaded via `
 
 To run the test suite you can run:
 ```
-$ make integration
+$ make test
 (...)
 $ echo $?
 0
+```
+or
+```
+# to run unit tests
+$ make unit
+
+# to run integration test
+$ make integration
 ```
 
 The tests are *not* idempotent (yet) so currently to re-run the tests, run:
