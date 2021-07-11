@@ -28,8 +28,8 @@ const simulateOnly = true
 
 export type IBuyOrSell = "sell" | "buy" | null
 
-// FtxDealer is a user of the wallet, therefore we are inheriting from UserWallet
-// FtxDealer is interacting with Ftx through bitcoin layer 1,
+// Dealer is a user of the wallet, therefore we are inheriting from UserWallet
+// Dealer is interacting with Ftx through bitcoin layer 1,
 // so it is using the OnChain Mixin.
 export class DealerWallet extends OnChainMixin(UserWallet) {
   exchange
