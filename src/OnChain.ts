@@ -207,10 +207,6 @@ export const OnChainMixin = (superclass) =>
 
           // normal onchain payment path
 
-          if (amount < yamlConfig.onchainDustAmount) {
-            throw new DustAmountError(undefined, { logger: onchainLogger })
-          }
-
           onchainLogger = onchainLogger.child({ onUs: false })
 
           if (!this.user.oldEnoughForWithdrawal) {
@@ -224,6 +220,10 @@ export const OnChainMixin = (superclass) =>
           const checksAmount = sendAll
             ? balance.total_in_BTC - this.user.withdrawFee
             : amount
+
+          if (checksAmount < yamlConfig.onchainDustAmount) {
+            throw new DustAmountError(undefined, { logger: onchainLogger })
+          }
 
           if (await this.user.limitHit({ on_us: false, amount: checksAmount })) {
             const error = `Cannot withdraw more than ${
