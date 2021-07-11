@@ -52,11 +52,6 @@ export class GenericExchange {
     return has
   }
 
-  public has2() {
-    const has = this.exchange.has
-    return has
-  }
-
   public name() {
     const name = this.exchange.name
     return name
