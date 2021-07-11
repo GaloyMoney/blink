@@ -48,13 +48,11 @@ export class GenericExchange {
   }
 
   public has() {
-    const has = this.exchange.has
-    return has
+    return this.exchange.has
   }
 
   public name() {
-    const name = this.exchange.name
-    return name
+    return this.exchange.name
   }
 
   async fetchDepositAddress(currency: string) {
@@ -115,7 +113,6 @@ export class GenericExchange {
   }
 
   public async getMethods() {
-    const data = Object.keys(this.exchange)
-    return data
+    return Object.keys(this.exchange)
   }
 }
