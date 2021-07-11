@@ -83,43 +83,6 @@ export class GenericExchange {
     return this.exchange.fetchBalance()
   }
 
-  public async getBtcSpot() {
-    return this.getFilteredInstrument("BTC", "spot")
-  }
-
-  public async getBtcFutures() {
-    return this.getFilteredInstrument("BTC", "future")
-  }
-
-  public async loadMarkets() {
-    return await this.exchange.loadMarkets(true)
-  }
-
-  public async getFilteredInstrument(base: string, type: string) {
-    const markets = await this.exchange.loadMarkets(true)
-    let data = ""
-
-    for (const symbol in markets) {
-      try {
-        if (!symbol.includes("MOVE")) {
-          const market = markets[symbol]
-          if (market["base"] === base || market["quote"] === base)
-            if (market["type"] === type || market["type"] === type + "s") {
-              const ticker = await this.exchange.fetchTicker(symbol)
-              data += `symbol = ${symbol}\n`
-              data += `Market = ${JSON.stringify(market)}\n`
-              data += `Ticker = ${JSON.stringify(ticker)}\n`
-              await sleep(this.exchange.rateLimit)
-            }
-        }
-      } catch (error) {
-        data += `error = ${error}\n`
-      }
-    }
-
-    return data
-  }
-
   public async getNextFundingRate() {
     // type it SupportedExchanges: func
     const getNextFundingRateMapping = {
