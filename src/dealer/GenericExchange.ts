@@ -35,13 +35,13 @@ export class GenericExchange {
   }
 
   public SetSymbol() {
-    // TODO: Should resolve best instrument to used given the exchange and the market conditions.
-    // const optimalSymbol = this.getOptimalSymbol;
-    // this.defaultSymbol = optimalSymbol;
+    // Ultimately the hedging strategy determines the instrument/symbol
+    // for now has we have an implicit and static hedging strategy embedded in the dealer wallet code,
+    // we can define the appropriate symbol statically
 
     const exchangeMapping = {
       ftx: "BTC-PERP",
-      okexv5: "BTC-USD-211231",
+      okexv5: "BTC-USD-SWAP",
     }
 
     this.symbol = exchangeMapping[this.exchangeId]
