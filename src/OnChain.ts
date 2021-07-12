@@ -60,6 +60,74 @@ export const getOnChainTransactions = async ({
   }
 }
 
+///////////
+abstract class PayOnChainClient {
+  client
+
+  static clientPayInstance(): PayOnChainClient {
+    return new LndOnChainClient()
+    // return new BitcoindClient()
+  }
+
+  abstract getBalance(): Promise<number>
+
+  abstract getEstimatedFee(
+    sendTo?: {
+      address: string
+      tokens: number
+    }[],
+  ): Promise<number>
+
+  // return txid
+  abstract sendToAddress(address: string, amount: number): Promise<string>
+
+  abstract getTxnFee(id: string): Promise<number>
+}
+
+class LndOnChainClient extends PayOnChainClient {
+  constructor() {
+    super()
+    this.client = getActiveOnchainLnd().lnd
+  }
+
+  async getBalance(): Promise<number> {
+    const { chain_balance: onChainBalance } = await getChainBalance({ lnd: this.client })
+    return onChainBalance
+  }
+
+  async getEstimatedFee(
+    sendTo: {
+      address: string
+      tokens: number
+    }[],
+  ): Promise<number> {
+    const { fee: estimatedFee } = await getChainFeeEstimate({
+      lnd: this.client,
+      send_to: sendTo,
+    })
+    return estimatedFee
+  }
+
+  async sendToAddress(address: string, amount: number): Promise<string> {
+    const { id } = await sendToChainAddress({ address, lnd: this.client, tokens: amount })
+    return id
+  }
+
+  async getTxnFee(id: string): Promise<number> {
+    const outgoingOnchainTxns = await getOnChainTransactions({
+      lnd: this.client,
+      incoming: false,
+    })
+    // eslint-disable-next-line
+    let fee
+    const [{ fee: fee_ }] = outgoingOnchainTxns.filter((tx) => tx.id === id)
+    // eslint-disable-next-line
+    fee = fee_
+    return fee
+  }
+}
+///////////
+
 export const OnChainMixin = (superclass) =>
   class extends superclass {
     constructor(...args) {
@@ -221,26 +289,17 @@ export const OnChainMixin = (superclass) =>
             throw new TransactionRestrictedError(error, { logger: onchainLogger })
           }
 
-          const { lnd } = getActiveOnchainLnd()
+          // const { lnd } = getActiveOnchainLnd()
+          const clientPayInstance = PayOnChainClient.clientPayInstance() // lnd-onchain or bitcoind
 
-          const { chain_balance: onChainBalance } = await getChainBalance({ lnd })
-          const onChainBalance2Btc = await bitcoindHotWalletClient.getBalance()
-          // eslint-disable-next-line
-          const onChainBalance2 = btc2sat(onChainBalance2Btc)
+          const onChainBalance = await clientPayInstance.getBalance()
 
           let estimatedFee, id, amountToSend
-          let estimatedFee2, id2
 
-          const sendTo = [{ address, tokens: checksAmount }]
+          const sendTo = [{ address, tokens: checksAmount }] // only required with lnd
 
           try {
-            ;({ fee: estimatedFee } = await getChainFeeEstimate({ lnd, send_to: sendTo }))
-
-            // TODO! estimatedFee2: {"errors":["Insufficient data or no feerate found"],"blocks":2}
-            const confTarget = 1 // same with 1 // 6
-            // TODO: estimate_mode
-            // eslint-disable-next-line
-            estimatedFee2 = await bitcoindHotWalletClient.estimateSmartFee(confTarget)
+            estimatedFee = await clientPayInstance.getEstimatedFee(sendTo)
           } catch (err) {
             const error = `Unable to estimate fee for on-chain transaction`
             onchainLogger.error({ err, sendTo, success: false }, error)
@@ -298,14 +357,7 @@ export const OnChainMixin = (superclass) =>
 
           return lockExtendOrThrow({ lock, logger: onchainLogger }, async () => {
             try {
-              ;({ id } = await sendToChainAddress({ address, lnd, tokens: amountToSend }))
-
-              const amountToSendBtc = sat2btc(amountToSend)
-              console.log(`amountToSendBtc: ${amountToSendBtc}`)
-              // TODO? which other args? replaceable? avoid_reuse? ...
-              id2 = await bitcoindHotWalletClient.sendToAddress(address, amountToSendBtc)
-              console.log(`id2: ${id2}`) // non-verbose: 3641dfdb930521afa710f1816f502c61001993104e50d684da78b449cd7a569f
-              // console.log(`JSON.stringify(id2): ${JSON.stringify(id2)}`); // verbose: {"txid":"d86489ecf3ffe48c4cde71da0c3466115df342abcdd7d7e4511b1c8e002a1ef0","fee_reason":"Fallback fee"}
+              id = await clientPayInstance.sendToAddress(address, amountToSend)
             } catch (err) {
               onchainLogger.error(
                 { err, address, tokens: amountToSend, success: false },
@@ -314,19 +366,9 @@ export const OnChainMixin = (superclass) =>
               return false
             }
 
-            let fee, fee2
+            let fee
             try {
-              const outgoingOnchainTxns = await getOnChainTransactions({
-                lnd,
-                incoming: false,
-              })
-              const [{ fee: fee_ }] = outgoingOnchainTxns.filter((tx) => tx.id === id)
-              fee = fee_
-
-              // Getting the fee from transaction directly
-              const txn = await bitcoindHotWalletClient.getTransaction(id2) //, null, true) // verbose true
-              // eslint-disable-next-line
-              fee2 = btc2sat(-txn.fee) // fee comes in BTC and negative
+              fee = await clientPayInstance.getTxnFee(id)
             } catch (err) {
               onchainLogger.fatal({ err }, "impossible to get fee for onchain payment")
               fee = 0
