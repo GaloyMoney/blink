@@ -172,7 +172,7 @@ export const OnChainMixin = (superclass) =>
             if (
               await this.user.limitHit({ on_us: true, amount: amountToSendPayeeUser })
             ) {
-              const error = `Cannot transfer more than ${this.config.limits.onUs} sats in 24 hours`
+              const error = `Cannot transfer more than ${this.config.limits.onUsLimit()} sats in 24 hours`
               throw new TransactionRestrictedError(error, { logger: onchainLoggerOnUs })
             }
 
@@ -210,7 +210,7 @@ export const OnChainMixin = (superclass) =>
           onchainLogger = onchainLogger.child({ onUs: false })
 
           if (!this.user.oldEnoughForWithdrawal) {
-            const error = `New accounts have to wait ${this.config.limits.oldEnoughForWithdrawal}h before withdrawing`
+            const error = `New accounts have to wait ${this.config.limits.oldEnoughForWithdrawalLimit()}h before withdrawing`
             throw new NewAccountWithdrawalError(error, { logger: onchainLogger })
           }
 
@@ -224,7 +224,7 @@ export const OnChainMixin = (superclass) =>
           }
 
           if (await this.user.limitHit({ on_us: false, amount: checksAmount })) {
-            const error = `Cannot withdraw more than ${this.config.limits.withdrawal} sats in 24 hours`
+            const error = `Cannot withdraw more than ${this.config.limits.withdrawalLimit()} sats in 24 hours`
             throw new TransactionRestrictedError(error, { logger: onchainLogger })
           }
 

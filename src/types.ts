@@ -1,4 +1,5 @@
 import { Logger as PinoLogger } from "pino"
+import { TransactionLimits } from "./config"
 import { User } from "./schema"
 
 export type Side = "buy" | "sell"
@@ -22,11 +23,7 @@ export type UserWalletConstructorArgs = WalletConstructorArgs & {
 
 export type UserWalletConfig = {
   dustThreshold: number
-  limits: {
-    onUs: number
-    withdrawal: number
-    oldEnoughForWithdrawal: number
-  }
+  limits: TransactionLimits
   name: string
 }
 

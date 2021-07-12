@@ -30,11 +30,7 @@ export const WalletFactory = async ({
   const userWalletConfig: UserWalletConfig = {
     name: yamlConfig.name,
     dustThreshold: yamlConfig.onChainWallet.dustThreshold,
-    limits: {
-      onUs: transactionLimits.onUsLimit(),
-      withdrawal: transactionLimits.withdrawalLimit(),
-      oldEnoughForWithdrawal: transactionLimits.oldEnoughForWithdrawalLimit(),
-    },
+    limits: transactionLimits,
   }
 
   return new LightningUserWallet({ user, logger, config: userWalletConfig })
