@@ -49,8 +49,10 @@ it("funds bitcoind wallet", async () => {
   let balance
 
   // depend of bitcoind version. needed in < 0.20 but failed in 0.21?
-  const { name } = await bitcoindDefaultClient.createWallet("")
-  expect(name).toBe("")
+  const { name } = await bitcoindDefaultClient.createWallet("default")
+  expect(name).toBe("default")
+  // const { name } = await bitcoindDefaultClient.createWallet("")
+  // expect(name).toBe("")
 
   balance = await bitcoindDefaultClient.getBalance()
 

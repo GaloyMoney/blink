@@ -10,7 +10,8 @@ export const getBalancesDetail = async (): Promise<
 
   for await (const wallet of wallets) {
     // do not use the default wallet for now (expect for testing).
-    if (wallet === "") {
+    if (wallet === "default") {
+    // if (wallet === "") {
       continue
     }
 
