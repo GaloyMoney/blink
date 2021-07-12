@@ -3,7 +3,7 @@ import { yamlConfig } from "../config"
 import { accountDealerFtxPath, liabilitiesDealerFtxPath } from "../ledger/ledger"
 import { MainBook } from "../mongodb"
 import { OnChainMixin } from "../OnChain"
-import { ILightningWalletUser } from "../types"
+import { WalletConstructorArgs } from "../types"
 import { btc2sat, sleep } from "../utils"
 import { baseLogger } from "../logger"
 import { UserWallet } from "../userWallet"
@@ -26,7 +26,7 @@ export type IBuyOrSell = "sell" | "buy" | null
 export class FtxDealerWallet extends OnChainMixin(UserWallet) {
   ftx
 
-  constructor({ user, logger }: ILightningWalletUser) {
+  constructor({ user, logger }: WalletConstructorArgs) {
     super({ user, logger })
     this.ftx = new ccxt.ftx({ apiKey, secret })
     this.logger = logger.child({ topic: "dealer" })

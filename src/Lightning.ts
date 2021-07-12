@@ -11,7 +11,6 @@ import {
 } from "lightning"
 import lnService from "ln-service"
 import moment from "moment"
-import { yamlConfig } from "./config"
 import {
   DbError,
   InsufficientBalanceError,
@@ -35,7 +34,12 @@ import { MainBook } from "./mongodb"
 import { transactionNotification } from "./notifications/payment"
 import { redis } from "./redis"
 import { InvoiceUser, Transaction, User } from "./schema"
-import { IAddInvoiceRequest, IFeeRequest, IPaymentRequest } from "./types"
+import {
+  IAddInvoiceRequest,
+  IFeeRequest,
+  IPaymentRequest,
+  UserWalletConfig,
+} from "./types"
 import { UserWallet } from "./userWallet"
 import { addContact, isInvoiceAlreadyPaidError, LoggedError, timeout } from "./utils"
 
@@ -59,8 +63,11 @@ export const delay = (currency) => {
 
 export const LightningMixin = (superclass) =>
   class extends superclass {
+    readonly config: UserWalletConfig
+
     constructor(...args) {
       super(...args)
+      this.config = args[0].config
     }
 
     async updatePending(lock) {
@@ -306,9 +313,7 @@ export const LightningMixin = (superclass) =>
             const lightningLoggerOnUs = lightningLogger.child({ onUs: true, fee: 0 })
 
             if (await this.user.limitHit({ on_us: true, amount: tokens })) {
-              const error = `Cannot transfer more than ${
-                yamlConfig.limits.onUs.level[this.user.level]
-              } sats in 24 hours`
+              const error = `Cannot transfer more than ${this.config.limits.onUsLimit()} sats in 24 hours`
               throw new TransactionRestrictedError(error, { logger: lightningLoggerOnUs })
             }
 
@@ -322,7 +327,7 @@ export const LightningMixin = (superclass) =>
 
               const payeeInvoice = await InvoiceUser.findOne({ _id: id })
               if (!payeeInvoice) {
-                const error = `User tried to pay invoice from ${yamlConfig.name}, but it does not exist`
+                const error = `User tried to pay invoice from ${this.config.name}, but it does not exist`
                 throw new LightningPaymentError(error, {
                   logger: lightningLoggerOnUs,
                   success: false,
@@ -433,16 +438,12 @@ export const LightningMixin = (superclass) =>
 
           // "normal" transaction: paying another lightning node
           if (!this.user.oldEnoughForWithdrawal) {
-            const error = `New accounts have to wait ${
-              yamlConfig.limits.oldEnoughForWithdrawal / (60 * 60 * 1000)
-            }h before withdrawing`
+            const error = `New accounts have to wait ${this.config.limits.oldEnoughForWithdrawalLimit()}h before withdrawing`
             throw new NewAccountWithdrawalError(error, { logger: lightningLogger })
           }
 
           if (await this.user.limitHit({ on_us: false, amount: tokens })) {
-            const error = `Cannot transfer more than ${
-              yamlConfig.limits.withdrawal.level[this.user.level]
-            } sats in 24 hours`
+            const error = `Cannot transfer more than ${this.config.limits.withdrawalLimit()} sats in 24 hours`
             throw new TransactionRestrictedError(error, { logger: lightningLogger })
           }
 

@@ -11,7 +11,6 @@ import {
 } from "lightning"
 import _ from "lodash"
 import moment from "moment"
-import { yamlConfig } from "./config"
 import {
   DbError,
   DustAmountError,
@@ -29,7 +28,7 @@ import { lockExtendOrThrow, redlock } from "./lock"
 import { baseLogger } from "./logger"
 import { MainBook } from "./mongodb"
 import { Transaction, User } from "./schema"
-import { IOnChainPayment, ISuccess, ITransaction } from "./types"
+import { IOnChainPayment, ISuccess, ITransaction, UserWalletConfig } from "./types"
 import { UserWallet } from "./userWallet"
 import {
   amountOnVout,
@@ -62,8 +61,11 @@ export const getOnChainTransactions = async ({
 
 export const OnChainMixin = (superclass) =>
   class extends superclass {
+    readonly config: UserWalletConfig
+
     constructor(...args) {
       super(...args)
+      this.config = args[0].config
     }
 
     async updatePending(lock): Promise<void> {
@@ -87,7 +89,7 @@ export const OnChainMixin = (superclass) =>
       if (payeeUser) {
         fee = 0
       } else {
-        if (amount && amount < yamlConfig.onchainDustAmount) {
+        if (amount && amount < this.config.dustThreshold) {
           throw new DustAmountError(undefined, { logger: this.logger })
         }
 
@@ -131,14 +133,14 @@ export const OnChainMixin = (superclass) =>
           throw new ValidationError(error, { logger: onchainLogger })
         }
 
-        if (amount < yamlConfig.onchainDustAmount) {
+        if (amount < this.config.dustThreshold) {
           throw new DustAmountError(undefined, { logger: onchainLogger })
         }
       }
       // when sendAll the amount should be 0
       else {
         assert(amount === 0)
-        /// TODO: unable to check balance.total_in_BTC vs yamlConfig.onchainDustAmount at this point...
+        /// TODO: unable to check balance.total_in_BTC vs this.dustThreshold at this point...
       }
 
       return await redlock(
@@ -170,9 +172,7 @@ export const OnChainMixin = (superclass) =>
             if (
               await this.user.limitHit({ on_us: true, amount: amountToSendPayeeUser })
             ) {
-              const error = `Cannot transfer more than ${
-                yamlConfig.limits.onUs.level[this.user.level]
-              } sats in 24 hours`
+              const error = `Cannot transfer more than ${this.config.limits.onUsLimit()} sats in 24 hours`
               throw new TransactionRestrictedError(error, { logger: onchainLoggerOnUs })
             }
 
@@ -210,9 +210,7 @@ export const OnChainMixin = (superclass) =>
           onchainLogger = onchainLogger.child({ onUs: false })
 
           if (!this.user.oldEnoughForWithdrawal) {
-            const error = `New accounts have to wait ${
-              yamlConfig.limits.oldEnoughForWithdrawal / (60 * 60 * 1000)
-            }h before withdrawing`
+            const error = `New accounts have to wait ${this.config.limits.oldEnoughForWithdrawalLimit()}h before withdrawing`
             throw new NewAccountWithdrawalError(error, { logger: onchainLogger })
           }
 
@@ -221,14 +219,12 @@ export const OnChainMixin = (superclass) =>
             ? balance.total_in_BTC - this.user.withdrawFee
             : amount
 
-          if (checksAmount < yamlConfig.onchainDustAmount) {
+          if (checksAmount < this.config.dustThreshold) {
             throw new DustAmountError(undefined, { logger: onchainLogger })
           }
 
           if (await this.user.limitHit({ on_us: false, amount: checksAmount })) {
-            const error = `Cannot withdraw more than ${
-              yamlConfig.limits.withdrawal.level[this.user.level]
-            } sats in 24 hours`
+            const error = `Cannot withdraw more than ${this.config.limits.withdrawalLimit()} sats in 24 hours`
             throw new TransactionRestrictedError(error, { logger: onchainLogger })
           }
 

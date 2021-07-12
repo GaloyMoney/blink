@@ -3,7 +3,7 @@ import { LightningMixin } from "./Lightning"
 import { redlock } from "./lock"
 import { OnChainMixin } from "./OnChain"
 import { User } from "./schema"
-import { ILightningWalletUser, OnboardingEarn } from "./types"
+import { WalletConstructorArgs, OnboardingEarn, UserWalletConstructorArgs } from "./types"
 import { UserWallet } from "./userWallet"
 import { getFunderWallet } from "./walletFactory"
 
@@ -11,7 +11,7 @@ import { getFunderWallet } from "./walletFactory"
  * this represents a user wallet
  */
 export class LightningUserWallet extends OnChainMixin(LightningMixin(UserWallet)) {
-  constructor(args: ILightningWalletUser) {
+  constructor(args: UserWalletConstructorArgs) {
     super({ ...args })
   }
 

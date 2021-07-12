@@ -1,4 +1,5 @@
 import { Logger as PinoLogger } from "pino"
+import { TransactionLimits } from "./config"
 import { User } from "./schema"
 
 export type Side = "buy" | "sell"
@@ -10,10 +11,20 @@ export type Logger = PinoLogger
 
 export type Primitive = string | boolean | number
 
-export interface ILightningWalletUser {
+export type WalletConstructorArgs = {
   // FIXME: Add a type for user here.
   user: unknown
   logger: Logger
+}
+
+export type UserWalletConstructorArgs = WalletConstructorArgs & {
+  config: UserWalletConfig
+}
+
+export type UserWalletConfig = {
+  dustThreshold: number
+  limits: TransactionLimits
+  name: string
 }
 
 // Lightning

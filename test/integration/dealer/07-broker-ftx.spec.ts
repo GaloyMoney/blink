@@ -8,6 +8,7 @@ import { UserWallet } from "src/userWallet"
 import mongoose from "mongoose"
 import { User } from "src/schema"
 import { getTokenFromPhoneIndex } from "../helper"
+import { yamlConfig as config } from "src/config"
 
 jest.mock("src/realtimePrice", () => require("../../mocks/realtimePrice"))
 
@@ -225,8 +226,14 @@ beforeAll(async () => {
 
   await getTokenFromPhoneIndex(7)
 
-  dealerWalletFixture0 = new FtxDealerWallet({ user: new User(), logger: baseLogger })
-  dealerWalletFixture1 = new FtxDealerWallet({ user: new User(), logger: baseLogger })
+  dealerWalletFixture0 = new FtxDealerWallet({
+    user: new User(),
+    logger: baseLogger,
+  })
+  dealerWalletFixture1 = new FtxDealerWallet({
+    user: new User(),
+    logger: baseLogger,
+  })
 })
 
 afterAll(async () => {
