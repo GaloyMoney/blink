@@ -4,7 +4,7 @@
 import { createChainAddress } from "lightning"
 import mongoose from "mongoose"
 import { setupMongoConnection } from "src/mongodb"
-import { bitcoindDefaultClient } from "src/utils"
+import { bitcoindDefaultClient, bitcoindHotClient } from "src/utils"
 import {
   checkIsBalanced,
   lnd1,
@@ -60,6 +60,21 @@ it("funds bitcoind wallet", async () => {
   await bitcoindDefaultClient.generateToAddress(numOfBlock, bitcoindAddress)
   await bitcoindDefaultClient.generateToAddress(100, RANDOM_ADDRESS)
   balance = await bitcoindDefaultClient.getBalance()
+  expect(balance).toBe(initialBitcoinWalletBalance + blockReward * numOfBlock)
+})
+
+it("funds hot bitcoind wallet", async () => {
+  let balance
+
+  const { name } = await bitcoindHotClient.createWallet("hot")
+  expect(name).toBe("hot")
+
+  balance = await bitcoindHotClient.getBalance()
+
+  const bitcoindAddress = await bitcoindHotClient.getNewAddress()
+  await bitcoindHotClient.generateToAddress(numOfBlock, bitcoindAddress)
+  await bitcoindHotClient.generateToAddress(100, RANDOM_ADDRESS)
+  balance = await bitcoindHotClient.getBalance()
   expect(balance).toBe(initialBitcoinWalletBalance + blockReward * numOfBlock)
 })
 
