@@ -48,13 +48,9 @@ afterAll(async () => {
 it("funds bitcoind wallet", async () => {
   let balance
 
-  try {
-    // depend of bitcoind version. needed in < 0.20 but failed in 0.21?
-    const { name } = await bitcoindDefaultClient.createWallet("")
-    expect(name).toBe("")
-  } catch (err) {
-    console.log({ err })
-  }
+  // depend of bitcoind version. needed in < 0.20 but failed in 0.21?
+  const { name } = await bitcoindDefaultClient.createWallet("")
+  expect(name).toBe("")
 
   balance = await bitcoindDefaultClient.getBalance()
 
