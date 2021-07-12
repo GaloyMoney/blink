@@ -78,7 +78,7 @@ export class SpecterWallet {
     if (!this.bitcoindClient) {
       const wallet = await this.setBitcoindClient()
       if (wallet === "default") {
-      // if (wallet === "") {
+        // if (wallet === "") {
         return 0
       }
     }
@@ -92,7 +92,7 @@ export class SpecterWallet {
     if (!this.bitcoindClient) {
       const wallet = await this.setBitcoindClient()
       if (wallet === "default") {
-      // if (wallet === "") {
+        // if (wallet === "") {
         return
       }
     }
@@ -172,7 +172,7 @@ export class SpecterWallet {
     if (!this.bitcoindClient) {
       const wallet = await this.setBitcoindClient()
       if (wallet === "default") {
-      // if (wallet === "") {
+        // if (wallet === "") {
         this.logger.warn("no wallet has been setup")
         return
       }
@@ -225,7 +225,7 @@ export class SpecterWallet {
     if (!this.bitcoindClient) {
       const wallet = await this.setBitcoindClient()
       if (wallet === "default") {
-      // if (wallet === "") {
+        // if (wallet === "") {
         return
       }
     }
