@@ -229,12 +229,10 @@ beforeAll(async () => {
   dealerWalletFixture0 = new FtxDealerWallet({
     user: new User(),
     logger: baseLogger,
-    config,
   })
   dealerWalletFixture1 = new FtxDealerWallet({
     user: new User(),
     logger: baseLogger,
-    config,
   })
 })
 

@@ -14,11 +14,20 @@ export type WalletConstructorArgs = {
   // FIXME: Add a type for user here.
   user: unknown
   logger: Logger
-  config: Config
 }
 
-export type Config = {
-  onchainDustAmount: number
+export type UserWalletConstructorArgs = WalletConstructorArgs & {
+  config: UserWalletConfig
+}
+
+export type UserWalletConfig = {
+  dustThreshold: number
+  limits: {
+    onUs: number
+    withdrawal: number
+    oldEnoughForWithdrawal: number
+  }
+  name: string
 }
 
 // Lightning

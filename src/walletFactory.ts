@@ -1,10 +1,10 @@
-import { yamlConfig as config } from "./config"
+import { TransactionLimits, yamlConfig } from "./config"
 import { FtxDealerWallet } from "./dealer/FtxDealerWallet"
 import { NotFoundError } from "./error"
 import { LightningUserWallet } from "./LightningUserWallet"
 import { getCurrentPrice } from "./realtimePrice"
 import { User } from "./schema"
-import { Logger } from "./types"
+import { Logger, UserWalletConfig } from "./types"
 import { UserWallet } from "./userWallet"
 
 export const WalletFactory = async ({
@@ -19,10 +19,25 @@ export const WalletFactory = async ({
   UserWallet.setCurrentPrice(lastPrice)
 
   if (user?.role === "dealer") {
-    return new FtxDealerWallet({ user, logger, config })
+    return new FtxDealerWallet({ user, logger })
   }
 
-  return new LightningUserWallet({ user, logger, config })
+  const transactionLimits = new TransactionLimits({
+    config: yamlConfig.limits,
+    level: user.level,
+  })
+
+  const userWalletConfig: UserWalletConfig = {
+    name: yamlConfig.name,
+    dustThreshold: yamlConfig.onChainWallet.dustThreshold,
+    limits: {
+      onUs: transactionLimits.onUsLimit(),
+      withdrawal: transactionLimits.withdrawalLimit(),
+      oldEnoughForWithdrawal: transactionLimits.oldEnoughForWithdrawalLimit(),
+    },
+  }
+
+  return new LightningUserWallet({ user, logger, config: userWalletConfig })
 }
 
 export const WalletFromUsername = async ({
@@ -42,7 +57,7 @@ export const WalletFromUsername = async ({
 }
 
 export const getFunderWallet = async ({ logger }) => {
-  const funder = await User.findOne({ username: config.funder })
+  const funder = await User.findOne({ username: yamlConfig.funder })
   return WalletFactory({ user: funder, logger })
 }
 

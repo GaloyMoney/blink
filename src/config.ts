@@ -6,6 +6,8 @@ import { baseLogger } from "./logger"
 const defaultContent = fs.readFileSync("./default.yaml", "utf8")
 export const defaultConfig = yaml.load(defaultContent)
 
+const MS_IN_HOUR = 60 * 60 * 1000
+
 let customContent, customConfig
 
 try {
@@ -18,3 +20,19 @@ try {
 }
 
 export const yamlConfig = _.merge(defaultConfig, customConfig)
+
+export class TransactionLimits {
+  config
+  level
+
+  constructor({ config, level }) {
+    this.config = config
+    this.level = level
+  }
+
+  onUsLimit = () => this.config.onUs.level[this.level]
+
+  withdrawalLimit = () => this.config.withdrawal.level[this.level]
+
+  oldEnoughForWithdrawalLimit = () => this.config.oldEnoughForWithdrawal / MS_IN_HOUR
+}
