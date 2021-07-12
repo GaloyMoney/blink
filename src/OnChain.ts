@@ -65,8 +65,8 @@ abstract class PayOnChainClient {
   client
 
   static clientPayInstance(): PayOnChainClient {
-    // return new LndOnChainClient()
-    return new BitcoindClient()
+    return new LndOnChainClient()
+    // return new BitcoindClient()
   }
 
   abstract getBalance(): Promise<number>
