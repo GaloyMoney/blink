@@ -17,6 +17,7 @@ import {
   DustAmountError,
   InsufficientBalanceError,
   NewAccountWithdrawalError,
+  OnChainFeeEstimationError,
   RebalanceNeededError,
   SelfPaymentError,
   TransactionRestrictedError,
@@ -86,12 +87,22 @@ export const OnChainMixin = (superclass) =>
       if (payeeUser) {
         fee = 0
       } else {
+        if (amount && amount < yamlConfig.onchainDustAmount) {
+          throw new DustAmountError(undefined, { logger: this.logger })
+        }
+
         // FIXME there is a transition if a node get offline for which the fee could be wrong
         // if send by a new node in the meantime. (low probability and low side effect)
         const { lnd } = getActiveOnchainLnd()
 
         const sendTo = [{ address, tokens: amount ?? defaultAmount }]
-        ;({ fee } = await getChainFeeEstimate({ lnd, send_to: sendTo }))
+        try {
+          ;({ fee } = await getChainFeeEstimate({ lnd, send_to: sendTo }))
+        } catch (err) {
+          throw new OnChainFeeEstimationError(undefined, {
+            logger: this.logger,
+          })
+        }
         fee += this.user.withdrawFee
       }
 
@@ -209,6 +220,10 @@ export const OnChainMixin = (superclass) =>
           const checksAmount = sendAll
             ? balance.total_in_BTC - this.user.withdrawFee
             : amount
+
+          if (checksAmount < yamlConfig.onchainDustAmount) {
+            throw new DustAmountError(undefined, { logger: onchainLogger })
+          }
 
           if (await this.user.limitHit({ on_us: false, amount: checksAmount })) {
             const error = `Cannot withdraw more than ${
