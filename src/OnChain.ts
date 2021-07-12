@@ -65,8 +65,8 @@ abstract class PayOnChainClient {
   client
 
   static clientPayInstance(): PayOnChainClient {
-    return new LndOnChainClient()
-    // return new BitcoindClient()
+    // return new LndOnChainClient()
+    return new BitcoindClient()
   }
 
   abstract getBalance(): Promise<number>
@@ -126,6 +126,43 @@ class LndOnChainClient extends PayOnChainClient {
     return fee
   }
 }
+
+// eslint-disable-next-line
+class BitcoindClient extends PayOnChainClient {
+  constructor() {
+    super()
+    // TODO bitcoindHotWalletClient
+    this.client = bitcoindDefaultClient
+  }
+
+  async getBalance(): Promise<number> {
+    const onChainBalance2Btc = await this.client.getBalance()
+    const onChainBalance2 = btc2sat(onChainBalance2Btc)
+    return onChainBalance2
+  }
+
+  // TODO! FIX
+  // eslint-disable-next-line
+  async getEstimatedFee(sendTo?: any): Promise<number> {
+    return Promise.resolve(1000)
+    // // TODO! estimatedFee2: {"errors":["Insufficient data or no feerate found"],"blocks":2}
+    // const confTarget = 1 // same with 1 // 6
+    // // TODO: estimate_mode
+    // const estimatedFee2 = await this.client.estimateSmartFee(confTarget)
+    // return estimatedFee2
+  }
+
+  async sendToAddress(address: string, amount: number): Promise<string> {
+    const id2 = await this.client.sendToAddress(address, sat2btc(amount))
+    return id2
+  }
+
+  async getTxnFee(id: string): Promise<number> {
+    const txn = await this.client.getTransaction(id) //, null, true) // verbose true
+    const fee2 = btc2sat(-txn.fee) // fee comes in BTC and negative
+    return fee2
+  }
+}
 ///////////
 
 export const OnChainMixin = (superclass) =>
@@ -182,9 +219,6 @@ export const OnChainMixin = (superclass) =>
         memo,
         sendAll,
       })
-
-      // TODO
-      const bitcoindHotWalletClient = bitcoindDefaultClient
 
       if (!sendAll) {
         if (amount <= 0) {

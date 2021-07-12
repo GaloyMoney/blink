@@ -62,6 +62,7 @@ afterAll(async () => {
 
 const amount = 10040 // sats
 
+// Starts to fail from here...
 it("SendsOnchainPaymentSuccessfully", async () => {
   const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
 
