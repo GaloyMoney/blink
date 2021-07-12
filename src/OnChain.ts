@@ -431,6 +431,7 @@ export const OnChainMixin = (superclass) =>
 
               // TODO/FIXME refactor. add the transaction first and set the fees in a second tx.
               await MainBook.entry(memo)
+                // TODO: this is no longer from Lightning
                 .credit(lndAccountingPath, sats - this.user.withdrawFee, metadata)
                 .credit(onchainRevenuePath, this.user.withdrawFee, metadata)
                 .debit(this.user.accountPath, sats, metadata)
