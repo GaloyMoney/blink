@@ -31,7 +31,7 @@
     "test-local-restart": "./deletePods.sh && source ./exportLocal.sh && yarn run test-local",
     "test-local-clean": "yarn run restart-charts && yarn jest --clearCache && yarn run test-local",
     "test:unit": "jest --config ./test/jest-unit.config.js --bail --verbose | yarn pino-pretty -c -l",
-    "test:integration": ". ./.envrc && jest --config ./test/jest-integration.config.js --forceExit --bail --runInBand --verbose | yarn pino-pretty -c -l"
+    "test:integration": ". ./.envrc && jest --config ./test/jest-integration.config.js --forceExit --bail --runInBand --verbose $TEST | yarn pino-pretty -c -l"
   },
   "engines": {
     "node": "14"

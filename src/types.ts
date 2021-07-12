@@ -10,10 +10,15 @@ export type Logger = PinoLogger
 
 export type Primitive = string | boolean | number
 
-export interface ILightningWalletUser {
+export type WalletConstructorArgs = {
   // FIXME: Add a type for user here.
   user: unknown
   logger: Logger
+  config: Config
+}
+
+export type Config = {
+  onchainDustAmount: number
 }
 
 // Lightning
