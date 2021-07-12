@@ -414,7 +414,7 @@ export const validate = async ({
   const keySendPreimageType = "5482373484"
   const preimageByteLength = 32
 
-  let pushPayment = false
+  let isPushPayment = false
   let tokens
   let expires_at
   let features
@@ -468,7 +468,7 @@ export const validate = async ({
       throw new ValidationError(error)
     }
 
-    pushPayment = true
+    isPushPayment = true
     destination = params.destination
     username = params.username
 
@@ -505,7 +505,7 @@ export const validate = async ({
     tokens,
     mtokens: String(tokens * 1000),
     destination,
-    pushPayment,
+    isPushPayment,
     id,
     routeHint,
     messages,
