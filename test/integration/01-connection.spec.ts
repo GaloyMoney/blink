@@ -1,31 +1,29 @@
-/**
- * @jest-environment node
- */
-//TODO: Choose between camel case or underscores for variable naming
-import { getWalletInfo } from "lightning"
-import mongoose from "mongoose"
 import { setupMongoConnection } from "src/mongodb"
 import { redis } from "src/redis"
 import { User } from "src/schema"
-import { bitcoindDefaultClient } from "src/utils"
-import { lnd1, lnd2, lndOutside1, lndOutside2 } from "./helper"
+import {
+  lnd1,
+  lnd2,
+  lndOutside1,
+  lndOutside2,
+  getWalletInfo,
+  bitcoindClient,
+} from "test/helpers"
 
-jest.mock("src/realtimePrice", () => require("../mocks/realtimePrice"))
-
-it("I can connect to bitcoind", async () => {
-  const { chain } = await bitcoindDefaultClient.getBlockchainInfo()
+it("should connect to bitcoind", async () => {
+  const { chain } = await bitcoindClient.getBlockchainInfo()
   expect(chain).toEqual("regtest")
 })
 
 const lnds = [lnd1, lnd2]
 for (const item in lnds) {
-  it(`I can connect to lnd index ${item}`, async () => {
+  it(`should connect to lnd${+item + 1}`, async () => {
     const { public_key } = await getWalletInfo({ lnd: lnds[item] })
     expect(public_key.length).toBe(64 + 2)
   })
 }
 
-it("I can connect to outside lnds", async () => {
+it("should connect to outside lnds", async () => {
   const lnds = [lndOutside1, lndOutside2]
   for (const lnd of lnds) {
     const { public_key } = await getWalletInfo({ lnd })
@@ -33,24 +31,28 @@ it("I can connect to outside lnds", async () => {
   }
 })
 
-it("I can connect to mongodb", async () => {
-  await setupMongoConnection()
+it("should connect to mongodb", async () => {
+  const mongoose = await setupMongoConnection()
   expect(mongoose.connection.readyState).toBe(1)
+
+  const db = mongoose.connection.db;
+  // Get all collections
+  const collections = await db.listCollections().toArray();
+  // Create an array of collection names and drop each collection
+  collections
+  .map((collection) => collection.name)
+  .forEach(async (collectionName) => {
+    db.dropCollection(collectionName);
+  });
+
   const users = await User.find()
-  expect(users).toEqual(expect.arrayContaining([]))
+  expect(users).toBeInstanceOf(Array)
   await mongoose.connection.close()
 })
 
-it("I can connect to redis", async () => {
+it("should connect to redis", async () => {
   const value = "value"
-
-  redis.on("error", function (error) {
-    console.log({ error })
-    // expect(true).toBeFalsy()
-  })
-
   await redis.set("key", value)
   const result = await redis.get("key")
-
   expect(result).toBe(value)
 })

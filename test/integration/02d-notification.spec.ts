@@ -1,7 +1,3 @@
-/**
- * @jest-environment node
- */
-
 import { getCurrentPrice } from "src/realtimePrice"
 import { sendBalanceToUsers } from "src/entrypoint/dailyBalanceNotification"
 import { customerPath } from "src/ledger/ledger"
@@ -9,12 +5,12 @@ import { MainBook, setupMongoConnection } from "src/mongodb"
 import { Transaction, User } from "src/schema"
 import { baseLogger } from "src/logger"
 import { getFunderWallet } from "src/walletFactory"
-import { getUserWallet } from "./helper"
+import { getUserWallet } from "test/helpers"
 jest.mock("src/notifications/notification")
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { sendNotification } = require("src/notifications/notification")
 
-jest.mock("src/realtimePrice", () => require("../mocks/realtimePrice"))
+jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
 
 let price
 

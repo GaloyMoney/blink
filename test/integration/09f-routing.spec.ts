@@ -2,7 +2,7 @@ import { createInvoice, pay } from "lightning"
 import { revenueFeePath } from "src/ledger/ledger"
 import { updateRoutingFees } from "src/lndUtils"
 import { MainBook, setupMongoConnection } from "src/mongodb"
-import { lndOutside1, lndOutside2 } from "./helper"
+import { lndOutside1, lndOutside2 } from "test/helpers"
 
 beforeAll(async () => {
   await setupMongoConnection()

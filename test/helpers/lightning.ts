@@ -1,5 +1,4 @@
 import { once } from "events"
-import * as jwt from "jsonwebtoken"
 import {
   AuthenticatedLnd,
   authenticatedLndGrpc,
@@ -7,18 +6,15 @@ import {
   openChannel,
   subscribeToChannels,
 } from "lightning"
-import { yamlConfig } from "src/config"
-import { FtxDealerWallet } from "src/dealer/FtxDealerWallet"
-import {
-  balanceSheetIsBalanced,
-  updateUsersPendingPayment,
-} from "src/ledger/balanceSheet"
+
 import { offchainLnds, onchainLnds, onChannelUpdated, updateEscrows } from "src/lndUtils"
 import { baseLogger } from "src/logger"
-import { User } from "src/schema"
-import { login } from "src/text"
-import { bitcoindDefaultClient, sleep } from "src/utils"
-import { WalletFactory } from "src/walletFactory"
+import { bitcoindClient, RANDOM_ADDRESS } from "./bitcoinCore"
+import { sleep } from "src/utils"
+
+const newBlock = 6
+
+export * from "lightning"
 
 export const lnd1 = offchainLnds[0].lnd
 export const lnd2 = offchainLnds[1].lnd
@@ -37,54 +33,8 @@ export const lndOutside2 = authenticatedLndGrpc({
   socket: `${process.env.LNDOUTSIDE2ADDR}:${process.env.LNDOUTSIDE2RPCPORT ?? 10009}`,
 }).lnd
 
-export const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
-
-export const getTokenFromPhoneIndex = async (index) => {
-  const entry = yamlConfig.test_accounts[index]
-  const raw_token = await login({ ...entry, logger: baseLogger, ip: "127.0.0.1" })
-  const token = jwt.verify(raw_token, process.env.JWT_SECRET)
-
-  const { uid } = token
-
-  if (entry.username) {
-    await User.findOneAndUpdate({ _id: uid }, { username: entry.username })
-  }
-
-  if (entry.currencies) {
-    await User.findOneAndUpdate({ _id: uid }, { currencies: entry.currencies })
-  }
-
-  if (entry.role) {
-    await User.findOneAndUpdate({ _id: uid }, { role: entry.role })
-  }
-
-  if (entry.title) {
-    await User.findOneAndUpdate({ _id: uid }, { title: entry.title })
-  }
-
-  return token
-}
-
-export const getUserWallet = async (userNumber) => {
-  const token = await getTokenFromPhoneIndex(userNumber)
-  const user = await User.findOne({ _id: token.uid })
-  const userWallet = await WalletFactory({ user, logger: baseLogger })
-  return userWallet
-}
-
-export const checkIsBalanced = async () => {
-  await updateUsersPendingPayment()
-  const { assetsLiabilitiesDifference, bookingVersusRealWorldAssets } =
-    await balanceSheetIsBalanced()
-  expect(assetsLiabilitiesDifference).toBeFalsy() // should be 0
-
-  // FIXME: because safe_fees is doing rounding to the value up
-  // balance doesn't match any longer. need to go from sats to msats to properly account for every msats spent
-  expect(Math.abs(bookingVersusRealWorldAssets)).toBeLessThan(5) // should be 0
-}
-
 export async function waitUntilBlockHeight({ lnd, blockHeight }) {
-  let current_block_height, is_synced_to_chain
+  let current_block_height: number, is_synced_to_chain: boolean
   ;({ current_block_height, is_synced_to_chain } = await getWalletInfo({ lnd }))
 
   let time = 0
@@ -92,7 +42,7 @@ export async function waitUntilBlockHeight({ lnd, blockHeight }) {
   while (current_block_height < blockHeight || !is_synced_to_chain) {
     await sleep(ms)
     ;({ current_block_height, is_synced_to_chain } = await getWalletInfo({ lnd }))
-    // logger.debug({ current_block_height, is_synced_to_chain})
+    // baseLogger.debug({ current_block_height, is_synced_to_chain})
     time++
   }
 
@@ -102,22 +52,9 @@ export async function waitUntilBlockHeight({ lnd, blockHeight }) {
   )
 }
 
-export const mockGetExchangeBalance = () =>
-  jest.spyOn(FtxDealerWallet.prototype, "getExchangeBalance").mockImplementation(
-    () =>
-      new Promise((resolve) => {
-        resolve({ sats: 0, usdPnl: 0 })
-      }),
-  )
-
-export const openChannelTesting = async ({
-  lnd,
-  other_lnd,
-  socket,
-  is_private = false,
-}) => {
+export async function openChannelTesting({ lnd, other_lnd, socket, is_private = false }) {
   const local_tokens = 1000000
-  const initBlockCount = await bitcoindDefaultClient.getBlockCount()
+  const initBlockCount = await bitcoindClient.getBlockCount()
 
   await waitUntilBlockHeight({ lnd, blockHeight: initBlockCount })
   await waitUntilBlockHeight({ lnd: other_lnd, blockHeight: initBlockCount })
@@ -162,16 +99,15 @@ export const openChannelTesting = async ({
   await updateEscrows()
   sub.removeAllListeners()
 }
-const newBlock = 6
 
-export const mineBlockAndSync = async ({
+export async function mineBlockAndSync({
   lnds,
   blockHeight,
 }: {
   lnds: Array<AuthenticatedLnd>
   blockHeight: number
-}) => {
-  await bitcoindDefaultClient.generateToAddress(newBlock, RANDOM_ADDRESS)
+}) {
+  await bitcoindClient.generateToAddress(newBlock, RANDOM_ADDRESS)
   const promiseArray: Array<Promise<void>> = []
   for (const lnd of lnds) {
     promiseArray.push(waitUntilBlockHeight({ lnd, blockHeight }))

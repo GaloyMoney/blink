@@ -10,14 +10,14 @@ import { MainBook, setupMongoConnection } from "src/mongodb"
 import { SpecterWallet } from "src/SpecterWallet"
 import { UserWallet } from "src/userWallet"
 import { bitcoindDefaultClient, sleep } from "src/utils"
-import { checkIsBalanced, mockGetExchangeBalance, RANDOM_ADDRESS } from "./helper"
+import { checkIsBalanced, mockGetExchangeBalance, RANDOM_ADDRESS } from "test/helpers"
 
 let specterWallet
 
 const { lnd } = getActiveOnchainLnd()
 
 jest.mock("src/notifications/notification")
-jest.mock("src/realtimePrice", () => require("../mocks/realtimePrice"))
+jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
 
 beforeAll(async () => {
   await bitcoindDefaultClient.generateToAddress(3, RANDOM_ADDRESS)

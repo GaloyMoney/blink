@@ -2,9 +2,9 @@
  * @jest-environment node
  */
 import { setupMongoConnection } from "src/mongodb"
-import { getUserWallet } from "./helper"
+import { getUserWallet } from "test/helpers"
 import mongoose from "mongoose"
-jest.mock("src/realtimePrice", () => require("../mocks/realtimePrice"))
+jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
 
 let userWallet
 

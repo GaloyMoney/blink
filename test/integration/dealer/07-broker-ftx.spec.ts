@@ -7,10 +7,10 @@ import { baseLogger } from "src/logger"
 import { UserWallet } from "src/userWallet"
 import mongoose from "mongoose"
 import { User } from "src/schema"
-import { getTokenFromPhoneIndex } from "../helper"
 import { yamlConfig as config } from "src/config"
+import { getTokenFromPhoneIndex } from "test/helpers"
 
-jest.mock("src/realtimePrice", () => require("../../mocks/realtimePrice"))
+jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
 
 const fixtures = [
   {

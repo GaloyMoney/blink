@@ -2,7 +2,7 @@
  * @jest-environment node
  */
 import { setupMongoConnection } from "src/mongodb"
-import { checkIsBalanced, getUserWallet, mockGetExchangeBalance } from "./helper"
+import { checkIsBalanced, getUserWallet, mockGetExchangeBalance } from "test/helpers"
 import { OnboardingEarn } from "src/types"
 import { find } from "lodash"
 
@@ -17,7 +17,7 @@ import mongoose from "mongoose"
 let userWallet1
 
 jest.mock("src/notifications/notification")
-jest.mock("src/realtimePrice", () => require("../mocks/realtimePrice"))
+jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
 
 beforeAll(async () => {
   await setupMongoConnection()
