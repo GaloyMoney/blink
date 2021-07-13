@@ -772,13 +772,13 @@ export const LightningMixin = (superclass) =>
       lock
       pubkey?: string
     }): Promise<boolean> {
-      let invoice, pubkey_
+      let invoice, pubkeyInvoiceUser
 
       // if a pubkey has been provided, it means the invoice has not been set as paid in mongodb
       // so not need for a round back trip to mongodb
       if (!pubkey) {
         let paid
-        ;({ pubkey: pubkey_, paid } = await InvoiceUser.findOne({ _id: hash }))
+        ;({ pubkey: pubkeyInvoiceUser, paid } = await InvoiceUser.findOne({ _id: hash }))
 
         if (paid) {
           return true
@@ -787,11 +787,11 @@ export const LightningMixin = (superclass) =>
 
       let lnd
       try {
-        ;({ lnd } = getLndFromPubkey({ pubkey: pubkey ?? pubkey_ }))
+        ;({ lnd } = getLndFromPubkey({ pubkey: pubkey ?? pubkeyInvoiceUser }))
       } catch (err) {
         // TODO: send a status to the user showing the infrastructure is not fully operational
         this.logger.warn(
-          { pubkey: pubkey ?? pubkey_, hash },
+          { pubkey: pubkey ?? pubkeyInvoiceUser, hash },
           "node is offline. can't verify invoice status",
         )
         return false
@@ -807,8 +807,24 @@ export const LightningMixin = (superclass) =>
         // TODO: we should not log/keep secret in the logs
         this.logger.debug({ invoice, user: this.user }, "got invoice status")
       } catch (err) {
-        const error = `issue fetching invoice`
-        this.logger.warn({ err, invoice }, error)
+        const invoiceNotFound = "unable to locate invoice"
+        try {
+          assert(err.length === 3 && err[2].err.details === invoiceNotFound)
+        } catch (err2) {
+          this.logger.error(
+            { err, err2, invoice },
+            "issue fetching invoice. unknown error",
+          )
+          return false
+        }
+
+        this.logger.info({ err, invoice }, invoiceNotFound)
+        try {
+          await InvoiceUser.deleteOne({ _id: hash, uid: this.user._id })
+        } catch (err) {
+          this.logger.error({ invoice }, "impossible to delete InvoiceUser entry")
+        }
+
         return false
       }
 
