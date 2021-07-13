@@ -88,6 +88,11 @@ spec:
             - name: BITCOINDPORT
               value: {{ $.Values.bitcoind.port | quote }}
 
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Release.Name }}-redis
+                  key: "redis-password"
             - name: REDIS_MASTER_NAME
               value: "mymaster"
             - name: REDIS_0_DNS
