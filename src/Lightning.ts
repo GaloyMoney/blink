@@ -799,10 +799,10 @@ export const LightningMixin = (superclass) =>
       }
 
       try {
-        // FIXME we should only be able to look at User invoice,
-        // but might not be a strong problem anyway
-        // at least return same error if invoice not from user
-        // or invoice doesn't exist. to preserve privacy and prevent DDOS attack.
+        // FIXME to preserve privacy and prevent DDOS attack
+        // we should only be able to look at an invoice that belongs to this.user
+        // at a minimum, we should return same error if :
+        // an invoice is not from user or if the invoice doesn't exist.
         invoice = await getInvoice({ lnd, id: hash })
 
         // TODO: we should not log/keep secret in the logs
@@ -823,7 +823,7 @@ export const LightningMixin = (superclass) =>
         )
         ;(async () => {
           try {
-            await InvoiceUser.deleteOne({ _id: hash, user: this.user._id })
+            await InvoiceUser.deleteOne({ _id: hash, uid: this.user._id })
           } catch (err) {
             this.logger.error({ invoice }, "impossible to delete InvoiceUser entry")
           }
