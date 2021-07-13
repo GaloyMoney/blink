@@ -1,15 +1,11 @@
-/**
- * @jest-environment node
- */
-
+import { forEach, tail } from "lodash"
+import moment from "moment"
 import { setupMongoConnection } from "src/mongodb"
-
 import { Price } from "src/priceImpl"
 import { baseLogger } from "src/logger"
-import mongoose from "mongoose"
 
-let price
-
+let price: Price
+let mongoose
 const priceResponse = [
   [1595455200000, 9392.7, 9642.4, 9389.8, 9520.1, 2735.99917304],
   [1595458800000, 9523.2, 9557.8, 9523.2, 9557.7, 193.67510759],
@@ -39,18 +35,16 @@ const priceResponse = [
 ]
 
 // make time current
-import _ from "lodash"
-import moment from "moment"
 const priceResponseTimingCurrent: number[][] = []
 const init = () => moment().subtract(4, "hours").startOf("hour")
-_.forEach(priceResponse, (value, key) =>
+forEach(priceResponse, (value, key) =>
   priceResponseTimingCurrent.push([
     init().add(key, "hours").unix() * 1000,
-    ..._.tail(value),
+    ...tail(value),
   ]),
 )
 
-export class bitfinex {
+class bitfinex {
   fetchOHLCV() {
     return new Promise((resolve) => {
       resolve(priceResponseTimingCurrent)
@@ -66,7 +60,7 @@ beforeAll(async () => {
     bitfinex,
   }))
   // await mongoose.connection.dropDatabase()
-  await setupMongoConnection()
+  mongoose = await setupMongoConnection()
   price = new Price({ logger: baseLogger })
 })
 
@@ -74,9 +68,9 @@ afterAll(async () => {
   return await mongoose.connection.close()
 })
 
-it("test updating price", async () => {
-  await price.update()
-  // test it doesn't throw an error
+it("should update prices and not throw an error", async () => {
+  const result = await price.update()
+  expect(result).toBeDefined()
 })
 
 // it('test fetching last 24 hours', async () => {

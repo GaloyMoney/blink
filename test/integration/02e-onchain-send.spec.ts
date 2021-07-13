@@ -2,7 +2,6 @@
  * @jest-environment node
  */
 import { once } from "events"
-import { createChainAddress, subscribeToTransactions } from "lightning"
 import { filter, first } from "lodash"
 import mongoose from "mongoose"
 import { yamlConfig } from "src/config"
@@ -10,7 +9,7 @@ import { onchainTransactionEventHandler } from "src/entrypoint/trigger"
 import { MainBook, setupMongoConnection } from "src/mongodb"
 import { getTitle } from "src/notifications/payment"
 import { Transaction } from "src/schema"
-import { bitcoindDefaultClient, sleep } from "src/utils"
+import { sleep } from "src/utils"
 import {
   checkIsBalanced,
   getUserWallet,
@@ -19,9 +18,12 @@ import {
   mockGetExchangeBalance,
   RANDOM_ADDRESS,
   waitUntilBlockHeight,
-} from "./helper"
+  createChainAddress,
+  subscribeToTransactions,
+  bitcoindClient,
+} from "test/helpers"
 
-jest.mock("src/realtimePrice", () => require("../mocks/realtimePrice"))
+jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
 
 const date = Date.now() + 1000 * 60 * 60 * 24 * 8
 
@@ -45,7 +47,7 @@ beforeAll(async () => {
 })
 
 beforeEach(async () => {
-  initBlockCount = await bitcoindDefaultClient.getBlockCount()
+  initBlockCount = await bitcoindClient.getBlockCount()
   ;({ BTC: initialBalanceUser0 } = await userWallet0.getBalances())
 })
 
@@ -54,7 +56,7 @@ afterEach(async () => {
 })
 
 afterAll(async () => {
-  await bitcoindDefaultClient.generateToAddress(3, RANDOM_ADDRESS)
+  await bitcoindClient.generateToAddress(3, RANDOM_ADDRESS)
   await sleep(2000)
   jest.restoreAllMocks()
   await mongoose.connection.close()
@@ -103,7 +105,7 @@ it("SendsOnchainPaymentSuccessfully", async () => {
     await Promise.all([
       once(sub, "chain_transaction"),
       waitUntilBlockHeight({ lnd: lndonchain, blockHeight: initBlockCount + 6 }),
-      bitcoindDefaultClient.generateToAddress(6, RANDOM_ADDRESS),
+      bitcoindClient.generateToAddress(6, RANDOM_ADDRESS),
     ])
   }
 
@@ -178,7 +180,7 @@ it("SendsOnchainSendAllPaymentSuccessfully", async () => {
     await Promise.all([
       once(sub, "chain_transaction"),
       waitUntilBlockHeight({ lnd: lndonchain, blockHeight: initBlockCount + 6 }),
-      bitcoindDefaultClient.generateToAddress(6, RANDOM_ADDRESS),
+      bitcoindClient.generateToAddress(6, RANDOM_ADDRESS),
     ])
   }
 
@@ -377,7 +379,7 @@ it("failsToMakeOnchainPaymentWhenWithdrawalLimitHit", async () => {
 
 it("testingFee", async () => {
   {
-    const address = await bitcoindDefaultClient.getNewAddress()
+    const address = await bitcoindClient.getNewAddress()
     const fee = await userWallet0.getOnchainFee({ address })
     expect(fee).toBeGreaterThan(0)
   }
@@ -390,7 +392,7 @@ it("testingFee", async () => {
 })
 
 it("throws dust amount error", async () => {
-  const address = await bitcoindDefaultClient.getNewAddress()
+  const address = await bitcoindClient.getNewAddress()
   expect(
     userWallet0.onChainPay({ address, amount: yamlConfig.onchainDustAmount - 1 }),
   ).rejects.toThrow()

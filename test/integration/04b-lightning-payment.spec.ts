@@ -26,7 +26,7 @@ import {
   lndOutside2,
   mockGetExchangeBalance,
   openChannelTesting,
-} from "./helper"
+} from "test/helpers"
 
 let userWallet0, userWallet1, userWallet2
 let initBalance0, initBalance1
@@ -34,7 +34,7 @@ let initBalance0, initBalance1
 const amountInvoice = 1000
 
 jest.mock("src/notifications/notification")
-jest.mock("src/realtimePrice", () => require("../mocks/realtimePrice"))
+jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
 
 const date = Date.now() + 1000 * 60 * 60 * 24 * 8
 

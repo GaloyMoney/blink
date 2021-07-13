@@ -11,7 +11,7 @@ import { UserWallet } from "src/userWallet"
 import { WalletFactory } from "src/walletFactory"
 import { User } from "src/schema"
 
-jest.mock("src/realtimePrice", () => require("../../mocks/realtimePrice"))
+jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
 
 let mongoose
 

@@ -16,9 +16,9 @@ import {
   lndOutside2,
   mockGetExchangeBalance,
   openChannelTesting,
-} from "./helper"
+} from "test/helpers"
 
-jest.mock("src/realtimePrice", () => require("../mocks/realtimePrice"))
+jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
 
 let channelLengthMain, channelLengthOutside1
 
