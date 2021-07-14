@@ -33,6 +33,7 @@ import { UserWallet } from "./userWallet"
 import {
   amountOnVout,
   bitcoindDefaultClient,
+  bitcoindHotClient,
   btc2sat,
   LoggedError,
   LOOK_BACK,
@@ -131,8 +132,7 @@ class LndOnChainClient extends PayOnChainClient {
 class BitcoindClient extends PayOnChainClient {
   constructor() {
     super()
-    // TODO bitcoindHotWalletClient
-    this.client = bitcoindDefaultClient
+    this.client = bitcoindHotClient
   }
 
   async getBalance(): Promise<number> {

@@ -16,7 +16,7 @@ import { baseLogger } from "src/logger"
 import { MainBook, setupMongoConnection } from "src/mongodb"
 import { getTitle } from "src/notifications/payment"
 import { getCurrentPrice } from "src/realtimePrice"
-import { bitcoindDefaultClient, btc2sat, sat2btc, sleep } from "src/utils"
+import { bitcoindDefaultClient, bitcoindHotClient, btc2sat, sat2btc, sleep } from "src/utils"
 import { getFunderWallet } from "src/walletFactory"
 import {
   checkIsBalanced,
@@ -127,6 +127,11 @@ const lnd_onchain_funding = async ({ walletDestination }) => {
 
   await Promise.all([checkBalance(), fundWallet()])
 }
+
+it("createsBitcoindHotWallet", async () => {
+  const { name } = await bitcoindHotClient.createWallet("hot")
+  expect(name).toBe("hot")
+})
 
 it("user0IsCreditedForOnChainTransaction", async () => {
   await lnd_onchain_funding({ walletDestination: walletUser0 })
