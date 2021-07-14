@@ -41,7 +41,8 @@ export class SpecterWallet {
       this.logger.info("specter wallet has not been instantiated")
 
       // currently use for testing purpose. need to refactor
-      return ""
+      return "default"
+      // return ""
     }
 
     if (specterWallets.length > 1) {
