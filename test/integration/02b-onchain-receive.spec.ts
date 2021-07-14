@@ -76,7 +76,7 @@ afterAll(async () => {
   await mongoose.connection.close()
 })
 
-const onchain_funding = async ({ walletDestination }) => {
+const lnd_onchain_funding = async ({ walletDestination }) => {
   const lnd = lndonchain
 
   const { BTC: initialBalance } = await walletDestination.getBalances()
@@ -129,7 +129,7 @@ const onchain_funding = async ({ walletDestination }) => {
 }
 
 it("user0IsCreditedForOnChainTransaction", async () => {
-  await onchain_funding({ walletDestination: walletUser0 })
+  await lnd_onchain_funding({ walletDestination: walletUser0 })
 })
 
 it("user11IsCreditedForOnChainSendAllTransaction", async () => {
@@ -137,18 +137,18 @@ it("user11IsCreditedForOnChainSendAllTransaction", async () => {
   const level1WithdrawalLimit = yamlConfig.limits.withdrawal.level["1"] // sats
   amount_BTC = sat2btc(level1WithdrawalLimit)
   walletUser11 = await getUserWallet(11)
-  await onchain_funding({ walletDestination: walletUser11 })
+  await lnd_onchain_funding({ walletDestination: walletUser11 })
 })
 
 it("user12IsCreditedForOnChainOnUsSendAllTransaction", async () => {
   const level1OnUsLimit = yamlConfig.limits.onUs.level["1"] // sats
   amount_BTC = sat2btc(level1OnUsLimit)
   walletUser12 = await getUserWallet(12)
-  await onchain_funding({ walletDestination: walletUser12 })
+  await lnd_onchain_funding({ walletDestination: walletUser12 })
 })
 
 it("fundingFunderWithOnchainTxFromBitcoind", async () => {
-  await onchain_funding({ walletDestination: funderWallet })
+  await lnd_onchain_funding({ walletDestination: funderWallet })
 })
 
 it("creditingLnd1WithSomeFundToCreateAChannel", async () => {
@@ -277,7 +277,7 @@ it("allows fee exemption for specific users", async () => {
   walletUser2.user.depositFeeRatio = 0
   await walletUser2.user.save()
   const { BTC: initBalanceUser2 } = await walletUser2.getBalances()
-  await onchain_funding({ walletDestination: walletUser2 })
+  await lnd_onchain_funding({ walletDestination: walletUser2 })
   const { BTC: finalBalanceUser2 } = await walletUser2.getBalances()
   expect(finalBalanceUser2).toBe(initBalanceUser2 + btc2sat(amount_BTC))
 })
