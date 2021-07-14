@@ -1,14 +1,14 @@
-import * as jwt from "jsonwebtoken"
-import { yamlConfig } from "src/config"
-import { baseLogger } from "src/logger"
-import { User } from "src/schema"
 import { login } from "src/text"
+import { User } from "src/schema"
+import * as jwt from "jsonwebtoken"
+import { baseLogger } from "src/logger"
+import { yamlConfig } from "src/config"
 import { WalletFactory } from "src/walletFactory"
 
 export const getTokenFromPhoneIndex = async (index) => {
   const entry = yamlConfig.test_accounts[index]
-  const raw_token = await login({ ...entry, logger: baseLogger, ip: "127.0.0.1" })
-  const token = jwt.verify(raw_token, process.env.JWT_SECRET)
+  const rawToken = await login({ ...entry, logger: baseLogger, ip: "127.0.0.1" })
+  const token = jwt.verify(rawToken, process.env.JWT_SECRET)
 
   const { uid } = token
 

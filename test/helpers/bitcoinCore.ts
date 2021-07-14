@@ -13,33 +13,25 @@ bitcoindDefaultClient.sendToAddressAndConfirm = async (address, amount) => {
 // However, a block must have 100 confirmations before that reward can be spent,
 // so we generate 101 blocks to get access to the coinbase transaction from block #1.
 
-bitcoindDefaultClient.mineAndConfirm = async (numOfBlocks, address): Promise<number> => {
+bitcoindDefaultClient.mineAndConfirm = async (numOfBlocks, address) => {
   const blockNumber = await bitcoindDefaultClient.getBlockCount()
 
   await bitcoindClient.generateToAddress(numOfBlocks, address)
-  await bitcoindClient.generateToAddress(100, RANDOM_ADDRESS)
+  await bitcoindClient.generateToAddress(101, RANDOM_ADDRESS)
 
   let rewards = 0
-  for (let i = 0; i < numOfBlocks; i++) {
+  for (let i = 1; i <= numOfBlocks; i++) {
     rewards = rewards + getBlockReward(blockNumber + i)
   }
 
   return rewards
 }
 
-function getBlockReward(
-  blockNumber: number,
-  halvingBlocks = 150,
-  blockReward = 50,
-): number {
-  const halving = (r, times) => {
-    if (times === 1) return r
-    return halving(financial(r / 2), times - 1)
-  }
-  return halving(blockReward, Math.ceil((blockNumber || 1) / halvingBlocks))
-}
+function getBlockReward(height = 0, halvingBlocks = 150) {
+  const halvings = BigInt(height) / BigInt(halvingBlocks)
+  if (halvings >= 64) return 0
 
-function financial(x, digits = 8) {
-  const factor = Math.pow(10, digits)
-  return Math.trunc(x * factor) / factor
+  let reward = BigInt(50 * 100000000)
+  reward >>= halvings
+  return Number(reward)
 }
