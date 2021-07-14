@@ -45,7 +45,8 @@ afterAll(async () => {
   jest.restoreAllMocks()
 })
 
-it("funds bitcoind wallet", async () => {
+it("funds default/outside bitcoind wallet", async () => {
+  // it("funds bitcoind wallet", async () => {
   let balance
 
   // depend of bitcoind version. needed in < 0.20 but failed in 0.21?
@@ -62,22 +63,6 @@ it("funds bitcoind wallet", async () => {
   balance = await bitcoindDefaultClient.getBalance()
   expect(balance).toBe(initialBitcoinWalletBalance + blockReward * numOfBlock)
 })
-
-// This new test fails afterFinished: checkIsBalanced()
-// it("funds hot bitcoind wallet", async () => {
-//   let balance
-
-//   const { name } = await bitcoindHotClient.createWallet("hot")
-//   expect(name).toBe("hot")
-
-//   balance = await bitcoindHotClient.getBalance()
-
-//   const bitcoindAddress = await bitcoindHotClient.getNewAddress()
-//   await bitcoindHotClient.generateToAddress(numOfBlock, bitcoindAddress)
-//   await bitcoindHotClient.generateToAddress(100, RANDOM_ADDRESS)
-//   balance = await bitcoindHotClient.getBalance()
-//   expect(balance).toBe(initialBitcoinWalletBalance + blockReward * numOfBlock)
-// })
 
 it("funds outside lnd node", async () => {
   lndOutside1_wallet_addr = (
