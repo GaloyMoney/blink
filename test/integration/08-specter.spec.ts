@@ -62,38 +62,39 @@ it("createWallet", async () => {
   // expect(balance).toBe(0)
 })
 
-it("deposit to bitcoind", async () => {
-  const initBitcoindBalance = await specterWallet.getBitcoindBalance()
-  const { chain_balance: initLndBalance } = await getChainBalance({ lnd })
+// TODO
+// it("deposit to bitcoind", async () => {
+//   const initBitcoindBalance = await specterWallet.getBitcoindBalance()
+//   const { chain_balance: initLndBalance } = await getChainBalance({ lnd })
 
-  const sats = 10000
+//   const sats = 10000
 
-  await specterWallet.toColdStorage({ sats })
-  await bitcoindDefaultClient.generateToAddress(6, RANDOM_ADDRESS)
+//   await specterWallet.toColdStorage({ sats })
+//   await bitcoindDefaultClient.generateToAddress(6, RANDOM_ADDRESS)
 
-  // TODO: use events, to make sure lnd has updated its utxo set
-  // and considered the change UTXO in the balance
-  await sleep(1000)
+//   // TODO: use events, to make sure lnd has updated its utxo set
+//   // and considered the change UTXO in the balance
+//   await sleep(1000)
 
-  const bitcoindBalance = await specterWallet.getBitcoindBalance()
-  const { chain_balance: lndBalance } = await getChainBalance({ lnd })
+//   const bitcoindBalance = await specterWallet.getBitcoindBalance()
+//   const { chain_balance: lndBalance } = await getChainBalance({ lnd })
 
-  expect(bitcoindBalance).toBe(initBitcoindBalance + sats)
+//   expect(bitcoindBalance).toBe(initBitcoindBalance + sats)
 
-  const {
-    results: [{ fee }],
-  } = await MainBook.ledger({ account: bitcoindAccountingPath, type: "to_cold_storage" })
+//   const {
+//     results: [{ fee }],
+//   } = await MainBook.ledger({ account: bitcoindAccountingPath, type: "to_cold_storage" })
 
-  console.log({
-    lndBalance,
-    initLndBalance,
-    sats,
-    fee,
-    bitcoindBalance,
-    initBitcoindBalance,
-  })
-  expect(lndBalance).toBe(initLndBalance - sats - fee)
-})
+//   console.log({
+//     lndBalance,
+//     initLndBalance,
+//     sats,
+//     fee,
+//     bitcoindBalance,
+//     initBitcoindBalance,
+//   })
+//   expect(lndBalance).toBe(initLndBalance - sats - fee)
+// })
 
 // TODO: Fix or remove. Expectations were commented out
 // it('withdrawing from bitcoind', async () => {

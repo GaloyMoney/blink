@@ -16,7 +16,13 @@ import { baseLogger } from "src/logger"
 import { MainBook, setupMongoConnection } from "src/mongodb"
 import { getTitle } from "src/notifications/payment"
 import { getCurrentPrice } from "src/realtimePrice"
-import { bitcoindDefaultClient, bitcoindHotClient, btc2sat, sat2btc, sleep } from "src/utils"
+import {
+  bitcoindDefaultClient,
+  bitcoindHotClient,
+  btc2sat,
+  sat2btc,
+  sleep,
+} from "src/utils"
 import { getFunderWallet } from "src/walletFactory"
 import {
   checkIsBalanced,
