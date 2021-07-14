@@ -7,7 +7,8 @@ import { btc2sat } from "../utils"
 import { HedgingStrategies, IHedgingStrategy } from "./IHedgingStrategy"
 import { createHedgingStrategy } from "./HedgingStrategyFactory"
 
-const activeStrategy = HedgingStrategies.FtxPerpetualSwap
+// const activeStrategy = HedgingStrategies.FtxPerpetualSwap
+const activeStrategy = HedgingStrategies.OkexPerpetualSwap
 
 export class SimpleDealerWallet extends OnChainMixin(UserWallet) {
   strategy: IHedgingStrategy
@@ -22,7 +23,12 @@ export class SimpleDealerWallet extends OnChainMixin(UserWallet) {
     const logger = this.logger.child({ method: "updatePositionAndLeverage()" })
     const btcPriceInUsd = btc2sat(UserWallet.lastPrice)
     const { USD: usdBalance } = await this.getBalances()
-    const usdLiability = -usdBalance
+    const usdLiability = Math.abs(usdBalance)
+
+    if (usdLiability <= 0) {
+      logger.debug({ msg: "No liabilities to hedge.", usdLiability: usdLiability })
+      return
+    }
 
     logger.debug("starting with order loop")
 
@@ -34,16 +40,19 @@ export class SimpleDealerWallet extends OnChainMixin(UserWallet) {
       logger.info(
         `The active ${activeStrategy} strategy was successful at UpdatePosition()`,
       )
-      logger.debug(
-        `Position BEFORE ${activeStrategy} strategy executed UpdatePosition(): ${updatedPosition.value.oldPosition}`,
-      )
-      logger.debug(
-        `Position AFTER ${activeStrategy} strategy executed UpdatePosition(): ${updatedPosition.value.newPosition}`,
-      )
+      logger.debug({
+        msg: `Position BEFORE ${activeStrategy} strategy executed UpdatePosition()`,
+        oldPosition: updatedPosition.value.oldPosition,
+      })
+      logger.debug({
+        msg: `Position AFTER ${activeStrategy} strategy executed UpdatePosition()`,
+        newPosition: updatedPosition.value.newPosition,
+      })
     } else {
-      logger.error(
-        `The active ${activeStrategy} strategy failed during the UpdatePosition() execution: ${updatedPosition.error}`,
-      )
+      logger.error({
+        msg: `The active ${activeStrategy} strategy failed during the UpdatePosition() execution`,
+        error: updatedPosition.error,
+      })
     }
 
     logger.debug("starting with rebalance loop")
@@ -73,16 +82,19 @@ export class SimpleDealerWallet extends OnChainMixin(UserWallet) {
       logger.info(
         `The active ${activeStrategy} strategy was successful at UpdateLeverage()`,
       )
-      logger.debug(
-        `Position BEFORE ${activeStrategy} strategy executed UpdateLeverage(): ${updatedLeverage.value.oldBalance}`,
-      )
-      logger.debug(
-        `Position AFTER ${activeStrategy} strategy executed UpdateLeverage(): ${updatedLeverage.value.newBalance}`,
-      )
+      logger.debug({
+        msg: `Position BEFORE ${activeStrategy} strategy executed UpdateLeverage()`,
+        oldBalance: updatedLeverage.value.oldBalance,
+      })
+      logger.debug({
+        msg: `Position AFTER ${activeStrategy} strategy executed UpdateLeverage()`,
+        newBalance: updatedLeverage.value.newBalance,
+      })
     } else {
-      logger.error(
-        `The active ${activeStrategy} strategy failed during the UpdateLeverage() execution: ${updatedLeverage.error}`,
-      )
+      logger.error({
+        msg: `The active ${activeStrategy} strategy failed during the UpdateLeverage() execution`,
+        error: updatedLeverage.error,
+      })
     }
   }
 }

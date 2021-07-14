@@ -27,11 +27,11 @@ export class OkexPerpetualSwapStrategy implements IHedgingStrategy {
   logger
 
   constructor(logger) {
-    this.exchange = new ccxt.ftx({ apiKey, secret, password })
+    this.exchange = new ccxt.okex5({ apiKey, secret, password })
     // The following check throws if something is wrong
     this.exchange.checkRequiredCredentials()
     this.symbol = exchangeSwapSymbol
-    this.logger = logger.child({ topic: OkexPerpetualSwapStrategy.name })
+    this.logger = logger.child({ class: OkexPerpetualSwapStrategy.name })
   }
 
   public async UpdatePosition(
@@ -46,7 +46,8 @@ export class OkexPerpetualSwapStrategy implements IHedgingStrategy {
 
       let updatedRisk
       const originalRisk = await this.getAccountRiskMeasures()
-      logger.debug(`getAccountRiskMeasures() returned: ${originalRisk}`)
+      logger.debug({ called: "getAccountRiskMeasures()", returned: originalRisk })
+
       if (originalRisk) {
         lastBtcPriceInUsd = originalRisk.lastBtcPriceInUsd
         exposureInUsd = originalRisk.exposureInUsd
@@ -58,23 +59,23 @@ export class OkexPerpetualSwapStrategy implements IHedgingStrategy {
         lastBtcPriceInUsd,
         hedgingBounds,
       )
-      logger.debug(
-        `getHedgingOrderIfNeeded(${{
-          liabilityInUsd,
-          exposureInUsd,
-          lastBtcPriceInUsd,
-          hedgingBounds,
-        }}) returned: ${hedgingOrder}`,
-      )
+      logger.debug({
+        called: `getHedgingOrderIfNeeded(${liabilityInUsd}, ${exposureInUsd}, ${lastBtcPriceInUsd}, hedgingBounds)`,
+        hedgingBounds: hedgingBounds,
+        returned: hedgingOrder,
+      })
 
       if (hedgingOrder.output.tradeSide === TradeSide.NoTrade) {
         const msg = `${hedgingOrder.input.loBracket} < ${hedgingOrder.input.exposureRatio} < ${hedgingOrder.input.hiBracket}`
         logger.debug(`Calculated no hedging is needed: ${msg}`)
       } else {
         if (hedgingOrder.output.IsSimulation) {
-          logger.debug(`Calculated a SIMULATED new hedging order: ${hedgingOrder}`)
+          logger.debug({
+            msg: "Calculated a SIMULATED new hedging order",
+            order: hedgingOrder,
+          })
         } else {
-          logger.debug(`Calculated a new hedging order: ${hedgingOrder}`)
+          logger.debug({ msg: "Calculated a new hedging order", order: hedgingOrder })
           const result = await this.placeHedgingOrder(
             hedgingOrder.output.tradeSide,
             hedgingOrder.output.orderSizeInUsd,
@@ -82,7 +83,7 @@ export class OkexPerpetualSwapStrategy implements IHedgingStrategy {
           if (result.ok) {
             // Check that we don't need another order, i.e. "all is good"
             updatedRisk = await this.getAccountRiskMeasures()
-            logger.debug(`getAccountRiskMeasures() returned: ${updatedRisk}`)
+            logger.debug({ called: "getAccountRiskMeasures()", returned: updatedRisk })
             if (updatedRisk) {
               lastBtcPriceInUsd = updatedRisk.lastBtcPriceInUsd
               exposureInUsd = updatedRisk.exposureInUsd
@@ -94,14 +95,11 @@ export class OkexPerpetualSwapStrategy implements IHedgingStrategy {
               lastBtcPriceInUsd,
               hedgingBounds,
             )
-            logger.debug(
-              `getHedgingOrderIfNeeded(${{
-                liabilityInUsd,
-                exposureInUsd,
-                lastBtcPriceInUsd,
-                hedgingBounds,
-              }}) returned: ${confirmationOrder}`,
-            )
+            logger.debug({
+              called: `getHedgingOrderIfNeeded(${liabilityInUsd}, ${exposureInUsd}, ${lastBtcPriceInUsd}, hedgingBounds)`,
+              hedgingBounds: hedgingBounds,
+              returned: confirmationOrder,
+            })
 
             if (
               !confirmationOrder.output.IsSimulation &&
@@ -174,13 +172,13 @@ export class OkexPerpetualSwapStrategy implements IHedgingStrategy {
       collateralInUsd = position.margin * position.last
       exposureInUsd = position.notionalUsd
     }
-    logger.debug(`exchange.fetchPosition(${this.symbol}) returned: ${position}`)
+    logger.debug({ called: `exchange.fetchPosition(${this.symbol})`, returned: position })
 
     const balance = await this.exchange.fetchBalance()
     if (balance) {
       totalAccountValueInUsd = balance?.info?.data?.[0]?.totalEq
     }
-    logger.debug(`exchange.fetchBalance() returned: ${balance}`)
+    logger.debug({ called: "exchange.fetchBalance()", returned: balance })
 
     return {
       lastBtcPriceInUsd,
@@ -254,12 +252,10 @@ export class OkexPerpetualSwapStrategy implements IHedgingStrategy {
             orderSizeInContract,
           )
 
-          logger.debug(
-            `this.exchange.createMarketOrder(${{
-              tradeSide,
-              orderSizeInContract,
-            }}) returned: ${placedOrder}`,
-          )
+          logger.debug({
+            called: `this.exchange.createMarketOrder(${tradeSide}, ${orderSizeInContract})`,
+            returned: placedOrder,
+          })
 
           const waitTimeInMs = 1000
           const maxWaitCycleCount = 30
@@ -269,9 +265,10 @@ export class OkexPerpetualSwapStrategy implements IHedgingStrategy {
           do {
             await sleep(waitTimeInMs)
             fetchedOrder = await this.exchange.fetchOrder(placedOrder.id)
-            logger.debug(
-              `this.exchange.fetchOrder(${placedOrder.id}) returned: ${fetchedOrder}`,
-            )
+            logger.debug({
+              called: `this.exchange.fetchOrder(${placedOrder.id})`,
+              returned: fetchedOrder,
+            })
           } while (
             ++iteration < maxWaitCycleCount &&
             fetchedOrder &&
