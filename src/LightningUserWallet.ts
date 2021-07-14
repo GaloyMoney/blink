@@ -3,7 +3,7 @@ import { LightningMixin } from "./Lightning"
 import { redlock } from "./lock"
 import { OnChainMixin } from "./OnChain"
 import { User } from "./schema"
-import { WalletConstructorArgs, OnboardingEarn, UserWalletConstructorArgs } from "./types"
+import { OnboardingEarn, UserWalletConstructorArgs } from "./types"
 import { UserWallet } from "./userWallet"
 import { getFunderWallet } from "./walletFactory"
 
