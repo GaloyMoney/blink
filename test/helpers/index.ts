@@ -1,3 +1,4 @@
+import { btc2sat } from "src/utils"
 import { FtxDealerWallet } from "src/dealer/FtxDealerWallet"
 import {
   balanceSheetIsBalanced,
@@ -7,6 +8,9 @@ import {
 export * from "./bitcoinCore"
 export * from "./lightning"
 export * from "./user"
+
+export const amountAfterFeeDeduction = ({ amount, depositFeeRatio }) =>
+  Math.round(btc2sat(amount) * (1 - depositFeeRatio))
 
 export const checkIsBalanced = async () => {
   await updateUsersPendingPayment()
@@ -26,3 +30,15 @@ export const mockGetExchangeBalance = () =>
         resolve({ sats: 0, usdPnl: 0 })
       }),
   )
+
+export const resetDatabase = async (mongoose) => {
+  const db = mongoose.connection.db
+  // Get all collections
+  const collections = await db.listCollections().toArray()
+  // Create an array of collection names and drop each collection
+  collections
+    .map((c) => c.name)
+    .forEach(async (collectionName) => {
+      await db.dropCollection(collectionName)
+    })
+}

@@ -1,18 +1,21 @@
 import { once } from "events"
+import { sleep } from "src/utils"
+import { baseLogger } from "src/logger"
+import { offchainLnds, onchainLnds, onChannelUpdated, updateEscrows } from "src/lndUtils"
 import {
   AuthenticatedLnd,
   authenticatedLndGrpc,
+  closeChannel,
+  createChainAddress,
+  getChainBalance,
+  getChannels,
   getWalletInfo,
   openChannel,
+  sendToChainAddress,
   subscribeToChannels,
 } from "lightning"
 
-import { offchainLnds, onchainLnds, onChannelUpdated, updateEscrows } from "src/lndUtils"
-import { baseLogger } from "src/logger"
 import { bitcoindClient, RANDOM_ADDRESS } from "./bitcoinCore"
-import { sleep } from "src/utils"
-
-const newBlock = 6
 
 export * from "lightning"
 
@@ -33,13 +36,18 @@ export const lndOutside2 = authenticatedLndGrpc({
   socket: `${process.env.LNDOUTSIDE2ADDR}:${process.env.LNDOUTSIDE2RPCPORT ?? 10009}`,
 }).lnd
 
-export async function waitUntilBlockHeight({ lnd, blockHeight }) {
+export const waitUntilBlockHeight = async ({ lnd, blockHeight = 0 }) => {
+  let block = blockHeight
+  if (block <= 0) {
+    block = await bitcoindClient.getBlockCount()
+  }
+
   let current_block_height: number, is_synced_to_chain: boolean
   ;({ current_block_height, is_synced_to_chain } = await getWalletInfo({ lnd }))
 
   let time = 0
   const ms = 50
-  while (current_block_height < blockHeight || !is_synced_to_chain) {
+  while (current_block_height < block || !is_synced_to_chain) {
     await sleep(ms)
     ;({ current_block_height, is_synced_to_chain } = await getWalletInfo({ lnd }))
     // baseLogger.debug({ current_block_height, is_synced_to_chain})
@@ -48,11 +56,16 @@ export async function waitUntilBlockHeight({ lnd, blockHeight }) {
 
   baseLogger.debug(
     { current_block_height, is_synced_to_chain },
-    `Seconds to sync blockheight ${blockHeight}: ${time / (1000 / ms)}`,
+    `Seconds to sync blockheight ${block}: ${time / (1000 / ms)}`,
   )
 }
 
-export async function openChannelTesting({ lnd, other_lnd, socket, is_private = false }) {
+export const openChannelTesting = async ({
+  lnd,
+  other_lnd,
+  socket,
+  is_private = false,
+}) => {
   const local_tokens = 1000000
   const initBlockCount = await bitcoindClient.getBlockCount()
 
@@ -92,7 +105,7 @@ export async function openChannelTesting({ lnd, other_lnd, socket, is_private = 
     // error: https://github.com/alexbosworth/ln-service/issues/122
     // need to investigate.
     // once(sub, 'channel_opened'),
-    mineBlockAndSync({ lnds: [lnd, other_lnd], blockHeight: initBlockCount + newBlock }),
+    mineBlockAndSync({ lnds: [lnd, other_lnd] }),
   ])
 
   await sleep(5000)
@@ -100,13 +113,53 @@ export async function openChannelTesting({ lnd, other_lnd, socket, is_private = 
   sub.removeAllListeners()
 }
 
-export async function mineBlockAndSync({
+export const fundLnd = async (lnd, amount = 1) => {
+  const { address } = await createChainAddress({ format: "p2wpkh", lnd })
+
+  await bitcoindClient.sendToAddressAndConfirm(address, amount)
+  await waitUntilBlockHeight({ lnd })
+}
+
+export const resetLnds = async () => {
+  const lnds = [lnd1, lnd2, lndOutside1, lndOutside2]
+  lnds.forEach(async (lnd) => {
+    await closeAllChannels({ lnd })
+  })
+
+  await mineBlockAndSync({ lnds })
+
+  lnds.forEach(async (lnd) => {
+    const chainBalance = (await getChainBalance({ lnd })).chain_balance
+    if (chainBalance > 0) {
+      const address = await bitcoindClient.getNewAddress()
+      await sendToChainAddress({ lnd, address, is_send_all: true })
+    }
+  })
+
+  await mineBlockAndSync({ lnds })
+  await mineBlockAndSync({ lnds })
+}
+
+export const closeAllChannels = async ({ lnd }) => {
+  try {
+    const { channels } = await getChannels({ lnd })
+    channels.forEach(async (channel) => {
+      await closeChannel({ lnd, id: channel.id })
+    })
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+export const mineBlockAndSync = async ({
   lnds,
-  blockHeight,
+  blockHeight = 0,
+  newBlock = 6,
 }: {
   lnds: Array<AuthenticatedLnd>
-  blockHeight: number
-}) {
+  blockHeight?: number
+  newBlock?: number
+}) => {
   await bitcoindClient.generateToAddress(newBlock, RANDOM_ADDRESS)
   const promiseArray: Array<Promise<void>> = []
   for (const lnd of lnds) {
