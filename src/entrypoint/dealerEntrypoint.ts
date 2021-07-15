@@ -3,7 +3,7 @@ import { baseLogger } from "../logger"
 import { User } from "../schema"
 import { getCurrentPrice } from "../realtimePrice"
 import { UserWallet } from "../userWallet"
-import { SimpleDealerWallet } from "../dealer/DealerWallet"
+import { DealerWallet } from "../dealer/DealerWallet"
 
 const main = async () => {
   const mongoose = await setupMongoConnection()
@@ -13,7 +13,7 @@ const main = async () => {
 
   const logger = baseLogger.child({ module: "cron" })
   const dealerUser = await User.findOne({ role: "dealer" })
-  const dealer = new SimpleDealerWallet({ user: dealerUser, logger })
+  const dealer = new DealerWallet({ user: dealerUser, logger })
 
   await dealer.updatePositionAndLeverage()
 
