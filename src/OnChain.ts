@@ -83,6 +83,71 @@ export const getOnChainTransactionsBitcoind = async ({
 }
 
 ///////////
+// TODO: where should this be?
+type GetChainTransactionsResultBitcoind = {
+  // Based on:
+  // type GetChainTransactionsResult = {
+  // transactions: {
+  //   /** Block Hash */
+  //   block_id?: string;
+  //   /** Confirmation Count */
+  //   confirmation_count?: number;
+  //   /** Confirmation Block Height */
+  //   confirmation_height?: number;
+  //   /** Created ISO 8601 Date */
+  //   created_at: string;
+  //   /** Transaction Label */
+  //   description?: string;
+  //   /** Fees Paid Tokens */
+  //   fee?: number;
+  //   /** Transaction Id */
+  //   id: string;
+  //   /** Is Confirmed */
+  //   is_confirmed: boolean;
+  //   /** Transaction Outbound */
+  //   is_outgoing: boolean;
+  //   /** Addresses */
+  //   output_addresses: string[];
+  //   /** Tokens Including Fee */
+  //   tokens: number;
+  //   /** Raw Transaction Hex */
+  //   transaction?: string;
+  // }[];
+
+  transactions_bitcoind: {
+    /** Block Hash */
+    "address"?: string
+    /** Confirmation Count */
+    "category"?: string
+    /** Block Hash */
+    "amount": number
+    /** Confirmation Count */
+    "label"?: string
+    /** Block Hash */
+    "vout"?: number
+    /** Confirmation Count */
+    "confirmations"?: number
+    /** Block Hash */
+    "blockhash"?: string
+    /** Confirmation Count */
+    "blockheight"?: number
+    /** Block Hash */
+    "blockindex"?: number
+    /** Confirmation Count */
+    "blocktime"?: number
+    /** Block Hash */
+    "txid"?: string
+    /** Confirmation Count */
+    "walletconflicts"?: []
+    /** Block Hash */
+    "time"?: number
+    /** Confirmation Count */
+    "timereceived"?: number
+    /** Block Hash */
+    "bip125-replaceable"?: string
+  }[]
+}
+
 abstract class PayOnChainClient {
   client
 
@@ -642,7 +707,8 @@ export const OnChainMixin = (superclass) =>
     async getOnchainReceiptBitcoind({ confirmed }: { confirmed?: boolean }) {
       // TODO? confirmed?
       const pubkeys: string[] = this.user.onchain_pubkey
-      let user_matched_txs: GetChainTransactionsResult["transactions_bitcoind"] = []
+      let user_matched_txs: GetChainTransactionsResultBitcoind["transactions_bitcoind"] =
+        []
 
       for (const pubkey of pubkeys) {
         // TODO: optimize the data structure
@@ -675,7 +741,7 @@ export const OnChainMixin = (superclass) =>
         //     }
         // ]
 
-        let incoming_filtered: GetChainTransactionsResult["transactions_bitcoind"]
+        let incoming_filtered: GetChainTransactionsResultBitcoind["transactions_bitcoind"]
 
         // TODO? not doing any filtering for now...
         // eslint-disable-next-line
