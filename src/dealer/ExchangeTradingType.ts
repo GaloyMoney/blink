@@ -1,7 +1,7 @@
 import { Order } from "ccxt"
 import { Result } from "./Result"
 
-export enum Currency {
+export enum TradeCurrency {
   BTC = "BTC",
   USD = "USD",
 }
@@ -12,10 +12,10 @@ export enum TradeSide {
   NoTrade = "",
 }
 
-export interface IOrder {
+export interface TradeOrder {
   tradeSide: TradeSide
   quantity: number
-  currency: Currency
+  currency: TradeCurrency
 }
 
 export enum FundTransferSide {
@@ -24,10 +24,10 @@ export enum FundTransferSide {
   NoTransfer = "",
 }
 
-export interface IFundTransfer {
+export interface FundTransfer {
   transferSide: FundTransferSide
   quantity: number
-  currency: Currency
+  currency: TradeCurrency
 }
 
 export enum OrderStatus {

@@ -1,11 +1,11 @@
 import { sleep } from "../utils"
 import _ from "lodash"
 import { yamlConfig } from "../config"
-import { TradeSide, FundTransferSide } from "./IExchange"
+import { TradeSide, FundTransferSide } from "./ExchangeTradingType"
 import assert from "assert"
 import ccxt from "ccxt"
 import { Result } from "./Result"
-import { IHedgingStrategy, UpdatedPosition, UpdatedBalance } from "./IHedgingStrategy"
+import { HedgingStrategy, UpdatedPosition, UpdatedBalance } from "./HedgingStrategyTypes"
 
 const exchangeName = "FTX"
 const exchangeSwapSymbol = "BTC-PERP"
@@ -22,7 +22,7 @@ if (!simulateOnly) {
 
 const hedgingBounds = yamlConfig.hedging
 
-export class FtxPerpetualSwapStrategy implements IHedgingStrategy {
+export class FtxPerpetualSwapStrategy implements HedgingStrategy {
   exchange
   symbol
   logger

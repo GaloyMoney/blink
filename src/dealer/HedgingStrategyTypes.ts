@@ -30,7 +30,7 @@ export type UpdatedBalance = {
   newBalance: Balance
 }
 
-export interface IHedgingStrategy {
+export interface HedgingStrategy {
   UpdatePosition(
     liabilityInUsd: number,
     btcPriceInUsd: number,

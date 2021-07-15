@@ -1,10 +1,15 @@
 import { sleep } from "../utils"
 import _ from "lodash"
 import { yamlConfig } from "../config"
-import { TradeSide, FundTransferSide, Currency, OrderStatus } from "./IExchange"
+import {
+  TradeSide,
+  FundTransferSide,
+  TradeCurrency,
+  OrderStatus,
+} from "./ExchangeTradingType"
 import ccxt, { Order } from "ccxt"
 import { Result } from "./Result"
-import { IHedgingStrategy, UpdatedPosition, UpdatedBalance } from "./IHedgingStrategy"
+import { HedgingStrategy, UpdatedPosition, UpdatedBalance } from "./HedgingStrategyTypes"
 
 const exchangeName = "OKEX"
 const exchangeSwapSymbol = "BTC-USD-SWAP"
@@ -21,7 +26,7 @@ if (!simulateOnly) {
 
 const hedgingBounds = yamlConfig.hedging
 
-export class OkexPerpetualSwapStrategy implements IHedgingStrategy {
+export class OkexPerpetualSwapStrategy implements HedgingStrategy {
   exchange
   symbol
   logger
@@ -250,7 +255,7 @@ export class OkexPerpetualSwapStrategy implements IHedgingStrategy {
         `publicGetPublicInstruments(${this.symbol}) returned: {swapContractDetail}`,
       )
 
-      if (swapContractDetail && swapContractDetail?.ctValCcy === Currency.USD) {
+      if (swapContractDetail && swapContractDetail?.ctValCcy === TradeCurrency.USD) {
         const minOrderSizeInContract = swapContractDetail?.minSz
         const contractFaceValue = swapContractDetail?.ctVal
         const orderSizeInContract = Math.round(btcPriceInUsd / contractFaceValue)

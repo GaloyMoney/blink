@@ -4,14 +4,14 @@ import { WalletConstructorArgs } from "../types"
 import { UserWallet } from "../userWallet"
 import { btc2sat } from "../utils"
 
-import { HedgingStrategies, IHedgingStrategy } from "./IHedgingStrategy"
+import { HedgingStrategies, HedgingStrategy } from "./HedgingStrategyTypes"
 import { createHedgingStrategy } from "./HedgingStrategyFactory"
 
-// const activeStrategy = HedgingStrategies.FtxPerpetualSwap
-const activeStrategy = HedgingStrategies.OkexPerpetualSwap
+const activeStrategy = HedgingStrategies.FtxPerpetualSwap
+// const activeStrategy = HedgingStrategies.OkexPerpetualSwap
 
 export class DealerWallet extends OnChainMixin(UserWallet) {
-  strategy: IHedgingStrategy
+  strategy: HedgingStrategy
 
   constructor({ user, logger }: WalletConstructorArgs) {
     super({ user, logger })
@@ -23,9 +23,10 @@ export class DealerWallet extends OnChainMixin(UserWallet) {
     const logger = this.logger.child({ method: "updatePositionAndLeverage()" })
     const btcPriceInUsd = btc2sat(UserWallet.lastPrice)
     const { USD: usdBalance } = await this.getBalances()
-    const usdLiability = Math.abs(usdBalance)
+    const usdLiability = -usdBalance
 
-    if (usdLiability <= 0) {
+    // Testing for 0 is tricky, assuming we wont hedge change
+    if (Math.abs(usdLiability) < 1) {
       logger.debug({ msg: "No liabilities to hedge.", usdLiability: usdLiability })
       return
     }
