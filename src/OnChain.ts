@@ -22,7 +22,12 @@ import {
   TransactionRestrictedError,
   ValidationError,
 } from "./error"
-import { customerPath, lndAccountingPath, onchainRevenuePath } from "./ledger/ledger"
+import {
+  bitcoindAccountingPath,
+  customerPath,
+  lndAccountingPath,
+  onchainRevenuePath,
+} from "./ledger/ledger"
 import { getActiveOnchainLnd, getLndFromPubkey } from "./lndUtils"
 import { lockExtendOrThrow, redlock } from "./lock"
 import { baseLogger } from "./logger"
@@ -61,11 +66,28 @@ export const getOnChainTransactions = async ({
   }
 }
 
+export const getOnChainTransactionsBitcoind = async ({
+  incoming, // TODO?
+}: {
+  incoming: boolean
+}) => {
+  try {
+    // TODO? how many transactions back?
+    const transactions: [] = await bitcoindHotClient.listTransactions(null, 1000)
+    return transactions
+  } catch (err) {
+    const error = `issue fetching bitcoind transaction`
+    baseLogger.error({ err, incoming }, error)
+    throw new LoggedError(error)
+  }
+}
+
 ///////////
 abstract class PayOnChainClient {
   client
 
   static clientPayInstance(): PayOnChainClient {
+    // * ALSO change updatePending *
     return new LndOnChainClient()
     // return new BitcoindClient()
   }
@@ -173,6 +195,7 @@ export const OnChainMixin = (superclass) =>
 
     async updatePending(lock): Promise<void> {
       await Promise.all([this.updateOnchainReceipt(lock), super.updatePending(lock)])
+      // await Promise.all([this.updateOnchainReceiptBitcoind(lock), super.updatePending(lock)])
     }
 
     async getOnchainFee({
@@ -498,6 +521,45 @@ export const OnChainMixin = (superclass) =>
       return address
     }
 
+    async getOnChainAddressBitcoind(): Promise<string> {
+      // TODO
+      // another option to investigate is to have a master key / client
+      // (maybe this could be saved in JWT)
+      // and a way for them to derive new key
+      //
+      // this would avoid a communication to the server
+      // every time you want to show a QR code.
+
+      let address
+
+      const onchainClient = bitcoindHotClient
+      // TODO?
+      const pubkey = "TODO" // pubkey: process.env[`${input.name}_PUBKEY`] || exit(98),
+
+      try {
+        address = await onchainClient.getNewAddress()
+      } catch (err) {
+        const error = `error getting bitcoind onchain address`
+        this.logger.error({ err }, error)
+        throw new LoggedError(error)
+      }
+
+      try {
+        this.user.onchain.push({ address, pubkey })
+        await this.user.save()
+      } catch (err) {
+        const error = `error storing new onchain address to db`
+        throw new DbError(error, {
+          forwardToClient: false,
+          logger: this.logger,
+          level: "warn",
+          err,
+        })
+      }
+
+      return address
+    }
+
     async getOnchainReceipt({ confirmed }: { confirmed: boolean }) {
       const pubkeys: string[] = this.user.onchain_pubkey
       let user_matched_txs: GetChainTransactionsResult["transactions"] = []
@@ -569,6 +631,60 @@ export const OnChainMixin = (superclass) =>
           ...lnd_incoming_filtered.filter(
             // only return transactions for addresses that belond to the user
             (tx) => _.intersection(tx.output_addresses, addresses).length > 0,
+          ),
+        ]
+      }
+
+      return user_matched_txs
+    }
+
+    // eslint-disable-next-line
+    async getOnchainReceiptBitcoind({ confirmed }: { confirmed?: boolean }) {
+      // TODO? confirmed?
+      const pubkeys: string[] = this.user.onchain_pubkey
+      let user_matched_txs: GetChainTransactionsResult["transactions_bitcoind"] = []
+
+      for (const pubkey of pubkeys) {
+        // TODO: optimize the data structure
+        const addresses = this.user.onchain
+          .filter((item) => (item.pubkey = pubkey))
+          .map((item) => item.address)
+
+        // const onchainClient = bitcoindHotClient
+
+        const incoming_txs = await getOnChainTransactionsBitcoind({ incoming: true })
+
+        // bitcoind transactions:
+        //   [
+        //     {
+        //         "address": "bcrt1qs2gudhr2c6vk5gjt338ya82y5tr78kd0xf9ht5",
+        //         "category": "receive",
+        //         "amount": 1.02443592,
+        //         "label": "",
+        //         "vout": 1,
+        //         "confirmations": 9,
+        //         "blockhash": "6bd2ec8a3c04ecfd96ceac13d894f2641cfb622a3dc144cf5723108d169428f9",
+        //         "blockheight": 120,
+        //         "blockindex": 1,
+        //         "blocktime": 1626221313,
+        //         "txid": "962e18e6c819742211185333825e3159f67980c0ad30120bb6a05f3bbed492ea",
+        //         "walletconflicts": [],
+        //         "time": 1626221313,
+        //         "timereceived": 1626221313,
+        //         "bip125-replaceable": "no"
+        //     }
+        // ]
+
+        let incoming_filtered: GetChainTransactionsResult["transactions_bitcoind"]
+
+        // TODO? not doing any filtering for now...
+        // eslint-disable-next-line
+        incoming_filtered = incoming_txs
+
+        user_matched_txs = [
+          ...incoming_filtered.filter(
+            // only return transactions for addresses that belond to the user
+            (tx) => _.intersection(tx.address, addresses).length > 0,
           ),
         ]
       }
@@ -737,6 +853,59 @@ export const OnChainMixin = (superclass) =>
                 .credit(onchainRevenuePath, fee, metadata)
                 .credit(this.user.accountPath, sats - fee, metadata)
                 .debit(lndAccountingPath, sats, metadata)
+                .commit()
+
+              const onchainLogger = this.logger.child({
+                topic: "payment",
+                protocol: "onchain",
+                transactionType: "receipt",
+                onUs: false,
+              })
+              onchainLogger.info({ success: true, ...metadata })
+            }
+          }
+        },
+      )
+    }
+
+    async updateOnchainReceiptBitcoind(lock?) {
+      const user_matched_txs = await this.getOnchainReceiptBitcoind({ confirmed: true })
+
+      const type = "onchain_receipt"
+
+      await redlock(
+        { path: this.user._id, logger: baseLogger /* FIXME */, lock },
+        async () => {
+          // FIXME O(n) ^ 2. bad.
+          for (const matched_tx of user_matched_txs) {
+            // has the transaction has not been added yet to the user account?
+            //
+            // note: the fact we fiter with `account_path: this.user.accountPath` could create
+            // double transaction for some non customer specific wallet. ie: if the path is different
+            // for the dealer. this is fixed now but something to think about.
+            const mongotx = await Transaction.findOne({
+              accounts: this.user.accountPath,
+              type,
+              hash: matched_tx.txid,
+            })
+
+            if (!mongotx) {
+              const sats = btc2sat(matched_tx.amount)
+              const fee = Math.round(sats * this.user.depositFeeRatio)
+
+              const metadata = {
+                currency: "BTC",
+                type,
+                hash: matched_tx.txid,
+                pending: false,
+                ...UserWallet.getCurrencyEquivalent({ sats, fee }),
+                payee_addresses: [], // TODO?
+              }
+
+              await MainBook.entry()
+                .credit(onchainRevenuePath, fee, metadata)
+                .credit(this.user.accountPath, sats - fee, metadata)
+                .debit(bitcoindAccountingPath, sats, metadata)
                 .commit()
 
               const onchainLogger = this.logger.child({
