@@ -11,11 +11,17 @@ import { filter } from "lodash"
 import mongoose from "mongoose"
 import { yamlConfig } from "src/config"
 import { onchainTransactionEventHandler } from "src/entrypoint/trigger"
-import { liabilitiesReserve, lndAccountingPath } from "src/ledger/ledger"
+import {
+  bitcoindAccountingPath,
+  liabilitiesReserve,
+  lndAccountingPath,
+  onchainRevenuePath,
+} from "src/ledger/ledger"
 import { baseLogger } from "src/logger"
 import { MainBook, setupMongoConnection } from "src/mongodb"
 import { getTitle } from "src/notifications/payment"
 import { getCurrentPrice } from "src/realtimePrice"
+import { UserWallet } from "src/userWallet"
 import {
   bitcoindDefaultClient,
   bitcoindHotClient,
@@ -134,12 +140,50 @@ const lnd_onchain_funding = async ({ walletDestination }) => {
   await Promise.all([checkBalance(), fundWallet()])
 }
 
+const bitcoind_onchain_funding = async ({ walletDestination }) => {
+  const address = await walletDestination.getOnChainAddressBitcoind()
+  expect(address.substr(0, 4)).toBe("bcrt")
+
+  // TODO?
+  // const checkBalance = async () => { ...
+
+  const fundWallet = async () => {
+    await sleep(100)
+    const txid = await bitcoindDefaultClient.sendToAddress(address, amount_BTC)
+    await bitcoindDefaultClient.generateToAddress(6, RANDOM_ADDRESS)
+
+    const sats = btc2sat(amount_BTC)
+    // const fee = await PayOnChainClient.clientPayInstance().getTxnFee(txid)
+    // TODO? Not really needed if is from outside
+
+    const memo = `bitcoind_onchain_funding username: ${walletDestination.user.username}`
+
+    const metadata = {
+      currency: "BTC",
+      hash: txid,
+      type: "onchain_payment",
+      pending: false,
+      ...UserWallet.getCurrencyEquivalent({ sats, fee: 0 }),
+      address,
+    }
+
+    await MainBook.entry(memo)
+      // TODO?
+      .credit(walletDestination.user.accountPath, sats, metadata)
+      .debit(bitcoindAccountingPath, sats, metadata)
+      .commit()
+  }
+
+  await Promise.all([fundWallet()])
+}
+
 it("createsBitcoindHotWallet", async () => {
   const { name } = await bitcoindHotClient.createWallet("hot")
   expect(name).toBe("hot")
 })
 
 it("user0IsCreditedForOnChainTransaction", async () => {
+  //   await bitcoind_onchain_funding({ walletDestination: walletUser0 })
   await lnd_onchain_funding({ walletDestination: walletUser0 })
 })
 
@@ -148,6 +192,7 @@ it("user11IsCreditedForOnChainSendAllTransaction", async () => {
   const level1WithdrawalLimit = yamlConfig.limits.withdrawal.level["1"] // sats
   amount_BTC = sat2btc(level1WithdrawalLimit)
   walletUser11 = await getUserWallet(11)
+  //   await bitcoind_onchain_funding({ walletDestination: walletUser11 })
   await lnd_onchain_funding({ walletDestination: walletUser11 })
 })
 
@@ -155,10 +200,12 @@ it("user12IsCreditedForOnChainOnUsSendAllTransaction", async () => {
   const level1OnUsLimit = yamlConfig.limits.onUs.level["1"] // sats
   amount_BTC = sat2btc(level1OnUsLimit)
   walletUser12 = await getUserWallet(12)
+  //   await bitcoind_onchain_funding({ walletDestination: walletUser12 })
   await lnd_onchain_funding({ walletDestination: walletUser12 })
 })
 
 it("fundingFunderWithOnchainTxFromBitcoind", async () => {
+  //   await bitcoind_onchain_funding({ walletDestination: funderWallet })
   await lnd_onchain_funding({ walletDestination: funderWallet })
 })
 
@@ -288,6 +335,7 @@ it("allows fee exemption for specific users", async () => {
   walletUser2.user.depositFeeRatio = 0
   await walletUser2.user.save()
   const { BTC: initBalanceUser2 } = await walletUser2.getBalances()
+  //   await bitcoind_onchain_funding({ walletDestination: walletUser2 })
   await lnd_onchain_funding({ walletDestination: walletUser2 })
   const { BTC: finalBalanceUser2 } = await walletUser2.getBalances()
   expect(finalBalanceUser2).toBe(initBalanceUser2 + btc2sat(amount_BTC))
