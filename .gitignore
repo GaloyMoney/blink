@@ -35,3 +35,5 @@ charts/configs/bitcoind/*
 coverage
 lib
 artifacts
+
+.env*
