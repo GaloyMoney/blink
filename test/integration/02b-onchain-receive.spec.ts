@@ -183,8 +183,8 @@ it("createsBitcoindHotWallet", async () => {
 })
 
 it("user0IsCreditedForOnChainTransaction", async () => {
-  await bitcoind_onchain_funding({ walletDestination: walletUser0 })
-  //   await lnd_onchain_funding({ walletDestination: walletUser0 })
+  //   await bitcoind_onchain_funding({ walletDestination: walletUser0 })
+  await lnd_onchain_funding({ walletDestination: walletUser0 })
 })
 
 it("user11IsCreditedForOnChainSendAllTransaction", async () => {
@@ -192,24 +192,23 @@ it("user11IsCreditedForOnChainSendAllTransaction", async () => {
   const level1WithdrawalLimit = yamlConfig.limits.withdrawal.level["1"] // sats
   amount_BTC = sat2btc(level1WithdrawalLimit)
   walletUser11 = await getUserWallet(11)
-  await bitcoind_onchain_funding({ walletDestination: walletUser11 })
-  //   await lnd_onchain_funding({ walletDestination: walletUser11 })
+  //   await bitcoind_onchain_funding({ walletDestination: walletUser11 })
+  await lnd_onchain_funding({ walletDestination: walletUser11 })
 })
 
 it("user12IsCreditedForOnChainOnUsSendAllTransaction", async () => {
   const level1OnUsLimit = yamlConfig.limits.onUs.level["1"] // sats
   amount_BTC = sat2btc(level1OnUsLimit)
   walletUser12 = await getUserWallet(12)
-  await bitcoind_onchain_funding({ walletDestination: walletUser12 })
-  //   await lnd_onchain_funding({ walletDestination: walletUser12 })
+  //   await bitcoind_onchain_funding({ walletDestination: walletUser12 })
+  await lnd_onchain_funding({ walletDestination: walletUser12 })
 })
 
 it("fundingFunderWithOnchainTxFromBitcoind", async () => {
-  await bitcoind_onchain_funding({ walletDestination: funderWallet })
-  //   await lnd_onchain_funding({ walletDestination: funderWallet })
+  //   await bitcoind_onchain_funding({ walletDestination: funderWallet })
+  await lnd_onchain_funding({ walletDestination: funderWallet })
 })
 
-// Now tests start to fail here (same reason: checkIsBalanced)
 it("creditingLnd1WithSomeFundToCreateAChannel", async () => {
   const { address } = await createChainAddress({
     lnd: lnd1,
@@ -336,8 +335,8 @@ it("allows fee exemption for specific users", async () => {
   walletUser2.user.depositFeeRatio = 0
   await walletUser2.user.save()
   const { BTC: initBalanceUser2 } = await walletUser2.getBalances()
-  await bitcoind_onchain_funding({ walletDestination: walletUser2 })
-  //   await lnd_onchain_funding({ walletDestination: walletUser2 })
+  //   await bitcoind_onchain_funding({ walletDestination: walletUser2 })
+  await lnd_onchain_funding({ walletDestination: walletUser2 })
   const { BTC: finalBalanceUser2 } = await walletUser2.getBalances()
   expect(finalBalanceUser2).toBe(initBalanceUser2 + btc2sat(amount_BTC))
 })
