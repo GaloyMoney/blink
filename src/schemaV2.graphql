@@ -1,0 +1,471 @@
+#########################
+### SCALARs
+#########################
+
+scalar Date
+scalar SatAmount
+# scalar PositiveSatAmount
+
+scalar Username # @pattern(regexp: "^[A-Za-z0-9_]+$") @stringLength(min: 3, max: 50)
+scalar Memo # @stringLength(max: 1024)
+scalar Phone # @pattern(regexp: "^\\+[0-9]+$")
+scalar Name # @stringLength(min: 3, max: 50)
+scalar AuthCode # @range(min: 100000, max: 999999)
+
+scalar OnChainAddress # @stringLength(min: 42, max: 42) @pattern(regexp: "^[A-Fa-f0-9]+$") (bc1 for mainnet, tb1)
+scalar FeeReimbursementHash # ...
+scalar LnInvoice # BOLT 11 - @pattern(regexp: "^ln[A-Za-z0-9]+$")
+scalar LnInvoiceHash # @stringLength(min: 64, max: 64) @pattern(regexp: "^[A-Fa-f0-9]+$")
+
+#########################
+### ENUMs
+#########################
+
+enum Currency {
+  USD
+  BTC
+}
+
+enum TxnDirection {
+  SEND
+  RECEIVE
+}
+
+enum AccountStatus {
+  ACTIVE
+  LOCKED
+}
+
+enum Language {
+  EN_US
+  ES_SV
+}
+
+enum AccountLevel {
+  ONE # We user's phone number
+  TWO # We have user's ID
+}
+
+enum InvoiceReceiveStatus {
+  PAID
+  NOT_PAID
+}
+
+enum GraphRange {
+  ONE_DAY
+  ONE_WEEK
+  ONE_MONTH
+  ONE_YEAR
+  FIVE_YEARS
+}
+
+enum TxnStatus {
+  PENDING
+  SUCCESS
+  FAILURE
+}
+
+#########################
+### Interfaces
+#########################
+interface BaseAccount {
+  level: AccountLevel!
+  status: AccountStatus!
+  wallets: [Wallet!]!
+  limits: Limits!
+  csvTransactions(walletId: ID!): String!
+}
+
+interface BaseTransaction {
+  id: ID!
+  direction: TxnDirection! # Inferred/Cached from amount
+  amount: TxnAmount!
+  convertedAmount: TxnAmount!
+  description: String!
+  status: TxnStatus!
+  createdAt: Date!
+}
+
+#########################
+### Unions
+#########################
+
+union Account = ConsumerAcount | MerchantAcount
+union OnUsAddress = Username | OnChainAddress | LnInvoinceHash | FeeReimbursementHash
+union Transacion = OnUsTransaction | LnTransaction | OnChainTransaction
+union MobileVersions = AndroirdVersions | IosVersions
+
+#########################
+### Custom Types
+#########################
+
+type User {
+  id: ID!
+  username: Username!
+  phone: Phone!
+  contacts: [Contact!]!
+  language: Language!
+  quizQuestions: [UserQuizQuestion!]!
+  defaultAccount: Account!
+  # accounts: [Account!]! # Future planning
+  createdAt: Date!
+}
+
+type ConsumerAccount implements BaseAccount {
+  user: [User!]!
+
+  level: AccountLevel!
+  status: AccountStatus!
+  wallets: [Wallet!]!
+  csvTransactions(walletId: ID!): String!
+}
+
+type MerchantAccount implements BaseAccount {
+  user: [User!]!
+  mapInfo: MapInfo!
+
+  level: AccountLevel!
+  status: AccountStatus!
+  wallets: [Wallet!]!
+  csvTransactions(walletId: ID!): String!
+}
+
+# # Future planning
+# type CorporateAccount implements BaseAccount {
+#   user: [User!]!
+# }
+
+type TxnAmount {
+  currency: Currency!
+  amount: Int! # Negative when sending
+  fee: Int!
+}
+
+type Balance {
+  currency: Currency!
+  amount: Int!
+}
+
+# Using the same wallet (ex, Bitcoin Beach)
+# 1) Pay with username, 2) Pay with LN, 3) Pay OnChain
+type OnUsTransaction implements BaseTransaction {
+  id: ID!
+  direction: TxnDirection!
+  amount: TxnAmount!
+  convertedAmount: TxnAmount!
+  description: String!
+  status: TxnStatus!
+  createdAt: Date!
+
+  address: OnUsAddress!
+}
+
+type OnChainTransaction implements BaseTransaction {
+  id: ID!
+  direction: TxnDirection!
+  amount: TxnAmount!
+  convertedAmount: TxnAmount!
+  description: String!
+  status: TxnStatus!
+  createdAt: Date!
+
+  addresses: [OnChainAddress!]!
+}
+
+type LnTransaction implements BaseTransaction {
+  id: ID!
+  direction: TxnDirection!
+  amount: TxnAmount!
+  convertedAmount: TxnAmount!
+  description: String!
+  status: TxnStatus!
+  createdAt: Date!
+
+  hash: LnInvoinceHash! # 256 bits (64 chars)
+}
+
+# type exchangeTransaction implements Transaction {
+#   rate: ...
+#   fee: ...
+# }
+
+# Should we convert this to generic currency/currency ratio?
+type Price {
+  id: ID! # Currently a date
+  date: Date!
+  price: Float! # price of 1 sat in USD (currently)
+}
+
+type QuizQuestion {
+  """
+  The earn reward for the app to display their associated amount
+  """
+  id: ID!
+  earnAmount: SatAmount!
+}
+
+type UserQuizQuestion {
+  question: QuizQuestion!
+  completed: Boolean!
+}
+
+# Account? Multiple wallets
+type Wallet {
+  id: ID!
+  balance: Balance!
+  transactions: [Transaction!]!
+}
+
+type Contact {
+  id: Username!
+  name: String # name can be set by the user
+  transactionsCount: Int! # number of transactions
+}
+
+type MapInfo {
+  mapTitle: String!
+  mapCoordinate: Coordinate!
+}
+
+type AndroirdVersions {
+  minSupported: Int!
+  currentSupported: Int!
+}
+
+type IosVersions {
+  minSupported: Int!
+  currentSupported: Int!
+}
+
+type Coordinate {
+  longitude: Float!
+  latitude: Float!
+}
+
+type Marker {
+  id: ID!
+  username: Username
+  mapInfo: MapInfo!
+}
+
+type Limits {
+  accountOldEnoughForWithdrawal: Boolean!
+  currentMaxSend: Int! # Ln | OnChain
+  cucrrentMaxSendOnUs: Int!
+}
+
+#########################
+### Root Query
+#########################
+type Query {
+  me: User
+  priceListForGraph(range: GraphRange!): [Price!]
+  quizQuestions: [QuizQuestion!]
+  merchantLocations: [Marker!]
+  mobileVersions: MobileVersions
+  usernameExists(username: Username!): Boolean
+  depositFeePercentage: Float # Static
+  onChainTxnFee(address: Address!, amount: SatAmount!): SatAmount # Dynamic
+
+  # settings...
+}
+
+#########################
+### Input and Payload types for mutations
+#########################
+
+type UserError {
+  message: String! # i18n?
+  fields: [String!]! # where the error occurred
+}
+
+type LnInvoicePayload {
+  errors: [UserError!]!
+  lnInvoice: LnInvoice
+}
+
+input UsernameInput {
+  username: Username!
+}
+
+input LnInvoiceInput {
+  username: Username!
+  amount: SatAmount!
+}
+
+type OnChainAddressPayload {
+  errors: [UserError!]!
+  onChainAddress: OnChainAddress
+}
+
+type TxnStatusPayload {
+  errors: [UserError!]!
+  status: TxnStatus
+}
+
+type SatAmountPayload {
+  errors: [UserError!]!
+  amount: SatAmount
+}
+
+input PhoneInput {
+  phone: Phone!
+}
+
+input LoginInput {
+  phone: Phone!
+  code: AuthCode!
+}
+
+input LanguageUpdateInput {
+  language: Language!
+}
+
+input UsernameUpdateInput {
+  username: Username!
+}
+
+input ContactUpdateInput {
+  username: Username!
+  name: Name!
+}
+
+input DeviceNotificationTokenInput {
+  deviceToken: String!
+}
+
+input OnChainPaymentInput {
+  address: Address!
+  amount: SatAmount!
+  memo: Memo
+}
+
+type OnChainPaymentAllInput {
+  address: Address!
+  memo: Memo
+}
+
+type LnAmountlessInvoiceCreateInput {
+  memo: Memo
+}
+
+type LnInvoiceCreateInput {
+  amount: SatAmount!
+  memo: Memo
+}
+
+type LnAmountlessInvoiceCreateForUserInput {
+  username: Username!
+  memo: Memo
+}
+
+type LnInvoiceCreateForUserInput {
+  username: Username!
+  amount: SatAmount!
+  memo: Memo
+}
+
+type LnAmountlessInvoicePaymentInput {
+  invoice: LnInvoice!
+  memo: Memo
+}
+
+type LnInvoicePaymentInput {
+  invoice: LnInvoice!
+  amount: SatAmount!
+  memo: Memo
+}
+
+type LnPushPaymentFeeProbeInput {
+  destination: String!
+  amount: SatAmount!
+}
+
+type LnAmountLessInvoiceFeeProbeInput {
+  invoice: LnInvoice!
+}
+
+type LnInvoiceFeeProbeInput {
+  invoice: LnInvoice!
+  amount: SatAmuont!
+}
+
+type LnUsernamePaymentInput {
+  username: Username!
+  amount: SatAmount!
+  destination: pubKey!
+  memo: Memo
+}
+
+type UserPaymentInput {
+  amount: SatAmount!
+  username: Username!
+  memo: Memo
+}
+
+type AuthTokenPayload {
+  errors: [UserError!]!
+  authToken: AuthToken
+}
+
+type AuthTokenPayload {
+  errors: [UserError!]!
+  quizQuestions: [UserQuizQuestion!]
+}
+
+#########################
+### Root Mutation
+#########################
+type Mutation {
+  ## Recieve payment from anonymous source ##
+  publicLnAmountlessInvoiceCreate(input: UsernameInput!): LnInvoicePayload!
+  publicLnInvoiceCreate(input: LnInvoiceInput!): LnInvoicePayload!
+
+  ## User mutations ##
+  userRequestPhoneCode(input: PhoneInput!): BooleanPayload!
+  userLogin(input: LoginInput!): AuthTokenPayload!
+  userQuizeQuestionsUpdateCompleted(ids: [ID]): QuizQuestionsUpdateCompletedPayload!
+  userLanguageUpdate(input: LanguageUpdateInput!): UserPayload!
+  usernameUpdate(input: UsernameUpdateInput!): UserPayload!
+  userContactUpdate(input: ContactUpdateInput!): BooleanPayload!
+
+  ## Device mutations ##
+  deviceNotificationTokenCreate(input: DeviceNotificationTokenInput!): BooleanPayload!
+
+  ## onChain mutations ##
+  onChainAddressCreate: OnChainAddressPayload! # always a mutation
+  onChainAddressCurrent: OnChainAddressPayload! # mutation first time it's issued, then query
+  onChainPaymentSend(input: OnChainPaymentInput!): TxnStatusPayload!
+  onChainPaymentSendAll(input: OnChainPaymentAllInput!): TxnStatusPayload!
+
+  ## lightning mutations ##
+  lnAmountlessInvoiceCreate(input: LnAmountlessInvoiceCreateInput!): LnInvoicePayload!
+  lnInvoiceCreate(input: LnInvoiceCreateInput!): LnInvoicePayload!
+  lnAmountlessInvoicePaymentSend(input: LnAmountlessInvoicePaymentInput!): TxnStatusPayload!
+  lnInvoicePaymentSend(input LnInvoicePaymentInput!): TxnStatusPayload!
+  lnPushPaymentFeeProbe(intput: LnPushPaymentFeeProbeInput!): SatAmountPayload!
+  lnAmountLessInvoiceFeeProbe(intput: LnAmountLessInvoiceFeeProbeInput!): SatAmountPayload!
+  lnInvoiceFeeProbe(intput: LnInvoiceFeeProbeInput!): SatAmountPayload!
+
+  ## mutations that do not require auth ##
+  LnAmountlessInvoiceCreateForUser(input: LnAmountlessInvoiceCreateForUserInput!): LnInvoicePayload!
+  LnInvoiceCreateForUser(input: LnInvoiceCreateForUserInput): LnInvoicePayload
+
+  ## Ledger entry (not part of LN) ##
+  UserPaymentSend(input: UserPaymentInput!): TxnStatusPayload!
+
+  ## Not used yet ##
+  LnUsernamePaymentSend(input: LnUsernamePaymentInput!): TxnStatusPayload!
+}
+
+#########################
+### Root Subscription
+#########################
+
+type Subscription {
+  priceCurrent: Price!
+
+  LnInvoiceReceiveStatus(hash: LnInvoiceHash!) {
+    status: InvoiceReceiveStatus!
+  }
+}
