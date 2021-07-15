@@ -26,7 +26,7 @@ enum Currency {
   BTC
 }
 
-enum TxnDirection {
+enum TxDirection {
   SEND
   RECEIVE
 }
@@ -59,7 +59,7 @@ enum GraphRange {
   FIVE_YEARS
 }
 
-enum TxnStatus {
+enum TxStatus {
   PENDING
   SUCCESS
   FAILURE
@@ -78,11 +78,11 @@ interface BaseAccount {
 
 interface BaseTransaction {
   id: ID!
-  direction: TxnDirection! # Inferred/Cached from amount
-  amount: TxnAmount!
-  convertedAmount: TxnAmount!
+  direction: TxDirection! # Inferred/Cached from amount
+  amount: TxAmount!
+  convertedAmount: TxAmount!
   description: String!
-  status: TxnStatus!
+  status: TxStatus!
   createdAt: Date!
 }
 
@@ -135,7 +135,7 @@ type MerchantAccount implements BaseAccount {
 #   user: [User!]!
 # }
 
-type TxnAmount {
+type TxAmount {
   currency: Currency!
   amount: Int! # Negative when sending
   fee: Int!
@@ -150,11 +150,11 @@ type Balance {
 # 1) Pay with username, 2) Pay with LN, 3) Pay OnChain
 type OnUsTransaction implements BaseTransaction {
   id: ID!
-  direction: TxnDirection!
-  amount: TxnAmount!
-  convertedAmount: TxnAmount!
+  direction: TxDirection!
+  amount: TxAmount!
+  convertedAmount: TxAmount!
   description: String!
-  status: TxnStatus!
+  status: TxStatus!
   createdAt: Date!
 
   address: OnUsAddress!
@@ -162,11 +162,11 @@ type OnUsTransaction implements BaseTransaction {
 
 type OnChainTransaction implements BaseTransaction {
   id: ID!
-  direction: TxnDirection!
-  amount: TxnAmount!
-  convertedAmount: TxnAmount!
+  direction: TxDirection!
+  amount: TxAmount!
+  convertedAmount: TxAmount!
   description: String!
-  status: TxnStatus!
+  status: TxStatus!
   createdAt: Date!
 
   addresses: [OnChainAddress!]!
@@ -174,11 +174,11 @@ type OnChainTransaction implements BaseTransaction {
 
 type LnTransaction implements BaseTransaction {
   id: ID!
-  direction: TxnDirection!
-  amount: TxnAmount!
-  convertedAmount: TxnAmount!
+  direction: TxDirection!
+  amount: TxAmount!
+  convertedAmount: TxAmount!
   description: String!
-  status: TxnStatus!
+  status: TxStatus!
   createdAt: Date!
 
   hash: LnInvoinceHash! # 256 bits (64 chars)
@@ -223,8 +223,8 @@ type Contact {
 }
 
 type MapInfo {
-  mapTitle: String!
-  mapCoordinate: Coordinate!
+  title: String!
+  coordinates: Coordinates!
 }
 
 type AndroirdVersions {
@@ -237,12 +237,12 @@ type IosVersions {
   currentSupported: Int!
 }
 
-type Coordinate {
+type Coordinates {
   longitude: Float!
   latitude: Float!
 }
 
-type Marker {
+type MapMarker {
   id: ID!
   username: Username
   mapInfo: MapInfo!
@@ -261,11 +261,11 @@ type Query {
   me: User
   priceListForGraph(range: GraphRange!): [Price!]
   quizQuestions: [QuizQuestion!]
-  merchantLocations: [Marker!]
+  merchantMapMarkers: [MapMarker!]
   mobileVersions: MobileVersions
   usernameExists(username: Username!): Boolean
   depositFeePercentage: Float # Static
-  onChainTxnFee(address: Address!, amount: SatAmount!): SatAmount # Dynamic
+  onChainTxFee(address: Address!, amount: SatAmount!): SatAmount # Dynamic
 
   # settings...
 }
@@ -298,9 +298,9 @@ type OnChainAddressPayload {
   onChainAddress: OnChainAddress
 }
 
-type TxnStatusPayload {
+type TxStatusPayload {
   errors: [UserError!]!
-  status: TxnStatus
+  status: TxStatus
 }
 
 type SatAmountPayload {
@@ -413,6 +413,11 @@ type AuthTokenPayload {
   quizQuestions: [UserQuizQuestion!]
 }
 
+type SuccessPayload {
+  errors: [UserError!]!
+  success: Boolean
+}
+
 #########################
 ### Root Mutation
 #########################
@@ -422,40 +427,40 @@ type Mutation {
   publicLnInvoiceCreate(input: LnInvoiceInput!): LnInvoicePayload!
 
   ## User mutations ##
-  userRequestPhoneCode(input: PhoneInput!): BooleanPayload!
+  userRequestPhoneCode(input: PhoneInput!): SuccessPayload!
   userLogin(input: LoginInput!): AuthTokenPayload!
   userQuizeQuestionsUpdateCompleted(ids: [ID]): QuizQuestionsUpdateCompletedPayload!
   userLanguageUpdate(input: LanguageUpdateInput!): UserPayload!
   usernameUpdate(input: UsernameUpdateInput!): UserPayload!
-  userContactUpdate(input: ContactUpdateInput!): BooleanPayload!
+  userContactUpdate(input: ContactUpdateInput!): SuccessPayload!
 
   ## Device mutations ##
-  deviceNotificationTokenCreate(input: DeviceNotificationTokenInput!): BooleanPayload!
+  deviceNotificationTokenCreate(input: DeviceNotificationTokenInput!): SuccessPayload!
 
   ## onChain mutations ##
   onChainAddressCreate: OnChainAddressPayload! # always a mutation
   onChainAddressCurrent: OnChainAddressPayload! # mutation first time it's issued, then query
-  onChainPaymentSend(input: OnChainPaymentInput!): TxnStatusPayload!
-  onChainPaymentSendAll(input: OnChainPaymentAllInput!): TxnStatusPayload!
+  onChainPaymentSend(input: OnChainPaymentInput!): TxStatusPayload!
+  onChainPaymentSendAll(input: OnChainPaymentAllInput!): TxStatusPayload!
 
   ## lightning mutations ##
   lnAmountlessInvoiceCreate(input: LnAmountlessInvoiceCreateInput!): LnInvoicePayload!
   lnInvoiceCreate(input: LnInvoiceCreateInput!): LnInvoicePayload!
-  lnAmountlessInvoicePaymentSend(input: LnAmountlessInvoicePaymentInput!): TxnStatusPayload!
-  lnInvoicePaymentSend(input LnInvoicePaymentInput!): TxnStatusPayload!
+  lnAmountlessInvoicePaymentSend(input: LnAmountlessInvoicePaymentInput!): TxStatusPayload!
+  lnInvoicePaymentSend(input LnInvoicePaymentInput!): TxStatusPayload!
   lnPushPaymentFeeProbe(intput: LnPushPaymentFeeProbeInput!): SatAmountPayload!
   lnAmountLessInvoiceFeeProbe(intput: LnAmountLessInvoiceFeeProbeInput!): SatAmountPayload!
   lnInvoiceFeeProbe(intput: LnInvoiceFeeProbeInput!): SatAmountPayload!
 
   ## mutations that do not require auth ##
-  LnAmountlessInvoiceCreateForUser(input: LnAmountlessInvoiceCreateForUserInput!): LnInvoicePayload!
-  LnInvoiceCreateForUser(input: LnInvoiceCreateForUserInput): LnInvoicePayload
+  lnAmountlessInvoiceCreateForUser(input: LnAmountlessInvoiceCreateForUserInput!): LnInvoicePayload!
+  lnInvoiceCreateForUser(input: LnInvoiceCreateForUserInput): LnInvoicePayload
 
   ## Ledger entry (not part of LN) ##
-  UserPaymentSend(input: UserPaymentInput!): TxnStatusPayload!
+  userPaymentSend(input: UserPaymentInput!): TxStatusPayload!
 
   ## Not used yet ##
-  LnUsernamePaymentSend(input: LnUsernamePaymentInput!): TxnStatusPayload!
+  lnUsernamePaymentSend(input: LnUsernamePaymentInput!): TxStatusPayload!
 }
 
 #########################
@@ -465,7 +470,7 @@ type Mutation {
 type Subscription {
   priceCurrent: Price!
 
-  LnInvoiceReceiveStatus(hash: LnInvoiceHash!) {
+  lnInvoiceReceiveStatus(hash: LnInvoiceHash!) {
     status: InvoiceReceiveStatus!
   }
 }
