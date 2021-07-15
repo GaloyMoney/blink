@@ -1,6 +1,6 @@
 import _ from "lodash"
 import { OnChainMixin } from "../OnChain"
-import { ILightningWalletUser } from "../types"
+import { WalletConstructorArgs } from "../types"
 import { UserWallet } from "../userWallet"
 import { btc2sat } from "../utils"
 
@@ -10,10 +10,10 @@ import { createHedgingStrategy } from "./HedgingStrategyFactory"
 // const activeStrategy = HedgingStrategies.FtxPerpetualSwap
 const activeStrategy = HedgingStrategies.OkexPerpetualSwap
 
-export class SimpleDealerWallet extends OnChainMixin(UserWallet) {
+export class DealerWallet extends OnChainMixin(UserWallet) {
   strategy: IHedgingStrategy
 
-  constructor({ user, logger }: ILightningWalletUser) {
+  constructor({ user, logger }: WalletConstructorArgs) {
     super({ user, logger })
     this.strategy = createHedgingStrategy(activeStrategy, logger)
     this.logger = logger.child({ topic: "dealer" })
