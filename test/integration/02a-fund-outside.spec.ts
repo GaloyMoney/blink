@@ -4,7 +4,7 @@
 import { createChainAddress } from "lightning"
 import mongoose from "mongoose"
 import { setupMongoConnection } from "src/mongodb"
-import { bitcoindDefaultClient, bitcoindHotWalletClient } from "src/utils"
+import { bitcoindDefaultClient, bitcoindOutsideWalletClient } from "src/utils"
 import {
   checkIsBalanced,
   lnd1,
@@ -55,12 +55,12 @@ it("funds outside bitcoind wallet", async () => {
   // const { name } = await bitcoindDefaultClient.createWallet("")
   // expect(name).toBe("")
 
-  balance = await bitcoindDefaultClient.getBalance()
+  balance = await bitcoindOutsideWalletClient.getBalance()
 
-  const bitcoindAddress = await bitcoindDefaultClient.getNewAddress()
-  await bitcoindDefaultClient.generateToAddress(numOfBlock, bitcoindAddress)
-  await bitcoindDefaultClient.generateToAddress(100, RANDOM_ADDRESS)
-  balance = await bitcoindDefaultClient.getBalance()
+  const bitcoindAddress = await bitcoindOutsideWalletClient.getNewAddress()
+  await bitcoindOutsideWalletClient.generateToAddress(numOfBlock, bitcoindAddress)
+  await bitcoindOutsideWalletClient.generateToAddress(100, RANDOM_ADDRESS)
+  balance = await bitcoindOutsideWalletClient.getBalance()
   expect(balance).toBe(initialBitcoinWalletBalance + blockReward * numOfBlock)
 })
 
@@ -70,8 +70,9 @@ it("funds outside lnd node", async () => {
   ).address
   expect(lndOutside1_wallet_addr.substr(0, 4)).toBe("bcrt")
 
-  await bitcoindDefaultClient.sendToAddress(lndOutside1_wallet_addr, amount_BTC)
-  await bitcoindDefaultClient.generateToAddress(6, RANDOM_ADDRESS)
+  // Funded by the outside wallet
+  await bitcoindOutsideWalletClient.sendToAddress(lndOutside1_wallet_addr, amount_BTC)
+  await bitcoindOutsideWalletClient.generateToAddress(6, RANDOM_ADDRESS)
 
   await waitUntilBlockHeight({ lnd: lnd1, blockHeight: 100 + numOfBlock + 6 })
   await waitUntilBlockHeight({ lnd: lndOutside1, blockHeight: 100 + numOfBlock + 6 })

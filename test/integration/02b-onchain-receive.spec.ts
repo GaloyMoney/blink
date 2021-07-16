@@ -24,7 +24,7 @@ import { getCurrentPrice } from "src/realtimePrice"
 import { UserWallet } from "src/userWallet"
 import {
   bitcoindDefaultClient,
-  bitcoindHotWalletClient,
+  bitcoindOutsideWalletClient,
   btc2sat,
   sat2btc,
   sleep,
@@ -70,7 +70,7 @@ beforeEach(async () => {
 
   funderWallet = await getFunderWallet({ logger: baseLogger })
 
-  initBlockCount = await bitcoindDefaultClient.getBlockCount()
+  initBlockCount = await bitcoindOutsideWalletClient.getBlockCount()
   initialBalanceUser0 = (await walletUser0.getBalances()).BTC
 
   amount_BTC = +(1 + Math.random()).toPrecision(9)
@@ -78,7 +78,7 @@ beforeEach(async () => {
 })
 
 afterEach(async () => {
-  await bitcoindDefaultClient.generateToAddress(3, RANDOM_ADDRESS)
+  await bitcoindOutsideWalletClient.generateToAddress(3, RANDOM_ADDRESS)
   await sleep(250)
   await checkIsBalanced()
 })
@@ -134,8 +134,8 @@ const lnd_onchain_funding = async ({ walletDestination }) => {
 
   const fundWallet = async () => {
     await sleep(100)
-    await bitcoindDefaultClient.sendToAddress(address, amount_BTC)
-    await bitcoindDefaultClient.generateToAddress(6, RANDOM_ADDRESS)
+    await bitcoindOutsideWalletClient.sendToAddress(address, amount_BTC)
+    await bitcoindOutsideWalletClient.generateToAddress(6, RANDOM_ADDRESS)
   }
 
   await Promise.all([checkBalance(), fundWallet()])
@@ -150,8 +150,8 @@ const bitcoind_onchain_funding = async ({ walletDestination }) => {
 
   const fundWallet = async () => {
     await sleep(100)
-    const txid = await bitcoindDefaultClient.sendToAddress(address, amount_BTC)
-    await bitcoindDefaultClient.generateToAddress(6, RANDOM_ADDRESS)
+    const txid = await bitcoindOutsideWalletClient.sendToAddress(address, amount_BTC)
+    await bitcoindOutsideWalletClient.generateToAddress(6, RANDOM_ADDRESS)
 
     const sats = btc2sat(amount_BTC)
     // const fee = await PayOnChainClient.clientPayInstance().getTxnFee(txid)
@@ -179,7 +179,7 @@ const bitcoind_onchain_funding = async ({ walletDestination }) => {
 }
 
 it("createsBitcoindHotWallet", async () => {
-  const { name } = await bitcoindHotWalletClient.createWallet("hot")
+  const { name } = await bitcoindDefaultClient.createWallet("hot")
   expect(name).toBe("hot")
 })
 
@@ -217,8 +217,8 @@ it("creditingLnd1WithSomeFundToCreateAChannel", async () => {
   })
 
   const amount = 1
-  await bitcoindDefaultClient.sendToAddress(address, amount)
-  await bitcoindDefaultClient.generateToAddress(6, RANDOM_ADDRESS)
+  await bitcoindOutsideWalletClient.sendToAddress(address, amount)
+  await bitcoindOutsideWalletClient.generateToAddress(6, RANDOM_ADDRESS)
   await waitUntilBlockHeight({ lnd: lnd1, blockHeight: initBlockCount + 6 })
 
   const sats = btc2sat(amount)
@@ -239,7 +239,7 @@ it("identifiesUnconfirmedIncomingOnChainTxn", async () => {
 
   await Promise.all([
     once(sub, "chain_transaction"),
-    bitcoindDefaultClient.sendToAddress(address, amount_BTC),
+    bitcoindOutsideWalletClient.sendToAddress(address, amount_BTC),
   ])
 
   await sleep(1000)
@@ -265,7 +265,7 @@ it("identifiesUnconfirmedIncomingOnChainTxn", async () => {
   )
 
   await Promise.all([
-    bitcoindDefaultClient.generateToAddress(3, RANDOM_ADDRESS),
+    bitcoindOutsideWalletClient.generateToAddress(3, RANDOM_ADDRESS),
     once(sub, "chain_transaction"),
   ])
 
@@ -302,18 +302,22 @@ it("batch send transaction", async () => {
 
   const outputs = [output0, output1]
 
-  const { psbt } = await bitcoindDefaultClient.walletCreateFundedPsbt([], outputs)
+  const { psbt } = await bitcoindOutsideWalletClient.walletCreateFundedPsbt([], outputs)
   // const decodedPsbt1 = await bitcoindDefaultClient.decodePsbt(psbt)
   // const analysePsbt1 = await bitcoindDefaultClient.analyzePsbt(psbt)
-  const walletProcessPsbt = await bitcoindDefaultClient.walletProcessPsbt(psbt)
+  const walletProcessPsbt = await bitcoindOutsideWalletClient.walletProcessPsbt(psbt)
   // const decodedPsbt2 = await bitcoindDefaultClient.decodePsbt(walletProcessPsbt.psbt)
   // const analysePsbt2 = await bitcoindDefaultClient.analyzePsbt(walletProcessPsbt.psbt)
-  const finalizedPsbt = await bitcoindDefaultClient.finalizePsbt(walletProcessPsbt.psbt)
-  await bitcoindDefaultClient.sendRawTransaction(finalizedPsbt.hex)
+  const finalizedPsbt = await bitcoindOutsideWalletClient.finalizePsbt(
+    walletProcessPsbt.psbt,
+  )
+  await bitcoindOutsideWalletClient.sendRawTransaction(finalizedPsbt.hex)
 
-  const { txid } = await bitcoindDefaultClient.decodeRawTransaction(finalizedPsbt.hex)
+  const { txid } = await bitcoindOutsideWalletClient.decodeRawTransaction(
+    finalizedPsbt.hex,
+  )
 
-  await bitcoindDefaultClient.generateToAddress(6, RANDOM_ADDRESS)
+  await bitcoindOutsideWalletClient.generateToAddress(6, RANDOM_ADDRESS)
   // TODO?
   await waitUntilBlockHeight({ lnd: lndonchain, blockHeight: initBlockCount + 6 })
 

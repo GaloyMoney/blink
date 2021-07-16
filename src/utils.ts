@@ -36,10 +36,14 @@ const connection_obj = {
   version: "0.21.0",
 }
 
+// Using a single bitcoind node client
 export const BitcoindClient = ({ wallet = "" }) =>
   new bitcoindClient({ ...connection_obj, wallet })
-export const bitcoindDefaultClient = BitcoindClient({ wallet: "outside" })
-// export const bitcoindDefaultClient = BitcoindClient({ wallet: "" })
+
+// For use when only the bitcoind client itself is needed, not wallet specific
+export const bitcoindDefaultClient = BitcoindClient({ wallet: "" })
+
+export const bitcoindOutsideWalletClient = BitcoindClient({ wallet: "outside" })
 export const bitcoindHotWalletClient = BitcoindClient({ wallet: "hot" })
 
 export const addContact = async ({ uid, username }) => {
