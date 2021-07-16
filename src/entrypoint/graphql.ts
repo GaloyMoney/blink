@@ -447,10 +447,10 @@ export async function startApolloServer() {
 
   server.applyMiddleware({ app })
 
-  await app.listen({ port: 4000 })
+  const httpServer = await app.listen({ port: 4000 })
 
   console.log(`🚀 Server ready at http://localhost:4000${server.graphqlPath}`)
-  return { server, app }
+  return { server, app, httpServer }
 }
 
 setupMongoConnection()
