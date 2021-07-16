@@ -153,8 +153,8 @@ abstract class PayOnChainClient {
 
   static clientPayInstance(): PayOnChainClient {
     // * ALSO change updatePending *
-    return new LndOnChainClient()
-    // return new BitcoindClient()
+    // return new LndOnChainClient()
+    return new BitcoindClient()
   }
 
   abstract getBalance(): Promise<number>
@@ -172,6 +172,7 @@ abstract class PayOnChainClient {
   abstract getTxnFee(id: string): Promise<number>
 }
 
+// eslint-disable-next-line
 class LndOnChainClient extends PayOnChainClient {
   constructor() {
     super()
@@ -259,8 +260,11 @@ export const OnChainMixin = (superclass) =>
     }
 
     async updatePending(lock): Promise<void> {
-      await Promise.all([this.updateOnchainReceipt(lock), super.updatePending(lock)])
-      // await Promise.all([this.updateOnchainReceiptBitcoind(lock), super.updatePending(lock)])
+      // await Promise.all([this.updateOnchainReceipt(lock), super.updatePending(lock)])
+      await Promise.all([
+        this.updateOnchainReceiptBitcoind(lock),
+        super.updatePending(lock),
+      ])
     }
 
     async getOnchainFee({

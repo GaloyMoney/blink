@@ -88,6 +88,7 @@ afterAll(async () => {
   await mongoose.connection.close()
 })
 
+// eslint-disable-next-line
 const lnd_onchain_funding = async ({ walletDestination }) => {
   const lnd = lndonchain
 
@@ -154,14 +155,14 @@ const bitcoind_onchain_funding = async ({ walletDestination }) => {
 
     const sats = btc2sat(amount_BTC)
     // const fee = await PayOnChainClient.clientPayInstance().getTxnFee(txid)
-    // TODO? Not really needed if is from outside
+    // TODO: We do charge a fee
 
     const memo = `bitcoind_onchain_funding username: ${walletDestination.user.username}`
 
     const metadata = {
       currency: "BTC",
       hash: txid,
-      type: "onchain_payment",
+      type: "onchain_payment", // TODO
       pending: false,
       ...UserWallet.getCurrencyEquivalent({ sats, fee: 0 }),
       address,
@@ -183,8 +184,8 @@ it("createsBitcoindHotWallet", async () => {
 })
 
 it("user0IsCreditedForOnChainTransaction", async () => {
-  //   await bitcoind_onchain_funding({ walletDestination: walletUser0 })
-  await lnd_onchain_funding({ walletDestination: walletUser0 })
+  await bitcoind_onchain_funding({ walletDestination: walletUser0 })
+  // await lnd_onchain_funding({ walletDestination: walletUser0 })
 })
 
 it("user11IsCreditedForOnChainSendAllTransaction", async () => {
@@ -192,21 +193,21 @@ it("user11IsCreditedForOnChainSendAllTransaction", async () => {
   const level1WithdrawalLimit = yamlConfig.limits.withdrawal.level["1"] // sats
   amount_BTC = sat2btc(level1WithdrawalLimit)
   walletUser11 = await getUserWallet(11)
-  //   await bitcoind_onchain_funding({ walletDestination: walletUser11 })
-  await lnd_onchain_funding({ walletDestination: walletUser11 })
+  await bitcoind_onchain_funding({ walletDestination: walletUser11 })
+  // await lnd_onchain_funding({ walletDestination: walletUser11 })
 })
 
 it("user12IsCreditedForOnChainOnUsSendAllTransaction", async () => {
   const level1OnUsLimit = yamlConfig.limits.onUs.level["1"] // sats
   amount_BTC = sat2btc(level1OnUsLimit)
   walletUser12 = await getUserWallet(12)
-  //   await bitcoind_onchain_funding({ walletDestination: walletUser12 })
-  await lnd_onchain_funding({ walletDestination: walletUser12 })
+  await bitcoind_onchain_funding({ walletDestination: walletUser12 })
+  // await lnd_onchain_funding({ walletDestination: walletUser12 })
 })
 
 it("fundingFunderWithOnchainTxFromBitcoind", async () => {
-  //   await bitcoind_onchain_funding({ walletDestination: funderWallet })
-  await lnd_onchain_funding({ walletDestination: funderWallet })
+  await bitcoind_onchain_funding({ walletDestination: funderWallet })
+  // await lnd_onchain_funding({ walletDestination: funderWallet })
 })
 
 it("creditingLnd1WithSomeFundToCreateAChannel", async () => {
@@ -218,6 +219,7 @@ it("creditingLnd1WithSomeFundToCreateAChannel", async () => {
   const amount = 1
   await bitcoindDefaultClient.sendToAddress(address, amount)
   await bitcoindDefaultClient.generateToAddress(6, RANDOM_ADDRESS)
+  await waitUntilBlockHeight({ lnd: lnd1, blockHeight: initBlockCount + 6 })
 
   const sats = btc2sat(amount)
   const metadata = { type: "onchain_receipt", currency: "BTC", pending: "false" }
@@ -231,6 +233,7 @@ it("creditingLnd1WithSomeFundToCreateAChannel", async () => {
 it("identifiesUnconfirmedIncomingOnChainTxn", async () => {
   const address = await walletUser0.getOnChainAddress()
 
+  // TODO?
   const sub = subscribeToTransactions({ lnd: lndonchain })
   sub.on("chain_transaction", onchainTransactionEventHandler)
 
@@ -282,9 +285,11 @@ it("identifiesUnconfirmedIncomingOnChainTxn", async () => {
 })
 
 it("batch send transaction", async () => {
-  const address0 = await walletUser0.getOnChainAddress()
+  // const address0 = await walletUser0.getOnChainAddress()
+  const address0 = await walletUser0.getOnChainAddressBitcoind()
   const walletUser4 = await getUserWallet(4)
-  const address4 = await walletUser4.getOnChainAddress()
+  // const address4 = await walletUser4.getOnChainAddress()
+  const address4 = await walletUser4.getOnChainAddressBitcoind()
 
   const { BTC: initBalanceUser4 } = await walletUser4.getBalances()
   console.log({ initBalanceUser4, initialBalanceUser0 })
@@ -306,8 +311,50 @@ it("batch send transaction", async () => {
   const finalizedPsbt = await bitcoindDefaultClient.finalizePsbt(walletProcessPsbt.psbt)
   await bitcoindDefaultClient.sendRawTransaction(finalizedPsbt.hex)
 
+  const { txid } = await bitcoindDefaultClient.decodeRawTransaction(finalizedPsbt.hex)
+
   await bitcoindDefaultClient.generateToAddress(6, RANDOM_ADDRESS)
+  // TODO?
   await waitUntilBlockHeight({ lnd: lndonchain, blockHeight: initBlockCount + 6 })
+
+  // TODO? move before sending?
+  const memo0 = `batch send transaction to ${walletUser0.user.username}`
+  const sats0 = btc2sat(1)
+  const fee0 = Math.round(sats0 * walletUser0.user.depositFeeRatio)
+
+  const metadata0 = {
+    currency: "BTC",
+    hash: txid,
+    type: "onchain_payment", // TODO?
+    pending: false,
+    ...UserWallet.getCurrencyEquivalent({ sats: sats0, fee: fee0 }),
+    address: address0,
+  }
+
+  await MainBook.entry(memo0)
+    .credit(onchainRevenuePath, fee0, metadata0)
+    .credit(walletUser0.user.accountPath, sats0 - fee0, metadata0)
+    .debit(bitcoindAccountingPath, sats0, metadata0)
+    .commit()
+
+  const memo4 = `batch send transaction to ${walletUser4.user.username}`
+  const sats4 = btc2sat(2)
+  const fee4 = Math.round(sats4 * walletUser4.user.depositFeeRatio)
+
+  const metadata4 = {
+    currency: "BTC",
+    hash: txid,
+    type: "onchain_payment",
+    pending: false,
+    ...UserWallet.getCurrencyEquivalent({ sats: sats4, fee: fee4 }),
+    address: address4,
+  }
+
+  await MainBook.entry(memo4)
+    .credit(onchainRevenuePath, fee4, metadata4)
+    .credit(walletUser4.user.accountPath, sats4 - fee4, metadata4)
+    .debit(bitcoindAccountingPath, sats4, metadata4)
+    .commit()
 
   {
     const { BTC: balance0 } = await walletUser0.getBalances()
@@ -335,8 +382,8 @@ it("allows fee exemption for specific users", async () => {
   walletUser2.user.depositFeeRatio = 0
   await walletUser2.user.save()
   const { BTC: initBalanceUser2 } = await walletUser2.getBalances()
-  //   await bitcoind_onchain_funding({ walletDestination: walletUser2 })
-  await lnd_onchain_funding({ walletDestination: walletUser2 })
+  await bitcoind_onchain_funding({ walletDestination: walletUser2 })
+  // await lnd_onchain_funding({ walletDestination: walletUser2 })
   const { BTC: finalBalanceUser2 } = await walletUser2.getBalances()
   expect(finalBalanceUser2).toBe(initBalanceUser2 + btc2sat(amount_BTC))
 })
