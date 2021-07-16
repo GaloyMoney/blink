@@ -1,11 +1,10 @@
-import { forEach, tail } from "lodash"
 import moment from "moment"
-import { setupMongoConnection } from "src/mongodb"
 import { Price } from "src/priceImpl"
+import { forEach, tail } from "lodash"
 import { baseLogger } from "src/logger"
+import { PriceHistory } from "src/schema"
 
 let price: Price
-let mongoose
 const priceResponse = [
   [1595455200000, 9392.7, 9642.4, 9389.8, 9520.1, 2735.99917304],
   [1595458800000, 9523.2, 9557.8, 9523.2, 9557.7, 193.67510759],
@@ -59,34 +58,43 @@ beforeAll(async () => {
   jest.mock("ccxt", () => ({
     bitfinex,
   }))
-  // await mongoose.connection.dropDatabase()
-  mongoose = await setupMongoConnection()
   price = new Price({ logger: baseLogger })
 })
 
-afterAll(async () => {
-  return await mongoose.connection.close()
+describe("Price", () => {
+  describe("update", () => {
+    it("updates prices and not throw an error", async () => {
+      const result = await price.update()
+      expect(result).toBeDefined()
+    })
+  })
+
+  describe.skip("lastCached", () => {
+    it("test fetching last 24 hours", async () => {
+      const priceHistory = await price.lastCached()
+      expect(priceHistory.length).toBe(25)
+    })
+  })
+
+  describe.skip("getFromExchange", () => {
+    it("test getting price", async () => {
+      const currPrice = await price.getFromExchange({
+        init: false,
+        since: moment().add(-5, "m").unix(),
+        limit: moment().unix(),
+      })
+      expect(currPrice).toBeTruthy() // FIXME test will fail if kraken offline
+    })
+
+    it("test saving price to db", async () => {
+      const currPrice = await price.getFromExchange({
+        init: false,
+        since: moment().add(-5, "m").unix(),
+        limit: moment().unix(),
+      })
+      await price.update()
+      const lastEntry = await PriceHistory.findOne({}).sort({ created_at: -1 })
+      expect(lastEntry.price).toBeCloseTo(Number(currPrice[currPrice.length - 1][1]), 6)
+    })
+  })
 })
-
-it("should update prices and not throw an error", async () => {
-  const result = await price.update()
-  expect(result).toBeDefined()
-})
-
-// it('test fetching last 24 hours', async () => {
-//   const priceHistory = await price.lastCached()
-//   expect(priceHistory.length).toBe(25)
-// })
-
-// it('test getting price', async () => {
-//   const currPrice = await price.getFromExchange()
-//   expect(currPrice).toBeTruthy() // FIXME test will fail if kraken offline
-// })
-
-// it('test saving price to db', async () => {
-//   const currPrice = await price.getFromExchange()
-//   await price.update()
-//   const PriceHistoryModel = mongoose.model("PriceHistory")
-//   const lastEntry = await PriceHistoryModel.findOne({}).sort({created_at: -1})
-//   expect(lastEntry.price).toBeCloseTo(currPrice, 6)
-// })

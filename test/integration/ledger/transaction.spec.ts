@@ -1,15 +1,15 @@
-import { dealerMediciPath, lndAccountingPath } from "src/ledger/ledger"
-import { MainBook, setupMongoConnection } from "src/mongodb"
-import {
-  addTransactionLndPayment,
-  addTransactionLndReceipt,
-  addTransactionOnUsPayment,
-  rebalancePortfolio,
-} from "src/ledger/transaction"
+import { User } from "src/schema"
 import { baseLogger } from "src/logger"
 import { UserWallet } from "src/userWallet"
 import { WalletFactory } from "src/walletFactory"
-import { User } from "src/schema"
+import { MainBook, setupMongoConnection } from "src/mongodb"
+import { dealerMediciPath, lndAccountingPath } from "src/ledger/ledger"
+import {
+  rebalancePortfolio,
+  addTransactionLndPayment,
+  addTransactionLndReceipt,
+  addTransactionOnUsPayment,
+} from "src/ledger/transaction"
 
 jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
 
@@ -20,8 +20,11 @@ let dealerPath
 
 beforeAll(async () => {
   mongoose = await setupMongoConnection()
-
   dealerPath = await dealerMediciPath()
+})
+
+afterAll(async () => {
+  await mongoose.connection.close()
 })
 
 beforeEach(async () => {
@@ -33,10 +36,6 @@ beforeEach(async () => {
 
   // FIXME: price is set twice. override the price by wallet factory
   UserWallet.setCurrentPrice(0.0001) // sats/USD. BTC at 10k
-})
-
-afterAll(async () => {
-  await mongoose.connection.close()
 })
 
 const expectBalance = async ({ account, currency, balance }) => {
