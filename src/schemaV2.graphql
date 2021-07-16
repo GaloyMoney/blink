@@ -2,25 +2,36 @@
 ### SCALARs
 #########################
 
+"Date field, serialized as the number of milliseconds since the Unix Epoch"
 scalar Date
+
+"An amount (of a currency) that can be negative (i.g. in a transaction)"
+scalar SignedAmount
+
+"(Positive) Satoshi amount (i.g. quiz earning)"
 scalar SatAmount
-# scalar PositiveSatAmount
 
-scalar Username # @pattern(regexp: "^[A-Za-z0-9_]+$") @stringLength(min: 3, max: 50)
-scalar Memo # @stringLength(max: 1024)
-scalar Phone # @pattern(regexp: "^\\+[0-9]+$")
-scalar Name # @stringLength(min: 3, max: 50)
-scalar AuthCode # @range(min: 100000, max: 999999)
+scalar Username # V: pattern(regexp: "^[A-Za-z0-9_]+$") stringLength(min: 3, max: 50)
+scalar Memo # V: stringLength(max: 1024)
+scalar Phone # V: pattern(regexp: "^\\+[0-9]+$")
+scalar Name # V: stringLength(min: 3, max: 50)
+scalar OneTimeAuthCode # V: range(min: 100000, max: 999999)
+scalar OnChainAddress # V: pattern(regexp: "^[A-Fa-f0-9]+$") (bc1 for mainnet, tb1)
+scalar FeeReimbursementHash
 
-scalar OnChainAddress # @stringLength(min: 42, max: 42) @pattern(regexp: "^[A-Fa-f0-9]+$") (bc1 for mainnet, tb1)
-scalar FeeReimbursementHash # ...
-scalar LnInvoice # BOLT 11 - @pattern(regexp: "^ln[A-Za-z0-9]+$")
-scalar LnInvoiceHash # @stringLength(min: 64, max: 64) @pattern(regexp: "^[A-Fa-f0-9]+$")
+"A Lightning invoice with the amount included - BOLT11"
+scalar LnInvoice # pattern(regexp: "^ln[A-Za-z0-9]+$")
+"A Lightning invoice that does not include an amount - BOLT11"
+scalar LnNoAmountInvoice # BOLT 11 but without amount
+scalar LnInvoiceHash # V: stringLength(min: 64, max: 64) pattern(regexp: "^[A-Fa-f0-9]+$")
+"Invoice lookup token"
+scalar LnInvoiceSecret
 
 #########################
 ### ENUMs
 #########################
 
+# ?: Mixed vs currency types
 enum Currency {
   USD
   BTC
@@ -42,16 +53,20 @@ enum Language {
 }
 
 enum AccountLevel {
-  ONE # We user's phone number
-  TWO # We have user's ID
+  "We have the user's phone number"
+  ONE
+  "We have the user's ID"
+  TWO
 }
 
+# ?: PaymentStatus
 enum InvoiceReceiveStatus {
   PAID
   NOT_PAID
 }
 
-enum GraphRange {
+"The range for the X axis in the BTC price graph"
+enum PriceGraphRange {
   ONE_DAY
   ONE_WEEK
   ONE_MONTH
@@ -62,12 +77,14 @@ enum GraphRange {
 enum TxStatus {
   PENDING
   SUCCESS
-  FAILURE
+  FAILURE # ?: Reason
 }
 
 #########################
 ### Interfaces
 #########################
+
+# ?: Account
 interface BaseAccount {
   level: AccountLevel!
   status: AccountStatus!
@@ -76,9 +93,9 @@ interface BaseAccount {
   csvTransactions(walletId: ID!): String!
 }
 
+# ?: Transaction
 interface BaseTransaction {
   id: ID!
-  direction: TxDirection! # Inferred/Cached from amount
   amount: TxAmount!
   convertedAmount: TxAmount!
   description: String!
@@ -92,28 +109,35 @@ interface BaseTransaction {
 
 union Account = ConsumerAcount | MerchantAcount
 union OnUsAddress = Username | OnChainAddress | LnInvoinceHash | FeeReimbursementHash
-union Transacion = OnUsTransaction | LnTransaction | OnChainTransaction
+union Transaction = OnUsTransaction | LnTransaction | OnChainTransaction
 union MobileVersions = AndroirdVersions | IosVersions
 
 #########################
 ### Custom Types
 #########################
 
+interface BaseAccount {
+  level: AccountLevel!
+  status: AccountStatus!
+  wallets: [Wallet!]!
+  limits: Limits!
+  csvTransactions(walletId: ID!): String!
+}
+
 type User {
   id: ID!
   username: Username!
   phone: Phone!
-  contacts: [Contact!]!
+  contacts: [Contact!]! # TODO: Connection
   language: Language!
   quizQuestions: [UserQuizQuestion!]!
   defaultAccount: Account!
-  # accounts: [Account!]! # Future planning
+  # accounts: [Account!]! # FuturePlanning
   createdAt: Date!
 }
 
 type ConsumerAccount implements BaseAccount {
-  user: [User!]!
-
+  # users: [User!]! # FuturePlanning
   level: AccountLevel!
   status: AccountStatus!
   wallets: [Wallet!]!
@@ -121,7 +145,7 @@ type ConsumerAccount implements BaseAccount {
 }
 
 type MerchantAccount implements BaseAccount {
-  user: [User!]!
+  # user: [User!]! # FuturePlanning
   mapInfo: MapInfo!
 
   level: AccountLevel!
@@ -130,14 +154,15 @@ type MerchantAccount implements BaseAccount {
   csvTransactions(walletId: ID!): String!
 }
 
-# # Future planning
+# # FuturePlanning
 # type CorporateAccount implements BaseAccount {
 #   user: [User!]!
 # }
 
 type TxAmount {
   currency: Currency!
-  amount: Int! # Negative when sending
+  "Negative when sending"
+  amount: SignedAmount!
   fee: Int!
 }
 
@@ -146,8 +171,12 @@ type Balance {
   amount: Int!
 }
 
-# Using the same wallet (ex, Bitcoin Beach)
-# 1) Pay with username, 2) Pay with LN, 3) Pay OnChain
+# initialize (invoice) & execute (payment)
+
+# ?: Using the same wallet (ex, Bitcoin Beach)
+# ?: 1) Pay with username, 2) Pay with LN, 3) Pay OnChain
+# ?: Fees are less
+# ?: Do we need it? Enterprise..
 type OnUsTransaction implements BaseTransaction {
   id: ID!
   direction: TxDirection!
@@ -159,6 +188,8 @@ type OnUsTransaction implements BaseTransaction {
 
   address: OnUsAddress!
 }
+
+# ?: UsernameTransaction
 
 type OnChainTransaction implements BaseTransaction {
   id: ID!
@@ -181,7 +212,7 @@ type LnTransaction implements BaseTransaction {
   status: TxStatus!
   createdAt: Date!
 
-  hash: LnInvoinceHash! # 256 bits (64 chars)
+  hash: LnInvoinceHash! # V: 256 bits (64 chars)
 }
 
 # type exchangeTransaction implements Transaction {
@@ -189,7 +220,7 @@ type LnTransaction implements BaseTransaction {
 #   fee: ...
 # }
 
-# Should we convert this to generic currency/currency ratio?
+# ?: Should we convert this to generic currency/currency ratio?
 type Price {
   id: ID! # Currently a date
   date: Date!
@@ -197,10 +228,8 @@ type Price {
 }
 
 type QuizQuestion {
-  """
-  The earn reward for the app to display their associated amount
-  """
   id: ID!
+  "The earn reward for the app to display their associated amount"
   earnAmount: SatAmount!
 }
 
@@ -209,17 +238,17 @@ type UserQuizQuestion {
   completed: Boolean!
 }
 
-# Account? Multiple wallets
+# ?: Account? Multiple wallets
 type Wallet {
   id: ID!
   balance: Balance!
-  transactions: [Transaction!]!
+  transactions: [Transaction!]! # Connection
 }
 
 type Contact {
   id: Username!
   name: String # name can be set by the user
-  transactionsCount: Int! # number of transactions
+  transactionsCount: Int!
 }
 
 type MapInfo {
@@ -249,8 +278,8 @@ type MapMarker {
 }
 
 type Limits {
-  accountOldEnoughForWithdrawal: Boolean!
-  currentMaxSend: Int! # Ln | OnChain
+  accountOldEnoughForWithdrawal: Boolean! # ?: Misplaced? Not a limit. AccountWithdrawlStatus?
+  currentMaxSend: Int! # ?: Ln | OnChain
   cucrrentMaxSendOnUs: Int!
 }
 
@@ -259,15 +288,15 @@ type Limits {
 #########################
 type Query {
   me: User
-  priceListForGraph(range: GraphRange!): [Price!]
+  priceListForGraph(range: PriceGraphRange!): [Price!]
   quizQuestions: [QuizQuestion!]
-  merchantMapMarkers: [MapMarker!]
+  merchantMapMarkers: [MapMarker!] # TODO: Map focus Connection | X merchants here
   mobileVersions: MobileVersions
-  usernameExists(username: Username!): Boolean
+  usernameExists(username: Username!): Boolean # TODO: security concerns
   depositFeePercentage: Float # Static
   onChainTxFee(address: Address!, amount: SatAmount!): SatAmount # Dynamic
 
-  # settings...
+  # settings... # FuturePlanning
 }
 
 #########################
@@ -275,7 +304,7 @@ type Query {
 #########################
 
 type UserError {
-  message: String! # i18n?
+  message: String! # ?: i18n?
   fields: [String!]! # where the error occurred
 }
 
@@ -284,13 +313,13 @@ type LnInvoicePayload {
   lnInvoice: LnInvoice
 }
 
-input UsernameInput {
-  username: Username!
+type LnNoAmountInvoicePayload {
+  errors: [UserError!]!
+  lnInvoice: LnNoAmountInvoice
 }
 
-input LnInvoiceInput {
+input UsernameInput {
   username: Username!
-  amount: SatAmount!
 }
 
 type OnChainAddressPayload {
@@ -314,7 +343,7 @@ input PhoneInput {
 
 input LoginInput {
   phone: Phone!
-  code: AuthCode!
+  code: OneTimeAuthCode!
 }
 
 input LanguageUpdateInput {
@@ -345,7 +374,7 @@ type OnChainPaymentAllInput {
   memo: Memo
 }
 
-type LnAmountlessInvoiceCreateInput {
+type LnNoAmountInvoiceCreateInput {
   memo: Memo
 }
 
@@ -354,35 +383,35 @@ type LnInvoiceCreateInput {
   memo: Memo
 }
 
-type LnAmountlessInvoiceCreateForUserInput {
-  username: Username!
+type LnNoAmountInvoiceCreateForUserInput {
+  recipient: Username!
   memo: Memo
 }
 
 type LnInvoiceCreateForUserInput {
-  username: Username!
+  recipient: Username!
   amount: SatAmount!
   memo: Memo
 }
 
-type LnAmountlessInvoicePaymentInput {
-  invoice: LnInvoice!
-  memo: Memo
-}
-
-type LnInvoicePaymentInput {
-  invoice: LnInvoice!
+type LnNoAmountInvoicePaymentInput {
+  invoice: LnNoAmountInvoice!
   amount: SatAmount!
   memo: Memo
 }
 
-type LnPushPaymentFeeProbeInput {
+input LnInvoicePaymentInput {
+  invoice: LnDefinedAmountInvoice!
+  memo: Memo
+}
+
+input LnPushPaymentFeeProbeInput {
   destination: String!
   amount: SatAmount!
 }
 
-type LnAmountLessInvoiceFeeProbeInput {
-  invoice: LnInvoice!
+input LnNoAmountInvoiceFeeProbeInput {
+  invoice: LnNoAmountInvoice!
 }
 
 type LnInvoiceFeeProbeInput {
@@ -390,16 +419,9 @@ type LnInvoiceFeeProbeInput {
   amount: SatAmuont!
 }
 
-type LnUsernamePaymentInput {
-  username: Username!
-  amount: SatAmount!
-  destination: pubKey!
-  memo: Memo
-}
-
 type UserPaymentInput {
+  recipient: Username!
   amount: SatAmount!
-  username: Username!
   memo: Memo
 }
 
@@ -418,18 +440,30 @@ type SuccessPayload {
   success: Boolean
 }
 
+input QuizQuestionUpdateCompletedInput {
+  ids: [ID!]!
+}
+
+input LnInvoiceReceiveStatusInput {
+  hash: LnInvoiceHash!
+  secret: LnInvoiceSecret!
+}
+
+type LnInvoiceReceivePayload {
+  errors: [UserError!]!
+  status: InvoiceReceiveStatus!
+}
+
 #########################
 ### Root Mutation
 #########################
 type Mutation {
-  ## Recieve payment from anonymous source ##
-  publicLnAmountlessInvoiceCreate(input: UsernameInput!): LnInvoicePayload!
-  publicLnInvoiceCreate(input: LnInvoiceInput!): LnInvoicePayload!
-
   ## User mutations ##
   userRequestPhoneCode(input: PhoneInput!): SuccessPayload!
   userLogin(input: LoginInput!): AuthTokenPayload!
-  userQuizeQuestionsUpdateCompleted(ids: [ID]): QuizQuestionsUpdateCompletedPayload!
+  userQuizeQuestionsUpdateCompleted(
+    input: QuizQuestionUpdateCompletedInput
+  ): QuizQuestionsUpdateCompletedPayload!
   userLanguageUpdate(input: LanguageUpdateInput!): UserPayload!
   usernameUpdate(input: UsernameUpdateInput!): UserPayload!
   userContactUpdate(input: ContactUpdateInput!): SuccessPayload!
@@ -444,23 +478,24 @@ type Mutation {
   onChainPaymentSendAll(input: OnChainPaymentAllInput!): TxStatusPayload!
 
   ## lightning mutations ##
-  lnAmountlessInvoiceCreate(input: LnAmountlessInvoiceCreateInput!): LnInvoicePayload!
+  lnNoAmountInvoiceCreate(input: LnNoAmountInvoiceCreateInput!): LnNoAmountInvoicePayload!
   lnInvoiceCreate(input: LnInvoiceCreateInput!): LnInvoicePayload!
-  lnAmountlessInvoicePaymentSend(input: LnAmountlessInvoicePaymentInput!): TxStatusPayload!
-  lnInvoicePaymentSend(input LnInvoicePaymentInput!): TxStatusPayload!
+  lnNoAmountInvoicePaymentSend(input: LnNoAmountInvoicePaymentInput!): TxStatusPayload!
+  lnInvoicePaymentSend(input: LnInvoicePaymentInput!): TxStatusPayload!
   lnPushPaymentFeeProbe(intput: LnPushPaymentFeeProbeInput!): SatAmountPayload!
-  lnAmountLessInvoiceFeeProbe(intput: LnAmountLessInvoiceFeeProbeInput!): SatAmountPayload!
+  lnNoAmountInvoiceFeeProbe(intput: LnNoAmountInvoiceFeeProbeInput!): SatAmountPayload!
   lnInvoiceFeeProbe(intput: LnInvoiceFeeProbeInput!): SatAmountPayload!
 
   ## mutations that do not require auth ##
-  lnAmountlessInvoiceCreateForUser(input: LnAmountlessInvoiceCreateForUserInput!): LnInvoicePayload!
-  lnInvoiceCreateForUser(input: LnInvoiceCreateForUserInput): LnInvoicePayload
+  ## Recieve payment from anonymous source ##
+  lnNoAmountInvoiceCreateForUser(
+    input: LnNoAmountInvoiceCreateForUserInput!
+  ): LnNoAmountInvoicePayload! # FINAL (lnpage)
+  # No use case yet
+  lnInvoiceCreateForUser(input: LnInvoiceCreateForUserInput): LnInvoicePayload!
 
   ## Ledger entry (not part of LN) ##
-  userPaymentSend(input: UserPaymentInput!): TxStatusPayload!
-
-  ## Not used yet ##
-  lnUsernamePaymentSend(input: LnUsernamePaymentInput!): TxStatusPayload!
+  usernamePaymentSend(input: UserPaymentInput!): TxStatusPayload! # direct
 }
 
 #########################
@@ -470,7 +505,10 @@ type Mutation {
 type Subscription {
   priceCurrent: Price!
 
-  lnInvoiceReceiveStatus(hash: LnInvoiceHash!) {
-    status: InvoiceReceiveStatus!
-  }
+  lnInvoiceReceiveStatus(input: LnInvoiceReceiveStatusInput!): LnInvoiceReceivePayload! # FINAL (lnpage)
+
+  # # FuturePlanning
+  # newTransactions() {
+  #   transactions: [Transactions]!
+  # }
 }
