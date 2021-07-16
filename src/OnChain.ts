@@ -38,7 +38,7 @@ import { UserWallet } from "./userWallet"
 import {
   amountOnVout,
   bitcoindDefaultClient,
-  bitcoindHotClient,
+  bitcoindHotWalletClient,
   btc2sat,
   LoggedError,
   LOOK_BACK,
@@ -73,7 +73,7 @@ export const getOnChainTransactionsBitcoind = async ({
 }) => {
   try {
     // TODO? how many transactions back?
-    const transactions: [] = await bitcoindHotClient.listTransactions(null, 1000)
+    const transactions: [] = await bitcoindHotWalletClient.listTransactions(null, 1000)
     return transactions
   } catch (err) {
     const error = `issue fetching bitcoind transaction`
@@ -220,7 +220,7 @@ class LndOnChainClient extends PayOnChainClient {
 class BitcoindOnChainClient extends PayOnChainClient {
   constructor() {
     super()
-    this.client = bitcoindHotClient
+    this.client = bitcoindHotWalletClient
   }
 
   async getBalance(): Promise<number> {
@@ -601,7 +601,7 @@ export const OnChainMixin = (superclass) =>
 
       let address
 
-      const onchainClient = bitcoindHotClient
+      const onchainClient = bitcoindHotWalletClient
       // TODO?
       const pubkey = "TODO" // pubkey: process.env[`${input.name}_PUBKEY`] || exit(98),
 
@@ -720,7 +720,7 @@ export const OnChainMixin = (superclass) =>
           .filter((item) => (item.pubkey = pubkey))
           .map((item) => item.address)
 
-        // const onchainClient = bitcoindHotClient
+        // const onchainClient = bitcoindHotWalletClient
 
         const incoming_txs = await getOnChainTransactionsBitcoind({ incoming: true })
 

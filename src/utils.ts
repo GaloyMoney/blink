@@ -40,7 +40,7 @@ export const BitcoindClient = ({ wallet = "" }) =>
   new bitcoindClient({ ...connection_obj, wallet })
 export const bitcoindDefaultClient = BitcoindClient({ wallet: "outside" })
 // export const bitcoindDefaultClient = BitcoindClient({ wallet: "" })
-export const bitcoindHotClient = BitcoindClient({ wallet: "hot" })
+export const bitcoindHotWalletClient = BitcoindClient({ wallet: "hot" })
 
 export const addContact = async ({ uid, username }) => {
   // https://stackoverflow.com/questions/37427610/mongodb-update-or-insert-object-in-array

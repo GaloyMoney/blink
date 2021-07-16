@@ -24,7 +24,7 @@ import { getCurrentPrice } from "src/realtimePrice"
 import { UserWallet } from "src/userWallet"
 import {
   bitcoindDefaultClient,
-  bitcoindHotClient,
+  bitcoindHotWalletClient,
   btc2sat,
   sat2btc,
   sleep,
@@ -179,7 +179,7 @@ const bitcoind_onchain_funding = async ({ walletDestination }) => {
 }
 
 it("createsBitcoindHotWallet", async () => {
-  const { name } = await bitcoindHotClient.createWallet("hot")
+  const { name } = await bitcoindHotWalletClient.createWallet("hot")
   expect(name).toBe("hot")
 })
 

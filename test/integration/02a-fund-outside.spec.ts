@@ -4,7 +4,7 @@
 import { createChainAddress } from "lightning"
 import mongoose from "mongoose"
 import { setupMongoConnection } from "src/mongodb"
-import { bitcoindDefaultClient, bitcoindHotClient } from "src/utils"
+import { bitcoindDefaultClient, bitcoindHotWalletClient } from "src/utils"
 import {
   checkIsBalanced,
   lnd1,
