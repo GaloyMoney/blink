@@ -1,53 +1,24 @@
 import { sleep } from "../utils"
 import _ from "lodash"
 import { yamlConfig } from "../config"
-import {
-  TradeSide,
-  FundTransferSide,
-  TradeCurrency,
-  OrderStatus,
-} from "./ExchangeTradingType"
-import ccxt, { Order } from "ccxt"
+import { TradeSide, TradeCurrency, OrderStatus } from "./ExchangeTradingType"
 import { Result } from "./Result"
 import { HedgingStrategy, UpdatedPosition, UpdatedBalance } from "./HedgingStrategyTypes"
-import { GenericExchange, SupportedExchange, ApiConfig } from "./GenericExchange"
+import { SupportedExchange, ExchangeBase } from "./ExchangeBase"
+import { ExchangeOkex } from "./ExchangeOkex"
 
 const exchangeName = SupportedExchange.OKEX5
 const strategySymbol = "BTC-USD-SWAP"
 
-const apiKey = process.env[`${exchangeName.toUpperCase()}_KEY`]
-const secret = process.env[`${exchangeName.toUpperCase()}_SECRET`]
-const password = process.env[`${exchangeName.toUpperCase()}_PASSWORD`]
-
-if (!apiKey || !secret || !password) {
-  throw new Error(`Missing ${exchangeName} exchange environment variables`)
-}
-
-const activeApiConfig = new ApiConfig(
-  exchangeName,
-  strategySymbol,
-  apiKey,
-  secret,
-  password,
-)
-
-const simulateOnly = !process.env["HEDGING_NOT_IN_SIMULATION"]
-
-if (!simulateOnly) {
-  throw new Error(`Hedging active, please disable this safeguard.`)
-}
-
 const hedgingBounds = yamlConfig.hedging
 
 export class OkexPerpetualSwapStrategy implements HedgingStrategy {
-  exchange
+  exchange: ExchangeBase
   symbol
   logger
 
   constructor(logger) {
-    this.exchange = new GenericExchange(activeApiConfig)
-    // The following check throws if something is wrong
-    this.exchange.checkRequiredCredentials()
+    this.exchange = new ExchangeOkex(exchangeName, strategySymbol, logger)
     this.symbol = strategySymbol
     this.logger = logger.child({ class: OkexPerpetualSwapStrategy.name })
   }
@@ -249,7 +220,7 @@ export class OkexPerpetualSwapStrategy implements HedgingStrategy {
         orderSizeInUsd,
         orderSizeInBtc,
         btcPriceInUsd,
-        IsSimulation: simulateOnly,
+        IsSimulation: exchange.IsSimulation, // TODO fix this simulation flag so it's only at the API call location
       },
     }
   }

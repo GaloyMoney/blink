@@ -15,115 +15,59 @@ import {
   OrderStatus,
 } from "./ExchangeTradingType"
 import assert from "assert"
-import { ApiConfig, ExchangeBase } from "./ExchangeBase"
+import { ExchangeBase, SupportedExchange } from "./ExchangeBase"
 import { Result } from "./Result"
 
-export abstract class ExchangeOkex extends ExchangeBase {
-  constructor(apiConfig: ApiConfig) {
-    super(apiConfig)
+export class ExchangeOkex extends ExchangeBase {
+  constructor(exchangeId: SupportedExchange, strategySymbol: string, logger) {
+    super(exchangeId, strategySymbol, logger)
   }
 
-  public async fetchDepositAddress(
-    currency: string,
-  ): Promise<Result<FetchDepositAddressResult>> {
-    try {
-      assert(currency === TradeCurrency.BTC, ApiError.UNSUPPORTED_CURRENCY)
-
-      const okexResp = await this.exchange.fetchDepositAddress(currency)
-
-      assert(okexResp, ApiError.UNSUPPORTED_API_RESPONSE)
-      const { ccy, addr, chain } = _.find(okexResp.data, {
-        chain: SupportedChain.BTC_Bitcoin,
-      })
-      assert(ccy === TradeCurrency.BTC, ApiError.UNSUPPORTED_CURRENCY)
-      assert(addr, ApiError.UNSUPPORTED_ADDRESS)
-      assert(chain === SupportedChain.BTC_Bitcoin, ApiError.UNSUPPORTED_CURRENCY)
-
-      return {
-        ok: true,
-        value: {
-          originalResponseAsIs: okexResp,
-          chain: chain,
-          currency: ccy,
-          address: addr,
-        },
-      }
-    } catch (error) {
-      return { ok: false, error: error }
+  fetchDepositAddressValidateInput(currency: string) {
+    assert(currency === TradeCurrency.BTC, ApiError.UNSUPPORTED_CURRENCY)
+  }
+  fetchDepositAddressProcessApiResponse(response): FetchDepositAddressResult {
+    assert(response, ApiError.UNSUPPORTED_API_RESPONSE)
+    const { ccy, addr, chain } = _.find(response.data, {
+      chain: SupportedChain.BTC_Bitcoin,
+    })
+    assert(ccy === TradeCurrency.BTC, ApiError.UNSUPPORTED_CURRENCY)
+    assert(addr, ApiError.UNSUPPORTED_ADDRESS)
+    assert(chain === SupportedChain.BTC_Bitcoin, ApiError.UNSUPPORTED_CURRENCY)
+    return {
+      originalResponseAsIs: response,
+      chain: chain,
+      currency: ccy,
+      address: addr,
     }
   }
 
-  public async withdraw(args: WithdrawParameters): Promise<Result<WithdrawResult>> {
-    try {
-      assert(args, ApiError.MISSING_PARAMETERS)
-      assert(args.currency === TradeCurrency.BTC, ApiError.UNSUPPORTED_CURRENCY)
-      assert(args.quantity > 0, ApiError.NON_POSITIVE_QUANTITY)
-      assert(args.address, ApiError.UNSUPPORTED_ADDRESS)
-
-      const okexResp = await this.exchange.withdraw(
-        args.currency,
-        args.quantity,
-        args.address,
-      )
-
-      assert(okexResp, ApiError.UNSUPPORTED_API_RESPONSE)
-
-      return {
-        ok: true,
-        value: {
-          originalResponseAsIs: okexResp,
-          status: okexResp.status,
-        },
-      }
-    } catch (error) {
-      return { ok: false, error: error }
-    }
+  withdrawValidateInput(args: WithdrawParameters) {
+    assert(args, ApiError.MISSING_PARAMETERS)
+    assert(args.currency === TradeCurrency.BTC, ApiError.UNSUPPORTED_CURRENCY)
+    assert(args.quantity > 0, ApiError.NON_POSITIVE_QUANTITY)
+    assert(args.address, ApiError.UNSUPPORTED_ADDRESS)
+  }
+  withdrawValidateApiResponse(response) {
+    assert(response, ApiError.UNSUPPORTED_API_RESPONSE)
   }
 
-  public async createMarketOrder(
-    args: CreateOrderParameters,
-  ): Promise<Result<CreateOrderResult>> {
-    try {
-      assert(args, ApiError.MISSING_PARAMETERS)
-      assert(args.side !== TradeSide.NoTrade, ApiError.INVALID_TRADE_SIDE)
-      assert(args.quantity > 0, ApiError.NON_POSITIVE_QUANTITY)
-
-      const okexResp = await this.exchange.createMarketOrder(args.side, args.quantity)
-
-      assert(okexResp, ApiError.UNSUPPORTED_API_RESPONSE)
-      assert(okexResp.id, ApiError.MISSING_ORDER_ID)
-
-      return {
-        ok: true,
-        value: {
-          originalResponseAsIs: okexResp,
-          id: okexResp.id,
-        },
-      }
-    } catch (error) {
-      return { ok: false, error: error }
-    }
+  createMarketOrderValidateInput(args: CreateOrderParameters) {
+    assert(args, ApiError.MISSING_PARAMETERS)
+    assert(args.side !== TradeSide.NoTrade, ApiError.INVALID_TRADE_SIDE)
+    assert(args.quantity > 0, ApiError.NON_POSITIVE_QUANTITY)
+  }
+  createMarketOrderValidateApiResponse(response) {
+    assert(response, ApiError.UNSUPPORTED_API_RESPONSE)
+    assert(response.id, ApiError.MISSING_ORDER_ID)
   }
 
-  public async fetchOrder(id: string): Promise<Result<FetchOrderResult>> {
-    try {
-      assert(id, ApiError.MISSING_PARAMETERS)
-
-      const okexResp = await this.exchange.fetchOrder(id)
-
-      assert(okexResp, ApiError.UNSUPPORTED_API_RESPONSE)
-      assert(okexResp.status as OrderStatus, ApiError.UNSUPPORTED_API_RESPONSE)
-
-      return {
-        ok: true,
-        value: {
-          originalResponseAsIs: okexResp,
-          status: okexResp.status,
-        },
-      }
-    } catch (error) {
-      return { ok: false, error: error }
-    }
+  fetchOrderValidateInput(id: string) {
+    assert(id, ApiError.MISSING_PARAMETERS)
+  }
+  fetchOrderValidateApiResponse(response) {
+    assert(response, ApiError.UNSUPPORTED_API_RESPONSE)
+    assert(response.status as OrderStatus, ApiError.UNSUPPORTED_API_RESPONSE)
   }
 
   public async getAccountAndPositionRisk(
@@ -132,8 +76,8 @@ export abstract class ExchangeOkex extends ExchangeBase {
     try {
       assert(btcPriceInUsd > 0, ApiError.MISSING_PARAMETERS)
 
-      const okexResp = await this.exchange.fetchPosition()
-      const okexResp2 = await this.exchange.fetchBalance()
+      const response = await this.exchange.fetchPosition()
+      const response2 = await this.exchange.fetchBalance()
 
       const lastBtcPriceInUsd = 0
       const leverageRatio = 0
@@ -158,12 +102,12 @@ export abstract class ExchangeOkex extends ExchangeBase {
       //   }
       //   logger.debug({ balance }, "exchange.fetchBalance() returned: {balance}")
 
-      assert(okexResp, ApiError.UNSUPPORTED_API_RESPONSE)
+      assert(response, ApiError.UNSUPPORTED_API_RESPONSE)
 
       return {
         ok: true,
         value: {
-          originalResponseAsIs: { fetchPosition: okexResp, fetchBalance: okexResp2 },
+          originalResponseAsIs: { fetchPosition: response, fetchBalance: response2 },
           lastBtcPriceInUsd: lastBtcPriceInUsd,
           leverageRatio: leverageRatio,
           collateralInUsd: collateralInUsd,
@@ -178,7 +122,7 @@ export abstract class ExchangeOkex extends ExchangeBase {
 
   public async getInstrumentDetails(): Promise<Result<GetInstrumentDetailsResult>> {
     try {
-      const okexResp = await this.exchange.publicGetPublicInstruments()
+      const response = await this.exchange.publicGetPublicInstruments()
 
       //   const swapContractDetail = await this.exchange.publicGetPublicInstruments({
       //     instType: "SWAP",
@@ -190,12 +134,12 @@ export abstract class ExchangeOkex extends ExchangeBase {
       //     const contractFaceValue = swapContractDetail?.ctVal
       //     const orderSizeInContract = Math.round(btcPriceInUsd / contractFaceValue)
 
-      assert(okexResp, ApiError.UNSUPPORTED_API_RESPONSE)
+      assert(response, ApiError.UNSUPPORTED_API_RESPONSE)
 
       return {
         ok: true,
         value: {
-          originalResponseAsIs: okexResp,
+          originalResponseAsIs: response,
           minimumOrderSizeInContract: 0,
           contractFaceValue: 0,
         },

@@ -5,44 +5,21 @@ import { TradeSide, FundTransferSide } from "./ExchangeTradingType"
 import assert from "assert"
 import { Result } from "./Result"
 import { HedgingStrategy, UpdatedPosition, UpdatedBalance } from "./HedgingStrategyTypes"
-import { GenericExchange, SupportedExchange, ApiConfig } from "./GenericExchange"
+import { SupportedExchange, ExchangeBase } from "./ExchangeBase"
+import { ExchangeFtx } from "./ExchangeFtx"
 
 const exchangeName = SupportedExchange.FTX
 const strategySymbol = "BTC-PERP"
 
-const apiKey = process.env[`${exchangeName.toUpperCase()}_KEY`]
-const secret = process.env[`${exchangeName.toUpperCase()}_SECRET`]
-const password = process.env[`${exchangeName.toUpperCase()}_PASSWORD`]
-
-if (!apiKey || !secret || !password) {
-  throw new Error(`Missing ${exchangeName} exchange environment variables`)
-}
-
-const activeApiConfig = new ApiConfig(
-  exchangeName,
-  strategySymbol,
-  apiKey,
-  secret,
-  password,
-)
-
-const simulateOnly = !process.env["HEDGING_NOT_IN_SIMULATION"]
-
-if (!simulateOnly) {
-  throw new Error(`Hedging active, please disable this safeguard.`)
-}
-
 const hedgingBounds = yamlConfig.hedging
 
 export class FtxPerpetualSwapStrategy implements HedgingStrategy {
-  exchange
+  exchange: ExchangeBase
   symbol
   logger
 
   constructor(logger) {
-    this.exchange = new GenericExchange(activeApiConfig)
-    // The following check throws if something is wrong
-    this.exchange.checkRequiredCredentials()
+    this.exchange = new ExchangeFtx(exchangeName, strategySymbol, logger)
     this.symbol = strategySymbol
     this.logger = logger.child({ class: FtxPerpetualSwapStrategy.name })
   }
@@ -75,7 +52,8 @@ export class FtxPerpetualSwapStrategy implements HedgingStrategy {
       })
       subLogger.debug({ btcAmount, buyOrSell }, "isOrderNeeded result")
 
-      if (buyOrSell && !simulateOnly) {
+      // TODO fix this simulation flag so it's only at the API call location
+      if (buyOrSell && !this.exchange.IsSimulation) {
         await this.executeOrder({ btcAmount, buyOrSell })
 
         // const { usd: usdLiability } = await this.getLocalLiabilities()
