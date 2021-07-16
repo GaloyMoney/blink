@@ -7,12 +7,17 @@ import {
   authenticatedLndGrpc,
   closeChannel,
   createChainAddress,
+  deletePayments,
   getChainBalance,
+  getChannelBalance,
   getChannels,
+  getPendingChannels,
   getWalletInfo,
   openChannel,
   sendToChainAddress,
   subscribeToChannels,
+  subscribeToGraph,
+  updateRoutingFees,
 } from "lightning"
 
 import { bitcoindClient, RANDOM_ADDRESS } from "./bitcoinCore"
@@ -36,81 +41,98 @@ export const lndOutside2 = authenticatedLndGrpc({
   socket: `${process.env.LNDOUTSIDE2ADDR}:${process.env.LNDOUTSIDE2RPCPORT ?? 10009}`,
 }).lnd
 
+export const lnds = [lnd1, lnd2, lndOutside1, lndOutside2]
+
 export const waitUntilBlockHeight = async ({ lnd, blockHeight = 0 }) => {
   let block = blockHeight
   if (block <= 0) {
     block = await bitcoindClient.getBlockCount()
   }
 
-  let current_block_height: number, is_synced_to_chain: boolean
-  ;({ current_block_height, is_synced_to_chain } = await getWalletInfo({ lnd }))
+  let current_block_height: number,
+    is_synced_to_chain: boolean,
+    is_synced_to_graph: boolean
+  ;({ current_block_height, is_synced_to_chain, is_synced_to_graph } =
+    (await getWalletInfo({ lnd })) as any)
 
   let time = 0
   const ms = 50
-  while (current_block_height < block || !is_synced_to_chain) {
+  while (current_block_height < block || !is_synced_to_chain /*|| !is_synced_to_graph*/) {
     await sleep(ms)
-    ;({ current_block_height, is_synced_to_chain } = await getWalletInfo({ lnd }))
+    ;({ current_block_height, is_synced_to_chain, is_synced_to_graph } =
+      (await getWalletInfo({ lnd })) as any)
     // baseLogger.debug({ current_block_height, is_synced_to_chain})
     time++
   }
 
   baseLogger.debug(
-    { current_block_height, is_synced_to_chain },
+    { current_block_height, is_synced_to_chain, is_synced_to_graph },
     `Seconds to sync blockheight ${block}: ${time / (1000 / ms)}`,
   )
 }
 
 export const openChannelTesting = async ({
   lnd,
-  other_lnd,
+  lndPartner,
   socket,
   is_private = false,
 }) => {
+  await waitUntilSync({ lnds: [lnd, lndPartner] })
+
   const local_tokens = 1000000
-  const initBlockCount = await bitcoindClient.getBlockCount()
+  const { public_key: partner_public_key } = await getWalletInfo({ lnd: lndPartner })
 
-  await waitUntilBlockHeight({ lnd, blockHeight: initBlockCount })
-  await waitUntilBlockHeight({ lnd: other_lnd, blockHeight: initBlockCount })
-
-  const { public_key: partner_public_key } = await getWalletInfo({ lnd: other_lnd })
-
-  const openChannelPromise = openChannel({
-    lnd,
-    local_tokens,
-    is_private,
-    partner_public_key,
-    partner_socket: socket,
+  const openChannelPromise = waitFor(async () => {
+    try {
+      return await openChannel({
+        lnd,
+        local_tokens,
+        is_private,
+        partner_public_key,
+        partner_socket: socket,
+      })
+    } catch (error) {
+      baseLogger.warn({ error }, "openChannel failed. trying again.")
+      return null
+    }
   })
 
+  let lndNewChannel, lndPartnerNewChannel
   const sub = subscribeToChannels({ lnd })
+  sub.once("channel_opened", async (channel) => {
+    lndNewChannel = channel
+  })
 
-  if (lnd === lnd1) {
-    sub.once("channel_opened", (channel) =>
-      onChannelUpdated({ channel, lnd, stateChange: "opened" }),
-    )
-  }
+  const subPartner = subscribeToChannels({ lnd: lndPartner })
+  subPartner.once("channel_opened", async (channel) => {
+    lndPartnerNewChannel = channel
+  })
 
-  if (other_lnd === lnd1) {
-    sub.once("channel_opened", (channel) =>
-      expect(channel.is_partner_initiated).toBe(true),
-    )
-  }
-
-  await once(sub, "channel_opening")
+  await Promise.all([once(sub, "channel_opening"), openChannelPromise])
 
   baseLogger.debug("mining blocks and waiting for channel being opened")
-
   await Promise.all([
-    openChannelPromise,
     // error: https://github.com/alexbosworth/ln-service/issues/122
-    // need to investigate.
     // once(sub, 'channel_opened'),
-    mineBlockAndSync({ lnds: [lnd, other_lnd] }),
+    waitFor(() => lndNewChannel && lndPartnerNewChannel),
+    mineBlockAndSync({ lnds: [lnd, lndPartner] }),
   ])
 
-  await sleep(5000)
-  await updateEscrows()
+  if (lnd === lnd1) {
+    baseLogger.debug({ lndNewChannel }, "lnd is lnd1 - onChannelUpdated")
+    await onChannelUpdated({ channel: lndNewChannel, lnd, stateChange: "opened" })
+  }
+
+  if (lndPartner === lnd1) {
+    expect(lndPartnerNewChannel.is_partner_initiated).toBe(true)
+  }
+
   sub.removeAllListeners()
+  subPartner.removeAllListeners()
+
+  await updateEscrows()
+  baseLogger.debug({ lndNewChannel, lndPartnerNewChannel }, "new channels")
+  return { lndNewChannel, lndPartnerNewChannel }
 }
 
 export const fundLnd = async (lnd, amount = 1) => {
@@ -121,34 +143,70 @@ export const fundLnd = async (lnd, amount = 1) => {
 }
 
 export const resetLnds = async () => {
-  const lnds = [lnd1, lnd2, lndOutside1, lndOutside2]
-  lnds.forEach(async (lnd) => {
+  // just in case pending transactions
+  await mineBlockAndSync({ lnds })
+
+  for (const lnd of lnds) {
     await closeAllChannels({ lnd })
-  })
+    await waitUntilSync({ lnds })
+  }
 
   await mineBlockAndSync({ lnds })
 
-  lnds.forEach(async (lnd) => {
+  for (const lnd of lnds) {
     const chainBalance = (await getChainBalance({ lnd })).chain_balance
     if (chainBalance > 0) {
       const address = await bitcoindClient.getNewAddress()
-      await sendToChainAddress({ lnd, address, is_send_all: true })
+      await sendToChainAddress({
+        lnd,
+        address,
+        is_send_all: true,
+        fee_tokens_per_vbyte: 1,
+      })
     }
-  })
+  }
 
-  await mineBlockAndSync({ lnds })
   await mineBlockAndSync({ lnds })
 }
 
 export const closeAllChannels = async ({ lnd }) => {
   try {
     const { channels } = await getChannels({ lnd })
-    channels.forEach(async (channel) => {
-      await closeChannel({ lnd, id: channel.id })
-    })
+    for (const channel of channels) {
+      if (channel.is_partner_initiated === false) {
+        await closeChannel({ lnd, id: channel.id })
+      }
+    }
   } catch (error) {
-    console.log(error)
+    baseLogger.error(
+      { error },
+      "Channels could not be closed, please reset your environment",
+    )
   }
+}
+
+export const setChannelFees = async ({ lnd, channel, base = 1, rate = 1 }) => {
+  const input = {
+    fee_rate: rate,
+    base_fee_mtokens: `${base * 1000}`,
+    transaction_id: channel.transaction_id,
+    transaction_vout: channel.transaction_vout,
+  }
+
+  const updateRoutingFeesPromise = waitFor(async () => {
+    try {
+      await updateRoutingFees({ lnd, ...input })
+      return true
+    } catch (error) {
+      baseLogger.warn({ error }, "updateRoutingFees failed. trying again.")
+      return false
+    }
+  })
+
+  const sub = subscribeToGraph({ lnd })
+  await Promise.all([updateRoutingFeesPromise, once(sub, "channel_updated")])
+
+  sub.removeAllListeners()
 }
 
 export const mineBlockAndSync = async ({
@@ -166,4 +224,36 @@ export const mineBlockAndSync = async ({
     promiseArray.push(waitUntilBlockHeight({ lnd, blockHeight }))
   }
   await Promise.all(promiseArray)
+}
+
+export const mineBlockAndSyncAll = async () => mineBlockAndSync({ lnds })
+
+export const waitUntilSyncAll = async () => waitUntilSync({ lnds })
+
+export const waitUntilSync = async ({ lnds }: { lnds: Array<AuthenticatedLnd> }) => {
+  const promiseArray: Array<Promise<void>> = []
+  for (const lnd of lnds) {
+    promiseArray.push(waitUntilBlockHeight({ lnd }))
+  }
+  await Promise.all(promiseArray)
+}
+
+export const waitUntilChannelBalanceSyncAll = async () => {
+  const promiseArray: Array<Promise<void>> = []
+  for (const lnd of lnds) {
+    promiseArray.push(waitUntilChannelBalanceSync({ lnd }))
+  }
+  await Promise.all(promiseArray)
+}
+
+export const waitUntilChannelBalanceSync = async ({ lnd }) =>
+  waitFor(async () => {
+    const { unsettled_balance } = await getChannelBalance({ lnd })
+    return unsettled_balance === 0
+  })
+
+export const waitFor = async (f) => {
+  let res
+  while (!(res = await f())) await sleep(500)
+  return res
 }

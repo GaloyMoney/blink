@@ -4,6 +4,7 @@ import {
   balanceSheetIsBalanced,
   updateUsersPendingPayment,
 } from "src/ledger/balanceSheet"
+import { waitUntilChannelBalanceSyncAll } from "./lightning"
 
 export * from "./bitcoinCore"
 export * from "./lightning"
@@ -14,13 +15,17 @@ export const amountAfterFeeDeduction = ({ amount, depositFeeRatio }) =>
 
 export const checkIsBalanced = async () => {
   await updateUsersPendingPayment()
+  // wait for balance updates because invoice event
+  // arrives before wallet balances updates in lnd
+  await waitUntilChannelBalanceSyncAll()
+
   const { assetsLiabilitiesDifference, bookingVersusRealWorldAssets } =
     await balanceSheetIsBalanced()
   expect(assetsLiabilitiesDifference).toBeFalsy() // should be 0
 
   // FIXME: because safe_fees is doing rounding to the value up
   // balance doesn't match any longer. need to go from sats to msats to properly account for every msats spent
-  expect(Math.abs(bookingVersusRealWorldAssets)).toBeLessThan(5) // should be 0
+  expect(Math.abs(bookingVersusRealWorldAssets)).toBeLessThanOrEqual(5) // should be 0
 }
 
 export const mockGetExchangeBalance = () =>
