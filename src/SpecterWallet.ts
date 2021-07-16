@@ -41,7 +41,7 @@ export class SpecterWallet {
       this.logger.info("specter wallet has not been instantiated")
 
       // currently use for testing purpose. need to refactor
-      return "default"
+      return "outside"
       // return ""
     }
 
@@ -78,7 +78,7 @@ export class SpecterWallet {
   async getBitcoindBalance(): Promise<number> {
     if (!this.bitcoindClient) {
       const wallet = await this.setBitcoindClient()
-      if (wallet === "default") {
+      if (wallet === "outside") {
         // if (wallet === "") {
         return 0
       }
@@ -92,7 +92,7 @@ export class SpecterWallet {
 
     if (!this.bitcoindClient) {
       const wallet = await this.setBitcoindClient()
-      if (wallet === "default") {
+      if (wallet === "outside") {
         // if (wallet === "") {
         return
       }
@@ -172,7 +172,7 @@ export class SpecterWallet {
   async toColdStorage({ sats }) {
     if (!this.bitcoindClient) {
       const wallet = await this.setBitcoindClient()
-      if (wallet === "default") {
+      if (wallet === "outside") {
         // if (wallet === "") {
         this.logger.warn("no wallet has been setup")
         return
@@ -225,7 +225,7 @@ export class SpecterWallet {
   async toLndWallet({ sats }) {
     if (!this.bitcoindClient) {
       const wallet = await this.setBitcoindClient()
-      if (wallet === "default") {
+      if (wallet === "outside") {
         // if (wallet === "") {
         return
       }

@@ -45,13 +45,13 @@ afterAll(async () => {
   jest.restoreAllMocks()
 })
 
-it("funds default/outside bitcoind wallet", async () => {
+it("funds outside bitcoind wallet", async () => {
   // it("funds bitcoind wallet", async () => {
   let balance
 
   // depend of bitcoind version. needed in < 0.20 but failed in 0.21?
-  const { name } = await bitcoindDefaultClient.createWallet("default")
-  expect(name).toBe("default")
+  const { name } = await bitcoindDefaultClient.createWallet("outside")
+  expect(name).toBe("outside")
   // const { name } = await bitcoindDefaultClient.createWallet("")
   // expect(name).toBe("")
 

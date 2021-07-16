@@ -38,7 +38,7 @@ const connection_obj = {
 
 export const BitcoindClient = ({ wallet = "" }) =>
   new bitcoindClient({ ...connection_obj, wallet })
-export const bitcoindDefaultClient = BitcoindClient({ wallet: "default" })
+export const bitcoindDefaultClient = BitcoindClient({ wallet: "outside" })
 // export const bitcoindDefaultClient = BitcoindClient({ wallet: "" })
 export const bitcoindHotClient = BitcoindClient({ wallet: "hot" })
 
