@@ -10,13 +10,26 @@ import {
 import ccxt, { Order } from "ccxt"
 import { Result } from "./Result"
 import { HedgingStrategy, UpdatedPosition, UpdatedBalance } from "./HedgingStrategyTypes"
+import { GenericExchange, SupportedExchange, ApiConfig } from "./GenericExchange"
 
-const exchangeName = "OKEX"
-const exchangeSwapSymbol = "BTC-USD-SWAP"
+const exchangeName = SupportedExchange.OKEX5
+const strategySymbol = "BTC-USD-SWAP"
 
-const apiKey = process.env[`${exchangeName}_KEY`]
-const secret = process.env[`${exchangeName}_SECRET`]
-const password = process.env[`${exchangeName}_PASSWORD`]
+const apiKey = process.env[`${exchangeName.toUpperCase()}_KEY`]
+const secret = process.env[`${exchangeName.toUpperCase()}_SECRET`]
+const password = process.env[`${exchangeName.toUpperCase()}_PASSWORD`]
+
+if (!apiKey || !secret || !password) {
+  throw new Error(`Missing ${exchangeName} exchange environment variables`)
+}
+
+const activeApiConfig = new ApiConfig(
+  exchangeName,
+  strategySymbol,
+  apiKey,
+  secret,
+  password,
+)
 
 const simulateOnly = !process.env["HEDGING_NOT_IN_SIMULATION"]
 
@@ -32,10 +45,10 @@ export class OkexPerpetualSwapStrategy implements HedgingStrategy {
   logger
 
   constructor(logger) {
-    this.exchange = new ccxt.okex5({ apiKey, secret, password })
+    this.exchange = new GenericExchange(activeApiConfig)
     // The following check throws if something is wrong
     this.exchange.checkRequiredCredentials()
-    this.symbol = exchangeSwapSymbol
+    this.symbol = strategySymbol
     this.logger = logger.child({ class: OkexPerpetualSwapStrategy.name })
   }
 

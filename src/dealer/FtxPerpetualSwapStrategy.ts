@@ -3,16 +3,28 @@ import _ from "lodash"
 import { yamlConfig } from "../config"
 import { TradeSide, FundTransferSide } from "./ExchangeTradingType"
 import assert from "assert"
-import ccxt from "ccxt"
 import { Result } from "./Result"
 import { HedgingStrategy, UpdatedPosition, UpdatedBalance } from "./HedgingStrategyTypes"
+import { GenericExchange, SupportedExchange, ApiConfig } from "./GenericExchange"
 
-const exchangeName = "FTX"
-const exchangeSwapSymbol = "BTC-PERP"
+const exchangeName = SupportedExchange.FTX
+const strategySymbol = "BTC-PERP"
 
-const apiKey = process.env[`${exchangeName}_KEY`]
-const secret = process.env[`${exchangeName}_SECRET`]
-const password = process.env[`${exchangeName}_PASSWORD`]
+const apiKey = process.env[`${exchangeName.toUpperCase()}_KEY`]
+const secret = process.env[`${exchangeName.toUpperCase()}_SECRET`]
+const password = process.env[`${exchangeName.toUpperCase()}_PASSWORD`]
+
+if (!apiKey || !secret || !password) {
+  throw new Error(`Missing ${exchangeName} exchange environment variables`)
+}
+
+const activeApiConfig = new ApiConfig(
+  exchangeName,
+  strategySymbol,
+  apiKey,
+  secret,
+  password,
+)
 
 const simulateOnly = !process.env["HEDGING_NOT_IN_SIMULATION"]
 
@@ -28,11 +40,11 @@ export class FtxPerpetualSwapStrategy implements HedgingStrategy {
   logger
 
   constructor(logger) {
-    this.exchange = new ccxt.ftx({ apiKey, secret, password })
+    this.exchange = new GenericExchange(activeApiConfig)
     // The following check throws if something is wrong
     this.exchange.checkRequiredCredentials()
-    this.symbol = exchangeSwapSymbol
-    this.logger = logger.child({ topic: FtxPerpetualSwapStrategy.name })
+    this.symbol = strategySymbol
+    this.logger = logger.child({ class: FtxPerpetualSwapStrategy.name })
   }
 
   public async UpdatePosition(
