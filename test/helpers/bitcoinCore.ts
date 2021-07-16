@@ -27,6 +27,13 @@ bitcoindDefaultClient.mineAndConfirm = async (numOfBlocks, address) => {
   return rewards
 }
 
+/**
+ * Get the bitcoin reward for the given height. Based on bitcoin-core implementation
+ * @method getBlockReward
+ * @param  height=0          block height
+ * @param  halvingBlocks=150 halving blocks. regtest = 150 - mainnet = 210000
+ * @return                   block reward in satoshis
+ */
 function getBlockReward(height = 0, halvingBlocks = 150) {
   const halvings = BigInt(height) / BigInt(halvingBlocks)
   if (halvings >= 64) return 0

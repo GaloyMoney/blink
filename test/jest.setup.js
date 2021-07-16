@@ -1,16 +1,20 @@
-const { redis } = require("src/redis");
+const { redis } = require("src/redis")
 const { setupMongoConnection } = require("src/mongodb")
 
 let mongoose
 
 beforeAll(async () => {
-  mongoose = await setupMongoConnection()
+  if (!global.stopMongoose) {
+    mongoose = await setupMongoConnection()
+  }
 })
 
 afterAll(async () => {
   // avoid to use --forceExit
   redis.disconnect()
-  await mongoose.connection.close()
+  if (mongoose) {
+    await mongoose.connection.close()
+  }
 })
 
 jest.setTimeout(30000)

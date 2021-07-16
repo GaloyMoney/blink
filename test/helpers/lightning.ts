@@ -226,7 +226,8 @@ export const mineBlockAndSync = async ({
   await Promise.all(promiseArray)
 }
 
-export const mineBlockAndSyncAll = async () => mineBlockAndSync({ lnds })
+export const mineBlockAndSyncAll = async (newBlock = 6) =>
+  mineBlockAndSync({ lnds, newBlock })
 
 export const waitUntilSyncAll = async () => waitUntilSync({ lnds })
 
