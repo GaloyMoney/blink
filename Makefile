@@ -26,7 +26,7 @@ reset-integration: reset-deps integration
 test-in-ci:
 	docker-compose up -d
 	. ./.envrc && \
-		node_modules/.bin/jest --bail --runInBand --ci --reporters=default --reporters=jest-junit --forceExit
+		LOGLEVEL=error node_modules/.bin/jest --bail --runInBand --ci --reporters=default --reporters=jest-junit
 
 check-code:
 	yarn tsc-check

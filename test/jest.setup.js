@@ -10,7 +10,7 @@ beforeAll(async () => {
 })
 
 afterAll(async () => {
-  // avoid to use --forceExit
+  // avoids to use --forceExit
   redis.disconnect()
   if (mongoose) {
     await mongoose.connection.close()
