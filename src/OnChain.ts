@@ -154,7 +154,7 @@ abstract class PayOnChainClient {
   static clientPayInstance(): PayOnChainClient {
     // * ALSO change updatePending *
     // return new LndOnChainClient()
-    return new BitcoindClient()
+    return new BitcoindOnChainClient()
   }
 
   abstract getBalance(): Promise<number>
@@ -217,7 +217,7 @@ class LndOnChainClient extends PayOnChainClient {
 }
 
 // eslint-disable-next-line
-class BitcoindClient extends PayOnChainClient {
+class BitcoindOnChainClient extends PayOnChainClient {
   constructor() {
     super()
     this.client = bitcoindHotClient
