@@ -14,7 +14,6 @@ const { lnd } = getActiveLnd()
 
 const createCustomInvoice = async () => {
   const username = "abcdef"
-  console.log(username)
   const requestOrg = (await createInvoice({ lnd, description: "abc" })).request
   const decoded = parsePaymentRequest({ request: requestOrg })
   decoded["username"] = username
