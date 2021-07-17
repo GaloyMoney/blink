@@ -45,35 +45,7 @@ $ make watch
 
 ## Testing
 
-To execute the test suite runtime dependencies must be running.
-```
-$ make start-deps
-docker-compose up -d
-(...)
-```
-
-Everytime the dependencies are re-started the environment must be reloaded via `direnv reload`. When using the [make command](./Makefile) this will happen automatically.
-
-To run the test suite you can run:
-```
-$ make test
-(...)
-$ echo $?
-0
-```
-or
-```
-# to run unit tests
-$ make unit
-
-# to run integration test
-$ make integration
-```
-
-The tests are *not* idempotent (yet) so currently to re-run the tests, run:
-```
-$ make reset-integration
-```
+Read more [here](./test/README.md)
 
 ## Running checks
 
