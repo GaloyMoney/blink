@@ -406,7 +406,7 @@ describe("UserWallet - Lightning Pay", () => {
         const result = await fn(userWallet1)({ invoice: request })
 
         await waitUntilChannelBalanceSyncAll()
-        
+
         expect(result).toBe("pending")
         const { BTC: balanceBeforeSettlement } = await userWallet1.getBalances()
         expect(balanceBeforeSettlement).toBe(
