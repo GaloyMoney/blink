@@ -45,6 +45,36 @@ The  integration tests are *not* fully idempotent (yet) so currently to re-run t
 $ make reset-integration
 ```
 
+### Run specific test file
+
+To execute a specific test file:
+
+#### Unit
+
+Example to run `test/unit/config.spec.ts`
+
+```bash
+$ TEST=config yarn test:unit
+# or
+$ TEST=config make unit
+```
+where `config` is the name of the file `config.spec.ts`
+
+#### Integration
+
+Example to run `test/integration/01-setup/01-connection.spec.ts`
+
+```bash
+$ TEST=01-connection yarn test:integration
+# or
+$ TEST=01-connection make integration
+```
+
+if within a specific test suite you want to run/debug only a describe or it(test) block please use:
+* [describe.only](https://jestjs.io/docs/api#describeonlyname-fn): just for debug purposes
+* [it.only](https://jestjs.io/docs/api#testonlyname-fn-timeout): just for debug purposes
+* [it.skip](https://jestjs.io/docs/api#testskipname-fn): use it when a test is temporarily broken. Please don't commit commented test cases
+
 ## Runtime dependencies
 
 ```bash
@@ -65,9 +95,9 @@ Everytime the dependencies are re-started the environment must be reloaded via `
   ```bash
   $ make reset-deps
   ```
-* **Integration tests running slow**: we use docker to run dependencies (redis, mongodb, bitcoind and 4 lnd) so the entire test suite is disk-intensive.
+* **Integration tests running slow**: we use docker to run dependencies (redis, mongodb, bitcoind and 4 lnds) so the entire test suite is disk-intensive.
   * Please make sure that you are running docker containers in a solid state drive (SSD)
-  * Add the next setting to [lnd.conf](../dev/lnd/lnd.conf) and and re-create runtime dependencies
+  * Add the next setting to [lnd.conf](../dev/lnd/lnd.conf) and re-create runtime dependencies
     ```
     # ./dev/lnd/lnd.conf
     routing.strictgraphpruning=true
