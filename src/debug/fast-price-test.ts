@@ -7,7 +7,7 @@ import { Price } from "../priceImpl"
 import { baseLogger } from "../logger"
 
 const main = async () => {
-  const price = new Price({logger: baseLogger})
+  const price = new Price({ logger: baseLogger })
   // await price.fastUpdate()
   return await price.update()
 }

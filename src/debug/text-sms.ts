@@ -1,4 +1,4 @@
-import { baseLogger } from "../logger"
+// import { baseLogger } from "../logger"
 // import { sendTwilioText, sendSMSalaText } from "../text"
 
 // const phone = "add phone number here with extension (ie: +1...)"
