@@ -1,23 +1,22 @@
 /**
- * @jest-environment node
+ * how to run:
+ * . ./.envrc && yarn ts-node src/debug/create-custom-invoices.ts
  */
+
 import { decode } from "bip66"
 import { createUnsignedRequest, parsePaymentRequest } from "invoices"
 import lnService from "ln-service"
 import { createInvoice, signBytes } from "lightning"
 import util from "util"
-import { getActiveLnd } from "src/lndUtils"
+import { getActiveLnd } from "../lndUtils"
+
 const { lnd } = getActiveLnd()
 
-it("add invoice", async () => {
+const createCustomInvoice = async () => {
   const username = "abcdef"
-
-  // const request = await userWallet1.addInvoice({ value: 1000, memo: "tx 1" })
-  // expect(request.startsWith("lnbcrt10")).toBeTruthy()
-
-  const request_org = (await createInvoice({ lnd, description: "abc" })).request
-  const decoded = parsePaymentRequest({ request: request_org })
-
+  console.log(username)
+  const requestOrg = (await createInvoice({ lnd, description: "abc" })).request
+  const decoded = parsePaymentRequest({ request: requestOrg })
   decoded["username"] = username
 
   const { preimage, hrp, tags } = createUnsignedRequest(decoded)
@@ -40,16 +39,21 @@ it("add invoice", async () => {
     tags,
   })
 
-  // console.log({request_org, request_new: request })
-  // console.log(util.inspect({ decoded, signature, hash, request_org, request_new: request }, false, Infinity))
+  // console.log({requestOrg, request_new: request })
+  // console.log(util.inspect({ decoded, signature, hash, requestOrg, request_new: request }, false, Infinity))
   // console.log(util.inspect({ requestDetails }, false, Infinity))
 
   // Decoded details of the payment request
   const requestDetails = parsePaymentRequest({ request })
 
-  console.log(
-    util.inspect({ request, request_org, requestDetails, decoded }, false, Infinity),
-  )
+  return { request, requestOrg, requestDetails, decoded }
+}
 
-  expect(requestDetails.username).toBe(username)
-})
+const main = async () => {
+  const customInvoice = await createCustomInvoice()
+  return util.inspect(customInvoice, false, Infinity)
+}
+
+main()
+  .then((o) => console.log(o))
+  .catch((err) => console.log(err))
