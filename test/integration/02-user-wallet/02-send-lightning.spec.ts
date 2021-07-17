@@ -405,8 +405,6 @@ describe("UserWallet - Lightning Pay", () => {
         })
         const result = await fn(userWallet1)({ invoice: request })
 
-        await waitUntilChannelBalanceSyncAll()
-
         expect(result).toBe("pending")
         const { BTC: balanceBeforeSettlement } = await userWallet1.getBalances()
         expect(balanceBeforeSettlement).toBe(
@@ -435,8 +433,6 @@ describe("UserWallet - Lightning Pay", () => {
 
         expect(result).toBe("pending")
         baseLogger.info("payment has timeout. status is pending.")
-
-        await waitUntilChannelBalanceSyncAll()
 
         const { BTC: intermediateBalance } = await userWallet1.getBalances()
         expect(intermediateBalance).toBe(initBalance1 - amountInvoice * (1 + initialFee))
