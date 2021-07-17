@@ -9,25 +9,16 @@ If you want to run it locally, you will need the following things properly insta
 * [Yarn](https://yarnpkg.com//)
 * [Docker](https://www.docker.com/)
 * [Docker Compose](https://docs.docker.com/compose/)
-* [Runtime dependencies](https://docs.docker.com/compose/)
+* [Runtime dependencies](#runtime-dependencies)
 
 ## Run tests
-
-To execute the test suite runtime dependencies must be running.
-
-```bash
-$ make start-deps
-
-# or
-$ make reset-deps
-```
-Everytime the dependencies are re-started the environment must be reloaded via `direnv reload`. When using the [make command](../Makefile) this will happen automatically.
 
 To run the test suite you can run:
 
 ```bash
 $ make test
 ```
+To execute the test suite [runtime dependencies](#runtime-dependencies) must be running.
 
 ### Run unit tests
 
@@ -41,7 +32,7 @@ Runtime dependencies are not required
 
 ### Run integration tests
 
-To execute the integration tests runtime dependencies must be running.
+To execute the integration tests [runtime dependencies](#runtime-dependencies) must be running.
 
 ```bash
 $ yarn test:integration
@@ -54,13 +45,23 @@ The  integration tests are *not* fully idempotent (yet) so currently to re-run t
 $ make reset-integration
 ```
 
+## Runtime dependencies
+
+```bash
+$ make start-deps
+
+# or
+$ make reset-deps
+```
+Everytime the dependencies are re-started the environment must be reloaded via `direnv reload`. When using the [make command](../Makefile) this will happen automatically.
+
 ## Known issues
 
 * **Test suite timeouts**: increase jest timeout value in [jest.setup.js](./jest.setup.js). Example:
   ```js
   jest.setTimeout(120000) // 120 seconds
   ```
-* **LNDs don't (re)start**: delete `*.macaroon` files from [dev folder](../dev/lnd) and re-create runtime dependencies:
+* **LNDs don't (re)start**: delete `*.macaroon` files from [dev folder](../dev/lnd) and re-create [runtime dependencies](#runtime-dependencies):
   ```bash
   $ make reset-deps
   ```
