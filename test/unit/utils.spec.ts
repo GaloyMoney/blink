@@ -1,4 +1,10 @@
-import { btc2sat, sat2btc, amountOnVout, myOwnAddressesOnVout, isInvoiceAlreadyPaidError } from "src/utils"
+import {
+  btc2sat,
+  sat2btc,
+  amountOnVout,
+  myOwnAddressesOnVout,
+  isInvoiceAlreadyPaidError,
+} from "src/utils"
 
 describe("utils.ts", () => {
   describe("btc2sat", () => {
@@ -137,7 +143,17 @@ describe("utils.ts", () => {
 
   describe("isInvoiceAlreadyPaidError", () => {
     it("decodes error correctly", async () => {
-      const error = [503,"UnexpectedPaymentError",{"err":{"code":6,"details":"invoice is already paid","metadata":{"internalRepr":{},"options":{}}}}]
+      const error = [
+        503,
+        "UnexpectedPaymentError",
+        {
+          err: {
+            code: 6,
+            details: "invoice is already paid",
+            metadata: { internalRepr: {}, options: {} },
+          },
+        },
+      ]
       expect(isInvoiceAlreadyPaidError(error)).toBeTruthy()
     })
   })

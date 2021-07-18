@@ -3,7 +3,7 @@
  * yarn ts-node src/debug/set-db-metadata.ts
  */
 
- import { setupMongoConnectionSecondary } from "../mongodb"
+import { setupMongoConnectionSecondary } from "../mongodb"
 import { DbMetadata } from "../schema"
 
 const main = async () => {
