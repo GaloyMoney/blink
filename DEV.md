@@ -86,11 +86,11 @@ To execute a specific test file:
 Example to run `test/unit/config.spec.ts`
 
 ```bash
-$ TEST=config yarn test:unit
+$ TEST=utils yarn test:unit
 # or
-$ TEST=config make unit
+$ TEST=utils make unit
 ```
-where `config` is the name of the file `config.spec.ts`
+where `utils` is the name of the file `utils.spec.ts`
 
 #### Integration
 
