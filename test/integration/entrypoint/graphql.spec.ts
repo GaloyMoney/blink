@@ -35,6 +35,7 @@ afterAll(async () => {
   await sleep(2500)
   swStats.stop()
   await httpServer.close()
+  redis.disconnect()
   await mongoose.connection.close()
 })
 
