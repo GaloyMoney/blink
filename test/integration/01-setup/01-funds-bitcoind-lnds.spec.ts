@@ -9,17 +9,24 @@ import {
   bitcoindClient,
   getChainBalance,
   fundLnd,
+  waitUntilSyncAll,
 } from "test/helpers"
 
 jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
+
+const defaultWallet = ""
+
+beforeEach(async () => {
+  await waitUntilSyncAll()
+})
 
 describe("Bitcoind", () => {
   it("should be funded mining 10 blocks", async () => {
     const numOfBlock = 10
     try {
+      const { name } = await bitcoindClient.createWallet(defaultWallet)
       // depends of bitcoind version. needed in < 0.20 but failed in 0.21?
-      const { name } = await bitcoindClient.createWallet("")
-      expect(name).toBe("")
+      expect(name).toBe(defaultWallet)
     } catch (error) {
       baseLogger.warn({ error }, "bitcoind wallet already exists")
     }
