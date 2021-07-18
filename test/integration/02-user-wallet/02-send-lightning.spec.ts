@@ -13,11 +13,13 @@ import {
   createHodlInvoice,
   createInvoice,
   decodePaymentRequest,
+  getInvoice,
   getUserWallet,
   lndOutside1,
   lndOutside2,
   pay,
   settleHodlInvoice,
+  waitFor,
   waitUntilChannelBalanceSyncAll,
 } from "test/helpers"
 import { TransactionLimits, yamlConfig } from "src/config"
@@ -413,9 +415,21 @@ describe("UserWallet - Lightning Pay", () => {
 
         // FIXME: necessary to not have openHandler ?
         // https://github.com/alexbosworth/ln-service/issues/122
-        await settleHodlInvoice({ lnd: lndOutside1, secret })
+        await waitFor(async () => {
+          try {
+            await settleHodlInvoice({ lnd: lndOutside1, secret })
+            return true
+          } catch (error) {
+            baseLogger.warn({ error }, "settleHodlInvoice failed. trying again.")
+            return false
+          }
+        })
 
-        await sleep(5000)
+        await waitFor(async () => {
+          const { is_confirmed } = await getInvoice({ lnd: lndOutside1, id })
+          return is_confirmed
+        })
+
         await waitUntilChannelBalanceSyncAll()
 
         const { BTC: finalBalance } = await userWallet1.getBalances()
@@ -438,11 +452,23 @@ describe("UserWallet - Lightning Pay", () => {
         const { BTC: intermediateBalance } = await userWallet1.getBalances()
         expect(intermediateBalance).toBe(initBalance1 - amountInvoice * (1 + initialFee))
 
-        await cancelHodlInvoice({ id, lnd: lndOutside1 })
+        await waitFor(async () => {
+          try {
+            await cancelHodlInvoice({ id, lnd: lndOutside1 })
+            return true
+          } catch (error) {
+            baseLogger.warn({ error }, "cancelHodlInvoice failed. trying again.")
+            return false
+          }
+        })
+
+        await waitFor(async () => {
+          const { is_canceled } = await getInvoice({ lnd: lndOutside1, id })
+          return is_canceled
+        })
 
         // wait for balance updates because invoice event
         // arrives before wallet balances updates in lnd
-        await sleep(5000)
         await waitUntilChannelBalanceSyncAll()
 
         const { BTC: finalBalance } = await userWallet1.getBalances()
