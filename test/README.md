@@ -100,5 +100,10 @@ Everytime the dependencies are re-started the environment must be reloaded via `
   * Add the next setting to [lnd.conf](../dev/lnd/lnd.conf) and re-create runtime dependencies
     ```
     # ./dev/lnd/lnd.conf
-    routing.strictgraphpruning=true
+    routing.assumechanvalid=true
+    ```
+  * Reduce lnd log disk usage: change debuglevel to critical
+    ```
+    # ./dev/lnd/lnd.conf
+    debuglevel=critical
     ```
