@@ -9,6 +9,7 @@ import {
   lndOutside1,
   lndOutside2,
   pay,
+  waitFor,
 } from "test/helpers"
 
 afterAll(async () => {
@@ -19,7 +20,15 @@ describe("lndUtils", () => {
   describe("updateRoutingFees", () => {
     it("sets routing fee correctly", async () => {
       const { request } = await createInvoice({ lnd: lndOutside2, tokens: 10000 })
-      await pay({ lnd: lndOutside1, request })
+
+      await waitFor(async () => {
+        try {
+          return await pay({ lnd: lndOutside1, request })
+        } catch (error) {
+          baseLogger.warn({ error }, "pay failed. trying again.")
+          return null
+        }
+      })
 
       baseLogger.debug((await getForwards({ lnd: lnd1 })).forwards, "forwards")
 
