@@ -124,10 +124,6 @@ Everytime the dependencies are re-started the environment must be reloaded via `
   # 120 seconds
   $ JEST_TIMEOUT=120000 yarn test:integration
   ```
-* **LNDs don't (re)start**: delete `*.macaroon` files from [dev folder](../dev/lnd) and re-create [runtime dependencies](#runtime-dependencies):
-  ```bash
-  $ make reset-deps
-  ```
 * **Integration tests running slow**: we use docker to run dependencies (redis, mongodb, bitcoind and 4 lnds) so the entire test suite is disk-intensive.
   * Please make sure that you are running docker containers in a solid state drive (SSD)
   * Reduce lnd log disk usage: change debuglevel to critical
