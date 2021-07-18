@@ -2,11 +2,12 @@ import { baseLogger } from "src/logger"
 import { UserWallet } from "src/userWallet"
 import { SpecterWallet } from "src/SpecterWallet"
 import { getActiveOnchainLnd } from "src/lndUtils"
-import { getChainBalance, mineBlockAndSyncAll } from "test/helpers"
+import { bitcoindClient, getChainBalance, mineBlockAndSyncAll } from "test/helpers"
 import { MainBook } from "src/mongodb"
 import { bitcoindAccountingPath } from "src/ledger/ledger"
 
 const { lnd } = getActiveOnchainLnd()
+const specterWalletName = "specter/coldstorage"
 let specterWallet
 
 beforeEach(async () => {
@@ -14,12 +15,21 @@ beforeEach(async () => {
   specterWallet = new SpecterWallet({ logger: baseLogger })
 })
 
+afterAll(async () => {
+  await bitcoindClient.unloadWallet({ wallet_name: specterWalletName })
+})
+
 describe("SpecterWallet", () => {
   it("creates wallet", async () => {
     let wallets = await SpecterWallet.listWallets()
 
     if (wallets.length < 2) {
-      await SpecterWallet.createWallet()
+      try {
+        await SpecterWallet.createWallet()
+      } catch {
+        const { name } = await bitcoindClient.loadWallet(specterWalletName)
+        expect(name).toBe(specterWalletName)
+      }
     }
 
     wallets = await SpecterWallet.listWallets()
