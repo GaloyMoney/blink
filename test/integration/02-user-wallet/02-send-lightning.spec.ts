@@ -415,6 +415,7 @@ describe("UserWallet - Lightning Pay", () => {
         // https://github.com/alexbosworth/ln-service/issues/122
         await settleHodlInvoice({ lnd: lndOutside1, secret })
 
+        await sleep(5000)
         await waitUntilChannelBalanceSyncAll()
 
         const { BTC: finalBalance } = await userWallet1.getBalances()
@@ -441,6 +442,7 @@ describe("UserWallet - Lightning Pay", () => {
 
         // wait for balance updates because invoice event
         // arrives before wallet balances updates in lnd
+        await sleep(5000)
         await waitUntilChannelBalanceSyncAll()
 
         const { BTC: finalBalance } = await userWallet1.getBalances()
