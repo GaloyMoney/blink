@@ -21,6 +21,7 @@ export abstract class ExchangeBase {
   exchange
   symbol
   logger
+  bypass
 
   constructor(exchangeId: SupportedExchange, strategySymbol: string, logger) {
     const apiKey = process.env[`${exchangeId.toUpperCase()}_KEY`]
@@ -35,6 +36,7 @@ export abstract class ExchangeBase {
     this.symbol = strategySymbol
     const exchangeClass = ccxt[this.exchangeId]
     this.exchange = new exchangeClass({ apiKey, secret, password })
+    this.bypass = this.exchange
 
     // The following check throws if something is wrong
     this.exchange.checkRequiredCredentials()
