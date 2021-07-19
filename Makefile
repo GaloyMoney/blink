@@ -5,6 +5,9 @@ start-deps:
 start: start-deps
 	. ./.envrc && yarn tsnd --respawn src/entrypoint/graphql.ts | yarn pino-pretty -c -l
 
+start-admin: start-deps
+	. ./.envrc && yarn tsnd --respawn src/entrypoint/graphql-admin-server.ts | yarn pino-pretty -c -l
+
 watch:
 	yarn nodemon -V -e ts,graphql -w ./src -x make start
 

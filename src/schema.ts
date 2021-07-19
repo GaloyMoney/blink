@@ -350,7 +350,11 @@ UserSchema.statics.getUser = async function ({ username, phone }) {
   if (phone) {
     user = await this.findOne({ phone })
   } else {
-    user = await this.findByUsername({ username })
+    if (typeof username !== "string" || !username.match(regexUsername)) {
+      return null
+    }
+
+    user = this.findOne({ username: caseInsensitiveRegex(username) })
   }
 
   if (!user) {
@@ -362,15 +366,6 @@ UserSchema.statics.getUser = async function ({ username, phone }) {
 
 UserSchema.statics.getUserByAddress = async function ({ address }) {
   return await this.findOne({ "onchain.address": address })
-}
-
-// FIXME: Merge findByUsername and getUser
-UserSchema.statics.findByUsername = async function ({ username }) {
-  if (typeof username !== "string" || !username.match(regexUsername)) {
-    return null
-  }
-
-  return await this.findOne({ username: caseInsensitiveRegex(username) })
 }
 
 UserSchema.statics.getActiveUsers = async function (): Promise<Array<typeof User>> {

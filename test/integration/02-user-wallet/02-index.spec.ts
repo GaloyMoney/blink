@@ -1,6 +1,7 @@
 import { yamlConfig } from "src/config"
 import { getUserWallet } from "test/helpers"
-import { setAccountStatus, usernameExists } from "src/AdminOps"
+import { setAccountStatus } from "src/AdminOps"
+import { usernameExists } from "src/graphql/db"
 
 jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
 

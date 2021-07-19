@@ -18,7 +18,7 @@ import path from "path"
 import pino from "pino"
 import PinoHttp from "pino-http"
 import { v4 as uuidv4 } from "uuid"
-import { addToMap, setAccountStatus, setLevel, usernameExists } from "../AdminOps"
+import { addToMap, setAccountStatus, setLevel } from "../AdminOps"
 import { yamlConfig } from "../config"
 import { AuthorizationError, IPBlacklistedError } from "../error"
 import { activateLndHealthCheck } from "../lndHealth"
@@ -33,9 +33,10 @@ import { User } from "../schema"
 import { login, requestPhoneCode } from "../text"
 import { Levels, OnboardingEarn, Primitive } from "../types"
 import helmet from "helmet"
-import { updateIPDetails, isIPBlacklisted, isProd } from "../utils"
+import { updateIPDetails, isIPBlacklisted, isDev } from "../utils"
 
 import { WalletFactory, WalletFromUsername } from "../walletFactory"
+import { usernameExists } from "../graphql/db"
 
 dotenv.config()
 
@@ -408,7 +409,7 @@ export async function startApolloServer(): Promise<Record<string, unknown>> {
     },
   })
 
-  app.use(helmet({ contentSecurityPolicy: isProd ? undefined : false }))
+  app.use(helmet({ contentSecurityPolicy: isDev ? false : undefined }))
 
   app.use(pino_http)
 

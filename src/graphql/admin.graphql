@@ -1,0 +1,29 @@
+type Query {
+  allLevels: [AccountLevel!]!
+  userDetailsByPhone(phone: Phone!): UserDetails!
+  userDetailsByUsername(username: Username!): UserDetails!
+}
+
+enum AccountLevel {
+  ONE
+  TWO
+}
+
+type UserDetails {
+  id: ID!
+  username: Username
+  phone: Phone!
+  level: AccountLevel
+  createdAt: Date!
+}
+
+scalar Username
+
+scalar Phone
+
+scalar Date
+
+type Mutation {
+  requestPhoneCode(phone: String!): Boolean
+  login(phone: String!, code: String!): String
+}
