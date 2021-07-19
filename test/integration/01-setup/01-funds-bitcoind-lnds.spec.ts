@@ -1,7 +1,6 @@
-import { liabilitiesReserve, lndAccountingPath } from "src/ledger/ledger"
-import { baseLogger } from "src/logger"
-import { MainBook } from "src/mongodb"
 import { btc2sat } from "src/utils"
+import { baseLogger } from "src/logger"
+import { getFunderWallet } from "src/walletFactory"
 import {
   lnd1,
   lndOutside1,
@@ -10,6 +9,8 @@ import {
   fundLnd,
   waitUntilSyncAll,
   checkIsBalanced,
+  getUserWallet,
+  waitUntilBlockHeight,
 } from "test/helpers"
 
 jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
@@ -18,6 +19,7 @@ const defaultWallet = ""
 
 afterEach(async () => {
   await waitUntilSyncAll()
+  await checkIsBalanced()
 })
 
 describe("Bitcoind", () => {
@@ -54,16 +56,16 @@ describe("Bitcoind", () => {
     const amount = 1
     const { chain_balance: initialBalance } = await getChainBalance({ lnd: lnd1 })
     const sats = initialBalance + btc2sat(amount)
-    await fundLnd(lnd1, amount)
+
+    // load funder wallet before use it
+    await getUserWallet(4)
+    const funderWallet = await getFunderWallet({ logger: baseLogger })
+    const address = await funderWallet.getOnChainAddress()
+
+    await bitcoindClient.sendToAddressAndConfirm(address, amount)
+    await waitUntilBlockHeight({ lnd: lnd1 })
+
     const { chain_balance: balance } = await getChainBalance({ lnd: lnd1 })
     expect(balance).toBe(sats)
-
-    const metadata = { type: "onchain_receipt", currency: "BTC", pending: "false" }
-
-    await MainBook.entry("funding tx")
-      .credit(liabilitiesReserve, sats, metadata)
-      .debit(lndAccountingPath, sats, metadata)
-      .commit()
-    await checkIsBalanced()
   })
 })
