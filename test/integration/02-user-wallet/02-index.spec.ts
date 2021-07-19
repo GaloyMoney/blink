@@ -1,11 +1,6 @@
-import { find } from "lodash"
 import { yamlConfig } from "src/config"
-import { OnboardingEarn } from "src/types"
+import { getUserWallet } from "test/helpers"
 import { setAccountStatus, usernameExists } from "src/AdminOps"
-import { bitcoindClient, checkIsBalanced, getUserWallet } from "test/helpers"
-import { InvoiceUser } from "src/schema"
-import { getHash } from "src/utils"
-import { baseLogger } from "src/logger"
 
 jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
 
@@ -118,20 +113,6 @@ describe("UserWallet", () => {
     })
   })
 
-  describe("getOnchainFee", () => {
-    it("returns a fee greater than zero for an external address", async () => {
-      const address = await bitcoindClient.getNewAddress()
-      const fee = await userWallet0.getOnchainFee({ address })
-      expect(fee).toBeGreaterThan(0)
-    })
-
-    it("returns zero for an on us address", async () => {
-      const address = await userWallet2.getOnChainAddress()
-      const fee = await userWallet0.getOnchainFee({ address })
-      expect(fee).toBe(0)
-    })
-  })
-
   describe("getStringCsv", () => {
     const csvHeader =
       "voided,approved,_id,accounts,credit,debit,_journal,book,unix,date,datetime,currency,username,type,hash,txid,fee,feeUsd,sats,usd,memo,memoPayer,meta,pending"
@@ -140,29 +121,6 @@ describe("UserWallet", () => {
       expect(typeof base64Data).toBe("string")
       const data = Buffer.from(base64Data, "base64")
       expect(data.includes(csvHeader)).toBeTruthy()
-    })
-  })
-
-  describe("addInvoice", () => {
-    it("adds a self generated invoice", async () => {
-      const request = await userWallet1.addInvoice({ value: 1000 })
-      expect(request.startsWith("lnbcrt10")).toBeTruthy()
-      const { uid } = await InvoiceUser.findById(getHash(request))
-      expect(String(uid)).toBe(String(userWallet1.user._id))
-    })
-
-    it("adds a self generated invoice without amount", async () => {
-      const request = await userWallet2.addInvoice({})
-      const { uid } = await InvoiceUser.findById(getHash(request))
-      expect(String(uid)).toBe(String(userWallet2.user._id))
-    })
-
-    it("adds a public invoice", async () => {
-      const request = await userWallet1.addInvoice({ selfGenerated: false })
-      expect(request.startsWith("lnbcrt1")).toBeTruthy()
-      const { uid, selfGenerated } = await InvoiceUser.findById(getHash(request))
-      expect(String(uid)).toBe(String(userWallet1.user._id))
-      expect(selfGenerated).toBe(false)
     })
   })
 
