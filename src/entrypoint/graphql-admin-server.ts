@@ -174,7 +174,7 @@ export async function startApolloServerForAdminSchema() {
 
   server.applyMiddleware({ app })
 
-  await app.listen({ port: isDev ? 4001 : 4000 })
+  await app.listen({ port: 4001 })
 
   console.log(`🚀 Admin server ready at http://localhost:4001${server.graphqlPath}`)
   return { server, app }

@@ -16,6 +16,15 @@ image:
   repository: gcr.io/galoyapp/galoy
 
 deployment:
+- name: graphql-admin
+  args: ["lib/entrypoint/graphql-admin-server.js"]
+  healthz: true
+  targetPort: 4001
+  replicaCount: 1
+  podAnnotations:
+    prometheus.io/path: /swagger/metrics
+    prometheus.io/port: "4001"
+    prometheus.io/scrape: "true"
 - name: graphql
   args: ["lib/entrypoint/graphql.js"]
   healthz: true
