@@ -123,4 +123,9 @@ export enum ApiError {
   NON_POSITIVE_QUANTITY = "Non Positive Quantity",
   INVALID_TRADE_SIDE = "Invalid Trade Side",
   MISSING_ORDER_ID = "Missing Order Id",
+  NON_POSITIVE_PRICE = "Non Positive Price",
+  NON_POSITIVE_NOTIONAL = "Non Positive Notional",
+  NON_POSITIVE_MARGIN = "Non Positive Margin",
+  MISSING_ACCOUNT_VALUE = "Missing Account Value",
+  NON_POSITIVE_ACCOUNT_VALUE = "Non Positive Account Value",
 }
