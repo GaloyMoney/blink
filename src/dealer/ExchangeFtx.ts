@@ -71,6 +71,7 @@ export class ExchangeFtx extends ExchangeBase {
       assert(btcPriceInUsd > 0, ApiError.MISSING_PARAMETERS)
 
       const response = await this.exchange.privateGetAccount()
+      this.logger.debug({ response }, "exchange.privateGetAccount() returned: {response}")
 
       assert(response, ApiError.UNSUPPORTED_API_RESPONSE)
 
