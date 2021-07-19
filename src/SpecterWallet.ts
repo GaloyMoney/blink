@@ -33,7 +33,7 @@ export class SpecterWallet {
   async setBitcoindClient(): Promise<string> {
     const wallets = await SpecterWallet.listWallets()
 
-    const pattern = this.config.onchainWallet ?? "specter"
+    const pattern = this.config.onchainWallet
     const specterWallets = _.filter(wallets, (item) => item.includes(pattern))
 
     // there should be only one specter wallet
