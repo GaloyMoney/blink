@@ -2,10 +2,7 @@ import _ from "lodash"
 import {
   FetchDepositAddressResult,
   WithdrawParameters,
-  WithdrawResult,
   CreateOrderParameters,
-  CreateOrderResult,
-  FetchOrderResult,
   GetAccountAndPositionRiskResult,
   GetInstrumentDetailsResult,
   SupportedChain,
@@ -74,40 +71,35 @@ export class ExchangeOkex extends ExchangeBase {
     btcPriceInUsd,
   ): Promise<Result<GetAccountAndPositionRiskResult>> {
     try {
+      // OKEx has last price as apart of position data, may forgo input validation
       assert(btcPriceInUsd > 0, ApiError.MISSING_PARAMETERS)
 
-      const response = await this.exchange.fetchPosition()
-      const response2 = await this.exchange.fetchBalance()
+      const position = await this.exchange.fetchPosition(this.symbol)
+      this.logger.debug(
+        { position },
+        `exchange.fetchPosition(${this.symbol}) returned: {position}`,
+      )
+      assert(position, ApiError.UNSUPPORTED_API_RESPONSE)
+      assert(position.last >= 0, ApiError.NON_POSITIVE_PRICE)
+      assert(position.notionalUsd >= 0, ApiError.NON_POSITIVE_NOTIONAL)
+      assert(position.margin >= 0, ApiError.NON_POSITIVE_MARGIN)
 
-      const lastBtcPriceInUsd = 0
-      const leverageRatio = 0
-      const collateralInUsd = 0
-      const exposureInUsd = 0
-      const totalAccountValueInUsd = 0
-      //   const position = await this.exchange.fetchPosition(this.symbol)
-      //   if (position) {
-      //     lastBtcPriceInUsd = position.last
-      //     leverageRatio = position.notionalUsd / position.last / position.margin
-      //     collateralInUsd = position.margin * position.last
-      //     exposureInUsd = position.notionalUsd
-      //   }
-      //   logger.debug(
-      //     { position },
-      //     `exchange.fetchPosition(${this.symbol}) returned: {position}`,
-      //   )
+      const lastBtcPriceInUsd = position.last
+      const leverageRatio = position.notionalUsd / position.last / position.margin
+      const collateralInUsd = position.margin * position.last
+      const exposureInUsd = position.notionalUsd
 
-      //   const balance = await this.exchange.fetchBalance()
-      //   if (balance) {
-      //     totalAccountValueInUsd = balance?.info?.data?.[0]?.totalEq
-      //   }
-      //   logger.debug({ balance }, "exchange.fetchBalance() returned: {balance}")
-
-      assert(response, ApiError.UNSUPPORTED_API_RESPONSE)
+      const balance = await this.exchange.fetchBalance()
+      this.logger.debug({ balance }, "exchange.fetchBalance() returned: {balance}")
+      assert(balance, ApiError.UNSUPPORTED_API_RESPONSE)
+      assert(balance?.info?.data?.[0]?.totalEq, ApiError.MISSING_ACCOUNT_VALUE)
+      assert(balance?.info?.data?.[0]?.totalEq >= 0, ApiError.NON_POSITIVE_ACCOUNT_VALUE)
+      const totalAccountValueInUsd = balance?.info?.data?.[0]?.totalEq
 
       return {
         ok: true,
         value: {
-          originalResponseAsIs: { fetchPosition: response, fetchBalance: response2 },
+          originalResponseAsIs: { positionResponse: position, balanceResponse: balance },
           lastBtcPriceInUsd: lastBtcPriceInUsd,
           leverageRatio: leverageRatio,
           collateralInUsd: collateralInUsd,
@@ -122,26 +114,28 @@ export class ExchangeOkex extends ExchangeBase {
 
   public async getInstrumentDetails(): Promise<Result<GetInstrumentDetailsResult>> {
     try {
-      const response = await this.exchange.publicGetPublicInstruments()
-
-      //   const swapContractDetail = await this.exchange.publicGetPublicInstruments({
-      //     instType: "SWAP",
-      //     instId: this.symbol,
-      //   })
-
-      //   if (swapContractDetail && swapContractDetail?.ctValCcy === TradeCurrency.USD) {
-      //     const minOrderSizeInContract = swapContractDetail?.minSz
-      //     const contractFaceValue = swapContractDetail?.ctVal
-      //     const orderSizeInContract = Math.round(btcPriceInUsd / contractFaceValue)
-
+      const response = await this.exchange.publicGetPublicInstruments({
+        instType: "SWAP",
+        instId: this.symbol,
+      })
+      this.logger.debug(
+        { response },
+        `publicGetPublicInstruments(${this.symbol}) returned: {response}`,
+      )
       assert(response, ApiError.UNSUPPORTED_API_RESPONSE)
+      assert(response.ctValCcy === TradeCurrency.USD, ApiError.INVALID_TRADE_SIDE)
+      assert(response.minSz > 0, ApiError.NON_POSITIVE_QUANTITY)
+      assert(response.ctVal > 0, ApiError.NON_POSITIVE_PRICE)
+
+      // const contractFaceValue = response.ctVal
+      // const orderSizeInContract = Math.round(btcPriceInUsd / contractFaceValue)
 
       return {
         ok: true,
         value: {
           originalResponseAsIs: response,
-          minimumOrderSizeInContract: 0,
-          contractFaceValue: 0,
+          minimumOrderSizeInContract: response.minSz,
+          contractFaceValue: response.ctVal,
         },
       }
     } catch (error) {
