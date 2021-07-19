@@ -1,8 +1,7 @@
-import { yamlConfig } from "src/config"
+import { yamlConfig, getSpecterWalletConfig } from "src/config"
 import { baseLogger } from "src/logger"
 import { UserWallet } from "src/userWallet"
 import { SpecterWallet } from "src/SpecterWallet"
-import { SpecterWalletConfig } from "src/types"
 import { getActiveOnchainLnd } from "src/lndUtils"
 import { bitcoindClient, getChainBalance, mineBlockAndSyncAll } from "test/helpers"
 import { MainBook } from "src/mongodb"
@@ -10,17 +9,11 @@ import { bitcoindAccountingPath } from "src/ledger/ledger"
 
 const { lnd } = getActiveOnchainLnd()
 const specterWalletName = "specter/coldstorage"
-const specterWalletConfig: SpecterWalletConfig = {
-  lndHoldingBase: yamlConfig.rebalancing.lndHoldingBase,
-  ratioTargetDeposit: yamlConfig.rebalancing.ratioTargetDeposit,
-  ratioTargetWithdraw: yamlConfig.rebalancing.ratioTargetWithdraw,
-  minOnchain: yamlConfig.rebalancing.minOnchain,
-  onchainWallet: yamlConfig.rebalancing.onchainWallet,
-}
 let specterWallet
 
 beforeEach(() => {
   UserWallet.setCurrentPrice(10000)
+  const specterWalletConfig = getSpecterWalletConfig(yamlConfig)
   specterWallet = new SpecterWallet({ logger: baseLogger, config: specterWalletConfig })
 })
 

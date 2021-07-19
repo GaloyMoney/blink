@@ -2,6 +2,7 @@ import fs from "fs"
 import yaml from "js-yaml"
 import _ from "lodash"
 import { baseLogger } from "./logger"
+import { SpecterWalletConfig } from "./types"
 
 const defaultContent = fs.readFileSync("./default.yaml", "utf8")
 export const defaultConfig = yaml.load(defaultContent)
@@ -36,3 +37,11 @@ export class TransactionLimits {
 
   oldEnoughForWithdrawalLimit = () => this.config.oldEnoughForWithdrawal / MS_IN_HOUR
 }
+
+export const getSpecterWalletConfig = (config): SpecterWalletConfig => ({
+    lndHoldingBase: config.rebalancing.lndHoldingBase,
+    ratioTargetDeposit: config.rebalancing.ratioTargetDeposit,
+    ratioTargetWithdraw: config.rebalancing.ratioTargetWithdraw,
+    minOnchain: config.rebalancing.minOnchain,
+    onchainWallet: config.rebalancing.onchainWallet ?? "specter",
+})
