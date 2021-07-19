@@ -21,10 +21,10 @@ export const checkIsBalanced = async () => {
 
   const { assetsLiabilitiesDifference, bookingVersusRealWorldAssets } =
     await balanceSheetIsBalanced()
-  expect(assetsLiabilitiesDifference).toBeFalsy() // should be 0
+  expect(assetsLiabilitiesDifference).toBe(0)
 
   // TODO: need to go from sats to msats to properly account for every msats spent
-  expect(Math.abs(bookingVersusRealWorldAssets)).toBeFalsy()
+  expect(Math.abs(bookingVersusRealWorldAssets)).toBe(0)
 }
 
 export const mockGetExchangeBalance = () =>
