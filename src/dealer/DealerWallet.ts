@@ -1,4 +1,3 @@
-import _ from "lodash"
 import { OnChainMixin } from "../OnChain"
 import { WalletConstructorArgs } from "../types"
 import { UserWallet } from "../userWallet"
