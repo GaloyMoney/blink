@@ -187,7 +187,7 @@ export class SpecterWallet {
     let id
 
     try {
-      ; ({ id } = await sendToChainAddress({
+      ;({ id } = await sendToChainAddress({
         address,
         lnd,
         tokens: sats,
