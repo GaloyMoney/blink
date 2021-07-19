@@ -7,17 +7,9 @@ import {
   FetchOrderResult,
   GetAccountAndPositionRiskResult,
   GetInstrumentDetailsResult,
-  ApiError,
-  SupportedChain,
 } from "./ExchangeTradingType"
 import { Result } from "./Result"
 import ccxt, { ExchangeId } from "ccxt"
-import _ from "lodash"
-
-const simulateOnly = !process.env["HEDGING_NOT_IN_SIMULATION"]
-if (!simulateOnly) {
-  throw new Error(`Hedging active, please disable this safeguard.`)
-}
 
 export enum SupportedExchange {
   FTX = "ftx",
@@ -29,7 +21,6 @@ export abstract class ExchangeBase {
   exchange
   symbol
   logger
-  public IsSimulation
 
   constructor(exchangeId: SupportedExchange, strategySymbol: string, logger) {
     const apiKey = process.env[`${exchangeId.toUpperCase()}_KEY`]
@@ -48,14 +39,7 @@ export abstract class ExchangeBase {
     // The following check throws if something is wrong
     this.exchange.checkRequiredCredentials()
 
-    this.IsSimulation = simulateOnly
     this.logger = logger.child({ class: `${ExchangeBase.name}-${exchangeId}` })
-  }
-
-  protected validate(condition: boolean, error: ApiError) {
-    if (!condition) {
-      throw new Error(error)
-    }
   }
 
   abstract fetchDepositAddressValidateInput(currency: string)
@@ -68,6 +52,10 @@ export abstract class ExchangeBase {
       this.fetchDepositAddressValidateInput(currency)
 
       const response = await this.exchange.fetchDepositAddress(currency)
+      this.logger.debug(
+        { response },
+        `exchange.fetchDepositAddress(${currency}) returned: {response}`,
+      )
 
       const result = this.fetchDepositAddressProcessApiResponse(response)
 
@@ -91,6 +79,10 @@ export abstract class ExchangeBase {
         args.currency,
         args.quantity,
         args.address,
+      )
+      this.logger.debug(
+        { response },
+        `exchange.withdraw(${args.currency}, ${args.quantity}, ${args.address}) returned: {response}`,
       )
 
       this.withdrawValidateApiResponse(response)
@@ -117,6 +109,10 @@ export abstract class ExchangeBase {
       this.createMarketOrderValidateInput(args)
 
       const response = await this.exchange.createMarketOrder(args.side, args.quantity)
+      this.logger.debug(
+        { response },
+        `exchange.createMarketOrder(${args.side}, ${args.quantity}) returned: {response}`,
+      )
 
       this.createMarketOrderValidateApiResponse(response)
 
@@ -141,6 +137,7 @@ export abstract class ExchangeBase {
 
       // call api
       const response = await this.exchange.fetchOrder(id)
+      this.logger.debug({ response }, `exchange.fetchOrder(${id}) returned: {response}`)
 
       this.fetchOrderValidateApiResponse(response)
 

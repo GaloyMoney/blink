@@ -13,6 +13,11 @@ const strategySymbol = "BTC-PERP"
 
 const hedgingBounds = yamlConfig.hedging
 
+const isSimulation = !process.env["HEDGING_NOT_IN_SIMULATION"]
+if (!isSimulation) {
+  throw new Error(`Hedging active, please disable this safeguard.`)
+}
+
 export class FtxPerpetualSwapStrategy implements HedgingStrategy {
   exchange: ExchangeBase
   symbol
@@ -53,7 +58,7 @@ export class FtxPerpetualSwapStrategy implements HedgingStrategy {
       subLogger.debug({ btcAmount, buyOrSell }, "isOrderNeeded result")
 
       // TODO fix this simulation flag so it's only at the API call location
-      if (buyOrSell && !this.exchange.IsSimulation) {
+      if (buyOrSell && !isSimulation) {
         await this.executeOrder({ btcAmount, buyOrSell })
 
         // const { usd: usdLiability } = await this.getLocalLiabilities()
@@ -172,7 +177,7 @@ export class FtxPerpetualSwapStrategy implements HedgingStrategy {
     // probably an empty array
 
     // tmp for log
-    const result = await this.exchange.privateGetAccount()
+    const result = await this.exchange.bypass.privateGetAccount()
     this.logger.debug({ result }, "full result of this.exchange.privateGetAccount")
 
     const {
@@ -319,7 +324,7 @@ export class FtxPerpetualSwapStrategy implements HedgingStrategy {
     // buy should be "reduceOnly":true
 
     try {
-      order = await this.exchange.createOrder(
+      order = await this.exchange.bypass.createOrder(
         this.symbol,
         orderType,
         buyOrSell,
@@ -336,7 +341,7 @@ export class FtxPerpetualSwapStrategy implements HedgingStrategy {
     await sleep(5000)
 
     try {
-      orderStatus = await this.exchange.fetchOrder(order.id)
+      orderStatus = await this.exchange.bypass.fetchOrder(order.id)
     } catch (err) {
       logOrder.error({ err }, "error fetching order status")
       throw err
