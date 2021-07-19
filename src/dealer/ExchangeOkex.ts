@@ -16,8 +16,11 @@ import { ExchangeBase, SupportedExchange } from "./ExchangeBase"
 import { Result } from "./Result"
 
 export class ExchangeOkex extends ExchangeBase {
+  symbol
+
   constructor(exchangeId: SupportedExchange, strategySymbol: string, logger) {
-    super(exchangeId, strategySymbol, logger)
+    super(exchangeId, logger)
+    this.symbol = strategySymbol
   }
 
   fetchDepositAddressValidateInput(currency: string) {

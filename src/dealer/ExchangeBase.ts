@@ -19,11 +19,10 @@ export enum SupportedExchange {
 export abstract class ExchangeBase {
   exchangeId: ExchangeId
   exchange
-  symbol
   logger
   bypass
 
-  constructor(exchangeId: SupportedExchange, strategySymbol: string, logger) {
+  constructor(exchangeId: SupportedExchange, logger) {
     const apiKey = process.env[`${exchangeId.toUpperCase()}_KEY`]
     const secret = process.env[`${exchangeId.toUpperCase()}_SECRET`]
     const password = process.env[`${exchangeId.toUpperCase()}_PASSWORD`]
@@ -33,7 +32,6 @@ export abstract class ExchangeBase {
     }
 
     this.exchangeId = exchangeId as ExchangeId
-    this.symbol = strategySymbol
     const exchangeClass = ccxt[this.exchangeId]
     this.exchange = new exchangeClass({ apiKey, secret, password })
     this.bypass = this.exchange
