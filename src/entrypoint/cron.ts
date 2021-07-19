@@ -20,7 +20,10 @@ const main = async () => {
   await deleteFailedPaymentsAllLnds()
 
   const specterWalletConfig = getSpecterWalletConfig(yamlConfig)
-  const specterWallet = new SpecterWallet({ logger: baseLogger, config: specterWalletConfig })
+  const specterWallet = new SpecterWallet({
+    logger: baseLogger,
+    config: specterWalletConfig,
+  })
   await specterWallet.tentativelyRebalance()
 
   await updateRoutingFees()

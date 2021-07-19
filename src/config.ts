@@ -39,9 +39,9 @@ export class TransactionLimits {
 }
 
 export const getSpecterWalletConfig = (config): SpecterWalletConfig => ({
-    lndHoldingBase: config.rebalancing.lndHoldingBase,
-    ratioTargetDeposit: config.rebalancing.ratioTargetDeposit,
-    ratioTargetWithdraw: config.rebalancing.ratioTargetWithdraw,
-    minOnchain: config.rebalancing.minOnchain,
-    onchainWallet: config.rebalancing.onchainWallet ?? "specter",
+  lndHoldingBase: config.rebalancing.lndHoldingBase,
+  ratioTargetDeposit: config.rebalancing.ratioTargetDeposit,
+  ratioTargetWithdraw: config.rebalancing.ratioTargetWithdraw,
+  minOnchain: config.rebalancing.minOnchain,
+  onchainWallet: config.rebalancing.onchainWallet ?? "specter",
 })
