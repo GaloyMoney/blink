@@ -1,3 +1,4 @@
+import { yamlConfig } from "../config"
 import { updateUsersPendingPayment } from "../ledger/balanceSheet"
 import {
   deleteExpiredInvoices,
@@ -7,7 +8,16 @@ import {
 } from "../lndUtils"
 import { baseLogger } from "../logger"
 import { setupMongoConnection } from "../mongodb"
+import { SpecterWalletConfig } from "../types"
 import { SpecterWallet } from "../SpecterWallet"
+
+const specterWalletConfig: SpecterWalletConfig = {
+  lndHoldingBase: yamlConfig.rebalancing.lndHoldingBase,
+  ratioTargetDeposit: yamlConfig.rebalancing.ratioTargetDeposit,
+  ratioTargetWithdraw: yamlConfig.rebalancing.ratioTargetWithdraw,
+  minOnchain: yamlConfig.rebalancing.minOnchain,
+  onchainWallet: yamlConfig.rebalancing.onchainWallet,
+}
 
 const main = async () => {
   const mongoose = await setupMongoConnection()
@@ -18,7 +28,7 @@ const main = async () => {
   await deleteExpiredInvoices()
   await deleteFailedPaymentsAllLnds()
 
-  const specterWallet = new SpecterWallet({ logger: baseLogger })
+  const specterWallet = new SpecterWallet({ logger: baseLogger, config: specterWalletConfig })
   await specterWallet.tentativelyRebalance()
 
   await updateRoutingFees()
