@@ -1,4 +1,4 @@
-import { yamlConfig, getSpecterWalletConfig } from "../config"
+import { getSpecterWalletConfig } from "../config"
 import { updateUsersPendingPayment } from "../ledger/balanceSheet"
 import {
   deleteExpiredInvoices,
@@ -19,7 +19,7 @@ const main = async () => {
   await deleteExpiredInvoices()
   await deleteFailedPaymentsAllLnds()
 
-  const specterWalletConfig = getSpecterWalletConfig(yamlConfig)
+  const specterWalletConfig = getSpecterWalletConfig()
   const specterWallet = new SpecterWallet({
     logger: baseLogger,
     config: specterWalletConfig,
