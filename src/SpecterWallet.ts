@@ -1,6 +1,5 @@
 import { createChainAddress, sendToChainAddress } from "lightning"
 import _ from "lodash"
-import { yamlConfig } from "./config"
 import { bitcoindAccountingPath, lndAccountingPath, lndFeePath } from "./ledger/ledger"
 import { getActiveOnchainLnd, lndsBalances } from "./lndUtils"
 import { MainBook } from "./mongodb"
@@ -101,7 +100,7 @@ export class SpecterWallet {
     }
 
     const { total, onChain } = await lndsBalances()
-    const { action, sats, reason } = SpecterWallet.isRebalanceNeeded({
+    const { action, sats, reason } = this.isRebalanceNeeded({
       lndBalance: total,
       onChain,
     })
@@ -127,12 +126,12 @@ export class SpecterWallet {
     }
   }
 
-  static isRebalanceNeeded({ lndBalance, onChain }) {
+  isRebalanceNeeded({ lndBalance, onChain }) {
     // base number to calculate the different thresholds below
-    const lndHoldingBase = yamlConfig.rebalancing.lndHoldingBase
+    const lndHoldingBase = this.config.lndHoldingBase
 
-    const ratioTargetDeposit = yamlConfig.rebalancing.ratioTargetDeposit
-    const ratioTargetWithdraw = yamlConfig.rebalancing.ratioTargetWithdraw
+    const ratioTargetDeposit = this.config.ratioTargetDeposit
+    const ratioTargetWithdraw = this.config.ratioTargetWithdraw
 
     // threshold for when we need to move money from cold storage to the lnd wallet
     const thresholdLowBound = (lndHoldingBase * 70) / 100
@@ -153,7 +152,7 @@ export class SpecterWallet {
       let action: string | undefined = "deposit"
       let reason: string | undefined
 
-      const minOnchain = yamlConfig.rebalancing.minOnchain
+      const minOnchain = this.config.minOnchain
 
       if (onChain - sats < minOnchain) {
         action = undefined
