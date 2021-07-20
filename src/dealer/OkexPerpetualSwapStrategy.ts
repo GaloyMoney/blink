@@ -4,8 +4,10 @@ import { Result } from "./Result"
 import {
   TradeSide,
   TradeType,
+  FundTransferSide,
   OrderStatus,
   GetAccountAndPositionRiskResult,
+  TradeCurrency,
 } from "./ExchangeTradingType"
 import { HedgingStrategy, UpdatedPosition, UpdatedBalance } from "./HedgingStrategyTypes"
 import { SupportedExchange, ExchangeBase } from "./ExchangeBase"
@@ -23,14 +25,28 @@ if (!isSimulation) {
 
 export interface GetHedgingOrderResult {
   in: {
-    exposureRatio
     loBracket
+    exposureRatio
     hiBracket
   }
   out: {
     tradeSide
     orderSizeInUsd
     orderSizeInBtc
+    btcPriceInUsd
+  }
+}
+
+export interface GetRebalanceTransferResult {
+  in: {
+    loBracket
+    leverageRatio
+    hiBracket
+  }
+  out: {
+    fundTransferSide
+    transferSizeInUsd
+    transferSizeInBtc
     btcPriceInUsd
   }
 }
@@ -141,12 +157,122 @@ export class OkexPerpetualSwapStrategy implements HedgingStrategy {
   public async UpdateLeverage(
     liabilityInUsd,
     btcPriceInUsd,
+    withdrawOnChainAddress,
+    withdrawBookKeepingCallback,
+    depositOnExchangeCallback,
   ): Promise<Result<UpdatedBalance>> {
     try {
-      // Withdraw
-      throw new Error(
-        `Not Implemented! and now using: ${liabilityInUsd}, ${btcPriceInUsd}`,
+      const riskResult = await this.exchange.getAccountAndPositionRisk(btcPriceInUsd)
+      this.logger.debug(
+        { btcPriceInUsd, riskResult },
+        "getAccountAndPositionRisk({btcPriceInUsd}) returned: {riskResult}",
       )
+      if (!riskResult.ok) {
+        return { ok: false, error: riskResult.error }
+      }
+      const risk = riskResult.value
+      const collateralInUsd = risk.collateralInUsd
+      const lastBtcPriceInUsd = risk.lastBtcPriceInUsd
+
+      const rebalanceResult = OkexPerpetualSwapStrategy.getRebalanceTransferIfNeeded(
+        liabilityInUsd,
+        collateralInUsd,
+        lastBtcPriceInUsd,
+        hedgingBounds,
+      )
+      this.logger.debug(
+        {
+          liabilityInUsd,
+          collateralInUsd,
+          lastBtcPriceInUsd,
+          hedgingBounds,
+          rebalanceResult,
+        },
+        "getRebalanceOrderIfNeeded() returned: {rebalanceResult}",
+      )
+      if (!rebalanceResult.ok) {
+        return { ok: false, error: rebalanceResult.error }
+      }
+      const fundTransferSide = rebalanceResult.value.out.fundTransferSide
+      const transferSizeInBtc = rebalanceResult.value.out.transferSizeInBtc
+
+      if (isSimulation) {
+        this.logger.debug(
+          { fundTransferSide, transferSizeInBtc, withdrawOnChainAddress },
+          "Calculated a SIMULATED rebalance transfer",
+        )
+      } else if (fundTransferSide === FundTransferSide.NoTransfer) {
+        this.logger.debug(
+          { fundTransferSide, transferSizeInBtc, withdrawOnChainAddress },
+          "Calculated NO rebalance transfer needed",
+        )
+      } else if (fundTransferSide === FundTransferSide.Withdraw) {
+        const withdrawArgs = {
+          currency: TradeCurrency.BTC,
+          quantity: transferSizeInBtc,
+          address: withdrawOnChainAddress,
+        }
+        const withdrawalResult = await this.exchange.withdraw(withdrawArgs)
+        this.logger.debug(
+          { withdrawArgs, withdrawalResult },
+          "withdraw() returned: {fetchResult}",
+        )
+        if (!withdrawalResult.ok) {
+          return { ok: false, error: withdrawalResult.error }
+        }
+        const withdrawalResponse = withdrawalResult.value
+
+        if (withdrawalResponse.status === "requested") {
+          // TODO: wait until request succeed before updating tx
+
+          const bookingResult = withdrawBookKeepingCallback(transferSizeInBtc)
+          this.logger.debug(
+            { transferSizeInBtc, bookingResult },
+            "withdrawBookKeepingCallback() returned: {depositResult}",
+          )
+          if (!bookingResult.ok) {
+            return { ok: false, error: bookingResult.error }
+          }
+
+          this.logger.info(
+            { withdrawalResponse },
+            `rebalancing withdrawal was successful`,
+          )
+        } else {
+          this.logger.error(
+            { withdrawalResponse },
+            `rebalancing withdrawal was NOT successful`,
+          )
+        }
+      } else if (fundTransferSide === FundTransferSide.Deposit) {
+        const memo = `deposit of ${transferSizeInBtc} btc to ${this.exchange.exchangeId}`
+
+        const fetchResult = await this.exchange.fetchDepositAddress(TradeCurrency.BTC)
+        this.logger.debug(
+          { fetchResult },
+          "fetchDepositAddress() returned: {fetchResult}",
+        )
+        if (!fetchResult.ok) {
+          return { ok: false, error: fetchResult.error }
+        }
+        const exchangeDepositOnChainAddress = fetchResult.value.address
+
+        const depositResult = depositOnExchangeCallback(
+          exchangeDepositOnChainAddress,
+          transferSizeInBtc,
+        )
+        this.logger.debug(
+          { exchangeDepositOnChainAddress, transferSizeInBtc, depositResult },
+          "depositOnExchangeCallback() returned: {depositResult}",
+        )
+        if (!depositResult.ok) {
+          return { ok: false, error: depositResult.error }
+        }
+        this.logger.info(
+          { memo, exchangeDepositOnChainAddress },
+          "deposit rebalancing successful",
+        )
+      }
 
       return {
         ok: true,
@@ -198,8 +324,8 @@ export class OkexPerpetualSwapStrategy implements HedgingStrategy {
         ok: true,
         value: {
           in: {
-            exposureRatio,
             loBracket: hedgingBounds.HIGH_BOUND_RATIO_SHORTING,
+            exposureRatio,
             hiBracket: hedgingBounds.LOW_BOUND_RATIO_SHORTING,
           },
           out: {
@@ -328,6 +454,49 @@ export class OkexPerpetualSwapStrategy implements HedgingStrategy {
         const msg = "Order has not been executed yet."
         logger.error(msg)
         return { ok: false, error: new Error(msg) }
+      }
+    } catch (error) {
+      return { ok: false, error: error }
+    }
+  }
+
+  static getRebalanceTransferIfNeeded(
+    liabilityInUsd,
+    collateralInUsd,
+    btcPriceInUsd,
+    hedgingBounds,
+  ): Result<GetRebalanceTransferResult> {
+    try {
+      let transferSizeInUsd = 0
+      let fundTransferSide: FundTransferSide = FundTransferSide.NoTransfer
+      const leverageRatio = liabilityInUsd / collateralInUsd
+
+      if (leverageRatio < hedgingBounds.LOW_BOUND_LEVERAGE) {
+        const newCollateralInUsd = liabilityInUsd / hedgingBounds.LOW_SAFEBOUND_LEVERAGE
+        transferSizeInUsd = collateralInUsd - newCollateralInUsd
+        fundTransferSide = FundTransferSide.Withdraw
+      } else if (leverageRatio > hedgingBounds.HIGH_BOUND_LEVERAGE) {
+        const newCollateralInUsd = liabilityInUsd / hedgingBounds.HIGH_SAFEBOUND_LEVERAGE
+        transferSizeInUsd = newCollateralInUsd - collateralInUsd
+        fundTransferSide = FundTransferSide.Deposit
+      }
+
+      const transferSizeInBtc = transferSizeInUsd / btcPriceInUsd
+      return {
+        ok: true,
+        value: {
+          in: {
+            loBracket: hedgingBounds.HIGH_BOUND_RATIO_SHORTING,
+            leverageRatio,
+            hiBracket: hedgingBounds.LOW_BOUND_RATIO_SHORTING,
+          },
+          out: {
+            fundTransferSide,
+            transferSizeInUsd,
+            transferSizeInBtc,
+            btcPriceInUsd,
+          },
+        },
       }
     } catch (error) {
       return { ok: false, error: error }
