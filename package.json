@@ -26,12 +26,12 @@
     "bitcoin-cli": "source ./exportLocal.sh && kubectl exec bitcoind-0 -- bitcoin-cli -rpcuser=rpcuser -rpcpassword=$BITCOINDRPCPASS -regtest",
     "update-postman": "curl --location --request GET \"https://api.getpostman.com/collections/4e3fee88-7267-44e1-a316-b81e90b0bd2b\" --header \"X-Api-Key: $POSTMANAPIKEY\" | jq . > src/postman/graphql.postman_collection.json",
     "autocannon-rn-no-auth": "yarn autocannon https://graphql.testnet.galoy.io:443/graphql -m POST -H Content-Type=application/json -b '{\"query\":\"query gql_query_anonymous {\n  prices {\n    __typename\n    id\n    o\n  }\n  earnList {\n    __typename\n    id\n    value\n  }\n  maps {\n    __typename\n    id\n    title\n    coordinate {\n        __typename\n        latitude\n        longitude\n    }\n  }\n}\",\"variables\":{}}' -c 20 -d 10",
-    "test": "export JEST_JUNIT_OUTPUT_DIR=\"./artifacts\" && jest --ci --reporters=default --reporters=jest-junit --forceExit",
+    "test": "export JEST_JUNIT_OUTPUT_DIR=\"./artifacts\" && jest --ci --reporters=default --reporters=jest-junit",
     "test-local": "yarn use-minikube && source ./exportLocal.sh && yarn jest --runInBand --verbose $TEST | pino-pretty -c -l",
     "test-local-restart": "./deletePods.sh && source ./exportLocal.sh && yarn run test-local",
     "test-local-clean": "yarn run restart-charts && yarn jest --clearCache && yarn run test-local",
-    "test:unit": "jest --config ./test/jest-unit.config.js --bail --verbose | yarn pino-pretty -c -l",
-    "test:integration": ". ./.envrc && jest --config ./test/jest-integration.config.js --forceExit --bail --runInBand --verbose $TEST | yarn pino-pretty -c -l"
+    "test:unit": "jest --config ./test/jest-unit.config.js --bail --verbose $TEST | yarn pino-pretty -c -l",
+    "test:integration": ". ./.envrc && LOGLEVEL=warn jest --config ./test/jest-integration.config.js --bail --runInBand --verbose $TEST | yarn pino-pretty -c -l"
   },
   "engines": {
     "node": "14"

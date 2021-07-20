@@ -12,7 +12,7 @@ helm repo add jetstack https://charts.jetstack.io
 helm repo add galoy https://galoymoney.github.io/charts/
 helm repo update
 
-lndVersion="1.2.9"
+lndVersion="1.2.11"
 bitcoindVersion="0.1.15"
 
 if [ ${LOCAL} ]
@@ -46,7 +46,7 @@ then
   NETWORK="$1"
   NAMESPACE="$1"
 
-  backupMongodb
+  # backupMongodb
 
   # create namespaces if not exists
   kubectl create namespace $INGRESS_NAMESPACE --dry-run -o yaml | kubectl apply -f -

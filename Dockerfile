@@ -10,8 +10,6 @@ RUN yarn install --frozen-lockfile
 
 COPY ./src ./src
 
-RUN find ./src -type d -depth -name '__tests__' -exec rm -r {} \; -prune
-
 RUN yarn build
 
 RUN yarn install --frozen-lockfile --production

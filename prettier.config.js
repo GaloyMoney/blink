@@ -8,7 +8,6 @@ module.exports = {
   singleQuote: false,
   tabWidth: 2,
   useTabs: false,
-  singleQuote: false,
   bracketSpacing: true,
   arrowParens: "always",
   proseWrap: "preserve",

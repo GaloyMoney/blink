@@ -5,6 +5,7 @@ import {
   cancelHodlInvoice,
   createInvoice,
   getInvoice,
+  GetInvoiceResult,
   getPayment,
   payViaPaymentDetails,
   payViaRoutes,
@@ -320,6 +321,7 @@ export const LightningMixin = (superclass) =>
             let payeeUser, pubkey
 
             if (pushPayment) {
+              // username has been sent
               // pay through username
               payeeUser = await User.findByUsername({ username: input_username })
             } else {
@@ -767,34 +769,41 @@ export const LightningMixin = (superclass) =>
     async updatePendingInvoice({
       hash,
       lock,
-      pubkey,
+      pubkeyCached,
     }: {
       hash: string
       lock
-      pubkey?: string
+      pubkeyCached?: string
     }): Promise<boolean> {
-      let invoice, pubkeyInvoiceUser
+      let invoice: GetInvoiceResult | undefined
+      let pubkey: string | undefined
 
       // if a pubkey has been provided, it means the invoice has not been set as paid in mongodb
       // so not need for a round back trip to mongodb
-      if (!pubkey) {
-        let paid
-        ;({ pubkey: pubkeyInvoiceUser, paid } = await InvoiceUser.findOne({ _id: hash }))
+      if (!pubkeyCached) {
+        let paid: boolean
+        const invoiceUser = await InvoiceUser.findOne({ _id: hash })
+
+        if (!invoiceUser) {
+          this.logger.info({ hash }, "invoiceUser doesn't exist")
+          return false
+        }
+
+        ;({ paid, pubkey } = invoiceUser)
 
         if (paid) {
           return true
         }
       }
 
-      let lnd
+      pubkey = (pubkey ?? pubkeyCached) as string
+
+      let lnd: AuthenticatedLnd
       try {
-        ;({ lnd } = getLndFromPubkey({ pubkey: pubkey ?? pubkeyInvoiceUser }))
+        ;({ lnd } = getLndFromPubkey({ pubkey }))
       } catch (err) {
         // TODO: send a status to the user showing the infrastructure is not fully operational
-        this.logger.warn(
-          { pubkey: pubkey ?? pubkeyInvoiceUser, hash },
-          "node is offline. can't verify invoice status",
-        )
+        this.logger.warn({ pubkey, hash }, "node is offline. can't verify invoice status")
         return false
       }
 
@@ -804,9 +813,6 @@ export const LightningMixin = (superclass) =>
         // at a minimum, we should return same error if :
         // an invoice is not from user or if the invoice doesn't exist.
         invoice = await getInvoice({ lnd, id: hash })
-
-        // TODO: we should not log/keep secret in the logs
-        this.logger.debug({ invoice, user: this.user }, "got invoice status")
       } catch (err) {
         const invoiceNotFound = "unable to locate invoice"
         try {
@@ -828,6 +834,14 @@ export const LightningMixin = (superclass) =>
 
         return false
       }
+
+      if (!invoice) {
+        this.logger.warn("received an invalid empty invoice from lnd")
+        return false
+      }
+
+      // TODO: we should not log/keep secret in the logs
+      this.logger.debug({ invoice, user: this.user }, "got invoice status")
 
       // invoice that are on_us will be cancelled but not confirmed
       // so we need a branch to return true in case the payment
@@ -856,18 +870,31 @@ export const LightningMixin = (superclass) =>
         })
 
         return await redlock({ path: hash, logger: lightningLogger, lock }, async () => {
+          let invoiceUser
+
           try {
-            const invoiceUser = await InvoiceUser.findOne({
+            invoiceUser = await InvoiceUser.findOne({
               _id: hash,
               uid: this.user._id,
               paid: false,
             })
+          } catch (err) {
+            const error = `issue getting invoice`
+            throw new DbError(error, {
+              logger: this.logger,
+              level: "error",
+              err,
+              invoice,
+            })
+          }
 
-            if (!invoiceUser) {
-              lightningLogger.info("invoice has already been processed")
-              return true
-            }
+          if (!invoiceUser) {
+            lightningLogger.info("invoice has already been processed")
+            // FIXME not sure we should necessarily return true here
+            return true
+          }
 
+          try {
             // TODO: use a transaction here
             // const session = await InvoiceUser.startSession()
             // session.withTransaction(
@@ -893,38 +920,35 @@ export const LightningMixin = (superclass) =>
             })
           }
 
+          const sats = (invoice as GetInvoiceResult).received
+
+          const metadata = {
+            hash,
+            type: "invoice",
+            pending: false,
+            ...UserWallet.getCurrencyEquivalent({ sats, fee: 0 }),
+          }
+
           try {
-            const sats = invoice.received
-
-            const metadata = {
-              hash,
-              type: "invoice",
-              pending: false,
-              ...UserWallet.getCurrencyEquivalent({ sats, fee: 0 }),
-            }
-
             await addTransactionLndReceipt({
-              description: invoice.description,
+              description: (invoice as GetInvoiceResult).description,
               payeeUser: this.user,
               metadata,
               sats,
             })
-
-            this.logger.info(
-              { metadata, success: true },
-              "long standing payment succeeded",
-            )
-
-            return true
           } catch (err) {
-            const error = `addTransactionLndReceipt failed`
+            const error = `addTransactionLndReceipt failed following settings InvoiceUser as failed. potential inconsistency`
             throw new DbError(error, {
               logger: this.logger,
-              level: "error",
+              level: "fatal",
               err,
               invoice,
             })
           }
+
+          this.logger.info({ metadata, success: true }, "long standing payment succeeded")
+
+          return true
         })
       } else {
         this.logger.debug({ invoice }, "invoice has not been paid")
@@ -938,8 +962,8 @@ export const LightningMixin = (superclass) =>
 
       const invoices = await InvoiceUser.find({ uid: this.user._id, paid: false })
 
-      for (const { _id: hash, pubkey } of invoices) {
-        await this.updatePendingInvoice({ hash, lock, pubkey })
+      for (const { _id: hash, pubkey: pubkeyCached } of invoices) {
+        await this.updatePendingInvoice({ hash, lock, pubkeyCached })
       }
     }
   }
