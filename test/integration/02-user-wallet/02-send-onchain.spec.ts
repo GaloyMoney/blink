@@ -13,7 +13,7 @@ import {
   lndOutside1,
   createChainAddress,
   subscribeToTransactions,
-  bitcoindClient,
+  bitcoindOutside,
   mineBlockAndSync,
 } from "test/helpers"
 
@@ -345,7 +345,7 @@ describe("UserWallet - onChainPay", () => {
   })
 
   it("fails if the amount is less than on chain dust amount", async () => {
-    const address = await bitcoindClient.getNewAddress()
+    const address = await bitcoindOutside.getNewAddress()
     expect(
       userWallet0.onChainPay({ address, amount: yamlConfig.onchainDustAmount - 1 }),
     ).rejects.toThrow()

@@ -1,4 +1,4 @@
-import { bitcoindClient, getUserWallet } from "test/helpers"
+import { bitcoindOutside, getUserWallet } from "test/helpers"
 
 jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
 jest.mock("src/phone-provider", () => require("test/mocks/phone-provider"))
@@ -12,7 +12,7 @@ beforeAll(async () => {
 
 describe("UserWallet - getOnchainFee", () => {
   it("returns a fee greater than zero for an external address", async () => {
-    const address = await bitcoindClient.getNewAddress()
+    const address = await bitcoindOutside.getNewAddress()
     const fee = await userWallet0.getOnchainFee({ address })
     expect(fee).toBeGreaterThan(0)
   })
