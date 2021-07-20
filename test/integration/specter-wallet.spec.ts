@@ -23,10 +23,11 @@ afterAll(async () => {
 
 describe("SpecterWallet", () => {
   it("creates wallet", async () => {
-    let wallets = await specterWallet.listWallets() // now ["default","outside"]
+    let wallets = await specterWallet.listWallets() // now ["default", "hot", "outside"]
 
     // TODO maybe this should be explicitly checking wallet names...
-    if (wallets.length < 3) {
+    if (wallets.length < 4) {
+      // if (wallets.length < 3) {
       // if (wallets.length < 2) {
       try {
         await specterWallet.createWallet()
@@ -37,7 +38,8 @@ describe("SpecterWallet", () => {
     }
 
     wallets = await specterWallet.listWallets()
-    expect(wallets.length).toBe(3)
+    expect(wallets.length).toBe(4)
+    // expect(wallets.length).toBe(3)
     // expect(wallets.length).toBe(2)
   })
 

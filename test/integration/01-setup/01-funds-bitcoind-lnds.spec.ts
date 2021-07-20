@@ -37,6 +37,18 @@ describe("Bitcoind", () => {
     expect(wallets).toContain("default")
   })
 
+  // TODO: only to be considered in the rest of the tests
+  it("create hot wallet", async () => {
+    try {
+      const { name } = await bitcoindClient.createWallet("hot")
+      expect(name).toBe("hot")
+    } catch (error) {
+      baseLogger.warn({ error }, "bitcoind wallet already exists")
+    }
+    const wallets = await bitcoindClient.listWallets()
+    expect(wallets).toContain("hot")
+  })
+
   it("create outside wallet", async () => {
     try {
       const { name } = await bitcoindClient.createWallet("outside")
