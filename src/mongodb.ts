@@ -22,9 +22,6 @@ const db = process.env.MONGODB_DATABASE ?? "galoy"
 const path = `mongodb://${user}:${password}@${address}/${db}`
 
 export const setupMongoConnection = async () => {
-  // FIXME we may not want to keep this in the logs
-  baseLogger.info({ path }, "db connection path")
-
   try {
     await mongoose.connect(path, {
       useNewUrlParser: true,
