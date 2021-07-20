@@ -73,8 +73,8 @@ jobs:
       - run:
           name: Run jest test
           command: |
-            kubectl exec --namespace=$NAMESPACE $(kubectl get pods --namespace=$NAMESPACE --selector=app=testpod --output=jsonpath={.items..metadata.name}) -- /nodejs/bin/node node_modules/.bin/jest --ci --reporters=default --reporters=jest-junit --forceExit
-            # export JEST_JUNIT_OUTPUT_DIR=\"./artifacts\" && jest --ci --reporters=default --reporters=jest-junit --forceExit
+            kubectl exec --namespace=$NAMESPACE $(kubectl get pods --namespace=$NAMESPACE --selector=app=testpod --output=jsonpath={.items..metadata.name}) -- /nodejs/bin/node node_modules/.bin/jest --ci --reporters=default --reporters=jest-junit
+            # export JEST_JUNIT_OUTPUT_DIR=\"./artifacts\" && jest --ci --reporters=default --reporters=jest-junit
       - run:
           name: Run postman test
           command: |

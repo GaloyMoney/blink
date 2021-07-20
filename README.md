@@ -1,17 +1,21 @@
 # Galoy
 
-Want to contribute? Checkout the [dev documentation](./DEV.md) and [join our community Slack](https://join.slack.com/t/galoymoney-workspace/shared_invite/zt-rvnhsdb5-72AZCD_jzw6_Q05aCs0SgA).
-
-### Responsible disclosure 
-Found critical bugs/vulnerabilities? 
-Please email them security@galoy.io Thanks!
-
-
 ### TLDR
 
 Galoy is an opinionated bitcoin banking platform.
 
-To give it a try headover to [INSTALLATION.md](https://github.com/GaloyMoney/galoy/blob/main/INSTALLATION.md):
+### Responsible disclosure 
+
+Found critical bugs/vulnerabilities? 
+Please email them security@galoy.io Thanks!
+
+### Get Started
+
+Want to try it out and contribute? Checkout the [dev documentation](./DEV.md) to deploy locally with a Docker-compose script.
+
+The production environment relies on kubernetes. To get your hands on a local kubernetes cluster with minikube, go to [INSTALLATION.md](https://github.com/GaloyMoney/galoy/blob/main/INSTALLATION.md).
+
+If you have questions, you can [join our community Slack](https://join.slack.com/t/galoymoney-workspace/shared_invite/zt-rvnhsdb5-72AZCD_jzw6_Q05aCs0SgA)
 
 ## Genesis
 

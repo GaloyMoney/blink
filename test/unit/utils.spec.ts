@@ -1,8 +1,14 @@
-import { btc2sat, sat2btc, amountOnVout, myOwnAddressesOnVout } from "src/utils"
+import {
+  btc2sat,
+  sat2btc,
+  amountOnVout,
+  myOwnAddressesOnVout,
+  isInvoiceAlreadyPaidError,
+} from "src/utils"
 
 describe("utils.ts", () => {
   describe("btc2sat", () => {
-    it("should convert from BTC to Satoshis", () => {
+    it("converts from BTC to Satoshis", () => {
       expect(btc2sat(0)).toEqual(0)
       expect(btc2sat(1.2)).toEqual(120000000)
       expect(btc2sat(1.1235678)).toEqual(112356780)
@@ -12,7 +18,7 @@ describe("utils.ts", () => {
   })
 
   describe("sat2btc", () => {
-    it("should convert from Satoshis to BTC", () => {
+    it("converts from Satoshis to BTC", () => {
       expect(sat2btc(0)).toEqual(0)
       expect(sat2btc(120000000)).toEqual(1.2)
       expect(sat2btc(112356780)).toEqual(1.1235678)
@@ -22,7 +28,7 @@ describe("utils.ts", () => {
   })
 
   describe("amountOnVout", () => {
-    it("should return the amount of the given addresses at index 0 of vout", () => {
+    it("returns the amount of the given addresses at index 0 of vout", () => {
       const vout = [
         {
           value: 1,
@@ -60,7 +66,7 @@ describe("utils.ts", () => {
       expect(amount).toBe(1)
     })
 
-    it("should return the amount of the given addresses at index 1 of vout", () => {
+    it("returns the amount of the given addresses at index 1 of vout", () => {
       const vout = [
         {
           value: 45.9998826,
@@ -98,7 +104,7 @@ describe("utils.ts", () => {
   })
 
   describe("myOwnAddressesOnVout", () => {
-    it("should return the given addresses found in the vout", () => {
+    it("returns the given addresses found in the vout", () => {
       const vout = [
         {
           value: 45.9998826,
@@ -132,6 +138,23 @@ describe("utils.ts", () => {
 
       const result = myOwnAddressesOnVout({ vout, addresses })
       expect(result).toStrictEqual(["bcrt1q72nxdjsh0zsdyd0e9zreh9e6npcutcqsqscfvw"])
+    })
+  })
+
+  describe("isInvoiceAlreadyPaidError", () => {
+    it("decodes error correctly", async () => {
+      const error = [
+        503,
+        "UnexpectedPaymentError",
+        {
+          err: {
+            code: 6,
+            details: "invoice is already paid",
+            metadata: { internalRepr: {}, options: {} },
+          },
+        },
+      ]
+      expect(isInvoiceAlreadyPaidError(error)).toBeTruthy()
     })
   })
 })
