@@ -5,11 +5,9 @@ import { TradeSide, FundTransferSide } from "./ExchangeTradingType"
 import assert from "assert"
 import { Result } from "./Result"
 import { HedgingStrategy, UpdatedPosition, UpdatedBalance } from "./HedgingStrategyTypes"
-import { SupportedExchange, ExchangeBase } from "./ExchangeBase"
+import { ExchangeBase } from "./ExchangeBase"
+import { ExchangeConfigurationFtx } from "./ExchangeConfigurationFtx"
 import { ExchangeFtx } from "./ExchangeFtx"
-
-const exchangeName = SupportedExchange.FTX
-const strategySymbol = "BTC-PERP"
 
 const hedgingBounds = yamlConfig.hedging
 
@@ -20,12 +18,13 @@ if (!isSimulation) {
 
 export class FtxPerpetualSwapStrategy implements HedgingStrategy {
   exchange: ExchangeBase
-  symbol
+  instrumentId
   logger
 
   constructor(logger) {
-    this.exchange = new ExchangeFtx(exchangeName, strategySymbol, logger)
-    this.symbol = strategySymbol
+    const exchangeConfig = new ExchangeConfigurationFtx()
+    this.exchange = new ExchangeFtx(exchangeConfig, logger)
+    this.instrumentId = exchangeConfig.instrumentId
     this.logger = logger.child({ class: FtxPerpetualSwapStrategy.name })
   }
 
@@ -182,7 +181,7 @@ export class FtxPerpetualSwapStrategy implements HedgingStrategy {
       "value kept from this.exchange.privateGetAccount",
     )
 
-    const positionBtcPerp = _.find(positions, { future: this.symbol })
+    const positionBtcPerp = _.find(positions, { future: this.instrumentId })
     this.logger.debug({ positionBtcPerp }, "positionBtcPerp result")
 
     // {
@@ -294,7 +293,7 @@ export class FtxPerpetualSwapStrategy implements HedgingStrategy {
     const orderType = "market"
 
     const logOrder = this.logger.child({
-      symbol: this.symbol,
+      symbol: this.instrumentId,
       orderType,
       buyOrSell,
       btcAmount,
@@ -313,7 +312,7 @@ export class FtxPerpetualSwapStrategy implements HedgingStrategy {
 
     try {
       order = await this.exchange.bypass.createOrder(
-        this.symbol,
+        this.instrumentId,
         orderType,
         buyOrSell,
         btcAmount,

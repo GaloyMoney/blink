@@ -10,28 +10,27 @@ import {
 } from "./ExchangeTradingType"
 import { Result } from "./Result"
 import ccxt, { ExchangeId } from "ccxt"
-
-export enum SupportedExchange {
-  FTX = "ftx",
-  OKEX5 = "okex5",
-}
+import { ExchangeConfiguration } from "./ExchangeConfiguration"
 
 export abstract class ExchangeBase {
+  exchangeConfig: ExchangeConfiguration
   exchangeId: ExchangeId
   exchange
   logger
   bypass
 
-  constructor(exchangeId: SupportedExchange, logger) {
-    const apiKey = process.env[`${exchangeId.toUpperCase()}_KEY`]
-    const secret = process.env[`${exchangeId.toUpperCase()}_SECRET`]
-    const password = process.env[`${exchangeId.toUpperCase()}_PASSWORD`]
+  constructor(exchangeConfig: ExchangeConfiguration, logger) {
+    this.exchangeConfig = exchangeConfig
+    this.exchangeId = exchangeConfig.exchangeId as ExchangeId
+
+    const apiKey = process.env[`${this.exchangeId.toUpperCase()}_KEY`]
+    const secret = process.env[`${this.exchangeId.toUpperCase()}_SECRET`]
+    const password = process.env[`${this.exchangeId.toUpperCase()}_PASSWORD`]
 
     if (!apiKey || !secret || !password) {
-      throw new Error(`Missing ${exchangeId} exchange environment variables`)
+      throw new Error(`Missing ${this.exchangeId} exchange environment variables`)
     }
 
-    this.exchangeId = exchangeId as ExchangeId
     const exchangeClass = ccxt[this.exchangeId]
     this.exchange = new exchangeClass({ apiKey, secret, password })
     this.bypass = this.exchange
@@ -39,17 +38,14 @@ export abstract class ExchangeBase {
     // The following check throws if something is wrong
     this.exchange.checkRequiredCredentials()
 
-    this.logger = logger.child({ class: `${ExchangeBase.name}-${exchangeId}` })
+    this.logger = logger.child({ class: `${ExchangeBase.name}-${this.exchangeId}` })
   }
-
-  abstract fetchDepositAddressValidateInput(currency: string)
-  abstract fetchDepositAddressProcessApiResponse(response): FetchDepositAddressResult
 
   public async fetchDepositAddress(
     currency: string,
   ): Promise<Result<FetchDepositAddressResult>> {
     try {
-      this.fetchDepositAddressValidateInput(currency)
+      this.exchangeConfig.fetchDepositAddressValidateInput(currency)
 
       const response = await this.exchange.fetchDepositAddress(currency)
       this.logger.debug(
@@ -57,7 +53,7 @@ export abstract class ExchangeBase {
         `exchange.fetchDepositAddress(${currency}) returned: {response}`,
       )
 
-      const result = this.fetchDepositAddressProcessApiResponse(response)
+      const result = this.exchangeConfig.fetchDepositAddressProcessApiResponse(response)
 
       return {
         ok: true,
@@ -68,12 +64,9 @@ export abstract class ExchangeBase {
     }
   }
 
-  abstract withdrawValidateInput(args: WithdrawParameters)
-  abstract withdrawValidateApiResponse(response)
-
   public async withdraw(args: WithdrawParameters): Promise<Result<WithdrawResult>> {
     try {
-      this.withdrawValidateInput(args)
+      this.exchangeConfig.withdrawValidateInput(args)
 
       const response = await this.exchange.withdraw(
         args.currency,
@@ -85,7 +78,7 @@ export abstract class ExchangeBase {
         `exchange.withdraw(${args.currency}, ${args.quantity}, ${args.address}) returned: {response}`,
       )
 
-      this.withdrawValidateApiResponse(response)
+      this.exchangeConfig.withdrawValidateApiResponse(response)
 
       return {
         ok: true,
@@ -99,14 +92,11 @@ export abstract class ExchangeBase {
     }
   }
 
-  abstract createMarketOrderValidateInput(args: CreateOrderParameters)
-  abstract createMarketOrderValidateApiResponse(response)
-
   public async createMarketOrder(
     args: CreateOrderParameters,
   ): Promise<Result<CreateOrderResult>> {
     try {
-      this.createMarketOrderValidateInput(args)
+      this.exchangeConfig.createMarketOrderValidateInput(args)
 
       const response = await this.exchange.createMarketOrder(args.side, args.quantity)
       this.logger.debug(
@@ -114,7 +104,7 @@ export abstract class ExchangeBase {
         `exchange.createMarketOrder(${args.side}, ${args.quantity}) returned: {response}`,
       )
 
-      this.createMarketOrderValidateApiResponse(response)
+      this.exchangeConfig.createMarketOrderValidateApiResponse(response)
 
       return {
         ok: true,
@@ -128,18 +118,15 @@ export abstract class ExchangeBase {
     }
   }
 
-  abstract fetchOrderValidateInput(id: string)
-  abstract fetchOrderValidateApiResponse(response)
-
   public async fetchOrder(id: string): Promise<Result<FetchOrderResult>> {
     try {
-      this.fetchOrderValidateInput(id)
+      this.exchangeConfig.fetchOrderValidateInput(id)
 
       // call api
       const response = await this.exchange.fetchOrder(id)
       this.logger.debug({ response }, `exchange.fetchOrder(${id}) returned: {response}`)
 
-      this.fetchOrderValidateApiResponse(response)
+      this.exchangeConfig.fetchOrderValidateApiResponse(response)
 
       return {
         ok: true,

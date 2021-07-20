@@ -10,11 +10,9 @@ import {
   TradeCurrency,
 } from "./ExchangeTradingType"
 import { HedgingStrategy, UpdatedPosition, UpdatedBalance } from "./HedgingStrategyTypes"
-import { SupportedExchange, ExchangeBase } from "./ExchangeBase"
+import { ExchangeBase } from "./ExchangeBase"
+import { ExchangeConfigurationOkex } from "./ExchangeConfigurationOkex"
 import { ExchangeOkex } from "./ExchangeOkex"
-
-const exchangeName = SupportedExchange.OKEX5
-const strategySymbol = "BTC-USD-SWAP"
 
 const hedgingBounds = yamlConfig.hedging
 
@@ -59,12 +57,11 @@ export interface GetRiskAndOrderResult {
 
 export class OkexPerpetualSwapStrategy implements HedgingStrategy {
   exchange: ExchangeBase
-  symbol
   logger
 
   constructor(logger) {
-    this.exchange = new ExchangeOkex(exchangeName, strategySymbol, logger)
-    this.symbol = strategySymbol
+    const exchangeConfig = new ExchangeConfigurationOkex()
+    this.exchange = new ExchangeOkex(exchangeConfig, logger)
     this.logger = logger.child({ class: OkexPerpetualSwapStrategy.name })
   }
 
