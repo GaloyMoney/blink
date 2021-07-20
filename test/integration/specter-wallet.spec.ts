@@ -1,4 +1,4 @@
-import { yamlConfig, getSpecterWalletConfig } from "src/config"
+import { getSpecterWalletConfig } from "src/config"
 import { baseLogger } from "src/logger"
 import { UserWallet } from "src/userWallet"
 import { SpecterWallet } from "src/SpecterWallet"
@@ -13,7 +13,7 @@ let specterWallet
 
 beforeEach(() => {
   UserWallet.setCurrentPrice(10000)
-  const specterWalletConfig = getSpecterWalletConfig(yamlConfig)
+  const specterWalletConfig = getSpecterWalletConfig()
   specterWallet = new SpecterWallet({ logger: baseLogger, config: specterWalletConfig })
 })
 
