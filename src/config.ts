@@ -38,10 +38,13 @@ export class TransactionLimits {
   oldEnoughForWithdrawalLimit = () => this.config.oldEnoughForWithdrawal / MS_IN_HOUR
 }
 
-export const getSpecterWalletConfig = (): SpecterWalletConfig => ({
-  lndHoldingBase: yamlConfig.rebalancing.lndHoldingBase,
-  ratioTargetDeposit: yamlConfig.rebalancing.ratioTargetDeposit,
-  ratioTargetWithdraw: yamlConfig.rebalancing.ratioTargetWithdraw,
-  minOnchain: yamlConfig.rebalancing.minOnchain,
-  onchainWallet: yamlConfig.rebalancing.onchainWallet || "specter",
-})
+export const getSpecterWalletConfig = (): SpecterWalletConfig => {
+  const config = yamlConfig.rebalancing
+  return {
+    lndHoldingBase: config.lndHoldingBase,
+    ratioTargetDeposit: config.ratioTargetDeposit,
+    ratioTargetWithdraw: config.ratioTargetWithdraw,
+    minOnchain: config.minOnchain,
+    onchainWallet: config.onchainWallet ?? "specter",
+  }
+}
