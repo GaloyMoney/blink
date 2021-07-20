@@ -23,7 +23,7 @@ const path = `mongodb://${user}:${password}@${address}/${db}`
 
 export const setupMongoConnection = async () => {
   // FIXME we may not want to keep this in the logs
-  baseLogger.info({path}, "db connection path")
+  baseLogger.info({ path }, "db connection path")
 
   try {
     await mongoose.connect(path, {
@@ -48,7 +48,6 @@ export const setupMongoConnection = async () => {
     await sleep(100)
     exit(99)
   }
-
 
   return mongoose
 }
