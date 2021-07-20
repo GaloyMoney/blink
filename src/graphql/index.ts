@@ -30,5 +30,5 @@ export const GT = {
   NonNullList: (GraphQLType) => GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLType))),
 }
 
-export * from "./core"
-export * from "./admin"
+export * from "./core/index"
+export * from "./admin/index"

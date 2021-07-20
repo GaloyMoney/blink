@@ -1,5 +1,5 @@
-import { GT } from "./index"
-import { login, requestPhoneCode } from "../text"
+import { GT } from "../index"
+import { login, requestPhoneCode } from "../../text"
 
 const MutationType = new GT.Object({
   name: "Mutation",

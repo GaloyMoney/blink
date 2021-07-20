@@ -2,14 +2,14 @@ import { redis } from "src/redis"
 import { sleep } from "src/utils"
 import { yamlConfig } from "src/config"
 import { createTestClient } from "apollo-server-testing"
-import { startApolloServer } from "src/entrypoint/graphql"
+import { startApolloServerForSchema } from "src/entrypoint/graphql-core-server"
 
 let server, httpServer
 const { phone, code: correctCode } = yamlConfig.test_accounts[9]
 const badCode = 123456
 
 beforeAll(async () => {
-  ;({ server, httpServer } = await startApolloServer())
+  ;({ server, httpServer } = await startApolloServerForSchema())
   await sleep(2500)
 })
 

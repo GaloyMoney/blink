@@ -1,6 +1,6 @@
-import { GT } from "./index"
+import { GT } from "../index"
 
-import Date from "./types/scalars/date"
+import Date from "../types/scalars/date"
 
 const QueryType = new GT.Object({
   name: "Query",

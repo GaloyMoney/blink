@@ -1,10 +1,10 @@
-import { GT } from "./index"
+import { GT } from "../index"
 
-import { User } from "../schema"
-import Phone from "./types/scalars/phone"
-import Username from "./types/scalars/username"
-import AccountLevel from "./types/account-level"
-import UserDetails from "./types/user-details"
+import { User } from "../../schema"
+import Phone from "../types/scalars/phone"
+import Username from "../types/scalars/username"
+import AccountLevel from "../types/account-level"
+import UserDetails from "../types/user-details"
 
 const QueryType = new GT.Object({
   name: "Query",

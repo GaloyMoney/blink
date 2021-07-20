@@ -1,13 +1,15 @@
 import { graphql } from "graphql"
 
 import { User } from "src/schema"
-import { setupMongoConnection } from "src/mongodb"
-import { gqlAdminSchema } from "../../../src/graphql/admin"
+import { gqlAdminSchema } from "src/graphql/admin"
 
 beforeAll(async () => {
-  await setupMongoConnection()
   const user = new User({ username: "tester", phone: "+19876543210" })
   await user.save()
+})
+
+afterAll(async () => {
+  await User.deleteOne({ username: "tester", phone: "+19876543210" })
 })
 
 describe("GraphQLQueryRoot", () => {

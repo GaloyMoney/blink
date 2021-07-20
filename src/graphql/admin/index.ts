@@ -2,9 +2,9 @@ import fs from "fs"
 import path from "path"
 import { GraphQLSchema, printSchema } from "graphql"
 
-import { isDev } from "../utils"
-import QueryType from "./admin-queries"
-import MutationType from "./admin-mutations"
+import { isDev } from "../../utils"
+import QueryType from "./queries"
+import MutationType from "./mutations"
 
 export const gqlAdminSchema = new GraphQLSchema({
   query: QueryType,
@@ -13,7 +13,7 @@ export const gqlAdminSchema = new GraphQLSchema({
 
 if (isDev) {
   fs.writeFileSync(
-    path.resolve("./src/graphql/admin.graphql"),
+    path.resolve("./src/graphql/admin/schema.graphql"),
     printSchema(gqlAdminSchema),
   )
 }
