@@ -134,7 +134,6 @@ fi
 rm -rf $INFRADIR/lnd
 
 helm pull --version=$lndVersion galoy/lnd -d $INFRADIR/ --untar
-cp "$INFRADIR/configs/lnd/RTL-Config.json" $INFRADIR/lnd/charts/rtl
 
 set +e
 kubectl apply -f $INFRADIR/configs/lnd/templates
