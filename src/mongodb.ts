@@ -22,6 +22,9 @@ const db = process.env.MONGODB_DATABASE ?? "galoy"
 const path = `mongodb://${user}:${password}@${address}/${db}`
 
 export const setupMongoConnection = async () => {
+  // FIXME we may not want to keep this in the logs
+  baseLogger.info({path}, "db connection path")
+
   try {
     await mongoose.connect(path, {
       useNewUrlParser: true,
@@ -29,15 +32,23 @@ export const setupMongoConnection = async () => {
       useCreateIndex: true,
       useFindAndModify: false,
     })
-    mongoose.set("runValidators", true)
-    await User.syncIndexes()
-    await Transaction.syncIndexes()
-    await InvoiceUser.syncIndexes()
   } catch (err) {
     baseLogger.fatal({ err, path }, `error connecting to mongodb`)
     await sleep(100)
     exit(99)
   }
+
+  try {
+    mongoose.set("runValidators", true)
+    await User.syncIndexes()
+    await Transaction.syncIndexes()
+    await InvoiceUser.syncIndexes()
+  } catch (err) {
+    baseLogger.fatal({ err, path }, `error setting the indexes`)
+    await sleep(100)
+    exit(99)
+  }
+
 
   return mongoose
 }
