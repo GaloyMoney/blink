@@ -1,10 +1,5 @@
-import { FEECAP } from "src/lndAuth"
-import { baseLogger } from "src/logger"
-import { InvoiceUser } from "src/schema"
-import { getHash, sleep } from "src/utils"
-import { createHash, randomBytes } from "crypto"
 import { ValidationError } from "apollo-server-express"
-import { getActiveLnd, nodesPubKey } from "src/lndUtils"
+import { createHash, randomBytes } from "crypto"
 import { TransactionLimits, yamlConfig } from "src/config"
 import {
   InsufficientBalanceError,
@@ -12,6 +7,11 @@ import {
   SelfPaymentError,
   TransactionRestrictedError,
 } from "src/error"
+import { FEECAP } from "src/lndAuth"
+import { getActiveLnd, nodesPubKey } from "src/lndUtils"
+import { baseLogger } from "src/logger"
+import { InvoiceUser } from "src/schema"
+import { getHash, sleep } from "src/utils"
 import {
   cancelHodlInvoice,
   checkIsBalanced,
@@ -96,9 +96,7 @@ describe("UserWallet - Lightning Pay", () => {
   })
 
   it("sends to another Galoy user a push payment", async () => {
-    const destination = nodesPubKey[0]
     const res = await userWallet1.pay({
-      destination,
       username: userWallet0.user.username,
       amount: amountInvoice,
     })
@@ -157,10 +155,8 @@ describe("UserWallet - Lightning Pay", () => {
   })
 
   it("fails if sends to self an on us push payment", async () => {
-    const destination = nodesPubKey[0]
     await expect(
       userWallet1.pay({
-        destination,
         username: userWallet1.user.username,
         amount: amountInvoice,
       }),

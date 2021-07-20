@@ -173,7 +173,6 @@ export const LightningMixin = (superclass) =>
         destination,
         id,
         routeHint,
-        messages,
         cltv_delta,
         features,
         payment,
@@ -189,7 +188,6 @@ export const LightningMixin = (superclass) =>
           destination,
           id,
           routeHint,
-          messages,
           cltv_delta,
           features,
           payment,
@@ -226,7 +224,6 @@ export const LightningMixin = (superclass) =>
           cltv_delta,
           features,
           max_fee,
-          messages,
           payment,
           total_mtokens: payment ? mtokens : undefined,
         }))
@@ -272,7 +269,6 @@ export const LightningMixin = (superclass) =>
         isPushPayment,
         id,
         routeHint,
-        messages,
         memoInvoice,
         payment,
         cltv_delta,
@@ -309,8 +305,7 @@ export const LightningMixin = (superclass) =>
           const balance = await this.getBalances(lock)
 
           // On us transaction
-          // if destination is empty, we consider this is also an on-us transaction
-          if (isMyNode({ pubkey: destination }) || destination === "") {
+          if (isMyNode({ pubkey: destination }) || pushPayment) {
             const lightningLoggerOnUs = lightningLogger.child({ onUs: true, fee: 0 })
 
             if (await this.user.limitHit({ on_us: true, amount: tokens })) {
@@ -450,13 +445,6 @@ export const LightningMixin = (superclass) =>
             throw new TransactionRestrictedError(error, { logger: lightningLogger })
           }
 
-          // TODO: manage push payment for other node as well
-          if (isPushPayment) {
-            const error = "Push payment to another wallet not yet supported"
-            lightningLogger.error({ success: false }, error)
-            throw new LightningPaymentError(error, { logger: lightningLogger })
-          }
-
           // TODO: fine tune those values:
           // const probe_timeout_ms
           // const path_timeout_ms
@@ -531,10 +519,6 @@ export const LightningMixin = (superclass) =>
               },
             )
 
-            if (isPushPayment) {
-              route.messages = messages
-            }
-
             // there is 3 scenarios for a payment.
             // 1/ payment succeed (function return before TIMEOUT_PAYMENT) and:
             // 1A/ fees are known in advance
@@ -562,7 +546,6 @@ export const LightningMixin = (superclass) =>
                   destination,
                   features,
                   max_fee,
-                  messages,
                   mtokens,
                   payment,
                   routes: routeHint,
