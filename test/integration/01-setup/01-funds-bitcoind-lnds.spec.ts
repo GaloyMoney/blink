@@ -4,7 +4,8 @@ import { getFunderWallet } from "src/walletFactory"
 import {
   lnd1,
   lndOutside1,
-  bitcoindClient,
+  bitcoindClient, // default = coinless
+  bitcoindOutside,
   getChainBalance,
   fundLnd,
   checkIsBalanced,
@@ -14,8 +15,6 @@ import {
 
 jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
 jest.mock("src/phone-provider", () => require("test/mocks/phone-provider"))
-
-const defaultWallet = ""
 
 beforeAll(async () => {
   // load funder wallet before use it
@@ -28,21 +27,32 @@ beforeAll(async () => {
 describe("Bitcoind", () => {
   it("create default wallet", async () => {
     try {
-      const { name } = await bitcoindClient.createWallet(defaultWallet)
+      const { name } = await bitcoindClient.createWallet("default")
       // depends of bitcoind version. needed in < 0.20 but failed in 0.21?
-      expect(name).toBe(defaultWallet)
+      expect(name).toBe("default")
     } catch (error) {
       baseLogger.warn({ error }, "bitcoind wallet already exists")
     }
     const wallets = await bitcoindClient.listWallets()
-    expect(wallets).toContain("")
+    expect(wallets).toContain("default")
+  })
+
+  it("create outside wallet", async () => {
+    try {
+      const { name } = await bitcoindClient.createWallet("outside")
+      expect(name).toBe("outside")
+    } catch (error) {
+      baseLogger.warn({ error }, "bitcoind wallet already exists")
+    }
+    const wallets = await bitcoindClient.listWallets()
+    expect(wallets).toContain("outside")
   })
 
   it("should be funded mining 10 blocks", async () => {
     const numOfBlock = 10
-    const bitcoindAddress = await bitcoindClient.getNewAddress()
-    await bitcoindClient.mineAndConfirm(numOfBlock, bitcoindAddress)
-    const balance = await bitcoindClient.getBalance()
+    const bitcoindAddress = await bitcoindOutside.getNewAddress()
+    await bitcoindOutside.mineAndConfirm(numOfBlock, bitcoindAddress)
+    const balance = await bitcoindOutside.getBalance()
     expect(balance).toBeGreaterThanOrEqual(50 * numOfBlock)
   })
 
@@ -65,7 +75,7 @@ describe("Bitcoind", () => {
     const funderWallet = await getFunderWallet({ logger: baseLogger })
     const address = await funderWallet.getOnChainAddress()
 
-    await bitcoindClient.sendToAddressAndConfirm(address, amount)
+    await bitcoindOutside.sendToAddressAndConfirm(address, amount)
     await waitUntilBlockHeight({ lnd: lnd1 })
 
     const { chain_balance: balance } = await getChainBalance({ lnd: lnd1 })

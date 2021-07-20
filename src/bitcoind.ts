@@ -10,8 +10,10 @@ export const getBalancesDetail = async (): Promise<
   const balances: { wallet: string; balance: number }[] = []
 
   for await (const wallet of wallets) {
-    // do not use the default wallet for now (expect for testing).
-    if (wallet === "") {
+    // do not consider the outside wallet (and "default" should be coinless, so it shouldn't need to be here...)
+    if (wallet === "outside") {
+      // do not use the default wallet for now (expect for testing).
+      // if (wallet === "") {
       continue
     }
 
