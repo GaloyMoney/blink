@@ -1,7 +1,7 @@
 import { once } from "events"
 import { filter } from "lodash"
 import { baseLogger } from "src/logger"
-import { TransactionLimits, yamlConfig } from "src/config"
+import { TransactionLimits } from "src/config"
 import { getCurrentPrice } from "src/realtimePrice"
 import { btc2sat, sat2btc, sleep } from "src/utils"
 import { getFunderWallet } from "src/walletFactory"
@@ -29,7 +29,6 @@ let walletUser12
 let amountBTC
 
 const transactionLimits = new TransactionLimits({
-  config: yamlConfig.limits,
   level: "1",
 })
 
