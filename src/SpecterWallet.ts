@@ -13,6 +13,9 @@ import { Logger, SpecterWalletConfig, SpecterWalletConstructorArgs } from "./typ
 import { UserWallet } from "./userWallet"
 import { BitcoindClient, bitcoindDefaultClient, btc2sat, sat2btc } from "./utils"
 
+// TODO: Centralizing this special handling. Does not seem to be the "outside" here...
+const specialWalletName = "default" // was ""
+
 export class SpecterWallet {
   bitcoindClient
   readonly logger: Logger
@@ -51,7 +54,7 @@ export class SpecterWallet {
       this.logger.info("specter wallet has not been instantiated")
 
       // currently use for testing purpose. need to refactor
-      return ""
+      return specialWalletName
     }
 
     if (specterWallets.length > 1) {
@@ -87,7 +90,7 @@ export class SpecterWallet {
   async getBitcoindBalance(): Promise<number> {
     if (!this.bitcoindClient) {
       const wallet = await this.setBitcoindClient()
-      if (wallet === "") {
+      if (wallet === specialWalletName) {
         return 0
       }
     }
@@ -100,7 +103,7 @@ export class SpecterWallet {
 
     if (!this.bitcoindClient) {
       const wallet = await this.setBitcoindClient()
-      if (wallet === "") {
+      if (wallet === specialWalletName) {
         return
       }
     }
@@ -179,7 +182,7 @@ export class SpecterWallet {
   async toColdStorage({ sats }) {
     if (!this.bitcoindClient) {
       const wallet = await this.setBitcoindClient()
-      if (wallet === "") {
+      if (wallet === specialWalletName) {
         this.logger.warn("no wallet has been setup")
         return
       }
@@ -233,7 +236,7 @@ export class SpecterWallet {
   async toLndWallet({ sats }) {
     if (!this.bitcoindClient) {
       const wallet = await this.setBitcoindClient()
-      if (wallet === "") {
+      if (wallet === specialWalletName) {
         return
       }
     }
