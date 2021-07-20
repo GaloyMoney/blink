@@ -22,7 +22,6 @@ import pino from "pino"
 // const __filename = fileURLToPath(import.meta.url);
 // const __dirname = path.dirname(__filename);
 import PinoHttp from "pino-http"
-import swStats from "swagger-stats"
 import { v4 as uuidv4 } from "uuid"
 import { addToMap, setAccountStatus, setLevel, usernameExists } from "../AdminOps"
 import { yamlConfig } from "../config"
@@ -427,14 +426,6 @@ export async function startApolloServer() {
       algorithms: ["HS256"],
       credentialsRequired: false,
       requestProperty: "token",
-    }),
-  )
-
-  app.use(
-    swStats.getMiddleware({
-      uriPath: "/swagger",
-      // no authentication but /swagger/* should be protected from access outside the cluster
-      // this is done with nginx
     }),
   )
 

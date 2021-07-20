@@ -21,10 +21,7 @@ deployment:
   healthz: true
   targetPort: 4000
   replicaCount: 2
-  podAnnotations:
-    prometheus.io/path: /swagger/metrics
-    prometheus.io/port: "4000"
-    prometheus.io/scrape: "true"
+  podAnnotations: {}
 - name: exporter
   args: ["lib/entrypoint/exporter.js"]
   healthz: true

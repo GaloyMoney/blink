@@ -76,7 +76,6 @@
     "prom-client": "^13.1.0",
     "rate-limiter-flexible": "^2.2.2",
     "redlock": "^4.2.0",
-    "swagger-stats": "^0.99.2",
     "twilio": "^3.65.0",
     "uuid": "^8.3.1"
   },
