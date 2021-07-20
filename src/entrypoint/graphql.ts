@@ -16,11 +16,6 @@ import moment from "moment"
 import mongoose from "mongoose"
 import path from "path"
 import pino from "pino"
-// https://nodejs.org/api/esm.html#esm_no_require_exports_module_exports_filename_dirname
-// TODO: to use when switching to module
-// import { fileURLToPath } from 'url';
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
 import PinoHttp from "pino-http"
 import swStats from "swagger-stats"
 import { v4 as uuidv4 } from "uuid"
@@ -39,7 +34,7 @@ import { User } from "../schema"
 import { login, requestPhoneCode } from "../text"
 import { Levels, OnboardingEarn, Primitive } from "../types"
 import helmet from "helmet"
-import { updateIPDetails, isIPBlacklisted } from "../utils"
+import { updateIPDetails, isIPBlacklisted, isProd } from "../utils"
 
 import { WalletFactory, WalletFromUsername } from "../walletFactory"
 
@@ -413,7 +408,7 @@ export async function startApolloServer() {
     },
   })
 
-  app.use(helmet())
+  app.use(helmet({ contentSecurityPolicy: isProd ? undefined : false }))
 
   app.use(pino_http)
 

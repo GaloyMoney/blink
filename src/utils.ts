@@ -4,14 +4,16 @@ import _ from "lodash"
 import bitcoindClient from "bitcoin-core"
 import { parsePaymentRequest } from "invoices"
 
-// how many block are we looking back for getChainTransactions
-export const LOOK_BACK = 2016
-
 import { User } from "./schema"
 import axios from "axios"
 import { yamlConfig } from "./config"
 import { ValidationError } from "./error"
 import { baseLogger } from "./logger"
+
+export const isProd = process.env.NODE_ENV === "production"
+
+// how many block are we looking back for getChainTransactions
+export const LOOK_BACK = 2016
 
 // FIXME: super ugly hack.
 // for some reason LoggedError get casted as GraphQLError

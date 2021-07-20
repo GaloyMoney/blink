@@ -8,19 +8,13 @@ import swStats from "swagger-stats"
 import { yamlConfig } from "src/config"
 import { createTestClient } from "apollo-server-testing"
 import { startApolloServer } from "src/entrypoint/graphql"
-import {
-  failedAttemptPerIp,
-  limiterLoginAttempt,
-  limiterRequestPhoneCode,
-  limiterRequestPhoneCodeIp,
-} from "src/rateLimit"
 
-let server, httpServer, app
+let server, httpServer
 const { phone, code: correctCode } = yamlConfig.test_accounts[9]
 const badCode = 123456
 
 beforeAll(async () => {
-  ;({ server, httpServer, app } = await startApolloServer())
+  ;({ server, httpServer } = await startApolloServer())
   await sleep(2500)
 })
 
