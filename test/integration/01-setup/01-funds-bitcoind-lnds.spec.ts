@@ -48,7 +48,6 @@ describe("Bitcoind", () => {
   })
 
   it("funds lnd1 node", async () => {
-    await waitUntilSyncAll()
     const amount = 1
     const { chain_balance: initialBalance } = await getChainBalance({ lnd: lnd1 })
     const sats = initialBalance + btc2sat(amount)
