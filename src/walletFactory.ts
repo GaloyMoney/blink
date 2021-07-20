@@ -18,7 +18,6 @@ export const WalletFactory = async ({
   UserWallet.setCurrentPrice(lastPrice)
 
   const transactionLimits = new TransactionLimits({
-    config: yamlConfig.limits,
     level: user.level,
   })
 

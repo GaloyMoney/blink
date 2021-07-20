@@ -23,11 +23,11 @@ try {
 export const yamlConfig = _.merge(defaultConfig, customConfig)
 
 export class TransactionLimits {
-  config
-  level
+  readonly config
+  readonly level
 
-  constructor({ config, level }) {
-    this.config = config
+  constructor({ level }) {
+    this.config = yamlConfig.limits
     this.level = level
   }
 
