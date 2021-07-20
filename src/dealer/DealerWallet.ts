@@ -28,7 +28,7 @@ export class DealerWallet extends OnChainMixin(UserWallet) {
 
     // Testing for 0 is tricky, assuming we wont hedge change
     if (Math.abs(usdLiability) < 1) {
-      logger.debug({ msg: "No liabilities to hedge.", usdLiability: usdLiability })
+      logger.debug({ usdLiability }, "No liabilities to hedge.")
       return
     }
 
@@ -39,52 +39,49 @@ export class DealerWallet extends OnChainMixin(UserWallet) {
       btcPriceInUsd,
     )
     if (updatedPosition.ok) {
+      const originalPosition = updatedPosition.value.originalPosition
+      const newPosition = updatedPosition.value.newPosition
+
       logger.info(
         `The active ${activeStrategy} strategy was successful at UpdatePosition()`,
       )
-      logger.debug({
-        msg: `Position BEFORE ${activeStrategy} strategy executed UpdatePosition()`,
-        oldPosition: updatedPosition.value.oldPosition,
-      })
-      logger.debug({
-        msg: `Position AFTER ${activeStrategy} strategy executed UpdatePosition()`,
-        newPosition: updatedPosition.value.newPosition,
-      })
+      logger.debug(
+        { originalPosition },
+        `Position BEFORE ${activeStrategy} strategy executed UpdatePosition()`,
+      )
+      logger.debug(
+        { newPosition },
+        `Position AFTER ${activeStrategy} strategy executed UpdatePosition()`,
+      )
     } else {
-      logger.error({
-        msg: `The active ${activeStrategy} strategy failed during the UpdatePosition() execution`,
-        error: updatedPosition.error,
-      })
+      logger.error(
+        { updatedPosition },
+        `The active ${activeStrategy} strategy failed during the UpdatePosition() execution`,
+      )
     }
 
     logger.debug("starting with rebalance loop")
 
     const withdrawOnChainAddress = await this.getLastOnChainAddress()
 
-    const updatedLeverage = await this.strategy.UpdateLeverage(
+    const updatedLeverageResult = await this.strategy.UpdateLeverage(
       usdLiability,
       btcPriceInUsd,
       withdrawOnChainAddress,
       this.withdrawBookKeeping,
       this.depositOnExchangeCallback,
     )
-    if (updatedLeverage.ok) {
+    if (updatedLeverageResult.ok) {
+      const updatedLeverage = updatedLeverageResult.value
       logger.info(
+        { updatedLeverage },
         `The active ${activeStrategy} strategy was successful at UpdateLeverage()`,
       )
-      logger.debug({
-        msg: `Position BEFORE ${activeStrategy} strategy executed UpdateLeverage()`,
-        oldBalance: updatedLeverage.value.oldBalance,
-      })
-      logger.debug({
-        msg: `Position AFTER ${activeStrategy} strategy executed UpdateLeverage()`,
-        newBalance: updatedLeverage.value.newBalance,
-      })
     } else {
-      logger.error({
-        msg: `The active ${activeStrategy} strategy failed during the UpdateLeverage() execution`,
-        error: updatedLeverage.error,
-      })
+      logger.error(
+        { updatedLeverageResult },
+        `The active ${activeStrategy} strategy failed during the UpdateLeverage() execution`,
+      )
     }
   }
 
