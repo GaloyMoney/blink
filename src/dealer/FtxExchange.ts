@@ -9,7 +9,7 @@ import { ExchangeBase } from "./ExchangeBase"
 import { ExchangeConfiguration } from "./ExchangeConfiguration"
 import { Result } from "./Result"
 
-export class ExchangeFtx extends ExchangeBase {
+export class FtxExchange extends ExchangeBase {
   instrumentId
 
   constructor(exchangeConfiguration: ExchangeConfiguration, logger) {

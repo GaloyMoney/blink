@@ -6,8 +6,8 @@ import assert from "assert"
 import { Result } from "./Result"
 import { HedgingStrategy, UpdatedPosition, UpdatedBalance } from "./HedgingStrategyTypes"
 import { ExchangeBase } from "./ExchangeBase"
-import { ExchangeConfigurationFtx } from "./ExchangeConfigurationFtx"
-import { ExchangeFtx } from "./ExchangeFtx"
+import { FtxExchangeConfiguration } from "./FtxExchangeConfiguration"
+import { FtxExchange } from "./FtxExchange"
 
 const hedgingBounds = yamlConfig.hedging
 
@@ -22,8 +22,8 @@ export class FtxPerpetualSwapStrategy implements HedgingStrategy {
   logger
 
   constructor(logger) {
-    const exchangeConfig = new ExchangeConfigurationFtx()
-    this.exchange = new ExchangeFtx(exchangeConfig, logger)
+    const exchangeConfig = new FtxExchangeConfiguration()
+    this.exchange = new FtxExchange(exchangeConfig, logger)
     this.instrumentId = exchangeConfig.instrumentId
     this.logger = logger.child({ class: FtxPerpetualSwapStrategy.name })
   }

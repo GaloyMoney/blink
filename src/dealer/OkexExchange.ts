@@ -9,7 +9,7 @@ import { ExchangeBase } from "./ExchangeBase"
 import { ExchangeConfiguration } from "./ExchangeConfiguration"
 import { Result } from "./Result"
 
-export class ExchangeOkex extends ExchangeBase {
+export class OkexExchange extends ExchangeBase {
   instrumentId
 
   constructor(exchangeConfiguration: ExchangeConfiguration, logger) {

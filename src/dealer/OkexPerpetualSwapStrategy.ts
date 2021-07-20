@@ -11,8 +11,8 @@ import {
 } from "./ExchangeTradingType"
 import { HedgingStrategy, UpdatedPosition, UpdatedBalance } from "./HedgingStrategyTypes"
 import { ExchangeBase } from "./ExchangeBase"
-import { ExchangeConfigurationOkex } from "./ExchangeConfigurationOkex"
-import { ExchangeOkex } from "./ExchangeOkex"
+import { OkexExchangeConfiguration } from "./OkexExchangeConfiguration"
+import { OkexExchange } from "./OkexExchange"
 
 const hedgingBounds = yamlConfig.hedging
 
@@ -60,8 +60,8 @@ export class OkexPerpetualSwapStrategy implements HedgingStrategy {
   logger
 
   constructor(logger) {
-    const exchangeConfig = new ExchangeConfigurationOkex()
-    this.exchange = new ExchangeOkex(exchangeConfig, logger)
+    const exchangeConfig = new OkexExchangeConfiguration()
+    this.exchange = new OkexExchange(exchangeConfig, logger)
     this.logger = logger.child({ class: OkexPerpetualSwapStrategy.name })
   }
 

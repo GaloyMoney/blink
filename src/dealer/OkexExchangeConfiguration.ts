@@ -1,3 +1,4 @@
+import _ from "lodash"
 import {
   FetchDepositAddressResult,
   WithdrawParameters,
@@ -15,13 +16,13 @@ import {
   SupportedInstrument,
 } from "./ExchangeConfiguration"
 
-export class ExchangeConfigurationFtx implements ExchangeConfiguration {
+export class OkexExchangeConfiguration implements ExchangeConfiguration {
   exchangeId: SupportedExchange
   instrumentId: SupportedInstrument
 
   constructor() {
-    this.exchangeId = SupportedExchange.FTX
-    this.instrumentId = SupportedInstrument.FTX_PERPETUAL_SWAP
+    this.exchangeId = SupportedExchange.OKEX5
+    this.instrumentId = SupportedInstrument.OKEX_PERPETUAL_SWAP
   }
 
   fetchDepositAddressValidateInput(currency: string) {
@@ -29,13 +30,17 @@ export class ExchangeConfigurationFtx implements ExchangeConfiguration {
   }
   fetchDepositAddressProcessApiResponse(response): FetchDepositAddressResult {
     assert(response, ApiError.UNSUPPORTED_API_RESPONSE)
-    assert(response.currency === TradeCurrency.BTC, ApiError.UNSUPPORTED_CURRENCY)
-    assert(response.address, ApiError.UNSUPPORTED_ADDRESS)
+    const { ccy, addr, chain } = _.find(response.data, {
+      chain: SupportedChain.BTC_Bitcoin,
+    })
+    assert(ccy === TradeCurrency.BTC, ApiError.UNSUPPORTED_CURRENCY)
+    assert(addr, ApiError.UNSUPPORTED_ADDRESS)
+    assert(chain === SupportedChain.BTC_Bitcoin, ApiError.UNSUPPORTED_CURRENCY)
     return {
       originalResponseAsIs: response,
-      chain: SupportedChain.BTC_Bitcoin,
-      currency: response.currency,
-      address: response.address,
+      chain: chain,
+      currency: ccy,
+      address: addr,
     }
   }
 
@@ -47,7 +52,6 @@ export class ExchangeConfigurationFtx implements ExchangeConfiguration {
   }
   withdrawValidateApiResponse(response) {
     assert(response, ApiError.UNSUPPORTED_API_RESPONSE)
-    // assert(response.status) // we don't know enough to validate the status, TODO
   }
 
   createMarketOrderValidateInput(args: CreateOrderParameters) {
