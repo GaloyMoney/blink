@@ -52,19 +52,6 @@ export enum SupportedChain {
 }
 
 export interface FetchDepositAddressResult {
-  /*
-    FTX
-        "currency": "BTC",
-        "address": "3QH7cZ5Zws3snDTss2HZJ7oxomFgdTgEzx",
-   */
-  /*
-    OKEX
-        "chain": "BTC-Bitcoin",
-        "ctAddr": "",
-        "ccy": "BTC",
-        "to": "6",
-        "addr": "32Cx7VgPAFkSDBNJyf1m3WrTHHCLhBXhRN",
-   */
   originalResponseAsIs // the original JSON response from the exchange as is
   chain: SupportedChain
   currency: TradeCurrency
