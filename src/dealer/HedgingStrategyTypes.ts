@@ -14,20 +14,15 @@ export type Position = {
 }
 
 export type UpdatedPosition = {
-  oldPosition: Position
+  originalPosition: Position
   newPosition: Position
 }
 
-export type Balance = {
-  leverageRatio: number
-  collateralInUsd: number
-  exposureInUsd: number
-  totalAccountValueInUsd: number
-}
-
 export type UpdatedBalance = {
-  oldBalance: Balance
-  newBalance: Balance
+  originalLeverageRatio: number
+  liabilityInUsd: number
+  collateralInUsd: number
+  newLeverageRatio: number
 }
 
 export interface WithdrawBookKeepingCallback {

@@ -90,7 +90,7 @@ export class FtxPerpetualSwapStrategy implements HedgingStrategy {
       return {
         ok: true,
         value: {
-          oldPosition: {
+          originalPosition: {
             leverageRatio: 0,
             collateralInUsd: 0,
             exposureInUsd: 0,
@@ -114,6 +114,7 @@ export class FtxPerpetualSwapStrategy implements HedgingStrategy {
     btcPriceInUsd,
   ): Promise<Result<UpdatedBalance>> {
     try {
+      const updatedBalance = {} as UpdatedBalance
       //   const { usd: usdLiability } = await this.getLocalLiabilities()
       const {
         usd: usdExposure,
@@ -150,20 +151,7 @@ export class FtxPerpetualSwapStrategy implements HedgingStrategy {
       // TODO: fill in the right stuff
       return {
         ok: true,
-        value: {
-          oldBalance: {
-            leverageRatio: 0,
-            collateralInUsd: 0,
-            exposureInUsd: 0,
-            totalAccountValueInUsd: 0,
-          },
-          newBalance: {
-            leverageRatio: 0,
-            collateralInUsd: 0,
-            exposureInUsd: 0,
-            totalAccountValueInUsd: 0,
-          },
-        },
+        value: updatedBalance,
       }
     } catch (error) {
       return { ok: false, error: error }

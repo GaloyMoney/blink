@@ -48,6 +48,7 @@ export interface GetRebalanceTransferResult {
     transferSizeInUsd
     transferSizeInBtc
     btcPriceInUsd
+    newLeverageRatio
   }
 }
 
@@ -72,9 +73,9 @@ export class OkexPerpetualSwapStrategy implements HedgingStrategy {
     btcPriceInUsd,
   ): Promise<Result<UpdatedPosition>> {
     try {
+      const updatedPosition = {} as UpdatedPosition
       const logger = this.logger.child({ method: "UpdatePosition()" })
 
-      let naRisk
       const riskAndOrderResult = await this.getRiskAndOrder(
         btcPriceInUsd,
         liabilityInUsd,
@@ -90,12 +91,14 @@ export class OkexPerpetualSwapStrategy implements HedgingStrategy {
       const originalRisk = riskAndOrderResult.value.risk
       const hedgingOrder = riskAndOrderResult.value.order
 
+      updatedPosition.originalPosition = originalRisk
+
       if (hedgingOrder.out.tradeSide === TradeSide.NoTrade) {
         const msg = `${hedgingOrder.in.loBracket} < ${hedgingOrder.in.exposureRatio} < ${hedgingOrder.in.hiBracket}`
         logger.debug(`Calculated no hedging is needed: ${msg}`)
         return {
           ok: true,
-          value: { oldPosition: originalRisk, newPosition: naRisk },
+          value: updatedPosition,
         }
       }
 
@@ -103,7 +106,7 @@ export class OkexPerpetualSwapStrategy implements HedgingStrategy {
         logger.debug({ hedgingOrder }, "Calculated a SIMULATED new hedging order")
         return {
           ok: true,
-          value: { oldPosition: originalRisk, newPosition: naRisk },
+          value: updatedPosition,
         }
       }
 
@@ -133,6 +136,8 @@ export class OkexPerpetualSwapStrategy implements HedgingStrategy {
       const updatedRisk = confirmRiskAndOrderResult.value.risk
       const confirmationOrder = confirmRiskAndOrderResult.value.order
 
+      updatedPosition.newPosition = updatedRisk
+
       if (!isSimulation && confirmationOrder.out.tradeSide !== TradeSide.NoTrade) {
         return {
           ok: false,
@@ -144,10 +149,7 @@ export class OkexPerpetualSwapStrategy implements HedgingStrategy {
 
       return {
         ok: true,
-        value: {
-          oldPosition: originalRisk,
-          newPosition: updatedRisk,
-        },
+        value: updatedPosition,
       }
     } catch (error) {
       return { ok: false, error: error }
@@ -162,6 +164,7 @@ export class OkexPerpetualSwapStrategy implements HedgingStrategy {
     depositOnExchangeCallback,
   ): Promise<Result<UpdatedBalance>> {
     try {
+      const updatedBalance = {} as UpdatedBalance
       const riskResult = await this.exchange.getAccountAndPositionRisk(btcPriceInUsd)
       this.logger.debug(
         { btcPriceInUsd, riskResult },
@@ -195,6 +198,11 @@ export class OkexPerpetualSwapStrategy implements HedgingStrategy {
       }
       const fundTransferSide = rebalanceResult.value.out.fundTransferSide
       const transferSizeInBtc = rebalanceResult.value.out.transferSizeInBtc
+
+      updatedBalance.liabilityInUsd = liabilityInUsd
+      updatedBalance.collateralInUsd = collateralInUsd
+      updatedBalance.originalLeverageRatio = rebalanceResult.value.in.leverageRatio
+      updatedBalance.newLeverageRatio = rebalanceResult.value.out.newLeverageRatio
 
       if (isSimulation) {
         this.logger.debug(
@@ -276,20 +284,7 @@ export class OkexPerpetualSwapStrategy implements HedgingStrategy {
 
       return {
         ok: true,
-        value: {
-          oldBalance: {
-            leverageRatio: 0,
-            collateralInUsd: 0,
-            exposureInUsd: 0,
-            totalAccountValueInUsd: 0,
-          },
-          newBalance: {
-            leverageRatio: 0,
-            collateralInUsd: 0,
-            exposureInUsd: 0,
-            totalAccountValueInUsd: 0,
-          },
-        },
+        value: updatedBalance,
       }
     } catch (error) {
       return { ok: false, error: error }
@@ -470,16 +465,18 @@ export class OkexPerpetualSwapStrategy implements HedgingStrategy {
       let transferSizeInUsd = 0
       let fundTransferSide: FundTransferSide = FundTransferSide.NoTransfer
       const leverageRatio = liabilityInUsd / collateralInUsd
+      let newCollateralInUsd
 
       if (leverageRatio < hedgingBounds.LOW_BOUND_LEVERAGE) {
-        const newCollateralInUsd = liabilityInUsd / hedgingBounds.LOW_SAFEBOUND_LEVERAGE
+        newCollateralInUsd = liabilityInUsd / hedgingBounds.LOW_SAFEBOUND_LEVERAGE
         transferSizeInUsd = collateralInUsd - newCollateralInUsd
         fundTransferSide = FundTransferSide.Withdraw
       } else if (leverageRatio > hedgingBounds.HIGH_BOUND_LEVERAGE) {
-        const newCollateralInUsd = liabilityInUsd / hedgingBounds.HIGH_SAFEBOUND_LEVERAGE
+        newCollateralInUsd = liabilityInUsd / hedgingBounds.HIGH_SAFEBOUND_LEVERAGE
         transferSizeInUsd = newCollateralInUsd - collateralInUsd
         fundTransferSide = FundTransferSide.Deposit
       }
+      const newLeverageRatio = liabilityInUsd / newCollateralInUsd
 
       const transferSizeInBtc = transferSizeInUsd / btcPriceInUsd
       return {
@@ -495,6 +492,7 @@ export class OkexPerpetualSwapStrategy implements HedgingStrategy {
             transferSizeInUsd,
             transferSizeInBtc,
             btcPriceInUsd,
+            newLeverageRatio,
           },
         },
       }
