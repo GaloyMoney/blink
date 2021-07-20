@@ -2,7 +2,7 @@ import fs from "fs"
 import yaml from "js-yaml"
 import _ from "lodash"
 import { baseLogger } from "./logger"
-import { SpecterWalletConfig } from "./types"
+import { ITransactionLimits, UserWalletConfig, SpecterWalletConfig } from "./types"
 
 const defaultContent = fs.readFileSync("./default.yaml", "utf8")
 export const defaultConfig = yaml.load(defaultContent)
@@ -22,7 +22,7 @@ try {
 
 export const yamlConfig = _.merge(defaultConfig, customConfig)
 
-export class TransactionLimits {
+export class TransactionLimits implements ITransactionLimits {
   readonly config
   readonly level
 
@@ -36,6 +36,18 @@ export class TransactionLimits {
   withdrawalLimit = () => this.config.withdrawal.level[this.level]
 
   oldEnoughForWithdrawalLimit = () => this.config.oldEnoughForWithdrawal / MS_IN_HOUR
+}
+
+export const getUserWalletConfig = (user): UserWalletConfig => {
+  const transactionLimits = new TransactionLimits({
+    level: user.level,
+  })
+
+  return {
+    name: yamlConfig.name,
+    dustThreshold: yamlConfig.onChainWallet.dustThreshold,
+    limits: transactionLimits,
+  }
 }
 
 export const getSpecterWalletConfig = (): SpecterWalletConfig => {

@@ -1,9 +1,9 @@
-import { TransactionLimits, yamlConfig } from "./config"
+import { getUserWalletConfig, yamlConfig } from "./config"
 import { NotFoundError } from "./error"
 import { LightningUserWallet } from "./LightningUserWallet"
 import { getCurrentPrice } from "./realtimePrice"
 import { User } from "./schema"
-import { Logger, UserWalletConfig } from "./types"
+import { Logger } from "./types"
 import { UserWallet } from "./userWallet"
 
 export const WalletFactory = async ({
@@ -17,15 +17,7 @@ export const WalletFactory = async ({
   const lastPrice = await getCurrentPrice()
   UserWallet.setCurrentPrice(lastPrice)
 
-  const transactionLimits = new TransactionLimits({
-    level: user.level,
-  })
-
-  const userWalletConfig: UserWalletConfig = {
-    name: yamlConfig.name,
-    dustThreshold: yamlConfig.onChainWallet.dustThreshold,
-    limits: transactionLimits,
-  }
+  const userWalletConfig = getUserWalletConfig(user)
 
   return new LightningUserWallet({ user, logger, config: userWalletConfig })
 }
