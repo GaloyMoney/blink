@@ -1,5 +1,5 @@
 import { createHash, randomBytes } from "crypto"
-import { TransactionLimits, yamlConfig } from "src/config"
+import { TransactionLimits } from "src/config"
 import {
   InsufficientBalanceError,
   LightningPaymentError,
@@ -37,7 +37,6 @@ let userWallet0, userWallet1, userWallet2
 let initBalance0, initBalance1
 const amountInvoice = 1000
 const transactionLimits = new TransactionLimits({
-  config: yamlConfig.limits,
   level: "1",
 })
 
