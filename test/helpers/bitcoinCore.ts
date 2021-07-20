@@ -1,13 +1,12 @@
-import { bitcoindDefaultClient } from "src/utils"
+import { bitcoindDefaultClient, bitcoindOutsideWalletClient } from "src/utils"
 
 export const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
-// TODO: default or outside?
-export const bitcoindClient = bitcoindDefaultClient
+export const bitcoindClient = bitcoindDefaultClient // default is "coinless" (does not receive or send coin)
+export const bitcoindOutside = bitcoindOutsideWalletClient
 
-// TODO: default or outside?
-bitcoindDefaultClient.sendToAddressAndConfirm = async (address, amount) => {
-  await bitcoindDefaultClient.sendToAddress(address, amount)
-  await bitcoindDefaultClient.generateToAddress(6, RANDOM_ADDRESS)
+bitcoindOutsideWalletClient.sendToAddressAndConfirm = async (address, amount) => {
+  await bitcoindOutsideWalletClient.sendToAddress(address, amount)
+  await bitcoindOutsideWalletClient.generateToAddress(6, RANDOM_ADDRESS)
 }
 
 // from: https://developer.bitcoin.org/examples/testing.html
@@ -15,12 +14,11 @@ bitcoindDefaultClient.sendToAddressAndConfirm = async (address, amount) => {
 // However, a block must have 100 confirmations before that reward can be spent,
 // so we generate 101 blocks to get access to the coinbase transaction from block #1.
 
-// TODO: default or outside?
-bitcoindDefaultClient.mineAndConfirm = async (numOfBlocks, address) => {
-  const blockNumber = await bitcoindDefaultClient.getBlockCount()
+bitcoindOutsideWalletClient.mineAndConfirm = async (numOfBlocks, address) => {
+  const blockNumber = await bitcoindOutsideWalletClient.getBlockCount()
 
-  await bitcoindClient.generateToAddress(numOfBlocks, address)
-  await bitcoindClient.generateToAddress(101, RANDOM_ADDRESS)
+  await bitcoindOutsideWalletClient.generateToAddress(numOfBlocks, address)
+  await bitcoindOutsideWalletClient.generateToAddress(101, RANDOM_ADDRESS)
 
   let rewards = 0
   for (let i = 1; i <= numOfBlocks; i++) {
