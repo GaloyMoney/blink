@@ -18,20 +18,18 @@ export class SpecterWallet {
     this.config = config
   }
 
-  // below static method are {wallet} agnostics from bitcoin-core api perspective
-
-  static async listWallets() {
+  async listWallets() {
     return await bitcoindDefaultClient.listWallets()
   }
 
-  static async createWallet() {
+  async createWallet() {
     return await bitcoindDefaultClient.createWallet({
       wallet_name: "specter/coldstorage",
     })
   }
 
   async setBitcoindClient(): Promise<string> {
-    const wallets = await SpecterWallet.listWallets()
+    const wallets = await this.listWallets()
 
     const pattern = this.config.onchainWallet
     const specterWallets = _.filter(wallets, (item) => item.includes(pattern))

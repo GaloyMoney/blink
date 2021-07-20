@@ -23,18 +23,18 @@ afterAll(async () => {
 
 describe("SpecterWallet", () => {
   it("creates wallet", async () => {
-    let wallets = await SpecterWallet.listWallets()
+    let wallets = await specterWallet.listWallets()
 
     if (wallets.length < 2) {
       try {
-        await SpecterWallet.createWallet()
+        await specterWallet.createWallet()
       } catch {
         const { name } = await bitcoindClient.loadWallet(specterWalletName)
         expect(name).toBe(specterWalletName)
       }
     }
 
-    wallets = await SpecterWallet.listWallets()
+    wallets = await specterWallet.listWallets()
     expect(wallets.length).toBe(2)
   })
 
