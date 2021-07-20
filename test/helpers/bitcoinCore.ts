@@ -1,8 +1,10 @@
 import { bitcoindDefaultClient } from "src/utils"
 
 export const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
+// TODO: default or outside?
 export const bitcoindClient = bitcoindDefaultClient
 
+// TODO: default or outside?
 bitcoindDefaultClient.sendToAddressAndConfirm = async (address, amount) => {
   await bitcoindDefaultClient.sendToAddress(address, amount)
   await bitcoindDefaultClient.generateToAddress(6, RANDOM_ADDRESS)
@@ -13,6 +15,7 @@ bitcoindDefaultClient.sendToAddressAndConfirm = async (address, amount) => {
 // However, a block must have 100 confirmations before that reward can be spent,
 // so we generate 101 blocks to get access to the coinbase transaction from block #1.
 
+// TODO: default or outside?
 bitcoindDefaultClient.mineAndConfirm = async (numOfBlocks, address) => {
   const blockNumber = await bitcoindDefaultClient.getBlockCount()
 

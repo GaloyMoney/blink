@@ -26,6 +26,7 @@ export class SpecterWallet {
   }
 
   async listWallets() {
+    // TODO: include default / outside?
     return await bitcoindDefaultClient.listWallets()
   }
 
