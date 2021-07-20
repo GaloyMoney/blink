@@ -4,7 +4,6 @@
 import mongoose from "mongoose"
 import { redis } from "src/redis"
 import { sleep } from "src/utils"
-import swStats from "swagger-stats"
 import { yamlConfig } from "src/config"
 import { createTestClient } from "apollo-server-testing"
 import { startApolloServer } from "src/entrypoint/graphql"
@@ -33,7 +32,6 @@ beforeEach(async () => {
 
 afterAll(async () => {
   await sleep(2500)
-  swStats.stop()
   await httpServer.close()
   redis.disconnect()
   await mongoose.connection.close()
