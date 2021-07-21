@@ -1,7 +1,5 @@
-import { ValidationError } from "apollo-server-express"
 import assert from "assert"
 import { default as axios } from "axios"
-import { createHash, randomBytes } from "crypto"
 import { parsePaymentRequest } from "invoices"
 import {
   AuthenticatedLnd,
@@ -20,7 +18,7 @@ import {
 import _ from "lodash"
 import { Logger } from "pino"
 import { yamlConfig } from "./config"
-import { DbError, LndOfflineError } from "./error"
+import { DbError, LndOfflineError, ValidationError } from "./error"
 import {
   escrowAccountingPath,
   lndAccountingPath,
@@ -412,7 +410,7 @@ export const validate = async ({
   params: IFeeRequest
   logger: Logger
 }) => {
-  let pushPayment = false
+  let isPushPayment = false
   let tokens
   let expires_at
   let features
@@ -450,14 +448,11 @@ export const validate = async ({
     // TODO: if expired_at expired, thrown an error
   } else {
     if (!params.username) {
-      // FIXME: create a new error. this is a not a graphl error.
-      // throw new ValidationError(error, {logger})
-
       const error = `a username is required for push payment to the ${yamlConfig.name}`
-      throw new ValidationError(error)
+      throw new ValidationError(error, { logger })
     }
 
-    pushPayment = true
+    isPushPayment = true
     username = params.username
   }
 
@@ -466,7 +461,7 @@ export const validate = async ({
     // FIXME: create a new error. this is a not a graphl error.
     // throw new ValidationError(error, {logger})
 
-    throw new ValidationError(error)
+    throw new ValidationError(error, { logger })
   }
 
   if (!params.amount && !tokens) {
@@ -475,7 +470,7 @@ export const validate = async ({
     // FIXME: create a new error. this is a not a graphl error.
     // throw new ValidationError(error, {logger})
 
-    throw new ValidationError(error)
+    throw new ValidationError(error, { logger })
   }
 
   tokens = tokens ? tokens : params.amount

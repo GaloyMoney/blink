@@ -305,7 +305,7 @@ export const LightningMixin = (superclass) =>
           const balance = await this.getBalances(lock)
 
           // On us transaction
-          if (isMyNode({ pubkey: destination }) || pushPayment) {
+          if (isMyNode({ pubkey: destination }) || isPushPayment) {
             const lightningLoggerOnUs = lightningLogger.child({ onUs: true, fee: 0 })
 
             if (await this.user.limitHit({ on_us: true, amount: tokens })) {
