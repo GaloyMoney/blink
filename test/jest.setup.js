@@ -4,9 +4,7 @@ const { setupMongoConnection } = require("src/mongodb")
 let mongoose
 
 beforeAll(async () => {
-  if (!global.stopMongoose) {
-    mongoose = await setupMongoConnection()
-  }
+  mongoose = await setupMongoConnection()
 })
 
 afterAll(async () => {

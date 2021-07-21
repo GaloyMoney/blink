@@ -1,3 +1,3 @@
-export const getCurrentPrice = async () => {
-  return 0.0001
+export const getCurrentPrice = async (): Promise<number | undefined> => {
+  return await Promise.resolve(0.0001)
 }
