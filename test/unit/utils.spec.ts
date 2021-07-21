@@ -142,7 +142,7 @@ describe("utils.ts", () => {
   })
 
   describe("isInvoiceAlreadyPaidError", () => {
-    it("decodes error correctly", async () => {
+    it("decodes error correctly", () => {
       const error = [
         503,
         "UnexpectedPaymentError",
