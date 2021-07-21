@@ -158,12 +158,10 @@ export const onInvoiceUpdate = async (invoice) => {
   }
 }
 
-const updatePriceForChart = async () => {
+const updatePriceForChart = () => {
   const price = new Price({ logger: baseLogger })
-
   const interval = 1000 * 30
-
-  setInterval(async function () {
+  return setInterval(async function () {
     try {
       await price.update()
     } catch (err) {
@@ -217,7 +215,7 @@ const listenerOffchain = ({ lnd, pubkey }) => {
   })
 }
 
-const main = async () => {
+const main = () => {
   lndStatusEvent.on("started", ({ lnd, pubkey, socket, type }) => {
     baseLogger.info({ socket }, "lnd started")
 

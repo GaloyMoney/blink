@@ -117,7 +117,7 @@ describe("graphql", () => {
 
 const clearLimiters = async (prefix) => {
   const keys = await redis.keys(`${prefix}:*`)
-  for (let key of keys) {
+  for (const key of keys) {
     await redis.del(key)
   }
 }

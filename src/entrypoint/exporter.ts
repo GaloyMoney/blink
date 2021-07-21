@@ -203,13 +203,13 @@ const main = async () => {
     res.end(await register.metrics())
   })
 
-  server.get("/healthz", async (req, res) => {
+  server.get("/healthz", (req, res) => {
     res.send("OK")
   })
 
   const port = process.env.PORT || 3000
   logger.info(`Server listening to ${port}, metrics exposed on /metrics endpoint`)
-  server.listen(port)
+  await server.listen(port)
 }
 
 setupMongoConnection()

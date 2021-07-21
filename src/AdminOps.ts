@@ -14,7 +14,12 @@ export const setLevel = async ({ uid, level }) => {
     const error = `${level} is not a valid user level`
     throw new ValidationError(error, { forwardToClient: true, logger, level: "warn" })
   }
-  return User.findOneAndUpdate({ _id: uid }, { $set: { level } }, { new: true })
+  const user = await User.findOneAndUpdate(
+    { _id: uid },
+    { $set: { level } },
+    { new: true },
+  )
+  return user
 }
 
 export const addToMap = async ({
