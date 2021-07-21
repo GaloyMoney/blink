@@ -1,6 +1,7 @@
 import { dealerMediciPath, customerPath, lndAccountingPath } from "./ledger"
 import { MainBook } from "../mongodb"
 import { UserWallet } from "../userWallet"
+import { IAddTransactionOnUsPayment } from "../types"
 
 export const addTransactionLndReceipt = async ({
   description,
@@ -79,7 +80,8 @@ export const addTransactionOnUsPayment = async ({
   payerUser,
   payeeUser,
   memoPayer,
-}) => {
+  shareMemoWithPayee,
+}: IAddTransactionOnUsPayment) => {
   const dealerPath = await dealerMediciPath()
 
   const entry = MainBook.entry(description)
@@ -87,6 +89,7 @@ export const addTransactionOnUsPayment = async ({
   entry
     .credit(customerPath(payeeUser._id), sats * payeeUser.ratioBtc, {
       ...metadata,
+      memoPayer: shareMemoWithPayee ? memoPayer : null,
       username: payerUser.username,
       currency: "BTC",
     })
@@ -115,6 +118,7 @@ export const addTransactionOnUsPayment = async ({
     entry
       .credit(customerPath(payeeUser._id), usdEq * payeeUser.ratioUsd, {
         ...metadata,
+        memoPayer: shareMemoWithPayee ? memoPayer : null,
         username: payerUser.username,
         currency: "USD",
       })

@@ -192,7 +192,6 @@ describe("on us payment", () => {
       metadata: { type: "on_us", pending: false },
       payerUser: payer,
       payeeUser: payee,
-      memoPayer: null,
     })
 
     await expectBalance({ account: payer.accountPath, currency: "BTC", balance: -1000 })
@@ -211,7 +210,6 @@ describe("on us payment", () => {
       metadata: { type: "on_us", pending: false },
       payerUser: payer,
       payeeUser: payee,
-      memoPayer: null,
     })
 
     await expectBalance({ account: payer.accountPath, currency: "USD", balance: -0.1 })
@@ -230,7 +228,6 @@ describe("on us payment", () => {
       metadata: { type: "on_us", pending: false },
       payerUser: payer,
       payeeUser: payee,
-      memoPayer: null,
     })
 
     await expectBalance({ account: payer.accountPath, currency: "BTC", balance: -1000 })
@@ -252,7 +249,6 @@ describe("on us payment", () => {
       metadata: { type: "on_us", pending: false },
       payerUser: payer,
       payeeUser: payee,
-      memoPayer: null,
     })
 
     await expectBalance({ account: payer.accountPath, currency: "BTC", balance: -1000 })
@@ -274,7 +270,6 @@ describe("on us payment", () => {
       metadata: { type: "on_us", pending: false },
       payerUser: payer,
       payeeUser: payee,
-      memoPayer: null,
     })
 
     await expectBalance({ account: payer.accountPath, currency: "BTC", balance: -500 })
@@ -297,7 +292,6 @@ describe("on us payment", () => {
       metadata: { type: "on_us", pending: false },
       payerUser: payer,
       payeeUser: payee,
-      memoPayer: null,
     })
 
     await expectBalance({ account: payer.accountPath, currency: "BTC", balance: 0 })
@@ -320,7 +314,6 @@ describe("on us payment", () => {
       metadata: { type: "on_us", pending: false },
       payerUser: payer,
       payeeUser: payee,
-      memoPayer: null,
     })
 
     await expectBalance({ account: payer.accountPath, currency: "BTC", balance: -500 })

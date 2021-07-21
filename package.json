@@ -19,7 +19,7 @@
     "restart-charts": "yarn use-minikube && yarn uninstall-charts || : && sleep 5 && yarn run add-charts",
     "use-minikube": "kubectl config use-context minikube",
     "cron": "yarn build && source exportLocal.sh && node src/entrypoint/cron.js",
-    "exporter": "yarn build && source exportLocal.sh && node src/entrypoint/exporter.js",
+    "exporter": "yarn build && node lib/entrypoint/exporter.js",
     "lnd-connection": "source exportLocal.sh && echo $MACAROON | base64 -d > ./macaroon && echo $TLS | base64 -d > ./tls.cert && lncli --network regtest --macaroonpath=./macaroon --tlscertpath=./tls.cert --rpcserver=${LNDDNS}:${LNDRPCPORT} getinfo",
     "lncli": "source exportLocal.sh && echo $MACAROON | base64 -d > ./macaroon && echo $TLS | base64 -d > ./tls.cert && lncli --network regtest --macaroonpath=./macaroon --tlscertpath=./tls.cert --rpcserver=${LNDDNS}:${LNDRPCPORT}",
     "postman": "yarn node src/postman/newman.ts",

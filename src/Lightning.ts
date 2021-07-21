@@ -269,7 +269,7 @@ export const LightningMixin = (superclass) =>
         mtokens,
         username: input_username,
         destination,
-        pushPayment,
+        isPushPayment,
         id,
         routeHint,
         messages,
@@ -286,7 +286,7 @@ export const LightningMixin = (superclass) =>
         decoded: {
           tokens,
           destination,
-          pushPayment,
+          isPushPayment,
           id,
           routeHint,
           memoInvoice,
@@ -320,8 +320,7 @@ export const LightningMixin = (superclass) =>
 
             let payeeUser, pubkey
 
-            if (pushPayment) {
-              // username has been sent
+            if (isPushPayment) {
               // pay through username
               payeeUser = await User.findByUsername({ username: input_username })
             } else {
@@ -381,6 +380,7 @@ export const LightningMixin = (superclass) =>
                 payerUser: this.user,
                 payeeUser,
                 memoPayer,
+                shareMemoWithPayee: isPushPayment,
               })
             })
 
@@ -392,7 +392,7 @@ export const LightningMixin = (superclass) =>
               type: "paid-invoice",
             })
 
-            if (!pushPayment) {
+            if (!isPushPayment) {
               // trying to delete the invoice first from lnd
               // if we failed to do it, the invoice would still be present in InvoiceUser
               // in case the invoice were to be paid another time independantly (unlikely outcome)
@@ -427,7 +427,7 @@ export const LightningMixin = (superclass) =>
 
             lightningLoggerOnUs.info(
               {
-                pushPayment,
+                isPushPayment,
                 success: true,
                 isReward: params.isReward ?? false,
                 ...metadata,
@@ -450,7 +450,7 @@ export const LightningMixin = (superclass) =>
           }
 
           // TODO: manage push payment for other node as well
-          if (pushPayment) {
+          if (isPushPayment) {
             const error = "Push payment to another wallet not yet supported"
             lightningLogger.error({ success: false }, error)
             throw new LightningPaymentError(error, { logger: lightningLogger })
@@ -529,7 +529,7 @@ export const LightningMixin = (superclass) =>
               },
             )
 
-            if (pushPayment) {
+            if (isPushPayment) {
               route.messages = messages
             }
 
