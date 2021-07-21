@@ -12,7 +12,6 @@ describe("schema", () => {
       it("returns active users according to volume", async () => {
         await getUserWallet(8)
 
-        const date = Date.now() + 31 * 24 * 60 * 60 * 1000
         let spy = jest
           .spyOn(User, "getVolume")
           .mockImplementation(() => ({ outgoingSats: 50000, incomingSats: 100000 }))

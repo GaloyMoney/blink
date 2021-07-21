@@ -10,7 +10,7 @@ const { lnd } = getActiveOnchainLnd()
 const specterWalletName = "specter/coldstorage"
 let specterWallet
 
-beforeEach(async () => {
+beforeEach(() => {
   UserWallet.setCurrentPrice(10000)
   specterWallet = new SpecterWallet({ logger: baseLogger })
 })

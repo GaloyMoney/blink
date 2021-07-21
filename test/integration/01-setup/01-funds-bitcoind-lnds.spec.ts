@@ -7,7 +7,6 @@ import {
   bitcoindClient,
   getChainBalance,
   fundLnd,
-  waitUntilSyncAll,
   checkIsBalanced,
   getUserWallet,
   waitUntilBlockHeight,

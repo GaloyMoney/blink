@@ -26,11 +26,11 @@ describe("UserWallet", () => {
     expect(user5.user.currencies[0]).toMatchObject({ id: "USD", ratio: 1 })
   })
 
-  it("has a title if it was configured", async () => {
+  it("has a title if it was configured", () => {
     expect(userWallet2.user.title).toBeTruthy()
   })
 
-  it("does not allow withdraw if the user is new", async () => {
+  it("does not allow withdraw if the user is new", () => {
     expect(userWallet2.user.oldEnoughForWithdrawal).toBeFalsy()
 
     // in 6 days:
@@ -41,7 +41,7 @@ describe("UserWallet", () => {
     expect(userWallet2.user.oldEnoughForWithdrawal).toBeFalsy()
   })
 
-  it("allows withdraw if user is old enough", async () => {
+  it("allows withdraw if user is old enough", () => {
     expect(userWallet2.user.oldEnoughForWithdrawal).toBeFalsy()
 
     // TODO make this configurable

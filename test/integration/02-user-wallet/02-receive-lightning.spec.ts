@@ -1,6 +1,6 @@
 import { Transaction } from "src/schema"
 import { getHash } from "src/utils"
-import { checkIsBalanced, getUserWallet, lnd1, lndOutside1, pay } from "test/helpers"
+import { checkIsBalanced, getUserWallet, lndOutside1, pay } from "test/helpers"
 
 jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
 

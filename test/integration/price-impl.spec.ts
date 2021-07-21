@@ -51,7 +51,7 @@ class bitfinex {
   }
 }
 
-beforeAll(async () => {
+beforeAll(() => {
   // this is called here to prevent hoisting issue that is caused by setupMongoConnection
   // being called before ccxt is mocked. setupMongoConnection in turn calls ccxt and thus
   // jest throws an error

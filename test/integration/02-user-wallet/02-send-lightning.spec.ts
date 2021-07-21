@@ -1,6 +1,11 @@
+import { FEECAP } from "src/lndAuth"
+import { baseLogger } from "src/logger"
+import { InvoiceUser } from "src/schema"
 import { getHash, sleep } from "src/utils"
-import { getActiveLnd, nodesPubKey } from "src/lndUtils"
+import { createHash, randomBytes } from "crypto"
 import { ValidationError } from "apollo-server-express"
+import { getActiveLnd, nodesPubKey } from "src/lndUtils"
+import { TransactionLimits, yamlConfig } from "src/config"
 import {
   InsufficientBalanceError,
   LightningPaymentError,
@@ -17,16 +22,10 @@ import {
   getUserWallet,
   lndOutside1,
   lndOutside2,
-  pay,
   settleHodlInvoice,
   waitFor,
   waitUntilChannelBalanceSyncAll,
 } from "test/helpers"
-import { TransactionLimits, yamlConfig } from "src/config"
-import { FEECAP } from "src/lndAuth"
-import { createHash, randomBytes } from "crypto"
-import { baseLogger } from "src/logger"
-import { InvoiceUser } from "src/schema"
 
 const date = Date.now() + 1000 * 60 * 60 * 24 * 8
 // required to avoid oldEnoughForWithdrawal validation
@@ -56,7 +55,7 @@ afterEach(async () => {
   await checkIsBalanced()
 })
 
-afterAll(async () => {
+afterAll(() => {
   jest.restoreAllMocks()
 })
 
@@ -178,7 +177,7 @@ describe("UserWallet - Lightning Pay", () => {
 
   it("fails if the user try to send a negative amount", async () => {
     const destination = nodesPubKey[0]
-    expect(
+    await expect(
       userWallet1.pay({
         destination,
         username: userWallet0.user.username,
@@ -242,7 +241,7 @@ describe("UserWallet - Lightning Pay", () => {
       fn: function fn(wallet) {
         return async (input) => {
           await wallet.getLightningFee(input)
-          return wallet.pay(input)
+          return await wallet.pay(input)
         }
       },
     },
@@ -251,7 +250,7 @@ describe("UserWallet - Lightning Pay", () => {
       initialFee: FEECAP,
       fn: function fn(wallet) {
         return async (input) => {
-          return wallet.pay(input)
+          return await wallet.pay(input)
         }
       },
     },
