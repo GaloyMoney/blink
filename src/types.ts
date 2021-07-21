@@ -219,6 +219,6 @@ export type IAddTransactionOnUsPayment = {
   metadata: Record<string, unknown>
   payerUser: typeof User
   payeeUser: typeof User
-  memoPayer?: string | null
+  memoPayer?: string
   shareMemoWithPayee?: boolean
 }
