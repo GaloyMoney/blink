@@ -1,3 +1,4 @@
+import assert from "assert"
 import { createChainAddress, sendToChainAddress } from "lightning"
 import _ from "lodash"
 import { bitcoindAccountingPath, lndAccountingPath, lndFeePath } from "./ledger/ledger"
@@ -16,6 +17,8 @@ export class SpecterWallet {
   constructor({ logger, config }: SpecterWalletConstructorArgs) {
     this.logger = logger.child({ topic: "bitcoind" })
     this.config = config
+
+    assert(this.config.onchainWallet != "")
   }
 
   async listWallets() {
