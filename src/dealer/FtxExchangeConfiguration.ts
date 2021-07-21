@@ -52,7 +52,10 @@ export class FtxExchangeConfiguration implements ExchangeConfiguration {
 
   createMarketOrderValidateInput(args: CreateOrderParameters) {
     assert(args, ApiError.MISSING_PARAMETERS)
-    assert(args.side !== TradeSide.NoTrade, ApiError.INVALID_TRADE_SIDE)
+    assert(
+      args.side === TradeSide.Buy || args.side === TradeSide.Sell,
+      ApiError.INVALID_TRADE_SIDE,
+    )
     assert(args.quantity > 0, ApiError.NON_POSITIVE_QUANTITY)
   }
   createMarketOrderValidateApiResponse(response) {
