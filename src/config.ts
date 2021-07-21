@@ -43,5 +43,5 @@ export const getSpecterWalletConfig = (): SpecterWalletConfig => ({
   ratioTargetDeposit: yamlConfig.rebalancing.ratioTargetDeposit,
   ratioTargetWithdraw: yamlConfig.rebalancing.ratioTargetWithdraw,
   minOnchain: yamlConfig.rebalancing.minOnchain,
-  onchainWallet: yamlConfig.rebalancing.onchainWallet ?? "specter",
+  onchainWallet: yamlConfig.rebalancing.onchainWallet || "specter",
 })
