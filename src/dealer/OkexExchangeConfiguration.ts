@@ -30,6 +30,7 @@ export class OkexExchangeConfiguration implements ExchangeConfiguration {
   }
   fetchDepositAddressProcessApiResponse(response): FetchDepositAddressResult {
     assert(response, ApiError.UNSUPPORTED_API_RESPONSE)
+    assert(response.data, ApiError.UNSUPPORTED_API_RESPONSE)
     const { ccy, addr, chain } = _.find(response.data, {
       chain: SupportedChain.BTC_Bitcoin,
     })
@@ -56,7 +57,10 @@ export class OkexExchangeConfiguration implements ExchangeConfiguration {
 
   createMarketOrderValidateInput(args: CreateOrderParameters) {
     assert(args, ApiError.MISSING_PARAMETERS)
-    assert(args.side !== TradeSide.NoTrade, ApiError.INVALID_TRADE_SIDE)
+    assert(
+      args.side === TradeSide.Buy || args.side === TradeSide.Sell,
+      ApiError.INVALID_TRADE_SIDE,
+    )
     assert(args.quantity > 0, ApiError.NON_POSITIVE_QUANTITY)
   }
   createMarketOrderValidateApiResponse(response) {
