@@ -4,7 +4,7 @@ import { bitcoindAccountingPath, lndAccountingPath, lndFeePath } from "./ledger/
 import { getActiveOnchainLnd, lndsBalances } from "./lndUtils"
 import { MainBook } from "./mongodb"
 import { getOnChainTransactions } from "./OnChain"
-import { Logger, SpecterWalletConfig } from "./types"
+import { Logger, SpecterWalletConfig, SpecterWalletConstructorArgs } from "./types"
 import { UserWallet } from "./userWallet"
 import { BitcoindClient, bitcoindDefaultClient, btc2sat, sat2btc } from "./utils"
 
@@ -13,7 +13,7 @@ export class SpecterWallet {
   readonly logger: Logger
   readonly config: SpecterWalletConfig
 
-  constructor({ logger, config }) {
+  constructor({ logger, config }: SpecterWalletConstructorArgs) {
     this.logger = logger.child({ topic: "bitcoind" })
     this.config = config
   }
