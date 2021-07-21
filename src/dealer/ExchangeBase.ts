@@ -17,7 +17,6 @@ export abstract class ExchangeBase {
   exchangeId: ExchangeId
   exchange
   logger
-  bypass
 
   constructor(exchangeConfig: ExchangeConfiguration, logger) {
     this.exchangeConfig = exchangeConfig
@@ -33,7 +32,6 @@ export abstract class ExchangeBase {
 
     const exchangeClass = ccxt[this.exchangeId]
     this.exchange = new exchangeClass({ apiKey, secret, password })
-    this.bypass = this.exchange
 
     // The following check throws if something is wrong
     this.exchange.checkRequiredCredentials()

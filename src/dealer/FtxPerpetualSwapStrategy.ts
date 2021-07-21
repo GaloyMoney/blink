@@ -164,7 +164,7 @@ export class FtxPerpetualSwapStrategy implements HedgingStrategy {
     // probably an empty array
 
     // tmp for log
-    const result = await this.exchange.bypass.privateGetAccount()
+    const result = await this.exchange.exchange.privateGetAccount()
     this.logger.debug({ result }, "full result of this.exchange.privateGetAccount")
 
     const {
@@ -311,7 +311,7 @@ export class FtxPerpetualSwapStrategy implements HedgingStrategy {
     // buy should be "reduceOnly":true
 
     try {
-      order = await this.exchange.bypass.createOrder(
+      order = await this.exchange.exchange.createOrder(
         this.instrumentId,
         orderType,
         buyOrSell,
@@ -328,7 +328,7 @@ export class FtxPerpetualSwapStrategy implements HedgingStrategy {
     await sleep(5000)
 
     try {
-      orderStatus = await this.exchange.bypass.fetchOrder(order.id)
+      orderStatus = await this.exchange.exchange.fetchOrder(order.id)
     } catch (err) {
       logOrder.error({ err }, "error fetching order status")
       throw err
