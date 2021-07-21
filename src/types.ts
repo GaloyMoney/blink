@@ -35,6 +35,11 @@ export type SpecterWalletConfig = {
   onchainWallet: string
 }
 
+export type SpecterWalletConstructorArgs = {
+  config: SpecterWalletConfig
+  logger: Logger
+}
+
 // Lightning
 
 export interface IAddInvoiceRequest {
