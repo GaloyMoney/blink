@@ -1,14 +1,14 @@
 import { redis } from "src/redis"
 import { FtxDealerWallet } from "src/dealer/FtxDealerWallet"
 
-beforeAll(async () => {
+beforeAll(() => {
   // avoids to use --forceExit and the need of a running redis
   redis.disconnect()
 })
 
 describe("FtxDealerWallet", () => {
   describe("isOrderNeeded", () => {
-    it("calculates initial order", async () => {
+    it("calculates initial order", () => {
       const { btcAmount, buyOrSell } = FtxDealerWallet.isOrderNeeded({
         usdLiability: 100,
         usdExposure: 0,
@@ -19,7 +19,7 @@ describe("FtxDealerWallet", () => {
       expect(btcAmount).toBe(0.0098)
     })
 
-    it("calculates hedging amount when under exposed", async () => {
+    it("calculates hedging amount when under exposed", () => {
       // ratio is a .5
       // need to be at .98
       // should buy $480/0.048 BTC
@@ -32,7 +32,7 @@ describe("FtxDealerWallet", () => {
       expect(btcAmount).toBe(0.048)
     })
 
-    it("calculates hedging amount when over exposed", async () => {
+    it("calculates hedging amount when over exposed", () => {
       // ratio is a 2
       // need to be at HIGH_SAFEBOUND_RATIO_SHORTING (1.00)
       // should sell $1000/0.1 BTC to have exposure being back at $1000
@@ -56,7 +56,7 @@ describe("FtxDealerWallet", () => {
       }
     })
 
-    it("calculates hedging when no rebalance is needed", async () => {
+    it("calculates hedging when no rebalance is needed", () => {
       const { buyOrSell } = FtxDealerWallet.isOrderNeeded({
         usdLiability: 1000,
         usdExposure: 1000,
@@ -65,7 +65,7 @@ describe("FtxDealerWallet", () => {
       expect(buyOrSell).toBeNull()
     })
 
-    it("returns null when order is not needed", async () => {
+    it("returns null when order is not needed", () => {
       // "updatedUsdLiability":40.31493016,"updatedUsdExposure":41.4612,"btcPrice":11517
       const { buyOrSell } = FtxDealerWallet.isOrderNeeded({
         usdLiability: 40.31493016,
@@ -77,7 +77,7 @@ describe("FtxDealerWallet", () => {
   })
 
   describe("isOrderNeeded", () => {
-    it("returns null when account has been initialized", async () => {
+    it("returns null when account has been initialized", () => {
       // "leverage":null,"collateral":0,"btcPrice":11378,
       const { depositOrWithdraw } = FtxDealerWallet.isRebalanceNeeded({
         usdLiability: 0,
@@ -87,7 +87,7 @@ describe("FtxDealerWallet", () => {
       expect(depositOrWithdraw).toBe(null)
     })
 
-    it("test first deposit", async () => {
+    it("test first deposit", () => {
       // "leverage":null,"collateral":0,"btcPrice":11378,
       const { btcAmount, depositOrWithdraw } = FtxDealerWallet.isRebalanceNeeded({
         usdLiability: 1000,
@@ -99,7 +99,7 @@ describe("FtxDealerWallet", () => {
     })
 
     // leverage 5x
-    it("test over leverage", async () => {
+    it("test over leverage", () => {
       const { btcAmount, depositOrWithdraw } = FtxDealerWallet.isRebalanceNeeded({
         usdLiability: 1000,
         btcPrice: 10000,
@@ -111,7 +111,7 @@ describe("FtxDealerWallet", () => {
     })
 
     // leverage 1.25
-    it("test under leverage", async () => {
+    it("test under leverage", () => {
       const { btcAmount, depositOrWithdraw } = FtxDealerWallet.isRebalanceNeeded({
         usdLiability: 1000,
         btcPrice: 10000,
@@ -123,7 +123,7 @@ describe("FtxDealerWallet", () => {
     })
 
     // leverage 0.35x
-    it("test outrageously under leverage", async () => {
+    it("test outrageously under leverage", () => {
       const { btcAmount, depositOrWithdraw } = FtxDealerWallet.isRebalanceNeeded({
         usdLiability: 1000,
         btcPrice: 10000,
@@ -134,7 +134,7 @@ describe("FtxDealerWallet", () => {
       expect(btcAmount).toBeCloseTo(0.2245)
     })
 
-    it("test no action", async () => {
+    it("test no action", () => {
       const { depositOrWithdraw } = FtxDealerWallet.isRebalanceNeeded({
         usdLiability: 1000,
         btcPrice: 10000,
