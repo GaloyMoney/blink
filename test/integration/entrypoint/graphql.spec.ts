@@ -1,7 +1,3 @@
-/**
- * @jest-environment <rootDir>/test/jest-clean-env.ts
- */
-import mongoose from "mongoose"
 import { redis } from "src/redis"
 import { sleep } from "src/utils"
 import { yamlConfig } from "src/config"
@@ -34,7 +30,6 @@ afterAll(async () => {
   await sleep(2500)
   await httpServer.close()
   redis.disconnect()
-  await mongoose.connection.close()
 })
 
 describe("graphql", () => {
