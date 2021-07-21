@@ -223,7 +223,7 @@ describe("FtxExchangeConfiguration", () => {
   })
 
   describe("createMarketOrderValidateInput", () => {
-    it(`should throw when arguments is not a supported side property`, async () => {
+    it("should throw when arguments is not a supported side property", async () => {
       const configuration = new FtxExchangeConfiguration()
       const args = getValidCreateMarketOrderValidateInput()
       //   const supportedTradeSide = [TradeSide.Buy, TradeSide.Sell]
@@ -320,7 +320,7 @@ describe("FtxExchangeConfiguration", () => {
       )
     })
 
-    it(`should throw when response.status is not a supported OrderStatus property`, async () => {
+    it("should throw when response.status is not a supported OrderStatus property", async () => {
       const configuration = new FtxExchangeConfiguration()
       const response = { status: "" }
       expect(() => configuration.fetchOrderValidateApiResponse(response)).toThrowError(

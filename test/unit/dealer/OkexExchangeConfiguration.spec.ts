@@ -231,7 +231,7 @@ describe("OkexExchangeConfiguration", () => {
       ).toThrowError(ApiError.UNSUPPORTED_CURRENCY)
     })
 
-    it(`should throw when response has no valid data[].addr property`, async () => {
+    it("should throw when response has no valid data[].addr property", async () => {
       const configuration = new OkexExchangeConfiguration()
       const response = {
         data: [
@@ -312,7 +312,7 @@ describe("OkexExchangeConfiguration", () => {
   })
 
   describe("createMarketOrderValidateInput", () => {
-    it(`should throw when arguments is not a supported side property`, async () => {
+    it("should throw when arguments is not a supported side property", async () => {
       const configuration = new OkexExchangeConfiguration()
       const args = getValidCreateMarketOrderValidateInput()
       //   const supportedTradeSide = [TradeSide.Buy, TradeSide.Sell]
@@ -409,7 +409,7 @@ describe("OkexExchangeConfiguration", () => {
       )
     })
 
-    it(`should throw when response.status is not a supported OrderStatus property`, async () => {
+    it("should throw when response.status is not a supported OrderStatus property", async () => {
       const configuration = new OkexExchangeConfiguration()
       const response = { status: "" }
       expect(() => configuration.fetchOrderValidateApiResponse(response)).toThrowError(
