@@ -46,11 +46,12 @@ export const deleteExpiredInvoices = async () => {
 
   const date = new Date()
   date.setDate(date.getDate() - delta)
-  InvoiceUser.deleteMany({ timestamp: { lt: date } })
+  await InvoiceUser.deleteMany({ timestamp: { lt: date } })
 }
 
 export const deleteFailedPaymentsAllLnds = async () => {
   baseLogger.warn("only run deleteFailedPayments on lnd 0.13")
+  return await Promise.resolve()
   // try {
   //   const lnds = offchainLnds
   //   for (const { lnd } of lnds)

@@ -52,16 +52,16 @@ export class FtxDealerWallet extends OnChainMixin(UserWallet) {
     }
   }
 
-  async has() {
-    return this.ftx.has
-  }
+  // async has() {
+  //   return this.ftx.has
+  // }
 
-  async createDepositAddress() {
-    // create a new address
-    // is not enabled on FTX
-    // return this.ftx.createDepositAddress("BTC")
-    return Error("not implemented")
-  }
+  // async createDepositAddress() {
+  //   // create a new address
+  //   // is not enabled on FTX
+  //   // return this.ftx.createDepositAddress("BTC")
+  //   return Error("not implemented")
+  // }
 
   async exchangeDepositAddress() {
     // same address is returned each time
@@ -674,7 +674,7 @@ export class FtxDealerWallet extends OnChainMixin(UserWallet) {
     }
   }
 
-  protected async getFtxMethods() {
+  protected getFtxMethods() {
     // 0: "isBrowser"
     // 1: "isElectron"
     // 2: "isWebWorker"

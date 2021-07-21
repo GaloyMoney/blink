@@ -373,7 +373,7 @@ export const LightningMixin = (superclass) =>
             }
 
             await lockExtendOrThrow({ lock, logger: lightningLoggerOnUs }, async () => {
-              addTransactionOnUsPayment({
+              const tx = await addTransactionOnUsPayment({
                 description: memoInvoice,
                 sats,
                 metadata,
@@ -382,6 +382,7 @@ export const LightningMixin = (superclass) =>
                 memoPayer,
                 shareMemoWithPayee: isPushPayment,
               })
+              return tx
             })
 
             transactionNotification({
@@ -520,12 +521,13 @@ export const LightningMixin = (superclass) =>
               { lock, logger: lightningLogger },
               async () => {
                 // reduce balance from customer first
-                return addTransactionLndPayment({
+                const tx = await addTransactionLndPayment({
                   description: memoInvoice,
                   payerUser: this.user,
                   sats,
                   metadata,
                 })
+                return tx
               },
             )
 

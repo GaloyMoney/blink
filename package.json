@@ -2,8 +2,8 @@
   "name": "galoy",
   "scripts": {
     "tsc-check": "tsc --noEmit --skipLibCheck",
-    "eslint-check": "eslint \"src/**/*.ts\"",
-    "eslint-fix": "eslint \"src/**/*.ts\" --fix",
+    "eslint-check": "eslint \"{src,test}/**/*.ts\"",
+    "eslint-fix": "eslint \"{src,test}/**/*.ts\" --fix",
     "prettier-check": "prettier --check .",
     "prettier-write": "prettier --write .",
     "build": "tsc -p tsconfig-build.json --skipLibCheck && cp -R src/protos lib && cp src/schema.graphql lib",

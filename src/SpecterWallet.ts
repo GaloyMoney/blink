@@ -19,11 +19,13 @@ export class SpecterWallet {
   // below static method are {wallet} agnostics from bitcoin-core api perspective
 
   static async listWallets() {
-    return bitcoindDefaultClient.listWallets()
+    return await bitcoindDefaultClient.listWallets()
   }
 
   static async createWallet() {
-    return bitcoindDefaultClient.createWallet({ wallet_name: "specter/coldstorage" })
+    return await bitcoindDefaultClient.createWallet({
+      wallet_name: "specter/coldstorage",
+    })
   }
 
   async setBitcoindClient(): Promise<string> {
@@ -56,7 +58,7 @@ export class SpecterWallet {
   }
 
   async getColdStorageAddress() {
-    return this.bitcoindClient.getNewAddress()
+    return await this.bitcoindClient.getNewAddress()
   }
 
   // for debugging
@@ -71,7 +73,7 @@ export class SpecterWallet {
   // bitcoin-cli importmulti `${descriptor}`
 
   async getAddressInfo({ address }) {
-    return this.bitcoindClient.getAddressInfo({ address })
+    return await this.bitcoindClient.getAddressInfo({ address })
   }
 
   async getBitcoindBalance(): Promise<number> {

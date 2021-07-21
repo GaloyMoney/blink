@@ -191,7 +191,7 @@ export const OnChainMixin = (superclass) =>
             }
 
             await lockExtendOrThrow({ lock, logger: onchainLoggerOnUs }, async () => {
-              MainBook.entry()
+              return await MainBook.entry()
                 .credit(customerPath(payeeUser._id), sats, metadata)
                 .debit(this.user.accountPath, sats, { ...metadata, memo })
                 .commit()
