@@ -2,7 +2,6 @@ import { redis } from "src/redis"
 import { SupportedExchange, SupportedInstrument } from "src/dealer/ExchangeConfiguration"
 import { OkexExchangeConfiguration } from "src/dealer/OkexExchangeConfiguration"
 import {
-  FetchDepositAddressResult,
   WithdrawParameters,
   CreateOrderParameters,
   SupportedChain,
@@ -12,7 +11,6 @@ import {
   ApiError,
   OrderStatus,
 } from "src/dealer/ExchangeTradingType"
-import { argsToArgsConfig } from "graphql/type/definition"
 
 beforeAll(async () => {
   // avoids to use --forceExit and the need of a running redis
@@ -61,49 +59,15 @@ function getValidFetchDepositAddressResponse() {
 }
 
 function getProcessedFetchDepositAddressResponse() {
+  const response = getValidFetchDepositAddressResponse()
+  const chain = response.data[0].chain
+  const currency = response.data[0].ccy
+  const address = response.data[0].addr
   return {
-    originalResponseAsIs: {
-      code: "0",
-      data: [
-        {
-          chain: "BTC-Bitcoin",
-          ctAddr: "",
-          ccy: "BTC",
-          to: "6",
-          addr: "32Cx7VgPAFkSDBNJYf1m3WrTHHCLhBXhRN",
-          selected: true,
-        },
-        {
-          chain: "BTC-OKExChain_KIP10",
-          ctAddr: "",
-          ccy: "BTC",
-          to: "6",
-          addr: "0x81d0b07d45659f333207632dc113a",
-          selected: false,
-        },
-        {
-          chain: "BTC-OKExChain",
-          ctAddr: "",
-          ccy: "BTC",
-          to: "6",
-          addr: "0x81d0b07d45659f333207632dc113a",
-          selected: false,
-        },
-        {
-          chain: "BTC-ERC20",
-          ctAddr: "5807cf",
-          ccy: "BTC",
-          to: "6",
-          addr: "0x81d0b07d45659f333207632dc113a",
-          selected: false,
-        },
-      ],
-      msg: "",
-    },
-
-    chain: "BTC-Bitcoin",
-    currency: "BTC",
-    address: "32Cx7VgPAFkSDBNJYf1m3WrTHHCLhBXhRN",
+    originalResponseAsIs: response,
+    chain: chain,
+    currency: currency,
+    address: address,
   }
 }
 
