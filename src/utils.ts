@@ -36,9 +36,11 @@ const connection_obj = {
   version: "0.21.0",
 }
 
-export const BitcoindClient = ({ wallet = "" }) =>
+export const BitcoindClient = ({ wallet = "default" }) =>
   new bitcoindClient({ ...connection_obj, wallet })
-export const bitcoindDefaultClient = BitcoindClient({ wallet: "default" }) // coinless
+
+// The "default" wallet should remain coinless (not generate, receive or send bitcoin)
+export const bitcoindDefaultClient = BitcoindClient({})
 export const bitcoindOutsideWalletClient = BitcoindClient({ wallet: "outside" })
 
 export const addContact = async ({ uid, username }) => {
