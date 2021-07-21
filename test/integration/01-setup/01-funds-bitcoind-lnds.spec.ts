@@ -17,11 +17,6 @@ jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
 
 const defaultWallet = ""
 
-afterEach(async () => {
-  await waitUntilSyncAll()
-  await checkIsBalanced()
-})
-
 describe("Bitcoind", () => {
   it("create default wallet", async () => {
     try {
@@ -67,5 +62,6 @@ describe("Bitcoind", () => {
 
     const { chain_balance: balance } = await getChainBalance({ lnd: lnd1 })
     expect(balance).toBe(sats)
+    await checkIsBalanced()
   })
 })

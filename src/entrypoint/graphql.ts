@@ -444,9 +444,15 @@ export async function startApolloServer() {
   return { server, app, httpServer }
 }
 
-setupMongoConnection()
-  .then(async () => {
-    await startApolloServer()
-    activateLndHealthCheck()
-  })
-  .catch((err) => graphqlLogger.error(err, "server error"))
+const main = () => {
+  if (process.env.NODE_ENV === "test") return
+
+  setupMongoConnection()
+    .then(async () => {
+      await startApolloServer()
+      activateLndHealthCheck()
+    })
+    .catch((err) => graphqlLogger.error(err, "server error"))
+}
+
+main()
