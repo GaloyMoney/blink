@@ -108,7 +108,7 @@ describe("graphql", () => {
       expect(result.errors).toEqual(
         expect.arrayContaining([expect.objectContaining({ code: "TOO_MANY_REQUEST" })]),
       )
-      expect(result.data.login.token).toBeFalsy()
+      expect(result.data.login).toBeFalsy()
     } catch (err) {
       expect(true).toBeFalsy()
     }
