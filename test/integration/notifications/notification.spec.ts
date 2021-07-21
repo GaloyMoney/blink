@@ -2,10 +2,7 @@ import { getCurrentPrice } from "src/realtimePrice"
 import { sendBalanceToUsers } from "src/entrypoint/dailyBalanceNotification"
 import { customerPath } from "src/ledger/ledger"
 import { MainBook } from "src/mongodb"
-import { Transaction, User } from "src/schema"
-import { baseLogger } from "src/logger"
-import { getFunderWallet } from "src/walletFactory"
-import { getUserWallet } from "test/helpers"
+import { User } from "src/schema"
 jest.mock("src/notifications/notification")
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { sendNotification } = require("src/notifications/notification")
@@ -21,7 +18,7 @@ beforeAll(async () => {
     .mockImplementation(() => ({ outgoingSats: 1000, incomingSats: 1000 }))
 })
 
-afterAll(async () => {
+afterAll(() => {
   jest.restoreAllMocks()
 })
 

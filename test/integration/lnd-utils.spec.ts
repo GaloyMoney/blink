@@ -12,7 +12,7 @@ import {
   waitFor,
 } from "test/helpers"
 
-afterAll(async () => {
+afterAll(() => {
   jest.restoreAllMocks()
 })
 

@@ -15,7 +15,7 @@ const checkLockExist = (client) =>
 describe("Lock", () => {
   describe("redlock", () => {
     it("return value is passed with a promise", async () => {
-      const result = await redlock({ path: uid, logger: baseLogger }, async function () {
+      const result = await redlock({ path: uid, logger: baseLogger }, () => {
         return "r"
       })
 
@@ -23,14 +23,11 @@ describe("Lock", () => {
     })
 
     it("use lock if this exist", async () => {
-      const result = await redlock(
-        { path: uid, logger: baseLogger },
-        async function (lock) {
-          return redlock({ path: uid, logger: baseLogger, lock }, async function () {
-            return "r"
-          })
-        },
-      )
+      const result = await redlock({ path: uid, logger: baseLogger }, (lock) => {
+        return redlock({ path: uid, logger: baseLogger, lock }, () => {
+          return "r"
+        })
+      })
 
       expect(result).toBe("r")
     })
@@ -38,7 +35,7 @@ describe("Lock", () => {
     it("relocking fail if lock is not passed down the tree", async () => {
       await expect(
         redlock({ path: uid, logger: baseLogger }, async function () {
-          return await redlock({ path: uid, logger: baseLogger }, async function () {
+          return await redlock({ path: uid, logger: baseLogger }, () => {
             return "r"
           })
         }),

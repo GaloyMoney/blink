@@ -12,8 +12,6 @@ import {
   lndonchain,
   lndOutside1,
   mockGetExchangeBalance,
-  RANDOM_ADDRESS,
-  waitUntilBlockHeight,
   createChainAddress,
   subscribeToTransactions,
   bitcoindClient,
@@ -51,7 +49,7 @@ afterEach(async () => {
   await checkIsBalanced()
 })
 
-afterAll(async () => {
+afterAll(() => {
   jest.restoreAllMocks()
 })
 

@@ -44,7 +44,7 @@ beforeAll(async () => {
   mockGetExchangeBalance()
 })
 
-beforeEach(async () => {
+beforeEach(() => {
   amountBTC = +(1 + Math.random()).toPrecision(9)
 })
 
@@ -52,7 +52,7 @@ afterEach(async () => {
   await checkIsBalanced()
 })
 
-afterAll(async () => {
+afterAll(() => {
   jest.restoreAllMocks()
 })
 

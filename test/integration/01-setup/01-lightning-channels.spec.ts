@@ -1,12 +1,9 @@
-import { once } from "events"
-import { find } from "lodash"
 import { MainBook } from "src/mongodb"
 import { lndFeePath } from "src/ledger/ledger"
 import {
   checkIsBalanced,
   closeChannel,
   getChannels,
-  getWalletInfo,
   lnd1,
   lnd2,
   lndOutside1,
@@ -15,13 +12,10 @@ import {
   openChannelTesting,
   setChannelFees,
   subscribeToChannels,
-  subscribeToGraph,
-  updateRoutingFees,
   waitFor,
   waitUntilSync,
 } from "test/helpers"
-import { offchainLnds, onChannelUpdated, updateEscrows } from "src/lndUtils"
-import { sleep } from "src/utils"
+import { onChannelUpdated, updateEscrows } from "src/lndUtils"
 
 jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
 
