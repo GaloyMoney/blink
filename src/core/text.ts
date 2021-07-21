@@ -1,4 +1,6 @@
+import axios from "axios"
 import moment from "moment"
+import querystring from "querystring"
 
 import {
   yamlConfig,
@@ -11,7 +13,7 @@ import { createToken } from "@services/jwt"
 import { sendTwilioText, getCarrier, sendSMSalaText } from "@services/phone-provider"
 import { PhoneCode, User } from "@services/mongoose/schema"
 
-import { IPBlacklistedError, TooManyRequestError } from "./error"
+import { CaptchaFailedError, IPBlacklistedError, TooManyRequestError } from "./error"
 import {
   failedAttemptPerIp,
   limiterLoginAttempt,
@@ -25,16 +27,45 @@ import {
   randomIntFromInterval,
 } from "./utils"
 
+async function captchaCheckGoogle(captcha) {
+  const base_url = "https://www.google.com/recaptcha/api/siteverify"
+  const secret = "TODO" // process.env.CAPTCHA_SECRET
+
+  const response = await axios.post(
+    base_url,
+    querystring.stringify({ secret, response: captcha }),
+  )
+  // TODO
+  // return response.success === true
+  return true
+}
+
 export const requestPhoneCode = async ({
   phone,
+  captchaResponse,
   logger,
   ip,
 }: {
   phone: string
+  captchaResponse?: string
   logger: Logger
   ip: string
 }): Promise<boolean> => {
   logger.info({ phone, ip }, "RequestPhoneCode called")
+
+  // TODO
+  const captchaRequired = captchaResponse ? captchaResponse.length > 0 : false
+  // const captchaRequired = false
+
+  if (captchaRequired) {
+    if (!captchaResponse) {
+      throw new CaptchaFailedError("Captcha Required", { logger, captchaResponse })
+    }
+    const success = await captchaCheckGoogle(captchaResponse)
+    if (!success) {
+      throw new CaptchaFailedError("Captcha Invalid", { logger, captchaResponse })
+    }
+  }
 
   if (isIPBlacklisted({ ip })) {
     throw new IPBlacklistedError("IP Blacklisted", { logger, ip })

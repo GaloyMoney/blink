@@ -168,8 +168,8 @@ const resolvers = {
     },
   },
   Mutation: {
-    requestPhoneCode: async (_, { phone }, { logger, ip }) => ({
-      success: await requestPhoneCode({ phone, logger, ip }),
+    requestPhoneCode: async (_, { phone, captchaResponse }, { logger, ip }) => ({
+      success: await requestPhoneCode({ phone, captchaResponse, logger, ip }),
     }),
     login: async (_, { phone, code }, { logger, ip }) => ({
       token: await login({ phone, code, logger, ip }),
