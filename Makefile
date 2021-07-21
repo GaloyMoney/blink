@@ -3,7 +3,7 @@ start-deps:
 	direnv reload
 
 start: start-deps
-	. ./.envrc && yarn build && node lib/entrypoint/graphql.js | yarn pino-pretty -c -l
+	. ./.envrc && yarn tsnd --respawn src/entrypoint/graphql.ts | yarn pino-pretty -c -l
 
 watch:
 	yarn nodemon -V -e ts,graphql -w ./src -x make start
