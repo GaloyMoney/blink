@@ -1,9 +1,11 @@
 import {
   GraphQLID,
   GraphQLObjectType,
+  GraphQLInputObjectType,
   GraphQLScalarType,
   GraphQLString,
   GraphQLInt,
+  GraphQLFloat,
   GraphQLNonNull,
   GraphQLList,
   GraphQLEnumType,
@@ -16,11 +18,13 @@ import {
 // GraphQL Types
 export const GT = {
   // Wrappers/shortners
+  Scalar: GraphQLScalarType,
   Object: GraphQLObjectType,
+  Input: GraphQLInputObjectType,
   String: GraphQLString,
   Int: GraphQLInt,
   Boolean: GraphQLBoolean,
-  Scalar: GraphQLScalarType,
+  Float: GraphQLFloat,
   Enum: GraphQLEnumType,
   NonNull: GraphQLNonNull,
   Kind,

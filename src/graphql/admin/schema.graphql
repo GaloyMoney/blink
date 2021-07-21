@@ -26,4 +26,39 @@ scalar Date
 type Mutation {
   requestPhoneCode(phone: String!): Boolean
   login(phone: String!, code: String!): String
+  userUpdateStatus(input: UserUpdateStatusInput!): UserDetailPayload!
+  userUpdateLevel(input: UserUpdateLevelInput!): UserDetailPayload!
+  merchantUpdateMapInfo(input: MerchanUpdateMapInfoInput!): UserDetailPayload!
+}
+
+type UserDetailPayload {
+  errors: [UserError!]!
+  userDetails: UserDetails
+}
+
+type UserError {
+  message: String!
+  fields: [String!]!
+}
+
+input UserUpdateStatusInput {
+  uid: ID!
+  status: AccountStatus!
+}
+
+enum AccountStatus {
+  LOCKED
+  ACTIVE
+}
+
+input UserUpdateLevelInput {
+  uid: ID!
+  level: AccountLevel!
+}
+
+input MerchanUpdateMapInfoInput {
+  username: Username!
+  title: String!
+  longitude: Float!
+  latitude: Float!
 }

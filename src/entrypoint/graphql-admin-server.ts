@@ -20,7 +20,9 @@ export async function startApolloServerForAdminSchema() {
         userDetailsByUsername: and(isAuthenticated, isEditor),
       },
       Mutation: {
-        // currentTime: and(isAuthenticated, isEditor),
+        merchantUpdateMapInfo: and(isAuthenticated, isEditor),
+        userUpdateLevel: and(isAuthenticated, isEditor),
+        userUpdateStatus: and(isAuthenticated, isEditor),
       },
     },
     { allowExternalErrors: true },

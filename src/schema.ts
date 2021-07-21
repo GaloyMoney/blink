@@ -364,6 +364,15 @@ UserSchema.statics.getUser = async function ({ username, phone }) {
   return user
 }
 
+UserSchema.statics.findOrCreate = async function (userInfo) {
+  let user
+  user = await this.findOne(userInfo)
+  if (!user) {
+    user = await this.create(userInfo)
+  }
+  return user
+}
+
 UserSchema.statics.getUserByAddress = async function ({ address }) {
   return await this.findOne({ "onchain.address": address })
 }

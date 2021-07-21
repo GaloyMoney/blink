@@ -4,12 +4,7 @@ import { User } from "src/schema"
 import { gqlAdminSchema } from "src/graphql/admin"
 
 beforeAll(async () => {
-  const user = new User({ username: "tester", phone: "+19876543210" })
-  await user.save()
-})
-
-afterAll(async () => {
-  await User.deleteOne({ username: "tester", phone: "+19876543210" })
+  await User.findOrCreate({ username: "tester", phone: "+19876543210" })
 })
 
 describe("GraphQLQueryRoot", () => {
@@ -19,8 +14,7 @@ describe("GraphQLQueryRoot", () => {
         allLevels
       }
     `
-    const rootValue = {}
-    const result = await graphql(gqlAdminSchema, query, rootValue)
+    const result = await graphql(gqlAdminSchema, query, {})
     const { data } = result
 
     if (!data) {
@@ -40,8 +34,7 @@ describe("GraphQLQueryRoot", () => {
       }
     `
 
-    const rootValue = {}
-    const result = await graphql(gqlAdminSchema, query, rootValue)
+    const result = await graphql(gqlAdminSchema, query, {})
     const { data } = result
 
     if (!data) {
@@ -61,8 +54,7 @@ describe("GraphQLQueryRoot", () => {
       }
     `
 
-    const rootValue = {}
-    const result = await graphql(gqlAdminSchema, query, rootValue)
+    const result = await graphql(gqlAdminSchema, query, {})
     const { data } = result
 
     if (!data) {

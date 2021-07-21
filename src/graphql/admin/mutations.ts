@@ -1,6 +1,10 @@
 import { GT } from "../index"
 import { login, requestPhoneCode } from "../../text"
 
+import UserUpdateStatusMutation from "../types/mutations/user-update-status"
+import UserUpdateLevelMutation from "../types/mutations/user-update-level"
+import MerchantUpdateMapInfoMutation from "../types/mutations/merchant-update-map-info"
+
 const MutationType = new GT.Object({
   name: "Mutation",
   fields: () => ({
@@ -23,6 +27,9 @@ const MutationType = new GT.Object({
         return login({ phone, code, logger, ip })
       },
     },
+    userUpdateStatus: UserUpdateStatusMutation,
+    userUpdateLevel: UserUpdateLevelMutation,
+    merchantUpdateMapInfo: MerchantUpdateMapInfoMutation,
   }),
 })
 
