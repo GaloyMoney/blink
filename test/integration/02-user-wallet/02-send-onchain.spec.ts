@@ -246,20 +246,18 @@ describe("UserWallet - onChainPay", () => {
 
     expect(paid).toBe(true)
 
+    const matchTx = (tx) => tx.type === "onchain_on_us" && tx.addresses.includes(address)
+
     const txs: Record<string, string>[] = await userWallet0.getTransactions()
-    let firstTxs = first(txs)
-    if (!firstTxs) {
-      throw Error("No transactions found")
-    }
-    expect(firstTxs.description).toBe(memo)
+    const filteredTxs = txs.filter(matchTx)
+    expect(filteredTxs.length).toBe(1)
+    expect(filteredTxs[0].description).toBe(memo)
 
     // receiver should not know memo from sender
     const txsUser3 = await userWallet3.getTransactions()
-    firstTxs = first(txsUser3)
-    if (!firstTxs) {
-      throw Error("No transactions found")
-    }
-    expect(firstTxs.description).not.toBe(memo)
+    const filteredTxsUser3 = txsUser3.filter(matchTx)
+    expect(filteredTxsUser3.length).toBe(1)
+    expect(filteredTxsUser3[0].description).not.toBe(memo)
   })
 
   it("sends all with an on us transaction", async () => {
