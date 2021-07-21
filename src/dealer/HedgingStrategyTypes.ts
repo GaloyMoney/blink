@@ -26,11 +26,11 @@ export type UpdatedBalance = {
 }
 
 export interface WithdrawBookKeepingCallback {
-  (transferSizeInBtc: number): Promise<Result<null>>
+  (transferSizeInBtc: number): Promise<Result<void>>
 }
 
 export interface DepositOnExchangeCallback {
-  (onChainAddress, transferSizeInBtc: number): Promise<Result<null>>
+  (onChainAddress, transferSizeInBtc: number): Promise<Result<void>>
 }
 
 export interface HedgingStrategy {

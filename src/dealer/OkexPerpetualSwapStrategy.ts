@@ -375,7 +375,7 @@ export class OkexPerpetualSwapStrategy implements HedgingStrategy {
     }
   }
 
-  async placeHedgingOrder(tradeSide, btcPriceInUsd): Promise<Result<null>> {
+  async placeHedgingOrder(tradeSide, btcPriceInUsd): Promise<Result<void>> {
     const logger = this.logger.child({ method: "placeHedgingOrder()" })
 
     try {
@@ -436,7 +436,7 @@ export class OkexPerpetualSwapStrategy implements HedgingStrategy {
         logger.info("Order has been place successfully.")
         return {
           ok: true,
-          value: null,
+          value: undefined,
         }
       } else if (fetchedOrder.status === OrderStatus.Canceled) {
         const msg = "Order has been cancelled."

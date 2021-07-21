@@ -88,7 +88,7 @@ export class DealerWallet extends OnChainMixin(UserWallet) {
   async depositOnExchangeCallback(
     onChainAddress,
     transferSizeInBtc: number,
-  ): Promise<Result<null>> {
+  ): Promise<Result<void>> {
     try {
       const memo = `deposit of ${transferSizeInBtc} btc to ${this.ftx.name}`
       const transferSizeInSats = btc2sat(transferSizeInBtc)
@@ -114,13 +114,13 @@ export class DealerWallet extends OnChainMixin(UserWallet) {
         .debit(accountDealerFtxPath, transferSizeInSats, { ...metadata, memo })
         .commit()
 
-      return { ok: true, value: null }
+      return { ok: true, value: undefined }
     } catch (error) {
       return { ok: false, error: error }
     }
   }
 
-  async withdrawBookKeeping(transferSizeInBtc: number): Promise<Result<null>> {
+  async withdrawBookKeeping(transferSizeInBtc: number): Promise<Result<void>> {
     try {
       const memo = `withdrawal of ${transferSizeInBtc} btc from ${this.ftx.name}`
       const transferSizeInSats = btc2sat(transferSizeInBtc)
@@ -143,7 +143,7 @@ export class DealerWallet extends OnChainMixin(UserWallet) {
         .debit(liabilitiesDealerFtxPath, transferSizeInSats, { ...metadata, memo })
         .commit()
 
-      return { ok: true, value: null }
+      return { ok: true, value: undefined }
     } catch (error) {
       return { ok: false, error: error }
     }
