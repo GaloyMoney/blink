@@ -7,11 +7,9 @@ import {
   authenticatedLndGrpc,
   closeChannel,
   createChainAddress,
-  deletePayments,
   getChainBalance,
   getChannelBalance,
   getChannels,
-  getPendingChannels,
   getWalletInfo,
   openChannel,
   sendToChainAddress,
@@ -49,24 +47,19 @@ export const waitUntilBlockHeight = async ({ lnd, blockHeight = 0 }) => {
     block = await bitcoindClient.getBlockCount()
   }
 
-  let current_block_height: number,
-    is_synced_to_chain: boolean,
-    is_synced_to_graph: boolean
-  ;({ current_block_height, is_synced_to_chain, is_synced_to_graph } =
-    (await getWalletInfo({ lnd })) as any)
+  let current_block_height: number, is_synced_to_chain: boolean
+  ;({ current_block_height, is_synced_to_chain } = await getWalletInfo({ lnd }))
 
   let time = 0
   const ms = 50
-  while (current_block_height < block || !is_synced_to_chain /*|| !is_synced_to_graph*/) {
+  while (current_block_height < block || !is_synced_to_chain) {
     await sleep(ms)
-    ;({ current_block_height, is_synced_to_chain, is_synced_to_graph } =
-      (await getWalletInfo({ lnd })) as any)
-    // baseLogger.debug({ current_block_height, is_synced_to_chain})
+    ;({ current_block_height, is_synced_to_chain } = await getWalletInfo({ lnd }))
     time++
   }
 
   baseLogger.debug(
-    { current_block_height, is_synced_to_chain, is_synced_to_graph },
+    { current_block_height, is_synced_to_chain },
     `Seconds to sync blockheight ${block}: ${time / (1000 / ms)}`,
   )
 }
@@ -99,12 +92,12 @@ export const openChannelTesting = async ({
 
   let lndNewChannel, lndPartnerNewChannel
   const sub = subscribeToChannels({ lnd })
-  sub.once("channel_opened", async (channel) => {
+  sub.once("channel_opened", (channel) => {
     lndNewChannel = channel
   })
 
   const subPartner = subscribeToChannels({ lnd: lndPartner })
-  subPartner.once("channel_opened", async (channel) => {
+  subPartner.once("channel_opened", (channel) => {
     lndPartnerNewChannel = channel
   })
 
@@ -226,10 +219,9 @@ export const mineBlockAndSync = async ({
   await Promise.all(promiseArray)
 }
 
-export const mineBlockAndSyncAll = async (newBlock = 6) =>
-  mineBlockAndSync({ lnds, newBlock })
+export const mineBlockAndSyncAll = (newBlock = 6) => mineBlockAndSync({ lnds, newBlock })
 
-export const waitUntilSyncAll = async () => waitUntilSync({ lnds })
+export const waitUntilSyncAll = () => waitUntilSync({ lnds })
 
 export const waitUntilSync = async ({ lnds }: { lnds: Array<AuthenticatedLnd> }) => {
   const promiseArray: Array<Promise<void>> = []
@@ -247,7 +239,7 @@ export const waitUntilChannelBalanceSyncAll = async () => {
   await Promise.all(promiseArray)
 }
 
-export const waitUntilChannelBalanceSync = async ({ lnd }) =>
+export const waitUntilChannelBalanceSync = ({ lnd }) =>
   waitFor(async () => {
     const { unsettled_balance } = await getChannelBalance({ lnd })
     return unsettled_balance === 0
