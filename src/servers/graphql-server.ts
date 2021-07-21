@@ -11,7 +11,7 @@ import PinoHttp from "pino-http"
 import { v4 as uuidv4 } from "uuid"
 import helmet from "helmet"
 
-import { getHelmetConfig, JWT_SECRET } from "@config/app"
+import { getHelmetConfig, getGeeTestConfig, JWT_SECRET } from "@config/app"
 import * as Users from "@app/users"
 
 import { baseLogger } from "@services/logger"
@@ -22,6 +22,7 @@ import { IPBlacklistedError } from "@core/error"
 import { isProd, isIPBlacklisted } from "@core/utils"
 import { WalletFactory } from "@core/wallet-factory"
 import { ApolloServerPluginUsageReporting } from "apollo-server-core"
+import GeeTest from "@services/geetest"
 
 const graphqlLogger = baseLogger.child({
   module: "graphql",
@@ -42,6 +43,8 @@ export const startApolloServer = async ({
   port,
   startSubscriptionServer = false,
 }): Promise<Record<string, unknown>> => {
+  const geeTestConfig = getGeeTestConfig()
+  const geetest = GeeTest(geeTestConfig)
   const app = express()
 
   const apolloPulgins = isProd
@@ -101,6 +104,7 @@ export const startApolloServer = async ({
         wallet,
         domainUser,
         user,
+        geetest,
         ip,
       }
     },

@@ -51,6 +51,17 @@ export const getGaloyInstanceName = (): string => yamlConfig.name
 
 export const getGaloySMSProvider = (): string => yamlConfig.sms_provider
 
+export const getGeeTestConfig = () => {
+  const config = {
+    id: process.env.GEETEST_ID,
+    key: process.env.GEETEST_KEY,
+  }
+  if (!config.id || !config.key) {
+    throw new Error("Geetest config not found")
+  }
+  return config
+}
+
 export const getLndParams = (): LndParams[] => {
   const config = yamlConfig.lnds
   return config.map((input) => ({

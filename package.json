@@ -61,6 +61,7 @@
     "graphql-relay": "^0.8.0",
     "graphql-shield": "^7.5.0",
     "graphql-tools": "^7.0.5",
+    "gt3-server-node-express-sdk": "https://github.com/GaloyMoney/gt3-server-node-express-bypass#master",
     "helmet": "^4.6.0",
     "invoices": "^2.0.0",
     "ioredis": "^4.27.6",

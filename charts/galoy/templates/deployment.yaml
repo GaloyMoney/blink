@@ -123,6 +123,14 @@ spec:
             - name: BITCOINDPORT
               value: {{ $.Values.bitcoind.port | quote }}
 
+            - name: GEETEST_ID
+              value: "geetest_id"
+            - name: GEETEST_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: geetest-key
+                  key: geettest_key
+
             - name: REDIS_MASTER_NAME
               value: "mymaster"
             - name: REDIS_PASSWORD
