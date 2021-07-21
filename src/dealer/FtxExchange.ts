@@ -21,7 +21,9 @@ export class FtxExchange extends ExchangeBase {
     btcPriceInUsd,
   ): Promise<Result<GetAccountAndPositionRiskResult>> {
     try {
-      assert(btcPriceInUsd > 0, ApiError.MISSING_PARAMETERS)
+      assert(btcPriceInUsd !== 0, ApiError.NON_POSITIVE_PRICE)
+      assert(btcPriceInUsd, ApiError.MISSING_PARAMETERS)
+      assert(btcPriceInUsd > 0, ApiError.NON_POSITIVE_PRICE)
 
       const response = await this.exchange.privateGetAccount()
       this.logger.debug({ response }, "exchange.privateGetAccount() returned: {response}")
