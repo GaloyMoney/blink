@@ -36,7 +36,7 @@ export const addToMap = async ({
     )
   }
 
-  const user = await User.getUser({ username })
+  const user = await User.getUserByUsername(username)
 
   if (!user) {
     throw new NotFoundError(`The user ${username} does not exist`, { logger })

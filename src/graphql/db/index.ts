@@ -5,7 +5,7 @@ import { baseLogger } from "../../logger"
 const logger = baseLogger.child({ module: "admin" })
 
 export async function usernameExists({ username }): Promise<boolean> {
-  return Boolean(await User.getUser({ username }))
+  return Boolean(await User.getUserByUsername(username))
 }
 
 export const updateUserLevel = async ({ uid, level }) => {
@@ -25,7 +25,7 @@ export const updateUserAccountStatus = async ({ uid, status }) => {
 }
 
 export const updateMerchantMapInfo = async ({ username, latitude, longitude, title }) => {
-  const user = await User.getUser({ username })
+  const user = await User.getUserByUsername(username)
 
   if (!user) {
     throw new NotFoundError(`The user ${username} does not exist`, { logger })

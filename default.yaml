@@ -63,6 +63,8 @@ test_accounts:
   code: 321321
 - phone: "+16505554333" # user12
   code: 321321
+- phone: "+19876543210" # user42
+  code: "424242"
 
 sms_provider: "twilio"
 
@@ -106,11 +108,11 @@ fees:
   withdraw: 2000 # 2000 sats flat per tx
   deposit: 0.003 # 0.3 percent
 
-lnds: 
+lnds:
   - name: LND1
     type: ["offchain", "onchain"]
     priority: 2 # lower number means higher priority
-  - name: LND2  
+  - name: LND2
     type: ["offchain"]
     priority: 3
 

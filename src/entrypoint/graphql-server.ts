@@ -113,6 +113,7 @@ export const startApolloServer = async ({ schema, port }) => {
 
       // Define custom serializers
       serializers: {
+        // TODO: sanitize
         err: pino.stdSerializers.err,
         req: pino.stdSerializers.req,
         res: (res) => ({

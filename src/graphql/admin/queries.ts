@@ -21,7 +21,7 @@ const QueryType = new GT.Object({
         phone: { type: GT.NonNull(Phone) },
       },
       resolve: async (parent, { phone }) => {
-        const user = await User.getUser({ phone })
+        const user = await User.getUserByPhone(phone)
         if (!user) {
           throw new Error("User not found")
         }
@@ -34,7 +34,7 @@ const QueryType = new GT.Object({
         username: { type: GT.NonNull(Username) },
       },
       resolve: async (parent, { username }) => {
-        const user = await User.getUser({ username })
+        const user = await User.getUserByUsername(username)
         if (!user) {
           throw new Error("User not found")
         }

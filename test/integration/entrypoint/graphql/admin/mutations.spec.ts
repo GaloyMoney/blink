@@ -34,7 +34,7 @@ describe("GraphQLMutationRoot", () => {
     if (!data) {
       throw new Error("invalid response")
     }
-    const updatedUser = await User.getUser({ username: "tester" })
+    const updatedUser = await User.getUserUsername("tester")
 
     expect(updatedUser.level).toEqual(2)
     expect(data.userUpdateLevel.userDetails.level).toEqual("TWO")
@@ -65,7 +65,7 @@ describe("GraphQLMutationRoot", () => {
       throw Error("invalid response")
     }
 
-    const updatedUser = await User.getUser({ username: "tester" })
+    const updatedUser = await User.getUserUsername("tester")
 
     expect(updatedUser.status).toEqual("locked")
     expect(data.userUpdateStatus.userDetails.id).toEqual(updatedUser.id)
@@ -96,7 +96,7 @@ describe("GraphQLMutationRoot", () => {
       throw Error("invalid response")
     }
 
-    const updatedUser = await User.getUser({ username: "tester" })
+    const updatedUser = await User.getUserUsername("tester")
 
     expect(updatedUser.title).toEqual("MapTest")
     expect(updatedUser.coordinate).toEqual({ longitude: 1, latitude: -1 })

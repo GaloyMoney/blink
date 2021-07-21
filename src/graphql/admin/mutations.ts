@@ -13,8 +13,8 @@ const MutationType = new GT.Object({
       args: {
         phone: { type: GT.NonNull(GT.String) },
       },
-      resolve: (_, { phone }, { logger, ip }) => {
-        return requestPhoneCode({ phone, logger, ip })
+      resolve: async (_, { phone }, { logger, ip }) => {
+        return await requestPhoneCode({ phone, logger, ip })
       },
     },
     login: {
@@ -23,8 +23,8 @@ const MutationType = new GT.Object({
         phone: { type: GT.NonNull(GT.String) },
         code: { type: GT.NonNull(GT.String) },
       },
-      resolve: (_, { phone, code }, { logger, ip }) => {
-        return login({ phone, code, logger, ip })
+      resolve: async (_, { phone, code }, { logger, ip }) => {
+        return await login({ phone, code, logger, ip })
       },
     },
     userUpdateStatus: UserUpdateStatusMutation,
