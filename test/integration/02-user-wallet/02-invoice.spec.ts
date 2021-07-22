@@ -3,6 +3,7 @@ import { InvoiceUser } from "src/schema"
 import { getUserWallet } from "test/helpers"
 
 jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
+jest.mock("src/phone-provider", () => require("test/mocks/phone-provider"))
 
 let userWallet1
 

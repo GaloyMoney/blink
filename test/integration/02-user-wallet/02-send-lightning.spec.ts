@@ -31,6 +31,7 @@ const date = Date.now() + 1000 * 60 * 60 * 24 * 8
 // required to avoid oldEnoughForWithdrawal validation
 jest.spyOn(global.Date, "now").mockImplementation(() => new Date(date).valueOf())
 jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
+jest.mock("src/phone-provider", () => require("test/mocks/phone-provider"))
 
 let userWallet0, userWallet1, userWallet2
 let initBalance0, initBalance1

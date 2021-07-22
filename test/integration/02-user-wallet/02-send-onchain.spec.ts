@@ -19,6 +19,7 @@ import {
 } from "test/helpers"
 
 jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
+jest.mock("src/phone-provider", () => require("test/mocks/phone-provider"))
 jest.mock("src/notifications/notification")
 
 const date = Date.now() + 1000 * 60 * 60 * 24 * 8
