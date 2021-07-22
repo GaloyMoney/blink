@@ -13,6 +13,7 @@ import {
   lndonchain,
   RANDOM_ADDRESS,
   waitUntilBlockHeight,
+  sendToAddressAndConfirm,
   subscribeToChainAddress,
   subscribeToTransactions,
   bitcoindOutside,
@@ -243,6 +244,6 @@ async function sendToWallet({ walletDestination }) {
 
   // just to improve performance
   const blockNumber = await bitcoindOutside.getBlockCount()
-  await bitcoindOutside.sendToAddressAndConfirm(address, amountBTC)
+  await sendToAddressAndConfirm(bitcoindOutside, address, amountBTC)
   await checkBalance(blockNumber)
 }

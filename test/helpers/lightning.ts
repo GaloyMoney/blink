@@ -18,7 +18,12 @@ import {
   updateRoutingFees,
 } from "lightning"
 
-import { bitcoindClient, bitcoindOutside, RANDOM_ADDRESS } from "./bitcoinCore"
+import {
+  bitcoindClient,
+  bitcoindOutside,
+  RANDOM_ADDRESS,
+  sendToAddressAndConfirm,
+} from "./bitcoinCore"
 
 export * from "lightning"
 
@@ -133,7 +138,7 @@ export const openChannelTesting = async ({
 
 export const fundLnd = async (lnd, amount = 1) => {
   const { address } = await createChainAddress({ format: "p2wpkh", lnd })
-  await bitcoindOutside.sendToAddressAndConfirm(address, amount)
+  await sendToAddressAndConfirm(bitcoindOutside, address, amount)
   await waitUntilBlockHeight({ lnd })
 }
 

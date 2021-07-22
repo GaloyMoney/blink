@@ -10,6 +10,8 @@ import {
   fundLnd,
   checkIsBalanced,
   getUserWallet,
+  mineAndConfirm,
+  sendToAddressAndConfirm,
   waitUntilBlockHeight,
 } from "test/helpers"
 
@@ -46,7 +48,7 @@ describe("Bitcoind", () => {
   it("should be funded mining 10 blocks", async () => {
     const numOfBlock = 10
     const bitcoindAddress = await bitcoindOutside.getNewAddress()
-    await bitcoindOutside.mineAndConfirm(numOfBlock, bitcoindAddress)
+    await mineAndConfirm(bitcoindOutside, numOfBlock, bitcoindAddress)
     const balance = await bitcoindOutside.getBalance()
     expect(balance).toBeGreaterThanOrEqual(50 * numOfBlock)
   })
@@ -70,7 +72,7 @@ describe("Bitcoind", () => {
     const funderWallet = await getFunderWallet({ logger: baseLogger })
     const address = await funderWallet.getOnChainAddress()
 
-    await bitcoindOutside.sendToAddressAndConfirm(address, amount)
+    await sendToAddressAndConfirm(bitcoindOutside, address, amount)
     await waitUntilBlockHeight({ lnd: lnd1 })
 
     const { chain_balance: balance } = await getChainBalance({ lnd: lnd1 })
