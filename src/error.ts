@@ -1,12 +1,24 @@
 import { ApolloError } from "apollo-server-errors"
 import { yamlConfig } from "./config"
 import { baseLogger } from "./logger"
+import { Logger } from "pino"
+
+type levelType = "fatal" | "error" | "warn" | "info" | "debug" | "trace" | "silent"
 
 export class CustomError extends ApolloError {
   log
   forwardToClient
 
-  constructor(message, code, { forwardToClient, logger, level, metadata }) {
+  constructor(
+    message: string,
+    code: string,
+    {
+      forwardToClient,
+      logger,
+      level,
+      metadata,
+    }: { forwardToClient: boolean; logger: Logger; metadata; level: levelType },
+  ) {
     super(message, code, { metadata })
     this.log = logger[level].bind(logger)
     this.forwardToClient = forwardToClient
@@ -14,7 +26,10 @@ export class CustomError extends ApolloError {
 }
 
 export class TransactionRestrictedError extends CustomError {
-  constructor(message, { forwardToClient = true, logger, level = "warn", ...metadata }) {
+  constructor(
+    message: string,
+    { forwardToClient = true, logger, level = "warn" as const, ...metadata },
+  ) {
     super(message, "TRANSACTION_RESTRICTED", { forwardToClient, logger, level, metadata })
   }
 }
@@ -22,7 +37,7 @@ export class TransactionRestrictedError extends CustomError {
 export class InsufficientBalanceError extends CustomError {
   constructor(
     message = `balance is too low`,
-    { forwardToClient = true, logger, level = "warn", ...metadata },
+    { forwardToClient = true, logger, level = "warn" as const, ...metadata },
   ) {
     super(message, "INSUFFICIENT_BALANCE", { forwardToClient, logger, level, metadata })
   }
@@ -31,26 +46,35 @@ export class InsufficientBalanceError extends CustomError {
 export class SelfPaymentError extends CustomError {
   constructor(
     message = "User tried to pay themselves",
-    { forwardToClient = true, logger, level = "warn", ...metadata },
+    { forwardToClient = true, logger, level = "warn" as const, ...metadata },
   ) {
     super(message, "CANT_PAY_SELF", { forwardToClient, logger, level, metadata })
   }
 }
 
-export class ValidationError extends CustomError {
-  constructor(message, { forwardToClient = true, logger, level = "warn", ...metadata }) {
+export class ValidationInternalError extends CustomError {
+  constructor(
+    message: string,
+    { forwardToClient = true, logger, level = "warn" as const, ...metadata },
+  ) {
     super(message, "INVALID_INPUT", { forwardToClient, logger, level, metadata })
   }
 }
 
 export class NotFoundError extends CustomError {
-  constructor(message, { forwardToClient = true, logger, level = "warn", ...metadata }) {
+  constructor(
+    message: string,
+    { forwardToClient = true, logger, level = "warn" as const, ...metadata },
+  ) {
     super(message, "NOT_FOUND", { forwardToClient, logger, level, metadata })
   }
 }
 
 export class NewAccountWithdrawalError extends CustomError {
-  constructor(message, { forwardToClient = true, logger, level = "warn", ...metadata }) {
+  constructor(
+    message: string,
+    { forwardToClient = true, logger, level = "warn" as const, ...metadata },
+  ) {
     super(message, "NEW_ACCOUNT_WITHDRAWAL_RESTRICTED", {
       forwardToClient,
       logger,
@@ -61,20 +85,23 @@ export class NewAccountWithdrawalError extends CustomError {
 }
 
 export class TooManyRequestError extends CustomError {
-  constructor({ forwardToClient = true, logger, level = "warn", ...metadata }) {
+  constructor({ forwardToClient = true, logger, level = "warn" as const, ...metadata }) {
     const message = "Too many requests"
     super(message, "TOO_MANY_REQUEST", { forwardToClient, logger, level, metadata })
   }
 }
 
 export class DbError extends CustomError {
-  constructor(message, { forwardToClient = true, logger, level, ...metadata }) {
+  constructor(message: string, { forwardToClient = true, logger, level, ...metadata }) {
     super(message, "DB_ERROR", { forwardToClient, logger, level, metadata })
   }
 }
 
 export class LightningPaymentError extends CustomError {
-  constructor(message, { forwardToClient = true, logger, level = "warn", ...metadata }) {
+  constructor(
+    message: string,
+    { forwardToClient = true, logger, level = "warn" as const, ...metadata },
+  ) {
     super(message, "LIGHTNING_PAYMENT_ERROR", {
       forwardToClient,
       logger,
@@ -87,7 +114,7 @@ export class LightningPaymentError extends CustomError {
 export class RouteFindingError extends CustomError {
   constructor(
     message = "Unable to find a route for payment",
-    { forwardToClient = true, logger, level = "warn", ...metadata },
+    { forwardToClient = true, logger, level = "warn" as const, ...metadata },
   ) {
     super(message, "ROUTE_FINDING_ERROR", { forwardToClient, logger, level, metadata })
   }
@@ -96,7 +123,7 @@ export class RouteFindingError extends CustomError {
 export class RebalanceNeededError extends CustomError {
   constructor(
     message = `Insufficient onchain balance on lnd`,
-    { forwardToClient = false, logger, level = "fatal", ...metadata },
+    { forwardToClient = false, logger, level = "error" as const, ...metadata },
   ) {
     super(message, "REBALANCE_NEEDED", { forwardToClient, logger, level, metadata })
   }
@@ -105,7 +132,7 @@ export class RebalanceNeededError extends CustomError {
 export class DustAmountError extends CustomError {
   constructor(
     message = `Use lightning to send amounts less than ${yamlConfig.onchainDustAmount}`,
-    { forwardToClient = true, logger, level = "warn", ...metadata },
+    { forwardToClient = true, logger, level = "warn" as const, ...metadata },
   ) {
     super(message, "ENTERED_DUST_AMOUNT", { forwardToClient, logger, level, metadata })
   }
@@ -114,7 +141,12 @@ export class DustAmountError extends CustomError {
 export class LndOfflineError extends CustomError {
   constructor(
     message,
-    { forwardToClient = true, logger = baseLogger, level = "warn", ...metadata } = {},
+    {
+      forwardToClient = true,
+      logger = baseLogger,
+      level = "warn" as const,
+      ...metadata
+    } = {},
   ) {
     super(message, "LND_OFFLINE", { forwardToClient, logger, level, metadata })
   }
@@ -123,14 +155,17 @@ export class LndOfflineError extends CustomError {
 export class AuthorizationError extends CustomError {
   constructor(
     message = `Not authorized!`,
-    { forwardToClient = true, logger, level = "warn", ...metadata },
+    { forwardToClient = true, logger, level = "warn" as const, ...metadata },
   ) {
     super(message, "NOT_AUTHORIZED", { forwardToClient, logger, level, metadata })
   }
 }
 
 export class IPBlacklistedError extends CustomError {
-  constructor(message, { forwardToClient = false, logger, level = "warn", ...metadata }) {
+  constructor(
+    message: string,
+    { forwardToClient = false, logger, level = "warn" as const, ...metadata },
+  ) {
     super(message, "REJECTED_BLACKLISTED_IP", {
       forwardToClient,
       logger,
@@ -144,7 +179,7 @@ export class OnChainFeeEstimationError extends CustomError {
   constructor(
     message = "Unable to estimate onchain fee",
     // FIXME: Do we want this to be a warning or an error?
-    { forwardToClient = true, logger, level = "warn", ...metadata },
+    { forwardToClient = true, logger, level = "warn" as const, ...metadata },
   ) {
     super(message, "ONCHAIN_FEE_ESTIMATION_ERROR", {
       forwardToClient,

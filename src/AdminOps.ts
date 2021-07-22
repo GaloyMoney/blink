@@ -1,4 +1,4 @@
-import { NotFoundError, ValidationError } from "./error"
+import { NotFoundError, ValidationInternalError } from "./error"
 import { User } from "./schema"
 import { Levels } from "./types"
 import { baseLogger } from "./logger"
@@ -12,7 +12,11 @@ export const usernameExists = async ({ username }): Promise<boolean> => {
 export const setLevel = async ({ uid, level }) => {
   if (Levels.indexOf(level) === -1) {
     const error = `${level} is not a valid user level`
-    throw new ValidationError(error, { forwardToClient: true, logger, level: "warn" })
+    throw new ValidationInternalError(error, {
+      forwardToClient: true,
+      logger,
+      level: "warn",
+    })
   }
   const user = await User.findOneAndUpdate(
     { _id: uid },
@@ -30,7 +34,7 @@ export const addToMap = async ({
   logger,
 }): Promise<boolean> => {
   if (!username || !latitude || !longitude || !title) {
-    throw new ValidationError(
+    throw new ValidationInternalError(
       `username, latitude, longitude and title are all required arguments`,
       { logger },
     )

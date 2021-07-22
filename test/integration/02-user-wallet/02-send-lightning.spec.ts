@@ -1,17 +1,17 @@
-import { FEECAP } from "src/lndAuth"
-import { baseLogger } from "src/logger"
-import { InvoiceUser } from "src/schema"
-import { getHash, sleep } from "src/utils"
 import { createHash, randomBytes } from "crypto"
-import { ValidationError } from "apollo-server-express"
-import { getActiveLnd, nodesPubKey } from "src/lndUtils"
 import { TransactionLimits, yamlConfig } from "src/config"
 import {
   InsufficientBalanceError,
   LightningPaymentError,
   SelfPaymentError,
   TransactionRestrictedError,
+  ValidationInternalError,
 } from "src/error"
+import { FEECAP } from "src/lndAuth"
+import { getActiveLnd, nodesPubKey } from "src/lndUtils"
+import { baseLogger } from "src/logger"
+import { InvoiceUser } from "src/schema"
+import { getHash, sleep } from "src/utils"
 import {
   cancelHodlInvoice,
   checkIsBalanced,
@@ -96,9 +96,7 @@ describe("UserWallet - Lightning Pay", () => {
   })
 
   it("sends to another Galoy user a push payment", async () => {
-    const destination = nodesPubKey[0]
     const res = await userWallet1.pay({
-      destination,
       username: userWallet0.user.username,
       amount: amountInvoice,
     })
@@ -157,10 +155,8 @@ describe("UserWallet - Lightning Pay", () => {
   })
 
   it("fails if sends to self an on us push payment", async () => {
-    const destination = nodesPubKey[0]
     await expect(
       userWallet1.pay({
-        destination,
         username: userWallet1.user.username,
         amount: amountInvoice,
       }),
@@ -196,7 +192,9 @@ describe("UserWallet - Lightning Pay", () => {
   it("fails to pay zero amount invoice without separate amount", async () => {
     const { request } = await createInvoice({ lnd: lndOutside1 })
     // TODO: use custom ValidationError not apollo error
-    await expect(userWallet1.pay({ invoice: request })).rejects.toThrow(ValidationError)
+    await expect(userWallet1.pay({ invoice: request })).rejects.toThrow(
+      ValidationInternalError,
+    )
   })
 
   it("fails to pay regular invoice with separate amount", async () => {
@@ -204,7 +202,7 @@ describe("UserWallet - Lightning Pay", () => {
     // TODO: use custom ValidationError not apollo error
     await expect(
       userWallet1.pay({ invoice: request, amount: amountInvoice }),
-    ).rejects.toThrow(ValidationError)
+    ).rejects.toThrow(ValidationInternalError)
   })
 
   it("fails to pay when withdrawalLimit exceeded", async () => {

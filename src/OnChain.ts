@@ -20,7 +20,7 @@ import {
   RebalanceNeededError,
   SelfPaymentError,
   TransactionRestrictedError,
-  ValidationError,
+  ValidationInternalError,
 } from "./error"
 import { customerPath, lndAccountingPath, onchainRevenuePath } from "./ledger/ledger"
 import { getActiveOnchainLnd, getLndFromPubkey } from "./lndUtils"
@@ -130,7 +130,7 @@ export const OnChainMixin = (superclass) =>
       if (!sendAll) {
         if (amount <= 0) {
           const error = "Amount can't be negative, and can only be zero if sendAll = true"
-          throw new ValidationError(error, { logger: onchainLogger })
+          throw new ValidationInternalError(error, { logger: onchainLogger })
         }
 
         if (amount < this.config.dustThreshold) {
