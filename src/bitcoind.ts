@@ -4,16 +4,13 @@ import { BitcoindClient, bitcoindDefaultClient, btc2sat } from "./utils"
 export const getBalancesDetail = async (): Promise<
   { wallet: string; balance: number }[]
 > => {
-  // TODO: include default / outside?
   const wallets = await bitcoindDefaultClient.listWallets()
 
   const balances: { wallet: string; balance: number }[] = []
 
   for await (const wallet of wallets) {
-    // do not consider the outside wallet (and "default" should be coinless, so it shouldn't need to be here...)
+    // do not consider the "outside" wallet in tests (and "default" should be coinless, so it shouldn't need to be here...)
     if (wallet === "outside") {
-      // do not use the default wallet for now (expect for testing).
-      // if (wallet === "") {
       continue
     }
 

@@ -15,7 +15,6 @@ import {
   waitUntilBlockHeight,
   subscribeToChainAddress,
   subscribeToTransactions,
-  // bitcoindClient,
   bitcoindOutside,
   amountAfterFeeDeduction,
 } from "test/helpers"
@@ -99,11 +98,11 @@ describe("UserWallet - On chain", () => {
     const outputs = [output0, output1]
 
     const { psbt } = await bitcoindOutside.walletCreateFundedPsbt([], outputs)
-    // const decodedPsbt1 = await bitcoindClient.decodePsbt(psbt)
-    // const analysePsbt1 = await bitcoindClient.analyzePsbt(psbt)
+    // const decodedPsbt1 = await bitcoindOutside.decodePsbt(psbt)
+    // const analysePsbt1 = await bitcoindOutside.analyzePsbt(psbt)
     const walletProcessPsbt = await bitcoindOutside.walletProcessPsbt(psbt)
-    // const decodedPsbt2 = await bitcoindClient.decodePsbt(walletProcessPsbt.psbt)
-    // const analysePsbt2 = await bitcoindClient.analyzePsbt(walletProcessPsbt.psbt)
+    // const decodedPsbt2 = await bitcoindOutside.decodePsbt(walletProcessPsbt.psbt)
+    // const analysePsbt2 = await bitcoindOutside.analyzePsbt(walletProcessPsbt.psbt)
     const finalizedPsbt = await bitcoindOutside.finalizePsbt(walletProcessPsbt.psbt)
 
     await bitcoindOutside.sendRawTransaction(finalizedPsbt.hex)

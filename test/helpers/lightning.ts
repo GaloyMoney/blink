@@ -129,7 +129,7 @@ export const openChannelTesting = async ({
   return { lndNewChannel, lndPartnerNewChannel }
 }
 
-// All the following uses of bitcoind client that send/receive coin must be "outside"
+// all the following uses of bitcoind client that send/receive coin must be "outside"
 
 export const fundLnd = async (lnd, amount = 1) => {
   const { address } = await createChainAddress({ format: "p2wpkh", lnd })
