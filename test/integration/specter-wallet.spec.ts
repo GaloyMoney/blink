@@ -25,10 +25,8 @@ describe("SpecterWallet", () => {
   it("creates wallet", async () => {
     let wallets = await specterWallet.listWallets() // now ["default", "hot", "outside"]
 
-    // TODO maybe this should be explicitly checking wallet names...
+    // TODO maybe this should be explicitly checking wallet names instead of a count?
     if (wallets.length < 4) {
-      // if (wallets.length < 3) {
-      // if (wallets.length < 2) {
       try {
         await specterWallet.createWallet()
       } catch {
@@ -39,8 +37,6 @@ describe("SpecterWallet", () => {
 
     wallets = await specterWallet.listWallets()
     expect(wallets.length).toBe(4)
-    // expect(wallets.length).toBe(3)
-    // expect(wallets.length).toBe(2)
   })
 
   it("deposit to bitcoind", async () => {
