@@ -29,15 +29,11 @@ describe("GraphQLMutationRoot", () => {
       }
     `
     const result = await graphql(gqlAdminSchema, query, {})
-    const { data } = result
-
-    if (!data) {
-      throw new Error("invalid response")
-    }
-    const updatedUser = await User.getUserUsername("tester")
-
+    const { errors, data } = result
+    const updatedUser = await User.getUserByUsername("tester")
+    expect(errors).toBeNull
     expect(updatedUser.level).toEqual(2)
-    expect(data.userUpdateLevel.userDetails.level).toEqual("TWO")
+    expect(data?.userUpdateLevel.userDetails.level).toEqual("TWO")
   })
 
   it("exposes userUpdateStatus", async () => {
@@ -59,16 +55,11 @@ describe("GraphQLMutationRoot", () => {
       }
     `
     const result = await graphql(gqlAdminSchema, query, {})
-    const { data } = result
-
-    if (!data) {
-      throw Error("invalid response")
-    }
-
-    const updatedUser = await User.getUserUsername("tester")
-
+    const { errors, data } = result
+    const updatedUser = await User.getUserByUsername("tester")
+    expect(errors).toBeNull
+    expect(data?.userUpdateStatus.userDetails.id).toEqual(updatedUser.id)
     expect(updatedUser.status).toEqual("locked")
-    expect(data.userUpdateStatus.userDetails.id).toEqual(updatedUser.id)
   })
 
   it("exposes merchantUpdateMapInfo", async () => {
@@ -90,16 +81,11 @@ describe("GraphQLMutationRoot", () => {
       }
     `
     const result = await graphql(gqlAdminSchema, query, {})
-    const { data } = result
-
-    if (!data) {
-      throw Error("invalid response")
-    }
-
-    const updatedUser = await User.getUserUsername("tester")
-
+    const { errors, data } = result
+    const updatedUser = await User.getUserByUsername("tester")
+    expect(errors).toBeNull
+    expect(data?.merchantUpdateMapInfo.userDetails.id).toEqual(updatedUser.id)
     expect(updatedUser.title).toEqual("MapTest")
     expect(updatedUser.coordinate).toEqual({ longitude: 1, latitude: -1 })
-    expect(data.merchantUpdateMapInfo.userDetails.id).toEqual(updatedUser.id)
   })
 })

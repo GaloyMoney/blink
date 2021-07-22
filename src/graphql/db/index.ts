@@ -1,11 +1,12 @@
 import { User } from "../../schema"
 import { NotFoundError } from "../../error"
 import { baseLogger } from "../../logger"
+import { caseInsensitiveRegex } from "src/utils"
 
 const logger = baseLogger.child({ module: "admin" })
 
 export async function usernameExists({ username }): Promise<boolean> {
-  return Boolean(await User.getUserByUsername(username))
+  return Boolean(await User.findOne({ username: caseInsensitiveRegex(username) }))
 }
 
 export const updateUserLevel = async ({ uid, level }) => {

@@ -33,7 +33,7 @@ const helmRevision = process.env.HELMREVISION
 
 const resolvers = {
   Query: {
-    me: async (_, __, { uid, user }) => {
+    me: (_, __, { uid, user }) => {
       const { phone, username, contacts, language, level } = user
 
       return {
@@ -47,7 +47,7 @@ const resolvers = {
     },
 
     // legacy, before handling multi currency account
-    wallet: async (_, __, { wallet }) => [
+    wallet: (_, __, { wallet }) => [
       {
         id: "BTC",
         currency: "BTC",
@@ -74,9 +74,9 @@ const resolvers = {
     // deprecated
     nodeStats: async () => {
       const { lnd } = getActiveLnd()
-      return nodeStats({ lnd })
+      return await nodeStats({ lnd })
     },
-    nodesStats: async () => nodesStats(),
+    nodesStats: async () => await nodesStats(),
     buildParameters: async () => {
       const { minBuildNumber, lastBuildNumber } = await getMinBuildNumber()
       return {
@@ -102,7 +102,7 @@ const resolvers = {
 
       return hourly.splice(-length)
     },
-    earnList: async (_, __, { user }) => {
+    earnList: (_, __, { user }) => {
       const response: Record<string, Primitive>[] = []
       const earned = user?.earn || []
 
@@ -117,7 +117,7 @@ const resolvers = {
       return response
     },
     getLastOnChainAddress: async (_, __, { wallet }) => ({
-      id: wallet.getLastOnChainAddress(),
+      id: await wallet.getLastOnChainAddress(),
     }),
     maps: async () => {
       // TODO: caching
@@ -134,8 +134,8 @@ const resolvers = {
         id: user.username,
       }))
     },
-    usernameExists: async (_, { username }) => usernameExists({ username }),
-    getUserDetails: async (_, { uid }) => User.findOne({ _id: uid }),
+    usernameExists: async (_, { username }) => await usernameExists({ username }),
+    getUserDetails: async (_, { uid }) => await User.findOne({ _id: uid }),
     noauthUpdatePendingInvoice: async (_, { hash, username }, { logger }) => {
       const wallet = await WalletFromUsername({ username, logger })
       return wallet.updatePendingInvoice({ hash })
@@ -158,21 +158,21 @@ const resolvers = {
   },
   Mutation: {
     requestPhoneCode: async (_, { phone }, { logger, ip }) => ({
-      success: requestPhoneCode({ phone, logger, ip }),
+      success: await requestPhoneCode({ phone, logger, ip }),
     }),
     login: async (_, { phone, code }, { logger, ip }) => ({
-      token: login({ phone, code, logger, ip }),
+      token: await login({ phone, code, logger, ip }),
     }),
-    updateUser: async (_, __, { wallet }) => ({
+    updateUser: (_, __, { wallet }) => ({
       setUsername: async ({ username }) => await wallet.setUsername({ username }),
       setLanguage: async ({ language }) => await wallet.setLanguage({ language }),
       updateUsername: (input) => wallet.updateUsername(input),
       updateLanguage: (input) => wallet.updateLanguage(input),
     }),
     setLevel: async (_, { uid, level }) => {
-      return setLevel({ uid, level })
+      return await setLevel({ uid, level })
     },
-    updateContact: async (_, __, { user }) => ({
+    updateContact: (_, __, { user }) => ({
       setName: async ({ username, name }) => {
         user.contacts.filter((item) => item.id === username)[0].name = name
         await user.save()
@@ -183,19 +183,20 @@ const resolvers = {
       const wallet = await WalletFromUsername({ username, logger })
       return wallet.addInvoice({ selfGenerated: false, value })
     },
-    invoice: async (_, __, { wallet }) => ({
-      addInvoice: async ({ value, memo }) => wallet.addInvoice({ value, memo }),
+    invoice: (_, __, { wallet }) => ({
+      addInvoice: async ({ value, memo }) => await wallet.addInvoice({ value, memo }),
       // FIXME: move to query
-      updatePendingInvoice: async ({ hash }) => wallet.updatePendingInvoice({ hash }),
+      updatePendingInvoice: async ({ hash }) =>
+        await wallet.updatePendingInvoice({ hash }),
       payInvoice: async ({ invoice, amount, memo }) =>
-        wallet.pay({ invoice, amount, memo }),
+        await wallet.pay({ invoice, amount, memo }),
       payKeysendUsername: async ({ destination, username, amount, memo }) =>
-        wallet.pay({ destination, username, amount, memo }),
+        await wallet.pay({ destination, username, amount, memo }),
       getFee: async ({ destination, amount, invoice }) =>
-        wallet.getLightningFee({ destination, amount, invoice }),
+        await wallet.getLightningFee({ destination, amount, invoice }),
     }),
-    earnCompleted: async (_, { ids }, { wallet }) => wallet.addEarn(ids),
-    onchain: async (_, __, { wallet }) => ({
+    earnCompleted: async (_, { ids }, { wallet }) => await wallet.addEarn(ids),
+    onchain: (_, __, { wallet }) => ({
       getNewAddress: () => wallet.getOnChainAddress(),
       pay: ({ address, amount, memo }) => ({
         success: wallet.onChainPay({ address, amount, memo }),
@@ -224,10 +225,10 @@ const resolvers = {
       return { success: true }
     },
     addToMap: async (_, { username, title, latitude, longitude }, { logger }) => {
-      return addToMap({ username, title, latitude, longitude, logger })
+      return await addToMap({ username, title, latitude, longitude, logger })
     },
     setAccountStatus: async (_, { uid, status }) => {
-      return setAccountStatus({ uid, status })
+      return await setAccountStatus({ uid, status })
     },
   },
 }
@@ -282,5 +283,5 @@ export async function startApolloServerForSchema() {
 
   const schema = applyMiddleware(execSchema, permissions)
 
-  return startApolloServer({ schema, port: 4000 })
+  return await startApolloServer({ schema, port: 4000 })
 }

@@ -5,9 +5,7 @@ import { activateLndHealthCheck } from "../lndHealth"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
 
-const main = () => {
-  if (process.env.NODE_ENV === "test") return
-
+if (require.main === module) {
   setupMongoConnection()
     .then(async () => {
       await startApolloServerForSchema()
@@ -15,5 +13,3 @@ const main = () => {
     })
     .catch((err) => graphqlLogger.error(err, "server error"))
 }
-
-main()

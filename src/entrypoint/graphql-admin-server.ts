@@ -29,11 +29,13 @@ export async function startApolloServerForAdminSchema() {
   )
 
   const schema = applyMiddleware(gqlAdminSchema, permissions)
-  return startApolloServer({ schema, port: 4001 })
+  return await startApolloServer({ schema, port: 4001 })
 }
 
-setupMongoConnection()
-  .then(async () => {
-    await startApolloServerForAdminSchema()
-  })
-  .catch((err) => graphqlLogger.error(err, "server error"))
+if (require.main === module) {
+  setupMongoConnection()
+    .then(async () => {
+      await startApolloServerForAdminSchema()
+    })
+    .catch((err) => graphqlLogger.error(err, "server error"))
+}

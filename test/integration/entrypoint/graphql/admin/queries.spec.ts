@@ -16,12 +16,7 @@ describe("GraphQLQueryRoot", () => {
     `
     const result = await graphql(gqlAdminSchema, query, {})
     const { data } = result
-
-    if (!data) {
-      throw Error("invalid response")
-    }
-
-    expect(data.allLevels).toEqual(["ONE", "TWO"])
+    expect(data?.allLevels).toEqual(["ONE", "TWO"])
   })
 
   it("exposes userDetails by phone", async () => {
@@ -33,15 +28,10 @@ describe("GraphQLQueryRoot", () => {
         }
       }
     `
-
     const result = await graphql(gqlAdminSchema, query, {})
-    const { data } = result
-
-    if (!data) {
-      throw Error("invalid response")
-    }
-
-    expect(data.userDetails.username).toEqual("tester")
+    const { errors, data } = result
+    expect(errors).toBeNull
+    expect(data?.userDetails.username).toEqual("tester")
   })
 
   it("exposes userDetails by username", async () => {
@@ -53,14 +43,9 @@ describe("GraphQLQueryRoot", () => {
         }
       }
     `
-
     const result = await graphql(gqlAdminSchema, query, {})
-    const { data } = result
-
-    if (!data) {
-      throw Error("invalid response")
-    }
-
-    expect(data.userDetails.phone).toEqual("+19876543210")
+    const { errors, data } = result
+    expect(errors).toBeNull
+    expect(data?.userDetails.phone).toEqual("+19876543210")
   })
 })

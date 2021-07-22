@@ -17,23 +17,24 @@ import { WalletFactory } from "../walletFactory"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
 
-export const isAuthenticated = rule({ cache: "contextual" })(
-  async (parent, args, ctx) => {
-    if (ctx.uid === null) {
-      throw new AuthorizationError(undefined, {
-        logger: graphqlLogger,
-        request: ctx.request.body,
-      })
-    }
-    return true
-  },
-)
+export const isAuthenticated = rule({ cache: "contextual" })((parent, args, ctx) => {
+  if (ctx.uid === null) {
+    throw new AuthorizationError(undefined, {
+      logger: graphqlLogger,
+      request: ctx.request.body,
+    })
+  }
+  return true
+})
 
-export const isEditor = rule({ cache: "contextual" })(async (parent, args, ctx) => {
+export const isEditor = rule({ cache: "contextual" })((parent, args, ctx) => {
   return ctx.user.role === "editor"
 })
 
-export const startApolloServer = async ({ schema, port }) => {
+export const startApolloServer = async ({
+  schema,
+  port,
+}): Promise<Record<string, unknown>> => {
   const app = express()
   const server = new ApolloServer({
     schema,
@@ -150,8 +151,17 @@ export const startApolloServer = async ({ schema, port }) => {
 
   server.applyMiddleware({ app })
 
-  const httpServer = await app.listen({ port })
+  return await new Promise((resolve, reject) => {
+    const httpServer = app.listen({ port })
 
-  console.log(`🚀 Server ready at http://localhost:${port}${server.graphqlPath}`)
-  return { app, server, httpServer }
+    httpServer.on("listening", () => {
+      console.log(`🚀 Server ready at http://localhost:${port}${server.graphqlPath}`)
+      resolve({ server, app, httpServer })
+    })
+
+    httpServer.on("error", (err) => {
+      console.error(err)
+      reject(err)
+    })
+  })
 }

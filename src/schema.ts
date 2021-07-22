@@ -343,7 +343,7 @@ UserSchema.virtual("userIsActive").get(async function (this: typeof UserSchema) 
   return volume?.outgoingSats > 1000 || volume?.incomingSats > 1000
 })
 
-UserSchema.statics.getUserByPhone = async function (phone) {
+UserSchema.statics.getUserByPhone = async function (phone: string) {
   const user = await this.findOne({ phone })
 
   if (!user) {
@@ -353,12 +353,12 @@ UserSchema.statics.getUserByPhone = async function (phone) {
   return user
 }
 
-UserSchema.statics.getUserByUsername = async function (username) {
-  if (typeof username !== "string" || !username.match(regexUsername)) {
+UserSchema.statics.getUserByUsername = async function (username: string) {
+  if (!username.match(regexUsername)) {
     return null
   }
 
-  const user = this.findOne({ username: caseInsensitiveRegex(username) })
+  const user = await this.findOne({ username: caseInsensitiveRegex(username) })
 
   if (!user) {
     throw new NotFoundError("User not found", { logger: baseLogger })
