@@ -25,6 +25,11 @@ beforeAll(async () => {
 })
 
 describe("Bitcoind", () => {
+  it("check no wallet", async () => {
+    const wallets = await bitcoindClient.listWallets()
+    expect(wallets.length).toBe(0)
+  })
+
   it("create default wallet", async () => {
     await createWalletInClient("default")
   })
@@ -75,13 +80,8 @@ describe("Bitcoind", () => {
 })
 
 async function createWalletInClient(walletName) {
-  try {
-    const { name } = await bitcoindClient.createWallet(walletName)
-    // depends of bitcoind version. needed in < 0.20 but failed in 0.21?
-    expect(name).toBe(walletName)
-  } catch (error) {
-    baseLogger.warn({ error }, "bitcoind wallet already exists")
-  }
+  const { name } = await bitcoindClient.createWallet(walletName)
+  expect(name).toBe(walletName)
   const wallets = await bitcoindClient.listWallets()
   expect(wallets).toContain(walletName)
 }
