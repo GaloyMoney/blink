@@ -26,38 +26,16 @@ beforeAll(async () => {
 
 describe("Bitcoind", () => {
   it("create default wallet", async () => {
-    try {
-      const { name } = await bitcoindClient.createWallet("default")
-      // depends of bitcoind version. needed in < 0.20 but failed in 0.21?
-      expect(name).toBe("default")
-    } catch (error) {
-      baseLogger.warn({ error }, "bitcoind wallet already exists")
-    }
-    const wallets = await bitcoindClient.listWallets()
-    expect(wallets).toContain("default")
+    await createWalletInClient("default")
   })
 
-  // TODO: only to be considered in the rest of the tests
+  // TODO: at the moment the "hot" wallet is only used here, specifically for a further test (specter-wallet) which considers the number of wallets...
   it("create hot wallet", async () => {
-    try {
-      const { name } = await bitcoindClient.createWallet("hot")
-      expect(name).toBe("hot")
-    } catch (error) {
-      baseLogger.warn({ error }, "bitcoind wallet already exists")
-    }
-    const wallets = await bitcoindClient.listWallets()
-    expect(wallets).toContain("hot")
+    await createWalletInClient("hot")
   })
 
   it("create outside wallet", async () => {
-    try {
-      const { name } = await bitcoindClient.createWallet("outside")
-      expect(name).toBe("outside")
-    } catch (error) {
-      baseLogger.warn({ error }, "bitcoind wallet already exists")
-    }
-    const wallets = await bitcoindClient.listWallets()
-    expect(wallets).toContain("outside")
+    await createWalletInClient("outside")
   })
 
   it("should be funded mining 10 blocks", async () => {
@@ -95,3 +73,15 @@ describe("Bitcoind", () => {
     await checkIsBalanced()
   })
 })
+
+async function createWalletInClient(walletName) {
+  try {
+    const { name } = await bitcoindClient.createWallet(walletName)
+    // depends of bitcoind version. needed in < 0.20 but failed in 0.21?
+    expect(name).toBe(walletName)
+  } catch (error) {
+    baseLogger.warn({ error }, "bitcoind wallet already exists")
+  }
+  const wallets = await bitcoindClient.listWallets()
+  expect(wallets).toContain(walletName)
+}
