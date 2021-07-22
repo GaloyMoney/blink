@@ -20,7 +20,7 @@ import {
 
 import { bitcoindClient, bitcoindOutside, RANDOM_ADDRESS } from "./bitcoinCore"
 
-export * from "lightning" // TODO?
+export * from "lightning"
 
 export const lnd1 = offchainLnds[0].lnd
 export const lnd2 = offchainLnds[1].lnd
