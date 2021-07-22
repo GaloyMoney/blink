@@ -7,7 +7,6 @@ import { parsePaymentRequest } from "invoices"
 import { User } from "./schema"
 import axios from "axios"
 import { yamlConfig } from "./config"
-import { ValidationError } from "./error"
 import { baseLogger } from "./logger"
 
 export const isProd = process.env.NODE_ENV === "production"
@@ -141,9 +140,8 @@ export const inputXOR = (arg1, arg2) => {
   const [[key1, value1]] = Object.entries(arg1)
   const [[key2, value2]] = Object.entries(arg2)
   if (!(!value1 !== !value2)) {
-    throw new ValidationError(`Either ${key1} or ${key2} is required, but not both`, {
-      logger: baseLogger,
-    })
+    // will be deleted with current Samer PR
+    throw new Error(`Either ${key1} or ${key2} is required, but not both`)
   }
 }
 

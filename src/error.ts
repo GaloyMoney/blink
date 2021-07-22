@@ -52,7 +52,7 @@ export class SelfPaymentError extends CustomError {
   }
 }
 
-export class ValidationError extends CustomError {
+export class ValidationInternalError extends CustomError {
   constructor(
     message: string,
     { forwardToClient = true, logger, level = "warn" as const, ...metadata },

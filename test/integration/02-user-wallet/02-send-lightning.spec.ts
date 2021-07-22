@@ -1,4 +1,3 @@
-import { ValidationError } from "apollo-server-express"
 import { createHash, randomBytes } from "crypto"
 import { TransactionLimits, yamlConfig } from "src/config"
 import {
@@ -6,6 +5,7 @@ import {
   LightningPaymentError,
   SelfPaymentError,
   TransactionRestrictedError,
+  ValidationInternalError,
 } from "src/error"
 import { FEECAP } from "src/lndAuth"
 import { getActiveLnd, nodesPubKey } from "src/lndUtils"
@@ -192,7 +192,9 @@ describe("UserWallet - Lightning Pay", () => {
   it("fails to pay zero amount invoice without separate amount", async () => {
     const { request } = await createInvoice({ lnd: lndOutside1 })
     // TODO: use custom ValidationError not apollo error
-    await expect(userWallet1.pay({ invoice: request })).rejects.toThrow(ValidationError)
+    await expect(userWallet1.pay({ invoice: request })).rejects.toThrow(
+      ValidationInternalError,
+    )
   })
 
   it("fails to pay regular invoice with separate amount", async () => {
@@ -200,7 +202,7 @@ describe("UserWallet - Lightning Pay", () => {
     // TODO: use custom ValidationError not apollo error
     await expect(
       userWallet1.pay({ invoice: request, amount: amountInvoice }),
-    ).rejects.toThrow(ValidationError)
+    ).rejects.toThrow(ValidationInternalError)
   })
 
   it("fails to pay when withdrawalLimit exceeded", async () => {

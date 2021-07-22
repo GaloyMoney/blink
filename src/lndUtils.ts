@@ -18,7 +18,7 @@ import {
 import _ from "lodash"
 import { Logger } from "pino"
 import { yamlConfig } from "./config"
-import { DbError, LndOfflineError, ValidationError } from "./error"
+import { DbError, LndOfflineError, ValidationInternalError } from "./error"
 import {
   escrowAccountingPath,
   lndAccountingPath,
@@ -449,7 +449,7 @@ export const validate = async ({
   } else {
     if (!params.username) {
       const error = `a username is required for push payment to the ${yamlConfig.name}`
-      throw new ValidationError(error, { logger })
+      throw new ValidationInternalError(error, { logger })
     }
 
     isPushPayment = true
@@ -459,18 +459,18 @@ export const validate = async ({
   if (!!params.amount && !!tokens) {
     const error = `Invoice contains non-zero amount, but amount was also passed separately`
     // FIXME: create a new error. this is a not a graphl error.
-    // throw new ValidationError(error, {logger})
+    // throw new ValidationInternalError(error, {logger})
 
-    throw new ValidationError(error, { logger })
+    throw new ValidationInternalError(error, { logger })
   }
 
   if (!params.amount && !tokens) {
     const error =
       "Invoice is a zero-amount invoice, or pushPayment is being used, but no amount was passed separately"
     // FIXME: create a new error. this is a not a graphl error.
-    // throw new ValidationError(error, {logger})
+    // throw new ValidationInternalError(error, {logger})
 
-    throw new ValidationError(error, { logger })
+    throw new ValidationInternalError(error, { logger })
   }
 
   tokens = tokens ? tokens : params.amount
