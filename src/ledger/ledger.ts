@@ -9,8 +9,6 @@ export const bitcoindAccountingPath = "Assets:Reserve:Bitcoind"
 export const lndAccountingPath = "Assets:Reserve:Lightning" // TODO: rename to Assets:Lnd
 export const escrowAccountingPath = "Assets:Reserve:Escrow" // TODO: rename to Assets:Lnd:Escrow
 
-export const accountDealerFtxPath = "Assets:Dealer:FTX" // this should be updated with a cron job taking into consideration profit/loss
-
 // liabilities
 export const customerPath = (uid) => `Liabilities:Customer:${uid}`
 
@@ -25,8 +23,6 @@ export const dealerMediciPath = async () => {
   cacheDealerPath = customerPath(dealer._id)
   return cacheDealerPath
 }
-
-export const liabilitiesDealerFtxPath = `Liabilities:Dealer:Ftx`
 
 // use for topping up lightning node that doesn't act at bitcoin wallet
 // only used during test for now

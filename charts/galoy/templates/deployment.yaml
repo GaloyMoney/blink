@@ -145,18 +145,6 @@ spec:
                 secretKeyRef:
                   name: network
                   key: network
-            {{- if eq .name "exporter" }}
-            - name: FTX_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: ftx-secret
-                  key: key
-            - name: FTX_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: ftx-secret
-                  key: secret
-            {{- end}}
             {{- if $.Values.loglevel}}
             - name: LOGLEVEL
               value: {{ $.Values.loglevel }}
