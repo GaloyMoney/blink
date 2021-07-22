@@ -70,12 +70,12 @@ export const balanceSheetIsBalanced = async () => {
     revenue /* revenue is ___ */
 
   const bookingVersusRealWorldAssets =
-    lnd +
-    bitcoind + // physical assets or value of account at third party
+    lnd + // physical assets
+    bitcoind + // physical assets
     (lightning + bitcoin) // value in accounting
 
   if (!!bookingVersusRealWorldAssets || !!assetsLiabilitiesDifference) {
-    logger.debug(
+    logger.warn(
       {
         assetsLiabilitiesDifference,
         bookingVersusRealWorldAssets,

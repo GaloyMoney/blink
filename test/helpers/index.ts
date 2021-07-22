@@ -1,5 +1,4 @@
 import { btc2sat } from "src/utils"
-import { FtxDealerWallet } from "src/dealer/FtxDealerWallet"
 import {
   balanceSheetIsBalanced,
   updateUsersPendingPayment,
@@ -26,14 +25,6 @@ export const checkIsBalanced = async () => {
   // TODO: need to go from sats to msats to properly account for every msats spent
   expect(Math.abs(bookingVersusRealWorldAssets)).toBe(0)
 }
-
-export const mockGetExchangeBalance = () =>
-  jest.spyOn(FtxDealerWallet.prototype, "getExchangeBalance").mockImplementation(
-    () =>
-      new Promise((resolve) => {
-        resolve({ sats: 0, usdPnl: 0 })
-      }),
-  )
 
 export const resetDatabase = async (mongoose) => {
   const db = mongoose.connection.db

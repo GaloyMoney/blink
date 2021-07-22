@@ -61,10 +61,6 @@ cron:
 - name: balance-notif
   args: ["lib/entrypoint/dailyBalanceNotification.js"]
   schedule: "0 14 * * *"
-- name: dealer-update
-  args: ["lib/entrypoint/dealer.js"]
-  schedule: "0,10,20,30,40,50 * * * *"
-
 
 mongobackup:
   bucketName: galoy-mongodb-backups

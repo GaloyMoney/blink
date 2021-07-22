@@ -11,7 +11,6 @@ import {
   checkIsBalanced,
   getUserWallet,
   lndonchain,
-  mockGetExchangeBalance,
   RANDOM_ADDRESS,
   waitUntilBlockHeight,
   subscribeToChainAddress,
@@ -41,7 +40,6 @@ beforeAll(async () => {
   walletUser0 = await getUserWallet(0)
   // load funder wallet before use it
   await getUserWallet(4)
-  mockGetExchangeBalance()
 })
 
 beforeEach(() => {

@@ -6,7 +6,7 @@ import { getBosScore, lndsBalances } from "../lndUtils"
 import { baseLogger } from "../logger"
 import { setupMongoConnection } from "../mongodb"
 import { Transaction, User } from "../schema"
-import { getDealerWallet, getFunderWallet } from "../walletFactory"
+import { getFunderWallet } from "../walletFactory"
 
 const logger = baseLogger.child({ module: "exporter" })
 
@@ -46,45 +46,9 @@ const lndClosingChannelBalance_g = new client.Gauge({
   name: `${prefix}_lnd_closingchannelbalance`,
   help: "how much fund is closing following force closed channel",
 })
-const usdShortPosition_g = new client.Gauge({
-  name: `${prefix}_usdShortPosition`,
-  help: "usd short position on ftx",
-})
-const totalAccountValue_g = new client.Gauge({
-  name: `${prefix}_totalAccountValue`,
-  help: "totalAccountValue on ftx",
-})
-const ftx_btc_g = new client.Gauge({
-  name: `${prefix}_ftxBtcBalance`,
-  help: "btc balance in ftx",
-})
-const ftx_usdPnl_g = new client.Gauge({
-  name: `${prefix}_ftxUsdPnl`,
-  help: "usd balance in FTX, which also represents the PNL",
-})
 const funder_balance_BTC_g = new client.Gauge({
   name: `${prefix}_funderBalance_BTC`,
   help: "funder balance BTC",
-})
-const dealer_local_btc_g = new client.Gauge({
-  name: `${prefix}_dealerLocalBtcBalance`,
-  help: "btc balance in for the dealer in the node",
-})
-const dealer_local_usd_g = new client.Gauge({
-  name: `${prefix}_dealerLocalUsdBalance`,
-  help: "usd liabilities for the dealer",
-})
-const dealer_profit_g = new client.Gauge({
-  name: `${prefix}_dealerProfit`,
-  help: "profit of the dealer wallet",
-})
-const leverage_g = new client.Gauge({
-  name: `${prefix}_leverage`,
-  help: "leverage ratio on ftx",
-})
-const fundingRate_g = new client.Gauge({
-  name: `${prefix}_fundingRate`,
-  help: "FTX hourly funding rate",
 })
 const assetsLiabilitiesDifference_g = new client.Gauge({
   name: `${prefix}_assetsEqLiabilities`,
@@ -146,28 +110,6 @@ const main = async () => {
     const funderWallet = await getFunderWallet({ logger })
     const { BTC: funderBalance } = await funderWallet.getBalances()
     funder_balance_BTC_g.set(funderBalance)
-
-    const dealerWallet = await getDealerWallet({ logger })
-
-    try {
-      const {
-        usd: usdShortPosition,
-        totalAccountValue,
-        leverage,
-      } = await dealerWallet.getAccountPosition()
-
-      ftx_btc_g.set((await dealerWallet.getExchangeBalance()).sats)
-      ftx_usdPnl_g.set((await dealerWallet.getExchangeBalance()).usdPnl)
-      dealer_local_btc_g.set((await dealerWallet.getLocalLiabilities()).satsLnd)
-      dealer_local_usd_g.set((await dealerWallet.getLocalLiabilities()).usd)
-      dealer_profit_g.set((await dealerWallet.getProfit()).usdProfit)
-      totalAccountValue_g.set(totalAccountValue)
-      usdShortPosition_g.set(usdShortPosition)
-      leverage_g.set(leverage)
-      fundingRate_g.set(await dealerWallet.getNextFundingRate())
-    } catch (error) {
-      logger.error("Couldn't set dealer wallet metrics")
-    }
 
     business_g.set(await User.count({ title: { $exists: true } }))
 
