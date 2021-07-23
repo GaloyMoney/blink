@@ -27,7 +27,7 @@ import {
   randomIntFromInterval,
 } from "./utils"
 
-async function captchaCheckGoogle(captcha) {
+async function captchaVerifyGoogle(captcha) {
   const base_url = "https://www.google.com/recaptcha/api/siteverify"
   const secret = "TODO" // process.env.CAPTCHA_SECRET
 
@@ -61,7 +61,7 @@ export const requestPhoneCode = async ({
     if (!captchaResponse) {
       throw new CaptchaFailedError("Captcha Required", { logger, captchaResponse })
     }
-    const success = await captchaCheckGoogle(captchaResponse)
+    const success = await captchaVerifyGoogle(captchaResponse)
     if (!success) {
       throw new CaptchaFailedError("Captcha Invalid", { logger, captchaResponse })
     }
