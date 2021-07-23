@@ -49,7 +49,6 @@ export const lnds = [lnd1, lnd2, lndOutside1, lndOutside2]
 export const waitUntilBlockHeight = async ({ lnd, blockHeight = 0 }) => {
   let block = blockHeight
   if (block <= 0) {
-    // TODO? only getBlockCount for the default client
     block = await bitcoindClient.getBlockCount()
   }
 

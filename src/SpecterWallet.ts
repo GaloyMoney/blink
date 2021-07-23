@@ -13,7 +13,7 @@ import { Logger, SpecterWalletConfig, SpecterWalletConstructorArgs } from "./typ
 import { UserWallet } from "./userWallet"
 import { BitcoindWalletClient, bitcoindDefaultClient, btc2sat, sat2btc } from "./utils"
 
-// TODO no longer used? (removing the creation of the default wallet didn't break anything)
+// TODO no longer used in tests, removing the creation of the default wallet didn't break anything
 const staticClient = "default" // was ""
 
 export class SpecterWallet {

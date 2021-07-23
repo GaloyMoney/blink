@@ -165,7 +165,6 @@ describe("UserWallet - On chain", () => {
     )
 
     await Promise.all([
-      // changing it to outside because it "receives" coin
       bitcoindOutside.generateToAddress(3, RANDOM_ADDRESS),
       once(sub, "chain_transaction"),
     ])

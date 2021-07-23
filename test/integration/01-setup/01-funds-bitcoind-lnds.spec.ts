@@ -4,7 +4,7 @@ import { getFunderWallet } from "src/walletFactory"
 import {
   lnd1,
   lndOutside1,
-  bitcoindClient, // default = coinless
+  bitcoindClient,
   bitcoindOutside,
   getChainBalance,
   fundLnd,
