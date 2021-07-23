@@ -65,6 +65,8 @@ spec:
             # dedupe with cronjob.yaml
             - name: HELMREVISION
               value: {{ $.Release.Revision | quote}}
+            - name: NODE_ENV
+              value: production
             - name: MONGODB_PASSWORD
               valueFrom:
                 secretKeyRef:
