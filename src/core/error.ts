@@ -179,7 +179,10 @@ export class IPBlacklistedError extends CustomError {
 }
 
 export class CaptchaFailedError extends CustomError {
-  constructor(message, { forwardToClient = true, logger, level = "warn", ...metadata }) {
+  constructor(
+    message,
+    { forwardToClient = true, logger, level = "warn" as const, ...metadata },
+  ) {
     super(message, "REJECTED_CAPTCHA_FAILED", {
       forwardToClient,
       logger,

@@ -253,6 +253,9 @@ enum AccountStatus {
 }
 
 type Mutation {
+  # TODO
+  registerCaptchaGeetest: String
+
   requestPhoneCodeGeetest(
     phone: String @pattern(regexp: "^\\+[0-9]+$", policy: THROW)
     captchaChallenge: String @stringLength(min: 10, max: 1000, policy: THROW)

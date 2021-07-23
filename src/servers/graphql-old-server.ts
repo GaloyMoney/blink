@@ -24,7 +24,12 @@ import { User } from "@services/mongoose/schema"
 
 import { addToMap, setAccountStatus, setLevel } from "@core/admin-ops"
 import { sendNotification } from "@core/notifications/notification"
-import { login, requestPhoneCode, requestPhoneCodeGeetest } from "@core/text"
+import {
+  login,
+  registerCaptchaGeetest,
+  requestPhoneCode,
+  requestPhoneCodeGeetest,
+} from "@core/text"
 import { getWalletFromUsername } from "@core/wallet-factory"
 
 import { usernameExists } from "../domain/user"
@@ -168,6 +173,9 @@ const resolvers = {
     },
   },
   Mutation: {
+    registerCaptchaGeetest: async (_, __, { logger, ip }) => ({
+      success: await registerCaptchaGeetest({ logger, ip }),
+    }),
     requestPhoneCodeGeetest: async (
       _,
       { phone, captchaChallenge, captchaValidate, captchaSeccode },

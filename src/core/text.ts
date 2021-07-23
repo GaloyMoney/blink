@@ -43,8 +43,66 @@ async function captchaVerifyGoogle(captcha) {
     querystring.stringify({ secret, response: captcha }),
   )
   // TODO
-  // return response.success === true
-  return true
+  return response.data.success === true
+  // return true
+}
+
+export const registerCaptchaGeetest = async ({
+  logger,
+  ip,
+}: {
+  logger: Logger
+  ip: string
+}): Promise<string | null> => {
+  logger.info({ ip }, "RegisterCaptchaGeetest called")
+
+  // TODO
+  const captchaRequired = true
+  // const captchaRequired = false
+
+  // TODO? any bypass?
+
+  // TODO: making the ip check first here... maybe in both?
+
+  let registerResponse = null
+  if (!captchaRequired) {
+    return registerResponse
+  }
+
+  if (isIPBlacklisted({ ip })) {
+    throw new IPBlacklistedError("IP Blacklisted", { logger, ip })
+  }
+
+  let ipDetails
+
+  try {
+    ipDetails = await fetchIP({ ip })
+  } catch (err) {
+    logger.warn({ err }, "Unable to fetch ip details")
+  }
+
+  if (!ipDetails || ipDetails.status === "denied" || ipDetails.status === "error") {
+    logger.warn({ ipDetails }, "Unable to fetch ip details")
+  }
+
+  if (isIPTypeBlacklisted({ type: ipDetails?.type })) {
+    throw new IPBlacklistedError("IP type Blacklisted", { logger, ipDetails })
+  }
+
+  // TODO? any new limiter for the captcha?
+
+  try {
+    await limiterRequestPhoneCodeIp.consume(ip)
+  } catch (err) {
+    if (err instanceof Error) {
+      throw err
+    } else {
+      throw new TooManyRequestError({ logger })
+    }
+  }
+
+  registerResponse = await Geetest.register()
+  return registerResponse
 }
 
 export const requestPhoneCodeGeetest = async ({
