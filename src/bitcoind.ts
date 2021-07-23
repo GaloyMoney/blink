@@ -1,5 +1,5 @@
 import _ from "lodash"
-import { BitcoindClient, bitcoindDefaultClient, btc2sat } from "./utils"
+import { BitcoindWalletClient, bitcoindDefaultClient, btc2sat } from "./utils"
 
 export const getBalancesDetail = async (): Promise<
   { wallet: string; balance: number }[]
@@ -14,7 +14,7 @@ export const getBalancesDetail = async (): Promise<
       continue
     }
 
-    const client = BitcoindClient({ wallet })
+    const client = BitcoindWalletClient({ wallet })
     const balance = btc2sat(await client.getBalance())
     balances.push({ wallet, balance })
   }

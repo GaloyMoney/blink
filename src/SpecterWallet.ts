@@ -11,7 +11,7 @@ import { MainBook } from "./mongodb"
 import { getOnChainTransactions } from "./OnChain"
 import { Logger, SpecterWalletConfig, SpecterWalletConstructorArgs } from "./types"
 import { UserWallet } from "./userWallet"
-import { BitcoindClient, bitcoindDefaultClient, btc2sat, sat2btc } from "./utils"
+import { BitcoindWalletClient, bitcoindDefaultClient, btc2sat, sat2btc } from "./utils"
 
 const staticClient = "default" // was ""
 
@@ -61,7 +61,7 @@ export class SpecterWallet {
 
     this.logger.info({ wallet: specterWallets[0] }, "setting BitcoindClient")
 
-    this.bitcoindClient = BitcoindClient({ wallet: specterWallets[0] })
+    this.bitcoindClient = BitcoindWalletClient({ wallet: specterWallets[0] })
 
     return specterWallets[0]
   }
