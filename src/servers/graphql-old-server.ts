@@ -24,7 +24,7 @@ import { User } from "@services/mongoose/schema"
 
 import { addToMap, setAccountStatus, setLevel } from "@core/admin-ops"
 import { sendNotification } from "@core/notifications/notification"
-import { login, requestPhoneCode } from "@core/text"
+import { login, requestPhoneCode, requestPhoneCodeGeetest } from "@core/text"
 import { getWalletFromUsername } from "@core/wallet-factory"
 
 import { usernameExists } from "../domain/user"
@@ -168,6 +168,20 @@ const resolvers = {
     },
   },
   Mutation: {
+    requestPhoneCodeGeetest: async (
+      _,
+      { phone, captchaChallenge, captchaValidate, captchaSeccode },
+      { logger, ip },
+    ) => ({
+      success: await requestPhoneCodeGeetest({
+        phone,
+        captchaChallenge,
+        captchaValidate,
+        captchaSeccode,
+        logger,
+        ip,
+      }),
+    }),
     requestPhoneCode: async (_, { phone, captchaResponse }, { logger, ip }) => ({
       success: await requestPhoneCode({ phone, captchaResponse, logger, ip }),
     }),

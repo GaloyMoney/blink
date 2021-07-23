@@ -14,6 +14,7 @@ import { sendTwilioText, getCarrier, sendSMSalaText } from "@services/phone-prov
 import { PhoneCode, User } from "@services/mongoose/schema"
 
 import { CaptchaFailedError, IPBlacklistedError, TooManyRequestError } from "./error"
+import * as Geetest from "../geetest/geetest"
 import {
   failedAttemptPerIp,
   limiterLoginAttempt,
@@ -27,6 +28,12 @@ import {
   randomIntFromInterval,
 } from "./utils"
 
+async function captchaVerifyGeetest(captchaChallenge, captchaValidate, captchaSeccode) {
+  const result = await Geetest.validate(captchaChallenge, captchaValidate, captchaSeccode)
+  return result.status === 1
+  // return true
+}
+
 async function captchaVerifyGoogle(captcha) {
   const base_url = "https://www.google.com/recaptcha/api/siteverify"
   const secret = "TODO" // process.env.CAPTCHA_SECRET
@@ -37,6 +44,144 @@ async function captchaVerifyGoogle(captcha) {
   )
   // TODO
   // return response.success === true
+  return true
+}
+
+export const requestPhoneCodeGeetest = async ({
+  phone,
+  captchaChallenge,
+  captchaValidate,
+  captchaSeccode,
+  logger,
+  ip,
+}: {
+  phone: string
+  captchaChallenge?: string
+  captchaValidate?: string
+  captchaSeccode?: string
+  logger: Logger
+  ip: string
+}): Promise<boolean> => {
+  logger.info({ phone, ip }, "RequestPhoneCode called")
+
+  // const challenge = req.body[GeetestLib.GEETEST_CHALLENGE];
+  // const validate = req.body[GeetestLib.GEETEST_VALIDATE];
+  // const seccode = req.body[GeetestLib.GEETEST_SECCODE];
+  //
+  // Maybe abstract all these by receiving them also through 'captchaResponse'?
+
+  // TODO
+  const captchaRequired = captchaChallenge && captchaValidate && captchaSeccode
+  // const captchaRequired = captchaResponse ? captchaResponse.length > 0 : false
+  // const captchaRequired = false
+
+  // TODO before or after ip?
+
+  if (captchaRequired) {
+    if (!(captchaChallenge && captchaValidate && captchaSeccode)) {
+      // if (!captchaResponse) {
+      throw new CaptchaFailedError("Captcha Required", {
+        logger,
+        captchaChallenge,
+        captchaValidate,
+        captchaSeccode,
+      })
+      // throw new CaptchaFailedError("Captcha Required", { logger, captchaResponse })
+    }
+    const success = await captchaVerifyGeetest(
+      captchaChallenge,
+      captchaValidate,
+      captchaSeccode,
+    )
+    // const success = await captchaVerifyGoogle(captchaResponse)
+    if (!success) {
+      throw new CaptchaFailedError("Captcha Invalid", {
+        logger,
+        captchaChallenge,
+        captchaValidate,
+        captchaSeccode,
+      })
+      // throw new CaptchaFailedError("Captcha Invalid", { logger, captchaResponse })
+    }
+  }
+
+  if (isIPBlacklisted({ ip })) {
+    throw new IPBlacklistedError("IP Blacklisted", { logger, ip })
+  }
+
+  let ipDetails
+
+  try {
+    ipDetails = await fetchIP({ ip })
+  } catch (err) {
+    logger.warn({ err }, "Unable to fetch ip details")
+  }
+
+  if (!ipDetails || ipDetails.status === "denied" || ipDetails.status === "error") {
+    logger.warn({ ipDetails }, "Unable to fetch ip details")
+  }
+
+  if (isIPTypeBlacklisted({ type: ipDetails?.type })) {
+    throw new IPBlacklistedError("IP type Blacklisted", { logger, ipDetails })
+  }
+
+  try {
+    await limiterRequestPhoneCode.consume(phone)
+  } catch (err) {
+    if (err instanceof Error) {
+      throw err
+    } else {
+      throw new TooManyRequestError({ logger })
+    }
+  }
+
+  try {
+    await limiterRequestPhoneCodeIp.consume(ip)
+  } catch (err) {
+    if (err instanceof Error) {
+      throw err
+    } else {
+      throw new TooManyRequestError({ logger })
+    }
+  }
+
+  // make it possible to bypass the auth for testing purpose
+  if (yamlConfig.test_accounts.findIndex((item) => item.phone === phone) !== -1) {
+    return true
+  }
+
+  const code = randomIntFromInterval(100000, 999999)
+  const body = `${code} is your verification code for ${yamlConfig.name}`
+  const sms_provider = yamlConfig.sms_provider.toLowerCase()
+
+  try {
+    const veryRecentCode = await PhoneCode.findOne({
+      phone,
+      created_at: {
+        $gte: moment().subtract(30, "seconds"),
+      },
+    })
+
+    if (veryRecentCode) {
+      return false
+    }
+
+    await PhoneCode.create({ phone, code, sms_provider })
+
+    const sendTextArguments = { body, to: phone, logger }
+    if (sms_provider === "twilio") {
+      await sendTwilioText(sendTextArguments)
+    } else if (sms_provider === "smsala") {
+      await sendSMSalaText(sendTextArguments)
+    } else {
+      // sms provider in yaml did not match any sms implementation
+      return false
+    }
+  } catch (err) {
+    logger.error({ err }, "impossible to send message")
+    return false
+  }
+
   return true
 }
 
