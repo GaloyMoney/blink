@@ -23,20 +23,21 @@ afterAll(async () => {
 
 describe("SpecterWallet", () => {
   it("creates wallet", async () => {
-    let wallets = await specterWallet.listWallets() // now ["default", "hot", "outside"]
+    let wallets = await specterWallet.listWallets() // now ["outside", "hot"]
 
     // TODO maybe this should be explicitly checking wallet names instead of a count?
-    if (wallets.length < 4) {
+    if (wallets.length < 3) {
       try {
         await specterWallet.createWallet()
       } catch {
+        // TODO Why a try catch here?
         const { name } = await bitcoindClient.loadWallet(specterWalletName)
         expect(name).toBe(specterWalletName)
       }
     }
 
     wallets = await specterWallet.listWallets()
-    expect(wallets.length).toBe(4)
+    expect(wallets.length).toBe(3)
   })
 
   it("deposit to bitcoind", async () => {

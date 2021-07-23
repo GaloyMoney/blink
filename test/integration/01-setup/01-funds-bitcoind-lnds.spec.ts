@@ -32,17 +32,13 @@ describe("Bitcoind", () => {
     expect(wallets.length).toBe(0)
   })
 
-  it("create default wallet", async () => {
-    await createWalletInClient("default")
+  it("create outside wallet", async () => {
+    await createWalletInClient("outside")
   })
 
   // TODO: at the moment the "hot" wallet is only used here, specifically for a further test (specter-wallet) which considers the number of wallets...
   it("create hot wallet", async () => {
     await createWalletInClient("hot")
-  })
-
-  it("create outside wallet", async () => {
-    await createWalletInClient("outside")
   })
 
   it("should be funded mining 10 blocks", async () => {
