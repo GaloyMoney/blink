@@ -317,7 +317,7 @@ export const LightningMixin = (superclass) =>
 
             if (isPushPayment) {
               // pay through username
-              payeeUser = await User.findByUsername({ username: input_username })
+              payeeUser = await User.getUserByUsername(input_username)
             } else {
               // standard path, user scan a lightning invoice of our own wallet from another user
 

@@ -43,7 +43,7 @@ export const WalletFromUsername = async ({
   username: string
   logger: Logger
 }) => {
-  const user = await User.findByUsername({ username })
+  const user = await User.getUserByUsername(username)
   if (!user) {
     const error = `User not found`
     throw new NotFoundError(error, { logger })

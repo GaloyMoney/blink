@@ -5,10 +5,6 @@ import { baseLogger } from "./logger"
 
 const logger = baseLogger.child({ module: "admin" })
 
-export const usernameExists = async ({ username }): Promise<boolean> => {
-  return !!(await User.findByUsername({ username }))
-}
-
 export const setLevel = async ({ uid, level }) => {
   if (Levels.indexOf(level) === -1) {
     const error = `${level} is not a valid user level`
@@ -40,7 +36,7 @@ export const addToMap = async ({
     )
   }
 
-  const user = await User.findByUsername({ username })
+  const user = await User.getUserByUsername(username)
 
   if (!user) {
     throw new NotFoundError(`The user ${username} does not exist`, { logger })

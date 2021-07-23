@@ -5,7 +5,7 @@ import { NotFoundError } from "./error"
 import { customerPath } from "./ledger/ledger"
 import { baseLogger } from "./logger"
 import { Levels } from "./types"
-import { caseInsensitiveRegex, inputXOR } from "./utils"
+import { caseInsensitiveRegex } from "./utils"
 
 // mongoose.set("debug", true)
 
@@ -343,15 +343,22 @@ UserSchema.virtual("userIsActive").get(async function (this: typeof UserSchema) 
   return volume?.outgoingSats > 1000 || volume?.incomingSats > 1000
 })
 
-UserSchema.statics.getUser = async function ({ username, phone }) {
-  inputXOR({ phone }, { username })
-  let user
+UserSchema.statics.getUserByPhone = async function (phone: string) {
+  const user = await this.findOne({ phone })
 
-  if (phone) {
-    user = await this.findOne({ phone })
-  } else {
-    user = await this.findByUsername({ username })
+  if (!user) {
+    throw new NotFoundError("User not found", { logger: baseLogger })
   }
+
+  return user
+}
+
+UserSchema.statics.getUserByUsername = async function (username: string) {
+  if (!username.match(regexUsername)) {
+    return null
+  }
+
+  const user = await this.findOne({ username: caseInsensitiveRegex(username) })
 
   if (!user) {
     throw new NotFoundError("User not found", { logger: baseLogger })
@@ -362,15 +369,6 @@ UserSchema.statics.getUser = async function ({ username, phone }) {
 
 UserSchema.statics.getUserByAddress = async function ({ address }) {
   return await this.findOne({ "onchain.address": address })
-}
-
-// FIXME: Merge findByUsername and getUser
-UserSchema.statics.findByUsername = async function ({ username }) {
-  if (typeof username !== "string" || !username.match(regexUsername)) {
-    return null
-  }
-
-  return await this.findOne({ username: caseInsensitiveRegex(username) })
 }
 
 UserSchema.statics.getActiveUsers = async function (): Promise<Array<typeof User>> {

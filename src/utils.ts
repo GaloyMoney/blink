@@ -9,7 +9,7 @@ import axios from "axios"
 import { yamlConfig } from "./config"
 import { baseLogger } from "./logger"
 
-export const isProd = process.env.NODE_ENV === "production"
+export const isDev = process.env.NODE_ENV !== "production"
 
 // how many block are we looking back for getChainTransactions
 export const LOOK_BACK = 2016

@@ -7,7 +7,7 @@
     "prettier-check": "prettier --check .",
     "prettier-write": "prettier --write .",
     "build": "tsc -p tsconfig-build.json --skipLibCheck && cp -R src/protos lib && cp src/schema.graphql lib",
-    "start": "yarn build && source ./exportLocal.sh && node lib/entrypoint/graphql.js | pino-pretty -c -l",
+    "start": "yarn build && source ./exportLocal.sh && node lib/entrypoint/graphql-core-server.js | pino-pretty -c -l",
     "trigger": "yarn build && source ./exportLocal.sh && node lib/entrypoint/trigger.js | pino-pretty -c -l",
     "watch": "nodemon -V -e ts,graphql -w ./src -x yarn run start",
     "watch-trigger": "nodemon -V -e ts,graphql -w ./src -x yarn trigger",

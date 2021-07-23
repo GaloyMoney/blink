@@ -1,0 +1,9 @@
+type Query {
+  currentTime: Date
+}
+
+scalar Date
+
+type Mutation {
+  currentTime: Date
+}
