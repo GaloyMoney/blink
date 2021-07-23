@@ -195,10 +195,10 @@ const resolvers = {
         await wallet.updatePendingInvoice({ hash }),
       payInvoice: async ({ invoice, amount, memo }) =>
         await wallet.pay({ invoice, amount, memo }),
-      payKeysendUsername: async ({ destination, username, amount, memo }) =>
-        await wallet.pay({ destination, username, amount, memo }),
-      getFee: async ({ destination, amount, invoice }) =>
-        await wallet.getLightningFee({ destination, amount, invoice }),
+      payKeysendUsername: async ({ username, amount, memo }) =>
+        await wallet.pay({ username, amount, memo }),
+      getFee: async ({ amount, invoice }) =>
+        await wallet.getLightningFee({ amount, invoice }),
     }),
     earnCompleted: async (_, { ids }, { wallet }) => await wallet.addEarn(ids),
     onchain: (_, __, { wallet }) => ({
