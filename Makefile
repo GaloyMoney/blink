@@ -3,7 +3,7 @@ start-deps:
 	direnv reload
 
 start: start-deps
-	. ./.envrc && yarn tsnd --respawn src/entrypoint/graphql.ts | yarn pino-pretty -c -l
+	. ./.envrc && yarn tsnd --respawn src/entrypoint/graphql-core-server.ts | yarn pino-pretty -c -l
 
 start-admin: start-deps
 	. ./.envrc && yarn tsnd --respawn src/entrypoint/graphql-admin-server.ts | yarn pino-pretty -c -l

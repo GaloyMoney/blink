@@ -24,7 +24,8 @@ const MutationType = new GT.Object({
         code: { type: GT.NonNull(GT.String) },
       },
       resolve: async (_, { phone, code }, { logger, ip }) => {
-        return await login({ phone, code, logger, ip })
+        const token = await login({ phone, code, logger, ip })
+        return token?.toString()
       },
     },
     userUpdateStatus: UserUpdateStatusMutation,

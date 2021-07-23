@@ -6,7 +6,10 @@ import { gqlAdminSchema } from "src/graphql/admin"
 let user
 
 beforeAll(async () => {
-  user = await User.findOrCreate({ username: "tester", phone: "+19876543210" })
+  user = await User.findOne({ username: "tester", phone: "+19876543210" })
+  if (!user) {
+    user = await User.create({ username: "tester", phone: "+19876543210" })
+  }
 })
 
 describe("GraphQLMutationRoot", () => {

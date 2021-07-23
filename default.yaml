@@ -63,7 +63,7 @@ test_accounts:
   code: 321321
 - phone: "+16505554333" # user12
   code: 321321
-- phone: "+19876543210" # user42
+- phone: "+12223334444" # user42
   code: "424242"
 
 sms_provider: "twilio"

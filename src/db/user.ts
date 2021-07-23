@@ -1,7 +1,7 @@
-import { User } from "../../schema"
-import { NotFoundError } from "../../error"
-import { baseLogger } from "../../logger"
-import { caseInsensitiveRegex } from "src/utils"
+import { User } from "../schema"
+import { NotFoundError } from "../error"
+import { baseLogger } from "../logger"
+import { caseInsensitiveRegex } from "../utils"
 
 const logger = baseLogger.child({ module: "admin" })
 

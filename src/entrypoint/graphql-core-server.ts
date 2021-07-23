@@ -1,3 +1,5 @@
+import { setupMongoConnection } from "../mongodb"
+import { activateLndHealthCheck } from "../lndHealth"
 import {
   stringLength,
   ValidateDirectiveVisitor,
@@ -11,6 +13,8 @@ import { and, shield } from "graphql-shield"
 import { makeExecutableSchema } from "graphql-tools"
 import moment from "moment"
 import path from "path"
+
+import { baseLogger } from "../logger"
 import { addToMap, setAccountStatus, setLevel } from "../AdminOps"
 import { yamlConfig } from "../config"
 import { getActiveLnd, nodesStats, nodeStats } from "../lndUtils"
@@ -21,9 +25,10 @@ import { User } from "../schema"
 import { login, requestPhoneCode } from "../text"
 import { Levels, OnboardingEarn, Primitive } from "../types"
 import { WalletFromUsername } from "../walletFactory"
-import { usernameExists } from "../graphql/db"
-
+import { usernameExists } from "../db/user"
 import { startApolloServer, isAuthenticated, isEditor } from "./graphql-server"
+
+const graphqlLogger = baseLogger.child({ module: "graphql" })
 
 dotenv.config()
 
@@ -284,4 +289,13 @@ export async function startApolloServerForSchema() {
   const schema = applyMiddleware(execSchema, permissions)
 
   return await startApolloServer({ schema, port: 4000 })
+}
+
+if (require.main === module) {
+  setupMongoConnection()
+    .then(async () => {
+      await startApolloServerForSchema()
+      activateLndHealthCheck()
+    })
+    .catch((err) => graphqlLogger.error(err, "server error"))
 }

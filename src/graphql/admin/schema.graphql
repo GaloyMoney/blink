@@ -14,12 +14,25 @@ type UserDetails {
   username: Username
   phone: Phone!
   level: AccountLevel
+  status: AccountStatus
+  title: String
+  coordinates: Coordinates
   createdAt: Date!
 }
 
 scalar Username
 
 scalar Phone
+
+enum AccountStatus {
+  LOCKED
+  ACTIVE
+}
+
+type Coordinates {
+  longitude: Float!
+  latitude: Float!
+}
 
 scalar Date
 
@@ -44,11 +57,6 @@ type UserError {
 input UserUpdateStatusInput {
   uid: ID!
   status: AccountStatus!
-}
-
-enum AccountStatus {
-  LOCKED
-  ACTIVE
 }
 
 input UserUpdateLevelInput {

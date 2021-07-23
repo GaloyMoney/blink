@@ -2,7 +2,7 @@ import { GT } from "../../index"
 import AccountLevel from "../account-level"
 
 import UserDetailPayload from "../payloads/user-detail"
-import { updateUserLevel } from "../../db"
+import { updateUserLevel } from "../../../db/user"
 
 const UserUpdateLevelInput = new GT.Input({
   name: "UserUpdateLevelInput",
