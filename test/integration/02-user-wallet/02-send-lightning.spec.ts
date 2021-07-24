@@ -478,6 +478,14 @@ describe("UserWallet - Lightning Pay", () => {
           const count = await Transaction.countDocuments(query)
           const { is_canceled } = await getInvoice({ lnd: lndOutside1, id })
           return is_canceled && count === 0
+          // try {
+          //   await getInvoice({ lnd: lndOutside1, id })
+          // } catch (err) {
+          //   console.log("err[2].err", err[2].err.details)
+          //   if (err[2].err.details === "unable to locate invoice") {
+          //     return true
+          //   }
+          // }
         })
 
         // wait for balance updates because invoice event
