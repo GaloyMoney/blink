@@ -637,8 +637,9 @@ export const LightningMixin = (superclass) =>
     // in this scenario, we have withdrawal a percent of fee (`max_fee`)
     // and once we know precisely how much the payment was we reimburse the difference
     async recordFeeDifference({ paymentResult, max_fee, id, related_journal }) {
-      const fees = await Transaction.find({ type: "fee_reimbursement", hash: id })
-      if (fees.length > 0) {
+      const feeRecorded = await Transaction.count({ type: "fee_reimbursement", hash: id })
+
+      if (feeRecorded > 0) {
         return
       }
 
@@ -725,7 +726,6 @@ export const LightningMixin = (superclass) =>
 
           if (result.is_confirmed || result.is_failed) {
             payment.pending = false
-            payment.markModified("pending")
             await payment.save()
           }
 
@@ -747,7 +747,7 @@ export const LightningMixin = (superclass) =>
 
           if (result.is_failed) {
             try {
-              await MainBook.void(payment._journal, "Payment canceled") // JSON.stringify(result.failed
+              await MainBook.void(payment._journal, "Payment canceled")
               lightningLogger.info(
                 { success: false, id: payment.hash, payment, result },
                 "payment has been canceled",
