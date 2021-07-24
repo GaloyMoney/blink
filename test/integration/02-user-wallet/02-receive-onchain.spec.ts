@@ -21,6 +21,7 @@ import {
 } from "test/helpers"
 
 jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
+jest.mock("src/phone-provider", () => require("test/mocks/phone-provider"))
 
 let walletUser0
 let walletUser2

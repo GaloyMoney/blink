@@ -18,6 +18,7 @@ import {
 import { onChannelUpdated, updateEscrows } from "src/lndUtils"
 
 jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
+jest.mock("src/phone-provider", () => require("test/mocks/phone-provider"))
 
 //this is the fixed opening and closing channel fee on devnet
 const channelFee = 7637
