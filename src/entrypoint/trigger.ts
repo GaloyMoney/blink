@@ -78,7 +78,7 @@ export async function onchainTransactionEventHandler(tx) {
       "payment completed",
     )
     const entry = await Transaction.findOne({
-      account_path: { $all: ["Liabilities", "Customer"] },
+      account_path: "Liabilities",
       hash: tx.id,
     })
 
