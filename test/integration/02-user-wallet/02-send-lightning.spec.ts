@@ -10,7 +10,7 @@ import {
 import { FEECAP } from "src/lndAuth"
 import { getActiveLnd, nodesPubKey } from "src/lndUtils"
 import { baseLogger } from "src/logger"
-import { InvoiceUser } from "src/schema"
+import { InvoiceUser, Transaction } from "src/schema"
 import { getHash, sleep } from "src/utils"
 import {
   cancelHodlInvoice,
@@ -424,8 +424,16 @@ describe("UserWallet - Lightning Pay", () => {
         })
 
         await waitFor(async () => {
+          await userWallet1.updatePendingPayments()
+          const query = {
+            accounts: userWallet1.user.accountPath,
+            type: "payment",
+            pending: true,
+            voided: false,
+          }
+          const count = await Transaction.countDocuments(query)
           const { is_confirmed } = await getInvoice({ lnd: lndOutside1, id })
-          return is_confirmed
+          return is_confirmed && count === 0
         })
 
         await waitUntilChannelBalanceSyncAll()
@@ -461,8 +469,16 @@ describe("UserWallet - Lightning Pay", () => {
         })
 
         await waitFor(async () => {
+          await userWallet1.updatePendingPayments()
+          const query = {
+            accounts: userWallet1.user.accountPath,
+            type: "payment",
+            pending: true,
+            voided: false,
+          }
+          const count = await Transaction.countDocuments(query)
           const { is_canceled } = await getInvoice({ lnd: lndOutside1, id })
-          return is_canceled
+          return is_canceled && count === 0
         })
 
         // wait for balance updates because invoice event

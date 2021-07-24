@@ -11,7 +11,6 @@ import {
   getUserWallet,
   lndonchain,
   lndOutside1,
-  mockGetExchangeBalance,
   createChainAddress,
   subscribeToTransactions,
   bitcoindClient,
@@ -39,7 +38,6 @@ beforeAll(async () => {
   userWallet12 = await getUserWallet(12)
   // load funder wallet before use it
   await getUserWallet(4)
-  mockGetExchangeBalance()
 })
 
 beforeEach(async () => {

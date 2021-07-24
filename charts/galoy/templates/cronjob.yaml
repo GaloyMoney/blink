@@ -104,16 +104,6 @@ spec:
 
             - name: LOGLEVEL
               value: debug
-            - name: FTX_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: ftx-secret
-                  key: key
-            - name: FTX_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: ftx-secret
-                  key: secret
             - name: GOOGLE_APPLICATION_CREDENTIALS
               value: "/tmp/firebase-serviceaccount/galoyapp-firebase-serviceaccont.json"
             - name: DROPBOX_ACCESS_TOKEN

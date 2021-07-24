@@ -637,6 +637,12 @@ export const LightningMixin = (superclass) =>
     // in this scenario, we have withdrawal a percent of fee (`max_fee`)
     // and once we know precisely how much the payment was we reimburse the difference
     async recordFeeDifference({ paymentResult, max_fee, id, related_journal }) {
+      const feeRecorded = await Transaction.count({ type: "fee_reimbursement", hash: id })
+
+      if (feeRecorded > 0) {
+        return
+      }
+
       const feeDifference = max_fee - paymentResult.safe_fee
 
       assert(feeDifference >= 0)
@@ -671,7 +677,12 @@ export const LightningMixin = (superclass) =>
     // or error being thrown. Not sure how this is handled by GraphQL
 
     async updatePendingPayments(lock) {
-      const query = { accounts: this.user.accountPath, type: "payment", pending: true }
+      const query = {
+        accounts: this.user.accountPath,
+        type: "payment",
+        pending: true,
+        voided: false,
+      }
       const count = await Transaction.countDocuments(query)
 
       if (count === 0) {
@@ -736,7 +747,7 @@ export const LightningMixin = (superclass) =>
 
           if (result.is_failed) {
             try {
-              await MainBook.void(payment._journal, "Payment canceled") // JSON.stringify(result.failed
+              await MainBook.void(payment._journal, "Payment canceled")
               lightningLogger.info(
                 { success: false, id: payment.hash, payment, result },
                 "payment has been canceled",

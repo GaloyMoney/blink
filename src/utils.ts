@@ -7,7 +7,6 @@ import { parsePaymentRequest } from "invoices"
 import { User } from "./schema"
 import axios from "axios"
 import { yamlConfig } from "./config"
-import { baseLogger } from "./logger"
 
 export const isDev = process.env.NODE_ENV !== "production"
 

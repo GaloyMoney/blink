@@ -1,5 +1,4 @@
 import { TransactionLimits, yamlConfig } from "./config"
-import { FtxDealerWallet } from "./dealer/FtxDealerWallet"
 import { NotFoundError } from "./error"
 import { LightningUserWallet } from "./LightningUserWallet"
 import { getCurrentPrice } from "./realtimePrice"
@@ -17,10 +16,6 @@ export const WalletFactory = async ({
   // FIXME: update price on event outside of the wallet factory
   const lastPrice = await getCurrentPrice()
   UserWallet.setCurrentPrice(lastPrice)
-
-  if (user?.role === "dealer") {
-    return new FtxDealerWallet({ user, logger })
-  }
 
   const transactionLimits = new TransactionLimits({
     config: yamlConfig.limits,
@@ -55,9 +50,4 @@ export const WalletFromUsername = async ({
 export const getFunderWallet = async ({ logger }) => {
   const funder = await User.findOne({ username: yamlConfig.funder })
   return WalletFactory({ user: funder, logger })
-}
-
-export const getDealerWallet = async ({ logger }) => {
-  const dealer = await User.findOne({ role: "dealer" })
-  return WalletFactory({ user: dealer, logger })
 }
