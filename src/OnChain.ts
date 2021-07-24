@@ -22,7 +22,7 @@ import {
   TransactionRestrictedError,
   ValidationInternalError,
 } from "./error"
-import { customerPath, lndAccountingPath, onchainRevenuePath } from "./ledger/ledger"
+import { accountPath, lndAccountingPath, onchainRevenuePath } from "./ledger/ledger"
 import { getActiveOnchainLnd, getLndFromPubkey } from "./lndUtils"
 import { lockExtendOrThrow, redlock } from "./lock"
 import { baseLogger } from "./logger"
@@ -192,7 +192,7 @@ export const OnChainMixin = (superclass) =>
 
             await lockExtendOrThrow({ lock, logger: onchainLoggerOnUs }, async () => {
               return await MainBook.entry()
-                .credit(customerPath(payeeUser._id), sats, metadata)
+                .credit(accountPath(payeeUser._id), sats, metadata)
                 .debit(this.user.accountPath, sats, { ...metadata, memo })
                 .commit()
             })

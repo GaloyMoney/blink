@@ -1,6 +1,6 @@
 import { getCurrentPrice } from "src/realtimePrice"
 import { sendBalanceToUsers } from "src/entrypoint/dailyBalanceNotification"
-import { customerPath } from "src/ledger/ledger"
+import { accountPath } from "src/ledger/ledger"
 import { MainBook } from "src/mongodb"
 import { User } from "src/schema"
 jest.mock("src/notifications/notification")
@@ -30,7 +30,7 @@ describe("notification", () => {
       expect(sendNotification.mock.calls.length).toBe(numActiveUsers)
       for (const [call] of sendNotification.mock.calls) {
         const { balance } = await MainBook.balance({
-          accounts: customerPath(call.user._id),
+          accounts: accountPath(call.user._id),
         })
         const expectedUsdBalance = (price * balance).toLocaleString("en", {
           maximumFractionDigits: 2,

@@ -3,7 +3,7 @@ import moment from "moment"
 import { CSVAccountExport } from "./csvAccountExport"
 import { DbError } from "./error"
 import { Balances } from "./interface"
-import { customerPath } from "./ledger/ledger"
+import { accountPath } from "./ledger/ledger"
 import { MainBook } from "./mongodb"
 import { sendNotification } from "./notifications/notification"
 import { User } from "./schema"
@@ -141,7 +141,7 @@ export abstract class UserWallet {
 
   async getStringCsv() {
     const csv = new CSVAccountExport()
-    await csv.addAccount({ account: customerPath(this.user.id) })
+    await csv.addAccount({ account: accountPath(this.user.id) })
     return csv.getBase64()
   }
 

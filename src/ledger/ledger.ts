@@ -10,9 +10,10 @@ export const lndAccountingPath = "Assets:Reserve:Lightning" // TODO: rename to A
 export const escrowAccountingPath = "Assets:Reserve:Escrow" // TODO: rename to Assets:Lnd:Escrow
 
 // liabilities
-export const customerPath = (uid) => `Liabilities:${uid}`
+export const accountPath = (uid) => `Liabilities:${uid}`
 
 let cacheDealerPath: string
+let cacheBankPath: string
 
 export const dealerMediciPath = async () => {
   if (cacheDealerPath) {
@@ -20,16 +21,24 @@ export const dealerMediciPath = async () => {
   }
 
   const dealer = await User.findOne({ role: "dealer" })
-  cacheDealerPath = customerPath(dealer._id)
+  cacheDealerPath = accountPath(dealer._id)
   return cacheDealerPath
+}
+
+export const bankMediciPath = async () => {
+  if (cacheBankPath) {
+    return cacheBankPath
+  }
+
+  const bank = await User.findOne({ role: "bank" })
+  cacheBankPath = accountPath(bank._id)
+  return cacheBankPath
 }
 
 // expenses
 
 // FIXME Bitcoin --> Lnd
 export const lndFeePath = "Expenses:Bitcoin:Fees"
-
-export const bitcoindFeePath = "Expenses:Bitcoin:Fees"
 
 // revenue
 export const onchainRevenuePath = "Revenue:Bitcoin:Fees"

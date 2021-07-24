@@ -2,7 +2,7 @@ import * as _ from "lodash"
 import * as mongoose from "mongoose"
 import { yamlConfig } from "./config"
 import { NotFoundError } from "./error"
-import { customerPath } from "./ledger/ledger"
+import { accountPath } from "./ledger/ledger"
 import { baseLogger } from "./logger"
 import { Levels } from "./types"
 import { caseInsensitiveRegex } from "./utils"
@@ -98,7 +98,7 @@ const UserSchema = new Schema({
   },
   role: {
     type: String,
-    enum: ["user", "dealer", "editor"],
+    enum: ["user", "dealer", "editor", "bank"],
     required: true,
     default: "user",
     // TODO : enfore the fact there can be only one dealer
@@ -251,7 +251,7 @@ UserSchema.virtual("ratioBtc").get(function (this: typeof UserSchema) {
 // this is the accounting path in medici for this user
 // eslint-disable-next-line no-unused-vars
 UserSchema.virtual("accountPath").get(function (this: typeof UserSchema) {
-  return customerPath(this._id)
+  return accountPath(this._id)
 })
 
 // eslint-disable-next-line no-unused-vars
