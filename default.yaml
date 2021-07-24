@@ -63,8 +63,11 @@ test_accounts:
   code: 321321
 - phone: "+16505554333" # user12
   code: 321321
-- phone: "+12223334444" # user42
+- phone: "+12223334444" # user13
   code: "424242"
+- phone: "+16505554334" # user14
+  code: 321321
+  role: "bank"
 
 sms_provider: "twilio"
 

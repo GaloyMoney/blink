@@ -20,9 +20,9 @@ import { Logger } from "pino"
 import { yamlConfig } from "./config"
 import { DbError, LndOfflineError, ValidationInternalError } from "./error"
 import {
+  bankMediciPath,
   escrowAccountingPath,
   lndAccountingPath,
-  lndFeePath,
   revenueFeePath,
 } from "./ledger/ledger"
 import { FEECAP, FEEMIN, ILndParamsAuthed, nodeType, params } from "./lndAuth"
@@ -299,13 +299,7 @@ export const onChannelUpdated = async ({
     return
   }
 
-  let txid
-
-  if (stateChange === "opened") {
-    ;({ transaction_id: txid } = channel as SubscribeToChannelsChannelOpenedEvent)
-  } else if (stateChange === "closed") {
-    ;({ close_transaction_id: txid } = channel as SubscribeToChannelsChannelClosedEvent)
-  }
+  const { transaction_id: txid } = channel as SubscribeToChannelsChannelOpenedEvent
 
   // TODO: dedupe from onchain
   const { current_block_height } = await getHeight({ lnd })
@@ -337,8 +331,10 @@ export const onChannelUpdated = async ({
 
   assert(fee > 0)
 
+  const bankPath = await bankMediciPath()
+
   await MainBook.entry(`channel ${stateChange} onchain fee`)
-    .debit(lndFeePath, fee, { ...metadata })
+    .debit(bankPath, fee, { ...metadata })
     .credit(lndAccountingPath, fee, { ...metadata })
     .commit()
 
