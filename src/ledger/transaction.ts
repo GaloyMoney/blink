@@ -18,12 +18,13 @@ export const addTransactionLndReceipt = async ({
       ...metadata,
       currency: "BTC",
     })
-    .credit(dealerPath, sats * payeeUser.ratioUsd, { ...metadata, currency: "BTC" })
-
     // always 100%
     .debit(lndAccountingPath, sats, { ...metadata, currency: "BTC" })
 
   if (payeeUser.ratioUsd) {
+    // other leg for the BTC. this is how the dealer get the BTC send to the user
+    entry.credit(dealerPath, sats * payeeUser.ratioUsd, { ...metadata, currency: "BTC" })
+
     const satsToConvert = sats * payeeUser.ratioUsd
 
     // TODO: add spread
@@ -57,9 +58,10 @@ export const addTransactionLndPayment = async ({
       ...metadata,
       currency: "BTC",
     })
-    .debit(dealerPath, sats * payerUser.ratioUsd, { ...metadata, currency: "BTC" })
 
   if (payerUser.ratioUsd) {
+    entry.debit(dealerPath, sats * payerUser.ratioUsd, { ...metadata, currency: "BTC" })
+
     const satsToConvert = sats * payerUser.ratioUsd
     const usdEquivalent = satsToConvert * UserWallet.lastPrice
 
