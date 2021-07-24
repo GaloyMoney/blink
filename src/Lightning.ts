@@ -637,12 +637,6 @@ export const LightningMixin = (superclass) =>
     // in this scenario, we have withdrawal a percent of fee (`max_fee`)
     // and once we know precisely how much the payment was we reimburse the difference
     async recordFeeDifference({ paymentResult, max_fee, id, related_journal }) {
-      const feeRecorded = await Transaction.count({ type: "fee_reimbursement", hash: id })
-
-      if (feeRecorded > 0) {
-        return
-      }
-
       const feeDifference = max_fee - paymentResult.safe_fee
 
       assert(feeDifference >= 0)
@@ -681,7 +675,6 @@ export const LightningMixin = (superclass) =>
         accounts: this.user.accountPath,
         type: "payment",
         pending: true,
-        voided: false,
       }
       const count = await Transaction.countDocuments(query)
 
@@ -704,6 +697,8 @@ export const LightningMixin = (superclass) =>
         const payments = await Transaction.find(query)
 
         for (const payment of payments) {
+          const paymentLogger = lightningLogger.child({ payment })
+
           let lnd
           try {
             ;({ lnd } = getLndFromPubkey({ pubkey: payment.pubkey }))
@@ -720,17 +715,31 @@ export const LightningMixin = (superclass) =>
             result = await getPayment({ lnd, id: payment.hash })
           } catch (err) {
             const error = "issue fetching payment"
-            this.logger.error({ lnd, err, payment }, error)
-            throw new LoggedError(error)
+            paymentLogger.error({ lnd, err }, error)
+            continue
           }
 
           if (result.is_confirmed || result.is_failed) {
-            payment.pending = false
-            await payment.save()
+            const resultPendingTrue = await Transaction.updateMany(
+              { _journal: payment._journal, pending: true },
+              { $set: { pending: false } },
+            )
+
+            if (resultPendingTrue.nModified === 0) {
+              // this could happen if dealer and user try to update transaction at the same time
+              // they are not mutually protected from the lock
+              paymentLogger.error(
+                { resultPendingTrue },
+                "we didn't have any transaction to update",
+              )
+              continue
+            }
+
+            paymentLogger.info({ resultPendingTrue }, "pending update status")
           }
 
           if (result.is_confirmed) {
-            lightningLogger.info(
+            paymentLogger.info(
               { success: true, id: payment.hash, payment },
               "payment has been confirmed",
             )
@@ -748,13 +757,16 @@ export const LightningMixin = (superclass) =>
           if (result.is_failed) {
             try {
               await MainBook.void(payment._journal, "Payment canceled")
-              lightningLogger.info(
-                { success: false, id: payment.hash, payment, result },
-                "payment has been canceled",
-              )
+              paymentLogger.info({ success: false, result }, "payment has been canceled")
             } catch (err) {
-              const error = `error canceling payment entry`
-              throw new DbError(error, { logger: this.logger, level: "fatal" })
+              const error = `error voiding payment entry`
+              paymentLogger.fatal(
+                {
+                  success: false,
+                  result,
+                },
+                error,
+              )
             }
           }
         }

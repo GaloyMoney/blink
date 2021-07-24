@@ -14,6 +14,8 @@ import {
   getChainBalance,
 } from "test/helpers"
 
+jest.mock("src/phone-provider", () => require("test/mocks/phone-provider"))
+
 it("connects to bitcoind", async () => {
   const { chain } = await bitcoindClient.getBlockchainInfo()
   expect(chain).toEqual("regtest")
