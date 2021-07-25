@@ -171,11 +171,10 @@ const resolvers = {
       const feeRates = getFeeRates()
       return { deposit: feeRates.depositFeeVariable }
     },
+    registerCaptchaGeetest: async (_, __, { logger, ip }) =>
+      await registerCaptchaGeetest({ logger, ip }),
   },
   Mutation: {
-    registerCaptchaGeetest: async (_, __, { logger, ip }) => ({
-      success: await registerCaptchaGeetest({ logger, ip }),
-    }),
     requestPhoneCodeGeetest: async (
       _,
       { phone, captchaChallenge, captchaValidate, captchaSeccode },

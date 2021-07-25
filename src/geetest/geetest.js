@@ -124,7 +124,7 @@ async function register() {
   // res.set('Content-Type', 'application/json;charset=UTF-8')
   // return res.send(result.data);
   console.log(`result: ${JSON.stringify(result)}`)
-  return result.data
+  return JSON.parse(result.data)
 }
 
 // // 二次验证接口，POST请求

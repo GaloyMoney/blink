@@ -207,10 +207,18 @@ type Query {
   getLevels: [Int]
   getLimits: Limits
   getWalletFees: WalletFees
+  registerCaptchaGeetest: RegisterCaptchaGeetestResult
 }
 
 type WalletFees {
   deposit: Float
+}
+
+type RegisterCaptchaGeetestResult {
+  success: Int
+  gt: String
+  challenge: String
+  new_captcha: Boolean
 }
 
 type Limits {
@@ -253,9 +261,6 @@ enum AccountStatus {
 }
 
 type Mutation {
-  # TODO
-  registerCaptchaGeetest: String
-
   requestPhoneCodeGeetest(
     phone: String @pattern(regexp: "^\\+[0-9]+$", policy: THROW)
     captchaChallenge: String @stringLength(min: 10, max: 1000, policy: THROW)

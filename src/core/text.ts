@@ -28,25 +28,6 @@ import {
   randomIntFromInterval,
 } from "./utils"
 
-async function captchaVerifyGeetest(captchaChallenge, captchaValidate, captchaSeccode) {
-  const result = await Geetest.validate(captchaChallenge, captchaValidate, captchaSeccode)
-  return result.status === 1
-  // return true
-}
-
-async function captchaVerifyGoogle(captcha) {
-  const base_url = "https://www.google.com/recaptcha/api/siteverify"
-  const secret = "TODO" // process.env.CAPTCHA_SECRET
-
-  const response = await axios.post(
-    base_url,
-    querystring.stringify({ secret, response: captcha }),
-  )
-  // TODO
-  return response.data.success === true
-  // return true
-}
-
 export const registerCaptchaGeetest = async ({
   logger,
   ip,
@@ -101,8 +82,28 @@ export const registerCaptchaGeetest = async ({
     }
   }
 
+  // TODO error handling
   registerResponse = await Geetest.register()
   return registerResponse
+}
+
+async function captchaVerifyGeetest(captchaChallenge, captchaValidate, captchaSeccode) {
+  const result = await Geetest.validate(captchaChallenge, captchaValidate, captchaSeccode)
+  return result.status === 1
+  // return true
+}
+
+async function captchaVerifyGoogle(captcha) {
+  const base_url = "https://www.google.com/recaptcha/api/siteverify"
+  const secret = "TODO" // process.env.CAPTCHA_SECRET
+
+  const response = await axios.post(
+    base_url,
+    querystring.stringify({ secret, response: captcha }),
+  )
+  // TODO
+  return response.data.success === true
+  // return true
 }
 
 export const requestPhoneCodeGeetest = async ({
