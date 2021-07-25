@@ -39,7 +39,7 @@ describe("lndUtils", () => {
 
       const bankOwnerPath = await bankOwnerMediciPath()
 
-      // FIXME: may not be independant. should have a diff of balance instead.
+      // FIXME: may not be indempotant. should have a diff of balance instead.
       const { balance } = await MainBook.balance({
         accounts: bankOwnerPath,
       })

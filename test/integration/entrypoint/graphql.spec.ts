@@ -4,6 +4,9 @@ import { yamlConfig } from "src/config"
 import { createTestClient } from "apollo-server-testing"
 import { startApolloServerForSchema } from "src/entrypoint/graphql-core-server"
 
+jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
+jest.mock("src/phone-provider", () => require("test/mocks/phone-provider"))
+
 let server, httpServer
 const { phone, code: correctCode } = yamlConfig.test_accounts[9]
 const badCode = 123456
