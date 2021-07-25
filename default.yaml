@@ -67,7 +67,7 @@ test_accounts:
   code: "424242"
 - phone: "+16505554334" # user14
   code: 321321
-  role: "bank"
+  role: "bankowner"
 
 sms_provider: "twilio"
 

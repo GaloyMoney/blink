@@ -1,7 +1,11 @@
 import assert from "assert"
 import { createChainAddress, sendToChainAddress } from "lightning"
 import _ from "lodash"
-import { bitcoindAccountingPath, lndAccountingPath, lndFeePath } from "./ledger/ledger"
+import {
+  bankOwnerMediciPath,
+  bitcoindAccountingPath,
+  lndAccountingPath,
+} from "./ledger/ledger"
 import { getActiveOnchainLnd, lndsBalances } from "./lndUtils"
 import { MainBook } from "./mongodb"
 import { getOnChainTransactions } from "./OnChain"
@@ -211,9 +215,11 @@ export class SpecterWallet {
       ...UserWallet.getCurrencyEquivalent({ sats, fee }),
     }
 
+    const bankOwnerPath = await bankOwnerMediciPath()
+
     await MainBook.entry(memo)
       .credit(lndAccountingPath, sats + fee, { ...metadata })
-      .debit(lndFeePath, fee, { ...metadata })
+      .debit(bankOwnerPath, fee, { ...metadata })
       .debit(bitcoindAccountingPath, sats, { ...metadata })
       .commit()
 
@@ -273,9 +279,11 @@ export class SpecterWallet {
     )
     const fee = btc2sat(-tx.fee) /* fee is negative */
 
+    const bankOwnerPath = await bankOwnerMediciPath()
+
     await MainBook.entry(memo)
       .debit(lndAccountingPath, sats, { ...metadata })
-      .debit(lndFeePath, fee, { ...metadata })
+      .debit(bankOwnerPath, fee, { ...metadata })
       .credit(bitcoindAccountingPath, sats + fee, { ...metadata })
       .commit()
 

@@ -21,7 +21,7 @@ it("mandatory users", async () => {
   // load funder wallet before use it
   await getUserWallet(4)
 
-  // "bank" user
+  // "bankowner" user
   await getUserWallet(14)
 })
 

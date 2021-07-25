@@ -1,5 +1,5 @@
 import { MainBook } from "src/mongodb"
-import { bankMediciPath } from "src/ledger/ledger"
+import { bankOwnerMediciPath } from "src/ledger/ledger"
 import {
   checkIsBalanced,
   closeChannel,
@@ -24,11 +24,11 @@ jest.mock("src/phone-provider", () => require("test/mocks/phone-provider"))
 const channelFee = 7637
 const lnds = [lnd1, lnd2, lndOutside1, lndOutside1]
 let channelLengthMain, channelLengthOutside1
-let bankPath: string
+let bankOwnerPath: string
 
 beforeEach(async () => {
   await waitUntilSync({ lnds })
-  bankPath = await bankMediciPath()
+  bankOwnerPath = await bankOwnerMediciPath()
   channelLengthMain = (await getChannels({ lnd: lnd1 })).channels.length
   channelLengthOutside1 = (await getChannels({ lnd: lndOutside1 })).channels.length
 })
@@ -60,7 +60,7 @@ describe("Lightning channels", () => {
   it("opens channel from lnd1 to lndOutside1", async () => {
     const socket = `lnd-outside-1:9735`
     const { balance: initFeeInLedger } = await MainBook.balance({
-      account: bankPath,
+      account: bankOwnerPath,
       currency: "BTC",
     })
 
@@ -74,7 +74,7 @@ describe("Lightning channels", () => {
     expect(channels.length).toEqual(channelLengthMain + 1)
 
     const { balance: finalFeeInLedger } = await MainBook.balance({
-      account: bankPath,
+      account: bankOwnerPath,
       currency: "BTC",
     })
     expect(finalFeeInLedger - initFeeInLedger).toBe(channelFee * -1)
@@ -102,7 +102,7 @@ describe("Lightning channels", () => {
   it("opens channel from lnd1 to lndOutside2", async () => {
     const socket = `lnd-outside-2:9735`
     const { balance: initFeeInLedger } = await MainBook.balance({
-      account: bankPath,
+      account: bankOwnerPath,
       currency: "BTC",
     })
 
@@ -116,7 +116,7 @@ describe("Lightning channels", () => {
     expect(channels.length).toEqual(channelLengthMain + 1)
 
     const { balance: finalFeeInLedger } = await MainBook.balance({
-      account: bankPath,
+      account: bankOwnerPath,
       currency: "BTC",
     })
     expect(finalFeeInLedger - initFeeInLedger).toBe(channelFee * -1)

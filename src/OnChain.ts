@@ -22,7 +22,7 @@ import {
   TransactionRestrictedError,
   ValidationInternalError,
 } from "./error"
-import { accountPath, lndAccountingPath, onchainRevenuePath } from "./ledger/ledger"
+import { accountPath, bankOwnerMediciPath, lndAccountingPath } from "./ledger/ledger"
 import { getActiveOnchainLnd, getLndFromPubkey } from "./lndUtils"
 import { lockExtendOrThrow, redlock } from "./lock"
 import { baseLogger } from "./logger"
@@ -338,10 +338,12 @@ export const OnChainMixin = (superclass) =>
                 sendAll,
               }
 
+              const bankOwnerPath = await bankOwnerMediciPath()
+
               // TODO/FIXME refactor. add the transaction first and set the fees in a second tx.
               await MainBook.entry(memo)
                 .credit(lndAccountingPath, sats - this.user.withdrawFee, metadata)
-                .credit(onchainRevenuePath, this.user.withdrawFee, metadata)
+                .credit(bankOwnerPath, this.user.withdrawFee, metadata)
                 .debit(this.user.accountPath, sats, metadata)
                 .commit()
 
@@ -641,8 +643,10 @@ export const OnChainMixin = (superclass) =>
                 payee_addresses: addresses,
               }
 
+              const bankOwnerPath = await bankOwnerMediciPath()
+
               await MainBook.entry()
-                .credit(onchainRevenuePath, fee, metadata)
+                .credit(bankOwnerPath, fee, metadata)
                 .credit(this.user.accountPath, sats - fee, metadata)
                 .debit(lndAccountingPath, sats, metadata)
                 .commit()

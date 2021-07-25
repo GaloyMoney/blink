@@ -5,7 +5,7 @@ import { balanceSheetIsBalanced, getLedgerAccounts } from "../ledger/balanceShee
 import { getBosScore, lndsBalances } from "../lndUtils"
 import { baseLogger } from "../logger"
 import { setupMongoConnection } from "../mongodb"
-import { Transaction, User } from "../schema"
+import { User } from "../schema"
 import { getFunderWallet } from "../walletFactory"
 
 const logger = baseLogger.child({ module: "exporter" })
@@ -67,14 +67,6 @@ const business_g = new client.Gauge({
   name: `${prefix}_business`,
   help: "number of businesses in the app",
 })
-const onchainWithdrawFees_g = new client.Gauge({
-  name: `${prefix}_onchainWithdrawFees`,
-  help: "onchain withdraw fees collected",
-})
-const onchainDepositFees_g = new client.Gauge({
-  name: `${prefix}_onchainDepositFees`,
-  help: "onchain deposit fees collected",
-})
 
 const main = async () => {
   server.get("/metrics", async (req, res) => {
@@ -126,20 +118,6 @@ const main = async () => {
     } catch (err) {
       logger.error({ err }, "error setting bitcoind/specter balance")
     }
-
-    const [depositFeeEntry] = await Transaction.aggregate([
-      { $match: { accounts: "Revenue:Bitcoin:Fees", type: "onchain_receipt" } },
-      { $group: { _id: null, totalDepositFees: { $sum: "$credit" } } },
-    ])
-    const { totalDepositFees = 0 } = depositFeeEntry || {}
-    onchainDepositFees_g.set(totalDepositFees)
-
-    const [withdrawFeeEntry] = await Transaction.aggregate([
-      { $match: { accounts: "Revenue:Bitcoin:Fees", type: "onchain_payment" } },
-      { $group: { _id: null, totalWithdrawFees: { $sum: "$credit" } } },
-    ])
-    const { totalWithdrawFees = 0 } = withdrawFeeEntry || {}
-    onchainWithdrawFees_g.set(totalWithdrawFees)
 
     res.set("Content-Type", register.contentType)
     res.end(await register.metrics())

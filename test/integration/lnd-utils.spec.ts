@@ -1,7 +1,7 @@
 import { MainBook } from "src/mongodb"
 import { baseLogger } from "src/logger"
 import { updateRoutingFees } from "src/lndUtils"
-import { revenueFeePath } from "src/ledger/ledger"
+import { bankOwnerMediciPath } from "src/ledger/ledger"
 import {
   createInvoice,
   getForwards,
@@ -37,8 +37,11 @@ describe("lndUtils", () => {
 
       await updateRoutingFees()
 
+      const bankOwnerPath = await bankOwnerMediciPath()
+
+      // FIXME: may not be independant. should have a diff of balance instead.
       const { balance } = await MainBook.balance({
-        accounts: revenueFeePath,
+        accounts: bankOwnerPath,
       })
 
       // this fix lnd rounding issues
