@@ -17,7 +17,7 @@ jest.mock("src/phone-provider", () => require("test/mocks/phone-provider"))
 
 const defaultWallet = ""
 
-it("mandatory users", async () => {
+beforeAll(async () => {
   // load funder wallet before use it
   await getUserWallet(4)
 
