@@ -1,5 +1,5 @@
 import { find, difference } from "lodash"
-import { OnboardingEarn } from "src/types"
+import { onboardingEarn } from "src/config"
 import { checkIsBalanced, getUserWallet } from "test/helpers"
 
 jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
@@ -8,9 +8,9 @@ jest.mock("src/phone-provider", () => require("test/mocks/phone-provider"))
 let userWallet1
 
 const earnsToGet = ["buyFirstSats", "debitCardActivation", "firstCardSpending"]
-const onBoardingEarnAmt: number = Object.keys(OnboardingEarn)
+const onBoardingEarnAmt: number = Object.keys(onboardingEarn)
   .filter((k) => find(earnsToGet, (o) => o === k))
-  .reduce((p, k) => p + OnboardingEarn[k], 0)
+  .reduce((p, k) => p + onboardingEarn[k], 0)
 const onBoardingEarnIds: string[] = earnsToGet
 
 beforeAll(async () => {

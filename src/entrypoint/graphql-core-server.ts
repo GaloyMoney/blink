@@ -16,14 +16,14 @@ import path from "path"
 
 import { baseLogger } from "../logger"
 import { addToMap, setAccountStatus, setLevel } from "../AdminOps"
-import { yamlConfig } from "../config"
+import { yamlConfig, levels, onboardingEarn } from "../config"
 import { getActiveLnd, nodesStats, nodeStats } from "../lndUtils"
 import { getHourlyPrice, getMinBuildNumber } from "../localCache"
 import { sendNotification } from "../notifications/notification"
 import { getCurrentPrice } from "../realtimePrice"
 import { User } from "../schema"
 import { login, requestPhoneCode } from "../text"
-import { Levels, OnboardingEarn, Primitive } from "../types"
+import { Primitive } from "../types"
 import { WalletFromUsername } from "../walletFactory"
 import { usernameExists } from "../db/user"
 import { startApolloServer, isAuthenticated, isEditor } from "./graphql-server"
@@ -111,7 +111,7 @@ const resolvers = {
       const response: Record<string, Primitive>[] = []
       const earned = user?.earn || []
 
-      for (const [id, value] of Object.entries(OnboardingEarn)) {
+      for (const [id, value] of Object.entries(onboardingEarn)) {
         response.push({
           id,
           value,
@@ -149,7 +149,7 @@ const resolvers = {
       const { _id: uid } = await User.getUserByPhone(phone)
       return uid
     },
-    getLevels: () => Levels,
+    getLevels: () => levels,
     getLimits: (_, __, { user }) => {
       return {
         oldEnoughForWithdrawal: yamlConfig.limits.oldEnoughForWithdrawal,
