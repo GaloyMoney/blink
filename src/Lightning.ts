@@ -35,12 +35,6 @@ import { MainBook } from "./mongodb"
 import { transactionNotification } from "./notifications/payment"
 import { redis } from "./redis"
 import { InvoiceUser, Transaction, User } from "./schema"
-import {
-  IAddInvoiceRequest,
-  IFeeRequest,
-  IPaymentRequest,
-  UserWalletConfig,
-} from "./types"
 import { UserWallet } from "./userWallet"
 import { addContact, isInvoiceAlreadyPaidError, LoggedError, timeout } from "./utils"
 

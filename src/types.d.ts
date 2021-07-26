@@ -1,26 +1,24 @@
-import { Logger as PinoLogger } from "pino"
-import { User } from "./schema"
+type Logger = import("pino").Logger
+type UserType = typeof import("./schema").User
 
-export type Side = "buy" | "sell"
-export type Currency = "USD" | "BTC"
+type Side = "buy" | "sell"
+type Currency = "USD" | "BTC"
 
-export type ISuccess = boolean
+type ISuccess = boolean
 
-export type Logger = PinoLogger
+type Primitive = string | boolean | number
 
-export type Primitive = string | boolean | number
-
-export type WalletConstructorArgs = {
+type WalletConstructorArgs = {
   // FIXME: Add a type for user here.
   user: unknown
   logger: Logger
 }
 
-export type UserWalletConstructorArgs = WalletConstructorArgs & {
+type UserWalletConstructorArgs = WalletConstructorArgs & {
   config: UserWalletConfig
 }
 
-export interface ITransactionLimits {
+interface ITransactionLimits {
   config
   level: number
   onUsLimit: () => number
@@ -28,13 +26,13 @@ export interface ITransactionLimits {
   oldEnoughForWithdrawalLimit: () => number
 }
 
-export type UserWalletConfig = {
+type UserWalletConfig = {
   dustThreshold: number
   limits: ITransactionLimits
   name: string
 }
 
-export type SpecterWalletConfig = {
+type SpecterWalletConfig = {
   lndHoldingBase: number
   ratioTargetDeposit: number
   ratioTargetWithdraw: number
@@ -42,42 +40,42 @@ export type SpecterWalletConfig = {
   onchainWallet: string
 }
 
-export type SpecterWalletConstructorArgs = {
+type SpecterWalletConstructorArgs = {
   config: SpecterWalletConfig
   logger: Logger
 }
 
 // Lightning
 
-export interface IAddInvoiceRequest {
+interface IAddInvoiceRequest {
   value: number
   memo: string | undefined
   selfGenerated?: boolean
 }
 
-export interface IAddBTCInvoiceRequest {
+interface IAddBTCInvoiceRequest {
   value: number | undefined
   memo?: string | undefined
   selfGenerated?: boolean
 }
 
-export interface IAddUSDInvoiceRequest {
+interface IAddUSDInvoiceRequest {
   value: number
   memo: string | undefined
 }
 
-export type IAddInvoiceResponse = {
+type IAddInvoiceResponse = {
   request: string
 }
 
-export type ChainType = "lightning" | "onchain"
+type ChainType = "lightning" | "onchain"
 
 // TODO:
 // refactor lightning/onchain and payment/receipt/onus
 // to 2 different variables.
 // also log have renamed "paid-invoice" --> "receipt"
 
-export type TransactionType =
+type TransactionType =
   | "payment"
   | "paid-invoice"
   | "on_us"
@@ -91,16 +89,16 @@ export type TransactionType =
   | "routing_fee"
   | "onchain_receipt_pending" // only for notification, not persistent in mongodb
 
-export type Levels = number[]
+type Levels = number[]
 
-export interface IOnChainPayment {
+interface IOnChainPayment {
   address: string
   amount: number // sats
   memo?: string
   sendAll?: boolean
 }
 
-export interface ITransaction {
+interface ITransaction {
   created_at: number // unix
   amount: number
   sat: number
@@ -118,13 +116,13 @@ export interface ITransaction {
   addresses?: string[]
 }
 
-export interface IFeeRequest {
+interface IFeeRequest {
   amount?: number
   invoice?: string
   username?: string
 }
 
-export interface IPaymentRequest {
+interface IPaymentRequest {
   username?: string
   amount?: number
   invoice?: string
@@ -132,34 +130,34 @@ export interface IPaymentRequest {
   isReward?: boolean
 }
 
-export type IPayInvoice = {
+type IPayInvoice = {
   invoice: string
 }
 
-export interface IQuoteRequest {
+interface IQuoteRequest {
   side: Side
   satAmount?: number // sell
   invoice?: string // buy
 }
 
-export interface IDataNotification {
+interface IDataNotification {
   type: TransactionType
   amount: number
   hash?: string
   txid?: string // FIXME in mongodb, there is no differenciation between hash and txid?
 }
 
-export interface IPaymentNotification {
+interface IPaymentNotification {
   amount: number
   type: string
-  user: typeof User
+  user: UserType
   logger: Logger
   hash?: string
   txid?: string
 }
 
-export interface INotification {
-  user: typeof User
+interface INotification {
+  user: UserType
   title: string
   data?: IDataNotification
   body?: string
@@ -167,12 +165,12 @@ export interface INotification {
 }
 
 // TODO: Add types for payer, payee and metadata
-export type IAddTransactionOnUsPayment = {
+type IAddTransactionOnUsPayment = {
   description: string
   sats: number
   metadata: Record<string, unknown>
-  payerUser: typeof User
-  payeeUser: typeof User
+  payerUser: UserType
+  payeeUser: UserType
   memoPayer?: string
   shareMemoWithPayee?: boolean
 }

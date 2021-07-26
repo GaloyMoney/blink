@@ -2,12 +2,6 @@ import fs from "fs"
 import yaml from "js-yaml"
 import _ from "lodash"
 import { baseLogger } from "./logger"
-import {
-  ITransactionLimits,
-  UserWalletConfig,
-  SpecterWalletConfig,
-  Levels,
-} from "./types"
 
 const defaultContent = fs.readFileSync("./default.yaml", "utf8")
 export const defaultConfig = yaml.load(defaultContent)

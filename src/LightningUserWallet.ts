@@ -4,7 +4,6 @@ import { redlock } from "./lock"
 import { OnChainMixin } from "./OnChain"
 import { User } from "./schema"
 import { onboardingEarn } from "./config"
-import { UserWalletConstructorArgs } from "./types"
 import { UserWallet } from "./userWallet"
 import { getFunderWallet } from "./walletFactory"
 

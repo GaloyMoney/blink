@@ -3,7 +3,6 @@ import { NotFoundError } from "./error"
 import { LightningUserWallet } from "./LightningUserWallet"
 import { getCurrentPrice } from "./realtimePrice"
 import { User } from "./schema"
-import { Logger } from "./types"
 import { UserWallet } from "./userWallet"
 
 export const WalletFactory = async ({
