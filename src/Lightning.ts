@@ -4,7 +4,6 @@ import {
   AuthenticatedLnd,
   cancelHodlInvoice,
   createInvoice,
-  getInvoice,
   GetInvoiceResult,
   getPayment,
   payViaPaymentDetails,
