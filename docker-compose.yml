@@ -31,7 +31,7 @@ services:
     volumes:
     - ${PWD}/dev/bitcoind/bitcoin.conf:/data/.bitcoin/bitcoin.conf
   lnd1:
-    image: lncm/lnd:v0.12.1-monitoring
+    image: lncm/lnd:v0.13.1-monitoring
     ports:
       - "10009:10009"
     volumes:
@@ -40,7 +40,7 @@ services:
     - ${PWD}/dev/lnd/tls.cert:/data/.lnd/tls.cert
     depends_on: [bitcoind]
   lnd2:
-    image: lncm/lnd:v0.12.1-monitoring
+    image: lncm/lnd:v0.13.1-monitoring
     ports:
       - "10010:10009"
     volumes:
@@ -49,7 +49,7 @@ services:
     - ${PWD}/dev/lnd/tls.cert:/data/.lnd/tls.cert
     depends_on: [bitcoind]
   lnd-outside-1:
-    image: lncm/lnd:v0.12.1-monitoring
+    image: lncm/lnd:v0.13.1-monitoring
     ports:
       - "10012:10009"
     volumes:
@@ -58,7 +58,7 @@ services:
     - ${PWD}/dev/lnd/tls.cert:/data/.lnd/tls.cert
     depends_on: [bitcoind]
   lnd-outside-2:
-    image: lncm/lnd:v0.12.1-monitoring
+    image: lncm/lnd:v0.13.1-monitoring
     ports:
       - "10013:10009"
     volumes:
