@@ -1,7 +1,10 @@
-import { MainBook } from "src/mongodb"
-import { baseLogger } from "src/logger"
-import { updateRoutingFees } from "src/lndUtils"
+import { cancelHodlInvoice } from "lightning"
+import moment from "moment"
 import { bankOwnerMediciPath } from "src/ledger/ledger"
+import { getInvoiceAttempt, updateRoutingFees } from "src/lndUtils"
+import { baseLogger } from "src/logger"
+import { MainBook } from "src/mongodb"
+import { sleep } from "src/utils"
 import {
   createInvoice,
   getForwards,
@@ -9,7 +12,7 @@ import {
   lndOutside1,
   lndOutside2,
   pay,
-  waitFor,
+  waitFor
 } from "test/helpers"
 
 afterAll(() => {
@@ -17,35 +20,75 @@ afterAll(() => {
 })
 
 describe("lndUtils", () => {
-  describe("updateRoutingFees", () => {
-    it("sets routing fee correctly", async () => {
-      const { request } = await createInvoice({ lnd: lndOutside2, tokens: 10000 })
+  // this is a test for gc-canceled-invoices-on-the-fly=true settings
+  it("test cancelling invoice effect", async () => {
+    const lnd = lndOutside2
 
-      await waitFor(async () => {
-        try {
-          return await pay({ lnd: lndOutside1, request })
-        } catch (error) {
-          baseLogger.warn({ error }, "pay failed. trying again.")
-          return null
-        }
-      })
+    const { id } = await createInvoice({ lnd, tokens: 10000 })
 
-      baseLogger.debug((await getForwards({ lnd: lnd1 })).forwards, "forwards")
+    {
+      const { invoice, invoiceDeleted } = await getInvoiceAttempt({ lnd, id })
+      expect(invoice).toBeTruthy()
+      expect(invoiceDeleted).toBeFalsy()
+    }
 
-      const date = Date.now() + 60 * 60 * 1000 * 24 * 2
-      jest.spyOn(global.Date, "now").mockImplementation(() => new Date(date).valueOf())
+    await cancelHodlInvoice({ lnd, id })
 
-      await updateRoutingFees()
+    {
+      const { invoice, invoiceDeleted } = await getInvoiceAttempt({ lnd, id })
+      expect(invoice).toBeFalsy()
+      expect(invoiceDeleted).toBeTruthy()
+    }
+  })
 
-      const bankOwnerPath = await bankOwnerMediciPath()
+  it("test expiring invoice effect", async () => {
+    const lnd = lndOutside2
 
-      // FIXME: may not be indempotant. should have a diff of balance instead.
-      const { balance } = await MainBook.balance({
-        accounts: bankOwnerPath,
-      })
+    const expires_at = moment().add(1, "s").toISOString()
 
-      // this fix lnd rounding issues
-      expect([1, 1.01]).toContain(balance)
+    const { id } = await createInvoice({ lnd: lndOutside2, tokens: 10000, expires_at })
+
+    {
+      const { invoice, invoiceDeleted } = await getInvoiceAttempt({ lnd, id })
+      expect(invoice).toBeTruthy()
+      expect(invoiceDeleted).toBeFalsy()
+    }
+
+    await sleep(1000)
+
+    {
+      const { invoice, invoiceDeleted } = await getInvoiceAttempt({ lnd, id })
+      expect(invoice).toBeFalsy()
+      expect(invoiceDeleted).toBeTruthy()
+    }
+  })
+
+  it("sets routing fee correctly", async () => {
+    const bankOwnerPath = await bankOwnerMediciPath()
+
+    const { request } = await createInvoice({ lnd: lndOutside2, tokens: 10000 })
+
+    await waitFor(async () => {
+      try {
+        return await pay({ lnd: lndOutside1, request })
+      } catch (error) {
+        baseLogger.warn({ error }, "pay failed. trying again.")
+        return null
+      }
     })
+
+    baseLogger.debug((await getForwards({ lnd: lnd1 })).forwards, "forwards")
+
+    const date = Date.now() + 60 * 60 * 1000 * 24 * 2
+    jest.spyOn(global.Date, "now").mockImplementation(() => new Date(date).valueOf())
+
+    await updateRoutingFees()
+
+    const { balance } = await MainBook.balance({
+      accounts: bankOwnerPath,
+    })
+
+    // this fix lnd rounding issues
+    expect([1, 1.01]).toContain(balance)
   })
 })

@@ -13,11 +13,14 @@ export const addTransactionLndReceipt = async ({
 
   const entry = MainBook.entry(description)
 
-  entry
-    .credit(payeeUser.accountPath, sats * payeeUser.ratioBtc, {
+  if (payeeUser.ratioBtc) {
+    entry.credit(payeeUser.accountPath, sats * payeeUser.ratioBtc, {
       ...metadata,
       currency: "BTC",
     })
+  }
+
+  entry
     // always 100%
     .debit(lndAccountingPath, sats, { ...metadata, currency: "BTC" })
 
@@ -54,10 +57,12 @@ export const addTransactionLndPayment = async ({
     // always 100%
     .credit(lndAccountingPath, sats, { ...metadata, currency: "BTC" })
 
-    .debit(payerUser.accountPath, sats * payerUser.ratioBtc, {
+  if (payerUser.ratioBtc) {
+    entry.debit(payerUser.accountPath, sats * payerUser.ratioBtc, {
       ...metadata,
       currency: "BTC",
     })
+  }
 
   if (payerUser.ratioUsd) {
     entry.debit(dealerPath, sats * payerUser.ratioUsd, { ...metadata, currency: "BTC" })

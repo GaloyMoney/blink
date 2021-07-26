@@ -60,6 +60,9 @@ describe("Bitcoind", () => {
     const { chain_balance: initialBalance } = await getChainBalance({ lnd: lnd1 })
     const sats = initialBalance + btc2sat(amount)
 
+    // initiate the dealer wallet
+    await getUserWallet(6)
+
     // load funder wallet before use it
     await getUserWallet(4)
     const funderWallet = await getFunderWallet({ logger: baseLogger })

@@ -11,6 +11,7 @@ import {
   getForwards,
   getHeight,
   getPendingChainBalance,
+  getInvoice,
   getWalletInfo,
   SubscribeToChannelsChannelClosedEvent,
   SubscribeToChannelsChannelOpenedEvent,
@@ -34,15 +35,15 @@ import { LoggedError, LOOK_BACK } from "./utils"
 // milliseconds in a day
 const MS_PER_DAY = 864e5
 
-export const deleteExpiredInvoices = async () => {
+export const deleteExpiredInvoiceUser = async () => {
   // this should be longer than the invoice validity time
-  // only useful for users that have not logged in back
-  // because the expired invoices are otherwise deleted on the fly
-  // from lnd, and the InvoiceUser collection are being deleted on user request
+
   const delta = 30 // days
 
   const date = new Date()
   date.setDate(date.getDate() - delta)
+  // TODO: assert: only paid: true invoice should be remaining here
+  // other invoiceUser should be deleted alongside deletion of lnd invoice
   await InvoiceUser.deleteMany({ timestamp: { lt: date } })
 }
 
@@ -181,6 +182,24 @@ export const getRoutingFees = async ({
 
   // returns an array of objects where each object has key = date and value = fees
   return _.map(feePerDate, (v, k) => ({ [k]: v }))
+}
+
+export const getInvoiceAttempt = async ({ lnd, id }) => {
+  let invoice
+  let invoiceDeleted = false
+
+  try {
+    invoice = await getInvoice({ lnd, id })
+  } catch (err) {
+    const invoiceNotFound = "unable to locate invoice"
+    if (err.length === 3 && err[2]?.err?.details === invoiceNotFound) {
+      invoiceDeleted = true
+    } else {
+      throw err
+    }
+  }
+
+  return { invoice, invoiceDeleted }
 }
 
 export const updateRoutingFees = async () => {

@@ -1,7 +1,7 @@
 import { getSpecterWalletConfig } from "../config"
 import { updateUsersPendingPayment } from "../ledger/balanceSheet"
 import {
-  deleteExpiredInvoices,
+  deleteExpiredInvoiceUser,
   deleteFailedPaymentsAllLnds,
   updateEscrows,
   updateRoutingFees,
@@ -16,7 +16,7 @@ const main = async () => {
   await updateEscrows()
   await updateUsersPendingPayment()
 
-  await deleteExpiredInvoices()
+  await deleteExpiredInvoiceUser()
   await deleteFailedPaymentsAllLnds()
 
   const specterWalletConfig = getSpecterWalletConfig()
