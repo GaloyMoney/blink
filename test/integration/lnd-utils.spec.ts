@@ -27,17 +27,15 @@ describe("lndUtils", () => {
     const { id } = await createInvoice({ lnd, tokens: 10000 })
 
     {
-      const { invoice, invoiceDeleted } = await getInvoiceAttempt({ lnd, id })
+      const invoice = await getInvoiceAttempt({ lnd, id })
       expect(invoice).toBeTruthy()
-      expect(invoiceDeleted).toBeFalsy()
     }
 
     await cancelHodlInvoice({ lnd, id })
 
     {
-      const { invoice, invoiceDeleted } = await getInvoiceAttempt({ lnd, id })
-      expect(invoice).toBeFalsy()
-      expect(invoiceDeleted).toBeTruthy()
+      const invoice = await getInvoiceAttempt({ lnd, id })
+      expect(invoice).toBeNull()
     }
   })
 
@@ -49,17 +47,15 @@ describe("lndUtils", () => {
     const { id } = await createInvoice({ lnd: lndOutside2, tokens: 10000, expires_at })
 
     {
-      const { invoice, invoiceDeleted } = await getInvoiceAttempt({ lnd, id })
+      const invoice = await getInvoiceAttempt({ lnd, id })
       expect(invoice).toBeTruthy()
-      expect(invoiceDeleted).toBeFalsy()
     }
 
     await sleep(1000)
 
     {
-      const { invoice, invoiceDeleted } = await getInvoiceAttempt({ lnd, id })
-      expect(invoice).toBeFalsy()
-      expect(invoiceDeleted).toBeTruthy()
+      const invoice = await getInvoiceAttempt({ lnd, id })
+      expect(invoice).toBeNull()
     }
   })
 

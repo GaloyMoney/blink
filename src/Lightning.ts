@@ -819,9 +819,9 @@ export const LightningMixin = (superclass) =>
         return false
       }
 
-      const { invoice, invoiceDeleted } = await getInvoiceAttempt({ lnd, id: hash })
+      const invoice = await getInvoiceAttempt({ lnd, id: hash })
 
-      if (invoiceDeleted) {
+      if (!invoice) {
         try {
           await InvoiceUser.deleteOne({ _id: hash, uid: this.user._id })
         } catch (err) {

@@ -469,8 +469,8 @@ describe("UserWallet - Lightning Pay", () => {
         const count = await Transaction.countDocuments(query)
         expect(count).toBeTruthy()
 
-        const { invoiceDeleted } = await getInvoiceAttempt({ lnd: lndOutside1, id })
-        expect(invoiceDeleted).toBeTruthy()
+        const invoice = await getInvoiceAttempt({ lnd: lndOutside1, id })
+        expect(invoice).toBeNull()
 
         // wait for balance updates because invoice event
         // arrives before wallet balances updates in lnd

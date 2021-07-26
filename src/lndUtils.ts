@@ -185,21 +185,16 @@ export const getRoutingFees = async ({
 }
 
 export const getInvoiceAttempt = async ({ lnd, id }) => {
-  let invoice
-  let invoiceDeleted = false
-
   try {
-    invoice = await getInvoice({ lnd, id })
+    return await getInvoice({ lnd, id })
   } catch (err) {
     const invoiceNotFound = "unable to locate invoice"
     if (err.length === 3 && err[2]?.err?.details === invoiceNotFound) {
-      invoiceDeleted = true
-    } else {
-      throw err
+      return null
     }
+    // must be wrapped error?
+    throw err
   }
-
-  return { invoice, invoiceDeleted }
 }
 
 export const updateRoutingFees = async () => {
