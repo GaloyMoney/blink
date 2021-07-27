@@ -12,7 +12,7 @@ watch:
 	yarn nodemon -V -e ts,graphql -w ./src -x make start
 
 clean-deps:
-	docker-compose rm -sfv
+	docker-compose down
 
 reset-deps: clean-deps start-deps
 
