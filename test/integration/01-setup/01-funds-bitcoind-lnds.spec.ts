@@ -39,15 +39,12 @@ describe("Bitcoind", () => {
   })
 
   it("create outside wallet", async () => {
-    await createWalletInClient("outside")
-    bitcoindOutside = new BitcoindClientWallet("outside")
-  })
-
-  // TODO: at the moment the "hot" wallet is only used here
-  it("create hot wallet", async () => {
-    await createWalletInClient("hot") // asserts
-    // then unload immediately
-    await bitcoindClient.unloadWallet({ wallet_name: "hot" })
+    const wallet_name = "outside"
+    const { name } = await bitcoindClient.createWallet({ wallet_name })
+    expect(name).toBe(wallet_name)
+    const wallets = await bitcoindClient.listWallets()
+    expect(wallets).toContain(wallet_name)
+    bitcoindOutside = new BitcoindWalletClient(wallet_name)
   })
 
   it("should be funded mining 10 blocks", async () => {
@@ -85,10 +82,3 @@ describe("Bitcoind", () => {
     await checkIsBalanced()
   })
 })
-
-async function createWalletInClient(wallet_name) {
-  const { name } = await bitcoindClient.createWallet({ wallet_name })
-  expect(name).toBe(wallet_name)
-  const wallets = await bitcoindClient.listWallets()
-  expect(wallets).toContain(wallet_name)
-}
