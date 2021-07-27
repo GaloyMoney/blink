@@ -1,4 +1,4 @@
-import { BitcoindClientWallet } from "src/bitcoind"
+import { BitcoindWalletClient } from "src/bitcoind"
 import { btc2sat } from "src/utils"
 import { baseLogger } from "src/logger"
 import { getFunderWallet } from "src/walletFactory"

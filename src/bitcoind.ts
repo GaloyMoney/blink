@@ -39,8 +39,8 @@ type InWalletTransaction = {
 
 // TODO consistency in params
 
-export class BitcoindClientNoWallet {
-  client
+export class BitcoindClient {
+  readonly client
 
   constructor() {
     this.client = new Client({ ...connection_obj })
@@ -83,8 +83,8 @@ export class BitcoindClientNoWallet {
   }
 }
 
-export class BitcoindClientWallet {
-  client
+export class BitcoindWalletClient {
+  readonly client
 
   constructor(walletName: string) {
     this.client = new Client({ ...connection_obj, wallet: walletName })
@@ -140,7 +140,7 @@ export class BitcoindClientWallet {
 }
 
 // The default client should remain without a wallet (not generate or receive bitcoin)
-export const bitcoindDefaultClient = new BitcoindClientNoWallet()
+export const bitcoindDefaultClient = new BitcoindClient()
 
 export const getBalancesDetail = async (): Promise<
   { wallet: string; balance: number }[]
@@ -155,7 +155,7 @@ export const getBalancesDetail = async (): Promise<
       continue
     }
 
-    const client = new BitcoindClientWallet(wallet)
+    const client = new BitcoindWalletClient(wallet)
     const balance = btc2sat(await client.getBalance())
     balances.push({ wallet, balance })
   }

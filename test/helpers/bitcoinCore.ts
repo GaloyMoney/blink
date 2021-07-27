@@ -1,8 +1,8 @@
-import { bitcoindDefaultClient, BitcoindClientWallet } from "src/bitcoind"
+import { bitcoindDefaultClient, BitcoindWalletClient } from "src/bitcoind"
 
 export const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
 export const bitcoindClient = bitcoindDefaultClient // no wallet
-export const bitcoindOutside = new BitcoindClientWallet("outside")
+export const bitcoindOutside = new BitcoindWalletClient("outside")
 
 export async function sendToAddressAndConfirm(walletClient, address, amount) {
   await walletClient.sendToAddress(address, amount)
