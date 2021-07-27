@@ -16,6 +16,12 @@ interface ITransactionLimits {
   oldEnoughForWithdrawalLimit: () => number
 }
 
+interface IRateLimits {
+  points: number
+  duration: number
+  blockDuration: number
+}
+
 type UserWalletConfig = {
   dustThreshold: number
   limits: ITransactionLimits
