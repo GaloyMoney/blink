@@ -43,9 +43,11 @@ describe("Bitcoind", () => {
     bitcoindOutside = new BitcoindClientWallet("outside")
   })
 
-  // TODO: at the moment the "hot" wallet is only used here, specifically for a further test (specter-wallet) which considers the number of wallets...
+  // TODO: at the moment the "hot" wallet is only used here
   it("create hot wallet", async () => {
-    await createWalletInClient("hot")
+    await createWalletInClient("hot") // asserts
+    // then unload immediately
+    await bitcoindClient.unloadWallet({ wallet_name: "hot" })
   })
 
   it("should be funded mining 10 blocks", async () => {
