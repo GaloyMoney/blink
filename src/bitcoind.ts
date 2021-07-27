@@ -67,7 +67,7 @@ export class BitcoindClient {
   }
 
   async loadWallet(filename: string): Promise<{ name: string; warning: string }> {
-    return await this.client.loadWallet(filename)
+    return await this.client.loadWallet({ filename })
   }
 
   async unloadWallet({
@@ -79,7 +79,7 @@ export class BitcoindClient {
   }
 
   async decodeRawTransaction(hexstring: string): Promise<{ vout: [VOut] }> {
-    return await this.client.decodeRawTransaction(hexstring)
+    return await this.client.decodeRawTransaction({ hexstring })
   }
 }
 
@@ -99,18 +99,18 @@ export class BitcoindWalletClient {
   }
 
   async sendToAddress(address: string, amount: number): Promise<string> {
-    return await this.client.sendToAddress(address, amount)
+    return await this.client.sendToAddress({ address, amount })
   }
 
   async getTransaction(
     txid: string,
     include_watchonly?: boolean,
   ): Promise<InWalletTransaction> {
-    return await this.client.getTransaction(txid, include_watchonly)
+    return await this.client.getTransaction({ txid, include_watchonly })
   }
 
   async generateToAddress(nblocks: number, address: string): Promise<[string]> {
-    return await this.client.generateToAddress(nblocks, address)
+    return await this.client.generateToAddress({ nblocks, address })
   }
 
   async getBalance(): Promise<number> {
@@ -121,21 +121,21 @@ export class BitcoindWalletClient {
     inputs: [],
     outputs: Record<string, number>[],
   ): Promise<{ psbt: string }> {
-    return await this.client.walletCreateFundedPsbt(inputs, outputs)
+    return await this.client.walletCreateFundedPsbt({ inputs, outputs })
   }
 
   async walletProcessPsbt(psbt: string): Promise<{ psbt: string }> {
-    return await this.client.walletProcessPsbt(psbt)
+    return await this.client.walletProcessPsbt({ psbt })
   }
 
   async finalizePsbt(
     psbt: string,
   ): Promise<{ psbt: string; hex: string; complete: boolean }> {
-    return await this.client.finalizePsbt(psbt)
+    return await this.client.finalizePsbt({ psbt })
   }
 
   async sendRawTransaction(hexstring: string): Promise<string> {
-    return await this.client.sendRawTransaction(hexstring)
+    return await this.client.sendRawTransaction({ hexstring })
   }
 }
 
