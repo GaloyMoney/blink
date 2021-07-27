@@ -1,8 +1,8 @@
-import { bitcoindDefaultClient, BitcoindWalletClient } from "src/utils"
+import { bitcoindDefaultClient, BitcoindClientWallet } from "src/bitcoind"
 
 export const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
 export const bitcoindClient = bitcoindDefaultClient // no wallet
-export const bitcoindOutside = BitcoindWalletClient({ wallet: "outside" })
+export const bitcoindOutside = new BitcoindClientWallet("outside")
 
 export async function sendToAddressAndConfirm(walletClient, address, amount) {
   await walletClient.sendToAddress(address, amount)
@@ -15,7 +15,7 @@ export async function mineAndConfirm(walletClient, numOfBlocks, address) {
   // However, a block must have 100 confirmations before that reward can be spent,
   // so we generate 101 blocks to get access to the coinbase transaction from block #1.
 
-  const blockNumber = await walletClient.getBlockCount()
+  const blockNumber = await bitcoindDefaultClient.getBlockCount()
 
   await walletClient.generateToAddress(numOfBlocks, address)
   await walletClient.generateToAddress(101, RANDOM_ADDRESS)

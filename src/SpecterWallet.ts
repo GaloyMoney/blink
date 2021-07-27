@@ -1,6 +1,7 @@
 import assert from "assert"
 import { createChainAddress, sendToChainAddress } from "lightning"
 import _ from "lodash"
+import { bitcoindDefaultClient, BitcoindClientWallet } from "./bitcoind"
 import {
   bankOwnerMediciPath,
   bitcoindAccountingPath,
@@ -11,13 +12,13 @@ import { MainBook } from "./mongodb"
 import { getOnChainTransactions } from "./OnChain"
 import { Logger, SpecterWalletConfig, SpecterWalletConstructorArgs } from "./types"
 import { UserWallet } from "./userWallet"
-import { BitcoindWalletClient, bitcoindDefaultClient, btc2sat, sat2btc } from "./utils"
+import { btc2sat, sat2btc } from "./utils"
 
 // TODO no longer used in tests, removing the creation of the default wallet didn't break anything
 const staticClient = "default" // was ""
 
 export class SpecterWallet {
-  bitcoindClient
+  bitcoindClient // TODO rename?
   readonly logger: Logger
   readonly config: SpecterWalletConfig
 
@@ -62,7 +63,7 @@ export class SpecterWallet {
 
     this.logger.info({ wallet: specterWallets[0] }, "setting BitcoindClient")
 
-    this.bitcoindClient = BitcoindWalletClient({ wallet: specterWallets[0] })
+    this.bitcoindClient = new BitcoindClientWallet(specterWallets[0])
 
     return specterWallets[0]
   }

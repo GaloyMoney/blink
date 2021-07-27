@@ -1,3 +1,4 @@
+import { BitcoindClientWallet } from "src/bitcoind"
 import { btc2sat } from "src/utils"
 import { baseLogger } from "src/logger"
 import { getFunderWallet } from "src/walletFactory"
@@ -5,7 +6,6 @@ import {
   lnd1,
   lndOutside1,
   bitcoindClient,
-  bitcoindOutside,
   getChainBalance,
   fundLnd,
   checkIsBalanced,
@@ -17,6 +17,8 @@ import {
 
 jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
 jest.mock("src/phone-provider", () => require("test/mocks/phone-provider"))
+
+let bitcoindOutside
 
 beforeAll(async () => {
   // load funder wallet before use it
@@ -34,6 +36,7 @@ describe("Bitcoind", () => {
 
   it("create outside wallet", async () => {
     await createWalletInClient("outside")
+    bitcoindOutside = new BitcoindClientWallet("outside")
   })
 
   // TODO: at the moment the "hot" wallet is only used here, specifically for a further test (specter-wallet) which considers the number of wallets...
@@ -77,9 +80,9 @@ describe("Bitcoind", () => {
   })
 })
 
-async function createWalletInClient(walletName) {
-  const { name } = await bitcoindClient.createWallet(walletName)
-  expect(name).toBe(walletName)
+async function createWalletInClient(wallet_name) {
+  const { name } = await bitcoindClient.createWallet({ wallet_name })
+  expect(name).toBe(wallet_name)
   const wallets = await bitcoindClient.listWallets()
-  expect(wallets).toContain(walletName)
+  expect(wallets).toContain(wallet_name)
 }

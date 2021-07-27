@@ -16,6 +16,7 @@ import {
   sendToAddressAndConfirm,
   subscribeToChainAddress,
   subscribeToTransactions,
+  bitcoindClient,
   bitcoindOutside,
   amountAfterFeeDeduction,
 } from "test/helpers"
@@ -242,7 +243,7 @@ async function sendToWallet({ walletDestination }) {
   }
 
   // just to improve performance
-  const blockNumber = await bitcoindOutside.getBlockCount()
+  const blockNumber = await bitcoindClient.getBlockCount()
   await sendToAddressAndConfirm(bitcoindOutside, address, amountBTC)
   await checkBalance(blockNumber)
 }
