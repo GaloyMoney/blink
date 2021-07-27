@@ -39,7 +39,7 @@ beforeAll(async () => {
   userWallet12 = await getUserWallet(12)
   // load funder wallet before use it
   await getUserWallet(4)
-  await bitcoindClient.loadWallet("outside")
+  await bitcoindClient.loadWallet({ filename: "outside" })
 })
 
 beforeEach(async () => {

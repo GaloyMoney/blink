@@ -37,8 +37,6 @@ type InWalletTransaction = {
   txid: string
 }
 
-// TODO consistency in params
-
 export class BitcoindClient {
   readonly client
 
@@ -66,7 +64,11 @@ export class BitcoindClient {
     return await this.client.listWallets()
   }
 
-  async loadWallet(filename: string): Promise<{ name: string; warning: string }> {
+  async loadWallet({
+    filename,
+  }: {
+    filename: string
+  }): Promise<{ name: string; warning: string }> {
     return await this.client.loadWallet({ filename })
   }
 
@@ -78,7 +80,11 @@ export class BitcoindClient {
     return await this.client.unloadWallet({ wallet_name })
   }
 
-  async decodeRawTransaction(hexstring: string): Promise<{ vout: [VOut] }> {
+  async decodeRawTransaction({
+    hexstring,
+  }: {
+    hexstring: string
+  }): Promise<{ vout: [VOut] }> {
     return await this.client.decodeRawTransaction({ hexstring })
   }
 }
@@ -86,7 +92,7 @@ export class BitcoindClient {
 export class BitcoindWalletClient {
   readonly client
 
-  constructor(walletName: string) {
+  constructor({ walletName }: { walletName: string }) {
     this.client = new Client({ ...connection_obj, wallet: walletName })
   }
 
@@ -98,18 +104,33 @@ export class BitcoindWalletClient {
     return await this.client.getAddressInfo({ address })
   }
 
-  async sendToAddress(address: string, amount: number): Promise<string> {
+  async sendToAddress({
+    address,
+    amount,
+  }: {
+    address: string
+    amount: number
+  }): Promise<string> {
     return await this.client.sendToAddress({ address, amount })
   }
 
-  async getTransaction(
-    txid: string,
-    include_watchonly?: boolean,
-  ): Promise<InWalletTransaction> {
+  async getTransaction({
+    txid,
+    include_watchonly,
+  }: {
+    txid: string
+    include_watchonly?: boolean
+  }): Promise<InWalletTransaction> {
     return await this.client.getTransaction({ txid, include_watchonly })
   }
 
-  async generateToAddress(nblocks: number, address: string): Promise<[string]> {
+  async generateToAddress({
+    nblocks,
+    address,
+  }: {
+    nblocks: number
+    address: string
+  }): Promise<[string]> {
     return await this.client.generateToAddress({ nblocks, address })
   }
 
@@ -117,24 +138,29 @@ export class BitcoindWalletClient {
     return await this.client.getBalance()
   }
 
-  async walletCreateFundedPsbt(
-    inputs: [],
-    outputs: Record<string, number>[],
-  ): Promise<{ psbt: string }> {
+  async walletCreateFundedPsbt({
+    inputs,
+    outputs,
+  }: {
+    inputs: []
+    outputs: Record<string, number>[]
+  }): Promise<{ psbt: string }> {
     return await this.client.walletCreateFundedPsbt({ inputs, outputs })
   }
 
-  async walletProcessPsbt(psbt: string): Promise<{ psbt: string }> {
+  async walletProcessPsbt({ psbt }: { psbt: string }): Promise<{ psbt: string }> {
     return await this.client.walletProcessPsbt({ psbt })
   }
 
-  async finalizePsbt(
-    psbt: string,
-  ): Promise<{ psbt: string; hex: string; complete: boolean }> {
+  async finalizePsbt({
+    psbt,
+  }: {
+    psbt: string
+  }): Promise<{ psbt: string; hex: string; complete: boolean }> {
     return await this.client.finalizePsbt({ psbt })
   }
 
-  async sendRawTransaction(hexstring: string): Promise<string> {
+  async sendRawTransaction({ hexstring }: { hexstring: string }): Promise<string> {
     return await this.client.sendRawTransaction({ hexstring })
   }
 }
@@ -155,7 +181,7 @@ export const getBalancesDetail = async (): Promise<
       continue
     }
 
-    const client = new BitcoindWalletClient(wallet)
+    const client = new BitcoindWalletClient({ walletName: wallet })
     const balance = btc2sat(await client.getBalance())
     balances.push({ wallet, balance })
   }

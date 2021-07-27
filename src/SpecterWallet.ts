@@ -63,7 +63,7 @@ export class SpecterWallet {
 
     this.logger.info({ wallet: specterWallets[0] }, "setting BitcoindClient")
 
-    this.bitcoindClient = new BitcoindWalletClient(specterWallets[0])
+    this.bitcoindClient = new BitcoindWalletClient({ walletName: specterWallets[0] })
 
     return specterWallets[0]
   }
@@ -270,17 +270,17 @@ export class SpecterWallet {
       // TODO: won't work automatically with a cold storage wallet
       // make a PSBT instead accesible for further signing.
       // TODO: figure out a way to export the PSBT when there is a pending tx
-      txid = await this.bitcoindClient.sendToAddress(address, sat2btc(sats))
+      txid = await this.bitcoindClient.sendToAddress({ address, amount: sat2btc(sats) })
     } catch (err) {
       const error = "this.bitcoindClient.sendToAddress() error"
       subLogger.error({ txid }, error)
       throw new Error(err)
     }
 
-    const tx = await this.bitcoindClient.getTransaction(
+    const tx = await this.bitcoindClient.getTransaction({
       txid,
-      true /* include_watchonly */,
-    )
+      include_watchonly: true,
+    })
     const fee = btc2sat(-tx.fee) /* fee is negative */
 
     const bankOwnerPath = await bankOwnerMediciPath()

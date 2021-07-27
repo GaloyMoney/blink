@@ -42,7 +42,7 @@ beforeAll(async () => {
   walletUser0 = await getUserWallet(0)
   // load funder wallet before use it
   await getUserWallet(4)
-  await bitcoindClient.loadWallet("outside")
+  await bitcoindClient.loadWallet({ filename: "outside" })
 })
 
 beforeEach(() => {
@@ -101,16 +101,18 @@ describe("UserWallet - On chain", () => {
 
     const outputs = [output0, output1]
 
-    const { psbt } = await bitcoindOutside.walletCreateFundedPsbt([], outputs)
+    const { psbt } = await bitcoindOutside.walletCreateFundedPsbt({ inputs: [], outputs })
     // const decodedPsbt1 = await bitcoindOutside.decodePsbt(psbt)
     // const analysePsbt1 = await bitcoindOutside.analyzePsbt(psbt)
-    const walletProcessPsbt = await bitcoindOutside.walletProcessPsbt(psbt)
+    const walletProcessPsbt = await bitcoindOutside.walletProcessPsbt({ psbt })
     // const decodedPsbt2 = await bitcoindOutside.decodePsbt(walletProcessPsbt.psbt)
     // const analysePsbt2 = await bitcoindOutside.analyzePsbt(walletProcessPsbt.psbt)
-    const finalizedPsbt = await bitcoindOutside.finalizePsbt(walletProcessPsbt.psbt)
+    const finalizedPsbt = await bitcoindOutside.finalizePsbt({
+      psbt: walletProcessPsbt.psbt,
+    })
 
-    await bitcoindOutside.sendRawTransaction(finalizedPsbt.hex)
-    await bitcoindOutside.generateToAddress(6, RANDOM_ADDRESS)
+    await bitcoindOutside.sendRawTransaction({ hexstring: finalizedPsbt.hex })
+    await bitcoindOutside.generateToAddress({ nblocks: 6, address: RANDOM_ADDRESS })
     await waitUntilBlockHeight({ lnd: lndonchain })
 
     {
@@ -141,7 +143,7 @@ describe("UserWallet - On chain", () => {
 
     await Promise.all([
       once(sub, "chain_transaction"),
-      bitcoindOutside.sendToAddress(address, amountBTC),
+      bitcoindOutside.sendToAddress({ address, amount: amountBTC }),
     ])
 
     await sleep(1000)
@@ -168,7 +170,7 @@ describe("UserWallet - On chain", () => {
     )
 
     await Promise.all([
-      bitcoindOutside.generateToAddress(3, RANDOM_ADDRESS),
+      bitcoindOutside.generateToAddress({ nblocks: 3, address: RANDOM_ADDRESS }),
       once(sub, "chain_transaction"),
     ])
 

@@ -2,11 +2,11 @@ import { bitcoindDefaultClient, BitcoindWalletClient } from "src/bitcoind"
 
 export const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
 export const bitcoindClient = bitcoindDefaultClient // no wallet
-export const bitcoindOutside = new BitcoindWalletClient("outside")
+export const bitcoindOutside = new BitcoindWalletClient({ walletName: "outside" })
 
 export async function sendToAddressAndConfirm(walletClient, address, amount) {
-  await walletClient.sendToAddress(address, amount)
-  await walletClient.generateToAddress(6, RANDOM_ADDRESS)
+  await walletClient.sendToAddress({ address, amount })
+  await walletClient.generateToAddress({ nblocks: 6, address: RANDOM_ADDRESS })
 }
 
 export async function mineAndConfirm(walletClient, numOfBlocks, address) {
@@ -17,8 +17,8 @@ export async function mineAndConfirm(walletClient, numOfBlocks, address) {
 
   const blockNumber = await bitcoindDefaultClient.getBlockCount()
 
-  await walletClient.generateToAddress(numOfBlocks, address)
-  await walletClient.generateToAddress(101, RANDOM_ADDRESS)
+  await walletClient.generateToAddress({ nblocks: numOfBlocks, address })
+  await walletClient.generateToAddress({ nblocks: 101, address: RANDOM_ADDRESS })
 
   let rewards = 0
   for (let i = 1; i <= numOfBlocks; i++) {

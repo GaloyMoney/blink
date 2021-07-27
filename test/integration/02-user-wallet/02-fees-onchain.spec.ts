@@ -8,7 +8,7 @@ let userWallet0, userWallet1
 beforeAll(async () => {
   userWallet0 = await getUserWallet(0)
   userWallet1 = await getUserWallet(1)
-  await bitcoindClient.loadWallet("outside")
+  await bitcoindClient.loadWallet({ filename: "outside" })
 })
 
 afterAll(async () => {

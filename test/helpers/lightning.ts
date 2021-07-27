@@ -217,7 +217,7 @@ export const mineBlockAndSync = async ({
   blockHeight?: number
   newBlock?: number
 }) => {
-  await bitcoindOutside.generateToAddress(newBlock, RANDOM_ADDRESS)
+  await bitcoindOutside.generateToAddress({ nblocks: newBlock, address: RANDOM_ADDRESS })
   const promiseArray: Array<Promise<void>> = []
   for (const lnd of lnds) {
     promiseArray.push(waitUntilBlockHeight({ lnd, blockHeight }))

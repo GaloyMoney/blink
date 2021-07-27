@@ -564,7 +564,7 @@ export const OnChainMixin = (superclass) =>
 
     // raw encoded transaction
     async getSatsAndAddressPerTx(tx): Promise<{ sats: number; addresses: string[] }> {
-      const { vout } = await bitcoindDefaultClient.decodeRawTransaction(tx)
+      const { vout } = await bitcoindDefaultClient.decodeRawTransaction({ hexstring: tx })
 
       //   vout: [
       //   {
