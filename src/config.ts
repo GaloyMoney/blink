@@ -22,6 +22,8 @@ try {
 
 export const yamlConfig = _.merge(defaultConfig, customConfig)
 
+export const getName = () => yamlConfig.name
+
 export const getLndParams = (): ILndParams[] => {
   const config = yamlConfig.lnds
   return config.map((input) => ({
