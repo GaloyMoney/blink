@@ -28,6 +28,10 @@ beforeAll(async () => {
   await getUserWallet(14)
 })
 
+afterAll(async () => {
+  await bitcoindClient.unloadWallet({ wallet_name: "outside" })
+})
+
 describe("Bitcoind", () => {
   it("check no wallet", async () => {
     const wallets = await bitcoindClient.listWallets()

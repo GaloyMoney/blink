@@ -1,4 +1,4 @@
-import { bitcoindOutside, getUserWallet } from "test/helpers"
+import { bitcoindClient, bitcoindOutside, getUserWallet } from "test/helpers"
 
 jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
 jest.mock("src/phone-provider", () => require("test/mocks/phone-provider"))
@@ -8,6 +8,11 @@ let userWallet0, userWallet1
 beforeAll(async () => {
   userWallet0 = await getUserWallet(0)
   userWallet1 = await getUserWallet(1)
+  await bitcoindClient.loadWallet("outside")
+})
+
+afterAll(async () => {
+  await bitcoindClient.unloadWallet({ wallet_name: "outside" })
 })
 
 describe("UserWallet - getOnchainFee", () => {

@@ -13,6 +13,7 @@ import {
   lndOutside1,
   createChainAddress,
   subscribeToTransactions,
+  bitcoindClient,
   bitcoindOutside,
   mineBlockAndSync,
 } from "test/helpers"
@@ -38,6 +39,7 @@ beforeAll(async () => {
   userWallet12 = await getUserWallet(12)
   // load funder wallet before use it
   await getUserWallet(4)
+  await bitcoindClient.loadWallet("outside")
 })
 
 beforeEach(async () => {
@@ -48,8 +50,9 @@ afterEach(async () => {
   await checkIsBalanced()
 })
 
-afterAll(() => {
+afterAll(async () => {
   jest.restoreAllMocks()
+  await bitcoindClient.unloadWallet({ wallet_name: "outside" })
 })
 
 const amount = 10040 // sats
