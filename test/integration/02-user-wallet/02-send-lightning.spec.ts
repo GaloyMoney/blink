@@ -459,15 +459,17 @@ describe("UserWallet - Lightning Pay", () => {
 
         await cancelHodlInvoice({ id, lnd: lndOutside1 })
 
-        await userWallet1.updatePendingPayments()
-        const query = {
-          accounts: userWallet1.user.accountPath,
-          type: "payment",
-          pending: true,
-          voided: false,
-        }
-        const count = await Transaction.countDocuments(query)
-        expect(count).toBeTruthy()
+        await waitFor(async () => {
+          await userWallet1.updatePendingPayments()
+          const query = {
+            accounts: userWallet1.user.accountPath,
+            type: "payment",
+            pending: true,
+            voided: false,
+          }
+          const count = await Transaction.countDocuments(query)
+          return count === 0
+        })
 
         const invoice = await getInvoiceAttempt({ lnd: lndOutside1, id })
         expect(invoice).toBeNull()

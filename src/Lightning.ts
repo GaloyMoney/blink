@@ -867,14 +867,14 @@ export const LightningMixin = (superclass) =>
             })
           }
 
-          if (invoiceUser.paid) {
-            lightningLogger.info("invoice has already been processed")
-            return true
-          }
-
           if (!invoiceUser) {
             lightningLogger.error("invoiceUser not found")
             return false
+          }
+
+          if (invoiceUser.paid) {
+            lightningLogger.info("invoice has already been processed")
+            return true
           }
 
           try {
