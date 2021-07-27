@@ -3,7 +3,6 @@ import { sleep } from "src/utils"
 import { baseLogger } from "src/logger"
 import { offchainLnds, onchainLnds, onChannelUpdated, updateEscrows } from "src/lndUtils"
 import {
-  AuthenticatedLnd,
   authenticatedLndGrpc,
   closeChannel,
   createChainAddress,

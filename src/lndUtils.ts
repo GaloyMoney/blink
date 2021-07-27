@@ -2,7 +2,6 @@ import assert from "assert"
 import { default as axios } from "axios"
 import { parsePaymentRequest } from "invoices"
 import {
-  AuthenticatedLnd,
   getChainBalance,
   getChainTransactions,
   getChannelBalance,
@@ -24,7 +23,7 @@ import {
   escrowAccountingPath,
   lndAccountingPath,
 } from "./ledger/ledger"
-import { FEECAP, FEEMIN, ILndParamsAuthed, nodeType, params } from "./lndAuth"
+import { FEECAP, FEEMIN, params } from "./lndAuth"
 import { baseLogger } from "./logger"
 import { MainBook } from "./mongodb"
 import { DbMetadata, InvoiceUser } from "./schema"

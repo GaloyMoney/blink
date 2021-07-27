@@ -1,6 +1,5 @@
 import assert from "assert"
 import {
-  AuthenticatedLnd,
   createChainAddress,
   getChainBalance,
   getChainFeeEstimate,
