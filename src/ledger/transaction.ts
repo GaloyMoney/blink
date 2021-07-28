@@ -85,6 +85,22 @@ export const addTransactionLndPayment = async ({
   return entry
 }
 
+export const addTransactionLndRoutingFee = async ({ amount, collectedOn }) => {
+  const metadata = {
+    type: "routing_fee",
+    currency: "BTC",
+    feesCollectedOn: collectedOn,
+    pending: false,
+  }
+
+  const bankOwnerPath = await bankOwnerMediciPath()
+
+  return await MainBook.entry("routing fee")
+    .credit(bankOwnerPath, amount, metadata)
+    .debit(lndAccountingPath, amount, metadata)
+    .commit()
+}
+
 export const updateLndEscrow = async ({ amount }) => {
   const { balance: ledgerEscrow } = await MainBook.balance({
     account: escrowAccountingPath,

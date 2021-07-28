@@ -20,7 +20,7 @@ import { Logger } from "pino"
 import { getGaloyInstanceName } from "./config"
 import { DbError, LndOfflineError, ValidationInternalError } from "./error"
 import { bankOwnerMediciPath, lndAccountingPath } from "./ledger/ledger"
-import { updateLndEscrow } from "./ledger/transaction"
+import { addTransactionLndRoutingFee, updateLndEscrow } from "./ledger/transaction"
 import { FEECAP, FEEMIN, params } from "./lndAuth"
 import { baseLogger } from "./logger"
 import { MainBook } from "./mongodb"
@@ -220,22 +220,14 @@ export const updateRoutingFees = async () => {
     return
   }
 
-  const type = "routing_fee"
-  const metadata = { type, currency: "BTC", pending: false }
-
   // get fee collected day wise
   const { lnd } = getActiveLnd()
   const forwards = await getRoutingFees({ lnd, before, after })
 
-  const bankOwnerPath = await bankOwnerMediciPath()
-
   for (const forward of forwards) {
     const [[day, fee]] = Object.entries(forward)
     try {
-      await MainBook.entry("routing fee")
-        .credit(bankOwnerPath, fee, { ...metadata, feesCollectedOn: day })
-        .debit(lndAccountingPath, fee, { ...metadata, feesCollectedOn: day })
-        .commit()
+      await addTransactionLndRoutingFee({ amount: fee, collectedOn: day })
     } catch (err) {
       throw new DbError("Unable to record routing revenue", {
         forwardToClient: false,
