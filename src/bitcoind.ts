@@ -83,6 +83,16 @@ export class BitcoindClient {
     return await this.client.listWallets()
   }
 
+  async decodeRawTransaction({
+    hexstring,
+  }: {
+    hexstring: string
+  }): Promise<{ vout: [VOut] }> {
+    return await this.client.decodeRawTransaction({ hexstring })
+  }
+
+  // load/unload only used in tests, for now
+
   async loadWallet({
     filename,
   }: {
@@ -97,14 +107,6 @@ export class BitcoindClient {
     wallet_name: string
   }): Promise<{ warning: string }> {
     return await this.client.unloadWallet({ wallet_name })
-  }
-
-  async decodeRawTransaction({
-    hexstring,
-  }: {
-    hexstring: string
-  }): Promise<{ vout: [VOut] }> {
-    return await this.client.decodeRawTransaction({ hexstring })
   }
 }
 
