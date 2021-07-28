@@ -85,6 +85,22 @@ export const addTransactionLndPayment = async ({
   return entry
 }
 
+export const addTransactionLndChannelFee = async ({ description, amount, metadata }) => {
+  const txMetadata = {
+    currency: "BTC",
+    type: "fee",
+    pending: false,
+    ...metadata,
+  }
+
+  const bankOwnerPath = await bankOwnerMediciPath()
+
+  return await MainBook.entry(description)
+    .debit(bankOwnerPath, amount, txMetadata)
+    .credit(lndAccountingPath, amount, txMetadata)
+    .commit()
+}
+
 export const addTransactionLndRoutingFee = async ({ amount, collectedOn }) => {
   const metadata = {
     type: "routing_fee",

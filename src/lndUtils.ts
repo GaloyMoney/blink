@@ -19,11 +19,13 @@ import _ from "lodash"
 import { Logger } from "pino"
 import { getGaloyInstanceName } from "./config"
 import { DbError, LndOfflineError, ValidationInternalError } from "./error"
-import { bankOwnerMediciPath, lndAccountingPath } from "./ledger/ledger"
-import { addTransactionLndRoutingFee, updateLndEscrow } from "./ledger/transaction"
+import {
+  addTransactionLndChannelFee,
+  addTransactionLndRoutingFee,
+  updateLndEscrow,
+} from "./ledger/transaction"
 import { FEECAP, FEEMIN, params } from "./lndAuth"
 import { baseLogger } from "./logger"
-import { MainBook } from "./mongodb"
 import { DbMetadata, InvoiceUser } from "./schema"
 import { LoggedError, LOOK_BACK } from "./utils"
 
@@ -307,21 +309,15 @@ export const onChannelUpdated = async ({
   // either calculate it from the input, or use an indexer
   // const { fee } = tx.fee
 
-  const metadata = { currency: "BTC", txid, type: "fee", pending: false }
-
   assert(fee > 0)
 
-  const bankOwnerPath = await bankOwnerMediciPath()
+  await addTransactionLndChannelFee({
+    description: `channel ${stateChange} onchain fee`,
+    amount: fee,
+    metadata: { txid },
+  })
 
-  await MainBook.entry(`channel ${stateChange} onchain fee`)
-    .debit(bankOwnerPath, fee, { ...metadata })
-    .credit(lndAccountingPath, fee, { ...metadata })
-    .commit()
-
-  baseLogger.info(
-    { channel, fee, ...metadata },
-    `${stateChange} channel fee added to mongodb`,
-  )
+  baseLogger.info({ channel, fee, txid }, `${stateChange} channel fee added to ledger`)
 }
 
 export const getLnds = ({
