@@ -4,6 +4,7 @@ import {
   lndAccountingPath,
   bankOwnerMediciPath,
   escrowAccountingPath,
+  bitcoindAccountingPath,
 } from "./ledger"
 import { MainBook } from "../mongodb"
 import { UserWallet } from "../userWallet"
@@ -276,6 +277,29 @@ export const addTransactionOnUsPayment = async ({
   await entry.commit()
 
   return entry
+}
+
+export const addTransactionColdStoragePayment = async ({
+  description,
+  amount,
+  fee,
+  metadata,
+}) => {
+  const txMetadata = {
+    currency: "BTC",
+    type: "to_cold_storage",
+    pending: false,
+    fee,
+    ...metadata,
+  }
+
+  const bankOwnerPath = await bankOwnerMediciPath()
+
+  return await MainBook.entry(description)
+    .credit(lndAccountingPath, amount + fee, txMetadata)
+    .debit(bankOwnerPath, fee, txMetadata)
+    .debit(bitcoindAccountingPath, amount, txMetadata)
+    .commit()
 }
 
 export const rebalancePortfolio = async ({ description, metadata, wallet }) => {

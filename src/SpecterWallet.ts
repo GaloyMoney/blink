@@ -7,6 +7,7 @@ import {
   bitcoindAccountingPath,
   lndAccountingPath,
 } from "./ledger/ledger"
+import { addTransactionColdStoragePayment } from "./ledger/transaction"
 import { getActiveOnchainLnd, lndsBalances } from "./lndUtils"
 import { MainBook } from "./mongodb"
 import { getOnChainTransactions } from "./OnChain"
@@ -210,21 +211,16 @@ export class SpecterWallet {
     const [{ fee }] = outgoingOnchainTxns.filter((tx) => tx.id === id)
 
     const metadata = {
-      type: "to_cold_storage",
-      currency: "BTC",
-      pending: false,
       hash: id,
-      fee,
       ...UserWallet.getCurrencyEquivalent({ sats, fee }),
     }
 
-    const bankOwnerPath = await bankOwnerMediciPath()
-
-    await MainBook.entry(memo)
-      .credit(lndAccountingPath, sats + fee, { ...metadata })
-      .debit(bankOwnerPath, fee, { ...metadata })
-      .debit(bitcoindAccountingPath, sats, { ...metadata })
-      .commit()
+    await addTransactionColdStoragePayment({
+      description: memo,
+      amount: sats,
+      fee,
+      metadata,
+    })
 
     this.logger.info(
       { ...metadata, sats, memo, address, fee },
