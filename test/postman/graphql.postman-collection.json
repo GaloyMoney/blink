@@ -256,7 +256,6 @@
                         "mode": "graphql",
                         "graphql": {
                           "query": "mutation requestPhoneCode ($phone: String) {\n    requestPhoneCode (phone: $phone) {\n        success\n    }\n}",
-                          //
                           "variables": "{\n  \"phone\": \"{{phone}}\"\n}"
                         },
                         "options": {

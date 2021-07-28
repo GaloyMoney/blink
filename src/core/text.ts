@@ -61,18 +61,6 @@ async function captchaVerifyGeetest(captchaChallenge, captchaValidate, captchaSe
   return result.status === 1
 }
 
-async function captchaVerifyGoogle(captcha) {
-  const base_url = "https://www.google.com/recaptcha/api/siteverify"
-  const secret = "TODO" // process.env.CAPTCHA_SECRET
-
-  const response = await axios.post(
-    base_url,
-    querystring.stringify({ secret, response: captcha }),
-  )
-  // TODO
-  return response.data.success === true
-}
-
 export const requestPhoneCodeGeetest = async ({
   phone,
   captchaChallenge,
@@ -207,30 +195,14 @@ export const requestPhoneCodeGeetest = async ({
 
 export const requestPhoneCode = async ({
   phone,
-  captchaResponse,
   logger,
   ip,
 }: {
   phone: string
-  captchaResponse?: string
   logger: Logger
   ip: string
 }): Promise<boolean> => {
   logger.info({ phone, ip }, "RequestPhoneCode called")
-
-  // TODO
-  const captchaRequired = captchaResponse ? captchaResponse.length > 0 : false
-  // const captchaRequired = false
-
-  if (captchaRequired) {
-    if (!captchaResponse) {
-      throw new CaptchaFailedError("Captcha Required", { logger, captchaResponse })
-    }
-    const success = await captchaVerifyGoogle(captchaResponse)
-    if (!success) {
-      throw new CaptchaFailedError("Captcha Invalid", { logger, captchaResponse })
-    }
-  }
 
   if (isIPBlacklisted({ ip })) {
     throw new IPBlacklistedError("IP Blacklisted", { logger, ip })

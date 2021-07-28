@@ -55,7 +55,6 @@ describe("graphql", () => {
     const { mutate } = createTestClient(apolloServer)
     const phone = "+123"
 
-    //
     const mutation = `mutation requestPhoneCode ($phone: String) {
       requestPhoneCode (phone: $phone) {
           success
