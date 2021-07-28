@@ -1,4 +1,5 @@
-const stringRandom = require("string-random")
+const cryptoRandomString = require("crypto-random-string") // current dependency
+// const stringRandom = require("string-random")
 const crypto = require("crypto")
 const axios = require("axios")
 const qs = require("qs")
@@ -93,7 +94,8 @@ class GeetestLib {
     // origin_challenge为空或者值为0代表失败
     if (!origin_challenge || origin_challenge === "0") {
       // 本地随机生成32位字符串
-      const challenge = stringRandom(32).toLowerCase()
+      const challenge = cryptoRandomString(32).toLowerCase()
+      // const challenge = stringRandom(32).toLowerCase()
       const data = {
         success: 0,
         gt: this.geetest_id,
