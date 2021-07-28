@@ -83,20 +83,12 @@ export async function onchainTransactionEventHandler(tx) {
       "payment completed",
     )
 
-    const entries = await Transaction.find({
+    const bankOwnerPath = await bankOwnerMediciPath()
+    const entry = await Transaction.findOne({
       account_path: liabilitiesMainAccount,
+      accounts: { $ne: bankOwnerPath },
       hash: tx.id,
     })
-
-    if (!entries) {
-      return
-    }
-
-    const bankOwnerPath = await bankOwnerMediciPath()
-
-    const entry = entries.find(
-      (p) => resolveAccountId(p.account_path) !== resolveAccountId(bankOwnerPath),
-    )
 
     const userId = resolveAccountId(entry?.account_path)
 
