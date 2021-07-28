@@ -644,11 +644,16 @@ export const OnChainMixin = (superclass) =>
 
               const bankOwnerPath = await bankOwnerMediciPath()
 
-              await MainBook.entry()
-                .credit(bankOwnerPath, fee, metadata)
+              const entry = MainBook.entry()
                 .credit(this.user.accountPath, sats - fee, metadata)
                 .debit(lndAccountingPath, sats, metadata)
-                .commit()
+
+              if (fee) {
+                // no need to have an entry if there is no fee.
+                entry.credit(bankOwnerPath, fee, metadata)
+              }
+
+              await entry.commit()
 
               const onchainLogger = this.logger.child({
                 topic: "payment",
