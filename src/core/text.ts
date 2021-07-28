@@ -45,11 +45,17 @@ export const registerCaptchaGeetest = async ({
   // TODO? any new limiter for the captcha?
 
   if (!captchaRequired) {
-    return null // TODO?
+    return null
   }
 
-  // TODO error handling
-  const registerResponse = await geetest.register()
+  let registerResponse
+  try {
+    registerResponse = await geetest.register()
+  } catch (err) {
+    logger.error({ err }, "impossible to register geetest")
+    return null
+  }
+
   return registerResponse
 }
 
@@ -95,12 +101,19 @@ export const requestPhoneCodeGeetest = async ({
         captchaSeccode,
       })
     }
-    const success = await captchaVerifyGeetest(
-      captchaChallenge,
-      captchaValidate,
-      captchaSeccode,
-    )
-    if (!success) {
+
+    let verifySuccess = false
+    try {
+      verifySuccess = await captchaVerifyGeetest(
+        captchaChallenge,
+        captchaValidate,
+        captchaSeccode,
+      )
+    } catch (err) {
+      logger.error({ err }, "impossible to verify geetest")
+      return false
+    }
+    if (!verifySuccess) {
       throw new CaptchaFailedError("Captcha Invalid", {
         logger,
         captchaChallenge,
