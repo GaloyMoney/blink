@@ -17,6 +17,14 @@ jest.mock("src/phone-provider", () => require("test/mocks/phone-provider"))
 
 const defaultWallet = ""
 
+beforeAll(async () => {
+  // load funder wallet before use it
+  await getUserWallet(4)
+
+  // "bankowner" user
+  await getUserWallet(14)
+})
+
 describe("Bitcoind", () => {
   it("create default wallet", async () => {
     try {

@@ -4,7 +4,7 @@ import { baseLogger } from "../logger"
 import { MainBook } from "../mongodb"
 import { User } from "../schema"
 import { WalletFactory } from "../walletFactory"
-import { bitcoindAccountingPath, lndAccountingPath, lndFeePath } from "./ledger"
+import { bankOwnerMediciPath, bitcoindAccountingPath, lndAccountingPath } from "./ledger"
 
 const logger = baseLogger.child({ module: "balanceSheet" })
 
@@ -44,30 +44,26 @@ export const getLedgerAccounts = async () => {
     accounts: bitcoindAccountingPath,
     currency: "BTC",
   })
-  const { balance: expenses } = await MainBook.balance({
-    accounts: lndFeePath,
-    currency: "BTC",
-  })
-  const { balance: revenue } = await MainBook.balance({
-    account_path: "Revenue",
+
+  const bankOwnerPath = await bankOwnerMediciPath()
+
+  const { balance: bankOwnerBalance } = await MainBook.balance({
+    accounts: bankOwnerPath,
     currency: "BTC",
   })
 
-  return { assets, liabilities, lightning, expenses, bitcoin, revenue }
+  return { assets, liabilities, lightning, bankOwnerBalance, bitcoin }
 }
 
 export const balanceSheetIsBalanced = async () => {
-  const { assets, liabilities, lightning, bitcoin, expenses, revenue } =
+  const { assets, liabilities, lightning, bitcoin, bankOwnerBalance } =
     await getLedgerAccounts()
   const { total: lnd } = await lndsBalances() // doesnt include escrow amount
 
   const bitcoind = await getBitcoindBalance()
 
   const assetsLiabilitiesDifference =
-    assets /* assets is ___ */ +
-    liabilities /* liabilities is ___ */ +
-    expenses /* expense is positif */ +
-    revenue /* revenue is ___ */
+    assets /* assets is ___ */ + liabilities /* liabilities is ___ */
 
   const bookingVersusRealWorldAssets =
     lnd + // physical assets
@@ -81,8 +77,7 @@ export const balanceSheetIsBalanced = async () => {
         bookingVersusRealWorldAssets,
         assets,
         liabilities,
-        expenses,
-        revenue,
+        bankOwnerBalance,
         lnd,
         lightning,
         bitcoind,

@@ -20,10 +20,9 @@ import { Logger } from "pino"
 import { yamlConfig } from "./config"
 import { DbError, LndOfflineError, ValidationInternalError } from "./error"
 import {
+  bankOwnerMediciPath,
   escrowAccountingPath,
   lndAccountingPath,
-  lndFeePath,
-  revenueFeePath,
 } from "./ledger/ledger"
 import { FEECAP, FEEMIN, ILndParamsAuthed, nodeType, params } from "./lndAuth"
 import { baseLogger } from "./logger"
@@ -219,11 +218,13 @@ export const updateRoutingFees = async () => {
   const { lnd } = getActiveLnd()
   const forwards = await getRoutingFees({ lnd, before, after })
 
+  const bankOwnerPath = await bankOwnerMediciPath()
+
   for (const forward of forwards) {
     const [[day, fee]] = Object.entries(forward)
     try {
       await MainBook.entry("routing fee")
-        .credit(revenueFeePath, fee, { ...metadata, feesCollectedOn: day })
+        .credit(bankOwnerPath, fee, { ...metadata, feesCollectedOn: day })
         .debit(lndAccountingPath, fee, { ...metadata, feesCollectedOn: day })
         .commit()
     } catch (err) {
@@ -299,13 +300,7 @@ export const onChannelUpdated = async ({
     return
   }
 
-  let txid
-
-  if (stateChange === "opened") {
-    ;({ transaction_id: txid } = channel as SubscribeToChannelsChannelOpenedEvent)
-  } else if (stateChange === "closed") {
-    ;({ close_transaction_id: txid } = channel as SubscribeToChannelsChannelClosedEvent)
-  }
+  const { transaction_id: txid } = channel as SubscribeToChannelsChannelOpenedEvent
 
   // TODO: dedupe from onchain
   const { current_block_height } = await getHeight({ lnd })
@@ -337,8 +332,10 @@ export const onChannelUpdated = async ({
 
   assert(fee > 0)
 
+  const bankOwnerPath = await bankOwnerMediciPath()
+
   await MainBook.entry(`channel ${stateChange} onchain fee`)
-    .debit(lndFeePath, fee, { ...metadata })
+    .debit(bankOwnerPath, fee, { ...metadata })
     .credit(lndAccountingPath, fee, { ...metadata })
     .commit()
 

@@ -1,15 +1,11 @@
-export const sendTwilioText = async ({ body, to, logger }) => {
+export const sendTwilioText = async () => {
   return await new Promise((resolve) => resolve(true))
 }
 
-export const sendSMSalaText = async ({ body, to, logger }) => {
+export const sendSMSalaText = async () => {
   return await new Promise((resolve) => resolve(true))
 }
 
-export const getCarrier = async (phone: string) => {
+export const getCarrier = async () => {
   return await new Promise((resolve) => resolve(null))
-}
-
-const getTwilioClient = () => {
-  console.log("getTwilioClient")
 }

@@ -1,5 +1,5 @@
 import { CSVAccountExport } from "../csvAccountExport"
-import { customerPath } from "../ledger/ledger"
+import { accountPath } from "../ledger/ledger"
 import { MainBook, setupMongoConnectionSecondary } from "../mongodb"
 import { Transaction, User } from "../schema"
 import { Primitive } from "../types"
@@ -42,7 +42,7 @@ const exportAllUserLedger = async () => {
   const csv = new CSVAccountExport()
 
   for await (const user of User.find({})) {
-    await csv.addAccount({ account: customerPath(user._id) })
+    await csv.addAccount({ account: accountPath(user._id) })
   }
 
   await csv.saveToDisk()

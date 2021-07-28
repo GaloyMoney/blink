@@ -1,4 +1,4 @@
-import { dealerMediciPath, customerPath, lndAccountingPath } from "./ledger"
+import { dealerMediciPath, accountPath, lndAccountingPath } from "./ledger"
 import { MainBook } from "../mongodb"
 import { UserWallet } from "../userWallet"
 import { IAddTransactionOnUsPayment } from "../types"
@@ -89,7 +89,7 @@ export const addTransactionOnUsPayment = async ({
   const entry = MainBook.entry(description)
 
   entry
-    .credit(customerPath(payeeUser._id), sats * payeeUser.ratioBtc, {
+    .credit(accountPath(payeeUser._id), sats * payeeUser.ratioBtc, {
       ...metadata,
       memoPayer: shareMemoWithPayee ? memoPayer : null,
       username: payerUser.username,
@@ -118,7 +118,7 @@ export const addTransactionOnUsPayment = async ({
     const usdEq = sats * UserWallet.lastPrice
 
     entry
-      .credit(customerPath(payeeUser._id), usdEq * payeeUser.ratioUsd, {
+      .credit(accountPath(payeeUser._id), usdEq * payeeUser.ratioUsd, {
         ...metadata,
         memoPayer: shareMemoWithPayee ? memoPayer : null,
         username: payerUser.username,
