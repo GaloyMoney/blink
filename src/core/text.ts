@@ -36,7 +36,6 @@ export const registerCaptchaGeetest = async ({
 
   // TODO
   const captchaRequired = true
-  // const captchaRequired = false
 
   // TODO? any bypass?
 
@@ -79,7 +78,7 @@ export const requestPhoneCodeGeetest = async ({
   logger: Logger
   ip: string
 }): Promise<boolean> => {
-  logger.info({ phone, ip }, "RequestPhoneCode called")
+  logger.info({ phone, ip }, "RequestPhoneCodeGeetest called")
 
   // const challenge = req.body[GeetestLib.GEETEST_CHALLENGE];
   // const validate = req.body[GeetestLib.GEETEST_VALIDATE];
@@ -87,7 +86,6 @@ export const requestPhoneCodeGeetest = async ({
 
   // TODO
   const captchaRequired = captchaChallenge && captchaValidate && captchaSeccode
-  // const captchaRequired = false
 
   // TODO before or after ip?
 
