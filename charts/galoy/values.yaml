@@ -49,6 +49,10 @@ service:
   type: NodePort
   targetPort: 4000
   port: 4000
+- name: graphql-admin
+  type: NodePort
+  targetPort: 4001
+  port: 4001
 - name: trigger
   type: ClusterIP
   targetPort: 8888
