@@ -3,6 +3,7 @@ import {
   accountPath,
   lndAccountingPath,
   bankOwnerMediciPath,
+  escrowAccountingPath,
 } from "./ledger"
 import { MainBook } from "../mongodb"
 import { UserWallet } from "../userWallet"
@@ -82,6 +83,40 @@ export const addTransactionLndPayment = async ({
   await entry.commit()
 
   return entry
+}
+
+export const updateLndEscrow = async ({ amount }) => {
+  const { balance: ledgerEscrow } = await MainBook.balance({
+    account: escrowAccountingPath,
+    currency: "BTC",
+  })
+
+  // ledgerEscrow is negative
+  // diff will equal 0 if there is no change
+  const diff = amount + ledgerEscrow
+
+  const escrowData = { ledgerPrevAmount: ledgerEscrow, lndAmount: amount, diff }
+
+  if (diff === 0) {
+    return { ...escrowData, updated: false }
+  }
+
+  const entry = MainBook.entry("escrow")
+  const metadata = { type: "escrow", currency: "BTC", pending: false }
+
+  if (diff > 0) {
+    entry
+      .credit(lndAccountingPath, diff, metadata)
+      .debit(escrowAccountingPath, diff, metadata)
+  } else if (diff < 0) {
+    entry
+      .debit(lndAccountingPath, -diff, metadata)
+      .credit(escrowAccountingPath, -diff, metadata)
+  }
+
+  await entry.commit()
+
+  return { ...escrowData, updated: true }
 }
 
 export const addTransactionOnchainReceipt = async ({

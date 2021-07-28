@@ -19,11 +19,8 @@ import _ from "lodash"
 import { Logger } from "pino"
 import { getGaloyInstanceName } from "./config"
 import { DbError, LndOfflineError, ValidationInternalError } from "./error"
-import {
-  bankOwnerMediciPath,
-  escrowAccountingPath,
-  lndAccountingPath,
-} from "./ledger/ledger"
+import { bankOwnerMediciPath, lndAccountingPath } from "./ledger/ledger"
+import { updateLndEscrow } from "./ledger/transaction"
 import { FEECAP, FEEMIN, params } from "./lndAuth"
 import { baseLogger } from "./logger"
 import { MainBook } from "./mongodb"
@@ -258,9 +255,6 @@ export const updateRoutingFees = async () => {
 }
 
 export const updateEscrows = async () => {
-  const type = "escrow"
-  const metadata = { type, currency: "BTC", pending: false }
-
   // FIXME: update escrow of all the node
   const { lnd } = getActiveLnd()
   const { channels } = await getChannels({ lnd })
@@ -268,28 +262,9 @@ export const updateEscrows = async () => {
   const selfInitatedChannels = _.filter(channels, { is_partner_initiated: false })
   const escrowInLnd = _.sumBy(selfInitatedChannels, "commit_transaction_fee")
 
-  const { balance: escrowInMongodb } = await MainBook.balance({
-    account: escrowAccountingPath,
-    currency: "BTC",
-  })
+  const result = await updateLndEscrow({ amount: escrowInLnd })
 
-  // escrowInMongodb is negative
-  // diff will equal 0 if there is no change
-  const diff = escrowInLnd + escrowInMongodb
-
-  baseLogger.info({ diff, escrowInLnd, escrowInMongodb, channels }, "escrow recording")
-
-  if (diff > 0) {
-    await MainBook.entry("escrow")
-      .credit(lndAccountingPath, diff, { ...metadata })
-      .debit(escrowAccountingPath, diff, { ...metadata })
-      .commit()
-  } else if (diff < 0) {
-    await MainBook.entry("escrow")
-      .debit(lndAccountingPath, -diff, { ...metadata })
-      .credit(escrowAccountingPath, -diff, { ...metadata })
-      .commit()
-  }
+  baseLogger.info({ ...result, channels }, "escrow recording")
 }
 
 export const onChannelUpdated = async ({
