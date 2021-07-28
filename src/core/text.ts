@@ -43,54 +43,22 @@ export const registerCaptchaGeetest = async ({
 
   // TODO? any bypass?
 
-  // TODO: making the ip check first here... maybe in both?
-
-  let registerResponse = null
-  if (!captchaRequired) {
-    return registerResponse
-  }
-
-  if (isIPBlacklisted({ ip })) {
-    throw new IPBlacklistedError("IP Blacklisted", { logger, ip })
-  }
-
-  let ipDetails
-
-  try {
-    ipDetails = await fetchIP({ ip })
-  } catch (err) {
-    logger.warn({ err }, "Unable to fetch ip details")
-  }
-
-  if (!ipDetails || ipDetails.status === "denied" || ipDetails.status === "error") {
-    logger.warn({ ipDetails }, "Unable to fetch ip details")
-  }
-
-  if (isIPTypeBlacklisted({ type: ipDetails?.type })) {
-    throw new IPBlacklistedError("IP type Blacklisted", { logger, ipDetails })
-  }
+  // TODO? ip checks?
 
   // TODO? any new limiter for the captcha?
 
-  try {
-    await limiterRequestPhoneCodeIp.consume(ip)
-  } catch (err) {
-    if (err instanceof Error) {
-      throw err
-    } else {
-      throw new TooManyRequestError({ logger })
-    }
+  if (!captchaRequired) {
+    return null // TODO?
   }
 
   // TODO error handling
-  registerResponse = await Geetest.register()
+  const registerResponse = await Geetest.register()
   return registerResponse
 }
 
 async function captchaVerifyGeetest(captchaChallenge, captchaValidate, captchaSeccode) {
   const result = await Geetest.validate(captchaChallenge, captchaValidate, captchaSeccode)
   return result.status === 1
-  // return true
 }
 
 async function captchaVerifyGoogle(captcha) {
@@ -103,7 +71,6 @@ async function captchaVerifyGoogle(captcha) {
   )
   // TODO
   return response.data.success === true
-  // return true
 }
 
 export const requestPhoneCodeGeetest = async ({
@@ -126,12 +93,9 @@ export const requestPhoneCodeGeetest = async ({
   // const challenge = req.body[GeetestLib.GEETEST_CHALLENGE];
   // const validate = req.body[GeetestLib.GEETEST_VALIDATE];
   // const seccode = req.body[GeetestLib.GEETEST_SECCODE];
-  //
-  // Maybe abstract all these by receiving them also through 'captchaResponse'?
 
   // TODO
   const captchaRequired = captchaChallenge && captchaValidate && captchaSeccode
-  // const captchaRequired = captchaResponse ? captchaResponse.length > 0 : false
   // const captchaRequired = false
 
   // TODO before or after ip?
@@ -145,14 +109,12 @@ export const requestPhoneCodeGeetest = async ({
         captchaValidate,
         captchaSeccode,
       })
-      // throw new CaptchaFailedError("Captcha Required", { logger, captchaResponse })
     }
     const success = await captchaVerifyGeetest(
       captchaChallenge,
       captchaValidate,
       captchaSeccode,
     )
-    // const success = await captchaVerifyGoogle(captchaResponse)
     if (!success) {
       throw new CaptchaFailedError("Captcha Invalid", {
         logger,
@@ -160,7 +122,6 @@ export const requestPhoneCodeGeetest = async ({
         captchaValidate,
         captchaSeccode,
       })
-      // throw new CaptchaFailedError("Captcha Invalid", { logger, captchaResponse })
     }
   }
 
