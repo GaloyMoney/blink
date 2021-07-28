@@ -4,12 +4,28 @@ export const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
 export const bitcoindClient = bitcoindDefaultClient // no wallet
 export const bitcoindOutside = new BitcoindWalletClient({ walletName: "outside" })
 
-export async function sendToAddressAndConfirm(walletClient, address, amount) {
+export async function sendToAddressAndConfirm({
+  walletClient,
+  address,
+  amount,
+}: {
+  walletClient: BitcoindWalletClient
+  address: string
+  amount: number
+}) {
   await walletClient.sendToAddress({ address, amount })
   await walletClient.generateToAddress({ nblocks: 6, address: RANDOM_ADDRESS })
 }
 
-export async function mineAndConfirm(walletClient, numOfBlocks, address) {
+export async function mineAndConfirm({
+  walletClient,
+  numOfBlocks,
+  address,
+}: {
+  walletClient: BitcoindWalletClient
+  numOfBlocks: number
+  address: string
+}): Promise<number> {
   // from: https://developer.bitcoin.org/examples/testing.html
   // Unlike mainnet, in regtest mode only the first 150 blocks pay a reward of 50 bitcoins.
   // However, a block must have 100 confirmations before that reward can be spent,

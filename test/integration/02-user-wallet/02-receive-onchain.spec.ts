@@ -248,6 +248,10 @@ async function sendToWallet({ walletDestination }) {
 
   // just to improve performance
   const blockNumber = await bitcoindClient.getBlockCount()
-  await sendToAddressAndConfirm(bitcoindOutside, address, amountBTC)
+  await sendToAddressAndConfirm({
+    walletClient: bitcoindOutside,
+    address,
+    amount: amountBTC,
+  })
   await checkBalance(blockNumber)
 }

@@ -137,7 +137,7 @@ export const openChannelTesting = async ({
 
 export const fundLnd = async (lnd, amount = 1) => {
   const { address } = await createChainAddress({ format: "p2wpkh", lnd })
-  await sendToAddressAndConfirm(bitcoindOutside, address, amount)
+  await sendToAddressAndConfirm({ walletClient: bitcoindOutside, address, amount })
   await waitUntilBlockHeight({ lnd })
 }
 

@@ -48,11 +48,15 @@ describe("Bitcoind", () => {
   })
 
   it("should be funded mining 10 blocks", async () => {
-    const numOfBlock = 10
+    const numOfBlocks = 10
     const bitcoindAddress = await bitcoindOutside.getNewAddress()
-    await mineAndConfirm(bitcoindOutside, numOfBlock, bitcoindAddress)
+    await mineAndConfirm({
+      walletClient: bitcoindOutside,
+      numOfBlocks,
+      address: bitcoindAddress,
+    })
     const balance = await bitcoindOutside.getBalance()
-    expect(balance).toBeGreaterThanOrEqual(50 * numOfBlock)
+    expect(balance).toBeGreaterThanOrEqual(50 * numOfBlocks)
   })
 
   it("funds outside lnd node", async () => {
@@ -74,7 +78,7 @@ describe("Bitcoind", () => {
     const funderWallet = await getFunderWallet({ logger: baseLogger })
     const address = await funderWallet.getOnChainAddress()
 
-    await sendToAddressAndConfirm(bitcoindOutside, address, amount)
+    await sendToAddressAndConfirm({ walletClient: bitcoindOutside, address, amount })
     await waitUntilBlockHeight({ lnd: lnd1 })
 
     const { chain_balance: balance } = await getChainBalance({ lnd: lnd1 })
