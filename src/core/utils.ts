@@ -5,6 +5,8 @@ import axios from "axios"
 
 import { getIpConfig, PROXY_CHECK_APIKEY } from "@config/app"
 
+import GeeTest from "../geetest/geetest"
+
 import { User } from "@services/mongoose/schema"
 
 export const isDev = process.env.NODE_ENV !== "production"
@@ -27,6 +29,11 @@ export class LoggedError extends GraphQLError {
 }
 
 const ipConfig = getIpConfig()
+
+export const geetest = new GeeTest(
+  process.env.GEETEST_ID,
+  process.env.GEETEST_KEY,
+)
 
 export const addContact = async ({ uid, username }) => {
   // https://stackoverflow.com/questions/37427610/mongodb-update-or-insert-object-in-array

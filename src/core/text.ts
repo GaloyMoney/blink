@@ -14,7 +14,6 @@ import { sendTwilioText, getCarrier, sendSMSalaText } from "@services/phone-prov
 import { PhoneCode, User } from "@services/mongoose/schema"
 
 import { CaptchaFailedError, IPBlacklistedError, TooManyRequestError } from "./error"
-import * as Geetest from "../geetest/geetest"
 import {
   failedAttemptPerIp,
   limiterLoginAttempt,
@@ -23,6 +22,7 @@ import {
 } from "./rate-limit"
 import {
   fetchIP,
+  geetest,
   isIPBlacklisted,
   isIPTypeBlacklisted,
   randomIntFromInterval,
@@ -52,12 +52,12 @@ export const registerCaptchaGeetest = async ({
   }
 
   // TODO error handling
-  const registerResponse = await Geetest.register()
+  const registerResponse = await geetest.register()
   return registerResponse
 }
 
 async function captchaVerifyGeetest(captchaChallenge, captchaValidate, captchaSeccode) {
-  const result = await Geetest.validate(captchaChallenge, captchaValidate, captchaSeccode)
+  const result = await geetest.validate(captchaChallenge, captchaValidate, captchaSeccode)
   return result.status === 1
 }
 

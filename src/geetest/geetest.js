@@ -4,15 +4,10 @@
 // doing this: "If the storage space is not sufficient: Send request to check bypass status before starting the verfication process."
 
 const axios = require("axios")
-// const asyncRedis = require("async-redis");
-
-const GeetestConfig = require("./geetest_config")
 const GeetestLib = require("./sdk/geetest_lib")
 
-// const client = asyncRedis.createClient({"host":GeetestConfig.REDIS_HOST, "port":GeetestConfig.REDIS_PORT});
-
 async function sendRequest(params) {
-  const request_url = GeetestConfig.BYPASS_URL
+  const request_url = "http://bypass.geetest.com/v1/bypass_status.php"
   let bypass_res
   try {
     const res = await axios({
@@ -30,84 +25,50 @@ async function sendRequest(params) {
   return bypass_res
 }
 
-function sleep() {
-  return new Promise((resolve) => {
-    setTimeout(resolve, GeetestConfig.CYCLE_TIME * 1000)
-  })
-}
-
-// async function checkBypassStatus(){
-//         let bypass_status;
-//         while(true){
-//             bypass_status = await sendRequest({"gt":GeetestConfig.GEETEST_ID});
-//             if (bypass_status === "success"){
-//                 client.set(GeetestConfig.GEETEST_BYPASS_STATUS_KEY, bypass_status);
-//             }
-//             else{
-//                 bypass_status = "fail"
-//                 client.set(GeetestConfig.GEETEST_BYPASS_STATUS_KEY, bypass_status);
-//             }
-//             console.log(bypass_status)
-//             await sleep();
-//         }
-// }
-// checkBypassStatus()
-
-async function getBypassStatus() {
-  const bypass_status = await sendRequest({ gt: GeetestConfig.GEETEST_ID })
-  return bypass_status
-  // if (bypass_status === "success"){
-  //     client.set(GeetestConfig.GEETEST_BYPASS_STATUS_KEY, bypass_status);
-  // }
-  // else{
-  //     bypass_status = "fail"
-  //     client.set(GeetestConfig.GEETEST_BYPASS_STATUS_KEY, bypass_status);
-  // }
-  //
-  // OR "" (empty => error in sendRequest)
-}
-
-async function register() {
-  const gtLib = new GeetestLib(GeetestConfig.GEETEST_ID, GeetestConfig.GEETEST_KEY)
-  const digestmod = "md5"
-  const userId = "test"
-  const params = {
-    digestmod: digestmod,
-    user_id: userId,
-    client_type: "web",
-    ip_address: "127.0.0.1",
+class GeeTest {
+  constructor(GEETEST_ID, GEETEST_KEY) {
+    this.GEETEST_ID = GEETEST_ID
+    this.GEETEST_KEY = GEETEST_KEY
   }
 
-  // const bypasscache = await client.get(GeetestConfig.GEETEST_BYPASS_STATUS_KEY);
-  const bypasscache = await getBypassStatus() // not a cache
-
-  let result
-  if (bypasscache === "success") {
-    result = await gtLib.register(digestmod, params)
-  } else {
-    result = await gtLib.localRegister()
+  // private
+  async _getBypassStatus() {
+    const bypass_status = await sendRequest({ gt: this.GEETEST_ID })
+    return bypass_status
   }
-  return JSON.parse(result.data)
+
+  async register() {
+    const gtLib = new GeetestLib(this.GEETEST_ID, this.GEETEST_KEY)
+    const digestmod = "md5"
+    const userId = "test"
+    const params = {
+      digestmod: digestmod,
+      user_id: userId,
+      client_type: "web",
+      ip_address: "127.0.0.1",
+    }
+    const bypasscache = await this._getBypassStatus() // not a cache
+    let result
+    if (bypasscache === "success") {
+      result = await gtLib.register(digestmod, params)
+    } else {
+      result = await gtLib.localRegister()
+    }
+    return JSON.parse(result.data)
+  }
+
+  async validate(challenge, validate, seccode) {
+    const gtLib = new GeetestLib(this.GEETEST_ID, this.GEETEST_KEY)
+    const bypasscache = await this._getBypassStatus() // not a cache
+    let result
+    var params = new Array()
+    if (bypasscache === "success") {
+      result = await gtLib.successValidate(challenge, validate, seccode, params)
+    } else {
+      result = gtLib.failValidate(challenge, validate, seccode)
+    }
+    return result
+  }
 }
 
-async function validate(challenge, validate, seccode) {
-  const gtLib = new GeetestLib(GeetestConfig.GEETEST_ID, GeetestConfig.GEETEST_KEY)
-  //   const challenge = req.body[GeetestLib.GEETEST_CHALLENGE]
-  //   const validate = req.body[GeetestLib.GEETEST_VALIDATE]
-  //   const seccode = req.body[GeetestLib.GEETEST_SECCODE]
-
-  // const bypasscache = await client.get(GeetestConfig.GEETEST_BYPASS_STATUS_KEY);
-  // TODO? Keep it in memory? is a single value... or use redis
-  const bypasscache = await getBypassStatus() // not a cache
-
-  let result
-  var params = new Array()
-  if (bypasscache === "success") {
-    result = await gtLib.successValidate(challenge, validate, seccode, params)
-  } else {
-    result = gtLib.failValidate(challenge, validate, seccode)
-  }
-  return result
-}
-
-module.exports = { register, validate }
+module.exports = GeeTest
