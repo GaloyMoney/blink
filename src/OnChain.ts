@@ -22,11 +22,14 @@ import {
   TransactionRestrictedError,
   ValidationInternalError,
 } from "./error"
-import { accountPath, bankOwnerMediciPath, lndAccountingPath } from "./ledger/ledger"
+import {
+  addTransactionOnchainPayment,
+  addTransactionOnchainReceipt,
+  addTransactionOnUsPayment,
+} from "./ledger/transaction"
 import { getActiveOnchainLnd, getLndFromPubkey } from "./lndUtils"
 import { lockExtendOrThrow, redlock } from "./lock"
 import { baseLogger } from "./logger"
-import { MainBook } from "./mongodb"
 import { Transaction, User } from "./schema"
 import { UserWallet } from "./userWallet"
 import {
@@ -180,7 +183,6 @@ export const OnChainMixin = (superclass) =>
 
             const sats = amountToSendPayeeUser
             const metadata = {
-              currency: "BTC",
               type: "onchain_on_us",
               pending: false,
               ...UserWallet.getCurrencyEquivalent({ sats, fee: 0 }),
@@ -189,10 +191,16 @@ export const OnChainMixin = (superclass) =>
             }
 
             await lockExtendOrThrow({ lock, logger: onchainLoggerOnUs }, async () => {
-              return await MainBook.entry()
-                .credit(accountPath(payeeUser._id), sats, metadata)
-                .debit(this.user.accountPath, sats, { ...metadata, memo })
-                .commit()
+              const tx = await addTransactionOnUsPayment({
+                description: "",
+                sats,
+                metadata,
+                payerUser: this.user,
+                payeeUser,
+                memoPayer: memo,
+                shareMemoWithPayee: false,
+              })
+              return tx
             })
 
             onchainLoggerOnUs.info(
@@ -328,22 +336,18 @@ export const OnChainMixin = (superclass) =>
               }
 
               const metadata = {
-                currency: "BTC",
                 hash: id,
-                type: "onchain_payment",
-                pending: true,
                 ...UserWallet.getCurrencyEquivalent({ sats, fee }),
                 sendAll,
               }
 
-              const bankOwnerPath = await bankOwnerMediciPath()
-
-              // TODO/FIXME refactor. add the transaction first and set the fees in a second tx.
-              await MainBook.entry(memo)
-                .credit(lndAccountingPath, sats - this.user.withdrawFee, metadata)
-                .credit(bankOwnerPath, this.user.withdrawFee, metadata)
-                .debit(this.user.accountPath, sats, metadata)
-                .commit()
+              await addTransactionOnchainPayment({
+                description: memo,
+                sats,
+                fee: this.user.withdrawFee,
+                account: this.user.accountPath,
+                metadata,
+              })
 
               onchainLogger.info(
                 { success: true, ...metadata },
@@ -633,26 +637,18 @@ export const OnChainMixin = (superclass) =>
               const fee = Math.round(sats * this.user.depositFeeRatio)
 
               const metadata = {
-                currency: "BTC",
-                type,
                 hash: matched_tx.id,
-                pending: false,
                 ...UserWallet.getCurrencyEquivalent({ sats, fee }),
                 payee_addresses: addresses,
               }
 
-              const bankOwnerPath = await bankOwnerMediciPath()
-
-              const entry = MainBook.entry()
-                .credit(this.user.accountPath, sats - fee, metadata)
-                .debit(lndAccountingPath, sats, metadata)
-
-              if (fee) {
-                // no need to have an entry if there is no fee.
-                entry.credit(bankOwnerPath, fee, metadata)
-              }
-
-              await entry.commit()
+              await addTransactionOnchainReceipt({
+                description: "",
+                sats,
+                fee,
+                account: this.user.accountPath,
+                metadata,
+              })
 
               const onchainLogger = this.logger.child({
                 topic: "payment",

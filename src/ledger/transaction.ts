@@ -1,4 +1,9 @@
-import { dealerMediciPath, accountPath, lndAccountingPath } from "./ledger"
+import {
+  dealerMediciPath,
+  accountPath,
+  lndAccountingPath,
+  bankOwnerMediciPath,
+} from "./ledger"
 import { MainBook } from "../mongodb"
 import { UserWallet } from "../userWallet"
 
@@ -77,6 +82,59 @@ export const addTransactionLndPayment = async ({
   await entry.commit()
 
   return entry
+}
+
+export const addTransactionOnchainReceipt = async ({
+  description,
+  sats,
+  fee,
+  account,
+  metadata,
+}) => {
+  const txMetadata = {
+    currency: "BTC",
+    type: "onchain_receipt",
+    pending: false,
+    ...metadata,
+  }
+
+  const entry = MainBook.entry(description)
+    .credit(account, sats - fee, txMetadata)
+    .debit(lndAccountingPath, sats, txMetadata)
+
+  if (fee) {
+    const bankOwnerPath = await bankOwnerMediciPath()
+    // no need to have an entry if there is no fee.
+    entry.credit(bankOwnerPath, fee, metadata)
+  }
+
+  await entry.commit()
+
+  return entry
+}
+
+export const addTransactionOnchainPayment = async ({
+  description,
+  sats,
+  fee,
+  account,
+  metadata,
+}) => {
+  const txMetadata = {
+    currency: "BTC",
+    type: "onchain_payment",
+    pending: true,
+    ...metadata,
+  }
+
+  const bankOwnerPath = await bankOwnerMediciPath()
+
+  // TODO/FIXME refactor. add the transaction first and set the fees in a second tx.
+  return await MainBook.entry(description)
+    .credit(lndAccountingPath, sats - fee, txMetadata)
+    .credit(bankOwnerPath, fee, txMetadata)
+    .debit(account, sats, txMetadata)
+    .commit()
 }
 
 export const addTransactionOnUsPayment = async ({
