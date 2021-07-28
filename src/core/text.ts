@@ -1,7 +1,4 @@
-import axios from "axios"
 import moment from "moment"
-import querystring from "querystring"
-
 import {
   yamlConfig,
   getGaloyInstanceName,

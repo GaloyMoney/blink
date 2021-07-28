@@ -268,9 +268,7 @@ type Mutation {
     captchaSeccode: String @stringLength(min: 10, max: 1000, policy: THROW)
   ): Success
 
-  requestPhoneCode(
-    phone: String @pattern(regexp: "^\\+[0-9]+$", policy: THROW)
-  ): Success
+  requestPhoneCode(phone: String @pattern(regexp: "^\\+[0-9]+$", policy: THROW)): Success
 
   login(
     phone: String @pattern(regexp: "^\\+[0-9]+$", policy: THROW)
