@@ -30,10 +30,7 @@ export class LoggedError extends GraphQLError {
 
 const ipConfig = getIpConfig()
 
-export const geetest = new GeeTest(
-  process.env.GEETEST_ID,
-  process.env.GEETEST_KEY,
-)
+export const geetest = new GeeTest(process.env.GEETEST_ID, process.env.GEETEST_KEY)
 
 export const addContact = async ({ uid, username }) => {
   // https://stackoverflow.com/questions/37427610/mongodb-update-or-insert-object-in-array
