@@ -302,6 +302,29 @@ export const addTransactionColdStoragePayment = async ({
     .commit()
 }
 
+export const addTransactionHotWalletPayment = async ({
+  description,
+  amount,
+  fee,
+  metadata,
+}) => {
+  const txMetadata = {
+    currency: "BTC",
+    type: "to_hot_wallet",
+    pending: false,
+    fee,
+    ...metadata,
+  }
+
+  const bankOwnerPath = await bankOwnerMediciPath()
+
+  return await MainBook.entry(description)
+    .debit(lndAccountingPath, amount, txMetadata)
+    .debit(bankOwnerPath, fee, txMetadata)
+    .credit(bitcoindAccountingPath, amount + fee, txMetadata)
+    .commit()
+}
+
 export const rebalancePortfolio = async ({ description, metadata, wallet }) => {
   const dealerPath = await dealerMediciPath()
 

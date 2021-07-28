@@ -3,13 +3,10 @@ import { createChainAddress, sendToChainAddress } from "lightning"
 import _ from "lodash"
 import { bitcoindDefaultClient, BitcoindWalletClient } from "./bitcoind"
 import {
-  bankOwnerMediciPath,
-  bitcoindAccountingPath,
-  lndAccountingPath,
-} from "./ledger/ledger"
-import { addTransactionColdStoragePayment } from "./ledger/transaction"
+  addTransactionColdStoragePayment,
+  addTransactionHotWalletPayment,
+} from "./ledger/transaction"
 import { getActiveOnchainLnd, lndsBalances } from "./lndUtils"
-import { MainBook } from "./mongodb"
 import { getOnChainTransactions } from "./OnChain"
 import { UserWallet } from "./userWallet"
 import { btc2sat, sat2btc } from "./utils"
@@ -245,8 +242,7 @@ export class SpecterWallet {
     // https://github.com/cryptoadvance/specter-desktop/issues/895
 
     // ...this.getCurrencyEquivalent({sats, fee: 0}),
-    const metadata = { type: "to_hot_wallet", currency: "BTC", pending: false }
-    let subLogger = this.logger.child({ ...metadata, sats })
+    let subLogger = this.logger.child({ sats })
 
     const memo = `withdrawal of ${sats} sats from specter wallet to lnd`
 
@@ -278,13 +274,12 @@ export class SpecterWallet {
     })
     const fee = btc2sat(-tx.fee) /* fee is negative */
 
-    const bankOwnerPath = await bankOwnerMediciPath()
-
-    await MainBook.entry(memo)
-      .debit(lndAccountingPath, sats, { ...metadata })
-      .debit(bankOwnerPath, fee, { ...metadata })
-      .credit(bitcoindAccountingPath, sats + fee, { ...metadata })
-      .commit()
+    await addTransactionHotWalletPayment({
+      description: memo,
+      amount: sats,
+      fee,
+      metadata: { hash: txid },
+    })
 
     subLogger.info({ txid, tx }, `rebalancing withdrawal was succesful`)
   }
