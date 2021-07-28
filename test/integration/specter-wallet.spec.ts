@@ -23,19 +23,9 @@ afterAll(async () => {
 
 describe("SpecterWallet", () => {
   it("creates wallet", async () => {
-    let wallets = await specterWallet.listWallets()
-
-    if (wallets.length < 2) {
-      try {
-        await specterWallet.createWallet()
-      } catch {
-        const { name } = await bitcoindClient.loadWallet(specterWalletName)
-        expect(name).toBe(specterWalletName)
-      }
-    }
-
-    wallets = await specterWallet.listWallets()
-    expect(wallets.length).toBe(2)
+    await specterWallet.createWallet()
+    const wallets = await specterWallet.listWallets()
+    expect(wallets.length).toBe(1)
   })
 
   it("deposit to bitcoind", async () => {

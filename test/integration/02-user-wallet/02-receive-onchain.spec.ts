@@ -13,9 +13,11 @@ import {
   lndonchain,
   RANDOM_ADDRESS,
   waitUntilBlockHeight,
+  sendToAddressAndConfirm,
   subscribeToChainAddress,
   subscribeToTransactions,
   bitcoindClient,
+  bitcoindOutside,
   amountAfterFeeDeduction,
 } from "test/helpers"
 
@@ -40,6 +42,7 @@ beforeAll(async () => {
   walletUser0 = await getUserWallet(0)
   // load funder wallet before use it
   await getUserWallet(4)
+  await bitcoindClient.loadWallet({ filename: "outside" })
 })
 
 beforeEach(() => {
@@ -50,8 +53,9 @@ afterEach(async () => {
   await checkIsBalanced()
 })
 
-afterAll(() => {
+afterAll(async () => {
   jest.restoreAllMocks()
+  await bitcoindClient.unloadWallet({ wallet_name: "outside" })
 })
 
 describe("FunderWallet - On chain", () => {
@@ -97,16 +101,18 @@ describe("UserWallet - On chain", () => {
 
     const outputs = [output0, output1]
 
-    const { psbt } = await bitcoindClient.walletCreateFundedPsbt([], outputs)
-    // const decodedPsbt1 = await bitcoindClient.decodePsbt(psbt)
-    // const analysePsbt1 = await bitcoindClient.analyzePsbt(psbt)
-    const walletProcessPsbt = await bitcoindClient.walletProcessPsbt(psbt)
-    // const decodedPsbt2 = await bitcoindClient.decodePsbt(walletProcessPsbt.psbt)
-    // const analysePsbt2 = await bitcoindClient.analyzePsbt(walletProcessPsbt.psbt)
-    const finalizedPsbt = await bitcoindClient.finalizePsbt(walletProcessPsbt.psbt)
+    const { psbt } = await bitcoindOutside.walletCreateFundedPsbt({ inputs: [], outputs })
+    // const decodedPsbt1 = await bitcoindOutside.decodePsbt(psbt)
+    // const analysePsbt1 = await bitcoindOutside.analyzePsbt(psbt)
+    const walletProcessPsbt = await bitcoindOutside.walletProcessPsbt({ psbt })
+    // const decodedPsbt2 = await bitcoindOutside.decodePsbt(walletProcessPsbt.psbt)
+    // const analysePsbt2 = await bitcoindOutside.analyzePsbt(walletProcessPsbt.psbt)
+    const finalizedPsbt = await bitcoindOutside.finalizePsbt({
+      psbt: walletProcessPsbt.psbt,
+    })
 
-    await bitcoindClient.sendRawTransaction(finalizedPsbt.hex)
-    await bitcoindClient.generateToAddress(6, RANDOM_ADDRESS)
+    await bitcoindOutside.sendRawTransaction({ hexstring: finalizedPsbt.hex })
+    await bitcoindOutside.generateToAddress({ nblocks: 6, address: RANDOM_ADDRESS })
     await waitUntilBlockHeight({ lnd: lndonchain })
 
     {
@@ -137,7 +143,7 @@ describe("UserWallet - On chain", () => {
 
     await Promise.all([
       once(sub, "chain_transaction"),
-      bitcoindClient.sendToAddress(address, amountBTC),
+      bitcoindOutside.sendToAddress({ address, amount: amountBTC }),
     ])
 
     await sleep(1000)
@@ -164,7 +170,7 @@ describe("UserWallet - On chain", () => {
     )
 
     await Promise.all([
-      bitcoindClient.generateToAddress(3, RANDOM_ADDRESS),
+      bitcoindOutside.generateToAddress({ nblocks: 3, address: RANDOM_ADDRESS }),
       once(sub, "chain_transaction"),
     ])
 
@@ -195,6 +201,7 @@ describe("UserWallet - On chain", () => {
   })
 })
 
+// all must be from outside if is about funding
 async function sendToWallet({ walletDestination }) {
   const lnd = lndonchain
 
@@ -241,6 +248,10 @@ async function sendToWallet({ walletDestination }) {
 
   // just to improve performance
   const blockNumber = await bitcoindClient.getBlockCount()
-  await bitcoindClient.sendToAddressAndConfirm(address, amountBTC)
+  await sendToAddressAndConfirm({
+    walletClient: bitcoindOutside,
+    address,
+    amount: amountBTC,
+  })
   await checkBalance(blockNumber)
 }

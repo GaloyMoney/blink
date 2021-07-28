@@ -18,7 +18,12 @@ import {
   updateRoutingFees,
 } from "lightning"
 
-import { bitcoindClient, RANDOM_ADDRESS } from "./bitcoinCore"
+import {
+  bitcoindClient,
+  bitcoindOutside,
+  RANDOM_ADDRESS,
+  sendToAddressAndConfirm,
+} from "./bitcoinCore"
 
 export * from "lightning"
 
@@ -128,10 +133,11 @@ export const openChannelTesting = async ({
   return { lndNewChannel, lndPartnerNewChannel }
 }
 
+// all the following uses of bitcoind client that send/receive coin must be "outside"
+
 export const fundLnd = async (lnd, amount = 1) => {
   const { address } = await createChainAddress({ format: "p2wpkh", lnd })
-
-  await bitcoindClient.sendToAddressAndConfirm(address, amount)
+  await sendToAddressAndConfirm({ walletClient: bitcoindOutside, address, amount })
   await waitUntilBlockHeight({ lnd })
 }
 
@@ -149,7 +155,7 @@ export const resetLnds = async () => {
   for (const lnd of lnds) {
     const chainBalance = (await getChainBalance({ lnd })).chain_balance
     if (chainBalance > 0) {
-      const address = await bitcoindClient.getNewAddress()
+      const address = await bitcoindOutside.getNewAddress()
       await sendToChainAddress({
         lnd,
         address,
@@ -211,7 +217,7 @@ export const mineBlockAndSync = async ({
   blockHeight?: number
   newBlock?: number
 }) => {
-  await bitcoindClient.generateToAddress(newBlock, RANDOM_ADDRESS)
+  await bitcoindOutside.generateToAddress({ nblocks: newBlock, address: RANDOM_ADDRESS })
   const promiseArray: Array<Promise<void>> = []
   for (const lnd of lnds) {
     promiseArray.push(waitUntilBlockHeight({ lnd, blockHeight }))

@@ -14,6 +14,7 @@ import {
   createChainAddress,
   subscribeToTransactions,
   bitcoindClient,
+  bitcoindOutside,
   mineBlockAndSync,
 } from "test/helpers"
 
@@ -38,6 +39,7 @@ beforeAll(async () => {
   userWallet12 = await getUserWallet(12)
   // load funder wallet before use it
   await getUserWallet(4)
+  await bitcoindClient.loadWallet({ filename: "outside" })
 })
 
 beforeEach(async () => {
@@ -48,8 +50,9 @@ afterEach(async () => {
   await checkIsBalanced()
 })
 
-afterAll(() => {
+afterAll(async () => {
   jest.restoreAllMocks()
+  await bitcoindClient.unloadWallet({ wallet_name: "outside" })
 })
 
 const amount = 10040 // sats
@@ -345,7 +348,7 @@ describe("UserWallet - onChainPay", () => {
   })
 
   it("fails if the amount is less than on chain dust amount", async () => {
-    const address = await bitcoindClient.getNewAddress()
+    const address = await bitcoindOutside.getNewAddress()
     expect(
       userWallet0.onChainPay({ address, amount: yamlConfig.onchainDustAmount - 1 }),
     ).rejects.toThrow()

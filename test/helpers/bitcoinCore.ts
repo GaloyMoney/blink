@@ -1,23 +1,40 @@
-import { bitcoindDefaultClient } from "src/utils"
+import { bitcoindDefaultClient, BitcoindWalletClient } from "src/bitcoind"
 
 export const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
-export const bitcoindClient = bitcoindDefaultClient
+export const bitcoindClient = bitcoindDefaultClient // no wallet
+export const bitcoindOutside = new BitcoindWalletClient({ walletName: "outside" })
 
-bitcoindDefaultClient.sendToAddressAndConfirm = async (address, amount) => {
-  await bitcoindDefaultClient.sendToAddress(address, amount)
-  await bitcoindDefaultClient.generateToAddress(6, RANDOM_ADDRESS)
+export async function sendToAddressAndConfirm({
+  walletClient,
+  address,
+  amount,
+}: {
+  walletClient: BitcoindWalletClient
+  address: string
+  amount: number
+}) {
+  await walletClient.sendToAddress({ address, amount })
+  await walletClient.generateToAddress({ nblocks: 6, address: RANDOM_ADDRESS })
 }
 
-// from: https://developer.bitcoin.org/examples/testing.html
-// Unlike mainnet, in regtest mode only the first 150 blocks pay a reward of 50 bitcoins.
-// However, a block must have 100 confirmations before that reward can be spent,
-// so we generate 101 blocks to get access to the coinbase transaction from block #1.
+export async function mineAndConfirm({
+  walletClient,
+  numOfBlocks,
+  address,
+}: {
+  walletClient: BitcoindWalletClient
+  numOfBlocks: number
+  address: string
+}): Promise<number> {
+  // from: https://developer.bitcoin.org/examples/testing.html
+  // Unlike mainnet, in regtest mode only the first 150 blocks pay a reward of 50 bitcoins.
+  // However, a block must have 100 confirmations before that reward can be spent,
+  // so we generate 101 blocks to get access to the coinbase transaction from block #1.
 
-bitcoindDefaultClient.mineAndConfirm = async (numOfBlocks, address) => {
   const blockNumber = await bitcoindDefaultClient.getBlockCount()
 
-  await bitcoindClient.generateToAddress(numOfBlocks, address)
-  await bitcoindClient.generateToAddress(101, RANDOM_ADDRESS)
+  await walletClient.generateToAddress({ nblocks: numOfBlocks, address })
+  await walletClient.generateToAddress({ nblocks: 101, address: RANDOM_ADDRESS })
 
   let rewards = 0
   for (let i = 1; i <= numOfBlocks; i++) {

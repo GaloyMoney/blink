@@ -1,7 +1,6 @@
 import { GraphQLError } from "graphql"
 import _ from "lodash"
 
-import bitcoindClient from "bitcoin-core"
 import { parsePaymentRequest } from "invoices"
 
 import { User } from "./schema"
@@ -26,19 +25,6 @@ export class LoggedError extends GraphQLError {
 }
 
 const PROXY_CHECK_APIKEY = yamlConfig?.PROXY_CHECK_APIKEY
-
-const connection_obj = {
-  network: process.env.NETWORK,
-  username: "rpcuser",
-  password: process.env.BITCOINDRPCPASS,
-  host: process.env.BITCOINDADDR,
-  port: process.env.BITCOINDPORT,
-  version: "0.21.0",
-}
-
-export const BitcoindClient = ({ wallet = "" }) =>
-  new bitcoindClient({ ...connection_obj, wallet })
-export const bitcoindDefaultClient = BitcoindClient({ wallet: "" })
 
 export const addContact = async ({ uid, username }) => {
   // https://stackoverflow.com/questions/37427610/mongodb-update-or-insert-object-in-array

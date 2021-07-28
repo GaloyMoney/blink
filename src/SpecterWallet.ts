@@ -1,6 +1,7 @@
 import assert from "assert"
 import { createChainAddress, sendToChainAddress } from "lightning"
 import _ from "lodash"
+import { bitcoindDefaultClient, BitcoindWalletClient } from "./bitcoind"
 import {
   bankOwnerMediciPath,
   bitcoindAccountingPath,
@@ -11,10 +12,13 @@ import { MainBook } from "./mongodb"
 import { getOnChainTransactions } from "./OnChain"
 import { Logger, SpecterWalletConfig, SpecterWalletConstructorArgs } from "./types"
 import { UserWallet } from "./userWallet"
-import { BitcoindClient, bitcoindDefaultClient, btc2sat, sat2btc } from "./utils"
+import { btc2sat, sat2btc } from "./utils"
+
+// TODO no longer used in tests, removing the creation of the default wallet didn't break anything
+const staticClient = "default" // was ""
 
 export class SpecterWallet {
-  bitcoindClient
+  bitcoindClient // TODO rename?
   readonly logger: Logger
   readonly config: SpecterWalletConfig
 
@@ -50,7 +54,7 @@ export class SpecterWallet {
       this.logger.info("specter wallet has not been instantiated")
 
       // currently use for testing purpose. need to refactor
-      return ""
+      return staticClient
     }
 
     if (specterWallets.length > 1) {
@@ -59,7 +63,7 @@ export class SpecterWallet {
 
     this.logger.info({ wallet: specterWallets[0] }, "setting BitcoindClient")
 
-    this.bitcoindClient = BitcoindClient({ wallet: specterWallets[0] })
+    this.bitcoindClient = new BitcoindWalletClient({ walletName: specterWallets[0] })
 
     return specterWallets[0]
   }
@@ -86,7 +90,7 @@ export class SpecterWallet {
   async getBitcoindBalance(): Promise<number> {
     if (!this.bitcoindClient) {
       const wallet = await this.setBitcoindClient()
-      if (wallet === "") {
+      if (wallet === staticClient) {
         return 0
       }
     }
@@ -99,7 +103,7 @@ export class SpecterWallet {
 
     if (!this.bitcoindClient) {
       const wallet = await this.setBitcoindClient()
-      if (wallet === "") {
+      if (wallet === staticClient) {
         return
       }
     }
@@ -178,7 +182,7 @@ export class SpecterWallet {
   async toColdStorage({ sats }) {
     if (!this.bitcoindClient) {
       const wallet = await this.setBitcoindClient()
-      if (wallet === "") {
+      if (wallet === staticClient) {
         this.logger.warn("no wallet has been setup")
         return
       }
@@ -232,7 +236,7 @@ export class SpecterWallet {
   async toLndWallet({ sats }) {
     if (!this.bitcoindClient) {
       const wallet = await this.setBitcoindClient()
-      if (wallet === "") {
+      if (wallet === staticClient) {
         return
       }
     }
@@ -266,17 +270,17 @@ export class SpecterWallet {
       // TODO: won't work automatically with a cold storage wallet
       // make a PSBT instead accesible for further signing.
       // TODO: figure out a way to export the PSBT when there is a pending tx
-      txid = await this.bitcoindClient.sendToAddress(address, sat2btc(sats))
+      txid = await this.bitcoindClient.sendToAddress({ address, amount: sat2btc(sats) })
     } catch (err) {
       const error = "this.bitcoindClient.sendToAddress() error"
       subLogger.error({ txid }, error)
       throw new Error(err)
     }
 
-    const tx = await this.bitcoindClient.getTransaction(
+    const tx = await this.bitcoindClient.getTransaction({
       txid,
-      true /* include_watchonly */,
-    )
+      include_watchonly: true,
+    })
     const fee = btc2sat(-tx.fee) /* fee is negative */
 
     const bankOwnerPath = await bankOwnerMediciPath()

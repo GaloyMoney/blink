@@ -11,6 +11,7 @@ import {
 } from "lightning"
 import _ from "lodash"
 import moment from "moment"
+import { bitcoindDefaultClient } from "./bitcoind"
 import {
   DbError,
   DustAmountError,
@@ -32,7 +33,6 @@ import { IOnChainPayment, ISuccess, ITransaction, UserWalletConfig } from "./typ
 import { UserWallet } from "./userWallet"
 import {
   amountOnVout,
-  bitcoindDefaultClient,
   btc2sat,
   LoggedError,
   LOOK_BACK,
@@ -564,7 +564,7 @@ export const OnChainMixin = (superclass) =>
 
     // raw encoded transaction
     async getSatsAndAddressPerTx(tx): Promise<{ sats: number; addresses: string[] }> {
-      const { vout } = await bitcoindDefaultClient.decodeRawTransaction(tx)
+      const { vout } = await bitcoindDefaultClient.decodeRawTransaction({ hexstring: tx })
 
       //   vout: [
       //   {
