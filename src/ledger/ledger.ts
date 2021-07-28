@@ -10,7 +10,32 @@ export const lndAccountingPath = "Assets:Reserve:Lightning" // TODO: rename to A
 export const escrowAccountingPath = "Assets:Reserve:Escrow" // TODO: rename to Assets:Lnd:Escrow
 
 // liabilities
-export const accountPath = (uid) => `Liabilities:${uid}`
+export const liabilitiesMainAccount = "Liabilities"
+export const accountPath = (uid) => `${liabilitiesMainAccount}:${uid}`
+export const resolveAccountId = (accountPath: string | string[]) => {
+  let id: string | null = null
+
+  if (!accountPath) {
+    return id
+  }
+
+  let path = accountPath
+
+  if (typeof accountPath === "string") {
+    path = accountPath.split(":")
+  }
+
+  if (
+    Array.isArray(path) &&
+    path.length === 2 &&
+    path[0] === liabilitiesMainAccount &&
+    path[1]
+  ) {
+    id = path[1]
+  }
+
+  return id
+}
 
 let cacheDealerPath: string
 let cachebankOwnerPath: string
