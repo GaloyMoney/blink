@@ -23,6 +23,8 @@ services:
     image: lncm/bitcoind:v0.21.1
     ports:
       - "18443:18443"
+      - "28332:28332"
+      - "28333:28333"
     volumes:
     - ${PWD}/dev/bitcoind/bitcoin.conf:/data/.bitcoin/bitcoin.conf
   lnd1:
