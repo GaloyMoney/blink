@@ -1,4 +1,4 @@
-import { getUserWalletConfig, yamlConfig } from "./config"
+import { getUserWalletConfig } from "./config"
 import { NotFoundError } from "./error"
 import { LightningUserWallet } from "./LightningUserWallet"
 import { getCurrentPrice } from "./realtimePrice"
