@@ -1,7 +1,5 @@
 import { accountPath } from "src/ledger/ledger"
-import { baseLogger } from "src/logger"
 import { User } from "src/schema"
-import { getFunderWallet } from "src/walletFactory"
 import { getUserWallet } from "test/helpers"
 
 jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
@@ -22,8 +20,8 @@ describe("schema", () => {
 
         const accountPaths = activeUsers.map((user) => accountPath(user._id))
         const userWallet0AccountPath = (await getUserWallet(0)).user.accountPath
-        const funderWalletAccountPath = (await getFunderWallet({ logger: baseLogger }))
-          .user.accountPath
+
+        const funderWalletAccountPath = await User.find({ role: "funder" }).accountPath
 
         // userWallets used in the tests
         expect(accountPaths.length).toBeGreaterThan(0)

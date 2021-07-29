@@ -4,7 +4,6 @@ import { baseLogger } from "src/logger"
 import { TransactionLimits } from "src/config"
 import { getCurrentPrice } from "src/realtimePrice"
 import { btc2sat, sat2btc, sleep } from "src/utils"
-import { getFunderWallet } from "src/walletFactory"
 import { getTitle } from "src/notifications/payment"
 import { onchainTransactionEventHandler } from "src/entrypoint/trigger"
 import {
@@ -20,6 +19,7 @@ import {
   bitcoindOutside,
   amountAfterFeeDeduction,
 } from "test/helpers"
+import { WalletFromRole } from "src/walletFactory"
 
 jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
 jest.mock("src/phone-provider", () => require("test/mocks/phone-provider"))
@@ -60,7 +60,7 @@ afterAll(async () => {
 
 describe("FunderWallet - On chain", () => {
   it("receives on-chain transaction", async () => {
-    const funderWallet = await getFunderWallet({ logger: baseLogger })
+    const funderWallet = await WalletFromRole({ role: "funder", logger: baseLogger })
     await sendToWallet({ walletDestination: funderWallet })
   })
 })

@@ -1,12 +1,12 @@
 import express from "express"
 import client, { register } from "prom-client"
+import { WalletFromRole } from "src/walletFactory"
 import { getBalancesDetail } from "../bitcoind"
 import { balanceSheetIsBalanced, getLedgerAccounts } from "../ledger/balanceSheet"
 import { getBosScore, lndsBalances } from "../lndUtils"
 import { baseLogger } from "../logger"
 import { setupMongoConnection } from "../mongodb"
 import { User } from "../schema"
-import { getFunderWallet } from "../walletFactory"
 
 const logger = baseLogger.child({ module: "exporter" })
 
@@ -67,6 +67,10 @@ const business_g = new client.Gauge({
   name: `${prefix}_business`,
   help: "number of businesses in the app",
 })
+// const bankOwner_g = new client.Gauge({
+//   name: `${prefix}_bankOwnerBalance`,
+//   help: "sats amount for the bank owner",
+// })
 
 const main = async () => {
   server.get("/metrics", async (req, res) => {
@@ -94,12 +98,11 @@ const main = async () => {
     lndOffChain_g.set(offChain)
     lndOpeningChannelBalance_g.set(opening_channel_balance)
     lndClosingChannelBalance_g.set(closing_channel_balance)
-    // price_g.set(price)
 
     const userCount = await User.countDocuments()
     userCount_g.set(userCount)
 
-    const funderWallet = await getFunderWallet({ logger })
+    const funderWallet = await WalletFromRole({ role: "funder", logger })
     const { BTC: funderBalance } = await funderWallet.getBalances()
     funder_balance_BTC_g.set(funderBalance)
 
