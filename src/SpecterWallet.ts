@@ -14,7 +14,7 @@ import { UserWallet } from "./userWallet"
 import { btc2sat, sat2btc } from "./utils"
 
 // TODO no longer used in tests, removing the creation of the default wallet didn't break anything
-const staticClient = "default" // was ""
+const staticClient = ""
 
 export class SpecterWallet {
   bitcoindClient // TODO rename?

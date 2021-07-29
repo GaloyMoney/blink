@@ -198,7 +198,7 @@ export const getBalancesDetail = async (): Promise<
 
   for await (const wallet of wallets) {
     // do not consider the "outside" wallet in tests
-    if (wallet === "outside") {
+    if (wallet === "" || wallet === "outside") {
       continue
     }
 
