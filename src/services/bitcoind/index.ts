@@ -92,6 +92,18 @@ export class BitcoindClient {
     return await this.client.decodeRawTransaction({ hexstring })
   }
 
+  // default client knows about all transactions of its wallets
+
+  async getTransaction({
+    txid,
+    include_watchonly,
+  }: {
+    txid: string
+    include_watchonly?: boolean
+  }): Promise<InWalletTransaction> {
+    return await this.client.getTransaction({ txid, include_watchonly })
+  }
+
   // load/unload only used in tests, for now
 
   async loadWallet({
@@ -134,16 +146,6 @@ export class BitcoindWalletClient {
     amount: number
   }): Promise<string> {
     return await this.client.sendToAddress({ address, amount })
-  }
-
-  async getTransaction({
-    txid,
-    include_watchonly,
-  }: {
-    txid: string
-    include_watchonly?: boolean
-  }): Promise<InWalletTransaction> {
-    return await this.client.getTransaction({ txid, include_watchonly })
   }
 
   async generateToAddress({

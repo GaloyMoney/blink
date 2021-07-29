@@ -267,7 +267,7 @@ export class SpecterWallet {
       throw new Error(err)
     }
 
-    const tx = await this.bitcoindClient.getTransaction({
+    const tx = await bitcoindDefaultClient.getTransaction({
       txid,
       include_watchonly: true,
     })
