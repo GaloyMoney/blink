@@ -831,12 +831,6 @@ export const LightningMixin = (superclass) =>
         return false
       }
 
-      // TODO: look if this is this really a condition that can happen?
-      if (!invoice) {
-        this.logger.warn("received an invalid empty invoice from lnd")
-        return false
-      }
-
       // TODO: we should not log/keep secret in the logs
       this.logger.debug({ invoice, user: this.user }, "got invoice status")
 

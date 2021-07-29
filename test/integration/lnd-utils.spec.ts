@@ -12,7 +12,7 @@ import {
   lndOutside1,
   lndOutside2,
   pay,
-  waitFor
+  waitFor,
 } from "test/helpers"
 
 afterAll(() => {
