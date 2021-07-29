@@ -26,6 +26,11 @@ type VOut = {
   scriptPubKey: ScriptPubKey
 }
 
+type DecodeRawTransactionResult = {
+  txid: string
+  vout: [VOut]
+}
+
 type GetAddressInfoResult = {
   address: string
   scriptPubKey: string
@@ -88,7 +93,7 @@ export class BitcoindClient {
     hexstring,
   }: {
     hexstring: string
-  }): Promise<{ vout: [VOut] }> {
+  }): Promise<DecodeRawTransactionResult> {
     return await this.client.decodeRawTransaction({ hexstring })
   }
 
