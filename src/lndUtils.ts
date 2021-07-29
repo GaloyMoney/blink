@@ -346,7 +346,7 @@ export const onChannelUpdated = async ({
 export const getLnds = ({
   type,
   active,
-}: { type?: nodeType; active?: boolean } = {}): ILndParamsAuthed[] => {
+}: { type?: nodeType; active?: boolean } = {}): LndParamsAuthed[] => {
   let result = params
 
   if (type) {

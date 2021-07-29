@@ -2,7 +2,7 @@ import { authenticatedLndGrpc } from "lightning"
 import _ from "lodash"
 import { getLndParams } from "./config"
 
-const inputs: ILndParams[] = getLndParams()
+const inputs: LndParams[] = getLndParams()
 
 // is this file being imported from trigger.ts?
 // FIXME: this is a hacky workaround to get active = true

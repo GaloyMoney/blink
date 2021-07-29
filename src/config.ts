@@ -24,7 +24,7 @@ export const yamlConfig = _.merge(defaultConfig, customConfig)
 
 export const getGaloyInstanceName = () => yamlConfig.name
 
-export const getLndParams = (): ILndParams[] => {
+export const getLndParams = (): LndParams[] => {
   const config = yamlConfig.lnds
   return config.map((input) => ({
     cert: process.env[`${input.name}_TLS`] || exit(98),

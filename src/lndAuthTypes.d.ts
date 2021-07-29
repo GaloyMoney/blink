@@ -1,6 +1,6 @@
 type nodeType = "offchain" | "onchain"
 
-interface ILndParams {
+type LndParams = {
   cert: string
   macaroon: string
   node: string
@@ -9,7 +9,7 @@ interface ILndParams {
   pubkey: string
 }
 
-interface ILndParamsAuthed extends ILndParams {
+type LndParamsAuthed = LndParams & {
   lnd: AuthenticatedLnd
   socket: string
   active: boolean
