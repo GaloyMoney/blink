@@ -8,6 +8,14 @@ type Primitive = string | boolean | number
 // configs & constructors
 // TODO: clean up this section when "constructor typing" work is
 //       being done
+
+type LimitConstants = {
+  oldEnoughForWithdrawalHours: number
+  oldEnoughForWithdrawalMicroseconds: number
+}
+
+type UserLimitsArgs = { level: number }
+
 interface IUserLimits {
   onUsLimit: number
   withdrawalLimit: number
@@ -15,6 +23,7 @@ interface IUserLimits {
 
 interface ITransactionLimits extends IUserLimits {
   oldEnoughForWithdrawalLimit: number
+  oldEnoughForWithdrawalLimitHours: number
 }
 
 interface IRateLimits {
