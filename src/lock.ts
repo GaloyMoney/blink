@@ -1,7 +1,6 @@
 import Redlock, { Lock } from "redlock"
 import bluebird from "bluebird"
 import { redis } from "./redis"
-import { Logger } from "./types"
 const { using } = bluebird
 
 // the maximum amount of time you want the resource locked,

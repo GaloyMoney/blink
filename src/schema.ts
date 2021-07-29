@@ -1,10 +1,9 @@
 import * as _ from "lodash"
 import * as mongoose from "mongoose"
-import { yamlConfig } from "./config"
+import { yamlConfig, levels } from "./config"
 import { NotFoundError } from "./error"
 import { accountPath } from "./ledger/ledger"
 import { baseLogger } from "./logger"
-import { Levels } from "./types"
 import { caseInsensitiveRegex } from "./utils"
 
 // mongoose.set("debug", true)
@@ -121,7 +120,7 @@ const UserSchema = new Schema({
   },
   level: {
     type: Number,
-    enum: Levels,
+    enum: levels,
     default: 1,
   },
 

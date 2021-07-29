@@ -28,7 +28,6 @@ import { FEECAP, FEEMIN, ILndParamsAuthed, nodeType, params } from "./lndAuth"
 import { baseLogger } from "./logger"
 import { MainBook } from "./mongodb"
 import { DbMetadata, InvoiceUser } from "./schema"
-import { IFeeRequest } from "./types"
 import { LoggedError, LOOK_BACK } from "./utils"
 
 // milliseconds in a day

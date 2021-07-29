@@ -7,7 +7,6 @@ import { accountPath } from "./ledger/ledger"
 import { MainBook } from "./mongodb"
 import { sendNotification } from "./notifications/notification"
 import { User } from "./schema"
-import { ITransaction, Logger } from "./types"
 
 export abstract class UserWallet {
   static lastPrice: number

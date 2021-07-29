@@ -29,7 +29,6 @@ import { lockExtendOrThrow, redlock } from "./lock"
 import { baseLogger } from "./logger"
 import { MainBook } from "./mongodb"
 import { Transaction, User } from "./schema"
-import { IOnChainPayment, ISuccess, ITransaction, UserWalletConfig } from "./types"
 import { UserWallet } from "./userWallet"
 import {
   amountOnVout,

@@ -1,12 +1,12 @@
 import { NotFoundError, ValidationInternalError } from "./error"
 import { User } from "./schema"
-import { Levels } from "./types"
+import { levels } from "./config"
 import { baseLogger } from "./logger"
 
 const logger = baseLogger.child({ module: "admin" })
 
 export const setLevel = async ({ uid, level }) => {
-  if (Levels.indexOf(level) === -1) {
+  if (levels.indexOf(level) === -1) {
     const error = `${level} is not a valid user level`
     throw new ValidationInternalError(error, {
       forwardToClient: true,

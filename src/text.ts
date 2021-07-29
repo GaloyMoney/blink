@@ -10,7 +10,6 @@ import {
   limiterRequestPhoneCodeIp,
 } from "./rateLimit"
 import { PhoneCode, User } from "./schema"
-import { Logger } from "./types"
 import {
   fetchIP,
   isIPBlacklisted,

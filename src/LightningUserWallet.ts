@@ -3,7 +3,7 @@ import { LightningMixin } from "./Lightning"
 import { redlock } from "./lock"
 import { OnChainMixin } from "./OnChain"
 import { User } from "./schema"
-import { OnboardingEarn, UserWalletConstructorArgs } from "./types"
+import { onboardingEarn } from "./config"
 import { UserWallet } from "./userWallet"
 import { getFunderWallet } from "./walletFactory"
 
@@ -35,7 +35,7 @@ export class LightningUserWallet extends OnChainMixin(LightningMixin(UserWallet)
       const result: Record<string, unknown>[] = []
 
       for (const id of ids) {
-        const amount = OnboardingEarn[id]
+        const amount = onboardingEarn[id]
 
         const userPastState = await User.findOneAndUpdate(
           { _id: this.user._id },

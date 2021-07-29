@@ -2,7 +2,6 @@ import { CSVAccountExport } from "../csvAccountExport"
 import { accountPath } from "../ledger/ledger"
 import { MainBook, setupMongoConnectionSecondary } from "../mongodb"
 import { Transaction, User } from "../schema"
-import { Primitive } from "../types"
 import { createObjectCsvWriter } from "csv-writer"
 import * as _ from "lodash"
 

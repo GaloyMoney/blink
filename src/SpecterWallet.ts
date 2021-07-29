@@ -10,7 +10,6 @@ import {
 import { getActiveOnchainLnd, lndsBalances } from "./lndUtils"
 import { MainBook } from "./mongodb"
 import { getOnChainTransactions } from "./OnChain"
-import { Logger, SpecterWalletConfig, SpecterWalletConstructorArgs } from "./types"
 import { UserWallet } from "./userWallet"
 import { btc2sat, sat2btc } from "./utils"
 

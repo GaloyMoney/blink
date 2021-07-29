@@ -1,6 +1,5 @@
 import * as admin from "firebase-admin"
 import _ from "lodash"
-import { INotification } from "../types"
 
 // The key GOOGLE_APPLICATION_CREDENTIALS should be set in production
 // This key defined the path of the config file that include the key
