@@ -126,6 +126,11 @@ export class BitcoindClient {
   }): Promise<{ warning: string }> {
     return await this.client.unloadWallet({ wallet_name })
   }
+
+  // for tests
+  async getZmqNotifications(): Promise<[Record<string, unknown>]> {
+    return await this.client.getZmqNotifications()
+  }
 }
 
 export class BitcoindWalletClient {
