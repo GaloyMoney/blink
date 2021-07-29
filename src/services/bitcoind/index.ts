@@ -101,10 +101,10 @@ export class BitcoindClient {
 
   async getTransaction({
     txid,
-    include_watchonly,
+    include_watchonly = true,
   }: {
     txid: string
-    include_watchonly?: boolean
+    include_watchonly: boolean
   }): Promise<InWalletTransaction> {
     return await this.client.getTransaction({ txid, include_watchonly })
   }
