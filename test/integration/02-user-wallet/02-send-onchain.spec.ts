@@ -347,6 +347,9 @@ describe("UserWallet - onChainPay", () => {
       { $group: { _id: null, outgoingSats: { $sum: "$debit" } } },
     ])
     const { outgoingSats } = result || { outgoingSats: 0 }
+
+    // FIXME: 'withdrawalLimit' no longer exists as of
+    //        https://github.com/GaloyMoney/galoy/commit/2c3433ea42df59272c673bad473c95f524be8d9e#diff-94d4d5bb5c048793536625edb8adffb17e89b5f3821cec6d1c7c337578cda8e4L51
     const amount = yamlConfig.withdrawalLimit - outgoingSats
 
     await expect(userWallet0.onChainPay({ address, amount })).rejects.toThrow()
@@ -355,7 +358,10 @@ describe("UserWallet - onChainPay", () => {
   it("fails if the amount is less than on chain dust amount", async () => {
     const address = await bitcoindOutside.getNewAddress()
     expect(
-      userWallet0.onChainPay({ address, amount: yamlConfig.onchainDustAmount - 1 }),
+      userWallet0.onChainPay({
+        address,
+        amount: yamlConfig.onChainWallet.dustThreshold - 1,
+      }),
     ).rejects.toThrow()
   })
 })
