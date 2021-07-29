@@ -8,12 +8,13 @@ type Primitive = string | boolean | number
 // configs & constructors
 // TODO: clean up this section when "constructor typing" work is
 //       being done
-interface ITransactionLimits {
-  config
-  level: number
-  onUsLimit: () => number
-  withdrawalLimit: () => number
-  oldEnoughForWithdrawalLimit: () => number
+interface IUserLimits {
+  onUsLimit: number
+  withdrawalLimit: number
+}
+
+interface ITransactionLimits extends IUserLimits {
+  oldEnoughForWithdrawalLimit: number
 }
 
 interface IRateLimits {

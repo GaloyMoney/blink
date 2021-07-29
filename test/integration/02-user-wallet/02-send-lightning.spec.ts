@@ -1,5 +1,5 @@
 import { createHash, randomBytes } from "crypto"
-import { TransactionLimits } from "@config/app"
+import { selectUserLimits } from "@config/app"
 import {
   InsufficientBalanceError,
   LightningPaymentError,
@@ -37,9 +37,7 @@ jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider")
 let userWallet0, userWallet1, userWallet2
 let initBalance0, initBalance1
 const amountInvoice = 1000
-const transactionLimits = new TransactionLimits({
-  level: "1",
-})
+const userLimits = selectUserLimits({ level: 1 })
 
 beforeAll(async () => {
   userWallet0 = await getUserWallet(0)
@@ -271,7 +269,7 @@ describe("UserWallet - Lightning Pay", () => {
   it("fails to pay when withdrawalLimit exceeded", async () => {
     const { request } = await createInvoice({
       lnd: lndOutside1,
-      tokens: transactionLimits.withdrawalLimit() + 1,
+      tokens: userLimits.withdrawalLimit + 1,
     })
     await expect(userWallet1.pay({ invoice: request })).rejects.toThrow(
       TransactionRestrictedError,
@@ -280,7 +278,7 @@ describe("UserWallet - Lightning Pay", () => {
 
   it("fails to pay when amount exceeds onUs limit", async () => {
     const request = await userWallet0.addInvoice({
-      value: transactionLimits.onUsLimit() + 1,
+      value: userLimits.onUsLimit + 1,
     })
     await expect(userWallet1.pay({ invoice: request })).rejects.toThrow(
       TransactionRestrictedError,
