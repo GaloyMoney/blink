@@ -22,7 +22,7 @@ try {
 
 export const yamlConfig = _.merge(defaultConfig, customConfig)
 
-export const getName = () => yamlConfig.name
+export const getGaloyInstanceName = () => yamlConfig.name
 
 export const getLndParams = (): ILndParams[] => {
   const config = yamlConfig.lnds

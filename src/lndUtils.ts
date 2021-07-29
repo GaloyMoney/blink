@@ -16,7 +16,7 @@ import {
 } from "lightning"
 import _ from "lodash"
 import { Logger } from "pino"
-import { getName } from "./config"
+import { getGaloyInstanceName } from "./config"
 import { DbError, LndOfflineError, ValidationInternalError } from "./error"
 import {
   bankOwnerMediciPath,
@@ -443,8 +443,8 @@ export const validate = async ({
     // TODO: if expired_at expired, thrown an error
   } else {
     if (!params.username) {
-      const name = getName()
-      const error = `a username is required for push payment to the ${name}`
+      const galoyInstanceName = getGaloyInstanceName()
+      const error = `a username is required for push payment to the ${galoyInstanceName}`
       throw new ValidationInternalError(error, { logger })
     }
 
