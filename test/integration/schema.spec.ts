@@ -1,4 +1,3 @@
-import { accountPath } from "src/ledger/ledger"
 import { User } from "src/schema"
 import { getUserWallet } from "test/helpers"
 
@@ -18,15 +17,14 @@ describe("schema", () => {
         const activeUsers = await User.getActiveUsers()
         spy.mockClear()
 
-        const accountPaths = activeUsers.map((user) => accountPath(user._id))
-        const userWallet0AccountPath = (await getUserWallet(0)).user.accountPath
-
-        const funderWalletAccountPath = await User.find({ role: "funder" }).accountPath
+        const accountIds = activeUsers.map((user) => user._id)
+        const userWallet0AccountId = (await getUserWallet(0)).user._id
+        const funderWalletAccountId = (await User.findOne({ role: "funder" }))._id
 
         // userWallets used in the tests
-        expect(accountPaths.length).toBeGreaterThan(0)
-        expect(accountPaths.indexOf(userWallet0AccountPath)).toBeGreaterThan(-1)
-        expect(accountPaths.indexOf(funderWalletAccountPath)).toBeGreaterThan(-1)
+        expect(accountIds).toEqual(
+          expect.arrayContaining([userWallet0AccountId, funderWalletAccountId]),
+        )
 
         spy = jest
           .spyOn(User, "getVolume")
