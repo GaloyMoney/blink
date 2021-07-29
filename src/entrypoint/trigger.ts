@@ -13,7 +13,7 @@ import {
   bankOwnerMediciPath,
   liabilitiesMainAccount,
   resolveAccountId,
-} from "src/ledger/ledger"
+} from "../ledger/ledger"
 import { updateUsersPendingPayment } from "../ledger/balanceSheet"
 import { activateLndHealthCheck, lndStatusEvent } from "../lndHealth"
 import { onChannelUpdated } from "../lndUtils"
