@@ -44,7 +44,8 @@ class GeeTest {
     const params = {
       digestmod: digestmod,
       user_id: userId,
-      client_type: "web",
+      client_type: "native",
+      // client_type: "web",
       ip_address: "127.0.0.1",
     }
     const bypasscache = await this._getBypassStatus() // not a cache
