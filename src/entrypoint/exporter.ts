@@ -46,10 +46,6 @@ const lndClosingChannelBalance_g = new client.Gauge({
   name: `${prefix}_lnd_closingchannelbalance`,
   help: "how much fund is closing following force closed channel",
 })
-const funder_balance_BTC_g = new client.Gauge({
-  name: `${prefix}_funderBalance_BTC`,
-  help: "funder balance BTC",
-})
 const assetsLiabilitiesDifference_g = new client.Gauge({
   name: `${prefix}_assetsEqLiabilities`,
   help: "do we have a balanced book",
@@ -67,6 +63,17 @@ const business_g = new client.Gauge({
   name: `${prefix}_business`,
   help: "number of businesses in the app",
 })
+
+const roles = ["dealer", "funder", "bankowner"]
+const wallet_roles = {}
+
+for (const role in roles) {
+  wallet_roles[role] = new client.Gauge({
+    name: `${prefix}_${role}_balance`,
+    help: "funder balance BTC",
+  })
+}
+
 // const bankOwner_g = new client.Gauge({
 //   name: `${prefix}_bankOwnerBalance`,
 //   help: "sats amount for the bank owner",
@@ -102,9 +109,11 @@ const main = async () => {
     const userCount = await User.countDocuments()
     userCount_g.set(userCount)
 
-    const funderWallet = await WalletFromRole({ role: "funder", logger })
-    const { BTC: funderBalance } = await funderWallet.getBalances()
-    funder_balance_BTC_g.set(funderBalance)
+    for (const role in roles) {
+      const wallet = await WalletFromRole({ role, logger })
+      const { BTC: balance } = await wallet.getBalances()
+      wallet_roles[role].set(balance)
+    }
 
     business_g.set(await User.count({ title: { $exists: true } }))
 
