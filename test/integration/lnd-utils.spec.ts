@@ -1,16 +1,16 @@
-import { cancelHodlInvoice } from "lightning"
 import moment from "moment"
 import { getBankOwnerBalance } from "src/ledger"
 import { getInvoiceAttempt, updateRoutingFees } from "src/lndUtils"
 import { baseLogger } from "src/logger"
-import { sleep } from "src/utils"
 import {
+  cancelHodlInvoice,
   createInvoice,
   getForwards,
   lnd1,
   lndOutside1,
   lndOutside2,
   pay,
+  subscribeToInvoice,
   waitFor,
 } from "test/helpers"
 
@@ -43,14 +43,22 @@ describe("lndUtils", () => {
 
     const expires_at = moment().add(1, "s").toISOString()
 
-    const { id } = await createInvoice({ lnd: lndOutside2, tokens: 10000, expires_at })
+    const { id } = await createInvoice({ lnd, tokens: 10000, expires_at })
 
     {
       const invoice = await getInvoiceAttempt({ lnd, id })
       expect(invoice).toBeTruthy()
     }
 
-    await sleep(1000)
+    let isCanceled = false
+    const sub = subscribeToInvoice({ lnd, id })
+    sub.on("invoice_updated", (invoice) => {
+      isCanceled = invoice.is_canceled
+    })
+
+    await waitFor(() => isCanceled)
+
+    sub.removeAllListeners()
 
     {
       const invoice = await getInvoiceAttempt({ lnd, id })
