@@ -12,7 +12,7 @@ import { makeExecutableSchema } from "graphql-tools"
 import moment from "moment"
 import path from "path"
 
-import { yamlConfig, levels, onboardingEarn } from "@config/app"
+import { yamlConfig, levels, onboardingEarn, selectTransactionLimits } from "@config/app"
 
 import { setupMongoConnection } from "@services/mongodb"
 import { activateLndHealthCheck } from "@services/lnd/health"
@@ -155,10 +155,11 @@ const resolvers = {
     },
     getLevels: () => levels,
     getLimits: (_, __, { user }) => {
+      const transactionLimits = selectTransactionLimits({ level: user.level })
       return {
-        oldEnoughForWithdrawal: yamlConfig.limits.oldEnoughForWithdrawal,
-        withdrawal: yamlConfig.limits.withdrawal.level[user.level],
-        onUs: yamlConfig.limits.onUs.level[user.level],
+        oldEnoughForWithdrawal: transactionLimits.oldEnoughForWithdrawalLimit,
+        withdrawal: transactionLimits.withdrawalLimit,
+        onUs: transactionLimits.onUsLimit,
       }
     },
     getWalletFees: () => ({

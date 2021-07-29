@@ -215,7 +215,7 @@ export const OnChainMixin = (superclass) =>
           onchainLogger = onchainLogger.child({ onUs: false })
 
           if (!this.user.oldEnoughForWithdrawal) {
-            const error = `New accounts have to wait ${this.config.limits.oldEnoughForWithdrawalLimit}h before withdrawing`
+            const error = `New accounts have to wait ${this.config.limits.oldEnoughForWithdrawalLimitHours}h before withdrawing`
             throw new NewAccountWithdrawalError(error, { logger: onchainLogger })
           }
 
