@@ -1,3 +1,9 @@
+import {
+  receiveRawBlockSubscriber,
+  receiveRawTxSubscriber,
+  SUB_ADDR_BLOCK,
+  SUB_ADDR_TX,
+} from "src/bitcoindSubscribers"
 import { setupMongoConnection } from "@services/mongodb"
 import { redis } from "@services/redis"
 import { User } from "@services/mongoose/schema"
@@ -19,6 +25,22 @@ jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider")
 it("connects to bitcoind", async () => {
   const { chain } = await bitcoindClient.getBlockchainInfo()
   expect(chain).toEqual("regtest")
+})
+
+it("detect active bitcoind zeromq notifications", async () => {
+  const notifications = await bitcoindClient.getZmqNotifications()
+  expect(notifications.length).toEqual(4) // 2 per topic
+})
+
+it("subscribe then close subscription to zeromq", async () => {
+  const bitcoindBlockSubscriber = await receiveRawBlockSubscriber()
+  const bitcoindTxSubscriber = await receiveRawTxSubscriber()
+  expect(bitcoindBlockSubscriber.lastEndpoint).toBe(SUB_ADDR_BLOCK)
+  expect(bitcoindTxSubscriber.lastEndpoint).toBe(SUB_ADDR_TX)
+  bitcoindBlockSubscriber.close()
+  bitcoindTxSubscriber.close()
+  expect(bitcoindBlockSubscriber.closed).toBe(true)
+  expect(bitcoindTxSubscriber.closed).toBe(true)
 })
 
 describe("connects to lnds", () => {
