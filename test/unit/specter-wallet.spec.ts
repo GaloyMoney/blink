@@ -4,6 +4,12 @@ import { SpecterWallet } from "src/SpecterWallet"
 import { getSpecterWalletConfig } from "src/config"
 import { baseLogger } from "src/logger"
 
+jest.mock("src/config.ts", () => {
+  const config = jest.requireActual("src/config.ts")
+  config.yamlConfig.lnds = []
+  return config
+})
+
 let specterWallet
 
 beforeAll(() => {
@@ -15,6 +21,10 @@ beforeAll(() => {
     logger: baseLogger,
     config: specterWalletConfig,
   })
+})
+
+afterAll(() => {
+  jest.restoreAllMocks()
 })
 
 describe("SpecterWallet", () => {
