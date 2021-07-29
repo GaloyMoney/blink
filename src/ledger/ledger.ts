@@ -4,10 +4,10 @@
 import { User } from "../schema"
 
 // assets:
-
-export const bitcoindAccountingPath = "Assets:Reserve:Bitcoind"
-export const lndAccountingPath = "Assets:Reserve:Lightning" // TODO: rename to Assets:Lnd
-export const escrowAccountingPath = "Assets:Reserve:Escrow" // TODO: rename to Assets:Lnd:Escrow
+export const assetsMainAccount = "Assets"
+export const bitcoindAccountingPath = `${assetsMainAccount}:Reserve:Bitcoind`
+export const lndAccountingPath = `${assetsMainAccount}:Reserve:Lightning` // TODO: rename to Assets:Lnd
+export const escrowAccountingPath = `${assetsMainAccount}:Reserve:Escrow` // TODO: rename to Assets:Lnd:Escrow
 
 // liabilities
 export const liabilitiesMainAccount = "Liabilities"

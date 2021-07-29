@@ -3,6 +3,7 @@ import moment from "moment"
 import { CSVAccountExport } from "./csvAccountExport"
 import { DbError } from "./error"
 import { Balances } from "./interface"
+import { getAccountBalance } from "./ledger"
 import { accountPath } from "./ledger/ledger"
 import { MainBook } from "./mongodb"
 import { sendNotification } from "./notifications/notification"
@@ -53,7 +54,7 @@ export abstract class UserWallet {
 
     // TODO: run this code in parrallel
     for (const { id } of this.user.currencies) {
-      const { balance } = await MainBook.balance({
+      const balance = await getAccountBalance({
         account: this.user.accountPath,
         currency: id,
       })

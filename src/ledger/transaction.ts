@@ -8,6 +8,7 @@ import {
 } from "./ledger"
 import { MainBook } from "../mongodb"
 import { UserWallet } from "../userWallet"
+import { getLndEscrowBalance } from "."
 
 export const addTransactionLndReceipt = async ({
   description,
@@ -119,10 +120,7 @@ export const addTransactionLndRoutingFee = async ({ amount, collectedOn }) => {
 }
 
 export const updateLndEscrow = async ({ amount }) => {
-  const { balance: ledgerEscrow } = await MainBook.balance({
-    account: escrowAccountingPath,
-    currency: "BTC",
-  })
+  const ledgerEscrow = await getLndEscrowBalance()
 
   // ledgerEscrow is negative
   // diff will equal 0 if there is no change

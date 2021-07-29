@@ -1,9 +1,8 @@
 import { cancelHodlInvoice } from "lightning"
 import moment from "moment"
-import { bankOwnerMediciPath } from "src/ledger/ledger"
+import { getBankOwnerBalance } from "src/ledger"
 import { getInvoiceAttempt, updateRoutingFees } from "src/lndUtils"
 import { baseLogger } from "src/logger"
-import { MainBook } from "src/mongodb"
 import { sleep } from "src/utils"
 import {
   createInvoice,
@@ -60,8 +59,6 @@ describe("lndUtils", () => {
   })
 
   it("sets routing fee correctly", async () => {
-    const bankOwnerPath = await bankOwnerMediciPath()
-
     const { request } = await createInvoice({ lnd: lndOutside2, tokens: 10000 })
 
     await waitFor(async () => {
@@ -80,9 +77,7 @@ describe("lndUtils", () => {
 
     await updateRoutingFees()
 
-    const { balance } = await MainBook.balance({
-      accounts: bankOwnerPath,
-    })
+    const balance = await getBankOwnerBalance()
 
     // this fix lnd rounding issues
     expect([1, 1.01]).toContain(balance)

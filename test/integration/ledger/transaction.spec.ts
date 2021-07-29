@@ -2,7 +2,7 @@ import { User } from "src/schema"
 import { baseLogger } from "src/logger"
 import { UserWallet } from "src/userWallet"
 import { WalletFactory } from "src/walletFactory"
-import { MainBook, setupMongoConnection } from "src/mongodb"
+import { setupMongoConnection } from "src/mongodb"
 import { dealerMediciPath, lndAccountingPath } from "src/ledger/ledger"
 import {
   rebalancePortfolio,
@@ -10,6 +10,7 @@ import {
   addTransactionLndReceipt,
   addTransactionOnUsPayment,
 } from "src/ledger/transaction"
+import { getAccountBalance } from "src/ledger"
 
 jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
 
@@ -39,10 +40,7 @@ beforeEach(async () => {
 })
 
 const expectBalance = async ({ account, currency, balance }) => {
-  const { balance: balanceResult } = await MainBook.balance({
-    account,
-    currency,
-  })
+  const balanceResult = await getAccountBalance({ account, currency })
   expect(balanceResult).toBe(balance)
 }
 
