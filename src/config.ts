@@ -37,6 +37,29 @@ export class TransactionLimits implements ITransactionLimits {
   oldEnoughForWithdrawalLimit = () => this.config.oldEnoughForWithdrawal / MS_IN_HOUR
 }
 
+const getRateLimits = (config): IRateLimits => {
+  /**
+   * Returns a subset of the required parameters for the
+   * 'rate-limiter-flexible.RateLimiterRedis' object.
+   */
+  return {
+    points: config.points,
+    duration: config.duration,
+    blockDuration: config.blockDuration,
+  }
+}
+
+export const getRequestPhoneCodeLimits = () =>
+  getRateLimits(yamlConfig.limits.requestPhoneCode)
+
+export const getRequestPhoneCodeIpLimits = () =>
+  getRateLimits(yamlConfig.limits.requestPhoneCodeIp)
+
+export const getLoginAttemptLimits = () => getRateLimits(yamlConfig.limits.loginAttempt)
+
+export const getFailedAttemptPerIpLimits = () =>
+  getRateLimits(yamlConfig.limits.failedAttemptPerIp)
+
 export const getUserWalletConfig = (user): UserWalletConfig => {
   const transactionLimits = new TransactionLimits({
     level: user.level,
