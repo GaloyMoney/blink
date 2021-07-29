@@ -107,6 +107,7 @@ describe("UserWallet - onChainPay", () => {
     expect(sendNotification.mock.calls[0][0].title).toBe(
       getTitle["onchain_payment"]({ amount }),
     )
+    expect(sendNotification.mock.calls[0][0].user._id).toStrictEqual(userWallet0.user._id)
     expect(sendNotification.mock.calls[0][0].data.type).toBe("onchain_payment")
 
     const {

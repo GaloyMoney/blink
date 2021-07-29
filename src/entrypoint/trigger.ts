@@ -9,6 +9,11 @@ import {
   subscribeToInvoices,
   subscribeToTransactions,
 } from "lightning"
+import {
+  bankOwnerMediciPath,
+  liabilitiesMainAccount,
+  resolveAccountId,
+} from "src/ledger/ledger"
 import { updateUsersPendingPayment } from "../ledger/balanceSheet"
 import { activateLndHealthCheck, lndStatusEvent } from "../lndHealth"
 import { onChannelUpdated } from "../lndUtils"
@@ -77,12 +82,21 @@ export async function onchainTransactionEventHandler(tx) {
       { success: true, pending: false, transactionType: "payment" },
       "payment completed",
     )
+
+    const bankOwnerPath = await bankOwnerMediciPath()
     const entry = await Transaction.findOne({
-      account_path: "Liabilities",
+      account_path: liabilitiesMainAccount,
+      accounts: { $ne: bankOwnerPath },
       hash: tx.id,
     })
 
-    const user = await User.findOne({ _id: entry.account_path[2] })
+    const userId = resolveAccountId(entry?.account_path)
+
+    if (!userId) {
+      return
+    }
+
+    const user = await User.findOne({ _id: userId })
     await transactionNotification({
       type: "onchain_payment",
       user,
