@@ -4,7 +4,6 @@ import {
   AuthenticatedLnd,
   cancelHodlInvoice,
   createInvoice,
-  getInvoice,
   GetInvoiceResult,
   getPayment,
   payViaPaymentDetails,
@@ -29,7 +28,13 @@ import {
   addTransactionOnUsPayment,
 } from "./ledger/transaction"
 import { TIMEOUT_PAYMENT } from "./lndAuth"
-import { getActiveLnd, getLndFromPubkey, isMyNode, validate } from "./lndUtils"
+import {
+  getActiveLnd,
+  getInvoiceAttempt,
+  getLndFromPubkey,
+  isMyNode,
+  validate,
+} from "./lndUtils"
 import { lockExtendOrThrow, redlock } from "./lock"
 import { MainBook } from "./mongodb"
 import { transactionNotification } from "./notifications/payment"
@@ -777,7 +782,6 @@ export const LightningMixin = (superclass) =>
       lock
       pubkeyCached?: string
     }): Promise<boolean> {
-      let invoice: GetInvoiceResult | undefined
       let pubkey: string | undefined
 
       // if a pubkey has been provided, it means the invoice has not been set as paid in mongodb
@@ -809,25 +813,9 @@ export const LightningMixin = (superclass) =>
         return false
       }
 
-      try {
-        // FIXME to preserve privacy and prevent DDOS attack
-        // we should only be able to look at an invoice that belongs to this.user
-        // at a minimum, we should return same error if :
-        // an invoice is not from user or if the invoice doesn't exist.
-        invoice = await getInvoice({ lnd, id: hash })
-      } catch (err) {
-        const invoiceNotFound = "unable to locate invoice"
-        try {
-          assert(err.length === 3 && err[2].err.details === invoiceNotFound)
-        } catch (err2) {
-          this.logger.error(
-            { err, err2, invoice },
-            "issue fetching invoice. unknown error",
-          )
-          return false
-        }
+      const invoice = await getInvoiceAttempt({ lnd, id: hash })
 
-        this.logger.info({ err, invoice }, invoiceNotFound)
+      if (!invoice) {
         try {
           await InvoiceUser.deleteOne({ _id: hash, uid: this.user._id })
         } catch (err) {
@@ -837,52 +825,29 @@ export const LightningMixin = (superclass) =>
         return false
       }
 
-      if (!invoice) {
-        this.logger.warn("received an invalid empty invoice from lnd")
-        return false
-      }
-
       // TODO: we should not log/keep secret in the logs
       this.logger.debug({ invoice, user: this.user }, "got invoice status")
 
-      // invoice that are on_us will be cancelled but not confirmed
-      // so we need a branch to return true in case the payment
-      // has been managed off lnd.
-      if (invoice.is_canceled) {
-        this.logger.info(
-          { hash, invoice, user: this.user },
-          "cancelled invoice. deleting associated InvoiceUser entry",
-        )
-        ;(async () => {
-          try {
-            await InvoiceUser.deleteOne({ _id: hash, uid: this.user._id })
-          } catch (err) {
-            this.logger.error({ invoice }, "impossible to delete InvoiceUser entry")
-          }
-        })()
-        return false
-      } else if (invoice.is_confirmed) {
-        const lightningLogger = this.logger.child({
-          hash,
-          user: this.user._id,
-          topic: "payment",
-          protocol: "lightning",
-          transactionType: "receipt",
-          onUs: false,
-        })
+      if (invoice.is_confirmed) {
+        return await redlock({ path: hash, logger: this.logger, lock }, async () => {
+          const lightningLogger = this.logger.child({
+            hash,
+            user: this.user._id,
+            topic: "payment",
+            protocol: "lightning",
+            transactionType: "receipt",
+            onUs: false,
+          })
 
-        return await redlock({ path: hash, logger: lightningLogger, lock }, async () => {
           let invoiceUser
 
           try {
             invoiceUser = await InvoiceUser.findOne({
               _id: hash,
               uid: this.user._id,
-              paid: false,
             })
           } catch (err) {
-            const error = `issue getting invoice`
-            throw new DbError(error, {
+            throw new DbError(`issue getting invoiceUser`, {
               logger: this.logger,
               level: "error",
               err,
@@ -891,8 +856,12 @@ export const LightningMixin = (superclass) =>
           }
 
           if (!invoiceUser) {
+            lightningLogger.error("invoiceUser not found")
+            return false
+          }
+
+          if (invoiceUser.paid) {
             lightningLogger.info("invoice has already been processed")
-            // FIXME not sure we should necessarily return true here
             return true
           }
 
@@ -913,8 +882,7 @@ export const LightningMixin = (superclass) =>
               "invoice has been updated from InvoiceUser following on_us transaction",
             )
           } catch (err) {
-            const error = `issue updating invoice`
-            throw new DbError(error, {
+            throw new DbError(`issue updating invoiceUser`, {
               logger: this.logger,
               level: "error",
               err,
@@ -939,7 +907,7 @@ export const LightningMixin = (superclass) =>
               sats,
             })
           } catch (err) {
-            const error = `addTransactionLndReceipt failed following settings InvoiceUser as failed. potential inconsistency`
+            const error = `addTransactionLndReceipt failed following updating InvoiceUser to paid = true. potential inconsistency`
             throw new DbError(error, {
               logger: this.logger,
               level: "fatal",

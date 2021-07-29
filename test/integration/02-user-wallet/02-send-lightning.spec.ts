@@ -8,7 +8,7 @@ import {
   ValidationInternalError,
 } from "src/error"
 import { FEECAP } from "src/lndAuth"
-import { getActiveLnd, nodesPubKey } from "src/lndUtils"
+import { getActiveLnd, nodesPubKey, getInvoiceAttempt } from "src/lndUtils"
 import { baseLogger } from "src/logger"
 import { InvoiceUser, Transaction } from "src/schema"
 import { getHash, sleep } from "src/utils"
@@ -457,15 +457,7 @@ describe("UserWallet - Lightning Pay", () => {
         const { BTC: intermediateBalance } = await userWallet1.getBalances()
         expect(intermediateBalance).toBe(initBalance1 - amountInvoice * (1 + initialFee))
 
-        await waitFor(async () => {
-          try {
-            await cancelHodlInvoice({ id, lnd: lndOutside1 })
-            return true
-          } catch (error) {
-            baseLogger.warn({ error }, "cancelHodlInvoice failed. trying again.")
-            return false
-          }
-        })
+        await cancelHodlInvoice({ id, lnd: lndOutside1 })
 
         await waitFor(async () => {
           await userWallet1.updatePendingPayments()
@@ -476,9 +468,11 @@ describe("UserWallet - Lightning Pay", () => {
             voided: false,
           }
           const count = await Transaction.countDocuments(query)
-          const { is_canceled } = await getInvoice({ lnd: lndOutside1, id })
-          return is_canceled && count === 0
+          return count === 0
         })
+
+        const invoice = await getInvoiceAttempt({ lnd: lndOutside1, id })
+        expect(invoice).toBeNull()
 
         // wait for balance updates because invoice event
         // arrives before wallet balances updates in lnd
