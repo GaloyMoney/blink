@@ -304,7 +304,7 @@ export const LightningMixin = (superclass) =>
             const lightningLoggerOnUs = lightningLogger.child({ onUs: true, fee: 0 })
 
             if (await this.user.limitHit({ on_us: true, amount: tokens })) {
-              const error = `Cannot transfer more than ${this.config.limits.onUsLimit()} sats in 24 hours`
+              const error = `Cannot transfer more than ${this.config.limits.onUsLimit} sats in 24 hours`
               throw new TransactionRestrictedError(error, { logger: lightningLoggerOnUs })
             }
 
@@ -432,12 +432,12 @@ export const LightningMixin = (superclass) =>
 
           // "normal" transaction: paying another lightning node
           if (!this.user.oldEnoughForWithdrawal) {
-            const error = `New accounts have to wait ${this.config.limits.oldEnoughForWithdrawalLimit()}h before withdrawing`
+            const error = `New accounts have to wait ${this.config.limits.oldEnoughForWithdrawalLimit}h before withdrawing`
             throw new NewAccountWithdrawalError(error, { logger: lightningLogger })
           }
 
           if (await this.user.limitHit({ on_us: false, amount: tokens })) {
-            const error = `Cannot transfer more than ${this.config.limits.withdrawalLimit()} sats in 24 hours`
+            const error = `Cannot transfer more than ${this.config.limits.withdrawalLimit} sats in 24 hours`
             throw new TransactionRestrictedError(error, { logger: lightningLogger })
           }
 
