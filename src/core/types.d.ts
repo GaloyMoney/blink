@@ -14,7 +14,7 @@ type LimitConstants = {
   oldEnoughForWithdrawalMicroseconds: number
 }
 
-type UserLimitsArgs = { level: number }
+type UserLimitsArgs = { level: number; limitsConfig? }
 
 interface IUserLimits {
   onUsLimit: number

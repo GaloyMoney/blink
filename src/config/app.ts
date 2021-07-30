@@ -40,16 +40,20 @@ export const getLndParams = (): LndParams[] => {
   }))
 }
 
-export const limitConstants: LimitConstants = {
-  oldEnoughForWithdrawalHours: yamlConfig.limits.oldEnoughForWithdrawal / MS_IN_HOUR,
-  oldEnoughForWithdrawalMicroseconds: yamlConfig.limits.oldEnoughForWithdrawal,
-}
+export const generateLimitConstants = (
+  limitsConfig = yamlConfig.limits,
+): LimitConstants => ({
+  oldEnoughForWithdrawalHours: limitsConfig.oldEnoughForWithdrawal / MS_IN_HOUR,
+  oldEnoughForWithdrawalMicroseconds: limitsConfig.oldEnoughForWithdrawal,
+})
 
-export const selectUserLimits = ({ level }: UserLimitsArgs): IUserLimits => {
-  const config = yamlConfig.limits
+export const selectUserLimits = ({
+  level,
+  limitsConfig = yamlConfig.limits,
+}: UserLimitsArgs): IUserLimits => {
   return {
-    onUsLimit: config.onUs.level[level],
-    withdrawalLimit: config.withdrawal.level[level],
+    onUsLimit: limitsConfig.onUs.level[level],
+    withdrawalLimit: limitsConfig.withdrawal.level[level],
   }
 }
 
@@ -78,14 +82,21 @@ export const getFailedAttemptPerIpLimits = () =>
 
 export const selectTransactionLimits = ({
   level,
-}: UserLimitsArgs): ITransactionLimits => ({
-  oldEnoughForWithdrawalLimit: limitConstants.oldEnoughForWithdrawalMicroseconds,
-  oldEnoughForWithdrawalLimitHours: limitConstants.oldEnoughForWithdrawalHours,
-  ...selectUserLimits({ level }),
-})
+  limitsConfig = yamlConfig.limits,
+}: UserLimitsArgs): ITransactionLimits => {
+  const limitConstants = generateLimitConstants(limitsConfig)
+  return {
+    oldEnoughForWithdrawalLimit: limitConstants.oldEnoughForWithdrawalMicroseconds,
+    oldEnoughForWithdrawalLimitHours: limitConstants.oldEnoughForWithdrawalHours,
+    ...selectUserLimits({ level, limitsConfig }),
+  }
+}
 
-export const getUserWalletConfig = (user): UserWalletConfig => {
-  const transactionLimits = selectTransactionLimits({ level: user.level })
+export const getUserWalletConfig = (
+  user,
+  limitsConfig = yamlConfig.limits,
+): UserWalletConfig => {
+  const transactionLimits = selectTransactionLimits({ level: user.level, limitsConfig })
   return {
     name: yamlConfig.name,
     dustThreshold: yamlConfig.onChainWallet.dustThreshold,
