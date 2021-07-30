@@ -33,7 +33,7 @@ import { lockExtendOrThrow, redlock } from "./lock"
 import { ledger } from "./mongodb"
 import { transactionNotification } from "./notifications/payment"
 import { redis } from "./redis"
-import { InvoiceUser, Transaction, User } from "./schema"
+import { InvoiceUser, User } from "./schema"
 import { UserWallet } from "./userWallet"
 import { addContact, isInvoiceAlreadyPaidError, LoggedError, timeout } from "./utils"
 
@@ -567,10 +567,7 @@ export const LightningMixin = (superclass) =>
                 // where multiple payment have the same hash
                 // ie: when a payment is being retried
 
-                await Transaction.updateMany(
-                  { hash: id },
-                  { pending: false, error: err[1] },
-                )
+                await ledger.settlePayment(id)
 
                 await ledger.voidTransactions(entry.journal._id, err[1])
 
@@ -599,7 +596,7 @@ export const LightningMixin = (superclass) =>
             }
 
             // success
-            await Transaction.updateMany({ hash: id }, { pending: false })
+            await ledger.settlePayment(id)
             const paymentResult = await paymentPromise
 
             if (!feeKnownInAdvance) {
@@ -667,11 +664,10 @@ export const LightningMixin = (superclass) =>
 
     async updatePendingPayments(lock) {
       const query = {
-        accounts: this.user.accountPath,
         type: "payment",
         pending: true,
       }
-      const count = await Transaction.countDocuments(query)
+      const count = await ledger.getAccountTransactionsCount(this.user.accountPath, query)
 
       if (count === 0) {
         return
@@ -689,7 +685,10 @@ export const LightningMixin = (superclass) =>
       // note: there might be another design that doesn't requiere a lock at the uid level but only at the hash level,
       // but will need to dig more into the cursor aspect of mongodb to see if there is a concurrency-safe way to do it.
       await redlock({ path: this.user._id, logger: lightningLogger, lock }, async () => {
-        const payments = await Transaction.find(query)
+        const { results: payments } = await ledger.getAccountTransactions(
+          this.user.accountPath,
+          query,
+        )
 
         for (const payment of payments) {
           const paymentLogger = lightningLogger.child({ payment })
@@ -715,10 +714,7 @@ export const LightningMixin = (superclass) =>
           }
 
           if (result.is_confirmed || result.is_failed) {
-            const resultPendingTrue = await Transaction.updateMany(
-              { _journal: payment._journal, pending: true },
-              { $set: { pending: false } },
-            )
+            const resultPendingTrue = await ledger.settlePayment(payment.hash)
 
             if (resultPendingTrue.nModified === 0) {
               // this could happen if dealer and user try to update transaction at the same time

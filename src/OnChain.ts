@@ -26,7 +26,7 @@ import { getActiveOnchainLnd, getLndFromPubkey } from "./lndUtils"
 import { lockExtendOrThrow, redlock } from "./lock"
 import { baseLogger } from "./logger"
 import { ledger } from "./mongodb"
-import { Transaction, User } from "./schema"
+import { User } from "./schema"
 import { UserWallet } from "./userWallet"
 import {
   amountOnVout,
@@ -618,13 +618,13 @@ export const OnChainMixin = (superclass) =>
             // note: the fact we fiter with `account_path: this.user.accountPath` could create
             // double transaction for some non customer specific wallet. ie: if the path is different
             // for the dealer. this is fixed now but something to think about.
-            const mongotx = await Transaction.findOne({
-              accounts: this.user.accountPath,
-              type,
-              hash: matched_tx.id,
-            })
+            const query = { type, hash: matched_tx.id }
+            const count = await ledger.getAccountTransactionsCount(
+              this.user.accountPath,
+              query,
+            )
 
-            if (!mongotx) {
+            if (!count) {
               const { sats, addresses } = await this.getSatsAndAddressPerTx(
                 matched_tx.transaction,
               )

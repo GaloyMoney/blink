@@ -1,4 +1,4 @@
-import { Transaction } from "src/schema"
+import { ledger } from "src/mongodb"
 import { getHash } from "src/utils"
 import { checkIsBalanced, getUserWallet, lndOutside1, pay } from "test/helpers"
 
@@ -35,7 +35,7 @@ describe("UserWallet - Lightning", () => {
     // second request must not throw an exception
     expect(await userWallet1.updatePendingInvoice({ hash })).toBeTruthy()
 
-    const dbTx = await Transaction.findOne({ hash })
+    const dbTx = await ledger.getTransactionByHash(hash)
     expect(dbTx.sats).toBe(sats)
     expect(dbTx.memo).toBe(memo)
     expect(dbTx.pending).toBe(false)
@@ -56,7 +56,7 @@ describe("UserWallet - Lightning", () => {
     // second request must not throw an exception
     expect(await userWallet1.updatePendingInvoice({ hash })).toBeTruthy()
 
-    const dbTx = await Transaction.findOne({ hash })
+    const dbTx = await ledger.getTransactionByHash(hash)
     expect(dbTx.sats).toBe(sats)
     expect(dbTx.memo).toBe("")
     expect(dbTx.pending).toBe(false)

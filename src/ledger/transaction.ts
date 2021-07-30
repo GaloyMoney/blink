@@ -9,6 +9,7 @@ import {
 import { MainBook } from "./books"
 import { UserWallet } from "../userWallet"
 import { getLndEscrowBalance } from "./query"
+import { Transaction } from "src/schema"
 
 export const addTransactionLndReceipt = async ({
   description,
@@ -325,6 +326,10 @@ export const addTransactionHotWalletPayment = async ({
 
 export const voidTransactions = (journalId, reason) => {
   return MainBook.void(journalId, reason)
+}
+
+export const settlePayment = (hash) => {
+  return Transaction.updateMany({ hash }, { pending: false })
 }
 
 export const rebalancePortfolio = async ({ description, metadata, wallet }) => {

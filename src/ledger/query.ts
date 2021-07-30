@@ -7,15 +7,35 @@ import {
   liabilitiesMainAccount,
   lndAccountingPath,
 } from "./accounts"
+import { Transaction } from "src/schema"
 
 export const getAllAccounts = () => {
   return MainBook.listAccounts()
+}
+
+export const getAccountByTransactionHash = async (hash) => {
+  const entry = await getTransactionByHash(hash)
+  return entry?.account_path
+}
+
+export const getTransactionByHash = async (hash) => {
+  const bankOwnerPath = await bankOwnerAccountPath()
+  return Transaction.findOne({
+    account_path: liabilitiesMainAccount,
+    accounts: { $ne: bankOwnerPath },
+    hash,
+  })
 }
 
 export const getAccountBalance = async (account: string, query = {}) => {
   const params = { account, currency: "BTC", ...query }
   const { balance } = await MainBook.balance(params)
   return balance
+}
+
+export const getAccountTransactionsCount = (account: string, query = {}) => {
+  const params = { accounts: account, ...query }
+  return Transaction.countDocuments(params)
 }
 
 export const getAccountTransactions = async (account: string, query = {}) => {
