@@ -54,7 +54,7 @@ const walletUSD = new User(fullUSDmeta)
 
 describe("receipt", () => {
   it("btcReceiptToLnd", async () => {
-    await ledger.addTransactionLndReceipt({
+    await ledger.addLndReceipt({
       description: "transaction test",
       payeeUser: walletBTC,
       metadata: { type: "invoice", pending: false },
@@ -71,7 +71,7 @@ describe("receipt", () => {
   })
 
   it("usd receipt to lnd", async () => {
-    await ledger.addTransactionLndReceipt({
+    await ledger.addLndReceipt({
       description: "transaction test",
       payeeUser: walletUSD,
       metadata: { type: "invoice", pending: false },
@@ -88,7 +88,7 @@ describe("receipt", () => {
   })
 
   it("50/50 usd/btc receipt to lnd", async () => {
-    await ledger.addTransactionLndReceipt({
+    await ledger.addLndReceipt({
       description: "transaction test",
       payeeUser: wallet5050,
       metadata: { type: "invoice", pending: false },
@@ -115,7 +115,7 @@ describe("receipt", () => {
 
 describe("payment with lnd", () => {
   it("btc send on lightning", async () => {
-    await ledger.addTransactionLndPayment({
+    await ledger.addLndPayment({
       description: "transaction test",
       payerUser: walletBTC,
       sats: 1000,
@@ -132,7 +132,7 @@ describe("payment with lnd", () => {
   })
 
   it("btcSendFromUsdOnLightning", async () => {
-    await ledger.addTransactionLndPayment({
+    await ledger.addLndPayment({
       description: "transaction test",
       payerUser: walletUSD,
       sats: 1000,
@@ -152,7 +152,7 @@ describe("payment with lnd", () => {
   })
 
   it("btcSend5050", async () => {
-    await ledger.addTransactionLndPayment({
+    await ledger.addLndPayment({
       description: "transaction test",
       payerUser: wallet5050,
       sats: 1000,
@@ -183,7 +183,7 @@ describe("on us payment", () => {
     const payer = walletBTC
     const payee = walletBTC2
 
-    await ledger.addTransactionOnUsPayment({
+    await ledger.addOnUsPayment({
       description: "desc",
       sats: 1000,
       metadata: { type: "on_us", pending: false },
@@ -202,7 +202,7 @@ describe("on us payment", () => {
     const payer = walletUSD
     const payee = walletUSD2
 
-    await ledger.addTransactionOnUsPayment({
+    await ledger.addOnUsPayment({
       description: "desc",
       sats: 1000,
       metadata: { type: "on_us", pending: false },
@@ -221,7 +221,7 @@ describe("on us payment", () => {
     const payer = walletBTC
     const payee = walletUSD
 
-    await ledger.addTransactionOnUsPayment({
+    await ledger.addOnUsPayment({
       description: "desc",
       sats: 1000,
       metadata: { type: "on_us", pending: false },
@@ -243,7 +243,7 @@ describe("on us payment", () => {
     const payer = walletBTC
     const payee = wallet5050
 
-    await ledger.addTransactionOnUsPayment({
+    await ledger.addOnUsPayment({
       description: "desc",
       sats: 1000,
       metadata: { type: "on_us", pending: false },
@@ -265,7 +265,7 @@ describe("on us payment", () => {
     const payer = wallet5050
     const payee = walletBTC
 
-    await ledger.addTransactionOnUsPayment({
+    await ledger.addOnUsPayment({
       description: "desc",
       sats: 1000,
       metadata: { type: "on_us", pending: false },
@@ -288,7 +288,7 @@ describe("on us payment", () => {
     const payer = walletUSD
     const payee = wallet5050
 
-    await ledger.addTransactionOnUsPayment({
+    await ledger.addOnUsPayment({
       description: "desc",
       sats: 1000,
       metadata: { type: "on_us", pending: false },
@@ -311,7 +311,7 @@ describe("on us payment", () => {
     const payer = wallet5050
     const payee = walletUSD
 
-    await ledger.addTransactionOnUsPayment({
+    await ledger.addOnUsPayment({
       description: "desc",
       sats: 1000,
       metadata: { type: "on_us", pending: false },
@@ -335,7 +335,7 @@ describe("rebalancePortfolio", () => {
   it("BtcNoOp", async () => {
     const wallet = fullWalletBTC
 
-    await ledger.addTransactionLndReceipt({
+    await ledger.addLndReceipt({
       description: "first tx to have a balance",
       payeeUser: wallet.user,
       metadata: { type: "invoice", pending: false },
@@ -367,7 +367,7 @@ describe("rebalancePortfolio", () => {
   it("Btcto5050", async () => {
     const wallet = fullWalletBTC
 
-    await ledger.addTransactionLndReceipt({
+    await ledger.addLndReceipt({
       description: "first tx to have a balance",
       payeeUser: wallet.user,
       metadata: { type: "invoice", pending: false },
@@ -411,7 +411,7 @@ describe("rebalancePortfolio", () => {
   it("Usdto5050", async () => {
     const wallet = fullWalletUSD
 
-    await ledger.addTransactionLndReceipt({
+    await ledger.addLndReceipt({
       description: "first tx to have a balance",
       payeeUser: wallet.user,
       metadata: { type: "invoice", pending: false },

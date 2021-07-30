@@ -187,7 +187,7 @@ export const OnChainMixin = (superclass) =>
             }
 
             await lockExtendOrThrow({ lock, logger: onchainLoggerOnUs }, async () => {
-              const tx = await ledger.addTransactionOnUsPayment({
+              const tx = await ledger.addOnUsPayment({
                 description: "",
                 sats,
                 metadata,
@@ -338,7 +338,7 @@ export const OnChainMixin = (superclass) =>
                 sendAll,
               }
 
-              await ledger.addTransactionOnchainPayment({
+              await ledger.addOnchainPayment({
                 description: memo,
                 sats,
                 fee: this.user.withdrawFee,
@@ -639,7 +639,7 @@ export const OnChainMixin = (superclass) =>
                 payee_addresses: addresses,
               }
 
-              await ledger.addTransactionOnchainReceipt({
+              await ledger.addOnchainReceipt({
                 description: "",
                 sats,
                 fee,

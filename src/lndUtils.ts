@@ -225,7 +225,7 @@ export const updateRoutingFees = async () => {
   for (const forward of forwards) {
     const [[day, fee]] = Object.entries(forward)
     try {
-      await ledger.addTransactionLndRoutingFee({ amount: fee, collectedOn: day })
+      await ledger.addLndRoutingFee({ amount: fee, collectedOn: day })
     } catch (err) {
       throw new DbError("Unable to record routing revenue", {
         forwardToClient: false,
@@ -307,7 +307,7 @@ export const onChannelUpdated = async ({
 
   assert(fee > 0)
 
-  await ledger.addTransactionLndChannelFee({
+  await ledger.addLndChannelFee({
     description: `channel ${stateChange} onchain fee`,
     amount: fee,
     metadata: { txid },

@@ -361,7 +361,7 @@ export const LightningMixin = (superclass) =>
             }
 
             await lockExtendOrThrow({ lock, logger: lightningLoggerOnUs }, async () => {
-              const tx = await ledger.addTransactionOnUsPayment({
+              const tx = await ledger.addOnUsPayment({
                 description: memoInvoice,
                 sats,
                 metadata,
@@ -503,7 +503,7 @@ export const LightningMixin = (superclass) =>
               { lock, logger: lightningLogger },
               async () => {
                 // reduce balance from customer first
-                const tx = await ledger.addTransactionLndPayment({
+                const tx = await ledger.addLndPayment({
                   description: memoInvoice,
                   payerUser: this.user,
                   sats,
@@ -653,7 +653,7 @@ export const LightningMixin = (superclass) =>
 
       // todo: add a reference to the journal entry of the main tx
 
-      await ledger.addTransactionLndReceipt({
+      await ledger.addLndReceipt({
         description: "fee reimbursement",
         payeeUser: this.user,
         metadata,
@@ -895,7 +895,7 @@ export const LightningMixin = (superclass) =>
           }
 
           try {
-            await ledger.addTransactionLndReceipt({
+            await ledger.addLndReceipt({
               description: (invoice as GetInvoiceResult).description,
               payeeUser: this.user,
               metadata,

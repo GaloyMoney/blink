@@ -209,7 +209,7 @@ export class SpecterWallet {
       ...UserWallet.getCurrencyEquivalent({ sats, fee }),
     }
 
-    await ledger.addTransactionColdStoragePayment({
+    await ledger.addColdStoragePayment({
       description: memo,
       amount: sats,
       fee,
@@ -271,7 +271,7 @@ export class SpecterWallet {
     })
     const fee = btc2sat(-tx.fee) /* fee is negative */
 
-    await ledger.addTransactionHotWalletPayment({
+    await ledger.addHotWalletPayment({
       description: memo,
       amount: sats,
       fee,

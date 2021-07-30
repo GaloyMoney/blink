@@ -10,7 +10,7 @@ import { MainBook } from "./books"
 import { Transaction } from "./schema"
 import { getLndEscrowBalance } from "./query"
 
-export const addTransactionLndReceipt = async ({
+export const addLndReceipt = async ({
   description,
   payeeUser,
   metadata,
@@ -51,7 +51,7 @@ export const addTransactionLndReceipt = async ({
   await entry.commit()
 }
 
-export const addTransactionLndPayment = async ({
+export const addLndPayment = async ({
   description,
   sats,
   metadata,
@@ -89,7 +89,7 @@ export const addTransactionLndPayment = async ({
   return entry
 }
 
-export const addTransactionLndChannelFee = async ({ description, amount, metadata }) => {
+export const addLndChannelFee = async ({ description, amount, metadata }) => {
   const txMetadata = {
     currency: "BTC",
     type: "fee",
@@ -105,7 +105,7 @@ export const addTransactionLndChannelFee = async ({ description, amount, metadat
     .commit()
 }
 
-export const addTransactionLndRoutingFee = async ({ amount, collectedOn }) => {
+export const addLndRoutingFee = async ({ amount, collectedOn }) => {
   const metadata = {
     type: "routing_fee",
     currency: "BTC",
@@ -152,7 +152,7 @@ export const updateLndEscrow = async ({ amount }) => {
   return { ...escrowData, updated: true }
 }
 
-export const addTransactionOnchainReceipt = async ({
+export const addOnchainReceipt = async ({
   description,
   sats,
   fee,
@@ -181,7 +181,7 @@ export const addTransactionOnchainReceipt = async ({
   return entry
 }
 
-export const addTransactionOnchainPayment = async ({
+export const addOnchainPayment = async ({
   description,
   sats,
   fee,
@@ -205,7 +205,7 @@ export const addTransactionOnchainPayment = async ({
     .commit()
 }
 
-export const addTransactionOnUsPayment = async ({
+export const addOnUsPayment = async ({
   description,
   sats,
   metadata,
@@ -280,12 +280,7 @@ export const addTransactionOnUsPayment = async ({
   return entry
 }
 
-export const addTransactionColdStoragePayment = async ({
-  description,
-  amount,
-  fee,
-  metadata,
-}) => {
+export const addColdStoragePayment = async ({ description, amount, fee, metadata }) => {
   const txMetadata = {
     currency: "BTC",
     type: "to_cold_storage",
@@ -303,12 +298,7 @@ export const addTransactionColdStoragePayment = async ({
     .commit()
 }
 
-export const addTransactionHotWalletPayment = async ({
-  description,
-  amount,
-  fee,
-  metadata,
-}) => {
+export const addHotWalletPayment = async ({ description, amount, fee, metadata }) => {
   const txMetadata = {
     currency: "BTC",
     type: "to_hot_wallet",
