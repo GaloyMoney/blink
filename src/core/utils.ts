@@ -3,7 +3,7 @@ import _ from "lodash"
 import { parsePaymentRequest } from "invoices"
 import axios from "axios"
 
-import { yamlConfig } from "@config/app"
+import { getIpConfig, PROXY_CHECK_APIKEY } from "@config/app"
 
 import { User } from "@services/mongoose/schema"
 
@@ -26,7 +26,7 @@ export class LoggedError extends GraphQLError {
   }
 }
 
-const PROXY_CHECK_APIKEY = yamlConfig?.PROXY_CHECK_APIKEY
+const ipConfig = getIpConfig()
 
 export const addContact = async ({ uid, username }) => {
   // https://stackoverflow.com/questions/37427610/mongodb-update-or-insert-object-in-array
@@ -155,7 +155,7 @@ export const updateIPDetails = async ({ ip, user, logger }): Promise<void> => {
       { $set: { "lastIPs.$.lastConnection": Date.now() } },
     )
 
-    if (!res.nModified && yamlConfig.ipRecording.proxyChecking.enabled) {
+    if (!res.nModified && ipConfig.proxyCheckingEnabled) {
       const ipinfo = await fetchIP({ ip })
       await User.findOneAndUpdate(
         { "_id": user._id, "lastIPs.ip": { $ne: ip } },
@@ -168,9 +168,9 @@ export const updateIPDetails = async ({ ip, user, logger }): Promise<void> => {
 }
 
 export const isIPTypeBlacklisted = ({ type }) =>
-  yamlConfig.blacklistedIPTypes?.includes(type)
+  ipConfig.blacklistedIPTypes.includes(type)
 
-export const isIPBlacklisted = ({ ip }) => yamlConfig.blacklistedIPs?.includes(ip)
+export const isIPBlacklisted = ({ ip }) => ipConfig.blacklistedIPs.includes(ip)
 
 /**
  * Process an iterator with N workers
