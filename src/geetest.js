@@ -4,7 +4,7 @@
 // doing this: "If the storage space is not sufficient: Send request to check bypass status before starting the verfication process."
 
 const axios = require("axios")
-const GeetestLib = require("./sdk/geetest_lib")
+const GeetestLib = require("gt3-server-node-express-sdk/sdk/geetest_lib") // galoy fork
 
 async function sendRequest(params) {
   const request_url = "http://bypass.geetest.com/v1/bypass_status.php"

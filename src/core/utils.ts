@@ -5,7 +5,7 @@ import axios from "axios"
 
 import { getIpConfig, PROXY_CHECK_APIKEY } from "@config/app"
 
-import GeeTest from "../geetest/geetest"
+import GeeTest from "../geetest"
 
 import { User } from "@services/mongoose/schema"
 
