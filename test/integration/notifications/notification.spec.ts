@@ -29,7 +29,7 @@ describe("notification", () => {
       const numActiveUsers = (await User.getActiveUsers()).length
       expect(sendNotification.mock.calls.length).toBe(numActiveUsers)
       for (const [call] of sendNotification.mock.calls) {
-        const balance = await getAccountBalance({ account: accountPath(call.user._id) })
+        const balance = await getAccountBalance(accountPath(call.user._id))
 
         const expectedUsdBalance = (price * balance).toLocaleString("en", {
           maximumFractionDigits: 2,

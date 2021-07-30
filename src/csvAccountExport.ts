@@ -1,7 +1,7 @@
-import { MainBook } from "./mongodb"
 import moment from "moment"
-
 import { createObjectCsvStringifier, createObjectCsvWriter } from "csv-writer"
+
+import { getAccountTransactions } from "./ledger"
 
 const header = [
   { id: "voided", title: "voided" },
@@ -63,9 +63,7 @@ export class CSVAccountExport {
   }
 
   async addAccount({ account }): Promise<void> {
-    const ledger = await MainBook.ledger({
-      account,
-    })
+    const ledger = await getAccountTransactions(account)
 
     const transactions: [] = ledger.results.map((tx) => {
       const newTx = tx.toObject()

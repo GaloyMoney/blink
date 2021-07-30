@@ -384,7 +384,7 @@ describe("UserWallet - Lightning Pay", () => {
         const { BTC: finalBalance } = await userWallet1.getBalances()
 
         // const { id } = await decodePaymentRequest({ lnd: lndOutside2, request })
-        // const { results: [{ fee }] } = await MainBook.ledger({ account: userWallet1.accountPath, hash: id })
+        // const { results: [{ fee }] } = await getAccountTransactions(userWallet1.accountPath, { hash: id })
         // ^^^^ this fetch the wrong transaction
 
         // TODO: have a way to do this more programatically?

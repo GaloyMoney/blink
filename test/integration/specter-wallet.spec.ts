@@ -4,8 +4,7 @@ import { UserWallet } from "src/userWallet"
 import { SpecterWallet } from "src/SpecterWallet"
 import { getActiveOnchainLnd } from "src/lndUtils"
 import { bitcoindClient, getChainBalance, mineBlockAndSyncAll } from "test/helpers"
-import { MainBook } from "src/mongodb"
-import { bitcoindAccountingPath } from "src/ledger/ledger"
+import { getBitcoindTransactions } from "src/ledger"
 
 const { lnd } = getActiveOnchainLnd()
 const specterWalletName = "specter/coldstorage"
@@ -43,10 +42,7 @@ describe("SpecterWallet", () => {
 
     const {
       results: [{ fee }],
-    } = await MainBook.ledger({
-      account: bitcoindAccountingPath,
-      type: "to_cold_storage",
-    })
+    } = await getBitcoindTransactions({ type: "to_cold_storage" })
 
     baseLogger.debug({
       lndBalance,

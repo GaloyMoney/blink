@@ -40,7 +40,7 @@ beforeEach(async () => {
 })
 
 const expectBalance = async ({ account, currency, balance }) => {
-  const balanceResult = await getAccountBalance({ account, currency })
+  const balanceResult = await getAccountBalance(account, { currency })
   expect(balanceResult).toBe(balance)
 }
 

@@ -3,9 +3,8 @@ import moment from "moment"
 import { CSVAccountExport } from "./csvAccountExport"
 import { DbError } from "./error"
 import { Balances } from "./interface"
-import { getAccountBalance } from "./ledger"
+import { getAccountBalance, getAccountTransactions } from "./ledger"
 import { accountPath } from "./ledger/ledger"
-import { MainBook } from "./mongodb"
 import { sendNotification } from "./notifications/notification"
 import { User } from "./schema"
 
@@ -54,10 +53,7 @@ export abstract class UserWallet {
 
     // TODO: run this code in parrallel
     for (const { id } of this.user.currencies) {
-      const balance = await getAccountBalance({
-        account: this.user.accountPath,
-        currency: id,
-      })
+      const balance = await getAccountBalance(this.user.accountPath, { currency: id })
 
       // the dealer is the only one that is allowed to be short USD
       if (this.user.role === "dealer" && id === "USD") {
@@ -97,14 +93,7 @@ export abstract class UserWallet {
   }
 
   async getRawTransactions() {
-    const { results } = await MainBook.ledger({
-      // TODO: manage currencies
-
-      account: this.user.accountPath,
-      // start_date: startDate,
-      // end_date: endDate
-    })
-
+    const { results } = await getAccountTransactions(this.user.accountPath)
     return results
   }
 

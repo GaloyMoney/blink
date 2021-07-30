@@ -8,26 +8,38 @@ import {
   lndAccountingPath,
 } from "./ledger"
 
-export const getAccountBalance = async ({ account, currency = "BTC" }) => {
-  const { balance } = await MainBook.balance({ account, currency })
+export const getAllAccounts = () => {
+  return MainBook.listAccounts()
+}
+
+export const getAccountBalance = async (account: string, query = {}) => {
+  const params = { account, currency: "BTC", ...query }
+  const { balance } = await MainBook.balance(params)
   return balance
 }
 
+export const getAccountTransactions = async (account: string, query = {}) => {
+  const params = { account, ...query }
+  const { results, total } = await MainBook.ledger(params)
+  return { query: params, results, total }
+}
+
 export const getAssetsBalance = (currency = "BTC") =>
-  getAccountBalance({ account: assetsMainAccount, currency })
+  getAccountBalance(assetsMainAccount, { currency })
 
 export const getLiabilitiesBalance = (currency = "BTC") =>
-  getAccountBalance({ account: liabilitiesMainAccount, currency })
+  getAccountBalance(liabilitiesMainAccount, { currency })
 
-export const getLndBalance = () => getAccountBalance({ account: lndAccountingPath })
+export const getLndBalance = () => getAccountBalance(lndAccountingPath)
 
-export const getLndEscrowBalance = () =>
-  getAccountBalance({ account: escrowAccountingPath })
+export const getLndEscrowBalance = () => getAccountBalance(escrowAccountingPath)
 
-export const getBitcoindBalance = () =>
-  getAccountBalance({ account: bitcoindAccountingPath })
+export const getBitcoindBalance = () => getAccountBalance(bitcoindAccountingPath)
+
+export const getBitcoindTransactions = (query = {}) =>
+  getAccountTransactions(bitcoindAccountingPath, query)
 
 export const getBankOwnerBalance = async (currency = "BTC") => {
   const bankOwnerPath = await bankOwnerMediciPath()
-  return getAccountBalance({ account: bankOwnerPath, currency })
+  return getAccountBalance(bankOwnerPath, { currency })
 }

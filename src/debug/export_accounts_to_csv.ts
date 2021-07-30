@@ -1,10 +1,10 @@
 import { CSVAccountExport } from "../csvAccountExport"
 import { accountPath } from "../ledger/ledger"
-import { MainBook, setupMongoConnectionSecondary } from "../mongodb"
+import { setupMongoConnectionSecondary } from "../mongodb"
 import { Transaction, User } from "../schema"
 import { createObjectCsvWriter } from "csv-writer"
 import * as _ from "lodash"
-import { getAccountBalance } from "../ledger"
+import { getAccountBalance, getAllAccounts } from "../ledger"
 
 // need to set MONGODB_ADDRESS to call the script
 // export MONGODB_PASSWORD=$(kubectl get secret -n mainnet galoy-mongodb -o=go-template='{{index .data "mongodb-password" | base64decode}}')
@@ -18,13 +18,13 @@ const main = async () => {
 }
 
 const getBooks = async () => {
-  const accounts = await MainBook.listAccounts()
+  const accounts = await getAllAccounts()
 
   // used for debugging
   const books = {}
   for (const account of accounts) {
     for (const currency of ["USD", "BTC"]) {
-      const balance = await getAccountBalance({ account, currency })
+      const balance = await getAccountBalance(account, { currency })
       if (balance) {
         books[`${currency}:${account}`] = balance
       }
@@ -101,8 +101,7 @@ const exportUsers = async () => {
     }
 
     for (const currency of ["USD", "BTC"]) {
-      record[`balance${currency}`] = await getAccountBalance({
-        account: user.accountPath,
+      record[`balance${currency}`] = await getAccountBalance(user.accountPath, {
         currency,
       })
     }
