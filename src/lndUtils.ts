@@ -19,13 +19,9 @@ import _ from "lodash"
 import { Logger } from "pino"
 import { getGaloyInstanceName } from "./config"
 import { DbError, LndOfflineError, ValidationInternalError } from "./error"
-import {
-  addTransactionLndChannelFee,
-  addTransactionLndRoutingFee,
-  updateLndEscrow,
-} from "./ledger/transaction"
-import { FEECAP, FEEMIN, params } from "./lndAuth"
+import { FEECAP, FEEMIN, ILndParamsAuthed, nodeType, params } from "./lndAuth"
 import { baseLogger } from "./logger"
+import { ledger } from "./mongodb"
 import { DbMetadata, InvoiceUser } from "./schema"
 import { LoggedError, LOOK_BACK } from "./utils"
 
@@ -229,7 +225,7 @@ export const updateRoutingFees = async () => {
   for (const forward of forwards) {
     const [[day, fee]] = Object.entries(forward)
     try {
-      await addTransactionLndRoutingFee({ amount: fee, collectedOn: day })
+      await ledger.addTransactionLndRoutingFee({ amount: fee, collectedOn: day })
     } catch (err) {
       throw new DbError("Unable to record routing revenue", {
         forwardToClient: false,
@@ -256,7 +252,7 @@ export const updateEscrows = async () => {
   const selfInitatedChannels = _.filter(channels, { is_partner_initiated: false })
   const escrowInLnd = _.sumBy(selfInitatedChannels, "commit_transaction_fee")
 
-  const result = await updateLndEscrow({ amount: escrowInLnd })
+  const result = await ledger.updateLndEscrow({ amount: escrowInLnd })
 
   baseLogger.info({ ...result, channels }, "escrow recording")
 }
@@ -311,7 +307,7 @@ export const onChannelUpdated = async ({
 
   assert(fee > 0)
 
-  await addTransactionLndChannelFee({
+  await ledger.addTransactionLndChannelFee({
     description: `channel ${stateChange} onchain fee`,
     amount: fee,
     metadata: { txid },

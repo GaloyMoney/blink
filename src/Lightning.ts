@@ -21,12 +21,6 @@ import {
   SelfPaymentError,
   TransactionRestrictedError,
 } from "./error"
-import {
-  addTransactionLndPayment,
-  addTransactionLndReceipt,
-  addTransactionOnUsPayment,
-  voidTransactions,
-} from "./ledger/transaction"
 import { TIMEOUT_PAYMENT } from "./lndAuth"
 import {
   getActiveLnd,
@@ -36,6 +30,7 @@ import {
   validate,
 } from "./lndUtils"
 import { lockExtendOrThrow, redlock } from "./lock"
+import { ledger } from "./mongodb"
 import { transactionNotification } from "./notifications/payment"
 import { redis } from "./redis"
 import { InvoiceUser, Transaction, User } from "./schema"
@@ -366,7 +361,7 @@ export const LightningMixin = (superclass) =>
             }
 
             await lockExtendOrThrow({ lock, logger: lightningLoggerOnUs }, async () => {
-              const tx = await addTransactionOnUsPayment({
+              const tx = await ledger.addTransactionOnUsPayment({
                 description: memoInvoice,
                 sats,
                 metadata,
@@ -507,7 +502,7 @@ export const LightningMixin = (superclass) =>
               { lock, logger: lightningLogger },
               async () => {
                 // reduce balance from customer first
-                const tx = await addTransactionLndPayment({
+                const tx = await ledger.addTransactionLndPayment({
                   description: memoInvoice,
                   payerUser: this.user,
                   sats,
@@ -577,7 +572,7 @@ export const LightningMixin = (superclass) =>
                   { pending: false, error: err[1] },
                 )
 
-                await voidTransactions(entry.journal._id, err[1])
+                await ledger.voidTransactions(entry.journal._id, err[1])
 
                 lightningLogger.warn(
                   { success: false, err, ...metadata, entry },
@@ -659,7 +654,7 @@ export const LightningMixin = (superclass) =>
 
       // todo: add a reference to the journal entry of the main tx
 
-      await addTransactionLndReceipt({
+      await ledger.addTransactionLndReceipt({
         description: "fee reimbursement",
         payeeUser: this.user,
         metadata,
@@ -756,7 +751,7 @@ export const LightningMixin = (superclass) =>
 
           if (result.is_failed) {
             try {
-              await voidTransactions(payment._journal, "Payment canceled")
+              await ledger.voidTransactions(payment._journal, "Payment canceled")
               paymentLogger.info({ success: false, result }, "payment has been canceled")
             } catch (err) {
               const error = `error voiding payment entry`
@@ -901,7 +896,7 @@ export const LightningMixin = (superclass) =>
           }
 
           try {
-            await addTransactionLndReceipt({
+            await ledger.addTransactionLndReceipt({
               description: (invoice as GetInvoiceResult).description,
               payeeUser: this.user,
               metadata,

@@ -9,16 +9,11 @@ import {
   subscribeToInvoices,
   subscribeToTransactions,
 } from "lightning"
-import {
-  bankOwnerMediciPath,
-  liabilitiesMainAccount,
-  resolveAccountId,
-} from "../ledger/ledger"
-import { updateUsersPendingPayment } from "../ledger/balanceSheet"
+import { updateUsersPendingPayment } from "../balance-sheet"
 import { activateLndHealthCheck, lndStatusEvent } from "../lndHealth"
 import { onChannelUpdated } from "../lndUtils"
 import { baseLogger } from "../logger"
-import { setupMongoConnection } from "../mongodb"
+import { ledger, setupMongoConnection } from "../mongodb"
 import { transactionNotification } from "../notifications/payment"
 import { Price } from "../priceImpl"
 import { InvoiceUser, Transaction, User } from "../schema"
@@ -83,14 +78,14 @@ export async function onchainTransactionEventHandler(tx) {
       "payment completed",
     )
 
-    const bankOwnerPath = await bankOwnerMediciPath()
+    const bankOwnerPath = await ledger.bankOwnerAccountPath()
     const entry = await Transaction.findOne({
-      account_path: liabilitiesMainAccount,
+      account_path: ledger.liabilitiesMainAccount,
       accounts: { $ne: bankOwnerPath },
       hash: tx.id,
     })
 
-    const userId = resolveAccountId(entry?.account_path)
+    const userId = ledger.resolveAccountId(entry?.account_path)
 
     if (!userId) {
       return

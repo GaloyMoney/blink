@@ -2,11 +2,8 @@ import assert from "assert"
 import { createChainAddress, sendToChainAddress } from "lightning"
 import _ from "lodash"
 import { bitcoindDefaultClient, BitcoindWalletClient } from "./bitcoind"
-import {
-  addTransactionColdStoragePayment,
-  addTransactionHotWalletPayment,
-} from "./ledger/transaction"
 import { getActiveOnchainLnd, lndsBalances } from "./lndUtils"
+import { ledger } from "./mongodb"
 import { getOnChainTransactions } from "./OnChain"
 import { UserWallet } from "./userWallet"
 import { btc2sat, sat2btc } from "./utils"
@@ -212,7 +209,7 @@ export class SpecterWallet {
       ...UserWallet.getCurrencyEquivalent({ sats, fee }),
     }
 
-    await addTransactionColdStoragePayment({
+    await ledger.addTransactionColdStoragePayment({
       description: memo,
       amount: sats,
       fee,
@@ -274,7 +271,7 @@ export class SpecterWallet {
     })
     const fee = btc2sat(-tx.fee) /* fee is negative */
 
-    await addTransactionHotWalletPayment({
+    await ledger.addTransactionHotWalletPayment({
       description: memo,
       amount: sats,
       fee,

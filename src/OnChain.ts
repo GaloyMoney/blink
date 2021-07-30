@@ -22,14 +22,10 @@ import {
   TransactionRestrictedError,
   ValidationInternalError,
 } from "./error"
-import {
-  addTransactionOnchainPayment,
-  addTransactionOnchainReceipt,
-  addTransactionOnUsPayment,
-} from "./ledger/transaction"
 import { getActiveOnchainLnd, getLndFromPubkey } from "./lndUtils"
 import { lockExtendOrThrow, redlock } from "./lock"
 import { baseLogger } from "./logger"
+import { ledger } from "./mongodb"
 import { Transaction, User } from "./schema"
 import { UserWallet } from "./userWallet"
 import {
@@ -191,7 +187,7 @@ export const OnChainMixin = (superclass) =>
             }
 
             await lockExtendOrThrow({ lock, logger: onchainLoggerOnUs }, async () => {
-              const tx = await addTransactionOnUsPayment({
+              const tx = await ledger.addTransactionOnUsPayment({
                 description: "",
                 sats,
                 metadata,
@@ -341,7 +337,7 @@ export const OnChainMixin = (superclass) =>
                 sendAll,
               }
 
-              await addTransactionOnchainPayment({
+              await ledger.addTransactionOnchainPayment({
                 description: memo,
                 sats,
                 fee: this.user.withdrawFee,
@@ -508,7 +504,7 @@ export const OnChainMixin = (superclass) =>
       //  })
 
       // TODO: should have outgoing unconfirmed transaction as well.
-      // they are in medici, but not necessarily confirmed
+      // they are in ledger, but not necessarily confirmed
 
       let unconfirmed_user: GetChainTransactionsResult["transactions"] = []
 
@@ -642,7 +638,7 @@ export const OnChainMixin = (superclass) =>
                 payee_addresses: addresses,
               }
 
-              await addTransactionOnchainReceipt({
+              await ledger.addTransactionOnchainReceipt({
                 description: "",
                 sats,
                 fee,

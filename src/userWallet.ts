@@ -1,12 +1,11 @@
 import assert from "assert"
 import moment from "moment"
-import { CSVAccountExport } from "./csvAccountExport"
+import { User } from "./schema"
+import { ledger } from "./mongodb"
 import { DbError } from "./error"
 import { Balances } from "./interface"
-import { getAccountBalance, getAccountTransactions } from "./ledger"
-import { accountPath } from "./ledger/ledger"
+import { CSVAccountExport } from "./csvAccountExport"
 import { sendNotification } from "./notifications/notification"
-import { User } from "./schema"
 
 export abstract class UserWallet {
   static lastPrice: number
@@ -53,7 +52,9 @@ export abstract class UserWallet {
 
     // TODO: run this code in parrallel
     for (const { id } of this.user.currencies) {
-      const balance = await getAccountBalance(this.user.accountPath, { currency: id })
+      const balance = await ledger.getAccountBalance(this.user.accountPath, {
+        currency: id,
+      })
 
       // the dealer is the only one that is allowed to be short USD
       if (this.user.role === "dealer" && id === "USD") {
@@ -93,7 +94,7 @@ export abstract class UserWallet {
   }
 
   async getRawTransactions() {
-    const { results } = await getAccountTransactions(this.user.accountPath)
+    const { results } = await ledger.getAccountTransactions(this.user.accountPath)
     return results
   }
 
@@ -130,7 +131,7 @@ export abstract class UserWallet {
 
   async getStringCsv() {
     const csv = new CSVAccountExport()
-    await csv.addAccount({ account: accountPath(this.user.id) })
+    await csv.addAccount({ account: this.user.accountPath })
     return csv.getBase64()
   }
 

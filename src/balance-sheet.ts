@@ -1,14 +1,9 @@
-import {
-  getAssetsBalance,
-  getBankOwnerBalance,
-  getLiabilitiesBalance,
-  getLndBalance,
-} from "."
-import { getBalance as getBitcoindBalance } from "../bitcoind"
-import { lndsBalances } from "../lndUtils"
-import { baseLogger } from "../logger"
-import { User } from "../schema"
-import { WalletFactory } from "../walletFactory"
+import { getBalance as getBitcoindBalance } from "./bitcoind"
+import { lndsBalances } from "./lndUtils"
+import { baseLogger } from "./logger"
+import { User } from "./schema"
+import { WalletFactory } from "./walletFactory"
+import { ledger } from "./mongodb"
 
 const logger = baseLogger.child({ module: "balanceSheet" })
 
@@ -33,11 +28,11 @@ export const updateUsersPendingPayment = async ({
 
 export const getLedgerAccounts = async () => {
   const [assets, liabilities, lightning, bitcoin, bankOwnerBalance] = await Promise.all([
-    getAssetsBalance(),
-    getLiabilitiesBalance(),
-    getLndBalance(),
-    getBitcoindBalance(),
-    getBankOwnerBalance(),
+    ledger.getAssetsBalance(),
+    ledger.getLiabilitiesBalance(),
+    ledger.getLndBalance(),
+    ledger.getBitcoindBalance(),
+    ledger.getBankOwnerBalance(),
   ])
 
   return { assets, liabilities, lightning, bitcoin, bankOwnerBalance }

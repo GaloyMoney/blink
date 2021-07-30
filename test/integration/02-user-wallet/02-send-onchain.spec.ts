@@ -16,7 +16,7 @@ import {
   bitcoindOutside,
   mineBlockAndSync,
 } from "test/helpers"
-import { getAccountTransactions } from "src/ledger"
+import { ledger } from "src/mongodb"
 
 jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
 jest.mock("src/phone-provider", () => require("test/mocks/phone-provider"))
@@ -80,7 +80,7 @@ describe("UserWallet - onChainPay", () => {
     // FIXME: does this syntax always take the first match item in the array? (which is waht we want, items are return as newest first)
     const {
       results: [pendingTxn],
-    } = await getAccountTransactions(userWallet0.accountPath, { pending: true })
+    } = await ledger.getAccountTransactions(userWallet0.accountPath, { pending: true })
 
     const { BTC: interimBalance } = await userWallet0.getBalances()
     expect(interimBalance).toBe(initialBalanceUser0 - amount - pendingTxn.fee)
@@ -112,7 +112,9 @@ describe("UserWallet - onChainPay", () => {
 
     const {
       results: [{ pending, fee, feeUsd }],
-    } = await getAccountTransactions(userWallet0.accountPath, { hash: pendingTxn.hash })
+    } = await ledger.getAccountTransactions(userWallet0.accountPath, {
+      hash: pendingTxn.hash,
+    })
 
     expect(pending).toBe(false)
     expect(fee).toBe(yamlConfig.fees.withdraw + 7050)
@@ -153,7 +155,7 @@ describe("UserWallet - onChainPay", () => {
     // FIXME: does this syntax always take the first match item in the array? (which is waht we want, items are return as newest first)
     const {
       results: [pendingTxn],
-    } = await getAccountTransactions(userWallet11.accountPath, { pending: true })
+    } = await ledger.getAccountTransactions(userWallet11.accountPath, { pending: true })
 
     const { BTC: interimBalance } = await userWallet11.getBalances()
     expect(interimBalance).toBe(0)
@@ -185,7 +187,9 @@ describe("UserWallet - onChainPay", () => {
 
     const {
       results: [{ pending, fee, feeUsd }],
-    } = await getAccountTransactions(userWallet11.accountPath, { hash: pendingTxn.hash })
+    } = await ledger.getAccountTransactions(userWallet11.accountPath, {
+      hash: pendingTxn.hash,
+    })
 
     expect(pending).toBe(false)
     expect(fee).toBe(yamlConfig.fees.withdraw + 7050) // 7050?
@@ -231,7 +235,9 @@ describe("UserWallet - onChainPay", () => {
 
     const {
       results: [{ pending, fee, feeUsd }],
-    } = await getAccountTransactions(userWallet0.accountPath, { type: "onchain_on_us" })
+    } = await ledger.getAccountTransactions(userWallet0.accountPath, {
+      type: "onchain_on_us",
+    })
 
     expect(pending).toBe(false)
     expect(fee).toBe(0)
@@ -276,7 +282,9 @@ describe("UserWallet - onChainPay", () => {
 
     const {
       results: [{ pending, fee, feeUsd }],
-    } = await getAccountTransactions(userWallet12.accountPath, { type: "onchain_on_us" })
+    } = await ledger.getAccountTransactions(userWallet12.accountPath, {
+      type: "onchain_on_us",
+    })
 
     expect(pending).toBe(false)
     expect(fee).toBe(0)

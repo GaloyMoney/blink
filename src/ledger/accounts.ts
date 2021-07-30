@@ -40,7 +40,7 @@ export const resolveAccountId = (accountPath: string | string[]) => {
 let cacheDealerPath: string
 let cachebankOwnerPath: string
 
-export const dealerMediciPath = async () => {
+export const dealerAccountPath = async () => {
   if (cacheDealerPath) {
     return cacheDealerPath
   }
@@ -50,7 +50,7 @@ export const dealerMediciPath = async () => {
   return cacheDealerPath
 }
 
-export const bankOwnerMediciPath = async () => {
+export const bankOwnerAccountPath = async () => {
   if (cachebankOwnerPath) {
     return cachebankOwnerPath
   }

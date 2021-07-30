@@ -1,10 +1,10 @@
-import { getSpecterWalletConfig } from "src/config"
+import { ledger } from "src/mongodb"
 import { baseLogger } from "src/logger"
 import { UserWallet } from "src/userWallet"
 import { SpecterWallet } from "src/SpecterWallet"
 import { getActiveOnchainLnd } from "src/lndUtils"
+import { getSpecterWalletConfig } from "src/config"
 import { bitcoindClient, getChainBalance, mineBlockAndSyncAll } from "test/helpers"
-import { getBitcoindTransactions } from "src/ledger"
 
 const { lnd } = getActiveOnchainLnd()
 const specterWalletName = "specter/coldstorage"
@@ -42,7 +42,7 @@ describe("SpecterWallet", () => {
 
     const {
       results: [{ fee }],
-    } = await getBitcoindTransactions({ type: "to_cold_storage" })
+    } = await ledger.getBitcoindTransactions({ type: "to_cold_storage" })
 
     baseLogger.debug({
       lndBalance,

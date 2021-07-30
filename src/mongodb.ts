@@ -5,11 +5,10 @@ import { baseLogger } from "./logger"
 import mongoose from "mongoose"
 
 import { User, Transaction, InvoiceUser } from "./schema"
+// we have to import schema before ledger
+import { loadLedger } from "./ledger"
 
-// we have to import schema before medici
-import { book } from "medici"
-
-export const MainBook = new book("MainBook")
+export const ledger = loadLedger()
 
 // TODO add an event listenever if we got disconnecter from MongoDb
 // after a first succesful connection

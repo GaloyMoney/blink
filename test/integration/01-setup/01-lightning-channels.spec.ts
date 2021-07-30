@@ -14,7 +14,7 @@ import {
   waitUntilSync,
 } from "test/helpers"
 import { onChannelUpdated, updateEscrows } from "src/lndUtils"
-import { getBankOwnerBalance } from "src/ledger"
+import { ledger } from "src/mongodb"
 
 jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
 jest.mock("src/phone-provider", () => require("test/mocks/phone-provider"))
@@ -57,7 +57,7 @@ describe("Lightning channels", () => {
   it("opens channel from lnd1 to lndOutside1", async () => {
     const socket = `lnd-outside-1:9735`
 
-    const initFeeInLedger = await getBankOwnerBalance()
+    const initFeeInLedger = await ledger.getBankOwnerBalance()
 
     const { lndNewChannel: channel } = await openChannelTesting({
       lnd: lnd1,
@@ -68,7 +68,7 @@ describe("Lightning channels", () => {
     const { channels } = await getChannels({ lnd: lnd1 })
     expect(channels.length).toEqual(channelLengthMain + 1)
 
-    const finalFeeInLedger = await getBankOwnerBalance()
+    const finalFeeInLedger = await ledger.getBankOwnerBalance()
     expect(finalFeeInLedger - initFeeInLedger).toBe(channelFee * -1)
 
     await setChannelFees({ lnd: lnd1, channel, base: 1, rate: 0 })
@@ -94,7 +94,7 @@ describe("Lightning channels", () => {
   it("opens channel from lnd1 to lndOutside2", async () => {
     const socket = `lnd-outside-2:9735`
 
-    const initFeeInLedger = await getBankOwnerBalance()
+    const initFeeInLedger = await ledger.getBankOwnerBalance()
 
     const { lndNewChannel: channel } = await openChannelTesting({
       lnd: lnd1,
@@ -105,7 +105,7 @@ describe("Lightning channels", () => {
     const { channels } = await getChannels({ lnd: lnd1 })
     expect(channels.length).toEqual(channelLengthMain + 1)
 
-    const finalFeeInLedger = await getBankOwnerBalance()
+    const finalFeeInLedger = await ledger.getBankOwnerBalance()
     expect(finalFeeInLedger - initFeeInLedger).toBe(channelFee * -1)
 
     await setChannelFees({ lnd: lnd1, channel, base: 1, rate: 0 })

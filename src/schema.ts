@@ -2,7 +2,7 @@ import * as _ from "lodash"
 import * as mongoose from "mongoose"
 import { yamlConfig, levels } from "./config"
 import { NotFoundError } from "./error"
-import { accountPath } from "./ledger/ledger"
+import { accountPath } from "./ledger/accounts"
 import { baseLogger } from "./logger"
 import { caseInsensitiveRegex } from "./utils"
 

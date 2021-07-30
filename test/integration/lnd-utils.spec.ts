@@ -1,7 +1,7 @@
 import moment from "moment"
-import { getBankOwnerBalance } from "src/ledger"
 import { getInvoiceAttempt, updateRoutingFees } from "src/lndUtils"
 import { baseLogger } from "src/logger"
+import { ledger } from "src/mongodb"
 import { sleep } from "src/utils"
 import {
   cancelHodlInvoice,
@@ -87,7 +87,7 @@ describe("lndUtils", () => {
 
     await updateRoutingFees()
 
-    const balance = await getBankOwnerBalance()
+    const balance = await ledger.getBankOwnerBalance()
 
     // this fix lnd rounding issues
     expect([1, 1.01]).toContain(balance)

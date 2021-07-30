@@ -1,14 +1,14 @@
 import {
-  dealerMediciPath,
+  dealerAccountPath,
   accountPath,
   lndAccountingPath,
-  bankOwnerMediciPath,
+  bankOwnerAccountPath,
   escrowAccountingPath,
   bitcoindAccountingPath,
-} from "./ledger"
-import { MainBook } from "../mongodb"
+} from "./accounts"
+import { MainBook } from "./books"
 import { UserWallet } from "../userWallet"
-import { getLndEscrowBalance } from "."
+import { getLndEscrowBalance } from "./query"
 
 export const addTransactionLndReceipt = async ({
   description,
@@ -16,7 +16,7 @@ export const addTransactionLndReceipt = async ({
   metadata,
   sats,
 }) => {
-  const dealerPath = await dealerMediciPath()
+  const dealerPath = await dealerAccountPath()
 
   const entry = MainBook.entry(description)
 
@@ -56,7 +56,7 @@ export const addTransactionLndPayment = async ({
   metadata,
   payerUser,
 }) => {
-  const dealerPath = await dealerMediciPath()
+  const dealerPath = await dealerAccountPath()
 
   const entry = MainBook.entry(description)
 
@@ -95,7 +95,7 @@ export const addTransactionLndChannelFee = async ({ description, amount, metadat
     ...metadata,
   }
 
-  const bankOwnerPath = await bankOwnerMediciPath()
+  const bankOwnerPath = await bankOwnerAccountPath()
 
   return await MainBook.entry(description)
     .debit(bankOwnerPath, amount, txMetadata)
@@ -111,7 +111,7 @@ export const addTransactionLndRoutingFee = async ({ amount, collectedOn }) => {
     pending: false,
   }
 
-  const bankOwnerPath = await bankOwnerMediciPath()
+  const bankOwnerPath = await bankOwnerAccountPath()
 
   return await MainBook.entry("routing fee")
     .credit(bankOwnerPath, amount, metadata)
@@ -193,7 +193,7 @@ export const addTransactionOnchainPayment = async ({
     ...metadata,
   }
 
-  const bankOwnerPath = await bankOwnerMediciPath()
+  const bankOwnerPath = await bankOwnerAccountPath()
 
   // TODO/FIXME refactor. add the transaction first and set the fees in a second tx.
   return await MainBook.entry(description)
@@ -212,7 +212,7 @@ export const addTransactionOnUsPayment = async ({
   memoPayer,
   shareMemoWithPayee,
 }: IAddTransactionOnUsPayment) => {
-  const dealerPath = await dealerMediciPath()
+  const dealerPath = await dealerAccountPath()
 
   const entry = MainBook.entry(description)
 
@@ -291,7 +291,7 @@ export const addTransactionColdStoragePayment = async ({
     ...metadata,
   }
 
-  const bankOwnerPath = await bankOwnerMediciPath()
+  const bankOwnerPath = await bankOwnerAccountPath()
 
   return await MainBook.entry(description)
     .credit(lndAccountingPath, amount + fee, txMetadata)
@@ -314,7 +314,7 @@ export const addTransactionHotWalletPayment = async ({
     ...metadata,
   }
 
-  const bankOwnerPath = await bankOwnerMediciPath()
+  const bankOwnerPath = await bankOwnerAccountPath()
 
   return await MainBook.entry(description)
     .debit(lndAccountingPath, amount, txMetadata)
@@ -328,7 +328,7 @@ export const voidTransactions = (journalId, reason) => {
 }
 
 export const rebalancePortfolio = async ({ description, metadata, wallet }) => {
-  const dealerPath = await dealerMediciPath()
+  const dealerPath = await dealerAccountPath()
 
   const balances = await wallet.getBalances()
 
