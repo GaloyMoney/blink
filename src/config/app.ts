@@ -47,6 +47,11 @@ export const generateLimitConstants = (
   oldEnoughForWithdrawalMicroseconds: limitsConfig.oldEnoughForWithdrawal,
 })
 
+export const generateFeeConstants = (feesConfig = yamlConfig.fees): FeeConstants => ({
+  depositFeeRate: feesConfig.deposit,
+  withdrawFeeFlat: feesConfig.withdraw,
+})
+
 export const selectUserLimits = ({
   level,
   limitsConfig = yamlConfig.limits,

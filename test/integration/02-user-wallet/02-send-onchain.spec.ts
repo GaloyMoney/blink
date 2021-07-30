@@ -1,7 +1,7 @@
 import { once } from "events"
 import { sleep } from "@core/utils"
 import { filter, first } from "lodash"
-import { yamlConfig } from "@config/app"
+import { generateFeeConstants, yamlConfig } from "@config/app"
 import { Transaction } from "@services/mongoose/schema"
 import { getTitle } from "@core/notifications/payment"
 import { onchainTransactionEventHandler } from "@servers/trigger"
@@ -115,9 +115,10 @@ describe("UserWallet - onChainPay", () => {
     } = await ledger.getAccountTransactions(userWallet0.accountPath, {
       hash: pendingTxn.hash,
     })
+    const feeConstants = generateFeeConstants()
 
     expect(pending).toBe(false)
-    expect(fee).toBe(yamlConfig.fees.withdraw + 7050)
+    expect(fee).toBe(feeConstants.withdrawFeeFlat + 7050)
     expect(feeUsd).toBeGreaterThan(0)
 
     const [txn] = (await userWallet0.getTransactions()).filter(
@@ -190,9 +191,10 @@ describe("UserWallet - onChainPay", () => {
     } = await ledger.getAccountTransactions(userWallet11.accountPath, {
       hash: pendingTxn.hash,
     })
+    const feeConstants = generateFeeConstants()
 
     expect(pending).toBe(false)
-    expect(fee).toBe(yamlConfig.fees.withdraw + 7050) // 7050?
+    expect(fee).toBe(feeConstants.withdrawFeeFlat + 7050) // 7050?
     expect(feeUsd).toBeGreaterThan(0)
 
     const [txn] = (await userWallet11.getTransactions()).filter(
