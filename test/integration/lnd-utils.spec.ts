@@ -2,6 +2,7 @@ import moment from "moment"
 import { getBankOwnerBalance } from "src/ledger"
 import { getInvoiceAttempt, updateRoutingFees } from "src/lndUtils"
 import { baseLogger } from "src/logger"
+import { sleep } from "src/utils"
 import {
   cancelHodlInvoice,
   createInvoice,
@@ -52,7 +53,8 @@ describe("lndUtils", () => {
 
     let isCanceled = false
     const sub = subscribeToInvoice({ lnd, id })
-    sub.on("invoice_updated", (invoice) => {
+    sub.on("invoice_updated", async (invoice) => {
+      await sleep(1000)
       isCanceled = invoice.is_canceled
     })
 

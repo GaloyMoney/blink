@@ -25,6 +25,7 @@ import {
   addTransactionLndPayment,
   addTransactionLndReceipt,
   addTransactionOnUsPayment,
+  voidTransactions,
 } from "./ledger/transaction"
 import { TIMEOUT_PAYMENT } from "./lndAuth"
 import {
@@ -35,7 +36,6 @@ import {
   validate,
 } from "./lndUtils"
 import { lockExtendOrThrow, redlock } from "./lock"
-import { MainBook } from "./mongodb"
 import { transactionNotification } from "./notifications/payment"
 import { redis } from "./redis"
 import { InvoiceUser, Transaction, User } from "./schema"
@@ -576,7 +576,9 @@ export const LightningMixin = (superclass) =>
                   { hash: id },
                   { pending: false, error: err[1] },
                 )
-                await MainBook.void(entry.journal._id, err[1])
+
+                await voidTransactions(entry.journal._id, err[1])
+
                 lightningLogger.warn(
                   { success: false, err, ...metadata, entry },
                   `payment error`,
@@ -754,7 +756,7 @@ export const LightningMixin = (superclass) =>
 
           if (result.is_failed) {
             try {
-              await MainBook.void(payment._journal, "Payment canceled")
+              await voidTransactions(payment._journal, "Payment canceled")
               paymentLogger.info({ success: false, result }, "payment has been canceled")
             } catch (err) {
               const error = `error voiding payment entry`

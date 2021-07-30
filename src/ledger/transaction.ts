@@ -323,6 +323,10 @@ export const addTransactionHotWalletPayment = async ({
     .commit()
 }
 
+export const voidTransactions = (journalId, reason) => {
+  return MainBook.void(journalId, reason)
+}
+
 export const rebalancePortfolio = async ({ description, metadata, wallet }) => {
   const dealerPath = await dealerMediciPath()
 
