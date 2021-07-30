@@ -7,7 +7,17 @@ import * as accounts from "./accounts"
 import * as queries from "./query"
 import * as transactions from "./transaction"
 
-export function loadLedger() {
+type LoadLedgerOptions = {
+  bankOwnerAccountResolver: () => Promise<string>
+  dealerAccountResolver: () => Promise<string>
+}
+
+export const loadLedger = ({
+  bankOwnerAccountResolver,
+  dealerAccountResolver,
+}: LoadLedgerOptions) => {
+  accounts.setBankOwnerAccountResolver(bankOwnerAccountResolver)
+  accounts.setDealerAccountResolver(dealerAccountResolver)
   return {
     ...accounts,
     ...queries,

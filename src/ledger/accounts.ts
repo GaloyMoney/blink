@@ -1,8 +1,6 @@
 // an accounting reminder:
 // https://en.wikipedia.org/wiki/Double-entry_bookkeeping
 
-import { User } from "../schema"
-
 // assets:
 export const assetsMainAccount = "Assets"
 export const bitcoindAccountingPath = `${assetsMainAccount}:Reserve:Bitcoind`
@@ -40,13 +38,25 @@ export const resolveAccountId = (accountPath: string | string[]) => {
 let cacheDealerPath: string
 let cachebankOwnerPath: string
 
+const throwError = (account) => Promise.reject(`Invalid ${account}AccountPath`)
+let bankOwnerResolver = (): Promise<string> => throwError("bankOwner")
+let dealerResolver = (): Promise<string> => throwError("dealer")
+
+export function setBankOwnerAccountResolver(resolver: () => Promise<string>) {
+  bankOwnerResolver = resolver
+}
+
+export function setDealerAccountResolver(resolver: () => Promise<string>) {
+  dealerResolver = resolver
+}
+
 export const dealerAccountPath = async () => {
   if (cacheDealerPath) {
     return cacheDealerPath
   }
 
-  const dealer = await User.findOne({ role: "dealer" })
-  cacheDealerPath = accountPath(dealer._id)
+  const dealerId = await dealerResolver()
+  cacheDealerPath = accountPath(dealerId)
   return cacheDealerPath
 }
 
@@ -55,7 +65,7 @@ export const bankOwnerAccountPath = async () => {
     return cachebankOwnerPath
   }
 
-  const bank = await User.findOne({ role: "bankowner" })
-  cachebankOwnerPath = accountPath(bank._id)
+  const bankOwnerId = await bankOwnerResolver()
+  cachebankOwnerPath = accountPath(bankOwnerId)
   return cachebankOwnerPath
 }
