@@ -14,6 +14,11 @@ type LimitConstants = {
   oldEnoughForWithdrawalMicroseconds: number
 }
 
+type FeeConstants = {
+  depositFeeRate: number
+  withdrawFeeFlat: number
+}
+
 type UserLimitsArgs = { level: number; limitsConfig? }
 
 interface IUserLimits {

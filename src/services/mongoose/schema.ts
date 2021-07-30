@@ -1,6 +1,11 @@
 import * as _ from "lodash"
 import * as mongoose from "mongoose"
-import { yamlConfig, levels, selectUserLimits, generateLimitConstants } from "@config/app"
+import {
+  levels,
+  selectUserLimits,
+  generateLimitConstants,
+  generateFeeConstants,
+} from "@config/app"
 import { NotFoundError } from "@core/error"
 import { accountPath } from "@core/ledger/accounts"
 import { Transaction } from "@core/ledger/schema"
@@ -58,16 +63,18 @@ export const InvoiceUser = mongoose.model("InvoiceUser", invoiceUserSchema)
 
 export const regexUsername = /(?!^(1|3|bc1|lnbc1))^[0-9a-z_]+$/i
 
+const feeConstants = generateFeeConstants()
+
 const UserSchema = new Schema({
   depositFeeRatio: {
     type: Number,
-    default: yamlConfig.fees.deposit,
+    default: feeConstants.depositFeeRate,
     min: 0,
     max: 1,
   },
   withdrawFee: {
     type: Number,
-    default: yamlConfig.fees.withdraw,
+    default: feeConstants.withdrawFeeFlat,
     min: 0,
   },
   lastConnection: Date,
@@ -264,7 +271,6 @@ UserSchema.virtual("accountPath").get(function (this: typeof UserSchema) {
 UserSchema.virtual("oldEnoughForWithdrawal").get(function (this: typeof UserSchema) {
   const elapsed = Date.now() - this.created_at.getTime()
   const limitConstants = generateLimitConstants()
-  // console.log({d, created_at: this.created_at.getTime(), oldEnough: yamlConfig.limits.oldEnoughForWithdrawal})
   return elapsed > limitConstants.oldEnoughForWithdrawalMicroseconds
 })
 
