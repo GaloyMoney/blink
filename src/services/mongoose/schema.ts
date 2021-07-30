@@ -1,6 +1,6 @@
 import * as _ from "lodash"
 import * as mongoose from "mongoose"
-import { yamlConfig, levels, selectUserLimits, limitConstants } from "@config/app"
+import { yamlConfig, levels, selectUserLimits, generateLimitConstants } from "@config/app"
 import { NotFoundError } from "@core/error"
 import { accountPath } from "@core/ledger/accounts"
 import { Transaction } from "@core/ledger/schema"
@@ -263,6 +263,7 @@ UserSchema.virtual("accountPath").get(function (this: typeof UserSchema) {
 // eslint-disable-next-line no-unused-vars
 UserSchema.virtual("oldEnoughForWithdrawal").get(function (this: typeof UserSchema) {
   const elapsed = Date.now() - this.created_at.getTime()
+  const limitConstants = generateLimitConstants()
   // console.log({d, created_at: this.created_at.getTime(), oldEnough: yamlConfig.limits.oldEnoughForWithdrawal})
   return elapsed > limitConstants.oldEnoughForWithdrawalMicroseconds
 })
