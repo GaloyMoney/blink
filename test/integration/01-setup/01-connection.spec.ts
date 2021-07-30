@@ -1,4 +1,5 @@
 import {
+  BITCOIND_EVENTS,
   receiveRawBlockSubscriber,
   receiveRawTxSubscriber,
   SUB_ADDR_BLOCK,
@@ -28,8 +29,9 @@ it("connects to bitcoind", async () => {
 })
 
 it("detect active bitcoind zeromq notifications", async () => {
-  const notifications = await bitcoindClient.getZmqNotifications()
-  expect(notifications.length).toEqual(4) // 2 per topic
+  const config = await bitcoindClient.getZmqNotifications()
+  const topics = [BITCOIND_EVENTS.RAW_BLOCK, BITCOIND_EVENTS.RAW_TX]
+  expect(config.length).toEqual(topics.length * 2) // bitcoind returns 2 per topic
 })
 
 it("subscribe then close subscription to zeromq", async () => {
