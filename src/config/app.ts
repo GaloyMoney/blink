@@ -127,6 +127,15 @@ export const getSpecterWalletConfig = (): SpecterWalletConfig => {
   }
 }
 
+export const PROXY_CHECK_APIKEY = yamlConfig?.PROXY_CHECK_APIKEY
+
+export const getIpConfig = (config = yamlConfig): IpConfig => ({
+  ipRecordingEnabled: config.ipRecording?.enabled,
+  proxyCheckingEnabled: config.ipRecording?.proxyChecking?.enabled,
+  blacklistedIPTypes: config.blacklistedIPTypes ? config.blacklistedIPTypes : [],
+  blacklistedIPs: config.blacklistedIPs ? config.blacklistedIPs : [],
+})
+
 export const levels: Levels = [1, 2]
 
 // onboarding
