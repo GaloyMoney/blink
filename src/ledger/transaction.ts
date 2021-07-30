@@ -7,15 +7,15 @@ import {
   bitcoindAccountingPath,
 } from "./accounts"
 import { MainBook } from "./books"
-import { UserWallet } from "../userWallet"
+import { Transaction } from "./schema"
 import { getLndEscrowBalance } from "./query"
-import { Transaction } from "src/schema"
 
 export const addTransactionLndReceipt = async ({
   description,
   payeeUser,
   metadata,
   sats,
+  lastPrice,
 }) => {
   const dealerPath = await dealerAccountPath()
 
@@ -39,7 +39,7 @@ export const addTransactionLndReceipt = async ({
     const satsToConvert = sats * payeeUser.ratioUsd
 
     // TODO: add spread
-    const usdEquivalent = satsToConvert * UserWallet.lastPrice
+    const usdEquivalent = satsToConvert * lastPrice
 
     entry
       .credit(payeeUser.accountPath, usdEquivalent, { ...metadata, currency: "USD" })
@@ -56,6 +56,7 @@ export const addTransactionLndPayment = async ({
   sats,
   metadata,
   payerUser,
+  lastPrice,
 }) => {
   const dealerPath = await dealerAccountPath()
 
@@ -76,7 +77,7 @@ export const addTransactionLndPayment = async ({
     entry.debit(dealerPath, sats * payerUser.ratioUsd, { ...metadata, currency: "BTC" })
 
     const satsToConvert = sats * payerUser.ratioUsd
-    const usdEquivalent = satsToConvert * UserWallet.lastPrice
+    const usdEquivalent = satsToConvert * lastPrice
 
     entry
       .credit(dealerPath, usdEquivalent, { ...metadata, currency: "USD" })
@@ -212,6 +213,7 @@ export const addTransactionOnUsPayment = async ({
   payeeUser,
   memoPayer,
   shareMemoWithPayee,
+  lastPrice,
 }: IAddTransactionOnUsPayment) => {
   const dealerPath = await dealerAccountPath()
 
@@ -244,7 +246,7 @@ export const addTransactionOnUsPayment = async ({
   }
 
   if (!!payerUser.ratioUsd || !!payeeUser.ratioUsd) {
-    const usdEq = sats * UserWallet.lastPrice
+    const usdEq = sats * lastPrice
 
     entry
       .credit(accountPath(payeeUser._id), usdEq * payeeUser.ratioUsd, {

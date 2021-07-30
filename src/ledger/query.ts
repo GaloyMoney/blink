@@ -1,4 +1,5 @@
 import { MainBook } from "./books"
+import { Transaction } from "./schema"
 import {
   assetsMainAccount,
   bankOwnerAccountPath,
@@ -7,7 +8,6 @@ import {
   liabilitiesMainAccount,
   lndAccountingPath,
 } from "./accounts"
-import { Transaction } from "src/schema"
 
 export const getAllAccounts = () => {
   return MainBook.listAccounts()

@@ -369,6 +369,7 @@ export const LightningMixin = (superclass) =>
                 payeeUser,
                 memoPayer,
                 shareMemoWithPayee: isPushPayment,
+                lastPrice: UserWallet.lastPrice,
               })
               return tx
             })
@@ -507,6 +508,7 @@ export const LightningMixin = (superclass) =>
                   payerUser: this.user,
                   sats,
                   metadata,
+                  lastPrice: UserWallet.lastPrice,
                 })
                 return tx
               },
@@ -656,6 +658,7 @@ export const LightningMixin = (superclass) =>
         payeeUser: this.user,
         metadata,
         sats: feeDifference,
+        lastPrice: UserWallet.lastPrice,
       })
     }
 
@@ -897,6 +900,7 @@ export const LightningMixin = (superclass) =>
               payeeUser: this.user,
               metadata,
               sats,
+              lastPrice: UserWallet.lastPrice,
             })
           } catch (err) {
             const error = `addTransactionLndReceipt failed following updating InvoiceUser to paid = true. potential inconsistency`

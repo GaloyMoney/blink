@@ -59,6 +59,7 @@ describe("receipt", () => {
       payeeUser: walletBTC,
       metadata: { type: "invoice", pending: false },
       sats: 1000,
+      lastPrice: UserWallet.lastPrice,
     })
 
     await expectBalance({
@@ -75,6 +76,7 @@ describe("receipt", () => {
       payeeUser: walletUSD,
       metadata: { type: "invoice", pending: false },
       sats: 1000,
+      lastPrice: UserWallet.lastPrice,
     })
 
     await expectBalance({ account: walletUSD.accountPath, currency: "BTC", balance: 0 })
@@ -91,6 +93,7 @@ describe("receipt", () => {
       payeeUser: wallet5050,
       metadata: { type: "invoice", pending: false },
       sats: 1000,
+      lastPrice: UserWallet.lastPrice,
     })
 
     await expectBalance({
@@ -117,6 +120,7 @@ describe("payment with lnd", () => {
       payerUser: walletBTC,
       sats: 1000,
       metadata: { type: "payment", pending: true },
+      lastPrice: UserWallet.lastPrice,
     })
 
     await expectBalance({
@@ -133,6 +137,7 @@ describe("payment with lnd", () => {
       payerUser: walletUSD,
       sats: 1000,
       metadata: { type: "payment", pending: true },
+      lastPrice: UserWallet.lastPrice,
     })
 
     await expectBalance({ account: dealerPath, currency: "BTC", balance: -1000 })
@@ -152,6 +157,7 @@ describe("payment with lnd", () => {
       payerUser: wallet5050,
       sats: 1000,
       metadata: { type: "payment", pending: true },
+      lastPrice: UserWallet.lastPrice,
     })
 
     await expectBalance({ account: dealerPath, currency: "BTC", balance: -500 })
@@ -183,6 +189,7 @@ describe("on us payment", () => {
       metadata: { type: "on_us", pending: false },
       payerUser: payer,
       payeeUser: payee,
+      lastPrice: UserWallet.lastPrice,
     })
 
     await expectBalance({ account: payer.accountPath, currency: "BTC", balance: -1000 })
@@ -201,6 +208,7 @@ describe("on us payment", () => {
       metadata: { type: "on_us", pending: false },
       payerUser: payer,
       payeeUser: payee,
+      lastPrice: UserWallet.lastPrice,
     })
 
     await expectBalance({ account: payer.accountPath, currency: "USD", balance: -0.1 })
@@ -219,6 +227,7 @@ describe("on us payment", () => {
       metadata: { type: "on_us", pending: false },
       payerUser: payer,
       payeeUser: payee,
+      lastPrice: UserWallet.lastPrice,
     })
 
     await expectBalance({ account: payer.accountPath, currency: "BTC", balance: -1000 })
@@ -240,6 +249,7 @@ describe("on us payment", () => {
       metadata: { type: "on_us", pending: false },
       payerUser: payer,
       payeeUser: payee,
+      lastPrice: UserWallet.lastPrice,
     })
 
     await expectBalance({ account: payer.accountPath, currency: "BTC", balance: -1000 })
@@ -261,6 +271,7 @@ describe("on us payment", () => {
       metadata: { type: "on_us", pending: false },
       payerUser: payer,
       payeeUser: payee,
+      lastPrice: UserWallet.lastPrice,
     })
 
     await expectBalance({ account: payer.accountPath, currency: "BTC", balance: -500 })
@@ -283,6 +294,7 @@ describe("on us payment", () => {
       metadata: { type: "on_us", pending: false },
       payerUser: payer,
       payeeUser: payee,
+      lastPrice: UserWallet.lastPrice,
     })
 
     await expectBalance({ account: payer.accountPath, currency: "BTC", balance: 0 })
@@ -305,6 +317,7 @@ describe("on us payment", () => {
       metadata: { type: "on_us", pending: false },
       payerUser: payer,
       payeeUser: payee,
+      lastPrice: UserWallet.lastPrice,
     })
 
     await expectBalance({ account: payer.accountPath, currency: "BTC", balance: -500 })
@@ -327,6 +340,7 @@ describe("rebalancePortfolio", () => {
       payeeUser: wallet.user,
       metadata: { type: "invoice", pending: false },
       sats: 1000,
+      lastPrice: UserWallet.lastPrice,
     })
 
     await expectBalance({
@@ -358,6 +372,7 @@ describe("rebalancePortfolio", () => {
       payeeUser: wallet.user,
       metadata: { type: "invoice", pending: false },
       sats: 1000,
+      lastPrice: UserWallet.lastPrice,
     })
 
     await expectBalance({
@@ -401,6 +416,7 @@ describe("rebalancePortfolio", () => {
       payeeUser: wallet.user,
       metadata: { type: "invoice", pending: false },
       sats: 1000,
+      lastPrice: UserWallet.lastPrice,
     })
 
     await expectBalance({ account: wallet.user.accountPath, currency: "BTC", balance: 0 })

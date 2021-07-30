@@ -195,6 +195,7 @@ export const OnChainMixin = (superclass) =>
                 payeeUser,
                 memoPayer: memo,
                 shareMemoWithPayee: false,
+                lastPrice: UserWallet.lastPrice,
               })
               return tx
             })
