@@ -1,15 +1,15 @@
 module.exports = {
   async up(db) {
-    const ftx_txs_custor = await db
+    const ftxTxsCursor = await db
       .collection("medici_transactions")
       .find({ accounts: /FTX/i })
 
-    while (ftx_txs_custor.hasNext()) {
-      const ftx_tx = ftx_txs_custor.next()
+    while (ftxTxsCursor.hasNext()) {
+      const ftxTx = ftxTxsCursor.next()
       const result = await db
         .collection("medici_journals")
-        .deleteOne({ _id: ftx_tx._journal })
-      console.log({ result, ftx_tx }, "delete useless accounting journal entries")
+        .deleteOne({ _id: ftxTx._journal })
+      console.log({ result, ftxTx }, "delete useless accounting journal entries")
     }
 
     {

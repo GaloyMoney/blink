@@ -5,7 +5,7 @@ import { OnChainMixin } from "./OnChain"
 import { User } from "./schema"
 import { onboardingEarn } from "./config"
 import { UserWallet } from "./userWallet"
-import { WalletFromRole } from "./walletFactory"
+import { getWalletFromRole } from "./walletFactory"
 
 /**
  * this represents a user wallet
@@ -29,7 +29,7 @@ export class LightningUserWallet extends OnChainMixin(LightningMixin(UserWallet)
       )
     }
 
-    const lightningFundingWallet = await WalletFromRole({
+    const lightningFundingWallet = await getWalletFromRole({
       role: "funder",
       logger: this.logger,
     })

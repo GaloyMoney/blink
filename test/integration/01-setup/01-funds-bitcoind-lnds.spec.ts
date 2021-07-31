@@ -13,7 +13,7 @@ import {
   sendToAddressAndConfirm,
   waitUntilBlockHeight,
 } from "test/helpers"
-import { WalletFromRole } from "src/walletFactory"
+import { getWalletFromRole } from "src/walletFactory"
 
 jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
 jest.mock("src/phone-provider", () => require("test/mocks/phone-provider"))
@@ -79,7 +79,7 @@ describe("Bitcoind", () => {
     // load funder wallet before use it
     await getUserWallet(4)
 
-    const funderWallet = await WalletFromRole({ role: "funder", logger: baseLogger })
+    const funderWallet = await getWalletFromRole({ role: "funder", logger: baseLogger })
     const address = await funderWallet.getOnChainAddress()
 
     await sendToAddressAndConfirm({ walletClient: bitcoindOutside, address, amount })

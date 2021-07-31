@@ -23,7 +23,7 @@ import { sendNotification } from "../notifications/notification"
 import { getCurrentPrice } from "../realtimePrice"
 import { User } from "../schema"
 import { login, requestPhoneCode } from "../text"
-import { WalletFromUsername } from "../walletFactory"
+import { getWalletFromUsername } from "../walletFactory"
 import { usernameExists } from "../db/user"
 import { startApolloServer, isAuthenticated, isEditor } from "./graphql-server"
 
@@ -141,7 +141,7 @@ const resolvers = {
     usernameExists: async (_, { username }) => await usernameExists({ username }),
     getUserDetails: async (_, { uid }) => await User.findOne({ _id: uid }),
     noauthUpdatePendingInvoice: async (_, { hash, username }, { logger }) => {
-      const wallet = await WalletFromUsername({ username, logger })
+      const wallet = await getWalletFromUsername({ username, logger })
       return wallet.updatePendingInvoice({ hash })
     },
     getUid: async (_, { phone }) => {
@@ -184,7 +184,7 @@ const resolvers = {
       },
     }),
     noauthAddInvoice: async (_, { username, value }, { logger }) => {
-      const wallet = await WalletFromUsername({ username, logger })
+      const wallet = await getWalletFromUsername({ username, logger })
       return wallet.addInvoice({ selfGenerated: false, value })
     },
     invoice: (_, __, { wallet }) => ({

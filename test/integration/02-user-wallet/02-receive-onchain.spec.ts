@@ -19,7 +19,7 @@ import {
   bitcoindOutside,
   amountAfterFeeDeduction,
 } from "test/helpers"
-import { WalletFromRole } from "src/walletFactory"
+import { getWalletFromRole } from "src/walletFactory"
 
 jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
 jest.mock("src/phone-provider", () => require("test/mocks/phone-provider"))
@@ -60,7 +60,7 @@ afterAll(async () => {
 
 describe("FunderWallet - On chain", () => {
   it("receives on-chain transaction", async () => {
-    const funderWallet = await WalletFromRole({ role: "funder", logger: baseLogger })
+    const funderWallet = await getWalletFromRole({ role: "funder", logger: baseLogger })
     await sendToWallet({ walletDestination: funderWallet })
   })
 })

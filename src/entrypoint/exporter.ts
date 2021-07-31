@@ -1,6 +1,6 @@
 import express from "express"
 import client, { register } from "prom-client"
-import { WalletFromRole } from "src/walletFactory"
+import { getWalletFromRole } from "../walletFactory"
 import { getBalancesDetail } from "../bitcoind"
 import { balanceSheetIsBalanced, getLedgerAccounts } from "../ledger/balanceSheet"
 import { getBosScore, lndsBalances } from "../lndUtils"
@@ -110,7 +110,7 @@ const main = async () => {
     userCount_g.set(userCount)
 
     for (const role in roles) {
-      const wallet = await WalletFromRole({ role, logger })
+      const wallet = await getWalletFromRole({ role, logger })
       const { BTC: balance } = await wallet.getBalances()
       wallet_roles[role].set(balance)
     }
