@@ -1,34 +1,8 @@
-import { AuthenticatedLnd, authenticatedLndGrpc } from "lightning"
+import { authenticatedLndGrpc } from "lightning"
 import _ from "lodash"
-import { exit } from "process"
-import { yamlConfig } from "./config"
+import { getLndParams } from "./config"
 
-export type nodeType = "offchain" | "onchain"
-
-interface ILndParams {
-  cert: string
-  macaroon: string
-  node: string
-  port: string | number
-  type: nodeType[]
-  pubkey: string
-}
-
-export interface ILndParamsAuthed extends ILndParams {
-  lnd: AuthenticatedLnd
-  socket: string
-  active: boolean
-}
-
-const inputs: ILndParams[] = yamlConfig.lnds.map((input) => ({
-  cert: process.env[`${input.name}_TLS`] || exit(98),
-  macaroon: process.env[`${input.name}_MACAROON`] || exit(98),
-  node: process.env[`${input.name}_DNS`] || exit(98),
-  port: process.env[`${input.name}_RPCPORT`] ?? 10009,
-  pubkey: process.env[`${input.name}_PUBKEY`] || exit(98),
-  priority: 1,
-  ...input,
-}))
+const inputs: LndParams[] = getLndParams()
 
 // is this file being imported from trigger.ts?
 // FIXME: this is a hacky workaround to get active = true

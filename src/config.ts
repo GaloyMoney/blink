@@ -2,6 +2,7 @@ import fs from "fs"
 import yaml from "js-yaml"
 import _ from "lodash"
 import { baseLogger } from "./logger"
+import { exit } from "process"
 
 const defaultContent = fs.readFileSync("./default.yaml", "utf8")
 export const defaultConfig = yaml.load(defaultContent)
@@ -20,6 +21,21 @@ try {
 }
 
 export const yamlConfig = _.merge(defaultConfig, customConfig)
+
+export const getGaloyInstanceName = () => yamlConfig.name
+
+export const getLndParams = (): LndParams[] => {
+  const config = yamlConfig.lnds
+  return config.map((input) => ({
+    cert: process.env[`${input.name}_TLS`] || exit(98),
+    macaroon: process.env[`${input.name}_MACAROON`] || exit(98),
+    node: process.env[`${input.name}_DNS`] || exit(98),
+    port: process.env[`${input.name}_RPCPORT`] ?? 10009,
+    pubkey: process.env[`${input.name}_PUBKEY`] || exit(98),
+    priority: 1,
+    ...input,
+  }))
+}
 
 export class TransactionLimits implements ITransactionLimits {
   readonly config

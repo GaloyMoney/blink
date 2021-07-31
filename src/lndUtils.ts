@@ -2,7 +2,6 @@ import assert from "assert"
 import { default as axios } from "axios"
 import { parsePaymentRequest } from "invoices"
 import {
-  AuthenticatedLnd,
   getChainBalance,
   getChainTransactions,
   getChannelBalance,
@@ -18,14 +17,14 @@ import {
 } from "lightning"
 import _ from "lodash"
 import { Logger } from "pino"
-import { yamlConfig } from "./config"
+import { getGaloyInstanceName } from "./config"
 import { DbError, LndOfflineError, ValidationInternalError } from "./error"
 import {
   bankOwnerMediciPath,
   escrowAccountingPath,
   lndAccountingPath,
 } from "./ledger/ledger"
-import { FEECAP, FEEMIN, ILndParamsAuthed, nodeType, params } from "./lndAuth"
+import { FEECAP, FEEMIN, params } from "./lndAuth"
 import { baseLogger } from "./logger"
 import { MainBook } from "./mongodb"
 import { DbMetadata, InvoiceUser } from "./schema"
@@ -361,7 +360,7 @@ export const onChannelUpdated = async ({
 export const getLnds = ({
   type,
   active,
-}: { type?: nodeType; active?: boolean } = {}): ILndParamsAuthed[] => {
+}: { type?: nodeType; active?: boolean } = {}): LndParamsAuthed[] => {
   let result = params
 
   if (type) {
@@ -458,7 +457,8 @@ export const validate = async ({
     // TODO: if expired_at expired, thrown an error
   } else {
     if (!params.username) {
-      const error = `a username is required for push payment to the ${yamlConfig.name}`
+      const galoyInstanceName = getGaloyInstanceName()
+      const error = `a username is required for push payment to the ${galoyInstanceName}`
       throw new ValidationInternalError(error, { logger })
     }
 

@@ -1,7 +1,6 @@
 import assert from "assert"
 import { createHash } from "crypto"
 import {
-  AuthenticatedLnd,
   cancelHodlInvoice,
   createInvoice,
   GetInvoiceResult,
