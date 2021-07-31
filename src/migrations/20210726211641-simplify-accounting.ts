@@ -1,20 +1,21 @@
 module.exports = {
   async up(db) {
-    const ftx_txs = await db
-      .getCollection("medici_transactions")
+    const ftxTxsCursor = await db
+      .collection("medici_transactions")
       .find({ accounts: /FTX/i })
 
-    for (const ftx_tx of ftx_txs) {
+    while (ftxTxsCursor.hasNext()) {
+      const ftxTx = ftxTxsCursor.next()
       const result = await db
-        .getCollection("medici_journal")
-        .deleteOne({ _id: ftx_tx._journal })
-      console.log({ result, ftx_tx }, "delete useless accounting journal entries")
+        .collection("medici_journals")
+        .deleteOne({ _id: ftxTx._journal })
+      console.log({ result, ftxTx }, "delete useless accounting journal entries")
     }
 
     {
       const result = await db
-        .getCollection("medici_transactions")
-        .deleteAll({ accounts: /FTX/i })
+        .collection("medici_transactions")
+        .deleteMany({ accounts: /FTX/i })
 
       console.log({ result }, "delete useless accounting transactions entries")
     }

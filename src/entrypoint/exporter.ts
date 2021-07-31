@@ -1,12 +1,12 @@
 import express from "express"
 import client, { register } from "prom-client"
+import { getWalletFromRole } from "../walletFactory"
 import { getBalancesDetail } from "../bitcoind"
 import { balanceSheetIsBalanced, getLedgerAccounts } from "../ledger/balanceSheet"
 import { getBosScore, lndsBalances } from "../lndUtils"
 import { baseLogger } from "../logger"
 import { setupMongoConnection } from "../mongodb"
 import { User } from "../schema"
-import { getFunderWallet } from "../walletFactory"
 
 const logger = baseLogger.child({ module: "exporter" })
 
@@ -46,10 +46,6 @@ const lndClosingChannelBalance_g = new client.Gauge({
   name: `${prefix}_lnd_closingchannelbalance`,
   help: "how much fund is closing following force closed channel",
 })
-const funder_balance_BTC_g = new client.Gauge({
-  name: `${prefix}_funderBalance_BTC`,
-  help: "funder balance BTC",
-})
 const assetsLiabilitiesDifference_g = new client.Gauge({
   name: `${prefix}_assetsEqLiabilities`,
   help: "do we have a balanced book",
@@ -67,6 +63,21 @@ const business_g = new client.Gauge({
   name: `${prefix}_business`,
   help: "number of businesses in the app",
 })
+
+const roles = ["dealer", "funder", "bankowner"]
+const wallet_roles = {}
+
+for (const role in roles) {
+  wallet_roles[role] = new client.Gauge({
+    name: `${prefix}_${role}_balance`,
+    help: "funder balance BTC",
+  })
+}
+
+// const bankOwner_g = new client.Gauge({
+//   name: `${prefix}_bankOwnerBalance`,
+//   help: "sats amount for the bank owner",
+// })
 
 const main = async () => {
   server.get("/metrics", async (req, res) => {
@@ -94,14 +105,15 @@ const main = async () => {
     lndOffChain_g.set(offChain)
     lndOpeningChannelBalance_g.set(opening_channel_balance)
     lndClosingChannelBalance_g.set(closing_channel_balance)
-    // price_g.set(price)
 
     const userCount = await User.countDocuments()
     userCount_g.set(userCount)
 
-    const funderWallet = await getFunderWallet({ logger })
-    const { BTC: funderBalance } = await funderWallet.getBalances()
-    funder_balance_BTC_g.set(funderBalance)
+    for (const role in roles) {
+      const wallet = await getWalletFromRole({ role, logger })
+      const { BTC: balance } = await wallet.getBalances()
+      wallet_roles[role].set(balance)
+    }
 
     business_g.set(await User.count({ title: { $exists: true } }))
 
