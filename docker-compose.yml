@@ -18,7 +18,7 @@ services:
     - MONGODB_REPLICA_SET_MODE=primary
     - MONGODB_ROOT_PASSWORD=password
     - MONGODB_REPLICA_SET_KEY=replicasetkey
-    - MONGODB_ADVERTISED_HOSTNAME=127.0.0.1
+    - MONGODB_ADVERTISED_HOSTNAME=${DOCKER_HOST_IP:-127.0.0.1}
   bitcoind:
     image: lncm/bitcoind:v0.21.1
     ports:
