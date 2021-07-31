@@ -7,7 +7,7 @@ import * as accounts from "./accounts"
 import * as queries from "./query"
 import * as transactions from "./transaction"
 
-type LoadLedgerOptions = {
+type LoadLedgerParams = {
   bankOwnerAccountResolver: () => Promise<string>
   dealerAccountResolver: () => Promise<string>
 }
@@ -15,7 +15,7 @@ type LoadLedgerOptions = {
 export const loadLedger = ({
   bankOwnerAccountResolver,
   dealerAccountResolver,
-}: LoadLedgerOptions) => {
+}: LoadLedgerParams) => {
   accounts.setBankOwnerAccountResolver(bankOwnerAccountResolver)
   accounts.setDealerAccountResolver(dealerAccountResolver)
   return {

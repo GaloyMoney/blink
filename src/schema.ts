@@ -7,7 +7,7 @@ import { Transaction } from "./ledger/schema"
 import { baseLogger } from "./logger"
 import { caseInsensitiveRegex } from "./utils"
 
-export { Transaction } from "./ledger/schema"
+export { Transaction }
 
 // mongoose.set("debug", true)
 
