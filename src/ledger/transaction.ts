@@ -171,9 +171,9 @@ export const addOnchainReceipt = async ({
     .debit(lndAccountingPath, sats, txMetadata)
 
   if (fee) {
-    const bankOwnerPath = await bankOwnerMediciPath()
+    const bankOwnerPath = await bankOwnerAccountPath()
     // no need to have an entry if there is no fee.
-    entry.credit(bankOwnerPath, fee, metadata)
+    entry.credit(bankOwnerPath, fee, txMetadata)
   }
 
   await entry.commit()
