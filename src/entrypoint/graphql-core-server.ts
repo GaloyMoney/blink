@@ -144,8 +144,10 @@ const resolvers = {
       const wallet = await getWalletFromUsername({ username, logger })
       return wallet.updatePendingInvoice({ hash })
     },
-    getUid: async (_, { phone }) => {
-      const { _id: uid } = await User.getUserByPhone(phone)
+    getUid: async (_, { username, phone }) => {
+      const { _id: uid } = username
+        ? await User.getUserByUsername(username)
+        : await User.getUserByPhone(phone)
       return uid
     },
     getLevels: () => levels,
