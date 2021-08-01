@@ -109,7 +109,7 @@ const main = async () => {
     const userCount = await User.countDocuments()
     userCount_g.set(userCount)
 
-    for (const role in roles) {
+    for (const role of roles) {
       try {
         const wallet = await getWalletFromRole({ role, logger })
         const { BTC: balance } = await wallet.getBalances()
