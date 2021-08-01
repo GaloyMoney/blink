@@ -14,9 +14,11 @@ type GenericLimits = {
   oldEnoughForWithdrawalMicroseconds: number
 }
 
-type FeeConstants = {
-  depositFeeRate: number
-  withdrawFeeFlat: number
+type FeeRates = {
+  depositFeeVariable: number
+  depositFeeFixed: number
+  withdrawFeeVariable: number
+  withdrawFeeFixed: number
 }
 
 type UserLimitsArgs = { level: number; limitsConfig? }

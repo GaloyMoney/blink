@@ -12,7 +12,7 @@ import { makeExecutableSchema } from "graphql-tools"
 import moment from "moment"
 import path from "path"
 
-import { levels, onboardingEarn, getTransactionLimits, getFees } from "@config/app"
+import { levels, onboardingEarn, getTransactionLimits, getFeeRates } from "@config/app"
 
 import { setupMongoConnection } from "@services/mongodb"
 import { activateLndHealthCheck } from "@services/lnd/health"
@@ -163,8 +163,8 @@ const resolvers = {
       }
     },
     getWalletFees: () => {
-      const feeConstants = getFees()
-      return { deposit: feeConstants.depositFeeRate }
+      const feeRates = getFeeRates()
+      return { deposit: feeRates.depositFeeVariable }
     },
   },
   Mutation: {

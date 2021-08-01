@@ -45,9 +45,11 @@ export const getGenericLimits = (limitsConfig = yamlConfig.limits): GenericLimit
   oldEnoughForWithdrawalMicroseconds: limitsConfig.oldEnoughForWithdrawal,
 })
 
-export const getFees = (feesConfig = yamlConfig.fees): FeeConstants => ({
-  depositFeeRate: feesConfig.deposit,
-  withdrawFeeFlat: feesConfig.withdraw,
+export const getFeeRates = (feesConfig = yamlConfig.fees): FeeRates => ({
+  depositFeeVariable: feesConfig.deposit,
+  depositFeeFixed: 0,
+  withdrawFeeVariable: 0,
+  withdrawFeeFixed: feesConfig.withdraw,
 })
 
 export const getUserLimits = ({

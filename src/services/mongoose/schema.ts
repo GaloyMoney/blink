@@ -1,6 +1,6 @@
 import * as _ from "lodash"
 import * as mongoose from "mongoose"
-import { levels, getUserLimits, getGenericLimits, getFees } from "@config/app"
+import { levels, getUserLimits, getGenericLimits, getFeeRates } from "@config/app"
 import { NotFoundError } from "@core/error"
 import { accountPath } from "@core/ledger/accounts"
 import { Transaction } from "@core/ledger/schema"
@@ -58,18 +58,18 @@ export const InvoiceUser = mongoose.model("InvoiceUser", invoiceUserSchema)
 
 export const regexUsername = /(?!^(1|3|bc1|lnbc1))^[0-9a-z_]+$/i
 
-const feeConstants = getFees()
+const feeRates = getFeeRates()
 
 const UserSchema = new Schema({
   depositFeeRatio: {
     type: Number,
-    default: feeConstants.depositFeeRate,
+    default: feeRates.depositFeeVariable,
     min: 0,
     max: 1,
   },
   withdrawFee: {
     type: Number,
-    default: feeConstants.withdrawFeeFlat,
+    default: feeRates.withdrawFeeFixed,
     min: 0,
   },
   lastConnection: Date,
