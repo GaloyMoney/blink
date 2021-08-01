@@ -40,7 +40,7 @@ export const getLndParams = (): LndParams[] => {
   }))
 }
 
-export const getLimitConstants = (limitsConfig = yamlConfig.limits): LimitConstants => ({
+export const getGenericLimits = (limitsConfig = yamlConfig.limits): GenericLimits => ({
   oldEnoughForWithdrawalHours: limitsConfig.oldEnoughForWithdrawal / MS_IN_HOUR,
   oldEnoughForWithdrawalMicroseconds: limitsConfig.oldEnoughForWithdrawal,
 })
@@ -87,10 +87,10 @@ export const getTransactionLimits = ({
   level,
   limitsConfig = yamlConfig.limits,
 }: UserLimitsArgs): ITransactionLimits => {
-  const limitConstants = getLimitConstants(limitsConfig)
+  const genericLimits = getGenericLimits(limitsConfig)
   return {
-    oldEnoughForWithdrawalLimit: limitConstants.oldEnoughForWithdrawalMicroseconds,
-    oldEnoughForWithdrawalLimitHours: limitConstants.oldEnoughForWithdrawalHours,
+    oldEnoughForWithdrawalLimit: genericLimits.oldEnoughForWithdrawalMicroseconds,
+    oldEnoughForWithdrawalLimitHours: genericLimits.oldEnoughForWithdrawalHours,
     ...getUserLimits({ level, limitsConfig }),
   }
 }

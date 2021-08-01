@@ -1,4 +1,4 @@
-import { getUserLimits, getTransactionLimits, getLimitConstants } from "@config/app"
+import { getUserLimits, getTransactionLimits, getGenericLimits } from "@config/app"
 
 const testLimitsConfig = {
   oldEnoughForWithdrawal: 172800000,
@@ -15,13 +15,13 @@ const testLimitsConfig = {
     },
   },
 }
-const testLimitConstants = getLimitConstants(testLimitsConfig)
+const testGenericLimits = getGenericLimits(testLimitsConfig)
 
 describe("config.ts", () => {
   describe("generates expected constants from a limits config object", () => {
-    it("generates expected limitConstants", () => {
-      expect(testLimitConstants.oldEnoughForWithdrawalHours).toEqual(48)
-      expect(testLimitConstants.oldEnoughForWithdrawalMicroseconds).toEqual(172800000)
+    it("generates expected genericLimits", () => {
+      expect(testGenericLimits.oldEnoughForWithdrawalHours).toEqual(48)
+      expect(testGenericLimits.oldEnoughForWithdrawalMicroseconds).toEqual(172800000)
     })
 
     it("selects user limits for level 1", () => {
