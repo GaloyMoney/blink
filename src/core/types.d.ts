@@ -9,7 +9,7 @@ type Primitive = string | boolean | number
 // TODO: clean up this section when "constructor typing" work is
 //       being done
 
-type LimitConstants = {
+type GenericLimits = {
   oldEnoughForWithdrawalHours: number
   oldEnoughForWithdrawalMicroseconds: number
 }

@@ -1,6 +1,6 @@
 import * as _ from "lodash"
 import * as mongoose from "mongoose"
-import { levels, getUserLimits, getLimitConstants, getFees } from "@config/app"
+import { levels, getUserLimits, getGenericLimits, getFees } from "@config/app"
 import { NotFoundError } from "@core/error"
 import { accountPath } from "@core/ledger/accounts"
 import { Transaction } from "@core/ledger/schema"
@@ -265,8 +265,8 @@ UserSchema.virtual("accountPath").get(function (this: typeof UserSchema) {
 // eslint-disable-next-line no-unused-vars
 UserSchema.virtual("oldEnoughForWithdrawal").get(function (this: typeof UserSchema) {
   const elapsed = Date.now() - this.created_at.getTime()
-  const limitConstants = getLimitConstants()
-  return elapsed > limitConstants.oldEnoughForWithdrawalMicroseconds
+  const genericLimits = getGenericLimits()
+  return elapsed > genericLimits.oldEnoughForWithdrawalMicroseconds
 })
 
 UserSchema.methods.limitHit = async function ({
