@@ -115,7 +115,7 @@ const main = async () => {
         const { BTC: balance } = await wallet.getBalances()
         wallet_roles[role].set(balance)
       } catch (err) {
-        baseLogger.error({role}, `can't fetch balance for role`)
+        baseLogger.error({ role }, `can't fetch balance for role`)
       }
     }
 
