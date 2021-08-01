@@ -24,6 +24,7 @@
     "import/no-deprecated": "error",
     "import/no-extraneous-dependencies": "error",
     "import/no-unassigned-import": "error",
+    "import/no-unresolved": "off",
     "no-duplicate-imports": "error",
     "no-empty": ["error", { "allowEmptyCatch": true }],
     "no-empty-function": "error",

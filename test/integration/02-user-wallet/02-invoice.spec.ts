@@ -1,9 +1,9 @@
-import { getHash } from "src/utils"
-import { InvoiceUser } from "src/schema"
+import { getHash } from "@core/utils"
+import { InvoiceUser } from "@services/mongoose/schema"
 import { getUserWallet } from "test/helpers"
 
-jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
-jest.mock("src/phone-provider", () => require("test/mocks/phone-provider"))
+jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
+jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
 let userWallet1
 

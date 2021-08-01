@@ -1,4 +1,4 @@
-import { GT } from "../../index"
+import { GT } from "@graphql/index"
 
 const Username = new GT.Scalar({
   name: "Username",

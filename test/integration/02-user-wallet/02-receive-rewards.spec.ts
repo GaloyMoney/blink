@@ -1,9 +1,9 @@
 import { find, difference } from "lodash"
-import { onboardingEarn } from "src/config"
+import { onboardingEarn } from "@config/app"
 import { checkIsBalanced, getUserWallet } from "test/helpers"
 
-jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
-jest.mock("src/phone-provider", () => require("test/mocks/phone-provider"))
+jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
+jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
 let userWallet1
 

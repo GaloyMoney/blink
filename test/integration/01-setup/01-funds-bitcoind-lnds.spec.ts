@@ -1,6 +1,6 @@
-import { BitcoindWalletClient } from "src/bitcoind"
-import { btc2sat } from "src/utils"
-import { baseLogger } from "src/logger"
+import { BitcoindWalletClient } from "@services/bitcoind"
+import { btc2sat } from "@core/utils"
+import { baseLogger } from "@services/logger"
 import {
   lnd1,
   lndOutside1,
@@ -13,10 +13,10 @@ import {
   sendToAddressAndConfirm,
   waitUntilBlockHeight,
 } from "test/helpers"
-import { getWalletFromRole } from "src/walletFactory"
+import { getWalletFromRole } from "@core/wallet-factory"
 
-jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
-jest.mock("src/phone-provider", () => require("test/mocks/phone-provider"))
+jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
+jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
 let bitcoindOutside
 

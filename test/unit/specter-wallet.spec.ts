@@ -1,11 +1,11 @@
-import { redis } from "src/redis"
-import { btc2sat } from "src/utils"
-import { SpecterWallet } from "src/SpecterWallet"
-import { getSpecterWalletConfig } from "src/config"
-import { baseLogger } from "src/logger"
+import { redis } from "@services/redis"
+import { btc2sat } from "@core/utils"
+import { SpecterWallet } from "@core/specter-wallet"
+import { getSpecterWalletConfig } from "@config/app"
+import { baseLogger } from "@services/logger"
 
-jest.mock("src/config.ts", () => {
-  const config = jest.requireActual("src/config.ts")
+jest.mock("@config/app.ts", () => {
+  const config = jest.requireActual("@config/app.ts")
   config.yamlConfig.lnds = []
   return config
 })

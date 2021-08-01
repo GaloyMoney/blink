@@ -1,10 +1,10 @@
-import { User } from "src/schema"
-import { baseLogger } from "src/logger"
-import { UserWallet } from "src/userWallet"
-import { WalletFactory } from "src/walletFactory"
-import { ledger, setupMongoConnection } from "src/mongodb"
+import { User } from "@services/mongoose/schema"
+import { baseLogger } from "@services/logger"
+import { UserWallet } from "@core/user-wallet"
+import { WalletFactory } from "@core/wallet-factory"
+import { ledger, setupMongoConnection } from "@services/mongodb"
 
-jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
+jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 
 let mongoose
 

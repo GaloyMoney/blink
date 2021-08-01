@@ -1,4 +1,4 @@
-import { ledger } from "src/mongodb"
+import { ledger } from "@services/mongodb"
 
 const { accountPath, liabilitiesMainAccount, resolveAccountId } = ledger
 

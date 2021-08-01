@@ -1,9 +1,9 @@
-import { login } from "src/text"
-import { User } from "src/schema"
+import { login } from "@core/text"
+import { User } from "@services/mongoose/schema"
 import * as jwt from "jsonwebtoken"
-import { baseLogger } from "src/logger"
-import { yamlConfig } from "src/config"
-import { WalletFactory } from "src/walletFactory"
+import { baseLogger } from "@services/logger"
+import { yamlConfig } from "@config/app"
+import { WalletFactory } from "@core/wallet-factory"
 
 export const getTokenFromPhoneIndex = async (index) => {
   const entry = yamlConfig.test_accounts[index]
