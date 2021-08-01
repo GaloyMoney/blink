@@ -7,4 +7,5 @@ type IAddTransactionOnUsPayment = {
   payeeUser: UserType
   memoPayer?: string
   shareMemoWithPayee?: boolean
+  lastPrice: number
 }

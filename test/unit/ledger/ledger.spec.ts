@@ -1,4 +1,6 @@
-import { accountPath, liabilitiesMainAccount, resolveAccountId } from "src/ledger/ledger"
+import { ledger } from "src/mongodb"
+
+const { accountPath, liabilitiesMainAccount, resolveAccountId } = ledger
 
 describe("ledger.ts", () => {
   describe("resolveAccountId", () => {

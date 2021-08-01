@@ -9,19 +9,14 @@ import {
   subscribeToInvoices,
   subscribeToTransactions,
 } from "lightning"
-import {
-  bankOwnerMediciPath,
-  liabilitiesMainAccount,
-  resolveAccountId,
-} from "../ledger/ledger"
-import { updateUsersPendingPayment } from "../ledger/balanceSheet"
+import { updateUsersPendingPayment } from "../balance-sheet"
 import { activateLndHealthCheck, lndStatusEvent } from "../lndHealth"
 import { onChannelUpdated } from "../lndUtils"
 import { baseLogger } from "../logger"
-import { setupMongoConnection } from "../mongodb"
+import { ledger, setupMongoConnection } from "../mongodb"
 import { transactionNotification } from "../notifications/payment"
 import { Price } from "../priceImpl"
-import { InvoiceUser, Transaction, User } from "../schema"
+import { InvoiceUser, User } from "../schema"
 import { WalletFactory } from "../walletFactory"
 
 const logger = baseLogger.child({ module: "trigger" })
@@ -77,20 +72,15 @@ export async function onchainTransactionEventHandler(tx) {
       // transaction has been sent. and this events is trigger before
     }
 
-    await Transaction.updateMany({ hash: tx.id }, { pending: false })
+    await ledger.settleOnchainPayment(tx.id)
+
     onchainLogger.info(
       { success: true, pending: false, transactionType: "payment" },
       "payment completed",
     )
 
-    const bankOwnerPath = await bankOwnerMediciPath()
-    const entry = await Transaction.findOne({
-      account_path: liabilitiesMainAccount,
-      accounts: { $ne: bankOwnerPath },
-      hash: tx.id,
-    })
-
-    const userId = resolveAccountId(entry?.account_path)
+    const accountPath = await ledger.getAccountByTransactionHash(tx.id)
+    const userId = ledger.resolveAccountId(accountPath)
 
     if (!userId) {
       return

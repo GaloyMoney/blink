@@ -1,8 +1,5 @@
 import { btc2sat } from "src/utils"
-import {
-  balanceSheetIsBalanced,
-  updateUsersPendingPayment,
-} from "src/ledger/balanceSheet"
+import { balanceSheetIsBalanced, updateUsersPendingPayment } from "src/balance-sheet"
 import { waitUntilChannelBalanceSyncAll } from "./lightning"
 
 export * from "./bitcoinCore"

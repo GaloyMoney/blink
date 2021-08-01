@@ -19,14 +19,9 @@ import _ from "lodash"
 import { Logger } from "pino"
 import { getGaloyInstanceName } from "./config"
 import { DbError, LndOfflineError, ValidationInternalError } from "./error"
-import {
-  bankOwnerMediciPath,
-  escrowAccountingPath,
-  lndAccountingPath,
-} from "./ledger/ledger"
 import { FEECAP, FEEMIN, params } from "./lndAuth"
 import { baseLogger } from "./logger"
-import { MainBook } from "./mongodb"
+import { ledger } from "./mongodb"
 import { DbMetadata, InvoiceUser } from "./schema"
 import { LoggedError, LOOK_BACK } from "./utils"
 
@@ -223,22 +218,14 @@ export const updateRoutingFees = async () => {
     return
   }
 
-  const type = "routing_fee"
-  const metadata = { type, currency: "BTC", pending: false }
-
   // get fee collected day wise
   const { lnd } = getActiveLnd()
   const forwards = await getRoutingFees({ lnd, before, after })
 
-  const bankOwnerPath = await bankOwnerMediciPath()
-
   for (const forward of forwards) {
     const [[day, fee]] = Object.entries(forward)
     try {
-      await MainBook.entry("routing fee")
-        .credit(bankOwnerPath, fee, { ...metadata, feesCollectedOn: day })
-        .debit(lndAccountingPath, fee, { ...metadata, feesCollectedOn: day })
-        .commit()
+      await ledger.addLndRoutingFee({ amount: fee, collectedOn: day })
     } catch (err) {
       throw new DbError("Unable to record routing revenue", {
         forwardToClient: false,
@@ -258,9 +245,6 @@ export const updateRoutingFees = async () => {
 }
 
 export const updateEscrows = async () => {
-  const type = "escrow"
-  const metadata = { type, currency: "BTC", pending: false }
-
   // FIXME: update escrow of all the node
   const { lnd } = getActiveLnd()
   const { channels } = await getChannels({ lnd })
@@ -268,28 +252,9 @@ export const updateEscrows = async () => {
   const selfInitatedChannels = _.filter(channels, { is_partner_initiated: false })
   const escrowInLnd = _.sumBy(selfInitatedChannels, "commit_transaction_fee")
 
-  const { balance: escrowInMongodb } = await MainBook.balance({
-    account: escrowAccountingPath,
-    currency: "BTC",
-  })
+  const result = await ledger.updateLndEscrow({ amount: escrowInLnd })
 
-  // escrowInMongodb is negative
-  // diff will equal 0 if there is no change
-  const diff = escrowInLnd + escrowInMongodb
-
-  baseLogger.info({ diff, escrowInLnd, escrowInMongodb, channels }, "escrow recording")
-
-  if (diff > 0) {
-    await MainBook.entry("escrow")
-      .credit(lndAccountingPath, diff, { ...metadata })
-      .debit(escrowAccountingPath, diff, { ...metadata })
-      .commit()
-  } else if (diff < 0) {
-    await MainBook.entry("escrow")
-      .debit(lndAccountingPath, -diff, { ...metadata })
-      .credit(escrowAccountingPath, -diff, { ...metadata })
-      .commit()
-  }
+  baseLogger.info({ ...result, channels }, "escrow recording")
 }
 
 export const onChannelUpdated = async ({
@@ -340,21 +305,15 @@ export const onChannelUpdated = async ({
   // either calculate it from the input, or use an indexer
   // const { fee } = tx.fee
 
-  const metadata = { currency: "BTC", txid, type: "fee", pending: false }
-
   assert(fee > 0)
 
-  const bankOwnerPath = await bankOwnerMediciPath()
+  await ledger.addLndChannelFee({
+    description: `channel ${stateChange} onchain fee`,
+    amount: fee,
+    metadata: { txid },
+  })
 
-  await MainBook.entry(`channel ${stateChange} onchain fee`)
-    .debit(bankOwnerPath, fee, { ...metadata })
-    .credit(lndAccountingPath, fee, { ...metadata })
-    .commit()
-
-  baseLogger.info(
-    { channel, fee, ...metadata },
-    `${stateChange} channel fee added to mongodb`,
-  )
+  baseLogger.info({ channel, fee, txid }, `${stateChange} channel fee added to ledger`)
 }
 
 export const getLnds = ({

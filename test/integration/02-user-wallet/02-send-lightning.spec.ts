@@ -10,7 +10,8 @@ import {
 import { FEECAP } from "src/lndAuth"
 import { getActiveLnd, nodesPubKey, getInvoiceAttempt } from "src/lndUtils"
 import { baseLogger } from "src/logger"
-import { InvoiceUser, Transaction } from "src/schema"
+import { ledger } from "src/mongodb"
+import { InvoiceUser } from "src/schema"
 import { getHash, sleep } from "src/utils"
 import {
   cancelHodlInvoice,
@@ -384,7 +385,7 @@ describe("UserWallet - Lightning Pay", () => {
         const { BTC: finalBalance } = await userWallet1.getBalances()
 
         // const { id } = await decodePaymentRequest({ lnd: lndOutside2, request })
-        // const { results: [{ fee }] } = await MainBook.ledger({ account: userWallet1.accountPath, hash: id })
+        // const { results: [{ fee }] } = await getAccountTransactions(userWallet1.accountPath, { hash: id })
         // ^^^^ this fetch the wrong transaction
 
         // TODO: have a way to do this more programatically?
@@ -422,15 +423,12 @@ describe("UserWallet - Lightning Pay", () => {
           }
         })
 
+        const userWallet1Path = userWallet1.user.accountPath
+        const query = { type: "payment", pending: true, voided: false }
+
         await waitFor(async () => {
           await userWallet1.updatePendingPayments()
-          const query = {
-            accounts: userWallet1.user.accountPath,
-            type: "payment",
-            pending: true,
-            voided: false,
-          }
-          const count = await Transaction.countDocuments(query)
+          const count = await ledger.getAccountTransactionsCount(userWallet1Path, query)
           const { is_confirmed } = await getInvoice({ lnd: lndOutside1, id })
           return is_confirmed && count === 0
         })
@@ -459,15 +457,12 @@ describe("UserWallet - Lightning Pay", () => {
 
         await cancelHodlInvoice({ id, lnd: lndOutside1 })
 
+        const userWallet1Path = userWallet1.user.accountPath
+        const query = { type: "payment", pending: true, voided: false }
+
         await waitFor(async () => {
           await userWallet1.updatePendingPayments()
-          const query = {
-            accounts: userWallet1.user.accountPath,
-            type: "payment",
-            pending: true,
-            voided: false,
-          }
-          const count = await Transaction.countDocuments(query)
+          const count = await ledger.getAccountTransactionsCount(userWallet1Path, query)
           return count === 0
         })
 

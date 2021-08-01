@@ -1,17 +1,17 @@
-import { cancelHodlInvoice } from "lightning"
 import moment from "moment"
-import { bankOwnerMediciPath } from "src/ledger/ledger"
 import { getInvoiceAttempt, updateRoutingFees } from "src/lndUtils"
 import { baseLogger } from "src/logger"
-import { MainBook } from "src/mongodb"
+import { ledger } from "src/mongodb"
 import { sleep } from "src/utils"
 import {
+  cancelHodlInvoice,
   createInvoice,
   getForwards,
   lnd1,
   lndOutside1,
   lndOutside2,
   pay,
+  subscribeToInvoice,
   waitFor,
 } from "test/helpers"
 
@@ -44,14 +44,23 @@ describe("lndUtils", () => {
 
     const expires_at = moment().add(1, "s").toISOString()
 
-    const { id } = await createInvoice({ lnd: lndOutside2, tokens: 10000, expires_at })
+    const { id } = await createInvoice({ lnd, tokens: 10000, expires_at })
 
     {
       const invoice = await getInvoiceAttempt({ lnd, id })
       expect(invoice).toBeTruthy()
     }
 
-    await sleep(1000)
+    let isCanceled = false
+    const sub = subscribeToInvoice({ lnd, id })
+    sub.on("invoice_updated", async (invoice) => {
+      await sleep(1000)
+      isCanceled = invoice.is_canceled
+    })
+
+    await waitFor(() => isCanceled)
+
+    sub.removeAllListeners()
 
     {
       const invoice = await getInvoiceAttempt({ lnd, id })
@@ -60,8 +69,6 @@ describe("lndUtils", () => {
   })
 
   it("sets routing fee correctly", async () => {
-    const bankOwnerPath = await bankOwnerMediciPath()
-
     const { request } = await createInvoice({ lnd: lndOutside2, tokens: 10000 })
 
     await waitFor(async () => {
@@ -80,9 +87,7 @@ describe("lndUtils", () => {
 
     await updateRoutingFees()
 
-    const { balance } = await MainBook.balance({
-      accounts: bankOwnerPath,
-    })
+    const balance = await ledger.getBankOwnerBalance()
 
     // this fix lnd rounding issues
     expect([1, 1.01]).toContain(balance)

@@ -1,5 +1,5 @@
 import { getSpecterWalletConfig } from "../config"
-import { updateUsersPendingPayment } from "../ledger/balanceSheet"
+import { updateUsersPendingPayment } from "../balance-sheet"
 import {
   deleteExpiredInvoiceUser,
   deleteFailedPaymentsAllLnds,

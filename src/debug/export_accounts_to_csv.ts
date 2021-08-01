@@ -1,6 +1,5 @@
 import { CSVAccountExport } from "../csvAccountExport"
-import { accountPath } from "../ledger/ledger"
-import { MainBook, setupMongoConnectionSecondary } from "../mongodb"
+import { ledger, setupMongoConnectionSecondary } from "../mongodb"
 import { Transaction, User } from "../schema"
 import { createObjectCsvWriter } from "csv-writer"
 import * as _ from "lodash"
@@ -17,16 +16,13 @@ const main = async () => {
 }
 
 const getBooks = async () => {
-  const accounts = await MainBook.listAccounts()
+  const accounts = await ledger.getAllAccounts()
 
   // used for debugging
   const books = {}
   for (const account of accounts) {
     for (const currency of ["USD", "BTC"]) {
-      const { balance } = await MainBook.balance({
-        account,
-        currency,
-      })
+      const balance = await ledger.getAccountBalance(account, { currency })
       if (balance) {
         books[`${currency}:${account}`] = balance
       }
@@ -41,7 +37,7 @@ const exportAllUserLedger = async () => {
   const csv = new CSVAccountExport()
 
   for await (const user of User.find({})) {
-    await csv.addAccount({ account: accountPath(user._id) })
+    await csv.addAccount({ account: ledger.accountPath(user._id) })
   }
 
   await csv.saveToDisk()
@@ -103,12 +99,9 @@ const exportUsers = async () => {
     }
 
     for (const currency of ["USD", "BTC"]) {
-      const { balance } = await MainBook.balance({
-        account: user.accountPath,
+      record[`balance${currency}`] = await ledger.getAccountBalance(user.accountPath, {
         currency,
       })
-
-      record[`balance${currency}`] = balance
     }
 
     try {

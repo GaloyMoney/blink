@@ -2,25 +2,19 @@ import { User } from "src/schema"
 import { baseLogger } from "src/logger"
 import { UserWallet } from "src/userWallet"
 import { WalletFactory } from "src/walletFactory"
-import { MainBook, setupMongoConnection } from "src/mongodb"
-import { dealerMediciPath, lndAccountingPath } from "src/ledger/ledger"
-import {
-  rebalancePortfolio,
-  addTransactionLndPayment,
-  addTransactionLndReceipt,
-  addTransactionOnUsPayment,
-} from "src/ledger/transaction"
+import { ledger, setupMongoConnection } from "src/mongodb"
 
 jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
 
 let mongoose
 
 let fullWalletBTC, fullWalletUSD
-let dealerPath
+let dealerPath, lndAccountingPath
 
 beforeAll(async () => {
   mongoose = await setupMongoConnection()
-  dealerPath = await dealerMediciPath()
+  dealerPath = await ledger.dealerAccountPath()
+  lndAccountingPath = ledger.lndAccountingPath
 })
 
 afterAll(async () => {
@@ -39,10 +33,7 @@ beforeEach(async () => {
 })
 
 const expectBalance = async ({ account, currency, balance }) => {
-  const { balance: balanceResult } = await MainBook.balance({
-    account,
-    currency,
-  })
+  const balanceResult = await ledger.getAccountBalance(account, { currency })
   expect(balanceResult).toBe(balance)
 }
 
@@ -63,11 +54,12 @@ const walletUSD = new User(fullUSDmeta)
 
 describe("receipt", () => {
   it("btcReceiptToLnd", async () => {
-    await addTransactionLndReceipt({
+    await ledger.addLndReceipt({
       description: "transaction test",
       payeeUser: walletBTC,
       metadata: { type: "invoice", pending: false },
       sats: 1000,
+      lastPrice: UserWallet.lastPrice,
     })
 
     await expectBalance({
@@ -79,11 +71,12 @@ describe("receipt", () => {
   })
 
   it("usd receipt to lnd", async () => {
-    await addTransactionLndReceipt({
+    await ledger.addLndReceipt({
       description: "transaction test",
       payeeUser: walletUSD,
       metadata: { type: "invoice", pending: false },
       sats: 1000,
+      lastPrice: UserWallet.lastPrice,
     })
 
     await expectBalance({ account: walletUSD.accountPath, currency: "BTC", balance: 0 })
@@ -95,11 +88,12 @@ describe("receipt", () => {
   })
 
   it("50/50 usd/btc receipt to lnd", async () => {
-    await addTransactionLndReceipt({
+    await ledger.addLndReceipt({
       description: "transaction test",
       payeeUser: wallet5050,
       metadata: { type: "invoice", pending: false },
       sats: 1000,
+      lastPrice: UserWallet.lastPrice,
     })
 
     await expectBalance({
@@ -121,11 +115,12 @@ describe("receipt", () => {
 
 describe("payment with lnd", () => {
   it("btc send on lightning", async () => {
-    await addTransactionLndPayment({
+    await ledger.addLndPayment({
       description: "transaction test",
       payerUser: walletBTC,
       sats: 1000,
       metadata: { type: "payment", pending: true },
+      lastPrice: UserWallet.lastPrice,
     })
 
     await expectBalance({
@@ -137,11 +132,12 @@ describe("payment with lnd", () => {
   })
 
   it("btcSendFromUsdOnLightning", async () => {
-    await addTransactionLndPayment({
+    await ledger.addLndPayment({
       description: "transaction test",
       payerUser: walletUSD,
       sats: 1000,
       metadata: { type: "payment", pending: true },
+      lastPrice: UserWallet.lastPrice,
     })
 
     await expectBalance({ account: dealerPath, currency: "BTC", balance: -1000 })
@@ -156,11 +152,12 @@ describe("payment with lnd", () => {
   })
 
   it("btcSend5050", async () => {
-    await addTransactionLndPayment({
+    await ledger.addLndPayment({
       description: "transaction test",
       payerUser: wallet5050,
       sats: 1000,
       metadata: { type: "payment", pending: true },
+      lastPrice: UserWallet.lastPrice,
     })
 
     await expectBalance({ account: dealerPath, currency: "BTC", balance: -500 })
@@ -186,12 +183,13 @@ describe("on us payment", () => {
     const payer = walletBTC
     const payee = walletBTC2
 
-    await addTransactionOnUsPayment({
+    await ledger.addOnUsPayment({
       description: "desc",
       sats: 1000,
       metadata: { type: "on_us", pending: false },
       payerUser: payer,
       payeeUser: payee,
+      lastPrice: UserWallet.lastPrice,
     })
 
     await expectBalance({ account: payer.accountPath, currency: "BTC", balance: -1000 })
@@ -204,12 +202,13 @@ describe("on us payment", () => {
     const payer = walletUSD
     const payee = walletUSD2
 
-    await addTransactionOnUsPayment({
+    await ledger.addOnUsPayment({
       description: "desc",
       sats: 1000,
       metadata: { type: "on_us", pending: false },
       payerUser: payer,
       payeeUser: payee,
+      lastPrice: UserWallet.lastPrice,
     })
 
     await expectBalance({ account: payer.accountPath, currency: "USD", balance: -0.1 })
@@ -222,12 +221,13 @@ describe("on us payment", () => {
     const payer = walletBTC
     const payee = walletUSD
 
-    await addTransactionOnUsPayment({
+    await ledger.addOnUsPayment({
       description: "desc",
       sats: 1000,
       metadata: { type: "on_us", pending: false },
       payerUser: payer,
       payeeUser: payee,
+      lastPrice: UserWallet.lastPrice,
     })
 
     await expectBalance({ account: payer.accountPath, currency: "BTC", balance: -1000 })
@@ -243,12 +243,13 @@ describe("on us payment", () => {
     const payer = walletBTC
     const payee = wallet5050
 
-    await addTransactionOnUsPayment({
+    await ledger.addOnUsPayment({
       description: "desc",
       sats: 1000,
       metadata: { type: "on_us", pending: false },
       payerUser: payer,
       payeeUser: payee,
+      lastPrice: UserWallet.lastPrice,
     })
 
     await expectBalance({ account: payer.accountPath, currency: "BTC", balance: -1000 })
@@ -264,12 +265,13 @@ describe("on us payment", () => {
     const payer = wallet5050
     const payee = walletBTC
 
-    await addTransactionOnUsPayment({
+    await ledger.addOnUsPayment({
       description: "desc",
       sats: 1000,
       metadata: { type: "on_us", pending: false },
       payerUser: payer,
       payeeUser: payee,
+      lastPrice: UserWallet.lastPrice,
     })
 
     await expectBalance({ account: payer.accountPath, currency: "BTC", balance: -500 })
@@ -286,12 +288,13 @@ describe("on us payment", () => {
     const payer = walletUSD
     const payee = wallet5050
 
-    await addTransactionOnUsPayment({
+    await ledger.addOnUsPayment({
       description: "desc",
       sats: 1000,
       metadata: { type: "on_us", pending: false },
       payerUser: payer,
       payeeUser: payee,
+      lastPrice: UserWallet.lastPrice,
     })
 
     await expectBalance({ account: payer.accountPath, currency: "BTC", balance: 0 })
@@ -308,12 +311,13 @@ describe("on us payment", () => {
     const payer = wallet5050
     const payee = walletUSD
 
-    await addTransactionOnUsPayment({
+    await ledger.addOnUsPayment({
       description: "desc",
       sats: 1000,
       metadata: { type: "on_us", pending: false },
       payerUser: payer,
       payeeUser: payee,
+      lastPrice: UserWallet.lastPrice,
     })
 
     await expectBalance({ account: payer.accountPath, currency: "BTC", balance: -500 })
@@ -331,11 +335,12 @@ describe("rebalancePortfolio", () => {
   it("BtcNoOp", async () => {
     const wallet = fullWalletBTC
 
-    await addTransactionLndReceipt({
+    await ledger.addLndReceipt({
       description: "first tx to have a balance",
       payeeUser: wallet.user,
       metadata: { type: "invoice", pending: false },
       sats: 1000,
+      lastPrice: UserWallet.lastPrice,
     })
 
     await expectBalance({
@@ -345,7 +350,7 @@ describe("rebalancePortfolio", () => {
     })
     await expectBalance({ account: lndAccountingPath, currency: "BTC", balance: -1000 })
 
-    await rebalancePortfolio({
+    await ledger.rebalancePortfolio({
       description: "rebalancePortfolio",
       metadata: { type: "user_rebalance" },
       wallet,
@@ -362,11 +367,12 @@ describe("rebalancePortfolio", () => {
   it("Btcto5050", async () => {
     const wallet = fullWalletBTC
 
-    await addTransactionLndReceipt({
+    await ledger.addLndReceipt({
       description: "first tx to have a balance",
       payeeUser: wallet.user,
       metadata: { type: "invoice", pending: false },
       sats: 1000,
+      lastPrice: UserWallet.lastPrice,
     })
 
     await expectBalance({
@@ -380,7 +386,7 @@ describe("rebalancePortfolio", () => {
     const error = wallet.user.validateSync()
     expect(error).toBeFalsy()
 
-    await rebalancePortfolio({
+    await ledger.rebalancePortfolio({
       description: "rebalancePortfolio",
       metadata: { type: "user_rebalance", pending: false },
       wallet,
@@ -405,11 +411,12 @@ describe("rebalancePortfolio", () => {
   it("Usdto5050", async () => {
     const wallet = fullWalletUSD
 
-    await addTransactionLndReceipt({
+    await ledger.addLndReceipt({
       description: "first tx to have a balance",
       payeeUser: wallet.user,
       metadata: { type: "invoice", pending: false },
       sats: 1000,
+      lastPrice: UserWallet.lastPrice,
     })
 
     await expectBalance({ account: wallet.user.accountPath, currency: "BTC", balance: 0 })
@@ -427,7 +434,7 @@ describe("rebalancePortfolio", () => {
     const error = wallet.user.validateSync()
     expect(error).toBeFalsy()
 
-    await rebalancePortfolio({
+    await ledger.rebalancePortfolio({
       description: "rebalancePortfolio",
       metadata: { type: "user_rebalance", pending: false },
       wallet,

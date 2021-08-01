@@ -21,11 +21,6 @@ import {
   SelfPaymentError,
   TransactionRestrictedError,
 } from "./error"
-import {
-  addTransactionLndPayment,
-  addTransactionLndReceipt,
-  addTransactionOnUsPayment,
-} from "./ledger/transaction"
 import { TIMEOUT_PAYMENT } from "./lndAuth"
 import {
   getActiveLnd,
@@ -35,10 +30,10 @@ import {
   validate,
 } from "./lndUtils"
 import { lockExtendOrThrow, redlock } from "./lock"
-import { MainBook } from "./mongodb"
+import { ledger } from "./mongodb"
 import { transactionNotification } from "./notifications/payment"
 import { redis } from "./redis"
-import { InvoiceUser, Transaction, User } from "./schema"
+import { InvoiceUser, User } from "./schema"
 import { UserWallet } from "./userWallet"
 import { addContact, isInvoiceAlreadyPaidError, LoggedError, timeout } from "./utils"
 
@@ -366,7 +361,7 @@ export const LightningMixin = (superclass) =>
             }
 
             await lockExtendOrThrow({ lock, logger: lightningLoggerOnUs }, async () => {
-              const tx = await addTransactionOnUsPayment({
+              const tx = await ledger.addOnUsPayment({
                 description: memoInvoice,
                 sats,
                 metadata,
@@ -374,6 +369,7 @@ export const LightningMixin = (superclass) =>
                 payeeUser,
                 memoPayer,
                 shareMemoWithPayee: isPushPayment,
+                lastPrice: UserWallet.lastPrice,
               })
               return tx
             })
@@ -507,11 +503,12 @@ export const LightningMixin = (superclass) =>
               { lock, logger: lightningLogger },
               async () => {
                 // reduce balance from customer first
-                const tx = await addTransactionLndPayment({
+                const tx = await ledger.addLndPayment({
                   description: memoInvoice,
                   payerUser: this.user,
                   sats,
                   metadata,
+                  lastPrice: UserWallet.lastPrice,
                 })
                 return tx
               },
@@ -572,11 +569,10 @@ export const LightningMixin = (superclass) =>
                 // where multiple payment have the same hash
                 // ie: when a payment is being retried
 
-                await Transaction.updateMany(
-                  { hash: id },
-                  { pending: false, error: err[1] },
-                )
-                await MainBook.void(entry.journal._id, err[1])
+                await ledger.settleLndPayment(id)
+
+                await ledger.voidTransactions(entry.journal._id, err[1])
+
                 lightningLogger.warn(
                   { success: false, err, ...metadata, entry },
                   `payment error`,
@@ -602,7 +598,7 @@ export const LightningMixin = (superclass) =>
             }
 
             // success
-            await Transaction.updateMany({ hash: id }, { pending: false })
+            await ledger.settleLndPayment(id)
             const paymentResult = await paymentPromise
 
             if (!feeKnownInAdvance) {
@@ -657,11 +653,12 @@ export const LightningMixin = (superclass) =>
 
       // todo: add a reference to the journal entry of the main tx
 
-      await addTransactionLndReceipt({
+      await ledger.addLndReceipt({
         description: "fee reimbursement",
         payeeUser: this.user,
         metadata,
         sats: feeDifference,
+        lastPrice: UserWallet.lastPrice,
       })
     }
 
@@ -670,11 +667,10 @@ export const LightningMixin = (superclass) =>
 
     async updatePendingPayments(lock) {
       const query = {
-        accounts: this.user.accountPath,
         type: "payment",
         pending: true,
       }
-      const count = await Transaction.countDocuments(query)
+      const count = await ledger.getAccountTransactionsCount(this.user.accountPath, query)
 
       if (count === 0) {
         return
@@ -692,7 +688,10 @@ export const LightningMixin = (superclass) =>
       // note: there might be another design that doesn't requiere a lock at the uid level but only at the hash level,
       // but will need to dig more into the cursor aspect of mongodb to see if there is a concurrency-safe way to do it.
       await redlock({ path: this.user._id, logger: lightningLogger, lock }, async () => {
-        const payments = await Transaction.find(query)
+        const { results: payments } = await ledger.getAccountTransactions(
+          this.user.accountPath,
+          query,
+        )
 
         for (const payment of payments) {
           const paymentLogger = lightningLogger.child({ payment })
@@ -718,22 +717,16 @@ export const LightningMixin = (superclass) =>
           }
 
           if (result.is_confirmed || result.is_failed) {
-            const resultPendingTrue = await Transaction.updateMany(
-              { _journal: payment._journal, pending: true },
-              { $set: { pending: false } },
-            )
+            const settled = await ledger.settleLndPayment(payment.hash)
 
-            if (resultPendingTrue.nModified === 0) {
+            if (!settled) {
               // this could happen if dealer and user try to update transaction at the same time
               // they are not mutually protected from the lock
-              paymentLogger.error(
-                { resultPendingTrue },
-                "we didn't have any transaction to update",
-              )
+              paymentLogger.error({ settled }, "we didn't have any transaction to update")
               continue
             }
 
-            paymentLogger.info({ resultPendingTrue }, "pending update status")
+            paymentLogger.info({ settled }, "pending update status")
           }
 
           if (result.is_confirmed) {
@@ -754,7 +747,7 @@ export const LightningMixin = (superclass) =>
 
           if (result.is_failed) {
             try {
-              await MainBook.void(payment._journal, "Payment canceled")
+              await ledger.voidTransactions(payment._journal, "Payment canceled")
               paymentLogger.info({ success: false, result }, "payment has been canceled")
             } catch (err) {
               const error = `error voiding payment entry`
@@ -899,11 +892,12 @@ export const LightningMixin = (superclass) =>
           }
 
           try {
-            await addTransactionLndReceipt({
+            await ledger.addLndReceipt({
               description: (invoice as GetInvoiceResult).description,
               payeeUser: this.user,
               metadata,
               sats,
+              lastPrice: UserWallet.lastPrice,
             })
           } catch (err) {
             const error = `addTransactionLndReceipt failed following updating InvoiceUser to paid = true. potential inconsistency`

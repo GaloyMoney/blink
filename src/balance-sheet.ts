@@ -1,10 +1,9 @@
-import { getBalance as getBitcoindBalance } from "../bitcoind"
-import { lndsBalances } from "../lndUtils"
-import { baseLogger } from "../logger"
-import { MainBook } from "../mongodb"
-import { User } from "../schema"
-import { WalletFactory } from "../walletFactory"
-import { bankOwnerMediciPath, bitcoindAccountingPath, lndAccountingPath } from "./ledger"
+import { getBalance as getBitcoindBalance } from "./bitcoind"
+import { lndsBalances } from "./lndUtils"
+import { baseLogger } from "./logger"
+import { User } from "./schema"
+import { WalletFactory } from "./walletFactory"
+import { ledger } from "./mongodb"
 
 const logger = baseLogger.child({ module: "balanceSheet" })
 
@@ -28,31 +27,15 @@ export const updateUsersPendingPayment = async ({
 }
 
 export const getLedgerAccounts = async () => {
-  const { balance: assets } = await MainBook.balance({
-    account_path: "Assets",
-    currency: "BTC",
-  })
-  const { balance: liabilities } = await MainBook.balance({
-    account_path: "Liabilities",
-    currency: "BTC",
-  })
-  const { balance: lightning } = await MainBook.balance({
-    accounts: lndAccountingPath,
-    currency: "BTC",
-  })
-  const { balance: bitcoin } = await MainBook.balance({
-    accounts: bitcoindAccountingPath,
-    currency: "BTC",
-  })
+  const [assets, liabilities, lightning, bitcoin, bankOwnerBalance] = await Promise.all([
+    ledger.getAssetsBalance(),
+    ledger.getLiabilitiesBalance(),
+    ledger.getLndBalance(),
+    ledger.getBitcoindBalance(),
+    ledger.getBankOwnerBalance(),
+  ])
 
-  const bankOwnerPath = await bankOwnerMediciPath()
-
-  const { balance: bankOwnerBalance } = await MainBook.balance({
-    accounts: bankOwnerPath,
-    currency: "BTC",
-  })
-
-  return { assets, liabilities, lightning, bankOwnerBalance, bitcoin }
+  return { assets, liabilities, lightning, bitcoin, bankOwnerBalance }
 }
 
 export const balanceSheetIsBalanced = async () => {

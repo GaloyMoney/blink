@@ -1,12 +1,11 @@
 import assert from "assert"
 import moment from "moment"
-import { CSVAccountExport } from "./csvAccountExport"
+import { User } from "./schema"
+import { ledger } from "./mongodb"
 import { DbError } from "./error"
 import { Balances } from "./interface"
-import { accountPath } from "./ledger/ledger"
-import { MainBook } from "./mongodb"
+import { CSVAccountExport } from "./csvAccountExport"
 import { sendNotification } from "./notifications/notification"
-import { User } from "./schema"
 
 export abstract class UserWallet {
   static lastPrice: number
@@ -53,8 +52,7 @@ export abstract class UserWallet {
 
     // TODO: run this code in parrallel
     for (const { id } of this.user.currencies) {
-      const { balance } = await MainBook.balance({
-        account: this.user.accountPath,
+      const balance = await ledger.getAccountBalance(this.user.accountPath, {
         currency: id,
       })
 
@@ -96,14 +94,7 @@ export abstract class UserWallet {
   }
 
   async getRawTransactions() {
-    const { results } = await MainBook.ledger({
-      // TODO: manage currencies
-
-      account: this.user.accountPath,
-      // start_date: startDate,
-      // end_date: endDate
-    })
-
+    const { results } = await ledger.getAccountTransactions(this.user.accountPath)
     return results
   }
 
@@ -140,7 +131,7 @@ export abstract class UserWallet {
 
   async getStringCsv() {
     const csv = new CSVAccountExport()
-    await csv.addAccount({ account: accountPath(this.user.id) })
+    await csv.addAccount({ account: this.user.accountPath })
     return csv.getBase64()
   }
 

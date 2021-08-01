@@ -5,11 +5,19 @@ import { baseLogger } from "./logger"
 import mongoose from "mongoose"
 
 import { User, Transaction, InvoiceUser } from "./schema"
+// we have to import schema before ledger
+import { loadLedger } from "./ledger"
 
-// we have to import schema before medici
-import { book } from "medici"
-
-export const MainBook = new book("MainBook")
+export const ledger = loadLedger({
+  bankOwnerAccountResolver: async () => {
+    const { _id } = await User.findOne({ role: "bankowner" })
+    return _id
+  },
+  dealerAccountResolver: async () => {
+    const { _id } = await User.findOne({ role: "dealer" })
+    return _id
+  },
+})
 
 // TODO add an event listenever if we got disconnecter from MongoDb
 // after a first succesful connection
