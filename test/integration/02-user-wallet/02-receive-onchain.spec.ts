@@ -1,7 +1,7 @@
 import { once } from "events"
 import { filter } from "lodash"
 import { baseLogger } from "@services/logger"
-import { selectUserLimits } from "@config/app"
+import { getUserLimits } from "@config/app"
 import { getCurrentPrice } from "@services/realtime-price"
 import { btc2sat, sat2btc, sleep } from "@core/utils"
 import { getTitle } from "@core/notifications/payment"
@@ -30,7 +30,7 @@ let walletUser11
 let walletUser12
 let amountBTC
 
-const userLimits = selectUserLimits({ level: 1 })
+const userLimits = getUserLimits({ level: 1 })
 
 jest.mock("@core/notifications/notification")
 // eslint-disable-next-line @typescript-eslint/no-var-requires

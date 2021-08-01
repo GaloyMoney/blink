@@ -1,11 +1,6 @@
 import * as _ from "lodash"
 import * as mongoose from "mongoose"
-import {
-  levels,
-  selectUserLimits,
-  generateLimitConstants,
-  generateFeeConstants,
-} from "@config/app"
+import { levels, getUserLimits, getLimitConstants, getFees } from "@config/app"
 import { NotFoundError } from "@core/error"
 import { accountPath } from "@core/ledger/accounts"
 import { Transaction } from "@core/ledger/schema"
@@ -63,7 +58,7 @@ export const InvoiceUser = mongoose.model("InvoiceUser", invoiceUserSchema)
 
 export const regexUsername = /(?!^(1|3|bc1|lnbc1))^[0-9a-z_]+$/i
 
-const feeConstants = generateFeeConstants()
+const feeConstants = getFees()
 
 const UserSchema = new Schema({
   depositFeeRatio: {
@@ -270,7 +265,7 @@ UserSchema.virtual("accountPath").get(function (this: typeof UserSchema) {
 // eslint-disable-next-line no-unused-vars
 UserSchema.virtual("oldEnoughForWithdrawal").get(function (this: typeof UserSchema) {
   const elapsed = Date.now() - this.created_at.getTime()
-  const limitConstants = generateLimitConstants()
+  const limitConstants = getLimitConstants()
   return elapsed > limitConstants.oldEnoughForWithdrawalMicroseconds
 })
 
@@ -287,7 +282,7 @@ UserSchema.methods.limitHit = async function ({
     ? [{ type: "on_us" }, { type: "onchain_on_us" }]
     : [{ type: { $ne: "on_us" } }]
 
-  const userLimits = selectUserLimits({ level: this.level })
+  const userLimits = getUserLimits({ level: this.level })
   const limit = on_us ? userLimits.onUsLimit : userLimits.withdrawalLimit
 
   const outgoingSats =
