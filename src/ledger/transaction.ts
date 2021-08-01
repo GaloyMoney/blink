@@ -298,13 +298,13 @@ export const addColdStoragePayment = async ({ description, amount, fee, metadata
     .commit()
 }
 
-export const addHotWalletPayment = async ({ description, amount, fee, metadata }) => {
+export const addHotWalletPayment = async ({ description, amount, fee, hash }) => {
   const txMetadata = {
     currency: "BTC",
     type: "to_hot_wallet",
     pending: false,
     fee,
-    ...metadata,
+    hash,
   }
 
   const bankOwnerPath = await bankOwnerAccountPath()

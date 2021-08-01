@@ -275,7 +275,7 @@ export class SpecterWallet {
       description: memo,
       amount: sats,
       fee,
-      metadata: { hash: txid },
+      hash: txid,
     })
 
     subLogger.info({ txid, tx }, `rebalancing withdrawal was succesful`)
