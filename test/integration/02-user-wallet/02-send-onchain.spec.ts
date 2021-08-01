@@ -1,7 +1,7 @@
 import { once } from "events"
 import { sleep } from "@core/utils"
 import { filter, first } from "lodash"
-import { getFeeRates, yamlConfig } from "@config/app"
+import { getFeeRates, getUserLimits, yamlConfig } from "@config/app"
 import { Transaction } from "@services/mongoose/schema"
 import { getTitle } from "@core/notifications/payment"
 import { onchainTransactionEventHandler } from "@servers/trigger"
@@ -350,9 +350,8 @@ describe("UserWallet - onChainPay", () => {
     ])
     const { outgoingSats } = result || { outgoingSats: 0 }
 
-    // FIXME: 'withdrawalLimit' no longer exists as of
-    //        https://github.com/GaloyMoney/galoy/commit/2c3433ea42df59272c673bad473c95f524be8d9e#diff-94d4d5bb5c048793536625edb8adffb17e89b5f3821cec6d1c7c337578cda8e4L51
-    const amount = yamlConfig.withdrawalLimit - outgoingSats
+    const userLimits = getUserLimits({ level: userWallet0.user.level })
+    const amount = userLimits.withdrawalLimit - outgoingSats
 
     await expect(userWallet0.onChainPay({ address, amount })).rejects.toThrow()
   })
