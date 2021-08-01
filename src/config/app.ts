@@ -40,19 +40,17 @@ export const getLndParams = (): LndParams[] => {
   }))
 }
 
-export const generateLimitConstants = (
-  limitsConfig = yamlConfig.limits,
-): LimitConstants => ({
+export const getLimitConstants = (limitsConfig = yamlConfig.limits): LimitConstants => ({
   oldEnoughForWithdrawalHours: limitsConfig.oldEnoughForWithdrawal / MS_IN_HOUR,
   oldEnoughForWithdrawalMicroseconds: limitsConfig.oldEnoughForWithdrawal,
 })
 
-export const generateFeeConstants = (feesConfig = yamlConfig.fees): FeeConstants => ({
+export const getFees = (feesConfig = yamlConfig.fees): FeeConstants => ({
   depositFeeRate: feesConfig.deposit,
   withdrawFeeFlat: feesConfig.withdraw,
 })
 
-export const selectUserLimits = ({
+export const getUserLimits = ({
   level,
   limitsConfig = yamlConfig.limits,
 }: UserLimitsArgs): IUserLimits => {
@@ -85,15 +83,15 @@ export const getLoginAttemptLimits = () => getRateLimits(yamlConfig.limits.login
 export const getFailedAttemptPerIpLimits = () =>
   getRateLimits(yamlConfig.limits.failedAttemptPerIp)
 
-export const selectTransactionLimits = ({
+export const getTransactionLimits = ({
   level,
   limitsConfig = yamlConfig.limits,
 }: UserLimitsArgs): ITransactionLimits => {
-  const limitConstants = generateLimitConstants(limitsConfig)
+  const limitConstants = getLimitConstants(limitsConfig)
   return {
     oldEnoughForWithdrawalLimit: limitConstants.oldEnoughForWithdrawalMicroseconds,
     oldEnoughForWithdrawalLimitHours: limitConstants.oldEnoughForWithdrawalHours,
-    ...selectUserLimits({ level, limitsConfig }),
+    ...getUserLimits({ level, limitsConfig }),
   }
 }
 
@@ -101,7 +99,7 @@ export const getUserWalletConfig = (
   user,
   limitsConfig = yamlConfig.limits,
 ): UserWalletConfig => {
-  const transactionLimits = selectTransactionLimits({ level: user.level, limitsConfig })
+  const transactionLimits = getTransactionLimits({ level: user.level, limitsConfig })
   return {
     name: yamlConfig.name,
     dustThreshold: yamlConfig.onChainWallet.dustThreshold,

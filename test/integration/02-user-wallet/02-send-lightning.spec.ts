@@ -1,5 +1,5 @@
 import { createHash, randomBytes } from "crypto"
-import { selectUserLimits } from "@config/app"
+import { getUserLimits } from "@config/app"
 import {
   InsufficientBalanceError,
   LightningPaymentError,
@@ -37,7 +37,7 @@ jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider")
 let userWallet0, userWallet1, userWallet2
 let initBalance0, initBalance1
 const amountInvoice = 1000
-const userLimits = selectUserLimits({ level: 1 })
+const userLimits = getUserLimits({ level: 1 })
 
 beforeAll(async () => {
   userWallet0 = await getUserWallet(0)

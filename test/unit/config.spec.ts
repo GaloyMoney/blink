@@ -1,8 +1,4 @@
-import {
-  selectUserLimits,
-  selectTransactionLimits,
-  generateLimitConstants,
-} from "@config/app"
+import { getUserLimits, getTransactionLimits, getLimitConstants } from "@config/app"
 
 const testLimitsConfig = {
   oldEnoughForWithdrawal: 172800000,
@@ -19,7 +15,7 @@ const testLimitsConfig = {
     },
   },
 }
-const testLimitConstants = generateLimitConstants(testLimitsConfig)
+const testLimitConstants = getLimitConstants(testLimitsConfig)
 
 describe("config.ts", () => {
   describe("generates expected constants from a limits config object", () => {
@@ -29,19 +25,19 @@ describe("config.ts", () => {
     })
 
     it("selects user limits for level 1", () => {
-      const userLimits = selectUserLimits({ level: 1, limitsConfig: testLimitsConfig })
+      const userLimits = getUserLimits({ level: 1, limitsConfig: testLimitsConfig })
       expect(userLimits.onUsLimit).toEqual(5000000)
       expect(userLimits.withdrawalLimit).toEqual(2000000)
     })
 
     it("selects user limits for level 2", () => {
-      const userLimits = selectUserLimits({ level: 2, limitsConfig: testLimitsConfig })
+      const userLimits = getUserLimits({ level: 2, limitsConfig: testLimitsConfig })
       expect(userLimits.onUsLimit).toEqual(100000000)
       expect(userLimits.withdrawalLimit).toEqual(100000000)
     })
 
     it("selects transaction limits for level 1", () => {
-      const transactionLimits = selectTransactionLimits({
+      const transactionLimits = getTransactionLimits({
         level: 1,
         limitsConfig: testLimitsConfig,
       })
@@ -52,7 +48,7 @@ describe("config.ts", () => {
     })
 
     it("selects transaction limits for level 2", () => {
-      const transactionLimits = selectTransactionLimits({
+      const transactionLimits = getTransactionLimits({
         level: 2,
         limitsConfig: testLimitsConfig,
       })
