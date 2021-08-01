@@ -69,7 +69,7 @@ jobs:
             kubectl create namespace $NAMESPACE
       - run:
           name: install helm charts
-          command: ./initLocalTest.sh
+          command: ./scripts/init-local-test.sh
       - run:
           name: Run jest test
           command: |
@@ -114,7 +114,7 @@ jobs:
       - run: sudo apt-get install -y kubectl helm
       - run:
           name: Upgrade testnet deployments
-          command: ./initLocalTest.sh testnet
+          command: ./scripts/init-local-test.sh testnet
 
   mainnet_deploy:
     docker:
@@ -128,7 +128,7 @@ jobs:
       - run:
           name: Upgrade mainnet deployments
           command: |
-            ./initLocalTest.sh mainnet
+            ./scripts/init-local-test.sh mainnet
 
 workflows:
   kube:
