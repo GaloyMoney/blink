@@ -110,9 +110,13 @@ const main = async () => {
     userCount_g.set(userCount)
 
     for (const role in roles) {
-      const wallet = await getWalletFromRole({ role, logger })
-      const { BTC: balance } = await wallet.getBalances()
-      wallet_roles[role].set(balance)
+      try {
+        const wallet = await getWalletFromRole({ role, logger })
+        const { BTC: balance } = await wallet.getBalances()
+        wallet_roles[role].set(balance)
+      } catch (err) {
+        baseLogger.error({role}, `can't fetch balance for role`)
+      }
     }
 
     business_g.set(await User.count({ title: { $exists: true } }))
