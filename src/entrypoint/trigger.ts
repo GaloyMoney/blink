@@ -72,7 +72,7 @@ export async function onchainTransactionEventHandler(tx) {
       // transaction has been sent. and this events is trigger before
     }
 
-    await ledger.settlePayment(tx.id)
+    await ledger.settleOnchainPayment(tx.id)
 
     onchainLogger.info(
       { success: true, pending: false, transactionType: "payment" },

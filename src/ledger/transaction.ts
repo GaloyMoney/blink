@@ -325,6 +325,14 @@ export const settlePayment = async (hash) => {
   return result.nModified > 0
 }
 
+export const settleLndPayment = (hash) => {
+  return settlePayment(hash)
+}
+
+export const settleOnchainPayment = (hash) => {
+  return settlePayment(hash)
+}
+
 export const rebalancePortfolio = async ({ description, metadata, wallet }) => {
   const dealerPath = await dealerAccountPath()
 

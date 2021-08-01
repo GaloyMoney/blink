@@ -569,7 +569,7 @@ export const LightningMixin = (superclass) =>
                 // where multiple payment have the same hash
                 // ie: when a payment is being retried
 
-                await ledger.settlePayment(id)
+                await ledger.settleLndPayment(id)
 
                 await ledger.voidTransactions(entry.journal._id, err[1])
 
@@ -598,7 +598,7 @@ export const LightningMixin = (superclass) =>
             }
 
             // success
-            await ledger.settlePayment(id)
+            await ledger.settleLndPayment(id)
             const paymentResult = await paymentPromise
 
             if (!feeKnownInAdvance) {
@@ -717,7 +717,7 @@ export const LightningMixin = (superclass) =>
           }
 
           if (result.is_confirmed || result.is_failed) {
-            const settled = await ledger.settlePayment(payment.hash)
+            const settled = await ledger.settleLndPayment(payment.hash)
 
             if (!settled) {
               // this could happen if dealer and user try to update transaction at the same time
