@@ -717,19 +717,16 @@ export const LightningMixin = (superclass) =>
           }
 
           if (result.is_confirmed || result.is_failed) {
-            const resultPendingTrue = await ledger.settlePayment(payment.hash)
+            const settled = await ledger.settlePayment(payment.hash)
 
-            if (resultPendingTrue.nModified === 0) {
+            if (!settled) {
               // this could happen if dealer and user try to update transaction at the same time
               // they are not mutually protected from the lock
-              paymentLogger.error(
-                { resultPendingTrue },
-                "we didn't have any transaction to update",
-              )
+              paymentLogger.error({ settled }, "we didn't have any transaction to update")
               continue
             }
 
-            paymentLogger.info({ resultPendingTrue }, "pending update status")
+            paymentLogger.info({ settled }, "pending update status")
           }
 
           if (result.is_confirmed) {

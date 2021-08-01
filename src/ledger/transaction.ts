@@ -320,8 +320,9 @@ export const voidTransactions = (journalId, reason) => {
   return MainBook.void(journalId, reason)
 }
 
-export const settlePayment = (hash) => {
-  return Transaction.updateMany({ hash }, { pending: false })
+export const settlePayment = async (hash) => {
+  const result = await Transaction.updateMany({ hash }, { pending: false })
+  return result.nModified > 0
 }
 
 export const rebalancePortfolio = async ({ description, metadata, wallet }) => {
