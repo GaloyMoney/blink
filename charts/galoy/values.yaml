@@ -22,7 +22,7 @@ deployment:
   targetPort: 4001
   replicaCount: 1
 - name: graphql
-  args: ["lib/servers/graphql-core-server.js"]
+  args: ["lib/servers/graphql-main-server.js"]
   healthz: true
   targetPort: 4000
   replicaCount: 2

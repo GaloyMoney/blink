@@ -3,9 +3,9 @@
  * yarn ts-node src/debug/fast-price-test.ts
  */
 
-import { Price } from "../price-impl"
-import { baseLogger } from "../logger"
-import { setupMongoConnectionSecondary } from "../mongodb"
+import { Price } from "@core/price-impl"
+import { baseLogger } from "@services/logger"
+import { setupMongoConnectionSecondary } from "@services/mongodb"
 
 const main = async () => {
   const mongoose = await setupMongoConnectionSecondary()

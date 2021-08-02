@@ -1,5 +1,5 @@
 import { GT } from "../index"
-import { login, requestPhoneCode } from "../../text"
+import { login, requestPhoneCode } from "@core/text"
 
 import UserUpdateStatusMutation from "../types/mutations/user-update-status"
 import UserUpdateLevelMutation from "../types/mutations/user-update-level"

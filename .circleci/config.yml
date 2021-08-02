@@ -78,7 +78,7 @@ jobs:
       - run:
           name: Run postman test
           command: |
-            kubectl exec --namespace=$NAMESPACE $(kubectl get pods --namespace=$NAMESPACE --selector=app=testpod --output=jsonpath={.items..metadata.name}) -- /nodejs/bin/node node_modules/.bin/ts-node src/postman/newman.ts
+            kubectl exec --namespace=$NAMESPACE $(kubectl get pods --namespace=$NAMESPACE --selector=app=testpod --output=jsonpath={.items..metadata.name}) -- /nodejs/bin/node node_modules/.bin/ts-node test/postman/newman.ts
       - run:
           name: Fetch test results
           # source $BASH_ENV

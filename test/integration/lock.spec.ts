@@ -1,7 +1,7 @@
-import { redis } from "src/redis"
-import { sleep } from "src/utils"
-import { baseLogger } from "src/logger"
-import { redlock, getResource, lockExtendOrThrow } from "src/lock"
+import { redis } from "@services/redis"
+import { sleep } from "@core/utils"
+import { baseLogger } from "@services/logger"
+import { redlock, getResource, lockExtendOrThrow } from "@core/lock"
 
 const uid = "1234"
 

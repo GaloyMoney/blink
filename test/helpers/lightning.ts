@@ -1,7 +1,12 @@
 import { once } from "events"
-import { sleep } from "src/utils"
-import { baseLogger } from "src/logger"
-import { offchainLnds, onchainLnds, onChannelUpdated, updateEscrows } from "src/lnd-utils"
+import { sleep } from "@core/utils"
+import { baseLogger } from "@services/logger"
+import {
+  offchainLnds,
+  onchainLnds,
+  onChannelUpdated,
+  updateEscrows,
+} from "@services/lnd/utils"
 import {
   authenticatedLndGrpc,
   closeChannel,

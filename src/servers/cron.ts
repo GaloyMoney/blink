@@ -1,14 +1,14 @@
-import { getSpecterWalletConfig } from "../config"
-import { updateUsersPendingPayment } from "../balance-sheet"
+import { getSpecterWalletConfig } from "@config/app"
+import { updateUsersPendingPayment } from "@core/balance-sheet"
 import {
   deleteExpiredInvoiceUser,
   deleteFailedPaymentsAllLnds,
   updateEscrows,
   updateRoutingFees,
-} from "../lnd-utils"
-import { baseLogger } from "../logger"
-import { setupMongoConnection } from "../mongodb"
-import { SpecterWallet } from "../specter-wallet"
+} from "@services/lnd/utils"
+import { baseLogger } from "@services/logger"
+import { setupMongoConnection } from "@services/mongodb"
+import { SpecterWallet } from "@core/specter-wallet"
 
 const main = async () => {
   const mongoose = await setupMongoConnection()

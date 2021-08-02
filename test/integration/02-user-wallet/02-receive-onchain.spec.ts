@@ -1,11 +1,11 @@
 import { once } from "events"
 import { filter } from "lodash"
-import { baseLogger } from "src/logger"
-import { TransactionLimits } from "src/config"
-import { getCurrentPrice } from "src/realtime-price"
-import { btc2sat, sat2btc, sleep } from "src/utils"
-import { getTitle } from "src/notifications/payment"
-import { onchainTransactionEventHandler } from "src/servers/trigger"
+import { baseLogger } from "@services/logger"
+import { TransactionLimits } from "@config/app"
+import { getCurrentPrice } from "@services/realtime-price"
+import { btc2sat, sat2btc, sleep } from "@core/utils"
+import { getTitle } from "@core/notifications/payment"
+import { onchainTransactionEventHandler } from "@servers/trigger"
 import {
   checkIsBalanced,
   getUserWallet,
@@ -19,10 +19,10 @@ import {
   bitcoindOutside,
   amountAfterFeeDeduction,
 } from "test/helpers"
-import { getWalletFromRole } from "src/wallet-factory"
+import { getWalletFromRole } from "@core/wallet-factory"
 
-jest.mock("src/realtime-price", () => require("test/mocks/realtime-price"))
-jest.mock("src/phone-provider", () => require("test/mocks/phone-provider"))
+jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
+jest.mock("@core/phone-provider", () => require("test/mocks/phone-provider"))
 
 let walletUser0
 let walletUser2
@@ -34,9 +34,9 @@ const transactionLimits = new TransactionLimits({
   level: "1",
 })
 
-jest.mock("src/notifications/notification")
+jest.mock("@core/notifications/notification")
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const { sendNotification } = require("src/notifications/notification")
+const { sendNotification } = require("@core/notifications/notification")
 
 beforeAll(async () => {
   walletUser0 = await getUserWallet(0)

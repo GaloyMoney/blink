@@ -4,7 +4,7 @@ import {
   amountOnVout,
   myOwnAddressesOnVout,
   isInvoiceAlreadyPaidError,
-} from "src/utils"
+} from "@core/utils"
 
 describe("utils.ts", () => {
   describe("btc2sat", () => {

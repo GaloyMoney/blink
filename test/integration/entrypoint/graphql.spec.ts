@@ -1,11 +1,11 @@
-import { redis } from "src/redis"
-import { sleep } from "src/utils"
-import { yamlConfig } from "src/config"
+import { redis } from "@services/redis"
+import { sleep } from "@core/utils"
+import { yamlConfig } from "@config/app"
 import { createTestClient } from "apollo-server-testing"
-import { startApolloServerForSchema } from "src/servers/graphql-core-server"
+import { startApolloServerForSchema } from "@servers/graphql-main-server"
 
-jest.mock("src/realtime-price", () => require("test/mocks/realtime-price"))
-jest.mock("src/phone-provider", () => require("test/mocks/phone-provider"))
+jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
+jest.mock("@core/phone-provider", () => require("test/mocks/phone-provider"))
 
 let server, httpServer
 const { phone, code: correctCode } = yamlConfig.test_accounts[9]

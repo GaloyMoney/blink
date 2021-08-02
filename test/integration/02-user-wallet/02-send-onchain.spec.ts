@@ -1,10 +1,10 @@
 import { once } from "events"
-import { sleep } from "src/utils"
+import { sleep } from "@core/utils"
 import { filter, first } from "lodash"
-import { yamlConfig } from "src/config"
-import { Transaction } from "src/schema"
-import { getTitle } from "src/notifications/payment"
-import { onchainTransactionEventHandler } from "src/servers/trigger"
+import { yamlConfig } from "@config/app"
+import { Transaction } from "@services/mongoose/schema"
+import { getTitle } from "@core/notifications/payment"
+import { onchainTransactionEventHandler } from "@servers/trigger"
 import {
   checkIsBalanced,
   getUserWallet,
@@ -16,11 +16,11 @@ import {
   bitcoindOutside,
   mineBlockAndSync,
 } from "test/helpers"
-import { ledger } from "src/mongodb"
+import { ledger } from "@services/mongodb"
 
-jest.mock("src/realtime-price", () => require("test/mocks/realtime-price"))
-jest.mock("src/phone-provider", () => require("test/mocks/phone-provider"))
-jest.mock("src/notifications/notification")
+jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
+jest.mock("@core/phone-provider", () => require("test/mocks/phone-provider"))
+jest.mock("@core/notifications/notification")
 
 const date = Date.now() + 1000 * 60 * 60 * 24 * 8
 
@@ -30,7 +30,7 @@ let initialBalanceUser0
 let userWallet0, userWallet3, userWallet11, userWallet12 // using userWallet11 and userWallet12 to sendAll
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const { sendNotification } = require("src/notifications/notification")
+const { sendNotification } = require("@core/notifications/notification")
 
 beforeAll(async () => {
   userWallet0 = await getUserWallet(0)

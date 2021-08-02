@@ -9,15 +9,15 @@ import {
   subscribeToInvoices,
   subscribeToTransactions,
 } from "lightning"
-import { updateUsersPendingPayment } from "../balance-sheet"
-import { activateLndHealthCheck, lndStatusEvent } from "../lnd-health"
-import { onChannelUpdated } from "../lnd-utils"
-import { baseLogger } from "../logger"
-import { ledger, setupMongoConnection } from "../mongodb"
-import { transactionNotification } from "../notifications/payment"
-import { Price } from "../price-impl"
-import { InvoiceUser, User } from "../schema"
-import { WalletFactory } from "../wallet-factory"
+import { updateUsersPendingPayment } from "@core/balance-sheet"
+import { activateLndHealthCheck, lndStatusEvent } from "@services/lnd/health"
+import { onChannelUpdated } from "@services/lnd/utils"
+import { baseLogger } from "@services/logger"
+import { ledger, setupMongoConnection } from "@services/mongodb"
+import { transactionNotification } from "@core/notifications/payment"
+import { Price } from "@core/price-impl"
+import { InvoiceUser, User } from "@services/mongoose/schema"
+import { WalletFactory } from "@core/wallet-factory"
 
 const logger = baseLogger.child({ module: "trigger" })
 

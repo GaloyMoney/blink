@@ -1,4 +1,4 @@
-import { bitcoindDefaultClient, BitcoindWalletClient } from "src/bitcoind"
+import { bitcoindDefaultClient, BitcoindWalletClient } from "@services/bitcoind"
 
 export const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
 export const bitcoindClient = bitcoindDefaultClient // no wallet

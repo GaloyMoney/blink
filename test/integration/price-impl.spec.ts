@@ -1,8 +1,8 @@
 import moment from "moment"
-import { Price } from "src/price-impl"
+import { Price } from "@core/price-impl"
 import { forEach, tail } from "lodash"
-import { baseLogger } from "src/logger"
-import { PriceHistory } from "src/schema"
+import { baseLogger } from "@services/logger"
+import { PriceHistory } from "@services/mongoose/schema"
 
 let price: Price
 const priceResponse = [

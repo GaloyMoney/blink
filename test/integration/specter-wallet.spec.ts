@@ -1,9 +1,9 @@
-import { ledger } from "src/mongodb"
-import { baseLogger } from "src/logger"
-import { UserWallet } from "src/user-wallet"
-import { SpecterWallet } from "src/specter-wallet"
-import { getActiveOnchainLnd } from "src/lnd-utils"
-import { getSpecterWalletConfig } from "src/config"
+import { ledger } from "@services/mongodb"
+import { baseLogger } from "@services/logger"
+import { UserWallet } from "@core/user-wallet"
+import { SpecterWallet } from "@core/specter-wallet"
+import { getActiveOnchainLnd } from "@services/lnd/utils"
+import { getSpecterWalletConfig } from "@config/app"
 import { bitcoindClient, getChainBalance, mineBlockAndSyncAll } from "test/helpers"
 
 const { lnd } = getActiveOnchainLnd()

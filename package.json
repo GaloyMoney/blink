@@ -6,8 +6,8 @@
     "eslint-fix": "eslint \"{src,test}/**/*.ts\" --fix",
     "prettier-check": "prettier --check .",
     "prettier-write": "prettier --write .",
-    "build": "tsc -p tsconfig-build.json --skipLibCheck && cp -R src/protos lib && cp src/schema.graphql lib",
-    "start": "yarn build && source ./scripts/export-local.sh && node lib/servers/graphql-core-server.js | pino-pretty -c -l",
+    "build": "tsc -p tsconfig-build.json --skipLibCheck && cp -R src/services/protos lib && cp src/graphql/old-schema.graphql lib/old-schema",
+    "start": "yarn build && source ./scripts/export-local.sh && node lib/servers/graphql-main-server.js | pino-pretty -c -l",
     "trigger": "yarn build && source ./scripts/export-local.sh && node lib/servers/trigger.js | pino-pretty -c -l",
     "watch": "nodemon -V -e ts,graphql -w ./src -x yarn run start",
     "watch-trigger": "nodemon -V -e ts,graphql -w ./src -x yarn trigger",
@@ -22,9 +22,9 @@
     "exporter": "yarn build && node lib/servers/exporter.js",
     "lnd-connection": "source scripts/export-local.sh && echo $MACAROON | base64 -d > ./macaroon && echo $TLS | base64 -d > ./tls.cert && lncli --network regtest --macaroonpath=./macaroon --tlscertpath=./tls.cert --rpcserver=${LNDDNS}:${LNDRPCPORT} getinfo",
     "lncli": "source scripts/export-local.sh && echo $MACAROON | base64 -d > ./macaroon && echo $TLS | base64 -d > ./tls.cert && lncli --network regtest --macaroonpath=./macaroon --tlscertpath=./tls.cert --rpcserver=${LNDDNS}:${LNDRPCPORT}",
-    "postman": "yarn node src/postman/newman.ts",
+    "postman": "yarn node test/postman/newman.ts",
     "bitcoin-cli": "source ./scripts/export-local.sh && kubectl exec bitcoind-0 -- bitcoin-cli -rpcuser=rpcuser -rpcpassword=$BITCOINDRPCPASS -regtest",
-    "update-postman": "curl --location --request GET \"https://api.getpostman.com/collections/4e3fee88-7267-44e1-a316-b81e90b0bd2b\" --header \"X-Api-Key: $POSTMANAPIKEY\" | jq . > src/postman/graphql.postman-collection.json",
+    "update-postman": "curl --location --request GET \"https://api.getpostman.com/collections/4e3fee88-7267-44e1-a316-b81e90b0bd2b\" --header \"X-Api-Key: $POSTMANAPIKEY\" | jq . > test/postman/graphql.postman-collection.json",
     "autocannon-rn-no-auth": "yarn autocannon https://graphql.testnet.galoy.io:443/graphql -m POST -H Content-Type=application/json -b '{\"query\":\"query gql_query_anonymous {\n  prices {\n    __typename\n    id\n    o\n  }\n  earnList {\n    __typename\n    id\n    value\n  }\n  maps {\n    __typename\n    id\n    title\n    coordinate {\n        __typename\n        latitude\n        longitude\n    }\n  }\n}\",\"variables\":{}}' -c 20 -d 10",
     "test": "export JEST_JUNIT_OUTPUT_DIR=\"./artifacts\" && jest --ci --reporters=default --reporters=jest-junit",
     "test-local": "yarn use-minikube && source ./scripts/export-local.sh && yarn jest --runInBand --verbose $TEST | pino-pretty -c -l",
@@ -36,7 +36,6 @@
   "engines": {
     "node": "14"
   },
-  "main": "src/index.js",
   "dependencies": {
     "@google-cloud/storage": "^5.8.5",
     "@grpc/grpc-js": "^1.3.4",
