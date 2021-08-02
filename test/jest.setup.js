@@ -1,5 +1,5 @@
-const { redis } = require("src/redis")
-const { setupMongoConnection } = require("src/mongodb")
+const { redis } = require("@services/redis")
+const { setupMongoConnection } = require("@services/mongodb")
 
 let mongoose
 

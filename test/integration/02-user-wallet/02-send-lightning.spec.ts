@@ -1,18 +1,18 @@
 import { createHash, randomBytes } from "crypto"
-import { TransactionLimits } from "src/config"
+import { TransactionLimits } from "@config/app"
 import {
   InsufficientBalanceError,
   LightningPaymentError,
   SelfPaymentError,
   TransactionRestrictedError,
   ValidationInternalError,
-} from "src/error"
-import { FEECAP } from "src/lndAuth"
-import { getActiveLnd, nodesPubKey, getInvoiceAttempt } from "src/lndUtils"
-import { baseLogger } from "src/logger"
-import { ledger } from "src/mongodb"
-import { InvoiceUser } from "src/schema"
-import { getHash, sleep } from "src/utils"
+} from "@core/error"
+import { FEECAP } from "@services/lnd/auth"
+import { getActiveLnd, nodesPubKey, getInvoiceAttempt } from "@services/lnd/utils"
+import { baseLogger } from "@services/logger"
+import { ledger } from "@services/mongodb"
+import { InvoiceUser } from "@services/mongoose/schema"
+import { getHash, sleep } from "@core/utils"
 import {
   cancelHodlInvoice,
   checkIsBalanced,
@@ -31,8 +31,8 @@ import {
 const date = Date.now() + 1000 * 60 * 60 * 24 * 8
 // required to avoid oldEnoughForWithdrawal validation
 jest.spyOn(global.Date, "now").mockImplementation(() => new Date(date).valueOf())
-jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
-jest.mock("src/phone-provider", () => require("test/mocks/phone-provider"))
+jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
+jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
 let userWallet0, userWallet1, userWallet2
 let initBalance0, initBalance1
@@ -343,7 +343,7 @@ describe("UserWallet - Lightning Pay", () => {
           walletPayer: userWallet2,
         })
 
-        // jest.mock("src/lndAuth", () => ({
+        // jest.mock("@services/lnd/auth", () => ({
         //   // remove first lnd so that ActiveLnd return the second lnd
         //   params: jest
         //     .fn()

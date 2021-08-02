@@ -1,7 +1,7 @@
 import { graphql } from "graphql"
 
-import { User } from "src/schema"
-import { gqlAdminSchema } from "src/graphql/admin"
+import { User } from "@services/mongoose/schema"
+import { gqlAdminSchema } from "@graphql/admin"
 
 let user
 

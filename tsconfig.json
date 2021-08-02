@@ -9,7 +9,16 @@
     "esModuleInterop": true,
     "baseUrl": "./",
     "moduleResolution": "node",
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "paths": {
+      "@config/*": ["src/config/*"],
+      "@core/*": ["src/core/*"],
+      "@domain/*": ["src/domain/*"],
+      "@services/*": ["src/services/*"],
+
+      "@graphql/*": ["src/graphql/*"],
+      "@servers/*": ["src/servers/*"]
+    }
   },
   "compileOnSave": true,
   "include": ["src/**/*", "test/**/*"]

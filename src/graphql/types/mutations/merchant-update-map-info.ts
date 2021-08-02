@@ -1,6 +1,6 @@
-import { GT } from "../../index"
+import { GT } from "@graphql/index"
 
-import { updateMerchantMapInfo } from "../../../db/user"
+import { updateMerchantMapInfo } from "@domain/user"
 import UserDetailPayload from "../payloads/user-detail"
 import Username from "../scalars/username"
 

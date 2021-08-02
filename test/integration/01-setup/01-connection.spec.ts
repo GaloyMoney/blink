@@ -1,6 +1,6 @@
-import { setupMongoConnection } from "src/mongodb"
-import { redis } from "src/redis"
-import { User } from "src/schema"
+import { setupMongoConnection } from "@services/mongodb"
+import { redis } from "@services/redis"
+import { User } from "@services/mongoose/schema"
 import {
   lnd1,
   lnd2,
@@ -14,7 +14,7 @@ import {
   getChainBalance,
 } from "test/helpers"
 
-jest.mock("src/phone-provider", () => require("test/mocks/phone-provider"))
+jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
 it("connects to bitcoind", async () => {
   const { chain } = await bitcoindClient.getBlockchainInfo()

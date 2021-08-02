@@ -1,5 +1,5 @@
-import { GT } from "../../index"
-import { updateUserAccountStatus } from "../../../db/user"
+import { GT } from "@graphql/index"
+import { updateUserAccountStatus } from "@domain/user"
 import AccountStatus from "../account-status"
 import UserDetailPayload from "../payloads/user-detail"
 

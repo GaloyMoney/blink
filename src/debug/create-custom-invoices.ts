@@ -5,10 +5,11 @@
 
 import { decode } from "bip66"
 import { createUnsignedRequest, parsePaymentRequest } from "invoices"
-import lnService from "ln-service"
 import { createInvoice, signBytes } from "lightning"
 import util from "util"
-import { getActiveLnd } from "../lndUtils"
+import lnService from "ln-service"
+
+import { getActiveLnd } from "@services/lnd/utils"
 
 const { lnd } = getActiveLnd()
 

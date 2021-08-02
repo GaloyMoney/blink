@@ -1,10 +1,10 @@
-import { yamlConfig } from "src/config"
+import { yamlConfig } from "@config/app"
 import { getUserWallet } from "test/helpers"
-import { setAccountStatus } from "src/AdminOps"
-import { usernameExists } from "src/db/user"
+import { setAccountStatus } from "@core/admin-ops"
+import { usernameExists } from "@domain/user"
 
-jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
-jest.mock("src/phone-provider", () => require("test/mocks/phone-provider"))
+jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
+jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
 let userWallet0, userWallet1, userWallet2
 const username = "user0"

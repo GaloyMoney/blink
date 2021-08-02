@@ -3,8 +3,8 @@
  * yarn ts-node src/debug/set-db-metadata.ts
  */
 
-import { setupMongoConnectionSecondary } from "../mongodb"
-import { DbMetadata } from "../schema"
+import { setupMongoConnectionSecondary } from "@services/mongodb"
+import { DbMetadata } from "@services/mongoose/schema"
 
 const main = async () => {
   const mongoose = await setupMongoConnectionSecondary()
