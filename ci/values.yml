@@ -1,0 +1,13 @@
+#@data/values
+---
+git_uri: git@github.com:GaloyMoney/galoy.git
+git_branch: main
+github_private_key: ((github-ssh-key.private_key))
+docker_registry: us.gcr.io/galoy-org
+docker_registry_user: ((docker-creds.username))
+docker_registry_password: ((docker-creds.password))
+docker_host_ip: ((staging.docker_host_ip))
+artifacts_bucket_name: ((staging.bucket_name))
+staging_inception_creds: ((staging.creds_json))
+staging_ssh_private_key: ((staging.ssh_private_key))
+staging_ssh_pub_key: ((staging.ssh_public_key))

@@ -1,0 +1,224 @@
+#@ load("@ytt:data", "data")
+
+#@ def pipeline_image():
+#@   return data.values.docker_registry + "/galoy-app-pipeline"
+#@ end
+
+#@ def galoy_image():
+#@   return data.values.docker_registry + "/galoy-app"
+#@ end
+
+#@ def task_image_config():
+type: registry-image
+source:
+  username: #@ data.values.docker_registry_user
+  password: #@ data.values.docker_registry_password
+  repository: #@ pipeline_image()
+#@ end
+
+groups:
+- name: galoy
+  jobs:
+  - test-integration
+  - test-unit
+  - check-code
+  - build-edge-image
+  - install-deps
+- name: image
+  jobs: [ build-pipeline-image ]
+
+jobs:
+- name: build-pipeline-image
+  serial: true
+  plan:
+  - {get: pipeline-image-def, trigger: true}
+  - task: build
+    privileged: true
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source:
+          repository: vito/oci-build-task
+      inputs:
+      - name: pipeline-image-def
+      outputs:
+      - name: image
+      params:
+        CONTEXT: pipeline-image-def/ci/image
+      run:
+        path: build
+  - put: pipeline-image
+    params:
+      image: image/image.tar
+
+- name: install-deps
+  plan:
+  - in_parallel:
+    - {get: deps, trigger: true}
+    - {get: pipeline-tasks}
+    - {put: deps-version, params: {bump: patch}}
+  - task: install-deps
+    config:
+      platform: linux
+      image_resource: #@ task_image_config()
+      inputs:
+      - name: pipeline-tasks
+      - name: deps
+      - name: deps-version
+      outputs:
+      - name: bundled-deps
+      run:
+        path: pipeline-tasks/ci/tasks/install-deps.sh
+  - put: bundled-deps
+    params:
+      file: bundled-deps/bundled-deps-*.tgz
+
+- name: test-integration
+  serial: true
+  plan:
+  - in_parallel:
+    - { get: repo, trigger: true }
+    - { get: pipeline-tasks }
+    - { get: bundled-deps, tags: ["staging"], trigger: true}
+  - task: test-integration
+    tags: ["staging"]
+    config:
+      platform: linux
+      image_resource: #@ task_image_config()
+      inputs:
+      - name: bundled-deps
+      - name: pipeline-tasks
+      - name: repo
+      params:
+        DOCKER_HOST_IP: #@ data.values.docker_host_ip
+        GOOGLE_CREDENTIALS: #@ data.values.staging_inception_creds
+        SSH_PRIVATE_KEY: #@ data.values.staging_ssh_private_key
+        SSH_PUB_KEY: #@ data.values.staging_ssh_pub_key
+      run:
+        path: pipeline-tasks/ci/tasks/test-integration.sh
+- name: test-unit
+  serial: true
+  plan:
+  - in_parallel:
+    - { get: repo, trigger: true }
+    - { get: pipeline-tasks }
+    - { get: bundled-deps, trigger: true}
+  - task: test-unit
+    config:
+      platform: linux
+      image_resource: #@ task_image_config()
+      inputs:
+      - name: bundled-deps
+      - name: pipeline-tasks
+      - name: repo
+      run:
+        path: pipeline-tasks/ci/tasks/test-unit.sh
+- name: check-code
+  serial: true
+  plan:
+  - in_parallel:
+    - { get: repo, trigger: true }
+    - { get: pipeline-tasks }
+    - { get: bundled-deps, trigger: true}
+  - task: check-code
+    config:
+      platform: linux
+      image_resource: #@ task_image_config()
+      inputs:
+      - name: bundled-deps
+      - name: pipeline-tasks
+      - name: repo
+      run:
+        path: pipeline-tasks/ci/tasks/check-code.sh
+
+- name: build-edge-image
+  plan:
+  - { get: repo, trigger: true }
+  - task: build
+    privileged: true
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source:
+          repository: vito/oci-build-task
+      inputs:
+      - name: repo
+      outputs:
+      - name: image
+      params:
+        CONTEXT: repo
+      run:
+        path: build
+  - put: edge-image
+    params:
+      image: image/image.tar
+
+resources:
+- name: repo
+  type: git
+  source:
+    ignore_paths: ["ci/*[^md]"]
+    uri: #@ data.values.git_uri
+    branch: #@ data.values.git_branch
+    private_key: #@ data.values.github_private_key
+
+- name: edge-image
+  type: registry-image
+  source:
+    tag: edge
+    username: #@ data.values.docker_registry_user
+    password: #@ data.values.docker_registry_password
+    repository: #@ galoy_image()
+
+- name: deps
+  type: git
+  source:
+    paths: [yarn.lock]
+    uri: #@ data.values.git_uri
+    branch: #@ data.values.git_branch
+    private_key: #@ data.values.github_private_key
+
+- name: pipeline-tasks
+  type: git
+  source:
+    paths: [ci/tasks/*, Makefile]
+    uri: #@ data.values.git_uri
+    branch: #@ data.values.git_branch
+    private_key: #@ data.values.github_private_key
+- name: pipeline-image
+  type: registry-image
+  source:
+    tag: latest
+    username: #@ data.values.docker_registry_user
+    password: #@ data.values.docker_registry_password
+    repository: #@ pipeline_image()
+- name: pipeline-image-def
+  type: git
+  source:
+    paths: [ci/image/Dockerfile]
+    uri: #@ data.values.git_uri
+    branch: #@ data.values.git_branch
+    private_key: #@ data.values.github_private_key
+
+- name: deps-version
+  type: semver
+  source:
+    initial_version: 0.1.0
+    driver: gcs
+    bucket: #@ data.values.artifacts_bucket_name
+    key: galoy-app-artifacts/versions/deps
+    json_key: #@ data.values.staging_inception_creds
+- name: bundled-deps
+  type: gcs-resource
+  source:
+    bucket: #@ data.values.artifacts_bucket_name
+    json_key: #@ data.values.staging_inception_creds
+    regexp: galoy-app-artifacts/deps/bundled-deps-v(.*)-.*.tgz
+
+resource_types:
+  - name: gcs-resource
+    type: docker-image
+    source:
+      repository: frodenas/gcs-resource
