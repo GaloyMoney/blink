@@ -1,4 +1,4 @@
-import { getGenericLimits } from "@config/app"
+import { getGenericLimits, MS_PER_HOUR } from "@config/app"
 import { getUserWallet } from "test/helpers"
 import { setAccountStatus } from "@core/admin-ops"
 import { usernameExists } from "@domain/user"
@@ -38,7 +38,7 @@ describe("UserWallet", () => {
     // in 6 days:
     const genericLimits = getGenericLimits()
     const date =
-      Date.now() + genericLimits.oldEnoughForWithdrawalMicroseconds - 60 * 60 * 1000
+      Date.now() + genericLimits.oldEnoughForWithdrawalMicroseconds - MS_PER_HOUR
 
     jest.spyOn(global.Date, "now").mockImplementationOnce(() => new Date(date).valueOf())
 
@@ -52,7 +52,7 @@ describe("UserWallet", () => {
     // in 8 days:
     const genericLimits = getGenericLimits()
     const date =
-      Date.now() + genericLimits.oldEnoughForWithdrawalMicroseconds + 60 * 60 * 1000
+      Date.now() + genericLimits.oldEnoughForWithdrawalMicroseconds + MS_PER_HOUR
 
     jest.spyOn(global.Date, "now").mockImplementationOnce(() => new Date(date).valueOf())
 

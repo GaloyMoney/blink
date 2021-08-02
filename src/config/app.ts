@@ -8,7 +8,9 @@ import { baseLogger } from "@services/logger"
 const defaultContent = fs.readFileSync("./default.yaml", "utf8")
 export const defaultConfig = yaml.load(defaultContent)
 
-const MS_IN_HOUR = 60 * 60 * 1000
+export const MS_PER_HOUR = 60 * 60 * 1000
+export const MS_PER_DAY = 24 * MS_PER_HOUR
+export const MS_PER_30_DAYs = 30 * MS_PER_DAY
 
 let customContent, customConfig
 
@@ -41,7 +43,7 @@ export const getLndParams = (): LndParams[] => {
 }
 
 export const getGenericLimits = (limitsConfig = yamlConfig.limits): GenericLimits => ({
-  oldEnoughForWithdrawalHours: limitsConfig.oldEnoughForWithdrawal / MS_IN_HOUR,
+  oldEnoughForWithdrawalHours: limitsConfig.oldEnoughForWithdrawal / MS_PER_HOUR,
   oldEnoughForWithdrawalMicroseconds: limitsConfig.oldEnoughForWithdrawal,
 })
 
