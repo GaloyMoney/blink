@@ -157,7 +157,7 @@ const resolvers = {
     getLimits: (_, __, { user }) => {
       const transactionLimits = getTransactionLimits({ level: user.level })
       return {
-        oldEnoughForWithdrawal: transactionLimits.oldEnoughForWithdrawalLimit,
+        oldEnoughForWithdrawal: transactionLimits.oldEnoughForWithdrawalMicroseconds,
         withdrawal: transactionLimits.withdrawalLimit,
         onUs: transactionLimits.onUsLimit,
       }

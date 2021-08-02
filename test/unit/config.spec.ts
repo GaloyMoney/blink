@@ -41,8 +41,8 @@ describe("config.ts", () => {
         level: 1,
         limitsConfig: testLimitsConfig,
       })
-      expect(transactionLimits.oldEnoughForWithdrawalLimit).toEqual(172800000)
-      expect(transactionLimits.oldEnoughForWithdrawalLimitHours).toEqual(48)
+      expect(transactionLimits.oldEnoughForWithdrawalMicroseconds).toEqual(172800000)
+      expect(transactionLimits.oldEnoughForWithdrawalHours).toEqual(48)
       expect(transactionLimits.onUsLimit).toEqual(5000000)
       expect(transactionLimits.withdrawalLimit).toEqual(2000000)
     })
@@ -52,8 +52,8 @@ describe("config.ts", () => {
         level: 2,
         limitsConfig: testLimitsConfig,
       })
-      expect(transactionLimits.oldEnoughForWithdrawalLimit).toEqual(172800000)
-      expect(transactionLimits.oldEnoughForWithdrawalLimitHours).toEqual(48)
+      expect(transactionLimits.oldEnoughForWithdrawalMicroseconds).toEqual(172800000)
+      expect(transactionLimits.oldEnoughForWithdrawalHours).toEqual(48)
       expect(transactionLimits.onUsLimit).toEqual(100000000)
       expect(transactionLimits.withdrawalLimit).toEqual(100000000)
     })

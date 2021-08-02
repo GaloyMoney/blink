@@ -432,7 +432,7 @@ export const LightningMixin = (superclass) =>
 
           // "normal" transaction: paying another lightning node
           if (!this.user.oldEnoughForWithdrawal) {
-            const error = `New accounts have to wait ${this.config.limits.oldEnoughForWithdrawalLimitHours}h before withdrawing`
+            const error = `New accounts have to wait ${this.config.limits.oldEnoughForWithdrawalHours}h before withdrawing`
             throw new NewAccountWithdrawalError(error, { logger: lightningLogger })
           }
 
