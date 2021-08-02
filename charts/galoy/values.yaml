@@ -63,7 +63,7 @@ cron:
   args: ["lib/servers/cron.js"]
   schedule: "0 2 * * *"
 - name: balance-notif
-  args: ["lib/servers/dailyBalanceNotification.js"]
+  args: ["lib/servers/daily-balance-notification.js"]
   schedule: "0 14 * * *"
 
 mongobackup:
