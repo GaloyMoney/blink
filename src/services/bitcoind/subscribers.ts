@@ -1,6 +1,6 @@
 import { Subscriber } from "zeromq"
-import { bitcoindDefaultClient } from "src/bitcoind"
-import { baseLogger } from "src/logger"
+import { bitcoindDefaultClient } from "./index"
+import { baseLogger } from "@services/logger"
 
 export const SUB_ADDR_BLOCK = `tcp://${process.env.BITCOINDADDR}:28332` // TODO? port
 export const SUB_ADDR_TX = `tcp://${process.env.BITCOINDADDR}:28333`

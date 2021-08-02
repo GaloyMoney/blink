@@ -4,7 +4,7 @@ import {
   receiveRawTxSubscriber,
   SUB_ADDR_BLOCK,
   SUB_ADDR_TX,
-} from "src/bitcoindSubscribers"
+} from "@services/bitcoind/subscribers"
 import { setupMongoConnection } from "@services/mongodb"
 import { redis } from "@services/redis"
 import { User } from "@services/mongoose/schema"
