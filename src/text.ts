@@ -8,7 +8,7 @@ import {
   limiterLoginAttempt,
   limiterRequestPhoneCode,
   limiterRequestPhoneCodeIp,
-} from "./rateLimit"
+} from "./rate-limit"
 import { PhoneCode, User } from "./schema"
 import {
   fetchIP,

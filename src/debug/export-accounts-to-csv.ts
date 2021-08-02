@@ -1,4 +1,4 @@
-import { CSVAccountExport } from "../csvAccountExport"
+import { CSVAccountExport } from "../csv-account-export"
 import { ledger, setupMongoConnectionSecondary } from "../mongodb"
 import { Transaction, User } from "../schema"
 import { createObjectCsvWriter } from "csv-writer"
@@ -6,7 +6,7 @@ import * as _ from "lodash"
 
 // need to set MONGODB_ADDRESS to call the script
 // export MONGODB_PASSWORD=$(kubectl get secret -n mainnet galoy-mongodb -o=go-template='{{index .data "mongodb-password" | base64decode}}')
-// ie: MONGODB_ADDRESS=localhost ts-node src/debug/export_accounts_to_csv.ts
+// ie: MONGODB_ADDRESS=localhost ts-node src/debug/export-accounts-to-csv.ts
 
 const main = async () => {
   await setupMongoConnectionSecondary()

@@ -1,11 +1,11 @@
 import { CustomError } from "./error"
-import { LightningMixin } from "./Lightning"
+import { LightningMixin } from "./lightning"
 import { redlock } from "./lock"
-import { OnChainMixin } from "./OnChain"
+import { OnChainMixin } from "./on-chain"
 import { User } from "./schema"
 import { onboardingEarn } from "./config"
-import { UserWallet } from "./userWallet"
-import { getWalletFromRole } from "./walletFactory"
+import { UserWallet } from "./user-wallet"
+import { getWalletFromRole } from "./wallet-factory"
 
 /**
  * this represents a user wallet

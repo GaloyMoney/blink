@@ -1,8 +1,8 @@
 import { ledger } from "src/mongodb"
 import { baseLogger } from "src/logger"
-import { UserWallet } from "src/userWallet"
-import { SpecterWallet } from "src/SpecterWallet"
-import { getActiveOnchainLnd } from "src/lndUtils"
+import { UserWallet } from "src/user-wallet"
+import { SpecterWallet } from "src/specter-wallet"
+import { getActiveOnchainLnd } from "src/lnd-utils"
 import { getSpecterWalletConfig } from "src/config"
 import { bitcoindClient, getChainBalance, mineBlockAndSyncAll } from "test/helpers"
 

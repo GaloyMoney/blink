@@ -2,10 +2,10 @@ import assert from "assert"
 import { createChainAddress, sendToChainAddress } from "lightning"
 import _ from "lodash"
 import { bitcoindDefaultClient, BitcoindWalletClient } from "./bitcoind"
-import { getActiveOnchainLnd, lndsBalances } from "./lndUtils"
+import { getActiveOnchainLnd, lndsBalances } from "./lnd-utils"
 import { ledger } from "./mongodb"
-import { getOnChainTransactions } from "./OnChain"
-import { UserWallet } from "./userWallet"
+import { getOnChainTransactions } from "./on-chain"
+import { UserWallet } from "./user-wallet"
 import { btc2sat, sat2btc } from "./utils"
 
 // TODO no longer used in tests, removing the creation of the default wallet didn't break anything

@@ -10,14 +10,14 @@ import {
   subscribeToTransactions,
 } from "lightning"
 import { updateUsersPendingPayment } from "../balance-sheet"
-import { activateLndHealthCheck, lndStatusEvent } from "../lndHealth"
-import { onChannelUpdated } from "../lndUtils"
+import { activateLndHealthCheck, lndStatusEvent } from "../lnd-health"
+import { onChannelUpdated } from "../lnd-utils"
 import { baseLogger } from "../logger"
 import { ledger, setupMongoConnection } from "../mongodb"
 import { transactionNotification } from "../notifications/payment"
-import { Price } from "../priceImpl"
+import { Price } from "../price-impl"
 import { InvoiceUser, User } from "../schema"
-import { WalletFactory } from "../walletFactory"
+import { WalletFactory } from "../wallet-factory"
 
 const logger = baseLogger.child({ module: "trigger" })
 

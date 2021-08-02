@@ -1,7 +1,7 @@
 import { once } from "events"
 import { sleep } from "src/utils"
 import { baseLogger } from "src/logger"
-import { offchainLnds, onchainLnds, onChannelUpdated, updateEscrows } from "src/lndUtils"
+import { offchainLnds, onchainLnds, onChannelUpdated, updateEscrows } from "src/lnd-utils"
 import {
   authenticatedLndGrpc,
   closeChannel,
@@ -22,7 +22,7 @@ import {
   bitcoindOutside,
   RANDOM_ADDRESS,
   sendToAddressAndConfirm,
-} from "./bitcoinCore"
+} from "./bitcoin-core"
 
 export * from "lightning"
 

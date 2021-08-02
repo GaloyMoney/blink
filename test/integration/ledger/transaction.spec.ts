@@ -1,10 +1,10 @@
 import { User } from "src/schema"
 import { baseLogger } from "src/logger"
-import { UserWallet } from "src/userWallet"
-import { WalletFactory } from "src/walletFactory"
+import { UserWallet } from "src/user-wallet"
+import { WalletFactory } from "src/wallet-factory"
 import { ledger, setupMongoConnection } from "src/mongodb"
 
-jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
+jest.mock("src/realtime-price", () => require("test/mocks/realtime-price"))
 
 let mongoose
 

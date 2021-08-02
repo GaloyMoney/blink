@@ -1,8 +1,8 @@
 import { getBalance as getBitcoindBalance } from "./bitcoind"
-import { lndsBalances } from "./lndUtils"
+import { lndsBalances } from "./lnd-utils"
 import { baseLogger } from "./logger"
 import { User } from "./schema"
-import { WalletFactory } from "./walletFactory"
+import { WalletFactory } from "./wallet-factory"
 import { ledger } from "./mongodb"
 
 const logger = baseLogger.child({ module: "balanceSheet" })

@@ -22,12 +22,12 @@ import {
   TransactionRestrictedError,
   ValidationInternalError,
 } from "./error"
-import { getActiveOnchainLnd, getLndFromPubkey } from "./lndUtils"
+import { getActiveOnchainLnd, getLndFromPubkey } from "./lnd-utils"
 import { lockExtendOrThrow, redlock } from "./lock"
 import { baseLogger } from "./logger"
 import { ledger } from "./mongodb"
 import { User } from "./schema"
-import { UserWallet } from "./userWallet"
+import { UserWallet } from "./user-wallet"
 import {
   amountOnVout,
   btc2sat,

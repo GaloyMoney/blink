@@ -5,10 +5,10 @@ import {
   deleteFailedPaymentsAllLnds,
   updateEscrows,
   updateRoutingFees,
-} from "../lndUtils"
+} from "../lnd-utils"
 import { baseLogger } from "../logger"
 import { setupMongoConnection } from "../mongodb"
-import { SpecterWallet } from "../SpecterWallet"
+import { SpecterWallet } from "../specter-wallet"
 
 const main = async () => {
   const mongoose = await setupMongoConnection()

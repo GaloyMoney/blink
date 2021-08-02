@@ -1,9 +1,9 @@
 import newman from "newman"
-import { collection } from "./graphql.postman_collection.json"
+import { collection } from "./graphql.postman-collection.json"
 
 const environment = process.env.LOCAL
-  ? require(`./devnet-local.postman_environment.json`)
-  : require(`./devnet.postman_environment.json`)
+  ? require(`./devnet-local.postman-environment.json`)
+  : require(`./devnet.postman-environment.json`)
 
 newman.run(
   {

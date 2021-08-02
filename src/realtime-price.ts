@@ -2,7 +2,7 @@ import { protoDescriptor } from "./grpc"
 import { sat2btc } from "./utils"
 import { baseLogger } from "./logger"
 import { credentials } from "@grpc/grpc-js"
-import { mainCache } from "./localCache"
+import { mainCache } from "./local-cache"
 
 const priceUrl = process.env.PRICE_ADDRESS ?? "galoy-price"
 const pricePort = process.env.PRICE_PORT ?? "50051"

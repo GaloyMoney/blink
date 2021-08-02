@@ -4,7 +4,7 @@ import { User } from "./schema"
 import { ledger } from "./mongodb"
 import { DbError } from "./error"
 import { Balances } from "./interface"
-import { CSVAccountExport } from "./csvAccountExport"
+import { CSVAccountExport } from "./csv-account-export"
 import { sendNotification } from "./notifications/notification"
 
 export abstract class UserWallet {

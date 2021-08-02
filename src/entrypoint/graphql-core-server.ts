@@ -1,5 +1,5 @@
 import { setupMongoConnection } from "../mongodb"
-import { activateLndHealthCheck } from "../lndHealth"
+import { activateLndHealthCheck } from "../lnd-health"
 import {
   stringLength,
   ValidateDirectiveVisitor,
@@ -15,15 +15,15 @@ import moment from "moment"
 import path from "path"
 
 import { baseLogger } from "../logger"
-import { addToMap, setAccountStatus, setLevel } from "../AdminOps"
+import { addToMap, setAccountStatus, setLevel } from "../admin-ops"
 import { yamlConfig, levels, onboardingEarn } from "../config"
-import { getActiveLnd, nodesStats, nodeStats } from "../lndUtils"
-import { getHourlyPrice, getMinBuildNumber } from "../localCache"
+import { getActiveLnd, nodesStats, nodeStats } from "../lnd-utils"
+import { getHourlyPrice, getMinBuildNumber } from "../local-cache"
 import { sendNotification } from "../notifications/notification"
-import { getCurrentPrice } from "../realtimePrice"
+import { getCurrentPrice } from "../realtime-price"
 import { User } from "../schema"
 import { login, requestPhoneCode } from "../text"
-import { getWalletFromUsername } from "../walletFactory"
+import { getWalletFromUsername } from "../wallet-factory"
 import { usernameExists } from "../db/user"
 import { startApolloServer, isAuthenticated, isEditor } from "./graphql-server"
 

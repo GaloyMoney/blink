@@ -13,10 +13,10 @@ import {
   waitFor,
   waitUntilSync,
 } from "test/helpers"
-import { onChannelUpdated, updateEscrows } from "src/lndUtils"
+import { onChannelUpdated, updateEscrows } from "src/lnd-utils"
 import { ledger } from "src/mongodb"
 
-jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
+jest.mock("src/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("src/phone-provider", () => require("test/mocks/phone-provider"))
 
 //this is the fixed opening and closing channel fee on devnet

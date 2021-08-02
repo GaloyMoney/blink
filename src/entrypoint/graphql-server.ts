@@ -13,7 +13,7 @@ import { redis } from "../redis"
 import { User } from "../schema"
 import helmet from "helmet"
 import { isDev, updateIPDetails, isIPBlacklisted } from "../utils"
-import { WalletFactory } from "../walletFactory"
+import { WalletFactory } from "../wallet-factory"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
 

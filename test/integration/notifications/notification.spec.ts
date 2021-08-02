@@ -1,12 +1,12 @@
-import { getCurrentPrice } from "src/realtimePrice"
-import { sendBalanceToUsers } from "src/entrypoint/dailyBalanceNotification"
+import { getCurrentPrice } from "src/realtime-price"
+import { sendBalanceToUsers } from "src/entrypoint/daily-balance-notification"
 import { User } from "src/schema"
 import { ledger } from "src/mongodb"
 jest.mock("src/notifications/notification")
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { sendNotification } = require("src/notifications/notification")
 
-jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
+jest.mock("src/realtime-price", () => require("test/mocks/realtime-price"))
 
 let price
 

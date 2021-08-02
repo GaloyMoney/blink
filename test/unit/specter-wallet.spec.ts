@@ -1,6 +1,6 @@
 import { redis } from "src/redis"
 import { btc2sat } from "src/utils"
-import { SpecterWallet } from "src/SpecterWallet"
+import { SpecterWallet } from "src/specter-wallet"
 import { getSpecterWalletConfig } from "src/config"
 import { baseLogger } from "src/logger"
 

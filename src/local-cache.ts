@@ -1,5 +1,5 @@
 import NodeCache from "node-cache"
-import { Price } from "./priceImpl"
+import { Price } from "./price-impl"
 import { DbMetadata } from "./schema"
 export const mainCache = new NodeCache()
 

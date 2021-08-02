@@ -7,8 +7,8 @@ import {
   TransactionRestrictedError,
   ValidationInternalError,
 } from "src/error"
-import { FEECAP } from "src/lndAuth"
-import { getActiveLnd, nodesPubKey, getInvoiceAttempt } from "src/lndUtils"
+import { FEECAP } from "src/lnd-auth"
+import { getActiveLnd, nodesPubKey, getInvoiceAttempt } from "src/lnd-utils"
 import { baseLogger } from "src/logger"
 import { ledger } from "src/mongodb"
 import { InvoiceUser } from "src/schema"
@@ -31,7 +31,7 @@ import {
 const date = Date.now() + 1000 * 60 * 60 * 24 * 8
 // required to avoid oldEnoughForWithdrawal validation
 jest.spyOn(global.Date, "now").mockImplementation(() => new Date(date).valueOf())
-jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
+jest.mock("src/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("src/phone-provider", () => require("test/mocks/phone-provider"))
 
 let userWallet0, userWallet1, userWallet2

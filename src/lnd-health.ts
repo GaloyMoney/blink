@@ -1,5 +1,5 @@
 import { getWalletInfo } from "lightning"
-import { params } from "./lndAuth"
+import { params } from "./lnd-auth"
 import { baseLogger } from "./logger"
 
 /* eslint-disable @typescript-eslint/no-var-requires */

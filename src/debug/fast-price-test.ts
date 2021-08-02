@@ -3,7 +3,7 @@
  * yarn ts-node src/debug/fast-price-test.ts
  */
 
-import { Price } from "../priceImpl"
+import { Price } from "../price-impl"
 import { baseLogger } from "../logger"
 import { setupMongoConnectionSecondary } from "../mongodb"
 

@@ -1,5 +1,5 @@
 import moment from "moment"
-import { getInvoiceAttempt, updateRoutingFees } from "src/lndUtils"
+import { getInvoiceAttempt, updateRoutingFees } from "src/lnd-utils"
 import { baseLogger } from "src/logger"
 import { ledger } from "src/mongodb"
 import { sleep } from "src/utils"

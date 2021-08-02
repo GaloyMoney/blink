@@ -1,9 +1,9 @@
 import { yamlConfig } from "src/config"
 import { getUserWallet } from "test/helpers"
-import { setAccountStatus } from "src/AdminOps"
+import { setAccountStatus } from "src/admin-ops"
 import { usernameExists } from "src/db/user"
 
-jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
+jest.mock("src/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("src/phone-provider", () => require("test/mocks/phone-provider"))
 
 let userWallet0, userWallet1, userWallet2

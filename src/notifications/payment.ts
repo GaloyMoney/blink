@@ -1,4 +1,4 @@
-import { getCurrentPrice } from "../realtimePrice"
+import { getCurrentPrice } from "../realtime-price"
 import { sendNotification } from "./notification"
 
 export const getTitle = {

@@ -21,20 +21,20 @@ import {
   SelfPaymentError,
   TransactionRestrictedError,
 } from "./error"
-import { TIMEOUT_PAYMENT } from "./lndAuth"
+import { TIMEOUT_PAYMENT } from "./lnd-auth"
 import {
   getActiveLnd,
   getInvoiceAttempt,
   getLndFromPubkey,
   isMyNode,
   validate,
-} from "./lndUtils"
+} from "./lnd-utils"
 import { lockExtendOrThrow, redlock } from "./lock"
 import { ledger } from "./mongodb"
 import { transactionNotification } from "./notifications/payment"
 import { redis } from "./redis"
 import { InvoiceUser, User } from "./schema"
-import { UserWallet } from "./userWallet"
+import { UserWallet } from "./user-wallet"
 import { addContact, isInvoiceAlreadyPaidError, LoggedError, timeout } from "./utils"
 
 export type ITxType =

@@ -1,9 +1,9 @@
 import { getUserWalletConfig } from "./config"
 import { NotFoundError } from "./error"
-import { LightningUserWallet } from "./LightningUserWallet"
-import { getCurrentPrice } from "./realtimePrice"
+import { LightningUserWallet } from "./lightning-user-wallet"
+import { getCurrentPrice } from "./realtime-price"
 import { User } from "./schema"
-import { UserWallet } from "./userWallet"
+import { UserWallet } from "./user-wallet"
 
 export const WalletFactory = async ({
   user,

@@ -2,7 +2,7 @@ import { once } from "events"
 import { filter } from "lodash"
 import { baseLogger } from "src/logger"
 import { TransactionLimits } from "src/config"
-import { getCurrentPrice } from "src/realtimePrice"
+import { getCurrentPrice } from "src/realtime-price"
 import { btc2sat, sat2btc, sleep } from "src/utils"
 import { getTitle } from "src/notifications/payment"
 import { onchainTransactionEventHandler } from "src/entrypoint/trigger"
@@ -19,9 +19,9 @@ import {
   bitcoindOutside,
   amountAfterFeeDeduction,
 } from "test/helpers"
-import { getWalletFromRole } from "src/walletFactory"
+import { getWalletFromRole } from "src/wallet-factory"
 
-jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
+jest.mock("src/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("src/phone-provider", () => require("test/mocks/phone-provider"))
 
 let walletUser0

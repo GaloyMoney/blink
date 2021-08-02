@@ -1,5 +1,5 @@
 import moment from "moment"
-import { Price } from "src/priceImpl"
+import { Price } from "src/price-impl"
 import { forEach, tail } from "lodash"
 import { baseLogger } from "src/logger"
 import { PriceHistory } from "src/schema"

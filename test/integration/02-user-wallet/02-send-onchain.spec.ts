@@ -18,7 +18,7 @@ import {
 } from "test/helpers"
 import { ledger } from "src/mongodb"
 
-jest.mock("src/realtimePrice", () => require("test/mocks/realtimePrice"))
+jest.mock("src/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("src/phone-provider", () => require("test/mocks/phone-provider"))
 jest.mock("src/notifications/notification")
 
