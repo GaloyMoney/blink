@@ -1,11 +1,11 @@
 import { GraphQLError } from "graphql"
 import _ from "lodash"
-
 import { parsePaymentRequest } from "invoices"
+import axios from "axios"
+
+import { yamlConfig } from "@config/app"
 
 import { User } from "@services/mongoose/schema"
-import axios from "axios"
-import { yamlConfig } from "@config/app"
 
 export const isDev = process.env.NODE_ENV !== "production"
 

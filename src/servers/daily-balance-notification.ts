@@ -1,6 +1,7 @@
 import { setupMongoConnection } from "@services/mongodb"
 import { User } from "@services/mongoose/schema"
 import { baseLogger } from "@services/logger"
+
 import { WalletFactory } from "@core/wallet-factory"
 
 const logger = baseLogger.child({ module: "dailyBalanceNotification" })

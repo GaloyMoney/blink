@@ -4,6 +4,7 @@ import { and, shield } from "graphql-shield"
 
 import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
+
 import { gqlAdminSchema } from "../graphql"
 import { startApolloServer, isAuthenticated, isEditor } from "./graphql-server"
 

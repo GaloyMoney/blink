@@ -1,6 +1,8 @@
 import { getWalletInfo } from "lightning"
-import { params } from "./auth"
+
 import { baseLogger } from "@services/logger"
+
+import { params } from "./auth"
 
 /* eslint-disable @typescript-eslint/no-var-requires */
 const EventEmitter = require("events")

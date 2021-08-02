@@ -6,12 +6,15 @@ import mongoose from "mongoose"
 import pino from "pino"
 import PinoHttp from "pino-http"
 import { v4 as uuidv4 } from "uuid"
+import helmet from "helmet"
+
 import { yamlConfig } from "@config/app"
-import { AuthorizationError, IPBlacklistedError } from "@core/error"
+
 import { baseLogger } from "@services/logger"
 import { redis } from "@services/redis"
 import { User } from "@services/mongoose/schema"
-import helmet from "helmet"
+
+import { AuthorizationError, IPBlacklistedError } from "@core/error"
 import { isDev, updateIPDetails, isIPBlacklisted } from "@core/utils"
 import { WalletFactory } from "@core/wallet-factory"
 

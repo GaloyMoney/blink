@@ -1,4 +1,5 @@
 import Redis from "ioredis"
+
 import { baseLogger } from "@services/logger"
 
 let connectionObj = {},

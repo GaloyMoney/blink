@@ -1,8 +1,10 @@
 import _ from "lodash"
-import { sat2btc } from "./utils"
 import moment from "moment"
-import { PriceHistory } from "@services/mongoose/schema"
 import ccxt from "ccxt"
+
+import { PriceHistory } from "@services/mongoose/schema"
+
+import { sat2btc } from "./utils"
 
 interface ITick {
   id: number // timestamp

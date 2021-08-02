@@ -1,6 +1,7 @@
 import { User } from "@services/mongoose/schema"
-import { NotFoundError } from "@core/error"
 import { baseLogger } from "@services/logger"
+
+import { NotFoundError } from "@core/error"
 import { caseInsensitiveRegex } from "@core/utils"
 
 const logger = baseLogger.child({ module: "admin" })

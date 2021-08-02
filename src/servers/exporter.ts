@@ -1,12 +1,14 @@
 import express from "express"
 import client, { register } from "prom-client"
-import { getWalletFromRole } from "@core/wallet-factory"
+
 import { getBalancesDetail } from "@services/bitcoind"
-import { balanceSheetIsBalanced, getLedgerAccounts } from "@core/balance-sheet"
 import { getBosScore, lndsBalances } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
 import { User } from "@services/mongoose/schema"
+
+import { getWalletFromRole } from "@core/wallet-factory"
+import { balanceSheetIsBalanced, getLedgerAccounts } from "@core/balance-sheet"
 
 const logger = baseLogger.child({ module: "exporter" })
 

@@ -1,5 +1,3 @@
-import { setupMongoConnection } from "@services/mongodb"
-import { activateLndHealthCheck } from "@services/lnd/health"
 import {
   stringLength,
   ValidateDirectiveVisitor,
@@ -14,16 +12,21 @@ import { makeExecutableSchema } from "graphql-tools"
 import moment from "moment"
 import path from "path"
 
-import { baseLogger } from "@services/logger"
-import { addToMap, setAccountStatus, setLevel } from "@core/admin-ops"
 import { yamlConfig, levels, onboardingEarn } from "@config/app"
+
+import { setupMongoConnection } from "@services/mongodb"
+import { activateLndHealthCheck } from "@services/lnd/health"
+import { baseLogger } from "@services/logger"
 import { getActiveLnd, nodesStats, nodeStats } from "@services/lnd/utils"
 import { getHourlyPrice, getMinBuildNumber } from "@services/local-cache"
-import { sendNotification } from "@core/notifications/notification"
 import { getCurrentPrice } from "@services/realtime-price"
 import { User } from "@services/mongoose/schema"
+
+import { addToMap, setAccountStatus, setLevel } from "@core/admin-ops"
+import { sendNotification } from "@core/notifications/notification"
 import { login, requestPhoneCode } from "@core/text"
 import { getWalletFromUsername } from "@core/wallet-factory"
+
 import { usernameExists } from "../domain/user"
 import { startApolloServer, isAuthenticated, isEditor } from "./graphql-server"
 

@@ -8,8 +8,8 @@ import {
   payViaPaymentDetails,
   payViaRoutes,
 } from "lightning"
-import lnService from "ln-service"
 import moment from "moment"
+import lnService from "ln-service"
 
 import { TIMEOUT_PAYMENT } from "@services/lnd/auth"
 import {

@@ -1,7 +1,9 @@
 import { ApolloError } from "apollo-server-errors"
-import { yamlConfig } from "@config/app"
-import { baseLogger } from "@services/logger"
 import { Logger } from "pino"
+
+import { yamlConfig } from "@config/app"
+
+import { baseLogger } from "@services/logger"
 
 type levelType = "fatal" | "error" | "warn" | "info" | "debug" | "trace" | "silent"
 

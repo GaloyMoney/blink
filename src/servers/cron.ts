@@ -1,5 +1,5 @@
 import { getSpecterWalletConfig } from "@config/app"
-import { updateUsersPendingPayment } from "@core/balance-sheet"
+
 import {
   deleteExpiredInvoiceUser,
   deleteFailedPaymentsAllLnds,
@@ -8,6 +8,8 @@ import {
 } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
+
+import { updateUsersPendingPayment } from "@core/balance-sheet"
 import { SpecterWallet } from "@core/specter-wallet"
 
 const main = async () => {

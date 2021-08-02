@@ -1,15 +1,18 @@
 import moment from "moment"
+
 import { yamlConfig } from "@config/app"
-import { IPBlacklistedError, TooManyRequestError } from "./error"
+
 import { createToken } from "@services/jwt"
-import { sendTwilioText, getCarrier, sendSMSalaText } from "./phone-provider"
+import { sendTwilioText, getCarrier, sendSMSalaText } from "@services/phone-provider"
+import { PhoneCode, User } from "@services/mongoose/schema"
+
+import { IPBlacklistedError, TooManyRequestError } from "./error"
 import {
   failedAttemptPerIp,
   limiterLoginAttempt,
   limiterRequestPhoneCode,
   limiterRequestPhoneCodeIp,
 } from "./rate-limit"
-import { PhoneCode, User } from "@services/mongoose/schema"
 import {
   fetchIP,
   isIPBlacklisted,

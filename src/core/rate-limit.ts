@@ -1,10 +1,12 @@
 import { RateLimiterRedis } from "rate-limiter-flexible"
+
 import {
   getRequestPhoneCodeLimits,
   getRequestPhoneCodeIpLimits,
   getLoginAttemptLimits,
   getFailedAttemptPerIpLimits,
 } from "@config/app"
+
 import { redis } from "@services/redis"
 
 const requestPhoneCodeLimits = getRequestPhoneCodeLimits()

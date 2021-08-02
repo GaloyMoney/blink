@@ -1,6 +1,8 @@
 import { levels } from "@config/app"
+
 import { User } from "@services/mongoose/schema"
 import { baseLogger } from "@services/logger"
+
 import { NotFoundError, ValidationInternalError } from "./error"
 
 const logger = baseLogger.child({ module: "admin" })

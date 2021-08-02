@@ -1,4 +1,5 @@
 import { getCurrentPrice } from "@services/realtime-price"
+
 import { sendNotification } from "./notification"
 
 export const getTitle = {
