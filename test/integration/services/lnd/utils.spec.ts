@@ -96,8 +96,7 @@ describe("lndUtils", () => {
     const before = endDate.toISOString()
 
     const totalFees = (await getForwards({ lnd: lnd1, after, before })).forwards
-      .map((f) => Number(f.fee_mtokens))
-      .reduce((acc, val) => acc + val)
+      .reduce((acc, val) => acc + Number(val.fee_mtokens), 0)
 
     baseLogger.debug(
       (await getForwards({ lnd: lnd1, after, before })).forwards,
