@@ -1,4 +1,4 @@
-import { GT } from "../../index"
+import { GT } from "@graphql/index"
 
 import UserDetails from "../user-details"
 import UserError from "../user-error"
