@@ -16,6 +16,9 @@ import {
   waitFor,
 } from "test/helpers"
 
+// milliseconds in a day
+const MS_PER_DAY = 864e5
+
 afterAll(() => {
   jest.restoreAllMocks()
 })
@@ -89,7 +92,7 @@ describe("lndUtils", () => {
     const startDate = new Date(0)
     startDate.setUTCHours(0, 0, 0, 0)
 
-    const endDate = new Date(Date.now() - 864e5)
+    const endDate = new Date(Date.now() - MS_PER_DAY)
     endDate.setUTCHours(0, 0, 0, 0)
 
     const after = startDate.toISOString()
