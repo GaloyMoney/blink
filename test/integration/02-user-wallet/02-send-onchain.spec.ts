@@ -17,6 +17,7 @@ import {
   mineBlockAndSync,
 } from "test/helpers"
 import { ledger } from "@services/mongodb"
+import { TransactionRestrictedError } from "@core/error"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
@@ -351,9 +352,11 @@ describe("UserWallet - onChainPay", () => {
     const { outgoingSats } = result || { outgoingSats: 0 }
 
     const userLimits = getUserLimits({ level: userWallet0.user.level })
-    const amount = userLimits.withdrawalLimit - outgoingSats
+    const amount = userLimits.withdrawalLimit - outgoingSats + 1
 
-    await expect(userWallet0.onChainPay({ address, amount })).rejects.toThrow()
+    await expect(userWallet0.onChainPay({ address, amount })).rejects.toThrow(
+      TransactionRestrictedError,
+    )
   })
 
   it("fails if the amount is less than on chain dust amount", async () => {
