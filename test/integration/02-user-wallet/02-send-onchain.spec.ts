@@ -19,7 +19,7 @@ import {
 import { ledger } from "@services/mongodb"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
-jest.mock("@core/phone-provider", () => require("test/mocks/phone-provider"))
+jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 jest.mock("@core/notifications/notification")
 
 const date = Date.now() + 1000 * 60 * 60 * 24 * 8

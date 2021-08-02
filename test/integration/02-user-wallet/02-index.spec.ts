@@ -4,7 +4,7 @@ import { setAccountStatus } from "@core/admin-ops"
 import { usernameExists } from "@domain/user"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
-jest.mock("@core/phone-provider", () => require("test/mocks/phone-provider"))
+jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
 let userWallet0, userWallet1, userWallet2
 const username = "user0"
