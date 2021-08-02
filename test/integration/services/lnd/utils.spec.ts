@@ -3,6 +3,7 @@ import { getInvoiceAttempt, updateRoutingFees } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { ledger } from "@services/mongodb"
 import { sleep } from "@core/utils"
+import { DbMetadata } from "@services/mongoose/schema"
 import {
   cancelHodlInvoice,
   createInvoice,
@@ -71,6 +72,8 @@ describe("lndUtils", () => {
   it("sets routing fee correctly", async () => {
     const { request } = await createInvoice({ lnd: lndOutside2, tokens: 10000 })
 
+    const initBalance = await ledger.getBankOwnerBalance()
+
     await waitFor(async () => {
       try {
         return await pay({ lnd: lndOutside1, request })
@@ -80,16 +83,37 @@ describe("lndUtils", () => {
       }
     })
 
-    baseLogger.debug((await getForwards({ lnd: lnd1 })).forwards, "forwards")
-
     const date = Date.now() + 60 * 60 * 1000 * 24 * 2
     jest.spyOn(global.Date, "now").mockImplementation(() => new Date(date).valueOf())
 
+    const startDate = new Date(0)
+    startDate.setUTCHours(0, 0, 0, 0)
+
+    const endDate = new Date(Date.now() - 864e5)
+    endDate.setUTCHours(0, 0, 0, 0)
+
+    const after = startDate.toISOString()
+    const before = endDate.toISOString()
+
+    const totalFees = (await getForwards({ lnd: lnd1, after, before })).forwards
+      .map((f) => Number(f.fee_mtokens))
+      .reduce((acc, val) => acc + val)
+
+    baseLogger.debug(
+      (await getForwards({ lnd: lnd1, after, before })).forwards,
+      "forwards",
+    )
+
+    await DbMetadata.findOneAndUpdate(
+      {},
+      { $set: { routingFeeLastEntry: null } },
+      { upsert: true },
+    )
+
     await updateRoutingFees()
 
-    const balance = await ledger.getBankOwnerBalance()
+    const endBalance = await ledger.getBankOwnerBalance()
 
-    // this fix lnd rounding issues
-    expect([1, 1.01]).toContain(balance)
+    expect((endBalance - initBalance) * 1000).toBeCloseTo(totalFees, 0)
   })
 })
