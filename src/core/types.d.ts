@@ -29,8 +29,8 @@ interface IUserLimits {
 }
 
 interface ITransactionLimits extends IUserLimits {
-  oldEnoughForWithdrawalLimit: number
-  oldEnoughForWithdrawalLimitHours: number
+  oldEnoughForWithdrawalMicroseconds: number
+  oldEnoughForWithdrawalHours: number
 }
 
 interface IRateLimits {

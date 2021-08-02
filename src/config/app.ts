@@ -91,8 +91,8 @@ export const getTransactionLimits = ({
 }: UserLimitsArgs): ITransactionLimits => {
   const genericLimits = getGenericLimits(limitsConfig)
   return {
-    oldEnoughForWithdrawalLimit: genericLimits.oldEnoughForWithdrawalMicroseconds,
-    oldEnoughForWithdrawalLimitHours: genericLimits.oldEnoughForWithdrawalHours,
+    oldEnoughForWithdrawalMicroseconds: genericLimits.oldEnoughForWithdrawalMicroseconds,
+    oldEnoughForWithdrawalHours: genericLimits.oldEnoughForWithdrawalHours,
     ...getUserLimits({ level, limitsConfig }),
   }
 }
