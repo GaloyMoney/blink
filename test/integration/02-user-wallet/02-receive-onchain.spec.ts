@@ -5,7 +5,7 @@ import { TransactionLimits } from "src/config"
 import { getCurrentPrice } from "src/realtime-price"
 import { btc2sat, sat2btc, sleep } from "src/utils"
 import { getTitle } from "src/notifications/payment"
-import { onchainTransactionEventHandler } from "src/entrypoint/trigger"
+import { onchainTransactionEventHandler } from "src/servers/trigger"
 import {
   checkIsBalanced,
   getUserWallet,

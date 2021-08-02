@@ -1,5 +1,5 @@
 import { getCurrentPrice } from "src/realtime-price"
-import { sendBalanceToUsers } from "src/entrypoint/daily-balance-notification"
+import { sendBalanceToUsers } from "src/servers/daily-balance-notification"
 import { User } from "src/schema"
 import { ledger } from "src/mongodb"
 jest.mock("src/notifications/notification")

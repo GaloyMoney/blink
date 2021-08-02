@@ -17,18 +17,18 @@ image:
 
 deployment:
 - name: graphql-admin
-  args: ["lib/entrypoint/graphql-admin-server.js"]
+  args: ["lib/servers/graphql-admin-server.js"]
   healthz: true
   targetPort: 4001
   replicaCount: 1
 - name: graphql
-  args: ["lib/entrypoint/graphql-core-server.js"]
+  args: ["lib/servers/graphql-core-server.js"]
   healthz: true
   targetPort: 4000
   replicaCount: 2
   podAnnotations: {}
 - name: exporter
-  args: ["lib/entrypoint/exporter.js"]
+  args: ["lib/servers/exporter.js"]
   healthz: true
   targetPort: 3000
   replicaCount: 1
@@ -37,7 +37,7 @@ deployment:
     prometheus.io/port: "3000"
     prometheus.io/scrape: "true"
 - name: trigger
-  args: ["lib/entrypoint/trigger.js"]
+  args: ["lib/servers/trigger.js"]
   healthz: true
   targetPort: 8888
   replicaCount: 1
@@ -60,10 +60,10 @@ service:
 
 cron:
 - name: cronjob
-  args: ["lib/entrypoint/cron.js"]
+  args: ["lib/servers/cron.js"]
   schedule: "0 2 * * *"
 - name: balance-notif
-  args: ["lib/entrypoint/dailyBalanceNotification.js"]
+  args: ["lib/servers/dailyBalanceNotification.js"]
   schedule: "0 14 * * *"
 
 mongobackup:

@@ -1,4 +1,4 @@
 {
   "extends": "./tsconfig.json",
-  "include": ["src/entrypoint/*.ts", "src/**/*.d.ts"]
+  "include": ["src/servers/*.ts", "src/**/*.d.ts"]
 }

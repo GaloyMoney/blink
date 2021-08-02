@@ -4,7 +4,7 @@ import { filter, first } from "lodash"
 import { yamlConfig } from "src/config"
 import { Transaction } from "src/schema"
 import { getTitle } from "src/notifications/payment"
-import { onchainTransactionEventHandler } from "src/entrypoint/trigger"
+import { onchainTransactionEventHandler } from "src/servers/trigger"
 import {
   checkIsBalanced,
   getUserWallet,
