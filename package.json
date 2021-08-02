@@ -6,7 +6,7 @@
     "eslint-fix": "eslint \"{src,test}/**/*.ts\" --fix",
     "prettier-check": "prettier --check .",
     "prettier-write": "prettier --write .",
-    "build": "tsc -p tsconfig-build.json --skipLibCheck && cp -R src/services/protos lib && cp src/graphql/old-schema.graphql lib/old-schema && tscpaths -p tsconfig.json -s ./src -o ./lib",
+    "build": "tsc -p tsconfig-build.json --skipLibCheck && cp -R src/services/protos lib/services/ && cp src/graphql/old-schema.graphql lib/old-schema && tscpaths -p tsconfig.json -s ./src -o ./lib",
     "start": "yarn build && source ./scripts/export-local.sh && node lib/servers/graphql-main-server.js | pino-pretty -c -l",
     "trigger": "yarn build && source ./scripts/export-local.sh && node lib/servers/trigger.js | pino-pretty -c -l",
     "watch": "nodemon -V -e ts,graphql -w ./src -x yarn run start",
