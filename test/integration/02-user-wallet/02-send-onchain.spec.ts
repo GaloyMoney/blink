@@ -1,7 +1,7 @@
 import { once } from "events"
 import { sleep } from "@core/utils"
 import { filter, first } from "lodash"
-import { getFeeRates, getUserLimits, yamlConfig } from "@config/app"
+import { getFeeRates, getUserLimits, MS_PER_DAY, yamlConfig } from "@config/app"
 import { Transaction } from "@services/mongoose/schema"
 import { getTitle } from "@core/notifications/payment"
 import { onchainTransactionEventHandler } from "@servers/trigger"
@@ -337,7 +337,7 @@ describe("UserWallet - onChainPay", () => {
       format: "p2wpkh",
     })
 
-    const timestampYesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
+    const timestampYesterday = new Date(Date.now() - MS_PER_DAY)
     const [result] = await Transaction.aggregate([
       {
         $match: {

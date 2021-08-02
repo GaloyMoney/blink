@@ -19,6 +19,7 @@ import {
   subscribeToInvoice,
   waitFor,
 } from "test/helpers"
+import { MS_PER_DAY } from "@config/app"
 
 // milliseconds in a day
 const MS_PER_DAY = 864e5
@@ -90,7 +91,7 @@ describe("lndUtils", () => {
       }
     })
 
-    const date = Date.now() + 60 * 60 * 1000 * 24 * 2
+    const date = Date.now() + MS_PER_DAY * 2
     jest.spyOn(global.Date, "now").mockImplementation(() => new Date(date).valueOf())
 
     const startDate = new Date(0)

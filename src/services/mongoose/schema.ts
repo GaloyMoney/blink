@@ -1,6 +1,13 @@
 import * as _ from "lodash"
 import * as mongoose from "mongoose"
-import { levels, getUserLimits, getGenericLimits, getFeeRates } from "@config/app"
+import {
+  levels,
+  getUserLimits,
+  getGenericLimits,
+  getFeeRates,
+  MS_PER_DAY,
+  MS_PER_30_DAYs,
+} from "@config/app"
 import { NotFoundError } from "@core/error"
 import { accountPath } from "@core/ledger/accounts"
 import { Transaction } from "@core/ledger/schema"
@@ -20,8 +27,6 @@ const dbMetadataSchema = new Schema({
   routingFeeLastEntry: Date,
 })
 export const DbMetadata = mongoose.model("DbMetadata", dbMetadataSchema)
-
-const MS_PER_DAY = 24 * 60 * 60 * 1000
 
 const invoiceUserSchema = new Schema({
   _id: String, // hash of invoice
@@ -341,7 +346,7 @@ UserSchema.virtual("onchain_pubkey").get(function (this: typeof UserSchema) {
 // user is considered active if there has been one transaction of more than 1000 sats in the last 30 days
 // eslint-disable-next-line no-unused-vars
 UserSchema.virtual("userIsActive").get(async function (this: typeof UserSchema) {
-  const timestamp30DaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000
+  const timestamp30DaysAgo = Date.now() - MS_PER_30_DAYs
 
   const volume = await User.getVolume({
     after: timestamp30DaysAgo,
