@@ -18,7 +18,7 @@ import {
 import _ from "lodash"
 import { Logger } from "pino"
 
-import { getGaloyInstanceName } from "@config/app"
+import { getGaloyInstanceName, MS_PER_DAY } from "@config/app"
 
 import { baseLogger } from "@services/logger"
 import { ledger } from "@services/mongodb"
@@ -28,9 +28,6 @@ import { DbError, LndOfflineError, ValidationInternalError } from "@core/error"
 import { LoggedError, LOOK_BACK } from "@core/utils"
 
 import { FEECAP, FEEMIN, params } from "./auth"
-
-// milliseconds in a day
-const MS_PER_DAY = 864e5
 
 export const deleteExpiredInvoiceUser = () => {
   // this should be longer than the invoice validity time
