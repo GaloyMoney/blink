@@ -10,6 +10,7 @@ import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
 
 import { updateUsersPendingPayment } from "@core/balance-sheet"
+import { BitcoindClient } from "@services/bitcoind"
 import { SpecterWallet } from "@core/specter-wallet"
 
 const main = async () => {
@@ -23,6 +24,7 @@ const main = async () => {
 
   const specterWalletConfig = getSpecterWalletConfig()
   const specterWallet = new SpecterWallet({
+    bitcoindClient: new BitcoindClient(),
     logger: baseLogger,
     config: specterWalletConfig,
   })

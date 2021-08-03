@@ -2,7 +2,7 @@ import assert from "assert"
 import { createChainAddress, sendToChainAddress } from "lightning"
 import _ from "lodash"
 
-import { bitcoindDefaultClient, BitcoindWalletClient } from "@services/bitcoind"
+import { BitcoindClient, BitcoindWalletClient } from "@services/bitcoind"
 import { getActiveOnchainLnd, lndsBalances } from "@services/lnd/utils"
 import { ledger } from "@services/mongodb"
 
@@ -14,11 +14,24 @@ import { btc2sat, sat2btc } from "./utils"
 const staticClient = ""
 
 export class SpecterWallet {
+  // Needs access to both classes' methods
+  bitcoindClient
   bitcoindWalletClient
   readonly logger: Logger
   readonly config: SpecterWalletConfig
 
-  constructor({ logger, config }: SpecterWalletConstructorArgs) {
+  // TODO? Add BitcoindClient type to SpecterWalletConstructorArgs
+  constructor({
+    bitcoindClient,
+    logger,
+    config,
+  }: {
+    bitcoindClient: BitcoindClient
+    logger: Logger
+    config: SpecterWalletConfig
+  }) {
+    // constructor({ logger, config }: SpecterWalletConstructorArgs) {
+    this.bitcoindClient = bitcoindClient
     this.logger = logger.child({ topic: "bitcoind" })
     this.config = config
 
@@ -26,11 +39,11 @@ export class SpecterWallet {
   }
 
   async listWallets() {
-    return await bitcoindDefaultClient.listWallets()
+    return await this.bitcoindClient.listWallets()
   }
 
   async createWallet() {
-    return await bitcoindDefaultClient.createWallet({
+    return await this.bitcoindClient.createWallet({
       wallet_name: "specter/coldstorage",
     })
   }
@@ -59,7 +72,9 @@ export class SpecterWallet {
 
     this.logger.info({ wallet: specterWallets[0] }, "setting BitcoindClient")
 
-    this.bitcoindWalletClient = new BitcoindWalletClient({ walletName: specterWallets[0] })
+    this.bitcoindWalletClient = new BitcoindWalletClient({
+      walletName: specterWallets[0],
+    })
 
     return specterWallets[0]
   }
@@ -260,14 +275,17 @@ export class SpecterWallet {
       // TODO: won't work automatically with a cold storage wallet
       // make a PSBT instead accesible for further signing.
       // TODO: figure out a way to export the PSBT when there is a pending tx
-      txid = await this.bitcoindWalletClient.sendToAddress({ address, amount: sat2btc(sats) })
+      txid = await this.bitcoindWalletClient.sendToAddress({
+        address,
+        amount: sat2btc(sats),
+      })
     } catch (err) {
       const error = "this.bitcoindWalletClient.sendToAddress() error"
       subLogger.error({ txid }, error)
       throw new Error(err)
     }
 
-    const tx = await bitcoindDefaultClient.getTransaction({
+    const tx = await this.bitcoindClient.getTransaction({
       txid,
       include_watchonly: true,
     })
