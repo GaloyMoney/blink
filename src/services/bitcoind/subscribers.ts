@@ -1,5 +1,5 @@
 import { Subscriber } from "zeromq"
-import { bitcoindDefaultClient } from "./index"
+import { BitcoindClient } from "./index"
 import { baseLogger } from "@services/logger"
 
 export const SUB_ADDR_BLOCK = `tcp://${process.env.BITCOINDADDR}:28332` // TODO? port
@@ -12,7 +12,7 @@ export enum BITCOIND_EVENTS {
   // HASH_TX = "hashtx",
 }
 
-export async function receiveRawBlockSubscriber() {
+export const receiveRawBlockSubscriber = async (): Promise<Subscriber> => {
   const sock = new Subscriber()
   sock.connect(SUB_ADDR_BLOCK)
   sock.subscribe(BITCOIND_EVENTS.RAW_BLOCK)
@@ -31,7 +31,11 @@ export async function receiveRawBlockSubscriber() {
   return await sock
 }
 
-export async function receiveRawTxSubscriber() {
+export const receiveRawTxSubscriber = async ({
+  bitcoindClient,
+}: {
+  bitcoindClient: BitcoindClient
+}): Promise<Subscriber> => {
   const sock = new Subscriber()
   sock.connect(SUB_ADDR_TX)
   sock.subscribe(BITCOIND_EVENTS.RAW_TX)
@@ -40,7 +44,7 @@ export async function receiveRawTxSubscriber() {
     for await (const [topic, msg] of sock) {
       if (topic.toString() === BITCOIND_EVENTS.RAW_TX) {
         const rawTx = msg.toString("hex")
-        const tx = await bitcoindDefaultClient.decodeRawTransaction({ hexstring: rawTx })
+        const tx = await bitcoindClient.decodeRawTransaction({ hexstring: rawTx })
         baseLogger.warn(`tx: ${JSON.stringify(tx)}`)
       }
     }

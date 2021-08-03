@@ -36,7 +36,7 @@ it("detect active bitcoind zeromq notifications", async () => {
 
 it("subscribe then close subscription to zeromq", async () => {
   const bitcoindBlockSubscriber = await receiveRawBlockSubscriber()
-  const bitcoindTxSubscriber = await receiveRawTxSubscriber()
+  const bitcoindTxSubscriber = await receiveRawTxSubscriber({ bitcoindClient })
   expect(bitcoindBlockSubscriber.lastEndpoint).toBe(SUB_ADDR_BLOCK)
   expect(bitcoindTxSubscriber.lastEndpoint).toBe(SUB_ADDR_TX)
   bitcoindBlockSubscriber.close()
