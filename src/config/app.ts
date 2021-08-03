@@ -10,8 +10,6 @@ export const defaultConfig = yaml.load(defaultContent)
 
 const MS_IN_HOUR = 60 * 60 * 1000
 
-export const MEMO_SHARING_SATS_THRESHOLD = 1000
-
 let customContent, customConfig
 
 try {
@@ -24,6 +22,8 @@ try {
 }
 
 export const yamlConfig = _.merge(defaultConfig, customConfig)
+
+export const MEMO_SHARING_SATS_THRESHOLD = yamlConfig.limits.memoSharingSatsThreshold
 
 export const getGaloyInstanceName = () => yamlConfig.name
 

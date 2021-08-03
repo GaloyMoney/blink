@@ -89,6 +89,7 @@ limits:
     points: 30
     duration: 21600 # 60 * 60 * 6 s
     blockDuration: 86400 # 60 * 60 * 24 s
+  memoSharingSatsThreshold: 1000
   oldEnoughForWithdrawal: 172800000 # 1000 * 60 * 60 * 24 * 2, in ms # 2 days
   withdrawal:
     level:
