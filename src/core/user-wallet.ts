@@ -8,6 +8,7 @@ import { DbError } from "./error"
 import { Balances } from "./interface"
 import { CSVAccountExport } from "./csv-account-export"
 import { sendNotification } from "./notifications/notification"
+import { MEMO_SHARING_SATS_THRESHOLD } from "@config/app"
 
 export abstract class UserWallet {
   static lastPrice: number
@@ -105,18 +106,27 @@ export abstract class UserWallet {
 
     return rawTransactions.map((item) => {
       const amount = item.credit - item.debit
+      const isCredit = amount > 0
+      const isValidCreditMemo = isCredit && amount >= MEMO_SHARING_SATS_THRESHOLD
+      const isDebit = !isCredit
+
       const memoUsername = item.username
-        ? amount > 0
+        ? isCredit
           ? `from ${item.username}`
           : `to ${item.username}`
         : null
+
+      const memoSpamFilter = (memoString) =>
+        memoString ? (isDebit || isValidCreditMemo ? memoString : null) : null
+      const memoFromPayer = memoSpamFilter(item.memoFromPayer)
+      const memo = memoSpamFilter(item.memo)
 
       return {
         created_at: moment(item.timestamp).unix(),
         amount,
         sat: item.sat,
         usd: item.usd,
-        description: item.memoFromPayer || item.memo || memoUsername || item.type, // TODO remove `|| item.type` once users have upgraded
+        description: memoFromPayer || memo || memoUsername || item.type, // TODO remove `|| item.type` once users have upgraded
         type: item.type,
         hash: item.hash,
         fee: item.fee,
