@@ -1,7 +1,7 @@
 import express from "express"
 import client, { register } from "prom-client"
 
-import { getBalancesDetail } from "@services/bitcoind"
+import { BitcoindClient, getBalancesDetail } from "@services/bitcoind"
 import { getBosScore, lndsBalances } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
@@ -124,7 +124,8 @@ const main = async () => {
     business_g.set(await User.count({ title: { $exists: true } }))
 
     try {
-      const balances = await getBalancesDetail()
+      const bitcoindClient = new BitcoindClient()
+      const balances = await getBalancesDetail({ bitcoindClient })
       for (const { wallet, balance } of balances) {
         const walletSanitized = wallet.replace("/", "_")
         const gauge = new client.Gauge({

@@ -1,4 +1,4 @@
-import { getBalance as getBitcoindBalance } from "@services/bitcoind"
+import { BitcoindClient, getBalance as getBitcoindBalance } from "@services/bitcoind"
 import { lndsBalances } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { InvoiceUser, User } from "@services/mongoose/schema"
@@ -95,7 +95,8 @@ export const balanceSheetIsBalanced = async () => {
     await getLedgerAccounts()
   const { total: lnd } = await lndsBalances() // doesnt include escrow amount
 
-  const bitcoind = await getBitcoindBalance()
+  const bitcoindClient = new BitcoindClient()
+  const bitcoind = await getBitcoindBalance({ bitcoindClient })
 
   const assetsLiabilitiesDifference =
     assets /* assets is ___ */ + liabilities /* liabilities is ___ */
