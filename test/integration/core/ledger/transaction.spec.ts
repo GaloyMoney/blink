@@ -1,4 +1,3 @@
-import { MEMO_SHARING_SATS_THRESHOLD } from "@config/app"
 import { User } from "@services/mongoose/schema"
 import { baseLogger } from "@services/logger"
 import { UserWallet } from "@core/user-wallet"
@@ -329,51 +328,6 @@ describe("on us payment", () => {
 
     await expectBalance({ account: payee.accountPath, currency: "BTC", balance: 0 })
     await expectBalance({ account: payee.accountPath, currency: "USD", balance: 0.1 })
-  })
-  it("does not share memo when below sats threshold", async () => {
-    const payer = walletBTC
-    const payee = walletBTC2
-    const spamMsg = "THIS MIGHT BE SPAM!!!"
-
-    const entry = await ledger.addOnUsPayment({
-      description: "desc",
-      sats: MEMO_SHARING_SATS_THRESHOLD - 1,
-      metadata: { type: "on_us", pending: false },
-      payerUser: payer,
-      payeeUser: payee,
-      lastPrice: UserWallet.lastPrice,
-      memoFromPayer: spamMsg,
-      shareMemoWithPayee: true,
-    })
-
-    for (const txn of entry.transactions) {
-      if (txn.credit > 0) {
-        expect(txn.memoFromPayer).toBeUndefined()
-      }
-    }
-  })
-  it("shares memo when above or equal to sats threshold", async () => {
-    const payer = walletBTC
-    const payee = walletBTC2
-    const spamMsg = "THIS MIGHT BE SPAM!!!"
-
-    const entry = await ledger.addOnUsPayment({
-      description: "desc",
-      sats: MEMO_SHARING_SATS_THRESHOLD,
-      metadata: { type: "on_us", pending: false },
-      payerUser: payer,
-      payeeUser: payee,
-      lastPrice: UserWallet.lastPrice,
-      memoFromPayer: spamMsg,
-      shareMemoWithPayee: true,
-    })
-
-    for (const txn of entry.transactions) {
-      console.log(txn)
-      if (txn.credit > 0) {
-        expect(txn.memoFromPayer).toEqual(spamMsg)
-      }
-    }
   })
 })
 
