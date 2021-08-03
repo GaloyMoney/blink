@@ -199,13 +199,12 @@ export class BitcoindWalletClient {
   }
 }
 
-// The default client should remain without a wallet (not generate or receive bitcoin)
-export const bitcoindDefaultClient = new BitcoindClient()
-
-export const getBalancesDetail = async (): Promise<
-  { wallet: string; balance: number }[]
-> => {
-  const wallets = await bitcoindDefaultClient.listWallets()
+export const getBalancesDetail = async ({
+  bitcoindClient,
+}: {
+  bitcoindClient: BitcoindClient
+}): Promise<{ wallet: string; balance: number }[]> => {
+  const wallets = await bitcoindClient.listWallets()
 
   const balances: { wallet: string; balance: number }[] = []
 
@@ -215,15 +214,19 @@ export const getBalancesDetail = async (): Promise<
       continue
     }
 
-    const client = new BitcoindWalletClient({ walletName: wallet })
-    const balance = btc2sat(await client.getBalance())
+    const bitcoindWalletClient = new BitcoindWalletClient({ walletName: wallet })
+    const balance = btc2sat(await bitcoindWalletClient.getBalance())
     balances.push({ wallet, balance })
   }
 
   return balances
 }
 
-export const getBalance = async (): Promise<number> => {
-  const balanceObj = await getBalancesDetail()
+export const getBalance = async ({
+  bitcoindClient,
+}: {
+  bitcoindClient: BitcoindClient
+}): Promise<number> => {
+  const balanceObj = await getBalancesDetail({ bitcoindClient })
   return _.sumBy(balanceObj, "balance")
 }

@@ -11,7 +11,7 @@ import {
 import _ from "lodash"
 import moment from "moment"
 
-import { bitcoindDefaultClient } from "@services/bitcoind"
+import { BitcoindClient } from "@services/bitcoind"
 import { getActiveOnchainLnd, getLndFromPubkey } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { ledger } from "@services/mongodb"
@@ -61,10 +61,14 @@ export const getOnChainTransactions = async ({
 export const OnChainMixin = (superclass) =>
   class extends superclass {
     readonly config: UserWalletConfig
+    // TODO? is this ok here?
+    readonly bitcoindClient
 
     constructor(...args) {
       super(...args)
       this.config = args[0].config
+      // TODO? is this ok here?
+      this.bitcoindClient = new BitcoindClient()
     }
 
     async updatePending(lock): Promise<void> {
@@ -565,7 +569,7 @@ export const OnChainMixin = (superclass) =>
 
     // raw encoded transaction
     async getSatsAndAddressPerTx(tx): Promise<{ sats: number; addresses: string[] }> {
-      const { vout } = await bitcoindDefaultClient.decodeRawTransaction({ hexstring: tx })
+      const { vout } = await this.bitcoindClient.decodeRawTransaction({ hexstring: tx })
 
       //   vout: [
       //   {
