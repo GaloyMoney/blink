@@ -1,4 +1,5 @@
 import moment from "moment"
+import { MS_PER_DAY } from "@config/app"
 import {
   deleteExpiredInvoiceUser,
   getInvoiceAttempt,
@@ -19,10 +20,6 @@ import {
   subscribeToInvoice,
   waitFor,
 } from "test/helpers"
-import { MS_PER_DAY } from "@config/app"
-
-// milliseconds in a day
-const MS_PER_DAY = 864e5
 
 afterEach(() => {
   jest.restoreAllMocks()
