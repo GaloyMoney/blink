@@ -14,7 +14,7 @@ import { btc2sat, sat2btc } from "./utils"
 const staticClient = ""
 
 export class SpecterWallet {
-  bitcoindClient // TODO rename?
+  bitcoindWalletClient
   readonly logger: Logger
   readonly config: SpecterWalletConfig
 
@@ -59,13 +59,13 @@ export class SpecterWallet {
 
     this.logger.info({ wallet: specterWallets[0] }, "setting BitcoindClient")
 
-    this.bitcoindClient = new BitcoindWalletClient({ walletName: specterWallets[0] })
+    this.bitcoindWalletClient = new BitcoindWalletClient({ walletName: specterWallets[0] })
 
     return specterWallets[0]
   }
 
   async getColdStorageAddress() {
-    return await this.bitcoindClient.getNewAddress()
+    return await this.bitcoindWalletClient.getNewAddress()
   }
 
   // for debugging
@@ -80,24 +80,24 @@ export class SpecterWallet {
   // bitcoin-cli importmulti `${descriptor}`
 
   async getAddressInfo({ address }) {
-    return await this.bitcoindClient.getAddressInfo({ address })
+    return await this.bitcoindWalletClient.getAddressInfo({ address })
   }
 
   async getBitcoindBalance(): Promise<number> {
-    if (!this.bitcoindClient) {
+    if (!this.bitcoindWalletClient) {
       const wallet = await this.setBitcoindClient()
       if (wallet === staticClient) {
         return 0
       }
     }
 
-    return btc2sat(await this.bitcoindClient.getBalance())
+    return btc2sat(await this.bitcoindWalletClient.getBalance())
   }
 
   async tentativelyRebalance(): Promise<void> {
     this.logger.info("entering tentatively rebalance")
 
-    if (!this.bitcoindClient) {
+    if (!this.bitcoindWalletClient) {
       const wallet = await this.setBitcoindClient()
       if (wallet === staticClient) {
         return
@@ -176,7 +176,7 @@ export class SpecterWallet {
   }
 
   async toColdStorage({ sats }) {
-    if (!this.bitcoindClient) {
+    if (!this.bitcoindWalletClient) {
       const wallet = await this.setBitcoindClient()
       if (wallet === staticClient) {
         this.logger.warn("no wallet has been setup")
@@ -225,7 +225,7 @@ export class SpecterWallet {
   }
 
   async toLndWallet({ sats }) {
-    if (!this.bitcoindClient) {
+    if (!this.bitcoindWalletClient) {
       const wallet = await this.setBitcoindClient()
       if (wallet === staticClient) {
         return
@@ -260,9 +260,9 @@ export class SpecterWallet {
       // TODO: won't work automatically with a cold storage wallet
       // make a PSBT instead accesible for further signing.
       // TODO: figure out a way to export the PSBT when there is a pending tx
-      txid = await this.bitcoindClient.sendToAddress({ address, amount: sat2btc(sats) })
+      txid = await this.bitcoindWalletClient.sendToAddress({ address, amount: sat2btc(sats) })
     } catch (err) {
-      const error = "this.bitcoindClient.sendToAddress() error"
+      const error = "this.bitcoindWalletClient.sendToAddress() error"
       subLogger.error({ txid }, error)
       throw new Error(err)
     }
