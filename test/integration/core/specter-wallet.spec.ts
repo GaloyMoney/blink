@@ -13,7 +13,11 @@ let specterWallet
 beforeEach(() => {
   UserWallet.setCurrentPrice(10000)
   const specterWalletConfig = getSpecterWalletConfig()
-  specterWallet = new SpecterWallet({ logger: baseLogger, config: specterWalletConfig })
+  specterWallet = new SpecterWallet({
+    bitcoindClient,
+    logger: baseLogger,
+    config: specterWalletConfig,
+  })
 })
 
 afterAll(async () => {

@@ -1,5 +1,6 @@
 import { redis } from "@services/redis"
 import { btc2sat } from "@core/utils"
+import { BitcoindClient } from "@services/bitcoind"
 import { SpecterWallet } from "@core/specter-wallet"
 import { getSpecterWalletConfig } from "@config/app"
 import { baseLogger } from "@services/logger"
@@ -18,6 +19,7 @@ beforeAll(() => {
 
   const specterWalletConfig = getSpecterWalletConfig()
   specterWallet = new SpecterWallet({
+    bitcoindClient: new BitcoindClient(),
     logger: baseLogger,
     config: specterWalletConfig,
   })
