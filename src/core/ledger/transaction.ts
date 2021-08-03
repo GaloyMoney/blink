@@ -9,7 +9,6 @@ import {
 import { MainBook } from "./books"
 import { Transaction } from "./schema"
 import { getLndEscrowBalance } from "./query"
-import { MEMO_SHARING_SATS_THRESHOLD } from "@config/app"
 
 export const addLndReceipt = async ({
   description,
@@ -220,13 +219,10 @@ export const addOnUsPayment = async ({
 
   const entry = MainBook.entry(description)
 
-  // This is the current workaround to block spam memos
-  const memoSharingCheck = shareMemoWithPayee && sats >= MEMO_SHARING_SATS_THRESHOLD
-
   entry
     .credit(accountPath(payeeUser._id), sats * payeeUser.ratioBtc, {
       ...metadata,
-      memoFromPayer: memoSharingCheck ? memoFromPayer : undefined,
+      memoFromPayer: shareMemoWithPayee ? memoFromPayer : null,
       username: payerUser.username,
       currency: "BTC",
     })
@@ -255,7 +251,7 @@ export const addOnUsPayment = async ({
     entry
       .credit(accountPath(payeeUser._id), usdEq * payeeUser.ratioUsd, {
         ...metadata,
-        memoFromPayer: memoSharingCheck ? memoFromPayer : undefined,
+        memoFromPayer: shareMemoWithPayee ? memoFromPayer : null,
         username: payerUser.username,
         currency: "USD",
       })
