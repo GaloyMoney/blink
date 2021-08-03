@@ -116,7 +116,7 @@ export abstract class UserWallet {
         amount,
         sat: item.sat,
         usd: item.usd,
-        description: item.memoPayer || item.memo || memoUsername || item.type, // TODO remove `|| item.type` once users have upgraded
+        description: item.memoFromPayer || item.memo || memoUsername || item.type, // TODO remove `|| item.type` once users have upgraded
         type: item.type,
         hash: item.hash,
         fee: item.fee,

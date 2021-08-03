@@ -25,7 +25,7 @@ const header = [
   { id: "sats", title: "sats" },
   { id: "usd", title: "usd" },
   { id: "memo", title: "memo" },
-  { id: "memoPayer", title: "memoPayer" },
+  { id: "memoFromPayer", title: "memoFromPayer" },
   { id: "meta", title: "meta" },
   { id: "pending", title: "pending" },
 ]
