@@ -117,7 +117,7 @@ describe("UserWallet", () => {
 
   describe("getStringCsv", () => {
     const csvHeader =
-      "voided,approved,_id,accounts,credit,debit,_journal,book,unix,date,datetime,currency,username,type,hash,txid,fee,feeUsd,sats,usd,memo,memoPayer,meta,pending"
+      "voided,approved,_id,accounts,credit,debit,_journal,book,unix,date,datetime,currency,username,type,hash,txid,fee,feeUsd,sats,usd,memo,memoFromPayer,meta,pending"
     it("exports to csv", async () => {
       const base64Data = await userWallet0.getStringCsv()
       expect(typeof base64Data).toBe("string")

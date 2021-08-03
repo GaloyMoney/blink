@@ -5,7 +5,7 @@ type IAddTransactionOnUsPayment = {
   metadata: Record<string, unknown>
   payerUser: UserType
   payeeUser: UserType
-  memoPayer?: string
+  memoFromPayer?: string
   shareMemoWithPayee?: boolean
   lastPrice: number
 }
