@@ -89,7 +89,7 @@ const transactionSchema = new Schema({
   // for onchain transactions.
   payee_addresses: [String],
 
-  memoFromPayer: String,
+  memoPayer: String,
 
   // not used for accounting but used for usd/sats equivalent
   usd: Number,
