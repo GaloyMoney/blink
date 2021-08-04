@@ -1,6 +1,5 @@
-type LnInvoiceDecodeError = {
-  message: string
-}
+type LnInvoiceDecodeErrorType = "LnInvoiceDecodeError"
+type LnInvoiceDecodeError = ErrorWithMessage<LnInvoiceDecodeError>
 
 type PaymentHash = {
   inner: string
