@@ -118,7 +118,7 @@ export abstract class UserWallet {
 
       const memoSpamFilter = (memoString) =>
         memoString ? (isDebit || isValidCreditMemo ? memoString : null) : null
-      const memoFromPayer = memoSpamFilter(item.memoFromPayer)
+      const memoPayer = memoSpamFilter(item.memoPayer)
       const memo = memoSpamFilter(item.memo)
 
       return {
@@ -126,7 +126,7 @@ export abstract class UserWallet {
         amount,
         sat: item.sat,
         usd: item.usd,
-        description: memoFromPayer || memo || memoUsername || item.type, // TODO remove `|| item.type` once users have upgraded
+        description: memoPayer || memo || memoUsername || item.type, // TODO remove `|| item.type` once users have upgraded
         type: item.type,
         hash: item.hash,
         fee: item.fee,

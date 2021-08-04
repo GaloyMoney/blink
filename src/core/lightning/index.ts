@@ -270,7 +270,7 @@ export const LightningMixin = (superclass) =>
         features,
         max_fee,
       } = await validate({ params, logger: lightningLogger })
-      const { memo: memoFromPayer } = params
+      const { memo: memoPayer } = params
 
       // not including message because it contains the preimage and we don't want to log this
       lightningLogger = lightningLogger.child({
@@ -281,7 +281,7 @@ export const LightningMixin = (superclass) =>
           id,
           routeHint,
           memoInvoice,
-          memoFromPayer,
+          memoPayer,
           payment,
           cltv_delta,
           features,
@@ -369,7 +369,7 @@ export const LightningMixin = (superclass) =>
                 metadata,
                 payerUser: this.user,
                 payeeUser,
-                memoFromPayer,
+                memoPayer,
                 shareMemoWithPayee: isPushPayment,
                 lastPrice: UserWallet.lastPrice,
               })

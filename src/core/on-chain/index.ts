@@ -195,7 +195,7 @@ export const OnChainMixin = (superclass) =>
                 metadata,
                 payerUser: this.user,
                 payeeUser,
-                memoFromPayer: memo,
+                memoPayer: memo,
                 shareMemoWithPayee: false,
                 lastPrice: UserWallet.lastPrice,
               })
@@ -495,7 +495,7 @@ export const OnChainMixin = (superclass) =>
       //   amount: item.credit - item.debit,
       //   sat: item.sat,
       //   usd: item.usd,
-      //   description: item.memoFromPayer || item.memo || item.type, // TODO remove `|| item.type` once users have upgraded
+      //   description: item.memoPayer || item.memo || item.type, // TODO remove `|| item.type` once users have upgraded
       //   type: item.type,
       //   hash: item.hash,
       //   fee: item.fee,

@@ -80,10 +80,10 @@ describe("UserWallet - Lightning Pay", () => {
 
   it("sends to another Galoy user with two different memos", async () => {
     const memo = "invoiceMemo"
-    const memoFromPayer = "my memo as a payer"
+    const memoPayer = "my memo as a payer"
 
     const request = await userWallet2.addInvoice({ value: amountInvoice, memo })
-    await userWallet1.pay({ invoice: request, memo: memoFromPayer })
+    await userWallet1.pay({ invoice: request, memo: memoPayer })
 
     const matchTx = (tx) => tx.type === "on_us" && tx.hash === getHash(request)
 
@@ -92,7 +92,7 @@ describe("UserWallet - Lightning Pay", () => {
     expect(user2Txn.filter(matchTx)[0].type).toBe("on_us")
 
     const user1Txn = await userWallet1.getTransactions()
-    expect(user1Txn.filter(matchTx)[0].description).toBe(memoFromPayer)
+    expect(user1Txn.filter(matchTx)[0].description).toBe(memoPayer)
     expect(user1Txn.filter(matchTx)[0].type).toBe("on_us")
   })
 

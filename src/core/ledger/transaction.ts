@@ -211,7 +211,7 @@ export const addOnUsPayment = async ({
   metadata,
   payerUser,
   payeeUser,
-  memoFromPayer,
+  memoPayer,
   shareMemoWithPayee,
   lastPrice,
 }: IAddTransactionOnUsPayment) => {
@@ -222,13 +222,13 @@ export const addOnUsPayment = async ({
   entry
     .credit(accountPath(payeeUser._id), sats * payeeUser.ratioBtc, {
       ...metadata,
-      memoPayer: shareMemoWithPayee ? memoFromPayer : null,
+      memoPayer: shareMemoWithPayee ? memoPayer : null,
       username: payerUser.username,
       currency: "BTC",
     })
     .debit(payerUser.accountPath, sats * payerUser.ratioBtc, {
       ...metadata,
-      memoPayer: memoFromPayer,
+      memoPayer: memoPayer,
       username: payeeUser.username,
       currency: "BTC",
     })
@@ -251,13 +251,13 @@ export const addOnUsPayment = async ({
     entry
       .credit(accountPath(payeeUser._id), usdEq * payeeUser.ratioUsd, {
         ...metadata,
-        memoPayer: shareMemoWithPayee ? memoFromPayer : null,
+        memoPayer: shareMemoWithPayee ? memoPayer : null,
         username: payerUser.username,
         currency: "USD",
       })
       .debit(payerUser.accountPath, usdEq * payerUser.ratioUsd, {
         ...metadata,
-        memoPayer: memoFromPayer,
+        memoPayer: memoPayer,
         username: payeeUser.username,
         currency: "USD",
       })
