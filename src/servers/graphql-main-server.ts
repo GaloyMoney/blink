@@ -29,6 +29,7 @@ import { getWalletFromUsername } from "@core/wallet-factory"
 
 import { usernameExists } from "../domain/user"
 import { startApolloServer, isAuthenticated, isEditor } from "./graphql-server"
+import { gqlSchema } from "../graphql"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
 
@@ -242,7 +243,7 @@ const resolvers = {
   },
 }
 
-export async function startApolloServerForSchema() {
+export async function startApolloServerForOldSchema() {
   const myTypeDefs = fs.readFileSync(
     path.join(__dirname, "../graphql/old-schema.graphql"),
     {
@@ -298,10 +299,25 @@ export async function startApolloServerForSchema() {
   return await startApolloServer({ schema, port: 4000 })
 }
 
+export async function startApolloServerForCoreSchema() {
+  const permissions = shield(
+    {
+      // Query: {},
+      // Mutation: {},
+      // Subscription: {},
+    },
+    { allowExternalErrors: true },
+  )
+
+  const schema = applyMiddleware(gqlSchema, permissions)
+  return await startApolloServer({ schema, port: 4002, startSubscriptionServer: true })
+}
+
 if (require.main === module) {
   setupMongoConnection()
     .then(async () => {
-      await startApolloServerForSchema()
+      await startApolloServerForOldSchema()
+      await startApolloServerForCoreSchema()
       activateLndHealthCheck()
     })
     .catch((err) => graphqlLogger.error(err, "server error"))

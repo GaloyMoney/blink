@@ -8,7 +8,9 @@ import { baseLogger } from "@services/logger"
 const defaultContent = fs.readFileSync("./default.yaml", "utf8")
 export const defaultConfig = yaml.load(defaultContent)
 
-const MS_IN_HOUR = 60 * 60 * 1000
+export const SUBSCRIPTION_POLLING_INTERVAL = 2.5 * 1000
+export const MS_IN_HOUR = 60 * 60 * 1000
+export const MAX_BYTES_FOR_MEMO = 639 // BOLT
 
 let customContent, customConfig
 

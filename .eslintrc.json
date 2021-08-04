@@ -34,7 +34,6 @@
     "no-throw-literal": "error",
     "no-void": "error",
     "@typescript-eslint/no-extra-semi": "off", // Prettier work
-    "require-await": "error",
 
     // Temporarily disabled recommended rules
     "@typescript-eslint/explicit-module-boundary-types": "off",

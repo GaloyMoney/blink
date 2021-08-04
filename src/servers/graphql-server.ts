@@ -1,4 +1,7 @@
+import { createServer } from "http"
+import { execute, subscribe } from "graphql"
 import { ApolloServer } from "apollo-server-express"
+import { SubscriptionServer } from "subscriptions-transport-ws"
 import express from "express"
 import expressJwt from "express-jwt"
 import { rule } from "graphql-shield"
@@ -37,9 +40,10 @@ export const isEditor = rule({ cache: "contextual" })((parent, args, ctx) => {
 export const startApolloServer = async ({
   schema,
   port,
+  startSubscriptionServer = false,
 }): Promise<Record<string, unknown>> => {
   const app = express()
-  const server = new ApolloServer({
+  const apolloServer = new ApolloServer({
     schema,
     playground: process.env.NETWORK !== "mainnet",
     introspection: process.env.NETWORK !== "mainnet",
@@ -152,14 +156,34 @@ export const startApolloServer = async ({
     res.status(isMongoAlive && isRedisAlive ? 200 : 503).send()
   })
 
-  server.applyMiddleware({ app })
+  apolloServer.applyMiddleware({ app })
+
+  const httpServer = createServer(app)
 
   return await new Promise((resolve, reject) => {
-    const httpServer = app.listen({ port })
+    httpServer.listen({ port }, () => {
+      if (startSubscriptionServer) {
+        new SubscriptionServer(
+          {
+            execute,
+            subscribe,
+            schema,
+            onOperation: (message, params) => {
+              const logger = graphqlLogger.child({ id: uuidv4() })
+              return { ...params, context: { logger } }
+            },
+          },
+          {
+            server: httpServer,
+            path: apolloServer.graphqlPath,
+          },
+        )
+      }
 
-    httpServer.on("listening", () => {
-      console.log(`🚀 Server ready at http://localhost:${port}${server.graphqlPath}`)
-      resolve({ server, app, httpServer })
+      console.log(
+        `🚀 Server ready at http://localhost:${port}${apolloServer.graphqlPath}`,
+      )
+      resolve({ app, httpServer, apolloServer })
     })
 
     httpServer.on("error", (err) => {
