@@ -1,3 +1,5 @@
+BIN_DIR=node_modules/.bin
+
 start-deps:
 	docker-compose up -d
 	direnv reload
@@ -21,6 +23,10 @@ test: unit integration
 unit:
 	yarn test:unit
 
+watch-unit:
+	$(BIN_DIR)/jest --clearCache
+	NODE_ENV=test LOGLEVEL=warn $(BIN_DIR)/jest --watch --config ./test/jest-unit.config.js 
+
 integration:
 	yarn test:integration
 
@@ -28,7 +34,7 @@ reset-integration: reset-deps integration
 
 integration-in-ci:
 	. ./.envrc && \
-		LOGLEVEL=error node_modules/.bin/jest --config ./test/jest-integration.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
+		LOGLEVEL=error $(BIN_DIR)/jest --config ./test/jest-integration.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
 
 check-code:
 	yarn tsc-check

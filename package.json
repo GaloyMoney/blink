@@ -71,6 +71,7 @@
     "medici": "^4.0.2",
     "moment": "^2.29.1",
     "mongoose": "~5.10.14",
+    "neverthrow": "^4.2.2",
     "node-cache": "^5.1.2",
     "pino": "^6.11.3",
     "pino-http": "^5.5.0",
