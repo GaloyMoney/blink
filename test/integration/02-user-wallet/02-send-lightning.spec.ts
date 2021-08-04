@@ -147,6 +147,68 @@ describe("UserWallet - Lightning Pay", () => {
     expect(finalBalance).toBe(initBalance1 - amountInvoice)
   })
 
+  it("filters spam from send to another Galoy user as push payment", async () => {
+    const satsBelow = 100
+    const memoSpamBelowThreshold = "Spam BELOW threshold"
+    const resBelowThreshold = await userWallet1.pay({
+      username: userWallet0.user.username,
+      amount: satsBelow,
+      memo: memoSpamBelowThreshold,
+    })
+
+    const satsAbove = 1100
+    const memoSpamAboveThreshold = "Spam ABOVE threshold"
+    const resAboveThreshold = await userWallet1.pay({
+      username: userWallet0.user.username,
+      amount: satsAbove,
+      memo: memoSpamAboveThreshold,
+    })
+
+    // fetch transactions from db
+    const userTransaction0 = await userWallet0.getTransactions()
+    const transaction0Above = userTransaction0[0]
+    const transaction0Below = userTransaction0[1]
+
+    const userTransaction1 = await userWallet1.getTransactions()
+    const transaction1Above = userTransaction1[0]
+    const transaction1Below = userTransaction1[1]
+
+    // confirm both transactions succeeded
+    expect(resBelowThreshold).toBe("success")
+    expect(resAboveThreshold).toBe("success")
+
+    // check below-threshold transaction for recipient was filtered
+    expect(transaction0Below).toHaveProperty("username", userWallet1.user.username)
+    expect(transaction0Below).toHaveProperty(
+      "description",
+      `from ${userWallet1.user.username}`,
+    )
+    expect(transaction1Below).toHaveProperty("username", userWallet0.user.username)
+    expect(transaction1Below).toHaveProperty("description", memoSpamBelowThreshold)
+
+    // check above-threshold transaction for recipient was NOT filtered
+    expect(transaction0Above).toHaveProperty("username", userWallet1.user.username)
+    expect(transaction0Above).toHaveProperty("description", memoSpamAboveThreshold)
+    expect(transaction1Above).toHaveProperty("username", userWallet0.user.username)
+    expect(transaction1Above).toHaveProperty("description", memoSpamAboveThreshold)
+
+    // check contacts being added
+    userWallet0 = await getUserWallet(0)
+    userWallet1 = await getUserWallet(1)
+
+    expect(userWallet0.user.contacts).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: userWallet1.user.username }),
+      ]),
+    )
+
+    expect(userWallet1.user.contacts).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: userWallet0.user.username }),
+      ]),
+    )
+  })
+
   it("fails if sends to self", async () => {
     const invoice = await userWallet1.addInvoice({
       value: amountInvoice,
