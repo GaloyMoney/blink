@@ -1,9 +1,11 @@
-import { okAsync, errAsync, ResultAsync } from "neverthrow"
+import { Result, ResultAsync } from "neverthrow"
 import { InvoiceUser } from "@services/mongoose/schema"
 import { decodeInvoice } from "@domain/ln-invoice"
 import { toTypedError } from "@domain/utils"
 
-export const MakePaymentStatusChecker = ({ paymentRequest }): PaymentStatusChecker => {
+export const MakePaymentStatusChecker = ({
+  paymentRequest,
+}): Result<PaymentStatusChecker, LnInvoiceDecodeError> => {
   const decodedInvoice = decodeInvoice(paymentRequest)
   const getStatus = (): ResultAsync<PaymentStatus, PaymentStatusError> => {
     return decodedInvoice
@@ -14,9 +16,9 @@ export const MakePaymentStatusChecker = ({ paymentRequest }): PaymentStatusCheck
       }))
   }
 
-  return {
-    getStatus,
-  }
+  return decodedInvoice.map(({ paymentHash }) => {
+    return { paymentHash, getStatus }
+  })
 }
 
 // Belongs in src/services/mongoose or something like that
@@ -33,4 +35,3 @@ const toInvoiceLookupError: ErrorConverter<InvoiceLookupErrorType> = toTypedErro
   _type: "InvoiceLookupError",
   unknownMessage: "Unknown error while looking up invoice",
 })
-const unknownInvoiceLookupError = toInvoiceLookupError({})

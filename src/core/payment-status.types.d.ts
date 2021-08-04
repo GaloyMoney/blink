@@ -9,5 +9,6 @@ type PaymentStatus = {
 }
 
 type PaymentStatusChecker = {
+  paymentHash: PaymentHash
   getStatus: () => ResultAsync<PaymentStatus, PaymentStatusError>
 }

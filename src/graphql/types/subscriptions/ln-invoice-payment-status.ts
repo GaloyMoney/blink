@@ -1,5 +1,5 @@
 import { SUBSCRIPTION_POLLING_INTERVAL, MS_IN_HOUR } from "@config/app"
-import { MakePaymentStatusChecker } from "@core/payment-statu"
+import { MakePaymentStatusChecker } from "@core/payment-status"
 import { GT, pubsub } from "@graphql/index"
 
 import LnInvoicePaymentRequest from "../scalars/ln-invoice-payment-request"
@@ -31,30 +31,35 @@ const LnInvoicePaymentStatusSubscription = {
     const { paymentRequest, lookupToken } = args.input
 
     const errors: UserError[] = []
-    const statusChecker = MakePaymentStatusChecker({ paymentRequest })
+    const statusCheckerRes = MakePaymentStatusChecker({ paymentRequest })
+    if (statusCheckerRes.isErr()) {
+      errors.push({ message: statusCheckerRes.error.message })
+    } else {
+      const statusChecker = statusCheckerRes.value
+      const invoiceEventName = `LnInvoicePaymentStatus-${statusChecker.paymentHash.inner}`
 
-    const intervalId = setInterval(async () => {
-      let result = await statusChecker.getStatus()
+      const intervalId = setInterval(async () => {
+        const result = await statusChecker.getStatus()
 
-      if (result.isOk()) {
-        let { status, paymentHash } = result.value
-        if (status === "paid") {
-          clearInterval(intervalId)
-          const invoiceEventName = `LnInvoicePaymentStatus-${paymentHash.inner}`
-          pubsub.publish(invoiceEventName, { errors: [], status: "PAID" })
+        if (result.isOk()) {
+          const { status } = result.value
+          if (status === "paid") {
+            clearInterval(intervalId)
+            pubsub.publish(invoiceEventName, { errors: [], status: "PAID" })
+          }
+        } else {
+          const error = result.error
+          // translate and return the error
         }
-      } else {
-        let error = result.error
-        // translate and return the error
-      }
-    }, SUBSCRIPTION_POLLING_INTERVAL)
+      }, SUBSCRIPTION_POLLING_INTERVAL)
 
-    setTimeout(() => {
-      clearInterval(intervalId)
-      pubsub.publish(invoiceEventName, { status: "TIMEOUT" })
-    }, MS_IN_HOUR)
+      setTimeout(() => {
+        clearInterval(intervalId)
+        pubsub.publish(invoiceEventName, { status: "TIMEOUT" })
+      }, MS_IN_HOUR)
 
-    return pubsub.asyncIterator([invoiceEventName])
+      return pubsub.asyncIterator([invoiceEventName])
+    }
   },
 }
 
