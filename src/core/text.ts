@@ -34,14 +34,8 @@ export const registerCaptchaGeetest = async ({
 }): Promise<string | null> => {
   logger.info({ ip }, "RegisterCaptchaGeetest called")
 
-  // TODO
+  // TODO config?
   const captchaRequired = true
-
-  // TODO? any bypass?
-
-  // TODO? ip checks?
-
-  // TODO? any new limiter for the captcha?
 
   if (!captchaRequired) {
     return null
@@ -58,54 +52,33 @@ export const registerCaptchaGeetest = async ({
   return registerResponse
 }
 
-async function captchaVerifyGeetest(captchaChallenge, captchaValidate, captchaSeccode) {
-  const result = await geetest.validate(captchaChallenge, captchaValidate, captchaSeccode)
-  return result.status === 1
-}
-
 export const requestPhoneCodeGeetest = async ({
   phone,
-  captchaChallenge,
-  captchaValidate,
-  captchaSeccode,
+  geetestChallenge,
+  geetestValidate,
+  geetestSeccode,
   logger,
   ip,
 }: {
   phone: string
-  captchaChallenge?: string
-  captchaValidate?: string
-  captchaSeccode?: string
+  geetestChallenge: string
+  geetestValidate: string
+  geetestSeccode: string
   logger: Logger
   ip: string
 }): Promise<boolean> => {
   logger.info({ phone, ip }, "RequestPhoneCodeGeetest called")
 
-  // const challenge = req.body[GeetestLib.GEETEST_CHALLENGE];
-  // const validate = req.body[GeetestLib.GEETEST_VALIDATE];
-  // const seccode = req.body[GeetestLib.GEETEST_SECCODE];
-
-  // TODO
-  const captchaRequired = captchaChallenge && captchaValidate && captchaSeccode
-
-  // TODO before or after ip?
+  // TODO config?
+  const captchaRequired = true
 
   if (captchaRequired) {
-    if (!(captchaChallenge && captchaValidate && captchaSeccode)) {
-      // if (!captchaResponse) {
-      throw new CaptchaFailedError("Captcha Required", {
-        logger,
-        captchaChallenge,
-        captchaValidate,
-        captchaSeccode,
-      })
-    }
-
     let verifySuccess = false
     try {
-      verifySuccess = await captchaVerifyGeetest(
-        captchaChallenge,
-        captchaValidate,
-        captchaSeccode,
+      verifySuccess = await geetest.validate(
+        geetestChallenge,
+        geetestValidate,
+        geetestSeccode,
       )
     } catch (err) {
       logger.error({ err }, "impossible to verify geetest")
@@ -114,91 +87,18 @@ export const requestPhoneCodeGeetest = async ({
     if (!verifySuccess) {
       throw new CaptchaFailedError("Captcha Invalid", {
         logger,
-        captchaChallenge,
-        captchaValidate,
-        captchaSeccode,
+        geetestChallenge,
+        geetestValidate,
+        geetestSeccode,
       })
     }
   }
 
-  if (isIPBlacklisted({ ip })) {
-    throw new IPBlacklistedError("IP Blacklisted", { logger, ip })
-  }
-
-  let ipDetails
-
-  try {
-    ipDetails = await fetchIP({ ip })
-  } catch (err) {
-    logger.warn({ err }, "Unable to fetch ip details")
-  }
-
-  if (!ipDetails || ipDetails.status === "denied" || ipDetails.status === "error") {
-    logger.warn({ ipDetails }, "Unable to fetch ip details")
-  }
-
-  if (isIPTypeBlacklisted({ type: ipDetails?.type })) {
-    throw new IPBlacklistedError("IP type Blacklisted", { logger, ipDetails })
-  }
-
-  try {
-    await limiterRequestPhoneCode.consume(phone)
-  } catch (err) {
-    if (err instanceof Error) {
-      throw err
-    } else {
-      throw new TooManyRequestError({ logger })
-    }
-  }
-
-  try {
-    await limiterRequestPhoneCodeIp.consume(ip)
-  } catch (err) {
-    if (err instanceof Error) {
-      throw err
-    } else {
-      throw new TooManyRequestError({ logger })
-    }
-  }
-
-  // make it possible to bypass the auth for testing purpose
-  if (yamlConfig.test_accounts.findIndex((item) => item.phone === phone) !== -1) {
-    return true
-  }
-
-  const code = randomIntFromInterval(100000, 999999)
-  const body = `${code} is your verification code for ${yamlConfig.name}`
-  const sms_provider = yamlConfig.sms_provider.toLowerCase()
-
-  try {
-    const veryRecentCode = await PhoneCode.findOne({
-      phone,
-      created_at: {
-        $gte: moment().subtract(30, "seconds"),
-      },
-    })
-
-    if (veryRecentCode) {
-      return false
-    }
-
-    await PhoneCode.create({ phone, code, sms_provider })
-
-    const sendTextArguments = { body, to: phone, logger }
-    if (sms_provider === "twilio") {
-      await sendTwilioText(sendTextArguments)
-    } else if (sms_provider === "smsala") {
-      await sendSMSalaText(sendTextArguments)
-    } else {
-      // sms provider in yaml did not match any sms implementation
-      return false
-    }
-  } catch (err) {
-    logger.error({ err }, "impossible to send message")
-    return false
-  }
-
-  return true
+  return await requestPhoneCode({
+    phone,
+    logger,
+    ip,
+  })
 }
 
 export const requestPhoneCode = async ({

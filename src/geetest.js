@@ -68,7 +68,7 @@ class GeeTest {
     } else {
       result = gtLib.failValidate(challenge, validate, seccode)
     }
-    return result
+    return result.status === 1
   }
 }
 
