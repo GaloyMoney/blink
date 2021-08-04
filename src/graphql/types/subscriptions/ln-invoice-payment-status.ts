@@ -1,5 +1,5 @@
 import { SUBSCRIPTION_POLLING_INTERVAL, MS_IN_HOUR } from "@config/app"
-import LnInvoiceThunk from "@core/lightning/invoice"
+import { MakePaymentStatusChecker } from "@core/payment-statu"
 import { GT, pubsub } from "@graphql/index"
 
 import LnInvoicePaymentRequest from "../scalars/ln-invoice-payment-request"
@@ -30,26 +30,22 @@ const LnInvoicePaymentStatusSubscription = {
   subscribe: async (source, args, { logger }) => {
     const { paymentRequest, lookupToken } = args.input
 
-    const LnInvoice = LnInvoiceThunk({ logger })
-
-    const { paymentHash, paymentSecret } = await LnInvoice.decode(paymentRequest)
     const errors: UserError[] = []
-
-    // TODO: Improve this check with a non public payment secret
-    if (paymentSecret !== lookupToken) {
-      errors.push({
-        message: "Invalid invoice data",
-      })
-    }
-
-    const invoiceEventName = `LnInvoicePaymentStatus-${paymentHash}`
+    const statusChecker = MakePaymentStatusChecker({ paymentRequest })
 
     const intervalId = setInterval(async () => {
-      const { paid } = await LnInvoice.findByHash(paymentHash)
+      let result = await statusChecker.getStatus()
 
-      if (paid) {
-        clearInterval(intervalId)
-        pubsub.publish(invoiceEventName, { errors: [], status: "PAID" })
+      if (result.isOk()) {
+        let { status, paymentHash } = result.value
+        if (status === "paid") {
+          clearInterval(intervalId)
+          const invoiceEventName = `LnInvoicePaymentStatus-${paymentHash.inner}`
+          pubsub.publish(invoiceEventName, { errors: [], status: "PAID" })
+        }
+      } else {
+        let error = result.error
+        // translate and return the error
       }
     }, SUBSCRIPTION_POLLING_INTERVAL)
 
