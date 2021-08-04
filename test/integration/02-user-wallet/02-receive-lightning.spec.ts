@@ -43,7 +43,7 @@ describe("UserWallet - Lightning", () => {
 
     // check that memo is not filtered by spam filter
     const txns = await userWallet1.getTransactions()
-    const noSpamTxn = txns.filter((txn) => txn.hash === hash)[0]
+    const noSpamTxn = txns.find((txn) => txn.hash === hash)
     expect(noSpamTxn.description).toBe(memo)
 
     const { BTC: finalBalance } = await userWallet1.getBalances()
@@ -91,7 +91,7 @@ describe("UserWallet - Lightning", () => {
 
     // check that spam memo is filtered from transaction description
     const txns = await userWallet1.getTransactions()
-    const spamTxn = txns.filter((txn) => txn.hash === hash)[0]
+    const spamTxn = txns.find((txn) => txn.hash === hash)
     expect(dbTx.type).toBe("invoice")
     expect(spamTxn.description).toBe(dbTx.type)
 
