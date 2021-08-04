@@ -25,6 +25,9 @@ import {
   randomIntFromInterval,
 } from "./utils"
 
+// TODO config?
+const captchaRequired = true
+
 export const registerCaptchaGeetest = async ({
   logger,
   ip,
@@ -33,9 +36,6 @@ export const registerCaptchaGeetest = async ({
   ip: string
 }): Promise<string | null> => {
   logger.info({ ip }, "RegisterCaptchaGeetest called")
-
-  // TODO config?
-  const captchaRequired = true
 
   if (!captchaRequired) {
     return null
@@ -68,9 +68,6 @@ export const requestPhoneCodeGeetest = async ({
   ip: string
 }): Promise<boolean> => {
   logger.info({ phone, ip }, "RequestPhoneCodeGeetest called")
-
-  // TODO config?
-  const captchaRequired = true
 
   if (captchaRequired) {
     let verifySuccess = false
