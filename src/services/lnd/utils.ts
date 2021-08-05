@@ -37,8 +37,9 @@ export const deleteExpiredInvoiceUser = () => {
 
   const delta = 90 // days
 
-  const date = new Date()
+  const date = new Date(Date.now())
   date.setDate(date.getDate() - delta)
+
   // TODO: assert: only paid: true invoice should be remaining here
   // other invoiceUser should be deleted alongside deletion of lnd invoice
   return InvoiceUser.deleteMany({ timestamp: { $lt: date } })

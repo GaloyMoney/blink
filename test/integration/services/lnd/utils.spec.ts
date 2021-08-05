@@ -7,7 +7,7 @@ import {
 import { baseLogger } from "@services/logger"
 import { ledger } from "@services/mongodb"
 import { sleep } from "@core/utils"
-import { DbMetadata } from "@services/mongoose/schema"
+import { DbMetadata, InvoiceUser } from "@services/mongoose/schema"
 import {
   cancelHodlInvoice,
   createInvoice,
@@ -23,7 +23,7 @@ import {
 // milliseconds in a day
 const MS_PER_DAY = 864e5
 
-afterAll(() => {
+afterEach(() => {
   jest.restoreAllMocks()
 })
 
@@ -125,8 +125,19 @@ describe("lndUtils", () => {
     expect((endBalance - initBalance) * 1000).toBeCloseTo(totalFees, 0)
   })
 
-  it("runs deleteExpiredInvoiceUser without throw an exception", async () => {
+  it("deletes expired InvoiceUser without throw an exception", async () => {
+    const delta = 90 // days
+    const mockDate = new Date()
+    mockDate.setDate(mockDate.getDate() + delta)
+    jest.spyOn(global.Date, "now").mockImplementation(() => new Date(mockDate).valueOf())
+
+    const queryDate = new Date(Date.now())
+    queryDate.setDate(queryDate.getDate() - delta)
+
+    const invoicesCount = await InvoiceUser.countDocuments({
+      timestamp: { $lt: queryDate },
+    })
     const result = await deleteExpiredInvoiceUser()
-    expect(result.deletedCount).toBe(0)
+    expect(result.deletedCount).toBe(invoicesCount)
   })
 })
