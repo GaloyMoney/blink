@@ -1,5 +1,5 @@
 import moment from "moment"
-import { getInvoiceAttempt, updateRoutingFees } from "@services/lnd/utils"
+import { deleteExpiredInvoiceUser, getInvoiceAttempt, updateRoutingFees } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { ledger } from "@services/mongodb"
 import { sleep } from "@core/utils"
@@ -119,5 +119,10 @@ describe("lndUtils", () => {
     const endBalance = await ledger.getBankOwnerBalance()
 
     expect((endBalance - initBalance) * 1000).toBeCloseTo(totalFees, 0)
+  })
+
+  it("runs deleteExpiredInvoiceUser without throw an exception", async () => {
+    const result = await deleteExpiredInvoiceUser()
+    expect(result.deletedCount).toBe(0)
   })
 })

@@ -32,7 +32,7 @@ import { FEECAP, FEEMIN, params } from "./auth"
 // milliseconds in a day
 const MS_PER_DAY = 864e5
 
-export const deleteExpiredInvoiceUser = async () => {
+export const deleteExpiredInvoiceUser = () => {
   // this should be longer than the invoice validity time
 
   const delta = 30 // days
@@ -41,7 +41,7 @@ export const deleteExpiredInvoiceUser = async () => {
   date.setDate(date.getDate() - delta)
   // TODO: assert: only paid: true invoice should be remaining here
   // other invoiceUser should be deleted alongside deletion of lnd invoice
-  await InvoiceUser.deleteMany({ timestamp: { lt: date } })
+  return InvoiceUser.deleteMany({ timestamp: { $lt: date } })
 }
 
 export const deleteFailedPaymentsAllLnds = async () => {
