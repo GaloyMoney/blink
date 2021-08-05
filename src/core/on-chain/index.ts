@@ -61,13 +61,11 @@ export const getOnChainTransactions = async ({
 export const OnChainMixin = (superclass) =>
   class extends superclass {
     readonly config: UserWalletConfig
-    // TODO? is this ok here?
     readonly bitcoindClient
 
     constructor(...args) {
       super(...args)
       this.config = args[0].config
-      // TODO? is this ok here?
       this.bitcoindClient = new BitcoindClient()
     }
 
