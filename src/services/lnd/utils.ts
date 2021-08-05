@@ -35,7 +35,7 @@ const MS_PER_DAY = 864e5
 export const deleteExpiredInvoiceUser = () => {
   // this should be longer than the invoice validity time
 
-  const delta = 30 // days
+  const delta = 90 // days
 
   const date = new Date()
   date.setDate(date.getDate() - delta)
