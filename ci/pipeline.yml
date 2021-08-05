@@ -24,8 +24,8 @@ groups:
   - check-code
   - build-edge-image
   - install-deps
-- name: images
-  jobs: [ build-pipeline-image, build-circleci-image ]
+- name: image
+  jobs: [ build-pipeline-image ]
 
 jobs:
 - name: build-pipeline-image
@@ -49,29 +49,6 @@ jobs:
       run:
         path: build
   - put: pipeline-image
-    params:
-      image: image/image.tar
-- name: build-circleci-image
-  serial: true
-  plan:
-  - {get: circleci-image-def, trigger: true}
-  - task: build
-    privileged: true
-    config:
-      platform: linux
-      image_resource:
-        type: registry-image
-        source:
-          repository: vito/oci-build-task
-      inputs:
-      - name: circleci-image-def
-      outputs:
-      - name: image
-      params:
-        CONTEXT: circleci-image-def/ci/circleci-image
-      run:
-        path: build
-  - put: circleci-image
     params:
       image: image/image.tar
 
@@ -221,20 +198,6 @@ resources:
   type: git
   source:
     paths: [ci/image/Dockerfile]
-    uri: #@ data.values.git_uri
-    branch: #@ data.values.git_branch
-    private_key: #@ data.values.github_private_key
-- name: circleci-image
-  type: registry-image
-  source:
-    tag: latest
-    username: #@ data.values.docker_registry_user
-    password: #@ data.values.docker_registry_password
-    repository: #@ data.values.docker_registry + "/galoy-app-circleci-pipeline"
-- name: circleci-image-def
-  type: git
-  source:
-    paths: [ci/circleci-image/Dockerfile]
     uri: #@ data.values.git_uri
     branch: #@ data.values.git_branch
     private_key: #@ data.values.github_private_key
