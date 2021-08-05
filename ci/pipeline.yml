@@ -68,7 +68,7 @@ jobs:
       outputs:
       - name: image
       params:
-        CONTEXT: circleci-image-def/ci/image
+        CONTEXT: circleci-image-def/ci/circleci-image
       run:
         path: build
   - put: circleci-image

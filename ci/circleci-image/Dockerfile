@@ -1,7 +1,7 @@
 FROM alpine
 
 RUN apk update \
-  && apk add bash make git docker curl python jq rsync openssh
+  && apk add bash make git docker curl py-pip jq rsync openssh
 
 # Install gcloud
 RUN curl -sSL https://sdk.cloud.google.com | bash
