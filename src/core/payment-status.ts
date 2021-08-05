@@ -10,10 +10,7 @@ export const MakePaymentStatusChecker = ({
   const getStatus = (): ResultAsync<PaymentStatus, PaymentStatusError> => {
     return decodedInvoice
       .asyncAndThen(({ paymentHash }) => findUserInvoice(paymentHash))
-      .map((invoice) => ({
-        paymentHash: invoice._id,
-        status: invoice.paid ? "paid" : "pending",
-      }))
+      .map((invoice) => (invoice.paid ? "paid" : "pending"))
   }
 
   return decodedInvoice.map(({ paymentHash }) => {

@@ -3,10 +3,7 @@ type InvoiceLookupError = ErrorWithMessage<InvoiceLookupErrorType>
 
 type PaymentStatusError = LnInvoiceDecodeError | InvoiceLookupError
 
-type PaymentStatus = {
-  paymentHash: PaymentHash
-  status: "paid" | "pending"
-}
+type PaymentStatus = "paid" | "pending"
 
 type PaymentStatusChecker = {
   paymentHash: PaymentHash

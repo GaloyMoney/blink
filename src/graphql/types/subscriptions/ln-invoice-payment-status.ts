@@ -42,8 +42,7 @@ const LnInvoicePaymentStatusSubscription = {
         const result = await statusChecker.getStatus()
 
         if (result.isOk()) {
-          const { status } = result.value
-          if (status === "paid") {
+          if (result.value === "paid") {
             clearInterval(intervalId)
             pubsub.publish(invoiceEventName, { errors: [], status: "PAID" })
           }
