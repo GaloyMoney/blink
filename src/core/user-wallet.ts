@@ -107,8 +107,6 @@ export abstract class UserWallet {
     return rawTransactions.map((item) => {
       const amount = item.credit - item.debit
       const isCredit = amount > 0
-      const isValidCreditMemo = isCredit && amount >= MEMO_SHARING_SATS_THRESHOLD
-      const isDebit = !isCredit
 
       const memoUsername = item.username
         ? isCredit
@@ -116,8 +114,11 @@ export abstract class UserWallet {
           : `to ${item.username}`
         : null
 
-      const memoSpamFilter = (memoString) =>
-        memoString ? (isDebit || isValidCreditMemo ? memoString : null) : null
+      const memoSpamFilter = (memoString) => {
+        const creditBelowThreshold = isCredit && amount < MEMO_SHARING_SATS_THRESHOLD
+        const isValidCreditMemo = !creditBelowThreshold
+        return memoString ? (isValidCreditMemo ? memoString : null) : null
+      }
       const memoPayer = memoSpamFilter(item.memoPayer)
       const memo = memoSpamFilter(item.memo)
 
