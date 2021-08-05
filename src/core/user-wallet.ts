@@ -103,6 +103,7 @@ export abstract class UserWallet {
 
   async getTransactions(): Promise<Array<ITransaction>> {
     const rawTransactions = await this.getRawTransactions()
+    const lightningFundingUser = await User.findOne({ role: "funder" })
 
     return rawTransactions.map((item) => {
       const amount = item.credit - item.debit
@@ -115,9 +116,17 @@ export abstract class UserWallet {
         : null
 
       const memoSpamFilter = (memoString) => {
-        const creditBelowThreshold = isCredit && amount < MEMO_SHARING_SATS_THRESHOLD
-        const isValidCreditMemo = !creditBelowThreshold
-        return memoString ? (isValidCreditMemo ? memoString : null) : null
+        const iscreditBelowThreshold = isCredit && amount < MEMO_SHARING_SATS_THRESHOLD
+        const funderPayer =
+          item.username && item.username == lightningFundingUser?.username
+
+        const isCreditWithValidMemo = !iscreditBelowThreshold || funderPayer
+
+        return memoString
+          ? !isCredit || isCreditWithValidMemo
+            ? memoString
+            : null
+          : null
       }
       const memoPayer = memoSpamFilter(item.memoPayer)
       const memo = memoSpamFilter(item.memo)
