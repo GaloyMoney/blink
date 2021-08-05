@@ -38,7 +38,7 @@ export const setupMongoConnection = async () => {
       useFindAndModify: false,
     })
   } catch (err) {
-    baseLogger.fatal({ err, path }, `error connecting to mongodb`)
+    baseLogger.fatal({ err, user, address, db }, `error connecting to mongodb`)
     await sleep(100)
     exit(99)
   }
@@ -49,7 +49,7 @@ export const setupMongoConnection = async () => {
     await Transaction.syncIndexes()
     await InvoiceUser.syncIndexes()
   } catch (err) {
-    baseLogger.fatal({ err, path }, `error setting the indexes`)
+    baseLogger.fatal({ err, user, address, db }, `error setting the indexes`)
     await sleep(100)
     exit(99)
   }
@@ -63,7 +63,7 @@ export const setupMongoConnectionSecondary = async () => {
     })
     mongoose.set("runValidators", true)
   } catch (err) {
-    baseLogger.fatal({ err, path }, `error connecting to secondary mongodb`)
+    baseLogger.fatal({ err, user, address, db }, `error connecting to secondary mongodb`)
     await sleep(100)
     exit(99)
   }
