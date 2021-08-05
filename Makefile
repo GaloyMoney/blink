@@ -27,6 +27,9 @@ watch-unit:
 	$(BIN_DIR)/jest --clearCache
 	NODE_ENV=test LOGLEVEL=warn $(BIN_DIR)/jest --watch --config ./test/jest-unit.config.js 
 
+watch-check:
+	$(BIN_DIR)/tsc --watch  -p tsconfig-build.json --noEmit --skipLibCheck
+
 integration:
 	yarn test:integration
 
