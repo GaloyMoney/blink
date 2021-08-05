@@ -12,7 +12,7 @@ export const MakePaymentStatusChecker = ({
   }
 
   const paymentHash = decodedInvoice.value.paymentHash
-  const getStatus = (): ResultAsync<PaymentStatus, PaymentStatusError> => {
+  const getStatus = (): ResultAsync<PaymentStatus, InvoiceLookupError> => {
     return findUserInvoice(paymentHash).map((invoice) =>
       invoice.paid ? "paid" : "pending",
     )
