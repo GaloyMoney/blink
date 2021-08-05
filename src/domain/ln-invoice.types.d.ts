@@ -2,14 +2,14 @@ type LnInvoiceDecodeErrorType = "LnInvoiceDecodeError"
 type LnInvoiceDecodeError = ErrorWithMessage<LnInvoiceDecodeErrorType>
 
 type PaymentHash = {
-  inner: string
+  readonly inner: string
 }
 
 type PaymentSecret = {
-  inner: string
+  readonly inner: string
 }
 
 type LnInvoice = {
-  paymentHash: PaymentHash
-  paymentSecret: PaymentSecret
+  readonly paymentHash: PaymentHash
+  readonly paymentSecret: PaymentSecret
 }

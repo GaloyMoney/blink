@@ -6,6 +6,6 @@ type PaymentStatusError = LnInvoiceDecodeError | InvoiceLookupError
 type PaymentStatus = "paid" | "pending"
 
 type PaymentStatusChecker = {
-  paymentHash: PaymentHash
-  getStatus: () => ResultAsync<PaymentStatus, PaymentStatusError>
+  readonly paymentHash: PaymentHash
+  readonly getStatus: () => ResultAsync<PaymentStatus, PaymentStatusError>
 }
