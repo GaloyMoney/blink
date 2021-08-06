@@ -9,14 +9,17 @@ import {
 import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
 
-import { updateUsersPendingPayment } from "@core/balance-sheet"
+import {
+  updatePendingLightningTransactions,
+  updateUsersPendingPayment,
+} from "@core/balance-sheet"
 import { SpecterWallet } from "@core/specter-wallet"
 
 const main = async () => {
   const mongoose = await setupMongoConnection()
 
   await updateEscrows()
-  await updateUsersPendingPayment()
+  await updatePendingLightningTransactions()
 
   await deleteExpiredInvoiceUser()
   await deleteFailedPaymentsAllLnds()
@@ -29,6 +32,8 @@ const main = async () => {
   await specterWallet.tentativelyRebalance()
 
   await updateRoutingFees()
+
+  await updateUsersPendingPayment({ onchainOnly: true })
 
   await mongoose.connection.close()
 
