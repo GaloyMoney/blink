@@ -1,5 +1,5 @@
 import { createHash, randomBytes } from "crypto"
-import { getUserLimits } from "@config/app"
+import { MEMO_SHARING_SATS_THRESHOLD, getUserLimits } from "@config/app"
 import {
   InsufficientBalanceError,
   LightningPaymentError,
@@ -11,7 +11,7 @@ import { FEECAP } from "@services/lnd/auth"
 import { getActiveLnd, nodesPubKey, getInvoiceAttempt } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { ledger } from "@services/mongodb"
-import { InvoiceUser } from "@services/mongoose/schema"
+import { InvoiceUser, User } from "@services/mongoose/schema"
 import { getHash, sleep } from "@core/utils"
 import {
   cancelHodlInvoice,
@@ -34,7 +34,7 @@ jest.spyOn(global.Date, "now").mockImplementation(() => new Date(date).valueOf()
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
-let userWallet0, userWallet1, userWallet2
+let userWallet0, userWallet1, userWallet2, userWallet4
 let initBalance0, initBalance1
 const amountInvoice = 1000
 const userLimits = getUserLimits({ level: 1 })
@@ -43,6 +43,7 @@ beforeAll(async () => {
   userWallet0 = await getUserWallet(0)
   userWallet1 = await getUserWallet(1)
   userWallet2 = await getUserWallet(2)
+  userWallet4 = await getUserWallet(4)
 })
 
 beforeEach(async () => {
@@ -162,20 +163,35 @@ describe("UserWallet - Lightning Pay", () => {
       memo: memoSpamAboveThreshold,
     })
 
+    const satsFunder = 10
+    const memoFunderBelowThreshold = "Funder message below threshold"
+    const resFunderBelowThreshold = await userWallet4.pay({
+      username: userWallet0.user.username,
+      amount: satsFunder,
+      memo: memoFunderBelowThreshold,
+    })
+
     // fetch transactions from db
     const userTransaction0 = await userWallet0.getTransactions()
-    const transaction0Above = userTransaction0[0]
-    const transaction0Below = userTransaction0[1]
+    const transaction0FunderBelow = userTransaction0[0]
+    const transaction0Above = userTransaction0[1]
+    const transaction0Below = userTransaction0[2]
 
     const userTransaction1 = await userWallet1.getTransactions()
     const transaction1Above = userTransaction1[0]
     const transaction1Below = userTransaction1[1]
 
+    const funderTransaction4 = await userWallet4.getTransactions()
+    const transaction4FunderBelow = funderTransaction4[0]
+
     // confirm both transactions succeeded
     expect(resBelowThreshold).toBe("success")
     expect(resAboveThreshold).toBe("success")
+    expect(resFunderBelowThreshold).toBe("success")
 
     // check below-threshold transaction for recipient was filtered
+    expect(transaction0Below.amount).toBeLessThan(MEMO_SHARING_SATS_THRESHOLD)
+    expect(transaction0Below.amount).toBeGreaterThanOrEqual(0)
     expect(transaction0Below).toHaveProperty("username", userWallet1.user.username)
     expect(transaction0Below).toHaveProperty(
       "description",
@@ -185,10 +201,27 @@ describe("UserWallet - Lightning Pay", () => {
     expect(transaction1Below).toHaveProperty("description", memoSpamBelowThreshold)
 
     // check above-threshold transaction for recipient was NOT filtered
+    expect(transaction0Above.amount).toBeGreaterThanOrEqual(MEMO_SHARING_SATS_THRESHOLD)
     expect(transaction0Above).toHaveProperty("username", userWallet1.user.username)
     expect(transaction0Above).toHaveProperty("description", memoSpamAboveThreshold)
     expect(transaction1Above).toHaveProperty("username", userWallet0.user.username)
     expect(transaction1Above).toHaveProperty("description", memoSpamAboveThreshold)
+
+    // check funder below-threshold transaction for recipient was NOT filtered
+    const fundingUser = await User.findOne({ role: "funder" })
+    expect(fundingUser.username).toBe(userWallet4.user.username)
+    expect(transaction0FunderBelow.amount).toBeLessThan(MEMO_SHARING_SATS_THRESHOLD)
+    expect(transaction0FunderBelow.amount).toBeGreaterThanOrEqual(0)
+    expect(transaction0FunderBelow).toHaveProperty("username", userWallet4.user.username)
+    expect(transaction0FunderBelow).toHaveProperty(
+      "description",
+      memoFunderBelowThreshold,
+    )
+    expect(transaction4FunderBelow).toHaveProperty("username", userWallet0.user.username)
+    expect(transaction4FunderBelow).toHaveProperty(
+      "description",
+      memoFunderBelowThreshold,
+    )
 
     // check contacts being added
     userWallet0 = await getUserWallet(0)
