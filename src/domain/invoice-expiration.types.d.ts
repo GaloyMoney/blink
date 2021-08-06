@@ -1,0 +1,3 @@
+type InvoiceExpiration = {
+  inner: Date
+}
