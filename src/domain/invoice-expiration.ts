@@ -12,7 +12,9 @@ export const invoiceExpirationForCurrency = (
   const now = moment(date)
   const delay = DEFAULT_EXPIRATIONS[currency]
   now.add(delay.value, delay.unit)
+  const inner = now.toDate()
   return {
-    inner: now.toDate(),
+    inner,
+    toISOString: () => inner.toISOString(),
   }
 }
