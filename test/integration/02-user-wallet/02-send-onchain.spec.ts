@@ -353,7 +353,7 @@ describe("UserWallet - onChainPay", () => {
   })
 
   it("fails if the amount is less than on chain dust amount", async () => {
-    const address = await bitcoindOutside.getNewAddress()
+    const address = await bitcoindOutside.getNewAddress({})
     expect(
       userWallet0.onChainPay({ address, amount: yamlConfig.onchainDustAmount - 1 }),
     ).rejects.toThrow()
