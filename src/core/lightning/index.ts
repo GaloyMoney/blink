@@ -1,17 +1,19 @@
 import assert from "assert"
-import { createHash } from "crypto"
+import { ResultAsync } from "neverthrow"
 import {
   cancelHodlInvoice,
-  createInvoice,
   GetInvoiceResult,
   getPayment,
   payViaPaymentDetails,
   payViaRoutes,
 } from "lightning"
-import moment from "moment"
+import { toSats } from "@domain/primitives/btc"
 import lnService from "ln-service"
 
 import { TIMEOUT_PAYMENT } from "@services/lnd/auth"
+import { MakeLndService } from "@services/lnd/service"
+import { unsafeThrowErrAsync } from "@domain/utils"
+import { invoiceExpirationForCurrency } from "@domain/invoice-expiration"
 import {
   getActiveLnd,
   getInvoiceAttempt,
@@ -47,16 +49,6 @@ export type ITxType =
   | "on_us"
 export type payInvoiceResult = "success" | "failed" | "pending" | "already_paid"
 
-// this value is here so that it can get mocked.
-// there could probably be a better design
-// but mocking on mixin is tricky
-export const delay = (currency) => {
-  return {
-    BTC: { value: 1, unit: "days" },
-    USD: { value: 2, unit: "mins" },
-  }[currency]
-}
-
 export const LightningMixin = (superclass) =>
   class extends superclass {
     readonly config: UserWalletConfig
@@ -74,13 +66,6 @@ export const LightningMixin = (superclass) =>
       ])
     }
 
-    getExpiration = (input) => {
-      // TODO: manage USD shorter time
-      const currency = "BTC"
-
-      return input.add(delay(currency).value, delay(currency).unit)
-    }
-
     async addInvoice({
       value,
       memo,
@@ -90,10 +75,6 @@ export const LightningMixin = (superclass) =>
         throw new Error("value can't be negative")
       }
 
-      let request, id, input
-
-      const expires_at = this.getExpiration(moment()).toDate()
-
       let lnd: AuthenticatedLnd, pubkey: string
 
       try {
@@ -102,31 +83,18 @@ export const LightningMixin = (superclass) =>
         throw new LndOfflineError("no active lnd to create an invoice")
       }
 
-      try {
-        input = {
-          lnd,
-          tokens: value,
-          expires_at,
-        }
+      const lndService = MakeLndService(lnd)
+      const result: ResultAsync<RegisteredInvoice, LightningServiceError> =
+        lndService.registerInvoice({
+          description: typeof memo == "string" ? memo : "",
+          satoshis: toSats(value),
+          expiresAt: invoiceExpirationForCurrency("BTC", new Date()),
+        })
 
-        if (selfGenerated) {
-          // generated through the mobile app
-          input["description"] = memo
-        } else {
-          // lnpay // static invoice
-          const description_string = `pay ${this.user.username}`
-          const sha256 = createHash("sha256")
-          const description_hash = sha256.update(description_string).digest("hex")
-          input["description_hash"] = description_hash
-        }
+      const lnInvoice = (await unsafeThrowErrAsync(result)).invoice
 
-        const result = await createInvoice(input)
-        request = result.request
-        id = result.id
-      } catch (err) {
-        const error = "impossible to create the invoice"
-        throw new LoggedError(error)
-      }
+      const request = lnInvoice.paymentRequest.inner
+      const id = lnInvoice.paymentHash.inner
 
       try {
         const result = await new InvoiceUser({
