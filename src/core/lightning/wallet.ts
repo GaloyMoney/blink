@@ -13,7 +13,7 @@ import { getWalletFromRole } from "../wallet-factory"
  */
 export class LightningUserWallet extends OnChainMixin(LightningMixin(UserWallet)) {
   constructor(args: UserWalletConstructorArgs) {
-    super({ ...args })
+    super(args)
   }
 
   async addEarn(ids) {

@@ -12,12 +12,14 @@ export abstract class UserWallet {
   static lastPrice: number
 
   // FIXME typing : https://thecodebarbarian.com/working-with-mongoose-in-typescript.html
-  user: typeof User // mongoose object
+  user: UserType // mongoose object
   readonly logger: Logger
+  readonly config: UserWalletConfig
 
-  constructor({ user, logger }) {
+  constructor({ user, logger, config }: UserWalletConstructorArgs) {
     this.user = user
     this.logger = logger
+    this.config = config
   }
 
   // async refreshUser() {

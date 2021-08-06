@@ -43,22 +43,6 @@ type onChainWalletConfig = {
   dustThreshold: number
 }
 
-type UserWalletConfig = {
-  dustThreshold: number
-  onchainMinConfirmations: number
-  limits: ITransactionLimits
-  name: string
-}
-
-type WalletConstructorArgs = {
-  user: UserType
-  logger: Logger
-}
-
-type UserWalletConstructorArgs = WalletConstructorArgs & {
-  config: UserWalletConfig
-}
-
 type IpConfig = {
   ipRecordingEnabled: boolean
   proxyCheckingEnabled: boolean
