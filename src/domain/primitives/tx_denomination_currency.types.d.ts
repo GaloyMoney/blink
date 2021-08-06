@@ -1,0 +1,1 @@
+type TxDenominationCurrency = "USD" | "BTC"
