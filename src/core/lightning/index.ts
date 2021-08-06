@@ -52,9 +52,9 @@ export const LightningMixin = (superclass) =>
     readonly config: UserWalletConfig
     readonly invoices: IWalletInvoicesRepository
 
-    constructor(...args) {
-      super(...args)
-      this.config = args[0].config
+    constructor(args: UserWalletConstructorArgs) {
+      super(args)
+      this.config = args.config
       this.invoices = InvoicesRepository()
     }
 
