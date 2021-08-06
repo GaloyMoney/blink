@@ -5,6 +5,7 @@ import { InvoiceUser, User } from "@services/mongoose/schema"
 import { ledger } from "@services/mongodb"
 
 import { WalletFactory } from "./wallet-factory"
+import { runInParallel } from "./utils"
 
 const logger = baseLogger.child({ module: "balanceSheet" })
 
@@ -17,51 +18,37 @@ export const updatePendingLightningTransactions = async () => {
     .cursor({ batchSize: 100 })
     .exec()
 
-  const updatePendingInvoices = async (userIds, index) => {
-    let user, userWallet
-    for await (const { _id } of userIds) {
+  await runInParallel({
+    iterator: usersWithPendingInvoices,
+    processor: async ({ _id }, index) => {
       logger.trace("updating pending invoices for user %s in worker %d", _id, index)
-      user = await User.findOne({ _id })
-      userWallet = await WalletFactory({ user, logger })
+      const user = await User.findOne({ _id })
+      const userWallet = await WalletFactory({ user, logger })
       await userWallet.updatePendingInvoices()
-    }
-  }
+    },
+  })
 
-  // starts 5 workers sharing the same iterator, i.e. update 5 users in parallel
-  const invoiceWorkers = new Array(5)
-    .fill(usersWithPendingInvoices)
-    .map(updatePendingInvoices)
-
-  await Promise.allSettled(invoiceWorkers)
-
-  logger.trace("finish updating pending invoices")
+  logger.info("finish updating pending invoices")
 
   const accountsWithPendingPayments = ledger.getAccountsWithPendingTransactions({
     type: "payment",
   })
 
-  const updatePendingPayments = async (accounts, index) => {
-    let user, userWallet
-    for await (const account of accounts) {
+  await runInParallel({
+    iterator: accountsWithPendingPayments,
+    processor: async (account, index) => {
       logger.trace(
         "updating pending payments for account %s in worker %d",
         account,
         index,
       )
-      user = await User.findOne({ _id: ledger.resolveAccountId(account) })
-      userWallet = await WalletFactory({ user, logger })
+      const user = await User.findOne({ _id: ledger.resolveAccountId(account) })
+      const userWallet = await WalletFactory({ user, logger })
       await userWallet.updatePendingPayments()
-    }
-  }
+    },
+  })
 
-  // starts 5 workers sharing the same iterator, i.e. update 5 users in parallel
-  const paymentWorkers = new Array(5)
-    .fill(accountsWithPendingPayments)
-    .map(updatePendingPayments)
-
-  await Promise.allSettled(paymentWorkers)
-
-  logger.trace("finish updating pending payments")
+  logger.info("finish updating pending payments")
 }
 
 export const updateUsersPendingPayment = async ({
@@ -71,15 +58,21 @@ export const updateUsersPendingPayment = async ({
     await updatePendingLightningTransactions()
   }
 
-  let userWallet
   const users = User.find({ onchain: { $exists: true, $not: { $size: 0 } } }).cursor({
     batchSize: 100,
   })
-  for await (const user of users) {
-    logger.trace("updating onchain receipt for user %o", user._id)
-    userWallet = await WalletFactory({ user, logger })
-    await userWallet.updateOnchainReceipt()
-  }
+
+  await runInParallel({
+    iterator: users,
+    processor: async (user, index) => {
+      logger.trace("updating onchain receipt for user %o in worker %d", user._id, index)
+      const userWallet = await WalletFactory({ user, logger })
+      await userWallet.updateOnchainReceipt()
+    },
+    workers: 10,
+  })
+
+  logger.info("finish updating onchain receipt")
 }
 
 export const getLedgerAccounts = async () => {

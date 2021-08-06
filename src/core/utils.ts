@@ -169,3 +169,22 @@ export const isIPTypeBlacklisted = ({ type }) =>
   yamlConfig.blacklistedIPTypes?.includes(type)
 
 export const isIPBlacklisted = ({ ip }) => yamlConfig.blacklistedIPs?.includes(ip)
+
+/**
+ * Process an iterator with N workers
+ * @method async
+ * @param  iterator iterator to process
+ * @param  processor async function that process each item
+ * @param  workers  number of workers to use. 5 by default
+ * @return       Promise with all workers
+ */
+export const runInParallel = ({ iterator, processor, workers = 5 }) => {
+  const runWorkerInParallel = async (items, index) => {
+    for await (const item of items) {
+      await processor(item, index)
+    }
+  }
+  // starts N workers sharing the same iterator, i.e. process N items in parallel
+  const jobWorkers = new Array(workers).fill(iterator).map(runWorkerInParallel)
+  return Promise.allSettled(jobWorkers)
+}
