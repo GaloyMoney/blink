@@ -102,8 +102,12 @@ export abstract class UserWallet {
   }
 
   async getTransactions(): Promise<Array<ITransaction>> {
-    const rawTransactions = await this.getRawTransactions()
-    const lightningFundingUser = await User.findOne({ role: "funder" })
+    const rawTransactionsPromise = this.getRawTransactions()
+    const lightningFundingUserPromise = User.findOne({ role: "funder" })
+    const [rawTransactions, lightningFundingUser] = await Promise.all([
+      rawTransactionsPromise,
+      lightningFundingUserPromise,
+    ])
 
     return rawTransactions.map((item) => {
       const amount = item.credit - item.debit
