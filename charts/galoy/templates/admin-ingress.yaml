@@ -14,7 +14,7 @@ spec:
   tls:
   - hosts:
     - {{.Values.adminIngress.host}}
-    secretName: {{.Values.global.network}}-tls
+    secretName: {{.Values.adminIngress.tlsSecretName}}
   rules:
   - host: {{.Values.adminIngress.host}}
     http:
