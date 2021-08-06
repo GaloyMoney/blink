@@ -192,3 +192,12 @@ export class OnChainFeeEstimationError extends CustomError {
     })
   }
 }
+
+export class TwoFactorError extends CustomError {
+  constructor(
+    message = "Incorrect code",
+    { forwardToClient = true, logger, level = "warn" as const, ...metadata },
+  ) {
+    super(message, "2FA_ERROR", { forwardToClient, logger, level, metadata })
+  }
+}

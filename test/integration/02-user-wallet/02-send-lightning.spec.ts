@@ -5,6 +5,7 @@ import {
   LightningPaymentError,
   SelfPaymentError,
   TransactionRestrictedError,
+  TwoFactorError,
   ValidationInternalError,
 } from "@core/error"
 import { FEECAP } from "@services/lnd/auth"
@@ -19,6 +20,8 @@ import {
   createHodlInvoice,
   createInvoice,
   decodePaymentRequest,
+  enable2FA,
+  generateTokenHelper,
   getInvoice,
   getUserWallet,
   lndOutside1,
@@ -632,6 +635,39 @@ describe("UserWallet - Lightning Pay", () => {
         const { BTC: finalBalance } = await userWallet1.getBalances()
         expect(finalBalance).toBe(initBalance1)
       }, 60000)
+    })
+
+    describe("2FA", () => {
+      it(`fails to pay above 2fa limit without 2fa token`, async () => {
+        enable2FA({ wallet: userWallet0 })
+        const remainingLimit = await userWallet0.user.remainingTwoFactorLimit()
+
+        const { request } = await createInvoice({
+          lnd: lndOutside1,
+          tokens: remainingLimit + 1,
+        })
+        await expect(fn(userWallet0)({ invoice: request })).rejects.toThrowError(
+          TwoFactorError,
+        )
+
+        const { BTC: finalBalance } = await userWallet0.getBalances()
+        expect(finalBalance).toBe(initBalance0)
+      })
+
+      it(`Makes large payment with a 2fa code`, async () => {
+        enable2FA({ wallet: userWallet0 })
+        const { request } = await createInvoice({
+          lnd: lndOutside1,
+          tokens: userWallet0.user.twoFactor.threshold + 1,
+        })
+
+        const twoFactorToken = generateTokenHelper({
+          secret: userWallet0.user.twoFactor.secret,
+        })
+        expect(await fn(userWallet0)({ invoice: request, twoFactorToken })).toBe(
+          "success",
+        )
+      })
     })
   })
 

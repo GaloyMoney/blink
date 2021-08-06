@@ -44,4 +44,5 @@ interface IOnChainPayment {
   amount: number // sats
   memo?: string
   sendAll?: boolean
+  twoFactorToken?: string
 }

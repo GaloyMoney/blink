@@ -20,11 +20,14 @@ import {
   bitcoindClient,
   bitcoindOutside,
   mineBlockAndSync,
+  enable2FA,
+  generateTokenHelper,
+  RANDOM_ADDRESS,
 } from "test/helpers"
 import { ledger } from "@services/mongodb"
-import { TransactionRestrictedError } from "@core/error"
 import { PaymentInitiationMethod } from "@domain/wallets"
 import * as Wallets from "@app/wallets"
+import { TwoFactorError, TransactionRestrictedError } from "@core/error"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
@@ -423,5 +426,30 @@ describe("UserWallet - onChainPay", () => {
         amount: onChainWalletConfig.dustThreshold - 1,
       }),
     ).rejects.toThrow()
+  })
+
+  describe("2FA", () => {
+    it("fails to pay above 2fa limit without 2fa token", async () => {
+      enable2FA({ wallet: userWallet0 })
+      const remainingLimit = await userWallet0.user.remainingTwoFactorLimit()
+      expect(
+        userWallet0.onChainPay({ address: RANDOM_ADDRESS, amount: remainingLimit + 1 }),
+      ).rejects.toThrowError(TwoFactorError)
+    })
+
+    it(`Makes large payment with a 2fa code`, async () => {
+      enable2FA({ wallet: userWallet0 })
+
+      const twoFactorToken = generateTokenHelper({
+        secret: userWallet0.user.twoFactor.secret,
+      })
+
+      const paymentResult = await userWallet0.onChainPay({
+        address: RANDOM_ADDRESS,
+        amount: userWallet0.user.twoFactor.threshold + 1,
+        twoFactorToken,
+      })
+      expect(paymentResult).toBe(true)
+    })
   })
 })

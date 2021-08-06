@@ -1,6 +1,7 @@
 import { btc2sat } from "@core/utils"
 import { balanceSheetIsBalanced, updateUsersPendingPayment } from "@core/balance-sheet"
 import { waitUntilChannelBalanceSyncAll } from "./lightning"
+import { generateToken } from "node-2fa"
 
 export * from "./bitcoin-core"
 export * from "./lightning"
@@ -33,4 +34,21 @@ export const resetDatabase = async (mongoose) => {
     .forEach(async (collectionName) => {
       await db.dropCollection(collectionName)
     })
+}
+
+export const generateTokenHelper = ({ secret }) => {
+  const generateTokenResult = generateToken(secret)
+  if (generateTokenResult && generateTokenResult.token) {
+    return generateTokenResult.token
+  }
+
+  fail("generateToken returned null")
+}
+
+export const enable2FA = async ({ wallet }) => {
+  if (!wallet.user.twoFactorEnabled) {
+    const { secret } = wallet.generate2fa()
+    const token = generateTokenHelper({ secret })
+    await wallet.save2fa({ secret, token })
+  }
 }

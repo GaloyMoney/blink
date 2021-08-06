@@ -3,10 +3,12 @@ import assert from "assert"
 import { User } from "@services/mongoose/schema"
 import { ledger } from "@services/mongodb"
 
-import { DbError } from "./error"
+import { DbError, TwoFactorError } from "./error"
 import { Balances } from "./interface"
 import { CSVAccountExport } from "./csv-account-export"
 import { sendNotification } from "./notifications/notification"
+import { getGaloyInstanceName, MEMO_SHARING_SATS_THRESHOLD } from "@config/app"
+import { generateSecret, verifyToken } from "node-2fa"
 
 export abstract class UserWallet {
   static lastPrice: number
@@ -199,6 +201,65 @@ export abstract class UserWallet {
     return usdValue
   }
 
+  generate2fa = () => {
+    const { secret, uri } = generateSecret({
+      name: getGaloyInstanceName(),
+      account: this.user.phone,
+    })
+    /*
+    { secret: 'XDQXYCP5AC6FA32FQXDGJSPBIDYNKK5W',
+      uri: 'otpauth://totp/My%20Awesome%20App:johndoe?secret=XDQXYCP5AC6FA32FQXDGJSPBIDYNKK5W&issuer=My%20Awesome%20App',
+      qr: 'https://chart.googleapis.com/chart?chs=166x166&chld=L|0&cht=qr&chl=otpauth://totp/My%20Awesome%20App:johndoe%3Fsecret=XDQXYCP5AC6FA32FQXDGJSPBIDYNKK5W%26issuer=My%20Awesome%20App'
+    }
+    */
+    return { secret, uri }
+  }
+
+  save2fa = async ({ secret, token }): Promise<boolean> => {
+    if (this.user.twoFactor.secret) {
+      throw new TwoFactorError("2FA is already set", { logger: this.logger })
+    }
+
+    const tokenIsValid = verifyToken(secret, token)
+
+    if (!tokenIsValid) {
+      throw new TwoFactorError(undefined, { logger: this.logger })
+    }
+
+    this.user.twoFactor.secret = secret
+
+    try {
+      await this.user.save()
+      return true
+    } catch (err) {
+      throw new DbError("Unable to save 2fa secret", {
+        forwardToClient: true,
+        logger: this.logger,
+        level: "error",
+        err,
+      })
+    }
+  }
+
+  delete2fa = async ({ token }): Promise<boolean> => {
+    if (!verifyToken(this.user.twoFactor.secret, token)) {
+      throw new TwoFactorError(undefined, { logger: this.logger })
+    }
+
+    try {
+      this.user.twoFactor.secret = undefined
+      await this.user.save()
+      return true
+    } catch (err) {
+      throw new DbError("Unable to delete 2fa secret", {
+        forwardToClient: true,
+        logger: this.logger,
+        level: "error",
+        err,
+      })
+    }
+  }
+
   sendBalance = async (): Promise<void> => {
     const { BTC: balanceSats } = await this.getBalances()
 
@@ -218,5 +279,19 @@ export abstract class UserWallet {
       title: `Your balance is $${balanceUsd} (${balanceSatsPrettified} sats)`,
       logger: this.logger,
     })
+  }
+
+  getUserLimits = async () => {
+    const remainingLimits = await Promise.all([
+      this.user.remainingTwoFactorLimit(),
+      this.user.remainingOnUsLimit(),
+      this.user.remainingWithdrawalLimit(),
+    ])
+
+    return {
+      remainingTwoFactorLimit: remainingLimits[0],
+      remainingOnUsLimit: remainingLimits[1],
+      remainingWithdrawalLimit: remainingLimits[2],
+    }
   }
 }

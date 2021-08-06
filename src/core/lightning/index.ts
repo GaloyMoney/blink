@@ -8,6 +8,7 @@ import {
 } from "lightning"
 import { toSats } from "@domain/bitcoin"
 import lnService from "ln-service"
+import { verifyToken } from "node-2fa"
 
 import { TIMEOUT_PAYMENT } from "@services/lnd/auth"
 import { LndService } from "@services/lnd"
@@ -33,6 +34,7 @@ import {
   RouteFindingError,
   SelfPaymentError,
   TransactionRestrictedError,
+  TwoFactorError,
 } from "../error"
 import { lockExtendOrThrow, redlock } from "../lock"
 import { transactionNotification } from "../notifications/payment"
@@ -236,7 +238,7 @@ export const LightningMixin = (superclass) =>
         features,
         max_fee,
       } = await validate({ params, logger: lightningLogger })
-      const { memo: memoPayer } = params
+      const { memo: memoPayer, twoFactorToken } = params
 
       // not including message because it contains the preimage and we don't want to log this
       lightningLogger = lightningLogger.child({
@@ -255,22 +257,40 @@ export const LightningMixin = (superclass) =>
         params,
       })
 
+      const remainingTwoFactorLimit = await this.user.remainingTwoFactorLimit()
+
+      if (this.user.twoFactor.secret && remainingTwoFactorLimit < tokens) {
+        if (!twoFactorToken) {
+          throw new TwoFactorError("Need a 2FA code to proceed with the payment", {
+            logger: lightningLogger,
+          })
+        }
+
+        if (!verifyToken(this.user.twoFactor.secret, twoFactorToken)) {
+          throw new TwoFactorError(undefined, { logger: lightningLogger })
+        }
+      }
+
       let fee
       let route
       let paymentPromise
       let feeKnownInAdvance
 
-      return redlock({ path: this.user._id, logger: lightningLogger }, async (lock) => {
-        const balance = await this.getBalances(lock)
+      return await redlock(
+        { path: this.user._id, logger: lightningLogger },
+        async (lock) => {
+          const balance = await this.getBalances(lock)
 
-        // On us transaction
-        if (isMyNode({ pubkey: destination }) || isPushPayment) {
-          const lightningLoggerOnUs = lightningLogger.child({ onUs: true, fee: 0 })
+          // On us transaction
+          if (isMyNode({ pubkey: destination }) || isPushPayment) {
+            const lightningLoggerOnUs = lightningLogger.child({ onUs: true, fee: 0 })
 
-          if (await this.user.limitHit({ on_us: true, amount: tokens })) {
-            const error = `Cannot transfer more than ${this.config.limits.onUsLimit} sats in 24 hours`
-            throw new TransactionRestrictedError(error, { logger: lightningLoggerOnUs })
-          }
+            const remainingOnUsLimit = await this.user.remainingOnUsLimit()
+
+            if (remainingOnUsLimit < tokens) {
+              const error = `Cannot transfer more than ${this.config.limits.onUsLimit} sats in 24 hours`
+              throw new TransactionRestrictedError(error, { logger: lightningLoggerOnUs })
+            }
 
           let payeeUser, pubkey
 
@@ -380,6 +400,14 @@ export const LightningMixin = (superclass) =>
           if (this.user.username) {
             await addContact({ uid: payeeUser._id, username: this.user.username })
           }
+
+          const remainingWithdrawalLimit = await this.user.remainingWithdrawalLimit()
+
+          if (remainingWithdrawalLimit < tokens) {
+            const error = `Cannot transfer more than ${this.config.limits.withdrawalLimit} sats in 24 hours`
+            throw new TransactionRestrictedError(error, { logger: lightningLogger })
+
+
 
           lightningLoggerOnUs.info(
             {
