@@ -1,3 +1,5 @@
+import { ResultAsync } from "neverthrow"
+
 export const toTypedError = <ErrorType>({
   unknownMessage,
   _type,
@@ -9,4 +11,14 @@ export const toTypedError = <ErrorType>({
       return { _type, message: unknownMessage }
     }
   }
+}
+
+export const unsafeThrowErrAsync = async <T, EType>(
+  result: ResultAsync<T, ErrorWithMessage<EType>>,
+): Promise<T> => {
+  const awaited = await result
+  if (awaited.isErr()) {
+    throw new Error(awaited.error.message)
+  }
+  return awaited.value
 }
