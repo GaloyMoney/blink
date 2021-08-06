@@ -61,9 +61,9 @@ export const LightningMixin = (superclass) =>
   class extends superclass {
     readonly config: UserWalletConfig
 
-    constructor(...args) {
-      super(...args)
-      this.config = args[0].config
+    constructor(args: UserWalletConstructorArgs) {
+      super(args)
+      this.config = args.config
     }
 
     async updatePending(lock) {

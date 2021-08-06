@@ -22,21 +22,6 @@ interface IRateLimits {
   blockDuration: number
 }
 
-type UserWalletConfig = {
-  dustThreshold: number
-  limits: ITransactionLimits
-  name: string
-}
-
-type WalletConstructorArgs = {
-  user: UserType
-  logger: Logger
-}
-
-type UserWalletConstructorArgs = WalletConstructorArgs & {
-  config: UserWalletConfig
-}
-
 // Currently unused types
 
 interface IAddBTCInvoiceRequest {
