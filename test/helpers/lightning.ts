@@ -159,7 +159,7 @@ export const resetLnds = async () => {
   for (const lnd of lnds) {
     const chainBalance = (await getChainBalance({ lnd })).chain_balance
     if (chainBalance > 0) {
-      const address = await bitcoindOutside.getNewAddress()
+      const address = await bitcoindOutside.getNewAddress({})
       await sendToChainAddress({
         lnd,
         address,

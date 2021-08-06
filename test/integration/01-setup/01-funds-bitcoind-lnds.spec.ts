@@ -49,7 +49,7 @@ describe("Bitcoind", () => {
 
   it("should be funded mining 10 blocks", async () => {
     const numOfBlocks = 10
-    const bitcoindAddress = await bitcoindOutside.getNewAddress()
+    const bitcoindAddress = await bitcoindOutside.getNewAddress({})
     await mineAndConfirm({
       walletClient: bitcoindOutside,
       numOfBlocks,

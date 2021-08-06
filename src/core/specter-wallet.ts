@@ -80,7 +80,7 @@ export class SpecterWallet {
   }
 
   async getColdStorageAddress() {
-    return await this.bitcoindWalletClient.getNewAddress()
+    return await this.bitcoindWalletClient.getNewAddress({})
   }
 
   // for debugging
@@ -285,7 +285,7 @@ export class SpecterWallet {
       throw new Error(err)
     }
 
-    const tx = await this.bitcoindClient.getTransaction({
+    const tx = await this.bitcoindWalletClient.getTransaction({
       txid,
       include_watchonly: true,
     })

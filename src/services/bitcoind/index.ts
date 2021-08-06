@@ -12,6 +12,37 @@ const connection_obj = {
   version: "0.21.0",
 }
 
+type GetAddressInfoResult = {
+  address: string
+  scriptPubKey: string
+  ismine: boolean
+  iswatchonly: boolean
+  solvable: boolean
+  desc?: string
+  isscript: boolean
+  ischange: boolean
+  iswitness: boolean
+  witness_version?: number
+  witness_program?: string
+  script?: string
+  hex?: string
+  pubkeys?: [string]
+  sigsrequired?: number
+  pubkey?: string
+  embedded?: Record<string, unknown>
+  iscompressed?: boolean
+  timestamp?: number
+  hdkeypath?: string
+  hdseedid?: string
+  hdmasterfingerprint?: string
+  labels: [string]
+}
+
+type ScriptSig = {
+  asm: string
+  hex: string
+}
+
 type ScriptPubKey = {
   asm: string
   hex: string
@@ -20,7 +51,15 @@ type ScriptPubKey = {
   addresses: [string]
 }
 
-type VOut = {
+export type VIn = {
+  txid: string
+  vout: number
+  scriptSig: ScriptSig
+  txinwitness: [string]
+  sequence: number
+}
+
+export type VOut = {
   value: number
   n: number
   scriptPubKey: ScriptPubKey
@@ -28,19 +67,57 @@ type VOut = {
 
 type DecodeRawTransactionResult = {
   txid: string
+  hash: string
+  size: number
+  vsize: number
+  weight: number
+  version: number
+  locktime: number
+  vin: [VIn]
   vout: [VOut]
 }
 
-type GetAddressInfoResult = {
+export enum TransactionCategory {
+  SEND = "send",
+  RECEIVE = "receive",
+  GENERATE = "generate",
+  IMMATURE = "immature",
+  ORPHAN = "orphan",
+}
+
+type ListTransactionsResult = {
+  "involvesWatchonly": boolean
+  "address": string
+  "category": TransactionCategory
+  "amount": number
+  "label": string
+  "vout": number
+  "fee": number
+  "confirmations": number
+  "generated": boolean
+  "trusted": boolean
+  "blockhash": string
+  "blockheight": number
+  "blockindex": number
+  "blocktime": number
+  "txid": string
+  "walletconflicts": [string]
+  "time": number
+  "timereceived": number
+  "comment": string
+  "bip125-replaceable": string
+  "abandoned": boolean
+}
+
+type InWalletTransactionDetails = {
+  involvesWatchonly: boolean
   address: string
-  scriptPubKey: string
-  ismine: boolean
-  iswatchonly: boolean
-  solvable: boolean
-  isscript: boolean
-  ischange: boolean
-  iswitness: boolean
-  // TODO? all avaialable: https://developer.bitcoin.org/reference/rpc/getaddressinfo.html#result
+  category: TransactionCategory
+  amount: number
+  label: string
+  vout: number
+  fee: number
+  abandoned: boolean
 }
 
 type InWalletTransaction = {
@@ -54,12 +131,20 @@ type InWalletTransaction = {
   "blockindex": number
   "blocktime": number
   "txid": string
+  "walletconflicts": [string]
   "time": number
   "timereceived": number
   "comment": string
   "bip125-replaceable": string
+  "details": [InWalletTransactionDetails]
   "hex": string
-  // TODO? all avaialable: https://developer.bitcoin.org/reference/rpc/gettransaction.html#result
+  "decoded": DecodeRawTransactionResult
+}
+
+type EstimateSmartFeeResult = {
+  feerate?: number
+  errors?: [string]
+  blocks: number
 }
 
 export class BitcoindClient {
@@ -97,18 +182,6 @@ export class BitcoindClient {
     return await this.client.decodeRawTransaction({ hexstring })
   }
 
-  // default client knows about all transactions of its wallets
-
-  async getTransaction({
-    txid,
-    include_watchonly = true,
-  }: {
-    txid: string
-    include_watchonly: boolean
-  }): Promise<InWalletTransaction> {
-    return await this.client.getTransaction({ txid, include_watchonly })
-  }
-
   // load/unload only used in tests, for now
 
   async loadWallet({
@@ -131,6 +204,25 @@ export class BitcoindClient {
   async getZmqNotifications(): Promise<[Record<string, unknown>]> {
     return await this.client.getZmqNotifications()
   }
+
+  // utils
+
+  async estimateSmartFee({
+    conf_target,
+    estimate_mode = "CONSERVATIVE",
+  }: {
+    conf_target: number
+    estimate_mode?: string
+  }): Promise<EstimateSmartFeeResult> {
+    const result: EstimateSmartFeeResult = await this.client.estimateSmartFee({
+      conf_target,
+      estimate_mode,
+    })
+    if (result.errors && result.errors.length) {
+      throw Error(JSON.stringify(result.errors))
+    }
+    return result
+  }
 }
 
 export class BitcoindWalletClient {
@@ -140,7 +232,10 @@ export class BitcoindWalletClient {
     this.client = new Client({ ...connection_obj, wallet: walletName })
   }
 
-  async getNewAddress(): Promise<string> {
+  async getNewAddress({ address_type }: { address_type?: string }): Promise<string> {
+    if (typeof address_type !== "undefined") {
+      return await this.client.getNewAddress({ address_type })
+    }
     return await this.client.getNewAddress()
   }
 
@@ -151,10 +246,15 @@ export class BitcoindWalletClient {
   async sendToAddress({
     address,
     amount,
+    fee_rate,
   }: {
     address: string
     amount: number
+    fee_rate?: number // sat/vB
   }): Promise<string> {
+    if (typeof fee_rate !== "undefined") {
+      return await this.client.sendToAddress({ address, amount, fee_rate })
+    }
     return await this.client.sendToAddress({ address, amount })
   }
 
@@ -166,6 +266,26 @@ export class BitcoindWalletClient {
     address: string
   }): Promise<[string]> {
     return await this.client.generateToAddress({ nblocks, address })
+  }
+
+  async getTransaction({
+    txid,
+    include_watchonly = true,
+    verbose = false,
+  }: {
+    txid: string
+    include_watchonly?: boolean
+    verbose?: boolean
+  }): Promise<InWalletTransaction> {
+    return await this.client.getTransaction({ txid, include_watchonly, verbose })
+  }
+
+  async listTransactions({
+    count,
+  }: {
+    count: number
+  }): Promise<[ListTransactionsResult]> {
+    return await this.client.listTransactions({ count })
   }
 
   async getBalance(): Promise<number> {

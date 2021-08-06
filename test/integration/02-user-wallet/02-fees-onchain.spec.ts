@@ -17,7 +17,7 @@ afterAll(async () => {
 
 describe("UserWallet - getOnchainFee", () => {
   it("returns a fee greater than zero for an external address", async () => {
-    const address = await bitcoindOutside.getNewAddress()
+    const address = await bitcoindOutside.getNewAddress({})
     const fee = await userWallet0.getOnchainFee({ address })
     expect(fee).toBeGreaterThan(0)
   })
