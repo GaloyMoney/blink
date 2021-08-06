@@ -1,29 +1,53 @@
 import { getBalance as getBitcoindBalance } from "@services/bitcoind"
 import { lndsBalances } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
-import { User } from "@services/mongoose/schema"
+import { InvoiceUser, User } from "@services/mongoose/schema"
 import { ledger } from "@services/mongodb"
 
 import { WalletFactory } from "./wallet-factory"
 
 const logger = baseLogger.child({ module: "balanceSheet" })
 
+export const updatePendingLightningTransactions = async () => {
+  let user, userWallet
+
+  // select distinct user ids from pending invoices
+  const usersWithPendingInvoices = InvoiceUser.aggregate([
+    { $match: { paid: false } },
+    { $group: { _id: "$uid" } },
+  ])
+    .cursor({ batchSize: 100 })
+    .exec()
+
+  for await (const { _id } of usersWithPendingInvoices) {
+    logger.trace("updating pending invoices for user %o", _id)
+    user = await User.findOne({ _id })
+    userWallet = await WalletFactory({ user, logger })
+    await userWallet.updatePendingInvoices()
+  }
+
+  const accounts = ledger.getAccountsWithPendingTransactions({ type: "payment" })
+  for await (const account of accounts) {
+    logger.trace("updating pending payments for account %o", account)
+    user = await User.findOne({ _id: ledger.resolveAccountId(account) })
+    userWallet = await WalletFactory({ user, logger })
+    await userWallet.updatePendingPayments()
+  }
+}
+
 export const updateUsersPendingPayment = async ({
   onchainOnly,
 }: { onchainOnly?: boolean } = {}) => {
+  if (!onchainOnly) {
+    await updatePendingLightningTransactions()
+  }
+
   let userWallet
-
-  for await (const user of User.find({})) {
-    logger.trace("updating user %o", user._id)
-
-    // A better approach would be to just loop over pending: true invoice/payment
+  const users = User.find({}).cursor({ batchSize: 100 })
+  for await (const user of users) {
+    logger.trace("updating onchain receipt for user %o", user._id)
     userWallet = await WalletFactory({ user, logger })
-
-    if (onchainOnly) {
-      await userWallet.updateOnchainReceipt()
-    } else {
-      await userWallet.updatePending()
-    }
+    await userWallet.updateOnchainReceipt()
   }
 }
 
