@@ -44,6 +44,19 @@ export const getAccountTransactions = async (account: string, query = {}) => {
   return { query: params, results, total }
 }
 
+export async function* getAccountsWithPendingTransactions(query = {}) {
+  const transactions = Transaction.aggregate([
+    { $match: { "pending": true, "account_path.0": liabilitiesMainAccount, ...query } },
+    { $group: { _id: "$accounts" } },
+  ])
+    .cursor({ batchSize: 100 })
+    .exec()
+
+  for await (const { _id } of transactions) {
+    yield _id
+  }
+}
+
 export const getAssetsBalance = (currency = "BTC") =>
   getAccountBalance(assetsMainAccount, { currency })
 
