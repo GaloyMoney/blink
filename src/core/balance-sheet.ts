@@ -43,7 +43,9 @@ export const updateUsersPendingPayment = async ({
   }
 
   let userWallet
-  const users = User.find({}).cursor({ batchSize: 100 })
+  const users = User.find({ onchain: { $exists: true, $not: { $size: 0 } } }).cursor({
+    batchSize: 100,
+  })
   for await (const user of users) {
     logger.trace("updating onchain receipt for user %o", user._id)
     userWallet = await WalletFactory({ user, logger })
