@@ -2,7 +2,7 @@ type AuthenticatedLnd = import("lightning").AuthenticatedLnd
 
 interface IAddInvoiceRequest {
   value: number
-  memo: string | undefined
+  memo: string
   selfGenerated?: boolean
 }
 

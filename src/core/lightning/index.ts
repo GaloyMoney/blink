@@ -68,7 +68,7 @@ export const LightningMixin = (superclass) =>
 
     async addInvoice({
       value,
-      memo,
+      memo = "",
       selfGenerated = true,
     }: IAddInvoiceRequest): Promise<string> {
       if (!!value && value < 0) {
