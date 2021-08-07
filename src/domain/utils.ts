@@ -10,9 +10,8 @@ export const toTypedError = <ErrorType>({
   return (error: any): ErrorWithMessage<ErrorType> => {
     if (error.message && typeof error.message == "string") {
       return { _type, message: error.message as string }
-    } else {
-      return { _type, message: unknownMessage }
     }
+    return { _type, message: unknownMessage }
   }
 }
 
