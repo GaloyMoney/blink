@@ -11,7 +11,7 @@ import { toSats } from "@domain/primitives/btc"
 import lnService from "ln-service"
 
 import { TIMEOUT_PAYMENT } from "@services/lnd/auth"
-import { MakeLndService } from "@services/lnd/service"
+import { MakeLndService } from "@services/lnd"
 import { unsafeThrowErrAsync } from "@domain/utils"
 import { invoiceExpirationForCurrency } from "@domain/invoice-expiration"
 import {
