@@ -20,19 +20,21 @@ export const decodeInvoice = (
 
   return safeDecode(bolt11EncodedInvoice).andThen(({ tags }) => {
     tags.forEach((tag) => {
-      if (tag.tagName === "payment_hash") {
-        if (typeof tag.data == "string") {
-          paymentHash = { inner: tag.data }
-        } else {
-          return err(toLnInvoiceDecodeError({ message: "Irregular payment_hash" }))
-        }
-      }
-      if (tag.tagName === "payment_secret") {
-        if (typeof tag.data == "string") {
-          paymentSecret = { inner: tag.data }
-        } else {
-          return err(toLnInvoiceDecodeError({ message: "Irregular payment_secret" }))
-        }
+      const tagError = typeof tag.data != "string"
+      switch (tag.tagName) {
+        case "payment_hash":
+          if (tagError) {
+            return err(toLnInvoiceDecodeError({ message: "Irregular payment_hash" }))
+          }
+          paymentHash = { inner: tag.data as string }
+          break
+
+        case "payment_secret":
+          if (tagError) {
+            return err(toLnInvoiceDecodeError({ message: "Irregular payment_secret" }))
+          }
+          paymentSecret = { inner: tag.data as string }
+          break
       }
     })
     if (paymentHash == null || paymentSecret == null) {
