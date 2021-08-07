@@ -3,6 +3,9 @@ import { ResultAsync } from "neverthrow"
 export const toTypedError = <ErrorType>({
   unknownMessage,
   _type,
+}: {
+  unknownMessage: string
+  _type: ErrorType
 }): ErrorConverter<ErrorType> => {
   return (error: any): ErrorWithMessage<ErrorType> => {
     if (error.message && typeof error.message == "string") {

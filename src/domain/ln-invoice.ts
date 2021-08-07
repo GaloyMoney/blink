@@ -4,7 +4,7 @@ import { toTypedError } from "./utils"
 
 const toLnInvoiceDecodeError = toTypedError<LnInvoiceDecodeErrorType>({
   unknownMessage: "Unknown decoding error",
-  _type: "LnInoviceDecodeError",
+  _type: "LnInvoiceDecodeError",
 })
 
 const safeDecode = Result.fromThrowable(lightningPayReq.decode, toLnInvoiceDecodeError)
