@@ -1,5 +1,4 @@
 import assert from "assert"
-import { ResultAsync } from "neverthrow"
 import {
   cancelHodlInvoice,
   GetInvoiceResult,
@@ -12,6 +11,7 @@ import lnService from "ln-service"
 
 import { TIMEOUT_PAYMENT } from "@services/lnd/auth"
 import { MakeLndService } from "@services/lnd"
+import { MakeInvoicesRepo } from "@services/mongoose/invoices"
 import { unsafeThrowErrAsync } from "@domain/utils"
 import { invoiceExpirationForCurrency } from "@domain/invoice-expiration"
 import {
@@ -39,7 +39,7 @@ import {
 import { lockExtendOrThrow, redlock } from "../lock"
 import { transactionNotification } from "../notifications/payment"
 import { UserWallet } from "../user-wallet"
-import { addContact, isInvoiceAlreadyPaidError, LoggedError, timeout } from "../utils"
+import { addContact, isInvoiceAlreadyPaidError, timeout } from "../utils"
 
 export type ITxType =
   | "invoice"
@@ -52,10 +52,12 @@ export type payInvoiceResult = "success" | "failed" | "pending" | "already_paid"
 export const LightningMixin = (superclass) =>
   class extends superclass {
     readonly config: UserWalletConfig
+    readonly invoices: IInvoices
 
     constructor(...args) {
       super(...args)
       this.config = args[0].config
+      this.invoices = MakeInvoicesRepo()
     }
 
     async updatePending(lock) {
@@ -84,38 +86,38 @@ export const LightningMixin = (superclass) =>
       }
 
       const lndService = MakeLndService(lnd)
-      const result: ResultAsync<RegisteredInvoice, LightningServiceError> =
-        lndService.registerInvoice({
-          description: typeof memo == "string" ? memo : "",
-          satoshis: toSats(value),
-          expiresAt: invoiceExpirationForCurrency("BTC", new Date()),
-        })
+      const registerResult = lndService.registerInvoice({
+        description: memo,
+        satoshis: toSats(value),
+        expiresAt: invoiceExpirationForCurrency("BTC", new Date()),
+      })
 
-      const lnInvoice = (await unsafeThrowErrAsync(result)).invoice
+      const { invoice } = await unsafeThrowErrAsync(registerResult)
 
-      const request = lnInvoice.paymentRequest as string
-      const id = lnInvoice.paymentHash as string
+      const walletInvoice = {
+        paymentHash: invoice.paymentHash,
+        walletId: this.user.id,
+        selfGenerated,
+        pubkey: pubkey,
+        paid: false,
+      } as WalletInvoice
 
-      try {
-        const result = await new InvoiceUser({
-          _id: id,
-          uid: this.user.id,
-          selfGenerated,
+      const persistResult = this.invoices.persist(walletInvoice)
+      await unsafeThrowErrAsync(persistResult)
+      this.logger.info(
+        {
           pubkey,
-        }).save()
+          result: persistResult,
+          value,
+          memo,
+          selfGenerated,
+          id: walletInvoice.paymentHash,
+          user: this.user,
+        },
+        "a new invoice has been added",
+      )
 
-        this.logger.info(
-          { pubkey, result, value, memo, selfGenerated, id, user: this.user },
-          "a new invoice has been added",
-        )
-      } catch (err) {
-        // FIXME if the mongodb connection has not been instantiated
-        // this fails silently
-        const error = `error storing invoice to db`
-        throw new DbError(error, { logger: this.logger, level: "error" })
-      }
-
-      return request
+      return invoice.paymentRequest
     }
 
     async getLightningFee(params: IFeeRequest): Promise<number> {
