@@ -9,7 +9,7 @@ describe("decoreInvoice", () => {
     const result = decodeInvoice(validBolt11Invoice)
     expect(result.isOk()).toEqual(true)
     const { value } = result as Ok<LnInvoice, LnInvoiceDecodeError>
-    expect(value.paymentHash.inner).toEqual(
+    expect(value.paymentHash).toEqual(
       "0001020304050607080900010203040506070809000102030405060708090102",
     )
   })

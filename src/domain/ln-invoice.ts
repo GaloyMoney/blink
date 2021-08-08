@@ -14,9 +14,7 @@ export const decodeInvoice = (
 ): Result<LnInvoice, LnInvoiceDecodeError> => {
   let paymentHash: PaymentHash | null = null
   let paymentSecret: PaymentSecret | null = null
-  const paymentRequest: EncodedPaymentRequest = {
-    inner: bolt11EncodedInvoice,
-  }
+  const paymentRequest = bolt11EncodedInvoice as EncodedPaymentRequest
 
   return safeDecode(bolt11EncodedInvoice).andThen(({ tags }) => {
     tags.forEach((tag) => {
@@ -26,14 +24,14 @@ export const decodeInvoice = (
           if (tagError) {
             return err(toLnInvoiceDecodeError({ message: "Irregular payment_hash" }))
           }
-          paymentHash = { inner: tag.data as string }
+          paymentHash = tag.data as PaymentHash
           break
 
         case "payment_secret":
           if (tagError) {
             return err(toLnInvoiceDecodeError({ message: "Irregular payment_secret" }))
           }
-          paymentSecret = { inner: tag.data as string }
+          paymentSecret = tag.data as PaymentSecret
           break
       }
     })

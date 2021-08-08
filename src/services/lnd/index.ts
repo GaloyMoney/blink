@@ -17,7 +17,7 @@ export const MakeLndService = (lndAuth: AuthenticatedLnd): ILightningService => 
     const input = {
       lnd: lndAuth,
       description,
-      tokens: satoshis.inner,
+      tokens: satoshis as number,
       expires_at: expiresAt.toISOString(),
     }
 

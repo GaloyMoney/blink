@@ -1,17 +1,14 @@
 type LnInvoiceDecodeErrorType = "LnInvoiceDecodeError"
 type LnInvoiceDecodeError = ErrorWithMessage<LnInvoiceDecodeErrorType>
 
-type EncodedPaymentRequest = {
-  readonly inner: string
-}
+declare const encodedPaymentRequestSymbol: unique symbol
+type EncodedPaymentRequest = string & { [encodedPaymentRequestSymbol]: never }
 
-type PaymentHash = {
-  readonly inner: string
-}
+declare const paymentHashSymbol: unique symbol
+type PaymentHash = string & { [paymentHashSymbol]: never }
 
-type PaymentSecret = {
-  readonly inner: string
-}
+declare const paymentSecret: unique symbol
+type PaymentSecret = string & { [paymentSecretSymbol]: never }
 
 type LnInvoice = {
   readonly paymentHash: PaymentHash

@@ -1,4 +1,2 @@
-type InvoiceExpiration = {
-  inner: Date
-  toISOString: () => string
-}
+declare const invoiceExpirationSymbol: unique symbol
+type InvoiceExpiration = Date & { [invoiceExpirationSymbol]: never }

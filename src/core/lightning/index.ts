@@ -93,8 +93,8 @@ export const LightningMixin = (superclass) =>
 
       const lnInvoice = (await unsafeThrowErrAsync(result)).invoice
 
-      const request = lnInvoice.paymentRequest.inner
-      const id = lnInvoice.paymentHash.inner
+      const request = lnInvoice.paymentRequest as string
+      const id = lnInvoice.paymentHash as string
 
       try {
         const result = await new InvoiceUser({

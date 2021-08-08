@@ -1,5 +1,3 @@
 export const toSats = (amount: number): Satoshis => {
-  return {
-    inner: amount,
-  }
+  return amount as Satoshis
 }
