@@ -3,18 +3,22 @@ import { GT } from "@graphql/index"
 const Phone = new GT.Scalar({
   name: "Phone",
   parseValue(value) {
-    return validPhoneValue(value) ? value : null
+    return validPhoneValue(value)
   },
   parseLiteral(ast) {
     if (ast.kind === GT.Kind.STRING) {
-      return validPhoneValue(ast.value) ? ast.value : null
+      return validPhoneValue(ast.value)
     }
-    return null
+    return new Error("Invalid type for Phone")
   },
 })
 
 function validPhoneValue(value) {
-  return value.match(/^\+[0-9]{7,}$/) // TODO: more accurate phone rexp
+  // TODO: more accurate phone rexp
+  if (value.match(/^\+[0-9]{7,}$/)) {
+    return value
+  }
+  return new Error("Invalid value for Phone")
 }
 
 export default Phone
