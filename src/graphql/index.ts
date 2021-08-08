@@ -12,8 +12,9 @@ import {
   Kind,
   GraphQLBoolean,
 } from "graphql"
+import { PubSub } from "graphql-subscriptions"
 
-// ##### GraphQL-related utility functions ####
+export const pubsub = new PubSub()
 
 // GraphQL Types
 export const GT = {

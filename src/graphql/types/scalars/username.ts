@@ -3,18 +3,21 @@ import { GT } from "@graphql/index"
 const Username = new GT.Scalar({
   name: "Username",
   parseValue(value) {
-    return validUsernameValue(value) ? value : null
+    return validUsernameValue(value)
   },
   parseLiteral(ast) {
     if (ast.kind === GT.Kind.STRING) {
-      return validUsernameValue(ast.value) ? ast.value : null
+      return validUsernameValue(ast.value)
     }
-    return null
+    return new Error("Invalid type for Username")
   },
 })
 
 function validUsernameValue(value) {
-  return value.match(/^[A-Za-z0-9_]{3,50}/)
+  if (value.match(/^[A-Za-z0-9_]{3,50}/)) {
+    return value
+  }
+  return new Error("Invalid value for Username")
 }
 
 export default Username

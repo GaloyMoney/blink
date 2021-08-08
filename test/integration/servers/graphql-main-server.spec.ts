@@ -2,17 +2,17 @@ import { redis } from "@services/redis"
 import { sleep } from "@core/utils"
 import { yamlConfig } from "@config/app"
 import { createTestClient } from "apollo-server-testing"
-import { startApolloServerForSchema } from "@servers/graphql-main-server"
+import { startApolloServerForOldSchema } from "@servers/graphql-main-server"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
-let server, httpServer
+let apolloServer, httpServer
 const { phone, code: correctCode } = yamlConfig.test_accounts[9]
 const badCode = 123456
 
 beforeAll(async () => {
-  ;({ server, httpServer } = await startApolloServerForSchema())
+  ;({ apolloServer, httpServer } = await startApolloServerForOldSchema())
   await sleep(2500)
 })
 
@@ -31,7 +31,7 @@ afterAll(async () => {
 
 describe("graphql", () => {
   it("start server", async () => {
-    const { query } = createTestClient(server)
+    const { query } = createTestClient(apolloServer)
 
     const {
       data: {
@@ -52,7 +52,7 @@ describe("graphql", () => {
   })
 
   it("rate limit limiterRequestPhoneCode", async () => {
-    const { mutate } = createTestClient(server)
+    const { mutate } = createTestClient(apolloServer)
     const phone = "+123"
 
     const mutation = `mutation requestPhoneCode ($phone: String) {
@@ -78,7 +78,7 @@ describe("graphql", () => {
   })
 
   it("rate limit login", async () => {
-    const { mutate } = createTestClient(server)
+    const { mutate } = createTestClient(apolloServer)
 
     const mutation = `mutation login ($phone: String, $code: Int) {
       login (phone: $phone, code: $code) {

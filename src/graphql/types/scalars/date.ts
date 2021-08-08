@@ -13,8 +13,10 @@ const Date = new GT.Scalar({
     if (ast.kind === GT.Kind.STRING) {
       return new Date(parseInt(ast.value, 10))
     }
-    return null
+    return new Error("Invalid type for Date")
   },
 })
+
+// TODO: validate date value
 
 export default Date

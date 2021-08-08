@@ -5,5 +5,59 @@ type Query {
 scalar Date
 
 type Mutation {
-  currentTime: Date
+  lnNoAmountInvoiceCreateOnBehalfOfRecipient(
+    input: LnNoAmountInvoiceCreateOnBehalfOfRecipientInput!
+  ): LnNoAmountInvoicePayload!
+}
+
+type LnNoAmountInvoicePayload {
+  errors: [UserError!]!
+  invoice: LnNoAmountInvoice
+}
+
+type UserError {
+  message: String!
+  fields: [String!]!
+}
+
+type LnNoAmountInvoice {
+  paymentRequest: LnInvoicePaymentRequest!
+  paymentHash: LnInvoicePaymentHash!
+  paymentSecret: LnInvoicePaymentSecret!
+}
+
+scalar LnInvoicePaymentRequest
+
+scalar LnInvoicePaymentHash
+
+scalar LnInvoicePaymentSecret
+
+input LnNoAmountInvoiceCreateOnBehalfOfRecipientInput {
+  recipient: Username!
+  memo: Memo
+}
+
+scalar Username
+
+scalar Memo
+
+type Subscription {
+  lnInvoicePaymentStatus(
+    input: LnInvoicePaymentStatusInput!
+  ): LnInvoicePaymentStatusPayload!
+}
+
+type LnInvoicePaymentStatusPayload {
+  errors: [UserError!]!
+  status: InvoicePaymentStatus
+}
+
+enum InvoicePaymentStatus {
+  PENDING
+  PAID
+}
+
+input LnInvoicePaymentStatusInput {
+  paymentRequest: LnInvoicePaymentRequest!
+  lookupToken: String!
 }
