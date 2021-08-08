@@ -321,7 +321,7 @@ export const voidTransactions = (journalId, reason) => {
 }
 
 export const settlePayment = async (hash) => {
-  const result = await Transaction.updateMany({ hash }, { pending: false })
+  const result = await Transaction.updateMany({ hash, pending: true }, { pending: false })
   return result.nModified > 0
 }
 

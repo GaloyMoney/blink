@@ -41,15 +41,16 @@ import {
 export const getOnChainTransactions = async ({
   lnd,
   incoming,
+  lookBack,
 }: {
   lnd: AuthenticatedLnd
   incoming: boolean
+  lookBack?: number
 }) => {
   try {
     const { current_block_height } = await getHeight({ lnd })
-    const after = Math.max(0, current_block_height - LOOK_BACK) // this is necessary for tests, otherwise after may be negative
+    const after = Math.max(0, current_block_height - (lookBack || LOOK_BACK)) // this is necessary for tests, otherwise after may be negative
     const { transactions } = await getChainTransactions({ lnd, after })
-
     return transactions.filter((tx) => incoming === !tx.is_outgoing)
   } catch (err) {
     const error = `issue fetching transaction`

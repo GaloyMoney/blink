@@ -16,10 +16,11 @@ import { baseLogger } from "@services/logger"
 import { ledger, setupMongoConnection } from "@services/mongodb"
 import { InvoiceUser, User } from "@services/mongoose/schema"
 
-import { updateUsersPendingPayment } from "@core/balance-sheet"
 import { transactionNotification } from "@core/notifications/payment"
 import { Price } from "@core/price-impl"
 import { WalletFactory } from "@core/wallet-factory"
+import { getOnChainTransactions } from "@core/on-chain"
+import { runInParallel } from "@core/utils"
 
 const logger = baseLogger.child({ module: "trigger" })
 
@@ -74,7 +75,11 @@ export async function onchainTransactionEventHandler(tx) {
       // transaction has been sent. and this events is trigger before
     }
 
-    await ledger.settleOnchainPayment(tx.id)
+    const settled = await ledger.settleOnchainPayment(tx.id)
+
+    if (!settled) {
+      return
+    }
 
     onchainLogger.info(
       { success: true, pending: false, transactionType: "payment" },
@@ -101,7 +106,7 @@ export async function onchainTransactionEventHandler(tx) {
 
     let user
     try {
-      user = await User.findOne({ "onchain.address": tx.output_addresses })
+      user = await User.findOne({ "onchain.address": { $in: tx.output_addresses } })
       if (!user) {
         //FIXME: Log the onchain address, need to first find which of the tx.output_addresses belongs to us
         onchainLogger.fatal(`No user associated with the onchain address`)
@@ -135,6 +140,39 @@ export async function onchainTransactionEventHandler(tx) {
       txid: tx.id,
     })
   }
+}
+
+export async function onchainBlockEventhandler({ lnd, height }) {
+  // get incoming txs from the last 36 blocks ~6 hours
+  // we don't use default look back because daily cron job will take care of delayed transactions
+  const lookBack = 6 * 6 // hours * ~ blocks per hour
+  const onchainTxns = await getOnChainTransactions({ lnd, lookBack, incoming: true })
+  const hasTransactions = onchainTxns && onchainTxns.length
+
+  if (!hasTransactions) {
+    logger.info(`finish block ${height} handler without transactions`)
+    return
+  }
+
+  await runInParallel({
+    iterator: onchainTxns.values(),
+    logger,
+    workers: 5,
+    processor: async (tx, index) => {
+      logger.trace("updating onchain tx %o in worker %d", tx.id, index)
+
+      const user = await User.findOne({ "onchain.address": { $in: tx.output_addresses } })
+
+      if (user && tx.is_confirmed) {
+        logger.trace("updating onchain receipt for user %o in worker %d", user._id, index)
+
+        const wallet = await WalletFactory({ user, logger })
+        await wallet.updateOnchainReceipt()
+      }
+    },
+  })
+
+  logger.info(`finish block ${height} handler with ${onchainTxns.length} transactions`)
 }
 
 export const onInvoiceUpdate = async (invoice) => {
@@ -181,15 +219,18 @@ const listenerOnchain = ({ lnd }) => {
   subTransactions.on("chain_transaction", onchainTransactionEventHandler)
 
   subTransactions.on("error", (err) => {
-    baseLogger.info({ err }, "error subTransactions")
+    baseLogger.error({ err }, "error subTransactions")
     subTransactions.removeAllListeners()
   })
 
   const subBlocks = subscribeToBlocks({ lnd })
-  subBlocks.on("block", () => updateUsersPendingPayment({ onchainOnly: true }))
+  subBlocks.on("block", async ({ height }) => {
+    await onchainBlockEventhandler({ lnd, height })
+  })
 
   subBlocks.on("error", (err) => {
-    console.log({ err }, "error subBlocks")
+    baseLogger.error({ err }, "error subBlocks")
+    subBlocks.removeAllListeners()
   })
 }
 
