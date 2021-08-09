@@ -1,6 +1,6 @@
 import { redis } from "@services/redis"
 import { sleep } from "@core/utils"
-import { yamlConfig } from "@config/app"
+import { yamlConfig, getRequestPhoneCodeLimits, getLoginAttemptLimits } from "@config/app"
 import { createTestClient } from "apollo-server-testing"
 import { startApolloServerForOldSchema } from "@servers/graphql-main-server"
 
@@ -62,7 +62,8 @@ describe("graphql", () => {
     }`
 
     // exhaust the limiter
-    for (let i = 0; i < yamlConfig.limits.requestPhoneCode.points; i++) {
+    const requestPhoneCodeLimits = getRequestPhoneCodeLimits()
+    for (let i = 0; i < requestPhoneCodeLimits.points; i++) {
       const result = await mutate({ mutation, variables: { phone } })
       expect(result.errors).toBeFalsy()
     }
@@ -101,7 +102,8 @@ describe("graphql", () => {
     expect(token).toBeTruthy()
 
     // exhaust the limiter
-    for (let i = 0; i < yamlConfig.limits.loginAttempt.points; i++) {
+    const loginAttemptLimits = getLoginAttemptLimits()
+    for (let i = 0; i < loginAttemptLimits.points; i++) {
       const result = await mutate({ mutation, variables: { phone, code: badCode } })
       expect(result.errors).toBeFalsy()
     }

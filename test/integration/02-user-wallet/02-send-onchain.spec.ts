@@ -1,7 +1,12 @@
 import { once } from "events"
 import { sleep } from "@core/utils"
 import { filter, first } from "lodash"
-import { getFeeRates, getUserLimits, MS_PER_DAY, yamlConfig } from "@config/app"
+import {
+  getFeeRates,
+  getUserLimits,
+  MS_PER_DAY,
+  getOnChainWalletConfig,
+} from "@config/app"
 import { Transaction } from "@services/mongoose/schema"
 import { getTitle } from "@core/notifications/payment"
 import { onchainTransactionEventHandler } from "@servers/trigger"
@@ -361,10 +366,11 @@ describe("UserWallet - onChainPay", () => {
 
   it("fails if the amount is less than on chain dust amount", async () => {
     const address = await bitcoindOutside.getNewAddress()
+    const onChainWalletConfig = getOnChainWalletConfig()
     expect(
       userWallet0.onChainPay({
         address,
-        amount: yamlConfig.onChainWallet.dustThreshold - 1,
+        amount: onChainWalletConfig.dustThreshold - 1,
       }),
     ).rejects.toThrow()
   })
