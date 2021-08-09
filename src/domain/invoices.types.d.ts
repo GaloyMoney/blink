@@ -1,6 +1,3 @@
-declare const walletIdSymbol: unique symbol
-type WalletId = string & { [walletIdSymbol]: never }
-
 type WalletInvoice = {
   paymentHash: PaymentHash
   walletId: WalletId
