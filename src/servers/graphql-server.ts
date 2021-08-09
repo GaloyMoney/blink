@@ -1,3 +1,4 @@
+import { GetTransactionsForWallet } from "@core/wallet/get-transactions-for-wallet"
 import { createServer } from "http"
 import { execute, subscribe } from "graphql"
 import { ApolloServer } from "apollo-server-express"

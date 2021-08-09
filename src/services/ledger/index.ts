@@ -24,3 +24,22 @@ export const loadLedger = ({
     ...transactions,
   }
 }
+
+import { UnknownLedgerError, LedgerError } from "@domain/errors"
+import { MainBook } from "./books"
+
+export const MakeLedger = (): ILedger => {
+  const liabilityTransactions = async (
+    liabilitiesAccountId: LiabilitiesAccountId,
+  ): Promise<LedgerTransaction[] | LedgerError> => {
+    try {
+      const { results } = await MainBook.ledger({ account: liabilitiesAccountId })
+      // translate raw schema result -> LedgerTransaction
+      return new UnknownLedgerError("err")
+    } catch (err) {
+      return new UnknownLedgerError(err)
+    }
+  }
+
+  return { liabilityTransactions }
+}

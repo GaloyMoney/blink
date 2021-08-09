@@ -1,0 +1,38 @@
+{
+  "_id": {
+    "$oid": "61118b20a2d9e951f59dd2a7"
+  },
+  "fee": 300000,
+  "payee_addresses": [
+    "bcrt1qu62dqf56sf36zzlwza6s8hxvwjl8x3ra7ajade"
+  ],
+  "feeUsd": 30,
+  "account_path": [
+    "Liabilities",
+    "61118b171135bab8c3fb18c2"
+  ],
+  "voided": false,
+  "approved": true,
+  "accounts": "Liabilities:61118b171135bab8c3fb18c2",
+  "credit": 99700000,
+  "debit": 0,
+  "book": "MainBook",
+  "memo": "",
+  "_journal": {
+    "$oid": "61118b20a2d9e951f59dd2a6"
+  },
+  "datetime": {
+    "$date": "2021-08-09T20:08:00.662Z"
+  },
+  "timestamp": {
+    "$date": "2021-08-09T20:08:00.662Z"
+  },
+  "currency": "BTC",
+  "type": "onchain_receipt",
+  "pending": false,
+  "hash": "128d385ce6eb6f033cfb80e37037b1047285330271dce6cbd5434c4fa70f4be8",
+  "sats": 100000000,
+  "usd": 10000,
+  "currencies": [],
+  "__v": 0
+}

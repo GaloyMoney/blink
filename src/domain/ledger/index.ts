@@ -1,3 +1,10 @@
+export { ledgerToWalletTransactions } from "./transaction-translation"
+
+export const liabilitiesMainAccount = "Liabilities"
+
+export const toLiabilitiesAccountId = (walletId: WalletId): LiabilitiesAccountId =>
+  `${liabilitiesMainAccount}:${walletId}` as LiabilitiesAccountId
+
 export const LedgerTransactionType = {
   Invoice: "invoice",
   Payment: "payment",
