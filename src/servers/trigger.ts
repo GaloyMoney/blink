@@ -145,7 +145,7 @@ export async function onchainBlockEventhandler({ lnd, height }) {
   const hasTransactions = onchainTxns && onchainTxns.length
 
   if (!hasTransactions) {
-    logger.info(`finish block ${height} handler without transactions`)
+    logger.info(`no transaction to handle, skipping block ${height}`)
     return
   }
 
@@ -215,7 +215,6 @@ const listenerOnchain = ({ lnd }) => {
 
   subTransactions.on("error", (err) => {
     baseLogger.error({ err }, "error subTransactions")
-    subTransactions.removeAllListeners()
   })
 
   const subBlocks = subscribeToBlocks({ lnd })
@@ -225,7 +224,6 @@ const listenerOnchain = ({ lnd }) => {
 
   subBlocks.on("error", (err) => {
     baseLogger.error({ err }, "error subBlocks")
-    subBlocks.removeAllListeners()
   })
 }
 
