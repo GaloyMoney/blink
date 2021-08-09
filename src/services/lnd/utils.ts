@@ -25,7 +25,7 @@ import { ledger } from "@services/mongodb"
 import { DbMetadata, InvoiceUser } from "@services/mongoose/schema"
 
 import { DbError, LndOfflineError, ValidationInternalError } from "@core/error"
-import { LoggedError, LOOK_BACK } from "@core/utils"
+import { LoggedError, LOOK_BACK_CHANNEL_UPDATE } from "@core/utils"
 
 import { FEECAP, FEEMIN, params } from "./auth"
 
@@ -283,7 +283,7 @@ export const onChannelUpdated = async ({
 
   // TODO: dedupe from onchain
   const { current_block_height } = await getHeight({ lnd })
-  const after = Math.max(0, current_block_height - LOOK_BACK) // this is necessary for tests, otherwise after may be negative
+  const after = Math.max(0, current_block_height - LOOK_BACK_CHANNEL_UPDATE) // this is necessary for tests, otherwise after may be negative
   const { transactions } = await getChainTransactions({ lnd, after })
   // end dedupe
 

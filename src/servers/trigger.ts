@@ -21,6 +21,7 @@ import { Price } from "@core/price-impl"
 import { WalletFactory } from "@core/wallet-factory"
 import { getOnChainTransactions } from "@core/on-chain"
 import { runInParallel } from "@core/utils"
+import { ONCHAIN_MIN_CONFIRMATIONS } from "@config/app"
 
 const logger = baseLogger.child({ module: "trigger" })
 
@@ -120,32 +121,26 @@ export async function onchainTransactionEventHandler(tx) {
       throw error
     }
 
-    if (tx.is_confirmed === false) {
+    // we only handle pending notification here because we wait more than 1 block
+    if (!tx.is_confirmed) {
       onchainLogger.info(
         { transactionType: "receipt", pending: true },
         "mempool appearence",
       )
-    } else {
-      // onchain is currently only BTC
-      const wallet = await WalletFactory({ user, logger: onchainLogger })
-      await wallet.updateOnchainReceipt()
-    }
 
-    const type = tx.is_confirmed ? "onchain_receipt" : "onchain_receipt_pending"
-    await transactionNotification({
-      type,
-      user,
-      logger: onchainLogger,
-      amount: Number(tx.tokens),
-      txid: tx.id,
-    })
+      await transactionNotification({
+        type: "onchain_receipt_pending",
+        user,
+        logger: onchainLogger,
+        amount: Number(tx.tokens),
+        txid: tx.id,
+      })
+    }
   }
 }
 
 export async function onchainBlockEventhandler({ lnd, height }) {
-  // get incoming txs from the last 36 blocks ~6 hours
-  // we don't use default look back because daily cron job will take care of delayed transactions
-  const lookBack = 6 * 6 // hours * ~ blocks per hour
+  const lookBack = ONCHAIN_MIN_CONFIRMATIONS + 1
   const onchainTxns = await getOnChainTransactions({ lnd, lookBack, incoming: true })
   const hasTransactions = onchainTxns && onchainTxns.length
 

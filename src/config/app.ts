@@ -26,6 +26,7 @@ try {
 export const yamlConfig = _.merge(defaultConfig, customConfig)
 
 export const MEMO_SHARING_SATS_THRESHOLD = yamlConfig.limits.memoSharingSatsThreshold
+export const ONCHAIN_MIN_CONFIRMATIONS = yamlConfig.onChainWallet.minConfirmations || 2
 
 export const getGaloyInstanceName = () => yamlConfig.name
 
@@ -107,6 +108,7 @@ export const getUserWalletConfig = (
   return {
     name: yamlConfig.name,
     dustThreshold: yamlConfig.onChainWallet.dustThreshold,
+    onchainMinConfirmations: ONCHAIN_MIN_CONFIRMATIONS,
     limits: transactionLimits,
   }
 }
