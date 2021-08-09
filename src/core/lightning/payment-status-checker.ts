@@ -1,6 +1,6 @@
-import { LnInvoiceLookupError } from "@domain/errors"
+import { AuthorizationError, RepositoryError } from "@domain/errors"
 import { decodeInvoice } from "@domain/ln-invoice"
-import { InvoiceUser } from "@services/mongoose/schema"
+import { MakeInvoicesRepo } from "@services/mongoose/invoices"
 
 const PaymentStatusChecker = ({ paymentRequest, lookupToken }) => {
   const decodedInvoice = decodeInvoice(paymentRequest)
@@ -11,16 +11,15 @@ const PaymentStatusChecker = ({ paymentRequest, lookupToken }) => {
 
   // TODO: Improve the following check with a non public payment secret
   if (paymentSecret !== lookupToken) {
-    return new LnInvoiceLookupError("Invalid invoice data")
+    return new AuthorizationError("Invalid lookup token")
   }
 
   return {
-    invoiceIsPaid: async (): Promise<boolean | LnInvoiceLookupError> => {
-      const invoiceUser = await InvoiceUser.findOne({ _id: paymentHash })
-      if (!invoiceUser) {
-        return new LnInvoiceLookupError("Invaild invoice data")
-      }
-      return invoiceUser.paid
+    invoiceIsPaid: async (): Promise<boolean | RepositoryError> => {
+      const repo = MakeInvoicesRepo()
+      const walletInvoice = await repo.findByPaymentHash(paymentHash)
+      if (walletInvoice instanceof RepositoryError) return walletInvoice
+      return walletInvoice.paid
     },
   }
 }
