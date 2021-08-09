@@ -11,7 +11,7 @@ import PinoHttp from "pino-http"
 import { v4 as uuidv4 } from "uuid"
 import helmet from "helmet"
 
-import { getIpConfig } from "@config/app"
+import { getIpConfig, getHelmetConfig } from "@config/app"
 
 import { baseLogger } from "@services/logger"
 import { redis } from "@services/redis"
@@ -24,6 +24,7 @@ import { WalletFactory } from "@core/wallet-factory"
 const graphqlLogger = baseLogger.child({ module: "graphql" })
 
 const ipConfig = getIpConfig()
+const helmetConfig = getHelmetConfig()
 
 export const isAuthenticated = rule({ cache: "contextual" })((parent, args, ctx) => {
   if (ctx.uid === null) {
@@ -114,7 +115,11 @@ export const startApolloServer = async ({
     },
   })
 
-  app.use(helmet({ contentSecurityPolicy: isDev ? false : undefined }))
+  app.use(
+    helmet({
+      contentSecurityPolicy: helmetConfig.disableContentPolicy ? false : undefined,
+    }),
+  )
 
   app.use(
     PinoHttp({
