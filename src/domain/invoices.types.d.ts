@@ -11,4 +11,5 @@ type WalletInvoice = {
 
 interface IInvoices {
   persist: (invoice: WalletInvoice) => Promise<WalletInvoice | RepositoryError>
+  findByPaymentHash: (paymentHash: PaymentHash) => Promise<WalletInvoice | LookupError>
 }

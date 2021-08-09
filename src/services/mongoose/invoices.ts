@@ -1,4 +1,4 @@
-import { CouldNotPersistError } from "@domain//errors"
+import { UnknownRepositoryError, CouldNotFindError } from "@domain//errors"
 import { InvoiceUser } from "./schema"
 
 export const MakeInvoicesRepo = () => {
@@ -25,9 +25,29 @@ export const MakeInvoicesRepo = () => {
         paid,
       } as WalletInvoice
     } catch (err) {
-      return new CouldNotPersistError(err)
+      return new UnknownRepositoryError(err)
     }
   }
 
-  return { persist }
+  const findByPaymentHash = async (
+    paymentHash: PaymentHash,
+  ): Promise<WalletInvoice | RepositoryError> => {
+    try {
+      const invoiceUser = await InvoiceUser.findOne({ _id: paymentHash })
+      if (!invoiceUser) {
+        return new CouldNotFindError("Couldn't find invoice for payment hash")
+      }
+      return {
+        paymentHash,
+        walletId: invoiceUser.uid,
+        selfGenerated: invoiceUser.selfGenerated,
+        pubkey: invoiceUser.pubkey,
+        paid: invoiceUser.paid,
+      }
+    } catch (err) {
+      return new UnknownRepositoryError(err)
+    }
+  }
+
+  return { persist, findByPaymentHash }
 }
