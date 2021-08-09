@@ -1,8 +1,6 @@
 global:
   network: mainnet
 
-nodeEnv: production
-
 galoy:
   name: "Galoy Wallet"
 
