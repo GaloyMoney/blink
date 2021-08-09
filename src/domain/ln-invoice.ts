@@ -2,7 +2,7 @@ import lightningPayReq from "bolt11"
 import { LnInvoiceDecodeError } from "./errors"
 
 const safeDecode = (
-  bolt11EncodedInvoice,
+  bolt11EncodedInvoice: string,
 ): lightningPayReq.PaymentRequestObject | LnInvoiceDecodeError => {
   try {
     return lightningPayReq.decode(bolt11EncodedInvoice)
@@ -22,19 +22,21 @@ export const decodeInvoice = (
     paymentSecret: PaymentSecret | null = null
 
   decodedInvoice.tags.forEach((tag) => {
-    if (tag.tagName === "payment_hash") {
-      if (typeof tag.data === "string") {
+    const tagError = typeof tag.data != "string"
+    switch (tag.tagName) {
+      case "payment_hash":
+        if (tagError) {
+          return new LnInvoiceDecodeError("Irregular payment_hash")
+        }
         paymentHash = tag.data as PaymentHash
-      } else {
-        return new LnInvoiceDecodeError("Irregular payment_hash")
-      }
-    }
-    if (tag.tagName === "payment_secret") {
-      if (typeof tag.data === "string") {
+        break
+
+      case "payment_secret":
+        if (tagError) {
+          return new LnInvoiceDecodeError("Irregular payment_secret")
+        }
         paymentSecret = tag.data as PaymentSecret
-      } else {
-        return new LnInvoiceDecodeError("Irregular payment_secret")
-      }
+        break
     }
   })
 
@@ -42,5 +44,9 @@ export const decodeInvoice = (
     return new LnInvoiceDecodeError("Invalid invoice data")
   }
 
-  return { paymentHash, paymentSecret }
+  return {
+    paymentRequest: bolt11EncodedInvoice as EncodedPaymentRequest,
+    paymentHash,
+    paymentSecret,
+  }
 }
