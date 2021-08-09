@@ -39,6 +39,10 @@ interface IRateLimits {
   blockDuration: number
 }
 
+type onChainWalletConfig = {
+  dustThreshold: number
+}
+
 type UserWalletConfig = {
   dustThreshold: number
   onchainMinConfirmations: number
