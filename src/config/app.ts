@@ -91,6 +91,10 @@ export const getLoginAttemptLimits = () => getRateLimits(yamlConfig.limits.login
 export const getFailedAttemptPerIpLimits = () =>
   getRateLimits(yamlConfig.limits.failedAttemptPerIp)
 
+export const getOnChainWalletConfig = () => ({
+  dustThreshold: yamlConfig.onChainWallet.dustThreshold,
+})
+
 export const getTransactionLimits = ({
   level,
   limitsConfig = yamlConfig.limits,
@@ -108,9 +112,10 @@ export const getUserWalletConfig = (
   limitsConfig = yamlConfig.limits,
 ): UserWalletConfig => {
   const transactionLimits = getTransactionLimits({ level: user.level, limitsConfig })
+  const onChainWalletConfig = getOnChainWalletConfig()
   return {
     name: yamlConfig.name,
-    dustThreshold: yamlConfig.onChainWallet.dustThreshold,
+    dustThreshold: onChainWalletConfig.dustThreshold,
     onchainMinConfirmations: ONCHAIN_MIN_CONFIRMATIONS,
     limits: transactionLimits,
   }

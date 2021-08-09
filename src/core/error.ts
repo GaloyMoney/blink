@@ -1,12 +1,13 @@
 import { ApolloError } from "apollo-server-errors"
 import { Logger } from "pino"
 
-import { yamlConfig } from "@config/app"
+import { getOnChainWalletConfig } from "@config/app"
 
 import { baseLogger } from "@services/logger"
 
-type levelType = "fatal" | "error" | "warn" | "info" | "debug" | "trace" | "silent"
+const onChainWalletConfig = getOnChainWalletConfig()
 
+type levelType = "fatal" | "error" | "warn" | "info" | "debug" | "trace" | "silent"
 export class CustomError extends ApolloError {
   log
   forwardToClient
@@ -133,7 +134,7 @@ export class RebalanceNeededError extends CustomError {
 
 export class DustAmountError extends CustomError {
   constructor(
-    message = `Use lightning to send amounts less than ${yamlConfig.onChainWallet.dustThreshold}`,
+    message = `Use lightning to send amounts less than ${onChainWalletConfig.dustThreshold}`,
     { forwardToClient = true, logger, level = "warn" as const, ...metadata },
   ) {
     super(message, "ENTERED_DUST_AMOUNT", { forwardToClient, logger, level, metadata })
