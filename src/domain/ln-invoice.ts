@@ -36,9 +36,6 @@ export const decodeInvoice = (
         return new LnInvoiceDecodeError("Irregular payment_secret")
       }
     }
-    if (!paymentHash || !paymentSecret) {
-      return new LnInvoiceDecodeError("Missing fields")
-    }
   })
 
   if (!paymentHash || !paymentSecret) {
