@@ -31,7 +31,9 @@ export const yamlConfig = _.merge(defaultConfig, customConfig)
 export const MEMO_SHARING_SATS_THRESHOLD = yamlConfig.limits.memoSharingSatsThreshold
 export const ONCHAIN_MIN_CONFIRMATIONS = yamlConfig.onChainWallet.minConfirmations
 
-export const getGaloyInstanceName = () => yamlConfig.name
+export const getGaloyInstanceName = (): string => yamlConfig.name
+
+export const getGaloySMSProvider = (): string => yamlConfig.sms_provider
 
 export const getLndParams = (): LndParams[] => {
   const config = yamlConfig.lnds

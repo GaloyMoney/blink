@@ -1,6 +1,11 @@
 import moment from "moment"
 
-import { yamlConfig } from "@config/app"
+import {
+  yamlConfig,
+  getGaloyInstanceName,
+  getGaloySMSProvider,
+  getFailedAttemptPerIpLimits,
+} from "@config/app"
 
 import { createToken } from "@services/jwt"
 import { sendTwilioText, getCarrier, sendSMSalaText } from "@services/phone-provider"
@@ -77,8 +82,9 @@ export const requestPhoneCode = async ({
   }
 
   const code = randomIntFromInterval(100000, 999999)
-  const body = `${code} is your verification code for ${yamlConfig.name}`
-  const sms_provider = yamlConfig.sms_provider.toLowerCase()
+  const galoyInstanceName = getGaloyInstanceName()
+  const body = `${code} is your verification code for ${galoyInstanceName}`
+  const sms_provider = getGaloySMSProvider().toLowerCase()
 
   try {
     const veryRecentCode = await PhoneCode.findOne({
@@ -127,10 +133,8 @@ export const login = async ({
   const subLogger = logger.child({ topic: "login" })
 
   const rlResult = await failedAttemptPerIp.get(ip)
-  if (
-    rlResult !== null &&
-    rlResult.consumedPoints > yamlConfig.limits.failedAttemptPerIp.points
-  ) {
+  const failedAttemptPerIpLimits = getFailedAttemptPerIpLimits()
+  if (rlResult !== null && rlResult.consumedPoints > failedAttemptPerIpLimits.points) {
     throw new TooManyRequestError({ logger })
   }
 
