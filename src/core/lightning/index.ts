@@ -1,17 +1,18 @@
 import assert from "assert"
-import { createHash } from "crypto"
 import {
   cancelHodlInvoice,
-  createInvoice,
   GetInvoiceResult,
   getPayment,
   payViaPaymentDetails,
   payViaRoutes,
 } from "lightning"
-import moment from "moment"
+import { toSats } from "@domain/primitives/btc"
 import lnService from "ln-service"
 
 import { TIMEOUT_PAYMENT } from "@services/lnd/auth"
+import { MakeLndService } from "@services/lnd"
+import { MakeInvoicesRepo } from "@services/mongoose/invoices"
+import { invoiceExpirationForCurrency } from "@domain/invoice-expiration"
 import {
   getActiveLnd,
   getInvoiceAttempt,
@@ -37,7 +38,7 @@ import {
 import { lockExtendOrThrow, redlock } from "../lock"
 import { transactionNotification } from "../notifications/payment"
 import { UserWallet } from "../user-wallet"
-import { addContact, isInvoiceAlreadyPaidError, LoggedError, timeout } from "../utils"
+import { addContact, isInvoiceAlreadyPaidError, timeout } from "../utils"
 
 export type ITxType =
   | "invoice"
@@ -47,23 +48,15 @@ export type ITxType =
   | "on_us"
 export type payInvoiceResult = "success" | "failed" | "pending" | "already_paid"
 
-// this value is here so that it can get mocked.
-// there could probably be a better design
-// but mocking on mixin is tricky
-export const delay = (currency) => {
-  return {
-    BTC: { value: 1, unit: "days" },
-    USD: { value: 2, unit: "mins" },
-  }[currency]
-}
-
 export const LightningMixin = (superclass) =>
   class extends superclass {
     readonly config: UserWalletConfig
+    readonly invoices: IInvoices
 
     constructor(...args) {
       super(...args)
       this.config = args[0].config
+      this.invoices = MakeInvoicesRepo()
     }
 
     async updatePending(lock) {
@@ -74,25 +67,14 @@ export const LightningMixin = (superclass) =>
       ])
     }
 
-    getExpiration = (input) => {
-      // TODO: manage USD shorter time
-      const currency = "BTC"
-
-      return input.add(delay(currency).value, delay(currency).unit)
-    }
-
     async addInvoice({
       value,
-      memo,
+      memo = "",
       selfGenerated = true,
     }: IAddInvoiceRequest): Promise<string> {
       if (!!value && value < 0) {
         throw new Error("value can't be negative")
       }
-
-      let request, id, input
-
-      const expires_at = this.getExpiration(moment()).toDate()
 
       let lnd: AuthenticatedLnd, pubkey: string
 
@@ -102,52 +84,44 @@ export const LightningMixin = (superclass) =>
         throw new LndOfflineError("no active lnd to create an invoice")
       }
 
-      try {
-        input = {
-          lnd,
-          tokens: value,
-          expires_at,
-        }
+      const lndService = MakeLndService(lnd)
+      const registerResult = await lndService.registerInvoice({
+        description: memo,
+        satoshis: toSats(value),
+        expiresAt: invoiceExpirationForCurrency("BTC", new Date()),
+      })
 
-        if (selfGenerated) {
-          // generated through the mobile app
-          input["description"] = memo
-        } else {
-          // lnpay // static invoice
-          const description_string = `pay ${this.user.username}`
-          const sha256 = createHash("sha256")
-          const description_hash = sha256.update(description_string).digest("hex")
-          input["description_hash"] = description_hash
-        }
-
-        const result = await createInvoice(input)
-        request = result.request
-        id = result.id
-      } catch (err) {
-        const error = "impossible to create the invoice"
-        throw new LoggedError(error)
+      if (registerResult instanceof Error) {
+        throw registerResult
       }
+      const { invoice } = registerResult
 
-      try {
-        const result = await new InvoiceUser({
-          _id: id,
-          uid: this.user.id,
-          selfGenerated,
+      const walletInvoice = {
+        paymentHash: invoice.paymentHash,
+        walletId: this.user.id,
+        selfGenerated,
+        pubkey: pubkey,
+        paid: false,
+      } as WalletInvoice
+
+      const persistResult = await this.invoices.persist(walletInvoice)
+      if (persistResult instanceof Error) {
+        throw persistResult
+      }
+      this.logger.info(
+        {
           pubkey,
-        }).save()
+          result: persistResult,
+          value,
+          memo,
+          selfGenerated,
+          id: walletInvoice.paymentHash,
+          user: this.user,
+        },
+        "a new invoice has been added",
+      )
 
-        this.logger.info(
-          { pubkey, result, value, memo, selfGenerated, id, user: this.user },
-          "a new invoice has been added",
-        )
-      } catch (err) {
-        // FIXME if the mongodb connection has not been instantiated
-        // this fails silently
-        const error = `error storing invoice to db`
-        throw new DbError(error, { logger: this.logger, level: "error" })
-      }
-
-      return request
+      return invoice.paymentRequest
     }
 
     async getLightningFee(params: IFeeRequest): Promise<number> {
