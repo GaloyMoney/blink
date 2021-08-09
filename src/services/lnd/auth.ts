@@ -10,6 +10,8 @@ const inputs: LndParams[] = getLndParams()
 // otherwise the tests will have to probe before being able to call lnd
 // TODO: use a mock instead.
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+const isTest = require.main!.filename.indexOf(".spec.") !== -1
+// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const isTrigger = require.main!.filename.indexOf("trigger") !== -1
 
 export const addProps = (array) =>
@@ -24,7 +26,7 @@ export const addProps = (array) =>
       // find a way to mock this up for jest
       // for now only trigger is active = false at start
       // because trigger will start listening to lnd event on lnd start/restart
-      active: !isTrigger,
+      active: isTest || !isTrigger,
     }
   })
 

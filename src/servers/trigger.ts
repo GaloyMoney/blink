@@ -16,10 +16,12 @@ import { baseLogger } from "@services/logger"
 import { ledger, setupMongoConnection } from "@services/mongodb"
 import { InvoiceUser, User } from "@services/mongoose/schema"
 
-import { updateUsersPendingPayment } from "@core/balance-sheet"
 import { transactionNotification } from "@core/notifications/payment"
 import { Price } from "@core/price-impl"
 import { WalletFactory } from "@core/wallet-factory"
+import { getOnChainTransactions } from "@core/on-chain"
+import { runInParallel } from "@core/utils"
+import { ONCHAIN_MIN_CONFIRMATIONS } from "@config/app"
 
 const logger = baseLogger.child({ module: "trigger" })
 
@@ -74,7 +76,11 @@ export async function onchainTransactionEventHandler(tx) {
       // transaction has been sent. and this events is trigger before
     }
 
-    await ledger.settleOnchainPayment(tx.id)
+    const settled = await ledger.settleOnchainPayment(tx.id)
+
+    if (!settled) {
+      return
+    }
 
     onchainLogger.info(
       { success: true, pending: false, transactionType: "payment" },
@@ -101,7 +107,7 @@ export async function onchainTransactionEventHandler(tx) {
 
     let user
     try {
-      user = await User.findOne({ "onchain.address": tx.output_addresses })
+      user = await User.findOne({ "onchain.address": { $in: tx.output_addresses } })
       if (!user) {
         //FIXME: Log the onchain address, need to first find which of the tx.output_addresses belongs to us
         onchainLogger.fatal(`No user associated with the onchain address`)
@@ -115,26 +121,53 @@ export async function onchainTransactionEventHandler(tx) {
       throw error
     }
 
-    if (tx.is_confirmed === false) {
+    // we only handle pending notification here because we wait more than 1 block
+    if (!tx.is_confirmed) {
       onchainLogger.info(
         { transactionType: "receipt", pending: true },
         "mempool appearence",
       )
-    } else {
-      // onchain is currently only BTC
-      const wallet = await WalletFactory({ user, logger: onchainLogger })
-      await wallet.updateOnchainReceipt()
-    }
 
-    const type = tx.is_confirmed ? "onchain_receipt" : "onchain_receipt_pending"
-    await transactionNotification({
-      type,
-      user,
-      logger: onchainLogger,
-      amount: Number(tx.tokens),
-      txid: tx.id,
-    })
+      await transactionNotification({
+        type: "onchain_receipt_pending",
+        user,
+        logger: onchainLogger,
+        amount: Number(tx.tokens),
+        txid: tx.id,
+      })
+    }
   }
+}
+
+export async function onchainBlockEventhandler({ lnd, height }) {
+  const lookBack = ONCHAIN_MIN_CONFIRMATIONS + 1
+  const onchainTxns = await getOnChainTransactions({ lnd, lookBack, incoming: true })
+  const hasTransactions = onchainTxns && onchainTxns.length
+
+  if (!hasTransactions) {
+    logger.info(`no transaction to handle, skipping block ${height}`)
+    return
+  }
+
+  await runInParallel({
+    iterator: onchainTxns.values(),
+    logger,
+    workers: 5,
+    processor: async (tx, index) => {
+      logger.trace("updating onchain tx %o in worker %d", tx.id, index)
+
+      const user = await User.findOne({ "onchain.address": { $in: tx.output_addresses } })
+
+      if (user && tx.is_confirmed) {
+        logger.trace("updating onchain receipt for user %o in worker %d", user._id, index)
+
+        const wallet = await WalletFactory({ user, logger })
+        await wallet.updateOnchainReceipt()
+      }
+    },
+  })
+
+  logger.info(`finish block ${height} handler with ${onchainTxns.length} transactions`)
 }
 
 export const onInvoiceUpdate = async (invoice) => {
@@ -181,15 +214,16 @@ const listenerOnchain = ({ lnd }) => {
   subTransactions.on("chain_transaction", onchainTransactionEventHandler)
 
   subTransactions.on("error", (err) => {
-    baseLogger.info({ err }, "error subTransactions")
-    subTransactions.removeAllListeners()
+    baseLogger.error({ err }, "error subTransactions")
   })
 
   const subBlocks = subscribeToBlocks({ lnd })
-  subBlocks.on("block", () => updateUsersPendingPayment({ onchainOnly: true }))
+  subBlocks.on("block", async ({ height }) => {
+    await onchainBlockEventhandler({ lnd, height })
+  })
 
   subBlocks.on("error", (err) => {
-    console.log({ err }, "error subBlocks")
+    baseLogger.error({ err }, "error subBlocks")
   })
 }
 

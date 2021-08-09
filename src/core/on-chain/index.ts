@@ -35,21 +35,24 @@ import {
   btc2sat,
   LoggedError,
   LOOK_BACK,
+  LOOK_BACK_OUTGOING,
   myOwnAddressesOnVout,
 } from "../utils"
+import { transactionNotification } from "@core/notifications/payment"
 
 export const getOnChainTransactions = async ({
   lnd,
   incoming,
+  lookBack,
 }: {
   lnd: AuthenticatedLnd
   incoming: boolean
+  lookBack?: number
 }) => {
   try {
     const { current_block_height } = await getHeight({ lnd })
-    const after = Math.max(0, current_block_height - LOOK_BACK) // this is necessary for tests, otherwise after may be negative
+    const after = Math.max(0, current_block_height - (lookBack || LOOK_BACK)) // this is necessary for tests, otherwise after may be negative
     const { transactions } = await getChainTransactions({ lnd, after })
-
     return transactions.filter((tx) => incoming === !tx.is_outgoing)
   } catch (err) {
     const error = `issue fetching transaction`
@@ -68,7 +71,7 @@ export const OnChainMixin = (superclass) =>
     }
 
     async updatePending(lock): Promise<void> {
-      await Promise.all([this.updateOnchainReceipt(lock), super.updatePending(lock)])
+      await super.updatePending(lock)
     }
 
     async getOnchainFee({
@@ -157,12 +160,9 @@ export const OnChainMixin = (superclass) =>
 
           // on us onchain transaction
           if (payeeUser) {
-            let amountToSendPayeeUser // fee = 0
-            if (!sendAll) {
-              amountToSendPayeeUser = amount
-            }
-            // when sendAll the amount to send payeeUser is the whole balance
-            else {
+            let amountToSendPayeeUser = amount
+            if (sendAll) {
+              // when sendAll the amount to send payeeUser is the whole balance
               amountToSendPayeeUser = balance.total_in_BTC
             }
 
@@ -314,6 +314,7 @@ export const OnChainMixin = (superclass) =>
               const outgoingOnchainTxns = await getOnChainTransactions({
                 lnd,
                 incoming: false,
+                lookBack: LOOK_BACK_OUTGOING,
               })
               const [{ fee: fee_ }] = outgoingOnchainTxns.filter((tx) => tx.id === id)
               fee = fee_
@@ -325,12 +326,9 @@ export const OnChainMixin = (superclass) =>
             fee += this.user.withdrawFee
 
             {
-              let sats // full amount debited from account
-              if (!sendAll) {
-                sats = amount + fee
-              }
-              // when sendAll the amount debited from the account is the whole balance
-              else {
+              let sats = amount + fee
+              if (sendAll) {
+                // when sendAll the amount debited from the account is the whole balance
                 sats = balance.total_in_BTC
               }
 
@@ -460,17 +458,16 @@ export const OnChainMixin = (superclass) =>
 
         let lnd_incoming_filtered: GetChainTransactionsResult["transactions"]
 
-        // TODO: expose to the yaml
-        const min_confirmation = 2
+        const minConfirmations = this.config.onchainMinConfirmations
 
         if (confirmed) {
           lnd_incoming_filtered = lnd_incoming_txs.filter(
-            (tx) => !!tx.confirmation_count && tx.confirmation_count >= min_confirmation,
+            (tx) => !!tx.confirmation_count && tx.confirmation_count >= minConfirmations,
           )
         } else {
           lnd_incoming_filtered = lnd_incoming_txs.filter(
             (tx) =>
-              (!!tx.confirmation_count && tx.confirmation_count < min_confirmation) ||
+              (!!tx.confirmation_count && tx.confirmation_count < minConfirmations) ||
               !tx.confirmation_count,
           )
         }
@@ -655,7 +652,16 @@ export const OnChainMixin = (superclass) =>
                 transactionType: "receipt",
                 onUs: false,
               })
+
               onchainLogger.info({ success: true, ...metadata })
+
+              await transactionNotification({
+                type,
+                user: this.user,
+                logger: onchainLogger,
+                amount: sats,
+                txid: matched_tx.id,
+              })
             }
           }
         },

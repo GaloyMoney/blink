@@ -20,6 +20,7 @@ export const updatePendingLightningTransactions = async () => {
 
   await runInParallel({
     iterator: usersWithPendingInvoices,
+    logger,
     processor: async ({ _id }, index) => {
       logger.trace("updating pending invoices for user %s in worker %d", _id, index)
       const user = await User.findOne({ _id })
@@ -36,6 +37,7 @@ export const updatePendingLightningTransactions = async () => {
 
   await runInParallel({
     iterator: accountsWithPendingPayments,
+    logger,
     processor: async (account, index) => {
       logger.trace(
         "updating pending payments for account %s in worker %d",
@@ -64,12 +66,13 @@ export const updateUsersPendingPayment = async ({
 
   await runInParallel({
     iterator: users,
+    logger,
+    workers: 3,
     processor: async (user, index) => {
       logger.trace("updating onchain receipt for user %o in worker %d", user._id, index)
       const userWallet = await WalletFactory({ user, logger })
       await userWallet.updateOnchainReceipt()
     },
-    workers: 10,
   })
 
   logger.info("finish updating onchain receipt")

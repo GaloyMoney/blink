@@ -10,7 +10,9 @@ import { User } from "@services/mongoose/schema"
 export const isDev = process.env.NODE_ENV !== "production"
 
 // how many block are we looking back for getChainTransactions
-export const LOOK_BACK = 2016
+export const LOOK_BACK = 360
+export const LOOK_BACK_OUTGOING = 2
+export const LOOK_BACK_CHANNEL_UPDATE = 2016
 
 // FIXME: super ugly hack.
 // for some reason LoggedError get casted as GraphQLError
@@ -176,12 +178,17 @@ export const isIPBlacklisted = ({ ip }) => yamlConfig.blacklistedIPs?.includes(i
  * @param  iterator iterator to process
  * @param  processor async function that process each item
  * @param  workers  number of workers to use. 5 by default
+ * @param  logger  logger instance, just needed if you want to log processor errors
  * @return       Promise with all workers
  */
-export const runInParallel = ({ iterator, processor, workers = 5 }) => {
+export const runInParallel = ({ iterator, processor, logger, workers = 5 }) => {
   const runWorkerInParallel = async (items, index) => {
     for await (const item of items) {
-      await processor(item, index)
+      try {
+        await processor(item, index)
+      } catch (error) {
+        logger.error({ item, error }, `issue with worker ${index}`)
+      }
     }
   }
   // starts N workers sharing the same iterator, i.e. process N items in parallel

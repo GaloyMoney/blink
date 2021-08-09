@@ -44,6 +44,7 @@ beforeAll(async () => {
 })
 
 beforeEach(() => {
+  jest.resetAllMocks()
   amountBTC = +(1 + Math.random()).toPrecision(9)
 })
 
@@ -112,6 +113,10 @@ describe("UserWallet - On chain", () => {
     await bitcoindOutside.sendRawTransaction({ hexstring: finalizedPsbt.hex })
     await bitcoindOutside.generateToAddress({ nblocks: 6, address: RANDOM_ADDRESS })
     await waitUntilBlockHeight({ lnd: lndonchain })
+
+    // this is done by trigger and/or cron in prod
+    await walletUser0.updateOnchainReceipt()
+    await walletUser4.updateOnchainReceipt()
 
     {
       const { BTC: balance0 } = await walletUser0.getBalances()
@@ -219,7 +224,8 @@ async function sendToWallet({ walletDestination }) {
     sub.removeAllListeners()
 
     await waitUntilBlockHeight({ lnd })
-    await checkIsBalanced()
+    // this is done by trigger and/or cron in prod
+    await walletDestination.updateOnchainReceipt()
 
     const { BTC: balance } = await walletDestination.getBalances()
     expect(balance).toBe(
