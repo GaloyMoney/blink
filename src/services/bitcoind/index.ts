@@ -120,7 +120,7 @@ type InWalletTransactionDetails = {
   abandoned: boolean
 }
 
-type InWalletTransaction = {
+export type InWalletTransaction = {
   "amount": number
   "fee": number
   "confirmations": number
@@ -142,7 +142,7 @@ type InWalletTransaction = {
 }
 
 type EstimateSmartFeeResult = {
-  feerate?: number
+  feerate: number // made required because error is now thrown, not returned
   errors?: [string]
   blocks: number
 }

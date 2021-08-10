@@ -6,7 +6,6 @@ import { BitcoindClient, BitcoindWalletClient } from "@services/bitcoind"
 import { getActiveOnchainLnd, lndsBalances } from "@services/lnd/utils"
 import { ledger } from "@services/mongodb"
 
-import { getOnChainTransactions } from "./on-chain"
 import { UserWallet } from "./user-wallet"
 import { btc2sat, sat2btc } from "./utils"
 
@@ -15,12 +14,12 @@ const staticClient = ""
 
 export class SpecterWallet {
   // Needs access to both classes' methods
-  bitcoindClient
-  bitcoindWalletClient
+  bitcoindWalletClient!: BitcoindWalletClient
+  readonly bitcoindClient: BitcoindClient
   readonly logger: Logger
   readonly config: SpecterWalletConfig
 
-  // TODO? Add BitcoindClient type to SpecterWalletConstructorArgs
+  // TODO Add BitcoindClient type to SpecterWalletConstructorArgs
   constructor({
     bitcoindClient,
     logger,
@@ -218,8 +217,8 @@ export class SpecterWallet {
 
     const memo = `deposit of ${sats} sats to the cold storage wallet`
 
-    const outgoingOnchainTxns = await getOnChainTransactions({ lnd, incoming: false })
-    const [{ fee }] = outgoingOnchainTxns.filter((tx) => tx.id === id)
+    const txn = await this.bitcoindWalletClient.getTransaction({ txid: id })
+    const fee = btc2sat(-txn.fee) // fee comes in BTC and negative
 
     const metadata = {
       hash: id,
