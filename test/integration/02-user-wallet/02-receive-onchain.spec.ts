@@ -5,7 +5,7 @@ import { getUserLimits } from "@config/app"
 import { getCurrentPrice } from "@services/realtime-price"
 import { btc2sat, sat2btc, sleep } from "@core/utils"
 import { getTitle } from "@core/notifications/payment"
-import { onchainTransactionEventHandler } from "@servers/trigger"
+import { onchainTransactionEventHandlerBitcoind } from "@servers/trigger"
 import {
   checkIsBalanced,
   getUserWallet,
@@ -14,12 +14,16 @@ import {
   waitUntilBlockHeight,
   sendToAddressAndConfirm,
   subscribeToChainAddress,
-  subscribeToTransactions,
   bitcoindClient,
   bitcoindOutside,
   amountAfterFeeDeduction,
 } from "test/helpers"
 import { getWalletFromRole } from "@core/wallet-factory"
+import { sockTx } from "@services/bitcoind/socket"
+import {
+  GALOY_BITCOIND_EVENTS,
+  receiveRawTxSubscriber,
+} from "@services/bitcoind/subscribers"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
@@ -68,7 +72,7 @@ describe("UserWallet - On chain", () => {
   })
 
   it("receives on-chain transaction with max limit for withdrawal level1", async () => {
-    /// TODO? add sendAll tests in which the user has more than the limit?
+    // TODO add sendAll tests in which the user has more than the limit?
     const level1WithdrawalLimit = userLimits.withdrawalLimit // sats
     amountBTC = sat2btc(level1WithdrawalLimit)
     walletUser11 = await getUserWallet(11)
@@ -139,11 +143,15 @@ describe("UserWallet - On chain", () => {
 
   it("identifies unconfirmed incoming on-chain transactions", async () => {
     const address = await walletUser0.getOnChainAddress()
-    const sub = subscribeToTransactions({ lnd: lndonchain })
-    sub.on("chain_transaction", onchainTransactionEventHandler)
+
+    const sub = await receiveRawTxSubscriber(sockTx)
+    sub.on(
+      GALOY_BITCOIND_EVENTS.CHAIN_TRANSACTION,
+      onchainTransactionEventHandlerBitcoind,
+    )
 
     await Promise.all([
-      once(sub, "chain_transaction"),
+      once(sub, GALOY_BITCOIND_EVENTS.CHAIN_TRANSACTION),
       bitcoindOutside.sendToAddress({ address, amount: amountBTC }),
     ])
 
@@ -172,7 +180,7 @@ describe("UserWallet - On chain", () => {
 
     await Promise.all([
       bitcoindOutside.generateToAddress({ nblocks: 3, address: RANDOM_ADDRESS }),
-      once(sub, "chain_transaction"),
+      once(sub, GALOY_BITCOIND_EVENTS.CHAIN_TRANSACTION),
     ])
 
     await sleep(3000)
