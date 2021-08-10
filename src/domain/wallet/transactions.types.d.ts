@@ -1,4 +1,5 @@
-type SettlementMethod = typeof import("./index").SettlementMethod[keyof typeof import("./index").SettlementMethod]
+type SettlementMethod =
+  typeof import("./index").SettlementMethod[keyof typeof import("./index").SettlementMethod]
 
 type BaseWalletTransaction = {
   readonly id: LedgerTransactionId
@@ -15,14 +16,17 @@ type IntraLedgerTransaction = BaseWalletTransaction & {
   readonly recipientId: Username
 }
 
-type OnChainTransaction = BaseWalletTransaction & {
+type WalletOnChainTransaction = BaseWalletTransaction & {
   readonly settlementVia: "onchain"
   readonly addresses: OnchainAddress[]
 }
 
-type LnTransaction = BaseWalletTransaction & {
+type WalletLnTransaction = BaseWalletTransaction & {
   readonly settlementVia: "lightning"
   readonly paymentHash: PaymentHash
 }
 
-type WalletTransaction = IntraLedgerTransaction | OnChainTransaction | LnTransaction
+type WalletTransaction =
+  | IntraLedgerTransaction
+  | WalletOnChainTransaction
+  | WalletLnTransaction

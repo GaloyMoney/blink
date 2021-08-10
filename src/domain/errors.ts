@@ -13,3 +13,8 @@ export class UnknownLightningServiceError extends LightningServiceError {}
 export class RepositoryError extends CoreError {}
 export class UnknownRepositoryError extends RepositoryError {}
 export class CouldNotFindError extends RepositoryError {}
+
+export class LedgerError extends CoreError {}
+export class UnknownLedgerError extends LedgerError {}
+
+export class OnChainServiceError extends CoreError {}
