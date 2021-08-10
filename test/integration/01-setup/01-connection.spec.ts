@@ -1,9 +1,5 @@
 import {
   BITCOIND_EVENTS,
-  receiveRawBlockSubscriber,
-  receiveRawTxSubscriber,
-  SUB_ADDR_BLOCK,
-  SUB_ADDR_TX,
 } from "@services/bitcoind/subscribers"
 import { setupMongoConnection } from "@services/mongodb"
 import { redis } from "@services/redis"
@@ -32,17 +28,6 @@ it("detect active bitcoind zeromq notifications", async () => {
   const config = await bitcoindClient.getZmqNotifications()
   const topics = [BITCOIND_EVENTS.RAW_BLOCK, BITCOIND_EVENTS.RAW_TX]
   expect(config.length).toEqual(topics.length * 2) // bitcoind returns 2 per topic
-})
-
-it("subscribe then close subscription to zeromq", async () => {
-  const bitcoindBlockSubscriber = await receiveRawBlockSubscriber()
-  const bitcoindTxSubscriber = await receiveRawTxSubscriber({ bitcoindClient })
-  expect(bitcoindBlockSubscriber.lastEndpoint).toBe(SUB_ADDR_BLOCK)
-  expect(bitcoindTxSubscriber.lastEndpoint).toBe(SUB_ADDR_TX)
-  bitcoindBlockSubscriber.close()
-  bitcoindTxSubscriber.close()
-  expect(bitcoindBlockSubscriber.closed).toBe(true)
-  expect(bitcoindTxSubscriber.closed).toBe(true)
 })
 
 describe("connects to lnds", () => {
