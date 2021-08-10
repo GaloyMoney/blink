@@ -23,7 +23,7 @@ export async function startApolloServerForCoreSchema() {
   )
 
   const schema = applyMiddleware(gqlSchema, permissions)
-  return await startApolloServer({ schema, port: 4002, startSubscriptionServer: true })
+  return startApolloServer({ schema, port: 4002, startSubscriptionServer: true })
 }
 
 if (require.main === module) {

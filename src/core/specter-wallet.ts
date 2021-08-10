@@ -26,13 +26,11 @@ export class SpecterWallet {
   }
 
   async listWallets() {
-    return await bitcoindDefaultClient.listWallets()
+    return bitcoindDefaultClient.listWallets()
   }
 
   async createWallet() {
-    return await bitcoindDefaultClient.createWallet({
-      wallet_name: "specter/coldstorage",
-    })
+    return bitcoindDefaultClient.createWallet({ wallet_name: "specter/coldstorage" })
   }
 
   async setBitcoindClient(): Promise<string> {
@@ -65,7 +63,7 @@ export class SpecterWallet {
   }
 
   async getColdStorageAddress() {
-    return await this.bitcoindClient.getNewAddress()
+    return this.bitcoindClient.getNewAddress()
   }
 
   // for debugging
@@ -80,7 +78,7 @@ export class SpecterWallet {
   // bitcoin-cli importmulti `${descriptor}`
 
   async getAddressInfo({ address }) {
-    return await this.bitcoindClient.getAddressInfo({ address })
+    return this.bitcoindClient.getAddressInfo({ address })
   }
 
   async getBitcoindBalance(): Promise<number> {

@@ -35,7 +35,7 @@ describe("Lock", () => {
     it("relocking fail if lock is not passed down the tree", async () => {
       await expect(
         redlock({ path: uid, logger: baseLogger }, async function () {
-          return await redlock({ path: uid, logger: baseLogger }, () => {
+          return redlock({ path: uid, logger: baseLogger }, () => {
             return "r"
           })
         }),

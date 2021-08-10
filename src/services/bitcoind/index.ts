@@ -65,11 +65,11 @@ export class BitcoindClient {
   }
 
   async getBlockCount(): Promise<number> {
-    return await this.client.getBlockCount()
+    return this.client.getBlockCount()
   }
 
   async getBlockchainInfo(): Promise<{ chain: string }> {
-    return await this.client.getBlockchainInfo()
+    return this.client.getBlockchainInfo()
   }
 
   async createWallet({
@@ -77,11 +77,11 @@ export class BitcoindClient {
   }: {
     wallet_name: string
   }): Promise<{ name: string; warning: string }> {
-    return await this.client.createWallet({ wallet_name })
+    return this.client.createWallet({ wallet_name })
   }
 
   async listWallets(): Promise<[string]> {
-    return await this.client.listWallets()
+    return this.client.listWallets()
   }
 
   async decodeRawTransaction({
@@ -89,7 +89,7 @@ export class BitcoindClient {
   }: {
     hexstring: string
   }): Promise<{ vout: [VOut] }> {
-    return await this.client.decodeRawTransaction({ hexstring })
+    return this.client.decodeRawTransaction({ hexstring })
   }
 
   // load/unload only used in tests, for now
@@ -99,7 +99,7 @@ export class BitcoindClient {
   }: {
     filename: string
   }): Promise<{ name: string; warning: string }> {
-    return await this.client.loadWallet({ filename })
+    return this.client.loadWallet({ filename })
   }
 
   async unloadWallet({
@@ -107,7 +107,7 @@ export class BitcoindClient {
   }: {
     wallet_name: string
   }): Promise<{ warning: string }> {
-    return await this.client.unloadWallet({ wallet_name })
+    return this.client.unloadWallet({ wallet_name })
   }
 }
 
@@ -119,11 +119,11 @@ export class BitcoindWalletClient {
   }
 
   async getNewAddress(): Promise<string> {
-    return await this.client.getNewAddress()
+    return this.client.getNewAddress()
   }
 
   async getAddressInfo({ address }: { address: string }): Promise<GetAddressInfoResult> {
-    return await this.client.getAddressInfo({ address })
+    return this.client.getAddressInfo({ address })
   }
 
   async sendToAddress({
@@ -133,7 +133,7 @@ export class BitcoindWalletClient {
     address: string
     amount: number
   }): Promise<string> {
-    return await this.client.sendToAddress({ address, amount })
+    return this.client.sendToAddress({ address, amount })
   }
 
   async getTransaction({
@@ -143,7 +143,7 @@ export class BitcoindWalletClient {
     txid: string
     include_watchonly?: boolean
   }): Promise<InWalletTransaction> {
-    return await this.client.getTransaction({ txid, include_watchonly })
+    return this.client.getTransaction({ txid, include_watchonly })
   }
 
   async generateToAddress({
@@ -153,11 +153,11 @@ export class BitcoindWalletClient {
     nblocks: number
     address: string
   }): Promise<[string]> {
-    return await this.client.generateToAddress({ nblocks, address })
+    return this.client.generateToAddress({ nblocks, address })
   }
 
   async getBalance(): Promise<number> {
-    return await this.client.getBalance()
+    return this.client.getBalance()
   }
 
   async walletCreateFundedPsbt({
@@ -167,11 +167,11 @@ export class BitcoindWalletClient {
     inputs: []
     outputs: Record<string, number>[]
   }): Promise<{ psbt: string }> {
-    return await this.client.walletCreateFundedPsbt({ inputs, outputs })
+    return this.client.walletCreateFundedPsbt({ inputs, outputs })
   }
 
   async walletProcessPsbt({ psbt }: { psbt: string }): Promise<{ psbt: string }> {
-    return await this.client.walletProcessPsbt({ psbt })
+    return this.client.walletProcessPsbt({ psbt })
   }
 
   async finalizePsbt({
@@ -179,11 +179,11 @@ export class BitcoindWalletClient {
   }: {
     psbt: string
   }): Promise<{ psbt: string; hex: string; complete: boolean }> {
-    return await this.client.finalizePsbt({ psbt })
+    return this.client.finalizePsbt({ psbt })
   }
 
   async sendRawTransaction({ hexstring }: { hexstring: string }): Promise<string> {
-    return await this.client.sendRawTransaction({ hexstring })
+    return this.client.sendRawTransaction({ hexstring })
   }
 }
 

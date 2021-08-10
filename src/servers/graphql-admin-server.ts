@@ -30,7 +30,7 @@ export async function startApolloServerForAdminSchema() {
   )
 
   const schema = applyMiddleware(gqlAdminSchema, permissions)
-  return await startApolloServer({ schema, port: 4001 })
+  return startApolloServer({ schema, port: 4001 })
 }
 
 if (require.main === module) {

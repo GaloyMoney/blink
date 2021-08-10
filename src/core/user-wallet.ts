@@ -37,7 +37,7 @@ export abstract class UserWallet {
   // an input needs to be set because updatePending is being overrided
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async updatePending(lock) {
-    return await Promise.resolve()
+    return Promise.resolve()
   }
 
   async getBalances(lock?): Promise<Balances> {

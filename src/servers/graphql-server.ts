@@ -163,7 +163,7 @@ export const startApolloServer = async ({
 
   const httpServer = createServer(app)
 
-  return await new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     httpServer.listen({ port }, () => {
       if (startSubscriptionServer) {
         new SubscriptionServer(

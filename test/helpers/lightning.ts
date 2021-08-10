@@ -86,7 +86,7 @@ export const openChannelTesting = async ({
 
   const openChannelPromise = waitFor(async () => {
     try {
-      return await openChannel({
+      return openChannel({
         lnd,
         local_tokens,
         is_private,
@@ -95,7 +95,7 @@ export const openChannelTesting = async ({
       })
     } catch (error) {
       baseLogger.warn({ error }, "openChannel failed. trying again.")
-      return null
+      return Promise.resolve(null)
     }
   })
 

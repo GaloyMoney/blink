@@ -50,12 +50,12 @@ interface IRedLock {
 
 export const redlock = async ({ path, logger, lock }: IRedLock, async_fn) => {
   if (!!lock && lock.expiration > Date.now()) {
-    return await async_fn(lock)
+    return async_fn(lock)
   }
-  return await using(
+  return using(
     redlockClient.disposer(getResource(path), ttl, errorWrapper({ logger })),
     async (lock) => {
-      return await async_fn(lock)
+      return async_fn(lock)
     },
   )
 }
@@ -70,7 +70,7 @@ const logLockTimeout = ({ logger, lock }) => {
 export const lockExtendOrThrow = async ({ lock, logger }, async_fn) => {
   logLockTimeout({ logger, lock })
 
-  return await new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     lock.extend(120000, async (err) => {
       // if we can't extend the lock, typically because it would have expired
       // then we throw an error
