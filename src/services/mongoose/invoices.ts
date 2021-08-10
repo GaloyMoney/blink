@@ -1,4 +1,4 @@
-import { UnknownRepositoryError, CouldNotFindError } from "@domain//errors"
+import { UnknownRepositoryError, CouldNotFindError } from "@domain/errors"
 import { InvoiceUser } from "./schema"
 
 export const MakeInvoicesRepo = () => {
