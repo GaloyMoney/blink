@@ -9,8 +9,8 @@ import {
   MS_PER_30_DAYs,
 } from "@config/app"
 import { NotFoundError } from "@core/error"
-import { accountPath } from "@core/ledger/accounts"
-import { Transaction } from "@core/ledger/schema"
+import { accountPath } from "@services/ledger/accounts"
+import { Transaction } from "@services/ledger/schema"
 import { baseLogger } from "../logger"
 import { caseInsensitiveRegex } from "@core/utils"
 

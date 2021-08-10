@@ -6,7 +6,7 @@ import mongoose from "mongoose"
 
 import { User, Transaction, InvoiceUser } from "../mongoose/schema"
 // we have to import schema before ledger
-import { loadLedger } from "@core/ledger"
+import { loadLedger } from "@services/ledger"
 
 export const ledger = loadLedger({
   bankOwnerAccountResolver: async () => {
