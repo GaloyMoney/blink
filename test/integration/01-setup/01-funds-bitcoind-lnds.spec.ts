@@ -1,6 +1,5 @@
 import { BitcoindWalletClient } from "@services/bitcoind"
 import { btc2sat } from "@core/utils"
-import { baseLogger } from "@services/logger"
 import {
   lnd1,
   lndOutside1,
@@ -10,15 +9,14 @@ import {
   checkIsBalanced,
   getUserWallet,
   mineAndConfirm,
-  sendToAddressAndConfirm,
-  waitUntilBlockHeight,
 } from "test/helpers"
-import { getWalletFromRole } from "@core/wallet-factory"
+import { ledger } from "@services/mongodb"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
-let bitcoindOutside
+let bitcoindOutside: BitcoindWalletClient
+let bitcoindHot: BitcoindWalletClient
 
 beforeAll(async () => {
   // load funder wallet before use it
@@ -47,6 +45,16 @@ describe("Bitcoind", () => {
     bitcoindOutside = new BitcoindWalletClient({ walletName })
   })
 
+  it("create hot wallet", async () => {
+    const walletName = "hot"
+    const { name } = await bitcoindClient.createWallet({ wallet_name: walletName })
+    expect(name).toBe(walletName)
+    const wallets = await bitcoindClient.listWallets()
+    expect(wallets).toContain(walletName)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    bitcoindHot = new BitcoindWalletClient({ walletName })
+  })
+
   it("should be funded mining 10 blocks", async () => {
     const numOfBlocks = 10
     const bitcoindAddress = await bitcoindOutside.getNewAddress({})
@@ -68,25 +76,22 @@ describe("Bitcoind", () => {
     expect(balance).toBe(sats)
   })
 
-  it("funds lnd1 node", async () => {
+  it("funds lnd1 lnd node", async () => {
     const amount = 1
     const { chain_balance: initialBalance } = await getChainBalance({ lnd: lnd1 })
     const sats = initialBalance + btc2sat(amount)
-
-    // initiate the dealer wallet
-    await getUserWallet(6)
-
-    // load funder wallet before use it
-    await getUserWallet(4)
-
-    const funderWallet = await getWalletFromRole({ role: "funder", logger: baseLogger })
-    const address = await funderWallet.getOnChainAddress()
-
-    await sendToAddressAndConfirm({ walletClient: bitcoindOutside, address, amount })
-    await waitUntilBlockHeight({ lnd: lnd1 })
-
+    await fundLnd(lnd1, amount) // receive client
     const { chain_balance: balance } = await getChainBalance({ lnd: lnd1 })
     expect(balance).toBe(sats)
+    // TODO confirm
+    const bankownerWallet = await getUserWallet(14) // bankowner
+    await ledger.addOnchainReceipt({
+      description: "",
+      sats,
+      fee: 0,
+      account: bankownerWallet.user.accountPath,
+      metadata: {},
+    })
     await checkIsBalanced()
   })
 })
