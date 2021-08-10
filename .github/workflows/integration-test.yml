@@ -9,6 +9,7 @@ jobs:
   integration:
     name: Integration test
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v2
