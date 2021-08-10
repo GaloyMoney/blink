@@ -9,7 +9,10 @@ import {
 } from "@config/app"
 import { Transaction } from "@services/mongoose/schema"
 import { getTitle } from "@core/notifications/payment"
-import { onchainTransactionEventHandler } from "@servers/trigger"
+import {
+  onchainTransactionEventHandler,
+  onchainTransactionEventHandlerBitcoind,
+} from "@servers/trigger"
 import {
   checkIsBalanced,
   getUserWallet,
@@ -17,12 +20,16 @@ import {
   lndOutside1,
   createChainAddress,
   subscribeToTransactions,
-  bitcoindClient,
   bitcoindOutside,
   mineBlockAndSync,
 } from "test/helpers"
 import { ledger } from "@services/mongodb"
 import { TransactionRestrictedError } from "@core/error"
+import { sockTx } from "@services/bitcoind/socket"
+import {
+  GALOY_BITCOIND_EVENTS,
+  receiveRawTxSubscriber,
+} from "@services/bitcoind/subscribers"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
@@ -65,16 +72,19 @@ describe("UserWallet - onChainPay", () => {
   it("sends a successful payment", async () => {
     const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
 
-    const sub = subscribeToTransactions({ lnd: lndonchain })
-    sub.on("chain_transaction", onchainTransactionEventHandler)
+    const sub = await receiveRawTxSubscriber(sockTx)
+    sub.on(
+      GALOY_BITCOIND_EVENTS.CHAIN_TRANSACTION,
+      onchainTransactionEventHandlerBitcoind,
+    )
 
     const results = await Promise.all([
-      once(sub, "chain_transaction"),
+      once(sub, GALOY_BITCOIND_EVENTS.CHAIN_TRANSACTION),
       userWallet0.onChainPay({ address, amount }),
     ])
 
     expect(results[1]).toBeTruthy()
-    await onchainTransactionEventHandler(results[0][0])
+    await onchainTransactionEventHandlerBitcoind(results[0][0])
 
     // we don't send a notification for send transaction for now
     // expect(sendNotification.mock.calls.length).toBe(1)
