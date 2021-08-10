@@ -15,6 +15,7 @@ import { ledger } from "@services/mongodb"
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
+// TODO unload gracefully
 let bitcoindOutside: BitcoindWalletClient
 let bitcoindHot: BitcoindWalletClient
 
@@ -24,10 +25,6 @@ beforeAll(async () => {
 
   // "bankowner" user
   await getUserWallet(14)
-})
-
-afterAll(async () => {
-  await bitcoindClient.unloadWallet({ wallet_name: "outside" })
 })
 
 describe("Bitcoind", () => {

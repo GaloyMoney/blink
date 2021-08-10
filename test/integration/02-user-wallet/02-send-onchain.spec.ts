@@ -45,7 +45,6 @@ beforeAll(async () => {
   userWallet12 = await getUserWallet(12)
   // load funder wallet before use it
   await getUserWallet(4)
-  await bitcoindClient.loadWallet({ filename: "outside" })
 })
 
 beforeEach(async () => {
@@ -57,8 +56,7 @@ afterEach(async () => {
 })
 
 afterAll(async () => {
-  jest.restoreAllMocks()
-  await bitcoindClient.unloadWallet({ wallet_name: "outside" })
+  await jest.restoreAllMocks()
 })
 
 const amount = 10040 // sats

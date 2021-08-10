@@ -40,7 +40,6 @@ beforeAll(async () => {
   walletUser0 = await getUserWallet(0)
   // load funder wallet before use it
   await getUserWallet(4)
-  await bitcoindClient.loadWallet({ filename: "outside" })
 })
 
 beforeEach(() => {
@@ -53,8 +52,7 @@ afterEach(async () => {
 })
 
 afterAll(async () => {
-  jest.restoreAllMocks()
-  await bitcoindClient.unloadWallet({ wallet_name: "outside" })
+  await jest.restoreAllMocks()
 })
 
 describe("FunderWallet - On chain", () => {

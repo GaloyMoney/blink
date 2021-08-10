@@ -8,11 +8,6 @@ let userWallet0, userWallet1
 beforeAll(async () => {
   userWallet0 = await getUserWallet(0)
   userWallet1 = await getUserWallet(1)
-  await bitcoindClient.loadWallet({ filename: "outside" })
-})
-
-afterAll(async () => {
-  await bitcoindClient.unloadWallet({ wallet_name: "outside" })
 })
 
 describe("UserWallet - getOnchainFee", () => {
