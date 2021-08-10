@@ -20,8 +20,13 @@ import { transactionNotification } from "@core/notifications/payment"
 import { Price } from "@core/price-impl"
 import { WalletFactory } from "@core/wallet-factory"
 import { getOnChainTransactions } from "@core/on-chain"
-import { runInParallel } from "@core/utils"
+import { btc2sat, runInParallel } from "@core/utils"
 import { ONCHAIN_MIN_CONFIRMATIONS } from "@config/app"
+import {
+  BitcoindClient,
+  BitcoindWalletClient,
+  InWalletTransaction,
+} from "@services/bitcoind"
 
 const logger = baseLogger.child({ module: "trigger" })
 
@@ -168,6 +173,124 @@ export async function onchainBlockEventhandler({ lnd, height }) {
   })
 
   logger.info(`finish block ${height} handler with ${onchainTxns.length} transactions`)
+}
+
+export async function onchainTransactionEventHandlerBitcoind(rawTx) {
+  // workaround for https://github.com/lightningnetwork/lnd/issues/2267
+  const hash = crypto.createHash("sha256").update(rawTx).digest("base64")
+  if (txsReceived.has(hash)) {
+    return
+  }
+  txsReceived.add(hash)
+
+  const decodedTransaction = await new BitcoindClient().decodeRawTransaction({
+    hexstring: rawTx,
+  })
+  const hotWallet = new BitcoindWalletClient({ walletName: "hot" })
+
+  let transaction: InWalletTransaction
+  try {
+    transaction = await hotWallet.getTransaction({
+      txid: decodedTransaction.txid,
+      include_watchonly: false,
+    })
+  } catch (error) {
+    logger.info({ error })
+    return // TODO ignoring non wallet (failed) transactions, at least for now
+  }
+
+  const output_addresses = transaction.details.map((item) => item.address)
+  // TODO only considering addresses when multiple details
+  const is_outgoing = transaction.details[0].category === "send"
+
+  const tx = {
+    id: transaction.txid,
+    is_outgoing,
+    is_confirmed: transaction.confirmations > 0,
+    tokens: btc2sat(transaction.amount),
+    fee: is_outgoing ? btc2sat(-transaction.fee) : 0, // TODO zero might not the best...
+    output_addresses,
+    transactionObj: transaction, // TODO may be temporary (mainly for the logger)
+  }
+
+  logger.info({ tx }, "received new onchain tx event")
+  const onchainLogger = logger.child({
+    topic: "payment",
+    protocol: "onchain",
+    tx,
+    onUs: false,
+  })
+
+  if (tx.is_outgoing) {
+    if (!tx.is_confirmed) {
+      return
+      // FIXME
+      // we have to return here because we will not know whose user the the txid belong to
+      // this is because of limitation for lnd onchain wallet. we only know the txid after the
+      // transaction has been sent. and this events is trigger before
+    }
+
+    await ledger.settleOnchainPayment(tx.id)
+
+    onchainLogger.info(
+      { success: true, pending: false, transactionType: "payment" },
+      "payment completed",
+    )
+
+    const accountPath = await ledger.getAccountByTransactionHash(tx.id)
+    const userId = ledger.resolveAccountId(accountPath)
+
+    if (!userId) {
+      return
+    }
+
+    const user = await User.findOne({ _id: userId })
+    await transactionNotification({
+      type: "onchain_payment",
+      user,
+      amount: Number(tx.tokens) - tx.fee,
+      txid: tx.id,
+      logger: onchainLogger,
+    })
+  } else {
+    // incoming transaction
+
+    let user
+    try {
+      user = await User.findOne({ "onchain.address": tx.output_addresses })
+      if (!user) {
+        //FIXME: Log the onchain address, need to first find which of the tx.output_addresses belongs to us
+        onchainLogger.fatal(`No user associated with the onchain address`)
+        return
+      }
+    } catch (error) {
+      onchainLogger.error(
+        { error },
+        "issue in onchainTransactionEventHandlerBitcoind to get User id attached to output_addresses",
+      )
+      throw error
+    }
+
+    if (tx.is_confirmed === false) {
+      onchainLogger.info(
+        { transactionType: "receipt", pending: true },
+        "mempool appearence",
+      )
+    } else {
+      // onchain is currently only BTC
+      const wallet = await WalletFactory({ user, logger: onchainLogger })
+      await wallet.updateOnchainReceipt()
+    }
+
+    const type = tx.is_confirmed ? "onchain_receipt" : "onchain_receipt_pending"
+    await transactionNotification({
+      type,
+      user,
+      logger: onchainLogger,
+      amount: Number(tx.tokens),
+      txid: tx.id,
+    })
+  }
 }
 
 export const onInvoiceUpdate = async (invoice) => {
