@@ -1,4 +1,6 @@
-import { BITCOIND_EVENTS } from "@services/bitcoind/subscribers"
+import {
+  BITCOIND_EVENTS,
+} from "@services/bitcoind/subscribers"
 import { setupMongoConnection } from "@services/mongodb"
 import { redis } from "@services/redis"
 import { User } from "@services/mongoose/schema"
