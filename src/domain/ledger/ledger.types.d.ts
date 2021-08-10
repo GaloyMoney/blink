@@ -7,7 +7,8 @@ type LedgerTransactionId = string & { [ledgerTransactionIdSymbol]: never }
 declare const ledgerAccountIdSymbol: unique symbol
 type LedgerAccountId = string & { [ledgerAccountIdSymbol]: never }
 
-type LedgerTransactionType = typeof import("./index").LedgerTransactionType[keyof typeof import("./index").LedgerTransactionType]
+type LedgerTransactionType =
+  typeof import("./index").LedgerTransactionType[keyof typeof import("./index").LedgerTransactionType]
 
 type LedgerTransaction = {
   id: LedgerTransactionId
