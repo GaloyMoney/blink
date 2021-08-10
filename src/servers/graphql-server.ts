@@ -11,7 +11,7 @@ import PinoHttp from "pino-http"
 import { v4 as uuidv4 } from "uuid"
 import helmet from "helmet"
 
-import { getIpConfig, getHelmetConfig } from "@config/app"
+import { getIpConfig, getHelmetConfig, JWT_SECRET } from "@config/app"
 
 import { baseLogger } from "@services/logger"
 import { redis } from "@services/redis"
@@ -143,13 +143,9 @@ export const startApolloServer = async ({
     }),
   )
 
-  if (!process.env.JWT_SECRET) {
-    throw new Error("JWT_SECRET is not set")
-  }
-
   app.use(
     expressJwt({
-      secret: process.env.JWT_SECRET,
+      secret: JWT_SECRET,
       algorithms: ["HS256"],
       credentialsRequired: false,
       requestProperty: "token",

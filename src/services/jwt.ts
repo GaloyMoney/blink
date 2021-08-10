@@ -1,10 +1,11 @@
+import { JWT_SECRET } from "@config/app"
 import * as jwt from "jsonwebtoken"
 
 // TODO: replace network by uri of the server
 // the uri will embed the network, ie: graphql.mainnet.server.io
 // and provide more information than just the network
-export const createToken = ({ uid, network }) =>
-  jwt.sign({ uid, network }, process.env.JWT_SECRET, {
+export const createToken = ({ uid, network }) => {
+  return jwt.sign({ uid, network }, JWT_SECRET, {
     // TODO use asymetric signature
     // and verify the signature from the client
     // otherwise we could get subject to DDos attack
@@ -17,3 +18,4 @@ export const createToken = ({ uid, network }) =>
     // see: https://www.theregister.com/2018/04/24/myetherwallet_dns_hijack/
     algorithm: "HS256",
   })
+}

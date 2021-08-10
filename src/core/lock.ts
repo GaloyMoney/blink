@@ -45,7 +45,7 @@ export const getResource = (path) => `locks:account:${path}`
 interface IRedLock {
   path: string
   logger: Logger
-  lock?: typeof Lock
+  lock?: Lock
 }
 
 export const redlock = async ({ path, logger, lock }: IRedLock, async_fn) => {
