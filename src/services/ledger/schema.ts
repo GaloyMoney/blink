@@ -1,7 +1,11 @@
 import * as mongoose from "mongoose"
+import { LedgerTransactionType } from "@domain/ledger"
 
 const Schema = mongoose.Schema
 
+const ledgerTransactionTypes = Object.keys(LedgerTransactionType).map(
+  (txType) => LedgerTransactionType[txType],
+)
 const transactionSchema = new Schema({
   hash: {
     type: Schema.Types.String,
@@ -17,24 +21,7 @@ const transactionSchema = new Schema({
   type: {
     required: true,
     type: String,
-    enum: [
-      // TODO: merge with the Interface located in types.ts?
-      "invoice",
-      "payment",
-      "on_us",
-      "fee_reimbursement", // lightning
-      "onchain_receipt",
-      "onchain_payment",
-      "onchain_on_us",
-      "deposit_fee", // onchain
-      "fee",
-      "escrow",
-      "routing_fee", // channel-related
-      "exchange_rebalance", // send/receive btc from the exchange
-      "user_rebalance", // buy/sell btc in the user wallet
-      "to_cold_storage",
-      "to_hot_wallet",
-    ],
+    enum: ledgerTransactionTypes,
   },
 
   // used to denote confirmation status of on and off chain txn
