@@ -1,12 +1,32 @@
+import moment from "moment"
+
 import { MEMO_SHARING_SATS_THRESHOLD } from "@config/app"
 
 export const ledgerToWalletTransactions = (ledgerTransactions: LedgerTransaction[]) => {
-  return ledgerTransactions.map(({ id, type, currency, memoFromPayer, credit }) => {
-    return {
+  return ledgerTransactions.map(
+    ({
       id,
-      description: translateDescription({ type, memoFromPayer, credit }),
-    }
-  })
+      type,
+      memoFromPayer,
+      credit,
+      hash,
+      username,
+      addresses,
+      pending,
+      timestamp,
+    }) => {
+      return {
+        id,
+        description: translateDescription({ type, memoFromPayer, credit }),
+        type,
+        hash,
+        username,
+        addresses,
+        pending,
+        created_at: moment(timestamp).unix(),
+      }
+    },
+  )
 }
 
 export const translateDescription = ({

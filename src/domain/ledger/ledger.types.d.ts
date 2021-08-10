@@ -16,9 +16,13 @@ type LedgerTransaction = {
   debit: Satoshis
   credit: Satoshis
   currency: TxDenominationCurrency
+  timestamp: Date
+  pending?: boolean
   username?: Username
+  hash?: PaymentHash
   lnMemo?: string
   memoFromPayer?: string
+  addresses?: OnChainAddress[]
 }
 
 interface ILedger {
