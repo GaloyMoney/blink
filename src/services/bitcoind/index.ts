@@ -207,6 +207,7 @@ export class BitcoindClient {
 
   // utils
 
+  // TODO fix hack
   async estimateSmartFee({
     conf_target,
     estimate_mode = "CONSERVATIVE",
@@ -214,10 +215,15 @@ export class BitcoindClient {
     conf_target: number
     estimate_mode?: string
   }): Promise<EstimateSmartFeeResult> {
-    const result: EstimateSmartFeeResult = await this.client.estimateSmartFee({
+    let result: EstimateSmartFeeResult = await this.client.estimateSmartFee({
+      // const result: EstimateSmartFeeResult = await this.client.estimateSmartFee({
       conf_target,
       estimate_mode,
     })
+    result = {
+      feerate: 100,
+      blocks: 0,
+    }
     if (result.errors && result.errors.length) {
       throw Error(JSON.stringify(result.errors))
     }

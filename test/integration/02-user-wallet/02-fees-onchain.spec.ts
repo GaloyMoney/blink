@@ -16,6 +16,8 @@ afterAll(async () => {
 })
 
 describe("UserWallet - getOnchainFee", () => {
+  // TODO mock
+  // expected for now: Error: ["Insufficient data or no feerate found"]
   it("returns a fee greater than zero for an external address", async () => {
     const address = await bitcoindOutside.getNewAddress({})
     const fee = await userWallet0.getOnchainFee({ address })
