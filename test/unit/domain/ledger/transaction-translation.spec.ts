@@ -14,25 +14,69 @@ describe("ledgerToWalletTransactions", () => {
       {
         id: "id" as LedgerTransactionId,
         type: "invoice" as LedgerTransactionType,
-        username: "username" as Username,
+        paymentHash: "paymentHash" as PaymentHash,
         debit: toSats(0),
-        credit: toSats(MEMO_SHARING_SATS_THRESHOLD),
+        fee: toSats(0),
+        credit: toSats(100000),
         currency: "BTC",
         memoFromPayer: "SomeMemo",
+        pendingConfirmation: false,
         timestamp,
+      },
+      {
+        id: "id" as LedgerTransactionId,
+        type: "on_us" as LedgerTransactionType,
+        username: "username" as Username,
+        debit: toSats(0),
+        fee: toSats(0),
+        credit: toSats(100000),
+        currency: "BTC",
+        pendingConfirmation: false,
+        timestamp,
+      },
+      {
+        id: "id" as LedgerTransactionId,
+        type: "onchain_receipt" as LedgerTransactionType,
+        debit: toSats(0),
+        fee: toSats(0),
+        credit: toSats(100000),
+        currency: "BTC",
+        pendingConfirmation: false,
+        timestamp,
+        addresses: ["address" as OnchainAddress],
       },
     ]
     const result = ledgerToWalletTransactions(ledgerTransactions)
     const expected = [
       {
         id: "id" as LedgerTransactionId,
+        settlementVia: "lightning",
+        settlementAmount: toSats(100000),
+        settlementFee: toSats(0),
+        paymentHash: "paymentHash" as PaymentHash,
         description: "SomeMemo",
-        type: "invoice" as LedgerTransactionType,
-        hash: undefined,
-        username: "username" as Username,
-        addresses: undefined,
-        pending: undefined,
-        created_at: moment(timestamp).unix(),
+        pendingConfirmation: false,
+        createdAt: timestamp,
+      },
+      {
+        id: "id" as LedgerTransactionId,
+        settlementVia: "intraledger",
+        recipientId: "username",
+        settlementAmount: toSats(100000),
+        settlementFee: toSats(0),
+        description: "from username",
+        pendingConfirmation: false,
+        createdAt: timestamp,
+      },
+      {
+        id: "id" as LedgerTransactionId,
+        settlementVia: "onchain",
+        settlementAmount: toSats(100000),
+        settlementFee: toSats(0),
+        description: "onchain_receipt",
+        pendingConfirmation: false,
+        createdAt: timestamp,
+        addresses: ["address" as OnchainAddress],
       },
     ]
     expect(result).toEqual(expected)
@@ -51,7 +95,7 @@ describe("translateDescription", () => {
 
   it("returns memo if there is no memoFromPayer", () => {
     const result = translateDescription({
-      memo: "some memo",
+      lnMemo: "some memo",
       credit: MEMO_SHARING_SATS_THRESHOLD,
       type: "invoice",
     })

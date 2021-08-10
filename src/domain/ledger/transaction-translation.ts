@@ -1,29 +1,67 @@
 import moment from "moment"
+import { toSats } from "@domain/primitives/btc"
 
 import { MEMO_SHARING_SATS_THRESHOLD } from "@config/app"
 
-export const ledgerToWalletTransactions = (ledgerTransactions: LedgerTransaction[]) => {
+export const ledgerToWalletTransactions = (
+  ledgerTransactions: LedgerTransaction[],
+): WalletTransaction[] => {
   return ledgerTransactions.map(
     ({
       id,
-      type,
       memoFromPayer,
+      lnMemo,
+      type,
       credit,
-      hash,
+      debit,
+      fee,
+      paymentHash,
       username,
       addresses,
-      pending,
+      pendingConfirmation,
       timestamp,
     }) => {
+      const settlementAmount = toSats(credit - debit)
+      const description = translateDescription({
+        type,
+        memoFromPayer,
+        lnMemo,
+        credit,
+        username,
+      })
+      if (username) {
+        return {
+          id,
+          settlementVia: "intraledger",
+          description,
+          settlementAmount,
+          settlementFee: fee,
+          recipientId: username,
+          pendingConfirmation,
+          createdAt: timestamp,
+        }
+      } else if (addresses) {
+        return {
+          id,
+          settlementVia: "onchain",
+          addresses,
+          description,
+          settlementAmount,
+          settlementFee: fee,
+          pendingConfirmation,
+          createdAt: timestamp,
+        }
+      }
       return {
         id,
-        description: translateDescription({ type, memoFromPayer, credit }),
-        type,
-        hash,
+        settlementVia: "lightning",
+        description,
+        settlementAmount,
+        settlementFee: fee,
+        paymentHash: paymentHash as PaymentHash,
         username,
-        addresses,
-        pending,
-        created_at: moment(timestamp).unix(),
+        pendingConfirmation,
+        createdAt: timestamp,
       }
     },
   )
@@ -31,13 +69,13 @@ export const ledgerToWalletTransactions = (ledgerTransactions: LedgerTransaction
 
 export const translateDescription = ({
   memoFromPayer,
-  memo,
+  lnMemo,
   username,
   type,
   credit,
 }: {
   memoFromPayer?: string
-  memo?: string
+  lnMemo?: string
   username?: string
   type: LedgerTransactionType
   credit: number
@@ -46,8 +84,8 @@ export const translateDescription = ({
     if (memoFromPayer) {
       return memoFromPayer
     }
-    if (memo) {
-      return memo
+    if (lnMemo) {
+      return lnMemo
     }
   }
 

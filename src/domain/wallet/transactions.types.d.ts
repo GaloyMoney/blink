@@ -1,24 +1,28 @@
+type SettlementMethod = typeof import("./index").SettlementMethod[keyof typeof import("./index").SettlementMethod]
+
 type BaseWalletTransaction = {
   readonly id: LedgerTransactionId
+  readonly settlementVia: SettlementMethod
+  readonly settlementAmount: Satoshis
+  readonly settlementFee: Satoshis
   readonly description: string
-  readonly type: LedgerTransactionType
-  readonly created_at: string
+  readonly pendingConfirmation: boolean
+  readonly createdAt: Date
 }
 
 type IntraLedgerTransaction = BaseWalletTransaction & {
-  // readonly recipientId: Username
-  readonly username: Username
+  readonly settlementVia: "intraledger"
+  readonly recipientId: Username
 }
 
 type OnChainTransaction = BaseWalletTransaction & {
-  readonly pending: boolean
-  readonly addresses: OnChainAddress[]
+  readonly settlementVia: "onchain"
+  readonly addresses: OnchainAddress[]
 }
 
 type LnTransaction = BaseWalletTransaction & {
-  readonly pending: boolean
-  // readonly paymentHash: PaymentHash
-  readonly hash: PaymentHash
+  readonly settlementVia: "lightning"
+  readonly paymentHash: PaymentHash
 }
 
 type WalletTransaction = IntraLedgerTransaction | OnChainTransaction | LnTransaction
