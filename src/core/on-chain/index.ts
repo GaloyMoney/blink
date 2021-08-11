@@ -39,7 +39,8 @@ import {
 } from "../utils"
 import { transactionNotification } from "@core/notifications/payment"
 import { MakeOnchainService } from "@services/lnd/onchain-service"
-import { OnChainServiceError } from "@domain/errors"
+import { OnChainServiceError, RepositoryError } from "@domain/errors"
+import { MakeWallets } from "@services/mongoose/wallets"
 
 export const getOnChainTransactions = async ({
   lnd,
@@ -408,82 +409,6 @@ export const OnChainMixin = (superclass) =>
       return address
     }
 
-    async getOnchainReceipt({
-      confirmed,
-    }: {
-      confirmed: boolean
-    }): Promise<OnChainTransaction[] | OnChainServiceError> {
-      const pubkeys: string[] = this.user.onchain_pubkey
-      let user_matched_txs: OnChainTransaction[] = []
-
-      for (const pubkey of pubkeys) {
-        // TODO: optimize the data structure
-        const addresses = this.user.onchain
-          .filter((item) => (item.pubkey = pubkey))
-          .map((item) => item.address)
-
-        let lnd: AuthenticatedLnd
-
-        try {
-          ;({ lnd } = getLndFromPubkey({ pubkey }))
-        } catch (err) {
-          // FIXME pass logger
-          baseLogger.warn({ pubkey }, "node is offline")
-          continue
-        }
-
-        const onChainService = MakeOnchainService(lnd)
-        const lnd_incoming_txs = await onChainService.getIncomingTransactions({
-          scanDepth: LOOK_BACK,
-        })
-        if (lnd_incoming_txs instanceof OnChainServiceError) {
-          // FIXME: return OnChainServiceError
-          return []
-        }
-
-        // for unconfirmed tx:
-        // { block_id: undefined,
-        //   confirmation_count: undefined,
-        //   confirmation_height: undefined,
-        //   created_at: '2021-03-09T12:55:09.000Z',
-        //   description: undefined,
-        //   fee: undefined,
-        //   id: '60dfde7a0c5209c1a8438a5c47bb5e56249eae6d0894d140996ec0dcbbbb5f83',
-        //   is_confirmed: false,
-        //   is_outgoing: false,
-        //   output_addresses: [Array],
-        //   tokens: 100000000,
-        //   transaction: '02000000000...' }
-
-        // for confirmed tx
-        // { block_id: '0000000000000b1fa86d936adb8dea741a9ecd5f6a58fc075a1894795007bdbc',
-        //   confirmation_count: 712,
-        //   confirmation_height: 1744148,
-        //   created_at: '2020-05-14T01:47:22.000Z',
-        //   fee: undefined,
-        //   id: '5e3d3f679bbe703131b028056e37aee35a193f28c38d337a4aeb6600e5767feb',
-        //   is_confirmed: true,
-        //   is_outgoing: false,
-        //   output_addresses: [Array],
-        //   tokens: 10775,
-        //   transaction: '020000000001.....' }
-
-        const lnd_incoming_filtered = confirmed
-          ? onChainService.filterConfirmedTransactions(lnd_incoming_txs)
-          : onChainService.filterUnconfirmedTransactions(lnd_incoming_txs)
-
-        user_matched_txs = [
-          ...user_matched_txs,
-          ...lnd_incoming_filtered.filter(
-            // only return transactions for addresses that belond to the user
-            (tx) => _.intersection(tx.outputAddresses, addresses).length > 0,
-          ),
-        ]
-      }
-
-      return user_matched_txs
-    }
-
     async getTransactions() {
       const confirmed: ITransaction[] = await super.getTransactions()
 
@@ -508,8 +433,9 @@ export const OnChainMixin = (superclass) =>
 
       let unconfirmed_user: OnChainTransaction[] = []
 
+      const wallets = MakeWallets()
       try {
-        const onChainReceipts = await this.getOnchainReceipt({ confirmed: false })
+        const onChainReceipts = await wallets.getUnconfirmedTransactionsFor(this.user.id)
         if (onChainReceipts instanceof OnChainServiceError) {
           // FIXME: return onChainReceipts
           unconfirmed_user = []
@@ -611,7 +537,8 @@ export const OnChainMixin = (superclass) =>
     }
 
     async updateOnchainReceipt(lock?) {
-      const user_matched_txs = await this.getOnchainReceipt({ confirmed: true })
+      const wallets = MakeWallets()
+      const user_matched_txs = await wallets.getConfirmedTransactionsFor(this.user.id)
 
       const type = "onchain_receipt"
 
