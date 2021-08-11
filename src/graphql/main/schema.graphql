@@ -8,6 +8,8 @@ type Mutation {
   lnNoAmountInvoiceCreateOnBehalfOfRecipient(
     input: LnNoAmountInvoiceCreateOnBehalfOfRecipientInput!
   ): LnNoAmountInvoicePayload!
+  captchaChallengeCreate: CaptchaChallengePayload!
+  authCodeRequest(input: AuthCodeRequestInput!): AuthCodeRequestPayload!
 }
 
 type LnNoAmountInvoicePayload {
@@ -40,6 +42,32 @@ input LnNoAmountInvoiceCreateOnBehalfOfRecipientInput {
 scalar Username
 
 scalar Memo
+
+type CaptchaChallengePayload {
+  errors: [UserError!]!
+  result: CaptchaChallengeResult
+}
+
+type CaptchaChallengeResult {
+  id: String!
+  challengeCode: String!
+  newCaptcha: Boolean!
+  failbackMode: Boolean!
+}
+
+type AuthCodeRequestPayload {
+  errors: [UserError!]!
+  success: Boolean!
+}
+
+input AuthCodeRequestInput {
+  phone: Phone!
+  challengeCode: String!
+  validationCode: String!
+  secCode: String!
+}
+
+scalar Phone
 
 type Subscription {
   lnInvoicePaymentStatus(

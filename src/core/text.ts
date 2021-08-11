@@ -10,7 +10,7 @@ import { createToken } from "@services/jwt"
 import { sendTwilioText, getCarrier, sendSMSalaText } from "@services/phone-provider"
 import { PhoneCode, User } from "@services/mongoose/schema"
 
-import { CaptchaFailedError, IPBlacklistedError, TooManyRequestError } from "./error"
+import { IPBlacklistedError, TooManyRequestError } from "./error"
 import {
   failedAttemptPerIp,
   limiterLoginAttempt,
@@ -23,81 +23,6 @@ import {
   isIPTypeBlacklisted,
   randomIntFromInterval,
 } from "./utils"
-
-// TODO config?
-const captchaRequired = true
-
-export const registerCaptchaGeetest = async ({
-  geetest,
-  logger,
-  ip,
-}: {
-  geetest: GeeTestType
-  logger: Logger
-  ip: string
-}): Promise<null | Record<string, unknown>> => {
-  logger.info({ ip }, "RegisterCaptchaGeetest called")
-
-  if (!captchaRequired) {
-    return null
-  }
-
-  try {
-    const { success, gt, challenge, new_captcha: newCaptcha } = await geetest.register()
-    return { success, gt, challenge, newCaptcha }
-  } catch (err) {
-    logger.error({ err }, "impossible to register geetest")
-    return null
-  }
-}
-
-export const requestOTP = async ({
-  phone,
-  geetest,
-  geetestChallenge,
-  geetestValidate,
-  geetestSeccode,
-  logger,
-  ip,
-}: {
-  phone: string
-  geetest: GeeTestType
-  geetestChallenge: string
-  geetestValidate: string
-  geetestSeccode: string
-  logger: Logger
-  ip: string
-}): Promise<boolean> => {
-  logger.info({ phone, ip }, "RequestPhoneCodeGeetest called")
-
-  if (captchaRequired) {
-    let verifySuccess = false
-    try {
-      verifySuccess = await geetest.validate(
-        geetestChallenge,
-        geetestValidate,
-        geetestSeccode,
-      )
-    } catch (err) {
-      logger.error({ err }, "impossible to verify geetest")
-      return false
-    }
-    if (!verifySuccess) {
-      throw new CaptchaFailedError("Captcha Invalid", {
-        logger,
-        geetestChallenge,
-        geetestValidate,
-        geetestSeccode,
-      })
-    }
-  }
-
-  return await requestPhoneCode({
-    phone,
-    logger,
-    ip,
-  })
-}
 
 export const requestPhoneCode = async ({
   phone,

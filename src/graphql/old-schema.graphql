@@ -207,18 +207,10 @@ type Query {
   getLevels: [Int]
   getLimits: Limits
   getWalletFees: WalletFees
-  registerCaptchaGeetest: RegisterCaptchaGeetestResult
 }
 
 type WalletFees {
   deposit: Float
-}
-
-type RegisterCaptchaGeetestResult {
-  success: Int!
-  gt: String!
-  challenge: String!
-  newCaptcha: Boolean!
 }
 
 type Limits {
@@ -261,13 +253,6 @@ enum AccountStatus {
 }
 
 type Mutation {
-  requestOTP(
-    phone: String! @pattern(regexp: "^\\+[0-9]+$", policy: THROW)
-    geetestChallenge: String!
-    geetestValidate: String!
-    geetestSeccode: String!
-  ): Success!
-
   requestPhoneCode(phone: String @pattern(regexp: "^\\+[0-9]+$", policy: THROW)): Success
 
   login(

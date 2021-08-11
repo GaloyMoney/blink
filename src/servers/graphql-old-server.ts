@@ -24,7 +24,7 @@ import { User } from "@services/mongoose/schema"
 
 import { addToMap, setAccountStatus, setLevel } from "@core/admin-ops"
 import { sendNotification } from "@core/notifications/notification"
-import { login, registerCaptchaGeetest, requestPhoneCode, requestOTP } from "@core/text"
+import { login, requestPhoneCode } from "@core/text"
 import { getWalletFromUsername } from "@core/wallet-factory"
 
 import { usernameExists } from "../domain/user"
@@ -166,25 +166,8 @@ const resolvers = {
       const feeRates = getFeeRates()
       return { deposit: feeRates.depositFeeVariable }
     },
-    registerCaptchaGeetest: async (_, __, { logger, ip, geetest }) =>
-      await registerCaptchaGeetest({ logger, ip, geetest }),
   },
   Mutation: {
-    requestOTP: async (
-      _,
-      { phone, geetestChallenge, geetestValidate, geetestSeccode },
-      { logger, ip, geetest },
-    ) => ({
-      success: await requestOTP({
-        phone,
-        geetest,
-        geetestChallenge,
-        geetestValidate,
-        geetestSeccode,
-        logger,
-        ip,
-      }),
-    }),
     requestPhoneCode: async (_, { phone }, { logger, ip }) => ({
       success: await requestPhoneCode({ phone, logger, ip }),
     }),
