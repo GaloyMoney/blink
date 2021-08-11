@@ -4,7 +4,6 @@ import {
   getChainBalance,
   getChainFeeEstimate,
   getChainTransactions,
-  GetChainTransactionsResult,
   getHeight,
   sendToChainAddress,
 } from "lightning"
@@ -39,6 +38,8 @@ import {
   myOwnAddressesOnVout,
 } from "../utils"
 import { transactionNotification } from "@core/notifications/payment"
+import { MakeOnchainService } from "@services/lnd/onchain-service"
+import { OnChainServiceError } from "@domain/errors"
 
 export const getOnChainTransactions = async ({
   lnd,
@@ -407,9 +408,13 @@ export const OnChainMixin = (superclass) =>
       return address
     }
 
-    async getOnchainReceipt({ confirmed }: { confirmed: boolean }) {
+    async getOnchainReceipt({
+      confirmed,
+    }: {
+      confirmed: boolean
+    }): Promise<OnChainTransaction[] | OnChainServiceError> {
       const pubkeys: string[] = this.user.onchain_pubkey
-      let user_matched_txs: GetChainTransactionsResult["transactions"] = []
+      let user_matched_txs: OnChainTransaction[] = []
 
       for (const pubkey of pubkeys) {
         // TODO: optimize the data structure
@@ -427,7 +432,14 @@ export const OnChainMixin = (superclass) =>
           continue
         }
 
-        const lnd_incoming_txs = await getOnChainTransactions({ lnd, incoming: true })
+        const onChainService = MakeOnchainService(lnd)
+        const lnd_incoming_txs = await onChainService.getIncomingTransactions({
+          scanDepth: LOOK_BACK,
+        })
+        if (lnd_incoming_txs instanceof OnChainServiceError) {
+          // FIXME: return OnChainServiceError
+          return []
+        }
 
         // for unconfirmed tx:
         // { block_id: undefined,
@@ -456,27 +468,15 @@ export const OnChainMixin = (superclass) =>
         //   tokens: 10775,
         //   transaction: '020000000001.....' }
 
-        let lnd_incoming_filtered: GetChainTransactionsResult["transactions"]
-
-        const minConfirmations = this.config.onchainMinConfirmations
-
-        if (confirmed) {
-          lnd_incoming_filtered = lnd_incoming_txs.filter(
-            (tx) => !!tx.confirmation_count && tx.confirmation_count >= minConfirmations,
-          )
-        } else {
-          lnd_incoming_filtered = lnd_incoming_txs.filter(
-            (tx) =>
-              (!!tx.confirmation_count && tx.confirmation_count < minConfirmations) ||
-              !tx.confirmation_count,
-          )
-        }
+        const lnd_incoming_filtered = confirmed
+          ? onChainService.filterConfirmedTransactions(lnd_incoming_txs)
+          : onChainService.filterUnconfirmedTransactions(lnd_incoming_txs)
 
         user_matched_txs = [
           ...user_matched_txs,
           ...lnd_incoming_filtered.filter(
             // only return transactions for addresses that belond to the user
-            (tx) => _.intersection(tx.output_addresses, addresses).length > 0,
+            (tx) => _.intersection(tx.outputAddresses, addresses).length > 0,
           ),
         ]
       }
@@ -506,12 +506,19 @@ export const OnChainMixin = (superclass) =>
       // TODO: should have outgoing unconfirmed transaction as well.
       // they are in ledger, but not necessarily confirmed
 
-      let unconfirmed_user: GetChainTransactionsResult["transactions"] = []
+      let unconfirmed_user: OnChainTransaction[] = []
 
       try {
-        unconfirmed_user = await this.getOnchainReceipt({ confirmed: false })
+        const onChainReceipts = await this.getOnchainReceipt({ confirmed: false })
+        if (onChainReceipts instanceof OnChainServiceError) {
+          // FIXME: return onChainReceipts
+          unconfirmed_user = []
+        } else {
+          unconfirmed_user = onChainReceipts
+        }
       } catch (err) {
         baseLogger.warn({ user: this.user }, "impossible to fetch transactions")
+        // FIXME: return onChainReceipts
         unconfirmed_user = []
       }
 
@@ -531,21 +538,21 @@ export const OnChainMixin = (superclass) =>
       // }
 
       const unconfirmed_promises = unconfirmed_user.map(
-        async ({ transaction, id, created_at }) => {
-          const { sats, addresses } = await this.getSatsAndAddressPerTx(transaction)
-          return { sats, addresses, id, created_at }
+        async ({ transactionHex, id, createdAt }) => {
+          const { sats, addresses } = await this.getSatsAndAddressPerTx(transactionHex)
+          return { sats, addresses, id, createdAt }
         },
       )
 
-      type unconfirmedType = { sats; addresses; id; created_at }
+      type unconfirmedType = { sats; addresses; id; createdAt }
       const unconfirmed: unconfirmedType[] = await Promise.all(unconfirmed_promises)
 
       return [
-        ...unconfirmed.map(({ sats, addresses, id, created_at }) => ({
+        ...unconfirmed.map(({ sats, addresses, id, createdAt }) => ({
           id,
           amount: sats,
           pending: true,
-          created_at: moment(created_at).unix(),
+          created_at: moment(createdAt).unix(),
           sat: sats,
           usd: UserWallet.satsToUsd(sats),
           description: "pending",
@@ -612,7 +619,7 @@ export const OnChainMixin = (superclass) =>
         { path: this.user._id, logger: baseLogger /* FIXME */, lock },
         async () => {
           // FIXME O(n) ^ 2. bad.
-          for (const matched_tx of user_matched_txs) {
+          for (const matched_tx of user_matched_txs as OnChainTransaction[]) {
             // has the transaction has not been added yet to the user account?
             //
             // note: the fact we fiter with `account_path: this.user.accountPath` could create
@@ -626,7 +633,7 @@ export const OnChainMixin = (superclass) =>
 
             if (!count) {
               const { sats, addresses } = await this.getSatsAndAddressPerTx(
-                matched_tx.transaction,
+                matched_tx.transactionHex,
               )
               assert(matched_tx.tokens >= sats)
 

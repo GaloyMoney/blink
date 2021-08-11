@@ -1,4 +1,3 @@
-import moment from "moment"
 import { toSats } from "@domain/primitives/btc"
 
 import { MEMO_SHARING_SATS_THRESHOLD } from "@config/app"

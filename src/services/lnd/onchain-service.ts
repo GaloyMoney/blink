@@ -1,3 +1,4 @@
+import { ONCHAIN_MIN_CONFIRMATIONS } from "@config/app"
 import { toSats } from "@domain/primitives/btc"
 import { getHeight, getChainTransactions } from "lightning"
 
@@ -27,5 +28,25 @@ export const MakeOnchainService = (lndAuth: AuthenticatedLnd): IOnChainService =
       )
   }
 
-  return { getIncomingTransactions }
+  const filterConfirmedTransactions = (
+    transactions: OnChainTransaction[],
+  ): OnChainTransaction[] =>
+    transactions.filter(
+      (tx) => !!tx.confirmationCount && tx.confirmationCount >= ONCHAIN_MIN_CONFIRMATIONS,
+    )
+
+  const filterUnconfirmedTransactions = (
+    transactions: OnChainTransaction[],
+  ): OnChainTransaction[] =>
+    transactions.filter(
+      (tx) =>
+        (!!tx.confirmationCount && tx.confirmationCount < ONCHAIN_MIN_CONFIRMATIONS) ||
+        !tx.confirmationCount,
+    )
+
+  return {
+    getIncomingTransactions,
+    filterConfirmedTransactions,
+    filterUnconfirmedTransactions,
+  }
 }
