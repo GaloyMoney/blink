@@ -6,7 +6,7 @@ type WalletInvoice = {
   paid: boolean
 }
 
-interface IInvoices {
+interface IWalletInvoices {
   persist: (invoice: WalletInvoice) => Promise<WalletInvoice | RepositoryError>
   findByPaymentHash: (paymentHash: PaymentHash) => Promise<WalletInvoice | LookupError>
 }

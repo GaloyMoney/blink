@@ -123,7 +123,7 @@ type ConsumerAccount implements IAccount {
   level: AccountLevel!
   status: AccountStatus!
   wallets: [Wallet!]!
-  allTransactions: [!Transaction]! # Connection
+  allTransactions: [Transaction!]! # Connection
   csvTransactionsCSV(walletId: ID!): String!
 }
 
@@ -199,9 +199,11 @@ type IntraLedgerTransaction implements ITransaction {
   createdAt: Date!
 
   originalDestination: IntraLedgerDestination!
-  """Settlement destination:
-    Could be null when originalDestination is onChain/LN
-    and the payeee does not have a username"""
+  """
+  Settlement destination:
+  Could be null when originalDestination is onChain/LN
+  and the payeee does not have a username
+  """
   recipientID: Username
 }
 

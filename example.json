@@ -3,14 +3,9 @@
     "$oid": "61118b20a2d9e951f59dd2a7"
   },
   "fee": 300000,
-  "payee_addresses": [
-    "bcrt1qu62dqf56sf36zzlwza6s8hxvwjl8x3ra7ajade"
-  ],
+  "payee_addresses": ["bcrt1qu62dqf56sf36zzlwza6s8hxvwjl8x3ra7ajade"],
   "feeUsd": 30,
-  "account_path": [
-    "Liabilities",
-    "61118b171135bab8c3fb18c2"
-  ],
+  "account_path": ["Liabilities", "61118b171135bab8c3fb18c2"],
   "voided": false,
   "approved": true,
   "accounts": "Liabilities:61118b171135bab8c3fb18c2",

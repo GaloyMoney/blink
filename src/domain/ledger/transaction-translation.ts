@@ -1,4 +1,4 @@
-import { toSats } from "@domain/primitives/btc"
+import { toSats } from "@domain/bitcoin"
 
 import { MEMO_SHARING_SATS_THRESHOLD } from "@config/app"
 

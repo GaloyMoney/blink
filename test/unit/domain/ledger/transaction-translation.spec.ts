@@ -5,7 +5,7 @@ import {
   ledgerToWalletTransactions,
   translateDescription,
 } from "@domain/ledger/transaction-translation"
-import { toSats } from "@domain/primitives/btc"
+import { toSats } from "@domain/bitcoin"
 
 describe("ledgerToWalletTransactions", () => {
   it("translates ledger txs to wallet txs", () => {

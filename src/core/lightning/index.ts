@@ -6,13 +6,13 @@ import {
   payViaPaymentDetails,
   payViaRoutes,
 } from "lightning"
-import { toSats } from "@domain/primitives/btc"
+import { toSats } from "@domain/bitcoin"
 import lnService from "ln-service"
 
 import { TIMEOUT_PAYMENT } from "@services/lnd/auth"
 import { MakeLndService } from "@services/lnd"
-import { MakeInvoicesRepo } from "@services/mongoose/invoices"
-import { invoiceExpirationForCurrency } from "@domain/invoice-expiration"
+import { MakeWalletInvoicesRepo } from "@services/mongoose/wallet-invoices"
+import { invoiceExpirationForCurrency } from "@domain/bitcoin/lightning"
 import {
   getActiveLnd,
   getInvoiceAttempt,
@@ -51,12 +51,12 @@ export type payInvoiceResult = "success" | "failed" | "pending" | "already_paid"
 export const LightningMixin = (superclass) =>
   class extends superclass {
     readonly config: UserWalletConfig
-    readonly invoices: IInvoices
+    readonly walletInvoices: IWalletInvoices
 
     constructor(...args) {
       super(...args)
       this.config = args[0].config
-      this.invoices = MakeInvoicesRepo()
+      this.walletInvoices = MakeWalletInvoicesRepo()
     }
 
     async updatePending(lock) {
@@ -104,7 +104,7 @@ export const LightningMixin = (superclass) =>
         paid: false,
       } as WalletInvoice
 
-      const persistResult = await this.invoices.persist(walletInvoice)
+      const persistResult = await this.walletInvoices.persist(walletInvoice)
       if (persistResult instanceof Error) {
         throw persistResult
       }

@@ -1,5 +1,5 @@
 import { getWalletFromUsername } from "@core/wallet-factory"
-import { decodeInvoice } from "@domain/ln-invoice"
+import { decodeInvoice } from "@domain/bitcoin/lightning"
 
 const addInvoiceForRecipient = async ({ recipient, memo }, { logger }) => {
   const wallet = await getWalletFromUsername({ username: recipient, logger })

@@ -1,4 +1,4 @@
-import { invoiceExpirationForCurrency } from "@domain/invoice-expiration"
+import { invoiceExpirationForCurrency } from "@domain/bitcoin/lightning"
 
 describe("invoice-expiration", () => {
   it("BTC invoice expires in 1 days", () => {

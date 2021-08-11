@@ -1,5 +1,4 @@
-import { LnInvoiceDecodeError } from "@domain/errors"
-import { decodeInvoice } from "@domain/ln-invoice"
+import { LnInvoiceDecodeError, decodeInvoice } from "@domain/bitcoin/lightning"
 
 describe("decoreInvoice", () => {
   const validBolt11Invoice =

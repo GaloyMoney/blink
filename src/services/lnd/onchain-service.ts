@@ -1,5 +1,5 @@
 import { ONCHAIN_MIN_CONFIRMATIONS } from "@config/app"
-import { toSats } from "@domain/primitives/btc"
+import { toSats } from "@domain/bitcoin"
 import { getHeight, getChainTransactions } from "lightning"
 
 export const MakeOnchainService = (lndAuth: AuthenticatedLnd): IOnChainService => {
