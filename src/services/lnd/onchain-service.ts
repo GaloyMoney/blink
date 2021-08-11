@@ -6,7 +6,9 @@ import { toSats } from "@domain/bitcoin"
 import { getHeight, getChainTransactions } from "lightning"
 import { getActiveLnd } from "./utils"
 
-export const MakeOnChainService = (): IOnChainService | OnChainServiceError => {
+export const MakeOnChainService = (
+  decoder: TxDecoder,
+): IOnChainService | OnChainServiceError => {
   let lnd: AuthenticatedLnd
 
   try {
@@ -19,25 +21,26 @@ export const MakeOnChainService = (): IOnChainService | OnChainServiceError => {
     scanDepth,
   }: {
     scanDepth: number
-  }): Promise<OnChainTransaction[] | OnChainServiceError> => {
+  }): Promise<SubmittedTransaction[] | OnChainServiceError> => {
     try {
       const { current_block_height } = await getHeight({ lnd })
       const after = Math.max(0, current_block_height - scanDepth) // this is necessary for tests, otherwise after may be negative
       const { transactions } = await getChainTransactions({ lnd, after })
+
       return transactions
         .filter((tx) => !tx.is_outgoing)
-        .map(
-          (tx) =>
-            ({
-              blockId: tx.block_id as BlockId,
-              confirmations: tx.confirmation_count,
-              fee: toSats(tx.fee as number),
-              id: tx.id as TxId,
-              outputAddresses: tx.output_addresses as OnChainAddress[],
-              tokens: toSats(tx.tokens),
-              transactionHex: tx.transaction,
-            } as OnChainTransaction),
-        )
+        .map((tx) => {
+          const txHex = tx.transaction || ""
+          return {
+            // blockId: tx.block_id as BlockId,
+            confirmations: tx.confirmation_count,
+            fee: toSats(tx.fee as number),
+            id: tx.id as TxId,
+            outputAddresses: tx.output_addresses as OnChainAddress[],
+            tokens: toSats(tx.tokens),
+            rawTx: decoder.decode(txHex),
+          } as SubmittedTransaction
+        })
     } catch (err) {
       return new UnknownOnChainServiceError(err)
     }

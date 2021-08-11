@@ -14,7 +14,7 @@ declare const btcNetworkSymbol: unique symbol
 type BtcNetwork = string & { [btcNetworkSymbol]: never }
 
 type TxOut = {
-  sats: Satoshi
+  sats: Satoshis
   n: number
   address: OnChainAddress
 }
@@ -22,6 +22,7 @@ type TxOut = {
 type OnChainTransaction = {
   id: TxId
   outs: TxOut[]
+  txHex: string
 }
 
 type SubmittedTransaction = {
@@ -32,6 +33,6 @@ type SubmittedTransaction = {
   outputAddresses: OnChainAddress[]
   // satsToAddress(recipient: OnChainAddress): Satoshis
   tokens: Satoshis
-  transactionHex: string
+  rawTx: OnChainTransaction
   createdAt: Date
 }

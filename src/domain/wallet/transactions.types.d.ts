@@ -18,7 +18,7 @@ type IntraLedgerTransaction = BaseWalletTransaction & {
 
 type WalletOnChainTransaction = BaseWalletTransaction & {
   readonly settlementVia: "onchain"
-  readonly addresses: OnchainAddress[]
+  readonly addresses: OnChainAddress[]
 }
 
 type WalletLnTransaction = BaseWalletTransaction & {

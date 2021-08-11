@@ -9,8 +9,10 @@ describe("decodeOnChainTransaction", () => {
     // 1Bc41qA9kTcsodBfA49ktbbZukx6R4PiNN => ‎4.35090974 BTC
 
     const decoder = MakeTxDecoder("mainnet" as BtcNetwork)
-    const result = decoder.decode(validTxHex)
+    let result = decoder.decode(validTxHex)
     expect(result).not.toBeInstanceOf(TransactionDecodeError)
+
+    result = result as OnChainTransaction
     expect(result.id).toEqual(
       "88b81eff6bab7070be45640d5ffc95819e671cd7d5f294a448735eb1bb980a20",
     )
