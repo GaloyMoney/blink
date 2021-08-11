@@ -15,17 +15,17 @@ import {
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
-beforeAll(async () => {
-  await bitcoindClient.loadWallet({ filename: "outside" })
-})
+// beforeAll(async () => {
+//   await bitcoindClient.loadWallet({ filename: "outside" })
+// })
 
 afterAll(async () => {
-  jest.restoreAllMocks()
-  await bitcoindClient.unloadWallet({ wallet_name: "outside" })
+  await jest.restoreAllMocks()
+  // await bitcoindClient.unloadWallet({ wallet_name: "outside" })
 })
 
 describe("onchainBlockEventhandler", () => {
-  it("should process block incoming transactions", async () => {
+  it.skip("should process block incoming transactions", async () => {
     const amount = 0.0001
     const blocksToMine = 6
     const wallet = await getUserWallet(0)

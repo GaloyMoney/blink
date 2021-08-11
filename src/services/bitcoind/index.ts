@@ -109,7 +109,7 @@ type ListTransactionsResult = {
   "abandoned": boolean
 }
 
-type InWalletTransactionDetails = {
+export type InWalletTransactionDetails = {
   involvesWatchonly: boolean
   address: string
   category: TransactionCategory
