@@ -35,6 +35,8 @@ export const getGaloyInstanceName = (): string => yamlConfig.name
 
 export const getGaloySMSProvider = (): string => yamlConfig.sms_provider
 
+export const getGeeTestConfig = () => yamlConfig.geetest
+
 export const getLndParams = (): LndParams[] => {
   const config = yamlConfig.lnds
   return config.map((input) => ({

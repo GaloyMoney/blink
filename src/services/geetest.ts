@@ -3,8 +3,8 @@
 // https://docs.geetest.com/captcha/apirefer/api/server
 // doing this: "If the storage space is not sufficient: Send request to check bypass status before starting the verfication process."
 
-const axios = require("axios")
-const GeetestLib = require("gt3-server-node-express-sdk/sdk/geetest_lib") // galoy fork
+import axios from "axios"
+import GeetestLib from "gt3-server-node-express-sdk/sdk/geetest_lib" // galoy fork
 
 async function sendRequest(params) {
   const request_url = "http://bypass.geetest.com/v1/bypass_status.php"
@@ -25,30 +25,20 @@ async function sendRequest(params) {
   return bypass_res
 }
 
-class GeeTest {
-  constructor(GEETEST_ID, GEETEST_KEY) {
-    this.GEETEST_ID = GEETEST_ID
-    this.GEETEST_KEY = GEETEST_KEY
-  }
-
-  // private
-  async _getBypassStatus() {
-    const bypass_status = await sendRequest({ gt: this.GEETEST_ID })
+const GeeTest = (config): GeeTestType => {
+  const getBypassStatus = async () => {
+    const bypass_status = await sendRequest({ gt: config.id })
     return bypass_status
   }
 
-  async register() {
-    const gtLib = new GeetestLib(this.GEETEST_ID, this.GEETEST_KEY)
+  const register = async () => {
+    const gtLib = new GeetestLib(config.id, config.key)
     const digestmod = "md5"
-    const userId = "test"
     const params = {
-      digestmod: digestmod,
-      user_id: userId,
+      digestmod,
       client_type: "native",
-      // client_type: "web",
-      ip_address: "127.0.0.1",
     }
-    const bypasscache = await this._getBypassStatus() // not a cache
+    const bypasscache = await getBypassStatus() // not a cache
     let result
     if (bypasscache === "success") {
       result = await gtLib.register(digestmod, params)
@@ -58,11 +48,11 @@ class GeeTest {
     return JSON.parse(result.data)
   }
 
-  async validate(challenge, validate, seccode) {
-    const gtLib = new GeetestLib(this.GEETEST_ID, this.GEETEST_KEY)
-    const bypasscache = await this._getBypassStatus() // not a cache
+  const validate = async (challenge, validate, seccode) => {
+    const gtLib = new GeetestLib(config.id, config.key)
+    const bypasscache = await getBypassStatus() // not a cache
     let result
-    var params = new Array()
+    const params = []
     if (bypasscache === "success") {
       result = await gtLib.successValidate(challenge, validate, seccode, params)
     } else {
@@ -70,6 +60,8 @@ class GeeTest {
     }
     return result.status === 1
   }
+
+  return { register, validate }
 }
 
-module.exports = GeeTest
+export default GeeTest

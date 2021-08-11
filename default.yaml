@@ -71,6 +71,10 @@ test_accounts:
 
 sms_provider: "twilio"
 
+geetest:
+  id: "GEETEST_ID_VALUE"
+  key: "GEETEST_KEY_VALUE"
+
 limits:
   requestPhoneCode:
     points: 4

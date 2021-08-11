@@ -19,7 +19,6 @@ import {
 } from "./rate-limit"
 import {
   fetchIP,
-  geetest,
   isIPBlacklisted,
   isIPTypeBlacklisted,
   randomIntFromInterval,
@@ -29,31 +28,32 @@ import {
 const captchaRequired = true
 
 export const registerCaptchaGeetest = async ({
+  geetest,
   logger,
   ip,
 }: {
+  geetest: GeeTestType
   logger: Logger
   ip: string
-}): Promise<string | null> => {
+}): Promise<null | Record<string, unknown>> => {
   logger.info({ ip }, "RegisterCaptchaGeetest called")
 
   if (!captchaRequired) {
     return null
   }
 
-  let registerResponse
   try {
-    registerResponse = await geetest.register()
+    const { success, gt, challenge, new_captcha: newCaptcha } = await geetest.register()
+    return { success, gt, challenge, newCaptcha }
   } catch (err) {
     logger.error({ err }, "impossible to register geetest")
     return null
   }
-
-  return registerResponse
 }
 
-export const requestPhoneCodeGeetest = async ({
+export const requestOTP = async ({
   phone,
+  geetest,
   geetestChallenge,
   geetestValidate,
   geetestSeccode,
@@ -61,6 +61,7 @@ export const requestPhoneCodeGeetest = async ({
   ip,
 }: {
   phone: string
+  geetest: GeeTestType
   geetestChallenge: string
   geetestValidate: string
   geetestSeccode: string

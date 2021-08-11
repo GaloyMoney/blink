@@ -215,10 +215,10 @@ type WalletFees {
 }
 
 type RegisterCaptchaGeetestResult {
-  success: Int
-  gt: String
-  challenge: String
-  new_captcha: Boolean
+  success: Int!
+  gt: String!
+  challenge: String!
+  newCaptcha: Boolean!
 }
 
 type Limits {
@@ -261,12 +261,12 @@ enum AccountStatus {
 }
 
 type Mutation {
-  requestPhoneCodeGeetest(
-    phone: String @pattern(regexp: "^\\+[0-9]+$", policy: THROW)
-    geetestChallenge: String @stringLength(min: 10, max: 1000, policy: THROW) # TODO
-    geetestValidate: String @stringLength(min: 10, max: 1000, policy: THROW)
-    geetestSeccode: String @stringLength(min: 10, max: 1000, policy: THROW)
-  ): Success
+  requestOTP(
+    phone: String! @pattern(regexp: "^\\+[0-9]+$", policy: THROW)
+    geetestChallenge: String!
+    geetestValidate: String!
+    geetestSeccode: String!
+  ): Success!
 
   requestPhoneCode(phone: String @pattern(regexp: "^\\+[0-9]+$", policy: THROW)): Success
 

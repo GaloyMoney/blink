@@ -11,7 +11,7 @@ import PinoHttp from "pino-http"
 import { v4 as uuidv4 } from "uuid"
 import helmet from "helmet"
 
-import { getIpConfig, getHelmetConfig } from "@config/app"
+import { getIpConfig, getHelmetConfig, getGeeTestConfig } from "@config/app"
 
 import { baseLogger } from "@services/logger"
 import { redis } from "@services/redis"
@@ -20,6 +20,7 @@ import { User } from "@services/mongoose/schema"
 import { AuthorizationError, IPBlacklistedError } from "@core/error"
 import { isDev, updateIPDetails, isIPBlacklisted } from "@core/utils"
 import { WalletFactory } from "@core/wallet-factory"
+import GeeTest from "@services/geetest"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
 
@@ -65,6 +66,10 @@ export const startApolloServer = async ({
       // TODO move from id: uuidv4() to a Jaeger standard
       const logger = graphqlLogger.child({ token, id: uuidv4(), body: context.req?.body })
 
+      const geeTestConfig = getGeeTestConfig()
+
+      const geetest = GeeTest(geeTestConfig)
+
       if (uid) {
         user = await User.findOneAndUpdate(
           { _id: uid },
@@ -88,6 +93,7 @@ export const startApolloServer = async ({
         uid,
         wallet,
         user,
+        geetest,
         ip,
       }
     },
