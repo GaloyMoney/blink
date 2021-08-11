@@ -3,7 +3,7 @@ export const MakeTxFilter = ({
   confsGTE,
   addresses,
 }: TxFilterArgs): TxFilter => {
-  const apply = (txs: OnChainTransaction[]): OnChainTransaction[] => {
+  const apply = (txs: SubmittedTransaction[]): SubmittedTransaction[] => {
     return txs.filter(({ confirmations, outputAddresses }) => {
       if (!!confsGTE && confirmations < confsGTE) {
         return false

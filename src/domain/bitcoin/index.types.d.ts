@@ -9,3 +9,29 @@ type BlockId = string & { [blockIdSymbol]: never }
 
 declare const txIdSymbol: unique symbol
 type TxId = string & { [txIdSymbol]: never }
+
+declare const btcNetworkSymbol: unique symbol
+type BtcNetwork = string & { [btcNetworkSymbol]: never }
+
+type TxOut = {
+  sats: Satoshi
+  n: number
+  address: OnChainAddress
+}
+
+type OnChainTransaction = {
+  id: TxId
+  outs: TxOut[]
+}
+
+type SubmittedTransaction = {
+  // blockId: BlockId
+  confirmations: number
+  fee: Satoshis
+  id: TxId
+  outputAddresses: OnChainAddress[]
+  // satsToAddress(recipient: OnChainAddress): Satoshis
+  tokens: Satoshis
+  transactionHex: string
+  createdAt: Date
+}

@@ -33,7 +33,6 @@ export const MakeOnChainService = (): IOnChainService | OnChainServiceError => {
               confirmations: tx.confirmation_count,
               fee: toSats(tx.fee as number),
               id: tx.id as TxId,
-              isOutgoing: tx.is_outgoing as boolean,
               outputAddresses: tx.output_addresses as OnChainAddress[],
               tokens: toSats(tx.tokens),
               transactionHex: tx.transaction,

@@ -5,5 +5,5 @@ type TxFilterArgs = {
 }
 
 type TxFilter = {
-  apply(txsonChainTransactions: OnChainTransaction[]): OnChainTransaction[]
+  apply(txsonChainTransactions: SubmittedTransaction[]): SubmittedTransaction[]
 }
