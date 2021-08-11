@@ -22,7 +22,6 @@ type TxOut = {
 type OnChainTransaction = {
   id: TxId
   outs: TxOut[]
-  txHex: string
 }
 
 type SubmittedTransaction = {

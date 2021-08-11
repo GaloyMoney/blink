@@ -1,5 +1,3 @@
-import moment from "moment"
-
 import { MEMO_SHARING_SATS_THRESHOLD } from "@config/app"
 import {
   ledgerToWalletTransactions,
@@ -22,6 +20,7 @@ describe("ledgerToWalletTransactions", () => {
         memoFromPayer: "SomeMemo",
         pendingConfirmation: false,
         timestamp,
+        addresses: [],
       },
       {
         id: "id" as LedgerTransactionId,

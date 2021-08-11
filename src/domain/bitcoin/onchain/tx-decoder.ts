@@ -10,7 +10,6 @@ export const MakeTxDecoder = (networkName: BtcNetwork): TxDecoder => {
     return {
       id: tx.getId() as TxId,
       outs: decodeOutput(tx, network),
-      txHex: txHex,
     }
   }
 

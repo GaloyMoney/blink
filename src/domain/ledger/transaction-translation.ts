@@ -39,7 +39,7 @@ export const ledgerToWalletTransactions = (
           pendingConfirmation,
           createdAt: timestamp,
         }
-      } else if (addresses) {
+      } else if (addresses && addresses.length > 0) {
         return {
           id,
           settlementVia: "onchain",

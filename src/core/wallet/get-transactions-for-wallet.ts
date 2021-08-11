@@ -1,11 +1,16 @@
 import { RepositoryError } from "@domain/errors"
-import { OnChainError, MakeTxFilter } from "@domain/bitcoin/onchain"
+import { OnChainError, MakeTxFilter, MakeTxDecoder } from "@domain/bitcoin/onchain"
 import { MakeWallets } from "@services/mongoose/wallets"
 import { MakeLedger } from "@services/ledger"
 import { MakeOnChainService } from "@services/lnd/onchain-service"
-import { toLiabilitiesAccountId, LedgerError } from "@domain/ledger"
+import {
+  toLiabilitiesAccountId,
+  LedgerError,
+  ledgerToWalletTransactions,
+} from "@domain/ledger"
 import { LOOK_BACK } from "../utils"
 import { ONCHAIN_MIN_CONFIRMATIONS } from "@config/app"
+import { submittedToWalletTransactions } from "@domain/wallet/transaction-translation"
 // import { WalletFactory } from "@core/wallet-factory"
 // import { User } from "@services/mongoose/schema"
 
@@ -17,6 +22,7 @@ export const GetTransactionsForWallet = async ({
   // logger: Logger
 }): Promise<WalletTransaction[] | CoreError> => {
   const wallets = MakeWallets()
+
   const wallet = await wallets.findById(walletId)
   if (wallet instanceof RepositoryError) return wallet
 
@@ -25,33 +31,26 @@ export const GetTransactionsForWallet = async ({
     addresses: wallet.onChainAddresses,
   })
 
-  const onChain = MakeOnChainService()
+  const decoder = MakeTxDecoder(process.env.NETWORK as BtcNetwork)
+
+  //              as 'SubmittedTransaction' types
+  const onChain = MakeOnChainService(decoder)
   if (onChain instanceof OnChainError) return onChain
   const onChainTxs = await onChain.getIncomingTransactions(LOOK_BACK)
   if (onChainTxs instanceof OnChainError) return onChain
 
   const pendingTxs = filter.apply(onChainTxs)
 
+  const pendingIncomingWalletTransactions = submittedToWalletTransactions(pendingTxs)
+
   const ledger = MakeLedger()
   const liabilitiesAccountId = toLiabilitiesAccountId(walletId)
   const ledgerTransactions = await ledger.liabilityTransactions(liabilitiesAccountId)
   if (ledgerTransactions instanceof LedgerError) return ledgerTransactions
 
-  // ledgerToWalletTransactions(ledgerTransactions)
-  // bitcoinDService.getUnconfirmedTxs(walletId)
+  const confirmedWalletTransactions = ledgerToWalletTransactions(ledgerTransactions)
 
-  /// result = LedgerService.getTransactionForWallet(walletId)
-  //
-  // result.map((ledgerTx) => displayTx)
-  //
-  // BitcoinService.getUnconfirmedTxs(walletId)
-  // append(ledgeTxs, bitcoinUnconfirmedTxs)
-  // return
-  // const user = await User.findOne({ _id: walletId })
-  // const wallet = await WalletFactory({ user, logger })
-  // wallet.getTransactions()
-
-  return new LedgerError("")
+  return [...pendingIncomingWalletTransactions, ...confirmedWalletTransactions]
 }
 
 // read from ledger -> leger line

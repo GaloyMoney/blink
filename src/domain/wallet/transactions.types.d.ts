@@ -2,7 +2,7 @@ type SettlementMethod =
   typeof import("./index").SettlementMethod[keyof typeof import("./index").SettlementMethod]
 
 type BaseWalletTransaction = {
-  readonly id: LedgerTransactionId
+  readonly id: LedgerTransactionId | TxId
   readonly settlementVia: SettlementMethod
   readonly settlementAmount: Satoshis
   readonly settlementFee: Satoshis

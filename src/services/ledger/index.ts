@@ -27,6 +27,7 @@ export const loadLedger = ({
 
 import { UnknownLedgerError, LedgerError } from "@domain/ledger/errors"
 import { MainBook } from "./books"
+import { toSats } from "@domain/bitcoin"
 
 export const MakeLedger = (): ILedger => {
   const liabilityTransactions = async (
@@ -35,7 +36,23 @@ export const MakeLedger = (): ILedger => {
     try {
       const { results } = await MainBook.ledger({ account: liabilitiesAccountId })
       // translate raw schema result -> LedgerTransaction
-      return new UnknownLedgerError("err")
+      return results.map((tx) => {
+        return {
+          id: tx.id,
+          type: tx.type,
+          debit: toSats(tx.debit),
+          credit: toSats(tx.credit),
+          fee: toSats(tx.fee),
+          currency: tx.currency,
+          timestamp: tx.timestamp,
+          pendingConfirmation: tx.pending,
+          lnMemo: tx.memo,
+          username: tx.username,
+          memoFromPayer: tx.memoPayer,
+          paymentHash: tx.hash,
+          addresses: tx.payee_addresses,
+        }
+      })
     } catch (err) {
       return new UnknownLedgerError(err)
     }

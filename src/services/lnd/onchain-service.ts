@@ -28,9 +28,8 @@ export const MakeOnChainService = (
       const { transactions } = await getChainTransactions({ lnd, after })
 
       return transactions
-        .filter((tx) => !tx.is_outgoing)
+        .filter((tx) => !tx.is_outgoing || !!tx.transaction)
         .map((tx) => {
-          const txHex = tx.transaction || ""
           return {
             // blockId: tx.block_id as BlockId,
             confirmations: tx.confirmation_count,
@@ -38,7 +37,7 @@ export const MakeOnChainService = (
             id: tx.id as TxId,
             outputAddresses: tx.output_addresses as OnChainAddress[],
             tokens: toSats(tx.tokens),
-            rawTx: decoder.decode(txHex),
+            rawTx: decoder.decode(tx.transaction as string),
           } as SubmittedTransaction
         })
     } catch (err) {
