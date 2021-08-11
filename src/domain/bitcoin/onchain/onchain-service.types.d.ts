@@ -1,19 +1,17 @@
 type OnChainTransaction = {
   blockId: BlockId
-  confirmationCount: number
+  confirmations: number
   fee: Satoshis
   id: TxId
   isOutgoing: boolean
-  outputAddresses: OnchainAddress[]
+  outputAddresses: OnChainAddress[]
   tokens: Satoshis
   transactionHex: string
-  createdAt: string
+  createdAt: Date
 }
 
 interface IOnChainService {
   getIncomingTransactions({
     scanDepth: number,
   }): Promise<OnChainTransaction[] | OnChainServiceError>
-  filterUnconfirmedTransactions(transactions: OnChainTransaction[]): OnChainTransaction[]
-  filterConfirmedTransactions(transactions: OnChainTransaction[]): OnChainTransaction[]
 }

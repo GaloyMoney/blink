@@ -1,7 +1,11 @@
-import { UnknownLedgerError, LedgerError, RepositoryError } from "@domain/errors"
+import { RepositoryError } from "@domain/errors"
+import { OnChainError, MakeTxFilter } from "@domain/bitcoin/onchain"
 import { MakeWallets } from "@services/mongoose/wallets"
 import { MakeLedger } from "@services/ledger"
-import { toLiabilitiesAccountId } from "@domain/ledger"
+import { MakeOnChainService } from "@services/lnd/onchain-service"
+import { toLiabilitiesAccountId, LedgerError } from "@domain/ledger"
+import { LOOK_BACK } from "../utils"
+import { ONCHAIN_MIN_CONFIRMATIONS } from "@config/app"
 // import { WalletFactory } from "@core/wallet-factory"
 // import { User } from "@services/mongoose/schema"
 
@@ -11,17 +15,27 @@ export const GetTransactionsForWallet = async ({
 {
   walletId: WalletId
   // logger: Logger
-}): Promise<WalletTransaction[] | LedgerError | RepositoryError> => {
-  const ledger = MakeLedger()
+}): Promise<WalletTransaction[] | CoreError> => {
+  const wallets = MakeWallets()
+  const wallet = await wallets.findById(walletId)
+  if (wallet instanceof RepositoryError) return wallet
 
+  const filter = MakeTxFilter({
+    confsLT: ONCHAIN_MIN_CONFIRMATIONS,
+    addresses: wallet.onChainAddresses,
+  })
+
+  const onChain = MakeOnChainService()
+  if (onChain instanceof OnChainError) return onChain
+  const onChainTxs = await onChain.getIncomingTransactions(LOOK_BACK)
+  if (onChainTxs instanceof OnChainError) return onChain
+
+  const pendingTxs = filter.apply(onChainTxs)
+
+  const ledger = MakeLedger()
   const liabilitiesAccountId = toLiabilitiesAccountId(walletId)
   const ledgerTransactions = await ledger.liabilityTransactions(liabilitiesAccountId)
   if (ledgerTransactions instanceof LedgerError) return ledgerTransactions
-
-  const wallets = MakeWallets()
-
-  const onchainAddresses = await wallets.getOnchainAddressesFor(walletId)
-  if (onchainAddresses instanceof RepositoryError) return onchainAddresses
 
   // ledgerToWalletTransactions(ledgerTransactions)
   // bitcoinDService.getUnconfirmedTxs(walletId)
@@ -37,7 +51,7 @@ export const GetTransactionsForWallet = async ({
   // const wallet = await WalletFactory({ user, logger })
   // wallet.getTransactions()
 
-  return new UnknownLedgerError("")
+  return new LedgerError("")
 }
 
 // read from ledger -> leger line

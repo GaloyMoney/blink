@@ -1,4 +1,5 @@
 export { ledgerToWalletTransactions } from "./transaction-translation"
+export * from "./errors"
 
 export const liabilitiesMainAccount = "Liabilities"
 

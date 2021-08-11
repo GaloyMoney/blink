@@ -43,7 +43,7 @@ describe("ledgerToWalletTransactions", () => {
         currency: "BTC",
         pendingConfirmation: false,
         timestamp,
-        addresses: ["address" as OnchainAddress],
+        addresses: ["address" as OnChainAddress],
       },
     ]
     const result = ledgerToWalletTransactions(ledgerTransactions)
@@ -76,7 +76,7 @@ describe("ledgerToWalletTransactions", () => {
         description: "onchain_receipt",
         pendingConfirmation: false,
         createdAt: timestamp,
-        addresses: ["address" as OnchainAddress],
+        addresses: ["address" as OnChainAddress],
       },
     ]
     expect(result).toEqual(expected)

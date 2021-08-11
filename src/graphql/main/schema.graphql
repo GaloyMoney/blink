@@ -5,7 +5,9 @@ type Query {
 scalar Date
 
 type Mutation {
-  lnNoAmountInvoiceCreateOnBehalfOfRecipient(input: LnNoAmountInvoiceCreateOnBehalfOfRecipientInput!): LnNoAmountInvoicePayload!
+  lnNoAmountInvoiceCreateOnBehalfOfRecipient(
+    input: LnNoAmountInvoiceCreateOnBehalfOfRecipientInput!
+  ): LnNoAmountInvoicePayload!
 }
 
 type LnNoAmountInvoicePayload {
@@ -40,7 +42,9 @@ scalar Username
 scalar Memo
 
 type Subscription {
-  lnInvoicePaymentStatus(input: LnInvoicePaymentStatusInput!): LnInvoicePaymentStatusPayload!
+  lnInvoicePaymentStatus(
+    input: LnInvoicePaymentStatusInput!
+  ): LnInvoicePaymentStatusPayload!
 }
 
 type LnInvoicePaymentStatusPayload {

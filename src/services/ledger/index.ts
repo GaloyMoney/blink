@@ -25,7 +25,7 @@ export const loadLedger = ({
   }
 }
 
-import { UnknownLedgerError, LedgerError } from "@domain/errors"
+import { UnknownLedgerError, LedgerError } from "@domain/ledger/errors"
 import { MainBook } from "./books"
 
 export const MakeLedger = (): ILedger => {
