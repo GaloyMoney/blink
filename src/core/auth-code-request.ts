@@ -1,7 +1,7 @@
 import { CaptchaFailedError } from "./error"
 import { requestPhoneCode } from "./text"
 
-export const VerifyCaptchaAndReturnOTP = async ({
+export const verifyCaptchaAndReturnOTP = async ({
   phone,
   geetest,
   geetestChallenge,
@@ -47,4 +47,4 @@ export const VerifyCaptchaAndReturnOTP = async ({
   })
 }
 
-export default VerifyCaptchaAndReturnOTP
+export default verifyCaptchaAndReturnOTP

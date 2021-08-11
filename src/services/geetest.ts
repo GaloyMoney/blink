@@ -7,28 +7,26 @@ import axios from "axios"
 import GeetestLib from "gt3-server-node-express-sdk/sdk/geetest_lib" // galoy fork
 
 async function sendRequest(params) {
-  const request_url = "http://bypass.geetest.com/v1/bypass_status.php"
-  let bypass_res
+  const requestUrl = "http://bypass.geetest.com/v1/bypass_status.php"
+  let bypassRes
   try {
     const res = await axios({
-      url: request_url,
+      url: requestUrl,
       method: "GET",
       timeout: 5000,
       params: params,
     })
     const resBody = res.status === 200 ? res.data : ""
-    console.log(resBody)
-    bypass_res = resBody["status"]
+    bypassRes = resBody["status"]
   } catch (e) {
-    bypass_res = ""
+    bypassRes = ""
   }
-  return bypass_res
+  return bypassRes
 }
 
 const GeeTest = (config): GeeTestType => {
   const getBypassStatus = async () => {
-    const bypass_status = await sendRequest({ gt: config.id })
-    return bypass_status
+    return sendRequest({ gt: config.id })
   }
 
   const register = async () => {

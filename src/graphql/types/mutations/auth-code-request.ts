@@ -1,5 +1,5 @@
 import { GT } from "@graphql/index"
-import VerifyCaptchaAndReturnOTP from "@core/auth-code-request"
+import verifyCaptchaAndReturnOTP from "@core/auth-code-request"
 
 import Phone from "../scalars/phone"
 import AuthCodeRequestPayload from "../payloads/auth-code-request-payload"
@@ -29,7 +29,7 @@ const AuthCodeRequest = {
 
     try {
       // TODO: redo this with use-case and errors pattern
-      await VerifyCaptchaAndReturnOTP({
+      await verifyCaptchaAndReturnOTP({
         phone,
         geetest,
         geetestChallenge,
