@@ -20,10 +20,10 @@ import {
 } from "test/helpers"
 import { getWalletFromRole } from "@core/wallet-factory"
 import { sockTx } from "@services/bitcoind/socket"
-import {
-  GALOY_BITCOIND_EVENTS,
-  receiveRawTxSubscriber,
-} from "@services/bitcoind/subscribers"
+// import {
+//   GALOY_BITCOIND_EVENTS,
+//   receiveRawTxSubscriber,
+// } from "@services/bitcoind/subscribers"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
@@ -141,63 +141,63 @@ describe("UserWallet - On chain", () => {
     }
   })
 
-  it("identifies unconfirmed incoming on-chain transactions", async () => {
-    const address = await walletUser0.getOnChainAddress()
+  // it("identifies unconfirmed incoming on-chain transactions", async () => {
+  //   const address = await walletUser0.getOnChainAddress()
 
-    const sub = await receiveRawTxSubscriber(sockTx)
-    sub.on(
-      GALOY_BITCOIND_EVENTS.CHAIN_TRANSACTION,
-      onchainTransactionEventHandlerBitcoind,
-    )
+  //   const sub = await receiveRawTxSubscriber(sockTx)
+  //   sub.on(
+  //     GALOY_BITCOIND_EVENTS.CHAIN_TRANSACTION,
+  //     onchainTransactionEventHandlerBitcoind,
+  //   )
 
-    await Promise.all([
-      once(sub, GALOY_BITCOIND_EVENTS.CHAIN_TRANSACTION),
-      bitcoindOutside.sendToAddress({ address, amount: amountBTC }),
-    ])
+  //   await Promise.all([
+  //     once(sub, GALOY_BITCOIND_EVENTS.CHAIN_TRANSACTION),
+  //     bitcoindOutside.sendToAddress({ address, amount: amountBTC }),
+  //   ])
 
-    await sleep(1000)
+  //   await sleep(1000)
 
-    const txs = await walletUser0.getTransactions()
-    const pendingTxs = filter(txs, { pending: true })
-    expect(pendingTxs.length).toBe(1)
-    expect(pendingTxs[0].amount).toBe(btc2sat(amountBTC))
-    expect(pendingTxs[0].addresses[0]).toBe(address)
+  //   const txs = await walletUser0.getTransactions()
+  //   const pendingTxs = filter(txs, { pending: true })
+  //   expect(pendingTxs.length).toBe(1)
+  //   expect(pendingTxs[0].amount).toBe(btc2sat(amountBTC))
+  //   expect(pendingTxs[0].addresses[0]).toBe(address)
 
-    await sleep(1000)
+  //   await sleep(1000)
 
-    expect(sendNotification.mock.calls.length).toBe(1)
-    expect(sendNotification.mock.calls[0][0].data.type).toBe("onchain_receipt_pending")
+  //   expect(sendNotification.mock.calls.length).toBe(1)
+  //   expect(sendNotification.mock.calls[0][0].data.type).toBe("onchain_receipt_pending")
 
-    const satsPrice = await getCurrentPrice()
-    if (!satsPrice) {
-      throw Error(`satsPrice is not set`)
-    }
-    const usd = (btc2sat(amountBTC) * satsPrice).toFixed(2)
+  //   const satsPrice = await getCurrentPrice()
+  //   if (!satsPrice) {
+  //     throw Error(`satsPrice is not set`)
+  //   }
+  //   const usd = (btc2sat(amountBTC) * satsPrice).toFixed(2)
 
-    expect(sendNotification.mock.calls[0][0].title).toBe(
-      getTitle["onchain_receipt_pending"]({ usd, amount: btc2sat(amountBTC) }),
-    )
+  //   expect(sendNotification.mock.calls[0][0].title).toBe(
+  //     getTitle["onchain_receipt_pending"]({ usd, amount: btc2sat(amountBTC) }),
+  //   )
 
-    await Promise.all([
-      bitcoindOutside.generateToAddress({ nblocks: 3, address: RANDOM_ADDRESS }),
-      once(sub, GALOY_BITCOIND_EVENTS.CHAIN_TRANSACTION),
-    ])
+  //   await Promise.all([
+  //     bitcoindOutside.generateToAddress({ nblocks: 3, address: RANDOM_ADDRESS }),
+  //     once(sub, GALOY_BITCOIND_EVENTS.CHAIN_TRANSACTION),
+  //   ])
 
-    await sleep(3000)
-    sub.removeAllListeners()
+  //   await sleep(3000)
+  //   sub.removeAllListeners()
 
-    // import util from 'util'
-    // baseLogger.debug(util.inspect(sendNotification.mock.calls, false, Infinity))
-    // FIXME: the event is actually fired twice.
-    // is it a lnd issue?
-    // a workaround: use a hash of the event and store in redis
-    // to not replay if it has already been handled?
-    //
-    // expect(notification.sendNotification.mock.calls.length).toBe(2)
-    // expect(notification.sendNotification.mock.calls[1][0].data.type).toBe("onchain_receipt")
-    // expect(notification.sendNotification.mock.calls[1][0].title).toBe(
-    //   `Your wallet has been credited with ${btc2sat(amountBTC)} sats`)
-  })
+  //   // import util from 'util'
+  //   // baseLogger.debug(util.inspect(sendNotification.mock.calls, false, Infinity))
+  //   // FIXME: the event is actually fired twice.
+  //   // is it a lnd issue?
+  //   // a workaround: use a hash of the event and store in redis
+  //   // to not replay if it has already been handled?
+  //   //
+  //   // expect(notification.sendNotification.mock.calls.length).toBe(2)
+  //   // expect(notification.sendNotification.mock.calls[1][0].data.type).toBe("onchain_receipt")
+  //   // expect(notification.sendNotification.mock.calls[1][0].title).toBe(
+  //   //   `Your wallet has been credited with ${btc2sat(amountBTC)} sats`)
+  // })
 
   it("allows fee exemption for specific users", async () => {
     walletUser2 = await getUserWallet(2)
