@@ -4,11 +4,17 @@ start-deps:
 	docker-compose up -d
 	direnv reload
 
-start: start-deps
+start-old:
+	. ./.envrc && yarn tsnd --respawn --files -r tsconfig-paths/register src/servers/graphql-old-server.ts | yarn pino-pretty -c -l
+
+start-new:
 	. ./.envrc && yarn tsnd --respawn --files -r tsconfig-paths/register src/servers/graphql-main-server.ts | yarn pino-pretty -c -l
 
-start-admin: start-deps
+start-admin:
 	. ./.envrc && yarn tsnd --respawn --files -r tsconfig-paths/register src/servers/graphql-admin-server.ts | yarn pino-pretty -c -l
+
+start: start-deps
+	make start-old & make start-new & make start-admin
 
 watch:
 	yarn nodemon -V -e ts,graphql -w ./src -x make start

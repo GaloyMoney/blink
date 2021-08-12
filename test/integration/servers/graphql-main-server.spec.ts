@@ -2,7 +2,7 @@ import { redis } from "@services/redis"
 import { sleep } from "@core/utils"
 import { yamlConfig, getRequestPhoneCodeLimits, getLoginAttemptLimits } from "@config/app"
 import { createTestClient } from "apollo-server-testing"
-import { startApolloServerForOldSchema } from "@servers/graphql-main-server"
+import { startApolloServerForOldSchema } from "@servers/graphql-old-server"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
