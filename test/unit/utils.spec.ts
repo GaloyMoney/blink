@@ -101,6 +101,45 @@ describe("utils.ts", () => {
       const amount = amountOnVout({ vout, addresses })
       expect(amount).toBe(1)
     })
+
+    it("does not fail if there are no addresses in vout", () => {
+      const vout = [
+        {
+          value: 1,
+          n: 0,
+          scriptPubKey: {
+            asm: "0 f3bbce2f4bc8ce783afac6ed9b6d911eba92de45",
+            hex: "0014f3bbce2f4bc8ce783afac6ed9b6d911eba92de45",
+            reqSigs: 1,
+            type: "witness_v0_keyhash",
+            addresses: ["bcrt1q7wauut6ter88swh6cmkekmv3r6af9hj9plkn07"],
+          },
+        },
+        {
+          value: 0,
+          n: 1,
+          scriptPubKey: {
+            asm: "OP_RETURN aa21a9ede2f61c3f71d1defd3fa999dfa36953755c690689799962b48bebd836974e8cf9",
+            hex: "6a24aa21a9ede2f61c3f71d1defd3fa999dfa36953755c690689799962b48bebd836974e8cf9",
+            type: "nulldata",
+          },
+        },
+      ]
+
+      const addresses = [
+        "bcrt1q8psckhj450a4qs6jy7f4n0rec9h5qp3e4zllve",
+        "bcrt1qg5h7khnuvyk3hrmkwhcde7ntdjd4aj63ta4jcr",
+        "bcrt1q72nxdjsh0zsdyd0e9zreh9e6npcutcqsqscfvw",
+      ]
+
+      let amount = amountOnVout({ vout, addresses })
+      expect(amount).toBe(0)
+
+      addresses.push("bcrt1q7wauut6ter88swh6cmkekmv3r6af9hj9plkn07")
+
+      amount = amountOnVout({ vout, addresses })
+      expect(amount).toBe(1)
+    })
   })
 
   describe("myOwnAddressesOnVout", () => {
@@ -138,6 +177,45 @@ describe("utils.ts", () => {
 
       const result = myOwnAddressesOnVout({ vout, addresses })
       expect(result).toStrictEqual(["bcrt1q72nxdjsh0zsdyd0e9zreh9e6npcutcqsqscfvw"])
+    })
+
+    it("does not fail if there are no addresses in vout", () => {
+      const vout = [
+        {
+          value: 1,
+          n: 0,
+          scriptPubKey: {
+            asm: "0 f3bbce2f4bc8ce783afac6ed9b6d911eba92de45",
+            hex: "0014f3bbce2f4bc8ce783afac6ed9b6d911eba92de45",
+            reqSigs: 1,
+            type: "witness_v0_keyhash",
+            addresses: ["bcrt1q7wauut6ter88swh6cmkekmv3r6af9hj9plkn07"],
+          },
+        },
+        {
+          value: 0,
+          n: 1,
+          scriptPubKey: {
+            asm: "OP_RETURN aa21a9ede2f61c3f71d1defd3fa999dfa36953755c690689799962b48bebd836974e8cf9",
+            hex: "6a24aa21a9ede2f61c3f71d1defd3fa999dfa36953755c690689799962b48bebd836974e8cf9",
+            type: "nulldata",
+          },
+        },
+      ]
+
+      const addresses = [
+        "bcrt1q8psckhj450a4qs6jy7f4n0rec9h5qp3e4zllve",
+        "bcrt1qg5h7khnuvyk3hrmkwhcde7ntdjd4aj63ta4jcr",
+        "bcrt1q72nxdjsh0zsdyd0e9zreh9e6npcutcqsqscfvw",
+      ]
+
+      let result = myOwnAddressesOnVout({ vout, addresses })
+      expect(result).toStrictEqual([])
+
+      addresses.push("bcrt1q7wauut6ter88swh6cmkekmv3r6af9hj9plkn07")
+
+      result = myOwnAddressesOnVout({ vout, addresses })
+      expect(result).toStrictEqual(["bcrt1q7wauut6ter88swh6cmkekmv3r6af9hj9plkn07"])
     })
   })
 
