@@ -23,4 +23,4 @@ COPY ./*.js ./default.yaml ./package.json ./tsconfig.json ./yarn.lock ./.env ./
 
 USER 1000
 
-CMD ["lib/servers/graphql-main-server.js"]
+CMD ["lib/servers/graphql-old-server.js"]

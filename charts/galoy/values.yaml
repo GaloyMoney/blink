@@ -16,17 +16,22 @@ image:
   repository: gcr.io/galoyapp/galoy
 
 deployment:
+- name: graphql
+  args: ["lib/servers/graphql-old-server.js"]
+  healthz: true
+  targetPort: 4000
+  replicaCount: 2
+  podAnnotations: {}
 - name: graphql-admin
   args: ["lib/servers/graphql-admin-server.js"]
   healthz: true
   targetPort: 4001
   replicaCount: 1
-- name: graphql
+- name: api
   args: ["lib/servers/graphql-main-server.js"]
   healthz: true
-  targetPort: 4000
-  replicaCount: 2
-  podAnnotations: {}
+  targetPort: 4002
+  replicaCount: 1
 - name: exporter
   args: ["lib/servers/exporter.js"]
   healthz: true
@@ -53,6 +58,10 @@ service:
   type: NodePort
   targetPort: 4001
   port: 4001
+- name: api
+  type: NodePort
+  targetPort: 4002
+  port: 4002
 - name: trigger
   type: ClusterIP
   targetPort: 8888
