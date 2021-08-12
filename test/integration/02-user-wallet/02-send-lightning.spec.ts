@@ -115,6 +115,8 @@ describe("UserWallet - Lightning Pay", () => {
       amount: amountInvoice,
     })
 
+    // WIP FIXME: Fails because it expects GetTransactions... to be
+    //            ordered by latest first in array
     const { BTC: finalBalance0 } = await userWallet0.getBalances()
     const userTransaction0 = await userWallet0.getTransactions()
     const { BTC: finalBalance1 } = await userWallet1.getBalances()
@@ -177,10 +179,21 @@ describe("UserWallet - Lightning Pay", () => {
       memo: memoSpamAboveThreshold,
     })
 
+    // WIP FIXME: Fails because it expects GetTransactions... to be
+    //            ordered by latest first in array
     // fetch transactions from db
-    const userTransaction0 = await userWallet0.getTransactions()
+    const userTransaction0 = await GetTransactionsForWallet({
+      walletId: userWallet0.user.id,
+    })
+    if (userTransaction0 instanceof Error) {
+      throw userTransaction0
+    }
+
+    console.log("HERE 0:", userTransaction0)
     const transaction0Above = userTransaction0[0]
+    console.log("HERE 1:", transaction0Above)
     const transaction0Below = userTransaction0[1]
+    console.log("HERE 2:", transaction0Below)
 
     const userTransaction1 = await userWallet1.getTransactions()
     const transaction1Above = userTransaction1[0]
