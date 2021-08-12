@@ -1,5 +1,5 @@
 import { GT } from "@graphql/index"
-import AccountLevel from "../account-level"
+import AccountLevel from "../scalars/account-level"
 
 import UserDetailPayload from "../payloads/user-detail"
 import { updateUserLevel } from "@domain/user"

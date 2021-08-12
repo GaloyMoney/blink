@@ -1,7 +1,7 @@
 import { GT } from "@graphql/index"
 
-import InvoicePaymentStatus from "../invoice-payment-status"
-import UserError from "../user-error"
+import InvoicePaymentStatus from "../scalars/invoice-payment-status"
+import UserError from "../object/user-error"
 
 const LnInvoicePaymentStatusPayload = new GT.Object({
   name: "LnInvoicePaymentStatusPayload",

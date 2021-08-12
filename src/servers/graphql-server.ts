@@ -58,7 +58,7 @@ export const startApolloServer = async ({
         throw new IPBlacklistedError("IP Blacklisted", { logger: graphqlLogger, ip })
       }
 
-      let wallet, user
+      let wallet, user: UserType | undefined
 
       // TODO move from id: uuidv4() to a Jaeger standard
       const logger = graphqlLogger.child({ token, id: uuidv4(), body: context.req?.body })
@@ -68,16 +68,13 @@ export const startApolloServer = async ({
           { _id: uid },
           { lastConnection: new Date() },
           { new: true },
-        )
+        ) // ?: Mongoose wrapper should return the correct TS type
 
         if (yamlConfig.ipRecording.enabled) {
           updateIPDetails({ ip, user, logger })
         }
 
-        wallet =
-          !!user && user.status === "active"
-            ? await WalletFactory({ user, logger })
-            : null
+        wallet = user?.status === "active" ? await WalletFactory({ user, logger }) : null
       }
 
       return {

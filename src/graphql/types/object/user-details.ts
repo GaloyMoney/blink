@@ -1,12 +1,13 @@
-import { GT } from "../index"
+import { GT } from "@graphql/index"
 
-import Date from "./scalars/date"
-import Phone from "./scalars/phone"
-import AccountLevel from "./account-level"
-import Username from "./scalars/username"
+import Date from "../scalars/date"
+import Phone from "../scalars/phone"
+import AccountLevel from "../scalars/account-level"
+import Username from "../scalars/username"
+import AccountStatus from "../scalars/account-status"
 import Coordinates from "./coordinates"
-import AccountStatus from "./account-status"
 
+// TODO: Merge with User type
 const UserDetails = new GT.Object({
   name: "UserDetails",
   fields: () => ({

@@ -77,7 +77,7 @@ enum PriceGraphRange {
 ### Interfaces
 #########################
 
-interface IAccount {
+interface Account {
   level: AccountLevel!
   status: AccountStatus!
   wallets: [Wallet!]!
@@ -85,7 +85,7 @@ interface IAccount {
   csvTransactions(walletId: ID!): String!
 }
 
-interface ITransaction {
+interface Transaction {
   id: ID!
   amount: TxAmount!
   convertedAmount: TxAmount!
@@ -98,8 +98,6 @@ interface ITransaction {
 ### Unions
 #########################
 
-union Account = ConsumerAcount | MerchantAcount
-union Transaction = IntraLedgerTransaction | LnTransaction | OnChainTransaction
 union MobileVersions = AndroidVersions | IosVersions
 
 #########################
@@ -118,7 +116,7 @@ type User {
   createdAt: Date!
 }
 
-type ConsumerAccount implements IAccount {
+type ConsumerAccount implements Account {
   # users: [User!]! # FuturePlanning
   level: AccountLevel!
   status: AccountStatus!
@@ -127,7 +125,7 @@ type ConsumerAccount implements IAccount {
   csvTransactionsCSV(walletId: ID!): String!
 }
 
-type MerchantAccount implements IAccount {
+type MerchantAccount implements Account {
   # user: [User!]! # FuturePlanning
   mapInfo: MapInfo!
 
@@ -138,7 +136,7 @@ type MerchantAccount implements IAccount {
 }
 
 # # FuturePlanning
-# type CorporateAccount implements IAccount {
+# type CorporateAccount implements Account {
 #   user: [User!]!
 # }
 
@@ -179,7 +177,7 @@ type FeeReimbursementDestination {
 
 # ?: Using the same wallet (ex, Bitcoin Beach)
 # ?: 1) Pay with username, 2) Pay with LN, 3) Pay OnChain
-type IntraLedgerTransaction implements ITransaction {
+type IntraLedgerTransaction implements Transaction {
   id: ID!
   direction: TxDirection!
   # amount: TxAmount!
@@ -207,7 +205,7 @@ type IntraLedgerTransaction implements ITransaction {
   recipientID: Username
 }
 
-type OnChainTransaction implements ITransaction {
+type OnChainTransaction implements Transaction {
   id: ID!
   direction: TxDirection!
   amount: TxAmount!
@@ -219,7 +217,7 @@ type OnChainTransaction implements ITransaction {
   addresses: [OnChainAddress!]!
 }
 
-type LnTransaction implements ITransaction {
+type LnTransaction implements Transaction {
   id: ID!
   direction: TxDirection!
   amount: TxAmount!
@@ -263,24 +261,24 @@ type UserQuizQuestion {
 }
 
 # ?: Account? Multiple wallets
-interface IWallet {
+interface Wallet {
   id: ID!
   storageCurrency: Currency
   balance: SignedAmount! # Can be negative for dealers
-  transactions: [ITransaction!]! # Connection
+  transactions: [Transaction!]! # Connection
 }
 
-type BTCWallet implements IWallet {
+type BTCWallet implements Wallet {
   id: ID!
   balance: SignedAmount!
-  transactions: [ITransaction!]! # Connection
+  transactions: [Transaction!]! # Connection
 }
 
-type FaitWallet implements IWallet {
+type FiatWallet implements Wallet {
   id: ID!
   currency: Currency!
   balance: SignedAmount!
-  transactions: [ITransaction!]! # Connection
+  transactions: [Transaction!]! # Connection
 }
 
 type Contact {

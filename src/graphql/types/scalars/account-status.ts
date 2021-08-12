@@ -1,4 +1,4 @@
-import { GT } from "../index"
+import { GT } from "@graphql/index"
 
 const AccountStatus = new GT.Enum({
   name: "AccountStatus",

@@ -1,14 +1,16 @@
+import User from "@graphql/types/object/user"
 import { GT } from "../index"
-
-import Date from "../types/scalars/date"
 
 const QueryType = new GT.Object({
   name: "Query",
   fields: () => ({
-    currentTime: {
-      type: Date,
-      resolve: () => {
-        return new Date().toISOString()
+    me: {
+      type: User,
+      resolve: (_, __, { user }) => {
+        if (!user) {
+          throw new Error("Invalid user request")
+        }
+        return user
       },
     },
   }),

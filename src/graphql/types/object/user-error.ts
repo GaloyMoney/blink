@@ -1,4 +1,4 @@
-import { GT } from "../index"
+import { GT } from "@graphql/index"
 
 const UserError = new GT.Object({
   name: "UserError",

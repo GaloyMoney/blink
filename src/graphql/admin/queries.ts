@@ -3,8 +3,8 @@ import { User } from "@services/mongoose/schema"
 import { GT } from "../index"
 import Phone from "../types/scalars/phone"
 import Username from "../types/scalars/username"
-import AccountLevel from "../types/account-level"
-import UserDetails from "../types/user-details"
+import AccountLevel from "../types/scalars/account-level"
+import UserDetails from "../types/object/user-details"
 
 const QueryType = new GT.Object({
   name: "Query",
