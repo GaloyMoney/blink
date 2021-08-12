@@ -143,6 +143,8 @@ export const getIpConfig = (config = yamlConfig): IpConfig => ({
   blacklistedIPs: config.blacklistedIPs ? config.blacklistedIPs : [],
 })
 
+export const getHelmetConfig = (config = yamlConfig): HelmetConfig => config.helmet
+
 export const levels: Levels = [1, 2]
 
 // onboarding

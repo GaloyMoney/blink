@@ -66,6 +66,10 @@ type IpConfig = {
   blacklistedIPs: string[]
 }
 
+type HelmetConfig = {
+  disableContentPolicy: boolean
+}
+
 // Currently unused types
 
 interface IAddBTCInvoiceRequest {

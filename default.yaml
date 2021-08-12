@@ -1,4 +1,3 @@
-
 name: "Galoy Banking"
 
 # username of the account that will be used to fund rewards
@@ -126,3 +125,6 @@ onChainWallet:
   minConfirmations: 2
 # TODO
 # carrierRegexFilter: ""
+
+helmet:
+  disableContentPolicy: false
