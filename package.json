@@ -29,7 +29,7 @@
     "test-local": "yarn use-minikube && source ./scripts/export-local.sh && yarn jest --runInBand --verbose $TEST | pino-pretty -c -l",
     "test-local-restart": "./scripts/delete-pods.sh && source ./scripts/export-local.sh && yarn run test-local",
     "test-local-clean": "yarn run restart-charts && yarn jest --clearCache && yarn run test-local",
-    "test:unit": "LOGLEVEL=warn jest --config ./test/jest-unit.config.js --bail --verbose $TEST | yarn pino-pretty -c -l",
+    "test:unit": ". ./.envrc && LOGLEVEL=warn jest --config ./test/jest-unit.config.js --bail --verbose $TEST | yarn pino-pretty -c -l",
     "test:integration": ". ./.envrc && LOGLEVEL=warn jest --config ./test/jest-integration.config.js --bail --runInBand --verbose $TEST | yarn pino-pretty -c -l"
   },
   "engines": {
