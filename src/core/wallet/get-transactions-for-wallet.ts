@@ -11,8 +11,6 @@ import {
 import { LOOK_BACK } from "../utils"
 import { ONCHAIN_MIN_CONFIRMATIONS } from "@config/app"
 import { submittedToWalletTransactions } from "@domain/wallet/transaction-translation"
-// import { WalletFactory } from "@core/wallet-factory"
-// import { User } from "@services/mongoose/schema"
 
 export const GetTransactionsForWallet = async ({
   walletId,
@@ -33,7 +31,6 @@ export const GetTransactionsForWallet = async ({
 
   const decoder = MakeTxDecoder(process.env.NETWORK as BtcNetwork)
 
-  //              as 'SubmittedTransaction' types
   const onChain = MakeOnChainService(decoder)
   if (onChain instanceof OnChainError) return onChain
   const onChainTxs = await onChain.getIncomingTransactions(LOOK_BACK)
@@ -50,7 +47,7 @@ export const GetTransactionsForWallet = async ({
 
   const confirmedWalletTransactions = ledgerToWalletTransactions(ledgerTransactions)
 
-  return [...pendingIncomingWalletTransactions, ...confirmedWalletTransactions]
+  return [...confirmedWalletTransactions, ...pendingIncomingWalletTransactions]
 }
 
 // read from ledger -> leger line

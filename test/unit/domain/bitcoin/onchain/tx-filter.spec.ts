@@ -11,7 +11,6 @@ describe("TxFilter", () => {
         id: "id" as TxId,
         outputAddresses: ["address"],
         tokens: toSats(10000),
-        transactionHex: "ashoten",
         createdAt: new Date(),
       } as SubmittedTransaction,
       {
@@ -20,7 +19,6 @@ describe("TxFilter", () => {
         id: "id" as TxId,
         outputAddresses: ["address"],
         tokens: toSats(10000),
-        transactionHex: "ashoten",
         createdAt: new Date(),
       } as SubmittedTransaction,
     ])
@@ -37,7 +35,6 @@ describe("TxFilter", () => {
         id: "id" as TxId,
         outputAddresses: ["address"],
         tokens: toSats(10000),
-        transactionHex: "ashoten",
         createdAt: new Date(),
       } as SubmittedTransaction,
       {
@@ -46,7 +43,6 @@ describe("TxFilter", () => {
         id: "id" as TxId,
         outputAddresses: ["address"],
         tokens: toSats(10000),
-        transactionHex: "ashoten",
         createdAt: new Date(),
       } as SubmittedTransaction,
     ])
@@ -63,7 +59,6 @@ describe("TxFilter", () => {
         id: "id" as TxId,
         outputAddresses: ["address1"],
         tokens: toSats(10000),
-        transactionHex: "ashoten",
         createdAt: new Date(),
       } as SubmittedTransaction,
       {
@@ -72,7 +67,6 @@ describe("TxFilter", () => {
         id: "id" as TxId,
         outputAddresses: ["address2"],
         tokens: toSats(10000),
-        transactionHex: "ashoten",
         createdAt: new Date(),
       } as SubmittedTransaction,
     ])

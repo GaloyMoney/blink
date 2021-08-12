@@ -32,7 +32,7 @@ export const MakeOnChainService = (
         .map((tx) => {
           return {
             // blockId: tx.block_id as BlockId,
-            confirmations: tx.confirmation_count,
+            confirmations: tx.confirmation_count || 0,
             fee: toSats(tx.fee as number),
             id: tx.id as TxId,
             outputAddresses: tx.output_addresses as OnChainAddress[],

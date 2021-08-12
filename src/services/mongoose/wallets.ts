@@ -14,15 +14,11 @@ export const MakeWallets = (): IWallets => {
       }
       const onChainAddressIdentifiers = result.onchain.map(({ pubkey, address }) => {
         return {
-          onChainAddresses: {
-            pubkey: pubkey as Pubkey,
-            address: address as OnChainAddress,
-          },
+          pubkey: pubkey as Pubkey,
+          address: address as OnChainAddress,
         }
-      }) as OnChainAddressIdentifier[]
-      const onChainAddresses = onChainAddressIdentifiers.map(
-        ({ address }) => address,
-      ) as OnChainAddress[]
+      })
+      const onChainAddresses = onChainAddressIdentifiers.map(({ address }) => address)
 
       return { onChainAddresses, onChainAddressIdentifiers }
     } catch (err) {

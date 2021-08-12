@@ -20,6 +20,7 @@ import {
   amountAfterFeeDeduction,
 } from "test/helpers"
 import { getWalletFromRole } from "@core/wallet-factory"
+import { GetTransactionsForWallet } from "@core/wallet/get-transactions-for-wallet"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
@@ -151,11 +152,37 @@ describe("UserWallet - On chain", () => {
 
     await sleep(1000)
 
-    const txs = await walletUser0.getTransactions()
-    const pendingTxs = filter(txs, { pending: true })
+    // -> Original
+    const txs1 = await walletUser0.getTransactions()
+    const pendingTxs1 = filter(txs1, { pending: true })
+    expect(pendingTxs1.length).toBe(1)
+    console.log("HERE 0:", txs1)
+    console.log("HERE 1:", pendingTxs1)
+    // -> EndOriginal
+
+    // -> New
+    const txs = await GetTransactionsForWallet({ walletId: walletUser0.user.id })
+    if (txs instanceof Error) {
+      throw txs
+    }
+    const pendingTxs = filter(txs, { pendingConfirmation: true })
+    console.log("HERE 2:", txs)
+    console.log("HERE 3:", pendingTxs)
     expect(pendingTxs.length).toBe(1)
-    expect(pendingTxs[0].amount).toBe(btc2sat(amountBTC))
-    expect(pendingTxs[0].addresses[0]).toBe(address)
+    // -> EndNew
+
+    // -> Original
+    // expect(pendingTxs[0].amount).toBe(btc2sat(amountBTC))
+    // expect(pendingTxs[0].addresses[0]).toBe(address)
+    // -> EndOriginal
+
+    // -> New
+    // const pendingTx = pendingTxs[0] as WalletOnChainTransaction
+    // expect(pendingTx.settlementVia).toBe("onchain")
+    // expect(pendingTx.settlementAmount).toBe(btc2sat(amountBTC))
+    // expect(pendingTx.addresses[0]).toBe(address)
+    expect(true).toBe(false)
+    // -> EndNew
 
     await sleep(1000)
 
@@ -209,7 +236,15 @@ async function sendToWallet({ walletDestination }) {
   const lnd = lndonchain
 
   const { BTC: initialBalance } = await walletDestination.getBalances()
+  // -> Original
   const initTransactions = await walletDestination.getTransactions()
+  // -> EndOriginal
+  // -> New
+  // const initTransactions = await GetTransactionsForWallet({ walletId: walletDestination.user.id })
+  // if (initTransactions instanceof Error) {
+  //   throw initTransactions
+  // }
+  // -> EndNew
 
   const address = await walletDestination.getOnChainAddress()
   expect(address.substr(0, 4)).toBe("bcrt")
@@ -236,9 +271,22 @@ async function sendToWallet({ walletDestination }) {
         }),
     )
 
+    // -> Original
     const transactions = await walletDestination.getTransactions()
+    // -> EndOriginal
+
+    // -> New
+    // const transactions = await GetTransactionsForWallet({
+    //   walletId: walletDestination.user.id,
+    // })
+    // if (transactions instanceof Error) {
+    //   throw transactions
+    // }
+    // -> EndNew
 
     expect(transactions.length).toBe(initTransactions.length + 1)
+
+    // -> Original
     expect(transactions[0].type).toBe("onchain_receipt")
     expect(transactions[0].fee).toBe(Math.round(transactions[0].fee))
     expect(transactions[0].amount).toBe(
@@ -248,6 +296,21 @@ async function sendToWallet({ walletDestination }) {
       }),
     )
     expect(transactions[0].addresses[0]).toBe(address)
+    // -> EndOriginal
+
+    // -> New
+    // const txn = transactions[0] as WalletOnChainTransaction
+    // expect(txn.settlementVia).toBe("onchain")
+    // expect(txn.settlementFee).toBe(Math.round(txn.settlementFee))
+    // expect(txn.settlementAmount).toBe(
+    //   amountAfterFeeDeduction({
+    //     amount: amountBTC,
+    //     depositFeeRatio: walletDestination.user.depositFeeRatio,
+    //   }),
+    // )
+    // expect(txn.addresses[0]).toBe(address)
+    // expect(true).toBe(false)
+    // -> EndNew
   }
 
   // just to improve performance
