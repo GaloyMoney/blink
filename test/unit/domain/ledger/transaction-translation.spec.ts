@@ -25,6 +25,7 @@ describe("ledgerToWalletTransactions", () => {
       {
         id: "id" as LedgerTransactionId,
         type: "on_us" as LedgerTransactionType,
+        paymentHash: "paymentHash" as PaymentHash,
         username: "username" as Username,
         debit: toSats(0),
         fee: toSats(0),
@@ -63,6 +64,7 @@ describe("ledgerToWalletTransactions", () => {
         recipientId: "username",
         settlementAmount: toSats(100000),
         settlementFee: toSats(0),
+        paymentHash: "paymentHash" as PaymentHash,
         description: "from username",
         pendingConfirmation: false,
         createdAt: timestamp,

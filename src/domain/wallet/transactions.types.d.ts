@@ -14,6 +14,7 @@ type BaseWalletTransaction = {
 type IntraLedgerTransaction = BaseWalletTransaction & {
   readonly settlementVia: "intraledger"
   readonly recipientId: Username
+  readonly paymentHash: PaymentHash
 }
 
 type WalletOnChainTransaction = BaseWalletTransaction & {

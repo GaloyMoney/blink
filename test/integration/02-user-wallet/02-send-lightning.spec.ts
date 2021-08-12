@@ -27,6 +27,7 @@ import {
   waitFor,
   waitUntilChannelBalanceSyncAll,
 } from "test/helpers"
+import { GetTransactionsForWallet } from "@core/wallet/get-transactions-for-wallet"
 
 const date = Date.now() + 1000 * 60 * 60 * 24 * 8
 // required to avoid oldEnoughForWithdrawal validation
@@ -65,15 +66,22 @@ describe("UserWallet - Lightning Pay", () => {
     const invoice = await userWallet2.addInvoice({ value: amountInvoice, memo })
     await userWallet1.pay({ invoice })
 
-    const matchTx = (tx) => tx.type === "on_us" && tx.hash === getHash(invoice)
+    const matchTx = (tx) =>
+      tx.settlementVia === "intraledger" && tx.paymentHash === getHash(invoice)
 
-    const user1Txn = await userWallet1.getTransactions()
+    const user1Txn = await GetTransactionsForWallet({ walletId: userWallet1.user.id })
+    if (user1Txn instanceof Error) {
+      throw user1Txn
+    }
     expect(user1Txn.filter(matchTx)[0].description).toBe(memo)
-    expect(user1Txn.filter(matchTx)[0].type).toBe("on_us")
+    expect(user1Txn.filter(matchTx)[0].settlementVia).toBe("intraledger")
 
-    const user2Txn = await userWallet2.getTransactions()
+    const user2Txn = await GetTransactionsForWallet({ walletId: userWallet1.user.id })
+    if (user2Txn instanceof Error) {
+      throw user2Txn
+    }
     expect(user2Txn.filter(matchTx)[0].description).toBe(memo)
-    expect(user2Txn.filter(matchTx)[0].type).toBe("on_us")
+    expect(user2Txn.filter(matchTx)[0].settlementVia).toBe("intraledger")
   })
 
   it("sends to another Galoy user with two different memos", async () => {
@@ -83,15 +91,22 @@ describe("UserWallet - Lightning Pay", () => {
     const request = await userWallet2.addInvoice({ value: amountInvoice, memo })
     await userWallet1.pay({ invoice: request, memo: memoPayer })
 
-    const matchTx = (tx) => tx.type === "on_us" && tx.hash === getHash(request)
+    const matchTx = (tx) =>
+      tx.settlementVia === "intraledger" && tx.paymentHash === getHash(request)
 
-    const user2Txn = await userWallet2.getTransactions()
+    const user2Txn = await GetTransactionsForWallet({ walletId: userWallet2.user.id })
+    if (user2Txn instanceof Error) {
+      throw user2Txn
+    }
     expect(user2Txn.filter(matchTx)[0].description).toBe(memo)
-    expect(user2Txn.filter(matchTx)[0].type).toBe("on_us")
+    expect(user2Txn.filter(matchTx)[0].settlementVia).toBe("intraledger")
 
-    const user1Txn = await userWallet1.getTransactions()
+    const user1Txn = await GetTransactionsForWallet({ walletId: userWallet1.user.id })
+    if (user1Txn instanceof Error) {
+      throw user1Txn
+    }
     expect(user1Txn.filter(matchTx)[0].description).toBe(memoPayer)
-    expect(user1Txn.filter(matchTx)[0].type).toBe("on_us")
+    expect(user1Txn.filter(matchTx)[0].settlementVia).toBe("intraledger")
   })
 
   it("sends to another Galoy user a push payment", async () => {
@@ -372,16 +387,27 @@ describe("UserWallet - Lightning Pay", () => {
           expect(payeeFinalBalance).toBe(payeeInitialBalance + amountInvoice)
 
           const hash = getHash(request)
-          const matchTx = (tx) => tx.type === "on_us" && tx.hash === hash
+          const matchTx = (tx) =>
+            tx.settlementVia === "intraledger" && tx.paymentHash === hash
 
-          const user2Txn = await walletPayee.getTransactions()
+          const user2Txn = await GetTransactionsForWallet({
+            walletId: walletPayee.user.id,
+          })
+          if (user2Txn instanceof Error) {
+            throw user2Txn
+          }
           const user2OnUsTxn = user2Txn.filter(matchTx)
-          expect(user2OnUsTxn[0].type).toBe("on_us")
+          expect(user2OnUsTxn[0].settlementVia).toBe("intraledger")
           await checkIsBalanced()
 
-          const user1Txn = await walletPayer.getTransactions()
+          const user1Txn = await GetTransactionsForWallet({
+            walletId: walletPayer.user.id,
+          })
+          if (user1Txn instanceof Error) {
+            throw user1Txn
+          }
           const user1OnUsTxn = user1Txn.filter(matchTx)
-          expect(user1OnUsTxn[0].type).toBe("on_us")
+          expect(user1OnUsTxn[0].settlementVia).toBe("intraledger")
 
           // making request twice because there is a cancel state, and this should be re-entrant
           expect(await walletPayer.updatePendingInvoice({ hash })).toBeTruthy()

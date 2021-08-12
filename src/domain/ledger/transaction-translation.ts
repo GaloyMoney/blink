@@ -35,6 +35,7 @@ export const ledgerToWalletTransactions = (
           description,
           settlementAmount,
           settlementFee: fee,
+          paymentHash: paymentHash as PaymentHash,
           recipientId: username,
           pendingConfirmation,
           createdAt: timestamp,
