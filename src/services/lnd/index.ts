@@ -33,7 +33,7 @@ export const LndService = (): ILightningService => {
       if (returnedInvoice instanceof Error) {
         return new CouldNotDecodeReturnedPaymentRequest(returnedInvoice.message)
       }
-      return { invoice: returnedInvoice } as RegisteredInvoice
+      return { invoice: returnedInvoice, pubkey } as RegisteredInvoice
     } catch (err) {
       return new UnknownLightningServiceError(err)
     }
