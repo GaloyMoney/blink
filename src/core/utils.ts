@@ -12,7 +12,7 @@ export const isDev = process.env.NODE_ENV !== "production"
 // how many block are we looking back for getChainTransactions
 export const LOOK_BACK = 360
 export const LOOK_BACK_OUTGOING = 2
-export const LOOK_BACK_CHANNEL_UPDATE = 2016
+export const LOOK_BACK_CHANNEL_UPDATE = 8
 
 // FIXME: super ugly hack.
 // for some reason LoggedError get casted as GraphQLError
