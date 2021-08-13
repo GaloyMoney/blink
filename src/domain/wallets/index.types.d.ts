@@ -75,4 +75,5 @@ type Wallet = {
 
 interface IWalletsRepository {
   findById(walletId: WalletId): Promise<Wallet | RepositoryError>
+  walletIdFromUsername(username: Username): Promise<WalletId | RepositoryError>
 }

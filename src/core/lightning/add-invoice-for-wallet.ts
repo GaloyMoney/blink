@@ -2,9 +2,16 @@ import { toSats } from "@domain/bitcoin"
 import { invoiceExpirationForCurrency } from "@domain/bitcoin/lightning"
 import { MakeWalletInvoiceFactory } from "@domain/wallet-invoices/wallet-invoice-factory"
 import { MakeLndService } from "@services/lnd"
-import { WalletInvoicesRepository } from "@services/mongoose"
+import { WalletsRepository, WalletInvoicesRepository } from "@services/mongoose"
 
-export const addInvoiceForWallet = async ({ walletId, amount, memo }) => {
+export const addInvoiceForSelf = async ({
+  walletId,
+  memo,
+  amount,
+}: AddInvoiceSelfArgs): Promise<LnInvoice | ApplicationError> => {
+  if (!(amount && amount > 0))
+    return new Error("Incorrect method used for no-amount invoice")
+
   const walletInvoiceFactory = MakeWalletInvoiceFactory(walletId)
   return baseAddInvoiceForWallet({
     amount,
@@ -13,10 +20,51 @@ export const addInvoiceForWallet = async ({ walletId, amount, memo }) => {
   })
 }
 
-export const addInvoiceForRecipientWallet = async ({ walletId, amount, memo }) => {
+export const addInvoiceNoAmountForSelf = async ({
+  walletId,
+  memo,
+}: AddInvoiceSelfArgs): Promise<LnInvoice | ApplicationError> => {
   const walletInvoiceFactory = MakeWalletInvoiceFactory(walletId)
   return baseAddInvoiceForWallet({
+    amount: toSats(0),
+    memo,
+    walletInvoiceCreateFn: walletInvoiceFactory.create,
+  })
+}
+
+export const addInvoiceForRecipient = async ({
+  username,
+  memo,
+  amount,
+}: AddInvoiceRecipientArgs): Promise<LnInvoice | ApplicationError> => {
+  if (!(amount && amount > 0))
+    return new Error("Incorrect method used for no-amount invoice")
+
+  const walletsRepo = MakeWalletsRepository()
+  const walletId = await walletsRepo.walletIdFromUsername(username)
+  if (walletId instanceof Error) return walletId
+
+  const walletInvoiceFactory = MakeWalletInvoiceFactory(walletId)
+
+  return baseAddInvoiceForWallet({
     amount,
+    memo,
+    walletInvoiceCreateFn: walletInvoiceFactory.createForRecipient,
+  })
+}
+
+export const addInvoiceNoAmountForRecipient = async ({
+  username,
+  memo,
+}: AddInvoiceRecipientArgs): Promise<LnInvoice | ApplicationError> => {
+  const walletsRepo = MakeWalletsRepository()
+  const walletId = await walletsRepo.walletIdFromUsername(username)
+  if (walletId instanceof Error) return walletId
+
+  const walletInvoiceFactory = MakeWalletInvoiceFactory(walletId)
+
+  return baseAddInvoiceForWallet({
+    amount: toSats(0),
     memo,
     walletInvoiceCreateFn: walletInvoiceFactory.createForRecipient,
   })
@@ -26,12 +74,17 @@ const baseAddInvoiceForWallet = async ({
   amount,
   memo,
   walletInvoiceCreateFn,
-}): Promise<LnInvoice | CoreError> => {
+}: {
+  amount: Satoshis
+  memo: string
+  walletInvoiceCreateFn: WalletInvoiceFactoryCreateMethod
+}): Promise<LnInvoice | ApplicationError> => {
   const walletInvoicesRepo = WalletInvoicesRepository()
   const lndService = MakeLndService()
 
+  const validatedMemo = memo ? memo : ""
   const registeredInvoice = await lndService.registerInvoice({
-    description: memo,
+    description: validatedMemo,
     satoshis: toSats(amount),
     expiresAt: invoiceExpirationForCurrency("BTC", new Date()),
   })

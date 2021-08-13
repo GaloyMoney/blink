@@ -19,3 +19,15 @@ interface IPaymentRequest {
   memo?: string
   isReward?: boolean
 }
+
+type AddInvoiceSelfArgs = {
+  walletId: WalletId
+  memo: string
+  amount?: Satoshis
+}
+
+type AddInvoiceRecipientArgs = {
+  username: Username
+  memo: string
+  amount?: Satoshis
+}
