@@ -26,7 +26,22 @@ export const WalletsRepository = (): IWalletsRepository => {
     }
   }
 
+  const walletIdFromUsername = async (
+    username: Username,
+  ): Promise<WalletId | RepositoryError> => {
+    try {
+      const result = await User.getUserByUsername(username)
+      if (!result) {
+        return new CouldNotFindError()
+      }
+      return result.id
+    } catch (err) {
+      return new UnknownRepositoryError(err)
+    }
+  }
+
   return {
     findById,
+    walletIdFromUsername,
   }
 }
