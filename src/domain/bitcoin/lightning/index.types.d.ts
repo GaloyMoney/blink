@@ -28,6 +28,7 @@ type RegisterInvoiceArgs = {
 
 type RegisteredInvoice = {
   invoice: LnInvoice
+  pubkey: Pubkey
 }
 
 interface ILightningService {
