@@ -1,11 +1,20 @@
+import { LndOfflineError } from "@core/error"
 import {
   decodeInvoice,
   CouldNotDecodeReturnedPaymentRequest,
   UnknownLightningServiceError,
 } from "@domain/bitcoin/lightning"
 import { createInvoice } from "lightning"
+import { getActiveLnd } from "./utils"
 
-export const LndService = (lndAuth: AuthenticatedLnd): ILightningService => {
+export const LndService = (): ILightningService => {
+  let lndAuth: AuthenticatedLnd, pubkey: string
+  try {
+    ;({ lnd: lndAuth, pubkey } = getActiveLnd())
+  } catch (err) {
+    throw new LndOfflineError("no active lnd to create an invoice")
+  }
+
   const registerInvoice = async ({
     satoshis,
     description,

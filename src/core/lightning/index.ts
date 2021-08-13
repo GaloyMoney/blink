@@ -28,7 +28,6 @@ import {
   DbError,
   InsufficientBalanceError,
   LightningPaymentError,
-  LndOfflineError,
   NewAccountWithdrawalError,
   NotFoundError,
   RouteFindingError,
@@ -76,15 +75,7 @@ export const LightningMixin = (superclass) =>
         throw new Error("value can't be negative")
       }
 
-      let lnd: AuthenticatedLnd, pubkey: string
-
-      try {
-        ;({ lnd, pubkey } = getActiveLnd())
-      } catch (err) {
-        throw new LndOfflineError("no active lnd to create an invoice")
-      }
-
-      const lndService = LndService(lnd)
+      const lndService = LndService()
       const registerResult = await lndService.registerInvoice({
         description: memo,
         satoshis: toSats(value),
@@ -94,13 +85,13 @@ export const LightningMixin = (superclass) =>
       if (registerResult instanceof Error) {
         throw registerResult
       }
-      const { invoice } = registerResult
+      const { invoice, pubkey } = registerResult
 
       const walletInvoice = {
         paymentHash: invoice.paymentHash,
         walletId: this.user.id,
         selfGenerated,
-        pubkey: pubkey,
+        pubkey,
         paid: false,
       } as WalletInvoice
 
