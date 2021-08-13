@@ -14,7 +14,10 @@ start-admin:
 	. ./.envrc && yarn tsnd --respawn --files -r tsconfig-paths/register src/servers/graphql-admin-server.ts | yarn pino-pretty -c -l
 
 start: start-deps
-	make start-old & make start-new & make start-admin
+	make start-old & make start-new & make start-admin & make trigger
+
+trigger: start-deps
+	. ./.envrc && yarn tsnd --respawn --files -r tsconfig-paths/register src/servers/trigger.ts | yarn pino-pretty -c -l
 
 watch:
 	yarn nodemon -V -e ts,graphql -w ./src -x make start

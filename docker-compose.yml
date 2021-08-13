@@ -1,9 +1,14 @@
 version: "2"
 services:
+  price:
+    image: gcr.io/galoyapp/price
+    ports:
+    - "50051:50051"
+    - "9464:9464"
   redis:
     image: bitnami/redis:6.2
     ports:
-    - '6379:6379'
+    - "6379:6379"
     environment:
     - ALLOW_EMPTY_PASSWORD=yes
     - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
