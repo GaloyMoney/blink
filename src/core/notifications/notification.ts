@@ -41,16 +41,16 @@ export const sendNotification = async ({
     message["notification"]["body"] = body
   }
 
-  if (user.deviceToken.length === 1 && user.deviceToken[0] === "test") {
-    logger.info({ message, user }, "test token. skipping notification")
-    return
-  }
-
-  if (user.deviceToken.length === 0) {
+  if (!user.deviceToken || user.deviceToken.length === 0) {
     logger.info(
       { message, user },
       "skipping notification as no deviceToken has been registered",
     )
+    return
+  }
+
+  if (user.deviceToken.length === 1 && user.deviceToken[0] === "test") {
+    logger.info({ message, user }, "test token. skipping notification")
     return
   }
 
