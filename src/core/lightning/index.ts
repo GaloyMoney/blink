@@ -6,7 +6,7 @@ import {
   payViaPaymentDetails,
   payViaRoutes,
 } from "lightning"
-import { toSats } from "@domain/primitives/btc"
+import { toSats } from "@domain/bitcoin"
 import lnService from "ln-service"
 
 import { TIMEOUT_PAYMENT } from "@services/lnd/auth"
