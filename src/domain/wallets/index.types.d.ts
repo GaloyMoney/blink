@@ -50,6 +50,7 @@ type OnChainAddressIdentifier = {
 }
 
 type Wallet = {
+  readonly id: WalletId
   readonly onChainAddressIdentifiers: OnChainAddressIdentifier[]
   readonly onChainAddresses: OnChainAddress[]
 }

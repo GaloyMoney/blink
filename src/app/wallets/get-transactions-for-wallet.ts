@@ -1,7 +1,7 @@
 import { RepositoryError } from "@domain/errors"
 import { OnChainError, MakeTxFilter, MakeTxDecoder } from "@domain/bitcoin/onchain"
-import { MakeWallets } from "@services/mongoose/wallets"
-import { MakeLedger } from "@services/ledger"
+import { MakeWalletsRepository } from "@services/mongoose/wallets"
+import { MakeLedgerService } from "@services/ledger"
 import { MakeOnChainService } from "@services/lnd/onchain-service"
 import { toLiabilitiesAccountId, LedgerError } from "@domain/ledger"
 import { LOOK_BACK } from "@core/utils"
@@ -13,11 +13,11 @@ export const getTransactionsForWallet = async ({
 }: {
   walletId: WalletId
 }): Promise<WalletTransaction[] | CoreError> => {
-  const wallets = MakeWallets()
+  const wallets = MakeWalletsRepository()
   const wallet = await wallets.findById(walletId)
   if (wallet instanceof RepositoryError) return wallet
 
-  const ledger = MakeLedger()
+  const ledger = MakeLedgerService()
   const liabilitiesAccountId = toLiabilitiesAccountId(walletId)
   const ledgerTransactions = await ledger.liabilityTransactions(liabilitiesAccountId)
   if (ledgerTransactions instanceof LedgerError) return ledgerTransactions

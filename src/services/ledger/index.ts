@@ -29,7 +29,7 @@ import { UnknownLedgerError, LedgerError } from "@domain/ledger/errors"
 import { MainBook } from "./books"
 import { toSats } from "@domain/bitcoin"
 
-export const MakeLedger = (): ILedgerService => {
+export const MakeLedgerService = (): ILedgerService => {
   const liabilityTransactions = async (
     liabilitiesAccountId: LiabilitiesAccountId,
   ): Promise<LedgerTransaction[] | LedgerError> => {

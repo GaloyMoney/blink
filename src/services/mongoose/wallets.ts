@@ -5,7 +5,7 @@ import {
 } from "@domain/errors"
 import { User } from "@services/mongoose/schema"
 
-export const MakeWallets = (): IWalletsRepository => {
+export const MakeWalletsRepository = (): IWalletsRepository => {
   const findById = async (walletId: WalletId): Promise<Wallet | RepositoryError> => {
     try {
       const result = await User.findOne({ _id: walletId })
@@ -20,7 +20,7 @@ export const MakeWallets = (): IWalletsRepository => {
       })
       const onChainAddresses = onChainAddressIdentifiers.map(({ address }) => address)
 
-      return { onChainAddresses, onChainAddressIdentifiers }
+      return { id: walletId, onChainAddresses, onChainAddressIdentifiers }
     } catch (err) {
       return new UnknownRepositoryError(err)
     }
