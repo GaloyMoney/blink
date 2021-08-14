@@ -57,6 +57,7 @@
     "firebase-admin": "^9.10.0",
     "graphql": "^15.5.1",
     "graphql-middleware": "^6.0.10",
+    "graphql-relay": "^0.8.0",
     "graphql-shield": "^7.5.0",
     "graphql-subscriptions": "^1.2.1",
     "graphql-tools": "^7.0.5",
