@@ -75,7 +75,7 @@ describe("UserWallet - Lightning Pay", () => {
     if (user1Txn instanceof Error) {
       throw user1Txn
     }
-    expect(user1Txn.filter(matchTx)[0].description).toBe(memo)
+    expect(user1Txn.filter(matchTx)[0].old.description).toBe(memo)
     expect(user1Txn.filter(matchTx)[0].settlementVia).toBe("intraledger")
 
     const user2Txn = await Wallets.getTransactionsForWallet({
@@ -84,7 +84,7 @@ describe("UserWallet - Lightning Pay", () => {
     if (user2Txn instanceof Error) {
       throw user2Txn
     }
-    expect(user2Txn.filter(matchTx)[0].description).toBe(memo)
+    expect(user2Txn.filter(matchTx)[0].old.description).toBe(memo)
     expect(user2Txn.filter(matchTx)[0].settlementVia).toBe("intraledger")
   })
 
@@ -104,7 +104,7 @@ describe("UserWallet - Lightning Pay", () => {
     if (user2Txn instanceof Error) {
       throw user2Txn
     }
-    expect(user2Txn.filter(matchTx)[0].description).toBe(memo)
+    expect(user2Txn.filter(matchTx)[0].old.description).toBe(memo)
     expect(user2Txn.filter(matchTx)[0].settlementVia).toBe("intraledger")
 
     const user1Txn = await Wallets.getTransactionsForWallet({
@@ -113,7 +113,7 @@ describe("UserWallet - Lightning Pay", () => {
     if (user1Txn instanceof Error) {
       throw user1Txn
     }
-    expect(user1Txn.filter(matchTx)[0].description).toBe(memoPayer)
+    expect(user1Txn.filter(matchTx)[0].old.description).toBe(memoPayer)
     expect(user1Txn.filter(matchTx)[0].settlementVia).toBe("intraledger")
   })
 
@@ -146,15 +146,11 @@ describe("UserWallet - Lightning Pay", () => {
     expect(finalBalance1).toBe(initBalance1 - amountInvoice)
 
     expect(userTransaction0[0]).toHaveProperty("recipientId", userWallet1.user.username)
-    expect(userTransaction0[0]).toHaveProperty(
-      "description",
-      `from ${userWallet1.user.username}`,
-    )
+    const oldFields0 = userTransaction0[0].old
+    expect(oldFields0).toHaveProperty("description", `from ${userWallet1.user.username}`)
     expect(userTransaction1[0]).toHaveProperty("recipientId", userWallet0.user.username)
-    expect(userTransaction1[0]).toHaveProperty(
-      "description",
-      `to ${userWallet0.user.username}`,
-    )
+    const oldFields1 = userTransaction1[0].old
+    expect(oldFields1).toHaveProperty("description", `to ${userWallet0.user.username}`)
 
     userWallet0 = await getUserWallet(0)
     userWallet1 = await getUserWallet(1)
@@ -224,18 +220,18 @@ describe("UserWallet - Lightning Pay", () => {
 
     // check below-threshold transaction for recipient was filtered
     expect(transaction0Below).toHaveProperty("recipientId", userWallet1.user.username)
-    expect(transaction0Below).toHaveProperty(
+    expect(transaction0Below.old).toHaveProperty(
       "description",
       `from ${userWallet1.user.username}`,
     )
     expect(transaction1Below).toHaveProperty("recipientId", userWallet0.user.username)
-    expect(transaction1Below).toHaveProperty("description", memoSpamBelowThreshold)
+    expect(transaction1Below.old).toHaveProperty("description", memoSpamBelowThreshold)
 
     // check above-threshold transaction for recipient was NOT filtered
     expect(transaction0Above).toHaveProperty("recipientId", userWallet1.user.username)
-    expect(transaction0Above).toHaveProperty("description", memoSpamAboveThreshold)
+    expect(transaction0Above.old).toHaveProperty("description", memoSpamAboveThreshold)
     expect(transaction1Above).toHaveProperty("recipientId", userWallet0.user.username)
-    expect(transaction1Above).toHaveProperty("description", memoSpamAboveThreshold)
+    expect(transaction1Above.old).toHaveProperty("description", memoSpamAboveThreshold)
 
     // check contacts being added
     userWallet0 = await getUserWallet(0)

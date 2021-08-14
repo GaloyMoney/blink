@@ -23,6 +23,7 @@ import {
 } from "test/helpers"
 import { ledger } from "@services/mongodb"
 import { TransactionRestrictedError } from "@core/error"
+import * as Wallets from "@app/wallets"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
@@ -94,10 +95,13 @@ describe("UserWallet - onChainPay", () => {
 
     await sleep(1000)
 
-    const txs = await userWallet0.getTransactions()
-    const pendingTxs = filter(txs, { pending: true })
+    let txs = await Wallets.getTransactionsForWallet({ walletId: userWallet0.user.id })
+    if (txs instanceof Error) {
+      throw txs
+    }
+    const pendingTxs = filter(txs, { pendingConfirmation: true })
     expect(pendingTxs.length).toBe(1)
-    expect(pendingTxs[0].amount).toBe(-amount - pendingTxs[0].fee)
+    expect(pendingTxs[0].settlementAmount).toBe(-amount - pendingTxs[0].settlementFee)
 
     // const subSpend = subscribeToChainSpend({ lnd: lndonchain, bech32_address: address, min_height: 1 })
 
@@ -127,11 +131,16 @@ describe("UserWallet - onChainPay", () => {
     expect(fee).toBe(feeRates.withdrawFeeFixed + 7050)
     expect(feeUsd).toBeGreaterThan(0)
 
-    const [txn] = (await userWallet0.getTransactions()).filter(
-      (tx) => tx.hash === pendingTxn.hash,
+    txs = await Wallets.getTransactionsForWallet({ walletId: userWallet0.user.id })
+    if (txs instanceof Error) {
+      throw txs
+    }
+
+    const [txn] = txs.filter(
+      (tx) => tx.settlementVia == "lightning" && tx.paymentHash === pendingTxn.hash,
     )
-    expect(txn.amount).toBe(-amount - fee)
-    expect(txn.type).toBe("onchain_payment")
+    expect(txn.settlementAmount).toBe(-amount - fee)
+    expect(txn.old.type).toBe("onchain_payment")
 
     const { BTC: finalBalance } = await userWallet0.getBalances()
     expect(finalBalance).toBe(initialBalanceUser0 - amount - fee)
@@ -170,10 +179,13 @@ describe("UserWallet - onChainPay", () => {
 
     await sleep(1000)
 
-    const txs = await userWallet11.getTransactions()
-    const pendingTxs = filter(txs, { pending: true })
+    let txs = await Wallets.getTransactionsForWallet({ walletId: userWallet11.user.id })
+    if (txs instanceof Error) {
+      throw txs
+    }
+    const pendingTxs = filter(txs, { pendingConfirmation: true })
     expect(pendingTxs.length).toBe(1)
-    expect(pendingTxs[0].amount).toBe(-initialBalanceUser11)
+    expect(pendingTxs[0].settlementAmount).toBe(-initialBalanceUser11)
 
     // const subSpend = subscribeToChainSpend({ lnd: lndonchain, bech32_address: address, min_height: 1 })
 
@@ -203,11 +215,15 @@ describe("UserWallet - onChainPay", () => {
     expect(fee).toBe(feeRates.withdrawFeeFixed + 7050) // 7050?
     expect(feeUsd).toBeGreaterThan(0)
 
-    const [txn] = (await userWallet11.getTransactions()).filter(
-      (tx) => tx.hash === pendingTxn.hash,
+    txs = await Wallets.getTransactionsForWallet({ walletId: userWallet11.user.id })
+    if (txs instanceof Error) {
+      throw txs
+    }
+    const [txn] = txs.filter(
+      (tx) => tx.settlementVia == "lightning" && tx.paymentHash === pendingTxn.hash,
     )
-    expect(txn.amount).toBe(-initialBalanceUser11)
-    expect(txn.type).toBe("onchain_payment")
+    expect(txn.settlementAmount).toBe(-initialBalanceUser11)
+    expect(txn.old.type).toBe("onchain_payment")
 
     const { BTC: finalBalance } = await userWallet11.getBalances()
     expect(finalBalance).toBe(0)
@@ -219,12 +235,17 @@ describe("UserWallet - onChainPay", () => {
     const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
     const paymentResult = await userWallet0.onChainPay({ address, amount, memo })
     expect(paymentResult).toBe(true)
-    const txs: Record<string, string>[] = await userWallet0.getTransactions()
+    const txs = await Wallets.getTransactionsForWallet({
+      walletId: userWallet0.user.id,
+    })
+    if (txs instanceof Error) {
+      throw txs
+    }
     const firstTxs = first(txs)
     if (!firstTxs) {
       throw Error("No transactions found")
     }
-    expect(firstTxs.description).toBe(memo)
+    expect(firstTxs.old.description).toBe(memo)
     await mineBlockAndSync({ lnds: [lndonchain] })
   })
 
@@ -259,18 +280,31 @@ describe("UserWallet - onChainPay", () => {
 
     expect(paid).toBe(true)
 
-    const matchTx = (tx) => tx.type === "onchain_on_us" && tx.addresses.includes(address)
+    const matchTx = (tx: WalletTransaction) =>
+      tx.settlementVia == "intraledger" &&
+      tx.old.type === "onchain_on_us" &&
+      tx.addresses?.includes(address)
 
-    const txs: Record<string, string>[] = await userWallet0.getTransactions()
+    const txs = await Wallets.getTransactionsForWallet({
+      walletId: userWallet0.user.id,
+    })
+    if (txs instanceof Error) {
+      throw txs
+    }
     const filteredTxs = txs.filter(matchTx)
     expect(filteredTxs.length).toBe(1)
-    expect(filteredTxs[0].description).toBe(memo)
+    expect(filteredTxs[0].old.description).toBe(memo)
 
     // receiver should not know memo from sender
-    const txsUser3 = await userWallet3.getTransactions()
+    const txsUser3 = await Wallets.getTransactionsForWallet({
+      walletId: userWallet3.user.id,
+    })
+    if (txsUser3 instanceof Error) {
+      throw txsUser3
+    }
     const filteredTxsUser3 = txsUser3.filter(matchTx)
     expect(filteredTxsUser3.length).toBe(1)
-    expect(filteredTxsUser3[0].description).not.toBe(memo)
+    expect(filteredTxsUser3[0].old.description).not.toBe(memo)
   })
 
   it("sends all with an on us transaction", async () => {

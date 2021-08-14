@@ -24,6 +24,9 @@ type LedgerTransaction = {
 
   readonly lnMemo?: string
 
+  readonly usd: number
+  readonly feeUsd: number
+
   // for IntraLedger
   readonly username?: Username
   readonly memoFromPayer?: string

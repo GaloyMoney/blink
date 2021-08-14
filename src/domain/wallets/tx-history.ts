@@ -7,6 +7,7 @@ const addPendingIncoming = (
   confirmedTransactions: WalletTransaction[],
   pendingTransactions: SubmittedTransaction[],
   addresses: OnChainAddress[],
+  usdPerSat: UsdPerSat,
 ): WalletTransactionHistoryWithPending => {
   const walletTransactions: WalletTransaction[] = []
   pendingTransactions.forEach(({ id, rawTx, createdAt }) => {
@@ -15,7 +16,12 @@ const addPendingIncoming = (
         walletTransactions.push({
           id,
           settlementVia: SettlementMethod.OnChain,
-          description: "pending",
+          old: {
+            description: "pending",
+            usd: usdPerSat * sats,
+            feeUsd: 0,
+            type: LedgerTransactionType.OnchainReceipt,
+          },
           settlementFee: toSats(0),
           pendingConfirmation: true,
           createdAt: createdAt,
@@ -42,6 +48,8 @@ export const confirmed = (
       credit,
       debit,
       fee,
+      usd,
+      feeUsd,
       paymentHash,
       username,
       addresses,
@@ -56,18 +64,40 @@ export const confirmed = (
         credit,
         username,
       })
-      if (
-        type == LedgerTransactionType.IntraLedger ||
-        type == LedgerTransactionType.OnchainIntraLedger
-      ) {
+      if (type == LedgerTransactionType.OnchainIntraLedger && addresses) {
         return {
           id,
           settlementVia: SettlementMethod.IntraLedger,
-          description,
+          old: {
+            description,
+            usd,
+            feeUsd,
+            type,
+          },
           settlementAmount,
           settlementFee: fee,
-          paymentHash: paymentHash as PaymentHash,
+          paymentHash: null,
+          addresses: addresses,
+          recipientId: null,
+          pendingConfirmation,
+          createdAt: timestamp,
+        }
+      }
+      if (type == LedgerTransactionType.IntraLedger) {
+        return {
+          id,
+          settlementVia: SettlementMethod.IntraLedger,
+          old: {
+            description,
+            usd,
+            feeUsd,
+            type,
+          },
+          settlementAmount,
+          settlementFee: fee,
+          paymentHash: (paymentHash as PaymentHash) || null,
           recipientId: username || null,
+          addresses: null,
           pendingConfirmation,
           createdAt: timestamp,
         }
@@ -76,7 +106,12 @@ export const confirmed = (
           id,
           settlementVia: SettlementMethod.OnChain,
           addresses,
-          description,
+          old: {
+            description,
+            usd,
+            feeUsd,
+            type,
+          },
           settlementAmount,
           settlementFee: fee,
           pendingConfirmation,
@@ -86,7 +121,12 @@ export const confirmed = (
       return {
         id,
         settlementVia: SettlementMethod.Lightning,
-        description,
+        old: {
+          description,
+          usd,
+          feeUsd,
+          type,
+        },
         settlementAmount,
         settlementFee: fee,
         paymentHash: paymentHash as PaymentHash,
@@ -101,7 +141,8 @@ export const confirmed = (
     addPendingIncoming: (
       pendingIncoming: SubmittedTransaction[],
       addresses: OnChainAddress[],
-    ) => addPendingIncoming(transactions, pendingIncoming, addresses),
+      usdPerSat: UsdPerSat,
+    ) => addPendingIncoming(transactions, pendingIncoming, addresses, usdPerSat),
   }
 }
 

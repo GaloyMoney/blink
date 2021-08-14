@@ -8,6 +8,9 @@ import { LOOK_BACK } from "@core/utils"
 import { ONCHAIN_MIN_CONFIRMATIONS } from "@config/app"
 import { WalletTransactionHistory } from "@domain/wallets"
 
+// TODO should be exposed via PriceSerivce / LiquidityProvider
+import { getCurrentPrice } from "@services/realtime-price"
+
 export const getTransactionsForWallet = async ({
   walletId,
 }: {
@@ -25,9 +28,14 @@ export const getTransactionsForWallet = async ({
   const confirmedHistory = WalletTransactionHistory.confirmed(ledgerTransactions)
 
   const onChain = MakeOnChainService(MakeTxDecoder(process.env.NETWORK as BtcNetwork))
-  if (onChain instanceof OnChainError) return onChain
+  if (onChain instanceof OnChainError) {
+    return confirmedHistory.transactions
+  }
+
   const onChainTxs = await onChain.getIncomingTransactions(LOOK_BACK)
-  if (onChainTxs instanceof OnChainError) return onChain
+  if (onChainTxs instanceof OnChainError) {
+    return confirmedHistory.transactions
+  }
 
   const filter = MakeTxFilter({
     confsLT: ONCHAIN_MIN_CONFIRMATIONS,
@@ -35,6 +43,12 @@ export const getTransactionsForWallet = async ({
   })
   const pendingTxs = filter.apply(onChainTxs)
 
-  return confirmedHistory.addPendingIncoming(pendingTxs, wallet.onChainAddresses)
+  // TODO should be a service - not a function call
+  let price = await getCurrentPrice()
+  if (typeof price != "number") {
+    price = 0
+  }
+
+  return confirmedHistory.addPendingIncoming(pendingTxs, wallet.onChainAddresses, price)
     .transactions
 }

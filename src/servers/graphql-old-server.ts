@@ -1,3 +1,5 @@
+import * as Wallets from "@app/wallets"
+import { SettlementMethod } from "@domain/wallets"
 import {
   stringLength,
   ValidateDirectiveVisitor,
@@ -59,7 +61,32 @@ const resolvers = {
         id: "BTC",
         currency: "BTC",
         balance: async () => (await wallet.getBalances())["BTC"],
-        transactions: () => wallet.getTransactions(),
+        transactions: async () => {
+          const txs = await Wallets.getTransactionsForWallet({ walletId: wallet.used.id })
+          if (txs instanceof Error) {
+            throw txs
+          }
+
+          return txs.map((tx: WalletTransaction) => {
+            return {
+              id: tx.id,
+              amount: tx.settlementAmount,
+              description: tx.old.description,
+              fee: tx.settlementFee,
+              created_id: tx.createdAt,
+              usd: tx.old.usd,
+              sat: tx.settlementAmount,
+              pending: tx.pendingConfirmation,
+              type: tx.old.type,
+              feeUsd: tx.old.feeUsd,
+              hash: tx.settlementVia != SettlementMethod.OnChain ? tx.paymentHash : null,
+              addresses:
+                tx.settlementVia != SettlementMethod.Lightning ? tx.addresses : null,
+              username:
+                tx.settlementVia == SettlementMethod.IntraLedger ? tx.recipientId : null,
+            }
+          })
+        },
         csv: () => wallet.getStringCsv(),
       },
     ],
@@ -71,7 +98,33 @@ const resolvers = {
       const balances = await wallet.getBalances()
 
       return {
-        transactions: wallet.getTransactions(),
+        transactions: async () => {
+          const txs = await Wallets.getTransactionsForWallet({ walletId: wallet.used.id })
+          if (txs instanceof Error) {
+            throw txs
+          }
+
+          return txs.map((tx: WalletTransaction) => {
+            return {
+              id: tx.id,
+              amount: tx.settlementAmount,
+              description: tx.old.description,
+              fee: tx.settlementFee,
+              created_id: tx.createdAt,
+              usd: tx.old.usd,
+              sat: tx.settlementAmount,
+              pending: tx.pendingConfirmation,
+              type: tx.old.type,
+              feeUsd: tx.old.feeUsd,
+              hash:
+                tx.settlementVia == SettlementMethod.Lightning ? tx.paymentHash : null,
+              addresses:
+                tx.settlementVia == SettlementMethod.OnChain ? tx.addresses : null,
+              username:
+                tx.settlementVia == SettlementMethod.IntraLedger ? tx.recipientId : null,
+            }
+          })
+        },
         balances: wallet.user.currencies.map((item) => ({
           id: item.id,
           balance: balances[item.id],

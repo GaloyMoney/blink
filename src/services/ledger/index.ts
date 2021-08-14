@@ -43,6 +43,8 @@ export const MakeLedgerService = (): ILedgerService => {
           debit: toSats(tx.debit),
           credit: toSats(tx.credit),
           fee: toSats(tx.fee),
+          usd: tx.usd,
+          feeUsd: tx.feeUsd,
           currency: tx.currency,
           timestamp: tx.timestamp,
           pendingConfirmation: tx.pending,

@@ -1,20 +1,31 @@
 type SettlementMethod =
-  typeof import("./index").SettlementMethod[keyof typeof import("./index").SettlementMethod]
+  typeof import("./settlement-method").SettlementMethod[keyof typeof import("./settlement-method").SettlementMethod]
+
+// Fields only needed to support the old schema
+type UsdPerSat = number
+type OldTxFields = {
+  readonly description: string
+  readonly type: LedgerTransactionType
+  readonly usd: number
+  readonly feeUsd: number
+}
 
 type BaseWalletTransaction = {
   readonly id: LedgerTransactionId | TxId
   readonly settlementVia: SettlementMethod
   readonly settlementAmount: Satoshis
   readonly settlementFee: Satoshis
-  readonly description: string
   readonly pendingConfirmation: boolean
   readonly createdAt: Date
+
+  readonly old: OldTxFields
 }
 
 type IntraLedgerTransaction = BaseWalletTransaction & {
   readonly settlementVia: "intraledger"
   readonly recipientId: Username | null
-  readonly paymentHash: PaymentHash
+  readonly paymentHash: PaymentHash | null
+  readonly addresses: OnChainAddress[] | null
 }
 
 type WalletOnChainTransaction = BaseWalletTransaction & {
@@ -37,6 +48,7 @@ type ConfirmedTransactionHistory = {
   addPendingIncoming(
     pendingIncoming: SubmittedTransaction[],
     addresses: OnChainAddress[],
+    usdPerSat: UsdPerSat,
   ): WalletTransactionHistoryWithPending
 }
 
