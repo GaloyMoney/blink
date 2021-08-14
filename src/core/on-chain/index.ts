@@ -9,7 +9,6 @@ import {
   sendToChainAddress,
 } from "lightning"
 import _ from "lodash"
-import moment from "moment"
 
 import { bitcoindDefaultClient } from "@services/bitcoind"
 import { getActiveOnchainLnd, getLndFromPubkey } from "@services/lnd/utils"
