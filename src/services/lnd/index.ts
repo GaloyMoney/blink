@@ -1,9 +1,8 @@
 import {
-  LightningServiceError,
+  decodeInvoice,
   CouldNotDecodeReturnedPaymentRequest,
   UnknownLightningServiceError,
-} from "@domain/errors"
-import { decodeInvoice } from "@domain/ln-invoice"
+} from "@domain/bitcoin/lightning"
 import { createInvoice } from "lightning"
 
 export const MakeLndService = (lndAuth: AuthenticatedLnd): ILightningService => {

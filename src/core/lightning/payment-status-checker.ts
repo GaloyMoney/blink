@@ -1,5 +1,5 @@
 import { AuthorizationError, RepositoryError } from "@domain/errors"
-import { decodeInvoice } from "@domain/ln-invoice"
+import { decodeInvoice } from "@domain/bitcoin/lightning"
 import { MakeInvoicesRepo } from "@services/mongoose/invoices"
 
 const PaymentStatusChecker = ({ paymentRequest, lookupToken }) => {
