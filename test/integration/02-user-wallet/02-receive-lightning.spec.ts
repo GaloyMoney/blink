@@ -2,6 +2,7 @@ import { ledger } from "@services/mongodb"
 import { getHash } from "@core/utils"
 import { checkIsBalanced, getUserWallet, lndOutside1, pay } from "test/helpers"
 import { MEMO_SHARING_SATS_THRESHOLD } from "@config/app"
+import * as Wallets from "@app/wallets"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
@@ -42,8 +43,13 @@ describe("UserWallet - Lightning", () => {
     expect(dbTx.pending).toBe(false)
 
     // check that memo is not filtered by spam filter
-    const txns = await userWallet1.getTransactions()
-    const noSpamTxn = txns.find((txn) => txn.hash === hash)
+    const txns = await Wallets.getTransactionsForWallet({ walletId: userWallet1.user.id })
+    if (txns instanceof Error) {
+      throw txns
+    }
+    const noSpamTxn = txns.find(
+      (txn) => txn.settlementVia == "lightning" && txn.paymentHash === hash,
+    ) as WalletTransaction
     expect(noSpamTxn.description).toBe(memo)
 
     const { BTC: finalBalance } = await userWallet1.getBalances()
@@ -90,8 +96,13 @@ describe("UserWallet - Lightning", () => {
     expect(dbTx.memo).toBe(memo)
 
     // check that spam memo is filtered from transaction description
-    const txns = await userWallet1.getTransactions()
-    const spamTxn = txns.find((txn) => txn.hash === hash)
+    const txns = await Wallets.getTransactionsForWallet({ walletId: userWallet1.user.id })
+    if (txns instanceof Error) {
+      throw txns
+    }
+    const spamTxn = txns.find(
+      (txn) => txn.settlementVia == "lightning" && txn.paymentHash === hash,
+    ) as WalletTransaction
     expect(dbTx.type).toBe("invoice")
     expect(spamTxn.description).toBe(dbTx.type)
 

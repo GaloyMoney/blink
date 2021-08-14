@@ -26,7 +26,7 @@ const addPendingIncoming = (
     })
   })
   return {
-    transactions: [...confirmedTransactions, ...walletTransactions],
+    transactions: [...walletTransactions, ...confirmedTransactions],
   }
 }
 
