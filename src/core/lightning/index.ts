@@ -51,7 +51,7 @@ export type payInvoiceResult = "success" | "failed" | "pending" | "already_paid"
 export const LightningMixin = (superclass) =>
   class extends superclass {
     readonly config: UserWalletConfig
-    readonly invoices: IInvoices
+    readonly invoices: IWalletInvoicesRepository
 
     constructor(...args) {
       super(...args)
