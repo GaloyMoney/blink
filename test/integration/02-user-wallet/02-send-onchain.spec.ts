@@ -95,10 +95,13 @@ describe("UserWallet - onChainPay", () => {
 
     await sleep(1000)
 
-    let txs = await Wallets.getTransactionsForWalletId({ walletId: userWallet0.user.id })
-    if (txs instanceof Error) {
-      throw txs
+    let txResult = await Wallets.getTransactionsForWalletId({
+      walletId: userWallet0.user.id,
+    })
+    if (txResult.error instanceof Error) {
+      throw txResult.error
     }
+    let txs = txResult.transactions
     const pendingTxs = filter(txs, { pendingConfirmation: true })
     expect(pendingTxs.length).toBe(1)
     expect(pendingTxs[0].settlementAmount).toBe(-amount - pendingTxs[0].settlementFee)
@@ -131,13 +134,16 @@ describe("UserWallet - onChainPay", () => {
     expect(fee).toBe(feeRates.withdrawFeeFixed + 7050)
     expect(feeUsd).toBeGreaterThan(0)
 
-    txs = await Wallets.getTransactionsForWalletId({ walletId: userWallet0.user.id })
-    if (txs instanceof Error) {
-      throw txs
+    txResult = await Wallets.getTransactionsForWalletId({
+      walletId: userWallet0.user.id,
+    })
+    if (txResult.error instanceof Error) {
+      throw txResult.error
     }
-
+    txs = txResult.transactions
     const [txn] = txs.filter(
-      (tx) => tx.settlementVia === "lightning" && tx.paymentHash === pendingTxn.hash,
+      (tx: WalletTransaction) =>
+        tx.settlementVia === "lightning" && tx.paymentHash === pendingTxn.hash,
     )
     expect(txn.settlementAmount).toBe(-amount - fee)
     expect(txn.old.type).toBe("onchain_payment")
@@ -179,10 +185,13 @@ describe("UserWallet - onChainPay", () => {
 
     await sleep(1000)
 
-    let txs = await Wallets.getTransactionsForWalletId({ walletId: userWallet11.user.id })
-    if (txs instanceof Error) {
-      throw txs
+    let txResult = await Wallets.getTransactionsForWalletId({
+      walletId: userWallet11.user.id,
+    })
+    if (txResult.error instanceof Error) {
+      throw txResult
     }
+    let txs = txResult.transactions
     const pendingTxs = filter(txs, { pendingConfirmation: true })
     expect(pendingTxs.length).toBe(1)
     expect(pendingTxs[0].settlementAmount).toBe(-initialBalanceUser11)
@@ -215,10 +224,13 @@ describe("UserWallet - onChainPay", () => {
     expect(fee).toBe(feeRates.withdrawFeeFixed + 7050) // 7050?
     expect(feeUsd).toBeGreaterThan(0)
 
-    txs = await Wallets.getTransactionsForWalletId({ walletId: userWallet11.user.id })
-    if (txs instanceof Error) {
-      throw txs
+    txResult = await Wallets.getTransactionsForWalletId({
+      walletId: userWallet11.user.id,
+    })
+    if (txResult.error instanceof Error) {
+      throw txResult.error
     }
+    txs = txResult.transactions
     const [txn] = txs.filter(
       (tx) => tx.settlementVia === "lightning" && tx.paymentHash === pendingTxn.hash,
     )
@@ -235,11 +247,11 @@ describe("UserWallet - onChainPay", () => {
     const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
     const paymentResult = await userWallet0.onChainPay({ address, amount, memo })
     expect(paymentResult).toBe(true)
-    const txs = await Wallets.getTransactionsForWalletId({
+    const { transactions: txs, error } = await Wallets.getTransactionsForWalletId({
       walletId: userWallet0.user.id,
     })
-    if (txs instanceof Error) {
-      throw txs
+    if (error instanceof Error) {
+      throw error
     }
     const firstTxs = first(txs)
     if (!firstTxs) {
@@ -285,22 +297,25 @@ describe("UserWallet - onChainPay", () => {
       tx.old.type === "onchain_on_us" &&
       tx.addresses?.includes(address)
 
-    const txs = await Wallets.getTransactionsForWalletId({
+    const { transactions: txs, error } = await Wallets.getTransactionsForWalletId({
       walletId: userWallet0.user.id,
     })
-    if (txs instanceof Error) {
-      throw txs
+    if (error instanceof Error) {
+      throw error
     }
     const filteredTxs = txs.filter(matchTx)
     expect(filteredTxs.length).toBe(1)
     expect(filteredTxs[0].old.description).toBe(memo)
 
     // receiver should not know memo from sender
-    const txsUser3 = await Wallets.getTransactionsForWalletId({
+    const {
+      transactions: txsUser3,
+      error: error2,
+    } = await Wallets.getTransactionsForWalletId({
       walletId: userWallet3.user.id as WalletId,
     })
-    if (txsUser3 instanceof Error) {
-      throw txsUser3
+    if (error2 instanceof Error) {
+      throw error2
     }
     const filteredTxsUser3 = txsUser3.filter(matchTx)
     expect(filteredTxsUser3.length).toBe(1)

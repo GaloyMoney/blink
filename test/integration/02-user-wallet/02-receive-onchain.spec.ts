@@ -152,11 +152,11 @@ describe("UserWallet - On chain", () => {
 
     await sleep(1000)
 
-    const txs = await Wallets.getTransactionsForWalletId({
+    const { transactions: txs, error } = await Wallets.getTransactionsForWalletId({
       walletId: walletUser0.user.id,
     })
-    if (txs instanceof Error) {
-      throw txs
+    if (error instanceof Error) {
+      throw error
     }
     const pendingTxs = filter(txs, { pendingConfirmation: true })
     expect(pendingTxs.length).toBe(1)
@@ -218,11 +218,14 @@ async function sendToWallet({ walletDestination }) {
   const lnd = lndonchain
 
   const { BTC: initialBalance } = await walletDestination.getBalances()
-  const initTransactions = await Wallets.getTransactionsForWalletId({
+  const {
+    transactions: initTransactions,
+    error,
+  } = await Wallets.getTransactionsForWalletId({
     walletId: walletDestination.user.id,
   })
-  if (initTransactions instanceof Error) {
-    throw initTransactions
+  if (error instanceof Error) {
+    throw error
   }
 
   const address = await walletDestination.getOnChainAddress()
@@ -250,11 +253,11 @@ async function sendToWallet({ walletDestination }) {
         }),
     )
 
-    const transactions = await Wallets.getTransactionsForWalletId({
+    const { transactions, error } = await Wallets.getTransactionsForWalletId({
       walletId: walletDestination.user.id as WalletId,
     })
-    if (transactions instanceof Error) {
-      throw transactions
+    if (error instanceof Error) {
+      throw error
     }
 
     expect(transactions.length).toBe(initTransactions.length + 1)
