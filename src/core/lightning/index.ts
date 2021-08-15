@@ -11,7 +11,7 @@ import lnService from "ln-service"
 
 import { TIMEOUT_PAYMENT } from "@services/lnd/auth"
 import { MakeLndService } from "@services/lnd"
-import { MakeInvoicesRepository } from "@services/mongoose/invoices"
+import { MakeInvoicesRepository } from "@services/mongoose"
 import { invoiceExpirationForCurrency } from "@domain/bitcoin/lightning"
 import {
   getActiveLnd,

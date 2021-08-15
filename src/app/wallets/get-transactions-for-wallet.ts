@@ -1,6 +1,6 @@
 import { RepositoryError } from "@domain/errors"
 import { OnChainError, MakeTxFilter, MakeTxDecoder } from "@domain/bitcoin/onchain"
-import { MakeWalletsRepository } from "@services/mongoose/wallets"
+import { MakeWalletsRepository } from "@services/mongoose"
 import { MakeLedgerService } from "@services/ledger"
 import { MakeOnChainService } from "@services/lnd/onchain-service"
 import { toLiabilitiesAccountId, LedgerError } from "@domain/ledger"

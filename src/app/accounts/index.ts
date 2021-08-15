@@ -1,4 +1,4 @@
-import { MakeAccountsRepository } from "@services/mongoose/accounts"
+import { MakeAccountsRepository } from "@services/mongoose"
 
 export const getAccount = async (accountId: AccountId) => {
   const accounts = MakeAccountsRepository()

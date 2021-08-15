@@ -1,5 +1,5 @@
 import { RepositoryError } from "@domain/errors"
-import { MakeInvoicesRepository } from "@services/mongoose/invoices"
+import { MakeInvoicesRepository } from "@services/mongoose"
 
 describe("Invoices", () => {
   it("persists and finds invoices", async () => {
