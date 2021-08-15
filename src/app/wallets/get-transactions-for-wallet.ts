@@ -25,7 +25,7 @@ export const getTransactionsForWallet = async ({
   const ledgerTransactions = await ledger.liabilityTransactions(liabilitiesAccountId)
   if (ledgerTransactions instanceof LedgerError) return ledgerTransactions
 
-  const confirmedHistory = WalletTransactionHistory.confirmed(ledgerTransactions)
+  const confirmedHistory = WalletTransactionHistory.fromLedger(ledgerTransactions)
 
   const onChain = MakeOnChainService(MakeTxDecoder(process.env.NETWORK as BtcNetwork))
   if (onChain instanceof OnChainError) {

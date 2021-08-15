@@ -36,7 +36,7 @@ const addPendingIncoming = (
   }
 }
 
-export const confirmed = (
+export const fromLedger = (
   ledgerTransactions: LedgerTransaction[],
 ): ConfirmedTransactionHistory => {
   const transactions = ledgerTransactions.map(
@@ -185,5 +185,5 @@ export const translateDescription = ({
 }
 
 export const WalletTransactionHistory = {
-  confirmed,
+  fromLedger,
 } as const

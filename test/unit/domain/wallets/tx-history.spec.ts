@@ -7,7 +7,7 @@ import {
 } from "@domain/wallets/tx-history"
 import { toSats } from "@domain/bitcoin"
 
-describe("WalletTransactionHistory.confirmed", () => {
+describe("WalletTransactionHistory.fromLedger", () => {
   it("translates ledger txs to wallet txs", () => {
     const timestamp = new Date(Date.now())
     const ledgerTransactions: LedgerTransaction[] = [
@@ -70,7 +70,7 @@ describe("WalletTransactionHistory.confirmed", () => {
         addresses: ["address" as OnChainAddress],
       },
     ]
-    const result = WalletTransactionHistory.confirmed(ledgerTransactions)
+    const result = WalletTransactionHistory.fromLedger(ledgerTransactions)
     const expected = [
       {
         id: "id" as LedgerTransactionId,
@@ -221,7 +221,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         createdAt: timestamp,
       },
     ]
-    const history = WalletTransactionHistory.confirmed([])
+    const history = WalletTransactionHistory.fromLedger([])
     const addresses = ["userAddress1", "userAddress2"] as OnChainAddress[]
     const result = history.addPendingIncoming(submittedTransactions, addresses, 1)
     const expected = [
