@@ -258,4 +258,48 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
     ]
     expect(result.transactions).toEqual(expected)
   })
+  it("translates handles price NaN", () => {
+    const timestamp = new Date(Date.now())
+    const submittedTransactions: SubmittedTransaction[] = [
+      {
+        confirmations: 1,
+        fee: toSats(1000),
+        id: "id" as TxId,
+        outputAddresses: ["userAddress1"] as OnChainAddress[],
+        tokens: toSats(100000),
+        rawTx: {
+          id: "id" as TxId,
+          outs: [
+            {
+              sats: toSats(25000),
+              n: 0,
+              address: "userAddress1" as OnChainAddress,
+            },
+          ],
+        },
+        createdAt: timestamp,
+      },
+    ]
+    const history = WalletTransactionHistory.fromLedger([])
+    const addresses = ["userAddress1"] as OnChainAddress[]
+    const result = history.addPendingIncoming(submittedTransactions, addresses, NaN)
+    const expected = [
+      {
+        id: "id" as TxId,
+        settlementVia: "onchain",
+        settlementAmount: toSats(25000),
+        settlementFee: toSats(0),
+        old: {
+          description: "pending",
+          usd: NaN,
+          feeUsd: 0,
+          type: LedgerTransactionType.OnchainReceipt,
+        },
+        pendingConfirmation: true,
+        createdAt: timestamp,
+        addresses: ["userAddress1" as OnChainAddress],
+      },
+    ]
+    expect(result.transactions).toEqual(expected)
+  })
 })

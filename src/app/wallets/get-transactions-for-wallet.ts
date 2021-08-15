@@ -51,7 +51,7 @@ export const getTransactionsForWallet = async (
   // TODO should be a service - not a function call
   let price = await getCurrentPrice()
   if (typeof price !== "number") {
-    price = 0
+    price = NaN
   }
 
   return confirmedHistory.addPendingIncoming(pendingTxs, wallet.onChainAddresses, price)
