@@ -108,26 +108,23 @@ const resolvers = {
             throw error
           }
 
-          return txs.map((tx: WalletTransaction) => {
-            return {
-              id: tx.id,
-              amount: tx.settlementAmount,
-              description: tx.old.description,
-              fee: tx.settlementFee,
-              created_id: tx.createdAt,
-              usd: tx.old.usd,
-              sat: tx.settlementAmount,
-              pending: tx.pendingConfirmation,
-              type: tx.old.type,
-              feeUsd: tx.old.feeUsd,
-              hash:
-                tx.settlementVia === SettlementMethod.Lightning ? tx.paymentHash : null,
-              addresses:
-                tx.settlementVia === SettlementMethod.OnChain ? tx.addresses : null,
-              username:
-                tx.settlementVia === SettlementMethod.IntraLedger ? tx.recipientId : null,
-            }
-          })
+          return txs.map((tx: WalletTransaction) => ({
+            id: tx.id,
+            amount: tx.settlementAmount,
+            description: tx.old.description,
+            fee: tx.settlementFee,
+            created_id: tx.createdAt,
+            usd: tx.old.usd,
+            sat: tx.settlementAmount,
+            pending: tx.pendingConfirmation,
+            type: tx.old.type,
+            feeUsd: tx.old.feeUsd,
+            hash: tx.settlementVia === SettlementMethod.Lightning ? tx.paymentHash : null,
+            addresses:
+              tx.settlementVia === SettlementMethod.OnChain ? tx.addresses : null,
+            username:
+              tx.settlementVia === SettlementMethod.IntraLedger ? tx.recipientId : null,
+          }))
         },
         balances: wallet.user.currencies.map((item) => ({
           id: item.id,
