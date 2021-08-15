@@ -22,7 +22,7 @@ export class SpecterWallet {
     this.logger = logger.child({ topic: "bitcoind" })
     this.config = config
 
-    assert(this.config.onchainWallet != "")
+    assert(this.config.onchainWallet !== "")
   }
 
   async listWallets() {

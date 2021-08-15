@@ -64,7 +64,7 @@ export const confirmed = (
         credit,
         username,
       })
-      if (type == LedgerTransactionType.OnchainIntraLedger && addresses) {
+      if (type === LedgerTransactionType.OnchainIntraLedger && addresses) {
         return {
           id,
           settlementVia: SettlementMethod.IntraLedger,
@@ -83,7 +83,7 @@ export const confirmed = (
           createdAt: timestamp,
         }
       }
-      if (type == LedgerTransactionType.IntraLedger) {
+      if (type === LedgerTransactionType.IntraLedger) {
         return {
           id,
           settlementVia: SettlementMethod.IntraLedger,
@@ -147,7 +147,7 @@ export const confirmed = (
 }
 
 const shouldDisplayMemo = (credit: number) => {
-  return credit == 0 || credit >= MEMO_SHARING_SATS_THRESHOLD
+  return credit === 0 || credit >= MEMO_SHARING_SATS_THRESHOLD
 }
 
 export const translateDescription = ({

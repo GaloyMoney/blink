@@ -79,11 +79,11 @@ const resolvers = {
               pending: tx.pendingConfirmation,
               type: tx.old.type,
               feeUsd: tx.old.feeUsd,
-              hash: tx.settlementVia != SettlementMethod.OnChain ? tx.paymentHash : null,
+              hash: tx.settlementVia !== SettlementMethod.OnChain ? tx.paymentHash : null,
               addresses:
-                tx.settlementVia != SettlementMethod.Lightning ? tx.addresses : null,
+                tx.settlementVia !== SettlementMethod.Lightning ? tx.addresses : null,
               username:
-                tx.settlementVia == SettlementMethod.IntraLedger ? tx.recipientId : null,
+                tx.settlementVia === SettlementMethod.IntraLedger ? tx.recipientId : null,
             }
           })
         },
@@ -117,11 +117,11 @@ const resolvers = {
               type: tx.old.type,
               feeUsd: tx.old.feeUsd,
               hash:
-                tx.settlementVia == SettlementMethod.Lightning ? tx.paymentHash : null,
+                tx.settlementVia === SettlementMethod.Lightning ? tx.paymentHash : null,
               addresses:
-                tx.settlementVia == SettlementMethod.OnChain ? tx.addresses : null,
+                tx.settlementVia === SettlementMethod.OnChain ? tx.addresses : null,
               username:
-                tx.settlementVia == SettlementMethod.IntraLedger ? tx.recipientId : null,
+                tx.settlementVia === SettlementMethod.IntraLedger ? tx.recipientId : null,
             }
           })
         },

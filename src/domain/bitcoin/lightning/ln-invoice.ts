@@ -22,7 +22,7 @@ export const decodeInvoice = (
     paymentSecret: PaymentSecret | null = null
 
   decodedInvoice.tags.forEach((tag) => {
-    const tagError = typeof tag.data != "string"
+    const tagError = typeof tag.data !== "string"
     switch (tag.tagName) {
       case "payment_hash":
         if (tagError) {

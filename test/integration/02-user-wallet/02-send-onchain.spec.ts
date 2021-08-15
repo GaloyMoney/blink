@@ -137,7 +137,7 @@ describe("UserWallet - onChainPay", () => {
     }
 
     const [txn] = txs.filter(
-      (tx) => tx.settlementVia == "lightning" && tx.paymentHash === pendingTxn.hash,
+      (tx) => tx.settlementVia === "lightning" && tx.paymentHash === pendingTxn.hash,
     )
     expect(txn.settlementAmount).toBe(-amount - fee)
     expect(txn.old.type).toBe("onchain_payment")
@@ -220,7 +220,7 @@ describe("UserWallet - onChainPay", () => {
       throw txs
     }
     const [txn] = txs.filter(
-      (tx) => tx.settlementVia == "lightning" && tx.paymentHash === pendingTxn.hash,
+      (tx) => tx.settlementVia === "lightning" && tx.paymentHash === pendingTxn.hash,
     )
     expect(txn.settlementAmount).toBe(-initialBalanceUser11)
     expect(txn.old.type).toBe("onchain_payment")
@@ -281,7 +281,7 @@ describe("UserWallet - onChainPay", () => {
     expect(paid).toBe(true)
 
     const matchTx = (tx: WalletTransaction) =>
-      tx.settlementVia == "intraledger" &&
+      tx.settlementVia === "intraledger" &&
       tx.old.type === "onchain_on_us" &&
       tx.addresses?.includes(address)
 

@@ -50,7 +50,7 @@ describe("UserWallet - Lightning", () => {
     }
     const noSpamTxn = txns.find(
       (txn) =>
-        txn.settlementVia == SettlementMethod.Lightning && txn.paymentHash === hash,
+        txn.settlementVia === SettlementMethod.Lightning && txn.paymentHash === hash,
     ) as WalletTransaction
     expect(noSpamTxn.old.description).toBe(memo)
 
@@ -104,7 +104,7 @@ describe("UserWallet - Lightning", () => {
     }
     const spamTxn = txns.find(
       (txn) =>
-        txn.settlementVia == SettlementMethod.Lightning && txn.paymentHash === hash,
+        txn.settlementVia === SettlementMethod.Lightning && txn.paymentHash === hash,
     ) as WalletTransaction
     expect(dbTx.type).toBe("invoice")
     expect(spamTxn.old.description).toBe(dbTx.type)
