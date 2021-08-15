@@ -36,12 +36,10 @@ describe("onchainBlockEventhandler", () => {
 
     const { BTC: initialBalance } = await wallet.getBalances()
     const initialBlock = await bitcoindClient.getBlockCount()
-    const {
-      transactions: initTransactions,
-      error,
-    } = await Wallets.getTransactionsForWalletId({
-      walletId: wallet.user.id as WalletId,
-    })
+    const { transactions: initTransactions, error } =
+      await Wallets.getTransactionsForWalletId({
+        walletId: wallet.user.id as WalletId,
+      })
     if (error instanceof Error) {
       throw error
     }

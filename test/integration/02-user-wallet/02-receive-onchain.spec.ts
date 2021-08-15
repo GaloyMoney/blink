@@ -218,12 +218,10 @@ async function sendToWallet({ walletDestination }) {
   const lnd = lndonchain
 
   const { BTC: initialBalance } = await walletDestination.getBalances()
-  const {
-    transactions: initTransactions,
-    error,
-  } = await Wallets.getTransactionsForWalletId({
-    walletId: walletDestination.user.id,
-  })
+  const { transactions: initTransactions, error } =
+    await Wallets.getTransactionsForWalletId({
+      walletId: walletDestination.user.id,
+    })
   if (error instanceof Error) {
     throw error
   }

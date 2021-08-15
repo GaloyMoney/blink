@@ -130,12 +130,10 @@ describe("UserWallet - Lightning Pay", () => {
     // WIP FIXME: Fails because it expects GetTransactions... to be
     //            ordered by latest first in array
     const { BTC: finalBalance0 } = await userWallet0.getBalances()
-    const {
-      transactions: userTransaction0,
-      error,
-    } = await Wallets.getTransactionsForWalletId({
-      walletId: userWallet0.user.id,
-    })
+    const { transactions: userTransaction0, error } =
+      await Wallets.getTransactionsForWalletId({
+        walletId: userWallet0.user.id,
+      })
     if (error instanceof Error) {
       throw error
     }
@@ -442,7 +440,7 @@ describe("UserWallet - Lightning Pay", () => {
           if (txResult.error instanceof Error) {
             throw txResult.error
           }
-          let user1Txn = txResult.transactions
+          const user1Txn = txResult.transactions
           const user1OnUsTxn = user1Txn.filter(matchTx)
           expect(user1OnUsTxn[0].settlementVia).toBe("intraledger")
 

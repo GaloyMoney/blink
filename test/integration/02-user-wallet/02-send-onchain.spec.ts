@@ -308,12 +308,10 @@ describe("UserWallet - onChainPay", () => {
     expect(filteredTxs[0].old.description).toBe(memo)
 
     // receiver should not know memo from sender
-    const {
-      transactions: txsUser3,
-      error: error2,
-    } = await Wallets.getTransactionsForWalletId({
-      walletId: userWallet3.user.id as WalletId,
-    })
+    const { transactions: txsUser3, error: error2 } =
+      await Wallets.getTransactionsForWalletId({
+        walletId: userWallet3.user.id as WalletId,
+      })
     if (error2 instanceof Error) {
       throw error2
     }
