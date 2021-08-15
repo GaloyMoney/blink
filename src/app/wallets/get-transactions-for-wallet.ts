@@ -15,31 +15,38 @@ export const getTransactionsForWalletId = async ({
   walletId,
 }: {
   walletId: WalletId
-}) => {
+}): Promise<{
+  transactions: WalletTransaction[]
+  error?: CoreError
+}> => {
   const wallets = MakeWalletsRepository()
   const wallet = await wallets.findById(walletId)
-  if (wallet instanceof RepositoryError) return wallet
+  if (wallet instanceof RepositoryError) return { transactions: [], error: wallet }
   return getTransactionsForWallet(wallet)
 }
 
 export const getTransactionsForWallet = async (
   wallet: Wallet,
-): Promise<WalletTransaction[] | CoreError> => {
+): Promise<{
+  transactions: WalletTransaction[]
+  error?: CoreError
+}> => {
   const ledger = MakeLedgerService()
   const liabilitiesAccountId = toLiabilitiesAccountId(wallet.id)
   const ledgerTransactions = await ledger.liabilityTransactions(liabilitiesAccountId)
-  if (ledgerTransactions instanceof LedgerError) return ledgerTransactions
+  if (ledgerTransactions instanceof LedgerError)
+    return { transactions: [], error: ledgerTransactions }
 
   const confirmedHistory = WalletTransactionHistory.fromLedger(ledgerTransactions)
 
   const onChain = MakeOnChainService(MakeTxDecoder(process.env.NETWORK as BtcNetwork))
   if (onChain instanceof OnChainError) {
-    return confirmedHistory.transactions
+    return { transactions: confirmedHistory.transactions, error: onChain }
   }
 
   const onChainTxs = await onChain.getIncomingTransactions(LOOK_BACK)
   if (onChainTxs instanceof OnChainError) {
-    return confirmedHistory.transactions
+    return { transactions: confirmedHistory.transactions, error: onChainTxs }
   }
 
   const filter = MakeTxFilter({
@@ -54,6 +61,11 @@ export const getTransactionsForWallet = async (
     price = NaN
   }
 
-  return confirmedHistory.addPendingIncoming(pendingTxs, wallet.onChainAddresses, price)
-    .transactions
+  return {
+    transactions: confirmedHistory.addPendingIncoming(
+      pendingTxs,
+      wallet.onChainAddresses,
+      price,
+    ).transactions,
+  }
 }
