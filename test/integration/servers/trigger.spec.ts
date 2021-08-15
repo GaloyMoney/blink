@@ -36,8 +36,8 @@ describe("onchainBlockEventhandler", () => {
 
     const { BTC: initialBalance } = await wallet.getBalances()
     const initialBlock = await bitcoindClient.getBlockCount()
-    const initTransactions = await Wallets.getTransactionsForWallet({
-      walletId: wallet.user.id,
+    const initTransactions = await Wallets.getTransactionsForWalletId({
+      walletId: wallet.user.id as WalletId,
     })
     if (initTransactions instanceof Error) {
       throw initTransactions
@@ -60,7 +60,7 @@ describe("onchainBlockEventhandler", () => {
 
     subBlocks.removeAllListeners()
 
-    const transactions = await Wallets.getTransactionsForWallet({
+    const transactions = await Wallets.getTransactionsForWalletId({
       walletId: wallet.user.id,
     })
     if (transactions instanceof Error) {

@@ -62,7 +62,9 @@ const resolvers = {
         currency: "BTC",
         balance: async () => (await wallet.getBalances())["BTC"],
         transactions: async () => {
-          const txs = await Wallets.getTransactionsForWallet({ walletId: wallet.used.id })
+          const txs = await Wallets.getTransactionsForWalletId({
+            walletId: wallet.user.id,
+          })
           if (txs instanceof Error) {
             throw txs
           }
@@ -99,7 +101,9 @@ const resolvers = {
 
       return {
         transactions: async () => {
-          const txs = await Wallets.getTransactionsForWallet({ walletId: wallet.used.id })
+          const txs = await Wallets.getTransactionsForWalletId({
+            walletId: wallet.user.id,
+          })
           if (txs instanceof Error) {
             throw txs
           }

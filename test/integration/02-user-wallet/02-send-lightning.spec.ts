@@ -69,7 +69,7 @@ describe("UserWallet - Lightning Pay", () => {
     const matchTx = (tx) =>
       tx.settlementVia === "intraledger" && tx.paymentHash === getHash(invoice)
 
-    const user1Txn = await Wallets.getTransactionsForWallet({
+    const user1Txn = await Wallets.getTransactionsForWalletId({
       walletId: userWallet1.user.id,
     })
     if (user1Txn instanceof Error) {
@@ -78,7 +78,7 @@ describe("UserWallet - Lightning Pay", () => {
     expect(user1Txn.filter(matchTx)[0].old.description).toBe(memo)
     expect(user1Txn.filter(matchTx)[0].settlementVia).toBe("intraledger")
 
-    const user2Txn = await Wallets.getTransactionsForWallet({
+    const user2Txn = await Wallets.getTransactionsForWalletId({
       walletId: userWallet1.user.id,
     })
     if (user2Txn instanceof Error) {
@@ -98,7 +98,7 @@ describe("UserWallet - Lightning Pay", () => {
     const matchTx = (tx) =>
       tx.settlementVia === "intraledger" && tx.paymentHash === getHash(request)
 
-    const user2Txn = await Wallets.getTransactionsForWallet({
+    const user2Txn = await Wallets.getTransactionsForWalletId({
       walletId: userWallet2.user.id,
     })
     if (user2Txn instanceof Error) {
@@ -107,7 +107,7 @@ describe("UserWallet - Lightning Pay", () => {
     expect(user2Txn.filter(matchTx)[0].old.description).toBe(memo)
     expect(user2Txn.filter(matchTx)[0].settlementVia).toBe("intraledger")
 
-    const user1Txn = await Wallets.getTransactionsForWallet({
+    const user1Txn = await Wallets.getTransactionsForWalletId({
       walletId: userWallet1.user.id,
     })
     if (user1Txn instanceof Error) {
@@ -126,7 +126,7 @@ describe("UserWallet - Lightning Pay", () => {
     // WIP FIXME: Fails because it expects GetTransactions... to be
     //            ordered by latest first in array
     const { BTC: finalBalance0 } = await userWallet0.getBalances()
-    const userTransaction0 = await await Wallets.getTransactionsForWallet({
+    const userTransaction0 = await await Wallets.getTransactionsForWalletId({
       walletId: userWallet0.user.id,
     })
     if (userTransaction0 instanceof Error) {
@@ -134,7 +134,7 @@ describe("UserWallet - Lightning Pay", () => {
     }
 
     const { BTC: finalBalance1 } = await userWallet1.getBalances()
-    const userTransaction1 = await await Wallets.getTransactionsForWallet({
+    const userTransaction1 = await await Wallets.getTransactionsForWalletId({
       walletId: userWallet1.user.id,
     })
     if (userTransaction1 instanceof Error) {
@@ -194,7 +194,7 @@ describe("UserWallet - Lightning Pay", () => {
       memo: memoSpamAboveThreshold,
     })
 
-    const userTransaction0 = await Wallets.getTransactionsForWallet({
+    const userTransaction0 = await Wallets.getTransactionsForWalletId({
       walletId: userWallet0.user.id,
     })
     if (userTransaction0 instanceof Error) {
@@ -204,7 +204,7 @@ describe("UserWallet - Lightning Pay", () => {
     const transaction0Above = userTransaction0[0]
     const transaction0Below = userTransaction0[1]
 
-    const userTransaction1 = await Wallets.getTransactionsForWallet({
+    const userTransaction1 = await Wallets.getTransactionsForWalletId({
       walletId: userWallet1.user.id,
     })
     if (userTransaction1 instanceof Error) {
@@ -418,7 +418,7 @@ describe("UserWallet - Lightning Pay", () => {
           const matchTx = (tx) =>
             tx.settlementVia === "intraledger" && tx.paymentHash === hash
 
-          const user2Txn = await Wallets.getTransactionsForWallet({
+          const user2Txn = await Wallets.getTransactionsForWalletId({
             walletId: walletPayee.user.id,
           })
           if (user2Txn instanceof Error) {
@@ -428,8 +428,8 @@ describe("UserWallet - Lightning Pay", () => {
           expect(user2OnUsTxn[0].settlementVia).toBe("intraledger")
           await checkIsBalanced()
 
-          const user1Txn = await Wallets.getTransactionsForWallet({
-            walletId: walletPayer.user.id,
+          const user1Txn = await Wallets.getTransactionsForWalletId({
+            walletId: walletPayer.user.id as WalletId,
           })
           if (user1Txn instanceof Error) {
             throw user1Txn

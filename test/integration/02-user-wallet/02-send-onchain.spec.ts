@@ -95,7 +95,7 @@ describe("UserWallet - onChainPay", () => {
 
     await sleep(1000)
 
-    let txs = await Wallets.getTransactionsForWallet({ walletId: userWallet0.user.id })
+    let txs = await Wallets.getTransactionsForWalletId({ walletId: userWallet0.user.id })
     if (txs instanceof Error) {
       throw txs
     }
@@ -131,7 +131,7 @@ describe("UserWallet - onChainPay", () => {
     expect(fee).toBe(feeRates.withdrawFeeFixed + 7050)
     expect(feeUsd).toBeGreaterThan(0)
 
-    txs = await Wallets.getTransactionsForWallet({ walletId: userWallet0.user.id })
+    txs = await Wallets.getTransactionsForWalletId({ walletId: userWallet0.user.id })
     if (txs instanceof Error) {
       throw txs
     }
@@ -179,7 +179,7 @@ describe("UserWallet - onChainPay", () => {
 
     await sleep(1000)
 
-    let txs = await Wallets.getTransactionsForWallet({ walletId: userWallet11.user.id })
+    let txs = await Wallets.getTransactionsForWalletId({ walletId: userWallet11.user.id })
     if (txs instanceof Error) {
       throw txs
     }
@@ -215,7 +215,7 @@ describe("UserWallet - onChainPay", () => {
     expect(fee).toBe(feeRates.withdrawFeeFixed + 7050) // 7050?
     expect(feeUsd).toBeGreaterThan(0)
 
-    txs = await Wallets.getTransactionsForWallet({ walletId: userWallet11.user.id })
+    txs = await Wallets.getTransactionsForWalletId({ walletId: userWallet11.user.id })
     if (txs instanceof Error) {
       throw txs
     }
@@ -235,7 +235,7 @@ describe("UserWallet - onChainPay", () => {
     const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
     const paymentResult = await userWallet0.onChainPay({ address, amount, memo })
     expect(paymentResult).toBe(true)
-    const txs = await Wallets.getTransactionsForWallet({
+    const txs = await Wallets.getTransactionsForWalletId({
       walletId: userWallet0.user.id,
     })
     if (txs instanceof Error) {
@@ -285,7 +285,7 @@ describe("UserWallet - onChainPay", () => {
       tx.old.type === "onchain_on_us" &&
       tx.addresses?.includes(address)
 
-    const txs = await Wallets.getTransactionsForWallet({
+    const txs = await Wallets.getTransactionsForWalletId({
       walletId: userWallet0.user.id,
     })
     if (txs instanceof Error) {
@@ -296,8 +296,8 @@ describe("UserWallet - onChainPay", () => {
     expect(filteredTxs[0].old.description).toBe(memo)
 
     // receiver should not know memo from sender
-    const txsUser3 = await Wallets.getTransactionsForWallet({
-      walletId: userWallet3.user.id,
+    const txsUser3 = await Wallets.getTransactionsForWalletId({
+      walletId: userWallet3.user.id as WalletId,
     })
     if (txsUser3 instanceof Error) {
       throw txsUser3

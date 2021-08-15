@@ -11,17 +11,22 @@ import { WalletTransactionHistory } from "@domain/wallets"
 // TODO should be exposed via PriceSerivce / LiquidityProvider
 import { getCurrentPrice } from "@services/realtime-price"
 
-export const getTransactionsForWallet = async ({
+export const getTransactionsForWalletId = async ({
   walletId,
 }: {
   walletId: WalletId
-}): Promise<WalletTransaction[] | CoreError> => {
+}) => {
   const wallets = MakeWalletsRepository()
   const wallet = await wallets.findById(walletId)
   if (wallet instanceof RepositoryError) return wallet
+  return getTransactionsForWallet(wallet)
+}
 
+export const getTransactionsForWallet = async (
+  wallet: Wallet,
+): Promise<WalletTransaction[] | CoreError> => {
   const ledger = MakeLedgerService()
-  const liabilitiesAccountId = toLiabilitiesAccountId(walletId)
+  const liabilitiesAccountId = toLiabilitiesAccountId(wallet.id)
   const ledgerTransactions = await ledger.liabilityTransactions(liabilitiesAccountId)
   if (ledgerTransactions instanceof LedgerError) return ledgerTransactions
 

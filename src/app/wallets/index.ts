@@ -1,4 +1,4 @@
-export { getTransactionsForWallet } from "./get-transactions-for-wallet"
+export * from "./get-transactions-for-wallet"
 
 import { MakeWalletsRepository } from "@services/mongoose/wallets"
 

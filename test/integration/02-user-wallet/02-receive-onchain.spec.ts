@@ -152,7 +152,9 @@ describe("UserWallet - On chain", () => {
 
     await sleep(1000)
 
-    const txs = await Wallets.getTransactionsForWallet({ walletId: walletUser0.user.id })
+    const txs = await Wallets.getTransactionsForWalletId({
+      walletId: walletUser0.user.id,
+    })
     if (txs instanceof Error) {
       throw txs
     }
@@ -216,7 +218,7 @@ async function sendToWallet({ walletDestination }) {
   const lnd = lndonchain
 
   const { BTC: initialBalance } = await walletDestination.getBalances()
-  const initTransactions = await Wallets.getTransactionsForWallet({
+  const initTransactions = await Wallets.getTransactionsForWalletId({
     walletId: walletDestination.user.id,
   })
   if (initTransactions instanceof Error) {
@@ -248,8 +250,8 @@ async function sendToWallet({ walletDestination }) {
         }),
     )
 
-    const transactions = await Wallets.getTransactionsForWallet({
-      walletId: walletDestination.user.id,
+    const transactions = await Wallets.getTransactionsForWalletId({
+      walletId: walletDestination.user.id as WalletId,
     })
     if (transactions instanceof Error) {
       throw transactions
