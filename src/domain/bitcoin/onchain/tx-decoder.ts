@@ -1,5 +1,5 @@
 import { toSats } from "@domain/bitcoin"
-import { Transaction, networks, address } from "bitcoinjs-lib"
+import { Transaction, networks, address, Network, TxOutput } from "bitcoinjs-lib"
 
 export const MakeTxDecoder = (networkName: BtcNetwork): TxDecoder => {
   const network = networks[networkName]
@@ -18,13 +18,13 @@ export const MakeTxDecoder = (networkName: BtcNetwork): TxDecoder => {
   }
 }
 
-const decodeOutput = (tx, network): TxOut[] => {
-  const format = (out, n, network) => {
+const decodeOutput = (tx: Transaction, network: Network): TxOut[] => {
+  const format = (out: TxOutput, network: Network) => {
     return {
       sats: toSats(out.value),
-      address: address.fromOutputScript(out.script, network),
+      address: address.fromOutputScript(out.script, network) as OnChainAddress,
     }
   }
 
-  return tx.outs.map((out, n) => format(out, n, network))
+  return tx.outs.map((out) => format(out, network))
 }

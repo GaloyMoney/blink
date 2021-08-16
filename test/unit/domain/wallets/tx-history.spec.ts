@@ -203,17 +203,14 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
           outs: [
             {
               sats: toSats(25000),
-              n: 0,
               address: "userAddress1" as OnChainAddress,
             },
             {
               sats: toSats(50000),
-              n: 1,
               address: "userAddress2" as OnChainAddress,
             },
             {
               sats: toSats(25000),
-              n: 1,
               address: "address3" as OnChainAddress,
             },
           ],
@@ -272,7 +269,6 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
           outs: [
             {
               sats: toSats(25000),
-              n: 0,
               address: "userAddress1" as OnChainAddress,
             },
           ],

@@ -13,7 +13,6 @@ type TxId = string & { [txIdSymbol]: never }
 
 type TxOut = {
   sats: Satoshis
-  n: number
   address: OnChainAddress
 }
 
