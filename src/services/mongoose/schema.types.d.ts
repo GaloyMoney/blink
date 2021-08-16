@@ -69,10 +69,3 @@ interface UserType {
   accountPath: string
   oldEnoughForWithdrawal: boolean
 }
-
-// ?: relocate
-type Account = {
-  level?: number
-  status?: string
-  language?: string
-}
