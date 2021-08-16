@@ -50,7 +50,7 @@ export const getTransactionsForWallet = async (
   }
 
   const filter = MakeTxFilter({
-    confsLT: ONCHAIN_MIN_CONFIRMATIONS,
+    confirmationsLessThan: ONCHAIN_MIN_CONFIRMATIONS,
     addresses: wallet.onChainAddresses,
   })
   const pendingTxs = filter.apply(onChainTxs)

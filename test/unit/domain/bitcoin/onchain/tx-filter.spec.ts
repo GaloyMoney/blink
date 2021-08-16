@@ -3,7 +3,7 @@ import { MakeTxFilter } from "@domain/bitcoin/onchain"
 
 describe("TxFilter", () => {
   it("filters greater than equal to confs", () => {
-    const filter = MakeTxFilter({ confsGTE: 2 })
+    const filter = MakeTxFilter({ confirmationsGreaterThanOrEqual: 2 })
     const filteredTxs = filter.apply([
       {
         confirmations: 0,
@@ -27,7 +27,7 @@ describe("TxFilter", () => {
   })
 
   it("filters less than confs", () => {
-    const filter = MakeTxFilter({ confsLT: 3 })
+    const filter = MakeTxFilter({ confirmationsLessThan: 3 })
     const filteredTxs = filter.apply([
       {
         confirmations: 2,

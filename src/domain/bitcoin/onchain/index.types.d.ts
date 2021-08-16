@@ -36,8 +36,8 @@ type TxDecoder = {
 }
 
 type TxFilterArgs = {
-  confsLT?: number
-  confsGTE?: number
+  confirmationsLessThan?: number
+  confirmationsGreaterThanOrEqual?: number
   addresses?: OnChainAddress[]
 }
 

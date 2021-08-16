@@ -1,14 +1,17 @@
 export const MakeTxFilter = ({
-  confsLT,
-  confsGTE,
+  confirmationsLessThan,
+  confirmationsGreaterThanOrEqual,
   addresses,
 }: TxFilterArgs): TxFilter => {
   const apply = (txs: SubmittedTransaction[]): SubmittedTransaction[] => {
     return txs.filter(({ confirmations, outputAddresses }) => {
-      if (!!confsGTE && confirmations < confsGTE) {
+      if (
+        !!confirmationsGreaterThanOrEqual &&
+        confirmations < confirmationsGreaterThanOrEqual
+      ) {
         return false
       }
-      if (!!confsLT && confirmations >= confsLT) {
+      if (!!confirmationsLessThan && confirmations >= confirmationsLessThan) {
         return false
       }
       if (!!addresses && !outputAddresses.some((addr) => addresses.includes(addr))) {
