@@ -129,7 +129,7 @@ onChainWallet:
 helmet:
   disableContentPolicy: false
 
-twoFactor:
+twoFA:
   threshold: 300000 # sats
 
 userActivenessMonthlyVolumeThreshold: 1000 # sats

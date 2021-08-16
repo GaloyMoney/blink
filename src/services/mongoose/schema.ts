@@ -5,6 +5,8 @@ import {
   getUserLimits,
   getGenericLimits,
   getFeeRates,
+  getTwoFAConfig,
+  USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD,
   MS_PER_DAY,
   MS_PER_30_DAYs,
 } from "@config/app"
@@ -65,6 +67,8 @@ export const InvoiceUser = mongoose.model("InvoiceUser", invoiceUserSchema)
 const regexUsername = getUsernameRegex()
 
 const feeRates = getFeeRates()
+
+const twoFAConfig = getTwoFAConfig()
 
 const UserSchema = new Schema<UserType>({
   depositFeeRatio: {
@@ -254,7 +258,7 @@ const UserSchema = new Schema<UserType>({
     },
     threshold: {
       type: Number,
-      default: yamlConfig.twoFactor.threshold,
+      default: twoFAConfig.threshold,
     },
   },
 })
@@ -387,7 +391,7 @@ UserSchema.virtual("onchain_pubkey").get(function (this: typeof UserSchema) {
 // eslint-disable-next-line no-unused-vars
 UserSchema.virtual("userIsActive").get(async function (this: typeof UserSchema) {
   const timestamp30DaysAgo = Date.now() - MS_PER_30_DAYs
-  const activenessThreshold = yamlConfig.userActivenessMonthlyVolumeThreshold
+  const activenessThreshold = USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD
 
   const volume = await User.getVolume({
     after: timestamp30DaysAgo,

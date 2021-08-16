@@ -14,7 +14,7 @@ import { makeExecutableSchema } from "graphql-tools"
 import moment from "moment"
 import path from "path"
 
-import { levels, onboardingEarn, getTransactionLimits, getFeeRates } from "@config/app"
+import { getFeeRates, levels, onboardingEarn } from "@config/app"
 
 import { setupMongoConnection } from "@services/mongodb"
 import { activateLndHealthCheck } from "@services/lnd/health"
@@ -194,10 +194,11 @@ const resolvers = {
       return uid
     },
     getLevels: () => levels,
-    getUserLimits: (_, __, { wallet }) => wallet.getUserLimits(),
-    getWalletFees: () => ({
-      deposit: yamlConfig.fees.deposit,
-    }),
+    getLimits: (_, __, { wallet }) => wallet.getUserLimits(),
+    getWalletFees: () => {
+      const feeRates = getFeeRates()
+      return { deposit: feeRates.depositFeeVariable }
+    },
   },
   Mutation: {
     requestPhoneCode: async (_, { phone }, { logger, ip }) => ({
