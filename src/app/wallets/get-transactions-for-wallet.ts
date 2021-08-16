@@ -17,7 +17,7 @@ export const getTransactionsForWalletId = async ({
   walletId: WalletId
 }): Promise<{
   transactions: WalletTransaction[]
-  error?: CoreError
+  error?: ApplicationError
 }> => {
   const wallets = MakeWalletsRepository()
   const wallet = await wallets.findById(walletId)
@@ -29,7 +29,7 @@ export const getTransactionsForWallet = async (
   wallet: Wallet,
 ): Promise<{
   transactions: WalletTransaction[]
-  error?: CoreError
+  error?: ApplicationError
 }> => {
   const ledger = MakeLedgerService()
   const liabilitiesAccountId = toLiabilitiesAccountId(wallet.id)
