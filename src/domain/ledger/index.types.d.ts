@@ -39,7 +39,7 @@ type LedgerTransaction = {
 }
 
 interface ILedgerService {
-  liabilityTransactions: (
+  getLiabilityTransactions: (
     liabilitiesAccountId: LiabilitiesAccountId,
   ) => Promise<LedgerTransaction[] | LedgerError>
 }

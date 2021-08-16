@@ -30,7 +30,7 @@ import { MainBook } from "./books"
 import { toSats } from "@domain/bitcoin"
 
 export const MakeLedgerService = (): ILedgerService => {
-  const liabilityTransactions = async (
+  const getLiabilityTransactions = async (
     liabilitiesAccountId: LiabilitiesAccountId,
   ): Promise<LedgerTransaction[] | LedgerError> => {
     try {
@@ -60,5 +60,5 @@ export const MakeLedgerService = (): ILedgerService => {
     }
   }
 
-  return { liabilityTransactions }
+  return { getLiabilityTransactions }
 }

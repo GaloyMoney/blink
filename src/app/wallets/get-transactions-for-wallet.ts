@@ -33,7 +33,7 @@ export const getTransactionsForWallet = async (
 }> => {
   const ledger = MakeLedgerService()
   const liabilitiesAccountId = toLiabilitiesAccountId(wallet.id)
-  const ledgerTransactions = await ledger.liabilityTransactions(liabilitiesAccountId)
+  const ledgerTransactions = await ledger.getLiabilityTransactions(liabilitiesAccountId)
   if (ledgerTransactions instanceof LedgerError)
     return { transactions: [], error: ledgerTransactions }
 
