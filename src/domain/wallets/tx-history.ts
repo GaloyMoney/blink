@@ -175,10 +175,9 @@ export const translateDescription = ({
 
   let usernameDescription
   if (username) {
+    usernameDescription = `to ${username}`
     if (credit > 0) {
       usernameDescription = `from ${username}`
-    } else {
-      usernameDescription = `to ${username}`
     }
   }
 
