@@ -1,4 +1,10 @@
+import {
+  addInvoiceForSelf,
+  addInvoiceNoAmountForRecipient,
+  addInvoiceNoAmountForSelf,
+} from "@app/wallets/add-invoice-for-wallet"
 import { getHash } from "@core/utils"
+import { toSats } from "@domain/bitcoin"
 import { InvoiceUser } from "@services/mongoose/schema"
 import { getUserWallet } from "test/helpers"
 
@@ -13,20 +19,36 @@ beforeAll(async () => {
 
 describe("UserWallet - addInvoice", () => {
   it("adds a self generated invoice", async () => {
-    const request = await userWallet1.addInvoice({ value: 1000 })
+    const lnInvoice = await addInvoiceForSelf({
+      walletId: userWallet1.user.id as WalletId,
+      amount: toSats(1000),
+    })
+    if (lnInvoice instanceof Error) return lnInvoice
+    const { paymentRequest: request } = lnInvoice
+
     expect(request.startsWith("lnbcrt10")).toBeTruthy()
     const { uid } = await InvoiceUser.findById(getHash(request))
     expect(String(uid)).toBe(String(userWallet1.user._id))
   })
 
   it("adds a self generated invoice without amount", async () => {
-    const request = await userWallet1.addInvoice({})
+    const lnInvoice = await addInvoiceNoAmountForSelf({
+      walletId: userWallet1.user.id as WalletId,
+    })
+    if (lnInvoice instanceof Error) return lnInvoice
+    const { paymentRequest: request } = lnInvoice
+
     const { uid } = await InvoiceUser.findById(getHash(request))
     expect(String(uid)).toBe(String(userWallet1.user._id))
   })
 
   it("adds a public invoice", async () => {
-    const request = await userWallet1.addInvoice({ selfGenerated: false })
+    const lnInvoice = await addInvoiceNoAmountForRecipient({
+      username: "user1" as Username,
+    })
+    if (lnInvoice instanceof Error) return lnInvoice
+    const { paymentRequest: request } = lnInvoice
+
     expect(request.startsWith("lnbcrt1")).toBeTruthy()
     const { uid, selfGenerated } = await InvoiceUser.findById(getHash(request))
     expect(String(uid)).toBe(String(userWallet1.user._id))
