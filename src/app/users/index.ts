@@ -1,6 +1,6 @@
-import { MakeUsersRepository } from "@services/mongoose"
+import { UsersRepository } from "@services/mongoose"
 
 export const getUser = async (userId: UserId) => {
-  const repo = MakeUsersRepository()
+  const repo = UsersRepository()
   return repo.findById(userId)
 }

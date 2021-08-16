@@ -1,9 +1,9 @@
 import { toSats } from "@domain/bitcoin"
-import { MakeTxFilter } from "@domain/bitcoin/onchain"
+import { TxFilter } from "@domain/bitcoin/onchain"
 
 describe("TxFilter", () => {
   it("filters greater than equal to confs", () => {
-    const filter = MakeTxFilter({ confirmationsGreaterThanOrEqual: 2 })
+    const filter = TxFilter({ confirmationsGreaterThanOrEqual: 2 })
     const filteredTxs = filter.apply([
       {
         confirmations: 0,
@@ -27,7 +27,7 @@ describe("TxFilter", () => {
   })
 
   it("filters less than confs", () => {
-    const filter = MakeTxFilter({ confirmationsLessThan: 3 })
+    const filter = TxFilter({ confirmationsLessThan: 3 })
     const filteredTxs = filter.apply([
       {
         confirmations: 2,
@@ -51,7 +51,7 @@ describe("TxFilter", () => {
   })
 
   it("filters including addresses", () => {
-    const filter = MakeTxFilter({ addresses: ["address1" as OnChainAddress] })
+    const filter = TxFilter({ addresses: ["address1" as OnChainAddress] })
     const filteredTxs = filter.apply([
       {
         confirmations: 2,

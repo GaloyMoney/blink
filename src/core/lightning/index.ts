@@ -10,8 +10,8 @@ import { toSats } from "@domain/bitcoin"
 import lnService from "ln-service"
 
 import { TIMEOUT_PAYMENT } from "@services/lnd/auth"
-import { MakeLndService } from "@services/lnd"
-import { MakeInvoicesRepository } from "@services/mongoose"
+import { LndService } from "@services/lnd"
+import { InvoicesRepository } from "@services/mongoose"
 import { invoiceExpirationForCurrency } from "@domain/bitcoin/lightning"
 import {
   getActiveLnd,
@@ -56,7 +56,7 @@ export const LightningMixin = (superclass) =>
     constructor(...args) {
       super(...args)
       this.config = args[0].config
-      this.invoices = MakeInvoicesRepository()
+      this.invoices = InvoicesRepository()
     }
 
     async updatePending(lock) {
@@ -84,7 +84,7 @@ export const LightningMixin = (superclass) =>
         throw new LndOfflineError("no active lnd to create an invoice")
       }
 
-      const lndService = MakeLndService(lnd)
+      const lndService = LndService(lnd)
       const registerResult = await lndService.registerInvoice({
         description: memo,
         satoshis: toSats(value),

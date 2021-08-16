@@ -1,8 +1,8 @@
 import { AuthorizationError, RepositoryError } from "@domain/errors"
 import { decodeInvoice } from "@domain/bitcoin/lightning"
-import { MakeInvoicesRepository } from "@services/mongoose"
+import { InvoicesRepository } from "@services/mongoose"
 
-export const MakePaymentStatusChecker = ({ paymentRequest, lookupToken }) => {
+export const PaymentStatusChecker = ({ paymentRequest, lookupToken }) => {
   const decodedInvoice = decodeInvoice(paymentRequest)
 
   if (decodedInvoice instanceof Error) return decodedInvoice
@@ -16,7 +16,7 @@ export const MakePaymentStatusChecker = ({ paymentRequest, lookupToken }) => {
 
   return {
     invoiceIsPaid: async (): Promise<boolean | RepositoryError> => {
-      const repo = MakeInvoicesRepository()
+      const repo = InvoicesRepository()
       const walletInvoice = await repo.findByPaymentHash(paymentHash)
       if (walletInvoice instanceof RepositoryError) return walletInvoice
       return walletInvoice.paid

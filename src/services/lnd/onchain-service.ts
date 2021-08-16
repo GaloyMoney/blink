@@ -6,7 +6,7 @@ import { toSats } from "@domain/bitcoin"
 import { getHeight, getChainTransactions } from "lightning"
 import { getActiveLnd } from "./utils"
 
-export const MakeOnChainService = (
+export const OnChainService = (
   decoder: TxDecoder,
 ): IOnChainService | OnChainServiceError => {
   let lnd: AuthenticatedLnd

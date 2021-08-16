@@ -5,7 +5,7 @@ import {
 } from "@domain/errors"
 import { User } from "@services/mongoose/schema"
 
-export const MakeWalletsRepository = (): IWalletsRepository => {
+export const WalletsRepository = (): IWalletsRepository => {
   const findById = async (walletId: WalletId): Promise<Wallet | RepositoryError> => {
     try {
       const result = await User.findOne({ _id: walletId })

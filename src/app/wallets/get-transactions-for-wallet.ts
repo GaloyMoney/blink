@@ -1,8 +1,8 @@
 import { RepositoryError } from "@domain/errors"
-import { OnChainError, MakeTxFilter, MakeTxDecoder } from "@domain/bitcoin/onchain"
-import { MakeWalletsRepository } from "@services/mongoose"
-import { MakeLedgerService } from "@services/ledger"
-import { MakeOnChainService } from "@services/lnd/onchain-service"
+import { OnChainError, TxFilter, TxDecoder } from "@domain/bitcoin/onchain"
+import { WalletsRepository } from "@services/mongoose"
+import { LedgerService } from "@services/ledger"
+import { OnChainService } from "@services/lnd/onchain-service"
 import { toLiabilitiesAccountId, LedgerError } from "@domain/ledger"
 import { LOOK_BACK } from "@core/utils"
 import { ONCHAIN_MIN_CONFIRMATIONS } from "@config/app"
@@ -17,7 +17,7 @@ export const getTransactionsForWalletId = async ({
 }: {
   walletId: WalletId
 }): Promise<PartialResult<WalletTransaction[]>> => {
-  const wallets = MakeWalletsRepository()
+  const wallets = WalletsRepository()
   const wallet = await wallets.findById(walletId)
   if (wallet instanceof RepositoryError) return PartialResult.err(wallet)
   return getTransactionsForWallet(wallet)
@@ -26,7 +26,7 @@ export const getTransactionsForWalletId = async ({
 export const getTransactionsForWallet = async (
   wallet: Wallet,
 ): Promise<PartialResult<WalletTransaction[]>> => {
-  const ledger = MakeLedgerService()
+  const ledger = LedgerService()
   const liabilitiesAccountId = toLiabilitiesAccountId(wallet.id)
   const ledgerTransactions = await ledger.getLiabilityTransactions(liabilitiesAccountId)
   if (ledgerTransactions instanceof LedgerError)
@@ -34,7 +34,7 @@ export const getTransactionsForWallet = async (
 
   const confirmedHistory = WalletTransactionHistory.fromLedger(ledgerTransactions)
 
-  const onChain = MakeOnChainService(MakeTxDecoder(process.env.NETWORK as BtcNetwork))
+  const onChain = OnChainService(TxDecoder(process.env.NETWORK as BtcNetwork))
   if (onChain instanceof OnChainError) {
     return PartialResult.partial(confirmedHistory.transactions, onChain)
   }
@@ -44,7 +44,7 @@ export const getTransactionsForWallet = async (
     return PartialResult.partial(confirmedHistory.transactions, onChainTxs)
   }
 
-  const filter = MakeTxFilter({
+  const filter = TxFilter({
     confirmationsLessThan: ONCHAIN_MIN_CONFIRMATIONS,
     addresses: wallet.onChainAddresses,
   })

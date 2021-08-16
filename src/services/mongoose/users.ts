@@ -6,7 +6,7 @@ import {
 } from "@domain/errors"
 import { User } from "@services/mongoose/schema"
 
-export const MakeUsersRepository = (): IUsersRepository => {
+export const UsersRepository = (): IUsersRepository => {
   const findById = async (userId: UserId): Promise<User | RepositoryError> => {
     try {
       const result = await User.findOne({ _id: userId })
