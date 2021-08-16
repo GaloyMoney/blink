@@ -96,12 +96,13 @@ describe("UserWallet - onChainPay", () => {
 
     await sleep(1000)
 
-    const [txs, error] = await Wallets.getTransactionsForWalletId({
+    let txResult = await Wallets.getTransactionsForWalletId({
       walletId: userWallet0.user.id,
     })
-    if (error instanceof Error) {
-      throw error
+    if (txResult.error instanceof Error) {
+      throw txResult.error
     }
+    let txs = txResult.transactions
     const pendingTxs = filter(txs, { pendingConfirmation: true })
     expect(pendingTxs.length).toBe(1)
     expect(pendingTxs[0].settlementAmount).toBe(-amount - pendingTxs[0].settlementFee)
@@ -134,13 +135,14 @@ describe("UserWallet - onChainPay", () => {
     expect(fee).toBe(feeRates.withdrawFeeFixed + 7050)
     expect(feeUsd).toBeGreaterThan(0)
 
-    const [txs2, error2] = await Wallets.getTransactionsForWalletId({
+    txResult = await Wallets.getTransactionsForWalletId({
       walletId: userWallet0.user.id,
     })
-    if (error2 instanceof Error) {
-      throw error2
+    if (txResult.error instanceof Error) {
+      throw txResult.error
     }
-    const [txn] = txs2.filter(
+    txs = txResult.transactions
+    const [txn] = txs.filter(
       (tx: WalletTransaction) =>
         tx.initiationVia === PaymentInitiationMethod.Lightning &&
         tx.paymentHash === pendingTxn.hash,
@@ -185,12 +187,13 @@ describe("UserWallet - onChainPay", () => {
 
     await sleep(1000)
 
-    const [txs, error] = await Wallets.getTransactionsForWalletId({
+    let txResult = await Wallets.getTransactionsForWalletId({
       walletId: userWallet11.user.id,
     })
-    if (error instanceof Error) {
-      throw error
+    if (txResult.error instanceof Error) {
+      throw txResult
     }
+    let txs = txResult.transactions
     const pendingTxs = filter(txs, { pendingConfirmation: true })
     expect(pendingTxs.length).toBe(1)
     expect(pendingTxs[0].settlementAmount).toBe(-initialBalanceUser11)
@@ -222,14 +225,16 @@ describe("UserWallet - onChainPay", () => {
     expect(pending).toBe(false)
     expect(fee).toBe(feeRates.withdrawFeeFixed + 7050) // 7050?
     expect(feeUsd).toBeGreaterThan(0)
-    const [txs2, error2] = await Wallets.getTransactionsForWalletId({
+
+    txResult = await Wallets.getTransactionsForWalletId({
       walletId: userWallet11.user.id,
     })
-    if (error2 instanceof Error) {
-      throw error2
+    if (txResult.error instanceof Error) {
+      throw txResult.error
     }
-    const [txn] = txs2.filter(
-      (tx: WalletTransaction) =>
+    txs = txResult.transactions
+    const [txn] = txs.filter(
+      (tx) =>
         tx.initiationVia === PaymentInitiationMethod.Lightning &&
         tx.paymentHash === pendingTxn.hash,
     )
@@ -246,7 +251,7 @@ describe("UserWallet - onChainPay", () => {
     const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
     const paymentResult = await userWallet0.onChainPay({ address, amount, memo })
     expect(paymentResult).toBe(true)
-    const [txs, error] = await Wallets.getTransactionsForWalletId({
+    const { transactions: txs, error } = await Wallets.getTransactionsForWalletId({
       walletId: userWallet0.user.id,
     })
     if (error instanceof Error) {
@@ -296,7 +301,7 @@ describe("UserWallet - onChainPay", () => {
       tx.deprecated.type === "onchain_on_us" &&
       tx.addresses?.includes(address)
 
-    const [txs, error] = await Wallets.getTransactionsForWalletId({
+    const { transactions: txs, error } = await Wallets.getTransactionsForWalletId({
       walletId: userWallet0.user.id,
     })
     if (error instanceof Error) {
@@ -307,9 +312,10 @@ describe("UserWallet - onChainPay", () => {
     expect(filteredTxs[0].deprecated.description).toBe(memo)
 
     // receiver should not know memo from sender
-    const [txsUser3, error2] = await Wallets.getTransactionsForWalletId({
-      walletId: userWallet3.user.id as WalletId,
-    })
+    const { transactions: txsUser3, error: error2 } =
+      await Wallets.getTransactionsForWalletId({
+        walletId: userWallet3.user.id as WalletId,
+      })
     if (error2 instanceof Error) {
       throw error2
     }
