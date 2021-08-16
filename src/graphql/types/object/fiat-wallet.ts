@@ -17,7 +17,7 @@ const FiatWallet = new GT.Object({
       type: TransactionConnection,
       args: connectionArgs,
       resolve: async (source: Wallet, args) => {
-        const { transactions, error } = await Wallets.getTransactionsForWallet(source)
+        const [transactions, error] = await Wallets.getTransactionsForWallet(source)
         if (error instanceof Error) {
           throw error
         }

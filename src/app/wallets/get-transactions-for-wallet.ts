@@ -15,38 +15,31 @@ export const getTransactionsForWalletId = async ({
   walletId,
 }: {
   walletId: WalletId
-}): Promise<{
-  transactions: WalletTransaction[]
-  error?: ApplicationError
-}> => {
+}): Promise<[WalletTransaction[], ApplicationError?]> => {
   const wallets = MakeWalletsRepository()
   const wallet = await wallets.findById(walletId)
-  if (wallet instanceof RepositoryError) return { transactions: [], error: wallet }
+  if (wallet instanceof RepositoryError) return [[], wallet]
   return getTransactionsForWallet(wallet)
 }
 
 export const getTransactionsForWallet = async (
   wallet: Wallet,
-): Promise<{
-  transactions: WalletTransaction[]
-  error?: ApplicationError
-}> => {
+): Promise<[WalletTransaction[], ApplicationError?]> => {
   const ledger = MakeLedgerService()
   const liabilitiesAccountId = toLiabilitiesAccountId(wallet.id)
   const ledgerTransactions = await ledger.getLiabilityTransactions(liabilitiesAccountId)
-  if (ledgerTransactions instanceof LedgerError)
-    return { transactions: [], error: ledgerTransactions }
+  if (ledgerTransactions instanceof LedgerError) return [[], ledgerTransactions]
 
   const confirmedHistory = WalletTransactionHistory.fromLedger(ledgerTransactions)
 
   const onChain = MakeOnChainService(MakeTxDecoder(process.env.NETWORK as BtcNetwork))
   if (onChain instanceof OnChainError) {
-    return { transactions: confirmedHistory.transactions, error: onChain }
+    return [confirmedHistory.transactions, onChain]
   }
 
   const onChainTxs = await onChain.getIncomingTransactions(LOOK_BACK)
   if (onChainTxs instanceof OnChainError) {
-    return { transactions: confirmedHistory.transactions, error: onChainTxs }
+    return [confirmedHistory.transactions, onChainTxs]
   }
 
   const filter = MakeTxFilter({
@@ -61,11 +54,8 @@ export const getTransactionsForWallet = async (
     price = NaN
   }
 
-  return {
-    transactions: confirmedHistory.addPendingIncoming(
-      pendingTxs,
-      wallet.onChainAddresses,
-      price,
-    ).transactions,
-  }
+  return [
+    confirmedHistory.addPendingIncoming(pendingTxs, wallet.onChainAddresses, price)
+      .transactions,
+  ]
 }
