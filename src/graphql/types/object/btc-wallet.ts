@@ -17,8 +17,10 @@ const BTCWallet = new GT.Object({
       type: TransactionConnection,
       args: connectionArgs,
       resolve: async (source: Wallet, args) => {
-        const { transactions, error } = await Wallets.getTransactionsForWallet(source)
-        if (error instanceof Error) {
+        const { result: transactions, error } = await Wallets.getTransactionsForWallet(
+          source,
+        )
+        if (error instanceof Error || transactions === null) {
           throw error
         }
         return connectionFromArray(transactions, args)

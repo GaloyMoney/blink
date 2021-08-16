@@ -44,10 +44,10 @@ describe("UserWallet - Lightning", () => {
     expect(dbTx.pending).toBe(false)
 
     // check that memo is not filtered by spam filter
-    const { transactions: txns, error } = await Wallets.getTransactionsForWalletId({
+    const { result: txns, error } = await Wallets.getTransactionsForWalletId({
       walletId: userWallet1.user.id,
     })
-    if (error instanceof Error) {
+    if (error instanceof Error || txns === null) {
       throw error
     }
     const noSpamTxn = txns.find(
@@ -101,10 +101,10 @@ describe("UserWallet - Lightning", () => {
     expect(dbTx.memo).toBe(memo)
 
     // check that spam memo is filtered from transaction description
-    const { transactions: txns, error } = await Wallets.getTransactionsForWalletId({
+    const { result: txns, error } = await Wallets.getTransactionsForWalletId({
       walletId: userWallet1.user.id,
     })
-    if (error instanceof Error) {
+    if (error instanceof Error || txns === null) {
       throw error
     }
     const spamTxn = txns.find(

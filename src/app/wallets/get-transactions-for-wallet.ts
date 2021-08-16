@@ -7,6 +7,7 @@ import { toLiabilitiesAccountId, LedgerError } from "@domain/ledger"
 import { LOOK_BACK } from "@core/utils"
 import { ONCHAIN_MIN_CONFIRMATIONS } from "@config/app"
 import { WalletTransactionHistory } from "@domain/wallets"
+import { PartialResult } from "@app/partial-result"
 
 // TODO should be exposed via PriceSerivce / LiquidityProvider
 import { getCurrentPrice } from "@services/realtime-price"
@@ -15,38 +16,32 @@ export const getTransactionsForWalletId = async ({
   walletId,
 }: {
   walletId: WalletId
-}): Promise<{
-  transactions: WalletTransaction[]
-  error?: ApplicationError
-}> => {
+}): Promise<PartialResult<WalletTransaction[]>> => {
   const wallets = MakeWalletsRepository()
   const wallet = await wallets.findById(walletId)
-  if (wallet instanceof RepositoryError) return { transactions: [], error: wallet }
+  if (wallet instanceof RepositoryError) return PartialResult.err(wallet)
   return getTransactionsForWallet(wallet)
 }
 
 export const getTransactionsForWallet = async (
   wallet: Wallet,
-): Promise<{
-  transactions: WalletTransaction[]
-  error?: ApplicationError
-}> => {
+): Promise<PartialResult<WalletTransaction[]>> => {
   const ledger = MakeLedgerService()
   const liabilitiesAccountId = toLiabilitiesAccountId(wallet.id)
   const ledgerTransactions = await ledger.getLiabilityTransactions(liabilitiesAccountId)
   if (ledgerTransactions instanceof LedgerError)
-    return { transactions: [], error: ledgerTransactions }
+    return PartialResult.err(ledgerTransactions)
 
   const confirmedHistory = WalletTransactionHistory.fromLedger(ledgerTransactions)
 
   const onChain = MakeOnChainService(MakeTxDecoder(process.env.NETWORK as BtcNetwork))
   if (onChain instanceof OnChainError) {
-    return { transactions: confirmedHistory.transactions, error: onChain }
+    return PartialResult.partial(confirmedHistory.transactions, onChain)
   }
 
   const onChainTxs = await onChain.getIncomingTransactions(LOOK_BACK)
   if (onChainTxs instanceof OnChainError) {
-    return { transactions: confirmedHistory.transactions, error: onChainTxs }
+    return PartialResult.partial(confirmedHistory.transactions, onChainTxs)
   }
 
   const filter = MakeTxFilter({
@@ -61,11 +56,8 @@ export const getTransactionsForWallet = async (
     price = NaN
   }
 
-  return {
-    transactions: confirmedHistory.addPendingIncoming(
-      pendingTxs,
-      wallet.onChainAddresses,
-      price,
-    ).transactions,
-  }
+  return PartialResult.ok(
+    confirmedHistory.addPendingIncoming(pendingTxs, wallet.onChainAddresses, price)
+      .transactions,
+  )
 }

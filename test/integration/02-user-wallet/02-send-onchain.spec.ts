@@ -99,10 +99,10 @@ describe("UserWallet - onChainPay", () => {
     let txResult = await Wallets.getTransactionsForWalletId({
       walletId: userWallet0.user.id,
     })
-    if (txResult.error instanceof Error) {
+    if (txResult.error instanceof Error || txResult.result === null) {
       throw txResult.error
     }
-    let txs = txResult.transactions
+    let txs = txResult.result
     const pendingTxs = filter(txs, { pendingConfirmation: true })
     expect(pendingTxs.length).toBe(1)
     expect(pendingTxs[0].settlementAmount).toBe(-amount - pendingTxs[0].settlementFee)
@@ -138,10 +138,10 @@ describe("UserWallet - onChainPay", () => {
     txResult = await Wallets.getTransactionsForWalletId({
       walletId: userWallet0.user.id,
     })
-    if (txResult.error instanceof Error) {
+    if (txResult.error instanceof Error || txResult.result === null) {
       throw txResult.error
     }
-    txs = txResult.transactions
+    txs = txResult.result
     const [txn] = txs.filter(
       (tx: WalletTransaction) =>
         tx.initiationVia === PaymentInitiationMethod.Lightning &&
@@ -190,10 +190,10 @@ describe("UserWallet - onChainPay", () => {
     let txResult = await Wallets.getTransactionsForWalletId({
       walletId: userWallet11.user.id,
     })
-    if (txResult.error instanceof Error) {
+    if (txResult.error instanceof Error || txResult.result === null) {
       throw txResult
     }
-    let txs = txResult.transactions
+    let txs = txResult.result
     const pendingTxs = filter(txs, { pendingConfirmation: true })
     expect(pendingTxs.length).toBe(1)
     expect(pendingTxs[0].settlementAmount).toBe(-initialBalanceUser11)
@@ -229,10 +229,10 @@ describe("UserWallet - onChainPay", () => {
     txResult = await Wallets.getTransactionsForWalletId({
       walletId: userWallet11.user.id,
     })
-    if (txResult.error instanceof Error) {
+    if (txResult.error instanceof Error || txResult.result === null) {
       throw txResult.error
     }
-    txs = txResult.transactions
+    txs = txResult.result
     const [txn] = txs.filter(
       (tx) =>
         tx.initiationVia === PaymentInitiationMethod.Lightning &&
@@ -251,10 +251,10 @@ describe("UserWallet - onChainPay", () => {
     const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
     const paymentResult = await userWallet0.onChainPay({ address, amount, memo })
     expect(paymentResult).toBe(true)
-    const { transactions: txs, error } = await Wallets.getTransactionsForWalletId({
+    const { result: txs, error } = await Wallets.getTransactionsForWalletId({
       walletId: userWallet0.user.id,
     })
-    if (error instanceof Error) {
+    if (error instanceof Error || txs === null) {
       throw error
     }
     const firstTxs = first(txs)
@@ -301,10 +301,10 @@ describe("UserWallet - onChainPay", () => {
       tx.deprecated.type === "onchain_on_us" &&
       tx.addresses?.includes(address)
 
-    const { transactions: txs, error } = await Wallets.getTransactionsForWalletId({
+    const { result: txs, error } = await Wallets.getTransactionsForWalletId({
       walletId: userWallet0.user.id,
     })
-    if (error instanceof Error) {
+    if (error instanceof Error || txs === null) {
       throw error
     }
     const filteredTxs = txs.filter(matchTx)
@@ -312,11 +312,10 @@ describe("UserWallet - onChainPay", () => {
     expect(filteredTxs[0].deprecated.description).toBe(memo)
 
     // receiver should not know memo from sender
-    const { transactions: txsUser3, error: error2 } =
-      await Wallets.getTransactionsForWalletId({
-        walletId: userWallet3.user.id as WalletId,
-      })
-    if (error2 instanceof Error) {
+    const { result: txsUser3, error: error2 } = await Wallets.getTransactionsForWalletId({
+      walletId: userWallet3.user.id as WalletId,
+    })
+    if (error2 instanceof Error || txsUser3 === null) {
       throw error2
     }
     const filteredTxsUser3 = txsUser3.filter(matchTx)

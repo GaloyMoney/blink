@@ -72,20 +72,20 @@ describe("UserWallet - Lightning Pay", () => {
     let txResult = await Wallets.getTransactionsForWalletId({
       walletId: userWallet1.user.id,
     })
-    if (txResult.error instanceof Error) {
+    if (txResult.error instanceof Error || txResult.result === null) {
       throw txResult.error
     }
-    const user1Txn = txResult.transactions
+    const user1Txn = txResult.result
     expect(user1Txn.filter(matchTx)[0].deprecated.description).toBe(memo)
     expect(user1Txn.filter(matchTx)[0].settlementVia).toBe("intraledger")
 
     txResult = await Wallets.getTransactionsForWalletId({
       walletId: userWallet1.user.id,
     })
-    if (txResult.error instanceof Error) {
+    if (txResult.error instanceof Error || txResult.result === null) {
       throw txResult.error
     }
-    const user2Txn = txResult.transactions
+    const user2Txn = txResult.result
     expect(user2Txn.filter(matchTx)[0].deprecated.description).toBe(memo)
     expect(user2Txn.filter(matchTx)[0].settlementVia).toBe("intraledger")
   })
@@ -103,20 +103,20 @@ describe("UserWallet - Lightning Pay", () => {
     let txResult = await Wallets.getTransactionsForWalletId({
       walletId: userWallet2.user.id,
     })
-    if (txResult.error instanceof Error) {
+    if (txResult.error instanceof Error || txResult.result === null) {
       throw txResult.error
     }
-    const user2Txn = txResult.transactions
+    const user2Txn = txResult.result
     expect(user2Txn.filter(matchTx)[0].deprecated.description).toBe(memo)
     expect(user2Txn.filter(matchTx)[0].settlementVia).toBe("intraledger")
 
     txResult = await Wallets.getTransactionsForWalletId({
       walletId: userWallet1.user.id,
     })
-    if (txResult.error instanceof Error) {
+    if (txResult.error instanceof Error || txResult.result === null) {
       throw txResult.error
     }
-    const user1Txn = txResult.transactions
+    const user1Txn = txResult.result
     expect(user1Txn.filter(matchTx)[0].deprecated.description).toBe(memoPayer)
     expect(user1Txn.filter(matchTx)[0].settlementVia).toBe("intraledger")
   })
@@ -128,11 +128,10 @@ describe("UserWallet - Lightning Pay", () => {
     })
 
     const { BTC: finalBalance0 } = await userWallet0.getBalances()
-    const { transactions: userTransaction0, error } =
-      await Wallets.getTransactionsForWalletId({
-        walletId: userWallet0.user.id,
-      })
-    if (error instanceof Error) {
+    const { result: userTransaction0, error } = await Wallets.getTransactionsForWalletId({
+      walletId: userWallet0.user.id,
+    })
+    if (error instanceof Error || userTransaction0 === null) {
       throw error
     }
 
@@ -140,10 +139,10 @@ describe("UserWallet - Lightning Pay", () => {
     const txResult = await Wallets.getTransactionsForWalletId({
       walletId: userWallet1.user.id,
     })
-    if (txResult.error instanceof Error) {
+    if (txResult.error instanceof Error || txResult.result === null) {
       throw txResult.error
     }
-    const userTransaction1 = txResult.transactions
+    const userTransaction1 = txResult.result
     expect(res).toBe("success")
     expect(finalBalance0).toBe(initBalance0 + amountInvoice)
     expect(finalBalance1).toBe(initBalance1 - amountInvoice)
@@ -200,20 +199,20 @@ describe("UserWallet - Lightning Pay", () => {
     let txResult = await Wallets.getTransactionsForWalletId({
       walletId: userWallet0.user.id,
     })
-    if (txResult.error instanceof Error) {
+    if (txResult.error instanceof Error || txResult.result === null) {
       throw txResult.error
     }
-    const userTransaction0 = txResult.transactions
+    const userTransaction0 = txResult.result
     const transaction0Above = userTransaction0[0]
     const transaction0Below = userTransaction0[1]
 
     txResult = await Wallets.getTransactionsForWalletId({
       walletId: userWallet1.user.id,
     })
-    if (txResult.error instanceof Error) {
+    if (txResult.error instanceof Error || txResult.result === null) {
       throw txResult.error
     }
-    const userTransaction1 = txResult.transactions
+    const userTransaction1 = txResult.result
     const transaction1Above = userTransaction1[0]
     const transaction1Below = userTransaction1[1]
 
@@ -433,10 +432,10 @@ describe("UserWallet - Lightning Pay", () => {
           let txResult = await Wallets.getTransactionsForWalletId({
             walletId: walletPayee.user.id,
           })
-          if (txResult.error instanceof Error) {
+          if (txResult.error instanceof Error || txResult.result === null) {
             throw txResult.error
           }
-          const user2Txn = txResult.transactions
+          const user2Txn = txResult.result
           const user2OnUsTxn = user2Txn.filter(matchTx)
           expect(user2OnUsTxn[0].settlementVia).toBe("intraledger")
           await checkIsBalanced()
@@ -444,10 +443,10 @@ describe("UserWallet - Lightning Pay", () => {
           txResult = await Wallets.getTransactionsForWalletId({
             walletId: walletPayer.user.id as WalletId,
           })
-          if (txResult.error instanceof Error) {
+          if (txResult.error instanceof Error || txResult.result === null) {
             throw txResult.error
           }
-          const user1Txn = txResult.transactions
+          const user1Txn = txResult.result
           const user1OnUsTxn = user1Txn.filter(matchTx)
           expect(user1OnUsTxn[0].settlementVia).toBe("intraledger")
 
