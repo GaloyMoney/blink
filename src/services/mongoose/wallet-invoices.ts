@@ -1,7 +1,7 @@
 import { CouldNotFindError, UnknownRepositoryError } from "@domain/errors"
 import { InvoiceUser } from "./schema"
 
-export const WalletInvoicesRepo = () => {
+export const WalletInvoicesRepository = () => {
   const persist = async ({
     paymentHash,
     walletId,

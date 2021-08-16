@@ -2,7 +2,7 @@ import { toSats } from "@domain/bitcoin"
 import { invoiceExpirationForCurrency } from "@domain/bitcoin/lightning"
 import { MakeWalletInvoiceFactory } from "@domain/wallet-invoices/wallet-invoice-factory"
 import { MakeLndService } from "@services/lnd"
-import { MakeWalletInvoicesRepo } from "@services/mongoose/wallet-invoices"
+import { WalletInvoicesRepository } from "@services/mongoose"
 
 export const addInvoiceForWallet = async ({ walletId, amount, memo }) => {
   const walletInvoiceFactory = MakeWalletInvoiceFactory(walletId)
@@ -27,7 +27,7 @@ const baseAddInvoiceForWallet = async ({
   memo,
   walletInvoiceCreateFn,
 }): Promise<LnInvoice | CoreError> => {
-  const walletInvoicesRepo = MakeWalletInvoicesRepo()
+  const walletInvoicesRepo = WalletInvoicesRepository()
   const lndService = MakeLndService()
 
   const registeredInvoice = await lndService.registerInvoice({

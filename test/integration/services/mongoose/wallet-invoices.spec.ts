@@ -1,10 +1,10 @@
 import { RepositoryError } from "@domain/errors"
-import { WalletInvoicesRepo } from "@services/mongoose/wallet-invoices"
+import { WalletInvoicesRepository } from "@services/mongoose"
 
 describe("WalletInvoices", () => {
   it("persists and finds invoices", async () => {
     const randomPaymentHash = Math.random().toString(36) as PaymentHash
-    const repo = WalletInvoicesRepo()
+    const repo = WalletInvoicesRepository()
     const invoiceToPersist = {
       paymentHash: randomPaymentHash,
       walletId: "walletId" as WalletId,
