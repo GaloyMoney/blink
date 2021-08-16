@@ -101,7 +101,8 @@ export const fromLedger = (
           pendingConfirmation,
           createdAt: timestamp,
         }
-      } else if (addresses && addresses.length > 0) {
+      }
+      if (addresses && addresses.length > 0) {
         return {
           id,
           settlementVia: SettlementMethod.OnChain,
