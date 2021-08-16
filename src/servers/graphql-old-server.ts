@@ -40,6 +40,24 @@ const commitHash = process.env.COMMITHASH
 const buildTime = process.env.BUILDTIME
 const helmRevision = process.env.HELMREVISION
 
+const translateWalletTx = (txs: WalletTransaction[]) => {
+  return txs.map((tx: WalletTransaction) => ({
+    id: tx.id,
+    amount: tx.settlementAmount,
+    description: tx.old.description,
+    fee: tx.settlementFee,
+    created_id: tx.createdAt,
+    usd: tx.old.usd,
+    sat: tx.settlementAmount,
+    pending: tx.pendingConfirmation,
+    type: tx.old.type,
+    feeUsd: tx.old.feeUsd,
+    hash: tx.settlementVia !== SettlementMethod.OnChain ? tx.paymentHash : null,
+    addresses: tx.settlementVia !== SettlementMethod.Lightning ? tx.addresses : null,
+    username: tx.settlementVia === SettlementMethod.IntraLedger ? tx.recipientId : null,
+  }))
+}
+
 const resolvers = {
   Query: {
     me: (_, __, { uid, user }) => {
@@ -69,25 +87,7 @@ const resolvers = {
             throw error
           }
 
-          return txs.map((tx: WalletTransaction) => {
-            return {
-              id: tx.id,
-              amount: tx.settlementAmount,
-              description: tx.old.description,
-              fee: tx.settlementFee,
-              created_id: tx.createdAt,
-              usd: tx.old.usd,
-              sat: tx.settlementAmount,
-              pending: tx.pendingConfirmation,
-              type: tx.old.type,
-              feeUsd: tx.old.feeUsd,
-              hash: tx.settlementVia !== SettlementMethod.OnChain ? tx.paymentHash : null,
-              addresses:
-                tx.settlementVia !== SettlementMethod.Lightning ? tx.addresses : null,
-              username:
-                tx.settlementVia === SettlementMethod.IntraLedger ? tx.recipientId : null,
-            }
-          })
+          return translateWalletTx(txs)
         },
         csv: () => wallet.getStringCsv(),
       },
@@ -108,23 +108,7 @@ const resolvers = {
             throw error
           }
 
-          return txs.map((tx: WalletTransaction) => ({
-            id: tx.id,
-            amount: tx.settlementAmount,
-            description: tx.old.description,
-            fee: tx.settlementFee,
-            created_id: tx.createdAt,
-            usd: tx.old.usd,
-            sat: tx.settlementAmount,
-            pending: tx.pendingConfirmation,
-            type: tx.old.type,
-            feeUsd: tx.old.feeUsd,
-            hash: tx.settlementVia === SettlementMethod.Lightning ? tx.paymentHash : null,
-            addresses:
-              tx.settlementVia === SettlementMethod.OnChain ? tx.addresses : null,
-            username:
-              tx.settlementVia === SettlementMethod.IntraLedger ? tx.recipientId : null,
-          }))
+          return translateWalletTx(txs)
         },
         balances: wallet.user.currencies.map((item) => ({
           id: item.id,
