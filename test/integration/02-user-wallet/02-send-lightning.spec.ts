@@ -127,8 +127,6 @@ describe("UserWallet - Lightning Pay", () => {
       amount: amountInvoice,
     })
 
-    // WIP FIXME: Fails because it expects GetTransactions... to be
-    //            ordered by latest first in array
     const { BTC: finalBalance0 } = await userWallet0.getBalances()
     const { transactions: userTransaction0, error } =
       await Wallets.getTransactionsForWalletId({
