@@ -28,6 +28,8 @@ import {
   waitUntilChannelBalanceSyncAll,
 } from "test/helpers"
 import * as Wallets from "@app/wallets"
+import { addInvoiceForSelf } from "@app/wallets/add-invoice-for-wallet"
+import { toSats } from "@domain/bitcoin"
 
 const date = Date.now() + 1000 * 60 * 60 * 24 * 8
 // required to avoid oldEnoughForWithdrawal validation
@@ -63,7 +65,14 @@ describe("UserWallet - Lightning Pay", () => {
   it("sends to another Galoy user with memo", async () => {
     const memo = "invoiceMemo"
 
-    const invoice = await userWallet2.addInvoice({ value: amountInvoice, memo })
+    const lnInvoice = await addInvoiceForSelf({
+      walletId: userWallet2.user.id as WalletId,
+      amount: toSats(amountInvoice),
+      memo,
+    })
+    if (lnInvoice instanceof Error) return lnInvoice
+    const { paymentRequest: invoice } = lnInvoice
+
     await userWallet1.pay({ invoice })
 
     const matchTx = (tx) =>
@@ -94,7 +103,14 @@ describe("UserWallet - Lightning Pay", () => {
     const memo = "invoiceMemo"
     const memoPayer = "my memo as a payer"
 
-    const request = await userWallet2.addInvoice({ value: amountInvoice, memo })
+    const lnInvoice = await addInvoiceForSelf({
+      walletId: userWallet2.user.id as WalletId,
+      amount: toSats(amountInvoice),
+      memo,
+    })
+    if (lnInvoice instanceof Error) return lnInvoice
+    const { paymentRequest: request } = lnInvoice
+
     await userWallet1.pay({ invoice: request, memo: memoPayer })
 
     const matchTx = (tx) =>
@@ -262,10 +278,14 @@ describe("UserWallet - Lightning Pay", () => {
   })
 
   it("fails if sends to self", async () => {
-    const invoice = await userWallet1.addInvoice({
-      value: amountInvoice,
+    const lnInvoice = await addInvoiceForSelf({
+      walletId: userWallet1.user.id as WalletId,
+      amount: toSats(amountInvoice),
       memo: "self payment",
     })
+    if (lnInvoice instanceof Error) return lnInvoice
+    const { paymentRequest: invoice } = lnInvoice
+
     await expect(userWallet1.pay({ invoice })).rejects.toThrow(SelfPaymentError)
   })
 
@@ -331,9 +351,13 @@ describe("UserWallet - Lightning Pay", () => {
   })
 
   it("fails to pay when amount exceeds onUs limit", async () => {
-    const request = await userWallet0.addInvoice({
-      value: userLimits.onUsLimit + 1,
+    const lnInvoice = await addInvoiceForSelf({
+      walletId: userWallet0.user.id as WalletId,
+      amount: toSats(userLimits.onUsLimit + 1),
     })
+    if (lnInvoice instanceof Error) return lnInvoice
+    const { paymentRequest: request } = lnInvoice
+
     await expect(userWallet1.pay({ invoice: request })).rejects.toThrow(
       TransactionRestrictedError,
     )
@@ -416,7 +440,12 @@ describe("UserWallet - Lightning Pay", () => {
           const { BTC: payerInitialBalance } = await walletPayer.getBalances()
           const { BTC: payeeInitialBalance } = await walletPayee.getBalances()
 
-          const request = await walletPayee.addInvoice({ value: amountInvoice })
+          const lnInvoice = await addInvoiceForSelf({
+            walletId: walletPayee.user.id as WalletId,
+            amount: toSats(amountInvoice),
+          })
+          if (lnInvoice instanceof Error) return lnInvoice
+          const { paymentRequest: request } = lnInvoice
           await fn(walletPayer)({ invoice: request, memo })
 
           const { BTC: payerFinalBalance } = await walletPayer.getBalances()
@@ -623,7 +652,14 @@ describe("UserWallet - Lightning Pay", () => {
 
     const { lnd } = getActiveLnd()
 
-    const request = await userWallet1.addInvoice({ value: amountInvoice, memo })
+    const lnInvoice = await addInvoiceForSelf({
+      walletId: userWallet1.user.id as WalletId,
+      amount: toSats(amountInvoice),
+      memo,
+    })
+    if (lnInvoice instanceof Error) return lnInvoice
+    const { paymentRequest: request } = lnInvoice
+
     const { id } = await decodePaymentRequest({ lnd, request })
     expect(await InvoiceUser.countDocuments({ _id: id })).toBe(1)
 

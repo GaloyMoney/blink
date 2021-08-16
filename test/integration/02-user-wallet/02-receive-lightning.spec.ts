@@ -4,6 +4,11 @@ import { checkIsBalanced, getUserWallet, lndOutside1, pay } from "test/helpers"
 import { MEMO_SHARING_SATS_THRESHOLD } from "@config/app"
 import * as Wallets from "@app/wallets"
 import { PaymentInitiationMethod } from "@domain/wallets"
+import {
+  addInvoiceForSelf,
+  addInvoiceNoAmountForSelf,
+} from "@app/wallets/add-invoice-for-wallet"
+import { toSats } from "@domain/bitcoin"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
@@ -29,7 +34,14 @@ describe("UserWallet - Lightning", () => {
     const sats = 50000
     const memo = "myMemo"
 
-    const invoice = await userWallet1.addInvoice({ value: sats, memo })
+    const lnInvoice = await addInvoiceForSelf({
+      walletId: userWallet1.user.id as WalletId,
+      amount: toSats(sats),
+      memo: memo,
+    })
+    if (lnInvoice instanceof Error) return lnInvoice
+    const { paymentRequest: invoice } = lnInvoice
+
     const hash = getHash(invoice)
 
     await pay({ lnd: lndOutside1, request: invoice })
@@ -64,7 +76,12 @@ describe("UserWallet - Lightning", () => {
   it("receives zero amount invoice", async () => {
     const sats = 1000
 
-    const invoice = await userWallet1.addInvoice({})
+    const lnInvoice = await addInvoiceNoAmountForSelf({
+      walletId: userWallet1.user.id as WalletId,
+    })
+    if (lnInvoice instanceof Error) return lnInvoice
+    const { paymentRequest: invoice } = lnInvoice
+
     const hash = getHash(invoice)
 
     await pay({ lnd: lndOutside1, request: invoice, tokens: sats })
@@ -91,7 +108,14 @@ describe("UserWallet - Lightning", () => {
     expect(sats).toBeLessThan(MEMO_SHARING_SATS_THRESHOLD)
 
     // process spam transaction
-    const invoice = await userWallet1.addInvoice({ value: sats, memo })
+    const lnInvoice = await addInvoiceForSelf({
+      walletId: userWallet1.user.id as WalletId,
+      amount: toSats(sats),
+      memo: memo,
+    })
+    if (lnInvoice instanceof Error) return lnInvoice
+    const { paymentRequest: invoice } = lnInvoice
+
     const hash = getHash(invoice)
     await pay({ lnd: lndOutside1, request: invoice })
     expect(await userWallet1.updatePendingInvoice({ hash })).toBeTruthy()
