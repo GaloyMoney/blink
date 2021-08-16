@@ -5,9 +5,6 @@ import { GT } from "@graphql/index"
 import { TransactionConnection } from "../abstract/transaction"
 import Wallet from "../abstract/wallet"
 
-// import Currency from "../scalars/currency"
-// import SignedAmount from "../scalars/signed-amount"
-
 const FiatWallet = new GT.Object({
   name: "FiatWallet",
   interfaces: () => [Wallet],
@@ -16,12 +13,6 @@ const FiatWallet = new GT.Object({
     id: {
       type: GT.NonNullID,
     },
-    // storageCurrency: {
-    //   type: GT.NonNull(Currency),
-    // },
-    // balance: {
-    //   type: GT.NonNull(SignedAmount),
-    // },
     transactions: {
       type: TransactionConnection,
       args: connectionArgs,
