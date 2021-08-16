@@ -22,12 +22,12 @@ interface IPaymentRequest {
 
 type AddInvoiceSelfArgs = {
   walletId: WalletId
-  memo: string
+  memo?: string
   amount?: Satoshis
 }
 
 type AddInvoiceRecipientArgs = {
   username: Username
-  memo: string
+  memo?: string
   amount?: Satoshis
 }

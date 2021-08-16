@@ -76,24 +76,22 @@ const baseAddInvoiceForWallet = async ({
   walletInvoiceCreateFn,
 }: {
   amount: Satoshis
-  memo: string
+  memo?: string
   walletInvoiceCreateFn: WalletInvoiceFactoryCreateMethod
 }): Promise<LnInvoice | ApplicationError> => {
   const walletInvoicesRepo = WalletInvoicesRepository()
   const lndService = MakeLndService()
 
-  const validatedMemo = memo ? memo : ""
   const registeredInvoice = await lndService.registerInvoice({
-    description: validatedMemo,
+    description: memo ? memo : "",
     satoshis: toSats(amount),
     expiresAt: invoiceExpirationForCurrency("BTC", new Date()),
   })
   if (registeredInvoice instanceof Error) return registeredInvoice
-  const { invoice, pubkey } = registeredInvoice
+  const { invoice } = registeredInvoice
 
   const walletInvoice = walletInvoiceCreateFn({
     registeredInvoice,
-    pubkey,
   })
   const persistedWalletInvoice = await walletInvoicesRepo.persist(walletInvoice)
   if (persistedWalletInvoice instanceof Error) return persistedWalletInvoice
