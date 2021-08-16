@@ -3,12 +3,11 @@ import { LedgerTransactionType } from "@domain/ledger"
 import { MEMO_SHARING_SATS_THRESHOLD } from "@config/app"
 import { SettlementMethod, PaymentInitiationMethod } from "./tx-methods"
 
-const addPendingIncoming = (
-  confirmedTransactions: WalletTransaction[],
+const filterPendingIncoming = (
   pendingTransactions: SubmittedTransaction[],
   addresses: OnChainAddress[],
   usdPerSat: UsdPerSat,
-): WalletTransactionHistoryWithPending => {
+): WalletTransaction[] => {
   const walletTransactions: WalletTransaction[] = []
   pendingTransactions.forEach(({ id, rawTx, createdAt }) => {
     rawTx.outs.forEach(({ sats, address }) => {
@@ -33,9 +32,7 @@ const addPendingIncoming = (
       }
     })
   })
-  return {
-    transactions: [...walletTransactions, ...confirmedTransactions],
-  }
+  return walletTransactions
 }
 
 export const fromLedger = (
@@ -134,7 +131,12 @@ export const fromLedger = (
       pendingIncoming: SubmittedTransaction[],
       addresses: OnChainAddress[],
       usdPerSat: UsdPerSat,
-    ) => addPendingIncoming(transactions, pendingIncoming, addresses, usdPerSat),
+    ): WalletTransactionHistoryWithPending => ({
+      transactions: [
+        ...filterPendingIncoming(pendingIncoming, addresses, usdPerSat),
+        ...transactions,
+      ],
+    }),
   }
 }
 
