@@ -30,7 +30,6 @@ const BTCWallet = new GT.Object({
         if (error instanceof Error) {
           throw error
         }
-        console.log("**********", transactions)
         return connectionFromArray(transactions, args)
       },
     },
