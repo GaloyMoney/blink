@@ -1,6 +1,6 @@
 import { MEMO_SHARING_SATS_THRESHOLD } from "@config/app"
 import { LedgerTransactionType } from "@domain/ledger"
-import { SettlementMethod } from "@domain/wallets"
+import { SettlementMethod, PaymentInitiationMethod } from "@domain/wallets"
 import {
   WalletTransactionHistory,
   translateDescription,
@@ -74,64 +74,68 @@ describe("WalletTransactionHistory.fromLedger", () => {
     const expected = [
       {
         id: "id" as LedgerTransactionId,
+        initiationVia: PaymentInitiationMethod.Lightning,
         settlementVia: SettlementMethod.Lightning,
         settlementAmount: toSats(100000),
         settlementFee: toSats(0),
         paymentHash: "paymentHash" as PaymentHash,
-        old: {
+        deprecated: {
           description: "SomeMemo",
           usd: 10,
           feeUsd: 0.1,
           type: LedgerTransactionType.Invoice,
         },
+        recipientId: null,
         pendingConfirmation: false,
         createdAt: timestamp,
       },
       {
         id: "id" as LedgerTransactionId,
+        initiationVia: PaymentInitiationMethod.Lightning,
         settlementVia: SettlementMethod.IntraLedger,
         recipientId: "username",
         settlementAmount: toSats(100000),
         settlementFee: toSats(0),
         paymentHash: "paymentHash" as PaymentHash,
-        old: {
+        deprecated: {
           description: "from username",
           usd: 10,
           feeUsd: 0.1,
           type: LedgerTransactionType.IntraLedger,
         },
-        addresses: null,
         pendingConfirmation: false,
         createdAt: timestamp,
       },
       {
         id: "id" as LedgerTransactionId,
+        initiationVia: PaymentInitiationMethod.OnChain,
         settlementVia: SettlementMethod.IntraLedger,
         settlementAmount: toSats(100000),
         settlementFee: toSats(0),
-        recipientId: null,
-        paymentHash: null,
-        old: {
+        deprecated: {
           description: "onchain_on_us",
           usd: 10,
           feeUsd: 0.1,
           type: LedgerTransactionType.OnchainIntraLedger,
         },
+        recipientId: null,
         addresses: ["address" as OnChainAddress],
         pendingConfirmation: false,
         createdAt: timestamp,
       },
       {
         id: "id" as LedgerTransactionId,
+        initiationVia: PaymentInitiationMethod.OnChain,
         settlementVia: SettlementMethod.OnChain,
         settlementAmount: toSats(100000),
         settlementFee: toSats(0),
-        old: {
+        deprecated: {
           description: "onchain_receipt",
           usd: 10,
           feeUsd: 0.1,
           type: LedgerTransactionType.OnchainReceipt,
         },
+        recipientId: null,
         pendingConfirmation: false,
         createdAt: timestamp,
         addresses: ["address" as OnChainAddress],
@@ -169,7 +173,7 @@ describe("translateDescription", () => {
     expect(result).toEqual("from username")
   })
 
-  it("defaults to type under spam threshold", () => {
+  it("defaults to type under spam threshdeprecated", () => {
     const result = translateDescription({
       memoFromPayer: "some memo",
       credit: 1,
@@ -224,30 +228,34 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
     const expected = [
       {
         id: "id" as TxId,
+        initiationVia: PaymentInitiationMethod.OnChain,
         settlementVia: "onchain",
         settlementAmount: toSats(25000),
         settlementFee: toSats(0),
-        old: {
+        deprecated: {
           description: "pending",
           usd: 25000,
           feeUsd: 0,
           type: LedgerTransactionType.OnchainReceipt,
         },
+        recipientId: null,
         pendingConfirmation: true,
         createdAt: timestamp,
         addresses: ["userAddress1" as OnChainAddress],
       },
       {
         id: "id" as TxId,
+        initiationVia: PaymentInitiationMethod.OnChain,
         settlementVia: "onchain",
         settlementAmount: toSats(50000),
         settlementFee: toSats(0),
-        old: {
+        deprecated: {
           description: "pending",
           usd: 50000,
           feeUsd: 0,
           type: LedgerTransactionType.OnchainReceipt,
         },
+        recipientId: null,
         pendingConfirmation: true,
         createdAt: timestamp,
         addresses: ["userAddress2" as OnChainAddress],
@@ -282,15 +290,17 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
     const expected = [
       {
         id: "id" as TxId,
+        initiationVia: PaymentInitiationMethod.OnChain,
         settlementVia: "onchain",
         settlementAmount: toSats(25000),
         settlementFee: toSats(0),
-        old: {
+        deprecated: {
           description: "pending",
           usd: NaN,
           feeUsd: 0,
           type: LedgerTransactionType.OnchainReceipt,
         },
+        recipientId: null,
         pendingConfirmation: true,
         createdAt: timestamp,
         addresses: ["userAddress1" as OnChainAddress],

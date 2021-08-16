@@ -1,7 +1,7 @@
 import { toSats } from "@domain/bitcoin"
 import { LedgerTransactionType } from "@domain/ledger"
 import { MEMO_SHARING_SATS_THRESHOLD } from "@config/app"
-import { SettlementMethod } from "./settlement-method"
+import { SettlementMethod, PaymentInitiationMethod } from "./tx-methods"
 
 const addPendingIncoming = (
   confirmedTransactions: WalletTransaction[],
@@ -15,13 +15,15 @@ const addPendingIncoming = (
       if (addresses.includes(address)) {
         walletTransactions.push({
           id,
+          initiationVia: PaymentInitiationMethod.OnChain,
           settlementVia: SettlementMethod.OnChain,
-          old: {
+          deprecated: {
             description: "pending",
             usd: usdPerSat * sats,
             feeUsd: 0,
             type: LedgerTransactionType.OnchainReceipt,
           },
+          recipientId: null,
           settlementFee: toSats(0),
           pendingConfirmation: true,
           createdAt: createdAt,
@@ -64,77 +66,66 @@ export const fromLedger = (
         credit,
         username,
       })
-      if (type === LedgerTransactionType.OnchainIntraLedger && addresses) {
-        return {
-          id,
-          settlementVia: SettlementMethod.IntraLedger,
-          old: {
-            description,
-            usd,
-            feeUsd,
-            type,
-          },
-          settlementAmount,
-          settlementFee: fee,
-          paymentHash: null,
-          addresses: addresses,
-          recipientId: null,
-          pendingConfirmation,
-          createdAt: timestamp,
-        }
-      }
-      if (type === LedgerTransactionType.IntraLedger) {
-        return {
-          id,
-          settlementVia: SettlementMethod.IntraLedger,
-          old: {
-            description,
-            usd,
-            feeUsd,
-            type,
-          },
-          settlementAmount,
-          settlementFee: fee,
-          paymentHash: (paymentHash as PaymentHash) || null,
-          recipientId: username || null,
-          addresses: null,
-          pendingConfirmation,
-          createdAt: timestamp,
-        }
-      }
       if (addresses && addresses.length > 0) {
         return {
           id,
-          settlementVia: SettlementMethod.OnChain,
+          initiationVia: PaymentInitiationMethod.OnChain,
+          settlementVia:
+            type === LedgerTransactionType.OnchainIntraLedger
+              ? SettlementMethod.IntraLedger
+              : SettlementMethod.OnChain,
           addresses,
-          old: {
+          deprecated: {
+            description,
+            usd,
+            feeUsd,
+            type,
+          },
+          recipientId: username || null,
+          settlementAmount,
+          settlementFee: toSats(fee || 0),
+          pendingConfirmation,
+          createdAt: timestamp,
+        }
+      }
+      if (paymentHash) {
+        return {
+          id,
+          initiationVia: PaymentInitiationMethod.Lightning,
+          settlementVia:
+            type === LedgerTransactionType.IntraLedger
+              ? SettlementMethod.IntraLedger
+              : SettlementMethod.Lightning,
+          deprecated: {
             description,
             usd,
             feeUsd,
             type,
           },
           settlementAmount,
-          settlementFee: fee,
+          settlementFee: toSats(fee || 0),
+          paymentHash: paymentHash as PaymentHash,
+          recipientId: username || null,
           pendingConfirmation,
           createdAt: timestamp,
         }
       }
       return {
         id,
-        settlementVia: SettlementMethod.Lightning,
-        old: {
+        initiationVia: PaymentInitiationMethod.Username,
+        settlementVia: SettlementMethod.IntraLedger,
+        deprecated: {
           description,
           usd,
           feeUsd,
           type,
         },
         settlementAmount,
-        settlementFee: fee,
-        paymentHash: paymentHash as PaymentHash,
-        username,
+        settlementFee: toSats(fee || 0),
+        recipientId: username || null,
         pendingConfirmation,
         createdAt: timestamp,
-      }
+      } as UsernameTransaction
     },
   )
   return {

@@ -3,7 +3,7 @@ import { getHash } from "@core/utils"
 import { checkIsBalanced, getUserWallet, lndOutside1, pay } from "test/helpers"
 import { MEMO_SHARING_SATS_THRESHOLD } from "@config/app"
 import * as Wallets from "@app/wallets"
-import { SettlementMethod } from "@domain/wallets"
+import { PaymentInitiationMethod } from "@domain/wallets"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
@@ -52,9 +52,10 @@ describe("UserWallet - Lightning", () => {
     }
     const noSpamTxn = txns.find(
       (txn) =>
-        txn.settlementVia === SettlementMethod.Lightning && txn.paymentHash === hash,
+        txn.initiationVia === PaymentInitiationMethod.Lightning &&
+        txn.paymentHash === hash,
     ) as WalletTransaction
-    expect(noSpamTxn.old.description).toBe(memo)
+    expect(noSpamTxn.deprecated.description).toBe(memo)
 
     const { BTC: finalBalance } = await userWallet1.getBalances()
     expect(finalBalance).toBe(initBalance1 + sats)
@@ -108,10 +109,11 @@ describe("UserWallet - Lightning", () => {
     }
     const spamTxn = txns.find(
       (txn) =>
-        txn.settlementVia === SettlementMethod.Lightning && txn.paymentHash === hash,
+        txn.initiationVia === PaymentInitiationMethod.Lightning &&
+        txn.paymentHash === hash,
     ) as WalletTransaction
     expect(dbTx.type).toBe("invoice")
-    expect(spamTxn.old.description).toBe(dbTx.type)
+    expect(spamTxn.deprecated.description).toBe(dbTx.type)
 
     // confirm expected final balance
     const { BTC: finalBalance } = await userWallet1.getBalances()

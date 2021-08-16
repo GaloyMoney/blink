@@ -76,7 +76,7 @@ describe("UserWallet - Lightning Pay", () => {
       throw txResult.error
     }
     const user1Txn = txResult.transactions
-    expect(user1Txn.filter(matchTx)[0].old.description).toBe(memo)
+    expect(user1Txn.filter(matchTx)[0].deprecated.description).toBe(memo)
     expect(user1Txn.filter(matchTx)[0].settlementVia).toBe("intraledger")
 
     txResult = await Wallets.getTransactionsForWalletId({
@@ -86,7 +86,7 @@ describe("UserWallet - Lightning Pay", () => {
       throw txResult.error
     }
     const user2Txn = txResult.transactions
-    expect(user2Txn.filter(matchTx)[0].old.description).toBe(memo)
+    expect(user2Txn.filter(matchTx)[0].deprecated.description).toBe(memo)
     expect(user2Txn.filter(matchTx)[0].settlementVia).toBe("intraledger")
   })
 
@@ -107,7 +107,7 @@ describe("UserWallet - Lightning Pay", () => {
       throw txResult.error
     }
     const user2Txn = txResult.transactions
-    expect(user2Txn.filter(matchTx)[0].old.description).toBe(memo)
+    expect(user2Txn.filter(matchTx)[0].deprecated.description).toBe(memo)
     expect(user2Txn.filter(matchTx)[0].settlementVia).toBe("intraledger")
 
     txResult = await Wallets.getTransactionsForWalletId({
@@ -117,7 +117,7 @@ describe("UserWallet - Lightning Pay", () => {
       throw txResult.error
     }
     const user1Txn = txResult.transactions
-    expect(user1Txn.filter(matchTx)[0].old.description).toBe(memoPayer)
+    expect(user1Txn.filter(matchTx)[0].deprecated.description).toBe(memoPayer)
     expect(user1Txn.filter(matchTx)[0].settlementVia).toBe("intraledger")
   })
 
@@ -149,10 +149,10 @@ describe("UserWallet - Lightning Pay", () => {
     expect(finalBalance1).toBe(initBalance1 - amountInvoice)
 
     expect(userTransaction0[0]).toHaveProperty("recipientId", userWallet1.user.username)
-    const oldFields0 = userTransaction0[0].old
+    const oldFields0 = userTransaction0[0].deprecated
     expect(oldFields0).toHaveProperty("description", `from ${userWallet1.user.username}`)
     expect(userTransaction1[0]).toHaveProperty("recipientId", userWallet0.user.username)
-    const oldFields1 = userTransaction1[0].old
+    const oldFields1 = userTransaction1[0].deprecated
     expect(oldFields1).toHaveProperty("description", `to ${userWallet0.user.username}`)
 
     userWallet0 = await getUserWallet(0)
@@ -223,18 +223,27 @@ describe("UserWallet - Lightning Pay", () => {
 
     // check below-threshold transaction for recipient was filtered
     expect(transaction0Below).toHaveProperty("recipientId", userWallet1.user.username)
-    expect(transaction0Below.old).toHaveProperty(
+    expect(transaction0Below.deprecated).toHaveProperty(
       "description",
       `from ${userWallet1.user.username}`,
     )
     expect(transaction1Below).toHaveProperty("recipientId", userWallet0.user.username)
-    expect(transaction1Below.old).toHaveProperty("description", memoSpamBelowThreshold)
+    expect(transaction1Below.deprecated).toHaveProperty(
+      "description",
+      memoSpamBelowThreshold,
+    )
 
     // check above-threshold transaction for recipient was NOT filtered
     expect(transaction0Above).toHaveProperty("recipientId", userWallet1.user.username)
-    expect(transaction0Above.old).toHaveProperty("description", memoSpamAboveThreshold)
+    expect(transaction0Above.deprecated).toHaveProperty(
+      "description",
+      memoSpamAboveThreshold,
+    )
     expect(transaction1Above).toHaveProperty("recipientId", userWallet0.user.username)
-    expect(transaction1Above.old).toHaveProperty("description", memoSpamAboveThreshold)
+    expect(transaction1Above.deprecated).toHaveProperty(
+      "description",
+      memoSpamAboveThreshold,
+    )
 
     // check contacts being added
     userWallet0 = await getUserWallet(0)

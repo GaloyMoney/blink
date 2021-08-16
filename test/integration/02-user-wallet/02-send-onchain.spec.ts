@@ -23,6 +23,7 @@ import {
 } from "test/helpers"
 import { ledger } from "@services/mongodb"
 import { TransactionRestrictedError } from "@core/error"
+import { PaymentInitiationMethod } from "@domain/wallets"
 import * as Wallets from "@app/wallets"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
@@ -143,10 +144,11 @@ describe("UserWallet - onChainPay", () => {
     txs = txResult.transactions
     const [txn] = txs.filter(
       (tx: WalletTransaction) =>
-        tx.settlementVia === "lightning" && tx.paymentHash === pendingTxn.hash,
+        tx.initiationVia === PaymentInitiationMethod.Lightning &&
+        tx.paymentHash === pendingTxn.hash,
     )
     expect(txn.settlementAmount).toBe(-amount - fee)
-    expect(txn.old.type).toBe("onchain_payment")
+    expect(txn.deprecated.type).toBe("onchain_payment")
 
     const { BTC: finalBalance } = await userWallet0.getBalances()
     expect(finalBalance).toBe(initialBalanceUser0 - amount - fee)
@@ -232,10 +234,12 @@ describe("UserWallet - onChainPay", () => {
     }
     txs = txResult.transactions
     const [txn] = txs.filter(
-      (tx) => tx.settlementVia === "lightning" && tx.paymentHash === pendingTxn.hash,
+      (tx) =>
+        tx.initiationVia === PaymentInitiationMethod.Lightning &&
+        tx.paymentHash === pendingTxn.hash,
     )
     expect(txn.settlementAmount).toBe(-initialBalanceUser11)
-    expect(txn.old.type).toBe("onchain_payment")
+    expect(txn.deprecated.type).toBe("onchain_payment")
 
     const { BTC: finalBalance } = await userWallet11.getBalances()
     expect(finalBalance).toBe(0)
@@ -257,7 +261,7 @@ describe("UserWallet - onChainPay", () => {
     if (!firstTxs) {
       throw Error("No transactions found")
     }
-    expect(firstTxs.old.description).toBe(memo)
+    expect(firstTxs.deprecated.description).toBe(memo)
     await mineBlockAndSync({ lnds: [lndonchain] })
   })
 
@@ -293,8 +297,8 @@ describe("UserWallet - onChainPay", () => {
     expect(paid).toBe(true)
 
     const matchTx = (tx: WalletTransaction) =>
-      tx.settlementVia === "intraledger" &&
-      tx.old.type === "onchain_on_us" &&
+      tx.initiationVia === "onchain" &&
+      tx.deprecated.type === "onchain_on_us" &&
       tx.addresses?.includes(address)
 
     const { transactions: txs, error } = await Wallets.getTransactionsForWalletId({
@@ -305,7 +309,7 @@ describe("UserWallet - onChainPay", () => {
     }
     const filteredTxs = txs.filter(matchTx)
     expect(filteredTxs.length).toBe(1)
-    expect(filteredTxs[0].old.description).toBe(memo)
+    expect(filteredTxs[0].deprecated.description).toBe(memo)
 
     // receiver should not know memo from sender
     const { transactions: txsUser3, error: error2 } =
@@ -317,7 +321,7 @@ describe("UserWallet - onChainPay", () => {
     }
     const filteredTxsUser3 = txsUser3.filter(matchTx)
     expect(filteredTxsUser3.length).toBe(1)
-    expect(filteredTxsUser3[0].old.description).not.toBe(memo)
+    expect(filteredTxsUser3[0].deprecated.description).not.toBe(memo)
   })
 
   it("sends all with an on us transaction", async () => {

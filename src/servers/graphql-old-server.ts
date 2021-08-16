@@ -1,5 +1,5 @@
 import * as Wallets from "@app/wallets"
-import { SettlementMethod } from "@domain/wallets"
+import { SettlementMethod, PaymentInitiationMethod } from "@domain/wallets"
 import {
   stringLength,
   ValidateDirectiveVisitor,
@@ -44,16 +44,16 @@ const translateWalletTx = (txs: WalletTransaction[]) => {
   return txs.map((tx: WalletTransaction) => ({
     id: tx.id,
     amount: tx.settlementAmount,
-    description: tx.old.description,
+    description: tx.deprecated.description,
     fee: tx.settlementFee,
     created_id: tx.createdAt,
-    usd: tx.old.usd,
+    usd: tx.deprecated.usd,
     sat: tx.settlementAmount,
     pending: tx.pendingConfirmation,
-    type: tx.old.type,
-    feeUsd: tx.old.feeUsd,
-    hash: tx.settlementVia !== SettlementMethod.OnChain ? tx.paymentHash : null,
-    addresses: tx.settlementVia !== SettlementMethod.Lightning ? tx.addresses : null,
+    type: tx.deprecated.type,
+    feeUsd: tx.deprecated.feeUsd,
+    hash: tx.initiationVia === PaymentInitiationMethod.Lightning ? tx.paymentHash : null,
+    addresses: tx.initiationVia === PaymentInitiationMethod.OnChain ? tx.addresses : null,
     username: tx.settlementVia === SettlementMethod.IntraLedger ? tx.recipientId : null,
   }))
 }

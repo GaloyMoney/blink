@@ -72,7 +72,7 @@ describe("onchainBlockEventhandler", () => {
     const finalAmount = amountAfterFeeDeduction({ amount, depositFeeRatio })
 
     expect(transactions.length).toBe(initTransactions.length + 1)
-    expect(lastTransaction.old.type).toBe("onchain_receipt")
+    expect(lastTransaction.deprecated.type).toBe("onchain_receipt")
     expect(lastTransaction.pendingConfirmation).toBe(false)
     expect(lastTransaction.settlementFee).toBe(Math.round(lastTransaction.settlementFee))
     expect(lastTransaction.settlementAmount).toBe(finalAmount)

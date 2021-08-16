@@ -1,9 +1,11 @@
+type PaymentInitiationMethod =
+  typeof import("./index").PaymentInitiationMethod[keyof typeof import("./index").PaymentInitiationMethod]
 type SettlementMethod =
   typeof import("./settlement-method").SettlementMethod[keyof typeof import("./settlement-method").SettlementMethod]
 
 // Fields only needed to support the old schema
 type UsdPerSat = number
-type OldTxFields = {
+type Deprecated = {
   readonly description: string
   readonly type: LedgerTransactionType
   readonly usd: number
@@ -12,34 +14,38 @@ type OldTxFields = {
 
 type BaseWalletTransaction = {
   readonly id: LedgerTransactionId | TxId
+  readonly initiationVia: PaymentInitiationMethod
   readonly settlementVia: SettlementMethod
   readonly settlementAmount: Satoshis
   readonly settlementFee: Satoshis
   readonly pendingConfirmation: boolean
   readonly createdAt: Date
 
-  readonly old: OldTxFields
+  readonly deprecated: Deprecated
 }
 
-type IntraLedgerTransaction = BaseWalletTransaction & {
+type UsernameTransaction = BaseWalletTransaction & {
+  readonly initiationVia: "username"
   readonly settlementVia: "intraledger"
-  readonly recipientId: Username | null
-  readonly paymentHash: PaymentHash | null
-  readonly addresses: OnChainAddress[] | null
+  readonly recipientId: Username
 }
 
 type WalletOnChainTransaction = BaseWalletTransaction & {
-  readonly settlementVia: "onchain"
+  readonly initiationVia: "onchain"
+  readonly settlementVia: "onchain" | "intraledger"
+  readonly recipientId: Username | null
   readonly addresses: OnChainAddress[]
 }
 
 type WalletLnTransaction = BaseWalletTransaction & {
-  readonly settlementVia: "lightning"
+  readonly initiationVia: "lightning"
+  readonly settlementVia: "lightning" | "intraledger"
+  readonly recipientId: Username | null
   readonly paymentHash: PaymentHash
 }
 
 type WalletTransaction =
-  | IntraLedgerTransaction
+  | UsernameTransaction
   | WalletOnChainTransaction
   | WalletLnTransaction
 
