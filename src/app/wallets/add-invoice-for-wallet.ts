@@ -1,7 +1,7 @@
 import { toSats } from "@domain/bitcoin"
 import { invoiceExpirationForCurrency } from "@domain/bitcoin/lightning"
-import { MakeWalletInvoiceFactory } from "@domain/wallet-invoices/wallet-invoice-factory"
-import { MakeLndService } from "@services/lnd"
+import { WalletInvoiceFactory } from "@domain/wallet-invoices/wallet-invoice-factory"
+import { LndService } from "@services/lnd"
 import { WalletsRepository, WalletInvoicesRepository } from "@services/mongoose"
 
 export const addInvoiceForSelf = async ({
@@ -12,7 +12,7 @@ export const addInvoiceForSelf = async ({
   if (!(amount && amount > 0))
     return new Error("Incorrect method used for no-amount invoice")
 
-  const walletInvoiceFactory = MakeWalletInvoiceFactory(walletId)
+  const walletInvoiceFactory = WalletInvoiceFactory(walletId)
   return baseAddInvoiceForWallet({
     amount,
     memo,
@@ -24,7 +24,7 @@ export const addInvoiceNoAmountForSelf = async ({
   walletId,
   memo,
 }: AddInvoiceSelfArgs): Promise<LnInvoice | ApplicationError> => {
-  const walletInvoiceFactory = MakeWalletInvoiceFactory(walletId)
+  const walletInvoiceFactory = WalletInvoiceFactory(walletId)
   return baseAddInvoiceForWallet({
     amount: toSats(0),
     memo,
@@ -40,11 +40,11 @@ export const addInvoiceForRecipient = async ({
   if (!(amount && amount > 0))
     return new Error("Incorrect method used for no-amount invoice")
 
-  const walletsRepo = MakeWalletsRepository()
+  const walletsRepo = WalletsRepository()
   const walletId = await walletsRepo.walletIdFromUsername(username)
   if (walletId instanceof Error) return walletId
 
-  const walletInvoiceFactory = MakeWalletInvoiceFactory(walletId)
+  const walletInvoiceFactory = WalletInvoiceFactory(walletId)
 
   return baseAddInvoiceForWallet({
     amount,
@@ -57,11 +57,11 @@ export const addInvoiceNoAmountForRecipient = async ({
   username,
   memo,
 }: AddInvoiceRecipientArgs): Promise<LnInvoice | ApplicationError> => {
-  const walletsRepo = MakeWalletsRepository()
+  const walletsRepo = WalletsRepository()
   const walletId = await walletsRepo.walletIdFromUsername(username)
   if (walletId instanceof Error) return walletId
 
-  const walletInvoiceFactory = MakeWalletInvoiceFactory(walletId)
+  const walletInvoiceFactory = WalletInvoiceFactory(walletId)
 
   return baseAddInvoiceForWallet({
     amount: toSats(0),
@@ -80,7 +80,7 @@ const baseAddInvoiceForWallet = async ({
   walletInvoiceCreateFn: WalletInvoiceFactoryCreateMethod
 }): Promise<LnInvoice | ApplicationError> => {
   const walletInvoicesRepo = WalletInvoicesRepository()
-  const lndService = MakeLndService()
+  const lndService = LndService()
 
   const registeredInvoice = await lndService.registerInvoice({
     description: memo ? memo : "",
