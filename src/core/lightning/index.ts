@@ -6,14 +6,11 @@ import {
   payViaPaymentDetails,
   payViaRoutes,
 } from "lightning"
-import { toSats } from "@domain/bitcoin"
 import lnService from "ln-service"
 import { verifyToken } from "node-2fa"
 
 import { TIMEOUT_PAYMENT } from "@services/lnd/auth"
-import { LndService } from "@services/lnd"
 import { InvoicesRepository } from "@services/mongoose"
-import { invoiceExpirationForCurrency } from "@domain/bitcoin/lightning"
 import {
   getActiveLnd,
   getInvoiceAttempt,
@@ -66,56 +63,6 @@ export const LightningMixin = (superclass) =>
         this.updatePendingPayments(lock),
         super.updatePending(lock),
       ])
-    }
-
-    async addInvoice({
-      value,
-      memo = "",
-      selfGenerated = true,
-    }: IAddInvoiceRequest): Promise<string> {
-      if (!!value && value < 0) {
-        throw new Error("value can't be negative")
-      }
-
-      const lndService = LndService()
-      if (lndService instanceof Error) throw lndService
-      const registerResult = await lndService.registerInvoice({
-        description: memo,
-        satoshis: toSats(value),
-        expiresAt: invoiceExpirationForCurrency("BTC", new Date()),
-      })
-
-      if (registerResult instanceof Error) {
-        throw registerResult
-      }
-      const { invoice, pubkey } = registerResult
-
-      const walletInvoice = {
-        paymentHash: invoice.paymentHash,
-        walletId: this.user.id,
-        selfGenerated,
-        pubkey,
-        paid: false,
-      } as WalletInvoice
-
-      const persistResult = await this.invoices.persist(walletInvoice)
-      if (persistResult instanceof Error) {
-        throw persistResult
-      }
-      this.logger.info(
-        {
-          pubkey,
-          result: persistResult,
-          value,
-          memo,
-          selfGenerated,
-          id: walletInvoice.paymentHash,
-          user: this.user,
-        },
-        "a new invoice has been added",
-      )
-
-      return invoice.paymentRequest
     }
 
     async getLightningFee(params: IFeeRequest): Promise<number> {
