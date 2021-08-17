@@ -1,4 +1,4 @@
-import addInvoiceForRecipient from "@core/lightning/add-invoice-for-recipient"
+import { addInvoiceNoAmountForRecipient } from "@app/wallets"
 import { GT } from "@graphql/index"
 
 import LnNoAmountInvoicePayload from "../payloads/ln-noamount-invoice"
@@ -18,20 +18,17 @@ const LnNoAmountInvoiceCreateOnBehalfOfRecipientMutation = {
   args: {
     input: { type: GT.NonNull(LnNoAmountInvoiceCreateOnBehalfOfRecipientInput) },
   },
-  resolve: async (_, args, { logger }) => {
+  resolve: async (_, args) => {
     const { recipient, memo } = args.input
 
     if (memo instanceof Error) {
       return { errors: [{ message: memo.message }] }
     }
 
-    const result = await addInvoiceForRecipient(
-      {
-        recipient,
-        memo,
-      },
-      { logger },
-    )
+    const result = await addInvoiceNoAmountForRecipient({
+      recipient,
+      memo,
+    })
 
     if (result instanceof Error) {
       return { errors: [{ message: result.message }] } // TODO: refine error
