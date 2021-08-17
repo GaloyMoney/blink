@@ -31,6 +31,7 @@ import { getWalletFromUsername } from "@core/wallet-factory"
 
 import { usernameExists } from "../domain/user"
 import { startApolloServer, isAuthenticated, isEditor } from "./graphql-server"
+import { addInvoiceForRecipient, addInvoiceForSelf } from "@app/wallets"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
 
@@ -227,12 +228,24 @@ const resolvers = {
         return true
       },
     }),
-    noauthAddInvoice: async (_, { username, value }, { logger }) => {
-      const wallet = await getWalletFromUsername({ username, logger })
-      return wallet.addInvoice({ selfGenerated: false, value })
+    noauthAddInvoice: async (_, { username, value }) => {
+      const lnInvoice = await addInvoiceForRecipient({
+        recipient: username,
+        amount: value,
+      })
+      if (lnInvoice instanceof Error) throw lnInvoice
+      return lnInvoice.paymentRequest
     },
     invoice: (_, __, { wallet }) => ({
-      addInvoice: async ({ value, memo }) => wallet.addInvoice({ value, memo }),
+      addInvoice: async ({ value, memo }) => {
+        const lnInvoice = await addInvoiceForSelf({
+          walletId: wallet.user.id,
+          amount: value,
+          memo,
+        })
+        if (lnInvoice instanceof Error) throw lnInvoice
+        return lnInvoice.paymentRequest
+      },
       // FIXME: move to query
       updatePendingInvoice: async ({ hash }) => wallet.updatePendingInvoice({ hash }),
       payInvoice: async ({ invoice, amount, memo }) =>
