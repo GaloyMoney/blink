@@ -1,9 +1,9 @@
-import { MakeWalletInvoiceFactory } from "@domain/wallet-invoices/wallet-invoice-factory"
+import { WalletInvoiceFactory } from "@domain/wallet-invoices/wallet-invoice-factory"
 
 let walletInvoiceFactory: IWalletInvoiceFactory
 
 beforeAll(async () => {
-  walletInvoiceFactory = MakeWalletInvoiceFactory("id" as WalletId)
+  walletInvoiceFactory = WalletInvoiceFactory("id" as WalletId)
 })
 
 describe("wallet invoice factory methods", () => {
