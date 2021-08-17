@@ -1,4 +1,4 @@
-export const WalletInvoiceFactory = (walletId: WalletId): IWalletInvoiceFactory => {
+export const WalletInvoiceFactory = (walletId: WalletId): WalletInvoiceFactoryType => {
   const create = ({
     registeredInvoice,
   }: {
