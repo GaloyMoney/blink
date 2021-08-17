@@ -2,7 +2,11 @@ import { toSats } from "@domain/bitcoin"
 import { invoiceExpirationForCurrency } from "@domain/bitcoin/lightning"
 import { WalletInvoiceFactory } from "@domain/wallet-invoices/wallet-invoice-factory"
 import { LndService } from "@services/lnd"
-import { WalletsRepository, WalletInvoicesRepository } from "@services/mongoose"
+import {
+  WalletInvoicesRepository,
+  UsersRepository,
+  AccountsRepository,
+} from "@services/mongoose"
 
 export const addInvoiceForSelf = async ({
   walletId,
@@ -34,9 +38,16 @@ export const addInvoiceForRecipient = async ({
   amount,
   memo = "",
 }: AddInvoiceRecipientArgs): Promise<LnInvoice | ApplicationError> => {
-  const walletsRepo = WalletsRepository()
-  const walletId = await walletsRepo.walletIdFromUsername(username)
-  if (walletId instanceof Error) return walletId
+  const usersRepo = UsersRepository()
+  const accountsRepo = AccountsRepository()
+
+  const user = await usersRepo.findByUsername(username)
+  if (user instanceof Error) return user
+
+  const defaultAccount = await accountsRepo.findById(user.defaultAccountId)
+  if (defaultAccount instanceof Error) return defaultAccount
+
+  const walletId = defaultAccount.walletIds[0]
 
   const walletInvoiceFactory = WalletInvoiceFactory(walletId)
 
@@ -51,9 +62,16 @@ export const addInvoiceNoAmountForRecipient = async ({
   username,
   memo = "",
 }: AddInvoiceNoAmountRecipientArgs): Promise<LnInvoice | ApplicationError> => {
-  const walletsRepo = WalletsRepository()
-  const walletId = await walletsRepo.walletIdFromUsername(username)
-  if (walletId instanceof Error) return walletId
+  const usersRepo = UsersRepository()
+  const accountsRepo = AccountsRepository()
+
+  const user = await usersRepo.findByUsername(username)
+  if (user instanceof Error) return user
+
+  const defaultAccount = await accountsRepo.findById(user.defaultAccountId)
+  if (defaultAccount instanceof Error) return defaultAccount
+
+  const walletId = defaultAccount.walletIds[0]
 
   const walletInvoiceFactory = WalletInvoiceFactory(walletId)
 

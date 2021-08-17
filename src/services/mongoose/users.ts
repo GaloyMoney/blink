@@ -27,7 +27,28 @@ export const UsersRepository = (): IUsersRepository => {
     }
   }
 
+  const findByUsername = async (username: Username): Promise<User | RepositoryError> => {
+    try {
+      const result = await User.findOne({ username })
+      if (!result) {
+        return new CouldNotFindError()
+      }
+
+      return {
+        id: result.id as UserId,
+        username,
+        phone: result.phone as PhoneNumber,
+        language: result.language || UserLanguage.EN_US,
+        defaultAccountId: result.id as AccountId,
+        createdAt: result.created_at,
+      }
+    } catch (err) {
+      return new UnknownRepositoryError(err)
+    }
+  }
+
   return {
     findById,
+    findByUsername,
   }
 }
