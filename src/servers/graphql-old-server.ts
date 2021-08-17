@@ -11,6 +11,7 @@ import { and, shield } from "graphql-shield"
 import { makeExecutableSchema } from "graphql-tools"
 import moment from "moment"
 import path from "path"
+import { takeRight } from "lodash"
 
 import { levels, onboardingEarn, getTransactionLimits, getFeeRates } from "@config/app"
 
@@ -98,16 +99,18 @@ const resolvers = {
       }
     },
     prices: async (_, { length = 365 * 24 * 10 }, { logger }) => {
-      const hourly = await getHourlyPrice({ logger })
+      const prices = await getHourlyPrice({ logger })
+      const currentPrice = await getCurrentPrice()
 
       // adding the current price as the lat index array
       // use by the mobile application to convert prices
-      hourly.push({
+      prices.push({
         id: moment().unix(),
-        o: getCurrentPrice(),
+        o: currentPrice,
       })
 
-      return hourly.splice(-length)
+      // return the last N (lenght) elements of the price array
+      return takeRight(prices, length)
     },
     earnList: (_, __, { user }) => {
       const response: Record<string, Primitive>[] = []
