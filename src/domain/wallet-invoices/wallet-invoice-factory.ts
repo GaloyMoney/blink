@@ -1,27 +1,27 @@
 export const WalletInvoiceFactory = (walletId: WalletId): IWalletInvoiceFactory => {
-  const create = ({ registeredInvoice }): WalletInvoice => {
-    return _baseCreate({ registeredInvoice, selfGenerated: true })
-  }
+  const create = ({
+    registeredInvoice,
+  }: {
+    registeredInvoice: RegisteredInvoice
+  }): WalletInvoice => ({
+    paymentHash: registeredInvoice.invoice.paymentHash,
+    walletId,
+    selfGenerated: true,
+    pubkey: registeredInvoice.pubkey,
+    paid: false,
+  })
 
-  const createForRecipient = ({ registeredInvoice }): WalletInvoice => {
-    return _baseCreate({
-      registeredInvoice,
-      selfGenerated: false,
-    })
-  }
-
-  const _baseCreate = ({
-    registeredInvoice: { invoice, pubkey },
-    selfGenerated,
-  }): WalletInvoice => {
-    return {
-      paymentHash: invoice.paymentHash,
-      walletId,
-      selfGenerated,
-      pubkey,
-      paid: false,
-    }
-  }
+  const createForRecipient = ({
+    registeredInvoice,
+  }: {
+    registeredInvoice: RegisteredInvoice
+  }): WalletInvoice => ({
+    paymentHash: registeredInvoice.invoice.paymentHash,
+    walletId,
+    selfGenerated: false,
+    pubkey: registeredInvoice.pubkey,
+    paid: false,
+  })
 
   return {
     create,
