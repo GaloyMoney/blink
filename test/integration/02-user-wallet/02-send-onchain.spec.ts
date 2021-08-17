@@ -23,6 +23,7 @@ import {
   enable2FA,
   generateTokenHelper,
   RANDOM_ADDRESS,
+  mineBlockAndSyncAll,
 } from "test/helpers"
 import { ledger } from "@services/mongodb"
 import { PaymentInitiationMethod } from "@domain/wallets"
@@ -437,19 +438,38 @@ describe("UserWallet - onChainPay", () => {
       ).rejects.toThrowError(TwoFactorError)
     })
 
-    it(`Makes large payment with a 2fa code`, async () => {
+    it("sends a successful large payment with a 2fa code", async () => {
       enable2FA({ wallet: userWallet0 })
 
+      const { BTC: initialBalance } = await userWallet0.getBalances()
+      const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
       const twoFactorToken = generateTokenHelper({
         secret: userWallet0.user.twoFactor.secret,
       })
-
-      const paymentResult = await userWallet0.onChainPay({
-        address: RANDOM_ADDRESS,
-        amount: userWallet0.user.twoFactor.threshold + 1,
+      const amount = userWallet0.user.twoFactor.threshold + 1
+      const paid = await userWallet0.onChainPay({
+        address,
+        amount,
         twoFactorToken,
       })
-      expect(paymentResult).toBe(true)
+
+      expect(paid).toBe(true)
+
+      await mineBlockAndSyncAll()
+      await userWallet0.updateOnchainReceipt()
+
+      const { result: txs, error } = await Wallets.getTransactionsForWalletId({
+        walletId: userWallet0.user.id,
+      })
+
+      if (error instanceof Error || txs === null) {
+        throw error
+      }
+
+      // settlementAmount is negative
+      const expectedBalance = initialBalance + txs[0].settlementAmount
+      const { BTC: finalBalance } = await userWallet0.getBalances()
+      expect(expectedBalance).toBe(finalBalance)
     })
   })
 })
