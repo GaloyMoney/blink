@@ -1,4 +1,8 @@
-import { CouldNotFindError, UnknownRepositoryError } from "@domain/errors"
+import {
+  CouldNotFindError,
+  RepositoryError,
+  UnknownRepositoryError,
+} from "@domain/errors"
 import { InvoiceUser } from "./schema"
 
 export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
@@ -49,5 +53,26 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     }
   }
 
-  return { persist, findByPaymentHash }
+  async function* findWalletsWithPendingInvoices():
+    | AsyncGenerator<WalletId>
+    | RepositoryError {
+    let pending
+    try {
+      // select distinct user ids from pending invoices
+      pending = InvoiceUser.aggregate([
+        { $match: { paid: false } },
+        { $group: { _id: "$uid" } },
+      ])
+        .cursor({ batchSize: 100 })
+        .exec()
+    } catch (error) {
+      return new RepositoryError(error)
+    }
+
+    for await (const { _id } of pending) {
+      yield _id as WalletId
+    }
+  }
+
+  return { persist, findByPaymentHash, findWalletsWithPendingInvoices }
 }

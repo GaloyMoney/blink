@@ -1,27 +1,35 @@
 import { getBalance as getBitcoindBalance } from "@services/bitcoind"
 import { lndsBalances } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
-import { InvoiceUser, User } from "@services/mongoose/schema"
 import { ledger } from "@services/mongodb"
 
 import { WalletFactory } from "./wallet-factory"
 import { runInParallel } from "./utils"
+import { WalletInvoicesRepository } from "@services/mongoose/wallet-invoices"
+import { RepositoryError } from "@domain/errors"
+import { User } from "@services/mongoose/schema"
 
 import * as Wallets from "@app/wallets"
 
 const logger = baseLogger.child({ module: "balanceSheet" })
 
-export const updatePendingLightningTransactions = async () => {
-  // select distinct user ids from pending invoices
-  const usersWithPendingInvoices = InvoiceUser.aggregate([
-    { $match: { paid: false } },
-    { $group: { _id: "$uid" } },
-  ])
-    .cursor({ batchSize: 100 })
-    .exec()
+const isError = (obj): boolean => obj instanceof RepositoryError
+
+const updatePendingLightningInvoices = async () => {
+  const walletInvoicesRepo = WalletInvoicesRepository()
+
+  const walletsWithPendingInvoices = walletInvoicesRepo.findWalletsWithPendingInvoices()
+
+  if (isError(walletsWithPendingInvoices)) {
+    logger.error(
+      { error: walletsWithPendingInvoices },
+      "finish updating pending invoices with error",
+    )
+    return
+  }
 
   await runInParallel({
-    iterator: usersWithPendingInvoices,
+    iterator: walletsWithPendingInvoices,
     logger,
     processor: async ({ _id }, index) => {
       logger.trace("updating pending invoices for user %s in worker %d", _id, index)
@@ -32,7 +40,9 @@ export const updatePendingLightningTransactions = async () => {
   })
 
   logger.info("finish updating pending invoices")
+}
 
+const updatePendingLightningPayments = async () => {
   const accountsWithPendingPayments = ledger.getAccountsWithPendingTransactions({
     type: "payment",
   })
@@ -53,6 +63,11 @@ export const updatePendingLightningTransactions = async () => {
   })
 
   logger.info("finish updating pending payments")
+}
+
+export const updatePendingLightningTransactions = async () => {
+  await updatePendingLightningInvoices()
+  await updatePendingLightningPayments()
 }
 
 export const updateUsersPendingPayment = async ({
