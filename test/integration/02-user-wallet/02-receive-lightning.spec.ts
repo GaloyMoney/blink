@@ -37,7 +37,7 @@ describe("UserWallet - Lightning", () => {
     const lnInvoice = await addInvoiceForSelf({
       walletId: userWallet1.user.id as WalletId,
       amount: toSats(sats),
-      memo: memo,
+      memo,
     })
     if (lnInvoice instanceof Error) return lnInvoice
     const { paymentRequest: invoice } = lnInvoice
@@ -111,7 +111,7 @@ describe("UserWallet - Lightning", () => {
     const lnInvoice = await addInvoiceForSelf({
       walletId: userWallet1.user.id as WalletId,
       amount: toSats(sats),
-      memo: memo,
+      memo,
     })
     if (lnInvoice instanceof Error) return lnInvoice
     const { paymentRequest: invoice } = lnInvoice

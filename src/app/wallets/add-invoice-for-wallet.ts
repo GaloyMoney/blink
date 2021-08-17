@@ -6,12 +6,9 @@ import { WalletsRepository, WalletInvoicesRepository } from "@services/mongoose"
 
 export const addInvoiceForSelf = async ({
   walletId,
-  memo,
   amount,
+  memo = "",
 }: AddInvoiceSelfArgs): Promise<LnInvoice | ApplicationError> => {
-  if (!(amount && amount > 0))
-    return new Error("Incorrect method used for no-amount invoice")
-
   const walletInvoiceFactory = WalletInvoiceFactory(walletId)
   return baseAddInvoiceForWallet({
     amount,
@@ -22,8 +19,8 @@ export const addInvoiceForSelf = async ({
 
 export const addInvoiceNoAmountForSelf = async ({
   walletId,
-  memo,
-}: AddInvoiceSelfArgs): Promise<LnInvoice | ApplicationError> => {
+  memo = "",
+}: AddInvoiceNoAmountSelfArgs): Promise<LnInvoice | ApplicationError> => {
   const walletInvoiceFactory = WalletInvoiceFactory(walletId)
   return baseAddInvoiceForWallet({
     amount: toSats(0),
@@ -34,12 +31,9 @@ export const addInvoiceNoAmountForSelf = async ({
 
 export const addInvoiceForRecipient = async ({
   username,
-  memo,
   amount,
+  memo = "",
 }: AddInvoiceRecipientArgs): Promise<LnInvoice | ApplicationError> => {
-  if (!(amount && amount > 0))
-    return new Error("Incorrect method used for no-amount invoice")
-
   const walletsRepo = WalletsRepository()
   const walletId = await walletsRepo.walletIdFromUsername(username)
   if (walletId instanceof Error) return walletId
@@ -55,8 +49,8 @@ export const addInvoiceForRecipient = async ({
 
 export const addInvoiceNoAmountForRecipient = async ({
   username,
-  memo,
-}: AddInvoiceRecipientArgs): Promise<LnInvoice | ApplicationError> => {
+  memo = "",
+}: AddInvoiceNoAmountRecipientArgs): Promise<LnInvoice | ApplicationError> => {
   const walletsRepo = WalletsRepository()
   const walletId = await walletsRepo.walletIdFromUsername(username)
   if (walletId instanceof Error) return walletId
@@ -74,16 +68,12 @@ const baseAddInvoiceForWallet = async ({
   amount,
   memo,
   walletInvoiceCreateFn,
-}: {
-  amount: Satoshis
-  memo?: string
-  walletInvoiceCreateFn: WalletInvoiceFactoryCreateMethod
-}): Promise<LnInvoice | ApplicationError> => {
+}: BaseAddInvoiceArgs): Promise<LnInvoice | ApplicationError> => {
   const walletInvoicesRepo = WalletInvoicesRepository()
   const lndService = LndService()
 
   const registeredInvoice = await lndService.registerInvoice({
-    description: memo ? memo : "",
+    description: memo,
     satoshis: toSats(amount),
     expiresAt: invoiceExpirationForCurrency("BTC", new Date()),
   })
