@@ -8,7 +8,10 @@ type WalletInvoice = {
 
 interface IWalletInvoicesRepository {
   persist: (invoice: WalletInvoice) => Promise<WalletInvoice | RepositoryError>
+
   findByPaymentHash: (
     paymentHash: PaymentHash,
   ) => Promise<WalletInvoice | RepositoryError>
+
+  findWalletsWithPendingInvoices: () => AsyncGenerator<WalletId> | RepositoryError
 }
