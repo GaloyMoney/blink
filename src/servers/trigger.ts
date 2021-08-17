@@ -14,7 +14,7 @@ import { activateLndHealthCheck, lndStatusEvent } from "@services/lnd/health"
 import { onChannelUpdated } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { ledger, setupMongoConnection } from "@services/mongodb"
-import { InvoiceUser, User } from "@services/mongoose/schema"
+import { User } from "@services/mongoose/schema"
 
 import { transactionNotification } from "@services/notifications/payment"
 import { Price } from "@core/price-impl"
@@ -23,10 +23,14 @@ import { getOnChainTransactions } from "@core/on-chain"
 import { runInParallel } from "@core/utils"
 import { ONCHAIN_MIN_CONFIRMATIONS } from "@config/app"
 import * as Wallets from "@app/wallets"
+import { WalletInvoicesRepository } from "@services/mongoose"
+import { RepositoryError } from "@domain/errors"
 
 const logger = baseLogger.child({ module: "trigger" })
 
 const txsReceived = new Set()
+
+const isRepoError = (obj): boolean => obj instanceof RepositoryError
 
 export const uploadBackup = async ({ backup, pubkey }) => {
   logger.debug({ backup }, "updating scb on dbx")
@@ -182,24 +186,25 @@ export const onInvoiceUpdate = async (invoice) => {
     return
   }
 
-  const invoiceUser = await InvoiceUser.findOne({ _id: invoice.id })
-  if (invoiceUser) {
-    const uid = invoiceUser.uid
-    const hash = invoice.id
+  const walletInvoicesRepo = WalletInvoicesRepository()
+  const invoiceWallet = await walletInvoicesRepo.findByPaymentHash(invoice.id)
 
-    const user = await User.findOne({ _id: uid })
-    const wallet = await WalletFactory({ user, logger })
-    await wallet.updatePendingInvoice({ hash, pubkey: invoiceUser.pubkey })
-    await transactionNotification({
-      type: "paid-invoice",
-      amount: invoice.received,
-      hash,
-      user,
-      logger,
-    })
-  } else {
+  if (isRepoError(invoiceWallet)) {
     logger.fatal({ invoice }, "we received an invoice but had no user attached to it")
+    return
   }
+
+  const { walletId, paymentHash: hash, pubkey } = invoice
+  const user = await User.findOne({ _id: walletId })
+  const wallet = await WalletFactory({ user, logger })
+  await wallet.updatePendingInvoice({ hash, pubkey })
+  await transactionNotification({
+    type: "paid-invoice",
+    amount: invoice.received,
+    hash,
+    user,
+    logger,
+  })
 }
 
 const updatePriceForChart = () => {
