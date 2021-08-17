@@ -1,4 +1,4 @@
-interface IWalletInvoiceFactory {
+type WalletInvoiceFactoryType = {
   create({ registeredInvoice: RegisteredInvoice }): WalletInvoice
   createForRecipient({ registeredInvoice: RegisteredInvoice }): WalletInvoice
 }
