@@ -7,7 +7,7 @@ import { DbError, TwoFactorError } from "./error"
 import { Balances } from "./interface"
 import { CSVAccountExport } from "./csv-account-export"
 import { sendNotification } from "./notifications/notification"
-import { getGaloyInstanceName, MEMO_SHARING_SATS_THRESHOLD } from "@config/app"
+import { getGaloyInstanceName } from "@config/app"
 import { generateSecret, verifyToken } from "node-2fa"
 
 export abstract class UserWallet {

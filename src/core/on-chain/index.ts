@@ -9,7 +9,6 @@ import {
   sendToChainAddress,
 } from "lightning"
 import _ from "lodash"
-import moment from "moment"
 import { verifyToken } from "node-2fa"
 
 import { bitcoindDefaultClient } from "@services/bitcoind"
