@@ -2,6 +2,8 @@ import { ledger } from "@services/mongodb"
 import { getHash } from "@core/utils"
 import { checkIsBalanced, getUserWallet, lndOutside1, pay } from "test/helpers"
 import { MEMO_SHARING_SATS_THRESHOLD } from "@config/app"
+import * as Wallets from "@app/wallets"
+import { PaymentInitiationMethod } from "@domain/wallets"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
@@ -42,9 +44,18 @@ describe("UserWallet - Lightning", () => {
     expect(dbTx.pending).toBe(false)
 
     // check that memo is not filtered by spam filter
-    const txns = await userWallet1.getTransactions()
-    const noSpamTxn = txns.find((txn) => txn.hash === hash)
-    expect(noSpamTxn.description).toBe(memo)
+    const { result: txns, error } = await Wallets.getTransactionsForWalletId({
+      walletId: userWallet1.user.id,
+    })
+    if (error instanceof Error || txns === null) {
+      throw error
+    }
+    const noSpamTxn = txns.find(
+      (txn) =>
+        txn.initiationVia === PaymentInitiationMethod.Lightning &&
+        txn.paymentHash === hash,
+    ) as WalletTransaction
+    expect(noSpamTxn.deprecated.description).toBe(memo)
 
     const { BTC: finalBalance } = await userWallet1.getBalances()
     expect(finalBalance).toBe(initBalance1 + sats)
@@ -90,10 +101,19 @@ describe("UserWallet - Lightning", () => {
     expect(dbTx.memo).toBe(memo)
 
     // check that spam memo is filtered from transaction description
-    const txns = await userWallet1.getTransactions()
-    const spamTxn = txns.find((txn) => txn.hash === hash)
+    const { result: txns, error } = await Wallets.getTransactionsForWalletId({
+      walletId: userWallet1.user.id,
+    })
+    if (error instanceof Error || txns === null) {
+      throw error
+    }
+    const spamTxn = txns.find(
+      (txn) =>
+        txn.initiationVia === PaymentInitiationMethod.Lightning &&
+        txn.paymentHash === hash,
+    ) as WalletTransaction
     expect(dbTx.type).toBe("invoice")
-    expect(spamTxn.description).toBe(dbTx.type)
+    expect(spamTxn.deprecated.description).toBe(dbTx.type)
 
     // confirm expected final balance
     const { BTC: finalBalance } = await userWallet1.getBalances()

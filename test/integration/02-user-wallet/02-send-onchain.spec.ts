@@ -23,6 +23,8 @@ import {
 } from "test/helpers"
 import { ledger } from "@services/mongodb"
 import { TransactionRestrictedError } from "@core/error"
+import { PaymentInitiationMethod } from "@domain/wallets"
+import * as Wallets from "@app/wallets"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
@@ -94,10 +96,16 @@ describe("UserWallet - onChainPay", () => {
 
     await sleep(1000)
 
-    const txs = await userWallet0.getTransactions()
-    const pendingTxs = filter(txs, { pending: true })
+    let txResult = await Wallets.getTransactionsForWalletId({
+      walletId: userWallet0.user.id,
+    })
+    if (txResult.error instanceof Error || txResult.result === null) {
+      throw txResult.error
+    }
+    let txs = txResult.result
+    const pendingTxs = filter(txs, { pendingConfirmation: true })
     expect(pendingTxs.length).toBe(1)
-    expect(pendingTxs[0].amount).toBe(-amount - pendingTxs[0].fee)
+    expect(pendingTxs[0].settlementAmount).toBe(-amount - pendingTxs[0].settlementFee)
 
     // const subSpend = subscribeToChainSpend({ lnd: lndonchain, bech32_address: address, min_height: 1 })
 
@@ -127,11 +135,20 @@ describe("UserWallet - onChainPay", () => {
     expect(fee).toBe(feeRates.withdrawFeeFixed + 7050)
     expect(feeUsd).toBeGreaterThan(0)
 
-    const [txn] = (await userWallet0.getTransactions()).filter(
-      (tx) => tx.hash === pendingTxn.hash,
+    txResult = await Wallets.getTransactionsForWalletId({
+      walletId: userWallet0.user.id,
+    })
+    if (txResult.error instanceof Error || txResult.result === null) {
+      throw txResult.error
+    }
+    txs = txResult.result
+    const [txn] = txs.filter(
+      (tx: WalletTransaction) =>
+        tx.initiationVia === PaymentInitiationMethod.Lightning &&
+        tx.paymentHash === pendingTxn.hash,
     )
-    expect(txn.amount).toBe(-amount - fee)
-    expect(txn.type).toBe("onchain_payment")
+    expect(txn.settlementAmount).toBe(-amount - fee)
+    expect(txn.deprecated.type).toBe("onchain_payment")
 
     const { BTC: finalBalance } = await userWallet0.getBalances()
     expect(finalBalance).toBe(initialBalanceUser0 - amount - fee)
@@ -170,10 +187,16 @@ describe("UserWallet - onChainPay", () => {
 
     await sleep(1000)
 
-    const txs = await userWallet11.getTransactions()
-    const pendingTxs = filter(txs, { pending: true })
+    let txResult = await Wallets.getTransactionsForWalletId({
+      walletId: userWallet11.user.id,
+    })
+    if (txResult.error instanceof Error || txResult.result === null) {
+      throw txResult
+    }
+    let txs = txResult.result
+    const pendingTxs = filter(txs, { pendingConfirmation: true })
     expect(pendingTxs.length).toBe(1)
-    expect(pendingTxs[0].amount).toBe(-initialBalanceUser11)
+    expect(pendingTxs[0].settlementAmount).toBe(-initialBalanceUser11)
 
     // const subSpend = subscribeToChainSpend({ lnd: lndonchain, bech32_address: address, min_height: 1 })
 
@@ -203,11 +226,20 @@ describe("UserWallet - onChainPay", () => {
     expect(fee).toBe(feeRates.withdrawFeeFixed + 7050) // 7050?
     expect(feeUsd).toBeGreaterThan(0)
 
-    const [txn] = (await userWallet11.getTransactions()).filter(
-      (tx) => tx.hash === pendingTxn.hash,
+    txResult = await Wallets.getTransactionsForWalletId({
+      walletId: userWallet11.user.id,
+    })
+    if (txResult.error instanceof Error || txResult.result === null) {
+      throw txResult.error
+    }
+    txs = txResult.result
+    const [txn] = txs.filter(
+      (tx) =>
+        tx.initiationVia === PaymentInitiationMethod.Lightning &&
+        tx.paymentHash === pendingTxn.hash,
     )
-    expect(txn.amount).toBe(-initialBalanceUser11)
-    expect(txn.type).toBe("onchain_payment")
+    expect(txn.settlementAmount).toBe(-initialBalanceUser11)
+    expect(txn.deprecated.type).toBe("onchain_payment")
 
     const { BTC: finalBalance } = await userWallet11.getBalances()
     expect(finalBalance).toBe(0)
@@ -219,12 +251,17 @@ describe("UserWallet - onChainPay", () => {
     const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
     const paymentResult = await userWallet0.onChainPay({ address, amount, memo })
     expect(paymentResult).toBe(true)
-    const txs: Record<string, string>[] = await userWallet0.getTransactions()
+    const { result: txs, error } = await Wallets.getTransactionsForWalletId({
+      walletId: userWallet0.user.id,
+    })
+    if (error instanceof Error || txs === null) {
+      throw error
+    }
     const firstTxs = first(txs)
     if (!firstTxs) {
       throw Error("No transactions found")
     }
-    expect(firstTxs.description).toBe(memo)
+    expect(firstTxs.deprecated.description).toBe(memo)
     await mineBlockAndSync({ lnds: [lndonchain] })
   })
 
@@ -259,18 +296,31 @@ describe("UserWallet - onChainPay", () => {
 
     expect(paid).toBe(true)
 
-    const matchTx = (tx) => tx.type === "onchain_on_us" && tx.addresses.includes(address)
+    const matchTx = (tx: WalletTransaction) =>
+      tx.initiationVia === "onchain" &&
+      tx.deprecated.type === "onchain_on_us" &&
+      tx.addresses?.includes(address)
 
-    const txs: Record<string, string>[] = await userWallet0.getTransactions()
+    const { result: txs, error } = await Wallets.getTransactionsForWalletId({
+      walletId: userWallet0.user.id,
+    })
+    if (error instanceof Error || txs === null) {
+      throw error
+    }
     const filteredTxs = txs.filter(matchTx)
     expect(filteredTxs.length).toBe(1)
-    expect(filteredTxs[0].description).toBe(memo)
+    expect(filteredTxs[0].deprecated.description).toBe(memo)
 
     // receiver should not know memo from sender
-    const txsUser3 = await userWallet3.getTransactions()
+    const { result: txsUser3, error: error2 } = await Wallets.getTransactionsForWalletId({
+      walletId: userWallet3.user.id as WalletId,
+    })
+    if (error2 instanceof Error || txsUser3 === null) {
+      throw error2
+    }
     const filteredTxsUser3 = txsUser3.filter(matchTx)
     expect(filteredTxsUser3.length).toBe(1)
-    expect(filteredTxsUser3[0].description).not.toBe(memo)
+    expect(filteredTxsUser3[0].deprecated.description).not.toBe(memo)
   })
 
   it("sends all with an on us transaction", async () => {

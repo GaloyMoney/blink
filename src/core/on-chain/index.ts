@@ -9,7 +9,6 @@ import {
   sendToChainAddress,
 } from "lightning"
 import _ from "lodash"
-import moment from "moment"
 
 import { bitcoindDefaultClient } from "@services/bitcoind"
 import { getActiveOnchainLnd, getLndFromPubkey } from "@services/lnd/utils"
@@ -482,82 +481,6 @@ export const OnChainMixin = (superclass) =>
       }
 
       return user_matched_txs
-    }
-
-    async getTransactions() {
-      const confirmed: ITransaction[] = await super.getTransactions()
-
-      //  ({
-      //   created_at: moment(item.timestamp).unix(),
-      //   amount: item.credit - item.debit,
-      //   sat: item.sat,
-      //   usd: item.usd,
-      //   description: item.memoPayer || item.memo || item.type, // TODO remove `|| item.type` once users have upgraded
-      //   type: item.type,
-      //   hash: item.hash,
-      //   fee: item.fee,
-      //   feeUsd: item.feeUsd,
-      //   // destination: TODO
-      //   pending: item.pending,
-      //   id: item._id,
-      //   currency: item.currency
-      //  })
-
-      // TODO: should have outgoing unconfirmed transaction as well.
-      // they are in ledger, but not necessarily confirmed
-
-      let unconfirmed_user: GetChainTransactionsResult["transactions"] = []
-
-      try {
-        unconfirmed_user = await this.getOnchainReceipt({ confirmed: false })
-      } catch (err) {
-        baseLogger.warn({ user: this.user }, "impossible to fetch transactions")
-        unconfirmed_user = []
-      }
-
-      // {
-      //   block_id: undefined,
-      //   confirmation_count: undefined,
-      //   confirmation_height: undefined,
-      //   created_at: '2020-10-06T17:18:26.000Z',
-      //   description: undefined,
-      //   fee: undefined,
-      //   id: '709dcc443014d14bf906b551d60cdb814d6f98f1caa3d40dcc49688175b2146a',
-      //   is_confirmed: false,
-      //   is_outgoing: false,
-      //   output_addresses: [Array],
-      //   tokens: 100000000,
-      //   transaction: '020000000001019b5e33c844cc72b093683cec8f743f1ddbcf075077e5851cc8a598a844e684850100000000feffffff022054380c0100000016001499294eb1f4936f15472a891ba400dc09bfd0aa7b00e1f505000000001600146107c29ed16bf7712347ddb731af713e68f1a50702473044022016c03d070341b8954fe8f956ed1273bb3852d3b4ba0d798e090bb5fddde9321a022028dad050cac2e06fb20fad5b5bb6f1d2786306d90a1d8d82bf91e03a85e46fa70121024e3c0b200723dda6862327135ab70941a94d4f353c51f83921fcf4b5935eb80495000000'
-      // }
-
-      const unconfirmed_promises = unconfirmed_user.map(
-        async ({ transaction, id, created_at }) => {
-          const { sats, addresses } = await this.getSatsAndAddressPerTx(transaction)
-          return { sats, addresses, id, created_at }
-        },
-      )
-
-      type unconfirmedType = { sats; addresses; id; created_at }
-      const unconfirmed: unconfirmedType[] = await Promise.all(unconfirmed_promises)
-
-      return [
-        ...unconfirmed.map(({ sats, addresses, id, created_at }) => ({
-          id,
-          amount: sats,
-          pending: true,
-          created_at: moment(created_at).unix(),
-          sat: sats,
-          usd: UserWallet.satsToUsd(sats),
-          description: "pending",
-          type: "onchain_receipt" as const,
-          hash: id,
-          currency: "BTC",
-          fee: 0,
-          feeUsd: 0,
-          addresses,
-        })),
-        ...confirmed,
-      ]
     }
 
     // raw encoded transaction

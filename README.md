@@ -11,7 +11,7 @@ Please email them security@galoy.io Thanks!
 
 ### Get Started
 
-Want to try it out and contribute? Checkout the [dev documentation](./DEV.md) to deploy locally with a Docker-compose script.
+Want to try it out and contribute? Checkout the [dev documentation](./DEV.md) to deploy locally with a docker-compose script.
 
 The production environment relies on kubernetes. To get your hands on a local kubernetes cluster with minikube, go to [INSTALLATION.md](https://github.com/GaloyMoney/galoy/blob/main/INSTALLATION.md).
 

@@ -1,5 +1,4 @@
 import assert from "assert"
-import moment from "moment"
 
 import { User } from "@services/mongoose/schema"
 import { ledger } from "@services/mongodb"
@@ -8,7 +7,6 @@ import { DbError } from "./error"
 import { Balances } from "./interface"
 import { CSVAccountExport } from "./csv-account-export"
 import { sendNotification } from "./notifications/notification"
-import { MEMO_SHARING_SATS_THRESHOLD } from "@config/app"
 
 export abstract class UserWallet {
   static lastPrice: number
@@ -94,51 +92,6 @@ export abstract class UserWallet {
     balances.total_in_USD = total.filter((item) => item.id === "USD")[0].value
 
     return balances
-  }
-
-  async getRawTransactions() {
-    const { results } = await ledger.getAccountTransactions(this.user.accountPath)
-    return results
-  }
-
-  async getTransactions(): Promise<Array<ITransaction>> {
-    const rawTransactions = await this.getRawTransactions()
-
-    return rawTransactions.map((item) => {
-      const amount = item.credit - item.debit
-      const isCredit = amount > 0
-      const isValidCreditMemo = isCredit && amount >= MEMO_SHARING_SATS_THRESHOLD
-      const isDebit = !isCredit
-
-      const memoUsername = item.username
-        ? isCredit
-          ? `from ${item.username}`
-          : `to ${item.username}`
-        : null
-
-      const memoSpamFilter = (memoString) =>
-        memoString ? (isDebit || isValidCreditMemo ? memoString : null) : null
-      const memoPayer = memoSpamFilter(item.memoPayer)
-      const memo = memoSpamFilter(item.memo)
-
-      return {
-        created_at: moment(item.timestamp).unix(),
-        amount,
-        sat: item.sat,
-        usd: item.usd,
-        description: memoPayer || memo || memoUsername || item.type, // TODO remove `|| item.type` once users have upgraded
-        type: item.type,
-        hash: item.hash,
-        fee: item.fee,
-        feeUsd: item.feeUsd,
-        username: item.username,
-        // destination: TODO
-        pending: item.pending,
-        id: item._id,
-        currency: item.currency,
-        addresses: item.payee_addresses,
-      }
-    })
   }
 
   async getStringCsv() {

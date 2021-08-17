@@ -1,3 +1,5 @@
+import * as Wallets from "@app/wallets"
+import { SettlementMethod, PaymentInitiationMethod } from "@domain/wallets"
 import {
   stringLength,
   ValidateDirectiveVisitor,
@@ -38,6 +40,24 @@ const commitHash = process.env.COMMITHASH
 const buildTime = process.env.BUILDTIME
 const helmRevision = process.env.HELMREVISION
 
+const translateWalletTx = (txs: WalletTransaction[]) => {
+  return txs.map((tx: WalletTransaction) => ({
+    id: tx.id,
+    amount: tx.settlementAmount,
+    description: tx.deprecated.description,
+    fee: tx.settlementFee,
+    created_id: tx.createdAt,
+    usd: tx.deprecated.usd,
+    sat: tx.settlementAmount,
+    pending: tx.pendingConfirmation,
+    type: tx.deprecated.type,
+    feeUsd: tx.deprecated.feeUsd,
+    hash: tx.initiationVia === PaymentInitiationMethod.Lightning ? tx.paymentHash : null,
+    addresses: tx.initiationVia === PaymentInitiationMethod.OnChain ? tx.addresses : null,
+    username: tx.settlementVia === SettlementMethod.IntraLedger ? tx.recipientId : null,
+  }))
+}
+
 const resolvers = {
   Query: {
     me: (_, __, { uid, user }) => {
@@ -59,7 +79,16 @@ const resolvers = {
         id: "BTC",
         currency: "BTC",
         balance: async () => (await wallet.getBalances())["BTC"],
-        transactions: () => wallet.getTransactions(),
+        transactions: async () => {
+          const { result: txs, error } = await Wallets.getTransactionsForWalletId({
+            walletId: wallet.user.id,
+          })
+          if (error instanceof Error || txs === null) {
+            throw error
+          }
+
+          return translateWalletTx(txs)
+        },
         csv: () => wallet.getStringCsv(),
       },
     ],
@@ -71,7 +100,16 @@ const resolvers = {
       const balances = await wallet.getBalances()
 
       return {
-        transactions: wallet.getTransactions(),
+        transactions: async () => {
+          const { result: txs, error } = await Wallets.getTransactionsForWalletId({
+            walletId: wallet.user.id,
+          })
+          if (error instanceof Error || txs === null) {
+            throw error
+          }
+
+          return translateWalletTx(txs)
+        },
         balances: wallet.user.currencies.map((item) => ({
           id: item.id,
           balance: balances[item.id],

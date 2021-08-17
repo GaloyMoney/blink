@@ -6,13 +6,13 @@ import {
   payViaPaymentDetails,
   payViaRoutes,
 } from "lightning"
-import { toSats } from "@domain/primitives/btc"
+import { toSats } from "@domain/bitcoin"
 import lnService from "ln-service"
 
 import { TIMEOUT_PAYMENT } from "@services/lnd/auth"
-import { MakeLndService } from "@services/lnd"
-import { MakeInvoicesRepo } from "@services/mongoose/invoices"
-import { invoiceExpirationForCurrency } from "@domain/invoice-expiration"
+import { LndService } from "@services/lnd"
+import { InvoicesRepository } from "@services/mongoose"
+import { invoiceExpirationForCurrency } from "@domain/bitcoin/lightning"
 import {
   getActiveLnd,
   getInvoiceAttempt,
@@ -51,12 +51,12 @@ export type payInvoiceResult = "success" | "failed" | "pending" | "already_paid"
 export const LightningMixin = (superclass) =>
   class extends superclass {
     readonly config: UserWalletConfig
-    readonly invoices: IInvoices
+    readonly invoices: IWalletInvoicesRepository
 
     constructor(...args) {
       super(...args)
       this.config = args[0].config
-      this.invoices = MakeInvoicesRepo()
+      this.invoices = InvoicesRepository()
     }
 
     async updatePending(lock) {
@@ -84,7 +84,7 @@ export const LightningMixin = (superclass) =>
         throw new LndOfflineError("no active lnd to create an invoice")
       }
 
-      const lndService = MakeLndService(lnd)
+      const lndService = LndService(lnd)
       const registerResult = await lndService.registerInvoice({
         description: memo,
         satoshis: toSats(value),

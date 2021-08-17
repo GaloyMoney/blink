@@ -20,6 +20,7 @@ import {
   amountAfterFeeDeduction,
 } from "test/helpers"
 import { getWalletFromRole } from "@core/wallet-factory"
+import * as Wallets from "@app/wallets"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
@@ -151,11 +152,19 @@ describe("UserWallet - On chain", () => {
 
     await sleep(1000)
 
-    const txs = await walletUser0.getTransactions()
-    const pendingTxs = filter(txs, { pending: true })
+    const { result: txs, error } = await Wallets.getTransactionsForWalletId({
+      walletId: walletUser0.user.id,
+    })
+    if (error instanceof Error || txs === null) {
+      throw error
+    }
+    const pendingTxs = filter(txs, { pendingConfirmation: true })
     expect(pendingTxs.length).toBe(1)
-    expect(pendingTxs[0].amount).toBe(btc2sat(amountBTC))
-    expect(pendingTxs[0].addresses[0]).toBe(address)
+
+    const pendingTx = pendingTxs[0] as WalletOnChainTransaction
+    expect(pendingTx.settlementVia).toBe("onchain")
+    expect(pendingTx.settlementAmount).toBe(btc2sat(amountBTC))
+    expect(pendingTx.addresses[0]).toBe(address)
 
     await sleep(1000)
 
@@ -209,7 +218,12 @@ async function sendToWallet({ walletDestination }) {
   const lnd = lndonchain
 
   const { BTC: initialBalance } = await walletDestination.getBalances()
-  const initTransactions = await walletDestination.getTransactions()
+  const { result: initTransactions, error } = await Wallets.getTransactionsForWalletId({
+    walletId: walletDestination.user.id,
+  })
+  if (error instanceof Error || initTransactions === null) {
+    throw error
+  }
 
   const address = await walletDestination.getOnChainAddress()
   expect(address.substr(0, 4)).toBe("bcrt")
@@ -236,18 +250,25 @@ async function sendToWallet({ walletDestination }) {
         }),
     )
 
-    const transactions = await walletDestination.getTransactions()
+    const { result: transactions, error } = await Wallets.getTransactionsForWalletId({
+      walletId: walletDestination.user.id as WalletId,
+    })
+    if (error instanceof Error || transactions === null) {
+      throw error
+    }
 
     expect(transactions.length).toBe(initTransactions.length + 1)
-    expect(transactions[0].type).toBe("onchain_receipt")
-    expect(transactions[0].fee).toBe(Math.round(transactions[0].fee))
-    expect(transactions[0].amount).toBe(
+
+    const txn = transactions[0] as WalletOnChainTransaction
+    expect(txn.settlementVia).toBe("onchain")
+    expect(txn.settlementFee).toBe(Math.round(txn.settlementFee))
+    expect(txn.settlementAmount).toBe(
       amountAfterFeeDeduction({
         amount: amountBTC,
         depositFeeRatio: walletDestination.user.depositFeeRatio,
       }),
     )
-    expect(transactions[0].addresses[0]).toBe(address)
+    expect(txn.addresses[0]).toBe(address)
   }
 
   // just to improve performance

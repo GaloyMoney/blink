@@ -11,6 +11,7 @@ import {
   sendToAddressAndConfirm,
   mineBlockAndSyncAll,
 } from "test/helpers"
+import * as Wallets from "@app/wallets"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
@@ -35,7 +36,12 @@ describe("onchainBlockEventhandler", () => {
 
     const { BTC: initialBalance } = await wallet.getBalances()
     const initialBlock = await bitcoindClient.getBlockCount()
-    const initTransactions = await wallet.getTransactions()
+    const { result: initTransactions, error } = await Wallets.getTransactionsForWalletId({
+      walletId: wallet.user.id as WalletId,
+    })
+    if (error instanceof Error || initTransactions === null) {
+      throw error
+    }
 
     const address = await wallet.getOnChainAddress()
 
@@ -54,17 +60,23 @@ describe("onchainBlockEventhandler", () => {
 
     subBlocks.removeAllListeners()
 
-    const transactions = await wallet.getTransactions()
+    const { result: transactions, error: error2 } =
+      await Wallets.getTransactionsForWalletId({
+        walletId: wallet.user.id,
+      })
+    if (error2 instanceof Error || transactions === null) {
+      throw error2
+    }
     const lastTransaction = transactions[0]
     const { depositFeeRatio } = wallet.user
     const finalAmount = amountAfterFeeDeduction({ amount, depositFeeRatio })
 
     expect(transactions.length).toBe(initTransactions.length + 1)
-    expect(lastTransaction.type).toBe("onchain_receipt")
-    expect(lastTransaction.pending).toBe(false)
-    expect(lastTransaction.fee).toBe(Math.round(lastTransaction.fee))
-    expect(lastTransaction.amount).toBe(finalAmount)
-    expect(lastTransaction.addresses[0]).toBe(address)
+    expect(lastTransaction.deprecated.type).toBe("onchain_receipt")
+    expect(lastTransaction.pendingConfirmation).toBe(false)
+    expect(lastTransaction.settlementFee).toBe(Math.round(lastTransaction.settlementFee))
+    expect(lastTransaction.settlementAmount).toBe(finalAmount)
+    expect((lastTransaction as WalletOnChainTransaction).addresses[0]).toBe(address)
 
     const { BTC: balance } = await wallet.getBalances()
     expect(balance).toBe(initialBalance + finalAmount)

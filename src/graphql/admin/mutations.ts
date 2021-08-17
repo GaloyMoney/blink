@@ -14,7 +14,7 @@ const MutationType = new GT.Object({
         phone: { type: GT.NonNull(GT.String) },
       },
       resolve: async (_, { phone }, { logger, ip }) => {
-        return await requestPhoneCode({ phone, logger, ip })
+        return requestPhoneCode({ phone, logger, ip })
       },
     },
     login: {

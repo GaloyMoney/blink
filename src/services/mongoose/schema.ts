@@ -9,8 +9,8 @@ import {
   MS_PER_30_DAYs,
 } from "@config/app"
 import { NotFoundError } from "@core/error"
-import { accountPath } from "@core/ledger/accounts"
-import { Transaction } from "@core/ledger/schema"
+import { accountPath } from "@services/ledger/accounts"
+import { Transaction } from "@services/ledger/schema"
 import { baseLogger } from "../logger"
 import { caseInsensitiveRegex } from "@core/utils"
 
@@ -65,7 +65,7 @@ export const regexUsername = /(?!^(1|3|bc1|lnbc1))^[0-9a-z_]+$/i
 
 const feeRates = getFeeRates()
 
-const UserSchema = new Schema({
+const UserSchema = new Schema<UserType>({
   depositFeeRatio: {
     type: Number,
     default: feeRates.depositFeeVariable,
@@ -401,7 +401,7 @@ UserSchema.index({
   coordinate: 1,
 })
 
-export const User = mongoose.model("User", UserSchema)
+export const User = mongoose.model<UserType>("User", UserSchema)
 
 // TODO: this DB should be capped.
 const PhoneCodeSchema = new Schema({

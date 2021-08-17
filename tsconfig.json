@@ -13,6 +13,7 @@
     "paths": {
       "@config/*": ["src/config/*"],
       "@core/*": ["src/core/*"],
+      "@app/*": ["src/app/*"],
       "@domain/*": ["src/domain/*"],
       "@services/*": ["src/services/*"],
 

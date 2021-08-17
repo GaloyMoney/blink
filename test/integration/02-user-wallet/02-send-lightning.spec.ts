@@ -27,6 +27,7 @@ import {
   waitFor,
   waitUntilChannelBalanceSyncAll,
 } from "test/helpers"
+import * as Wallets from "@app/wallets"
 
 const date = Date.now() + 1000 * 60 * 60 * 24 * 8
 // required to avoid oldEnoughForWithdrawal validation
@@ -65,15 +66,28 @@ describe("UserWallet - Lightning Pay", () => {
     const invoice = await userWallet2.addInvoice({ value: amountInvoice, memo })
     await userWallet1.pay({ invoice })
 
-    const matchTx = (tx) => tx.type === "on_us" && tx.hash === getHash(invoice)
+    const matchTx = (tx) =>
+      tx.settlementVia === "intraledger" && tx.paymentHash === getHash(invoice)
 
-    const user1Txn = await userWallet1.getTransactions()
-    expect(user1Txn.filter(matchTx)[0].description).toBe(memo)
-    expect(user1Txn.filter(matchTx)[0].type).toBe("on_us")
+    let txResult = await Wallets.getTransactionsForWalletId({
+      walletId: userWallet1.user.id,
+    })
+    if (txResult.error instanceof Error || txResult.result === null) {
+      throw txResult.error
+    }
+    const user1Txn = txResult.result
+    expect(user1Txn.filter(matchTx)[0].deprecated.description).toBe(memo)
+    expect(user1Txn.filter(matchTx)[0].settlementVia).toBe("intraledger")
 
-    const user2Txn = await userWallet2.getTransactions()
-    expect(user2Txn.filter(matchTx)[0].description).toBe(memo)
-    expect(user2Txn.filter(matchTx)[0].type).toBe("on_us")
+    txResult = await Wallets.getTransactionsForWalletId({
+      walletId: userWallet1.user.id,
+    })
+    if (txResult.error instanceof Error || txResult.result === null) {
+      throw txResult.error
+    }
+    const user2Txn = txResult.result
+    expect(user2Txn.filter(matchTx)[0].deprecated.description).toBe(memo)
+    expect(user2Txn.filter(matchTx)[0].settlementVia).toBe("intraledger")
   })
 
   it("sends to another Galoy user with two different memos", async () => {
@@ -83,15 +97,28 @@ describe("UserWallet - Lightning Pay", () => {
     const request = await userWallet2.addInvoice({ value: amountInvoice, memo })
     await userWallet1.pay({ invoice: request, memo: memoPayer })
 
-    const matchTx = (tx) => tx.type === "on_us" && tx.hash === getHash(request)
+    const matchTx = (tx) =>
+      tx.settlementVia === "intraledger" && tx.paymentHash === getHash(request)
 
-    const user2Txn = await userWallet2.getTransactions()
-    expect(user2Txn.filter(matchTx)[0].description).toBe(memo)
-    expect(user2Txn.filter(matchTx)[0].type).toBe("on_us")
+    let txResult = await Wallets.getTransactionsForWalletId({
+      walletId: userWallet2.user.id,
+    })
+    if (txResult.error instanceof Error || txResult.result === null) {
+      throw txResult.error
+    }
+    const user2Txn = txResult.result
+    expect(user2Txn.filter(matchTx)[0].deprecated.description).toBe(memo)
+    expect(user2Txn.filter(matchTx)[0].settlementVia).toBe("intraledger")
 
-    const user1Txn = await userWallet1.getTransactions()
-    expect(user1Txn.filter(matchTx)[0].description).toBe(memoPayer)
-    expect(user1Txn.filter(matchTx)[0].type).toBe("on_us")
+    txResult = await Wallets.getTransactionsForWalletId({
+      walletId: userWallet1.user.id,
+    })
+    if (txResult.error instanceof Error || txResult.result === null) {
+      throw txResult.error
+    }
+    const user1Txn = txResult.result
+    expect(user1Txn.filter(matchTx)[0].deprecated.description).toBe(memoPayer)
+    expect(user1Txn.filter(matchTx)[0].settlementVia).toBe("intraledger")
   })
 
   it("sends to another Galoy user a push payment", async () => {
@@ -101,24 +128,31 @@ describe("UserWallet - Lightning Pay", () => {
     })
 
     const { BTC: finalBalance0 } = await userWallet0.getBalances()
-    const userTransaction0 = await userWallet0.getTransactions()
-    const { BTC: finalBalance1 } = await userWallet1.getBalances()
-    const userTransaction1 = await userWallet1.getTransactions()
+    const { result: userTransaction0, error } = await Wallets.getTransactionsForWalletId({
+      walletId: userWallet0.user.id,
+    })
+    if (error instanceof Error || userTransaction0 === null) {
+      throw error
+    }
 
+    const { BTC: finalBalance1 } = await userWallet1.getBalances()
+    const txResult = await Wallets.getTransactionsForWalletId({
+      walletId: userWallet1.user.id,
+    })
+    if (txResult.error instanceof Error || txResult.result === null) {
+      throw txResult.error
+    }
+    const userTransaction1 = txResult.result
     expect(res).toBe("success")
     expect(finalBalance0).toBe(initBalance0 + amountInvoice)
     expect(finalBalance1).toBe(initBalance1 - amountInvoice)
 
-    expect(userTransaction0[0]).toHaveProperty("username", userWallet1.user.username)
-    expect(userTransaction0[0]).toHaveProperty(
-      "description",
-      `from ${userWallet1.user.username}`,
-    )
-    expect(userTransaction1[0]).toHaveProperty("username", userWallet0.user.username)
-    expect(userTransaction1[0]).toHaveProperty(
-      "description",
-      `to ${userWallet0.user.username}`,
-    )
+    expect(userTransaction0[0]).toHaveProperty("recipientId", userWallet1.user.username)
+    const oldFields0 = userTransaction0[0].deprecated
+    expect(oldFields0).toHaveProperty("description", `from ${userWallet1.user.username}`)
+    expect(userTransaction1[0]).toHaveProperty("recipientId", userWallet0.user.username)
+    const oldFields1 = userTransaction1[0].deprecated
+    expect(oldFields1).toHaveProperty("description", `to ${userWallet0.user.username}`)
 
     userWallet0 = await getUserWallet(0)
     userWallet1 = await getUserWallet(1)
@@ -162,12 +196,23 @@ describe("UserWallet - Lightning Pay", () => {
       memo: memoSpamAboveThreshold,
     })
 
-    // fetch transactions from db
-    const userTransaction0 = await userWallet0.getTransactions()
+    let txResult = await Wallets.getTransactionsForWalletId({
+      walletId: userWallet0.user.id,
+    })
+    if (txResult.error instanceof Error || txResult.result === null) {
+      throw txResult.error
+    }
+    const userTransaction0 = txResult.result
     const transaction0Above = userTransaction0[0]
     const transaction0Below = userTransaction0[1]
 
-    const userTransaction1 = await userWallet1.getTransactions()
+    txResult = await Wallets.getTransactionsForWalletId({
+      walletId: userWallet1.user.id,
+    })
+    if (txResult.error instanceof Error || txResult.result === null) {
+      throw txResult.error
+    }
+    const userTransaction1 = txResult.result
     const transaction1Above = userTransaction1[0]
     const transaction1Below = userTransaction1[1]
 
@@ -176,19 +221,28 @@ describe("UserWallet - Lightning Pay", () => {
     expect(resAboveThreshold).toBe("success")
 
     // check below-threshold transaction for recipient was filtered
-    expect(transaction0Below).toHaveProperty("username", userWallet1.user.username)
-    expect(transaction0Below).toHaveProperty(
+    expect(transaction0Below).toHaveProperty("recipientId", userWallet1.user.username)
+    expect(transaction0Below.deprecated).toHaveProperty(
       "description",
       `from ${userWallet1.user.username}`,
     )
-    expect(transaction1Below).toHaveProperty("username", userWallet0.user.username)
-    expect(transaction1Below).toHaveProperty("description", memoSpamBelowThreshold)
+    expect(transaction1Below).toHaveProperty("recipientId", userWallet0.user.username)
+    expect(transaction1Below.deprecated).toHaveProperty(
+      "description",
+      memoSpamBelowThreshold,
+    )
 
     // check above-threshold transaction for recipient was NOT filtered
-    expect(transaction0Above).toHaveProperty("username", userWallet1.user.username)
-    expect(transaction0Above).toHaveProperty("description", memoSpamAboveThreshold)
-    expect(transaction1Above).toHaveProperty("username", userWallet0.user.username)
-    expect(transaction1Above).toHaveProperty("description", memoSpamAboveThreshold)
+    expect(transaction0Above).toHaveProperty("recipientId", userWallet1.user.username)
+    expect(transaction0Above.deprecated).toHaveProperty(
+      "description",
+      memoSpamAboveThreshold,
+    )
+    expect(transaction1Above).toHaveProperty("recipientId", userWallet0.user.username)
+    expect(transaction1Above.deprecated).toHaveProperty(
+      "description",
+      memoSpamAboveThreshold,
+    )
 
     // check contacts being added
     userWallet0 = await getUserWallet(0)
@@ -372,16 +426,29 @@ describe("UserWallet - Lightning Pay", () => {
           expect(payeeFinalBalance).toBe(payeeInitialBalance + amountInvoice)
 
           const hash = getHash(request)
-          const matchTx = (tx) => tx.type === "on_us" && tx.hash === hash
+          const matchTx = (tx) =>
+            tx.settlementVia === "intraledger" && tx.paymentHash === hash
 
-          const user2Txn = await walletPayee.getTransactions()
+          let txResult = await Wallets.getTransactionsForWalletId({
+            walletId: walletPayee.user.id,
+          })
+          if (txResult.error instanceof Error || txResult.result === null) {
+            throw txResult.error
+          }
+          const user2Txn = txResult.result
           const user2OnUsTxn = user2Txn.filter(matchTx)
-          expect(user2OnUsTxn[0].type).toBe("on_us")
+          expect(user2OnUsTxn[0].settlementVia).toBe("intraledger")
           await checkIsBalanced()
 
-          const user1Txn = await walletPayer.getTransactions()
+          txResult = await Wallets.getTransactionsForWalletId({
+            walletId: walletPayer.user.id as WalletId,
+          })
+          if (txResult.error instanceof Error || txResult.result === null) {
+            throw txResult.error
+          }
+          const user1Txn = txResult.result
           const user1OnUsTxn = user1Txn.filter(matchTx)
-          expect(user1OnUsTxn[0].type).toBe("on_us")
+          expect(user1OnUsTxn[0].settlementVia).toBe("intraledger")
 
           // making request twice because there is a cancel state, and this should be re-entrant
           expect(await walletPayer.updatePendingInvoice({ hash })).toBeTruthy()

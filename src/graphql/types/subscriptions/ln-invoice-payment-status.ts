@@ -1,5 +1,5 @@
 import { SUBSCRIPTION_POLLING_INTERVAL, MS_PER_HOUR } from "@config/app"
-import PaymentStatusChecker from "@core/lightning/payment-status-checker"
+import { PaymentStatusChecker } from "@app/lightning"
 import { GT, pubsub } from "@graphql/index"
 
 import LnInvoicePaymentRequest from "../scalars/ln-invoice-payment-request"
