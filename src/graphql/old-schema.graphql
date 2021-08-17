@@ -123,6 +123,7 @@ type User {
   created_at: String
   coordinate: Coordinate
   status: AccountStatus
+  twoFactorEnabled: Boolean
 }
 
 type Success {
@@ -252,6 +253,11 @@ enum AccountStatus {
   locked
 }
 
+type twoFactorSecret {
+  secret: String
+  uri: String
+}
+
 type Mutation {
   requestPhoneCode(phone: String @pattern(regexp: "^\\+[0-9]+$", policy: THROW)): Success
 
@@ -292,4 +298,10 @@ type Mutation {
   setAccountStatus(uid: ID!, status: AccountStatus!): User
 
   setLevel(uid: ID!, level: Int!): User
+
+  generate2fa: twoFactorSecret
+
+  save2fa(secret: String, token: String): Boolean
+
+  delete2fa(token: String): Boolean
 }
