@@ -71,6 +71,7 @@ const baseAddInvoiceForWallet = async ({
 }: BaseAddInvoiceArgs): Promise<LnInvoice | ApplicationError> => {
   const walletInvoicesRepo = WalletInvoicesRepository()
   const lndService = LndService()
+  if (lndService instanceof Error) return lndService
 
   const registeredInvoice = await lndService.registerInvoice({
     description: memo,

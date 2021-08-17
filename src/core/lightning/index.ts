@@ -76,6 +76,7 @@ export const LightningMixin = (superclass) =>
       }
 
       const lndService = LndService()
+      if (lndService instanceof Error) throw lndService
       const registerResult = await lndService.registerInvoice({
         description: memo,
         satoshis: toSats(value),
