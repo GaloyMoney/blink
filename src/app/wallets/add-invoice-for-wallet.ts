@@ -34,14 +34,14 @@ export const addInvoiceNoAmountForSelf = async ({
 }
 
 export const addInvoiceForRecipient = async ({
-  username,
+  recipient,
   amount,
   memo = "",
 }: AddInvoiceRecipientArgs): Promise<LnInvoice | ApplicationError> => {
   const usersRepo = UsersRepository()
   const accountsRepo = AccountsRepository()
 
-  const user = await usersRepo.findByUsername(username)
+  const user = await usersRepo.findByUsername(recipient)
   if (user instanceof Error) return user
 
   const defaultAccount = await accountsRepo.findById(user.defaultAccountId)
@@ -59,13 +59,13 @@ export const addInvoiceForRecipient = async ({
 }
 
 export const addInvoiceNoAmountForRecipient = async ({
-  username,
+  recipient,
   memo = "",
 }: AddInvoiceNoAmountRecipientArgs): Promise<LnInvoice | ApplicationError> => {
   const usersRepo = UsersRepository()
   const accountsRepo = AccountsRepository()
 
-  const user = await usersRepo.findByUsername(username)
+  const user = await usersRepo.findByUsername(recipient)
   if (user instanceof Error) return user
 
   const defaultAccount = await accountsRepo.findById(user.defaultAccountId)
