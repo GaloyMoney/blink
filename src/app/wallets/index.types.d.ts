@@ -10,12 +10,12 @@ type AddInvoiceNoAmountSelfArgs = {
 }
 
 type AddInvoiceRecipientArgs = {
-  username: Username
+  recipient: Username
   amount: Satoshis
   memo?: string
 }
 
 type AddInvoiceNoAmountRecipientArgs = {
-  username: Username
+  recipient: Username
   memo?: string
 }
