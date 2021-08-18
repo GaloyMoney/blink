@@ -1,4 +1,4 @@
-import { toSats } from "@domain/bitcoin"
+import { checkedToSats, toSats } from "@domain/bitcoin"
 import { invoiceExpirationForCurrency } from "@domain/bitcoin/lightning"
 import { WalletInvoiceFactory } from "@domain/wallet-invoices/wallet-invoice-factory"
 import { LndService } from "@services/lnd"
@@ -13,9 +13,12 @@ export const addInvoiceForSelf = async ({
   amount,
   memo = "",
 }: AddInvoiceSelfArgs): Promise<LnInvoice | ApplicationError> => {
+  const sats = checkedToSats(amount)
+  if (sats instanceof Error) throw sats
+
   const walletInvoiceFactory = WalletInvoiceFactory(walletId)
   return addInvoiceForWallet({
-    amount,
+    sats,
     memo,
     walletInvoiceCreateFn: walletInvoiceFactory.create,
   })
@@ -27,7 +30,7 @@ export const addInvoiceNoAmountForSelf = async ({
 }: AddInvoiceNoAmountSelfArgs): Promise<LnInvoice | ApplicationError> => {
   const walletInvoiceFactory = WalletInvoiceFactory(walletId)
   return addInvoiceForWallet({
-    amount: toSats(0),
+    sats: toSats(0),
     memo,
     walletInvoiceCreateFn: walletInvoiceFactory.create,
   })
@@ -38,6 +41,9 @@ export const addInvoiceForRecipient = async ({
   amount,
   memo = "",
 }: AddInvoiceRecipientArgs): Promise<LnInvoice | ApplicationError> => {
+  const sats = checkedToSats(amount)
+  if (sats instanceof Error) throw sats
+
   const usersRepo = UsersRepository()
   const accountsRepo = AccountsRepository()
 
@@ -52,7 +58,7 @@ export const addInvoiceForRecipient = async ({
   const walletInvoiceFactory = WalletInvoiceFactory(walletId)
 
   return addInvoiceForWallet({
-    amount,
+    sats,
     memo,
     walletInvoiceCreateFn: walletInvoiceFactory.createForRecipient,
   })
@@ -70,11 +76,11 @@ export const addInvoiceNoAmountForRecipient = async ({
 }
 
 const addInvoiceForWallet = async ({
-  amount,
+  sats,
   memo,
   walletInvoiceCreateFn,
 }: {
-  amount: Satoshis
+  sats: Satoshis
   memo: string
   walletInvoiceCreateFn: WalletInvoiceFactoryCreateMethod
 }): Promise<LnInvoice | ApplicationError> => {
@@ -84,7 +90,7 @@ const addInvoiceForWallet = async ({
 
   const registeredInvoice = await lndService.registerInvoice({
     description: memo,
-    satoshis: amount,
+    satoshis: sats,
     expiresAt: invoiceExpirationForCurrency("BTC", new Date()),
   })
   if (registeredInvoice instanceof Error) return registeredInvoice
