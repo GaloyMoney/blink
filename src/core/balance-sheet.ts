@@ -2,23 +2,21 @@ import { getBalance as getBitcoindBalance } from "@services/bitcoind"
 import { lndsBalances } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { ledger } from "@services/mongodb"
+import { WalletInvoicesRepository } from "@services/mongoose"
+import { User } from "@services/mongoose/schema"
+import { isRepoError } from "@domain/utils"
 
 import { WalletFactory } from "./wallet-factory"
 import { runInParallel } from "./utils"
-import { WalletInvoicesRepository } from "@services/mongoose"
-import { RepositoryError } from "@domain/errors"
-import { User } from "@services/mongoose/schema"
 
 import * as Wallets from "@app/wallets"
 
 const logger = baseLogger.child({ module: "balanceSheet" })
 
-const isRepoError = (obj): boolean => obj instanceof RepositoryError
-
 const updatePendingLightningInvoices = async () => {
   const walletInvoicesRepo = WalletInvoicesRepository()
 
-  const walletsWithPendingInvoices = walletInvoicesRepo.findWalletsWithPendingInvoices()
+  const walletsWithPendingInvoices = walletInvoicesRepo.listWalletsWithPendingInvoices()
 
   if (isRepoError(walletsWithPendingInvoices)) {
     logger.error(

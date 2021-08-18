@@ -53,7 +53,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     }
   }
 
-  async function* findWalletsWithPendingInvoices():
+  async function* listWalletsWithPendingInvoices():
     | AsyncGenerator<WalletId>
     | RepositoryError {
     let pending
@@ -74,5 +74,5 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     }
   }
 
-  return { persist, findByPaymentHash, findWalletsWithPendingInvoices }
+  return { persist, findByPaymentHash, listWalletsWithPendingInvoices }
 }
