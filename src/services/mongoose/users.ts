@@ -5,6 +5,8 @@ import {
   RepositoryError,
 } from "@domain/errors"
 import { User } from "@services/mongoose/schema"
+import { caseInsensitiveRegex } from "@core/utils"
+import { getUsernameRegex } from "@config/app"
 
 export const UsersRepository = (): IUsersRepository => {
   const findById = async (userId: UserId): Promise<User | RepositoryError> => {
@@ -28,8 +30,13 @@ export const UsersRepository = (): IUsersRepository => {
   }
 
   const findByUsername = async (username: Username): Promise<User | RepositoryError> => {
+    const regexUsername = getUsernameRegex()
     try {
-      const result = await User.findOne({ username })
+      if (!username.match(regexUsername)) {
+        return new CouldNotFindError("Invalid username")
+      }
+
+      const result = await User.findOne({ username: caseInsensitiveRegex(username) })
       if (!result) {
         return new CouldNotFindError()
       }

@@ -7,6 +7,7 @@ import {
   getFeeRates,
   MS_PER_DAY,
   MS_PER_30_DAYs,
+  getUsernameRegex,
 } from "@config/app"
 import { NotFoundError } from "@core/error"
 import { accountPath } from "@services/ledger/accounts"
@@ -61,7 +62,7 @@ invoiceUserSchema.index({ uid: 1, paid: 1 })
 
 export const InvoiceUser = mongoose.model("InvoiceUser", invoiceUserSchema)
 
-export const regexUsername = /(?!^(1|3|bc1|lnbc1))^[0-9a-z_]+$/i
+const regexUsername = getUsernameRegex()
 
 const feeRates = getFeeRates()
 
