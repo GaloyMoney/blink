@@ -97,7 +97,7 @@ const baseAddInvoiceForWallet = async ({
 
   const registeredInvoice = await lndService.registerInvoice({
     description: memo,
-    satoshis: toSats(amount),
+    satoshis: amount,
     expiresAt: invoiceExpirationForCurrency("BTC", new Date()),
   })
   if (registeredInvoice instanceof Error) return registeredInvoice

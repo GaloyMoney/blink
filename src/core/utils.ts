@@ -117,10 +117,6 @@ export const isInvoiceAlreadyPaidError = (err) => {
   return false
 }
 
-export const caseInsensitiveRegex = (input) => {
-  return new RegExp(`^${input}$`, "i")
-}
-
 // Throws an error if neither or both value1 and value2 are provided
 export const inputXOR = (arg1, arg2) => {
   const [[key1, value1]] = Object.entries(arg1)
