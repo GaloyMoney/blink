@@ -9,3 +9,4 @@ type ApplicationError =
   | RepositoryError
   | LightningError
   | PriceError
+  | ValidationError
