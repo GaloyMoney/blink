@@ -1,12 +1,14 @@
-import { UserLanguage } from "@domain/users"
+import { getUsernameRegex, UserLanguage } from "@domain/users"
 import {
   UnknownRepositoryError,
   CouldNotFindError,
   RepositoryError,
 } from "@domain/errors"
 import { User } from "@services/mongoose/schema"
-import { caseInsensitiveRegex } from "@core/utils"
-import { getUsernameRegex } from "@config/app"
+
+export const caseInsensitiveRegex = (input) => {
+  return new RegExp(`^${input}$`, "i")
+}
 
 export const UsersRepository = (): IUsersRepository => {
   const findById = async (userId: UserId): Promise<User | RepositoryError> => {

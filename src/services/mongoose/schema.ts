@@ -7,13 +7,13 @@ import {
   getFeeRates,
   MS_PER_DAY,
   MS_PER_30_DAYs,
-  getUsernameRegex,
 } from "@config/app"
 import { NotFoundError } from "@core/error"
 import { accountPath } from "@services/ledger/accounts"
 import { Transaction } from "@services/ledger/schema"
 import { baseLogger } from "../logger"
-import { caseInsensitiveRegex } from "@core/utils"
+import { caseInsensitiveRegex } from "./users"
+import { getUsernameRegex } from "@domain/users"
 
 export { Transaction }
 
