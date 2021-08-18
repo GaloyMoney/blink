@@ -1,4 +1,4 @@
-import { getUsernameRegex, UserLanguage } from "@domain/users"
+import { UserLanguage } from "@domain/users"
 import {
   UnknownRepositoryError,
   CouldNotFindError,
@@ -32,12 +32,7 @@ export const UsersRepository = (): IUsersRepository => {
   }
 
   const findByUsername = async (username: Username): Promise<User | RepositoryError> => {
-    const regexUsername = getUsernameRegex()
     try {
-      if (!username.match(regexUsername)) {
-        return new CouldNotFindError("Invalid username")
-      }
-
       const result = await User.findOne({ username: caseInsensitiveRegex(username) })
       if (!result) {
         return new CouldNotFindError()
