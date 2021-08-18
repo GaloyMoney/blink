@@ -1,5 +1,6 @@
 import { checkedToSats, toSats } from "@domain/bitcoin"
 import { invoiceExpirationForCurrency } from "@domain/bitcoin/lightning"
+import { checkedToUsername } from "@domain/users"
 import { WalletInvoiceFactory } from "@domain/wallet-invoices/wallet-invoice-factory"
 import { LndService } from "@services/lnd"
 import {
@@ -41,13 +42,15 @@ export const addInvoiceForRecipient = async ({
   amount,
   memo = "",
 }: AddInvoiceRecipientArgs): Promise<LnInvoice | ApplicationError> => {
+  const username = checkedToUsername(recipient)
+  if (username instanceof Error) return username
   const sats = checkedToSats(amount)
   if (sats instanceof Error) throw sats
 
   const usersRepo = UsersRepository()
   const accountsRepo = AccountsRepository()
 
-  const user = await usersRepo.findByUsername(recipient)
+  const user = await usersRepo.findByUsername(username)
   if (user instanceof Error) return user
 
   const defaultAccount = await accountsRepo.findById(user.defaultAccountId)
