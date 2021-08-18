@@ -14,7 +14,7 @@ export const addInvoiceForSelf = async ({
   memo = "",
 }: AddInvoiceSelfArgs): Promise<LnInvoice | ApplicationError> => {
   const walletInvoiceFactory = WalletInvoiceFactory(walletId)
-  return baseAddInvoiceForWallet({
+  return addInvoiceForWallet({
     amount,
     memo,
     walletInvoiceCreateFn: walletInvoiceFactory.create,
@@ -26,7 +26,7 @@ export const addInvoiceNoAmountForSelf = async ({
   memo = "",
 }: AddInvoiceNoAmountSelfArgs): Promise<LnInvoice | ApplicationError> => {
   const walletInvoiceFactory = WalletInvoiceFactory(walletId)
-  return baseAddInvoiceForWallet({
+  return addInvoiceForWallet({
     amount: toSats(0),
     memo,
     walletInvoiceCreateFn: walletInvoiceFactory.create,
@@ -51,7 +51,7 @@ export const addInvoiceForRecipient = async ({
 
   const walletInvoiceFactory = WalletInvoiceFactory(walletId)
 
-  return baseAddInvoiceForWallet({
+  return addInvoiceForWallet({
     amount,
     memo,
     walletInvoiceCreateFn: walletInvoiceFactory.createForRecipient,
@@ -75,14 +75,14 @@ export const addInvoiceNoAmountForRecipient = async ({
 
   const walletInvoiceFactory = WalletInvoiceFactory(walletId)
 
-  return baseAddInvoiceForWallet({
+  return addInvoiceForWallet({
     amount: toSats(0),
     memo,
     walletInvoiceCreateFn: walletInvoiceFactory.createForRecipient,
   })
 }
 
-const baseAddInvoiceForWallet = async ({
+const addInvoiceForWallet = async ({
   amount,
   memo,
   walletInvoiceCreateFn,
