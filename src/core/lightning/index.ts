@@ -9,7 +9,7 @@ import {
 import lnService from "ln-service"
 
 import { TIMEOUT_PAYMENT } from "@services/lnd/auth"
-import { InvoicesRepository } from "@services/mongoose"
+import { InvoicesRepository, UsersRepository } from "@services/mongoose"
 import {
   getActiveLnd,
   getInvoiceAttempt,
@@ -223,7 +223,9 @@ export const LightningMixin = (superclass) =>
 
           if (isPushPayment) {
             // pay through username
-            payeeUser = await User.getUserByUsername(input_username)
+            const usersRepo = UsersRepository()
+            payeeUser = await usersRepo.findByUsername(input_username)
+            if (payeeUser instanceof Error) throw payeeUser
           } else {
             // standard path, user scan a lightning invoice of our own wallet from another user
 

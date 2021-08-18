@@ -5,6 +5,7 @@ import Phone from "../types/scalars/phone"
 import Username from "../types/scalars/username"
 import AccountLevel from "../types/account-level"
 import UserDetails from "../types/user-details"
+import { UsersRepository } from "@services/mongoose"
 
 const QueryType = new GT.Object({
   name: "Query",
@@ -34,10 +35,10 @@ const QueryType = new GT.Object({
         username: { type: GT.NonNull(Username) },
       },
       resolve: async (parent, { username }) => {
-        const user = await User.getUserByUsername(username)
-        if (!user) {
-          throw new Error("User not found")
-        }
+        const usersRepo = UsersRepository()
+        const user = await usersRepo.findByUsername(username)
+        if (user instanceof Error) throw user
+
         return user
       },
     },
