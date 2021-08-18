@@ -24,6 +24,7 @@ groups:
   - check-code
   - build-edge-image
   - install-deps
+  - bump-image-tag-in-values
 - name: image
   jobs: [ build-pipeline-image ]
 
@@ -154,6 +155,33 @@ jobs:
   - put: edge-image
     params:
       image: image/image.tar
+
+- name: bump-image-tag-in-values
+  plan:
+  - in_parallel:
+    - { get: bundled-deps, tags: ["staging"], trigger: true}
+    - { get: repo, trigger: true }
+    - { get: pipeline-tasks }
+  - task: bump-image-tag-in-values
+    config:
+      platform: linux
+      image_resource: #@ task_image_config()
+      inputs:
+      - name: bundled-deps
+      - name: pipeline-tasks
+      - name: repo
+      outputs:
+      - name: repo
+      params:
+        BRANCH: #@ data.values.git_branch
+      run:
+        path: pipeline-tasks/ci/tasks/test-unit.sh
+  - in_parallel:
+    - put: repo
+      params:
+        repository: repo
+        rebase: true
+
 
 resources:
 - name: repo
