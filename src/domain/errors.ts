@@ -8,6 +8,7 @@ export class RepositoryError extends DomainError {}
 
 export class UnknownRepositoryError extends DomainError {}
 export class CouldNotFindError extends DomainError {}
+export class CouldNotPersistError extends DomainError {}
 
 export class ValidationError extends DomainError {}
 export class InvalidSatoshiAmount extends ValidationError {}
