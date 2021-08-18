@@ -37,6 +37,7 @@ import {
   addInvoiceNoAmountForRecipient,
   addInvoiceNoAmount,
 } from "@app/wallets"
+import { UsersRepository } from "@services/mongoose"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
 
@@ -192,8 +193,14 @@ const resolvers = {
       return wallet.updatePendingInvoice({ hash })
     },
     getUid: async (_, { username, phone }) => {
+      const getUserByUsername = async (username) => {
+        const usersRepo = UsersRepository()
+        const user = await usersRepo.findByUsername(username as Username)
+        if (user instanceof Error) throw user
+        return user
+      }
       const { _id: uid } = username
-        ? await User.getUserByUsername(username)
+        ? await getUserByUsername(username)
         : await User.getUserByPhone(phone)
       return uid
     },
