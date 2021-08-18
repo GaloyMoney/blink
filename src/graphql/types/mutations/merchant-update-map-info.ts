@@ -29,8 +29,13 @@ const MerchantUpdateMapInfoMutation = {
   },
   resolve: async (_, args) => {
     const { username, title, latitude, longitude } = args.input
-    const user = await updateMerchantMapInfo({ username, title, latitude, longitude })
-    return { errors: [], userDetails: user }
+    const userDetails = await updateMerchantMapInfo({
+      username,
+      title,
+      latitude,
+      longitude,
+    })
+    return { errors: [], userDetails: userDetails }
   },
 }
 

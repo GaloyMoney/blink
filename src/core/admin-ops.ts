@@ -3,7 +3,8 @@ import { levels } from "@config/app"
 import { User } from "@services/mongoose/schema"
 import { baseLogger } from "@services/logger"
 
-import { NotFoundError, ValidationInternalError } from "./error"
+import { ValidationInternalError } from "./error"
+import { UsersRepository } from "@services/mongoose"
 
 const logger = baseLogger.child({ module: "admin" })
 
@@ -33,11 +34,9 @@ export const addToMap = async ({
     )
   }
 
-  const user = await User.getUserByUsername(username)
-
-  if (!user) {
-    throw new NotFoundError(`The user ${username} does not exist`, { logger })
-  }
+  const usersRepo = UsersRepository()
+  const user = await usersRepo.findByUsername(username)
+  if (user instanceof Error) throw user
 
   user.coordinate = {
     latitude,
@@ -45,7 +44,11 @@ export const addToMap = async ({
   }
 
   user.title = title
-  return !!(await user.save())
+
+  const persistResult = await usersRepo.update(user)
+  if (persistResult instanceof Error) throw persistResult
+
+  return true
 }
 
 export const setAccountStatus = async ({ uid, status }): Promise<typeof User> => {
