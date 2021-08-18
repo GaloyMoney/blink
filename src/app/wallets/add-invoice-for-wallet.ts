@@ -86,7 +86,11 @@ const baseAddInvoiceForWallet = async ({
   amount,
   memo,
   walletInvoiceCreateFn,
-}: BaseAddInvoiceArgs): Promise<LnInvoice | ApplicationError> => {
+}: {
+  amount: Satoshis
+  memo: string
+  walletInvoiceCreateFn: WalletInvoiceFactoryCreateMethod
+}): Promise<LnInvoice | ApplicationError> => {
   const walletInvoicesRepo = WalletInvoicesRepository()
   const lndService = LndService()
   if (lndService instanceof Error) return lndService

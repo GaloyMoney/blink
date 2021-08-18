@@ -19,9 +19,3 @@ type AddInvoiceNoAmountRecipientArgs = {
   username: Username
   memo?: string
 }
-
-type BaseAddInvoiceArgs = {
-  amount: Satoshis
-  memo: string
-  walletInvoiceCreateFn: WalletInvoiceFactoryCreateMethod
-}

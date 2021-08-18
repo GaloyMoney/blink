@@ -1,6 +1,6 @@
 import { WalletInvoiceFactory } from "@domain/wallet-invoices/wallet-invoice-factory"
 
-let walletInvoiceFactory: WalletInvoiceFactoryType
+let walletInvoiceFactory: WalletInvoiceFactory
 
 beforeAll(async () => {
   walletInvoiceFactory = WalletInvoiceFactory("id" as WalletId)
