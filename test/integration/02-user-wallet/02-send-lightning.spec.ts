@@ -354,7 +354,7 @@ describe("UserWallet - Lightning Pay", () => {
       fn: function fn(wallet) {
         return async (input) => {
           await wallet.getLightningFee(input)
-          return await wallet.pay(input)
+          return wallet.pay(input)
         }
       },
     },
@@ -363,7 +363,7 @@ describe("UserWallet - Lightning Pay", () => {
       initialFee: FEECAP,
       fn: function fn(wallet) {
         return async (input) => {
-          return await wallet.pay(input)
+          return wallet.pay(input)
         }
       },
     },

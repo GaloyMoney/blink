@@ -99,7 +99,7 @@ export const addLndChannelFee = async ({ description, amount, metadata }) => {
 
   const bankOwnerPath = await bankOwnerAccountPath()
 
-  return await MainBook.entry(description)
+  return MainBook.entry(description)
     .debit(bankOwnerPath, amount, txMetadata)
     .credit(lndAccountingPath, amount, txMetadata)
     .commit()
@@ -115,7 +115,7 @@ export const addLndRoutingFee = async ({ amount, collectedOn }) => {
 
   const bankOwnerPath = await bankOwnerAccountPath()
 
-  return await MainBook.entry("routing fee")
+  return MainBook.entry("routing fee")
     .credit(bankOwnerPath, amount, metadata)
     .debit(lndAccountingPath, amount, metadata)
     .commit()
@@ -198,7 +198,7 @@ export const addOnchainPayment = async ({
   const bankOwnerPath = await bankOwnerAccountPath()
 
   // TODO/FIXME refactor. add the transaction first and set the fees in a second tx.
-  return await MainBook.entry(description)
+  return MainBook.entry(description)
     .credit(lndAccountingPath, sats - fee, txMetadata)
     .credit(bankOwnerPath, fee, txMetadata)
     .debit(account, sats, txMetadata)
@@ -291,7 +291,7 @@ export const addColdStoragePayment = async ({ description, amount, fee, metadata
 
   const bankOwnerPath = await bankOwnerAccountPath()
 
-  return await MainBook.entry(description)
+  return MainBook.entry(description)
     .credit(lndAccountingPath, amount + fee, txMetadata)
     .debit(bankOwnerPath, fee, txMetadata)
     .debit(bitcoindAccountingPath, amount, txMetadata)
@@ -309,7 +309,7 @@ export const addHotWalletPayment = async ({ description, amount, fee, hash }) =>
 
   const bankOwnerPath = await bankOwnerAccountPath()
 
-  return await MainBook.entry(description)
+  return MainBook.entry(description)
     .debit(lndAccountingPath, amount, txMetadata)
     .debit(bankOwnerPath, fee, txMetadata)
     .credit(bitcoindAccountingPath, amount + fee, txMetadata)

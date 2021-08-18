@@ -81,7 +81,7 @@ describe("lndUtils", () => {
 
     await waitFor(async () => {
       try {
-        return await pay({ lnd: lndOutside1, request })
+        return pay({ lnd: lndOutside1, request })
       } catch (error) {
         baseLogger.warn({ error }, "pay failed. trying again.")
         return null

@@ -16,12 +16,7 @@ export const setLevel = async ({ uid, level }) => {
       level: "warn",
     })
   }
-  const user = await User.findOneAndUpdate(
-    { _id: uid },
-    { $set: { level } },
-    { new: true },
-  )
-  return user
+  return User.findOneAndUpdate({ _id: uid }, { $set: { level } }, { new: true })
 }
 
 export const addToMap = async ({

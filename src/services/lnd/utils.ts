@@ -44,7 +44,7 @@ export const deleteExpiredInvoiceUser = () => {
 
 export const deleteFailedPaymentsAllLnds = async () => {
   baseLogger.warn("only run deleteFailedPayments on lnd 0.13")
-  return await Promise.resolve()
+  return Promise.resolve()
   // try {
   //   const lnds = offchainLnds
   //   for (const { lnd } of lnds)
@@ -120,7 +120,7 @@ export async function nodeStats({ lnd }) {
 export const nodesStats = async () => {
   const data = offchainLnds.map(({ lnd }) => nodeStats({ lnd }))
   // TODO: try if we don't need a Promise.all()
-  return await Promise.all(data)
+  return Promise.all(data)
 }
 
 export async function getBosScore() {
@@ -181,7 +181,8 @@ export const getRoutingFees = async ({
 
 export const getInvoiceAttempt = async ({ lnd, id }) => {
   try {
-    return await getInvoice({ lnd, id })
+    const result = await getInvoice({ lnd, id })
+    return result
   } catch (err) {
     const invoiceNotFound = "unable to locate invoice"
     if (err.length === 3 && err[2]?.err?.details === invoiceNotFound) {

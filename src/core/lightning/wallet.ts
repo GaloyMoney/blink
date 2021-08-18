@@ -35,7 +35,7 @@ export class LightningUserWallet extends OnChainMixin(LightningMixin(UserWallet)
       logger: this.logger,
     })
 
-    return await redlock({ path: this.user._id, logger: this.logger }, async () => {
+    return redlock({ path: this.user._id, logger: this.logger }, async () => {
       const result: Record<string, unknown>[] = []
 
       for (const id of ids) {

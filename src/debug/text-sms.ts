@@ -16,7 +16,7 @@ const main = async () => {
     fail("there was an error sending the SMSala text")
   }
 
-  return await Promise.resolve(true)
+  return Promise.resolve(true)
 }
 
 main()

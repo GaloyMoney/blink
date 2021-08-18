@@ -141,7 +141,7 @@ const main = async () => {
     res.end(await register.metrics())
   })
 
-  server.get("/healthz", (req, res) => {
+  server.get("/healthz", async (req, res) => {
     res.send("OK")
   })
 

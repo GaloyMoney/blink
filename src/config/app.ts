@@ -8,6 +8,12 @@ import { baseLogger } from "@services/logger"
 const defaultContent = fs.readFileSync("./default.yaml", "utf8")
 export const defaultConfig = yaml.load(defaultContent)
 
+if (!process.env.JWT_SECRET) {
+  throw new Error("JWT_SECRET env variable is missing")
+}
+
+export const JWT_SECRET = process.env.JWT_SECRET
+
 export const MS_PER_HOUR = 60 * 60 * 1000
 export const MS_PER_DAY = 24 * MS_PER_HOUR
 export const MS_PER_30_DAYs = 30 * MS_PER_DAY

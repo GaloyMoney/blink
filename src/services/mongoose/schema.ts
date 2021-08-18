@@ -382,7 +382,7 @@ UserSchema.statics.getUserByUsername = async function (username: string) {
 }
 
 UserSchema.statics.getUserByAddress = async function ({ address }) {
-  return await this.findOne({ "onchain.address": address })
+  return this.findOne({ "onchain.address": address })
 }
 
 UserSchema.statics.getActiveUsers = async function (): Promise<Array<typeof User>> {

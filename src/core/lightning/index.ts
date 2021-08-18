@@ -268,333 +268,327 @@ export const LightningMixin = (superclass) =>
       let paymentPromise
       let feeKnownInAdvance
 
-      return await redlock(
-        { path: this.user._id, logger: lightningLogger },
-        async (lock) => {
-          const balance = await this.getBalances(lock)
+      return redlock({ path: this.user._id, logger: lightningLogger }, async (lock) => {
+        const balance = await this.getBalances(lock)
 
-          // On us transaction
-          if (isMyNode({ pubkey: destination }) || isPushPayment) {
-            const lightningLoggerOnUs = lightningLogger.child({ onUs: true, fee: 0 })
+        // On us transaction
+        if (isMyNode({ pubkey: destination }) || isPushPayment) {
+          const lightningLoggerOnUs = lightningLogger.child({ onUs: true, fee: 0 })
 
-            if (await this.user.limitHit({ on_us: true, amount: tokens })) {
-              const error = `Cannot transfer more than ${this.config.limits.onUsLimit} sats in 24 hours`
-              throw new TransactionRestrictedError(error, { logger: lightningLoggerOnUs })
-            }
-
-            let payeeUser, pubkey
-
-            if (isPushPayment) {
-              // pay through username
-              payeeUser = await User.getUserByUsername(input_username)
-            } else {
-              // standard path, user scan a lightning invoice of our own wallet from another user
-
-              const payeeInvoice = await InvoiceUser.findOne({ _id: id })
-              if (!payeeInvoice) {
-                const error = `User tried to pay invoice from ${this.config.name}, but it does not exist`
-                throw new LightningPaymentError(error, {
-                  logger: lightningLoggerOnUs,
-                  success: false,
-                })
-              }
-
-              if (payeeInvoice.paid) {
-                const error = `Invoice is already paid`
-                throw new LightningPaymentError(error, {
-                  logger: lightningLoggerOnUs,
-                  success: false,
-                })
-              }
-
-              ;({ pubkey } = payeeInvoice)
-              payeeUser = await User.findOne({ _id: payeeInvoice.uid })
-            }
-
-            if (!payeeUser) {
-              const error = `this user doesn't exist`
-              throw new NotFoundError(error, { logger: lightningLoggerOnUs })
-            }
-
-            if (String(payeeUser._id) === String(this.user._id)) {
-              throw new SelfPaymentError(undefined, { logger: lightningLoggerOnUs })
-            }
-
-            const sats = tokens
-            const metadata = {
-              hash: id,
-              pubkey,
-              type: "on_us",
-              pending: false,
-              ...UserWallet.getCurrencyEquivalent({ sats, fee: 0 }),
-            }
-
-            // TODO: manage when paid fully in USD directly from USD balance to avoid conversion issue
-            if (balance.total_in_BTC < sats) {
-              throw new InsufficientBalanceError(undefined, {
-                logger: lightningLoggerOnUs,
-              })
-            }
-
-            await lockExtendOrThrow({ lock, logger: lightningLoggerOnUs }, async () => {
-              const tx = await ledger.addOnUsPayment({
-                description: memoInvoice,
-                sats,
-                metadata,
-                payerUser: this.user,
-                payeeUser,
-                memoPayer,
-                shareMemoWithPayee: isPushPayment,
-                lastPrice: UserWallet.lastPrice,
-              })
-              return tx
-            })
-
-            transactionNotification({
-              amount: sats,
-              user: payeeUser,
-              hash: id,
-              logger: this.logger,
-              type: "paid-invoice",
-            })
-
-            if (!isPushPayment) {
-              // trying to delete the invoice first from lnd
-              // if we failed to do it, the invoice would still be present in InvoiceUser
-              // in case the invoice were to be paid another time independantly (unlikely outcome)
-              try {
-                const { lnd } = getLndFromPubkey({ pubkey })
-
-                await cancelHodlInvoice({ lnd, id })
-                this.logger.info({ id, user: this.user }, "canceling invoice on lnd")
-
-                const resultUpdate = await InvoiceUser.updateOne(
-                  { _id: id },
-                  { paid: true },
-                )
-                this.logger.info(
-                  { id, user: this.user, resultUpdate },
-                  "invoice has been updated from InvoiceUser following on_us transaction",
-                )
-              } catch (err) {
-                this.logger.error({ id, user: this.user, err }, "issue deleting invoice")
-              }
-            }
-
-            // adding contact for the payer
-            if (payeeUser.username) {
-              await addContact({ uid: this.user._id, username: payeeUser.username })
-            }
-
-            // adding contact for the payee
-            if (this.user.username) {
-              await addContact({ uid: payeeUser._id, username: this.user.username })
-            }
-
-            lightningLoggerOnUs.info(
-              {
-                isPushPayment,
-                success: true,
-                isReward: params.isReward ?? false,
-                ...metadata,
-              },
-              "lightning payment success",
-            )
-
-            return "success"
+          if (await this.user.limitHit({ on_us: true, amount: tokens })) {
+            const error = `Cannot transfer more than ${this.config.limits.onUsLimit} sats in 24 hours`
+            throw new TransactionRestrictedError(error, { logger: lightningLoggerOnUs })
           }
 
-          // "normal" transaction: paying another lightning node
-          if (!this.user.oldEnoughForWithdrawal) {
-            const error = `New accounts have to wait ${this.config.limits.oldEnoughForWithdrawalHours}h before withdrawing`
-            throw new NewAccountWithdrawalError(error, { logger: lightningLogger })
-          }
+          let payeeUser, pubkey
 
-          if (await this.user.limitHit({ on_us: false, amount: tokens })) {
-            const error = `Cannot transfer more than ${this.config.limits.withdrawalLimit} sats in 24 hours`
-            throw new TransactionRestrictedError(error, { logger: lightningLogger })
-          }
-
-          // TODO: fine tune those values:
-          // const probe_timeout_ms
-          // const path_timeout_ms
-
-          // TODO: push payment for other node as well
-          lightningLogger = lightningLogger.child({ onUs: false, max_fee })
-
-          const key = JSON.stringify({ id, mtokens })
-          route = JSON.parse((await redis.get(key)) as string)
-          this.logger.info({ route }, "route from redis")
-
-          let pubkey: string, lnd: AuthenticatedLnd
-
-          // TODO: check if route is not an array and we shouldn't use .length instead
-          if (route) {
-            lightningLogger = lightningLogger.child({ routing: "payViaRoutes", route })
-            fee = route.safe_fee
-            feeKnownInAdvance = true
-            pubkey = route.pubkey
-
-            try {
-              ;({ lnd } = getLndFromPubkey({ pubkey }))
-            } catch (err) {
-              // lnd may have gone offline since the probe has been done.
-              // deleting entry so that subsequent payment attempt could succeed
-              await redis.del(key)
-              throw err
-            }
+          if (isPushPayment) {
+            // pay through username
+            payeeUser = await User.getUserByUsername(input_username)
           } else {
-            lightningLogger = lightningLogger.child({ routing: "payViaPaymentDetails" })
-            fee = max_fee
-            feeKnownInAdvance = false
-            ;({ pubkey, lnd } = getActiveLnd())
-          }
+            // standard path, user scan a lightning invoice of our own wallet from another user
 
-          // we are confident enough that there is a possible payment route. let's move forward
-          // TODO quote for fees, and also USD for USD users
-
-          let entry
-
-          {
-            const sats = tokens + fee
-
-            const metadata = {
-              hash: id,
-              type: "payment",
-              pending: true,
-              pubkey,
-              feeKnownInAdvance,
-              ...UserWallet.getCurrencyEquivalent({ sats, fee }),
-            }
-
-            lightningLogger = lightningLogger.child({ route, balance, ...metadata })
-
-            // TODO usd management for balance
-
-            if (balance.total_in_BTC < sats) {
-              throw new InsufficientBalanceError(undefined, { logger: lightningLogger })
-            }
-
-            entry = await lockExtendOrThrow(
-              { lock, logger: lightningLogger },
-              async () => {
-                // reduce balance from customer first
-                const tx = await ledger.addLndPayment({
-                  description: memoInvoice,
-                  payerUser: this.user,
-                  sats,
-                  metadata,
-                  lastPrice: UserWallet.lastPrice,
-                })
-                return tx
-              },
-            )
-
-            // there is 3 scenarios for a payment.
-            // 1/ payment succeed (function return before TIMEOUT_PAYMENT) and:
-            // 1A/ fees are known in advance
-            // 1B/ fees are not kwown in advance --> need to refund for the difference in fees?
-            //   for now we keep the change
-
-            // 2/ the payment fails. we are reverting it. this including voiding prior transaction
-            // 3/ payment is still pending after TIMEOUT_PAYMENT.
-            // we are timing out the request for UX purpose, so that the client can show the payment is pending
-            // even if the payment is still ongoing from lnd.
-            // to clean pending payments, another cron-job loop will run in the background.
-
-            try {
-              // Fixme: seems to be leaking if it timeout.
-              if (route) {
-                paymentPromise = payViaRoutes({ lnd, routes: [route], id })
-              } else {
-                // incoming_peer?
-                // max_paths for MPP
-                // max_timeout_height ??
-                paymentPromise = payViaPaymentDetails({
-                  lnd,
-                  id,
-                  cltv_delta,
-                  destination,
-                  features,
-                  max_fee,
-                  mtokens,
-                  payment,
-                  routes: routeHint,
-                })
-              }
-
-              await Promise.race([paymentPromise, timeout(TIMEOUT_PAYMENT, "Timeout")])
-              // FIXME
-              // return this.payDetail({
-              //     pubkey: details.destination,
-              //     hash: details.id,
-              //     amount: details.tokens,
-              //     routes: details.routes
-              // })
-            } catch (err) {
-              if (err.message === "Timeout") {
-                lightningLogger.warn({ ...metadata, pending: true }, "timeout payment")
-
-                return "pending"
-                // pending in-flight payment are being handled either by a cron job
-                // or payment update when the user query his balance
-              }
-
-              try {
-                // FIXME: this query may not make sense
-                // where multiple payment have the same hash
-                // ie: when a payment is being retried
-
-                await ledger.settleLndPayment(id)
-
-                await ledger.voidTransactions(entry.journal._id, err[1])
-
-                lightningLogger.warn(
-                  { success: false, err, ...metadata, entry },
-                  `payment error`,
-                )
-              } catch (err_fatal) {
-                const error = `ERROR CANCELING PAYMENT ENTRY`
-                throw new DbError(error, { logger: lightningLogger, level: "fatal" })
-              }
-
-              if (isInvoiceAlreadyPaidError(err)) {
-                lightningLogger.warn(
-                  { ...metadata, pending: false },
-                  "invoice already paid",
-                )
-                return "already_paid"
-              }
-
-              throw new LightningPaymentError("Error paying invoice", {
-                logger: lightningLogger,
-                err,
+            const payeeInvoice = await InvoiceUser.findOne({ _id: id })
+            if (!payeeInvoice) {
+              const error = `User tried to pay invoice from ${this.config.name}, but it does not exist`
+              throw new LightningPaymentError(error, {
+                logger: lightningLoggerOnUs,
                 success: false,
               })
             }
 
-            // success
-            await ledger.settleLndPayment(id)
-            const paymentResult = await paymentPromise
-
-            if (!feeKnownInAdvance) {
-              await this.recordFeeDifference({
-                paymentResult,
-                max_fee,
-                id,
-                related_journal: entry.journal._id,
+            if (payeeInvoice.paid) {
+              const error = `Invoice is already paid`
+              throw new LightningPaymentError(error, {
+                logger: lightningLoggerOnUs,
+                success: false,
               })
             }
 
-            lightningLogger.info(
-              { success: true, paymentResult, ...metadata },
-              `payment success`,
-            )
+            ;({ pubkey } = payeeInvoice)
+            payeeUser = await User.findOne({ _id: payeeInvoice.uid })
           }
 
+          if (!payeeUser) {
+            const error = `this user doesn't exist`
+            throw new NotFoundError(error, { logger: lightningLoggerOnUs })
+          }
+
+          if (String(payeeUser._id) === String(this.user._id)) {
+            throw new SelfPaymentError(undefined, { logger: lightningLoggerOnUs })
+          }
+
+          const sats = tokens
+          const metadata = {
+            hash: id,
+            pubkey,
+            type: "on_us",
+            pending: false,
+            ...UserWallet.getCurrencyEquivalent({ sats, fee: 0 }),
+          }
+
+          // TODO: manage when paid fully in USD directly from USD balance to avoid conversion issue
+          if (balance.total_in_BTC < sats) {
+            throw new InsufficientBalanceError(undefined, {
+              logger: lightningLoggerOnUs,
+            })
+          }
+
+          await lockExtendOrThrow({ lock, logger: lightningLoggerOnUs }, async () => {
+            const tx = await ledger.addOnUsPayment({
+              description: memoInvoice,
+              sats,
+              metadata,
+              payerUser: this.user,
+              payeeUser,
+              memoPayer,
+              shareMemoWithPayee: isPushPayment,
+              lastPrice: UserWallet.lastPrice,
+            })
+            return tx
+          })
+
+          transactionNotification({
+            amount: sats,
+            user: payeeUser,
+            hash: id,
+            logger: this.logger,
+            type: "paid-invoice",
+          })
+
+          if (!isPushPayment) {
+            // trying to delete the invoice first from lnd
+            // if we failed to do it, the invoice would still be present in InvoiceUser
+            // in case the invoice were to be paid another time independantly (unlikely outcome)
+            try {
+              const { lnd } = getLndFromPubkey({ pubkey })
+
+              await cancelHodlInvoice({ lnd, id })
+              this.logger.info({ id, user: this.user }, "canceling invoice on lnd")
+
+              const resultUpdate = await InvoiceUser.updateOne(
+                { _id: id },
+                { paid: true },
+              )
+              this.logger.info(
+                { id, user: this.user, resultUpdate },
+                "invoice has been updated from InvoiceUser following on_us transaction",
+              )
+            } catch (err) {
+              this.logger.error({ id, user: this.user, err }, "issue deleting invoice")
+            }
+          }
+
+          // adding contact for the payer
+          if (payeeUser.username) {
+            await addContact({ uid: this.user._id, username: payeeUser.username })
+          }
+
+          // adding contact for the payee
+          if (this.user.username) {
+            await addContact({ uid: payeeUser._id, username: this.user.username })
+          }
+
+          lightningLoggerOnUs.info(
+            {
+              isPushPayment,
+              success: true,
+              isReward: params.isReward ?? false,
+              ...metadata,
+            },
+            "lightning payment success",
+          )
+
           return "success"
-        },
-      )
+        }
+
+        // "normal" transaction: paying another lightning node
+        if (!this.user.oldEnoughForWithdrawal) {
+          const error = `New accounts have to wait ${this.config.limits.oldEnoughForWithdrawalHours}h before withdrawing`
+          throw new NewAccountWithdrawalError(error, { logger: lightningLogger })
+        }
+
+        if (await this.user.limitHit({ on_us: false, amount: tokens })) {
+          const error = `Cannot transfer more than ${this.config.limits.withdrawalLimit} sats in 24 hours`
+          throw new TransactionRestrictedError(error, { logger: lightningLogger })
+        }
+
+        // TODO: fine tune those values:
+        // const probe_timeout_ms
+        // const path_timeout_ms
+
+        // TODO: push payment for other node as well
+        lightningLogger = lightningLogger.child({ onUs: false, max_fee })
+
+        const key = JSON.stringify({ id, mtokens })
+        route = JSON.parse((await redis.get(key)) as string)
+        this.logger.info({ route }, "route from redis")
+
+        let pubkey: string, lnd: AuthenticatedLnd
+
+        // TODO: check if route is not an array and we shouldn't use .length instead
+        if (route) {
+          lightningLogger = lightningLogger.child({ routing: "payViaRoutes", route })
+          fee = route.safe_fee
+          feeKnownInAdvance = true
+          pubkey = route.pubkey
+
+          try {
+            ;({ lnd } = getLndFromPubkey({ pubkey }))
+          } catch (err) {
+            // lnd may have gone offline since the probe has been done.
+            // deleting entry so that subsequent payment attempt could succeed
+            await redis.del(key)
+            throw err
+          }
+        } else {
+          lightningLogger = lightningLogger.child({ routing: "payViaPaymentDetails" })
+          fee = max_fee
+          feeKnownInAdvance = false
+          ;({ pubkey, lnd } = getActiveLnd())
+        }
+
+        // we are confident enough that there is a possible payment route. let's move forward
+        // TODO quote for fees, and also USD for USD users
+
+        let entry
+
+        {
+          const sats = tokens + fee
+
+          const metadata = {
+            hash: id,
+            type: "payment",
+            pending: true,
+            pubkey,
+            feeKnownInAdvance,
+            ...UserWallet.getCurrencyEquivalent({ sats, fee }),
+          }
+
+          lightningLogger = lightningLogger.child({ route, balance, ...metadata })
+
+          // TODO usd management for balance
+
+          if (balance.total_in_BTC < sats) {
+            throw new InsufficientBalanceError(undefined, { logger: lightningLogger })
+          }
+
+          entry = await lockExtendOrThrow({ lock, logger: lightningLogger }, async () => {
+            // reduce balance from customer first
+            const tx = await ledger.addLndPayment({
+              description: memoInvoice,
+              payerUser: this.user,
+              sats,
+              metadata,
+              lastPrice: UserWallet.lastPrice,
+            })
+            return tx
+          })
+
+          // there is 3 scenarios for a payment.
+          // 1/ payment succeed (function return before TIMEOUT_PAYMENT) and:
+          // 1A/ fees are known in advance
+          // 1B/ fees are not kwown in advance --> need to refund for the difference in fees?
+          //   for now we keep the change
+
+          // 2/ the payment fails. we are reverting it. this including voiding prior transaction
+          // 3/ payment is still pending after TIMEOUT_PAYMENT.
+          // we are timing out the request for UX purpose, so that the client can show the payment is pending
+          // even if the payment is still ongoing from lnd.
+          // to clean pending payments, another cron-job loop will run in the background.
+
+          try {
+            // Fixme: seems to be leaking if it timeout.
+            if (route) {
+              paymentPromise = payViaRoutes({ lnd, routes: [route], id })
+            } else {
+              // incoming_peer?
+              // max_paths for MPP
+              // max_timeout_height ??
+              paymentPromise = payViaPaymentDetails({
+                lnd,
+                id,
+                cltv_delta,
+                destination,
+                features,
+                max_fee,
+                mtokens,
+                payment,
+                routes: routeHint,
+              })
+            }
+
+            await Promise.race([paymentPromise, timeout(TIMEOUT_PAYMENT, "Timeout")])
+            // FIXME
+            // return this.payDetail({
+            //     pubkey: details.destination,
+            //     hash: details.id,
+            //     amount: details.tokens,
+            //     routes: details.routes
+            // })
+          } catch (err) {
+            if (err.message === "Timeout") {
+              lightningLogger.warn({ ...metadata, pending: true }, "timeout payment")
+
+              return "pending"
+              // pending in-flight payment are being handled either by a cron job
+              // or payment update when the user query his balance
+            }
+
+            try {
+              // FIXME: this query may not make sense
+              // where multiple payment have the same hash
+              // ie: when a payment is being retried
+
+              await ledger.settleLndPayment(id)
+
+              await ledger.voidTransactions(entry.journal._id, err[1])
+
+              lightningLogger.warn(
+                { success: false, err, ...metadata, entry },
+                `payment error`,
+              )
+            } catch (err_fatal) {
+              const error = `ERROR CANCELING PAYMENT ENTRY`
+              throw new DbError(error, { logger: lightningLogger, level: "fatal" })
+            }
+
+            if (isInvoiceAlreadyPaidError(err)) {
+              lightningLogger.warn(
+                { ...metadata, pending: false },
+                "invoice already paid",
+              )
+              return "already_paid"
+            }
+
+            throw new LightningPaymentError("Error paying invoice", {
+              logger: lightningLogger,
+              err,
+              success: false,
+            })
+          }
+
+          // success
+          await ledger.settleLndPayment(id)
+          const paymentResult = await paymentPromise
+
+          if (!feeKnownInAdvance) {
+            await this.recordFeeDifference({
+              paymentResult,
+              max_fee,
+              id,
+              related_journal: entry.journal._id,
+            })
+          }
+
+          lightningLogger.info(
+            { success: true, paymentResult, ...metadata },
+            `payment success`,
+          )
+        }
+
+        return "success"
+      })
     }
 
     // this method is used when the probing failed
@@ -797,7 +791,7 @@ export const LightningMixin = (superclass) =>
       this.logger.debug({ invoice, user: this.user }, "got invoice status")
 
       if (invoice.is_confirmed) {
-        return await redlock({ path: hash, logger: this.logger, lock }, async () => {
+        return redlock({ path: hash, logger: this.logger, lock }, async () => {
           const lightningLogger = this.logger.child({
             hash,
             user: this.user._id,
