@@ -53,6 +53,7 @@ export const LedgerService = (): ILedgerService => {
           memoFromPayer: tx.memoPayer,
           paymentHash: tx.hash,
           addresses: tx.payee_addresses,
+          txId: tx.hash,
         }
       })
     } catch (err) {

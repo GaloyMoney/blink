@@ -36,6 +36,7 @@ type LedgerTransaction = {
 
   // for onchain
   readonly addresses?: OnChainAddress[]
+  readonly txId?: TxId
 }
 
 interface ILedgerService {
