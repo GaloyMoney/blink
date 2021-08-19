@@ -44,9 +44,10 @@ export const getTransactionsForWallet = async (
     return PartialResult.partial(confirmedHistory.transactions, onChainTxs)
   }
 
+  const addresses = wallet.onChainAddresses()
   const filter = TxFilter({
     confirmationsLessThan: ONCHAIN_MIN_CONFIRMATIONS,
-    addresses: wallet.onChainAddresses,
+    addresses,
   })
   const pendingTxs = filter.apply(onChainTxs)
 
@@ -57,7 +58,6 @@ export const getTransactionsForWallet = async (
   }
 
   return PartialResult.ok(
-    confirmedHistory.addPendingIncoming(pendingTxs, wallet.onChainAddresses, price)
-      .transactions,
+    confirmedHistory.addPendingIncoming(pendingTxs, addresses, price).transactions,
   )
 }
