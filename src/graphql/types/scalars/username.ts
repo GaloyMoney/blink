@@ -2,6 +2,7 @@ import { GT } from "@graphql/index"
 
 const Username = new GT.Scalar({
   name: "Username",
+  description: "Unique identifier of an API user",
   parseValue(value) {
     return validUsernameValue(value)
   },
@@ -14,8 +15,8 @@ const Username = new GT.Scalar({
 })
 
 function validUsernameValue(value) {
-  if (value.match(/^[A-Za-z0-9_]{3,50}/)) {
-    return value
+  if (value.match(/^[a-z0-9_]{3,50}/i)) {
+    return value.toLowerCase()
   }
   return new Error("Invalid value for Username")
 }

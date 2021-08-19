@@ -2,6 +2,7 @@ import { GT } from "@graphql/index"
 
 const SignedAmount = new GT.Scalar({
   name: "SignedAmount",
+  description: "An amount (of a currency) that can be negative (i.g. in a transaction)",
   parseValue(value) {
     return validSignedAmount(value)
   },

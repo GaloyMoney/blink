@@ -3,6 +3,7 @@ import { GT } from "@graphql/index"
 
 const Memo = new GT.Scalar({
   name: "Memo",
+  description: "Text field in a lightning payment transaction",
   parseValue(value) {
     return validMemo(value)
   },

@@ -1,7 +1,8 @@
 import { GT } from "@graphql/index"
 
-const Date = new GT.Scalar({
-  name: "Date",
+const Timestamp = new GT.Scalar({
+  name: "Timestamp",
+  description: "Date field, serialized as the number of milliseconds since the Unix Epoch",
   serialize(value) {
     return value.getTime()
   },
@@ -19,4 +20,4 @@ const Date = new GT.Scalar({
 
 // TODO: validate date value
 
-export default Date
+export default Timestamp

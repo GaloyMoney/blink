@@ -1,7 +1,7 @@
 import { addInvoiceNoAmountForRecipient } from "@app/wallets"
 import { GT } from "@graphql/index"
 
-import LnNoAmountInvoicePayload from "../payloads/ln-noamount-invoice"
+import LnNoAmountInvoicePayload from "../payload/ln-noamount-invoice"
 import Memo from "../scalars/memo"
 import Username from "../scalars/username"
 

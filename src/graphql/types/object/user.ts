@@ -2,7 +2,7 @@ import * as Accounts from "@app/accounts"
 import { GT } from "@graphql/index"
 import Account from "../abstract/account"
 
-import Date from "../scalars/date"
+import Timestamp from "../scalars/timestamp"
 import Language from "../scalars/language"
 import Phone from "../scalars/phone"
 import Username from "../scalars/username"
@@ -33,7 +33,7 @@ const User = new GT.Object({
     // TODO: contacts, quizQuestions
 
     createdAt: {
-      type: GT.NonNull(Date),
+      type: GT.NonNull(Timestamp),
       resolve: (source) => source.createdAt,
     },
   }),

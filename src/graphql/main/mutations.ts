@@ -1,5 +1,5 @@
 import { GT } from "../index"
-import LnNoAmountInvoiceCreateOnBehalfOfRecipientMutation from "../types/mutations/ln-noamount-invoice-create-on-behalf-of-recipient"
+import LnNoAmountInvoiceCreateOnBehalfOfRecipientMutation from "../types/mutation/ln-noamount-invoice-create-on-behalf-of-recipient"
 
 const MutationType = new GT.Object({
   name: "Mutation",

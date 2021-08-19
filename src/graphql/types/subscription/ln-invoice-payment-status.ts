@@ -3,7 +3,7 @@ import { PaymentStatusChecker } from "@app/lightning"
 import { GT, pubsub } from "@graphql/index"
 
 import LnInvoicePaymentRequest from "../scalars/ln-invoice-payment-request"
-import LnInvoicePaymentStatusPayload from "../payloads/ln-invoice-payment-status"
+import LnInvoicePaymentStatusPayload from "../payload/ln-invoice-payment-status"
 
 const LnInvoicePaymentStatusInput = new GT.Input({
   name: "LnInvoicePaymentStatusInput",
