@@ -22,24 +22,31 @@ import { getGaloyInstanceName, MS_PER_DAY } from "@config/app"
 
 import { baseLogger } from "@services/logger"
 import { ledger } from "@services/mongodb"
-import { DbMetadata, InvoiceUser } from "@services/mongoose/schema"
+import { DbMetadata } from "@services/mongoose/schema"
 
 import { DbError, LndOfflineError, ValidationInternalError } from "@core/error"
 import { LoggedError, LOOK_BACK_CHANNEL_UPDATE } from "@core/utils"
 
 import { FEECAP, FEEMIN, params } from "./auth"
+import { WalletInvoicesRepository } from "@services/mongoose"
+import { isRepoError } from "@domain/utils"
 
-export const deleteExpiredInvoiceUser = () => {
+export const deleteExpiredInvoiceUser = async () => {
+  const walletInvoicesRepo = WalletInvoicesRepository()
+
   // this should be longer than the invoice validity time
-
   const delta = 90 // days
 
   const date = new Date(Date.now())
   date.setDate(date.getDate() - delta)
 
-  // TODO: assert: only paid: true invoice should be remaining here
-  // other invoiceUser should be deleted alongside deletion of lnd invoice
-  return InvoiceUser.deleteMany({ timestamp: { $lt: date } })
+  const result = await walletInvoicesRepo.deleteExpired(date)
+  if (isRepoError(result)) {
+    baseLogger.error({ error: result }, "error deleting expired invoices")
+    return 0
+  }
+
+  return result
 }
 
 export const deleteFailedPaymentsAllLnds = async () => {
