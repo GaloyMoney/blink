@@ -2,9 +2,9 @@ import { getCurrentPrice } from "@services/realtime-price"
 import { sendBalanceToUsers } from "@servers/daily-balance-notification"
 import { User } from "@services/mongoose/schema"
 import { ledger } from "@services/mongodb"
-jest.mock("@core/notifications/notification")
+jest.mock("@services/notifications/notification")
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const { sendNotification } = require("@core/notifications/notification")
+const { sendNotification } = require("@services/notifications/notification")
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 
