@@ -1,7 +1,7 @@
 type PaymentInitiationMethod =
-  typeof import("./index").PaymentInitiationMethod[keyof typeof import("./index").PaymentInitiationMethod]
+  typeof import("./tx-methods").PaymentInitiationMethod[keyof typeof import("./tx-methods").PaymentInitiationMethod]
 type SettlementMethod =
-  typeof import("./settlement-method").SettlementMethod[keyof typeof import("./settlement-method").SettlementMethod]
+  typeof import("./tx-methods").SettlementMethod[keyof typeof import("./tx-methods").SettlementMethod]
 
 // Fields only needed to support the old schema
 type UsdPerSat = number
