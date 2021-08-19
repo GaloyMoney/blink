@@ -1,4 +1,5 @@
 type LedgerError = import("./errors").LedgerError
+type LedgerServiceError = import("./errors").LedgerServiceError
 
 declare const liabilitiesAccountId: unique symbol
 type LiabilitiesAccountId = string & { [liabilitiesAccountId]: never }
@@ -40,7 +41,12 @@ type LedgerTransaction = {
 }
 
 interface ILedgerService {
-  getLiabilityTransactions: (
+  getLiabilityTransactions(
     liabilitiesAccountId: LiabilitiesAccountId,
-  ) => Promise<LedgerTransaction[] | LedgerError>
+  ): Promise<LedgerTransaction[] | LedgerServiceError>
+
+  isOnChainTxRecorded(
+    liabilitiesAccountId: LiabilitiesAccountId,
+    txId: TxId,
+  ): Promise<boolean | LedgerServiceError>
 }

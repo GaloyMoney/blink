@@ -27,7 +27,9 @@ export const loadLedger = ({
 
 import { UnknownLedgerError, LedgerError } from "@domain/ledger/errors"
 import { MainBook } from "./books"
+import { Transaction } from "./schema"
 import { toSats } from "@domain/bitcoin"
+import { LedgerTransactionType } from "@domain/ledger"
 
 export const LedgerService = (): ILedgerService => {
   const getLiabilityTransactions = async (
@@ -61,5 +63,20 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
-  return { getLiabilityTransactions }
+  const isOnChainTxRecorded = async (
+    liabilitiesAccountId: LiabilitiesAccountId,
+    txId: TxId,
+  ): Promise<boolean | LedgerServiceError> => {
+    try {
+      const result = Transaction.countDocuments({
+        accounts: liabilitiesAccountId,
+        type: LedgerTransactionType.OnchainReceipt,
+        hash: txId,
+      })
+      return result
+    } catch (err) {
+      return new UnknownLedgerError(err)
+    }
+  }
+  return { getLiabilityTransactions, isOnChainTxRecorded }
 }
