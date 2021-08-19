@@ -28,8 +28,10 @@ export const loadLedger = ({
 import { UnknownLedgerError, LedgerError } from "@domain/ledger/errors"
 import { MainBook } from "./books"
 import { Transaction } from "./schema"
+import { addOnchainReceipt } from "./transaction"
 import { toSats } from "@domain/bitcoin"
 import { LedgerTransactionType } from "@domain/ledger"
+import { lndAccountingPath, bankOwnerAccountPath } from "./accounts"
 
 export const LedgerService = (): ILedgerService => {
   const getLiabilityTransactions = async (
@@ -78,5 +80,43 @@ export const LedgerService = (): ILedgerService => {
       return new UnknownLedgerError(err)
     }
   }
-  return { getLiabilityTransactions, isOnChainTxRecorded }
+
+  const receiveOnChainTx = async ({
+    liabilitiesAccountId,
+    txId,
+    sats,
+    fee,
+    usd,
+    usdFee,
+    receivingAddress,
+  }: ReceiveOnChainTxArgs) => {
+    try {
+      const metadata = {
+        currency: "BTC",
+        type: LedgerTransactionType.OnchainReceipt,
+        pending: false,
+        hash: txId,
+        fee,
+        usdFee,
+        sats,
+        usd,
+        payee_addresses: [receivingAddress],
+      }
+
+      const entry = MainBook.entry("")
+        .credit(liabilitiesAccountId, sats - fee, metadata)
+        .debit(lndAccountingPath, sats, metadata)
+
+      if (fee > 0) {
+        const bankOwnerPath = await bankOwnerAccountPath()
+        entry.credit(bankOwnerPath, fee, metadata)
+      }
+
+      await entry.commit()
+    } catch (err) {
+      return new UnknownLedgerError(err)
+    }
+  }
+
+  return { getLiabilityTransactions, isOnChainTxRecorded, receiveOnChainTx }
 }
