@@ -14,6 +14,7 @@ ca:
 
 image:
   repository: gcr.io/galoyapp/galoy
+  digest: "xyz"
 
 deployment:
 - name: graphql
