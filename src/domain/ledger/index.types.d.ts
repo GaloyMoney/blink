@@ -40,6 +40,16 @@ type LedgerTransaction = {
   readonly txId?: TxId
 }
 
+type ReceiveOnChainTxArgs = {
+  liabilitiesAccountId: LiabilitiesAccountId
+  txId: TxId
+  sats: Satoshis
+  fee: Satoshis
+  usd: number
+  usdFee: number
+  receivingAddress: OnChainAddress
+}
+
 interface ILedgerService {
   getLiabilityTransactions(
     liabilitiesAccountId: LiabilitiesAccountId,
@@ -49,4 +59,6 @@ interface ILedgerService {
     liabilitiesAccountId: LiabilitiesAccountId,
     txId: TxId,
   ): Promise<boolean | LedgerServiceError>
+
+  receiveOnChainTx(args: ReceiveOnChainTxArgs): Promise<void | LedgerServiceError>
 }
