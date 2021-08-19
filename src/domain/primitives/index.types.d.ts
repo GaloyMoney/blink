@@ -1,3 +1,6 @@
+declare const usdPerSatSymbol: unique symbol
+type UsdPerSat = number & { [usdPerSatSymbol]: never }
+
 declare const userIdSymbol: unique symbol
 type UserId = string & { [userIdSymbol]: never }
 

@@ -221,7 +221,11 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
     ]
     const history = WalletTransactionHistory.fromLedger([])
     const addresses = ["userAddress1", "userAddress2"] as OnChainAddress[]
-    const result = history.addPendingIncoming(submittedTransactions, addresses, 1)
+    const result = history.addPendingIncoming(
+      submittedTransactions,
+      addresses,
+      1 as UsdPerSat,
+    )
     const expected = [
       {
         id: "id" as TxId,
@@ -280,7 +284,11 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
     ]
     const history = WalletTransactionHistory.fromLedger([])
     const addresses = ["userAddress1"] as OnChainAddress[]
-    const result = history.addPendingIncoming(submittedTransactions, addresses, NaN)
+    const result = history.addPendingIncoming(
+      submittedTransactions,
+      addresses,
+      NaN as UsdPerSat,
+    )
     const expected = [
       {
         id: "id" as TxId,
