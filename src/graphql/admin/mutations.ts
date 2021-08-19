@@ -1,9 +1,9 @@
 import { GT } from "../index"
 import { login, requestPhoneCode } from "@core/text"
 
-import UserUpdateStatusMutation from "../types/mutations/user-update-status"
-import UserUpdateLevelMutation from "../types/mutations/user-update-level"
-import MerchantUpdateMapInfoMutation from "../types/mutations/merchant-update-map-info"
+import UserUpdateStatusMutation from "../types/mutation/user-update-status"
+import UserUpdateLevelMutation from "../types/mutation/user-update-level"
+import MerchantUpdateMapInfoMutation from "../types/mutation/merchant-update-map-info"
 
 const MutationType = new GT.Object({
   name: "Mutation",

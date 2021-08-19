@@ -1,6 +1,6 @@
 import { GT } from "@graphql/index"
 import Transaction from "../abstract/transaction"
-import Date from "../scalars/date"
+import Timestamp from "../scalars/timestamp"
 
 const IntraLedgerTransaction = new GT.Object({
   name: "IntraLedgerTransaction",
@@ -11,7 +11,7 @@ const IntraLedgerTransaction = new GT.Object({
       type: GT.NonNullID,
     },
     createdAt: {
-      type: GT.NonNull(Date),
+      type: GT.NonNull(Timestamp),
     },
   }),
 })

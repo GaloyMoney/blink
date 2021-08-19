@@ -2,6 +2,7 @@ import { GT } from "@graphql/index"
 
 const Phone = new GT.Scalar({
   name: "Phone",
+  description: "Phone number which includes country code",
   parseValue(value) {
     return validPhoneValue(value)
   },
@@ -14,8 +15,8 @@ const Phone = new GT.Scalar({
 })
 
 function validPhoneValue(value) {
-  // TODO: more accurate phone rexp
-  if (value.match(/^\+[0-9]{7,}$/)) {
+  // ?: Use ^(\+|00)[1-9][0-9 \-\(\)\.]{7,}$ and strip \D 
+  if (value.match(/^\+[1-9][0-9]{7,}$/)) {
     return value
   }
   return new Error("Invalid value for Phone")

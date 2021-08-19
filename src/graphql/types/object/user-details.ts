@@ -1,6 +1,6 @@
 import { GT } from "@graphql/index"
 
-import Date from "../scalars/date"
+import Timestamp from "../scalars/timestamp"
 import Phone from "../scalars/phone"
 import AccountLevel from "../scalars/account-level"
 import Username from "../scalars/username"
@@ -34,7 +34,7 @@ const UserDetails = new GT.Object({
       resolve: (source) => source.coordinate,
     },
     createdAt: {
-      type: GT.NonNull(Date),
+      type: GT.NonNull(Timestamp),
       resolve: (source) => source.created_at,
     },
   }),
