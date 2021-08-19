@@ -1,5 +1,7 @@
-type PaymentInitiationMethod = typeof import("./tx-methods").PaymentInitiationMethod[keyof typeof import("./tx-methods").PaymentInitiationMethod]
-type SettlementMethod = typeof import("./tx-methods").SettlementMethod[keyof typeof import("./tx-methods").SettlementMethod]
+type PaymentInitiationMethod =
+  typeof import("./tx-methods").PaymentInitiationMethod[keyof typeof import("./tx-methods").PaymentInitiationMethod]
+type SettlementMethod =
+  typeof import("./tx-methods").SettlementMethod[keyof typeof import("./tx-methods").SettlementMethod]
 
 // Fields only needed to support the old schema
 type Deprecated = {

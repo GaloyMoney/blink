@@ -271,7 +271,8 @@ describe("UserWallet - onChainPay", () => {
   })
 
   it("sends an on us transaction", async () => {
-    const address = await userWallet3.getOnChainAddress()
+    const address = await Wallets.createOnChainAddress(userWallet3.user.id)
+    if (address instanceof Error) throw address
     const { BTC: initialBalanceUser3 } = await userWallet3.getBalances()
 
     const paid = await userWallet0.onChainPay({ address, amount })
@@ -296,7 +297,8 @@ describe("UserWallet - onChainPay", () => {
 
   it("sends an on us transaction with memo", async () => {
     const memo = "this is my onchain memo"
-    const address = await userWallet3.getOnChainAddress()
+    const address = await Wallets.createOnChainAddress(userWallet3.user.id)
+    if (address instanceof Error) throw address
     const paid = await userWallet0.onChainPay({ address, amount, memo })
 
     expect(paid).toBe(true)
@@ -331,7 +333,8 @@ describe("UserWallet - onChainPay", () => {
   it("sends all with an on us transaction", async () => {
     const { BTC: initialBalanceUser12 } = await userWallet12.getBalances()
 
-    const address = await userWallet3.getOnChainAddress()
+    const address = await Wallets.createOnChainAddress(userWallet3.user.id)
+    if (address instanceof Error) throw address
     const { BTC: initialBalanceUser3 } = await userWallet3.getBalances()
 
     const paid = await userWallet12.onChainPay({ address, amount: 0, sendAll: true })
@@ -355,7 +358,8 @@ describe("UserWallet - onChainPay", () => {
   })
 
   it("fails if try to send a transaction to self", async () => {
-    const address = await userWallet0.getOnChainAddress()
+    const address = await Wallets.createOnChainAddress(userWallet0.user.id)
+    if (address instanceof Error) throw address
     await expect(userWallet0.onChainPay({ address, amount })).rejects.toThrow()
   })
 
@@ -380,7 +384,8 @@ describe("UserWallet - onChainPay", () => {
   })
 
   it("fails if send all with a nonzero amount", async () => {
-    const address = await userWallet3.getOnChainAddress()
+    const address = await Wallets.createOnChainAddress(userWallet3.user.id)
+    if (address instanceof Error) throw address
     await expect(
       userWallet0.onChainPay({ address, amount, sendAll: true }),
     ).rejects.toThrow()

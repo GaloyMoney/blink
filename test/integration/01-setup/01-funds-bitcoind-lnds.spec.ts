@@ -14,6 +14,7 @@ import {
   waitUntilBlockHeight,
 } from "test/helpers"
 import { getWalletFromRole } from "@core/wallet-factory"
+import { createOnChainAddress } from "@app/wallets"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
@@ -80,7 +81,8 @@ describe("Bitcoind", () => {
     await getUserWallet(4)
 
     const funderWallet = await getWalletFromRole({ role: "funder", logger: baseLogger })
-    const address = await funderWallet.getOnChainAddress()
+    const address = await createOnChainAddress(funderWallet.user.id)
+    if (address instanceof Error) throw address
 
     await sendToAddressAndConfirm({ walletClient: bitcoindOutside, address, amount })
     await waitUntilBlockHeight({ lnd: lnd1 })

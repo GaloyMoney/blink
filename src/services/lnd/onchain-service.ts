@@ -68,14 +68,12 @@ export const extractIncomingTransactions = (
 ): SubmittedTransaction[] => {
   return transactions
     .filter((tx) => !tx.is_outgoing && !!tx.transaction)
-    .map(
-      (tx): SubmittedTransaction => {
-        return {
-          confirmations: tx.confirmation_count || 0,
-          rawTx: decoder.decode(tx.transaction as string),
-          fee: toSats(tx.fee || 0),
-          createdAt: new Date(tx.created_at),
-        }
-      },
-    )
+    .map((tx): SubmittedTransaction => {
+      return {
+        confirmations: tx.confirmation_count || 0,
+        rawTx: decoder.decode(tx.transaction as string),
+        fee: toSats(tx.fee || 0),
+        createdAt: new Date(tx.created_at),
+      }
+    })
 }

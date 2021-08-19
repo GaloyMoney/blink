@@ -47,7 +47,8 @@ describe("onchainBlockEventhandler", () => {
       throw error
     }
 
-    const address = await wallet.getOnChainAddress()
+    const address = await Wallets.createOnChainAddress(wallet.user.id)
+    if (address instanceof Error) throw address
 
     let isFinalBlock = false
     let lastHeight = 0

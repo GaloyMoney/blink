@@ -86,9 +86,11 @@ describe("UserWallet - On chain", () => {
   })
 
   it("receives batch on-chain transaction", async () => {
-    const address0 = await walletUser0.getOnChainAddress()
+    const address0 = await Wallets.createOnChainAddress(walletUser0.user.id)
+    if (address0 instanceof Error) throw address0
     const walletUser4 = await getUserWallet(4)
-    const address4 = await walletUser4.getOnChainAddress()
+    const address4 = await Wallets.createOnChainAddress(walletUser4.user.id)
+    if (address4 instanceof Error) throw address4
 
     const { BTC: initialBalanceUser0 } = await walletUser0.getBalances()
     const { BTC: initBalanceUser4 } = await walletUser4.getBalances()
@@ -147,7 +149,8 @@ describe("UserWallet - On chain", () => {
   })
 
   it("identifies unconfirmed incoming on-chain transactions", async () => {
-    const address = await walletUser0.getOnChainAddress()
+    const address = await Wallets.createOnChainAddress(walletUser0.user.id)
+    if (address instanceof Error) throw address
     const sub = subscribeToTransactions({ lnd: lndonchain })
     sub.on("chain_transaction", onchainTransactionEventHandler)
 
@@ -231,7 +234,8 @@ async function sendToWallet({ walletDestination }) {
     throw error
   }
 
-  const address = await walletDestination.getOnChainAddress()
+  const address = await Wallets.createOnChainAddress(walletDestination.user.id)
+  if (address instanceof Error) throw address
   expect(address.substr(0, 4)).toBe("bcrt")
 
   const checkBalance = async (minBlockToWatch = 1) => {
