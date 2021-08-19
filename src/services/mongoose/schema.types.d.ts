@@ -38,6 +38,7 @@ type CoordinateObjectForUser = {
 // ?: improve this
 interface UserType {
   _id: string
+  id: string
   username?: string
   phone: string
   role: string
