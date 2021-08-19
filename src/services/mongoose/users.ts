@@ -24,6 +24,7 @@ export const UsersRepository = (): IUsersRepository => {
         phone: result.phone as PhoneNumber,
         language: result.language || UserLanguage.EN_US,
         defaultAccountId: result.id as AccountId,
+        deviceToken: result.deviceToken || [],
         createdAt: result.created_at,
       }
     } catch (err) {
@@ -49,6 +50,7 @@ export const UsersRepository = (): IUsersRepository => {
         phone: result.phone as PhoneNumber,
         language: result.language || UserLanguage.EN_US,
         defaultAccountId: result.id as AccountId,
+        deviceToken: result.deviceToken || [],
         createdAt: result.created_at,
       }
     } catch (err) {
