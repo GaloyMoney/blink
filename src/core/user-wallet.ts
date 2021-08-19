@@ -6,9 +6,9 @@ import { ledger } from "@services/mongodb"
 import { DbError, TwoFAError } from "./error"
 import { Balances } from "./interface"
 import { CSVAccountExport } from "./csv-account-export"
-import { sendNotification } from "./notifications/notification"
 import { getGaloyInstanceName } from "@config/app"
 import { generateSecret, verifyToken } from "node-2fa"
+import { sendNotification } from "@services/notifications/notification"
 
 export abstract class UserWallet {
   static lastPrice: number

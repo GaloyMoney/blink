@@ -39,7 +39,7 @@ import {
   LOOK_BACK_OUTGOING,
   myOwnAddressesOnVout,
 } from "../utils"
-import { transactionNotification } from "@core/notifications/payment"
+import { transactionNotification } from "@services/notifications/payment"
 
 export const getOnChainTransactions = async ({
   lnd,

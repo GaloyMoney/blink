@@ -4,7 +4,7 @@ import { baseLogger } from "@services/logger"
 import { getUserLimits } from "@config/app"
 import { getCurrentPrice } from "@services/realtime-price"
 import { btc2sat, sat2btc, sleep } from "@core/utils"
-import { getTitle } from "@core/notifications/payment"
+import { getTitle } from "@services/notifications/payment"
 import { onchainTransactionEventHandler } from "@servers/trigger"
 import {
   checkIsBalanced,
@@ -33,9 +33,9 @@ let amountBTC
 
 const userLimits = getUserLimits({ level: 1 })
 
-jest.mock("@core/notifications/notification")
+jest.mock("@services/notifications/notification")
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const { sendNotification } = require("@core/notifications/notification")
+const { sendNotification } = require("@services/notifications/notification")
 
 beforeAll(async () => {
   walletUser0 = await getUserWallet(0)

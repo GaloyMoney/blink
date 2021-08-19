@@ -8,7 +8,7 @@ import {
   getOnChainWalletConfig,
 } from "@config/app"
 import { Transaction } from "@services/mongoose/schema"
-import { getTitle } from "@core/notifications/payment"
+import { getTitle } from "@services/notifications/payment"
 import { onchainTransactionEventHandler } from "@servers/trigger"
 import {
   checkIsBalanced,
@@ -32,7 +32,7 @@ import { TwoFAError, TransactionRestrictedError } from "@core/error"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
-jest.mock("@core/notifications/notification")
+jest.mock("@services/notifications/notification")
 
 const date = Date.now() + 1000 * 60 * 60 * 24 * 8
 
@@ -42,7 +42,7 @@ let initialBalanceUser0
 let userWallet0, userWallet3, userWallet11, userWallet12 // using userWallet11 and userWallet12 to sendAll
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const { sendNotification } = require("@core/notifications/notification")
+const { sendNotification } = require("@services/notifications/notification")
 
 beforeAll(async () => {
   userWallet0 = await getUserWallet(0)

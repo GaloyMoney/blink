@@ -37,7 +37,7 @@ import {
   TwoFAError,
 } from "../error"
 import { lockExtendOrThrow, redlock } from "../lock"
-import { transactionNotification } from "../notifications/payment"
+import { transactionNotification } from "@services/notifications/payment"
 import { UserWallet } from "../user-wallet"
 import { addContact, isInvoiceAlreadyPaidError, timeout } from "../utils"
 

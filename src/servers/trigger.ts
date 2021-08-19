@@ -16,7 +16,7 @@ import { baseLogger } from "@services/logger"
 import { ledger, setupMongoConnection } from "@services/mongodb"
 import { InvoiceUser, User } from "@services/mongoose/schema"
 
-import { transactionNotification } from "@core/notifications/payment"
+import { transactionNotification } from "@services/notifications/payment"
 import { Price } from "@core/price-impl"
 import { WalletFactory } from "@core/wallet-factory"
 import { getOnChainTransactions } from "@core/on-chain"
