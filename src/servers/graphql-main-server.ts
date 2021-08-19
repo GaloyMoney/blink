@@ -6,7 +6,7 @@ import { setupMongoConnection } from "@services/mongodb"
 import { activateLndHealthCheck } from "@services/lnd/health"
 import { baseLogger } from "@services/logger"
 import { startApolloServer } from "./graphql-server"
-import { gqlSchema } from "../graphql"
+import { gqlMainSchema } from "../graphql"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
 
@@ -22,7 +22,7 @@ export async function startApolloServerForCoreSchema() {
     { allowExternalErrors: true },
   )
 
-  const schema = applyMiddleware(gqlSchema, permissions)
+  const schema = applyMiddleware(gqlMainSchema, permissions)
   return startApolloServer({ schema, port: 4002, startSubscriptionServer: true })
 }
 
