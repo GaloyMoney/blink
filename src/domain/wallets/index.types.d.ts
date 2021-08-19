@@ -66,8 +66,12 @@ type OnChainAddressIdentifier = {
   readonly address: OnChainAddress
 }
 
+declare const depositFeeRatioSymbol: unique symbol
+type DepositFeeRatio = number & { [depositFeeRatioSymbol]: never }
+
 type Wallet = {
   readonly id: WalletId
+  readonly depositFeeRatio: DepositFeeRatio
   readonly onChainAddressIdentifiers: OnChainAddressIdentifier[]
   onChainAddresses(): OnChainAddress[]
 }
