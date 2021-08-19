@@ -43,8 +43,14 @@ type TxFilter = {
   apply(txsonChainTransactions: SubmittedTransaction[]): SubmittedTransaction[]
 }
 
+type OnChainAddressIdentifier = {
+  readonly pubkey: Pubkey
+  readonly address: OnChainAddress
+}
+
 interface IOnChainService {
   getIncomingTransactions(
     scanDepth: number,
   ): Promise<SubmittedTransaction[] | OnChainServiceError>
+  createOnChainAddress(): Promise<OnChainAddressIdentifier | OnChainServiceError>
 }
