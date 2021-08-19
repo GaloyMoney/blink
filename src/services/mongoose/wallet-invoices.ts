@@ -74,5 +74,14 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     }
   }
 
-  return { persist, findByPaymentHash, listWalletsWithPendingInvoices }
+  const deleteByPaymentHash = async (paymentHash: PaymentHash): Promise<boolean | RepositoryError> => {
+    try {
+      const result = await InvoiceUser.deleteOne({ _id: paymentHash })
+      return result.deletedCount === 1
+    } catch (error) {
+      return new RepositoryError(error)
+    }
+  }
+
+  return { persist, findByPaymentHash, listWalletsWithPendingInvoices, deleteByPaymentHash }
 }

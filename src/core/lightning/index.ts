@@ -37,6 +37,7 @@ import { lockExtendOrThrow, redlock } from "../lock"
 import { transactionNotification } from "@services/notifications/payment"
 import { UserWallet } from "../user-wallet"
 import { addContact, isInvoiceAlreadyPaidError, timeout } from "../utils"
+import { isRepoError } from "@domain/utils"
 
 export type ITxType =
   | "invoice"
@@ -744,12 +745,10 @@ export const LightningMixin = (superclass) =>
       const invoice = await getInvoiceAttempt({ lnd, id: hash })
 
       if (!invoice) {
-        try {
-          await InvoiceUser.deleteOne({ _id: hash, uid: this.user._id })
-        } catch (err) {
+        const isDeleted = this.invoices.deleteByPaymentHash(hash as PaymentHash)
+        if (isRepoError(isDeleted) || !isDeleted) {
           this.logger.error({ invoice }, "impossible to delete InvoiceUser entry")
         }
-
         return false
       }
 
