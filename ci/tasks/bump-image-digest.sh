@@ -22,3 +22,4 @@ fi
   git status
   git commit -m "Bump image digest to '${digest}'"
 )
+exit 1
