@@ -5,7 +5,7 @@ import { LedgerService } from "@services/ledger"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { toLiabilitiesAccountId, LedgerError } from "@domain/ledger"
 import { LOOK_BACK } from "@core/utils"
-import { ONCHAIN_MIN_CONFIRMATIONS } from "@config/app"
+import { ONCHAIN_MIN_CONFIRMATIONS, BTC_NETWORK } from "@config/app"
 import { WalletTransactionHistory } from "@domain/wallets"
 import { PartialResult } from "@app/partial-result"
 
@@ -34,7 +34,7 @@ export const getTransactionsForWallet = async (
 
   const confirmedHistory = WalletTransactionHistory.fromLedger(ledgerTransactions)
 
-  const onChain = OnChainService(TxDecoder(process.env.NETWORK as BtcNetwork))
+  const onChain = OnChainService(TxDecoder(BTC_NETWORK))
   if (onChain instanceof OnChainError) {
     return PartialResult.partial(confirmedHistory.transactions, onChain)
   }
