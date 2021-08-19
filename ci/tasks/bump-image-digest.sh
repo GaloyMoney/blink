@@ -6,7 +6,7 @@ digest=$(cat ./edge-image/digest)
 
 pushd charts-repo
 
-sed -i'' "s/^  digest:.*/  digest: \"${tag}\"/" ./charts/galoy/values.yaml
+sed -i'' "s/^  digest:.*/  digest: \"${digest}\"/" ./charts/galoy/values.yaml
 
 if [[ -z $(git config --global user.email) ]]; then
   git config --global user.email "bot@galoy.io"
