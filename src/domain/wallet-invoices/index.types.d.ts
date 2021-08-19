@@ -14,4 +14,6 @@ interface IWalletInvoicesRepository {
   ) => Promise<WalletInvoice | RepositoryError>
 
   listWalletsWithPendingInvoices: () => AsyncGenerator<WalletId> | RepositoryError
+
+  deleteByPaymentHash: (paymentHash: PaymentHash) => Promise<boolean | RepositoryError>
 }
