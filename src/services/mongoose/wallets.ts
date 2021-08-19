@@ -18,7 +18,8 @@ export const WalletsRepository = (): IWalletsRepository => {
           address: address as OnChainAddress,
         }
       })
-      const onChainAddresses = onChainAddressIdentifiers.map(({ address }) => address)
+      const onChainAddresses = () =>
+        onChainAddressIdentifiers.map(({ address }) => address)
 
       return { id: walletId, onChainAddresses, onChainAddressIdentifiers }
     } catch (err) {
