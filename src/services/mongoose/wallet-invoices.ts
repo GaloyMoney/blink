@@ -74,7 +74,9 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     }
   }
 
-  const deleteByPaymentHash = async (paymentHash: PaymentHash): Promise<boolean | RepositoryError> => {
+  const deleteByPaymentHash = async (
+    paymentHash: PaymentHash,
+  ): Promise<boolean | RepositoryError> => {
     try {
       const result = await InvoiceUser.deleteOne({ _id: paymentHash })
       return result.deletedCount === 1
@@ -83,5 +85,23 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     }
   }
 
-  return { persist, findByPaymentHash, listWalletsWithPendingInvoices, deleteByPaymentHash }
+  const deleteExpired = async (before: Date): Promise<number | RepositoryError> => {
+    try {
+      const result = await InvoiceUser.deleteMany({
+        timestamp: { $lt: before },
+        paid: false,
+      })
+      return result.deletedCount
+    } catch (error) {
+      return new RepositoryError(error)
+    }
+  }
+
+  return {
+    persist,
+    findByPaymentHash,
+    listWalletsWithPendingInvoices,
+    deleteByPaymentHash,
+    deleteExpired,
+  }
 }
