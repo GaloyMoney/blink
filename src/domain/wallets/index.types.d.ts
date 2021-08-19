@@ -4,7 +4,6 @@ type SettlementMethod =
   typeof import("./tx-methods").SettlementMethod[keyof typeof import("./tx-methods").SettlementMethod]
 
 // Fields only needed to support the old schema
-type UsdPerSat = number
 type Deprecated = {
   readonly description: string
   readonly type: LedgerTransactionType

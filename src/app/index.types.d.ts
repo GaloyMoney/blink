@@ -3,4 +3,9 @@ type PartialResult<T> = {
   error?: ApplicationError
 }
 
-type ApplicationError = LedgerError | OnChainError | RepositoryError | LightningError
+type ApplicationError =
+  | LedgerError
+  | OnChainError
+  | RepositoryError
+  | LightningError
+  | PriceError

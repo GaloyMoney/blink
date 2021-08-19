@@ -2,15 +2,13 @@ import { RepositoryError } from "@domain/errors"
 import { OnChainError, TxFilter, TxDecoder } from "@domain/bitcoin/onchain"
 import { WalletsRepository } from "@services/mongoose"
 import { LedgerService } from "@services/ledger"
+import { PriceService } from "@services/price"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { toLiabilitiesAccountId, LedgerError } from "@domain/ledger"
 import { LOOK_BACK } from "@core/utils"
 import { ONCHAIN_MIN_CONFIRMATIONS, BTC_NETWORK } from "@config/app"
 import { WalletTransactionHistory } from "@domain/wallets"
 import { PartialResult } from "@app/partial-result"
-
-// TODO should be exposed via PriceSerivce / LiquidityProvider
-import { getCurrentPrice } from "@services/realtime-price"
 
 export const getTransactionsForWalletId = async ({
   walletId,
@@ -51,9 +49,8 @@ export const getTransactionsForWallet = async (
   })
   const pendingTxs = filter.apply(onChainTxs)
 
-  // TODO should be a service - not a function call
-  let price = await getCurrentPrice()
-  if (typeof price !== "number") {
+  let price = await PriceService().getCurrentPrice()
+  if (price instanceof Error) {
     price = NaN
   }
 
