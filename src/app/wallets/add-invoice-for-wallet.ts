@@ -62,23 +62,10 @@ export const addInvoiceNoAmountForRecipient = async ({
   recipient,
   memo = "",
 }: AddInvoiceNoAmountRecipientArgs): Promise<LnInvoice | ApplicationError> => {
-  const usersRepo = UsersRepository()
-  const accountsRepo = AccountsRepository()
-
-  const user = await usersRepo.findByUsername(recipient)
-  if (user instanceof Error) return user
-
-  const defaultAccount = await accountsRepo.findById(user.defaultAccountId)
-  if (defaultAccount instanceof Error) return defaultAccount
-
-  const walletId = defaultAccount.walletIds[0]
-
-  const walletInvoiceFactory = WalletInvoiceFactory(walletId)
-
-  return addInvoiceForWallet({
+  return addInvoiceForRecipient({
+    recipient,
     amount: toSats(0),
     memo,
-    walletInvoiceCreateFn: walletInvoiceFactory.createForRecipient,
   })
 }
 
