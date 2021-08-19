@@ -564,6 +564,15 @@ type Mutation {
 
   ## Ledger entry (not part of LN) ##
   intraLedgerPaymentSend(input: UserPaymentInput!): PaymentStatusPayload! # FINAL (mobile)
+
+  businessAccountCreate(input: BusinessAccountCreateInput!): BusinessAccountPayload!
+  businessAccountAddWallet(input: BusinessAccountAddWalletInput!): WalletPayload!
+  businessAccountDisableWallet
+  businessAccountAddUser()
+  businessAccountRemoveUser()
+  permissions: viewBalance, viewAllTransactions, viewRecentTransactions, refund?, receive, intraBusinessSend, anySend
+  # businessAccountAddPermission()
+  # businessAccountRemovePermission()
 }
 
 #########################
