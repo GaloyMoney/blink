@@ -30,7 +30,11 @@ spec:
     spec:
       containers:
         - name: {{ .name }}
+          {{- if $.Values.image.tag -}}
           image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag }}{{- if .debugContainer -}}-debug{{- end -}}"
+          {{- else -}}
+          image: "{{ $.Values.image.repository }}@{{ $.Values.image.digest }}"
+          {{- end -}}
           {{- if .command }}
           command: ["/bin/sh","-c", {{ .command }}]
           {{- end }}
