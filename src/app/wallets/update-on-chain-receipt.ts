@@ -48,7 +48,7 @@ export const updateOnChainReceipt = async (
   }
   const liabilitiesAccountId = toLiabilitiesAccountId(wallet.id)
 
-  return await redlock({ path: wallet.id, logger }, async () => {
+  return redlock({ path: wallet.id, logger }, async () => {
     for (const tx of pendingTxs) {
       const recorded = await ledger.isOnChainTxRecorded(liabilitiesAccountId, tx.id)
       if (recorded instanceof Error) {

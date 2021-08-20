@@ -33,7 +33,7 @@ describe("onchainBlockEventhandler", () => {
     const wallet = await getUserWallet(0)
 
     await mineBlockAndSyncAll()
-    let result = await Wallets.updateOnChainReceipt(wallet.user.id, baseLogger)
+    const result = await Wallets.updateOnChainReceipt(wallet.user.id, baseLogger)
     if (result instanceof Error) {
       throw result
     }

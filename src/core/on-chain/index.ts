@@ -11,7 +11,6 @@ import {
 import _ from "lodash"
 import { verifyToken } from "node-2fa"
 
-import { bitcoindDefaultClient } from "@services/bitcoind"
 import { getActiveOnchainLnd, getLndFromPubkey } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { ledger } from "@services/mongodb"
@@ -31,15 +30,7 @@ import {
 } from "../error"
 import { lockExtendOrThrow, redlock } from "../lock"
 import { UserWallet } from "../user-wallet"
-import {
-  amountOnVout,
-  btc2sat,
-  LoggedError,
-  LOOK_BACK,
-  LOOK_BACK_OUTGOING,
-  myOwnAddressesOnVout,
-} from "../utils"
-import { transactionNotification } from "@services/notifications/payment"
+import { LoggedError, LOOK_BACK, LOOK_BACK_OUTGOING } from "../utils"
 
 export const getOnChainTransactions = async ({
   lnd,
@@ -511,113 +502,5 @@ export const OnChainMixin = (superclass) =>
       }
 
       return user_matched_txs
-    }
-
-    // raw encoded transaction
-    async getSatsAndAddressPerTx(tx): Promise<{ sats: number; addresses: string[] }> {
-      const { vout } = await bitcoindDefaultClient.decodeRawTransaction({ hexstring: tx })
-
-      //   vout: [
-      //   {
-      //     value: 1,
-      //     n: 0,
-      //     scriptPubKey: {
-      //       asm: '0 13584315784642a24d62c7dd1073f24c60604a10',
-      //       hex: '001413584315784642a24d62c7dd1073f24c60604a10',
-      //       reqSigs: 1,
-      //       type: 'witness_v0_keyhash',
-      //       addresses: [ 'bcrt1qzdvyx9tcgep2yntzclw3quljf3sxqjsszrwx2x' ]
-      //     }
-      //   },
-      //   {
-      //     value: 46.9999108,
-      //     n: 1,
-      //     scriptPubKey: {
-      //       asm: '0 44c6e3f09c2462f9825e441a69d3f2c2325f3ab8',
-      //       hex: '001444c6e3f09c2462f9825e441a69d3f2c2325f3ab8',
-      //       reqSigs: 1,
-      //       type: 'witness_v0_keyhash',
-      //       addresses: [ 'bcrt1qgnrw8uyuy330nqj7gsdxn5ljcge97w4cu4c7m0' ]
-      //     }
-      //   }
-      // ]
-
-      // we have to look at the precise vout because lnd sums up the value at the transaction level, not at the vout level.
-      // ie: if an attacker send 10 to user A at Galoy, and 10 to user B at galoy in a sinle transaction,
-      // both would be credited 20, unless we do the below filtering.
-      const value = amountOnVout({ vout, addresses: this.user.onchain_addresses })
-      const sats = btc2sat(value)
-
-      const addresses = myOwnAddressesOnVout({
-        vout,
-        addresses: this.user.onchain_addresses,
-      })
-
-      return { sats, addresses }
-    }
-
-    async updateOnchainReceipt(lock?) {
-      const user_matched_txs = await this.getOnchainReceipt({ confirmed: true })
-
-      const type = "onchain_receipt"
-
-      await redlock(
-        { path: this.user._id, logger: baseLogger /* FIXME */, lock },
-        async () => {
-          // FIXME O(n) ^ 2. bad.
-          for (const matched_tx of user_matched_txs) {
-            // has the transaction has not been added yet to the user account?
-            //
-            // note: the fact we fiter with `account_path: this.user.accountPath` could create
-            // double transaction for some non customer specific wallet. ie: if the path is different
-            // for the dealer. this is fixed now but something to think about.
-            const query = { type, hash: matched_tx.id }
-            const count = await ledger.getAccountTransactionsCount(
-              this.user.accountPath,
-              query,
-            )
-
-            if (!count) {
-              const { sats, addresses } = await this.getSatsAndAddressPerTx(
-                matched_tx.transaction,
-              )
-              assert(matched_tx.tokens >= sats)
-
-              const fee = Math.round(sats * this.user.depositFeeRatio)
-
-              const metadata = {
-                hash: matched_tx.id,
-                ...UserWallet.getCurrencyEquivalent({ sats, fee }),
-                payee_addresses: addresses,
-              }
-
-              await ledger.addOnchainReceipt({
-                description: "",
-                sats,
-                fee,
-                account: this.user.accountPath,
-                metadata,
-              })
-
-              const onchainLogger = this.logger.child({
-                topic: "payment",
-                protocol: "onchain",
-                transactionType: "receipt",
-                onUs: false,
-              })
-
-              onchainLogger.info({ success: true, ...metadata })
-
-              await transactionNotification({
-                type,
-                user: this.user,
-                logger: onchainLogger,
-                amount: sats,
-                txid: matched_tx.id,
-              })
-            }
-          }
-        },
-      )
     }
   }

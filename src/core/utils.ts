@@ -1,5 +1,4 @@
 import { GraphQLError } from "graphql"
-import _ from "lodash"
 import { parsePaymentRequest } from "invoices"
 import axios from "axios"
 
@@ -55,21 +54,6 @@ export const addContact = async ({ uid, username }) => {
       },
     )
   }
-}
-
-export const amountOnVout = ({ vout, addresses }): number => {
-  // TODO: check if this is always [0], ie: there is always a single addresses for vout for lnd output
-  const addressFilter = (tx) =>
-    tx.scriptPubKey?.addresses && _.includes(addresses, tx.scriptPubKey.addresses[0])
-  return _.sumBy(_.filter(vout, addressFilter), "value")
-}
-
-export const myOwnAddressesOnVout = ({ vout, addresses }): string[] => {
-  // TODO: check if this is always [0], ie: there is always a single addresses for vout for lnd output
-  const scriptAddresses = vout
-    .filter((o) => o.scriptPubKey?.addresses)
-    .map((o) => o.scriptPubKey.addresses[0])
-  return _.intersection(_.union(scriptAddresses), addresses)
 }
 
 export const getHash = (request) => {
