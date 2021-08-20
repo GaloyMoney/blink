@@ -47,19 +47,10 @@ export const addInvoiceByUsername = async ({
   const sats = checkedToSats(amount)
   if (sats instanceof Error) throw sats
 
-  const usersRepo = UsersRepository()
-  const accountsRepo = AccountsRepository()
-
-  const user = await usersRepo.findByUsername(username)
-  if (user instanceof Error) return user
-
-  const defaultAccount = await accountsRepo.findById(user.defaultAccountId)
-  if (defaultAccount instanceof Error) return defaultAccount
-
-  const walletId = defaultAccount.walletIds[0]
+  const walletId = await walletIdFromUsername(username)
+  if (walletId instanceof Error) throw walletId
 
   const walletInvoiceFactory = WalletInvoiceFactory(walletId)
-
   return registerAndPersistInvoice({
     sats,
     memo,
@@ -71,10 +62,17 @@ export const addInvoiceNoAmountByUsername = async ({
   recipient,
   memo = "",
 }: AddInvoiceNoAmountByUsernameArgs): Promise<LnInvoice | ApplicationError> => {
-  return addInvoiceByUsername({
-    recipient,
-    amount: toSats(0),
+  const username = checkedToUsername(recipient)
+  if (username instanceof Error) return username
+
+  const walletId = await walletIdFromUsername(username)
+  if (walletId instanceof Error) throw walletId
+
+  const walletInvoiceFactory = WalletInvoiceFactory(walletId)
+  return registerAndPersistInvoice({
+    sats: toSats(0),
     memo,
+    walletInvoiceCreateFn: walletInvoiceFactory.createForRecipient,
   })
 }
 
@@ -106,4 +104,19 @@ const registerAndPersistInvoice = async ({
   if (persistedWalletInvoice instanceof Error) return persistedWalletInvoice
 
   return invoice
+}
+
+const walletIdFromUsername = async (
+  username: Username,
+): Promise<WalletId | RepositoryError> => {
+  const usersRepo = UsersRepository()
+  const accountsRepo = AccountsRepository()
+
+  const user = await usersRepo.findByUsername(username)
+  if (user instanceof Error) return user
+
+  const defaultAccount = await accountsRepo.findById(user.defaultAccountId)
+  if (defaultAccount instanceof Error) return defaultAccount
+
+  return defaultAccount.walletIds[0]
 }
