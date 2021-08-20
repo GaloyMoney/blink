@@ -31,7 +31,7 @@ import {
   waitUntilChannelBalanceSyncAll,
 } from "test/helpers"
 import * as Wallets from "@app/wallets"
-import { addInvoiceForSelf } from "@app/wallets/add-invoice-for-wallet"
+import { addInvoice } from "@app/wallets/add-invoice-for-wallet"
 import { toSats } from "@domain/bitcoin"
 
 const date = Date.now() + 1000 * 60 * 60 * 24 * 8
@@ -68,7 +68,7 @@ describe("UserWallet - Lightning Pay", () => {
   it("sends to another Galoy user with memo", async () => {
     const memo = "invoiceMemo"
 
-    const lnInvoice = await addInvoiceForSelf({
+    const lnInvoice = await addInvoice({
       walletId: userWallet2.user.id as WalletId,
       amount: toSats(amountInvoice),
       memo,
@@ -106,7 +106,7 @@ describe("UserWallet - Lightning Pay", () => {
     const memo = "invoiceMemo"
     const memoPayer = "my memo as a payer"
 
-    const lnInvoice = await addInvoiceForSelf({
+    const lnInvoice = await addInvoice({
       walletId: userWallet2.user.id as WalletId,
       amount: toSats(amountInvoice),
       memo,
@@ -281,7 +281,7 @@ describe("UserWallet - Lightning Pay", () => {
   })
 
   it("fails if sends to self", async () => {
-    const lnInvoice = await addInvoiceForSelf({
+    const lnInvoice = await addInvoice({
       walletId: userWallet1.user.id as WalletId,
       amount: toSats(amountInvoice),
       memo: "self payment",
@@ -354,7 +354,7 @@ describe("UserWallet - Lightning Pay", () => {
   })
 
   it("fails to pay when amount exceeds onUs limit", async () => {
-    const lnInvoice = await addInvoiceForSelf({
+    const lnInvoice = await addInvoice({
       walletId: userWallet0.user.id as WalletId,
       amount: toSats(userLimits.onUsLimit + 1),
     })
@@ -443,7 +443,7 @@ describe("UserWallet - Lightning Pay", () => {
           const { BTC: payerInitialBalance } = await walletPayer.getBalances()
           const { BTC: payeeInitialBalance } = await walletPayee.getBalances()
 
-          const lnInvoice = await addInvoiceForSelf({
+          const lnInvoice = await addInvoice({
             walletId: walletPayee.user.id as WalletId,
             amount: toSats(amountInvoice),
           })
@@ -686,7 +686,7 @@ describe("UserWallet - Lightning Pay", () => {
 
     const { lnd } = getActiveLnd()
 
-    const lnInvoice = await addInvoiceForSelf({
+    const lnInvoice = await addInvoice({
       walletId: userWallet1.user.id as WalletId,
       amount: toSats(amountInvoice),
       memo,

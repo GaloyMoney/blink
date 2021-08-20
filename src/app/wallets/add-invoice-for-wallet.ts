@@ -9,39 +9,39 @@ import {
   AccountsRepository,
 } from "@services/mongoose"
 
-export const addInvoiceForSelf = async ({
+export const addInvoice = async ({
   walletId,
   amount,
   memo = "",
-}: AddInvoiceSelfArgs): Promise<LnInvoice | ApplicationError> => {
+}: AddInvoiceArgs): Promise<LnInvoice | ApplicationError> => {
   const sats = checkedToSats(amount)
   if (sats instanceof Error) throw sats
 
   const walletInvoiceFactory = WalletInvoiceFactory(walletId)
-  return addInvoiceForWallet({
+  return registerAndPersistInvoice({
     sats,
     memo,
     walletInvoiceCreateFn: walletInvoiceFactory.create,
   })
 }
 
-export const addInvoiceNoAmountForSelf = async ({
+export const addInvoiceNoAmount = async ({
   walletId,
   memo = "",
-}: AddInvoiceNoAmountSelfArgs): Promise<LnInvoice | ApplicationError> => {
+}: AddInvoiceNoAmountArgs): Promise<LnInvoice | ApplicationError> => {
   const walletInvoiceFactory = WalletInvoiceFactory(walletId)
-  return addInvoiceForWallet({
+  return registerAndPersistInvoice({
     sats: toSats(0),
     memo,
     walletInvoiceCreateFn: walletInvoiceFactory.create,
   })
 }
 
-export const addInvoiceForRecipient = async ({
+export const addInvoiceByUsername = async ({
   recipient,
   amount,
   memo = "",
-}: AddInvoiceRecipientArgs): Promise<LnInvoice | ApplicationError> => {
+}: AddInvoiceByUsernameArgs): Promise<LnInvoice | ApplicationError> => {
   const username = checkedToUsername(recipient)
   if (username instanceof Error) return username
   const sats = checkedToSats(amount)
@@ -60,25 +60,25 @@ export const addInvoiceForRecipient = async ({
 
   const walletInvoiceFactory = WalletInvoiceFactory(walletId)
 
-  return addInvoiceForWallet({
+  return registerAndPersistInvoice({
     sats,
     memo,
     walletInvoiceCreateFn: walletInvoiceFactory.createForRecipient,
   })
 }
 
-export const addInvoiceNoAmountForRecipient = async ({
+export const addInvoiceNoAmountByUsername = async ({
   recipient,
   memo = "",
-}: AddInvoiceNoAmountRecipientArgs): Promise<LnInvoice | ApplicationError> => {
-  return addInvoiceForRecipient({
+}: AddInvoiceNoAmountByUsernameArgs): Promise<LnInvoice | ApplicationError> => {
+  return addInvoiceByUsername({
     recipient,
     amount: toSats(0),
     memo,
   })
 }
 
-const addInvoiceForWallet = async ({
+const registerAndPersistInvoice = async ({
   sats,
   memo,
   walletInvoiceCreateFn,

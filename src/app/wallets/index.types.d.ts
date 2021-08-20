@@ -1,21 +1,21 @@
-type AddInvoiceSelfArgs = {
+type AddInvoiceArgs = {
   walletId: WalletId
   amount: Satoshis
   memo?: string
 }
 
-type AddInvoiceNoAmountSelfArgs = {
+type AddInvoiceNoAmountArgs = {
   walletId: WalletId
   memo?: string
 }
 
-type AddInvoiceRecipientArgs = {
+type AddInvoiceByUsernameArgs = {
   recipient: Username
   amount: Satoshis
   memo?: string
 }
 
-type AddInvoiceNoAmountRecipientArgs = {
+type AddInvoiceNoAmountByUsernameArgs = {
   recipient: Username
   memo?: string
 }
