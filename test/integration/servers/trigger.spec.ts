@@ -17,7 +17,7 @@ import {
 } from "test/helpers"
 import * as Wallets from "@app/wallets"
 import { toSats } from "@domain/bitcoin"
-import { addInvoiceForSelf } from "@app/wallets"
+import { addInvoice } from "@app/wallets"
 import { getHash } from "@core/utils"
 import { ledger } from "@services/mongodb"
 import { getTitle } from "@core/notifications/payment"
@@ -107,7 +107,7 @@ describe("onchainBlockEventhandler", () => {
   it("should process pending invoices on invoice update event", async () => {
     const sats = 500
     const wallet = await getUserWallet(12)
-    const lnInvoice = await addInvoiceForSelf({
+    const lnInvoice = await addInvoice({
       walletId: wallet.user.id as WalletId,
       amount: toSats(sats),
     })
