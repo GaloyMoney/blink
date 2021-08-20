@@ -53,6 +53,29 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     }
   }
 
+  async function* findPendingByWalletId(
+    walletId: WalletId,
+  ): AsyncGenerator<WalletInvoice> | RepositoryError {
+    let pending
+    try {
+      pending = InvoiceUser.find({ uid: walletId, paid: false }).cursor({
+        batchSize: 100,
+      })
+    } catch (error) {
+      return new RepositoryError(error)
+    }
+
+    for await (const invoice of pending) {
+      yield {
+        paymentHash: invoice.id as PaymentHash,
+        walletId: invoice.uid as WalletId,
+        selfGenerated: invoice.selfGenerated,
+        pubkey: invoice.pubkey as Pubkey,
+        paid: invoice.paid,
+      } as WalletInvoice
+    }
+  }
+
   async function* listWalletsWithPendingInvoices():
     | AsyncGenerator<WalletId>
     | RepositoryError {
@@ -71,6 +94,17 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
 
     for await (const { _id } of pending) {
       yield _id as WalletId
+    }
+  }
+
+  const setPaidByPaymentHash = async (
+    paymentHash: PaymentHash,
+  ): Promise<boolean | RepositoryError> => {
+    try {
+      const result = await InvoiceUser.updateOne({ _id: paymentHash }, { paid: true })
+      return result.nModified === 1
+    } catch (error) {
+      return new RepositoryError(error)
     }
   }
 
@@ -100,7 +134,9 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
   return {
     persist,
     findByPaymentHash,
+    findPendingByWalletId,
     listWalletsWithPendingInvoices,
+    setPaidByPaymentHash,
     deleteByPaymentHash,
     deleteExpired,
   }
