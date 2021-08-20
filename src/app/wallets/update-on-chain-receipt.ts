@@ -30,6 +30,9 @@ export const updateOnChainReceipt = async (
     return onChain
   }
   const onChainTxs = await onChain.getIncomingTransactions(LOOK_BACK)
+  if (onChainTxs instanceof OnChainError) {
+    return onChainTxs
+  }
 
   const wallets = WalletsRepository()
   const wallet = await wallets.findById(walletId)
@@ -50,7 +53,7 @@ export const updateOnChainReceipt = async (
 
   return redlock({ path: wallet.id, logger }, async () => {
     for (const tx of pendingTxs) {
-      const recorded = await ledger.isOnChainTxRecorded(liabilitiesAccountId, tx.id)
+      const recorded = await ledger.isOnChainTxRecorded(liabilitiesAccountId, tx.rawTx.id)
       if (recorded instanceof Error) {
         logger.error({ error: recorded }, "Could not query ledger")
         return recorded
@@ -58,14 +61,14 @@ export const updateOnChainReceipt = async (
 
       if (!recorded) {
         for (const { sats, address } of tx.rawTx.outs) {
-          if (addresses.includes(address)) {
+          if (address !== null && addresses.includes(address)) {
             const fee = toSats(Math.round(sats * wallet.depositFeeRatio))
             const usd = sats * price
             const usdFee = fee * price
 
             const result = await ledger.receiveOnChainTx({
               liabilitiesAccountId,
-              txId: tx.id,
+              txId: tx.rawTx.id,
               sats,
               fee,
               usd,
@@ -80,7 +83,7 @@ export const updateOnChainReceipt = async (
             await notifications.onChainTransactionReceived({
               walletId: walletId,
               amount: sats,
-              txId: tx.id,
+              txId: tx.rawTx.id,
             })
           }
         }
