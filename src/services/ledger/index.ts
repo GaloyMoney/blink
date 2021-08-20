@@ -28,7 +28,6 @@ export const loadLedger = ({
 import { UnknownLedgerError, LedgerError } from "@domain/ledger/errors"
 import { MainBook } from "./books"
 import { Transaction } from "./schema"
-import { addOnchainReceipt } from "./transaction"
 import { toSats } from "@domain/bitcoin"
 import { LedgerTransactionType } from "@domain/ledger"
 import { lndAccountingPath, bankOwnerAccountPath } from "./accounts"

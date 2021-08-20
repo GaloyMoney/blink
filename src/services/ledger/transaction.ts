@@ -152,35 +152,6 @@ export const updateLndEscrow = async ({ amount }) => {
   return { ...escrowData, updated: true }
 }
 
-export const addOnchainReceipt = async ({
-  description,
-  sats,
-  fee,
-  account,
-  metadata,
-}) => {
-  const txMetadata = {
-    currency: "BTC",
-    type: "onchain_receipt",
-    pending: false,
-    ...metadata,
-  }
-
-  const entry = MainBook.entry(description)
-    .credit(account, sats - fee, txMetadata)
-    .debit(lndAccountingPath, sats, txMetadata)
-
-  if (fee) {
-    const bankOwnerPath = await bankOwnerAccountPath()
-    // no need to have an entry if there is no fee.
-    entry.credit(bankOwnerPath, fee, txMetadata)
-  }
-
-  await entry.commit()
-
-  return entry
-}
-
 export const addOnchainPayment = async ({
   description,
   sats,

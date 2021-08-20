@@ -245,7 +245,10 @@ async function sendToWallet({ walletDestination }) {
 
     await waitUntilBlockHeight({ lnd })
     // this is done by trigger and/or cron in prod
-    let result = await Wallets.updateOnChainReceipt(walletDestination.user.id, baseLogger)
+    const result = await Wallets.updateOnChainReceipt(
+      walletDestination.user.id,
+      baseLogger,
+    )
     if (result instanceof Error) {
       throw result
     }
