@@ -30,7 +30,7 @@ export const updateOnChainReceipt = async (
     return onChain
   }
   const onChainTxs = await onChain.getIncomingTransactions(LOOK_BACK)
-  if (onChainTxs instanceof OnChainError) {
+  if (onChainTxs instanceof Error) {
     return onChainTxs
   }
 
