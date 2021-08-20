@@ -7,7 +7,7 @@ import { OnChainMixin } from "../on-chain"
 import { onboardingEarn } from "@config/app"
 import { UserWallet } from "../user-wallet"
 import { getWalletFromRole } from "../wallet-factory"
-import { addInvoiceForSelf } from "@app/wallets"
+import { addInvoice } from "@app/wallets"
 
 /**
  * this represents a user wallet
@@ -50,7 +50,7 @@ export class LightningUserWallet extends OnChainMixin(LightningMixin(UserWallet)
 
         if (userPastState.earn.findIndex((item) => item === id) === -1) {
           // FIXME: use pay by username instead
-          const lnInvoice = await addInvoiceForSelf({
+          const lnInvoice = await addInvoice({
             walletId: this.user.id,
             amount,
             memo: id,

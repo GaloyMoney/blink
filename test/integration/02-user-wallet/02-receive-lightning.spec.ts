@@ -4,10 +4,7 @@ import { checkIsBalanced, getUserWallet, lndOutside1, pay } from "test/helpers"
 import { MEMO_SHARING_SATS_THRESHOLD } from "@config/app"
 import * as Wallets from "@app/wallets"
 import { PaymentInitiationMethod } from "@domain/wallets"
-import {
-  addInvoiceForSelf,
-  addInvoiceNoAmountForSelf,
-} from "@app/wallets/add-invoice-for-wallet"
+import { addInvoice, addInvoiceNoAmount } from "@app/wallets/add-invoice-for-wallet"
 import { toSats } from "@domain/bitcoin"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
@@ -34,7 +31,7 @@ describe("UserWallet - Lightning", () => {
     const sats = 50000
     const memo = "myMemo"
 
-    const lnInvoice = await addInvoiceForSelf({
+    const lnInvoice = await addInvoice({
       walletId: userWallet1.user.id as WalletId,
       amount: toSats(sats),
       memo,
@@ -76,7 +73,7 @@ describe("UserWallet - Lightning", () => {
   it("receives zero amount invoice", async () => {
     const sats = 1000
 
-    const lnInvoice = await addInvoiceNoAmountForSelf({
+    const lnInvoice = await addInvoiceNoAmount({
       walletId: userWallet1.user.id as WalletId,
     })
     if (lnInvoice instanceof Error) return lnInvoice
@@ -108,7 +105,7 @@ describe("UserWallet - Lightning", () => {
     expect(sats).toBeLessThan(MEMO_SHARING_SATS_THRESHOLD)
 
     // process spam transaction
-    const lnInvoice = await addInvoiceForSelf({
+    const lnInvoice = await addInvoice({
       walletId: userWallet1.user.id as WalletId,
       amount: toSats(sats),
       memo,
