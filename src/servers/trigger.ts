@@ -22,6 +22,7 @@ import { WalletFactory } from "@core/wallet-factory"
 import { getOnChainTransactions } from "@core/on-chain"
 import { runInParallel } from "@core/utils"
 import { ONCHAIN_MIN_CONFIRMATIONS } from "@config/app"
+import * as Wallets from "@app/wallets"
 
 const logger = baseLogger.child({ module: "trigger" })
 
@@ -160,9 +161,13 @@ export async function onchainBlockEventhandler({ lnd, height }) {
 
       if (user && tx.is_confirmed) {
         logger.trace("updating onchain receipt for user %o in worker %d", user._id, index)
-
-        const wallet = await WalletFactory({ user, logger })
-        await wallet.updateOnchainReceipt()
+        const result = await Wallets.updateOnChainReceipt(user.id, logger)
+        if (result instanceof Error) {
+          logger.error(
+            { userId: user.id, index },
+            "Could not updateOnChainReceipt from trigger",
+          )
+        }
       }
     },
   })

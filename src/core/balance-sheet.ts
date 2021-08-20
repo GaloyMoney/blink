@@ -7,6 +7,8 @@ import { ledger } from "@services/mongodb"
 import { WalletFactory } from "./wallet-factory"
 import { runInParallel } from "./utils"
 
+import * as Wallets from "@app/wallets"
+
 const logger = baseLogger.child({ module: "balanceSheet" })
 
 export const updatePendingLightningTransactions = async () => {
@@ -24,8 +26,13 @@ export const updatePendingLightningTransactions = async () => {
     processor: async ({ _id }, index) => {
       logger.trace("updating pending invoices for user %s in worker %d", _id, index)
       const user = await User.findOne({ _id })
-      const userWallet = await WalletFactory({ user, logger })
-      await userWallet.updatePendingInvoices()
+      const result = await Wallets.updateOnChainReceipt(user.id, logger)
+      if (result instanceof Error) {
+        logger.error(
+          { userId: _id, index },
+          "Could not updateOnChainReceipt from balance-sheet",
+        )
+      }
     },
   })
 
@@ -70,8 +77,13 @@ export const updateUsersPendingPayment = async ({
     workers: 3,
     processor: async (user, index) => {
       logger.trace("updating onchain receipt for user %o in worker %d", user._id, index)
-      const userWallet = await WalletFactory({ user, logger })
-      await userWallet.updateOnchainReceipt()
+      const result = await Wallets.updateOnChainReceipt(user.id, logger)
+      if (result instanceof Error) {
+        logger.error(
+          { userId: user.id, index },
+          "Could not updateOnChainReceipt from balance-sheet",
+        )
+      }
     },
   })
 
