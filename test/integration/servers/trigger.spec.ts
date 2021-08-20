@@ -1,4 +1,5 @@
 import { onchainBlockEventhandler } from "@servers/trigger"
+import { baseLogger } from "@services/logger"
 import {
   getUserWallet,
   bitcoindClient,
@@ -32,7 +33,10 @@ describe("onchainBlockEventhandler", () => {
     const wallet = await getUserWallet(0)
 
     await mineBlockAndSyncAll()
-    await wallet.updateOnchainReceipt()
+    let result = await Wallets.updateOnChainReceipt(wallet.user.id, baseLogger)
+    if (result instanceof Error) {
+      throw result
+    }
 
     const { BTC: initialBalance } = await wallet.getBalances()
     const initialBlock = await bitcoindClient.getBlockCount()
