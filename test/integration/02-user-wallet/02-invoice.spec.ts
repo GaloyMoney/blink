@@ -1,7 +1,7 @@
 import {
-  addInvoiceForSelf,
-  addInvoiceNoAmountForRecipient,
-  addInvoiceNoAmountForSelf,
+  addInvoice,
+  addInvoiceNoAmountByUsername,
+  addInvoiceNoAmount,
 } from "@app/wallets/add-invoice-for-wallet"
 import { getHash } from "@core/utils"
 import { toSats } from "@domain/bitcoin"
@@ -19,7 +19,7 @@ beforeAll(async () => {
 
 describe("UserWallet - addInvoice", () => {
   it("adds a self generated invoice", async () => {
-    const lnInvoice = await addInvoiceForSelf({
+    const lnInvoice = await addInvoice({
       walletId: userWallet1.user.id as WalletId,
       amount: toSats(1000),
     })
@@ -32,7 +32,7 @@ describe("UserWallet - addInvoice", () => {
   })
 
   it("adds a self generated invoice without amount", async () => {
-    const lnInvoice = await addInvoiceNoAmountForSelf({
+    const lnInvoice = await addInvoiceNoAmount({
       walletId: userWallet1.user.id as WalletId,
     })
     if (lnInvoice instanceof Error) return lnInvoice
@@ -43,7 +43,7 @@ describe("UserWallet - addInvoice", () => {
   })
 
   it("adds a public invoice", async () => {
-    const lnInvoice = await addInvoiceNoAmountForRecipient({
+    const lnInvoice = await addInvoiceNoAmountByUsername({
       recipient: "user1" as Username,
     })
     if (lnInvoice instanceof Error) return lnInvoice
