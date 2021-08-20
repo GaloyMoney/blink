@@ -1,14 +1,13 @@
 type NotificationsServiceError = import("./errors").NotificationsServiceError
 
 type TransactionReceivedArgs = {
-  type: LedgerTransactionType
-  userId: UserId
+  walletId: WalletId
   amount: Satoshis
   txId: TxId
 }
 
 interface INotificationsService {
-  transactionReceived(
+  onChainTransactionReceived(
     args: TransactionReceivedArgs,
   ): Promise<void | NotificationsServiceError>
 }

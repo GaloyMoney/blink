@@ -1,4 +1,5 @@
 export * from "./get-transactions-for-wallet"
+export * from "./update-on-chain-receipt"
 
 import { WalletsRepository } from "@services/mongoose"
 
