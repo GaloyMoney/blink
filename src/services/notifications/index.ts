@@ -1,19 +1,19 @@
+import { LedgerTransactionType } from "@domain/ledger"
 import { NotificationsServiceError } from "@domain/notifications"
 import { User } from "@services/mongoose/schema"
 import { transactionNotification } from "./payment"
 
 export const NotificationsService = (logger: Logger): INotificationsService => {
-  const transactionReceived = async ({
-    type,
+  const onChainTransactionReceived = async ({
     amount,
-    userId,
+    walletId,
     txId,
   }: TransactionReceivedArgs) => {
     try {
       // work around to move forward before re-wrighting the whole notifications module
-      const user = await User.findOne({ _id: userId })
+      const user = await User.findOne({ _id: walletId })
       transactionNotification({
-        type,
+        type: LedgerTransactionType.OnchainReceipt,
         user,
         logger: logger,
         amount,
@@ -23,5 +23,5 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
       return new NotificationsServiceError(err)
     }
   }
-  return { transactionReceived }
+  return { onChainTransactionReceived }
 }
