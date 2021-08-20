@@ -37,7 +37,7 @@ import { lockExtendOrThrow, redlock } from "../lock"
 import { transactionNotification } from "@services/notifications/payment"
 import { UserWallet } from "../user-wallet"
 import { addContact, isInvoiceAlreadyPaidError, timeout } from "../utils"
-import { isRepoError } from "@domain/utils"
+import { isRepoError, isWalletInvoice } from "@domain/utils"
 import { CouldNotFindError } from "@domain/errors"
 
 export type ITxType =
@@ -239,26 +239,21 @@ export const LightningMixin = (superclass) =>
             throw new TransactionRestrictedError(error, { logger: lightningLoggerOnUs })
           }
 
-          let payeeUser, pubkey
+          let payeeUser, pubkey, payeeInvoice
 
           if (isPushPayment) {
             // pay through username
             payeeUser = await User.getUserByUsername(input_username)
           } else {
             // standard path, user scan a lightning invoice of our own wallet from another user
-            const payeeInvoiceRes = await this.invoices.findByPaymentHash(id)
-            if (
-              payeeInvoiceRes instanceof CouldNotFindError ||
-              isRepoError(payeeInvoiceRes)
-            ) {
+            payeeInvoice = await this.invoices.findByPaymentHash(id)
+            if (payeeInvoice instanceof CouldNotFindError || isRepoError(payeeInvoice)) {
               const error = `User tried to pay invoice from ${this.config.name}, but it does not exist`
               throw new LightningPaymentError(error, {
                 logger: lightningLoggerOnUs,
                 success: false,
               })
             }
-
-            const payeeInvoice = payeeInvoiceRes as WalletInvoice
 
             if (payeeInvoice.paid) {
               const error = `Invoice is already paid`
@@ -329,15 +324,16 @@ export const LightningMixin = (superclass) =>
               await cancelHodlInvoice({ lnd, id })
               this.logger.info({ id, user: this.user }, "canceling invoice on lnd")
 
-              const isUpdated = await this.invoices.setPaidByPaymentHash(id)
-              if (isRepoError(isUpdated) || !isUpdated) {
+              payeeInvoice.paid = true
+              const updatedInvoice = await this.invoices.persist(payeeInvoice)
+              if (isRepoError(updatedInvoice)) {
                 this.logger.error(
-                  { id, user: this.user, err: isUpdated },
+                  { id, user: this.user, err: updatedInvoice },
                   "issue updating invoice",
                 )
               }
 
-              if (isUpdated) {
+              if (isWalletInvoice(updatedInvoice)) {
                 this.logger.info(
                   { id, user: this.user },
                   "invoice has been updated from InvoiceUser following on_us transaction",
@@ -729,15 +725,13 @@ export const LightningMixin = (superclass) =>
       if (!pubkeyCached) {
         let paid: boolean
 
-        const invoiceUserRes = await this.invoices.findByPaymentHash(hash as PaymentHash)
-        if (invoiceUserRes instanceof CouldNotFindError || isRepoError(invoiceUserRes)) {
+        const walletInvoice = await this.invoices.findByPaymentHash(hash as PaymentHash)
+        if (!isWalletInvoice(walletInvoice)) {
           this.logger.info({ hash }, "invoiceUser doesn't exist")
           return false
         }
 
-        const invoiceUser = invoiceUserRes as WalletInvoice
-
-        ;({ paid, pubkey } = invoiceUser)
+        ;({ paid, pubkey } = walletInvoice)
 
         if (paid) {
           return true
@@ -779,24 +773,21 @@ export const LightningMixin = (superclass) =>
             onUs: false,
           })
 
-          const invoiceUserRes = await this.invoices.findByPaymentHash(
-            hash as PaymentHash,
-          )
-          if (isRepoError(invoiceUserRes)) {
+          const invoiceUser = await this.invoices.findByPaymentHash(hash as PaymentHash)
+
+          if (isRepoError(invoiceUser)) {
             throw new DbError("issue getting invoiceUser", {
               logger: this.logger,
               level: "error",
-              err: invoiceUserRes,
+              err: invoiceUser,
               invoice,
             })
           }
 
-          if (invoiceUserRes instanceof CouldNotFindError) {
+          if (!isWalletInvoice(invoiceUser)) {
             lightningLogger.error("invoiceUser not found")
             return false
           }
-
-          const invoiceUser = invoiceUserRes as WalletInvoice
 
           if (invoiceUser.paid) {
             lightningLogger.info("invoice has already been processed")
@@ -809,12 +800,13 @@ export const LightningMixin = (superclass) =>
 
           // OR: use a an unique index account / hash / voided
           // may still not avoid issue from discrenpency between hash and the books
-          const isUpdated = await this.invoices.setPaidByPaymentHash(hash as PaymentHash)
-          if (isRepoError(isUpdated) || !isUpdated) {
+          invoiceUser.paid = true
+          const updatedInvoice = await this.invoices.persist(invoiceUser)
+          if (isRepoError(updatedInvoice)) {
             throw new DbError(`issue updating invoiceUser`, {
               logger: this.logger,
               level: "error",
-              err: isUpdated,
+              err: updatedInvoice,
               invoice,
             })
           }

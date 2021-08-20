@@ -40,7 +40,7 @@ export const deleteExpiredInvoiceUser = async () => {
   const date = new Date(Date.now())
   date.setDate(date.getDate() - delta)
 
-  const result = await walletInvoicesRepo.deleteExpired(date)
+  const result = await walletInvoicesRepo.deleteUnpaidOlderThan(date)
   if (isRepoError(result)) {
     baseLogger.error({ error: result }, "error deleting expired invoices")
     return 0

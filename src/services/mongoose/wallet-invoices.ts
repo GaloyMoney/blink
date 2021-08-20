@@ -14,19 +14,17 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     paid,
   }: WalletInvoice): Promise<WalletInvoice | RepositoryError> => {
     try {
-      await new InvoiceUser({
-        _id: paymentHash,
-        uid: walletId,
-        selfGenerated,
-        pubkey,
-        paid,
-      }).save()
+      const data = { uid: walletId, selfGenerated, pubkey, paid }
+      const doc = await InvoiceUser.findOneAndUpdate({ _id: paymentHash }, data, {
+        new: true,
+        upsert: true,
+      })
       return {
-        paymentHash,
-        walletId,
-        selfGenerated,
-        pubkey,
-        paid,
+        paymentHash: doc.id,
+        walletId: doc.uid,
+        selfGenerated: doc.selfGenerated,
+        pubkey: doc.pubkey,
+        paid: doc.paid,
       } as WalletInvoice
     } catch (err) {
       return new UnknownRepositoryError(err)
@@ -97,17 +95,6 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     }
   }
 
-  const setPaidByPaymentHash = async (
-    paymentHash: PaymentHash,
-  ): Promise<boolean | RepositoryError> => {
-    try {
-      const result = await InvoiceUser.updateOne({ _id: paymentHash }, { paid: true })
-      return result.nModified === 1
-    } catch (error) {
-      return new RepositoryError(error)
-    }
-  }
-
   const deleteByPaymentHash = async (
     paymentHash: PaymentHash,
   ): Promise<boolean | RepositoryError> => {
@@ -119,7 +106,9 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     }
   }
 
-  const deleteExpired = async (before: Date): Promise<number | RepositoryError> => {
+  const deleteUnpaidOlderThan = async (
+    before: Date,
+  ): Promise<number | RepositoryError> => {
     try {
       const result = await InvoiceUser.deleteMany({
         timestamp: { $lt: before },
@@ -136,8 +125,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     findByPaymentHash,
     findPendingByWalletId,
     listWalletsWithPendingInvoices,
-    setPaidByPaymentHash,
     deleteByPaymentHash,
-    deleteExpired,
+    deleteUnpaidOlderThan,
   }
 }

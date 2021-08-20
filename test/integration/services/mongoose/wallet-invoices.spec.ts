@@ -1,4 +1,4 @@
-import { addInvoiceForSelf } from "@app/wallets"
+import { addInvoice } from "@app/wallets"
 import { toSats } from "@domain/bitcoin"
 import { RepositoryError } from "@domain/errors"
 import { WalletInvoicesRepository } from "@services/mongoose"
@@ -25,7 +25,14 @@ describe("WalletInvoices", () => {
 
     const { paymentHash } = persistResult as WalletInvoice
     const lookedUpInvoice = await repo.findByPaymentHash(paymentHash)
+    expect(persistResult).not.toBeInstanceOf(RepositoryError)
     expect(lookedUpInvoice).toEqual(invoiceToPersist)
+
+    const invoiceToUpdate = lookedUpInvoice as WalletInvoice
+    invoiceToUpdate.paid = true
+    const updatedResult = await repo.persist(invoiceToUpdate)
+    expect(updatedResult).not.toBeInstanceOf(RepositoryError)
+    expect(updatedResult).toHaveProperty("paid", true)
   })
 
   it("delete one invoice by hash", async () => {
@@ -40,27 +47,10 @@ describe("WalletInvoices", () => {
     expect(isDeleted).toEqual(true)
   })
 
-  it("set invoice as paid by hash", async () => {
-    const repo = WalletInvoicesRepository()
-    const invoiceToPersist = createTestWalletInvoice()
-    const persistResult = await repo.persist(invoiceToPersist)
-    expect(persistResult).not.toBeInstanceOf(RepositoryError)
-
-    const { paymentHash } = persistResult as WalletInvoice
-    let isUpdated = await repo.setPaidByPaymentHash(paymentHash)
-    expect(persistResult).not.toBeInstanceOf(RepositoryError)
-    expect(isUpdated).toBe(true)
-
-    // if we try to update again it should return false
-    isUpdated = await repo.setPaidByPaymentHash(paymentHash)
-    expect(persistResult).not.toBeInstanceOf(RepositoryError)
-    expect(isUpdated).toBe(false)
-  })
-
   it("find pending invoices by wallet id", async () => {
     const wallet = await getUserWallet(1)
     for (let i = 0; i < 2; i++) {
-      await addInvoiceForSelf({
+      await addInvoice({
         walletId: wallet.user.id as WalletId,
         amount: toSats(1000),
       })

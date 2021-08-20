@@ -19,9 +19,7 @@ interface IWalletInvoicesRepository {
 
   listWalletsWithPendingInvoices: () => AsyncGenerator<WalletId> | RepositoryError
 
-  setPaidByPaymentHash: (paymentHash: PaymentHash) => Promise<boolean | RepositoryError>
-
   deleteByPaymentHash: (paymentHash: PaymentHash) => Promise<boolean | RepositoryError>
 
-  deleteExpired: (before: Date) => Promise<number | RepositoryError>
+  deleteUnpaidOlderThan: (before: Date) => Promise<number | RepositoryError>
 }
