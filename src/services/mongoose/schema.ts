@@ -366,20 +366,6 @@ UserSchema.statics.getUserByPhone = async function (phone: string) {
   return user
 }
 
-UserSchema.statics.getUserByUsername = async function (username: string) {
-  if (!username.match(UsernameRegex)) {
-    return null
-  }
-
-  const user = await this.findOne({ username: caseInsensitiveRegex(username) })
-
-  if (!user) {
-    throw new NotFoundError("User not found", { logger: baseLogger })
-  }
-
-  return user
-}
-
 UserSchema.statics.getUserByAddress = async function ({ address }) {
   return this.findOne({ "onchain.address": address })
 }
