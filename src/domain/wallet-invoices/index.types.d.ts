@@ -13,7 +13,13 @@ interface IWalletInvoicesRepository {
     paymentHash: PaymentHash,
   ) => Promise<WalletInvoice | RepositoryError>
 
+  findPendingByWalletId: (
+    walletId: WalletId,
+  ) => AsyncGenerator<WalletInvoice> | RepositoryError
+
   listWalletsWithPendingInvoices: () => AsyncGenerator<WalletId> | RepositoryError
+
+  setPaidByPaymentHash: (paymentHash: PaymentHash) => Promise<boolean | RepositoryError>
 
   deleteByPaymentHash: (paymentHash: PaymentHash) => Promise<boolean | RepositoryError>
 
