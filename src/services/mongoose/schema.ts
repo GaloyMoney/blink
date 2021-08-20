@@ -13,7 +13,7 @@ import { accountPath } from "@services/ledger/accounts"
 import { Transaction } from "@services/ledger/schema"
 import { baseLogger } from "../logger"
 import { caseInsensitiveRegex } from "./users"
-import { getUsernameRegex } from "@domain/users"
+import { UsernameRegex } from "@domain/users"
 
 export { Transaction }
 
@@ -61,8 +61,6 @@ const invoiceUserSchema = new Schema({
 invoiceUserSchema.index({ uid: 1, paid: 1 })
 
 export const InvoiceUser = mongoose.model("InvoiceUser", invoiceUserSchema)
-
-const regexUsername = getUsernameRegex()
 
 const feeRates = getFeeRates()
 
@@ -162,7 +160,7 @@ const UserSchema = new Schema<UserType>({
 
   username: {
     type: String,
-    match: [regexUsername, "Username can only have alphabets, numbers and underscores"],
+    match: [UsernameRegex, "Username can only have alphabets, numbers and underscores"],
     minlength: 3,
     maxlength: 50,
     index: {
@@ -369,7 +367,7 @@ UserSchema.statics.getUserByPhone = async function (phone: string) {
 }
 
 UserSchema.statics.getUserByUsername = async function (username: string) {
-  if (!username.match(regexUsername)) {
+  if (!username.match(UsernameRegex)) {
     return null
   }
 
