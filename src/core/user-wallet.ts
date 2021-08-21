@@ -242,7 +242,7 @@ export abstract class UserWallet {
   }
 
   delete2fa = async ({ token }): Promise<boolean> => {
-    if (!verifyToken(this.user.twoFA.secret, token)) {
+    if (!this.user.twoFA.secret || !verifyToken(this.user.twoFA.secret, token)) {
       throw new TwoFAError(undefined, { logger: this.logger })
     }
 
