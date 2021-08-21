@@ -1,5 +1,3 @@
-import fs from "fs"
-import path from "path"
 import { GraphQLSchema, printSchema } from "graphql"
 
 import { isDev } from "@core/utils"
@@ -12,8 +10,7 @@ export const gqlAdminSchema = new GraphQLSchema({
 })
 
 if (isDev) {
-  fs.writeFileSync(
-    path.resolve("./src/graphql/admin/schema.graphql"),
-    printSchema(gqlAdminSchema),
-  )
+  import("@services/fs").then(({ writeSDLFile }) => {
+    writeSDLFile(__dirname + "/schema.graphql", printSchema(gqlAdminSchema))
+  })
 }
