@@ -3,8 +3,8 @@ import { GT } from "@graphql/index"
 import Account from "../abstract/account"
 import Wallet from "../abstract/wallet"
 
-import AccountLevel from "../scalars/account-level"
-import AccountStatus from "../scalars/account-status"
+import AccountLevel from "../scalar/account-level"
+import AccountStatus from "../scalar/account-status"
 
 const ConsumerAccount = new GT.Object({
   name: "ConsumerAccount",

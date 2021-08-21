@@ -1,7 +1,7 @@
 import { connectionDefinitions } from "graphql-relay"
 
 import { GT } from "@graphql/index"
-import Timestamp from "../scalars/timestamp"
+import Timestamp from "../scalar/timestamp"
 
 const Transaction = new GT.Interface({
   name: "Transaction",

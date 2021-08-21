@@ -1,9 +1,9 @@
 import { addInvoiceNoAmountForRecipient } from "@app/wallets"
 import { GT } from "@graphql/index"
 
-import LnNoAmountInvoicePayload from "../payload/ln-noamount-invoice"
-import Memo from "../scalars/memo"
-import Username from "../scalars/username"
+import LnNoAmountInvoicePayload from "./payload/ln-noamount-invoice"
+import Memo from "../scalar/memo"
+import Username from "../scalar/username"
 
 const LnNoAmountInvoiceCreateOnBehalfOfRecipientInput = new GT.Input({
   name: "LnNoAmountInvoiceCreateOnBehalfOfRecipientInput",
