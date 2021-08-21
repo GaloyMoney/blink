@@ -1,6 +1,6 @@
 import {
   addInvoice,
-  addInvoiceNoAmountByUsername,
+  addInvoiceNoAmountForRecipient,
   addInvoiceNoAmount,
 } from "@app/wallets/add-invoice-for-wallet"
 import { getHash } from "@core/utils"
@@ -43,7 +43,7 @@ describe("UserWallet - addInvoice", () => {
   })
 
   it("adds a public invoice", async () => {
-    const lnInvoice = await addInvoiceNoAmountByUsername({
+    const lnInvoice = await addInvoiceNoAmountForRecipient({
       recipient: "user1" as Username,
     })
     if (lnInvoice instanceof Error) return lnInvoice
