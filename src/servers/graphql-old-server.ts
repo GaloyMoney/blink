@@ -31,7 +31,7 @@ import { getWalletFromUsername } from "@core/wallet-factory"
 
 import { usernameExists } from "../domain/user"
 import { startApolloServer, isAuthenticated, isEditor } from "./graphql-server"
-import { addInvoiceByUsername, addInvoice } from "@app/wallets"
+import { addInvoiceForRecipient, addInvoice } from "@app/wallets"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
 
@@ -229,7 +229,7 @@ const resolvers = {
       },
     }),
     noauthAddInvoice: async (_, { username, value }) => {
-      const lnInvoice = await addInvoiceByUsername({
+      const lnInvoice = await addInvoiceForRecipient({
         recipient: username,
         amount: value,
       })

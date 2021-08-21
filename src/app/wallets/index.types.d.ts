@@ -1,6 +1,6 @@
 type AddInvoiceArgs = {
   walletId: WalletId
-  amount: Satoshis
+  amount: number
   memo?: string
 }
 
@@ -9,13 +9,13 @@ type AddInvoiceNoAmountArgs = {
   memo?: string
 }
 
-type AddInvoiceByUsernameArgs = {
+type AddInvoiceForRecipientArgs = {
   recipient: Username
-  amount: Satoshis
+  amount: number
   memo?: string
 }
 
-type AddInvoiceNoAmountByUsernameArgs = {
+type AddInvoiceNoAmountForRecipientArgs = {
   recipient: Username
   memo?: string
 }

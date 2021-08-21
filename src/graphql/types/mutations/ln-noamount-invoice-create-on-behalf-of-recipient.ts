@@ -1,4 +1,4 @@
-import { addInvoiceNoAmountByUsername } from "@app/wallets"
+import { addInvoiceNoAmountForRecipient } from "@app/wallets"
 import { GT } from "@graphql/index"
 
 import LnNoAmountInvoicePayload from "../payloads/ln-noamount-invoice"
@@ -25,7 +25,7 @@ const LnNoAmountInvoiceCreateOnBehalfOfRecipientMutation = {
       return { errors: [{ message: memo.message }] }
     }
 
-    const result = await addInvoiceNoAmountByUsername({
+    const result = await addInvoiceNoAmountForRecipient({
       recipient,
       memo,
     })
