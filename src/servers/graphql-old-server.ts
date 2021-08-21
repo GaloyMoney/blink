@@ -31,7 +31,12 @@ import { getWalletFromUsername } from "@core/wallet-factory"
 
 import { usernameExists } from "../domain/user"
 import { startApolloServer, isAuthenticated, isEditor } from "./graphql-server"
-import { addInvoiceForRecipient, addInvoice } from "@app/wallets"
+import {
+  addInvoiceForRecipient,
+  addInvoice,
+  addInvoiceNoAmountForRecipient,
+  addInvoiceNoAmount,
+} from "@app/wallets"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
 
@@ -230,20 +235,31 @@ const resolvers = {
       },
     }),
     noauthAddInvoice: async (_, { username, value }) => {
-      const lnInvoice = await addInvoiceForRecipient({
-        recipient: username,
-        amount: value,
-      })
+      const lnInvoice =
+        value && value > 0
+          ? await addInvoiceForRecipient({
+              recipient: username,
+              amount: value,
+            })
+          : await addInvoiceNoAmountForRecipient({
+              recipient: username,
+            })
       if (lnInvoice instanceof Error) throw lnInvoice
       return lnInvoice.paymentRequest
     },
     invoice: (_, __, { wallet }) => ({
       addInvoice: async ({ value, memo }) => {
-        const lnInvoice = await addInvoice({
-          walletId: wallet.user.id,
-          amount: value,
-          memo,
-        })
+        const lnInvoice =
+          value && value > 0
+            ? await addInvoice({
+                walletId: wallet.user.id,
+                amount: value,
+                memo,
+              })
+            : await addInvoiceNoAmount({
+                walletId: wallet.user.id,
+                memo,
+              })
         if (lnInvoice instanceof Error) throw lnInvoice
         return lnInvoice.paymentRequest
       },
