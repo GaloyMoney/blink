@@ -37,11 +37,11 @@ export const addInvoiceNoAmount = async ({
   })
 }
 
-export const addInvoiceByUsername = async ({
+export const addInvoiceForRecipient = async ({
   recipient,
   amount,
   memo = "",
-}: AddInvoiceByUsernameArgs): Promise<LnInvoice | ApplicationError> => {
+}: AddInvoiceForRecipientArgs): Promise<LnInvoice | ApplicationError> => {
   const username = checkedToUsername(recipient)
   if (username instanceof Error) return username
   const sats = checkedToSats(amount)
@@ -58,10 +58,10 @@ export const addInvoiceByUsername = async ({
   })
 }
 
-export const addInvoiceNoAmountByUsername = async ({
+export const addInvoiceNoAmountForRecipient = async ({
   recipient,
   memo = "",
-}: AddInvoiceNoAmountByUsernameArgs): Promise<LnInvoice | ApplicationError> => {
+}: AddInvoiceNoAmountForRecipientArgs): Promise<LnInvoice | ApplicationError> => {
   const username = checkedToUsername(recipient)
   if (username instanceof Error) return username
 
