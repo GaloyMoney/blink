@@ -13,7 +13,8 @@ type TxId = string & { [txIdSymbol]: never }
 
 type TxOut = {
   sats: Satoshis
-  address: OnChainAddress
+  // OP_RETURN utxos don't have valid addresses associated with them
+  address: OnChainAddress | null
 }
 
 type OnChainTransaction = {

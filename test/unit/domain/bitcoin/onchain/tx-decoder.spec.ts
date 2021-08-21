@@ -19,4 +19,25 @@ describe("decodeOnChainTransaction", () => {
       sats: toSats(700768),
     })
   })
+  it("can handle txs with OP_RETURN (utxo without address)", () => {
+    const txWithOpReturn =
+      "020000000001010000000000000000000000000000000000000000000000000000000000000000ffffffff4e03b4a10a045a9c79be4254432e636f6d2f6835367573fabe6d6d773e726b504adea24922b5449d207a6a190f1b6e5d811558811e009813b756fc020000008e9b20aa0a6e1fd83a8b010000000000ffffffff034d3a9c25000000001976a91474e878616bd5e5236ecb22667627eeecbff54b9f88ac0000000000000000266a24aa21a9edd78d77773f717ec2865633f8955f1344ee3645afc9021d6915819132dbd8c52e0000000000000000266a24b9e11b6dc64bb7816d47abb66e8a01770807e5e22a15a4f328526f56aac07884f364c2150120000000000000000000000000000000000000000000000000000000000000000000000000"
+
+    const decoder = TxDecoder("mainnet" as BtcNetwork)
+    let result = decoder.decode(txWithOpReturn)
+    expect(result).not.toBeInstanceOf(TransactionDecodeError)
+
+    result = result as OnChainTransaction
+    expect(result.id).toEqual(
+      "0ca352925d6afb2845c369be2f09aa12ffeb765b3dc88db05c865e8c02d642dd",
+    )
+    expect(result.outs[0]).toEqual({
+      address: "1Bf9sZvBHPFGVPX71WX2njhd1NXKv5y7v5",
+      sats: toSats(630995533),
+    })
+    expect(result.outs[1]).toEqual({
+      address: null,
+      sats: toSats(0),
+    })
+  })
 })

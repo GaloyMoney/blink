@@ -11,7 +11,7 @@ const filterPendingIncoming = (
   const walletTransactions: WalletTransaction[] = []
   pendingTransactions.forEach(({ id, rawTx, createdAt }) => {
     rawTx.outs.forEach(({ sats, address }) => {
-      if (addresses.includes(address)) {
+      if (address && addresses.includes(address)) {
         walletTransactions.push({
           id,
           initiationVia: PaymentInitiationMethod.OnChain,
