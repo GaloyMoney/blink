@@ -1,6 +1,6 @@
 import { GT } from "@graphql/index"
-import AccountLevel from "../scalars/account-level"
-import AccountStatus from "../scalars/account-status"
+import AccountLevel from "../scalar/account-level"
+import AccountStatus from "../scalar/account-status"
 import Wallet from "./wallet"
 
 const Account = new GT.Interface({

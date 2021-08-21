@@ -7,8 +7,6 @@ scalar LnPaymentRequest # pattern(regexp: "^ln[A-Za-z0-9]+$")
 scalar LnNoAmountPaymentRequest # BOLT 11 but without amount
 scalar LnPaymentHash # V: stringLength(min: 64, max: 64) pattern(regexp: "^[A-Fa-f0-9]+$")
 scalar LnPaymentSecret # ?: validation
-
-
 # ?: Mixed vs currency types
 enum Currency {
   USD
@@ -541,12 +539,12 @@ type Mutation {
   ## Ledger entry (not part of LN) ##
   intraLedgerPaymentSend(input: UserPaymentInput!): PaymentStatusPayload! # FINAL (mobile)
 
-  businessAccountCreate(input: BusinessAccountCreateInput!): BusinessAccountPayload!
-  businessAccountAddWallet(input: BusinessAccountAddWalletInput!): WalletPayload!
-  businessAccountDisableWallet
-  businessAccountAddUser()
-  businessAccountRemoveUser()
-  permissions: viewBalance, viewAllTransactions, viewRecentTransactions, refund?, receive, intraBusinessSend, anySend
+  # businessAccountCreate(input: BusinessAccountCreateInput!): BusinessAccountPayload!
+  # businessAccountAddWallet(input: BusinessAccountAddWalletInput!): WalletPayload!
+  # businessAccountDisableWallet
+  # businessAccountAddUser()
+  # businessAccountRemoveUser()
+  # permissions: viewBalance, viewAllTransactions, viewRecentTransactions, refund?, receive, intraBusinessSend, anySend
   # businessAccountAddPermission()
   # businessAccountRemovePermission()
 }

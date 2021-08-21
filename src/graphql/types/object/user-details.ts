@@ -1,10 +1,10 @@
 import { GT } from "@graphql/index"
 
-import Timestamp from "../scalars/timestamp"
-import Phone from "../scalars/phone"
-import AccountLevel from "../scalars/account-level"
-import Username from "../scalars/username"
-import AccountStatus from "../scalars/account-status"
+import Timestamp from "../scalar/timestamp"
+import Phone from "../scalar/phone"
+import AccountLevel from "../scalar/account-level"
+import Username from "../scalar/username"
+import AccountStatus from "../scalar/account-status"
 import Coordinates from "./coordinates"
 
 // TODO: Merge with User type

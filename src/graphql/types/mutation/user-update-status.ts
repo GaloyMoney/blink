@@ -1,7 +1,7 @@
 import { GT } from "@graphql/index"
 import { updateUserAccountStatus } from "@domain/user"
-import AccountStatus from "../account-status"
-import UserDetailPayload from "../payload/user-detail"
+import AccountStatus from "../scalar/account-status"
+import UserDetailPayload from "./payload/user-detail"
 
 const UserUpdateStatusInput = new GT.Input({
   name: "UserUpdateStatusInput",

@@ -2,10 +2,10 @@ import * as Accounts from "@app/accounts"
 import { GT } from "@graphql/index"
 import Account from "../abstract/account"
 
-import Timestamp from "../scalars/timestamp"
-import Language from "../scalars/language"
-import Phone from "../scalars/phone"
-import Username from "../scalars/username"
+import Timestamp from "../scalar/timestamp"
+import Language from "../scalar/language"
+import Phone from "../scalar/phone"
+import Username from "../scalar/username"
 
 const User = new GT.Object({
   name: "User",
