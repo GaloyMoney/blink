@@ -20,12 +20,6 @@ type ScriptPubKey = {
   addresses: [string]
 }
 
-type VOut = {
-  value: number
-  n: number
-  scriptPubKey: ScriptPubKey
-}
-
 type GetAddressInfoResult = {
   address: string
   scriptPubKey: string
@@ -82,14 +76,6 @@ export class BitcoindClient {
 
   async listWallets(): Promise<[string]> {
     return this.client.listWallets()
-  }
-
-  async decodeRawTransaction({
-    hexstring,
-  }: {
-    hexstring: string
-  }): Promise<{ vout: [VOut] }> {
-    return this.client.decodeRawTransaction({ hexstring })
   }
 
   // load/unload only used in tests, for now
