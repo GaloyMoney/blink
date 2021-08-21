@@ -28,7 +28,7 @@ import {
 import { ledger } from "@services/mongodb"
 import { PaymentInitiationMethod } from "@domain/wallets"
 import * as Wallets from "@app/wallets"
-import { TwoFactorError, TransactionRestrictedError } from "@core/error"
+import { TwoFAError, TransactionRestrictedError } from "@core/error"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
@@ -432,10 +432,10 @@ describe("UserWallet - onChainPay", () => {
   describe("2FA", () => {
     it("fails to pay above 2fa limit without 2fa token", async () => {
       enable2FA({ wallet: userWallet0 })
-      const remainingLimit = await userWallet0.user.remainingTwoFactorLimit()
+      const remainingLimit = await userWallet0.user.remainingTwoFALimit()
       expect(
         userWallet0.onChainPay({ address: RANDOM_ADDRESS, amount: remainingLimit + 1 }),
-      ).rejects.toThrowError(TwoFactorError)
+      ).rejects.toThrowError(TwoFAError)
     })
 
     it("sends a successful large payment with a 2fa code", async () => {
@@ -443,14 +443,14 @@ describe("UserWallet - onChainPay", () => {
 
       const { BTC: initialBalance } = await userWallet0.getBalances()
       const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
-      const twoFactorToken = generateTokenHelper({
-        secret: userWallet0.user.twoFactor.secret,
+      const twoFAToken = generateTokenHelper({
+        secret: userWallet0.user.twoFA.secret,
       })
-      const amount = userWallet0.user.twoFactor.threshold + 1
+      const amount = userWallet0.user.twoFA.threshold + 1
       const paid = await userWallet0.onChainPay({
         address,
         amount,
-        twoFactorToken,
+        twoFAToken,
       })
 
       expect(paid).toBe(true)

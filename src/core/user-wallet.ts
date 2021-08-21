@@ -3,7 +3,7 @@ import assert from "assert"
 import { User } from "@services/mongoose/schema"
 import { ledger } from "@services/mongodb"
 
-import { DbError, TwoFactorError } from "./error"
+import { DbError, TwoFAError } from "./error"
 import { Balances } from "./interface"
 import { CSVAccountExport } from "./csv-account-export"
 import { sendNotification } from "./notifications/notification"
@@ -216,17 +216,17 @@ export abstract class UserWallet {
   }
 
   save2fa = async ({ secret, token }): Promise<boolean> => {
-    if (this.user.twoFactor.secret) {
-      throw new TwoFactorError("2FA is already set", { logger: this.logger })
+    if (this.user.twoFA.secret) {
+      throw new TwoFAError("2FA is already set", { logger: this.logger })
     }
 
     const tokenIsValid = verifyToken(secret, token)
 
     if (!tokenIsValid) {
-      throw new TwoFactorError(undefined, { logger: this.logger })
+      throw new TwoFAError(undefined, { logger: this.logger })
     }
 
-    this.user.twoFactor.secret = secret
+    this.user.twoFA.secret = secret
 
     try {
       await this.user.save()
@@ -242,12 +242,12 @@ export abstract class UserWallet {
   }
 
   delete2fa = async ({ token }): Promise<boolean> => {
-    if (!verifyToken(this.user.twoFactor.secret, token)) {
-      throw new TwoFactorError(undefined, { logger: this.logger })
+    if (!verifyToken(this.user.twoFA.secret, token)) {
+      throw new TwoFAError(undefined, { logger: this.logger })
     }
 
     try {
-      this.user.twoFactor.secret = undefined
+      this.user.twoFA.secret = undefined
       await this.user.save()
       return true
     } catch (err) {
@@ -283,13 +283,13 @@ export abstract class UserWallet {
 
   getUserLimits = async () => {
     const remainingLimits = await Promise.all([
-      this.user.remainingTwoFactorLimit(),
+      this.user.remainingTwoFALimit(),
       this.user.remainingOnUsLimit(),
       this.user.remainingWithdrawalLimit(),
     ])
 
     return {
-      remainingTwoFactorLimit: remainingLimits[0],
+      remainingTwoFALimit: remainingLimits[0],
       remainingOnUsLimit: remainingLimits[1],
       remainingWithdrawalLimit: remainingLimits[2],
     }

@@ -26,7 +26,7 @@ import {
   RebalanceNeededError,
   SelfPaymentError,
   TransactionRestrictedError,
-  TwoFactorError,
+  TwoFAError,
   ValidationInternalError,
 } from "../error"
 import { lockExtendOrThrow, redlock } from "../lock"
@@ -119,7 +119,7 @@ export const OnChainMixin = (superclass) =>
       amount,
       memo,
       sendAll = false,
-      twoFactorToken,
+      twoFAToken,
     }: IOnChainPayment): Promise<ISuccess> {
       let onchainLogger = this.logger.child({
         topic: "payment",
@@ -166,31 +166,28 @@ export const OnChainMixin = (superclass) =>
             amountToSendPayeeUser = balance.total_in_BTC
           }
 
-            const remainingTwoFactorLimit = await this.user.remainingTwoFactorLimit()
+          const remainingTwoFALimit = await this.user.remainingTwoFALimit()
 
-            if (
-              this.user.twoFactor.secret &&
-              remainingTwoFactorLimit < amountToSendPayeeUser
-            ) {
-              if (!twoFactorToken) {
-                throw new TwoFactorError("Need a 2FA code to proceed with the payment", {
-                  logger: onchainLogger,
-                })
-              }
-
-              if (!verifyToken(this.user.twoFactor.secret, twoFactorToken)) {
-                throw new TwoFactorError(undefined, { logger: onchainLogger })
-              }
+          if (this.user.twoFA.secret && remainingTwoFALimit < amountToSendPayeeUser) {
+            if (!twoFAToken) {
+              throw new TwoFAError("Need a 2FA code to proceed with the payment", {
+                logger: onchainLogger,
+              })
             }
 
-            const onchainLoggerOnUs = onchainLogger.child({ onUs: true })
-
-            const remainingOnUsLimit = await this.user.remainingOnUsLimit()
-
-            if (remainingOnUsLimit < amountToSendPayeeUser) {
-              const error = `Cannot transfer more than ${this.config.limits.onUsLimit} sats in 24 hours`
-              throw new TransactionRestrictedError(error, { logger: onchainLoggerOnUs })
+            if (!verifyToken(this.user.twoFA.secret, twoFAToken)) {
+              throw new TwoFAError(undefined, { logger: onchainLogger })
             }
+          }
+
+          const onchainLoggerOnUs = onchainLogger.child({ onUs: true })
+
+          const remainingOnUsLimit = await this.user.remainingOnUsLimit()
+
+          if (remainingOnUsLimit < amountToSendPayeeUser) {
+            const error = `Cannot transfer more than ${this.config.limits.onUsLimit} sats in 24 hours`
+            throw new TransactionRestrictedError(error, { logger: onchainLoggerOnUs })
+          }
 
           if (String(payeeUser._id) === String(this.user._id)) {
             throw new SelfPaymentError(undefined, { logger: onchainLoggerOnUs })
@@ -245,28 +242,28 @@ export const OnChainMixin = (superclass) =>
           throw new DustAmountError(undefined, { logger: onchainLogger })
         }
 
-          const remainingWithdrawalLimit = await this.user.remainingWithdrawalLimit()
+        const remainingWithdrawalLimit = await this.user.remainingWithdrawalLimit()
 
-          if (remainingWithdrawalLimit < checksAmount) {
-            const error = `Cannot withdraw more than ${this.config.limits.withdrawalLimit} sats in 24 hours`
-            throw new TransactionRestrictedError(error, { logger: onchainLogger })
+        if (remainingWithdrawalLimit < checksAmount) {
+          const error = `Cannot withdraw more than ${this.config.limits.withdrawalLimit} sats in 24 hours`
+          throw new TransactionRestrictedError(error, { logger: onchainLogger })
+        }
+
+        const remainingTwoFALimit = await this.user.remainingTwoFALimit()
+
+        if (this.user.twoFA.secret && remainingTwoFALimit < checksAmount) {
+          if (!twoFAToken) {
+            throw new TwoFAError("Need a 2FA code to proceed with the payment", {
+              logger: onchainLogger,
+            })
           }
 
-          const remainingTwoFactorLimit = await this.user.remainingTwoFactorLimit()
-
-          if (this.user.twoFactor.secret && remainingTwoFactorLimit < checksAmount) {
-            if (!twoFactorToken) {
-              throw new TwoFactorError("Need a 2FA code to proceed with the payment", {
-                logger: onchainLogger,
-              })
-            }
-
-            if (!verifyToken(this.user.twoFactor.secret, twoFactorToken)) {
-              throw new TwoFactorError(undefined, { logger: onchainLogger })
-            }
+          if (!verifyToken(this.user.twoFA.secret, twoFAToken)) {
+            throw new TwoFAError(undefined, { logger: onchainLogger })
           }
+        }
 
-          const { lnd } = getActiveOnchainLnd()
+        const { lnd } = getActiveOnchainLnd()
 
         const { chain_balance: onChainBalance } = await getChainBalance({ lnd })
 

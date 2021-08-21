@@ -123,7 +123,7 @@ type User {
   created_at: String
   coordinate: Coordinate
   status: AccountStatus
-  twoFactorEnabled: Boolean
+  twoFAEnabled: Boolean
 }
 
 type Success {
@@ -253,7 +253,7 @@ enum AccountStatus {
   locked
 }
 
-type twoFactorSecret {
+type twoFASecret {
   secret: String
   uri: String
 }
@@ -299,7 +299,7 @@ type Mutation {
 
   setLevel(uid: ID!, level: Int!): User
 
-  generate2fa: twoFactorSecret
+  generate2fa: twoFASecret
 
   save2fa(secret: String, token: String): Boolean
 

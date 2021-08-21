@@ -34,7 +34,7 @@ import {
   RouteFindingError,
   SelfPaymentError,
   TransactionRestrictedError,
-  TwoFactorError,
+  TwoFAError,
 } from "../error"
 import { lockExtendOrThrow, redlock } from "../lock"
 import { transactionNotification } from "../notifications/payment"
@@ -238,7 +238,7 @@ export const LightningMixin = (superclass) =>
         features,
         max_fee,
       } = await validate({ params, logger: lightningLogger })
-      const { memo: memoPayer, twoFactorToken } = params
+      const { memo: memoPayer, twoFAToken } = params
 
       // not including message because it contains the preimage and we don't want to log this
       lightningLogger = lightningLogger.child({
@@ -257,17 +257,17 @@ export const LightningMixin = (superclass) =>
         params,
       })
 
-      const remainingTwoFactorLimit = await this.user.remainingTwoFactorLimit()
+      const remainingTwoFALimit = await this.user.remainingTwoFALimit()
 
-      if (this.user.twoFactor.secret && remainingTwoFactorLimit < tokens) {
-        if (!twoFactorToken) {
-          throw new TwoFactorError("Need a 2FA code to proceed with the payment", {
+      if (this.user.twoFA.secret && remainingTwoFALimit < tokens) {
+        if (!twoFAToken) {
+          throw new TwoFAError("Need a 2FA code to proceed with the payment", {
             logger: lightningLogger,
           })
         }
 
-        if (!verifyToken(this.user.twoFactor.secret, twoFactorToken)) {
-          throw new TwoFactorError(undefined, { logger: lightningLogger })
+        if (!verifyToken(this.user.twoFA.secret, twoFAToken)) {
+          throw new TwoFAError(undefined, { logger: lightningLogger })
         }
       }
 

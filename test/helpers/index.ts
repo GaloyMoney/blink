@@ -46,7 +46,7 @@ export const generateTokenHelper = ({ secret }) => {
 }
 
 export const enable2FA = async ({ wallet }) => {
-  if (!wallet.user.twoFactorEnabled) {
+  if (!wallet.user.twoFAEnabled) {
     const { secret } = wallet.generate2fa()
     const token = generateTokenHelper({ secret })
     await wallet.save2fa({ secret, token })

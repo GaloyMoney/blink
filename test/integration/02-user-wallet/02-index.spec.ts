@@ -145,18 +145,18 @@ describe("UserWallet", () => {
       const token = generateTokenHelper({ secret })
       await userWallet0.save2fa({ secret, token })
       userWallet0 = await getUserWallet(0)
-      expect(userWallet0.user.twoFactorEnabled).toBe(true)
-      expect(userWallet0.user.twoFactor.secret).toBe(secret)
+      expect(userWallet0.user.twoFAEnabled).toBe(true)
+      expect(userWallet0.user.twoFA.secret).toBe(secret)
     })
   })
 
   describe("delete2fa", () => {
     it("delete 2fa for user0", async () => {
-      const token = generateTokenHelper({ secret: userWallet0.user.twoFactor.secret })
+      const token = generateTokenHelper({ secret: userWallet0.user.twoFA.secret })
       const result = await userWallet0.delete2fa({ token })
       expect(result).toBeTruthy()
       userWallet0 = await getUserWallet(0)
-      expect(userWallet0.user.twoFactorEnabled).toBeFalsy()
+      expect(userWallet0.user.twoFAEnabled).toBeFalsy()
     })
   })
 })

@@ -252,7 +252,7 @@ const UserSchema = new Schema<UserType>({
     default: "active",
   },
 
-  twoFactor: {
+  twoFA: {
     secret: {
       type: String,
     },
@@ -289,14 +289,14 @@ UserSchema.virtual("oldEnoughForWithdrawal").get(function (this: typeof UserSche
   return elapsed > genericLimits.oldEnoughForWithdrawalMicroseconds
 })
 
-UserSchema.virtual("twoFactorEnabled").get(function (this: typeof UserSchema) {
-  return this.twoFactor.secret != null
+UserSchema.virtual("twoFAEnabled").get(function (this: typeof UserSchema) {
+  return this.twoFA.secret != null
 })
 
 const getTimestampYesterday = () => Date.now() - MS_PER_DAY
 
-UserSchema.methods.remainingTwoFactorLimit = async function () {
-  const threshold = this.twoFactor.threshold
+UserSchema.methods.remainingTwoFALimit = async function () {
+  const threshold = this.twoFA.threshold
 
   const txnType = [
     { type: "on_us" },

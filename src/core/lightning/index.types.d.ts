@@ -18,5 +18,5 @@ interface IPaymentRequest {
   invoice?: string
   memo?: string
   isReward?: boolean
-  twoFactorToken?: string
+  twoFAToken?: string
 }

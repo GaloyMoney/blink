@@ -71,7 +71,7 @@ const resolvers = {
         username,
         contacts,
         language,
-        twoFactorEnabled: user.twoFactorEnabled,
+        twoFAEnabled: user.twoFAEnabled,
       }
     },
 

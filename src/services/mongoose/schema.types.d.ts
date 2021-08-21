@@ -9,7 +9,7 @@ type IPType = {
   lastConnection: string
 }
 
-type TwoFactor = {
+type TwoFA = {
   secret: string
   threshold: number
 }
@@ -64,7 +64,7 @@ interface UserType {
   lastIPs?: IPType[]
   onchain?: OnChainObjectForUser[]
   lastConnection?: string
-  twoFactor: TwoFactor
+  twoFA: TwoFA
 
   // merchant:
   title?: string
@@ -77,7 +77,7 @@ interface UserType {
   oldEnoughForWithdrawal: boolean
 
   // methods
-  remainingTwoFactorLimit: () => Promise<number>
+  remainingTwoFALimit: () => Promise<number>
   remainingOnUsLimit: () => Promise<number>
   remainingWithdrawalLimit: () => Promise<number>
 
