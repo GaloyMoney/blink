@@ -15,7 +15,7 @@ export const addInvoice = async ({
   memo = "",
 }: AddInvoiceArgs): Promise<LnInvoice | ApplicationError> => {
   const sats = checkedToSats(amount)
-  if (sats instanceof Error) throw sats
+  if (sats instanceof Error) return sats
 
   const walletInvoiceFactory = WalletInvoiceFactory(walletId)
   return registerAndPersistInvoice({
@@ -45,10 +45,10 @@ export const addInvoiceByUsername = async ({
   const username = checkedToUsername(recipient)
   if (username instanceof Error) return username
   const sats = checkedToSats(amount)
-  if (sats instanceof Error) throw sats
+  if (sats instanceof Error) return sats
 
   const walletId = await walletIdFromUsername(username)
-  if (walletId instanceof Error) throw walletId
+  if (walletId instanceof Error) return walletId
 
   const walletInvoiceFactory = WalletInvoiceFactory(walletId)
   return registerAndPersistInvoice({
@@ -66,7 +66,7 @@ export const addInvoiceNoAmountByUsername = async ({
   if (username instanceof Error) return username
 
   const walletId = await walletIdFromUsername(username)
-  if (walletId instanceof Error) throw walletId
+  if (walletId instanceof Error) return walletId
 
   const walletInvoiceFactory = WalletInvoiceFactory(walletId)
   return registerAndPersistInvoice({
