@@ -24,7 +24,7 @@ groups:
   - check-code
   - build-edge-image
   - install-deps
-  - bump-image-tag-in-values
+  - bump-image-digest-in-values
 - name: image
   jobs: [ build-pipeline-image ]
 
@@ -156,31 +156,36 @@ jobs:
     params:
       image: image/image.tar
 
-- name: bump-image-tag-in-values
+- name: bump-image-digest-in-values
   plan:
   - in_parallel:
-    - { get: bundled-deps, tags: ["staging"], trigger: true}
-    - { get: repo, trigger: true }
-    - { get: pipeline-tasks }
-  - task: bump-image-tag-in-values
+    - get: edge-image
+      trigger: true
+      passed: [build-edge-image]
+    - get: repo
+      trigger: true
+      passed: [check-code, test-unit, test-integration]
+    - get: charts-repo
+      params: { skip_download: true }
+    - get: pipeline-tasks
+  - task: bump-image-digest-in-values
     config:
       platform: linux
       image_resource: #@ task_image_config()
       inputs:
-      - name: bundled-deps
+      - name: edge-image
       - name: pipeline-tasks
-      - name: repo
+      - name: charts-repo
       outputs:
-      - name: repo
+      - name: charts-repo
       params:
-        BRANCH: #@ data.values.git_branch
+        BRANCH: #@ data.values.git_charts_branch
       run:
-        path: pipeline-tasks/ci/tasks/test-unit.sh
-  - in_parallel:
-    - put: repo
-      params:
-        repository: repo
-        rebase: true
+        path: pipeline-tasks/ci/tasks/bump-image-digest.sh
+  - put: charts-repo
+    params:
+      repository: charts-repo
+      rebase: true
 
 
 resources:
@@ -190,6 +195,14 @@ resources:
     ignore_paths: ["ci/*[^md]"]
     uri: #@ data.values.git_uri
     branch: #@ data.values.git_branch
+    private_key: #@ data.values.github_private_key
+
+- name: charts-repo
+  type: git
+  source:
+    ignore_paths: ["ci/*[^md]"]
+    uri: #@ data.values.git_charts_uri
+    branch: #@ data.values.git_charts_branch
     private_key: #@ data.values.github_private_key
 
 - name: edge-image
