@@ -9,6 +9,11 @@ type IPType = {
   lastConnection: string
 }
 
+type TwoFactor = {
+  secret: string
+  threshold: number
+}
+
 type OnChainObjectForUser = {
   pubkey: string
   address: string
@@ -59,6 +64,7 @@ interface UserType {
   lastIPs?: IPType[]
   onchain?: OnChainObjectForUser[]
   lastConnection?: string
+  twoFactor: TwoFactor
 
   // merchant:
   title?: string
@@ -69,4 +75,12 @@ interface UserType {
   ratioBtc: number
   accountPath: string
   oldEnoughForWithdrawal: boolean
+
+  // methods
+  remainingTwoFactorLimit: () => Promise<number>
+  remainingOnUsLimit: () => Promise<number>
+  remainingWithdrawalLimit: () => Promise<number>
+
+  // mongoose in-built functions
+  save: () => { any }
 }
