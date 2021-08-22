@@ -9,11 +9,11 @@ const filterPendingIncoming = (
   usdPerSat: UsdPerSat,
 ): WalletTransaction[] => {
   const walletTransactions: WalletTransaction[] = []
-  pendingTransactions.forEach(({ id, rawTx, createdAt }) => {
+  pendingTransactions.forEach(({ rawTx, createdAt }) => {
     rawTx.outs.forEach(({ sats, address }) => {
       if (address && addresses.includes(address)) {
         walletTransactions.push({
-          id,
+          id: rawTx.id,
           initiationVia: PaymentInitiationMethod.OnChain,
           settlementVia: SettlementMethod.OnChain,
           deprecated: {

@@ -7,7 +7,6 @@ describe("TxFilter", () => {
     const filteredTxs = filter.apply([
       {
         confirmations: 0,
-        id: "id1" as TxId,
         rawTx: {
           id: "id1" as TxId,
           outs: [
@@ -21,7 +20,6 @@ describe("TxFilter", () => {
       },
       {
         confirmations: 2,
-        id: "id2" as TxId,
         rawTx: {
           id: "id2" as TxId,
           outs: [
@@ -43,7 +41,6 @@ describe("TxFilter", () => {
     const filteredTxs = filter.apply([
       {
         confirmations: 2,
-        id: "id1" as TxId,
         rawTx: {
           id: "id1" as TxId,
           outs: [
@@ -57,7 +54,6 @@ describe("TxFilter", () => {
       },
       {
         confirmations: 3,
-        id: "id2" as TxId,
         rawTx: {
           id: "id2" as TxId,
           outs: [
@@ -79,7 +75,6 @@ describe("TxFilter", () => {
     const filteredTxs = filter.apply([
       {
         confirmations: 2,
-        id: "id1" as TxId,
         rawTx: {
           id: "id1" as TxId,
           outs: [
@@ -93,7 +88,6 @@ describe("TxFilter", () => {
       },
       {
         confirmations: 3,
-        id: "id2" as TxId,
         rawTx: {
           id: "id2" as TxId,
           outs: [
@@ -107,6 +101,6 @@ describe("TxFilter", () => {
       },
     ])
 
-    expect(filteredTxs[0].id).toEqual("id1")
+    expect(filteredTxs[0].rawTx.id).toEqual("id1")
   })
 })

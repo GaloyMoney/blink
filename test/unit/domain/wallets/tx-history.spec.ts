@@ -198,7 +198,6 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
     const submittedTransactions: SubmittedTransaction[] = [
       {
         confirmations: 1,
-        id: "id" as TxId,
         rawTx: {
           id: "id" as TxId,
           outs: [
@@ -265,7 +264,6 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
     const submittedTransactions: SubmittedTransaction[] = [
       {
         confirmations: 1,
-        id: "id" as TxId,
         rawTx: {
           id: "id" as TxId,
           outs: [
