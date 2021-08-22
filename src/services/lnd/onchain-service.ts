@@ -3,7 +3,7 @@ import {
   OnChainServiceUnavailableError,
 } from "@domain/bitcoin/onchain"
 import { toSats } from "@domain/bitcoin"
-import { getHeight, getChainTransactions } from "lightning"
+import { getHeight, getChainTransactions, GetChainTransactionsResult } from "lightning"
 import { getActiveLnd } from "./utils"
 
 export const OnChainService = (
@@ -25,11 +25,14 @@ export const OnChainService = (
     try {
       const { current_block_height } = await getHeight({ lnd })
       const after = Math.max(0, current_block_height - scanDepth) // this is necessary for tests, otherwise after may be negative
-      const { transactions } = await getChainTransactions({ lnd, after })
+      const { transactions }: GetChainTransactionsResult = await getChainTransactions({
+        lnd,
+        after,
+      })
 
       return transactions
         .filter((tx) => !tx.is_outgoing || !!tx.transaction)
-        .map((tx) => {
+        .map((tx): SubmittedTransaction => {
           return {
             confirmations: tx.confirmation_count || 0,
             fee: toSats(tx.fee as number),
@@ -37,7 +40,8 @@ export const OnChainService = (
             outputAddresses: tx.output_addresses as OnChainAddress[],
             tokens: toSats(tx.tokens),
             rawTx: decoder.decode(tx.transaction as string),
-          } as SubmittedTransaction
+            createdAt: new Date(tx.created_at),
+          }
         })
     } catch (err) {
       return new UnknownOnChainServiceError(err)
