@@ -25,8 +25,6 @@ type OnChainTransaction = {
 type SubmittedTransaction = {
   confirmations: number
   id: TxId
-  outputAddresses: OnChainAddress[]
-  tokens: Satoshis
   rawTx: OnChainTransaction
   createdAt: Date
 }
