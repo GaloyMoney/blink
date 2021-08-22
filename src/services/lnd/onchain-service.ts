@@ -24,22 +24,17 @@ export const OnChainService = (
   }): Promise<SubmittedTransaction[] | OnChainServiceError> => {
     try {
       const { current_block_height } = await getHeight({ lnd })
-      const after = Math.max(0, current_block_height - scanDepth) // this is necessary for tests, otherwise after may be negative
-      const { transactions }: GetChainTransactionsResult = await getChainTransactions({
-        lnd,
-        after,
-      })
 
-      return transactions
-        .filter((tx) => !tx.is_outgoing && !!tx.transaction && !!tx.fee && tx.fee >= 0)
-        .map((tx): SubmittedTransaction => {
-          return {
-            confirmations: tx.confirmation_count || 0,
-            rawTx: decoder.decode(tx.transaction as string),
-            fee: toSats(tx.fee as number),
-            createdAt: new Date(tx.created_at),
-          }
-        })
+      // this is necessary for tests, otherwise after may be negative
+      const after = Math.max(0, current_block_height - scanDepth)
+
+      return extractIncomingTransactions(
+        decoder,
+        await getChainTransactions({
+          lnd,
+          after,
+        }),
+      )
     } catch (err) {
       return new UnknownOnChainServiceError(err)
     }
@@ -48,4 +43,20 @@ export const OnChainService = (
   return {
     getIncomingTransactions,
   }
+}
+
+export const extractIncomingTransactions = (
+  decoder: TxDecoder,
+  { transactions }: GetChainTransactionsResult,
+): SubmittedTransaction[] => {
+  return transactions
+    .filter((tx) => !tx.is_outgoing && !!tx.transaction)
+    .map((tx): SubmittedTransaction => {
+      return {
+        confirmations: tx.confirmation_count || 0,
+        rawTx: decoder.decode(tx.transaction as string),
+        fee: toSats(tx.fee || 0),
+        createdAt: new Date(tx.created_at),
+      }
+    })
 }
