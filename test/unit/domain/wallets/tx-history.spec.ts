@@ -199,8 +199,6 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
       {
         confirmations: 1,
         id: "id" as TxId,
-        outputAddresses: ["userAddress1", "userAddress2", "address3"] as OnChainAddress[],
-        tokens: toSats(100000),
         rawTx: {
           id: "id" as TxId,
           outs: [
@@ -268,8 +266,6 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
       {
         confirmations: 1,
         id: "id" as TxId,
-        outputAddresses: ["userAddress1"] as OnChainAddress[],
-        tokens: toSats(100000),
         rawTx: {
           id: "id" as TxId,
           outs: [

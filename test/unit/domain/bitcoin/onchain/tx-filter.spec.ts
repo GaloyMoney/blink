@@ -7,18 +7,32 @@ describe("TxFilter", () => {
     const filteredTxs = filter.apply([
       {
         confirmations: 0,
-        id: "id" as TxId,
-        outputAddresses: ["address"],
-        tokens: toSats(10000),
+        id: "id1" as TxId,
+        rawTx: {
+          id: "id1" as TxId,
+          outs: [
+            {
+              sats: toSats(1),
+              address: "address1" as OnChainAddress,
+            },
+          ],
+        },
         createdAt: new Date(),
-      } as SubmittedTransaction,
+      },
       {
         confirmations: 2,
-        id: "id" as TxId,
-        outputAddresses: ["address"],
-        tokens: toSats(10000),
+        id: "id2" as TxId,
+        rawTx: {
+          id: "id2" as TxId,
+          outs: [
+            {
+              sats: toSats(1),
+              address: "address2" as OnChainAddress,
+            },
+          ],
+        },
         createdAt: new Date(),
-      } as SubmittedTransaction,
+      },
     ])
 
     expect(filteredTxs.length).toEqual(1)
@@ -29,18 +43,32 @@ describe("TxFilter", () => {
     const filteredTxs = filter.apply([
       {
         confirmations: 2,
-        id: "id" as TxId,
-        outputAddresses: ["address"],
-        tokens: toSats(10000),
+        id: "id1" as TxId,
+        rawTx: {
+          id: "id1" as TxId,
+          outs: [
+            {
+              sats: toSats(1),
+              address: "address1" as OnChainAddress,
+            },
+          ],
+        },
         createdAt: new Date(),
-      } as SubmittedTransaction,
+      },
       {
         confirmations: 3,
-        id: "id" as TxId,
-        outputAddresses: ["address"],
-        tokens: toSats(10000),
+        id: "id2" as TxId,
+        rawTx: {
+          id: "id2" as TxId,
+          outs: [
+            {
+              sats: toSats(1),
+              address: "address2" as OnChainAddress,
+            },
+          ],
+        },
         createdAt: new Date(),
-      } as SubmittedTransaction,
+      },
     ])
 
     expect(filteredTxs[0].confirmations).toEqual(2)
@@ -51,20 +79,34 @@ describe("TxFilter", () => {
     const filteredTxs = filter.apply([
       {
         confirmations: 2,
-        id: "id" as TxId,
-        outputAddresses: ["address1"],
-        tokens: toSats(10000),
+        id: "id1" as TxId,
+        rawTx: {
+          id: "id1" as TxId,
+          outs: [
+            {
+              sats: toSats(1),
+              address: "address1" as OnChainAddress,
+            },
+          ],
+        },
         createdAt: new Date(),
-      } as SubmittedTransaction,
+      },
       {
         confirmations: 3,
-        id: "id" as TxId,
-        outputAddresses: ["address2"],
-        tokens: toSats(10000),
+        id: "id2" as TxId,
+        rawTx: {
+          id: "id2" as TxId,
+          outs: [
+            {
+              sats: toSats(1),
+              address: "address2" as OnChainAddress,
+            },
+          ],
+        },
         createdAt: new Date(),
-      } as SubmittedTransaction,
+      },
     ])
 
-    expect(filteredTxs[0].outputAddresses[0]).toEqual("address1")
+    expect(filteredTxs[0].id).toEqual("id1")
   })
 })

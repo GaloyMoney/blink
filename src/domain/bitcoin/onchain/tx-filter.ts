@@ -4,7 +4,7 @@ export const TxFilter = ({
   addresses,
 }: TxFilterArgs): TxFilter => {
   const apply = (txs: SubmittedTransaction[]): SubmittedTransaction[] => {
-    return txs.filter(({ confirmations, outputAddresses }) => {
+    return txs.filter(({ confirmations, rawTx: { outs } }) => {
       if (
         !!confirmationsGreaterThanOrEqual &&
         confirmations < confirmationsGreaterThanOrEqual
@@ -14,7 +14,10 @@ export const TxFilter = ({
       if (!!confirmationsLessThan && confirmations >= confirmationsLessThan) {
         return false
       }
-      if (!!addresses && !outputAddresses.some((addr) => addresses.includes(addr))) {
+      if (
+        !!addresses &&
+        !outs.some((out) => out.address != null && addresses.includes(out.address))
+      ) {
         return false
       }
       return true
