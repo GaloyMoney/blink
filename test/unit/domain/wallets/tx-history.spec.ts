@@ -198,7 +198,6 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
     const submittedTransactions: SubmittedTransaction[] = [
       {
         confirmations: 1,
-        fee: toSats(1000),
         id: "id" as TxId,
         outputAddresses: ["userAddress1", "userAddress2", "address3"] as OnChainAddress[],
         tokens: toSats(100000),
@@ -268,7 +267,6 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
     const submittedTransactions: SubmittedTransaction[] = [
       {
         confirmations: 1,
-        fee: toSats(1000),
         id: "id" as TxId,
         outputAddresses: ["userAddress1"] as OnChainAddress[],
         tokens: toSats(100000),

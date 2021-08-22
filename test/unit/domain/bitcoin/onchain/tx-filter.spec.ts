@@ -7,7 +7,6 @@ describe("TxFilter", () => {
     const filteredTxs = filter.apply([
       {
         confirmations: 0,
-        fee: toSats(10),
         id: "id" as TxId,
         outputAddresses: ["address"],
         tokens: toSats(10000),
@@ -15,7 +14,6 @@ describe("TxFilter", () => {
       } as SubmittedTransaction,
       {
         confirmations: 2,
-        fee: toSats(10),
         id: "id" as TxId,
         outputAddresses: ["address"],
         tokens: toSats(10000),
@@ -31,7 +29,6 @@ describe("TxFilter", () => {
     const filteredTxs = filter.apply([
       {
         confirmations: 2,
-        fee: toSats(10),
         id: "id" as TxId,
         outputAddresses: ["address"],
         tokens: toSats(10000),
@@ -39,7 +36,6 @@ describe("TxFilter", () => {
       } as SubmittedTransaction,
       {
         confirmations: 3,
-        fee: toSats(10),
         id: "id" as TxId,
         outputAddresses: ["address"],
         tokens: toSats(10000),
@@ -55,7 +51,6 @@ describe("TxFilter", () => {
     const filteredTxs = filter.apply([
       {
         confirmations: 2,
-        fee: toSats(10),
         id: "id" as TxId,
         outputAddresses: ["address1"],
         tokens: toSats(10000),
@@ -63,7 +58,6 @@ describe("TxFilter", () => {
       } as SubmittedTransaction,
       {
         confirmations: 3,
-        fee: toSats(10),
         id: "id" as TxId,
         outputAddresses: ["address2"],
         tokens: toSats(10000),
