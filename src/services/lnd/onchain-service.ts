@@ -31,7 +31,7 @@ export const OnChainService = (
       })
 
       return transactions
-        .filter((tx) => !tx.is_outgoing || !!tx.transaction || !!tx.fee)
+        .filter((tx) => !tx.is_outgoing && !!tx.transaction && !!tx.fee && tx.fee >= 0)
         .map((tx): SubmittedTransaction => {
           return {
             confirmations: tx.confirmation_count || 0,
