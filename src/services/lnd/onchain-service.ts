@@ -36,7 +36,6 @@ export const OnChainService = (
           (tx): SubmittedTransaction => {
             return {
               confirmations: tx.confirmation_count || 0,
-              id: tx.id as TxId,
               rawTx: decoder.decode(tx.transaction as string),
               createdAt: new Date(tx.created_at),
             }

@@ -24,7 +24,6 @@ type OnChainTransaction = {
 
 type SubmittedTransaction = {
   confirmations: number
-  id: TxId
   rawTx: OnChainTransaction
   createdAt: Date
 }
