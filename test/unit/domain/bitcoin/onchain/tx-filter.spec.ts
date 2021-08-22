@@ -7,6 +7,7 @@ describe("TxFilter", () => {
     const filteredTxs = filter.apply([
       {
         confirmations: 0,
+        fee: toSats(1000),
         rawTx: {
           id: "id1" as TxId,
           outs: [
@@ -20,6 +21,7 @@ describe("TxFilter", () => {
       },
       {
         confirmations: 2,
+        fee: toSats(1000),
         rawTx: {
           id: "id2" as TxId,
           outs: [
@@ -41,6 +43,7 @@ describe("TxFilter", () => {
     const filteredTxs = filter.apply([
       {
         confirmations: 2,
+        fee: toSats(1000),
         rawTx: {
           id: "id1" as TxId,
           outs: [
@@ -54,6 +57,7 @@ describe("TxFilter", () => {
       },
       {
         confirmations: 3,
+        fee: toSats(1000),
         rawTx: {
           id: "id2" as TxId,
           outs: [
@@ -75,6 +79,7 @@ describe("TxFilter", () => {
     const filteredTxs = filter.apply([
       {
         confirmations: 2,
+        fee: toSats(1000),
         rawTx: {
           id: "id1" as TxId,
           outs: [
@@ -88,6 +93,7 @@ describe("TxFilter", () => {
       },
       {
         confirmations: 3,
+        fee: toSats(1000),
         rawTx: {
           id: "id2" as TxId,
           outs: [
