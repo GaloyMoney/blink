@@ -33,7 +33,7 @@ type SubmittedTransaction = {
 }
 
 type TxDecoder = {
-  decode(txHex: string): OnChainTransaction | TransactionDecodeError
+  decode(txHex: string): OnChainTransaction
 }
 
 type TxFilterArgs = {
