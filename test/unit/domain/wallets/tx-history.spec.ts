@@ -198,6 +198,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
     const submittedTransactions: SubmittedTransaction[] = [
       {
         confirmations: 1,
+        fee: toSats(1000),
         rawTx: {
           id: "id" as TxId,
           outs: [
@@ -264,6 +265,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
     const submittedTransactions: SubmittedTransaction[] = [
       {
         confirmations: 1,
+        fee: toSats(1000),
         rawTx: {
           id: "id" as TxId,
           outs: [

@@ -32,15 +32,14 @@ export const OnChainService = (
 
       return transactions
         .filter((tx) => !tx.is_outgoing || !!tx.transaction || !!tx.fee)
-        .map(
-          (tx): SubmittedTransaction => {
-            return {
-              confirmations: tx.confirmation_count || 0,
-              rawTx: decoder.decode(tx.transaction as string),
-              createdAt: new Date(tx.created_at),
-            }
-          },
-        )
+        .map((tx): SubmittedTransaction => {
+          return {
+            confirmations: tx.confirmation_count || 0,
+            rawTx: decoder.decode(tx.transaction as string),
+            fee: toSats(tx.fee as number),
+            createdAt: new Date(tx.created_at),
+          }
+        })
     } catch (err) {
       return new UnknownOnChainServiceError(err)
     }

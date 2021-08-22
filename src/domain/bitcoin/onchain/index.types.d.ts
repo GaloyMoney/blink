@@ -25,6 +25,7 @@ type OnChainTransaction = {
 type SubmittedTransaction = {
   confirmations: number
   rawTx: OnChainTransaction
+  fee: Satoshis
   createdAt: Date
 }
 
