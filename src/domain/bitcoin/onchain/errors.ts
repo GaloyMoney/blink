@@ -3,5 +3,7 @@ export class OnChainError extends Error {
 }
 
 export class TransactionDecodeError extends OnChainError {}
-export class UnknownOnChainServiceError extends OnChainError {}
-export class OnChainServiceUnavailableError extends OnChainError {}
+
+export class OnChainServiceError extends OnChainError {}
+export class UnknownOnChainServiceError extends OnChainServiceError {}
+export class OnChainServiceUnavailableError extends OnChainServiceError {}
