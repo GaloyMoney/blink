@@ -14,7 +14,7 @@ import { makeExecutableSchema } from "graphql-tools"
 import moment from "moment"
 import path from "path"
 
-import { levels, onboardingEarn, getTransactionLimits, getFeeRates } from "@config/app"
+import { getFeeRates, levels, onboardingEarn } from "@config/app"
 
 import { setupMongoConnection } from "@services/mongodb"
 import { activateLndHealthCheck } from "@services/lnd/health"
@@ -71,6 +71,7 @@ const resolvers = {
         username,
         contacts,
         language,
+        twoFAEnabled: user.twoFAEnabled,
       }
     },
 
@@ -193,14 +194,7 @@ const resolvers = {
       return uid
     },
     getLevels: () => levels,
-    getLimits: (_, __, { user }) => {
-      const transactionLimits = getTransactionLimits({ level: user.level })
-      return {
-        oldEnoughForWithdrawal: transactionLimits.oldEnoughForWithdrawalMicroseconds,
-        withdrawal: transactionLimits.withdrawalLimit,
-        onUs: transactionLimits.onUsLimit,
-      }
-    },
+    getLimits: (_, __, { wallet }) => wallet.getUserLimits(),
     getWalletFees: () => {
       const feeRates = getFeeRates()
       return { deposit: feeRates.depositFeeVariable }
@@ -213,6 +207,10 @@ const resolvers = {
     login: async (_, { phone, code }, { logger, ip }) => ({
       token: await login({ phone, code, logger, ip }),
     }),
+    generate2fa: async (_, __, { wallet }) => wallet.generate2fa(),
+    save2fa: async (_, { secret, token }, { wallet }) =>
+      wallet.save2fa({ secret, token }),
+    delete2fa: async (_, { token }, { wallet }) => wallet.delete2fa({ token }),
     updateUser: (_, __, { wallet }) => ({
       setUsername: async ({ username }) => wallet.setUsername({ username }),
       setLanguage: async ({ language }) => wallet.setLanguage({ language }),
@@ -317,6 +315,9 @@ export async function startApolloServerForOldSchema() {
         getLevels: and(isAuthenticated, isEditor),
       },
       Mutation: {
+        generate2fa: isAuthenticated,
+        delete2fa: isAuthenticated,
+        save2fa: isAuthenticated,
         onchain: isAuthenticated,
         invoice: isAuthenticated,
         earnCompleted: isAuthenticated,

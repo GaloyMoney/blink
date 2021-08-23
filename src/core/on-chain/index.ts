@@ -9,6 +9,7 @@ import {
   sendToChainAddress,
 } from "lightning"
 import _ from "lodash"
+import { verifyToken } from "node-2fa"
 
 import { bitcoindDefaultClient } from "@services/bitcoind"
 import { getActiveOnchainLnd, getLndFromPubkey } from "@services/lnd/utils"
@@ -25,6 +26,7 @@ import {
   RebalanceNeededError,
   SelfPaymentError,
   TransactionRestrictedError,
+  TwoFAError,
   ValidationInternalError,
 } from "../error"
 import { lockExtendOrThrow, redlock } from "../lock"
@@ -117,6 +119,7 @@ export const OnChainMixin = (superclass) =>
       amount,
       memo,
       sendAll = false,
+      twoFAToken,
     }: IOnChainPayment): Promise<ISuccess> {
       let onchainLogger = this.logger.child({
         topic: "payment",
@@ -163,9 +166,25 @@ export const OnChainMixin = (superclass) =>
             amountToSendPayeeUser = balance.total_in_BTC
           }
 
+          const remainingTwoFALimit = await this.user.remainingTwoFALimit()
+
+          if (this.user.twoFA.secret && remainingTwoFALimit < amountToSendPayeeUser) {
+            if (!twoFAToken) {
+              throw new TwoFAError("Need a 2FA code to proceed with the payment", {
+                logger: onchainLogger,
+              })
+            }
+
+            if (!verifyToken(this.user.twoFA.secret, twoFAToken)) {
+              throw new TwoFAError(undefined, { logger: onchainLogger })
+            }
+          }
+
           const onchainLoggerOnUs = onchainLogger.child({ onUs: true })
 
-          if (await this.user.limitHit({ on_us: true, amount: amountToSendPayeeUser })) {
+          const remainingOnUsLimit = await this.user.remainingOnUsLimit()
+
+          if (remainingOnUsLimit < amountToSendPayeeUser) {
             const error = `Cannot transfer more than ${this.config.limits.onUsLimit} sats in 24 hours`
             throw new TransactionRestrictedError(error, { logger: onchainLoggerOnUs })
           }
@@ -223,9 +242,25 @@ export const OnChainMixin = (superclass) =>
           throw new DustAmountError(undefined, { logger: onchainLogger })
         }
 
-        if (await this.user.limitHit({ on_us: false, amount: checksAmount })) {
+        const remainingWithdrawalLimit = await this.user.remainingWithdrawalLimit()
+
+        if (remainingWithdrawalLimit < checksAmount) {
           const error = `Cannot withdraw more than ${this.config.limits.withdrawalLimit} sats in 24 hours`
           throw new TransactionRestrictedError(error, { logger: onchainLogger })
+        }
+
+        const remainingTwoFALimit = await this.user.remainingTwoFALimit()
+
+        if (this.user.twoFA.secret && remainingTwoFALimit < checksAmount) {
+          if (!twoFAToken) {
+            throw new TwoFAError("Need a 2FA code to proceed with the payment", {
+              logger: onchainLogger,
+            })
+          }
+
+          if (!verifyToken(this.user.twoFA.secret, twoFAToken)) {
+            throw new TwoFAError(undefined, { logger: onchainLogger })
+          }
         }
 
         const { lnd } = getActiveOnchainLnd()

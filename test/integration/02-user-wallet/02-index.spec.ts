@@ -1,5 +1,5 @@
 import { getGenericLimits, MS_PER_HOUR } from "@config/app"
-import { getUserWallet } from "test/helpers"
+import { generateTokenHelper, getUserWallet } from "test/helpers"
 import { setAccountStatus } from "@core/admin-ops"
 import { usernameExists } from "@domain/user"
 
@@ -136,6 +136,27 @@ describe("UserWallet", () => {
       expect(user.status).toBe("locked")
       user = await setAccountStatus({ uid: user._id, status: "active" })
       expect(user.status).toBe("active")
+    })
+  })
+
+  describe("save2fa", () => {
+    it("saves 2fa for user0", async () => {
+      const { secret } = userWallet0.generate2fa()
+      const token = generateTokenHelper({ secret })
+      await userWallet0.save2fa({ secret, token })
+      userWallet0 = await getUserWallet(0)
+      expect(userWallet0.user.twoFAEnabled).toBe(true)
+      expect(userWallet0.user.twoFA.secret).toBe(secret)
+    })
+  })
+
+  describe("delete2fa", () => {
+    it("delete 2fa for user0", async () => {
+      const token = generateTokenHelper({ secret: userWallet0.user.twoFA.secret })
+      const result = await userWallet0.delete2fa({ token })
+      expect(result).toBeTruthy()
+      userWallet0 = await getUserWallet(0)
+      expect(userWallet0.user.twoFAEnabled).toBeFalsy()
     })
   })
 })

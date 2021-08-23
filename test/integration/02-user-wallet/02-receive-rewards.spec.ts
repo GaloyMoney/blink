@@ -1,5 +1,5 @@
 import { find, difference } from "lodash"
-import { onboardingEarn } from "@config/app"
+import { MS_PER_DAY, onboardingEarn } from "@config/app"
 import { checkIsBalanced, getUserWallet } from "test/helpers"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
@@ -13,10 +13,18 @@ const onBoardingEarnAmt: number = Object.keys(onboardingEarn)
   .reduce((p, k) => p + onboardingEarn[k], 0)
 const onBoardingEarnIds: string[] = earnsToGet
 
+// required to avoid withdrawalLimit validation
+const date = Date.now() + 2 * MS_PER_DAY
+jest.spyOn(global.Date, "now").mockImplementation(() => new Date(date).valueOf())
+
 beforeAll(async () => {
   userWallet1 = await getUserWallet(1)
   // load funder wallet before use it
   await getUserWallet(4)
+})
+
+afterAll(() => {
+  jest.restoreAllMocks()
 })
 
 describe("UserWallet - addEarn", () => {

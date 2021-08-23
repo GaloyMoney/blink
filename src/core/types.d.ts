@@ -54,6 +54,10 @@ type HelmetConfig = {
   disableContentPolicy: boolean
 }
 
+type TwoFAConfig = {
+  threshold: number
+}
+
 // Currently unused types
 
 interface IAddBTCInvoiceRequest {

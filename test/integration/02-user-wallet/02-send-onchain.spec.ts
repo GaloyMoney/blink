@@ -20,11 +20,15 @@ import {
   bitcoindClient,
   bitcoindOutside,
   mineBlockAndSync,
+  enable2FA,
+  generateTokenHelper,
+  RANDOM_ADDRESS,
+  mineBlockAndSyncAll,
 } from "test/helpers"
 import { ledger } from "@services/mongodb"
-import { TransactionRestrictedError } from "@core/error"
 import { PaymentInitiationMethod } from "@domain/wallets"
 import * as Wallets from "@app/wallets"
+import { TwoFAError, TransactionRestrictedError } from "@core/error"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
@@ -423,5 +427,49 @@ describe("UserWallet - onChainPay", () => {
         amount: onChainWalletConfig.dustThreshold - 1,
       }),
     ).rejects.toThrow()
+  })
+
+  describe("2FA", () => {
+    it("fails to pay above 2fa limit without 2fa token", async () => {
+      enable2FA({ wallet: userWallet0 })
+      const remainingLimit = await userWallet0.user.remainingTwoFALimit()
+      expect(
+        userWallet0.onChainPay({ address: RANDOM_ADDRESS, amount: remainingLimit + 1 }),
+      ).rejects.toThrowError(TwoFAError)
+    })
+
+    it("sends a successful large payment with a 2fa code", async () => {
+      enable2FA({ wallet: userWallet0 })
+
+      const { BTC: initialBalance } = await userWallet0.getBalances()
+      const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
+      const twoFAToken = generateTokenHelper({
+        secret: userWallet0.user.twoFA.secret,
+      })
+      const amount = userWallet0.user.twoFA.threshold + 1
+      const paid = await userWallet0.onChainPay({
+        address,
+        amount,
+        twoFAToken,
+      })
+
+      expect(paid).toBe(true)
+
+      await mineBlockAndSyncAll()
+      await userWallet0.updateOnchainReceipt()
+
+      const { result: txs, error } = await Wallets.getTransactionsForWalletId({
+        walletId: userWallet0.user.id,
+      })
+
+      if (error instanceof Error || txs === null) {
+        throw error
+      }
+
+      // settlementAmount is negative
+      const expectedBalance = initialBalance + txs[0].settlementAmount
+      const { BTC: finalBalance } = await userWallet0.getBalances()
+      expect(expectedBalance).toBe(finalBalance)
+    })
   })
 })
