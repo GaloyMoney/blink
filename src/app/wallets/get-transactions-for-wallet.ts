@@ -51,7 +51,7 @@ export const getTransactionsForWallet = async (
 
   let price = await PriceService().getCurrentPrice()
   if (price instanceof Error) {
-    price = NaN
+    price = NaN as UsdPerSat
   }
 
   return PartialResult.ok(
