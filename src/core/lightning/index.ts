@@ -425,8 +425,10 @@ export const LightningMixin = (superclass) =>
           throw new NewAccountWithdrawalError(error, { logger: lightningLogger })
         }
 
-        if (await this.user.limitHit({ on_us: false, amount: tokens })) {
-          const error = `Cannot transfer more than ${this.config.limits.withdrawalLimit} sats in 24 hours`
+        const remainingWithdrawalLimit = await this.user.remainingWithdrawalLimit()
+
+        if (remainingWithdrawalLimit < tokens) {
+          const error = `Cannot withdraw more than ${this.config.limits.withdrawalLimit} sats in 24 hours`
           throw new TransactionRestrictedError(error, { logger: lightningLogger })
         }
 

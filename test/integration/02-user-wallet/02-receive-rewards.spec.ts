@@ -13,10 +13,18 @@ const onBoardingEarnAmt: number = Object.keys(onboardingEarn)
   .reduce((p, k) => p + onboardingEarn[k], 0)
 const onBoardingEarnIds: string[] = earnsToGet
 
+// required to avoid withdrawalLimit validation
+const date = Date.now() + 1000 * 60 * 60 * 24 * 2
+jest.spyOn(global.Date, "now").mockImplementation(() => new Date(date).valueOf())
+
 beforeAll(async () => {
   userWallet1 = await getUserWallet(1)
   // load funder wallet before use it
   await getUserWallet(4)
+})
+
+afterAll(() => {
+  jest.restoreAllMocks()
 })
 
 describe("UserWallet - addEarn", () => {
