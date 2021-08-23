@@ -109,7 +109,7 @@ export const fromLedger = (
       }
       return {
         id,
-        initiationVia: PaymentInitiationMethod.Username,
+        initiationVia: PaymentInitiationMethod.Walletname,
         settlementVia: SettlementMethod.IntraLedger,
         deprecated: {
           description,
