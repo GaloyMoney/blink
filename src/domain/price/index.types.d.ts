@@ -1,3 +1,3 @@
 interface IPriceService {
-  getCurrentPrice(): Promite<UsdPerSat | PriceServiceError>
+  getCurrentPrice(): Promise<UsdPerSat | PriceServiceError>
 }
