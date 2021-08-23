@@ -12,7 +12,9 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
     try {
       // work around to move forward before re-wrighting the whole notifications module
       const user = await User.findOne({ _id: walletId })
-      await transactionNotification({
+
+      // Do not await this call for quicker processing
+      transactionNotification({
         type: LedgerTransactionType.OnchainReceipt,
         user,
         logger: logger,
