@@ -82,5 +82,5 @@ interface UserType {
   remainingWithdrawalLimit: () => Promise<number>
 
   // mongoose in-built functions
-  save: () => { any }
+  save: () => Promise<UserType>
 }
