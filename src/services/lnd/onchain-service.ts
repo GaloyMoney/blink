@@ -28,13 +28,12 @@ export const OnChainService = (
       // this is necessary for tests, otherwise after may be negative
       const after = Math.max(0, current_block_height - scanDepth)
 
-      return extractIncomingTransactions(
-        decoder,
-        await getChainTransactions({
-          lnd,
-          after,
-        }),
-      )
+      const result = await getChainTransactions({
+        lnd,
+        after,
+      })
+
+      return extractIncomingTransactions(decoder, result)
     } catch (err) {
       return new UnknownOnChainServiceError(err)
     }
