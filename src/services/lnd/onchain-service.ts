@@ -17,11 +17,9 @@ export const OnChainService = (
     return new OnChainServiceUnavailableError(err)
   }
 
-  const getIncomingTransactions = async ({
-    scanDepth,
-  }: {
-    scanDepth: number
-  }): Promise<SubmittedTransaction[] | OnChainServiceError> => {
+  const getIncomingTransactions = async (
+    scanDepth: number,
+  ): Promise<SubmittedTransaction[] | OnChainServiceError> => {
     try {
       const { current_block_height } = await getHeight({ lnd })
 

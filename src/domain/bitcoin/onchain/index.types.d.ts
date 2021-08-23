@@ -44,7 +44,7 @@ type TxFilter = {
 }
 
 interface IOnChainService {
-  getIncomingTransactions({
+  getIncomingTransactions(
     scanDepth: number,
-  }): Promise<SubmittedTransaction[] | OnChainServiceError>
+  ): Promise<SubmittedTransaction[] | OnChainServiceError>
 }
