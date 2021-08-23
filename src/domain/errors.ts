@@ -12,3 +12,4 @@ export class CouldNotFindError extends DomainError {}
 export class ValidationError extends DomainError {}
 export class InvalidSatoshiAmount extends ValidationError {}
 export class InvalidUsername extends ValidationError {}
+export class InvalidWalletname extends ValidationError {}
