@@ -5,7 +5,7 @@ export const SettlementMethod = {
 } as const
 
 export const PaymentInitiationMethod = {
-  Username: "username",
+  Walletname: "username",
   OnChain: "onchain",
   Lightning: "lightning",
 } as const

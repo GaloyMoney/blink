@@ -32,7 +32,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
         id: "id" as LedgerTransactionId,
         type: LedgerTransactionType.IntraLedger,
         paymentHash: "paymentHash" as PaymentHash,
-        username: "username" as Username,
+        username: "username" as Walletname,
         debit: toSats(0),
         fee: toSats(0),
         credit: toSats(100000),

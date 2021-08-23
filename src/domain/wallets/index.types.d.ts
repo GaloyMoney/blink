@@ -26,20 +26,20 @@ type BaseWalletTransaction = {
 type UsernameTransaction = BaseWalletTransaction & {
   readonly initiationVia: "username"
   readonly settlementVia: "intraledger"
-  readonly recipientId: Username
+  readonly recipientId: Walletname
 }
 
 type WalletOnChainTransaction = BaseWalletTransaction & {
   readonly initiationVia: "onchain"
   readonly settlementVia: "onchain" | "intraledger"
-  readonly recipientId: Username | null
+  readonly recipientId: Walletname | null
   readonly addresses: OnChainAddress[]
 }
 
 type WalletLnTransaction = BaseWalletTransaction & {
   readonly initiationVia: "lightning"
   readonly settlementVia: "lightning" | "intraledger"
-  readonly recipientId: Username | null
+  readonly recipientId: Walletname | null
   readonly paymentHash: PaymentHash
 }
 
