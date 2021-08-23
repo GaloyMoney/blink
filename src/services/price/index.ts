@@ -1,13 +1,17 @@
-import { PriceServiceError } from "@domain/price"
+import { PriceServiceError, UnknownPriceServiceError } from "@domain/price"
 import { getCurrentPrice } from "@services/realtime-price"
 
 export const PriceService = (): IPriceService => {
   const fetchPrice = async () => {
-    const price = await getCurrentPrice()
-    if (typeof price !== "number") {
-      return new PriceServiceError("Couldn't fetch price")
+    try {
+      const price = await getCurrentPrice()
+      if (typeof price !== "number") {
+        return new PriceServiceError("Couldn't fetch price")
+      }
+      return price
+    } catch (err) {
+      return new UnknownPriceServiceError(err)
     }
-    return price
   }
   return {
     getCurrentPrice: fetchPrice,
