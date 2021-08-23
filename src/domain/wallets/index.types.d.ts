@@ -72,10 +72,12 @@ type DepositFeeRatio = number & { [depositFeeRatioSymbol]: never }
 type Wallet = {
   readonly id: WalletId
   readonly depositFeeRatio: DepositFeeRatio
+  readonly walletname: Walletname
   readonly onChainAddressIdentifiers: OnChainAddressIdentifier[]
   onChainAddresses(): OnChainAddress[]
 }
 
 interface IWalletsRepository {
   findById(walletId: WalletId): Promise<Wallet | RepositoryError>
+  findByWalletname(walletname: Walletname): Promise<Wallet | RepositoryError>
 }
