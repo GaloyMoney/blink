@@ -16,7 +16,7 @@ export const TxFilter = ({
       }
       if (
         !!addresses &&
-        !outs.some((out) => out.address != null && addresses.includes(out.address))
+        !outs.some((out) => out.address !== null && addresses.includes(out.address))
       ) {
         return false
       }
