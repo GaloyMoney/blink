@@ -46,7 +46,8 @@ const translateWalletTx = (txs: WalletTransaction[]) => {
     amount: tx.settlementAmount,
     description: tx.deprecated.description,
     fee: tx.settlementFee,
-    created_at: tx.createdAt,
+    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#get_the_number_of_seconds_since_the_ecmascript_epoch
+    created_at: Math.floor(tx.createdAt.getTime() / 1000),
     usd: tx.deprecated.usd,
     sat: tx.settlementAmount,
     pending: tx.pendingConfirmation,
