@@ -112,6 +112,8 @@ export const LedgerService = (): ILedgerService => {
       }
 
       await entry.commit()
+
+      return
     } catch (err) {
       return new UnknownLedgerError(err)
     }
