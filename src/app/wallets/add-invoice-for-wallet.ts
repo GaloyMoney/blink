@@ -1,13 +1,9 @@
 import { checkedToSats, toSats } from "@domain/bitcoin"
 import { invoiceExpirationForCurrency } from "@domain/bitcoin/lightning"
-import { checkedToUsername } from "@domain/users"
 import { WalletInvoiceFactory } from "@domain/wallet-invoices/wallet-invoice-factory"
+import { checkedToWalletname } from "@domain/wallets"
 import { LndService } from "@services/lnd"
-import {
-  WalletInvoicesRepository,
-  UsersRepository,
-  AccountsRepository,
-} from "@services/mongoose"
+import { WalletInvoicesRepository, WalletsRepository } from "@services/mongoose"
 
 export const addInvoice = async ({
   walletId,
@@ -42,12 +38,12 @@ export const addInvoiceForRecipient = async ({
   amount,
   memo = "",
 }: AddInvoiceForRecipientArgs): Promise<LnInvoice | ApplicationError> => {
-  const username = checkedToUsername(recipient)
-  if (username instanceof Error) return username
+  const walletname = checkedToWalletname(recipient)
+  if (walletname instanceof Error) return walletname
   const sats = checkedToSats(amount)
   if (sats instanceof Error) return sats
 
-  const walletId = await walletIdFromUsername(username)
+  const walletId = await walletIdFromWalletname(walletname)
   if (walletId instanceof Error) return walletId
 
   const walletInvoiceFactory = WalletInvoiceFactory(walletId)
@@ -62,10 +58,10 @@ export const addInvoiceNoAmountForRecipient = async ({
   recipient,
   memo = "",
 }: AddInvoiceNoAmountForRecipientArgs): Promise<LnInvoice | ApplicationError> => {
-  const username = checkedToUsername(recipient)
-  if (username instanceof Error) return username
+  const walletname = checkedToWalletname(recipient)
+  if (walletname instanceof Error) return walletname
 
-  const walletId = await walletIdFromUsername(username)
+  const walletId = await walletIdFromWalletname(walletname)
   if (walletId instanceof Error) return walletId
 
   const walletInvoiceFactory = WalletInvoiceFactory(walletId)
@@ -106,17 +102,12 @@ const registerAndPersistInvoice = async ({
   return invoice
 }
 
-const walletIdFromUsername = async (
-  username: Username,
+const walletIdFromWalletname = async (
+  walletname: Walletname,
 ): Promise<WalletId | RepositoryError> => {
-  const usersRepo = UsersRepository()
-  const accountsRepo = AccountsRepository()
+  const walletsRepo = WalletsRepository()
+  const wallet = await walletsRepo.findByWalletname(walletname)
+  if (wallet instanceof Error) return wallet
 
-  const user = await usersRepo.findByUsername(username)
-  if (user instanceof Error) return user
-
-  const defaultAccount = await accountsRepo.findById(user.defaultAccountId)
-  if (defaultAccount instanceof Error) return defaultAccount
-
-  return defaultAccount.walletIds[0]
+  return wallet.id
 }
