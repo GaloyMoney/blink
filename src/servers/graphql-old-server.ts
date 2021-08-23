@@ -46,7 +46,7 @@ const translateWalletTx = (txs: WalletTransaction[]) => {
     amount: tx.settlementAmount,
     description: tx.deprecated.description,
     fee: tx.settlementFee,
-    created_id: tx.createdAt,
+    created_at: tx.createdAt,
     usd: tx.deprecated.usd,
     sat: tx.settlementAmount,
     pending: tx.pendingConfirmation,
