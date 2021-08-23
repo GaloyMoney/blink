@@ -3,3 +3,4 @@ export class PriceError extends Error {
 }
 
 export class PriceServiceError extends PriceError {}
+export class UnknownPriceServiceError extends PriceServiceError {}
