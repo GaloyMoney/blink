@@ -74,7 +74,7 @@ export const LedgerService = (): ILedgerService => {
         type: LedgerTransactionType.OnchainReceipt,
         hash: txId,
       })
-      return result
+      return !!result
     } catch (err) {
       return new UnknownLedgerError(err)
     }
