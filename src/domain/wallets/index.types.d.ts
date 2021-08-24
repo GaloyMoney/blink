@@ -72,7 +72,7 @@ type DepositFeeRatio = number & { [depositFeeRatioSymbol]: never }
 type Wallet = {
   readonly id: WalletId
   readonly depositFeeRatio: DepositFeeRatio
-  readonly walletname: Walletname
+  readonly walletname: Walletname | null
   readonly onChainAddressIdentifiers: OnChainAddressIdentifier[]
   onChainAddresses(): OnChainAddress[]
 }

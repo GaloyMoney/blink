@@ -43,9 +43,7 @@ export const WalletsRepository = (): IWalletsRepository => {
 const resultToWallet = (result: UserType): Wallet => {
   const walletId = result.id as WalletId
 
-  const walletname: Walletname = result.username
-    ? (result.username as Walletname)
-    : ("" as Walletname)
+  const walletname = result.username ? (result.username as Walletname) : null
 
   const depositFeeRatio = result.depositFeeRatio as DepositFeeRatio
 
