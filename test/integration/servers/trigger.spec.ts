@@ -20,11 +20,11 @@ import { toSats } from "@domain/bitcoin"
 import { addInvoice } from "@app/wallets"
 import { getHash } from "@core/utils"
 import { ledger } from "@services/mongodb"
-import { getTitle } from "@core/notifications/payment"
+import { getTitle } from "@services/notifications/payment"
 import { getCurrentPrice } from "@services/realtime-price"
 import { TxStatus } from "@domain/wallets"
 
-jest.mock("@core/notifications/notification")
+jest.mock("@services/notifications/notification")
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
