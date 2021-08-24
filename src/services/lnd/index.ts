@@ -1,9 +1,13 @@
+import { timeout } from "@core/utils"
+import { toMSats, toSats } from "@domain/bitcoin"
 import {
   decodeInvoice,
   CouldNotDecodeReturnedPaymentRequest,
   UnknownLightningServiceError,
+  LightningServiceError,
 } from "@domain/bitcoin/lightning"
-import { createInvoice } from "lightning"
+import { createInvoice, payViaRoutes, payViaPaymentDetails } from "lightning"
+import { FEECAP, FEEMIN, TIMEOUT_PAYMENT } from "./auth"
 import { getActiveLnd } from "./utils"
 
 export const LndService = (): ILightningService | LightningServiceError => {
@@ -38,7 +42,81 @@ export const LndService = (): ILightningService | LightningServiceError => {
     }
   }
 
+  const payRequest = async ({
+    decodedRequest,
+    timeoutMSecs = TIMEOUT_PAYMENT as TimeoutMSecs,
+  }: {
+    decodedRequest: DecodedPaymentRequest
+    timeoutMSecs?: TimeoutMSecs
+  }): Promise<PaymentResult | LightningServiceError> => {
+    let paymentResult
+
+    const { id, satoshis, destination, routeHint, payment, cltvDelta, features } =
+      decodedRequest
+    const max_fee = Math.floor(Math.max(FEECAP * satoshis, FEEMIN))
+
+    try {
+      const paymentPromise = payViaPaymentDetails({
+        lnd: lndAuth,
+        id,
+        cltv_delta: cltvDelta,
+        destination,
+        features,
+        max_fee,
+        mtokens: toMSats(satoshis).toString(),
+        payment,
+        routes: routeHint,
+      })
+      const timeoutPromise = timeout(timeoutMSecs, "Timeout")
+      paymentResult = await Promise.race([paymentPromise, timeoutPromise])
+    } catch (err) {
+      return handlePaymentError(err)
+    }
+    return {
+      safe_fee: paymentResult.safe_fee as Satoshis,
+      paymentSecret: paymentResult.secret as PaymentSecret,
+    }
+  }
+
+  const payToRoute = async ({
+    route,
+    id,
+    timeoutMSecs = TIMEOUT_PAYMENT as TimeoutMSecs,
+  }: {
+    route: PaymentRoute
+    id: Pubkey
+    timeoutMSecs?: TimeoutMSecs
+  }): Promise<PaymentResult | LightningServiceError> => {
+    let paymentResult
+    try {
+      const paymentPromise = payViaRoutes({ lnd: lndAuth, routes: [route], id })
+      const timeoutPromise = timeout(timeoutMSecs, "Timeout")
+      paymentResult = await Promise.race([paymentPromise, timeoutPromise])
+    } catch (err) {
+      return handlePaymentError(err)
+    }
+    return {
+      safe_fee: paymentResult.safe_fee as Satoshis,
+      paymentSecret: paymentResult.secret as PaymentSecret,
+    }
+  }
+
   return {
     registerInvoice,
+    payRequest,
+    payToRoute,
   }
+}
+
+const handlePaymentError = (err): LightningServiceError => {
+  if (err.message === "Timeout")
+    return new LightningServiceError("Paying invoice timed out")
+
+  if (
+    "invoice is already paid" ===
+    (err[2]?.err?.details || err[2]?.failures?.[0]?.[2]?.err?.details)
+  )
+    return new LightningServiceError("Invoice already paid")
+
+  return new UnknownLightningServiceError()
 }

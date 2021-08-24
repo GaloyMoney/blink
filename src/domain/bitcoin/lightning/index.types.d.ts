@@ -14,6 +14,9 @@ type PaymentHash = string & { [paymentHashSymbol]: never }
 declare const paymentSecretSymbol: unique symbol
 type PaymentSecret = string & { [paymentSecretSymbol]: never }
 
+declare const timeoutMSecsSymbol: unique symbol
+type TimeoutMSecs = number & { [timeoutMSecsSymbol]: never }
+
 type RouteHint = {
   baseFeeMTokens?: string
   channel?: string
@@ -32,6 +35,40 @@ type LnInvoice = {
   readonly paymentRequest: EncodedPaymentRequest
 }
 
+type PaymentRoute = {
+  fee: number
+  fee_mtokens: string
+  hops: {
+    channel: string
+    channel_capacity: number
+    fee: number
+    fee_mtokens: string
+    forward: number
+    forward_mtokens: string
+    public_key?: string
+    timeout: number
+  }[]
+  messages?: {
+    type: string
+    value: string
+  }[]
+  mtokens: string
+  timeout: number
+  tokens: number
+}
+
+type PaymentRequestFeatures = {
+  bit: number
+  is_known: boolean
+  is_required: boolean
+  type: string
+}[]
+
+type PaymentResult = {
+  safe_fee: Satoshis
+  paymentSecret: PaymentSecret
+}
+
 type RegisterInvoiceArgs = {
   description: string
   satoshis: Satoshis
@@ -47,4 +84,20 @@ interface ILightningService {
   registerInvoice(
     registerInvoiceArgs: RegisterInvoiceArgs,
   ): Promise<RegisteredInvoice | LightningServiceError>
+  payRequest({
+    decodedRequest,
+    timeoutMSecs,
+  }: {
+    decodedRequest: LnInvoice
+    timeoutMSecs?: TimeoutMSecs
+  }): Promise<PaymentResult | LightningServiceError>
+  payToRoute({
+    route,
+    id,
+    timeoutMSecs,
+  }: {
+    route: PaymentRoute
+    id: Pubkey
+    timeoutMSecs?: TimeoutMSecs
+  }): Promise<PaymentResult | LightningServiceError>
 }
