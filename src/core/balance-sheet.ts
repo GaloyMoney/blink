@@ -25,13 +25,9 @@ export const updatePendingLightningTransactions = async () => {
     logger,
     processor: async ({ _id }, index) => {
       logger.trace("updating pending invoices for user %s in worker %d", _id, index)
-      const result = await Wallets.updateOnChainReceipt(_id, logger)
-      if (result instanceof Error) {
-        logger.error(
-          { userId: _id, index },
-          "Could not updateOnChainReceipt from balance-sheet",
-        )
-      }
+      const user = await User.findOne({ _id })
+      const userWallet = await WalletFactory({ user, logger })
+      await userWallet.updatePendingInvoices()
     },
   })
 
