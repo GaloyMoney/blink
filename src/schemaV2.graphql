@@ -188,11 +188,6 @@ input RequestAuthCodeInput {
   phone: Phone!
 }
 
-input LoginInput {
-  phone: Phone!
-  code: OneTimeAuthCode!
-}
-
 input LanguageUpdateInput {
   language: Language!
 }
@@ -323,7 +318,6 @@ type LnInvoiceReceivePayload {
 type Mutation {
   ## User mutations ##
 
-  userRequestAuthCode(input: RequestAuthCodeInput!): SuccessPayload!
   userLogin(input: LoginInput!): AuthTokenPayload!
 
   userQuizeQuestionsUpdateCompleted(
