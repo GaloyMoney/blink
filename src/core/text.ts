@@ -160,7 +160,9 @@ export const login = async ({
     // is it a test account?
     if (
       yamlConfig.test_accounts.findIndex((item) => item.phone === phone) !== -1 &&
-      yamlConfig.test_accounts.filter((item) => item.phone === phone)[0].code === code // TODO: change code to string everywhere
+      yamlConfig.test_accounts
+        .filter((item) => item.phone === phone)[0]
+        .code.toString() === code.toString()
     ) {
       // we are in this branch if phone is a test account + code is correct
     } else if (codes.findIndex((item) => item.code === code) === -1) {
