@@ -8,6 +8,10 @@
 #@   return data.values.docker_registry + "/galoy-app"
 #@ end
 
+#@ def debug_galoy_image():
+#@   return data.values.docker_registry + "/galoy-app-debug"
+#@ end
+
 #@ def task_image_config():
 type: registry-image
 source:
@@ -23,6 +27,7 @@ groups:
   - test-unit
   - check-code
   - build-edge-image
+  - build-debug-edge-image
   - install-deps
   - bump-image-digest-in-values
 - name: image
@@ -156,6 +161,30 @@ jobs:
     params:
       image: image/image.tar
 
+- name: build-debug-edge-image
+  plan:
+  - { get: repo, trigger: true }
+  - task: build
+    privileged: true
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source:
+          repository: vito/oci-build-task
+      inputs:
+      - name: repo
+      outputs:
+      - name: image
+      params:
+        CONTEXT: repo
+        DOCKERFILE: "repo/Dockerfile-debug"
+      run:
+        path: build
+  - put: debug-edge-image
+    params:
+      image: image/image.tar
+
 - name: bump-image-digest-in-values
   plan:
   - in_parallel:
@@ -187,7 +216,6 @@ jobs:
       repository: charts-repo
       rebase: true
 
-
 resources:
 - name: repo
   type: git
@@ -212,6 +240,14 @@ resources:
     username: #@ data.values.docker_registry_user
     password: #@ data.values.docker_registry_password
     repository: #@ galoy_image()
+
+- name: debug-edge-image
+  type: registry-image
+  source:
+    tag: edge
+    username: #@ data.values.docker_registry_user
+    password: #@ data.values.docker_registry_password
+    repository: #@ debug_galoy_image()
 
 - name: deps
   type: git
