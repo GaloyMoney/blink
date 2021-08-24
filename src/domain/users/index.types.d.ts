@@ -19,5 +19,4 @@ type User = {
 
 interface IUsersRepository {
   findById(userId: UserId): Promise<User | RepositoryError>
-  findByUsername(username: Username): Promise<User | RepositoryError>
 }
