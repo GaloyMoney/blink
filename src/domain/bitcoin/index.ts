@@ -9,6 +9,10 @@ export const checkedToSats = (amount: number): Satoshis | ValidationError => {
   return amount as Satoshis
 }
 
+export const toMSats = (amount: number): MSatoshis => {
+  return (amount * 1000) as MSatoshis
+}
+
 export const BtcNetwork = {
   mainnet: "mainnet",
   testnet: "testnet",
