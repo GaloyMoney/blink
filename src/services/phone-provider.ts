@@ -23,10 +23,11 @@ export const sendTwilioText = async ({ body, to, logger }) => {
     })
   } catch (err) {
     logger.error({ err, provider }, "impossible to send text")
-    return
+    return false
   }
 
   logger.info({ to, provider }, "sent text successfully")
+  return true
 }
 
 export const sendSMSalaText = async ({ body, to, logger }) => {
@@ -47,10 +48,11 @@ export const sendSMSalaText = async ({ body, to, logger }) => {
     await axios.get(url)
   } catch (err) {
     logger.error({ err, provider }, "impossible to send text")
-    return
+    return false
   }
 
   logger.info({ to, provider }, "sent text successfully")
+  return true
 }
 
 export const getCarrier = async (phone: string) => {
