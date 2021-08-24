@@ -1,5 +1,4 @@
 import { once } from "events"
-import { baseLogger } from "@services/logger"
 import { sleep } from "@core/utils"
 import { filter, first } from "lodash"
 import { baseLogger } from "@services/logger"
