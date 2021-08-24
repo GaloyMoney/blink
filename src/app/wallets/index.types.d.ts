@@ -10,12 +10,12 @@ type AddInvoiceNoAmountArgs = {
 }
 
 type AddInvoiceForRecipientArgs = {
-  recipient: Walletname
+  recipient: WalletName
   amount: number
   memo?: string
 }
 
 type AddInvoiceNoAmountForRecipientArgs = {
-  recipient: Walletname
+  recipient: WalletName
   memo?: string
 }

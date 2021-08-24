@@ -52,7 +52,7 @@ export const LedgerService = (): ILedgerService => {
           timestamp: tx.timestamp,
           pendingConfirmation: tx.pending,
           lnMemo: tx.memo,
-          walletname: tx.username,
+          walletName: tx.username,
           memoFromPayer: tx.memoPayer,
           paymentHash: tx.hash,
           addresses: tx.payee_addresses,
