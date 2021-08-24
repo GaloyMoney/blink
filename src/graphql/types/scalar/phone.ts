@@ -15,7 +15,7 @@ const Phone = new GT.Scalar({
 })
 
 function validPhoneValue(value) {
-  // ?: Use ^(\+|00)[1-9][0-9 \-\(\)\.]{7,}$ and strip \D 
+  // ?: Use ^(\+|00)[1-9][0-9 \-\(\)\.]{7,}$ and strip \D
   if (value.match(/^\+[1-9][0-9]{7,}$/)) {
     return value
   }

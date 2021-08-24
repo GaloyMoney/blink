@@ -2,7 +2,8 @@ import { GT } from "@graphql/index"
 
 const Timestamp = new GT.Scalar({
   name: "Timestamp",
-  description: "Date field, serialized as the number of milliseconds since the Unix Epoch",
+  description:
+    "Date field, serialized as the number of milliseconds since the Unix Epoch",
   serialize(value) {
     return value.getTime()
   },
