@@ -1,6 +1,7 @@
 import { once } from "events"
 import { sleep } from "@core/utils"
 import { filter, first } from "lodash"
+import { baseLogger } from "@services/logger"
 import {
   getFeeRates,
   getUserLimits,
@@ -456,7 +457,10 @@ describe("UserWallet - onChainPay", () => {
       expect(paid).toBe(true)
 
       await mineBlockAndSyncAll()
-      await userWallet0.updateOnchainReceipt()
+      const result = await Wallets.updateOnChainReceipt(userWallet0.user.id, baseLogger)
+      if (result instanceof Error) {
+        throw result
+      }
 
       const { result: txs, error } = await Wallets.getTransactionsForWalletId({
         walletId: userWallet0.user.id,
