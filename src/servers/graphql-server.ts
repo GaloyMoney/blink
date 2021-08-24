@@ -21,7 +21,10 @@ import { AuthorizationError, IPBlacklistedError } from "@core/error"
 import { isDev, updateIPDetails, isIPBlacklisted } from "@core/utils"
 import { WalletFactory } from "@core/wallet-factory"
 
-const graphqlLogger = baseLogger.child({ module: "graphql" })
+const graphqlLogger = baseLogger.child({
+  module: "graphql",
+  redact: ["req.headers.authorization"],
+})
 
 const ipConfig = getIpConfig()
 const helmetConfig = getHelmetConfig()
