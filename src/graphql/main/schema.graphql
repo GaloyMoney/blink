@@ -212,6 +212,7 @@ type Mutation {
   lnNoAmountInvoiceCreateOnBehalfOfRecipient(
     input: LnNoAmountInvoiceCreateOnBehalfOfRecipientInput!
   ): LnNoAmountInvoicePayload!
+  lnNoAmountInvoiceCreate(input: LnNoAmountInvoiceCreateInput!): LnNoAmountInvoicePayload!
 }
 
 type LnNoAmountInvoicePayload {
@@ -247,6 +248,10 @@ input LnNoAmountInvoiceCreateOnBehalfOfRecipientInput {
 Unique identifier of an account wallet
 """
 scalar WalletName
+
+input LnNoAmountInvoiceCreateInput {
+  memo: Memo
+}
 
 type Subscription {
   lnInvoicePaymentStatus(
