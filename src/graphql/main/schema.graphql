@@ -209,19 +209,29 @@ type QuizQuestion {
 }
 
 type Mutation {
+  userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
   lnNoAmountInvoiceCreateOnBehalfOfRecipient(
     input: LnNoAmountInvoiceCreateOnBehalfOfRecipientInput!
   ): LnNoAmountInvoicePayload!
   lnNoAmountInvoiceCreate(input: LnNoAmountInvoiceCreateInput!): LnNoAmountInvoicePayload!
 }
 
-type LnNoAmountInvoicePayload {
+type SuccessPayload {
   errors: [UserError!]!
-  invoice: LnNoAmountInvoice
+  success: Boolean
 }
 
 type UserError {
   message: String!
+}
+
+input UserRequestAuthCodeInput {
+  phone: Phone!
+}
+
+type LnNoAmountInvoicePayload {
+  errors: [UserError!]!
+  invoice: LnNoAmountInvoice
 }
 
 type LnNoAmountInvoice {

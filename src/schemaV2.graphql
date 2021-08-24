@@ -184,7 +184,7 @@ enum TxStatus {
   FAILURE
 }
 
-input PhoneInput {
+input RequestAuthCodeInput {
   phone: Phone!
 }
 
@@ -322,8 +322,10 @@ type LnInvoiceReceivePayload {
 #########################
 type Mutation {
   ## User mutations ##
-  userRequestPhoneCode(input: PhoneInput!): SuccessPayload!
+
+  userRequestAuthCode(input: RequestAuthCodeInput!): SuccessPayload!
   userLogin(input: LoginInput!): AuthTokenPayload!
+
   userQuizeQuestionsUpdateCompleted(
     input: QuizQuestionUpdateCompletedInput
   ): QuizQuestionsUpdateCompletedPayload!
@@ -340,8 +342,6 @@ type Mutation {
   onChainPaymentSendAll(input: OnChainPaymentAllInput!): PaymentStatusPayload!
 
   ## lightning mutations ##
-  lnNoAmountInvoiceCreate(input: LnNoAmountInvoiceCreateInput!): LnNoAmountInvoicePayload!
-
   lnInvoiceCreate(input: LnInvoiceCreateInput!): LnInvoicePayload!
 
   lnNoAmountInvoicePaymentSend(

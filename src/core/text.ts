@@ -101,10 +101,13 @@ export const requestPhoneCode = async ({
     await PhoneCode.create({ phone, code, sms_provider })
 
     const sendTextArguments = { body, to: phone, logger }
+
     if (sms_provider === "twilio") {
-      await sendTwilioText(sendTextArguments)
+      const smsOk = await sendTwilioText(sendTextArguments)
+      return smsOk
     } else if (sms_provider === "smsala") {
-      await sendSMSalaText(sendTextArguments)
+      const smsOk = await sendSMSalaText(sendTextArguments)
+      return smsOk
     } else {
       // sms provider in yaml did not match any sms implementation
       return false
@@ -113,8 +116,6 @@ export const requestPhoneCode = async ({
     logger.error({ err }, "impossible to send message")
     return false
   }
-
-  return true
 }
 
 interface ILogin {
