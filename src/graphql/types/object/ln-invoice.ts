@@ -19,6 +19,7 @@ const LnInvoice = new GT.Object({
     },
     satoshis: {
       type: SatAmount,
+      resolve: (source) => source.amount,
     },
   }),
 })

@@ -14,11 +14,22 @@ type PaymentHash = string & { [paymentHashSymbol]: never }
 declare const paymentSecretSymbol: unique symbol
 type PaymentSecret = string & { [paymentSecretSymbol]: never }
 
+type RouteHint = {
+  baseFeeMTokens?: string
+  channel?: string
+  cltvDelta?: number
+  feeRate?: number
+  nodePubkey: Pubkey
+}
+
 type LnInvoice = {
+  readonly amount: Satoshis | null
+  readonly cltvDelta: number | null
+  readonly routeHints: RouteHint[]
+  readonly destination: Pubkey
   readonly paymentHash: PaymentHash
-  readonly paymentSecret: PaymentSecret
+  readonly paymentSecret: PaymentSecret | null
   readonly paymentRequest: EncodedPaymentRequest
-  readonly satoshis: Satoshis
 }
 
 type RegisterInvoiceArgs = {
