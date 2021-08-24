@@ -5,19 +5,18 @@ import Account from "../abstract/account"
 import Timestamp from "../scalar/timestamp"
 import Language from "../scalar/language"
 import Phone from "../scalar/phone"
-import Username from "../scalar/username"
+import Contact from "./contact"
+import UserQuizQuestion from "./user-quiz-question"
 
 const User = new GT.Object({
   name: "User",
   fields: () => ({
     id: { type: GT.NonNullID },
-    username: { type: Username }, // TODO: make username required
     phone: { type: GT.NonNull(Phone) },
     language: {
       type: GT.NonNull(Language),
       resolve: (source) => source.language,
     },
-
     defaultAccount: {
       type: GT.NonNull(Account),
       resolve: async (source) => {
@@ -29,13 +28,17 @@ const User = new GT.Object({
         return account
       },
     },
-
-    // TODO: contacts, quizQuestions
-
+    contacts: {
+      type: GT.NonNullList(Contact), // TODO: Make it a Connection Interface
+    },
+    quizQuestions: {
+      type: GT.NonNullList(UserQuizQuestion),
+    },
     createdAt: {
       type: GT.NonNull(Timestamp),
-      resolve: (source) => source.createdAt,
     },
+
+    // FUTURE-PLAN: support an `accounts: [Account!]!` here
   }),
 })
 

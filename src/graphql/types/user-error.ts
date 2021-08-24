@@ -6,9 +6,10 @@ const UserError = new GT.Object({
     message: {
       type: GT.NonNull(GT.String),
     },
-    fields: {
-      type: GT.NonNullList(GT.String),
-    },
+    // TODO: Add fields to errors where possible
+    // fields: {
+    //   type: GT.NonNullList(GT.String),
+    // },
   }),
 })
 

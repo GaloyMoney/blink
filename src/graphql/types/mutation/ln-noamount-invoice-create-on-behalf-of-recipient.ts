@@ -3,12 +3,12 @@ import { GT } from "@graphql/index"
 
 import LnNoAmountInvoicePayload from "./payload/ln-noamount-invoice"
 import Memo from "../scalar/memo"
-import Username from "../scalar/username"
+import WalletName from "../scalar/wallet-name"
 
 const LnNoAmountInvoiceCreateOnBehalfOfRecipientInput = new GT.Input({
   name: "LnNoAmountInvoiceCreateOnBehalfOfRecipientInput",
   fields: () => ({
-    recipient: { type: GT.NonNull(Username) },
+    recipient: { type: GT.NonNull(WalletName) },
     memo: { type: Memo },
   }),
 })

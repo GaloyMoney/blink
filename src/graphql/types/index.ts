@@ -3,7 +3,7 @@ import ConsumerAccount from "./object/consumer-account"
 import FiatWallet from "./object/fiat-wallet"
 import IntraLedgerTransaction from "./object/intra-ledger-transaction"
 import LnTransaction from "./object/ln-transaction"
-import MerchantAccount from "./object/merchant-account"
+import BusinessAccount from "./object/business-account"
 import OnChainTransaction from "./object/onchain-transaction"
 
 // The following types are not directly included
@@ -11,7 +11,7 @@ import OnChainTransaction from "./object/onchain-transaction"
 // They need to be included via GraphQLSchema.types config
 export const TYPE_FOR_INTERFACES = [
   ConsumerAccount,
-  MerchantAccount,
+  BusinessAccount,
   BTCWallet,
   FiatWallet,
   IntraLedgerTransaction,

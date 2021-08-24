@@ -2,13 +2,13 @@ import { GT } from "@graphql/index"
 
 import { updateMerchantMapInfo } from "@domain/user"
 import UserDetailPayload from "./payload/user-detail"
-import Username from "../scalar/username"
+import WalletName from "../scalar/wallet-name"
 
 const MerchanUpdateMapInfoInput = new GT.Input({
   name: "MerchanUpdateMapInfoInput",
   fields: () => ({
-    username: {
-      type: GT.NonNull(Username),
+    walletName: {
+      type: GT.NonNull(WalletName), // ?: This is converted from Username
     },
     title: {
       type: GT.NonNull(GT.String),
