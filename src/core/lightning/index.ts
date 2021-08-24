@@ -854,16 +854,17 @@ export const LightningMixin = (superclass) =>
     }
 
     async updatePendingInvoices(lock) {
-      const pendingInvoicesRes = this.invoices.findPendingByWalletId(this.user._id)
-      if (isRepoError(pendingInvoicesRes)) {
+      let invoices
+
+      invoices = this.invoices.findPendingByWalletId(this.user._id)
+      if (isRepoError(invoices)) {
         this.logger.error(
-          { walletId: this.user._id, error: pendingInvoicesRes },
+          { walletId: this.user._id, error: invoices },
           "finish updating pending invoices with error",
         )
         return
       }
 
-      const invoices = pendingInvoicesRes as AsyncGenerator<WalletInvoice>
       for await (const { paymentHash: hash, pubkey: pubkeyCached } of invoices) {
         await this.updatePendingInvoice({ hash, lock, pubkeyCached })
       }
