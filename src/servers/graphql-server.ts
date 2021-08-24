@@ -23,7 +23,6 @@ import { WalletFactory } from "@core/wallet-factory"
 
 const graphqlLogger = baseLogger.child({
   module: "graphql",
-  redact: ["req.headers.authorization", "body.variables.code", "req.body.variables.code"],
 })
 
 const ipConfig = getIpConfig()
