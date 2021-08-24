@@ -23,11 +23,7 @@ import { WalletFactory } from "@core/wallet-factory"
 
 const graphqlLogger = baseLogger.child({
   module: "graphql",
-  redact: [
-    "req.headers.authorization",
-    "jsonPayload.body.variables.code",
-    "jsonPayload.res.body.variables.code",
-  ],
+  redact: ["req.headers.authorization", "body.variables.code", "req.body.variables.code"],
 })
 
 const ipConfig = getIpConfig()
@@ -131,18 +127,11 @@ export const startApolloServer = async ({
   app.use(
     PinoHttp({
       logger: graphqlLogger,
-      wrapSerializers: false,
-
-      // Define custom serializers
       serializers: {
-        // TODO: sanitize
-        err: pino.stdSerializers.err,
-        req: pino.stdSerializers.req,
-        res: (res) => ({
-          // FIXME: kind of a hack. body should be in in req. but have not being able to do it.
-          body: res.req.body,
-          ...pino.stdSerializers.res(res),
-        }),
+        req(req) {
+          req.body = req.raw.body
+          return req
+        },
       },
       autoLogging: {
         ignorePaths: ["/healthz"],
