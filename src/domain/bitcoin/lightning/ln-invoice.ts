@@ -1,11 +1,10 @@
-import lightningPayReq from "bolt11"
+import { toSats } from "@domain/bitcoin"
+import { parsePaymentRequest } from "invoices"
 import { LnInvoiceDecodeError } from "./errors"
 
-const safeDecode = (
-  bolt11EncodedInvoice: string,
-): lightningPayReq.PaymentRequestObject | LnInvoiceDecodeError => {
+const safeDecode = (bolt11EncodedInvoice: string) => {
   try {
-    return lightningPayReq.decode(bolt11EncodedInvoice)
+    return parsePaymentRequest({ request: bolt11EncodedInvoice })
   } catch (err) {
     return new LnInvoiceDecodeError(err)
   }
@@ -15,38 +14,38 @@ export const decodeInvoice = (
   bolt11EncodedInvoice: string,
 ): LnInvoice | LnInvoiceDecodeError => {
   const decodedInvoice = safeDecode(bolt11EncodedInvoice)
-
   if (decodedInvoice instanceof Error) return decodedInvoice
 
-  let paymentHash: PaymentHash | null = null,
-    paymentSecret: PaymentSecret | null = null
+  const paymentSecret: PaymentSecret | null = decodedInvoice.payment
+    ? decodedInvoice.payment
+    : null
+  const amount: Satoshis | null = decodedInvoice.tokens
+    ? toSats(decodedInvoice.tokens)
+    : null
+  const cltvDelta: number | null = decodedInvoice.cltv_delta
+    ? decodedInvoice.cltv_delta
+    : null
 
-  decodedInvoice.tags.forEach((tag) => {
-    const tagError = typeof tag.data !== "string"
-    switch (tag.tagName) {
-      case "payment_hash":
-        if (tagError) {
-          return new LnInvoiceDecodeError("Irregular payment_hash")
-        }
-        paymentHash = tag.data as PaymentHash
-        break
-
-      case "payment_secret":
-        if (tagError) {
-          return new LnInvoiceDecodeError("Irregular payment_secret")
-        }
-        paymentSecret = tag.data as PaymentSecret
-        break
-    }
-  })
-
-  if (!paymentHash || !paymentSecret) {
-    return new LnInvoiceDecodeError("Invalid invoice data")
+  let routeHints: RouteHint[] = []
+  if (decodedInvoice.routes) {
+    decodedInvoice.routes.forEach((route) =>
+      routeHints.push({
+        baseFeeMTokens: route.base_fee_mtokens,
+        channel: route.channel,
+        cltvDelta: route.cltv_delta,
+        feeRate: route.feeRate,
+        nodePubkey: route.public_key as Pubkey,
+      }),
+    )
   }
 
   return {
-    paymentRequest: bolt11EncodedInvoice as EncodedPaymentRequest,
-    paymentHash,
+    amount,
     paymentSecret,
+    routeHints,
+    cltvDelta,
+    paymentRequest: bolt11EncodedInvoice as EncodedPaymentRequest,
+    paymentHash: decodedInvoice.id as PaymentHash,
+    destination: decodedInvoice.destination as Pubkey,
   }
 }
