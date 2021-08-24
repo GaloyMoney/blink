@@ -1,7 +1,7 @@
 type Query {
   allLevels: [AccountLevel!]!
   userDetailsByPhone(phone: Phone!): UserDetails!
-  userDetailsByUsername(username: Username!): UserDetails!
+  userDetailsByUsername(username: WalletName!): UserDetails!
 }
 
 enum AccountLevel {
@@ -11,17 +11,17 @@ enum AccountLevel {
 
 type UserDetails {
   id: ID!
-  username: Username
   phone: Phone!
   level: AccountLevel
   status: AccountStatus
   title: String
   coordinates: Coordinates
-  createdAt: Date!
+  createdAt: Timestamp!
 }
 
-scalar Username
-
+"""
+Phone number which includes country code
+"""
 scalar Phone
 
 enum AccountStatus {
@@ -34,7 +34,15 @@ type Coordinates {
   latitude: Float!
 }
 
-scalar Date
+"""
+Date field, serialized as the number of milliseconds since the Unix Epoch
+"""
+scalar Timestamp
+
+"""
+Unique identifier of an account wallet
+"""
+scalar WalletName
 
 type Mutation {
   requestPhoneCode(phone: String!): Boolean
@@ -51,7 +59,6 @@ type UserDetailPayload {
 
 type UserError {
   message: String!
-  fields: [String!]!
 }
 
 input UserUpdateStatusInput {
@@ -65,7 +72,7 @@ input UserUpdateLevelInput {
 }
 
 input MerchanUpdateMapInfoInput {
-  username: Username!
+  walletName: WalletName!
   title: String!
   longitude: Float!
   latitude: Float!

@@ -2,6 +2,7 @@ import { GT } from "@graphql/index"
 
 const LnInvoicePaymentRequest = new GT.Scalar({
   name: "LnInvoicePaymentRequest",
+  description: "BOLT11 lightning invoice payment request with the amount included",
   parseValue(value) {
     return validLnInvoicePaymentRequest(value)
   },
@@ -15,7 +16,7 @@ const LnInvoicePaymentRequest = new GT.Scalar({
 
 function validLnInvoicePaymentRequest(value) {
   // TODO: verify/improve
-  if (value.match(/^ln[A-Za-z0-9]+$/)) {
+  if (value.match(/^ln[a-z0-9]+$/i)) {
     return value
   }
   return new Error("Invalid value for LnInvoicePaymentRequest")

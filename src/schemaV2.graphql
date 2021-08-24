@@ -1,127 +1,11 @@
-scalar OneTimeAuthCode # V: range(min: 100000, max: 999999)
-scalar OnChainAddress # V: pattern(regexp: "^[A-Fa-f0-9]+$") (bc1 for mainnet, tb1)
-scalar FeeReimbursementHash # ?: Examples
-"BOLT11 lightning invoice payment request with the amount included"
-scalar LnPaymentRequest # pattern(regexp: "^ln[A-Za-z0-9]+$")
-"BOLT11 lightning invoice payment request string that does not include an amount"
-scalar LnNoAmountPaymentRequest # BOLT 11 but without amount
-scalar LnPaymentHash # V: stringLength(min: 64, max: 64) pattern(regexp: "^[A-Fa-f0-9]+$")
-scalar LnPaymentSecret # ?: validation
-# ?: Mixed vs currency types
-enum Currency {
-  USD
-  BTC
-}
-
-enum TxDirection {
-  SEND
-  RECEIVE
-}
-
-enum AccountLevel {
-  "We have the user's phone number"
-  ONE
-  "We have the user's ID"
-  TWO
-}
-
-"The range for the X axis in the BTC price graph"
-enum PriceGraphRange {
-  ONE_DAY
-  ONE_WEEK
-  ONE_MONTH
-  ONE_YEAR
-  FIVE_YEARS
-}
-
-#########################
-### Interfaces
-#########################
-
-interface Account {
-  level: AccountLevel!
-  status: AccountStatus!
-  wallets: [Wallet!]!
-  limits: Limits!
-  csvTransactions(walletId: ID!): String!
-}
-
-interface Transaction {
-  id: ID!
-  amount: TxAmount!
-  convertedAmount: TxAmount!
-  memo: Memo # :? E2E encryption
-  status: TxStatus!
-  createdAt: Date!
-}
-
-#########################
-### Unions
-#########################
-
-union MobileVersions = AndroidVersions | IosVersions
-
-#########################
-### Custom Types
-#########################
-
-type User {
-  id: ID!
-  username: Username!
-  phone: Phone!
-  contacts: [Contact!]! # TODO: Connection
-  language: Language!
-  quizQuestions: [UserQuizQuestion!]!
-  defaultAccount: Account!
-  # accounts: [Account!]! # FuturePlanning
-  createdAt: Date!
-}
-
-type ConsumerAccount implements Account {
-  # users: [User!]! # FuturePlanning
-  level: AccountLevel!
-  status: AccountStatus!
-  wallets: [Wallet!]!
-  allTransactions: [Transaction!]! # Connection
-  csvTransactionsCSV(walletId: ID!): String!
-}
-
-type MerchantAccount implements Account {
-  # user: [User!]! # FuturePlanning
-  mapInfo: MapInfo!
-
-  level: AccountLevel!
-  status: AccountStatus!
-  wallets: [Wallet!]!
-  csvTransactions(walletId: ID!): String!
-}
-
-# # FuturePlanning
-# type CorporateAccount implements Account {
-#   user: [User!]!
-# }
-
-type TxAmount {
-  currency: Currency!
-  "Negative when sending"
-  amount: SignedAmount!
-  fee: AbsoluteAmount!
-}
-
-# ?: confirm
-type TxSettlement {
-  amount: SatAmount!
-  fee: SatAmount!
-}
-
 union IntraLedgerDestination =
     IntraLedgerDestination
   | OnChainDestination
   | LnDestination
   | FeeReimbursementDestination
 
-type UsernameDestination {
-  destination: Username!
+type WalletNameDestination {
+  destination: WalletName!
 }
 
 type OnChainDestination {
@@ -137,16 +21,10 @@ type FeeReimbursementDestination {
 }
 
 # ?: Using the same wallet (ex, Bitcoin Beach)
-# ?: 1) Pay with username, 2) Pay with LN, 3) Pay OnChain
-type IntraLedgerTransaction implements Transaction {
+# ?: 1) Pay with WalletName, 2) Pay with LN, 3) Pay OnChain
+type WalletNameTransaction implements Transaction {
   id: ID!
   direction: TxDirection!
-  # amount: TxAmount!
-  # settlementAmount: TxSettlementAmount!
-
-  # currency: Currency!
-  # amount: AbsoluteAmount!
-  # fee: AbsoluteAmount! # ?: Is this needed?
 
   settlementAmount: SatAmount!
   settlementFee: SatAmount!
@@ -157,13 +35,12 @@ type IntraLedgerTransaction implements Transaction {
   status: TxStatus!
   createdAt: Date!
 
-  originalDestination: IntraLedgerDestination!
   """
   Settlement destination:
   Could be null when originalDestination is onChain/LN
-  and the payeee does not have a username
+  and the payeee does not have a WalletName
   """
-  recipientID: Username
+  recipientWalletName: WalletName
 }
 
 type OnChainTransaction implements Transaction {
@@ -175,7 +52,7 @@ type OnChainTransaction implements Transaction {
   status: TxStatus!
   createdAt: Date!
 
-  addresses: [OnChainAddress!]!
+  address: OnChainAddress!
 }
 
 type LnTransaction implements Transaction {
@@ -189,37 +66,13 @@ type LnTransaction implements Transaction {
 
   paymentHash: LnInvoincePaymentHash! # V: 256 bits (64 chars)
   "Which node the payment was made to"
-  receivingNode: LnNode!
+  # receivingNode: LnNode!
 }
 
-# type exchangeTransaction implements Transaction {
+# type ExchangeTransaction implements Transaction {
 #   rate: ...
 #   fee: ...
 # }
-
-# ?: Should we convert this to generic currency/currency ratio?
-type BtcUsdPrice {
-  id: ID! # Currently a date
-  date: Date!
-  price: Float! # price of 1 sat in USD (currently)
-}
-
-type BtcPrice {
-  id: ID! # Currently a date
-  date: Date!
-  price: Float! # price of 1 sat in USD (currently)
-}
-
-type QuizQuestion {
-  id: ID!
-  "The earn reward for the app to display their associated amount"
-  earnAmount: SatAmount!
-}
-
-type UserQuizQuestion {
-  question: QuizQuestion!
-  completed: Boolean!
-}
 
 # ?: Account? Multiple wallets
 interface Wallet {
@@ -242,25 +95,9 @@ type FiatWallet implements Wallet {
   transactions: [Transaction!]! # Connection
 }
 
-type Contact {
-  id: Username!
-  name: String # name can be set by the user
-  transactionsCount: Int!
-}
-
 type MapInfo {
   title: String!
   coordinates: Coordinates!
-}
-
-type AndroidVersions {
-  minSupported: Int!
-  currentSupported: Int!
-}
-
-type IosVersions {
-  minSupported: Int!
-  currentSupported: Int!
 }
 
 type Coordinates {
@@ -272,12 +109,6 @@ type MapMarker {
   id: ID!
   username: Username
   mapInfo: MapInfo!
-}
-
-type Limits {
-  accountOldEnoughForWithdrawal: Boolean! # ?: Misplaced? Not a limit. AccountWithdrawlStatus?
-  currentMaxSend: Int! # ?: Ln | OnChain
-  cucrrentIntraLedgerMaxSend: Int!
 }
 
 enum ExpectedConfirmationTime {
@@ -302,11 +133,11 @@ type GaloyGlobalSettings {
 #########################
 type Query {
   galoyGlobalSettings: GaloyGlobalSettings
-  priceListForGraph(range: PriceGraphRange!): [Price!]
+  btcUsdPriceListForGraph(range: PriceGraphRange!): [BtcUsdPrice!]
   quizQuestions: [QuizQuestion!]
   merchantMapMarkers: [MapMarker!] # TODO: Map focus Connection | X merchants here
   mobileVersions: MobileVersions
-  usernameAvailable(username: Username!): Boolean # TODO: security concerns / rate-limit
+  walletNameAvailable(walletName: WalletName!): Boolean # TODO: security concerns / rate-limit
   onChainTxFee(distination: OnChainAddress!, amount: SatAmount!): [OnChainTxFee!] # Dynamic
 
   # settings... # FuturePlanning
@@ -362,16 +193,8 @@ input LoginInput {
   code: OneTimeAuthCode!
 }
 
-input UsernameInput {
-  username: Username!
-}
-
 input LanguageUpdateInput {
   language: Language!
-}
-
-input UsernameUpdateInput {
-  username: Username!
 }
 
 input ContactUpdateInput {
@@ -505,7 +328,6 @@ type Mutation {
     input: QuizQuestionUpdateCompletedInput
   ): QuizQuestionsUpdateCompletedPayload!
   userLanguageUpdate(input: LanguageUpdateInput!): UserPayload!
-  usernameUpdate(input: UsernameUpdateInput!): UserPayload!
   userContactUpdate(input: ContactUpdateInput!): SuccessPayload!
 
   ## Device mutations ##
@@ -519,12 +341,17 @@ type Mutation {
 
   ## lightning mutations ##
   lnNoAmountInvoiceCreate(input: LnNoAmountInvoiceCreateInput!): LnNoAmountInvoicePayload!
+
   lnInvoiceCreate(input: LnInvoiceCreateInput!): LnInvoicePayload!
+
   lnNoAmountInvoicePaymentSend(
     input: LnNoAmountInvoicePaymentInput!
   ): PaymentStatusPayload! # FINAL (mobile)
+
   lnInvoicePaymentSend(input: LnInvoicePaymentInput!): PaymentStatusPayload!
+
   lnNoAmountInvoiceFeeProbe(intput: LnNoAmountInvoiceFeeProbeInput!): SatAmountPayload!
+
   lnInvoiceFeeProbe(intput: LnInvoiceFeeProbeInput!): SatAmountPayload!
   # lnPushPaymentFeeProbe(intput: LnPushPaymentFeeProbeInput!): SatAmountPayload! # FuturePlanning
 

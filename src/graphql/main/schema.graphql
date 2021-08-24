@@ -4,17 +4,17 @@ type Query {
 
 type User {
   id: ID!
-  username: Username
   phone: Phone!
   language: Language!
   defaultAccount: Account!
+  contacts: [Contact!]!
+  quizQuestions: [UserQuizQuestion!]!
   createdAt: Timestamp!
 }
 
-"""Unique identifier of an API user"""
-scalar Username
-
-"""Phone number which includes country code"""
+"""
+Phone number which includes country code
+"""
 scalar Phone
 
 enum Language {
@@ -26,6 +26,9 @@ interface Account {
   level: AccountLevel!
   status: AccountStatus!
   wallets: [Wallet!]!
+  canWithdraw: Boolean!
+  limits: Limits!
+  csvTransactions(walletIds: [ID!]!): String!
 }
 
 enum AccountLevel {
@@ -41,56 +44,117 @@ enum AccountStatus {
 interface Wallet {
   id: ID!
   transactions(
-    """Returns the items in the list that come after the specified cursor."""
+    """
+    Returns the items in the list that come after the specified cursor.
+    """
     after: String
 
-    """Returns the first n items from the list."""
+    """
+    Returns the first n items from the list.
+    """
     first: Int
 
-    """Returns the items in the list that come before the specified cursor."""
+    """
+    Returns the items in the list that come before the specified cursor.
+    """
     before: String
 
-    """Returns the last n items from the list."""
+    """
+    Returns the last n items from the list.
+    """
     last: Int
   ): TransactionConnection
 }
 
-"""A connection to a list of items."""
+"""
+A connection to a list of items.
+"""
 type TransactionConnection {
-  """Information to aid in pagination."""
+  """
+  Information to aid in pagination.
+  """
   pageInfo: PageInfo!
 
-  """A list of edges."""
+  """
+  A list of edges.
+  """
   edges: [TransactionEdge]
 }
 
-"""Information about pagination in a connection."""
+"""
+Information about pagination in a connection.
+"""
 type PageInfo {
-  """When paginating forwards, are there more items?"""
+  """
+  When paginating forwards, are there more items?
+  """
   hasNextPage: Boolean!
 
-  """When paginating backwards, are there more items?"""
+  """
+  When paginating backwards, are there more items?
+  """
   hasPreviousPage: Boolean!
 
-  """When paginating backwards, the cursor to continue."""
+  """
+  When paginating backwards, the cursor to continue.
+  """
   startCursor: String
 
-  """When paginating forwards, the cursor to continue."""
+  """
+  When paginating forwards, the cursor to continue.
+  """
   endCursor: String
 }
 
-"""An edge in a connection."""
+"""
+An edge in a connection.
+"""
 type TransactionEdge {
-  """The item at the end of the edge"""
+  """
+  The item at the end of the edge
+  """
   node: Transaction
 
-  """A cursor for use in pagination"""
+  """
+  A cursor for use in pagination
+  """
   cursor: String!
 }
 
 interface Transaction {
   id: ID!
+  initiationVia: PaymentInitiationMethod!
+  settlementVia: SettlementMethod!
+  settlementAmount: SatAmount!
+  settlementFee: SatAmount!
+  priceAtSettlement: BtcUsdPrice!
+  direction: TxDirection!
+  memo: Memo
+  status: TxStatus
   createdAt: Timestamp!
+}
+
+enum PaymentInitiationMethod {
+  WALLET_NAME
+  ON_CHAIN
+  LIGHTNING
+}
+
+enum SettlementMethod {
+  INTRA_LEDGER
+  ON_CHAIN
+  LIGHTNING
+}
+
+"""
+(Positive) Satoshi amount (i.g. quiz earning)
+"""
+scalar SatAmount
+
+type BtcUsdPrice {
+  id: ID!
+  timestamp: Timestamp!
+  price: Float!
 }
 
 """
@@ -98,8 +162,56 @@ Date field, serialized as the number of milliseconds since the Unix Epoch
 """
 scalar Timestamp
 
+enum TxDirection {
+  SEND
+  RECEIVE
+}
+
+"""
+Text field in a lightning payment transaction
+"""
+scalar Memo
+
+enum TxStatus {
+  PENDING
+  SUCCESS
+  FAILURE
+}
+
+type Limits {
+  maxSend: Int!
+  intraLedgerMaxSend: Int!
+}
+
+type Contact {
+  id: ID!
+  name: FullName
+  transactionsCount: Int!
+}
+
+"""
+Full name of an API user
+"""
+scalar FullName
+
+type UserQuizQuestion {
+  question: QuizQuestion!
+  completed: Boolean!
+}
+
+type QuizQuestion {
+  id: ID!
+
+  """
+  The earn reward in Satoshis for the quiz question
+  """
+  earnAmount: SatAmount!
+}
+
 type Mutation {
-  lnNoAmountInvoiceCreateOnBehalfOfRecipient(input: LnNoAmountInvoiceCreateOnBehalfOfRecipientInput!): LnNoAmountInvoicePayload!
+  lnNoAmountInvoiceCreateOnBehalfOfRecipient(
+    input: LnNoAmountInvoiceCreateOnBehalfOfRecipientInput!
+  ): LnNoAmountInvoicePayload!
 }
 
 type LnNoAmountInvoicePayload {
@@ -109,7 +221,6 @@ type LnNoAmountInvoicePayload {
 
 type UserError {
   message: String!
-  fields: [String!]!
 }
 
 type LnNoAmountInvoice {
@@ -118,6 +229,9 @@ type LnNoAmountInvoice {
   paymentSecret: LnInvoicePaymentSecret!
 }
 
+"""
+BOLT11 lightning invoice payment request with the amount included
+"""
 scalar LnInvoicePaymentRequest
 
 scalar LnInvoicePaymentHash
@@ -125,15 +239,19 @@ scalar LnInvoicePaymentHash
 scalar LnInvoicePaymentSecret
 
 input LnNoAmountInvoiceCreateOnBehalfOfRecipientInput {
-  recipient: Username!
+  recipient: WalletName!
   memo: Memo
 }
 
-"""Text field in a lightning payment transaction"""
-scalar Memo
+"""
+Unique identifier of an account wallet
+"""
+scalar WalletName
 
 type Subscription {
-  lnInvoicePaymentStatus(input: LnInvoicePaymentStatusInput!): LnInvoicePaymentStatusPayload!
+  lnInvoicePaymentStatus(
+    input: LnInvoicePaymentStatusInput!
+  ): LnInvoicePaymentStatusPayload!
 }
 
 type LnInvoicePaymentStatusPayload {

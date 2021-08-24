@@ -2,7 +2,7 @@ import { User } from "@services/mongoose/schema"
 
 import { GT } from "../index"
 import Phone from "../types/scalar/phone"
-import Username from "../types/scalar/username"
+import WalletName from "../types/scalar/wallet-name"
 import AccountLevel from "../types/scalar/account-level"
 import UserDetails from "../types/object/user-details"
 
@@ -31,7 +31,7 @@ const QueryType = new GT.Object({
     userDetailsByUsername: {
       type: GT.NonNull(UserDetails),
       args: {
-        username: { type: GT.NonNull(Username) },
+        username: { type: GT.NonNull(WalletName) },
       },
       resolve: async (parent, { username }) => {
         const user = await User.getUserByUsername(username)

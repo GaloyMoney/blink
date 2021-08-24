@@ -15,7 +15,7 @@ const LnInvoicePaymentHash = new GT.Scalar({
 
 function validkLnInvoicePaymentHash(value) {
   // TODO: verify/improve
-  if (value.match(/^[A-Fa-f0-9]{64}$/)) {
+  if (value.match(/^[a-f0-9]{64}$/i)) {
     return value
   }
   return new Error("Invaild value for LnInvoicePaymentHash")

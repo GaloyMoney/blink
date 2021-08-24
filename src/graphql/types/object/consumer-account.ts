@@ -1,10 +1,12 @@
 import * as Wallets from "@app/wallets"
 import { GT } from "@graphql/index"
 import Account from "../abstract/account"
+import Transaction from "../abstract/transaction"
 import Wallet from "../abstract/wallet"
 
 import AccountLevel from "../scalar/account-level"
 import AccountStatus from "../scalar/account-status"
+import Limits from "./limits"
 
 const ConsumerAccount = new GT.Object({
   name: "ConsumerAccount",
@@ -17,6 +19,13 @@ const ConsumerAccount = new GT.Object({
     status: {
       type: GT.NonNull(AccountStatus),
     },
+    canWithdraw: {
+      type: GT.NonNull(GT.Boolean),
+    },
+    limits: {
+      type: GT.NonNull(Limits),
+    },
+
     wallets: {
       type: GT.NonNullList(Wallet),
       resolve: (source) => {
@@ -28,6 +37,19 @@ const ConsumerAccount = new GT.Object({
           return wallet
         })
         return wallets
+      },
+    },
+
+    allTransactions: {
+      type: GT.NonNullList(Transaction),
+    },
+
+    csvTransactions: {
+      type: GT.NonNull(GT.String),
+      args: {
+        walletIds: {
+          type: GT.NonNullList(GT.NonNullID),
+        },
       },
     },
   }),

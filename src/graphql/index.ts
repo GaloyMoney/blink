@@ -27,6 +27,7 @@ export const GT = {
   Scalar: GraphQLScalarType,
   Enum: GraphQLEnumType,
 
+  ID: GraphQLID,
   String: GraphQLString,
   Int: GraphQLInt,
   Boolean: GraphQLBoolean,

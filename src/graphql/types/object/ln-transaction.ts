@@ -1,6 +1,6 @@
 import { GT } from "@graphql/index"
 import Transaction from "../abstract/transaction"
-import Timestamp f../scalar/date/timestamp"
+import Timestamp from "../scalar/timestamp"
 
 const LnTransaction = new GT.Object({
   name: "LnTransaction",

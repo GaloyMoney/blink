@@ -3,7 +3,6 @@ import { GT } from "@graphql/index"
 import Timestamp from "../scalar/timestamp"
 import Phone from "../scalar/phone"
 import AccountLevel from "../scalar/account-level"
-import Username from "../scalar/username"
 import AccountStatus from "../scalar/account-status"
 import Coordinates from "./coordinates"
 
@@ -13,9 +12,6 @@ const UserDetails = new GT.Object({
   fields: () => ({
     id: {
       type: GT.NonNullID,
-    },
-    username: {
-      type: Username,
     },
     phone: {
       type: GT.NonNull(Phone),
