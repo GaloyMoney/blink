@@ -50,7 +50,7 @@ export const fromLedger = (
       usd,
       feeUsd,
       paymentHash,
-      username,
+      walletname,
       addresses,
       pendingConfirmation,
       timestamp,
@@ -61,7 +61,7 @@ export const fromLedger = (
         memoFromPayer,
         lnMemo,
         credit,
-        username,
+        walletname,
       })
       if (addresses && addresses.length > 0) {
         return {
@@ -78,7 +78,7 @@ export const fromLedger = (
             feeUsd,
             type,
           },
-          recipientId: username || null,
+          recipientId: walletname || null,
           settlementAmount,
           settlementFee: toSats(fee || 0),
           pendingConfirmation,
@@ -102,7 +102,7 @@ export const fromLedger = (
           settlementAmount,
           settlementFee: toSats(fee || 0),
           paymentHash: paymentHash as PaymentHash,
-          recipientId: username || null,
+          recipientId: walletname || null,
           pendingConfirmation,
           createdAt: timestamp,
         }
@@ -119,7 +119,7 @@ export const fromLedger = (
         },
         settlementAmount,
         settlementFee: toSats(fee || 0),
-        recipientId: username || null,
+        recipientId: walletname || null,
         pendingConfirmation,
         createdAt: timestamp,
       } as UsernameTransaction
@@ -147,13 +147,13 @@ const shouldDisplayMemo = (credit: number) => {
 export const translateDescription = ({
   memoFromPayer,
   lnMemo,
-  username,
+  walletname,
   type,
   credit,
 }: {
   memoFromPayer?: string
   lnMemo?: string
-  username?: string
+  walletname?: string
   type: LedgerTransactionType
   credit: number
 }): string => {
@@ -166,15 +166,15 @@ export const translateDescription = ({
     }
   }
 
-  let usernameDescription
-  if (username) {
-    usernameDescription = `to ${username}`
+  let walletnameDescription
+  if (walletname) {
+    walletnameDescription = `to ${walletname}`
     if (credit > 0) {
-      usernameDescription = `from ${username}`
+      walletnameDescription = `from ${walletname}`
     }
   }
 
-  return usernameDescription || type
+  return walletnameDescription || type
 }
 
 export const WalletTransactionHistory = {
