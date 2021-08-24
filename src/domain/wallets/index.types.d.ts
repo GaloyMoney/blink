@@ -26,20 +26,20 @@ type BaseWalletTransaction = {
 type UsernameTransaction = BaseWalletTransaction & {
   readonly initiationVia: "username"
   readonly settlementVia: "intraledger"
-  readonly recipientId: Walletname
+  readonly recipientId: WalletName
 }
 
 type WalletOnChainTransaction = BaseWalletTransaction & {
   readonly initiationVia: "onchain"
   readonly settlementVia: "onchain" | "intraledger"
-  readonly recipientId: Walletname | null
+  readonly recipientId: WalletName | null
   readonly addresses: OnChainAddress[]
 }
 
 type WalletLnTransaction = BaseWalletTransaction & {
   readonly initiationVia: "lightning"
   readonly settlementVia: "lightning" | "intraledger"
-  readonly recipientId: Walletname | null
+  readonly recipientId: WalletName | null
   readonly paymentHash: PaymentHash
 }
 
@@ -72,12 +72,12 @@ type DepositFeeRatio = number & { [depositFeeRatioSymbol]: never }
 type Wallet = {
   readonly id: WalletId
   readonly depositFeeRatio: DepositFeeRatio
-  readonly walletname: Walletname | null
+  readonly walletName: WalletName | null
   readonly onChainAddressIdentifiers: OnChainAddressIdentifier[]
   onChainAddresses(): OnChainAddress[]
 }
 
 interface IWalletsRepository {
   findById(walletId: WalletId): Promise<Wallet | RepositoryError>
-  findByWalletname(walletname: Walletname): Promise<Wallet | RepositoryError>
+  findByWalletName(walletName: WalletName): Promise<Wallet | RepositoryError>
 }

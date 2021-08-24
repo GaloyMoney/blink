@@ -32,7 +32,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
         id: "id" as LedgerTransactionId,
         type: LedgerTransactionType.IntraLedger,
         paymentHash: "paymentHash" as PaymentHash,
-        walletname: "walletname" as Walletname,
+        walletName: "walletName" as WalletName,
         debit: toSats(0),
         fee: toSats(0),
         credit: toSats(100000),
@@ -93,12 +93,12 @@ describe("WalletTransactionHistory.fromLedger", () => {
         id: "id" as LedgerTransactionId,
         initiationVia: PaymentInitiationMethod.Lightning,
         settlementVia: SettlementMethod.IntraLedger,
-        recipientId: "walletname",
+        recipientId: "walletName",
         settlementAmount: toSats(100000),
         settlementFee: toSats(0),
         paymentHash: "paymentHash" as PaymentHash,
         deprecated: {
-          description: "from walletname",
+          description: "from walletName",
           usd: 10,
           feeUsd: 0.1,
           type: LedgerTransactionType.IntraLedger,
@@ -164,13 +164,13 @@ describe("translateDescription", () => {
     expect(result).toEqual("some memo")
   })
 
-  it("returns walletname description for any amount", () => {
+  it("returns walletName description for any amount", () => {
     const result = translateDescription({
-      walletname: "walletname",
+      walletName: "walletName",
       credit: MEMO_SHARING_SATS_THRESHOLD - 1,
       type: "invoice",
     })
-    expect(result).toEqual("from walletname")
+    expect(result).toEqual("from walletName")
   })
 
   it("defaults to type under spam threshdeprecated", () => {

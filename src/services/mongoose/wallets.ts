@@ -19,8 +19,8 @@ export const WalletsRepository = (): IWalletsRepository => {
     }
   }
 
-  const findByWalletname = async (
-    username: Walletname,
+  const findByWalletName = async (
+    username: WalletName,
   ): Promise<Wallet | RepositoryError> => {
     try {
       const result = await User.findOne({ username: caseInsensitiveRegex(username) })
@@ -36,14 +36,14 @@ export const WalletsRepository = (): IWalletsRepository => {
 
   return {
     findById,
-    findByWalletname,
+    findByWalletName,
   }
 }
 
 const resultToWallet = (result: UserType): Wallet => {
   const walletId = result.id as WalletId
 
-  const walletname = result.username ? (result.username as Walletname) : null
+  const walletName = result.username ? (result.username as WalletName) : null
 
   const depositFeeRatio = result.depositFeeRatio as DepositFeeRatio
 
@@ -60,7 +60,7 @@ const resultToWallet = (result: UserType): Wallet => {
   return {
     id: walletId,
     depositFeeRatio,
-    walletname,
+    walletName,
     onChainAddressIdentifiers,
     onChainAddresses,
   }
