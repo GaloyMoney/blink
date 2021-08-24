@@ -126,11 +126,18 @@ export const startApolloServer = async ({
   app.use(
     PinoHttp({
       logger: graphqlLogger,
+      wrapSerializers: false,
+
+      // Define custom serializers
       serializers: {
-        req(req) {
-          req.body = req.raw.body
-          return req
-        },
+        // TODO: sanitize
+        err: pino.stdSerializers.err,
+        req: pino.stdSerializers.req,
+        res: (res) => ({
+          // FIXME: kind of a hack. body should be in in req. but have not being able to do it.
+          body: res.req.body,
+          ...pino.stdSerializers.res(res),
+        }),
       },
       autoLogging: {
         ignorePaths: ["/healthz"],
