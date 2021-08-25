@@ -1,10 +1,10 @@
-type InputError implements UserError {
+type InputError implements Error {
   message: String!
   path: [String]
   code: InputErrorCode!
 }
 
-interface UserError {
+interface Error {
   message: String!
   path: [String]
 }
@@ -16,7 +16,7 @@ enum InputErrorCode {
   VALUE_NOT_ALLOWED
 }
 
-type PaymentError implements UserError {
+type PaymentError implements Error {
   message: String!
   path: [String]
   code: PaymentErrorCode!
@@ -32,32 +32,13 @@ enum PaymentErrorCode {
 }
 
 type ConsumerAccount implements Account {
-  level: AccountLevel!
-  status: AccountStatus!
-  canWithdraw: Boolean!
-  limits: Limits!
   wallets: [Wallet!]!
-  allTransactions: [Transaction!]!
   csvTransactions(walletIds: [ID!]!): String!
 }
 
 interface Account {
-  level: AccountLevel!
-  status: AccountStatus!
   wallets: [Wallet!]!
-  canWithdraw: Boolean!
-  limits: Limits!
   csvTransactions(walletIds: [ID!]!): String!
-}
-
-enum AccountLevel {
-  ONE
-  TWO
-}
-
-enum AccountStatus {
-  LOCKED
-  ACTIVE
 }
 
 interface Wallet {
@@ -158,10 +139,6 @@ interface Transaction {
   settlementVia: SettlementMethod!
   settlementAmount: SatAmount!
   settlementFee: SatAmount!
-  priceAtSettlement: BtcUsdPrice!
-  direction: TxDirection!
-  memo: Memo
-  status: TxStatus
   createdAt: Timestamp!
 }
 
@@ -182,76 +159,12 @@ enum SettlementMethod {
 """
 scalar SatAmount
 
-type BtcUsdPrice {
-  id: ID!
-  timestamp: Timestamp!
-  price: Float!
-}
-
 """
 Date field, serialized as the number of milliseconds since the Unix Epoch
 """
 scalar Timestamp
 
-enum TxDirection {
-  SEND
-  RECEIVE
-}
-
-"""
-Text field in a lightning payment transaction
-"""
-scalar Memo
-
-enum TxStatus {
-  PENDING
-  SUCCESS
-  FAILURE
-}
-
-type Limits {
-  maxSend: Int!
-  intraLedgerMaxSend: Int!
-}
-
-type BusinessAccount implements Account {
-  level: AccountLevel!
-  status: AccountStatus!
-  wallets: [Wallet!]!
-  canWithdraw: Boolean!
-  limits: Limits!
-  allTransactions: [Transaction!]!
-  csvTransactions(walletIds: [ID!]!): String!
-}
-
 type BTCWallet implements Wallet {
-  id: ID!
-  storageCurrency: Currency!
-  balance: SignedAmount!
-  transactions(
-    """
-    Returns the items in the list that come after the specified cursor.
-    """
-    after: String
-
-    """
-    Returns the first n items from the list.
-    """
-    first: Int
-
-    """
-    Returns the items in the list that come before the specified cursor.
-    """
-    before: String
-
-    """
-    Returns the last n items from the list.
-    """
-    last: Int
-  ): TransactionConnection
-}
-
-type FiatWallet implements Wallet {
   id: ID!
   storageCurrency: Currency!
   balance: SignedAmount!
@@ -284,18 +197,14 @@ type WalletNameTransaction implements Transaction {
   settlementVia: SettlementMethod!
   settlementAmount: SatAmount!
   settlementFee: SatAmount!
-  priceAtSettlement: BtcUsdPrice!
-  direction: TxDirection!
-  memo: Memo
-  status: TxStatus
   createdAt: Timestamp!
 
   """
   Settlement destination:
-          Could be null when originalDestination is onChain/LN
-          and the payeee does not have a WalletName
+    Could be null when originalDestination is onChain/LN
+    and the payeee does not have a WalletName
   """
-  recipientId: WalletName
+  recipient: WalletName
 }
 
 """
@@ -309,10 +218,6 @@ type OnChainTransaction implements Transaction {
   settlementVia: SettlementMethod!
   settlementAmount: SatAmount!
   settlementFee: SatAmount!
-  priceAtSettlement: BtcUsdPrice!
-  direction: TxDirection!
-  memo: Memo
-  status: TxStatus
   createdAt: Timestamp!
   address: OnChainAddress!
 }
@@ -328,10 +233,6 @@ type LnTransaction implements Transaction {
   settlementVia: SettlementMethod!
   settlementAmount: SatAmount!
   settlementFee: SatAmount!
-  priceAtSettlement: BtcUsdPrice!
-  direction: TxDirection!
-  memo: Memo
-  status: TxStatus
   createdAt: Timestamp!
   paymentHash: LnInvoicePaymentHash!
 }
@@ -347,8 +248,6 @@ type User {
   phone: Phone!
   language: Language!
   defaultAccount: Account!
-  contacts: [Contact!]!
-  quizQuestions: [UserQuizQuestion!]!
   createdAt: Timestamp!
 }
 
@@ -362,31 +261,6 @@ enum Language {
   ES_SV
 }
 
-type Contact {
-  id: ID!
-  name: FullName
-  transactionsCount: Int!
-}
-
-"""
-Full name of an API user
-"""
-scalar FullName
-
-type UserQuizQuestion {
-  question: QuizQuestion!
-  completed: Boolean!
-}
-
-type QuizQuestion {
-  id: ID!
-
-  """
-  The earn reward in Satoshis for the quiz question
-  """
-  earnAmount: SatAmount!
-}
-
 type Mutation {
   userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
   userLogin(input: UserLoginInput!): AuthTokenPayload!
@@ -397,7 +271,7 @@ type Mutation {
 }
 
 type SuccessPayload {
-  errors: [UserError!]!
+  errors: [Error!]!
   success: Boolean
 }
 
@@ -406,7 +280,7 @@ input UserRequestAuthCodeInput {
 }
 
 type AuthTokenPayload {
-  errors: [UserError!]!
+  errors: [Error!]!
   authToken: AuthToken
 }
 
@@ -426,7 +300,7 @@ An authentication code valid for a single use
 scalar OneTimeAuthCode
 
 type LnNoAmountInvoicePayload {
-  errors: [UserError!]!
+  errors: [Error!]!
   invoice: LnNoAmountInvoice
 }
 
@@ -448,6 +322,11 @@ input LnNoAmountInvoiceCreateOnBehalfOfRecipientInput {
   memo: Memo
 }
 
+"""
+Text field in a lightning payment transaction
+"""
+scalar Memo
+
 input LnNoAmountInvoiceCreateInput {
   memo: Memo
 }
@@ -459,7 +338,7 @@ type Subscription {
 }
 
 type LnInvoicePaymentStatusPayload {
-  errors: [UserError!]!
+  errors: [Error!]!
   status: InvoicePaymentStatus
 }
 
