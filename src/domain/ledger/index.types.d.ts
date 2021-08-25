@@ -10,8 +10,7 @@ type LedgerTransactionId = string & { [ledgerTransactionIdSymbol]: never }
 declare const ledgerAccountIdSymbol: unique symbol
 type LedgerAccountId = string & { [ledgerAccountIdSymbol]: never }
 
-type LedgerTransactionType =
-  typeof import("./index").LedgerTransactionType[keyof typeof import("./index").LedgerTransactionType]
+type LedgerTransactionType = typeof import("./index").LedgerTransactionType[keyof typeof import("./index").LedgerTransactionType]
 
 type LedgerTransaction = {
   readonly id: LedgerTransactionId
@@ -40,6 +39,11 @@ type LedgerTransaction = {
   readonly txId?: TxId
 }
 
+type TimeFrame = {
+  Daily
+  ThirtyDays
+}
+
 type ReceiveOnChainTxArgs = {
   liabilitiesAccountId: LiabilitiesAccountId
   txId: TxId
@@ -61,4 +65,14 @@ interface ILedgerService {
   ): Promise<boolean | LedgerServiceError>
 
   receiveOnChainTx(args: ReceiveOnChainTxArgs): Promise<void | LedgerServiceError>
+
+  sendLnTx()
+
+  sendIntraLedgerTx()
+
+  aggregatedVolumeFor(
+    LiabilitiesAccountId: LiabilitiesAccountId,
+    timeFrame: TimeFrame,
+    settlementMethod: SettlementMethod,
+  )
 }
