@@ -1,13 +1,15 @@
-import { GT } from "../index"
-import { login, requestPhoneCode } from "@core/text"
+import { GT } from "@graphql/index"
 
-import UserUpdateStatusMutation from "../types/mutation/user-update-status"
-import UserUpdateLevelMutation from "../types/mutation/user-update-level"
-import MerchantUpdateMapInfoMutation from "../types/mutation/merchant-update-map-info"
+import UserUpdateStatusMutation from "@graphql/root/mutation/user-update-status"
+import UserUpdateLevelMutation from "@graphql/root/mutation/user-update-level"
+import BusinessUpdateMapInfoMutation from "@graphql/root/mutation/business-update-map-info"
+
+import { login, requestPhoneCode } from "@core/text"
 
 const MutationType = new GT.Object({
   name: "Mutation",
   fields: () => ({
+    // TODO: Move to root
     requestPhoneCode: {
       type: GT.Boolean,
       args: {
@@ -17,6 +19,7 @@ const MutationType = new GT.Object({
         return requestPhoneCode({ phone, logger, ip })
       },
     },
+    // TODO: Move to root
     login: {
       type: GT.String,
       args: {
@@ -30,7 +33,7 @@ const MutationType = new GT.Object({
     },
     userUpdateStatus: UserUpdateStatusMutation,
     userUpdateLevel: UserUpdateLevelMutation,
-    merchantUpdateMapInfo: MerchantUpdateMapInfoMutation,
+    businessUpdateMapInfo: BusinessUpdateMapInfoMutation,
   }),
 })
 

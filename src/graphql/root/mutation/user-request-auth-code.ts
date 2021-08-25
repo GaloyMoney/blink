@@ -1,8 +1,8 @@
 import { requestPhoneCode } from "@core/text"
 import { GT } from "@graphql/index"
 
-import Phone from "../scalar/phone"
-import SuccessPayload from "./payload/success-payload"
+import Phone from "@graphql/types/scalar/phone"
+import SuccessPayload from "@graphql/types/payload/success-payload"
 
 const UserRequestAuthCodeInput = new GT.Input({
   name: "UserRequestAuthCodeInput",
@@ -13,7 +13,7 @@ const UserRequestAuthCodeInput = new GT.Input({
   }),
 })
 
-const UserRequestAuthCodeMutation = {
+const UserRequestAuthCodeMutation = GT.Field({
   type: GT.NonNull(SuccessPayload),
   args: {
     input: { type: GT.NonNull(UserRequestAuthCodeInput) },
@@ -38,6 +38,6 @@ const UserRequestAuthCodeMutation = {
 
     return { errors: [], success: status }
   },
-}
+})
 
 export default UserRequestAuthCodeMutation

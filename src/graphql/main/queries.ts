@@ -1,20 +1,10 @@
-import * as Users from "@app/users"
-import User from "@graphql/types/object/user"
-import { GT } from "../index"
+import MeQuery from "@graphql/root/query/me"
+import { GT } from "@graphql/index"
 
 const QueryType = new GT.Object({
   name: "Query",
   fields: () => ({
-    me: {
-      type: User,
-      resolve: async (_, __, { uid }) => {
-        const user = await Users.getUser(uid)
-        if (user instanceof Error) {
-          throw user
-        }
-        return user
-      },
-    },
+    me: MeQuery,
   }),
 })
 

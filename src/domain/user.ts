@@ -26,7 +26,7 @@ export const updateUserAccountStatus = async ({ uid, status }) => {
   return user
 }
 
-export const updateMerchantMapInfo = async ({ username, latitude, longitude, title }) => {
+export const updateBusinessMapInfo = async ({ username, latitude, longitude, title }) => {
   const user = await User.getUserByUsername(username)
 
   if (!user) {

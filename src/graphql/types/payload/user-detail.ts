@@ -1,7 +1,7 @@
 import { GT } from "@graphql/index"
 
-import UserDetails from "../../object/user-details"
-import UserError from "../../user-error"
+import UserDetails from "../object/user-details"
+import UserError from "../user-error"
 
 const UserDetailPayload = new GT.Object({
   name: "UserDetailPayload",

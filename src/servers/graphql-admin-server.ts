@@ -21,7 +21,7 @@ export async function startApolloServerForAdminSchema() {
         userDetailsByUsername: and(isAuthenticated, isEditor),
       },
       Mutation: {
-        merchantUpdateMapInfo: and(isAuthenticated, isEditor),
+        businessUpdateMapInfo: and(isAuthenticated, isEditor),
         userUpdateLevel: and(isAuthenticated, isEditor),
         userUpdateStatus: and(isAuthenticated, isEditor),
       },

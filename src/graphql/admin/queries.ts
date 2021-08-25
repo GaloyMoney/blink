@@ -1,6 +1,6 @@
 import { User } from "@services/mongoose/schema"
 
-import { GT } from "../index"
+import { GT } from "@graphql/index"
 import Phone from "../types/scalar/phone"
 import WalletName from "../types/scalar/wallet-name"
 import AccountLevel from "../types/scalar/account-level"
