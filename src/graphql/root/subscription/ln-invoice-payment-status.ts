@@ -27,7 +27,7 @@ const LnInvoicePaymentStatusSubscription = {
 
     const paymentStatusChecker = PaymentStatusChecker({ paymentRequest, lookupToken })
 
-    const errors: UserError[] = []
+    const errors: IError[] = []
 
     const eventName = `LnInvoicePaymentStatus-${paymentRequest}`
 

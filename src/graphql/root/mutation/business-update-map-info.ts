@@ -29,6 +29,12 @@ const BusinessUpdateMapInfoMutation = GT.Field({
   },
   resolve: async (_, args) => {
     const { walletName, title, latitude, longitude } = args.input
+    for (const input of [walletName, title, latitude, longitude]) {
+      if (input instanceof Error) {
+        return { errors: [{ message: input.message }] }
+      }
+    }
+
     const user = await updateBusinessMapInfo({ walletName, title, latitude, longitude })
     return {
       errors: [],

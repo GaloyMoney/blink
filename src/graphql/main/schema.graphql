@@ -264,10 +264,13 @@ type Mutation {
   userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
   userLogin(input: UserLoginInput!): AuthTokenPayload!
   lnInvoiceCreate(input: LnInvoiceCreateInput!): LnInvoicePayload!
+  lnNoAmountInvoiceCreate(input: LnNoAmountInvoiceCreateInput!): LnNoAmountInvoicePayload!
+  lnInvoiceCreateOnBehalfOfRecipient(
+    input: LnInvoiceCreateOnBehalfOfRecipientInput!
+  ): LnInvoicePayload!
   lnNoAmountInvoiceCreateOnBehalfOfRecipient(
     input: LnNoAmountInvoiceCreateOnBehalfOfRecipientInput!
   ): LnNoAmountInvoicePayload!
-  lnNoAmountInvoiceCreate(input: LnNoAmountInvoiceCreateInput!): LnNoAmountInvoicePayload!
 }
 
 type SuccessPayload {
@@ -338,12 +341,18 @@ type LnNoAmountInvoice {
   paymentSecret: LnInvoicePaymentSecret!
 }
 
-input LnNoAmountInvoiceCreateOnBehalfOfRecipientInput {
-  recipient: WalletName!
+input LnNoAmountInvoiceCreateInput {
   memo: Memo
 }
 
-input LnNoAmountInvoiceCreateInput {
+input LnInvoiceCreateOnBehalfOfRecipientInput {
+  recipient: WalletName!
+  amount: SatAmount!
+  memo: Memo
+}
+
+input LnNoAmountInvoiceCreateOnBehalfOfRecipientInput {
+  recipient: WalletName!
   memo: Memo
 }
 

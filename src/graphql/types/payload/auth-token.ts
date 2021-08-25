@@ -1,12 +1,12 @@
 import { GT } from "@graphql/index"
 import AuthToken from "@graphql/types/scalar/auth-token"
-import UserError from "../abstract/error"
+import IError from "../abstract/error"
 
 const AuthTokenPayload = new GT.Object({
   name: "AuthTokenPayload",
   fields: () => ({
     errors: {
-      type: GT.NonNullList(UserError),
+      type: GT.NonNullList(IError),
     },
     authToken: {
       type: AuthToken,

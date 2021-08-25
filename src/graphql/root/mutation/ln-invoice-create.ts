@@ -21,12 +21,10 @@ const LnInvoiceCreateMutation = GT.Field({
   resolve: async (_, args, { user }) => {
     const { memo, amount } = args.input
 
-    if (memo instanceof Error) {
-      return { errors: [{ message: memo.message }] }
-    }
-
-    if (amount instanceof Error) {
-      return { errors: [{ message: amount.message }] }
+    for (const input of [memo, amount]) {
+      if (input instanceof Error) {
+        return { errors: [{ message: input.message }] }
+      }
     }
 
     const lnInvoice = await addInvoice({
@@ -36,7 +34,7 @@ const LnInvoiceCreateMutation = GT.Field({
     })
 
     if (lnInvoice instanceof Error) {
-      return { errors: [{ message: lnInvoice.message }] } // TODO: refine error
+      return { errors: [{ message: lnInvoice.message || lnInvoice.name }] } // TODO: refine error
     }
 
     const { paymentRequest, paymentHash, paymentSecret } = lnInvoice

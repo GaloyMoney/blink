@@ -29,7 +29,7 @@ const LnNoAmountInvoiceCreateMutation = GT.Field({
     })
 
     if (lnInvoice instanceof Error) {
-      return { errors: [{ message: lnInvoice.message }] } // TODO: refine error
+      return { errors: [{ message: lnInvoice.message || lnInvoice.name }] } // TODO: refine error
     }
 
     const { paymentRequest, paymentHash, paymentSecret } = lnInvoice

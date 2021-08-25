@@ -1,38 +1,41 @@
-import { addInvoiceNoAmountForRecipient } from "@app/wallets"
+import { addInvoiceForRecipient } from "@app/wallets"
 import { GT } from "@graphql/index"
 
-import LnNoAmountInvoicePayload from "@graphql/types/payload/ln-noamount-invoice"
+import LnInvoicePayload from "@graphql/types/payload/ln-invoice"
 import Memo from "@graphql/types/scalar/memo"
+import SatAmount from "@graphql/types/scalar/sat-amount"
 import WalletName from "@graphql/types/scalar/wallet-name"
 
-const LnNoAmountInvoiceCreateOnBehalfOfRecipientInput = new GT.Input({
-  name: "LnNoAmountInvoiceCreateOnBehalfOfRecipientInput",
+const LnInvoiceCreateOnBehalfOfRecipientInput = new GT.Input({
+  name: "LnInvoiceCreateOnBehalfOfRecipientInput",
   fields: () => ({
     recipient: { type: GT.NonNull(WalletName) },
+    amount: { type: GT.NonNull(SatAmount) },
     memo: { type: Memo },
   }),
 })
 
-const LnNoAmountInvoiceCreateOnBehalfOfRecipientMutation = GT.Field({
-  type: GT.NonNull(LnNoAmountInvoicePayload),
+const LnInvoiceCreateOnBehalfOfRecipientMutation = GT.Field({
+  type: GT.NonNull(LnInvoicePayload),
   args: {
-    input: { type: GT.NonNull(LnNoAmountInvoiceCreateOnBehalfOfRecipientInput) },
+    input: { type: GT.NonNull(LnInvoiceCreateOnBehalfOfRecipientInput) },
   },
   resolve: async (_, args) => {
-    const { recipient, memo } = args.input
-
-    for (const input of [recipient, memo]) {
+    const { recipient, amount, memo } = args.input
+    for (const input of [recipient, amount, memo]) {
       if (input instanceof Error) {
         return { errors: [{ message: input.message }] }
       }
     }
 
-    const result = await addInvoiceNoAmountForRecipient({
+    const result = await addInvoiceForRecipient({
       recipient,
+      amount,
       memo,
     })
 
     if (result instanceof Error) {
+      console.error(result)
       return { errors: [{ message: result.message || result.name }] } // TODO: refine error
     }
 
@@ -49,4 +52,4 @@ const LnNoAmountInvoiceCreateOnBehalfOfRecipientMutation = GT.Field({
   },
 })
 
-export default LnNoAmountInvoiceCreateOnBehalfOfRecipientMutation
+export default LnInvoiceCreateOnBehalfOfRecipientMutation
