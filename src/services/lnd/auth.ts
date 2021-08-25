@@ -1,4 +1,4 @@
-import { authenticatedLndGrpc } from "lightning"
+import { unauthenticatedLndGrpc } from "lightning"
 import _ from "lodash"
 import { getLndParams } from "@config/app"
 
@@ -20,7 +20,7 @@ export const addProps = (array) =>
     return {
       ...input,
       socket,
-      lnd: authenticatedLndGrpc({ ...input, socket }).lnd,
+      lnd: unauthenticatedLndGrpc({ ...input, socket }).lnd,
 
       // FIXME: should be inactive first
       // find a way to mock this up for jest
