@@ -12,14 +12,6 @@ const connection_obj = {
   version: "0.21.0",
 }
 
-type ScriptPubKey = {
-  asm: string
-  hex: string
-  reqSigs: number
-  type: string
-  addresses: [string]
-}
-
 type GetAddressInfoResult = {
   address: string
   scriptPubKey: string

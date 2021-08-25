@@ -5,9 +5,8 @@ class DomainError extends Error {
 export class AuthorizationError extends DomainError {}
 
 export class RepositoryError extends DomainError {}
-
-export class UnknownRepositoryError extends DomainError {}
-export class CouldNotFindError extends DomainError {}
+export class UnknownRepositoryError extends RepositoryError {}
+export class CouldNotFindError extends RepositoryError {}
 
 export class ValidationError extends DomainError {}
 export class InvalidSatoshiAmount extends ValidationError {}
