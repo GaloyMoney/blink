@@ -16,36 +16,24 @@ export const decodeInvoice = (
   const decodedInvoice = safeDecode(bolt11EncodedInvoice)
   if (decodedInvoice instanceof Error) return decodedInvoice
 
-  const paymentSecret: PaymentSecret | null = decodedInvoice.payment
+  const paymentSecret: PaymentSecret | undefined = decodedInvoice.payment
     ? decodedInvoice.payment
-    : null
+    : undefined
   const amount: Satoshis | null = decodedInvoice.tokens
     ? toSats(decodedInvoice.tokens)
     : null
-  const cltvDelta: number | null = decodedInvoice.cltv_delta
+  const cltvDelta: number | undefined = decodedInvoice.cltv_delta
     ? decodedInvoice.cltv_delta
-    : null
-
-  let routeHints: RouteHint[] = []
-  if (decodedInvoice.routes) {
-    decodedInvoice.routes.forEach((route) =>
-      routeHints.push({
-        baseFeeMTokens: route.base_fee_mtokens,
-        channel: route.channel,
-        cltvDelta: route.cltv_delta,
-        feeRate: route.feeRate,
-        nodePubkey: route.public_key as Pubkey,
-      }),
-    )
-  }
+    : undefined
 
   return {
     amount,
     paymentSecret,
-    routeHints,
+    routeHints: decodedInvoice.routes,
     cltvDelta,
     paymentRequest: bolt11EncodedInvoice as EncodedPaymentRequest,
     paymentHash: decodedInvoice.id as PaymentHash,
     destination: decodedInvoice.destination as Pubkey,
+    features: decodedInvoice.features,
   }
 }

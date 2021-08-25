@@ -17,22 +17,15 @@ type PaymentSecret = string & { [paymentSecretSymbol]: never }
 declare const timeoutMSecsSymbol: unique symbol
 type TimeoutMSecs = number & { [timeoutMSecsSymbol]: never }
 
-type RouteHint = {
-  baseFeeMTokens?: string
-  channel?: string
-  cltvDelta?: number
-  feeRate?: number
-  nodePubkey: Pubkey
-}
-
 type LnInvoice = {
   readonly amount: Satoshis | null
-  readonly cltvDelta: number | null
-  readonly routeHints: RouteHint[]
+  readonly cltvDelta?: number
+  readonly routeHints
   readonly destination: Pubkey
   readonly paymentHash: PaymentHash
-  readonly paymentSecret: PaymentSecret | null
+  readonly paymentSecret?: PaymentSecret
   readonly paymentRequest: EncodedPaymentRequest
+  readonly features
 }
 
 type PaymentRoute = {

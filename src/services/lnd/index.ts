@@ -1,5 +1,5 @@
 import { timeout } from "@core/utils"
-import { toMSats, toSats } from "@domain/bitcoin"
+import { toMSats } from "@domain/bitcoin"
 import {
   decodeInvoice,
   CouldNotDecodeReturnedPaymentRequest,
@@ -46,14 +46,23 @@ export const LndService = (): ILightningService | LightningServiceError => {
     decodedRequest,
     timeoutMSecs = TIMEOUT_PAYMENT as TimeoutMSecs,
   }: {
-    decodedRequest: DecodedPaymentRequest
+    decodedRequest: LnInvoice
     timeoutMSecs?: TimeoutMSecs
   }): Promise<PaymentResult | LightningServiceError> => {
     let paymentResult
 
-    const { id, satoshis, destination, routeHint, payment, cltvDelta, features } =
-      decodedRequest
-    const max_fee = Math.floor(Math.max(FEECAP * satoshis, FEEMIN))
+    const {
+      paymentHash: id,
+      amount: satoshis,
+      destination,
+      routeHints,
+      paymentSecret: payment,
+      cltvDelta,
+      features,
+    } = decodedRequest
+
+    const max_fee =
+      satoshis && satoshis > 0 ? Math.floor(Math.max(FEECAP * satoshis, FEEMIN)) : FEEMIN
 
     try {
       const paymentPromise = payViaPaymentDetails({
@@ -63,9 +72,9 @@ export const LndService = (): ILightningService | LightningServiceError => {
         destination,
         features,
         max_fee,
-        mtokens: toMSats(satoshis).toString(),
+        tokens: satoshis || 0,
         payment,
-        routes: routeHint,
+        routes: routeHints,
       })
       const timeoutPromise = timeout(timeoutMSecs, "Timeout")
       paymentResult = await Promise.race([paymentPromise, timeoutPromise])
