@@ -1,13 +1,22 @@
 import { connectionArgs, connectionFromArray } from "graphql-relay"
 
 import { GT } from "@graphql/index"
+
 import { TransactionConnection } from "./transaction"
+import Currency from "../scalar/currency"
+import SignedAmount from "../scalar/signed-amount"
 
 const Wallet = new GT.Interface({
   name: "Wallet",
   fields: () => ({
     id: {
       type: GT.NonNullID,
+    },
+    storageCurrency: {
+      type: GT.NonNull(Currency),
+    },
+    balance: {
+      type: GT.NonNull(SignedAmount),
     },
     transactions: {
       type: TransactionConnection,

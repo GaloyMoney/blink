@@ -10,10 +10,10 @@ import TxStatus from "../scalar/tx-status"
 import WalletName from "../scalar/wallet-name"
 import BtcUsdPrice from "./btc-usd-price"
 
-const IntraLedgerTransaction = new GT.Object({
-  name: "IntraLedgerTransaction",
+const WalletNameTransaction = new GT.Object({
+  name: "WalletNameTransaction",
   interfaces: () => [Transaction],
-  isTypeOf: (source) => source.type === "intra-ledger", // TODO: make this work
+  isTypeOf: (source) => source.type === "wallet-name", // TODO: make this work
   fields: () => ({
     id: {
       type: GT.NonNullID,
@@ -49,10 +49,11 @@ const IntraLedgerTransaction = new GT.Object({
     // Non-interface fields
     recipientId: {
       type: WalletName,
+      description: `Settlement destination:
+        Could be null when originalDestination is onChain/LN
+        and the payeee does not have a WalletName`,
     },
-
-    // ?: originalDestination
   }),
 })
 
-export default IntraLedgerTransaction
+export default WalletNameTransaction
