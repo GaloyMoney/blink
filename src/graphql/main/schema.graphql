@@ -264,6 +264,7 @@ enum Language {
 type Mutation {
   userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
   userLogin(input: UserLoginInput!): AuthTokenPayload!
+  lnInvoiceCreate(input: LnNoAmountInvoiceCreateInput!): LnNoAmountInvoicePayload!
   lnNoAmountInvoiceCreateOnBehalfOfRecipient(
     input: LnNoAmountInvoiceCreateOnBehalfOfRecipientInput!
   ): LnNoAmountInvoicePayload!
@@ -317,8 +318,7 @@ scalar LnInvoicePaymentRequest
 
 scalar LnInvoicePaymentSecret
 
-input LnNoAmountInvoiceCreateOnBehalfOfRecipientInput {
-  recipient: WalletName!
+input LnNoAmountInvoiceCreateInput {
   memo: Memo
 }
 
@@ -327,7 +327,8 @@ Text field in a lightning payment transaction
 """
 scalar Memo
 
-input LnNoAmountInvoiceCreateInput {
+input LnNoAmountInvoiceCreateOnBehalfOfRecipientInput {
+  recipient: WalletName!
   memo: Memo
 }
 
