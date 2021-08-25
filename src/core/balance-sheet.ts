@@ -15,18 +15,19 @@ const logger = baseLogger.child({ module: "balanceSheet" })
 const updatePendingLightningInvoices = async () => {
   const walletInvoicesRepo = WalletInvoicesRepository()
 
-  const walletsWithPendingInvoices = walletInvoicesRepo.listWalletsWithPendingInvoices()
+  const walletIdsWithPendingInvoices =
+    walletInvoicesRepo.listWalletIdsWithPendingInvoices()
 
-  if (walletsWithPendingInvoices instanceof Error) {
+  if (walletIdsWithPendingInvoices instanceof Error) {
     logger.error(
-      { error: walletsWithPendingInvoices },
+      { error: walletIdsWithPendingInvoices },
       "finish updating pending invoices with error",
     )
     return
   }
 
   await runInParallel({
-    iterator: walletsWithPendingInvoices,
+    iterator: walletIdsWithPendingInvoices,
     logger,
     processor: async (walletId, index) => {
       logger.trace(

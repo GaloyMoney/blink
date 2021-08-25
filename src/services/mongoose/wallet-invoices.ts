@@ -101,7 +101,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     }
   }
 
-  async function* listWalletsWithPendingInvoices():
+  async function* listWalletIdsWithPendingInvoices():
     | AsyncGenerator<WalletId>
     | RepositoryError {
     let pending
@@ -152,7 +152,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     update,
     findByPaymentHash,
     findPendingByWalletId,
-    listWalletsWithPendingInvoices,
+    listWalletIdsWithPendingInvoices,
     deleteByPaymentHash,
     deleteUnpaidOlderThan,
   }
