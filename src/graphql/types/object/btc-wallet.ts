@@ -3,14 +3,14 @@ import { connectionArgs, connectionFromArray } from "graphql-relay"
 import { GT } from "@graphql/index"
 
 import { TransactionConnection } from "../abstract/transaction"
-import Wallet from "../abstract/wallet"
+import IWallet from "../abstract/wallet"
 import SignedAmount from "../scalar/signed-amount"
 import Currency from "../scalar/currency"
 import * as Wallets from "@app/wallets"
 
 const BTCWallet = new GT.Object({
   name: "BTCWallet",
-  interfaces: () => [Wallet],
+  interfaces: () => [IWallet],
   isTypeOf: (source) => true || source.type === "btc", // TODO: make this work
   fields: () => ({
     id: {

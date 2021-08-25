@@ -1,10 +1,10 @@
 import { GT } from "@graphql/index"
-import UserError from "../abstract/user-error"
+import IError from "../abstract/error"
 import InputErrorCode from "../scalar/input-error-code"
 
 const InputError = new GT.Object({
   name: "InputError",
-  interfaces: () => [UserError],
+  interfaces: () => [IError],
   isTypeOf: (source) => true || source.code, // TODO: make this work through GQL ENUM values
   fields: () => ({
     message: {

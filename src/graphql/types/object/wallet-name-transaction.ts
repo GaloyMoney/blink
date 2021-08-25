@@ -1,18 +1,18 @@
 import { GT } from "@graphql/index"
-import Transaction from "../abstract/transaction"
-import Memo from "../scalar/memo"
+import ITransaction from "../abstract/transaction"
 import PaymentInitiationMethod from "../scalar/payment-initiation-method"
 import SatAmount from "../scalar/sat-amount"
 import SettlementMethod from "../scalar/settlement-method"
 import Timestamp from "../scalar/timestamp"
-import TxDirection from "../scalar/tx-direction"
-import TxStatus from "../scalar/tx-status"
+// import Memo from "../scalar/memo"
+// import TxDirection from "../scalar/tx-direction"
+// import TxStatus from "../scalar/tx-status"
+// import BtcUsdPrice from "./btc-usd-price"
 import WalletName from "../scalar/wallet-name"
-import BtcUsdPrice from "./btc-usd-price"
 
 const WalletNameTransaction = new GT.Object({
   name: "WalletNameTransaction",
-  interfaces: () => [Transaction],
+  interfaces: () => [ITransaction],
   isTypeOf: (source) => source.type === "wallet-name", // TODO: make this work
   fields: () => ({
     id: {
@@ -30,28 +30,28 @@ const WalletNameTransaction = new GT.Object({
     settlementFee: {
       type: GT.NonNull(SatAmount),
     },
-    priceAtSettlement: {
-      type: GT.NonNull(BtcUsdPrice),
-    },
-    direction: {
-      type: GT.NonNull(TxDirection),
-    },
-    memo: {
-      type: Memo,
-    },
-    status: {
-      type: TxStatus,
-    },
+    // priceAtSettlement: {
+    //   type: GT.NonNull(BtcUsdPrice),
+    // },
+    // direction: {
+    //   type: GT.NonNull(TxDirection),
+    // },
+    // memo: {
+    //   type: Memo,
+    // },
+    // status: {
+    //   type: TxStatus,
+    // },
     createdAt: {
       type: GT.NonNull(Timestamp),
     },
 
     // Non-interface fields
-    recipientId: {
+    recipient: {
       type: WalletName,
       description: `Settlement destination:
-        Could be null when originalDestination is onChain/LN
-        and the payeee does not have a WalletName`,
+  Could be null when originalDestination is onChain/LN
+  and the payeee does not have a WalletName`,
     },
   }),
 })

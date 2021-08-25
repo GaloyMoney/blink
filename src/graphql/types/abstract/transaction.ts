@@ -5,12 +5,12 @@ import Timestamp from "../scalar/timestamp"
 import PaymentInitiationMethod from "../scalar/payment-initiation-method"
 import SettlementMethod from "../scalar/settlement-method"
 import SatAmount from "../scalar/sat-amount"
-import BtcUsdPrice from "../object/btc-usd-price"
-import Memo from "../scalar/memo"
-import TxStatus from "../scalar/tx-status"
-import TxDirection from "../scalar/tx-direction"
+// import BtcUsdPrice from "../object/btc-usd-price"
+// import Memo from "../scalar/memo"
+// import TxStatus from "../scalar/tx-status"
+// import TxDirection from "../scalar/tx-direction"
 
-const Transaction = new GT.Interface({
+const ITransaction = new GT.Interface({
   name: "Transaction",
   fields: () => ({
     id: {
@@ -28,18 +28,18 @@ const Transaction = new GT.Interface({
     settlementFee: {
       type: GT.NonNull(SatAmount),
     },
-    priceAtSettlement: {
-      type: GT.NonNull(BtcUsdPrice),
-    },
-    direction: {
-      type: GT.NonNull(TxDirection),
-    },
-    memo: {
-      type: Memo,
-    },
-    status: {
-      type: TxStatus,
-    },
+    // priceAtSettlement: {
+    //   type: GT.NonNull(BtcUsdPrice),
+    // },
+    // direction: {
+    //   type: GT.NonNull(TxDirection),
+    // },
+    // memo: {
+    //   type: Memo,
+    // },
+    // status: {
+    //   type: TxStatus,
+    // },
     createdAt: {
       type: GT.NonNull(Timestamp),
     },
@@ -47,7 +47,7 @@ const Transaction = new GT.Interface({
 })
 
 export const { connectionType: TransactionConnection } = connectionDefinitions({
-  nodeType: Transaction,
+  nodeType: ITransaction,
 })
 
-export default Transaction
+export default ITransaction

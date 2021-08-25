@@ -6,7 +6,7 @@ import { TransactionConnection } from "./transaction"
 import Currency from "../scalar/currency"
 import SignedAmount from "../scalar/signed-amount"
 
-const Wallet = new GT.Interface({
+const IWallet = new GT.Interface({
   name: "Wallet",
   fields: () => ({
     id: {
@@ -28,4 +28,4 @@ const Wallet = new GT.Interface({
   }),
 })
 
-export default Wallet
+export default IWallet

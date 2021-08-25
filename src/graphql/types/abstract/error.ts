@@ -1,7 +1,7 @@
 import { GT } from "@graphql/index"
 
-const UserError = new GT.Interface({
-  name: "UserError",
+const IError = new GT.Interface({
+  name: "Error",
   fields: () => ({
     message: {
       type: GT.NonNull(GT.String),
@@ -12,4 +12,4 @@ const UserError = new GT.Interface({
   }),
 })
 
-export default UserError
+export default IError

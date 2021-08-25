@@ -53,11 +53,11 @@ type Mutation {
 }
 
 type SuccessPayload {
-  errors: [UserError!]!
+  errors: [Error!]!
   success: Boolean
 }
 
-interface UserError {
+interface Error {
   message: String!
   path: [String]
 }
@@ -67,7 +67,7 @@ input UserRequestAuthCodeInput {
 }
 
 type AuthTokenPayload {
-  errors: [UserError!]!
+  errors: [Error!]!
   authToken: AuthToken
 }
 
@@ -87,7 +87,7 @@ An authentication code valid for a single use
 scalar OneTimeAuthCode
 
 type UserDetailPayload {
-  errors: [UserError!]!
+  errors: [Error!]!
   userDetails: UserDetails
 }
 
