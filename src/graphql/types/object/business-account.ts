@@ -5,6 +5,7 @@ import Wallet from "../abstract/wallet"
 
 import AccountLevel from "../scalar/account-level"
 import AccountStatus from "../scalar/account-status"
+import Limits from "./limits"
 
 const BusinessAccount = new GT.Object({
   name: "BusinessAccount",
@@ -21,6 +22,14 @@ const BusinessAccount = new GT.Object({
       type: GT.NonNullList(Wallet),
     },
 
+    // TODO: confirm
+    canWithdraw: {
+      type: GT.NonNull(GT.Boolean),
+    },
+    limits: {
+      type: GT.NonNull(Limits),
+    },
+
     allTransactions: {
       type: GT.NonNullList(Transaction),
     },
@@ -29,7 +38,7 @@ const BusinessAccount = new GT.Object({
       type: GT.NonNull(GT.String),
       args: {
         walletIds: {
-          type: GT.NonNullList(GT.NonNullID),
+          type: GT.NonNullList(GT.ID),
         },
       },
     },

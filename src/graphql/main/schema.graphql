@@ -1,25 +1,44 @@
-type Query {
-  me: User
+type InputError implements UserError {
+  message: String!
+  path: [String]
+  code: InputErrorCode!
 }
 
-type User {
-  id: ID!
-  phone: Phone!
-  language: Language!
-  defaultAccount: Account!
-  contacts: [Contact!]!
-  quizQuestions: [UserQuizQuestion!]!
-  createdAt: Timestamp!
+interface UserError {
+  message: String!
+  path: [String]
 }
 
-"""
-Phone number which includes country code
-"""
-scalar Phone
+enum InputErrorCode {
+  INVALID_INPUT
+  VALUE_TOO_SHORT
+  VALUE_TOO_LONG
+  VALUE_NOT_ALLOWED
+}
 
-enum Language {
-  EN_US
-  ES_SV
+type PaymentError implements UserError {
+  message: String!
+  path: [String]
+  code: PaymentErrorCode!
+}
+
+enum PaymentErrorCode {
+  ACCOUNT_LOCKED
+  LIMIT_EXCEEDED
+  INSUFFICENT_BALANCE
+  INVOICE_PAID
+  NO_LIQUIDITY
+  NO_ROUTE
+}
+
+type ConsumerAccount implements Account {
+  level: AccountLevel!
+  status: AccountStatus!
+  canWithdraw: Boolean!
+  limits: Limits!
+  wallets: [Wallet!]!
+  allTransactions: [Transaction!]!
+  csvTransactions(walletIds: [ID!]!): String!
 }
 
 interface Account {
@@ -195,6 +214,154 @@ type Limits {
   intraLedgerMaxSend: Int!
 }
 
+type BusinessAccount implements Account {
+  level: AccountLevel!
+  status: AccountStatus!
+  wallets: [Wallet!]!
+  canWithdraw: Boolean!
+  limits: Limits!
+  allTransactions: [Transaction!]!
+  csvTransactions(walletIds: [ID!]!): String!
+}
+
+type BTCWallet implements Wallet {
+  id: ID!
+  storageCurrency: Currency!
+  balance: SignedAmount!
+  transactions(
+    """
+    Returns the items in the list that come after the specified cursor.
+    """
+    after: String
+
+    """
+    Returns the first n items from the list.
+    """
+    first: Int
+
+    """
+    Returns the items in the list that come before the specified cursor.
+    """
+    before: String
+
+    """
+    Returns the last n items from the list.
+    """
+    last: Int
+  ): TransactionConnection
+}
+
+type FiatWallet implements Wallet {
+  id: ID!
+  storageCurrency: Currency!
+  balance: SignedAmount!
+  transactions(
+    """
+    Returns the items in the list that come after the specified cursor.
+    """
+    after: String
+
+    """
+    Returns the first n items from the list.
+    """
+    first: Int
+
+    """
+    Returns the items in the list that come before the specified cursor.
+    """
+    before: String
+
+    """
+    Returns the last n items from the list.
+    """
+    last: Int
+  ): TransactionConnection
+}
+
+type WalletNameTransaction implements Transaction {
+  id: ID!
+  initiationVia: PaymentInitiationMethod!
+  settlementVia: SettlementMethod!
+  settlementAmount: SatAmount!
+  settlementFee: SatAmount!
+  priceAtSettlement: BtcUsdPrice!
+  direction: TxDirection!
+  memo: Memo
+  status: TxStatus
+  createdAt: Timestamp!
+
+  """
+  Settlement destination:
+          Could be null when originalDestination is onChain/LN
+          and the payeee does not have a WalletName
+  """
+  recipientId: WalletName
+}
+
+"""
+Unique identifier of an account wallet
+"""
+scalar WalletName
+
+type OnChainTransaction implements Transaction {
+  id: ID!
+  initiationVia: PaymentInitiationMethod!
+  settlementVia: SettlementMethod!
+  settlementAmount: SatAmount!
+  settlementFee: SatAmount!
+  priceAtSettlement: BtcUsdPrice!
+  direction: TxDirection!
+  memo: Memo
+  status: TxStatus
+  createdAt: Timestamp!
+  address: OnChainAddress!
+}
+
+"""
+An address for an on-chain bitcoin destination
+"""
+scalar OnChainAddress
+
+type LnTransaction implements Transaction {
+  id: ID!
+  initiationVia: PaymentInitiationMethod!
+  settlementVia: SettlementMethod!
+  settlementAmount: SatAmount!
+  settlementFee: SatAmount!
+  priceAtSettlement: BtcUsdPrice!
+  direction: TxDirection!
+  memo: Memo
+  status: TxStatus
+  createdAt: Timestamp!
+  paymentHash: LnInvoicePaymentHash!
+}
+
+scalar LnInvoicePaymentHash
+
+type Query {
+  me: User
+}
+
+type User {
+  id: ID!
+  phone: Phone!
+  language: Language!
+  defaultAccount: Account!
+  contacts: [Contact!]!
+  quizQuestions: [UserQuizQuestion!]!
+  createdAt: Timestamp!
+}
+
+"""
+Phone number which includes country code
+"""
+scalar Phone
+
+enum Language {
+  EN_US
+  ES_SV
+}
+
 type Contact {
   id: ID!
   name: FullName
@@ -232,10 +399,6 @@ type Mutation {
 type SuccessPayload {
   errors: [UserError!]!
   success: Boolean
-}
-
-type UserError {
-  message: String!
 }
 
 input UserRequestAuthCodeInput {
@@ -278,19 +441,12 @@ BOLT11 lightning invoice payment request with the amount included
 """
 scalar LnInvoicePaymentRequest
 
-scalar LnInvoicePaymentHash
-
 scalar LnInvoicePaymentSecret
 
 input LnNoAmountInvoiceCreateOnBehalfOfRecipientInput {
   recipient: WalletName!
   memo: Memo
 }
-
-"""
-Unique identifier of an account wallet
-"""
-scalar WalletName
 
 input LnNoAmountInvoiceCreateInput {
   memo: Memo

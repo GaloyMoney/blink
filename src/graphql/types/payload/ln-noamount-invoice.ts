@@ -1,7 +1,7 @@
 import { GT } from "@graphql/index"
+import UserError from "../abstract/user-error"
 
 import LnNoAmountInvoice from "../object/ln-noamount-invoice"
-import UserError from "../user-error"
 
 const LnNoAmountInvoicePayload = new GT.Object({
   name: "LnNoAmountInvoicePayload",

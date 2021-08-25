@@ -1,15 +1,14 @@
 import { GT } from "@graphql/index"
 
-const UserError = new GT.Object({
+const UserError = new GT.Interface({
   name: "UserError",
   fields: () => ({
     message: {
       type: GT.NonNull(GT.String),
     },
-    // TODO: Add fields to errors where possible
-    // fields: {
-    //   type: GT.NonNullList(GT.String),
-    // },
+    path: {
+      type: GT.List(GT.String),
+    },
   }),
 })
 
