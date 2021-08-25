@@ -264,7 +264,7 @@ enum Language {
 type Mutation {
   userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
   userLogin(input: UserLoginInput!): AuthTokenPayload!
-  lnInvoiceCreate(input: LnNoAmountInvoiceCreateInput!): LnNoAmountInvoicePayload!
+  lnInvoiceCreate(input: LnInvoiceCreateInput!): LnInvoicePayload!
   lnNoAmountInvoiceCreateOnBehalfOfRecipient(
     input: LnNoAmountInvoiceCreateOnBehalfOfRecipientInput!
   ): LnNoAmountInvoicePayload!
@@ -300,12 +300,12 @@ An authentication code valid for a single use
 """
 scalar OneTimeAuthCode
 
-type LnNoAmountInvoicePayload {
+type LnInvoicePayload {
   errors: [Error!]!
-  invoice: LnNoAmountInvoice
+  invoice: LnInvoice
 }
 
-type LnNoAmountInvoice {
+type LnInvoice {
   paymentRequest: LnInvoicePaymentRequest!
   paymentHash: LnInvoicePaymentHash!
   paymentSecret: LnInvoicePaymentSecret!
@@ -318,7 +318,8 @@ scalar LnInvoicePaymentRequest
 
 scalar LnInvoicePaymentSecret
 
-input LnNoAmountInvoiceCreateInput {
+input LnInvoiceCreateInput {
+  amount: SatAmount!
   memo: Memo
 }
 
@@ -327,8 +328,23 @@ Text field in a lightning payment transaction
 """
 scalar Memo
 
+type LnNoAmountInvoicePayload {
+  errors: [Error!]!
+  invoice: LnNoAmountInvoice
+}
+
+type LnNoAmountInvoice {
+  paymentRequest: LnInvoicePaymentRequest!
+  paymentHash: LnInvoicePaymentHash!
+  paymentSecret: LnInvoicePaymentSecret!
+}
+
 input LnNoAmountInvoiceCreateOnBehalfOfRecipientInput {
   recipient: WalletName!
+  memo: Memo
+}
+
+input LnNoAmountInvoiceCreateInput {
   memo: Memo
 }
 

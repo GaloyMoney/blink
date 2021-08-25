@@ -25,6 +25,10 @@ const LnInvoiceCreateMutation = GT.Field({
       return { errors: [{ message: memo.message }] }
     }
 
+    if (amount instanceof Error) {
+      return { errors: [{ message: amount.message }] }
+    }
+
     const lnInvoice = await addInvoice({
       walletId: user.id, // TODO: should this be changed to not depend on context?
       amount,

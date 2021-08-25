@@ -1,7 +1,7 @@
 import * as Wallets from "@app/wallets"
 import { GT } from "@graphql/index"
 import IAccount from "../abstract/account"
-import Transaction from "../abstract/transaction"
+// import Transaction from "../abstract/transaction"
 import Wallet from "../abstract/wallet"
 
 // import AccountLevel from "../scalar/account-level"
