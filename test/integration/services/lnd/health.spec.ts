@@ -14,7 +14,7 @@ afterAll(done => {
 describe("lndHealth", () => {
   // this is a test health checks on lnd
   it('should emit on started', function(){
-    var eventFired = true
+    let eventFired = true
     setTimeout(function () {
       expect(eventFired).toBeTruthy()
     }, 500); //timeout with an error in one second
