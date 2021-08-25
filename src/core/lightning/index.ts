@@ -324,7 +324,7 @@ export const LightningMixin = (superclass) =>
               this.logger.info({ id, user: this.user }, "canceling invoice on lnd")
 
               payeeInvoice.paid = true
-              payeeInvoice = await this.invoices.persist(payeeInvoice)
+              payeeInvoice = await this.invoices.update(payeeInvoice)
               if (payeeInvoice instanceof Error) {
                 this.logger.error(
                   { id, user: this.user, err: payeeInvoice },
@@ -800,7 +800,7 @@ export const LightningMixin = (superclass) =>
           // OR: use a an unique index account / hash / voided
           // may still not avoid issue from discrenpency between hash and the books
           invoiceUser.paid = true
-          const updatedInvoice = await this.invoices.persist(invoiceUser)
+          const updatedInvoice = await this.invoices.update(invoiceUser)
           if (updatedInvoice instanceof Error) {
             throw new DbError(`issue updating invoiceUser`, {
               logger: this.logger,

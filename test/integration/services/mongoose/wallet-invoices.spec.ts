@@ -1,6 +1,5 @@
 import { addInvoice } from "@app/wallets"
 import { toSats } from "@domain/bitcoin"
-import { RepositoryError } from "@domain/errors"
 import { WalletInvoicesRepository } from "@services/mongoose"
 import { InvoiceUser } from "@services/mongoose/schema"
 import { getUserWallet } from "test/helpers"
@@ -17,33 +16,46 @@ const createTestWalletInvoice = () => {
 }
 
 describe("WalletInvoices", () => {
-  it("persists and finds invoices", async () => {
+  it("persists and finds an invoice", async () => {
     const repo = WalletInvoicesRepository()
     const invoiceToPersist = createTestWalletInvoice()
-    const persistResult = await repo.persist(invoiceToPersist)
-    expect(persistResult).not.toBeInstanceOf(RepositoryError)
+    const persistResult = await repo.persistNew(invoiceToPersist)
+    expect(persistResult).not.toBeInstanceOf(Error)
 
     const { paymentHash } = persistResult as WalletInvoice
     const lookedUpInvoice = await repo.findByPaymentHash(paymentHash)
-    expect(persistResult).not.toBeInstanceOf(RepositoryError)
+    expect(lookedUpInvoice).not.toBeInstanceOf(Error)
     expect(lookedUpInvoice).toEqual(invoiceToPersist)
-
-    const invoiceToUpdate = lookedUpInvoice as WalletInvoice
-    invoiceToUpdate.paid = true
-    const updatedResult = await repo.persist(invoiceToUpdate)
-    expect(updatedResult).not.toBeInstanceOf(RepositoryError)
-    expect(updatedResult).toHaveProperty("paid", true)
   })
 
-  it("delete one invoice by hash", async () => {
+  it("updates an invoice", async () => {
     const repo = WalletInvoicesRepository()
     const invoiceToPersist = createTestWalletInvoice()
-    const persistResult = await repo.persist(invoiceToPersist)
-    expect(persistResult).not.toBeInstanceOf(RepositoryError)
+    const persistResult = await repo.persistNew(invoiceToPersist)
+    expect(persistResult).not.toBeInstanceOf(Error)
+
+    const invoiceToUpdate = persistResult as WalletInvoice
+    invoiceToUpdate.paid = true
+    const updatedResult = await repo.update(invoiceToUpdate)
+    expect(updatedResult).not.toBeInstanceOf(Error)
+    expect(updatedResult).toHaveProperty("paid", true)
+
+    const { paymentHash } = updatedResult as WalletInvoice
+    const lookedUpInvoice = await repo.findByPaymentHash(paymentHash)
+    expect(lookedUpInvoice).not.toBeInstanceOf(Error)
+    expect(lookedUpInvoice).toEqual(updatedResult)
+    expect(lookedUpInvoice).toHaveProperty("paid", true)
+  })
+
+  it("deletes an invoice by hash", async () => {
+    const repo = WalletInvoicesRepository()
+    const invoiceToPersist = createTestWalletInvoice()
+    const persistResult = await repo.persistNew(invoiceToPersist)
+    expect(persistResult).not.toBeInstanceOf(Error)
 
     const { paymentHash } = persistResult as WalletInvoice
     const isDeleted = await repo.deleteByPaymentHash(paymentHash)
-    expect(isDeleted).not.toBeInstanceOf(RepositoryError)
+    expect(isDeleted).not.toBeInstanceOf(Error)
     expect(isDeleted).toEqual(true)
   })
 
@@ -63,7 +75,7 @@ describe("WalletInvoices", () => {
 
     const repo = WalletInvoicesRepository()
     const invoices = repo.findPendingByWalletId(wallet.user.id)
-    expect(invoices).not.toBeInstanceOf(RepositoryError)
+    expect(invoices).not.toBeInstanceOf(Error)
 
     const pendingInvoices = invoices as AsyncGenerator<WalletInvoice>
 

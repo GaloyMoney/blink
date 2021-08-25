@@ -6,7 +6,34 @@ import {
 import { InvoiceUser } from "./schema"
 
 export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
-  const persist = async ({
+  const persistNew = async ({
+    paymentHash,
+    walletId,
+    selfGenerated,
+    pubkey,
+    paid,
+  }: WalletInvoice): Promise<WalletInvoice | RepositoryError> => {
+    try {
+      await new InvoiceUser({
+        _id: paymentHash,
+        uid: walletId,
+        selfGenerated,
+        pubkey,
+        paid,
+      }).save()
+      return {
+        paymentHash,
+        walletId,
+        selfGenerated,
+        pubkey,
+        paid,
+      } as WalletInvoice
+    } catch (err) {
+      return new UnknownRepositoryError(err)
+    }
+  }
+
+  const update = async ({
     paymentHash,
     walletId,
     selfGenerated,
@@ -15,16 +42,16 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
   }: WalletInvoice): Promise<WalletInvoice | RepositoryError> => {
     try {
       const data = { uid: walletId, selfGenerated, pubkey, paid }
-      const doc = await InvoiceUser.findOneAndUpdate({ _id: paymentHash }, data, {
-        new: true,
-        upsert: true,
-      })
+      const doc = await InvoiceUser.updateOne({ _id: paymentHash }, { $set: data })
+      if (doc.nModified !== 1) {
+        return new RepositoryError("Couldn't update invoice for payment hash")
+      }
       return {
-        paymentHash: doc.id,
-        walletId: doc.uid,
-        selfGenerated: doc.selfGenerated,
-        pubkey: doc.pubkey,
-        paid: doc.paid,
+        paymentHash,
+        walletId,
+        selfGenerated,
+        pubkey,
+        paid,
       } as WalletInvoice
     } catch (err) {
       return new UnknownRepositoryError(err)
@@ -121,7 +148,8 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
   }
 
   return {
-    persist,
+    persistNew,
+    update,
     findByPaymentHash,
     findPendingByWalletId,
     listWalletsWithPendingInvoices,

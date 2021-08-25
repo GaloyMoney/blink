@@ -7,7 +7,9 @@ type WalletInvoice = {
 }
 
 interface IWalletInvoicesRepository {
-  persist: (invoice: WalletInvoice) => Promise<WalletInvoice | RepositoryError>
+  persistNew: (invoice: WalletInvoice) => Promise<WalletInvoice | RepositoryError>
+
+  update: (invoice: WalletInvoice) => Promise<WalletInvoice | RepositoryError>
 
   findByPaymentHash: (
     paymentHash: PaymentHash,
