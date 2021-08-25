@@ -1,5 +1,5 @@
 import * as Wallets from "@app/wallets"
-import { SettlementMethod, PaymentInitiationMethod } from "@domain/wallets"
+import { SettlementMethod, PaymentInitiationMethod, TxStatus } from "@domain/wallets"
 import {
   stringLength,
   ValidateDirectiveVisitor,
@@ -56,7 +56,7 @@ const translateWalletTx = (txs: WalletTransaction[]) => {
     created_at: Math.floor(tx.createdAt.getTime() / 1000),
     usd: tx.deprecated.usd,
     sat: tx.settlementAmount,
-    pending: tx.pendingConfirmation,
+    pending: tx.status == TxStatus.Pending,
     type: tx.deprecated.type,
     feeUsd: tx.deprecated.feeUsd,
     hash: tx.initiationVia === PaymentInitiationMethod.Lightning ? tx.paymentHash : null,

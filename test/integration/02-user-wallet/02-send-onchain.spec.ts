@@ -27,7 +27,7 @@ import {
   mineBlockAndSyncAll,
 } from "test/helpers"
 import { ledger } from "@services/mongodb"
-import { PaymentInitiationMethod } from "@domain/wallets"
+import { PaymentInitiationMethod, TxStatus } from "@domain/wallets"
 import * as Wallets from "@app/wallets"
 import { TwoFAError, TransactionRestrictedError } from "@core/error"
 
@@ -108,7 +108,7 @@ describe("UserWallet - onChainPay", () => {
       throw txResult.error
     }
     let txs = txResult.result
-    const pendingTxs = filter(txs, { pendingConfirmation: true })
+    const pendingTxs = filter(txs, { status: TxStatus.Pending })
     expect(pendingTxs.length).toBe(1)
     expect(pendingTxs[0].settlementAmount).toBe(-amount - pendingTxs[0].settlementFee)
 
@@ -199,7 +199,7 @@ describe("UserWallet - onChainPay", () => {
       throw txResult
     }
     let txs = txResult.result
-    const pendingTxs = filter(txs, { pendingConfirmation: true })
+    const pendingTxs = filter(txs, { status: TxStatus.Pending })
     expect(pendingTxs.length).toBe(1)
     expect(pendingTxs[0].settlementAmount).toBe(-initialBalanceUser11)
 

@@ -21,6 +21,7 @@ import {
 } from "test/helpers"
 import { getWalletFromRole } from "@core/wallet-factory"
 import * as Wallets from "@app/wallets"
+import { TxStatus } from "@domain/wallets"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
@@ -164,7 +165,7 @@ describe("UserWallet - On chain", () => {
     if (error instanceof Error || txs === null) {
       throw error
     }
-    const pendingTxs = filter(txs, { pendingConfirmation: true })
+    const pendingTxs = filter(txs, { status: TxStatus.Pending })
     expect(pendingTxs.length).toBe(1)
 
     const pendingTx = pendingTxs[0] as WalletOnChainTransaction

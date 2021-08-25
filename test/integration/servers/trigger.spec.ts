@@ -13,6 +13,7 @@ import {
   mineBlockAndSyncAll,
 } from "test/helpers"
 import * as Wallets from "@app/wallets"
+import { TxStatus } from "@domain/wallets"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
@@ -77,7 +78,7 @@ describe("onchainBlockEventhandler", () => {
 
     expect(transactions.length).toBe(initTransactions.length + 1)
     expect(lastTransaction.deprecated.type).toBe("onchain_receipt")
-    expect(lastTransaction.pendingConfirmation).toBe(false)
+    expect(lastTransaction.status).toBe(TxStatus.Success)
     expect(lastTransaction.settlementFee).toBe(Math.round(lastTransaction.settlementFee))
     expect(lastTransaction.settlementAmount).toBe(finalAmount)
     expect((lastTransaction as WalletOnChainTransaction).addresses[0]).toBe(address)

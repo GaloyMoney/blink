@@ -2,6 +2,7 @@ import { toSats } from "@domain/bitcoin"
 import { LedgerTransactionType } from "@domain/ledger"
 import { MEMO_SHARING_SATS_THRESHOLD } from "@config/app"
 import { SettlementMethod, PaymentInitiationMethod } from "./tx-methods"
+import { TxStatus } from "./tx-status"
 
 const filterPendingIncoming = (
   pendingTransactions: SubmittedTransaction[],
@@ -24,7 +25,7 @@ const filterPendingIncoming = (
           },
           recipientId: null,
           settlementFee: toSats(0),
-          pendingConfirmation: true,
+          status: TxStatus.Pending,
           createdAt: createdAt,
           settlementAmount: sats,
           addresses: [address],
@@ -63,6 +64,7 @@ export const fromLedger = (
         credit,
         walletName,
       })
+      const status = pendingConfirmation ? TxStatus.Pending : TxStatus.Success
       if (addresses && addresses.length > 0) {
         return {
           id,
@@ -81,7 +83,7 @@ export const fromLedger = (
           recipientId: walletName || null,
           settlementAmount,
           settlementFee: toSats(fee || 0),
-          pendingConfirmation,
+          status,
           createdAt: timestamp,
         }
       }
@@ -103,7 +105,7 @@ export const fromLedger = (
           settlementFee: toSats(fee || 0),
           paymentHash: paymentHash as PaymentHash,
           recipientId: walletName || null,
-          pendingConfirmation,
+          status,
           createdAt: timestamp,
         }
       }
@@ -120,7 +122,7 @@ export const fromLedger = (
         settlementAmount,
         settlementFee: toSats(fee || 0),
         recipientId: walletName || null,
-        pendingConfirmation,
+        status,
         createdAt: timestamp,
       } as WalletNameTransaction
     },

@@ -19,7 +19,7 @@ type BaseWalletTransaction = {
   readonly settlementVia: SettlementMethod
   readonly settlementAmount: Satoshis
   readonly settlementFee: Satoshis
-  readonly pendingConfirmation: boolean
+  readonly status: TxStatus
   readonly createdAt: Date
 
   readonly deprecated: Deprecated
