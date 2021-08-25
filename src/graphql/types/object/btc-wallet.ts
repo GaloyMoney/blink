@@ -1,9 +1,12 @@
 import { connectionArgs, connectionFromArray } from "graphql-relay"
 
-import * as Wallets from "@app/wallets"
 import { GT } from "@graphql/index"
+
 import { TransactionConnection } from "../abstract/transaction"
 import Wallet from "../abstract/wallet"
+import SignedAmount from "../scalar/signed-amount"
+import Currency from "../scalar/currency"
+import * as Wallets from "@app/wallets"
 
 const BTCWallet = new GT.Object({
   name: "BTCWallet",
@@ -13,6 +16,13 @@ const BTCWallet = new GT.Object({
     id: {
       type: GT.NonNullID,
     },
+    storageCurrency: {
+      type: GT.NonNull(Currency),
+    },
+    balance: {
+      type: GT.NonNull(SignedAmount),
+    },
+
     transactions: {
       type: TransactionConnection,
       args: connectionArgs,
