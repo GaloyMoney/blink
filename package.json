@@ -65,7 +65,7 @@
     "ioredis": "^4.27.6",
     "js-yaml": "^4.1.0",
     "jsonwebtoken": "^8.5.1",
-		"lightning": "github:alexbosworth/lightning",
+    "lightning": "^4.1.0",
     "ln-service": "^51.8.7",
     "lodash": "^4.17.21",
     "medici": "^4.0.2",
