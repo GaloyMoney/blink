@@ -4,7 +4,6 @@ import { baseLogger } from "@services/logger"
 import { ledger } from "@services/mongodb"
 import { WalletInvoicesRepository } from "@services/mongoose"
 import { User } from "@services/mongoose/schema"
-import { isRepoError } from "@domain/utils"
 
 import { WalletFactory } from "./wallet-factory"
 import { runInParallel } from "./utils"
@@ -18,7 +17,7 @@ const updatePendingLightningInvoices = async () => {
 
   const walletsWithPendingInvoices = walletInvoicesRepo.listWalletsWithPendingInvoices()
 
-  if (isRepoError(walletsWithPendingInvoices)) {
+  if (walletsWithPendingInvoices instanceof Error) {
     logger.error(
       { error: walletsWithPendingInvoices },
       "finish updating pending invoices with error",
@@ -29,9 +28,13 @@ const updatePendingLightningInvoices = async () => {
   await runInParallel({
     iterator: walletsWithPendingInvoices,
     logger,
-    processor: async ({ _id }, index) => {
-      logger.trace("updating pending invoices for user %s in worker %d", _id, index)
-      const user = await User.findOne({ _id })
+    processor: async (walletId, index) => {
+      logger.trace(
+        "updating pending invoices for wallet %s in worker %d",
+        walletId,
+        index,
+      )
+      const user = await User.findOne({ _id: walletId })
       const userWallet = await WalletFactory({ user, logger })
       await userWallet.updatePendingInvoices()
     },

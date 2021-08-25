@@ -29,7 +29,6 @@ import { LoggedError, LOOK_BACK_CHANNEL_UPDATE } from "@core/utils"
 
 import { FEECAP, FEEMIN, params } from "./auth"
 import { WalletInvoicesRepository } from "@services/mongoose"
-import { isRepoError } from "@domain/utils"
 
 export const deleteExpiredInvoiceUser = async () => {
   const walletInvoicesRepo = WalletInvoicesRepository()
@@ -41,7 +40,7 @@ export const deleteExpiredInvoiceUser = async () => {
   date.setDate(date.getDate() - delta)
 
   const result = await walletInvoicesRepo.deleteUnpaidOlderThan(date)
-  if (isRepoError(result)) {
+  if (result instanceof Error) {
     baseLogger.error({ error: result }, "error deleting expired invoices")
     return 0
   }

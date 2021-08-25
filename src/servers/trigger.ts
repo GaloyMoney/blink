@@ -24,7 +24,6 @@ import { runInParallel } from "@core/utils"
 import { ONCHAIN_MIN_CONFIRMATIONS } from "@config/app"
 import * as Wallets from "@app/wallets"
 import { WalletInvoicesRepository } from "@services/mongoose"
-import { isRepoError } from "@domain/utils"
 
 const logger = baseLogger.child({ module: "trigger" })
 
@@ -187,15 +186,17 @@ export const onInvoiceUpdate = async (invoice) => {
   const walletInvoicesRepo = WalletInvoicesRepository()
   const walletInvoice = await walletInvoicesRepo.findByPaymentHash(invoice.id)
 
-  if (isRepoError(walletInvoice)) {
-    logger.fatal({ invoice }, "we received an invoice but had no user attached to it")
+  if (walletInvoice instanceof Error) {
+    logger.fatal({ invoice }, "we received an invoice but had no wallet attached to it")
     return
   }
 
-  const { walletId, paymentHash: hash, pubkey } = walletInvoice as WalletInvoice
+  const { walletId, paymentHash: hash, pubkey } = walletInvoice
   const user = await User.findOne({ _id: walletId })
   const wallet = await WalletFactory({ user, logger })
+
   await wallet.updatePendingInvoice({ hash, pubkey })
+
   await transactionNotification({
     type: "paid-invoice",
     amount: invoice.received,
