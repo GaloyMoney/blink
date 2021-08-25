@@ -77,20 +77,15 @@ interface ILightningService {
   registerInvoice(
     registerInvoiceArgs: RegisterInvoiceArgs,
   ): Promise<RegisteredInvoice | LightningServiceError>
-  payRequest({
-    decodedRequest,
-    timeoutMSecs,
-  }: {
-    decodedRequest: LnInvoice
-    timeoutMSecs?: TimeoutMSecs
-  }): Promise<PaymentResult | LightningServiceError>
-  payToRoute({
+  pay({
     route,
     id,
+    lnInvoice,
     timeoutMSecs,
   }: {
     route: PaymentRoute
     id: Pubkey
+    lnInvoice: LnInvoice
     timeoutMSecs?: TimeoutMSecs
   }): Promise<PaymentResult | LightningServiceError>
 }

@@ -1,5 +1,4 @@
 import { timeout } from "@core/utils"
-import { toMSats } from "@domain/bitcoin"
 import {
   decodeInvoice,
   CouldNotDecodeReturnedPaymentRequest,
@@ -42,11 +41,26 @@ export const LndService = (): ILightningService | LightningServiceError => {
     }
   }
 
-  const payRequest = async ({
-    decodedRequest,
+  const pay = async ({
+    route,
+    id,
+    lnInvoice,
     timeoutMSecs = TIMEOUT_PAYMENT as TimeoutMSecs,
   }: {
-    decodedRequest: LnInvoice
+    route: PaymentRoute
+    id: Pubkey
+    lnInvoice: LnInvoice
+    timeoutMSecs?: TimeoutMSecs
+  }) =>
+    route
+      ? payToRoute({ route, id, timeoutMSecs })
+      : payRequest({ lnInvoice, timeoutMSecs })
+
+  const payRequest = async ({
+    lnInvoice,
+    timeoutMSecs = TIMEOUT_PAYMENT as TimeoutMSecs,
+  }: {
+    lnInvoice: LnInvoice
     timeoutMSecs?: TimeoutMSecs
   }): Promise<PaymentResult | LightningServiceError> => {
     let paymentResult
@@ -59,7 +73,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
       paymentSecret: payment,
       cltvDelta,
       features,
-    } = decodedRequest
+    } = lnInvoice
 
     const max_fee =
       satoshis && satoshis > 0 ? Math.floor(Math.max(FEECAP * satoshis, FEEMIN)) : FEEMIN
@@ -112,8 +126,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
 
   return {
     registerInvoice,
-    payRequest,
-    payToRoute,
+    pay,
   }
 }
 
