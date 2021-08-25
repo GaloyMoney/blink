@@ -1,19 +1,11 @@
 import { getWalletStatus } from "lightning"
-
 import { baseLogger } from "@services/logger"
 
-import { params } from "./auth"
+import { params } from "./unauth"
 
 /*
 
 	Check the status of the wallet and emit current state
-
-	Wallet can be in the following states:
-		NON_EXISTING
-    LOCKED
-    UNLOCKED
-    RPC_ACTIVE
-    WAITING_TO_START
 
 */
 
@@ -38,11 +30,11 @@ export const isUp = async (param): Promise<void> => {
     active = false
   }
 
-  if (state == "RPC_ACTIVE") {
+  if (state.is_active == true) {
     lndStatusEvent.emit("started", param)
   } else {
     lndStatusEvent.emit("stopped", param)
-	}
+  }
 
   param.active = active
   baseLogger.debug({ socket, active }, "lnd pulse")
