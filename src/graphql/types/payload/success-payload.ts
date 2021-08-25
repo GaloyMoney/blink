@@ -1,6 +1,5 @@
 import { GT } from "@graphql/index"
-
-import UserError from "../user-error"
+import UserError from "../abstract/user-error"
 
 const SuccessPayload = new GT.Object({
   name: "SuccessPayload",

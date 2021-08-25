@@ -57,8 +57,9 @@ type SuccessPayload {
   success: Boolean
 }
 
-type UserError {
+interface UserError {
   message: String!
+  path: [String]
 }
 
 input UserRequestAuthCodeInput {

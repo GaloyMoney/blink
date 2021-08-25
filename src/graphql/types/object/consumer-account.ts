@@ -48,7 +48,7 @@ const ConsumerAccount = new GT.Object({
       type: GT.NonNull(GT.String),
       args: {
         walletIds: {
-          type: GT.NonNullList(GT.NonNullID),
+          type: GT.NonNullList(GT.ID),
         },
       },
     },
