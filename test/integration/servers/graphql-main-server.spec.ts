@@ -1,18 +1,24 @@
 import { redis } from "@services/redis"
 import { sleep } from "@core/utils"
-import { yamlConfig, getRequestPhoneCodeLimits, getLoginAttemptLimits } from "@config/app"
-import { createTestClient } from "apollo-server-testing"
-import { startApolloServerForOldSchema } from "@servers/graphql-old-server"
+import { yamlConfig, JWT_SECRET } from "@config/app"
+import { createTestClient } from "apollo-server-integration-testing"
+import { startApolloServerForCoreSchema } from "@servers/graphql-main-server"
+import * as jwt from "jsonwebtoken"
+
+import USER_REQUEST_AUTH_CODE from "./graphql-main-server/mutations/user-request-auth-code.gql"
+import USER_LOGIN from "./graphql-main-server/mutations/user-login.gql"
+import LN_NO_AMOUNT_INVOICE_CREATE from "./graphql-main-server/mutations/ln-no-amount-invoice-create.gql"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
-let apolloServer, httpServer
-const { phone, code: correctCode } = yamlConfig.test_accounts[9]
-const badCode = 123456
+let apolloServer, httpServer, mutate, setOptions, correctCode
+const { phone, code } = yamlConfig.test_accounts[9]
 
 beforeAll(async () => {
-  ;({ apolloServer, httpServer } = await startApolloServerForOldSchema())
+  correctCode = `${code}`
+  ;({ apolloServer, httpServer } = await startApolloServerForCoreSchema())
+  ;({ mutate, setOptions } = createTestClient({ apolloServer }))
   await sleep(2500)
 })
 
@@ -30,93 +36,128 @@ afterAll(async () => {
 })
 
 describe("graphql", () => {
-  it("start server", async () => {
-    const { query } = createTestClient(apolloServer)
-
-    const {
-      data: {
-        nodeStats: { id, peersCount },
-      },
-    } = await query({
-      query: `query nodeStats {
-      nodeStats {
-          id
-          peersCount
-          channelsCount
-      }
-    }`,
+  describe("userRequestAuthCode", () => {
+    const mutation = USER_REQUEST_AUTH_CODE
+    it("success with a valid phone", async () => {
+      const input = { phone }
+      const result = await mutate(mutation, { variables: { input } })
+      expect(result.data.userRequestAuthCode).toEqual(
+        expect.objectContaining({ success: true }),
+      )
     })
 
-    expect(id).toBeTruthy()
-    expect(peersCount).toBeGreaterThanOrEqual(1)
+    it("returns error for invalid phone", async () => {
+      const message = "Invalid value for Phone"
+      let input = { phone: "+123" }
+
+      let result = await mutate(mutation, { variables: { input } })
+      expect(result.data.userRequestAuthCode.errors).toEqual(
+        expect.arrayContaining([expect.objectContaining({ message })]),
+      )
+
+      input = { phone: "abcd" }
+      result = await mutate(mutation, { variables: { input } })
+      expect(result.data.userRequestAuthCode.errors).toEqual(
+        expect.arrayContaining([expect.objectContaining({ message })]),
+      )
+
+      input = { phone: "" }
+      result = await mutate(mutation, { variables: { input } })
+      expect(result.data.userRequestAuthCode.errors).toEqual(
+        expect.arrayContaining([expect.objectContaining({ message })]),
+      )
+    })
   })
 
-  it("rate limit limiterRequestPhoneCode", async () => {
-    const { mutate } = createTestClient(apolloServer)
-    const phone = "+123"
+  describe("userLogin", () => {
+    const mutation = USER_LOGIN
 
-    const mutation = `mutation requestPhoneCode ($phone: String) {
-      requestPhoneCode (phone: $phone) {
-          success
-      }
-    }`
+    it("returns a jwt token for a valid phone/code", async () => {
+      const input = { phone, code: correctCode }
+      const result = await mutate(mutation, { variables: { input } })
+      expect(result.data.userLogin).toHaveProperty("authToken")
+      const token = jwt.verify(result.data.userLogin.authToken, `${JWT_SECRET}`)
+      expect(token).toHaveProperty("uid")
+      expect(token).toHaveProperty("network")
+      expect(token).toHaveProperty("iat")
+    })
 
-    // exhaust the limiter
-    const requestPhoneCodeLimits = getRequestPhoneCodeLimits()
-    for (let i = 0; i < requestPhoneCodeLimits.points; i++) {
-      const result = await mutate({ mutation, variables: { phone } })
-      expect(result.errors).toBeFalsy()
-    }
-
-    try {
-      const result = await mutate({ mutation, variables: { phone } })
-      expect(result.errors).toEqual(
-        expect.arrayContaining([expect.objectContaining({ code: "TOO_MANY_REQUEST" })]),
+    it("returns error for invalid phone", async () => {
+      let phone = "+19999999999"
+      let message = "Invalid request"
+      let input = { phone, code: correctCode }
+      let result = await mutate(mutation, { variables: { input } })
+      expect(result.data.userLogin.errors).toEqual(
+        expect.arrayContaining([expect.objectContaining({ message })]),
       )
-    } catch (err) {
-      expect(true).toBeFalsy()
-    }
+
+      phone = "+1999"
+      message = "Invalid value for Phone"
+      input = { phone, code: correctCode }
+      result = await mutate(mutation, { variables: { input } })
+      expect(result.data.userLogin.errors).toEqual(
+        expect.arrayContaining([expect.objectContaining({ message })]),
+      )
+
+      phone = "abcd"
+      input = { phone, code: correctCode }
+      result = await mutate(mutation, { variables: { input } })
+      expect(result.data.userLogin.errors).toEqual(
+        expect.arrayContaining([expect.objectContaining({ message })]),
+      )
+
+      phone = ""
+      input = { phone, code: correctCode }
+      result = await mutate(mutation, { variables: { input } })
+      expect(result.data.userLogin.errors).toEqual(
+        expect.arrayContaining([expect.objectContaining({ message })]),
+      )
+    })
+
+    it("returns error for invalid code", async () => {
+      let message = "Invalid request"
+      let input = { phone, code: "113566" }
+      let result = await mutate(mutation, { variables: { input } })
+      expect(result.data.userLogin.errors).toEqual(
+        expect.arrayContaining([expect.objectContaining({ message })]),
+      )
+
+      message = "Invalid value for OneTimeAuthCode"
+      input = { phone, code: "abcdef" }
+      result = await mutate(mutation, { variables: { input } })
+      expect(result.data.userLogin.errors).toEqual(
+        expect.arrayContaining([expect.objectContaining({ message })]),
+      )
+
+      input = { phone, code: "" }
+      result = await mutate(mutation, { variables: { input } })
+      expect(result.data.userLogin.errors).toEqual(
+        expect.arrayContaining([expect.objectContaining({ message })]),
+      )
+    })
   })
 
-  it("rate limit login", async () => {
-    const { mutate } = createTestClient(apolloServer)
+  describe.skip("lnNoAmountInvoiceCreate", () => {
+    const mutation = LN_NO_AMOUNT_INVOICE_CREATE
 
-    const mutation = `mutation login ($phone: String, $code: Int) {
-      login (phone: $phone, code: $code) {
-          token
-      }
-    }`
+    beforeAll(async () => {
+      const input = { phone, code: correctCode }
+      const result = await mutate(USER_LOGIN, { variables: { input } })
+      const token = result.data.userLogin.authToken
+      setOptions({
+        request: {
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
+        },
+      })
+    })
 
-    const {
-      data: {
-        login: { token: tokenNull },
-      },
-    } = await mutate({ mutation, variables: { phone, code: badCode } })
-    expect(tokenNull).toBeFalsy()
-
-    const {
-      data: {
-        login: { token },
-      },
-    } = await mutate({ mutation, variables: { phone, code: correctCode } })
-    expect(token).toBeTruthy()
-
-    // exhaust the limiter
-    const loginAttemptLimits = getLoginAttemptLimits()
-    for (let i = 0; i < loginAttemptLimits.points; i++) {
-      const result = await mutate({ mutation, variables: { phone, code: badCode } })
-      expect(result.errors).toBeFalsy()
-    }
-
-    try {
-      const result = await mutate({ mutation, variables: { phone, code: correctCode } })
-      expect(result.errors).toEqual(
-        expect.arrayContaining([expect.objectContaining({ code: "TOO_MANY_REQUEST" })]),
-      )
-      expect(result.data.login).toBeFalsy()
-    } catch (err) {
-      expect(true).toBeFalsy()
-    }
+    it("returns a valid lightning invoice", async () => {
+      const input = { memo: "This is a lightning invoice" }
+      const result = await mutate(mutation, { variables: { input } })
+      expect(result.data).toBe("authToken")
+    })
   })
 })
 
