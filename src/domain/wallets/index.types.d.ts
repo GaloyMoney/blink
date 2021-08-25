@@ -23,8 +23,8 @@ type BaseWalletTransaction = {
   readonly deprecated: Deprecated
 }
 
-type UsernameTransaction = BaseWalletTransaction & {
-  readonly initiationVia: "username"
+type WalletNameTransaction = BaseWalletTransaction & {
+  readonly initiationVia: "walletname"
   readonly settlementVia: "intraledger"
   readonly recipientId: WalletName
 }
@@ -44,7 +44,7 @@ type WalletLnTransaction = BaseWalletTransaction & {
 }
 
 type WalletTransaction =
-  | UsernameTransaction
+  | WalletNameTransaction
   | WalletOnChainTransaction
   | WalletLnTransaction
 

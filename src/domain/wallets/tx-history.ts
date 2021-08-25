@@ -122,7 +122,7 @@ export const fromLedger = (
         recipientId: walletName || null,
         pendingConfirmation,
         createdAt: timestamp,
-      } as UsernameTransaction
+      } as WalletNameTransaction
     },
   )
   return {
