@@ -45,20 +45,49 @@ Unique identifier of an account wallet
 scalar WalletName
 
 type Mutation {
-  requestPhoneCode(phone: String!): Boolean
-  login(phone: String!, code: String!): String
+  userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
+  userLogin(input: UserLoginInput!): AuthTokenPayload!
   userUpdateStatus(input: UserUpdateStatusInput!): UserDetailPayload!
   userUpdateLevel(input: UserUpdateLevelInput!): UserDetailPayload!
-  businessUpdateMapInfo(input: MerchanUpdateMapInfoInput!): UserDetailPayload!
+  businessUpdateMapInfo(input: BusinessUpdateMapInfoInput!): UserDetailPayload!
 }
 
-type UserDetailPayload {
+type SuccessPayload {
   errors: [UserError!]!
-  userDetails: UserDetails
+  success: Boolean
 }
 
 type UserError {
   message: String!
+}
+
+input UserRequestAuthCodeInput {
+  phone: Phone!
+}
+
+type AuthTokenPayload {
+  errors: [UserError!]!
+  authToken: AuthToken
+}
+
+"""
+An authentication code valid for a single use
+"""
+scalar AuthToken
+
+input UserLoginInput {
+  phone: Phone!
+  code: OneTimeAuthCode!
+}
+
+"""
+An authentication code valid for a single use
+"""
+scalar OneTimeAuthCode
+
+type UserDetailPayload {
+  errors: [UserError!]!
+  userDetails: UserDetails
 }
 
 input UserUpdateStatusInput {
@@ -71,7 +100,7 @@ input UserUpdateLevelInput {
   level: AccountLevel!
 }
 
-input MerchanUpdateMapInfoInput {
+input BusinessUpdateMapInfoInput {
   walletName: WalletName!
   title: String!
   longitude: Float!

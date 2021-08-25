@@ -6,6 +6,7 @@ import WalletName from "../types/scalar/wallet-name"
 import AccountLevel from "../types/scalar/account-level"
 import UserDetails from "../types/object/user-details"
 
+// TODO: redo/move root fields
 const QueryType = new GT.Object({
   name: "Query",
   fields: () => ({
