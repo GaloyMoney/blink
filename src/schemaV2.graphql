@@ -1,0 +1,192 @@
+type Query {
+  globalSettings: GlobalSettings
+  btcUsdPriceListForGraph(range: PriceGraphRange!): [BtcUsdPrice!]
+  quizQuestions: [QuizQuestion!]
+  businessMapMarkers: [MapMarker!] # TODO: Map focus Connection | X businesses here
+  mobileVersions: MobileVersions
+  walletNameAvailable(walletName: WalletName!): Boolean # TODO: security concerns / rate-limit
+  onChainTxFee(distination: OnChainAddress!, amount: SatAmount!): [OnChainTxFee!] # Dynamic
+}
+
+enum TxStatus {
+  PENDING
+  SUCCESS
+  FAILURE
+}
+
+input LanguageUpdateInput {
+  language: Language!
+}
+
+input ContactUpdateInput {
+  username: Username!
+  name: Name!
+}
+
+input DeviceNotificationTokenInput {
+  deviceToken: String!
+}
+
+input OnChainPaymentInput {
+  address: OnChainAddress!
+  amount: SatAmount!
+  memo: Memo
+}
+
+input OnChainPaymentAllInput {
+  address: OnChainAddress!
+  memo: Memo
+}
+
+input LnInvoicePaymentInput {
+  invoice: LnInvoice!
+  memo: Memo
+}
+
+input LnNoAmountInvoiceFeeProbeInput {
+  invoice: LnNoAmountInvoice!
+  amount: SatAmuont!
+}
+
+input QuizQuestionUpdateCompletedInput {
+  ids: [ID!]!
+}
+
+input LnInvoiceReceiveStatusInput {
+  paymentHash: LnInvoicePaymentHash!
+  paymentSecret: LnInvoicePaymentSecret!
+}
+
+input LnNoAmountInvoiceCreateInput {
+  memo: Memo
+}
+
+input LnInvoiceCreateInput {
+  amount: SatAmount!
+  memo: Memo
+}
+
+input LnNoAmountInvoiceCreateForUserInput {
+  recipientID: Username!
+  memo: Memo
+}
+
+input LnInvoiceCreateForUserInput {
+  recipientID: Username!
+  amount: SatAmount!
+  memo: Memo
+}
+
+input LnNoAmountInvoicePaymentInput {
+  invoice: LnNoAmountInvoice!
+  amount: SatAmount!
+  memo: Memo
+}
+
+input LnInvoiceFeeProbeInput {
+  invoice: LnInvoice!
+}
+
+input UserPaymentInput {
+  recipientID: Username!
+  amount: SatAmount!
+  memo: Memo
+}
+
+type LnInvoicePayload {
+  errors: [Error!]!
+  lnInvoice: LnInvoice
+}
+
+type LnNoAmountInvoicePayload {
+  errors: [Error!]!
+  lnInvoice: LnNoAmountInvoice
+}
+
+type OnChainAddressPayload {
+  errors: [Error!]!
+  onChainAddress: OnChainAddress
+}
+
+type PaymentStatusPayload {
+  errors: [Error!]!
+  status: TxStatus
+}
+
+type SatAmountPayload {
+  errors: [Error!]!
+  amount: SatAmount
+}
+
+type AuthTokenPayload {
+  errors: [Error!]!
+  authToken: AuthToken
+}
+
+type AuthTokenPayload {
+  errors: [Error!]!
+  quizQuestions: [UserQuizQuestion!]
+}
+
+type SuccessPayload {
+  errors: [Error!]!
+  success: Boolean
+}
+
+type LnInvoiceReceivePayload {
+  errors: [Error!]!
+  status: InvoiceReceiveStatus!
+}
+
+type Mutation {
+  userQuizeQuestionsUpdateCompleted(
+    input: QuizQuestionUpdateCompletedInput
+  ): QuizQuestionsUpdateCompletedPayload!
+  userLanguageUpdate(input: LanguageUpdateInput!): UserPayload!
+  userContactUpdate(input: ContactUpdateInput!): SuccessPayload!
+
+  ## Device mutations ##
+  deviceNotificationTokenCreate(input: DeviceNotificationTokenInput!): SuccessPayload!
+
+  ## onChain mutations ##
+  onChainAddressCreate: OnChainAddressPayload! # always a mutation
+  onChainAddressCurrent: OnChainAddressPayload! # mutation first time it's issued, then query
+  onChainPaymentSend(input: OnChainPaymentInput!): PaymentStatusPayload!
+  onChainPaymentSendAll(input: OnChainPaymentAllInput!): PaymentStatusPayload!
+
+  ## lightning mutations ##
+  lnNoAmountInvoicePaymentSend(
+    input: LnNoAmountInvoicePaymentInput!
+  ): PaymentStatusPayload!
+  lnInvoicePaymentSend(input: LnInvoicePaymentInput!): PaymentStatusPayload!
+
+  lnNoAmountInvoiceFeeProbe(intput: LnNoAmountInvoiceFeeProbeInput!): SatAmountPayload!
+
+  lnInvoiceFeeProbe(intput: LnInvoiceFeeProbeInput!): SatAmountPayload!
+
+  ## mutations that do not require auth ##
+  ## Receive payment from anonymous source ##
+  lnNoAmountInvoiceCreateForUser(
+    input: LnNoAmountInvoiceCreateForUserInput!
+  ): LnNoAmountInvoicePayload!
+  # No use case yet
+  lnInvoiceCreateForUser(input: LnInvoiceCreateForUserInput): LnInvoicePayload!
+
+  ## Ledger entry (not part of LN) ##
+  intraLedgerPaymentSend(input: UserPaymentInput!): PaymentStatusPayload!
+
+  # businessAccountCreate(input: BusinessAccountCreateInput!): BusinessAccountPayload!
+  # businessAccountAddWallet(input: BusinessAccountAddWalletInput!): WalletPayload!
+  # businessAccountDisableWallet
+  # businessAccountAddUser()
+  # businessAccountRemoveUser()
+  # permissions: viewBalance, viewAllTransactions, viewRecentTransactions, refund?, receive, intraBusinessSend, anySend
+  # businessAccountAddPermission()
+  # businessAccountRemovePermission()
+}
+
+type Subscription {
+  priceCurrent: Price!
+
+  lnInvoiceReceiveStatus(input: LnInvoiceReceiveStatusInput!): LnInvoiceReceivePayload! # FINAL (lnpage)
+}
