@@ -26,11 +26,12 @@ const isUpLoop = (param) => setInterval(() => isUp(param), refresh_time)
 
 export const isUp = async (param): Promise<void> => {
   let active
+  let state
   const { lnd, socket } = param
 
   try {
     // will throw if there is an error
-    var { state } = await getWalletStatus({ lnd })
+    state = await getWalletStatus({ lnd })
     active = true
   } catch (err) {
     baseLogger.warn({ err }, `can't get wallet info from ${socket}`)
