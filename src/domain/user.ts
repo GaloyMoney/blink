@@ -26,11 +26,16 @@ export const updateUserAccountStatus = async ({ uid, status }) => {
   return user
 }
 
-export const updateBusinessMapInfo = async ({ username, latitude, longitude, title }) => {
-  const user = await User.getUserByUsername(username)
+export const updateBusinessMapInfo = async ({
+  walletName,
+  latitude,
+  longitude,
+  title,
+}) => {
+  const user = await User.getUserByUsername(walletName)
 
   if (!user) {
-    throw new NotFoundError(`The user ${username} does not exist`, { logger })
+    throw new NotFoundError(`The wallet ${walletName} does not exist`, { logger })
   }
 
   user.coordinate = {

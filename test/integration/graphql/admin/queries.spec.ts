@@ -26,15 +26,14 @@ describe("GraphQLQueryRoot", () => {
     const query = `
       query Q {
         userDetails: userDetailsByPhone(phone: "+19876543210") {
-          username
           createdAt
         }
       }
     `
     const result = await graphql(gqlAdminSchema, query, {})
     const { errors, data } = result
-    expect(errors).toBeNull
-    expect(data?.userDetails.username).toEqual("tester")
+    expect(errors).toBeUndefined()
+    expect(data?.userDetails.createdAt).toBeDefined()
   })
 
   it("exposes userDetails by username", async () => {
@@ -48,7 +47,7 @@ describe("GraphQLQueryRoot", () => {
     `
     const result = await graphql(gqlAdminSchema, query, {})
     const { errors, data } = result
-    expect(errors).toBeNull
+    expect(errors).toBeUndefined()
     expect(data?.userDetails.phone).toEqual("+19876543210")
   })
 })
