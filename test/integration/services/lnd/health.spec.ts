@@ -1,6 +1,6 @@
 import moment from "moment"
 import { isUp, lndStatusEvent } from "@services/lnd/health"
-import { params } from "@services/lnd/auth"
+import { params } from "@services/lnd/unauth"
 import { baseLogger } from "@services/logger"
 
 beforeAll(done => {
