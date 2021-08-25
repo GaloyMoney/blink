@@ -38,6 +38,7 @@ afterAll(async () => {
 describe("graphql", () => {
   describe("userRequestAuthCode", () => {
     const mutation = USER_REQUEST_AUTH_CODE
+
     it("success with a valid phone", async () => {
       const input = { phone }
       const result = await mutate(mutation, { variables: { input } })
@@ -137,26 +138,28 @@ describe("graphql", () => {
     })
   })
 
-  describe.skip("lnNoAmountInvoiceCreate", () => {
+  describe("lnNoAmountInvoiceCreate", () => {
     const mutation = LN_NO_AMOUNT_INVOICE_CREATE
 
     beforeAll(async () => {
       const input = { phone, code: correctCode }
       const result = await mutate(USER_LOGIN, { variables: { input } })
-      const token = result.data.userLogin.authToken
-      setOptions({
-        request: {
-          headers: {
-            authorization: `Bearer ${token}`,
-          },
-        },
-      })
+      const token = jwt.verify(result.data.userLogin.authToken, `${JWT_SECRET}`)
+      // mock jwt middleware
+      setOptions({ request: { token } })
+    })
+
+    afterAll(async () => {
+      setOptions({ request: { token: null } })
     })
 
     it("returns a valid lightning invoice", async () => {
       const input = { memo: "This is a lightning invoice" }
       const result = await mutate(mutation, { variables: { input } })
-      expect(result.data).toBe("authToken")
+      const { invoice } = result.data.lnNoAmountInvoiceCreate
+      expect(invoice).toHaveProperty("paymentRequest")
+      expect(invoice).toHaveProperty("paymentHash")
+      expect(invoice).toHaveProperty("paymentSecret")
     })
   })
 })
