@@ -1,10 +1,11 @@
 import { GT } from "@graphql/index"
-import Currency from "../scalar/currency"
+import WalletCurrency from "../scalar/wallet-currency"
 
 const GlobalSettings = new GT.Object({
   name: "GlobalSettings",
   fields: () => ({
-    baseCurrency: { type: GT.NonNull(Currency) },
+    // Need to have Galoy Base Currency type here instead
+    baseCurrency: { type: GT.NonNull(WalletCurrency) },
     depositFeePercentage: { type: GT.NonNull(GT.Float) },
   }),
 })

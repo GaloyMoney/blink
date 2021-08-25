@@ -5,7 +5,7 @@ import { GT } from "@graphql/index"
 import { TransactionConnection } from "../abstract/transaction"
 import IWallet from "../abstract/wallet"
 import SignedAmount from "../scalar/signed-amount"
-import Currency from "../scalar/currency"
+import WalletCurrency from "../scalar/wallet-currency"
 import * as Wallets from "@app/wallets"
 
 const BTCWallet = new GT.Object({
@@ -16,8 +16,8 @@ const BTCWallet = new GT.Object({
     id: {
       type: GT.NonNullID,
     },
-    storageCurrency: {
-      type: GT.NonNull(Currency),
+    walletCurrency: {
+      type: GT.NonNull(WalletCurrency),
       resolve: () => "BTC",
     },
     balance: {

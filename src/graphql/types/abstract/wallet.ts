@@ -3,7 +3,7 @@ import { connectionArgs, connectionFromArray } from "graphql-relay"
 import { GT } from "@graphql/index"
 
 import { TransactionConnection } from "./transaction"
-import Currency from "../scalar/currency"
+import WalletCurrency from "../scalar/wallet-currency"
 import SignedAmount from "../scalar/signed-amount"
 
 const IWallet = new GT.Interface({
@@ -12,8 +12,8 @@ const IWallet = new GT.Interface({
     id: {
       type: GT.NonNullID,
     },
-    storageCurrency: {
-      type: GT.NonNull(Currency),
+    walletCurrency: {
+      type: GT.NonNull(WalletCurrency),
     },
     balance: {
       type: GT.NonNull(SignedAmount),
