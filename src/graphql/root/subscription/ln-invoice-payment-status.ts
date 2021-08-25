@@ -2,8 +2,8 @@ import { SUBSCRIPTION_POLLING_INTERVAL, MS_PER_HOUR } from "@config/app"
 import { PaymentStatusChecker } from "@app/lightning"
 import { GT, pubsub } from "@graphql/index"
 
-import LnInvoicePaymentRequest from "../scalar/ln-invoice-payment-request"
-import LnInvoicePaymentStatusPayload from "../mutation/payload/ln-invoice-payment-status"
+import LnInvoicePaymentRequest from "@graphql/types/scalar/ln-invoice-payment-request"
+import LnInvoicePaymentStatusPayload from "@graphql/types/payload/ln-invoice-payment-status"
 
 const LnInvoicePaymentStatusInput = new GT.Input({
   name: "LnInvoicePaymentStatusInput",

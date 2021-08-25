@@ -1,7 +1,7 @@
 import { GT } from "@graphql/index"
-import AccountLevel from "../scalar/account-level"
+import AccountLevel from "@graphql/types/scalar/account-level"
 
-import UserDetailPayload from "./payload/user-detail"
+import UserDetailPayload from "@graphql/types/payload/user-detail"
 import { updateUserLevel } from "@domain/user"
 
 const UserUpdateLevelInput = new GT.Input({
@@ -16,7 +16,7 @@ const UserUpdateLevelInput = new GT.Input({
   }),
 })
 
-const UserUpdateLevelMutation = {
+const UserUpdateLevelMutation = GT.Field({
   type: GT.NonNull(UserDetailPayload),
   args: {
     input: { type: GT.NonNull(UserUpdateLevelInput) },
@@ -26,6 +26,6 @@ const UserUpdateLevelMutation = {
     const user = await updateUserLevel({ uid, level })
     return { errors: [], userDetails: user }
   },
-}
+})
 
 export default UserUpdateLevelMutation

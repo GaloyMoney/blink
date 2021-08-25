@@ -20,6 +20,9 @@ export const pubsub = new PubSub()
 
 // GraphQL Types
 export const GT = {
+  // Wrap root configurations for consistency
+  Field: (config) => config,
+
   // Wrappers/shortners
   Interface: GraphQLInterfaceType,
   Union: GraphQLUnionType,

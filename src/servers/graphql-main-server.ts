@@ -5,7 +5,7 @@ import { shield } from "graphql-shield"
 import { setupMongoConnection } from "@services/mongodb"
 import { activateLndHealthCheck } from "@services/lnd/health"
 import { baseLogger } from "@services/logger"
-import { startApolloServer } from "./graphql-server"
+import { isAuthenticated, startApolloServer } from "./graphql-server"
 import { gqlMainSchema } from "../graphql"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
@@ -15,8 +15,12 @@ dotenv.config()
 export async function startApolloServerForCoreSchema() {
   const permissions = shield(
     {
-      // Query: {},
-      // Mutation: {},
+      Query: {
+        me: isAuthenticated,
+      },
+      Mutation: {
+        lnNoAmountInvoiceCreate: isAuthenticated,
+      },
       // Subscription: {},
     },
     { allowExternalErrors: true },

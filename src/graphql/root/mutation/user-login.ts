@@ -1,9 +1,9 @@
 import { login } from "@core/text"
 import { GT } from "@graphql/index"
-import OneTimeAuthCode from "../scalar/one-time-auth-code"
+import OneTimeAuthCode from "@graphql/types/scalar/one-time-auth-code"
 
-import Phone from "../scalar/phone"
-import AuthTokenPayload from "./payload/auth-token"
+import Phone from "@graphql/types/scalar/phone"
+import AuthTokenPayload from "@graphql/types/payload/auth-token"
 
 const UserLoginInput = new GT.Input({
   name: "UserLoginInput",
@@ -17,7 +17,7 @@ const UserLoginInput = new GT.Input({
   }),
 })
 
-const UserLoginMutation = {
+const UserLoginMutation = GT.Field({
   type: GT.NonNull(AuthTokenPayload),
   args: {
     input: { type: GT.NonNull(UserLoginInput) },
@@ -46,6 +46,6 @@ const UserLoginMutation = {
 
     return { errors: [], authToken }
   },
-}
+})
 
 export default UserLoginMutation

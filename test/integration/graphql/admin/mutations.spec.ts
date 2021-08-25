@@ -65,10 +65,10 @@ describe("GraphQLMutationRoot", () => {
     expect(updatedUser.status).toEqual("locked")
   })
 
-  it("exposes merchantUpdateMapInfo", async () => {
+  it("exposes businessUpdateMapInfo", async () => {
     const query = `
       mutation {
-        merchantUpdateMapInfo(input: { username: "${user.username}", title: "MapTest", longitude: 1, latitude: -1 }) {
+        businessUpdateMapInfo(input: { username: "${user.username}", title: "MapTest", longitude: 1, latitude: -1 }) {
           errors {
             message
             fields
@@ -87,7 +87,7 @@ describe("GraphQLMutationRoot", () => {
     const { errors, data } = result
     const updatedUser = await User.getUserByUsername("tester")
     expect(errors).toBeNull
-    expect(data?.merchantUpdateMapInfo.userDetails.id).toEqual(updatedUser.id)
+    expect(data?.businessUpdateMapInfo.userDetails.id).toEqual(updatedUser.id)
     expect(updatedUser.title).toEqual("MapTest")
     expect(updatedUser.coordinate).toEqual({ longitude: 1, latitude: -1 })
   })

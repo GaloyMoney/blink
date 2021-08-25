@@ -43,6 +43,8 @@ enum AccountStatus {
 
 interface Wallet {
   id: ID!
+  storageCurrency: Currency!
+  balance: SignedAmount!
   transactions(
     """
     Returns the items in the list that come after the specified cursor.
@@ -65,6 +67,16 @@ interface Wallet {
     last: Int
   ): TransactionConnection
 }
+
+enum Currency {
+  USD
+  BTC
+}
+
+"""
+An amount (of a currency) that can be negative (i.g. in a transaction)
+"""
+scalar SignedAmount
 
 """
 A connection to a list of items.

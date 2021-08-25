@@ -66,7 +66,7 @@ interface UserType {
   lastConnection?: string
   twoFA: TwoFA
 
-  // merchant:
+  // business:
   title?: string
   coordinate?: CoordinateObjectForUser
 

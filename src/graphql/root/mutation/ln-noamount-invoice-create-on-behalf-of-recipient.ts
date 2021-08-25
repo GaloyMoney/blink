@@ -1,9 +1,9 @@
 import { addInvoiceNoAmountForRecipient } from "@app/wallets"
 import { GT } from "@graphql/index"
 
-import LnNoAmountInvoicePayload from "./payload/ln-noamount-invoice"
-import Memo from "../scalar/memo"
-import WalletName from "../scalar/wallet-name"
+import LnNoAmountInvoicePayload from "@graphql/types/payload/ln-noamount-invoice"
+import Memo from "@graphql/types/scalar/memo"
+import WalletName from "@graphql/types/scalar/wallet-name"
 
 const LnNoAmountInvoiceCreateOnBehalfOfRecipientInput = new GT.Input({
   name: "LnNoAmountInvoiceCreateOnBehalfOfRecipientInput",
@@ -13,7 +13,7 @@ const LnNoAmountInvoiceCreateOnBehalfOfRecipientInput = new GT.Input({
   }),
 })
 
-const LnNoAmountInvoiceCreateOnBehalfOfRecipientMutation = {
+const LnNoAmountInvoiceCreateOnBehalfOfRecipientMutation = GT.Field({
   type: GT.NonNull(LnNoAmountInvoicePayload),
   args: {
     input: { type: GT.NonNull(LnNoAmountInvoiceCreateOnBehalfOfRecipientInput) },
@@ -45,6 +45,6 @@ const LnNoAmountInvoiceCreateOnBehalfOfRecipientMutation = {
       },
     }
   },
-}
+})
 
 export default LnNoAmountInvoiceCreateOnBehalfOfRecipientMutation

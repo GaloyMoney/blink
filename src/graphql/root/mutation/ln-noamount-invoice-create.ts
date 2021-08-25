@@ -1,7 +1,7 @@
 import { GT } from "@graphql/index"
 
-import LnNoAmountInvoicePayload from "./payload/ln-noamount-invoice"
-import Memo from "../scalar/memo"
+import LnNoAmountInvoicePayload from "@graphql/types/payload/ln-noamount-invoice"
+import Memo from "@graphql/types/scalar/memo"
 import { addInvoiceNoAmount } from "@app/wallets/add-invoice-for-wallet"
 
 const LnNoAmountInvoiceCreateInput = new GT.Input({
@@ -11,7 +11,7 @@ const LnNoAmountInvoiceCreateInput = new GT.Input({
   }),
 })
 
-const LnNoAmountInvoiceCreateMutation = {
+const LnNoAmountInvoiceCreateMutation = GT.Field({
   type: GT.NonNull(LnNoAmountInvoicePayload),
   args: {
     input: { type: GT.NonNull(LnNoAmountInvoiceCreateInput) },
@@ -21,10 +21,6 @@ const LnNoAmountInvoiceCreateMutation = {
 
     if (memo instanceof Error) {
       return { errors: [{ message: memo.message }] }
-    }
-
-    if (!user) {
-      return { errors: [{ message: "Invalid user operation" }] }
     }
 
     const lnInvoice = await addInvoiceNoAmount({
@@ -47,6 +43,6 @@ const LnNoAmountInvoiceCreateMutation = {
       },
     }
   },
-}
+})
 
 export default LnNoAmountInvoiceCreateMutation
