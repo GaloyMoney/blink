@@ -15,8 +15,9 @@ const SatAmount = new GT.Scalar({
 })
 
 function validSatAmount(value) {
-  if (Number.isInteger(value) && value >= 0) {
-    return value
+  const intValue = Number.parseInt(value, 10)
+  if (Number.isInteger(intValue) && intValue >= 0) {
+    return intValue
   }
   return new Error("Invalid value for SatAmount")
 }
