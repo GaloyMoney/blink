@@ -24,6 +24,8 @@ export async function startApolloServerForCoreSchema() {
 
         lnInvoiceCreate: isAuthenticated,
         lnNoAmountInvoiceCreate: isAuthenticated,
+
+        lnInvoicePaymentSend: isAuthenticated,
       },
       // Subscription: {},
     },

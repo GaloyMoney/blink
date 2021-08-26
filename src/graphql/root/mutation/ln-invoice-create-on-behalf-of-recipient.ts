@@ -35,7 +35,6 @@ const LnInvoiceCreateOnBehalfOfRecipientMutation = GT.Field({
     })
 
     if (result instanceof Error) {
-      console.error(result)
       return { errors: [{ message: result.message || result.name }] } // TODO: refine error
     }
 
