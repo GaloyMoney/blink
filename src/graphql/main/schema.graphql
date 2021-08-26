@@ -43,7 +43,7 @@ interface Account {
 
 interface Wallet {
   id: ID!
-  storageCurrency: Currency!
+  walletCurrency: WalletCurrency!
   balance: SignedAmount!
   transactions(
     """
@@ -68,8 +68,7 @@ interface Wallet {
   ): TransactionConnection
 }
 
-enum Currency {
-  USD
+enum WalletCurrency {
   BTC
 }
 
@@ -166,7 +165,7 @@ scalar Timestamp
 
 type BTCWallet implements Wallet {
   id: ID!
-  storageCurrency: Currency!
+  walletCurrency: WalletCurrency!
   balance: SignedAmount!
   transactions(
     """
