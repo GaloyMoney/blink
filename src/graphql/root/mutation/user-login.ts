@@ -29,12 +29,10 @@ const UserLoginMutation = GT.Field({
 
     const { phone, code } = args.input
 
-    if (phone instanceof Error) {
-      return { errors: [{ message: phone.message }] }
-    }
-
-    if (code instanceof Error) {
-      return { errors: [{ message: code.message }] }
+    for (const input of [phone, code]) {
+      if (input instanceof Error) {
+        return { errors: [{ message: input.message }] }
+      }
     }
 
     // TODO: Make this through a new app use-case

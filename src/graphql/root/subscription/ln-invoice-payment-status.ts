@@ -2,14 +2,13 @@ import { SUBSCRIPTION_POLLING_INTERVAL, MS_PER_HOUR } from "@config/app"
 import { PaymentStatusChecker } from "@app/lightning"
 import { GT, pubsub } from "@graphql/index"
 
-import LnInvoicePaymentRequest from "@graphql/types/scalar/ln-invoice-payment-request"
+import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
 import LnInvoicePaymentStatusPayload from "@graphql/types/payload/ln-invoice-payment-status"
 
 const LnInvoicePaymentStatusInput = new GT.Input({
   name: "LnInvoicePaymentStatusInput",
   fields: () => ({
-    paymentRequest: { type: GT.NonNull(LnInvoicePaymentRequest) },
-    lookupToken: { type: GT.NonNull(GT.String) },
+    paymentRequest: { type: GT.NonNull(LnPaymentRequest) },
   }),
 })
 
@@ -23,11 +22,11 @@ const LnInvoicePaymentStatusSubscription = {
   resolve: (source) => source,
 
   subscribe: async (source, args) => {
-    const { paymentRequest, lookupToken } = args.input
+    const { paymentRequest } = args.input
 
-    const paymentStatusChecker = PaymentStatusChecker({ paymentRequest, lookupToken })
+    const paymentStatusChecker = PaymentStatusChecker({ paymentRequest })
 
-    const errors: UserError[] = []
+    const errors: IError[] = []
 
     const eventName = `LnInvoicePaymentStatus-${paymentRequest}`
 

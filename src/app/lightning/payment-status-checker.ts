@@ -1,18 +1,13 @@
-import { AuthorizationError, RepositoryError } from "@domain/errors"
+import { RepositoryError } from "@domain/errors"
 import { decodeInvoice } from "@domain/bitcoin/lightning"
 import { WalletInvoicesRepository } from "@services/mongoose"
 
-export const PaymentStatusChecker = ({ paymentRequest, lookupToken }) => {
+export const PaymentStatusChecker = ({ paymentRequest }) => {
   const decodedInvoice = decodeInvoice(paymentRequest)
 
   if (decodedInvoice instanceof Error) return decodedInvoice
 
-  const { paymentHash, paymentSecret } = decodedInvoice
-
-  // TODO: Improve the following check with a non public payment secret
-  if (paymentSecret !== lookupToken) {
-    return new AuthorizationError("Invalid lookup token")
-  }
+  const { paymentHash } = decodedInvoice
 
   return {
     invoiceIsPaid: async (): Promise<boolean | RepositoryError> => {

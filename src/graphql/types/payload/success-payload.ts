@@ -1,11 +1,11 @@
 import { GT } from "@graphql/index"
-import UserError from "../abstract/error"
+import IError from "../abstract/error"
 
 const SuccessPayload = new GT.Object({
   name: "SuccessPayload",
   fields: () => ({
     errors: {
-      type: GT.NonNullList(UserError),
+      type: GT.NonNullList(IError),
     },
     success: {
       type: GT.Boolean,

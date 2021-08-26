@@ -19,8 +19,14 @@ export async function startApolloServerForCoreSchema() {
         me: isAuthenticated,
       },
       Mutation: {
+        lnInvoiceFeeProbe: isAuthenticated,
+        lnNoAmountInvoiceFeeProbe: isAuthenticated,
+
         lnInvoiceCreate: isAuthenticated,
         lnNoAmountInvoiceCreate: isAuthenticated,
+
+        lnInvoicePaymentSend: isAuthenticated,
+        lnNoAmountInvoicePaymentSend: isAuthenticated,
       },
       // Subscription: {},
     },

@@ -233,10 +233,10 @@ type LnTransaction implements Transaction {
   settlementAmount: SatAmount!
   settlementFee: SatAmount!
   createdAt: Timestamp!
-  paymentHash: LnInvoicePaymentHash!
+  paymentHash: LnPaymentHash!
 }
 
-scalar LnInvoicePaymentHash
+scalar LnPaymentHash
 
 type Query {
   me: User
@@ -263,11 +263,20 @@ enum Language {
 type Mutation {
   userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
   userLogin(input: UserLoginInput!): AuthTokenPayload!
+  lnInvoiceFeeProbe(input: LnInvoiceFeeProbeInput!): SatAmountPayload!
+  lnNoAmountInvoiceFeeProbe(input: LnNoAmountInvoiceFeeProbeInput!): SatAmountPayload!
   lnInvoiceCreate(input: LnInvoiceCreateInput!): LnInvoicePayload!
+  lnNoAmountInvoiceCreate(input: LnNoAmountInvoiceCreateInput!): LnNoAmountInvoicePayload!
+  lnInvoiceCreateOnBehalfOfRecipient(
+    input: LnInvoiceCreateOnBehalfOfRecipientInput!
+  ): LnInvoicePayload!
   lnNoAmountInvoiceCreateOnBehalfOfRecipient(
     input: LnNoAmountInvoiceCreateOnBehalfOfRecipientInput!
   ): LnNoAmountInvoicePayload!
-  lnNoAmountInvoiceCreate(input: LnNoAmountInvoiceCreateInput!): LnNoAmountInvoicePayload!
+  lnInvoicePaymentSend(input: LnInvoicePaymentInput!): LnInvoicePaymentStatusPayload!
+  lnNoAmountInvoicePaymentSend(
+    input: LnNoAmountInvoicePaymentInput!
+  ): LnInvoicePaymentStatusPayload!
 }
 
 type SuccessPayload {
@@ -299,23 +308,38 @@ An authentication code valid for a single use
 """
 scalar OneTimeAuthCode
 
+type SatAmountPayload {
+  errors: [Error!]!
+  amount: SatAmount
+}
+
+input LnInvoiceFeeProbeInput {
+  paymentRequest: LnPaymentRequest!
+}
+
+"""
+BOLT11 lightning invoice payment request with the amount included
+"""
+scalar LnPaymentRequest
+
+input LnNoAmountInvoiceFeeProbeInput {
+  paymentRequest: LnPaymentRequest!
+  amount: SatAmount!
+}
+
 type LnInvoicePayload {
   errors: [Error!]!
   invoice: LnInvoice
 }
 
 type LnInvoice {
-  paymentRequest: LnInvoicePaymentRequest!
-  paymentHash: LnInvoicePaymentHash!
-  paymentSecret: LnInvoicePaymentSecret!
+  paymentRequest: LnPaymentRequest!
+  paymentHash: LnPaymentHash!
+  paymentSecret: LnPaymentSecret!
+  satoshis: SatAmount
 }
 
-"""
-BOLT11 lightning invoice payment request with the amount included
-"""
-scalar LnInvoicePaymentRequest
-
-scalar LnInvoicePaymentSecret
+scalar LnPaymentSecret
 
 input LnInvoiceCreateInput {
   amount: SatAmount!
@@ -333,9 +357,19 @@ type LnNoAmountInvoicePayload {
 }
 
 type LnNoAmountInvoice {
-  paymentRequest: LnInvoicePaymentRequest!
-  paymentHash: LnInvoicePaymentHash!
-  paymentSecret: LnInvoicePaymentSecret!
+  paymentRequest: LnPaymentRequest!
+  paymentHash: LnPaymentHash!
+  paymentSecret: LnPaymentSecret!
+}
+
+input LnNoAmountInvoiceCreateInput {
+  memo: Memo
+}
+
+input LnInvoiceCreateOnBehalfOfRecipientInput {
+  recipient: WalletName!
+  amount: SatAmount!
+  memo: Memo
 }
 
 input LnNoAmountInvoiceCreateOnBehalfOfRecipientInput {
@@ -343,7 +377,26 @@ input LnNoAmountInvoiceCreateOnBehalfOfRecipientInput {
   memo: Memo
 }
 
-input LnNoAmountInvoiceCreateInput {
+type LnInvoicePaymentStatusPayload {
+  errors: [Error!]!
+  status: TxStatus
+}
+
+enum TxStatus {
+  PENDING
+  SUCCESS
+  FAILURE
+  ALREADY_PAID
+}
+
+input LnInvoicePaymentInput {
+  paymentRequest: LnPaymentRequest!
+  memo: Memo
+}
+
+input LnNoAmountInvoicePaymentInput {
+  paymentRequest: LnPaymentRequest!
+  amount: SatAmount!
   memo: Memo
 }
 
@@ -353,17 +406,6 @@ type Subscription {
   ): LnInvoicePaymentStatusPayload!
 }
 
-type LnInvoicePaymentStatusPayload {
-  errors: [Error!]!
-  status: InvoicePaymentStatus
-}
-
-enum InvoicePaymentStatus {
-  PENDING
-  PAID
-}
-
 input LnInvoicePaymentStatusInput {
-  paymentRequest: LnInvoicePaymentRequest!
-  lookupToken: String!
+  paymentRequest: LnPaymentRequest!
 }
