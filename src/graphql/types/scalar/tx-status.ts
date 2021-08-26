@@ -7,6 +7,7 @@ const TxStatus = new GT.Enum({
     PENDING: { value: DomainTxStatus.Pending },
     SUCCESS: { value: DomainTxStatus.Success },
     FAILURE: { value: DomainTxStatus.Failure },
+    ALREADY_PAID: { value: DomainTxStatus.AlreadyPaid },
   },
 })
 

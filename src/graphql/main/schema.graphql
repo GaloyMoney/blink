@@ -274,6 +274,9 @@ type Mutation {
     input: LnNoAmountInvoiceCreateOnBehalfOfRecipientInput!
   ): LnNoAmountInvoicePayload!
   lnInvoicePaymentSend(input: LnInvoicePaymentInput!): LnInvoicePaymentStatusPayload!
+  lnNoAmountInvoicePaymentSend(
+    input: LnNoAmountInvoicePaymentInput!
+  ): LnInvoicePaymentStatusPayload!
 }
 
 type SuccessPayload {
@@ -376,16 +379,24 @@ input LnNoAmountInvoiceCreateOnBehalfOfRecipientInput {
 
 type LnInvoicePaymentStatusPayload {
   errors: [Error!]!
-  status: InvoicePaymentStatus
+  status: TxStatus
 }
 
-enum InvoicePaymentStatus {
+enum TxStatus {
   PENDING
-  PAID
+  SUCCESS
+  FAILURE
+  ALREADY_PAID
 }
 
 input LnInvoicePaymentInput {
   paymentRequest: LnPaymentRequest!
+  memo: Memo
+}
+
+input LnNoAmountInvoicePaymentInput {
+  paymentRequest: LnPaymentRequest!
+  amount: SatAmount!
   memo: Memo
 }
 
