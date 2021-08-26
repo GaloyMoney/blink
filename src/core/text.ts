@@ -165,7 +165,9 @@ export const login = async ({
         .code.toString() === code.toString()
     ) {
       // we are in this branch if phone is a test account + code is correct
-    } else if (codes.findIndex((item) => item.code === code) === -1) {
+    } else if (
+      codes.findIndex((item) => item.code.toString() === code.toString()) === -1
+    ) {
       // this branch is both relevant for test and non-test accounts
       // for when the code is not correct
       subLogger.warn({ phone, code }, `user enter incorrect code`)
