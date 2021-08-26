@@ -5,8 +5,7 @@ import { LedgerService } from "@services/ledger"
 import { PriceService } from "@services/price"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { toLiabilitiesAccountId, LedgerError } from "@domain/ledger"
-import { LOOK_BACK } from "@core/utils"
-import { ONCHAIN_MIN_CONFIRMATIONS, BTC_NETWORK } from "@config/app"
+import { ONCHAIN_LOOK_BACK, ONCHAIN_MIN_CONFIRMATIONS, BTC_NETWORK } from "@config/app"
 import { WalletTransactionHistory } from "@domain/wallets"
 import { PartialResult } from "@app/partial-result"
 
@@ -37,7 +36,7 @@ export const getTransactionsForWallet = async (
     return PartialResult.partial(confirmedHistory.transactions, onChain)
   }
 
-  const onChainTxs = await onChain.getIncomingTransactions(LOOK_BACK)
+  const onChainTxs = await onChain.getIncomingTransactions(ONCHAIN_LOOK_BACK)
   if (onChainTxs instanceof OnChainError) {
     return PartialResult.partial(confirmedHistory.transactions, onChainTxs)
   }

@@ -6,11 +6,8 @@ import { NotificationsService } from "@services/notifications"
 import { LedgerService } from "@services/ledger"
 import { OnChainError, TxFilter, TxDecoder } from "@domain/bitcoin/onchain"
 import { toLiabilitiesAccountId } from "@domain/ledger"
-
 import { redlock } from "@core/lock"
-
-import { LOOK_BACK } from "@core/utils"
-import { ONCHAIN_MIN_CONFIRMATIONS, BTC_NETWORK } from "@config/app"
+import { ONCHAIN_LOOK_BACK, ONCHAIN_MIN_CONFIRMATIONS, BTC_NETWORK } from "@config/app"
 
 export const updateOnChainReceipt = async (
   walletId: WalletId,
@@ -29,7 +26,7 @@ export const updateOnChainReceipt = async (
   if (onChain instanceof OnChainError) {
     return onChain
   }
-  const onChainTxs = await onChain.getIncomingTransactions(LOOK_BACK)
+  const onChainTxs = await onChain.getIncomingTransactions(ONCHAIN_LOOK_BACK)
   if (onChainTxs instanceof OnChainError) {
     return onChainTxs
   }

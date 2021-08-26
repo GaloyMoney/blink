@@ -30,7 +30,8 @@ import {
 } from "../error"
 import { lockExtendOrThrow, redlock } from "../lock"
 import { UserWallet } from "../user-wallet"
-import { LoggedError, LOOK_BACK, LOOK_BACK_OUTGOING } from "../utils"
+import { LoggedError } from "../utils"
+import { ONCHAIN_LOOK_BACK, ONCHAIN_LOOK_BACK_OUTGOING } from "@config/app"
 
 export const getOnChainTransactions = async ({
   lnd,
@@ -43,7 +44,7 @@ export const getOnChainTransactions = async ({
 }) => {
   try {
     const { current_block_height } = await getHeight({ lnd })
-    const after = Math.max(0, current_block_height - (lookBack || LOOK_BACK)) // this is necessary for tests, otherwise after may be negative
+    const after = Math.max(0, current_block_height - (lookBack || ONCHAIN_LOOK_BACK)) // this is necessary for tests, otherwise after may be negative
     const { transactions } = await getChainTransactions({ lnd, after })
     return transactions.filter((tx) => incoming === !tx.is_outgoing)
   } catch (err) {
@@ -335,7 +336,7 @@ export const OnChainMixin = (superclass) =>
             const outgoingOnchainTxns = await getOnChainTransactions({
               lnd,
               incoming: false,
-              lookBack: LOOK_BACK_OUTGOING,
+              lookBack: ONCHAIN_LOOK_BACK_OUTGOING,
             })
             const [{ fee: fee_ }] = outgoingOnchainTxns.filter((tx) => tx.id === id)
             fee = fee_
