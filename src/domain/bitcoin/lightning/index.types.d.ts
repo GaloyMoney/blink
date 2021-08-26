@@ -18,6 +18,7 @@ type LnInvoice = {
   readonly paymentHash: PaymentHash
   readonly paymentSecret: PaymentSecret
   readonly paymentRequest: EncodedPaymentRequest
+  readonly satoshis: Satoshis
 }
 
 type RegisterInvoiceArgs = {

@@ -13,6 +13,7 @@ describe("wallet invoice factory methods", () => {
         paymentHash: "paymentHash" as PaymentHash,
         paymentSecret: "paymentSecret" as PaymentSecret,
         paymentRequest: "paymentRequest" as EncodedPaymentRequest,
+        satoshis: 42 as Satoshis,
       },
       pubkey: "pubkey" as Pubkey,
     }

@@ -263,6 +263,7 @@ enum Language {
 type Mutation {
   userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
   userLogin(input: UserLoginInput!): AuthTokenPayload!
+  lnInvoiceFeeProbe(input: LnInvoiceFeeProbeInput!): SatAmountPayload!
   lnInvoiceCreate(input: LnInvoiceCreateInput!): LnInvoicePayload!
   lnNoAmountInvoiceCreate(input: LnNoAmountInvoiceCreateInput!): LnNoAmountInvoicePayload!
   lnInvoiceCreateOnBehalfOfRecipient(
@@ -302,6 +303,20 @@ An authentication code valid for a single use
 """
 scalar OneTimeAuthCode
 
+type SatAmountPayload {
+  errors: [Error!]!
+  amount: SatAmount
+}
+
+input LnInvoiceFeeProbeInput {
+  paymentRequest: LnInvoicePaymentRequest!
+}
+
+"""
+BOLT11 lightning invoice payment request with the amount included
+"""
+scalar LnInvoicePaymentRequest
+
 type LnInvoicePayload {
   errors: [Error!]!
   invoice: LnInvoice
@@ -311,12 +326,8 @@ type LnInvoice {
   paymentRequest: LnInvoicePaymentRequest!
   paymentHash: LnInvoicePaymentHash!
   paymentSecret: LnInvoicePaymentSecret!
+  satoshis: SatAmount
 }
-
-"""
-BOLT11 lightning invoice payment request with the amount included
-"""
-scalar LnInvoicePaymentRequest
 
 scalar LnInvoicePaymentSecret
 

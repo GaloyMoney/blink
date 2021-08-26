@@ -19,7 +19,10 @@ export const decodeInvoice = (
   if (decodedInvoice instanceof Error) return decodedInvoice
 
   let paymentHash: PaymentHash | null = null,
-    paymentSecret: PaymentSecret | null = null
+    paymentSecret: PaymentSecret | null = null,
+    satoshis: Satoshis | null = null
+
+  satoshis = decodedInvoice.satoshis as Satoshis
 
   decodedInvoice.tags.forEach((tag) => {
     const tagError = typeof tag.data !== "string"
@@ -48,5 +51,6 @@ export const decodeInvoice = (
     paymentRequest: bolt11EncodedInvoice as EncodedPaymentRequest,
     paymentHash,
     paymentSecret,
+    satoshis,
   }
 }
