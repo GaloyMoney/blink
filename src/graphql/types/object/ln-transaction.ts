@@ -1,6 +1,6 @@
 import { GT } from "@graphql/index"
 import ITransaction from "../abstract/transaction"
-import LnInvoicePaymentHash from "../scalar/ln-invoice-payment-hash"
+import LnPaymentHash from "../scalar/ln-payment-hash"
 // import Memo from "../scalar/memo"
 import PaymentInitiationMethod from "../scalar/payment-initiation-method"
 import SatAmount from "../scalar/sat-amount"
@@ -48,7 +48,7 @@ const LnTransaction = new GT.Object({
 
     // Non-interface fields
     paymentHash: {
-      type: GT.NonNull(LnInvoicePaymentHash),
+      type: GT.NonNull(LnPaymentHash),
     },
   }),
 })

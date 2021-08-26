@@ -1,13 +1,13 @@
 import { GT } from "@graphql/index"
 
-import LnInvoicePaymentRequest from "@graphql/types/scalar/ln-invoice-payment-request"
+import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
 import SatAmountPayload from "@graphql/types/payload/sat-amount"
 import SatAmount from "@graphql/types/scalar/sat-amount"
 
 const LnNoAmountInvoiceFeeProbeInput = new GT.Input({
   name: "LnNoAmountInvoiceFeeProbeInput",
   fields: () => ({
-    paymentRequest: { type: GT.NonNull(LnInvoicePaymentRequest) },
+    paymentRequest: { type: GT.NonNull(LnPaymentRequest) },
     amount: { type: GT.NonNull(SatAmount) },
   }),
 })

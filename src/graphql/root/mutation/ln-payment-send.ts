@@ -1,13 +1,13 @@
 import { TxStatus } from "@domain/wallets"
 import { GT } from "@graphql/index"
 import LnInvoicePaymentStatusPayload from "@graphql/types/payload/ln-invoice-payment-status"
-import LnInvoicePaymentRequest from "@graphql/types/scalar/ln-invoice-payment-request"
+import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
 import Memo from "@graphql/types/scalar/memo"
 
 const LnInvoicePaymentInput = new GT.Input({
   name: "LnInvoicePaymentInput",
   fields: () => ({
-    paymentRequest: { type: GT.NonNull(LnInvoicePaymentRequest) },
+    paymentRequest: { type: GT.NonNull(LnPaymentRequest) },
     memo: { type: Memo },
   }),
 })

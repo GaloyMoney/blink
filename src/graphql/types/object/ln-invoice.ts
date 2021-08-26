@@ -1,21 +1,21 @@
 import { GT } from "@graphql/index"
 
-import LnInvoicePaymentRequest from "../scalar/ln-invoice-payment-request"
-import LnInvoicePaymentHash from "../scalar/ln-invoice-payment-hash"
-import LnInvoicePaymentSecret from "../scalar/ln-invoice-payment-secret"
+import LnPaymentRequest from "../scalar/ln-payment-request"
+import LnPaymentHash from "../scalar/ln-payment-hash"
+import LnPaymentSecret from "../scalar/ln-payment-secret"
 import SatAmount from "../scalar/sat-amount"
 
 const LnInvoice = new GT.Object({
   name: "LnInvoice",
   fields: () => ({
     paymentRequest: {
-      type: GT.NonNull(LnInvoicePaymentRequest),
+      type: GT.NonNull(LnPaymentRequest),
     },
     paymentHash: {
-      type: GT.NonNull(LnInvoicePaymentHash),
+      type: GT.NonNull(LnPaymentHash),
     },
     paymentSecret: {
-      type: GT.NonNull(LnInvoicePaymentSecret),
+      type: GT.NonNull(LnPaymentSecret),
     },
     satoshis: {
       type: SatAmount,
