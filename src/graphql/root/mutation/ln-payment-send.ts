@@ -1,3 +1,4 @@
+import { TxStatus } from "@domain/wallets"
 import { GT } from "@graphql/index"
 import LnInvoicePaymentStatusPayload from "@graphql/types/payload/ln-invoice-payment-status"
 import LnInvoicePaymentRequest from "@graphql/types/scalar/ln-invoice-payment-request"
@@ -24,7 +25,8 @@ const lnInvoicePaymentSendMutation = GT.Field({
     }
 
     try {
-      const status = await wallet.pay({ invoice: paymentRequest, memo })
+      const payReturn = await wallet.pay({ invoice: paymentRequest, memo })
+      const status = payReturn == "pending" ? TxStatus.Pending : TxStatus.Success
       return {
         errors: [],
         status,
