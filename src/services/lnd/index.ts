@@ -1,10 +1,13 @@
+import { toSats } from "@domain/bitcoin"
 import {
   decodeInvoice,
   CouldNotDecodeReturnedPaymentRequest,
   UnknownLightningServiceError,
+  LightningServiceError,
+  InvoiceNotFoundError,
 } from "@domain/bitcoin/lightning"
-import { createInvoice } from "lightning"
-import { getActiveLnd } from "./utils"
+import { createInvoice, getInvoice } from "lightning"
+import { getActiveLnd, getLndFromPubkey } from "./utils"
 
 export const LndService = (): ILightningService | LightningServiceError => {
   let lndAuth: AuthenticatedLnd, pubkey: string
@@ -38,7 +41,31 @@ export const LndService = (): ILightningService | LightningServiceError => {
     }
   }
 
+  const lookupInvoice = async ({
+    pubkey,
+    paymentHash,
+  }: {
+    pubkey: Pubkey
+    paymentHash: PaymentHash
+  }): Promise<LnLookupInvoice | LightningServiceError> => {
+    try {
+      const { lnd } = getLndFromPubkey({ pubkey })
+      const { is_confirmed, description, received } = await getInvoice({
+        lnd,
+        id: paymentHash,
+      })
+      return { isSettled: !!is_confirmed, description, sats: toSats(received) }
+    } catch (err) {
+      const invoiceNotFound = "unable to locate invoice"
+      if (err.length === 3 && err[2]?.err?.details === invoiceNotFound) {
+        return new InvoiceNotFoundError()
+      }
+      return new UnknownLightningServiceError(err)
+    }
+  }
+
   return {
     registerInvoice,
+    lookupInvoice,
   }
 }
