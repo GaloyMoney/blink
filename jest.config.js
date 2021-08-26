@@ -1,9 +1,10 @@
 module.exports = {
-  moduleFileExtensions: ["js", "json", "ts"],
+  moduleFileExtensions: ["js", "json", "ts", "gql"],
   rootDir: ".",
   roots: ["<rootDir>/test"],
   transform: {
     "^.+\\.(ts)$": "ts-jest",
+    "^.+\\.(gql)$": "@jagi/jest-transform-graphql",
   },
   testRegex: ".*\\.spec\\.ts$",
   testSequencer: "./test/jest-test-sequencer.js",
