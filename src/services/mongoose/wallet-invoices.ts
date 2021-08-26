@@ -127,7 +127,10 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
   ): Promise<boolean | RepositoryError> => {
     try {
       const result = await InvoiceUser.deleteOne({ _id: paymentHash })
-      return result.deletedCount === 1
+      if (result.deletedCount === 0) {
+        return new CouldNotFindError()
+      }
+      return true
     } catch (error) {
       return new RepositoryError(error)
     }
