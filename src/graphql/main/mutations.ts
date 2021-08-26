@@ -5,6 +5,7 @@ import UserRequestAuthCodeMutation from "@graphql/root/mutation/user-request-aut
 import LnNoAmountInvoiceCreateOnBehalfOfRecipientMutation from "@graphql/root/mutation/ln-noamount-invoice-create-on-behalf-of-recipient"
 import UserLoginMutation from "@graphql/root/mutation/user-login"
 import LnInvoiceCreateMutation from "@graphql/root/mutation/ln-invoice-create"
+import lnInvoicePaymentSendMutation from "@graphql/root/mutation/ln-payment-send"
 
 const MutationType = new GT.Object({
   name: "Mutation",
@@ -15,6 +16,7 @@ const MutationType = new GT.Object({
     lnNoAmountInvoiceCreateOnBehalfOfRecipient:
       LnNoAmountInvoiceCreateOnBehalfOfRecipientMutation,
     lnNoAmountInvoiceCreate: LnNoAmountInvoiceCreateMutation,
+    lnInvoicePaymentSend: lnInvoicePaymentSendMutation,
   }),
 })
 
