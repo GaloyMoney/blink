@@ -113,7 +113,19 @@ export const startApolloServer = async ({
         graphqlLogger.error(err)
       }
 
-      return isDev ? err : new Error("Internal server error")
+      const reportErrorToCclient =
+        isDev ||
+        ["GRAPHQL_PARSE_FAILED", "GRAPHQL_VALIDATION_FAILED", "BAD_USER_INPUT"].includes(
+          err.extensions?.code,
+        )
+
+      return reportErrorToCclient
+        ? err
+        : {
+            message: `Error processing GraphQL request: ${
+              err.extensions?.code || "INTERNAL"
+            }`,
+          }
     },
   })
 
