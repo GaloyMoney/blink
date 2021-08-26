@@ -1,6 +1,6 @@
 import { MEMO_SHARING_SATS_THRESHOLD } from "@config/app"
 import { LedgerTransactionType } from "@domain/ledger"
-import { SettlementMethod, PaymentInitiationMethod } from "@domain/wallets"
+import { SettlementMethod, PaymentInitiationMethod, TxStatus } from "@domain/wallets"
 import {
   WalletTransactionHistory,
   translateDescription,
@@ -86,7 +86,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
           type: LedgerTransactionType.Invoice,
         },
         recipientId: null,
-        pendingConfirmation: false,
+        status: TxStatus.Success,
         createdAt: timestamp,
       },
       {
@@ -103,7 +103,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
           feeUsd: 0.1,
           type: LedgerTransactionType.IntraLedger,
         },
-        pendingConfirmation: false,
+        status: TxStatus.Success,
         createdAt: timestamp,
       },
       {
@@ -120,7 +120,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
         },
         recipientId: null,
         addresses: ["address" as OnChainAddress],
-        pendingConfirmation: false,
+        status: TxStatus.Success,
         createdAt: timestamp,
       },
       {
@@ -136,7 +136,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
           type: LedgerTransactionType.OnchainReceipt,
         },
         recipientId: null,
-        pendingConfirmation: false,
+        status: TxStatus.Success,
         createdAt: timestamp,
         addresses: ["address" as OnChainAddress],
       },
@@ -240,7 +240,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
           type: LedgerTransactionType.OnchainReceipt,
         },
         recipientId: null,
-        pendingConfirmation: true,
+        status: TxStatus.Pending,
         createdAt: timestamp,
         addresses: ["userAddress1" as OnChainAddress],
       },
@@ -257,7 +257,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
           type: LedgerTransactionType.OnchainReceipt,
         },
         recipientId: null,
-        pendingConfirmation: true,
+        status: TxStatus.Pending,
         createdAt: timestamp,
         addresses: ["userAddress2" as OnChainAddress],
       },
@@ -303,7 +303,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
           type: LedgerTransactionType.OnchainReceipt,
         },
         recipientId: null,
-        pendingConfirmation: true,
+        status: TxStatus.Pending,
         createdAt: timestamp,
         addresses: ["userAddress1" as OnChainAddress],
       },
