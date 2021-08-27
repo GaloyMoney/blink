@@ -35,9 +35,10 @@ const updatePendingLightningInvoices = async () => {
         walletId,
         index,
       )
-      const user = await User.findOne({ _id: walletId })
-      const userWallet = await WalletFactory({ user, logger })
-      await userWallet.updatePendingInvoices()
+      await Wallets.updatePendingInvoices({
+        walletId,
+        logger,
+      })
     },
   })
 

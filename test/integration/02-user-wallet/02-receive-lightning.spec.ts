@@ -1,4 +1,5 @@
 import { ledger } from "@services/mongodb"
+import { baseLogger } from "@services/logger"
 import { getHash } from "@core/utils"
 import { checkIsBalanced, getUserWallet, lndOutside1, pay } from "test/helpers"
 import { MEMO_SHARING_SATS_THRESHOLD } from "@config/app"
@@ -43,9 +44,19 @@ describe("UserWallet - Lightning", () => {
 
     await pay({ lnd: lndOutside1, request: invoice })
 
-    expect(await userWallet1.updatePendingInvoice({ hash })).toBeTruthy()
-    // second request must not throw an exception
-    expect(await userWallet1.updatePendingInvoice({ hash })).toBeTruthy()
+    expect(
+      await Wallets.updatePendingInvoiceByPaymentHash({
+        paymentHash: hash as PaymentHash,
+        logger: baseLogger,
+      }),
+    ).not.toBeInstanceOf(Error)
+    // should be idempotent (not return error when called again)
+    expect(
+      await Wallets.updatePendingInvoiceByPaymentHash({
+        paymentHash: hash as PaymentHash,
+        logger: baseLogger,
+      }),
+    ).not.toBeInstanceOf(Error)
 
     const dbTx = await ledger.getTransactionByHash(hash)
     expect(dbTx.sats).toBe(sats)
@@ -83,9 +94,19 @@ describe("UserWallet - Lightning", () => {
 
     await pay({ lnd: lndOutside1, request: invoice, tokens: sats })
 
-    expect(await userWallet1.updatePendingInvoice({ hash })).toBeTruthy()
-    // second request must not throw an exception
-    expect(await userWallet1.updatePendingInvoice({ hash })).toBeTruthy()
+    expect(
+      await Wallets.updatePendingInvoiceByPaymentHash({
+        paymentHash: hash as PaymentHash,
+        logger: baseLogger,
+      }),
+    ).not.toBeInstanceOf(Error)
+    // should be idempotent (not return error when called again)
+    expect(
+      await Wallets.updatePendingInvoiceByPaymentHash({
+        paymentHash: hash as PaymentHash,
+        logger: baseLogger,
+      }),
+    ).not.toBeInstanceOf(Error)
 
     const dbTx = await ledger.getTransactionByHash(hash)
     expect(dbTx.sats).toBe(sats)
@@ -115,7 +136,12 @@ describe("UserWallet - Lightning", () => {
 
     const hash = getHash(invoice)
     await pay({ lnd: lndOutside1, request: invoice })
-    expect(await userWallet1.updatePendingInvoice({ hash })).toBeTruthy()
+    expect(
+      await Wallets.updatePendingInvoiceByPaymentHash({
+        paymentHash: hash as PaymentHash,
+        logger: baseLogger,
+      }),
+    ).not.toBeInstanceOf(Error)
 
     // check that spam memo is persisted to database
     const dbTx = await ledger.getTransactionByHash(hash)

@@ -142,7 +142,9 @@ export const LedgerService = (): ILedgerService => {
       }
 
       const entry = MainBook.entry(description)
-      entry.debit(lndAccountingPath, sats, metadata)
+      entry
+        .credit(liabilitiesAccountId, sats, metadata)
+        .debit(lndAccountingPath, sats, metadata)
 
       await entry.commit()
     } catch (err) {
