@@ -155,15 +155,6 @@ export class LndOfflineError extends CustomError {
   }
 }
 
-export class AuthorizationError extends CustomError {
-  constructor(
-    message = `Not authorized!`,
-    { forwardToClient = true, logger, level = "warn" as const, ...metadata },
-  ) {
-    super(message, "NOT_AUTHORIZED", { forwardToClient, logger, level, metadata })
-  }
-}
-
 export class IPBlacklistedError extends CustomError {
   constructor(
     message: string,

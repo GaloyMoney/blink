@@ -17,8 +17,8 @@ import { baseLogger } from "@services/logger"
 import { redis } from "@services/redis"
 import { User } from "@services/mongoose/schema"
 
-import { AuthorizationError, IPBlacklistedError } from "@core/error"
-import { isDev, updateIPDetails, isIPBlacklisted } from "@core/utils"
+import { IPBlacklistedError } from "@core/error"
+import { updateIPDetails, isIPBlacklisted } from "@core/utils"
 import { WalletFactory } from "@core/wallet-factory"
 
 const graphqlLogger = baseLogger.child({
@@ -29,17 +29,11 @@ const ipConfig = getIpConfig()
 const helmetConfig = getHelmetConfig()
 
 export const isAuthenticated = rule({ cache: "contextual" })((parent, args, ctx) => {
-  if (ctx.uid === null) {
-    throw new AuthorizationError(undefined, {
-      logger: graphqlLogger,
-      request: ctx.request.body,
-    })
-  }
-  return true
+  return ctx.uid !== null ? true : "NOT_AUTHENTICATED"
 })
 
 export const isEditor = rule({ cache: "contextual" })((parent, args, ctx) => {
-  return ctx.user.role === "editor"
+  return ctx.user.role === "editor" ? true : "NOT_AUTHORIZED"
 })
 
 export const startApolloServer = async ({
@@ -113,18 +107,26 @@ export const startApolloServer = async ({
         graphqlLogger.error(err)
       }
 
+      // GraphQL shield seems to have a bug around throwing a custom ApolloError
+      // This is a workaround for now
+      const isSheildError = ["NOT_AUTHENTICATED", "NOT_AUTHORIZED"].includes(err.message)
+
       const reportErrorToCclient =
-        isDev ||
         ["GRAPHQL_PARSE_FAILED", "GRAPHQL_VALIDATION_FAILED", "BAD_USER_INPUT"].includes(
           err.extensions?.code,
-        )
+        ) || isSheildError
+
+      const reportedError = {
+        message: err.message,
+        locations: err.locations,
+        path: err.path,
+        code: isSheildError ? err.message : err.extensions?.code,
+      }
 
       return reportErrorToCclient
-        ? err
+        ? reportedError
         : {
-            message: `Error processing GraphQL request: ${
-              err.extensions?.code || "INTERNAL"
-            }`,
+            message: `Error processing GraphQL request ${reportedError.code}`,
           }
     },
   })
