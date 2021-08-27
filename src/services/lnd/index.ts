@@ -47,14 +47,14 @@ export const LndService = (): ILightningService | LightningServiceError => {
   }: {
     pubkey: Pubkey
     paymentHash: PaymentHash
-  }): Promise<LnLookupInvoice | LightningServiceError> => {
+  }): Promise<LnInvoiceLookup | LightningServiceError> => {
     try {
       const { lnd } = getLndFromPubkey({ pubkey })
       const { is_confirmed, description, received } = await getInvoice({
         lnd,
         id: paymentHash,
       })
-      return { isSettled: !!is_confirmed, description, sats: toSats(received) }
+      return { isSettled: !!is_confirmed, description, received: toSats(received) }
     } catch (err) {
       const invoiceNotFound = "unable to locate invoice"
       if (err.length === 3 && err[2]?.err?.details === invoiceNotFound) {

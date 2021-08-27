@@ -22,10 +22,10 @@ type RouteHint = {
   nodePubkey: Pubkey
 }
 
-type LnLookupInvoice = {
+type LnInvoiceLookup = {
   readonly isSettled: boolean
   readonly description: string
-  readonly sats: Satoshis
+  readonly received: Satoshis
 }
 
 type LnInvoice = {
@@ -59,5 +59,5 @@ interface ILightningService {
   }: {
     pubkey: Pubkey
     paymentHash: PaymentHash
-  }): Promise<LnLookupInvoice | LightningServiceError>
+  }): Promise<LnInvoiceLookup | LightningServiceError>
 }

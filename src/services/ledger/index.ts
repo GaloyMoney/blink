@@ -124,57 +124,25 @@ export const LedgerService = (): ILedgerService => {
     liabilitiesAccountId,
     paymentHash,
     description,
-    currencies,
-    fee,
     sats,
-    price,
-  }: {
-    liabilitiesAccountId: LiabilitiesAccountId
-    paymentHash: PaymentHash
-    description: string
-    currencies: Currencies
-    fee: Satoshis
-    sats: Satoshis
-    price: number
-  }): Promise<void | LedgerError> => {
+    fee,
+    usd,
+    usdFee,
+  }: ReceiveLnTxArgs): Promise<void | LedgerError> => {
     try {
       const metadata = {
         type: LedgerTransactionType.Invoice,
         pending: false,
         hash: paymentHash,
         fee,
-        feeUsd: fee * price,
+        feeUsd: usdFee,
         sats,
-        usd: sats * price,
+        usd,
+        currency: "BTC",
       }
-
-      const ratioBtc = currencies.find((c) => c.id === "BTC")?.ratio
-      const ratioUsd = currencies.find((c) => c.id === "USD")?.ratio
-      assert((ratioBtc || 0) + (ratioUsd || 0) == 1)
 
       const entry = MainBook.entry(description)
-      entry.debit(lndAccountingPath, sats, { ...metadata, currency: "BTC" })
-
-      if (ratioBtc) {
-        const satsPortionInBtc = sats * ratioBtc
-        entry.credit(liabilitiesAccountId, satsPortionInBtc, {
-          ...metadata,
-          currency: "BTC",
-        })
-      }
-
-      if (ratioUsd) {
-        const satsPortionInUsd = sats * ratioUsd
-        // TODO: add spread
-        const usdEquivalent = satsPortionInUsd * price
-
-        const dealerPath = await accounts.dealerAccountPath()
-
-        entry.credit(dealerPath, satsPortionInUsd, { ...metadata, currency: "BTC" })
-        entry
-          .credit(liabilitiesAccountId, usdEquivalent, { ...metadata, currency: "USD" })
-          .debit(dealerPath, usdEquivalent, { ...metadata, currency: "USD" })
-      }
+      entry.debit(lndAccountingPath, sats, metadata)
 
       await entry.commit()
     } catch (err) {
