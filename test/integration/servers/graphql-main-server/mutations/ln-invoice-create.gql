@@ -1,0 +1,12 @@
+mutation LnInvoiceCreate($input: LnInvoiceCreateInput!) {
+  lnInvoiceCreate(input: $input) {
+    errors {
+      message
+    }
+    invoice {
+      paymentRequest
+      paymentHash
+      paymentSecret
+    }
+  }
+}

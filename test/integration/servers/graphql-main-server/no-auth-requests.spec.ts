@@ -5,9 +5,8 @@ import { createTestClient } from "apollo-server-integration-testing"
 import { startApolloServerForCoreSchema } from "@servers/graphql-main-server"
 import * as jwt from "jsonwebtoken"
 
-import USER_REQUEST_AUTH_CODE from "./graphql-main-server/mutations/user-request-auth-code.gql"
-import USER_LOGIN from "./graphql-main-server/mutations/user-login.gql"
-import LN_NO_AMOUNT_INVOICE_CREATE from "./graphql-main-server/mutations/ln-no-amount-invoice-create.gql"
+import USER_REQUEST_AUTH_CODE from "./mutations/user-request-auth-code.gql"
+import USER_LOGIN from "./mutations/user-login.gql"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
@@ -135,31 +134,6 @@ describe("graphql", () => {
       expect(result.data.userLogin.errors).toEqual(
         expect.arrayContaining([expect.objectContaining({ message })]),
       )
-    })
-  })
-
-  describe("lnNoAmountInvoiceCreate", () => {
-    const mutation = LN_NO_AMOUNT_INVOICE_CREATE
-
-    beforeAll(async () => {
-      const input = { phone, code: correctCode }
-      const result = await mutate(USER_LOGIN, { variables: { input } })
-      const token = jwt.verify(result.data.userLogin.authToken, `${JWT_SECRET}`)
-      // mock jwt middleware
-      setOptions({ request: { token } })
-    })
-
-    afterAll(async () => {
-      setOptions({ request: { token: null } })
-    })
-
-    it("returns a valid lightning invoice", async () => {
-      const input = { memo: "This is a lightning invoice" }
-      const result = await mutate(mutation, { variables: { input } })
-      const { invoice } = result.data.lnNoAmountInvoiceCreate
-      expect(invoice).toHaveProperty("paymentRequest")
-      expect(invoice).toHaveProperty("paymentHash")
-      expect(invoice).toHaveProperty("paymentSecret")
     })
   })
 })
