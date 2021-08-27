@@ -37,15 +37,9 @@ const LnInvoiceCreateMutation = GT.Field({
       return { errors: [{ message: lnInvoice.message || lnInvoice.name }] } // TODO: refine error
     }
 
-    const { paymentRequest, paymentHash, paymentSecret } = lnInvoice
-
     return {
       errors: [],
-      invoice: {
-        paymentRequest,
-        paymentHash,
-        paymentSecret,
-      },
+      invoice: lnInvoice,
     }
   },
 })
