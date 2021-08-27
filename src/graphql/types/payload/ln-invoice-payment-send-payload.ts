@@ -9,7 +9,7 @@ const LnInvoicePaymentSendPayload = new GT.Object({
     errors: {
       type: GT.NonNullList(IError),
     },
-    result: { type: LnPaymentSendResult },
+    status: { type: LnPaymentSendResult },
   }),
 })
 

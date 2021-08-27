@@ -1,5 +1,5 @@
 import { GT } from "@graphql/index"
-import LnInvoicePaymentStatusPayload from "@graphql/types/payload/ln-invoice-payment-status"
+import LnInvoicePaymentSendPayload from "@graphql/types/payload/ln-invoice-payment-send-payload"
 import LnIPaymentRequest from "@graphql/types/scalar/ln-payment-request"
 import Memo from "@graphql/types/scalar/memo"
 import SatAmount from "@graphql/types/scalar/sat-amount"
@@ -14,7 +14,7 @@ const LnNoAmountInvoicePaymentInput = new GT.Input({
 })
 
 const LnNoAmountInvoicePaymentSendMutation = GT.Field({
-  type: GT.NonNull(LnInvoicePaymentStatusPayload),
+  type: GT.NonNull(LnInvoicePaymentSendPayload),
   args: {
     input: { type: GT.NonNull(LnNoAmountInvoicePaymentInput) },
   },
