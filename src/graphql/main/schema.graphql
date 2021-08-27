@@ -317,6 +317,9 @@ type MobileVersions {
 }
 
 type Mutation {
+  userQuizQuestionsUpdateCompleted(
+    input: UserQuizQuestionsUpdateCompletedInput!
+  ): UserQuizQuestionsUpdateCompletedPayload!
   userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
   userLogin(input: UserLoginInput!): AuthTokenPayload!
   deviceNotificationTokenCreate(
@@ -343,6 +346,15 @@ type Mutation {
   intraLedgerPaymentSend(
     input: IntraLedgerPaymentSendInput!
   ): LnInvoicePaymentSendPayload!
+}
+
+type UserQuizQuestionsUpdateCompletedPayload {
+  errors: [Error!]!
+  userQuizQuestions: UserQuizQuestion
+}
+
+input UserQuizQuestionsUpdateCompletedInput {
+  ids: [ID!]!
 }
 
 type SuccessPayload {
