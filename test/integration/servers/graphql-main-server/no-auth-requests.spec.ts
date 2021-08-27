@@ -11,13 +11,13 @@ import USER_LOGIN from "./mutations/user-login.gql"
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
-let apolloServer, httpServer, mutate, setOptions, correctCode
+let apolloServer, httpServer, mutate, correctCode
 const { phone, code } = yamlConfig.test_accounts[9]
 
 beforeAll(async () => {
   correctCode = `${code}`
   ;({ apolloServer, httpServer } = await startApolloServerForCoreSchema())
-  ;({ mutate, setOptions } = createTestClient({ apolloServer }))
+  ;({ mutate } = createTestClient({ apolloServer }))
   await sleep(2500)
 })
 
