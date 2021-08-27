@@ -23,7 +23,7 @@ const LnInvoiceFeeProbeMutation = GT.Field({
     }
 
     try {
-      const feeSatAmount = wallet.getLightningFee({
+      const feeSatAmount = await wallet.getLightningFee({
         invoice: paymentRequest,
       })
       // TODO: validate feeSatAmount
