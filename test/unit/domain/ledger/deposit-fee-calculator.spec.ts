@@ -6,13 +6,13 @@ describe("DepositFeeCalculator", () => {
     it("applies a depositFeeRatio", () => {
       const depositedAmount = toSats(100)
       const calculator = DepositFeeCalculator(depositedAmount)
-      const depositFeeRatio = 0.02
+      const depositFeeRatio = 0.02 as DepositFeeRatio
       const fee = calculator.onChainDepositFee(depositFeeRatio)
       expect(fee).toEqual(2)
     })
   })
-  describe("lnDepositFee",() => {
-    it("is free",() => {
+  describe("lnDepositFee", () => {
+    it("is free", () => {
       const depositedAmount = toSats(100)
       const calculator = DepositFeeCalculator(depositedAmount)
       const fee = calculator.lnDepositFee()

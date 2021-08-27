@@ -54,10 +54,10 @@ type ReceiveLnTxArgs = {
   liabilitiesAccountId: LiabilitiesAccountId
   paymentHash: PaymentHash
   description: string
-  currencies: Currencies
-  fee: Satoshis
   sats: Satoshis
-  price: number
+  fee: Satoshis
+  usd: number
+  usdFee: number
 }
 
 type DepositFeeCalculator = {

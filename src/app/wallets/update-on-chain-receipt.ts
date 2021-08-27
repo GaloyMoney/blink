@@ -1,11 +1,10 @@
 import { WalletsRepository } from "@services/mongoose"
-import { toSats } from "@domain/bitcoin"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { PriceService } from "@services/price"
 import { NotificationsService } from "@services/notifications"
-import { LedgerService, DepositFeeCalculator } from "@services/ledger"
+import { LedgerService } from "@services/ledger"
 import { OnChainError, TxDecoder } from "@domain/bitcoin/onchain"
-import { toLiabilitiesAccountId } from "@domain/ledger"
+import { toLiabilitiesAccountId, DepositFeeCalculator } from "@domain/ledger"
 import { LockService } from "@services/lock"
 import { ONCHAIN_LOOK_BACK, ONCHAIN_MIN_CONFIRMATIONS, BTC_NETWORK } from "@config/app"
 
