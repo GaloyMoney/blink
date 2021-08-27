@@ -3,8 +3,8 @@ import IError from "../abstract/error"
 
 import LnPaymentSendResult from "../scalar/ln-payment-send-result"
 
-const LnInvoicePaymentPaymentSendPayload = new GT.Object({
-  name: "LnInvoicePaymentPaymentSendPayload",
+const LnInvoicePaymentSendPayload = new GT.Object({
+  name: "LnInvoicePaymentSendPayload",
   fields: () => ({
     errors: {
       type: GT.NonNullList(IError),
@@ -13,4 +13,4 @@ const LnInvoicePaymentPaymentSendPayload = new GT.Object({
   }),
 })
 
-export default LnInvoicePaymentPaymentSendPayload
+export default LnInvoicePaymentSendPayload

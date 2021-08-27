@@ -273,7 +273,7 @@ type Mutation {
   lnNoAmountInvoiceCreateOnBehalfOfRecipient(
     input: LnNoAmountInvoiceCreateOnBehalfOfRecipientInput!
   ): LnNoAmountInvoicePayload!
-  lnInvoicePaymentSend(input: LnInvoicePaymentInput!): LnInvoicePaymentPaymentSendPayload!
+  lnInvoicePaymentSend(input: LnInvoicePaymentInput!): LnInvoicePaymentSendPayload!
   lnNoAmountInvoicePaymentSend(
     input: LnNoAmountInvoicePaymentInput!
   ): LnInvoicePaymentStatusPayload!
@@ -377,7 +377,7 @@ input LnNoAmountInvoiceCreateOnBehalfOfRecipientInput {
   memo: Memo
 }
 
-type LnInvoicePaymentPaymentSendPayload {
+type LnInvoicePaymentSendPayload {
   errors: [Error!]!
   result: LnPaymentSendResult
 }
