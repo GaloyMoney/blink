@@ -246,8 +246,8 @@ type User {
   id: ID!
   phone: Phone!
   language: Language!
-  level: AccountLevel
-  status: AccountStatus
+  contacts: [Contact!]!
+  quizQuestions: [UserQuizQuestion!]!
   createdAt: Timestamp!
   defaultAccount: Account!
 }
@@ -262,14 +262,29 @@ enum Language {
   ES_SV
 }
 
-enum AccountLevel {
-  ONE
-  TWO
+type Contact {
+  id: ID!
+  name: FullName
+  transactionsCount: Int!
 }
 
-enum AccountStatus {
-  LOCKED
-  ACTIVE
+"""
+Full name of an API user
+"""
+scalar FullName
+
+type UserQuizQuestion {
+  question: QuizQuestion!
+  completed: Boolean!
+}
+
+type QuizQuestion {
+  id: ID!
+
+  """
+  The earn reward in Satoshis for the quiz question
+  """
+  earnAmount: SatAmount!
 }
 
 type Mutation {
@@ -333,8 +348,8 @@ type UserDetails {
   id: ID!
   phone: Phone!
   language: Language!
-  level: AccountLevel
-  status: AccountStatus
+  contacts: [Contact!]!
+  quizQuestions: [UserQuizQuestion!]!
   createdAt: Timestamp!
 }
 
@@ -346,11 +361,6 @@ input UserUpdateContactByUsernameInput {
   username: String!
   fullName: FullName!
 }
-
-"""
-Full name of an API user
-"""
-scalar FullName
 
 type SatAmountPayload {
   errors: [Error!]!

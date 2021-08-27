@@ -13,9 +13,11 @@ type MerchantUser {
   id: ID!
   phone: Phone!
   language: Language!
+  contacts: [Contact!]!
+  quizQuestions: [UserQuizQuestion!]!
+  createdAt: Timestamp!
   level: AccountLevel
   status: AccountStatus
-  createdAt: Timestamp!
   title: String
   coordinates: Coordinates
 }
@@ -30,15 +32,45 @@ enum Language {
   ES_SV
 }
 
-enum AccountStatus {
-  LOCKED
-  ACTIVE
+type Contact {
+  id: ID!
+  name: FullName
+  transactionsCount: Int!
 }
+
+"""
+Full name of an API user
+"""
+scalar FullName
+
+type UserQuizQuestion {
+  question: QuizQuestion!
+  completed: Boolean!
+}
+
+type QuizQuestion {
+  id: ID!
+
+  """
+  The earn reward in Satoshis for the quiz question
+  """
+  earnAmount: SatAmount!
+}
+
+"""
+(Positive) Satoshi amount (i.g. quiz earning)
+"""
+scalar SatAmount
 
 """
 Date field, serialized as the number of milliseconds since the Unix Epoch
 """
 scalar Timestamp
+
+enum AccountStatus {
+  LOCKED
+  ACTIVE
+}
 
 type Coordinates {
   longitude: Float!

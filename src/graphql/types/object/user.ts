@@ -9,27 +9,25 @@ import AccountLevel from "../scalar/account-level"
 import AccountStatus from "../scalar/account-status"
 import Coordinates from "./coordinates"
 
-// import Contact from "./contact"
-// import UserQuizQuestion from "./user-quiz-question"
+import Contact from "./contact"
+import UserQuizQuestion from "./user-quiz-question"
 
 const mainUserFields = () => ({
   id: { type: GT.NonNullID },
   phone: { type: GT.NonNull(Phone) },
   language: { type: GT.NonNull(Language) },
-  level: { type: AccountLevel },
-  status: { type: AccountStatus },
 
-  // contacts: {
-  //   type: GT.NonNullList(Contact), // TODO: Make it a Connection Interface
-  // },
+  contacts: {
+    type: GT.NonNullList(Contact), // TODO: Make it a Connection Interface
+  },
 
-  // quizQuestions: {
-  //   type: GT.NonNullList(UserQuizQuestion),
-  // },
+  quizQuestions: {
+    type: GT.NonNullList(UserQuizQuestion),
+  },
 
   createdAt: {
     type: GT.NonNull(Timestamp),
-    resolve: (source) => source.created_at,
+    resolve: (source) => source.createdAt ?? source.created_at, // TODO: Get rid of this resolver
   },
 })
 
@@ -45,6 +43,8 @@ export const MerchantUser = new GT.Object({
   name: "MerchantUser",
   fields: () => ({
     ...mainUserFields(),
+    level: { type: AccountLevel },
+    status: { type: AccountStatus },
     title: {
       type: GT.String,
     },
