@@ -11,6 +11,7 @@ import LN_INVOICE_CREATE from "./mutations/ln-invoice-create.gql"
 import LN_INVOICE_FEE_PROBE from "./mutations/ln-invoice-fee-probe.gql"
 import LN_NO_AMOUNT_INVOICE_FEE_PROBE from "./mutations/ln-no-amount-invoice-fee-probe.gql"
 import LN_INVOICE_PAYMENT_SEND from "./mutations/ln-invoice-payment-send.gql"
+import LN_NO_AMOUNT_INVOICE_PAYMENT_SEND from "./mutations/ln-no-amount-invoice-payment-send.gql"
 import { createInvoice, lndOutside2 } from "test/helpers"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
@@ -211,6 +212,32 @@ describe("graphql", () => {
       const input = { paymentRequest }
       const result = await mutate(mutation, { variables: { input } })
       const { status, errors } = result.data.lnInvoicePaymentSend
+      expect(errors).toHaveLength(0)
+      expect(status).toBe("SUCCESS")
+    })
+  })
+
+  describe("lnNoAmountInvoicePaymentSend", () => {
+    const mutation = LN_NO_AMOUNT_INVOICE_PAYMENT_SEND
+    beforeAll(async () => {
+      const date = Date.now() + 1000 * 60 * 60 * 24 * 8
+      // required to avoid oldEnoughForWithdrawal validation
+      jest.spyOn(global.Date, "now").mockImplementation(() => new Date(date).valueOf())
+    })
+
+    afterAll(async () => {
+      jest.restoreAllMocks()
+    })
+
+    it("sends a payment", async () => {
+      const { request: paymentRequest } = await createInvoice({
+        lnd: lndOutside2,
+        tokens: 0,
+      })
+
+      const input = { paymentRequest, amount: 1000 }
+      const result = await mutate(mutation, { variables: { input } })
+      const { status, errors } = result.data.lnNoAmountInvoicePaymentSend
       expect(errors).toHaveLength(0)
       expect(status).toBe("SUCCESS")
     })
