@@ -27,7 +27,6 @@ beforeAll(async () => {
   const input = { phone, code: `${code}` }
   const result = await mutate(USER_LOGIN, { variables: { input } })
   const token = jwt.verify(result.data.userLogin.authToken, `${JWT_SECRET}`)
-  // console.warn(result.data.userLogin.authToken)
   // mock jwt middleware
   setOptions({ request: { token } })
 })
@@ -215,6 +214,24 @@ describe("graphql", () => {
       expect(errors).toHaveLength(0)
       expect(status).toBe("SUCCESS")
     })
+
+    it("returns error when sends a payment to self", async () => {
+      const message = "User tried to pay themselves"
+      const input = { amount: 1000, memo: "This is a lightning invoice" }
+      const res = await mutate(LN_INVOICE_CREATE, { variables: { input } })
+      const {
+        invoice: { paymentRequest },
+      } = res.data.lnInvoiceCreate
+
+      const query = { variables: { input: { paymentRequest } } }
+      const result = await mutate(mutation, query)
+      const { status, errors } = result.data.lnInvoicePaymentSend
+      expect(errors).toHaveLength(1)
+      expect(status).toBe(null)
+      expect(errors).toEqual(
+        expect.arrayContaining([expect.objectContaining({ message })]),
+      )
+    })
   })
 
   describe("lnNoAmountInvoicePaymentSend", () => {
@@ -240,6 +257,24 @@ describe("graphql", () => {
       const { status, errors } = result.data.lnNoAmountInvoicePaymentSend
       expect(errors).toHaveLength(0)
       expect(status).toBe("SUCCESS")
+    })
+
+    it("returns error when sends a payment to self", async () => {
+      const message = "User tried to pay themselves"
+      const input = { memo: "This is a lightning invoice" }
+      const res = await mutate(LN_NO_AMOUNT_INVOICE_CREATE, { variables: { input } })
+      const {
+        invoice: { paymentRequest },
+      } = res.data.lnNoAmountInvoiceCreate
+
+      const query = { variables: { input: { paymentRequest, amount: 1000 } } }
+      const result = await mutate(mutation, query)
+      const { status, errors } = result.data.lnNoAmountInvoicePaymentSend
+      expect(errors).toHaveLength(1)
+      expect(status).toBe(null)
+      expect(errors).toEqual(
+        expect.arrayContaining([expect.objectContaining({ message })]),
+      )
     })
   })
 })
