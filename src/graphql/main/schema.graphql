@@ -246,8 +246,10 @@ type User {
   id: ID!
   phone: Phone!
   language: Language!
-  defaultAccount: Account!
+  level: AccountLevel
+  status: AccountStatus
   createdAt: Timestamp!
+  defaultAccount: Account!
 }
 
 """
@@ -260,9 +262,23 @@ enum Language {
   ES_SV
 }
 
+enum AccountLevel {
+  ONE
+  TWO
+}
+
+enum AccountStatus {
+  LOCKED
+  ACTIVE
+}
+
 type Mutation {
   userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
   userLogin(input: UserLoginInput!): AuthTokenPayload!
+  userUpdateLanguage(input: UserUpdateLanguageInput!): UserUpdateLanguagePayload!
+  userUpdateContactByUsername(
+    input: UserUpdateContactByUsernameInput!
+  ): UserUpdateLanguagePayload!
   lnInvoiceFeeProbe(input: LnInvoiceFeeProbeInput!): SatAmountPayload!
   lnNoAmountInvoiceFeeProbe(input: LnNoAmountInvoiceFeeProbeInput!): SatAmountPayload!
   lnInvoiceCreate(input: LnInvoiceCreateInput!): LnInvoicePayload!
@@ -307,6 +323,34 @@ input UserLoginInput {
 An authentication code valid for a single use
 """
 scalar OneTimeAuthCode
+
+type UserUpdateLanguagePayload {
+  errors: [Error!]!
+  user: UserDetails
+}
+
+type UserDetails {
+  id: ID!
+  phone: Phone!
+  language: Language!
+  level: AccountLevel
+  status: AccountStatus
+  createdAt: Timestamp!
+}
+
+input UserUpdateLanguageInput {
+  language: Language!
+}
+
+input UserUpdateContactByUsernameInput {
+  username: String!
+  fullName: FullName!
+}
+
+"""
+Full name of an API user
+"""
+scalar FullName
 
 type SatAmountPayload {
   errors: [Error!]!

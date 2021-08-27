@@ -1,7 +1,7 @@
 type Query {
   allLevels: [AccountLevel!]!
-  userDetailsByPhone(phone: Phone!): UserDetails!
-  userDetailsByUsername(username: WalletName!): UserDetails!
+  userDetailsByPhone(phone: Phone!): MerchantUser!
+  userDetailsByUsername(username: WalletName!): MerchantUser!
 }
 
 enum AccountLevel {
@@ -9,14 +9,15 @@ enum AccountLevel {
   TWO
 }
 
-type UserDetails {
+type MerchantUser {
   id: ID!
   phone: Phone!
+  language: Language!
   level: AccountLevel
   status: AccountStatus
+  createdAt: Timestamp!
   title: String
   coordinates: Coordinates
-  createdAt: Timestamp!
 }
 
 """
@@ -24,20 +25,25 @@ Phone number which includes country code
 """
 scalar Phone
 
+enum Language {
+  EN_US
+  ES_SV
+}
+
 enum AccountStatus {
   LOCKED
   ACTIVE
-}
-
-type Coordinates {
-  longitude: Float!
-  latitude: Float!
 }
 
 """
 Date field, serialized as the number of milliseconds since the Unix Epoch
 """
 scalar Timestamp
+
+type Coordinates {
+  longitude: Float!
+  latitude: Float!
+}
 
 """
 Unique identifier of an account wallet
@@ -88,7 +94,7 @@ scalar OneTimeAuthCode
 
 type UserDetailPayload {
   errors: [Error!]!
-  userDetails: UserDetails
+  userDetails: MerchantUser
 }
 
 input UserUpdateStatusInput {
