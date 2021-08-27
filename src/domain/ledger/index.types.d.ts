@@ -60,6 +60,11 @@ type ReceiveLnTxArgs = {
   price: number
 }
 
+type DepositFeeCalculator = {
+  onChainDepositFee(ratio: DepositFeeRatio): Satoshis
+  lnDepositFee(): Satoshis
+}
+
 interface ILedgerService {
   getLiabilityTransactions(
     liabilitiesAccountId: LiabilitiesAccountId,

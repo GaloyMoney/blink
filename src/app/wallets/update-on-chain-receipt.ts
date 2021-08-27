@@ -3,7 +3,7 @@ import { toSats } from "@domain/bitcoin"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { PriceService } from "@services/price"
 import { NotificationsService } from "@services/notifications"
-import { LedgerService } from "@services/ledger"
+import { LedgerService, DepositFeeCalculator } from "@services/ledger"
 import { OnChainError, TxDecoder } from "@domain/bitcoin/onchain"
 import { toLiabilitiesAccountId } from "@domain/ledger"
 import { LockService } from "@services/lock"
@@ -93,7 +93,7 @@ const processTxForWallet = async (
     if (!recorded) {
       for (const { sats, address } of tx.rawTx.outs) {
         if (address !== null && walletAddresses.includes(address)) {
-          const fee = toSats(Math.round(sats * wallet.depositFeeRatio))
+          const fee = DepositFeeCalculator(sats).onChainDepositFee(wallet.depositFeeRatio)
           const usd = sats * price
           const usdFee = fee * price
 
