@@ -13,7 +13,7 @@ export const updatePendingInvoices = async ({
 }: {
   walletId: WalletId
   logger: Logger
-  lock
+  lock?
 }) => {
   const invoicesRepo = WalletInvoicesRepository()
 
@@ -23,6 +23,21 @@ export const updatePendingInvoices = async ({
   for await (const walletInvoice of invoices) {
     await updatePendingInvoice({ walletInvoice, logger, lock })
   }
+}
+
+export const updatePendingInvoiceByPaymentHash = async ({
+  paymentHash,
+  logger,
+  lock,
+}: {
+  paymentHash: PaymentHash
+  logger: Logger
+  lock?
+}): Promise<void | ApplicationError> => {
+  const invoicesRepo = WalletInvoicesRepository()
+  const walletInvoice = await invoicesRepo.findByPaymentHash(paymentHash)
+  if (walletInvoice instanceof Error) return walletInvoice
+  return updatePendingInvoice({ walletInvoice, logger, lock })
 }
 
 const updatePendingInvoice = async ({

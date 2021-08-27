@@ -9,6 +9,7 @@ import { CSVAccountExport } from "./csv-account-export"
 import { getGaloyInstanceName } from "@config/app"
 import { generateSecret, verifyToken } from "node-2fa"
 import { sendNotification } from "@services/notifications/notification"
+import * as Wallets from "@app/wallets"
 
 export abstract class UserWallet {
   static lastPrice: number
@@ -33,19 +34,13 @@ export abstract class UserWallet {
     UserWallet.lastPrice = price
   }
 
-  // this needs to be here to be able to call / chain updatePending()
-  // otherwise super.updatePending() would result in an error
-  // there may be better way to architecture this?
-
-  // we need to ignore typescript warning because even is lock is not used
-  // an input needs to be set because updatePending is being overrided
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async updatePending(lock) {
-    return Promise.resolve()
-  }
-
   async getBalances(lock?): Promise<Balances> {
-    await this.updatePending(lock)
+    Wallets.updatePendingInvoices({
+      walletId: this.user.id as WalletId,
+      lock,
+      logger: this.logger,
+    })
+    this.updatePendingPayments(lock)
 
     // TODO: add effective ratio
     const balances = {
@@ -293,5 +288,9 @@ export abstract class UserWallet {
       remainingOnUsLimit: remainingLimits[1],
       remainingWithdrawalLimit: remainingLimits[2],
     }
+  }
+
+  async updatePendingPayments(lock) {
+    return Promise.resolve()
   }
 }

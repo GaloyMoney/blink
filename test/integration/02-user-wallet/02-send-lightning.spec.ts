@@ -483,10 +483,18 @@ describe("UserWallet - Lightning Pay", () => {
           expect(user1OnUsTxn[0].settlementVia).toBe("intraledger")
 
           // making request twice because there is a cancel state, and this should be re-entrant
-          expect(await walletPayer.updatePendingInvoice({ hash })).toBeTruthy()
-          expect(await walletPayee.updatePendingInvoice({ hash })).toBeTruthy()
-          expect(await walletPayer.updatePendingInvoice({ hash })).toBeTruthy()
-          expect(await walletPayee.updatePendingInvoice({ hash })).toBeTruthy()
+          expect(
+            await Wallets.updatePendingInvoiceByPaymentHash({
+              paymentHash: hash as PaymentHash,
+              logger: baseLogger,
+            }),
+          ).not.toBeInstanceOf(Error)
+          expect(
+            await Wallets.updatePendingInvoiceByPaymentHash({
+              paymentHash: hash as PaymentHash,
+              logger: baseLogger,
+            }),
+          ).not.toBeInstanceOf(Error)
         }
 
         await paymentOtherGaloyUser({
