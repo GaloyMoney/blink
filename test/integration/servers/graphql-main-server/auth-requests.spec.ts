@@ -18,7 +18,7 @@ jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price")
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
 let apolloServer, httpServer, mutate, setOptions
-const { phone, code } = yamlConfig.test_accounts[1]
+const { phone, code } = yamlConfig.test_accounts[3]
 
 beforeAll(async () => {
   ;({ apolloServer, httpServer } = await startApolloServerForCoreSchema())
@@ -205,7 +205,7 @@ describe("graphql", () => {
     it("sends a payment", async () => {
       const { request: paymentRequest } = await createInvoice({
         lnd: lndOutside2,
-        tokens: 1001,
+        tokens: 1,
       })
 
       const input = { paymentRequest }
@@ -217,7 +217,7 @@ describe("graphql", () => {
 
     it("returns error when sends a payment to self", async () => {
       const message = "User tried to pay themselves"
-      const input = { amount: 1000, memo: "This is a lightning invoice" }
+      const input = { amount: 1, memo: "This is a lightning invoice" }
       const res = await mutate(LN_INVOICE_CREATE, { variables: { input } })
       const {
         invoice: { paymentRequest },
@@ -227,7 +227,7 @@ describe("graphql", () => {
       const result = await mutate(mutation, query)
       const { status, errors } = result.data.lnInvoicePaymentSend
       expect(errors).toHaveLength(1)
-      expect(status).toBe(null)
+      expect(status).toBe("FAILURE")
       expect(errors).toEqual(
         expect.arrayContaining([expect.objectContaining({ message })]),
       )
@@ -252,7 +252,7 @@ describe("graphql", () => {
         tokens: 0,
       })
 
-      const input = { paymentRequest, amount: 1000 }
+      const input = { paymentRequest, amount: 1 }
       const result = await mutate(mutation, { variables: { input } })
       const { status, errors } = result.data.lnNoAmountInvoicePaymentSend
       expect(errors).toHaveLength(0)
@@ -267,11 +267,11 @@ describe("graphql", () => {
         invoice: { paymentRequest },
       } = res.data.lnNoAmountInvoiceCreate
 
-      const query = { variables: { input: { paymentRequest, amount: 1000 } } }
+      const query = { variables: { input: { paymentRequest, amount: 1 } } }
       const result = await mutate(mutation, query)
       const { status, errors } = result.data.lnNoAmountInvoicePaymentSend
       expect(errors).toHaveLength(1)
-      expect(status).toBe(null)
+      expect(status).toBe("FAILURE")
       expect(errors).toEqual(
         expect.arrayContaining([expect.objectContaining({ message })]),
       )
