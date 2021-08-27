@@ -1,7 +1,7 @@
 import { GT } from "@graphql/index"
 import IError from "../abstract/error"
 
-import TxStatus from "../scalar/tx-status"
+import InvoicePaymentStatus from "../scalar/invoice-payment-status"
 
 const LnInvoicePaymentStatusPayload = new GT.Object({
   name: "LnInvoicePaymentStatusPayload",
@@ -9,7 +9,7 @@ const LnInvoicePaymentStatusPayload = new GT.Object({
     errors: {
       type: GT.NonNullList(IError),
     },
-    status: { type: TxStatus },
+    status: { type: InvoicePaymentStatus },
   }),
 })
 

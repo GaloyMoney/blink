@@ -379,14 +379,12 @@ input LnNoAmountInvoiceCreateOnBehalfOfRecipientInput {
 
 type LnInvoicePaymentStatusPayload {
   errors: [Error!]!
-  status: TxStatus
+  status: InvoicePaymentStatus
 }
 
-enum TxStatus {
+enum InvoicePaymentStatus {
   PENDING
-  SUCCESS
-  FAILURE
-  ALREADY_PAID
+  PAID
 }
 
 input LnInvoicePaymentInput {
