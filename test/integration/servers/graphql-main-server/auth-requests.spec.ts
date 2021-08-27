@@ -10,13 +10,14 @@ import LN_NO_AMOUNT_INVOICE_CREATE from "./mutations/ln-no-amount-invoice-create
 import LN_INVOICE_CREATE from "./mutations/ln-invoice-create.gql"
 import LN_INVOICE_FEE_PROBE from "./mutations/ln-invoice-fee-probe.gql"
 import LN_NO_AMOUNT_INVOICE_FEE_PROBE from "./mutations/ln-no-amount-invoice-fee-probe.gql"
+import LN_INVOICE_PAYMENT_SEND from "./mutations/ln-invoice-payment-send.gql"
 import { createInvoice, lndOutside2 } from "test/helpers"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
 let apolloServer, httpServer, mutate, setOptions
-const { phone, code } = yamlConfig.test_accounts[9]
+const { phone, code } = yamlConfig.test_accounts[1]
 
 beforeAll(async () => {
   ;({ apolloServer, httpServer } = await startApolloServerForCoreSchema())
@@ -186,6 +187,32 @@ describe("graphql", () => {
       expect(errors).toEqual(
         expect.arrayContaining([expect.objectContaining({ message })]),
       )
+    })
+  })
+
+  describe("lnInvoicePaymentSend", () => {
+    const mutation = LN_INVOICE_PAYMENT_SEND
+    beforeAll(async () => {
+      const date = Date.now() + 1000 * 60 * 60 * 24 * 8
+      // required to avoid oldEnoughForWithdrawal validation
+      jest.spyOn(global.Date, "now").mockImplementation(() => new Date(date).valueOf())
+    })
+
+    afterAll(async () => {
+      jest.restoreAllMocks()
+    })
+
+    it("sends a payment", async () => {
+      const { request: paymentRequest } = await createInvoice({
+        lnd: lndOutside2,
+        tokens: 1001,
+      })
+
+      const input = { paymentRequest }
+      const result = await mutate(mutation, { variables: { input } })
+      const { status, errors } = result.data.lnInvoicePaymentSend
+      expect(errors).toHaveLength(0)
+      expect(status).toBe("SUCCESS")
     })
   })
 })
