@@ -54,6 +54,18 @@ describe("graphql", () => {
       const { invoice, errors } = result.data.lnNoAmountInvoiceCreate
       expect(errors).toHaveLength(0)
       expect(invoice).toHaveProperty("paymentRequest")
+      expect(invoice.paymentRequest.startsWith("lnbc")).toBeTruthy()
+      expect(invoice).toHaveProperty("paymentHash")
+      expect(invoice).toHaveProperty("paymentSecret")
+    })
+
+    it("returns a valid lightning invoice if memo is not passed", async () => {
+      const input = {}
+      const result = await mutate(mutation, { variables: { input } })
+      const { invoice, errors } = result.data.lnNoAmountInvoiceCreate
+      expect(errors).toHaveLength(0)
+      expect(invoice).toHaveProperty("paymentRequest")
+      expect(invoice.paymentRequest.startsWith("lnbc")).toBeTruthy()
       expect(invoice).toHaveProperty("paymentHash")
       expect(invoice).toHaveProperty("paymentSecret")
     })
@@ -68,8 +80,46 @@ describe("graphql", () => {
       const { invoice, errors } = result.data.lnInvoiceCreate
       expect(errors).toHaveLength(0)
       expect(invoice).toHaveProperty("paymentRequest")
+      expect(invoice.paymentRequest.startsWith("lnbcrt10")).toBeTruthy()
       expect(invoice).toHaveProperty("paymentHash")
       expect(invoice).toHaveProperty("paymentSecret")
+    })
+
+    it("returns a valid lightning invoice if memo is not passed", async () => {
+      const input = { amount: 1000 }
+      const result = await mutate(mutation, { variables: { input } })
+      const { invoice, errors } = result.data.lnInvoiceCreate
+      expect(errors).toHaveLength(0)
+      expect(invoice).toHaveProperty("paymentRequest")
+      expect(invoice.paymentRequest.startsWith("lnbcrt10")).toBeTruthy()
+      expect(invoice).toHaveProperty("paymentHash")
+      expect(invoice).toHaveProperty("paymentSecret")
+    })
+
+    it("returns an error if amount is negative", async () => {
+      const message = "Invalid value for SatAmount"
+      const input = { amount: -1, memo: "This is a lightning invoice" }
+      const result = await mutate(mutation, { variables: { input } })
+      const { invoice, errors } = result.data.lnInvoiceCreate
+
+      expect(errors).toHaveLength(1)
+      expect(invoice).toBe(null)
+      expect(errors).toEqual(
+        expect.arrayContaining([expect.objectContaining({ message })]),
+      )
+    })
+
+    it("returns an error if amount is zero", async () => {
+      const message = "InvalidSatoshiAmount"
+      const input = { amount: 0, memo: "This is a lightning invoice" }
+      const result = await mutate(mutation, { variables: { input } })
+      const { invoice, errors } = result.data.lnInvoiceCreate
+
+      expect(errors).toHaveLength(1)
+      expect(invoice).toBe(null)
+      expect(errors).toEqual(
+        expect.arrayContaining([expect.objectContaining({ message })]),
+      )
     })
   })
 
