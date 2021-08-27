@@ -310,6 +310,9 @@ type Coordinates {
 }
 
 type Mutation {
+  userQuizQuestionsUpdateCompleted(
+    input: UserQuizQuestionsUpdateCompletedInput!
+  ): UserQuizQuestionsUpdateCompletedPayload!
   userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
   userLogin(input: UserLoginInput!): AuthTokenPayload!
   userUpdateLanguage(input: UserUpdateLanguageInput!): UserUpdateLanguagePayload!
@@ -333,6 +336,15 @@ type Mutation {
   intraLedgerPaymentSend(
     input: IntraLedgerPaymentSendInput!
   ): LnInvoicePaymentSendPayload!
+}
+
+type UserQuizQuestionsUpdateCompletedPayload {
+  errors: [Error!]!
+  userQuizQuestions: UserQuizQuestion
+}
+
+input UserQuizQuestionsUpdateCompletedInput {
+  ids: [ID!]!
 }
 
 type SuccessPayload {
