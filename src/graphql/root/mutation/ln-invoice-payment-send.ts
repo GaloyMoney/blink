@@ -1,5 +1,5 @@
 import { GT } from "@graphql/index"
-import LnInvoicePaymentStatusPayload from "@graphql/types/payload/ln-invoice-payment-status"
+import LnInvoicePaymentSendPayload from "@graphql/types/payload/ln-invoice-payment-send-payload"
 import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
 import Memo from "@graphql/types/scalar/memo"
 
@@ -12,7 +12,7 @@ const LnInvoicePaymentInput = new GT.Input({
 })
 
 const lnInvoicePaymentSendMutation = GT.Field({
-  type: GT.NonNull(LnInvoicePaymentStatusPayload),
+  type: GT.NonNull(LnInvoicePaymentSendPayload),
   args: {
     input: { type: GT.NonNull(LnInvoicePaymentInput) },
   },
@@ -27,21 +27,16 @@ const lnInvoicePaymentSendMutation = GT.Field({
 
     try {
       const status = await wallet.pay({ invoice: paymentRequest, memo })
-      if (status instanceof Error || status == "failed") {
-        return { errors: [{ message: status.message || "Paying invoice failed" }] }
-      }
-      if (status == "success" || status == "already_paid") {
-        return {
-          errors: [],
-          status: "PAID",
-        }
+      if (status instanceof Error) {
+        return { status: "failed", errors: [{ message: status.message }] }
       }
       return {
         errors: [],
-        status: "PENDING",
+        status: "PAID",
       }
     } catch (err) {
       return {
+        status: "failed",
         errors: [{ message: err.message }],
       }
     }
