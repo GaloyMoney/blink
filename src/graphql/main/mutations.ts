@@ -10,10 +10,12 @@ import LnNoAmountInvoiceFeeProbeMutation from "@graphql/root/mutation/ln-noamoun
 import lnNoAmountInvoicePaymentSendMutation from "@graphql/root/mutation/ln-noamount-invoice-payment-send"
 import UserLoginMutation from "@graphql/root/mutation/user-login"
 import UserRequestAuthCodeMutation from "@graphql/root/mutation/user-request-auth-code"
+import UserQuizQuestionsUpdateCompletedMutation from "@graphql/root/mutation/user-quiz-questions-update-completed"
 
 const MutationType = new GT.Object({
   name: "Mutation",
   fields: () => ({
+    userQuizQuestionsUpdateCompleted: UserQuizQuestionsUpdateCompletedMutation,
     userRequestAuthCode: UserRequestAuthCodeMutation,
     userLogin: UserLoginMutation,
 

@@ -261,6 +261,9 @@ enum Language {
 }
 
 type Mutation {
+  userQuizQuestionsUpdateCompleted(
+    input: UserQuizQuestionsUpdateCompletedInput!
+  ): UserQuizQuestionsUpdateCompletedPayload!
   userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
   userLogin(input: UserLoginInput!): AuthTokenPayload!
   lnInvoiceFeeProbe(input: LnInvoiceFeeProbeInput!): SatAmountPayload!
@@ -277,6 +280,29 @@ type Mutation {
   lnNoAmountInvoicePaymentSend(
     input: LnNoAmountInvoicePaymentInput!
   ): LnInvoicePaymentStatusPayload!
+}
+
+type UserQuizQuestionsUpdateCompletedPayload {
+  errors: [Error!]!
+  userQuizQuestions: UserQuizQuestion
+}
+
+type UserQuizQuestion {
+  question: QuizQuestion!
+  completed: Boolean!
+}
+
+type QuizQuestion {
+  id: ID!
+
+  """
+  The earn reward in Satoshis for the quiz question
+  """
+  earnAmount: SatAmount!
+}
+
+input UserQuizQuestionsUpdateCompletedInput {
+  ids: [ID!]!
 }
 
 type SuccessPayload {
