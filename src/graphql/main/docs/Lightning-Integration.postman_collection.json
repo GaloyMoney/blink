@@ -1,0 +1,337 @@
+{
+	"info": {
+		"_postman_id": "f6e5a039-4e74-4672-88e3-645cf075e5bb",
+		"name": "Lightning Integration",
+		"description": "# Overview\nThe API endpoints are\n\ntestnet: `https://api.testnet.galoy.io/graphql`\n\nmainnet: `https://api.mainnet.galoy.io/graphql`\n\n# Authentication\nTo get a valid JWT, use `userRequestAuthCode` and `userLogin`.\n\nAll other methods require a JWT set in the header as a bearer token - `Authorization: Bearer`",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "mutations",
+			"item": [
+				{
+					"name": "userRequestAuthCode",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation userRequestAuthCode ($input: UserRequestAuthCodeInput!) {\n    userRequestAuthCode (input: $input) {\n        errors {\n            message\n            path\n        }\n        success\n    }\n}",
+								"variables": "{\n  \"input\": {\n    \"phone\": \"{{phone}}\"\n  }\n}"
+							}
+						},
+						"url": {
+							"raw": "{{url}}",
+							"host": [
+								"{{url}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "userLogin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var resp = JSON.parse(responseBody);",
+									"",
+									"pm.collectionVariables.set(\"authToken\", resp.data.userLogin.authToken);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation userLogin ($input: UserLoginInput!) {\n    userLogin (input: $input) {\n        errors {\n            message\n            path\n        }\n        authToken\n    }\n}",
+								"variables": "{\n  \"input\": {\n    \"phone\": \"{{phone}}\",\n    \"code\": \"{{code}}\"\n  }\n}"
+							}
+						},
+						"url": {
+							"raw": "{{url}}",
+							"host": [
+								"{{url}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "lnInvoiceCreate",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var resp = JSON.parse(responseBody);",
+									"",
+									"if (resp.data.lnInvoiceCreate.errors.length === 0) {",
+									"    pm.collectionVariables.set(\"paymentRequest\", resp.data.lnInvoiceCreate.invoice.paymentRequest);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation lnInvoiceCreate ($input: LnInvoiceCreateInput!) {\n    lnInvoiceCreate (input: $input) {\n        errors {\n            message\n            path\n        }\n        invoice {\n            paymentRequest\n            paymentHash\n            paymentSecret\n            satoshis\n        }\n    }\n}",
+								"variables": "{\n  \"input\": {\n    \"amount\": 100,\n    \"memo\": \"This is a lightning invoice\"\n  }\n}"
+							}
+						},
+						"url": {
+							"raw": "{{url}}",
+							"host": [
+								"{{url}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "lnInvoiceFeeProbe",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation lnInvoiceFeeProbe ($input: LnInvoiceFeeProbeInput!) {\n    lnInvoiceFeeProbe (input: $input) {\n        errors {\n            message\n            path\n        }\n        amount\n    }\n}",
+								"variables": "{\n  \"input\": {\n    \"paymentRequest\": \"{{paymentRequest}}\"\n  }\n}"
+							}
+						},
+						"url": {
+							"raw": "{{url}}",
+							"host": [
+								"{{url}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "lnInvoicePaymentSend",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation lnInvoicePaymentSend ($input: LnInvoicePaymentInput!) {\n    lnInvoicePaymentSend (input: $input) {\n        errors {\n            message\n            path\n        }\n        status\n    }\n}",
+								"variables": "{\n  \"input\": {\n    \"paymentRequest\": \"{{paymentRequest}}\",\n    \"memo\": \"This is a lightning invoice\"\n  }\n}"
+							}
+						},
+						"url": {
+							"raw": "{{url}}",
+							"host": [
+								"{{url}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "lnNoAmountInvoiceCreate",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var resp = JSON.parse(responseBody);",
+									"",
+									"if (resp.data.lnNoAmountInvoiceCreate.errors.length === 0) {",
+									"    pm.collectionVariables.set(\"paymentRequest\", resp.data.lnNoAmountInvoiceCreate.invoice.paymentRequest);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation lnNoAmountInvoiceCreate ($input: LnNoAmountInvoiceCreateInput!) {\n    lnNoAmountInvoiceCreate (input: $input) {\n        errors {\n            message\n            path\n        }\n        invoice {\n            paymentRequest\n            paymentHash\n            paymentSecret\n        }\n    }\n}",
+								"variables": "{\n  \"input\": {\n    \"memo\": \"This is a lightning invoice\"\n  }\n}"
+							}
+						},
+						"url": {
+							"raw": "{{url}}",
+							"host": [
+								"{{url}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "lnNoAmountInvoiceFeeProbe",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation lnNoAmountInvoiceFeeProbe ($input: LnNoAmountInvoiceFeeProbeInput!) {\n    lnNoAmountInvoiceFeeProbe (input: $input) {\n        errors {\n            message\n            path\n        }\n        amount\n    }\n}",
+								"variables": "{\n  \"input\": {\n    \"paymentRequest\": \"{{paymentRequest}}\",\n    \"amount\": 100\n  }\n}"
+							}
+						},
+						"url": {
+							"raw": "{{url}}",
+							"host": [
+								"{{url}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "lnNoAmountInvoicePaymentSend",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "mutation lnNoAmountInvoicePaymentSend ($input: LnNoAmountInvoicePaymentInput!) {\n    lnNoAmountInvoicePaymentSend (input: $input) {\n        errors {\n            message\n            path\n        }\n        status\n    }\n}",
+								"variables": "{\n  \"input\": {\n    \"paymentRequest\": \"{{paymentRequest}}\",\n    \"amount\": 100,\n    \"memo\": \"This is a lightning invoice\"\n  }\n}"
+							}
+						},
+						"url": {
+							"raw": "{{url}}",
+							"host": [
+								"{{url}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "subscriptions",
+			"item": [
+				{
+					"name": "lnInvoicePaymentStatus",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "graphql",
+							"graphql": {
+								"query": "subscription lnInvoicePaymentStatus ($input: LnInvoicePaymentStatusInput!) {\n    lnInvoicePaymentStatus (input: $input) {\n        errors {\n            message\n            path\n        }\n        status\n    }\n}",
+								"variables": "{\n  \"input\": {\n    \"paymentRequest\": \"{{paymentRequest}}\"\n  }\n}"
+							}
+						},
+						"url": {
+							"raw": "{{url}}",
+							"host": [
+								"{{url}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "url",
+			"value": ""
+		},
+		{
+			"key": "authToken",
+			"value": ""
+		},
+		{
+			"key": "paymentRequest",
+			"value": ""
+		}
+	]
+}
