@@ -11,7 +11,7 @@ const LnInvoicePaymentInput = new GT.Input({
   }),
 })
 
-const lnInvoicePaymentSendMutation = GT.Field({
+const LnInvoicePaymentSendMutation = GT.Field({
   type: GT.NonNull(LnInvoicePaymentSendPayload),
   args: {
     input: { type: GT.NonNull(LnInvoicePaymentInput) },
@@ -32,7 +32,7 @@ const lnInvoicePaymentSendMutation = GT.Field({
       }
       return {
         errors: [],
-        status: "PAID",
+        status,
       }
     } catch (err) {
       return {
@@ -43,4 +43,4 @@ const lnInvoicePaymentSendMutation = GT.Field({
   },
 })
 
-export default lnInvoicePaymentSendMutation
+export default LnInvoicePaymentSendMutation
