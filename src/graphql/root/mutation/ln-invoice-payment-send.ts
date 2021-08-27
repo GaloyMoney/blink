@@ -27,9 +27,18 @@ const lnInvoicePaymentSendMutation = GT.Field({
 
     try {
       const status = await wallet.pay({ invoice: paymentRequest, memo })
+      if (status instanceof Error || status == "failed") {
+        return { errors: [{ message: status.message || "Paying invoice failed" }] }
+      }
+      if (status == "success" || status == "already_paid") {
+        return {
+          errors: [],
+          status: "PAID",
+        }
+      }
       return {
         errors: [],
-        status,
+        status: "PENDING",
       }
     } catch (err) {
       return {
