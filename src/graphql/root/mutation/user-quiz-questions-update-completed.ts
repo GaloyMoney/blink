@@ -1,9 +1,6 @@
 import { GT } from "@graphql/index"
 
 import UserQuizQuestionsUpdateCompletedPayload from "@graphql/types/payload/user-quiz-questions-update-completed"
-import Memo from "@graphql/types/scalar/memo"
-import { addInvoice } from "@app/wallets/add-invoice-for-wallet"
-import SatAmount from "@graphql/types/scalar/sat-amount"
 
 const UserQuizQuestionsUpdateCompletedInput = new GT.Input({
   name: "UserQuizQuestionsUpdateCompletedInput",
