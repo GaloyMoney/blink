@@ -79,27 +79,13 @@ export const updateUsersPendingPayment = async ({
     await updatePendingLightningTransactions()
   }
 
-  const users = User.find({ onchain: { $exists: true, $not: { $size: 0 } } }).cursor({
-    batchSize: 100,
-  })
+  const txNumber = await Wallets.updateOnChainReceipt({ logger })
+  if (txNumber instanceof Error) {
+    logger.error({ error: txNumber }, "error updating onchain receipt")
+    return
+  }
 
-  await runInParallel({
-    iterator: users,
-    logger,
-    workers: 3,
-    processor: async (user, index) => {
-      logger.trace("updating onchain receipt for user %o in worker %d", user._id, index)
-      const result = await Wallets.updateOnChainReceipt(user.id, logger)
-      if (result instanceof Error) {
-        logger.error(
-          { userId: user.id, index },
-          "Could not updateOnChainReceipt from balance-sheet",
-        )
-      }
-    },
-  })
-
-  logger.info("finish updating onchain receipt")
+  logger.info(`finish updating onchain receipt with ${txNumber} transactions`)
 }
 
 export const getLedgerAccounts = async () => {

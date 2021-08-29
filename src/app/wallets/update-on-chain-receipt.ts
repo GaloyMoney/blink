@@ -9,8 +9,68 @@ import { toLiabilitiesAccountId } from "@domain/ledger"
 import { redlock } from "@core/lock"
 import { ONCHAIN_LOOK_BACK, ONCHAIN_MIN_CONFIRMATIONS, BTC_NETWORK } from "@config/app"
 
-export const updateOnChainReceipt = async (
-  walletId: WalletId,
+export const updateOnChainReceipt = async ({
+  scanDepth = ONCHAIN_LOOK_BACK,
+  logger,
+}: {
+  scanDepth?: number
+  logger: Logger
+}): Promise<number | ApplicationError> => {
+  const onChain = OnChainService(TxDecoder(BTC_NETWORK))
+  if (onChain instanceof OnChainError) {
+    return onChain
+  }
+
+  const onChainTxs = await onChain.getIncomingTransactions(scanDepth)
+  if (onChainTxs instanceof OnChainError) {
+    return onChainTxs
+  }
+
+  const walletRepo = WalletsRepository()
+  const logError = ({ walletId, txId, error }) => {
+    logger.error(
+      { walletId, txId, error },
+      "Could not updateOnChainReceipt from updateOnChainReceiptForWallet",
+    )
+  }
+
+  let wallets, addresses, walletId, txId, result
+  for (const tx of onChainTxs) {
+    txId = tx.rawTx.id
+
+    addresses = tx.rawTx.outs.reduce<OnChainAddress[]>((a, o) => {
+      if (o.address) a.push(o.address)
+      return a
+    }, [])
+
+    wallets = await walletRepo.findByAddresses(addresses)
+    if (wallets instanceof Error) {
+      logError({ walletId: null, txId, error: wallets })
+      continue
+    }
+
+    for (const wallet of wallets) {
+      walletId = wallet.id
+      logger.warn({ walletId, txId }, "updating onchain receipt")
+
+      try {
+        result = await updateOnChainReceiptForWallet(wallet, [tx], logger)
+        if (result instanceof Error) {
+          logError({ walletId, txId, error: result })
+        }
+      } catch (error) {
+        // TODO: handle redlock exceptions with the new return pattern
+        logError({ walletId, txId, error })
+      }
+    }
+  }
+
+  return onChainTxs.length
+}
+
+export const updateOnChainReceiptForWallet = async (
+  wallet: Wallet,
+  onChainTxs: SubmittedTransaction[],
   logger: Logger,
 ): Promise<void | ApplicationError> => {
   const notifications = NotificationsService(
@@ -22,18 +82,6 @@ export const updateOnChainReceipt = async (
     }),
   )
   const ledger = LedgerService()
-  const onChain = OnChainService(TxDecoder(BTC_NETWORK))
-  if (onChain instanceof OnChainError) {
-    return onChain
-  }
-  const onChainTxs = await onChain.getIncomingTransactions(ONCHAIN_LOOK_BACK)
-  if (onChainTxs instanceof OnChainError) {
-    return onChainTxs
-  }
-
-  const wallets = WalletsRepository()
-  const wallet = await wallets.findById(walletId)
-  if (wallet instanceof Error) return wallet
 
   const addresses = wallet.onChainAddresses()
   const filter = TxFilter({
@@ -78,7 +126,7 @@ export const updateOnChainReceipt = async (
             }
 
             await notifications.onChainTransactionReceived({
-              walletId: walletId,
+              walletId: wallet.id,
               amount: sats,
               txId: tx.rawTx.id,
             })

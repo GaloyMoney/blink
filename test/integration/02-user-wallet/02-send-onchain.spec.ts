@@ -457,7 +457,7 @@ describe("UserWallet - onChainPay", () => {
       expect(paid).toBe(true)
 
       await mineBlockAndSyncAll()
-      const result = await Wallets.updateOnChainReceipt(userWallet0.user.id, baseLogger)
+      const result = await Wallets.updateOnChainReceipt({ logger: baseLogger })
       if (result instanceof Error) {
         throw result
       }

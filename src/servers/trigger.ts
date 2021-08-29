@@ -19,8 +19,6 @@ import { User } from "@services/mongoose/schema"
 import { transactionNotification } from "@services/notifications/payment"
 import { Price } from "@core/price-impl"
 import { WalletFactory } from "@core/wallet-factory"
-import { getOnChainTransactions } from "@core/on-chain"
-import { runInParallel } from "@core/utils"
 import { ONCHAIN_MIN_CONFIRMATIONS } from "@config/app"
 import * as Wallets from "@app/wallets"
 import { WalletInvoicesRepository } from "@services/mongoose"
@@ -141,39 +139,17 @@ export async function onchainTransactionEventHandler(tx) {
   }
 }
 
-export async function onchainBlockEventhandler({ lnd, height }) {
-  const lookBack = ONCHAIN_MIN_CONFIRMATIONS + 1
-  const onchainTxns = await getOnChainTransactions({ lnd, lookBack, incoming: true })
-  const hasTransactions = onchainTxns && onchainTxns.length
-
-  if (!hasTransactions) {
-    logger.info(`no transaction to handle, skipping block ${height}`)
+export async function onchainBlockEventhandler({ height }) {
+  const scanDepth = ONCHAIN_MIN_CONFIRMATIONS + 1
+  const txNumber = await Wallets.updateOnChainReceipt({ scanDepth, logger })
+  if (txNumber instanceof Error) {
+    logger.error(
+      { error: txNumber },
+      `error updating onchain receipt for block ${height}`,
+    )
     return
   }
-
-  await runInParallel({
-    iterator: onchainTxns.values(),
-    logger,
-    workers: 5,
-    processor: async (tx, index) => {
-      logger.trace("updating onchain tx %o in worker %d", tx.id, index)
-
-      const user = await User.findOne({ "onchain.address": { $in: tx.output_addresses } })
-
-      if (user && tx.is_confirmed) {
-        logger.trace("updating onchain receipt for user %o in worker %d", user._id, index)
-        const result = await Wallets.updateOnChainReceipt(user.id, logger)
-        if (result instanceof Error) {
-          logger.error(
-            { userId: user.id, index },
-            "Could not updateOnChainReceipt from trigger",
-          )
-        }
-      }
-    },
-  })
-
-  logger.info(`finish block ${height} handler with ${onchainTxns.length} transactions`)
+  logger.info(`finish block ${height} handler with ${txNumber} transactions`)
 }
 
 export const onInvoiceUpdate = async (invoice) => {
@@ -228,7 +204,7 @@ const listenerOnchain = ({ lnd }) => {
 
   const subBlocks = subscribeToBlocks({ lnd })
   subBlocks.on("block", async ({ height }) => {
-    await onchainBlockEventhandler({ lnd, height })
+    await onchainBlockEventhandler({ height })
   })
 
   subBlocks.on("error", (err) => {
