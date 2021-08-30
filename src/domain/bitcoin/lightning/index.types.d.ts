@@ -28,6 +28,11 @@ type LnInvoiceLookup = {
   readonly received: Satoshis
 }
 
+type LnPaymentLookup = {
+  readonly isSettled: boolean
+  readonly isFailed: boolean
+}
+
 type LnInvoice = {
   readonly amount: Satoshis | null
   readonly cltvDelta: number | null
@@ -60,4 +65,13 @@ interface ILightningService {
     pubkey: Pubkey
     paymentHash: PaymentHash
   }): Promise<LnInvoiceLookup | LightningServiceError>
+  lookupPayment({
+    pubkey,
+    paymentHash,
+    logger,
+  }: {
+    pubkey: Pubkey
+    paymentHash: PaymentHash
+    logger: Logger
+  }): Promise<LnPaymentLookup | LightningServiceError>
 }
