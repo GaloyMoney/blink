@@ -18,10 +18,8 @@ import { User } from "@services/mongoose/schema"
 
 import { transactionNotification } from "@services/notifications/payment"
 import { Price } from "@core/price-impl"
-import { WalletFactory } from "@core/wallet-factory"
 import { ONCHAIN_MIN_CONFIRMATIONS } from "@config/app"
 import * as Wallets from "@app/wallets"
-import { WalletInvoicesRepository } from "@services/mongoose"
 
 const logger = baseLogger.child({ module: "trigger" })
 
