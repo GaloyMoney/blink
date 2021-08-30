@@ -1,9 +1,9 @@
 import {
   UnknownOnChainServiceError,
   OnChainServiceUnavailableError,
+  SubmittedTransaction,
 } from "@domain/bitcoin/onchain"
 import { toSats } from "@domain/bitcoin"
-import { SubmittedTransaction } from "@domain/bitcoin/onchain"
 import { getHeight, getChainTransactions, GetChainTransactionsResult } from "lightning"
 import { getActiveLnd } from "./utils"
 

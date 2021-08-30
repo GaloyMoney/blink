@@ -1,6 +1,5 @@
 import { toSats } from "@domain/bitcoin"
-import { SubmittedTransaction } from "@domain/bitcoin/onchain"
-import { TxFilter } from "@domain/bitcoin/onchain"
+import { TxFilter, SubmittedTransaction } from "@domain/bitcoin/onchain"
 
 describe("TxFilter", () => {
   it("filters greater than equal to confs", () => {
