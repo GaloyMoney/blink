@@ -212,6 +212,17 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
+  const settlePendingLiabilityTransactions = async (
+    paymentHash: PaymentHash,
+  ): Promise<boolean | LedgerServiceError> => {
+    try {
+      const result = await Transaction.updateMany({ paymentHash }, { pending: false })
+      return result.nModified > 0
+    } catch (err) {
+      return new UnknownLedgerError(err)
+    }
+  }
+
   return {
     getLiabilityTransactions,
     getPendingPayments,
@@ -219,5 +230,6 @@ export const LedgerService = (): ILedgerService => {
     isOnChainTxRecorded,
     receiveOnChainTx,
     receiveLnTx,
+    settlePendingLiabilityTransactions,
   }
 }
