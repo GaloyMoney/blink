@@ -1,5 +1,5 @@
 import { InvoiceNotFoundError } from "@domain/bitcoin/lightning"
-import { toLiabilitiesAccountId, DepositFeeCalculator } from "@domain/ledger"
+import { toLiabilitiesAccountId } from "@domain/ledger"
 import { LndService } from "@services/lnd"
 import { LedgerService } from "@services/ledger"
 import { WalletInvoicesRepository } from "@services/mongoose"
@@ -7,6 +7,7 @@ import { PriceService } from "@services/price"
 import { CouldNotFindError } from "@domain/errors"
 import { LockService } from "@services/lock"
 import { NotificationsService } from "@services/notifications"
+import { DepositFeeCalculator } from "@domain/wallets"
 
 export const updatePendingInvoices = async ({
   walletId,

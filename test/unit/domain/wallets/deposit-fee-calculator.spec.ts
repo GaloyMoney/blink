@@ -1,4 +1,4 @@
-import { DepositFeeCalculator } from "@domain/ledger"
+import { DepositFeeCalculator } from "@domain/wallets"
 import { toSats } from "@domain/bitcoin"
 
 describe("DepositFeeCalculator", () => {

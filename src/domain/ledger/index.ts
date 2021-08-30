@@ -1,5 +1,4 @@
 export * from "./errors"
-export * from "./deposit-fee-calculator"
 
 export const liabilitiesMainAccount = "Liabilities"
 
