@@ -1,4 +1,3 @@
-import { redlock } from "@core/lock"
 import { InvoiceNotFoundError } from "@domain/bitcoin/lightning"
 import { toLiabilitiesAccountId, DepositFeeCalculator } from "@domain/ledger"
 import { LndService } from "@services/lnd"
@@ -6,6 +5,7 @@ import { LedgerService } from "@services/ledger"
 import { WalletInvoicesRepository } from "@services/mongoose"
 import { PriceService } from "@services/price"
 import { CouldNotFindError } from "@domain/errors"
+import { LockService } from "@services/lock"
 
 export const updatePendingInvoices = async ({
   walletId,
@@ -14,7 +14,7 @@ export const updatePendingInvoices = async ({
 }: {
   walletId: WalletId
   logger: Logger
-  lock?
+  lock?: PaymentHashLock
 }) => {
   const invoicesRepo = WalletInvoicesRepository()
 
@@ -33,7 +33,7 @@ export const updatePendingInvoiceByPaymentHash = async ({
 }: {
   paymentHash: PaymentHash
   logger: Logger
-  lock?
+  lock?: PaymentHashLock
 }): Promise<void | ApplicationError> => {
   const invoicesRepo = WalletInvoicesRepository()
   const walletInvoice = await invoicesRepo.findByPaymentHash(paymentHash)
@@ -52,7 +52,7 @@ const updatePendingInvoice = async ({
 }: {
   walletInvoice: WalletInvoice
   logger: Logger
-  lock
+  lock?: PaymentHashLock
 }): Promise<void | ApplicationError> => {
   const lndService = LndService()
   if (lndService instanceof Error) return Error
@@ -76,7 +76,9 @@ const updatePendingInvoice = async ({
       logger.info("invoice has already been processed")
       return
     }
-    return redlock({ path: paymentHash, logger, lock }, async () => {
+
+    const lockService = LockService()
+    return lockService.lockPaymentHash({ paymentHash, logger, lock }, async () => {
       const invoiceToUpdate = await walletInvoicesRepo.findByPaymentHash(
         walletInvoice.paymentHash,
       )

@@ -13,7 +13,23 @@ export const LockService = (): ILockService => {
     }
   }
 
+  const lockPaymentHash = async <Res>(
+    {
+      paymentHash,
+      logger,
+      lock,
+    }: { paymentHash: PaymentHash; logger: Logger; lock?: PaymentHashLock },
+    f: (lock?: PaymentHashLock) => Promise<Res>,
+  ) => {
+    try {
+      return redlock({ path: paymentHash, logger, lock }, f)
+    } catch (err) {
+      return new UnknownLockServiceError(err)
+    }
+  }
+
   return {
     lockWalletId,
+    lockPaymentHash,
   }
 }
