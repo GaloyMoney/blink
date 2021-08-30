@@ -4,7 +4,7 @@ import { GT } from "@graphql/index"
 import Phone from "../types/scalar/phone"
 import WalletName from "../types/scalar/wallet-name"
 import AccountLevel from "../types/scalar/account-level"
-import { MerchantUser } from "../types/object/user"
+import { UserForAdmin } from "../types/object/user"
 
 // TODO: redo/move root fields
 const QueryType = new GT.Object({
@@ -17,7 +17,7 @@ const QueryType = new GT.Object({
       },
     },
     userDetailsByPhone: {
-      type: GT.NonNull(MerchantUser),
+      type: GT.NonNull(UserForAdmin),
       args: {
         phone: { type: GT.NonNull(Phone) },
       },
@@ -30,7 +30,7 @@ const QueryType = new GT.Object({
       },
     },
     userDetailsByUsername: {
-      type: GT.NonNull(MerchantUser),
+      type: GT.NonNull(UserForAdmin),
       args: {
         username: { type: GT.NonNull(WalletName) },
       },

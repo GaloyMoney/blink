@@ -39,8 +39,8 @@ export const UserDetails = new GT.Object({
 })
 
 // TODO: A temp type for the current admin dashboard
-export const MerchantUser = new GT.Object({
-  name: "MerchantUser",
+export const UserForAdmin = new GT.Object({
+  name: "User",
   fields: () => ({
     ...mainUserFields(),
     level: { type: AccountLevel },

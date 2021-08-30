@@ -1,7 +1,7 @@
 type Query {
   allLevels: [AccountLevel!]!
-  userDetailsByPhone(phone: Phone!): MerchantUser!
-  userDetailsByUsername(username: WalletName!): MerchantUser!
+  userDetailsByPhone(phone: Phone!): User!
+  userDetailsByUsername(username: WalletName!): User!
 }
 
 enum AccountLevel {
@@ -9,7 +9,7 @@ enum AccountLevel {
   TWO
 }
 
-type MerchantUser {
+type User {
   id: ID!
   phone: Phone!
   language: Language!
@@ -126,7 +126,7 @@ scalar OneTimeAuthCode
 
 type UserDetailPayload {
   errors: [Error!]!
-  userDetails: MerchantUser
+  userDetails: User
 }
 
 input UserUpdateStatusInput {
