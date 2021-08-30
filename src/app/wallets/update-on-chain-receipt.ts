@@ -47,7 +47,7 @@ export const updateOnChainReceipt = async ({
 
     for (const wallet of wallets) {
       const walletId = wallet.id
-      logger.warn({ walletId, txId }, "updating onchain receipt")
+      logger.trace({ walletId, txId }, "updating onchain receipt")
 
       const result = await processTxForWallet(wallet, tx, logger)
       if (result instanceof Error) {
