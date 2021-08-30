@@ -239,7 +239,12 @@ type LnTransaction implements Transaction {
 scalar LnPaymentHash
 
 type Query {
+  globals: Globals
   me: User
+}
+
+type Globals {
+  nodesIds: [String!]!
 }
 
 type User {
