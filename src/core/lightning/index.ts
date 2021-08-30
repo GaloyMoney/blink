@@ -1,7 +1,6 @@
 import assert from "assert"
 import {
   cancelHodlInvoice,
-  GetInvoiceResult,
   getPayment,
   payViaPaymentDetails,
   payViaRoutes,
@@ -9,15 +8,10 @@ import {
 import lnService from "ln-service"
 import { verifyToken } from "node-2fa"
 
+import * as Wallets from "@app/wallets"
 import { TIMEOUT_PAYMENT } from "@services/lnd/auth"
 import { WalletInvoicesRepository } from "@services/mongoose"
-import {
-  getActiveLnd,
-  getInvoiceAttempt,
-  getLndFromPubkey,
-  isMyNode,
-  validate,
-} from "@services/lnd/utils"
+import { getActiveLnd, getLndFromPubkey, isMyNode, validate } from "@services/lnd/utils"
 import { ledger } from "@services/mongodb"
 import { redis } from "@services/redis"
 import { User } from "@services/mongoose/schema"
@@ -37,7 +31,6 @@ import { lockExtendOrThrow, redlock } from "../lock"
 import { transactionNotification } from "@services/notifications/payment"
 import { UserWallet } from "../user-wallet"
 import { addContact, isInvoiceAlreadyPaidError, timeout } from "../utils"
-import { UnknownRepositoryError } from "@domain/errors"
 
 export type ITxType =
   | "invoice"
@@ -60,7 +53,11 @@ export const LightningMixin = (superclass) =>
 
     async updatePending(lock) {
       await Promise.all([
-        this.updatePendingInvoices(lock),
+        Wallets.updatePendingInvoices({
+          walletId: this.user.id as WalletId,
+          lock,
+          logger: this.logger,
+        }),
         this.updatePendingPayments(lock),
         super.updatePending(lock),
       ])
@@ -705,165 +702,5 @@ export const LightningMixin = (superclass) =>
           }
         }
       })
-    }
-
-    // return whether the invoice has been paid of not
-    async updatePendingInvoice({
-      hash,
-      lock,
-      pubkeyCached,
-    }: {
-      hash: string
-      lock
-      pubkeyCached?: string
-    }): Promise<boolean> {
-      let pubkey: string | undefined
-
-      // if a pubkey has been provided, it means the invoice has not been set as paid in mongodb
-      // so not need for a round back trip to mongodb
-      if (!pubkeyCached) {
-        let paid: boolean
-
-        const walletInvoice = await this.invoices.findByPaymentHash(hash as PaymentHash)
-        if (walletInvoice instanceof Error) {
-          this.logger.info({ hash }, "invoiceUser doesn't exist")
-          return false
-        }
-
-        ;({ paid, pubkey } = walletInvoice)
-
-        if (paid) {
-          return true
-        }
-      }
-
-      pubkey = (pubkey ?? pubkeyCached) as string
-
-      let lnd: AuthenticatedLnd
-      try {
-        ;({ lnd } = getLndFromPubkey({ pubkey }))
-      } catch (err) {
-        // TODO: send a status to the user showing the infrastructure is not fully operational
-        this.logger.warn({ pubkey, hash }, "node is offline. can't verify invoice status")
-        return false
-      }
-
-      const invoice = await getInvoiceAttempt({ lnd, id: hash })
-
-      if (!invoice) {
-        const isDeleted = this.invoices.deleteByPaymentHash(hash as PaymentHash)
-        if (isDeleted instanceof Error || !isDeleted) {
-          this.logger.error({ invoice }, "impossible to delete InvoiceUser entry")
-        }
-        return false
-      }
-
-      // TODO: we should not log/keep secret in the logs
-      this.logger.debug({ invoice, user: this.user }, "got invoice status")
-
-      if (invoice.is_confirmed) {
-        return redlock({ path: hash, logger: this.logger, lock }, async () => {
-          const lightningLogger = this.logger.child({
-            hash,
-            user: this.user._id,
-            topic: "payment",
-            protocol: "lightning",
-            transactionType: "receipt",
-            onUs: false,
-          })
-
-          const invoiceUser = await this.invoices.findByPaymentHash(hash as PaymentHash)
-
-          if (invoiceUser instanceof UnknownRepositoryError) {
-            throw new DbError("issue getting invoiceUser", {
-              logger: this.logger,
-              level: "error",
-              err: invoiceUser,
-              invoice,
-            })
-          }
-
-          if (invoiceUser instanceof Error) {
-            lightningLogger.error("invoiceUser not found")
-            return false
-          }
-
-          if (invoiceUser.paid) {
-            lightningLogger.info("invoice has already been processed")
-            return true
-          }
-
-          // TODO: use a transaction here
-          // const session = await InvoiceUser.startSession()
-          // session.withTransaction(
-
-          // OR: use a an unique index account / hash / voided
-          // may still not avoid issue from discrenpency between hash and the books
-          invoiceUser.paid = true
-          const updatedInvoice = await this.invoices.update(invoiceUser)
-          if (updatedInvoice instanceof Error) {
-            throw new DbError(`issue updating invoiceUser`, {
-              logger: this.logger,
-              level: "error",
-              err: updatedInvoice,
-              invoice,
-            })
-          }
-
-          this.logger.info(
-            { hash, user: this.user },
-            "invoice has been updated from InvoiceUser following on_us transaction",
-          )
-
-          const sats = (invoice as GetInvoiceResult).received
-
-          const metadata = {
-            hash,
-            type: "invoice",
-            pending: false,
-            ...UserWallet.getCurrencyEquivalent({ sats, fee: 0 }),
-          }
-
-          try {
-            await ledger.addLndReceipt({
-              description: (invoice as GetInvoiceResult).description,
-              payeeUser: this.user,
-              metadata,
-              sats,
-              lastPrice: UserWallet.lastPrice,
-            })
-          } catch (err) {
-            const error = `addTransactionLndReceipt failed following updating InvoiceUser to paid = true. potential inconsistency`
-            throw new DbError(error, {
-              logger: this.logger,
-              level: "fatal",
-              err,
-              invoice,
-            })
-          }
-
-          this.logger.info({ metadata, success: true }, "long standing payment succeeded")
-
-          return true
-        })
-      } else {
-        this.logger.debug({ invoice }, "invoice has not been paid")
-        return false
-      }
-    }
-
-    async updatePendingInvoices(lock) {
-      const invoices = this.invoices.findPendingByWalletId(this.user._id)
-      if (invoices instanceof Error) {
-        this.logger.error(
-          { walletId: this.user._id, error: invoices },
-          "finish updating pending invoices with error",
-        )
-        return
-      }
-
-      for await (const { paymentHash: hash, pubkey: pubkeyCached } of invoices) {
-        await this.updatePendingInvoice({ hash, lock, pubkeyCached })
-      }
     }
   }

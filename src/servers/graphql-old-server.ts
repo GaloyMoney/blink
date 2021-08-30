@@ -27,7 +27,6 @@ import { User } from "@services/mongoose/schema"
 import { addToMap, setAccountStatus, setLevel } from "@core/admin-ops"
 import { sendNotification } from "@services/notifications/notification"
 import { login, requestPhoneCode } from "@core/text"
-import { getWalletFromUsername } from "@core/wallet-factory"
 
 import { usernameExists } from "../domain/user"
 import { startApolloServer, isAuthenticated, isEditor } from "./graphql-server"

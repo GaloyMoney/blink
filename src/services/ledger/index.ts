@@ -31,7 +31,6 @@ import { Transaction } from "./schema"
 import { toSats } from "@domain/bitcoin"
 import { LedgerTransactionType } from "@domain/ledger"
 import { lndAccountingPath, bankOwnerAccountPath } from "./accounts"
-import { assert } from "console"
 
 export const LedgerService = (): ILedgerService => {
   const getLiabilityTransactions = async (
