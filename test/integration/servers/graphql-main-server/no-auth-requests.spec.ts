@@ -1,4 +1,3 @@
-import { redis } from "@services/redis"
 import { sleep } from "@core/utils"
 import { yamlConfig, JWT_SECRET } from "@config/app"
 import { createTestClient } from "apollo-server-integration-testing"
@@ -7,6 +6,7 @@ import * as jwt from "jsonwebtoken"
 
 import USER_REQUEST_AUTH_CODE from "./mutations/user-request-auth-code.gql"
 import USER_LOGIN from "./mutations/user-login.gql"
+import { clearLimiters } from "test/helpers"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
@@ -22,16 +22,12 @@ beforeAll(async () => {
 })
 
 beforeEach(async () => {
-  await clearLimiters("login")
-  await clearLimiters("failed_attempt_ip")
-  await clearLimiters("request_phone_code")
-  await clearLimiters("request_phone_code_ip")
+  await clearLimiters()
 })
 
 afterAll(async () => {
   await sleep(2500)
   await httpServer.close()
-  redis.disconnect()
 })
 
 describe("graphql", () => {
@@ -137,10 +133,3 @@ describe("graphql", () => {
     })
   })
 })
-
-const clearLimiters = async (prefix) => {
-  const keys = await redis.keys(`${prefix}:*`)
-  for (const key of keys) {
-    await redis.del(key)
-  }
-}

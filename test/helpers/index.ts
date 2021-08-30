@@ -6,6 +6,7 @@ import { generateToken } from "node-2fa"
 export * from "./bitcoin-core"
 export * from "./lightning"
 export * from "./user"
+export * from "./redis"
 
 export const amountAfterFeeDeduction = ({ amount, depositFeeRatio }) =>
   Math.round(btc2sat(amount) * (1 - depositFeeRatio))
