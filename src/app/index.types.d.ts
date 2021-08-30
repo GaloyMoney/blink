@@ -10,3 +10,4 @@ type ApplicationError =
   | LightningError
   | PriceServiceError
   | ValidationError
+  | LockServiceError
