@@ -34,7 +34,7 @@ export const WalletsRepository = (): IWalletsRepository => {
     }
   }
 
-  const findByAddresses = async (
+  const listByAddresses = async (
     addresses: string[],
   ): Promise<Wallet[] | RepositoryError> => {
     try {
@@ -51,7 +51,7 @@ export const WalletsRepository = (): IWalletsRepository => {
   return {
     findById,
     findByWalletName,
-    findByAddresses,
+    listByAddresses,
   }
 }
 

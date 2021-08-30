@@ -6,7 +6,7 @@ import { NotificationsService } from "@services/notifications"
 import { LedgerService } from "@services/ledger"
 import { OnChainError, TxFilter, TxDecoder } from "@domain/bitcoin/onchain"
 import { toLiabilitiesAccountId } from "@domain/ledger"
-import { redlock } from "@core/lock"
+import { LockService } from "@services/lock"
 import { ONCHAIN_LOOK_BACK, ONCHAIN_MIN_CONFIRMATIONS, BTC_NETWORK } from "@config/app"
 
 export const updateOnChainReceipt = async ({
@@ -37,7 +37,7 @@ export const updateOnChainReceipt = async ({
   for (const tx of onChainTxs) {
     const txId = tx.rawTx.id
     const addresses = tx.uniqueAddresses()
-    const wallets = await walletRepo.findByAddresses(addresses)
+    const wallets = await walletRepo.listByAddresses(addresses)
     if (wallets instanceof Error) {
       logError({ walletId: null, txId, error: wallets })
       continue
@@ -47,14 +47,9 @@ export const updateOnChainReceipt = async ({
       const walletId = wallet.id
       logger.warn({ walletId, txId }, "updating onchain receipt")
 
-      try {
-        const result = await updateOnChainReceiptForWallet(wallet, [tx], logger)
-        if (result instanceof Error) {
-          logError({ walletId, txId, error: result })
-        }
-      } catch (error) {
-        // TODO: handle redlock exceptions with the new return pattern
-        logError({ walletId, txId, error })
+      const result = await updateOnChainReceiptForWallet(wallet, [tx], logger)
+      if (result instanceof Error) {
+        logError({ walletId, txId, error: result })
       }
     }
   }
@@ -90,7 +85,8 @@ export const updateOnChainReceiptForWallet = async (
   }
   const liabilitiesAccountId = toLiabilitiesAccountId(wallet.id)
 
-  return redlock({ path: wallet.id, logger }, async () => {
+  const lockService = LockService()
+  return lockService.lockWalletAccess({ walletId: wallet.id, logger }, async () => {
     for (const tx of pendingTxs) {
       const recorded = await ledger.isOnChainTxRecorded(liabilitiesAccountId, tx.rawTx.id)
       if (recorded instanceof Error) {
