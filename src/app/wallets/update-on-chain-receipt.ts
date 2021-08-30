@@ -83,7 +83,7 @@ const processTxForWallet = async (
   const liabilitiesAccountId = toLiabilitiesAccountId(wallet.id)
 
   const lockService = LockService()
-  return lockService.lockWalletAccess({ walletId: wallet.id, logger }, async () => {
+  return lockService.lockWalletId({ walletId: wallet.id, logger }, async () => {
     const recorded = await ledger.isOnChainTxRecorded(liabilitiesAccountId, tx.rawTx.id)
     if (recorded instanceof Error) {
       logger.error({ error: recorded }, "Could not query ledger")

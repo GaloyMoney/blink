@@ -1,7 +1,7 @@
 type LockServiceError = import("./errors").LockServiceError
 
 interface ILockService {
-  lockWalletAccess<Res>(
+  lockWalletId<Res>(
     args: { walletId: WalletId; logger: Logger },
     f: () => Promise<Res>,
   ): Promise<Res | LockServiceError>

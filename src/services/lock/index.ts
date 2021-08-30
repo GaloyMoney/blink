@@ -2,7 +2,7 @@ import { UnknownLockServiceError } from "@domain/lock"
 import { redlock } from "@core/lock"
 
 export const LockService = (): ILockService => {
-  const lockWalletAccess = async <Res>(
+  const lockWalletId = async <Res>(
     { walletId, logger }: { walletId: WalletId; logger: Logger },
     f: () => Promise<Res>,
   ) => {
@@ -14,6 +14,6 @@ export const LockService = (): ILockService => {
   }
 
   return {
-    lockWalletAccess,
+    lockWalletId,
   }
 }
