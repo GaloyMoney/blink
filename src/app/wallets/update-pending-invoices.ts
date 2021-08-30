@@ -34,12 +34,12 @@ export const updatePendingInvoiceByPaymentHash = async ({
   paymentHash: PaymentHash
   logger: Logger
   lock?: PaymentHashLock
-}): Promise<void | ApplicationError> => {
+}): Promise<boolean | ApplicationError> => {
   const invoicesRepo = WalletInvoicesRepository()
   const walletInvoice = await invoicesRepo.findByPaymentHash(paymentHash)
   if (walletInvoice instanceof CouldNotFindError) {
     logger.info({ paymentHash }, "WalletInvoice doesn't exist")
-    return
+    return false
   }
   if (walletInvoice instanceof Error) return walletInvoice
   return updatePendingInvoice({ walletInvoice, logger, lock })
@@ -53,7 +53,7 @@ const updatePendingInvoice = async ({
   walletInvoice: WalletInvoice
   logger: Logger
   lock?: PaymentHashLock
-}): Promise<void | ApplicationError> => {
+}): Promise<boolean | ApplicationError> => {
   const lndService = LndService()
   if (lndService instanceof Error) return Error
 
@@ -67,14 +67,14 @@ const updatePendingInvoice = async ({
       logger.error({ walletInvoice }, "impossible to delete WalletInvoice entry")
       return isDeleted
     }
-    return
+    return false
   }
   if (lnInvoiceLookup instanceof Error) return lnInvoiceLookup
 
   if (lnInvoiceLookup.isSettled) {
     if (walletInvoice.paid) {
       logger.info("invoice has already been processed")
-      return
+      return true
     }
 
     const lockService = LockService()
@@ -83,13 +83,18 @@ const updatePendingInvoice = async ({
         walletInvoice.paymentHash,
       )
       if (invoiceToUpdate instanceof CouldNotFindError) {
-        logger.info(
+        logger.error(
           { paymentHash: walletInvoice.paymentHash },
           "WalletInvoice doesn't exist",
         )
-        return
+        return false
       }
       if (invoiceToUpdate instanceof Error) return invoiceToUpdate
+      if (invoiceToUpdate.paid) {
+        logger.info("invoice has already been processed")
+        return true
+      }
+
       invoiceToUpdate.paid = true
 
       const updatedWalletInvoice = await walletInvoicesRepo.update(invoiceToUpdate)
@@ -116,6 +121,7 @@ const updatePendingInvoice = async ({
         usdFee,
       })
       if (result instanceof Error) return result
+      return true
     })
   }
 }
