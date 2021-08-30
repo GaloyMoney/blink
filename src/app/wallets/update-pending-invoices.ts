@@ -65,7 +65,10 @@ const updatePendingInvoice = async ({
   if (lnInvoiceLookup instanceof InvoiceNotFoundError) {
     const isDeleted = walletInvoicesRepo.deleteByPaymentHash(paymentHash)
     if (isDeleted instanceof Error) {
-      logger.error({ walletInvoice, error: isDeleted }, "impossible to delete WalletInvoice entry")
+      logger.error(
+        { walletInvoice, error: isDeleted },
+        "impossible to delete WalletInvoice entry",
+      )
       return isDeleted
     }
     return false
@@ -73,8 +76,17 @@ const updatePendingInvoice = async ({
   if (lnInvoiceLookup instanceof Error) return lnInvoiceLookup
 
   if (lnInvoiceLookup.isSettled) {
+    const pendingInvoiceLogger = logger.child({
+      hash: paymentHash,
+      wallet: walletId,
+      topic: "payment",
+      protocol: "lightning",
+      transactionType: "receipt",
+      onUs: false,
+    })
+
     if (walletInvoice.paid) {
-      logger.info("invoice has already been processed")
+      pendingInvoiceLogger.info("invoice has already been processed")
       return true
     }
 
@@ -84,7 +96,7 @@ const updatePendingInvoice = async ({
         walletInvoice.paymentHash,
       )
       if (invoiceToUpdate instanceof CouldNotFindError) {
-        logger.error(
+        pendingInvoiceLogger.error(
           { paymentHash: walletInvoice.paymentHash },
           "WalletInvoice doesn't exist",
         )
@@ -92,7 +104,7 @@ const updatePendingInvoice = async ({
       }
       if (invoiceToUpdate instanceof Error) return invoiceToUpdate
       if (invoiceToUpdate.paid) {
-        logger.info("invoice has already been processed")
+        pendingInvoiceLogger.info("invoice has already been processed")
         return true
       }
 
