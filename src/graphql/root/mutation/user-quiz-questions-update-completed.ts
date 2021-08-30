@@ -21,11 +21,16 @@ const UserQuizQuestionsUpdateCompletedMutation = GT.Field({
 
       return {
         errors: [],
-        userQuizQuestions: quizQuestions.map((question) => { return {question: {id: question.id, amount: question.value}, completed: question.completed }})
+        userQuizQuestions: quizQuestions.map((question) => {
+          return {
+            question: { id: question.id, amount: question.value },
+            completed: question.completed,
+          }
+        }),
       }
     } catch (err) {
-      return { 
-        errors: [{ message: err.message }]
+      return {
+        errors: [{ message: err.message }],
       }
     }
   },
