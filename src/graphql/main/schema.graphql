@@ -246,8 +246,10 @@ type User {
   id: ID!
   phone: Phone!
   language: Language!
-  defaultAccount: Account!
+  contacts: [Contact!]!
+  quizQuestions: [UserQuizQuestion!]!
   createdAt: Timestamp!
+  defaultAccount: Account!
 }
 
 """
@@ -260,9 +262,38 @@ enum Language {
   ES_SV
 }
 
+type Contact {
+  id: ID!
+  name: FullName
+  transactionsCount: Int!
+}
+
+"""
+Full name of an API user
+"""
+scalar FullName
+
+type UserQuizQuestion {
+  question: QuizQuestion!
+  completed: Boolean!
+}
+
+type QuizQuestion {
+  id: ID!
+
+  """
+  The earn reward in Satoshis for the quiz question
+  """
+  earnAmount: SatAmount!
+}
+
 type Mutation {
   userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
   userLogin(input: UserLoginInput!): AuthTokenPayload!
+  userUpdateLanguage(input: UserUpdateLanguageInput!): UserUpdateLanguagePayload!
+  userUpdateContactByUsername(
+    input: UserUpdateContactByUsernameInput!
+  ): UserUpdateLanguagePayload!
   lnInvoiceFeeProbe(input: LnInvoiceFeeProbeInput!): SatAmountPayload!
   lnNoAmountInvoiceFeeProbe(input: LnNoAmountInvoiceFeeProbeInput!): SatAmountPayload!
   lnInvoiceCreate(input: LnInvoiceCreateInput!): LnInvoicePayload!
@@ -276,7 +307,7 @@ type Mutation {
   lnInvoicePaymentSend(input: LnInvoicePaymentInput!): LnInvoicePaymentSendPayload!
   lnNoAmountInvoicePaymentSend(
     input: LnNoAmountInvoicePaymentInput!
-  ): LnInvoicePaymentStatusPayload!
+  ): LnInvoicePaymentSendPayload!
 }
 
 type SuccessPayload {
@@ -307,6 +338,29 @@ input UserLoginInput {
 An authentication code valid for a single use
 """
 scalar OneTimeAuthCode
+
+type UserUpdateLanguagePayload {
+  errors: [Error!]!
+  user: UserDetails
+}
+
+type UserDetails {
+  id: ID!
+  phone: Phone!
+  language: Language!
+  contacts: [Contact!]!
+  quizQuestions: [UserQuizQuestion!]!
+  createdAt: Timestamp!
+}
+
+input UserUpdateLanguageInput {
+  language: Language!
+}
+
+input UserUpdateContactByUsernameInput {
+  username: String!
+  fullName: FullName!
+}
 
 type SatAmountPayload {
   errors: [Error!]!
@@ -379,7 +433,7 @@ input LnNoAmountInvoiceCreateOnBehalfOfRecipientInput {
 
 type LnInvoicePaymentSendPayload {
   errors: [Error!]!
-  result: LnPaymentSendResult
+  status: LnPaymentSendResult
 }
 
 enum LnPaymentSendResult {
@@ -394,16 +448,6 @@ input LnInvoicePaymentInput {
   memo: Memo
 }
 
-type LnInvoicePaymentStatusPayload {
-  errors: [Error!]!
-  status: InvoicePaymentStatus
-}
-
-enum InvoicePaymentStatus {
-  PENDING
-  PAID
-}
-
 input LnNoAmountInvoicePaymentInput {
   paymentRequest: LnPaymentRequest!
   amount: SatAmount!
@@ -414,6 +458,16 @@ type Subscription {
   lnInvoicePaymentStatus(
     input: LnInvoicePaymentStatusInput!
   ): LnInvoicePaymentStatusPayload!
+}
+
+type LnInvoicePaymentStatusPayload {
+  errors: [Error!]!
+  status: InvoicePaymentStatus
+}
+
+enum InvoicePaymentStatus {
+  PENDING
+  PAID
 }
 
 input LnInvoicePaymentStatusInput {
