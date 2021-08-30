@@ -65,7 +65,7 @@ const updatePendingInvoice = async ({
   if (lnInvoiceLookup instanceof InvoiceNotFoundError) {
     const isDeleted = walletInvoicesRepo.deleteByPaymentHash(paymentHash)
     if (isDeleted instanceof Error) {
-      logger.error({ walletInvoice }, "impossible to delete WalletInvoice entry")
+      logger.error({ walletInvoice, error: isDeleted }, "impossible to delete WalletInvoice entry")
       return isDeleted
     }
     return false
