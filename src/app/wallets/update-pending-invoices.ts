@@ -56,7 +56,7 @@ const updatePendingInvoice = async ({
   lock?: PaymentHashLock
 }): Promise<boolean | ApplicationError> => {
   const lndService = LndService()
-  if (lndService instanceof Error) return Error
+  if (lndService instanceof Error) return lndService
 
   const walletInvoicesRepo = WalletInvoicesRepository()
 
@@ -133,4 +133,6 @@ const updatePendingInvoice = async ({
       return true
     })
   }
+  logger.debug({ invoice: lnInvoiceLookup }, "invoice has not been paid")
+  return false
 }
