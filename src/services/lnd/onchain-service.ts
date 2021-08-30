@@ -3,6 +3,7 @@ import {
   OnChainServiceUnavailableError,
 } from "@domain/bitcoin/onchain"
 import { toSats } from "@domain/bitcoin"
+import { SubmittedTransaction } from "@domain/bitcoin/onchain"
 import { getHeight, getChainTransactions, GetChainTransactionsResult } from "lightning"
 import { getActiveLnd } from "./utils"
 
@@ -48,12 +49,13 @@ export const extractIncomingTransactions = (
 ): SubmittedTransaction[] => {
   return transactions
     .filter((tx) => !tx.is_outgoing && !!tx.transaction)
-    .map((tx): SubmittedTransaction => {
-      return {
-        confirmations: tx.confirmation_count || 0,
-        rawTx: decoder.decode(tx.transaction as string),
-        fee: toSats(tx.fee || 0),
-        createdAt: new Date(tx.created_at),
-      }
-    })
+    .map(
+      (tx): SubmittedTransaction =>
+        SubmittedTransaction({
+          confirmations: tx.confirmation_count || 0,
+          rawTx: decoder.decode(tx.transaction as string),
+          fee: toSats(tx.fee || 0),
+          createdAt: new Date(tx.created_at),
+        }),
+    )
 }

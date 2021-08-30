@@ -36,12 +36,7 @@ export const updateOnChainReceipt = async ({
 
   for (const tx of onChainTxs) {
     const txId = tx.rawTx.id
-
-    const addresses = tx.rawTx.outs.reduce<OnChainAddress[]>((a, o) => {
-      if (o.address) a.push(o.address)
-      return a
-    }, [])
-
+    const addresses = tx.uniqueAddresses()
     const wallets = await walletRepo.findByAddresses(addresses)
     if (wallets instanceof Error) {
       logError({ walletId: null, txId, error: wallets })
