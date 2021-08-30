@@ -5,8 +5,9 @@ import {
   UnknownLightningServiceError,
   LightningServiceError,
   InvoiceNotFoundError,
+  PaymentNotFoundError,
 } from "@domain/bitcoin/lightning"
-import { createInvoice, getInvoice } from "lightning"
+import { createInvoice, getInvoice, getPayment } from "lightning"
 import { getActiveLnd, getLndFromPubkey } from "./utils"
 
 export const LndService = (): ILightningService | LightningServiceError => {
@@ -64,8 +65,49 @@ export const LndService = (): ILightningService | LightningServiceError => {
     }
   }
 
+  const lookupPayment = async ({
+    pubkey,
+    paymentHash,
+    logger,
+  }: {
+    pubkey: Pubkey
+    paymentHash: PaymentHash
+    logger: Logger
+  }): Promise<LnPaymentLookup | LightningServiceError> => {
+    const lightningLogger = logger.child({
+      topic: "payment",
+      protocol: "lightning",
+      transactionType: "payment",
+      onUs: false,
+    })
+
+    let lnd
+    try {
+      ;({ lnd } = getLndFromPubkey({ pubkey }))
+    } catch (err) {
+      lightningLogger.warn(
+        { paymentHash },
+        "node is offline. skipping payment verification for now",
+      )
+      return new UnknownLightningServiceError(err)
+    }
+
+    try {
+      const { is_confirmed, is_failed } = await getPayment({
+        lnd,
+        id: paymentHash,
+      })
+      return { isSettled: !!is_confirmed, isFailed: !!is_failed }
+    } catch (err) {
+      const paymentNotFound = "issue fetching payment"
+      lightningLogger.error({ lnd, err }, paymentNotFound)
+      return new PaymentNotFoundError()
+    }
+  }
+
   return {
     registerInvoice,
     lookupInvoice,
+    lookupPayment,
   }
 }
