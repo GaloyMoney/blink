@@ -86,4 +86,8 @@ interface ILedgerService {
   receiveOnChainTx(args: ReceiveOnChainTxArgs): Promise<void | LedgerServiceError>
 
   receiveLnTx(args: ReceiveLnTxArgs): Promise<void | LedgerServiceError>
+
+  settlePendingLiabilityTransactions(
+    paymentHash: PaymentHash,
+  ): Promise<boolean | LedgerServiceError>
 }
