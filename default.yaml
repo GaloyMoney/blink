@@ -123,6 +123,10 @@ lnds:
 onChainWallet:
   dustThreshold: 5000
   minConfirmations: 2
+  lookBack: 360
+  lookBackOutgoing: 2
+  lookBackChannelUpdate: 8
+
 # TODO
 # carrierRegexFilter: ""
 

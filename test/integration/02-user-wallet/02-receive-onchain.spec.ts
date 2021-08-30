@@ -117,11 +117,7 @@ describe("UserWallet - On chain", () => {
     await waitUntilBlockHeight({ lnd: lndonchain })
 
     // this is done by trigger and/or cron in prod
-    let result = await Wallets.updateOnChainReceipt(walletUser0.user.id, baseLogger)
-    if (result instanceof Error) {
-      throw result
-    }
-    result = await Wallets.updateOnChainReceipt(walletUser4.user.id, baseLogger)
+    const result = await Wallets.updateOnChainReceipt({ logger: baseLogger })
     if (result instanceof Error) {
       throw result
     }
@@ -246,10 +242,7 @@ async function sendToWallet({ walletDestination }) {
 
     await waitUntilBlockHeight({ lnd })
     // this is done by trigger and/or cron in prod
-    const result = await Wallets.updateOnChainReceipt(
-      walletDestination.user.id,
-      baseLogger,
-    )
+    const result = await Wallets.updateOnChainReceipt({ logger: baseLogger })
     if (result instanceof Error) {
       throw result
     }

@@ -32,7 +32,14 @@ try {
 export const yamlConfig = _.merge(defaultConfig, customConfig)
 
 export const MEMO_SHARING_SATS_THRESHOLD = yamlConfig.limits.memoSharingSatsThreshold
+
 export const ONCHAIN_MIN_CONFIRMATIONS = yamlConfig.onChainWallet.minConfirmations
+// how many block are we looking back for getChainTransactions
+export const ONCHAIN_LOOK_BACK = yamlConfig.onChainWallet.lookBack
+export const ONCHAIN_LOOK_BACK_OUTGOING = yamlConfig.onChainWallet.lookBackOutgoing
+export const ONCHAIN_LOOK_BACK_CHANNEL_UPDATE =
+  yamlConfig.onChainWallet.lookBackChannelUpdate
+
 export const USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD =
   yamlConfig.userActivenessMonthlyVolumeThreshold
 

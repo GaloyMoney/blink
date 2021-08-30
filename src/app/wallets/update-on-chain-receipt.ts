@@ -4,16 +4,64 @@ import { OnChainService } from "@services/lnd/onchain-service"
 import { PriceService } from "@services/price"
 import { NotificationsService } from "@services/notifications"
 import { LedgerService } from "@services/ledger"
-import { OnChainError, TxFilter, TxDecoder } from "@domain/bitcoin/onchain"
+import { OnChainError, TxDecoder } from "@domain/bitcoin/onchain"
 import { toLiabilitiesAccountId } from "@domain/ledger"
+import { LockService } from "@services/lock"
+import { ONCHAIN_LOOK_BACK, ONCHAIN_MIN_CONFIRMATIONS, BTC_NETWORK } from "@config/app"
 
-import { redlock } from "@core/lock"
+export const updateOnChainReceipt = async ({
+  scanDepth = ONCHAIN_LOOK_BACK,
+  logger,
+}: {
+  scanDepth?: number
+  logger: Logger
+}): Promise<number | ApplicationError> => {
+  const onChain = OnChainService(TxDecoder(BTC_NETWORK))
+  if (onChain instanceof OnChainError) {
+    return onChain
+  }
 
-import { LOOK_BACK } from "@core/utils"
-import { ONCHAIN_MIN_CONFIRMATIONS, BTC_NETWORK } from "@config/app"
+  const onChainTxs = await onChain.getIncomingTransactions(scanDepth)
+  if (onChainTxs instanceof OnChainError) {
+    return onChainTxs
+  }
 
-export const updateOnChainReceipt = async (
-  walletId: WalletId,
+  const walletRepo = WalletsRepository()
+  const logError = ({ walletId, txId, error }) => {
+    logger.error(
+      { walletId, txId, error },
+      "Could not updateOnChainReceipt from updateOnChainReceiptForWallet",
+    )
+  }
+
+  for (const tx of onChainTxs) {
+    if (tx.confirmations < ONCHAIN_MIN_CONFIRMATIONS) continue
+
+    const txId = tx.rawTx.id
+    const addresses = tx.uniqueAddresses()
+    const wallets = await walletRepo.listByAddresses(addresses)
+    if (wallets instanceof Error) {
+      logError({ walletId: null, txId, error: wallets })
+      continue
+    }
+
+    for (const wallet of wallets) {
+      const walletId = wallet.id
+      logger.trace({ walletId, txId }, "updating onchain receipt")
+
+      const result = await processTxForWallet(wallet, tx, logger)
+      if (result instanceof Error) {
+        logError({ walletId, txId, error: result })
+      }
+    }
+  }
+
+  return onChainTxs.length
+}
+
+const processTxForWallet = async (
+  wallet: Wallet,
+  tx: SubmittedTransaction,
   logger: Logger,
 ): Promise<void | ApplicationError> => {
   const notifications = NotificationsService(
@@ -25,25 +73,8 @@ export const updateOnChainReceipt = async (
     }),
   )
   const ledger = LedgerService()
-  const onChain = OnChainService(TxDecoder(BTC_NETWORK))
-  if (onChain instanceof OnChainError) {
-    return onChain
-  }
-  const onChainTxs = await onChain.getIncomingTransactions(LOOK_BACK)
-  if (onChainTxs instanceof OnChainError) {
-    return onChainTxs
-  }
 
-  const wallets = WalletsRepository()
-  const wallet = await wallets.findById(walletId)
-  if (wallet instanceof Error) return wallet
-
-  const addresses = wallet.onChainAddresses()
-  const filter = TxFilter({
-    confirmationsGreaterThanOrEqual: ONCHAIN_MIN_CONFIRMATIONS,
-    addresses,
-  })
-  const pendingTxs = filter.apply(onChainTxs)
+  const walletAddresses = wallet.onChainAddresses()
 
   const price = await PriceService().getCurrentPrice()
   if (price instanceof Error) {
@@ -51,41 +82,40 @@ export const updateOnChainReceipt = async (
   }
   const liabilitiesAccountId = toLiabilitiesAccountId(wallet.id)
 
-  return redlock({ path: wallet.id, logger }, async () => {
-    for (const tx of pendingTxs) {
-      const recorded = await ledger.isOnChainTxRecorded(liabilitiesAccountId, tx.rawTx.id)
-      if (recorded instanceof Error) {
-        logger.error({ error: recorded }, "Could not query ledger")
-        return recorded
-      }
+  const lockService = LockService()
+  return lockService.lockWalletId({ walletId: wallet.id, logger }, async () => {
+    const recorded = await ledger.isOnChainTxRecorded(liabilitiesAccountId, tx.rawTx.id)
+    if (recorded instanceof Error) {
+      logger.error({ error: recorded }, "Could not query ledger")
+      return recorded
+    }
 
-      if (!recorded) {
-        for (const { sats, address } of tx.rawTx.outs) {
-          if (address !== null && addresses.includes(address)) {
-            const fee = toSats(Math.round(sats * wallet.depositFeeRatio))
-            const usd = sats * price
-            const usdFee = fee * price
+    if (!recorded) {
+      for (const { sats, address } of tx.rawTx.outs) {
+        if (address !== null && walletAddresses.includes(address)) {
+          const fee = toSats(Math.round(sats * wallet.depositFeeRatio))
+          const usd = sats * price
+          const usdFee = fee * price
 
-            const result = await ledger.receiveOnChainTx({
-              liabilitiesAccountId,
-              txId: tx.rawTx.id,
-              sats,
-              fee,
-              usd,
-              usdFee,
-              receivingAddress: address,
-            })
-            if (result instanceof Error) {
-              logger.error({ error: result }, "Could not record onchain tx in ledger")
-              return result
-            }
-
-            await notifications.onChainTransactionReceived({
-              walletId: walletId,
-              amount: sats,
-              txId: tx.rawTx.id,
-            })
+          const result = await ledger.receiveOnChainTx({
+            liabilitiesAccountId,
+            txId: tx.rawTx.id,
+            sats,
+            fee,
+            usd,
+            usdFee,
+            receivingAddress: address,
+          })
+          if (result instanceof Error) {
+            logger.error({ error: result }, "Could not record onchain tx in ledger")
+            return result
           }
+
+          await notifications.onChainTransactionReceived({
+            walletId: wallet.id,
+            amount: sats,
+            txId: tx.rawTx.id,
+          })
         }
       }
     }

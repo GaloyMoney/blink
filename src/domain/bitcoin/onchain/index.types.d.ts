@@ -27,6 +27,7 @@ type SubmittedTransaction = {
   rawTx: OnChainTransaction
   fee: Satoshis
   createdAt: Date
+  uniqueAddresses: () => OnChainAddress[]
 }
 
 type TxDecoder = {

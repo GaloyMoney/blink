@@ -18,14 +18,18 @@ import {
 import _ from "lodash"
 import { Logger } from "pino"
 
-import { getGaloyInstanceName, MS_PER_DAY } from "@config/app"
+import {
+  getGaloyInstanceName,
+  MS_PER_DAY,
+  ONCHAIN_LOOK_BACK_CHANNEL_UPDATE,
+} from "@config/app"
 
 import { baseLogger } from "@services/logger"
 import { ledger } from "@services/mongodb"
 import { DbMetadata } from "@services/mongoose/schema"
 
 import { DbError, LndOfflineError, ValidationInternalError } from "@core/error"
-import { LoggedError, LOOK_BACK_CHANNEL_UPDATE } from "@core/utils"
+import { LoggedError } from "@core/utils"
 
 import { FEECAP, FEEMIN, params } from "./auth"
 import { WalletInvoicesRepository } from "@services/mongoose"
@@ -290,7 +294,7 @@ export const onChannelUpdated = async ({
 
   // TODO: dedupe from onchain
   const { current_block_height } = await getHeight({ lnd })
-  const after = Math.max(0, current_block_height - LOOK_BACK_CHANNEL_UPDATE) // this is necessary for tests, otherwise after may be negative
+  const after = Math.max(0, current_block_height - ONCHAIN_LOOK_BACK_CHANNEL_UPDATE) // this is necessary for tests, otherwise after may be negative
   const { transactions } = await getChainTransactions({ lnd, after })
   // end dedupe
 

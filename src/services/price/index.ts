@@ -8,7 +8,7 @@ export const PriceService = (): IPriceService => {
       if (typeof price !== "number") {
         return new PriceServiceError("Couldn't fetch price")
       }
-      return price
+      return price as UsdPerSat
     } catch (err) {
       return new UnknownPriceServiceError(err)
     }

@@ -1,8 +1,8 @@
 type WalletInvoice = {
-  paymentHash: PaymentHash
-  walletId: WalletId
-  selfGenerated: boolean
-  pubkey: Pubkey
+  readonly paymentHash: PaymentHash
+  readonly walletId: WalletId
+  readonly selfGenerated: boolean
+  readonly pubkey: Pubkey
   paid: boolean
 }
 

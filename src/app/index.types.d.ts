@@ -8,5 +8,6 @@ type ApplicationError =
   | OnChainError
   | RepositoryError
   | LightningError
-  | PriceError
+  | PriceServiceError
   | ValidationError
+  | LockServiceError

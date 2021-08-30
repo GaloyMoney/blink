@@ -34,9 +34,24 @@ export const WalletsRepository = (): IWalletsRepository => {
     }
   }
 
+  const listByAddresses = async (
+    addresses: string[],
+  ): Promise<Wallet[] | RepositoryError> => {
+    try {
+      const result = await User.find({ "onchain.address": { $in: addresses } })
+      if (!result) {
+        return new CouldNotFindError()
+      }
+      return result.map(resultToWallet)
+    } catch (err) {
+      return new UnknownRepositoryError(err)
+    }
+  }
+
   return {
     findById,
     findByWalletName,
+    listByAddresses,
   }
 }
 
