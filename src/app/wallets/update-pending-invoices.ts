@@ -5,6 +5,7 @@ import { LndService } from "@services/lnd"
 import { LedgerService } from "@services/ledger"
 import { WalletInvoicesRepository } from "@services/mongoose"
 import { PriceService } from "@services/price"
+import { CouldNotFindError } from "@domain/errors"
 
 export const updatePendingInvoices = async ({
   walletId,
@@ -36,6 +37,10 @@ export const updatePendingInvoiceByPaymentHash = async ({
 }): Promise<void | ApplicationError> => {
   const invoicesRepo = WalletInvoicesRepository()
   const walletInvoice = await invoicesRepo.findByPaymentHash(paymentHash)
+  if (walletInvoice instanceof CouldNotFindError) {
+    logger.info({ paymentHash }, "WalletInvoice doesn't exist")
+    return
+  }
   if (walletInvoice instanceof Error) return walletInvoice
   return updatePendingInvoice({ walletInvoice, logger, lock })
 }
@@ -75,6 +80,13 @@ const updatePendingInvoice = async ({
       const invoiceToUpdate = await walletInvoicesRepo.findByPaymentHash(
         walletInvoice.paymentHash,
       )
+      if (invoiceToUpdate instanceof CouldNotFindError) {
+        logger.info(
+          { paymentHash: walletInvoice.paymentHash },
+          "WalletInvoice doesn't exist",
+        )
+        return
+      }
       if (invoiceToUpdate instanceof Error) return invoiceToUpdate
       invoiceToUpdate.paid = true
 
