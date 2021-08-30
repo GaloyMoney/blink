@@ -25,7 +25,11 @@ export const loadLedger = ({
   }
 }
 
-import { UnknownLedgerError, LedgerError } from "@domain/ledger/errors"
+import {
+  UnknownLedgerError,
+  LedgerError,
+  LedgerServiceError,
+} from "@domain/ledger/errors"
 import { MainBook } from "./books"
 import { Transaction } from "./schema"
 import { toSats } from "@domain/bitcoin"
@@ -58,6 +62,58 @@ export const LedgerService = (): ILedgerService => {
           addresses: tx.payee_addresses,
           txId: tx.hash,
         }
+      })
+    } catch (err) {
+      return new UnknownLedgerError(err)
+    }
+  }
+
+  const getPendingPayments = async (
+    liabilitiesAccountId: LiabilitiesAccountId,
+  ): Promise<LedgerTransaction[] | LedgerError> => {
+    const type = "payment"
+    try {
+      const { results } = await MainBook.ledger({
+        account: liabilitiesAccountId,
+        type,
+        pending: true,
+      })
+      // translate raw schema result -> LedgerTransaction
+      return results.map(
+        (tx): LedgerTransaction => ({
+          id: tx.id,
+          type: tx.type,
+          debit: toSats(tx.debit),
+          credit: toSats(tx.credit),
+          fee: toSats(tx.fee),
+          usd: tx.usd,
+          feeUsd: tx.feeUsd,
+          currency: tx.currency,
+          timestamp: tx.timestamp,
+          pendingConfirmation: tx.pending,
+          journalId: tx.journal,
+          lnMemo: tx.memo,
+          walletName: tx.username,
+          memoFromPayer: tx.memoPayer,
+          paymentHash: tx.hash,
+          addresses: tx.payee_addresses,
+          txId: tx.hash,
+          feeKnownInAdvance: tx.feeKnownInAdvance,
+        }),
+      )
+    } catch (err) {
+      return new UnknownLedgerError(err)
+    }
+  }
+
+  const getPendingPaymentsCount = async (
+    liabilitiesAccountId: LiabilitiesAccountId,
+  ): Promise<number | LedgerError> => {
+    try {
+      return Transaction.countDocuments({
+        accounts: liabilitiesAccountId,
+        type: "payment",
+        pending: true,
       })
     } catch (err) {
       return new UnknownLedgerError(err)
@@ -155,5 +211,12 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
-  return { getLiabilityTransactions, isOnChainTxRecorded, receiveOnChainTx, receiveLnTx }
+  return {
+    getLiabilityTransactions,
+    getPendingPayments,
+    getPendingPaymentsCount,
+    isOnChainTxRecorded,
+    receiveOnChainTx,
+    receiveLnTx,
+  }
 }
