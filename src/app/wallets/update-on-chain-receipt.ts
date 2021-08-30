@@ -35,6 +35,8 @@ export const updateOnChainReceipt = async ({
   }
 
   for (const tx of onChainTxs) {
+    if (tx.confirmations < ONCHAIN_MIN_CONFIRMATIONS) continue
+
     const txId = tx.rawTx.id
     const addresses = tx.uniqueAddresses()
     const wallets = await walletRepo.listByAddresses(addresses)
@@ -47,7 +49,7 @@ export const updateOnChainReceipt = async ({
       const walletId = wallet.id
       logger.warn({ walletId, txId }, "updating onchain receipt")
 
-      const result = await updateOnChainReceiptForWallet(wallet, [tx], logger)
+      const result = await processTxForWallet(wallet, tx, logger)
       if (result instanceof Error) {
         logError({ walletId, txId, error: result })
       }
@@ -57,9 +59,9 @@ export const updateOnChainReceipt = async ({
   return onChainTxs.length
 }
 
-export const updateOnChainReceiptForWallet = async (
+const processTxForWallet = async (
   wallet: Wallet,
-  onChainTxs: SubmittedTransaction[],
+  tx: SubmittedTransaction,
   logger: Logger,
 ): Promise<void | ApplicationError> => {
   const notifications = NotificationsService(
@@ -72,12 +74,7 @@ export const updateOnChainReceiptForWallet = async (
   )
   const ledger = LedgerService()
 
-  const addresses = wallet.onChainAddresses()
-  const filter = TxFilter({
-    confirmationsGreaterThanOrEqual: ONCHAIN_MIN_CONFIRMATIONS,
-    addresses,
-  })
-  const pendingTxs = filter.apply(onChainTxs)
+  const walletAddresses = wallet.onChainAddresses()
 
   const price = await PriceService().getCurrentPrice()
   if (price instanceof Error) {
@@ -87,40 +84,38 @@ export const updateOnChainReceiptForWallet = async (
 
   const lockService = LockService()
   return lockService.lockWalletAccess({ walletId: wallet.id, logger }, async () => {
-    for (const tx of pendingTxs) {
-      const recorded = await ledger.isOnChainTxRecorded(liabilitiesAccountId, tx.rawTx.id)
-      if (recorded instanceof Error) {
-        logger.error({ error: recorded }, "Could not query ledger")
-        return recorded
-      }
+    const recorded = await ledger.isOnChainTxRecorded(liabilitiesAccountId, tx.rawTx.id)
+    if (recorded instanceof Error) {
+      logger.error({ error: recorded }, "Could not query ledger")
+      return recorded
+    }
 
-      if (!recorded) {
-        for (const { sats, address } of tx.rawTx.outs) {
-          if (address !== null && addresses.includes(address)) {
-            const fee = toSats(Math.round(sats * wallet.depositFeeRatio))
-            const usd = sats * price
-            const usdFee = fee * price
+    if (!recorded) {
+      for (const { sats, address } of tx.rawTx.outs) {
+        if (address !== null && walletAddresses.includes(address)) {
+          const fee = toSats(Math.round(sats * wallet.depositFeeRatio))
+          const usd = sats * price
+          const usdFee = fee * price
 
-            const result = await ledger.receiveOnChainTx({
-              liabilitiesAccountId,
-              txId: tx.rawTx.id,
-              sats,
-              fee,
-              usd,
-              usdFee,
-              receivingAddress: address,
-            })
-            if (result instanceof Error) {
-              logger.error({ error: result }, "Could not record onchain tx in ledger")
-              return result
-            }
-
-            await notifications.onChainTransactionReceived({
-              walletId: wallet.id,
-              amount: sats,
-              txId: tx.rawTx.id,
-            })
+          const result = await ledger.receiveOnChainTx({
+            liabilitiesAccountId,
+            txId: tx.rawTx.id,
+            sats,
+            fee,
+            usd,
+            usdFee,
+            receivingAddress: address,
+          })
+          if (result instanceof Error) {
+            logger.error({ error: result }, "Could not record onchain tx in ledger")
+            return result
           }
+
+          await notifications.onChainTransactionReceived({
+            walletId: wallet.id,
+            amount: sats,
+            txId: tx.rawTx.id,
+          })
         }
       }
     }
