@@ -159,27 +159,7 @@ export const onInvoiceUpdate = async (invoice) => {
     return
   }
 
-  const walletInvoicesRepo = WalletInvoicesRepository()
-  const walletInvoice = await walletInvoicesRepo.findByPaymentHash(invoice.id)
-
-  if (walletInvoice instanceof Error) {
-    logger.fatal({ invoice }, "we received an invoice but had no wallet attached to it")
-    return
-  }
-
-  const { walletId, paymentHash: hash, pubkey } = walletInvoice
-  const user = await User.findOne({ _id: walletId })
-  const wallet = await WalletFactory({ user, logger })
-
-  await wallet.updatePendingInvoice({ hash, pubkey })
-
-  await transactionNotification({
-    type: "paid-invoice",
-    amount: invoice.received,
-    hash,
-    user,
-    logger,
-  })
+  await Wallets.updatePendingInvoiceByPaymentHash({ paymentHash: invoice.id, logger })
 }
 
 const updatePriceForChart = () => {

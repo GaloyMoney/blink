@@ -6,6 +6,7 @@ import { WalletInvoicesRepository } from "@services/mongoose"
 import { PriceService } from "@services/price"
 import { CouldNotFindError } from "@domain/errors"
 import { LockService } from "@services/lock"
+import { NotificationsService } from "@services/notifications"
 
 export const updatePendingInvoices = async ({
   walletId,
@@ -121,6 +122,14 @@ const updatePendingInvoice = async ({
         usdFee,
       })
       if (result instanceof Error) return result
+
+      const notificationsService = NotificationsService(logger)
+      await notificationsService.lnPaymentReceived({
+        amount: received,
+        walletId: walletInvoice.walletId,
+        paymentHash,
+      })
+
       return true
     })
   }
