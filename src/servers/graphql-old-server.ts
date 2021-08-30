@@ -189,9 +189,13 @@ const resolvers = {
     },
     usernameExists: async (_, { username }) => usernameExists({ username }),
     getUserDetails: async (_, { uid }) => User.findOne({ _id: uid }),
-    noauthUpdatePendingInvoice: async (_, { hash, username }, { logger }) => {
-      const wallet = await getWalletFromUsername({ username, logger })
-      return wallet.updatePendingInvoice({ hash })
+    noauthUpdatePendingInvoice: async (_, { hash }, { logger }) => {
+      const result = Wallets.updatePendingInvoiceByPaymentHash({
+        paymentHash: hash,
+        logger,
+      })
+      if (result instanceof Error) throw result
+      return result
     },
     getUid: async (_, { username, phone }) => {
       const { _id: uid } = username
@@ -246,7 +250,7 @@ const resolvers = {
       if (lnInvoice instanceof Error) throw lnInvoice
       return lnInvoice.paymentRequest
     },
-    invoice: (_, __, { wallet }) => ({
+    invoice: (_, __, { wallet, logger }) => ({
       addInvoice: async ({ value, memo }) => {
         const lnInvoice =
           value && value > 0
@@ -263,7 +267,14 @@ const resolvers = {
         return lnInvoice.paymentRequest
       },
       // FIXME: move to query
-      updatePendingInvoice: async ({ hash }) => wallet.updatePendingInvoice({ hash }),
+      updatePendingInvoice: async ({ hash }) => {
+        const result = Wallets.updatePendingInvoiceByPaymentHash({
+          paymentHash: hash,
+          logger,
+        })
+        if (result instanceof Error) throw result
+        return result
+      },
       payInvoice: async ({ invoice, amount, memo }) =>
         wallet.pay({ invoice, amount, memo }),
       payKeysendUsername: async ({ username, amount, memo }) =>
