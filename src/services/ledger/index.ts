@@ -256,6 +256,17 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
+  const voidLedgerTransactionsForJournal = async (
+    journalId: LedgerJournalId,
+  ): Promise<void | LedgerServiceError> => {
+    const reason = "Payment canceled"
+    try {
+      await MainBook.void(journalId, reason)
+    } catch (err) {
+      return new UnknownLedgerError(err)
+    }
+  }
+
   return {
     getLiabilityTransactions,
     getPendingPayments,
@@ -265,5 +276,6 @@ export const LedgerService = (): ILedgerService => {
     receiveLnTx,
     receiveLnFeeReimbursement,
     settlePendingLiabilityTransactions,
+    voidLedgerTransactionsForJournal,
   }
 }
