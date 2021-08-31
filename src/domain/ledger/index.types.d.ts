@@ -7,6 +7,9 @@ type LiabilitiesAccountId = string & { [liabilitiesAccountId]: never }
 declare const ledgerTransactionIdSymbol: unique symbol
 type LedgerTransactionId = string & { [ledgerTransactionIdSymbol]: never }
 
+declare const ledgerJournalIdSymbol: unique symbol
+type LedgerJournalId = string & { [ledgerJournalIdSymbol]: never }
+
 declare const ledgerAccountIdSymbol: unique symbol
 type LedgerAccountId = string & { [ledgerAccountIdSymbol]: never }
 
@@ -22,6 +25,7 @@ type LedgerTransaction = {
   readonly currency: TxDenominationCurrency
   readonly timestamp: Date
   readonly pendingConfirmation: boolean
+  readonly journalId: LedgerJournalId
 
   readonly lnMemo?: string
 
