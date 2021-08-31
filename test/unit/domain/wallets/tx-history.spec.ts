@@ -24,6 +24,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
         currency: "BTC",
         memoFromPayer: "SomeMemo",
         pendingConfirmation: false,
+        journalId: "journalId" as LedgerJournalId,
         timestamp,
         // To test that the lightning detection logic
         // works when key is present
@@ -41,6 +42,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
         feeUsd: 0.1,
         currency: "BTC",
         pendingConfirmation: false,
+        journalId: "journalId" as LedgerJournalId,
         timestamp,
       },
       {
@@ -55,6 +57,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
         feeUsd: 0.1,
         currency: "BTC",
         pendingConfirmation: false,
+        journalId: "journalId" as LedgerJournalId,
         timestamp,
       },
       {
@@ -67,6 +70,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
         feeUsd: 0.1,
         currency: "BTC",
         pendingConfirmation: false,
+        journalId: "journalId" as LedgerJournalId,
         timestamp,
         addresses: ["address" as OnChainAddress],
       },
