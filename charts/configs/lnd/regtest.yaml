@@ -13,6 +13,7 @@ configmap:
   - noseedbackup=1
   - bitcoind.rpchost=bitcoind:18443
   - keysend-hold-time=2s
+  - routing.assumechanvalid=true
 
 loop:
   enabled: false
