@@ -1,21 +1,26 @@
 declare const phoneNumberSymbol: unique symbol
 type PhoneNumber = string & { [phoneNumberSymbol]: never }
 
-type UserLanguage =
-  typeof import("./index").UserLanguage[keyof typeof import("./index").UserLanguage]
+type UserLanguage = typeof import("./index").UserLanguage[keyof typeof import("./index").UserLanguage]
 
 declare const deviceTokenSymbol: unique symbol
 type DeviceToken = number & { [deviceTokenSymbol]: never }
 
-type UserContact = {
-  id: string
-  name: string
+declare const contactAliasSymbol: unique symbol
+type ContactAlias = string & { [contactAliasSymbol]: never }
+
+declare const quizQuestionIdSymbol: unique symbol
+type QuizQuestionId = string & { [quizQuestionIdSymbol]: never }
+
+type WalletContact = {
+  walletName: WalletName
+  alias: ContactAlias
   transactionsCount: number
 }
 
 type QuizQuestion = {
-  id: string
-  earnAmount: number
+  id: QuizQuestionId
+  earnAmount: Satoshis
 }
 
 type UserQuizQuestion = {

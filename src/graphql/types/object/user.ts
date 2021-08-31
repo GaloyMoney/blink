@@ -9,7 +9,7 @@ import AccountLevel from "../scalar/account-level"
 import AccountStatus from "../scalar/account-status"
 import Coordinates from "./coordinates"
 
-import Contact from "./contact"
+import WalletContact from "./wallet-contact"
 import UserQuizQuestion from "./user-quiz-question"
 
 const mainUserFields = () => ({
@@ -18,7 +18,7 @@ const mainUserFields = () => ({
   language: { type: GT.NonNull(Language) },
 
   contacts: {
-    type: GT.NonNullList(Contact), // TODO: Make it a Connection Interface
+    type: GT.NonNullList(WalletContact), // TODO: Make it a Connection Interface
   },
 
   quizQuestions: {

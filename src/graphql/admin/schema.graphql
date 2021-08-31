@@ -13,7 +13,7 @@ type User {
   id: ID!
   phone: Phone!
   language: Language!
-  contacts: [Contact!]!
+  contacts: [WalletContact!]!
   quizQuestions: [UserQuizQuestion!]!
   createdAt: Timestamp!
   level: AccountLevel
@@ -32,16 +32,16 @@ enum Language {
   ES_SV
 }
 
-type Contact {
-  id: ID!
-  name: FullName
+type WalletContact {
+  walletName: ID!
+  alias: ContactAlias
   transactionsCount: Int!
 }
 
 """
 Full name of an API user
 """
-scalar FullName
+scalar ContactAlias
 
 type UserQuizQuestion {
   question: QuizQuestion!
