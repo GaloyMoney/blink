@@ -159,7 +159,6 @@ lnpage:
     enabled: false
   podLabels:
     app: lnpage
-  command: ['/bin/sh', '-c' , 'echo "window.env={\"GRAPHQL_URI\":\"https://graphql.{{.Values.global.network}}.galoy.io/graphql\"}" > /app/env.js && /opt/bitnami/scripts/nginx/entrypoint.sh /opt/bitnami/scripts/nginx/run.sh']
   serverBlock: |-
     server {
       listen 8080;
