@@ -64,6 +64,14 @@ type ReceiveLnTxArgs = {
   usdFee: number
 }
 
+type ReceiveLnFeeReeimbursementArgs = {
+  liabilitiesAccountId: LiabilitiesAccountId
+  paymentHash: PaymentHash
+  sats: Satoshis
+  usd: number
+  journalId: LedgerJournalId
+}
+
 type DepositFeeCalculator = {
   onChainDepositFee(ratio: DepositFeeRatio): Satoshis
   lnDepositFee(): Satoshis
@@ -100,6 +108,10 @@ interface ILedgerService {
   receiveOnChainTx(args: ReceiveOnChainTxArgs): Promise<void | LedgerServiceError>
 
   receiveLnTx(args: ReceiveLnTxArgs): Promise<void | LedgerServiceError>
+
+  receiveLnFeeReimbursement(
+    args: ReceiveLnFeeReeimbursementArgs,
+  ): Promise<void | LedgerServiceError>
 
   settlePendingLiabilityTransactions(
     paymentHash: PaymentHash,
