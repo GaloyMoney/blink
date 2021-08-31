@@ -49,7 +49,7 @@ export const UsersRepository = (): IUsersRepository => {
             }),
           ) || [],
         defaultAccountId: result.id as AccountId,
-        deviceToken: result.deviceToken || [],
+        deviceTokens: result.deviceToken || [],
         createdAt: result.created_at,
       }
     } catch (err) {
@@ -65,7 +65,7 @@ export const UsersRepository = (): IUsersRepository => {
     contacts,
     quizQuestions,
     defaultAccountId,
-    deviceToken,
+    deviceTokens,
     createdAt,
   }: User): Promise<User | RepositoryError> => {
     try {
@@ -77,6 +77,7 @@ export const UsersRepository = (): IUsersRepository => {
           id: walletName,
           name: alias,
         })),
+        deviceToken: deviceTokens,
       }
       const doc = await User.updateOne({ _id: id }, { $set: data })
       if (doc.nModified !== 1) {
@@ -90,7 +91,7 @@ export const UsersRepository = (): IUsersRepository => {
         contacts,
         quizQuestions,
         defaultAccountId,
-        deviceToken,
+        deviceTokens,
         createdAt,
       }
     } catch (err) {

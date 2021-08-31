@@ -37,7 +37,7 @@ type User = {
   contacts: WalletContact[]
   quizQuestions: UserQuizQuestion[]
   defaultAccountId: AccountId
-  deviceToken: DeviceToken[]
+  deviceTokens: DeviceToken[]
   createdAt: Date
 }
 
