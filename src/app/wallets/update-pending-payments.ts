@@ -19,19 +19,15 @@ export const updatePendingPayments = async ({
 }): Promise<void | ApplicationError> => {
   const ledgerService = LedgerService()
   const liabilitiesAccountId = toLiabilitiesAccountId(walletId)
-  const count = await ledgerService.getPendingLiabilityTransactionsCount(
-    liabilitiesAccountId,
-  )
+  const count = await ledgerService.getPendingPaymentsCount(liabilitiesAccountId)
   if (count instanceof Error) throw count
   if (count === 0) return
 
   const lockService = LockService()
   await lockService.lockWalletId({ walletId, logger }, async () => {
-    const ledgerTransactions = await ledgerService.getLiabilityTransactions(
-      liabilitiesAccountId,
-    )
-    if (ledgerTransactions instanceof Error) return ledgerTransactions
-    for (const payment of ledgerTransactions) {
+    const pendingPayments = await ledgerService.getPendingPayments(liabilitiesAccountId)
+    if (pendingPayments instanceof Error) return pendingPayments
+    for (const payment of pendingPayments) {
       await updatePendingPayment({ walletId, payment, logger })
     }
   })
@@ -59,14 +55,10 @@ const updatePendingPayment = async ({
   const lndService = LndService()
   if (lndService instanceof Error) return lndService
 
-  const { paymentHash } = payment
+  const { paymentHash, pubkey } = payment
   if (!paymentHash)
-    return new ValidationError("paymentHash missing from payment LedgerTransaction")
-
-  const walletInvoicesRepo = WalletInvoicesRepository()
-  const walletInvoice = await walletInvoicesRepo.findByPaymentHash(paymentHash)
-  if (walletInvoice instanceof Error) return walletInvoice
-  const { pubkey } = walletInvoice
+    return new ValidationError("paymentHash missing from payment transaction")
+  if (!pubkey) return new ValidationError("pubkey missing from payment transaction")
 
   const lnPaymentLookup = await lndService.lookupPayment({
     pubkey,
@@ -136,6 +128,5 @@ const updatePendingPayment = async ({
       }
     }
   }
-
   return
 }
