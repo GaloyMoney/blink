@@ -212,6 +212,35 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
+  const receiveLnFeeReimbursement = async ({
+    liabilitiesAccountId,
+    paymentHash,
+    sats,
+    usd,
+    journalId,
+  }: ReceiveLnFeeReeimbursementArgs): Promise<void | LedgerError> => {
+    try {
+      const metadata = {
+        type: "fee reimbursement",
+        currency: "BTC",
+        hash: paymentHash,
+        related_journal: journalId,
+        pending: false,
+        usd,
+      }
+
+      const description = "fee reimbursement"
+      const entry = MainBook.entry(description)
+      entry
+        .credit(liabilitiesAccountId, sats, metadata)
+        .debit(lndAccountingPath, sats, metadata)
+
+      await entry.commit()
+    } catch (err) {
+      return new UnknownLedgerError(err)
+    }
+  }
+
   const settlePendingLiabilityTransactions = async (
     paymentHash: PaymentHash,
   ): Promise<boolean | LedgerServiceError> => {
@@ -233,6 +262,7 @@ export const LedgerService = (): ILedgerService => {
     isOnChainTxRecorded,
     receiveOnChainTx,
     receiveLnTx,
+    receiveLnFeeReimbursement,
     settlePendingLiabilityTransactions,
   }
 }
