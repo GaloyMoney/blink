@@ -93,11 +93,16 @@ export const LndService = (): ILightningService | LightningServiceError => {
     }
 
     try {
-      const { is_confirmed, is_failed } = await getPayment({
+      const { is_confirmed, is_failed, payment } = await getPayment({
         lnd,
         id: paymentHash,
       })
-      return { isSettled: !!is_confirmed, isFailed: !!is_failed }
+      const safeFee = payment?.safe_fee ? toSats(payment?.safe_fee) : null
+      return {
+        isSettled: !!is_confirmed,
+        isFailed: !!is_failed,
+        safeFee,
+      }
     } catch (err) {
       const paymentNotFound = "issue fetching payment"
       lightningLogger.error({ lnd, err }, paymentNotFound)

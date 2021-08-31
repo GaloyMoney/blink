@@ -31,6 +31,7 @@ type LnInvoiceLookup = {
 type LnPaymentLookup = {
   readonly isSettled: boolean
   readonly isFailed: boolean
+  readonly safeFee: Satoshis | null
 }
 
 type LnInvoice = {
