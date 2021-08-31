@@ -62,6 +62,7 @@ export const LedgerService = (): ILedgerService => {
           paymentHash: tx.hash,
           addresses: tx.payee_addresses,
           txId: tx.hash,
+          feeKnownInAdvance: tx.feeKnownInAdvance,
         }
       })
     } catch (err) {
