@@ -43,7 +43,7 @@ export const LedgerService = (): ILedgerService => {
     try {
       const { results } = await MainBook.ledger({ account: liabilitiesAccountId })
       // translate raw schema result -> LedgerTransaction
-      return results.map((tx) => {
+      return results.map((tx): LedgerTransaction => {
         return {
           id: tx.id,
           type: tx.type,
@@ -55,6 +55,7 @@ export const LedgerService = (): ILedgerService => {
           currency: tx.currency,
           timestamp: tx.timestamp,
           pendingConfirmation: tx.pending,
+          journalId: tx.journal,
           lnMemo: tx.memo,
           walletName: tx.username,
           memoFromPayer: tx.memoPayer,
