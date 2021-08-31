@@ -29,7 +29,8 @@ const MutationType = new GT.Object({
     lnNoAmountInvoiceCreate: LnNoAmountInvoiceCreateMutation,
 
     lnInvoiceCreateOnBehalfOfRecipient: LnInvoiceCreateOnBehalfOfRecipientMutation,
-    lnNoAmountInvoiceCreateOnBehalfOfRecipient: LnNoAmountInvoiceCreateOnBehalfOfRecipientMutation,
+    lnNoAmountInvoiceCreateOnBehalfOfRecipient:
+      LnNoAmountInvoiceCreateOnBehalfOfRecipientMutation,
 
     lnInvoicePaymentSend: LnInvoicePaymentSendMutation,
     lnNoAmountInvoicePaymentSend: LnNoAmountInvoicePaymentSendMutation,

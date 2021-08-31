@@ -1,7 +1,8 @@
 declare const phoneNumberSymbol: unique symbol
 type PhoneNumber = string & { [phoneNumberSymbol]: never }
 
-type UserLanguage = typeof import("./index").UserLanguage[keyof typeof import("./index").UserLanguage]
+type UserLanguage =
+  typeof import("./index").UserLanguage[keyof typeof import("./index").UserLanguage]
 
 declare const deviceTokenSymbol: unique symbol
 type DeviceToken = number & { [deviceTokenSymbol]: never }
@@ -33,7 +34,7 @@ type User = {
   username: Username | null
   phone: PhoneNumber
   language: UserLanguage
-  contacts: UserContact[]
+  contacts: WalletContact[]
   quizQuestions: UserQuizQuestion[]
   defaultAccountId: AccountId
   deviceToken: DeviceToken[]
@@ -42,4 +43,5 @@ type User = {
 
 interface IUsersRepository {
   findById(userId: UserId): Promise<User | RepositoryError>
+  update(user: User): Promise<User | RepositoryError>
 }
