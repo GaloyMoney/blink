@@ -3,6 +3,7 @@ import { GT } from "@graphql/index"
 import WalletContactUpdateAliasPayload from "@graphql/types/payload/wallet-contact-update-alias"
 import ContactAlias from "@graphql/types/scalar/contact-alias"
 import WalletName from "@graphql/types/scalar/wallet-name"
+import * as Users from "@app/users"
 
 const WalletContactUpdateAliasInput = new GT.Input({
   name: "WalletContactUpdateAliasInput",
@@ -17,10 +18,19 @@ const WalletContactUpdateAliasMutation = GT.Field({
   args: {
     input: { type: GT.NonNull(WalletContactUpdateAliasInput) },
   },
-  resolve: async (_, args, { user }) => {
+  resolve: async (_, args, { uid }) => {
     const { walletName, alias } = args.input
 
     if (walletName instanceof Error) {
+      return { errors: [{ message: walletName.message }] }
+    }
+
+    const user = Users.updateWalletContactAlias({
+      userId: uid as UserId,
+      contact: walletName,
+      alias,
+    })
+    if (user instanceof Error) {
       return { errors: [{ message: walletName.message }] }
     }
 

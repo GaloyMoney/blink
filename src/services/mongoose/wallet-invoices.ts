@@ -52,7 +52,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
         selfGenerated,
         pubkey,
         paid,
-      } as WalletInvoice
+      }
     } catch (err) {
       return new UnknownRepositoryError(err)
     }

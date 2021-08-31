@@ -57,7 +57,49 @@ export const UsersRepository = (): IUsersRepository => {
     }
   }
 
+  const update = async ({
+    id,
+    username,
+    phone,
+    language,
+    contacts,
+    quizQuestions,
+    defaultAccountId,
+    deviceToken,
+    createdAt,
+  }: User): Promise<User | RepositoryError> => {
+    try {
+      const data = {
+        username,
+        phone,
+        language,
+        contacts: contacts.map(({ walletName, alias }: WalletContact) => ({
+          id: walletName,
+          name: alias,
+        })),
+      }
+      const doc = await User.updateOne({ _id: id }, { $set: data })
+      if (doc.nModified !== 1) {
+        return new RepositoryError("Couldn't update user")
+      }
+      return {
+        id,
+        username,
+        phone,
+        language,
+        contacts,
+        quizQuestions,
+        defaultAccountId,
+        deviceToken,
+        createdAt,
+      }
+    } catch (err) {
+      return new UnknownRepositoryError(err)
+    }
+  }
+
   return {
     findById,
+    update,
   }
 }
