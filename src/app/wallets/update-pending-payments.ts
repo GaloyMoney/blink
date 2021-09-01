@@ -61,9 +61,17 @@ const updatePendingPayment = async ({
   const lnPaymentLookup = await lndService.lookupPayment({
     pubkey,
     paymentHash,
-    logger,
   })
-  if (lnPaymentLookup instanceof Error) return lnPaymentLookup
+  if (lnPaymentLookup instanceof Error) {
+    const lightningLogger = logger.child({
+      topic: "payment",
+      protocol: "lightning",
+      transactionType: "payment",
+      onUs: false,
+    })
+    lightningLogger.error({ err: lnPaymentLookup }, "issue fetching payment")
+    return lnPaymentLookup
+  }
   const { isSettled, isFailed, safeFee } = lnPaymentLookup
 
   if (isSettled || isFailed) {
