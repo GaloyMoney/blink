@@ -1,12 +1,10 @@
-import { toSats } from "@domain/bitcoin"
 import { PaymentStatus } from "@domain/bitcoin/lightning"
 import { ValidationError } from "@domain/errors"
 import { toLiabilitiesAccountId } from "@domain/ledger"
-import { FeeDifferenceCalculator } from "@domain/ledger/fee-difference-calculator"
+import { FeeReimbursement } from "@domain/ledger/fee-reimbursement"
 import { LedgerService } from "@services/ledger"
 import { LndService } from "@services/lnd"
 import { LockService } from "@services/lock"
-import { WalletInvoicesRepository } from "@services/mongoose"
 import { PriceService } from "@services/price"
 
 export const updatePendingPayments = async ({
@@ -89,16 +87,27 @@ const updatePendingPayment = async ({
         "payment has been confirmed",
       )
       if (!payment.feeKnownInAdvance) {
-        const maxFee = payment.fee
-        const actualFee = roundedUpFee
-        const feeDifference = FeeDifferenceCalculator().paymentFeeDifference({
-          maxFee,
-          actualFee,
-        })
-        if (feeDifference instanceof Error) return feeDifference
+        const feeDifference = FeeReimbursement({
+          prepaidFee: payment.fee,
+        }).getReimbursement({ actualFee: roundedUpFee })
+        if (feeDifference === null) {
+          logger.warn(
+            `Invalid reimbursement fee for ${{
+              maxFee: payment.fee,
+              actualFee: roundedUpFee,
+            }}`,
+          )
+          return
+        }
 
         logger.info(
-          { paymentResult: payment, feeDifference, maxFee, actualFee, id: paymentHash },
+          {
+            paymentResult: payment,
+            feeDifference,
+            maxFee: payment.fee,
+            actualFee: roundedUpFee,
+            id: paymentHash,
+          },
           "logging a fee difference",
         )
 
