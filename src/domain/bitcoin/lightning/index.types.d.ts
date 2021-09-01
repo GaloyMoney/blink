@@ -69,10 +69,8 @@ interface ILightningService {
   lookupPayment({
     pubkey,
     paymentHash,
-    logger,
   }: {
     pubkey: Pubkey
     paymentHash: PaymentHash
-    logger: Logger
   }): Promise<LnPaymentLookup | LightningServiceError>
 }

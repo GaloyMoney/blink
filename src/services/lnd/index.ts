@@ -68,27 +68,14 @@ export const LndService = (): ILightningService | LightningServiceError => {
   const lookupPayment = async ({
     pubkey,
     paymentHash,
-    logger,
   }: {
     pubkey: Pubkey
     paymentHash: PaymentHash
-    logger: Logger
   }): Promise<LnPaymentLookup | LightningServiceError> => {
-    const lightningLogger = logger.child({
-      topic: "payment",
-      protocol: "lightning",
-      transactionType: "payment",
-      onUs: false,
-    })
-
     let lnd
     try {
       ;({ lnd } = getLndFromPubkey({ pubkey }))
     } catch (err) {
-      lightningLogger.warn(
-        { paymentHash },
-        "node is offline. skipping payment verification for now",
-      )
       return new UnknownLightningServiceError(err)
     }
 
@@ -104,8 +91,6 @@ export const LndService = (): ILightningService | LightningServiceError => {
         safeFee,
       }
     } catch (err) {
-      const paymentNotFound = "issue fetching payment"
-      lightningLogger.error({ lnd, err }, paymentNotFound)
       return new PaymentNotFoundError()
     }
   }
