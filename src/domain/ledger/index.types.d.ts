@@ -38,6 +38,7 @@ type LedgerTransaction = {
 
   // for ln
   readonly paymentHash?: PaymentHash
+  readonly pubkey?: Pubkey
   readonly feeKnownInAdvance?: boolean
 
   // for onchain
