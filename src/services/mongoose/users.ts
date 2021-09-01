@@ -99,7 +99,7 @@ const userFromRaw = (result: UserType): User => {
     phone: result.phone as PhoneNumber,
     language: (result.language || UserLanguage.EN_US) as UserLanguage,
     contacts: result.contacts.reduce(
-      (res: WalletContact[], contact: ConcatObjectForUser): WalletContact[] => {
+      (res: WalletContact[], contact: ContactObjectForUser): WalletContact[] => {
         if (contact.id) {
           res.push({
             walletName: contact.id as WalletName,
