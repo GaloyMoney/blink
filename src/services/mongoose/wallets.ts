@@ -7,6 +7,27 @@ import { User } from "@services/mongoose/schema"
 import { caseInsensitiveRegex } from "./users"
 
 export const WalletsRepository = (): IWalletsRepository => {
+  const persistNewOnChainAddress = async (
+    walletId: WalletId,
+    onChainAddress: OnChainAddressIdentifier,
+  ): Promise<OnChainAddressIdentifier | RepositoryError> => {
+    try {
+      const { address, pubkey } = onChainAddress
+      const result = await User.updateOne(
+        { _id: walletId },
+        { $push: { onchain: { address, pubkey } } },
+      )
+
+      if (result.nModified !== 1) {
+        return new RepositoryError("Couldn't add onchain address for wallet")
+      }
+
+      return onChainAddress
+    } catch (err) {
+      return new UnknownRepositoryError(err)
+    }
+  }
+
   const findById = async (walletId: WalletId): Promise<Wallet | RepositoryError> => {
     try {
       const result = await User.findOne({ _id: walletId })
@@ -49,6 +70,7 @@ export const WalletsRepository = (): IWalletsRepository => {
   }
 
   return {
+    persistNewOnChainAddress,
     findById,
     findByWalletName,
     listByAddresses,

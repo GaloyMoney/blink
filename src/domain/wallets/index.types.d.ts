@@ -80,6 +80,10 @@ type Wallet = {
 }
 
 interface IWalletsRepository {
+  persistNewOnChainAddress(
+    walletId: WalletId,
+    onChainAddress: OnChainAddressIdentifier,
+  ): Promise<OnChainAddressIdentifier | RepositoryError>
   findById(walletId: WalletId): Promise<Wallet | RepositoryError>
   findByWalletName(walletName: WalletName): Promise<Wallet | RepositoryError>
   listByAddresses(addresses: string[]): Promise<Wallet[] | RepositoryError>
