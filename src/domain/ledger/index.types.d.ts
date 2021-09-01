@@ -98,10 +98,6 @@ interface ILedgerService {
     liabilitiesAccountId: LiabilitiesAccountId,
   ): Promise<LedgerTransaction[] | LedgerServiceError>
 
-  getPendingPaymentsCount(
-    liabilitiesAccountId: LiabilitiesAccountId,
-  ): Promise<number | LedgerServiceError>
-
   isOnChainTxRecorded(
     liabilitiesAccountId: LiabilitiesAccountId,
     txId: TxId,
