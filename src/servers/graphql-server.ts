@@ -1,4 +1,5 @@
 import { createServer } from "http"
+import { CouldNotFindError } from "@domain/errors"
 import { execute, subscribe } from "graphql"
 import { ApolloServer } from "apollo-server-express"
 import { SubscriptionServer } from "subscriptions-transport-ws"
@@ -12,13 +13,14 @@ import { v4 as uuidv4 } from "uuid"
 import helmet from "helmet"
 
 import { getIpConfig, getHelmetConfig, JWT_SECRET } from "@config/app"
+import * as Users from "@app/users"
 
 import { baseLogger } from "@services/logger"
 import { redis } from "@services/redis"
-import { User } from "@services/mongoose/schema"
+import { UsersRepository } from "@services/mongoose/users"
 
 import { IPBlacklistedError } from "@core/error"
-import { updateIPDetails, isIPBlacklisted } from "@core/utils"
+import { isIPBlacklisted } from "@core/utils"
 import { WalletFactory } from "@core/wallet-factory"
 
 const graphqlLogger = baseLogger.child({
@@ -50,7 +52,13 @@ export const startApolloServer = async ({
       // @ts-expect-error: TODO
       const token = context.req?.token ?? null
       const uid = token?.uid ?? null
-      const ip = context.req?.headers["x-real-ip"]
+      const ips = context.req?.headers["x-real-ip"]
+      let ip: string | undefined
+      if (ips && ips.length) {
+        ip = ips[0]
+      } else {
+        ip = ips as string | undefined
+      }
 
       if (isIPBlacklisted({ ip })) {
         throw new IPBlacklistedError("IP Blacklisted", { logger: graphqlLogger, ip })
@@ -61,17 +69,12 @@ export const startApolloServer = async ({
       // TODO move from id: uuidv4() to a Jaeger standard
       const logger = graphqlLogger.child({ token, id: uuidv4(), body: context.req?.body })
 
+      let domainUser: User | null = null
       if (uid) {
-        user = await User.findOneAndUpdate(
-          { _id: uid },
-          { lastConnection: new Date() },
-          { new: true },
-        )
-
-        if (ipConfig.ipRecordingEnabled) {
-          updateIPDetails({ ip, user, logger })
-        }
-
+        const findResult = await Users.getUserForLogin({ userId: uid, ip })
+        if (findResult instanceof Error) throw findResult
+        user = findResult.rawUser
+        domainUser = findResult.domainUser
         wallet =
           !!user && user.status === "active"
             ? await WalletFactory({ user, logger })
@@ -83,6 +86,7 @@ export const startApolloServer = async ({
         logger,
         uid,
         wallet,
+        domainUser,
         user,
         ip,
       }
