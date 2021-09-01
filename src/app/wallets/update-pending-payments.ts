@@ -15,7 +15,7 @@ export const updatePendingPayments = async ({
 }: {
   walletId: WalletId
   logger: Logger
-  lock?: PaymentHashLock
+  lock?: DistributedLock
 }): Promise<void | ApplicationError> => {
   const ledgerService = LedgerService()
   const liabilitiesAccountId = toLiabilitiesAccountId(walletId)
@@ -42,7 +42,7 @@ const updatePendingPayment = async ({
   walletId: WalletId
   payment: LedgerTransaction
   logger: Logger
-  lock?: PaymentHashLock
+  lock?: DistributedLock
 }): Promise<void | ApplicationError> => {
   const paymentLogger = logger.child({
     topic: "payment",
