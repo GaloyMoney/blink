@@ -58,8 +58,8 @@ interface UserType {
   earn?: string[]
   deviceToken?: string[]
   excludeCashback?: boolean
-  contacts: ConcatObjectForUser
-  created_at?: string
+  contacts: ConcatObjectForUser[]
+  created_at: string
   currencies: CurrenceyObjectForUser[]
   lastIPs?: IPType[]
   onchain?: OnChainObjectForUser[]

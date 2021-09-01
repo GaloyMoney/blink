@@ -8,11 +8,28 @@ import {
 import { User } from "@services/mongoose/schema"
 import { onboardingEarn } from "@config/app"
 
-export const caseInsensitiveRegex = (input) => {
+export const caseInsensitiveRegex = (input: string) => {
   return new RegExp(`^${input}$`, "i")
 }
 
-export const UsersRepository = (): IUsersRepository => {
+export const UsersRepository = () => {
+  const findByIdIncludeRaw = async (
+    userId: UserId,
+  ): Promise<{ domainUser: User; raw: UserType } | RepositoryError> => {
+    try {
+      const result = await User.findOne({ _id: userId })
+      if (!result) {
+        return new CouldNotFindError()
+      }
+      return {
+        domainUser: userFromRaw(result),
+        raw: result,
+      }
+    } catch (err) {
+      return new UnknownRepositoryError(err)
+    }
+  }
+
   const findById = async (userId: UserId): Promise<User | RepositoryError> => {
     try {
       const result = await User.findOne({ _id: userId })
@@ -20,38 +37,7 @@ export const UsersRepository = (): IUsersRepository => {
         return new CouldNotFindError()
       }
 
-      return {
-        id: userId,
-        username: (result.username as Username) || null,
-        phone: result.phone as PhoneNumber,
-        language: result.language || UserLanguage.EN_US,
-        contacts: result.contacts.reduce(
-          (res: WalletContact[], contact: ConcatObjectForUser): WalletContact[] => {
-            if (contact.id) {
-              res.push({
-                walletName: contact.id as WalletName,
-                alias: (contact.name || contact.id) as ContactAlias,
-                transactionsCount: contact.transactionsCount,
-              })
-            }
-            return res
-          },
-          [],
-        ),
-        quizQuestions:
-          result.earn?.map(
-            (questionId: string): UserQuizQuestion => ({
-              question: {
-                id: questionId as QuizQuestionId,
-                earnAmount: toSats(onboardingEarn[questionId]),
-              },
-              completed: true,
-            }),
-          ) || [],
-        defaultAccountId: result.id as AccountId,
-        deviceTokens: result.deviceToken || [],
-        createdAt: result.created_at,
-      }
+      return userFromRaw(result)
     } catch (err) {
       return new UnknownRepositoryError(err)
     }
@@ -66,7 +52,6 @@ export const UsersRepository = (): IUsersRepository => {
     quizQuestions,
     defaultAccountId,
     deviceTokens,
-    createdAt,
   }: User): Promise<User | RepositoryError> => {
     try {
       const data = {
@@ -92,7 +77,6 @@ export const UsersRepository = (): IUsersRepository => {
         quizQuestions,
         defaultAccountId,
         deviceTokens,
-        createdAt,
       }
     } catch (err) {
       return new UnknownRepositoryError(err)
@@ -100,7 +84,42 @@ export const UsersRepository = (): IUsersRepository => {
   }
 
   return {
+    findByIdIncludeRaw,
     findById,
     update,
+  }
+}
+
+const userFromRaw = (result: UserType): User => {
+  return {
+    id: result.id as UserId,
+    username: (result.username as Username) || null,
+    phone: result.phone as PhoneNumber,
+    language: (result.language || UserLanguage.EN_US) as UserLanguage,
+    contacts: result.contacts.reduce(
+      (res: WalletContact[], contact: ConcatObjectForUser): WalletContact[] => {
+        if (contact.id) {
+          res.push({
+            walletName: contact.id as WalletName,
+            alias: (contact.name || contact.id) as ContactAlias,
+            transactionsCount: contact.transactionsCount,
+          })
+        }
+        return res
+      },
+      [],
+    ),
+    quizQuestions:
+      result.earn?.map(
+        (questionId: string): UserQuizQuestion => ({
+          question: {
+            id: questionId as QuizQuestionId,
+            earnAmount: toSats(onboardingEarn[questionId]),
+          },
+          completed: true,
+        }),
+      ) || [],
+    defaultAccountId: result.id as AccountId,
+    deviceTokens: (result.deviceToken || []) as DeviceToken[],
   }
 }
