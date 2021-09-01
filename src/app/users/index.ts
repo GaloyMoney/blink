@@ -77,11 +77,10 @@ export const getUserForLogin = async ({
     }
   }
 
-  const updateResult = repo.update(domainUser)
+  const updateResult = await repo.update(domainUser)
 
   if (updateResult instanceof RepositoryError) {
-    // Don't understand why this cast is necesairy
-    return updateResult as RepositoryError
+    return updateResult
   }
 
   return { domainUser, rawUser: raw }
