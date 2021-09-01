@@ -14,30 +14,31 @@ declare const quizQuestionIdSymbol: unique symbol
 type QuizQuestionId = string & { [quizQuestionIdSymbol]: never }
 
 type WalletContact = {
-  walletName: WalletName
+  readonly walletName: WalletName
   alias: ContactAlias
   transactionsCount: number
 }
 
 type QuizQuestion = {
-  id: QuizQuestionId
-  earnAmount: Satoshis
+  readonly id: QuizQuestionId
+  readonly earnAmount: Satoshis
 }
 
 type UserQuizQuestion = {
-  question: QuizQuestion
+  readonly question: QuizQuestion
   completed: boolean
 }
 
 type User = {
-  id: UserId
-  username: Username | null
+  readonly id: UserId
+  readonly contacts: WalletContact[]
+  readonly quizQuestions: UserQuizQuestion[]
+  readonly defaultAccountId: AccountId
+  readonly deviceTokens: DeviceToken[]
+  readonly lastIPs: IPType[]
   phone: PhoneNumber
   language: UserLanguage
-  contacts: WalletContact[]
-  quizQuestions: UserQuizQuestion[]
-  defaultAccountId: AccountId
-  deviceTokens: DeviceToken[]
+  lastConnection: Date
 }
 
 interface IUsersRepository {

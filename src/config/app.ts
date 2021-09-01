@@ -149,7 +149,8 @@ export const getSpecterWalletConfig = (): SpecterWalletConfig => {
 export const PROXY_CHECK_APIKEY = yamlConfig?.PROXY_CHECK_APIKEY
 
 export const getIpConfig = (config = yamlConfig): IpConfig => ({
-  ipRecordingEnabled: config.ipRecording?.enabled,
+  ipRecordingEnabled:
+    process.env.NODE_ENV === "test" ? false : config.ipRecording?.enabled,
   proxyCheckingEnabled: config.ipRecording?.proxyChecking?.enabled,
   blacklistedIPTypes: config.blacklistedIPTypes ? config.blacklistedIPTypes : [],
   blacklistedIPs: config.blacklistedIPs ? config.blacklistedIPs : [],
