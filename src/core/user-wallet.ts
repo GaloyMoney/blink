@@ -290,6 +290,7 @@ export abstract class UserWallet {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async updatePendingPayments(lock) {
     return Promise.resolve()
   }
