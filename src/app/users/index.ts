@@ -45,43 +45,41 @@ export const getUserForLogin = async ({
 }: {
   userId: string
   ip?: string
-}): Promise<{ domainUser: User; rawUser: UserType } | ApplicationError> => {
+}): Promise<User | ApplicationError> => {
   const repo = UsersRepository()
 
-  const findResult = await repo.findByIdIncludeRaw(userId as UserId)
-  if (findResult instanceof Error) return findResult
-
-  const { domainUser, raw } = findResult
-  domainUser.lastConnection = new Date()
+  const user = await repo.findById(userId as UserId)
+  if (user instanceof Error) return user
+  user.lastConnection = new Date()
 
   // IP tracking logic could be extracted into domain
   const ipConfig = getIpConfig()
   if (ipConfig.ipRecordingEnabled) {
-    const lastIP: IPType | undefined = domainUser.lastIPs.find(
+    const lastIP: IPType | undefined = user.lastIPs.find(
       (ipObject: IPType) => ipObject.ip === ip,
     )
     if (lastIP) {
-      lastIP.lastConnection = domainUser.lastConnection
+      lastIP.lastConnection = user.lastConnection
     } else if (ip && ipConfig.proxyCheckingEnabled) {
       const ipFetcher = IpFetcher()
       const ipInfo = await ipFetcher.fetchIPInfo(ip as IpAddress)
       if (!(ipInfo instanceof Error)) {
-        domainUser.lastIPs.push({
+        user.lastIPs.push({
           ip,
           ...ipInfo,
           Type: ipInfo.type,
-          firstConnection: domainUser.lastConnection,
-          lastConnection: domainUser.lastConnection,
+          firstConnection: user.lastConnection,
+          lastConnection: user.lastConnection,
         })
       }
     }
   }
 
-  const updateResult = await repo.update(domainUser)
+  const updateResult = await repo.update(user)
 
   if (updateResult instanceof RepositoryError) {
     return updateResult
   }
 
-  return { domainUser, rawUser: raw }
+  return user
 }

@@ -16,6 +16,7 @@ import * as Users from "@app/users"
 
 import { baseLogger } from "@services/logger"
 import { redis } from "@services/redis"
+import { User } from "@services/mongoose/schema"
 
 import { IPBlacklistedError } from "@core/error"
 import { isIPBlacklisted } from "@core/utils"
@@ -68,10 +69,10 @@ export const startApolloServer = async ({
 
       let domainUser: User | null = null
       if (uid) {
-        const findResult = await Users.getUserForLogin({ userId: uid, ip })
-        if (findResult instanceof Error) throw findResult
-        user = findResult.rawUser
-        domainUser = findResult.domainUser
+        const loggedInUser = await Users.getUserForLogin({ userId: uid, ip })
+        if (loggedInUser instanceof Error) throw loggedInUser
+        domainUser = loggedInUser
+        user = await User.findOne({ _id: uid })
         wallet =
           !!user && user.status === "active"
             ? await WalletFactory({ user, logger })
