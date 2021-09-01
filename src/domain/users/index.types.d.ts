@@ -5,7 +5,7 @@ type UserLanguage =
   typeof import("./index").UserLanguage[keyof typeof import("./index").UserLanguage]
 
 declare const deviceTokenSymbol: unique symbol
-type DeviceToken = number & { [deviceTokenSymbol]: never }
+type DeviceToken = string & { [deviceTokenSymbol]: never }
 
 declare const contactAliasSymbol: unique symbol
 type ContactAlias = string & { [contactAliasSymbol]: never }
@@ -38,7 +38,6 @@ type User = {
   quizQuestions: UserQuizQuestion[]
   defaultAccountId: AccountId
   deviceTokens: DeviceToken[]
-  createdAt: Date
 }
 
 interface IUsersRepository {
