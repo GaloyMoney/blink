@@ -6,7 +6,7 @@ import * as jwt from "jsonwebtoken"
 
 import USER_REQUEST_AUTH_CODE from "./mutations/user-request-auth-code.gql"
 import USER_LOGIN from "./mutations/user-login.gql"
-import { clearLimiters } from "test/helpers"
+import { clearAccountLocks, clearLimiters } from "test/helpers"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
@@ -23,6 +23,7 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   await clearLimiters()
+  await clearAccountLocks()
 })
 
 afterAll(async () => {
