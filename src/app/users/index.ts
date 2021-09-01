@@ -64,7 +64,7 @@ export const getUserForLogin = async ({
       lastIP.lastConnection = domainUser.lastConnection
     } else if (ip && ipConfig.proxyCheckingEnabled) {
       const ipFetcher = IpFetcher()
-      const ipInfo = await ipFetcher.fetchIPInfo(ip)
+      const ipInfo = await ipFetcher.fetchIPInfo(ip as IpAddress)
       if (!(ipInfo instanceof Error)) {
         domainUser.lastIPs.push({
           ip,
