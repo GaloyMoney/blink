@@ -29,7 +29,7 @@ type CurrenceyObjectForUser = {
   ratio: number
 }
 
-type ConcatObjectForUser = {
+type ContactObjectForUser = {
   id?: string
   name?: string
   transactionsCount: number
@@ -58,7 +58,7 @@ interface UserType {
   earn?: string[]
   deviceToken?: string[]
   excludeCashback?: boolean
-  contacts: ConcatObjectForUser[]
+  contacts: ContactObjectForUser[]
   created_at: string
   currencies: CurrenceyObjectForUser[]
   lastIPs?: IPType[]
