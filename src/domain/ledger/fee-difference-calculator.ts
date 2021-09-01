@@ -8,10 +8,10 @@ export const FeeDifferenceCalculator = (): FeeDifferenceCalculator => {
   }: {
     maxFee: Satoshis
     actualFee: Satoshis
-  }): Satoshis | ValidationError => {
+  }): Satoshis | null => {
     const feeDifference = toSats(maxFee - actualFee)
     if (feeDifference < 0 || feeDifference > maxFee)
-      return new ValidationError(`Invalid fee difference '${feeDifference}'`)
+      return null
     return feeDifference
   }
 

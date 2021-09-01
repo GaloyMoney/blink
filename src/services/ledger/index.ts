@@ -43,29 +43,31 @@ export const LedgerService = (): ILedgerService => {
     try {
       const { results } = await MainBook.ledger({ account: liabilitiesAccountId })
       // translate raw schema result -> LedgerTransaction
-      return results.map((tx): LedgerTransaction => {
-        return {
-          id: tx.id,
-          type: tx.type,
-          debit: toSats(tx.debit),
-          credit: toSats(tx.credit),
-          fee: toSats(tx.fee),
-          usd: tx.usd,
-          feeUsd: tx.feeUsd,
-          currency: tx.currency,
-          timestamp: tx.timestamp,
-          pendingConfirmation: tx.pending,
-          journalId: tx.journal,
-          lnMemo: tx.memo,
-          walletName: tx.username,
-          memoFromPayer: tx.memoPayer,
-          paymentHash: tx.hash,
-          pubkey: tx.pubkey,
-          addresses: tx.payee_addresses,
-          txId: tx.hash,
-          feeKnownInAdvance: tx.feeKnownInAdvance,
-        }
-      })
+      return results.map(
+        (tx): LedgerTransaction => {
+          return {
+            id: tx.id,
+            type: tx.type,
+            debit: toSats(tx.debit),
+            credit: toSats(tx.credit),
+            fee: toSats(tx.fee),
+            usd: tx.usd,
+            feeUsd: tx.feeUsd,
+            currency: tx.currency,
+            timestamp: tx.timestamp,
+            pendingConfirmation: tx.pending,
+            journalId: tx.journal,
+            lnMemo: tx.memo,
+            walletName: tx.username,
+            memoFromPayer: tx.memoPayer,
+            paymentHash: tx.hash,
+            pubkey: tx.pubkey,
+            addresses: tx.payee_addresses,
+            txId: tx.hash,
+            feeKnownInAdvance: tx.feeKnownInAdvance,
+          }
+        },
+      )
     } catch (err) {
       return new UnknownLedgerError(err)
     }
@@ -74,7 +76,7 @@ export const LedgerService = (): ILedgerService => {
   const getPendingPayments = async (
     liabilitiesAccountId: LiabilitiesAccountId,
   ): Promise<LedgerTransaction[] | LedgerError> => {
-    const type = "payment"
+    const type = "payment" // use LedgerTransactionType.Payment
     try {
       const { results } = await MainBook.ledger({
         account: liabilitiesAccountId,
@@ -83,6 +85,7 @@ export const LedgerService = (): ILedgerService => {
       })
       // translate raw schema result -> LedgerTransaction
       return results.map(
+        // extract translation function
         (tx): LedgerTransaction => ({
           id: tx.id,
           type: tx.type,
@@ -225,7 +228,7 @@ export const LedgerService = (): ILedgerService => {
   }: ReceiveLnFeeReeimbursementArgs): Promise<void | LedgerError> => {
     try {
       const metadata = {
-        type: "fee reimbursement",
+        type: "fee reimbursement", // LedgerTransactionType.FeeReimbursement
         currency: "BTC",
         hash: paymentHash,
         related_journal: journalId,

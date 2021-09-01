@@ -85,28 +85,29 @@ export const LndService = (): ILightningService | LightningServiceError => {
     try {
       ;({ lnd } = getLndFromPubkey({ pubkey }))
     } catch (err) {
-      lightningLogger.warn(
-        { paymentHash },
-        "node is offline. skipping payment verification for now",
-      )
+      // lightningLogger.warn(
+      //   { paymentHash },
+      //   "node is offline. skipping payment verification for now",
+      // )
       return new UnknownLightningServiceError(err)
     }
 
     try {
-      const { is_confirmed, is_failed, payment } = await getPayment({
+      const { is_confirmed, is_failed, payment }:GetPaymentResult = await getPayment({
         lnd,
         id: paymentHash,
       })
-      const safeFee = payment?.safe_fee ? toSats(payment?.safe_fee) : null
+      if (!!payment) {
+      return new PaymentNotFoundError()
+      }
       return {
-        isSettled: !!is_confirmed,
-        isFailed: !!is_failed,
-        safeFee,
+        status: 'settled' | "failed"
+        roundedUpFee: toSats(payment.safe_fee),
       }
     } catch (err) {
-      const paymentNotFound = "issue fetching payment"
-      lightningLogger.error({ lnd, err }, paymentNotFound)
-      return new PaymentNotFoundError()
+      // const paymentNotFound = "issue fetching payment"
+      // lightningLogger.error({ lnd, err }, paymentNotFound)
+      return new Unknown() // when catching we don't know what has happened
     }
   }
 

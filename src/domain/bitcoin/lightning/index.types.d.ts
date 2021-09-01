@@ -29,9 +29,11 @@ type LnInvoiceLookup = {
 }
 
 type LnPaymentLookup = {
-  readonly isSettled: boolean
-  readonly isFailed: boolean
-  readonly safeFee: Satoshis | null
+  readonly status:
+  readonly roundedUpFee: Satoshis
+  // readonly isSettled: boolean
+  // readonly isFailed: boolean
+  // readonly safeFee: Satoshis | null
 }
 
 type LnInvoice = {
@@ -69,7 +71,7 @@ interface ILightningService {
   lookupPayment({
     pubkey,
     paymentHash,
-    logger,
+    logger, // get rid of logger
   }: {
     pubkey: Pubkey
     paymentHash: PaymentHash

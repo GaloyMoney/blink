@@ -13,9 +13,9 @@ type LedgerJournalId = string & { [ledgerJournalIdSymbol]: never }
 declare const ledgerAccountIdSymbol: unique symbol
 type LedgerAccountId = string & { [ledgerAccountIdSymbol]: never }
 
-type LedgerTransactionType =
-  typeof import("./index").LedgerTransactionType[keyof typeof import("./index").LedgerTransactionType]
+type LedgerTransactionType = typeof import("./index").LedgerTransactionType[keyof typeof import("./index").LedgerTransactionType]
 
+// Differentiate fields depending on what 'type' we have (see domain/wallets/index.types.d.ts)
 type LedgerTransaction = {
   readonly id: LedgerTransactionId
   readonly type: LedgerTransactionType
@@ -39,7 +39,7 @@ type LedgerTransaction = {
   // for ln
   readonly paymentHash?: PaymentHash
   readonly pubkey?: Pubkey
-  readonly feeKnownInAdvance?: boolean
+  readonly feeKnownInAdvance: boolean
 
   // for onchain
   readonly addresses?: OnChainAddress[]
