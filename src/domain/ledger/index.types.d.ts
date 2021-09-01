@@ -79,14 +79,8 @@ type DepositFeeCalculator = {
   lnDepositFee(): Satoshis
 }
 
-type FeeDifferenceCalculator = {
-  paymentFeeDifference({
-    maxFee,
-    actualFee,
-  }: {
-    maxFee: Satoshis
-    actualFee: Satoshis
-  }): Satoshis | ValidationError
+type FeeReimbursement = {
+  getReimbursement({ actualFee }: { actualFee: Satoshis }): Satoshis | null
 }
 
 interface ILedgerService {
