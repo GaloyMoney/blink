@@ -1,5 +1,4 @@
 import { createServer } from "http"
-import { CouldNotFindError } from "@domain/errors"
 import { execute, subscribe } from "graphql"
 import { ApolloServer } from "apollo-server-express"
 import { SubscriptionServer } from "subscriptions-transport-ws"
@@ -12,12 +11,11 @@ import PinoHttp from "pino-http"
 import { v4 as uuidv4 } from "uuid"
 import helmet from "helmet"
 
-import { getIpConfig, getHelmetConfig, JWT_SECRET } from "@config/app"
+import { getHelmetConfig, JWT_SECRET } from "@config/app"
 import * as Users from "@app/users"
 
 import { baseLogger } from "@services/logger"
 import { redis } from "@services/redis"
-import { UsersRepository } from "@services/mongoose/users"
 
 import { IPBlacklistedError } from "@core/error"
 import { isIPBlacklisted } from "@core/utils"
@@ -27,7 +25,6 @@ const graphqlLogger = baseLogger.child({
   module: "graphql",
 })
 
-const ipConfig = getIpConfig()
 const helmetConfig = getHelmetConfig()
 
 export const isAuthenticated = rule({ cache: "contextual" })((parent, args, ctx) => {

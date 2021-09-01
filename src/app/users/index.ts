@@ -1,6 +1,6 @@
 import { UsersRepository } from "@services/mongoose"
 import { IpFetcher } from "@services/ipfetcher"
-import { getIpConfig, PROXY_CHECK_APIKEY } from "@config/app"
+import { getIpConfig } from "@config/app"
 import { ValidationError, RepositoryError } from "@domain/errors"
 
 export const getUser = async (userId: UserId): Promise<User | ApplicationError> => {
