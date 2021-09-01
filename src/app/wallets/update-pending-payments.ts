@@ -17,16 +17,14 @@ export const updatePendingPayments = async ({
   logger: Logger
   lock?: DistributedLock
 }): Promise<void | ApplicationError> => {
-  const ledgerService = LedgerService()
   const liabilitiesAccountId = toLiabilitiesAccountId(walletId)
-  const count = await ledgerService.getPendingPaymentsCount(liabilitiesAccountId)
-  if (count instanceof Error) throw count
-  if (count === 0) return
 
   const lockService = LockService()
   await lockService.lockWalletId({ walletId, logger }, async () => {
+    const ledgerService = LedgerService()
     const pendingPayments = await ledgerService.getPendingPayments(liabilitiesAccountId)
     if (pendingPayments instanceof Error) return pendingPayments
+
     for (const payment of pendingPayments) {
       await updatePendingPayment({ walletId, payment, logger })
     }
