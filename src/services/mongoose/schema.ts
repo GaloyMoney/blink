@@ -264,23 +264,19 @@ const UserSchema = new Schema<UserType>({
 // Define getter for ratioUsd
 // FIXME: this // An outer value of 'this' is shadowed by this container.
 // https://stackoverflow.com/questions/41944650/this-implicitly-has-type-any-because-it-does-not-have-a-type-annotation
-// eslint-disable-next-line no-unused-vars
 UserSchema.virtual("ratioUsd").get(function (this: typeof UserSchema) {
   return _.find(this.currencies, { id: "USD" })?.ratio ?? 0
 })
 
-// eslint-disable-next-line no-unused-vars
 UserSchema.virtual("ratioBtc").get(function (this: typeof UserSchema) {
   return _.find(this.currencies, { id: "BTC" })?.ratio ?? 0
 })
 
 // this is the accounting path in medici for this user
-// eslint-disable-next-line no-unused-vars
 UserSchema.virtual("accountPath").get(function (this: typeof UserSchema) {
   return accountPath(this._id)
 })
 
-// eslint-disable-next-line no-unused-vars
 UserSchema.virtual("oldEnoughForWithdrawal").get(function (this: typeof UserSchema) {
   const elapsed = Date.now() - this.created_at.getTime()
   const genericLimits = getGenericLimits()
