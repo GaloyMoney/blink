@@ -1,5 +1,5 @@
 import { PaymentStatus } from "@domain/bitcoin/lightning"
-import { ValidationError } from "@domain/errors"
+import { InconsistentDataError } from "@domain/errors"
 import { toLiabilitiesAccountId } from "@domain/ledger"
 import { FeeReimbursement } from "@domain/ledger/fee-reimbursement"
 import { LedgerService } from "@services/ledger"
@@ -55,9 +55,10 @@ const updatePendingPayment = async ({
   if (lndService instanceof Error) return lndService
 
   const { paymentHash, pubkey } = paymentLiabilityTx
+  // If we had PaymentLedgerType => no need for checking the fields
   if (!paymentHash)
-    return new ValidationError("paymentHash missing from payment transaction")
-  if (!pubkey) return new ValidationError("pubkey missing from payment transaction")
+    return new InconsistentDataError("paymentHash missing from payment transaction")
+  if (!pubkey) return new InconsistentDataError("pubkey missing from payment transaction")
 
   const lnPaymentLookup = await lndService.lookupPayment({
     pubkey,
@@ -115,8 +116,9 @@ const reimburseFee = async ({
   logger: Logger
 }): Promise<void | ApplicationError> => {
   const { paymentHash } = paymentLiabilityTx
+  // If we had PaymentLedgerType => no need for checking the fields
   if (!paymentHash)
-    return new ValidationError("paymentHash missing from payment transaction")
+    return new InconsistentDataError("paymentHash missing from payment transaction")
 
   if (!paymentLiabilityTx.feeKnownInAdvance) {
     const feeDifference = FeeReimbursement({
