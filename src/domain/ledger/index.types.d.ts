@@ -16,6 +16,7 @@ type LedgerAccountId = string & { [ledgerAccountIdSymbol]: never }
 type LedgerTransactionType =
   typeof import("./index").LedgerTransactionType[keyof typeof import("./index").LedgerTransactionType]
 
+// Differentiate fields depending on what 'type' we have (see domain/wallets/index.types.d.ts)
 type LedgerTransaction = {
   readonly id: LedgerTransactionId
   readonly type: LedgerTransactionType
