@@ -86,61 +86,98 @@ const updatePendingPayment = async ({
         { success: true, id: paymentHash, payment },
         "payment has been confirmed",
       )
-      if (!payment.feeKnownInAdvance) {
-        const feeDifference = FeeReimbursement({
-          prepaidFee: payment.fee,
-        }).getReimbursement({ actualFee: roundedUpFee })
-        if (feeDifference === null) {
-          logger.warn(
-            `Invalid reimbursement fee for ${{
-              maxFee: payment.fee,
-              actualFee: roundedUpFee,
-            }}`,
-          )
-          return
-        }
-
-        logger.info(
-          {
-            paymentResult: payment,
-            feeDifference,
-            maxFee: payment.fee,
-            actualFee: roundedUpFee,
-            id: paymentHash,
-          },
-          "logging a fee difference",
-        )
-
-        const price = await PriceService().getCurrentPrice()
-        if (price instanceof Error) return price
-        const usd = feeDifference * price
-
-        const liabilitiesAccountId = toLiabilitiesAccountId(walletId)
-        const result = await ledgerService.receiveLnFeeReimbursement({
-          liabilitiesAccountId,
-          paymentHash,
-          sats: feeDifference,
-          usd,
-          journalId: payment.journalId,
-        })
-        if (result instanceof Error) return result
-      }
-    } else {
-      const voided = await ledgerService.voidLedgerTransactionsForJournal(
-        payment.journalId,
-      )
-      if (voided instanceof Error) {
-        const error = `error voiding payment entry`
-        paymentLogger.fatal(
-          {
-            success: false,
-            result: lnPaymentLookup,
-          },
-          error,
-        )
-        return voided
-      }
+      return reimburseFee({
+        walletId,
+        payment,
+        roundedUpFee,
+        logger,
+      })
     }
+    return revertTransaction({
+      payment,
+      lnPaymentLookup,
+      logger: paymentLogger,
+    })
   }
-  return
+}
+
+const reimburseFee = async ({
+  walletId,
+  payment,
+  roundedUpFee,
+  logger,
+}: {
+  walletId: WalletId
+  payment: LedgerTransaction
+  roundedUpFee: Satoshis
+  logger: Logger
+}): Promise<void | ApplicationError> => {
+  const { paymentHash } = payment
+  if (!paymentHash)
+    return new ValidationError("paymentHash missing from payment transaction")
+
+  if (!payment.feeKnownInAdvance) {
+    const feeDifference = FeeReimbursement({
+      prepaidFee: payment.fee,
+    }).getReimbursement({ actualFee: roundedUpFee })
+    if (feeDifference === null) {
+      logger.warn(
+        `Invalid reimbursement fee for ${{
+          maxFee: payment.fee,
+          actualFee: roundedUpFee,
+        }}`,
+      )
+      return
+    }
+
+    logger.info(
+      {
+        paymentResult: payment,
+        feeDifference,
+        maxFee: payment.fee,
+        actualFee: roundedUpFee,
+        id: paymentHash,
+      },
+      "logging a fee difference",
+    )
+
+    const price = await PriceService().getCurrentPrice()
+    if (price instanceof Error) return price
+    const usd = feeDifference * price
+
+    const liabilitiesAccountId = toLiabilitiesAccountId(walletId)
+    const ledgerService = LedgerService()
+    const result = await ledgerService.receiveLnFeeReimbursement({
+      liabilitiesAccountId,
+      paymentHash: paymentHash,
+      sats: feeDifference,
+      usd,
+      journalId: payment.journalId,
+    })
+    if (result instanceof Error) return result
+  }
+}
+
+const revertTransaction = async ({
+  payment,
+  lnPaymentLookup,
+  logger,
+}: {
+  payment: LedgerTransaction
+  lnPaymentLookup: LnPaymentLookup
+  logger: Logger
+}): Promise<void | ApplicationError> => {
+  const ledgerService = LedgerService()
+  const voided = await ledgerService.voidLedgerTransactionsForJournal(payment.journalId)
+  if (voided instanceof Error) {
+    const error = `error voiding payment entry`
+    logger.fatal(
+      {
+        success: false,
+        result: lnPaymentLookup,
+      },
+      error,
+    )
+    return voided
+  }
 }
