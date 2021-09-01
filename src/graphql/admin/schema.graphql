@@ -1,7 +1,40 @@
+type InputError implements Error {
+  message: String!
+  path: [String]
+  code: InputErrorCode!
+}
+
+interface Error {
+  message: String!
+  path: [String]
+}
+
+enum InputErrorCode {
+  INVALID_INPUT
+  VALUE_TOO_SHORT
+  VALUE_TOO_LONG
+  VALUE_NOT_ALLOWED
+}
+
+type PaymentError implements Error {
+  message: String!
+  path: [String]
+  code: PaymentErrorCode!
+}
+
+enum PaymentErrorCode {
+  ACCOUNT_LOCKED
+  LIMIT_EXCEEDED
+  INSUFFICENT_BALANCE
+  INVOICE_PAID
+  NO_LIQUIDITY
+  NO_ROUTE
+}
+
 type Query {
   allLevels: [AccountLevel!]!
   userDetailsByPhone(phone: Phone!): UserDetails!
-  userDetailsByUsername(username: WalletName!): UserDetails!
+  userDetailsByWalletName(walletName: WalletName!): UserDetails!
 }
 
 enum AccountLevel {
@@ -12,6 +45,7 @@ enum AccountLevel {
 type UserDetails {
   id: ID!
   phone: Phone!
+  walletName: WalletName
   language: Language!
   level: AccountLevel
   status: AccountStatus
@@ -24,6 +58,11 @@ type UserDetails {
 Phone number which includes country code
 """
 scalar Phone
+
+"""
+Unique identifier of an account wallet
+"""
+scalar WalletName
 
 enum Language {
   EN_US
@@ -45,27 +84,17 @@ Date field, serialized as the number of milliseconds since the Unix Epoch
 """
 scalar Timestamp
 
-"""
-Unique identifier of an account wallet
-"""
-scalar WalletName
-
 type Mutation {
   userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
   userLogin(input: UserLoginInput!): AuthTokenPayload!
-  userUpdateStatus(input: UserUpdateStatusInput!): UserDetailPayload!
   userUpdateLevel(input: UserUpdateLevelInput!): UserDetailPayload!
+  userUpdateStatus(input: UserUpdateStatusInput!): UserDetailPayload!
   businessUpdateMapInfo(input: BusinessUpdateMapInfoInput!): UserDetailPayload!
 }
 
 type SuccessPayload {
   errors: [Error!]!
   success: Boolean
-}
-
-interface Error {
-  message: String!
-  path: [String]
 }
 
 input UserRequestAuthCodeInput {
@@ -97,14 +126,14 @@ type UserDetailPayload {
   userDetails: UserDetails
 }
 
-input UserUpdateStatusInput {
-  uid: ID!
-  status: AccountStatus!
-}
-
 input UserUpdateLevelInput {
   uid: ID!
   level: AccountLevel!
+}
+
+input UserUpdateStatusInput {
+  uid: ID!
+  status: AccountStatus!
 }
 
 input BusinessUpdateMapInfoInput {

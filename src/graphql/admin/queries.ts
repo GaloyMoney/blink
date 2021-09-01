@@ -1,47 +1,15 @@
-import { User } from "@services/mongoose/schema"
-
 import { GT } from "@graphql/index"
 
-import AccountLevel from "./types/scalar/account-level"
-import Phone from "../types/scalar/phone"
-import UserDetails from "./types/object/user"
-import WalletName from "../types/scalar/wallet-name"
+import AllLevelsQuery from "./root/query/all-levels"
+import UserDetailsByPhoneQuery from "./root/query/user-details-by-phone"
+import UserDetailsByWalletNameQuery from "./root/query/user-details-by-wallet-name"
 
 const QueryType = new GT.Object({
   name: "Query",
   fields: () => ({
-    allLevels: {
-      type: GT.NonNullList(AccountLevel),
-      resolve: () => {
-        return [1, 2]
-      },
-    },
-    userDetailsByPhone: {
-      type: GT.NonNull(UserDetails),
-      args: {
-        phone: { type: GT.NonNull(Phone) },
-      },
-      resolve: async (parent, { phone }) => {
-        const user = await User.getUserByPhone(phone)
-        if (!user) {
-          throw new Error("User not found")
-        }
-        return user
-      },
-    },
-    userDetailsByUsername: {
-      type: GT.NonNull(UserDetails),
-      args: {
-        username: { type: GT.NonNull(WalletName) },
-      },
-      resolve: async (parent, { username }) => {
-        const user = await User.getUserByUsername(username)
-        if (!user) {
-          throw new Error("User not found")
-        }
-        return user
-      },
-    },
+    allLevels: AllLevelsQuery,
+    userDetailsByPhone: UserDetailsByPhoneQuery,
+    userDetailsByWalletName: UserDetailsByWalletNameQuery,
   }),
 })
 

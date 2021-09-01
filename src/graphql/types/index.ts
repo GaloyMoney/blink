@@ -8,12 +8,13 @@ import OnChainTransaction from "./object/onchain-transaction"
 import InputError from "./object/input-error"
 import PaymentError from "./object/payment-error"
 
+export const ERROR_INTERFACE_TYPES = [InputError, PaymentError]
+
 // The following types are not directly included
 // in the GraphQL schema. They only implement interfaces.
 // They need to be included via GraphQLSchema.types config
-export const TYPE_FOR_INTERFACES = [
-  InputError,
-  PaymentError,
+export const ALL_INTERFACE_TYPES = [
+  ...ERROR_INTERFACE_TYPES,
   ConsumerAccount,
   // BusinessAccount,
   BTCWallet,

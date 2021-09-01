@@ -18,12 +18,12 @@ export async function startApolloServerForAdminSchema() {
       Query: {
         allLevels: and(isAuthenticated, isEditor),
         userDetailsByPhone: and(isAuthenticated, isEditor),
-        userDetailsByUsername: and(isAuthenticated, isEditor),
+        userDetailsByWalletName: and(isAuthenticated, isEditor),
       },
       Mutation: {
-        businessUpdateMapInfo: and(isAuthenticated, isEditor),
-        userUpdateLevel: and(isAuthenticated, isEditor),
         userUpdateStatus: and(isAuthenticated, isEditor),
+        userUpdateLevel: and(isAuthenticated, isEditor),
+        businessUpdateMapInfo: and(isAuthenticated, isEditor),
       },
     },
     { allowExternalErrors: true },

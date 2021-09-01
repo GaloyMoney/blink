@@ -12,7 +12,10 @@ import UserQuizQuestion from "./user-quiz-question"
 const mainUserFields = () => ({
   id: { type: GT.NonNullID },
   phone: { type: GT.NonNull(Phone) },
-  language: { type: GT.NonNull(Language) },
+  language: {
+    type: GT.NonNull(Language),
+    resolve: (source) => source.language || "en",
+  },
 
   contacts: {
     type: GT.NonNullList(WalletContact), // TODO: Make it a Connection Interface

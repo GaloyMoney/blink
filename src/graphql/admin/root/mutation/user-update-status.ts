@@ -23,7 +23,16 @@ const UserUpdateStatusMutation = GT.Field({
   },
   resolve: async (_, args) => {
     const { uid, status } = args.input
+    for (const input of [uid, status]) {
+      if (input instanceof Error) {
+        return { errors: [{ message: input.message }] }
+      }
+    }
+
     const user = await updateUserAccountStatus({ uid, status })
+    if (user instanceof Error) {
+      return { errors: [{ message: user.message }] }
+    }
     return { errors: [], userDetails: user }
   },
 })
