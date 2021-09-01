@@ -1,9 +1,10 @@
-import User from "@graphql/types/object/user"
-import * as Users from "@app/users"
 import { GT } from "@graphql/index"
 
+import { UserWithAccounts } from "@graphql/types/object/user"
+import * as Users from "@app/users"
+
 const MeQuery = GT.Field({
-  type: User,
+  type: UserWithAccounts,
   resolve: async (_, __, { uid }) => {
     const user = await Users.getUser(uid)
     if (user instanceof Error) {

@@ -5,9 +5,6 @@ import Account from "../abstract/account"
 import Timestamp from "../scalar/timestamp"
 import Language from "../scalar/language"
 import Phone from "../scalar/phone"
-import AccountLevel from "../scalar/account-level"
-import AccountStatus from "../scalar/account-status"
-import Coordinates from "./coordinates"
 
 import WalletContact from "./wallet-contact"
 import UserQuizQuestion from "./user-quiz-question"
@@ -38,24 +35,7 @@ export const UserDetails = new GT.Object({
   }),
 })
 
-// TODO: A temp type for the current admin dashboard
-export const UserForAdmin = new GT.Object({
-  name: "User",
-  fields: () => ({
-    ...mainUserFields(),
-    level: { type: AccountLevel },
-    status: { type: AccountStatus },
-    title: {
-      type: GT.String,
-    },
-    coordinates: {
-      type: Coordinates,
-      resolve: (source) => source.coordinate,
-    },
-  }),
-})
-
-const User = new GT.Object({
+export const UserWithAccounts = new GT.Object({
   name: "User",
   fields: () => ({
     ...mainUserFields(),
@@ -75,5 +55,3 @@ const User = new GT.Object({
     // FUTURE-PLAN: support an `accounts: [Account!]!` here
   }),
 })
-
-export default User

@@ -1,7 +1,8 @@
 import { GT } from "@graphql/index"
 
 import { updateBusinessMapInfo } from "@core/user"
-import UserDetailPayload from "@graphql/types/payload/user-detail"
+
+import UserDetailPayload from "@graphql/admin/types/payload/user-detail"
 import WalletName from "@graphql/types/scalar/wallet-name"
 
 const BusinessUpdateMapInfoInput = new GT.Input({

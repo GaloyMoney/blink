@@ -1,12 +1,12 @@
 import { User } from "@services/mongoose/schema"
 
 import { GT } from "@graphql/index"
-import Phone from "../types/scalar/phone"
-import WalletName from "../types/scalar/wallet-name"
-import AccountLevel from "../types/scalar/account-level"
-import { UserForAdmin } from "../types/object/user"
 
-// TODO: redo/move root fields
+import AccountLevel from "./types/scalar/account-level"
+import Phone from "../types/scalar/phone"
+import UserDetails from "./types/object/user"
+import WalletName from "../types/scalar/wallet-name"
+
 const QueryType = new GT.Object({
   name: "Query",
   fields: () => ({
@@ -17,7 +17,7 @@ const QueryType = new GT.Object({
       },
     },
     userDetailsByPhone: {
-      type: GT.NonNull(UserForAdmin),
+      type: GT.NonNull(UserDetails),
       args: {
         phone: { type: GT.NonNull(Phone) },
       },
@@ -30,7 +30,7 @@ const QueryType = new GT.Object({
       },
     },
     userDetailsByUsername: {
-      type: GT.NonNull(UserForAdmin),
+      type: GT.NonNull(UserDetails),
       args: {
         username: { type: GT.NonNull(WalletName) },
       },

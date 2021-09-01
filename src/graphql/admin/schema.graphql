@@ -1,7 +1,7 @@
 type Query {
   allLevels: [AccountLevel!]!
-  userDetailsByPhone(phone: Phone!): User!
-  userDetailsByUsername(username: WalletName!): User!
+  userDetailsByPhone(phone: Phone!): UserDetails!
+  userDetailsByUsername(username: WalletName!): UserDetails!
 }
 
 enum AccountLevel {
@@ -9,17 +9,15 @@ enum AccountLevel {
   TWO
 }
 
-type User {
+type UserDetails {
   id: ID!
   phone: Phone!
   language: Language!
-  contacts: [WalletContact!]!
-  quizQuestions: [UserQuizQuestion!]!
-  createdAt: Timestamp!
   level: AccountLevel
   status: AccountStatus
   title: String
   coordinates: Coordinates
+  createdAt: Timestamp!
 }
 
 """
@@ -32,41 +30,6 @@ enum Language {
   ES_SV
 }
 
-type WalletContact {
-  walletName: ID!
-  alias: ContactAlias
-  transactionsCount: Int!
-}
-
-"""
-An alias name that a user can set for a wallet (with which they have transactions)
-"""
-scalar ContactAlias
-
-type UserQuizQuestion {
-  question: QuizQuestion!
-  completed: Boolean!
-}
-
-type QuizQuestion {
-  id: ID!
-
-  """
-  The earn reward in Satoshis for the quiz question
-  """
-  earnAmount: SatAmount!
-}
-
-"""
-(Positive) Satoshi amount (i.g. quiz earning)
-"""
-scalar SatAmount
-
-"""
-Date field, serialized as the number of milliseconds since the Unix Epoch
-"""
-scalar Timestamp
-
 enum AccountStatus {
   LOCKED
   ACTIVE
@@ -76,6 +39,11 @@ type Coordinates {
   longitude: Float!
   latitude: Float!
 }
+
+"""
+Date field, serialized as the number of milliseconds since the Unix Epoch
+"""
+scalar Timestamp
 
 """
 Unique identifier of an account wallet
@@ -126,7 +94,7 @@ scalar OneTimeAuthCode
 
 type UserDetailPayload {
   errors: [Error!]!
-  userDetails: User
+  userDetails: UserDetails
 }
 
 input UserUpdateStatusInput {
