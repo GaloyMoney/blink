@@ -37,7 +37,7 @@ export const requestPhoneCode = async ({
   }
 
   const ipFetcher = IpFetcher()
-  const ipDetails = await ipFetcher.fetchIPInfo(ip)
+  const ipDetails = await ipFetcher.fetchIPInfo(ip as IpAddress)
   if (ipDetails instanceof Error) {
     logger.warn({ ipDetails }, "Unable to fetch ip details")
   } else if (ipDetails.status === "denied" || ipDetails.status === "error") {

@@ -1,5 +1,8 @@
 type IpFetcherServiceError = import("./errors").IpFetcherServiceError
 
+declare const ipAddressSymbol: unique symbol
+type IpAddress = string & { [ipAddressSymbol]: never }
+
 type IPInfo = {
   provider: string
   country: string
@@ -10,5 +13,5 @@ type IPInfo = {
 }
 
 interface IIpFetcherService {
-  fetchIPInfo(ip: string): Promise<IPInfo | IpFetcherServiceError>
+  fetchIPInfo(ip: IpAddress): Promise<IPInfo | IpFetcherServiceError>
 }
