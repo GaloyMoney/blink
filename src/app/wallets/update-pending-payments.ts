@@ -21,7 +21,7 @@ export const updatePendingPayments = async ({
   const lockService = LockService()
   await lockService.lockWalletId({ walletId, logger }, async () => {
     const ledgerService = LedgerService()
-    const pendingPaymentTransactions = await ledgerService.getPendingPayments(
+    const pendingPaymentTransactions = await ledgerService.listPendingPayments(
       liabilitiesAccountId,
     )
     if (pendingPaymentTransactions instanceof Error) return pendingPaymentTransactions
