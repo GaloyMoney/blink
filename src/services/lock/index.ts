@@ -18,8 +18,8 @@ export const LockService = (): ILockService => {
       paymentHash,
       logger,
       lock,
-    }: { paymentHash: PaymentHash; logger: Logger; lock?: PaymentHashLock },
-    f: (lock?: PaymentHashLock) => Promise<Res>,
+    }: { paymentHash: PaymentHash; logger: Logger; lock?: DistributedLock },
+    f: (lock?: DistributedLock) => Promise<Res>,
   ) => {
     try {
       return redlock({ path: paymentHash, logger, lock }, f)
