@@ -594,7 +594,12 @@ describe("UserWallet - Lightning Pay", () => {
         const query = { type: "payment", pending: true, voided: false }
 
         await waitFor(async () => {
-          await userWallet1.updatePendingPayments()
+          const updatedPayments = await Wallets.updatePendingPayments({
+            walletId: userWallet1.user.id,
+            logger: baseLogger,
+          })
+          if (updatedPayments instanceof Error) throw updatedPayments
+
           const count = await ledger.getAccountTransactionsCount(userWallet1Path, query)
           const { is_confirmed } = await getInvoice({ lnd: lndOutside1, id })
           return is_confirmed && count === 0
@@ -628,7 +633,11 @@ describe("UserWallet - Lightning Pay", () => {
         const query = { type: "payment", pending: true, voided: false }
 
         await waitFor(async () => {
-          await userWallet1.updatePendingPayments()
+          const updatedPayments = await Wallets.updatePendingPayments({
+            walletId: userWallet1.user.id,
+            logger: baseLogger,
+          })
+          if (updatedPayments instanceof Error) throw updatedPayments
           const count = await ledger.getAccountTransactionsCount(userWallet1Path, query)
           return count === 0
         })
