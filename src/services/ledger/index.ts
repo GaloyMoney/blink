@@ -74,7 +74,7 @@ export const LedgerService = (): ILedgerService => {
   const listPendingPayments = async (
     liabilitiesAccountId: LiabilitiesAccountId,
   ): Promise<LedgerTransaction[] | LedgerError> => {
-    const type = "payment"
+    const type = LedgerTransactionType.Payment
     try {
       const { results } = await MainBook.ledger({
         account: liabilitiesAccountId,
@@ -210,7 +210,7 @@ export const LedgerService = (): ILedgerService => {
   }: ReceiveLnFeeReeimbursementArgs): Promise<void | LedgerError> => {
     try {
       const metadata = {
-        type: "fee reimbursement",
+        type: LedgerTransactionType.LnFeeReimbursement,
         currency: "BTC",
         hash: paymentHash,
         related_journal: journalId,
