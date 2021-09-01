@@ -12,25 +12,7 @@ export const caseInsensitiveRegex = (input: string) => {
   return new RegExp(`^${input}$`, "i")
 }
 
-export const UsersRepository = () => {
-  // Remove when old GQL api is deprecated => only use domain user
-  const findByIdIncludeRaw = async (
-    userId: UserId,
-  ): Promise<{ domainUser: User; raw: UserType } | RepositoryError> => {
-    try {
-      const result = await User.findOne({ _id: userId })
-      if (!result) {
-        return new CouldNotFindError()
-      }
-      return {
-        domainUser: userFromRaw(result),
-        raw: result,
-      }
-    } catch (err) {
-      return new UnknownRepositoryError(err)
-    }
-  }
-
+export const UsersRepository = (): IUsersRepository => {
   const findById = async (userId: UserId): Promise<User | RepositoryError> => {
     try {
       const result = await User.findOne({ _id: userId })
@@ -87,7 +69,6 @@ export const UsersRepository = () => {
   }
 
   return {
-    findByIdIncludeRaw,
     findById,
     update,
   }
