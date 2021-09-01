@@ -5,8 +5,8 @@ type IPType = {
   region: string
   city: string
   Type: string
-  firstConnection: string
-  lastConnection: string
+  firstConnection: Date
+  lastConnection: Date
 }
 
 type TwoFA = {
@@ -63,7 +63,7 @@ interface UserType {
   currencies: CurrenceyObjectForUser[]
   lastIPs?: IPType[]
   onchain?: OnChainObjectForUser[]
-  lastConnection?: string
+  lastConnection: Date
   twoFA: TwoFA
 
   // business:

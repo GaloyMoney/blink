@@ -1,5 +1,7 @@
 import { UsersRepository } from "@services/mongoose"
-import { ValidationError } from "@domain/errors"
+import { IpFetcher } from "@services/ipfetcher"
+import { getIpConfig, PROXY_CHECK_APIKEY } from "@config/app"
+import { ValidationError, RepositoryError } from "@domain/errors"
 
 export const getUser = async (userId: UserId): Promise<User | ApplicationError> => {
   const repo = UsersRepository()
@@ -35,4 +37,52 @@ export const updateWalletContactAlias = async ({
   }
 
   return user
+}
+
+export const getUserForLogin = async ({
+  userId,
+  ip,
+}: {
+  userId: string
+  ip?: string
+}): Promise<{ domainUser: User; rawUser: UserType } | ApplicationError> => {
+  const repo = UsersRepository()
+
+  const findResult = await repo.findByIdIncludeRaw(userId as UserId)
+  if (findResult instanceof Error) return findResult
+
+  const { domainUser, raw } = findResult
+  domainUser.lastConnection = new Date()
+
+  // IP tracking logic could be extracted into domain
+  const ipConfig = getIpConfig()
+  if (ipConfig.ipRecordingEnabled) {
+    const lastIP: IPType | undefined = domainUser.lastIPs.find(
+      (ipObject: IPType) => ipObject.ip === ip,
+    )
+    if (lastIP) {
+      lastIP.lastConnection = domainUser.lastConnection
+    } else if (ip && ipConfig.proxyCheckingEnabled) {
+      const ipFetcher = IpFetcher()
+      const ipInfo = await ipFetcher.fetchIPInfo(ip)
+      if (!(ipInfo instanceof Error)) {
+        domainUser.lastIPs.push({
+          ip,
+          ...ipInfo,
+          Type: ipInfo.type,
+          firstConnection: domainUser.lastConnection,
+          lastConnection: domainUser.lastConnection,
+        })
+      }
+    }
+  }
+
+  const updateResult = repo.update(domainUser)
+
+  if (updateResult instanceof RepositoryError) {
+    // Don't understand why this cast is necesairy
+    return updateResult as RepositoryError
+  }
+
+  return { domainUser, rawUser: raw }
 }

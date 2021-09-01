@@ -13,6 +13,7 @@ export const caseInsensitiveRegex = (input: string) => {
 }
 
 export const UsersRepository = () => {
+  // Remove when old GQL api is deprecated => only use domain user
   const findByIdIncludeRaw = async (
     userId: UserId,
   ): Promise<{ domainUser: User; raw: UserType } | RepositoryError> => {
@@ -45,17 +46,17 @@ export const UsersRepository = () => {
 
   const update = async ({
     id,
-    username,
     phone,
     language,
     contacts,
     quizQuestions,
     defaultAccountId,
     deviceTokens,
+    lastConnection,
+    lastIPs,
   }: User): Promise<User | RepositoryError> => {
     try {
       const data = {
-        username,
         phone,
         language,
         contacts: contacts.map(({ walletName, alias }: WalletContact) => ({
@@ -63,6 +64,7 @@ export const UsersRepository = () => {
           name: alias,
         })),
         deviceToken: deviceTokens,
+        lastConnection,
       }
       const doc = await User.updateOne({ _id: id }, { $set: data })
       if (doc.nModified !== 1) {
@@ -70,13 +72,14 @@ export const UsersRepository = () => {
       }
       return {
         id,
-        username,
         phone,
         language,
         contacts,
         quizQuestions,
         defaultAccountId,
         deviceTokens,
+        lastConnection,
+        lastIPs,
       }
     } catch (err) {
       return new UnknownRepositoryError(err)
@@ -93,7 +96,6 @@ export const UsersRepository = () => {
 const userFromRaw = (result: UserType): User => {
   return {
     id: result.id as UserId,
-    username: (result.username as Username) || null,
     phone: result.phone as PhoneNumber,
     language: (result.language || UserLanguage.EN_US) as UserLanguage,
     contacts: result.contacts.reduce(
@@ -121,5 +123,7 @@ const userFromRaw = (result: UserType): User => {
       ) || [],
     defaultAccountId: result.id as AccountId,
     deviceTokens: (result.deviceToken || []) as DeviceToken[],
+    lastConnection: result.lastConnection,
+    lastIPs: (result.lastIPs || []) as IPType[],
   }
 }
