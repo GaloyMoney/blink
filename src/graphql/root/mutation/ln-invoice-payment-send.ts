@@ -1,5 +1,5 @@
 import { GT } from "@graphql/index"
-import LnInvoicePaymentSendPayload from "@graphql/types/payload/ln-invoice-payment-send-payload"
+import LnInvoicePaymentSendPayload from "@graphql/types/payload/ln-invoice-payment-send"
 import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
 import Memo from "@graphql/types/scalar/memo"
 

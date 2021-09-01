@@ -1,4 +1,5 @@
 import { GT } from "@graphql/index"
+import { UserInputError } from "apollo-server-errors"
 
 const OnChainAddress = new GT.Scalar({
   name: "OnChainAddress",
@@ -10,7 +11,7 @@ const OnChainAddress = new GT.Scalar({
     if (ast.kind === GT.Kind.STRING) {
       return validOnChainAddressValue(ast.value)
     }
-    return new Error("Invalid type for OnChainAddress")
+    return new UserInputError("Invalid type for OnChainAddress")
   },
 })
 
@@ -19,7 +20,7 @@ function validOnChainAddressValue(value) {
   if (value.match(/^[A-Fa-f0-9]+$/i)) {
     return value.toLowerCase()
   }
-  return new Error("Invalid value for OnChainAddress")
+  return new UserInputError("Invalid value for OnChainAddress")
 }
 
 export default OnChainAddress

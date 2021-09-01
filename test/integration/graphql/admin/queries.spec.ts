@@ -39,7 +39,7 @@ describe("GraphQLQueryRoot", () => {
   it("exposes userDetails by username", async () => {
     const query = `
       query Q {
-        userDetails: userDetailsByUsername(username: "tester") {
+        userDetails: userDetailsByWalletName(walletName: "tester") {
           phone
           createdAt
         }

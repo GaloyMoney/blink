@@ -1,7 +1,8 @@
 import { GT } from "@graphql/index"
-import { updateUserAccountStatus } from "@domain/user"
-import AccountStatus from "@graphql/types/scalar/account-status"
-import UserDetailPayload from "@graphql/types/payload/user-detail"
+import { updateUserAccountStatus } from "@core/user"
+
+import UserDetailPayload from "@graphql/admin/types/payload/user-detail"
+import AccountStatus from "@graphql/admin/types/scalar/account-status"
 
 const UserUpdateStatusInput = new GT.Input({
   name: "UserUpdateStatusInput",
@@ -22,7 +23,16 @@ const UserUpdateStatusMutation = GT.Field({
   },
   resolve: async (_, args) => {
     const { uid, status } = args.input
+    for (const input of [uid, status]) {
+      if (input instanceof Error) {
+        return { errors: [{ message: input.message }] }
+      }
+    }
+
     const user = await updateUserAccountStatus({ uid, status })
+    if (user instanceof Error) {
+      return { errors: [{ message: user.message }] }
+    }
     return { errors: [], userDetails: user }
   },
 })

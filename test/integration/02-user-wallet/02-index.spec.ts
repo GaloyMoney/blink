@@ -1,7 +1,7 @@
 import { getGenericLimits, MS_PER_HOUR } from "@config/app"
 import { generateTokenHelper, getUserWallet } from "test/helpers"
 import { setAccountStatus } from "@core/admin-ops"
-import { usernameExists } from "@domain/user"
+import { usernameExists } from "@core/user"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))

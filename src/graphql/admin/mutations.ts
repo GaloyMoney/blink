@@ -1,19 +1,21 @@
 import { GT } from "@graphql/index"
 
-import UserUpdateStatusMutation from "@graphql/root/mutation/user-update-status"
-import UserUpdateLevelMutation from "@graphql/root/mutation/user-update-level"
-import BusinessUpdateMapInfoMutation from "@graphql/root/mutation/business-update-map-info"
-
 import UserRequestAuthCodeMutation from "@graphql/root/mutation/user-request-auth-code"
 import UserLoginMutation from "@graphql/root/mutation/user-login"
+
+import UserUpdateLevelMutation from "@graphql/admin/root/mutation/user-update-level"
+import UserUpdateStatusMutation from "@graphql/admin/root/mutation/user-update-status"
+import BusinessUpdateMapInfoMutation from "@graphql/admin/root/mutation/business-update-map-info"
 
 const MutationType = new GT.Object({
   name: "Mutation",
   fields: () => ({
     userRequestAuthCode: UserRequestAuthCodeMutation,
     userLogin: UserLoginMutation,
-    userUpdateStatus: UserUpdateStatusMutation,
+
     userUpdateLevel: UserUpdateLevelMutation,
+    userUpdateStatus: UserUpdateStatusMutation,
+
     businessUpdateMapInfo: BusinessUpdateMapInfoMutation,
   }),
 })

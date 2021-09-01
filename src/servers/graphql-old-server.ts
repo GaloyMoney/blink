@@ -1,5 +1,3 @@
-import * as Wallets from "@app/wallets"
-import { SettlementMethod, PaymentInitiationMethod, TxStatus } from "@domain/wallets"
 import {
   stringLength,
   ValidateDirectiveVisitor,
@@ -16,6 +14,8 @@ import path from "path"
 
 import { getFeeRates, levels, onboardingEarn } from "@config/app"
 
+import * as Wallets from "@app/wallets"
+import { SettlementMethod, PaymentInitiationMethod, TxStatus } from "@domain/wallets"
 import { setupMongoConnection } from "@services/mongodb"
 import { activateLndHealthCheck } from "@services/lnd/health"
 import { baseLogger } from "@services/logger"
@@ -23,19 +23,12 @@ import { getActiveLnd, nodesStats, nodeStats } from "@services/lnd/utils"
 import { getHourlyPrice, getMinBuildNumber } from "@services/local-cache"
 import { getCurrentPrice } from "@services/realtime-price"
 import { User } from "@services/mongoose/schema"
-
 import { addToMap, setAccountStatus, setLevel } from "@core/admin-ops"
 import { sendNotification } from "@services/notifications/notification"
 import { login, requestPhoneCode } from "@core/text"
+import { usernameExists } from "@core/user"
 
-import { usernameExists } from "../domain/user"
 import { startApolloServer, isAuthenticated, isEditor } from "./graphql-server"
-import {
-  addInvoiceForRecipient,
-  addInvoice,
-  addInvoiceNoAmountForRecipient,
-  addInvoiceNoAmount,
-} from "@app/wallets"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
 
@@ -239,11 +232,11 @@ const resolvers = {
     noauthAddInvoice: async (_, { username, value }) => {
       const lnInvoice =
         value && value > 0
-          ? await addInvoiceForRecipient({
+          ? await Wallets.addInvoiceForRecipient({
               recipient: username,
               amount: value,
             })
-          : await addInvoiceNoAmountForRecipient({
+          : await Wallets.addInvoiceNoAmountForRecipient({
               recipient: username,
             })
       if (lnInvoice instanceof Error) throw lnInvoice
@@ -253,12 +246,12 @@ const resolvers = {
       addInvoice: async ({ value, memo }) => {
         const lnInvoice =
           value && value > 0
-            ? await addInvoice({
+            ? await Wallets.addInvoice({
                 walletId: wallet.user.id,
                 amount: value,
                 memo,
               })
-            : await addInvoiceNoAmount({
+            : await Wallets.addInvoiceNoAmount({
                 walletId: wallet.user.id,
                 memo,
               })

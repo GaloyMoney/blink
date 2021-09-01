@@ -1,4 +1,5 @@
 import { GT } from "@graphql/index"
+import { UserInputError } from "apollo-server-errors"
 
 const ContactAlias = new GT.Scalar({
   name: "ContactAlias",
@@ -11,7 +12,7 @@ const ContactAlias = new GT.Scalar({
     if (ast.kind === GT.Kind.STRING) {
       return validContactAliasValue(ast.value)
     }
-    return new Error("Invalid type for ContactAlias")
+    return new UserInputError("Invalid type for ContactAlias")
   },
 })
 
@@ -19,7 +20,7 @@ function validContactAliasValue(value) {
   if (value.match(/^[\p{Alpha}][\p{Alpha} -]{3,}/u)) {
     return value
   }
-  return new Error("Invalid value for ContactAlias")
+  return new UserInputError("Invalid value for ContactAlias")
 }
 
 export default ContactAlias

@@ -1,7 +1,8 @@
 import { GT } from "@graphql/index"
 
-import { updateBusinessMapInfo } from "@domain/user"
-import UserDetailPayload from "@graphql/types/payload/user-detail"
+import { updateBusinessMapInfo } from "@core/user"
+
+import UserDetailPayload from "@graphql/admin/types/payload/user-detail"
 import WalletName from "@graphql/types/scalar/wallet-name"
 
 const BusinessUpdateMapInfoInput = new GT.Input({
@@ -29,6 +30,7 @@ const BusinessUpdateMapInfoMutation = GT.Field({
   },
   resolve: async (_, args) => {
     const { walletName, title, latitude, longitude } = args.input
+
     for (const input of [walletName, title, latitude, longitude]) {
       if (input instanceof Error) {
         return { errors: [{ message: input.message }] }
@@ -36,6 +38,11 @@ const BusinessUpdateMapInfoMutation = GT.Field({
     }
 
     const user = await updateBusinessMapInfo({ walletName, title, latitude, longitude })
+
+    if (user instanceof Error) {
+      return { errors: [{ message: user.message }] }
+    }
+
     return {
       errors: [],
       userDetails: {

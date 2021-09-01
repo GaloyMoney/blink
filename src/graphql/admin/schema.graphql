@@ -1,7 +1,40 @@
+type InputError implements Error {
+  message: String!
+  path: [String]
+  code: InputErrorCode!
+}
+
+interface Error {
+  message: String!
+  path: [String]
+}
+
+enum InputErrorCode {
+  INVALID_INPUT
+  VALUE_TOO_SHORT
+  VALUE_TOO_LONG
+  VALUE_NOT_ALLOWED
+}
+
+type PaymentError implements Error {
+  message: String!
+  path: [String]
+  code: PaymentErrorCode!
+}
+
+enum PaymentErrorCode {
+  ACCOUNT_LOCKED
+  LIMIT_EXCEEDED
+  INSUFFICENT_BALANCE
+  INVOICE_PAID
+  NO_LIQUIDITY
+  NO_ROUTE
+}
+
 type Query {
   allLevels: [AccountLevel!]!
-  userDetailsByPhone(phone: Phone!): User!
-  userDetailsByUsername(username: WalletName!): User!
+  userDetailsByPhone(phone: Phone!): UserDetails!
+  userDetailsByWalletName(walletName: WalletName!): UserDetails!
 }
 
 enum AccountLevel {
@@ -9,17 +42,16 @@ enum AccountLevel {
   TWO
 }
 
-type User {
+type UserDetails {
   id: ID!
   phone: Phone!
+  walletName: WalletName
   language: Language!
-  contacts: [WalletContact!]!
-  quizQuestions: [UserQuizQuestion!]!
-  createdAt: Timestamp!
   level: AccountLevel
   status: AccountStatus
   title: String
   coordinates: Coordinates
+  createdAt: Timestamp!
 }
 
 """
@@ -27,45 +59,15 @@ Phone number which includes country code
 """
 scalar Phone
 
+"""
+Unique identifier of an account wallet
+"""
+scalar WalletName
+
 enum Language {
   EN_US
   ES_SV
 }
-
-type WalletContact {
-  walletName: ID!
-  alias: ContactAlias
-  transactionsCount: Int!
-}
-
-"""
-An alias name that a user can set for a wallet (with which they have transactions)
-"""
-scalar ContactAlias
-
-type UserQuizQuestion {
-  question: QuizQuestion!
-  completed: Boolean!
-}
-
-type QuizQuestion {
-  id: ID!
-
-  """
-  The earn reward in Satoshis for the quiz question
-  """
-  earnAmount: SatAmount!
-}
-
-"""
-(Positive) Satoshi amount (i.g. quiz earning)
-"""
-scalar SatAmount
-
-"""
-Date field, serialized as the number of milliseconds since the Unix Epoch
-"""
-scalar Timestamp
 
 enum AccountStatus {
   LOCKED
@@ -78,26 +80,21 @@ type Coordinates {
 }
 
 """
-Unique identifier of an account wallet
+Date field, serialized as the number of milliseconds since the Unix Epoch
 """
-scalar WalletName
+scalar Timestamp
 
 type Mutation {
   userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
   userLogin(input: UserLoginInput!): AuthTokenPayload!
-  userUpdateStatus(input: UserUpdateStatusInput!): UserDetailPayload!
   userUpdateLevel(input: UserUpdateLevelInput!): UserDetailPayload!
+  userUpdateStatus(input: UserUpdateStatusInput!): UserDetailPayload!
   businessUpdateMapInfo(input: BusinessUpdateMapInfoInput!): UserDetailPayload!
 }
 
 type SuccessPayload {
   errors: [Error!]!
   success: Boolean
-}
-
-interface Error {
-  message: String!
-  path: [String]
 }
 
 input UserRequestAuthCodeInput {
@@ -126,17 +123,17 @@ scalar OneTimeAuthCode
 
 type UserDetailPayload {
   errors: [Error!]!
-  userDetails: User
-}
-
-input UserUpdateStatusInput {
-  uid: ID!
-  status: AccountStatus!
+  userDetails: UserDetails
 }
 
 input UserUpdateLevelInput {
   uid: ID!
   level: AccountLevel!
+}
+
+input UserUpdateStatusInput {
+  uid: ID!
+  status: AccountStatus!
 }
 
 input BusinessUpdateMapInfoInput {
