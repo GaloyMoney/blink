@@ -2,7 +2,8 @@ import { GT } from "@graphql/index"
 
 const ContactAlias = new GT.Scalar({
   name: "ContactAlias",
-  description: "Full name of an API user",
+  description:
+    "An alias name that a user can set for a wallet (with which they have transactions)",
   parseValue(value) {
     return validContactAliasValue(value)
   },

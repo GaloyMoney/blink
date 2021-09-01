@@ -39,7 +39,7 @@ type WalletContact {
 }
 
 """
-Full name of an API user
+An alias name that a user can set for a wallet (with which they have transactions)
 """
 scalar ContactAlias
 

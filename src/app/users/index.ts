@@ -8,29 +8,28 @@ export const getUser = async (userId: UserId): Promise<User | ApplicationError> 
 
 export const updateWalletContactAlias = async ({
   userId,
-  contact,
+  walletName,
   alias,
 }: {
   userId: UserId
-  contact: string
+  walletName: string
   alias: string
 }): Promise<User | ApplicationError> => {
   const repo = UsersRepository()
   const user = await repo.findById(userId)
-
   if (user instanceof Error) {
     return user
   }
 
   const found = user.contacts.find(
-    (walletContact: WalletContact) => walletContact.walletName === contact,
+    (walletContact) => walletContact.walletName === walletName,
   )
   if (!found) {
     return new ValidationError("User doesn't have walletContact")
   }
   found.alias = alias as ContactAlias
 
-  const result = repo.update(user)
+  const result = await repo.update(user)
   if (result instanceof Error) {
     return result
   }
