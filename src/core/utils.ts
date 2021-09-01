@@ -1,8 +1,7 @@
 import { GraphQLError } from "graphql"
 import { parsePaymentRequest } from "invoices"
-import axios from "axios"
 
-import { getIpConfig, PROXY_CHECK_APIKEY } from "@config/app"
+import { getIpConfig } from "@config/app"
 
 import { User } from "@services/mongoose/schema"
 
@@ -103,41 +102,6 @@ export const inputXOR = (arg1, arg2) => {
   if (!(!value1 !== !value2)) {
     // will be deleted with current Samer PR
     throw new Error(`Either ${key1} or ${key2} is required, but not both`)
-  }
-}
-
-export const fetchIP = async ({ ip }) => {
-  const { data } = await axios.get(
-    `http://proxycheck.io/v2/${ip}?key=${PROXY_CHECK_APIKEY}&vpn=1&asn=1`,
-  )
-  return { ...data[ip], status: data.status }
-}
-
-export const updateIPDetails = async ({ ip, user, logger }): Promise<void> => {
-  if (process.env.NODE_ENV === "test") {
-    return
-  }
-
-  try {
-    // skip axios.get call if ip already exists in user object
-    if (user.lastIPs.some((ipObject) => ipObject.ip === ip)) {
-      return
-    }
-
-    const res = await User.updateOne(
-      { "_id": user._id, "lastIPs.ip": ip },
-      { $set: { "lastIPs.$.lastConnection": Date.now() } },
-    )
-
-    if (!res.nModified && ipConfig.proxyCheckingEnabled) {
-      const ipinfo = await fetchIP({ ip })
-      await User.findOneAndUpdate(
-        { "_id": user._id, "lastIPs.ip": { $ne: ip } },
-        { $push: { lastIPs: { ip, ...ipinfo, Type: ipinfo?.type } } },
-      )
-    }
-  } catch (error) {
-    logger.warn({ error }, "error setting last ip")
   }
 }
 

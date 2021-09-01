@@ -18,12 +18,8 @@ import {
   limiterRequestPhoneCode,
   limiterRequestPhoneCodeIp,
 } from "./rate-limit"
-import {
-  fetchIP,
-  isIPBlacklisted,
-  isIPTypeBlacklisted,
-  randomIntFromInterval,
-} from "./utils"
+import { isIPBlacklisted, isIPTypeBlacklisted, randomIntFromInterval } from "./utils"
+import { IpFetcher } from "@services/ipfetcher"
 
 export const requestPhoneCode = async ({
   phone,
@@ -40,19 +36,15 @@ export const requestPhoneCode = async ({
     throw new IPBlacklistedError("IP Blacklisted", { logger, ip })
   }
 
-  let ipDetails
-
-  try {
-    ipDetails = await fetchIP({ ip })
-  } catch (err) {
-    logger.warn({ err }, "Unable to fetch ip details")
-  }
-
-  if (!ipDetails || ipDetails.status === "denied" || ipDetails.status === "error") {
+  const ipFetcher = IpFetcher()
+  const ipDetails = await ipFetcher.fetchIPInfo(ip)
+  if (ipDetails instanceof Error) {
+    logger.warn({ ipDetails }, "Unable to fetch ip details")
+  } else if (ipDetails.status === "denied" || ipDetails.status === "error") {
     logger.warn({ ipDetails }, "Unable to fetch ip details")
   }
 
-  if (isIPTypeBlacklisted({ type: ipDetails?.type })) {
+  if (!(ipDetails instanceof Error) && isIPTypeBlacklisted({ type: ipDetails.type })) {
     throw new IPBlacklistedError("IP type Blacklisted", { logger, ipDetails })
   }
 
