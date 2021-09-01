@@ -6,8 +6,9 @@ import {
   LightningServiceError,
   InvoiceNotFoundError,
   PaymentNotFoundError,
+  PaymentStatus,
 } from "@domain/bitcoin/lightning"
-import { createInvoice, getInvoice, getPayment } from "lightning"
+import { createInvoice, getInvoice, getPayment, GetPaymentResult } from "lightning"
 import { getActiveLnd, getLndFromPubkey } from "./utils"
 
 export const LndService = (): ILightningService | LightningServiceError => {
@@ -80,18 +81,21 @@ export const LndService = (): ILightningService | LightningServiceError => {
     }
 
     try {
-      const { is_confirmed, is_failed, payment } = await getPayment({
+      const { is_confirmed, is_failed, payment }: GetPaymentResult = await getPayment({
         lnd,
         id: paymentHash,
       })
-      const safeFee = payment?.safe_fee ? toSats(payment?.safe_fee) : null
+      if (!payment) return new PaymentNotFoundError()
       return {
-        isSettled: !!is_confirmed,
-        isFailed: !!is_failed,
-        safeFee,
+        status: is_confirmed
+          ? PaymentStatus.Settled
+          : is_failed
+          ? PaymentStatus.Failed
+          : PaymentStatus.Pending,
+        roundedUpFee: toSats(payment.safe_fee),
       }
     } catch (err) {
-      return new PaymentNotFoundError()
+      return new UnknownLightningServiceError()
     }
   }
 

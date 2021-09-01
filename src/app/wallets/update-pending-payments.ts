@@ -1,4 +1,5 @@
 import { toSats } from "@domain/bitcoin"
+import { PaymentStatus } from "@domain/bitcoin/lightning"
 import { ValidationError } from "@domain/errors"
 import { toLiabilitiesAccountId } from "@domain/ledger"
 import { FeeDifferenceCalculator } from "@domain/ledger/fee-difference-calculator"
@@ -72,9 +73,9 @@ const updatePendingPayment = async ({
     lightningLogger.error({ err: lnPaymentLookup }, "issue fetching payment")
     return lnPaymentLookup
   }
-  const { isSettled, isFailed, safeFee } = lnPaymentLookup
+  const { status, roundedUpFee } = lnPaymentLookup
 
-  if (isSettled || isFailed) {
+  if (status === PaymentStatus.Settled || status === PaymentStatus.Failed) {
     const ledgerService = LedgerService()
     const settled = await ledgerService.settlePendingLiabilityTransactions(paymentHash)
     if (settled instanceof Error) {
@@ -82,14 +83,14 @@ const updatePendingPayment = async ({
       return settled
     }
 
-    if (isSettled) {
+    if (status === PaymentStatus.Settled) {
       paymentLogger.info(
         { success: true, id: paymentHash, payment },
         "payment has been confirmed",
       )
       if (!payment.feeKnownInAdvance) {
         const maxFee = payment.fee
-        const actualFee = toSats(safeFee || 0)
+        const actualFee = roundedUpFee
         const feeDifference = FeeDifferenceCalculator().paymentFeeDifference({
           maxFee,
           actualFee,
@@ -115,9 +116,7 @@ const updatePendingPayment = async ({
         })
         if (result instanceof Error) return result
       }
-    }
-
-    if (isFailed) {
+    } else {
       const voided = await ledgerService.voidLedgerTransactionsForJournal(
         payment.journalId,
       )

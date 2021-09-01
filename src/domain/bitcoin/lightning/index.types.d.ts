@@ -14,6 +14,9 @@ type PaymentHash = string & { [paymentHashSymbol]: never }
 declare const paymentSecretSymbol: unique symbol
 type PaymentSecret = string & { [paymentSecretSymbol]: never }
 
+type PaymentStatus =
+  typeof import("./index").PaymentStatus[keyof typeof import("./index").PaymentStatus]
+
 type RouteHint = {
   baseFeeMTokens?: string
   channel?: string
@@ -29,9 +32,8 @@ type LnInvoiceLookup = {
 }
 
 type LnPaymentLookup = {
-  readonly isSettled: boolean
-  readonly isFailed: boolean
-  readonly safeFee: Satoshis | null
+  readonly status: PaymentStatus
+  readonly roundedUpFee: Satoshis
 }
 
 type LnInvoice = {
