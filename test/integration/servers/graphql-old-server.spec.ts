@@ -1,8 +1,8 @@
-import { redis } from "@services/redis"
 import { sleep } from "@core/utils"
 import { yamlConfig, getRequestPhoneCodeLimits, getLoginAttemptLimits } from "@config/app"
 import { createTestClient } from "apollo-server-testing"
 import { startApolloServerForOldSchema } from "@servers/graphql-old-server"
+import { clearAccountLocks, clearLimiters } from "test/helpers"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
@@ -17,16 +17,13 @@ beforeAll(async () => {
 })
 
 beforeEach(async () => {
-  await clearLimiters("login")
-  await clearLimiters("failed_attempt_ip")
-  await clearLimiters("request_phone_code")
-  await clearLimiters("request_phone_code_ip")
+  await clearLimiters()
+  await clearAccountLocks()
 })
 
 afterAll(async () => {
   await sleep(2500)
   await httpServer.close()
-  redis.disconnect()
 })
 
 describe("graphql", () => {
@@ -119,10 +116,3 @@ describe("graphql", () => {
     }
   })
 })
-
-const clearLimiters = async (prefix) => {
-  const keys = await redis.keys(`${prefix}:*`)
-  for (const key of keys) {
-    await redis.del(key)
-  }
-}

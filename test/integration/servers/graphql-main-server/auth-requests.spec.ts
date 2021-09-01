@@ -11,7 +11,12 @@ import LN_INVOICE_FEE_PROBE from "./mutations/ln-invoice-fee-probe.gql"
 import LN_NO_AMOUNT_INVOICE_FEE_PROBE from "./mutations/ln-no-amount-invoice-fee-probe.gql"
 import LN_INVOICE_PAYMENT_SEND from "./mutations/ln-invoice-payment-send.gql"
 import LN_NO_AMOUNT_INVOICE_PAYMENT_SEND from "./mutations/ln-no-amount-invoice-payment-send.gql"
-import { createInvoice, lndOutside2, clearLimiters } from "test/helpers"
+import {
+  createInvoice,
+  lndOutside2,
+  clearLimiters,
+  clearAccountLocks,
+} from "test/helpers"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
@@ -32,6 +37,7 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   await clearLimiters()
+  await clearAccountLocks()
 })
 
 afterAll(async () => {
