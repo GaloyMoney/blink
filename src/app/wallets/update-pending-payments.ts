@@ -21,23 +21,25 @@ export const updatePendingPayments = async ({
   const lockService = LockService()
   await lockService.lockWalletId({ walletId, logger }, async () => {
     const ledgerService = LedgerService()
-    const pendingPayments = await ledgerService.getPendingPayments(liabilitiesAccountId)
-    if (pendingPayments instanceof Error) return pendingPayments
+    const pendingPaymentTransactions = await ledgerService.getPendingPayments(
+      liabilitiesAccountId,
+    )
+    if (pendingPaymentTransactions instanceof Error) return pendingPaymentTransactions
 
-    for (const payment of pendingPayments) {
-      await updatePendingPayment({ walletId, payment, logger })
+    for (const paymentLiabilityTx of pendingPaymentTransactions) {
+      await updatePendingPayment({ walletId, paymentLiabilityTx, logger })
     }
   })
 }
 
 const updatePendingPayment = async ({
   walletId,
-  payment,
+  paymentLiabilityTx,
   logger,
   lock,
 }: {
   walletId: WalletId
-  payment: LedgerTransaction
+  paymentLiabilityTx: LedgerTransaction
   logger: Logger
   lock?: DistributedLock
 }): Promise<void | ApplicationError> => {
@@ -46,13 +48,13 @@ const updatePendingPayment = async ({
     protocol: "lightning",
     transactionType: "payment",
     onUs: false,
-    payment,
+    payment: paymentLiabilityTx,
   })
 
   const lndService = LndService()
   if (lndService instanceof Error) return lndService
 
-  const { paymentHash, pubkey } = payment
+  const { paymentHash, pubkey } = paymentLiabilityTx
   if (!paymentHash)
     return new ValidationError("paymentHash missing from payment transaction")
   if (!pubkey) return new ValidationError("pubkey missing from payment transaction")
@@ -83,18 +85,18 @@ const updatePendingPayment = async ({
 
     if (status === PaymentStatus.Settled) {
       paymentLogger.info(
-        { success: true, id: paymentHash, payment },
+        { success: true, id: paymentHash, payment: paymentLiabilityTx },
         "payment has been confirmed",
       )
       return reimburseFee({
         walletId,
-        payment,
+        paymentLiabilityTx,
         roundedUpFee,
         logger,
       })
     }
     return revertTransaction({
-      payment,
+      paymentLiabilityTx,
       lnPaymentLookup,
       logger: paymentLogger,
     })
@@ -103,27 +105,27 @@ const updatePendingPayment = async ({
 
 const reimburseFee = async ({
   walletId,
-  payment,
+  paymentLiabilityTx,
   roundedUpFee,
   logger,
 }: {
   walletId: WalletId
-  payment: LedgerTransaction
+  paymentLiabilityTx: LedgerTransaction
   roundedUpFee: Satoshis
   logger: Logger
 }): Promise<void | ApplicationError> => {
-  const { paymentHash } = payment
+  const { paymentHash } = paymentLiabilityTx
   if (!paymentHash)
     return new ValidationError("paymentHash missing from payment transaction")
 
-  if (!payment.feeKnownInAdvance) {
+  if (!paymentLiabilityTx.feeKnownInAdvance) {
     const feeDifference = FeeReimbursement({
-      prepaidFee: payment.fee,
+      prepaidFee: paymentLiabilityTx.fee,
     }).getReimbursement({ actualFee: roundedUpFee })
     if (feeDifference === null) {
       logger.warn(
         `Invalid reimbursement fee for ${{
-          maxFee: payment.fee,
+          maxFee: paymentLiabilityTx.fee,
           actualFee: roundedUpFee,
         }}`,
       )
@@ -132,9 +134,9 @@ const reimburseFee = async ({
 
     logger.info(
       {
-        paymentResult: payment,
+        paymentResult: paymentLiabilityTx,
         feeDifference,
-        maxFee: payment.fee,
+        maxFee: paymentLiabilityTx.fee,
         actualFee: roundedUpFee,
         id: paymentHash,
       },
@@ -152,23 +154,25 @@ const reimburseFee = async ({
       paymentHash: paymentHash,
       sats: feeDifference,
       usd,
-      journalId: payment.journalId,
+      journalId: paymentLiabilityTx.journalId,
     })
     if (result instanceof Error) return result
   }
 }
 
 const revertTransaction = async ({
-  payment,
+  paymentLiabilityTx,
   lnPaymentLookup,
   logger,
 }: {
-  payment: LedgerTransaction
+  paymentLiabilityTx: LedgerTransaction
   lnPaymentLookup: LnPaymentLookup
   logger: Logger
 }): Promise<void | ApplicationError> => {
   const ledgerService = LedgerService()
-  const voided = await ledgerService.voidLedgerTransactionsForJournal(payment.journalId)
+  const voided = await ledgerService.voidLedgerTransactionsForJournal(
+    paymentLiabilityTx.journalId,
+  )
   if (voided instanceof Error) {
     const error = `error voiding payment entry`
     logger.fatal(
