@@ -1,4 +1,5 @@
 import { GT } from "@graphql/index"
+import { UserInputError } from "apollo-server-errors"
 
 const LnPaymentSecret = new GT.Scalar({
   name: "LnPaymentSecret",
@@ -9,7 +10,7 @@ const LnPaymentSecret = new GT.Scalar({
     if (ast.kind === GT.Kind.STRING) {
       return validLnPaymentSecret(ast.value)
     }
-    return new Error("Invalid type for LnPaymentSecret")
+    return new UserInputError("Invalid type for LnPaymentSecret")
   },
 })
 
@@ -18,7 +19,7 @@ function validLnPaymentSecret(value) {
   if (value.match(/^[A-Fa-f0-9]{64}$/)) {
     return value
   }
-  return new Error("Invalid value for LnPaymentSecret")
+  return new UserInputError("Invalid value for LnPaymentSecret")
 }
 
 export default LnPaymentSecret

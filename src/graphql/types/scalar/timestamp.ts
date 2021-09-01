@@ -1,4 +1,5 @@
 import { GT } from "@graphql/index"
+import { UserInputError } from "apollo-server-errors"
 
 const Timestamp = new GT.Scalar({
   name: "Timestamp",
@@ -15,7 +16,7 @@ const Timestamp = new GT.Scalar({
     if (ast.kind === GT.Kind.STRING) {
       return new Date(parseInt(ast.value, 10))
     }
-    return new Error("Invalid type for Date")
+    return new UserInputError("Invalid type for Date")
   },
 })
 

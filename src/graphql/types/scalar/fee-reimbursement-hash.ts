@@ -1,4 +1,5 @@
 import { GT } from "@graphql/index"
+import { UserInputError } from "apollo-server-errors"
 
 const FeeReimbursementHash = new GT.Scalar({
   name: "FeeReimbursementHash",
@@ -10,7 +11,7 @@ const FeeReimbursementHash = new GT.Scalar({
     if (ast.kind === GT.Kind.STRING) {
       return validFeeReimbursementHashValue(ast.value)
     }
-    return new Error("Invalid type for FeeReimbursementHash")
+    return new UserInputError("Invalid type for FeeReimbursementHash")
   },
 })
 
@@ -19,7 +20,7 @@ function validFeeReimbursementHashValue(value) {
   if (value.match(/^[A-Fa-f0-9]+$/i)) {
     return value.toLowerCase()
   }
-  return new Error("Invalid value for FeeReimbursementHash")
+  return new UserInputError("Invalid value for FeeReimbursementHash")
 }
 
 export default FeeReimbursementHash
