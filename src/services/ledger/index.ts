@@ -43,29 +43,7 @@ export const LedgerService = (): ILedgerService => {
     try {
       const { results } = await MainBook.ledger({ account: liabilitiesAccountId })
       // translate raw schema result -> LedgerTransaction
-      return results.map((tx): LedgerTransaction => {
-        return {
-          id: tx.id,
-          type: tx.type,
-          debit: toSats(tx.debit),
-          credit: toSats(tx.credit),
-          fee: toSats(tx.fee),
-          usd: tx.usd,
-          feeUsd: tx.feeUsd,
-          currency: tx.currency,
-          timestamp: tx.timestamp,
-          pendingConfirmation: tx.pending,
-          journalId: tx.journal,
-          lnMemo: tx.memo,
-          walletName: tx.username,
-          memoFromPayer: tx.memoPayer,
-          paymentHash: tx.hash,
-          pubkey: tx.pubkey,
-          addresses: tx.payee_addresses,
-          txId: tx.hash,
-          feeKnownInAdvance: tx.feeKnownInAdvance,
-        }
-      })
+      return results.map((tx) => translateToLedgerTx(tx))
     } catch (err) {
       return new UnknownLedgerError(err)
     }
@@ -82,29 +60,7 @@ export const LedgerService = (): ILedgerService => {
         pending: true,
       })
       // translate raw schema result -> LedgerTransaction
-      return results.map(
-        (tx): LedgerTransaction => ({
-          id: tx.id,
-          type: tx.type,
-          debit: toSats(tx.debit),
-          credit: toSats(tx.credit),
-          fee: toSats(tx.fee),
-          usd: tx.usd,
-          feeUsd: tx.feeUsd,
-          currency: tx.currency,
-          timestamp: tx.timestamp,
-          pendingConfirmation: tx.pending,
-          journalId: tx.journal,
-          lnMemo: tx.memo,
-          walletName: tx.username,
-          memoFromPayer: tx.memoPayer,
-          paymentHash: tx.hash,
-          pubkey: tx.pubkey,
-          addresses: tx.payee_addresses,
-          txId: tx.hash,
-          feeKnownInAdvance: tx.feeKnownInAdvance,
-        }),
-      )
+      return results.map((tx) => translateToLedgerTx(tx))
     } catch (err) {
       return new UnknownLedgerError(err)
     }
@@ -266,3 +222,25 @@ export const LedgerService = (): ILedgerService => {
     voidLedgerTransactionsForJournal,
   }
 }
+
+const translateToLedgerTx = (tx): LedgerTransaction => ({
+  id: tx.id,
+  type: tx.type,
+  debit: toSats(tx.debit),
+  credit: toSats(tx.credit),
+  fee: toSats(tx.fee),
+  usd: tx.usd,
+  feeUsd: tx.feeUsd,
+  currency: tx.currency,
+  timestamp: tx.timestamp,
+  pendingConfirmation: tx.pending,
+  journalId: tx.journal,
+  lnMemo: tx.memo,
+  walletName: tx.username,
+  memoFromPayer: tx.memoPayer,
+  paymentHash: tx.hash,
+  pubkey: tx.pubkey,
+  addresses: tx.payee_addresses,
+  txId: tx.hash,
+  feeKnownInAdvance: tx.feeKnownInAdvance,
+})
