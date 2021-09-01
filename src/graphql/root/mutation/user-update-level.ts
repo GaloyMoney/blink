@@ -2,7 +2,7 @@ import { GT } from "@graphql/index"
 import AccountLevel from "@graphql/types/scalar/account-level"
 
 import UserDetailPayload from "@graphql/types/payload/user-detail"
-import { updateUserLevel } from "@domain/user"
+import { updateUserLevel } from "@core/user"
 
 const UserUpdateLevelInput = new GT.Input({
   name: "UserUpdateLevelInput",

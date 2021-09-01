@@ -1,6 +1,6 @@
 import { GT } from "@graphql/index"
 
-import { updateBusinessMapInfo } from "@domain/user"
+import { updateBusinessMapInfo } from "@core/user"
 import UserDetailPayload from "@graphql/types/payload/user-detail"
 import WalletName from "@graphql/types/scalar/wallet-name"
 

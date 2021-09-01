@@ -1,5 +1,5 @@
 import { GT } from "@graphql/index"
-import { updateUserAccountStatus } from "@domain/user"
+import { updateUserAccountStatus } from "@core/user"
 import AccountStatus from "@graphql/types/scalar/account-status"
 import UserDetailPayload from "@graphql/types/payload/user-detail"
 
