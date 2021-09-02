@@ -241,6 +241,7 @@ scalar LnPaymentHash
 type Query {
   globals: Globals
   me: User
+  walletNameAvailable(walletName: WalletName!): Boolean
 }
 
 type Globals {
