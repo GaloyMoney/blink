@@ -90,6 +90,7 @@ const updatePendingPayment = async ({
       return reimburseFee({
         liabilitiesAccountId,
         paymentLiabilityTx,
+        paymentHash,
         roundedUpFee,
         logger,
       })
@@ -105,19 +106,16 @@ const updatePendingPayment = async ({
 const reimburseFee = async ({
   liabilitiesAccountId,
   paymentLiabilityTx,
+  paymentHash,
   roundedUpFee,
   logger,
 }: {
   liabilitiesAccountId: LiabilitiesAccountId
   paymentLiabilityTx: LedgerTransaction
+  paymentHash: PaymentHash
   roundedUpFee: Satoshis
   logger: Logger
 }): Promise<void | ApplicationError> => {
-  const { paymentHash } = paymentLiabilityTx
-  // If we had PaymentLedgerType => no need for checking the fields
-  if (!paymentHash)
-    return new InconsistentDataError("paymentHash missing from payment transaction")
-
   if (!paymentLiabilityTx.feeKnownInAdvance) {
     const feeDifference = FeeReimbursement(paymentLiabilityTx.fee).getReimbursement({
       actualFee: roundedUpFee,
