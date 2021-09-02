@@ -234,7 +234,7 @@ const translateToLedgerTx = (tx): LedgerTransaction => ({
   currency: tx.currency,
   timestamp: tx.timestamp,
   pendingConfirmation: tx.pending,
-  journalId: tx.journal,
+  journalId: tx._journal.toString(),
   lnMemo: tx.memo,
   walletName: tx.username,
   memoFromPayer: tx.memoPayer,
