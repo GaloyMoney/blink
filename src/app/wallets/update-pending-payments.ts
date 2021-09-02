@@ -121,9 +121,9 @@ const reimburseFee = async ({
     return new InconsistentDataError("paymentHash missing from payment transaction")
 
   if (!paymentLiabilityTx.feeKnownInAdvance) {
-    const feeDifference = FeeReimbursement({
-      prepaidFee: paymentLiabilityTx.fee,
-    }).getReimbursement({ actualFee: roundedUpFee })
+    const feeDifference = FeeReimbursement(paymentLiabilityTx.fee).getReimbursement({
+      actualFee: roundedUpFee,
+    })
     if (feeDifference === null) {
       logger.warn(
         `Invalid reimbursement fee for ${{
