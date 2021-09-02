@@ -63,7 +63,7 @@ const updatePendingLightningPayments = async () => {
       const userWallet = await WalletFactory({ user, logger })
       await Wallets.updatePendingPayments({
         walletId: userWallet.user.id as WalletId,
-        logger: userWallet.logger,
+        logger,
       })
     },
   })
