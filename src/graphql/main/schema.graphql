@@ -314,6 +314,9 @@ type Mutation {
   lnNoAmountInvoicePaymentSend(
     input: LnNoAmountInvoicePaymentInput!
   ): LnInvoicePaymentSendPayload!
+  intraLedgerPaymentSend(
+    input: IntraLedgerPaymentSendInput!
+  ): LnInvoicePaymentSendPayload!
 }
 
 type SuccessPayload {
@@ -461,6 +464,12 @@ input LnInvoicePaymentInput {
 
 input LnNoAmountInvoicePaymentInput {
   paymentRequest: LnPaymentRequest!
+  amount: SatAmount!
+  memo: Memo
+}
+
+input IntraLedgerPaymentSendInput {
+  recipient: WalletName!
   amount: SatAmount!
   memo: Memo
 }
