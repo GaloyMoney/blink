@@ -19,7 +19,7 @@ export const updatePendingPayments = async ({
   const liabilitiesAccountId = toLiabilitiesAccountId(walletId)
 
   const lockService = LockService()
-  await lockService.lockWalletId({ walletId, logger }, async () => {
+  await lockService.lockWalletId({ walletId, logger, lock }, async () => {
     const ledgerService = LedgerService()
     const pendingPaymentTransactions = await ledgerService.listPendingPayments(
       liabilitiesAccountId,
@@ -36,12 +36,10 @@ const updatePendingPayment = async ({
   walletId,
   paymentLiabilityTx,
   logger,
-  lock,
 }: {
   walletId: WalletId
   paymentLiabilityTx: LedgerTransaction
   logger: Logger
-  lock?: DistributedLock
 }): Promise<void | ApplicationError> => {
   const paymentLogger = logger.child({
     topic: "payment",
