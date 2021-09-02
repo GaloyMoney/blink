@@ -241,5 +241,5 @@ const translateToLedgerTx = (tx): LedgerTransaction => ({
   pubkey: tx.pubkey,
   addresses: tx.payee_addresses,
   txId: tx.hash,
-  feeKnownInAdvance: tx.feeKnownInAdvance,
+  feeKnownInAdvance: tx.feeKnownInAdvance || false,
 })
