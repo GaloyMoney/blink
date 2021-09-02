@@ -1,7 +1,7 @@
 #@data/values
 ---
 git_uri: git@github.com:GaloyMoney/galoy.git
-git_branch: galoy_ci
+git_branch: main
 git_charts_uri: git@github.com:GaloyMoney/charts.git
 git_charts_branch: dev
 github_private_key: ((github-ssh-key.private_key))
