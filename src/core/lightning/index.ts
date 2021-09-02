@@ -58,8 +58,11 @@ export const LightningMixin = (superclass) =>
           lock,
           logger: this.logger,
         }),
-        this.updatePendingPayments(lock),
-        super.updatePending(lock),
+        Wallets.updatePendingPayments({
+          walletId: this.user.id as WalletId,
+          lock,
+          logger: this.logger,
+        }),
       ])
     }
 
