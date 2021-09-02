@@ -116,7 +116,6 @@ cp -R ./tmp/* $INFRADIR/configs/
 set -e
 
 helmUpgrade bitcoind $localdevpath -f $INFRADIR/configs/bitcoind/$NETWORK.yaml galoy/bitcoind --version=$bitcoindVersion
-helmUpgrade specter $localdevpath -f $INFRADIR/configs/specter/$NETWORK.yaml galoy/specter
 
 # bug with --wait: https://github.com/helm/helm/issues/7139 ?
 kubectlWait app.kubernetes.io/name=bitcoind
@@ -155,6 +154,7 @@ if [ "$NETWORK" == "testnet" ] || [ "$NETWORK" == "mainnet" ];
 then
   kubectlLndDeletionWait
   helmUpgrade rtl -f $INFRADIR/configs/rtl/$NETWORK.yaml galoy/rtl
+  helmUpgrade specter -f $INFRADIR/configs/specter/$NETWORK.yaml galoy/specter
 else
   helmUpgrade lnd-outside-1 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpathOutside galoy/lnd & \
   helmUpgrade lnd-outside-2 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpathOutside galoy/lnd
