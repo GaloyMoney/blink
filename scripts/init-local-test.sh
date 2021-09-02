@@ -13,7 +13,7 @@ helm repo add galoy https://galoymoney.github.io/charts/
 helm repo update
 
 lndVersion="1.3.4"
-bitcoindVersion="0.2.4"
+bitcoindVersion="0.3.0"
 
 if [ ${LOCAL} ]
 then
