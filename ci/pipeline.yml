@@ -193,7 +193,12 @@ jobs:
       passed: [build-edge-image]
     - get: repo
       trigger: true
-      passed: [check-code, test-unit, test-integration]
+      passed:
+      - check-code
+      - test-unit
+      - test-integration
+      - build-debug-edge-image
+      - build-edge-image
     - get: charts-repo
       params: { skip_download: true }
     - get: pipeline-tasks
