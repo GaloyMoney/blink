@@ -29,6 +29,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
         // To test that the lightning detection logic
         // works when key is present
         addresses: [],
+        feeKnownInAdvance: false,
       },
       {
         id: "id" as LedgerTransactionId,
@@ -44,6 +45,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
         pendingConfirmation: false,
         journalId: "journalId" as LedgerJournalId,
         timestamp,
+        feeKnownInAdvance: false,
       },
       {
         id: "id" as LedgerTransactionId,
@@ -59,6 +61,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
         pendingConfirmation: false,
         journalId: "journalId" as LedgerJournalId,
         timestamp,
+        feeKnownInAdvance: false,
       },
       {
         id: "id" as LedgerTransactionId,
@@ -73,6 +76,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
         journalId: "journalId" as LedgerJournalId,
         timestamp,
         addresses: ["address" as OnChainAddress],
+        feeKnownInAdvance: false,
       },
     ]
     const result = WalletTransactionHistory.fromLedger(ledgerTransactions)
