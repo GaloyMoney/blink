@@ -191,6 +191,7 @@ jobs:
     - get: edge-image
       trigger: true
       passed: [build-edge-image]
+      params: { skip_download: true }
     - get: repo
       trigger: true
       passed:
