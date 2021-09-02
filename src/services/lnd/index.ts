@@ -91,7 +91,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
           : is_failed
           ? PaymentStatus.Failed
           : PaymentStatus.Pending,
-        roundedUpFee: payment ? toSats(payment.safe_fee) : null,
+        roundedUpFee: payment ? toSats(payment.safe_fee) : toSats(0),
       }
     } catch (err) {
       return new UnknownLightningServiceError(err)

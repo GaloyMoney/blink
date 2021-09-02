@@ -82,7 +82,7 @@ const updatePendingPayment = async ({
       return settled
     }
 
-    if (status === PaymentStatus.Settled && roundedUpFee !== null) {
+    if (status === PaymentStatus.Settled) {
       paymentLogger.info(
         { success: true, id: paymentHash, payment: paymentLiabilityTx },
         "payment has been confirmed",
