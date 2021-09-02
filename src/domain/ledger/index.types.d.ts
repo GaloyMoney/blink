@@ -102,6 +102,8 @@ interface ILedgerService {
     txId: TxId,
   ): Promise<boolean | LedgerServiceError>
 
+  isLnTxRecorded(paymentHash: PaymentHash): Promise<boolean | LedgerServiceError>
+
   receiveOnChainTx(args: ReceiveOnChainTxArgs): Promise<void | LedgerServiceError>
 
   receiveLnTx(args: ReceiveLnTxArgs): Promise<void | LedgerServiceError>

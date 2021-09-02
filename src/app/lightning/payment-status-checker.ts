@@ -1,6 +1,6 @@
 import { RepositoryError } from "@domain/errors"
 import { decodeInvoice } from "@domain/bitcoin/lightning"
-import { WalletInvoicesRepository } from "@services/mongoose"
+import { LedgerService } from "@services/ledger"
 
 export const PaymentStatusChecker = ({ paymentRequest }) => {
   const decodedInvoice = decodeInvoice(paymentRequest)
@@ -11,10 +11,10 @@ export const PaymentStatusChecker = ({ paymentRequest }) => {
 
   return {
     invoiceIsPaid: async (): Promise<boolean | RepositoryError> => {
-      const repo = WalletInvoicesRepository()
-      const walletInvoice = await repo.findByPaymentHash(paymentHash)
-      if (walletInvoice instanceof RepositoryError) return walletInvoice
-      return walletInvoice.paid
+      const ledger = LedgerService()
+      const recorded = await ledger.isLnTxRecorded(paymentHash)
+      if (recorded instanceof RepositoryError) return recorded
+      return recorded
     },
   }
 }

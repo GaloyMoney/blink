@@ -90,6 +90,19 @@ export const LedgerService = (): ILedgerService => {
       return new UnknownLedgerError(err)
     }
   }
+
+  const isLnTxRecorded = async (
+    paymentHash: PaymentHash,
+  ): Promise<boolean | LedgerServiceError> => {
+    try {
+      const result = await Transaction.countDocuments({
+        hash: paymentHash,
+      })
+      return result > 0
+    } catch (err) {
+      return new UnknownLedgerError(err)
+    }
+  }
   const receiveOnChainTx = async ({
     liabilitiesAccountId,
     txId,
@@ -225,6 +238,7 @@ export const LedgerService = (): ILedgerService => {
     listPendingPayments,
     getPendingPaymentsCount,
     isOnChainTxRecorded,
+    isLnTxRecorded,
     receiveOnChainTx,
     receiveLnTx,
     receiveLnFeeReimbursement,
