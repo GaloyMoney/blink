@@ -7,7 +7,7 @@ type DistributedLock = RedLock & { [paymentHashLockSymbol]: never }
 
 interface ILockService {
   lockWalletId<Res>(
-    args: { walletId: WalletId; logger: Logger },
+    args: { walletId: WalletId; logger: Logger; lock?: DistributedLock },
     f: () => Promise<Res>,
   ): Promise<Res | LockServiceError>
   lockPaymentHash<Res>(

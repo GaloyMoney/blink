@@ -3,11 +3,15 @@ import { redlock } from "@core/lock"
 
 export const LockService = (): ILockService => {
   const lockWalletId = async <Res>(
-    { walletId, logger }: { walletId: WalletId; logger: Logger },
+    {
+      walletId,
+      logger,
+      lock,
+    }: { walletId: WalletId; logger: Logger; lock?: DistributedLock },
     f: () => Promise<Res>,
   ) => {
     try {
-      return redlock({ path: walletId, logger }, f)
+      return redlock({ path: walletId, logger, lock }, f)
     } catch (err) {
       return new UnknownLockServiceError(err)
     }
@@ -19,7 +23,7 @@ export const LockService = (): ILockService => {
       logger,
       lock,
     }: { paymentHash: PaymentHash; logger: Logger; lock?: DistributedLock },
-    f: (lock?: DistributedLock) => Promise<Res>,
+    f: () => Promise<Res>,
   ) => {
     try {
       return redlock({ path: paymentHash, logger, lock }, f)

@@ -40,7 +40,11 @@ export abstract class UserWallet {
       lock,
       logger: this.logger,
     })
-    this.updatePendingPayments(lock)
+    Wallets.updatePendingPayments({
+      walletId: this.user.id as WalletId,
+      lock,
+      logger: this.logger,
+    })
 
     // TODO: add effective ratio
     const balances = {
