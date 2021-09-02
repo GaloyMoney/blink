@@ -57,10 +57,11 @@ const updatePendingLightningPayments = async () => {
         account,
         index,
       )
-      await Wallets.updatePendingPayments({
+      const result = await Wallets.updatePendingPayments({
         walletId: ledger.resolveAccountId(account) as WalletId,
         logger,
       })
+      if (result instanceof Error) throw result
     },
   })
 
