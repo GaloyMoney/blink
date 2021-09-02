@@ -11,7 +11,6 @@ import {
 import { FEECAP } from "@services/lnd/auth"
 import { getActiveLnd, nodesPubKey, getInvoiceAttempt } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
-import { ledger } from "@services/mongodb"
 import { InvoiceUser } from "@services/mongoose/schema"
 import { getHash, sleep } from "@core/utils"
 import {
@@ -33,6 +32,7 @@ import {
 import * as Wallets from "@app/wallets"
 import { addInvoice } from "@app/wallets/add-invoice-for-wallet"
 import { toSats } from "@domain/bitcoin"
+import { getAccountTransactionsCount } from "test/helpers/ledger"
 
 const date = Date.now() + 1000 * 60 * 60 * 24 * 8
 // required to avoid oldEnoughForWithdrawal validation
@@ -600,7 +600,7 @@ describe("UserWallet - Lightning Pay", () => {
           })
           if (updatedPayments instanceof Error) throw updatedPayments
 
-          const count = await ledger.getAccountTransactionsCount(userWallet1Path, query)
+          const count = await getAccountTransactionsCount(userWallet1Path, query)
           const { is_confirmed } = await getInvoice({ lnd: lndOutside1, id })
           return is_confirmed && count === 0
         })
@@ -638,7 +638,7 @@ describe("UserWallet - Lightning Pay", () => {
             logger: baseLogger,
           })
           if (updatedPayments instanceof Error) throw updatedPayments
-          const count = await ledger.getAccountTransactionsCount(userWallet1Path, query)
+          const count = await getAccountTransactionsCount(userWallet1Path, query)
           return count === 0
         })
 

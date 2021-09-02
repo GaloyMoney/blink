@@ -33,11 +33,6 @@ export const getAccountBalance = async (account: string, query = {}) => {
   return balance
 }
 
-export const getAccountTransactionsCount = (account: string, query = {}) => {
-  const params = { accounts: account, ...query }
-  return Transaction.countDocuments(params)
-}
-
 export const getAccountTransactions = async (account: string, query = {}) => {
   const params = { account, ...query }
   const { results, total } = await MainBook.ledger(params)
