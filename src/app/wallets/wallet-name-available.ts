@@ -4,7 +4,7 @@ import { WalletsRepository } from "@services/mongoose"
 
 export const walletNameAvailable = async (
   walletName: string,
-): Promise<boolean | Error> => {
+): Promise<boolean | ApplicationError> => {
   const checkedWalletName = checkedToWalletName(walletName)
   if (checkedWalletName instanceof Error) return checkedWalletName
 

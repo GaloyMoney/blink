@@ -1,4 +1,4 @@
-import { walletNameAvailable } from "@app/wallets/wallet-name-available"
+import * as Wallets from "@app/wallets"
 import { GT } from "@graphql/index"
 import WalletName from "@graphql/types/scalar/wallet-name"
 
@@ -16,7 +16,7 @@ const WalletNameAvailableQuery = GT.Field({
       throw walletName
     }
 
-    const available = await walletNameAvailable(walletName)
+    const available = await Wallets.walletNameAvailable(walletName)
 
     if (available instanceof Error) {
       throw available
