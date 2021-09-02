@@ -116,6 +116,7 @@ cp -R ./tmp/* $INFRADIR/configs/
 set -e
 
 helmUpgrade bitcoind $localdevpath -f $INFRADIR/configs/bitcoind/$NETWORK.yaml galoy/bitcoind --version=$bitcoindVersion
+helmUpgrade specter $localdevpath -f $INFRADIR/configs/specter/$NETWORK.yaml galoy/specter
 
 # bug with --wait: https://github.com/helm/helm/issues/7139 ?
 kubectlWait app.kubernetes.io/name=bitcoind
