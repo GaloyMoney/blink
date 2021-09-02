@@ -40,11 +40,12 @@ export abstract class UserWallet {
       lock,
       logger: this.logger,
     })
-    Wallets.updatePendingPayments({
+    const result = await Wallets.updatePendingPayments({
       walletId: this.user.id as WalletId,
       lock,
       logger: this.logger,
     })
+    if (result instanceof Error) throw result
 
     // TODO: add effective ratio
     const balances = {
