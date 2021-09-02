@@ -69,17 +69,16 @@ export const LedgerService = (): ILedgerService => {
     txId: TxId,
   ): Promise<boolean | LedgerServiceError> => {
     try {
-      const result = Transaction.countDocuments({
+      const result = await Transaction.countDocuments({
         accounts: liabilitiesAccountId,
         type: LedgerTransactionType.OnchainReceipt,
         hash: txId,
       })
-      return result
+      return result > 0
     } catch (err) {
       return new UnknownLedgerError(err)
     }
   }
-
   const receiveOnChainTx = async ({
     liabilitiesAccountId,
     txId,
