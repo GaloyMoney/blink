@@ -27,17 +27,17 @@ export const updatePendingPayments = async ({
     if (pendingPaymentTransactions instanceof Error) return pendingPaymentTransactions
 
     for (const paymentLiabilityTx of pendingPaymentTransactions) {
-      await updatePendingPayment({ walletId, paymentLiabilityTx, logger })
+      await updatePendingPayment({ liabilitiesAccountId, paymentLiabilityTx, logger })
     }
   })
 }
 
 const updatePendingPayment = async ({
-  walletId,
+  liabilitiesAccountId,
   paymentLiabilityTx,
   logger,
 }: {
-  walletId: WalletId
+  liabilitiesAccountId: LiabilitiesAccountId
   paymentLiabilityTx: LedgerTransaction
   logger: Logger
 }): Promise<void | ApplicationError> => {
@@ -89,7 +89,7 @@ const updatePendingPayment = async ({
         "payment has been confirmed",
       )
       return reimburseFee({
-        walletId,
+        liabilitiesAccountId,
         paymentLiabilityTx,
         roundedUpFee,
         logger,
@@ -104,12 +104,12 @@ const updatePendingPayment = async ({
 }
 
 const reimburseFee = async ({
-  walletId,
+  liabilitiesAccountId,
   paymentLiabilityTx,
   roundedUpFee,
   logger,
 }: {
-  walletId: WalletId
+  liabilitiesAccountId: LiabilitiesAccountId
   paymentLiabilityTx: LedgerTransaction
   roundedUpFee: Satoshis
   logger: Logger
@@ -148,7 +148,6 @@ const reimburseFee = async ({
     if (price instanceof Error) return price
     const usd = feeDifference * price
 
-    const liabilitiesAccountId = toLiabilitiesAccountId(walletId)
     const ledgerService = LedgerService()
     const result = await ledgerService.receiveLnFeeReimbursement({
       liabilitiesAccountId,
