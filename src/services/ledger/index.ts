@@ -52,11 +52,10 @@ export const LedgerService = (): ILedgerService => {
   const listPendingPayments = async (
     liabilitiesAccountId: LiabilitiesAccountId,
   ): Promise<LedgerTransaction[] | LedgerError> => {
-    const type = LedgerTransactionType.Payment
     try {
       const { results } = await MainBook.ledger({
         account: liabilitiesAccountId,
-        type,
+        type: LedgerTransactionType.Payment,
         pending: true,
       })
       // translate raw schema result -> LedgerTransaction

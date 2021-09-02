@@ -82,7 +82,6 @@ const updatePendingPayment = async ({
       return settled
     }
 
-    // PaymentStatus.Failed transactions have null 'roundedUpFee'
     if (status === PaymentStatus.Settled && roundedUpFee !== null) {
       paymentLogger.info(
         { success: true, id: paymentHash, payment: paymentLiabilityTx },
