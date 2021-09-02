@@ -1,6 +1,6 @@
 import { createServer } from "http"
 import { execute, subscribe } from "graphql"
-import { ApolloServer } from "apollo-server-express"
+import { ApolloError, ApolloServer } from "apollo-server-express"
 import { SubscriptionServer } from "subscriptions-transport-ws"
 import express from "express"
 import expressJwt from "express-jwt"
@@ -70,7 +70,8 @@ export const startApolloServer = async ({
       let domainUser: User | null = null
       if (uid) {
         const loggedInUser = await Users.getUserForLogin({ userId: uid, ip })
-        if (loggedInUser instanceof Error) throw loggedInUser
+        if (loggedInUser instanceof Error)
+          throw new ApolloError("Invalid user authentication")
         domainUser = loggedInUser
         user = await User.findOne({ _id: uid })
         wallet =
@@ -116,7 +117,9 @@ export const startApolloServer = async ({
       const reportErrorToCclient =
         ["GRAPHQL_PARSE_FAILED", "GRAPHQL_VALIDATION_FAILED", "BAD_USER_INPUT"].includes(
           err.extensions?.code,
-        ) || isSheildError
+        ) ||
+        isSheildError ||
+        err instanceof ApolloError
 
       const reportedError = {
         message: err.message,
