@@ -3,9 +3,7 @@ import { lndsBalances } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { ledger } from "@services/mongodb"
 import { WalletInvoicesRepository } from "@services/mongoose"
-import { User } from "@services/mongoose/schema"
 
-import { WalletFactory } from "./wallet-factory"
 import { runInParallel } from "./utils"
 
 import * as Wallets from "@app/wallets"
@@ -59,10 +57,8 @@ const updatePendingLightningPayments = async () => {
         account,
         index,
       )
-      const user = await User.findOne({ _id: ledger.resolveAccountId(account) })
-      const userWallet = await WalletFactory({ user, logger })
       await Wallets.updatePendingPayments({
-        walletId: userWallet.user.id as WalletId,
+        walletId: ledger.resolveAccountId(account) as WalletId,
         logger,
       })
     },
