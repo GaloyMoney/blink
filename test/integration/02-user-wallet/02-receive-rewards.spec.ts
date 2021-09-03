@@ -1,6 +1,7 @@
 import { find, difference } from "lodash"
 import { MS_PER_DAY, onboardingEarn } from "@config/app"
 import { checkIsBalanced, getUserWallet } from "test/helpers"
+import { getBTCBalance } from "test/helpers/wallet"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
@@ -29,11 +30,11 @@ afterAll(() => {
 
 describe("UserWallet - addEarn", () => {
   it("adds balance only once", async () => {
-    const { BTC: initialBalance } = await userWallet1.getBalances()
+    const initialBalance = await getBTCBalance(userWallet1.user.id)
 
     const getAndVerifyRewards = async () => {
       await userWallet1.addEarn(onBoardingEarnIds)
-      const { BTC: finalBalance } = await userWallet1.getBalances()
+      const finalBalance = await getBTCBalance(userWallet1.user.id)
       let rewards = onBoardingEarnAmt
       if (difference(onBoardingEarnIds, userWallet1.user.earn).length === 0) {
         rewards = 0
