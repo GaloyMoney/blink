@@ -22,6 +22,7 @@ import {
 import { getWalletFromRole } from "@core/wallet-factory"
 import * as Wallets from "@app/wallets"
 import { TxStatus } from "@domain/wallets"
+import { getBTCBalance } from "test/helpers/wallet"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
@@ -103,8 +104,8 @@ describe("UserWallet - On chain", () => {
     const address4 = await Wallets.createOnChainAddress(walletUser4.user.id)
     if (address4 instanceof Error) throw address4
 
-    const { BTC: initialBalanceUser0 } = await walletUser0.getBalances()
-    const { BTC: initBalanceUser4 } = await walletUser4.getBalances()
+    const initialBalanceUser0 = await getBTCBalance(walletUser0.user.id)
+    const initBalanceUser4 = await getBTCBalance(walletUser4.user.id)
 
     const output0 = {}
     output0[address0] = 1
@@ -135,8 +136,8 @@ describe("UserWallet - On chain", () => {
     }
 
     {
-      const { BTC: balance0 } = await walletUser0.getBalances()
-      const { BTC: balance4 } = await walletUser4.getBalances()
+      const balance0 = await getBTCBalance(walletUser0.user.id)
+      const balance4 = await getBTCBalance(walletUser4.user.id)
 
       expect(balance0).toBe(
         initialBalanceUser0 +
@@ -223,9 +224,9 @@ describe("UserWallet - On chain", () => {
     walletUser2 = await getUserWallet(2)
     walletUser2.user.depositFeeRatio = 0
     await walletUser2.user.save()
-    const { BTC: initBalanceUser2 } = await walletUser2.getBalances()
+    const initBalanceUser2 = await getBTCBalance(walletUser2.user.id)
     await sendToWallet({ walletDestination: walletUser2 })
-    const { BTC: finalBalanceUser2 } = await walletUser2.getBalances()
+    const finalBalanceUser2 = await getBTCBalance(walletUser2.user.id)
     expect(finalBalanceUser2).toBe(initBalanceUser2 + btc2sat(amountBTC))
   })
 })
@@ -234,7 +235,7 @@ describe("UserWallet - On chain", () => {
 async function sendToWallet({ walletDestination }) {
   const lnd = lndonchain
 
-  const { BTC: initialBalance } = await walletDestination.getBalances()
+  const initialBalance = await getBTCBalance(walletDestination.user.id)
   const { result: initTransactions, error } = await Wallets.getTransactionsForWalletId({
     walletId: walletDestination.user.id,
   })
@@ -263,7 +264,7 @@ async function sendToWallet({ walletDestination }) {
       throw result
     }
 
-    const { BTC: balance } = await walletDestination.getBalances()
+    const balance = await getBTCBalance(walletDestination.user.id)
     expect(balance).toBe(
       initialBalance +
         amountAfterFeeDeduction({

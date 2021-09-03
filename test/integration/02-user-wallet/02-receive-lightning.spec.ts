@@ -1,7 +1,13 @@
 import { ledger } from "@services/mongodb"
 import { baseLogger } from "@services/logger"
 import { getHash } from "@core/utils"
-import { checkIsBalanced, getUserWallet, lndOutside1, pay } from "test/helpers"
+import {
+  checkIsBalanced,
+  getUserWallet,
+  lndOutside1,
+  pay,
+  getBTCBalance,
+} from "test/helpers"
 import { MEMO_SHARING_SATS_THRESHOLD } from "@config/app"
 import * as Wallets from "@app/wallets"
 import { PaymentInitiationMethod } from "@domain/wallets"
@@ -20,7 +26,7 @@ beforeAll(async () => {
 })
 
 beforeEach(async () => {
-  ;({ BTC: initBalance1 } = await userWallet1.getBalances())
+  initBalance1 = await getBTCBalance(userWallet1.user.id)
 })
 
 afterEach(async () => {
@@ -90,7 +96,7 @@ describe("UserWallet - Lightning", () => {
     ) as WalletTransaction
     expect(noSpamTxn.deprecated.description).toBe(memo)
 
-    const { BTC: finalBalance } = await userWallet1.getBalances()
+    const finalBalance = await getBTCBalance(userWallet1.user.id)
     expect(finalBalance).toBe(initBalance1 + sats)
   })
 
@@ -126,7 +132,7 @@ describe("UserWallet - Lightning", () => {
     expect(dbTx.memo).toBe("")
     expect(dbTx.pending).toBe(false)
 
-    const { BTC: finalBalance } = await userWallet1.getBalances()
+    const finalBalance = await getBTCBalance(userWallet1.user.id)
     expect(finalBalance).toBe(initBalance1 + sats)
   })
 
@@ -176,7 +182,7 @@ describe("UserWallet - Lightning", () => {
     expect(spamTxn.deprecated.description).toBe(dbTx.type)
 
     // confirm expected final balance
-    const { BTC: finalBalance } = await userWallet1.getBalances()
+    const finalBalance = await getBTCBalance(userWallet1.user.id)
     expect(finalBalance).toBe(initBalance1 + sats)
   })
 })

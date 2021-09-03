@@ -7,6 +7,7 @@ export * from "./bitcoin-core"
 export * from "./lightning"
 export * from "./user"
 export * from "./redis"
+export * from "./wallet"
 
 export const amountAfterFeeDeduction = ({ amount, depositFeeRatio }) =>
   Math.round(btc2sat(amount) * (1 - depositFeeRatio))
