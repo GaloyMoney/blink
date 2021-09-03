@@ -97,6 +97,10 @@ interface ILedgerService {
     liabilitiesAccountId: LiabilitiesAccountId,
   ): Promise<number | LedgerServiceError>
 
+  getAccountBalance(
+    liabilitiesAccountId: LiabilitiesAccountId,
+  ): Promise<Satoshis | LedgerServiceError>
+
   isOnChainTxRecorded(
     liabilitiesAccountId: LiabilitiesAccountId,
     txId: TxId,
