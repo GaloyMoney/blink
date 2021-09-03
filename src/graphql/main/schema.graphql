@@ -242,6 +242,7 @@ type Query {
   globals: Globals
   me: User
   walletNameAvailable(walletName: WalletName!): Boolean
+  businessMapMarkers: [MapMarker]
 }
 
 type Globals {
@@ -291,6 +292,21 @@ type QuizQuestion {
   The earn reward in Satoshis for the quiz question
   """
   earnAmount: SatAmount!
+}
+
+type MapMarker {
+  walletName: WalletName
+  mapInfo: MapInfo!
+}
+
+type MapInfo {
+  title: String!
+  coordinates: Coordinates!
+}
+
+type Coordinates {
+  longitude: Float!
+  latitude: Float!
 }
 
 type Mutation {

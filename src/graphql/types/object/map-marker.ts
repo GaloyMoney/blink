@@ -1,14 +1,12 @@
 import { GT } from "@graphql/index"
+import WalletName from "../scalar/wallet-name"
 import MapInfo from "./map-info"
 
 const MapMarker = new GT.Object({
   name: "MapMarker",
   fields: () => ({
-    id: {
-      type: GT.NonNullID,
-    },
-    username: {
-      type: GT.String, // ?: confirm
+    walletName: {
+      type: WalletName,
     },
     mapInfo: {
       type: GT.NonNull(MapInfo),

@@ -19,6 +19,25 @@ type Currencies = {
   ratio: CurrencyRatio
 }[]
 
+declare const businessMapTitleSymbol: unique symbol
+type BusinessMapTitle = string & { [businessMapTitleSymbol]: never }
+
+type Coordinates = {
+  longitude: number
+  latitude: number
+}
+
+type BusinessMapInfo = {
+  title: BusinessMapTitle
+  coordinates: Coordinates
+}
+
+type BusinessMapMarker = {
+  walletName: WalletName
+  mapInfo: BusinessMapInfo
+}
+
 interface IAccountsRepository {
   findById(accountId: AccountId): Promise<Account | RepositoryError>
+  listBusinessesForMap(): Promise<BusinessMapMarker[] | RepositoryError>
 }
