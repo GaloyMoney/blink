@@ -14,29 +14,29 @@ const EventEmitter = require("events")
 
 const refresh_time = 10000 // ms
 
-const isUpLoop = (param) => setInterval(() => isUp(param), refresh_time)
+const isUpLoop = (param) =>
+  setInterval(async () => {
+    await isUp(param)
+  }, refresh_time)
 
 export const isUp = async (param): Promise<void> => {
-  let active
-  let state
+  let active = false
   const { lnd, socket } = param
 
   try {
     // will throw if there is an error
-    state = await getWalletStatus({ lnd })
-    active = true
+    const { is_active } = await getWalletStatus({ lnd })
+    active = !!is_active
   } catch (err) {
     baseLogger.warn({ err }, `can't get wallet info from ${socket}`)
     active = false
   }
 
-  if (state.is_active == true) {
-    lndStatusEvent.emit("started", param)
-  } else {
-    lndStatusEvent.emit("stopped", param)
-  }
+  const event = active ? "started" : "stopped"
 
   param.active = active
+  lndStatusEvent.emit(event, param)
+
   baseLogger.debug({ socket, active }, "lnd pulse")
 }
 
