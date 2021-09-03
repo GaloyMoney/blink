@@ -3,6 +3,7 @@ import { baseLogger } from "@services/logger"
 import { UserWallet } from "@core/user-wallet"
 import { WalletFactory } from "@core/wallet-factory"
 import { ledger, setupMongoConnection } from "@services/mongodb"
+import { clearAccountLocks } from "test/helpers/redis"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 
@@ -12,6 +13,7 @@ let fullWalletBTC, fullWalletUSD
 let dealerPath, lndAccountingPath
 
 beforeAll(async () => {
+  await clearAccountLocks()
   mongoose = await setupMongoConnection()
   dealerPath = await ledger.dealerAccountPath()
   lndAccountingPath = ledger.lndAccountingPath
