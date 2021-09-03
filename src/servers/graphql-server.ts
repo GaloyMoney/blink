@@ -21,6 +21,7 @@ import { User } from "@services/mongoose/schema"
 import { IPBlacklistedError } from "@core/error"
 import { isIPBlacklisted } from "@core/utils"
 import { WalletFactory } from "@core/wallet-factory"
+import { ApolloServerPluginUsageReporting } from "apollo-server-core"
 
 const graphqlLogger = baseLogger.child({
   module: "graphql",
@@ -46,6 +47,14 @@ export const startApolloServer = async ({
     schema,
     playground: process.env.NETWORK !== "mainnet",
     introspection: process.env.NETWORK !== "mainnet",
+    plugins: [
+      ApolloServerPluginUsageReporting({
+        rewriteError(err) {
+          graphqlLogger.error({ error: err }, "Error caught in rewriteError")
+          return err
+        },
+      }),
+    ],
     context: async (context) => {
       // @ts-expect-error: TODO
       const token = context.req?.token ?? null
@@ -71,7 +80,9 @@ export const startApolloServer = async ({
       if (uid) {
         const loggedInUser = await Users.getUserForLogin({ userId: uid, ip })
         if (loggedInUser instanceof Error)
-          throw new ApolloError("Invalid user authentication")
+          throw new ApolloError("Invalid user authentication", "INVALID_AUTHENTICATION", {
+            reason: loggedInUser,
+          })
         domainUser = loggedInUser
         user = await User.findOne({ _id: uid })
         wallet =
