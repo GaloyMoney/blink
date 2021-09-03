@@ -312,6 +312,9 @@ type Coordinates {
 type Mutation {
   userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
   userLogin(input: UserLoginInput!): AuthTokenPayload!
+  deviceNotificationTokenCreate(
+    input: DeviceNotificatinoTokenCreateInput!
+  ): SuccessPayload!
   userUpdateLanguage(input: UserUpdateLanguageInput!): UserUpdateLanguagePayload!
   walletContactUpdateAlias(
     input: WalletContactUpdateAliasInput!
@@ -363,6 +366,10 @@ input UserLoginInput {
 An authentication code valid for a single use
 """
 scalar OneTimeAuthCode
+
+input DeviceNotificatinoTokenCreateInput {
+  deviceToken: String!
+}
 
 type UserUpdateLanguagePayload {
   errors: [Error!]!
