@@ -89,7 +89,7 @@ helmUpgradeDebug () {
 kubectlWait () {
   echo "waiting for -n=$NAMESPACE -l $@"
   sleep 6
-  kubectl wait -n=$NAMESPACE --for=condition=ready --timeout=1200s pod -l "$@"
+  kubectl wait -n=$NAMESPACE --for=condition=Ready --timeout=300s pod -l "$@"
 }
 
 kubectlLndDeletionWait () {
