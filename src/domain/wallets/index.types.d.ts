@@ -5,6 +5,11 @@ type SettlementMethod =
 type TxStatus =
   typeof import("./tx-status").TxStatus[keyof typeof import("./tx-status").TxStatus]
 
+type Balances = {
+  BTC: Satoshis
+  totalInBtc: Satoshis
+}
+
 // Fields only needed to support the old schema
 type Deprecated = {
   readonly description: string

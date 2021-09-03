@@ -75,6 +75,20 @@ export const LedgerService = (): ILedgerService => {
     })
   }
 
+  const getAccountBalance = async (
+    liabilitiesAccountId: LiabilitiesAccountId,
+  ): Promise<Satoshis | LedgerError> => {
+    try {
+      const { balance } = await MainBook.balance({
+        account: liabilitiesAccountId,
+        currency: "BTC",
+      })
+      return toSats(balance)
+    } catch (err) {
+      return new UnknownLedgerError()
+    }
+  }
+
   const isOnChainTxRecorded = async (
     liabilitiesAccountId: LiabilitiesAccountId,
     txId: TxId,
@@ -239,6 +253,7 @@ export const LedgerService = (): ILedgerService => {
     getLiabilityTransactions,
     listPendingPayments,
     getPendingPaymentsCount,
+    getAccountBalance,
     isOnChainTxRecorded,
     isLnTxRecorded,
     receiveOnChainTx,
