@@ -65,6 +65,16 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
+  const getPendingPaymentsCount = async (
+    liabilitiesAccountId: LiabilitiesAccountId,
+  ): Promise<number | LedgerError> => {
+    return Transaction.countDocuments({
+      accounts: liabilitiesAccountId,
+      type: "payment",
+      pending: true,
+    })
+  }
+
   const isOnChainTxRecorded = async (
     liabilitiesAccountId: LiabilitiesAccountId,
     txId: TxId,
@@ -213,6 +223,7 @@ export const LedgerService = (): ILedgerService => {
   return {
     getLiabilityTransactions,
     listPendingPayments,
+    getPendingPaymentsCount,
     isOnChainTxRecorded,
     receiveOnChainTx,
     receiveLnTx,

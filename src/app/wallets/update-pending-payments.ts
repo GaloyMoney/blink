@@ -15,11 +15,18 @@ export const updatePendingPayments = async ({
   walletId: WalletId
   logger: Logger
   lock?: DistributedLock
-}): Promise<void | ApplicationError> =>
-  LockService().lockWalletId({ walletId, logger, lock }, async () => {
-    const ledgerService = LedgerService()
-    const liabilitiesAccountId = toLiabilitiesAccountId(walletId)
+}): Promise<void | ApplicationError> => {
+  // we only lock the account if there is some pending payment transaction, which would typically be unlikely
+  // we're doing the the Transaction.find after the lock to make sure there is no race condition
+  // note: there might be another design that doesn't requiere a lock at the uid level but only at the hash level,
+  // but will need to dig more into the cursor aspect of mongodb to see if there is a concurrency-safe way to do it.
+  const liabilitiesAccountId = toLiabilitiesAccountId(walletId)
+  const ledgerService = LedgerService()
+  const count = await ledgerService.getPendingPaymentsCount(liabilitiesAccountId)
+  if (count instanceof Error) return count
+  if (count === 0) return
 
+  return LockService().lockWalletId({ walletId, logger, lock }, async () => {
     const pendingPaymentTransactions = await ledgerService.listPendingPayments(
       liabilitiesAccountId,
     )
@@ -29,6 +36,7 @@ export const updatePendingPayments = async ({
       await updatePendingPayment({ liabilitiesAccountId, paymentLiabilityTx, logger })
     }
   })
+}
 
 const updatePendingPayment = async ({
   liabilitiesAccountId,
