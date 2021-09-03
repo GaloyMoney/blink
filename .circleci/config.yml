@@ -69,6 +69,7 @@ jobs:
             kubectl create namespace $NAMESPACE
       - run:
           name: install helm charts
+          no_output_timeout: 20m
           command: ./scripts/init-local-test.sh
       - run:
           name: Run jest test
