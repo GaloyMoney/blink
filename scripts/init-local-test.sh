@@ -89,7 +89,7 @@ helmUpgradeDebug () {
 kubectlWait () {
   echo "waiting for -n=$NAMESPACE -l $@"
   sleep 6
-  kubectl wait -n=$NAMESPACE --for=condition=Ready --timeout=300s pod -l "$@"
+  kubectl wait -n=$NAMESPACE --for=condition=ready --timeout=1800s pod -l "$@"
 }
 
 kubectlLndDeletionWait () {
@@ -118,6 +118,7 @@ set -e
 helmUpgrade bitcoind $localdevpath -f $INFRADIR/configs/bitcoind/$NETWORK.yaml galoy/bitcoind --version=$bitcoindVersion
 helmUpgrade specter $localdevpath -f $INFRADIR/configs/specter/$NETWORK.yaml galoy/specter
 
+helm history -n=$NAMESPACE "bitcoind"
 # bug with --wait: https://github.com/helm/helm/issues/7139 ?
 kubectlWait app.kubernetes.io/name=bitcoind
 
