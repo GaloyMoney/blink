@@ -3,9 +3,22 @@
  * https://en.wikipedia.org/wiki/Double-entry_bookkeeping
  */
 
+// we have to import schema before medici
+import { Transaction } from "./schema"
+
 import * as accounts from "./accounts"
 import * as queries from "./query"
 import * as transactions from "./transaction"
+
+import {
+  UnknownLedgerError,
+  LedgerError,
+  LedgerServiceError,
+} from "@domain/ledger/errors"
+import { MainBook } from "./books"
+import { toSats } from "@domain/bitcoin"
+import { LedgerTransactionType } from "@domain/ledger"
+import { lndAccountingPath, bankOwnerAccountPath } from "./accounts"
 
 type LoadLedgerParams = {
   bankOwnerAccountResolver: () => Promise<string>
@@ -24,17 +37,6 @@ export const loadLedger = ({
     ...transactions,
   }
 }
-
-import {
-  UnknownLedgerError,
-  LedgerError,
-  LedgerServiceError,
-} from "@domain/ledger/errors"
-import { MainBook } from "./books"
-import { Transaction } from "./schema"
-import { toSats } from "@domain/bitcoin"
-import { LedgerTransactionType } from "@domain/ledger"
-import { lndAccountingPath, bankOwnerAccountPath } from "./accounts"
 
 export const LedgerService = (): ILedgerService => {
   const getLiabilityTransactions = async (
@@ -85,7 +87,7 @@ export const LedgerService = (): ILedgerService => {
       })
       return toSats(balance)
     } catch (err) {
-      return new UnknownLedgerError()
+      return new UnknownLedgerError(err)
     }
   }
 
