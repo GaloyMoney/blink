@@ -337,6 +337,7 @@ type Mutation {
     input: IntraLedgerPaymentSendInput!
   ): LnInvoicePaymentSendPayload!
   onChainAddressCreate: OnChainAddressPayload!
+  onChainAddressCurrent: OnChainAddressPayload!
 }
 
 type SuccessPayload {
@@ -501,6 +502,7 @@ input IntraLedgerPaymentSendInput {
 type OnChainAddressPayload {
   errors: [Error!]!
   address: OnChainAddress!
+}
 
 type Subscription {
   lnInvoicePaymentStatus(

@@ -17,7 +17,6 @@ export async function startApolloServerForCoreSchema() {
     {
       Query: {
         me: isAuthenticated,
-        onChainAddressCurrent: isAuthenticated,
       },
       Mutation: {
         userUpdateLanguage: isAuthenticated,
@@ -37,6 +36,7 @@ export async function startApolloServerForCoreSchema() {
         intraLedgerPaymentSend: isAuthenticated,
 
         onChainAddressCreate: isAuthenticated,
+        onChainAddressCurrent: isAuthenticated,
       },
       // Subscription: {},
     },

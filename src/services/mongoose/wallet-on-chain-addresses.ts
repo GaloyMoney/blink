@@ -2,6 +2,7 @@ import { Types as MongooseTypes } from "mongoose"
 import { User } from "@services/mongoose/schema"
 import {
   CouldNotFindError,
+  PersistError,
   RepositoryError,
   UnknownRepositoryError,
 } from "@domain/errors"
@@ -23,7 +24,7 @@ export const WalletOnChainAddressesRepository = (): IWalletOnChainAddressesRepos
       }
 
       if (result.nModified !== 1) {
-        return new RepositoryError("Couldn't add onchain address for wallet")
+        return new PersistError("Couldn't add onchain address for wallet")
       }
 
       return onChainAddress

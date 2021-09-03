@@ -3,7 +3,6 @@ import { GT } from "@graphql/index"
 import GlobalsQuery from "@graphql/root/query/globals"
 import WalletNameAvailableQuery from "@graphql/root/query/wallet-name-available"
 import BusinessMapMarkersQuery from "@graphql/root/query/business-map-markers"
-import OnChainAddressCurrentQuery from "@graphql/root/query/on-chain-address-current"
 
 const QueryType = new GT.Object({
   name: "Query",
@@ -12,7 +11,6 @@ const QueryType = new GT.Object({
     me: MeQuery,
     walletNameAvailable: WalletNameAvailableQuery,
     businessMapMarkers: BusinessMapMarkersQuery,
-    onChainAddressCurrent: OnChainAddressCurrentQuery,
   }),
 })
 
