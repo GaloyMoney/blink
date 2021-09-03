@@ -34,6 +34,7 @@ import { addInvoice } from "@app/wallets/add-invoice-for-wallet"
 import { toSats } from "@domain/bitcoin"
 import { toLiabilitiesAccountId } from "@domain/ledger"
 import { LedgerService } from "@services/ledger"
+import { getBTCBalance } from "test/helpers/wallet"
 
 const date = Date.now() + 1000 * 60 * 60 * 24 * 8
 // required to avoid oldEnoughForWithdrawal validation
@@ -53,8 +54,8 @@ beforeAll(async () => {
 })
 
 beforeEach(async () => {
-  ;({ BTC: initBalance0 } = await userWallet0.getBalances())
-  ;({ BTC: initBalance1 } = await userWallet1.getBalances())
+  initBalance0 = await getBTCBalance(userWallet0.user.id)
+  initBalance1 = await getBTCBalance(userWallet1.user.id)
 })
 
 afterEach(async () => {
@@ -147,7 +148,7 @@ describe("UserWallet - Lightning Pay", () => {
       amount: amountInvoice,
     })
 
-    const { BTC: finalBalance0 } = await userWallet0.getBalances()
+    const finalBalance0 = await getBTCBalance(userWallet0.user.id)
     const { result: userTransaction0, error } = await Wallets.getTransactionsForWalletId({
       walletId: userWallet0.user.id,
     })
@@ -155,7 +156,7 @@ describe("UserWallet - Lightning Pay", () => {
       throw error
     }
 
-    const { BTC: finalBalance1 } = await userWallet1.getBalances()
+    const finalBalance1 = await getBTCBalance(userWallet1.user.id)
     const txResult = await Wallets.getTransactionsForWalletId({
       walletId: userWallet1.user.id,
     })
@@ -195,7 +196,7 @@ describe("UserWallet - Lightning Pay", () => {
     const result = await userWallet1.pay({ invoice: request, amount: amountInvoice })
     expect(result).toBe("success")
 
-    const { BTC: finalBalance } = await userWallet1.getBalances()
+    const finalBalance = await getBTCBalance(userWallet1.user.id)
     expect(finalBalance).toBe(initBalance1 - amountInvoice)
   })
 
@@ -407,7 +408,7 @@ describe("UserWallet - Lightning Pay", () => {
         const result = await fn(userWallet1)({ invoice: request })
         expect(result).toBe("success")
 
-        const { BTC: finalBalance } = await userWallet1.getBalances()
+        const finalBalance = await getBTCBalance(userWallet1.user.id)
         expect(finalBalance).toBe(initBalance1 - amountInvoice)
       })
 
@@ -417,11 +418,20 @@ describe("UserWallet - Lightning Pay", () => {
           tokens: amountInvoice,
         })
         await fn(userWallet1)({ invoice: request })
-        const intermediateBalance = await userWallet1.getBalances()
+        const intermediateBalance = await Wallets.getBalanceForWallet({
+          walletId: userWallet1.user.id,
+          logger: baseLogger,
+        })
+        if (intermediateBalance instanceof Error) throw intermediateBalance
+
         const result = await fn(userWallet1)({ invoice: request })
         expect(result).toBe("already_paid")
 
-        const finalBalance = await userWallet1.getBalances()
+        const finalBalance = await Wallets.getBalanceForWallet({
+          walletId: userWallet1.user.id,
+          logger: baseLogger,
+        })
+        if (finalBalance instanceof Error) throw finalBalance
         expect(finalBalance).toStrictEqual(intermediateBalance)
       })
 
@@ -433,7 +443,7 @@ describe("UserWallet - Lightning Pay", () => {
         })
         const result = await await fn(userWallet1)({ invoice: request })
         expect(result).toBe("success")
-        const { BTC: finalBalance } = await userWallet1.getBalances()
+        const finalBalance = await getBTCBalance(userWallet1.user.id)
         expect(finalBalance).toBe(initBalance1 - amountInvoice)
       })
 
@@ -441,8 +451,8 @@ describe("UserWallet - Lightning Pay", () => {
         const memo = "my memo as a payer"
 
         const paymentOtherGaloyUser = async ({ walletPayer, walletPayee }) => {
-          const { BTC: payerInitialBalance } = await walletPayer.getBalances()
-          const { BTC: payeeInitialBalance } = await walletPayee.getBalances()
+          const payerInitialBalance = await getBTCBalance(walletPayer.user.id)
+          const payeeInitialBalance = await getBTCBalance(walletPayee.user.id)
 
           const lnInvoice = await addInvoice({
             walletId: walletPayee.user.id as WalletId,
@@ -452,8 +462,8 @@ describe("UserWallet - Lightning Pay", () => {
           const { paymentRequest: request } = lnInvoice
           await fn(walletPayer)({ invoice: request, memo })
 
-          const { BTC: payerFinalBalance } = await walletPayer.getBalances()
-          const { BTC: payeeFinalBalance } = await walletPayee.getBalances()
+          const payerFinalBalance = await getBTCBalance(walletPayer.user.id)
+          const payeeFinalBalance = await getBTCBalance(walletPayee.user.id)
 
           expect(payerFinalBalance).toBe(payerInitialBalance - amountInvoice)
           expect(payeeFinalBalance).toBe(payeeInitialBalance + amountInvoice)
@@ -538,7 +548,7 @@ describe("UserWallet - Lightning Pay", () => {
           is_including_private_channels: true,
         })
 
-        const { BTC: initialBalance } = await userWallet1.getBalances()
+        const initialBalance = await getBTCBalance(userWallet1.user.id)
 
         const result = await fn(userWallet1)({
           invoice: request,
@@ -550,7 +560,7 @@ describe("UserWallet - Lightning Pay", () => {
         await waitUntilChannelBalanceSyncAll()
 
         expect(result).toBe("success")
-        const { BTC: finalBalance } = await userWallet1.getBalances()
+        const finalBalance = await getBTCBalance(userWallet1.user.id)
 
         // const { id } = await decodePaymentRequest({ lnd: lndOutside2, request })
         // const { results: [{ fee }] } = await getAccountTransactions(userWallet1.accountPath, { hash: id })
@@ -574,7 +584,7 @@ describe("UserWallet - Lightning Pay", () => {
         const result = await fn(userWallet1)({ invoice: request })
 
         expect(result).toBe("pending")
-        const { BTC: balanceBeforeSettlement } = await userWallet1.getBalances()
+        const balanceBeforeSettlement = await getBTCBalance(userWallet1.user.id)
         expect(balanceBeforeSettlement).toBe(
           initBalance1 - amountInvoice * (1 + initialFee),
         )
@@ -610,7 +620,7 @@ describe("UserWallet - Lightning Pay", () => {
 
         await waitUntilChannelBalanceSyncAll()
 
-        const { BTC: finalBalance } = await userWallet1.getBalances()
+        const finalBalance = await getBTCBalance(userWallet1.user.id)
         expect(finalBalance).toBe(initBalance1 - amountInvoice)
       }, 60000)
 
@@ -627,7 +637,7 @@ describe("UserWallet - Lightning Pay", () => {
         expect(result).toBe("pending")
         baseLogger.info("payment has timeout. status is pending.")
 
-        const { BTC: intermediateBalance } = await userWallet1.getBalances()
+        const intermediateBalance = await getBTCBalance(userWallet1.user.id)
         expect(intermediateBalance).toBe(initBalance1 - amountInvoice * (1 + initialFee))
 
         await cancelHodlInvoice({ id, lnd: lndOutside1 })
@@ -655,7 +665,7 @@ describe("UserWallet - Lightning Pay", () => {
         // arrives before wallet balances updates in lnd
         await waitUntilChannelBalanceSyncAll()
 
-        const { BTC: finalBalance } = await userWallet1.getBalances()
+        const finalBalance = await getBTCBalance(userWallet1.user.id)
         expect(finalBalance).toBe(initBalance1)
       }, 60000)
     })
@@ -673,7 +683,7 @@ describe("UserWallet - Lightning Pay", () => {
           TwoFAError,
         )
 
-        const { BTC: finalBalance } = await userWallet0.getBalances()
+        const finalBalance = await getBTCBalance(userWallet0.user.id)
         expect(finalBalance).toBe(initBalance0)
       })
 
@@ -752,7 +762,11 @@ describe("UserWallet - Lightning Pay", () => {
 
     // await sleep(1000)
 
-    await userWallet1.getBalances()
+    const _ = await Wallets.getBalanceForWallet({
+      walletId: userWallet1.user.id,
+      logger: baseLogger,
+    })
+    if (_ instanceof Error) throw _
 
     // FIXME: test is failing.
     // lnd doens't always delete invoice just after they have expired

@@ -30,6 +30,7 @@ import { ledger } from "@services/mongodb"
 import { PaymentInitiationMethod, TxStatus } from "@domain/wallets"
 import * as Wallets from "@app/wallets"
 import { TwoFAError, TransactionRestrictedError } from "@core/error"
+import { getBTCBalance } from "test/helpers/wallet"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
@@ -56,7 +57,7 @@ beforeAll(async () => {
 })
 
 beforeEach(async () => {
-  ;({ BTC: initialBalanceUser0 } = await userWallet0.getBalances())
+  initialBalanceUser0 = await getBTCBalance(userWallet0.user.id)
 })
 
 afterEach(async () => {
@@ -95,7 +96,7 @@ describe("UserWallet - onChainPay", () => {
       results: [pendingTxn],
     } = await ledger.getAccountTransactions(userWallet0.accountPath, { pending: true })
 
-    const { BTC: interimBalance } = await userWallet0.getBalances()
+    const interimBalance = await getBTCBalance(userWallet0.user.id)
     expect(interimBalance).toBe(initialBalanceUser0 - amount - pendingTxn.fee)
     await checkIsBalanced()
 
@@ -155,7 +156,7 @@ describe("UserWallet - onChainPay", () => {
     expect(txn.settlementAmount).toBe(-amount - fee)
     expect(txn.deprecated.type).toBe("onchain_payment")
 
-    const { BTC: finalBalance } = await userWallet0.getBalances()
+    const finalBalance = await getBTCBalance(userWallet0.user.id)
     expect(finalBalance).toBe(initialBalanceUser0 - amount - fee)
     sub.removeAllListeners()
   })
@@ -166,7 +167,7 @@ describe("UserWallet - onChainPay", () => {
     const sub = subscribeToTransactions({ lnd: lndonchain })
     sub.on("chain_transaction", onchainTransactionEventHandler)
 
-    const { BTC: initialBalanceUser11 } = await userWallet11.getBalances()
+    const initialBalanceUser11 = await getBTCBalance(userWallet11.user.id)
 
     const results = await Promise.all([
       once(sub, "chain_transaction"),
@@ -186,7 +187,7 @@ describe("UserWallet - onChainPay", () => {
       results: [pendingTxn],
     } = await ledger.getAccountTransactions(userWallet11.accountPath, { pending: true })
 
-    const { BTC: interimBalance } = await userWallet11.getBalances()
+    const interimBalance = await getBTCBalance(userWallet11.user.id)
     expect(interimBalance).toBe(0)
     await checkIsBalanced()
 
@@ -246,7 +247,7 @@ describe("UserWallet - onChainPay", () => {
     expect(txn.settlementAmount).toBe(-initialBalanceUser11)
     expect(txn.deprecated.type).toBe("onchain_payment")
 
-    const { BTC: finalBalance } = await userWallet11.getBalances()
+    const finalBalance = await getBTCBalance(userWallet11.user.id)
     expect(finalBalance).toBe(0)
     sub.removeAllListeners()
   })
@@ -274,12 +275,12 @@ describe("UserWallet - onChainPay", () => {
     const address = await Wallets.createOnChainAddress(userWallet3.user.id)
     if (address instanceof Error) throw address
 
-    const { BTC: initialBalanceUser3 } = await userWallet3.getBalances()
+    const initialBalanceUser3 = await getBTCBalance(userWallet3.user.id)
 
     const paid = await userWallet0.onChainPay({ address, amount })
 
-    const { BTC: finalBalanceUser0 } = await userWallet0.getBalances()
-    const { BTC: finalBalanceUser3 } = await userWallet3.getBalances()
+    const finalBalanceUser0 = await getBTCBalance(userWallet0.user.id)
+    const finalBalanceUser3 = await getBTCBalance(userWallet3.user.id)
 
     expect(paid).toBe(true)
     expect(finalBalanceUser0).toBe(initialBalanceUser0 - amount)
@@ -334,17 +335,17 @@ describe("UserWallet - onChainPay", () => {
   })
 
   it("sends all with an on us transaction", async () => {
-    const { BTC: initialBalanceUser12 } = await userWallet12.getBalances()
+    const initialBalanceUser12 = await getBTCBalance(userWallet12.user.id)
 
     const address = await Wallets.createOnChainAddress(userWallet3.user.id)
     if (address instanceof Error) throw address
 
-    const { BTC: initialBalanceUser3 } = await userWallet3.getBalances()
+    const initialBalanceUser3 = await getBTCBalance(userWallet3.user.id)
 
     const paid = await userWallet12.onChainPay({ address, amount: 0, sendAll: true })
 
-    const { BTC: finalBalanceUser12 } = await userWallet12.getBalances()
-    const { BTC: finalBalanceUser3 } = await userWallet3.getBalances()
+    const finalBalanceUser12 = await getBTCBalance(userWallet12.user.id)
+    const finalBalanceUser3 = await getBTCBalance(userWallet3.user.id)
 
     expect(paid).toBe(true)
     expect(finalBalanceUser12).toBe(0)
@@ -381,7 +382,7 @@ describe("UserWallet - onChainPay", () => {
       lnd: lndOutside1,
       format: "p2wpkh",
     })
-    const { BTC: initialBalanceUser3 } = await userWallet3.getBalances()
+    const initialBalanceUser3 = await getBTCBalance(userWallet3.user.id)
 
     //should fail because user does not have balance to pay for on-chain fee
     await expect(
@@ -454,7 +455,7 @@ describe("UserWallet - onChainPay", () => {
     it("sends a successful large payment with a 2fa code", async () => {
       enable2FA({ wallet: userWallet0 })
 
-      const { BTC: initialBalance } = await userWallet0.getBalances()
+      const initialBalance = await getBTCBalance(userWallet0.user.id)
       const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
       const twoFAToken = generateTokenHelper({
         secret: userWallet0.user.twoFA.secret,
@@ -484,7 +485,7 @@ describe("UserWallet - onChainPay", () => {
 
       // settlementAmount is negative
       const expectedBalance = initialBalance + txs[0].settlementAmount
-      const { BTC: finalBalance } = await userWallet0.getBalances()
+      const finalBalance = await getBTCBalance(userWallet0.user.id)
       expect(expectedBalance).toBe(finalBalance)
     })
   })
