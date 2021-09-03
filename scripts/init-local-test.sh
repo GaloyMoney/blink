@@ -156,8 +156,8 @@ then
   kubectlLndDeletionWait
   helmUpgrade rtl -f $INFRADIR/configs/rtl/$NETWORK.yaml galoy/rtl
 else
-  helmUpgrade lnd-outside-1 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpathOutside galoy/lnd & \
-  helmUpgrade lnd-outside-2 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpathOutside galoy/lnd
+  helmUpgrade lnd-outside-1 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpathOutside $INFRADIR/lnd & \
+  helmUpgrade lnd-outside-2 --version=$lndVersion -f $INFRADIR/configs/lnd/$NETWORK.yaml $localdevpathOutside $INFRADIR/lnd
 fi
 
 # # add extra sleep time... seems lnd is quite long to show up some time
