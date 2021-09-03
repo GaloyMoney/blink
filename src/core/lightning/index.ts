@@ -47,7 +47,7 @@ export const LightningMixin = (superclass) =>
     }
 
     async updatePending(lock) {
-      const [_, updatePaymentsResult] = await Promise.all([
+      const [, updatePaymentsResult] = await Promise.all([
         Wallets.updatePendingInvoices({
           walletId: this.user.id as WalletId,
           lock,
