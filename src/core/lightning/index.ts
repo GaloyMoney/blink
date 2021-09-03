@@ -221,7 +221,11 @@ export const LightningMixin = (superclass) =>
       let feeKnownInAdvance
 
       return redlock({ path: this.user._id, logger: lightningLogger }, async (lock) => {
-        const balance = await this.getBalances(lock)
+        const balance = await Wallets.getBalanceForWallet({
+          walletId: this.user.id,
+          logger: lightningLogger,
+        })
+        if (balance instanceof Error) throw balance
 
         // On us transaction
         if (isMyNode({ pubkey: destination }) || isPushPayment) {
@@ -281,7 +285,7 @@ export const LightningMixin = (superclass) =>
           }
 
           // TODO: manage when paid fully in USD directly from USD balance to avoid conversion issue
-          if (balance.total_in_BTC < sats) {
+          if (balance.totalInBtc < sats) {
             throw new InsufficientBalanceError(undefined, {
               logger: lightningLoggerOnUs,
             })
@@ -438,7 +442,7 @@ export const LightningMixin = (superclass) =>
 
           // TODO usd management for balance
 
-          if (balance.total_in_BTC < sats) {
+          if (balance.totalInBtc < sats) {
             throw new InsufficientBalanceError(undefined, { logger: lightningLogger })
           }
 
