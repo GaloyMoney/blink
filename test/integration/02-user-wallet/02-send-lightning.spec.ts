@@ -32,7 +32,8 @@ import {
 import * as Wallets from "@app/wallets"
 import { addInvoice } from "@app/wallets/add-invoice-for-wallet"
 import { toSats } from "@domain/bitcoin"
-import { getAccountTransactionsCount } from "test/helpers/ledger"
+import { toLiabilitiesAccountId } from "@domain/ledger"
+import { LedgerService } from "@services/ledger"
 
 const date = Date.now() + 1000 * 60 * 60 * 24 * 8
 // required to avoid oldEnoughForWithdrawal validation
@@ -590,9 +591,6 @@ describe("UserWallet - Lightning Pay", () => {
           }
         })
 
-        const userWallet1Path = userWallet1.user.accountPath
-        const query = { type: "payment", pending: true, voided: false }
-
         await waitFor(async () => {
           const updatedPayments = await Wallets.updatePendingPayments({
             walletId: userWallet1.user.id,
@@ -600,7 +598,12 @@ describe("UserWallet - Lightning Pay", () => {
           })
           if (updatedPayments instanceof Error) throw updatedPayments
 
-          const count = await getAccountTransactionsCount(userWallet1Path, query)
+          const liabilitiesAccountId = toLiabilitiesAccountId(userWallet1.user.id)
+          const count = await LedgerService().getPendingPaymentsCount(
+            liabilitiesAccountId,
+          )
+          if (count instanceof Error) throw count
+
           const { is_confirmed } = await getInvoice({ lnd: lndOutside1, id })
           return is_confirmed && count === 0
         })
@@ -629,16 +632,19 @@ describe("UserWallet - Lightning Pay", () => {
 
         await cancelHodlInvoice({ id, lnd: lndOutside1 })
 
-        const userWallet1Path = userWallet1.user.accountPath
-        const query = { type: "payment", pending: true, voided: false }
-
         await waitFor(async () => {
           const updatedPayments = await Wallets.updatePendingPayments({
             walletId: userWallet1.user.id,
             logger: baseLogger,
           })
           if (updatedPayments instanceof Error) throw updatedPayments
-          const count = await getAccountTransactionsCount(userWallet1Path, query)
+
+          const liabilitiesAccountId = toLiabilitiesAccountId(userWallet1.user.id)
+          const count = await LedgerService().getPendingPaymentsCount(
+            liabilitiesAccountId,
+          )
+          if (count instanceof Error) throw count
+
           return count === 0
         })
 
