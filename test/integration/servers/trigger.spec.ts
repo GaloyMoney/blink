@@ -76,7 +76,8 @@ describe("onchainBlockEventhandler", () => {
     const initWallet0State = await getWalletState(wallet0)
     const initWallet3State = await getWalletState(wallet3)
 
-    const address = await wallet0.getOnChainAddress()
+    const address = await Wallets.createOnChainAddress(wallet0.user.id)
+    if (address instanceof Error) throw address
 
     let isFinalBlock = false
     let lastHeight = 0
@@ -91,7 +92,9 @@ describe("onchainBlockEventhandler", () => {
     const output0 = {}
     output0[address] = amount
 
-    const address2 = await wallet3.getOnChainAddress()
+    const address2 = await Wallets.createOnChainAddress(wallet3.user.id)
+    if (address2 instanceof Error) throw address2
+
     const output1 = {}
     output1[address2] = amount2
 

@@ -1,4 +1,5 @@
 import { bitcoindClient, bitcoindOutside, getUserWallet } from "test/helpers"
+import * as Wallets from "@app/wallets"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
@@ -23,7 +24,8 @@ describe("UserWallet - getOnchainFee", () => {
   })
 
   it("returns zero for an on us address", async () => {
-    const address = await userWallet1.getOnChainAddress()
+    const address = await Wallets.createOnChainAddress(userWallet1.user.id)
+    if (address instanceof Error) throw address
     const fee = await userWallet0.getOnchainFee({ address })
     expect(fee).toBe(0)
   })

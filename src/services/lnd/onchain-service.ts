@@ -55,10 +55,7 @@ export const OnChainService = (
         format: "p2wpkh",
       })
 
-      return {
-        address: address as OnChainAddress,
-        pubkey,
-      }
+      return { address: address as OnChainAddress, pubkey }
     } catch (err) {
       return new UnknownOnChainServiceError(err)
     }
