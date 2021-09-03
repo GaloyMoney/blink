@@ -24,6 +24,7 @@ import { ledger } from "@services/mongodb"
 import { getTitle } from "@services/notifications/payment"
 import { getCurrentPrice } from "@services/realtime-price"
 import { TxStatus } from "@domain/wallets"
+import { getBTCBalance } from "test/helpers/wallet"
 
 jest.mock("@services/notifications/notification")
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
@@ -46,7 +47,7 @@ afterAll(async () => {
 })
 
 const getWalletState = async (wallet) => {
-  const { BTC: balance } = await wallet.getBalances()
+  const balance = await getBTCBalance(wallet.user.id)
   const { result: transactions, error } = await Wallets.getTransactionsForWalletId({
     walletId: wallet.user.id as WalletId,
   })
