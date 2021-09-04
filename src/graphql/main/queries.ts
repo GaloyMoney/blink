@@ -4,6 +4,7 @@ import GlobalsQuery from "@graphql/root/query/globals"
 import WalletNameAvailableQuery from "@graphql/root/query/wallet-name-available"
 import BusinessMapMarkersQuery from "@graphql/root/query/business-map-markers"
 import MobileVersionsQuery from "@graphql/root/query/mobile-versions"
+import QuizQuestionsQuery from "@graphql/root/query/quiz-questions"
 
 const QueryType = new GT.Object({
   name: "Query",
@@ -13,6 +14,7 @@ const QueryType = new GT.Object({
     walletNameAvailable: WalletNameAvailableQuery,
     businessMapMarkers: BusinessMapMarkersQuery,
     mobileVersions: MobileVersionsQuery,
+    quizQuestions: QuizQuestionsQuery,
   }),
 })
 
