@@ -131,7 +131,7 @@ workflows:
             - build_test_image
       - testnet_deploy:
           requires:
-            - test
+            - approve_testnet_deploy
           filters:
             branches:
               only:
@@ -140,6 +140,12 @@ workflows:
           type: approval
           requires:
             - testnet_deploy
+          filters:
+            branches:
+              only:
+                - main
+      - approve_testnet_deploy:
+          type: approval
           filters:
             branches:
               only:
