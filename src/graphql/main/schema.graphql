@@ -243,6 +243,7 @@ type Query {
   me: User
   walletNameAvailable(walletName: WalletName!): Boolean
   businessMapMarkers: [MapMarker]
+  mobileVersions: [MobileVersions]
 }
 
 type Globals {
@@ -307,6 +308,12 @@ type MapInfo {
 type Coordinates {
   longitude: Float!
   latitude: Float!
+}
+
+type MobileVersions {
+  platform: String!
+  currentSupported: Int!
+  minSupported: Int!
 }
 
 type Mutation {
