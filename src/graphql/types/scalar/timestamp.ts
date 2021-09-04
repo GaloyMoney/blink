@@ -5,9 +5,6 @@ const Timestamp = new GT.Scalar({
   name: "Timestamp",
   description:
     "Date field, serialized as the number of milliseconds since the Unix Epoch",
-  serialize(value) {
-    return value.getTime()
-  },
   // TODO: db work for dates
   parseValue(value) {
     return new Date(value)
