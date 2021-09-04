@@ -1,11 +1,12 @@
 import { GT } from "@graphql/index"
 
-const IosVersions = new GT.Object({
-  name: "IosVersions",
+const MobileVersions = new GT.Object({
+  name: "MobileVersions",
   fields: () => ({
+    platform: { type: GT.NonNull(GT.String) },
     currentSupported: { type: GT.NonNull(GT.Int) },
     minSupported: { type: GT.NonNull(GT.Int) },
   }),
 })
 
-export default IosVersions
+export default MobileVersions

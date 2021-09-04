@@ -5,19 +5,19 @@ export const mainCache = new NodeCache()
 
 export const getMinBuildNumber = async () => {
   const key = "minBuildNumber"
-  let value
+  let versions
 
-  value = mainCache.get(key)
-  if (value === undefined) {
+  versions = mainCache.get(key)
+  if (versions === undefined) {
     const { minBuildNumber, lastBuildNumber } = await DbMetadata.findOne(
       {},
       { minBuildNumber: 1, lastBuildNumber: 1, _id: 0 },
     )
-    mainCache.set(key, { minBuildNumber, lastBuildNumber }, 3600)
-    value = { minBuildNumber, lastBuildNumber }
+    versions = { minBuildNumber, lastBuildNumber }
+    mainCache.set(key, versions, 3600)
   }
 
-  return value
+  return versions
 }
 
 export const getHourlyPrice = async ({ logger }) => {

@@ -1,6 +1,6 @@
 /**
  * how to run:
- * yarn ts-node src/debug/set-db-metadata.ts
+ * yarn tsnd --respawn --files -r tsconfig-paths/register src/debug/set-db-metadata.ts
  */
 
 import { setupMongoConnectionSecondary } from "@services/mongodb"
