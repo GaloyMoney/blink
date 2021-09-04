@@ -146,6 +146,8 @@ workflows:
                 - main
       - approve_testnet_deploy:
           type: approval
+          requires:
+            - build_test_image
           filters:
             branches:
               only:
