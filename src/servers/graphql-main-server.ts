@@ -19,6 +19,7 @@ export async function startApolloServerForCoreSchema() {
         me: isAuthenticated,
       },
       Mutation: {
+        userQuizQuestionsUpdateCompleted: isAuthenticated,
         userUpdateLanguage: isAuthenticated,
         walletContactUpdateAlias: isAuthenticated,
 

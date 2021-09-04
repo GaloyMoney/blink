@@ -19,14 +19,13 @@ import UserQuizQuestionsUpdateCompletedMutation from "@graphql/root/mutation/use
 const MutationType = new GT.Object({
   name: "Mutation",
   fields: () => ({
-    userQuizQuestionsUpdateCompleted: UserQuizQuestionsUpdateCompletedMutation,
     userRequestAuthCode: UserRequestAuthCodeMutation,
     userLogin: UserLoginMutation,
 
-    deviceNotificationTokenCreate: DeviceNotificationTokenCreateMutation,
-
+    userQuizQuestionsUpdateCompleted: UserQuizQuestionsUpdateCompletedMutation,
     userUpdateLanguage: UserUpdateLanguageMutation,
     walletContactUpdateAlias: WalletContactUpdateAliasMutation,
+    deviceNotificationTokenCreate: DeviceNotificationTokenCreateMutation,
 
     lnInvoiceFeeProbe: LnInvoiceFeeProbeMutation,
     lnNoAmountInvoiceFeeProbe: LnNoAmountInvoiceFeeProbeMutation,
