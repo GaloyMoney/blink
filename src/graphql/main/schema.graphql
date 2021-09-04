@@ -310,11 +310,11 @@ type Coordinates {
 }
 
 type Mutation {
+  userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
+  userLogin(input: UserLoginInput!): AuthTokenPayload!
   userQuizQuestionsUpdateCompleted(
     input: UserQuizQuestionsUpdateCompletedInput!
   ): UserQuizQuestionsUpdateCompletedPayload!
-  userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
-  userLogin(input: UserLoginInput!): AuthTokenPayload!
   userUpdateLanguage(input: UserUpdateLanguageInput!): UserUpdateLanguagePayload!
   walletContactUpdateAlias(
     input: WalletContactUpdateAliasInput!
@@ -336,15 +336,6 @@ type Mutation {
   intraLedgerPaymentSend(
     input: IntraLedgerPaymentSendInput!
   ): LnInvoicePaymentSendPayload!
-}
-
-type UserQuizQuestionsUpdateCompletedPayload {
-  errors: [Error!]!
-  userQuizQuestions: UserQuizQuestion
-}
-
-input UserQuizQuestionsUpdateCompletedInput {
-  ids: [ID!]!
 }
 
 type SuccessPayload {
@@ -375,6 +366,15 @@ input UserLoginInput {
 An authentication code valid for a single use
 """
 scalar OneTimeAuthCode
+
+type UserQuizQuestionsUpdateCompletedPayload {
+  errors: [Error!]!
+  userQuizQuestions: [UserQuizQuestion]
+}
+
+input UserQuizQuestionsUpdateCompletedInput {
+  ids: [ID!]!
+}
 
 type UserUpdateLanguagePayload {
   errors: [Error!]!
