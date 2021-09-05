@@ -11,12 +11,19 @@ describe("lndHealth", () => {
   it("should emit on started", async () => {
     const handler = jest.fn()
     const node = params[0]
+    node.active = false
 
     lndStatusEvent.on("started", handler)
     await isUp(node)
+    lndStatusEvent.removeAllListeners()
 
     expect(handler).toBeCalledTimes(1)
 
-    lndStatusEvent.removeAllListeners()
+    const { active, lnd, type } = handler.mock.calls[0][0]
+    expect(active).toBe(true)
+    expect(type).toStrictEqual(["offchain", "onchain"])
+    // validates if it is an authenticated lnd
+    expect(lnd.unlocker).toBeUndefined()
+    expect(lnd.wallet).toBeDefined()
   })
 })
