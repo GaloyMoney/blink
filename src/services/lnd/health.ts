@@ -1,7 +1,8 @@
 import { getWalletStatus } from "lightning"
 import { baseLogger } from "@services/logger"
 
-import { params } from "./unauth"
+import { params as unauthParams } from "./unauth"
+import { params as authParams } from "./auth"
 
 /*
 
@@ -21,7 +22,7 @@ const isUpLoop = (param) =>
 
 export const isUp = async (param): Promise<void> => {
   let active = false
-  const { lnd, socket } = param
+  const { lnd, socket, active: isParamActive } = param
 
   try {
     // will throw if there is an error
@@ -32,16 +33,25 @@ export const isUp = async (param): Promise<void> => {
     active = false
   }
 
-  const event = active ? "started" : "stopped"
-
+  const authParam = authParams.find((p) => p.socket === socket)
+  if (authParam) {
+    authParam.active = active
+  }
   param.active = active
-  lndStatusEvent.emit(event, param)
+
+  if (active && !isParamActive) {
+    lndStatusEvent.emit("started", authParam || param)
+  }
+
+  if (!active && isParamActive) {
+    lndStatusEvent.emit("stopped", authParam || param)
+  }
 
   baseLogger.debug({ socket, active }, "lnd pulse")
 }
 
 // launching a loop to update whether lnd are active or not
-export const activateLndHealthCheck = () => params.forEach(isUpLoop)
+export const activateLndHealthCheck = () => unauthParams.forEach(isUpLoop)
 
 class LndStatusEventEmitter extends EventEmitter {}
 export const lndStatusEvent = new LndStatusEventEmitter()
