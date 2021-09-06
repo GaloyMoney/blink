@@ -2,7 +2,7 @@ import { toSats } from "@domain/bitcoin"
 import { parsePaymentRequest } from "invoices"
 import { LnInvoiceDecodeError } from "./errors"
 
-const safeDecode = (bolt11EncodedInvoice: string) => {
+const safeDecode = (bolt11EncodedInvoice: EncodedPaymentRequest) => {
   try {
     return parsePaymentRequest({ request: bolt11EncodedInvoice })
   } catch (err) {
@@ -11,7 +11,7 @@ const safeDecode = (bolt11EncodedInvoice: string) => {
 }
 
 export const decodeInvoice = (
-  bolt11EncodedInvoice: string,
+  bolt11EncodedInvoice: EncodedPaymentRequest,
 ): LnInvoice | LnInvoiceDecodeError => {
   const decodedInvoice = safeDecode(bolt11EncodedInvoice)
   if (decodedInvoice instanceof Error) return decodedInvoice
