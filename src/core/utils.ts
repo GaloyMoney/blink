@@ -5,7 +5,7 @@ import { getIpConfig } from "@config/app"
 
 import { User } from "@services/mongoose/schema"
 
-export const isDev = process.env.NODE_ENV !== "production"
+export const isProd = process.env.NODE_ENV === "production"
 
 // FIXME: super ugly hack.
 // for some reason LoggedError get casted as GraphQLError

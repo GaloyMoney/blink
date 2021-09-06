@@ -1,6 +1,6 @@
 import { GraphQLSchema, printSchema } from "graphql"
 
-import { isDev } from "@core/utils"
+import { isProd } from "@core/utils"
 
 import { ERROR_INTERFACE_TYPES } from "@graphql/types"
 
@@ -13,7 +13,7 @@ export const gqlAdminSchema = new GraphQLSchema({
   types: ERROR_INTERFACE_TYPES,
 })
 
-if (isDev) {
+if (!isProd) {
   import("@services/fs").then(({ writeSDLFile }) => {
     writeSDLFile(__dirname + "/schema.graphql", printSchema(gqlAdminSchema))
   })
