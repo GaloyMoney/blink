@@ -19,7 +19,7 @@ import { redis } from "@services/redis"
 import { User } from "@services/mongoose/schema"
 
 import { IPBlacklistedError } from "@core/error"
-import { isIPBlacklisted } from "@core/utils"
+import { isProd, isIPBlacklisted } from "@core/utils"
 import { WalletFactory } from "@core/wallet-factory"
 import { ApolloServerPluginUsageReporting } from "apollo-server-core"
 
@@ -43,18 +43,22 @@ export const startApolloServer = async ({
   startSubscriptionServer = false,
 }): Promise<Record<string, unknown>> => {
   const app = express()
+
+  const apolloPulgins = isProd
+    ? [
+        ApolloServerPluginUsageReporting({
+          rewriteError(err) {
+            graphqlLogger.error(err, "Error caught in rewriteError")
+            return err
+          },
+        }),
+      ]
+    : []
   const apolloServer = new ApolloServer({
     schema,
     playground: process.env.NETWORK !== "mainnet",
     introspection: process.env.NETWORK !== "mainnet",
-    plugins: [
-      ApolloServerPluginUsageReporting({
-        rewriteError(err) {
-          graphqlLogger.error({ error: err }, "Error caught in rewriteError")
-          return err
-        },
-      }),
-    ],
+    plugins: apolloPulgins,
     context: async (context) => {
       // @ts-expect-error: TODO
       const token = context.req?.token ?? null
