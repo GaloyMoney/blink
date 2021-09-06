@@ -24,6 +24,9 @@ type FeatureType = string & { [featureTypeSymbol]: never }
 type PaymentStatus =
   typeof import("./index").PaymentStatus[keyof typeof import("./index").PaymentStatus]
 
+type PaymentSendStatus =
+  typeof import("./index").PaymentSendStatus[keyof typeof import("./index").PaymentSendStatus]
+
 type Hop = {
   baseFeeMTokens?: string
   channel?: string
