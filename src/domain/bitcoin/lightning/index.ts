@@ -7,3 +7,10 @@ export const PaymentStatus = {
   Failed: "failed",
   Pending: "pending",
 } as const
+
+export const PaymentSendStatus = {
+  Success: { value: "success" },
+  Failure: { value: "failed" },
+  Pending: { value: "pending" },
+  AlreadyPaid: { value: "already_paid" },
+} as const
