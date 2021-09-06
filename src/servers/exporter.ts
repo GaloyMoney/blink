@@ -10,6 +10,8 @@ import { User } from "@services/mongoose/schema"
 import { getWalletFromRole } from "@core/wallet-factory"
 import { balanceSheetIsBalanced, getLedgerAccounts } from "@core/balance-sheet"
 
+import * as Wallets from "@app/wallets"
+
 const logger = baseLogger.child({ module: "exporter" })
 
 const server = express()
@@ -109,8 +111,13 @@ const main = async () => {
     for (const role of roles) {
       try {
         const wallet = await getWalletFromRole({ role, logger })
-        const { BTC: balance } = await wallet.getBalances()
-        wallet_roles[role].set(balance)
+        const balances = await Wallets.getBalanceForWallet({
+          walletId: wallet.user.id as WalletId,
+          logger,
+        })
+        if (balances instanceof Error) throw balances
+
+        wallet_roles[role].set(balances.BTC)
       } catch (err) {
         baseLogger.error({ role }, `can't fetch balance for role`)
       }
