@@ -122,6 +122,11 @@ type FeeReimbursement = {
   getReimbursement({ actualFee }: { actualFee: Satoshis }): Satoshis | null
 }
 
+type TxVolume = {
+  outgoingSats: Satoshis
+  incomingSats: Satoshis
+}
+
 interface ILedgerService {
   getLiabilityTransactions(
     liabilitiesAccountId: LiabilitiesAccountId,
@@ -143,6 +148,14 @@ interface ILedgerService {
   getAccountBalance(
     liabilitiesAccountId: LiabilitiesAccountId,
   ): Promise<Satoshis | LedgerServiceError>
+
+  txVolumeSince({
+    liabilitiesAccountId,
+    timestamp,
+  }: {
+    liabilitiesAccountId: LiabilitiesAccountId
+    timestamp: UnixTimeMs
+  }): Promise<TxVolume | LedgerServiceError>
 
   isOnChainTxRecorded(
     liabilitiesAccountId: LiabilitiesAccountId,
