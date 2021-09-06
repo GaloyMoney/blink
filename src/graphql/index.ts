@@ -14,9 +14,8 @@ import {
   GraphQLNonNull,
   Kind,
 } from "graphql"
-import { PubSub } from "graphql-subscriptions"
 
-export const pubsub = new PubSub()
+export { pubsub } from "@services/redis"
 
 // GraphQL Types
 export const GT = {

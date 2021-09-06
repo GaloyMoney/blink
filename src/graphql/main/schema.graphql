@@ -521,9 +521,26 @@ input OnChainAddressCurrentInput {
 }
 
 type Subscription {
+  price(input: PriceInput!): PricePayload!
   lnInvoicePaymentStatus(
     input: LnInvoicePaymentStatusInput!
   ): LnInvoicePaymentStatusPayload!
+}
+
+type PricePayload {
+  errors: [Error!]!
+  price: Float
+}
+
+input PriceInput {
+  amount: Int!
+  amountCurrency: ExchangeCurrency!
+  priceCurrentcy: ExchangeCurrency!
+}
+
+enum ExchangeCurrency {
+  SAT
+  USD
 }
 
 type LnInvoicePaymentStatusPayload {

@@ -10,12 +10,13 @@ import {
   subscribeToTransactions,
 } from "lightning"
 
+import { getCurrentPrice } from "@services/realtime-price"
+import { pubsub } from "@services/redis"
 import { activateLndHealthCheck, lndStatusEvent } from "@services/lnd/health"
 import { onChannelUpdated } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { ledger, setupMongoConnection } from "@services/mongodb"
 import { User } from "@services/mongoose/schema"
-
 import { transactionNotification } from "@services/notifications/payment"
 import { Price } from "@core/price-impl"
 import { ONCHAIN_MIN_CONFIRMATIONS } from "@config/app"
@@ -160,12 +161,20 @@ export const onInvoiceUpdate = async (invoice) => {
   await Wallets.updatePendingInvoiceByPaymentHash({ paymentHash: invoice.id, logger })
 }
 
+const publishCurrentPrice = async () => {
+  const satUsdPrice = await getCurrentPrice()
+  if (satUsdPrice) {
+    pubsub.publish("SAT-USD-PRICE", { price: satUsdPrice })
+  }
+}
+
 const updatePriceForChart = () => {
   const price = new Price({ logger: baseLogger })
   const interval = 1000 * 30
   return setInterval(async function () {
     try {
       await price.update()
+      publishCurrentPrice()
     } catch (err) {
       logger.error({ err }, "can't update the price")
     }

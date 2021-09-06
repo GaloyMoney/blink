@@ -1,4 +1,4 @@
-const { redis } = require("@services/redis")
+const { redis, redisSub } = require("@services/redis")
 const { setupMongoConnection } = require("@services/mongodb")
 
 let mongoose
@@ -10,6 +10,7 @@ beforeAll(async () => {
 afterAll(async () => {
   // avoids to use --forceExit
   redis.disconnect()
+  redisSub.disconnect()
   if (mongoose) {
     await mongoose.connection.close()
   }
