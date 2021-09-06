@@ -73,11 +73,19 @@ const resolvers = {
     },
 
     // legacy, before handling multi currency account
-    wallet: (_, __, { wallet }) => [
+    wallet: (_, __, { wallet, logger }) => [
       {
         id: "BTC",
         currency: "BTC",
-        balance: async () => (await wallet.getBalances())["BTC"],
+        balance: async () => {
+          const balances = await Wallets.getBalanceForWallet({
+            walletId: wallet.user.id as WalletId,
+            logger,
+          })
+          if (balances instanceof Error) throw balances
+
+          return balances.BTC
+        },
         transactions: async () => {
           const { result: txs, error } = await Wallets.getTransactionsForWalletId({
             walletId: wallet.user.id,
