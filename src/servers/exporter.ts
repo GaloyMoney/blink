@@ -111,13 +111,13 @@ const main = async () => {
     for (const role of roles) {
       try {
         const wallet = await getWalletFromRole({ role, logger })
-        const balances = await Wallets.getBalanceForWallet({
+        const balanceSats = await Wallets.getBalanceForWallet({
           walletId: wallet.user.id as WalletId,
           logger,
         })
-        if (balances instanceof Error) throw balances
+        if (balanceSats instanceof Error) throw balanceSats
 
-        wallet_roles[role].set(balances.BTC)
+        wallet_roles[role].set(balanceSats)
       } catch (err) {
         baseLogger.error({ role }, `can't fetch balance for role`)
       }
