@@ -49,7 +49,8 @@ export const LndService = (): ILightningService | LightningServiceError => {
     }
 
     try {
-      const { request } = await createInvoice(input)
+      const result = await createInvoice(input)
+      const request = result.request as EncodedPaymentRequest
       const returnedInvoice = decodeInvoice(request)
       if (returnedInvoice instanceof Error) {
         return new CouldNotDecodeReturnedPaymentRequest(returnedInvoice.message)
