@@ -261,12 +261,11 @@ export abstract class UserWallet {
   }
 
   sendBalance = async (): Promise<void> => {
-    const balances = await Wallets.getBalanceForWallet({
+    const balanceSats = await Wallets.getBalanceForWallet({
       walletId: this.user.id as WalletId,
       logger: this.logger,
     })
-    if (balances instanceof Error) throw balances
-    const { BTC: balanceSats } = balances
+    if (balanceSats instanceof Error) throw balanceSats
 
     // Add commas to balancesats
     const balanceSatsPrettified = balanceSats.toLocaleString("en")

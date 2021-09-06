@@ -135,21 +135,21 @@ export const OnChainMixin = (superclass) =>
       // when sendAll the amount should be 0
       else {
         assert(amount === 0)
-        /// TODO: unable to check balance.totalInBtc vs this.dustThreshold at this point...
+        /// TODO: unable to check balanceSats vs this.dustThreshold at this point...
       }
 
       return redlock({ path: this.user._id, logger: onchainLogger }, async (lock) => {
-        const balance = await Wallets.getBalanceForWallet({
+        const balanceSats = await Wallets.getBalanceForWallet({
           walletId: this.user.id,
           logger: onchainLogger,
           lock,
         })
-        if (balance instanceof Error) throw balance
+        if (balanceSats instanceof Error) throw balanceSats
 
-        onchainLogger = onchainLogger.child({ balance })
+        onchainLogger = onchainLogger.child({ balanceSats })
 
         // quit early if balance is not enough
-        if (balance.totalInBtc < amount) {
+        if (balanceSats < amount) {
           throw new InsufficientBalanceError(undefined, { logger: onchainLogger })
         }
 
@@ -160,7 +160,7 @@ export const OnChainMixin = (superclass) =>
           let amountToSendPayeeUser = amount
           if (sendAll) {
             // when sendAll the amount to send payeeUser is the whole balance
-            amountToSendPayeeUser = balance.totalInBtc
+            amountToSendPayeeUser = balanceSats
           }
 
           const remainingTwoFALimit = await this.user.remainingTwoFALimit()
@@ -231,7 +231,7 @@ export const OnChainMixin = (superclass) =>
         }
 
         /// when sendAll the amount is closer to the final one by deducting the withdrawFee
-        const checksAmount = sendAll ? balance.totalInBtc - this.user.withdrawFee : amount
+        const checksAmount = sendAll ? balanceSats - this.user.withdrawFee : amount
 
         if (checksAmount < this.config.dustThreshold) {
           throw new DustAmountError(undefined, { logger: onchainLogger })
@@ -292,13 +292,13 @@ export const OnChainMixin = (superclass) =>
           }
 
           // case where the user doesn't have enough money
-          if (balance.totalInBtc < amountToSend + estimatedFee + this.user.withdrawFee) {
+          if (balanceSats < amountToSend + estimatedFee + this.user.withdrawFee) {
             throw new InsufficientBalanceError(undefined, { logger: onchainLogger })
           }
         }
         // when sendAll the amount to sendToChainAddress is the whole balance minus the fees
         else {
-          amountToSend = balance.totalInBtc - estimatedFee - this.user.withdrawFee
+          amountToSend = balanceSats - estimatedFee - this.user.withdrawFee
 
           // case where there is not enough money available within lnd on-chain wallet
           if (onChainBalance < amountToSend) {
@@ -351,7 +351,7 @@ export const OnChainMixin = (superclass) =>
             let sats = amount + fee
             if (sendAll) {
               // when sendAll the amount debited from the account is the whole balance
-              sats = balance.totalInBtc
+              sats = balanceSats
             }
 
             const metadata = {

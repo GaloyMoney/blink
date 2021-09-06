@@ -221,11 +221,11 @@ export const LightningMixin = (superclass) =>
       let feeKnownInAdvance
 
       return redlock({ path: this.user._id, logger: lightningLogger }, async (lock) => {
-        const balance = await Wallets.getBalanceForWallet({
+        const balanceSats = await Wallets.getBalanceForWallet({
           walletId: this.user.id,
           logger: lightningLogger,
         })
-        if (balance instanceof Error) throw balance
+        if (balanceSats instanceof Error) throw balanceSats
 
         // On us transaction
         if (isMyNode({ pubkey: destination }) || isPushPayment) {
@@ -285,7 +285,7 @@ export const LightningMixin = (superclass) =>
           }
 
           // TODO: manage when paid fully in USD directly from USD balance to avoid conversion issue
-          if (balance.totalInBtc < sats) {
+          if (balanceSats < sats) {
             throw new InsufficientBalanceError(undefined, {
               logger: lightningLoggerOnUs,
             })
@@ -438,11 +438,11 @@ export const LightningMixin = (superclass) =>
             ...UserWallet.getCurrencyEquivalent({ sats, fee }),
           }
 
-          lightningLogger = lightningLogger.child({ route, balance, ...metadata })
+          lightningLogger = lightningLogger.child({ route, balanceSats, ...metadata })
 
           // TODO usd management for balance
 
-          if (balance.totalInBtc < sats) {
+          if (balanceSats < sats) {
             throw new InsufficientBalanceError(undefined, { logger: lightningLogger })
           }
 
@@ -505,7 +505,7 @@ export const LightningMixin = (superclass) =>
 
               return "pending"
               // pending in-flight payment are being handled either by a cron job
-              // or payment update when the user query his balance
+              // or payment update when the user query his balanceSats
             }
 
             try {

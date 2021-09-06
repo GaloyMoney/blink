@@ -418,21 +418,13 @@ describe("UserWallet - Lightning Pay", () => {
           tokens: amountInvoice,
         })
         await fn(userWallet1)({ invoice: request })
-        const intermediateBalance = await Wallets.getBalanceForWallet({
-          walletId: userWallet1.user.id,
-          logger: baseLogger,
-        })
-        if (intermediateBalance instanceof Error) throw intermediateBalance
+        const intermediateBalanceSats = await getBTCBalance(userWallet1.user.id)
 
         const result = await fn(userWallet1)({ invoice: request })
         expect(result).toBe("already_paid")
 
-        const finalBalance = await Wallets.getBalanceForWallet({
-          walletId: userWallet1.user.id,
-          logger: baseLogger,
-        })
-        if (finalBalance instanceof Error) throw finalBalance
-        expect(finalBalance).toStrictEqual(intermediateBalance)
+        const finalBalanceSats = await getBTCBalance(userWallet1.user.id)
+        expect(finalBalanceSats).toEqual(intermediateBalanceSats)
       })
 
       it("pay invoice with High CLTV Delta", async () => {
@@ -762,11 +754,7 @@ describe("UserWallet - Lightning Pay", () => {
 
     // await sleep(1000)
 
-    const _ = await Wallets.getBalanceForWallet({
-      walletId: userWallet1.user.id,
-      logger: baseLogger,
-    })
-    if (_ instanceof Error) throw _
+    await getBTCBalance(userWallet1.user.id)
 
     // FIXME: test is failing.
     // lnd doens't always delete invoice just after they have expired
