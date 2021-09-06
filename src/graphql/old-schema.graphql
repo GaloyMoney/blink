@@ -188,8 +188,6 @@ type Query {
       @stringLength(min: 3, max: 50, policy: THROW)
   ): Boolean
 
-  getUserDetails(uid: ID!): User
-
   noauthUpdatePendingInvoice(
     username: String!
       @pattern(regexp: "^[A-Za-z0-9_]+$", policy: THROW)
@@ -199,13 +197,6 @@ type Query {
       @pattern(regexp: "^[A-Fa-f0-9]+$", policy: THROW)
   ): Boolean
 
-  getUid(
-    username: String
-      @pattern(regexp: "^[A-Za-z0-9_]+$", policy: THROW)
-      @stringLength(min: 3, max: 50, policy: THROW)
-    phone: String @pattern(regexp: "^\\+[0-9]+$", policy: THROW)
-  ): ID
-  getLevels: [Int]
   getLimits: Limits
   getWalletFees: WalletFees
 }
@@ -286,19 +277,6 @@ type Mutation {
 
   addDeviceToken(deviceToken: String): Success # to refactor with User?
   testMessage: Success # FIXME remove test
-  addToMap(
-    username: String!
-      @pattern(regexp: "^[A-Za-z0-9_]+$", policy: THROW)
-      @stringLength(min: 3, max: 50, policy: THROW)
-    title: String!
-    latitude: Float!
-    longitude: Float!
-  ): Boolean
-
-  setAccountStatus(uid: ID!, status: AccountStatus!): User
-
-  setLevel(uid: ID!, level: Int!): User
-
   generate2fa: twoFASecret
 
   save2fa(secret: String, token: String): Boolean

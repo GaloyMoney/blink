@@ -7,12 +7,12 @@ import {
 import dotenv from "dotenv"
 import fs from "fs"
 import { applyMiddleware } from "graphql-middleware"
-import { and, shield } from "graphql-shield"
+import { shield } from "graphql-shield"
 import { makeExecutableSchema } from "graphql-tools"
 import moment from "moment"
 import path from "path"
 
-import { getFeeRates, levels, onboardingEarn } from "@config/app"
+import { getFeeRates, onboardingEarn } from "@config/app"
 
 import * as Wallets from "@app/wallets"
 import { SettlementMethod, PaymentInitiationMethod, TxStatus } from "@domain/wallets"
@@ -23,12 +23,11 @@ import { getActiveLnd, nodesStats, nodeStats } from "@services/lnd/utils"
 import { getHourlyPrice, getMinBuildNumber } from "@services/local-cache"
 import { getCurrentPrice } from "@services/realtime-price"
 import { User } from "@services/mongoose/schema"
-import { addToMap, setAccountStatus, setLevel } from "@core/admin-ops"
 import { sendNotification } from "@services/notifications/notification"
 import { login, requestPhoneCode } from "@core/text"
 import { usernameExists } from "@core/user"
 
-import { startApolloServer, isAuthenticated, isEditor } from "./graphql-server"
+import { startApolloServer, isAuthenticated } from "./graphql-server"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
 
@@ -180,7 +179,6 @@ const resolvers = {
       }))
     },
     usernameExists: async (_, { username }) => usernameExists({ username }),
-    getUserDetails: async (_, { uid }) => User.findOne({ _id: uid }),
     noauthUpdatePendingInvoice: async (_, { hash }, { logger }) => {
       const result = Wallets.updatePendingInvoiceByPaymentHash({
         paymentHash: hash,
@@ -189,13 +187,6 @@ const resolvers = {
       if (result instanceof Error) throw result
       return result
     },
-    getUid: async (_, { username, phone }) => {
-      const { _id: uid } = username
-        ? await User.getUserByUsername(username)
-        : await User.getUserByPhone(phone)
-      return uid
-    },
-    getLevels: () => levels,
     getLimits: (_, __, { wallet }) => wallet.getUserLimits(),
     getWalletFees: () => {
       const feeRates = getFeeRates()
@@ -219,9 +210,6 @@ const resolvers = {
       updateUsername: (input) => wallet.updateUsername(input),
       updateLanguage: (input) => wallet.updateLanguage(input),
     }),
-    setLevel: async (_, { uid, level }) => {
-      return setLevel({ uid, level })
-    },
     updateContact: (_, __, { user }) => ({
       setName: async ({ username, name }) => {
         user.contacts.filter((item) => item.id === username)[0].name = name
@@ -302,12 +290,6 @@ const resolvers = {
       })
       return { success: true }
     },
-    addToMap: async (_, { username, title, latitude, longitude }, { logger }) => {
-      return addToMap({ username, title, latitude, longitude, logger })
-    },
-    setAccountStatus: async (_, { uid, status }) => {
-      return setAccountStatus({ uid, status })
-    },
   },
 }
 
@@ -342,9 +324,6 @@ export async function startApolloServerForOldSchema() {
         wallet: isAuthenticated,
         wallet2: isAuthenticated,
         getLastOnChainAddress: isAuthenticated,
-        getUserDetails: and(isAuthenticated, isEditor),
-        getUid: and(isAuthenticated, isEditor),
-        getLevels: and(isAuthenticated, isEditor),
       },
       Mutation: {
         generate2fa: isAuthenticated,
@@ -357,9 +336,6 @@ export async function startApolloServerForOldSchema() {
         updateContact: isAuthenticated,
         addDeviceToken: isAuthenticated,
         testMessage: isAuthenticated,
-        addToMap: and(isAuthenticated, isEditor),
-        setLevel: and(isAuthenticated, isEditor),
-        setAccountStatus: and(isAuthenticated, isEditor),
       },
     },
     { allowExternalErrors: true },

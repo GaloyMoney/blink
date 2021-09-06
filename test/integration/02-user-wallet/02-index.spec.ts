@@ -1,7 +1,6 @@
 import { getGenericLimits, MS_PER_HOUR } from "@config/app"
 import { generateTokenHelper, getUserWallet } from "test/helpers"
-import { setAccountStatus } from "@core/admin-ops"
-import { usernameExists } from "@core/user"
+import { updateUserAccountStatus, usernameExists } from "@core/user"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
@@ -130,11 +129,20 @@ describe("UserWallet", () => {
     })
   })
 
-  describe("setAccountStatus", () => {
+  describe("updateUserAccountStatus", () => {
     it("sets account status for given user id", async () => {
-      let user = await setAccountStatus({ uid: userWallet2.user._id, status: "locked" })
+      let user = await updateUserAccountStatus({
+        uid: userWallet2.user._id,
+        status: "locked",
+      })
+      if (user instanceof Error) {
+        throw user
+      }
       expect(user.status).toBe("locked")
-      user = await setAccountStatus({ uid: user._id, status: "active" })
+      user = await updateUserAccountStatus({ uid: user._id, status: "active" })
+      if (user instanceof Error) {
+        throw user
+      }
       expect(user.status).toBe("active")
     })
   })
