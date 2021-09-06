@@ -8,7 +8,7 @@ import {
   PaymentStatus,
 } from "@domain/bitcoin/lightning"
 import { createInvoice, getInvoice, getPayment, GetPaymentResult } from "lightning"
-import { getActiveLnd, getLndFromPubkey } from "./utils"
+import { getActiveLnd, getLndFromPubkey, getLnds } from "./utils"
 
 export const LndService = (): ILightningService | LightningServiceError => {
   let lndAuth: AuthenticatedLnd, pubkey: string
@@ -16,6 +16,18 @@ export const LndService = (): ILightningService | LightningServiceError => {
     ;({ lnd: lndAuth, pubkey } = getActiveLnd())
   } catch (err) {
     return new UnknownLightningServiceError(err)
+  }
+
+  const isLocal = (pubkey: Pubkey): boolean | LightningServiceError => {
+    let offchainLnds: LndParamsAuthed[]
+    try {
+      offchainLnds = getLnds({ type: "offchain" })
+    } catch (err) {
+      return new UnknownLightningServiceError(err)
+    }
+    return !!offchainLnds
+      .map((item) => item.pubkey as Pubkey)
+      .find((item) => item == pubkey)
   }
 
   const registerInvoice = async ({
@@ -99,6 +111,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
   }
 
   return {
+    isLocal,
     registerInvoice,
     lookupInvoice,
     lookupPayment,

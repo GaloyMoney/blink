@@ -58,6 +58,7 @@ type RegisteredInvoice = {
 }
 
 interface ILightningService {
+  isLocal(pubkey: Pubkey): boolean | LightningServiceError
   registerInvoice(
     registerInvoiceArgs: RegisterInvoiceArgs,
   ): Promise<RegisteredInvoice | LightningServiceError>
