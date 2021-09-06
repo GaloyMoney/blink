@@ -2,17 +2,17 @@ import { GT } from "@graphql/index"
 
 import SuccessPayload from "@graphql/types/payload/success-payload"
 
-const DeviceNotificatinoTokenCreateInput = new GT.Input({
-  name: "DeviceNotificatinoTokenCreateInput",
+const DeviceNotificationTokenCreateInput = new GT.Input({
+  name: "DeviceNotificationTokenCreateInput",
   fields: () => ({
     deviceToken: { type: GT.NonNull(GT.String) },
   }),
 })
 
-const DeviceNotificatinoTokenCreateMutation = GT.Field({
+const DeviceNotificationTokenCreateMutation = GT.Field({
   type: GT.NonNull(SuccessPayload),
   args: {
-    input: { type: GT.NonNull(DeviceNotificatinoTokenCreateInput) },
+    input: { type: GT.NonNull(DeviceNotificationTokenCreateInput) },
   },
   resolve: async (_, args, { user }) => {
     const { deviceToken } = args.input
@@ -28,4 +28,4 @@ const DeviceNotificatinoTokenCreateMutation = GT.Field({
   },
 })
 
-export default DeviceNotificatinoTokenCreateMutation
+export default DeviceNotificationTokenCreateMutation

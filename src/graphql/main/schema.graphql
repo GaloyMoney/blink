@@ -313,7 +313,7 @@ type Mutation {
   userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
   userLogin(input: UserLoginInput!): AuthTokenPayload!
   deviceNotificationTokenCreate(
-    input: DeviceNotificatinoTokenCreateInput!
+    input: DeviceNotificationTokenCreateInput!
   ): SuccessPayload!
   userUpdateLanguage(input: UserUpdateLanguageInput!): UserUpdateLanguagePayload!
   walletContactUpdateAlias(
@@ -367,7 +367,7 @@ An authentication code valid for a single use
 """
 scalar OneTimeAuthCode
 
-input DeviceNotificatinoTokenCreateInput {
+input DeviceNotificationTokenCreateInput {
   deviceToken: String!
 }
 
