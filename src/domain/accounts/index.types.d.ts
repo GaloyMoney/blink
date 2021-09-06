@@ -37,6 +37,17 @@ type BusinessMapMarker = {
   mapInfo: BusinessMapInfo
 }
 
+type LimitsChecker = {
+  check({
+    walletVolume,
+    pendingAmount,
+    settlementMethod,
+  }: {
+    walletVolume: TxVolume
+    pendingAmount: Satoshis
+    settlementMethod: SettlementMethod
+  }): void | LimitsExceededError
+}
 interface IAccountsRepository {
   findById(accountId: AccountId): Promise<Account | RepositoryError>
   listByUserId(userId: UserId): Promise<Account[] | RepositoryError>
