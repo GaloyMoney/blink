@@ -91,6 +91,41 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
+  const txVolumeSince = async ({
+    liabilitiesAccountId,
+    timestamp,
+  }: {
+    liabilitiesAccountId: LiabilitiesAccountId
+    timestamp: UnixTimeMs
+  }): Promise<TxVolume | LedgerServiceError> => {
+    const txnTypes = [{ type: "on_us" }, { type: "onchain_on_us" }]
+    try {
+      const [result]: (TxVolume & { _id: null })[] = await Transaction.aggregate([
+        {
+          $match: {
+            accounts: liabilitiesAccountId,
+            $or: txnTypes,
+            $and: [{ timestamp: { $gte: new Date(timestamp) } }],
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            outgoingSats: { $sum: "$debit" },
+            incomingSats: { $sum: "$credit" },
+          },
+        },
+      ])
+
+      return {
+        outgoingSats: toSats(result?.outgoingSats ?? 0),
+        incomingSats: toSats(result?.incomingSats ?? 0),
+      }
+    } catch (err) {
+      return new UnknownLedgerError(err)
+    }
+  }
+
   const isOnChainTxRecorded = async (
     liabilitiesAccountId: LiabilitiesAccountId,
     txId: TxId,
@@ -256,6 +291,7 @@ export const LedgerService = (): ILedgerService => {
     listPendingPayments,
     getPendingPaymentsCount,
     getAccountBalance,
+    txVolumeSince,
     isOnChainTxRecorded,
     isLnTxRecorded,
     receiveOnChainTx,
