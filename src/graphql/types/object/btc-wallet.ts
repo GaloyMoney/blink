@@ -22,7 +22,14 @@ const BTCWallet = new GT.Object({
     },
     balance: {
       type: GT.NonNull(SignedAmount),
-      resolve: async (_, __, { wallet }) => (await wallet.getBalances())["BTC"],
+      resolve: async (_, __, { wallet, logger }) => {
+        const balances = await Wallets.getBalanceForWallet({
+          walletId: wallet.user.id as WalletId,
+          logger,
+        })
+        if (balances instanceof Error) throw balances
+        return balances.BTC
+      },
     },
 
     transactions: {
