@@ -1,6 +1,6 @@
 import { GT } from "@graphql/index"
 
-import DeviceNotificatinoTokenCreateMutation from "@graphql/root/mutation/device-notification-token-create"
+import DeviceNotificationTokenCreateMutation from "@graphql/root/mutation/device-notification-token-create"
 import IntraLedgerPaymentSendMutation from "@graphql/root/mutation/intraledger-payment-send"
 import LnInvoiceCreateMutation from "@graphql/root/mutation/ln-invoice-create"
 import LnInvoiceCreateOnBehalfOfRecipientMutation from "@graphql/root/mutation/ln-invoice-create-on-behalf-of-recipient"
@@ -21,7 +21,7 @@ const MutationType = new GT.Object({
     userRequestAuthCode: UserRequestAuthCodeMutation,
     userLogin: UserLoginMutation,
 
-    deviceNotificationTokenCreate: DeviceNotificatinoTokenCreateMutation,
+    deviceNotificationTokenCreate: DeviceNotificationTokenCreateMutation,
 
     userUpdateLanguage: UserUpdateLanguageMutation,
     walletContactUpdateAlias: WalletContactUpdateAliasMutation,
