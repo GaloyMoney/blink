@@ -9,7 +9,7 @@ const OnChainAddressPayload = new GT.Object({
       type: GT.NonNullList(IError),
     },
     address: {
-      type: GT.NonNull(OnChainAddress),
+      type: OnChainAddress,
     },
   }),
 })
