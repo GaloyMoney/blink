@@ -4,7 +4,6 @@ global:
 resources:
   limits:
     cpu: 150m
-    memory: 256Mi
 
 terminationGracePeriodSeconds: 0
 
