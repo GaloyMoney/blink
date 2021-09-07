@@ -182,8 +182,9 @@ export const LedgerService = (): ILedgerService => {
     usd,
     usdFee,
   }: ReceiveLnTxArgs): Promise<void | LedgerError> => {
+    let metadata: ReceiveLnTxMetadata
     try {
-      const metadata = {
+      metadata = {
         type: LedgerTransactionType.Invoice,
         pending: false,
         hash: paymentHash,
@@ -239,6 +240,64 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
+  const sendLnTx = async ({
+    liabilitiesAccountId,
+    recipientLiabilitiesAccountId,
+    paymentHash,
+    description,
+    sats,
+    fee,
+    usd,
+    usdFee,
+    type,
+    pending,
+    pubkey,
+    feeKnownInAdvance,
+    payerWalletName,
+    recipientWalletName,
+    memoPayer,
+    isPushPayment,
+  }: SendLnTxArgs): Promise<void | LedgerError> => {
+    let metadata: SendLnTxMetadata
+    try {
+      metadata = {
+        type,
+        pending,
+        hash: paymentHash,
+        fee,
+        feeUsd: usdFee,
+        sats,
+        usd,
+        pubkey,
+        feeKnownInAdvance,
+        currency: "BTC",
+      }
+
+      const creditMetadata = { ...metadata }
+      if (payerWalletName) {
+        creditMetadata.memoPayer = isPushPayment ? memoPayer : null
+        creditMetadata.username = payerWalletName
+      }
+      const debitMetadata = { ...metadata }
+      if (recipientWalletName) {
+        debitMetadata.memoPayer = memoPayer
+        debitMetadata.username = recipientWalletName
+      }
+
+      const entry = MainBook.entry(description)
+      const creditAccountingPath =
+        recipientLiabilitiesAccountId || (lndAccountingPath as LiabilitiesAccountId)
+
+      entry
+        .credit(creditAccountingPath, sats, creditMetadata)
+        .debit(liabilitiesAccountId, sats, debitMetadata)
+
+      await entry.commit()
+    } catch (err) {
+      return new UnknownLedgerError(err)
+    }
+  }
+
   const settlePendingLiabilityTransactions = async (
     paymentHash: PaymentHash,
   ): Promise<boolean | LedgerServiceError> => {
@@ -275,6 +334,7 @@ export const LedgerService = (): ILedgerService => {
     receiveOnChainTx,
     receiveLnTx,
     receiveLnFeeReimbursement,
+    sendLnTx,
     settlePendingLiabilityTransactions,
     voidLedgerTransactionsForJournal,
   }
