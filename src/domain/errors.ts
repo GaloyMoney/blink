@@ -15,3 +15,4 @@ export class ValidationError extends DomainError {}
 export class InvalidSatoshiAmount extends ValidationError {}
 export class InvalidWalletName extends ValidationError {}
 export class LimitsExceededError extends ValidationError {}
+export class InsufficientBalanceError extends ValidationError {}
