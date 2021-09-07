@@ -51,14 +51,13 @@ export const startApolloServer = async ({
       const token = context.req?.token ?? null
       const uid = token?.uid ?? null
       const ips = context.req?.headers["x-real-ip"]
-      let ip: string | undefined
-      if (ips && ips.length) {
+      let ip: string | undefined = ips as string | undefined
+
+      if (ips && Array.isArray(ips) && ips.length) {
         ip = ips[0]
-      } else {
-        ip = ips as string | undefined
       }
 
-      if (isIPBlacklisted({ ip })) {
+      if (ip && isIPBlacklisted({ ip })) {
         throw new IPBlacklistedError("IP Blacklisted", { logger: graphqlLogger, ip })
       }
 
