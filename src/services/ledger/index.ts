@@ -95,14 +95,16 @@ export const LedgerService = (): ILedgerService => {
     paymentHash: PaymentHash,
   ): Promise<boolean | LedgerServiceError> => {
     try {
-      const result = await Transaction.countDocuments({
+      const { total } = await MainBook.ledger({
+        pending: false,
         hash: paymentHash,
       })
-      return result > 0
+      return total > 0
     } catch (err) {
       return new UnknownLedgerError(err)
     }
   }
+
   const receiveOnChainTx = async ({
     liabilitiesAccountId,
     txId,
