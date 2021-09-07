@@ -69,7 +69,7 @@ const business_g = new client.Gauge({
 const roles = ["dealer", "funder", "bankowner"]
 const wallet_roles = {}
 
-for (const role in roles) {
+for (const role of roles) {
   wallet_roles[role] = new client.Gauge({
     name: `${prefix}_${role}_balance`,
     help: "funder balance BTC",
