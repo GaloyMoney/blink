@@ -349,7 +349,7 @@
                       "body": {
                         "mode": "graphql",
                         "graphql": {
-                          "query": "mutation login ($phone: String, $code: Int) {\n    login (phone: $phone, code: $code) {\n        token\n    }\n}",
+                          "query": "mutation login ($phone: String!, $code: Int!) {\n    login (phone: $phone, code: $code) {\n        token\n    }\n}",
                           "variables": "{\n  \"phone\": \"{{phone}}\",\n  \"code\": {{code}}\n}"
                         },
                         "options": {
@@ -397,7 +397,7 @@
                       "body": {
                         "mode": "graphql",
                         "graphql": {
-                          "query": "mutation login ($phone: String, $code: Int, $currency: String) {\n    login (phone: $phone, code: $code, currency: $currency) {\n        token\n    }\n}",
+                          "query": "mutation login ($phone: String!, $code: Int!, $currency: String) {\n    login (phone: $phone, code: $code, currency: $currency) {\n        token\n    }\n}",
                           "variables": "{\n  \"phone\": \"{{phone}}\",\n  \"code\": {{code}},\n  \"currency\": \"{{currency}}\"\n}"
                         },
                         "options": {

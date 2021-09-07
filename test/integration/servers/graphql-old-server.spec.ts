@@ -78,7 +78,7 @@ describe("graphql", () => {
   it("rate limit login", async () => {
     const { mutate } = createTestClient(apolloServer)
 
-    const mutation = `mutation login ($phone: String, $code: Int) {
+    const mutation = `mutation login ($phone: String!, $code: Int!) {
       login (phone: $phone, code: $code) {
           token
       }
