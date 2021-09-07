@@ -23,5 +23,6 @@ export class InsufficientBalanceError extends ValidationError {}
 export class InvalidTargetConfirmations extends ValidationError {}
 export class LimitsExceededError extends ValidationError {}
 export class NoUserForUsernameError extends ValidationError {}
+export class IncorrectUseCaseError extends ValidationError {}
 
 export class TwoFALimitsExceededError extends LimitsExceededError {}
