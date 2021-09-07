@@ -11,16 +11,20 @@ export const AccountsRepository = (): IAccountsRepository => {
   const findById = async (accountId: AccountId): Promise<Account | RepositoryError> => {
     try {
       const result: UserType = await User.findOne({ _id: accountId })
-      if (!result) {
-        return new CouldNotFindError()
-      }
+      if (!result) return new CouldNotFindError()
+      return translateToAccount(result)
+    } catch (err) {
+      return new UnknownRepositoryError(err)
+    }
+  }
 
-      return {
-        id: accountId,
-        level: (result.level as AccountLevel) || AccountLevel.One,
-        status: (result.status as AccountStatus) || AccountStatus.Active,
-        walletIds: [result.id as WalletId],
-      }
+  const findByWalletId = async (
+    walletId: WalletId,
+  ): Promise<Account | RepositoryError> => {
+    try {
+      const result: UserType = await User.findOne({ _id: walletId })
+      if (!result) return new CouldNotFindError()
+      return translateToAccount(result)
     } catch (err) {
       return new UnknownRepositoryError(err)
     }
@@ -40,16 +44,8 @@ export const AccountsRepository = (): IAccountsRepository => {
       const result: UserType = await User.findOne({
         username: caseInsensitiveRegex(walletName),
       })
-      if (!result) {
-        return new CouldNotFindError("Invalid walletName")
-      }
-
-      return {
-        id: result.id as AccountId,
-        level: (result.level as AccountLevel) || AccountLevel.One,
-        status: (result.status as AccountStatus) || AccountStatus.Active,
-        walletIds: [result.id as WalletId],
-      }
+      if (!result) return new CouldNotFindError("Invalid walletName")
+      return translateToAccount(result)
     } catch (err) {
       return new UnknownRepositoryError(err)
     }
@@ -86,6 +82,14 @@ export const AccountsRepository = (): IAccountsRepository => {
     findById,
     listByUserId,
     findByWalletName,
+    findByWalletId,
     listBusinessesForMap,
   }
 }
+
+const translateToAccount = (result): Account => ({
+  id: result.id as AccountId,
+  level: (result.level as AccountLevel) || AccountLevel.One,
+  status: (result.status as AccountStatus) || AccountStatus.Active,
+  walletIds: [result.id as WalletId],
+})
