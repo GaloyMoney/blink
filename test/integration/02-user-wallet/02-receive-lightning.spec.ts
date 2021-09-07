@@ -7,6 +7,7 @@ import * as Wallets from "@app/wallets"
 import { PaymentInitiationMethod } from "@domain/wallets"
 import { addInvoice, addInvoiceNoAmount } from "@app/wallets/add-invoice-for-wallet"
 import { toSats } from "@domain/bitcoin"
+import { PaymentStatusChecker } from "@app/lightning"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
@@ -40,6 +41,14 @@ describe("UserWallet - Lightning", () => {
     if (lnInvoice instanceof Error) return lnInvoice
     const { paymentRequest: invoice } = lnInvoice
 
+    const checker = PaymentStatusChecker({ paymentRequest: invoice })
+    expect(checker).not.toBeInstanceOf(Error)
+    if (checker instanceof Error) throw checker
+
+    const isPaidBeforePay = await checker.invoiceIsPaid()
+    expect(isPaidBeforePay).not.toBeInstanceOf(Error)
+    expect(isPaidBeforePay).toBe(false)
+
     const hash = getHash(invoice)
 
     await pay({ lnd: lndOutside1, request: invoice })
@@ -62,6 +71,10 @@ describe("UserWallet - Lightning", () => {
     expect(dbTx.sats).toBe(sats)
     expect(dbTx.memo).toBe(memo)
     expect(dbTx.pending).toBe(false)
+
+    const isPaidAfterPay = await checker.invoiceIsPaid()
+    expect(isPaidAfterPay).not.toBeInstanceOf(Error)
+    expect(isPaidAfterPay).toBe(true)
 
     // check that memo is not filtered by spam filter
     const { result: txns, error } = await Wallets.getTransactionsForWalletId({
