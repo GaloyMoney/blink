@@ -12,7 +12,7 @@ helm repo add jetstack https://charts.jetstack.io
 helm repo add galoy https://galoymoney.github.io/charts/
 helm repo update
 
-lndVersion="1.3.4"
+lndVersion="1.3.5"
 bitcoindVersion="0.3.0"
 
 if [ ${LOCAL} ]
