@@ -7,7 +7,13 @@ import {
   InvoiceNotFoundError,
   PaymentStatus,
 } from "@domain/bitcoin/lightning"
-import { createInvoice, getInvoice, getPayment, GetPaymentResult } from "lightning"
+import {
+  createInvoice,
+  getInvoice,
+  getPayment,
+  cancelHodlInvoice,
+  GetPaymentResult,
+} from "lightning"
 import { getActiveLnd, getLndFromPubkey, getLnds } from "./utils"
 
 export const LndService = (): ILightningService | LightningServiceError => {
@@ -84,7 +90,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
     pubkey: Pubkey
     paymentHash: PaymentHash
   }): Promise<LnPaymentLookup | LightningServiceError> => {
-    let lnd
+    let lnd: AuthenticatedLnd
     try {
       ;({ lnd } = getLndFromPubkey({ pubkey }))
     } catch (err) {
@@ -110,10 +116,26 @@ export const LndService = (): ILightningService | LightningServiceError => {
     }
   }
 
+  const deleteUnpaidInvoice = async ({
+    pubkey,
+    paymentHash,
+  }: {
+    pubkey: Pubkey
+    paymentHash: PaymentHash
+  }): Promise<void | LightningServiceError> => {
+    try {
+      const { lnd } = getLndFromPubkey({ pubkey })
+      await cancelHodlInvoice({ lnd, id: paymentHash })
+    } catch (err) {
+      return new UnknownLightningServiceError(err)
+    }
+  }
+
   return {
     isLocal,
     registerInvoice,
     lookupInvoice,
     lookupPayment,
+    deleteUnpaidInvoice,
   }
 }

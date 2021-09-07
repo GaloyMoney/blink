@@ -76,4 +76,11 @@ interface ILightningService {
     pubkey: Pubkey
     paymentHash: PaymentHash
   }): Promise<LnPaymentLookup | LightningServiceError>
+  deleteUnpaidInvoice({
+    pubkey,
+    paymentHash,
+  }: {
+    pubkey: Pubkey
+    paymentHash: PaymentHash
+  }): Promise<void | LightningServiceError>
 }
