@@ -76,11 +76,6 @@ for (const role in roles) {
   })
 }
 
-// const bankOwner_g = new client.Gauge({
-//   name: `${prefix}_bankOwnerBalance`,
-//   help: "sats amount for the bank owner",
-// })
-
 const main = async () => {
   server.get("/metrics", async (req, res) => {
     const bosScore = await getBosScore()
