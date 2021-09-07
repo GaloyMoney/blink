@@ -41,7 +41,7 @@ export const AccountsRepository = (): IAccountsRepository => {
         username: caseInsensitiveRegex(walletName),
       })
       if (!result) {
-        return new CouldNotFindError()
+        return new CouldNotFindError("Invalid walletName")
       }
 
       return {

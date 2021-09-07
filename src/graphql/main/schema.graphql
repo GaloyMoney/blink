@@ -336,7 +336,7 @@ type Mutation {
   intraLedgerPaymentSend(
     input: IntraLedgerPaymentSendInput!
   ): LnInvoicePaymentSendPayload!
-  onChainAddressCreate: OnChainAddressPayload!
+  onChainAddressCreate(input: OnChainAddressCreateInput!): OnChainAddressPayload!
   onChainAddressCurrent(input: OnChainAddressCurrentInput!): OnChainAddressPayload!
 }
 
@@ -502,6 +502,10 @@ input IntraLedgerPaymentSendInput {
 type OnChainAddressPayload {
   errors: [Error!]!
   address: OnChainAddress
+}
+
+input OnChainAddressCreateInput {
+  walletName: WalletName
 }
 
 input OnChainAddressCurrentInput {

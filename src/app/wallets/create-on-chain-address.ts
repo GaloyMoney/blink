@@ -1,7 +1,7 @@
 import { OnChainService } from "@services/lnd/onchain-service"
 import { TxDecoder } from "@domain/bitcoin/onchain"
 import { BTC_NETWORK } from "@config/app"
-import { WalletOnChainAddressesRepository } from "@services/mongoose"
+import { WalletOnChainAddressesRepository, WalletsRepository } from "@services/mongoose"
 
 export const createOnChainAddress = async (
   walletId: WalletId,
@@ -20,4 +20,13 @@ export const createOnChainAddress = async (
   if (savedOnChainAddress instanceof Error) return savedOnChainAddress
 
   return savedOnChainAddress.address
+}
+
+export const createOnChainAddressByWalletName = async (
+  walletName: WalletName,
+): Promise<OnChainAddress | ApplicationError> => {
+  const wallets = WalletsRepository()
+  const wallet = await wallets.findByWalletName(walletName)
+  if (wallet instanceof Error) return wallet
+  return createOnChainAddress(wallet.id)
 }
