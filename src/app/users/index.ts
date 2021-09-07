@@ -54,13 +54,13 @@ export const getUserForLogin = async ({
 
   // IP tracking logic could be extracted into domain
   const ipConfig = getIpConfig()
-  if (ipConfig.ipRecordingEnabled) {
+  if (ip && ipConfig.ipRecordingEnabled) {
     const lastIP: IPType | undefined = user.lastIPs.find(
       (ipObject: IPType) => ipObject.ip === ip,
     )
     if (lastIP) {
       lastIP.lastConnection = user.lastConnection
-    } else if (ip && ipConfig.proxyCheckingEnabled) {
+    } else if (ipConfig.proxyCheckingEnabled) {
       const ipFetcher = IpFetcher()
       const ipInfo = await ipFetcher.fetchIPInfo(ip as IpAddress)
       if (!(ipInfo instanceof Error)) {
