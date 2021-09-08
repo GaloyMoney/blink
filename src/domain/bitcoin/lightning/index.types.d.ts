@@ -57,6 +57,10 @@ type RegisteredInvoice = {
   pubkey: Pubkey
 }
 
+type LnFeeCalculator = {
+  max(amount: Satoshis): Satoshis
+}
+
 interface ILightningService {
   registerInvoice(
     registerInvoiceArgs: RegisterInvoiceArgs,
