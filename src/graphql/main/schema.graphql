@@ -383,7 +383,7 @@ type UserQuizQuestionsUpdateCompletedPayload {
 }
 
 input UserQuizQuestionsUpdateCompletedInput {
-  ids: [ID!]!
+  id: ID!
 }
 
 type UserUpdateLanguagePayload {
