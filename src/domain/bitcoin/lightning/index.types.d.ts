@@ -61,6 +61,10 @@ type RegisteredInvoice = {
   pubkey: Pubkey
 }
 
+type LnFeeCalculator = {
+  max(amount: Satoshis): Satoshis
+}
+
 interface ILightningService {
   isLocal(pubkey: Pubkey): boolean | LightningServiceError
   registerInvoice(
