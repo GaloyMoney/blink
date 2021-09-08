@@ -6,7 +6,7 @@ import UserQuizQuestionsUpdateCompletedPayload from "@graphql/types/payload/user
 const UserQuizQuestionsUpdateCompletedInput = new GT.Input({
   name: "UserQuizQuestionsUpdateCompletedInput",
   fields: () => ({
-    ids: { type: GT.NonNullList(GT.ID) }, // TODO: ENUM?
+    id: { type: GT.NonNull(GT.ID) },
   }),
 })
 
@@ -16,19 +16,14 @@ const UserQuizQuestionsUpdateCompletedMutation = GT.Field({
     input: { type: GT.NonNull(UserQuizQuestionsUpdateCompletedInput) },
   },
   resolve: async (_, args, { wallet }) => {
-    const { ids } = args.input
+    const { id } = args.input
 
-    // TODO: Figure out a better protection for this mutation
-    if (ids.length > 3) {
-      return { errors: [{ message: "Invalid requset" }] }
-    }
-
-    if (ids.some((id) => !onboardingEarn[id])) {
+    if (id.some((id) => !onboardingEarn[id])) {
       return { errors: [{ message: "Invalid input" }] }
     }
 
     try {
-      const quizQuestions = await wallet.addEarn(ids)
+      const quizQuestions = await wallet.addEarn([id])
 
       return {
         errors: [],
