@@ -85,9 +85,11 @@ type LnFeeCalculator = {
 
 interface ILightningService {
   isLocal(pubkey: Pubkey): boolean | LightningServiceError
+
   registerInvoice(
     registerInvoiceArgs: RegisterInvoiceArgs,
   ): Promise<RegisteredInvoice | LightningServiceError>
+
   lookupInvoice({
     pubkey,
     paymentHash,
@@ -95,6 +97,7 @@ interface ILightningService {
     pubkey: Pubkey
     paymentHash: PaymentHash
   }): Promise<LnInvoiceLookup | LightningServiceError>
+
   lookupPayment({
     pubkey,
     paymentHash,
@@ -102,6 +105,24 @@ interface ILightningService {
     pubkey: Pubkey
     paymentHash: PaymentHash
   }): Promise<LnPaymentLookup | LightningServiceError>
+
+  payInvoice({
+    paymentHash,
+    route,
+    lndAuthForRoute,
+    decodedInvoice,
+    maxFee,
+    timeoutMs,
+  }: {
+    paymentHash: PaymentHash
+    route: CachedRoute | null
+    lndAuthForRoute: AuthenticatedLnd | null
+    decodedInvoice: LnInvoice
+    milliSatsAmount: MilliSatoshis
+    maxFee: Satoshis
+    timeoutMs?: MilliSeconds
+  }): Promise<void | LightningServiceError>
+
   deleteUnpaidInvoice({
     pubkey,
     paymentHash,
