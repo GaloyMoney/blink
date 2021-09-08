@@ -7,7 +7,6 @@ module.exports = {
   },
   testRegex: ".*\\.spec\\.ts$",
   testSequencer: "<rootDir>/test/jest-test-sequencer.js",
-  setupFilesAfterEnv: ["<rootDir>/test/jest.setup.js"],
   testEnvironment: "node",
   moduleNameMapper: {
     "^@config/(.*)$": ["<rootDir>src/config/$1"],

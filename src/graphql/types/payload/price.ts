@@ -1,6 +1,7 @@
 import { GT } from "@graphql/index"
 
 import IError from "../abstract/error"
+import Price from "../object/price"
 
 const PricePayload = new GT.Object({
   name: "PricePayload",
@@ -9,7 +10,7 @@ const PricePayload = new GT.Object({
       type: GT.NonNullList(IError),
     },
     price: {
-      type: GT.Float,
+      type: Price,
     },
   }),
 })

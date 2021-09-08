@@ -529,18 +529,30 @@ type Subscription {
 
 type PricePayload {
   errors: [Error!]!
-  price: Float
+  price: Price
+}
+
+type Price {
+  base: BigInt!
+  offset: Int!
+  currencyUnit: ExchangeCurrencyUnit!
+  formattedAmount: String!
+}
+
+"""
+The `BigInt` scalar type represents non-fractional signed whole numeric values. BigInt can represent values between -(2^53) + 1 and 2^53 - 1
+"""
+scalar BigInt
+
+enum ExchangeCurrencyUnit {
+  BTCSAT
+  USDCENT
 }
 
 input PriceInput {
   amount: Int!
-  amountCurrency: ExchangeCurrency!
-  priceCurrentcy: ExchangeCurrency!
-}
-
-enum ExchangeCurrency {
-  SAT
-  USD
+  amountCurrencyUnit: ExchangeCurrencyUnit!
+  priceCurrencyUnit: ExchangeCurrencyUnit!
 }
 
 type LnInvoicePaymentStatusPayload {

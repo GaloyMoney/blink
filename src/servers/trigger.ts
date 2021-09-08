@@ -164,7 +164,7 @@ export const onInvoiceUpdate = async (invoice) => {
 const publishCurrentPrice = async () => {
   const satUsdPrice = await getCurrentPrice()
   if (satUsdPrice) {
-    pubsub.publish("SAT-USD-PRICE", { price: satUsdPrice })
+    pubsub.publish("SAT-USDCENT-PRICE", { price: 100 * satUsdPrice })
   }
 }
 
