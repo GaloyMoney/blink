@@ -6,14 +6,23 @@ import {
   LightningServiceError,
   InvoiceNotFoundError,
   PaymentStatus,
+  LnPaymentPendingError,
+  LnAlreadyPaidError,
 } from "@domain/bitcoin/lightning"
+import { isInvoiceAlreadyPaidError, timeout } from "@core/utils"
 import {
   createInvoice,
   getInvoice,
   getPayment,
   cancelHodlInvoice,
+  payViaRoutes,
+  payViaPaymentDetails,
   GetPaymentResult,
+  PayViaPaymentDetailsArgs,
+  PayViaRoutesResult,
+  PayViaPaymentDetailsResult,
 } from "lightning"
+import { TIMEOUT_PAYMENT } from "./auth"
 import { getActiveLnd, getLndFromPubkey, getLnds } from "./utils"
 
 export const LndService = (): ILightningService | LightningServiceError => {
@@ -158,11 +167,81 @@ export const LndService = (): ILightningService | LightningServiceError => {
     }
   }
 
+  const payInvoice = async ({
+    paymentHash,
+    rawRoute,
+    lndAuthForRoute,
+    decodedInvoice,
+    milliSatsAmount,
+    maxFee,
+  }: {
+    paymentHash: PaymentHash
+    rawRoute: RawRoute | null
+    lndAuthForRoute: AuthenticatedLnd | null
+    decodedInvoice: LnInvoice
+    milliSatsAmount: MilliSatoshis
+    maxFee: Satoshis
+  }): Promise<PayInvoiceResult | LightningServiceError> => {
+    const selectedLndAuth = rawRoute && lndAuthForRoute ? lndAuthForRoute : lndAuth
+
+    const paymentDetailsArgs: PayViaPaymentDetailsArgs = {
+      lnd: selectedLndAuth,
+      id: paymentHash,
+      destination: decodedInvoice.destination,
+      mtokens: milliSatsAmount.toString(),
+      payment: decodedInvoice.paymentSecret as string,
+      max_fee: maxFee,
+      cltv_delta: decodedInvoice.cltvDelta || undefined,
+      features: decodedInvoice.features
+        ? decodedInvoice.features.map((f) => ({
+            bit: f.bit,
+            is_required: f.isRequired,
+            type: f.type,
+          }))
+        : undefined,
+      routes: [],
+    }
+
+    if (decodedInvoice.routeHints) {
+      decodedInvoice.routeHints.forEach((route) => {
+        const rawRoute: RawHopWithStrings[] = []
+        route.forEach((hop) =>
+          rawRoute.push({
+            base_fee_mtokens: hop.baseFeeMTokens,
+            channel: hop.channel,
+            cltv_delta: hop.cltvDelta,
+            fee_rate: hop.feeRate,
+            public_key: hop.nodePubkey,
+          }),
+        )
+        paymentDetailsArgs.routes.push(rawRoute)
+      })
+    }
+
+    try {
+      const paymentPromise = rawRoute
+        ? payViaRoutes({ lnd: selectedLndAuth, routes: [rawRoute], id: paymentHash })
+        : payViaPaymentDetails(paymentDetailsArgs)
+      const timeoutPromise = timeout(TIMEOUT_PAYMENT, "Timeout")
+      const paymentResult = (await Promise.race([paymentPromise, timeoutPromise])) as
+        | PayViaRoutesResult
+        | PayViaPaymentDetailsResult
+      return {
+        roundedUpFee: toSats(paymentResult.safe_fee),
+      }
+    } catch (err) {
+      if (err.message === "Timeout") return new LnPaymentPendingError()
+      if (isInvoiceAlreadyPaidError(err)) return new LnAlreadyPaidError()
+      return new UnknownLightningServiceError(err)
+    }
+  }
+
   return {
     isLocal,
     registerInvoice,
     lookupInvoice,
     lookupPayment,
     cancelInvoice,
+    payInvoice,
   }
 }
