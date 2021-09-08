@@ -14,18 +14,33 @@ type PaymentHash = string & { [paymentHashSymbol]: never }
 declare const paymentSecretSymbol: unique symbol
 type PaymentSecret = string & { [paymentSecretSymbol]: never }
 
+declare const featureBitSymbol: unique symbol
+type FeatureBit = number & { [featureBitSymbol]: never }
+
+declare const featureTypeSymbol: unique symbol
+type FeatureType = string & { [featureTypeSymbol]: never }
+
 type PaymentStatus =
   typeof import("./index").PaymentStatus[keyof typeof import("./index").PaymentStatus]
 
 type PaymentSendStatus =
   typeof import("./index").PaymentSendStatus[keyof typeof import("./index").PaymentSendStatus]
 
-type RouteHint = {
+type Hop = {
   baseFeeMTokens?: string
   channel?: string
   cltvDelta?: number
   feeRate?: number
   nodePubkey: Pubkey
+}
+
+type LnInvoiceFeature = {
+  // BOLT 09 Feature Bit Number
+  bit: FeatureBit
+  // Feature Support is Required To Pay Bool
+  isRequired: boolean
+  // Feature Type String
+  type: FeatureType
 }
 
 type LnInvoiceLookup = {
@@ -41,13 +56,16 @@ type LnPaymentLookup = {
 }
 
 type LnInvoice = {
-  readonly amount: Satoshis | null
-  readonly cltvDelta: number | null
-  readonly routeHints: RouteHint[]
   readonly destination: Pubkey
   readonly paymentHash: PaymentHash
-  readonly paymentSecret: PaymentSecret | null
   readonly paymentRequest: EncodedPaymentRequest
+  readonly milliSatsAmount: MilliSatoshis
+  readonly description: string
+  readonly cltvDelta: number | null
+  readonly amount: Satoshis | null
+  readonly routeHints: Hop[][]
+  readonly paymentSecret: PaymentSecret | null
+  readonly features: LnInvoiceFeature[]
 }
 
 type RegisterInvoiceArgs = {

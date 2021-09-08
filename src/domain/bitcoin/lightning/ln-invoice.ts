@@ -1,4 +1,4 @@
-import { toSats } from "@domain/bitcoin"
+import { toMilliSats, toSats } from "@domain/bitcoin"
 import { parsePaymentRequest } from "invoices"
 import { LnInvoiceDecodeError } from "./errors"
 
@@ -27,17 +27,19 @@ export const decodeInvoice = (
     ? decodedInvoice.cltv_delta
     : null
 
-  const routeHints: RouteHint[] = []
+  const routeHints: Hop[][] = []
   if (decodedInvoice.routes) {
-    decodedInvoice.routes.forEach((route) =>
-      routeHints.push({
-        baseFeeMTokens: route.base_fee_mtokens,
-        channel: route.channel,
-        cltvDelta: route.cltv_delta,
-        feeRate: route.fee_rate,
-        nodePubkey: route.public_key as Pubkey,
-      }),
-    )
+    decodedInvoice.routes.forEach((rawRoute) => {
+      const route: Hop[] = []
+      route.push({
+        baseFeeMTokens: rawRoute.base_fee_mtokens,
+        channel: rawRoute.channel,
+        cltvDelta: rawRoute.cltv_delta,
+        feeRate: rawRoute.fee_rate,
+        nodePubkey: rawRoute.public_key as Pubkey,
+      })
+      routeHints.push(route)
+    })
   }
 
   return {
@@ -46,7 +48,12 @@ export const decodeInvoice = (
     routeHints,
     cltvDelta,
     paymentRequest: bolt11EncodedInvoice as EncodedPaymentRequest,
+    description: decodedInvoice.description || "",
     paymentHash: decodedInvoice.id as PaymentHash,
     destination: decodedInvoice.destination as Pubkey,
+    milliSatsAmount: decodedInvoice.mtokens
+      ? toMilliSats(decodedInvoice.mtokens)
+      : toMilliSats(0),
+    features: (decodedInvoice.features || []) as LnInvoiceFeature[],
   }
 }

@@ -1,4 +1,4 @@
-type RawHop = {
+type RawProbedHop = {
   /** Standard Format Channel Id */
   channel: string
   /** Channel Capacity Tokens */
@@ -17,27 +17,50 @@ type RawHop = {
   timeout: number
 }
 
-type RawRoute = {
-  /** Total Fee Tokens To Pay */
+type RawProbedRoute = {
+  /** Route Confidence Score Out Of One Million Number */
+  confidence?: number
+  /** Route Fee Tokens Rounded Down Number */
   fee: number
-  /** Total Fee Millitokens To Pay */
+  /** Route Fee Millitokens String */
   fee_mtokens: string
-  hops: RawHop[]
+  hops: RawProbedHop[]
   messages?: {
-    /** Message Type number */
+    /** Message Type Number String */
     type: string
-    /** Message Raw Value Hex Encoded */
+    /** Message Raw Value Hex Encoded String */
     value: string
   }[]
-  /** Total Millitokens To Pay */
+  /** Total Fee-Inclusive Millitokens String */
   mtokens: string
-  /** Expiration Block Height */
+  /** Payment Identifier Hex String */
+  payment?: string
+  /** Payment Forwarding Fee Rounded Up Tokens Number */
+  safe_fee: number
+  /** Payment Tokens Rounded Up Number */
+  safe_tokens: number
+  /** Timeout Block Height Number */
   timeout: number
-  /** Total Tokens To Pay */
+  /** Total Fee-Inclusive Tokens Rounded Down Number */
   tokens: number
+  /** Total Millitokens String */
+  total_mtokens?: string
 }
 
-type CachedRoute = RawRoute & { pubkey: Pubkey }
+type CachedRoute = RawProbedRoute & { pubkey: Pubkey }
+
+type RawInvoiceHop = {
+  /** Base Routing Fee In Millitokens */
+  base_fee_mtokens?: string
+  /** Standard Format Channel Id */
+  channel?: string
+  /** CLTV Blocks Delta */
+  cltv_delta?: number
+  /** Fee Rate In Millitokens Per Million */
+  fee_rate?: number
+  /** Forward Edge Public Key Hex */
+  public_key: string
+}
 
 interface IRoutesRepository {
   findByPaymentHash: ({

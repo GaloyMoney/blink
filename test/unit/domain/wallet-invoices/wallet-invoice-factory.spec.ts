@@ -1,3 +1,4 @@
+import { toMilliSats, toSats } from "@domain/bitcoin"
 import { WalletInvoiceFactory } from "@domain/wallet-invoices/wallet-invoice-factory"
 
 let walletInvoiceFactory: WalletInvoiceFactory
@@ -16,7 +17,10 @@ describe("wallet invoice factory methods", () => {
         routeHints: [],
         cltvDelta: null,
         destination: "destination" as Pubkey,
-        amount: 42 as Satoshis,
+        amount: toSats(42),
+        milliSatsAmount: toMilliSats(42000),
+        description: "",
+        features: [],
       },
       pubkey: "pubkey" as Pubkey,
     }
