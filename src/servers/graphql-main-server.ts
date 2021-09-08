@@ -38,6 +38,8 @@ export async function startApolloServerForCoreSchema() {
 
         onChainAddressCreate: isAuthenticated,
         onChainAddressCurrent: isAuthenticated,
+        onChainPaymentSend: isAuthenticated,
+        onChainPaymentSendAll: isAuthenticated,
       },
       // Subscription: {},
     },

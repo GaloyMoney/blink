@@ -17,6 +17,8 @@ import UserRequestAuthCodeMutation from "@graphql/root/mutation/user-request-aut
 import UserUpdateLanguageMutation from "@graphql/root/mutation/user-update-language"
 import WalletContactUpdateAliasMutation from "@graphql/root/mutation/wallet-contact-update-alias"
 import UserQuizQuestionsUpdateCompletedMutation from "@graphql/root/mutation/user-quiz-questions-update-completed"
+import OnChainPaymentSendMutation from "@graphql/root/mutation/onchain-payment-send"
+import OnChainPaymentSendAllMutation from "@graphql/root/mutation/onchain-payment-send-all"
 
 const MutationType = new GT.Object({
   name: "Mutation",
@@ -46,6 +48,8 @@ const MutationType = new GT.Object({
 
     onChainAddressCreate: OnChainAddressCreateMutation,
     onChainAddressCurrent: OnChainAddressCurrentMutation,
+    onChainPaymentSend: OnChainPaymentSendMutation,
+    onChainPaymentSendAll: OnChainPaymentSendAllMutation,
   }),
 })
 

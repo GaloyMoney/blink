@@ -380,15 +380,13 @@ type Mutation {
   lnNoAmountInvoiceCreateOnBehalfOfRecipient(
     input: LnNoAmountInvoiceCreateOnBehalfOfRecipientInput!
   ): LnNoAmountInvoicePayload!
-  lnInvoicePaymentSend(input: LnInvoicePaymentInput!): LnInvoicePaymentSendPayload!
-  lnNoAmountInvoicePaymentSend(
-    input: LnNoAmountInvoicePaymentInput!
-  ): LnInvoicePaymentSendPayload!
-  intraLedgerPaymentSend(
-    input: IntraLedgerPaymentSendInput!
-  ): LnInvoicePaymentSendPayload!
+  lnInvoicePaymentSend(input: LnInvoicePaymentInput!): PaymentSendPayload!
+  lnNoAmountInvoicePaymentSend(input: LnNoAmountInvoicePaymentInput!): PaymentSendPayload!
+  intraLedgerPaymentSend(input: IntraLedgerPaymentSendInput!): PaymentSendPayload!
   onChainAddressCreate(input: OnChainAddressCreateInput!): OnChainAddressPayload!
   onChainAddressCurrent(input: OnChainAddressCurrentInput!): OnChainAddressPayload!
+  onChainPaymentSend(input: OnChainPaymentSendInput!): PaymentSendPayload!
+  onChainPaymentSendAll(input: OnChainPaymentSendAllInput!): PaymentSendPayload!
 }
 
 type SuccessPayload {
@@ -530,12 +528,12 @@ input LnNoAmountInvoiceCreateOnBehalfOfRecipientInput {
   memo: Memo
 }
 
-type LnInvoicePaymentSendPayload {
+type PaymentSendPayload {
   errors: [Error!]!
-  status: LnPaymentSendResult
+  status: PaymentSendResult
 }
 
-enum LnPaymentSendResult {
+enum PaymentSendResult {
   SUCCESS
   FAILURE
   PENDING
@@ -570,6 +568,17 @@ input OnChainAddressCreateInput {
 
 input OnChainAddressCurrentInput {
   walletName: WalletName
+}
+
+input OnChainPaymentSendInput {
+  address: OnChainAddress!
+  amount: SatAmount!
+  memo: Memo
+}
+
+input OnChainPaymentSendAllInput {
+  address: OnChainAddress!
+  memo: Memo
 }
 
 type Subscription {
