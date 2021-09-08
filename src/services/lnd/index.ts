@@ -1,4 +1,4 @@
-import { toSats } from "@domain/bitcoin"
+import { toMilliSats, toSats } from "@domain/bitcoin"
 import {
   decodeInvoice,
   CouldNotDecodeReturnedPaymentRequest,
@@ -111,6 +111,9 @@ export const LndService = (): ILightningService | LightningServiceError => {
           ? PaymentStatus.Failed
           : PaymentStatus.Pending,
         roundedUpFee: payment ? toSats(payment.safe_fee) : toSats(0),
+        milliSatsAmount: payment
+          ? toMilliSats(parseFloat(payment.mtokens))
+          : toMilliSats(0),
       }
     } catch (err) {
       return new UnknownLightningServiceError(err)
