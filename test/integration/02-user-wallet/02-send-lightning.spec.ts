@@ -754,7 +754,7 @@ describe("UserWallet - Lightning Pay", () => {
 
     // await sleep(1000)
 
-    await getBTCBalance(userWallet1.user.id)
+    // await getBTCBalance(userWallet1.user.id)
 
     // FIXME: test is failing.
     // lnd doens't always delete invoice just after they have expired
