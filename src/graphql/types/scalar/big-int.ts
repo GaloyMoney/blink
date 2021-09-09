@@ -28,7 +28,7 @@ function coerceBigInt(value) {
     )
   }
   const num = Number(value)
-  if (num !== num || num > MAX_INT || num < MIN_INT) {
+  if (num !== value || num > MAX_INT || num < MIN_INT) {
     throw new Error(
       "BigInt cannot represent non 53-bit signed integer value: " + String(value),
     )

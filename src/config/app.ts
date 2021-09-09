@@ -18,6 +18,8 @@ export const MS_PER_30_DAYs = 30 * MS_PER_DAY
 export const SUBSCRIPTION_POLLING_INTERVAL = 2.5 * 1000
 export const MAX_BYTES_FOR_MEMO = 639 // BOLT
 
+export const SAT_USDCENT_PRICE = "SAT-USDCENT-PRICE"
+
 let customContent, customConfig
 
 try {

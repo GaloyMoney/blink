@@ -3,6 +3,7 @@ import { GT, pubsub } from "@graphql/index"
 import ExchangeCurrencyUnit from "@graphql/types/scalar/exchange-currency-unit"
 import PricePayload from "@graphql/types/payload/price"
 import { getCurrentPrice } from "@services/realtime-price"
+import { SAT_USDCENT_PRICE } from "@config/app"
 
 const PriceInput = new GT.Input({
   name: "PriceInput",
@@ -42,7 +43,7 @@ const PriceSubscription = {
       }
     }
 
-    const eventName = "SAT-USDCENT-PRICE"
+    const eventName = SAT_USDCENT_PRICE
 
     // For now, keep the only supported exchange price as SAT -> USD
     if (amountCurrencyUnit !== "BTCSAT" || priceCurrencyUnit !== "USDCENT") {

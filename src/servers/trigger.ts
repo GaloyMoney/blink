@@ -19,7 +19,7 @@ import { ledger, setupMongoConnection } from "@services/mongodb"
 import { User } from "@services/mongoose/schema"
 import { transactionNotification } from "@services/notifications/payment"
 import { Price } from "@core/price-impl"
-import { ONCHAIN_MIN_CONFIRMATIONS } from "@config/app"
+import { ONCHAIN_MIN_CONFIRMATIONS, SAT_USDCENT_PRICE } from "@config/app"
 import * as Wallets from "@app/wallets"
 
 const logger = baseLogger.child({ module: "trigger" })
@@ -164,7 +164,7 @@ export const onInvoiceUpdate = async (invoice) => {
 const publishCurrentPrice = async () => {
   const satUsdPrice = await getCurrentPrice()
   if (satUsdPrice) {
-    pubsub.publish("SAT-USDCENT-PRICE", { price: 100 * satUsdPrice })
+    pubsub.publish(SAT_USDCENT_PRICE, { satUsdCentPrice: 100 * satUsdPrice })
   }
 }
 
