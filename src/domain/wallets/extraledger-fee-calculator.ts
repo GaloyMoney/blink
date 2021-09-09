@@ -1,6 +1,6 @@
 import { toSats } from "@domain/bitcoin"
 
-export const DepositFeeCalculator = (amount: Satoshis): DepositFeeCalculator => {
+export const ExtraLedgerFeeCalculator = (amount: Satoshis): ExtraLedgerFeeCalculator => {
   const onChainDepositFee = (ratio: DepositFeeRatio) => {
     return toSats(Math.round(amount * ratio))
   }
@@ -8,5 +8,6 @@ export const DepositFeeCalculator = (amount: Satoshis): DepositFeeCalculator => 
   return {
     onChainDepositFee,
     lnDepositFee: () => toSats(0),
+    lnWithdrawalFee: () => toSats(0),
   }
 }

@@ -105,9 +105,10 @@ type ReceiveLnFeeReeimbursementArgs = {
   journalId: LedgerJournalId
 }
 
-type DepositFeeCalculator = {
+type ExtraLedgerFeeCalculator = {
   onChainDepositFee(ratio: DepositFeeRatio): Satoshis
   lnDepositFee(): Satoshis
+  lnWithdrawalFee(): Satoshis
 }
 
 type FeeReimbursement = {

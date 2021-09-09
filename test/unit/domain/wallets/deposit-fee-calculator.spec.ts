@@ -1,11 +1,11 @@
-import { DepositFeeCalculator } from "@domain/wallets"
+import { ExtraLedgerFeeCalculator } from "@domain/wallets"
 import { toSats } from "@domain/bitcoin"
 
-describe("DepositFeeCalculator", () => {
+describe("ExtraLedgerFeeCalculator", () => {
   describe("onChainDepositFee", () => {
     it("applies a depositFeeRatio", () => {
       const depositedAmount = toSats(100)
-      const calculator = DepositFeeCalculator(depositedAmount)
+      const calculator = ExtraLedgerFeeCalculator(depositedAmount)
       const depositFeeRatio = 0.02 as DepositFeeRatio
       const fee = calculator.onChainDepositFee(depositFeeRatio)
       expect(fee).toEqual(2)
@@ -14,7 +14,7 @@ describe("DepositFeeCalculator", () => {
   describe("lnDepositFee", () => {
     it("is free", () => {
       const depositedAmount = toSats(100)
-      const calculator = DepositFeeCalculator(depositedAmount)
+      const calculator = ExtraLedgerFeeCalculator(depositedAmount)
       const fee = calculator.lnDepositFee()
       expect(fee).toEqual(0)
     })
