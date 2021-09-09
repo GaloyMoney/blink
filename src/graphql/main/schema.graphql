@@ -550,7 +550,7 @@ enum ExchangeCurrencyUnit {
 }
 
 input PriceInput {
-  amount: Int!
+  amount: SatAmount!
   amountCurrencyUnit: ExchangeCurrencyUnit!
   priceCurrencyUnit: ExchangeCurrencyUnit!
 }
