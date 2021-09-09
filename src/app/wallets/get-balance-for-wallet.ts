@@ -11,17 +11,19 @@ export const getBalanceForWallet = async ({
   lock?: DistributedLock
   logger: Logger
 }): Promise<Satoshis | ApplicationError> => {
-  Wallets.updatePendingInvoices({
-    walletId: walletId,
-    lock,
-    logger,
-  })
-  const result = await Wallets.updatePendingPayments({
-    walletId: walletId,
-    lock,
-    logger,
-  })
-  if (result instanceof Error) throw result
+  const [, updatePaymentsResult] = await Promise.all([
+    Wallets.updatePendingInvoices({
+      walletId: walletId,
+      lock,
+      logger,
+    }),
+    Wallets.updatePendingPayments({
+      walletId: walletId,
+      lock,
+      logger,
+    }),
+  ])
+  if (updatePaymentsResult instanceof Error) throw updatePaymentsResult
 
   const liabilitiesAccountId = toLiabilitiesAccountId(walletId)
   const balance = await LedgerService().getAccountBalance(liabilitiesAccountId)
