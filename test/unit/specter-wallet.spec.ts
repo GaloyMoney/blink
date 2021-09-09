@@ -1,4 +1,3 @@
-import { redis } from "@services/redis"
 import { btc2sat } from "@core/utils"
 import { SpecterWallet } from "@core/specter-wallet"
 import { getSpecterWalletConfig } from "@config/app"
@@ -10,12 +9,11 @@ jest.mock("@config/app.ts", () => {
   return config
 })
 
+jest.mock("@services/redis", () => ({}))
+
 let specterWallet
 
 beforeAll(() => {
-  // avoids to use --forceExit and the need of a running redis
-  redis.disconnect()
-
   const specterWalletConfig = getSpecterWalletConfig()
   specterWallet = new SpecterWallet({
     logger: baseLogger,
