@@ -533,16 +533,16 @@ type PricePayload {
 }
 
 type Price {
-  base: BigInt!
+  base: SafeInt!
   offset: Int!
   currencyUnit: ExchangeCurrencyUnit!
   formattedAmount: String!
 }
 
 """
-The `BigInt` scalar type represents non-fractional signed whole numeric values. BigInt can represent values between -(2^53) + 1 and 2^53 - 1
+The `SafeInt` scalar type represents non-fractional signed whole numeric values. SafeInt can represent values between -(2^53) + 1 and 2^53 - 1
 """
-scalar BigInt
+scalar SafeInt
 
 enum ExchangeCurrencyUnit {
   BTCSAT
