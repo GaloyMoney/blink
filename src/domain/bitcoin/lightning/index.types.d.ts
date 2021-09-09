@@ -92,6 +92,9 @@ type PayInvoiceResult = {
 
 interface ILightningService {
   isLocal(pubkey: Pubkey): boolean | LightningServiceError
+
+  lndFromPubkey(pubkey: Pubkey): AuthenticatedLnd | LightningServiceError
+
   registerInvoice(
     registerInvoiceArgs: RegisterInvoiceArgs,
   ): Promise<RegisteredInvoice | LightningServiceError>
