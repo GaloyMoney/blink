@@ -360,16 +360,19 @@ enum PriceGraphRange {
 type Mutation {
   userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
   userLogin(input: UserLoginInput!): AuthTokenPayload!
+  twoFAGenerate: TwoFAGeneratePayload!
+  twoFASave(input: TwoFASaveInput!): SuccessPayload!
+  twoFADelete(input: TwoFADeleteInput!): SuccessPayload!
   userQuizQuestionsUpdateCompleted(
     input: UserQuizQuestionsUpdateCompletedInput!
   ): UserQuizQuestionsUpdateCompletedPayload!
+  deviceNotificationTokenCreate(
+    input: DeviceNotificationTokenCreateInput!
+  ): SuccessPayload!
   userUpdateLanguage(input: UserUpdateLanguageInput!): UserUpdateLanguagePayload!
   walletContactUpdateAlias(
     input: WalletContactUpdateAliasInput!
   ): WalletContactUpdateAliasPayload!
-  deviceNotificationTokenCreate(
-    input: DeviceNotificationTokenCreateInput!
-  ): SuccessPayload!
   lnInvoiceFeeProbe(input: LnInvoiceFeeProbeInput!): SatAmountPayload!
   lnNoAmountInvoiceFeeProbe(input: LnNoAmountInvoiceFeeProbeInput!): SatAmountPayload!
   lnInvoiceCreate(input: LnInvoiceCreateInput!): LnInvoicePayload!
@@ -418,6 +421,25 @@ An authentication code valid for a single use
 """
 scalar OneTimeAuthCode
 
+type TwoFAGeneratePayload {
+  errors: [Error!]!
+  twoFASecret: TwoFASecret
+}
+
+type TwoFASecret {
+  secret: String!
+  uri: String!
+}
+
+input TwoFASaveInput {
+  secret: String!
+  token: String!
+}
+
+input TwoFADeleteInput {
+  token: String!
+}
+
 type UserQuizQuestionsUpdateCompletedPayload {
   errors: [Error!]!
   userQuizQuestions: [UserQuizQuestion]
@@ -425,6 +447,10 @@ type UserQuizQuestionsUpdateCompletedPayload {
 
 input UserQuizQuestionsUpdateCompletedInput {
   id: ID!
+}
+
+input DeviceNotificationTokenCreateInput {
+  deviceToken: String!
 }
 
 type UserUpdateLanguagePayload {
@@ -453,10 +479,6 @@ type WalletContactUpdateAliasPayload {
 input WalletContactUpdateAliasInput {
   walletName: WalletName!
   alias: ContactAlias!
-}
-
-input DeviceNotificationTokenCreateInput {
-  deviceToken: String!
 }
 
 type SatAmountPayload {
