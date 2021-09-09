@@ -1,6 +1,5 @@
 import assert from "assert"
 import {
-  createChainAddress,
   getChainBalance,
   getChainFeeEstimate,
   getChainTransactions,
@@ -17,7 +16,6 @@ import { ledger } from "@services/mongodb"
 import { User } from "@services/mongoose/schema"
 
 import {
-  DbError,
   DustAmountError,
   InsufficientBalanceError,
   NewAccountWithdrawalError,
@@ -377,55 +375,6 @@ export const OnChainMixin = (superclass) =>
           return true
         })
       })
-    }
-
-    async getLastOnChainAddress(): Promise<string> {
-      if (this.user.onchain.length === 0) {
-        // FIXME this should not be done in a query but only in a mutation?
-        await this.getOnChainAddress()
-      }
-
-      return _.last(this.user.onchain_addresses) as string
-    }
-
-    async getOnChainAddress(): Promise<string> {
-      // TODO
-      // another option to investigate is to have a master key / client
-      // (maybe this could be saved in JWT)
-      // and a way for them to derive new key
-      //
-      // this would avoid a communication to the server
-      // every time you want to show a QR code.
-
-      let address
-
-      const { lnd, pubkey } = getActiveOnchainLnd()
-
-      try {
-        ;({ address } = await createChainAddress({
-          lnd,
-          format: "p2wpkh",
-        }))
-      } catch (err) {
-        const error = `error getting on chain address`
-        this.logger.error({ err }, error)
-        throw new LoggedError(error)
-      }
-
-      try {
-        this.user.onchain.push({ address, pubkey })
-        await this.user.save()
-      } catch (err) {
-        const error = `error storing new onchain address to db`
-        throw new DbError(error, {
-          forwardToClient: false,
-          logger: this.logger,
-          level: "warn",
-          err,
-        })
-      }
-
-      return address
     }
 
     async getOnchainReceipt({ confirmed }: { confirmed: boolean }) {

@@ -10,6 +10,8 @@ import LnNoAmountInvoiceCreateMutation from "@graphql/root/mutation/ln-noamount-
 import LnNoAmountInvoiceCreateOnBehalfOfRecipientMutation from "@graphql/root/mutation/ln-noamount-invoice-create-on-behalf-of-recipient"
 import LnNoAmountInvoiceFeeProbeMutation from "@graphql/root/mutation/ln-noamount-invoice-fee-probe"
 import LnNoAmountInvoicePaymentSendMutation from "@graphql/root/mutation/ln-noamount-invoice-payment-send"
+import OnChainAddressCreateMutation from "@graphql/root/mutation/on-chain-address-create"
+import OnChainAddressCurrentMutation from "@graphql/root/mutation/on-chain-address-current"
 import UserLoginMutation from "@graphql/root/mutation/user-login"
 import UserRequestAuthCodeMutation from "@graphql/root/mutation/user-request-auth-code"
 import UserUpdateLanguageMutation from "@graphql/root/mutation/user-update-language"
@@ -40,6 +42,9 @@ const MutationType = new GT.Object({
     lnNoAmountInvoicePaymentSend: LnNoAmountInvoicePaymentSendMutation,
 
     intraLedgerPaymentSend: IntraLedgerPaymentSendMutation,
+
+    onChainAddressCreate: OnChainAddressCreateMutation,
+    onChainAddressCurrent: OnChainAddressCurrentMutation,
   }),
 })
 

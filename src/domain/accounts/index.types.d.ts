@@ -39,5 +39,7 @@ type BusinessMapMarker = {
 
 interface IAccountsRepository {
   findById(accountId: AccountId): Promise<Account | RepositoryError>
+  listByUserId(userId: UserId): Promise<Account[] | RepositoryError>
+  findByWalletName(walletName: WalletName): Promise<Account | RepositoryError>
   listBusinessesForMap(): Promise<BusinessMapMarker[] | RepositoryError>
 }

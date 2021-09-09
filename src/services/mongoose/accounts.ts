@@ -5,6 +5,7 @@ import {
   RepositoryError,
 } from "@domain/errors"
 import { User } from "@services/mongoose/schema"
+import { caseInsensitiveRegex } from "."
 
 export const AccountsRepository = (): IAccountsRepository => {
   const findById = async (accountId: AccountId): Promise<Account | RepositoryError> => {
@@ -16,6 +17,35 @@ export const AccountsRepository = (): IAccountsRepository => {
 
       return {
         id: accountId,
+        level: (result.level as AccountLevel) || AccountLevel.One,
+        status: (result.status as AccountStatus) || AccountStatus.Active,
+        walletIds: [result.id as WalletId],
+      }
+    } catch (err) {
+      return new UnknownRepositoryError(err)
+    }
+  }
+
+  const listByUserId = async (userId: UserId): Promise<Account[] | RepositoryError> => {
+    const accountId = `${userId}` as AccountId
+    const account = await findById(accountId)
+    if (account instanceof Error) return account
+    return [account]
+  }
+
+  const findByWalletName = async (
+    walletName: WalletName,
+  ): Promise<Account | RepositoryError> => {
+    try {
+      const result: UserType = await User.findOne({
+        username: caseInsensitiveRegex(walletName),
+      })
+      if (!result) {
+        return new CouldNotFindError("Invalid walletName")
+      }
+
+      return {
+        id: result.id as AccountId,
         level: (result.level as AccountLevel) || AccountLevel.One,
         status: (result.status as AccountStatus) || AccountStatus.Active,
         walletIds: [result.id as WalletId],
@@ -54,6 +84,8 @@ export const AccountsRepository = (): IAccountsRepository => {
   }
   return {
     findById,
+    listByUserId,
+    findByWalletName,
     listBusinessesForMap,
   }
 }

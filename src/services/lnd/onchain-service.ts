@@ -4,16 +4,24 @@ import {
   SubmittedTransaction,
 } from "@domain/bitcoin/onchain"
 import { toSats } from "@domain/bitcoin"
-import { getHeight, getChainTransactions, GetChainTransactionsResult } from "lightning"
-import { getActiveLnd } from "./utils"
+import {
+  getHeight,
+  getChainTransactions,
+  GetChainTransactionsResult,
+  createChainAddress,
+} from "lightning"
+import { getActiveOnchainLnd } from "./utils"
 
 export const OnChainService = (
   decoder: TxDecoder,
 ): IOnChainService | OnChainServiceError => {
   let lnd: AuthenticatedLnd
+  let pubkey: Pubkey
 
   try {
-    ;({ lnd } = getActiveLnd())
+    const activeNode = getActiveOnchainLnd()
+    lnd = activeNode.lnd
+    pubkey = activeNode.pubkey as Pubkey
   } catch (err) {
     return new OnChainServiceUnavailableError(err)
   }
@@ -38,8 +46,24 @@ export const OnChainService = (
     }
   }
 
+  const createOnChainAddress = async (): Promise<
+    OnChainAddressIdentifier | OnChainServiceError
+  > => {
+    try {
+      const { address } = await createChainAddress({
+        lnd,
+        format: "p2wpkh",
+      })
+
+      return { address: address as OnChainAddress, pubkey }
+    } catch (err) {
+      return new UnknownOnChainServiceError(err)
+    }
+  }
+
   return {
     getIncomingTransactions,
+    createOnChainAddress,
   }
 }
 

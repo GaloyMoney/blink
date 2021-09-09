@@ -63,11 +63,6 @@ type WalletTransactionHistoryWithPending = {
   readonly transactions: WalletTransaction[]
 }
 
-type OnChainAddressIdentifier = {
-  readonly pubkey: Pubkey
-  readonly address: OnChainAddress
-}
-
 declare const depositFeeRatioSymbol: unique symbol
 type DepositFeeRatio = number & { [depositFeeRatioSymbol]: never }
 

@@ -160,9 +160,14 @@ const resolvers = {
 
       return response
     },
-    getLastOnChainAddress: async (_, __, { wallet }) => ({
-      id: await wallet.getLastOnChainAddress(),
-    }),
+    getLastOnChainAddress: async (_, __, { wallet }) => {
+      const address = await Wallets.getLastOnChainAddress(wallet.user.id)
+      if (address instanceof Error) throw address
+
+      return {
+        id: address,
+      }
+    },
     maps: async () => {
       // TODO: caching
       const users = await User.find(
@@ -263,7 +268,11 @@ const resolvers = {
     }),
     earnCompleted: async (_, { ids }, { wallet }) => wallet.addEarn(ids),
     onchain: (_, __, { wallet }) => ({
-      getNewAddress: () => wallet.getOnChainAddress(),
+      getNewAddress: async () => {
+        const address = await Wallets.createOnChainAddress(wallet.user.id)
+        if (address instanceof Error) throw address
+        return address
+      },
       pay: ({ address, amount, memo }) => ({
         success: wallet.onChainPay({ address, amount, memo }),
       }),

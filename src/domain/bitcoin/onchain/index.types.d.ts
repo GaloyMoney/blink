@@ -48,4 +48,6 @@ interface IOnChainService {
   getIncomingTransactions(
     scanDepth: number,
   ): Promise<SubmittedTransaction[] | OnChainServiceError>
+
+  createOnChainAddress(): Promise<OnChainAddressIdentifier | OnChainServiceError>
 }
