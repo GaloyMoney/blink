@@ -18,7 +18,7 @@ const UserQuizQuestionsUpdateCompletedMutation = GT.Field({
   resolve: async (_, args, { wallet }) => {
     const { id } = args.input
 
-    if (id.some((id) => !onboardingEarn[id])) {
+    if (!onboardingEarn[id]) {
       return { errors: [{ message: "Invalid input" }] }
     }
 
