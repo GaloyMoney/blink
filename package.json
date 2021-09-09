@@ -43,7 +43,7 @@
     "apollo-server-core": "^2.25.2",
     "apollo-server-errors": "^2.5.0",
     "apollo-server-express": "^2.25.2",
-    "axios": "^0.21.1",
+    "axios": "^0.21.2",
     "bip66": "^1.1.5",
     "bitcoin-core": "^3.0.0",
     "bitcoinjs-lib": "^5.2.0",
