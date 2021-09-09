@@ -31,6 +31,15 @@ export const LndService = (): ILightningService | LightningServiceError => {
     return new UnknownLightningServiceError(err)
   }
 
+  const lndFromPubkey = (pubkey: Pubkey): AuthenticatedLnd | LightningServiceError => {
+    try {
+      const { lnd } = getLndFromPubkey({ pubkey })
+      return lnd
+    } catch (err) {
+      return new UnknownLightningServiceError()
+    }
+  }
+
   const isLocal = (pubkey: Pubkey): boolean | LightningServiceError => {
     let offchainLnds: LndParamsAuthed[]
     try {
@@ -209,6 +218,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
   }
 
   return {
+    lndFromPubkey,
     isLocal,
     registerInvoice,
     lookupInvoice,
