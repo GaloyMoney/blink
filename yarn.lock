@@ -6156,6 +6156,15 @@ graphql-middleware@^6.0.10:
     "@graphql-tools/delegate" "^7.1.5"
     "@graphql-tools/schema" "^7.1.5"
 
+graphql-redis-subscriptions@^2.4.0:
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/graphql-redis-subscriptions/-/graphql-redis-subscriptions-2.4.0.tgz#a18e3bfe2351f1a74ba9cfa5db40fdc4981a08fb"
+  integrity sha512-McIJK9R8sVbjTlkkaFMRAG5dOF6CPEPO+8PcyHlKARd64d4h4bwl0q/DnR2RA494ZrfykEvFWAnwuIM45470Vw==
+  dependencies:
+    iterall "^1.3.0"
+  optionalDependencies:
+    ioredis "^4.17.3"
+
 graphql-relay@^0.8.0:
   version "0.8.0"
   resolved "https://registry.yarnpkg.com/graphql-relay/-/graphql-relay-0.8.0.tgz#35f0090f0f056192767c1acdaa402daed19ede6d"
@@ -6176,13 +6185,6 @@ graphql-subscriptions@^1.0.0:
   integrity sha512-6WzlBFC0lWmXJbIVE8OgFgXIP4RJi3OQgTPa0DVMsDXdpRDjTsM1K9wfl5HSYX7R87QAGlvcv2Y4BIZa/ItonA==
   dependencies:
     iterall "^1.2.1"
-
-graphql-subscriptions@^1.2.1:
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/graphql-subscriptions/-/graphql-subscriptions-1.2.1.tgz#2142b2d729661ddf967b7388f7cf1dd4cf2e061d"
-  integrity sha512-95yD/tKi24q8xYa7Q9rhQN16AYj5wPbrb8tmHGM3WRc9EBmWrG/0kkMl+tQG8wcEuE9ibR4zyOM31p5Sdr2v4g==
-  dependencies:
-    iterall "^1.3.0"
 
 graphql-tag@^2.11.0:
   version "2.11.0"
@@ -6670,6 +6672,23 @@ invoices@2.0.0, invoices@^2.0.0:
     bolt07 "1.7.3"
     bolt09 "0.1.5"
     secp256k1 "4.0.2"
+
+ioredis@^4.17.3:
+  version "4.27.9"
+  resolved "https://registry.yarnpkg.com/ioredis/-/ioredis-4.27.9.tgz#c27bbade9724f0b8f84c279fb1d567be785ba33d"
+  integrity sha512-hAwrx9F+OQ0uIvaJefuS3UTqW+ByOLyLIV+j0EH8ClNVxvFyH9Vmb08hCL4yje6mDYT5zMquShhypkd50RRzkg==
+  dependencies:
+    cluster-key-slot "^1.1.0"
+    debug "^4.3.1"
+    denque "^1.1.0"
+    lodash.defaults "^4.2.0"
+    lodash.flatten "^4.4.0"
+    lodash.isarguments "^3.1.0"
+    p-map "^2.1.0"
+    redis-commands "1.7.0"
+    redis-errors "^1.2.0"
+    redis-parser "^3.0.0"
+    standard-as-callback "^2.1.0"
 
 ioredis@^4.27.6:
   version "4.27.7"

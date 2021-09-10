@@ -1,4 +1,5 @@
 import Redis from "ioredis"
+import { RedisPubSub } from "graphql-redis-subscriptions"
 
 import { baseLogger } from "@services/logger"
 
@@ -47,4 +48,10 @@ if (process.env.LOCAL === "docker-compose") {
 }
 
 export const redis = new Redis(connectionObj)
+export const redisSub = new Redis(connectionObj)
+export const pubsub = new RedisPubSub({
+  publisher: redis,
+  subscriber: redisSub,
+})
+
 redis.on("error", (err) => baseLogger.error({ err }, "Redis error"))

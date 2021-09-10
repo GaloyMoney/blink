@@ -521,9 +521,38 @@ input OnChainAddressCurrentInput {
 }
 
 type Subscription {
+  price(input: PriceInput!): PricePayload!
   lnInvoicePaymentStatus(
     input: LnInvoicePaymentStatusInput!
   ): LnInvoicePaymentStatusPayload!
+}
+
+type PricePayload {
+  errors: [Error!]!
+  price: Price
+}
+
+type Price {
+  base: SafeInt!
+  offset: Int!
+  currencyUnit: ExchangeCurrencyUnit!
+  formattedAmount: String!
+}
+
+"""
+The `SafeInt` scalar type represents non-fractional signed whole numeric values. SafeInt can represent values between -(2^53) + 1 and 2^53 - 1
+"""
+scalar SafeInt
+
+enum ExchangeCurrencyUnit {
+  BTCSAT
+  USDCENT
+}
+
+input PriceInput {
+  amount: SatAmount!
+  amountCurrencyUnit: ExchangeCurrencyUnit!
+  priceCurrencyUnit: ExchangeCurrencyUnit!
 }
 
 type LnInvoicePaymentStatusPayload {
