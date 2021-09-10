@@ -139,6 +139,7 @@ jobs:
         path: pipeline-tasks/ci/tasks/check-code.sh
 
 - name: build-edge-image
+  serial: true
   plan:
   - { get: repo, trigger: true }
   - task: build
@@ -162,6 +163,7 @@ jobs:
       image: image/image.tar
 
 - name: build-debug-edge-image
+  serial: true
   plan:
   - { get: repo, trigger: true }
   - task: build
