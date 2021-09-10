@@ -122,45 +122,45 @@ const reimburseFee = async ({
   roundedUpFee: Satoshis
   logger: Logger
 }): Promise<void | ApplicationError> => {
-  if (!paymentLiabilityTx.feeKnownInAdvance) {
-    const feeDifference = FeeReimbursement(paymentLiabilityTx.fee).getReimbursement({
-      actualFee: roundedUpFee,
-    })
-    if (feeDifference === null) {
-      logger.warn(
-        `Invalid reimbursement fee for ${{
-          maxFee: paymentLiabilityTx.fee,
-          actualFee: roundedUpFee,
-        }}`,
-      )
-      return
-    }
+  if (paymentLiabilityTx.feeKnownInAdvance) return
 
-    logger.info(
-      {
-        paymentResult: paymentLiabilityTx,
-        feeDifference,
+  const feeDifference = FeeReimbursement(paymentLiabilityTx.fee).getReimbursement({
+    actualFee: roundedUpFee,
+  })
+  if (feeDifference === null) {
+    logger.warn(
+      `Invalid reimbursement fee for ${{
         maxFee: paymentLiabilityTx.fee,
         actualFee: roundedUpFee,
-        id: paymentHash,
-      },
-      "logging a fee difference",
+      }}`,
     )
-
-    const price = await PriceService().getCurrentPrice()
-    if (price instanceof Error) return price
-    const usd = feeDifference * price
-
-    const ledgerService = LedgerService()
-    const result = await ledgerService.receiveLnFeeReimbursement({
-      liabilitiesAccountId,
-      paymentHash: paymentHash,
-      sats: feeDifference,
-      usd,
-      journalId: paymentLiabilityTx.journalId,
-    })
-    if (result instanceof Error) return result
+    return
   }
+
+  logger.info(
+    {
+      paymentResult: paymentLiabilityTx,
+      feeDifference,
+      maxFee: paymentLiabilityTx.fee,
+      actualFee: roundedUpFee,
+      id: paymentHash,
+    },
+    "logging a fee difference",
+  )
+
+  const price = await PriceService().getCurrentPrice()
+  if (price instanceof Error) return price
+  const usd = feeDifference * price
+
+  const ledgerService = LedgerService()
+  const result = await ledgerService.receiveLnFeeReimbursement({
+    liabilitiesAccountId,
+    paymentHash: paymentHash,
+    sats: feeDifference,
+    usd,
+    journalId: paymentLiabilityTx.journalId,
+  })
+  if (result instanceof Error) return result
 }
 
 const revertTransaction = async ({
