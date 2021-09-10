@@ -296,7 +296,11 @@ const resolvers = {
       payAll: ({ address, memo }) => ({
         success: wallet.onChainPay({ address, amount: 0, memo, sendAll: true }),
       }),
-      getFee: ({ address, amount }) => wallet.getOnchainFee({ address, amount }),
+      getFee: async ({ address, amount }) => {
+        const fee = await Wallets.getOnChainFeeByWalletId(wallet.user.id, amount, address)
+        if (fee instanceof Error) throw fee
+        return fee
+      },
     }),
     addDeviceToken: async (_, { deviceToken }, { user }) => {
       user.deviceToken.addToSet(deviceToken)

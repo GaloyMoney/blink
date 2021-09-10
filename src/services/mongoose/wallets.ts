@@ -34,6 +34,20 @@ export const WalletsRepository = (): IWalletsRepository => {
     }
   }
 
+  const findByAddress = async (
+    address: OnChainAddress,
+  ): Promise<Wallet | RepositoryError> => {
+    try {
+      const result = await User.findOne({ "onchain.address": address })
+      if (!result) {
+        return new CouldNotFindError()
+      }
+      return resultToWallet(result)
+    } catch (err) {
+      return new UnknownRepositoryError(err)
+    }
+  }
+
   const listByAddresses = async (
     addresses: string[],
   ): Promise<Wallet[] | RepositoryError> => {
@@ -51,6 +65,7 @@ export const WalletsRepository = (): IWalletsRepository => {
   return {
     findById,
     findByWalletName,
+    findByAddress,
     listByAddresses,
   }
 }
@@ -61,6 +76,7 @@ const resultToWallet = (result: UserType): Wallet => {
   const walletName = result.username ? (result.username as WalletName) : null
 
   const depositFeeRatio = result.depositFeeRatio as DepositFeeRatio
+  const withdrawFee = result.withdrawFee as WithdrawFee
 
   const onChainAddressIdentifiers = result.onchain
     ? result.onchain.map(({ pubkey, address }) => {
@@ -75,6 +91,7 @@ const resultToWallet = (result: UserType): Wallet => {
   return {
     id: walletId,
     depositFeeRatio,
+    withdrawFee,
     walletName,
     onChainAddressIdentifiers,
     onChainAddresses,

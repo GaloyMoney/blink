@@ -19,7 +19,6 @@ import {
   DustAmountError,
   InsufficientBalanceError,
   NewAccountWithdrawalError,
-  OnChainFeeEstimationError,
   RebalanceNeededError,
   SelfPaymentError,
   TransactionRestrictedError,
@@ -64,45 +63,6 @@ export const OnChainMixin = (superclass) =>
 
     async updatePending(lock): Promise<void> {
       await super.updatePending(lock)
-    }
-
-    async getOnchainFee({
-      address,
-      amount,
-    }: {
-      address: string
-      amount: number | null
-    }): Promise<number> {
-      const payeeUser = await User.getUserByAddress({ address })
-
-      let fee
-
-      // FIXME: legacy. is this still necessary?
-      const defaultAmount = 300000
-
-      if (payeeUser) {
-        fee = 0
-      } else {
-        if (amount && amount < this.config.dustThreshold) {
-          throw new DustAmountError(undefined, { logger: this.logger })
-        }
-
-        // FIXME there is a transition if a node get offline for which the fee could be wrong
-        // if send by a new node in the meantime. (low probability and low side effect)
-        const { lnd } = getActiveOnchainLnd()
-
-        const sendTo = [{ address, tokens: amount ?? defaultAmount }]
-        try {
-          ;({ fee } = await getChainFeeEstimate({ lnd, send_to: sendTo }))
-        } catch (err) {
-          throw new OnChainFeeEstimationError(undefined, {
-            logger: this.logger,
-          })
-        }
-        fee += this.user.withdrawFee
-      }
-
-      return fee
     }
 
     async onChainPay({

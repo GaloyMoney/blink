@@ -9,6 +9,7 @@ import {
   getChainTransactions,
   GetChainTransactionsResult,
   createChainAddress,
+  getChainFeeEstimate,
 } from "lightning"
 import { getActiveOnchainLnd } from "./utils"
 
@@ -61,9 +62,27 @@ export const OnChainService = (
     }
   }
 
+  const getOnChainFeeEstimate = async (
+    amount: Satoshis,
+    address: OnChainAddress,
+  ): Promise<Satoshis | OnChainServiceError> => {
+    const sendTo = [{ address, tokens: amount }]
+    try {
+      const { fee } = await getChainFeeEstimate({
+        lnd,
+        send_to: sendTo,
+      })
+
+      return fee as Satoshis
+    } catch (err) {
+      return new UnknownOnChainServiceError(err)
+    }
+  }
+
   return {
     getIncomingTransactions,
     createOnChainAddress,
+    getOnChainFeeEstimate,
   }
 }
 
