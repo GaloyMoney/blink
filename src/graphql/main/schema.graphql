@@ -246,6 +246,11 @@ type Query {
   mobileVersions: [MobileVersions]
   quizQuestions: [QuizQuestion]
   btcPriceList(range: PriceGraphRange!): [PricePoint]
+  onChainTxFee(
+    walletName: WalletName
+    address: OnChainAddress!
+    amount: SatAmount!
+  ): OnChainTxFee!
 }
 
 type Globals {
@@ -377,6 +382,10 @@ enum PriceGraphRange {
   ONE_MONTH
   ONE_YEAR
   FIVE_YEARS
+}
+
+type OnChainTxFee {
+  amount: SatAmount!
 }
 
 type Mutation {

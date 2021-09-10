@@ -75,7 +75,7 @@ export const OnChainService = (
 
       return fee as Satoshis
     } catch (err) {
-      return new UnknownOnChainServiceError(err)
+      return new UnknownOnChainServiceError(err[2]?.err?.details || err[1])
     }
   }
 

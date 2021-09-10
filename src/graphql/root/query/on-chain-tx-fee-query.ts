@@ -1,0 +1,50 @@
+import { GT } from "@graphql/index"
+import * as Wallets from "@app/wallets"
+import * as Accounts from "@app/accounts"
+import WalletName from "@graphql/types/scalar/wallet-name"
+import OnChainAddress from "@graphql/types/scalar/on-chain-address"
+import SatAmount from "@graphql/types/scalar/sat-amount"
+import OnChainTxFee from "@graphql/types/object/onchain-tx-fee"
+import { ApolloError, ForbiddenError } from "apollo-server-errors"
+
+const OnChainTxFeeQuery = GT.Field({
+  type: GT.NonNull(OnChainTxFee),
+  args: {
+    walletName: { type: WalletName },
+    address: { type: GT.NonNull(OnChainAddress) },
+    amount: { type: GT.NonNull(SatAmount) },
+  },
+  resolve: async (_, args, { domainUser }) => {
+    const { walletName, address, amount } = args
+
+    for (const input of [walletName, address, amount]) {
+      if (input instanceof Error) throw input
+    }
+
+    let fee: Satoshis | Error | null = null
+    if (walletName) {
+      const hasPermissions = await Accounts.hasPermissions(domainUser.id, walletName)
+      if (hasPermissions instanceof Error) throw new ApolloError(hasPermissions.message)
+
+      if (!hasPermissions) throw new ForbiddenError("Invalid walletName")
+
+      fee = await Wallets.getOnChainFeeByWalletName(walletName, amount, address)
+    }
+
+    if (!fee) {
+      const account = await Accounts.getAccount(domainUser.defaultAccountId)
+      if (account instanceof Error) throw account
+
+      if (!account.walletIds.length)
+        throw new Error("Account does not have a default wallet")
+
+      fee = await Wallets.getOnChainFeeByWalletId(account.walletIds[0], amount, address)
+    }
+
+    if (fee instanceof Error) throw fee
+
+    return { amount: fee }
+  },
+})
+
+export default OnChainTxFeeQuery
