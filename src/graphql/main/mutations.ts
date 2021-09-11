@@ -22,8 +22,8 @@ import WalletContactUpdateAliasMutation from "@graphql/root/mutation/wallet-cont
 import UserQuizQuestionUpdateCompletedMutation from "@graphql/root/mutation/user-quiz-question-update-completed"
 import OnChainPaymentSendMutation from "@graphql/root/mutation/onchain-payment-send"
 import OnChainPaymentSendAllMutation from "@graphql/root/mutation/onchain-payment-send-all"
-import AuthCodeRequest from "@graphql/root/mutation/auth-code-request"
-import CaptchaChallengeCreate from "@graphql/root/mutation/captcha-challenge-create"
+import CaptchaRequestAuthCodeMutation from "@graphql/root/mutation/captcha-request-auth-code"
+import CaptchaCreateChallengeMutation from "@graphql/root/mutation/captcha-create-challenge"
 
 const MutationType = new GT.Object({
   name: "Mutation",
@@ -61,8 +61,8 @@ const MutationType = new GT.Object({
     onChainPaymentSend: OnChainPaymentSendMutation,
     onChainPaymentSendAll: OnChainPaymentSendAllMutation,
 
-    captchaChallengeCreate: CaptchaChallengeCreate,
-    authCodeRequest: AuthCodeRequest,
+    captchaCreateChallenge: CaptchaCreateChallengeMutation,
+    captchaRequestAuthCode: CaptchaRequestAuthCodeMutation,
   }),
 })
 

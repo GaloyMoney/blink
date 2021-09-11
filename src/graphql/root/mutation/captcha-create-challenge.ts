@@ -1,10 +1,10 @@
 import { GT } from "@graphql/index"
 import { RegisterCaptchaGeetest } from "@core/captcha-challenge-create"
 
-import CaptchaChallengePayload from "@graphql/types/payload/captcha-challenge"
+import CaptchaCreateChallengePayload from "@graphql/types/payload/captcha-create-challenge"
 
-const CaptchaChallengeCreate = {
-  type: GT.NonNull(CaptchaChallengePayload),
+const CaptchaCreateChallengeMutation = GT.Field({
+  type: GT.NonNull(CaptchaCreateChallengePayload),
   resolve: async (_, __, { logger, ip, geetest }) => {
     // TODO: store the request and determine what to do if things fail here...
     const registerCaptchaGeetest = await RegisterCaptchaGeetest({
@@ -31,6 +31,6 @@ const CaptchaChallengeCreate = {
       },
     }
   },
-}
+})
 
-export default CaptchaChallengeCreate
+export default CaptchaCreateChallengeMutation

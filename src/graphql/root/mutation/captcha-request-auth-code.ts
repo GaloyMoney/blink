@@ -2,10 +2,10 @@ import { GT } from "@graphql/index"
 import verifyCaptchaAndReturnOTP from "@core/auth-code-request"
 
 import Phone from "@graphql/types/scalar/phone"
-import AuthCodeRequestPayload from "@graphql/types/payload/auth-code-request"
+import SuccessPayload from "@graphql/types/payload/success-payload"
 
-const AuthCodeRequestInput = new GT.Input({
-  name: "AuthCodeRequestInput",
+const CaptchaRequestAuthCodeInput = new GT.Input({
+  name: "CaptchaRequestAuthCodeInput",
   fields: () => ({
     phone: { type: GT.NonNull(Phone) },
     challengeCode: { type: GT.NonNull(GT.String) },
@@ -14,10 +14,10 @@ const AuthCodeRequestInput = new GT.Input({
   }),
 })
 
-const AuthCodeRequest = {
-  type: GT.NonNull(AuthCodeRequestPayload),
+const CaptchaRequestAuthCodeMutation = GT.Field({
+  type: GT.NonNull(SuccessPayload),
   args: {
-    input: { type: GT.NonNull(AuthCodeRequestInput) },
+    input: { type: GT.NonNull(CaptchaRequestAuthCodeInput) },
   },
   resolve: async (_, args, { logger, ip, geetest }) => {
     const {
@@ -49,6 +49,6 @@ const AuthCodeRequest = {
       }
     }
   },
-}
+})
 
-export default AuthCodeRequest
+export default CaptchaRequestAuthCodeMutation
