@@ -8,6 +8,7 @@ import { CouldNotFindError } from "@domain/errors"
 import { LockService } from "@services/lock"
 import { NotificationsService } from "@services/notifications"
 import { DepositFeeCalculator } from "@domain/wallets"
+import { pubsub } from "@services/redis"
 
 export const updatePendingInvoices = async ({
   walletId,
@@ -142,6 +143,9 @@ const updatePendingInvoice = async ({
         walletId: walletInvoice.walletId,
         paymentHash,
       })
+
+      const eventName = `LNINVOICE-PAYMENT-STATUS-${paymentHash}`
+      pubsub.publish(eventName, { status: "PAID" })
 
       return true
     })
