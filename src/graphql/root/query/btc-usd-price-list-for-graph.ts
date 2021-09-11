@@ -3,12 +3,14 @@ import { GT } from "@graphql/index"
 import { MS_PER_DAY } from "@config/app"
 
 import BtcUsdPrice from "@graphql/types/object/btc-usd-price"
-import PriceGraphRange from "@graphql/types/scalar/price-graph-range"
+import PriceGraphRange, {
+  priceRangeValues,
+} from "@graphql/types/scalar/price-graph-range"
 
 import { getHourlyPrice } from "@services/local-cache"
 import { getCurrentPrice } from "@services/realtime-price"
 
-const rangeStartDateMS: (string) => number | Error = (range) => {
+const rangeStartDateMS: (string: typeof priceRangeValues[number]) => number = (range) => {
   const currentTimestamp = Date.now()
 
   switch (range) {
@@ -22,8 +24,6 @@ const rangeStartDateMS: (string) => number | Error = (range) => {
       return currentTimestamp - 365 * MS_PER_DAY
     case "FIVE_YEARS":
       return currentTimestamp - 5 * 365 * MS_PER_DAY
-    default:
-      return new Error("Invalid range value")
   }
 }
 
@@ -39,8 +39,8 @@ const BtcUsdPriceListForGraphQuery = GT.Field({
 
     const rangeStart = rangeStartDateMS(range)
 
-    if (rangeStart instanceof Error) {
-      throw Error
+    if (!rangeStart) {
+      throw new Error("Invalid range")
     }
 
     const hourlyPrices = await getHourlyPrice({ logger })
