@@ -87,6 +87,10 @@ type PayInvoiceResult = {
   roundedUpFee: Satoshis
 }
 
+type LnInvoiceValidator = {
+  validateToSend(amount?: Satoshis): { amount: Satoshis } | ValidationError
+}
+
 interface ILightningService {
   lndFromPubkey(pubkey: Pubkey): AuthenticatedLnd | LightningServiceError
 
