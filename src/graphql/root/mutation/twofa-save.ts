@@ -20,7 +20,6 @@ const TwoFASaveMutation = GT.Field({
     input: { type: GT.NonNull(TwoFASaveInput) },
   },
   resolve: async (_, args, { wallet }) => {
-
     const { secret, token } = args.input
 
     for (const input of [secret, token]) {

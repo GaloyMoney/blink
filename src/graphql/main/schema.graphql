@@ -258,6 +258,7 @@ type User {
   language: Language!
   contacts: [WalletContact!]!
   quizQuestions: [UserQuizQuestion!]!
+  twoFAEnabled: Boolean
   createdAt: Timestamp!
   defaultAccount: Account!
 }
@@ -464,6 +465,7 @@ type UserDetails {
   language: Language!
   contacts: [WalletContact!]!
   quizQuestions: [UserQuizQuestion!]!
+  twoFAEnabled: Boolean
   createdAt: Timestamp!
 }
 
