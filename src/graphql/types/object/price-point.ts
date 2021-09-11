@@ -1,12 +1,14 @@
 import { GT } from "@graphql/index"
-import Timestamp from "../scalar/timestamp"
 
-const BtcUsdPrice = new GT.Object({
-  name: "BtcUsdPrice",
+import Timestamp from "../scalar/timestamp"
+import Price from "./price"
+
+const PricePoint = new GT.Object({
+  name: "PricePoint",
   fields: () => ({
     timestamp: { type: GT.NonNull(Timestamp) },
-    price: { type: GT.NonNull(GT.Float) }, // Currently price of 1 sat
+    price: { type: GT.NonNull(Price) },
   }),
 })
 
-export default BtcUsdPrice
+export default PricePoint

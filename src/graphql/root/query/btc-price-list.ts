@@ -2,7 +2,7 @@ import { GT } from "@graphql/index"
 
 import { MS_PER_DAY } from "@config/app"
 
-import BtcUsdPrice from "@graphql/types/object/btc-usd-price"
+import PricePoint from "@graphql/types/object/price-point"
 import PriceGraphRange, {
   priceRangeValues,
 } from "@graphql/types/scalar/price-graph-range"
@@ -27,8 +27,8 @@ const rangeStartDateMS: (string: typeof priceRangeValues[number]) => number = (r
   }
 }
 
-const BtcUsdPriceListForGraphQuery = GT.Field({
-  type: GT.List(BtcUsdPrice),
+const BtcPriceListQuery = GT.Field({
+  type: GT.List(PricePoint),
   args: {
     range: {
       type: GT.NonNull(PriceGraphRange),
@@ -45,22 +45,37 @@ const BtcUsdPriceListForGraphQuery = GT.Field({
 
     const hourlyPrices = await getHourlyPrice({ logger })
 
-    const prices: Record<"timestamp" | "price", number>[] = []
+    const prices: PricePointType[] = []
 
     for (const price of hourlyPrices) {
       if (1000 * price.id < rangeStart) {
         break
       }
-      prices.push({ timestamp: price.id, price: price.o })
+      const btcPriceInCents = price.o * 100 * 10 ** 8
+      prices.push({
+        timestamp: price.id,
+        price: {
+          formattedAmount: btcPriceInCents.toString(),
+          base: Math.round(btcPriceInCents * 10 ** 4),
+          offset: 4,
+          currencyUnit: "USDCENT",
+        },
+      })
     }
 
     // Add the current price as the last item in the array
     // This is used by the mobile app to convert prices
     const currentPrice = await getCurrentPrice()
     if (currentPrice) {
+      const currentBtcPriceInCents = currentPrice * 100 * 10 ** 8
       prices.push({
         timestamp: Date.now(),
-        price: currentPrice,
+        price: {
+          formattedAmount: currentBtcPriceInCents.toString(),
+          base: Math.round(currentBtcPriceInCents * 10 ** 4),
+          offset: 4,
+          currencyUnit: "USDCENT",
+        },
       })
     }
 
@@ -68,4 +83,4 @@ const BtcUsdPriceListForGraphQuery = GT.Field({
   },
 })
 
-export default BtcUsdPriceListForGraphQuery
+export default BtcPriceListQuery

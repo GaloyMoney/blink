@@ -245,7 +245,7 @@ type Query {
   businessMapMarkers: [MapMarker]
   mobileVersions: [MobileVersions]
   quizQuestions: [QuizQuestion]
-  btcUsdPriceListForGraph(range: PriceGraphRange!): [BtcUsdPrice]
+  btcPriceList(range: PriceGraphRange!): [PricePoint]
 }
 
 type Globals {
@@ -318,9 +318,26 @@ type MobileVersions {
   minSupported: Int!
 }
 
-type BtcUsdPrice {
+type PricePoint {
   timestamp: Timestamp!
-  price: Float!
+  price: Price!
+}
+
+type Price {
+  base: SafeInt!
+  offset: Int!
+  currencyUnit: ExchangeCurrencyUnit!
+  formattedAmount: String!
+}
+
+"""
+The `SafeInt` scalar type represents non-fractional signed whole numeric values. SafeInt can represent values between -(2^53) + 1 and 2^53 - 1
+"""
+scalar SafeInt
+
+enum ExchangeCurrencyUnit {
+  BTCSAT
+  USDCENT
 }
 
 """
@@ -547,23 +564,6 @@ type Subscription {
 type PricePayload {
   errors: [Error!]!
   price: Price
-}
-
-type Price {
-  base: SafeInt!
-  offset: Int!
-  currencyUnit: ExchangeCurrencyUnit!
-  formattedAmount: String!
-}
-
-"""
-The `SafeInt` scalar type represents non-fractional signed whole numeric values. SafeInt can represent values between -(2^53) + 1 and 2^53 - 1
-"""
-scalar SafeInt
-
-enum ExchangeCurrencyUnit {
-  BTCSAT
-  USDCENT
 }
 
 input PriceInput {

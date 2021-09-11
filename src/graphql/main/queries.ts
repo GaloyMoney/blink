@@ -6,7 +6,7 @@ import WalletNameAvailableQuery from "@graphql/root/query/wallet-name-available"
 import BusinessMapMarkersQuery from "@graphql/root/query/business-map-markers"
 import MobileVersionsQuery from "@graphql/root/query/mobile-versions"
 import QuizQuestionsQuery from "@graphql/root/query/quiz-questions"
-import BtcUsdPriceListForGraphQuery from "@graphql/root/query/btc-usd-price-list-for-graph"
+import BtcPriceListQuery from "@graphql/root/query/btc-price-list"
 
 const QueryType = new GT.Object({
   name: "Query",
@@ -17,7 +17,7 @@ const QueryType = new GT.Object({
     businessMapMarkers: BusinessMapMarkersQuery,
     mobileVersions: MobileVersionsQuery,
     quizQuestions: QuizQuestionsQuery,
-    btcUsdPriceListForGraph: BtcUsdPriceListForGraphQuery,
+    btcPriceList: BtcPriceListQuery,
   }),
 })
 
