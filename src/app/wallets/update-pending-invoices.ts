@@ -9,6 +9,7 @@ import { LockService } from "@services/lock"
 import { NotificationsService } from "@services/notifications"
 import { DepositFeeCalculator } from "@domain/wallets"
 import { pubsub } from "@services/redis"
+import { lnPaymentStatusEvent } from "@config/app"
 
 export const updatePendingInvoices = async ({
   walletId,
@@ -144,7 +145,7 @@ const updatePendingInvoice = async ({
         paymentHash,
       })
 
-      const eventName = `LNINVOICE-PAYMENT-STATUS-${paymentHash}`
+      const eventName = lnPaymentStatusEvent(paymentHash)
       pubsub.publish(eventName, { status: "PAID" })
 
       return true

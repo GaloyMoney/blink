@@ -3,6 +3,7 @@ import { GT, pubsub } from "@graphql/index"
 import { getPaymentHashFromRequest } from "@app/lightning"
 import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
 import LnInvoicePaymentStatusPayload from "@graphql/types/payload/ln-invoice-payment-status"
+import { lnPaymentStatusEvent } from "@config/app"
 
 const LnInvoicePaymentStatusInput = new GT.Input({
   name: "LnInvoicePaymentStatusInput",
@@ -28,22 +29,21 @@ const LnInvoicePaymentStatusSubscription = {
     }
   },
 
-  subscribe: async (source, args) => {
+  subscribe: async (_, args) => {
     const { paymentRequest } = args.input
 
     const paymentHash = getPaymentHashFromRequest(paymentRequest)
 
-    const eventName = `LNINVOICE-PAYMENT-STATUS-${paymentHash}`
-
     if (paymentHash instanceof Error) {
       setImmediate(() =>
-        pubsub.publish(eventName, {
+        pubsub.publish(paymentRequest, {
           errors: [{ message: paymentHash.message }], // TODO: refine message
         }),
       )
-      return pubsub.asyncIterator([eventName])
+      return pubsub.asyncIterator(paymentRequest)
     }
 
+    const eventName = lnPaymentStatusEvent(paymentHash)
     return pubsub.asyncIterator(eventName)
   },
 }
