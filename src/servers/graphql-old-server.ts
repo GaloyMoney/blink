@@ -28,6 +28,7 @@ import { login, requestPhoneCode } from "@core/text"
 import { usernameExists } from "@core/user"
 
 import { startApolloServer, isAuthenticated } from "./graphql-server"
+import { ApolloError } from "apollo-server-errors"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
 
@@ -207,12 +208,20 @@ const resolvers = {
     },
   },
   Mutation: {
-    requestPhoneCode: async (_, { phone }, { logger, ip }) => ({
-      success: await requestPhoneCode({ phone, logger, ip }),
-    }),
-    login: async (_, { phone, code }, { logger, ip }) => ({
-      token: await login({ phone, code, logger, ip }),
-    }),
+    requestPhoneCode: async (_, { phone }, { logger, ip }) => {
+      if (!phone) {
+        throw new ApolloError("Missing phone value", "GRAPHQL_VALIDATION_FAILED")
+      }
+      return {
+        success: await requestPhoneCode({ phone, logger, ip }),
+      }
+    },
+    login: async (_, { phone, code }, { logger, ip }) => {
+      if (!phone || !code) {
+        throw new ApolloError("Missing phone/code value", "GRAPHQL_VALIDATION_FAILED")
+      }
+      return { token: await login({ phone, code, logger, ip }) }
+    },
     generate2fa: async (_, __, { wallet }) => wallet.generate2fa(),
     save2fa: async (_, { secret, token }, { wallet }) =>
       wallet.save2fa({ secret, token }),
