@@ -35,6 +35,7 @@ import { toSats } from "@domain/bitcoin"
 import { toLiabilitiesAccountId } from "@domain/ledger"
 import { LedgerService } from "@services/ledger"
 import { getBTCBalance } from "test/helpers/wallet"
+import { lnInvoicePaymentSend } from "@app/lightning"
 
 const date = Date.now() + 1000 * 60 * 60 * 24 * 8
 // required to avoid oldEnoughForWithdrawal validation
@@ -78,7 +79,13 @@ describe("UserWallet - Lightning Pay", () => {
     if (lnInvoice instanceof Error) return lnInvoice
     const { paymentRequest: invoice } = lnInvoice
 
-    await userWallet1.pay({ invoice })
+    const paymentResult = await lnInvoicePaymentSend({
+      walletId: userWallet1.user.id,
+      userId: userWallet1.user.id,
+      invoice,
+      logger: userWallet1.logger,
+    })
+    if (paymentResult instanceof Error) throw paymentResult
 
     const matchTx = (tx) =>
       tx.settlementVia === "intraledger" && tx.paymentHash === getHash(invoice)
@@ -92,6 +99,7 @@ describe("UserWallet - Lightning Pay", () => {
     const user1Txn = txResult.result
     expect(user1Txn.filter(matchTx)[0].deprecated.description).toBe(memo)
     expect(user1Txn.filter(matchTx)[0].settlementVia).toBe("intraledger")
+    expect(user1Txn.filter(matchTx)[0].recipientId).toBe("lily")
 
     txResult = await Wallets.getTransactionsForWalletId({
       walletId: userWallet1.user.id,
