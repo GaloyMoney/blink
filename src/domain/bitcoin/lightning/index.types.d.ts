@@ -93,6 +93,8 @@ type PayInvoiceResult = {
 interface ILightningService {
   isLocal(pubkey: Pubkey): boolean | LightningServiceError
 
+  defaultPubkey(): Pubkey
+
   lndFromPubkey(pubkey: Pubkey): AuthenticatedLnd | LightningServiceError
 
   registerInvoice(
