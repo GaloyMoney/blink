@@ -16,6 +16,12 @@ type LedgerAccountId = string & { [ledgerAccountIdSymbol]: never }
 type LedgerTransactionType =
   typeof import("./index").LedgerTransactionType[keyof typeof import("./index").LedgerTransactionType]
 
+type LedgerJournal = {
+  readonly journalId: LedgerJournalId
+  readonly voided: boolean
+  readonly transactionIds: LedgerTransactionId[]
+}
+
 // Differentiate fields depending on what 'type' we have (see domain/wallets/index.types.d.ts)
 type LedgerTransaction = {
   readonly id: LedgerTransactionId
@@ -138,15 +144,17 @@ interface ILedgerService {
 
   isLnTxRecorded(paymentHash: PaymentHash): Promise<boolean | LedgerServiceError>
 
-  receiveOnChainTx(args: ReceiveOnChainTxArgs): Promise<void | LedgerServiceError>
+  receiveOnChainTx(
+    args: ReceiveOnChainTxArgs,
+  ): Promise<LedgerJournal | LedgerServiceError>
 
-  receiveLnTx(args: ReceiveLnTxArgs): Promise<void | LedgerServiceError>
+  receiveLnTx(args: ReceiveLnTxArgs): Promise<LedgerJournal | LedgerServiceError>
 
   receiveLnFeeReimbursement(
     args: ReceiveLnFeeReeimbursementArgs,
-  ): Promise<void | LedgerServiceError>
+  ): Promise<LedgerJournal | LedgerServiceError>
 
-  sendLnTx(args: SendLnTxArgs): Promise<void | LedgerServiceError>
+  sendLnTx(args: SendLnTxArgs): Promise<LedgerJournal | LedgerServiceError>
 
   settlePendingLiabilityTransactions(
     paymentHash: PaymentHash,
