@@ -132,11 +132,8 @@ export const lnInvoicePaymentSend = async ({
   const maxFee = LnFeeCalculator().max(paymentAmount)
   const lnFee = isLocal ? toSats(0) : route ? toSats(route.safe_fee) : maxFee
   const sats = toSats(paymentAmount + lnFee)
-  const internalFee = isLocal
-    ? toSats(0)
-    : ExtraLedgerFeeCalculator(paymentAmount).lnWithdrawalFee()
   const usd = sats * price
-  const usdFee = internalFee * price
+  const usdFee = lnFee * price
 
   return LockService().lockWalletId({ walletId, logger }, async (lock) => {
     const balance = await getBalanceForWallet({ walletId, logger })
@@ -156,7 +153,7 @@ export const lnInvoicePaymentSend = async ({
         paymentHash,
         description: decodedInvoice.description,
         sats,
-        fee: internalFee,
+        fee: lnFee,
         usd,
         usdFee,
         feeKnownInAdvance: !!route,
