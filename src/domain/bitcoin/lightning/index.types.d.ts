@@ -83,6 +83,10 @@ type LnFeeCalculator = {
   max(amount: Satoshis): Satoshis
 }
 
+type PayInvoiceResult = {
+  roundedUpFee: Satoshis
+}
+
 interface ILightningService {
   lndFromPubkey(pubkey: Pubkey): AuthenticatedLnd | LightningServiceError
 
@@ -123,7 +127,7 @@ interface ILightningService {
     milliSatsAmount: MilliSatoshis
     maxFee: Satoshis
     timeoutMs?: MilliSeconds
-  }): Promise<void | LightningServiceError>
+  }): Promise<PayInvoiceResult | LightningServiceError>
 
   deleteUnpaidInvoice({
     pubkey,

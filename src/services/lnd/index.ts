@@ -19,6 +19,8 @@ import {
   payViaPaymentDetails,
   GetPaymentResult,
   PayViaPaymentDetailsArgs,
+  PayViaRoutesResult,
+  PayViaPaymentDetailsResult,
 } from "lightning"
 import { TIMEOUT_PAYMENT } from "./auth"
 import { getActiveLnd, getLndFromPubkey, getLnds } from "./utils"
@@ -152,7 +154,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
     milliSatsAmount: MilliSatoshis
     maxFee: Satoshis
     timeoutMs?: MilliSeconds
-  }): Promise<void | LightningServiceError> => {
+  }): Promise<PayInvoiceResult | LightningServiceError> => {
     const selectedLndAuth = route && lndAuthForRoute ? lndAuthForRoute : lndAuth
 
     const paymentDetailsArgs: PayViaPaymentDetailsArgs = {
@@ -194,7 +196,12 @@ export const LndService = (): ILightningService | LightningServiceError => {
         ? payViaRoutes({ lnd: selectedLndAuth, routes: [route], id: paymentHash })
         : payViaPaymentDetails(paymentDetailsArgs)
       const timeoutPromise = timeout(timeoutMs, "Timeout")
-      await Promise.race([paymentPromise, timeoutPromise])
+      const paymentResult = (await Promise.race([paymentPromise, timeoutPromise])) as
+        | PayViaRoutesResult
+        | PayViaPaymentDetailsResult
+      return {
+        roundedUpFee: toSats(paymentResult.safe_fee),
+      }
     } catch (err) {
       if (err.message === "Timeout") return new LnPaymentPendingError()
       if (isInvoiceAlreadyPaidError(err)) return new LnAlreadyPaidError()
