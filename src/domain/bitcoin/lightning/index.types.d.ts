@@ -92,6 +92,8 @@ type LnInvoiceValidator = {
 }
 
 interface ILightningService {
+  defaultPubkey(): Pubkey
+
   lndFromPubkey(pubkey: Pubkey): AuthenticatedLnd | LightningServiceError
 
   isLocal(pubkey: Pubkey): boolean | LightningServiceError

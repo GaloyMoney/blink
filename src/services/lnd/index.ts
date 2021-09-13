@@ -26,9 +26,11 @@ import { TIMEOUT_PAYMENT } from "./auth"
 import { getActiveLnd, getLndFromPubkey, getLnds } from "./utils"
 
 export const LndService = (): ILightningService | LightningServiceError => {
-  let lndAuth: AuthenticatedLnd, pubkey: string
+  let lndAuth: AuthenticatedLnd, defaultPubkey: Pubkey
   try {
-    ;({ lnd: lndAuth, pubkey } = getActiveLnd())
+    const { lnd, pubkey } = getActiveLnd()
+    lndAuth = lnd
+    defaultPubkey = pubkey as Pubkey
   } catch (err) {
     return new UnknownLightningServiceError(err)
   }
@@ -73,7 +75,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
       if (returnedInvoice instanceof Error) {
         return new CouldNotDecodeReturnedPaymentRequest(returnedInvoice.message)
       }
-      return { invoice: returnedInvoice, pubkey } as RegisteredInvoice
+      return { invoice: returnedInvoice, pubkey: defaultPubkey } as RegisteredInvoice
     } catch (err) {
       return new UnknownLightningServiceError(err)
     }
@@ -225,6 +227,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
   }
 
   return {
+    defaultPubkey: (): Pubkey => defaultPubkey,
     lndFromPubkey,
     isLocal,
     registerInvoice,
