@@ -2,14 +2,14 @@ import { getCurrentPrice } from "@services/realtime-price"
 
 import { sendNotification } from "./notification"
 
-export const getTitle = {
+export const getTitle: Record<string, GetTitleFunction> = {
   "paid-invoice": ({ usd, amount }) => `+$${usd} | ${amount} sats`,
   "onchain_receipt": ({ usd, amount }) => `+$${usd} | ${amount} sats`,
   "onchain_receipt_pending": ({ usd, amount }) => `pending +$${usd} | ${amount} sats`,
   "onchain_payment": ({ amount }) => `Sent onchain payment of ${amount} sats confirmed`,
 }
 
-export const getTitleNoUsd = {
+export const getTitleNoUsd: Record<string, GetTitleNoUsdFunction> = {
   "paid-invoice": ({ amount }) => `+${amount} sats`,
   "onchain_receipt": ({ amount }) => `+${amount} sats`,
   "onchain_receipt_pending": ({ amount }) => `pending +${amount} sats`,

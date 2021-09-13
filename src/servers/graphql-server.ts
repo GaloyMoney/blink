@@ -71,7 +71,11 @@ export const startApolloServer = async ({
       }
 
       if (ip && isIPBlacklisted({ ip })) {
-        throw new IPBlacklistedError("IP Blacklisted", { logger: graphqlLogger, ip })
+        throw new IPBlacklistedError({
+          message: "IP Blacklisted",
+          logger: graphqlLogger,
+          ip,
+        })
       }
 
       let wallet, user

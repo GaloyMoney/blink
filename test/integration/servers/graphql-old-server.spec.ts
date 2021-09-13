@@ -1,5 +1,9 @@
 import { sleep } from "@core/utils"
-import { yamlConfig, getRequestPhoneCodeLimits, getLoginAttemptLimits } from "@config/app"
+import {
+  getRequestPhoneCodeLimits,
+  getLoginAttemptLimits,
+  getTestAccounts,
+} from "@config/app"
 import { createTestClient } from "apollo-server-testing"
 import { startApolloServerForOldSchema } from "@servers/graphql-old-server"
 import { clearAccountLocks, clearLimiters } from "test/helpers"
@@ -7,8 +11,10 @@ import { clearAccountLocks, clearLimiters } from "test/helpers"
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
+const testAccounts = getTestAccounts()
+
 let apolloServer, httpServer
-const { phone, code: correctCode } = yamlConfig.test_accounts[9]
+const { phone, code: correctCode } = testAccounts[9]
 const badCode = 123456
 
 beforeAll(async () => {

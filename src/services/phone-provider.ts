@@ -12,7 +12,7 @@ const getTwilioClient = () => {
   return client
 }
 
-export const sendTwilioText = async ({ body, to, logger }) => {
+export const sendTwilioText: SendTextFunction = async ({ body, to, logger }) => {
   const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER
   const provider = "twilio"
   try {
@@ -30,7 +30,7 @@ export const sendTwilioText = async ({ body, to, logger }) => {
   return true
 }
 
-export const sendSMSalaText = async ({ body, to, logger }) => {
+export const sendSMSalaText: SendTextFunction = async ({ body, to, logger }) => {
   const provider = "smsala"
   try {
     const base_url = "http://api.smsala.com/api/SendSMS"

@@ -1,0 +1,178 @@
+{
+  "name": "Galoy Banking",
+  "funder": "FunderWallet",
+  "hedging": {
+    "LOW_BOUND_RATIO_SHORTING": 0.95,
+    "LOW_SAFEBOUND_RATIO_SHORTING": 0.98,
+    "HIGH_SAFEBOUND_RATIO_SHORTING": 1,
+    "HIGH_BOUND_RATIO_SHORTING": 1.03,
+    "LOW_BOUND_LEVERAGE": 1.2,
+    "LOW_SAFEBOUND_LEVERAGE": 1.8,
+    "HIGH_SAFEBOUND_LEVERAGE": 2.25,
+    "HIGH_BOUND_LEVERAGE": 3
+  },
+  "rebalancing": {
+    "lndHoldingBase": 50000000,
+    "ratioTargetDeposit": 1,
+    "ratioTargetWithdraw": 1,
+    "minOnchain": 10000000,
+    "onchainWallet": "specter"
+  },
+  "test_accounts": [
+    {
+      "phone": "+16505554321",
+      "code": 321321
+    },
+    {
+      "phone": "+16505554322",
+      "code": 321321
+    },
+    {
+      "phone": "+16505554323",
+      "code": 321321,
+      "title": "business"
+    },
+    {
+      "phone": "+16505554324",
+      "code": 321321
+    },
+    {
+      "phone": "+16505554325",
+      "code": 321321,
+      "username": "FunderWallet",
+      "role": "funder"
+    },
+    {
+      "phone": "+16505554326",
+      "code": 321321,
+      "currencies": [
+        {
+          "id": "USD",
+          "ratio": 1
+        }
+      ]
+    },
+    {
+      "phone": "+16505554327",
+      "code": 321321,
+      "role": "dealer"
+    },
+    {
+      "phone": "+16505554328",
+      "code": 321321
+    },
+    {
+      "phone": "+16505554329",
+      "code": 321321
+    },
+    {
+      "phone": "+16505554330",
+      "code": 321321,
+      "currencies": [
+        {
+          "id": "USD",
+          "ratio": 0.5
+        },
+        {
+          "id": "BTC",
+          "ratio": 0.5
+        }
+      ]
+    },
+    {
+      "phone": "+16505554331",
+      "code": 321321,
+      "currency": "BTC"
+    },
+    {
+      "phone": "+16505554332",
+      "code": 321321
+    },
+    {
+      "phone": "+16505554333",
+      "code": 321321
+    },
+    {
+      "phone": "+12223334444",
+      "code": "424242"
+    },
+    {
+      "phone": "+16505554334",
+      "code": 321321,
+      "role": "bankowner"
+    }
+  ],
+  "sms_provider": "twilio",
+  "limits": {
+    "requestPhoneCode": {
+      "points": 4,
+      "duration": 3600,
+      "blockDuration": 10800
+    },
+    "requestPhoneCodeIp": {
+      "points": 4,
+      "duration": 3600,
+      "blockDuration": 86400
+    },
+    "loginAttempt": {
+      "points": 8,
+      "duration": 1200,
+      "blockDuration": 3600
+    },
+    "failedAttemptPerIp": {
+      "points": 30,
+      "duration": 21600,
+      "blockDuration": 86400
+    },
+    "memoSharingSatsThreshold": 1000,
+    "oldEnoughForWithdrawal": 172800000,
+    "withdrawal": {
+      "level": {
+        "1": 2000000,
+        "2": 100000000
+      }
+    },
+    "onUs": {
+      "level": {
+        "1": 5000000,
+        "2": 100000000
+      }
+    }
+  },
+  "ipRecording": {
+    "enabled": true,
+    "proxyChecking": {
+      "enabled": true
+    }
+  },
+  "fees": {
+    "withdraw": 2000,
+    "deposit": 0.003
+  },
+  "lnds": [
+    {
+      "name": "LND1",
+      "type": ["offchain", "onchain"],
+      "priority": 2
+    },
+    {
+      "name": "LND2",
+      "type": ["offchain"],
+      "priority": 3
+    }
+  ],
+  "onChainWallet": {
+    "dustThreshold": 5000,
+    "minConfirmations": 2,
+    "lookBack": 360,
+    "lookBackOutgoing": 2,
+    "lookBackChannelUpdate": 8
+  },
+  "helmet": {
+    "disableContentPolicy": false
+  },
+  "twoFA": {
+    "threshold": 300000
+  },
+  "userActivenessMonthlyVolumeThreshold": 1000
+}

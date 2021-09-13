@@ -6,3 +6,7 @@ interface IPaymentNotification {
   hash?: string
   txid?: string
 }
+
+type GetTitleFunction = (args0: { usd: string; amount: number }) => string
+
+type GetTitleNoUsdFunction = (args0: { amount: number }) => string

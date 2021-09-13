@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "module": "CommonJS",
+    "outDir": "lib",
+    "sourceMap": true,
+    "strict": true,
+    "target": "es2020",
+    "esModuleInterop": true,
+    "baseUrl": "./",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "paths": {
+      "@config/*": ["src/config/*"],
+      "@core/*": ["src/core/*"],
+      "@app/*": ["src/app/*"],
+      "@domain/*": ["src/domain/*"],
+      "@services/*": ["src/services/*"],
+
+      "@graphql/*": ["src/graphql/*"],
+      "@servers/*": ["src/servers/*"]
+    }
+  },
+  "compileOnSave": true,
+  "include": ["src/app**/*", "src/domain/**/*", "src/graphql/**/*", "src/**/*.d.ts"]
+}

@@ -1,9 +1,19 @@
-// globally used types
+type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>
+
 type Logger = import("pino").Logger
+type LogFn = import("pino").LogFn
 
 type Currency = "USD" | "BTC"
 
 type Primitive = string | boolean | number
+
+type CustomErrorData = {
+  message?: string
+  logger: Logger
+  level?: "fatal" | "error" | "warn" | "info" | "debug" | "trace" | "silent"
+  forwardToClient?: boolean
+  [key: string]: unknown
+}
 
 // configs & constructors
 // TODO: clean up this section when "constructor typing" work is
@@ -20,8 +30,6 @@ type FeeRates = {
   withdrawFeeVariable: number
   withdrawFeeFixed: number
 }
-
-type UserLimitsArgs = { level: number; limitsConfig? }
 
 interface IUserLimits {
   onUsLimit: number

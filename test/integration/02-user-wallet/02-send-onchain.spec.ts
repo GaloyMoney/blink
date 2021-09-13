@@ -9,7 +9,7 @@ import {
   getOnChainWalletConfig,
 } from "@config/app"
 import { Transaction } from "@services/mongoose/schema"
-import { getTitle } from "@services/notifications/payment"
+import { getTitleNoUsd } from "@services/notifications/payment"
 import { onchainTransactionEventHandler } from "@servers/trigger"
 import {
   checkIsBalanced,
@@ -72,7 +72,7 @@ afterAll(async () => {
 const amount = 10040 // sats
 
 describe("UserWallet - onChainPay", () => {
-  it("sends a successful payment", async () => {
+  it.only("sends a successful payment", async () => {
     const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
 
     const sub = subscribeToTransactions({ lnd: lndonchain })
@@ -125,7 +125,7 @@ describe("UserWallet - onChainPay", () => {
     // expect(sendNotification.mock.calls.length).toBe(2)  // FIXME: should be 1
 
     expect(sendNotification.mock.calls[0][0].title).toBe(
-      getTitle["onchain_payment"]({ amount }),
+      getTitleNoUsd["onchain_payment"]({ amount }),
     )
     expect(sendNotification.mock.calls[0][0].user._id).toStrictEqual(userWallet0.user._id)
     expect(sendNotification.mock.calls[0][0].data.type).toBe("onchain_payment")
@@ -217,7 +217,7 @@ describe("UserWallet - onChainPay", () => {
 
     /// TODO Still showing amount, find where this happens...
     // expect(sendNotification.mock.calls[0][0].title).toBe(
-    //   getTitle["onchain_payment"]({ amount: initialBalanceUser1 }),
+    //   getTitleNoUsd["onchain_payment"]({ amount: initialBalanceUser1 }),
     // )
     expect(sendNotification.mock.calls[0][0].data.type).toBe("onchain_payment")
 

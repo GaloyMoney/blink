@@ -240,7 +240,8 @@ export const updateRoutingFees = async () => {
     try {
       await ledger.addLndRoutingFee({ amount: fee, collectedOn: day })
     } catch (err) {
-      throw new DbError("Unable to record routing revenue", {
+      throw new DbError({
+        message: "Unable to record routing revenue",
         forwardToClient: false,
         logger: baseLogger,
         level: "error",
@@ -352,7 +353,9 @@ export const offchainLnds = getLnds({ type: "offchain" })
 export const getActiveLnd = () => {
   const lnds = getLnds({ active: true, type: "offchain" })
   if (lnds.length === 0) {
-    throw new LndOfflineError("no active lightning node (for offchain)")
+    throw new LndOfflineError({
+      message: "no active lightning node (for offchain)",
+    })
   }
   return lnds[0]
 
@@ -364,7 +367,7 @@ export const getActiveLnd = () => {
 export const getActiveOnchainLnd = () => {
   const lnds = getLnds({ active: true, type: "onchain" })
   if (lnds.length === 0) {
-    throw new LndOfflineError("no active lightning node (for onchain)")
+    throw new LndOfflineError({ message: "no active lightning node (for onchain)" })
   }
   return lnds[0]
 }
@@ -378,7 +381,7 @@ export const getLndFromPubkey = ({ pubkey }: { pubkey: string }) => {
   const lnds = getLnds({ active: true })
   const lnd = _.filter(lnds, { pubkey })
   if (!lnd) {
-    throw new LndOfflineError(`lnd with pubkey:${pubkey} is offline`)
+    throw new LndOfflineError({ message: `lnd with pubkey:${pubkey} is offline` })
   } else {
     return lnd[0]
   }
@@ -430,8 +433,10 @@ export const validate = async ({
   } else {
     if (!params.username) {
       const galoyInstanceName = getGaloyInstanceName()
-      const error = `a username is required for push payment to the ${galoyInstanceName}`
-      throw new ValidationInternalError(error, { logger })
+      throw new ValidationInternalError({
+        message: `a username is required for push payment to the ${galoyInstanceName}`,
+        logger,
+      })
     }
 
     isPushPayment = true
@@ -439,11 +444,13 @@ export const validate = async ({
   }
 
   if (!!params.amount && !!tokens) {
-    const error = `Invoice contains non-zero amount, but amount was also passed separately`
     // FIXME: create a new error. this is a not a graphl error.
     // throw new ValidationInternalError(error, {logger})
 
-    throw new ValidationInternalError(error, { logger })
+    throw new ValidationInternalError({
+      message: "Invoice contains non-zero amount, but amount was also passed separately",
+      logger,
+    })
   }
 
   if (!params.amount && !tokens) {
@@ -452,7 +459,7 @@ export const validate = async ({
     // FIXME: create a new error. this is a not a graphl error.
     // throw new ValidationInternalError(error, {logger})
 
-    throw new ValidationInternalError(error, { logger })
+    throw new ValidationInternalError({ message: error, logger })
   }
 
   tokens = tokens ? tokens : params.amount

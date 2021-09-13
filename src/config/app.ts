@@ -5,8 +5,7 @@ import { exit } from "process"
 
 import { baseLogger } from "@services/logger"
 
-const defaultContent = fs.readFileSync("./default.yaml", "utf8")
-export const defaultConfig = yaml.load(defaultContent)
+import defaultConfig from "./defaults.json"
 
 export const JWT_SECRET = process.env.JWT_SECRET
 export const BTC_NETWORK = process.env.NETWORK as BtcNetwork
@@ -31,43 +30,43 @@ try {
   }
 }
 
-export const yamlConfig = _.merge(defaultConfig, customConfig)
+export const config = _.merge(defaultConfig, customConfig)
 
-export const MEMO_SHARING_SATS_THRESHOLD = yamlConfig.limits.memoSharingSatsThreshold
+export const MEMO_SHARING_SATS_THRESHOLD = config.limits.memoSharingSatsThreshold
 
-export const ONCHAIN_MIN_CONFIRMATIONS = yamlConfig.onChainWallet.minConfirmations
+export const ONCHAIN_MIN_CONFIRMATIONS = config.onChainWallet.minConfirmations
 // how many block are we looking back for getChainTransactions
-export const ONCHAIN_LOOK_BACK = yamlConfig.onChainWallet.lookBack
-export const ONCHAIN_LOOK_BACK_OUTGOING = yamlConfig.onChainWallet.lookBackOutgoing
-export const ONCHAIN_LOOK_BACK_CHANNEL_UPDATE =
-  yamlConfig.onChainWallet.lookBackChannelUpdate
+export const ONCHAIN_LOOK_BACK = config.onChainWallet.lookBack
+export const ONCHAIN_LOOK_BACK_OUTGOING = config.onChainWallet.lookBackOutgoing
+export const ONCHAIN_LOOK_BACK_CHANNEL_UPDATE = config.onChainWallet.lookBackChannelUpdate
 
 export const USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD =
-  yamlConfig.userActivenessMonthlyVolumeThreshold
+  config.userActivenessMonthlyVolumeThreshold
 
-export const getGaloyInstanceName = (): string => yamlConfig.name
+export const getGaloyInstanceName = (): string => config.name
 
-export const getGaloySMSProvider = (): string => yamlConfig.sms_provider
+export const getTestAccounts = () => config.test_accounts
+
+export const getGaloySMSProvider = (): string => config.sms_provider
 
 export const getLndParams = (): LndParams[] => {
-  const config = yamlConfig.lnds
-  return config.map((input) => ({
-    cert: process.env[`${input.name}_TLS`] || exit(98),
-    macaroon: process.env[`${input.name}_MACAROON`] || exit(98),
-    node: process.env[`${input.name}_DNS`] || exit(98),
-    port: process.env[`${input.name}_RPCPORT`] ?? 10009,
-    pubkey: process.env[`${input.name}_PUBKEY`] || exit(98),
-    priority: 1,
-    ...input,
+  return config.lnds.map(({ name, priority, ...rest }) => ({
+    cert: process.env[`${name}_TLS`] || exit(98),
+    macaroon: process.env[`${name}_MACAROON`] || exit(98),
+    node: process.env[`${name}_DNS`] || exit(98),
+    port: process.env[`${name}_RPCPORT`] ?? 10009,
+    pubkey: process.env[`${name}_PUBKEY`] || exit(98),
+    priority: priority ?? 1,
+    ...rest,
   }))
 }
 
-export const getGenericLimits = (limitsConfig = yamlConfig.limits): GenericLimits => ({
+export const getGenericLimits = (limitsConfig = config.limits): GenericLimits => ({
   oldEnoughForWithdrawalHours: limitsConfig.oldEnoughForWithdrawal / MS_PER_HOUR,
   oldEnoughForWithdrawalMicroseconds: limitsConfig.oldEnoughForWithdrawal,
 })
 
-export const getFeeRates = (feesConfig = yamlConfig.fees): FeeRates => ({
+export const getFeeRates = (feesConfig = config.fees): FeeRates => ({
   depositFeeVariable: feesConfig.deposit,
   depositFeeFixed: 0,
   withdrawFeeVariable: 0,
@@ -76,15 +75,18 @@ export const getFeeRates = (feesConfig = yamlConfig.fees): FeeRates => ({
 
 export const getUserLimits = ({
   level,
-  limitsConfig = yamlConfig.limits,
-}: UserLimitsArgs): IUserLimits => {
+  limitsConfig = config.limits,
+}: {
+  level: 1 | 2
+  limitsConfig?: typeof config.limits
+}): IUserLimits => {
   return {
     onUsLimit: limitsConfig.onUs.level[level],
     withdrawalLimit: limitsConfig.withdrawal.level[level],
   }
 }
 
-const getRateLimits = (config): IRateLimits => {
+const getRateLimits = (config: RateLimitConfig): IRateLimits => {
   /**
    * Returns a subset of the required parameters for the
    * 'rate-limiter-flexible.RateLimiterRedis' object.
@@ -97,24 +99,27 @@ const getRateLimits = (config): IRateLimits => {
 }
 
 export const getRequestPhoneCodeLimits = () =>
-  getRateLimits(yamlConfig.limits.requestPhoneCode)
+  getRateLimits(config.limits.requestPhoneCode)
 
 export const getRequestPhoneCodeIpLimits = () =>
-  getRateLimits(yamlConfig.limits.requestPhoneCodeIp)
+  getRateLimits(config.limits.requestPhoneCodeIp)
 
-export const getLoginAttemptLimits = () => getRateLimits(yamlConfig.limits.loginAttempt)
+export const getLoginAttemptLimits = () => getRateLimits(config.limits.loginAttempt)
 
 export const getFailedAttemptPerIpLimits = () =>
-  getRateLimits(yamlConfig.limits.failedAttemptPerIp)
+  getRateLimits(config.limits.failedAttemptPerIp)
 
 export const getOnChainWalletConfig = () => ({
-  dustThreshold: yamlConfig.onChainWallet.dustThreshold,
+  dustThreshold: config.onChainWallet.dustThreshold,
 })
 
 export const getTransactionLimits = ({
   level,
-  limitsConfig = yamlConfig.limits,
-}: UserLimitsArgs): ITransactionLimits => {
+  limitsConfig = config.limits,
+}: {
+  level: 1 | 2
+  limitsConfig?: typeof config.limits
+}): ITransactionLimits => {
   const genericLimits = getGenericLimits(limitsConfig)
   return {
     oldEnoughForWithdrawalMicroseconds: genericLimits.oldEnoughForWithdrawalMicroseconds,
@@ -124,13 +129,13 @@ export const getTransactionLimits = ({
 }
 
 export const getUserWalletConfig = (
-  user,
-  limitsConfig = yamlConfig.limits,
+  user: UserType,
+  limitsConfig = config.limits,
 ): UserWalletConfig => {
   const transactionLimits = getTransactionLimits({ level: user.level, limitsConfig })
   const onChainWalletConfig = getOnChainWalletConfig()
   return {
-    name: yamlConfig.name,
+    name: config.name,
     dustThreshold: onChainWalletConfig.dustThreshold,
     onchainMinConfirmations: ONCHAIN_MIN_CONFIRMATIONS,
     limits: transactionLimits,
@@ -138,28 +143,34 @@ export const getUserWalletConfig = (
 }
 
 export const getSpecterWalletConfig = (): SpecterWalletConfig => {
-  const config = yamlConfig.rebalancing
+  const {
+    lndHoldingBase,
+    ratioTargetDeposit,
+    ratioTargetWithdraw,
+    minOnchain,
+    onchainWallet,
+  } = config.rebalancing
   return {
-    lndHoldingBase: config.lndHoldingBase,
-    ratioTargetDeposit: config.ratioTargetDeposit,
-    ratioTargetWithdraw: config.ratioTargetWithdraw,
-    minOnchain: config.minOnchain,
-    onchainWallet: config.onchainWallet ?? "specter",
+    lndHoldingBase,
+    ratioTargetDeposit,
+    ratioTargetWithdraw,
+    minOnchain,
+    onchainWallet: onchainWallet ?? "specter",
   }
 }
 
-export const PROXY_CHECK_APIKEY = yamlConfig?.PROXY_CHECK_APIKEY
+export const PROXY_CHECK_APIKEY = config?.PROXY_CHECK_APIKEY
 
-export const getIpConfig = (config = yamlConfig): IpConfig => ({
+export const getIpConfig = (pConfig = config): IpConfig => ({
   ipRecordingEnabled:
-    process.env.NODE_ENV === "test" ? false : config.ipRecording?.enabled,
-  proxyCheckingEnabled: config.ipRecording?.proxyChecking?.enabled,
-  blacklistedIPTypes: config.blacklistedIPTypes ? config.blacklistedIPTypes : [],
-  blacklistedIPs: config.blacklistedIPs ? config.blacklistedIPs : [],
+    process.env.NODE_ENV === "test" ? false : pConfig.ipRecording?.enabled,
+  proxyCheckingEnabled: pConfig.ipRecording?.proxyChecking?.enabled,
+  blacklistedIPTypes: pConfig.blacklistedIPTypes ? pConfig.blacklistedIPTypes : [],
+  blacklistedIPs: pConfig.blacklistedIPs ? pConfig.blacklistedIPs : [],
 })
 
-export const getHelmetConfig = (config = yamlConfig): HelmetConfig => config.helmet
-export const getTwoFAConfig = (config = yamlConfig): TwoFAConfig => config.twoFA
+export const getHelmetConfig = (pConfig = config): HelmetConfig => pConfig.helmet
+export const getTwoFAConfig = (pConfig = config): TwoFAConfig => pConfig.twoFA
 
 export const levels: Levels = [1, 2]
 

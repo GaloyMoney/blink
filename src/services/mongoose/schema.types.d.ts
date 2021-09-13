@@ -41,16 +41,16 @@ type CoordinateObjectForUser = {
 }
 
 // ?: improve this
-interface UserType {
+type UserType = {
   _id: string
   id: string
   username?: string
   phone: string
   role: string
 
-  level?: number // ?: enum [1, 2]
-  status?: string // ?: enum ["active", "locked"]
-  language?: string // ?: enum ["en", "es"]
+  level: 1 | 2
+  status: "active" | "locked"
+  language: "en" | "es" | ""
 
   twilio?: TwillioObjectForUser
   depositFeeRatio?: number

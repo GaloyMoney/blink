@@ -84,7 +84,7 @@ export const OnChainMixin = (superclass) =>
         fee = 0
       } else {
         if (amount && amount < this.config.dustThreshold) {
-          throw new DustAmountError(undefined, { logger: this.logger })
+          throw new DustAmountError({ logger: this.logger })
         }
 
         // FIXME there is a transition if a node get offline for which the fee could be wrong
@@ -95,7 +95,7 @@ export const OnChainMixin = (superclass) =>
         try {
           ;({ fee } = await getChainFeeEstimate({ lnd, send_to: sendTo }))
         } catch (err) {
-          throw new OnChainFeeEstimationError(undefined, {
+          throw new OnChainFeeEstimationError({
             logger: this.logger,
           })
         }
@@ -124,12 +124,14 @@ export const OnChainMixin = (superclass) =>
 
       if (!sendAll) {
         if (amount <= 0) {
-          const error = "Amount can't be negative, and can only be zero if sendAll = true"
-          throw new ValidationInternalError(error, { logger: onchainLogger })
+          throw new ValidationInternalError({
+            message: "Amount can't be negative, and can only be zero if sendAll = true",
+            logger: onchainLogger,
+          })
         }
 
         if (amount < this.config.dustThreshold) {
-          throw new DustAmountError(undefined, { logger: onchainLogger })
+          throw new DustAmountError({ logger: onchainLogger })
         }
       }
       // when sendAll the amount should be 0
@@ -150,7 +152,7 @@ export const OnChainMixin = (superclass) =>
 
         // quit early if balance is not enough
         if (balanceSats < amount) {
-          throw new InsufficientBalanceError(undefined, { logger: onchainLogger })
+          throw new InsufficientBalanceError({ logger: onchainLogger })
         }
 
         const payeeUser = await User.getUserByAddress({ address })
@@ -167,13 +169,14 @@ export const OnChainMixin = (superclass) =>
 
           if (this.user.twoFA.secret && remainingTwoFALimit < amountToSendPayeeUser) {
             if (!twoFAToken) {
-              throw new TwoFAError("Need a 2FA code to proceed with the payment", {
+              throw new TwoFAError({
+                message: "Need a 2FA code to proceed with the payment",
                 logger: onchainLogger,
               })
             }
 
             if (!verifyToken(this.user.twoFA.secret, twoFAToken)) {
-              throw new TwoFAError(undefined, { logger: onchainLogger })
+              throw new TwoFAError({ logger: onchainLogger })
             }
           }
 
@@ -182,12 +185,14 @@ export const OnChainMixin = (superclass) =>
           const remainingOnUsLimit = await this.user.remainingOnUsLimit()
 
           if (remainingOnUsLimit < amountToSendPayeeUser) {
-            const error = `Cannot transfer more than ${this.config.limits.onUsLimit} sats in 24 hours`
-            throw new TransactionRestrictedError(error, { logger: onchainLoggerOnUs })
+            throw new TransactionRestrictedError({
+              message: `Cannot transfer more than ${this.config.limits.onUsLimit} sats in 24 hours`,
+              logger: onchainLoggerOnUs,
+            })
           }
 
           if (String(payeeUser._id) === String(this.user._id)) {
-            throw new SelfPaymentError(undefined, { logger: onchainLoggerOnUs })
+            throw new SelfPaymentError({ logger: onchainLoggerOnUs })
           }
 
           const sats = amountToSendPayeeUser
@@ -226,35 +231,40 @@ export const OnChainMixin = (superclass) =>
         onchainLogger = onchainLogger.child({ onUs: false })
 
         if (!this.user.oldEnoughForWithdrawal) {
-          const error = `New accounts have to wait ${this.config.limits.oldEnoughForWithdrawalHours}h before withdrawing`
-          throw new NewAccountWithdrawalError(error, { logger: onchainLogger })
+          throw new NewAccountWithdrawalError({
+            message: `New accounts have to wait ${this.config.limits.oldEnoughForWithdrawalHours}h before withdrawing`,
+            logger: onchainLogger,
+          })
         }
 
         /// when sendAll the amount is closer to the final one by deducting the withdrawFee
         const checksAmount = sendAll ? balanceSats - this.user.withdrawFee : amount
 
         if (checksAmount < this.config.dustThreshold) {
-          throw new DustAmountError(undefined, { logger: onchainLogger })
+          throw new DustAmountError({ logger: onchainLogger })
         }
 
         const remainingWithdrawalLimit = await this.user.remainingWithdrawalLimit()
 
         if (remainingWithdrawalLimit < checksAmount) {
-          const error = `Cannot withdraw more than ${this.config.limits.withdrawalLimit} sats in 24 hours`
-          throw new TransactionRestrictedError(error, { logger: onchainLogger })
+          throw new TransactionRestrictedError({
+            message: `Cannot withdraw more than ${this.config.limits.withdrawalLimit} sats in 24 hours`,
+            logger: onchainLogger,
+          })
         }
 
         const remainingTwoFALimit = await this.user.remainingTwoFALimit()
 
         if (this.user.twoFA.secret && remainingTwoFALimit < checksAmount) {
           if (!twoFAToken) {
-            throw new TwoFAError("Need a 2FA code to proceed with the payment", {
+            throw new TwoFAError({
+              message: "Need a 2FA code to proceed with the payment",
               logger: onchainLogger,
             })
           }
 
           if (!verifyToken(this.user.twoFA.secret, twoFAToken)) {
-            throw new TwoFAError(undefined, { logger: onchainLogger })
+            throw new TwoFAError({ logger: onchainLogger })
           }
         }
 
@@ -280,7 +290,7 @@ export const OnChainMixin = (superclass) =>
           // case where there is not enough money available within lnd on-chain wallet
           if (onChainBalance < amountToSend + estimatedFee) {
             // TODO: add a page to initiate the rebalancing quickly
-            throw new RebalanceNeededError(undefined, {
+            throw new RebalanceNeededError({
               logger: onchainLogger,
               onChainBalance,
               amount: amountToSend,
@@ -293,7 +303,7 @@ export const OnChainMixin = (superclass) =>
 
           // case where the user doesn't have enough money
           if (balanceSats < amountToSend + estimatedFee + this.user.withdrawFee) {
-            throw new InsufficientBalanceError(undefined, { logger: onchainLogger })
+            throw new InsufficientBalanceError({ logger: onchainLogger })
           }
         }
         // when sendAll the amount to sendToChainAddress is the whole balance minus the fees
@@ -303,7 +313,7 @@ export const OnChainMixin = (superclass) =>
           // case where there is not enough money available within lnd on-chain wallet
           if (onChainBalance < amountToSend) {
             // TODO: add a page to initiate the rebalancing quickly
-            throw new RebalanceNeededError(undefined, {
+            throw new RebalanceNeededError({
               logger: onchainLogger,
               onChainBalance,
               amount: amountToSend,
@@ -316,7 +326,7 @@ export const OnChainMixin = (superclass) =>
 
           // case where the user doesn't have enough money (fees are more than the whole balance)
           if (amountToSend < 0) {
-            throw new InsufficientBalanceError(undefined, { logger: onchainLogger })
+            throw new InsufficientBalanceError({ logger: onchainLogger })
           }
         }
 

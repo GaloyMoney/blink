@@ -15,7 +15,7 @@ export const updateUserLevel = async ({ uid, level }): Promise<UserType | Error>
     const user = await User.findOne({ _id: uid })
 
     if (!user) {
-      throw new NotFoundError("User not found", { logger })
+      throw new NotFoundError({ message: "User not found", logger })
     }
 
     user.level = level
@@ -34,7 +34,7 @@ export const updateUserAccountStatus = async ({
     const user = await User.findOne({ _id: uid })
 
     if (!user) {
-      throw new NotFoundError("User not found", { logger })
+      throw new NotFoundError({ message: "User not found", logger })
     }
 
     user.status = status
@@ -55,7 +55,7 @@ export const updateBusinessMapInfo = async ({
     const user = await User.getUserByUsername(walletName)
 
     if (!user) {
-      throw new NotFoundError("User not found", { logger })
+      throw new NotFoundError({ message: "User not found", logger })
     }
 
     user.coordinate = {

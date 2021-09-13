@@ -11,7 +11,7 @@ export const WalletFactory = async ({
   user,
   logger,
 }: {
-  user: typeof User
+  user: UserType
   logger: Logger
 }) => {
   // FIXME: update price on event outside of the wallet factory
@@ -32,8 +32,7 @@ export const getWalletFromUsername = async ({
 }) => {
   const user = await User.getUserByUsername(username)
   if (!user) {
-    const error = `User not found`
-    throw new NotFoundError(error, { logger })
+    throw new NotFoundError({ message: "User not found", logger })
   }
 
   return WalletFactory({ user, logger })

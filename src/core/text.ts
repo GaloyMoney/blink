@@ -1,10 +1,10 @@
 import moment from "moment"
 
 import {
-  yamlConfig,
   getGaloyInstanceName,
   getGaloySMSProvider,
   getFailedAttemptPerIpLimits,
+  getTestAccounts,
 } from "@config/app"
 
 import { createToken } from "@services/jwt"
@@ -21,6 +21,8 @@ import {
 import { isIPBlacklisted, isIPTypeBlacklisted, randomIntFromInterval } from "./utils"
 import { IpFetcher } from "@services/ipfetcher"
 
+const testAccounts = getTestAccounts()
+
 export const requestPhoneCode = async ({
   phone,
   logger,
@@ -33,7 +35,7 @@ export const requestPhoneCode = async ({
   logger.info({ phone, ip }, "RequestPhoneCode called")
 
   if (isIPBlacklisted({ ip })) {
-    throw new IPBlacklistedError("IP Blacklisted", { logger, ip })
+    throw new IPBlacklistedError({ message: "IP Blacklisted", logger, ip })
   }
 
   const ipFetcher = IpFetcher()
@@ -45,7 +47,7 @@ export const requestPhoneCode = async ({
   }
 
   if (!(ipDetails instanceof Error) && isIPTypeBlacklisted({ type: ipDetails.type })) {
-    throw new IPBlacklistedError("IP type Blacklisted", { logger, ipDetails })
+    throw new IPBlacklistedError({ message: "IP type Blacklisted", logger, ipDetails })
   }
 
   try {
@@ -69,7 +71,7 @@ export const requestPhoneCode = async ({
   }
 
   // make it possible to bypass the auth for testing purpose
-  if (yamlConfig.test_accounts.findIndex((item) => item.phone === phone) !== -1) {
+  if (testAccounts.findIndex((item) => item.phone === phone) !== -1) {
     return true
   }
 
@@ -151,10 +153,9 @@ export const login = async ({
 
     // is it a test account?
     if (
-      yamlConfig.test_accounts.findIndex((item) => item.phone === phone) !== -1 &&
-      yamlConfig.test_accounts
-        .filter((item) => item.phone === phone)[0]
-        .code.toString() === code.toString()
+      testAccounts.findIndex((item) => item.phone === phone) !== -1 &&
+      testAccounts.filter((item) => item.phone === phone)[0].code.toString() ===
+        code.toString()
     ) {
       // we are in this branch if phone is a test account + code is correct
     } else if (
@@ -193,10 +194,7 @@ export const login = async ({
       subLogger.info({ phone }, "a new user has register")
     }
 
-    // TODO
-    // if (yamlConfig.carrierRegexFilter)  {
-    //
-    // }
+    // TODO: if (carrierRegexFilter ) ...
 
     // only fetch info once
     if (user.twilio.countryCode === undefined || user.twilio.countryCode === null) {

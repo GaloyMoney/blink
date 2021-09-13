@@ -2,11 +2,13 @@ import { login } from "@core/text"
 import { User } from "@services/mongoose/schema"
 import * as jwt from "jsonwebtoken"
 import { baseLogger } from "@services/logger"
-import { JWT_SECRET, yamlConfig } from "@config/app"
+import { getTestAccounts, JWT_SECRET } from "@config/app"
 import { WalletFactory } from "@core/wallet-factory"
 
+const testAccounts = getTestAccounts()
+
 export const getTokenFromPhoneIndex = async (index) => {
-  const entry = yamlConfig.test_accounts[index]
+  const entry = testAccounts[index]
   const rawToken = await login({ ...entry, logger: baseLogger, ip: "127.0.0.1" })
 
   // @ts-expect-error: Fix for when rawToken is null

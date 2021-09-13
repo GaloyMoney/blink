@@ -15,10 +15,10 @@ const client = new protoDescriptor.PriceFeed(fullUrl, credentials.createInsecure
 export const getCurrentPrice = async (): Promise<number | undefined> => {
   // keep price in cache for 1 min in case the price pod is not online
 
-  let price
+  let price: number
 
   try {
-    const promise = new Promise(
+    const promise: Promise<number> = new Promise(
       (resolve, reject): Promise<number> =>
         client.getPrice({}, (err, { price }) => {
           if (err) {
@@ -36,7 +36,7 @@ export const getCurrentPrice = async (): Promise<number | undefined> => {
     // FIXME switch back to 60 once price pod stop crashing
     mainCache.set(key, price, 600)
   } catch (err) {
-    price = mainCache.get(key)
+    price = mainCache.get(key) as number
     if (price) {
       throw new Error("price is not available")
     }

@@ -19,16 +19,13 @@ export class LightningUserWallet extends OnChainMixin(LightningMixin(UserWallet)
 
   async addEarn(ids) {
     if (this.user?.twilio?.carrier?.type === "voip") {
-      throw new CustomError(
-        "reward can only be given on non voip-based phone",
-        "VOIP_REWARD_RESTRICTED",
-        {
-          forwardToClient: true,
-          logger: this.logger,
-          level: "warn",
-          metadata: undefined,
-        },
-      )
+      throw new CustomError({
+        message: "reward can only be given on non voip-based phone",
+        code: "VOIP_REWARD_RESTRICTED",
+        forwardToClient: true,
+        logger: this.logger,
+        level: "warn",
+      })
     }
 
     const lightningFundingWallet = await getWalletFromRole({

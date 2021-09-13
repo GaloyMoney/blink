@@ -1,5 +1,5 @@
 import { sleep } from "@core/utils"
-import { yamlConfig, JWT_SECRET } from "@config/app"
+import { getTestAccounts, JWT_SECRET } from "@config/app"
 import { createTestClient } from "apollo-server-integration-testing"
 import { startApolloServerForCoreSchema } from "@servers/graphql-main-server"
 import * as jwt from "jsonwebtoken"
@@ -11,8 +11,10 @@ import { clearAccountLocks, clearLimiters } from "test/helpers"
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
+const testAccounts = getTestAccounts()
+
 let apolloServer, httpServer, mutate, correctCode
-const { phone, code } = yamlConfig.test_accounts[9]
+const { phone, code } = testAccounts[9]
 
 beforeAll(async () => {
   correctCode = `${code}`

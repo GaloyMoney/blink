@@ -135,7 +135,7 @@ export const LightningMixin = (superclass) =>
           total_mtokens: payment ? mtokens : undefined,
         }))
       } catch (err) {
-        throw new RouteFindingError(undefined, {
+        throw new RouteFindingError({
           logger: lightningLogger,
           probingSuccess: false,
           success: false,
@@ -144,7 +144,7 @@ export const LightningMixin = (superclass) =>
 
       if (!route) {
         // TODO: check if the error is irrecoverable or not.
-        throw new RouteFindingError(undefined, {
+        throw new RouteFindingError({
           logger: lightningLogger,
           probingSuccess: false,
           success: false,
@@ -205,13 +205,14 @@ export const LightningMixin = (superclass) =>
 
       if (this.user.twoFA.secret && remainingTwoFALimit < tokens) {
         if (!twoFAToken) {
-          throw new TwoFAError("Need a 2FA code to proceed with the payment", {
+          throw new TwoFAError({
+            message: "Need a 2FA code to proceed with the payment",
             logger: lightningLogger,
           })
         }
 
         if (!verifyToken(this.user.twoFA.secret, twoFAToken)) {
-          throw new TwoFAError(undefined, { logger: lightningLogger })
+          throw new TwoFAError({ logger: lightningLogger })
         }
       }
 
@@ -234,8 +235,10 @@ export const LightningMixin = (superclass) =>
           const remainingOnUsLimit = await this.user.remainingOnUsLimit()
 
           if (remainingOnUsLimit < tokens) {
-            const error = `Cannot transfer more than ${this.config.limits.onUsLimit} sats in 24 hours`
-            throw new TransactionRestrictedError(error, { logger: lightningLoggerOnUs })
+            throw new TransactionRestrictedError({
+              message: `Cannot transfer more than ${this.config.limits.onUsLimit} sats in 24 hours`,
+              logger: lightningLoggerOnUs,
+            })
           }
 
           let payeeUser, pubkey, payeeInvoice
@@ -247,16 +250,16 @@ export const LightningMixin = (superclass) =>
             // standard path, user scan a lightning invoice of our own wallet from another user
             payeeInvoice = await this.invoices.findByPaymentHash(id)
             if (payeeInvoice instanceof Error) {
-              const error = `User tried to pay invoice from ${this.config.name}, but it does not exist`
-              throw new LightningPaymentError(error, {
+              throw new LightningPaymentError({
+                message: `User tried to pay invoice from ${this.config.name}, but it does not exist`,
                 logger: lightningLoggerOnUs,
                 success: false,
               })
             }
 
             if (payeeInvoice.paid) {
-              const error = `Invoice is already paid`
-              throw new LightningPaymentError(error, {
+              throw new LightningPaymentError({
+                message: "Invoice is already paid",
                 logger: lightningLoggerOnUs,
                 success: false,
               })
@@ -267,12 +270,14 @@ export const LightningMixin = (superclass) =>
           }
 
           if (!payeeUser) {
-            const error = `this user doesn't exist`
-            throw new NotFoundError(error, { logger: lightningLoggerOnUs })
+            throw new NotFoundError({
+              message: "this user doesn't exist",
+              logger: lightningLoggerOnUs,
+            })
           }
 
           if (String(payeeUser._id) === String(this.user._id)) {
-            throw new SelfPaymentError(undefined, { logger: lightningLoggerOnUs })
+            throw new SelfPaymentError({ logger: lightningLoggerOnUs })
           }
 
           const sats = tokens
@@ -286,7 +291,7 @@ export const LightningMixin = (superclass) =>
 
           // TODO: manage when paid fully in USD directly from USD balance to avoid conversion issue
           if (balanceSats < sats) {
-            throw new InsufficientBalanceError(undefined, {
+            throw new InsufficientBalanceError({
               logger: lightningLoggerOnUs,
             })
           }
@@ -356,8 +361,10 @@ export const LightningMixin = (superclass) =>
           const remainingWithdrawalLimit = await this.user.remainingWithdrawalLimit()
 
           if (remainingWithdrawalLimit < tokens) {
-            const error = `Cannot transfer more than ${this.config.limits.withdrawalLimit} sats in 24 hours`
-            throw new TransactionRestrictedError(error, { logger: lightningLogger })
+            throw new TransactionRestrictedError({
+              message: `Cannot transfer more than ${this.config.limits.withdrawalLimit} sats in 24 hours`,
+              logger: lightningLogger,
+            })
           }
 
           lightningLoggerOnUs.info(
@@ -375,15 +382,19 @@ export const LightningMixin = (superclass) =>
 
         // "normal" transaction: paying another lightning node
         if (!this.user.oldEnoughForWithdrawal) {
-          const error = `New accounts have to wait ${this.config.limits.oldEnoughForWithdrawalHours}h before withdrawing`
-          throw new NewAccountWithdrawalError(error, { logger: lightningLogger })
+          throw new NewAccountWithdrawalError({
+            message: `New accounts have to wait ${this.config.limits.oldEnoughForWithdrawalHours}h before withdrawing`,
+            logger: lightningLogger,
+          })
         }
 
         const remainingWithdrawalLimit = await this.user.remainingWithdrawalLimit()
 
         if (remainingWithdrawalLimit < tokens) {
-          const error = `Cannot withdraw more than ${this.config.limits.withdrawalLimit} sats in 24 hours`
-          throw new TransactionRestrictedError(error, { logger: lightningLogger })
+          throw new TransactionRestrictedError({
+            message: `Cannot withdraw more than ${this.config.limits.withdrawalLimit} sats in 24 hours`,
+            logger: lightningLogger,
+          })
         }
 
         // TODO: fine tune those values:
@@ -443,7 +454,7 @@ export const LightningMixin = (superclass) =>
           // TODO usd management for balance
 
           if (balanceSats < sats) {
-            throw new InsufficientBalanceError(undefined, { logger: lightningLogger })
+            throw new InsufficientBalanceError({ logger: lightningLogger })
           }
 
           entry = await lockExtendOrThrow({ lock, logger: lightningLogger }, async () => {
@@ -522,8 +533,11 @@ export const LightningMixin = (superclass) =>
                 `payment error`,
               )
             } catch (err_fatal) {
-              const error = `ERROR CANCELING PAYMENT ENTRY`
-              throw new DbError(error, { logger: lightningLogger, level: "fatal" })
+              throw new DbError({
+                message: "ERROR CANCELING PAYMENT ENTRY",
+                logger: lightningLogger,
+                level: "fatal",
+              })
             }
 
             if (isInvoiceAlreadyPaidError(err)) {
@@ -534,7 +548,8 @@ export const LightningMixin = (superclass) =>
               return "already_paid"
             }
 
-            throw new LightningPaymentError("Error paying invoice", {
+            throw new LightningPaymentError({
+              message: "Error paying invoice",
               logger: lightningLogger,
               err,
               success: false,

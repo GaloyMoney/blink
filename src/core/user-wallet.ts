@@ -112,8 +112,8 @@ export abstract class UserWallet {
     )
 
     if (!result) {
-      const error = `Username is already set`
-      throw new DbError(error, {
+      throw new DbError({
+        message: "Username is already set",
         forwardToClient: true,
         logger: this.logger,
         level: "warn",
@@ -128,8 +128,8 @@ export abstract class UserWallet {
     const result = await User.findOneAndUpdate({ _id: this.user.id }, { language })
 
     if (!result) {
-      const error = `issue setting language preferences`
-      throw new DbError(error, {
+      throw new DbError({
+        message: "issue setting language preferences",
         forwardToClient: false,
         logger: this.logger,
         level: "warn",
@@ -149,7 +149,8 @@ export abstract class UserWallet {
         { username },
       )
       if (!result) {
-        throw new DbError(`Username is already set`, {
+        throw new DbError({
+          message: "Username is already set",
           forwardToClient: true,
           logger: this.logger,
           level: "warn",
@@ -158,7 +159,8 @@ export abstract class UserWallet {
       return { username, id: this.user.id }
     } catch (err) {
       this.logger.error({ err })
-      throw new DbError("error updating username", {
+      throw new DbError({
+        message: "error updating username",
         forwardToClient: false,
         logger: this.logger,
         level: "error",
@@ -217,13 +219,13 @@ export abstract class UserWallet {
 
   save2fa = async ({ secret, token }): Promise<boolean> => {
     if (this.user.twoFA.secret) {
-      throw new TwoFAError("2FA is already set", { logger: this.logger })
+      throw new TwoFAError({ message: "2FA is already set", logger: this.logger })
     }
 
     const tokenIsValid = verifyToken(secret, token)
 
     if (!tokenIsValid) {
-      throw new TwoFAError(undefined, { logger: this.logger })
+      throw new TwoFAError({ logger: this.logger })
     }
 
     this.user.twoFA.secret = secret
@@ -232,7 +234,8 @@ export abstract class UserWallet {
       await this.user.save()
       return true
     } catch (err) {
-      throw new DbError("Unable to save 2fa secret", {
+      throw new DbError({
+        message: "Unable to save 2fa secret",
         forwardToClient: true,
         logger: this.logger,
         level: "error",
@@ -243,7 +246,7 @@ export abstract class UserWallet {
 
   delete2fa = async ({ token }): Promise<boolean> => {
     if (!this.user.twoFA.secret || !verifyToken(this.user.twoFA.secret, token)) {
-      throw new TwoFAError(undefined, { logger: this.logger })
+      throw new TwoFAError({ logger: this.logger })
     }
 
     try {
@@ -251,7 +254,8 @@ export abstract class UserWallet {
       await this.user.save()
       return true
     } catch (err) {
-      throw new DbError("Unable to delete 2fa secret", {
+      throw new DbError({
+        message: "Unable to delete 2fa secret",
         forwardToClient: true,
         logger: this.logger,
         level: "error",
