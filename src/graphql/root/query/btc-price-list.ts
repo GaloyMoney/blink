@@ -1,3 +1,4 @@
+import moment from "moment"
 import { GT } from "@graphql/index"
 
 import { MS_PER_DAY } from "@config/app"
@@ -69,7 +70,7 @@ const BtcPriceListQuery = GT.Field({
     if (currentPrice) {
       const currentBtcPriceInCents = currentPrice * 100 * 10 ** 8
       prices.push({
-        timestamp: Date.now(),
+        timestamp: moment().unix(),
         price: {
           formattedAmount: currentBtcPriceInCents.toString(),
           base: Math.round(currentBtcPriceInCents * 10 ** 4),
