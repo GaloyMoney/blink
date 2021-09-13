@@ -7,7 +7,7 @@ import { PriceService } from "@services/price"
 import { CouldNotFindError } from "@domain/errors"
 import { LockService } from "@services/lock"
 import { NotificationsService } from "@services/notifications"
-import { ExtraLedgerFeeCalculator } from "@domain/wallets"
+import { DepositFeeCalculator } from "@domain/wallets"
 
 export const updatePendingInvoices = async ({
   walletId,
@@ -118,7 +118,7 @@ const updatePendingInvoice = async ({
       if (price instanceof Error) return price
 
       const { description, received } = lnInvoiceLookup
-      const fee = ExtraLedgerFeeCalculator(received).lnDepositFee()
+      const fee = DepositFeeCalculator(received).lnDepositFee()
 
       const usd = received * price
       const usdFee = fee * price

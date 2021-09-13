@@ -5,7 +5,7 @@ import { NotificationsService } from "@services/notifications"
 import { LedgerService } from "@services/ledger"
 import { OnChainError, TxDecoder } from "@domain/bitcoin/onchain"
 import { toLiabilitiesAccountId } from "@domain/ledger"
-import { ExtraLedgerFeeCalculator } from "@domain/wallets"
+import { DepositFeeCalculator } from "@domain/wallets"
 import { LockService } from "@services/lock"
 import { ONCHAIN_LOOK_BACK, ONCHAIN_MIN_CONFIRMATIONS, BTC_NETWORK } from "@config/app"
 
@@ -93,9 +93,7 @@ const processTxForWallet = async (
     if (!recorded) {
       for (const { sats, address } of tx.rawTx.outs) {
         if (address !== null && walletAddresses.includes(address)) {
-          const fee = ExtraLedgerFeeCalculator(sats).onChainDepositFee(
-            wallet.depositFeeRatio,
-          )
+          const fee = DepositFeeCalculator(sats).onChainDepositFee(wallet.depositFeeRatio)
           const usd = sats * price
           const usdFee = fee * price
 
