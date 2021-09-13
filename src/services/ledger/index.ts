@@ -164,7 +164,7 @@ export const LedgerService = (): ILedgerService => {
     usd,
     usdFee,
     receivingAddress,
-  }: ReceiveOnChainTxArgs) => {
+  }: ReceiveOnChainTxArgs): Promise<LedgerJournal | LedgerError> => {
     try {
       const metadata = {
         currency: "BTC",
@@ -187,9 +187,12 @@ export const LedgerService = (): ILedgerService => {
         entry.credit(bankOwnerPath, fee, metadata)
       }
 
-      await entry.commit()
-
-      return
+      const savedEntry = await entry.commit()
+      return {
+        journalId: savedEntry._id.toString(),
+        voided: savedEntry.voided,
+        transactionIds: savedEntry._transactions.map((id) => id.toString()),
+      }
     } catch (err) {
       return new UnknownLedgerError(err)
     }
@@ -203,7 +206,7 @@ export const LedgerService = (): ILedgerService => {
     fee,
     usd,
     usdFee,
-  }: ReceiveLnTxArgs): Promise<void | LedgerError> => {
+  }: ReceiveLnTxArgs): Promise<LedgerJournal | LedgerError> => {
     let metadata: ReceiveLnTxMetadata
     try {
       metadata = {
@@ -227,7 +230,12 @@ export const LedgerService = (): ILedgerService => {
         entry.credit(bankOwnerPath, fee, metadata)
       }
 
-      await entry.commit()
+      const savedEntry = await entry.commit()
+      return {
+        journalId: savedEntry._id.toString(),
+        voided: savedEntry.voided,
+        transactionIds: savedEntry._transactions.map((id) => id.toString()),
+      }
     } catch (err) {
       return new UnknownLedgerError(err)
     }
@@ -239,7 +247,7 @@ export const LedgerService = (): ILedgerService => {
     sats,
     usd,
     journalId,
-  }: ReceiveLnFeeReeimbursementArgs): Promise<void | LedgerError> => {
+  }: ReceiveLnFeeReeimbursementArgs): Promise<LedgerJournal | LedgerError> => {
     try {
       const metadata = {
         type: LedgerTransactionType.LnFeeReimbursement,
@@ -256,7 +264,12 @@ export const LedgerService = (): ILedgerService => {
         .credit(liabilitiesAccountId, sats, metadata)
         .debit(lndAccountingPath, sats, metadata)
 
-      await entry.commit()
+      const savedEntry = await entry.commit()
+      return {
+        journalId: savedEntry._id.toString(),
+        voided: savedEntry.voided,
+        transactionIds: savedEntry._transactions.map((id) => id.toString()),
+      }
     } catch (err) {
       return new UnknownLedgerError(err)
     }
@@ -279,7 +292,7 @@ export const LedgerService = (): ILedgerService => {
     recipientWalletName,
     memoPayer,
     isPushPayment,
-  }: SendLnTxArgs): Promise<void | LedgerError> => {
+  }: SendLnTxArgs): Promise<LedgerJournal | LedgerError> => {
     let metadata: SendLnTxMetadata
     try {
       metadata = {
@@ -314,7 +327,12 @@ export const LedgerService = (): ILedgerService => {
         .credit(creditAccountingPath, sats, creditMetadata)
         .debit(liabilitiesAccountId, sats, debitMetadata)
 
-      await entry.commit()
+      const savedEntry = await entry.commit()
+      return {
+        journalId: savedEntry._id.toString(),
+        voided: savedEntry.voided,
+        transactionIds: savedEntry._transactions.map((id) => id.toString()),
+      }
     } catch (err) {
       return new UnknownLedgerError(err)
     }
