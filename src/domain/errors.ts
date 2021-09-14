@@ -18,3 +18,5 @@ export class LimitsExceededError extends ValidationError {}
 export class InsufficientBalanceError extends ValidationError {}
 export class AlreadyPaidError extends ValidationError {}
 export class SelfPaymentError extends ValidationError {}
+
+export class TwoFALimitsExceededError extends LimitsExceededError {}

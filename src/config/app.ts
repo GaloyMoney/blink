@@ -84,6 +84,10 @@ export const getUserLimits = ({
   }
 }
 
+export const getTwoFALimits = (): TwoFALimits => ({
+  threshold: yamlConfig.twoFA.threshold,
+})
+
 const getRateLimits = (config): IRateLimits => {
   /**
    * Returns a subset of the required parameters for the

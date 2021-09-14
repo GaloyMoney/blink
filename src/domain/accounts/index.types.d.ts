@@ -38,14 +38,16 @@ type BusinessMapMarker = {
 }
 
 type LimitsChecker = {
-  check({
-    walletVolume,
+  checkTwoFA({ pendingAmount }: { pendingAmount: Satoshis }): void | LimitsExceededError
+  checkIntraledger({
     pendingAmount,
-    settlementMethod,
   }: {
-    walletVolume: TxVolume
     pendingAmount: Satoshis
-    settlementMethod: SettlementMethod
+  }): void | LimitsExceededError
+  checkWithdrawal({
+    pendingAmount,
+  }: {
+    pendingAmount: Satoshis
   }): void | LimitsExceededError
 }
 interface IAccountsRepository {
