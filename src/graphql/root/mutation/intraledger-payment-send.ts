@@ -1,7 +1,7 @@
 import { checkedToWalletName } from "@domain/wallets"
 import { GT } from "@graphql/index"
 
-import InvoicePaymentSendPayload from "@graphql/types/payload/ln-invoice-payment-send"
+import PaymentSendPayload from "@graphql/types/payload/payment-send"
 import Memo from "@graphql/types/scalar/memo"
 import SatAmount from "@graphql/types/scalar/sat-amount"
 import WalletName from "@graphql/types/scalar/wallet-name"
@@ -16,7 +16,7 @@ const IntraLedgerPaymentSendInput = new GT.Input({
 })
 
 const IntraLedgerPaymentSendMutation = GT.Field({
-  type: GT.NonNull(InvoicePaymentSendPayload),
+  type: GT.NonNull(PaymentSendPayload),
   args: {
     input: { type: GT.NonNull(IntraLedgerPaymentSendInput) },
   },

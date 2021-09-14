@@ -17,7 +17,7 @@ const OnChainAddress = new GT.Scalar({
 
 function validOnChainAddressValue(value) {
   // TODO: verify/improve. Use bc1/tb1 prefixes?
-  if (value.match(/^[A-Fa-f0-9]+$/i)) {
+  if (value.match(/^[A-Z0-9]+$/i)) {
     return value.toLowerCase()
   }
   return new UserInputError("Invalid value for OnChainAddress")
