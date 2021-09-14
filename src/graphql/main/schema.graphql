@@ -245,6 +245,7 @@ type Query {
   businessMapMarkers: [MapMarker]
   mobileVersions: [MobileVersions]
   quizQuestions: [QuizQuestion]
+  btcPriceList(range: PriceGraphRange!): [PricePoint]
 }
 
 type Globals {
@@ -315,6 +316,45 @@ type MobileVersions {
   platform: String!
   currentSupported: Int!
   minSupported: Int!
+}
+
+type PricePoint {
+  """
+  Unix timesamp (number of seconds elapsed since January 1, 1970 00:00:00 UTC)
+  """
+  timestamp: Timestamp!
+  price: Price!
+}
+
+"""
+Price amount expressed in base/offset. To calculate, use: `base / 10^offset`
+"""
+type Price {
+  base: SafeInt!
+  offset: Int!
+  currencyUnit: ExchangeCurrencyUnit!
+  formattedAmount: String!
+}
+
+"""
+The `SafeInt` scalar type represents non-fractional signed whole numeric values. SafeInt can represent values between -(2^53) + 1 and 2^53 - 1
+"""
+scalar SafeInt
+
+enum ExchangeCurrencyUnit {
+  BTCSAT
+  USDCENT
+}
+
+"""
+The range for the X axis in the BTC price graph
+"""
+enum PriceGraphRange {
+  ONE_DAY
+  ONE_WEEK
+  ONE_MONTH
+  ONE_YEAR
+  FIVE_YEARS
 }
 
 type Mutation {
@@ -542,23 +582,6 @@ type Subscription {
 type PricePayload {
   errors: [Error!]!
   price: Price
-}
-
-type Price {
-  base: SafeInt!
-  offset: Int!
-  currencyUnit: ExchangeCurrencyUnit!
-  formattedAmount: String!
-}
-
-"""
-The `SafeInt` scalar type represents non-fractional signed whole numeric values. SafeInt can represent values between -(2^53) + 1 and 2^53 - 1
-"""
-scalar SafeInt
-
-enum ExchangeCurrencyUnit {
-  BTCSAT
-  USDCENT
 }
 
 input PriceInput {
