@@ -320,13 +320,16 @@ type MobileVersions {
 type Mutation {
   userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
   userLogin(input: UserLoginInput!): AuthTokenPayload!
-  deviceNotificationTokenCreate(
-    input: DeviceNotificationTokenCreateInput!
-  ): SuccessPayload!
+  userQuizQuestionsUpdateCompleted(
+    input: UserQuizQuestionsUpdateCompletedInput!
+  ): UserQuizQuestionsUpdateCompletedPayload!
   userUpdateLanguage(input: UserUpdateLanguageInput!): UserUpdateLanguagePayload!
   walletContactUpdateAlias(
     input: WalletContactUpdateAliasInput!
   ): WalletContactUpdateAliasPayload!
+  deviceNotificationTokenCreate(
+    input: DeviceNotificationTokenCreateInput!
+  ): SuccessPayload!
   lnInvoiceFeeProbe(input: LnInvoiceFeeProbeInput!): SatAmountPayload!
   lnNoAmountInvoiceFeeProbe(input: LnNoAmountInvoiceFeeProbeInput!): SatAmountPayload!
   lnInvoiceCreate(input: LnInvoiceCreateInput!): LnInvoicePayload!
@@ -377,8 +380,13 @@ An authentication code valid for a single use
 """
 scalar OneTimeAuthCode
 
-input DeviceNotificationTokenCreateInput {
-  deviceToken: String!
+type UserQuizQuestionsUpdateCompletedPayload {
+  errors: [Error!]!
+  userQuizQuestions: [UserQuizQuestion]
+}
+
+input UserQuizQuestionsUpdateCompletedInput {
+  id: ID!
 }
 
 type UserUpdateLanguagePayload {
@@ -407,6 +415,10 @@ type WalletContactUpdateAliasPayload {
 input WalletContactUpdateAliasInput {
   walletName: WalletName!
   alias: ContactAlias!
+}
+
+input DeviceNotificationTokenCreateInput {
+  deviceToken: String!
 }
 
 type SatAmountPayload {
