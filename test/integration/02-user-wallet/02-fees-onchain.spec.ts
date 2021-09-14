@@ -1,6 +1,6 @@
 import * as Wallets from "@app/wallets"
 import { getOnChainWalletConfig } from "@config/app"
-import { InvalidOnChainAmount } from "@domain/errors"
+import { LessThanDustThresholdError } from "@domain/errors"
 import { bitcoindClient, bitcoindOutside, getUserWallet } from "test/helpers"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
@@ -62,7 +62,7 @@ describe("UserWallet - getOnchainFee", () => {
       address,
       targetConfirmations: defaultTarget,
     })
-    expect(fee).toBeInstanceOf(InvalidOnChainAmount)
+    expect(fee).toBeInstanceOf(LessThanDustThresholdError)
     expect(fee).toHaveProperty(
       "message",
       `Use lightning to send amounts less than ${dustThreshold}`,

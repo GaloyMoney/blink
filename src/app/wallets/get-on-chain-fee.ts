@@ -3,7 +3,7 @@ import { TxDecoder } from "@domain/bitcoin/onchain"
 import { WalletsRepository } from "@services/mongoose"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { BTC_NETWORK, getOnChainWalletConfig } from "@config/app"
-import { CouldNotFindError, InvalidOnChainAmount } from "@domain/errors"
+import { CouldNotFindError, LessThanDustThresholdError } from "@domain/errors"
 
 const { dustThreshold } = getOnChainWalletConfig()
 
@@ -17,7 +17,7 @@ export const getOnChainFee = async ({
   const payeeWallet = await walletsRepo.findByAddress(address)
   if (payeeWallet instanceof CouldNotFindError) {
     if (amount < dustThreshold) {
-      return new InvalidOnChainAmount(
+      return new LessThanDustThresholdError(
         `Use lightning to send amounts less than ${dustThreshold}`,
       )
     }
