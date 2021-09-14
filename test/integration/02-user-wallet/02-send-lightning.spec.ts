@@ -124,7 +124,14 @@ describe("UserWallet - Lightning Pay", () => {
     if (lnInvoice instanceof Error) return lnInvoice
     const { paymentRequest: request } = lnInvoice
 
-    await userWallet1.pay({ invoice: request, memo: memoPayer })
+    const paymentResult = await lnInvoicePaymentSend({
+      walletId: userWallet1.user.id,
+      userId: userWallet1.user.id,
+      invoice: request,
+      memo: memoPayer,
+      logger: userWallet1.logger,
+    })
+    if (paymentResult instanceof Error) throw paymentResult
 
     const matchTx = (tx) =>
       tx.settlementVia === "intraledger" && tx.paymentHash === getHash(request)
