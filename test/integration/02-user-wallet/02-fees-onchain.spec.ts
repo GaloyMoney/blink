@@ -7,6 +7,7 @@ jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price")
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
 const defaultAmount = 300000 as Satoshis
+const defaultTarget = 3 as TargetConfirmations
 const { dustThreshold } = getOnChainWalletConfig()
 let userWallet0: Wallet, userWallet1: Wallet
 
@@ -30,7 +31,12 @@ afterAll(async () => {
 describe("UserWallet - getOnchainFee", () => {
   it("returns a fee greater than zero for an external address", async () => {
     const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
-    const fee = await Wallets.getOnChainFee(userWallet0, defaultAmount, address)
+    const fee = await Wallets.getOnChainFee({
+      wallet: userWallet0,
+      amount: defaultAmount,
+      address,
+      targetConfirmations: defaultTarget,
+    })
     expect(fee).toBeGreaterThan(0)
     expect(fee).toBeGreaterThan(userWallet0.withdrawFee)
   })
@@ -38,26 +44,28 @@ describe("UserWallet - getOnchainFee", () => {
   it("returns zero for an on us address", async () => {
     const address = await Wallets.createOnChainAddress(userWallet1.id)
     if (address instanceof Error) throw address
-    const fee = await Wallets.getOnChainFee(userWallet0, defaultAmount, address)
+    const fee = await Wallets.getOnChainFee({
+      wallet: userWallet0,
+      amount: defaultAmount,
+      address,
+      targetConfirmations: defaultTarget,
+    })
     expect(fee).toBe(0)
   })
 
   it("returns error for dust amount", async () => {
     const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
     const amount = (dustThreshold - 1) as Satoshis
-    const fee = await Wallets.getOnChainFee(userWallet0, amount, address)
+    const fee = await Wallets.getOnChainFee({
+      wallet: userWallet0,
+      amount,
+      address,
+      targetConfirmations: defaultTarget,
+    })
     expect(fee).toBeInstanceOf(InvalidOnChainAmount)
     expect(fee).toHaveProperty(
       "message",
       `Use lightning to send amounts less than ${dustThreshold}`,
     )
-  })
-
-  it("returns error for zero amount", async () => {
-    const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
-    const amount = 0 as Satoshis
-    const fee = await Wallets.getOnChainFee(userWallet0, amount, address)
-    expect(fee).toBeInstanceOf(InvalidOnChainAmount)
-    expect(fee).toHaveProperty("message", "Invalid amount")
   })
 })

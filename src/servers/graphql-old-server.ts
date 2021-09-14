@@ -297,7 +297,12 @@ const resolvers = {
         success: wallet.onChainPay({ address, amount: 0, memo, sendAll: true }),
       }),
       getFee: async ({ address, amount }) => {
-        const fee = await Wallets.getOnChainFeeByWalletId(wallet.user.id, amount, address)
+        const fee = await Wallets.getOnChainFeeByWalletId({
+          walletId: wallet.user.id,
+          amount,
+          address,
+          targetConfirmations: 3,
+        })
         if (fee instanceof Error) throw fee
         return fee
       },

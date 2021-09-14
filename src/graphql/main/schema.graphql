@@ -250,6 +250,7 @@ type Query {
     walletName: WalletName
     address: OnChainAddress!
     amount: SatAmount!
+    targetConfirmations: TargetConfirmations = 3
   ): OnChainTxFee!
 }
 
@@ -387,6 +388,11 @@ enum PriceGraphRange {
 type OnChainTxFee {
   amount: SatAmount!
 }
+
+"""
+(Positive) Number of blocks in which the transaction is expected to be confirmed
+"""
+scalar TargetConfirmations
 
 type Mutation {
   userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!

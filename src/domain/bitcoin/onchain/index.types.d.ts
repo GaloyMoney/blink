@@ -54,5 +54,6 @@ interface IOnChainService {
   getOnChainFeeEstimate(
     amount: Satoshis,
     address: OnChainAddress,
+    targetConfirmations: TargetConfirmations,
   ): Promise<Satoshis | OnChainServiceError>
 }

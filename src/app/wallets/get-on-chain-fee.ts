@@ -1,3 +1,4 @@
+import { checkedToSats, checkedToTargetConfs } from "@domain/bitcoin"
 import { TxDecoder } from "@domain/bitcoin/onchain"
 import { WalletsRepository } from "@services/mongoose"
 import { OnChainService } from "@services/lnd/onchain-service"
@@ -6,13 +7,12 @@ import { CouldNotFindError, InvalidOnChainAmount } from "@domain/errors"
 
 const { dustThreshold } = getOnChainWalletConfig()
 
-export const getOnChainFee = async (
-  wallet: Wallet,
-  amount: Satoshis,
-  address: OnChainAddress,
-): Promise<Satoshis | ApplicationError> => {
-  if (amount <= 0) return new InvalidOnChainAmount("Invalid amount")
-
+export const getOnChainFee = async ({
+  wallet,
+  amount,
+  address,
+  targetConfirmations,
+}: GetOnChainFeeArgs): Promise<Satoshis | ApplicationError> => {
   const walletsRepo = WalletsRepository()
   const payeeWallet = await walletsRepo.findByAddress(address)
   if (payeeWallet instanceof CouldNotFindError) {
@@ -25,7 +25,11 @@ export const getOnChainFee = async (
     const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
     if (onChainService instanceof Error) return onChainService
 
-    const onChainFee = await onChainService.getOnChainFeeEstimate(amount, address)
+    const onChainFee = await onChainService.getOnChainFeeEstimate(
+      amount,
+      address,
+      targetConfirmations,
+    )
     if (onChainFee instanceof Error) return onChainFee
 
     return (onChainFee + wallet.withdrawFee) as Satoshis
@@ -36,28 +40,50 @@ export const getOnChainFee = async (
   return 0 as Satoshis
 }
 
-export const getOnChainFeeByWalletId = async (
-  walletId: WalletId,
-  amount: Satoshis,
-  address: OnChainAddress,
-): Promise<Satoshis | ApplicationError> => {
-  const wallets = WalletsRepository()
+export const getOnChainFeeByWalletId = async ({
+  walletId,
+  amount,
+  address,
+  targetConfirmations,
+}: GetOnChainFeeByWalletIdArgs): Promise<Satoshis | ApplicationError> => {
+  const sats = checkedToSats(amount)
+  if (sats instanceof Error) return sats
 
+  const targetConfs = checkedToTargetConfs(targetConfirmations)
+  if (targetConfs instanceof Error) return targetConfs
+
+  const wallets = WalletsRepository()
   const wallet = await wallets.findById(walletId)
   if (wallet instanceof Error) return wallet
 
-  return getOnChainFee(wallet, amount, address)
+  return getOnChainFee({
+    wallet,
+    amount: sats,
+    address,
+    targetConfirmations: targetConfs,
+  })
 }
 
-export const getOnChainFeeByWalletName = async (
-  walletName: WalletName,
-  amount: Satoshis,
-  address: OnChainAddress,
-): Promise<Satoshis | ApplicationError> => {
-  const wallets = WalletsRepository()
+export const getOnChainFeeByWalletName = async ({
+  walletName,
+  amount,
+  address,
+  targetConfirmations,
+}: GetOnChainFeeByWalletNameArgs): Promise<Satoshis | ApplicationError> => {
+  const sats = checkedToSats(amount)
+  if (sats instanceof Error) return sats
 
+  const targetConfs = checkedToTargetConfs(targetConfirmations)
+  if (targetConfs instanceof Error) return targetConfs
+
+  const wallets = WalletsRepository()
   const wallet = await wallets.findByWalletName(walletName)
   if (wallet instanceof Error) return wallet
 
-  return getOnChainFee(wallet, amount, address)
+  return getOnChainFee({
+    wallet,
+    amount: sats,
+    address,
+    targetConfirmations: targetConfs,
+  })
 }

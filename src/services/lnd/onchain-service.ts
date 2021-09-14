@@ -65,12 +65,14 @@ export const OnChainService = (
   const getOnChainFeeEstimate = async (
     amount: Satoshis,
     address: OnChainAddress,
+    targetConfirmations: TargetConfirmations,
   ): Promise<Satoshis | OnChainServiceError> => {
     const sendTo = [{ address, tokens: amount }]
     try {
       const { fee } = await getChainFeeEstimate({
         lnd,
         send_to: sendTo,
+        target_confirmations: targetConfirmations,
       })
 
       return fee as Satoshis

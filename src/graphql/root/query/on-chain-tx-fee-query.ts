@@ -4,6 +4,7 @@ import * as Accounts from "@app/accounts"
 import WalletName from "@graphql/types/scalar/wallet-name"
 import OnChainAddress from "@graphql/types/scalar/on-chain-address"
 import SatAmount from "@graphql/types/scalar/sat-amount"
+import TargetConfirmations from "@graphql/types/scalar/target-confirmations"
 import OnChainTxFee from "@graphql/types/object/onchain-tx-fee"
 import { ApolloError, ForbiddenError } from "apollo-server-errors"
 
@@ -13,11 +14,12 @@ const OnChainTxFeeQuery = GT.Field({
     walletName: { type: WalletName },
     address: { type: GT.NonNull(OnChainAddress) },
     amount: { type: GT.NonNull(SatAmount) },
+    targetConfirmations: { type: TargetConfirmations, defaultValue: 3 },
   },
   resolve: async (_, args, { domainUser }) => {
-    const { walletName, address, amount } = args
+    const { walletName, address, amount, targetConfirmations } = args
 
-    for (const input of [walletName, address, amount]) {
+    for (const input of [walletName, address, amount, targetConfirmations]) {
       if (input instanceof Error) throw input
     }
 
@@ -28,7 +30,12 @@ const OnChainTxFeeQuery = GT.Field({
 
       if (!hasPermissions) throw new ForbiddenError("Invalid walletName")
 
-      fee = await Wallets.getOnChainFeeByWalletName(walletName, amount, address)
+      fee = await Wallets.getOnChainFeeByWalletName({
+        walletName,
+        amount,
+        address,
+        targetConfirmations,
+      })
     }
 
     if (!fee) {
@@ -38,7 +45,12 @@ const OnChainTxFeeQuery = GT.Field({
       if (!account.walletIds.length)
         throw new Error("Account does not have a default wallet")
 
-      fee = await Wallets.getOnChainFeeByWalletId(account.walletIds[0], amount, address)
+      fee = await Wallets.getOnChainFeeByWalletId({
+        walletId: account.walletIds[0],
+        amount,
+        address,
+        targetConfirmations,
+      })
     }
 
     if (fee instanceof Error) throw fee
