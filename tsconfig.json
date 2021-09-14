@@ -6,6 +6,7 @@
     "strict": true,
     "target": "es2020",
     "noImplicitAny": false,
+    "useUnknownInCatchVariables": false,
     "esModuleInterop": true,
     "baseUrl": "./",
     "moduleResolution": "node",
