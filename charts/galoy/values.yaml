@@ -20,7 +20,7 @@ deployment:
   args: ["lib/servers/graphql-old-server.js"]
   healthz: true
   targetPort: 4000
-  replicaCount: 6
+  replicaCount: 3
   podAnnotations: {}
 - name: graphql-admin
   args: ["lib/servers/graphql-admin-server.js"]
