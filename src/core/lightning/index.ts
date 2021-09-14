@@ -8,7 +8,7 @@ import { TIMEOUT_PAYMENT } from "@services/lnd/auth"
 import { WalletInvoicesRepository } from "@services/mongoose"
 import { getActiveLnd, getLndFromPubkey, isMyNode, validate } from "@services/lnd/utils"
 import { ledger } from "@services/mongodb"
-import { redis } from "@services/redis"
+import { pubsub, redis } from "@services/redis"
 import { User } from "@services/mongoose/schema"
 
 import {
@@ -26,6 +26,7 @@ import { lockExtendOrThrow, redlock } from "../lock"
 import { transactionNotification } from "@services/notifications/payment"
 import { UserWallet } from "../user-wallet"
 import { addContact, isInvoiceAlreadyPaidError, timeout } from "../utils"
+import { lnPaymentStatusEvent } from "@config/app"
 
 export type ITxType =
   | "invoice"
@@ -312,6 +313,9 @@ export const LightningMixin = (superclass) =>
             logger: this.logger,
             type: "paid-invoice",
           })
+
+          const eventName = lnPaymentStatusEvent(id)
+          pubsub.publish(eventName, { status: "PAID" })
 
           if (!isPushPayment) {
             // trying to delete the invoice first from lnd
