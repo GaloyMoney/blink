@@ -391,7 +391,7 @@ type Mutation {
   onChainAddressCurrent(input: OnChainAddressCurrentInput!): OnChainAddressPayload!
   onChainPaymentSend(input: OnChainPaymentSendInput!): PaymentSendPayload!
   onChainPaymentSendAll(input: OnChainPaymentSendAllInput!): PaymentSendPayload!
-  captchaCreateChallenge: CaptchaCreteChallengePayload!
+  captchaCreateChallenge: CaptchaCreateChallengePayload!
   captchaRequestAuthCode(input: CaptchaRequestAuthCodeInput!): SuccessPayload!
 }
 
@@ -607,7 +607,7 @@ input OnChainPaymentSendAllInput {
   memo: Memo
 }
 
-type CaptchaCreteChallengePayload {
+type CaptchaCreateChallengePayload {
   errors: [Error!]!
   result: CaptchaCreateChallengeResult
 }

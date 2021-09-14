@@ -19,8 +19,8 @@ const CaptchaCreateChallengeResult = new GT.Object({
   }),
 })
 
-const CaptchaCreteChallengePayload = new GT.Object({
-  name: "CaptchaCreteChallengePayload",
+const CaptchaCreateChallengePayload = new GT.Object({
+  name: "CaptchaCreateChallengePayload",
   fields: () => ({
     errors: {
       type: GT.NonNullList(IError),
@@ -29,4 +29,4 @@ const CaptchaCreteChallengePayload = new GT.Object({
   }),
 })
 
-export default CaptchaCreteChallengePayload
+export default CaptchaCreateChallengePayload
