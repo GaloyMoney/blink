@@ -25,6 +25,11 @@ const mainUserFields = () => ({
     type: GT.NonNullList(UserQuizQuestion),
   },
 
+  twoFAEnabled: {
+    type: GT.Boolean,
+    resolve: (source) => source.twoFA.secret !== null,
+  },
+
   createdAt: {
     type: GT.NonNull(Timestamp),
     resolve: (source) => source.createdAt ?? source.created_at, // TODO: Get rid of this resolver
