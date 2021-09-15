@@ -1,9 +1,14 @@
-import { checkedToSats, checkedToTargetConfs } from "@domain/bitcoin"
 import { TxDecoder } from "@domain/bitcoin/onchain"
 import { WalletsRepository } from "@services/mongoose"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { BTC_NETWORK, getOnChainWalletConfig } from "@config/app"
-import { CouldNotFindError, LessThanDustThresholdError } from "@domain/errors"
+import { checkedToSats, checkedToTargetConfs } from "@domain/bitcoin"
+import {
+  CouldNotFindError,
+  LessThanDustThresholdError,
+  InsufficientBalanceError,
+} from "@domain/errors"
+import { getBalanceForWalletId } from "./get-balance-for-wallet"
 
 const { dustThreshold } = getOnChainWalletConfig()
 
@@ -22,6 +27,14 @@ export const getOnChainFee = async ({
       )
     }
 
+    const balance = await getBalanceForWalletId(wallet.id)
+    if (balance instanceof Error) return balance
+
+    // avoids lnd balance sniffing attack
+    if (balance < amount) {
+      return new InsufficientBalanceError("Balance is too low")
+    }
+
     const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
     if (onChainService instanceof Error) return onChainService
 
@@ -37,6 +50,7 @@ export const getOnChainFee = async ({
 
   if (payeeWallet instanceof Error) return payeeWallet
 
+  // intraledger tx has zero fee
   return 0 as Satoshis
 }
 

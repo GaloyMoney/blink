@@ -11,6 +11,7 @@ import { sleep } from "@core/utils"
 import { DbMetadata, InvoiceUser } from "@services/mongoose/schema"
 import {
   cancelHodlInvoice,
+  clearAccountLocks,
   createInvoice,
   getForwards,
   lnd1,
@@ -20,6 +21,10 @@ import {
   subscribeToInvoice,
   waitFor,
 } from "test/helpers"
+
+beforeAll(async () => {
+  await clearAccountLocks()
+})
 
 afterEach(() => {
   jest.restoreAllMocks()

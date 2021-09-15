@@ -1,12 +1,12 @@
 import * as Wallets from "@app/wallets"
 import { getOnChainWalletConfig } from "@config/app"
-import { LessThanDustThresholdError } from "@domain/errors"
+import { InsufficientBalanceError, LessThanDustThresholdError } from "@domain/errors"
 import { bitcoindClient, bitcoindOutside, getUserWallet } from "test/helpers"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
-const defaultAmount = 300000 as Satoshis
+const defaultAmount = 6000 as Satoshis
 const defaultTarget = 3 as TargetConfirmations
 const { dustThreshold } = getOnChainWalletConfig()
 let userWallet0: Wallet, userWallet1: Wallet
@@ -67,5 +67,18 @@ describe("UserWallet - getOnchainFee", () => {
       "message",
       `Use lightning to send amounts less than ${dustThreshold}`,
     )
+  })
+
+  it("returns error for balance too low", async () => {
+    const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
+    const amount = 1000000000 as Satoshis
+    const fee = await Wallets.getOnChainFee({
+      wallet: userWallet0,
+      amount,
+      address,
+      targetConfirmations: defaultTarget,
+    })
+    expect(fee).toBeInstanceOf(InsufficientBalanceError)
+    expect(fee).toHaveProperty("message", "Balance is too low")
   })
 })
