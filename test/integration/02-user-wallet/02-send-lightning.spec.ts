@@ -1,13 +1,6 @@
 import { createHash, randomBytes } from "crypto"
 import { getUserLimits } from "@config/app"
-import {
-  InsufficientBalanceError,
-  LightningPaymentError,
-  SelfPaymentError,
-  TransactionRestrictedError,
-  TwoFAError,
-  ValidationInternalError,
-} from "@core/error"
+import { SelfPaymentError, TwoFAError } from "@core/error"
 import { FEECAP } from "@services/lnd/auth"
 import { getActiveLnd, nodesPubKey, getInvoiceAttempt } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
@@ -36,10 +29,13 @@ import { toLiabilitiesAccountId } from "@domain/ledger"
 import {
   SelfPaymentError as DomainSelfPaymentError,
   InsufficientBalanceError as DomainInsufficientBalanceError,
+  ValidationError,
+  LimitsExceededError,
 } from "@domain/errors"
 import { LedgerService } from "@services/ledger"
 import { getBTCBalance } from "test/helpers/wallet"
 import { lnInvoicePaymentSend } from "@app/lightning"
+import { LightningServiceError } from "@domain/bitcoin/lightning"
 
 const date = Date.now() + 1000 * 60 * 60 * 24 * 8
 // required to avoid oldEnoughForWithdrawal validation
@@ -362,35 +358,48 @@ describe("UserWallet - Lightning Pay", () => {
 
   it("fails to pay when channel capacity exceeded", async () => {
     const { request } = await createInvoice({ lnd: lndOutside1, tokens: 1500000 })
-    await expect(userWallet0.pay({ invoice: request })).rejects.toThrow(
-      LightningPaymentError,
-    )
+    const paymentResult = await lnInvoicePaymentSend({
+      walletId: userWallet0.user.id,
+      userId: userWallet0.user.id,
+      invoice: request as EncodedPaymentRequest,
+      logger: userWallet0.logger,
+    })
+    expect(paymentResult).toBeInstanceOf(LightningServiceError)
   })
 
   it("fails to pay zero amount invoice without separate amount", async () => {
     const { request } = await createInvoice({ lnd: lndOutside1 })
     // TODO: use custom ValidationError not apollo error
-    await expect(userWallet1.pay({ invoice: request })).rejects.toThrow(
-      ValidationInternalError,
-    )
+    const paymentResult = await lnInvoicePaymentSend({
+      walletId: userWallet1.user.id,
+      userId: userWallet1.user.id,
+      invoice: request as EncodedPaymentRequest,
+      logger: userWallet1.logger,
+    })
+    expect(paymentResult).toBeInstanceOf(ValidationError)
   })
 
-  it("fails to pay regular invoice with separate amount", async () => {
-    const { request } = await createInvoice({ lnd: lndOutside1, tokens: amountInvoice })
-    // TODO: use custom ValidationError not apollo error
-    await expect(
-      userWallet1.pay({ invoice: request, amount: amountInvoice }),
-    ).rejects.toThrow(ValidationInternalError)
-  })
+  // TODO: Remove when use-cases are separated
+  // it("fails to pay regular invoice with separate amount", async () => {
+  //   const { request } = await createInvoice({ lnd: lndOutside1, tokens: amountInvoice })
+  //   // TODO: use custom ValidationError not apollo error
+  //   await expect(
+  //     userWallet1.pay({ invoice: request, amount: amountInvoice }),
+  //   ).rejects.toThrow(ValidationInternalError)
+  // })
 
   it("fails to pay when withdrawalLimit exceeded", async () => {
     const { request } = await createInvoice({
       lnd: lndOutside1,
       tokens: userLimits.withdrawalLimit + 1,
     })
-    await expect(userWallet1.pay({ invoice: request })).rejects.toThrow(
-      TransactionRestrictedError,
-    )
+    const paymentResult = await lnInvoicePaymentSend({
+      walletId: userWallet1.user.id,
+      userId: userWallet1.user.id,
+      invoice: request as EncodedPaymentRequest,
+      logger: userWallet1.logger,
+    })
+    expect(paymentResult).toBeInstanceOf(LimitsExceededError)
   })
 
   it("fails to pay when amount exceeds onUs limit", async () => {
@@ -401,9 +410,13 @@ describe("UserWallet - Lightning Pay", () => {
     if (lnInvoice instanceof Error) return lnInvoice
     const { paymentRequest: request } = lnInvoice
 
-    await expect(userWallet1.pay({ invoice: request })).rejects.toThrow(
-      TransactionRestrictedError,
-    )
+    const paymentResult = await lnInvoicePaymentSend({
+      walletId: userWallet1.user.id,
+      userId: userWallet1.user.id,
+      invoice: request as EncodedPaymentRequest,
+      logger: userWallet1.logger,
+    })
+    expect(paymentResult).toBeInstanceOf(LimitsExceededError)
   })
 
   const createInvoiceHash = () => {
