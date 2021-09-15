@@ -33,6 +33,10 @@ import * as Wallets from "@app/wallets"
 import { addInvoice } from "@app/wallets/add-invoice-for-wallet"
 import { toSats } from "@domain/bitcoin"
 import { toLiabilitiesAccountId } from "@domain/ledger"
+import {
+  SelfPaymentError as DomainSelfPaymentError,
+  InsufficientBalanceError as DomainInsufficientBalanceError,
+} from "@domain/errors"
 import { LedgerService } from "@services/ledger"
 import { getBTCBalance } from "test/helpers/wallet"
 import { lnInvoicePaymentSend } from "@app/lightning"
@@ -208,8 +212,15 @@ describe("UserWallet - Lightning Pay", () => {
 
   it("pay zero amount invoice", async () => {
     const { request } = await createInvoice({ lnd: lndOutside1 })
-    const result = await userWallet1.pay({ invoice: request, amount: amountInvoice })
-    expect(result).toBe("success")
+    const paymentResult = await lnInvoicePaymentSend({
+      walletId: userWallet1.user.id,
+      userId: userWallet1.user.id,
+      invoice: request as EncodedPaymentRequest,
+      amount: toSats(amountInvoice),
+      logger: userWallet1.logger,
+    })
+    if (paymentResult instanceof Error) throw paymentResult
+    expect(paymentResult.value).toBe("success")
 
     const finalBalance = await getBTCBalance(userWallet1.user.id)
     expect(finalBalance).toBe(initBalance1 - amountInvoice)
@@ -306,7 +317,13 @@ describe("UserWallet - Lightning Pay", () => {
     if (lnInvoice instanceof Error) return lnInvoice
     const { paymentRequest: invoice } = lnInvoice
 
-    await expect(userWallet1.pay({ invoice })).rejects.toThrow(SelfPaymentError)
+    const paymentResult = await lnInvoicePaymentSend({
+      walletId: userWallet1.user.id,
+      userId: userWallet1.user.id,
+      invoice,
+      logger: userWallet1.logger,
+    })
+    await expect(paymentResult).toBeInstanceOf(DomainSelfPaymentError)
   })
 
   it("fails if sends to self an on us push payment", async () => {
@@ -323,7 +340,13 @@ describe("UserWallet - Lightning Pay", () => {
       lnd: lndOutside1,
       tokens: initBalance1 + 1000000,
     })
-    await expect(userWallet1.pay({ invoice })).rejects.toThrow(InsufficientBalanceError)
+    const paymentResult = await lnInvoicePaymentSend({
+      walletId: userWallet1.user.id,
+      userId: userWallet1.user.id,
+      invoice: invoice as EncodedPaymentRequest,
+      logger: userWallet1.logger,
+    })
+    await expect(paymentResult).toBeInstanceOf(DomainInsufficientBalanceError)
   })
 
   it("fails if the user try to send a negative amount", async () => {
