@@ -1,3 +1,4 @@
+import { lnInvoicePaymentSend } from "@app/lightning"
 import { GT } from "@graphql/index"
 import PaymentSendPayload from "@graphql/types/payload/payment-send"
 import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
@@ -16,7 +17,7 @@ const LnInvoicePaymentSendMutation = GT.Field({
   args: {
     input: { type: GT.NonNull(LnInvoicePaymentInput) },
   },
-  resolve: async (_, args, { wallet }) => {
+  resolve: async (_, args, { user, wallet, logger }) => {
     const { paymentRequest, memo } = args.input
 
     for (const input of [memo, paymentRequest]) {
@@ -26,13 +27,19 @@ const LnInvoicePaymentSendMutation = GT.Field({
     }
 
     try {
-      const status = await wallet.pay({ invoice: paymentRequest, memo })
+      const status = await lnInvoicePaymentSend({
+        paymentRequest,
+        memo,
+        walletId: wallet.user.id as WalletId,
+        userId: user.id as UserId,
+        logger,
+      })
       if (status instanceof Error) {
         return { status: "failed", errors: [{ message: status.message }] }
       }
       return {
         errors: [],
-        status,
+        status: status.value,
       }
     } catch (err) {
       return {
