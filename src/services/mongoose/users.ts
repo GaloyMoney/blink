@@ -36,6 +36,7 @@ export const UsersRepository = (): IUsersRepository => {
     deviceTokens,
     lastConnection,
     lastIPs,
+    twoFA,
   }: User): Promise<User | RepositoryError> => {
     try {
       const data = {
@@ -47,6 +48,7 @@ export const UsersRepository = (): IUsersRepository => {
         })),
         deviceToken: deviceTokens,
         lastConnection,
+        twoFA,
       }
       const doc = await User.updateOne({ _id: id }, { $set: data })
       if (doc.nModified !== 1) {
@@ -62,6 +64,7 @@ export const UsersRepository = (): IUsersRepository => {
         deviceTokens,
         lastConnection,
         lastIPs,
+        twoFA,
       }
     } catch (err) {
       return new UnknownRepositoryError(err)
@@ -79,6 +82,7 @@ const userFromRaw = (result: UserType): User => {
     id: result.id as UserId,
     phone: result.phone as PhoneNumber,
     language: (result.language || UserLanguage.EN_US) as UserLanguage,
+    twoFA: result.twoFA as TwoFA,
     contacts: result.contacts.reduce(
       (res: WalletContact[], contact: ContactObjectForUser): WalletContact[] => {
         if (contact.id) {
