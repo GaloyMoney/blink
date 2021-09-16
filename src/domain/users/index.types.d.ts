@@ -7,9 +7,6 @@ type UserLanguage =
 declare const deviceTokenSymbol: unique symbol
 type DeviceToken = string & { [deviceTokenSymbol]: never }
 
-declare const twoFASecretSymbol: unique symbol
-type TwoFASecret = string & { [twoFASecretSymbol]: never }
-
 declare const contactAliasSymbol: unique symbol
 type ContactAlias = string & { [contactAliasSymbol]: never }
 
