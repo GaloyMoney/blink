@@ -7,6 +7,7 @@ import {
 } from "@domain/errors"
 import { User } from "@services/mongoose/schema"
 import { onboardingEarn } from "@config/app"
+import { addContact } from "@core/utils"
 
 export const caseInsensitiveRegex = (input: string) => {
   return new RegExp(`^${input}$`, "i")
@@ -54,10 +55,24 @@ export const UsersRepository = (): IUsersRepository => {
       return new UnknownRepositoryError(err)
     }
   }
+  const addContactByWalletName = async ({
+    userId,
+    contactWalletName,
+  }: {
+    userId: UserId
+    contactWalletName: WalletName
+  }): Promise<void | RepositoryError> => {
+    try {
+      await addContact({ uid: userId, username: contactWalletName })
+    } catch (err) {
+      return new UnknownRepositoryError(err)
+    }
+  }
 
   return {
     findById,
     update,
+    addContactByWalletName,
   }
 }
 
