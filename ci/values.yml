@@ -4,7 +4,9 @@ git_uri: git@github.com:GaloyMoney/galoy.git
 git_branch: main
 git_charts_uri: git@github.com:GaloyMoney/charts.git
 git_charts_branch: dev
-github_private_key: ((github-ssh-key.private_key))
+git_charts_bot_branch: bot-bump-galoy-image
+github_private_key: ((github.private_key))
+github_token: ((github.api_token))
 docker_registry: us.gcr.io/galoy-org
 docker_registry_user: ((docker-creds.username))
 docker_registry_password: ((docker-creds.password))
