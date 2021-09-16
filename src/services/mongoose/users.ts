@@ -33,6 +33,7 @@ export const UsersRepository = (): IUsersRepository => {
     contacts,
     deviceTokens,
     lastConnection,
+    twoFA,
   }: User): Promise<User | RepositoryError> => {
     try {
       const data = {
@@ -44,6 +45,7 @@ export const UsersRepository = (): IUsersRepository => {
         })),
         deviceToken: deviceTokens,
         lastConnection,
+        twoFA,
       }
       const result = await User.findOneAndUpdate({ _id: id }, data)
       if (!result) {
@@ -66,7 +68,7 @@ const userFromRaw = (result: UserType): User => {
     id: result.id as UserId,
     phone: result.phone as PhoneNumber,
     language: (result.language || UserLanguage.EN_US) as UserLanguage,
-    twoFA: result.twoFA,
+    twoFA: result.twoFA as TwoFA,
     contacts: result.contacts.reduce(
       (res: WalletContact[], contact: ContactObjectForUser): WalletContact[] => {
         if (contact.id) {
