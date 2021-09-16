@@ -1,7 +1,7 @@
 import {
   getGaloyInstanceName,
   MS_PER_DAY,
-  ONCHAIN_LOOK_BACK_CHANNEL_UPDATE
+  ONCHAIN_LOOK_BACK_CHANNEL_UPDATE,
 } from "@config/app"
 import { DbError, LndOfflineError, ValidationInternalError } from "@core/error"
 import { LoggedError } from "@core/utils"
@@ -14,15 +14,19 @@ import assert from "assert"
 import { default as axios } from "axios"
 import { parsePaymentRequest } from "invoices"
 import {
-  deleteFailedPayAttempts, getChainBalance,
+  deleteFailedPayAttempts,
+  getChainBalance,
   getChainTransactions,
   getChannelBalance,
   getChannels,
   getClosedChannels,
   getForwards,
-  getHeight, getInvoice, getPendingChainBalance, getWalletInfo,
+  getHeight,
+  getInvoice,
+  getPendingChainBalance,
+  getWalletInfo,
   SubscribeToChannelsChannelClosedEvent,
-  SubscribeToChannelsChannelOpenedEvent
+  SubscribeToChannelsChannelOpenedEvent,
 } from "lightning"
 import _ from "lodash"
 import { Logger } from "pino"
@@ -48,11 +52,10 @@ export const deleteExpiredInvoiceUser = async () => {
 
 export const deleteFailedPaymentsAttemptAllLnds = async () => {
   const lnds = offchainLnds
-  for (const { lnd, socket } of lnds)
-  
-  try {
-    baseLogger.info({socket}, "running deleteFailedPayments")
-      await deleteFailedPayAttempts({lnd})
+  for (const { lnd, socket } of lnds) {
+    try {
+      baseLogger.info({ socket }, "running deleteFailedPaymentsAttempt")
+      await deleteFailedPayAttempts({ lnd })
     } catch (err) {
       baseLogger.warn({ err }, "error deleting failed payment")
     }

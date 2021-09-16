@@ -1,18 +1,17 @@
 import { toSats } from "@domain/bitcoin"
 import {
-  CouldNotDecodeReturnedPaymentRequest,
   decodeInvoice,
-  InvoiceNotFoundError,
-  LightningServiceError,
-  PaymentStatus,
+  CouldNotDecodeReturnedPaymentRequest,
   UnknownLightningServiceError,
+  LightningServiceError,
+  InvoiceNotFoundError,
+  PaymentStatus,
 } from "@domain/bitcoin/lightning"
 import {
-  cancelHodlInvoice,
   createInvoice,
-  deleteFailedPayAttempts,
   getInvoice,
   getPayment,
+  cancelHodlInvoice,
   GetPaymentResult,
 } from "lightning"
 import { getActiveLnd, getLndFromPubkey, getLnds } from "./utils"
@@ -138,6 +137,5 @@ export const LndService = (): ILightningService | LightningServiceError => {
     lookupInvoice,
     lookupPayment,
     cancelInvoice,
-    deleteFailedPayAttempts,
   }
 }
