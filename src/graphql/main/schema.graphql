@@ -33,12 +33,12 @@ enum PaymentErrorCode {
 
 type ConsumerAccount implements Account {
   wallets: [Wallet!]!
-  csvTransactions(walletIds: [ID!]!): String!
+  csvTransactions(walletNames: [WalletName!]!): String!
 }
 
 interface Account {
   wallets: [Wallet!]!
-  csvTransactions(walletIds: [ID!]!): String!
+  csvTransactions(walletNames: [WalletName!]!): String!
 }
 
 interface Wallet {
@@ -163,6 +163,11 @@ Date field, serialized as the number of milliseconds since the Unix Epoch
 """
 scalar Timestamp
 
+"""
+Unique identifier of an account wallet
+"""
+scalar WalletName
+
 type BTCWallet implements Wallet {
   id: ID!
   walletCurrency: WalletCurrency!
@@ -205,11 +210,6 @@ type WalletNameTransaction implements Transaction {
   """
   recipient: WalletName
 }
-
-"""
-Unique identifier of an account wallet
-"""
-scalar WalletName
 
 type OnChainTransaction implements Transaction {
   id: ID!
