@@ -3,7 +3,6 @@
 set -eu
 
 digest=$(cat ./edge-image/digest)
-digest=$(cat ./edge-image/digest)
 ref=$(cat ./repo/.git/short_ref)
 
 pushd charts-repo
