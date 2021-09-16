@@ -10,7 +10,7 @@ type IPType = {
 }
 
 type TwoFA = {
-  secret: string | undefined
+  secret?: TwoFASecret
   threshold: number
 }
 
