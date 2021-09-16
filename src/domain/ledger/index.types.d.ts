@@ -74,15 +74,17 @@ type ReceiveLnTxArgs = {
 }
 
 type SendLnTxArgs = ReceiveLnTxArgs & {
-  recipientLiabilitiesAccountId: LiabilitiesAccountId | null
-  type: LedgerTransactionType
-  pending: boolean
   pubkey: Pubkey
   feeKnownInAdvance: boolean
-  payerWalletName?: WalletName
-  recipientWalletName?: WalletName
-  memoPayer?: string | null
-  isPushPayment?: boolean
+}
+
+type SendIntraledgerTxArgs = ReceiveLnTxArgs & {
+  pubkey: Pubkey
+  recipientLiabilitiesAccountId: LiabilitiesAccountId | null
+  payerWalletName: WalletName | null
+  recipientWalletName: WalletName | null
+  memoPayer: string | null
+  isPushPayment: boolean
 }
 
 type ReceiveLnTxMetadata = {
@@ -99,8 +101,12 @@ type ReceiveLnTxMetadata = {
 type SendLnTxMetadata = ReceiveLnTxMetadata & {
   pubkey: Pubkey
   feeKnownInAdvance: boolean
-  memoPayer?: string | null
-  username?: WalletName
+}
+
+type SendIntraledgerTxMetadata = ReceiveLnTxMetadata & {
+  pubkey: Pubkey
+  memoPayer: string | null
+  username: WalletName | null
 }
 
 type ReceiveLnFeeReeimbursementArgs = {
@@ -168,6 +174,10 @@ interface ILedgerService {
   ): Promise<LedgerJournal | LedgerServiceError>
 
   sendLnTx(args: SendLnTxArgs): Promise<LedgerJournal | LedgerServiceError>
+
+  sendIntraledgerTx(
+    args: SendIntraledgerTxArgs,
+  ): Promise<LedgerJournal | LedgerServiceError>
 
   settlePendingLiabilityTransactions(
     paymentHash: PaymentHash,

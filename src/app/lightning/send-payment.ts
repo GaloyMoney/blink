@@ -13,7 +13,7 @@ import {
   InsufficientBalanceError,
   ValidationError,
 } from "@domain/errors"
-import { LedgerTransactionType, toLiabilitiesAccountId } from "@domain/ledger"
+import { toLiabilitiesAccountId } from "@domain/ledger"
 import { LimitsChecker } from "@domain/accounts"
 import { WalletInvoiceValidator } from "@domain/wallet-invoices"
 import { LedgerService } from "@services/ledger"
@@ -31,6 +31,22 @@ import { PriceService } from "@services/price"
 import * as Wallets from "@app/wallets"
 import { TwoFAHelper, TwoFAError } from "@domain/twoFA"
 import { addNewContact } from "@app/users/add-new-contact"
+
+export const lnInvoicePaymentSend = async (
+  args: LnInvoicePaymentSendArgs,
+): Promise<PaymentSendStatus | ApplicationError> =>
+  lnInvoicePaymentSendWithTwoFA({
+    twoFAToken: null,
+    ...args,
+  })
+
+export const lnNoAmountInvoicePaymentSend = async (
+  args: LnNoAmountInvoicePaymentSendArgs,
+): Promise<PaymentSendStatus | ApplicationError> =>
+  lnNoAmountInvoicePaymentSendWithTwoFA({
+    twoFAToken: null,
+    ...args,
+  })
 
 export const lnInvoicePaymentSendWithTwoFA = async ({
   paymentRequest,
@@ -95,22 +111,6 @@ export const lnNoAmountInvoicePaymentSendWithTwoFA = async ({
   })
 }
 
-export const lnInvoicePaymentSend = async (
-  args: LnInvoicePaymentSendArgs,
-): Promise<PaymentSendStatus | ApplicationError> =>
-  lnInvoicePaymentSendWithTwoFA({
-    twoFAToken: null,
-    ...args,
-  })
-
-export const lnNoAmountInvoicePaymentSend = async (
-  args: LnNoAmountInvoicePaymentSendArgs,
-): Promise<PaymentSendStatus | ApplicationError> =>
-  lnNoAmountInvoicePaymentSendWithTwoFA({
-    twoFAToken: null,
-    ...args,
-  })
-
 const lnSendPayment = async ({
   walletId,
   userId,
@@ -128,31 +128,8 @@ const lnSendPayment = async ({
   twoFAToken: TwoFAToken | null
   logger: Logger
 }): Promise<PaymentSendStatus | ApplicationError> => {
-  const { paymentHash } = decodedInvoice
-
-  const ledgerService = LedgerService()
-  const lnService = LndService()
-  if (lnService instanceof Error) return lnService
-
-  const liabilitiesAccountId = toLiabilitiesAccountId(walletId)
-  const timestamp1Day = (Date.now() - MS_PER_DAY) as UnixTimeMs
-  const walletVolume = await ledgerService.txVolumeSince({
-    liabilitiesAccountId,
-    timestamp: timestamp1Day,
-  })
-  if (walletVolume instanceof Error) return walletVolume
-
-  const account = await AccountsRepository().findByWalletId(walletId)
-  if (account instanceof Error) return account
-  const { level } = account
-
-  const userLimits = getUserLimits({ level })
-  const twoFALimits = getTwoFALimits()
-  const limitsChecker = LimitsChecker({
-    walletVolume,
-    userLimits,
-    twoFALimits,
-  })
+  const limitsChecker = await getLimitsChecker(walletId)
+  if (limitsChecker instanceof Error) return limitsChecker
 
   const user = await UsersRepository().findById(userId)
   if (user instanceof Error) return user
@@ -169,41 +146,93 @@ const lnSendPayment = async ({
     }
   }
 
+  const lnService = LndService()
+  if (lnService instanceof Error) return lnService
   const isLocal = lnService.isLocal(decodedInvoice.destination)
   if (isLocal instanceof Error) return isLocal
 
-  let route: CachedRoute | null = null
-  let lndAuthForRoute: AuthenticatedLnd | null = null
-  let recipientPubkey: Pubkey
-  let recipientWalletId: WalletId
-  let sendLnTxArgsLocal: {
-    payerWalletName?: WalletName
-    recipientWalletName?: WalletName
-    memoPayer?: string
-  } = {}
-  const paymentPrepare = preparePayment({ paymentAmount, limitsChecker })
-  if (isLocal) {
-    const intraResult = await paymentPrepare.intraledger({
-      paymentHash,
-      walletId,
-      userId,
-      memo,
-    })
-    if (intraResult instanceof Error) return intraResult
-    ;({ recipientPubkey, recipientWalletId, sendLnTxArgsLocal } = intraResult)
-  } else {
-    const extraResult = await paymentPrepare.extraledger({
-      decodedInvoice,
-      lnService,
-    })
-    if (extraResult instanceof Error) return extraResult
-    ;({ route, lndAuthForRoute } = extraResult)
+  return isLocal
+    ? executePaymentViaIntraledger({
+        paymentHash: decodedInvoice.paymentHash,
+        description: decodedInvoice.description,
+        paymentAmount,
+        memo,
+        walletId,
+        userId,
+        limitsChecker,
+        lnService,
+        logger,
+      })
+    : executePaymentViaLn({
+        decodedInvoice,
+        paymentAmount,
+        walletId,
+        limitsChecker,
+        lnService,
+        logger,
+      })
+}
+
+const executePaymentViaIntraledger = async ({
+  paymentHash,
+  description,
+  paymentAmount,
+  memo,
+  walletId,
+  userId,
+  limitsChecker,
+  lnService,
+  logger,
+}: {
+  paymentHash: PaymentHash
+  description: string
+  paymentAmount: Satoshis
+  memo: string
+  walletId: WalletId
+  userId: UserId
+  limitsChecker: LimitsChecker
+  lnService: ILightningService
+  logger: Logger
+}): Promise<PaymentSendStatus | ApplicationError> => {
+  const intraledgerLimitCheck = limitsChecker.checkIntraledger({
+    pendingAmount: paymentAmount,
+  })
+  if (intraledgerLimitCheck instanceof Error) return intraledgerLimitCheck
+
+  const invoicesRepo = WalletInvoicesRepository()
+  const walletInvoice = await invoicesRepo.findByPaymentHash(paymentHash)
+  if (walletInvoice instanceof CouldNotFindError) {
+    const error = `User tried to pay invoice generated by a Galoy user, but the invoice does not exist`
+    return new CouldNotFindError(error)
   }
+  if (walletInvoice instanceof Error) return walletInvoice
+
+  const validatedResult = WalletInvoiceValidator(walletInvoice).validateToSend({
+    fromWalletId: walletId,
+  })
+  if (validatedResult instanceof Error) return validatedResult
+  const { pubkey: recipientPubkey, walletId: recipientWalletId } = walletInvoice
+
+  const payerWallet = await WalletsRepository().findById(walletId)
+  if (payerWallet instanceof CouldNotFindError) return payerWallet
+  if (payerWallet instanceof Error) return payerWallet
+  const recipientWallet = await WalletsRepository().findById(recipientWalletId)
+  if (recipientWallet instanceof CouldNotFindError) return recipientWallet
+  if (recipientWallet instanceof Error) return recipientWallet
+
+  const resultPayerAddRecipient = await addNewContact({
+    userId,
+    contactWalletId: recipientWalletId,
+  })
+  if (
+    resultPayerAddRecipient instanceof Error &&
+    !(resultPayerAddRecipient instanceof ValidationError)
+  )
+    return resultPayerAddRecipient
 
   const price = await PriceService().getCurrentPrice()
   if (price instanceof Error) return price
-  const maxFee = LnFeeCalculator().max(paymentAmount)
-  const lnFee = isLocal ? toSats(0) : route ? toSats(route.safe_fee) : maxFee
+  const lnFee = toSats(0)
   const sats = toSats(paymentAmount + lnFee)
   const usd = sats * price
   const usdFee = lnFee * price
@@ -217,209 +246,122 @@ const lnSendPayment = async ({
       )
     }
 
+    const liabilitiesAccountId = toLiabilitiesAccountId(walletId)
     const journal = await LockService().extendLock({ logger, lock }, async () =>
-      ledgerService.sendLnTx({
+      LedgerService().sendIntraledgerTx({
         liabilitiesAccountId,
-        recipientLiabilitiesAccountId: recipientWalletId
-          ? toLiabilitiesAccountId(recipientWalletId)
-          : null,
+        paymentHash,
+        description,
+        sats,
+        fee: lnFee,
+        usd,
+        usdFee,
+        recipientLiabilitiesAccountId: toLiabilitiesAccountId(recipientWalletId),
+        pubkey: lnService.defaultPubkey(),
+        payerWalletName: payerWallet.walletName,
+        recipientWalletName: recipientWallet.walletName,
+        memoPayer: memo,
+        isPushPayment: false,
+      }),
+    )
+    if (journal instanceof Error) return journal
+
+    const deletedLnInvoice = await lnService.deleteUnpaidInvoice({
+      pubkey: recipientPubkey,
+      paymentHash,
+    })
+    if (deletedLnInvoice instanceof Error) return deletedLnInvoice
+
+    return PaymentSendStatus.Success
+  })
+}
+
+const executePaymentViaLn = async ({
+  decodedInvoice,
+  paymentAmount,
+  walletId,
+  limitsChecker,
+  lnService,
+  logger,
+}: {
+  decodedInvoice: LnInvoice
+  paymentAmount: Satoshis
+  walletId: WalletId
+  limitsChecker: LimitsChecker
+  lnService: ILightningService
+  logger: Logger
+}): Promise<PaymentSendStatus | ApplicationError> => {
+  const { paymentHash } = decodedInvoice
+
+  const withdrawalLimitCheck = limitsChecker.checkWithdrawal({
+    pendingAmount: paymentAmount,
+  })
+  if (withdrawalLimitCheck instanceof Error) return withdrawalLimitCheck
+
+  const routesRepo = RoutesRepository()
+  const routeResult = await routesRepo.findByPaymentHash({
+    paymentHash: decodedInvoice.paymentHash,
+    milliSatsAmounts: decodedInvoice.milliSatsAmount,
+  })
+
+  let route: CachedRoute | null = null
+  let lndAuthForRoute: AuthenticatedLnd | null = null
+  if (routeResult && !(routeResult instanceof Error)) {
+    route = routeResult
+
+    const lndAuthForRouteResult = lnService.lndFromPubkey(route.pubkey)
+    if (lndAuthForRouteResult && !(lndAuthForRouteResult instanceof Error)) {
+      lndAuthForRoute = lndAuthForRouteResult
+    } else {
+      const deleted = await routesRepo.deleteByPaymentHash({
+        paymentHash: decodedInvoice.paymentHash,
+        milliSatsAmounts: decodedInvoice.milliSatsAmount,
+      })
+      if (deleted instanceof Error) return deleted
+    }
+  }
+
+  const price = await PriceService().getCurrentPrice()
+  if (price instanceof Error) return price
+
+  const maxFee = LnFeeCalculator().max(paymentAmount)
+  const lnFee = route ? toSats(route.safe_fee) : maxFee
+  const sats = toSats(paymentAmount + lnFee)
+  const usd = sats * price
+  const usdFee = lnFee * price
+
+  return LockService().lockWalletId({ walletId, logger }, async (lock) => {
+    const balance = await getBalanceForWallet({ walletId, logger })
+    if (balance instanceof Error) return balance
+    if (balance < sats) {
+      return new InsufficientBalanceError(
+        `Payment amount '${sats}' exceeds balance '${balance}'`,
+      )
+    }
+
+    const liabilitiesAccountId = toLiabilitiesAccountId(walletId)
+    const journal = await LockService().extendLock({ logger, lock }, async () =>
+      LedgerService().sendLnTx({
+        liabilitiesAccountId,
         paymentHash,
         description: decodedInvoice.description,
         sats,
         fee: lnFee,
         usd,
         usdFee,
-        feeKnownInAdvance: !!route,
-        pending: !isLocal,
-        type: isLocal ? LedgerTransactionType.IntraLedger : LedgerTransactionType.Payment,
         pubkey: route && lndAuthForRoute ? route.pubkey : lnService.defaultPubkey(),
-        ...sendLnTxArgsLocal,
+        feeKnownInAdvance: !!route,
       }),
     )
     if (journal instanceof Error) return journal
+    const { journalId } = journal
 
-    const paymentExecute = await executePayment({ paymentHash, lnService, logger })
-    return isLocal
-      ? paymentExecute.intraledger({
-          pubkey: recipientPubkey,
-        })
-      : paymentExecute.extraledger({
-          route,
-          lndAuthForRoute,
-          decodedInvoice,
-          milliSatsAmount: toMilliSats(paymentAmount * 1000),
-          maxFee,
-          liabilitiesAccountId,
-          journalId: journal.journalId,
-        })
-  })
-}
-
-const preparePayment = ({
-  paymentAmount,
-  limitsChecker,
-}: {
-  paymentAmount: Satoshis
-  limitsChecker: LimitsChecker
-}): PreparePayment => {
-  const intraledger = async ({
-    walletId,
-    userId,
-    paymentHash,
-    memo,
-  }: {
-    walletId: WalletId
-    userId: UserId
-    paymentHash: PaymentHash
-    memo?: string
-  }): Promise<
-    | {
-        recipientPubkey: Pubkey
-        recipientWalletId: WalletId
-        sendLnTxArgsLocal: {
-          payerWalletName?: WalletName
-          recipientWalletName?: WalletName
-          memoPayer?: string
-        }
-      }
-    | ApplicationError
-  > => {
-    const intraledgerLimitCheck = limitsChecker.checkIntraledger({
-      pendingAmount: paymentAmount,
-    })
-    if (intraledgerLimitCheck instanceof Error) return intraledgerLimitCheck
-
-    const invoicesRepo = WalletInvoicesRepository()
-    const walletInvoice = await invoicesRepo.findByPaymentHash(paymentHash)
-    if (walletInvoice instanceof CouldNotFindError) {
-      const error = `User tried to pay invoice generated by a Galoy user, but the invoice does not exist`
-      return new CouldNotFindError(error)
-    }
-    if (walletInvoice instanceof Error) return walletInvoice
-
-    const validatedResult = WalletInvoiceValidator(walletInvoice).validateToSend({
-      fromWalletId: walletId,
-    })
-    if (validatedResult instanceof Error) return validatedResult
-    const { pubkey: recipientPubkey, walletId: recipientWalletId } = walletInvoice
-
-    const payerWallet = await WalletsRepository().findById(walletId)
-    if (payerWallet instanceof CouldNotFindError) return payerWallet
-    if (payerWallet instanceof Error) return payerWallet
-    const recipientWallet = await WalletsRepository().findById(recipientWalletId)
-    if (recipientWallet instanceof CouldNotFindError) return recipientWallet
-    if (recipientWallet instanceof Error) return recipientWallet
-
-    const sendLnTxArgsLocal = {
-      payerWalletName: payerWallet.walletName || undefined,
-      recipientWalletName: recipientWallet.walletName || undefined,
-      memoPayer: memo,
-    }
-
-    const resultPayerAddRecipient = await addNewContact({
-      userId,
-      contactWalletId: recipientWalletId,
-    })
-    if (
-      resultPayerAddRecipient instanceof Error &&
-      !(resultPayerAddRecipient instanceof ValidationError)
-    )
-      return resultPayerAddRecipient
-
-    return {
-      recipientPubkey: recipientPubkey,
-      recipientWalletId: recipientWallet.id,
-      sendLnTxArgsLocal,
-    }
-  }
-
-  const extraledger = async ({
-    decodedInvoice,
-    lnService,
-  }: {
-    decodedInvoice: LnInvoice
-    lnService: ILightningService
-  }): Promise<
-    | { route: CachedRoute | null; lndAuthForRoute: AuthenticatedLnd | null }
-    | ApplicationError
-  > => {
-    const withdrawalLimitCheck = limitsChecker.checkWithdrawal({
-      pendingAmount: paymentAmount,
-    })
-    if (withdrawalLimitCheck instanceof Error) return withdrawalLimitCheck
-
-    const routesRepo = RoutesRepository()
-    const route = await routesRepo.findByPaymentHash({
-      paymentHash: decodedInvoice.paymentHash,
-      milliSatsAmounts: decodedInvoice.milliSatsAmount,
-    })
-    if (!route || route instanceof Error) return { route: null, lndAuthForRoute: null }
-
-    const lndAuthForRoute = lnService.lndFromPubkey(route.pubkey)
-    if (lndAuthForRoute instanceof Error) {
-      const deleted = await routesRepo.deleteByPaymentHash({
-        paymentHash: decodedInvoice.paymentHash,
-        milliSatsAmounts: decodedInvoice.milliSatsAmount,
-      })
-      if (deleted instanceof Error) return deleted
-      return { route, lndAuthForRoute: null }
-    }
-
-    return { route: route, lndAuthForRoute: lndAuthForRoute }
-  }
-
-  return {
-    intraledger,
-    extraledger,
-  }
-}
-
-const executePayment = ({
-  paymentHash,
-  lnService,
-  logger,
-}: {
-  paymentHash: PaymentHash
-  lnService: ILightningService
-  logger: Logger
-}): ExecutePayment => {
-  const intraledger = async ({
-    pubkey,
-  }: {
-    pubkey: Pubkey
-  }): Promise<PaymentSendStatus | ApplicationError> => {
-    const deletedLnInvoice = await lnService.deleteUnpaidInvoice({
-      pubkey,
-      paymentHash,
-    })
-    if (deletedLnInvoice instanceof Error) return deletedLnInvoice
-
-    return PaymentSendStatus.Success
-  }
-
-  const extraledger = async ({
-    route,
-    lndAuthForRoute,
-    decodedInvoice,
-    milliSatsAmount,
-    maxFee,
-    liabilitiesAccountId,
-    journalId,
-  }: {
-    route: CachedRoute | null
-    lndAuthForRoute: AuthenticatedLnd | null
-    decodedInvoice: LnInvoice
-    milliSatsAmount: MilliSatoshis
-    maxFee: Satoshis
-    liabilitiesAccountId: LiabilitiesAccountId
-    journalId: LedgerJournalId
-  }): Promise<PaymentSendStatus | ApplicationError> => {
     const payResult = await lnService.payInvoice({
       paymentHash,
       route: !(route instanceof Error) ? route : null,
       lndAuthForRoute,
       decodedInvoice,
-      milliSatsAmount,
+      milliSatsAmount: toMilliSats(paymentAmount * 1000),
       maxFee,
     })
     if (payResult instanceof LnPaymentPendingError) return PaymentSendStatus.Pending
@@ -450,10 +392,31 @@ const executePayment = ({
     }
 
     return PaymentSendStatus.Success
-  }
+  })
+}
 
-  return {
-    intraledger,
-    extraledger,
-  }
+const getLimitsChecker = async (
+  walletId: WalletId,
+): Promise<LimitsChecker | ApplicationError> => {
+  const ledgerService = LedgerService()
+
+  const liabilitiesAccountId = toLiabilitiesAccountId(walletId)
+  const timestamp1Day = (Date.now() - MS_PER_DAY) as UnixTimeMs
+  const walletVolume = await ledgerService.txVolumeSince({
+    liabilitiesAccountId,
+    timestamp: timestamp1Day,
+  })
+  if (walletVolume instanceof Error) return walletVolume
+
+  const account = await AccountsRepository().findByWalletId(walletId)
+  if (account instanceof Error) return account
+  const { level } = account
+
+  const userLimits = getUserLimits({ level })
+  const twoFALimits = getTwoFALimits()
+  return LimitsChecker({
+    walletVolume,
+    userLimits,
+    twoFALimits,
+  })
 }
