@@ -29,7 +29,7 @@ groups:
   - build-edge-image
   - build-debug-edge-image
   - install-deps
-  - bump-image-digest-in-values
+  - bump-image-in-chart
 - name: image
   jobs: [ build-pipeline-image ]
 
@@ -187,7 +187,7 @@ jobs:
     params:
       image: image/image.tar
 
-- name: bump-image-digest-in-values
+- name: bump-image-in-chart
   plan:
   - in_parallel:
     - get: edge-image
@@ -210,6 +210,7 @@ jobs:
       platform: linux
       image_resource: #@ task_image_config()
       inputs:
+      - name: repo
       - name: edge-image
       - name: pipeline-tasks
       - name: charts-repo
@@ -219,10 +220,25 @@ jobs:
         BRANCH: #@ data.values.git_charts_branch
       run:
         path: pipeline-tasks/ci/tasks/bump-image-digest.sh
-  - put: charts-repo
+  - put: charts-repo-bot-branch
     params:
       repository: charts-repo
-      rebase: true
+      force: true
+  - task: open-charts-pr
+    config:
+      platform: linux
+      image_resource: #@ task_image_config()
+      inputs:
+      - name: pipeline-tasks
+      - name: edge-image
+      - name: charts-repo
+      params:
+        GH_TOKEN: #@ data.values.github_token
+        BRANCH: #@ data.values.git_charts_branch
+        BOT_BRANCH: #@ data.values.git_charts_bot_branch
+      run:
+        path: pipeline-tasks/ci/tasks/open-charts-pr.sh
+
 
 resources:
 - name: repo
@@ -233,10 +249,16 @@ resources:
     branch: #@ data.values.git_branch
     private_key: #@ data.values.github_private_key
 
+- name: charts-repo-bot-branch
+  type: git
+  source:
+    uri: #@ data.values.git_charts_uri
+    branch: #@ data.values.git_charts_bot_branch
+    private_key: #@ data.values.github_private_key
+
 - name: charts-repo
   type: git
   source:
-    ignore_paths: ["ci/*[^md]"]
     uri: #@ data.values.git_charts_uri
     branch: #@ data.values.git_charts_branch
     private_key: #@ data.values.github_private_key
