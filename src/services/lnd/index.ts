@@ -13,6 +13,7 @@ import {
   getPayment,
   cancelHodlInvoice,
   GetPaymentResult,
+  deleteFailedPayAttempts,
 } from "lightning"
 import { getActiveLnd, getLndFromPubkey, getLnds } from "./utils"
 
@@ -137,5 +138,6 @@ export const LndService = (): ILightningService | LightningServiceError => {
     lookupInvoice,
     lookupPayment,
     cancelInvoice,
+    deleteFailedPayAttempts,
   }
 }

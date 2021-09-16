@@ -2,7 +2,7 @@ import { getSpecterWalletConfig } from "@config/app"
 
 import {
   deleteExpiredInvoiceUser,
-  deleteFailedPaymentsAllLnds,
+  deleteFailedPaymentsAttemptAllLnds,
   updateEscrows,
   updateRoutingFees,
 } from "@services/lnd/utils"
@@ -22,7 +22,7 @@ const main = async () => {
   await updatePendingLightningTransactions()
 
   await deleteExpiredInvoiceUser()
-  await deleteFailedPaymentsAllLnds()
+  await deleteFailedPaymentsAttemptAllLnds()
 
   const specterWalletConfig = getSpecterWalletConfig()
   const specterWallet = new SpecterWallet({
