@@ -1,6 +1,6 @@
 import { createHash, randomBytes } from "crypto"
 import { getUserLimits } from "@config/app"
-import { SelfPaymentError, TwoFAError } from "@core/error"
+import { SelfPaymentError } from "@core/error"
 import { FEECAP } from "@services/lnd/auth"
 import { getActiveLnd, nodesPubKey, getInvoiceAttempt } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
@@ -32,10 +32,11 @@ import {
   ValidationError,
   LimitsExceededError,
 } from "@domain/errors"
+import { TwoFAError } from "@domain/twoFA"
 import { LedgerService } from "@services/ledger"
 import { getBTCBalance } from "test/helpers/wallet"
 import { lnInvoicePaymentSend } from "@app/lightning"
-import { LightningServiceError } from "@domain/bitcoin/lightning"
+import { LightningServiceError, PaymentSendStatus } from "@domain/bitcoin/lightning"
 
 const date = Date.now() + 1000 * 60 * 60 * 24 * 8
 // required to avoid oldEnoughForWithdrawal validation
@@ -432,9 +433,17 @@ describe("UserWallet - Lightning Pay", () => {
       name: "getFeeAndPay",
       initialFee: 0,
       fn: function fn(wallet) {
-        return async (input) => {
+        return async (input): Promise<PaymentSendStatus | ApplicationError> => {
           await wallet.getLightningFee(input)
-          return wallet.pay(input)
+          const paymentResult = await lnInvoicePaymentSend({
+            walletId: wallet.user.id,
+            userId: wallet.user.id,
+            invoice: input.invoice as EncodedPaymentRequest,
+            memo: input.memo,
+            twoFAToken: input.twoFAToken,
+            logger: wallet.logger,
+          })
+          return paymentResult
         }
       },
     },
@@ -442,8 +451,16 @@ describe("UserWallet - Lightning Pay", () => {
       name: "directPay",
       initialFee: FEECAP,
       fn: function fn(wallet) {
-        return async (input) => {
-          return wallet.pay(input)
+        return async (input): Promise<PaymentSendStatus | ApplicationError> => {
+          const paymentResult = await lnInvoicePaymentSend({
+            walletId: wallet.user.id,
+            userId: wallet.user.id,
+            invoice: input.invoice as EncodedPaymentRequest,
+            memo: input.memo,
+            twoFAToken: input.twoFAToken,
+            logger: wallet.logger,
+          })
+          return paymentResult
         }
       },
     },
@@ -457,7 +474,8 @@ describe("UserWallet - Lightning Pay", () => {
           tokens: amountInvoice,
         })
         const result = await fn(userWallet1)({ invoice: request })
-        expect(result).toBe("success")
+        if (result instanceof Error) throw result
+        expect(result).toBe(PaymentSendStatus.Success)
 
         const finalBalance = await getBTCBalance(userWallet1.user.id)
         expect(finalBalance).toBe(initBalance1 - amountInvoice)
@@ -468,11 +486,13 @@ describe("UserWallet - Lightning Pay", () => {
           lnd: lndOutside1,
           tokens: amountInvoice,
         })
-        await fn(userWallet1)({ invoice: request })
+        const intermediateResult = await fn(userWallet1)({ invoice: request })
+        if (intermediateResult instanceof Error) throw intermediateResult
         const intermediateBalanceSats = await getBTCBalance(userWallet1.user.id)
 
         const result = await fn(userWallet1)({ invoice: request })
-        expect(result).toBe("already_paid")
+        if (result instanceof Error) throw result
+        expect(result).toBe(PaymentSendStatus.AlreadyPaid)
 
         const finalBalanceSats = await getBTCBalance(userWallet1.user.id)
         expect(finalBalanceSats).toEqual(intermediateBalanceSats)
@@ -484,8 +504,9 @@ describe("UserWallet - Lightning Pay", () => {
           tokens: amountInvoice,
           cltv_delta: 200,
         })
-        const result = await await fn(userWallet1)({ invoice: request })
-        expect(result).toBe("success")
+        const result = await fn(userWallet1)({ invoice: request })
+        if (result instanceof Error) throw result
+        expect(result).toBe(PaymentSendStatus.Success)
         const finalBalance = await getBTCBalance(userWallet1.user.id)
         expect(finalBalance).toBe(initBalance1 - amountInvoice)
       })
@@ -503,7 +524,8 @@ describe("UserWallet - Lightning Pay", () => {
           })
           if (lnInvoice instanceof Error) return lnInvoice
           const { paymentRequest: request } = lnInvoice
-          await fn(walletPayer)({ invoice: request, memo })
+          const result = await fn(walletPayer)({ invoice: request, memo })
+          if (result instanceof Error) throw result
 
           const payerFinalBalance = await getBTCBalance(walletPayer.user.id)
           const payeeFinalBalance = await getBTCBalance(walletPayee.user.id)
@@ -597,12 +619,13 @@ describe("UserWallet - Lightning Pay", () => {
           invoice: request,
           memo: "pay an unconnected node",
         })
+        if (result instanceof Error) throw result
 
         // wait for balance updates because invoice event
         // arrives before wallet balances updates in lnd
         await waitUntilChannelBalanceSyncAll()
 
-        expect(result).toBe("success")
+        expect(result).toBe(PaymentSendStatus.Success)
         const finalBalance = await getBTCBalance(userWallet1.user.id)
 
         // const { id } = await decodePaymentRequest({ lnd: lndOutside2, request })
@@ -625,8 +648,9 @@ describe("UserWallet - Lightning Pay", () => {
           tokens: amountInvoice,
         })
         const result = await fn(userWallet1)({ invoice: request })
+        if (result instanceof Error) throw result
 
-        expect(result).toBe("pending")
+        expect(result).toBe(PaymentSendStatus.Pending)
         const balanceBeforeSettlement = await getBTCBalance(userWallet1.user.id)
         expect(balanceBeforeSettlement).toBe(
           initBalance1 - amountInvoice * (1 + initialFee),
@@ -676,8 +700,9 @@ describe("UserWallet - Lightning Pay", () => {
           tokens: amountInvoice,
         })
         const result = await fn(userWallet1)({ invoice: request })
+        if (result instanceof Error) throw result
 
-        expect(result).toBe("pending")
+        expect(result).toBe(PaymentSendStatus.Pending)
         baseLogger.info("payment has timeout. status is pending.")
 
         const intermediateBalance = await getBTCBalance(userWallet1.user.id)
@@ -722,9 +747,8 @@ describe("UserWallet - Lightning Pay", () => {
           lnd: lndOutside1,
           tokens: remainingLimit + 1,
         })
-        await expect(fn(userWallet0)({ invoice: request })).rejects.toThrowError(
-          TwoFAError,
-        )
+        const result = await fn(userWallet0)({ invoice: request })
+        expect(result).toBeInstanceOf(TwoFAError)
 
         const finalBalance = await getBTCBalance(userWallet0.user.id)
         expect(finalBalance).toBe(initBalance0)
@@ -740,7 +764,9 @@ describe("UserWallet - Lightning Pay", () => {
         const twoFAToken = generateTokenHelper({
           secret: userWallet0.user.twoFA.secret,
         })
-        expect(await fn(userWallet0)({ invoice: request, twoFAToken })).toBe("success")
+        const result = await fn(userWallet0)({ invoice: request, twoFAToken })
+        if (result instanceof Error) throw result
+        expect(result).toBe(PaymentSendStatus.Success)
       })
     })
   })
