@@ -5,7 +5,6 @@ import {
   decodeInvoice,
   LnPaymentPendingError,
   PaymentSendStatus,
-  LnInvoiceValidator,
   LnFeeCalculator,
   LnAlreadyPaidError,
 } from "@domain/bitcoin/lightning"
@@ -33,28 +32,102 @@ import * as Wallets from "@app/wallets"
 import { TwoFAHelper, TwoFAError } from "@domain/twoFA"
 import { addNewContact } from "@app/users/add-new-contact"
 
-export const lnInvoicePaymentSend = async ({
+export const lnInvoicePaymentSendWithTwoFA = async ({
+  paymentRequest,
+  memo,
   walletId,
   userId,
-  invoice,
+  twoFAToken,
+  logger,
+}: LnInvoicePaymentSendWithTwoFAArgs): Promise<PaymentSendStatus | ApplicationError> => {
+  const decodedInvoice = await decodeInvoice(paymentRequest)
+  if (decodedInvoice instanceof Error) return decodedInvoice
+
+  const { amount: paymentAmount } = decodedInvoice
+  if (!(paymentAmount && paymentAmount > 0)) {
+    const error = "Zero-amount invoice cannot be paid using this use-case method"
+    return new ValidationError(error)
+  }
+
+  return lnSendPayment({
+    walletId,
+    userId,
+    decodedInvoice,
+    paymentAmount,
+    memo: memo || "",
+    twoFAToken,
+    logger,
+  })
+}
+
+export const lnNoAmountInvoicePaymentSendWithTwoFA = async ({
+  paymentRequest,
+  memo,
   amount,
+  walletId,
+  userId,
+  twoFAToken,
+  logger,
+}: LnNoAmountInvoicePaymentSendWithTwoFAArgs): Promise<
+  PaymentSendStatus | ApplicationError
+> => {
+  const decodedInvoice = await decodeInvoice(paymentRequest)
+  if (decodedInvoice instanceof Error) return decodedInvoice
+
+  const { amount: lnInvoiceAmount } = decodedInvoice
+  if (lnInvoiceAmount && lnInvoiceAmount > 0) {
+    const error = "Non zero-amount invoice cannot be paid using this use-case method"
+    return new ValidationError(error)
+  }
+  if (!(amount && amount > 0)) {
+    const error = "Invalid amount passed to pay zero-amount invoice"
+    return new ValidationError(error)
+  }
+
+  return lnSendPayment({
+    walletId,
+    userId,
+    decodedInvoice,
+    paymentAmount: amount,
+    memo: memo || "",
+    twoFAToken,
+    logger,
+  })
+}
+
+export const lnInvoicePaymentSend = async (
+  args: LnInvoicePaymentSendArgs,
+): Promise<PaymentSendStatus | ApplicationError> =>
+  lnInvoicePaymentSendWithTwoFA({
+    twoFAToken: null,
+    ...args,
+  })
+
+export const lnNoAmountInvoicePaymentSend = async (
+  args: LnNoAmountInvoicePaymentSendArgs,
+): Promise<PaymentSendStatus | ApplicationError> =>
+  lnNoAmountInvoicePaymentSendWithTwoFA({
+    twoFAToken: null,
+    ...args,
+  })
+
+const lnSendPayment = async ({
+  walletId,
+  userId,
+  decodedInvoice,
+  paymentAmount,
   memo,
   twoFAToken,
   logger,
 }: {
   walletId: WalletId
   userId: UserId
-  invoice: EncodedPaymentRequest
-  amount?: Satoshis
-  memo?: string
-  twoFAToken?: TwoFAToken
+  decodedInvoice: LnInvoice
+  paymentAmount: Satoshis
+  memo: string
+  twoFAToken: TwoFAToken | null
   logger: Logger
 }): Promise<PaymentSendStatus | ApplicationError> => {
-  const decodedInvoice = await decodeInvoice(invoice)
-  if (decodedInvoice instanceof Error) return decodedInvoice
-  const validatorResult = LnInvoiceValidator(decodedInvoice).validateToSend(amount)
-  if (validatorResult instanceof Error) return validatorResult
-  const { amount: paymentAmount } = validatorResult
   const { paymentHash } = decodedInvoice
 
   const ledgerService = LedgerService()

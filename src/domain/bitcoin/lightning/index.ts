@@ -1,7 +1,6 @@
 export { decodeInvoice } from "./ln-invoice"
 export { invoiceExpirationForCurrency } from "./invoice-expiration"
 export * from "./fee-calculator"
-export * from "./invoice-validator"
 export * from "./errors"
 
 export const PaymentStatus = {

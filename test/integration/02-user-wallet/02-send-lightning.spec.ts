@@ -35,7 +35,11 @@ import {
 import { TwoFAError } from "@domain/twoFA"
 import { LedgerService } from "@services/ledger"
 import { getBTCBalance } from "test/helpers/wallet"
-import { lnInvoicePaymentSend } from "@app/lightning"
+import {
+  lnInvoicePaymentSend,
+  lnInvoicePaymentSendWithTwoFA,
+  lnNoAmountInvoicePaymentSend,
+} from "@app/lightning"
 import { LightningServiceError, PaymentSendStatus } from "@domain/bitcoin/lightning"
 
 const date = Date.now() + 1000 * 60 * 60 * 24 * 8
@@ -81,9 +85,10 @@ describe("UserWallet - Lightning Pay", () => {
     const { paymentRequest: invoice } = lnInvoice
 
     const paymentResult = await lnInvoicePaymentSend({
+      paymentRequest: invoice,
+      memo: null,
       walletId: userWallet1.user.id,
       userId: userWallet1.user.id,
-      invoice,
       logger: userWallet1.logger,
     })
     if (paymentResult instanceof Error) throw paymentResult
@@ -126,10 +131,10 @@ describe("UserWallet - Lightning Pay", () => {
     const { paymentRequest: request } = lnInvoice
 
     const paymentResult = await lnInvoicePaymentSend({
+      paymentRequest: request,
+      memo: memoPayer,
       walletId: userWallet1.user.id,
       userId: userWallet1.user.id,
-      invoice: request,
-      memo: memoPayer,
       logger: userWallet1.logger,
     })
     if (paymentResult instanceof Error) throw paymentResult
@@ -209,11 +214,12 @@ describe("UserWallet - Lightning Pay", () => {
 
   it("pay zero amount invoice", async () => {
     const { request } = await createInvoice({ lnd: lndOutside1 })
-    const paymentResult = await lnInvoicePaymentSend({
+    const paymentResult = await lnNoAmountInvoicePaymentSend({
+      paymentRequest: request as EncodedPaymentRequest,
+      memo: null,
+      amount: toSats(amountInvoice),
       walletId: userWallet1.user.id,
       userId: userWallet1.user.id,
-      invoice: request as EncodedPaymentRequest,
-      amount: toSats(amountInvoice),
       logger: userWallet1.logger,
     })
     if (paymentResult instanceof Error) throw paymentResult
@@ -315,9 +321,10 @@ describe("UserWallet - Lightning Pay", () => {
     const { paymentRequest: invoice } = lnInvoice
 
     const paymentResult = await lnInvoicePaymentSend({
+      paymentRequest: invoice,
+      memo: null,
       walletId: userWallet1.user.id,
       userId: userWallet1.user.id,
-      invoice,
       logger: userWallet1.logger,
     })
     await expect(paymentResult).toBeInstanceOf(DomainSelfPaymentError)
@@ -338,9 +345,10 @@ describe("UserWallet - Lightning Pay", () => {
       tokens: initBalance1 + 1000000,
     })
     const paymentResult = await lnInvoicePaymentSend({
+      paymentRequest: invoice as EncodedPaymentRequest,
+      memo: null,
       walletId: userWallet1.user.id,
       userId: userWallet1.user.id,
-      invoice: invoice as EncodedPaymentRequest,
       logger: userWallet1.logger,
     })
     await expect(paymentResult).toBeInstanceOf(DomainInsufficientBalanceError)
@@ -360,9 +368,10 @@ describe("UserWallet - Lightning Pay", () => {
   it("fails to pay when channel capacity exceeded", async () => {
     const { request } = await createInvoice({ lnd: lndOutside1, tokens: 1500000 })
     const paymentResult = await lnInvoicePaymentSend({
+      paymentRequest: request as EncodedPaymentRequest,
+      memo: null,
       walletId: userWallet0.user.id,
       userId: userWallet0.user.id,
-      invoice: request as EncodedPaymentRequest,
       logger: userWallet0.logger,
     })
     expect(paymentResult).toBeInstanceOf(LightningServiceError)
@@ -372,9 +381,10 @@ describe("UserWallet - Lightning Pay", () => {
     const { request } = await createInvoice({ lnd: lndOutside1 })
     // TODO: use custom ValidationError not apollo error
     const paymentResult = await lnInvoicePaymentSend({
+      paymentRequest: request as EncodedPaymentRequest,
+      memo: null,
       walletId: userWallet1.user.id,
       userId: userWallet1.user.id,
-      invoice: request as EncodedPaymentRequest,
       logger: userWallet1.logger,
     })
     expect(paymentResult).toBeInstanceOf(ValidationError)
@@ -395,9 +405,10 @@ describe("UserWallet - Lightning Pay", () => {
       tokens: userLimits.withdrawalLimit + 1,
     })
     const paymentResult = await lnInvoicePaymentSend({
+      paymentRequest: request as EncodedPaymentRequest,
+      memo: null,
       walletId: userWallet1.user.id,
       userId: userWallet1.user.id,
-      invoice: request as EncodedPaymentRequest,
       logger: userWallet1.logger,
     })
     expect(paymentResult).toBeInstanceOf(LimitsExceededError)
@@ -412,9 +423,10 @@ describe("UserWallet - Lightning Pay", () => {
     const { paymentRequest: request } = lnInvoice
 
     const paymentResult = await lnInvoicePaymentSend({
+      paymentRequest: request as EncodedPaymentRequest,
+      memo: null,
       walletId: userWallet1.user.id,
       userId: userWallet1.user.id,
-      invoice: request as EncodedPaymentRequest,
       logger: userWallet1.logger,
     })
     expect(paymentResult).toBeInstanceOf(LimitsExceededError)
@@ -435,12 +447,12 @@ describe("UserWallet - Lightning Pay", () => {
       fn: function fn(wallet) {
         return async (input): Promise<PaymentSendStatus | ApplicationError> => {
           await wallet.getLightningFee(input)
-          const paymentResult = await lnInvoicePaymentSend({
+          const paymentResult = await lnInvoicePaymentSendWithTwoFA({
+            paymentRequest: input.invoice as EncodedPaymentRequest,
+            memo: input.memo,
             walletId: wallet.user.id,
             userId: wallet.user.id,
-            invoice: input.invoice as EncodedPaymentRequest,
-            memo: input.memo,
-            twoFAToken: input.twoFAToken,
+            twoFAToken: input.twoFAToken || null,
             logger: wallet.logger,
           })
           return paymentResult
@@ -452,12 +464,12 @@ describe("UserWallet - Lightning Pay", () => {
       initialFee: FEECAP,
       fn: function fn(wallet) {
         return async (input): Promise<PaymentSendStatus | ApplicationError> => {
-          const paymentResult = await lnInvoicePaymentSend({
+          const paymentResult = await lnInvoicePaymentSendWithTwoFA({
+            paymentRequest: input.invoice as EncodedPaymentRequest,
+            memo: input.memo,
             walletId: wallet.user.id,
             userId: wallet.user.id,
-            invoice: input.invoice as EncodedPaymentRequest,
-            memo: input.memo,
-            twoFAToken: input.twoFAToken,
+            twoFAToken: input.twoFAToken || null,
             logger: wallet.logger,
           })
           return paymentResult
