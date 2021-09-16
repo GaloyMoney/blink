@@ -30,6 +30,8 @@ import { usernameExists } from "@core/user"
 import { startApolloServer, isAuthenticated } from "./graphql-server"
 import { ApolloError } from "apollo-server-errors"
 import { addInvoiceForUsername, addInvoiceNoAmountForUsername } from "@core/wallets"
+import { lnInvoicePaymentSend, lnNoAmountInvoicePaymentSend } from "@app/wallets"
+import { decodeInvoice } from "@domain/bitcoin/lightning"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
 
@@ -290,8 +292,33 @@ const resolvers = {
         if (result instanceof Error) throw result
         return result
       },
-      payInvoice: async ({ invoice, amount, memo }) =>
-        wallet.pay({ invoice, amount, memo }),
+      payInvoice: async ({ invoice, amount, memo }) => {
+        const decodedInvoice = await decodeInvoice(invoice)
+        if (decodedInvoice instanceof Error) throw decodedInvoice
+
+        const { amount: lnInvoiceAmount } = decodedInvoice
+        if (lnInvoiceAmount && lnInvoiceAmount > 0) {
+          const status = await lnInvoicePaymentSend({
+            paymentRequest: invoice,
+            memo,
+            walletId: wallet.user.id as WalletId,
+            userId: wallet.user.id as UserId,
+            logger,
+          })
+          if (status instanceof Error) throw status
+          return status.value
+        }
+        const status = await lnNoAmountInvoicePaymentSend({
+          paymentRequest: invoice,
+          memo,
+          amount,
+          walletId: wallet.user.id as WalletId,
+          userId: wallet.user.id as UserId,
+          logger,
+        })
+        if (status instanceof Error) throw status
+        return status.value
+      },
       payKeysendUsername: async ({ username, amount, memo }) =>
         wallet.pay({ username, amount, memo }),
       getFee: async ({ amount, invoice }) => wallet.getLightningFee({ amount, invoice }),
