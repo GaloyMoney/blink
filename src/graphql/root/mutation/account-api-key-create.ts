@@ -1,8 +1,8 @@
 import { GT } from "@graphql/index"
+import { addApiKeyForAccount } from "@app/accounts"
 import Timestamp from "@graphql/types/scalar/timestamp"
 import AccountApiKeyPayload from "@graphql/types/payload/account-api-key"
 import AccountApiKeyLabel from "@graphql/types/scalar/account-api-key-label"
-import { addApiKeyForAccount } from "@app/accounts"
 
 const AccountApiKeyCreateInput = new GT.Input({
   name: "AccountApiKeyCreateInput",
