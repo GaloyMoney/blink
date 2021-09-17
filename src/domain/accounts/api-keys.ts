@@ -21,11 +21,17 @@ const hasExpired = (expireAt: Date): boolean => {
   return expireAt < now
 }
 
-export const randomApiKey = async (expireAt: Date): Promise<ApiKey | ApiKeyError> => {
+export const randomApiKey = async (
+  expireAt: Date,
+  label?: string,
+): Promise<ApiKey | ApiKeyError> => {
   if (hasExpired(expireAt)) return new InvalidExpirationError()
 
+  const key = await randomString(16, "hex")
+
   return {
-    key: await randomString(16, "hex"),
+    label: label || key.substring(0, 6),
+    key,
     secret: await randomString(32, "base64"),
     expireAt,
   }
@@ -34,10 +40,11 @@ export const randomApiKey = async (expireAt: Date): Promise<ApiKey | ApiKeyError
 export const hashApiKey = async ({
   key,
   secret,
-  expireAt,
-}: ApiKey): Promise<HashedKey | ApiKeyError> => {
+}: {
+  key: string
+  secret: string
+}): Promise<HashedKey | ApiKeyError> => {
   if (!key || !secret) return new InvalidApiKeyError()
-  if (hasExpired(expireAt)) return new InvalidExpirationError()
 
   try {
     const hash = await scrypt(key, secret, 64)

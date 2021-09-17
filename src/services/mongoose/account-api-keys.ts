@@ -1,5 +1,6 @@
 import {
   CouldNotFindError,
+  DuplicateError,
   RepositoryError,
   UnknownRepositoryError,
 } from "@domain/errors"
@@ -63,6 +64,7 @@ export const AccountApiKeysRepository = (): IAccountApiKeysRepository => {
         expireAt,
       }
     } catch (err) {
+      if ([11000, 11001].includes(err.code)) return new DuplicateError()
       return new UnknownRepositoryError(err)
     }
   }

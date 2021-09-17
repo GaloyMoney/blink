@@ -407,6 +407,7 @@ type Mutation {
   deviceNotificationTokenCreate(
     input: DeviceNotificationTokenCreateInput!
   ): SuccessPayload!
+  accountApiKeyCreate(input: AccountApiKeyCreateInput!): AccountApiKeyPayload!
   userUpdateLanguage(input: UserUpdateLanguageInput!): UserUpdateLanguagePayload!
   walletContactUpdateAlias(
     input: WalletContactUpdateAliasInput!
@@ -491,6 +492,28 @@ input UserQuizQuestionUpdateCompletedInput {
 
 input DeviceNotificationTokenCreateInput {
   deviceToken: String!
+}
+
+type AccountApiKeyPayload {
+  errors: [Error!]!
+  accountApiKey: AccountApiKey
+}
+
+type AccountApiKey {
+  label: AccountApiKeyLabel!
+  key: String!
+  secret: String!
+  expireAt: Timestamp!
+}
+
+"""
+Identifier of an account api key
+"""
+scalar AccountApiKeyLabel
+
+input AccountApiKeyCreateInput {
+  label: AccountApiKeyLabel
+  expireAt: Timestamp!
 }
 
 type UserUpdateLanguagePayload {

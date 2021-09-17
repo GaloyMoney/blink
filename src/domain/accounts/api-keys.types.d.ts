@@ -2,6 +2,7 @@ declare const hashedApiKeySymbol: unique symbol
 type HashedKey = string & { [hashedApiKeySymbol]: never }
 
 type ApiKey = {
+  label: string
   key: string
   secret: string
   expireAt: Date

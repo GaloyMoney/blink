@@ -1,4 +1,4 @@
-type GenerateApiKeyArgs = {
+type AddApiKeyForAccountArgs = {
   accountId: AccountId
   label?: string
   expireAt: Date
