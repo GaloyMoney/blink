@@ -5,8 +5,8 @@ const TwoFAGenerateMutation = GT.Field({
   type: GT.NonNull(TwoFAGeneratePayload),
   resolve: async (_, __, { wallet }) => {
     try {
-      const twoFA = await wallet.generate2fa()
-      return { errors: [], twoFA }
+      const twoFASecret = await wallet.generate2fa()
+      return { errors: [], twoFASecret }
     } catch (err) {
       return { errors: [{ message: err.message }] }
     }
