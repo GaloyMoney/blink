@@ -252,6 +252,7 @@ type Query {
     amount: SatAmount!
     targetConfirmations: TargetConfirmations = 3
   ): OnChainTxFee!
+  accountApiKeys: [AccountApiKeyHashed]
 }
 
 type Globals {
@@ -395,6 +396,16 @@ type OnChainTxFee {
 """
 scalar TargetConfirmations
 
+type AccountApiKeyHashed {
+  label: AccountApiKeyLabel!
+  expireAt: Timestamp!
+}
+
+"""
+Identifier of an account api key
+"""
+scalar AccountApiKeyLabel
+
 type Mutation {
   userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
   userLogin(input: UserLoginInput!): AuthTokenPayload!
@@ -506,11 +517,6 @@ type AccountApiKey {
   secret: String!
   expireAt: Timestamp!
 }
-
-"""
-Identifier of an account api key
-"""
-scalar AccountApiKeyLabel
 
 input AccountApiKeyCreateInput {
   label: AccountApiKeyLabel
