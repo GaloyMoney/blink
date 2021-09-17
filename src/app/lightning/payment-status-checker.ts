@@ -10,6 +10,7 @@ export const PaymentStatusChecker = ({ paymentRequest }) => {
   const { paymentHash } = decodedInvoice
 
   return {
+    paymentHash,
     invoiceIsPaid: async (): Promise<boolean | RepositoryError> => {
       const ledger = LedgerService()
       const recorded = await ledger.isLnTxRecorded(paymentHash)

@@ -38,41 +38,32 @@ const PriceSubscription = {
   subscribe: async (_, args) => {
     const { amount, amountCurrencyUnit, priceCurrencyUnit } = args.input
 
+    const eventName = SAT_USDCENT_PRICE
+
     for (const input of [amountCurrencyUnit, priceCurrencyUnit]) {
       if (input instanceof Error) {
-        return { errors: [{ message: input.message }] }
+        pubsub.setPublish(eventName, {
+          errors: [{ message: input.message }],
+        })
+        return pubsub.asyncIterator(eventName)
       }
     }
 
-    const eventName = SAT_USDCENT_PRICE
-
-    // For now, keep the only supported exchange price as SAT -> USD
     if (amountCurrencyUnit !== "BTCSAT" || priceCurrencyUnit !== "USDCENT") {
-      setImmediate(() =>
-        pubsub.publish(eventName, {
-          errors: [{ message: "Unsupported exchange unit" }],
-        }),
-      )
-      return pubsub.asyncIterator(eventName)
-    }
-
-    if (amount >= 1000000) {
+      // For now, keep the only supported exchange price as SAT -> USD
+      pubsub.setPublish(eventName, {
+        errors: [{ message: "Unsupported exchange unit" }],
+      })
+    } else if (amount >= 1000000) {
       // SafeInt limit, reject for now
-      setImmediate(() =>
-        pubsub.publish(eventName, {
-          errors: [{ message: "Unsupported exchange amount" }],
-        }),
-      )
-      return pubsub.asyncIterator(eventName)
-    }
-
-    const satUsdPrice = await getCurrentPrice()
-
-    if (satUsdPrice) {
-      setTimeout(
-        () => pubsub.publish(eventName, { satUsdCentPrice: 100 * satUsdPrice }),
-        1000,
-      )
+      pubsub.setPublish(eventName, {
+        errors: [{ message: "Unsupported exchange amount" }],
+      })
+    } else {
+      const satUsdPrice = await getCurrentPrice()
+      if (satUsdPrice) {
+        pubsub.setPublish(eventName, { satUsdCentPrice: 100 * satUsdPrice })
+      }
     }
 
     return pubsub.asyncIterator(eventName)

@@ -1,6 +1,6 @@
 import { GT, pubsub } from "@graphql/index"
 
-import { getPaymentHashFromRequest } from "@app/lightning"
+import { PaymentStatusChecker } from "@app/lightning"
 import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
 import LnInvoicePaymentStatusPayload from "@graphql/types/payload/ln-invoice-payment-status"
 import { lnPaymentStatusEvent } from "@config/app"
@@ -32,18 +32,26 @@ const LnInvoicePaymentStatusSubscription = {
   subscribe: async (_, args) => {
     const { paymentRequest } = args.input
 
-    const paymentHash = getPaymentHashFromRequest(paymentRequest)
+    const paymentStatusChecker = PaymentStatusChecker({ paymentRequest })
 
-    if (paymentHash instanceof Error) {
-      setImmediate(() =>
-        pubsub.publish(paymentRequest, {
-          errors: [{ message: paymentHash.message }], // TODO: refine message
-        }),
-      )
+    if (paymentStatusChecker instanceof Error) {
+      pubsub.setPublish(paymentRequest, {
+        errors: [{ message: paymentStatusChecker.message }], // TODO: refine message
+      })
       return pubsub.asyncIterator(paymentRequest)
     }
 
-    const eventName = lnPaymentStatusEvent(paymentHash)
+    const eventName = lnPaymentStatusEvent(paymentStatusChecker.paymentHash)
+    const paid = await paymentStatusChecker.invoiceIsPaid()
+
+    if (paid instanceof Error) {
+      pubsub.setPublish(eventName, { errors: [{ message: paid.message }] })
+    }
+
+    if (paid) {
+      pubsub.setPublish(eventName, { status: "PAID" })
+    }
+
     return pubsub.asyncIterator(eventName)
   },
 }

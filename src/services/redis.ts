@@ -49,9 +49,16 @@ if (process.env.LOCAL === "docker-compose") {
 
 export const redis = new Redis(connectionObj)
 export const redisSub = new Redis(connectionObj)
-export const pubsub = new RedisPubSub({
+const redisPubSub = new RedisPubSub({
   publisher: redis,
   subscriber: redisSub,
 })
+
+export const pubsub = {
+  asyncIterator: (trigger: string) => redisPubSub.asyncIterator(trigger),
+  publish: (triger: string, payload: unknown) => redisPubSub.publish(triger, payload),
+  setPublish: (triger: string, payload: unknown) =>
+    setImmediate(() => setImmediate(() => redisPubSub.publish(triger, payload))),
+}
 
 redis.on("error", (err) => baseLogger.error({ err }, "Redis error"))
