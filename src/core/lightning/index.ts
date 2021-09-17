@@ -1,5 +1,5 @@
 import assert from "assert"
-import { cancelHodlInvoice, payViaPaymentDetails, payViaRoutes } from "lightning"
+import { payViaPaymentDetails, payViaRoutes } from "lightning"
 import lnService from "ln-service"
 import { verifyToken } from "node-2fa"
 
@@ -328,9 +328,13 @@ export const LightningMixin = (superclass) =>
             // if we failed to do it, the invoice would still be present in InvoiceUser
             // in case the invoice were to be paid another time independantly (unlikely outcome)
             try {
-              const { lnd } = getLndFromPubkey({ pubkey })
-
-              await cancelHodlInvoice({ lnd, id })
+              const lndService = LndService()
+              if (lndService instanceof Error) return lndService
+              const deleteResult = lndService.deleteUnpaidInvoice({
+                pubkey,
+                paymentHash: id,
+              })
+              if (deleteResult instanceof Error) throw deleteResult
               this.logger.info({ id, user: this.user }, "canceling invoice on lnd")
 
               payeeInvoice.paid = true
