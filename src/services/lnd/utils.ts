@@ -372,7 +372,6 @@ export const getActiveOnchainLnd = () => {
 export const onchainLnds = getLnds({ type: "onchain" })
 
 export const nodesPubKey = offchainLnds.map((item) => item.pubkey)
-export const isMyNode = ({ pubkey }) => _.includes(nodesPubKey, pubkey)
 
 export const getLndFromPubkey = ({ pubkey }: { pubkey: string }) => {
   const lnds = getLnds({ active: true })
