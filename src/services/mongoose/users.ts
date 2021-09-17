@@ -45,11 +45,11 @@ export const UsersRepository = (): IUsersRepository => {
         deviceToken: deviceTokens,
         lastConnection,
       }
-      const user: User = await User.findOneAndUpdate({ _id: id }, data)
-      if (!user) {
+      const result = await User.findOneAndUpdate({ _id: id }, data)
+      if (!result) {
         return new RepositoryError("Couldn't update user")
       }
-      return user
+      return userFromRaw(result)
     } catch (err) {
       return new UnknownRepositoryError(err)
     }
