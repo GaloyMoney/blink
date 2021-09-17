@@ -1,9 +1,10 @@
-import { GT, pubsub } from "@graphql/index"
+import { GT } from "@graphql/index"
 
 import { PaymentStatusChecker } from "@app/lightning"
 import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
 import LnInvoicePaymentStatusPayload from "@graphql/types/payload/ln-invoice-payment-status"
 import { lnPaymentStatusEvent } from "@config/app"
+import pubsub from "@services/pubsub"
 
 const LnInvoicePaymentStatusInput = new GT.Input({
   name: "LnInvoicePaymentStatusInput",
@@ -35,7 +36,7 @@ const LnInvoicePaymentStatusSubscription = {
     const paymentStatusChecker = PaymentStatusChecker({ paymentRequest })
 
     if (paymentStatusChecker instanceof Error) {
-      pubsub.setPublish(paymentRequest, {
+      pubsub.publishImmediate(paymentRequest, {
         errors: [{ message: paymentStatusChecker.message }], // TODO: refine message
       })
       return pubsub.asyncIterator(paymentRequest)
@@ -45,11 +46,11 @@ const LnInvoicePaymentStatusSubscription = {
     const paid = await paymentStatusChecker.invoiceIsPaid()
 
     if (paid instanceof Error) {
-      pubsub.setPublish(eventName, { errors: [{ message: paid.message }] })
+      pubsub.publishImmediate(eventName, { errors: [{ message: paid.message }] })
     }
 
     if (paid) {
-      pubsub.setPublish(eventName, { status: "PAID" })
+      pubsub.publishImmediate(eventName, { status: "PAID" })
     }
 
     return pubsub.asyncIterator(eventName)

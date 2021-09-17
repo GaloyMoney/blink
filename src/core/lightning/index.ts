@@ -8,7 +8,7 @@ import { TIMEOUT_PAYMENT } from "@services/lnd/auth"
 import { WalletInvoicesRepository } from "@services/mongoose"
 import { getActiveLnd, getLndFromPubkey, isMyNode, validate } from "@services/lnd/utils"
 import { ledger } from "@services/mongodb"
-import { pubsub, redis } from "@services/redis"
+import { redis } from "@services/redis"
 import { User } from "@services/mongoose/schema"
 
 import {
@@ -27,6 +27,7 @@ import { transactionNotification } from "@services/notifications/payment"
 import { UserWallet } from "../user-wallet"
 import { addContact, isInvoiceAlreadyPaidError, timeout } from "../utils"
 import { lnPaymentStatusEvent } from "@config/app"
+import pubsub from "@services/pubsub"
 
 export type ITxType =
   | "invoice"

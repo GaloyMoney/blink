@@ -8,8 +8,8 @@ import { CouldNotFindError } from "@domain/errors"
 import { LockService } from "@services/lock"
 import { NotificationsService } from "@services/notifications"
 import { DepositFeeCalculator } from "@domain/wallets"
-import { pubsub } from "@services/redis"
 import { lnPaymentStatusEvent } from "@config/app"
+import pubsub from "@services/pubsub"
 
 export const updatePendingInvoices = async ({
   walletId,
