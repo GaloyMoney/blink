@@ -13,7 +13,10 @@ old_ref=$(grep '# git_ref' charts/galoy/values.yaml | sed -E 's/.*"(.*)"/\1/')
 cat <<EOF >> ../body.md
 # Bump galoy image
 
-The galoy image will be bumped to digest: '${digest}'
+The galoy image will be bumped to digest:
+```
+${digest}
+```
 
 Code diff contained in this image:
 
