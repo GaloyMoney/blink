@@ -20,7 +20,7 @@ Code diff contained in this image:
 https://github.com/GaloyMoney/galoy/compare/${old_ref}...${ref}
 EOF
 
-gh pr close ${BOT_BRANCH}
+gh pr close ${BOT_BRANCH} || true
 gh pr create \
   --title bump-galoy-image-${ref} \
   --body-file ../body.md \
