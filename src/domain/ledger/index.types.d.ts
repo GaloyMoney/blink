@@ -89,6 +89,11 @@ interface ILedgerService {
     liabilitiesAccountId: LiabilitiesAccountId,
   ): Promise<LedgerTransaction[] | LedgerServiceError>
 
+  getLiabilityTransactionsForContactWalletName(
+    liabilitiesAccountId: LiabilitiesAccountId,
+    contactWalletName: WalletName,
+  ): Promise<LedgerTransaction[] | LedgerServiceError>
+
   listPendingPayments(
     liabilitiesAccountId: LiabilitiesAccountId,
   ): Promise<LedgerTransaction[] | LedgerServiceError>
