@@ -280,7 +280,7 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
-  const sendIntraledgerTx = async ({
+  const sendLnIntraledgerTx = async ({
     liabilitiesAccountId,
     paymentHash,
     description,
@@ -293,9 +293,9 @@ export const LedgerService = (): ILedgerService => {
     payerWalletName,
     recipientWalletName,
     memoPayer,
-    isPushPayment,
-  }: SendIntraledgerTxArgs): Promise<LedgerJournal | LedgerError> => {
-    const metadata: SendIntraledgerTxMetadata = {
+    shareMemoWithPayee,
+  }: SendLnIntraledgerTxArgs): Promise<LedgerJournal | LedgerError> => {
+    const metadata: SendLnIntraledgerTxMetadata = {
       type: LedgerTransactionType.IntraLedger,
       pending: false,
       hash: paymentHash,
@@ -308,17 +308,80 @@ export const LedgerService = (): ILedgerService => {
       username: null,
       currency: "BTC",
     }
+
+    return sendIntraledgerTx({
+      liabilitiesAccountId,
+      description,
+      sats,
+      recipientLiabilitiesAccountId,
+      payerWalletName,
+      recipientWalletName,
+      memoPayer,
+      shareMemoWithPayee,
+      metadata,
+    })
+  }
+
+  const sendOnChainIntraledgerTx = async ({
+    liabilitiesAccountId,
+    description,
+    sats,
+    fee,
+    usd,
+    usdFee,
+    payeeAddresses,
+    sendAll,
+    recipientLiabilitiesAccountId,
+    payerWalletName,
+    recipientWalletName,
+    memoPayer,
+    shareMemoWithPayee,
+  }: SendOnChainIntraledgerTxArgs): Promise<LedgerJournal | LedgerError> => {
+    const metadata: SendOnChainIntraledgerTxMetadata = {
+      type: LedgerTransactionType.OnchainIntraLedger,
+      pending: false,
+      fee,
+      feeUsd: usdFee,
+      sats,
+      usd,
+      memoPayer: null,
+      username: null,
+      payee_addresses: payeeAddresses,
+      sendAll,
+      currency: "BTC",
+    }
+
+    return sendIntraledgerTx({
+      liabilitiesAccountId,
+      description,
+      sats,
+      recipientLiabilitiesAccountId,
+      payerWalletName,
+      recipientWalletName,
+      memoPayer,
+      shareMemoWithPayee,
+      metadata,
+    })
+  }
+
+  const sendIntraledgerTx = async ({
+    liabilitiesAccountId,
+    description,
+    sats,
+    recipientLiabilitiesAccountId,
+    payerWalletName,
+    recipientWalletName,
+    memoPayer,
+    shareMemoWithPayee,
+    metadata,
+  }: SendIntraledgerTxArgs): Promise<LedgerJournal | LedgerError> => {
     try {
-      const creditMetadata = { ...metadata }
-      if (payerWalletName) {
-        creditMetadata.memoPayer = isPushPayment ? memoPayer : null
-        creditMetadata.username = payerWalletName
+      const creditMetadata = {
+        ...metadata,
+        username: payerWalletName,
+        memoPayer: shareMemoWithPayee ? memoPayer : null,
       }
-      const debitMetadata = { ...metadata }
-      if (recipientWalletName) {
-        debitMetadata.memoPayer = memoPayer
-        debitMetadata.username = recipientWalletName
-      }
+      const debitMetadata = { ...metadata, username: recipientWalletName, memoPayer }
 
       const entry = MainBook.entry(description)
 
@@ -370,7 +433,8 @@ export const LedgerService = (): ILedgerService => {
     receiveLnTx,
     receiveLnFeeReimbursement,
     sendLnTx,
-    sendIntraledgerTx,
+    sendLnIntraledgerTx,
+    sendOnChainIntraledgerTx,
     settlePendingLiabilityTransactions,
     voidLedgerTransactionsForJournal,
   }

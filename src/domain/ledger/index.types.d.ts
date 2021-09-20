@@ -63,9 +63,8 @@ type ReceiveOnChainTxArgs = {
   receivingAddress: OnChainAddress
 }
 
-type ReceiveLnTxArgs = {
+type TxArgs = {
   liabilitiesAccountId: LiabilitiesAccountId
-  paymentHash: PaymentHash
   description: string
   sats: Satoshis
   fee: Satoshis
@@ -73,24 +72,51 @@ type ReceiveLnTxArgs = {
   usdFee: number
 }
 
-type SendLnTxArgs = ReceiveLnTxArgs & {
+type LnTxArgs = TxArgs & {
+  paymentHash: PaymentHash
+}
+
+type ReceiveLnTxArgs = LnTxArgs
+
+type SendLnTxArgs = LnTxArgs & {
   pubkey: Pubkey
   feeKnownInAdvance: boolean
 }
 
-type SendIntraledgerTxArgs = ReceiveLnTxArgs & {
-  pubkey: Pubkey
+type IntraledgerTxArgs = {
+  liabilitiesAccountId: LiabilitiesAccountId
+  description: string
+  sats: Satoshis
   recipientLiabilitiesAccountId: LiabilitiesAccountId | null
   payerWalletName: WalletName | null
   recipientWalletName: WalletName | null
   memoPayer: string | null
-  isPushPayment: boolean
+  shareMemoWithPayee: boolean
 }
 
-type ReceiveLnTxMetadata = {
+type SendIntraledgerTxArgs = IntraledgerTxArgs & {
+  metadata: SendLnIntraledgerTxMetadata | SendOnChainIntraledgerTxMetadata
+}
+
+type SendLnIntraledgerTxArgs = IntraledgerTxArgs & {
+  paymentHash: PaymentHash
+  fee: Satoshis
+  usd: number
+  usdFee: number
+  pubkey: Pubkey
+}
+
+type SendOnChainIntraledgerTxArgs = IntraledgerTxArgs & {
+  fee: Satoshis
+  usd: number
+  usdFee: number
+  payeeAddresses: OnChainAddress[]
+  sendAll: boolean
+}
+
+type TxMetadata = {
   type: LedgerTransactionType
   pending: boolean
-  hash: PaymentHash
   fee: Satoshis
   feeUsd: number
   sats: Satoshis
@@ -98,13 +124,26 @@ type ReceiveLnTxMetadata = {
   currency: Currency
 }
 
-type SendLnTxMetadata = ReceiveLnTxMetadata & {
+type ReceiveLnTxMetadata = TxMetadata & {
+  hash: PaymentHash
+}
+
+type SendLnTxMetadata = TxMetadata & {
+  hash: PaymentHash
   pubkey: Pubkey
   feeKnownInAdvance: boolean
 }
 
-type SendIntraledgerTxMetadata = ReceiveLnTxMetadata & {
+type SendLnIntraledgerTxMetadata = TxMetadata & {
+  hash: PaymentHash
   pubkey: Pubkey
+  memoPayer: string | null
+  username: WalletName | null
+}
+
+type SendOnChainIntraledgerTxMetadata = TxMetadata & {
+  payee_addresses: OnChainAddress[]
+  sendAll: boolean
   memoPayer: string | null
   username: WalletName | null
 }
@@ -162,8 +201,12 @@ interface ILedgerService {
 
   sendLnTx(args: SendLnTxArgs): Promise<LedgerJournal | LedgerServiceError>
 
-  sendIntraledgerTx(
-    args: SendIntraledgerTxArgs,
+  sendLnIntraledgerTx(
+    args: SendLnIntraledgerTxArgs,
+  ): Promise<LedgerJournal | LedgerServiceError>
+
+  sendOnChainIntraledgerTx(
+    args: SendOnChainIntraledgerTxArgs,
   ): Promise<LedgerJournal | LedgerServiceError>
 
   settlePendingLiabilityTransactions(
