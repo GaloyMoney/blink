@@ -1,5 +1,6 @@
 import { TxDecoder } from "@domain/bitcoin/onchain"
 import { WalletsRepository } from "@services/mongoose"
+import { WithdrawalFeeCalculator } from "@domain/wallets"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { BTC_NETWORK, getOnChainWalletConfig } from "@config/app"
 import { checkedToSats, checkedToTargetConfs } from "@domain/bitcoin"
@@ -18,6 +19,7 @@ export const getOnChainFee = async ({
   address,
   targetConfirmations,
 }: GetOnChainFeeArgs): Promise<Satoshis | ApplicationError> => {
+  const withdrawalFeeCalculator = WithdrawalFeeCalculator(wallet)
   const walletsRepo = WalletsRepository()
   const payeeWallet = await walletsRepo.findByAddress(address)
   if (payeeWallet instanceof CouldNotFindError) {
@@ -45,13 +47,12 @@ export const getOnChainFee = async ({
     )
     if (onChainFee instanceof Error) return onChainFee
 
-    return (onChainFee + wallet.withdrawFee) as Satoshis
+    return withdrawalFeeCalculator.onChainFee(onChainFee)
   }
 
   if (payeeWallet instanceof Error) return payeeWallet
 
-  // intraledger tx has zero fee
-  return 0 as Satoshis
+  return withdrawalFeeCalculator.onChainIntraLedgerFee()
 }
 
 export const getOnChainFeeByWalletId = async ({

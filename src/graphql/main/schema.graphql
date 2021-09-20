@@ -387,6 +387,7 @@ enum PriceGraphRange {
 
 type OnChainTxFee {
   amount: SatAmount!
+  targetConfirmations: TargetConfirmations!
 }
 
 """

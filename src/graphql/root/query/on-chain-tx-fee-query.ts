@@ -1,12 +1,12 @@
 import { GT } from "@graphql/index"
 import * as Wallets from "@app/wallets"
 import * as Accounts from "@app/accounts"
-import WalletName from "@graphql/types/scalar/wallet-name"
-import OnChainAddress from "@graphql/types/scalar/on-chain-address"
+import { ApolloError } from "apollo-server-errors"
 import SatAmount from "@graphql/types/scalar/sat-amount"
-import TargetConfirmations from "@graphql/types/scalar/target-confirmations"
+import WalletName from "@graphql/types/scalar/wallet-name"
 import OnChainTxFee from "@graphql/types/object/onchain-tx-fee"
-import { ApolloError, ForbiddenError } from "apollo-server-errors"
+import OnChainAddress from "@graphql/types/scalar/on-chain-address"
+import TargetConfirmations from "@graphql/types/scalar/target-confirmations"
 
 const OnChainTxFeeQuery = GT.Field({
   type: GT.NonNull(OnChainTxFee),
@@ -28,7 +28,7 @@ const OnChainTxFeeQuery = GT.Field({
       const hasPermissions = await Accounts.hasPermissions(domainUser.id, walletName)
       if (hasPermissions instanceof Error) throw new ApolloError(hasPermissions.message)
 
-      if (!hasPermissions) throw new ForbiddenError("Invalid walletName")
+      if (!hasPermissions) throw new ApolloError("Invalid walletName")
 
       fee = await Wallets.getOnChainFeeByWalletName({
         walletName,
@@ -55,7 +55,10 @@ const OnChainTxFeeQuery = GT.Field({
 
     if (fee instanceof Error) throw fee
 
-    return { amount: fee }
+    return {
+      amount: fee,
+      targetConfirmations,
+    }
   },
 })
 
