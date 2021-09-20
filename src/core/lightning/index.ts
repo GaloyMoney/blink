@@ -251,18 +251,22 @@ export const LightningMixin = (superclass) =>
         })
         if (balanceSats instanceof Error) throw balanceSats
 
+        const limitsChecker = await getLimitsChecker(this.user.id)
+        if (limitsChecker instanceof Error) throw limitsChecker
+
         // On us transaction
         const lndService = LndService()
         if (lndService instanceof Error) throw lndService
         if (lndService.isLocal(destination) || isPushPayment) {
           const lightningLoggerOnUs = lightningLogger.child({ onUs: true, fee: 0 })
 
-          const remainingOnUsLimit = await this.user.remainingOnUsLimit()
-
-          if (remainingOnUsLimit < tokens) {
-            const error = `Cannot transfer more than ${this.config.limits.onUsLimit} sats in 24 hours`
-            throw new TransactionRestrictedError(error, { logger: lightningLoggerOnUs })
-          }
+          const intraledgerLimitCheck = limitsChecker.checkIntraledger({
+            amount: tokens,
+          })
+          if (intraledgerLimitCheck instanceof Error)
+            throw new TransactionRestrictedError(intraledgerLimitCheck.message, {
+              logger: lightningLoggerOnUs,
+            })
 
           let payeeUser, pubkey, payeeInvoice
 
@@ -405,13 +409,13 @@ export const LightningMixin = (superclass) =>
           if (this.user.username) {
             await addContact({ uid: payeeUser._id, username: this.user.username })
           }
-
-          const remainingWithdrawalLimit = await this.user.remainingWithdrawalLimit()
-
-          if (remainingWithdrawalLimit < tokens) {
-            const error = `Cannot transfer more than ${this.config.limits.withdrawalLimit} sats in 24 hours`
-            throw new TransactionRestrictedError(error, { logger: lightningLogger })
-          }
+          const withdrawalLimitCheck = limitsChecker.checkWithdrawal({
+            amount: tokens,
+          })
+          if (withdrawalLimitCheck instanceof Error)
+            throw new TransactionRestrictedError(withdrawalLimitCheck.message, {
+              logger: lightningLogger,
+            })
 
           lightningLoggerOnUs.info(
             {
@@ -432,12 +436,13 @@ export const LightningMixin = (superclass) =>
           throw new NewAccountWithdrawalError(error, { logger: lightningLogger })
         }
 
-        const remainingWithdrawalLimit = await this.user.remainingWithdrawalLimit()
-
-        if (remainingWithdrawalLimit < tokens) {
-          const error = `Cannot withdraw more than ${this.config.limits.withdrawalLimit} sats in 24 hours`
-          throw new TransactionRestrictedError(error, { logger: lightningLogger })
-        }
+        const withdrawalLimitCheck = limitsChecker.checkWithdrawal({
+          amount: tokens,
+        })
+        if (withdrawalLimitCheck instanceof Error)
+          throw new TransactionRestrictedError(withdrawalLimitCheck.message, {
+            logger: lightningLogger,
+          })
 
         // TODO: fine tune those values:
         // const probe_timeout_ms

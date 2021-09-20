@@ -155,12 +155,13 @@ export const OnChainMixin = (superclass) =>
 
           const onchainLoggerOnUs = onchainLogger.child({ onUs: true })
 
-          const remainingOnUsLimit = await this.user.remainingOnUsLimit()
-
-          if (remainingOnUsLimit < amountToSendPayeeUser) {
-            const error = `Cannot transfer more than ${this.config.limits.onUsLimit} sats in 24 hours`
-            throw new TransactionRestrictedError(error, { logger: onchainLoggerOnUs })
-          }
+          const intraledgerLimitCheck = limitsChecker.checkIntraledger({
+            amount: toSats(amountToSendPayeeUser),
+          })
+          if (intraledgerLimitCheck instanceof Error)
+            throw new TransactionRestrictedError(intraledgerLimitCheck.message, {
+              logger: onchainLoggerOnUs,
+            })
 
           if (String(payeeUser._id) === String(this.user._id)) {
             throw new SelfPaymentError(undefined, { logger: onchainLoggerOnUs })
@@ -233,12 +234,13 @@ export const OnChainMixin = (superclass) =>
           throw new DustAmountError(undefined, { logger: onchainLogger })
         }
 
-        const remainingWithdrawalLimit = await this.user.remainingWithdrawalLimit()
-
-        if (remainingWithdrawalLimit < checksAmount) {
-          const error = `Cannot withdraw more than ${this.config.limits.withdrawalLimit} sats in 24 hours`
-          throw new TransactionRestrictedError(error, { logger: onchainLogger })
-        }
+        const withdrawalLimitCheck = limitsChecker.checkWithdrawal({
+          amount: toSats(checksAmount),
+        })
+        if (withdrawalLimitCheck instanceof Error)
+          throw new TransactionRestrictedError(withdrawalLimitCheck.message, {
+            logger: onchainLogger,
+          })
 
         const twoFACheck = twoFA?.secret
           ? await checkAndVerifyTwoFA({
