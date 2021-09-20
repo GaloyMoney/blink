@@ -1,4 +1,4 @@
-import { UsersRepository } from "@services/mongoose"
+import { UsersRepository, WalletsRepository } from "@services/mongoose"
 import { IpFetcher } from "@services/ipfetcher"
 import { getIpConfig } from "@config/app"
 import { ValidationError, RepositoryError } from "@domain/errors"
@@ -14,7 +14,7 @@ export const updateWalletContactAlias = async ({
   alias,
 }: {
   userId: UserId
-  walletName: string
+  walletName: WalletName
   alias: string
 }): Promise<User | ApplicationError> => {
   const repo = UsersRepository()
@@ -35,6 +35,41 @@ export const updateWalletContactAlias = async ({
   if (result instanceof Error) {
     return result
   }
+
+  return user
+}
+
+export const addNewWalletContact = async ({
+  userId,
+  contactWalletId,
+}: {
+  userId: UserId
+  contactWalletId: WalletId
+}): Promise<User | ApplicationError> => {
+  const contactWallet = await WalletsRepository().findById(contactWalletId)
+  if (contactWallet instanceof Error) return contactWallet
+  const { walletName } = contactWallet
+  if (!walletName)
+    return new ValidationError(
+      "New wallet contact does not have a value for 'walletName' property",
+    )
+
+  const usersRepo = UsersRepository()
+  const user = await usersRepo.findById(userId)
+  if (user instanceof Error) return user
+
+  const found = user.contacts.find(
+    (walletContact) => walletContact.walletName === walletName,
+  )
+  if (found) return user
+
+  user.contacts.push({
+    walletName,
+    alias: "" as ContactAlias,
+    transactionsCount: 1,
+  })
+  const updateResult = await usersRepo.update(user)
+  if (updateResult instanceof Error) return updateResult
 
   return user
 }

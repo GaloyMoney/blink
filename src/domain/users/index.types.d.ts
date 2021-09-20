@@ -45,11 +45,4 @@ type User = {
 interface IUsersRepository {
   findById(userId: UserId): Promise<User | RepositoryError>
   update(user: User): Promise<User | RepositoryError>
-  addContactByWalletName({
-    userId,
-    contactWalletName,
-  }: {
-    userId: UserId
-    contactWalletName: WalletName
-  }): Promise<void | RepositoryError>
 }
