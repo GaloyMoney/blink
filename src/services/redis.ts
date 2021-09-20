@@ -49,7 +49,7 @@ if (process.env.LOCAL === "docker-compose") {
 
 export const redis = new Redis(connectionObj)
 
-const redisSub = new Redis(connectionObj)
+export const redisSub = new Redis(connectionObj)
 export const redisPubSub = new RedisPubSub({
   publisher: redis,
   subscriber: redisSub,
