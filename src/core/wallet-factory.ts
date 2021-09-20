@@ -6,8 +6,6 @@ import { User } from "@services/mongoose/schema"
 import { NotFoundError } from "./error"
 import { LightningUserWallet } from "./lightning/wallet"
 import { UserWallet } from "./user-wallet"
-import { CSVAccountExport } from "./csv-account-export"
-import { accountPath } from "@services/ledger/accounts"
 
 export const WalletFactory = async ({
   user,
@@ -44,12 +42,4 @@ export const getWalletFromUsername = async ({
 export const getWalletFromRole = async ({ logger, role }) => {
   const user = await User.findOne({ role })
   return WalletFactory({ user, logger })
-}
-
-export const getStringCsvForWallets = async (walletIds: WalletId[]) => {
-  const csv = new CSVAccountExport()
-  for (const walletId of walletIds) {
-    await csv.addAccount({ account: accountPath(walletId) })
-  }
-  return csv.getBase64()
 }

@@ -1,9 +1,11 @@
-import * as Wallets from "@app/wallets"
-import { getStringCsvForWallets } from "@core/wallet-factory"
 import { GT } from "@graphql/index"
+
 import IAccount from "../abstract/account"
 import Wallet from "../abstract/wallet"
 import WalletName from "../scalar/wallet-name"
+
+import * as Wallets from "@app/wallets"
+import * as Accounts from "@app/accounts"
 
 // import Transaction from "../abstract/transaction"
 // import AccountLevel from "../scalar/account-level"
@@ -50,19 +52,13 @@ const ConsumerAccount = new GT.Object({
         },
       },
       resolve: async (source, args) => {
-        const walletIds: WalletId[] = []
+        const walletIds = await Accounts.toWalletIds(source, args.walletNames)
 
-        for (const id of source.walletIds) {
-          const wallet = await Wallets.getWallet(id)
-          if (wallet instanceof Error) {
-            throw wallet
-          }
-          if (args.walletNames.includes(wallet.walletName)) {
-            walletIds.push(wallet.id)
-          }
+        if (walletIds instanceof Error) {
+          throw walletIds
         }
 
-        return getStringCsvForWallets(walletIds)
+        return Wallets.getCSVForWallets(walletIds)
       },
     },
   }),

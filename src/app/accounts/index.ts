@@ -1,4 +1,5 @@
-import { AccountsRepository } from "@services/mongoose"
+import { RepositoryError } from "@domain/errors"
+import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 
 export const getAccount = async (accountId: AccountId) => {
   const accounts = AccountsRepository()
@@ -23,4 +24,27 @@ export const hasPermissions = async (
 export const getBusinessMapMarkers = async () => {
   const accounts = AccountsRepository()
   return accounts.listBusinessesForMap()
+}
+
+export const toWalletIds = async (
+  account: Account,
+  walletNames: WalletName[],
+): Promise<WalletId[] | ApplicationError> => {
+  const wallets = WalletsRepository()
+
+  const walletIds: WalletId[] = []
+
+  for (const walletName of walletNames) {
+    const wallet = await wallets.findByWalletName(walletName)
+    if (wallet instanceof Error) {
+      return wallet
+    }
+
+    if (!account.walletIds.includes(wallet.id)) {
+      return new RepositoryError()
+    }
+    walletIds.push(wallet.id)
+  }
+
+  return walletIds
 }
