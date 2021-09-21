@@ -19,6 +19,8 @@ export const SUBSCRIPTION_POLLING_INTERVAL = 2.5 * 1000
 export const MAX_BYTES_FOR_MEMO = 639 // BOLT
 
 export const SAT_USDCENT_PRICE = "SAT-USDCENT-PRICE"
+export const lnPaymentStatusEvent = (paymentHash: PaymentHash) =>
+  `LN-PAYMENT-STATUS-${paymentHash}`
 
 let customContent, customConfig
 

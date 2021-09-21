@@ -15,8 +15,6 @@ import {
   Kind,
 } from "graphql"
 
-export { pubsub } from "@services/redis"
-
 // GraphQL Types
 export const GT = {
   // Wrap root configurations for consistency

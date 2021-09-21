@@ -26,6 +26,8 @@ import { lockExtendOrThrow, redlock } from "../lock"
 import { transactionNotification } from "@services/notifications/payment"
 import { UserWallet } from "../user-wallet"
 import { addContact, isInvoiceAlreadyPaidError, timeout } from "../utils"
+import { lnPaymentStatusEvent } from "@config/app"
+import pubsub from "@services/pubsub"
 
 export type ITxType =
   | "invoice"
@@ -312,6 +314,9 @@ export const LightningMixin = (superclass) =>
             logger: this.logger,
             type: "paid-invoice",
           })
+
+          const eventName = lnPaymentStatusEvent(id)
+          pubsub.publish(eventName, { status: "PAID" })
 
           if (!isPushPayment) {
             // trying to delete the invoice first from lnd

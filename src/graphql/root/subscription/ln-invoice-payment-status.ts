@@ -1,9 +1,10 @@
-import { SUBSCRIPTION_POLLING_INTERVAL, MS_PER_HOUR } from "@config/app"
-import { PaymentStatusChecker } from "@app/lightning"
-import { GT, pubsub } from "@graphql/index"
+import { GT } from "@graphql/index"
 
+import { PaymentStatusChecker } from "@app/lightning"
 import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
 import LnInvoicePaymentStatusPayload from "@graphql/types/payload/ln-invoice-payment-status"
+import { lnPaymentStatusEvent } from "@config/app"
+import pubsub from "@services/pubsub"
 
 const LnInvoicePaymentStatusInput = new GT.Input({
   name: "LnInvoicePaymentStatusInput",
@@ -19,51 +20,40 @@ const LnInvoicePaymentStatusSubscription = {
     input: { type: GT.NonNull(LnInvoicePaymentStatusInput) },
   },
 
-  resolve: (source) => source,
+  resolve: (source) => {
+    if (source.errors) {
+      return { errors: source.errors }
+    }
+    return {
+      errors: [],
+      status: source.status,
+    }
+  },
 
-  subscribe: async (source, args) => {
+  subscribe: async (_, args) => {
     const { paymentRequest } = args.input
 
     const paymentStatusChecker = PaymentStatusChecker({ paymentRequest })
 
-    const errors: IError[] = []
-
-    const eventName = `LnInvoicePaymentStatus-${paymentRequest}`
-
     if (paymentStatusChecker instanceof Error) {
-      setImmediate(() =>
-        pubsub.publish(eventName, {
-          errors: [{ message: paymentStatusChecker.message }], // TODO: refine message
-        }),
-      )
-      return pubsub.asyncIterator([eventName])
+      pubsub.publishImmediate(paymentRequest, {
+        errors: [{ message: paymentStatusChecker.message }], // TODO: refine message
+      })
+      return pubsub.asyncIterator(paymentRequest)
     }
 
-    const intervalId = setInterval(async () => {
-      if (errors.length > 0) {
-        pubsub.publish(eventName, { errors })
-        clearInterval(intervalId)
-        return
-      }
+    const eventName = lnPaymentStatusEvent(paymentStatusChecker.paymentHash)
+    const paid = await paymentStatusChecker.invoiceIsPaid()
 
-      const paid = await paymentStatusChecker.invoiceIsPaid()
-      if (paid instanceof Error) {
-        clearInterval(intervalId)
-        pubsub.publish(eventName, { errors: [{ message: paid.message }] })
-        return
-      }
-      if (paid) {
-        clearInterval(intervalId)
-        pubsub.publish(eventName, { errors: [], status: "PAID" })
-      }
-    }, SUBSCRIPTION_POLLING_INTERVAL)
+    if (paid instanceof Error) {
+      pubsub.publishImmediate(eventName, { errors: [{ message: paid.message }] })
+    }
 
-    setTimeout(() => {
-      clearInterval(intervalId)
-      pubsub.publish(eventName, { errors: [{ message: "Operation timed out" }] })
-    }, MS_PER_HOUR)
+    if (paid) {
+      pubsub.publishImmediate(eventName, { status: "PAID" })
+    }
 
-    return pubsub.asyncIterator([eventName])
+    return pubsub.asyncIterator(eventName)
   },
 }
 

@@ -8,6 +8,8 @@ import { CouldNotFindError } from "@domain/errors"
 import { LockService } from "@services/lock"
 import { NotificationsService } from "@services/notifications"
 import { DepositFeeCalculator } from "@domain/wallets"
+import { lnPaymentStatusEvent } from "@config/app"
+import pubsub from "@services/pubsub"
 
 export const updatePendingInvoices = async ({
   walletId,
@@ -142,6 +144,9 @@ const updatePendingInvoice = async ({
         walletId: walletInvoice.walletId,
         paymentHash,
       })
+
+      const eventName = lnPaymentStatusEvent(paymentHash)
+      pubsub.publish(eventName, { status: "PAID" })
 
       return true
     })

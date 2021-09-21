@@ -11,7 +11,6 @@ import {
 } from "lightning"
 
 import { getCurrentPrice } from "@services/realtime-price"
-import { pubsub } from "@services/redis"
 import { activateLndHealthCheck, lndStatusEvent } from "@services/lnd/health"
 import { onChannelUpdated } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
@@ -21,6 +20,7 @@ import { transactionNotification } from "@services/notifications/payment"
 import { Price } from "@core/price-impl"
 import { ONCHAIN_MIN_CONFIRMATIONS, SAT_USDCENT_PRICE } from "@config/app"
 import * as Wallets from "@app/wallets"
+import pubsub from "@services/pubsub"
 
 const logger = baseLogger.child({ module: "trigger" })
 
