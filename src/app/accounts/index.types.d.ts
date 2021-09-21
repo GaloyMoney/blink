@@ -1,6 +1,6 @@
 type AddApiKeyForAccountArgs = {
   accountId: AccountId
-  label?: string
+  label: string
   expireAt: Date
 }
 

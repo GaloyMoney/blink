@@ -3,9 +3,9 @@ import { CouldNotFindError } from "@domain/errors"
 import { AccountApiKeysRepository } from "@services/mongoose"
 
 const repo = AccountApiKeysRepository()
-const delta = 30 // days
+const deltaDays = 30
 const expireAt = new Date(Date.now())
-expireAt.setDate(expireAt.getDate() + delta)
+expireAt.setDate(expireAt.getDate() + deltaDays)
 
 const createTestHash = async () => {
   const apiKey = await randomApiKey(expireAt)

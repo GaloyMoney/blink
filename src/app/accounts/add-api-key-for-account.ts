@@ -3,7 +3,7 @@ import { AccountApiKeysRepository } from "@services/mongoose"
 
 export const addApiKeyForAccount = async ({
   accountId,
-  label = "",
+  label,
   expireAt,
 }: AddApiKeyForAccountArgs): Promise<ApiKey | ApplicationError> => {
   const apiKey = await randomApiKey(expireAt, label)

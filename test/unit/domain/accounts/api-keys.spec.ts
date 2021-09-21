@@ -5,9 +5,9 @@ import {
   InvalidExpirationError,
 } from "@domain/accounts"
 
-const delta = 30 // days
+const deltaDays = 30
 const expireAt = new Date(Date.now())
-expireAt.setDate(expireAt.getDate() + delta)
+expireAt.setDate(expireAt.getDate() + deltaDays)
 
 const isValidEncoding = (str: string, encoding: BufferEncoding) =>
   str === Buffer.from(str, encoding).toString(encoding)
