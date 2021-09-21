@@ -23,7 +23,7 @@ const WalletContact = new GT.Object({
         const contactWalletName = source.walletName as WalletName
 
         // TODO: figure out what to do here when we have multiple accounts
-        const account = await Accounts.getAccount(domainUser.id)
+        const account = await Accounts.getAccount(domainUser.defaultAccountId)
 
         if (account instanceof Error) {
           throw account
