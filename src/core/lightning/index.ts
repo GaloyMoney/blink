@@ -330,7 +330,7 @@ export const LightningMixin = (superclass) =>
             try {
               const lndService = LndService()
               if (lndService instanceof Error) return lndService
-              const deleteResult = lndService.deleteUnpaidInvoice({
+              const deleteResult = lndService.cancelInvoice({
                 pubkey,
                 paymentHash: id,
               })

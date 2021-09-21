@@ -116,7 +116,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
     }
   }
 
-  const deleteUnpaidInvoice = async ({
+  const cancelInvoice = async ({
     pubkey,
     paymentHash,
   }: {
@@ -136,6 +136,6 @@ export const LndService = (): ILightningService | LightningServiceError => {
     registerInvoice,
     lookupInvoice,
     lookupPayment,
-    deleteUnpaidInvoice,
+    cancelInvoice,
   }
 }
