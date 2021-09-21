@@ -23,10 +23,11 @@ export const reimburseFee = async ({
   })
   if (feeDifference === null) {
     logger.warn(
-      `Invalid reimbursement fee for ${{
+      {
         maxFee,
         actualFee,
-      }}`,
+      },
+      `Invalid reimbursement fee`,
     )
     return
   }
