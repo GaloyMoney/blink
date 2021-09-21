@@ -25,7 +25,7 @@ import {
   TwoFAError,
   ValidationInternalError,
 } from "../error"
-import { lockExtendOrThrow, redlock } from "../lock"
+import { redlock } from "../lock"
 import { UserWallet } from "../user-wallet"
 import { LoggedError } from "../utils"
 import { ONCHAIN_LOOK_BACK, ONCHAIN_LOOK_BACK_OUTGOING } from "@config/app"
@@ -36,6 +36,7 @@ import { WalletsRepository } from "@services/mongoose"
 import { CouldNotFindError } from "@domain/errors"
 import { LedgerService } from "@services/ledger"
 import { toLiabilitiesAccountId } from "@domain/ledger"
+import { LockService } from "@services/lock"
 
 export const getOnChainTransactions = async ({
   lnd,
@@ -178,10 +179,10 @@ export const OnChainMixin = (superclass) =>
           if (recipientWallet instanceof CouldNotFindError) throw recipientWallet
           if (recipientWallet instanceof Error) throw recipientWallet
 
-          const journal = await lockExtendOrThrow(
-            { lock, logger: onchainLoggerOnUs },
-            async () => {
-              return LedgerService().addOnChainIntraledgerTxSend({
+          const journal = await LockService().extendLock(
+            { logger: onchainLoggerOnUs, lock },
+            async () =>
+              LedgerService().addOnChainIntraledgerTxSend({
                 liabilitiesAccountId: toLiabilitiesAccountId(this.user.id),
                 description: "",
                 sats: toSats(sats),
@@ -195,8 +196,7 @@ export const OnChainMixin = (superclass) =>
                 recipientWalletName: recipientWallet.walletName,
                 memoPayer: memo || null,
                 shareMemoWithPayee: false,
-              })
-            },
+              }),
           )
           if (journal instanceof Error) throw journal
 
@@ -307,7 +307,8 @@ export const OnChainMixin = (superclass) =>
           }
         }
 
-        return lockExtendOrThrow({ lock, logger: onchainLogger }, async () => {
+        const lockArgs = { logger: onchainLogger, lock }
+        const result = await LockService().extendLock(lockArgs, async () => {
           try {
             ;({ id } = await sendToChainAddress({
               address,
@@ -368,6 +369,8 @@ export const OnChainMixin = (superclass) =>
 
           return true
         })
+        if (result instanceof Error) throw result
+        return result
       })
     }
 
