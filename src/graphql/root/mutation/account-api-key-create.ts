@@ -7,7 +7,7 @@ import AccountApiKeyLabel from "@graphql/types/scalar/account-api-key-label"
 const AccountApiKeyCreateInput = new GT.Input({
   name: "AccountApiKeyCreateInput",
   fields: () => ({
-    label: { type: AccountApiKeyLabel, defaultValue: "" },
+    label: { type: AccountApiKeyLabel },
     expireAt: { type: GT.NonNull(Timestamp) },
   }),
 })
