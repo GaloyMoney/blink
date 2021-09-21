@@ -1,4 +1,4 @@
-import { RepositoryError } from "@domain/errors"
+import { ValidationError } from "@domain/errors"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 
 export const getAccount = async (accountId: AccountId) => {
@@ -41,7 +41,7 @@ export const toWalletIds = async (
     }
 
     if (!account.walletIds.includes(wallet.id)) {
-      return new RepositoryError()
+      return new ValidationError()
     }
     walletIds.push(wallet.id)
   }
