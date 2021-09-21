@@ -486,17 +486,27 @@ export const LightningMixin = (superclass) =>
             throw new InsufficientBalanceError(undefined, { logger: lightningLogger })
           }
 
+          const price = await PriceService().getCurrentPrice()
+          if (price instanceof Error) throw price
+          const lnFee = toSats(fee)
+          const usd = sats * price
+          const usdFee = lnFee * price
+
           entry = await lockExtendOrThrow({ lock, logger: lightningLogger }, async () => {
             // reduce balance from customer first
-            const tx = await ledger.addLndPayment({
+            return LedgerService().sendLnTx({
+              liabilitiesAccountId: toLiabilitiesAccountId(this.user.id),
+              paymentHash: id,
               description: memoInvoice,
-              payerUser: this.user,
               sats,
-              metadata,
-              lastPrice: UserWallet.lastPrice,
+              fee,
+              usd,
+              usdFee,
+              pubkey: pubkey as Pubkey,
+              feeKnownInAdvance,
             })
-            return tx
           })
+          if (entry instanceof Error) throw entry
 
           // there is 3 scenarios for a payment.
           // 1/ payment succeed (function return before TIMEOUT_PAYMENT) and:
@@ -555,7 +565,7 @@ export const LightningMixin = (superclass) =>
 
               await ledger.settleLndPayment(id)
 
-              await ledger.voidTransactions(entry.journal._id, err[1])
+              await ledger.voidTransactions(entry.journalId, err[1])
 
               lightningLogger.warn(
                 { success: false, err, ...metadata, entry },
@@ -590,7 +600,7 @@ export const LightningMixin = (superclass) =>
               paymentResult,
               max_fee,
               id,
-              related_journal: entry.journal._id,
+              related_journal: entry.journalId,
             })
           }
 
