@@ -30,6 +30,12 @@ import { UserWallet } from "../user-wallet"
 import { LoggedError } from "../utils"
 import { ONCHAIN_LOOK_BACK, ONCHAIN_LOOK_BACK_OUTGOING } from "@config/app"
 import * as Wallets from "@app/wallets"
+import { PriceService } from "@services/price"
+import { toSats } from "@domain/bitcoin"
+import { WalletsRepository } from "@services/mongoose"
+import { CouldNotFindError } from "@domain/errors"
+import { LedgerService } from "@services/ledger"
+import { toLiabilitiesAccountId } from "@domain/ledger"
 
 export const getOnChainTransactions = async ({
   lnd,
@@ -159,19 +165,40 @@ export const OnChainMixin = (superclass) =>
             sendAll,
           }
 
-          await lockExtendOrThrow({ lock, logger: onchainLoggerOnUs }, async () => {
-            const tx = await ledger.addOnUsPayment({
-              description: "",
-              sats,
-              metadata,
-              payerUser: this.user,
-              payeeUser,
-              memoPayer: memo,
-              shareMemoWithPayee: false,
-              lastPrice: UserWallet.lastPrice,
-            })
-            return tx
-          })
+          const price = await PriceService().getCurrentPrice()
+          if (price instanceof Error) throw price
+          const onChainFee = toSats(0)
+          const usd = sats * price
+          const usdFee = onChainFee * price
+
+          const payerWallet = await WalletsRepository().findById(this.user.id)
+          if (payerWallet instanceof CouldNotFindError) throw payerWallet
+          if (payerWallet instanceof Error) throw payerWallet
+          const recipientWallet = await WalletsRepository().findById(payeeUser.id)
+          if (recipientWallet instanceof CouldNotFindError) throw recipientWallet
+          if (recipientWallet instanceof Error) throw recipientWallet
+
+          const journal = await lockExtendOrThrow(
+            { lock, logger: onchainLoggerOnUs },
+            async () => {
+              return LedgerService().sendOnChainIntraledgerTx({
+                liabilitiesAccountId: toLiabilitiesAccountId(this.user.id),
+                description: "",
+                sats: toSats(sats),
+                fee: onChainFee,
+                usd,
+                usdFee,
+                payeeAddresses: [address as OnChainAddress],
+                sendAll,
+                recipientLiabilitiesAccountId: toLiabilitiesAccountId(payeeUser.id),
+                payerWalletName: payerWallet.walletName,
+                recipientWalletName: recipientWallet.walletName,
+                memoPayer: memo || null,
+                shareMemoWithPayee: false,
+              })
+            },
+          )
+          if (journal instanceof Error) throw journal
 
           onchainLoggerOnUs.info(
             { success: true, ...metadata },
