@@ -27,6 +27,12 @@ const CaptchaRequestAuthCodeMutation = GT.Field({
       secCode: geetestSeccode,
     } = args.input
 
+    for (const input of [phone, geetestChallenge, geetestValidate, geetestSeccode]) {
+      if (input instanceof Error) {
+        return { errors: [{ message: input.message }] }
+      }
+    }
+
     try {
       // TODO: redo this with use-case and errors pattern
       await verifyCaptchaAndReturnOTP({
