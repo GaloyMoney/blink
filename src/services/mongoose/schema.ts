@@ -1,5 +1,6 @@
 import * as _ from "lodash"
 import * as mongoose from "mongoose"
+import crypto from "crypto"
 import {
   levels,
   getUserLimits,
@@ -258,6 +259,14 @@ const UserSchema = new Schema<UserType>({
       type: Number,
       default: twoFAConfig.threshold,
     },
+  },
+
+  walletPublicId: {
+    type: String,
+    index: true,
+    unique: true,
+    required: true,
+    default: () => crypto.randomUUID(),
   },
 })
 
