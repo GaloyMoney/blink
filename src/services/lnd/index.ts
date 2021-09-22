@@ -1,4 +1,4 @@
-import { toSats } from "@domain/bitcoin"
+import { toMilliSats, toSats } from "@domain/bitcoin"
 import {
   decodeInvoice,
   CouldNotDecodeReturnedPaymentRequest,
@@ -117,6 +117,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
         confirmedAt: undefined,
         destination: "" as Pubkey,
         roundedUpFee: toSats(0),
+        milliSatsAmount: toMilliSats(0),
         secret: "" as PaymentSecret,
         request: undefined,
         status,
@@ -130,6 +131,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
           destination: payment.destination as Pubkey,
           request: payment.request,
           roundedUpFee: toSats(payment.safe_fee),
+          milliSatsAmount: toMilliSats(parseInt(payment.mtokens)),
           secret: payment.secret as PaymentSecret,
           status,
         })
