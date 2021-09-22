@@ -322,7 +322,12 @@ export const OnChainMixin = (superclass) =>
 
         return lockExtendOrThrow({ lock, logger: onchainLogger }, async () => {
           try {
-            ;({ id } = await sendToChainAddress({ address, lnd, tokens: amountToSend }))
+            ;({ id } = await sendToChainAddress({
+              address,
+              lnd,
+              tokens: amountToSend,
+              utxo_confirmations: 0,
+            }))
           } catch (err) {
             onchainLogger.error(
               { err, address, tokens: amountToSend, success: false },
