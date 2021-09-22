@@ -48,12 +48,12 @@ const BtcPriceListQuery = GT.Field({
 
     const prices: PricePointType[] = []
 
-    for (const price of hourlyPrices) {
+    for (const price of hourlyPrices.reverse()) {
       if (1000 * price.id < rangeStart) {
         break
       }
       const btcPriceInCents = price.o * 100 * 10 ** 8
-      prices.push({
+      prices.unshift({
         timestamp: price.id,
         price: {
           formattedAmount: btcPriceInCents.toString(),
