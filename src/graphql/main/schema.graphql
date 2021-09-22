@@ -364,9 +364,9 @@ type Mutation {
   twoFAGenerate: TwoFAGeneratePayload!
   twoFASave(input: TwoFASaveInput!): SuccessPayload!
   twoFADelete(input: TwoFADeleteInput!): SuccessPayload!
-  userQuizQuestionsUpdateCompleted(
-    input: UserQuizQuestionsUpdateCompletedInput!
-  ): UserQuizQuestionsUpdateCompletedPayload!
+  userQuizQuestionUpdateCompleted(
+    input: UserQuizQuestionUpdateCompletedInput!
+  ): UserQuizQuestionUpdateCompletedPayload!
   deviceNotificationTokenCreate(
     input: DeviceNotificationTokenCreateInput!
   ): SuccessPayload!
@@ -441,12 +441,12 @@ input TwoFADeleteInput {
   token: String!
 }
 
-type UserQuizQuestionsUpdateCompletedPayload {
+type UserQuizQuestionUpdateCompletedPayload {
   errors: [Error!]!
-  userQuizQuestions: [UserQuizQuestion]
+  userQuizQuestion: UserQuizQuestion
 }
 
-input UserQuizQuestionsUpdateCompletedInput {
+input UserQuizQuestionUpdateCompletedInput {
   id: ID!
 }
 
