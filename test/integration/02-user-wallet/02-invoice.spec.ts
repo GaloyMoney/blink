@@ -44,7 +44,7 @@ describe("UserWallet - addInvoice", () => {
 
   it("adds a public invoice", async () => {
     const lnInvoice = await addInvoiceNoAmountForRecipient({
-      recipient: "user1" as WalletName,
+      recipientWalletPublicId: "user1" as WalletPublicId,
     })
     if (lnInvoice instanceof Error) return lnInvoice
     const { paymentRequest: request } = lnInvoice

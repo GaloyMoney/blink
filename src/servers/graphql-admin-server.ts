@@ -18,7 +18,7 @@ export async function startApolloServerForAdminSchema() {
       Query: {
         allLevels: and(isAuthenticated, isEditor),
         userDetailsByPhone: and(isAuthenticated, isEditor),
-        userDetailsByWalletName: and(isAuthenticated, isEditor),
+        userDetailsByUsername: and(isAuthenticated, isEditor),
       },
       Mutation: {
         userUpdateStatus: and(isAuthenticated, isEditor),

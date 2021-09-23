@@ -65,6 +65,7 @@ interface UserType {
   onchain?: OnChainObjectForUser[]
   lastConnection: Date
   twoFA: TwoFAForUser
+  walletPublicId: WalletPublicId
 
   // business:
   title?: string

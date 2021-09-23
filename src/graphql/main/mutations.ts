@@ -18,7 +18,7 @@ import TwoFASaveMutation from "@graphql/root/mutation/twofa-save"
 import UserLoginMutation from "@graphql/root/mutation/user-login"
 import UserRequestAuthCodeMutation from "@graphql/root/mutation/user-request-auth-code"
 import UserUpdateLanguageMutation from "@graphql/root/mutation/user-update-language"
-import WalletContactUpdateAliasMutation from "@graphql/root/mutation/wallet-contact-update-alias"
+import UserContactUpdateAliasMutation from "@graphql/root/mutation/user-contact-update-alias"
 import UserQuizQuestionUpdateCompletedMutation from "@graphql/root/mutation/user-quiz-question-update-completed"
 import OnChainPaymentSendMutation from "@graphql/root/mutation/onchain-payment-send"
 import OnChainPaymentSendAllMutation from "@graphql/root/mutation/onchain-payment-send-all"
@@ -44,7 +44,7 @@ const MutationType = new GT.Object({
     accountApiKeyDisable: AccountApiKeyDisableMutation,
 
     userUpdateLanguage: UserUpdateLanguageMutation,
-    walletContactUpdateAlias: WalletContactUpdateAliasMutation,
+    userContactUpdateAlias: UserContactUpdateAliasMutation,
 
     lnInvoiceFeeProbe: LnInvoiceFeeProbeMutation,
     lnNoAmountInvoiceFeeProbe: LnNoAmountInvoiceFeeProbeMutation,

@@ -80,12 +80,12 @@ export const getOnChainFeeByWalletId = async ({
   })
 }
 
-export const getOnChainFeeByWalletName = async ({
-  walletName,
+export const getOnChainFeeByWalletPublicId = async ({
+  walletPublicId,
   amount,
   address,
   targetConfirmations,
-}: GetOnChainFeeByWalletNameArgs): Promise<Satoshis | ApplicationError> => {
+}: GetOnChainFeeByWalletPublicIdArgs): Promise<Satoshis | ApplicationError> => {
   const sats = checkedToSats(amount)
   if (sats instanceof Error) return sats
 
@@ -93,7 +93,7 @@ export const getOnChainFeeByWalletName = async ({
   if (targetConfs instanceof Error) return targetConfs
 
   const wallets = WalletsRepository()
-  const wallet = await wallets.findByWalletName(walletName)
+  const wallet = await wallets.findByPublicId(walletPublicId)
   if (wallet instanceof Error) return wallet
 
   return getOnChainFee({

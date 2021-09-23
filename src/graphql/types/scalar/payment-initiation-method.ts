@@ -4,7 +4,7 @@ import { PaymentInitiationMethod as DomainPaymentInitiationMethod } from "@domai
 const PaymentInitiationMethod = new GT.Enum({
   name: "PaymentInitiationMethod",
   values: {
-    WALLET_NAME: { value: DomainPaymentInitiationMethod.WalletName },
+    WALLET_ID: { value: DomainPaymentInitiationMethod.WalletId },
     ON_CHAIN: { value: DomainPaymentInitiationMethod.OnChain },
     LIGHTNING: { value: DomainPaymentInitiationMethod.Lightning },
   },

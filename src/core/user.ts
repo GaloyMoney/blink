@@ -46,13 +46,13 @@ export const updateUserAccountStatus = async ({
 }
 
 export const updateBusinessMapInfo = async ({
-  walletName,
+  username,
   latitude,
   longitude,
   title,
 }): Promise<UserType | Error> => {
   try {
-    const user = await User.getUserByUsername(walletName)
+    const user = await User.getUserByUsername(username)
 
     if (!user) {
       throw new NotFoundError("User not found", { logger })

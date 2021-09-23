@@ -30,7 +30,7 @@ beforeAll(async () => {
 })
 
 afterAll(async () => {
-  await bitcoindClient.unloadWallet({ wallet_name: "outside" })
+  await bitcoindClient.unloadWallet({ username: "outside" })
 })
 
 describe("Bitcoind", () => {
@@ -40,12 +40,12 @@ describe("Bitcoind", () => {
   })
 
   it("create outside wallet", async () => {
-    const walletName = "outside"
-    const { name } = await bitcoindClient.createWallet({ wallet_name: walletName })
-    expect(name).toBe(walletName)
+    const username = "outside"
+    const { name } = await bitcoindClient.createWallet({ wallet_name: username })
+    expect(name).toBe(username)
     const wallets = await bitcoindClient.listWallets()
-    expect(wallets).toContain(walletName)
-    bitcoindOutside = new BitcoindWalletClient({ walletName })
+    expect(wallets).toContain(username)
+    bitcoindOutside = new BitcoindWalletClient({ username })
   })
 
   it("should be funded mining 10 blocks", async () => {

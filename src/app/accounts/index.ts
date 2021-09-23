@@ -32,14 +32,14 @@ export const getAccountByApiKey = async (
 
 export const hasPermissions = async (
   userId: UserId,
-  walletName: WalletName,
+  wallePublicId: WalletPublicId,
 ): Promise<boolean | ApplicationError> => {
   const accounts = AccountsRepository()
 
   const userAccounts = await accounts.listByUserId(userId)
   if (userAccounts instanceof Error) return userAccounts
 
-  const walletAccount = await accounts.findByWalletName(walletName)
+  const walletAccount = await accounts.findByWalletPublicId(wallePublicId)
   if (walletAccount instanceof Error) return walletAccount
 
   return userAccounts.some((a) => a.id === walletAccount.id)
@@ -50,16 +50,13 @@ export const getBusinessMapMarkers = async () => {
   return accounts.listBusinessesForMap()
 }
 
-export const toWalletIds = async (
-  account: Account,
-  walletNames: WalletName[],
-): Promise<WalletId[] | ApplicationError> => {
+export const toWalletIds: ToWalletIdsFunction = async ({ account, walletPublicIds }) => {
   const wallets = WalletsRepository()
 
   const walletIds: WalletId[] = []
 
-  for (const walletName of walletNames) {
-    const wallet = await wallets.findByWalletName(walletName)
+  for (const walletPublicId of walletPublicIds) {
+    const wallet = await wallets.findByPublicId(walletPublicId)
     if (wallet instanceof Error) {
       return wallet
     }

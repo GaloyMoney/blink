@@ -34,7 +34,7 @@ enum PaymentErrorCode {
 type Query {
   allLevels: [AccountLevel!]!
   userDetailsByPhone(phone: Phone!): UserDetails!
-  userDetailsByWalletName(walletName: WalletName!): UserDetails!
+  userDetailsByUsername(username: Username!): UserDetails!
 }
 
 enum AccountLevel {
@@ -45,7 +45,7 @@ enum AccountLevel {
 type UserDetails {
   id: ID!
   phone: Phone!
-  walletName: WalletName
+  username: Username
   language: Language!
   level: AccountLevel
   status: AccountStatus
@@ -60,9 +60,9 @@ Phone number which includes country code
 scalar Phone
 
 """
-Unique identifier of an account wallet
+Unique identifier of a user
 """
-scalar WalletName
+scalar Username
 
 enum Language {
   EN_US
@@ -137,7 +137,7 @@ input UserUpdateStatusInput {
 }
 
 input BusinessUpdateMapInfoInput {
-  walletName: WalletName!
+  username: Username!
   title: String!
   longitude: Float!
   latitude: Float!

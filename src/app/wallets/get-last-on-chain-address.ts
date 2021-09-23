@@ -16,11 +16,11 @@ export const getLastOnChainAddress = async (
   return lastOnChainAddress.address
 }
 
-export const getLastOnChainAddressByWalletName = async (
-  walletName: WalletName,
+export const getLastOnChainAddressByWalletPublicId = async (
+  walletPublicId: WalletPublicId,
 ): Promise<OnChainAddress | ApplicationError> => {
   const wallets = WalletsRepository()
-  const wallet = await wallets.findByWalletName(walletName)
+  const wallet = await wallets.findByPublicId(walletPublicId)
   if (wallet instanceof Error) return wallet
   return getLastOnChainAddress(wallet.id)
 }

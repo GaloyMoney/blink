@@ -53,7 +53,7 @@ const translateWalletTx = (txs: WalletTransaction[]) => {
     feeUsd: tx.deprecated.feeUsd,
     hash: tx.initiationVia === PaymentInitiationMethod.Lightning ? tx.paymentHash : null,
     addresses: tx.initiationVia === PaymentInitiationMethod.OnChain ? tx.addresses : null,
-    username: tx.settlementVia === SettlementMethod.IntraLedger ? tx.recipientId : null,
+    username: tx.settlementVia === SettlementMethod.IntraLedger ? tx.recipient : null,
   }))
 }
 
@@ -242,12 +242,12 @@ const resolvers = {
     noauthAddInvoice: async (_, { username, value }) => {
       const lnInvoice =
         value && value > 0
-          ? await Wallets.addInvoiceForRecipient({
-              recipient: username,
+          ? await Wallets.addInvoiceForUsername({
+              username,
               amount: value,
             })
-          : await Wallets.addInvoiceNoAmountForRecipient({
-              recipient: username,
+          : await Wallets.addInvoiceNoAmountForUsername({
+              username,
             })
       if (lnInvoice instanceof Error) throw lnInvoice
       return lnInvoice.paymentRequest

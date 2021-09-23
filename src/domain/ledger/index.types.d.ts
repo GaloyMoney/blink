@@ -41,7 +41,8 @@ type LedgerTransaction = {
   readonly feeUsd: number
 
   // for IntraLedger
-  readonly walletName?: WalletName
+  readonly walletPublicId?: WalletPublicId
+  readonly username?: Username
   readonly memoFromPayer?: string
 
   // for ln
@@ -133,9 +134,9 @@ interface ILedgerService {
     liabilitiesAccountId: LiabilitiesAccountId,
   ): Promise<LedgerTransaction[] | LedgerServiceError>
 
-  getLiabilityTransactionsForContactWalletName(
+  getLiabilityTransactionsForContactUsername(
     liabilitiesAccountId: LiabilitiesAccountId,
-    contactWalletName: WalletName,
+    contactUsername: Username,
   ): Promise<LedgerTransaction[] | LedgerServiceError>
 
   listPendingPayments(

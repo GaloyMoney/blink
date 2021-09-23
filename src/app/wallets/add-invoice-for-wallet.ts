@@ -1,7 +1,8 @@
 import { checkedToSats, toSats } from "@domain/bitcoin"
 import { invoiceExpirationForCurrency } from "@domain/bitcoin/lightning"
 import { WalletInvoiceFactory } from "@domain/wallet-invoices/wallet-invoice-factory"
-import { checkedToWalletName } from "@domain/wallets"
+import { checkedToWalletPublicId } from "@domain/wallets"
+
 import { LndService } from "@services/lnd"
 import { WalletInvoicesRepository, WalletsRepository } from "@services/mongoose"
 
@@ -34,16 +35,16 @@ export const addInvoiceNoAmount = async ({
 }
 
 export const addInvoiceForRecipient = async ({
-  recipient,
+  recipientWalletPublicId,
   amount,
   memo = "",
 }: AddInvoiceForRecipientArgs): Promise<LnInvoice | ApplicationError> => {
-  const walletName = checkedToWalletName(recipient)
-  if (walletName instanceof Error) return walletName
+  const walletPublicId = checkedToWalletPublicId(recipientWalletPublicId)
+  if (walletPublicId instanceof Error) return walletPublicId
   const sats = checkedToSats(amount)
   if (sats instanceof Error) return sats
 
-  const walletId = await walletIdFromWalletName(walletName)
+  const walletId = await walletIdFromPublicId(walletPublicId)
   if (walletId instanceof Error) return walletId
 
   const walletInvoiceFactory = WalletInvoiceFactory(walletId)
@@ -55,13 +56,13 @@ export const addInvoiceForRecipient = async ({
 }
 
 export const addInvoiceNoAmountForRecipient = async ({
-  recipient,
+  recipientWalletPublicId,
   memo = "",
 }: AddInvoiceNoAmountForRecipientArgs): Promise<LnInvoice | ApplicationError> => {
-  const walletName = checkedToWalletName(recipient)
-  if (walletName instanceof Error) return walletName
+  const walletPublicId = checkedToWalletPublicId(recipientWalletPublicId)
+  if (walletPublicId instanceof Error) return walletPublicId
 
-  const walletId = await walletIdFromWalletName(walletName)
+  const walletId = await walletIdFromPublicId(walletPublicId)
   if (walletId instanceof Error) return walletId
 
   const walletInvoiceFactory = WalletInvoiceFactory(walletId)
@@ -102,12 +103,64 @@ const registerAndPersistInvoice = async ({
   return invoice
 }
 
-const walletIdFromWalletName = async (
-  walletName: WalletName,
+const walletIdFromPublicId = async (
+  walletPublicId: WalletPublicId,
 ): Promise<WalletId | RepositoryError> => {
   const walletsRepo = WalletsRepository()
-  const wallet = await walletsRepo.findByWalletName(walletName)
+  const wallet = await walletsRepo.findByPublicId(walletPublicId)
   if (wallet instanceof Error) return wallet
 
   return wallet.id
+}
+
+// TODO: Remove. Used in v1 only
+const walletIdFromUsername = async (
+  username: Username,
+): Promise<WalletId | RepositoryError> => {
+  const walletsRepo = WalletsRepository()
+  const wallet = await walletsRepo.findByUsername(username)
+  if (wallet instanceof Error) return wallet
+
+  return wallet.id
+}
+
+// TODO: Remove. Used in v1 only
+export const addInvoiceForUsername = async ({
+  username,
+  amount,
+  memo = "",
+}): Promise<LnInvoice | ApplicationError> => {
+  const walletPublicId = checkedToWalletPublicId(username)
+  if (walletPublicId instanceof Error) return walletPublicId
+  const sats = checkedToSats(amount)
+  if (sats instanceof Error) return sats
+
+  const walletId = await walletIdFromUsername(username)
+  if (walletId instanceof Error) return walletId
+
+  const walletInvoiceFactory = WalletInvoiceFactory(walletId)
+  return registerAndPersistInvoice({
+    sats,
+    memo,
+    walletInvoiceCreateFn: walletInvoiceFactory.createForRecipient,
+  })
+}
+
+// TODO: Remove. Used in v1 only
+export const addInvoiceNoAmountForUsername = async ({
+  username,
+  memo = "",
+}): Promise<LnInvoice | ApplicationError> => {
+  const walletPublicId = checkedToWalletPublicId(username)
+  if (walletPublicId instanceof Error) return walletPublicId
+
+  const walletId = await walletIdFromUsername(username)
+  if (walletId instanceof Error) return walletId
+
+  const walletInvoiceFactory = WalletInvoiceFactory(walletId)
+  return registerAndPersistInvoice({
+    sats: toSats(0),
+    memo,
+    walletInvoiceCreateFn: walletInvoiceFactory.createForRecipient,
+  })
 }

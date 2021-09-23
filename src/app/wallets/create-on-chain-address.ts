@@ -22,11 +22,11 @@ export const createOnChainAddress = async (
   return savedOnChainAddress.address
 }
 
-export const createOnChainAddressByWalletName = async (
-  walletName: WalletName,
+export const createOnChainAddressByWalletPublicId = async (
+  walletPublicId: WalletPublicId,
 ): Promise<OnChainAddress | ApplicationError> => {
   const wallets = WalletsRepository()
-  const wallet = await wallets.findByWalletName(walletName)
+  const wallet = await wallets.findByPublicId(walletPublicId)
   if (wallet instanceof Error) return wallet
   return createOnChainAddress(wallet.id)
 }

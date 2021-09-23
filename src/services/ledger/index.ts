@@ -50,14 +50,14 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
-  const getLiabilityTransactionsForContactWalletName = async (
+  const getLiabilityTransactionsForContactUsername = async (
     liabilitiesAccountId: LiabilitiesAccountId,
-    contactWalletName,
+    contactUsername,
   ): Promise<LedgerTransaction[] | LedgerError> => {
     try {
       const { results } = await MainBook.ledger({
         account: liabilitiesAccountId,
-        username: contactWalletName,
+        username: contactUsername,
       })
       return results.map((tx) => translateToLedgerTx(tx))
     } catch (err) {
@@ -458,7 +458,7 @@ export const LedgerService = (): ILedgerService => {
 
   return {
     getLiabilityTransactions,
-    getLiabilityTransactionsForContactWalletName,
+    getLiabilityTransactionsForContactUsername,
     listPendingPayments,
     getPendingPaymentsCount,
     getAccountBalance,
@@ -490,7 +490,8 @@ const translateToLedgerTx = (tx): LedgerTransaction => ({
   pendingConfirmation: tx.pending,
   journalId: tx._journal.toString(),
   lnMemo: tx.memo,
-  walletName: tx.username,
+  username: tx.username,
+  walletPublicId: tx.walletPublicId,
   memoFromPayer: tx.memoPayer,
   paymentHash: tx.hash,
   pubkey: tx.pubkey,

@@ -25,29 +25,29 @@ type BaseWalletTransaction = {
   readonly deprecated: Deprecated
 }
 
-type WalletNameTransaction = BaseWalletTransaction & {
-  readonly initiationVia: "walletname"
+type IntraLedgerTransaction = BaseWalletTransaction & {
+  readonly initiationVia: "walletid"
   readonly settlementVia: "intraledger"
-  readonly recipientId: WalletName
+  readonly recipient: Username
 }
 
 type WalletOnChainTransaction = BaseWalletTransaction & {
   readonly initiationVia: "onchain"
   readonly settlementVia: "onchain" | "intraledger"
-  readonly recipientId: WalletName | null
+  readonly recipient: Username | null
   readonly addresses: OnChainAddress[]
 }
 
 type WalletLnTransaction = BaseWalletTransaction & {
   readonly initiationVia: "lightning"
   readonly settlementVia: "lightning" | "intraledger"
-  readonly recipientId: WalletName | null
+  readonly recipient: Username | null
   readonly paymentHash: PaymentHash
   readonly pubkey: Pubkey
 }
 
 type WalletTransaction =
-  | WalletNameTransaction
+  | IntraLedgerTransaction
   | WalletOnChainTransaction
   | WalletLnTransaction
 
@@ -73,17 +73,18 @@ type WithdrawFee = number & { [withdrawFeeSymbol]: never }
 
 type Wallet = {
   readonly id: WalletId
+  readonly publicId: WalletPublicId | null
   readonly depositFeeRatio: DepositFeeRatio
   readonly withdrawFee: WithdrawFee
-  readonly walletName: WalletName | null
   readonly onChainAddressIdentifiers: OnChainAddressIdentifier[]
   onChainAddresses(): OnChainAddress[]
 }
 
 interface IWalletsRepository {
   findById(walletId: WalletId): Promise<Wallet | RepositoryError>
-  findByWalletName(walletName: WalletName): Promise<Wallet | RepositoryError>
   findByAddress(address: OnChainAddress): Promise<Wallet | RepositoryError>
+  findByUsername(username: Username): Promise<Wallet | RepositoryError>
+  findByPublicId(publicId: WalletPublicId): Promise<Wallet | RepositoryError>
   listByAddresses(addresses: string[]): Promise<Wallet[] | RepositoryError>
 }
 

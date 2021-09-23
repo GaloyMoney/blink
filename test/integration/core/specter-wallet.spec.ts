@@ -7,7 +7,7 @@ import { getSpecterWalletConfig } from "@config/app"
 import { bitcoindClient, getChainBalance, mineBlockAndSyncAll } from "test/helpers"
 
 const { lnd } = getActiveOnchainLnd()
-const specterWalletName = "specter/coldstorage"
+const specterUsername = "specter/coldstorage"
 let specterWallet
 
 beforeEach(() => {
@@ -17,7 +17,7 @@ beforeEach(() => {
 })
 
 afterAll(async () => {
-  await bitcoindClient.unloadWallet({ wallet_name: specterWalletName })
+  await bitcoindClient.unloadWallet({ username: specterUsername })
 })
 
 describe("SpecterWallet", () => {

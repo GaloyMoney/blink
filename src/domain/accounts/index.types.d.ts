@@ -33,7 +33,7 @@ type BusinessMapInfo = {
 }
 
 type BusinessMapMarker = {
-  walletName: WalletName
+  username: Username
   mapInfo: BusinessMapInfo
 }
 
@@ -45,7 +45,7 @@ type LimitsChecker = {
 interface IAccountsRepository {
   findById(accountId: AccountId): Promise<Account | RepositoryError>
   listByUserId(userId: UserId): Promise<Account[] | RepositoryError>
-  findByWalletName(walletName: WalletName): Promise<Account | RepositoryError>
   findByWalletId(walletId: WalletId): Promise<Account | RepositoryError>
+  findByWalletPublicId(walletPublicId: WalletPublicId): Promise<Account | RepositoryError>
   listBusinessesForMap(): Promise<BusinessMapMarker[] | RepositoryError>
 }

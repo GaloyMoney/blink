@@ -5,7 +5,6 @@ import {
   RepositoryError,
 } from "@domain/errors"
 import { User } from "@services/mongoose/schema"
-import { caseInsensitiveRegex } from "."
 
 export const AccountsRepository = (): IAccountsRepository => {
   const findById = async (accountId: AccountId): Promise<Account | RepositoryError> => {
@@ -37,12 +36,12 @@ export const AccountsRepository = (): IAccountsRepository => {
     return [account]
   }
 
-  const findByWalletName = async (
-    walletName: WalletName,
+  const findByWalletPublicId = async (
+    walletPublicId: WalletPublicId,
   ): Promise<Account | RepositoryError> => {
     try {
       const result: UserType = await User.findOne({
-        username: caseInsensitiveRegex(walletName),
+        walletPublicId,
       })
       if (!result) return new CouldNotFindError("Invalid walletName")
       return translateToAccount(result)
@@ -68,7 +67,7 @@ export const AccountsRepository = (): IAccountsRepository => {
       }
 
       return accounts.map((account) => ({
-        walletName: account.username as WalletName,
+        username: account.username as Username,
         mapInfo: {
           title: account.title as BusinessMapTitle,
           coordinates: account.coordinate as Coordinates,
@@ -81,8 +80,8 @@ export const AccountsRepository = (): IAccountsRepository => {
   return {
     findById,
     listByUserId,
-    findByWalletName,
     findByWalletId,
+    findByWalletPublicId,
     listBusinessesForMap,
   }
 }

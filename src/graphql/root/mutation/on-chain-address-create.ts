@@ -1,13 +1,13 @@
 import { GT } from "@graphql/index"
 import * as Wallets from "@app/wallets"
 import * as Accounts from "@app/accounts"
-import WalletName from "@graphql/types/scalar/wallet-name"
 import OnChainAddressPayload from "@graphql/types/payload/on-chain-address"
+import WalletId from "@graphql/types/scalar/wallet-id"
 
 const OnChainAddressCreateInput = new GT.Input({
   name: "OnChainAddressCreateInput",
   fields: () => ({
-    walletName: { type: WalletName },
+    walletId: { type: GT.NonNull(WalletId) },
   }),
 })
 
@@ -17,24 +17,23 @@ const OnChainAddressCreateMutation = GT.Field({
     input: { type: GT.NonNull(OnChainAddressCreateInput) },
   },
   resolve: async (_, args, { domainUser }) => {
-    const { walletName } = args.input
-    if (walletName && walletName instanceof Error) {
-      return { errors: [{ message: walletName.message }] }
+    const { walletId } = args.input
+    if (walletId instanceof Error) {
+      return { errors: [{ message: walletId.message }] }
     }
 
     let address: OnChainAddress | Error | null = null
-    if (walletName) {
-      const hasPermissions = await Accounts.hasPermissions(domainUser.id, walletName)
-      if (hasPermissions instanceof Error) {
-        return { errors: [{ message: hasPermissions.message }] }
-      }
 
-      if (!hasPermissions) {
-        return { errors: [{ message: "Invalid walletName" }] }
-      }
-
-      address = await Wallets.createOnChainAddressByWalletName(walletName)
+    const hasPermissions = await Accounts.hasPermissions(domainUser.id, walletId)
+    if (hasPermissions instanceof Error) {
+      return { errors: [{ message: hasPermissions.message }] }
     }
+
+    if (!hasPermissions) {
+      return { errors: [{ message: "Invalid wallet" }] }
+    }
+
+    address = await Wallets.createOnChainAddressByWalletPublicId(walletId)
 
     if (!address) {
       const account = await Accounts.getAccount(domainUser.defaultAccountId)
