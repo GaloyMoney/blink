@@ -10,7 +10,7 @@ const UserQuizQuestionUpdateCompletedPayload = new GT.Object({
       type: GT.NonNullList(IError),
     },
     userQuizQuestion: {
-      type: GT.List(UserQuizQuestion),
+      type: UserQuizQuestion,
     },
   }),
 })
