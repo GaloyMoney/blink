@@ -1,11 +1,10 @@
 import { PaymentStatus } from "@domain/bitcoin/lightning"
 import { InconsistentDataError } from "@domain/errors"
 import { toLiabilitiesAccountId } from "@domain/ledger"
-import { FeeReimbursement } from "@domain/ledger/fee-reimbursement"
 import { LedgerService } from "@services/ledger"
 import { LndService } from "@services/lnd"
 import { LockService } from "@services/lock"
-import { PriceService } from "@services/price"
+import { reimburseFee } from "@app/wallets/reimburse-fee"
 
 export const updatePendingPayments = async ({
   walletId,
@@ -93,11 +92,13 @@ const updatePendingPayment = async ({
         { success: true, id: paymentHash, payment: paymentLiabilityTx },
         "payment has been confirmed",
       )
+      if (paymentLiabilityTx.feeKnownInAdvance) return
       return reimburseFee({
         liabilitiesAccountId,
-        paymentLiabilityTx,
+        journalId: paymentLiabilityTx.journalId,
         paymentHash,
-        roundedUpFee,
+        maxFee: paymentLiabilityTx.fee,
+        actualFee: roundedUpFee,
         logger,
       })
     }
@@ -106,60 +107,6 @@ const updatePendingPayment = async ({
       lnPaymentLookup,
       logger: paymentLogger,
     })
-  }
-}
-
-const reimburseFee = async ({
-  liabilitiesAccountId,
-  paymentLiabilityTx,
-  paymentHash,
-  roundedUpFee,
-  logger,
-}: {
-  liabilitiesAccountId: LiabilitiesAccountId
-  paymentLiabilityTx: LedgerTransaction
-  paymentHash: PaymentHash
-  roundedUpFee: Satoshis
-  logger: Logger
-}): Promise<void | ApplicationError> => {
-  if (!paymentLiabilityTx.feeKnownInAdvance) {
-    const feeDifference = FeeReimbursement(paymentLiabilityTx.fee).getReimbursement({
-      actualFee: roundedUpFee,
-    })
-    if (feeDifference === null) {
-      logger.warn(
-        `Invalid reimbursement fee for ${{
-          maxFee: paymentLiabilityTx.fee,
-          actualFee: roundedUpFee,
-        }}`,
-      )
-      return
-    }
-
-    logger.info(
-      {
-        paymentResult: paymentLiabilityTx,
-        feeDifference,
-        maxFee: paymentLiabilityTx.fee,
-        actualFee: roundedUpFee,
-        id: paymentHash,
-      },
-      "logging a fee difference",
-    )
-
-    const price = await PriceService().getCurrentPrice()
-    if (price instanceof Error) return price
-    const usd = feeDifference * price
-
-    const ledgerService = LedgerService()
-    const result = await ledgerService.receiveLnFeeReimbursement({
-      liabilitiesAccountId,
-      paymentHash: paymentHash,
-      sats: feeDifference,
-      usd,
-      journalId: paymentLiabilityTx.journalId,
-    })
-    if (result instanceof Error) return result
   }
 }
 
