@@ -3,7 +3,7 @@ import { verifyToken } from "node-2fa"
 
 export * from "./errors"
 
-export const TwoFA = (): TwoFAComponent => {
+export const TwoFA = (): TwoFA => {
   const verify = ({
     secret,
     token,

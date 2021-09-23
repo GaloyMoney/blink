@@ -68,7 +68,7 @@ const userFromRaw = (result: UserType): User => {
     id: result.id as UserId,
     phone: result.phone as PhoneNumber,
     language: (result.language || UserLanguage.EN_US) as UserLanguage,
-    twoFA: result.twoFA as TwoFA,
+    twoFA: result.twoFA as TwoFAForUser,
     contacts: result.contacts.reduce(
       (res: WalletContact[], contact: ContactObjectForUser): WalletContact[] => {
         if (contact.id) {
