@@ -7,7 +7,6 @@ export * from "./update-pending-invoices"
 export * from "./update-pending-payments"
 export * from "./add-invoice-for-wallet"
 export * from "./wallet-name-available"
-export * from "./reimburse-fee"
 
 import { WalletsRepository } from "@services/mongoose"
 

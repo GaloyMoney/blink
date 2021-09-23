@@ -4,7 +4,7 @@ import { toLiabilitiesAccountId } from "@domain/ledger"
 import { LedgerService } from "@services/ledger"
 import { LndService } from "@services/lnd"
 import { LockService } from "@services/lock"
-import * as Wallets from "@app/wallets"
+import { reimburseFee } from "@app/wallets/reimburse-fee"
 
 export const updatePendingPayments = async ({
   walletId,
@@ -93,7 +93,7 @@ const updatePendingPayment = async ({
         "payment has been confirmed",
       )
       if (paymentLiabilityTx.feeKnownInAdvance) return
-      return Wallets.reimburseFee({
+      return reimburseFee({
         liabilitiesAccountId,
         journalId: paymentLiabilityTx.journalId,
         paymentHash,
