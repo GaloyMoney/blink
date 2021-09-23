@@ -7,5 +7,5 @@ type TwoFAToken = string & { [twoFATokenSymbol]: never }
 type TwoFAError = import("./errors").TwoFAError
 
 interface TwoFA {
-  verify({ secret, token }: { secret: TwoFASecret; token: TwoFAToken }): void | TwoFAError
+  verify({ secret, token }: { secret: TwoFASecret; token: TwoFAToken }): true | TwoFAError
 }

@@ -10,12 +10,13 @@ export const TwoFA = (): TwoFA => {
   }: {
     secret: TwoFASecret
     token: TwoFAToken
-  }): void | TwoFAError => {
+  }): true | TwoFAError => {
     try {
       const result = verifyToken(secret, token)
       if (!result) {
         return new TwoFAValidationError()
       }
+      return true
     } catch (err) {
       return new UnknownTwoFAError()
     }
