@@ -7,10 +7,10 @@ export const WalletInvoiceValidator = (
     fromWalletId,
   }: {
     fromWalletId: WalletId
-  }): void | ApplicationError => {
+  }): true | ApplicationError => {
     if (walletInvoice.paid) return new AlreadyPaidError()
-
     if (walletInvoice.walletId === fromWalletId) return new SelfPaymentError()
+    return true
   }
 
   return {

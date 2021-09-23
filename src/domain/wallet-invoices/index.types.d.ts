@@ -7,7 +7,7 @@ type WalletInvoice = {
 }
 
 type WalletInvoiceValidator = {
-  validateToSend({ fromWalletId: WalletId }): void | Error
+  validateToSend({ fromWalletId: WalletId }): true | Error
 }
 
 interface IWalletInvoicesRepository {
