@@ -7,8 +7,14 @@ import {
   InvoiceNotFoundError,
   PaymentStatus,
 } from "@domain/bitcoin/lightning"
-import { createInvoice, getInvoice, getPayment, GetPaymentResult } from "lightning"
-import { getActiveLnd, getLndFromPubkey } from "./utils"
+import {
+  createInvoice,
+  getInvoice,
+  getPayment,
+  cancelHodlInvoice,
+  GetPaymentResult,
+} from "lightning"
+import { getActiveLnd, getLndFromPubkey, getLnds } from "./utils"
 
 export const LndService = (): ILightningService | LightningServiceError => {
   let lndAuth: AuthenticatedLnd, pubkey: string
@@ -16,6 +22,18 @@ export const LndService = (): ILightningService | LightningServiceError => {
     ;({ lnd: lndAuth, pubkey } = getActiveLnd())
   } catch (err) {
     return new UnknownLightningServiceError(err)
+  }
+
+  const isLocal = (pubkey: Pubkey): boolean | LightningServiceError => {
+    let offchainLnds: LndParamsAuthed[]
+    try {
+      offchainLnds = getLnds({ type: "offchain" })
+    } catch (err) {
+      return new UnknownLightningServiceError(err)
+    }
+    return !!offchainLnds
+      .map((item) => item.pubkey as Pubkey)
+      .find((item) => item == pubkey)
   }
 
   const registerInvoice = async ({
@@ -72,7 +90,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
     pubkey: Pubkey
     paymentHash: PaymentHash
   }): Promise<LnPaymentLookup | LightningServiceError> => {
-    let lnd
+    let lnd: AuthenticatedLnd
     try {
       ;({ lnd } = getLndFromPubkey({ pubkey }))
     } catch (err) {
@@ -98,9 +116,26 @@ export const LndService = (): ILightningService | LightningServiceError => {
     }
   }
 
+  const cancelInvoice = async ({
+    pubkey,
+    paymentHash,
+  }: {
+    pubkey: Pubkey
+    paymentHash: PaymentHash
+  }): Promise<void | LightningServiceError> => {
+    try {
+      const { lnd } = getLndFromPubkey({ pubkey })
+      await cancelHodlInvoice({ lnd, id: paymentHash })
+    } catch (err) {
+      return new UnknownLightningServiceError(err)
+    }
+  }
+
   return {
+    isLocal,
     registerInvoice,
     lookupInvoice,
     lookupPayment,
+    cancelInvoice,
   }
 }

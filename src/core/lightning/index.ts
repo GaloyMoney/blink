@@ -1,12 +1,12 @@
 import assert from "assert"
-import { cancelHodlInvoice, payViaPaymentDetails, payViaRoutes } from "lightning"
+import { payViaPaymentDetails, payViaRoutes } from "lightning"
 import lnService from "ln-service"
 import { verifyToken } from "node-2fa"
 
 import * as Wallets from "@app/wallets"
 import { TIMEOUT_PAYMENT } from "@services/lnd/auth"
 import { WalletInvoicesRepository } from "@services/mongoose"
-import { getActiveLnd, getLndFromPubkey, isMyNode, validate } from "@services/lnd/utils"
+import { getActiveLnd, getLndFromPubkey, validate } from "@services/lnd/utils"
 import { ledger } from "@services/mongodb"
 import { redis } from "@services/redis"
 import { User } from "@services/mongoose/schema"
@@ -28,6 +28,7 @@ import { UserWallet } from "../user-wallet"
 import { addContact, isInvoiceAlreadyPaidError, timeout } from "../utils"
 import { lnPaymentStatusEvent } from "@config/app"
 import pubsub from "@services/pubsub"
+import { LndService } from "@services/lnd"
 
 export type ITxType =
   | "invoice"
@@ -107,7 +108,9 @@ export const LightningMixin = (superclass) =>
       // this should not happen as this check is done within RN
 
       // TODO: mobile side should also haev a list of array instead of a single node
-      if (isMyNode({ pubkey: destination })) {
+      const lndService = LndService()
+      if (lndService instanceof Error) throw lndService
+      if (lndService.isLocal(destination)) {
         lightningLogger.warn("probe for self")
         return 0
       }
@@ -230,7 +233,9 @@ export const LightningMixin = (superclass) =>
         if (balanceSats instanceof Error) throw balanceSats
 
         // On us transaction
-        if (isMyNode({ pubkey: destination }) || isPushPayment) {
+        const lndService = LndService()
+        if (lndService instanceof Error) throw lndService
+        if (lndService.isLocal(destination) || isPushPayment) {
           const lightningLoggerOnUs = lightningLogger.child({ onUs: true, fee: 0 })
 
           const remainingOnUsLimit = await this.user.remainingOnUsLimit()
@@ -323,9 +328,13 @@ export const LightningMixin = (superclass) =>
             // if we failed to do it, the invoice would still be present in InvoiceUser
             // in case the invoice were to be paid another time independantly (unlikely outcome)
             try {
-              const { lnd } = getLndFromPubkey({ pubkey })
-
-              await cancelHodlInvoice({ lnd, id })
+              const lndService = LndService()
+              if (lndService instanceof Error) return lndService
+              const deleteResult = lndService.cancelInvoice({
+                pubkey,
+                paymentHash: id,
+              })
+              if (deleteResult instanceof Error) throw deleteResult
               this.logger.info({ id, user: this.user }, "canceling invoice on lnd")
 
               payeeInvoice.paid = true
