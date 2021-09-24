@@ -27,16 +27,16 @@ export const verifyCaptchaAndReturnOTP = async ({
       geetestValidate,
       geetestSeccode,
     )
+    if (!verifySuccess) {
+      throw new Error("Could not validate captcha")
+    }
   } catch (err) {
-    logger.error({ err }, "impossible to verify geetest")
-    return false
-  }
-  if (!verifySuccess) {
     throw new CaptchaFailedError("Captcha Invalid", {
       logger,
       geetestChallenge,
       geetestValidate,
       geetestSeccode,
+      err,
     })
   }
 
