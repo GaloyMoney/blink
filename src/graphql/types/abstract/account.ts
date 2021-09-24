@@ -1,4 +1,5 @@
 import { GT } from "@graphql/index"
+import WalletName from "../scalar/wallet-name"
 // import Limits from "../object/limits"
 // import AccountLevel from "../scalar/account-level"
 // import AccountStatus from "../scalar/account-status"
@@ -25,8 +26,8 @@ const IAccount = new GT.Interface({
     csvTransactions: {
       type: GT.NonNull(GT.String),
       args: {
-        walletIds: {
-          type: GT.NonNullList(GT.ID),
+        walletNames: {
+          type: GT.NonNullList(WalletName),
         },
       },
     },

@@ -1,9 +1,13 @@
-import * as Wallets from "@app/wallets"
 import { GT } from "@graphql/index"
-import IAccount from "../abstract/account"
-// import Transaction from "../abstract/transaction"
-import Wallet from "../abstract/wallet"
 
+import IAccount from "../abstract/account"
+import Wallet from "../abstract/wallet"
+import WalletName from "../scalar/wallet-name"
+
+import * as Wallets from "@app/wallets"
+import * as Accounts from "@app/accounts"
+
+// import Transaction from "../abstract/transaction"
 // import AccountLevel from "../scalar/account-level"
 // import AccountStatus from "../scalar/account-status"
 // import Limits from "./limits"
@@ -29,8 +33,8 @@ const ConsumerAccount = new GT.Object({
     wallets: {
       type: GT.NonNullList(Wallet),
       resolve: (source) => {
-        const wallets = source.walletIds.map((id: WalletId) => {
-          const wallet = Wallets.getWallet(id)
+        const wallets = source.walletIds.map(async (id: WalletId) => {
+          const wallet = await Wallets.getWallet(id)
           if (wallet instanceof Error) {
             throw wallet
           }
@@ -43,9 +47,18 @@ const ConsumerAccount = new GT.Object({
     csvTransactions: {
       type: GT.NonNull(GT.String),
       args: {
-        walletIds: {
-          type: GT.NonNullList(GT.ID),
+        walletNames: {
+          type: GT.NonNullList(WalletName),
         },
+      },
+      resolve: async (source, args) => {
+        const walletIds = await Accounts.toWalletIds(source, args.walletNames)
+
+        if (walletIds instanceof Error) {
+          throw walletIds
+        }
+
+        return Wallets.getCSVForWallets(walletIds)
       },
     },
   }),
