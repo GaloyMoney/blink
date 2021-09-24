@@ -1,7 +1,6 @@
 import { LedgerService } from "@services/ledger"
 import { toLiabilitiesAccountId, LedgerError } from "@domain/ledger"
 import { WalletTransactionHistory } from "@domain/wallets"
-import { PartialResult } from "@app/partial-result"
 
 export const getAccountTransactionsForContact = async ({
   account,
@@ -9,7 +8,7 @@ export const getAccountTransactionsForContact = async ({
 }: {
   account: Account
   contactWalletName: WalletName
-}): Promise<PartialResult<WalletTransaction[]>> => {
+}): Promise<WalletTransaction[] | Error> => {
   const ledger = LedgerService()
   let transactions: WalletTransaction[] = []
 
@@ -19,12 +18,11 @@ export const getAccountTransactionsForContact = async ({
       liabilitiesAccountId,
       contactWalletName,
     )
-    if (ledgerTransactions instanceof LedgerError)
-      return PartialResult.err(ledgerTransactions)
+    if (ledgerTransactions instanceof LedgerError) return ledgerTransactions
 
     const confirmedHistory = WalletTransactionHistory.fromLedger(ledgerTransactions)
     transactions = transactions.concat(confirmedHistory.transactions)
   }
 
-  return PartialResult.ok(transactions)
+  return transactions
 }

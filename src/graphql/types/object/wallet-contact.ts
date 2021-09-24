@@ -29,14 +29,13 @@ const WalletContact = new GT.Object({
           throw account
         }
 
-        const { result: transactions, error } =
-          await Wallets.getAccountTransactionsForContact({
-            account,
-            contactWalletName,
-          })
+        const transactions = await Wallets.getAccountTransactionsForContact({
+          account,
+          contactWalletName,
+        })
 
-        if (error instanceof Error || transactions === null) {
-          throw error
+        if (transactions instanceof Error) {
+          throw transactions
         }
 
         return connectionFromArray(transactions, args)
