@@ -12,6 +12,16 @@ type Route = { roundedUpFee: Satoshis; roundedDownFee: Satoshis }
 type CachedRoute = { pubkey: Pubkey; route: RawRoute }
 
 interface IRoutesRepository {
+  persistByPaymentHash: ({
+    paymentHash,
+    milliSatsAmounts,
+    routeToCache,
+  }: {
+    paymentHash: PaymentHash
+    milliSatsAmounts: MilliSatoshis
+    routeToCache: CachedRoute
+  }) => Promise<true | RepositoryError>
+
   findByPaymentHash: ({
     paymentHash,
     milliSatsAmounts,

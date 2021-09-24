@@ -1,7 +1,32 @@
+import { SECS_PER_5_MINS } from "@config/app"
 import { CouldNotFindError, UnknownRepositoryError } from "@domain/errors"
 import { redis } from "@services/redis"
 
 export const RoutesRepository = (): IRoutesRepository => {
+  const persistByPaymentHash = async ({
+    paymentHash,
+    milliSatsAmounts,
+    routeToCache,
+    time = SECS_PER_5_MINS,
+  }: {
+    paymentHash: PaymentHash
+    milliSatsAmounts: MilliSatoshis
+    routeToCache: CachedRoute
+    time?: Seconds
+  }): Promise<true | RepositoryError> => {
+    try {
+      const key = JSON.stringify({
+        id: paymentHash,
+        mtokens: milliSatsAmounts.toString(),
+      })
+      const value = JSON.stringify(routeToCache)
+      await redis.set(key, value, "EX", time)
+      return true
+    } catch (err) {
+      return new UnknownRepositoryError(err)
+    }
+  }
+
   const findByPaymentHash = async ({
     paymentHash,
     milliSatsAmounts,
@@ -39,6 +64,7 @@ export const RoutesRepository = (): IRoutesRepository => {
   }
 
   return {
+    persistByPaymentHash,
     findByPaymentHash,
     deleteByPaymentHash,
   }
