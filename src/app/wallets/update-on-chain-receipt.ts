@@ -93,7 +93,10 @@ const processTxForWallet = async (
     if (!recorded) {
       for (const { sats, address } of tx.rawTx.outs) {
         if (address !== null && walletAddresses.includes(address)) {
-          const fee = DepositFeeCalculator(sats).onChainDepositFee(wallet.depositFeeRatio)
+          const fee = DepositFeeCalculator().onChainDepositFee({
+            amount: sats,
+            ratio: wallet.depositFeeRatio,
+          })
           const usd = sats * price
           const usdFee = fee * price
 
