@@ -73,8 +73,10 @@ export const startApolloServer = async ({
     context: async (context) => {
       // @ts-expect-error: TODO
       const token = context.req?.token ?? null
-      const apiKey = context.req["apiKey"] ?? null
-      const apiSecret = context.req["apiSecret"] ?? null
+      // @ts-expect-error: TODO
+      const apiKey = context.req?.apiKey ?? null
+      // @ts-expect-error: TODO
+      const apiSecret = context.req?.apiSecret ?? null
       const uid = token?.uid ?? null
       const ips = context.req?.headers["x-real-ip"]
       let ip: string | undefined = ips as string | undefined
