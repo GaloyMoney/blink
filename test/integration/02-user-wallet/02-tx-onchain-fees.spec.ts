@@ -1,13 +1,14 @@
 import * as Wallets from "@app/wallets"
 import { getOnChainWalletConfig } from "@config/app"
+import { toSats, toTargetConfs } from "@domain/bitcoin"
 import { InsufficientBalanceError, LessThanDustThresholdError } from "@domain/errors"
 import { bitcoindClient, bitcoindOutside, getUserWallet } from "test/helpers"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
-const defaultAmount = 6000 as Satoshis
-const defaultTarget = 3 as TargetConfirmations
+const defaultAmount = toSats(6000)
+const defaultTarget = toTargetConfs(3)
 const { dustThreshold } = getOnChainWalletConfig()
 let userWallet0: Wallet, userWallet1: Wallet
 
@@ -37,6 +38,7 @@ describe("UserWallet - getOnchainFee", () => {
       address,
       targetConfirmations: defaultTarget,
     })
+    expect(fee).not.toBeInstanceOf(Error)
     expect(fee).toBeGreaterThan(0)
     expect(fee).toBeGreaterThan(userWallet0.withdrawFee)
   })
@@ -50,6 +52,7 @@ describe("UserWallet - getOnchainFee", () => {
       address,
       targetConfirmations: defaultTarget,
     })
+    expect(fee).not.toBeInstanceOf(Error)
     expect(fee).toBe(0)
   })
 

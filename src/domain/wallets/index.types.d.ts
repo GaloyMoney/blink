@@ -93,3 +93,13 @@ type DepositFeeCalculator = {
   onChainDepositFee({ amount, ratio }: onChainDepositFeeArgs): Satoshis
   lnDepositFee(): Satoshis
 }
+
+type OnChainWithdrawalFeeArgs = {
+  onChainFee: Satoshis
+  walletFee: Satoshis
+}
+
+type WithdrawalFeeCalculator = {
+  onChainWithdrawalFee({ onChainFee, walletFee }: OnChainWithdrawalFeeArgs): Satoshis
+  onChainIntraLedgerFee(): Satoshis
+}

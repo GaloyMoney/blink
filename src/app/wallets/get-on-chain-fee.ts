@@ -3,7 +3,7 @@ import { WalletsRepository } from "@services/mongoose"
 import { WithdrawalFeeCalculator } from "@domain/wallets"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { BTC_NETWORK, getOnChainWalletConfig } from "@config/app"
-import { checkedToSats, checkedToTargetConfs } from "@domain/bitcoin"
+import { checkedToSats, checkedToTargetConfs, toSats } from "@domain/bitcoin"
 import {
   CouldNotFindError,
   LessThanDustThresholdError,
@@ -19,40 +19,41 @@ export const getOnChainFee = async ({
   address,
   targetConfirmations,
 }: GetOnChainFeeArgs): Promise<Satoshis | ApplicationError> => {
-  const withdrawalFeeCalculator = WithdrawalFeeCalculator(wallet)
+  const withdrawalFeeCalculator = WithdrawalFeeCalculator()
   const walletsRepo = WalletsRepository()
   const payeeWallet = await walletsRepo.findByAddress(address)
-  if (payeeWallet instanceof CouldNotFindError) {
-    if (amount < dustThreshold) {
-      return new LessThanDustThresholdError(
-        `Use lightning to send amounts less than ${dustThreshold}`,
-      )
-    }
 
-    const balance = await getBalanceForWalletId(wallet.id)
-    if (balance instanceof Error) return balance
+  const isIntraLedger = !(payeeWallet instanceof Error)
+  if (isIntraLedger) return withdrawalFeeCalculator.onChainIntraLedgerFee()
 
-    // avoids lnd balance sniffing attack
-    if (balance < amount) {
-      return new InsufficientBalanceError("Balance is too low")
-    }
+  const isError = !(payeeWallet instanceof CouldNotFindError)
+  if (isError) return payeeWallet
 
-    const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
-    if (onChainService instanceof Error) return onChainService
-
-    const onChainFee = await onChainService.getOnChainFeeEstimate(
-      amount,
-      address,
-      targetConfirmations,
+  if (amount < dustThreshold)
+    return new LessThanDustThresholdError(
+      `Use lightning to send amounts less than ${dustThreshold}`,
     )
-    if (onChainFee instanceof Error) return onChainFee
 
-    return withdrawalFeeCalculator.onChainFee(onChainFee)
-  }
+  const balance = await getBalanceForWalletId(wallet.id)
+  if (balance instanceof Error) return balance
 
-  if (payeeWallet instanceof Error) return payeeWallet
+  // avoids lnd balance sniffing attack
+  if (balance < amount) return new InsufficientBalanceError("Balance is too low")
 
-  return withdrawalFeeCalculator.onChainIntraLedgerFee()
+  const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
+  if (onChainService instanceof Error) return onChainService
+
+  const onChainFee = await onChainService.getOnChainFeeEstimate(
+    amount,
+    address,
+    targetConfirmations,
+  )
+  if (onChainFee instanceof Error) return onChainFee
+
+  return withdrawalFeeCalculator.onChainWithdrawalFee({
+    onChainFee,
+    walletFee: toSats(wallet.withdrawFee),
+  })
 }
 
 export const getOnChainFeeByWalletId = async ({
