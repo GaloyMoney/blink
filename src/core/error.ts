@@ -169,6 +169,20 @@ export class IPBlacklistedError extends CustomError {
   }
 }
 
+export class CaptchaFailedError extends CustomError {
+  constructor(
+    message,
+    { forwardToClient = true, logger, level = "warn" as const, ...metadata },
+  ) {
+    super(message, "REJECTED_CAPTCHA_FAILED", {
+      forwardToClient,
+      logger,
+      level,
+      metadata,
+    })
+  }
+}
+
 export class OnChainFeeEstimationError extends CustomError {
   constructor(
     message = "Unable to estimate onchain fee",
