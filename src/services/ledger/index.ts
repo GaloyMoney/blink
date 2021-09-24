@@ -44,7 +44,21 @@ export const LedgerService = (): ILedgerService => {
   ): Promise<LedgerTransaction[] | LedgerError> => {
     try {
       const { results } = await MainBook.ledger({ account: liabilitiesAccountId })
-      // translate raw schema result -> LedgerTransaction
+      return results.map((tx) => translateToLedgerTx(tx))
+    } catch (err) {
+      return new UnknownLedgerError(err)
+    }
+  }
+
+  const getLiabilityTransactionsForContactWalletName = async (
+    liabilitiesAccountId: LiabilitiesAccountId,
+    contactWalletName,
+  ): Promise<LedgerTransaction[] | LedgerError> => {
+    try {
+      const { results } = await MainBook.ledger({
+        account: liabilitiesAccountId,
+        username: contactWalletName,
+      })
       return results.map((tx) => translateToLedgerTx(tx))
     } catch (err) {
       return new UnknownLedgerError(err)
@@ -60,7 +74,6 @@ export const LedgerService = (): ILedgerService => {
         type: LedgerTransactionType.Payment,
         pending: true,
       })
-      // translate raw schema result -> LedgerTransaction
       return results.map((tx) => translateToLedgerTx(tx))
     } catch (err) {
       return new UnknownLedgerError(err)
@@ -253,6 +266,7 @@ export const LedgerService = (): ILedgerService => {
 
   return {
     getLiabilityTransactions,
+    getLiabilityTransactionsForContactWalletName,
     listPendingPayments,
     getPendingPaymentsCount,
     getAccountBalance,
