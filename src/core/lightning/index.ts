@@ -133,13 +133,14 @@ export const LightningMixin = (superclass) =>
       const cacheProbe = await redis.get(key)
       if (cacheProbe) {
         lightningLogger.info("route result in cache")
-        return JSON.parse(cacheProbe).fee
+        const cachedRoute = JSON.parse(cacheProbe)
+        return cachedRoute.route.fee
       }
 
-      let route
+      let rawRoute
 
       try {
-        ;({ route } = await lnService.probeForRoute({
+        ;({ route: rawRoute } = await lnService.probeForRoute({
           lnd,
           destination,
           mtokens,
@@ -158,7 +159,7 @@ export const LightningMixin = (superclass) =>
         })
       }
 
-      if (!route) {
+      if (!rawRoute) {
         // TODO: check if the error is irrecoverable or not.
         throw new RouteFindingError(undefined, {
           logger: lightningLogger,
@@ -167,14 +168,21 @@ export const LightningMixin = (superclass) =>
         })
       }
 
-      const value = JSON.stringify({ ...route, pubkey })
+      const route: Route = {
+        roundedUpFee: toSats(rawRoute.safe_fee),
+        roundedDownFee: toSats(rawRoute.fee),
+      }
+      const value = JSON.stringify({
+        pubkey,
+        route: rawRoute,
+      })
       await redis.set(key, value, "EX", 60 * 5) // expires after 5 minutes
 
       lightningLogger.info(
         { redis: { key, value }, probingSuccess: true, success: true },
         "successfully found a route",
       )
-      return route.fee
+      return route.roundedDownFee
     }
 
     async pay(params: IPaymentRequest): Promise<payInvoiceResult | Error> {
@@ -452,13 +460,14 @@ export const LightningMixin = (superclass) =>
         lightningLogger = lightningLogger.child({ onUs: false, max_fee })
 
         const key = JSON.stringify({ id, mtokens })
-        route = JSON.parse((await redis.get(key)) as string)
-        this.logger.info({ route }, "route from redis")
+        const cachedRoute = JSON.parse((await redis.get(key)) as string)
+        this.logger.info({ route: cachedRoute }, "route from redis")
 
         let pubkey: string, lnd: AuthenticatedLnd
 
         // TODO: check if route is not an array and we shouldn't use .length instead
-        if (route) {
+        if (cachedRoute) {
+          route = { ...cachedRoute.route, pubkey: cachedRoute.pubkey }
           lightningLogger = lightningLogger.child({ routing: "payViaRoutes", route })
           fee = route.safe_fee
           feeKnownInAdvance = true
