@@ -34,8 +34,9 @@ import pubsub from "@services/pubsub"
 import { LndService } from "@services/lnd"
 import { PriceService } from "@services/price"
 import { LedgerService } from "@services/ledger"
-import { toSats } from "@domain/bitcoin"
+import { toMilliSats, toSats } from "@domain/bitcoin"
 import { toLiabilitiesAccountId } from "@domain/ledger"
+import { RoutesRepository } from "@services/redis/routes"
 import { CouldNotFindError } from "@domain/errors"
 import { LockService } from "@services/lock"
 import { checkAndVerifyTwoFA, getLimitsChecker } from "@core/accounts/helpers"
@@ -128,12 +129,14 @@ export const LightningMixin = (superclass) =>
 
       const { lnd, pubkey } = getActiveLnd()
 
-      const key = JSON.stringify({ id, mtokens })
-
-      const cacheProbe = await redis.get(key)
-      if (cacheProbe) {
+      const cachedRoute = await RoutesRepository().findByPaymentHash({
+        paymentHash: id,
+        milliSatsAmounts: toMilliSats(parseFloat(mtokens)),
+      })
+      if (cachedRoute instanceof Error && !(cachedRoute instanceof CouldNotFindError))
+        throw cachedRoute
+      if (!(cachedRoute instanceof CouldNotFindError)) {
         lightningLogger.info("route result in cache")
-        const cachedRoute = JSON.parse(cacheProbe)
         return cachedRoute.route.fee
       }
 
@@ -168,21 +171,26 @@ export const LightningMixin = (superclass) =>
         })
       }
 
-      const route: Route = {
-        roundedUpFee: toSats(rawRoute.safe_fee),
-        roundedDownFee: toSats(rawRoute.fee),
-      }
-      const value = JSON.stringify({
-        pubkey,
+      const routeToCache = {
+        pubkey: pubkey as Pubkey,
         route: rawRoute,
+      }
+      await RoutesRepository().persistByPaymentHash({
+        paymentHash: id,
+        milliSatsAmounts: toMilliSats(parseFloat(mtokens)),
+        routeToCache,
       })
-      await redis.set(key, value, "EX", 60 * 5) // expires after 5 minutes
 
+      const key = JSON.stringify({ id, mtokens })
       lightningLogger.info(
-        { redis: { key, value }, probingSuccess: true, success: true },
+        {
+          redis: { key, value: JSON.stringify(routeToCache) },
+          probingSuccess: true,
+          success: true,
+        },
         "successfully found a route",
       )
-      return route.roundedDownFee
+      return rawRoute.fee
     }
 
     async pay(params: IPaymentRequest): Promise<payInvoiceResult | Error> {
@@ -459,15 +467,22 @@ export const LightningMixin = (superclass) =>
         // TODO: push payment for other node as well
         lightningLogger = lightningLogger.child({ onUs: false, max_fee })
 
-        const key = JSON.stringify({ id, mtokens })
-        const cachedRoute = JSON.parse((await redis.get(key)) as string)
-        this.logger.info({ route: cachedRoute }, "route from redis")
+        const routesRepo = RoutesRepository()
+        const cachedRoute = await routesRepo.findByPaymentHash({
+          paymentHash: id,
+          milliSatsAmounts: toMilliSats(parseFloat(mtokens)),
+        })
+        if (cachedRoute instanceof Error && !(cachedRoute instanceof CouldNotFindError))
+          throw cachedRoute
+        if (!(cachedRoute instanceof CouldNotFindError)) {
+          route = { ...cachedRoute.route, pubkey: cachedRoute.pubkey }
+        }
+        this.logger.info({ route }, "route from redis")
 
         let pubkey: string, lnd: AuthenticatedLnd
 
         // TODO: check if route is not an array and we shouldn't use .length instead
-        if (cachedRoute) {
-          route = { ...cachedRoute.route, pubkey: cachedRoute.pubkey }
+        if (route) {
           lightningLogger = lightningLogger.child({ routing: "payViaRoutes", route })
           fee = route.safe_fee
           feeKnownInAdvance = true
@@ -478,7 +493,11 @@ export const LightningMixin = (superclass) =>
           } catch (err) {
             // lnd may have gone offline since the probe has been done.
             // deleting entry so that subsequent payment attempt could succeed
-            await redis.del(key)
+            const deleted = await routesRepo.deleteByPaymentHash({
+              paymentHash: id,
+              milliSatsAmounts: toMilliSats(parseFloat(mtokens)),
+            })
+            if (deleted instanceof Error) throw deleted
             throw err
           }
         } else {

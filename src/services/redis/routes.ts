@@ -56,7 +56,10 @@ export const RoutesRepository = (): IRoutesRepository => {
     milliSatsAmounts: MilliSatoshis
   }): Promise<void | RepositoryError> => {
     try {
-      const key = JSON.stringify({ id: paymentHash, mtokens: milliSatsAmounts })
+      const key = JSON.stringify({
+        id: paymentHash,
+        mtokens: milliSatsAmounts.toString(),
+      })
       await redis.del(key)
     } catch (err) {
       return new UnknownRepositoryError(err)
