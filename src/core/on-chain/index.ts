@@ -8,7 +8,6 @@ import {
   sendToChainAddress,
 } from "lightning"
 import _ from "lodash"
-import { verifyToken } from "node-2fa"
 
 import { getActiveOnchainLnd, getLndFromPubkey } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
@@ -32,11 +31,13 @@ import { ONCHAIN_LOOK_BACK, ONCHAIN_LOOK_BACK_OUTGOING } from "@config/app"
 import * as Wallets from "@app/wallets"
 import { PriceService } from "@services/price"
 import { toSats } from "@domain/bitcoin"
-import { WalletsRepository } from "@services/mongoose"
+import { UsersRepository, WalletsRepository } from "@services/mongoose"
 import { CouldNotFindError } from "@domain/errors"
 import { LedgerService } from "@services/ledger"
 import { toLiabilitiesAccountId } from "@domain/ledger"
 import { LockService } from "@services/lock"
+import { checkAndVerifyTwoFA, getLimitsChecker } from "@core/accounts/helpers"
+import { TwoFANewCodeNeededError } from "@domain/twoFA"
 
 export const getOnChainTransactions = async ({
   lnd,
@@ -122,6 +123,13 @@ export const OnChainMixin = (superclass) =>
 
         const payeeUser = await User.getUserByAddress({ address })
 
+        const limitsChecker = await getLimitsChecker(this.user.id)
+        if (limitsChecker instanceof Error) throw limitsChecker
+
+        const user = await UsersRepository().findById(this.user.id)
+        if (user instanceof Error) throw user
+        const { twoFA } = user
+
         // on us onchain transaction
         if (payeeUser) {
           let amountToSendPayeeUser = amount
@@ -130,19 +138,20 @@ export const OnChainMixin = (superclass) =>
             amountToSendPayeeUser = balanceSats
           }
 
-          const remainingTwoFALimit = await this.user.remainingTwoFALimit()
-
-          if (this.user.twoFA.secret && remainingTwoFALimit < amountToSendPayeeUser) {
-            if (!twoFAToken) {
-              throw new TwoFAError("Need a 2FA code to proceed with the payment", {
-                logger: onchainLogger,
+          const twoFACheck = twoFA?.secret
+            ? await checkAndVerifyTwoFA({
+                amount: toSats(amountToSendPayeeUser),
+                twoFAToken: twoFAToken as TwoFAToken,
+                twoFASecret: twoFA.secret,
+                limitsChecker,
               })
-            }
-
-            if (!verifyToken(this.user.twoFA.secret, twoFAToken)) {
-              throw new TwoFAError(undefined, { logger: onchainLogger })
-            }
-          }
+            : null
+          if (twoFACheck instanceof TwoFANewCodeNeededError)
+            throw new TwoFAError("Need a 2FA code to proceed with the payment", {
+              logger: onchainLogger,
+            })
+          if (twoFACheck instanceof Error)
+            throw new TwoFAError(undefined, { logger: onchainLogger })
 
           const onchainLoggerOnUs = onchainLogger.child({ onUs: true })
 
@@ -231,19 +240,20 @@ export const OnChainMixin = (superclass) =>
           throw new TransactionRestrictedError(error, { logger: onchainLogger })
         }
 
-        const remainingTwoFALimit = await this.user.remainingTwoFALimit()
-
-        if (this.user.twoFA.secret && remainingTwoFALimit < checksAmount) {
-          if (!twoFAToken) {
-            throw new TwoFAError("Need a 2FA code to proceed with the payment", {
-              logger: onchainLogger,
+        const twoFACheck = twoFA?.secret
+          ? await checkAndVerifyTwoFA({
+              amount: toSats(checksAmount),
+              twoFAToken: twoFAToken as TwoFAToken,
+              twoFASecret: twoFA.secret,
+              limitsChecker,
             })
-          }
-
-          if (!verifyToken(this.user.twoFA.secret, twoFAToken)) {
-            throw new TwoFAError(undefined, { logger: onchainLogger })
-          }
-        }
+          : null
+        if (twoFACheck instanceof TwoFANewCodeNeededError)
+          throw new TwoFAError("Need a 2FA code to proceed with the payment", {
+            logger: onchainLogger,
+          })
+        if (twoFACheck instanceof Error)
+          throw new TwoFAError(undefined, { logger: onchainLogger })
 
         const { lnd } = getActiveOnchainLnd()
 

@@ -1,11 +1,14 @@
 import assert from "assert"
 import { payViaPaymentDetails, payViaRoutes } from "lightning"
 import lnService from "ln-service"
-import { verifyToken } from "node-2fa"
 
 import * as Wallets from "@app/wallets"
 import { TIMEOUT_PAYMENT } from "@services/lnd/auth"
-import { WalletInvoicesRepository, WalletsRepository } from "@services/mongoose"
+import {
+  UsersRepository,
+  WalletInvoicesRepository,
+  WalletsRepository,
+} from "@services/mongoose"
 import { getActiveLnd, getLndFromPubkey, validate } from "@services/lnd/utils"
 import { ledger } from "@services/mongodb"
 import { redis } from "@services/redis"
@@ -35,6 +38,8 @@ import { toSats } from "@domain/bitcoin"
 import { toLiabilitiesAccountId } from "@domain/ledger"
 import { CouldNotFindError } from "@domain/errors"
 import { LockService } from "@services/lock"
+import { checkAndVerifyTwoFA, getLimitsChecker } from "@core/accounts/helpers"
+import { TwoFANewCodeNeededError } from "@domain/twoFA"
 
 export type ITxType =
   | "invoice"
@@ -212,19 +217,27 @@ export const LightningMixin = (superclass) =>
         params,
       })
 
-      const remainingTwoFALimit = await this.user.remainingTwoFALimit()
+      const twoFALimitsChecker = await getLimitsChecker(this.user.id)
+      if (twoFALimitsChecker instanceof Error) throw twoFALimitsChecker
 
-      if (this.user.twoFA.secret && remainingTwoFALimit < tokens) {
-        if (!twoFAToken) {
-          throw new TwoFAError("Need a 2FA code to proceed with the payment", {
-            logger: lightningLogger,
+      const user = await UsersRepository().findById(this.user.id)
+      if (user instanceof Error) throw user
+      const { twoFA } = user
+
+      const twoFACheck = twoFA?.secret
+        ? await checkAndVerifyTwoFA({
+            amount: toSats(tokens),
+            twoFAToken: twoFAToken as TwoFAToken,
+            twoFASecret: twoFA.secret,
+            limitsChecker: twoFALimitsChecker,
           })
-        }
-
-        if (!verifyToken(this.user.twoFA.secret, twoFAToken)) {
-          throw new TwoFAError(undefined, { logger: lightningLogger })
-        }
-      }
+        : null
+      if (twoFACheck instanceof TwoFANewCodeNeededError)
+        throw new TwoFAError("Need a 2FA code to proceed with the payment", {
+          logger: lightningLogger,
+        })
+      if (twoFACheck instanceof Error)
+        throw new TwoFAError(undefined, { logger: lightningLogger })
 
       let fee
       let route
