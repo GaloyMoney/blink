@@ -3,4 +3,5 @@ export class TwoFAError extends Error {
 }
 
 export class TwoFAValidationError extends TwoFAError {}
+export class TwoFANewCodeNeededError extends TwoFAError {}
 export class UnknownTwoFAError extends TwoFAError {}

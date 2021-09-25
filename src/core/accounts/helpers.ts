@@ -1,6 +1,7 @@
 import { getTwoFALimits, getUserLimits, MS_PER_DAY } from "@config/app"
 import { LimitsChecker } from "@domain/accounts"
 import { toLiabilitiesAccountId } from "@domain/ledger"
+import { TwoFA, TwoFANewCodeNeededError } from "@domain/twoFA"
 import { LedgerService } from "@services/ledger"
 import { AccountsRepository } from "@services/mongoose"
 
@@ -28,4 +29,29 @@ export const getLimitsChecker = async (
     userLimits,
     twoFALimits,
   })
+}
+
+export const checkAndVerifyTwoFA = async ({
+  amount,
+  twoFAToken,
+  twoFASecret,
+  limitsChecker,
+}: {
+  amount: Satoshis
+  twoFAToken: TwoFAToken
+  twoFASecret: TwoFASecret
+  limitsChecker: LimitsChecker
+}): Promise<void | ApplicationError> => {
+  const twoFALimitCheck = limitsChecker.checkTwoFA({
+    amount,
+  })
+  if (!(twoFALimitCheck instanceof Error)) return
+
+  if (!twoFAToken) return new TwoFANewCodeNeededError()
+
+  const validTwoFA = TwoFA().verify({
+    secret: twoFASecret,
+    token: twoFAToken as TwoFAToken,
+  })
+  if (validTwoFA instanceof Error) return validTwoFA
 }
