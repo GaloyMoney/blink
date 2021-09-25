@@ -181,7 +181,7 @@ export const OnChainMixin = (superclass) =>
           const journal = await lockExtendOrThrow(
             { lock, logger: onchainLoggerOnUs },
             async () => {
-              return LedgerService().sendOnChainIntraledgerTx({
+              return LedgerService().addOnChainIntraledgerTxSend({
                 liabilitiesAccountId: toLiabilitiesAccountId(this.user.id),
                 description: "",
                 sats: toSats(sats),

@@ -319,7 +319,7 @@ export const LightningMixin = (superclass) =>
           const journal = await lockExtendOrThrow(
             { lock, logger: lightningLoggerOnUs },
             async () => {
-              return LedgerService().sendLnIntraledgerTx({
+              return LedgerService().addLnIntraledgerTxSend({
                 liabilitiesAccountId: toLiabilitiesAccountId(this.user.id),
                 paymentHash: id,
                 description: memoInvoice,
@@ -494,7 +494,7 @@ export const LightningMixin = (superclass) =>
 
           entry = await lockExtendOrThrow({ lock, logger: lightningLogger }, async () => {
             // reduce balance from customer first
-            return LedgerService().sendLnTx({
+            return LedgerService().addLnTxSend({
               liabilitiesAccountId: toLiabilitiesAccountId(this.user.id),
               paymentHash: id,
               description: memoInvoice,
