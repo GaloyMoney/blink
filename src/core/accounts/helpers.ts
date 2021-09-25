@@ -38,7 +38,7 @@ export const checkAndVerifyTwoFA = async ({
   limitsChecker,
 }: {
   amount: Satoshis
-  twoFAToken: TwoFAToken
+  twoFAToken: TwoFAToken | null
   twoFASecret: TwoFASecret
   limitsChecker: LimitsChecker
 }): Promise<void | ApplicationError> => {
@@ -51,7 +51,7 @@ export const checkAndVerifyTwoFA = async ({
 
   const validTwoFA = TwoFA().verify({
     secret: twoFASecret,
-    token: twoFAToken as TwoFAToken,
+    token: twoFAToken,
   })
   if (validTwoFA instanceof Error) return validTwoFA
 }
