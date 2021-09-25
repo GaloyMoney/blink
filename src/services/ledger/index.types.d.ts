@@ -8,24 +8,24 @@ type TxMetadata = {
   currency: Currency
 }
 
-type ReceiveLnTxMetadata = TxMetadata & {
+type AddLnTxReceiveMetadata = TxMetadata & {
   hash: PaymentHash
 }
 
-type SendLnTxMetadata = TxMetadata & {
+type AddLnTxSendMetadata = TxMetadata & {
   hash: PaymentHash
   pubkey: Pubkey
   feeKnownInAdvance: boolean
 }
 
-type SendLnIntraledgerTxMetadata = TxMetadata & {
+type AddLnIntraledgerTxSendMetadata = TxMetadata & {
   hash: PaymentHash
   pubkey: Pubkey
   memoPayer: string | null
   username: WalletName | null
 }
 
-type SendOnChainIntraledgerTxMetadata = TxMetadata & {
+type AddOnChainIntraledgerTxSendMetadata = TxMetadata & {
   payee_addresses: OnChainAddress[]
   sendAll: boolean
   memoPayer: string | null
@@ -33,5 +33,5 @@ type SendOnChainIntraledgerTxMetadata = TxMetadata & {
 }
 
 type SendIntraledgerTxArgs = IntraledgerTxArgs & {
-  metadata: SendLnIntraledgerTxMetadata | SendOnChainIntraledgerTxMetadata
+  metadata: AddLnIntraledgerTxSendMetadata | AddOnChainIntraledgerTxSendMetadata
 }

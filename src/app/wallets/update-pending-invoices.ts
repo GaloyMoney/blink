@@ -127,7 +127,7 @@ const updatePendingInvoice = async ({
 
       const liabilitiesAccountId = toLiabilitiesAccountId(walletId)
       const ledgerService = LedgerService()
-      const result = await ledgerService.receiveLnTx({
+      const result = await ledgerService.addLnTxReceive({
         liabilitiesAccountId,
         paymentHash,
         description,

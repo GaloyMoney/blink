@@ -76,9 +76,9 @@ type LnTxArgs = TxArgs & {
   paymentHash: PaymentHash
 }
 
-type ReceiveLnTxArgs = LnTxArgs
+type AddLnTxReceiveArgs = LnTxArgs
 
-type SendLnTxArgs = LnTxArgs & {
+type AddLnTxSendArgs = LnTxArgs & {
   pubkey: Pubkey
   feeKnownInAdvance: boolean
 }
@@ -94,7 +94,7 @@ type IntraledgerTxArgs = {
   shareMemoWithPayee: boolean
 }
 
-type SendLnIntraledgerTxArgs = IntraledgerTxArgs & {
+type AddLnIntraledgerTxSendArgs = IntraledgerTxArgs & {
   paymentHash: PaymentHash
   fee: Satoshis
   usd: number
@@ -102,7 +102,7 @@ type SendLnIntraledgerTxArgs = IntraledgerTxArgs & {
   pubkey: Pubkey
 }
 
-type SendOnChainIntraledgerTxArgs = IntraledgerTxArgs & {
+type AddOnChainIntraledgerTxSendArgs = IntraledgerTxArgs & {
   fee: Satoshis
   usd: number
   usdFee: number
@@ -110,7 +110,7 @@ type SendOnChainIntraledgerTxArgs = IntraledgerTxArgs & {
   sendAll: boolean
 }
 
-type ReceiveLnFeeReeimbursementArgs = {
+type AddLnFeeReeimbursementReceiveArgs = {
   liabilitiesAccountId: LiabilitiesAccountId
   paymentHash: PaymentHash
   sats: Satoshis
@@ -151,24 +151,24 @@ interface ILedgerService {
 
   isLnTxRecorded(paymentHash: PaymentHash): Promise<boolean | LedgerServiceError>
 
-  receiveOnChainTx(
+  addOnChainTxReceive(
     args: ReceiveOnChainTxArgs,
   ): Promise<LedgerJournal | LedgerServiceError>
 
-  receiveLnTx(args: ReceiveLnTxArgs): Promise<LedgerJournal | LedgerServiceError>
+  addLnTxReceive(args: AddLnTxReceiveArgs): Promise<LedgerJournal | LedgerServiceError>
 
-  receiveLnFeeReimbursement(
-    args: ReceiveLnFeeReeimbursementArgs,
+  addLnFeeReimbursementReceive(
+    args: AddLnFeeReeimbursementReceiveArgs,
   ): Promise<LedgerJournal | LedgerServiceError>
 
-  sendLnTx(args: SendLnTxArgs): Promise<LedgerJournal | LedgerServiceError>
+  addLnTxSend(args: AddLnTxSendArgs): Promise<LedgerJournal | LedgerServiceError>
 
-  sendLnIntraledgerTx(
-    args: SendLnIntraledgerTxArgs,
+  addLnIntraledgerTxSend(
+    args: AddLnIntraledgerTxSendArgs,
   ): Promise<LedgerJournal | LedgerServiceError>
 
-  sendOnChainIntraledgerTx(
-    args: SendOnChainIntraledgerTxArgs,
+  addOnChainIntraledgerTxSend(
+    args: AddOnChainIntraledgerTxSendArgs,
   ): Promise<LedgerJournal | LedgerServiceError>
 
   settlePendingLiabilityTransactions(

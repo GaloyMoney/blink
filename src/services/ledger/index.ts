@@ -134,7 +134,7 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
-  const receiveOnChainTx = async ({
+  const addOnChainTxReceive = async ({
     liabilitiesAccountId,
     txId,
     sats,
@@ -172,7 +172,7 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
-  const receiveLnTx = async ({
+  const addLnTxReceive = async ({
     liabilitiesAccountId,
     paymentHash,
     description,
@@ -180,8 +180,8 @@ export const LedgerService = (): ILedgerService => {
     fee,
     usd,
     usdFee,
-  }: ReceiveLnTxArgs): Promise<LedgerJournal | LedgerError> => {
-    let metadata: ReceiveLnTxMetadata
+  }: AddLnTxReceiveArgs): Promise<LedgerJournal | LedgerError> => {
+    let metadata: AddLnTxReceiveMetadata
     try {
       metadata = {
         type: LedgerTransactionType.Invoice,
@@ -211,13 +211,13 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
-  const receiveLnFeeReimbursement = async ({
+  const addLnFeeReimbursementReceive = async ({
     liabilitiesAccountId,
     paymentHash,
     sats,
     usd,
     journalId,
-  }: ReceiveLnFeeReeimbursementArgs): Promise<LedgerJournal | LedgerError> => {
+  }: AddLnFeeReeimbursementReceiveArgs): Promise<LedgerJournal | LedgerError> => {
     try {
       const metadata = {
         type: LedgerTransactionType.LnFeeReimbursement,
@@ -241,7 +241,7 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
-  const sendLnTx = async ({
+  const addLnTxSend = async ({
     liabilitiesAccountId,
     paymentHash,
     description,
@@ -251,8 +251,8 @@ export const LedgerService = (): ILedgerService => {
     usdFee,
     pubkey,
     feeKnownInAdvance,
-  }: SendLnTxArgs): Promise<LedgerJournal | LedgerError> => {
-    let metadata: SendLnTxMetadata
+  }: AddLnTxSendArgs): Promise<LedgerJournal | LedgerError> => {
+    let metadata: AddLnTxSendMetadata
     try {
       metadata = {
         type: LedgerTransactionType.Payment,
@@ -280,7 +280,7 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
-  const sendLnIntraledgerTx = async ({
+  const addLnIntraledgerTxSend = async ({
     liabilitiesAccountId,
     paymentHash,
     description,
@@ -294,8 +294,8 @@ export const LedgerService = (): ILedgerService => {
     recipientWalletName,
     memoPayer,
     shareMemoWithPayee,
-  }: SendLnIntraledgerTxArgs): Promise<LedgerJournal | LedgerError> => {
-    const metadata: SendLnIntraledgerTxMetadata = {
+  }: AddLnIntraledgerTxSendArgs): Promise<LedgerJournal | LedgerError> => {
+    const metadata: AddLnIntraledgerTxSendMetadata = {
       type: LedgerTransactionType.IntraLedger,
       pending: false,
       hash: paymentHash,
@@ -309,7 +309,7 @@ export const LedgerService = (): ILedgerService => {
       currency: "BTC",
     }
 
-    return sendIntraledgerTx({
+    return addIntraledgerTxSend({
       liabilitiesAccountId,
       description,
       sats,
@@ -322,7 +322,7 @@ export const LedgerService = (): ILedgerService => {
     })
   }
 
-  const sendOnChainIntraledgerTx = async ({
+  const addOnChainIntraledgerTxSend = async ({
     liabilitiesAccountId,
     description,
     sats,
@@ -336,8 +336,8 @@ export const LedgerService = (): ILedgerService => {
     recipientWalletName,
     memoPayer,
     shareMemoWithPayee,
-  }: SendOnChainIntraledgerTxArgs): Promise<LedgerJournal | LedgerError> => {
-    const metadata: SendOnChainIntraledgerTxMetadata = {
+  }: AddOnChainIntraledgerTxSendArgs): Promise<LedgerJournal | LedgerError> => {
+    const metadata: AddOnChainIntraledgerTxSendMetadata = {
       type: LedgerTransactionType.OnchainIntraLedger,
       pending: false,
       fee,
@@ -351,7 +351,7 @@ export const LedgerService = (): ILedgerService => {
       currency: "BTC",
     }
 
-    return sendIntraledgerTx({
+    return addIntraledgerTxSend({
       liabilitiesAccountId,
       description,
       sats,
@@ -364,7 +364,7 @@ export const LedgerService = (): ILedgerService => {
     })
   }
 
-  const sendIntraledgerTx = async ({
+  const addIntraledgerTxSend = async ({
     liabilitiesAccountId,
     description,
     sats,
@@ -429,12 +429,12 @@ export const LedgerService = (): ILedgerService => {
     getAccountBalance,
     isOnChainTxRecorded,
     isLnTxRecorded,
-    receiveOnChainTx,
-    receiveLnTx,
-    receiveLnFeeReimbursement,
-    sendLnTx,
-    sendLnIntraledgerTx,
-    sendOnChainIntraledgerTx,
+    addOnChainTxReceive,
+    addLnTxReceive,
+    addLnFeeReimbursementReceive,
+    addLnTxSend,
+    addLnIntraledgerTxSend,
+    addOnChainIntraledgerTxSend,
     settlePendingLiabilityTransactions,
     voidLedgerTransactionsForJournal,
   }
