@@ -41,11 +41,11 @@ export const checkAndVerifyTwoFA = async ({
   twoFAToken: TwoFAToken | null
   twoFASecret: TwoFASecret
   limitsChecker: LimitsChecker
-}): Promise<void | ApplicationError> => {
+}): Promise<true | ApplicationError> => {
   const twoFALimitCheck = limitsChecker.checkTwoFA({
     amount,
   })
-  if (!(twoFALimitCheck instanceof Error)) return
+  if (!(twoFALimitCheck instanceof Error)) return true
 
   if (!twoFAToken) return new TwoFANewCodeNeededError()
 
@@ -54,4 +54,6 @@ export const checkAndVerifyTwoFA = async ({
     token: twoFAToken,
   })
   if (validTwoFA instanceof Error) return validTwoFA
+
+  return true
 }

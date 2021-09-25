@@ -9,37 +9,40 @@ export const LimitsChecker = ({
   userLimits: IUserLimits
   twoFALimits: TwoFALimits
 }): LimitsChecker => {
-  const checkTwoFA = ({ amount }: { amount: Satoshis }): void | LimitsExceededError => {
+  const checkTwoFA = ({ amount }: { amount: Satoshis }): true | LimitsExceededError => {
     const remainingTwoFALimit = twoFALimits.threshold - walletVolume.outgoingSats
     if (remainingTwoFALimit < amount) {
       return new TwoFALimitsExceededError("Need a 2FA code to proceed with the payment")
     }
+    return true
   }
 
   const checkIntraledger = ({
     amount,
   }: {
     amount: Satoshis
-  }): void | LimitsExceededError => {
+  }): true | LimitsExceededError => {
     const remainingLimit = userLimits.onUsLimit - walletVolume.outgoingSats
     if (remainingLimit < amount) {
       return new LimitsExceededError(
         `Cannot transfer more than ${userLimits.onUsLimit} sats in 24 hours`,
       )
     }
+    return true
   }
 
   const checkWithdrawal = ({
     amount,
   }: {
     amount: Satoshis
-  }): void | LimitsExceededError => {
+  }): true | LimitsExceededError => {
     const remainingLimit = userLimits.withdrawalLimit - walletVolume.outgoingSats
     if (remainingLimit < amount) {
       return new LimitsExceededError(
         `Cannot transfer more than ${userLimits.withdrawalLimit} sats in 24 hours`,
       )
     }
+    return true
   }
 
   return {
