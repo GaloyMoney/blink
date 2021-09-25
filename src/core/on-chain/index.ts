@@ -141,7 +141,7 @@ export const OnChainMixin = (superclass) =>
           const twoFACheck = twoFA?.secret
             ? await checkAndVerifyTwoFA({
                 amount: toSats(amountToSendPayeeUser),
-                twoFAToken: twoFAToken as TwoFAToken,
+                twoFAToken: twoFAToken ? (twoFAToken as TwoFAToken) : null,
                 twoFASecret: twoFA.secret,
                 limitsChecker,
               })
@@ -245,7 +245,7 @@ export const OnChainMixin = (superclass) =>
         const twoFACheck = twoFA?.secret
           ? await checkAndVerifyTwoFA({
               amount: toSats(checksAmount),
-              twoFAToken: twoFAToken as TwoFAToken,
+              twoFAToken: twoFAToken ? (twoFAToken as TwoFAToken) : null,
               twoFASecret: twoFA.secret,
               limitsChecker,
             })
