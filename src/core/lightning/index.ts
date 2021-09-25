@@ -231,7 +231,7 @@ export const LightningMixin = (superclass) =>
             twoFASecret: twoFA.secret,
             limitsChecker: twoFALimitsChecker,
           })
-        : null
+        : true
       if (twoFACheck instanceof TwoFANewCodeNeededError)
         throw new TwoFAError("Need a 2FA code to proceed with the payment", {
           logger: lightningLogger,

@@ -145,7 +145,7 @@ export const OnChainMixin = (superclass) =>
                 twoFASecret: twoFA.secret,
                 limitsChecker,
               })
-            : null
+            : true
           if (twoFACheck instanceof TwoFANewCodeNeededError)
             throw new TwoFAError("Need a 2FA code to proceed with the payment", {
               logger: onchainLogger,
@@ -249,7 +249,7 @@ export const OnChainMixin = (superclass) =>
               twoFASecret: twoFA.secret,
               limitsChecker,
             })
-          : null
+          : true
         if (twoFACheck instanceof TwoFANewCodeNeededError)
           throw new TwoFAError("Need a 2FA code to proceed with the payment", {
             logger: onchainLogger,
