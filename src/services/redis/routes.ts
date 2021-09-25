@@ -3,42 +3,26 @@ import { CouldNotFindError, UnknownRepositoryError } from "@domain/errors"
 import { redis } from "@services/redis"
 
 export const RoutesRepository = (): IRoutesRepository => {
-  const persistByPaymentHash = async ({
-    paymentHash,
-    milliSatsAmounts,
+  const persist = async ({
+    key,
     routeToCache,
     time = SECS_PER_5_MINS,
   }: {
-    paymentHash: PaymentHash
-    milliSatsAmounts: MilliSatoshis
+    key: CacheKey
     routeToCache: CachedRoute
     time?: Seconds
-  }): Promise<true | RepositoryError> => {
+  }): Promise<CachedRoute | RepositoryError> => {
     try {
-      const key = JSON.stringify({
-        id: paymentHash,
-        mtokens: milliSatsAmounts.toString(),
-      })
       const value = JSON.stringify(routeToCache)
       await redis.set(key, value, "EX", time)
-      return true
+      return routeToCache
     } catch (err) {
       return new UnknownRepositoryError(err)
     }
   }
 
-  const findByPaymentHash = async ({
-    paymentHash,
-    milliSatsAmounts,
-  }: {
-    paymentHash: PaymentHash
-    milliSatsAmounts: MilliSatoshis
-  }): Promise<CachedRoute | RepositoryError> => {
+  const findByKey = async (key: CacheKey): Promise<CachedRoute | RepositoryError> => {
     try {
-      const key = JSON.stringify({
-        id: paymentHash,
-        mtokens: milliSatsAmounts.toString(),
-      })
       const rawRouteString = await redis.get(key)
       if (!rawRouteString)
         return new CouldNotFindError("Couldn't find cached route for payment hash")
@@ -48,27 +32,18 @@ export const RoutesRepository = (): IRoutesRepository => {
     }
   }
 
-  const deleteByPaymentHash = async ({
-    paymentHash,
-    milliSatsAmounts,
-  }: {
-    paymentHash: PaymentHash
-    milliSatsAmounts: MilliSatoshis
-  }): Promise<void | RepositoryError> => {
+  const deleteByKey = async (key: CacheKey): Promise<true | RepositoryError> => {
     try {
-      const key = JSON.stringify({
-        id: paymentHash,
-        mtokens: milliSatsAmounts.toString(),
-      })
       await redis.del(key)
+      return true
     } catch (err) {
       return new UnknownRepositoryError(err)
     }
   }
 
   return {
-    persistByPaymentHash,
-    findByPaymentHash,
-    deleteByPaymentHash,
+    persist,
+    findByKey,
+    deleteByKey,
   }
 }

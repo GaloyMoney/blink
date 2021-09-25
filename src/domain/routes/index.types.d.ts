@@ -11,30 +11,24 @@ type Route = { roundedUpFee: Satoshis; roundedDownFee: Satoshis }
 
 type CachedRoute = { pubkey: Pubkey; route: RawRoute }
 
+declare const cacheKeySymbol: unique symbol
+type CacheKey = string & { [cacheKeySymbol]: never }
+
+type CachedRouteKeyGenerator = {
+  generate(milliSatsAmounts: MilliSatoshis): CacheKey
+}
+
 interface IRoutesRepository {
-  persistByPaymentHash: ({
-    paymentHash,
-    milliSatsAmounts,
+  persist: ({
+    key,
     routeToCache,
   }: {
-    paymentHash: PaymentHash
-    milliSatsAmounts: MilliSatoshis
+    key
     routeToCache: CachedRoute
-  }) => Promise<true | RepositoryError>
-
-  findByPaymentHash: ({
-    paymentHash,
-    milliSatsAmounts,
-  }: {
-    paymentHash: PaymentHash
-    milliSatsAmounts: MilliSatoshis
+    time?: Seconds
   }) => Promise<CachedRoute | RepositoryError>
 
-  deleteByPaymentHash: ({
-    paymentHash,
-    milliSatsAmounts,
-  }: {
-    paymentHash: PaymentHash
-    milliSatsAmounts: MilliSatoshis
-  }) => Promise<void | RepositoryError>
+  findByKey: (key: CacheKey) => Promise<CachedRoute | RepositoryError>
+
+  deleteByKey: (key: CacheKey) => Promise<true | RepositoryError>
 }
