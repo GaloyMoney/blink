@@ -129,7 +129,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: geetest-key
-                  key: geettest_key
+                  key: geetest_key
 
             - name: REDIS_MASTER_NAME
               value: "mymaster"
