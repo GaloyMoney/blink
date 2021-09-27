@@ -1,6 +1,10 @@
 import { hashApiKey } from "@domain/accounts"
 import { ValidationError } from "@domain/errors"
-import { AccountsRepository, AccountApiKeysRepository, WalletsRepository } from "@services/mongoose"
+import {
+  AccountApiKeysRepository,
+  AccountsRepository,
+  WalletsRepository,
+} from "@services/mongoose"
 
 export * from "./add-api-key-for-account"
 export * from "./get-api-keys-for-account"
