@@ -31,8 +31,9 @@ import { DbMetadata } from "@services/mongoose/schema"
 import { DbError, LndOfflineError, ValidationInternalError } from "@core/error"
 import { LoggedError } from "@core/utils"
 
-import { FEECAP, FEEMIN, params } from "./auth"
+import { params } from "./auth"
 import { WalletInvoicesRepository } from "@services/mongoose"
+import { LnFeeCalculator } from "@domain/bitcoin/lightning"
 
 export const deleteExpiredInvoiceUser = async () => {
   const walletInvoicesRepo = WalletInvoicesRepository()
@@ -461,7 +462,7 @@ export const validate = async ({
     throw Error("amount can't be negative")
   }
 
-  const max_fee = Math.floor(Math.max(FEECAP * tokens, FEEMIN))
+  const max_fee = LnFeeCalculator().max(tokens)
 
   return {
     // FIXME String: https://github.com/alexbosworth/lightning/issues/24
