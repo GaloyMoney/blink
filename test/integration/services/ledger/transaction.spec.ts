@@ -4,6 +4,10 @@ import { UserWallet } from "@core/user-wallet"
 import { WalletFactory } from "@core/wallet-factory"
 import { ledger, setupMongoConnection } from "@services/mongodb"
 import { clearAccountLocks } from "test/helpers/redis"
+import { LedgerService } from "@services/ledger"
+import { toSats } from "@domain/bitcoin"
+import { PriceService } from "@services/price"
+import { DepositFeeCalculator } from "@domain/wallets"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 
@@ -53,6 +57,37 @@ const walletUSD2 = new User(fullUSDmeta)
 const wallet5050 = new User(_5050meta)
 const walletBTC = new User(fullBTCmeta)
 const walletUSD = new User(fullUSDmeta)
+
+describe("receipt via Ledger Service", () => {
+  it("btc receive on lightning via ledger service", async () => {
+    const price = await PriceService().getCurrentPrice()
+    expect(price).not.toBeInstanceOf(Error)
+    if (price instanceof Error) throw price
+    const fee = DepositFeeCalculator().lnDepositFee()
+
+    const sats = toSats(1000)
+    const usd = sats * price
+    const usdFee = fee * price
+
+    const result = await LedgerService().addLnTxReceive({
+      liabilitiesAccountId: walletBTC.accountPath,
+      paymentHash: "paymentHash" as PaymentHash,
+      description: "transaction test",
+      sats,
+      fee,
+      usd,
+      usdFee,
+    })
+    expect(result).not.toBeInstanceOf(Error)
+
+    await expectBalance({
+      account: walletBTC.accountPath,
+      currency: "BTC",
+      balance: 1000,
+    })
+    await expectBalance({ account: lndAccountingPath, currency: "BTC", balance: -1000 })
+  })
+})
 
 describe("receipt", () => {
   it("btcReceiptToLnd", async () => {
@@ -112,6 +147,39 @@ describe("receipt", () => {
       balance: 0.05,
     })
     await expectBalance({ account: dealerPath, currency: "USD", balance: -0.05 })
+  })
+})
+
+describe("payment with lnd via Ledger Service", () => {
+  it("btc send on lightning via ledger service", async () => {
+    const price = await PriceService().getCurrentPrice()
+    expect(price).not.toBeInstanceOf(Error)
+    if (price instanceof Error) throw price
+    const fee = DepositFeeCalculator().lnDepositFee()
+
+    const sats = toSats(1000)
+    const usd = sats * price
+    const usdFee = fee * price
+
+    const result = await LedgerService().addLnTxSend({
+      liabilitiesAccountId: walletBTC.accountPath,
+      paymentHash: "paymentHash" as PaymentHash,
+      description: "transaction test",
+      sats,
+      fee,
+      usd,
+      usdFee,
+      pubkey: "pubkey" as Pubkey,
+      feeKnownInAdvance: false,
+    })
+    expect(result).not.toBeInstanceOf(Error)
+
+    await expectBalance({
+      account: walletBTC.accountPath,
+      currency: "BTC",
+      balance: -1000,
+    })
+    await expectBalance({ account: lndAccountingPath, currency: "BTC", balance: 1000 })
   })
 })
 
@@ -177,6 +245,43 @@ describe("payment with lnd", () => {
       currency: "USD",
       balance: -0.05,
     })
+  })
+})
+
+describe("on us payment via Ledger Service", () => {
+  it("intraledger", async () => {
+    const payer = walletBTC
+    const payee = walletBTC2
+
+    const price = await PriceService().getCurrentPrice()
+    expect(price).not.toBeInstanceOf(Error)
+    if (price instanceof Error) throw price
+    const fee = DepositFeeCalculator().lnDepositFee()
+
+    const sats = toSats(1000)
+    const lnFee = toSats(0)
+    const usd = sats * price
+    const usdFee = fee * price
+
+    const result = await LedgerService().addLnIntraledgerTxSend({
+      liabilitiesAccountId: payer.accountPath,
+      paymentHash: "paymentHash" as PaymentHash,
+      description: "desc",
+      sats,
+      fee: lnFee,
+      usd,
+      usdFee,
+      pubkey: "" as Pubkey,
+      recipientLiabilitiesAccountId: payee.accountPath,
+      payerWalletName: "payerWalletName" as WalletName,
+      recipientWalletName: "recipientWalletName" as WalletName,
+      memoPayer: null,
+      shareMemoWithPayee: true,
+    })
+    expect(result).not.toBeInstanceOf(Error)
+
+    await expectBalance({ account: payer.accountPath, currency: "BTC", balance: -1000 })
+    await expectBalance({ account: payee.accountPath, currency: "BTC", balance: 1000 })
   })
 })
 
