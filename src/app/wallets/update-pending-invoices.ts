@@ -120,7 +120,7 @@ const updatePendingInvoice = async ({
       if (price instanceof Error) return price
 
       const { description, received } = lnInvoiceLookup
-      const fee = DepositFeeCalculator(received).lnDepositFee()
+      const fee = DepositFeeCalculator().lnDepositFee()
 
       const usd = received * price
       const usdFee = fee * price

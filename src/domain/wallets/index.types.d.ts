@@ -78,3 +78,13 @@ interface IWalletsRepository {
   findByWalletName(walletName: WalletName): Promise<Wallet | RepositoryError>
   listByAddresses(addresses: string[]): Promise<Wallet[] | RepositoryError>
 }
+
+type onChainDepositFeeArgs = {
+  amount: Satoshis
+  ratio: DepositFeeRatio
+}
+
+type DepositFeeCalculator = {
+  onChainDepositFee({ amount, ratio }: onChainDepositFeeArgs): Satoshis
+  lnDepositFee(): Satoshis
+}
