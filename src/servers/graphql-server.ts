@@ -13,6 +13,7 @@ import helmet from "helmet"
 
 import { getHelmetConfig, getGeeTestConfig, JWT_SECRET } from "@config/app"
 import * as Users from "@app/users"
+import * as Accounts from "@app/accounts"
 
 import { baseLogger } from "@services/logger"
 import { redis } from "@services/redis"
@@ -23,6 +24,7 @@ import { isProd, isIPBlacklisted } from "@core/utils"
 import { WalletFactory } from "@core/wallet-factory"
 import { ApolloServerPluginUsageReporting } from "apollo-server-core"
 import GeeTest from "@services/geetest"
+import expressApiKeyAuth from "./graphql-middlewares/api-key-auth"
 
 const graphqlLogger = baseLogger.child({
   module: "graphql",
@@ -33,6 +35,12 @@ const helmetConfig = getHelmetConfig()
 export const isAuthenticated = rule({ cache: "contextual" })((parent, args, ctx) => {
   return ctx.uid !== null ? true : "NOT_AUTHENTICATED"
 })
+
+export const isApiKeyAuthenticated = rule({ cache: "contextual" })(
+  (_parent, _args, ctx) => {
+    return ctx.account !== null ? true : "NOT_AUTHENTICATED"
+  },
+)
 
 export const isEditor = rule({ cache: "contextual" })((parent, args, ctx) => {
   return ctx.user.role === "editor" ? true : "NOT_AUTHORIZED"
@@ -65,6 +73,10 @@ export const startApolloServer = async ({
     context: async (context) => {
       // @ts-expect-error: TODO
       const token = context.req?.token ?? null
+      // @ts-expect-error: TODO
+      const apiKey = context.req?.apiKey ?? null
+      // @ts-expect-error: TODO
+      const apiSecret = context.req?.apiSecret ?? null
       const uid = token?.uid ?? null
       const ips = context.req?.headers["x-real-ip"]
       let ip: string | undefined = ips as string | undefined
@@ -97,6 +109,16 @@ export const startApolloServer = async ({
             : null
       }
 
+      let account: Account | null = null
+      if (apiSecret && apiSecret) {
+        const loggedInAccount = await Accounts.getAccountByApiKey(apiKey, apiSecret)
+        if (loggedInAccount instanceof Error)
+          throw new ApolloError("Invalid API authentication", "INVALID_AUTHENTICATION", {
+            reason: loggedInAccount,
+          })
+        account = loggedInAccount
+      }
+
       return {
         ...context,
         logger,
@@ -105,6 +127,7 @@ export const startApolloServer = async ({
         domainUser,
         user,
         geetest,
+        account,
         ip,
       }
     },
@@ -195,6 +218,8 @@ export const startApolloServer = async ({
       requestProperty: "token",
     }),
   )
+
+  app.use(expressApiKeyAuth)
 
   // Health check
   app.get("/healthz", async function (req, res) {

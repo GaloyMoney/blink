@@ -252,6 +252,7 @@ type Query {
     amount: SatAmount!
     targetConfirmations: TargetConfirmations = 3
   ): OnChainTxFee!
+  accountApiKeys: [AccountApiKeyHashed]
 }
 
 type Globals {
@@ -395,6 +396,16 @@ type OnChainTxFee {
 """
 scalar TargetConfirmations
 
+type AccountApiKeyHashed {
+  label: AccountApiKeyLabel!
+  expireAt: Timestamp!
+}
+
+"""
+Identifier of an account api key
+"""
+scalar AccountApiKeyLabel
+
 type Mutation {
   userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
   userLogin(input: UserLoginInput!): AuthTokenPayload!
@@ -407,6 +418,8 @@ type Mutation {
   deviceNotificationTokenCreate(
     input: DeviceNotificationTokenCreateInput!
   ): SuccessPayload!
+  accountApiKeyCreate(input: AccountApiKeyCreateInput!): AccountApiKeyPayload!
+  accountApiKeyDisable(input: AccountApiKeyDisableInput!): SuccessPayload!
   userUpdateLanguage(input: UserUpdateLanguageInput!): UserUpdateLanguagePayload!
   walletContactUpdateAlias(
     input: WalletContactUpdateAliasInput!
@@ -491,6 +504,27 @@ input UserQuizQuestionUpdateCompletedInput {
 
 input DeviceNotificationTokenCreateInput {
   deviceToken: String!
+}
+
+type AccountApiKeyPayload {
+  errors: [Error!]!
+  accountApiKey: AccountApiKey
+}
+
+type AccountApiKey {
+  label: AccountApiKeyLabel!
+  key: String!
+  secret: String!
+  expireAt: Timestamp!
+}
+
+input AccountApiKeyCreateInput {
+  label: AccountApiKeyLabel
+  expireAt: Timestamp!
+}
+
+input AccountApiKeyDisableInput {
+  label: AccountApiKeyLabel!
 }
 
 type UserUpdateLanguagePayload {

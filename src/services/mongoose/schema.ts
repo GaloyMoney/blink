@@ -504,3 +504,15 @@ const priceHistorySchema = new Schema({
 })
 
 export const PriceHistory = mongoose.model("PriceHistory", priceHistorySchema)
+
+const accountApiKeySchema = new Schema({
+  accountId: { type: String, index: true, required: true },
+  label: { type: String, required: true },
+  hashedKey: { type: String, unique: true, required: true },
+  enabled: { type: Boolean, default: true },
+  expireAt: { type: Date, required: true },
+  timestamp: { type: Date, default: Date.now },
+})
+
+accountApiKeySchema.index({ accountId: 1, label: 1 }, { unique: true })
+export const AccountApiKey = mongoose.model("AccountApiKey", accountApiKeySchema)

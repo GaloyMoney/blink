@@ -1,11 +1,15 @@
 import dotenv from "dotenv"
 import { applyMiddleware } from "graphql-middleware"
-import { shield } from "graphql-shield"
+import { or, shield } from "graphql-shield"
 
 import { setupMongoConnection } from "@services/mongodb"
 import { activateLndHealthCheck } from "@services/lnd/health"
 import { baseLogger } from "@services/logger"
-import { isAuthenticated, startApolloServer } from "./graphql-server"
+import {
+  isApiKeyAuthenticated,
+  isAuthenticated,
+  startApolloServer,
+} from "./graphql-server"
 import { gqlMainSchema } from "../graphql"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
@@ -18,6 +22,7 @@ export async function startApolloServerForCoreSchema() {
       Query: {
         me: isAuthenticated,
         onChainTxFee: isAuthenticated,
+        accountApiKeys: isAuthenticated,
       },
       Mutation: {
         userQuizQuestionUpdateCompleted: isAuthenticated,
@@ -30,21 +35,24 @@ export async function startApolloServerForCoreSchema() {
 
         deviceNotificationTokenCreate: isAuthenticated,
 
-        lnInvoiceFeeProbe: isAuthenticated,
-        lnNoAmountInvoiceFeeProbe: isAuthenticated,
+        accountApiKeyCreate: isAuthenticated,
+        accountApiKeyDisable: isAuthenticated,
 
-        lnInvoiceCreate: isAuthenticated,
-        lnNoAmountInvoiceCreate: isAuthenticated,
+        lnInvoiceFeeProbe: or(isAuthenticated, isApiKeyAuthenticated),
+        lnNoAmountInvoiceFeeProbe: or(isAuthenticated, isApiKeyAuthenticated),
 
-        lnInvoicePaymentSend: isAuthenticated,
-        lnNoAmountInvoicePaymentSend: isAuthenticated,
+        lnInvoiceCreate: or(isAuthenticated, isApiKeyAuthenticated),
+        lnNoAmountInvoiceCreate: or(isAuthenticated, isApiKeyAuthenticated),
 
-        intraLedgerPaymentSend: isAuthenticated,
+        lnInvoicePaymentSend: or(isAuthenticated, isApiKeyAuthenticated),
+        lnNoAmountInvoicePaymentSend: or(isAuthenticated, isApiKeyAuthenticated),
 
-        onChainAddressCreate: isAuthenticated,
-        onChainAddressCurrent: isAuthenticated,
-        onChainPaymentSend: isAuthenticated,
-        onChainPaymentSendAll: isAuthenticated,
+        intraLedgerPaymentSend: or(isAuthenticated, isApiKeyAuthenticated),
+
+        onChainAddressCreate: or(isAuthenticated, isApiKeyAuthenticated),
+        onChainAddressCurrent: or(isAuthenticated, isApiKeyAuthenticated),
+        onChainPaymentSend: or(isAuthenticated, isApiKeyAuthenticated),
+        onChainPaymentSendAll: or(isAuthenticated, isApiKeyAuthenticated),
       },
       // Subscription: {},
     },

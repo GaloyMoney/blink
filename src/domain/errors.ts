@@ -10,6 +10,7 @@ export class RepositoryError extends DomainError {}
 export class UnknownRepositoryError extends RepositoryError {}
 export class CouldNotFindError extends RepositoryError {}
 export class PersistError extends RepositoryError {}
+export class DuplicateError extends RepositoryError {}
 
 export class ValidationError extends DomainError {}
 export class InvalidSatoshiAmount extends ValidationError {}
