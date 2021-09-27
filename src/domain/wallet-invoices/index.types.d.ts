@@ -6,6 +6,10 @@ type WalletInvoice = {
   paid: boolean
 }
 
+type WalletInvoiceValidator = {
+  validateToSend({ fromWalletId: WalletId }): true | Error
+}
+
 interface IWalletInvoicesRepository {
   persistNew: (invoice: WalletInvoice) => Promise<WalletInvoice | RepositoryError>
 
