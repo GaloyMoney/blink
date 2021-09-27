@@ -1,4 +1,0 @@
-service:
-  name: rest
-  type: ClusterIP
-  port: 3333
