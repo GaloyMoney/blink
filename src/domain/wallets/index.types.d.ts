@@ -65,9 +65,13 @@ type WalletTransactionHistoryWithPending = {
 declare const depositFeeRatioSymbol: unique symbol
 type DepositFeeRatio = number & { [depositFeeRatioSymbol]: never }
 
+declare const withdrawFeeSymbol: unique symbol
+type WithdrawFee = number & { [withdrawFeeSymbol]: never }
+
 type Wallet = {
   readonly id: WalletId
   readonly depositFeeRatio: DepositFeeRatio
+  readonly withdrawFee: WithdrawFee
   readonly walletName: WalletName | null
   readonly onChainAddressIdentifiers: OnChainAddressIdentifier[]
   onChainAddresses(): OnChainAddress[]
@@ -76,6 +80,7 @@ type Wallet = {
 interface IWalletsRepository {
   findById(walletId: WalletId): Promise<Wallet | RepositoryError>
   findByWalletName(walletName: WalletName): Promise<Wallet | RepositoryError>
+  findByAddress(address: OnChainAddress): Promise<Wallet | RepositoryError>
   listByAddresses(addresses: string[]): Promise<Wallet[] | RepositoryError>
 }
 
@@ -87,4 +92,14 @@ type onChainDepositFeeArgs = {
 type DepositFeeCalculator = {
   onChainDepositFee({ amount, ratio }: onChainDepositFeeArgs): Satoshis
   lnDepositFee(): Satoshis
+}
+
+type OnChainWithdrawalFeeArgs = {
+  onChainFee: Satoshis
+  walletFee: Satoshis
+}
+
+type WithdrawalFeeCalculator = {
+  onChainWithdrawalFee({ onChainFee, walletFee }: OnChainWithdrawalFeeArgs): Satoshis
+  onChainIntraLedgerFee(): Satoshis
 }

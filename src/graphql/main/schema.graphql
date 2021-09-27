@@ -246,6 +246,12 @@ type Query {
   mobileVersions: [MobileVersions]
   quizQuestions: [QuizQuestion]
   btcPriceList(range: PriceGraphRange!): [PricePoint]
+  onChainTxFee(
+    walletName: WalletName
+    address: OnChainAddress!
+    amount: SatAmount!
+    targetConfirmations: TargetConfirmations = 3
+  ): OnChainTxFee!
 }
 
 type Globals {
@@ -378,6 +384,16 @@ enum PriceGraphRange {
   ONE_YEAR
   FIVE_YEARS
 }
+
+type OnChainTxFee {
+  amount: SatAmount!
+  targetConfirmations: TargetConfirmations!
+}
+
+"""
+(Positive) Number of blocks in which the transaction is expected to be confirmed
+"""
+scalar TargetConfirmations
 
 type Mutation {
   userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!

@@ -50,4 +50,10 @@ interface IOnChainService {
   ): Promise<SubmittedTransaction[] | OnChainServiceError>
 
   createOnChainAddress(): Promise<OnChainAddressIdentifier | OnChainServiceError>
+
+  getOnChainFeeEstimate(
+    amount: Satoshis,
+    address: OnChainAddress,
+    targetConfirmations: TargetConfirmations,
+  ): Promise<Satoshis | OnChainServiceError>
 }

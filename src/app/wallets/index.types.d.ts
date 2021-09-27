@@ -19,3 +19,24 @@ type AddInvoiceNoAmountForRecipientArgs = {
   recipient: WalletName
   memo?: string
 }
+
+type GetOnChainFeeArgs = {
+  wallet: Wallet
+  amount: Satoshis
+  address: OnChainAddress
+  targetConfirmations: TargetConfirmations
+}
+
+type GetOnChainFeeByWalletIdArgs = {
+  walletId: WalletId
+  amount: number
+  address: OnChainAddress
+  targetConfirmations: number
+}
+
+type GetOnChainFeeByWalletNameArgs = {
+  walletName: WalletName
+  amount: number
+  address: OnChainAddress
+  targetConfirmations: number
+}
