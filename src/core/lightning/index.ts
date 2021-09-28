@@ -22,7 +22,7 @@ import {
   TransactionRestrictedError,
   TwoFAError,
 } from "../error"
-import { lockExtendOrThrow, redlock } from "../lock"
+import { redlock } from "../lock"
 import { transactionNotification } from "@services/notifications/payment"
 import { UserWallet } from "../user-wallet"
 import { addContact, isInvoiceAlreadyPaidError, timeout } from "../utils"
@@ -34,6 +34,7 @@ import { LedgerService } from "@services/ledger"
 import { toSats } from "@domain/bitcoin"
 import { toLiabilitiesAccountId } from "@domain/ledger"
 import { CouldNotFindError } from "@domain/errors"
+import { LockService } from "@services/lock"
 
 export type ITxType =
   | "invoice"
@@ -316,10 +317,10 @@ export const LightningMixin = (superclass) =>
           if (recipientWallet instanceof CouldNotFindError) throw recipientWallet
           if (recipientWallet instanceof Error) throw recipientWallet
 
-          const journal = await lockExtendOrThrow(
-            { lock, logger: lightningLoggerOnUs },
-            async () => {
-              return LedgerService().addLnIntraledgerTxSend({
+          const journal = await LockService().extendLock(
+            { logger: lightningLoggerOnUs, lock },
+            async () =>
+              LedgerService().addLnIntraledgerTxSend({
                 liabilitiesAccountId: toLiabilitiesAccountId(this.user.id),
                 paymentHash: id,
                 description: memoInvoice,
@@ -333,8 +334,7 @@ export const LightningMixin = (superclass) =>
                 recipientWalletName: recipientWallet.walletName,
                 memoPayer: memoPayer || null,
                 shareMemoWithPayee: isPushPayment,
-              })
-            },
+              }),
           )
           if (journal instanceof Error) throw journal
 
@@ -492,9 +492,10 @@ export const LightningMixin = (superclass) =>
           const usd = sats * price
           const usdFee = lnFee * price
 
-          entry = await lockExtendOrThrow({ lock, logger: lightningLogger }, async () => {
+          const lockArgs = { logger: lightningLogger, lock }
+          entry = await LockService().extendLock(lockArgs, async () =>
             // reduce balance from customer first
-            return LedgerService().addLnTxSend({
+            LedgerService().addLnTxSend({
               liabilitiesAccountId: toLiabilitiesAccountId(this.user.id),
               paymentHash: id,
               description: memoInvoice,
@@ -504,8 +505,8 @@ export const LightningMixin = (superclass) =>
               usdFee,
               pubkey: pubkey as Pubkey,
               feeKnownInAdvance,
-            })
-          })
+            }),
+          )
           if (entry instanceof Error) throw entry
 
           // there is 3 scenarios for a payment.
