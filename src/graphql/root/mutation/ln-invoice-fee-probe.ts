@@ -2,6 +2,7 @@ import { GT } from "@graphql/index"
 import WalletId from "@graphql/types/scalar/wallet-id"
 import SatAmountPayload from "@graphql/types/payload/sat-amount"
 import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
+import { lnInvoiceFeeProbe } from "@app/lightning/get-lightning-fee"
 
 const LnInvoiceFeeProbeInput = new GT.Input({
   name: "LnInvoiceFeeProbeInput",
@@ -16,7 +17,7 @@ const LnInvoiceFeeProbeMutation = GT.Field({
   args: {
     input: { type: GT.NonNull(LnInvoiceFeeProbeInput) },
   },
-  resolve: async (_, args, { wallet }) => {
+  resolve: async (_, args) => {
     const { walletId, paymentRequest } = args.input
 
     for (const input of [walletId, paymentRequest]) {
@@ -26,9 +27,13 @@ const LnInvoiceFeeProbeMutation = GT.Field({
     }
 
     try {
-      const feeSatAmount = await wallet.getLightningFee({
-        invoice: paymentRequest,
+      const feeSatAmount = await lnInvoiceFeeProbe({
+        paymentRequest,
       })
+      if (feeSatAmount instanceof Error) {
+        return { errors: [{ message: feeSatAmount.message || feeSatAmount.name }] } // TODO: refine error
+      }
+
       // TODO: validate feeSatAmount
       return {
         errors: [],
