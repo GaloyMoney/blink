@@ -104,6 +104,24 @@ interface ILightningService {
 
   defaultPubkey(): Pubkey
 
+  invoiceProbeForRoute({
+    decodedInvoice,
+    maxFee,
+  }: {
+    decodedInvoice: LnInvoice
+    maxFee: Satoshis
+  }): Promise<RawRoute | LightningServiceError>
+
+  noAmountInvoiceProbeForRoute({
+    decodedInvoice,
+    maxFee,
+    amount,
+  }: {
+    decodedInvoice: LnInvoice
+    maxFee: Satoshis
+    amount: Satoshis
+  }): Promise<RawRoute | LightningServiceError>
+
   registerInvoice(
     registerInvoiceArgs: RegisterInvoiceArgs,
   ): Promise<RegisteredInvoice | LightningServiceError>
