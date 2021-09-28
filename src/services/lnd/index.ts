@@ -11,6 +11,7 @@ import {
   NoValidNodeForPubkeyError,
   PaymentNotFoundError,
 } from "@domain/bitcoin/lightning"
+import lnService from "ln-service"
 import { isInvoiceAlreadyPaidError, timeout } from "@core/utils"
 import {
   createInvoice,
@@ -49,6 +50,100 @@ export const LndService = (): ILightningService | LightningServiceError => {
     return !!offchainLnds
       .map((item) => item.pubkey as Pubkey)
       .find((item) => item == pubkey)
+  }
+
+  const invoiceProbeForRoute = async ({
+    decodedInvoice,
+    maxFee,
+  }: {
+    decodedInvoice: LnInvoice
+    maxFee: Satoshis
+  }): Promise<RawRoute | LightningServiceError> => {
+    if (!(decodedInvoice.amount && decodedInvoice.amount > 0))
+      return new LightningServiceError(
+        "No amount invoice passed to method. Expected a valid amount to be present.",
+      )
+    return _probeForRoute({
+      decodedInvoice,
+      maxFee,
+      amount: decodedInvoice.amount,
+    })
+  }
+
+  const noAmountInvoiceProbeForRoute = async ({
+    decodedInvoice,
+    maxFee,
+    amount,
+  }: {
+    decodedInvoice: LnInvoice
+    maxFee: Satoshis
+    amount: Satoshis
+  }): Promise<RawRoute | LightningServiceError> => {
+    if (!(amount && amount > 0))
+      return new LightningServiceError(
+        "Invalid amount passed to method for invoice with no amount. Expected a valid amount to be passed.",
+      )
+    return _probeForRoute({
+      decodedInvoice,
+      maxFee,
+      amount,
+    })
+  }
+
+  const _probeForRoute = async ({
+    decodedInvoice,
+    maxFee,
+    amount,
+  }: {
+    decodedInvoice: LnInvoice
+    maxFee: Satoshis
+    amount: Satoshis
+  }): Promise<RawRoute | LightningServiceError> => {
+    try {
+      const routes: RawHopWithNumbers[][] = []
+      if (decodedInvoice.routeHints) {
+        decodedInvoice.routeHints.forEach((route) => {
+          const rawRoute: RawHopWithNumbers[] = []
+          route.forEach((hop) =>
+            rawRoute.push({
+              base_fee_mtokens: hop.baseFeeMTokens
+                ? parseFloat(hop.baseFeeMTokens)
+                : undefined,
+              channel: hop.channel,
+              cltv_delta: hop.cltvDelta,
+              fee_rate: hop.feeRate,
+              public_key: hop.nodePubkey,
+            }),
+          )
+          routes.push(rawRoute)
+        })
+      }
+
+      const probeForRouteArgs: ProbeForRouteArgs = {
+        lnd: lndAuth,
+        destination: decodedInvoice.destination,
+        mtokens: decodedInvoice.milliSatsAmount.toString(),
+        routes,
+        cltv_delta: decodedInvoice.cltvDelta || undefined,
+        features: decodedInvoice.features
+          ? decodedInvoice.features.map((f) => ({
+              bit: f.bit,
+              is_required: f.isRequired,
+              type: f.type,
+            }))
+          : undefined,
+        max_fee: maxFee,
+        payment: decodedInvoice.paymentSecret || undefined,
+        total_mtokens: decodedInvoice.paymentSecret
+          ? decodedInvoice.milliSatsAmount.toString()
+          : undefined,
+        tokens: amount,
+      }
+      const { route } = await lnService.probeForRoute(probeForRouteArgs)
+      return route
+    } catch (err) {
+      return new UnknownLightningServiceError()
+    }
   }
 
   const registerInvoice = async ({
@@ -235,6 +330,8 @@ export const LndService = (): ILightningService | LightningServiceError => {
   return {
     isLocal,
     defaultPubkey: (): Pubkey => defaultPubkey,
+    invoiceProbeForRoute,
+    noAmountInvoiceProbeForRoute,
     registerInvoice,
     lookupInvoice,
     lookupPayment,
