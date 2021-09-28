@@ -1,9 +1,7 @@
 import assert from "assert"
-import { payViaPaymentDetails, payViaRoutes } from "lightning"
 import lnService from "ln-service"
 
 import * as Wallets from "@app/wallets"
-import { TIMEOUT_PAYMENT } from "@services/lnd/auth"
 import {
   UsersRepository,
   WalletInvoicesRepository,
@@ -27,7 +25,7 @@ import {
 import { redlock } from "../lock"
 import { transactionNotification } from "@services/notifications/payment"
 import { UserWallet } from "../user-wallet"
-import { addContact, isInvoiceAlreadyPaidError, timeout } from "../utils"
+import { addContact } from "../utils"
 import { lnPaymentStatusEvent } from "@config/app"
 import pubsub from "@services/pubsub"
 import { LndService } from "@services/lnd"
@@ -41,6 +39,11 @@ import { LockService } from "@services/lock"
 import { checkAndVerifyTwoFA, getLimitsChecker } from "@core/accounts/helpers"
 import { TwoFANewCodeNeededError } from "@domain/twoFA"
 import { CachedRouteLookupKeyFactory } from "@domain/routes/key-factory"
+import {
+  decodeInvoice,
+  LnAlreadyPaidError,
+  LnPaymentPendingError,
+} from "@domain/bitcoin/lightning"
 
 export type ITxType =
   | "invoice"
@@ -255,7 +258,6 @@ export const LightningMixin = (superclass) =>
 
       let fee
       let route
-      let paymentPromise
       let feeKnownInAdvance
 
       return redlock({ path: this.user._id, logger: lightningLogger }, async (lock) => {
@@ -476,7 +478,7 @@ export const LightningMixin = (superclass) =>
         }
         this.logger.info({ route }, "route from redis")
 
-        let pubkey: string, lnd: AuthenticatedLnd
+        let pubkey: string
 
         // TODO: check if route is not an array and we shouldn't use .length instead
         if (route) {
@@ -486,7 +488,7 @@ export const LightningMixin = (superclass) =>
           pubkey = route.pubkey
 
           try {
-            ;({ lnd } = getLndFromPubkey({ pubkey }))
+            getLndFromPubkey({ pubkey })
           } catch (err) {
             // lnd may have gone offline since the probe has been done.
             // deleting entry so that subsequent payment attempt could succeed
@@ -503,7 +505,7 @@ export const LightningMixin = (superclass) =>
           lightningLogger = lightningLogger.child({ routing: "payViaPaymentDetails" })
           fee = max_fee
           feeKnownInAdvance = false
-          ;({ pubkey, lnd } = getActiveLnd())
+          ;({ pubkey } = getActiveLnd())
         }
 
         // we are confident enough that there is a possible payment route. let's move forward
@@ -566,37 +568,30 @@ export const LightningMixin = (superclass) =>
           // even if the payment is still ongoing from lnd.
           // to clean pending payments, another cron-job loop will run in the background.
 
+          let result: PayInvoiceResult | LightningServiceError
           try {
-            // Fixme: seems to be leaking if it timeout.
+            const decodedInvoice = decodeInvoice(params.invoice as EncodedPaymentRequest)
+            if (decodedInvoice instanceof Error) throw decodedInvoice
+
+            const lndService = LndService()
+            if (lndService instanceof Error) throw lndService
+
             if (route) {
-              paymentPromise = payViaRoutes({ lnd, routes: [route], id })
+              result = await lndService.payInvoiceViaRoutes({
+                paymentHash: decodedInvoice.paymentHash,
+                rawRoute: route,
+                pubkey: pubkey as Pubkey,
+              })
             } else {
-              // incoming_peer?
-              // max_paths for MPP
-              // max_timeout_height ??
-              paymentPromise = payViaPaymentDetails({
-                lnd,
-                id,
-                cltv_delta,
-                destination,
-                features,
-                max_fee,
-                mtokens,
-                payment,
-                routes: routeHint,
+              result = await lndService.payInvoiceViaPaymentDetails({
+                decodedInvoice,
+                milliSatsAmount: toMilliSats(parseFloat(mtokens)),
+                maxFee: toSats(max_fee),
               })
             }
-
-            await Promise.race([paymentPromise, timeout(TIMEOUT_PAYMENT, "Timeout")])
-            // FIXME
-            // return this.payDetail({
-            //     pubkey: details.destination,
-            //     hash: details.id,
-            //     amount: details.tokens,
-            //     routes: details.routes
-            // })
+            if (result instanceof Error) throw result
           } catch (err) {
-            if (err.message === "Timeout") {
+            if (err instanceof LnPaymentPendingError) {
               lightningLogger.warn({ ...metadata, pending: true }, "timeout payment")
 
               return "pending"
@@ -622,7 +617,7 @@ export const LightningMixin = (superclass) =>
               throw new DbError(error, { logger: lightningLogger, level: "fatal" })
             }
 
-            if (isInvoiceAlreadyPaidError(err)) {
+            if (err instanceof LnAlreadyPaidError) {
               lightningLogger.warn(
                 { ...metadata, pending: false },
                 "invoice already paid",
@@ -639,11 +634,10 @@ export const LightningMixin = (superclass) =>
 
           // success
           await ledger.settleLndPayment(id)
-          const paymentResult = await paymentPromise
 
           if (!feeKnownInAdvance) {
             await this.recordFeeDifference({
-              paymentResult,
+              paymentResult: { safe_fee: result.roundedUpFee },
               max_fee,
               id,
               related_journal: entry.journalId,
@@ -651,7 +645,11 @@ export const LightningMixin = (superclass) =>
           }
 
           lightningLogger.info(
-            { success: true, paymentResult, ...metadata },
+            {
+              success: true,
+              safe_fee: result.roundedUpFee,
+              ...metadata,
+            },
             `payment success`,
           )
         }
