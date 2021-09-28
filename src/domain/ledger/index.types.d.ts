@@ -16,6 +16,12 @@ type LedgerAccountId = string & { [ledgerAccountIdSymbol]: never }
 type LedgerTransactionType =
   typeof import("./index").LedgerTransactionType[keyof typeof import("./index").LedgerTransactionType]
 
+type LedgerJournal = {
+  readonly journalId: LedgerJournalId
+  readonly voided: boolean
+  readonly transactionIds: LedgerTransactionId[]
+}
+
 // Differentiate fields depending on what 'type' we have (see domain/wallets/index.types.d.ts)
 type LedgerTransaction = {
   readonly id: LedgerTransactionId
@@ -57,9 +63,8 @@ type ReceiveOnChainTxArgs = {
   receivingAddress: OnChainAddress
 }
 
-type ReceiveLnTxArgs = {
+type TxArgs = {
   liabilitiesAccountId: LiabilitiesAccountId
-  paymentHash: PaymentHash
   description: string
   sats: Satoshis
   fee: Satoshis
@@ -67,7 +72,45 @@ type ReceiveLnTxArgs = {
   usdFee: number
 }
 
-type ReceiveLnFeeReeimbursementArgs = {
+type LnTxArgs = TxArgs & {
+  paymentHash: PaymentHash
+}
+
+type AddLnTxReceiveArgs = LnTxArgs
+
+type AddLnTxSendArgs = LnTxArgs & {
+  pubkey: Pubkey
+  feeKnownInAdvance: boolean
+}
+
+type IntraledgerTxArgs = {
+  liabilitiesAccountId: LiabilitiesAccountId
+  description: string
+  sats: Satoshis
+  recipientLiabilitiesAccountId: LiabilitiesAccountId | null
+  payerWalletName: WalletName | null
+  recipientWalletName: WalletName | null
+  memoPayer: string | null
+  shareMemoWithPayee: boolean
+}
+
+type AddLnIntraledgerTxSendArgs = IntraledgerTxArgs & {
+  paymentHash: PaymentHash
+  fee: Satoshis
+  usd: number
+  usdFee: number
+  pubkey: Pubkey
+}
+
+type AddOnChainIntraledgerTxSendArgs = IntraledgerTxArgs & {
+  fee: Satoshis
+  usd: number
+  usdFee: number
+  payeeAddresses: OnChainAddress[]
+  sendAll: boolean
+}
+
+type AddLnFeeReeimbursementReceiveArgs = {
   liabilitiesAccountId: LiabilitiesAccountId
   paymentHash: PaymentHash
   sats: Satoshis
@@ -108,13 +151,25 @@ interface ILedgerService {
 
   isLnTxRecorded(paymentHash: PaymentHash): Promise<boolean | LedgerServiceError>
 
-  receiveOnChainTx(args: ReceiveOnChainTxArgs): Promise<void | LedgerServiceError>
+  addOnChainTxReceive(
+    args: ReceiveOnChainTxArgs,
+  ): Promise<LedgerJournal | LedgerServiceError>
 
-  receiveLnTx(args: ReceiveLnTxArgs): Promise<void | LedgerServiceError>
+  addLnTxReceive(args: AddLnTxReceiveArgs): Promise<LedgerJournal | LedgerServiceError>
 
-  receiveLnFeeReimbursement(
-    args: ReceiveLnFeeReeimbursementArgs,
-  ): Promise<void | LedgerServiceError>
+  addLnFeeReimbursementReceive(
+    args: AddLnFeeReeimbursementReceiveArgs,
+  ): Promise<LedgerJournal | LedgerServiceError>
+
+  addLnTxSend(args: AddLnTxSendArgs): Promise<LedgerJournal | LedgerServiceError>
+
+  addLnIntraledgerTxSend(
+    args: AddLnIntraledgerTxSendArgs,
+  ): Promise<LedgerJournal | LedgerServiceError>
+
+  addOnChainIntraledgerTxSend(
+    args: AddOnChainIntraledgerTxSendArgs,
+  ): Promise<LedgerJournal | LedgerServiceError>
 
   settlePendingLiabilityTransactions(
     paymentHash: PaymentHash,

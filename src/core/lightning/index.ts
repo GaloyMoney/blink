@@ -5,7 +5,7 @@ import { verifyToken } from "node-2fa"
 
 import * as Wallets from "@app/wallets"
 import { TIMEOUT_PAYMENT } from "@services/lnd/auth"
-import { WalletInvoicesRepository } from "@services/mongoose"
+import { WalletInvoicesRepository, WalletsRepository } from "@services/mongoose"
 import { getActiveLnd, getLndFromPubkey, validate } from "@services/lnd/utils"
 import { ledger } from "@services/mongodb"
 import { redis } from "@services/redis"
@@ -29,6 +29,11 @@ import { addContact, isInvoiceAlreadyPaidError, timeout } from "../utils"
 import { lnPaymentStatusEvent } from "@config/app"
 import pubsub from "@services/pubsub"
 import { LndService } from "@services/lnd"
+import { PriceService } from "@services/price"
+import { LedgerService } from "@services/ledger"
+import { toSats } from "@domain/bitcoin"
+import { toLiabilitiesAccountId } from "@domain/ledger"
+import { CouldNotFindError } from "@domain/errors"
 
 export type ITxType =
   | "invoice"
@@ -298,19 +303,40 @@ export const LightningMixin = (superclass) =>
             })
           }
 
-          await lockExtendOrThrow({ lock, logger: lightningLoggerOnUs }, async () => {
-            const tx = await ledger.addOnUsPayment({
-              description: memoInvoice,
-              sats,
-              metadata,
-              payerUser: this.user,
-              payeeUser,
-              memoPayer,
-              shareMemoWithPayee: isPushPayment,
-              lastPrice: UserWallet.lastPrice,
-            })
-            return tx
-          })
+          const price = await PriceService().getCurrentPrice()
+          if (price instanceof Error) throw price
+          const lnFee = toSats(0)
+          const usd = sats * price
+          const usdFee = lnFee * price
+
+          const payerWallet = await WalletsRepository().findById(this.user.id)
+          if (payerWallet instanceof CouldNotFindError) throw payerWallet
+          if (payerWallet instanceof Error) throw payerWallet
+          const recipientWallet = await WalletsRepository().findById(payeeUser.id)
+          if (recipientWallet instanceof CouldNotFindError) throw recipientWallet
+          if (recipientWallet instanceof Error) throw recipientWallet
+
+          const journal = await lockExtendOrThrow(
+            { lock, logger: lightningLoggerOnUs },
+            async () => {
+              return LedgerService().addLnIntraledgerTxSend({
+                liabilitiesAccountId: toLiabilitiesAccountId(this.user.id),
+                paymentHash: id,
+                description: memoInvoice,
+                sats,
+                fee: lnFee,
+                usd,
+                usdFee,
+                pubkey,
+                recipientLiabilitiesAccountId: toLiabilitiesAccountId(payeeUser.id),
+                payerWalletName: payerWallet.walletName,
+                recipientWalletName: recipientWallet.walletName,
+                memoPayer: memoPayer || null,
+                shareMemoWithPayee: isPushPayment,
+              })
+            },
+          )
+          if (journal instanceof Error) throw journal
 
           transactionNotification({
             amount: sats,
@@ -460,17 +486,27 @@ export const LightningMixin = (superclass) =>
             throw new InsufficientBalanceError(undefined, { logger: lightningLogger })
           }
 
+          const price = await PriceService().getCurrentPrice()
+          if (price instanceof Error) throw price
+          const lnFee = toSats(fee)
+          const usd = sats * price
+          const usdFee = lnFee * price
+
           entry = await lockExtendOrThrow({ lock, logger: lightningLogger }, async () => {
             // reduce balance from customer first
-            const tx = await ledger.addLndPayment({
+            return LedgerService().addLnTxSend({
+              liabilitiesAccountId: toLiabilitiesAccountId(this.user.id),
+              paymentHash: id,
               description: memoInvoice,
-              payerUser: this.user,
               sats,
-              metadata,
-              lastPrice: UserWallet.lastPrice,
+              fee,
+              usd,
+              usdFee,
+              pubkey: pubkey as Pubkey,
+              feeKnownInAdvance,
             })
-            return tx
           })
+          if (entry instanceof Error) throw entry
 
           // there is 3 scenarios for a payment.
           // 1/ payment succeed (function return before TIMEOUT_PAYMENT) and:
@@ -529,7 +565,7 @@ export const LightningMixin = (superclass) =>
 
               await ledger.settleLndPayment(id)
 
-              await ledger.voidTransactions(entry.journal._id, err[1])
+              await ledger.voidTransactions(entry.journalId, err[1])
 
               lightningLogger.warn(
                 { success: false, err, ...metadata, entry },
@@ -564,7 +600,7 @@ export const LightningMixin = (superclass) =>
               paymentResult,
               max_fee,
               id,
-              related_journal: entry.journal._id,
+              related_journal: entry.journalId,
             })
           }
 

@@ -47,7 +47,7 @@ export const reimburseFee = async ({
   const usd = feeDifference * price
 
   const ledgerService = LedgerService()
-  const result = await ledgerService.receiveLnFeeReimbursement({
+  const result = await ledgerService.addLnFeeReimbursementReceive({
     liabilitiesAccountId,
     paymentHash,
     sats: feeDifference,

@@ -134,7 +134,7 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
-  const receiveOnChainTx = async ({
+  const addOnChainTxReceive = async ({
     liabilitiesAccountId,
     txId,
     sats,
@@ -142,7 +142,7 @@ export const LedgerService = (): ILedgerService => {
     usd,
     usdFee,
     receivingAddress,
-  }: ReceiveOnChainTxArgs) => {
+  }: ReceiveOnChainTxArgs): Promise<LedgerJournal | LedgerError> => {
     try {
       const metadata = {
         currency: "BTC",
@@ -165,15 +165,14 @@ export const LedgerService = (): ILedgerService => {
         entry.credit(bankOwnerPath, fee, metadata)
       }
 
-      await entry.commit()
-
-      return
+      const savedEntry = await entry.commit()
+      return translateToLedgerJournal(savedEntry)
     } catch (err) {
       return new UnknownLedgerError(err)
     }
   }
 
-  const receiveLnTx = async ({
+  const addLnTxReceive = async ({
     liabilitiesAccountId,
     paymentHash,
     description,
@@ -181,9 +180,10 @@ export const LedgerService = (): ILedgerService => {
     fee,
     usd,
     usdFee,
-  }: ReceiveLnTxArgs): Promise<void | LedgerError> => {
+  }: AddLnTxReceiveArgs): Promise<LedgerJournal | LedgerError> => {
+    let metadata: AddLnTxReceiveMetadata
     try {
-      const metadata = {
+      metadata = {
         type: LedgerTransactionType.Invoice,
         pending: false,
         hash: paymentHash,
@@ -204,19 +204,20 @@ export const LedgerService = (): ILedgerService => {
         entry.credit(bankOwnerPath, fee, metadata)
       }
 
-      await entry.commit()
+      const savedEntry = await entry.commit()
+      return translateToLedgerJournal(savedEntry)
     } catch (err) {
       return new UnknownLedgerError(err)
     }
   }
 
-  const receiveLnFeeReimbursement = async ({
+  const addLnFeeReimbursementReceive = async ({
     liabilitiesAccountId,
     paymentHash,
     sats,
     usd,
     journalId,
-  }: ReceiveLnFeeReeimbursementArgs): Promise<void | LedgerError> => {
+  }: AddLnFeeReeimbursementReceiveArgs): Promise<LedgerJournal | LedgerError> => {
     try {
       const metadata = {
         type: LedgerTransactionType.LnFeeReimbursement,
@@ -233,7 +234,163 @@ export const LedgerService = (): ILedgerService => {
         .credit(liabilitiesAccountId, sats, metadata)
         .debit(lndAccountingPath, sats, metadata)
 
-      await entry.commit()
+      const savedEntry = await entry.commit()
+      return translateToLedgerJournal(savedEntry)
+    } catch (err) {
+      return new UnknownLedgerError(err)
+    }
+  }
+
+  const addLnTxSend = async ({
+    liabilitiesAccountId,
+    paymentHash,
+    description,
+    sats,
+    fee,
+    usd,
+    usdFee,
+    pubkey,
+    feeKnownInAdvance,
+  }: AddLnTxSendArgs): Promise<LedgerJournal | LedgerError> => {
+    let metadata: AddLnTxSendMetadata
+    try {
+      metadata = {
+        type: LedgerTransactionType.Payment,
+        pending: true,
+        hash: paymentHash,
+        fee,
+        feeUsd: usdFee,
+        sats,
+        usd,
+        pubkey,
+        feeKnownInAdvance,
+        currency: "BTC",
+      }
+
+      const entry = MainBook.entry(description)
+
+      entry
+        .credit(lndAccountingPath, sats, metadata)
+        .debit(liabilitiesAccountId, sats, metadata)
+
+      const savedEntry = await entry.commit()
+      return translateToLedgerJournal(savedEntry)
+    } catch (err) {
+      return new UnknownLedgerError(err)
+    }
+  }
+
+  const addLnIntraledgerTxSend = async ({
+    liabilitiesAccountId,
+    paymentHash,
+    description,
+    sats,
+    fee,
+    usd,
+    usdFee,
+    pubkey,
+    recipientLiabilitiesAccountId,
+    payerWalletName,
+    recipientWalletName,
+    memoPayer,
+    shareMemoWithPayee,
+  }: AddLnIntraledgerTxSendArgs): Promise<LedgerJournal | LedgerError> => {
+    const metadata: AddLnIntraledgerTxSendMetadata = {
+      type: LedgerTransactionType.IntraLedger,
+      pending: false,
+      hash: paymentHash,
+      fee,
+      feeUsd: usdFee,
+      sats,
+      usd,
+      pubkey,
+      memoPayer: null,
+      username: null,
+      currency: "BTC",
+    }
+
+    return addIntraledgerTxSend({
+      liabilitiesAccountId,
+      description,
+      sats,
+      recipientLiabilitiesAccountId,
+      payerWalletName,
+      recipientWalletName,
+      memoPayer,
+      shareMemoWithPayee,
+      metadata,
+    })
+  }
+
+  const addOnChainIntraledgerTxSend = async ({
+    liabilitiesAccountId,
+    description,
+    sats,
+    fee,
+    usd,
+    usdFee,
+    payeeAddresses,
+    sendAll,
+    recipientLiabilitiesAccountId,
+    payerWalletName,
+    recipientWalletName,
+    memoPayer,
+    shareMemoWithPayee,
+  }: AddOnChainIntraledgerTxSendArgs): Promise<LedgerJournal | LedgerError> => {
+    const metadata: AddOnChainIntraledgerTxSendMetadata = {
+      type: LedgerTransactionType.OnchainIntraLedger,
+      pending: false,
+      fee,
+      feeUsd: usdFee,
+      sats,
+      usd,
+      memoPayer: null,
+      username: null,
+      payee_addresses: payeeAddresses,
+      sendAll,
+      currency: "BTC",
+    }
+
+    return addIntraledgerTxSend({
+      liabilitiesAccountId,
+      description,
+      sats,
+      recipientLiabilitiesAccountId,
+      payerWalletName,
+      recipientWalletName,
+      memoPayer,
+      shareMemoWithPayee,
+      metadata,
+    })
+  }
+
+  const addIntraledgerTxSend = async ({
+    liabilitiesAccountId,
+    description,
+    sats,
+    recipientLiabilitiesAccountId,
+    payerWalletName,
+    recipientWalletName,
+    memoPayer,
+    shareMemoWithPayee,
+    metadata,
+  }: SendIntraledgerTxArgs): Promise<LedgerJournal | LedgerError> => {
+    try {
+      const creditMetadata = {
+        ...metadata,
+        username: payerWalletName,
+        memoPayer: shareMemoWithPayee ? memoPayer : null,
+      }
+      const debitMetadata = { ...metadata, username: recipientWalletName, memoPayer }
+
+      const entry = MainBook.entry(description)
+
+      entry
+        .credit(recipientLiabilitiesAccountId, sats, creditMetadata)
+        .debit(liabilitiesAccountId, sats, debitMetadata)
+
+      const savedEntry = await entry.commit()
+      return translateToLedgerJournal(savedEntry)
     } catch (err) {
       return new UnknownLedgerError(err)
     }
@@ -272,9 +429,12 @@ export const LedgerService = (): ILedgerService => {
     getAccountBalance,
     isOnChainTxRecorded,
     isLnTxRecorded,
-    receiveOnChainTx,
-    receiveLnTx,
-    receiveLnFeeReimbursement,
+    addOnChainTxReceive,
+    addLnTxReceive,
+    addLnFeeReimbursementReceive,
+    addLnTxSend,
+    addLnIntraledgerTxSend,
+    addOnChainIntraledgerTxSend,
     settlePendingLiabilityTransactions,
     voidLedgerTransactionsForJournal,
   }
@@ -300,4 +460,10 @@ const translateToLedgerTx = (tx): LedgerTransaction => ({
   addresses: tx.payee_addresses,
   txId: tx.hash,
   feeKnownInAdvance: tx.feeKnownInAdvance || false,
+})
+
+const translateToLedgerJournal = (savedEntry): LedgerJournal => ({
+  journalId: savedEntry._id.toString(),
+  voided: savedEntry.voided,
+  transactionIds: savedEntry._transactions.map((id) => id.toString()),
 })
