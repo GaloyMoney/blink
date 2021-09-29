@@ -96,5 +96,6 @@ const userFromRaw = (result: UserType): User => {
     deviceTokens: (result.deviceToken || []) as DeviceToken[],
     lastConnection: result.lastConnection,
     lastIPs: (result.lastIPs || []) as IPType[],
+    createdAt: new Date(result.created_at),
   }
 }

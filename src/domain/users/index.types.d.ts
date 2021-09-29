@@ -36,6 +36,7 @@ type User = {
   readonly defaultAccountId: AccountId
   readonly deviceTokens: DeviceToken[]
   readonly lastIPs: IPType[]
+  readonly createdAt: Date
   phone: PhoneNumber
   language: UserLanguage
   lastConnection: Date
