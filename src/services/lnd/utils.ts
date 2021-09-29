@@ -1,7 +1,20 @@
+import {
+  getGaloyInstanceName,
+  MS_PER_DAY,
+  ONCHAIN_LOOK_BACK_CHANNEL_UPDATE,
+} from "@config/app"
+import { DbError, LndOfflineError, ValidationInternalError } from "@core/error"
+import { LoggedError } from "@core/utils"
+import { LnFeeCalculator } from "@domain/bitcoin/lightning"
+import { baseLogger } from "@services/logger"
+import { ledger } from "@services/mongodb"
+import { WalletInvoicesRepository } from "@services/mongoose"
+import { DbMetadata } from "@services/mongoose/schema"
 import assert from "assert"
 import { default as axios } from "axios"
 import { parsePaymentRequest } from "invoices"
 import {
+  deleteFailedPayAttempts,
   getChainBalance,
   getChainTransactions,
   getChannelBalance,
@@ -9,31 +22,15 @@ import {
   getClosedChannels,
   getForwards,
   getHeight,
-  getPendingChainBalance,
   getInvoice,
+  getPendingChainBalance,
   getWalletInfo,
   SubscribeToChannelsChannelClosedEvent,
   SubscribeToChannelsChannelOpenedEvent,
 } from "lightning"
 import _ from "lodash"
 import { Logger } from "pino"
-
-import {
-  getGaloyInstanceName,
-  MS_PER_DAY,
-  ONCHAIN_LOOK_BACK_CHANNEL_UPDATE,
-} from "@config/app"
-
-import { baseLogger } from "@services/logger"
-import { ledger } from "@services/mongodb"
-import { DbMetadata } from "@services/mongoose/schema"
-
-import { DbError, LndOfflineError, ValidationInternalError } from "@core/error"
-import { LoggedError } from "@core/utils"
-
 import { params } from "./auth"
-import { WalletInvoicesRepository } from "@services/mongoose"
-import { LnFeeCalculator } from "@domain/bitcoin/lightning"
 
 export const deleteExpiredInvoiceUser = async () => {
   const walletInvoicesRepo = WalletInvoicesRepository()
@@ -53,17 +50,16 @@ export const deleteExpiredInvoiceUser = async () => {
   return result
 }
 
-export const deleteFailedPaymentsAllLnds = async () => {
-  baseLogger.warn("only run deleteFailedPayments on lnd 0.13")
-  return Promise.resolve()
-  // try {
-  //   const lnds = offchainLnds
-  //   for (const { lnd } of lnds)
-  //     await deleteFailedPayments({lnd})
-  //   }
-  // } catch (err) {
-  //   baseLogger.warn({ err }, "error deleting failed payment")
-  // }
+export const deleteFailedPaymentsAttemptAllLnds = async () => {
+  const lnds = offchainLnds
+  for (const { lnd, socket } of lnds) {
+    try {
+      baseLogger.info({ socket }, "running deleteFailedPaymentsAttempt")
+      await deleteFailedPayAttempts({ lnd })
+    } catch (err) {
+      baseLogger.warn({ err }, "error deleting failed payment")
+    }
+  }
 }
 
 export const lndsBalances = async () => {
