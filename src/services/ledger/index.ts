@@ -109,7 +109,7 @@ export const LedgerService = (): ILedgerService => {
     timestamp,
   }: {
     liabilitiesAccountId: LiabilitiesAccountId
-    timestamp: UnixTimeMs
+    timestamp: Date
   }): Promise<TxVolume | LedgerServiceError> => {
     const txnTypes = [{ type: "on_us" }, { type: "onchain_on_us" }]
     try {
@@ -118,7 +118,7 @@ export const LedgerService = (): ILedgerService => {
           $match: {
             accounts: liabilitiesAccountId,
             $or: txnTypes,
-            $and: [{ timestamp: { $gte: new Date(timestamp) } }],
+            $and: [{ timestamp: { $gte: timestamp } }],
           },
         },
         {

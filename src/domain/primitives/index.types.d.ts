@@ -16,7 +16,4 @@ type WalletName = string & { [walletNameSymbol]: never }
 declare const accountIdSymbol: unique symbol
 type AccountId = string & { [accountIdSymbol]: never }
 
-declare const unixTimeMsSymbol: unique symbol
-type UnixTimeMs = number & { [unixTimeMsSymbol]: never }
-
 type TxDenominationCurrency = "USD" | "BTC"

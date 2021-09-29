@@ -11,7 +11,7 @@ export const getLimitsChecker = async (
   const ledgerService = LedgerService()
 
   const liabilitiesAccountId = toLiabilitiesAccountId(walletId)
-  const timestamp1Day = (Date.now() - MS_PER_DAY) as UnixTimeMs
+  const timestamp1Day = new Date(Date.now() - MS_PER_DAY)
   const walletVolume = await ledgerService.txVolumeSince({
     liabilitiesAccountId,
     timestamp: timestamp1Day,

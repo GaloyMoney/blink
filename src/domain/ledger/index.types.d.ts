@@ -154,7 +154,7 @@ interface ILedgerService {
     timestamp,
   }: {
     liabilitiesAccountId: LiabilitiesAccountId
-    timestamp: UnixTimeMs
+    timestamp: Date
   }): Promise<TxVolume | LedgerServiceError>
 
   isOnChainTxRecorded(
