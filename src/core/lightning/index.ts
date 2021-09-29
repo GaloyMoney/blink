@@ -129,8 +129,8 @@ export const LightningMixin = (superclass) =>
 
       const { lnd, pubkey } = getActiveLnd()
 
-      const millisats = toMilliSats(parseFloat(mtokens))
-      const key = CachedRouteKeyGenerator(id).generate(millisats)
+      const milliSats = toMilliSats(parseFloat(mtokens))
+      const key = CachedRouteKeyGenerator().generate({ paymentHash: id, milliSats })
       const cachedRoute = await RoutesRepository().findByKey(key)
       if (cachedRoute instanceof Error && !(cachedRoute instanceof CouldNotFindError))
         throw cachedRoute
@@ -462,8 +462,8 @@ export const LightningMixin = (superclass) =>
         // TODO: push payment for other node as well
         lightningLogger = lightningLogger.child({ onUs: false, max_fee })
 
-        const millisats = toMilliSats(parseFloat(mtokens))
-        const key = CachedRouteKeyGenerator(id).generate(millisats)
+        const milliSats = toMilliSats(parseFloat(mtokens))
+        const key = CachedRouteKeyGenerator().generate({ paymentHash: id, milliSats })
         const routesRepo = RoutesRepository()
         const cachedRoute = await routesRepo.findByKey(key)
         if (cachedRoute instanceof Error && !(cachedRoute instanceof CouldNotFindError))
@@ -487,8 +487,8 @@ export const LightningMixin = (superclass) =>
           } catch (err) {
             // lnd may have gone offline since the probe has been done.
             // deleting entry so that subsequent payment attempt could succeed
-            const millisats = toMilliSats(parseFloat(mtokens))
-            const key = CachedRouteKeyGenerator(id).generate(millisats)
+            const milliSats = toMilliSats(parseFloat(mtokens))
+            const key = CachedRouteKeyGenerator().generate({ paymentHash: id, milliSats })
             const deleted = await routesRepo.deleteByKey(key)
             if (deleted instanceof Error) throw deleted
             throw err
