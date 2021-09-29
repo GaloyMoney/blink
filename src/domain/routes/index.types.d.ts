@@ -15,7 +15,7 @@ declare const cacheKeySymbol: unique symbol
 type CacheKey = string & { [cacheKeySymbol]: never }
 
 type CachedRouteKeyGenerator = {
-  generate(milliSatsAmounts: MilliSatoshis): CacheKey
+  generate(args: { paymentHash: PaymentHash; milliSats: MilliSatoshis }): CacheKey
 }
 
 interface IRoutesRepository {
