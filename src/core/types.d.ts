@@ -14,6 +14,10 @@ type GenericLimits = {
   oldEnoughForWithdrawalMicroseconds: number
 }
 
+type TwoFALimits = {
+  threshold: number
+}
+
 type FeeRates = {
   depositFeeVariable: number
   depositFeeFixed: number

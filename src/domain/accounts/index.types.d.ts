@@ -8,10 +8,10 @@ type AccountStatus =
   typeof import("./index").AccountStatus[keyof typeof import("./index").AccountStatus]
 
 type Account = {
-  id: AccountId
-  level: AccountLevel
-  status: AccountStatus
-  walletIds: WalletId[]
+  readonly id: AccountId
+  readonly level: AccountLevel
+  readonly status: AccountStatus
+  readonly walletIds: WalletId[]
 }
 
 type Currencies = {
@@ -37,9 +37,15 @@ type BusinessMapMarker = {
   mapInfo: BusinessMapInfo
 }
 
+type LimitsChecker = {
+  checkTwoFA({ amount }: { amount: Satoshis }): true | LimitsExceededError
+  checkIntraledger({ amount }: { amount: Satoshis }): true | LimitsExceededError
+  checkWithdrawal({ amount }: { amount: Satoshis }): true | LimitsExceededError
+}
 interface IAccountsRepository {
   findById(accountId: AccountId): Promise<Account | RepositoryError>
   listByUserId(userId: UserId): Promise<Account[] | RepositoryError>
   findByWalletName(walletName: WalletName): Promise<Account | RepositoryError>
+  findByWalletId(walletId: WalletId): Promise<Account | RepositoryError>
   listBusinessesForMap(): Promise<BusinessMapMarker[] | RepositoryError>
 }

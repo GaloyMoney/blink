@@ -9,8 +9,8 @@ type IPType = {
   lastConnection: Date
 }
 
-type TwoFA = {
-  secret: string | undefined
+type TwoFAForUser = {
+  secret?: TwoFASecret
   threshold: number
 }
 
@@ -64,7 +64,7 @@ interface UserType {
   lastIPs?: IPType[]
   onchain?: OnChainObjectForUser[]
   lastConnection: Date
-  twoFA: TwoFA
+  twoFA: TwoFAForUser
 
   // business:
   title?: string

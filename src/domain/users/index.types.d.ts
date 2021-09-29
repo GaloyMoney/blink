@@ -39,7 +39,7 @@ type User = {
   phone: PhoneNumber
   language: UserLanguage
   lastConnection: Date
-  twoFA: TwoFA
+  twoFA: TwoFAForUser
 }
 
 interface IUsersRepository {

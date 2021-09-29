@@ -20,3 +20,6 @@ export class SelfPaymentError extends ValidationError {}
 export class LessThanDustThresholdError extends ValidationError {}
 export class InsufficientBalanceError extends ValidationError {}
 export class InvalidTargetConfirmations extends ValidationError {}
+export class LimitsExceededError extends ValidationError {}
+
+export class TwoFALimitsExceededError extends LimitsExceededError {}
