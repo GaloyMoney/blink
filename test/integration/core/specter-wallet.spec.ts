@@ -17,7 +17,7 @@ beforeEach(() => {
 })
 
 afterAll(async () => {
-  await bitcoindClient.unloadWallet({ username: specterUsername })
+  await bitcoindClient.unloadWallet({ walletName: specterUsername })
 })
 
 describe("SpecterWallet", () => {

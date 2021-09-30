@@ -32,14 +32,14 @@ export const getAccountByApiKey = async (
 
 export const hasPermissions = async (
   userId: UserId,
-  wallePublicId: WalletPublicId,
+  walletPublicId: WalletPublicId,
 ): Promise<boolean | ApplicationError> => {
   const accounts = AccountsRepository()
 
   const userAccounts = await accounts.listByUserId(userId)
   if (userAccounts instanceof Error) return userAccounts
 
-  const walletAccount = await accounts.findByWalletPublicId(wallePublicId)
+  const walletAccount = await accounts.findByWalletPublicId(walletPublicId)
   if (walletAccount instanceof Error) return walletAccount
 
   return userAccounts.some((a) => a.id === walletAccount.id)

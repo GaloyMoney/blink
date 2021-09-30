@@ -80,16 +80,20 @@ export class BitcoindClient {
     return this.client.loadWallet({ filename })
   }
 
-  async unloadWallet({ username }: { username: string }): Promise<{ warning: string }> {
-    return this.client.unloadWallet({ wallet_name: username })
+  async unloadWallet({
+    walletName,
+  }: {
+    walletName: string
+  }): Promise<{ warning: string }> {
+    return this.client.unloadWallet({ wallet_name: walletName })
   }
 }
 
 export class BitcoindWalletClient {
   readonly client
 
-  constructor({ username }: { username: string }) {
-    this.client = new Client({ ...connection_obj, wallet: username })
+  constructor({ walletName }: { walletName: string }) {
+    this.client = new Client({ ...connection_obj, wallet: walletName })
   }
 
   async getNewAddress(): Promise<string> {
@@ -177,7 +181,7 @@ export const getBalancesDetail = async (): Promise<
       continue
     }
 
-    const client = new BitcoindWalletClient({ username: wallet })
+    const client = new BitcoindWalletClient({ walletName: wallet })
     const balance = btc2sat(await client.getBalance())
     balances.push({ wallet, balance })
   }

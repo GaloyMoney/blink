@@ -57,7 +57,7 @@ export class SpecterWallet {
 
     this.logger.info({ wallet: specterWallets[0] }, "setting BitcoindClient")
 
-    this.bitcoindClient = new BitcoindWalletClient({ username: specterWallets[0] })
+    this.bitcoindClient = new BitcoindWalletClient({ walletName: specterWallets[0] })
 
     return specterWallets[0]
   }

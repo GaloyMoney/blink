@@ -73,7 +73,7 @@ export const addInvoiceNoAmountForRecipient = async ({
   })
 }
 
-const registerAndPersistInvoice = async ({
+export const registerAndPersistInvoice = async ({
   sats,
   memo,
   walletInvoiceCreateFn,
@@ -111,56 +111,4 @@ const walletIdFromPublicId = async (
   if (wallet instanceof Error) return wallet
 
   return wallet.id
-}
-
-// TODO: Remove. Used in v1 only
-const walletIdFromUsername = async (
-  username: Username,
-): Promise<WalletId | RepositoryError> => {
-  const walletsRepo = WalletsRepository()
-  const wallet = await walletsRepo.findByUsername(username)
-  if (wallet instanceof Error) return wallet
-
-  return wallet.id
-}
-
-// TODO: Remove. Used in v1 only
-export const addInvoiceForUsername = async ({
-  username,
-  amount,
-  memo = "",
-}): Promise<LnInvoice | ApplicationError> => {
-  const walletPublicId = checkedToWalletPublicId(username)
-  if (walletPublicId instanceof Error) return walletPublicId
-  const sats = checkedToSats(amount)
-  if (sats instanceof Error) return sats
-
-  const walletId = await walletIdFromUsername(username)
-  if (walletId instanceof Error) return walletId
-
-  const walletInvoiceFactory = WalletInvoiceFactory(walletId)
-  return registerAndPersistInvoice({
-    sats,
-    memo,
-    walletInvoiceCreateFn: walletInvoiceFactory.createForRecipient,
-  })
-}
-
-// TODO: Remove. Used in v1 only
-export const addInvoiceNoAmountForUsername = async ({
-  username,
-  memo = "",
-}): Promise<LnInvoice | ApplicationError> => {
-  const walletPublicId = checkedToWalletPublicId(username)
-  if (walletPublicId instanceof Error) return walletPublicId
-
-  const walletId = await walletIdFromUsername(username)
-  if (walletId instanceof Error) return walletId
-
-  const walletInvoiceFactory = WalletInvoiceFactory(walletId)
-  return registerAndPersistInvoice({
-    sats: toSats(0),
-    memo,
-    walletInvoiceCreateFn: walletInvoiceFactory.createForRecipient,
-  })
 }

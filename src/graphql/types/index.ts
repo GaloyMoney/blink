@@ -2,7 +2,7 @@
 import BTCWallet from "./object/btc-wallet"
 import ConsumerAccount from "./object/consumer-account"
 // import FiatWallet from "./object/fiat-wallet"
-import UsernaemTransaction from "./object/wallet-id-transaction"
+import IntraLedgerTransaction from "./object/wallet-id-transaction"
 import LnTransaction from "./object/ln-transaction"
 import OnChainTransaction from "./object/onchain-transaction"
 import InputError from "./object/input-error"
@@ -19,7 +19,7 @@ export const ALL_INTERFACE_TYPES = [
   // BusinessAccount,
   BTCWallet,
   // FiatWallet,
-  UsernaemTransaction,
+  IntraLedgerTransaction,
   OnChainTransaction,
   LnTransaction,
 ]

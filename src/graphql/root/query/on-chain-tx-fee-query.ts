@@ -12,7 +12,7 @@ import * as Accounts from "@app/accounts"
 const OnChainTxFeeQuery = GT.Field({
   type: GT.NonNull(OnChainTxFee),
   args: {
-    walletId: { type: WalletId },
+    walletId: { type: GT.NonNull(WalletId) },
     address: { type: GT.NonNull(OnChainAddress) },
     amount: { type: GT.NonNull(SatAmount) },
     targetConfirmations: { type: TargetConfirmations, defaultValue: 3 },

@@ -12,7 +12,7 @@ type ApplicationError =
   | ValidationError
   | LockServiceError
 
-type ToWalletIdsFunction = (args0: {
+type ToWalletIdsFunction = (args: {
   account: Account
   walletPublicIds: WalletPublicId[]
 }) => Promise<WalletId[] | ApplicationError>

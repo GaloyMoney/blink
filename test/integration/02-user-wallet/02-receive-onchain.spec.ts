@@ -57,7 +57,7 @@ afterEach(async () => {
 
 afterAll(async () => {
   jest.restoreAllMocks()
-  await bitcoindClient.unloadWallet({ username: "outside" })
+  await bitcoindClient.unloadWallet({ walletName: "outside" })
 })
 
 describe("FunderWallet - On chain", () => {

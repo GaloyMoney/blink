@@ -43,7 +43,7 @@ beforeEach(() => {
 
 afterAll(async () => {
   jest.restoreAllMocks()
-  await bitcoindClient.unloadWallet({ username: "outside" })
+  await bitcoindClient.unloadWallet({ walletName: "outside" })
 })
 
 const getWalletState = async (wallet) => {

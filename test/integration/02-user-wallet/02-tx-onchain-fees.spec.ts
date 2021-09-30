@@ -26,7 +26,7 @@ beforeAll(async () => {
 })
 
 afterAll(async () => {
-  await bitcoindClient.unloadWallet({ username: "outside" })
+  await bitcoindClient.unloadWallet({ walletName: "outside" })
 })
 
 describe("UserWallet - getOnchainFee", () => {

@@ -1,4 +1,4 @@
-import { InvalidWalletId } from "@domain/errors"
+import { InvalidPublicWalletId } from "@domain/errors"
 
 export { WalletTransactionHistory } from "./tx-history"
 export * from "./tx-methods"
@@ -13,7 +13,7 @@ export const checkedToWalletPublicId = (
   walletPublicId: string,
 ): WalletPublicId | ValidationError => {
   if (!walletPublicId.match(WalletPublicIdRegex)) {
-    return new InvalidWalletId(walletPublicId)
+    return new InvalidPublicWalletId(walletPublicId)
   }
   return walletPublicId as WalletPublicId
 }

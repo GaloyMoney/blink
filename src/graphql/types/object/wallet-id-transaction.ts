@@ -4,7 +4,7 @@ import PaymentInitiationMethod from "../scalar/payment-initiation-method"
 import SatAmount from "../scalar/sat-amount"
 import SettlementMethod from "../scalar/settlement-method"
 import Timestamp from "../scalar/timestamp"
-import WalletId from "../scalar/wallet-id"
+import Username from "../scalar/username"
 // import Memo from "../scalar/memo"
 // import TxDirection from "../scalar/tx-direction"
 // import TxStatus from "../scalar/tx-status"
@@ -47,11 +47,11 @@ const IntraLedgerTransaction = new GT.Object({
     },
 
     // Non-interface fields
-    recipient: {
-      type: WalletId,
+    recipientUsername: {
+      type: Username,
       description:
         "Settlement destination: Could be null when originalDestination is onChain/LN" +
-        " and the payeee does not have a username",
+        " and the payee does not have a username",
     },
   }),
 })

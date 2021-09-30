@@ -8,7 +8,7 @@ import * as Accounts from "@app/accounts"
 const OnChainAddressCurrentInput = new GT.Input({
   name: "OnChainAddressCurrentInput",
   fields: () => ({
-    walletId: { type: WalletId },
+    walletId: { type: GT.NonNull(WalletId) },
   }),
 })
 
@@ -37,18 +37,16 @@ const OnChainAddressCurrentMutation = GT.Field({
       address = await Wallets.getLastOnChainAddressByWalletPublicId(walletId)
     }
 
-    if (!address) {
-      const account = await Accounts.getAccount(domainUser.defaultAccountId)
-      if (account instanceof Error) {
-        return { errors: [{ message: account.message }] }
-      }
-
-      if (!account.walletIds.length) {
-        return { errors: [{ message: "Account does not have a default wallet" }] }
-      }
-
-      address = await Wallets.getLastOnChainAddress(account.walletIds[0])
+    const account = await Accounts.getAccount(domainUser.defaultAccountId)
+    if (account instanceof Error) {
+      return { errors: [{ message: account.message }] }
     }
+
+    if (!account.walletIds.length) {
+      return { errors: [{ message: "Account does not have a default wallet" }] }
+    }
+
+    address = await Wallets.getLastOnChainAddress(account.walletIds[0])
 
     if (address instanceof Error) {
       return { errors: [{ message: address.message }] }
