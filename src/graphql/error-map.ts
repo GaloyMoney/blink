@@ -127,6 +127,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "RateLimitError":
     case "RateLimitServiceError":
     case "UnknownRateLimitServiceError":
+    case "RouteNotFoundError":
     case "CouldNotFindUserError":
     case "TwoFAError":
     case "LedgerError":

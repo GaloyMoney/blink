@@ -10,6 +10,7 @@ import {
   LnAlreadyPaidError,
   NoValidNodeForPubkeyError,
   PaymentNotFoundError,
+  RouteNotFoundError,
 } from "@domain/bitcoin/lightning"
 import lnService from "ln-service"
 import { isInvoiceAlreadyPaidError, timeout } from "@core/utils"
@@ -140,6 +141,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
         tokens: amount,
       }
       const { route } = await lnService.probeForRoute(probeForRouteArgs)
+      if (!route) return new RouteNotFoundError()
       return route
     } catch (err) {
       return new UnknownLightningServiceError()
