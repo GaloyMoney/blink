@@ -50,7 +50,13 @@ export const getBusinessMapMarkers = async () => {
   return accounts.listBusinessesForMap()
 }
 
-export const toWalletIds: ToWalletIdsFunction = async ({ account, walletPublicIds }) => {
+export const toWalletIds = async ({
+  account,
+  walletPublicIds,
+}: {
+  account: Account
+  walletPublicIds: WalletPublicId[]
+}): Promise<WalletId[] | ApplicationError> => {
   const wallets = WalletsRepository()
 
   const walletIds: WalletId[] = []

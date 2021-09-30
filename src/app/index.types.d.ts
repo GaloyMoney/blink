@@ -11,8 +11,3 @@ type ApplicationError =
   | PriceServiceError
   | ValidationError
   | LockServiceError
-
-type ToWalletIdsFunction = (args: {
-  account: Account
-  walletPublicIds: WalletPublicId[]
-}) => Promise<WalletId[] | ApplicationError>

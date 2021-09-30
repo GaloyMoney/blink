@@ -204,10 +204,15 @@ type IntraLedgerTransaction implements Transaction {
   createdAt: Timestamp!
 
   """
-  Settlement destination: Could be null when originalDestination is onChain/LN and the payeee does not have a username
+  Settlement destination: Could be null when originalDestination is onChain/LN and the payee does not have a username
   """
-  recipient: WalletId
+  recipientUsername: Username
 }
+
+"""
+Unique identifier of a user
+"""
+scalar Username
 
 type OnChainTransaction implements Transaction {
   id: ID!
@@ -246,7 +251,7 @@ type Query {
   quizQuestions: [QuizQuestion]
   btcPriceList(range: PriceGraphRange!): [PricePoint]
   onChainTxFee(
-    walletId: WalletId
+    walletId: WalletId!
     address: OnChainAddress!
     amount: SatAmount!
     targetConfirmations: TargetConfirmations = 3
@@ -305,11 +310,6 @@ type UserContact {
     last: Int
   ): TransactionConnection
 }
-
-"""
-Unique identifier of a user
-"""
-scalar Username
 
 """
 An alias name that a user can set for a wallet (with which they have transactions)
@@ -668,7 +668,7 @@ input OnChainAddressCreateInput {
 }
 
 input OnChainAddressCurrentInput {
-  walletId: WalletId
+  walletId: WalletId!
 }
 
 input OnChainPaymentSendInput {
