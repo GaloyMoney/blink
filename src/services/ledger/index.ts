@@ -325,8 +325,8 @@ export const LedgerService = (): ILedgerService => {
     usdFee,
     pubkey,
     recipientLiabilitiesAccountId,
-    payerWalletName,
-    recipientWalletName,
+    payerUsername,
+    recipientUsername,
     memoPayer,
     shareMemoWithPayee,
   }: AddLnIntraledgerTxSendArgs): Promise<LedgerJournal | LedgerError> => {
@@ -349,8 +349,8 @@ export const LedgerService = (): ILedgerService => {
       description,
       sats,
       recipientLiabilitiesAccountId,
-      payerWalletName,
-      recipientWalletName,
+      payerUsername,
+      recipientUsername,
       memoPayer,
       shareMemoWithPayee,
       metadata,
@@ -367,8 +367,8 @@ export const LedgerService = (): ILedgerService => {
     payeeAddresses,
     sendAll,
     recipientLiabilitiesAccountId,
-    payerWalletName,
-    recipientWalletName,
+    payerUsername,
+    recipientUsername,
     memoPayer,
     shareMemoWithPayee,
   }: AddOnChainIntraledgerTxSendArgs): Promise<LedgerJournal | LedgerError> => {
@@ -391,8 +391,8 @@ export const LedgerService = (): ILedgerService => {
       description,
       sats,
       recipientLiabilitiesAccountId,
-      payerWalletName,
-      recipientWalletName,
+      payerUsername,
+      recipientUsername,
       memoPayer,
       shareMemoWithPayee,
       metadata,
@@ -404,8 +404,8 @@ export const LedgerService = (): ILedgerService => {
     description,
     sats,
     recipientLiabilitiesAccountId,
-    payerWalletName,
-    recipientWalletName,
+    payerUsername,
+    recipientUsername,
     memoPayer,
     shareMemoWithPayee,
     metadata,
@@ -413,10 +413,10 @@ export const LedgerService = (): ILedgerService => {
     try {
       const creditMetadata = {
         ...metadata,
-        username: payerWalletName,
+        username: payerUsername,
         memoPayer: shareMemoWithPayee ? memoPayer : null,
       }
-      const debitMetadata = { ...metadata, username: recipientWalletName, memoPayer }
+      const debitMetadata = { ...metadata, username: recipientUsername, memoPayer }
 
       const entry = MainBook.entry(description)
 
