@@ -14,6 +14,7 @@ type Deprecated = {
 
 type BaseWalletTransaction = {
   readonly id: LedgerTransactionId | TxId
+  readonly walletId: WalletId | null
   readonly initiationVia: PaymentInitiationMethod
   readonly settlementVia: SettlementMethod
   readonly settlementAmount: Satoshis
@@ -42,6 +43,7 @@ type WalletLnTransaction = BaseWalletTransaction & {
   readonly settlementVia: "lightning" | "intraledger"
   readonly recipientId: WalletName | null
   readonly paymentHash: PaymentHash
+  readonly pubkey: Pubkey
 }
 
 type WalletTransaction =
@@ -52,6 +54,7 @@ type WalletTransaction =
 type ConfirmedTransactionHistory = {
   readonly transactions: WalletTransaction[]
   addPendingIncoming(
+    walletId: WalletId,
     pendingIncoming: SubmittedTransaction[],
     addresses: OnChainAddress[],
     usdPerSat: UsdPerSat,

@@ -25,6 +25,7 @@ type LedgerJournal = {
 // Differentiate fields depending on what 'type' we have (see domain/wallets/index.types.d.ts)
 type LedgerTransaction = {
   readonly id: LedgerTransactionId
+  readonly walletId: WalletId | null
   readonly type: LedgerTransactionType
   readonly debit: Satoshis
   readonly credit: Satoshis

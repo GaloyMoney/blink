@@ -5,6 +5,7 @@ import { SettlementMethod, PaymentInitiationMethod } from "./tx-methods"
 import { TxStatus } from "./tx-status"
 
 const filterPendingIncoming = (
+  walletId: WalletId,
   pendingTransactions: SubmittedTransaction[],
   addresses: OnChainAddress[],
   usdPerSat: UsdPerSat,
@@ -15,6 +16,7 @@ const filterPendingIncoming = (
       if (address && addresses.includes(address)) {
         walletTransactions.push({
           id: rawTx.id,
+          walletId,
           initiationVia: PaymentInitiationMethod.OnChain,
           settlementVia: SettlementMethod.OnChain,
           deprecated: {
@@ -42,6 +44,7 @@ export const fromLedger = (
   const transactions = ledgerTransactions.map(
     ({
       id,
+      walletId,
       memoFromPayer,
       lnMemo,
       type,
@@ -51,6 +54,7 @@ export const fromLedger = (
       usd,
       feeUsd,
       paymentHash,
+      pubkey,
       walletName,
       addresses,
       pendingConfirmation,
@@ -68,6 +72,7 @@ export const fromLedger = (
       if (addresses && addresses.length > 0) {
         return {
           id,
+          walletId,
           initiationVia: PaymentInitiationMethod.OnChain,
           settlementVia:
             type === LedgerTransactionType.OnchainIntraLedger
@@ -90,6 +95,7 @@ export const fromLedger = (
       if (paymentHash) {
         return {
           id,
+          walletId,
           initiationVia: PaymentInitiationMethod.Lightning,
           settlementVia:
             type === LedgerTransactionType.IntraLedger
@@ -104,6 +110,7 @@ export const fromLedger = (
           settlementAmount,
           settlementFee: toSats(fee || 0),
           paymentHash: paymentHash as PaymentHash,
+          pubkey: pubkey as Pubkey,
           recipientId: walletName || null,
           status,
           createdAt: timestamp,
@@ -111,6 +118,7 @@ export const fromLedger = (
       }
       return {
         id,
+        walletId,
         initiationVia: PaymentInitiationMethod.WalletName,
         settlementVia: SettlementMethod.IntraLedger,
         deprecated: {
@@ -130,12 +138,13 @@ export const fromLedger = (
   return {
     transactions,
     addPendingIncoming: (
+      walletId: WalletId,
       pendingIncoming: SubmittedTransaction[],
       addresses: OnChainAddress[],
       usdPerSat: UsdPerSat,
     ): WalletTransactionHistoryWithPending => ({
       transactions: [
-        ...filterPendingIncoming(pendingIncoming, addresses, usdPerSat),
+        ...filterPendingIncoming(walletId, pendingIncoming, addresses, usdPerSat),
         ...transactions,
       ],
     }),

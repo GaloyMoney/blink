@@ -14,6 +14,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
     const ledgerTransactions: LedgerTransaction[] = [
       {
         id: "id" as LedgerTransactionId,
+        walletId: "walletId" as WalletId,
         type: LedgerTransactionType.Invoice,
         paymentHash: "paymentHash" as PaymentHash,
         debit: toSats(0),
@@ -33,6 +34,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
       },
       {
         id: "id" as LedgerTransactionId,
+        walletId: "walletId" as WalletId,
         type: LedgerTransactionType.IntraLedger,
         paymentHash: "paymentHash" as PaymentHash,
         walletName: "walletName" as WalletName,
@@ -49,6 +51,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
       },
       {
         id: "id" as LedgerTransactionId,
+        walletId: "walletId" as WalletId,
         type: LedgerTransactionType.OnchainIntraLedger,
         addresses: ["address" as OnChainAddress],
         paymentHash: "paymentHash" as PaymentHash,
@@ -65,6 +68,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
       },
       {
         id: "id" as LedgerTransactionId,
+        walletId: "walletId" as WalletId,
         type: LedgerTransactionType.OnchainReceipt,
         debit: toSats(0),
         fee: toSats(0),
@@ -83,6 +87,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
     const expected = [
       {
         id: "id" as LedgerTransactionId,
+        walletId: "walletId" as WalletId,
         initiationVia: PaymentInitiationMethod.Lightning,
         settlementVia: SettlementMethod.Lightning,
         settlementAmount: toSats(100000),
@@ -100,6 +105,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
       },
       {
         id: "id" as LedgerTransactionId,
+        walletId: "walletId" as WalletId,
         initiationVia: PaymentInitiationMethod.Lightning,
         settlementVia: SettlementMethod.IntraLedger,
         recipientId: "walletName",
@@ -117,6 +123,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
       },
       {
         id: "id" as LedgerTransactionId,
+        walletId: "walletId" as WalletId,
         initiationVia: PaymentInitiationMethod.OnChain,
         settlementVia: SettlementMethod.IntraLedger,
         settlementAmount: toSats(100000),
@@ -134,6 +141,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
       },
       {
         id: "id" as LedgerTransactionId,
+        walletId: "walletId" as WalletId,
         initiationVia: PaymentInitiationMethod.OnChain,
         settlementVia: SettlementMethod.OnChain,
         settlementAmount: toSats(100000),
@@ -231,6 +239,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
     const history = WalletTransactionHistory.fromLedger([])
     const addresses = ["userAddress1", "userAddress2"] as OnChainAddress[]
     const result = history.addPendingIncoming(
+      "walletId" as WalletId,
       submittedTransactions,
       addresses,
       1 as UsdPerSat,
@@ -238,6 +247,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
     const expected = [
       {
         id: "id" as TxId,
+        walletId: "walletId" as WalletId,
         initiationVia: PaymentInitiationMethod.OnChain,
         settlementVia: "onchain",
         settlementAmount: toSats(25000),
@@ -255,6 +265,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
       },
       {
         id: "id" as TxId,
+        walletId: "walletId" as WalletId,
         initiationVia: PaymentInitiationMethod.OnChain,
         settlementVia: "onchain",
         settlementAmount: toSats(50000),
@@ -294,6 +305,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
     const history = WalletTransactionHistory.fromLedger([])
     const addresses = ["userAddress1"] as OnChainAddress[]
     const result = history.addPendingIncoming(
+      "walletId" as WalletId,
       submittedTransactions,
       addresses,
       NaN as UsdPerSat,
@@ -301,6 +313,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
     const expected = [
       {
         id: "id" as TxId,
+        walletId: "walletId" as WalletId,
         initiationVia: PaymentInitiationMethod.OnChain,
         settlementVia: "onchain",
         settlementAmount: toSats(25000),

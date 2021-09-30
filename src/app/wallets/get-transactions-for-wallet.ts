@@ -54,6 +54,7 @@ export const getTransactionsForWallet = async (
   }
 
   return PartialResult.ok(
-    confirmedHistory.addPendingIncoming(pendingTxs, addresses, price).transactions,
+    confirmedHistory.addPendingIncoming(wallet.id, pendingTxs, addresses, price)
+      .transactions,
   )
 }
