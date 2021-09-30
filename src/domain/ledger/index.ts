@@ -22,3 +22,18 @@ export const LedgerTransactionType = {
   ToColdStorage: "to_cold_storage",
   ToHotWallet: "to_hot_wallet",
 } as const
+
+export const toWalletId = (accountId: LiabilitiesAccountId): WalletId | null => {
+  const path = accountId.split(":")
+
+  if (
+    Array.isArray(path) &&
+    path.length === 2 &&
+    path[0] === liabilitiesMainAccount &&
+    path[1]
+  ) {
+    return path[1] as WalletId
+  }
+
+  return null
+}

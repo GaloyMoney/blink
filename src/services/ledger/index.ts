@@ -17,7 +17,7 @@ import {
 } from "@domain/ledger/errors"
 import { MainBook } from "./books"
 import { toSats } from "@domain/bitcoin"
-import { LedgerTransactionType } from "@domain/ledger"
+import { LedgerTransactionType, toWalletId } from "@domain/ledger"
 import { lndAccountingPath, bankOwnerAccountPath } from "./accounts"
 
 type LoadLedgerParams = {
@@ -478,6 +478,7 @@ export const LedgerService = (): ILedgerService => {
 
 const translateToLedgerTx = (tx): LedgerTransaction => ({
   id: tx.id,
+  walletId: toWalletId(tx.accounts),
   type: tx.type,
   debit: toSats(tx.debit),
   credit: toSats(tx.credit),
