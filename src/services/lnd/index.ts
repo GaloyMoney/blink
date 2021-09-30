@@ -103,14 +103,38 @@ export const LndService = (): ILightningService | LightningServiceError => {
         id: paymentHash,
       })
       const { is_confirmed, is_failed, payment } = result
-      return {
-        status: is_confirmed
-          ? PaymentStatus.Settled
-          : is_failed
-          ? PaymentStatus.Failed
-          : PaymentStatus.Pending,
-        roundedUpFee: payment ? toSats(payment.safe_fee) : toSats(0),
+
+      const status = is_confirmed
+        ? PaymentStatus.Settled
+        : is_failed
+        ? PaymentStatus.Failed
+        : PaymentStatus.Pending
+
+      let paymentLookup: LnPaymentLookup = {
+        amount: toSats(0),
+        createdAt: new Date(0),
+        confirmedAt: undefined,
+        destination: "" as Pubkey,
+        roundedUpFee: toSats(0),
+        secret: "" as PaymentSecret,
+        request: undefined,
+        status,
       }
+
+      if (payment) {
+        paymentLookup = Object.assign(payment, {
+          amount: toSats(payment.tokens),
+          createdAt: new Date(payment.created_at),
+          confirmedAt: payment.confirmed_at ? new Date(payment.confirmed_at) : undefined,
+          destination: payment.destination as Pubkey,
+          request: payment.request,
+          roundedUpFee: toSats(payment.safe_fee),
+          secret: payment.secret as PaymentSecret,
+          status,
+        })
+      }
+
+      return paymentLookup
     } catch (err) {
       return new UnknownLightningServiceError(err)
     }

@@ -34,6 +34,12 @@ type LnInvoiceLookup = {
 type LnPaymentLookup = {
   readonly status: PaymentStatus
   readonly roundedUpFee: Satoshis
+  readonly createdAt: Date
+  readonly confirmedAt: Date | undefined
+  readonly amount: Satoshis
+  readonly secret: PaymentSecret
+  readonly request: string | undefined
+  readonly destination: Pubkey
 }
 
 type LnInvoice = {
