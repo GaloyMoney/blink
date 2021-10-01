@@ -19,9 +19,9 @@ const WalletId = new GT.Scalar({
 function validWalletIdValue(value) {
   const checkedWalletId = checkedToWalletPublicId(value)
   if (checkedWalletId instanceof Error) {
-    return checkedWalletId
+    return new UserInputError("Invalid value for WalletId")
   }
-  return new UserInputError("Invalid value for WalletId")
+  return checkedWalletId
 }
 
 export default WalletId
