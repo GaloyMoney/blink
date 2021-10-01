@@ -14,8 +14,8 @@ type CachedRoute = { pubkey: Pubkey; route: RawRoute }
 declare const cachedRouteLookupKeySymbol: unique symbol
 type CachedRouteLookupKey = string & { [cachedRouteLookupKeySymbol]: never }
 
-type CachedRouteKeyGenerator = {
-  generate(args: {
+type CachedRouteLookupKeyFactory = {
+  create(args: {
     paymentHash: PaymentHash
     milliSats: MilliSatoshis
   }): CachedRouteLookupKey

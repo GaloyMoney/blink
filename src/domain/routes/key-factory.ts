@@ -1,5 +1,5 @@
-export const CachedRouteKeyGenerator = (): CachedRouteKeyGenerator => {
-  const generate = ({
+export const CachedRouteLookupKeyFactory = (): CachedRouteLookupKeyFactory => {
+  const create = ({
     paymentHash,
     milliSats,
   }: {
@@ -12,6 +12,6 @@ export const CachedRouteKeyGenerator = (): CachedRouteKeyGenerator => {
     }) as CachedRouteLookupKey
 
   return {
-    generate,
+    create,
   }
 }
