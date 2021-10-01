@@ -35,7 +35,7 @@ import { PriceService } from "@services/price"
 import { LedgerService } from "@services/ledger"
 import { toMilliSats, toSats } from "@domain/bitcoin"
 import { toLiabilitiesAccountId } from "@domain/ledger"
-import { RoutesRepository } from "@services/redis/routes"
+import { RoutesCache } from "@services/redis/routes"
 import { CouldNotFindError } from "@domain/errors"
 import { LockService } from "@services/lock"
 import { checkAndVerifyTwoFA, getLimitsChecker } from "@core/accounts/helpers"
@@ -131,12 +131,15 @@ export const LightningMixin = (superclass) =>
 
       const milliSats = toMilliSats(parseFloat(mtokens))
       const key = CachedRouteKeyGenerator().generate({ paymentHash: id, milliSats })
-      const cachedRoute = await RoutesRepository().findByKey(key)
-      if (cachedRoute instanceof Error && !(cachedRoute instanceof CouldNotFindError))
-        throw cachedRoute
-      if (!(cachedRoute instanceof CouldNotFindError)) {
+      const routeFromCache = await RoutesCache().findByKey(key)
+      if (
+        routeFromCache instanceof Error &&
+        !(routeFromCache instanceof CouldNotFindError)
+      )
+        throw routeFromCache
+      if (!(routeFromCache instanceof CouldNotFindError)) {
         lightningLogger.info("route result in cache")
-        return cachedRoute.route.fee
+        return routeFromCache.route.fee
       }
 
       let rawRoute
@@ -174,8 +177,8 @@ export const LightningMixin = (superclass) =>
         pubkey: pubkey as Pubkey,
         route: rawRoute,
       }
-      const persistedRoute = await RoutesRepository().persist({ key, routeToCache })
-      if (persistedRoute instanceof Error) throw persistedRoute
+      const cachedRoute = await RoutesCache().store({ key, routeToCache })
+      if (cachedRoute instanceof Error) throw cachedRoute
 
       lightningLogger.info(
         {
@@ -464,8 +467,8 @@ export const LightningMixin = (superclass) =>
 
         const milliSats = toMilliSats(parseFloat(mtokens))
         const key = CachedRouteKeyGenerator().generate({ paymentHash: id, milliSats })
-        const routesRepo = RoutesRepository()
-        const cachedRoute = await routesRepo.findByKey(key)
+        const routesCache = RoutesCache()
+        const cachedRoute = await routesCache.findByKey(key)
         if (cachedRoute instanceof Error && !(cachedRoute instanceof CouldNotFindError))
           throw cachedRoute
         if (!(cachedRoute instanceof CouldNotFindError)) {
@@ -489,7 +492,7 @@ export const LightningMixin = (superclass) =>
             // deleting entry so that subsequent payment attempt could succeed
             const milliSats = toMilliSats(parseFloat(mtokens))
             const key = CachedRouteKeyGenerator().generate({ paymentHash: id, milliSats })
-            const deleted = await routesRepo.deleteByKey(key)
+            const deleted = await routesCache.deleteByKey(key)
             if (deleted instanceof Error) throw deleted
             throw err
           }
