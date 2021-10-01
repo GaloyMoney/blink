@@ -2,12 +2,12 @@ import { SECS_PER_5_MINS } from "@config/app"
 import { CouldNotFindError, UnknownRepositoryError } from "@domain/errors"
 import { redis } from "@services/redis"
 
-export const RoutesRepository = (): IRoutesRepository => {
-  const persist = async ({
+export const RoutesCache = (): IRoutesCache => {
+  const store = async ({
     key,
     routeToCache,
   }: {
-    key: CacheKey
+    key: CachedRouteLookupKey
     routeToCache: CachedRoute
   }): Promise<CachedRoute | RepositoryError> => {
     try {
@@ -19,7 +19,9 @@ export const RoutesRepository = (): IRoutesRepository => {
     }
   }
 
-  const findByKey = async (key: CacheKey): Promise<CachedRoute | RepositoryError> => {
+  const findByKey = async (
+    key: CachedRouteLookupKey,
+  ): Promise<CachedRoute | RepositoryError> => {
     try {
       const rawRouteString = await redis.get(key)
       if (!rawRouteString)
@@ -30,7 +32,9 @@ export const RoutesRepository = (): IRoutesRepository => {
     }
   }
 
-  const deleteByKey = async (key: CacheKey): Promise<true | RepositoryError> => {
+  const deleteByKey = async (
+    key: CachedRouteLookupKey,
+  ): Promise<true | RepositoryError> => {
     try {
       await redis.del(key)
       return true
@@ -40,7 +44,7 @@ export const RoutesRepository = (): IRoutesRepository => {
   }
 
   return {
-    persist,
+    store,
     findByKey,
     deleteByKey,
   }

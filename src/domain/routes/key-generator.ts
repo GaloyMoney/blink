@@ -5,11 +5,11 @@ export const CachedRouteKeyGenerator = (): CachedRouteKeyGenerator => {
   }: {
     paymentHash: PaymentHash
     milliSats: MilliSatoshis
-  }): CacheKey =>
+  }): CachedRouteLookupKey =>
     JSON.stringify({
       id: paymentHash,
       mtokens: milliSats.toString(),
-    }) as CacheKey
+    }) as CachedRouteLookupKey
 
   return {
     generate,
