@@ -6,15 +6,13 @@ export const RoutesRepository = (): IRoutesRepository => {
   const persist = async ({
     key,
     routeToCache,
-    time = SECS_PER_5_MINS,
   }: {
     key: CacheKey
     routeToCache: CachedRoute
-    time?: Seconds
   }): Promise<CachedRoute | RepositoryError> => {
     try {
       const value = JSON.stringify(routeToCache)
-      await redis.set(key, value, "EX", time)
+      await redis.set(key, value, "EX", SECS_PER_5_MINS)
       return routeToCache
     } catch (err) {
       return new UnknownRepositoryError(err)

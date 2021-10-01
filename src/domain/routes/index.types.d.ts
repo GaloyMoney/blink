@@ -25,7 +25,6 @@ interface IRoutesRepository {
   }: {
     key
     routeToCache: CachedRoute
-    time?: Seconds
   }) => Promise<CachedRoute | RepositoryError>
 
   findByKey: (key: CacheKey) => Promise<CachedRoute | RepositoryError>
