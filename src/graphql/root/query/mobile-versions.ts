@@ -1,12 +1,18 @@
 import { GT } from "@graphql/index"
 
 import MobileVersions from "@graphql/types/object/mobile-versions"
-import { getMinBuildNumber } from "@services/local-cache"
+import { getBuildVersionNumbers } from "@services/local-cache"
 
 const MobileVersionsQuery = GT.Field({
   type: GT.List(MobileVersions),
   resolve: async () => {
-    const { minBuildNumber, lastBuildNumber } = await getMinBuildNumber()
+    const versionNumbers = await getBuildVersionNumbers()
+
+    if (versionNumbers instanceof Error) {
+      throw versionNumbers
+    }
+
+    const { minBuildNumber, lastBuildNumber } = versionNumbers
 
     return [
       {

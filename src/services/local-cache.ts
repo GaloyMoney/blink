@@ -3,21 +3,30 @@ import { Price } from "@core/price-impl"
 import { DbMetadata } from "./mongoose/schema"
 export const mainCache = new NodeCache()
 
-export const getMinBuildNumber = async () => {
-  const key = "minBuildNumber"
-  let versions
+type BuildNumbers = {
+  minBuildNumber: number
+  lastBuildNumber: number
+}
 
-  versions = mainCache.get(key)
+export const getBuildVersionNumbers = async (): Promise<BuildNumbers | Error> => {
+  const key = "minBuildNumber"
+  let versions = mainCache.get(key) as BuildNumbers
+
   if (versions === undefined) {
-    const { minBuildNumber, lastBuildNumber } = await DbMetadata.findOne(
+    versions = await DbMetadata.findOne(
       {},
       { minBuildNumber: 1, lastBuildNumber: 1, _id: 0 },
     )
-    versions = { minBuildNumber, lastBuildNumber }
-    mainCache.set(key, versions, 3600)
+    if (versions?.minBuildNumber && versions?.lastBuildNumber) {
+      mainCache.set(key, versions, 3600)
+    }
   }
 
-  return versions
+  if (versions?.minBuildNumber && versions?.lastBuildNumber) {
+    return versions
+  }
+
+  return new Error("Build version numbers are missing")
 }
 
 export const getHourlyPrice = async ({ logger }) => {

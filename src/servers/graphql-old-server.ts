@@ -20,7 +20,7 @@ import { setupMongoConnection } from "@services/mongodb"
 import { activateLndHealthCheck } from "@services/lnd/health"
 import { baseLogger } from "@services/logger"
 import { getActiveLnd, nodesStats, nodeStats } from "@services/lnd/utils"
-import { getHourlyPrice, getMinBuildNumber } from "@services/local-cache"
+import { getHourlyPrice, getBuildVersionNumbers } from "@services/local-cache"
 import { getCurrentPrice } from "@services/realtime-price"
 import { User } from "@services/mongoose/schema"
 import { sendNotification } from "@services/notifications/notification"
@@ -131,7 +131,13 @@ const resolvers = {
     },
     nodesStats: async () => nodesStats(),
     buildParameters: async () => {
-      const { minBuildNumber, lastBuildNumber } = await getMinBuildNumber()
+      const versionNumbers = await getBuildVersionNumbers()
+
+      if (versionNumbers instanceof Error) {
+        throw versionNumbers
+      }
+
+      const { minBuildNumber, lastBuildNumber } = versionNumbers
       return {
         id: lastBuildNumber,
         commitHash: () => commitHash,
