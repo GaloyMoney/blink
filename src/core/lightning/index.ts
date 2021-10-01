@@ -40,7 +40,7 @@ import { CouldNotFindError } from "@domain/errors"
 import { LockService } from "@services/lock"
 import { checkAndVerifyTwoFA, getLimitsChecker } from "@core/accounts/helpers"
 import { TwoFANewCodeNeededError } from "@domain/twoFA"
-import { CachedRouteKeyGenerator } from "@domain/routes/key-generator"
+import { CachedRouteLookupKeyFactory } from "@domain/routes/key-factory"
 
 export type ITxType =
   | "invoice"
@@ -130,7 +130,7 @@ export const LightningMixin = (superclass) =>
       const { lnd, pubkey } = getActiveLnd()
 
       const milliSats = toMilliSats(parseFloat(mtokens))
-      const key = CachedRouteKeyGenerator().generate({ paymentHash: id, milliSats })
+      const key = CachedRouteLookupKeyFactory().create({ paymentHash: id, milliSats })
       const routeFromCache = await RoutesCache().findByKey(key)
       if (
         routeFromCache instanceof Error &&
@@ -466,7 +466,7 @@ export const LightningMixin = (superclass) =>
         lightningLogger = lightningLogger.child({ onUs: false, max_fee })
 
         const milliSats = toMilliSats(parseFloat(mtokens))
-        const key = CachedRouteKeyGenerator().generate({ paymentHash: id, milliSats })
+        const key = CachedRouteLookupKeyFactory().create({ paymentHash: id, milliSats })
         const routesCache = RoutesCache()
         const cachedRoute = await routesCache.findByKey(key)
         if (cachedRoute instanceof Error && !(cachedRoute instanceof CouldNotFindError))
@@ -491,7 +491,10 @@ export const LightningMixin = (superclass) =>
             // lnd may have gone offline since the probe has been done.
             // deleting entry so that subsequent payment attempt could succeed
             const milliSats = toMilliSats(parseFloat(mtokens))
-            const key = CachedRouteKeyGenerator().generate({ paymentHash: id, milliSats })
+            const key = CachedRouteLookupKeyFactory().create({
+              paymentHash: id,
+              milliSats,
+            })
             const deleted = await routesCache.deleteByKey(key)
             if (deleted instanceof Error) throw deleted
             throw err
