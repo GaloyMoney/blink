@@ -22,6 +22,7 @@ import {
   PayViaPaymentDetailsArgs,
   PayViaRoutesResult,
   PayViaPaymentDetailsResult,
+  GetInvoiceResult,
 } from "lightning"
 import { TIMEOUT_PAYMENT } from "./auth"
 import { getActiveLnd, getLndFromPubkey, getLnds } from "./utils"
@@ -83,11 +84,21 @@ export const LndService = (): ILightningService | LightningServiceError => {
   }): Promise<LnInvoiceLookup | LightningServiceError> => {
     try {
       const { lnd } = getLndFromPubkey({ pubkey })
-      const { is_confirmed, description, received } = await getInvoice({
+      const invoice: GetInvoiceResult = await getInvoice({
         lnd,
         id: paymentHash,
       })
-      return { isSettled: !!is_confirmed, description, received: toSats(received) }
+
+      return {
+        createdAt: new Date(invoice.created_at),
+        confirmedAt: invoice.confirmed_at ? new Date(invoice.confirmed_at) : undefined,
+        description: invoice.description,
+        expiresAt: invoice.expires_at ? new Date(invoice.expires_at) : undefined,
+        isSettled: !!invoice.is_confirmed,
+        received: toSats(invoice.received),
+        request: invoice.request,
+        secret: invoice.secret as PaymentSecret,
+      }
     } catch (err) {
       const invoiceNotFound = "unable to locate invoice"
       if (err.length === 3 && err[2]?.err?.details === invoiceNotFound) {

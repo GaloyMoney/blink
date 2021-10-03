@@ -42,9 +42,14 @@ type LnInvoiceFeature = {
 }
 
 type LnInvoiceLookup = {
-  readonly isSettled: boolean
+  readonly createdAt: Date
+  readonly confirmedAt: Date | undefined
   readonly description: string
+  readonly expiresAt: Date | undefined
+  readonly isSettled: boolean
   readonly received: Satoshis
+  readonly request: string | undefined
+  readonly secret: PaymentSecret
 }
 
 type LnPaymentLookup = {

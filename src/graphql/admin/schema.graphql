@@ -298,6 +298,7 @@ type Query {
   userDetailsByPhone(phone: Phone!): UserDetails!
   userDetailsByUsername(username: Username!): UserDetails!
   transactionsByHash(hash: PaymentHash!): [Transaction]
+  lightningInvoice(hash: String!): LightningInvoice!
 }
 
 enum AccountLevel {
@@ -336,6 +337,24 @@ type Coordinates {
   longitude: Float!
   latitude: Float!
 }
+
+type LightningInvoice {
+  createdAt: Timestamp!
+  confirmedAt: Timestamp
+  description: String!
+  expiresAt: Timestamp
+  isSettled: Boolean!
+  received: SatAmount!
+  request: LnPaymentRequest
+  secret: LnPaymentSecret!
+}
+
+"""
+BOLT11 lightning invoice payment request with the amount included
+"""
+scalar LnPaymentRequest
+
+scalar LnPaymentSecret
 
 type Mutation {
   userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
