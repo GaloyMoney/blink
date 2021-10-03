@@ -299,6 +299,7 @@ type Query {
   userDetailsByUsername(username: Username!): UserDetails!
   transactionsByHash(hash: PaymentHash!): [Transaction]
   lightningInvoice(hash: PaymentHash!): LightningInvoice!
+  lightningPayment(hash: String!): LightningPayment!
 }
 
 enum AccountLevel {

@@ -153,13 +153,13 @@ export const startApolloServer = async ({
 
       // GraphQL shield seems to have a bug around throwing a custom ApolloError
       // This is a workaround for now
-      const isSheildError = ["NOT_AUTHENTICATED", "NOT_AUTHORIZED"].includes(err.message)
+      const isShieldError = ["NOT_AUTHENTICATED", "NOT_AUTHORIZED"].includes(err.message)
 
       const reportErrorToCclient =
         ["GRAPHQL_PARSE_FAILED", "GRAPHQL_VALIDATION_FAILED", "BAD_USER_INPUT"].includes(
           err.extensions?.code,
         ) ||
-        isSheildError ||
+        isShieldError ||
         err instanceof ApolloError ||
         err instanceof GraphQLError
 
@@ -167,7 +167,7 @@ export const startApolloServer = async ({
         message: err.message,
         locations: err.locations,
         path: err.path,
-        code: isSheildError ? err.message : err.extensions?.code,
+        code: isShieldError ? err.message : err.extensions?.code,
       }
 
       return reportErrorToCclient
