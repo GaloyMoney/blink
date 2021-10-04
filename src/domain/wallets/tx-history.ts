@@ -27,6 +27,7 @@ const filterPendingIncoming = (
           },
           recipientUsername: null,
           settlementFee: toSats(0),
+          transactionHash: rawTx.id as TxId,
           status: TxStatus.Pending,
           memo: null,
           createdAt: createdAt,
@@ -55,6 +56,7 @@ export const fromLedger = (
       usd,
       feeUsd,
       paymentHash,
+      txId,
       pubkey,
       username,
       addresses,
@@ -66,12 +68,11 @@ export const fromLedger = (
         type,
         memoFromPayer,
         lnMemo,
-        type,
         credit,
         username,
       })
       const status = pendingConfirmation ? TxStatus.Pending : TxStatus.Success
-      if (addresses && addresses.length > 0) {
+      if ((addresses && addresses.length > 0) || isOnchainTransaction(type)) {
         return {
           id,
           walletId,
@@ -80,7 +81,7 @@ export const fromLedger = (
             type === LedgerTransactionType.OnchainIntraLedger
               ? SettlementMethod.IntraLedger
               : SettlementMethod.OnChain,
-          addresses,
+          addresses: addresses || [],
           deprecated: {
             description,
             usd,
@@ -90,14 +91,21 @@ export const fromLedger = (
           recipientUsername: username || null,
           settlementAmount,
           settlementFee: toSats(fee || 0),
+          transactionHash: txId as TxId,
           status,
+          memo: description,
           createdAt: timestamp,
         }
+      }
+      if (paymentHash) {
         return {
           id,
           walletId,
-          initiationVia: PaymentInitiationMethod.WalletName,
-          settlementVia: SettlementMethod.IntraLedger,
+          initiationVia: PaymentInitiationMethod.Lightning,
+          settlementVia:
+            type === LedgerTransactionType.IntraLedger
+              ? SettlementMethod.IntraLedger
+              : SettlementMethod.Lightning,
           deprecated: {
             description,
             usd,
@@ -129,6 +137,7 @@ export const fromLedger = (
         settlementFee: toSats(fee || 0),
         recipientUsername: username || null,
         status,
+        memo: description,
         createdAt: timestamp,
       } as IntraLedgerTransaction
     },

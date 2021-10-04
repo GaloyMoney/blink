@@ -37,6 +37,7 @@ type WalletOnChainTransaction = BaseWalletTransaction & {
   readonly settlementVia: "onchain" | "intraledger"
   readonly recipientUsername: Username | null
   readonly addresses: OnChainAddress[]
+  readonly transactionHash: TxId
 }
 
 type WalletLnTransaction = BaseWalletTransaction & {
