@@ -17,7 +17,7 @@ import {
 } from "@domain/ledger/errors"
 import { MainBook } from "./books"
 import { toSats } from "@domain/bitcoin"
-import { LedgerTransactionType, toWalletId } from "@domain/ledger"
+import { LedgerTransactionType, liabilitiesMainAccount, toWalletId } from "@domain/ledger"
 import { lndAccountingPath, bankOwnerAccountPath } from "./accounts"
 
 type LoadLedgerParams = {
@@ -43,7 +43,10 @@ export const LedgerService = (): ILedgerService => {
     hash: PaymentHash | TxId,
   ): Promise<LedgerTransaction[] | LedgerServiceError> => {
     try {
-      const { results } = await MainBook.ledger({ hash })
+      const { results } = await MainBook.ledger({
+        account_path: liabilitiesMainAccount,
+        hash,
+      })
       return results.map((tx) => translateToLedgerTx(tx))
     } catch (err) {
       return new UnknownLedgerError(err)

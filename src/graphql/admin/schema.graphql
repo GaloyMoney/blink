@@ -33,12 +33,12 @@ enum PaymentErrorCode {
 
 type ConsumerAccount implements Account {
   wallets: [Wallet!]!
-  csvTransactions(walletNames: [WalletName!]!): String!
+  csvTransactions(walletIds: [WalletId!]!): String!
 }
 
 interface Account {
   wallets: [Wallet!]!
-  csvTransactions(walletNames: [WalletName!]!): String!
+  csvTransactions(walletIds: [WalletId!]!): String!
 }
 
 interface Wallet {
@@ -143,16 +143,14 @@ interface Transaction {
   status: TxStatus
 
   """
-  Settlement destination:
-    Could be null when originalDestination is onChain/LN
-    and the payee does not have a WalletName
+  Settlement destination: Could be null when originalDestination is onChain/LN and the payee does not have a username
   """
-  recipient: WalletName
+  recipientUsername: Username
   createdAt: Timestamp!
 }
 
 enum PaymentInitiationMethod {
-  WALLET_NAME
+  WALLET_ID
   ON_CHAIN
   LIGHTNING
 }
@@ -180,14 +178,19 @@ enum TxStatus {
 }
 
 """
-Unique identifier of an account wallet
+Unique identifier of a user
 """
-scalar WalletName
+scalar Username
 
 """
 Date field, serialized as the number of milliseconds since the Unix Epoch
 """
 scalar Timestamp
+
+"""
+Unique identifier of a user
+"""
+scalar WalletId
 
 type BTCWallet implements Wallet {
   id: ID!
@@ -216,7 +219,7 @@ type BTCWallet implements Wallet {
   ): TransactionConnection
 }
 
-type WalletNameTransaction implements Transaction {
+type IntraLedgerTransaction implements Transaction {
   id: ID!
   walletId: ID!
   initiationVia: PaymentInitiationMethod!
@@ -228,11 +231,9 @@ type WalletNameTransaction implements Transaction {
   createdAt: Timestamp!
 
   """
-  Settlement destination:
-    Could be null when originalDestination is onChain/LN
-    and the payee does not have a WalletName
+  Settlement destination: Could be null when originalDestination is onChain/LN and the payee does not have a username
   """
-  recipient: WalletName
+  recipientUsername: Username
 }
 
 type OnChainTransaction implements Transaction {
@@ -244,7 +245,7 @@ type OnChainTransaction implements Transaction {
   settlementFee: SatAmount!
   memo: Memo
   status: TxStatus
-  recipient: WalletName
+  recipientUsername: Username
   createdAt: Timestamp!
   address: OnChainAddress!
 }
@@ -263,7 +264,7 @@ type LnTransaction implements Transaction {
   settlementFee: SatAmount!
   memo: Memo
   status: TxStatus
-  recipient: WalletName
+  recipientUsername: Username
   createdAt: Timestamp!
   paymentHash: LnPaymentHash!
 }
@@ -298,11 +299,6 @@ type UserDetails {
 Phone number which includes country code
 """
 scalar Phone
-
-"""
-Unique identifier of a user
-"""
-scalar Username
 
 enum Language {
   EN_US

@@ -5,10 +5,10 @@ import Timestamp from "../scalar/timestamp"
 import PaymentInitiationMethod from "../scalar/payment-initiation-method"
 import SettlementMethod from "../scalar/settlement-method"
 import SatAmount from "../scalar/sat-amount"
+import Username from "../scalar/username"
 // import BtcUsdPrice from "../object/btc-usd-price"
 import Memo from "../scalar/memo"
 import TxStatus from "../scalar/tx-status"
-import WalletName from "../scalar/wallet-name"
 // import TxDirection from "../scalar/tx-direction"
 
 const ITransaction = new GT.Interface({
@@ -44,11 +44,11 @@ const ITransaction = new GT.Interface({
     status: {
       type: TxStatus,
     },
-    recipient: {
-      type: WalletName,
-      description: `Settlement destination:
-  Could be null when originalDestination is onChain/LN
-  and the payee does not have a WalletName`,
+    recipientUsername: {
+      type: Username,
+      description:
+        "Settlement destination: Could be null when originalDestination is onChain/LN" +
+        " and the payee does not have a username",
     },
     createdAt: {
       type: GT.NonNull(Timestamp),
