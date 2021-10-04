@@ -31,10 +31,250 @@ enum PaymentErrorCode {
   NO_ROUTE
 }
 
+type ConsumerAccount implements Account {
+  wallets: [Wallet!]!
+  csvTransactions(walletNames: [WalletName!]!): String!
+}
+
+interface Account {
+  wallets: [Wallet!]!
+  csvTransactions(walletNames: [WalletName!]!): String!
+}
+
+interface Wallet {
+  id: ID!
+  walletCurrency: WalletCurrency!
+  balance: SignedAmount!
+  transactions(
+    """
+    Returns the items in the list that come after the specified cursor.
+    """
+    after: String
+
+    """
+    Returns the first n items from the list.
+    """
+    first: Int
+
+    """
+    Returns the items in the list that come before the specified cursor.
+    """
+    before: String
+
+    """
+    Returns the last n items from the list.
+    """
+    last: Int
+  ): TransactionConnection
+}
+
+enum WalletCurrency {
+  BTC
+}
+
+"""
+An amount (of a currency) that can be negative (i.g. in a transaction)
+"""
+scalar SignedAmount
+
+"""
+A connection to a list of items.
+"""
+type TransactionConnection {
+  """
+  Information to aid in pagination.
+  """
+  pageInfo: PageInfo!
+
+  """
+  A list of edges.
+  """
+  edges: [TransactionEdge]
+}
+
+"""
+Information about pagination in a connection.
+"""
+type PageInfo {
+  """
+  When paginating forwards, are there more items?
+  """
+  hasNextPage: Boolean!
+
+  """
+  When paginating backwards, are there more items?
+  """
+  hasPreviousPage: Boolean!
+
+  """
+  When paginating backwards, the cursor to continue.
+  """
+  startCursor: String
+
+  """
+  When paginating forwards, the cursor to continue.
+  """
+  endCursor: String
+}
+
+"""
+An edge in a connection.
+"""
+type TransactionEdge {
+  """
+  The item at the end of the edge
+  """
+  node: Transaction
+
+  """
+  A cursor for use in pagination
+  """
+  cursor: String!
+}
+
+interface Transaction {
+  id: ID!
+  walletId: ID!
+  initiationVia: PaymentInitiationMethod!
+  settlementVia: SettlementMethod!
+  settlementAmount: SatAmount!
+  settlementFee: SatAmount!
+  memo: Memo
+  status: TxStatus
+
+  """
+  Settlement destination:
+    Could be null when originalDestination is onChain/LN
+    and the payee does not have a WalletName
+  """
+  recipient: WalletName
+  createdAt: Timestamp!
+}
+
+enum PaymentInitiationMethod {
+  WALLET_NAME
+  ON_CHAIN
+  LIGHTNING
+}
+
+enum SettlementMethod {
+  INTRA_LEDGER
+  ON_CHAIN
+  LIGHTNING
+}
+
+"""
+(Positive) Satoshi amount (i.g. quiz earning)
+"""
+scalar SatAmount
+
+"""
+Text field in a lightning payment transaction
+"""
+scalar Memo
+
+enum TxStatus {
+  PENDING
+  SUCCESS
+  FAILURE
+}
+
+"""
+Unique identifier of an account wallet
+"""
+scalar WalletName
+
+"""
+Date field, serialized as the number of milliseconds since the Unix Epoch
+"""
+scalar Timestamp
+
+type BTCWallet implements Wallet {
+  id: ID!
+  walletCurrency: WalletCurrency!
+  balance: SignedAmount!
+  transactions(
+    """
+    Returns the items in the list that come after the specified cursor.
+    """
+    after: String
+
+    """
+    Returns the first n items from the list.
+    """
+    first: Int
+
+    """
+    Returns the items in the list that come before the specified cursor.
+    """
+    before: String
+
+    """
+    Returns the last n items from the list.
+    """
+    last: Int
+  ): TransactionConnection
+}
+
+type WalletNameTransaction implements Transaction {
+  id: ID!
+  walletId: ID!
+  initiationVia: PaymentInitiationMethod!
+  settlementVia: SettlementMethod!
+  settlementAmount: SatAmount!
+  settlementFee: SatAmount!
+  memo: Memo
+  status: TxStatus
+  createdAt: Timestamp!
+
+  """
+  Settlement destination:
+    Could be null when originalDestination is onChain/LN
+    and the payee does not have a WalletName
+  """
+  recipient: WalletName
+}
+
+type OnChainTransaction implements Transaction {
+  id: ID!
+  walletId: ID!
+  initiationVia: PaymentInitiationMethod!
+  settlementVia: SettlementMethod!
+  settlementAmount: SatAmount!
+  settlementFee: SatAmount!
+  memo: Memo
+  status: TxStatus
+  recipient: WalletName
+  createdAt: Timestamp!
+  address: OnChainAddress!
+}
+
+"""
+An address for an on-chain bitcoin destination
+"""
+scalar OnChainAddress
+
+type LnTransaction implements Transaction {
+  id: ID!
+  walletId: ID!
+  initiationVia: PaymentInitiationMethod!
+  settlementVia: SettlementMethod!
+  settlementAmount: SatAmount!
+  settlementFee: SatAmount!
+  memo: Memo
+  status: TxStatus
+  recipient: WalletName
+  createdAt: Timestamp!
+  paymentHash: LnPaymentHash!
+}
+
+scalar LnPaymentHash
+
 type Query {
   allLevels: [AccountLevel!]!
   userDetailsByPhone(phone: Phone!): UserDetails!
   userDetailsByUsername(username: Username!): UserDetails!
+  transactionsByHash(hash: String!): [Transaction]
 }
 
 enum AccountLevel {
@@ -78,11 +318,6 @@ type Coordinates {
   longitude: Float!
   latitude: Float!
 }
-
-"""
-Date field, serialized as the number of milliseconds since the Unix Epoch
-"""
-scalar Timestamp
 
 type Mutation {
   userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!

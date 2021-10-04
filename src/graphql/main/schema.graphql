@@ -134,10 +134,20 @@ type TransactionEdge {
 
 interface Transaction {
   id: ID!
+  walletId: ID!
   initiationVia: PaymentInitiationMethod!
   settlementVia: SettlementMethod!
   settlementAmount: SatAmount!
   settlementFee: SatAmount!
+  memo: Memo
+  status: TxStatus
+
+  """
+  Settlement destination:
+    Could be null when originalDestination is onChain/LN
+    and the payee does not have a WalletName
+  """
+  recipient: WalletName
   createdAt: Timestamp!
 }
 
@@ -159,14 +169,25 @@ enum SettlementMethod {
 scalar SatAmount
 
 """
-Date field, serialized as the number of milliseconds since the Unix Epoch
+Text field in a lightning payment transaction
 """
-scalar Timestamp
+scalar Memo
+
+enum TxStatus {
+  PENDING
+  SUCCESS
+  FAILURE
+}
 
 """
 Unique identifier of a user
 """
 scalar WalletId
+
+"""
+Date field, serialized as the number of milliseconds since the Unix Epoch
+"""
+scalar Timestamp
 
 type BTCWallet implements Wallet {
   id: ID!
@@ -197,10 +218,13 @@ type BTCWallet implements Wallet {
 
 type IntraLedgerTransaction implements Transaction {
   id: ID!
+  walletId: ID!
   initiationVia: PaymentInitiationMethod!
   settlementVia: SettlementMethod!
   settlementAmount: SatAmount!
   settlementFee: SatAmount!
+  memo: Memo
+  status: TxStatus
   createdAt: Timestamp!
 
   """
@@ -216,10 +240,14 @@ scalar Username
 
 type OnChainTransaction implements Transaction {
   id: ID!
+  walletId: ID!
   initiationVia: PaymentInitiationMethod!
   settlementVia: SettlementMethod!
   settlementAmount: SatAmount!
   settlementFee: SatAmount!
+  memo: Memo
+  status: TxStatus
+  recipient: WalletName
   createdAt: Timestamp!
   address: OnChainAddress!
 }
@@ -231,10 +259,14 @@ scalar OnChainAddress
 
 type LnTransaction implements Transaction {
   id: ID!
+  walletId: ID!
   initiationVia: PaymentInitiationMethod!
   settlementVia: SettlementMethod!
   settlementAmount: SatAmount!
   settlementFee: SatAmount!
+  memo: Memo
+  status: TxStatus
+  recipient: WalletName
   createdAt: Timestamp!
   paymentHash: LnPaymentHash!
 }
@@ -597,11 +629,6 @@ input LnInvoiceCreateInput {
   amount: SatAmount!
   memo: Memo
 }
-
-"""
-Text field in a lightning payment transaction
-"""
-scalar Memo
 
 type LnNoAmountInvoicePayload {
   errors: [Error!]!

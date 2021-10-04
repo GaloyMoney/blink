@@ -39,6 +39,17 @@ export const loadLedger = ({
 }
 
 export const LedgerService = (): ILedgerService => {
+  const getTransactionsByHash = async (
+    hash: PaymentHash | TxId,
+  ): Promise<LedgerTransaction[] | LedgerServiceError> => {
+    try {
+      const { results } = await MainBook.ledger({ hash })
+      return results.map((tx) => translateToLedgerTx(tx))
+    } catch (err) {
+      return new UnknownLedgerError(err)
+    }
+  }
+
   const getLiabilityTransactions = async (
     liabilitiesAccountId: LiabilitiesAccountId,
   ): Promise<LedgerTransaction[] | LedgerError> => {
@@ -457,6 +468,7 @@ export const LedgerService = (): ILedgerService => {
   }
 
   return {
+    getTransactionsByHash,
     getLiabilityTransactions,
     getLiabilityTransactionsForContactUsername,
     listPendingPayments,

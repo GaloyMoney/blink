@@ -5,17 +5,21 @@ import SatAmount from "../scalar/sat-amount"
 import SettlementMethod from "../scalar/settlement-method"
 import Timestamp from "../scalar/timestamp"
 import Username from "../scalar/username"
-// import Memo from "../scalar/memo"
+import Memo from "../scalar/memo"
 // import TxDirection from "../scalar/tx-direction"
-// import TxStatus from "../scalar/tx-status"
+import TxStatus from "../scalar/tx-status"
 // import BtcUsdPrice from "./btc-usd-price"
+import { SettlementMethod as DomainSettlementMethod } from "@domain/wallets"
 
 const IntraLedgerTransaction = new GT.Object({
   name: "IntraLedgerTransaction",
   interfaces: () => [ITransaction],
-  isTypeOf: (source) => source.type === "intra-ledger", // TODO: make this work
+  isTypeOf: (source) => source.settlementVia === DomainSettlementMethod.IntraLedger,
   fields: () => ({
     id: {
+      type: GT.NonNullID,
+    },
+    walletId: {
       type: GT.NonNullID,
     },
     initiationVia: {
@@ -36,12 +40,12 @@ const IntraLedgerTransaction = new GT.Object({
     // direction: {
     //   type: GT.NonNull(TxDirection),
     // },
-    // memo: {
-    //   type: Memo,
-    // },
-    // status: {
-    //   type: TxStatus,
-    // },
+    memo: {
+      type: Memo,
+    },
+    status: {
+      type: TxStatus,
+    },
     createdAt: {
       type: GT.NonNull(Timestamp),
     },

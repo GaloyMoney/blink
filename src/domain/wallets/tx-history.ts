@@ -1,5 +1,5 @@
 import { toSats } from "@domain/bitcoin"
-import { LedgerTransactionType } from "@domain/ledger"
+import { isOnchainTransaction, LedgerTransactionType } from "@domain/ledger"
 import { MEMO_SHARING_SATS_THRESHOLD } from "@config/app"
 import { SettlementMethod, PaymentInitiationMethod } from "./tx-methods"
 import { TxStatus } from "./tx-status"
@@ -28,6 +28,7 @@ const filterPendingIncoming = (
           recipientUsername: null,
           settlementFee: toSats(0),
           status: TxStatus.Pending,
+          memo: null,
           createdAt: createdAt,
           settlementAmount: sats,
           addresses: [address],
@@ -65,6 +66,7 @@ export const fromLedger = (
         type,
         memoFromPayer,
         lnMemo,
+        type,
         credit,
         username,
       })
@@ -91,16 +93,11 @@ export const fromLedger = (
           status,
           createdAt: timestamp,
         }
-      }
-      if (paymentHash) {
         return {
           id,
           walletId,
-          initiationVia: PaymentInitiationMethod.Lightning,
-          settlementVia:
-            type === LedgerTransactionType.IntraLedger
-              ? SettlementMethod.IntraLedger
-              : SettlementMethod.Lightning,
+          initiationVia: PaymentInitiationMethod.WalletName,
+          settlementVia: SettlementMethod.IntraLedger,
           deprecated: {
             description,
             usd,
@@ -113,6 +110,7 @@ export const fromLedger = (
           pubkey: pubkey as Pubkey,
           recipientUsername: username || null,
           status,
+          memo: description,
           createdAt: timestamp,
         }
       }
