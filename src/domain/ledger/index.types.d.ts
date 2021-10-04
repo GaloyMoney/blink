@@ -41,7 +41,8 @@ type LedgerTransaction = {
   readonly feeUsd: number
 
   // for IntraLedger
-  readonly walletName?: WalletName
+  readonly walletPublicId?: WalletPublicId
+  readonly username?: Username
   readonly memoFromPayer?: string
 
   // for ln
@@ -89,8 +90,8 @@ type IntraledgerTxArgs = {
   description: string
   sats: Satoshis
   recipientLiabilitiesAccountId: LiabilitiesAccountId | null
-  payerWalletName: WalletName | null
-  recipientWalletName: WalletName | null
+  payerUsername: Username | null
+  recipientUsername: Username | null
   memoPayer: string | null
   shareMemoWithPayee: boolean
 }
@@ -133,9 +134,9 @@ interface ILedgerService {
     liabilitiesAccountId: LiabilitiesAccountId,
   ): Promise<LedgerTransaction[] | LedgerServiceError>
 
-  getLiabilityTransactionsForContactWalletName(
+  getLiabilityTransactionsForContactUsername(
     liabilitiesAccountId: LiabilitiesAccountId,
-    contactWalletName: WalletName,
+    contactUsername: Username,
   ): Promise<LedgerTransaction[] | LedgerServiceError>
 
   listPendingPayments(

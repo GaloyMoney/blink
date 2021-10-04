@@ -81,11 +81,11 @@ export class BitcoindClient {
   }
 
   async unloadWallet({
-    wallet_name,
+    walletName,
   }: {
-    wallet_name: string
+    walletName: string
   }): Promise<{ warning: string }> {
-    return this.client.unloadWallet({ wallet_name })
+    return this.client.unloadWallet({ wallet_name: walletName })
   }
 }
 

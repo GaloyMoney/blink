@@ -4,16 +4,16 @@ import PaymentInitiationMethod from "../scalar/payment-initiation-method"
 import SatAmount from "../scalar/sat-amount"
 import SettlementMethod from "../scalar/settlement-method"
 import Timestamp from "../scalar/timestamp"
+import Username from "../scalar/username"
 // import Memo from "../scalar/memo"
 // import TxDirection from "../scalar/tx-direction"
 // import TxStatus from "../scalar/tx-status"
 // import BtcUsdPrice from "./btc-usd-price"
-import WalletName from "../scalar/wallet-name"
 
-const WalletNameTransaction = new GT.Object({
-  name: "WalletNameTransaction",
+const IntraLedgerTransaction = new GT.Object({
+  name: "IntraLedgerTransaction",
   interfaces: () => [ITransaction],
-  isTypeOf: (source) => source.type === "wallet-name", // TODO: make this work
+  isTypeOf: (source) => source.type === "intra-ledger", // TODO: make this work
   fields: () => ({
     id: {
       type: GT.NonNullID,
@@ -47,13 +47,13 @@ const WalletNameTransaction = new GT.Object({
     },
 
     // Non-interface fields
-    recipient: {
-      type: WalletName,
-      description: `Settlement destination:
-  Could be null when originalDestination is onChain/LN
-  and the payeee does not have a WalletName`,
+    recipientUsername: {
+      type: Username,
+      description:
+        "Settlement destination: Could be null when originalDestination is onChain/LN" +
+        " and the payee does not have a username",
     },
   }),
 })
 
-export default WalletNameTransaction
+export default IntraLedgerTransaction

@@ -273,8 +273,8 @@ describe("on us payment via Ledger Service", () => {
       usdFee,
       pubkey: "" as Pubkey,
       recipientLiabilitiesAccountId: payee.accountPath,
-      payerWalletName: "payerWalletName" as WalletName,
-      recipientWalletName: "recipientWalletName" as WalletName,
+      payerUsername: "payerUsername" as Username,
+      recipientUsername: "recipientUsername" as Username,
       memoPayer: null,
       shareMemoWithPayee: true,
     })

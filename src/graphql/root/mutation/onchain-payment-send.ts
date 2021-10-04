@@ -30,9 +30,10 @@ const OnChainPaymentSendMutation = GT.Field({
 
     try {
       const status = await wallet.onChainPay({ address, amount, memo })
+
       return {
         errors: [],
-        status,
+        status: status ? "success" : "failed", // TODO: Figure out pending here
       }
     } catch (err) {
       return {

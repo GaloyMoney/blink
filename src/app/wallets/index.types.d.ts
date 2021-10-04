@@ -10,13 +10,13 @@ type AddInvoiceNoAmountArgs = {
 }
 
 type AddInvoiceForRecipientArgs = {
-  recipient: WalletName
+  recipientWalletPublicId: WalletPublicId
   amount: number
   memo?: string
 }
 
 type AddInvoiceNoAmountForRecipientArgs = {
-  recipient: WalletName
+  recipientWalletPublicId: WalletPublicId
   memo?: string
 }
 
@@ -34,8 +34,8 @@ type GetOnChainFeeByWalletIdArgs = {
   targetConfirmations: number
 }
 
-type GetOnChainFeeByWalletNameArgs = {
-  walletName: WalletName
+type GetOnChainFeeByWalletPublicIdArgs = {
+  walletPublicId: WalletPublicId
   amount: number
   address: OnChainAddress
   targetConfirmations: number

@@ -7,15 +7,15 @@ import Coordinates from "@graphql/types/object/coordinates"
 import Language from "@graphql/types/scalar/language"
 import Phone from "@graphql/types/scalar/phone"
 import Timestamp from "@graphql/types/scalar/timestamp"
-import WalletName from "@graphql/types/scalar/wallet-name"
+import Username from "@graphql/types/scalar/username"
 
 const UserDetails = new GT.Object({
   name: "UserDetails",
   fields: () => ({
     id: { type: GT.NonNullID },
     phone: { type: GT.NonNull(Phone) },
-    walletName: {
-      type: WalletName,
+    username: {
+      type: Username,
       resolve: (source) => source.username,
     },
     language: {

@@ -7,6 +7,7 @@ import {
 } from "@domain/errors"
 import { User } from "@services/mongoose/schema"
 import { onboardingEarn } from "@config/app"
+import Username from "@graphql/types/scalar/username"
 
 export const caseInsensitiveRegex = (input: string) => {
   return new RegExp(`^${input}$`, "i")
@@ -16,6 +17,34 @@ export const UsersRepository = (): IUsersRepository => {
   const findById = async (userId: UserId): Promise<User | RepositoryError> => {
     try {
       const result = await User.findOne({ _id: userId })
+      if (!result) {
+        return new CouldNotFindError()
+      }
+
+      return userFromRaw(result)
+    } catch (err) {
+      return new UnknownRepositoryError(err)
+    }
+  }
+
+  const findByUsername = async (username: Username): Promise<User | RepositoryError> => {
+    try {
+      const result = await User.findOne({ username: caseInsensitiveRegex(username) })
+      if (!result) {
+        return new CouldNotFindError()
+      }
+
+      return userFromRaw(result)
+    } catch (err) {
+      return new UnknownRepositoryError(err)
+    }
+  }
+
+  const findByWalletPublicId = async (
+    walletPublicId: WalletPublicId,
+  ): Promise<User | RepositoryError> => {
+    try {
+      const result = await User.findOne({ walletPublicId })
       if (!result) {
         return new CouldNotFindError()
       }
@@ -39,8 +68,8 @@ export const UsersRepository = (): IUsersRepository => {
       const data = {
         phone,
         language,
-        contacts: contacts.map(({ walletName, alias }: WalletContact) => ({
-          id: walletName,
+        contacts: contacts.map(({ username, alias }: UserContact) => ({
+          id: username,
           name: alias,
         })),
         deviceToken: deviceTokens,
@@ -59,6 +88,8 @@ export const UsersRepository = (): IUsersRepository => {
 
   return {
     findById,
+    findByUsername,
+    findByWalletPublicId,
     update,
   }
 }
@@ -66,14 +97,16 @@ export const UsersRepository = (): IUsersRepository => {
 const userFromRaw = (result: UserType): User => {
   return {
     id: result.id as UserId,
+    username: result.username as Username,
+    walletPublicId: result.walletPublicId as WalletPublicId,
     phone: result.phone as PhoneNumber,
     language: (result.language || UserLanguage.EN_US) as UserLanguage,
     twoFA: result.twoFA as TwoFAForUser,
     contacts: result.contacts.reduce(
-      (res: WalletContact[], contact: ContactObjectForUser): WalletContact[] => {
+      (res: UserContact[], contact: ContactObjectForUser): UserContact[] => {
         if (contact.id) {
           res.push({
-            walletName: contact.id as WalletName,
+            username: contact.id as Username,
             alias: (contact.name || contact.id) as ContactAlias,
             transactionsCount: contact.transactionsCount,
           })

@@ -25,7 +25,7 @@ const filterPendingIncoming = (
             feeUsd: 0,
             type: LedgerTransactionType.OnchainReceipt,
           },
-          recipientId: null,
+          recipientUsername: null,
           settlementFee: toSats(0),
           status: TxStatus.Pending,
           createdAt: createdAt,
@@ -55,7 +55,7 @@ export const fromLedger = (
       feeUsd,
       paymentHash,
       pubkey,
-      walletName,
+      username,
       addresses,
       pendingConfirmation,
       timestamp,
@@ -66,7 +66,7 @@ export const fromLedger = (
         memoFromPayer,
         lnMemo,
         credit,
-        walletName,
+        username,
       })
       const status = pendingConfirmation ? TxStatus.Pending : TxStatus.Success
       if (addresses && addresses.length > 0) {
@@ -85,7 +85,7 @@ export const fromLedger = (
             feeUsd,
             type,
           },
-          recipientId: walletName || null,
+          recipientUsername: username || null,
           settlementAmount,
           settlementFee: toSats(fee || 0),
           status,
@@ -111,7 +111,7 @@ export const fromLedger = (
           settlementFee: toSats(fee || 0),
           paymentHash: paymentHash as PaymentHash,
           pubkey: pubkey as Pubkey,
-          recipientId: walletName || null,
+          recipientUsername: username || null,
           status,
           createdAt: timestamp,
         }
@@ -119,7 +119,7 @@ export const fromLedger = (
       return {
         id,
         walletId,
-        initiationVia: PaymentInitiationMethod.WalletName,
+        initiationVia: PaymentInitiationMethod.WalletId,
         settlementVia: SettlementMethod.IntraLedger,
         deprecated: {
           description,
@@ -129,10 +129,10 @@ export const fromLedger = (
         },
         settlementAmount,
         settlementFee: toSats(fee || 0),
-        recipientId: walletName || null,
+        recipientUsername: username || null,
         status,
         createdAt: timestamp,
-      } as WalletNameTransaction
+      } as IntraLedgerTransaction
     },
   )
   return {
@@ -158,13 +158,13 @@ const shouldDisplayMemo = (credit: number) => {
 export const translateDescription = ({
   memoFromPayer,
   lnMemo,
-  walletName,
+  username,
   type,
   credit,
 }: {
   memoFromPayer?: string
   lnMemo?: string
-  walletName?: string
+  username?: string
   type: LedgerTransactionType
   credit: number
 }): string => {
@@ -177,15 +177,15 @@ export const translateDescription = ({
     }
   }
 
-  let walletNameDescription
-  if (walletName) {
-    walletNameDescription = `to ${walletName}`
+  let usernameDescription
+  if (username) {
+    usernameDescription = `to ${username}`
     if (credit > 0) {
-      walletNameDescription = `from ${walletName}`
+      usernameDescription = `from ${username}`
     }
   }
 
-  return walletNameDescription || type
+  return usernameDescription || type
 }
 
 export const WalletTransactionHistory = {

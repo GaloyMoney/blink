@@ -65,7 +65,7 @@ describe("GraphQLMutationRoot", () => {
   it("exposes businessUpdateMapInfo", async () => {
     const query = `
       mutation {
-        businessUpdateMapInfo(input: { walletName: "${user.username}", title: "MapTest", longitude: 1, latitude: -1 }) {
+        businessUpdateMapInfo(input: { username: "${user.username}", title: "MapTest", longitude: 1, latitude: -1 }) {
           errors {
             message
           }

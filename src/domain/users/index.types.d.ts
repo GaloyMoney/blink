@@ -13,8 +13,8 @@ type ContactAlias = string & { [contactAliasSymbol]: never }
 declare const quizQuestionIdSymbol: unique symbol
 type QuizQuestionId = string & { [quizQuestionIdSymbol]: never }
 
-type WalletContact = {
-  readonly walletName: WalletName
+type UserContact = {
+  readonly username: Username
   alias: ContactAlias
   transactionsCount: number
 }
@@ -31,7 +31,9 @@ type UserQuizQuestion = {
 
 type User = {
   readonly id: UserId
-  readonly contacts: WalletContact[]
+  readonly username: Username
+  readonly walletPublicId: WalletPublicId
+  readonly contacts: UserContact[]
   readonly quizQuestions: UserQuizQuestion[]
   readonly defaultAccountId: AccountId
   readonly deviceTokens: DeviceToken[]
@@ -45,5 +47,7 @@ type User = {
 
 interface IUsersRepository {
   findById(userId: UserId): Promise<User | RepositoryError>
+  findByUsername(username: Username): Promise<User | RepositoryError>
+  findByWalletPublicId(walletPublicId: WalletPublicId): Promise<User | RepositoryError>
   update(user: User): Promise<User | RepositoryError>
 }

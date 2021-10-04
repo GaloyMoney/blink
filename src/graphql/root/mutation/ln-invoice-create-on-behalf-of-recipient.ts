@@ -4,12 +4,12 @@ import { GT } from "@graphql/index"
 import LnInvoicePayload from "@graphql/types/payload/ln-invoice"
 import Memo from "@graphql/types/scalar/memo"
 import SatAmount from "@graphql/types/scalar/sat-amount"
-import WalletName from "@graphql/types/scalar/wallet-name"
+import WalletId from "@graphql/types/scalar/wallet-id"
 
 const LnInvoiceCreateOnBehalfOfRecipientInput = new GT.Input({
   name: "LnInvoiceCreateOnBehalfOfRecipientInput",
   fields: () => ({
-    recipient: { type: GT.NonNull(WalletName) },
+    recipientWalletId: { type: GT.NonNull(WalletId) },
     amount: { type: GT.NonNull(SatAmount) },
     memo: { type: Memo },
   }),
@@ -21,15 +21,15 @@ const LnInvoiceCreateOnBehalfOfRecipientMutation = GT.Field({
     input: { type: GT.NonNull(LnInvoiceCreateOnBehalfOfRecipientInput) },
   },
   resolve: async (_, args) => {
-    const { recipient, amount, memo } = args.input
-    for (const input of [recipient, amount, memo]) {
+    const { recipientWalletId, amount, memo } = args.input
+    for (const input of [recipientWalletId, amount, memo]) {
       if (input instanceof Error) {
         return { errors: [{ message: input.message }] }
       }
     }
 
     const result = await addInvoiceForRecipient({
-      recipient,
+      recipientWalletPublicId: recipientWalletId,
       amount,
       memo,
     })

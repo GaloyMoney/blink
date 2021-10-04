@@ -6,7 +6,7 @@ import Timestamp from "../scalar/timestamp"
 import Language from "../scalar/language"
 import Phone from "../scalar/phone"
 
-import WalletContact from "./wallet-contact"
+import UserContact from "./wallet-contact"
 import UserQuizQuestion from "./user-quiz-question"
 
 const mainUserFields = () => ({
@@ -18,7 +18,7 @@ const mainUserFields = () => ({
   },
 
   contacts: {
-    type: GT.NonNullList(WalletContact), // TODO: Make it a Connection Interface
+    type: GT.NonNullList(UserContact), // TODO: Make it a Connection Interface
   },
 
   quizQuestions: {

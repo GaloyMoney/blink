@@ -33,12 +33,12 @@ enum PaymentErrorCode {
 
 type ConsumerAccount implements Account {
   wallets: [Wallet!]!
-  csvTransactions(walletNames: [WalletName!]!): String!
+  csvTransactions(walletIds: [WalletId!]!): String!
 }
 
 interface Account {
   wallets: [Wallet!]!
-  csvTransactions(walletNames: [WalletName!]!): String!
+  csvTransactions(walletIds: [WalletId!]!): String!
 }
 
 interface Wallet {
@@ -142,7 +142,7 @@ interface Transaction {
 }
 
 enum PaymentInitiationMethod {
-  WALLET_NAME
+  WALLET_ID
   ON_CHAIN
   LIGHTNING
 }
@@ -164,9 +164,9 @@ Date field, serialized as the number of milliseconds since the Unix Epoch
 scalar Timestamp
 
 """
-Unique identifier of an account wallet
+Unique identifier of a user
 """
-scalar WalletName
+scalar WalletId
 
 type BTCWallet implements Wallet {
   id: ID!
@@ -195,7 +195,7 @@ type BTCWallet implements Wallet {
   ): TransactionConnection
 }
 
-type WalletNameTransaction implements Transaction {
+type IntraLedgerTransaction implements Transaction {
   id: ID!
   initiationVia: PaymentInitiationMethod!
   settlementVia: SettlementMethod!
@@ -204,12 +204,15 @@ type WalletNameTransaction implements Transaction {
   createdAt: Timestamp!
 
   """
-  Settlement destination:
-    Could be null when originalDestination is onChain/LN
-    and the payeee does not have a WalletName
+  Settlement destination: Could be null when originalDestination is onChain/LN and the payee does not have a username
   """
-  recipient: WalletName
+  recipientUsername: Username
 }
+
+"""
+Unique identifier of a user
+"""
+scalar Username
 
 type OnChainTransaction implements Transaction {
   id: ID!
@@ -241,13 +244,14 @@ scalar LnPaymentHash
 type Query {
   globals: Globals
   me: User
-  walletNameAvailable(walletName: WalletName!): Boolean
+  usernameAvailable(username: Username!): Boolean
+  userWalletId(username: Username!): WalletId!
   businessMapMarkers: [MapMarker]
   mobileVersions: [MobileVersions]
   quizQuestions: [QuizQuestion]
   btcPriceList(range: PriceGraphRange!): [PricePoint]
   onChainTxFee(
-    walletName: WalletName
+    walletId: WalletId!
     address: OnChainAddress!
     amount: SatAmount!
     targetConfirmations: TargetConfirmations = 3
@@ -263,7 +267,7 @@ type User {
   id: ID!
   phone: Phone!
   language: Language!
-  contacts: [WalletContact!]!
+  contacts: [UserContact!]!
   quizQuestions: [UserQuizQuestion!]!
   twoFAEnabled: Boolean
   createdAt: Timestamp!
@@ -280,8 +284,8 @@ enum Language {
   ES_SV
 }
 
-type WalletContact {
-  walletName: ID!
+type UserContact {
+  username: Username!
   alias: ContactAlias
   transactionsCount: Int!
   transactions(
@@ -327,7 +331,7 @@ type QuizQuestion {
 }
 
 type MapMarker {
-  walletName: WalletName
+  username: Username
   mapInfo: MapInfo!
 }
 
@@ -421,9 +425,9 @@ type Mutation {
   accountApiKeyCreate(input: AccountApiKeyCreateInput!): AccountApiKeyPayload!
   accountApiKeyDisable(input: AccountApiKeyDisableInput!): SuccessPayload!
   userUpdateLanguage(input: UserUpdateLanguageInput!): UserUpdateLanguagePayload!
-  walletContactUpdateAlias(
-    input: WalletContactUpdateAliasInput!
-  ): WalletContactUpdateAliasPayload!
+  userContactUpdateAlias(
+    input: UserContactUpdateAliasInput!
+  ): UserContactUpdateAliasPayload!
   lnInvoiceFeeProbe(input: LnInvoiceFeeProbeInput!): SatAmountPayload!
   lnNoAmountInvoiceFeeProbe(input: LnNoAmountInvoiceFeeProbeInput!): SatAmountPayload!
   lnInvoiceCreate(input: LnInvoiceCreateInput!): LnInvoicePayload!
@@ -536,7 +540,7 @@ type UserDetails {
   id: ID!
   phone: Phone!
   language: Language!
-  contacts: [WalletContact!]!
+  contacts: [UserContact!]!
   quizQuestions: [UserQuizQuestion!]!
   twoFAEnabled: Boolean
   createdAt: Timestamp!
@@ -546,13 +550,13 @@ input UserUpdateLanguageInput {
   language: Language!
 }
 
-type WalletContactUpdateAliasPayload {
+type UserContactUpdateAliasPayload {
   errors: [Error!]!
   user: UserDetails
 }
 
-input WalletContactUpdateAliasInput {
-  walletName: WalletName!
+input UserContactUpdateAliasInput {
+  username: Username!
   alias: ContactAlias!
 }
 
@@ -615,13 +619,13 @@ input LnNoAmountInvoiceCreateInput {
 }
 
 input LnInvoiceCreateOnBehalfOfRecipientInput {
-  recipient: WalletName!
+  recipientWalletId: WalletId!
   amount: SatAmount!
   memo: Memo
 }
 
 input LnNoAmountInvoiceCreateOnBehalfOfRecipientInput {
-  recipient: WalletName!
+  recipientWalletId: WalletId!
   memo: Memo
 }
 
@@ -649,7 +653,7 @@ input LnNoAmountInvoicePaymentInput {
 }
 
 input IntraLedgerPaymentSendInput {
-  recipient: WalletName!
+  recipientWalletId: WalletId!
   amount: SatAmount!
   memo: Memo
 }
@@ -660,11 +664,11 @@ type OnChainAddressPayload {
 }
 
 input OnChainAddressCreateInput {
-  walletName: WalletName
+  walletId: WalletId!
 }
 
 input OnChainAddressCurrentInput {
-  walletName: WalletName
+  walletId: WalletId!
 }
 
 input OnChainPaymentSendInput {

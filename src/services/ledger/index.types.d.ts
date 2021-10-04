@@ -22,14 +22,14 @@ type AddLnIntraledgerTxSendMetadata = TxMetadata & {
   hash: PaymentHash
   pubkey: Pubkey
   memoPayer: string | null
-  username: WalletName | null
+  username: Username | null
 }
 
 type AddOnChainIntraledgerTxSendMetadata = TxMetadata & {
   payee_addresses: OnChainAddress[]
   sendAll: boolean
   memoPayer: string | null
-  username: WalletName | null
+  username: Username | null
 }
 
 type SendIntraledgerTxArgs = IntraledgerTxArgs & {

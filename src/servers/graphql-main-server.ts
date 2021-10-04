@@ -23,11 +23,12 @@ export async function startApolloServerForCoreSchema() {
         me: isAuthenticated,
         onChainTxFee: isAuthenticated,
         accountApiKeys: isAuthenticated,
+        userWalletId: isAuthenticated,
       },
       Mutation: {
         userQuizQuestionUpdateCompleted: isAuthenticated,
         userUpdateLanguage: isAuthenticated,
-        walletContactUpdateAlias: isAuthenticated,
+        userContactUpdateAlias: isAuthenticated,
 
         twoFAGenerate: isAuthenticated,
         twoFASave: isAuthenticated,

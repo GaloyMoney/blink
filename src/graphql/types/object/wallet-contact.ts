@@ -6,21 +6,26 @@ import * as Wallets from "@app/wallets"
 
 import ContactAlias from "../scalar/contact-alias"
 import * as Accounts from "@app/accounts"
+import Username from "../scalar/username"
+import { checkedToUsername } from "@domain/users"
 
-const WalletContact = new GT.Object({
-  name: "WalletContact",
+const UserContact = new GT.Object({
+  name: "UserContact",
   fields: () => ({
-    walletName: { type: GT.NonNullID },
+    username: { type: GT.NonNull(Username) },
     alias: { type: ContactAlias },
     transactionsCount: {
       type: GT.NonNull(GT.Int),
     },
-
     transactions: {
       type: TransactionConnection,
       args: connectionArgs,
       resolve: async (source, args, { domainUser }) => {
-        const contactWalletName = source.walletName as WalletName
+        const contactUsername = checkedToUsername(source.username)
+
+        if (contactUsername instanceof Error) {
+          throw contactUsername
+        }
 
         // TODO: figure out what to do here when we have multiple accounts
         const account = await Accounts.getAccount(domainUser.defaultAccountId)
@@ -31,7 +36,7 @@ const WalletContact = new GT.Object({
 
         const transactions = await Wallets.getAccountTransactionsForContact({
           account,
-          contactWalletName,
+          contactUsername,
         })
 
         if (transactions instanceof Error) {
@@ -44,4 +49,4 @@ const WalletContact = new GT.Object({
   }),
 })
 
-export default WalletContact
+export default UserContact

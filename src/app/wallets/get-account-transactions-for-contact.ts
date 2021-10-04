@@ -4,19 +4,19 @@ import { WalletTransactionHistory } from "@domain/wallets"
 
 export const getAccountTransactionsForContact = async ({
   account,
-  contactWalletName,
+  contactUsername,
 }: {
   account: Account
-  contactWalletName: WalletName
+  contactUsername: Username
 }): Promise<WalletTransaction[] | Error> => {
   const ledger = LedgerService()
   let transactions: WalletTransaction[] = []
 
   for (const walletId of account.walletIds) {
     const liabilitiesAccountId = toLiabilitiesAccountId(walletId)
-    const ledgerTransactions = await ledger.getLiabilityTransactionsForContactWalletName(
+    const ledgerTransactions = await ledger.getLiabilityTransactionsForContactUsername(
       liabilitiesAccountId,
-      contactWalletName,
+      contactUsername,
     )
     if (ledgerTransactions instanceof LedgerError) return ledgerTransactions
 

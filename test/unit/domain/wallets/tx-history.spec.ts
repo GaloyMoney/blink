@@ -37,7 +37,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
         walletId: "walletId" as WalletId,
         type: LedgerTransactionType.IntraLedger,
         paymentHash: "paymentHash" as PaymentHash,
-        walletName: "walletName" as WalletName,
+        username: "username" as Username,
         debit: toSats(0),
         fee: toSats(0),
         credit: toSats(100000),
@@ -99,7 +99,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
           feeUsd: 0.1,
           type: LedgerTransactionType.Invoice,
         },
-        recipientId: null,
+        recipientUsername: null,
         status: TxStatus.Success,
         createdAt: timestamp,
       },
@@ -108,12 +108,12 @@ describe("WalletTransactionHistory.fromLedger", () => {
         walletId: "walletId" as WalletId,
         initiationVia: PaymentInitiationMethod.Lightning,
         settlementVia: SettlementMethod.IntraLedger,
-        recipientId: "walletName",
+        recipientUsername: "username",
         settlementAmount: toSats(100000),
         settlementFee: toSats(0),
         paymentHash: "paymentHash" as PaymentHash,
         deprecated: {
-          description: "from walletName",
+          description: "from username",
           usd: 10,
           feeUsd: 0.1,
           type: LedgerTransactionType.IntraLedger,
@@ -134,7 +134,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
           feeUsd: 0.1,
           type: LedgerTransactionType.OnchainIntraLedger,
         },
-        recipientId: null,
+        recipientUsername: null,
         addresses: ["address" as OnChainAddress],
         status: TxStatus.Success,
         createdAt: timestamp,
@@ -152,7 +152,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
           feeUsd: 0.1,
           type: LedgerTransactionType.OnchainReceipt,
         },
-        recipientId: null,
+        recipientUsername: null,
         status: TxStatus.Success,
         createdAt: timestamp,
         addresses: ["address" as OnChainAddress],
@@ -181,13 +181,13 @@ describe("translateDescription", () => {
     expect(result).toEqual("some memo")
   })
 
-  it("returns walletName description for any amount", () => {
+  it("returns username description for any amount", () => {
     const result = translateDescription({
-      walletName: "walletName",
+      username: "username",
       credit: MEMO_SHARING_SATS_THRESHOLD - 1,
       type: "invoice",
     })
-    expect(result).toEqual("from walletName")
+    expect(result).toEqual("from username")
   })
 
   it("defaults to type under spam threshdeprecated", () => {
@@ -258,7 +258,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
           feeUsd: 0,
           type: LedgerTransactionType.OnchainReceipt,
         },
-        recipientId: null,
+        recipientUsername: null,
         status: TxStatus.Pending,
         createdAt: timestamp,
         addresses: ["userAddress1" as OnChainAddress],
@@ -276,7 +276,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
           feeUsd: 0,
           type: LedgerTransactionType.OnchainReceipt,
         },
-        recipientId: null,
+        recipientUsername: null,
         status: TxStatus.Pending,
         createdAt: timestamp,
         addresses: ["userAddress2" as OnChainAddress],
@@ -324,7 +324,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
           feeUsd: 0,
           type: LedgerTransactionType.OnchainReceipt,
         },
-        recipientId: null,
+        recipientUsername: null,
         status: TxStatus.Pending,
         createdAt: timestamp,
         addresses: ["userAddress1" as OnChainAddress],

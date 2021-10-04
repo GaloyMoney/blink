@@ -2,7 +2,7 @@ import { GT } from "@graphql/index"
 
 import IAccount from "../abstract/account"
 import Wallet from "../abstract/wallet"
-import WalletName from "../scalar/wallet-name"
+import WalletId from "../scalar/wallet-id"
 
 import * as Wallets from "@app/wallets"
 import * as Accounts from "@app/accounts"
@@ -47,12 +47,15 @@ const ConsumerAccount = new GT.Object({
     csvTransactions: {
       type: GT.NonNull(GT.String),
       args: {
-        walletNames: {
-          type: GT.NonNullList(WalletName),
+        walletIds: {
+          type: GT.NonNullList(WalletId),
         },
       },
       resolve: async (source, args) => {
-        const walletIds = await Accounts.toWalletIds(source, args.walletNames)
+        const walletIds = await Accounts.toWalletIds({
+          account: source,
+          walletPublicIds: args.walletIds,
+        })
 
         if (walletIds instanceof Error) {
           throw walletIds

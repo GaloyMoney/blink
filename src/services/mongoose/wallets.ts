@@ -19,8 +19,8 @@ export const WalletsRepository = (): IWalletsRepository => {
     }
   }
 
-  const findByWalletName = async (
-    username: WalletName,
+  const findByUsername = async (
+    username: Username,
   ): Promise<Wallet | RepositoryError> => {
     try {
       const result = await User.findOne({ username: caseInsensitiveRegex(username) })
@@ -48,6 +48,21 @@ export const WalletsRepository = (): IWalletsRepository => {
     }
   }
 
+  const findByPublicId = async (
+    walletPublicId: WalletPublicId,
+  ): Promise<Wallet | RepositoryError> => {
+    try {
+      const result = await User.findOne({ walletPublicId })
+      if (!result) {
+        return new CouldNotFindError()
+      }
+
+      return resultToWallet(result)
+    } catch (err) {
+      return new UnknownRepositoryError(err)
+    }
+  }
+
   const listByAddresses = async (
     addresses: string[],
   ): Promise<Wallet[] | RepositoryError> => {
@@ -64,17 +79,16 @@ export const WalletsRepository = (): IWalletsRepository => {
 
   return {
     findById,
-    findByWalletName,
     findByAddress,
+    findByUsername,
+    findByPublicId,
     listByAddresses,
   }
 }
 
 const resultToWallet = (result: UserType): Wallet => {
   const walletId = result.id as WalletId
-
-  const walletName = result.username ? (result.username as WalletName) : null
-
+  const publicId = result.walletPublicId
   const depositFeeRatio = result.depositFeeRatio as DepositFeeRatio
   const withdrawFee = result.withdrawFee as WithdrawFee
 
@@ -92,7 +106,7 @@ const resultToWallet = (result: UserType): Wallet => {
     id: walletId,
     depositFeeRatio,
     withdrawFee,
-    walletName,
+    publicId,
     onChainAddressIdentifiers,
     onChainAddresses,
   }

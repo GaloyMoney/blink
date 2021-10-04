@@ -30,7 +30,7 @@ beforeAll(async () => {
 })
 
 afterAll(async () => {
-  await bitcoindClient.unloadWallet({ wallet_name: "outside" })
+  await bitcoindClient.unloadWallet({ walletName: "outside" })
 })
 
 describe("Bitcoind", () => {

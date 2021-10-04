@@ -3,13 +3,13 @@ import { GT } from "@graphql/index"
 import { updateBusinessMapInfo } from "@core/user"
 
 import UserDetailPayload from "@graphql/admin/types/payload/user-detail"
-import WalletName from "@graphql/types/scalar/wallet-name"
+import Username from "@graphql/types/scalar/username"
 
 const BusinessUpdateMapInfoInput = new GT.Input({
   name: "BusinessUpdateMapInfoInput",
   fields: () => ({
-    walletName: {
-      type: GT.NonNull(WalletName), // ?: This is converted from Username
+    username: {
+      type: GT.NonNull(Username),
     },
     title: {
       type: GT.NonNull(GT.String),
@@ -29,15 +29,15 @@ const BusinessUpdateMapInfoMutation = GT.Field({
     input: { type: GT.NonNull(BusinessUpdateMapInfoInput) },
   },
   resolve: async (_, args) => {
-    const { walletName, title, latitude, longitude } = args.input
+    const { username, title, latitude, longitude } = args.input
 
-    for (const input of [walletName, title, latitude, longitude]) {
+    for (const input of [username, title, latitude, longitude]) {
       if (input instanceof Error) {
         return { errors: [{ message: input.message }] }
       }
     }
 
-    const user = await updateBusinessMapInfo({ walletName, title, latitude, longitude })
+    const user = await updateBusinessMapInfo({ username, title, latitude, longitude })
 
     if (user instanceof Error) {
       return { errors: [{ message: user.message }] }
@@ -47,7 +47,7 @@ const BusinessUpdateMapInfoMutation = GT.Field({
       errors: [],
       userDetails: {
         id: user.id,
-        walletName: user.username,
+        username: user.username,
         level: user.level,
         status: user.status,
         phone: user.phone,

@@ -1,4 +1,4 @@
-import { InvalidWalletName } from "@domain/errors"
+import { InvalidPublicWalletId } from "@domain/errors"
 
 export { WalletTransactionHistory } from "./tx-history"
 export * from "./tx-methods"
@@ -6,11 +6,14 @@ export * from "./tx-status"
 export * from "./deposit-fee-calculator"
 export * from "./withdrawal-fee-calculator"
 
-export const WalletNameRegex = /(?!^(1|3|bc1|lnbc1))^[0-9a-z_]+$/i
+export const WalletPublicIdRegex =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
-export const checkedToWalletName = (walletName: string): WalletName | ValidationError => {
-  if (!walletName.match(WalletNameRegex)) {
-    return new InvalidWalletName(walletName)
+export const checkedToWalletPublicId = (
+  walletPublicId: string,
+): WalletPublicId | ValidationError => {
+  if (!walletPublicId.match(WalletPublicIdRegex)) {
+    return new InvalidPublicWalletId(walletPublicId)
   }
-  return walletName as WalletName
+  return walletPublicId as WalletPublicId
 }
