@@ -37,6 +37,20 @@ export class TransactionRestrictedError extends CustomError {
   }
 }
 
+export class UnknownClientError extends CustomError {
+  constructor(
+    message: string,
+    { logger = baseLogger, level = "warn" as const, ...metadata } = {},
+  ) {
+    super(message, "UNKNOWN_CLIENT_ERROR", {
+      forwardToClient: true,
+      logger,
+      level,
+      metadata,
+    })
+  }
+}
+
 export class InsufficientBalanceError extends CustomError {
   constructor(
     message = `balance is too low`,
