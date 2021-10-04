@@ -11,7 +11,6 @@ import {
 } from "@services/mongoose"
 import { getActiveLnd, getLndFromPubkey, validate } from "@services/lnd/utils"
 import { ledger } from "@services/mongodb"
-import { redis } from "@services/redis"
 import { User } from "@services/mongoose/schema"
 
 import {
@@ -34,12 +33,14 @@ import pubsub from "@services/pubsub"
 import { LndService } from "@services/lnd"
 import { PriceService } from "@services/price"
 import { LedgerService } from "@services/ledger"
-import { toSats } from "@domain/bitcoin"
+import { toMilliSats, toSats } from "@domain/bitcoin"
 import { toLiabilitiesAccountId } from "@domain/ledger"
+import { RoutesCache } from "@services/redis/routes"
 import { CouldNotFindError } from "@domain/errors"
 import { LockService } from "@services/lock"
 import { checkAndVerifyTwoFA, getLimitsChecker } from "@core/accounts/helpers"
 import { TwoFANewCodeNeededError } from "@domain/twoFA"
+import { CachedRouteLookupKeyFactory } from "@domain/routes/key-factory"
 
 export type ITxType =
   | "invoice"
@@ -128,18 +129,23 @@ export const LightningMixin = (superclass) =>
 
       const { lnd, pubkey } = getActiveLnd()
 
-      const key = JSON.stringify({ id, mtokens })
-
-      const cacheProbe = await redis.get(key)
-      if (cacheProbe) {
+      const milliSats = toMilliSats(parseFloat(mtokens))
+      const key = CachedRouteLookupKeyFactory().create({ paymentHash: id, milliSats })
+      const routeFromCache = await RoutesCache().findByKey(key)
+      if (
+        routeFromCache instanceof Error &&
+        !(routeFromCache instanceof CouldNotFindError)
+      )
+        throw routeFromCache
+      if (!(routeFromCache instanceof CouldNotFindError)) {
         lightningLogger.info("route result in cache")
-        return JSON.parse(cacheProbe).fee
+        return routeFromCache.route.fee
       }
 
-      let route
+      let rawRoute
 
       try {
-        ;({ route } = await lnService.probeForRoute({
+        ;({ route: rawRoute } = await lnService.probeForRoute({
           lnd,
           destination,
           mtokens,
@@ -158,7 +164,7 @@ export const LightningMixin = (superclass) =>
         })
       }
 
-      if (!route) {
+      if (!rawRoute) {
         // TODO: check if the error is irrecoverable or not.
         throw new RouteFindingError(undefined, {
           logger: lightningLogger,
@@ -167,14 +173,22 @@ export const LightningMixin = (superclass) =>
         })
       }
 
-      const value = JSON.stringify({ ...route, pubkey })
-      await redis.set(key, value, "EX", 60 * 5) // expires after 5 minutes
+      const routeToCache = {
+        pubkey: pubkey as Pubkey,
+        route: rawRoute,
+      }
+      const cachedRoute = await RoutesCache().store({ key, routeToCache })
+      if (cachedRoute instanceof Error) throw cachedRoute
 
       lightningLogger.info(
-        { redis: { key, value }, probingSuccess: true, success: true },
+        {
+          redis: { key, value: JSON.stringify(routeToCache) },
+          probingSuccess: true,
+          success: true,
+        },
         "successfully found a route",
       )
-      return route.fee
+      return rawRoute.fee
     }
 
     async pay(params: IPaymentRequest): Promise<payInvoiceResult | Error> {
@@ -451,8 +465,15 @@ export const LightningMixin = (superclass) =>
         // TODO: push payment for other node as well
         lightningLogger = lightningLogger.child({ onUs: false, max_fee })
 
-        const key = JSON.stringify({ id, mtokens })
-        route = JSON.parse((await redis.get(key)) as string)
+        const milliSats = toMilliSats(parseFloat(mtokens))
+        const key = CachedRouteLookupKeyFactory().create({ paymentHash: id, milliSats })
+        const routesCache = RoutesCache()
+        const cachedRoute = await routesCache.findByKey(key)
+        if (cachedRoute instanceof Error && !(cachedRoute instanceof CouldNotFindError))
+          throw cachedRoute
+        if (!(cachedRoute instanceof CouldNotFindError)) {
+          route = { ...cachedRoute.route, pubkey: cachedRoute.pubkey }
+        }
         this.logger.info({ route }, "route from redis")
 
         let pubkey: string, lnd: AuthenticatedLnd
@@ -469,7 +490,13 @@ export const LightningMixin = (superclass) =>
           } catch (err) {
             // lnd may have gone offline since the probe has been done.
             // deleting entry so that subsequent payment attempt could succeed
-            await redis.del(key)
+            const milliSats = toMilliSats(parseFloat(mtokens))
+            const key = CachedRouteLookupKeyFactory().create({
+              paymentHash: id,
+              milliSats,
+            })
+            const deleted = await routesCache.deleteByKey(key)
+            if (deleted instanceof Error) throw deleted
             throw err
           }
         } else {

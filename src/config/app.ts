@@ -15,6 +15,8 @@ export const MS_PER_HOUR = 60 * 60 * 1000
 export const MS_PER_DAY = 24 * MS_PER_HOUR
 export const MS_PER_30_DAYs = 30 * MS_PER_DAY
 
+export const SECS_PER_5_MINS = (60 * 5) as Seconds
+
 export const SUBSCRIPTION_POLLING_INTERVAL = 2.5 * 1000
 export const MAX_BYTES_FOR_MEMO = 639 // BOLT
 
