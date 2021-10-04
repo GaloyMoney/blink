@@ -1,5 +1,5 @@
 import { toSats } from "@domain/bitcoin"
-import { LedgerTransactionType } from "@domain/ledger"
+import { isOnchainTransaction, LedgerTransactionType } from "@domain/ledger"
 import { MEMO_SHARING_SATS_THRESHOLD } from "@config/app"
 import { SettlementMethod, PaymentInitiationMethod } from "./tx-methods"
 import { TxStatus } from "./tx-status"
@@ -28,6 +28,7 @@ const filterPendingIncoming = (
           recipientId: null,
           settlementFee: toSats(0),
           status: TxStatus.Pending,
+          memo: null,
           createdAt: createdAt,
           settlementAmount: sats,
           addresses: [address],
@@ -41,100 +42,105 @@ const filterPendingIncoming = (
 export const fromLedger = (
   ledgerTransactions: LedgerTransaction[],
 ): ConfirmedTransactionHistory => {
-  const transactions = ledgerTransactions.map(
-    ({
-      id,
-      walletId,
-      memoFromPayer,
-      lnMemo,
-      type,
-      credit,
-      debit,
-      fee,
-      usd,
-      feeUsd,
-      paymentHash,
-      pubkey,
-      walletName,
-      addresses,
-      pendingConfirmation,
-      timestamp,
-    }) => {
-      const settlementAmount = toSats(credit - debit)
-      const description = translateDescription({
-        type,
-        memoFromPayer,
-        lnMemo,
-        credit,
-        walletName,
-      })
-      const status = pendingConfirmation ? TxStatus.Pending : TxStatus.Success
-      if (addresses && addresses.length > 0) {
-        return {
-          id,
-          walletId,
-          initiationVia: PaymentInitiationMethod.OnChain,
-          settlementVia:
-            type === LedgerTransactionType.OnchainIntraLedger
-              ? SettlementMethod.IntraLedger
-              : SettlementMethod.OnChain,
-          addresses,
-          deprecated: {
-            description,
-            usd,
-            feeUsd,
-            type,
-          },
-          recipientId: walletName || null,
-          settlementAmount,
-          settlementFee: toSats(fee || 0),
-          status,
-          createdAt: timestamp,
-        }
-      }
-      if (paymentHash) {
-        return {
-          id,
-          walletId,
-          initiationVia: PaymentInitiationMethod.Lightning,
-          settlementVia:
-            type === LedgerTransactionType.IntraLedger
-              ? SettlementMethod.IntraLedger
-              : SettlementMethod.Lightning,
-          deprecated: {
-            description,
-            usd,
-            feeUsd,
-            type,
-          },
-          settlementAmount,
-          settlementFee: toSats(fee || 0),
-          paymentHash: paymentHash as PaymentHash,
-          pubkey: pubkey as Pubkey,
-          recipientId: walletName || null,
-          status,
-          createdAt: timestamp,
-        }
-      }
-      return {
+  const transactions = ledgerTransactions
+    .filter((t) => !!t.walletId)
+    .map(
+      ({
         id,
         walletId,
-        initiationVia: PaymentInitiationMethod.WalletName,
-        settlementVia: SettlementMethod.IntraLedger,
-        deprecated: {
-          description,
-          usd,
-          feeUsd,
+        memoFromPayer,
+        lnMemo,
+        type,
+        credit,
+        debit,
+        fee,
+        usd,
+        feeUsd,
+        paymentHash,
+        pubkey,
+        walletName,
+        addresses,
+        pendingConfirmation,
+        timestamp,
+      }) => {
+        const settlementAmount = toSats(credit - debit)
+        const description = translateDescription({
           type,
-        },
-        settlementAmount,
-        settlementFee: toSats(fee || 0),
-        recipientId: walletName || null,
-        status,
-        createdAt: timestamp,
-      } as WalletNameTransaction
-    },
-  )
+          memoFromPayer,
+          lnMemo,
+          credit,
+          walletName,
+        })
+        const status = pendingConfirmation ? TxStatus.Pending : TxStatus.Success
+        if ((addresses && addresses.length > 0) || isOnchainTransaction(type)) {
+          return {
+            id,
+            walletId,
+            initiationVia: PaymentInitiationMethod.OnChain,
+            settlementVia:
+              type === LedgerTransactionType.OnchainIntraLedger
+                ? SettlementMethod.IntraLedger
+                : SettlementMethod.OnChain,
+            addresses: addresses || [],
+            deprecated: {
+              description,
+              usd,
+              feeUsd,
+              type,
+            },
+            recipientId: walletName || null,
+            settlementAmount,
+            settlementFee: toSats(fee || 0),
+            status,
+            memo: description,
+            createdAt: timestamp,
+          }
+        }
+        if (paymentHash) {
+          return {
+            id,
+            walletId,
+            initiationVia: PaymentInitiationMethod.Lightning,
+            settlementVia:
+              type === LedgerTransactionType.IntraLedger
+                ? SettlementMethod.IntraLedger
+                : SettlementMethod.Lightning,
+            deprecated: {
+              description,
+              usd,
+              feeUsd,
+              type,
+            },
+            settlementAmount,
+            settlementFee: toSats(fee || 0),
+            paymentHash: paymentHash as PaymentHash,
+            pubkey: pubkey as Pubkey,
+            recipientId: walletName || null,
+            status,
+            memo: description,
+            createdAt: timestamp,
+          }
+        }
+        return {
+          id,
+          walletId,
+          initiationVia: PaymentInitiationMethod.WalletName,
+          settlementVia: SettlementMethod.IntraLedger,
+          deprecated: {
+            description,
+            usd,
+            feeUsd,
+            type,
+          },
+          settlementAmount,
+          settlementFee: toSats(fee || 0),
+          recipientId: walletName || null,
+          status,
+          memo: description,
+          createdAt: timestamp,
+        } as WalletNameTransaction
+      },
+    )
   return {
     transactions,
     addPendingIncoming: (

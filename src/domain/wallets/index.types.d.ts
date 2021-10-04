@@ -20,6 +20,7 @@ type BaseWalletTransaction = {
   readonly settlementAmount: Satoshis
   readonly settlementFee: Satoshis
   readonly status: TxStatus
+  readonly memo: string | null
   readonly createdAt: Date
 
   readonly deprecated: Deprecated
