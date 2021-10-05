@@ -128,13 +128,13 @@ interface ILightningService {
   payInvoice({
     paymentHash,
     rawRoute,
-    lndAuthForRoute,
+    pubkey,
     decodedInvoice,
     maxFee,
   }: {
     paymentHash: PaymentHash
     rawRoute: RawRoute | null
-    lndAuthForRoute: AuthenticatedLnd | null
+    pubkey: Pubkey | null
     decodedInvoice: LnInvoice
     milliSatsAmount: MilliSatoshis
     maxFee: Satoshis

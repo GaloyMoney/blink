@@ -181,18 +181,23 @@ export const LndService = (): ILightningService | LightningServiceError => {
   const payInvoice = async ({
     paymentHash,
     rawRoute,
-    lndAuthForRoute,
+    pubkey,
     decodedInvoice,
     milliSatsAmount,
     maxFee,
   }: {
     paymentHash: PaymentHash
     rawRoute: RawRoute | null
-    lndAuthForRoute: AuthenticatedLnd | null
+    pubkey: Pubkey | null
     decodedInvoice: LnInvoice
     milliSatsAmount: MilliSatoshis
     maxFee: Satoshis
   }): Promise<PayInvoiceResult | LightningServiceError> => {
+    let lndAuthForRoute: AuthenticatedLnd | null = null
+    const lndAuthForRouteResult = pubkey ? lndFromPubkey(pubkey) : null
+    if (lndAuthForRouteResult && !(lndAuthForRouteResult instanceof Error)) {
+      lndAuthForRoute = lndAuthForRouteResult
+    }
     const selectedLndAuth = rawRoute && lndAuthForRoute ? lndAuthForRoute : lndAuth
 
     const paymentDetailsArgs: PayViaPaymentDetailsArgs = {
