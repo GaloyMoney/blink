@@ -95,7 +95,7 @@ interface ILightningService {
 
   defaultPubkey(): Pubkey
 
-  lndFromPubkey(pubkey: Pubkey): AuthenticatedLnd | LightningServiceError
+  hasValidLnClientForPubkey(pubkey: Pubkey): boolean | LightningServiceError
 
   registerInvoice(
     registerInvoiceArgs: RegisterInvoiceArgs,

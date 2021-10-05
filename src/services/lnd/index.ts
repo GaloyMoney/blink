@@ -47,12 +47,12 @@ export const LndService = (): ILightningService | LightningServiceError => {
       .find((item) => item == pubkey)
   }
 
-  const lndFromPubkey = (pubkey: Pubkey): AuthenticatedLnd | LightningServiceError => {
+  const hasValidLnClientForPubkey = (pubkey: Pubkey): boolean | LightningServiceError => {
     try {
-      const { lnd } = getLndFromPubkey({ pubkey })
-      return lnd
+      const { lnd: lndAuth } = getLndFromPubkey({ pubkey })
+      return !!lndAuth
     } catch (err) {
-      return new UnknownLightningServiceError()
+      return new UnknownLightningServiceError(err)
     }
   }
 
@@ -194,9 +194,12 @@ export const LndService = (): ILightningService | LightningServiceError => {
     maxFee: Satoshis
   }): Promise<PayInvoiceResult | LightningServiceError> => {
     let lndAuthForRoute: AuthenticatedLnd | null = null
-    const lndAuthForRouteResult = pubkey ? lndFromPubkey(pubkey) : null
-    if (lndAuthForRouteResult && !(lndAuthForRouteResult instanceof Error)) {
-      lndAuthForRoute = lndAuthForRouteResult
+    if (pubkey) {
+      try {
+        ;({ lnd: lndAuthForRoute } = getLndFromPubkey({ pubkey }))
+      } catch (err) {
+        // No viable AuthenticatedLnd for pubkey to move forward with
+      }
     }
     const selectedLndAuth = rawRoute && lndAuthForRoute ? lndAuthForRoute : lndAuth
 
@@ -255,7 +258,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
   return {
     isLocal,
     defaultPubkey: (): Pubkey => defaultPubkey,
-    lndFromPubkey,
+    hasValidLnClientForPubkey,
     registerInvoice,
     lookupInvoice,
     lookupPayment,
