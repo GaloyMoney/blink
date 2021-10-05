@@ -8,6 +8,7 @@ import {
   PaymentStatus,
   LnPaymentPendingError,
   LnAlreadyPaidError,
+  NoValidNodeForPubkeyError,
 } from "@domain/bitcoin/lightning"
 import { isInvoiceAlreadyPaidError, timeout } from "@core/utils"
 import {
@@ -24,6 +25,7 @@ import {
 } from "lightning"
 import { TIMEOUT_PAYMENT } from "./auth"
 import { getActiveLnd, getLndFromPubkey, getLnds } from "./utils"
+import { LndOfflineError } from "@core/error"
 
 export const LndService = (): ILightningService | LightningServiceError => {
   let lndAuth: AuthenticatedLnd, defaultPubkey: Pubkey
@@ -255,6 +257,105 @@ export const LndService = (): ILightningService | LightningServiceError => {
     }
   }
 
+  const payInvoiceViaRoutes = async ({
+    paymentHash,
+    rawRoute,
+    pubkey,
+  }: {
+    paymentHash: PaymentHash
+    rawRoute: RawRoute
+    pubkey: Pubkey
+  }): Promise<PayInvoiceResult | LightningServiceError> => {
+    let lndAuthForRoute: AuthenticatedLnd | LightningServiceError
+    try {
+      ;({ lnd: lndAuthForRoute } = getLndFromPubkey({ pubkey }))
+      if (lndAuthForRoute instanceof LndOfflineError)
+        return new NoValidNodeForPubkeyError()
+    } catch (err) {
+      return new NoValidNodeForPubkeyError(err)
+    }
+
+    try {
+      const paymentPromise = payViaRoutes({
+        lnd: lndAuthForRoute,
+        routes: [rawRoute],
+        id: paymentHash,
+      })
+      const timeoutPromise = timeout(TIMEOUT_PAYMENT, "Timeout")
+      const paymentResult = (await Promise.race([
+        paymentPromise,
+        timeoutPromise,
+      ])) as PayViaRoutesResult
+      return {
+        roundedUpFee: toSats(paymentResult.safe_fee),
+      }
+    } catch (err) {
+      if (err.message === "Timeout") return new LnPaymentPendingError()
+      if (isInvoiceAlreadyPaidError(err)) return new LnAlreadyPaidError()
+      return new UnknownLightningServiceError(err)
+    }
+  }
+
+  const payInvoiceViaPaymentDetails = async ({
+    decodedInvoice,
+    milliSatsAmount,
+    maxFee,
+  }: {
+    decodedInvoice: LnInvoice
+    milliSatsAmount: MilliSatoshis
+    maxFee: Satoshis
+  }): Promise<PayInvoiceResult | LightningServiceError> => {
+    const paymentDetailsArgs: PayViaPaymentDetailsArgs = {
+      lnd: lndAuth,
+      id: decodedInvoice.paymentHash,
+      destination: decodedInvoice.destination,
+      mtokens: milliSatsAmount.toString(),
+      payment: decodedInvoice.paymentSecret as string,
+      max_fee: maxFee,
+      cltv_delta: decodedInvoice.cltvDelta || undefined,
+      features: decodedInvoice.features
+        ? decodedInvoice.features.map((f) => ({
+            bit: f.bit,
+            is_required: f.isRequired,
+            type: f.type,
+          }))
+        : undefined,
+      routes: [],
+    }
+
+    if (decodedInvoice.routeHints) {
+      decodedInvoice.routeHints.forEach((route) => {
+        const rawRoute: RawHopWithStrings[] = []
+        route.forEach((hop) =>
+          rawRoute.push({
+            base_fee_mtokens: hop.baseFeeMTokens,
+            channel: hop.channel,
+            cltv_delta: hop.cltvDelta,
+            fee_rate: hop.feeRate,
+            public_key: hop.nodePubkey,
+          }),
+        )
+        paymentDetailsArgs.routes.push(rawRoute)
+      })
+    }
+
+    try {
+      const paymentPromise = payViaPaymentDetails(paymentDetailsArgs)
+      const timeoutPromise = timeout(TIMEOUT_PAYMENT, "Timeout")
+      const paymentResult = (await Promise.race([
+        paymentPromise,
+        timeoutPromise,
+      ])) as PayViaPaymentDetailsResult
+      return {
+        roundedUpFee: toSats(paymentResult.safe_fee),
+      }
+    } catch (err) {
+      if (err.message === "Timeout") return new LnPaymentPendingError()
+      if (isInvoiceAlreadyPaidError(err)) return new LnAlreadyPaidError()
+      return new UnknownLightningServiceError(err)
+    }
+  }
+
   return {
     isLocal,
     defaultPubkey: (): Pubkey => defaultPubkey,
@@ -264,5 +365,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
     lookupPayment,
     cancelInvoice,
     payInvoice,
+    payInvoiceViaRoutes,
+    payInvoiceViaPaymentDetails,
   }
 }

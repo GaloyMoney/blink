@@ -1,6 +1,7 @@
 type LightningError = import("./errors").LightningError
 type LnInvoiceDecodeError = import("./errors").LnInvoiceDecodeError
 type LightningServiceError = import("./errors").LightningServiceError
+type NoValidNodeForPubkeyError = import("./errors").NoValidNodeForPubkeyError
 
 declare const invoiceExpirationSymbol: unique symbol
 type InvoiceExpiration = Date & { [invoiceExpirationSymbol]: never }
@@ -135,6 +136,26 @@ interface ILightningService {
     paymentHash: PaymentHash
     rawRoute: RawRoute | null
     pubkey: Pubkey | null
+    decodedInvoice: LnInvoice
+    milliSatsAmount: MilliSatoshis
+    maxFee: Satoshis
+  }): Promise<PayInvoiceResult | LightningServiceError>
+
+  payInvoiceViaRoutes({
+    paymentHash,
+    rawRoute,
+    pubkey,
+  }: {
+    paymentHash: PaymentHash
+    rawRoute: RawRoute | null
+    pubkey: Pubkey | null
+  }): Promise<PayInvoiceResult | LightningServiceError>
+
+  payInvoiceViaPaymentDetails({
+    decodedInvoice,
+    milliSatsAmount,
+    maxFee,
+  }: {
     decodedInvoice: LnInvoice
     milliSatsAmount: MilliSatoshis
     maxFee: Satoshis
