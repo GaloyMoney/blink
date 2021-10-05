@@ -33,7 +33,7 @@
     "test:integration": ". ./.envrc && LOGLEVEL=warn jest --config ./test/jest-integration.config.js --bail --runInBand --verbose $TEST | yarn pino-pretty -c -l"
   },
   "engines": {
-    "node": "14"
+    "node": ">=14.17 <15"
   },
   "dependencies": {
     "@google-cloud/storage": "^5.8.5",
