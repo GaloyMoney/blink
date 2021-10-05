@@ -431,14 +431,22 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
-  const settlePendingLiabilityTransactions = async (
-    paymentHash: PaymentHash,
-  ): Promise<boolean | LedgerServiceError> => {
+  const settlePendingLnPayments = async ({
+    paymentHash,
+    pubkey,
+  }: {
+    paymentHash: PaymentHash
+    pubkey: Pubkey | null
+  }): Promise<boolean | LedgerServiceError> => {
     try {
-      const result = await Transaction.updateMany(
+      const args: { hash?: PaymentHash; pending?: boolean; pubkey?: Pubkey }[] = [
         { hash: paymentHash },
         { pending: false },
-      )
+      ]
+      if (pubkey) {
+        args.push({ pubkey })
+      }
+      const result = await Transaction.updateMany(...args)
       return result.nModified > 0
     } catch (err) {
       return new UnknownLedgerError(err)
@@ -471,7 +479,7 @@ export const LedgerService = (): ILedgerService => {
     addLnTxSend,
     addLnIntraledgerTxSend,
     addOnChainIntraledgerTxSend,
-    settlePendingLiabilityTransactions,
+    settlePendingLnPayments,
     voidLedgerTransactionsForJournal,
   }
 }
