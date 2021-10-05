@@ -49,10 +49,13 @@ if (process.env.LOCAL === "docker-compose") {
 
 export const redis = new Redis(connectionObj)
 
+redis.on("error", (err) => baseLogger.error({ err }, "Redis error"))
+
 export const redisSub = new Redis(connectionObj)
+
 export const redisPubSub = new RedisPubSub({
   publisher: redis,
   subscriber: redisSub,
 })
 
-redis.on("error", (err) => baseLogger.error({ err }, "Redis error"))
+export * from "./routes"
