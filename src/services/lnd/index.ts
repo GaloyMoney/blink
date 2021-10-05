@@ -49,15 +49,6 @@ export const LndService = (): ILightningService | LightningServiceError => {
       .find((item) => item == pubkey)
   }
 
-  const hasValidLnClientForPubkey = (pubkey: Pubkey): boolean | LightningServiceError => {
-    try {
-      const { lnd: lndAuth } = getLndFromPubkey({ pubkey })
-      return !!lndAuth
-    } catch (err) {
-      return new UnknownLightningServiceError(err)
-    }
-  }
-
   const registerInvoice = async ({
     satoshis,
     description,
@@ -282,7 +273,6 @@ export const LndService = (): ILightningService | LightningServiceError => {
   return {
     isLocal,
     defaultPubkey: (): Pubkey => defaultPubkey,
-    hasValidLnClientForPubkey,
     registerInvoice,
     lookupInvoice,
     lookupPayment,
