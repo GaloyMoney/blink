@@ -126,21 +126,6 @@ interface ILightningService {
     paymentHash: PaymentHash
   }): Promise<void | LightningServiceError>
 
-  payInvoice({
-    paymentHash,
-    rawRoute,
-    pubkey,
-    decodedInvoice,
-    maxFee,
-  }: {
-    paymentHash: PaymentHash
-    rawRoute: RawRoute | null
-    pubkey: Pubkey | null
-    decodedInvoice: LnInvoice
-    milliSatsAmount: MilliSatoshis
-    maxFee: Satoshis
-  }): Promise<PayInvoiceResult | LightningServiceError>
-
   payInvoiceViaRoutes({
     paymentHash,
     rawRoute,
