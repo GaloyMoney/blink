@@ -6,7 +6,7 @@ Galoy is an opinionated bitcoin banking platform.
 
 ### Responsible disclosure 
 
-Found critical bugs/vulnerabilities? 
+Found critical bugs/vulnerabilities?
 Please email them security@galoy.io Thanks!
 
 ### Get Started
