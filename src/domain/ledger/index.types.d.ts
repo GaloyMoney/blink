@@ -194,6 +194,14 @@ interface ILedgerService {
     pubkey: Pubkey | null
   }): Promise<boolean | LedgerServiceError>
 
+  updatePendingLnPayments({
+    paymentHash,
+    pubkey,
+  }: {
+    paymentHash: PaymentHash
+    pubkey: Pubkey
+  }): Promise<boolean | LedgerServiceError>
+
   voidLedgerTransactionsForJournal(
     journalId: LedgerJournalId,
   ): Promise<void | LedgerServiceError>
