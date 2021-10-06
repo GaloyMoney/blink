@@ -3,6 +3,10 @@ name: "Galoy Banking"
 # username of the account that will be used to fund rewards
 funder: "FunderWallet"
 
+buildVersion:
+  minBuildNumber: 200
+  lastBuildNumber: 200
+
 hedging:
   LOW_BOUND_RATIO_SHORTING: 0.95
   LOW_SAFEBOUND_RATIO_SHORTING: 0.98
