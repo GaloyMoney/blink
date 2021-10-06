@@ -1,0 +1,14 @@
+FROM node:14-alpine AS BUILD_IMAGE
+
+WORKDIR /app
+
+RUN apk update && apk add git
+
+COPY ./*.json ./yarn.lock ./
+
+RUN yarn install --frozen-lockfile
+
+COPY ./src ./src
+COPY ./test ./test
+
+RUN yarn build
