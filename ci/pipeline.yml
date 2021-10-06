@@ -228,6 +228,7 @@ jobs:
       - test-unit
       - test-integration
       - build-debug-edge-image
+      - build-init-edge-image
       - build-edge-image
     - get: charts-repo
       params: { skip_download: true }
