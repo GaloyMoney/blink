@@ -8,7 +8,7 @@ import SatAmount from "../scalar/sat-amount"
 // import BtcUsdPrice from "../object/btc-usd-price"
 import Memo from "../scalar/memo"
 import TxStatus from "../scalar/tx-status"
-// import TxDirection from "../scalar/tx-direction"
+import TxDirection, { txDirectionValues } from "../scalar/tx-direction"
 
 const ITransaction = new GT.Interface({
   name: "Transaction",
@@ -31,11 +31,13 @@ const ITransaction = new GT.Interface({
     // priceAtSettlement: {
     //   type: GT.NonNull(BtcUsdPrice),
     // },
-    // direction: {
-    //   type: GT.NonNull(TxDirection),
-    // },
     memo: {
       type: Memo,
+    },
+    direction: {
+      type: GT.NonNull(TxDirection),
+      resolve: (source) =>
+        source.settlementAmount > 0 ? txDirectionValues.RECEIVE : txDirectionValues.SEND,
     },
     status: {
       type: TxStatus,

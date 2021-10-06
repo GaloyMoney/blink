@@ -139,6 +139,7 @@ interface Transaction {
   settlementAmount: SatAmount!
   settlementFee: SatAmount!
   memo: Memo
+  direction: TxDirection!
   status: TxStatus
   createdAt: Timestamp!
 }
@@ -164,6 +165,11 @@ scalar SatAmount
 Text field in a lightning payment transaction
 """
 scalar Memo
+
+enum TxDirection {
+  SEND
+  RECEIVE
+}
 
 enum TxStatus {
   PENDING
@@ -215,6 +221,7 @@ type IntraLedgerTransaction implements Transaction {
   settlementAmount: SatAmount!
   settlementFee: SatAmount!
   memo: Memo
+  direction: TxDirection!
   status: TxStatus
   createdAt: Timestamp!
 
@@ -236,6 +243,7 @@ type OnChainTransaction implements Transaction {
   settlementAmount: SatAmount!
   settlementFee: SatAmount!
   memo: Memo
+  direction: TxDirection!
   status: TxStatus
   createdAt: Timestamp!
   addresses: [OnChainAddress!]!
@@ -252,6 +260,7 @@ type LnTransaction implements Transaction {
   settlementVia: SettlementMethod!
   settlementAmount: SatAmount!
   settlementFee: SatAmount!
+  direction: TxDirection!
   memo: Memo
   status: TxStatus
   createdAt: Timestamp!
