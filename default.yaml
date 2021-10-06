@@ -4,8 +4,8 @@ name: "Galoy Banking"
 funder: "FunderWallet"
 
 buildVersion:
-  minBuildNumber: 200
-  lastBuildNumber: 200
+  minBuildNumber: 182
+  lastBuildNumber: 269
 
 hedging:
   LOW_BOUND_RATIO_SHORTING: 0.95
