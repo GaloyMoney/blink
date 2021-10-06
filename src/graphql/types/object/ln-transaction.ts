@@ -6,7 +6,6 @@ import PaymentInitiationMethod from "../scalar/payment-initiation-method"
 import SatAmount from "../scalar/sat-amount"
 import SettlementMethod from "../scalar/settlement-method"
 import Timestamp from "../scalar/timestamp"
-import Username from "../scalar/username"
 // import TxDirection from "../scalar/tx-direction"
 import TxStatus from "../scalar/tx-status"
 // import BtcUsdPrice from "./btc-usd-price"
@@ -18,9 +17,6 @@ const LnTransaction = new GT.Object({
   isTypeOf: (source) => source.settlementVia === DomainSettlementMethod.Lightning,
   fields: () => ({
     id: {
-      type: GT.NonNullID,
-    },
-    walletId: {
       type: GT.NonNullID,
     },
     initiationVia: {
@@ -46,10 +42,6 @@ const LnTransaction = new GT.Object({
     },
     status: {
       type: TxStatus,
-    },
-    recipientUsername: {
-      type: Username,
-      resolve: () => null,
     },
     createdAt: {
       type: GT.NonNull(Timestamp),

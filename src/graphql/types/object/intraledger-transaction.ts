@@ -19,9 +19,6 @@ const IntraLedgerTransaction = new GT.Object({
     id: {
       type: GT.NonNullID,
     },
-    walletId: {
-      type: GT.NonNullID,
-    },
     initiationVia: {
       type: GT.NonNull(PaymentInitiationMethod),
     },

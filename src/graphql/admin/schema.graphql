@@ -134,18 +134,12 @@ type TransactionEdge {
 
 interface Transaction {
   id: ID!
-  walletId: ID!
   initiationVia: PaymentInitiationMethod!
   settlementVia: SettlementMethod!
   settlementAmount: SatAmount!
   settlementFee: SatAmount!
   memo: Memo
   status: TxStatus
-
-  """
-  Settlement destination: Could be null when originalDestination is onChain/LN and the payee does not have a username
-  """
-  recipientUsername: Username
   createdAt: Timestamp!
 }
 
@@ -176,11 +170,6 @@ enum TxStatus {
   SUCCESS
   FAILURE
 }
-
-"""
-Unique identifier of a user
-"""
-scalar Username
 
 """
 Date field, serialized as the number of milliseconds since the Unix Epoch
@@ -221,7 +210,6 @@ type BTCWallet implements Wallet {
 
 type IntraLedgerTransaction implements Transaction {
   id: ID!
-  walletId: ID!
   initiationVia: PaymentInitiationMethod!
   settlementVia: SettlementMethod!
   settlementAmount: SatAmount!
@@ -236,16 +224,19 @@ type IntraLedgerTransaction implements Transaction {
   recipientUsername: Username
 }
 
+"""
+Unique identifier of a user
+"""
+scalar Username
+
 type OnChainTransaction implements Transaction {
   id: ID!
-  walletId: ID!
   initiationVia: PaymentInitiationMethod!
   settlementVia: SettlementMethod!
   settlementAmount: SatAmount!
   settlementFee: SatAmount!
   memo: Memo
   status: TxStatus
-  recipientUsername: Username
   createdAt: Timestamp!
   address: OnChainAddress!
 }
@@ -257,14 +248,12 @@ scalar OnChainAddress
 
 type LnTransaction implements Transaction {
   id: ID!
-  walletId: ID!
   initiationVia: PaymentInitiationMethod!
   settlementVia: SettlementMethod!
   settlementAmount: SatAmount!
   settlementFee: SatAmount!
   memo: Memo
   status: TxStatus
-  recipientUsername: Username
   createdAt: Timestamp!
   paymentHash: PaymentHash!
 }
