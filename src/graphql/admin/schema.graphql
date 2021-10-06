@@ -275,7 +275,7 @@ type Query {
   allLevels: [AccountLevel!]!
   userDetailsByPhone(phone: Phone!): UserDetails!
   userDetailsByUsername(username: Username!): UserDetails!
-  transactionsByHash(hash: String!): [Transaction]
+  transactionsByHash(hash: PaymentHash!): [Transaction]
 }
 
 enum AccountLevel {
