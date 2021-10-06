@@ -206,6 +206,8 @@ export const OnChainMixin = (superclass) =>
                 recipientLiabilitiesAccountId: toLiabilitiesAccountId(payeeUser.id),
                 payerUsername: this.user.username,
                 recipientUsername: payeeUser.username,
+                payerWalletPublicId: this.user.walletPublicId,
+                recipientWalletPublicId: payeeUser.walletPublicId,
                 memoPayer: memo || null,
                 shareMemoWithPayee: false,
               }),
