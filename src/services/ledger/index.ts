@@ -411,6 +411,8 @@ export const LedgerService = (): ILedgerService => {
     recipientLiabilitiesAccountId,
     payerUsername,
     recipientUsername,
+    payerWalletPublicId,
+    recipientWalletPublicId,
     memoPayer,
     shareMemoWithPayee,
   }: AddLnIntraledgerTxSendArgs): Promise<LedgerJournal | LedgerError> => {
@@ -435,6 +437,8 @@ export const LedgerService = (): ILedgerService => {
       recipientLiabilitiesAccountId,
       payerUsername,
       recipientUsername,
+      payerWalletPublicId,
+      recipientWalletPublicId,
       memoPayer,
       shareMemoWithPayee,
       metadata,
@@ -453,6 +457,8 @@ export const LedgerService = (): ILedgerService => {
     recipientLiabilitiesAccountId,
     payerUsername,
     recipientUsername,
+    payerWalletPublicId,
+    recipientWalletPublicId,
     memoPayer,
     shareMemoWithPayee,
   }: AddOnChainIntraledgerTxSendArgs): Promise<LedgerJournal | LedgerError> => {
@@ -477,6 +483,8 @@ export const LedgerService = (): ILedgerService => {
       recipientLiabilitiesAccountId,
       payerUsername,
       recipientUsername,
+      payerWalletPublicId,
+      recipientWalletPublicId,
       memoPayer,
       shareMemoWithPayee,
       metadata,
@@ -490,6 +498,8 @@ export const LedgerService = (): ILedgerService => {
     recipientLiabilitiesAccountId,
     payerUsername,
     recipientUsername,
+    payerWalletPublicId,
+    recipientWalletPublicId,
     memoPayer,
     shareMemoWithPayee,
     metadata,
@@ -498,9 +508,15 @@ export const LedgerService = (): ILedgerService => {
       const creditMetadata = {
         ...metadata,
         username: payerUsername,
+        walletPublicId: payerWalletPublicId,
         memoPayer: shareMemoWithPayee ? memoPayer : null,
       }
-      const debitMetadata = { ...metadata, username: recipientUsername, memoPayer }
+      const debitMetadata = {
+        ...metadata,
+        username: recipientUsername,
+        walletPublicId: recipientWalletPublicId,
+        memoPayer,
+      }
 
       const entry = MainBook.entry(description)
 
