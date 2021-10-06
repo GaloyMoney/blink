@@ -1,4 +1,4 @@
-import { toMilliSats, toSats } from "@domain/bitcoin"
+import { toMilliSatsFromNumber, toSats } from "@domain/bitcoin"
 import { WalletInvoiceFactory } from "@domain/wallet-invoices/wallet-invoice-factory"
 
 let walletInvoiceFactory: WalletInvoiceFactory
@@ -18,7 +18,7 @@ describe("wallet invoice factory methods", () => {
         cltvDelta: null,
         destination: "destination" as Pubkey,
         amount: toSats(42),
-        milliSatsAmount: toMilliSats(42000),
+        milliSatsAmount: toMilliSatsFromNumber(42000),
         description: "",
         features: [],
       },

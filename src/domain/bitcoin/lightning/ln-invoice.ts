@@ -1,4 +1,4 @@
-import { toMilliSats, toSats } from "@domain/bitcoin"
+import { toMilliSatsFromNumber, toSats } from "@domain/bitcoin"
 import { parsePaymentRequest } from "invoices"
 import { LnInvoiceDecodeError } from "./errors"
 
@@ -51,7 +51,7 @@ export const decodeInvoice = (
     description: decodedInvoice.description || "",
     paymentHash: decodedInvoice.id as PaymentHash,
     destination: decodedInvoice.destination as Pubkey,
-    milliSatsAmount: toMilliSats(decodedInvoice.mtokens || 0),
+    milliSatsAmount: toMilliSatsFromNumber(decodedInvoice.mtokens || 0),
     features: (decodedInvoice.features || []) as LnInvoiceFeature[],
   }
 }

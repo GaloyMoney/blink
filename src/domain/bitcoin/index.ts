@@ -8,8 +8,12 @@ export const toTargetConfs = (confs: number): TargetConfirmations => {
   return confs as TargetConfirmations
 }
 
-export const toMilliSats = (amount: number): MilliSatoshis => {
+export const toMilliSatsFromNumber = (amount: number): MilliSatoshis => {
   return amount as MilliSatoshis
+}
+
+export const toMilliSatsFromString = (amount: string): MilliSatoshis => {
+  return parseInt(amount, 10) as MilliSatoshis
 }
 
 export const checkedToSats = (amount: number): Satoshis | ValidationError => {
