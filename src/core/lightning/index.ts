@@ -364,6 +364,8 @@ export const LightningMixin = (superclass) =>
                 recipientLiabilitiesAccountId: toLiabilitiesAccountId(payeeUser.id),
                 payerUsername: this.user.username,
                 recipientUsername: payeeUser.username,
+                payerWalletPublicId: this.user.walletPublicId,
+                recipientWalletPublicId: payeeUser.walletPublicId,
                 memoPayer: memoPayer || null,
                 shareMemoWithPayee: isPushPayment,
               }),
