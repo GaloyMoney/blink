@@ -3,8 +3,6 @@ import { parsePaymentRequest } from "invoices"
 
 import { getIpConfig } from "@config/app"
 
-import { User } from "@services/mongoose/schema"
-
 export const isProd = process.env.NODE_ENV === "production"
 
 // FIXME: super ugly hack.
@@ -20,35 +18,6 @@ export class LoggedError extends GraphQLError {
 }
 
 const ipConfig = getIpConfig()
-
-export const addContact = async ({ uid, username }) => {
-  // https://stackoverflow.com/questions/37427610/mongodb-update-or-insert-object-in-array
-
-  const result = await User.update(
-    {
-      "_id": uid,
-      "contacts.id": username,
-    },
-    {
-      $inc: { "contacts.$.transactionsCount": 1 },
-    },
-  )
-
-  if (!result.nModified) {
-    await User.update(
-      {
-        _id: uid,
-      },
-      {
-        $addToSet: {
-          contacts: {
-            id: username,
-          },
-        },
-      },
-    )
-  }
-}
 
 export const getHash = (request) => {
   return parsePaymentRequest({ request }).id
