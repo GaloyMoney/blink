@@ -19,6 +19,7 @@ type BaseWalletTransaction = {
   readonly settlementVia: SettlementMethod
   readonly settlementAmount: Satoshis
   readonly settlementFee: Satoshis
+  readonly settlementUsdPerSat: number
   readonly status: TxStatus
   readonly memo: string | null
   readonly createdAt: Date
@@ -27,7 +28,7 @@ type BaseWalletTransaction = {
 }
 
 type IntraLedgerTransaction = BaseWalletTransaction & {
-  readonly initiationVia: "walletid"
+  readonly initiationVia: "intraledger"
   readonly settlementVia: "intraledger"
   readonly recipientUsername: Username
 }

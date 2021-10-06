@@ -1,10 +1,14 @@
 import { GT } from "@graphql/index"
+
 import { UserInputError } from "apollo-server-errors"
 
 const Timestamp = new GT.Scalar({
   name: "Timestamp",
   description:
-    "Date field, serialized as the number of milliseconds since the Unix Epoch",
+    "Timestamp field, serialized as Unix time (the number of seconds since the Unix epoch)",
+  serialize(value) {
+    return Math.floor(value.getTime() / 1000)
+  },
   // TODO: db work for dates
   parseValue(value) {
     return new Date(value)

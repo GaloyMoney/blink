@@ -1,14 +1,8 @@
 import { GT } from "@graphql/index"
-import ITransaction from "../abstract/transaction"
-import PaymentInitiationMethod from "../scalar/payment-initiation-method"
-import SatAmount from "../scalar/sat-amount"
-import SettlementMethod from "../scalar/settlement-method"
-import Timestamp from "../scalar/timestamp"
+
+import ITransaction, { transactionInterfaceFields } from "../abstract/transaction"
 import Username from "../scalar/username"
-import Memo from "../scalar/memo"
-// import TxDirection from "../scalar/tx-direction"
-import TxStatus from "../scalar/tx-status"
-// import BtcUsdPrice from "./btc-usd-price"
+
 import { SettlementMethod as DomainSettlementMethod } from "@domain/wallets"
 
 const IntraLedgerTransaction = new GT.Object({
@@ -16,36 +10,7 @@ const IntraLedgerTransaction = new GT.Object({
   interfaces: () => [ITransaction],
   isTypeOf: (source) => source.settlementVia === DomainSettlementMethod.IntraLedger,
   fields: () => ({
-    id: {
-      type: GT.NonNullID,
-    },
-    initiationVia: {
-      type: GT.NonNull(PaymentInitiationMethod),
-    },
-    settlementVia: {
-      type: GT.NonNull(SettlementMethod),
-    },
-    settlementAmount: {
-      type: GT.NonNull(SatAmount),
-    },
-    settlementFee: {
-      type: GT.NonNull(SatAmount),
-    },
-    // priceAtSettlement: {
-    //   type: GT.NonNull(BtcUsdPrice),
-    // },
-    // direction: {
-    //   type: GT.NonNull(TxDirection),
-    // },
-    memo: {
-      type: Memo,
-    },
-    status: {
-      type: TxStatus,
-    },
-    createdAt: {
-      type: GT.NonNull(Timestamp),
-    },
+    ...transactionInterfaceFields,
 
     // Non-interface fields
     recipientUsername: {
