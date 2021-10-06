@@ -138,6 +138,8 @@ interface Transaction {
   settlementVia: SettlementMethod!
   settlementAmount: SatAmount!
   settlementFee: SatAmount!
+  memo: Memo
+  status: TxStatus
   createdAt: Timestamp!
 }
 
@@ -157,6 +159,17 @@ enum SettlementMethod {
 (Positive) Satoshi amount (i.g. quiz earning)
 """
 scalar SatAmount
+
+"""
+Text field in a lightning payment transaction
+"""
+scalar Memo
+
+enum TxStatus {
+  PENDING
+  SUCCESS
+  FAILURE
+}
 
 """
 Date field, serialized as the number of milliseconds since the Unix Epoch
@@ -201,6 +214,8 @@ type IntraLedgerTransaction implements Transaction {
   settlementVia: SettlementMethod!
   settlementAmount: SatAmount!
   settlementFee: SatAmount!
+  memo: Memo
+  status: TxStatus
   createdAt: Timestamp!
 
   """
@@ -220,8 +235,10 @@ type OnChainTransaction implements Transaction {
   settlementVia: SettlementMethod!
   settlementAmount: SatAmount!
   settlementFee: SatAmount!
+  memo: Memo
+  status: TxStatus
   createdAt: Timestamp!
-  address: OnChainAddress!
+  addresses: [OnChainAddress!]!
 }
 
 """
@@ -235,11 +252,13 @@ type LnTransaction implements Transaction {
   settlementVia: SettlementMethod!
   settlementAmount: SatAmount!
   settlementFee: SatAmount!
+  memo: Memo
+  status: TxStatus
   createdAt: Timestamp!
-  paymentHash: LnPaymentHash!
+  paymentHash: PaymentHash!
 }
 
-scalar LnPaymentHash
+scalar PaymentHash
 
 type Query {
   globals: Globals
@@ -586,7 +605,7 @@ type LnInvoicePayload {
 
 type LnInvoice {
   paymentRequest: LnPaymentRequest!
-  paymentHash: LnPaymentHash!
+  paymentHash: PaymentHash!
   paymentSecret: LnPaymentSecret!
   satoshis: SatAmount
 }
@@ -598,11 +617,6 @@ input LnInvoiceCreateInput {
   memo: Memo
 }
 
-"""
-Text field in a lightning payment transaction
-"""
-scalar Memo
-
 type LnNoAmountInvoicePayload {
   errors: [Error!]!
   invoice: LnNoAmountInvoice
@@ -610,7 +624,7 @@ type LnNoAmountInvoicePayload {
 
 type LnNoAmountInvoice {
   paymentRequest: LnPaymentRequest!
-  paymentHash: LnPaymentHash!
+  paymentHash: PaymentHash!
   paymentSecret: LnPaymentSecret!
 }
 

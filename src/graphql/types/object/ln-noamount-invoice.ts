@@ -1,7 +1,7 @@
 import { GT } from "@graphql/index"
 
 import LnPaymentRequest from "../scalar/ln-payment-request"
-import LnPaymentHash from "../scalar/ln-payment-hash"
+import PaymentHash from "../scalar/payment-hash"
 import LnPaymentSecret from "../scalar/ln-payment-secret"
 
 const LnNoAmountInvoice = new GT.Object({
@@ -11,7 +11,7 @@ const LnNoAmountInvoice = new GT.Object({
       type: GT.NonNull(LnPaymentRequest),
     },
     paymentHash: {
-      type: GT.NonNull(LnPaymentHash),
+      type: GT.NonNull(PaymentHash),
     },
     paymentSecret: {
       type: GT.NonNull(LnPaymentSecret),

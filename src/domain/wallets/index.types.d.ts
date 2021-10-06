@@ -20,6 +20,7 @@ type BaseWalletTransaction = {
   readonly settlementAmount: Satoshis
   readonly settlementFee: Satoshis
   readonly status: TxStatus
+  readonly memo: string | null
   readonly createdAt: Date
 
   readonly deprecated: Deprecated
@@ -36,6 +37,7 @@ type WalletOnChainTransaction = BaseWalletTransaction & {
   readonly settlementVia: "onchain" | "intraledger"
   readonly recipientUsername: Username | null
   readonly addresses: OnChainAddress[]
+  readonly transactionHash: TxId
 }
 
 type WalletLnTransaction = BaseWalletTransaction & {

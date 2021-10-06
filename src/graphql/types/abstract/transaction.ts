@@ -6,8 +6,8 @@ import PaymentInitiationMethod from "../scalar/payment-initiation-method"
 import SettlementMethod from "../scalar/settlement-method"
 import SatAmount from "../scalar/sat-amount"
 // import BtcUsdPrice from "../object/btc-usd-price"
-// import Memo from "../scalar/memo"
-// import TxStatus from "../scalar/tx-status"
+import Memo from "../scalar/memo"
+import TxStatus from "../scalar/tx-status"
 // import TxDirection from "../scalar/tx-direction"
 
 const ITransaction = new GT.Interface({
@@ -34,12 +34,12 @@ const ITransaction = new GT.Interface({
     // direction: {
     //   type: GT.NonNull(TxDirection),
     // },
-    // memo: {
-    //   type: Memo,
-    // },
-    // status: {
-    //   type: TxStatus,
-    // },
+    memo: {
+      type: Memo,
+    },
+    status: {
+      type: TxStatus,
+    },
     createdAt: {
       type: GT.NonNull(Timestamp),
     },

@@ -37,3 +37,7 @@ export const toWalletId = (accountId: LiabilitiesAccountId): WalletId | null => 
 
   return null
 }
+
+export const isOnchainTransaction = (type: LedgerTransactionType): boolean =>
+  type === LedgerTransactionType.OnchainReceipt ||
+  type === LedgerTransactionType.OnchainPayment

@@ -148,13 +148,13 @@ describe("UserWallet - onChainPay", () => {
       throw txResult.error
     }
     txs = txResult.result
-    const [txn] = txs.filter(
+    const txn = txs.find(
       (tx: WalletTransaction) =>
-        tx.initiationVia === PaymentInitiationMethod.Lightning &&
-        tx.paymentHash === pendingTxn.hash,
+        tx.initiationVia === PaymentInitiationMethod.OnChain && tx.id === pendingTxn.id,
     )
-    expect(txn.settlementAmount).toBe(-amount - fee)
-    expect(txn.deprecated.type).toBe("onchain_payment")
+    expect(txn).toBeTruthy()
+    expect(txn?.settlementAmount).toBe(-amount - fee)
+    expect(txn?.deprecated.type).toBe("onchain_payment")
 
     const finalBalance = await getBTCBalance(userWallet0.user.id)
     expect(finalBalance).toBe(initialBalanceUser0 - amount - fee)
@@ -239,13 +239,13 @@ describe("UserWallet - onChainPay", () => {
       throw txResult.error
     }
     txs = txResult.result
-    const [txn] = txs.filter(
+    const txn = txs.find(
       (tx) =>
-        tx.initiationVia === PaymentInitiationMethod.Lightning &&
-        tx.paymentHash === pendingTxn.hash,
+        tx.initiationVia === PaymentInitiationMethod.OnChain && tx.id === pendingTxn.id,
     )
-    expect(txn.settlementAmount).toBe(-initialBalanceUser11)
-    expect(txn.deprecated.type).toBe("onchain_payment")
+    expect(txn).toBeTruthy()
+    expect(txn?.settlementAmount).toBe(-initialBalanceUser11)
+    expect(txn?.deprecated.type).toBe("onchain_payment")
 
     const finalBalance = await getBTCBalance(userWallet11.user.id)
     expect(finalBalance).toBe(0)
