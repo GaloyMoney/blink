@@ -145,7 +145,7 @@ interface Transaction {
 }
 
 enum PaymentInitiationMethod {
-  WALLET_ID
+  INTRALEDGER
   ON_CHAIN
   LIGHTNING
 }
