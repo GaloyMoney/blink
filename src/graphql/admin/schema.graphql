@@ -299,7 +299,7 @@ type Query {
   userDetailsByUsername(username: Username!): UserDetails!
   transactionsByHash(hash: PaymentHash!): [Transaction]
   lightningInvoice(hash: PaymentHash!): LightningInvoice!
-  lightningPayment(hash: String!): LightningPayment!
+  lightningPayment(hash: PaymentHash!): LightningPayment!
 }
 
 enum AccountLevel {
@@ -350,12 +350,33 @@ type LightningInvoice {
   secret: LnPaymentSecret!
 }
 
+type LightningPayment {
+  status: LnPaymentStatus
+  roundedUpFee: SatAmount
+  createdAt: Timestamp
+  confirmedAt: Timestamp
+  amount: SatAmount
+  secret: LnPaymentSecret
+  request: LnPaymentRequest
+  destination: LnPubkey
+}
+
+enum LnPaymentStatus {
+  PENDING
+  FAILED
+  SETTLED
+}
+
+scalar LnPaymentSecret
+
 """
 BOLT11 lightning invoice payment request with the amount included
 """
 scalar LnPaymentRequest
 
 scalar LnPaymentSecret
+
+scalar LnPubkey
 
 type Mutation {
   userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
