@@ -266,10 +266,10 @@ type LnTransaction implements Transaction {
   status: TxStatus
   recipientUsername: Username
   createdAt: Timestamp!
-  paymentHash: LnPaymentHash!
+  paymentHash: PaymentHash!
 }
 
-scalar LnPaymentHash
+scalar PaymentHash
 
 type Query {
   globals: Globals
@@ -616,7 +616,7 @@ type LnInvoicePayload {
 
 type LnInvoice {
   paymentRequest: LnPaymentRequest!
-  paymentHash: LnPaymentHash!
+  paymentHash: PaymentHash!
   paymentSecret: LnPaymentSecret!
   satoshis: SatAmount
 }
@@ -635,7 +635,7 @@ type LnNoAmountInvoicePayload {
 
 type LnNoAmountInvoice {
   paymentRequest: LnPaymentRequest!
-  paymentHash: LnPaymentHash!
+  paymentHash: PaymentHash!
   paymentSecret: LnPaymentSecret!
 }
 

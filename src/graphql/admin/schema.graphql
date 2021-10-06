@@ -266,10 +266,10 @@ type LnTransaction implements Transaction {
   status: TxStatus
   recipientUsername: Username
   createdAt: Timestamp!
-  paymentHash: LnPaymentHash!
+  paymentHash: PaymentHash!
 }
 
-scalar LnPaymentHash
+scalar PaymentHash
 
 type Query {
   allLevels: [AccountLevel!]!
