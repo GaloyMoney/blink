@@ -31,7 +31,7 @@ import pubsub from "@services/pubsub"
 import { LndService } from "@services/lnd"
 import { PriceService } from "@services/price"
 import { LedgerService } from "@services/ledger"
-import { toMilliSats, toSats } from "@domain/bitcoin"
+import { toMilliSatsFromString, toSats } from "@domain/bitcoin"
 import { toLiabilitiesAccountId } from "@domain/ledger"
 import { RoutesCache } from "@services/redis"
 import { CouldNotFindError } from "@domain/errors"
@@ -132,7 +132,7 @@ export const LightningMixin = (superclass) =>
 
       const { lnd, pubkey } = getActiveLnd()
 
-      const milliSats = toMilliSats(parseInt(mtokens))
+      const milliSats = toMilliSatsFromString(mtokens)
       const key = CachedRouteLookupKeyFactory().create({ paymentHash: id, milliSats })
       const routeFromCache = await RoutesCache().findByKey(key)
       if (
@@ -467,7 +467,7 @@ export const LightningMixin = (superclass) =>
         // TODO: push payment for other node as well
         lightningLogger = lightningLogger.child({ onUs: false, max_fee })
 
-        const milliSats = toMilliSats(parseInt(mtokens))
+        const milliSats = toMilliSatsFromString(mtokens)
         const key = CachedRouteLookupKeyFactory().create({ paymentHash: id, milliSats })
         const routesCache = RoutesCache()
         const cachedRoute = await routesCache.findByKey(key)
@@ -492,7 +492,7 @@ export const LightningMixin = (superclass) =>
           } catch (err) {
             // lnd may have gone offline since the probe has been done.
             // deleting entry so that subsequent payment attempt could succeed
-            const milliSats = toMilliSats(parseInt(mtokens))
+            const milliSats = toMilliSatsFromString(mtokens)
             const key = CachedRouteLookupKeyFactory().create({
               paymentHash: id,
               milliSats,
@@ -585,7 +585,7 @@ export const LightningMixin = (superclass) =>
             } else {
               result = await lndService.payInvoiceViaPaymentDetails({
                 decodedInvoice,
-                milliSatsAmount: toMilliSats(parseInt(mtokens)),
+                milliSatsAmount: toMilliSatsFromString(mtokens),
                 maxFee: toSats(max_fee),
               })
             }
