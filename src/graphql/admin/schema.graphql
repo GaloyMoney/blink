@@ -238,7 +238,7 @@ type OnChainTransaction implements Transaction {
   memo: Memo
   status: TxStatus
   createdAt: Timestamp!
-  address: OnChainAddress!
+  addresses: [OnChainAddress!]!
 }
 
 """
