@@ -92,6 +92,8 @@ type IntraledgerTxArgs = {
   recipientLiabilitiesAccountId: LiabilitiesAccountId | null
   payerUsername: Username | null
   recipientUsername: Username | null
+  payerWalletPublicId: WalletPublicId | null
+  recipientWalletPublicId: WalletPublicId | null
   memoPayer: string | null
   shareMemoWithPayee: boolean
 }
