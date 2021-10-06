@@ -142,7 +142,20 @@ jobs:
 - name: build-edge-image
   serial: true
   plan:
-  - { get: repo, trigger: true }
+  - in_parallel:
+    - { get: repo, trigger: true }
+    - { get: pipeline-tasks }
+  - task: prepare-docker-build
+    config:
+      platform: linux
+      image_resource: #@ task_image_config()
+      inputs:
+      - name: pipeline-tasks
+      - name: repo
+      outputs:
+      - name: repo
+      run:
+        path: pipeline-tasks/ci/tasks/prepare-docker-build.sh
   - task: build
     privileged: true
     config:
