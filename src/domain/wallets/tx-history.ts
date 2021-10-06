@@ -32,6 +32,7 @@ const filterPendingIncoming = (
           memo: null,
           createdAt: createdAt,
           settlementAmount: sats,
+          settlementUsdPerSat: usdPerSat,
           addresses: [address],
         })
       }
@@ -91,6 +92,7 @@ export const fromLedger = (
           recipientUsername: username || null,
           settlementAmount,
           settlementFee: toSats(fee || 0),
+          settlementUsdPerSat: Math.abs(usd / settlementAmount),
           transactionHash: txId as TxId,
           status,
           memo: description,
@@ -114,6 +116,7 @@ export const fromLedger = (
           },
           settlementAmount,
           settlementFee: toSats(fee || 0),
+          settlementUsdPerSat: Math.abs(usd / settlementAmount),
           paymentHash: paymentHash as PaymentHash,
           pubkey: pubkey as Pubkey,
           recipientUsername: username || null,
@@ -135,6 +138,7 @@ export const fromLedger = (
         },
         settlementAmount,
         settlementFee: toSats(fee || 0),
+        settlementUsdPerSat: Math.abs(usd / settlementAmount),
         recipientUsername: username || null,
         status,
         memo: description,

@@ -138,9 +138,10 @@ interface Transaction {
   settlementVia: SettlementMethod!
   settlementAmount: SatAmount!
   settlementFee: SatAmount!
-  memo: Memo
+  settlementPrice: Price!
   direction: TxDirection!
-  status: TxStatus
+  status: TxStatus!
+  memo: Memo
   createdAt: Timestamp!
 }
 
@@ -162,9 +163,24 @@ enum SettlementMethod {
 scalar SatAmount
 
 """
-Text field in a lightning payment transaction
+Price amount expressed in base/offset. To calculate, use: `base / 10^offset`
 """
-scalar Memo
+type Price {
+  base: SafeInt!
+  offset: Int!
+  currencyUnit: ExchangeCurrencyUnit!
+  formattedAmount: String!
+}
+
+"""
+The `SafeInt` scalar type represents non-fractional signed whole numeric values. SafeInt can represent values between -(2^53) + 1 and 2^53 - 1
+"""
+scalar SafeInt
+
+enum ExchangeCurrencyUnit {
+  BTCSAT
+  USDCENT
+}
 
 enum TxDirection {
   SEND
@@ -178,7 +194,12 @@ enum TxStatus {
 }
 
 """
-Date field, serialized as the number of milliseconds since the Unix Epoch
+Text field in a lightning payment transaction
+"""
+scalar Memo
+
+"""
+Timestamp field, serialized as Unix time (the number of seconds since the Unix epoch)
 """
 scalar Timestamp
 
@@ -220,9 +241,10 @@ type IntraLedgerTransaction implements Transaction {
   settlementVia: SettlementMethod!
   settlementAmount: SatAmount!
   settlementFee: SatAmount!
-  memo: Memo
+  settlementPrice: Price!
   direction: TxDirection!
-  status: TxStatus
+  status: TxStatus!
+  memo: Memo
   createdAt: Timestamp!
 
   """
@@ -242,9 +264,10 @@ type OnChainTransaction implements Transaction {
   settlementVia: SettlementMethod!
   settlementAmount: SatAmount!
   settlementFee: SatAmount!
-  memo: Memo
+  settlementPrice: Price!
   direction: TxDirection!
-  status: TxStatus
+  status: TxStatus!
+  memo: Memo
   createdAt: Timestamp!
   addresses: [OnChainAddress!]!
 }
@@ -260,9 +283,10 @@ type LnTransaction implements Transaction {
   settlementVia: SettlementMethod!
   settlementAmount: SatAmount!
   settlementFee: SatAmount!
+  settlementPrice: Price!
   direction: TxDirection!
+  status: TxStatus!
   memo: Memo
-  status: TxStatus
   createdAt: Timestamp!
   paymentHash: PaymentHash!
 }
