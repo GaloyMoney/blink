@@ -266,7 +266,11 @@ export const OnChainMixin = (superclass) =>
         const sendTo = [{ address, tokens: checksAmount }]
 
         try {
-          ;({ fee: estimatedFee } = await getChainFeeEstimate({ lnd, send_to: sendTo }))
+          ;({ fee: estimatedFee } = await getChainFeeEstimate({
+            lnd,
+            send_to: sendTo,
+            target_confirmations: 1,
+          }))
         } catch (err) {
           const error = `Unable to estimate fee for on-chain transaction`
           onchainLogger.error({ err, sendTo, success: false }, error)
@@ -327,6 +331,7 @@ export const OnChainMixin = (superclass) =>
               lnd,
               tokens: amountToSend,
               utxo_confirmations: 0,
+              target_confirmations: 1,
             }))
           } catch (err) {
             onchainLogger.error(
