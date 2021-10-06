@@ -27,7 +27,6 @@ groups:
   - test-unit
   - check-code
   - build-edge-image
-  - build-init-edge-image
   - build-debug-edge-image
   - install-deps
   - bump-image-in-chart
@@ -164,31 +163,6 @@ jobs:
     params:
       image: image/image.tar
 
-- name: build-init-edge-image
-  serial: true
-  plan:
-  - { get: repo, trigger: true }
-  - task: build
-    privileged: true
-    config:
-      platform: linux
-      image_resource:
-        type: registry-image
-        source:
-          repository: vito/oci-build-task
-      inputs:
-      - name: repo
-      outputs:
-      - name: image
-      params:
-        CONTEXT: repo
-        DOCKERFILE: "repo/Dockerfile-init"
-      run:
-        path: build
-  - put: init-edge-image
-    params:
-      image: image/image.tar
-
 - name: build-debug-edge-image
   serial: true
   plan:
@@ -228,7 +202,6 @@ jobs:
       - test-unit
       - test-integration
       - build-debug-edge-image
-      - build-init-edge-image
       - build-edge-image
     - get: charts-repo
       params: { skip_download: true }
@@ -298,14 +271,6 @@ resources:
     username: #@ data.values.docker_registry_user
     password: #@ data.values.docker_registry_password
     repository: #@ galoy_image()
-
-- name: init-edge-image
-  type: registry-image
-  source:
-    tag: edge
-    username: #@ data.values.docker_registry_user
-    password: #@ data.values.docker_registry_password
-    repository: #@ debug_galoy_image()
 
 - name: debug-edge-image
   type: registry-image
