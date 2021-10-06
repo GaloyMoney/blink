@@ -81,7 +81,7 @@ const updatePendingPayment = async ({
 
   if (status === PaymentStatus.Settled || status === PaymentStatus.Failed) {
     const ledgerService = LedgerService()
-    const settled = await ledgerService.settlePendingLiabilityTransactions(paymentHash)
+    const settled = await ledgerService.settlePendingLnPayments(paymentHash)
     if (settled instanceof Error) {
       paymentLogger.error({ error: settled }, "we didn't have any transaction to update")
       return settled
