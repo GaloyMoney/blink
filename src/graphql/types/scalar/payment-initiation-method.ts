@@ -4,7 +4,7 @@ import { PaymentInitiationMethod as DomainPaymentInitiationMethod } from "@domai
 const PaymentInitiationMethod = new GT.Enum({
   name: "PaymentInitiationMethod",
   values: {
-    INTRALEDGER: { value: DomainPaymentInitiationMethod.IntraLedger },
+    INTRA_LEDGER: { value: DomainPaymentInitiationMethod.IntraLedger },
     ON_CHAIN: { value: DomainPaymentInitiationMethod.OnChain },
     LIGHTNING: { value: DomainPaymentInitiationMethod.Lightning },
   },

@@ -146,7 +146,7 @@ interface Transaction {
 }
 
 enum PaymentInitiationMethod {
-  INTRALEDGER
+  INTRA_LEDGER
   ON_CHAIN
   LIGHTNING
 }

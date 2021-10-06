@@ -146,7 +146,7 @@ interface Transaction {
 }
 
 enum PaymentInitiationMethod {
-  INTRALEDGER
+  INTRA_LEDGER
   ON_CHAIN
   LIGHTNING
 }
@@ -306,7 +306,7 @@ type Query {
     walletId: WalletId!
     address: OnChainAddress!
     amount: SatAmount!
-    targetConfirmations: TargetConfirmations = 3
+    targetConfirmations: TargetConfirmations = 1
   ): OnChainTxFee!
   accountApiKeys: [AccountApiKeyHashed]
 }
