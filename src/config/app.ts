@@ -167,6 +167,13 @@ export const getSpecterWalletConfig = (): SpecterWalletConfig => {
   }
 }
 
+export const getBuildVersions = (): {
+  minBuildNumber: number
+  lastBuildNumber: number
+} => {
+  return yamlConfig.buildVersion
+}
+
 export const PROXY_CHECK_APIKEY = yamlConfig?.PROXY_CHECK_APIKEY
 
 export const getIpConfig = (config = yamlConfig): IpConfig => ({

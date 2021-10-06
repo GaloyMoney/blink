@@ -12,7 +12,7 @@ import { makeExecutableSchema } from "graphql-tools"
 import moment from "moment"
 import path from "path"
 
-import { getFeeRates, onboardingEarn } from "@config/app"
+import { getFeeRates, onboardingEarn, getBuildVersions } from "@config/app"
 
 import * as Wallets from "@app/wallets"
 import { SettlementMethod, PaymentInitiationMethod, TxStatus } from "@domain/wallets"
@@ -20,7 +20,7 @@ import { setupMongoConnection } from "@services/mongodb"
 import { activateLndHealthCheck } from "@services/lnd/health"
 import { baseLogger } from "@services/logger"
 import { getActiveLnd, nodesStats, nodeStats } from "@services/lnd/utils"
-import { getHourlyPrice, getMinBuildNumber } from "@services/local-cache"
+import { getHourlyPrice } from "@services/local-cache"
 import { getCurrentPrice } from "@services/realtime-price"
 import { User } from "@services/mongoose/schema"
 import { sendNotification } from "@services/notifications/notification"
@@ -133,7 +133,7 @@ const resolvers = {
     },
     nodesStats: async () => nodesStats(),
     buildParameters: async () => {
-      const { minBuildNumber, lastBuildNumber } = await getMinBuildNumber()
+      const { minBuildNumber, lastBuildNumber } = getBuildVersions()
       return {
         id: lastBuildNumber,
         commitHash: () => commitHash,
