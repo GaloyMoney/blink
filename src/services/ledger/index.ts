@@ -611,7 +611,7 @@ const translateToLedgerTx = (tx): LedgerTransaction => ({
   journalId: tx._journal.toString(),
   lnMemo: tx.memo,
   username: tx.username,
-  walletPublicId: tx.walletPublicId,
+  walletPublicId: tx.walletPublicId || null,
   memoFromPayer: tx.memoPayer,
   paymentHash: tx.hash,
   pubkey: tx.pubkey,
