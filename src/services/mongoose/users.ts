@@ -68,9 +68,10 @@ export const UsersRepository = (): IUsersRepository => {
       const data = {
         phone,
         language,
-        contacts: contacts.map(({ username, alias }: UserContact) => ({
+        contacts: contacts.map(({ username, alias, transactionsCount }: UserContact) => ({
           id: username,
           name: alias,
+          transactionsCount,
         })),
         deviceToken: deviceTokens,
         lastConnection,
