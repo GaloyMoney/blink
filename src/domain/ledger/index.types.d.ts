@@ -190,9 +190,15 @@ interface ILedgerService {
     args: AddOnChainIntraledgerTxSendArgs,
   ): Promise<LedgerJournal | LedgerServiceError>
 
-  settlePendingLiabilityTransactions(
-    paymentHash: PaymentHash,
-  ): Promise<boolean | LedgerServiceError>
+  settlePendingLnPayments(paymentHash: PaymentHash): Promise<boolean | LedgerServiceError>
+
+  updatePendingLnPayments({
+    paymentHash,
+    pubkey,
+  }: {
+    paymentHash: PaymentHash
+    pubkey: Pubkey
+  }): Promise<boolean | LedgerServiceError>
 
   voidLedgerTransactionsForJournal(
     journalId: LedgerJournalId,

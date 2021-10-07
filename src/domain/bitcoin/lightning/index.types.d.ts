@@ -1,6 +1,7 @@
 type LightningError = import("./errors").LightningError
 type LnInvoiceDecodeError = import("./errors").LnInvoiceDecodeError
 type LightningServiceError = import("./errors").LightningServiceError
+type NoValidNodeForPubkeyError = import("./errors").NoValidNodeForPubkeyError
 
 declare const invoiceExpirationSymbol: unique symbol
 type InvoiceExpiration = Date & { [invoiceExpirationSymbol]: never }
@@ -14,15 +15,30 @@ type PaymentHash = string & { [paymentHashSymbol]: never }
 declare const paymentSecretSymbol: unique symbol
 type PaymentSecret = string & { [paymentSecretSymbol]: never }
 
+declare const featureBitSymbol: unique symbol
+type FeatureBit = number & { [featureBitSymbol]: never }
+
+declare const featureTypeSymbol: unique symbol
+type FeatureType = string & { [featureTypeSymbol]: never }
+
 type PaymentStatus =
   typeof import("./index").PaymentStatus[keyof typeof import("./index").PaymentStatus]
 
-type RouteHint = {
+type Hop = {
   baseFeeMTokens?: string
   channel?: string
   cltvDelta?: number
   feeRate?: number
   nodePubkey: Pubkey
+}
+
+type LnInvoiceFeature = {
+  // BOLT 09 Feature Bit Number
+  bit: FeatureBit
+  // Feature Support is Required To Pay Bool
+  isRequired: boolean
+  // Feature Type String
+  type: FeatureType
 }
 
 type LnInvoiceLookup = {
@@ -34,6 +50,7 @@ type LnInvoiceLookup = {
 type LnPaymentLookup = {
   readonly status: PaymentStatus
   readonly roundedUpFee: Satoshis
+  readonly milliSatsAmount: MilliSatoshis
   readonly createdAt: Date
   readonly confirmedAt: Date | undefined
   readonly amount: Satoshis
@@ -43,13 +60,16 @@ type LnPaymentLookup = {
 }
 
 type LnInvoice = {
-  readonly amount: Satoshis | null
-  readonly cltvDelta: number | null
-  readonly routeHints: RouteHint[]
   readonly destination: Pubkey
   readonly paymentHash: PaymentHash
-  readonly paymentSecret: PaymentSecret | null
   readonly paymentRequest: EncodedPaymentRequest
+  readonly milliSatsAmount: MilliSatoshis
+  readonly description: string
+  readonly cltvDelta: number | null
+  readonly amount: Satoshis | null
+  readonly routeHints: Hop[][]
+  readonly paymentSecret: PaymentSecret | null
+  readonly features: LnInvoiceFeature[]
 }
 
 type RegisterInvoiceArgs = {
@@ -67,11 +87,19 @@ type LnFeeCalculator = {
   max(amount: Satoshis): Satoshis
 }
 
+type PayInvoiceResult = {
+  roundedUpFee: Satoshis
+}
+
 interface ILightningService {
   isLocal(pubkey: Pubkey): boolean | LightningServiceError
+
+  defaultPubkey(): Pubkey
+
   registerInvoice(
     registerInvoiceArgs: RegisterInvoiceArgs,
   ): Promise<RegisteredInvoice | LightningServiceError>
+
   lookupInvoice({
     pubkey,
     paymentHash,
@@ -79,6 +107,7 @@ interface ILightningService {
     pubkey: Pubkey
     paymentHash: PaymentHash
   }): Promise<LnInvoiceLookup | LightningServiceError>
+
   lookupPayment({
     pubkey,
     paymentHash,
@@ -86,6 +115,7 @@ interface ILightningService {
     pubkey: Pubkey
     paymentHash: PaymentHash
   }): Promise<LnPaymentLookup | LightningServiceError>
+
   cancelInvoice({
     pubkey,
     paymentHash,
@@ -93,4 +123,24 @@ interface ILightningService {
     pubkey: Pubkey
     paymentHash: PaymentHash
   }): Promise<void | LightningServiceError>
+
+  payInvoiceViaRoutes({
+    paymentHash,
+    rawRoute,
+    pubkey,
+  }: {
+    paymentHash: PaymentHash
+    rawRoute: RawRoute | null
+    pubkey: Pubkey | null
+  }): Promise<PayInvoiceResult | LightningServiceError>
+
+  payInvoiceViaPaymentDetails({
+    decodedInvoice,
+    milliSatsAmount,
+    maxFee,
+  }: {
+    decodedInvoice: LnInvoice
+    milliSatsAmount: MilliSatoshis
+    maxFee: Satoshis
+  }): Promise<PayInvoiceResult | LightningServiceError>
 }

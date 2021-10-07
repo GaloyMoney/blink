@@ -85,12 +85,16 @@ export function timeout(delay, msg) {
   })
 }
 
-export const isInvoiceAlreadyPaidError = (err) => {
-  if (
-    "invoice is already paid" ===
-    (err[2]?.err?.details || err[2]?.failures?.[0]?.[2]?.err?.details)
-  ) {
-    return true
+export const isInvoiceAlreadyPaidError = (err): boolean => {
+  try {
+    if (
+      "invoice is already paid" ===
+      (err[2]?.err?.details || err[2]?.failures?.[0]?.[2]?.err?.details)
+    ) {
+      return true
+    }
+  } catch (err) {
+    return false
   }
   return false
 }
