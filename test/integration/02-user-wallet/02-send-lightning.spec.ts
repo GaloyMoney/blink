@@ -189,10 +189,43 @@ describe("UserWallet - Lightning Pay", () => {
         expect.objectContaining({ id: userWallet1.user.username }),
       ]),
     )
+    const contact0 = userWallet0.user.contacts.find(
+      (userContact) => userContact.id === userWallet1.user.username,
+    )
+    const txnCount0 = contact0?.transactionsCount || 0
 
     expect(userWallet1.user.contacts).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ id: userWallet0.user.username }),
+      ]),
+    )
+    const contact1 = userWallet1.user.contacts.find(
+      (userContact) => userContact.id === userWallet0.user.username,
+    )
+    const txnCount1 = contact1?.transactionsCount || 0
+
+    const res2 = await userWallet1.pay({
+      username: userWallet0.user.username,
+      amount: amountInvoice,
+    })
+    expect(res2).toBe("success")
+
+    userWallet0 = await getUserWallet(0)
+    userWallet1 = await getUserWallet(1)
+    expect(userWallet0.user.contacts).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: userWallet1.user.username,
+          transactionsCount: txnCount0 + 1,
+        }),
+      ]),
+    )
+    expect(userWallet1.user.contacts).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: userWallet0.user.username,
+          transactionsCount: txnCount1 + 1,
+        }),
       ]),
     )
   })
