@@ -96,18 +96,18 @@ type IntraledgerTxArgs = {
   shareMemoWithPayee: boolean
 }
 
-type AddLnIntraledgerTxSendArgs = IntraledgerTxArgs & {
-  paymentHash: PaymentHash
+type AddIntraLedgerTxSendArgs = IntraledgerTxArgs & {
   fee: Satoshis
   usd: number
   usdFee: number
+}
+
+type AddLnIntraledgerTxSendArgs = AddIntraLedgerTxSendArgs & {
+  paymentHash: PaymentHash
   pubkey: Pubkey
 }
 
-type AddOnChainIntraledgerTxSendArgs = IntraledgerTxArgs & {
-  fee: Satoshis
-  usd: number
-  usdFee: number
+type AddOnChainIntraledgerTxSendArgs = AddIntraLedgerTxSendArgs & {
   payeeAddresses: OnChainAddress[]
   sendAll: boolean
 }
