@@ -62,3 +62,11 @@ type LnNoAmountInvoicePaymentSendArgs = PaymentSendArgs & {
 type LnNoAmountInvoicePaymentSendWithTwoFAArgs = LnNoAmountInvoicePaymentSendArgs & {
   twoFAToken: TwoFAToken | null
 }
+
+type IntraLedgerPaymentSendArgs = PaymentSendArgs & {
+  recipientUsername: Username
+  amount: Satoshis
+}
+type IntraLedgerPaymentSendWithTwoFAArgs = IntraLedgerPaymentSendArgs & {
+  twoFAToken: TwoFAToken | null
+}

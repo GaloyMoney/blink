@@ -114,6 +114,10 @@ type AddOnChainIntraledgerTxSendArgs = AddIntraLedgerTxSendArgs & {
   sendAll: boolean
 }
 
+type AddUsernameIntraledgerTxSendArgs = AddIntraLedgerTxSendArgs & {
+  recipientUsername: Username
+}
+
 type AddLnFeeReeimbursementReceiveArgs = {
   liabilitiesAccountId: LiabilitiesAccountId
   paymentHash: PaymentHash
@@ -210,6 +214,10 @@ interface ILedgerService {
 
   addOnChainIntraledgerTxSend(
     args: AddOnChainIntraledgerTxSendArgs,
+  ): Promise<LedgerJournal | LedgerServiceError>
+
+  addUsernameIntraledgerTxSend(
+    args: AddUsernameIntraledgerTxSendArgs,
   ): Promise<LedgerJournal | LedgerServiceError>
 
   settlePendingLnPayments(paymentHash: PaymentHash): Promise<boolean | LedgerServiceError>
