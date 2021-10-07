@@ -18,20 +18,22 @@ type AddLnTxSendMetadata = TxMetadata & {
   feeKnownInAdvance: boolean
 }
 
-type AddLnIntraledgerTxSendMetadata = TxMetadata & {
-  hash: PaymentHash
-  pubkey: Pubkey
+type IntraledgerTxMetadata = TxMetadata & {
   memoPayer: string | null
   username: Username | null
 }
 
-type AddOnChainIntraledgerTxSendMetadata = TxMetadata & {
+type AddLnIntraledgerTxSendMetadata = IntraledgerTxMetadata & {
+  hash: PaymentHash
+  pubkey: Pubkey
+}
+
+type AddOnChainIntraledgerTxSendMetadata = IntraledgerTxMetadata & {
   payee_addresses: OnChainAddress[]
   sendAll: boolean
-  memoPayer: string | null
-  username: Username | null
 }
 
 type SendIntraledgerTxArgs = IntraledgerTxArgs & {
+  recipientUsername: Username | null
   metadata: AddLnIntraledgerTxSendMetadata | AddOnChainIntraledgerTxSendMetadata
 }
