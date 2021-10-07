@@ -18,16 +18,18 @@ export const addNewContact = async ({
   const user = await usersRepo.findById(userId)
   if (user instanceof Error) return user
 
-  const found = user.contacts.find(
+  const idx = user.contacts.findIndex(
     (userContact) => userContact.username === contactUsername,
   )
-  if (found) return user
-
-  user.contacts.push({
-    username: contactUsername,
-    alias: "" as ContactAlias,
-    transactionsCount: 1,
-  })
+  if (idx >= 0) {
+    user.contacts[idx].transactionsCount++
+  } else {
+    user.contacts.push({
+      username: contactUsername,
+      alias: "" as ContactAlias,
+      transactionsCount: 1,
+    })
+  }
   const updateResult = await usersRepo.update(user)
   if (updateResult instanceof Error) return updateResult
 
