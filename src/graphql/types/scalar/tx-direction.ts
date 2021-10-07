@@ -1,13 +1,16 @@
 import { GT } from "@graphql/index"
 
 export const txDirectionValues = {
-  SEND: {},
-  RECEIVE: {},
-}
+  SEND: "send",
+  RECEIVE: "receive",
+} as const
 
 const TxDirection = new GT.Enum({
   name: "TxDirection",
-  values: txDirectionValues,
+  values: {
+    SEND: { value: txDirectionValues.SEND },
+    RECEIVE: { value: txDirectionValues.RECEIVE },
+  },
 })
 
 export default TxDirection
