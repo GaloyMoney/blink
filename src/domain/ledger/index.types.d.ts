@@ -95,7 +95,6 @@ type IntraledgerTxArgs = {
   payerWalletPublicId: WalletPublicId | null
   recipientWalletPublicId: WalletPublicId | null
   memoPayer: string | null
-  shareMemoWithPayee: boolean
 }
 
 type AddIntraLedgerTxSendArgs = IntraledgerTxArgs & {

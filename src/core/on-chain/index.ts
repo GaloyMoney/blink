@@ -209,7 +209,6 @@ export const OnChainMixin = (superclass) =>
                 payerWalletPublicId: this.user.walletPublicId,
                 recipientWalletPublicId: payeeUser.walletPublicId,
                 memoPayer: memo || null,
-                shareMemoWithPayee: false,
               }),
           )
           if (journal instanceof Error) throw journal

@@ -187,7 +187,6 @@ const executePaymentViaIntraledger = async ({
         payerWalletPublicId: payerWallet.publicId,
         recipientWalletPublicId: recipientWallet.publicId,
         memoPayer: memo,
-        shareMemoWithPayee: false,
       }),
     )
     if (journal instanceof Error) return journal
