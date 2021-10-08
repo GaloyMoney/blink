@@ -169,13 +169,13 @@ describe("UserWallet - Lightning Pay", () => {
     expect(finalBalance1).toBe(initBalance1 - amountInvoice)
 
     expect(userTransaction0[0]).toHaveProperty(
-      "recipientUsername",
+      "otherPartyUsername",
       userWallet1.user.username,
     )
     const oldFields0 = userTransaction0[0].deprecated
     expect(oldFields0).toHaveProperty("description", `from ${userWallet1.user.username}`)
     expect(userTransaction1[0]).toHaveProperty(
-      "recipientUsername",
+      "otherPartyUsername",
       userWallet0.user.username,
     )
     const oldFields1 = userTransaction1[0].deprecated
@@ -282,7 +282,7 @@ describe("UserWallet - Lightning Pay", () => {
 
     // check below-threshold transaction for recipient was filtered
     expect(transaction0Below).toHaveProperty(
-      "recipientUsername",
+      "otherPartyUsername",
       userWallet1.user.username,
     )
     expect(transaction0Below.deprecated).toHaveProperty(
@@ -290,7 +290,7 @@ describe("UserWallet - Lightning Pay", () => {
       `from ${userWallet1.user.username}`,
     )
     expect(transaction1Below).toHaveProperty(
-      "recipientUsername",
+      "otherPartyUsername",
       userWallet0.user.username,
     )
     expect(transaction1Below.deprecated).toHaveProperty(
@@ -300,7 +300,7 @@ describe("UserWallet - Lightning Pay", () => {
 
     // check above-threshold transaction for recipient was NOT filtered
     expect(transaction0Above).toHaveProperty(
-      "recipientUsername",
+      "otherPartyUsername",
       userWallet1.user.username,
     )
     expect(transaction0Above.deprecated).toHaveProperty(
@@ -308,7 +308,7 @@ describe("UserWallet - Lightning Pay", () => {
       memoSpamAboveThreshold,
     )
     expect(transaction1Above).toHaveProperty(
-      "recipientUsername",
+      "otherPartyUsername",
       userWallet0.user.username,
     )
     expect(transaction1Above.deprecated).toHaveProperty(

@@ -248,9 +248,9 @@ type IntraLedgerTransaction implements Transaction {
   createdAt: Timestamp!
 
   """
-  Settlement destination: Could be null when originalDestination is onChain/LN and the payee does not have a username
+  Settlement destination: Could be null when originalDestination is OnChain/LN and the payee does not have a username
   """
-  recipientUsername: Username
+  otherPartyUsername: Username
 }
 
 """
