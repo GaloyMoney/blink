@@ -9,6 +9,7 @@ import {
   LnPaymentPendingError,
   LnAlreadyPaidError,
   NoValidNodeForPubkeyError,
+  PaymentNotFoundError,
 } from "@domain/bitcoin/lightning"
 import { isInvoiceAlreadyPaidError, timeout } from "@core/utils"
 import {
@@ -100,59 +101,21 @@ export const LndService = (): ILightningService | LightningServiceError => {
     pubkey,
     paymentHash,
   }: {
-    pubkey: Pubkey
+    pubkey?: Pubkey
     paymentHash: PaymentHash
   }): Promise<LnPaymentLookup | LightningServiceError> => {
-    let lnd: AuthenticatedLnd
-    try {
-      ;({ lnd } = getLndFromPubkey({ pubkey }))
-    } catch (err) {
-      return new UnknownLightningServiceError(err)
-    }
+    if (pubkey) return lookupPaymentByPubkeyAndHash({ pubkey, paymentHash })
 
-    try {
-      const result: GetPaymentResult = await getPayment({
-        lnd,
-        id: paymentHash,
+    for (const { pubkey } of offchainLnds) {
+      const payment = await lookupPaymentByPubkeyAndHash({
+        pubkey: pubkey as Pubkey,
+        paymentHash,
       })
-      const { is_confirmed, is_failed, payment } = result
-
-      const status = is_confirmed
-        ? PaymentStatus.Settled
-        : is_failed
-        ? PaymentStatus.Failed
-        : PaymentStatus.Pending
-
-      let paymentLookup: LnPaymentLookup = {
-        amount: toSats(0),
-        createdAt: new Date(0),
-        confirmedAt: undefined,
-        destination: "" as Pubkey,
-        roundedUpFee: toSats(0),
-        milliSatsAmount: toMilliSatsFromNumber(0),
-        secret: "" as PaymentSecret,
-        request: undefined,
-        status,
-      }
-
-      if (payment) {
-        paymentLookup = Object.assign(payment, {
-          amount: toSats(payment.tokens),
-          createdAt: new Date(payment.created_at),
-          confirmedAt: payment.confirmed_at ? new Date(payment.confirmed_at) : undefined,
-          destination: payment.destination as Pubkey,
-          request: payment.request,
-          roundedUpFee: toSats(payment.safe_fee),
-          milliSatsAmount: toMilliSatsFromString(payment.mtokens),
-          secret: payment.secret as PaymentSecret,
-          status,
-        })
-      }
-
-      return paymentLookup
-    } catch (err) {
-      return new UnknownLightningServiceError(err)
+      if (payment instanceof Error) continue
+      return payment
     }
+
+    return new PaymentNotFoundError("Payment hash not found")
   }
 
   const cancelInvoice = async ({
@@ -310,6 +273,65 @@ const lookupInvoiceByPubkeyAndHash = async ({
     if (err.length === 3 && err[2]?.err?.details === invoiceNotFound) {
       return new InvoiceNotFoundError()
     }
+    return new UnknownLightningServiceError(err)
+  }
+}
+
+const lookupPaymentByPubkeyAndHash = async ({
+  pubkey,
+  paymentHash,
+}: {
+  pubkey: Pubkey
+  paymentHash: PaymentHash
+}): Promise<LnPaymentLookup | LightningServiceError> => {
+  let lnd: AuthenticatedLnd
+  try {
+    ;({ lnd } = getLndFromPubkey({ pubkey }))
+  } catch (err) {
+    return new UnknownLightningServiceError(err)
+  }
+
+  try {
+    const result: GetPaymentResult = await getPayment({
+      lnd,
+      id: paymentHash,
+    })
+    const { is_confirmed, is_failed, payment } = result
+
+    const status = is_confirmed
+      ? PaymentStatus.Settled
+      : is_failed
+      ? PaymentStatus.Failed
+      : PaymentStatus.Pending
+
+    let paymentLookup: LnPaymentLookup = {
+      amount: toSats(0),
+      createdAt: new Date(0),
+      confirmedAt: undefined,
+      destination: "" as Pubkey,
+      roundedUpFee: toSats(0),
+      milliSatsAmount: toMilliSatsFromNumber(0),
+      secret: "" as PaymentSecret,
+      request: undefined,
+      status,
+    }
+
+    if (payment) {
+      paymentLookup = Object.assign(payment, {
+        amount: toSats(payment.tokens),
+        createdAt: new Date(payment.created_at),
+        confirmedAt: payment.confirmed_at ? new Date(payment.confirmed_at) : undefined,
+        destination: payment.destination as Pubkey,
+        request: payment.request,
+        roundedUpFee: toSats(payment.safe_fee),
+        milliSatsAmount: toMilliSatsFromString(payment.mtokens),
+        secret: payment.secret as PaymentSecret,
+        status,
+      })
+    }
+
+    return paymentLookup
+  } catch (err) {
     return new UnknownLightningServiceError(err)
   }
 }

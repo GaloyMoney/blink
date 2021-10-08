@@ -350,6 +350,13 @@ type LightningInvoice {
   secret: LnPaymentSecret!
 }
 
+"""
+BOLT11 lightning invoice payment request with the amount included
+"""
+scalar LnPaymentRequest
+
+scalar LnPaymentSecret
+
 type LightningPayment {
   status: LnPaymentStatus
   roundedUpFee: SatAmount
@@ -366,15 +373,6 @@ enum LnPaymentStatus {
   FAILED
   SETTLED
 }
-
-scalar LnPaymentSecret
-
-"""
-BOLT11 lightning invoice payment request with the amount included
-"""
-scalar LnPaymentRequest
-
-scalar LnPaymentSecret
 
 scalar LnPubkey
 
