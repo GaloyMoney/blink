@@ -7,9 +7,7 @@ import {
 import { toSats } from "@domain/bitcoin"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
 import {
-  CouldNotFindError,
   InsufficientBalanceError,
-  NoUserForUsernameError,
   NoWalletExistsForUserError,
   SatoshiAmountRequiredError,
   SelfPaymentError,
@@ -118,8 +116,6 @@ const executePaymentViaIntraledger = async ({
   if (intraledgerLimitCheck instanceof Error) return intraledgerLimitCheck
 
   const recipientUser = await UsersRepository().findByUsername(recipientUsername)
-  if (recipientUser instanceof CouldNotFindError)
-    return new NoUserForUsernameError(recipientUsername)
   if (recipientUser instanceof Error) return recipientUser
   if (recipientUser.id === userId)
     return new SelfPaymentError("User tried to pay themselves")
