@@ -140,7 +140,8 @@ const executePaymentViaIntraledger = async ({
   if (recipientUser instanceof CouldNotFindError)
     return new NoUserForUsernameError(recipientUsername)
   if (recipientUser instanceof Error) return recipientUser
-  if (recipientUser.id === userId) return new SelfPaymentError()
+  if (recipientUser.id === userId)
+    return new SelfPaymentError("User tried to pay themselves")
 
   const recipientAccount = await AccountsRepository().findById(
     recipientUser.defaultAccountId,
