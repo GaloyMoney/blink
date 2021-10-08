@@ -30,7 +30,11 @@ import { usernameExists } from "@core/user"
 import { startApolloServer, isAuthenticated } from "./graphql-server"
 import { ApolloError } from "apollo-server-errors"
 import { addInvoiceForUsername, addInvoiceNoAmountForUsername } from "@core/wallets"
-import { lnInvoicePaymentSend, lnNoAmountInvoicePaymentSend } from "@app/wallets"
+import {
+  intraledgerPaymentSend,
+  lnInvoicePaymentSend,
+  lnNoAmountInvoicePaymentSend,
+} from "@app/wallets"
 import { decodeInvoice } from "@domain/bitcoin/lightning"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
@@ -319,8 +323,18 @@ const resolvers = {
         if (status instanceof Error) throw status
         return status.value
       },
-      payKeysendUsername: async ({ username, amount, memo }) =>
-        wallet.pay({ username, amount, memo }),
+      payKeysendUsername: async ({ username, amount, memo }) => {
+        const status = await intraledgerPaymentSend({
+          recipientUsername: username,
+          memo,
+          amount,
+          walletId: wallet.user.id,
+          userId: wallet.user.id,
+          logger,
+        })
+        if (status instanceof Error) throw status
+        return status.value
+      },
       getFee: async ({ amount, invoice }) => wallet.getLightningFee({ amount, invoice }),
     }),
     earnCompleted: async (_, { ids }, { wallet }) => wallet.addEarn(ids),
