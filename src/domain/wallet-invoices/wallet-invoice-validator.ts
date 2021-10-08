@@ -9,7 +9,8 @@ export const WalletInvoiceValidator = (
     fromWalletId: WalletId
   }): true | ApplicationError => {
     if (walletInvoice.paid) return new AlreadyPaidError()
-    if (walletInvoice.walletId === fromWalletId) return new SelfPaymentError()
+    if (walletInvoice.walletId === fromWalletId)
+      return new SelfPaymentError("User tried to pay themselves")
     return true
   }
 
