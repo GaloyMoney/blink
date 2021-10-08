@@ -344,7 +344,6 @@ export const LedgerService = (): ILedgerService => {
     payerWalletPublicId,
     recipientWalletPublicId,
     memoPayer,
-    shareMemoWithPayee,
   }: AddLnIntraledgerTxSendArgs): Promise<LedgerJournal | LedgerError> => {
     const metadata: AddLnIntraledgerTxSendMetadata = {
       type: LedgerTransactionType.IntraLedger,
@@ -370,7 +369,7 @@ export const LedgerService = (): ILedgerService => {
       payerWalletPublicId,
       recipientWalletPublicId,
       memoPayer,
-      shareMemoWithPayee,
+      shareMemoWithPayee: false,
       metadata,
     })
   }
@@ -390,7 +389,6 @@ export const LedgerService = (): ILedgerService => {
     payerWalletPublicId,
     recipientWalletPublicId,
     memoPayer,
-    shareMemoWithPayee,
   }: AddOnChainIntraledgerTxSendArgs): Promise<LedgerJournal | LedgerError> => {
     const metadata: AddOnChainIntraledgerTxSendMetadata = {
       type: LedgerTransactionType.OnchainIntraLedger,
@@ -416,7 +414,7 @@ export const LedgerService = (): ILedgerService => {
       payerWalletPublicId,
       recipientWalletPublicId,
       memoPayer,
-      shareMemoWithPayee,
+      shareMemoWithPayee: false,
       metadata,
     })
   }
@@ -434,7 +432,6 @@ export const LedgerService = (): ILedgerService => {
     payerWalletPublicId,
     recipientWalletPublicId,
     memoPayer,
-    shareMemoWithPayee,
   }: AddUsernameIntraledgerTxSendArgs): Promise<LedgerJournal | LedgerError> => {
     const metadata: AddUsernameIntraledgerTxSendMetadata = {
       type: LedgerTransactionType.OnchainIntraLedger,
@@ -458,7 +455,7 @@ export const LedgerService = (): ILedgerService => {
       payerWalletPublicId,
       recipientWalletPublicId,
       memoPayer,
-      shareMemoWithPayee,
+      shareMemoWithPayee: true,
       metadata,
     })
   }
