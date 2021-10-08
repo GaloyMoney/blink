@@ -1,4 +1,3 @@
-import { CouldNotFindError, NoUserForUsernameError } from "@domain/errors"
 import { UsersRepository } from "@services/mongoose"
 
 export const addNewContact = async ({
@@ -11,8 +10,6 @@ export const addNewContact = async ({
   const usersRepo = UsersRepository()
 
   const contactUser = await usersRepo.findByUsername(contactUsername)
-  if (contactUser instanceof CouldNotFindError)
-    return new NoUserForUsernameError(contactUsername)
   if (contactUser instanceof Error) return contactUser
 
   const user = await usersRepo.findById(userId)

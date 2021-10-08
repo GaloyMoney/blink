@@ -332,7 +332,9 @@ const resolvers = {
           userId: wallet.user.id,
           logger,
         })
+
         if (status instanceof Error) throw status
+
         return status.value
       },
       getFee: async ({ amount, invoice }) => wallet.getLightningFee({ amount, invoice }),
