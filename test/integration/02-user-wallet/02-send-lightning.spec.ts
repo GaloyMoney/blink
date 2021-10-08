@@ -1,7 +1,6 @@
 import { createHash, randomBytes } from "crypto"
 import { getUserLimits } from "@config/app"
-import { SelfPaymentError } from "@core/error"
-import { getActiveLnd, nodesPubKey, getInvoiceAttempt } from "@services/lnd/utils"
+import { getActiveLnd, getInvoiceAttempt } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { InvoiceUser } from "@services/mongoose/schema"
 import { getHash, sleep } from "@core/utils"
@@ -30,12 +29,14 @@ import {
   InsufficientBalanceError as DomainInsufficientBalanceError,
   ValidationError,
   LimitsExceededError,
+  InvalidSatoshiAmount,
 } from "@domain/errors"
 import { TwoFAError } from "@domain/twoFA"
 import { LedgerService } from "@services/ledger"
 import { getBTCBalance } from "test/helpers/wallet"
 import { WalletInvoicesRepository } from "@services/mongoose"
 import {
+  intraledgerPaymentSend,
   lnInvoicePaymentSend,
   lnInvoicePaymentSendWithTwoFA,
   lnNoAmountInvoicePaymentSend,
@@ -179,10 +180,16 @@ describe("UserWallet - Lightning Pay", () => {
   })
 
   it("sends to another Galoy user a push payment", async () => {
-    const res = await userWallet1.pay({
-      username: userWallet0.user.username,
-      amount: amountInvoice,
+    const res = await intraledgerPaymentSend({
+      recipientUsername: userWallet0.user.username,
+      memo: "",
+      amount: toSats(amountInvoice),
+      walletId: userWallet1.user.id,
+      userId: userWallet1.user.id,
+      logger: userWallet1.logger,
     })
+    expect(res).not.toBeInstanceOf(Error)
+    if (res instanceof Error) throw res
 
     const finalBalance0 = await getBTCBalance(userWallet0.user.id)
     const { result: userTransaction0, error } = await Wallets.getTransactionsForWalletId({
@@ -200,7 +207,7 @@ describe("UserWallet - Lightning Pay", () => {
       throw txResult.error
     }
     const userTransaction1 = txResult.result
-    expect(res).toBe("success")
+    expect(res).toBe(PaymentSendStatus.Success)
     expect(finalBalance0).toBe(initBalance0 + amountInvoice)
     expect(finalBalance1).toBe(initBalance1 - amountInvoice)
 
@@ -221,14 +228,10 @@ describe("UserWallet - Lightning Pay", () => {
     userWallet1 = await getUserWallet(1)
 
     expect(userWallet0.user.contacts).toEqual(
-      expect.arrayContaining([
+      expect.not.arrayContaining([
         expect.objectContaining({ id: userWallet1.user.username }),
       ]),
     )
-    const contact0 = userWallet0.user.contacts.find(
-      (userContact) => userContact.id === userWallet1.user.username,
-    )
-    const txnCount0 = contact0?.transactionsCount || 0
 
     expect(userWallet1.user.contacts).toEqual(
       expect.arrayContaining([
@@ -240,22 +243,19 @@ describe("UserWallet - Lightning Pay", () => {
     )
     const txnCount1 = contact1?.transactionsCount || 0
 
-    const res2 = await userWallet1.pay({
-      username: userWallet0.user.username,
-      amount: amountInvoice,
+    const res2 = await intraledgerPaymentSend({
+      recipientUsername: userWallet0.user.username,
+      memo: "",
+      amount: toSats(amountInvoice),
+      walletId: userWallet1.user.id,
+      userId: userWallet1.user.id,
+      logger: userWallet1.logger,
     })
-    expect(res2).toBe("success")
+    expect(res2).not.toBeInstanceOf(Error)
+    if (res2 instanceof Error) throw res2
+    expect(res2).toBe(PaymentSendStatus.Success)
 
-    userWallet0 = await getUserWallet(0)
     userWallet1 = await getUserWallet(1)
-    expect(userWallet0.user.contacts).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          id: userWallet1.user.username,
-          transactionsCount: txnCount0 + 1,
-        }),
-      ]),
-    )
     expect(userWallet1.user.contacts).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -286,19 +286,29 @@ describe("UserWallet - Lightning Pay", () => {
   it("filters spam from send to another Galoy user as push payment", async () => {
     const satsBelow = 100
     const memoSpamBelowThreshold = "Spam BELOW threshold"
-    const resBelowThreshold = await userWallet1.pay({
-      username: userWallet0.user.username,
-      amount: satsBelow,
+    const resBelowThreshold = await intraledgerPaymentSend({
+      recipientUsername: userWallet0.user.username,
       memo: memoSpamBelowThreshold,
+      amount: toSats(satsBelow),
+      walletId: userWallet1.user.id,
+      userId: userWallet1.user.id,
+      logger: userWallet1.logger,
     })
+    expect(resBelowThreshold).not.toBeInstanceOf(Error)
+    if (resBelowThreshold instanceof Error) throw resBelowThreshold
 
     const satsAbove = 1100
     const memoSpamAboveThreshold = "Spam ABOVE threshold"
-    const resAboveThreshold = await userWallet1.pay({
-      username: userWallet0.user.username,
-      amount: satsAbove,
+    const resAboveThreshold = await intraledgerPaymentSend({
+      recipientUsername: userWallet0.user.username,
       memo: memoSpamAboveThreshold,
+      amount: toSats(satsAbove),
+      walletId: userWallet1.user.id,
+      userId: userWallet1.user.id,
+      logger: userWallet1.logger,
     })
+    expect(resAboveThreshold).not.toBeInstanceOf(Error)
+    if (resAboveThreshold instanceof Error) throw resAboveThreshold
 
     let txResult = await Wallets.getTransactionsForWalletId({
       walletId: userWallet0.user.id,
@@ -321,8 +331,8 @@ describe("UserWallet - Lightning Pay", () => {
     const transaction1Below = userTransaction1[1]
 
     // confirm both transactions succeeded
-    expect(resBelowThreshold).toBe("success")
-    expect(resAboveThreshold).toBe("success")
+    expect(resBelowThreshold).toBe(PaymentSendStatus.Success)
+    expect(resAboveThreshold).toBe(PaymentSendStatus.Success)
 
     // check below-threshold transaction for recipient was filtered
     expect(transaction0Below).toHaveProperty(
@@ -365,7 +375,7 @@ describe("UserWallet - Lightning Pay", () => {
     userWallet1 = await getUserWallet(1)
 
     expect(userWallet0.user.contacts).toEqual(
-      expect.arrayContaining([
+      expect.not.arrayContaining([
         expect.objectContaining({ id: userWallet1.user.username }),
       ]),
     )
@@ -393,16 +403,19 @@ describe("UserWallet - Lightning Pay", () => {
       userId: userWallet1.user.id,
       logger: userWallet1.logger,
     })
-    await expect(paymentResult).toBeInstanceOf(DomainSelfPaymentError)
+    expect(paymentResult).toBeInstanceOf(DomainSelfPaymentError)
   })
 
   it("fails if sends to self an on us push payment", async () => {
-    await expect(
-      userWallet1.pay({
-        username: userWallet1.user.username,
-        amount: amountInvoice,
-      }),
-    ).rejects.toThrow(SelfPaymentError)
+    const paymentResult = await intraledgerPaymentSend({
+      recipientUsername: userWallet1.user.username,
+      memo: "",
+      amount: toSats(amountInvoice),
+      walletId: userWallet1.user.id,
+      userId: userWallet1.user.id,
+      logger: userWallet1.logger,
+    })
+    expect(paymentResult).toBeInstanceOf(DomainSelfPaymentError)
   })
 
   it("fails when user has insufficient balance", async () => {
@@ -421,14 +434,16 @@ describe("UserWallet - Lightning Pay", () => {
   })
 
   it("fails if the user try to send a negative amount", async () => {
-    const destination = nodesPubKey[0]
-    await expect(
-      userWallet1.pay({
-        destination,
-        username: userWallet0.user.username,
-        amount: -amountInvoice,
-      }),
-    ).rejects.toThrow("amount can't be negative")
+    const paymentResult = await intraledgerPaymentSend({
+      recipientUsername: userWallet0.user.username,
+      memo: "",
+      amount: toSats(-amountInvoice),
+      walletId: userWallet1.user.id,
+      userId: userWallet1.user.id,
+      logger: userWallet1.logger,
+    })
+    expect(paymentResult).toBeInstanceOf(InvalidSatoshiAmount)
+    expect((paymentResult as Error).message).toBe("Amount cannot be negative or zero")
   })
 
   it("fails to pay when channel capacity exceeded", async () => {
@@ -455,15 +470,6 @@ describe("UserWallet - Lightning Pay", () => {
     })
     expect(paymentResult).toBeInstanceOf(ValidationError)
   })
-
-  // TODO: Remove when use-cases are separated
-  // it("fails to pay regular invoice with separate amount", async () => {
-  //   const { request } = await createInvoice({ lnd: lndOutside1, tokens: amountInvoice })
-  //   // TODO: use custom ValidationError not apollo error
-  //   await expect(
-  //     userWallet1.pay({ invoice: request, amount: amountInvoice }),
-  //   ).rejects.toThrow(ValidationInternalError)
-  // })
 
   it("fails to pay when withdrawalLimit exceeded", async () => {
     const { request } = await createInvoice({
