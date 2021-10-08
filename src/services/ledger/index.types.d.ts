@@ -37,6 +37,7 @@ type AddUsernameIntraledgerTxSendMetadata = IntraledgerTxMetadata
 
 type SendIntraledgerTxArgs = IntraledgerTxArgs & {
   recipientUsername: Username | null
+  shareMemoWithPayee: boolean
   metadata:
     | AddLnIntraledgerTxSendMetadata
     | AddOnChainIntraledgerTxSendMetadata
