@@ -22,9 +22,10 @@ import {
   PayViaPaymentDetailsArgs,
   PayViaRoutesResult,
   PayViaPaymentDetailsResult,
+  GetInvoiceResult,
 } from "lightning"
 import { TIMEOUT_PAYMENT } from "./auth"
-import { getActiveLnd, getLndFromPubkey, getLnds } from "./utils"
+import { getActiveLnd, getLndFromPubkey, getLnds, offchainLnds } from "./utils"
 import { LndOfflineError } from "@core/error"
 
 export const LndService = (): ILightningService | LightningServiceError => {
@@ -78,23 +79,21 @@ export const LndService = (): ILightningService | LightningServiceError => {
     pubkey,
     paymentHash,
   }: {
-    pubkey: Pubkey
+    pubkey?: Pubkey
     paymentHash: PaymentHash
   }): Promise<LnInvoiceLookup | LightningServiceError> => {
-    try {
-      const { lnd } = getLndFromPubkey({ pubkey })
-      const { is_confirmed, description, received } = await getInvoice({
-        lnd,
-        id: paymentHash,
+    if (pubkey) return lookupInvoiceByPubkeyAndHash({ pubkey, paymentHash })
+
+    for (const { pubkey } of offchainLnds) {
+      const invoice = await lookupInvoiceByPubkeyAndHash({
+        pubkey: pubkey as Pubkey,
+        paymentHash,
       })
-      return { isSettled: !!is_confirmed, description, received: toSats(received) }
-    } catch (err) {
-      const invoiceNotFound = "unable to locate invoice"
-      if (err.length === 3 && err[2]?.err?.details === invoiceNotFound) {
-        return new InvoiceNotFoundError()
-      }
-      return new UnknownLightningServiceError(err)
+      if (invoice instanceof Error) continue
+      return invoice
     }
+
+    return new InvoiceNotFoundError("Invoice not found")
   }
 
   const lookupPayment = async ({
@@ -279,5 +278,38 @@ export const LndService = (): ILightningService | LightningServiceError => {
     cancelInvoice,
     payInvoiceViaRoutes,
     payInvoiceViaPaymentDetails,
+  }
+}
+
+const lookupInvoiceByPubkeyAndHash = async ({
+  pubkey,
+  paymentHash,
+}: {
+  pubkey: Pubkey
+  paymentHash: PaymentHash
+}): Promise<LnInvoiceLookup | LightningServiceError> => {
+  try {
+    const { lnd } = getLndFromPubkey({ pubkey })
+    const invoice: GetInvoiceResult = await getInvoice({
+      lnd,
+      id: paymentHash,
+    })
+
+    return {
+      createdAt: new Date(invoice.created_at),
+      confirmedAt: invoice.confirmed_at ? new Date(invoice.confirmed_at) : undefined,
+      description: invoice.description,
+      expiresAt: invoice.expires_at ? new Date(invoice.expires_at) : undefined,
+      isSettled: !!invoice.is_confirmed,
+      received: toSats(invoice.received),
+      request: invoice.request,
+      secret: invoice.secret as PaymentSecret,
+    }
+  } catch (err) {
+    const invoiceNotFound = "unable to locate invoice"
+    if (err.length === 3 && err[2]?.err?.details === invoiceNotFound) {
+      return new InvoiceNotFoundError()
+    }
+    return new UnknownLightningServiceError(err)
   }
 }
