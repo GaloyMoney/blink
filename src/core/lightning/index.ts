@@ -349,26 +349,28 @@ export const LightningMixin = (superclass) =>
           if (recipientWallet instanceof CouldNotFindError) throw recipientWallet
           if (recipientWallet instanceof Error) throw recipientWallet
 
+          const addTxSendArgs = {
+            liabilitiesAccountId: toLiabilitiesAccountId(this.user.id),
+            paymentHash: id,
+            description: memoInvoice,
+            sats,
+            fee: lnFee,
+            usd,
+            usdFee,
+            pubkey,
+            recipientLiabilitiesAccountId: toLiabilitiesAccountId(payeeUser.id),
+            payerUsername: this.user.username,
+            recipientUsername: payeeUser.username,
+            payerWalletPublicId: this.user.walletPublicId,
+            recipientWalletPublicId: payeeUser.walletPublicId,
+            memoPayer: memoPayer || null,
+          }
           const journal = await LockService().extendLock(
             { logger: lightningLoggerOnUs, lock },
             async () =>
-              LedgerService().addLnIntraledgerTxSend({
-                liabilitiesAccountId: toLiabilitiesAccountId(this.user.id),
-                paymentHash: id,
-                description: memoInvoice,
-                sats,
-                fee: lnFee,
-                usd,
-                usdFee,
-                pubkey,
-                recipientLiabilitiesAccountId: toLiabilitiesAccountId(payeeUser.id),
-                payerUsername: this.user.username,
-                recipientUsername: payeeUser.username,
-                payerWalletPublicId: this.user.walletPublicId,
-                recipientWalletPublicId: payeeUser.walletPublicId,
-                memoPayer: memoPayer || null,
-                shareMemoWithPayee: isPushPayment,
-              }),
+              isPushPayment
+                ? LedgerService().addLnIntraledgerTxSend(addTxSendArgs)
+                : LedgerService().addUsernameIntraledgerTxSend(addTxSendArgs),
           )
           if (journal instanceof Error) throw journal
 
