@@ -72,6 +72,11 @@ export const fromLedger = (
         credit,
         username,
       })
+      const memo = translateMemo({
+        memoFromPayer,
+        lnMemo,
+        credit,
+      })
       const status = pendingConfirmation ? TxStatus.Pending : TxStatus.Success
       if ((addresses && addresses.length > 0) || isOnchainTransaction(type)) {
         return {
@@ -95,7 +100,7 @@ export const fromLedger = (
           settlementUsdPerSat: Math.abs(usd / settlementAmount),
           transactionHash: txId as TxId,
           status,
-          memo: description,
+          memo,
           createdAt: timestamp,
         }
       }
@@ -121,7 +126,7 @@ export const fromLedger = (
           pubkey: pubkey as Pubkey,
           otherPartyUsername: username || null,
           status,
-          memo: description,
+          memo,
           createdAt: timestamp,
         }
       }
@@ -141,7 +146,7 @@ export const fromLedger = (
         settlementUsdPerSat: Math.abs(usd / settlementAmount),
         otherPartyUsername: username || null,
         status,
-        memo: description,
+        memo,
         createdAt: timestamp,
       } as IntraLedgerTransaction
     },
@@ -197,6 +202,27 @@ export const translateDescription = ({
   }
 
   return usernameDescription || type
+}
+
+export const translateMemo = ({
+  memoFromPayer,
+  lnMemo,
+  credit,
+}: {
+  memoFromPayer?: string
+  lnMemo?: string
+  credit: number
+}): string | null => {
+  if (shouldDisplayMemo(credit)) {
+    if (memoFromPayer) {
+      return memoFromPayer
+    }
+    if (lnMemo) {
+      return lnMemo
+    }
+  }
+
+  return null
 }
 
 export const WalletTransactionHistory = {
