@@ -25,7 +25,6 @@ import {
 import { redlock } from "../lock"
 import { transactionNotification } from "@services/notifications/payment"
 import { UserWallet } from "../user-wallet"
-import { addContact } from "../utils"
 import { lnPaymentStatusEvent } from "@config/app"
 import pubsub from "@services/pubsub"
 import { LndService } from "@services/lnd"
@@ -44,6 +43,7 @@ import {
   LnAlreadyPaidError,
   LnPaymentPendingError,
 } from "@domain/bitcoin/lightning"
+import { addNewContact } from "@app/users/add-new-contact"
 
 export type ITxType =
   | "invoice"
@@ -418,13 +418,22 @@ export const LightningMixin = (superclass) =>
 
           // adding contact for the payer
           if (payeeUser.username) {
-            await addContact({ uid: this.user._id, username: payeeUser.username })
+            const addContactToPayerResult = await addNewContact({
+              userId: this.user.id,
+              contactUsername: payeeUser.username,
+            })
+            if (addContactToPayerResult instanceof Error) throw addContactToPayerResult
           }
 
           // adding contact for the payee
           if (this.user.username) {
-            await addContact({ uid: payeeUser._id, username: this.user.username })
+            const addContactToPayeeResult = await addNewContact({
+              userId: payeeUser.id,
+              contactUsername: this.user.username,
+            })
+            if (addContactToPayeeResult instanceof Error) throw addContactToPayeeResult
           }
+
           const withdrawalLimitCheck = limitsChecker.checkWithdrawal({
             amount: tokens,
           })
