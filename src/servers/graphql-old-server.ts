@@ -36,6 +36,8 @@ import {
   lnNoAmountInvoicePaymentSend,
 } from "@app/lightning"
 import { decodeInvoice } from "@domain/bitcoin/lightning"
+import { NoUserForUsernameError } from "@domain/errors"
+import { NotFoundError } from "@core/error"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
 
@@ -321,7 +323,11 @@ const resolvers = {
           userId: wallet.user.id,
           logger,
         })
+
+        if (status instanceof NoUserForUsernameError)
+          throw new NotFoundError("User not found", { logger })
         if (status instanceof Error) throw status
+
         return status.value
       },
       getFee: async ({ amount, invoice }) => wallet.getLightningFee({ amount, invoice }),
