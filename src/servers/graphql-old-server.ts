@@ -303,7 +303,7 @@ const resolvers = {
           walletId: wallet.user.id,
           amount,
           address,
-          targetConfirmations: 3,
+          targetConfirmations: 1,
         })
         if (fee instanceof Error) throw fee
         return fee
