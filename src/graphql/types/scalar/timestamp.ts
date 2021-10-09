@@ -7,7 +7,10 @@ const Timestamp = new GT.Scalar({
   description:
     "Timestamp field, serialized as Unix time (the number of seconds since the Unix epoch)",
   serialize(value) {
-    return Math.floor(value.getTime() / 1000)
+    if (value.getTime) {
+      return Math.floor(value.getTime() / 1000)
+    }
+    return value
   },
   // TODO: db work for dates
   parseValue(value) {
