@@ -68,6 +68,7 @@ export class Price {
 
   async lastCached(): Promise<Array<ITick>> {
     const ohlcv = await PriceHistory.findOne(this.path)
+    if (!ohlcv) return []
     // TODO use sort + only request the last 25 data points at the db level for optimization
     // assuming we can do this on subquery in MongoDB
     const data = ohlcv.pair.exchange.price
