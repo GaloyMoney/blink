@@ -317,7 +317,7 @@ const lookupPaymentByPubkeyAndHash = async ({
     }
 
     if (payment) {
-      paymentLookup = Object.assign(payment, {
+      paymentLookup = Object.assign(paymentLookup, {
         amount: toSats(payment.tokens),
         createdAt: new Date(payment.created_at),
         confirmedAt: payment.confirmed_at ? new Date(payment.confirmed_at) : undefined,
