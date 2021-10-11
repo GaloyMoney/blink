@@ -31,6 +31,9 @@ import { reimburseFee } from "@app/wallets/reimburse-fee"
 import { TwoFAError, TwoFANewCodeNeededError } from "@domain/twoFA"
 import { checkAndVerifyTwoFA, getLimitsChecker } from "@core/accounts/helpers"
 import { CachedRouteLookupKeyFactory } from "@domain/routes/key-factory"
+import { lnPaymentStatusEvent } from "@config/app"
+import { NotificationsService } from "@services/notifications"
+import pubsub from "@services/pubsub"
 
 export const lnInvoicePaymentSend = async (
   args: LnInvoicePaymentSendArgs,
@@ -152,26 +155,41 @@ const lnSendPayment = async ({
   const isLocal = lndService.isLocal(decodedInvoice.destination)
   if (isLocal instanceof Error) return isLocal
 
-  return isLocal
-    ? executePaymentViaIntraledger({
+  if (isLocal) {
+    const executedPayment = await executePaymentViaIntraledger({
+      paymentHash: decodedInvoice.paymentHash,
+      description: decodedInvoice.description,
+      paymentAmount,
+      memo,
+      walletId,
+      username: user.username,
+      limitsChecker,
+      lndService,
+      logger,
+    })
+    if (executedPayment === PaymentSendStatus.Success) {
+      const notificationsService = NotificationsService(logger)
+      await notificationsService.lnPaymentReceived({
+        amount: paymentAmount,
+        walletId,
         paymentHash: decodedInvoice.paymentHash,
-        description: decodedInvoice.description,
-        paymentAmount,
-        memo,
-        walletId,
-        username: user.username,
-        limitsChecker,
-        lndService,
-        logger,
       })
-    : executePaymentViaLn({
-        decodedInvoice,
-        paymentAmount,
-        walletId,
-        limitsChecker,
-        lndService,
-        logger,
-      })
+
+      const eventName = lnPaymentStatusEvent(decodedInvoice.paymentHash)
+      pubsub.publish(eventName, { status: "PAID" })
+    }
+
+    return executedPayment
+  }
+
+  return executePaymentViaLn({
+    decodedInvoice,
+    paymentAmount,
+    walletId,
+    limitsChecker,
+    lndService,
+    logger,
+  })
 }
 
 const executePaymentViaIntraledger = async ({
