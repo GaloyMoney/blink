@@ -37,7 +37,8 @@ export const getCurrentPrice = async (): Promise<number | undefined> => {
     mainCache.set(key, price, 600)
   } catch (err) {
     price = mainCache.get(key)
-    if (price) {
+    baseLogger.error({ err })
+    if (!price) {
       throw new Error("price is not available")
     }
     baseLogger.info({ price }, "using stale price")
