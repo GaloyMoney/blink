@@ -69,10 +69,6 @@ export const OnChainMixin = (superclass) =>
       this.config = args.config
     }
 
-    async updatePending(lock): Promise<void> {
-      await super.updatePending(lock)
-    }
-
     async onChainPay({
       address,
       amount,
