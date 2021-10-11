@@ -11,3 +11,4 @@ export class InvoiceNotFoundError extends LightningServiceError {}
 export class LnPaymentPendingError extends LightningServiceError {}
 export class LnAlreadyPaidError extends LightningServiceError {}
 export class NoValidNodeForPubkeyError extends LightningServiceError {}
+export class PaymentNotFoundError extends LightningServiceError {}

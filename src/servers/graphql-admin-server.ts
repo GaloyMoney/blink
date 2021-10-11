@@ -21,6 +21,7 @@ export async function startApolloServerForAdminSchema() {
         userDetailsByUsername: and(isAuthenticated, isEditor),
         transactionsByHash: and(isAuthenticated, isEditor),
         lightningInvoice: and(isAuthenticated, isEditor),
+        lightningPayment: and(isAuthenticated, isEditor),
       },
       Mutation: {
         userUpdateStatus: and(isAuthenticated, isEditor),
