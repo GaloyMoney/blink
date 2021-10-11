@@ -320,6 +320,7 @@ type User {
   phone: Phone!
   language: Language!
   contacts: [UserContact!]!
+  contactByUsername(username: Username!): UserContact!
   quizQuestions: [UserQuizQuestion!]!
   twoFAEnabled: Boolean
   createdAt: Timestamp!
@@ -573,6 +574,7 @@ type UserDetails {
   phone: Phone!
   language: Language!
   contacts: [UserContact!]!
+  contactByUsername(username: Username!): UserContact!
   quizQuestions: [UserQuizQuestion!]!
   twoFAEnabled: Boolean
   createdAt: Timestamp!
