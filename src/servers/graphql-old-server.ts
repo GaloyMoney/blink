@@ -55,7 +55,7 @@ const translateWalletTx = (txs: WalletTransaction[]) => {
     hash: tx.initiationVia === PaymentInitiationMethod.Lightning ? tx.paymentHash : null,
     addresses: tx.initiationVia === PaymentInitiationMethod.OnChain ? tx.addresses : null,
     username:
-      tx.settlementVia === SettlementMethod.IntraLedger ? tx.recipientUsername : null,
+      tx.settlementVia === SettlementMethod.IntraLedger ? tx.otherPartyUsername : null,
   }))
 }
 

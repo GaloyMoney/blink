@@ -25,7 +25,7 @@ const filterPendingIncoming = (
             feeUsd: 0,
             type: LedgerTransactionType.OnchainReceipt,
           },
-          recipientUsername: null,
+          otherPartyUsername: null,
           settlementFee: toSats(0),
           transactionHash: rawTx.id as TxId,
           status: TxStatus.Pending,
@@ -72,6 +72,11 @@ export const fromLedger = (
         credit,
         username,
       })
+      const memo = translateMemo({
+        memoFromPayer,
+        lnMemo,
+        credit,
+      })
       const status = pendingConfirmation ? TxStatus.Pending : TxStatus.Success
       if ((addresses && addresses.length > 0) || isOnchainTransaction(type)) {
         return {
@@ -89,13 +94,13 @@ export const fromLedger = (
             feeUsd,
             type,
           },
-          recipientUsername: username || null,
+          otherPartyUsername: username || null,
           settlementAmount,
           settlementFee: toSats(fee || 0),
           settlementUsdPerSat: Math.abs(usd / settlementAmount),
           transactionHash: txId as TxId,
           status,
-          memo: description,
+          memo,
           createdAt: timestamp,
         }
       }
@@ -119,9 +124,9 @@ export const fromLedger = (
           settlementUsdPerSat: Math.abs(usd / settlementAmount),
           paymentHash: paymentHash as PaymentHash,
           pubkey: pubkey as Pubkey,
-          recipientUsername: username || null,
+          otherPartyUsername: username || null,
           status,
-          memo: description,
+          memo,
           createdAt: timestamp,
         }
       }
@@ -139,9 +144,9 @@ export const fromLedger = (
         settlementAmount,
         settlementFee: toSats(fee || 0),
         settlementUsdPerSat: Math.abs(usd / settlementAmount),
-        recipientUsername: username || null,
+        otherPartyUsername: username || null,
         status,
-        memo: description,
+        memo,
         createdAt: timestamp,
       } as IntraLedgerTransaction
     },
@@ -197,6 +202,27 @@ export const translateDescription = ({
   }
 
   return usernameDescription || type
+}
+
+export const translateMemo = ({
+  memoFromPayer,
+  lnMemo,
+  credit,
+}: {
+  memoFromPayer?: string
+  lnMemo?: string
+  credit: number
+}): string | null => {
+  if (shouldDisplayMemo(credit)) {
+    if (memoFromPayer) {
+      return memoFromPayer
+    }
+    if (lnMemo) {
+      return lnMemo
+    }
+  }
+
+  return null
 }
 
 export const WalletTransactionHistory = {
