@@ -7,7 +7,7 @@ import { OnChainMixin } from "../on-chain"
 import { onboardingEarn } from "@config/app"
 import { UserWallet } from "../user-wallet"
 import { getWalletFromRole } from "../wallet-factory"
-import { addInvoice } from "@app/wallets"
+import { addInvoice, lnInvoicePaymentSend } from "@app/wallets"
 
 /**
  * this represents a user wallet
@@ -56,10 +56,15 @@ export class LightningUserWallet extends OnChainMixin(LightningMixin(UserWallet)
             memo: id,
           })
           if (lnInvoice instanceof Error) throw lnInvoice
-          await lightningFundingWallet.pay({
-            invoice: lnInvoice.paymentRequest,
-            isReward: true,
+
+          const payResult = await lnInvoicePaymentSend({
+            paymentRequest: lnInvoice.paymentRequest,
+            memo: null,
+            walletId: lightningFundingWallet.user.id,
+            userId: lightningFundingWallet.user.id,
+            logger: this.logger,
           })
+          if (payResult instanceof Error) throw payResult
         }
 
         result.push({ id, value: amount, completed: true })
