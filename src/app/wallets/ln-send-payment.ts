@@ -87,6 +87,7 @@ export const lnInvoicePaymentSendWithTwoFA = async ({
         walletId,
         username,
         decodedInvoice,
+        paymentRequest,
         amount: lnInvoiceAmount,
         memo: memo || "",
         logger,
@@ -125,6 +126,7 @@ export const lnInvoicePaymentSend = async ({
         walletId,
         username: user.username,
         decodedInvoice,
+        paymentRequest,
         amount: lnInvoiceAmount,
         memo: memo || "",
         logger,
@@ -183,6 +185,7 @@ export const lnNoAmountInvoicePaymentSendWithTwoFA = async ({
         walletId,
         username,
         decodedInvoice,
+        paymentRequest,
         amount,
         memo: memo || "",
         logger,
@@ -227,6 +230,7 @@ export const lnNoAmountInvoicePaymentSend = async ({
         walletId,
         username: user.username,
         decodedInvoice,
+        paymentRequest,
         amount,
         memo: memo || "",
         logger,
@@ -238,6 +242,7 @@ const lnSendPayment = async ({
   walletId,
   username,
   decodedInvoice,
+  paymentRequest,
   amount,
   memo,
   logger,
@@ -245,6 +250,7 @@ const lnSendPayment = async ({
   walletId: WalletId
   username: Username
   decodedInvoice: LnInvoice
+  paymentRequest: EncodedPaymentRequest
   amount: Satoshis
   memo: string
   logger: Logger
@@ -292,6 +298,7 @@ const lnSendPayment = async ({
 
   return executePaymentViaLn({
     decodedInvoice,
+    paymentRequest,
     amount,
     usdPerSat,
     walletId,
@@ -395,6 +402,7 @@ const executePaymentViaIntraledger = async ({
 
 const executePaymentViaLn = async ({
   decodedInvoice,
+  paymentRequest,
   amount,
   usdPerSat,
   walletId,
@@ -402,6 +410,7 @@ const executePaymentViaLn = async ({
   logger,
 }: {
   decodedInvoice: LnInvoice
+  paymentRequest: EncodedPaymentRequest
   amount: Satoshis
   usdPerSat: UsdPerSat
   walletId: WalletId
@@ -485,6 +494,7 @@ const executePaymentViaLn = async ({
 
     const payment = await lndService.lookupPayment({ pubkey, paymentHash })
     if (payment instanceof Error) return payment
+    payment.paymentRequest = payment.paymentRequest || paymentRequest
 
     const settled = await ledgerService.settlePendingLnPayments({ paymentHash, payment })
     if (settled instanceof Error) return settled
