@@ -431,8 +431,8 @@ export const LedgerService = (): ILedgerService => {
       const entry = MainBook.entry(description)
 
       entry
-        .credit(lndAccountingPath, sats, metadata)
-        .debit(liabilitiesWalletId, sats, metadata)
+        .credit(lndAccountingPath, sats, { ...metadata, payment: null })
+        .debit(liabilitiesWalletId, sats, { ...metadata, payment: null })
 
       const savedEntry = await entry.commit()
       return translateToLedgerJournal(savedEntry)
@@ -595,13 +595,17 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
-  const settlePendingLnPayments = async (
-    paymentHash: PaymentHash,
-  ): Promise<boolean | LedgerServiceError> => {
+  const settlePendingLnPayments = async ({
+    paymentHash,
+    payment,
+  }: {
+    paymentHash: PaymentHash
+    payment: LnPaymentLookup
+  }): Promise<boolean | LedgerServiceError> => {
     try {
       const result = await Transaction.updateMany(
         { hash: paymentHash },
-        { pending: false },
+        { pending: false, payment },
       )
       return result.nModified > 0
     } catch (err) {

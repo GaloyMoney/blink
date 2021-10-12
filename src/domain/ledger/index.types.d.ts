@@ -227,7 +227,13 @@ interface ILedgerService {
     args: AddUsernameIntraledgerTxSendArgs,
   ): Promise<LedgerJournal | LedgerServiceError>
 
-  settlePendingLnPayments(paymentHash: PaymentHash): Promise<boolean | LedgerServiceError>
+  settlePendingLnPayments({
+    paymentHash,
+    payment,
+  }: {
+    paymentHash: PaymentHash
+    payment: LnPaymentLookup
+  }): Promise<boolean | LedgerServiceError>
 
   voidLedgerTransactionsForJournal(
     journalId: LedgerJournalId,
