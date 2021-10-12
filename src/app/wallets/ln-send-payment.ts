@@ -483,7 +483,10 @@ const executePaymentViaLn = async ({
         })
     if (payResult instanceof LnPaymentPendingError) return PaymentSendStatus.Pending
 
-    const settled = await ledgerService.settlePendingLnPayments(paymentHash)
+    const payment = await lndService.lookupPayment({ pubkey, paymentHash })
+    if (payment instanceof Error) return payment
+
+    const settled = await ledgerService.settlePendingLnPayments({ paymentHash, payment })
     if (settled instanceof Error) return settled
 
     if (payResult instanceof Error) {

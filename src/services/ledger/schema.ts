@@ -111,6 +111,7 @@ const transactionSchema = new Schema({
     min: 0,
   },
   meta: Schema.Types.Mixed,
+  payment: Schema.Types.Mixed,
   datetime: Date,
   account_path: [String],
   accounts: String,
