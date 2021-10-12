@@ -1,4 +1,3 @@
-import axios from "axios"
 import twilio from "twilio"
 
 import { baseLogger } from "@services/logger"
@@ -21,31 +20,6 @@ export const sendTwilioText = async ({ body, to, logger }) => {
       to,
       body,
     })
-  } catch (err) {
-    logger.error({ err, provider }, "impossible to send text")
-    return false
-  }
-
-  logger.info({ to, provider }, "sent text successfully")
-  return true
-}
-
-export const sendSMSalaText = async ({ body, to, logger }) => {
-  const provider = "smsala"
-  try {
-    const base_url = "http://api.smsala.com/api/SendSMS"
-    const api_id = process.env.SMSALA_API_ID
-    const api_password = process.env.SMSALA_API_PASSWORD
-    const sms_type = "T"
-    const encoding = "T"
-    const sender_id = process.env.SMSALA_SENDER_ID
-    // SMSala api does not acccept nonnumeric characters like '+'
-    const phoneNumber = to.replace(/\D/g, "")
-
-    let url = `${base_url}?api_id=${api_id}&api_password=${api_password}`
-    url = url + `&sms_type=${sms_type}&encoding=${encoding}&sender_id=${sender_id}`
-    url = url + `&phonenumber=${phoneNumber}&textmessage=${body}`
-    await axios.get(url)
   } catch (err) {
     logger.error({ err, provider }, "impossible to send text")
     return false
