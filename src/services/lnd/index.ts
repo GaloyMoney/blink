@@ -305,28 +305,32 @@ const lookupPaymentByPubkeyAndHash = async ({
       : PaymentStatus.Pending
 
     let paymentLookup: LnPaymentLookup = {
-      amount: toSats(0),
-      createdAt: new Date(0),
-      confirmedAt: undefined,
-      destination: "" as Pubkey,
-      roundedUpFee: toSats(0),
-      milliSatsAmount: toMilliSatsFromNumber(0),
-      secret: "" as PaymentSecret,
-      paymentRequest: undefined,
       status,
+      confirmedAt: undefined,
+      createdAt: new Date(0),
+      destination: "" as Pubkey,
+      milliSatsFee: toMilliSatsFromNumber(0),
+      paymentHash: "" as PaymentHash,
+      milliSatsAmount: toMilliSatsFromNumber(0),
+      paymentRequest: undefined,
+      roundedUpFee: toSats(0),
+      secret: "" as PaymentSecret,
+      amount: toSats(0),
     }
 
     if (payment) {
       paymentLookup = Object.assign(paymentLookup, {
-        amount: toSats(payment.tokens),
-        createdAt: new Date(payment.created_at),
+        status,
         confirmedAt: payment.confirmed_at ? new Date(payment.confirmed_at) : undefined,
-        destination: payment.destination as Pubkey,
+        createdAt: new Date(payment.created_at),
+        destination: payment.destination,
+        milliSatsFee: toMilliSatsFromString(payment.fee_mtokens),
+        paymentHash: payment.id,
+        milliSatsAmount: toMilliSatsFromString(payment.mtokens),
         paymentRequest: payment.request,
         roundedUpFee: toSats(payment.safe_fee),
-        milliSatsAmount: toMilliSatsFromString(payment.mtokens),
-        secret: payment.secret as PaymentSecret,
-        status,
+        secret: payment.secret,
+        amount: toSats(payment.tokens),
       })
     }
 
