@@ -265,7 +265,7 @@ const lookupInvoiceByPubkeyAndHash = async ({
       expiresAt: invoice.expires_at ? new Date(invoice.expires_at) : undefined,
       isSettled: !!invoice.is_confirmed,
       received: toSats(invoice.received),
-      request: invoice.request,
+      paymentRequest: invoice.request,
       secret: invoice.secret as PaymentSecret,
     }
   } catch (err) {
@@ -312,7 +312,7 @@ const lookupPaymentByPubkeyAndHash = async ({
       roundedUpFee: toSats(0),
       milliSatsAmount: toMilliSatsFromNumber(0),
       secret: "" as PaymentSecret,
-      request: undefined,
+      paymentRequest: undefined,
       status,
     }
 
@@ -322,7 +322,7 @@ const lookupPaymentByPubkeyAndHash = async ({
         createdAt: new Date(payment.created_at),
         confirmedAt: payment.confirmed_at ? new Date(payment.confirmed_at) : undefined,
         destination: payment.destination as Pubkey,
-        request: payment.request,
+        paymentRequest: payment.request,
         roundedUpFee: toSats(payment.safe_fee),
         milliSatsAmount: toMilliSatsFromString(payment.mtokens),
         secret: payment.secret as PaymentSecret,
