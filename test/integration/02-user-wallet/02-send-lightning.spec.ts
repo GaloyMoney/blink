@@ -34,6 +34,7 @@ import { toSats, FEECAP } from "@domain/bitcoin"
 import { toLiabilitiesAccountId } from "@domain/ledger"
 import { LedgerService } from "@services/ledger"
 import { getBTCBalance } from "test/helpers/wallet"
+import { WalletInvoicesRepository } from "@services/mongoose"
 
 const date = Date.now() + 1000 * 60 * 60 * 24 * 8
 // required to avoid oldEnoughForWithdrawal validation
@@ -45,6 +46,8 @@ let userWallet0, userWallet1, userWallet2
 let initBalance0, initBalance1
 const amountInvoice = 1000
 const userLimits = getUserLimits({ level: 1 })
+
+const invoicesRepo = WalletInvoicesRepository()
 
 beforeAll(async () => {
   userWallet0 = await getUserWallet(0)
@@ -74,10 +77,20 @@ describe("UserWallet - Lightning Pay", () => {
       amount: toSats(amountInvoice),
       memo,
     })
-    if (lnInvoice instanceof Error) return lnInvoice
+    if (lnInvoice instanceof Error) throw lnInvoice
     const { paymentRequest: invoice } = lnInvoice
 
+    let walletInvoice = await invoicesRepo.findByPaymentHash(lnInvoice.paymentHash)
+    expect(walletInvoice).not.toBeInstanceOf(Error)
+    if (walletInvoice instanceof Error) throw walletInvoice
+    expect(walletInvoice.paid).toBeFalsy()
+
     await userWallet1.pay({ invoice })
+
+    walletInvoice = await invoicesRepo.findByPaymentHash(lnInvoice.paymentHash)
+    expect(walletInvoice).not.toBeInstanceOf(Error)
+    if (walletInvoice instanceof Error) throw walletInvoice
+    expect(walletInvoice.paid).toBeTruthy()
 
     const matchTx = (tx) =>
       tx.settlementVia === "intraledger" && tx.paymentHash === getHash(invoice)
