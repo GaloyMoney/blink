@@ -55,6 +55,9 @@ type LnInvoiceLookup = {
   readonly secret: PaymentSecret
 }
 
+type GetPaymentResult = import("lightning").GetPaymentResult
+type RawPaths = NonNullable<GetPaymentResult["payment"]>["paths"]
+
 type LnPaymentLookup = {
   readonly status: PaymentStatus
   readonly confirmedAt: Date | undefined
@@ -63,6 +66,7 @@ type LnPaymentLookup = {
   readonly milliSatsFee: MilliSatoshis
   readonly paymentHash: PaymentHash
   readonly milliSatsAmount: MilliSatoshis
+  readonly paths: RawPaths
   paymentRequest: EncodedPaymentRequest | undefined
   readonly roundedUpFee: Satoshis
   readonly secret: PaymentSecret
