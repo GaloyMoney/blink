@@ -312,6 +312,7 @@ export const LedgerService = (): ILedgerService => {
         sats,
         usd,
         pubkey,
+        payment: null,
         feeKnownInAdvance,
         currency: "BTC",
       }
@@ -319,8 +320,8 @@ export const LedgerService = (): ILedgerService => {
       const entry = MainBook.entry(description)
 
       entry
-        .credit(lndAccountingPath, sats, { ...metadata, payment: null })
-        .debit(liabilitiesAccountId, sats, { ...metadata, payment: null })
+        .credit(lndAccountingPath, sats, metadata)
+        .debit(liabilitiesAccountId, sats, metadata)
 
       const savedEntry = await entry.commit()
       return translateToLedgerJournal(savedEntry)
