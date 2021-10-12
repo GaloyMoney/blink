@@ -319,6 +319,7 @@ const lookupPaymentByPubkeyAndHash = async ({
     }
 
     if (payment) {
+      console.log("HERE 30:", payment)
       paymentLookup = Object.assign(paymentLookup, {
         status,
         confirmedAt: payment.confirmed_at ? new Date(payment.confirmed_at) : undefined,
@@ -333,6 +334,8 @@ const lookupPaymentByPubkeyAndHash = async ({
         amount: toSats(payment.tokens),
       })
     }
+
+    console.log("HERE 20:", paymentLookup)
 
     return paymentLookup
   } catch (err) {

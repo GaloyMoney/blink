@@ -413,6 +413,8 @@ const executePaymentViaLn = async ({
     if (payment instanceof Error) return payment
     payment.paymentRequest = payment.paymentRequest || paymentRequest
 
+    console.log("HERE 10:", paymentHash)
+    console.log("HERE 11:", payment)
     const settled = await ledgerService.settlePendingLnPayments({ paymentHash, payment })
     if (settled instanceof Error) return settled
 
