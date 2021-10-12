@@ -62,7 +62,7 @@ type LnPaymentLookup = {
   readonly confirmedAt: Date | undefined
   readonly amount: Satoshis
   readonly secret: PaymentSecret
-  readonly request: string | undefined
+  request: EncodedPaymentRequest | undefined
   readonly destination: Pubkey
 }
 
