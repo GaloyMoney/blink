@@ -3,7 +3,7 @@
 git_uri: git@github.com:GaloyMoney/galoy.git
 git_branch: main
 git_charts_uri: git@github.com:GaloyMoney/charts.git
-git_charts_branch: dev
+git_charts_branch: main
 git_charts_bot_branch: bot-bump-galoy-image
 github_private_key: ((github.private_key))
 github_token: ((github.api_token))
