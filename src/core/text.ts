@@ -8,7 +8,7 @@ import {
 } from "@config/app"
 
 import { createToken } from "@services/jwt"
-import { sendTwilioText, getCarrier, sendSMSalaText } from "@services/phone-provider"
+import { sendTwilioText, getCarrier } from "@services/phone-provider"
 import { PhoneCode, User } from "@services/mongoose/schema"
 
 import { IPBlacklistedError, TooManyRequestError } from "./error"
@@ -96,9 +96,6 @@ export const requestPhoneCode = async ({
 
     if (sms_provider === "twilio") {
       const smsOk = await sendTwilioText(sendTextArguments)
-      return smsOk
-    } else if (sms_provider === "smsala") {
-      const smsOk = await sendSMSalaText(sendTextArguments)
       return smsOk
     } else {
       // sms provider in yaml did not match any sms implementation

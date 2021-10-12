@@ -1,5 +1,5 @@
 // import { baseLogger } from "../logger"
-// import { sendTwilioText, sendSMSalaText } from "../text"
+// import { sendTwilioText } from "../text"
 
 // const phone = "add phone number here with extension (ie: +1...)"
 
@@ -8,12 +8,6 @@ const main = async () => {
     // await sendTwilioText({body: "test text", to: phone, logger: baseLogger})
   } catch (err) {
     fail("there was an error sending the Twilio text")
-  }
-
-  try {
-    // await sendSMSalaText({ body: "test text", to: phone, logger: baseLogger })
-  } catch (err) {
-    fail("there was an error sending the SMSala text")
   }
 
   return Promise.resolve(true)
