@@ -50,7 +50,7 @@ type LnInvoiceLookup = {
   readonly expiresAt: Date | undefined
   readonly isSettled: boolean
   readonly received: Satoshis
-  readonly request: string | undefined
+  readonly paymentRequest: string | undefined
   readonly secret: PaymentSecret
 }
 
@@ -62,7 +62,7 @@ type LnPaymentLookup = {
   readonly confirmedAt: Date | undefined
   readonly amount: Satoshis
   readonly secret: PaymentSecret
-  request: EncodedPaymentRequest | undefined
+  paymentRequest: EncodedPaymentRequest | undefined
   readonly destination: Pubkey
 }
 
