@@ -2680,10 +2680,10 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-10.12.18.tgz#1d3ca764718915584fcd9f6344621b7672665c67"
   integrity sha512-fh+pAqt4xRzPfqA6eh3Z2y6fyZavRIumvjhaCL753+TVkGKGhpPeyrJG2JftD0T9q4GF00KjefsQ+PQNDdWQaQ==
 
-"@types/node@16.10.1":
-  version "16.10.1"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-16.10.1.tgz#f3647623199ca920960006b3dccf633ea905f243"
-  integrity sha512-4/Z9DMPKFexZj/Gn3LylFgamNKHm4K3QDi0gz9B26Uk0c8izYf97B5fxfpspMNkWlFupblKM/nV8+NA9Ffvr+w==
+"@types/node@16.10.3":
+  version "16.10.3"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-16.10.3.tgz#7a8f2838603ea314d1d22bb3171d899e15c57bd5"
+  integrity sha512-ho3Ruq+fFnBrZhUYI46n/bV2GjwzSkwuT4dTf0GkuNFmnb8nq4ny2z9JEVemFi6bdEJanHLlYfy9c6FN9B9McQ==
 
 "@types/node@16.9.6":
   version "16.9.6"
@@ -4157,6 +4157,13 @@ cbor@8.0.0:
   integrity sha512-nMmaLWbj7+bC6MsApKRIig8h+yjgNLhPLXaCelq5+C7mpWsHgIcseZSdvgexSY5uE1Q3m2uPvIDZwSdxdo7qig==
   dependencies:
     nofilter "^3.0.2"
+
+cbor@8.0.2:
+  version "8.0.2"
+  resolved "https://registry.yarnpkg.com/cbor/-/cbor-8.0.2.tgz#d0f5088423437efcc160e9304bd0576f45d06abb"
+  integrity sha512-H5WTjQYgyHQI0VrCmbyQBOPy1353MjmUi/r3DbPib4U13vuyqm7es9Mfpe8G58bN/mCdRlJWkiCrPl1uM1wAlg==
+  dependencies:
+    nofilter "^3.0.3"
 
 ccxt@^1.53.54:
   version "1.56.34"
@@ -7679,15 +7686,15 @@ lightning@4.7.2:
     invoices "2.0.0"
     psbt "1.1.10"
 
-lightning@^4.8.0:
-  version "4.8.0"
-  resolved "https://registry.yarnpkg.com/lightning/-/lightning-4.8.0.tgz#c7ba1d92e9276769271994bbd92ae582fdcd0477"
-  integrity sha512-FjK5ZnXptCyw96TIqAbBXbsBaCAvQTXI7F8IRfKst2C9qWVbKiV0krw3jGCXWFL4z5yPHSdx7DJ2V9nOi6MT9w==
+lightning@^4.10.6:
+  version "4.10.6"
+  resolved "https://registry.yarnpkg.com/lightning/-/lightning-4.10.6.tgz#f52361097be0afb7a712dad67193d2c01a508e6d"
+  integrity sha512-giIgzG3ce9oEGlDE9UIeYSeCcw4NHNLI0ETOt2aJQ+O9ZJEfdfGb2cPtdaRrFaW5yXezLR+tQsUHMFWhft71JQ==
   dependencies:
     "@grpc/grpc-js" "1.3.7"
     "@grpc/proto-loader" "0.6.5"
     "@types/express" "4.17.13"
-    "@types/node" "16.10.1"
+    "@types/node" "16.10.3"
     "@types/request" "2.48.7"
     "@types/ws" "8.2.0"
     async "3.2.1"
@@ -7697,7 +7704,7 @@ lightning@^4.8.0:
     body-parser "1.19.0"
     bolt07 "1.7.3"
     bolt09 "0.2.0"
-    cbor "8.0.0"
+    cbor "8.0.2"
     express "4.17.1"
     invoices "2.0.0"
     psbt "1.1.10"
@@ -8419,6 +8426,11 @@ nofilter@^3.0.2:
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/nofilter/-/nofilter-3.0.3.tgz#3ff3b142efdccb403434ccae4a0c2c835cb9b522"
   integrity sha512-TN/MCrQmXQk5DyUJ8TGUq1Il8rv4fTsjddLmMopV006QP8DMkglmGgYfQKD5620vXLRXfr8iGI6ZZ4/ZWld2cQ==
+
+nofilter@^3.0.3:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/nofilter/-/nofilter-3.1.0.tgz#c757ba68801d41ff930ba2ec55bab52ca184aa66"
+  integrity sha512-l2NNj07e9afPnhAhvgVrCD/oy2Ai1yfLpuo3EpiO1jFTsB4sFz6oIfAfSZyQzVpkZQ9xS8ZS5g1jCBgq4Hwo0g==
 
 nopt@~1.0.10:
   version "1.0.10"
