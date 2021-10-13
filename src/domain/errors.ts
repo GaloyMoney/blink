@@ -23,11 +23,13 @@ export class SelfPaymentError extends ValidationError {}
 export class LessThanDustThresholdError extends ValidationError {}
 export class InsufficientBalanceError extends ValidationError {}
 export class InvalidTargetConfirmations extends ValidationError {}
-export class LimitsExceededError extends ValidationError {}
 export class NoUserForUsernameError extends ValidationError {}
 export class NoContactForUsernameError extends ValidationError {}
 export class LnPaymentRequestNonZeroAmountRequiredError extends ValidationError {}
 export class LnPaymentRequestZeroAmountRequiredError extends ValidationError {}
 export class NoWalletExistsForUserError extends ValidationError {}
 
+export class LimitsExceededError extends ValidationError {}
+export class WithdrawalLimitsExceededError extends LimitsExceededError {}
+export class IntraledgerLimitsExceededError extends LimitsExceededError {}
 export class TwoFALimitsExceededError extends LimitsExceededError {}
