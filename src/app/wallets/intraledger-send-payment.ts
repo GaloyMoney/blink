@@ -25,48 +25,23 @@ import { PriceService } from "@services/price"
 export const intraledgerPaymentSend = async (
   args: IntraLedgerPaymentSendArgs,
 ): Promise<PaymentSendStatus | ApplicationError> =>
-  intraledgerPaymentSendWithTwoFA({
+  intraledgerSendPaymentWithTwoFA({
     twoFAToken: null,
     ...args,
   })
 
-export const intraledgerPaymentSendWithTwoFA = async ({
+const intraledgerSendPaymentWithTwoFA = async ({
+  twoFAToken,
   recipientUsername,
   amount,
   memo,
   walletId,
   userId,
-  twoFAToken,
   logger,
-}: IntraLedgerPaymentSendWithTwoFAArgs): Promise<PaymentSendStatus | ApplicationError> =>
-  intraledgerSendPayment({
-    walletId,
-    userId,
-    recipientUsername,
-    paymentAmount: amount,
-    memo: memo || "",
-    twoFAToken,
-    logger,
-  })
-
-const intraledgerSendPayment = async ({
-  walletId,
-  userId,
-  recipientUsername,
-  paymentAmount,
-  memo,
-  twoFAToken,
-  logger,
-}: {
-  walletId: WalletId
-  userId: UserId
-  recipientUsername: Username
-  paymentAmount: Satoshis
-  memo: string
-  twoFAToken: TwoFAToken | null
-  logger: Logger
-}): Promise<PaymentSendStatus | ApplicationError> => {
-  if (!(paymentAmount && paymentAmount > 0)) {
+}: IntraLedgerPaymentSendWithTwoFAArgs): Promise<
+  PaymentSendStatus | ApplicationError
+> => {
+  if (!(amount && amount > 0)) {
     return new SatoshiAmountRequiredError()
   }
 
@@ -76,7 +51,7 @@ const intraledgerSendPayment = async ({
 
   const twoFACheck = twoFA?.secret
     ? await checkAndVerifyTwoFA({
-        amount: paymentAmount,
+        amount,
         twoFAToken: twoFAToken ? (twoFAToken as TwoFAToken) : null,
         twoFASecret: twoFA.secret,
         walletId,
@@ -89,8 +64,8 @@ const intraledgerSendPayment = async ({
   const paymentSendStatus = await executePaymentViaIntraledger({
     userId,
     recipientUsername,
-    paymentAmount,
-    memo,
+    amount,
+    memoPayer: memo || "",
     walletId,
     username: user.username,
     logger,
@@ -108,22 +83,22 @@ const intraledgerSendPayment = async ({
 const executePaymentViaIntraledger = async ({
   userId,
   recipientUsername,
-  paymentAmount,
-  memo,
+  amount,
+  memoPayer,
   walletId,
   username,
   logger,
 }: {
   userId: UserId
   recipientUsername: Username
-  paymentAmount: Satoshis
-  memo: string
+  amount: Satoshis
+  memoPayer: string
   walletId: WalletId
   username: Username
   logger: Logger
 }): Promise<PaymentSendStatus | ApplicationError> => {
   const intraledgerLimitCheck = await checkIntraledgerLimits({
-    amount: paymentAmount,
+    amount,
     walletId,
   })
   if (intraledgerLimitCheck instanceof Error) return intraledgerLimitCheck
@@ -152,7 +127,7 @@ const executePaymentViaIntraledger = async ({
   const price = await PriceService().getCurrentPrice()
   if (price instanceof Error) return price
   const lnFee = toSats(0)
-  const sats = toSats(paymentAmount + lnFee)
+  const sats = toSats(amount + lnFee)
   const usd = sats * price
   const usdFee = lnFee * price
 
@@ -179,7 +154,7 @@ const executePaymentViaIntraledger = async ({
         recipientUsername,
         payerWalletPublicId: payerWallet.publicId,
         recipientWalletPublicId: recipientWallet.publicId,
-        memoPayer: memo,
+        memoPayer,
       }),
     )
     if (journal instanceof Error) return journal
