@@ -11,9 +11,10 @@ import {
 import {
   AlreadyPaidError,
   CouldNotFindError,
-  IncorrectUseCaseError,
   InsufficientBalanceError,
   InvalidSatoshiAmount,
+  LnPaymentRequestNonZeroAmountRequiredError,
+  LnPaymentRequestZeroAmountRequiredError,
 } from "@domain/errors"
 import { toLiabilitiesAccountId } from "@domain/ledger"
 import { WalletInvoiceValidator } from "@domain/wallet-invoices"
@@ -69,8 +70,7 @@ export const lnInvoicePaymentSendWithTwoFA = async ({
 
   const { amount: lnInvoiceAmount } = decodedInvoice
   if (!(lnInvoiceAmount && lnInvoiceAmount > 0)) {
-    const error = "Zero-amount invoice cannot be paid using this use-case method"
-    return new IncorrectUseCaseError(error)
+    return new LnPaymentRequestNonZeroAmountRequiredError()
   }
 
   return lnSendPayment({
@@ -100,8 +100,7 @@ export const lnNoAmountInvoicePaymentSendWithTwoFA = async ({
 
   const { amount: lnInvoiceAmount } = decodedInvoice
   if (lnInvoiceAmount && lnInvoiceAmount > 0) {
-    const error = "Non zero-amount invoice cannot be paid using this use-case method"
-    return new IncorrectUseCaseError(error)
+    return new LnPaymentRequestZeroAmountRequiredError()
   }
   if (!(amount && amount > 0)) {
     const error = "Invalid amount passed to pay zero-amount invoice"
