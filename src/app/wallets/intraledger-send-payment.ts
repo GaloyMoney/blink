@@ -6,9 +6,9 @@ import { PaymentSendStatus } from "@domain/bitcoin/lightning"
 import {
   CouldNotFindError,
   InsufficientBalanceError,
-  InvalidSatoshiAmount,
   NoUserForUsernameError,
   NoWalletExistsForUserError,
+  SatoshiAmountRequiredError,
   SelfPaymentError,
 } from "@domain/errors"
 import { toLiabilitiesAccountId } from "@domain/ledger"
@@ -38,19 +38,8 @@ export const intraledgerPaymentSendWithTwoFA = async ({
   userId,
   twoFAToken,
   logger,
-}: IntraLedgerPaymentSendWithTwoFAArgs): Promise<
-  PaymentSendStatus | ApplicationError
-> => {
-  if (!amount) {
-    const error = "Amount missing"
-    return new InvalidSatoshiAmount(error)
-  }
-  if (amount <= 0) {
-    const error = "Amount cannot be negative or zero"
-    return new InvalidSatoshiAmount(error)
-  }
-
-  return intraledgerSendPayment({
+}: IntraLedgerPaymentSendWithTwoFAArgs): Promise<PaymentSendStatus | ApplicationError> =>
+  intraledgerSendPayment({
     walletId,
     userId,
     recipientUsername,
@@ -59,7 +48,6 @@ export const intraledgerPaymentSendWithTwoFA = async ({
     twoFAToken,
     logger,
   })
-}
 
 const intraledgerSendPayment = async ({
   walletId,
@@ -78,6 +66,10 @@ const intraledgerSendPayment = async ({
   twoFAToken: TwoFAToken | null
   logger: Logger
 }): Promise<PaymentSendStatus | ApplicationError> => {
+  if (!(paymentAmount && paymentAmount > 0)) {
+    return new SatoshiAmountRequiredError()
+  }
+
   const user = await UsersRepository().findById(userId)
   if (user instanceof Error) return user
   const { twoFA } = user

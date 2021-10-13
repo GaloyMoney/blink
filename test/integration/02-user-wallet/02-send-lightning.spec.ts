@@ -29,7 +29,6 @@ import {
   InsufficientBalanceError as DomainInsufficientBalanceError,
   ValidationError,
   LimitsExceededError,
-  InvalidSatoshiAmount,
 } from "@domain/errors"
 import { TwoFAError } from "@domain/twoFA"
 import { LedgerService } from "@services/ledger"
@@ -431,19 +430,6 @@ describe("UserWallet - Lightning Pay", () => {
       logger: userWallet1.logger,
     })
     await expect(paymentResult).toBeInstanceOf(DomainInsufficientBalanceError)
-  })
-
-  it("fails if the user try to send a negative amount", async () => {
-    const paymentResult = await intraledgerPaymentSend({
-      recipientUsername: userWallet0.user.username,
-      memo: "",
-      amount: toSats(-amountInvoice),
-      walletId: userWallet1.user.id,
-      userId: userWallet1.user.id,
-      logger: userWallet1.logger,
-    })
-    expect(paymentResult).toBeInstanceOf(InvalidSatoshiAmount)
-    expect((paymentResult as Error).message).toBe("Amount cannot be negative or zero")
   })
 
   it("fails to pay when channel capacity exceeded", async () => {
