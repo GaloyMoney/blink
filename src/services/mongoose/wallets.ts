@@ -1,7 +1,11 @@
 import {
   UnknownRepositoryError,
-  CouldNotFindError,
   RepositoryError,
+  CouldNotFindWalletFromIdError,
+  CouldNotFindWalletFromUsernameError,
+  CouldNotFindWalletFromOnChainAddressError,
+  CouldNotFindWalletFromPublicIdError,
+  CouldNotFindWalletFromOnChainAddressesError,
 } from "@domain/errors"
 import { User } from "@services/mongoose/schema"
 import { caseInsensitiveRegex } from "./users"
@@ -11,7 +15,7 @@ export const WalletsRepository = (): IWalletsRepository => {
     try {
       const result = await User.findOne({ _id: walletId })
       if (!result) {
-        return new CouldNotFindError()
+        return new CouldNotFindWalletFromIdError()
       }
       return resultToWallet(result)
     } catch (err) {
@@ -25,7 +29,7 @@ export const WalletsRepository = (): IWalletsRepository => {
     try {
       const result = await User.findOne({ username: caseInsensitiveRegex(username) })
       if (!result) {
-        return new CouldNotFindError()
+        return new CouldNotFindWalletFromUsernameError()
       }
 
       return resultToWallet(result)
@@ -40,7 +44,7 @@ export const WalletsRepository = (): IWalletsRepository => {
     try {
       const result = await User.findOne({ "onchain.address": address })
       if (!result) {
-        return new CouldNotFindError()
+        return new CouldNotFindWalletFromOnChainAddressError()
       }
       return resultToWallet(result)
     } catch (err) {
@@ -54,7 +58,7 @@ export const WalletsRepository = (): IWalletsRepository => {
     try {
       const result = await User.findOne({ walletPublicId })
       if (!result) {
-        return new CouldNotFindError()
+        return new CouldNotFindWalletFromPublicIdError()
       }
 
       return resultToWallet(result)
@@ -69,7 +73,7 @@ export const WalletsRepository = (): IWalletsRepository => {
     try {
       const result = await User.find({ "onchain.address": { $in: addresses } })
       if (!result) {
-        return new CouldNotFindError()
+        return new CouldNotFindWalletFromOnChainAddressesError()
       }
       return result.map(resultToWallet)
     } catch (err) {
