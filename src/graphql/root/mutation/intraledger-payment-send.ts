@@ -7,6 +7,7 @@ import PaymentSendPayload from "@graphql/types/payload/payment-send"
 import Memo from "@graphql/types/scalar/memo"
 import SatAmount from "@graphql/types/scalar/sat-amount"
 import WalletId from "@graphql/types/scalar/wallet-id"
+import { mapError } from "@graphql/error-map"
 
 const IntraLedgerPaymentSendInput = new GT.Input({
   name: "IntraLedgerPaymentSendInput",
@@ -40,28 +41,22 @@ const IntraLedgerPaymentSendMutation = GT.Field({
       return { errors: [{ message: recipientUsername.message }] }
     }
 
-    try {
-      const status = await intraledgerPaymentSend({
-        recipientUsername,
-        memo,
-        amount,
-        walletId: wallet.user.id,
-        userId: user.id,
-        logger,
-      })
-      if (status instanceof Error) {
-        return { status: "failed", errors: [{ message: status.message }] }
-      }
+    const status = await intraledgerPaymentSend({
+      recipientUsername,
+      memo,
+      amount,
+      walletId: wallet.user.id,
+      userId: user.id,
+      logger,
+    })
+    if (status instanceof Error) {
+      const appErr = mapError(status)
+      return { status: "failed", errors: [{ message: appErr.message }] }
+    }
 
-      return {
-        errors: [],
-        status: status.value,
-      }
-    } catch (err) {
-      return {
-        status: "failed",
-        errors: [{ message: err.message }],
-      }
+    return {
+      errors: [],
+      status: status.value,
     }
   },
 })

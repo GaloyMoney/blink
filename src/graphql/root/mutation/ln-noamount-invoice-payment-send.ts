@@ -1,3 +1,4 @@
+import { mapError } from "@graphql/error-map"
 import { lnNoAmountInvoicePaymentSend } from "@app/wallets"
 import { GT } from "@graphql/index"
 import PaymentSendPayload from "@graphql/types/payload/payment-send"
@@ -27,27 +28,21 @@ const LnNoAmountInvoicePaymentSendMutation = GT.Field({
       }
     }
 
-    try {
-      const status = await lnNoAmountInvoicePaymentSend({
-        paymentRequest,
-        memo,
-        amount,
-        walletId: wallet.user.id as WalletId,
-        userId: user.id as UserId,
-        logger,
-      })
-      if (status instanceof Error) {
-        return { status: "failed", errors: [{ message: status.message }] }
-      }
-      return {
-        errors: [],
-        status: status.value,
-      }
-    } catch (err) {
-      return {
-        status: "failed",
-        errors: [{ message: err.message }],
-      }
+    const status = await lnNoAmountInvoicePaymentSend({
+      paymentRequest,
+      memo,
+      amount,
+      walletId: wallet.user.id as WalletId,
+      userId: user.id as UserId,
+      logger,
+    })
+    if (status instanceof Error) {
+      const appErr = mapError(status)
+      return { status: "failed", errors: [{ message: appErr.message }] }
+    }
+    return {
+      errors: [],
+      status: status.value,
     }
   },
 })
