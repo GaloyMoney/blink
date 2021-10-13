@@ -25,7 +25,6 @@ export class InvalidTargetConfirmations extends ValidationError {}
 export class LimitsExceededError extends ValidationError {}
 export class NoUserForUsernameError extends ValidationError {}
 export class NoContactForUsernameError extends ValidationError {}
-export class IncorrectUseCaseError extends ValidationError {}
 export class LnPaymentRequestNonZeroAmountRequiredError extends ValidationError {}
 export class LnPaymentRequestZeroAmountRequiredError extends ValidationError {}
 export class NoWalletExistsForUserError extends ValidationError {}
