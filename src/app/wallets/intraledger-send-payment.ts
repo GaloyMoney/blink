@@ -77,6 +77,17 @@ const intraledgerSendPaymentWithTwoFA = async ({
   })
   if (addContactToPayerResult instanceof Error) return addContactToPayerResult
 
+  if (user.username) {
+    const recipientUser = await UsersRepository().findByUsername(recipientUsername)
+    if (recipientUser instanceof Error) return recipientUser
+
+    const addContactToPayeeResult = await addNewContact({
+      userId: recipientUser.id,
+      contactUsername: user.username,
+    })
+    if (addContactToPayeeResult instanceof Error) return addContactToPayeeResult
+  }
+
   return paymentSendStatus
 }
 
