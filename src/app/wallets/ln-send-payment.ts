@@ -11,9 +11,9 @@ import {
 import {
   AlreadyPaidError,
   InsufficientBalanceError,
-  InvalidSatoshiAmount,
   LnPaymentRequestNonZeroAmountRequiredError,
   LnPaymentRequestZeroAmountRequiredError,
+  SatoshiAmountRequiredError,
 } from "@domain/errors"
 import { toLiabilitiesAccountId } from "@domain/ledger"
 import { WalletInvoiceValidator } from "@domain/wallet-invoices"
@@ -101,9 +101,9 @@ export const lnNoAmountInvoicePaymentSendWithTwoFA = async ({
   if (lnInvoiceAmount && lnInvoiceAmount > 0) {
     return new LnPaymentRequestZeroAmountRequiredError()
   }
+
   if (!(amount && amount > 0)) {
-    const error = "Invalid amount passed to pay zero-amount invoice"
-    return new InvalidSatoshiAmount(error)
+    return new SatoshiAmountRequiredError()
   }
 
   return lnSendPayment({

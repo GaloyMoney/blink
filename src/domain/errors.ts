@@ -14,6 +14,7 @@ export class DuplicateError extends RepositoryError {}
 
 export class ValidationError extends DomainError {}
 export class InvalidSatoshiAmount extends ValidationError {}
+export class SatoshiAmountRequiredError extends ValidationError {}
 export class InvalidUsername extends ValidationError {}
 export class InvalidPublicWalletId extends ValidationError {}
 export class InvalidLedgerTransactionId extends ValidationError {}
