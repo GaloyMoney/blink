@@ -2,8 +2,10 @@ import { UserLanguage } from "@domain/users"
 import { toSats } from "@domain/bitcoin"
 import {
   UnknownRepositoryError,
-  CouldNotFindError,
   RepositoryError,
+  CouldNotFindUserFromIdError,
+  CouldNotFindUserFromUsernameError,
+  CouldNotFindUserFromWalletIdError,
 } from "@domain/errors"
 import { User } from "@services/mongoose/schema"
 import { onboardingEarn } from "@config/app"
@@ -18,7 +20,7 @@ export const UsersRepository = (): IUsersRepository => {
     try {
       const result = await User.findOne({ _id: userId })
       if (!result) {
-        return new CouldNotFindError()
+        return new CouldNotFindUserFromIdError(userId)
       }
 
       return userFromRaw(result)
@@ -31,7 +33,7 @@ export const UsersRepository = (): IUsersRepository => {
     try {
       const result = await User.findOne({ username: caseInsensitiveRegex(username) })
       if (!result) {
-        return new CouldNotFindError()
+        return new CouldNotFindUserFromUsernameError(username)
       }
 
       return userFromRaw(result)
@@ -46,7 +48,7 @@ export const UsersRepository = (): IUsersRepository => {
     try {
       const result = await User.findOne({ walletPublicId })
       if (!result) {
-        return new CouldNotFindError()
+        return new CouldNotFindUserFromWalletIdError(walletPublicId)
       }
 
       return userFromRaw(result)

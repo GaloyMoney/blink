@@ -1,5 +1,5 @@
 import {
-  CouldNotFindError,
+  CouldNotFindWalletInvoiceError,
   RepositoryError,
   UnknownRepositoryError,
 } from "@domain/errors"
@@ -64,7 +64,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     try {
       const invoiceUser = await InvoiceUser.findOne({ _id: paymentHash })
       if (!invoiceUser) {
-        return new CouldNotFindError("Couldn't find invoice for payment hash")
+        return new CouldNotFindWalletInvoiceError(paymentHash)
       }
       return {
         paymentHash,
@@ -128,7 +128,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     try {
       const result = await InvoiceUser.deleteOne({ _id: paymentHash })
       if (result.deletedCount === 0) {
-        return new CouldNotFindError()
+        return new CouldNotFindWalletInvoiceError(paymentHash)
       }
       return true
     } catch (error) {
