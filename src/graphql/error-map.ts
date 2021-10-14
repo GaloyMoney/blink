@@ -69,6 +69,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = `User does not exist for wallet-id ${error.message}`
       return new NotFoundError({ message, logger: baseLogger })
 
+    case "CouldNotFindUserFromRoleError":
+      message = `User does not exist for role ${error.message}`
+      return new NotFoundError({ message, logger: baseLogger })
+
     case "SelfPaymentError":
       message = "User tried to pay themselves"
       return new SelfPaymentError({ message, logger: baseLogger })

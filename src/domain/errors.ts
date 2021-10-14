@@ -20,6 +20,7 @@ export class CouldNotFindUserFromUsernameError extends CouldNotFindError {}
 export class CouldNotFindUserFromPhoneError extends CouldNotFindError {}
 export class CouldNotFindUserFromWalletIdError extends CouldNotFindError {}
 export class CouldNotFindPhoneCodeError extends CouldNotFindError {}
+export class CouldNotFindUserFromRoleError extends CouldNotFindError {}
 export class CouldNotFindWalletFromIdError extends CouldNotFindError {}
 export class CouldNotFindWalletFromUsernameError extends CouldNotFindError {}
 export class CouldNotFindWalletFromOnChainAddressError extends CouldNotFindError {}
