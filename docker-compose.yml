@@ -1,7 +1,7 @@
 version: "2"
 services:
   price:
-    image: gcr.io/galoyapp/price
+    image: us.gcr.io/galoy-org/price:edge
     ports:
     - "50051:50051"
     - "9464:9464"
