@@ -36,6 +36,7 @@ import {
   lnNoAmountInvoicePaymentSend,
 } from "@app/wallets"
 import { decodeInvoice } from "@domain/bitcoin/lightning"
+import { mapError } from "@graphql/error-map"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
 
@@ -309,7 +310,7 @@ const resolvers = {
             userId: wallet.user.id as UserId,
             logger,
           })
-          if (status instanceof Error) throw status
+          if (status instanceof Error) throw mapError(status)
           return status.value
         }
         const status = await lnNoAmountInvoicePaymentSend({
@@ -320,7 +321,7 @@ const resolvers = {
           userId: wallet.user.id as UserId,
           logger,
         })
-        if (status instanceof Error) throw status
+        if (status instanceof Error) throw mapError(status)
         return status.value
       },
       payKeysendUsername: async ({ username, amount, memo }) => {
@@ -333,7 +334,7 @@ const resolvers = {
           logger,
         })
 
-        if (status instanceof Error) throw status
+        if (status instanceof Error) throw mapError(status)
 
         return status.value
       },
