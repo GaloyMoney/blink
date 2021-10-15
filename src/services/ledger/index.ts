@@ -118,14 +118,65 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
-  const txVolumeSince = async ({
+  const twoFATxVolumeSince = async ({
     liabilitiesAccountId,
     timestamp,
   }: {
     liabilitiesAccountId: LiabilitiesAccountId
     timestamp: Date
+  }) =>
+    txVolumeSince({
+      liabilitiesAccountId,
+      timestamp,
+      txnTypes: [
+        { type: LedgerTransactionType.IntraLedger },
+        { type: LedgerTransactionType.OnchainIntraLedger },
+        { type: LedgerTransactionType.Payment },
+        { type: LedgerTransactionType.OnchainPayment },
+      ],
+    })
+
+  const withdrawalTxVolumeSince = async ({
+    liabilitiesAccountId,
+    timestamp,
+  }: {
+    liabilitiesAccountId: LiabilitiesAccountId
+    timestamp: Date
+  }) =>
+    txVolumeSince({
+      liabilitiesAccountId,
+      timestamp,
+      txnTypes: [
+        { type: LedgerTransactionType.Payment },
+        { type: LedgerTransactionType.OnchainPayment },
+      ],
+    })
+
+  const intraledgerTxVolumeSince = async ({
+    liabilitiesAccountId,
+    timestamp,
+  }: {
+    liabilitiesAccountId: LiabilitiesAccountId
+    timestamp: Date
+  }) =>
+    txVolumeSince({
+      liabilitiesAccountId,
+      timestamp,
+      txnTypes: [
+        { type: LedgerTransactionType.IntraLedger },
+        { type: LedgerTransactionType.OnchainIntraLedger },
+      ],
+    })
+
+  const txVolumeSince = async ({
+    liabilitiesAccountId,
+    timestamp,
+    txnTypes,
+  }: {
+    liabilitiesAccountId: LiabilitiesAccountId
+    timestamp: Date
+    txnTypes: { type: LedgerTransactionType }[]
   }): Promise<TxVolume | LedgerServiceError> => {
-    const txnTypes = [{ type: "on_us" }, { type: "onchain_on_us" }]
     try {
       const [result]: (TxVolume & { _id: null })[] = await Transaction.aggregate([
         {
@@ -492,7 +543,9 @@ export const LedgerService = (): ILedgerService => {
     listPendingPayments,
     getPendingPaymentsCount,
     getAccountBalance,
-    txVolumeSince,
+    twoFATxVolumeSince,
+    withdrawalTxVolumeSince,
+    intraledgerTxVolumeSince,
     isOnChainTxRecorded,
     isLnTxRecorded,
     addOnChainTxReceive,

@@ -155,7 +155,23 @@ interface ILedgerService {
     liabilitiesAccountId: LiabilitiesAccountId,
   ): Promise<Satoshis | LedgerServiceError>
 
-  txVolumeSince({
+  twoFATxVolumeSince({
+    liabilitiesAccountId,
+    timestamp,
+  }: {
+    liabilitiesAccountId: LiabilitiesAccountId
+    timestamp: Date
+  }): Promise<TxVolume | LedgerServiceError>
+
+  withdrawalTxVolumeSince({
+    liabilitiesAccountId,
+    timestamp,
+  }: {
+    liabilitiesAccountId: LiabilitiesAccountId
+    timestamp: Date
+  }): Promise<TxVolume | LedgerServiceError>
+
+  intraledgerTxVolumeSince({
     liabilitiesAccountId,
     timestamp,
   }: {
