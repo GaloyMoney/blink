@@ -4,10 +4,15 @@ type PartialResult<T> = {
 }
 
 type ApplicationError =
+  | AuthorizationError
+  | RepositoryError
+  | ValidationError
   | LedgerError
   | OnChainError
-  | RepositoryError
   | LightningError
   | PriceServiceError
-  | ValidationError
+  | TwoFAError
   | LockServiceError
+  | IpFetcherError
+  | AccountError
+  | NotificationsError
