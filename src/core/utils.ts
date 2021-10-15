@@ -1,8 +1,6 @@
 import { GraphQLError } from "graphql"
 import { parsePaymentRequest } from "invoices"
 
-import { getIpConfig } from "@config/app"
-
 export const isProd = process.env.NODE_ENV === "production"
 
 // FIXME: super ugly hack.
@@ -16,8 +14,6 @@ export class LoggedError extends GraphQLError {
     super(`${customLoggerPrefix}${message}`)
   }
 }
-
-const ipConfig = getIpConfig()
 
 export const getHash = (request) => {
   return parsePaymentRequest({ request }).id
@@ -77,11 +73,6 @@ export const inputXOR = (arg1, arg2) => {
     throw new Error(`Either ${key1} or ${key2} is required, but not both`)
   }
 }
-
-export const isIPTypeBlacklisted = ({ type }) =>
-  ipConfig.blacklistedIPTypes.includes(type)
-
-export const isIPBlacklisted = ({ ip }) => ipConfig.blacklistedIPs.includes(ip)
 
 /**
  * Process an iterator with N workers

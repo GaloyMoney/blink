@@ -169,20 +169,6 @@ export class LndOfflineError extends CustomError {
   }
 }
 
-export class IPBlacklistedError extends CustomError {
-  constructor(
-    message: string,
-    { forwardToClient = false, logger, level = "warn" as const, ...metadata },
-  ) {
-    super(message, "REJECTED_BLACKLISTED_IP", {
-      forwardToClient,
-      logger,
-      level,
-      metadata,
-    })
-  }
-}
-
 export class CaptchaFailedError extends CustomError {
   constructor(
     message,

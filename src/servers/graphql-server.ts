@@ -19,8 +19,7 @@ import { baseLogger } from "@services/logger"
 import { redis } from "@services/redis"
 import { User } from "@services/mongoose/schema"
 
-import { IPBlacklistedError } from "@core/error"
-import { isProd, isIPBlacklisted } from "@core/utils"
+import { isProd } from "@core/utils"
 import { WalletFactory } from "@core/wallet-factory"
 import { ApolloServerPluginUsageReporting } from "apollo-server-core"
 import GeeTest from "@services/geetest"
@@ -79,14 +78,10 @@ export const startApolloServer = async ({
       const apiSecret = context.req?.apiSecret ?? null
       const uid = token?.uid ?? null
       const ips = context.req?.headers["x-real-ip"]
-      let ip: string | undefined = ips as string | undefined
+      let ip: string | undefined
 
       if (ips && Array.isArray(ips) && ips.length) {
         ip = ips[0]
-      }
-
-      if (ip && isIPBlacklisted({ ip })) {
-        throw new IPBlacklistedError("IP Blacklisted", { logger: graphqlLogger, ip })
       }
 
       let wallet, user
