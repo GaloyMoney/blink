@@ -22,7 +22,7 @@ export const LimitsChecker = ({
   }: {
     amount: Satoshis
   }): true | LimitsExceededError => {
-    const remainingLimit = userLimits.onUsLimit - walletVolume.outgoingSats
+    const remainingLimit = userLimits.onUsLimit - walletVolume.outgoingSats // should be walletVolumeOnUs
     if (remainingLimit < amount) {
       return new LimitsExceededError(
         `Cannot transfer more than ${userLimits.onUsLimit} sats in 24 hours`,
@@ -36,7 +36,7 @@ export const LimitsChecker = ({
   }: {
     amount: Satoshis
   }): true | LimitsExceededError => {
-    const remainingLimit = userLimits.withdrawalLimit - walletVolume.outgoingSats
+    const remainingLimit = userLimits.withdrawalLimit - walletVolume.outgoingSats // should be walletVolumeWithdrawal
     if (remainingLimit < amount) {
       return new LimitsExceededError(
         `Cannot transfer more than ${userLimits.withdrawalLimit} sats in 24 hours`,

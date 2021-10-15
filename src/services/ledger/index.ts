@@ -125,7 +125,9 @@ export const LedgerService = (): ILedgerService => {
     liabilitiesAccountId: LiabilitiesAccountId
     timestamp: Date
   }): Promise<TxVolume | LedgerServiceError> => {
-    const txnTypes = [{ type: "on_us" }, { type: "onchain_on_us" }]
+    const txnTypes = [{ type: "on_us" }, { type: "onchain_on_us" }] 
+    // this is only for on_us
+    // there needs to be a check for "payment" and "onchain_payment" for the withdrawal limit
     try {
       const [result]: (TxVolume & { _id: null })[] = await Transaction.aggregate([
         {

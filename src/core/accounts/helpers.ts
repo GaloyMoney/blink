@@ -25,7 +25,7 @@ export const getLimitsChecker = async (
   const userLimits = getUserLimits({ level })
   const twoFALimits = getTwoFALimits()
   return LimitsChecker({
-    walletVolume,
+    walletVolume, // this should be walletVolumeOnUs
     userLimits,
     twoFALimits,
   })
