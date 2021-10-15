@@ -29,7 +29,6 @@ import { RoutesCache } from "@services/redis/routes"
 import { PriceService } from "@services/price"
 
 import { reimburseFee } from "@app/wallets/reimburse-fee"
-import { TwoFAError, TwoFANewCodeNeededError } from "@domain/twoFA"
 import {
   checkAndVerifyTwoFA,
   checkIntraledgerLimits,
@@ -146,8 +145,6 @@ const lnSendPayment = async ({
         walletId,
       })
     : true
-  if (twoFACheck instanceof TwoFANewCodeNeededError)
-    return new TwoFAError("Need a 2FA code to proceed with the payment")
   if (twoFACheck instanceof Error) return twoFACheck
 
   const lndService = LndService()

@@ -23,11 +23,12 @@ const AllDomainErrors = {
   ...DomainTwoFAErrors,
 }
 
-function assertUnreachable(x: never): never {
-  throw new Error(`Didn't expect to get here with ${x}`)
+const assertUnreachable = (x: never): never => {
+  throw new Error(`This should never compile with ${x}`)
 }
 
 export const mapError = (error: ApplicationError): CustomError => {
+  let message: string
   const errorName = error.constructor.name as keyof typeof AllDomainErrors
   switch (errorName) {
     case "WithdrawalLimitsExceededError":
@@ -37,7 +38,10 @@ export const mapError = (error: ApplicationError): CustomError => {
       return new TransactionRestrictedError(error.message, { logger: baseLogger })
 
     case "TwoFANewCodeNeededError":
-      return new TwoFAError(error.message, { logger: baseLogger })
+      message = "Need a 2FA code to proceed with the payment"
+      return new TwoFAError(message, {
+        logger: baseLogger,
+      })
 
     case "AlreadyPaidError":
       return new LightningPaymentError(error.message, { logger: baseLogger })

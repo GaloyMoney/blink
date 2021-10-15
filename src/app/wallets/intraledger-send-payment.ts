@@ -13,7 +13,6 @@ import {
   SelfPaymentError,
 } from "@domain/errors"
 import { toLiabilitiesAccountId } from "@domain/ledger"
-import { TwoFAError, TwoFANewCodeNeededError } from "@domain/twoFA"
 import { LedgerService } from "@services/ledger"
 import { LockService } from "@services/lock"
 import {
@@ -58,8 +57,6 @@ const intraledgerSendPaymentWithTwoFA = async ({
         walletId,
       })
     : true
-  if (twoFACheck instanceof TwoFANewCodeNeededError)
-    return new TwoFAError("Need a 2FA code to proceed with the payment")
   if (twoFACheck instanceof Error) return twoFACheck
 
   const paymentSendStatus = await executePaymentViaIntraledger({
