@@ -38,9 +38,27 @@ type BusinessMapMarker = {
 }
 
 type LimitsChecker = {
-  checkTwoFA({ amount }: { amount: Satoshis }): true | LimitsExceededError
-  checkIntraledger({ amount }: { amount: Satoshis }): true | LimitsExceededError
-  checkWithdrawal({ amount }: { amount: Satoshis }): true | LimitsExceededError
+  checkTwoFA({
+    amount,
+    walletVolume,
+  }: {
+    amount: Satoshis
+    walletVolume: TxVolume
+  }): true | LimitsExceededError
+  checkIntraledger({
+    amount,
+    walletVolume,
+  }: {
+    amount: Satoshis
+    walletVolume: TxVolume
+  }): true | LimitsExceededError
+  checkWithdrawal({
+    amount,
+    walletVolume,
+  }: {
+    amount: Satoshis
+    walletVolume: TxVolume
+  }): true | LimitsExceededError
 }
 interface IAccountsRepository {
   findById(accountId: AccountId): Promise<Account | RepositoryError>
