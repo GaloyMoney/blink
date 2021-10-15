@@ -1,3 +1,4 @@
+type NotificationsError = import("./errors").NotificationsError
 type NotificationsServiceError = import("./errors").NotificationsServiceError
 
 type OnChainTxReceivedArgs = {
