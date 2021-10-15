@@ -20,7 +20,7 @@ export const LimitsChecker = ({
   }): true | LimitsExceededError => {
     const remainingTwoFALimit = twoFALimits.threshold - walletVolume.outgoingSats
     if (remainingTwoFALimit < amount) {
-      return new TwoFALimitsExceededError("Need a 2FA code to proceed with the payment")
+      return new TwoFALimitsExceededError()
     }
     return true
   }
