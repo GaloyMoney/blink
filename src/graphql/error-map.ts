@@ -11,16 +11,28 @@ import {
 } from "@core/error"
 
 import * as DomainErrors from "@domain/errors"
-import * as DomainLightningErrors from "@domain/bitcoin/lightning/errors"
-import * as DomainLedgerErrors from "@domain/ledger/errors"
-import * as DomainTwoFAErrors from "@domain/twoFA/errors"
+import * as LedgerErrors from "@domain/ledger/errors"
+import * as OnChainErrors from "@domain/bitcoin/onchain/errors"
+import * as LightningErrors from "@domain/bitcoin/lightning/errors"
+import * as PriceServiceErrors from "@domain/price/errors"
+import * as TwoFAErrors from "@domain/twoFA/errors"
+import * as LockServiceErrors from "@domain/lock/errors"
+import * as IpFetcherErrors from "@domain/ipfetcher/errors"
+import * as AccountErrors from "@domain/accounts/errors"
+import * as NotificationsErrors from "@domain/notifications/errors"
 import { baseLogger } from "@services/logger"
 
-const AllDomainErrors = {
+const AllApplicationErrors = {
   ...DomainErrors,
-  ...DomainLightningErrors,
-  ...DomainLedgerErrors,
-  ...DomainTwoFAErrors,
+  ...LedgerErrors,
+  ...OnChainErrors,
+  ...LightningErrors,
+  ...PriceServiceErrors,
+  ...TwoFAErrors,
+  ...LockServiceErrors,
+  ...IpFetcherErrors,
+  ...AccountErrors,
+  ...NotificationsErrors,
 }
 
 const assertUnreachable = (x: never): never => {
@@ -29,7 +41,7 @@ const assertUnreachable = (x: never): never => {
 
 export const mapError = (error: ApplicationError): CustomError => {
   let message = ""
-  const errorName = error.constructor.name as keyof typeof AllDomainErrors
+  const errorName = error.constructor.name as keyof typeof AllApplicationErrors
   switch (errorName) {
     case "WithdrawalLimitsExceededError":
       message = error.message
@@ -200,6 +212,69 @@ export const mapError = (error: ApplicationError): CustomError => {
       return new UnknownClientError(message)
 
     case "CouldNotFindWalletFromOnChainAddressesError":
+      return new UnknownClientError(message)
+
+    case "LockError":
+      return new UnknownClientError(message)
+
+    case "LockServiceError":
+      return new UnknownClientError(message)
+
+    case "UnknownLockServiceError":
+      return new UnknownClientError(message)
+
+    case "PriceError":
+      return new UnknownClientError(message)
+
+    case "PriceServiceError":
+      return new UnknownClientError(message)
+
+    case "UnknownPriceServiceError":
+      return new UnknownClientError(message)
+
+    case "OnChainError":
+      return new UnknownClientError(message)
+
+    case "TransactionDecodeError":
+      return new UnknownClientError(message)
+
+    case "OnChainServiceError":
+      return new UnknownClientError(message)
+
+    case "UnknownOnChainServiceError":
+      return new UnknownClientError(message)
+
+    case "OnChainServiceUnavailableError":
+      return new UnknownClientError(message)
+
+    case "NotificationsError":
+      return new UnknownClientError(message)
+
+    case "NotificationsServiceError":
+      return new UnknownClientError(message)
+
+    case "AccountError":
+      return new UnknownClientError(message)
+
+    case "ApiKeyError":
+      return new UnknownClientError(message)
+
+    case "ApiKeyHashError":
+      return new UnknownClientError(message)
+
+    case "InvalidApiKeyError":
+      return new UnknownClientError(message)
+
+    case "InvalidExpirationError":
+      return new UnknownClientError(message)
+
+    case "IpFetcherError":
+      return new UnknownClientError(message)
+
+    case "IpFetcherServiceError":
+      return new UnknownClientError(message)
+
+    case "UnknownIpFetcherServiceError":
       return new UnknownClientError(message)
 
     default:
