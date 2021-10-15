@@ -36,7 +36,11 @@ import { CouldNotFindError } from "@domain/errors"
 import { LedgerService } from "@services/ledger"
 import { toLiabilitiesAccountId } from "@domain/ledger"
 import { LockService } from "@services/lock"
-import { checkAndVerifyTwoFA, getLimitsChecker } from "@core/accounts/helpers"
+import {
+  checkAndVerifyTwoFA,
+  checkIntraledgerLimits,
+  checkWithdrawalLimits,
+} from "@core/accounts/helpers"
 import { TwoFANewCodeNeededError } from "@domain/twoFA"
 
 export const getOnChainTransactions = async ({
@@ -123,9 +127,6 @@ export const OnChainMixin = (superclass) =>
 
         const payeeUser = await User.getUserByAddress({ address })
 
-        const limitsChecker = await getLimitsChecker(this.user.id)
-        if (limitsChecker instanceof Error) throw limitsChecker
-
         const user = await UsersRepository().findById(this.user.id)
         if (user instanceof Error) throw user
         const { twoFA } = user
@@ -143,7 +144,7 @@ export const OnChainMixin = (superclass) =>
                 amount: toSats(amountToSendPayeeUser),
                 twoFAToken: twoFAToken ? (twoFAToken as TwoFAToken) : null,
                 twoFASecret: twoFA.secret,
-                limitsChecker,
+                walletId: this.user.id,
               })
             : true
           if (twoFACheck instanceof TwoFANewCodeNeededError)
@@ -155,8 +156,9 @@ export const OnChainMixin = (superclass) =>
 
           const onchainLoggerOnUs = onchainLogger.child({ onUs: true })
 
-          const intraledgerLimitCheck = limitsChecker.checkIntraledger({
+          const intraledgerLimitCheck = await checkIntraledgerLimits({
             amount: toSats(amountToSendPayeeUser),
+            walletId: this.user.id,
           })
           if (intraledgerLimitCheck instanceof Error)
             throw new TransactionRestrictedError(intraledgerLimitCheck.message, {
@@ -234,8 +236,9 @@ export const OnChainMixin = (superclass) =>
           throw new DustAmountError(undefined, { logger: onchainLogger })
         }
 
-        const withdrawalLimitCheck = limitsChecker.checkWithdrawal({
+        const withdrawalLimitCheck = await checkWithdrawalLimits({
           amount: toSats(checksAmount),
+          walletId: this.user.id,
         })
         if (withdrawalLimitCheck instanceof Error)
           throw new TransactionRestrictedError(withdrawalLimitCheck.message, {
@@ -247,7 +250,7 @@ export const OnChainMixin = (superclass) =>
               amount: toSats(checksAmount),
               twoFAToken: twoFAToken ? (twoFAToken as TwoFAToken) : null,
               twoFASecret: twoFA.secret,
-              limitsChecker,
+              walletId: this.user.id,
             })
           : true
         if (twoFACheck instanceof TwoFANewCodeNeededError)
