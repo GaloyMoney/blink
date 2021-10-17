@@ -3,4 +3,5 @@ export class LedgerError extends Error {
 }
 
 export class LedgerServiceError extends LedgerError {}
+export class CouldNotFindTransactionError extends LedgerError {}
 export class UnknownLedgerError extends LedgerServiceError {}

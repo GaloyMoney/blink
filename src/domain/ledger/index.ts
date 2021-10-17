@@ -1,3 +1,5 @@
+import { InvalidLedgerTransactionId } from "@domain/errors"
+
 export * from "./errors"
 
 export const liabilitiesMainAccount = "Liabilities"
@@ -41,3 +43,14 @@ export const toWalletId = (accountId: LiabilitiesAccountId): WalletId | null => 
 export const isOnchainTransaction = (type: LedgerTransactionType): boolean =>
   type === LedgerTransactionType.OnchainReceipt ||
   type === LedgerTransactionType.OnchainPayment
+
+export const LedgerTransactionIdRegex = /^[0-9a-fA-F]{24}$/i
+
+export const checkedToLedgerTransactionId = (
+  ledgerTransactionId: string,
+): LedgerTransactionId | ValidationError => {
+  if (ledgerTransactionId && ledgerTransactionId.match(LedgerTransactionIdRegex)) {
+    return ledgerTransactionId as LedgerTransactionId
+  }
+  return new InvalidLedgerTransactionId(ledgerTransactionId)
+}
