@@ -39,6 +39,17 @@ const commitHash = process.env.COMMITHASH
 const buildTime = process.env.BUILDTIME
 const helmRevision = process.env.HELMREVISION
 
+const getHash = (tx: WalletTransaction) => {
+  switch (tx.settlementVia) {
+    case SettlementMethod.Lightning:
+      return tx.paymentHash
+    case SettlementMethod.OnChain:
+      return tx.transactionHash
+    case SettlementMethod.IntraLedger:
+      return null
+  }
+}
+
 const translateWalletTx = (txs: WalletTransaction[]) => {
   return txs.map((tx: WalletTransaction) => ({
     id: tx.id,
@@ -52,7 +63,7 @@ const translateWalletTx = (txs: WalletTransaction[]) => {
     pending: tx.status == TxStatus.Pending,
     type: tx.deprecated.type,
     feeUsd: tx.deprecated.feeUsd,
-    hash: tx.initiationVia === PaymentInitiationMethod.Lightning ? tx.paymentHash : null,
+    hash: getHash(tx),
     addresses: tx.initiationVia === PaymentInitiationMethod.OnChain ? tx.addresses : null,
     username:
       tx.settlementVia === SettlementMethod.IntraLedger ? tx.otherPartyUsername : null,
