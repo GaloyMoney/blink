@@ -32,7 +32,7 @@ import {
 } from "@domain/errors"
 import { TwoFAError } from "@domain/twoFA"
 import { LedgerService } from "@services/ledger"
-import { getBTCBalance } from "test/helpers/wallet"
+import { getBTCBalance, getRemainingTwoFALimit } from "test/helpers/wallet"
 import { WalletInvoicesRepository } from "@services/mongoose"
 import {
   intraledgerPaymentSend,
@@ -823,7 +823,9 @@ describe("UserWallet - Lightning Pay", () => {
     describe("2FA", () => {
       it(`fails to pay above 2fa limit without 2fa token`, async () => {
         enable2FA({ wallet: userWallet0 })
-        const remainingLimit = await userWallet0.user.remainingTwoFALimit()
+        const remainingLimit = await getRemainingTwoFALimit(userWallet0.user.id)
+        expect(remainingLimit).not.toBeInstanceOf(Error)
+        if (remainingLimit instanceof Error) return remainingLimit
 
         const { request } = await createInvoice({
           lnd: lndOutside1,
