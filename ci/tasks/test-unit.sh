@@ -8,4 +8,4 @@ unpack_deps
 
 pushd repo
 
-make unit
+make unit-in-ci
