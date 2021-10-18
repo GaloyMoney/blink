@@ -1,6 +1,9 @@
 import { addNewContact } from "@app/users/add-new-contact"
 import { getBalanceForWallet } from "@app/wallets"
-import { checkAndVerifyTwoFA, checkIntraledgerLimits } from "@core/accounts/helpers"
+import {
+  checkAndVerifyTwoFA,
+  checkIntraledgerLimits,
+} from "@app/wallets/check-limit-helpers"
 import { toSats } from "@domain/bitcoin"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
 import {

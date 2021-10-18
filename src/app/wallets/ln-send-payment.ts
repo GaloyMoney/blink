@@ -34,7 +34,7 @@ import {
   checkAndVerifyTwoFA,
   checkIntraledgerLimits,
   checkWithdrawalLimits,
-} from "@core/accounts/helpers"
+} from "@app/wallets/check-limit-helpers"
 import { CachedRouteLookupKeyFactory } from "@domain/routes/key-factory"
 import { lnPaymentStatusEvent } from "@config/app"
 import { NotificationsService } from "@services/notifications"

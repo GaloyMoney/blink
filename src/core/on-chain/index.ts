@@ -40,7 +40,7 @@ import {
   checkAndVerifyTwoFA,
   checkIntraledgerLimits,
   checkWithdrawalLimits,
-} from "@core/accounts/helpers"
+} from "@app/wallets/check-limit-helpers"
 import { TwoFANewCodeNeededError } from "@domain/twoFA"
 
 export const getOnChainTransactions = async ({
