@@ -270,9 +270,11 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         id: "id" as TxId,
         walletId: "walletId" as WalletId,
         initiationVia: PaymentInitiationMethod.OnChain,
+        memo: null,
         settlementVia: "onchain",
         settlementAmount: toSats(25000),
         settlementFee: toSats(0),
+        settlementUsdPerSat: 1,
         deprecated: {
           description: "pending",
           usd: 25000,
@@ -282,6 +284,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         otherPartyUsername: null,
         status: TxStatus.Pending,
         createdAt: timestamp,
+        transactionHash: "id",
         addresses: ["userAddress1" as OnChainAddress],
       },
       {
@@ -290,7 +293,9 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         initiationVia: PaymentInitiationMethod.OnChain,
         settlementVia: "onchain",
         settlementAmount: toSats(50000),
+        memo: null,
         settlementFee: toSats(0),
+        settlementUsdPerSat: 1,
         deprecated: {
           description: "pending",
           usd: 50000,
@@ -301,6 +306,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         status: TxStatus.Pending,
         createdAt: timestamp,
         addresses: ["userAddress2" as OnChainAddress],
+        transactionHash: "id",
       },
     ]
     expect(result.transactions).toEqual(expected)
