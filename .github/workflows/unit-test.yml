@@ -13,4 +13,4 @@ jobs:
     - uses: actions/setup-node@v2
     - run: yarn install
     - name: Run unit tests
-      run: make unit
+      run: make unit-in-ci
