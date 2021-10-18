@@ -1,7 +1,6 @@
 import { authenticatedLndGrpc } from "lightning"
 import _ from "lodash"
 import { getLndParams } from "@config/app"
-import { toSats } from "@domain/bitcoin"
 
 const inputs: LndParams[] = getLndParams()
 
@@ -34,5 +33,3 @@ export const addProps = (array) =>
 export const params = addProps(_.sortBy(inputs, ["priority"]))
 
 export const TIMEOUT_PAYMENT = process.env.NETWORK !== "regtest" ? 45000 : 3000
-export const FEECAP = toSats(0.02) // = 2%
-export const FEEMIN = toSats(10) // sats
