@@ -1,4 +1,4 @@
-import { FEECAP, FEEMIN } from "@services/lnd/auth"
+import { FEECAP, FEEMIN } from "@domain/bitcoin"
 import { toSats } from ".."
 
 export const LnFeeCalculator = (

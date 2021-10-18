@@ -1,6 +1,5 @@
-import { toSats } from "@domain/bitcoin"
+import { toSats, FEECAP, FEEMIN } from "@domain/bitcoin"
 import { LnFeeCalculator } from "@domain/bitcoin/lightning"
-import { FEECAP, FEEMIN } from "@services/lnd/auth"
 
 describe("LnFeeCalculator", () => {
   let minAmount: Satoshis

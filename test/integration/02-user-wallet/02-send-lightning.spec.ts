@@ -8,7 +8,6 @@ import {
   TwoFAError,
   ValidationInternalError,
 } from "@core/error"
-import { FEECAP } from "@services/lnd/auth"
 import { getActiveLnd, nodesPubKey, getInvoiceAttempt } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { InvoiceUser } from "@services/mongoose/schema"
@@ -31,7 +30,7 @@ import {
 } from "test/helpers"
 import * as Wallets from "@app/wallets"
 import { addInvoice } from "@app/wallets/add-invoice-for-wallet"
-import { toSats } from "@domain/bitcoin"
+import { toSats, FEECAP } from "@domain/bitcoin"
 import { toLiabilitiesAccountId } from "@domain/ledger"
 import { LedgerService } from "@services/ledger"
 import { getBTCBalance } from "test/helpers/wallet"
