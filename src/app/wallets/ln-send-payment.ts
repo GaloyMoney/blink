@@ -39,22 +39,6 @@ import { lnPaymentStatusEvent } from "@config/app"
 import { NotificationsService } from "@services/notifications"
 import pubsub from "@services/pubsub"
 
-export const lnInvoicePaymentSend = async (
-  args: LnInvoicePaymentSendArgs,
-): Promise<PaymentSendStatus | ApplicationError> =>
-  lnInvoicePaymentSendWithTwoFA({
-    twoFAToken: null,
-    ...args,
-  })
-
-export const lnNoAmountInvoicePaymentSend = async (
-  args: LnNoAmountInvoicePaymentSendArgs,
-): Promise<PaymentSendStatus | ApplicationError> =>
-  lnNoAmountInvoicePaymentSendWithTwoFA({
-    twoFAToken: null,
-    ...args,
-  })
-
 export const lnInvoicePaymentSendWithTwoFA = async ({
   paymentRequest,
   memo,
@@ -71,21 +55,62 @@ export const lnInvoicePaymentSendWithTwoFA = async ({
     return new LnPaymentRequestNonZeroAmountRequiredError()
   }
 
+  const user = await UsersRepository().findById(userId)
+  if (user instanceof Error) return user
+  const { username, twoFA } = user
+
+  const twoFACheck = twoFA?.secret
+    ? await checkAndVerifyTwoFA({
+        amount: lnInvoiceAmount,
+        twoFAToken: twoFAToken ? (twoFAToken as TwoFAToken) : null,
+        twoFASecret: twoFA.secret,
+        walletId,
+      })
+    : true
+  if (twoFACheck instanceof Error) return twoFACheck
+
   return lnSendPayment({
     walletId,
-    userId,
+    username,
     decodedInvoice,
     amount: lnInvoiceAmount,
     memo: memo || "",
-    twoFAToken,
+    logger,
+  })
+}
+
+export const lnInvoicePaymentSend = async ({
+  paymentRequest,
+  memo,
+  walletId,
+  userId,
+  logger,
+}: LnInvoicePaymentSendArgs): Promise<PaymentSendStatus | ApplicationError> => {
+  const decodedInvoice = await decodeInvoice(paymentRequest)
+  if (decodedInvoice instanceof Error) return decodedInvoice
+
+  const { amount: lnInvoiceAmount } = decodedInvoice
+  if (!(lnInvoiceAmount && lnInvoiceAmount > 0)) {
+    return new LnPaymentRequestNonZeroAmountRequiredError()
+  }
+
+  const user = await UsersRepository().findById(userId)
+  if (user instanceof Error) return user
+
+  return lnSendPayment({
+    walletId,
+    username: user.username,
+    decodedInvoice,
+    amount: lnInvoiceAmount,
+    memo: memo || "",
     logger,
   })
 }
 
 export const lnNoAmountInvoicePaymentSendWithTwoFA = async ({
   paymentRequest,
-  memo,
   amount,
+  memo,
   walletId,
   userId,
   twoFAToken,
@@ -105,37 +130,9 @@ export const lnNoAmountInvoicePaymentSendWithTwoFA = async ({
     return new SatoshiAmountRequiredError()
   }
 
-  return lnSendPayment({
-    walletId,
-    userId,
-    decodedInvoice,
-    amount,
-    memo: memo || "",
-    twoFAToken,
-    logger,
-  })
-}
-
-const lnSendPayment = async ({
-  walletId,
-  userId,
-  decodedInvoice,
-  amount,
-  memo,
-  twoFAToken,
-  logger,
-}: {
-  walletId: WalletId
-  userId: UserId
-  decodedInvoice: LnInvoice
-  amount: Satoshis
-  memo: string
-  twoFAToken: TwoFAToken | null
-  logger: Logger
-}): Promise<PaymentSendStatus | ApplicationError> => {
   const user = await UsersRepository().findById(userId)
   if (user instanceof Error) return user
-  const { twoFA } = user
+  const { username, twoFA } = user
 
   const twoFACheck = twoFA?.secret
     ? await checkAndVerifyTwoFA({
@@ -147,6 +144,64 @@ const lnSendPayment = async ({
     : true
   if (twoFACheck instanceof Error) return twoFACheck
 
+  return lnSendPayment({
+    walletId,
+    username,
+    decodedInvoice,
+    amount,
+    memo: memo || "",
+    logger,
+  })
+}
+
+export const lnNoAmountInvoicePaymentSend = async ({
+  paymentRequest,
+  amount,
+  memo,
+  walletId,
+  userId,
+  logger,
+}: LnNoAmountInvoicePaymentSendArgs): Promise<PaymentSendStatus | ApplicationError> => {
+  const decodedInvoice = await decodeInvoice(paymentRequest)
+  if (decodedInvoice instanceof Error) return decodedInvoice
+
+  const { amount: lnInvoiceAmount } = decodedInvoice
+  if (lnInvoiceAmount && lnInvoiceAmount > 0) {
+    return new LnPaymentRequestZeroAmountRequiredError()
+  }
+
+  if (!(amount && amount > 0)) {
+    return new SatoshiAmountRequiredError()
+  }
+
+  const user = await UsersRepository().findById(userId)
+  if (user instanceof Error) return user
+
+  return lnSendPayment({
+    walletId,
+    username: user.username,
+    decodedInvoice,
+    amount,
+    memo: memo || "",
+    logger,
+  })
+}
+
+const lnSendPayment = async ({
+  walletId,
+  username,
+  decodedInvoice,
+  amount,
+  memo,
+  logger,
+}: {
+  walletId: WalletId
+  username: Username
+  decodedInvoice: LnInvoice
+  amount: Satoshis
+  memo: string
+  logger: Logger
+}): Promise<PaymentSendStatus | ApplicationError> => {
   const lndService = LndService()
   if (lndService instanceof Error) return lndService
   const isLocal = lndService.isLocal(decodedInvoice.destination)
@@ -159,7 +214,7 @@ const lnSendPayment = async ({
       amount,
       memo,
       walletId,
-      username: user.username,
+      username,
       lndService,
       logger,
     })
