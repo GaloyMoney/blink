@@ -57,6 +57,32 @@ export const checkWithdrawalLimits = async ({
   })
 }
 
+export const checkTwoFALimits = async ({
+  amount,
+  walletId,
+}: {
+  amount: Satoshis
+  walletId: WalletId
+}) => {
+  const limitsChecker = await getLimitsChecker(walletId)
+  if (limitsChecker instanceof Error) return limitsChecker
+
+  const ledgerService = LedgerService()
+  const liabilitiesAccountId = toLiabilitiesAccountId(walletId)
+  const timestamp1Day = new Date(Date.now() - MS_PER_DAY)
+
+  const walletVolume = await ledgerService.twoFATxVolumeSince({
+    liabilitiesAccountId,
+    timestamp: timestamp1Day,
+  })
+  if (walletVolume instanceof Error) return walletVolume
+
+  return limitsChecker.checkTwoFA({
+    amount,
+    walletVolume,
+  })
+}
+
 export const checkAndVerifyTwoFA = async ({
   amount,
   twoFAToken,
@@ -68,22 +94,9 @@ export const checkAndVerifyTwoFA = async ({
   twoFASecret: TwoFASecret
   walletId: WalletId
 }): Promise<true | ApplicationError> => {
-  const ledgerService = LedgerService()
-  const liabilitiesAccountId = toLiabilitiesAccountId(walletId)
-  const timestamp1Day = new Date(Date.now() - MS_PER_DAY)
-
-  const walletVolume = await ledgerService.twoFATxVolumeSince({
-    liabilitiesAccountId,
-    timestamp: timestamp1Day,
-  })
-  if (walletVolume instanceof Error) return walletVolume
-
-  const limitsChecker = await getLimitsChecker(walletId)
-  if (limitsChecker instanceof Error) return limitsChecker
-
-  const twoFALimitCheck = limitsChecker.checkTwoFA({
+  const twoFALimitCheck = await checkTwoFALimits({
     amount,
-    walletVolume,
+    walletId,
   })
   if (!(twoFALimitCheck instanceof Error)) return true
 
