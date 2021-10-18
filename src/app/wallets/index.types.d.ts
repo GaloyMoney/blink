@@ -52,7 +52,7 @@ type LnInvoicePaymentSendArgs = PaymentSendArgs & {
   paymentRequest: EncodedPaymentRequest
 }
 type LnInvoicePaymentSendWithTwoFAArgs = LnInvoicePaymentSendArgs & {
-  twoFAToken: TwoFAToken | null
+  twoFAToken: TwoFAToken
 }
 
 type LnNoAmountInvoicePaymentSendArgs = PaymentSendArgs & {
@@ -60,7 +60,7 @@ type LnNoAmountInvoicePaymentSendArgs = PaymentSendArgs & {
   amount: Satoshis
 }
 type LnNoAmountInvoicePaymentSendWithTwoFAArgs = LnNoAmountInvoicePaymentSendArgs & {
-  twoFAToken: TwoFAToken | null
+  twoFAToken: TwoFAToken
 }
 
 type IntraLedgerPaymentSendArgs = PaymentSendArgs & {
