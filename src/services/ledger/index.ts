@@ -129,10 +129,10 @@ export const LedgerService = (): ILedgerService => {
       liabilitiesAccountId,
       timestamp,
       txnTypes: [
-        { type: LedgerTransactionType.IntraLedger },
-        { type: LedgerTransactionType.OnchainIntraLedger },
-        { type: LedgerTransactionType.Payment },
-        { type: LedgerTransactionType.OnchainPayment },
+        LedgerTransactionType.IntraLedger,
+        LedgerTransactionType.OnchainIntraLedger,
+        LedgerTransactionType.Payment,
+        LedgerTransactionType.OnchainPayment,
       ],
     })
 
@@ -146,10 +146,7 @@ export const LedgerService = (): ILedgerService => {
     txVolumeSince({
       liabilitiesAccountId,
       timestamp,
-      txnTypes: [
-        { type: LedgerTransactionType.Payment },
-        { type: LedgerTransactionType.OnchainPayment },
-      ],
+      txnTypes: [LedgerTransactionType.Payment, LedgerTransactionType.OnchainPayment],
     })
 
   const intraledgerTxVolumeSince = async ({
@@ -163,8 +160,8 @@ export const LedgerService = (): ILedgerService => {
       liabilitiesAccountId,
       timestamp,
       txnTypes: [
-        { type: LedgerTransactionType.IntraLedger },
-        { type: LedgerTransactionType.OnchainIntraLedger },
+        LedgerTransactionType.IntraLedger,
+        LedgerTransactionType.OnchainIntraLedger,
       ],
     })
 
@@ -175,14 +172,18 @@ export const LedgerService = (): ILedgerService => {
   }: {
     liabilitiesAccountId: LiabilitiesAccountId
     timestamp: Date
-    txnTypes: { type: LedgerTransactionType }[]
+    txnTypes: LedgerTransactionType[]
   }): Promise<TxVolume | LedgerServiceError> => {
+    const txnTypesObj = txnTypes.map((txnType) => ({
+      type: txnType,
+    }))
+
     try {
       const [result]: (TxVolume & { _id: null })[] = await Transaction.aggregate([
         {
           $match: {
             accounts: liabilitiesAccountId,
-            $or: txnTypes,
+            $or: txnTypesObj,
             $and: [{ timestamp: { $gte: timestamp } }],
           },
         },
