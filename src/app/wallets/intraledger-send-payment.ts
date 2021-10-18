@@ -22,15 +22,33 @@ import {
 } from "@services/mongoose"
 import { PriceService } from "@services/price"
 
-export const intraledgerPaymentSend = async (
-  args: IntraLedgerPaymentSendArgs,
-): Promise<PaymentSendStatus | ApplicationError> =>
-  intraledgerSendPaymentWithTwoFA({
-    twoFAToken: null,
-    ...args,
-  })
+export const intraledgerPaymentSend = async ({
+  recipientUsername,
+  amount,
+  memo,
+  walletId,
+  userId,
+  logger,
+}: IntraLedgerPaymentSendArgs): Promise<PaymentSendStatus | ApplicationError> => {
+  if (!(amount && amount > 0)) {
+    return new SatoshiAmountRequiredError()
+  }
 
-const intraledgerSendPaymentWithTwoFA = async ({
+  const user = await UsersRepository().findById(userId)
+  if (user instanceof Error) return user
+
+  return lnSendPayment({
+    userId,
+    walletId,
+    username: user.username,
+    recipientUsername,
+    amount,
+    memo: memo || "",
+    logger,
+  })
+}
+
+export const intraledgerSendPaymentWithTwoFA = async ({
   twoFAToken,
   recipientUsername,
   amount,
@@ -47,7 +65,7 @@ const intraledgerSendPaymentWithTwoFA = async ({
 
   const user = await UsersRepository().findById(userId)
   if (user instanceof Error) return user
-  const { twoFA } = user
+  const { username, twoFA } = user
 
   const twoFACheck = twoFA?.secret
     ? await checkAndVerifyTwoFA({
@@ -59,13 +77,41 @@ const intraledgerSendPaymentWithTwoFA = async ({
     : true
   if (twoFACheck instanceof Error) return twoFACheck
 
+  return lnSendPayment({
+    userId,
+    walletId,
+    username,
+    recipientUsername,
+    amount,
+    memo: memo || "",
+    logger,
+  })
+}
+
+const lnSendPayment = async ({
+  userId,
+  walletId,
+  username,
+  recipientUsername,
+  amount,
+  memo,
+  logger,
+}: {
+  userId: UserId
+  walletId: WalletId
+  username: Username
+  recipientUsername: Username
+  amount: Satoshis
+  memo: string
+  logger: Logger
+}) => {
   const paymentSendStatus = await executePaymentViaIntraledger({
     userId,
     recipientUsername,
     amount,
     memoPayer: memo || "",
     walletId,
-    username: user.username,
+    username,
     logger,
   })
 
@@ -75,13 +121,13 @@ const intraledgerSendPaymentWithTwoFA = async ({
   })
   if (addContactToPayerResult instanceof Error) return addContactToPayerResult
 
-  if (user.username) {
+  if (username) {
     const recipientUser = await UsersRepository().findByUsername(recipientUsername)
     if (recipientUser instanceof Error) return recipientUser
 
     const addContactToPayeeResult = await addNewContact({
       userId: recipientUser.id,
-      contactUsername: user.username,
+      contactUsername: username,
     })
     if (addContactToPayeeResult instanceof Error) return addContactToPayeeResult
   }

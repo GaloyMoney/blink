@@ -68,5 +68,5 @@ type IntraLedgerPaymentSendArgs = PaymentSendArgs & {
   amount: Satoshis
 }
 type IntraLedgerPaymentSendWithTwoFAArgs = IntraLedgerPaymentSendArgs & {
-  twoFAToken: TwoFAToken | null
+  twoFAToken: TwoFAToken
 }
