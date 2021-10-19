@@ -1,5 +1,12 @@
 version: "2"
 services:
+  otel-agent:
+    image: otel/opentelemetry-collector:0.37.0
+    command: ["--config=/etc/otel-agent-config.yaml", "--log-level=debug"]
+    volumes:
+      - ./dev/otel-agent-config.yaml:/etc/otel-agent-config.yaml
+    ports:
+      - "6832:6832/udp" # Jaeger receiver
   price:
     image: us.gcr.io/galoy-org/price:edge
     ports:
