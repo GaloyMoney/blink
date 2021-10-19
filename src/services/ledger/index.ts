@@ -118,20 +118,72 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
-  const txVolumeSince = async ({
+  const twoFATxVolumeSince = async ({
     liabilitiesAccountId,
     timestamp,
   }: {
     liabilitiesAccountId: LiabilitiesAccountId
     timestamp: Date
+  }) =>
+    txVolumeSince({
+      liabilitiesAccountId,
+      timestamp,
+      txnTypes: [
+        LedgerTransactionType.IntraLedger,
+        LedgerTransactionType.OnchainIntraLedger,
+        LedgerTransactionType.Payment,
+        LedgerTransactionType.OnchainPayment,
+      ],
+    })
+
+  const withdrawalTxVolumeSince = async ({
+    liabilitiesAccountId,
+    timestamp,
+  }: {
+    liabilitiesAccountId: LiabilitiesAccountId
+    timestamp: Date
+  }) =>
+    txVolumeSince({
+      liabilitiesAccountId,
+      timestamp,
+      txnTypes: [LedgerTransactionType.Payment, LedgerTransactionType.OnchainPayment],
+    })
+
+  const intraledgerTxVolumeSince = async ({
+    liabilitiesAccountId,
+    timestamp,
+  }: {
+    liabilitiesAccountId: LiabilitiesAccountId
+    timestamp: Date
+  }) =>
+    txVolumeSince({
+      liabilitiesAccountId,
+      timestamp,
+      txnTypes: [
+        LedgerTransactionType.IntraLedger,
+        LedgerTransactionType.OnchainIntraLedger,
+      ],
+    })
+
+  const txVolumeSince = async ({
+    liabilitiesAccountId,
+    timestamp,
+    txnTypes,
+  }: {
+    liabilitiesAccountId: LiabilitiesAccountId
+    timestamp: Date
+    txnTypes: LedgerTransactionType[]
   }): Promise<TxVolume | LedgerServiceError> => {
-    const txnTypes = [{ type: "on_us" }, { type: "onchain_on_us" }]
+    const txnTypesObj = txnTypes.map((txnType) => ({
+      type: txnType,
+    }))
+
     try {
       const [result]: (TxVolume & { _id: null })[] = await Transaction.aggregate([
         {
           $match: {
             accounts: liabilitiesAccountId,
-            $or: txnTypes,
+            $or: txnTypesObj,
             $and: [{ timestamp: { $gte: timestamp } }],
           },
         },
@@ -492,7 +544,9 @@ export const LedgerService = (): ILedgerService => {
     listPendingPayments,
     getPendingPaymentsCount,
     getAccountBalance,
-    txVolumeSince,
+    twoFATxVolumeSince,
+    withdrawalTxVolumeSince,
+    intraledgerTxVolumeSince,
     isOnChainTxRecorded,
     isLnTxRecorded,
     addOnChainTxReceive,

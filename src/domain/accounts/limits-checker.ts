@@ -1,15 +1,19 @@
 import { LimitsExceededError, TwoFALimitsExceededError } from "@domain/errors"
 
 export const LimitsChecker = ({
-  walletVolume,
   userLimits,
   twoFALimits,
 }: {
-  walletVolume: TxVolume
   userLimits: IUserLimits
   twoFALimits: TwoFALimits
 }): LimitsChecker => {
-  const checkTwoFA = ({ amount }: { amount: Satoshis }): true | LimitsExceededError => {
+  const checkTwoFA = ({
+    amount,
+    walletVolume,
+  }: {
+    amount: Satoshis
+    walletVolume: TxVolume
+  }): true | LimitsExceededError => {
     const remainingTwoFALimit = twoFALimits.threshold - walletVolume.outgoingSats
     if (remainingTwoFALimit < amount) {
       return new TwoFALimitsExceededError("Need a 2FA code to proceed with the payment")
@@ -19,8 +23,10 @@ export const LimitsChecker = ({
 
   const checkIntraledger = ({
     amount,
+    walletVolume,
   }: {
     amount: Satoshis
+    walletVolume: TxVolume
   }): true | LimitsExceededError => {
     const remainingLimit = userLimits.onUsLimit - walletVolume.outgoingSats
     if (remainingLimit < amount) {
@@ -33,8 +39,10 @@ export const LimitsChecker = ({
 
   const checkWithdrawal = ({
     amount,
+    walletVolume,
   }: {
     amount: Satoshis
+    walletVolume: TxVolume
   }): true | LimitsExceededError => {
     const remainingLimit = userLimits.withdrawalLimit - walletVolume.outgoingSats
     if (remainingLimit < amount) {

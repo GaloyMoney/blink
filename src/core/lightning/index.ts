@@ -35,7 +35,11 @@ import { toLiabilitiesAccountId } from "@domain/ledger"
 import { RoutesCache } from "@services/redis"
 import { CouldNotFindError } from "@domain/errors"
 import { LockService } from "@services/lock"
-import { checkAndVerifyTwoFA, getLimitsChecker } from "@core/accounts/helpers"
+import {
+  checkAndVerifyTwoFA,
+  checkIntraledgerLimits,
+  checkWithdrawalLimits,
+} from "@core/accounts/helpers"
 import { TwoFANewCodeNeededError } from "@domain/twoFA"
 import { CachedRouteLookupKeyFactory } from "@domain/routes/key-factory"
 import {
@@ -234,9 +238,6 @@ export const LightningMixin = (superclass) =>
         params,
       })
 
-      const twoFALimitsChecker = await getLimitsChecker(this.user.id)
-      if (twoFALimitsChecker instanceof Error) throw twoFALimitsChecker
-
       const user = await UsersRepository().findById(this.user.id)
       if (user instanceof Error) throw user
       const { twoFA } = user
@@ -246,7 +247,7 @@ export const LightningMixin = (superclass) =>
             amount: toSats(tokens),
             twoFAToken: twoFAToken ? (twoFAToken as TwoFAToken) : null,
             twoFASecret: twoFA.secret,
-            limitsChecker: twoFALimitsChecker,
+            walletId: this.user.id,
           })
         : true
       if (twoFACheck instanceof TwoFANewCodeNeededError)
@@ -267,17 +268,15 @@ export const LightningMixin = (superclass) =>
         })
         if (balanceSats instanceof Error) throw balanceSats
 
-        const limitsChecker = await getLimitsChecker(this.user.id)
-        if (limitsChecker instanceof Error) throw limitsChecker
-
         // On us transaction
         const lndService = LndService()
         if (lndService instanceof Error) throw lndService
         if (lndService.isLocal(destination) || isPushPayment) {
           const lightningLoggerOnUs = lightningLogger.child({ onUs: true, fee: 0 })
 
-          const intraledgerLimitCheck = limitsChecker.checkIntraledger({
+          const intraledgerLimitCheck = await checkIntraledgerLimits({
             amount: tokens,
+            walletId: this.user.id,
           })
           if (intraledgerLimitCheck instanceof Error)
             throw new TransactionRestrictedError(intraledgerLimitCheck.message, {
@@ -434,8 +433,9 @@ export const LightningMixin = (superclass) =>
             if (addContactToPayeeResult instanceof Error) throw addContactToPayeeResult
           }
 
-          const withdrawalLimitCheck = limitsChecker.checkWithdrawal({
+          const withdrawalLimitCheck = await checkWithdrawalLimits({
             amount: tokens,
+            walletId: this.user.id,
           })
           if (withdrawalLimitCheck instanceof Error)
             throw new TransactionRestrictedError(withdrawalLimitCheck.message, {
@@ -461,8 +461,9 @@ export const LightningMixin = (superclass) =>
           throw new NewAccountWithdrawalError(error, { logger: lightningLogger })
         }
 
-        const withdrawalLimitCheck = limitsChecker.checkWithdrawal({
+        const withdrawalLimitCheck = await checkWithdrawalLimits({
           amount: tokens,
+          walletId: this.user.id,
         })
         if (withdrawalLimitCheck instanceof Error)
           throw new TransactionRestrictedError(withdrawalLimitCheck.message, {
