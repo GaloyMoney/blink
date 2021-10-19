@@ -6,7 +6,7 @@ import * as Users from "@app/users"
 import { CouldNotFindError } from "@domain/errors"
 import { NotFoundError, UnknownClientError } from "@core/error"
 
-const UserWalletIdQuery = GT.Field({
+const UserDefaultWalletIdQuery = GT.Field({
   type: GT.NonNull(WalletId),
   args: {
     username: {
@@ -34,4 +34,4 @@ const UserWalletIdQuery = GT.Field({
   },
 })
 
-export default UserWalletIdQuery
+export default UserDefaultWalletIdQuery
