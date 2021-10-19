@@ -297,7 +297,7 @@ type Query {
   globals: Globals
   me: User
   usernameAvailable(username: Username!): Boolean
-  userWalletId(username: Username!): WalletId!
+  userDefaultWalletId(username: Username!): WalletId!
   businessMapMarkers: [MapMarker]
   mobileVersions: [MobileVersions]
   quizQuestions: [QuizQuestion]
