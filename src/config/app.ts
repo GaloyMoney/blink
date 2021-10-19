@@ -180,8 +180,6 @@ export const getIpConfig = (config = yamlConfig): IpConfig => ({
   ipRecordingEnabled:
     process.env.NODE_ENV === "test" ? false : config.ipRecording?.enabled,
   proxyCheckingEnabled: config.ipRecording?.proxyChecking?.enabled,
-  blacklistedIPTypes: config.blacklistedIPTypes ? config.blacklistedIPTypes : [],
-  blacklistedIPs: config.blacklistedIPs ? config.blacklistedIPs : [],
 })
 
 export const getHelmetConfig = (config = yamlConfig): HelmetConfig => config.helmet

@@ -50,8 +50,6 @@ type onChainWalletConfig = {
 type IpConfig = {
   ipRecordingEnabled: boolean
   proxyCheckingEnabled: boolean
-  blacklistedIPTypes: string[]
-  blacklistedIPs: string[]
 }
 
 type HelmetConfig = {

@@ -11,14 +11,14 @@ import { createToken } from "@services/jwt"
 import { sendTwilioText, getCarrier } from "@services/phone-provider"
 import { PhoneCode, User } from "@services/mongoose/schema"
 
-import { IPBlacklistedError, TooManyRequestError } from "./error"
+import { TooManyRequestError } from "./error"
 import {
   failedAttemptPerIp,
   limiterLoginAttempt,
   limiterRequestPhoneCode,
   limiterRequestPhoneCodeIp,
 } from "./rate-limit"
-import { isIPBlacklisted, isIPTypeBlacklisted, randomIntFromInterval } from "./utils"
+import { randomIntFromInterval } from "./utils"
 import { IpFetcher } from "@services/ipfetcher"
 
 export const requestPhoneCode = async ({
@@ -32,20 +32,12 @@ export const requestPhoneCode = async ({
 }): Promise<boolean> => {
   logger.info({ phone, ip }, "RequestPhoneCode called")
 
-  if (isIPBlacklisted({ ip })) {
-    throw new IPBlacklistedError("IP Blacklisted", { logger, ip })
-  }
-
   const ipFetcher = IpFetcher()
   const ipDetails = await ipFetcher.fetchIPInfo(ip as IpAddress)
   if (ipDetails instanceof Error) {
     logger.warn({ ipDetails }, "Unable to fetch ip details")
   } else if (ipDetails.status === "denied" || ipDetails.status === "error") {
     logger.warn({ ipDetails }, "Unable to fetch ip details")
-  }
-
-  if (!(ipDetails instanceof Error) && isIPTypeBlacklisted({ type: ipDetails.type })) {
-    throw new IPBlacklistedError("IP type Blacklisted", { logger, ipDetails })
   }
 
   try {
