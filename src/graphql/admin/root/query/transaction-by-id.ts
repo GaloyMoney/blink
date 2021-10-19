@@ -12,7 +12,7 @@ const TransactionByIdQuery = GT.Field({
   resolve: async (_, { id }) => {
     if (id instanceof Error) throw id
 
-    const ledgerTx = await Wallets.getTransactionsById(id)
+    const ledgerTx = await Wallets.getTransactionById(id)
     if (ledgerTx instanceof CouldNotFindTransactionError) return null
     if (ledgerTx instanceof Error) throw ledgerTx
 

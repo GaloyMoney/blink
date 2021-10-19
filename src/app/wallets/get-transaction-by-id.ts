@@ -2,7 +2,7 @@ import { LedgerService } from "@services/ledger"
 import { WalletTransactionHistory } from "@domain/wallets"
 import { checkedToLedgerTransactionId } from "@domain/ledger"
 
-export const getTransactionsById = async (
+export const getTransactionById = async (
   id: string,
 ): Promise<WalletTransaction | ApplicationError> => {
   const ledger = LedgerService()
