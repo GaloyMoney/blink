@@ -11,6 +11,7 @@ import * as queries from "./query"
 import * as transactions from "./transaction"
 
 import {
+  CouldNotFindTransactionError,
   UnknownLedgerError,
   LedgerError,
   LedgerServiceError,
@@ -39,6 +40,23 @@ export const loadLedger = ({
 }
 
 export const LedgerService = (): ILedgerService => {
+  const getTransactionById = async (
+    id: LedgerTransactionId,
+  ): Promise<LedgerTransaction | LedgerServiceError> => {
+    try {
+      const { results } = await MainBook.ledger({
+        account_path: liabilitiesMainAccount,
+        _id: id,
+      })
+      if (results.length === 1) {
+        return translateToLedgerTx(results[0])
+      }
+      return new CouldNotFindTransactionError()
+    } catch (err) {
+      return new UnknownLedgerError(err)
+    }
+  }
+
   const getTransactionsByHash = async (
     hash: PaymentHash | TxId,
   ): Promise<LedgerTransaction[] | LedgerServiceError> => {
@@ -538,6 +556,7 @@ export const LedgerService = (): ILedgerService => {
   }
 
   return {
+    getTransactionById,
     getTransactionsByHash,
     getLiabilityTransactions,
     getLiabilityTransactionsForContactUsername,

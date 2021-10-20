@@ -270,12 +270,15 @@ type OnChainTransaction implements Transaction {
   memo: Memo
   createdAt: Timestamp!
   addresses: [OnChainAddress!]!
+  transactionHash: OnChainTxHash!
 }
 
 """
 An address for an on-chain bitcoin destination
 """
 scalar OnChainAddress
+
+scalar OnChainTxHash
 
 type LnTransaction implements Transaction {
   id: ID!
