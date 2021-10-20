@@ -82,6 +82,8 @@ export const startApolloServer = async ({
 
       if (ips && Array.isArray(ips) && ips.length) {
         ip = ips[0]
+      } else if (typeof ips === "string") {
+        ip = ips
       }
 
       let wallet, user
