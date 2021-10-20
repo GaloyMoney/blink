@@ -270,7 +270,7 @@ type OnChainTransaction implements Transaction {
   memo: Memo
   createdAt: Timestamp!
   addresses: [OnChainAddress!]!
-  transactionHash: PaymentHash!
+  transactionHash: OnChainTxHash!
 }
 
 """
@@ -278,7 +278,7 @@ An address for an on-chain bitcoin destination
 """
 scalar OnChainAddress
 
-scalar PaymentHash
+scalar OnChainTxHash
 
 type LnTransaction implements Transaction {
   id: ID!
@@ -293,6 +293,8 @@ type LnTransaction implements Transaction {
   createdAt: Timestamp!
   paymentHash: PaymentHash!
 }
+
+scalar PaymentHash
 
 type Query {
   globals: Globals
