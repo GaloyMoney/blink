@@ -8,7 +8,7 @@ jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider")
 
 let userWallet1
 
-const earnsToGet = ["buyFirstSats", "debitCardActivation", "firstCardSpending"]
+const earnsToGet = ["whereBitcoinExist", "whyStonesShellGold", "NoCounterfeitMoney"]
 const onBoardingEarnAmt: number = Object.keys(onboardingEarn)
   .filter((k) => find(earnsToGet, (o) => o === k))
   .reduce((p, k) => p + onboardingEarn[k], 0)
