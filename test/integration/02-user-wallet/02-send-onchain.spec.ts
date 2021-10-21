@@ -310,7 +310,7 @@ describe("UserWallet - onChainPay", () => {
     const matchTx = (tx: WalletTransaction) =>
       tx.initiationVia === "onchain" &&
       tx.deprecated.type === "onchain_on_us" &&
-      tx.addresses?.includes(address)
+      tx.address === address
 
     const { result: txs, error } = await Wallets.getTransactionsForWalletId({
       walletId: userWallet0.user.id,

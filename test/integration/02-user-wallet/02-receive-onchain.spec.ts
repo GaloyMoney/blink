@@ -182,7 +182,7 @@ describe("UserWallet - On chain", () => {
     const pendingTx = pendingTxs[0] as WalletOnChainTransaction
     expect(pendingTx.settlementVia).toBe("onchain")
     expect(pendingTx.settlementAmount).toBe(btc2sat(amountBTC))
-    expect(pendingTx.addresses[0]).toBe(address)
+    expect(pendingTx.address).toBe(address)
 
     await sleep(1000)
 
@@ -291,7 +291,7 @@ async function sendToWallet({ walletDestination }) {
         depositFeeRatio: walletDestination.user.depositFeeRatio,
       }),
     )
-    expect(txn.addresses[0]).toBe(address)
+    expect(txn.address).toBe(address)
   }
 
   // just to improve performance

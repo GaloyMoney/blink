@@ -33,7 +33,7 @@ const filterPendingIncoming = (
           createdAt: createdAt,
           settlementAmount: sats,
           settlementUsdPerSat: usdPerSat,
-          addresses: [address],
+          address,
         })
       }
     })
@@ -60,7 +60,7 @@ export const fromLedger = (
       txId,
       pubkey,
       username,
-      addresses,
+      address,
       pendingConfirmation,
       timestamp,
     }) => {
@@ -78,7 +78,7 @@ export const fromLedger = (
         credit,
       })
       const status = pendingConfirmation ? TxStatus.Pending : TxStatus.Success
-      if ((addresses && addresses.length > 0) || isOnchainTransaction(type)) {
+      if (address || isOnchainTransaction(type)) {
         return {
           id,
           walletId,
@@ -87,7 +87,7 @@ export const fromLedger = (
             type === LedgerTransactionType.OnchainIntraLedger
               ? SettlementMethod.IntraLedger
               : SettlementMethod.OnChain,
-          addresses: addresses || [],
+          address: address as OnChainAddress,
           deprecated: {
             description,
             usd,

@@ -14,8 +14,8 @@ const OnChainTransaction = new GT.Object({
     ...transactionInterfaceFields,
 
     // Non-interface fields
-    addresses: {
-      type: GT.NonNullList(OnChainAddress),
+    address: {
+      type: GT.NonNull(OnChainAddress),
     },
 
     transactionHash: {
