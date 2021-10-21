@@ -9,7 +9,7 @@ export const TxDecoder = (networkName: BtcNetwork): TxDecoder => {
     const tx = Transaction.fromHex(txHex)
 
     return {
-      id: tx.getId() as TxId,
+      id: tx.getId() as OnChainTxHash,
       outs: decodeOutput(tx, network),
     }
   }

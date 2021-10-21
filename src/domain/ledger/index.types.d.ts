@@ -52,12 +52,12 @@ type LedgerTransaction = {
 
   // for onchain
   readonly address?: OnChainAddress
-  readonly txId?: TxId
+  readonly txHash?: OnChainTxHash
 }
 
 type ReceiveOnChainTxArgs = {
   liabilitiesAccountId: LiabilitiesAccountId
-  txId: TxId
+  txHash: OnChainTxHash
   sats: Satoshis
   fee: Satoshis
   usd: number
@@ -138,7 +138,7 @@ interface ILedgerService {
   ): Promise<LedgerTransaction | LedgerServiceError>
 
   getTransactionsByHash(
-    paymentHash: PaymentHash | TxId,
+    paymentHash: PaymentHash | OnChainTxHash,
   ): Promise<LedgerTransaction[] | LedgerServiceError>
 
   getLiabilityTransactions(
@@ -188,7 +188,7 @@ interface ILedgerService {
 
   isOnChainTxRecorded(
     liabilitiesAccountId: LiabilitiesAccountId,
-    txId: TxId,
+    txHash: OnChainTxHash,
   ): Promise<boolean | LedgerServiceError>
 
   isLnTxRecorded(paymentHash: PaymentHash): Promise<boolean | LedgerServiceError>

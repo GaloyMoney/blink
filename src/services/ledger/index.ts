@@ -58,7 +58,7 @@ export const LedgerService = (): ILedgerService => {
   }
 
   const getTransactionsByHash = async (
-    hash: PaymentHash | TxId,
+    hash: PaymentHash | OnChainTxHash,
   ): Promise<LedgerTransaction[] | LedgerServiceError> => {
     try {
       const { results } = await MainBook.ledger({
@@ -225,13 +225,13 @@ export const LedgerService = (): ILedgerService => {
 
   const isOnChainTxRecorded = async (
     liabilitiesAccountId: LiabilitiesAccountId,
-    txId: TxId,
+    txHash: OnChainTxHash,
   ): Promise<boolean | LedgerServiceError> => {
     try {
       const result = await Transaction.countDocuments({
         accounts: liabilitiesAccountId,
         type: LedgerTransactionType.OnchainReceipt,
-        hash: txId,
+        hash: txHash,
       })
       return result > 0
     } catch (err) {
@@ -255,7 +255,7 @@ export const LedgerService = (): ILedgerService => {
 
   const addOnChainTxReceive = async ({
     liabilitiesAccountId,
-    txId,
+    txHash,
     sats,
     fee,
     usd,
@@ -267,7 +267,7 @@ export const LedgerService = (): ILedgerService => {
         currency: "BTC",
         type: LedgerTransactionType.OnchainReceipt,
         pending: false,
-        hash: txId,
+        hash: txHash,
         fee,
         usdFee,
         sats,
@@ -623,7 +623,7 @@ const translateToLedgerTx = (tx): LedgerTransaction => ({
     tx.payee_addresses && tx.payee_addresses.length > 0
       ? tx.payee_addresses[0]
       : undefined,
-  txId: tx.hash,
+  txHash: tx.hash,
   feeKnownInAdvance: tx.feeKnownInAdvance || false,
 })
 

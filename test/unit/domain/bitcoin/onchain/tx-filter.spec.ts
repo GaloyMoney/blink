@@ -9,7 +9,7 @@ describe("TxFilter", () => {
         confirmations: 0,
         fee: toSats(1000),
         rawTx: {
-          id: "id1" as TxId,
+          id: "id1" as OnChainTxHash,
           outs: [
             {
               sats: toSats(1),
@@ -23,7 +23,7 @@ describe("TxFilter", () => {
         confirmations: 2,
         fee: toSats(1000),
         rawTx: {
-          id: "id2" as TxId,
+          id: "id2" as OnChainTxHash,
           outs: [
             {
               sats: toSats(1),
@@ -45,7 +45,7 @@ describe("TxFilter", () => {
         confirmations: 2,
         fee: toSats(1000),
         rawTx: {
-          id: "id1" as TxId,
+          id: "id1" as OnChainTxHash,
           outs: [
             {
               sats: toSats(1),
@@ -59,7 +59,7 @@ describe("TxFilter", () => {
         confirmations: 3,
         fee: toSats(1000),
         rawTx: {
-          id: "id2" as TxId,
+          id: "id2" as OnChainTxHash,
           outs: [
             {
               sats: toSats(1),
@@ -81,7 +81,7 @@ describe("TxFilter", () => {
         confirmations: 2,
         fee: toSats(1000),
         rawTx: {
-          id: "id1" as TxId,
+          id: "id1" as OnChainTxHash,
           outs: [
             {
               sats: toSats(1),
@@ -95,7 +95,7 @@ describe("TxFilter", () => {
         confirmations: 3,
         fee: toSats(1000),
         rawTx: {
-          id: "id2" as TxId,
+          id: "id2" as OnChainTxHash,
           outs: [
             {
               sats: toSats(1),

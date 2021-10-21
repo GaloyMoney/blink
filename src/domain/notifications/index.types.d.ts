@@ -7,7 +7,7 @@ type NotificationType =
 type OnChainTxBaseArgs = {
   walletId: WalletId
   amount: Satoshis
-  txId: TxId
+  txHash: OnChainTxHash
   usdPerSat?: UsdPerSat
 }
 

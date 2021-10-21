@@ -8,8 +8,8 @@ type OnChainAddress = string & { [onChainAddressSymbol]: never }
 declare const blockIdSymbol: unique symbol
 type BlockId = string & { [blockIdSymbol]: never }
 
-declare const txIdSymbol: unique symbol
-type TxId = string & { [txIdSymbol]: never }
+declare const onChainTxHashSymbol: unique symbol
+type OnChainTxHash = string & { [onChainTxHashSymbol]: never }
 
 type TxOut = {
   sats: Satoshis
@@ -18,7 +18,7 @@ type TxOut = {
 }
 
 type OnChainTransaction = {
-  id: TxId
+  id: OnChainTxHash
   outs: TxOut[]
 }
 
