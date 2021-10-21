@@ -1,12 +1,13 @@
 import { toMilliSatsFromNumber, toSats } from "@domain/bitcoin"
 import { parsePaymentRequest } from "invoices"
+import { LnInvoiceMissingPaymentSecretError, UnknownLnInvoiceDecodeError } from "."
 import { LnInvoiceDecodeError } from "./errors"
 
 const safeDecode = (bolt11EncodedInvoice: EncodedPaymentRequest) => {
   try {
     return parsePaymentRequest({ request: bolt11EncodedInvoice })
   } catch (err) {
-    return new LnInvoiceDecodeError(err)
+    return new UnknownLnInvoiceDecodeError(err)
   }
 }
 
@@ -17,7 +18,7 @@ export const decodeInvoice = (
   if (decodedInvoice instanceof Error) return decodedInvoice
 
   if (!decodedInvoice.payment) {
-    return new LnInvoiceDecodeError("Invoice missing paymentSecret")
+    return new LnInvoiceMissingPaymentSecretError()
   }
   const paymentSecret: PaymentSecret = decodedInvoice.payment
   const amount: Satoshis | null = decodedInvoice.tokens
