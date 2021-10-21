@@ -184,3 +184,14 @@ export class TwoFAError extends CustomError {
     })
   }
 }
+
+export class InvoiceDecodeError extends CustomError {
+  constructor(errData: CustomErrorData) {
+    super({
+      message: "Unable to decode invoice",
+      forwardToClient: true,
+      code: "INVOICE_DECODE_ERROR",
+      ...errData,
+    })
+  }
+}
