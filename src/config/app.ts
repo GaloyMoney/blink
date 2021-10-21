@@ -39,7 +39,7 @@ export const yamlConfig = _.merge(defaultConfig, customConfig)
 
 export const tracingConfig = {
   jaegerHost: process.env.JAEGER_HOST || "localhost",
-  jaegerPort: parseInt(process.env.JAEGER_PORT || "6832"),
+  jaegerPort: parseInt(process.env.JAEGER_PORT || "6832", 10),
   tracingServiceName: process.env.TRACING_SERVICE_NAME || "galoy-dev",
 }
 export const MEMO_SHARING_SATS_THRESHOLD = yamlConfig.limits.memoSharingSatsThreshold
