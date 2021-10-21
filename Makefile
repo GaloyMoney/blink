@@ -5,22 +5,27 @@ start-deps:
 	direnv reload
 
 start-old:
-	. ./.envrc && yarn tsnd --respawn --files -r tsconfig-paths/register src/servers/graphql-old-server.ts | yarn pino-pretty -c -l
+	. ./.envrc && yarn tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \
+		src/servers/graphql-old-server.ts | yarn pino-pretty -c -l
 
 start-new:
-	. ./.envrc && yarn tsnd --respawn --files -r tsconfig-paths/register src/servers/graphql-main-server.ts | yarn pino-pretty -c -l
+	. ./.envrc && yarn tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \
+		src/servers/graphql-main-server.ts | yarn pino-pretty -c -l
 
 start-admin:
-	. ./.envrc && yarn tsnd --respawn --files -r tsconfig-paths/register src/servers/graphql-admin-server.ts | yarn pino-pretty -c -l
+	. ./.envrc && yarn tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \
+		src/servers/graphql-admin-server.ts | yarn pino-pretty -c -l
 
 start: start-deps
 	make start-old & make start-new & make start-admin & make trigger
 
 trigger: start-deps
-	. ./.envrc && yarn tsnd --respawn --files -r tsconfig-paths/register src/servers/trigger.ts | yarn pino-pretty -c -l
+	. ./.envrc && yarn tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \
+		src/servers/trigger.ts | yarn pino-pretty -c -l
 
 exporter: start-deps
-	. ./.envrc && yarn tsnd --respawn --files -r tsconfig-paths/register src/servers/exporter.ts | yarn pino-pretty -c -l
+	. ./.envrc && yarn tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \
+		src/servers/exporter.ts | yarn pino-pretty -c -l
 
 watch:
 	yarn nodemon -V -e ts,graphql -w ./src -x make start

@@ -1,0 +1,25 @@
+receivers:
+  jaeger:
+    protocols:
+      thrift_binary: # on port 6832
+
+processors:
+  batch:
+
+exporters:
+  logging:
+    loglevel: debug
+
+extensions:
+  health_check:
+  pprof:
+  zpages:
+
+service:
+  extensions: [health_check, pprof, zpages]
+  pipelines:
+    traces:
+      receivers: [jaeger]
+      processors: [batch]
+      exporters: [logging]
+
