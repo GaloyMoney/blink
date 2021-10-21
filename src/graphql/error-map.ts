@@ -129,164 +129,58 @@ export const mapError = (error: ApplicationError): CustomError => {
     // ----------
 
     case "CouldNotFindUserError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "TwoFAError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "LedgerError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "LedgerServiceError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "LightningError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "LnInvoiceDecodeError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "LightningServiceError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "CouldNotDecodeReturnedPaymentRequest":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "InvoiceNotFoundError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "LnPaymentPendingError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "LnAlreadyPaidError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "NoValidNodeForPubkeyError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "PaymentNotFoundError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "InconsistentDataError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "AuthorizationError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "RepositoryError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "PersistError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "DuplicateError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "CouldNotFindError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "ValidationError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "InvalidSatoshiAmount":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "InvalidUsername":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "InvalidPublicWalletId":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "LessThanDustThresholdError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "InvalidTargetConfirmations":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "NoContactForUsernameError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "NoWalletExistsForUserError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "LimitsExceededError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "CouldNotFindWalletFromIdError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "CouldNotFindWalletFromUsernameError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "CouldNotFindWalletFromOnChainAddressError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "CouldNotFindWalletFromPublicIdError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "CouldNotFindWalletFromOnChainAddressesError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "LockError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "LockServiceError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "UnknownLockServiceError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "PriceError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "PriceServiceError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "UnknownPriceServiceError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "OnChainError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "TransactionDecodeError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "OnChainServiceError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "UnknownOnChainServiceError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "OnChainServiceUnavailableError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "NotificationsError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "NotificationsServiceError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "AccountError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "ApiKeyError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "ApiKeyHashError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "InvalidApiKeyError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "InvalidExpirationError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "IpFetcherError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "IpFetcherServiceError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "UnknownIpFetcherServiceError":
       return new UnknownClientError({ message, logger: baseLogger })
 
