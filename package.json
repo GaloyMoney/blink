@@ -72,7 +72,7 @@
     "lodash": "^4.17.21",
     "medici": "^4.0.2",
     "moment": "^2.29.1",
-    "mongoose": "~5.10.14",
+    "mongoose": "^6.0.11",
     "node-2fa": "^2.0.2",
     "node-cache": "^5.1.2",
     "pino": "^6.11.3",
