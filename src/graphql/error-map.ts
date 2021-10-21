@@ -8,6 +8,8 @@ import {
   InsufficientBalanceError,
   DbError,
   UnknownClientError,
+  InvoiceDecodeError,
+  ValidationInternalError,
 } from "@graphql/error"
 
 import * as DomainErrors from "@domain/errors"
@@ -56,6 +58,14 @@ export const mapError = (error: ApplicationError): CustomError => {
       message = "Need a 2FA code to proceed with the payment"
       return new TwoFAError({ message, logger: baseLogger })
 
+    case "TwoFALimitsExceededError":
+      message = "Need a 2FA code to proceed with the payment"
+      return new TwoFAError({ message, logger: baseLogger })
+
+    case "TwoFAValidationError":
+      message = "Invalid 2FA token passed"
+      return new TwoFAError({ message, logger: baseLogger })
+
     case "AlreadyPaidError":
       message = "Invoice is already paid"
       return new LightningPaymentError({ message, logger: baseLogger })
@@ -83,11 +93,36 @@ export const mapError = (error: ApplicationError): CustomError => {
     case "InsufficientBalanceError":
       return new InsufficientBalanceError({ message, logger: baseLogger })
 
+    case "LnInvoiceMissingPaymentSecretError":
+      message = "Invoice is missing its 'payment secret' value"
+      return new InvoiceDecodeError({ message, logger: baseLogger })
+
+    case "SatoshiAmountRequiredError":
+      message = "An amount is required to complete payment"
+      return new ValidationInternalError({ message, logger: baseLogger })
+
+    case "LnPaymentRequestNonZeroAmountRequiredError":
+      message = "Invoice does not have a valid amount to pay"
+      return new ValidationInternalError({ message, logger: baseLogger })
+
+    case "LnPaymentRequestZeroAmountRequiredError":
+      message = "Invoice must be a zero-amount invoice"
+      return new ValidationInternalError({ message, logger: baseLogger })
+
+    case "UnknownLnInvoiceDecodeError":
+      return new InvoiceDecodeError({ message, logger: baseLogger })
+
+    case "UnknownRepositoryError":
+      return new DbError({ message, logger: baseLogger, level: "fatal" })
+
     case "UnknownLedgerError":
       return new DbError({ message, logger: baseLogger, level: "fatal" })
 
     case "UnknownLightningServiceError":
       return new LightningPaymentError({ message, logger: baseLogger })
+
+    case "UnknownTwoFAError":
+      return new TwoFAError({ message, logger: baseLogger })
 
     // ----------
     // Unhandled below here
@@ -97,12 +132,6 @@ export const mapError = (error: ApplicationError): CustomError => {
       return new UnknownClientError({ message, logger: baseLogger })
 
     case "TwoFAError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
-    case "TwoFAValidationError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
-    case "UnknownTwoFAError":
       return new UnknownClientError({ message, logger: baseLogger })
 
     case "LedgerError":
@@ -147,9 +176,6 @@ export const mapError = (error: ApplicationError): CustomError => {
     case "RepositoryError":
       return new UnknownClientError({ message, logger: baseLogger })
 
-    case "UnknownRepositoryError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "PersistError":
       return new UnknownClientError({ message, logger: baseLogger })
 
@@ -163,9 +189,6 @@ export const mapError = (error: ApplicationError): CustomError => {
       return new UnknownClientError({ message, logger: baseLogger })
 
     case "InvalidSatoshiAmount":
-      return new UnknownClientError({ message, logger: baseLogger })
-
-    case "SatoshiAmountRequiredError":
       return new UnknownClientError({ message, logger: baseLogger })
 
     case "InvalidUsername":
@@ -183,19 +206,10 @@ export const mapError = (error: ApplicationError): CustomError => {
     case "NoContactForUsernameError":
       return new UnknownClientError({ message, logger: baseLogger })
 
-    case "LnPaymentRequestNonZeroAmountRequiredError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
-    case "LnPaymentRequestZeroAmountRequiredError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "NoWalletExistsForUserError":
       return new UnknownClientError({ message, logger: baseLogger })
 
     case "LimitsExceededError":
-      return new UnknownClientError({ message, logger: baseLogger })
-
-    case "TwoFALimitsExceededError":
       return new UnknownClientError({ message, logger: baseLogger })
 
     case "CouldNotFindWalletFromIdError":
