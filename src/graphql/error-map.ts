@@ -182,6 +182,8 @@ export const mapError = (error: ApplicationError): CustomError => {
     case "IpFetcherError":
     case "IpFetcherServiceError":
     case "UnknownIpFetcherServiceError":
+    case "CouldNotFindTransactionError":
+    case "InvalidLedgerTransactionId":
       return new UnknownClientError({ message, logger: baseLogger })
 
     default:
