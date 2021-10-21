@@ -61,6 +61,7 @@ unit-in-ci:
 		LOGLEVEL=warn $(BIN_DIR)/jest --config ./test/jest-unit.config.js --ci --bail
 
 check-code:
+	yarn tsc --version
 	yarn tsc-check
 	yarn eslint-check
 	yarn prettier-check
