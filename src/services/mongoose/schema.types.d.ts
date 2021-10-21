@@ -24,7 +24,7 @@ type TwillioObjectForUser = {
   countryCode: string
 }
 
-type CurrenceyObjectForUser = {
+type CurrencyObjectForUser = {
   id: string
   ratio: number
 }
@@ -60,7 +60,7 @@ interface UserType {
   excludeCashback?: boolean
   contacts: ContactObjectForUser[]
   created_at: string
-  currencies: CurrenceyObjectForUser[]
+  currencies: CurrencyObjectForUser[]
   lastIPs?: IPType[]
   onchain?: OnChainObjectForUser[]
   lastConnection: Date
