@@ -273,8 +273,6 @@ describe("on us payment via Ledger Service", () => {
       recipientLiabilitiesAccountId: payee.accountPath,
       payerUsername: "payerUsername" as Username,
       recipientUsername: "recipientUsername" as Username,
-      payerWalletPublicId: "payerWalletPublicId" as WalletPublicId,
-      recipientWalletPublicId: "recipientWalletPublicId" as WalletPublicId,
       memoPayer: null,
     })
     expect(result).not.toBeInstanceOf(Error)

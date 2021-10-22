@@ -411,8 +411,6 @@ export const LedgerService = (): ILedgerService => {
     recipientLiabilitiesAccountId,
     payerUsername,
     recipientUsername,
-    payerWalletPublicId,
-    recipientWalletPublicId,
     memoPayer,
   }: AddLnIntraledgerTxSendArgs): Promise<LedgerJournal | LedgerError> => {
     const metadata: AddLnIntraledgerTxSendMetadata = {
@@ -436,8 +434,6 @@ export const LedgerService = (): ILedgerService => {
       recipientLiabilitiesAccountId,
       payerUsername,
       recipientUsername,
-      payerWalletPublicId,
-      recipientWalletPublicId,
       memoPayer,
       shareMemoWithPayee: false,
       metadata,
@@ -456,8 +452,6 @@ export const LedgerService = (): ILedgerService => {
     recipientLiabilitiesAccountId,
     payerUsername,
     recipientUsername,
-    payerWalletPublicId,
-    recipientWalletPublicId,
     memoPayer,
   }: AddOnChainIntraledgerTxSendArgs): Promise<LedgerJournal | LedgerError> => {
     const metadata: AddOnChainIntraledgerTxSendMetadata = {
@@ -481,8 +475,6 @@ export const LedgerService = (): ILedgerService => {
       recipientLiabilitiesAccountId,
       payerUsername,
       recipientUsername,
-      payerWalletPublicId,
-      recipientWalletPublicId,
       memoPayer,
       shareMemoWithPayee: false,
       metadata,
@@ -499,8 +491,6 @@ export const LedgerService = (): ILedgerService => {
     recipientLiabilitiesAccountId,
     payerUsername,
     recipientUsername,
-    payerWalletPublicId,
-    recipientWalletPublicId,
     memoPayer,
   }: AddUsernameIntraledgerTxSendArgs): Promise<LedgerJournal | LedgerError> => {
     const metadata: AddUsernameIntraledgerTxSendMetadata = {
@@ -522,8 +512,6 @@ export const LedgerService = (): ILedgerService => {
       recipientLiabilitiesAccountId,
       payerUsername,
       recipientUsername,
-      payerWalletPublicId,
-      recipientWalletPublicId,
       memoPayer,
       shareMemoWithPayee: true,
       metadata,
@@ -537,8 +525,6 @@ export const LedgerService = (): ILedgerService => {
     recipientLiabilitiesAccountId,
     payerUsername,
     recipientUsername,
-    payerWalletPublicId,
-    recipientWalletPublicId,
     memoPayer,
     shareMemoWithPayee,
     metadata,
@@ -547,15 +533,9 @@ export const LedgerService = (): ILedgerService => {
       const creditMetadata = {
         ...metadata,
         username: payerUsername,
-        walletPublicId: payerWalletPublicId,
         memoPayer: shareMemoWithPayee ? memoPayer : null,
       }
-      const debitMetadata = {
-        ...metadata,
-        username: recipientUsername,
-        walletPublicId: recipientWalletPublicId,
-        memoPayer,
-      }
+      const debitMetadata = { ...metadata, username: recipientUsername, memoPayer }
 
       const entry = MainBook.entry(description)
 

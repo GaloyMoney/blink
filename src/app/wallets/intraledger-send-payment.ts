@@ -204,8 +204,6 @@ const executePaymentViaIntraledger = async ({
         recipientLiabilitiesAccountId: toLiabilitiesAccountId(recipientWalletId),
         payerUsername: username,
         recipientUsername,
-        payerWalletPublicId: payerWallet.publicId,
-        recipientWalletPublicId: recipientWallet.publicId,
         memoPayer,
       }),
     )
