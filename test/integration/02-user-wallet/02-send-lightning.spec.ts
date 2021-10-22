@@ -118,9 +118,6 @@ describe("UserWallet - Lightning Pay", () => {
     expect(user1Txn.filter(matchTx)[0].deprecated.description).toBe(memo)
     expect(user1Txn.filter(matchTx)[0].settlementVia).toBe("intraledger")
     // expect(user1Txn.filter(matchTx)[0].recipientUsername).toBe("lily")
-    expect(user1Txn.filter(matchTx)[0].recipientWalletPublicId).toBe(
-      userWallet2.user.walletPublicId,
-    )
 
     txResult = await Wallets.getTransactionsForWalletId({
       walletId: userWallet1.user.id,
