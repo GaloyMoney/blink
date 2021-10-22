@@ -66,7 +66,15 @@ export const LndService = (): ILightningService | LightningServiceError => {
     }
 
     try {
+      // console.log("HERE 0:", lndAuth)
+      console.log("HERE 1:", {
+        description,
+        tokens: satoshis as number,
+        expires_at: expiresAt.toISOString(),
+      })
       const result = await createInvoice(input)
+      console.log("HERE 2:", result)
+
       const request = result.request as EncodedPaymentRequest
       const returnedInvoice = decodeInvoice(request)
       if (returnedInvoice instanceof Error) {
@@ -74,6 +82,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
       }
       return { invoice: returnedInvoice, pubkey: defaultPubkey } as RegisteredInvoice
     } catch (err) {
+      console.log("HERE 3:", err)
       return new UnknownLightningServiceError(err)
     }
   }

@@ -3,10 +3,13 @@ import { MS_PER_DAY, onboardingEarn } from "@config/app"
 import { checkIsBalanced, getAndCreateUserWallet } from "test/helpers"
 import { getBTCBalance } from "test/helpers/wallet"
 import { resetSelfWalletIdLimits } from "test/helpers/rate-limit"
+import { updateUserQuizQuestionCompleted } from "@app/lightning/user-quiz-question"
 
 let userWallet1
 
-const earnsToGet = ["whereBitcoinExist", "whyStonesShellGold", "NoCounterfeitMoney"]
+// const earnsToGet = ["whereBitcoinExist", "whyStonesShellGold", "NoCounterfeitMoney"]
+const earnsToGet = ["whereBitcoinExist"]
+// const earnsToGet = ["whyStonesShellGold"]
 const onBoardingEarnAmt: number = Object.keys(onboardingEarn)
   .filter((k) => find(earnsToGet, (o) => o === k))
   .reduce((p, k) => p + onboardingEarn[k], 0)
@@ -27,7 +30,7 @@ afterAll(() => {
 })
 
 describe("UserWallet - addEarn", () => {
-  it("adds balance only once", async () => {
+  it.only("adds balance only once", async () => {
     const resetOk = await resetSelfWalletIdLimits(userWallet1.user.id)
     expect(resetOk).not.toBeInstanceOf(Error)
     if (resetOk instanceof Error) throw resetOk
@@ -35,7 +38,16 @@ describe("UserWallet - addEarn", () => {
     const initialBalance = await getBTCBalance(userWallet1.user.id)
 
     const getAndVerifyRewards = async () => {
-      await userWallet1.addEarn(onBoardingEarnIds)
+      for (const questionId of onBoardingEarnIds) {
+        const question = updateUserQuizQuestionCompleted({
+          questionId: questionId as QuizQuestionId,
+          userId: userWallet1.user.id,
+          logger: userWallet1.logger,
+        })
+        expect(question).not.toBeInstanceOf(Error)
+        if (question instanceof Error) throw question
+      }
+      // await userWallet1.addEarn(onBoardingEarnIds)
       const finalBalance = await getBTCBalance(userWallet1.user.id)
       let rewards = onBoardingEarnAmt
       if (difference(onBoardingEarnIds, userWallet1.user.earn).length === 0) {
