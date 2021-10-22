@@ -1,4 +1,6 @@
+import { updateUserQuizQuestionCompleted } from "@app/lightning/user-quiz-question"
 import { onboardingEarn } from "@config/app"
+import { mapError } from "@graphql/error-map"
 import { GT } from "@graphql/index"
 
 import UserQuizQuestionUpdateCompletedPayload from "@graphql/types/payload/user-quiz-question-update-completed"
@@ -15,28 +17,31 @@ const UserQuizQuestionUpdateCompletedMutation = GT.Field({
   args: {
     input: { type: GT.NonNull(UserQuizQuestionUpdateCompletedInput) },
   },
-  resolve: async (_, args, { wallet }) => {
+  resolve: async (_, args, { user, logger }) => {
     const { id } = args.input
+    for (const input of [id]) {
+      if (input instanceof Error) {
+        return { errors: [{ message: input.message }] }
+      }
+    }
 
     if (!onboardingEarn[id]) {
       return { errors: [{ message: "Invalid input" }] }
     }
 
-    try {
-      const quizQuestions = await wallet.addEarn([id])
-      const question = quizQuestions[0]
+    const userQuizQuestion = await updateUserQuizQuestionCompleted({
+      questionId: id as QuizQuestionId,
+      userId: user.id as UserId,
+      logger,
+    })
+    if (userQuizQuestion instanceof Error) {
+      const appErr = mapError(userQuizQuestion)
+      return { errors: [{ message: appErr.message }] }
+    }
 
-      return {
-        errors: [],
-        userQuizQuestion: {
-          question: { id: question.id, earnAmount: question.value },
-          completed: question.completed,
-        },
-      }
-    } catch (err) {
-      return {
-        errors: [{ message: err.message || err.name }],
-      }
+    return {
+      errors: [],
+      userQuizQuestion,
     }
   },
 })
