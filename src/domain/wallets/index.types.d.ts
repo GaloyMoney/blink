@@ -30,7 +30,7 @@ type BaseWalletTransaction = {
 type IntraLedgerTransaction = BaseWalletTransaction & {
   readonly initiationVia: "intraledger"
   readonly settlementVia: "intraledger"
-  readonly otherPartyUsername: Username
+  readonly otherPartyUsername: Username | null
   readonly recipientWalletPublicId: WalletPublicId
 }
 
