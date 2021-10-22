@@ -10,10 +10,17 @@ interface ILockService {
     args: { walletId: WalletId; logger: Logger; lock?: DistributedLock },
     f: (lock?: DistributedLock) => Promise<Res>,
   ): Promise<Res | LockServiceError>
+
+  lockUserId<Res>(
+    args: { userId: UserId; logger: Logger; lock?: DistributedLock },
+    f: (lock?: DistributedLock) => Promise<Res>,
+  ): Promise<Res | LockServiceError>
+
   lockPaymentHash<Res>(
     args: { paymentHash: PaymentHash; logger: Logger; lock?: DistributedLock },
     f: (lock?: DistributedLock) => Promise<Res>,
   ): Promise<Res | LockServiceError>
+
   extendLock<Res>(
     args: { logger: Logger; lock?: DistributedLock },
     f: (lock?: DistributedLock) => Promise<Res>,
