@@ -11,21 +11,24 @@ import { redis } from "@services/redis"
 
 const requestPhoneCodeLimits = getRequestPhoneCodeLimits()
 export const limiterRequestPhoneCode = new RateLimiterRedis({
-  storeClient: redis,
+  // @ts-expect-error: TODO
+  redis,
   keyPrefix: "request_phone_code",
   ...requestPhoneCodeLimits,
 })
 
 const requestPhoneCodeIpLimits = getRequestPhoneCodeIpLimits()
 export const limiterRequestPhoneCodeIp = new RateLimiterRedis({
-  storeClient: redis,
+  // @ts-expect-error: TODO
+  redis,
   keyPrefix: "request_phone_code_ip",
   ...requestPhoneCodeIpLimits,
 })
 
 const loginAttemptLimits = getLoginAttemptLimits()
 export const limiterLoginAttempt = new RateLimiterRedis({
-  storeClient: redis,
+  // @ts-expect-error: TODO
+  redis,
   keyPrefix: "login",
   ...loginAttemptLimits,
 })
@@ -36,7 +39,8 @@ export const limiterLoginAttempt = new RateLimiterRedis({
 
 const failedAttemptPerIpLimits = getFailedAttemptPerIpLimits()
 export const failedAttemptPerIp = new RateLimiterRedis({
-  storeClient: redis,
+  // @ts-expect-error: TODO
+  redis,
   keyPrefix: "failed_attempt_ip",
   ...failedAttemptPerIpLimits,
 })
