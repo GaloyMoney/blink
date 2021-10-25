@@ -1,5 +1,5 @@
 import { toSats } from "@domain/bitcoin"
-import { isOnchainTransaction, LedgerTransactionType } from "@domain/ledger"
+import { isOnChainTransaction, LedgerTransactionType } from "@domain/ledger"
 import { MEMO_SHARING_SATS_THRESHOLD } from "@config/app"
 import { SettlementMethod, PaymentInitiationMethod } from "./tx-methods"
 import { TxStatus } from "./tx-status"
@@ -78,7 +78,7 @@ export const fromLedger = (
         credit,
       })
       const status = pendingConfirmation ? TxStatus.Pending : TxStatus.Success
-      if (address || isOnchainTransaction(type)) {
+      if (isOnChainTransaction(type)) {
         return {
           id,
           walletId,

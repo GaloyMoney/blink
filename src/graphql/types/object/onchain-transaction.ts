@@ -16,6 +16,11 @@ const OnChainTransaction = new GT.Object({
     // Non-interface fields
     address: {
       type: GT.NonNull(OnChainAddress),
+      resolve: (source) => {
+        // this is required to support legacy data
+        if (source && source.address) return source.address
+        return ""
+      },
     },
 
     transactionHash: {

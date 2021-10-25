@@ -636,7 +636,9 @@ const translateToLedgerTx = (tx): LedgerTransaction => ({
   paymentHash: tx.hash,
   pubkey: tx.pubkey,
   address:
-    (tx.payee_addresses && tx.payee_addresses.length > 0 && tx.payee_addresses[0]) || "",
+    tx.payee_addresses && tx.payee_addresses.length > 0
+      ? tx.payee_addresses[0]
+      : undefined,
   txId: tx.hash,
   feeKnownInAdvance: tx.feeKnownInAdvance || false,
 })
