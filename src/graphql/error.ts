@@ -6,7 +6,7 @@ import { baseLogger } from "@services/logger"
 
 const onChainWalletConfig = getOnChainWalletConfig()
 
-export class CustomError extends ApolloError {
+export class CustomApolloError extends ApolloError {
   log: LogFn
   forwardToClient: boolean
 
@@ -17,27 +17,27 @@ export class CustomError extends ApolloError {
     logger,
     level,
     ...metadata
-  }: CustomErrorData & { code: string }) {
+  }: CustomApolloErrorData & { code: string }) {
     super(message ?? code, code, metadata)
     this.log = logger[level || "warn"].bind(logger)
     this.forwardToClient = forwardToClient || false
   }
 }
 
-export class TransactionRestrictedError extends CustomError {
-  constructor(errData: CustomErrorData) {
+export class TransactionRestrictedError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
     super({ code: "TRANSACTION_RESTRICTED", forwardToClient: true, ...errData })
   }
 }
 
-export class UnknownClientError extends CustomError {
-  constructor(errData: CustomErrorData) {
+export class UnknownClientError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
     super({ code: "UNKNOWN_CLIENT_ERROR", forwardToClient: true, ...errData })
   }
 }
 
-export class InsufficientBalanceError extends CustomError {
-  constructor(errData: CustomErrorData) {
+export class InsufficientBalanceError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
     super({
       code: "INSUFFICIENT_BALANCE",
       message: "balance is too low",
@@ -47,8 +47,8 @@ export class InsufficientBalanceError extends CustomError {
   }
 }
 
-export class SelfPaymentError extends CustomError {
-  constructor(errData: CustomErrorData) {
+export class SelfPaymentError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
     super({
       code: "CANT_PAY_SELF",
       message: "User tried to pay themselves",
@@ -58,20 +58,20 @@ export class SelfPaymentError extends CustomError {
   }
 }
 
-export class ValidationInternalError extends CustomError {
-  constructor(errData: CustomErrorData) {
+export class ValidationInternalError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
     super({ code: "INVALID_INPUT", forwardToClient: true, ...errData })
   }
 }
 
-export class NotFoundError extends CustomError {
-  constructor(errData: CustomErrorData) {
+export class NotFoundError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
     super({ code: "NOT_FOUND", forwardToClient: true, ...errData })
   }
 }
 
-export class NewAccountWithdrawalError extends CustomError {
-  constructor(errData: CustomErrorData) {
+export class NewAccountWithdrawalError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
     super({
       code: "NEW_ACCOUNT_WITHDRAWAL_RESTRICTED",
       forwardToClient: true,
@@ -80,8 +80,8 @@ export class NewAccountWithdrawalError extends CustomError {
   }
 }
 
-export class TooManyRequestError extends CustomError {
-  constructor(errData: CustomErrorData) {
+export class TooManyRequestError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
     super({
       code: "TOO_MANY_REQUEST",
       message: "Too many requests",
@@ -91,20 +91,20 @@ export class TooManyRequestError extends CustomError {
   }
 }
 
-export class DbError extends CustomError {
-  constructor(errData: CustomErrorData) {
+export class DbError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
     super({ code: "DB_ERROR", forwardToClient: true, ...errData })
   }
 }
 
-export class LightningPaymentError extends CustomError {
-  constructor(errData: CustomErrorData) {
+export class LightningPaymentError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
     super({ code: "LIGHTNING_PAYMENT_ERROR", forwardToClient: true, ...errData })
   }
 }
 
-export class RouteFindingError extends CustomError {
-  constructor(errData: CustomErrorData) {
+export class RouteFindingError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
     super({
       code: "ROUTE_FINDING_ERROR",
       message: "Unable to find a route for payment",
@@ -114,8 +114,8 @@ export class RouteFindingError extends CustomError {
   }
 }
 
-export class RebalanceNeededError extends CustomError {
-  constructor(errData: CustomErrorData) {
+export class RebalanceNeededError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
     super({
       code: "REBALANCE_NEEDED",
       message: "Insufficient onchain balance on lnd",
@@ -125,8 +125,8 @@ export class RebalanceNeededError extends CustomError {
   }
 }
 
-export class DustAmountError extends CustomError {
-  constructor(errData: CustomErrorData) {
+export class DustAmountError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
     super({
       code: "ENTERED_DUST_AMOUNT",
       message: `Use lightning to send amounts less than ${onChainWalletConfig.dustThreshold}`,
@@ -136,14 +136,14 @@ export class DustAmountError extends CustomError {
   }
 }
 
-export class LndOfflineError extends CustomError {
-  constructor(errData: PartialBy<CustomErrorData, "logger" | "forwardToClient">) {
+export class LndOfflineError extends CustomApolloError {
+  constructor(errData: PartialBy<CustomApolloErrorData, "logger" | "forwardToClient">) {
     super({ code: "LND_OFFLINE", forwardToClient: true, ...errData, logger: baseLogger })
   }
 }
 
-export class IPBlacklistedError extends CustomError {
-  constructor(errData: CustomErrorData) {
+export class IPBlacklistedError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
     super({
       forwardToClient: false,
       code: "REJECTED_BLACKLISTED_IP",
@@ -152,8 +152,8 @@ export class IPBlacklistedError extends CustomError {
   }
 }
 
-export class CaptchaFailedError extends CustomError {
-  constructor(errData: CustomErrorData) {
+export class CaptchaFailedError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
     super({
       message: "Unable to estimate onchain fee",
       forwardToClient: true,
@@ -163,8 +163,8 @@ export class CaptchaFailedError extends CustomError {
   }
 }
 
-export class OnChainFeeEstimationError extends CustomError {
-  constructor(errData: CustomErrorData) {
+export class OnChainFeeEstimationError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
     super({
       message: "Unable to estimate onchain fee",
       forwardToClient: true,
@@ -174,8 +174,8 @@ export class OnChainFeeEstimationError extends CustomError {
   }
 }
 
-export class TwoFAError extends CustomError {
-  constructor(errData: CustomErrorData) {
+export class TwoFAError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
     super({
       message: "Incorrect code",
       forwardToClient: true,
@@ -185,8 +185,8 @@ export class TwoFAError extends CustomError {
   }
 }
 
-export class InvoiceDecodeError extends CustomError {
-  constructor(errData: CustomErrorData) {
+export class InvoiceDecodeError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
     super({
       message: "Unable to decode invoice",
       forwardToClient: true,

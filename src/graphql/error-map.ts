@@ -1,5 +1,4 @@
 import {
-  CustomError,
   TransactionRestrictedError,
   LightningPaymentError,
   TwoFAError,
@@ -42,7 +41,7 @@ const assertUnreachable = (x: never): never => {
   throw new Error(`This should never compile with ${x}`)
 }
 
-export const mapError = (error: ApplicationError): CustomError => {
+export const mapError = (error: ApplicationError): CustomApolloError => {
   let message = ""
   const errorName = error.constructor.name as keyof typeof AllApplicationErrors
   switch (errorName) {
