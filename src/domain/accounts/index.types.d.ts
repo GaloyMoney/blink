@@ -1,3 +1,5 @@
+type AccountError = import("./errors").AccountError
+
 declare const currencyRatioSymbol: unique symbol
 type CurrencyRatio = number & { [currencyRatioSymbol]: never }
 

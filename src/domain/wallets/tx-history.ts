@@ -148,7 +148,7 @@ export const fromLedger = (
         status,
         memo,
         createdAt: timestamp,
-      } as IntraLedgerTransaction
+      }
     },
   )
   return {

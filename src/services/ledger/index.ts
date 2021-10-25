@@ -412,7 +412,6 @@ export const LedgerService = (): ILedgerService => {
     payerUsername,
     recipientUsername,
     memoPayer,
-    shareMemoWithPayee,
   }: AddLnIntraledgerTxSendArgs): Promise<LedgerJournal | LedgerError> => {
     const metadata: AddLnIntraledgerTxSendMetadata = {
       type: LedgerTransactionType.IntraLedger,
@@ -436,7 +435,7 @@ export const LedgerService = (): ILedgerService => {
       payerUsername,
       recipientUsername,
       memoPayer,
-      shareMemoWithPayee,
+      shareMemoWithPayee: false,
       metadata,
     })
   }
@@ -454,7 +453,6 @@ export const LedgerService = (): ILedgerService => {
     payerUsername,
     recipientUsername,
     memoPayer,
-    shareMemoWithPayee,
   }: AddOnChainIntraledgerTxSendArgs): Promise<LedgerJournal | LedgerError> => {
     const metadata: AddOnChainIntraledgerTxSendMetadata = {
       type: LedgerTransactionType.OnchainIntraLedger,
@@ -478,7 +476,44 @@ export const LedgerService = (): ILedgerService => {
       payerUsername,
       recipientUsername,
       memoPayer,
-      shareMemoWithPayee,
+      shareMemoWithPayee: false,
+      metadata,
+    })
+  }
+
+  const addUsernameIntraledgerTxSend = async ({
+    liabilitiesAccountId,
+    description,
+    sats,
+    fee,
+    usd,
+    usdFee,
+    recipientLiabilitiesAccountId,
+    payerUsername,
+    recipientUsername,
+    memoPayer,
+  }: AddUsernameIntraledgerTxSendArgs): Promise<LedgerJournal | LedgerError> => {
+    const metadata: AddUsernameIntraledgerTxSendMetadata = {
+      type: LedgerTransactionType.OnchainIntraLedger,
+      pending: false,
+      fee,
+      feeUsd: usdFee,
+      sats,
+      usd,
+      memoPayer: null,
+      username: null,
+      currency: "BTC",
+    }
+
+    return addIntraledgerTxSend({
+      liabilitiesAccountId,
+      description,
+      sats,
+      recipientLiabilitiesAccountId,
+      payerUsername,
+      recipientUsername,
+      memoPayer,
+      shareMemoWithPayee: true,
       metadata,
     })
   }
@@ -574,6 +609,7 @@ export const LedgerService = (): ILedgerService => {
     addLnTxSend,
     addLnIntraledgerTxSend,
     addOnChainIntraledgerTxSend,
+    addUsernameIntraledgerTxSend,
     settlePendingLnPayments,
     updatePendingLnPayments,
     voidLedgerTransactionsForJournal,
@@ -595,7 +631,7 @@ const translateToLedgerTx = (tx): LedgerTransaction => ({
   journalId: tx._journal.toString(),
   lnMemo: tx.memo,
   username: tx.username,
-  walletPublicId: tx.walletPublicId,
+  walletPublicId: tx.walletPublicId || null,
   memoFromPayer: tx.memoPayer,
   paymentHash: tx.hash,
   pubkey: tx.pubkey,

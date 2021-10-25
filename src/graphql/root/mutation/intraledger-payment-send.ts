@@ -1,3 +1,4 @@
+import { intraledgerPaymentSend } from "@app/wallets"
 import { getUsernameFromWalletPublicId } from "@app/users"
 import { checkedToWalletPublicId } from "@domain/wallets"
 import { GT } from "@graphql/index"
@@ -6,6 +7,7 @@ import PaymentSendPayload from "@graphql/types/payload/payment-send"
 import Memo from "@graphql/types/scalar/memo"
 import SatAmount from "@graphql/types/scalar/sat-amount"
 import WalletId from "@graphql/types/scalar/wallet-id"
+import { mapError } from "@graphql/error-map"
 
 const IntraLedgerPaymentSendInput = new GT.Input({
   name: "IntraLedgerPaymentSendInput",
@@ -21,7 +23,7 @@ const IntraLedgerPaymentSendMutation = GT.Field({
   args: {
     input: { type: GT.NonNull(IntraLedgerPaymentSendInput) },
   },
-  resolve: async (_, args, { wallet }) => {
+  resolve: async (_, args, { user, wallet, logger }) => {
     const { recipientWalletId, amount, memo } = args.input
     for (const input of [recipientWalletId, amount, memo]) {
       if (input instanceof Error) {
@@ -35,21 +37,26 @@ const IntraLedgerPaymentSendMutation = GT.Field({
     }
 
     const recipientUsername = await getUsernameFromWalletPublicId(walletPublicId)
+    if (recipientUsername instanceof Error) {
+      return { errors: [{ message: recipientUsername.message }] }
+    }
 
-    try {
-      const status = await wallet.pay({ username: recipientUsername, amount, memo })
-      if (status instanceof Error) {
-        return { status: "failed", errors: [{ message: status.message }] }
-      }
-      return {
-        errors: [],
-        status,
-      }
-    } catch (err) {
-      return {
-        status: "failed",
-        errors: [{ message: err.message }],
-      }
+    const status = await intraledgerPaymentSend({
+      recipientUsername,
+      memo,
+      amount,
+      walletId: wallet.user.id,
+      userId: user.id,
+      logger,
+    })
+    if (status instanceof Error) {
+      const appErr = mapError(status)
+      return { status: "failed", errors: [{ message: appErr.message }] }
+    }
+
+    return {
+      errors: [],
+      status: status.value,
     }
   },
 })

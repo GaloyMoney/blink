@@ -263,20 +263,17 @@ describe("on us payment via Ledger Service", () => {
     const usd = sats * price
     const usdFee = fee * price
 
-    const result = await LedgerService().addLnIntraledgerTxSend({
+    const result = await LedgerService().addUsernameIntraledgerTxSend({
       liabilitiesAccountId: payer.accountPath,
-      paymentHash: "paymentHash" as PaymentHash,
       description: "desc",
       sats,
       fee: lnFee,
       usd,
       usdFee,
-      pubkey: "" as Pubkey,
       recipientLiabilitiesAccountId: payee.accountPath,
       payerUsername: "payerUsername" as Username,
       recipientUsername: "recipientUsername" as Username,
       memoPayer: null,
-      shareMemoWithPayee: true,
     })
     expect(result).not.toBeInstanceOf(Error)
 

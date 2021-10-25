@@ -1,3 +1,4 @@
+type IpFetcherError = import("./errors").IpFetcherError
 type IpFetcherServiceError = import("./errors").IpFetcherServiceError
 
 declare const ipAddressSymbol: unique symbol

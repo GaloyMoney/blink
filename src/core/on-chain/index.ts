@@ -40,7 +40,7 @@ import {
   checkAndVerifyTwoFA,
   checkIntraledgerLimits,
   checkWithdrawalLimits,
-} from "@core/accounts/helpers"
+} from "@app/wallets/check-limit-helpers"
 import { TwoFANewCodeNeededError } from "@domain/twoFA"
 
 export const getOnChainTransactions = async ({
@@ -71,10 +71,6 @@ export const OnChainMixin = (superclass) =>
     constructor(args: UserWalletConstructorArgs) {
       super(args)
       this.config = args.config
-    }
-
-    async updatePending(lock): Promise<void> {
-      await super.updatePending(lock)
     }
 
     async onChainPay({
@@ -207,7 +203,6 @@ export const OnChainMixin = (superclass) =>
                 payerUsername: this.user.username,
                 recipientUsername: payeeUser.username,
                 memoPayer: memo || null,
-                shareMemoWithPayee: false,
               }),
           )
           if (journal instanceof Error) throw journal

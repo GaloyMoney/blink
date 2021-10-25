@@ -94,7 +94,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
       return invoice
     }
 
-    return new InvoiceNotFoundError("Invoice not found")
+    return new InvoiceNotFoundError()
   }
 
   const lookupPayment = async ({

@@ -93,23 +93,26 @@ type IntraledgerTxArgs = {
   payerUsername: Username | null
   recipientUsername: Username | null
   memoPayer: string | null
-  shareMemoWithPayee: boolean
 }
 
-type AddLnIntraledgerTxSendArgs = IntraledgerTxArgs & {
-  paymentHash: PaymentHash
+type AddIntraLedgerTxSendArgs = IntraledgerTxArgs & {
   fee: Satoshis
   usd: number
   usdFee: number
+}
+
+type AddLnIntraledgerTxSendArgs = AddIntraLedgerTxSendArgs & {
+  paymentHash: PaymentHash
   pubkey: Pubkey
 }
 
-type AddOnChainIntraledgerTxSendArgs = IntraledgerTxArgs & {
-  fee: Satoshis
-  usd: number
-  usdFee: number
+type AddOnChainIntraledgerTxSendArgs = AddIntraLedgerTxSendArgs & {
   payeeAddresses: OnChainAddress[]
   sendAll: boolean
+}
+
+type AddUsernameIntraledgerTxSendArgs = AddIntraLedgerTxSendArgs & {
+  recipientUsername: Username
 }
 
 type AddLnFeeReeimbursementReceiveArgs = {
@@ -208,6 +211,10 @@ interface ILedgerService {
 
   addOnChainIntraledgerTxSend(
     args: AddOnChainIntraledgerTxSendArgs,
+  ): Promise<LedgerJournal | LedgerServiceError>
+
+  addUsernameIntraledgerTxSend(
+    args: AddUsernameIntraledgerTxSendArgs,
   ): Promise<LedgerJournal | LedgerServiceError>
 
   settlePendingLnPayments(paymentHash: PaymentHash): Promise<boolean | LedgerServiceError>

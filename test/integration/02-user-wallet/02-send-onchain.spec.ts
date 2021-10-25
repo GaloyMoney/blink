@@ -30,7 +30,7 @@ import { ledger } from "@services/mongodb"
 import { PaymentInitiationMethod, TxStatus } from "@domain/wallets"
 import * as Wallets from "@app/wallets"
 import { TwoFAError, TransactionRestrictedError } from "@core/error"
-import { getBTCBalance } from "test/helpers/wallet"
+import { getBTCBalance, getRemainingTwoFALimit } from "test/helpers/wallet"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
@@ -446,7 +446,10 @@ describe("UserWallet - onChainPay", () => {
   describe("2FA", () => {
     it("fails to pay above 2fa limit without 2fa token", async () => {
       enable2FA({ wallet: userWallet0 })
-      const remainingLimit = await userWallet0.user.remainingTwoFALimit()
+      const remainingLimit = await getRemainingTwoFALimit(userWallet0.user.id)
+      expect(remainingLimit).not.toBeInstanceOf(Error)
+      if (remainingLimit instanceof Error) return remainingLimit
+
       expect(
         userWallet0.onChainPay({ address: RANDOM_ADDRESS, amount: remainingLimit + 1 }),
       ).rejects.toThrowError(TwoFAError)

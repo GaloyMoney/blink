@@ -3,6 +3,8 @@ export class LightningError extends Error {
 }
 
 export class LnInvoiceDecodeError extends LightningError {}
+export class LnInvoiceMissingPaymentSecretError extends LnInvoiceDecodeError {}
+export class UnknownLnInvoiceDecodeError extends LnInvoiceDecodeError {}
 
 export class LightningServiceError extends LightningError {}
 export class CouldNotDecodeReturnedPaymentRequest extends LightningServiceError {}

@@ -40,3 +40,33 @@ type GetOnChainFeeByWalletPublicIdArgs = {
   address: OnChainAddress
   targetConfirmations: number
 }
+
+type PaymentSendArgs = {
+  memo: string | null
+  walletId: WalletId
+  userId: UserId
+  logger: Logger
+}
+
+type LnInvoicePaymentSendArgs = PaymentSendArgs & {
+  paymentRequest: EncodedPaymentRequest
+}
+type LnInvoicePaymentSendWithTwoFAArgs = LnInvoicePaymentSendArgs & {
+  twoFAToken: TwoFAToken
+}
+
+type LnNoAmountInvoicePaymentSendArgs = PaymentSendArgs & {
+  paymentRequest: EncodedPaymentRequest
+  amount: Satoshis
+}
+type LnNoAmountInvoicePaymentSendWithTwoFAArgs = LnNoAmountInvoicePaymentSendArgs & {
+  twoFAToken: TwoFAToken
+}
+
+type IntraLedgerPaymentSendArgs = PaymentSendArgs & {
+  recipientUsername: Username
+  amount: Satoshis
+}
+type IntraLedgerPaymentSendWithTwoFAArgs = IntraLedgerPaymentSendArgs & {
+  twoFAToken: TwoFAToken
+}
