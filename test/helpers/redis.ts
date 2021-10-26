@@ -7,9 +7,7 @@ export const clearKeys = async (prefix) => {
   }
 }
 
-export const clearAccountLocks = () => {
-  return clearKeys("locks:account")
-}
+export const clearAccountLocks = () => clearKeys("locks:account")
 
 export const clearLimiters = async () => {
   await clearKeys("login")
