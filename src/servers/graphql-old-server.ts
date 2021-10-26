@@ -15,7 +15,7 @@ import path from "path"
 import { getFeeRates, onboardingEarn, getBuildVersions } from "@config/app"
 
 import * as Wallets from "@app/wallets"
-import { SettlementMethod, TxStatus } from "@domain/wallets"
+import { SettlementMethod, PaymentInitiationMethod, TxStatus } from "@domain/wallets"
 import { setupMongoConnection } from "@services/mongodb"
 import { activateLndHealthCheck } from "@services/lnd/health"
 import { baseLogger } from "@services/logger"
@@ -72,7 +72,9 @@ const translateWalletTx = (txs: WalletTransaction[]) => {
     feeUsd: tx.deprecated.feeUsd,
     hash: getHash(tx),
     addresses:
-      tx.settlementVia === SettlementMethod.OnChain && tx.address ? [tx.address] : null,
+      tx.initiationVia === PaymentInitiationMethod.OnChain && tx.address
+        ? [tx.address]
+        : null,
     username:
       tx.settlementVia === SettlementMethod.IntraLedger ? tx.otherPartyUsername : null,
   }))
