@@ -17,7 +17,9 @@ const OnChainTransaction = new GT.Object({
     address: {
       type: GT.NonNull(OnChainAddress),
       resolve: (source) => {
-        // this is required to support legacy data
+        // Required to support legacy data:
+        // Domain expects a strict string type, but absence of property in legacy
+        // data means that the incoming value can sometimes be undefined.
         if (source && source.address) return source.address
         return ""
       },
