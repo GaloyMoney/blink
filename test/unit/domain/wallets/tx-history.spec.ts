@@ -33,9 +33,6 @@ describe("WalletTransactionHistory.fromLedger", () => {
         pendingConfirmation: false,
         journalId: "journalId" as LedgerJournalId,
         timestamp,
-        // To test that the lightning detection logic
-        // works when key is present
-        address: undefined,
         feeKnownInAdvance: false,
       },
       {
