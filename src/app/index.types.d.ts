@@ -3,16 +3,8 @@ type PartialResult<T> = {
   error?: ApplicationError
 }
 
-type ApplicationError =
-  | AuthorizationError
-  | RepositoryError
-  | ValidationError
-  | LedgerError
-  | OnChainError
-  | LightningError
-  | PriceServiceError
-  | TwoFAError
-  | LockServiceError
-  | IpFetcherError
-  | AccountError
-  | NotificationsError
+type ApplicationErrors = typeof import("./errors").ApplicationErrors
+type ApplicationErrorKey = keyof ApplicationErrors
+
+type ExtractInstanceType<T> = T extends new () => infer R ? R : never
+type ApplicationError = ExtractInstanceType<ApplicationErrors[ApplicationErrorKey]>
