@@ -41,6 +41,14 @@ type WalletOnChainTransaction = BaseWalletTransaction & {
   readonly transactionHash: TxId
 }
 
+type WalletLegacyOnChainTransaction = BaseWalletTransaction & {
+  readonly initiationVia: "onchain"
+  readonly settlementVia: "onchain" | "intraledger"
+  readonly otherPartyUsername: Username | null
+  readonly address: OnChainAddress | undefined
+  readonly transactionHash: TxId
+}
+
 type WalletLnTransaction = BaseWalletTransaction & {
   readonly initiationVia: "lightning"
   readonly settlementVia: "lightning" | "intraledger"
@@ -53,6 +61,7 @@ type WalletTransaction =
   | IntraLedgerTransaction
   | WalletOnChainTransaction
   | WalletLnTransaction
+  | WalletLegacyOnChainTransaction
 
 type ConfirmedTransactionHistory = {
   readonly transactions: WalletTransaction[]

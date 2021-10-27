@@ -44,7 +44,7 @@ const filterPendingIncoming = (
 export const fromLedger = (
   ledgerTransactions: LedgerTransaction[],
 ): ConfirmedTransactionHistory => {
-  const transactions = ledgerTransactions.map(
+  const transactions: WalletTransaction[] = ledgerTransactions.map(
     ({
       id,
       walletId,
@@ -87,7 +87,7 @@ export const fromLedger = (
             type === LedgerTransactionType.OnchainIntraLedger
               ? SettlementMethod.IntraLedger
               : SettlementMethod.OnChain,
-          address: address as OnChainAddress,
+          address,
           deprecated: {
             description,
             usd,
