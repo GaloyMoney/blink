@@ -321,6 +321,7 @@ type Globals {
 type User {
   id: ID!
   phone: Phone!
+  username: Username
   language: Language!
   contacts: [UserContact!]!
   contactByUsername(username: Username!): UserContact!
@@ -575,6 +576,7 @@ type UserUpdateLanguagePayload {
 type UserDetails {
   id: ID!
   phone: Phone!
+  username: Username
   language: Language!
   contacts: [UserContact!]!
   contactByUsername(username: Username!): UserContact!

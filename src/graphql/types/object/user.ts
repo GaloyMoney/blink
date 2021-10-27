@@ -16,6 +16,7 @@ import { UnknownClientError } from "@core/error"
 const mainUserFields = () => ({
   id: { type: GT.NonNullID },
   phone: { type: GT.NonNull(Phone) },
+  username: { type: Username },
   language: {
     type: GT.NonNull(Language),
     resolve: (source) => source.language || "en",
