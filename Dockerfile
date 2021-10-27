@@ -23,4 +23,9 @@ COPY ./*.js ./default.yaml ./package.json ./tsconfig.json ./yarn.lock ./.env ./
 
 USER 1000
 
+ARG BUILDTIME
+ARG COMMITHASH
+ENV BUILDTIME ${BUILDTIME}
+ENV COMMITHASH ${COMMITHASH}
+
 CMD ["lib/servers/graphql-old-server.js"]
