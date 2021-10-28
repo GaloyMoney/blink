@@ -2,7 +2,7 @@ function unpack_deps() {
 
   echo "Unpacking deps... "
 
-  tar -zxvf bundled-deps/bundled-deps-*.tgz ./node_modules/ ./yarn.lock -C repo/ > /dev/null
+  tar -zxvf bundled-deps/bundled-deps-*.tgz ./node_modules/ ./yarn.lock -C ${REPO_PATH:-repo}/ > /dev/null
 
   pushd repo > /dev/null
 
