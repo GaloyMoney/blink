@@ -2,7 +2,7 @@
 
 set -eu
 
-digest=$(cat ./edge-image/digest)
+export digest=$(cat ./edge-image/digest)
 
 pushd charts-repo
 
