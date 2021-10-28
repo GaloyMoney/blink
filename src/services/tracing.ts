@@ -2,14 +2,17 @@ import {
   SemanticAttributes,
   SemanticResourceAttributes,
 } from "@opentelemetry/semantic-conventions"
+import { W3CTraceContextPropagator } from "@opentelemetry/core"
 import { NodeTracerProvider } from "@opentelemetry/sdk-trace-node"
 import { getNodeAutoInstrumentations } from "@opentelemetry/auto-instrumentations-node"
 import { registerInstrumentations } from "@opentelemetry/instrumentation"
 import { SimpleSpanProcessor } from "@opentelemetry/sdk-trace-base"
 import { JaegerExporter } from "@opentelemetry/exporter-jaeger"
 import { Resource } from "@opentelemetry/resources"
-import { trace, context, SpanAttributes } from "@opentelemetry/api"
+import { trace, context, propagation, SpanAttributes } from "@opentelemetry/api"
 import { tracingConfig } from "@config/app"
+
+propagation.setGlobalPropagator(new W3CTraceContextPropagator())
 
 registerInstrumentations({
   instrumentations: getNodeAutoInstrumentations(),
