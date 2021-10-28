@@ -6,9 +6,9 @@ digest=$(cat ./edge-image/digest)
 
 pushd charts-repo
 
-ref=$(grep '# git_ref' charts/galoy/values.yaml | sed -E 's/.*"(.*)"/\1/')
+ref=$(yq e '.image.git_ref' charts/galoy/values.yaml)
 git checkout ${BRANCH}
-old_ref=$(grep '# git_ref' charts/galoy/values.yaml | sed -E 's/.*"(.*)"/\1/')
+old_ref=$(yq e '.image.git_ref' charts/galoy/values.yaml)
 
 cat <<EOF >> ../body.md
 # Bump galoy image
