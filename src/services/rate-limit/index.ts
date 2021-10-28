@@ -1,7 +1,10 @@
 import { RateLimiterRedis } from "rate-limiter-flexible"
 import { redis } from "@services/redis"
 
-import { RateLimiterExceededError } from "@domain/rate-limit/errors"
+import {
+  RateLimiterExceededError,
+  UnknownRateLimitServiceError,
+} from "@domain/rate-limit/errors"
 
 export const RedisRateLimitService = ({
   keyPrefix,
@@ -21,5 +24,14 @@ export const RedisRateLimitService = ({
     }
   }
 
-  return { consume }
+  const reset = async (key) => {
+    try {
+      await limiter.delete(key)
+      return true
+    } catch (err) {
+      return new UnknownRateLimitServiceError()
+    }
+  }
+
+  return { consume, reset }
 }
