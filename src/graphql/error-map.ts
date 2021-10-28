@@ -9,6 +9,7 @@ import {
   UnknownClientError,
   InvoiceDecodeError,
   ValidationInternalError,
+  TooManyRequestError,
 } from "@graphql/error"
 import { baseLogger } from "@services/logger"
 
@@ -83,6 +84,11 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "Invoice must be a zero-amount invoice"
       return new ValidationInternalError({ message, logger: baseLogger })
 
+    case "InvoiceCreateRateLimiterExceededError":
+      message =
+        "User tried to create too many invoices, please wait for a while and try again."
+      return new TooManyRequestError({ message, logger: baseLogger })
+
     case "UnknownLnInvoiceDecodeError":
       return new InvoiceDecodeError({ message, logger: baseLogger })
 
@@ -101,7 +107,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     // ----------
     // Unhandled below here
     // ----------
-
+    case "RateLimiterExceededError":
+    case "RateLimitError":
+    case "RateLimitServiceError":
+    case "UnknownRateLimitServiceError":
     case "CouldNotFindUserError":
     case "TwoFAError":
     case "LedgerError":

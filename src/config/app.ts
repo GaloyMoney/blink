@@ -108,7 +108,7 @@ export const getTwoFALimits = (): TwoFALimits => ({
   threshold: yamlConfig.twoFA.threshold,
 })
 
-const getRateLimits = (config): IRateLimits => {
+const getRateLimits = (config): RateLimitOptions => {
   /**
    * Returns a subset of the required parameters for the
    * 'rate-limiter-flexible.RateLimiterRedis' object.
