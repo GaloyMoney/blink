@@ -1,4 +1,5 @@
 import { addInvoiceForRecipient } from "@app/wallets"
+import { mapError } from "@graphql/error-map"
 import { GT } from "@graphql/index"
 
 import LnInvoicePayload from "@graphql/types/payload/ln-invoice"
@@ -35,7 +36,8 @@ const LnInvoiceCreateOnBehalfOfRecipientMutation = GT.Field({
     })
 
     if (result instanceof Error) {
-      return { errors: [{ message: result.message || result.name }] } // TODO: refine error
+      const appErr = mapError(result)
+      return { errors: [{ message: appErr.message || appErr.name }] } // TODO: refine error
     }
 
     const { paymentRequest, paymentHash, paymentSecret } = result

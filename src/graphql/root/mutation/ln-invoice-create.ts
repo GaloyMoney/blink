@@ -4,6 +4,7 @@ import LnInvoicePayload from "@graphql/types/payload/ln-invoice"
 import Memo from "@graphql/types/scalar/memo"
 import { addInvoice } from "@app/wallets/add-invoice-for-wallet"
 import SatAmount from "@graphql/types/scalar/sat-amount"
+import { mapError } from "@graphql/error-map"
 
 const LnInvoiceCreateInput = new GT.Input({
   name: "LnInvoiceCreateInput",
@@ -34,7 +35,8 @@ const LnInvoiceCreateMutation = GT.Field({
     })
 
     if (lnInvoice instanceof Error) {
-      return { errors: [{ message: lnInvoice.message || lnInvoice.name }] } // TODO: refine error
+      const appErr = mapError(lnInvoice)
+      return { errors: [{ message: appErr.message || appErr.name }] } // TODO: refine error
     }
 
     return {
