@@ -3,7 +3,7 @@ import { Price } from "@core/price-impl"
 export const mainCache = new NodeCache()
 
 export const getHourlyPrice = async ({ logger }) => {
-  const key = "lastCached"
+  const key = "price:lastCached"
   let value
 
   value = mainCache.get(key)
