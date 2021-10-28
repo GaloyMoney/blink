@@ -96,7 +96,9 @@ jobs:
       - name: bundled-deps
       - name: pipeline-tasks
       - name: repo
+        path: galoy
       params:
+        REPO_PATH: galoy
         DOCKER_HOST_IP: #@ data.values.docker_host_ip
         GOOGLE_CREDENTIALS: #@ data.values.staging_inception_creds
         SSH_PRIVATE_KEY: #@ data.values.staging_ssh_private_key
