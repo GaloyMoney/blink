@@ -32,20 +32,8 @@ export const RoutesCache = (): IRoutesCache => {
     }
   }
 
-  const deleteByKey = async (
-    key: CachedRouteLookupKey,
-  ): Promise<true | RepositoryError> => {
-    try {
-      await redis.del(key)
-      return true
-    } catch (err) {
-      return new UnknownRepositoryError(err)
-    }
-  }
-
   return {
     store,
     findByKey,
-    deleteByKey,
   }
 }

@@ -6,7 +6,6 @@ import {
   PaymentSendStatus,
   LnFeeCalculator,
   LnAlreadyPaidError,
-  NoValidNodeForPubkeyError,
 } from "@domain/bitcoin/lightning"
 import {
   AlreadyPaidError,
@@ -407,38 +406,17 @@ const executePaymentViaLn = async ({
     if (journal instanceof Error) return journal
     const { journalId } = journal
 
-    let payResult: PayInvoiceResult | LightningServiceError
-    if (rawRoute) {
-      payResult = await lndService.payInvoiceViaRoutes({
-        paymentHash,
-        rawRoute,
-        pubkey,
-      })
-
-      if (payResult instanceof NoValidNodeForPubkeyError) {
-        pubkey = lndService.defaultPubkey()
-        const updated = await ledgerService.updatePendingLnPayments({
+    const payResult = rawRoute
+      ? await lndService.payInvoiceViaRoutes({
           paymentHash,
+          rawRoute,
           pubkey,
         })
-        if (updated instanceof Error) return updated
-
-        const deleted = await routesCache.deleteByKey(key)
-        if (deleted instanceof Error) return deleted
-
-        payResult = await lndService.payInvoiceViaPaymentDetails({
+      : await lndService.payInvoiceViaPaymentDetails({
           decodedInvoice,
           milliSatsAmount: toMilliSatsFromNumber(amount * 1000),
           maxFee,
         })
-      }
-    } else {
-      payResult = await lndService.payInvoiceViaPaymentDetails({
-        decodedInvoice,
-        milliSatsAmount: toMilliSatsFromNumber(amount * 1000),
-        maxFee,
-      })
-    }
     if (payResult instanceof LnPaymentPendingError) return PaymentSendStatus.Pending
 
     const settled = await ledgerService.settlePendingLnPayments(paymentHash)

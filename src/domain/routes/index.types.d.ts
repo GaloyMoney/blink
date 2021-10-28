@@ -31,6 +31,4 @@ interface IRoutesCache {
   }) => Promise<CachedRoute | RepositoryError>
 
   findByKey: (key: CachedRouteLookupKey) => Promise<CachedRoute | RepositoryError>
-
-  deleteByKey: (key: CachedRouteLookupKey) => Promise<true | RepositoryError>
 }
