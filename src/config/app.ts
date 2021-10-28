@@ -131,6 +131,12 @@ export const getLoginAttemptLimits = () => getRateLimits(yamlConfig.limits.login
 export const getFailedAttemptPerIpLimits = () =>
   getRateLimits(yamlConfig.limits.failedAttemptPerIp)
 
+export const getInvoiceCreateAttemptLimits = () =>
+  getRateLimits(yamlConfig.limits.invoiceCreateAttempt)
+
+export const getInvoiceCreateForRecipientAttemptLimits = () =>
+  getRateLimits(yamlConfig.limits.invoiceCreateForRecipientAttempt)
+
 export const getOnChainWalletConfig = () => ({
   dustThreshold: yamlConfig.onChainWallet.dustThreshold,
 })
