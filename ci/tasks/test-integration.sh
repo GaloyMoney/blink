@@ -30,11 +30,11 @@ export ADDITIONAL_SSH_OPTS="-o StrictHostKeyChecking=no -i ${CI_ROOT}/login.ssh"
 
 echo "Syncing repo to docker-host... "
 rsync --delete -avr -e "ssh -l ${DOCKER_HOST_USER} ${ADDITIONAL_SSH_OPTS}" \
-  repo/ ${DOCKER_HOST_IP}:repo > /dev/null
+  repo/ ${DOCKER_HOST_IP}:galoy > /dev/null
 echo "Done!"
 
 ssh ${ADDITIONAL_SSH_OPTS} ${DOCKER_HOST_USER}@${DOCKER_HOST_IP} \
-  "cd repo; docker ps -aq | xargs docker rm -vf; DOCKER_HOST_IP=${DOCKER_HOST_IP} docker-compose up -d"
+  "cd galoy; docker ps -aq | xargs docker rm -vf; DOCKER_HOST_IP=${DOCKER_HOST_IP} docker-compose up -d"
 
 export DOCKER_HOST=ssh://${DOCKER_HOST_USER}@${DOCKER_HOST_IP}
 
