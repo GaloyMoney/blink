@@ -1,16 +1,25 @@
+import { getInvoiceCreateAttemptLimits } from "@config/app"
 import { checkedToSats, toSats } from "@domain/bitcoin"
 import { invoiceExpirationForCurrency } from "@domain/bitcoin/lightning"
+import { RateLimitPrefix } from "@domain/rate-limit"
+import {
+  InvoiceCreateRateLimiterExceededError,
+  RateLimiterExceededError,
+} from "@domain/rate-limit/errors"
 import { WalletInvoiceFactory } from "@domain/wallet-invoices/wallet-invoice-factory"
 import { checkedToWalletPublicId } from "@domain/wallets"
 
 import { LndService } from "@services/lnd"
 import { WalletInvoicesRepository, WalletsRepository } from "@services/mongoose"
+import { RedisRateLimitService } from "@services/rate-limit"
 
 export const addInvoice = async ({
   walletId,
   amount,
   memo = "",
 }: AddInvoiceArgs): Promise<LnInvoice | ApplicationError> => {
+  const limitOk = await checkWalletIdLimits(walletId)
+  if (limitOk instanceof Error) return limitOk
   const sats = checkedToSats(amount)
   if (sats instanceof Error) return sats
 
@@ -26,6 +35,9 @@ export const addInvoiceNoAmount = async ({
   walletId,
   memo = "",
 }: AddInvoiceNoAmountArgs): Promise<LnInvoice | ApplicationError> => {
+  const limitOk = await checkWalletIdLimits(walletId)
+  if (limitOk instanceof Error) return limitOk
+
   const walletInvoiceFactory = WalletInvoiceFactory(walletId)
   return registerAndPersistInvoice({
     sats: toSats(0),
@@ -111,4 +123,18 @@ const walletIdFromPublicId = async (
   if (wallet instanceof Error) return wallet
 
   return wallet.id
+}
+
+const checkWalletIdLimits = async (
+  walletId: WalletId,
+): Promise<true | RateLimiterExceededError> => {
+  const invoiceCreateAttemptLimits = getInvoiceCreateAttemptLimits()
+  const limiter = RedisRateLimitService({
+    keyPrefix: RateLimitPrefix.invoiceCreate,
+    limitOptions: invoiceCreateAttemptLimits,
+  })
+  const limitOk = await limiter.consume(walletId)
+  if (limitOk instanceof RateLimiterExceededError)
+    return new InvoiceCreateRateLimiterExceededError()
+  return limitOk
 }
