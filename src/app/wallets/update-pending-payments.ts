@@ -15,36 +15,32 @@ export const updatePendingPayments = async ({
   logger: Logger
   lock?: DistributedLock
 }): Promise<void | ApplicationError> => {
-  // we only lock the account if there is some pending payment transaction, which would typically be unlikely
-  // we're doing the the Transaction.find after the lock to make sure there is no race condition
-  // note: there might be another design that doesn't requiere a lock at the uid level but only at the hash level,
-  // but will need to dig more into the cursor aspect of mongodb to see if there is a concurrency-safe way to do it.
   const liabilitiesAccountId = toLiabilitiesAccountId(walletId)
   const ledgerService = LedgerService()
   const count = await ledgerService.getPendingPaymentsCount(liabilitiesAccountId)
   if (count instanceof Error) return count
   if (count === 0) return
 
-  return LockService().lockWalletId({ walletId, logger, lock }, async () => {
-    const pendingPaymentTransactions = await ledgerService.listPendingPayments(
-      liabilitiesAccountId,
-    )
-    if (pendingPaymentTransactions instanceof Error) return pendingPaymentTransactions
+  const pendingPaymentTransactions = await ledgerService.listPendingPayments(
+    liabilitiesAccountId,
+  )
+  if (pendingPaymentTransactions instanceof Error) return pendingPaymentTransactions
 
-    for (const paymentLiabilityTx of pendingPaymentTransactions) {
-      await updatePendingPayment({ liabilitiesAccountId, paymentLiabilityTx, logger })
-    }
-  })
+  for (const paymentLiabilityTx of pendingPaymentTransactions) {
+    await updatePendingPayment({ liabilitiesAccountId, paymentLiabilityTx, logger, lock })
+  }
 }
 
 const updatePendingPayment = async ({
   liabilitiesAccountId,
   paymentLiabilityTx,
   logger,
+  lock,
 }: {
   liabilitiesAccountId: LiabilitiesAccountId
   paymentLiabilityTx: LedgerTransaction
   logger: Logger
+  lock?: DistributedLock
 }): Promise<void | ApplicationError> => {
   const paymentLogger = logger.child({
     topic: "payment",
@@ -81,31 +77,49 @@ const updatePendingPayment = async ({
 
   if (status === PaymentStatus.Settled || status === PaymentStatus.Failed) {
     const ledgerService = LedgerService()
-    const settled = await ledgerService.settlePendingLnPayments(paymentHash)
-    if (settled instanceof Error) {
-      paymentLogger.error({ error: settled }, "we didn't have any transaction to update")
-      return settled
-    }
+    return LockService().lockPaymentHash({ paymentHash, logger, lock }, async () => {
+      const recorded = await ledgerService.isLnTxRecorded(paymentHash)
+      if (recorded instanceof Error) {
+        paymentLogger.error({ error: recorded }, "we couldn't query pending transaction")
+        return recorded
+      }
 
-    if (status === PaymentStatus.Settled) {
-      paymentLogger.info(
-        { success: true, id: paymentHash, payment: paymentLiabilityTx },
-        "payment has been confirmed",
-      )
-      if (paymentLiabilityTx.feeKnownInAdvance) return
-      return reimburseFee({
-        liabilitiesAccountId,
-        journalId: paymentLiabilityTx.journalId,
-        paymentHash,
-        maxFee: paymentLiabilityTx.fee,
-        actualFee: roundedUpFee,
-        logger,
+      if (recorded) {
+        paymentLogger.info("payment has already been processed")
+        return
+      }
+
+      const settled = await ledgerService.settlePendingLnPayments(paymentHash)
+      if (settled instanceof Error) {
+        paymentLogger.error(
+          { error: settled },
+          "we didn't have any transaction to update",
+        )
+        return settled
+      }
+
+      if (status === PaymentStatus.Settled) {
+        paymentLogger.info(
+          { success: true, id: paymentHash, payment: paymentLiabilityTx },
+          "payment has been confirmed",
+        )
+        if (paymentLiabilityTx.feeKnownInAdvance) return
+
+        return reimburseFee({
+          liabilitiesAccountId,
+          journalId: paymentLiabilityTx.journalId,
+          paymentHash,
+          maxFee: paymentLiabilityTx.fee,
+          actualFee: roundedUpFee,
+          logger,
+        })
+      }
+
+      return revertTransaction({
+        paymentLiabilityTx,
+        lnPaymentLookup,
+        logger: paymentLogger,
       })
-    }
-    return revertTransaction({
-      paymentLiabilityTx,
-      lnPaymentLookup,
-      logger: paymentLogger,
     })
   }
 }
