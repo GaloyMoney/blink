@@ -37,12 +37,6 @@ interface ITransactionLimits extends IUserLimits {
   oldEnoughForWithdrawalHours: number
 }
 
-interface IRateLimits {
-  points: number
-  duration: number
-  blockDuration: number
-}
-
 type onChainWalletConfig = {
   dustThreshold: number
 }

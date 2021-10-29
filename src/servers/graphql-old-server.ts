@@ -269,7 +269,7 @@ const resolvers = {
           : await addInvoiceNoAmountForUsername({
               username,
             })
-      if (lnInvoice instanceof Error) throw lnInvoice
+      if (lnInvoice instanceof Error) throw mapError(lnInvoice)
       return lnInvoice.paymentRequest
     },
     invoice: (_, __, { wallet, logger }) => ({
@@ -285,7 +285,7 @@ const resolvers = {
                 walletId: wallet.user.id,
                 memo,
               })
-        if (lnInvoice instanceof Error) throw lnInvoice
+        if (lnInvoice instanceof Error) throw mapError(lnInvoice)
         return lnInvoice.paymentRequest
       },
       // FIXME: move to query

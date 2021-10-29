@@ -2,6 +2,7 @@ import { find, difference } from "lodash"
 import { MS_PER_DAY, onboardingEarn } from "@config/app"
 import { checkIsBalanced, getUserWallet } from "test/helpers"
 import { getBTCBalance } from "test/helpers/wallet"
+import { resetSelfWalletIdLimits } from "test/helpers/rate-limit"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
@@ -30,6 +31,10 @@ afterAll(() => {
 
 describe("UserWallet - addEarn", () => {
   it("adds balance only once", async () => {
+    const resetOk = await resetSelfWalletIdLimits(userWallet1.user.id)
+    expect(resetOk).not.toBeInstanceOf(Error)
+    if (resetOk instanceof Error) throw resetOk
+
     const initialBalance = await getBTCBalance(userWallet1.user.id)
 
     const getAndVerifyRewards = async () => {

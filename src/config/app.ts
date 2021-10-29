@@ -108,7 +108,7 @@ export const getTwoFALimits = (): TwoFALimits => ({
   threshold: yamlConfig.twoFA.threshold,
 })
 
-const getRateLimits = (config): IRateLimits => {
+const getRateLimits = (config): RateLimitOptions => {
   /**
    * Returns a subset of the required parameters for the
    * 'rate-limiter-flexible.RateLimiterRedis' object.
@@ -130,6 +130,12 @@ export const getLoginAttemptLimits = () => getRateLimits(yamlConfig.limits.login
 
 export const getFailedAttemptPerIpLimits = () =>
   getRateLimits(yamlConfig.limits.failedAttemptPerIp)
+
+export const getInvoiceCreateAttemptLimits = () =>
+  getRateLimits(yamlConfig.limits.invoiceCreateAttempt)
+
+export const getInvoiceCreateForRecipientAttemptLimits = () =>
+  getRateLimits(yamlConfig.limits.invoiceCreateForRecipientAttempt)
 
 export const getOnChainWalletConfig = () => ({
   dustThreshold: yamlConfig.onChainWallet.dustThreshold,

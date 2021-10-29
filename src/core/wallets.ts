@@ -1,4 +1,4 @@
-import { registerAndPersistInvoice } from "@app/wallets"
+import { checkRecipientWalletIdLimits, registerAndPersistInvoice } from "@app/wallets"
 
 import { checkedToSats, toSats } from "@domain/bitcoin"
 import { checkedToUsername } from "@domain/users"
@@ -25,11 +25,13 @@ export const addInvoiceForUsername = async ({
 }): Promise<LnInvoice | ApplicationError> => {
   const checkedUsername = checkedToUsername(username)
   if (checkedUsername instanceof Error) return checkedUsername
-  const sats = checkedToSats(amount)
-  if (sats instanceof Error) return sats
-
   const walletId = await walletIdFromUsername(checkedUsername)
   if (walletId instanceof Error) return walletId
+
+  const limitOk = await checkRecipientWalletIdLimits(walletId)
+  if (limitOk instanceof Error) return limitOk
+  const sats = checkedToSats(amount)
+  if (sats instanceof Error) return sats
 
   const walletInvoiceFactory = WalletInvoiceFactory(walletId)
   return registerAndPersistInvoice({
@@ -46,9 +48,11 @@ export const addInvoiceNoAmountForUsername = async ({
 }): Promise<LnInvoice | ApplicationError> => {
   const checkedUsername = checkedToUsername(username)
   if (checkedUsername instanceof Error) return checkedUsername
-
   const walletId = await walletIdFromUsername(checkedUsername)
   if (walletId instanceof Error) return walletId
+
+  const limitOk = await checkRecipientWalletIdLimits(walletId)
+  if (limitOk instanceof Error) return limitOk
 
   const walletInvoiceFactory = WalletInvoiceFactory(walletId)
   return registerAndPersistInvoice({
