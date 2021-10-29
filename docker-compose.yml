@@ -1,7 +1,7 @@
 version: "2"
 services:
   otel-agent:
-    image: otel/opentelemetry-collector:0.22.0
+    image: otel/opentelemetry-collector-contrib:0.37.1
     command: ["--config=/etc/otel-agent-config.yaml", "--log-level=debug"]
     volumes:
       - ./dev/otel-agent-config.yaml:/etc/otel-agent-config.yaml
