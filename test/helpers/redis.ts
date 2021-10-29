@@ -1,3 +1,4 @@
+import { RateLimitPrefix } from "@domain/rate-limit"
 import { redis } from "@services/redis"
 
 export const clearKeys = async (prefix) => {
@@ -12,8 +13,7 @@ export const clearAccountLocks = async () => {
 }
 
 export const clearLimiters = async () => {
-  await clearKeys("login")
-  await clearKeys("failed_attempt_ip")
-  await clearKeys("request_phone_code")
-  await clearKeys("request_phone_code_ip")
+  for (const limiter in RateLimitPrefix) {
+    await clearKeys(RateLimitPrefix[limiter])
+  }
 }
