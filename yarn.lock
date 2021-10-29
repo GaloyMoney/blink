@@ -2237,6 +2237,15 @@
     "@opentelemetry/instrumentation" "^0.26.0"
     "@types/graphql" "14.5.0"
 
+"@opentelemetry/instrumentation-grpc@^0.26.0":
+  version "0.26.0"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation-grpc/-/instrumentation-grpc-0.26.0.tgz#4b851da210a7d3e3698f7f512e595a24a76c4091"
+  integrity sha512-D4lVZMGSPdcjMFhecuVnwG6/zrfyv65uwpU72FD8D6I+BhLYQoGQefmFefcpeCWKb5998nRUhf+WqG1ObbJPwQ==
+  dependencies:
+    "@opentelemetry/api-metrics" "0.26.0"
+    "@opentelemetry/instrumentation" "0.26.0"
+    "@opentelemetry/semantic-conventions" "1.0.0"
+
 "@opentelemetry/instrumentation-http@^0.26.0":
   version "0.26.0"
   resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation-http/-/instrumentation-http-0.26.0.tgz#f432c56fa33c92bbaf41772bfee38f4e0a719f87"
@@ -2246,6 +2255,24 @@
     "@opentelemetry/instrumentation" "0.26.0"
     "@opentelemetry/semantic-conventions" "1.0.0"
     semver "^7.3.5"
+
+"@opentelemetry/instrumentation-ioredis@^0.26.0":
+  version "0.26.0"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation-ioredis/-/instrumentation-ioredis-0.26.0.tgz#e8b57af5d171c0010edd2c43a0575dbd00ad14ec"
+  integrity sha512-EONN2KE03nk9J/M+FJg9err120vW1c1b5jNx59M6+638Q2KVuLuhIb/CCpA+RMOqaL1PtF91iNxtZ9x5+kan5w==
+  dependencies:
+    "@opentelemetry/instrumentation" "^0.26.0"
+    "@opentelemetry/semantic-conventions" "^1.0.0"
+    "@types/ioredis" "4.26.6"
+
+"@opentelemetry/instrumentation-mongodb@^0.26.0":
+  version "0.26.0"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation-mongodb/-/instrumentation-mongodb-0.26.0.tgz#cfb5054b015c5e75301ba3219516cb184d2f5848"
+  integrity sha512-b7VM2jKSLuX6pkBlR4f1/bzQnU/9Hgh1dnMRqyZiQ2D/DpOq5XXgSH5xoshcqG1IhhAnyItY7Ccgeh1e4Z01Mw==
+  dependencies:
+    "@opentelemetry/instrumentation" "^0.26.0"
+    "@opentelemetry/semantic-conventions" "^1.0.0"
+    "@types/mongodb" "3.6.20"
 
 "@opentelemetry/instrumentation@0.26.0", "@opentelemetry/instrumentation@^0.26.0":
   version "0.26.0"
@@ -2657,6 +2684,13 @@
   resolved "https://registry.yarnpkg.com/@types/http-errors/-/http-errors-1.8.0.tgz#682477dbbbd07cd032731cb3b0e7eaee3d026b69"
   integrity sha512-2aoSC4UUbHDj2uCsCxcG/vRMXey/m17bC7UwitVm5hn22nI8O8Y9iDpA76Orc+DWkQ4zZrOKEshCqR/jSuXAHA==
 
+"@types/ioredis@4.26.6":
+  version "4.26.6"
+  resolved "https://registry.yarnpkg.com/@types/ioredis/-/ioredis-4.26.6.tgz#7e332d6d24f12d79a1099834ccfa0c169ef667ed"
+  integrity sha512-Q9ydXL/5Mot751i7WLCm9OGTj5jlW3XBdkdEW21SkXZ8Y03srbkluFGbM3q8c+vzPW30JOLJ+NsZWHoly0+13A==
+  dependencies:
+    "@types/node" "*"
+
 "@types/ioredis@^4.26.4":
   version "4.27.2"
   resolved "https://registry.yarnpkg.com/@types/ioredis/-/ioredis-4.27.2.tgz#067d0e361d7a01f6231fa6b9c6f08846102ba71e"
@@ -2766,7 +2800,7 @@
   resolved "https://registry.yarnpkg.com/@types/minimatch/-/minimatch-3.0.5.tgz#1001cc5e6a3704b83c236027e77f2f58ea010f40"
   integrity sha512-Klz949h02Gz2uZCMGwDUSDS1YBlTdDDgbWHi+81l29tQALUtvz4rAYi5uoVhE5Lagoq6DeqAUlbrHvW/mXDgdQ==
 
-"@types/mongodb@^3.6.20":
+"@types/mongodb@3.6.20", "@types/mongodb@^3.6.20":
   version "3.6.20"
   resolved "https://registry.yarnpkg.com/@types/mongodb/-/mongodb-3.6.20.tgz#b7c5c580644f6364002b649af1c06c3c0454e1d2"
   integrity sha512-WcdpPJCakFzcWWD9juKoZbRtQxKIMYF/JIAM4JrNHrMcnJL6/a2NWjXxW7fo9hxboxxkg+icff8d7+WIEvKgYQ==

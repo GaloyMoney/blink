@@ -6,6 +6,9 @@ import { W3CTraceContextPropagator } from "@opentelemetry/core"
 import { NodeTracerProvider } from "@opentelemetry/sdk-trace-node"
 import { HttpInstrumentation } from "@opentelemetry/instrumentation-http"
 import { GraphQLInstrumentation } from "@opentelemetry/instrumentation-graphql"
+import { MongoDBInstrumentation } from '@opentelemetry/instrumentation-mongodb'
+import { IORedisInstrumentation } from '@opentelemetry/instrumentation-ioredis'
+import { GrpcInstrumentation } from '@opentelemetry/instrumentation-grpc'
 import { registerInstrumentations } from "@opentelemetry/instrumentation"
 import { SimpleSpanProcessor } from "@opentelemetry/sdk-trace-base"
 import { JaegerExporter } from "@opentelemetry/exporter-jaeger"
@@ -22,7 +25,10 @@ registerInstrumentations({
     }),
     new GraphQLInstrumentation({
       mergeItems: true
-    })
+    }),
+    new MongoDBInstrumentation(),
+    new GrpcInstrumentation(),
+    new IORedisInstrumentation()
   ]
 })
 
