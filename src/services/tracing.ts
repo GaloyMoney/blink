@@ -2,20 +2,96 @@ import {
   SemanticAttributes,
   SemanticResourceAttributes,
 } from "@opentelemetry/semantic-conventions"
+import type * as graphqlTypes from "graphql"
 import { W3CTraceContextPropagator } from "@opentelemetry/core"
 import { NodeTracerProvider } from "@opentelemetry/sdk-trace-node"
-import { getNodeAutoInstrumentations } from "@opentelemetry/auto-instrumentations-node"
+import { HttpInstrumentation } from "@opentelemetry/instrumentation-http"
+import { GraphQLInstrumentation } from "@opentelemetry/instrumentation-graphql"
+import { MongoDBInstrumentation } from "@opentelemetry/instrumentation-mongodb"
+import { IORedisInstrumentation } from "@opentelemetry/instrumentation-ioredis"
+import { GrpcInstrumentation } from "@opentelemetry/instrumentation-grpc"
 import { registerInstrumentations } from "@opentelemetry/instrumentation"
 import { SimpleSpanProcessor } from "@opentelemetry/sdk-trace-base"
 import { JaegerExporter } from "@opentelemetry/exporter-jaeger"
 import { Resource } from "@opentelemetry/resources"
-import { trace, context, propagation, SpanAttributes } from "@opentelemetry/api"
+import {
+  trace,
+  context,
+  propagation,
+  Span,
+  SpanAttributes,
+  SpanStatusCode,
+} from "@opentelemetry/api"
 import { tracingConfig } from "@config/app"
 
 propagation.setGlobalPropagator(new W3CTraceContextPropagator())
 
+const gqlResponseHook = (span: Span, data: graphqlTypes.ExecutionResult) => {
+  if (data.errors && data.errors.length > 0) {
+    span.recordException({
+      name: "graphql.execution.error",
+      message: JSON.stringify(data.errors),
+    })
+    span.setStatus({
+      code: SpanStatusCode.ERROR,
+    })
+    const firstErr = data.errors[0]
+    if (firstErr.message != "") {
+      span.setAttribute("graphql.error.message", firstErr.message)
+    }
+    span.setAttribute(`graphql.error.type`, firstErr.constructor.name)
+    if (firstErr.extensions?.code) {
+      span.setAttribute(`graphql.error.code`, firstErr.extensions.code)
+    }
+    if (firstErr.originalError) {
+      span.setAttribute(
+        `graphql.error.original.type`,
+        firstErr.originalError.constructor.name,
+      )
+      if (firstErr.originalError.message != "") {
+        span.setAttribute(
+          `graphql.error.original.message`,
+          firstErr.originalError.message,
+        )
+      }
+    }
+    data.errors.forEach((err, idx) => {
+      if (err.message != "") {
+        span.setAttribute(`graphql.error.${idx}.message`, err.message)
+      }
+      span.setAttribute(`graphql.error.${idx}.type`, err.constructor.name)
+      if (err.extensions?.code) {
+        span.setAttribute(`graphql.error.${idx}.code`, err.extensions.code)
+      }
+      if (err.originalError) {
+        span.setAttribute(
+          `graphql.error.${idx}.original.type`,
+          err.originalError.constructor.name,
+        )
+        if (err.originalError.message != "") {
+          span.setAttribute(
+            `graphql.error.${idx}.original.message`,
+            err.originalError.message,
+          )
+        }
+      }
+    })
+  }
+}
+
 registerInstrumentations({
-  instrumentations: getNodeAutoInstrumentations(),
+  instrumentations: [
+    new HttpInstrumentation({
+      ignoreIncomingPaths: ["/healthz"],
+    }),
+    new GraphQLInstrumentation({
+      mergeItems: true,
+      responseHook: gqlResponseHook,
+    }),
+    new MongoDBInstrumentation(),
+    new GrpcInstrumentation(),
+    new IORedisInstrumentation(),
+  ],
 })
 
 const provider = new NodeTracerProvider({
