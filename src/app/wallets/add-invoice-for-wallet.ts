@@ -1,4 +1,7 @@
-import { getInvoiceCreateAttemptLimits } from "@config/app"
+import {
+  getInvoiceCreateAttemptLimits,
+  getInvoiceCreateForRecipientAttemptLimits,
+} from "@config/app"
 import { checkedToSats, toSats } from "@domain/bitcoin"
 import { invoiceExpirationForCurrency } from "@domain/bitcoin/lightning"
 import { RateLimitPrefix } from "@domain/rate-limit"
@@ -18,7 +21,7 @@ export const addInvoice = async ({
   amount,
   memo = "",
 }: AddInvoiceArgs): Promise<LnInvoice | ApplicationError> => {
-  const limitOk = await checkWalletIdLimits(walletId)
+  const limitOk = await checkSelfWalletIdLimits(walletId)
   if (limitOk instanceof Error) return limitOk
   const sats = checkedToSats(amount)
   if (sats instanceof Error) return sats
@@ -35,7 +38,7 @@ export const addInvoiceNoAmount = async ({
   walletId,
   memo = "",
 }: AddInvoiceNoAmountArgs): Promise<LnInvoice | ApplicationError> => {
-  const limitOk = await checkWalletIdLimits(walletId)
+  const limitOk = await checkSelfWalletIdLimits(walletId)
   if (limitOk instanceof Error) return limitOk
 
   const walletInvoiceFactory = WalletInvoiceFactory(walletId)
@@ -53,11 +56,13 @@ export const addInvoiceForRecipient = async ({
 }: AddInvoiceForRecipientArgs): Promise<LnInvoice | ApplicationError> => {
   const walletPublicId = checkedToWalletPublicId(recipientWalletPublicId)
   if (walletPublicId instanceof Error) return walletPublicId
-  const sats = checkedToSats(amount)
-  if (sats instanceof Error) return sats
-
   const walletId = await walletIdFromPublicId(walletPublicId)
   if (walletId instanceof Error) return walletId
+
+  const limitOk = await checkRecipientWalletIdLimits(walletId)
+  if (limitOk instanceof Error) return limitOk
+  const sats = checkedToSats(amount)
+  if (sats instanceof Error) return sats
 
   const walletInvoiceFactory = WalletInvoiceFactory(walletId)
   return registerAndPersistInvoice({
@@ -73,9 +78,11 @@ export const addInvoiceNoAmountForRecipient = async ({
 }: AddInvoiceNoAmountForRecipientArgs): Promise<LnInvoice | ApplicationError> => {
   const walletPublicId = checkedToWalletPublicId(recipientWalletPublicId)
   if (walletPublicId instanceof Error) return walletPublicId
-
   const walletId = await walletIdFromPublicId(walletPublicId)
   if (walletId instanceof Error) return walletId
+
+  const limitOk = await checkRecipientWalletIdLimits(walletId)
+  if (limitOk instanceof Error) return limitOk
 
   const walletInvoiceFactory = WalletInvoiceFactory(walletId)
   return registerAndPersistInvoice({
@@ -125,13 +132,27 @@ const walletIdFromPublicId = async (
   return wallet.id
 }
 
-const checkWalletIdLimits = async (
+const checkSelfWalletIdLimits = async (
   walletId: WalletId,
 ): Promise<true | RateLimiterExceededError> => {
   const invoiceCreateAttemptLimits = getInvoiceCreateAttemptLimits()
   const limiter = RedisRateLimitService({
     keyPrefix: RateLimitPrefix.invoiceCreate,
     limitOptions: invoiceCreateAttemptLimits,
+  })
+  const limitOk = await limiter.consume(walletId)
+  if (limitOk instanceof RateLimiterExceededError)
+    return new InvoiceCreateRateLimiterExceededError()
+  return limitOk
+}
+
+const checkRecipientWalletIdLimits = async (
+  walletId: WalletId,
+): Promise<true | RateLimiterExceededError> => {
+  const invoiceCreateForRecipientAttempt = getInvoiceCreateForRecipientAttemptLimits()
+  const limiter = RedisRateLimitService({
+    keyPrefix: RateLimitPrefix.invoiceCreateForRecipient,
+    limitOptions: invoiceCreateForRecipientAttempt,
   })
   const limitOk = await limiter.consume(walletId)
   if (limitOk instanceof RateLimiterExceededError)
