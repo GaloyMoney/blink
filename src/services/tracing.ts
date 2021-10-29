@@ -4,7 +4,8 @@ import {
 } from "@opentelemetry/semantic-conventions"
 import { W3CTraceContextPropagator } from "@opentelemetry/core"
 import { NodeTracerProvider } from "@opentelemetry/sdk-trace-node"
-import { getNodeAutoInstrumentations } from "@opentelemetry/auto-instrumentations-node"
+import { HttpInstrumentation } from "@opentelemetry/instrumentation-http"
+import { GraphQLInstrumentation } from "@opentelemetry/instrumentation-graphql"
 import { registerInstrumentations } from "@opentelemetry/instrumentation"
 import { SimpleSpanProcessor } from "@opentelemetry/sdk-trace-base"
 import { JaegerExporter } from "@opentelemetry/exporter-jaeger"
@@ -15,7 +16,14 @@ import { tracingConfig } from "@config/app"
 propagation.setGlobalPropagator(new W3CTraceContextPropagator())
 
 registerInstrumentations({
-  instrumentations: getNodeAutoInstrumentations(),
+  instrumentations: [
+    new HttpInstrumentation({
+      ignoreIncomingPaths: ["/healthz"]
+    }),
+    new GraphQLInstrumentation({
+      mergeItems: true
+    })
+  ]
 })
 
 const provider = new NodeTracerProvider({

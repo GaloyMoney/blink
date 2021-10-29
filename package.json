@@ -35,6 +35,7 @@
     "@opentelemetry/core": "^1.0.0",
     "@opentelemetry/exporter-jaeger": "^1.0.0",
     "@opentelemetry/instrumentation": "^0.26.0",
+    "@opentelemetry/instrumentation-graphql": "^0.26.0",
     "@opentelemetry/instrumentation-http": "^0.26.0",
     "@opentelemetry/resources": "^1.0.0",
     "@opentelemetry/sdk-trace-base": "^1.0.0",
