@@ -112,7 +112,7 @@ describe("graphql", () => {
     })
 
     it("returns an error if amount is zero", async () => {
-      const message = "InvalidSatoshiAmount"
+      const message = "A valid satoshi amount is required"
       const input = { amount: 0, memo: "This is a lightning invoice" }
       const result = await mutate(mutation, { variables: { input } })
       const { invoice, errors } = result.data.lnInvoiceCreate
