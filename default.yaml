@@ -93,12 +93,12 @@ limits:
     duration: 21600 # 60 * 60 * 6 s
     blockDuration: 86400 # 60 * 60 * 24 s
   invoiceCreateAttempt:
-    points: 5
-    duration: 60
-    blockDuration: 60
+    points: 20
+    duration: 120
+    blockDuration: 300
   invoiceCreateForRecipientAttempt:
-    points: 10
-    duration: 60
+    points: 20
+    duration: 120
     blockDuration: 300
   memoSharingSatsThreshold: 1000
   oldEnoughForWithdrawal: 172800000 # 1000 * 60 * 60 * 24 * 2, in ms # 2 days
