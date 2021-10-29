@@ -132,7 +132,7 @@ const walletIdFromPublicId = async (
   return wallet.id
 }
 
-const checkSelfWalletIdLimits = async (
+export const checkSelfWalletIdLimits = async (
   walletId: WalletId,
 ): Promise<true | RateLimiterExceededError> => {
   const invoiceCreateAttemptLimits = getInvoiceCreateAttemptLimits()
@@ -146,7 +146,7 @@ const checkSelfWalletIdLimits = async (
   return limitOk
 }
 
-const checkRecipientWalletIdLimits = async (
+export const checkRecipientWalletIdLimits = async (
   walletId: WalletId,
 ): Promise<true | RateLimiterExceededError> => {
   const invoiceCreateForRecipientAttempt = getInvoiceCreateForRecipientAttemptLimits()
