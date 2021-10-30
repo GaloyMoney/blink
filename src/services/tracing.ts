@@ -41,7 +41,10 @@ const gqlResponseHook = (span: Span, data: graphqlTypes.ExecutionResult) => {
     if (firstErr.message != "") {
       span.setAttribute("graphql.error.message", firstErr.message)
     }
-    span.setAttribute(`graphql.error.type`, firstErr.constructor.name)
+    span.setAttribute("graphql.error.type", firstErr.constructor.name)
+    if (firstErr.path) {
+      span.setAttribute("graphql.error.path", firstErr.path.join("."))
+    }
     if (firstErr.extensions?.code) {
       span.setAttribute(`graphql.error.code`, firstErr.extensions.code)
     }
@@ -62,6 +65,9 @@ const gqlResponseHook = (span: Span, data: graphqlTypes.ExecutionResult) => {
         span.setAttribute(`graphql.error.${idx}.message`, err.message)
       }
       span.setAttribute(`graphql.error.${idx}.type`, err.constructor.name)
+      if (err.path) {
+        span.setAttribute(`graphql.error.${idx}.path`, err.path.join("."))
+      }
       if (err.extensions?.code) {
         span.setAttribute(`graphql.error.${idx}.code`, err.extensions.code)
       }
