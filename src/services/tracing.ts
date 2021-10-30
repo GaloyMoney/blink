@@ -94,6 +94,7 @@ registerInstrumentations({
     }),
     new GraphQLInstrumentation({
       mergeItems: true,
+      allowValues: true,
       responseHook: gqlResponseHook,
     }),
     new MongoDBInstrumentation(),

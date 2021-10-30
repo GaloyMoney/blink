@@ -6,6 +6,11 @@ receivers:
 
 processors:
   batch:
+  attributes:
+    actions:
+    - key: graphql.variables.input.code
+      action: update
+      value: "<redacted>"
 
 exporters:
   logging:
@@ -21,6 +26,6 @@ service:
   pipelines:
     traces:
       receivers: [jaeger]
-      processors: [batch]
+      processors: [attributes, batch]
       exporters: [logging]
 
