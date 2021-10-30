@@ -1,7 +1,7 @@
 BIN_DIR=node_modules/.bin
 
 start-deps:
-	docker-compose up -d
+	docker compose up -d
 	direnv reload
 
 start-old:
@@ -31,7 +31,7 @@ watch:
 	yarn nodemon -V -e ts,graphql -w ./src -x make start
 
 clean-deps:
-	docker-compose down
+	docker compose down
 
 reset-deps: clean-deps start-deps
 
