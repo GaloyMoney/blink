@@ -1,6 +1,7 @@
 receivers:
   jaeger:
     protocols:
+      thrift_compact: # on port 6831
       thrift_binary: # on port 6832
 
 processors:
