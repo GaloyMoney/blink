@@ -27,7 +27,9 @@ import { resetOnChainAddressWalletIdLimits } from "test/helpers/rate-limit"
 import { OnChainAddressCreateRateLimiterExceededError } from "@domain/rate-limit/errors"
 import { NotificationType } from "@domain/notifications"
 
-jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
+jest.mock("@services/price/get-realtime-price", () =>
+  require("test/mocks/get-realtime-price"),
+)
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
 let walletUser0
