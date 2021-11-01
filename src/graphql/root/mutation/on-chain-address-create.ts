@@ -3,6 +3,7 @@ import * as Wallets from "@app/wallets"
 import * as Accounts from "@app/accounts"
 import OnChainAddressPayload from "@graphql/types/payload/on-chain-address"
 import WalletId from "@graphql/types/scalar/wallet-id"
+import { mapError } from "@graphql/error-map"
 
 const OnChainAddressCreateInput = new GT.Input({
   name: "OnChainAddressCreateInput",
@@ -34,6 +35,10 @@ const OnChainAddressCreateMutation = GT.Field({
     }
 
     address = await Wallets.createOnChainAddressByWalletPublicId(walletId)
+    if (address instanceof Error) {
+      const appErr = mapError(address)
+      return { errors: [{ message: appErr.message }] }
+    }
 
     const account = await Accounts.getAccount(domainUser.defaultAccountId)
     if (account instanceof Error) {
@@ -45,9 +50,9 @@ const OnChainAddressCreateMutation = GT.Field({
     }
 
     address = await Wallets.createOnChainAddress(account.walletIds[0])
-
     if (address instanceof Error) {
-      return { errors: [{ message: address.message }] }
+      const appErr = mapError(address)
+      return { errors: [{ message: appErr.message }] }
     }
 
     return {
