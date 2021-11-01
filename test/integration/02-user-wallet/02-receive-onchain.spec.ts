@@ -1,7 +1,7 @@
 import { once } from "events"
 import { filter } from "lodash"
 import { baseLogger } from "@services/logger"
-import { getUserLimits } from "@config/app"
+import { getOnChainAddressCreateAttemptLimits, getUserLimits } from "@config/app"
 import { getCurrentPrice } from "@services/realtime-price"
 import { btc2sat, sat2btc, sleep } from "@core/utils"
 import { getTitle } from "@services/notifications/payment"
@@ -23,6 +23,8 @@ import { getWalletFromRole } from "@core/wallet-factory"
 import * as Wallets from "@app/wallets"
 import { TxStatus } from "@domain/wallets"
 import { getBTCBalance } from "test/helpers/wallet"
+import { resetOnChainAddressWalletIdLimits } from "test/helpers/rate-limit"
+import { OnChainAddressCreateRateLimiterExceededError } from "@domain/rate-limit/errors"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
@@ -75,6 +77,32 @@ describe("UserWallet - On chain", () => {
     expect(address).not.toBeInstanceOf(Error)
     expect(lastAddress).not.toBeInstanceOf(Error)
     expect(lastAddress).toBe(address)
+  })
+
+  it("fails to create onChain Address past rate limit", async () => {
+    // Reset limits before starting
+    let resetOk = await resetOnChainAddressWalletIdLimits(walletUser0.user.id)
+    expect(resetOk).not.toBeInstanceOf(Error)
+    if (resetOk instanceof Error) throw resetOk
+
+    // Create max number of addresses
+    const limitsNum = getOnChainAddressCreateAttemptLimits().points
+    const promises: Promise<OnChainAddress | ApplicationError>[] = []
+    for (let i = 0; i < limitsNum; i++) {
+      const onChainAddressPromise = Wallets.createOnChainAddress(walletUser0.user.id)
+      promises.push(onChainAddressPromise)
+    }
+    const onChainAddresses = await Promise.all(promises)
+    const isNotError = (item) => !(item instanceof Error)
+    expect(onChainAddresses.every(isNotError)).toBe(true)
+
+    // Test that first address past the limit fails
+    const onChainAddress = await Wallets.createOnChainAddress(walletUser0.user.id)
+    expect(onChainAddress).toBeInstanceOf(OnChainAddressCreateRateLimiterExceededError)
+
+    // Reset limits when done for other tests
+    resetOk = await resetOnChainAddressWalletIdLimits(walletUser0.user.id)
+    expect(resetOk).not.toBeInstanceOf(Error)
   })
 
   it("receives on-chain transaction", async () => {
