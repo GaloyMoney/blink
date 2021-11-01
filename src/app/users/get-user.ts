@@ -1,4 +1,8 @@
-import { SemanticAttributes, asyncRunInSpan } from "@services/tracing"
+import {
+  SemanticAttributes,
+  asyncRunInSpan,
+  addAttributesToCurrentSpan,
+} from "@services/tracing"
 import { UsersRepository } from "@services/mongoose"
 import { IpFetcher } from "@services/ipfetcher"
 import { getIpConfig } from "@config/app"
@@ -25,6 +29,9 @@ export const getUserForLogin = async ({
       if (user instanceof Error) {
         return user
       }
+      addAttributesToCurrentSpan({
+        ENDUSER_ALIAS: user.username,
+      })
       user.lastConnection = new Date()
 
       // IP tracking logic could be extracted into domain

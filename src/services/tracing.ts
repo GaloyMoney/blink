@@ -154,3 +154,5 @@ export const asyncRunInSpan = <
 }
 
 export { SemanticAttributes, SemanticResourceAttributes }
+
+export const ENDUSER_ALIAS = "enduser.alias"

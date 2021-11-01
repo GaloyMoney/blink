@@ -24,6 +24,11 @@ import { WalletFactory } from "@core/wallet-factory"
 import { ApolloServerPluginUsageReporting } from "apollo-server-core"
 import GeeTest from "@services/geetest"
 import expressApiKeyAuth from "./graphql-middlewares/api-key-auth"
+import {
+  SemanticAttributes,
+  addAttributesToCurrentSpan,
+  ENDUSER_ALIAS,
+} from "@services/tracing"
 
 const graphqlLogger = baseLogger.child({
   module: "graphql",
@@ -115,6 +120,12 @@ export const startApolloServer = async ({
           })
         account = loggedInAccount
       }
+
+      addAttributesToCurrentSpan({
+        [SemanticAttributes.ENDUSER_ID]: uid,
+        [ENDUSER_ALIAS]: domainUser?.username,
+        [SemanticAttributes.HTTP_CLIENT_IP]: ip,
+      })
 
       return {
         ...context,
