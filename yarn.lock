@@ -1513,6 +1513,14 @@
   dependencies:
     tslib "^2.1.0"
 
+"@galoymoney/instrumentation-graphql@^0.26.0":
+  version "0.26.0"
+  resolved "https://registry.yarnpkg.com/@galoymoney/instrumentation-graphql/-/instrumentation-graphql-0.26.0.tgz#ba6ff6f6f8f8757733fcd733186376b9acbd8260"
+  integrity sha512-/uu70BaMVPmh9KIygBci0K0/dPFAR/0MuiFtGqiW20unaERrvNoy2A8DNDl1BYLEwRte0Tv3OU+tNc4FyMvtBg==
+  dependencies:
+    "@opentelemetry/instrumentation" "^0.26.0"
+    "@types/graphql" "14.5.0"
+
 "@google-cloud/common@^3.7.0":
   version "3.7.2"
   resolved "https://registry.yarnpkg.com/@google-cloud/common/-/common-3.7.2.tgz#2f1feef9aaeb4f392d627ceab06e7eaa03329f58"
@@ -2228,14 +2236,6 @@
     "@opentelemetry/sdk-trace-base" "1.0.0"
     "@opentelemetry/semantic-conventions" "1.0.0"
     jaeger-client "^3.15.0"
-
-"@opentelemetry/instrumentation-graphql@^0.26.0":
-  version "0.26.0"
-  resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation-graphql/-/instrumentation-graphql-0.26.0.tgz#ad53cbbbdd0a1acd12fb68237257aa4828f8be63"
-  integrity sha512-dF8gccpOtDlMQ+IbuzfJE/DB3+sZ45A1oA8gYUpZ1eHZnKf4FvGGpRMchrRp1sLr9VdX49EYn7azQBZGTwZCCQ==
-  dependencies:
-    "@opentelemetry/instrumentation" "^0.26.0"
-    "@types/graphql" "14.5.0"
 
 "@opentelemetry/instrumentation-grpc@^0.26.0":
   version "0.26.0"

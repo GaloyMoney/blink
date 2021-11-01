@@ -6,7 +6,7 @@ import type * as graphqlTypes from "graphql"
 import { W3CTraceContextPropagator } from "@opentelemetry/core"
 import { NodeTracerProvider } from "@opentelemetry/sdk-trace-node"
 import { HttpInstrumentation } from "@opentelemetry/instrumentation-http"
-import { GraphQLInstrumentation } from "@opentelemetry/instrumentation-graphql"
+import { GraphQLInstrumentation } from "@galoymoney/instrumentation-graphql"
 import { MongoDBInstrumentation } from "@opentelemetry/instrumentation-mongodb"
 import { IORedisInstrumentation } from "@opentelemetry/instrumentation-ioredis"
 import { GrpcInstrumentation } from "@opentelemetry/instrumentation-grpc"
@@ -26,6 +26,8 @@ import { tracingConfig } from "@config/app"
 
 propagation.setGlobalPropagator(new W3CTraceContextPropagator())
 
+// FYI this hook is executed BEFORE the `formatError` hook from apollo
+// The data.errors field here may still change before being returned to the client
 const gqlResponseHook = (span: Span, data: graphqlTypes.ExecutionResult) => {
   if (data.errors && data.errors.length > 0) {
     span.recordException({
@@ -39,7 +41,10 @@ const gqlResponseHook = (span: Span, data: graphqlTypes.ExecutionResult) => {
     if (firstErr.message != "") {
       span.setAttribute("graphql.error.message", firstErr.message)
     }
-    span.setAttribute(`graphql.error.type`, firstErr.constructor.name)
+    span.setAttribute("graphql.error.type", firstErr.constructor.name)
+    if (firstErr.path) {
+      span.setAttribute("graphql.error.path", firstErr.path.join("."))
+    }
     if (firstErr.extensions?.code) {
       span.setAttribute(`graphql.error.code`, firstErr.extensions.code)
     }
@@ -60,6 +65,9 @@ const gqlResponseHook = (span: Span, data: graphqlTypes.ExecutionResult) => {
         span.setAttribute(`graphql.error.${idx}.message`, err.message)
       }
       span.setAttribute(`graphql.error.${idx}.type`, err.constructor.name)
+      if (err.path) {
+        span.setAttribute(`graphql.error.${idx}.path`, err.path.join("."))
+      }
       if (err.extensions?.code) {
         span.setAttribute(`graphql.error.${idx}.code`, err.extensions.code)
       }
@@ -86,6 +94,7 @@ registerInstrumentations({
     }),
     new GraphQLInstrumentation({
       mergeItems: true,
+      allowValues: true,
       responseHook: gqlResponseHook,
     }),
     new MongoDBInstrumentation(),
