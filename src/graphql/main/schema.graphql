@@ -336,10 +336,7 @@ Phone number which includes country code
 """
 scalar Phone
 
-enum Language {
-  EN_US
-  ES_SV
-}
+scalar Language
 
 type UserContact {
   username: Username!
