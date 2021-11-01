@@ -4,10 +4,6 @@ import * as Accounts from "@app/accounts"
 import OnChainAddressPayload from "@graphql/types/payload/on-chain-address"
 import WalletId from "@graphql/types/scalar/wallet-id"
 import { mapError } from "@graphql/error-map"
-import { getOnChainAddressCreateAttemptLimits } from "@config/app"
-import { RedisRateLimitService } from "@services/rate-limit"
-import { RateLimitPrefix } from "@domain/rate-limit"
-import { WalletsRepository } from "@services/mongoose"
 
 const OnChainAddressCreateInput = new GT.Input({
   name: "OnChainAddressCreateInput",
@@ -27,38 +23,15 @@ const OnChainAddressCreateMutation = GT.Field({
       return { errors: [{ message: walletId.message }] }
     }
 
-    let address: OnChainAddress | Error | null = null
-
     const hasPermissions = await Accounts.hasPermissions(domainUser.id, walletId)
     if (hasPermissions instanceof Error) {
       return { errors: [{ message: hasPermissions.message }] }
     }
-
     if (!hasPermissions) {
       return { errors: [{ message: "Invalid wallet" }] }
     }
 
-    address = await Wallets.createOnChainAddressByWalletPublicId(walletId)
-    if (address instanceof Error) {
-      const appErr = mapError(address)
-      return { errors: [{ message: appErr.message }] }
-    }
-
-    const account = await Accounts.getAccount(domainUser.defaultAccountId)
-    if (account instanceof Error) {
-      return { errors: [{ message: account.message }] }
-    }
-
-    if (!account.walletIds.length) {
-      return { errors: [{ message: "Account does not have a default wallet" }] }
-    }
-
-    const rewarded = await rewardOnChainAddressWalletIdLimit(walletId)
-    if (rewarded instanceof Error) {
-      const appErr = mapError(rewarded)
-      return { errors: [{ message: appErr.message }] }
-    }
-    address = await Wallets.createOnChainAddress(account.walletIds[0])
+    const address = await Wallets.createOnChainAddressByWalletPublicId(walletId)
     if (address instanceof Error) {
       const appErr = mapError(address)
       return { errors: [{ message: appErr.message }] }
@@ -70,20 +43,5 @@ const OnChainAddressCreateMutation = GT.Field({
     }
   },
 })
-
-const rewardOnChainAddressWalletIdLimit = async (
-  walletPublicId: WalletPublicId,
-): Promise<true | ApplicationError> => {
-  const wallet = await WalletsRepository().findByPublicId(walletPublicId)
-  if (wallet instanceof Error) return wallet
-  const { id: walletId } = wallet
-
-  const onChainAddressCreateAttempt = getOnChainAddressCreateAttemptLimits()
-  const limiter = RedisRateLimitService({
-    keyPrefix: RateLimitPrefix.onChainAddressCreate,
-    limitOptions: onChainAddressCreateAttempt,
-  })
-  return limiter.reward(walletId)
-}
 
 export default OnChainAddressCreateMutation
