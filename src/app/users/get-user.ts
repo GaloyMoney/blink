@@ -6,10 +6,6 @@ import { RepositoryError } from "@domain/errors"
 
 const users = UsersRepository()
 
-export const getUser = async (userId: UserId): Promise<User | ApplicationError> => {
-  return users.findById(userId)
-}
-
 export const getUserForLogin = async ({
   userId,
   ip,
