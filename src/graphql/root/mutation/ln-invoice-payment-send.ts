@@ -4,7 +4,11 @@ import { GT } from "@graphql/index"
 import PaymentSendPayload from "@graphql/types/payload/payment-send"
 import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
 import Memo from "@graphql/types/scalar/memo"
-import { addToEverySpan, SemanticAttributes, ENDUSER_ALIAS } from "@services/tracing"
+import {
+  addAttributesToCurrentSpanAndPropagate,
+  SemanticAttributes,
+  ENDUSER_ALIAS,
+} from "@services/tracing"
 
 const LnInvoicePaymentInput = new GT.Input({
   name: "LnInvoicePaymentInput",
@@ -20,7 +24,7 @@ const LnInvoicePaymentSendMutation = GT.Field({
     input: { type: GT.NonNull(LnInvoicePaymentInput) },
   },
   resolve: async (_, args, { ip, domainUser, wallet, logger }) =>
-    addToEverySpan(
+    addAttributesToCurrentSpanAndPropagate(
       {
         [SemanticAttributes.ENDUSER_ID]: domainUser?.id,
         [ENDUSER_ALIAS]: domainUser?.username,

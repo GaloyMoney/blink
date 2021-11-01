@@ -166,7 +166,7 @@ export const asyncRunInSpan = <F extends () => ReturnType<F>>(
   return ret
 }
 
-export const addToEverySpan = <F extends () => ReturnType<F>>(
+export const addAttributesToCurrentSpanAndPropagate = <F extends () => ReturnType<F>>(
   attributes: { [key: string]: string | undefined },
   fn: F,
 ) => {

@@ -26,7 +26,7 @@ import GeeTest from "@services/geetest"
 import expressApiKeyAuth from "./graphql-middlewares/api-key-auth"
 import {
   SemanticAttributes,
-  addToEverySpan,
+  addAttributesToCurrentSpanAndPropagate,
   addAttributesToCurrentSpan,
   ENDUSER_ALIAS,
 } from "@services/tracing"
@@ -98,7 +98,7 @@ export const startApolloServer = async ({
       const logger = graphqlLogger.child({ token, id: uuidv4(), body: context.req?.body })
 
       let domainUser: User | null = null
-      return addToEverySpan(
+      return addAttributesToCurrentSpanAndPropagate(
         { [SemanticAttributes.ENDUSER_ID]: uid, [SemanticAttributes.HTTP_CLIENT_IP]: ip },
         async () => {
           if (uid) {

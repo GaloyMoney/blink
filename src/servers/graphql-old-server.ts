@@ -37,7 +37,11 @@ import {
 } from "@app/wallets"
 import { decodeInvoice } from "@domain/bitcoin/lightning"
 import { mapError } from "@graphql/error-map"
-import { addToEverySpan, SemanticAttributes, ENDUSER_ALIAS } from "@services/tracing"
+import {
+  addAttributesToCurrentSpanAndPropagate,
+  SemanticAttributes,
+  ENDUSER_ALIAS,
+} from "@services/tracing"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
 
@@ -81,7 +85,7 @@ const translateWalletTx = (txs: WalletTransaction[]) => {
 const resolvers = {
   Query: {
     me: (_, __, { uid, user, ip, domainUser }) =>
-      addToEverySpan(
+      addAttributesToCurrentSpanAndPropagate(
         {
           [SemanticAttributes.ENDUSER_ID]: domainUser?.id,
           [ENDUSER_ALIAS]: domainUser?.username,
@@ -307,7 +311,7 @@ const resolvers = {
         return result
       },
       payInvoice: async ({ invoice, amount, memo }, _, { ip, domainUser }) =>
-        addToEverySpan(
+        addAttributesToCurrentSpanAndPropagate(
           {
             [SemanticAttributes.ENDUSER_ID]: domainUser?.id,
             [ENDUSER_ALIAS]: domainUser?.username,
