@@ -7,3 +7,4 @@ export class UnknownRateLimitServiceError extends RateLimitServiceError {}
 
 export class RateLimiterExceededError extends RateLimitServiceError {}
 export class InvoiceCreateRateLimiterExceededError extends RateLimiterExceededError {}
+export class OnChainAddressCreateRateLimiterExceededError extends RateLimiterExceededError {}
