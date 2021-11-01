@@ -155,7 +155,8 @@ describe("onchainBlockEventhandler", () => {
     expect(dbTx.sats).toBe(sats)
     expect(dbTx.pending).toBe(false)
 
-    const satsPrice = (await getCurrentPrice()) || 1
+    const satsPrice = await PriceService().getCurrentPrice()
+    if (satsPrice instanceof Error) throw satsPrice
     const usd = (sats * satsPrice).toFixed(2)
     expect(sendNotification.mock.calls[0][0].title).toBe(
       getTitle[NotificationType.LnInvoicePaid]({ usd, amount: sats }),

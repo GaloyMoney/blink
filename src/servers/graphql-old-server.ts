@@ -20,8 +20,6 @@ import { setupMongoConnection } from "@services/mongodb"
 import { activateLndHealthCheck } from "@services/lnd/health"
 import { baseLogger } from "@services/logger"
 import { getActiveLnd, nodesStats, nodeStats } from "@services/lnd/utils"
-import { getHourlyPrice } from "@services/local-cache"
-import { getCurrentPrice } from "@services/realtime-price"
 import { User } from "@services/mongoose/schema"
 import { sendNotification } from "@services/notifications/notification"
 import { login, requestPhoneCode } from "@core/text"
@@ -42,6 +40,8 @@ import {
   SemanticAttributes,
   ENDUSER_ALIAS,
 } from "@services/tracing"
+import { PriceService } from "@services/price"
+import { PriceInterval, PriceRange } from "@domain/price"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
 
@@ -179,17 +179,27 @@ const resolvers = {
         lastBuildNumberIos: lastBuildNumber,
       }
     },
-    prices: async (_, { length = 365 * 24 * 10 }, { logger }) => {
-      const hourly = await getHourlyPrice({ logger })
+    prices: async (_, { length = 365 * 24 * 10 }) => {
+      const service = PriceService()
+      let hourly: Tick[] | PriceServiceError = []
+      if (length > 1) {
+        hourly = await service.listHistory(PriceRange.OneYear, PriceInterval.OneHour)
+        if (hourly instanceof Error) throw hourly
+      }
+
+      const currentPrice = await service.getCurrentPrice()
+      if (currentPrice instanceof Error) throw currentPrice
 
       // adding the current price as the lat index array
       // use by the mobile application to convert prices
       hourly.push({
-        id: moment().unix(),
-        o: getCurrentPrice(),
+        date: new Date(Date.now()),
+        price: currentPrice,
       })
 
-      return hourly.splice(-length)
+      return hourly
+        .splice(-length)
+        .map((p) => ({ id: Math.floor(p.date.getTime() / 1000), o: p.price }))
     },
     earnList: (_, __, { user }) => {
       const response: Record<string, Primitive>[] = []

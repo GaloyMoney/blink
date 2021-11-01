@@ -1,6 +1,6 @@
 import { getUserWalletConfig } from "@config/app"
 
-import { getCurrentPrice } from "@services/realtime-price"
+import { PriceService } from "@services/price"
 import { User } from "@services/mongoose/schema"
 
 import { NotFoundError } from "./error"
@@ -15,7 +15,8 @@ export const WalletFactory = async ({
   logger: Logger
 }) => {
   // FIXME: update price on event outside of the wallet factory
-  const lastPrice = await getCurrentPrice()
+  const lastPrice = await PriceService().getCurrentPrice()
+  if (lastPrice instanceof Error) throw lastPrice
   UserWallet.setCurrentPrice(lastPrice)
 
   const userWalletConfig = getUserWalletConfig(user)

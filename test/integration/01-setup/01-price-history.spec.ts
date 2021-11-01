@@ -1,5 +1,5 @@
 import { Types as MongooseTypes } from "mongoose"
-import { PriceHistory } from "@services/mongoose/schema"
+import { PriceHistory } from "@services/price/schema"
 import { chunk, generateSatoshiPriceHistory } from "test/helpers"
 
 describe("Price history", () => {

@@ -3,16 +3,13 @@
  * yarn ts-node src/debug/fast-price-test.ts
  */
 
-import { baseLogger } from "@services/logger"
 import { setupMongoConnectionSecondary } from "@services/mongodb"
 
-import { Price } from "@core/price-impl"
+import { updatePriceHistory } from "@services/price/update-price-history"
 
 const main = async () => {
   const mongoose = await setupMongoConnectionSecondary()
-  const price = new Price({ logger: baseLogger })
-  // await price.fastUpdate()
-  const data = await price.update()
+  const data = await updatePriceHistory()
   await mongoose.connection.close()
   return data
 }
