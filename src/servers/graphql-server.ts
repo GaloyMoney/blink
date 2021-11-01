@@ -26,6 +26,7 @@ import GeeTest from "@services/geetest"
 import expressApiKeyAuth from "./graphql-middlewares/api-key-auth"
 import {
   SemanticAttributes,
+  addToEverySpan,
   addAttributesToCurrentSpan,
   ENDUSER_ALIAS,
 } from "@services/tracing"
@@ -97,47 +98,56 @@ export const startApolloServer = async ({
       const logger = graphqlLogger.child({ token, id: uuidv4(), body: context.req?.body })
 
       let domainUser: User | null = null
-      if (uid) {
-        const loggedInUser = await Users.getUserForLogin({ userId: uid, ip })
-        if (loggedInUser instanceof Error)
-          throw new ApolloError("Invalid user authentication", "INVALID_AUTHENTICATION", {
-            reason: loggedInUser,
-          })
-        domainUser = loggedInUser
-        user = await User.findOne({ _id: uid })
-        wallet =
-          !!user && user.status === "active"
-            ? await WalletFactory({ user, logger })
-            : null
-      }
+      return addToEverySpan(
+        { [SemanticAttributes.ENDUSER_ID]: uid, [SemanticAttributes.HTTP_CLIENT_IP]: ip },
+        async () => {
+          if (uid) {
+            const loggedInUser = await Users.getUserForLogin({ userId: uid, ip })
+            if (loggedInUser instanceof Error)
+              throw new ApolloError(
+                "Invalid user authentication",
+                "INVALID_AUTHENTICATION",
+                {
+                  reason: loggedInUser,
+                },
+              )
+            domainUser = loggedInUser
+            user = await User.findOne({ _id: uid })
+            wallet =
+              !!user && user.status === "active"
+                ? await WalletFactory({ user, logger })
+                : null
+          }
 
-      let account: Account | null = null
-      if (apiSecret && apiSecret) {
-        const loggedInAccount = await Accounts.getAccountByApiKey(apiKey, apiSecret)
-        if (loggedInAccount instanceof Error)
-          throw new ApolloError("Invalid API authentication", "INVALID_AUTHENTICATION", {
-            reason: loggedInAccount,
-          })
-        account = loggedInAccount
-      }
+          let account: Account | null = null
+          if (apiSecret && apiSecret) {
+            const loggedInAccount = await Accounts.getAccountByApiKey(apiKey, apiSecret)
+            if (loggedInAccount instanceof Error)
+              throw new ApolloError(
+                "Invalid API authentication",
+                "INVALID_AUTHENTICATION",
+                {
+                  reason: loggedInAccount,
+                },
+              )
+            account = loggedInAccount
+          }
 
-      addAttributesToCurrentSpan({
-        [SemanticAttributes.ENDUSER_ID]: uid,
-        [ENDUSER_ALIAS]: domainUser?.username,
-        [SemanticAttributes.HTTP_CLIENT_IP]: ip,
-      })
+          addAttributesToCurrentSpan({ [ENDUSER_ALIAS]: domainUser?.username })
 
-      return {
-        ...context,
-        logger,
-        uid,
-        wallet,
-        domainUser,
-        user,
-        geetest,
-        account,
-        ip,
-      }
+          return {
+            ...context,
+            logger,
+            uid,
+            wallet,
+            domainUser,
+            user,
+            geetest,
+            account,
+            ip,
+          }
+        },
+      )
     },
     formatError: (err) => {
       const log = err.extensions?.exception?.log

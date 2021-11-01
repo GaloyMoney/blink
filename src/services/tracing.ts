@@ -11,7 +11,7 @@ import { MongoDBInstrumentation } from "@opentelemetry/instrumentation-mongodb"
 import { IORedisInstrumentation } from "@opentelemetry/instrumentation-ioredis"
 import { GrpcInstrumentation } from "@opentelemetry/instrumentation-grpc"
 import { registerInstrumentations } from "@opentelemetry/instrumentation"
-import { SimpleSpanProcessor } from "@opentelemetry/sdk-trace-base"
+import { SimpleSpanProcessor, Span as SdkSpan } from "@opentelemetry/sdk-trace-base"
 import { JaegerExporter } from "@opentelemetry/exporter-jaeger"
 import { Resource } from "@opentelemetry/resources"
 import {
@@ -111,11 +111,28 @@ const provider = new NodeTracerProvider({
   ),
 })
 
-const jaegerExporter = new JaegerExporter({
-  host: tracingConfig.jaegerHost,
-  port: tracingConfig.jaegerPort,
-})
-provider.addSpanProcessor(new SimpleSpanProcessor(jaegerExporter))
+class SpanProcessorWrapper extends SimpleSpanProcessor {
+  onStart(span: SdkSpan) {
+    const ctx = context.active()
+    if (ctx) {
+      const baggage = propagation.getBaggage(ctx)
+      if (baggage) {
+        baggage.getAllEntries().forEach(([key, entry]) => {
+          span.setAttribute(key, entry.value)
+        })
+      }
+    }
+    super.onStart(span)
+  }
+}
+provider.addSpanProcessor(
+  new SpanProcessorWrapper(
+    new JaegerExporter({
+      host: tracingConfig.jaegerHost,
+      port: tracingConfig.jaegerPort,
+    }),
+  ),
+)
 
 provider.register()
 
@@ -133,17 +150,13 @@ export const addAttributesToCurrentSpan = (attributes: SpanAttributes) => {
     }
   }
 }
-export const asyncRunInSpan = <
-  A extends unknown[],
-  F extends (...args: A) => ReturnType<F>,
->(
+export const asyncRunInSpan = <F extends () => ReturnType<F>>(
   spanName: string,
   attributes: SpanAttributes,
   fn: F,
-  ...args: A
 ) => {
   const ret = tracer.startActiveSpan(spanName, { attributes }, async (span) => {
-    const ret = await Promise.resolve(fn(...args))
+    const ret = await Promise.resolve(fn())
     if ((ret as unknown) instanceof Error) {
       span.recordException(ret)
     }
@@ -151,6 +164,24 @@ export const asyncRunInSpan = <
     return ret
   })
   return ret
+}
+
+export const addToEverySpan = <F extends () => ReturnType<F>>(
+  attributes: { [key: string]: string | undefined },
+  fn: F,
+) => {
+  const ctx = context.active()
+  let baggage = propagation.getBaggage(ctx) || propagation.createBaggage()
+  const currentSpan = trace.getSpan(ctx)
+  Object.entries(attributes).forEach(([key, value]) => {
+    if (value) {
+      baggage = baggage.setEntry(key, { value })
+      if (currentSpan) {
+        currentSpan.setAttribute(key, value)
+      }
+    }
+  })
+  return context.with(propagation.setBaggage(ctx, baggage), fn)
 }
 
 export { SemanticAttributes, SemanticResourceAttributes }
