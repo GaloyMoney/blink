@@ -2,6 +2,7 @@ import {
   SemanticAttributes,
   asyncRunInSpan,
   addAttributesToCurrentSpan,
+  ENDUSER_ALIAS,
 } from "@services/tracing"
 import { UsersRepository } from "@services/mongoose"
 import { IpFetcher } from "@services/ipfetcher"
@@ -16,21 +17,17 @@ export const getUserForLogin = async ({
 }: {
   userId: string
   ip?: string
-}): Promise<User | ApplicationError> => {
-  return asyncRunInSpan(
+}): Promise<User | ApplicationError> =>
+  asyncRunInSpan(
     "app.getUserForLogin",
-    {
-      [SemanticAttributes.ENDUSER_ID]: userId,
-      [SemanticAttributes.CODE_FUNCTION]: "getUserForLogin",
-      [SemanticAttributes.HTTP_CLIENT_IP]: ip,
-    },
+    { [SemanticAttributes.CODE_FUNCTION]: "getUserForLogin" },
     async () => {
       const user = await users.findById(userId as UserId)
       if (user instanceof Error) {
         return user
       }
       addAttributesToCurrentSpan({
-        ENDUSER_ALIAS: user.username,
+        [ENDUSER_ALIAS]: user.username,
       })
       user.lastConnection = new Date()
 
@@ -65,7 +62,6 @@ export const getUserForLogin = async ({
       return user
     },
   )
-}
 
 export const getUsernameFromWalletPublicId = async (
   walletPublicId: WalletPublicId,

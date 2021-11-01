@@ -37,6 +37,7 @@ import {
 } from "@app/wallets"
 import { decodeInvoice } from "@domain/bitcoin/lightning"
 import { mapError } from "@graphql/error-map"
+import { addToEverySpan, SemanticAttributes, ENDUSER_ALIAS } from "@services/tracing"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
 
@@ -79,19 +80,27 @@ const translateWalletTx = (txs: WalletTransaction[]) => {
 
 const resolvers = {
   Query: {
-    me: (_, __, { uid, user }) => {
-      const { phone, username, contacts, language, level } = user
+    me: (_, __, { uid, user, ip, domainUser }) =>
+      addToEverySpan(
+        {
+          [SemanticAttributes.ENDUSER_ID]: domainUser?.id,
+          [ENDUSER_ALIAS]: domainUser?.username,
+          [SemanticAttributes.HTTP_CLIENT_IP]: ip,
+        },
+        async () => {
+          const { phone, username, contacts, language, level } = user
 
-      return {
-        id: uid,
-        level,
-        phone,
-        username,
-        contacts,
-        language,
-        twoFAEnabled: user.twoFAEnabled,
-      }
-    },
+          return {
+            id: uid,
+            level,
+            phone,
+            username,
+            contacts,
+            language,
+            twoFAEnabled: user.twoFAEnabled,
+          }
+        },
+      ),
 
     // legacy, before handling multi currency account
     wallet: (_, __, { wallet, logger }) => [
@@ -297,33 +306,41 @@ const resolvers = {
         if (result instanceof Error) throw result
         return result
       },
-      payInvoice: async ({ invoice, amount, memo }) => {
-        const decodedInvoice = await decodeInvoice(invoice)
-        if (decodedInvoice instanceof Error) throw decodedInvoice
+      payInvoice: async ({ invoice, amount, memo }, _, { ip, domainUser }) =>
+        addToEverySpan(
+          {
+            [SemanticAttributes.ENDUSER_ID]: domainUser?.id,
+            [ENDUSER_ALIAS]: domainUser?.username,
+            [SemanticAttributes.HTTP_CLIENT_IP]: ip,
+          },
+          async () => {
+            const decodedInvoice = decodeInvoice(invoice)
+            if (decodedInvoice instanceof Error) throw decodedInvoice
 
-        const { amount: lnInvoiceAmount } = decodedInvoice
-        if (lnInvoiceAmount && lnInvoiceAmount > 0) {
-          const status = await lnInvoicePaymentSend({
-            paymentRequest: invoice,
-            memo,
-            walletId: wallet.user.id as WalletId,
-            userId: wallet.user.id as UserId,
-            logger,
-          })
-          if (status instanceof Error) throw mapError(status)
-          return status.value
-        }
-        const status = await lnNoAmountInvoicePaymentSend({
-          paymentRequest: invoice,
-          memo,
-          amount,
-          walletId: wallet.user.id as WalletId,
-          userId: wallet.user.id as UserId,
-          logger,
-        })
-        if (status instanceof Error) throw mapError(status)
-        return status.value
-      },
+            const { amount: lnInvoiceAmount } = decodedInvoice
+            if (lnInvoiceAmount && lnInvoiceAmount > 0) {
+              const status = await lnInvoicePaymentSend({
+                paymentRequest: invoice,
+                memo,
+                walletId: wallet.user.id as WalletId,
+                userId: wallet.user.id as UserId,
+                logger,
+              })
+              if (status instanceof Error) throw mapError(status)
+              return status.value
+            }
+            const status = await lnNoAmountInvoicePaymentSend({
+              paymentRequest: invoice,
+              memo,
+              amount,
+              walletId: wallet.user.id as WalletId,
+              userId: wallet.user.id as UserId,
+              logger,
+            })
+            if (status instanceof Error) throw mapError(status)
+            return status.value
+          },
+        ),
       payKeysendUsername: async ({ username, amount, memo }) => {
         const status = await intraledgerPaymentSend({
           recipientUsername: username,
