@@ -13,5 +13,5 @@ const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
   oneofs: true,
 })
 
-export const protoDescriptor = grpc.loadPackageDefinition(packageDefinition)
+export const PriceProtoDescriptor = grpc.loadPackageDefinition(packageDefinition)
 // The protoDescriptor object has the full package hierarchy

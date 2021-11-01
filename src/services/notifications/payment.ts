@@ -23,13 +23,11 @@ export const transactionNotification = async ({
   txid,
   usdPerSat,
 }: IPaymentNotification) => {
-  let title
+  let title = getTitleNoUsd[type]({ amount })
 
   if (usdPerSat) {
     const usd = (amount * usdPerSat).toFixed(2)
     title = getTitle[type]({ usd, amount })
-  } else {
-    title = getTitleNoUsd[type]({ amount })
   }
 
   const data: IDataNotification = {

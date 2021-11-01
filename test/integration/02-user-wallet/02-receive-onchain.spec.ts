@@ -2,7 +2,6 @@ import { once } from "events"
 import { filter } from "lodash"
 import { baseLogger } from "@services/logger"
 import { getOnChainAddressCreateAttemptLimits, getUserLimits } from "@config/app"
-import { getCurrentPrice } from "@services/realtime-price"
 import { btc2sat, sat2btc, sleep } from "@core/utils"
 import { getTitle } from "@services/notifications/payment"
 import { onchainTransactionEventHandler } from "@servers/trigger"
@@ -222,10 +221,8 @@ describe("UserWallet - On chain", () => {
       NotificationType.OnchainReceiptPending,
     )
 
-    const satsPrice = await getCurrentPrice()
-    if (!satsPrice) {
-      throw Error(`satsPrice is not set`)
-    }
+    const satsPrice = await PriceService().getCurrentPrice()
+    if (satsPrice instanceof Error) throw satsPrice
     const usd = (btc2sat(amountBTC) * satsPrice).toFixed(2)
 
     expect(sendNotification.mock.calls[0][0].title).toBe(

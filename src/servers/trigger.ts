@@ -9,14 +9,14 @@ import {
   subscribeToInvoices,
   subscribeToTransactions,
 } from "lightning"
-
-import { getCurrentPrice } from "@services/realtime-price"
+import { PriceService } from "@services/price"
 import { activateLndHealthCheck, lndStatusEvent } from "@services/lnd/health"
 import { onChannelUpdated } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { ledger, setupMongoConnection } from "@services/mongodb"
 import { User } from "@services/mongoose/schema"
-import { Price } from "@core/price-impl"
+import { transactionNotification } from "@services/notifications/payment"
+import { updatePriceHistory } from "@services/price/update-price-history"
 import { ONCHAIN_MIN_CONFIRMATIONS, SAT_USDCENT_PRICE } from "@config/app"
 import * as Wallets from "@app/wallets"
 import pubsub from "@services/pubsub"
@@ -169,19 +169,18 @@ export const onInvoiceUpdate = async (invoice) => {
 }
 
 const publishCurrentPrice = async () => {
-  const satUsdPrice = await getCurrentPrice()
-  if (satUsdPrice) {
-    pubsub.publish(SAT_USDCENT_PRICE, { satUsdCentPrice: 100 * satUsdPrice })
-  }
+  const satsPrice = await PriceService().getCurrentPrice()
+  if (satsPrice instanceof Error) return
+
+  pubsub.publish(SAT_USDCENT_PRICE, { satUsdCentPrice: 100 * satsPrice })
 }
 
 const updatePriceForChart = () => {
-  const price = new Price({ logger: baseLogger })
   const interval = 1000 * 30
   return setInterval(async function () {
     try {
-      await price.update()
-      publishCurrentPrice()
+      await updatePriceHistory()
+      await publishCurrentPrice()
     } catch (err) {
       logger.error({ err }, "can't update the price")
     }

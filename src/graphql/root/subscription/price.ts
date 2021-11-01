@@ -2,7 +2,7 @@ import { GT } from "@graphql/index"
 
 import ExchangeCurrencyUnit from "@graphql/types/scalar/exchange-currency-unit"
 import PricePayload from "@graphql/types/payload/price"
-import { getCurrentPrice } from "@services/realtime-price"
+import { PriceService } from "@services/price"
 import { SAT_USDCENT_PRICE } from "@config/app"
 import SatAmount from "@graphql/types/scalar/sat-amount"
 import pubsub from "@services/pubsub"
@@ -61,8 +61,8 @@ const PriceSubscription = {
         errors: [{ message: "Unsupported exchange amount" }],
       })
     } else {
-      const satUsdPrice = await getCurrentPrice()
-      if (satUsdPrice) {
+      const satUsdPrice = await PriceService().getCurrentPrice()
+      if (!(satUsdPrice instanceof Error)) {
         pubsub.publishImmediate(eventName, { satUsdCentPrice: 100 * satUsdPrice })
       }
     }
