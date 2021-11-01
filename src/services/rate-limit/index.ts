@@ -29,9 +29,18 @@ export const RedisRateLimitService = ({
       await limiter.delete(key)
       return true
     } catch (err) {
-      return new UnknownRateLimitServiceError()
+      return new UnknownRateLimitServiceError(err)
     }
   }
 
-  return { consume, reset }
+  const reward = async (key) => {
+    try {
+      await limiter.reward(key)
+      return true
+    } catch (err) {
+      return new UnknownRateLimitServiceError(err)
+    }
+  }
+
+  return { consume, reset, reward }
 }
