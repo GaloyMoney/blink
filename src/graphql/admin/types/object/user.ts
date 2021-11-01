@@ -20,7 +20,7 @@ const UserDetails = new GT.Object({
     },
     language: {
       type: GT.NonNull(Language),
-      resolve: (source) => source.language || "en",
+      resolve: (source) => source.language,
     },
     level: { type: AccountLevel },
     status: { type: AccountStatus },

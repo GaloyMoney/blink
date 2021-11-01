@@ -103,7 +103,7 @@ const userFromRaw = (result: UserType): User => {
     username: result.username as Username,
     walletPublicId: result.walletPublicId as WalletPublicId,
     phone: result.phone as PhoneNumber,
-    language: (result.language || UserLanguage.EN_US) as UserLanguage,
+    language: result.language as UserLanguage,
     twoFA: result.twoFA as TwoFAForUser,
     contacts: result.contacts.reduce(
       (res: UserContact[], contact: ContactObjectForUser): UserContact[] => {

@@ -19,7 +19,7 @@ const mainUserFields = () => ({
   username: { type: Username },
   language: {
     type: GT.NonNull(Language),
-    resolve: (source) => source.language || "en",
+    resolve: (source) => source.language,
   },
 
   contacts: {

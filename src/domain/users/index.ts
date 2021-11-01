@@ -1,4 +1,5 @@
 export const UserLanguage = {
+  DEFAULT: "",
   EN_US: "en",
   ES_SV: "es",
 } as const
