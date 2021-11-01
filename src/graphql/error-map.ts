@@ -97,6 +97,11 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
         "User tried to create too many invoices, please wait for a while and try again."
       return new TooManyRequestError({ message, logger: baseLogger })
 
+    case "OnChainAddressCreateRateLimiterExceededError":
+      message =
+        "Tried to create too many onchain addresses for user, please wait for a while and try again."
+      return new TooManyRequestError({ message, logger: baseLogger })
+
     case "UnknownLnInvoiceDecodeError":
       return new InvoiceDecodeError({ message, logger: baseLogger })
 

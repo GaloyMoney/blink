@@ -344,7 +344,7 @@ const resolvers = {
     onchain: (_, __, { wallet }) => ({
       getNewAddress: async () => {
         const address = await Wallets.createOnChainAddress(wallet.user.id)
-        if (address instanceof Error) throw address
+        if (address instanceof Error) throw mapError(address)
         return address
       },
       pay: ({ address, amount, memo }) => ({

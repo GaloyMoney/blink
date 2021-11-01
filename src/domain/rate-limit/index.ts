@@ -5,4 +5,5 @@ export const RateLimitPrefix = {
   failedAttemptIp: "failed_attempt_ip",
   invoiceCreate: "invoice_create",
   invoiceCreateForRecipient: "invoice_create_for_recipient",
+  onChainAddressCreate: "onchain_address_create",
 } as const

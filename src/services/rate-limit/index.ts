@@ -29,7 +29,7 @@ export const RedisRateLimitService = ({
       await limiter.delete(key)
       return true
     } catch (err) {
-      return new UnknownRateLimitServiceError()
+      return new UnknownRateLimitServiceError(err)
     }
   }
 
