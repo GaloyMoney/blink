@@ -3,6 +3,9 @@ services:
   otel-agent:
     image: otel/opentelemetry-collector-contrib:0.37.1
     command: ["--config=/etc/otel-agent-config.yaml", "--log-level=debug"]
+    environment:
+    - HONEYCOMB_DATASET=${HONEYCOMB_DATASET}
+    - HONEYCOMB_API_KEY=${HONEYCOMB_API_KEY}
     volumes:
       - ./dev/otel-agent-config.yaml:/etc/otel-agent-config.yaml
     ports:
