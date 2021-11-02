@@ -56,6 +56,9 @@ export const lnInvoicePaymentSendWithTwoFA = async ({
     "app.lnInvoicePaymentSendWithTwoFA",
     {
       [SemanticAttributes.CODE_FUNCTION]: "lnInvoicePaymentSendWithTwoFA",
+      "payment.initiation_method": PaymentInitiationMethod.Lightning,
+      "payment.wallet_id": walletId,
+      "payment.request": paymentRequest,
     },
     async () => {
       const decodedInvoice = decodeInvoice(paymentRequest)
@@ -102,6 +105,9 @@ export const lnInvoicePaymentSend = async ({
     "app.lnInvoicePaymentSend",
     {
       [SemanticAttributes.CODE_FUNCTION]: "lnInvoicePaymentSend",
+      "payment.initiation_method": PaymentInitiationMethod.Lightning,
+      "payment.wallet_id": walletId,
+      "payment.request": paymentRequest,
     },
     async () => {
       const decodedInvoice = decodeInvoice(paymentRequest)
@@ -141,6 +147,10 @@ export const lnNoAmountInvoicePaymentSendWithTwoFA = async ({
     "app.lnNoAmountInvoicePaymentSendWithTwoFA",
     {
       [SemanticAttributes.CODE_FUNCTION]: "lnNoAmountInvoicePaymentSendWithTwoFA",
+      "payment.initiation_method": PaymentInitiationMethod.Lightning,
+      "payment.wallet_id": walletId,
+      "payment.request": paymentRequest,
+      "payment.amount": amount,
     },
     async () => {
       const decodedInvoice = decodeInvoice(paymentRequest)
@@ -192,6 +202,10 @@ export const lnNoAmountInvoicePaymentSend = async ({
     "app.lnNoAmountInvoicePaymentSend",
     {
       [SemanticAttributes.CODE_FUNCTION]: "lnNoAmountInvoicePaymentSend",
+      "payment.initiation_method": PaymentInitiationMethod.Lightning,
+      "payment.wallet_id": walletId,
+      "payment.request": paymentRequest,
+      "payment.amount": amount,
     },
     async () => {
       const decodedInvoice = decodeInvoice(paymentRequest)
@@ -236,7 +250,10 @@ const lnSendPayment = async ({
   logger: Logger
 }): Promise<PaymentSendStatus | ApplicationError> => {
   addAttributesToCurrentSpan({
-    "payment.initiation_method": PaymentInitiationMethod.Lightning,
+    "payment.amount": amount,
+    "payment.request.destination": decodedInvoice.destination,
+    "payment.request.hash": decodedInvoice.paymentHash,
+    "payment.request.description": decodedInvoice.description,
   })
   const lndService = LndService()
   if (lndService instanceof Error) return lndService
