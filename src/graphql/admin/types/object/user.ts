@@ -14,14 +14,8 @@ const UserDetails = new GT.Object({
   fields: () => ({
     id: { type: GT.NonNullID },
     phone: { type: GT.NonNull(Phone) },
-    username: {
-      type: Username,
-      resolve: (source) => source.username,
-    },
-    language: {
-      type: GT.NonNull(Language),
-      resolve: (source) => source.language,
-    },
+    username: { type: Username },
+    language: { type: GT.NonNull(Language) },
     level: { type: AccountLevel },
     status: { type: AccountStatus },
     title: { type: GT.String },
