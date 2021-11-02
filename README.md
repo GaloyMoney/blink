@@ -44,6 +44,7 @@ For an overview of all relevent repository checkout [awesome-galoy](https://gith
   - Support for clearnet and TOR
   - Support for invoices with and without specified amount
   - Route probing to pre-display an accurate fee and mitigate attacks based on expensive routing
+  - Channel data backup to dropbox and google cloud storage
 - Custodial storage of all user assets
   - Limited funds stored in hot-wallet (keys kept on servers)
   - Threshold based rebalancing to cold-storage (keys stored on offline hardware devices)
@@ -54,6 +55,8 @@ For an overview of all relevent repository checkout [awesome-galoy](https://gith
   - DDos prevention 
     - via rate limiting infront of critical APIs
     - via geetest CAPTCHA
+- Resiliency
+  - Databases (mongodb and redis) are run by default in high availaby/resilience mode. If one pod/node get downs, there is an automatic failover on another pod.
 - Production ready
   - Supports horizontal scaling and highly available deployments via k8s
   - Client side load balancing accross multiple LND nodes
