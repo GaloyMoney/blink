@@ -17,16 +17,16 @@ export const transactionInterfaceFields = {
   },
   initiationVia: {
     type: GT.NonNull(PaymentInitiationMethod),
-    description: "From which protocol the payment has been initiated."
+    description: "From which protocol the payment has been initiated.",
   },
   settlementVia: {
     type: GT.NonNull(SettlementMethod),
-    description: "To which protocol the payment has settled on."
+    description: "To which protocol the payment has settled on.",
   },
   settlementAmount: {
     type: GT.NonNull(SatAmount),
     //TODO: Does the amount include fees.
-    description: "Amount of sats paid by the user."
+    description: "Amount of sats paid by the user.",
   },
   settlementFee: {
     //TODO: Fees will be incorrect if probing fails and there is a fee refund.
@@ -46,7 +46,7 @@ export const transactionInterfaceFields = {
         currencyUnit: "USDCENT",
       }
     },
-    description: "Price in USDCENT/SATS at time of settlement."
+    description: "Price in USDCENT/SATS at time of settlement.",
   },
   direction: {
     type: GT.NonNull(TxDirection),
@@ -67,7 +67,8 @@ export const transactionInterfaceFields = {
 const ITransaction = new GT.Interface({
   name: "Transaction",
   fields: () => transactionInterfaceFields,
-  description: "Give details about an individual transaction.\nGaloy have a smart routing system which is automatically settling intraledger when both the payer and payee use the same wallet - therefore it's possible the transactions is being initiated onchain or with lightning but settled intraledger."
+  description:
+    "Give details about an individual transaction.\nGaloy have a smart routing system which is automatically settling intraledger when both the payer and payee use the same wallet - therefore it's possible the transactions is being initiated onchain or with lightning but settled intraledger.",
 })
 
 export const { connectionType: TransactionConnection } = connectionDefinitions({

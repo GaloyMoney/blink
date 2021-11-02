@@ -13,8 +13,15 @@ import { checkedToUsername } from "@domain/users"
 const UserContact = new GT.Object({
   name: "UserContact",
   fields: () => ({
-    username: { type: GT.NonNull(Username), description: "Actual identifier of the contact." },
-    alias: { type: ContactAlias, description: "Alias the user can set for this contact.\nOnly the user can see the alias attached to their contact." },
+    username: {
+      type: GT.NonNull(Username),
+      description: "Actual identifier of the contact.",
+    },
+    alias: {
+      type: ContactAlias,
+      description:
+        "Alias the user can set for this contact.\nOnly the user can see the alias attached to their contact.",
+    },
     transactionsCount: {
       type: GT.NonNull(GT.Int),
     },
@@ -46,7 +53,7 @@ const UserContact = new GT.Object({
 
         return connectionFromArray(transactions, args)
       },
-      description: "Paginated list of transactions sent to/from this contact."
+      description: "Paginated list of transactions sent to/from this contact.",
     },
   }),
 })
