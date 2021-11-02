@@ -522,7 +522,7 @@ const executePaymentViaLn = async ({
     if (payment instanceof Error) return payment
     payment.paymentRequest = payment.paymentRequest || paymentRequest
 
-    const settled = await ledgerService.settlePendingLnPayments({ paymentHash, payment })
+    const settled = await ledgerService.settlePendingLnPayments({ paymentHash })
     if (settled instanceof Error) return settled
 
     if (payResult instanceof Error) {

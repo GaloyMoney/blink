@@ -87,7 +87,6 @@ const updatePendingPayment = async ({
 
       const settled = await ledgerService.settlePendingLnPayments({
         paymentHash,
-        payment: lnPaymentLookup,
       })
       if (settled instanceof Error) {
         paymentLogger.error(
