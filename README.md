@@ -72,7 +72,7 @@ For an overview of all relevent repository checkout [awesome-galoy](https://gith
 
 - GCP, Kubernetes, Terraform, Helm, Concourse, Docker
 - Opentelemetry, Prometheus
-- Bitcoind, LND, Specter, RideTheLightning, Loop, LNDMoon, Pool
+- Bitcoind, LND, Specter, RideTheLightning, Loop, Lndmon, Pool
 - PostgreSQL, MongoDB, Redis
 - NodeJS
 - Typescript
