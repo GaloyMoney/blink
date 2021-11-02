@@ -15,6 +15,11 @@ processors:
 exporters:
   logging:
     loglevel: debug
+  otlp:
+    endpoint: "api.honeycomb.io:443"
+    headers:
+      "x-honeycomb-team": ${HONEYCOMB_API_KEY}
+      "x-honeycomb-dataset": ${HONEYCOMB_DATASET}
 
 extensions:
   health_check:
@@ -27,5 +32,5 @@ service:
     traces:
       receivers: [jaeger]
       processors: [attributes, batch]
-      exporters: [logging]
+      exporters: [otlp, logging]
 
