@@ -1,17 +1,23 @@
+import {
+  addAttributesToCurrentSpanAndPropagate,
+  SemanticAttributes,
+  ENDUSER_ALIAS,
+} from "@services/tracing"
 import { GT } from "@graphql/index"
 
 import { UserWithAccounts } from "@graphql/types/object/user"
-import * as Users from "@app/users"
 
 const MeQuery = GT.Field({
   type: UserWithAccounts,
-  resolve: async (_, __, { uid }) => {
-    const user = await Users.getUser(uid)
-    if (user instanceof Error) {
-      throw user
-    }
-    return user
-  },
+  resolve: async (_, __, { ip, domainUser }) =>
+    addAttributesToCurrentSpanAndPropagate(
+      {
+        [SemanticAttributes.ENDUSER_ID]: domainUser?.id,
+        [ENDUSER_ALIAS]: domainUser?.username,
+        [SemanticAttributes.HTTP_CLIENT_IP]: ip,
+      },
+      () => domainUser,
+    ),
 })
 
 export default MeQuery
