@@ -259,12 +259,15 @@ const lnSendPayment = async ({
   if (lndService instanceof Error) return lndService
   const isLocal = lndService.isLocal(decodedInvoice.destination)
   if (isLocal instanceof Error) return isLocal
+  const usdPerSat = await PriceService().getCurrentPrice()
+  if (usdPerSat instanceof Error) return usdPerSat
 
   if (isLocal) {
     const executedPayment = await executePaymentViaIntraledger({
       paymentHash: decodedInvoice.paymentHash,
       description: decodedInvoice.description,
       amount,
+      usdPerSat,
       memo,
       walletId,
       username,
@@ -277,6 +280,7 @@ const lnSendPayment = async ({
         amount,
         walletId,
         paymentHash: decodedInvoice.paymentHash,
+        usdPerSat,
       })
 
       const eventName = lnPaymentStatusEvent(decodedInvoice.paymentHash)
@@ -289,6 +293,7 @@ const lnSendPayment = async ({
   return executePaymentViaLn({
     decodedInvoice,
     amount,
+    usdPerSat,
     walletId,
     lndService,
     logger,
@@ -299,6 +304,7 @@ const executePaymentViaIntraledger = async ({
   paymentHash,
   description,
   amount,
+  usdPerSat,
   memo,
   walletId,
   username,
@@ -308,6 +314,7 @@ const executePaymentViaIntraledger = async ({
   paymentHash: PaymentHash
   description: string
   amount: Satoshis
+  usdPerSat: UsdPerSat
   memo: string
   walletId: WalletId
   username: Username
@@ -339,12 +346,10 @@ const executePaymentViaIntraledger = async ({
   const recipientWallet = await WalletsRepository().findById(recipientWalletId)
   if (recipientWallet instanceof Error) return recipientWallet
 
-  const price = await PriceService().getCurrentPrice()
-  if (price instanceof Error) return price
   const lnFee = toSats(0)
   const sats = toSats(amount + lnFee)
-  const usd = sats * price
-  const usdFee = lnFee * price
+  const usd = sats * usdPerSat
+  const usdFee = lnFee * usdPerSat
 
   return LockService().lockWalletId({ walletId, logger }, async (lock) => {
     const balance = await getBalanceForWallet({ walletId, logger })
@@ -391,12 +396,14 @@ const executePaymentViaIntraledger = async ({
 const executePaymentViaLn = async ({
   decodedInvoice,
   amount,
+  usdPerSat,
   walletId,
   lndService,
   logger,
 }: {
   decodedInvoice: LnInvoice
   amount: Satoshis
+  usdPerSat: UsdPerSat
   walletId: WalletId
   lndService: ILightningService
   logger: Logger
@@ -430,14 +437,11 @@ const executePaymentViaLn = async ({
     }
   }
 
-  const price = await PriceService().getCurrentPrice()
-  if (price instanceof Error) return price
-
   const maxFee = LnFeeCalculator().max(amount)
   const lnFee = route ? route.roundedUpFee : maxFee
   const sats = toSats(amount + lnFee)
-  const usd = sats * price
-  const usdFee = lnFee * price
+  const usd = sats * usdPerSat
+  const usdFee = lnFee * usdPerSat
 
   return LockService().lockWalletId({ walletId, logger }, async (lock) => {
     const balance = await getBalanceForWallet({ walletId, logger })

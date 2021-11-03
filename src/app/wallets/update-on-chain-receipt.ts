@@ -76,10 +76,9 @@ const processTxForWallet = async (
 
   const walletAddresses = wallet.onChainAddresses()
 
-  const price = await PriceService().getCurrentPrice()
-  if (price instanceof Error) {
-    return price
-  }
+  const usdPerSat = await PriceService().getCurrentPrice()
+  if (usdPerSat instanceof Error) return usdPerSat
+
   const liabilitiesAccountId = toLiabilitiesAccountId(wallet.id)
 
   const lockService = LockService()
@@ -97,8 +96,8 @@ const processTxForWallet = async (
             amount: sats,
             ratio: wallet.depositFeeRatio,
           })
-          const usd = sats * price
-          const usdFee = fee * price
+          const usd = sats * usdPerSat
+          const usdFee = fee * usdPerSat
 
           const result = await ledger.addOnChainTxReceive({
             liabilitiesAccountId,
@@ -118,6 +117,7 @@ const processTxForWallet = async (
             walletId: wallet.id,
             amount: sats,
             txId: tx.rawTx.id,
+            usdPerSat,
           })
         }
       }

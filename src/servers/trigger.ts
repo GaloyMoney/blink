@@ -16,11 +16,13 @@ import { onChannelUpdated } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { ledger, setupMongoConnection } from "@services/mongodb"
 import { User } from "@services/mongoose/schema"
-import { transactionNotification } from "@services/notifications/payment"
 import { Price } from "@core/price-impl"
 import { ONCHAIN_MIN_CONFIRMATIONS, SAT_USDCENT_PRICE } from "@config/app"
 import * as Wallets from "@app/wallets"
 import pubsub from "@services/pubsub"
+import { PriceService } from "@services/price"
+import { NotificationsService } from "@services/notifications"
+import { toSats } from "@domain/bitcoin"
 
 const logger = baseLogger.child({ module: "trigger" })
 
@@ -94,12 +96,13 @@ export async function onchainTransactionEventHandler(tx) {
     }
 
     const user = await User.findOne({ _id: userId })
-    await transactionNotification({
-      type: "onchain_payment",
-      user,
-      amount: Number(tx.tokens) - tx.fee,
-      txid: tx.id,
-      logger: onchainLogger,
+    const price = await PriceService().getCurrentPrice()
+    const usdPerSat = price instanceof Error ? undefined : price
+    await NotificationsService(onchainLogger).onChainTransactionPayment({
+      walletId: user.id,
+      amount: toSats(Number(tx.tokens) - tx.fee),
+      txId: tx.id,
+      usdPerSat,
     })
   } else {
     // incoming transaction
@@ -127,12 +130,13 @@ export async function onchainTransactionEventHandler(tx) {
         "mempool appearence",
       )
 
-      await transactionNotification({
-        type: "onchain_receipt_pending",
-        user,
-        logger: onchainLogger,
-        amount: Number(tx.tokens),
-        txid: tx.id,
+      const price = await PriceService().getCurrentPrice()
+      const usdPerSat = price instanceof Error ? undefined : price
+      await NotificationsService(onchainLogger).onChainTransactionReceivedPending({
+        walletId: user.id,
+        amount: toSats(Number(tx.tokens)),
+        txId: tx.id,
+        usdPerSat,
       })
     }
   }
