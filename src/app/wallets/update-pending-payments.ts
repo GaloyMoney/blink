@@ -120,6 +120,7 @@ const updatePendingPayment = async ({
         return reimburseFee({
           liabilitiesAccountId,
           journalId: paymentLiabilityTx.journalId,
+          paymentId: persistedPayment.id,
           paymentHash,
           maxFee: paymentLiabilityTx.fee,
           actualFee: roundedUpFee,

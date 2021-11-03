@@ -5,6 +5,7 @@ import { PriceService } from "@services/price"
 export const reimburseFee = async ({
   liabilitiesAccountId,
   journalId,
+  paymentId,
   paymentHash,
   maxFee,
   actualFee,
@@ -12,6 +13,7 @@ export const reimburseFee = async ({
 }: {
   liabilitiesAccountId: LiabilitiesAccountId
   journalId: LedgerJournalId
+  paymentId: PaymentId
   paymentHash: PaymentHash
   maxFee: Satoshis
   actualFee: Satoshis
@@ -53,6 +55,7 @@ export const reimburseFee = async ({
     sats: feeDifference,
     usd,
     journalId,
+    paymentId,
   })
   if (result instanceof Error) return result
 }
