@@ -544,6 +544,7 @@ const executePaymentViaLn = async ({
       const reimbursed = await reimburseFee({
         walletId,
         journalId,
+        paymentId: persistedPayment.id,
         paymentHash,
         maxFee,
         actualFee: payResult.roundedUpFee,
