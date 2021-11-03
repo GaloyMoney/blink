@@ -5,6 +5,7 @@ import { LedgerService } from "@services/ledger"
 import { LndService } from "@services/lnd"
 import { LockService } from "@services/lock"
 import { reimburseFee } from "@app/wallets/reimburse-fee"
+import { LnPaymentsRepository } from "@services/mongoose/ln-payments"
 
 export const updatePendingPayments = async ({
   walletId,
@@ -98,6 +99,14 @@ const updatePendingPayment = async ({
           "we didn't have any transaction to update",
         )
         return settled
+      }
+      const persistedPayment = await LnPaymentsRepository().update(lnPaymentLookup)
+      if (persistedPayment instanceof Error) {
+        paymentLogger.error(
+          { error: lnPaymentLookup },
+          "we couldn't update payment data to our database",
+        )
+        return persistedPayment
       }
 
       if (status === PaymentStatus.Settled) {
