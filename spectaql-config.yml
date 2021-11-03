@@ -1,0 +1,20 @@
+spectaql:
+  logoFile: ./public/galoy-logo.png
+
+introspection:
+  schemaFile: ./src/graphql/main/schema.graphql
+
+info:
+  title: GraphQL API Reference
+  description: Welcome to the Galoy API reference!
+  contact:
+    name: API Support
+    email: dev@galoy.io
+  license:
+    name: MIT 
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api.testnet.galoy.io/graphql
+    description: Testnet
+    production: false
