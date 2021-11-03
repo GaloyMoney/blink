@@ -3,6 +3,8 @@ name: "Generate GraphQL Docs"
 on:
   push:
     branches: [ main ]
+    paths:
+      - "**.graphql"
 
 jobs:
   build:
