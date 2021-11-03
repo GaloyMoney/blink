@@ -42,6 +42,7 @@ import { RoutesCache } from "@services/redis/routes"
 
 import { CachedRouteLookupKeyFactory } from "@domain/routes/key-factory"
 import { NotificationsService } from "@services/notifications"
+import { LnPaymentsRepository } from "@services/mongoose/ln-payments"
 
 export const lnInvoicePaymentSendWithTwoFA = async ({
   paymentRequest,
@@ -524,6 +525,8 @@ const executePaymentViaLn = async ({
 
     const settled = await ledgerService.settlePendingLnPayments({ paymentHash })
     if (settled instanceof Error) return settled
+    const persistedPayment = await LnPaymentsRepository().update(payment)
+    if (persistedPayment instanceof Error) return persistedPayment
 
     if (payResult instanceof Error) {
       const voided = await ledgerService.voidLedgerTransactionsForJournal(journalId)
