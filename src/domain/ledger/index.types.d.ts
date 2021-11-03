@@ -124,6 +124,7 @@ type AddLnFeeReeimbursementReceiveArgs = {
   sats: Satoshis
   usd: number
   journalId: LedgerJournalId
+  paymentId: PaymentId
 }
 
 type FeeReimbursement = {

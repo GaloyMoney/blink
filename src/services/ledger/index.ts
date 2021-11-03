@@ -374,6 +374,7 @@ export const LedgerService = (): ILedgerService => {
     sats,
     usd,
     journalId,
+    paymentId,
   }: AddLnFeeReeimbursementReceiveArgs): Promise<LedgerJournal | LedgerError> => {
     const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
 
@@ -385,6 +386,7 @@ export const LedgerService = (): ILedgerService => {
         related_journal: journalId,
         pending: false,
         usd,
+        _payment: paymentId,
       }
 
       const description = "fee reimbursement"
