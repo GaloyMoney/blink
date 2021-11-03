@@ -64,16 +64,6 @@ export const isInvoiceAlreadyPaidError = (err): boolean => {
   return false
 }
 
-// Throws an error if neither or both value1 and value2 are provided
-export const inputXOR = (arg1, arg2) => {
-  const [[key1, value1]] = Object.entries(arg1)
-  const [[key2, value2]] = Object.entries(arg2)
-  if (!(!value1 !== !value2)) {
-    // will be deleted with current Samer PR
-    throw new Error(`Either ${key1} or ${key2} is required, but not both`)
-  }
-}
-
 /**
  * Process an iterator with N workers
  * @method async

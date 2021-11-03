@@ -43,7 +43,7 @@ export const isAuthenticated = rule({ cache: "contextual" })((parent, args, ctx)
 
 export const isApiKeyAuthenticated = rule({ cache: "contextual" })(
   (_parent, _args, ctx) => {
-    return ctx.account !== null ? true : "NOT_AUTHENTICATED"
+    return ctx.account !== null ? true : "NOT_APIKEY_AUTHENTICATED"
   },
 )
 
@@ -171,7 +171,11 @@ export const startApolloServer = async ({
 
       // GraphQL shield seems to have a bug around throwing a custom ApolloError
       // This is a workaround for now
-      const isShieldError = ["NOT_AUTHENTICATED", "NOT_AUTHORIZED"].includes(err.message)
+      const isShieldError = [
+        "NOT_AUTHENTICATED",
+        "NOT_APIKEY_AUTHENTICATED",
+        "NOT_AUTHORIZED",
+      ].includes(err.message)
 
       const reportErrorToCclient =
         ["GRAPHQL_PARSE_FAILED", "GRAPHQL_VALIDATION_FAILED", "BAD_USER_INPUT"].includes(
