@@ -8,6 +8,9 @@ type InvoiceExpiration = Date & { [invoiceExpirationSymbol]: never }
 declare const encodedPaymentRequestSymbol: unique symbol
 type EncodedPaymentRequest = string & { [encodedPaymentRequestSymbol]: never }
 
+declare const paymentIdSymbol: unique symbol
+type PaymentId = string & { [paymentIdSymbol]: never }
+
 declare const paymentHashSymbol: unique symbol
 type PaymentHash = string & { [paymentHashSymbol]: never }
 
@@ -71,6 +74,8 @@ type LnPaymentLookup = {
   readonly secret: PaymentSecret
   readonly amount: Satoshis
 }
+
+type LnPayment = LnPaymentLookup & { id: PaymentId }
 
 type LnInvoice = {
   readonly destination: Pubkey

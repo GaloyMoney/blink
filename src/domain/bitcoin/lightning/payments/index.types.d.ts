@@ -1,3 +1,3 @@
 interface ILnPaymentsRepository {
-  update(lnPayment: LnPaymentLookup): Promise<LnPaymentLookup | RepositoryError>
+  update(lnPayment: LnPaymentLookup): Promise<LnPayment | RepositoryError>
 }
