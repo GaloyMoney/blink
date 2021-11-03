@@ -31,6 +31,7 @@ import { PaymentInitiationMethod, TxStatus } from "@domain/wallets"
 import * as Wallets from "@app/wallets"
 import { TwoFAError, TransactionRestrictedError } from "@core/error"
 import { getBTCBalance, getRemainingTwoFALimit } from "test/helpers/wallet"
+import { NotificationType } from "@domain/notifications"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
@@ -88,7 +89,7 @@ describe("UserWallet - onChainPay", () => {
 
     // we don't send a notification for send transaction for now
     // expect(sendNotification.mock.calls.length).toBe(1)
-    // expect(sendNotification.mock.calls[0][0].data.type).toBe("onchain_payment")
+    // expect(sendNotification.mock.calls[0][0].data.type).toBe(NotificationType.OnchainPayment)
     // expect(sendNotification.mock.calls[0][0].data.title).toBe(`Your transaction has been sent. It may takes some time before it is confirmed`)
 
     // FIXME: does this syntax always take the first match item in the array? (which is waht we want, items are return as newest first)
@@ -125,10 +126,12 @@ describe("UserWallet - onChainPay", () => {
     // expect(sendNotification.mock.calls.length).toBe(2)  // FIXME: should be 1
 
     expect(sendNotification.mock.calls[0][0].title).toBe(
-      getTitle["onchain_payment"]({ amount }),
+      getTitle[NotificationType.OnchainPayment]({ amount }),
     )
     expect(sendNotification.mock.calls[0][0].user._id).toStrictEqual(userWallet0.user._id)
-    expect(sendNotification.mock.calls[0][0].data.type).toBe("onchain_payment")
+    expect(sendNotification.mock.calls[0][0].data.type).toBe(
+      NotificationType.OnchainPayment,
+    )
 
     const {
       results: [{ pending, fee, feeUsd }],
@@ -179,7 +182,7 @@ describe("UserWallet - onChainPay", () => {
 
     // we don't send a notification for send transaction for now
     // expect(sendNotification.mock.calls.length).toBe(1)
-    // expect(sendNotification.mock.calls[0][0].data.type).toBe("onchain_payment")
+    // expect(sendNotification.mock.calls[0][0].data.type).toBe(NotificationType.OnchainPayment)
     // expect(sendNotification.mock.calls[0][0].data.title).toBe(`Your transaction has been sent. It may takes some time before it is confirmed`)
 
     // FIXME: does this syntax always take the first match item in the array? (which is waht we want, items are return as newest first)
@@ -217,9 +220,11 @@ describe("UserWallet - onChainPay", () => {
 
     /// TODO Still showing amount, find where this happens...
     // expect(sendNotification.mock.calls[0][0].title).toBe(
-    //   getTitle["onchain_payment"]({ amount: initialBalanceUser1 }),
+    //   getTitle[NotificationType.OnchainPayment]({ amount: initialBalanceUser1 }),
     // )
-    expect(sendNotification.mock.calls[0][0].data.type).toBe("onchain_payment")
+    expect(sendNotification.mock.calls[0][0].data.type).toBe(
+      NotificationType.OnchainPayment,
+    )
 
     const {
       results: [{ pending, fee, feeUsd }],

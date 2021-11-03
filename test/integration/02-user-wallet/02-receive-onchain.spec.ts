@@ -25,6 +25,7 @@ import { TxStatus } from "@domain/wallets"
 import { getBTCBalance } from "test/helpers/wallet"
 import { resetOnChainAddressWalletIdLimits } from "test/helpers/rate-limit"
 import { OnChainAddressCreateRateLimiterExceededError } from "@domain/rate-limit/errors"
+import { NotificationType } from "@domain/notifications"
 
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
@@ -215,7 +216,9 @@ describe("UserWallet - On chain", () => {
     await sleep(1000)
 
     expect(sendNotification.mock.calls.length).toBe(1)
-    expect(sendNotification.mock.calls[0][0].data.type).toBe("onchain_receipt_pending")
+    expect(sendNotification.mock.calls[0][0].data.type).toBe(
+      NotificationType.OnchainReceiptPending,
+    )
 
     const satsPrice = await getCurrentPrice()
     if (!satsPrice) {
@@ -224,7 +227,10 @@ describe("UserWallet - On chain", () => {
     const usd = (btc2sat(amountBTC) * satsPrice).toFixed(2)
 
     expect(sendNotification.mock.calls[0][0].title).toBe(
-      getTitle["onchain_receipt_pending"]({ usd, amount: btc2sat(amountBTC) }),
+      getTitle[NotificationType.OnchainReceiptPending]({
+        usd,
+        amount: btc2sat(amountBTC),
+      }),
     )
 
     await Promise.all([
@@ -243,7 +249,7 @@ describe("UserWallet - On chain", () => {
     // to not replay if it has already been handled?
     //
     // expect(notification.sendNotification.mock.calls.length).toBe(2)
-    // expect(notification.sendNotification.mock.calls[1][0].data.type).toBe("onchain_receipt")
+    // expect(notification.sendNotification.mock.calls[1][0].data.type).toBe(NotificationType.OnchainReceipt)
     // expect(notification.sendNotification.mock.calls[1][0].title).toBe(
     //   `Your wallet has been credited with ${btc2sat(amountBTC)} sats`)
   })

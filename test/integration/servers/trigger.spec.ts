@@ -25,6 +25,7 @@ import { getTitle } from "@services/notifications/payment"
 import { getCurrentPrice } from "@services/realtime-price"
 import { TxStatus } from "@domain/wallets"
 import { getBTCBalance } from "test/helpers/wallet"
+import { NotificationType } from "@domain/notifications"
 
 jest.mock("@services/notifications/notification")
 jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
@@ -159,9 +160,11 @@ describe("onchainBlockEventhandler", () => {
     const satsPrice = (await getCurrentPrice()) || 1
     const usd = (sats * satsPrice).toFixed(2)
     expect(sendNotification.mock.calls[0][0].title).toBe(
-      getTitle["paid-invoice"]({ usd, amount: sats }),
+      getTitle[NotificationType.LnInvoicePaid]({ usd, amount: sats }),
     )
     expect(sendNotification.mock.calls[0][0].user._id).toStrictEqual(wallet.user._id)
-    expect(sendNotification.mock.calls[0][0].data.type).toBe("paid-invoice")
+    expect(sendNotification.mock.calls[0][0].data.type).toBe(
+      NotificationType.LnInvoicePaid,
+    )
   })
 })

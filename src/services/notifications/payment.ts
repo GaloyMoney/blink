@@ -1,5 +1,3 @@
-import { getCurrentPrice } from "@services/realtime-price"
-
 import { sendNotification } from "./notification"
 
 export const getTitle = {
@@ -23,13 +21,12 @@ export const transactionNotification = async ({
   logger,
   hash,
   txid,
+  usdPerSat,
 }: IPaymentNotification) => {
-  const satsPrice = await getCurrentPrice()
-
   let title
 
-  if (satsPrice) {
-    const usd = (amount * satsPrice).toFixed(2)
+  if (usdPerSat) {
+    const usd = (amount * usdPerSat).toFixed(2)
     title = getTitle[type]({ usd, amount })
   } else {
     title = getTitleNoUsd[type]({ amount })

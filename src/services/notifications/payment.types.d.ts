@@ -5,4 +5,5 @@ interface IPaymentNotification {
   logger: Logger
   hash?: string
   txid?: string
+  usdPerSat?: UsdPerSat
 }
