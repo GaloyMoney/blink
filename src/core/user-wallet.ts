@@ -145,9 +145,10 @@ export abstract class UserWallet {
   }): Promise<{ username: string | undefined; id: string }> {
     try {
       const result = await User.findOneAndUpdate(
-        { _id: this.user.id, username: null },
+        { _id: this.user.id, username: { $in: [null, ""] } },
         { username },
       )
+
       if (!result) {
         throw new DbError(`Username is already set`, {
           forwardToClient: true,

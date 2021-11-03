@@ -17,10 +17,7 @@ const mainUserFields = () => ({
   id: { type: GT.NonNullID },
   phone: { type: GT.NonNull(Phone) },
   username: { type: Username },
-  language: {
-    type: GT.NonNull(Language),
-    resolve: (source) => source.language,
-  },
+  language: { type: GT.NonNull(Language) },
 
   contacts: {
     type: GT.NonNullList(UserContact), // TODO: Make it a Connection Interface

@@ -459,6 +459,7 @@ type Mutation {
   accountApiKeyCreate(input: AccountApiKeyCreateInput!): AccountApiKeyPayload!
   accountApiKeyDisable(input: AccountApiKeyDisableInput!): SuccessPayload!
   userUpdateLanguage(input: UserUpdateLanguageInput!): UserUpdateLanguagePayload!
+  userUpdateUsername(input: UserUpdateUsernameInput!): UserUpdateUsernamePayload!
   userContactUpdateAlias(
     input: UserContactUpdateAliasInput!
   ): UserContactUpdateAliasPayload!
@@ -567,6 +568,34 @@ input AccountApiKeyDisableInput {
 
 type UserUpdateLanguagePayload {
   errors: [Error!]!
+  user: UserLanguageDetails
+}
+
+type UserLanguageDetails {
+  id: ID!
+  language: Language!
+}
+
+input UserUpdateLanguageInput {
+  language: Language!
+}
+
+type UserUpdateUsernamePayload {
+  errors: [Error!]!
+  user: UserUsernameDetails
+}
+
+type UserUsernameDetails {
+  id: ID!
+  username: Username!
+}
+
+input UserUpdateUsernameInput {
+  username: Username!
+}
+
+type UserContactUpdateAliasPayload {
+  errors: [Error!]!
   user: UserDetails
 }
 
@@ -580,15 +609,6 @@ type UserDetails {
   quizQuestions: [UserQuizQuestion!]!
   twoFAEnabled: Boolean
   createdAt: Timestamp!
-}
-
-input UserUpdateLanguageInput {
-  language: Language!
-}
-
-type UserContactUpdateAliasPayload {
-  errors: [Error!]!
-  user: UserDetails
 }
 
 input UserContactUpdateAliasInput {
