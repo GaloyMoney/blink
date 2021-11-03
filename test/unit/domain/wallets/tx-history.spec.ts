@@ -33,9 +33,6 @@ describe("WalletTransactionHistory.fromLedger", () => {
         pendingConfirmation: false,
         journalId: "journalId" as LedgerJournalId,
         timestamp,
-        // To test that the lightning detection logic
-        // works when key is present
-        addresses: [],
         feeKnownInAdvance: false,
       },
       {
@@ -60,7 +57,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
         id: "id" as LedgerTransactionId,
         walletId: "walletId" as WalletId,
         type: LedgerTransactionType.OnchainIntraLedger,
-        addresses: ["address" as OnChainAddress],
+        address: "address" as OnChainAddress,
         paymentHash: "paymentHash" as PaymentHash,
         txId: "txId" as TxId,
         debit: toSats(0),
@@ -87,7 +84,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
         pendingConfirmation: false,
         journalId: "journalId" as LedgerJournalId,
         timestamp,
-        addresses: ["address" as OnChainAddress],
+        address: "address" as OnChainAddress,
         txId: "txId" as TxId,
         feeKnownInAdvance: false,
       },
@@ -152,7 +149,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
           type: LedgerTransactionType.OnchainIntraLedger,
         },
         otherPartyUsername: null,
-        addresses: ["address" as OnChainAddress],
+        address: "address" as OnChainAddress,
         transactionHash: "txId",
         status: TxStatus.Success,
         createdAt: timestamp,
@@ -175,7 +172,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
         otherPartyUsername: null,
         status: TxStatus.Success,
         createdAt: timestamp,
-        addresses: ["address" as OnChainAddress],
+        address: "address" as OnChainAddress,
         transactionHash: "txId",
       },
     ]
@@ -285,7 +282,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         status: TxStatus.Pending,
         createdAt: timestamp,
         transactionHash: "id",
-        addresses: ["userAddress1" as OnChainAddress],
+        address: "userAddress1" as OnChainAddress,
       },
       {
         id: "id" as TxId,
@@ -305,7 +302,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         otherPartyUsername: null,
         status: TxStatus.Pending,
         createdAt: timestamp,
-        addresses: ["userAddress2" as OnChainAddress],
+        address: "userAddress2" as OnChainAddress,
         transactionHash: "id",
       },
     ]
@@ -356,7 +353,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         otherPartyUsername: null,
         status: TxStatus.Pending,
         createdAt: timestamp,
-        addresses: ["userAddress1" as OnChainAddress],
+        address: "userAddress1" as OnChainAddress,
         transactionHash: "id",
       },
     ]

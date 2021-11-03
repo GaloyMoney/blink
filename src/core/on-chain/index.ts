@@ -364,6 +364,7 @@ export const OnChainMixin = (superclass) =>
 
             const metadata = {
               hash: id,
+              payee_addresses: [address],
               ...UserWallet.getCurrencyEquivalent({ sats, fee }),
               sendAll,
             }

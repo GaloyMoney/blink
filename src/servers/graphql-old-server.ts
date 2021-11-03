@@ -76,7 +76,10 @@ const translateWalletTx = (txs: WalletTransaction[]) => {
     type: tx.deprecated.type,
     feeUsd: tx.deprecated.feeUsd,
     hash: getHash(tx),
-    addresses: tx.initiationVia === PaymentInitiationMethod.OnChain ? tx.addresses : null,
+    addresses:
+      tx.initiationVia === PaymentInitiationMethod.OnChain && tx.address
+        ? [tx.address]
+        : null,
     username:
       tx.settlementVia === SettlementMethod.IntraLedger ? tx.otherPartyUsername : null,
   }))

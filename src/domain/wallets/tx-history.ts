@@ -1,5 +1,5 @@
 import { toSats } from "@domain/bitcoin"
-import { isOnchainTransaction, LedgerTransactionType } from "@domain/ledger"
+import { isOnChainTransaction, LedgerTransactionType } from "@domain/ledger"
 import { MEMO_SHARING_SATS_THRESHOLD } from "@config/app"
 import { SettlementMethod, PaymentInitiationMethod } from "./tx-methods"
 import { TxStatus } from "./tx-status"
@@ -33,7 +33,7 @@ const filterPendingIncoming = (
           createdAt: createdAt,
           settlementAmount: sats,
           settlementUsdPerSat: usdPerSat,
-          addresses: [address],
+          address,
         })
       }
     })
@@ -44,7 +44,7 @@ const filterPendingIncoming = (
 export const fromLedger = (
   ledgerTransactions: LedgerTransaction[],
 ): ConfirmedTransactionHistory => {
-  const transactions = ledgerTransactions.map(
+  const transactions: WalletTransaction[] = ledgerTransactions.map(
     ({
       id,
       walletId,
@@ -60,7 +60,7 @@ export const fromLedger = (
       txId,
       pubkey,
       username,
-      addresses,
+      address,
       pendingConfirmation,
       timestamp,
     }) => {
@@ -78,7 +78,7 @@ export const fromLedger = (
         credit,
       })
       const status = pendingConfirmation ? TxStatus.Pending : TxStatus.Success
-      if ((addresses && addresses.length > 0) || isOnchainTransaction(type)) {
+      if (isOnChainTransaction(type)) {
         return {
           id,
           walletId,
@@ -87,7 +87,7 @@ export const fromLedger = (
             type === LedgerTransactionType.OnchainIntraLedger
               ? SettlementMethod.IntraLedger
               : SettlementMethod.OnChain,
-          addresses: addresses || [],
+          address,
           deprecated: {
             description,
             usd,

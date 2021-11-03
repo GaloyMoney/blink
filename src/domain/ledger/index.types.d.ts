@@ -51,7 +51,7 @@ type LedgerTransaction = {
   readonly feeKnownInAdvance: boolean
 
   // for onchain
-  readonly addresses?: OnChainAddress[]
+  readonly address?: OnChainAddress
   readonly txId?: TxId
 }
 
