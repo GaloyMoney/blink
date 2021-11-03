@@ -111,6 +111,10 @@ const transactionSchema = new Schema({
     type: Number,
     min: 0,
   },
+  _payment: {
+    type: Schema.Types.ObjectId,
+    ref: "LnPayment",
+  },
   meta: Schema.Types.Mixed,
   datetime: Date,
   account_path: [String],
