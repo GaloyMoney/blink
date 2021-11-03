@@ -45,7 +45,7 @@ const pathSchema = new Schema({
   total_mtokens: String,
 })
 
-const paymentSchema = new Schema({
+const paymentSchema = new Schema<LnPaymentType>({
   status: { type: String, enum: ["settled", "failed", "pending"], required: true },
   confirmedAt: Date,
   createdAt: Date,
