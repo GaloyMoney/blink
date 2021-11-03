@@ -382,6 +382,7 @@ export const LedgerService = (): ILedgerService => {
         sats,
         usd,
         pubkey,
+        _payment: null,
         feeKnownInAdvance,
         currency: "BTC",
       }
@@ -552,13 +553,15 @@ export const LedgerService = (): ILedgerService => {
 
   const settlePendingLnPayments = async ({
     paymentHash,
+    paymentId,
   }: {
     paymentHash: PaymentHash
+    paymentId: PaymentId
   }): Promise<boolean | LedgerServiceError> => {
     try {
       const result = await Transaction.updateMany(
         { hash: paymentHash },
-        { pending: false },
+        { pending: false, _payment: paymentId },
       )
       return result.nModified > 0
     } catch (err) {
