@@ -55,8 +55,8 @@ For an overview of all relevent repository checkout [awesome-galoy](https://gith
   - DDos prevention 
     - via rate limiting infront of critical APIs
     - via geetest CAPTCHA
-- Resiliency
-  - Databases (mongodb and redis) are run by default in high availaby/resilience mode. If one pod/node get downs, there is an automatic failover on another pod.
+- Resilience
+  - Databases (mongodb and redis) are run by default in high availability/resilience mode. If one pod/node goes down, there is an automatic failover on another pod/node.
 - Production ready
   - Supports horizontal scaling and highly available deployments via k8s
   - Client side load balancing accross multiple LND nodes
