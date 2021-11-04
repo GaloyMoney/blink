@@ -21,7 +21,7 @@ import { User } from "@services/mongoose/schema"
 
 import { isProd } from "@core/utils"
 import { WalletFactory } from "@core/wallet-factory"
-import { ApolloServerPluginUsageReporting } from "apollo-server-core"
+import { ApolloServerPluginUsageReporting, PlaygroundConfig } from "apollo-server-core"
 import GeeTest from "@services/geetest"
 import expressApiKeyAuth from "./graphql-middlewares/api-key-auth"
 import {
@@ -51,6 +51,15 @@ export const isEditor = rule({ cache: "contextual" })((parent, args, ctx) => {
   return ctx.user.role === "editor" ? true : "NOT_AUTHORIZED"
 })
 
+const playgroundConfigurations = (): PlaygroundConfig => {
+  if (process.env.NETWORK === "mainnet") {
+    return false
+  }
+  return {
+    settings: { "schema.polling.enable": false },
+  }
+}
+
 export const startApolloServer = async ({
   schema,
   port,
@@ -72,7 +81,7 @@ export const startApolloServer = async ({
     : []
   const apolloServer = new ApolloServer({
     schema,
-    playground: process.env.NETWORK !== "mainnet",
+    playground: playgroundConfigurations(),
     introspection: process.env.NETWORK !== "mainnet",
     plugins: apolloPulgins,
     context: async (context) => {
