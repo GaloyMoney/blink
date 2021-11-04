@@ -60,8 +60,8 @@ First, helmet.disableContentPolicy should be set to `true` in default.yaml
 Then, restart the server and open the following url:
 
 - http://localhost:4000/graphql (old API - deprecated)
-- http://localhost:4001/graphql (new API)
-- http://localhost:4002/graphql (admin API)
+- http://localhost:4001/graphql (admin API)
+- http://localhost:4002/graphql (new API)
 
 
 ## Testing
