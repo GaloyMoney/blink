@@ -15,7 +15,6 @@ import { addInvoice, addInvoiceNoAmount } from "@app/wallets/add-invoice-for-wal
 import { toSats } from "@domain/bitcoin"
 import { PaymentStatusChecker } from "@app/lightning"
 
-jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
 let userWallet1

@@ -4,7 +4,6 @@ import { toSats, toTargetConfs } from "@domain/bitcoin"
 import { InsufficientBalanceError, LessThanDustThresholdError } from "@domain/errors"
 import { bitcoindClient, bitcoindOutside, getUserWallet } from "test/helpers"
 
-jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
 const defaultAmount = toSats(6000)

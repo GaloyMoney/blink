@@ -16,7 +16,6 @@ import {
 import { getWalletFromRole } from "@core/wallet-factory"
 import * as Wallets from "@app/wallets"
 
-jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
 let bitcoindOutside

@@ -9,8 +9,6 @@ import { toSats } from "@domain/bitcoin"
 import { PriceService } from "@services/price"
 import { DepositFeeCalculator } from "@domain/wallets"
 
-jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
-
 let mongoose
 
 let fullWalletBTC, fullWalletUSD

@@ -28,7 +28,7 @@ import { getBTCBalance } from "test/helpers/wallet"
 import { NotificationType } from "@domain/notifications"
 
 jest.mock("@services/notifications/notification")
-jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
+
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires

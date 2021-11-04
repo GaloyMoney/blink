@@ -16,7 +16,6 @@ import {
 import { onChannelUpdated, updateEscrows } from "@services/lnd/utils"
 import { ledger } from "@services/mongodb"
 
-jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
 //this is the fixed opening and closing channel fee on devnet

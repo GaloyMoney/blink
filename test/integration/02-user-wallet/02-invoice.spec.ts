@@ -19,7 +19,6 @@ import {
   resetSelfWalletIdLimits,
 } from "test/helpers/rate-limit"
 
-jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
 let userWallet1
