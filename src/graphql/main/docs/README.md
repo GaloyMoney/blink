@@ -1,9 +1,7 @@
 # Lightning Integration
 
 ## Overview
-The API endpoints are
-
-staging: `https://api.testnet.galoy.io/graphql`
+The staging API endpoint is: `https://api.testnet.galoy.io/graphql`
 
 ## Authentication
 To get a new JWT:
