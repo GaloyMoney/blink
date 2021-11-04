@@ -30,28 +30,23 @@ export const updateIpInfo = async ({
 
       if (lastIP) {
         lastIP.lastConnection = lastConnection
-      } else if (ipConfig.proxyCheckingEnabled) {
+      } else {
         let ipInfo = {
-          provider: null,
-          country: null,
-          region: null,
-          city: null,
-          Type: null,
           ip,
           firstConnection: lastConnection,
           lastConnection: lastConnection,
         } as IPType
 
-        const ipFetcher = IpFetcher()
-        const ipFetcherInfo = await ipFetcher.fetchIPInfo(ip as IpAddress)
+        if (ipConfig.proxyCheckingEnabled) {
+          const ipFetcher = IpFetcher()
+          const ipFetcherInfo = await ipFetcher.fetchIPInfo(ip as IpAddress)
 
-        if (!(ipFetcherInfo instanceof Error)) {
-          ipInfo = { ...ipInfo, ...ipFetcherInfo }
+          if (!(ipFetcherInfo instanceof Error)) {
+            ipInfo = { ...ipInfo, ...ipFetcherInfo }
+          }
         }
-
         iPs.push(ipInfo)
       }
-
       users.updateIps(userId, iPs)
     },
   )
