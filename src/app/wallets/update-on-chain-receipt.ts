@@ -27,9 +27,9 @@ export const updateOnChainReceipt = async ({
   }
 
   const walletRepo = WalletsRepository()
-  const logError = ({ walletId, txId, error }) => {
+  const logError = ({ walletId, txHash, error }) => {
     logger.error(
-      { walletId, txId, error },
+      { walletId, txHash, error },
       "Could not updateOnChainReceipt from updateOnChainReceiptForWallet",
     )
   }
@@ -37,21 +37,21 @@ export const updateOnChainReceipt = async ({
   for (const tx of onChainTxs) {
     if (tx.confirmations < ONCHAIN_MIN_CONFIRMATIONS) continue
 
-    const txId = tx.rawTx.id
+    const txHash = tx.rawTx.txHash
     const addresses = tx.uniqueAddresses()
     const wallets = await walletRepo.listByAddresses(addresses)
     if (wallets instanceof Error) {
-      logError({ walletId: null, txId, error: wallets })
+      logError({ walletId: null, txHash, error: wallets })
       continue
     }
 
     for (const wallet of wallets) {
       const walletId = wallet.id
-      logger.trace({ walletId, txId }, "updating onchain receipt")
+      logger.trace({ walletId, txHash }, "updating onchain receipt")
 
       const result = await processTxForWallet(wallet, tx, logger)
       if (result instanceof Error) {
-        logError({ walletId, txId, error: result })
+        logError({ walletId, txHash, error: result })
       }
     }
   }
@@ -83,7 +83,10 @@ const processTxForWallet = async (
 
   const lockService = LockService()
   return lockService.lockWalletId({ walletId: wallet.id, logger }, async () => {
-    const recorded = await ledger.isOnChainTxRecorded(liabilitiesAccountId, tx.rawTx.id)
+    const recorded = await ledger.isOnChainTxRecorded(
+      liabilitiesAccountId,
+      tx.rawTx.txHash,
+    )
     if (recorded instanceof Error) {
       logger.error({ error: recorded }, "Could not query ledger")
       return recorded
@@ -101,7 +104,7 @@ const processTxForWallet = async (
 
           const result = await ledger.addOnChainTxReceive({
             liabilitiesAccountId,
-            txHash: tx.rawTx.id,
+            txHash: tx.rawTx.txHash,
             sats,
             fee,
             usd,
@@ -116,7 +119,7 @@ const processTxForWallet = async (
           await notifications.onChainTransactionReceived({
             walletId: wallet.id,
             amount: sats,
-            txHash: tx.rawTx.id,
+            txHash: tx.rawTx.txHash,
             usdPerSat,
           })
         }

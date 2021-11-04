@@ -19,8 +19,8 @@ export const transactionNotification = async ({
   type,
   user,
   logger,
-  hash,
-  txid,
+  paymentHash,
+  txHash,
   usdPerSat,
 }: IPaymentNotification) => {
   let title
@@ -34,9 +34,9 @@ export const transactionNotification = async ({
 
   const data: IDataNotification = {
     type: type as TransactionType,
-    hash, // offchain
+    hash: paymentHash, // offchain
     amount,
-    txid, // onchain ... use the same property? txid have an index as well
+    txid: txHash, // onchain ... use the same property? txid have an index as well
   }
 
   await sendNotification({ title, user, logger, data })

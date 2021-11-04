@@ -18,7 +18,7 @@ type TxOut = {
 }
 
 type OnChainTransaction = {
-  id: OnChainTxHash
+  txHash: OnChainTxHash
   outs: TxOut[]
 }
 

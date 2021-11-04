@@ -26,7 +26,7 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
         user,
         logger,
         amount,
-        txid: txHash,
+        txHash,
         usdPerSat,
       })
       return
@@ -93,7 +93,7 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
         user,
         logger,
         amount,
-        hash: paymentHash,
+        paymentHash,
         usdPerSat,
       })
       return

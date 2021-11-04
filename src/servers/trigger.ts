@@ -101,7 +101,7 @@ export async function onchainTransactionEventHandler(tx) {
     await NotificationsService(onchainLogger).onChainTransactionPayment({
       walletId: user.id,
       amount: toSats(Number(tx.tokens) - tx.fee),
-      txId: tx.id,
+      txHash: tx.id,
       usdPerSat,
     })
   } else {
@@ -135,7 +135,7 @@ export async function onchainTransactionEventHandler(tx) {
       await NotificationsService(onchainLogger).onChainTransactionReceivedPending({
         walletId: user.id,
         amount: toSats(Number(tx.tokens)),
-        txId: tx.id,
+        txHash: tx.id,
         usdPerSat,
       })
     }
