@@ -1,18 +1,19 @@
+import { createHttpTerminator } from "http-terminator"
 import { sleep } from "@core/utils"
 import { yamlConfig, getRequestPhoneCodeLimits, getLoginAttemptLimits } from "@config/app"
 import { createTestClient } from "apollo-server-testing"
 import { startApolloServerForOldSchema } from "@servers/graphql-old-server"
 import { clearAccountLocks, clearLimiters } from "test/helpers"
 
-jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
-let apolloServer, httpServer
+let apolloServer, httpServer, httpTerminator
 const { phone, code: correctCode } = yamlConfig.test_accounts[9]
 const badCode = 123456
 
 beforeAll(async () => {
   ;({ apolloServer, httpServer } = await startApolloServerForOldSchema())
+  httpTerminator = createHttpTerminator({ server: httpServer })
   await sleep(2500)
 })
 
@@ -22,8 +23,7 @@ beforeEach(async () => {
 })
 
 afterAll(async () => {
-  await sleep(2500)
-  await httpServer.close()
+  await httpTerminator.terminate()
 })
 
 describe("graphql", () => {
