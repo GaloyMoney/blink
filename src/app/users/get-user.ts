@@ -1,65 +1,50 @@
-import {
-  SemanticAttributes,
-  asyncRunInSpan,
-  addAttributesToCurrentSpan,
-  ENDUSER_ALIAS,
-} from "@services/tracing"
+import { SemanticAttributes, asyncRunInSpan } from "@services/tracing"
 import { UsersRepository } from "@services/mongoose"
-import { IpFetcher } from "@services/ipfetcher"
 import { getIpConfig } from "@config/app"
-import { RepositoryError } from "@domain/errors"
+import { IpFetcher } from "@services/ipfetcher"
 
 const users = UsersRepository()
 
-export const getUserForLogin = async ({
+export const updateIpInfo = async ({
   userId,
+  iPs,
   ip,
+  lastConnection,
 }: {
-  userId: string
-  ip?: string
-}): Promise<User | ApplicationError> =>
+  userId: UserId
+  iPs: IPType[]
+  ip?: Ip
+  lastConnection: Date
+}): Promise<void> =>
   asyncRunInSpan(
     "app.getUserForLogin",
-    { [SemanticAttributes.CODE_FUNCTION]: "getUserForLogin" },
+    { [SemanticAttributes.CODE_FUNCTION]: "addIp" },
     async () => {
-      const user = await users.findById(userId as UserId)
-      if (user instanceof Error) {
-        return user
-      }
-      addAttributesToCurrentSpan({
-        [ENDUSER_ALIAS]: user.username,
-      })
-      user.lastConnection = new Date()
-
-      // IP tracking logic could be extracted into domain
       const ipConfig = getIpConfig()
-      if (ip && ipConfig.ipRecordingEnabled) {
-        const lastIP: IPType | undefined = user.lastIPs.find(
-          (ipObject: IPType) => ipObject.ip === ip,
-        )
-        if (lastIP) {
-          lastIP.lastConnection = user.lastConnection
-        } else if (ipConfig.proxyCheckingEnabled) {
-          const ipFetcher = IpFetcher()
-          const ipInfo = await ipFetcher.fetchIPInfo(ip as IpAddress)
-          if (!(ipInfo instanceof Error)) {
-            user.lastIPs.push({
-              ip,
-              ...ipInfo,
-              Type: ipInfo.type,
-              firstConnection: user.lastConnection,
-              lastConnection: user.lastConnection,
-            })
-          }
+
+      if (!ip || !ipConfig.ipRecordingEnabled) {
+        return
+      }
+
+      const lastIP = iPs.find((ipObject) => ipObject.ip === ip)
+
+      if (lastIP) {
+        lastIP.lastConnection = lastConnection
+      } else if (ipConfig.proxyCheckingEnabled) {
+        const ipFetcher = IpFetcher()
+        const ipInfo = await ipFetcher.fetchIPInfo(ip as IpAddress)
+        if (!(ipInfo instanceof Error)) {
+          iPs.push({
+            ip,
+            ...ipInfo,
+            Type: ipInfo.type,
+            firstConnection: lastConnection,
+            lastConnection: lastConnection,
+          })
         }
       }
 
-      const updateResult = await users.update(user)
-
-      if (updateResult instanceof RepositoryError) {
-        return updateResult
-      }
-      return user
+      await users.updateIps(userId, iPs)
     },
   )
 

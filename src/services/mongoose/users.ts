@@ -1,4 +1,3 @@
-import { UserLanguage } from "@domain/users"
 import { toSats } from "@domain/bitcoin"
 import {
   UnknownRepositoryError,
@@ -9,7 +8,6 @@ import {
 } from "@domain/errors"
 import { User } from "@services/mongoose/schema"
 import { onboardingEarn } from "@config/app"
-import Username from "@graphql/types/scalar/username"
 
 export const caseInsensitiveRegex = (input: string) => {
   return new RegExp(`^${input}$`, "i")
@@ -19,6 +17,29 @@ export const UsersRepository = (): IUsersRepository => {
   const findById = async (userId: UserId): Promise<User | RepositoryError> => {
     try {
       const result = await User.findOne({ _id: userId })
+      if (!result) {
+        return new CouldNotFindUserFromIdError(userId)
+      }
+
+      return userFromRaw(result)
+    } catch (err) {
+      return new UnknownRepositoryError(err)
+    }
+  }
+
+  const findByIdAndUpdateLastConnectionDate = async (
+    userId: UserId,
+    lastConnection: Date,
+  ): Promise<User | RepositoryError> => {
+    try {
+      const result = await User.findOneAndUpdate(
+        {
+          _id: userId,
+        },
+        {
+          lastConnection,
+        },
+      )
       if (!result) {
         return new CouldNotFindUserFromIdError(userId)
       }
@@ -57,13 +78,23 @@ export const UsersRepository = (): IUsersRepository => {
     }
   }
 
+  const updateIps = async (id, ips) => {
+    try {
+      const result = await User.updateOne({ _id: id }, { lastIps: ips })
+      if (!result) {
+        return new RepositoryError("Couldn't update lastIps")
+      }
+    } catch (err) {
+      return new UnknownRepositoryError(err)
+    }
+  }
+
   const update = async ({
     id,
     phone,
     language,
     contacts,
     deviceTokens,
-    lastConnection,
     twoFA,
   }: User): Promise<User | RepositoryError> => {
     try {
@@ -76,7 +107,6 @@ export const UsersRepository = (): IUsersRepository => {
           transactionsCount,
         })),
         deviceToken: deviceTokens,
-        lastConnection,
         twoFA,
       }
       const result = await User.findOneAndUpdate({ _id: id }, data)
@@ -91,6 +121,8 @@ export const UsersRepository = (): IUsersRepository => {
 
   return {
     findById,
+    findByIdAndUpdateLastConnectionDate,
+    updateIps,
     findByUsername,
     findByWalletPublicId,
     update,
@@ -100,6 +132,7 @@ export const UsersRepository = (): IUsersRepository => {
 const userFromRaw = (result: UserType): User => {
   return {
     id: result.id as UserId,
+    status: result.status as AccountStatus,
     username: result.username as Username,
     walletPublicId: result.walletPublicId as WalletPublicId,
     phone: result.phone as PhoneNumber,

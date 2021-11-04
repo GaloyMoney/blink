@@ -39,6 +39,7 @@ type User = {
   readonly deviceTokens: DeviceToken[]
   readonly lastIPs: IPType[]
   readonly createdAt: Date
+  readonly status: AccountStatus
   phone: PhoneNumber
   language: UserLanguage
   lastConnection: Date
@@ -47,7 +48,14 @@ type User = {
 
 interface IUsersRepository {
   findById(userId: UserId): Promise<User | RepositoryError>
+  findByIdAndUpdateLastConnectionDate(
+    userId: UserId,
+    findByIdAndUpdateLastConnectionDate: Date,
+  ): Promise<User | RepositoryError>
+  updateIps(userId: UserId, iPs: IPType[])
   findByUsername(username: Username): Promise<User | RepositoryError>
   findByWalletPublicId(walletPublicId: WalletPublicId): Promise<User | RepositoryError>
   update(user: User): Promise<User | RepositoryError>
 }
+
+type Ip = string

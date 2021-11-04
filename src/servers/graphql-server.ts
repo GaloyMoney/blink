@@ -17,7 +17,6 @@ import * as Accounts from "@app/accounts"
 
 import { baseLogger } from "@services/logger"
 import { redis } from "@services/redis"
-import { User } from "@services/mongoose/schema"
 
 import { isProd } from "@core/utils"
 import { WalletFactory } from "@core/wallet-factory"
@@ -30,6 +29,7 @@ import {
   addAttributesToCurrentSpan,
   ENDUSER_ALIAS,
 } from "@services/tracing"
+import { UsersRepository } from "@services/mongoose"
 
 const graphqlLogger = baseLogger.child({
   module: "graphql",
@@ -82,7 +82,7 @@ export const startApolloServer = async ({
       const apiKey = context.req?.apiKey ?? null
       // @ts-expect-error: TODO
       const apiSecret = context.req?.apiSecret ?? null
-      const uid = token?.uid ?? null
+      const userId = (token?.uid as UserId) ?? null
       const ips = context.req?.headers["x-real-ip"]
       let ip: string | undefined
 
@@ -92,31 +92,42 @@ export const startApolloServer = async ({
         ip = ips
       }
 
-      let wallet, user
+      let wallet
 
       // TODO move from id: uuidv4() to a Jaeger standard
       const logger = graphqlLogger.child({ token, id: uuidv4(), body: context.req?.body })
 
       let domainUser: User | null = null
       return addAttributesToCurrentSpanAndPropagate(
-        { [SemanticAttributes.ENDUSER_ID]: uid, [SemanticAttributes.HTTP_CLIENT_IP]: ip },
+        {
+          [SemanticAttributes.ENDUSER_ID]: userId,
+          [SemanticAttributes.HTTP_CLIENT_IP]: ip,
+        },
         async () => {
-          if (uid) {
-            const loggedInUser = await Users.getUserForLogin({ userId: uid, ip })
-            if (loggedInUser instanceof Error)
+          if (userId) {
+            const lastConnection = new Date()
+
+            const user = await UsersRepository().findByIdAndUpdateLastConnectionDate(
+              userId,
+              lastConnection,
+            )
+
+            if (user instanceof Error)
               throw new ApolloError(
                 "Invalid user authentication",
                 "INVALID_AUTHENTICATION",
                 {
-                  reason: loggedInUser,
+                  reason: user,
                 },
               )
-            domainUser = loggedInUser
-            user = await User.findOne({ _id: uid })
+            domainUser = user
+
             wallet =
-              !!user && user.status === "active"
-                ? await WalletFactory({ user, logger })
+              !!domainUser && domainUser.status === "active"
+                ? await WalletFactory({ user: domainUser, logger })
                 : null
+
+            Users.updateIpInfo({ userId, iPs: user.lastIPs, ip, lastConnection })
           }
 
           let account: Account | null = null
@@ -138,10 +149,10 @@ export const startApolloServer = async ({
           return {
             ...context,
             logger,
-            uid,
+            uid: userId,
             wallet,
             domainUser,
-            user,
+            user: domainUser,
             geetest,
             account,
             ip,
