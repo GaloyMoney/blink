@@ -52,7 +52,7 @@ export const updateIpInfo = async ({
         iPs.push(ipInfo)
       }
 
-      await users.updateIps(userId, iPs)
+      users.updateIps(userId, iPs)
     },
   )
 
