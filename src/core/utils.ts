@@ -1,6 +1,7 @@
 import { GraphQLError } from "graphql"
 import { parsePaymentRequest } from "invoices"
 
+export const isTest = require.main?.filename.indexOf(".spec.") !== -1
 export const isProd = process.env.NODE_ENV === "production"
 
 // FIXME: super ugly hack.
