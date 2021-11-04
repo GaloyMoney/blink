@@ -1,10 +1,10 @@
 type IPType = {
   ip: string
-  provider: string
-  country: string
-  region: string
-  city: string
-  Type: string
+  provider: string | null
+  country: string | null
+  region: string | null
+  city: string | null
+  Type: string | null
   firstConnection: Date
   lastConnection: Date
 }
