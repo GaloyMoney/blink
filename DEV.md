@@ -32,6 +32,16 @@ direnv: direnv: loading ~/projects/GaloyMoney/galoy/.envrc
 $ yarn install
 ```
 
+### Runtime dependencies
+
+```bash
+$ make start-deps
+
+# or
+$ make reset-deps
+```
+Everytime the dependencies are re-started the environment must be reloaded via `direnv reload`. When using the [make command](../Makefile) this will happen automatically.
+
 ## Development
 
 To start the GraphQL server and its dependencies:
@@ -39,11 +49,22 @@ To start the GraphQL server and its dependencies:
 $ make start
 ```
 
-
 Alernatively, to start the GraphQL server in watch mode (with automatic restart on changes):
 ```
 $ make watch
 ```
+
+### Using graphiql
+
+You can load graphiq, a web GUI for Graphql.
+
+First, helmet.disableContentPolicy should be set to `true` in default.yaml
+Then, restart the server and open the following url:
+
+- http://localhost:4000/graphql (old API - deprecated)
+- http://localhost:4001/graphql (admin API)
+- http://localhost:4002/graphql (new API)
+
 
 ## Testing
 
@@ -109,15 +130,7 @@ if within a specific test suite you want to run/debug only a describe or it(test
 * [it.only](https://jestjs.io/docs/api#testonlyname-fn-timeout): just for debug purposes
 * [it.skip](https://jestjs.io/docs/api#testskipname-fn): use it when a test is temporarily broken. Please don't commit commented test cases
 
-### Runtime dependencies
 
-```bash
-$ make start-deps
-
-# or
-$ make reset-deps
-```
-Everytime the dependencies are re-started the environment must be reloaded via `direnv reload`. When using the [make command](../Makefile) this will happen automatically.
 
 ### Known issues
 
