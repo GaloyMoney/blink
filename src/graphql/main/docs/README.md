@@ -18,7 +18,9 @@ All other methods require a valid JWT set in the header as a bearer token - `Aut
 
 #### query
 ```
-curl --location --request POST 'https://api.testnet.galoy.io/graphql' --header 'Content-Type: application/json' --data-raw '{"query":"mutation userRequestAuthCode ($input: UserRequestAuthCodeInput!) {\n    userRequestAuthCode (input: $input) {\n        errors {\n            message\n            path\n        }\n        success\n    }\n}","variables":{"input":{"phone":"+12025550148"}}}'
+export URI=https://api.testnet.galoy.io/graphql
+
+curl --location --request POST $URI --header 'Content-Type: application/json' --data-raw '{"query":"mutation userRequestAuthCode ($input: UserRequestAuthCodeInput!) {\n    userRequestAuthCode (input: $input) {\n        errors {\n            message\n            path\n        }\n        success\n    }\n}","variables":{"input":{"phone":"+12025550148"}}}'
 ```
 
 #### response
@@ -38,7 +40,9 @@ curl --location --request POST 'https://api.testnet.galoy.io/graphql' --header '
 
 #### query
 ```
-curl --location --request POST 'https://api.testnet.galoy.io/graphql' --header 'Content-Type: application/json' --data-raw '{"query":"mutation userLogin ($input: UserLoginInput!) {\n    userLogin (input: $input) {\n        errors {\n            message\n            path\n        }\n        authToken\n    }\n}","variables":{"input":{"phone":"+12025550148","code":"69420"}}}'
+export URI=https://api.testnet.galoy.io/graphql
+
+curl --location --request POST $URI --header 'Content-Type: application/json' --data-raw '{"query":"mutation userLogin ($input: UserLoginInput!) {\n    userLogin (input: $input) {\n        errors {\n            message\n            path\n        }\n        authToken\n    }\n}","variables":{"input":{"phone":"+12025550148","code":"69420"}}}'
 ```
 
 #### response
@@ -57,7 +61,10 @@ curl --location --request POST 'https://api.testnet.galoy.io/graphql' --header '
 
 #### query
 ```
-curl --location --request POST 'https://api.testnet.galoy.io/graphql' --header 'Authorization: Bearer eyJhbgciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2MTgzNzBhNWJiYzE2MmrhNzNhNDY3MzkiLCJuZXR3b3JrIjiobWFpbm5ldCIsImlhdCI6MTYzNjAwNDAwNX0.M51l0lR03dbpblkuegJg3rDQ6Zrou50SeROR-b-jXPw' --header 'Content-Type: application/json' --data-raw '{"query":"mutation lnInvoiceCreate ($input: LnInvoiceCreateInput!) {\n    lnInvoiceCreate (input: $input) {\n        errors {\n            message\n            path\n        }\n        invoice {\n            paymentRequest\n            paymentHash\n            paymentSecret\n            satoshis\n        }\n    }\n}","variables":{"input":{"amount":"12345","memo":"tipping jpow"}}}'
+export URI=https://api.testnet.galoy.io/graphql
+export AUTH_TOKEN='Authorization: Bearer eyJhbgciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2MTgzNzBhNWJiYzE2MmrhNzNhNDY3MzkiLCJuZXR3b3JrIjiobWFpbm5ldCIsImlhdCI6MTYzNjAwNDAwNX0.M51l0lR03dbpblkuegJg3rDQ6Zrou50SeROR-b-jXPw'
+
+curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Type: application/json' --data-raw '{"query":"mutation lnInvoiceCreate ($input: LnInvoiceCreateInput!) {\n    lnInvoiceCreate (input: $input) {\n        errors {\n            message\n            path\n        }\n        invoice {\n            paymentRequest\n            paymentHash\n            paymentSecret\n            satoshis\n        }\n    }\n}","variables":{"input":{"amount":"12345","memo":"tipping jpow"}}}'
 ```
 
 #### response
@@ -81,7 +88,10 @@ curl --location --request POST 'https://api.testnet.galoy.io/graphql' --header '
 
 #### query
 ```
-curl --location --request POST 'https://api.testnet.galoy.io/graphql' --header 'Authorization: Bearer eyJhbgciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2MTgzNzBhNWJiYzE2MmrhNzNhNDY3MzkiLCJuZXR3b3JrIjiobWFpbm5ldCIsImlhdCI6MTYzNjAwNDAwNX0.M51l0lR03dbpblkuegJg3rDQ6Zrou50SeROR-b-jXPw' --header 'Content-Type: application/json' --data-raw '{"query":"mutation lnInvoiceFeeProbe ($input: LnInvoiceFeeProbeInput!) {\n    lnInvoiceFeeProbe (input: $input) {\n        errors {\n            message\n            path\n        }\n        amount\n    }\n}","variables":{"input":{"paymentRequest":"lntb123450n1pscxulepp59x872uskmr0a4r3wnr3vkmr297zm53smw8j4efevpknuwm8vs5yqdq5w35hqurfdenjq6nsdamscqzpuxqyz5vqsp5yzmznk5z7xszkgfk5xstuh8j5gg4srerelv58pph5wjan2kd8rqs9qyyssqe5l376x893374kqsr5lc8tesudg4jryaqlzmx44mfr87nds83margfa09ggd92sy0rudl6r79sat4rxqml5yfdhmm7yk9jc0ugzw7hgpdfxfzk"}}}'
+export URI=https://api.testnet.galoy.io/graphql
+export PAYMENT_REQUEST='lntb123450n1pscxulepp59x872uskmr0a4r3wnr3vkmr297zm53smw8j4efevpknuwm8vs5yqdq5w35hqurfdenjq6nsdamscqzpuxqyz5vqsp5yzmznk5z7xszkgfk5xstuh8j5gg4srerelv58pph5wjan2kd8rqs9qyyssqe5l376x893374kqsr5lc8tesudg4jryaqlzmx44mfr87nds83margfa09ggd92sy0rudl6r79sat4rxqml5yfdhmm7yk9jc0ugzw7hgpdfxfzk'
+
+curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Type: application/json' --data-raw '{"query":"mutation lnInvoiceFeeProbe ($input: LnInvoiceFeeProbeInput!) {\n    lnInvoiceFeeProbe (input: $input) {\n        errors {\n            message\n            path\n        }\n        amount\n    }\n}","variables":{"input":{"paymentRequest":"'"$PAYMENT_REQUEST"'"}}}'
 ```
 
 #### response
@@ -95,11 +105,16 @@ curl --location --request POST 'https://api.testnet.galoy.io/graphql' --header '
     }
 }
 ```
+
+
 ### lnInvoicePaymentSend
 
 #### query
 ```
-curl --location --request POST 'https://api.testnet.galoy.io/graphql' --header 'Authorization: Bearer eyJhbgciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2MTgzNzBhNWJiYzE2MmrhNzNhNDY3MzkiLCJuZXR3b3JrIjiobWFpbm5ldCIsImlhdCI6MTYzNjAwNDAwNX0.M51l0lR03dbpblkuegJg3rDQ6Zrou50SeROR-b-jXPw' --header 'Content-Type: application/json' --data-raw '{"query":"mutation lnInvoicePaymentSend ($input: LnInvoicePaymentInput!) {\n    lnInvoicePaymentSend (input: $input) {\n        errors {\n            message\n            path\n        }\n        status\n    }\n}","variables":{"input":{"paymentRequest":"lntb50u1psc8xeppp5yryt4j8ve0pvyunrp3dr0l5tj0ss4hnkuxz52hldc9nz2njpe2fqdqqxqrrss9qy9qsqsp5xduj0a8u2c7mn959045wnu8xrv63vqye2d2zw3kllahdv47np6qsrzjqwfn3p9278ttzzpe0e00uhyxhned3j5d9acqak5emwfpflp8z2cng85uzyqqqdsqqqqqqqlgqqqqqeqqjqjwcuu47akd6qggafxy403zk9f67xh86huv6r0fkngvkuwrxuadv8dd3u5gfeurshh3q6jr5jvu05z7f63xz5ac8v4pk3tjfv46jt5dcprr9d4z","memo":"tipping jpow"}}}'
+export URI=https://api.testnet.galoy.io/graphql
+PAYMENT_REQUEST='lntb50u1psc8xeppp5yryt4j8ve0pvyunrp3dr0l5tj0ss4hnkuxz52hldc9nz2njpe2fqdqqxqrrss9qy9qsqsp5xduj0a8u2c7mn959045wnu8xrv63vqye2d2zw3kllahdv47np6qsrzjqwfn3p9278ttzzpe0e00uhyxhned3j5d9acqak5emwfpflp8z2cng85uzyqqqdsqqqqqqqlgqqqqqeqqjqjwcuu47akd6qggafxy403zk9f67xh86huv6r0fkngvkuwrxuadv8dd3u5gfeurshh3q6jr5jvu05z7f63xz5ac8v4pk3tjfv46jt5dcprr9d4z'
+
+curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Type: application/json' --data-raw '{"query":"mutation lnInvoicePaymentSend ($input: LnInvoicePaymentInput!) {\n    lnInvoicePaymentSend (input: $input) {\n        errors {\n            message\n            path\n        }\n        status\n    }\n}","variables":{"input":{"paymentRequest":"'"$PAYMENT_REQUEST"'","memo":"tipping jpow"}}}'
 ```
 
 #### response
@@ -107,17 +122,13 @@ curl --location --request POST 'https://api.testnet.galoy.io/graphql' --header '
 {
     "data": {
         "lnInvoicePaymentSend": {
-            "errors": [
-                {
-                    "message": "",
-                    "path": null
-                }
-            ],
-            "status": "SUCCESS"
+            "errors": [],
+            "status": "ALREADY_PAID"
         }
     }
 }
 ```
+
 
 
 
