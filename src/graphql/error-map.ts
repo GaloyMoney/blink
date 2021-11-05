@@ -106,6 +106,8 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       return new TooManyRequestError({ message, logger: baseLogger })
 
     case "UnknownLnInvoiceDecodeError":
+      // Consider using `error.message` somehow since lib returns semi-sensible details
+      message = "Invalid lightning request, couldn't decode."
       return new InvoiceDecodeError({ message, logger: baseLogger })
 
     case "UnknownRepositoryError":
