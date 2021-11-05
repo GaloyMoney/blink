@@ -24,7 +24,7 @@ services:
     - ALLOW_EMPTY_PASSWORD=yes
     - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
   mongodb:
-    image: bitnami/mongodb:4.4.10-debian-10-r20
+    image: bitnami/mongodb:4.4.6-debian-10-r0
     ports:
     - "27017:27017"
     environment:
