@@ -8,13 +8,15 @@ const users = UsersRepository()
 export const getUserForLogin = async ({
   userId,
   ip,
+  logger,
 }: {
   userId: UserId
   ip?: Ip
+  logger: Logger
 }): Promise<User | ApplicationError> =>
   asyncRunInSpan(
     "app.getUserForLogin",
-    { [SemanticAttributes.CODE_FUNCTION]: "addIp" },
+    { [SemanticAttributes.CODE_FUNCTION]: "getUserForLogin" },
     async () => {
       const lastConnection = new Date()
 
@@ -24,7 +26,7 @@ export const getUserForLogin = async ({
         return user
       }
 
-      updateIpInfo({ userId, iPs: user.lastIPs, ip, lastConnection })
+      updateIpInfo({ userId, iPs: user.lastIPs, ip, lastConnection, logger })
 
       return user
     },
@@ -35,14 +37,16 @@ const updateIpInfo = async ({
   iPs,
   ip,
   lastConnection,
+  logger,
 }: {
   userId: UserId
   iPs: IPType[]
   ip?: Ip
   lastConnection: Date
+  logger: Logger
 }): Promise<void> =>
   asyncRunInSpan(
-    "app.getUserForLogin",
+    "app.addIp",
     { [SemanticAttributes.CODE_FUNCTION]: "addIp" },
     async () => {
       const ipConfig = getIpConfig()
@@ -72,7 +76,11 @@ const updateIpInfo = async ({
         }
         iPs.push(ipInfo)
       }
-      users.updateIps(userId, iPs)
+      const result = await users.updateIps(userId, iPs)
+
+      if (result instanceof Error) {
+        logger
+      }
     },
   )
 

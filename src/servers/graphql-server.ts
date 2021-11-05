@@ -104,7 +104,7 @@ export const startApolloServer = async ({
         },
         async () => {
           if (userId) {
-            const user = await Users.getUserForLogin({ userId, ip })
+            const user = await Users.getUserForLogin({ userId, ip, logger })
 
             if (user instanceof Error) {
               throw new ApolloError(

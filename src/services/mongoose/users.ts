@@ -84,6 +84,8 @@ export const UsersRepository = (): IUsersRepository => {
       if (!result) {
         return new RepositoryError("Couldn't update lastIps")
       }
+
+      return null
     } catch (err) {
       return new UnknownRepositoryError(err)
     }

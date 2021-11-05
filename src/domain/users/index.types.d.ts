@@ -48,7 +48,7 @@ type User = {
 
 interface IUsersRepository {
   findById(userId: UserId): Promise<User | RepositoryError>
-  updateIps(userId: UserId, iPs: IPType[]): Promise<void>
+  updateIps(userId: UserId, iPs: IPType[]): Promise<null | RepositoryError>
   findByIdAndUpdateLastConnectionDate(
     userId: UserId,
     findByIdAndUpdateLastConnectionDate: Date,
