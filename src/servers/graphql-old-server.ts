@@ -391,13 +391,13 @@ const resolvers = {
           })
           if (!(feeSatAmount instanceof Error)) return feeSatAmount
           if (!(feeSatAmount instanceof LnPaymentRequestZeroAmountRequiredError))
-            throw feeSatAmount
+            throw mapError(feeSatAmount)
         }
 
         feeSatAmount = await lnInvoiceFeeProbe({
           paymentRequest: invoice,
         })
-        if (feeSatAmount instanceof Error) throw feeSatAmount
+        if (feeSatAmount instanceof Error) throw mapError(feeSatAmount)
         return feeSatAmount
       },
     }),
