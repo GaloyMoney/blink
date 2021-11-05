@@ -15,3 +15,7 @@ artifacts_bucket_name: ((staging-gcp-creds.bucket_name))
 staging_inception_creds: ((staging-gcp-creds.creds_json))
 staging_ssh_private_key: ((staging-ssh.ssh_private_key))
 staging_ssh_pub_key: ((staging-ssh.ssh_public_key))
+
+slack_channel: galoy-main-github
+slack_username: concourse
+slack_webhook_url: ((galoy-main-slack.api_url))
