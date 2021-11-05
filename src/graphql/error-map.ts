@@ -180,6 +180,11 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "UnknownIpFetcherServiceError":
     case "CouldNotFindTransactionError":
     case "InvalidLedgerTransactionId":
+    case "CacheError":
+    case "LocalCacheNotAvailableError":
+    case "LocalCacheServiceError":
+    case "LocalCacheUndefinedError":
+    case "UnknownLocalCacheServiceError":
       return new UnknownClientError({ message, logger: baseLogger })
 
     default:

@@ -25,6 +25,7 @@ import { getTitle } from "@services/notifications/payment"
 import { TxStatus } from "@domain/wallets"
 import { getBTCBalance } from "test/helpers/wallet"
 import { NotificationType } from "@domain/notifications"
+import { getCurrentPrice } from "@app/prices"
 
 jest.mock("@services/notifications/notification")
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
@@ -155,7 +156,7 @@ describe("onchainBlockEventhandler", () => {
     expect(dbTx.sats).toBe(sats)
     expect(dbTx.pending).toBe(false)
 
-    const satsPrice = await PriceService().getCurrentPrice()
+    const satsPrice = await getCurrentPrice()
     if (satsPrice instanceof Error) throw satsPrice
     const usd = (sats * satsPrice).toFixed(2)
     expect(sendNotification.mock.calls[0][0].title).toBe(

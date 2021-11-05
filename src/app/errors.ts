@@ -9,6 +9,7 @@ import * as RateLimitServiceErrors from "@domain/rate-limit/errors"
 import * as IpFetcherErrors from "@domain/ipfetcher/errors"
 import * as AccountErrors from "@domain/accounts/errors"
 import * as NotificationsErrors from "@domain/notifications/errors"
+import * as CacheErrors from "@domain/cache/errors"
 
 export const ApplicationErrors = {
   ...DomainErrors,
@@ -22,4 +23,5 @@ export const ApplicationErrors = {
   ...IpFetcherErrors,
   ...AccountErrors,
   ...NotificationsErrors,
+  ...CacheErrors,
 } as const

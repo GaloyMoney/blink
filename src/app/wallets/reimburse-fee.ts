@@ -1,6 +1,6 @@
+import { getCurrentPrice } from "@app/prices"
 import { FeeReimbursement } from "@domain/ledger/fee-reimbursement"
 import { LedgerService } from "@services/ledger"
-import { PriceService } from "@services/price"
 
 export const reimburseFee = async ({
   liabilitiesAccountId,
@@ -42,7 +42,7 @@ export const reimburseFee = async ({
     "logging a fee difference",
   )
 
-  const price = await PriceService().getCurrentPrice()
+  const price = await getCurrentPrice()
   if (price instanceof Error) return price
   const usd = feeDifference * price
 

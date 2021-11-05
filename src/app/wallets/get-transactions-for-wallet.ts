@@ -2,12 +2,12 @@ import { RepositoryError } from "@domain/errors"
 import { OnChainError, TxFilter, TxDecoder } from "@domain/bitcoin/onchain"
 import { WalletsRepository } from "@services/mongoose"
 import { LedgerService } from "@services/ledger"
-import { PriceService } from "@services/price"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { toLiabilitiesAccountId, LedgerError } from "@domain/ledger"
 import { ONCHAIN_LOOK_BACK, ONCHAIN_MIN_CONFIRMATIONS, BTC_NETWORK } from "@config/app"
 import { WalletTransactionHistory } from "@domain/wallets"
 import { PartialResult } from "@app/partial-result"
+import { getCurrentPrice } from "@app/prices"
 
 export const getTransactionsForWalletId = async ({
   walletId,
@@ -48,7 +48,7 @@ export const getTransactionsForWallet = async (
   })
   const pendingTxs = filter.apply(onChainTxs)
 
-  let price = await PriceService().getCurrentPrice()
+  let price = await getCurrentPrice()
   if (price instanceof Error) {
     price = NaN as UsdPerSat
   }

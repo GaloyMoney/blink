@@ -4,8 +4,8 @@ import PricePoint from "@graphql/types/object/price-point"
 import PriceGraphRange, {
   priceRangeValues,
 } from "@graphql/types/scalar/price-graph-range"
-import { PriceService } from "@services/price"
 import { PriceInterval, PriceRange } from "@domain/price"
+import * as Prices from "@app/prices"
 
 const parseRange: (string: typeof priceRangeValues[number]) => PriceRange = (range) => {
   switch (range) {
@@ -47,13 +47,12 @@ const BtcPriceListQuery = GT.Field({
     },
   },
   resolve: async (_, args) => {
-    const priceService = PriceService()
     const range = parseRange(args.range)
     const interval = parseInterval(args.range)
 
     if (!range) throw new Error("Invalid range")
 
-    const hourlyPrices = await priceService.listHistory(range, interval)
+    const hourlyPrices = await Prices.getPriceHistory({ range, interval })
     if (hourlyPrices instanceof Error) throw hourlyPrices
 
     const prices: PricePointType[] = hourlyPrices.map(({ date, price }) => {
@@ -71,7 +70,7 @@ const BtcPriceListQuery = GT.Field({
 
     // Add the current price as the last item in the array
     // This is used by the mobile app to convert prices
-    const currentPrice = await priceService.getCurrentPrice()
+    const currentPrice = await Prices.getCurrentPrice()
     if (!(currentPrice instanceof Error)) {
       const currentBtcPriceInCents = currentPrice * 100 * 10 ** 8
       prices.push({

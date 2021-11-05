@@ -11,7 +11,7 @@ type Tick = {
 }
 
 interface IPriceService {
-  getCurrentPrice(): Promise<UsdPerSat | PriceServiceError>
+  getRealTimePrice(): Promise<UsdPerSat | PriceServiceError>
   listHistory(
     range: PriceRange,
     interval: PriceInterval,
