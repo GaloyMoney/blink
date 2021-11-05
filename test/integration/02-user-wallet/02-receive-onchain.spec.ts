@@ -26,9 +26,9 @@ import { resetOnChainAddressWalletIdLimits } from "test/helpers/rate-limit"
 import { OnChainAddressCreateRateLimiterExceededError } from "@domain/rate-limit/errors"
 import { NotificationType } from "@domain/notifications"
 
-jest.mock("@services/price/get-realtime-price", () =>
-  require("test/mocks/get-realtime-price"),
-)
+import { getCurrentPrice } from "@app/prices"
+
+jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
 let walletUser0
@@ -221,7 +221,7 @@ describe("UserWallet - On chain", () => {
       NotificationType.OnchainReceiptPending,
     )
 
-    const satsPrice = await PriceService().getCurrentPrice()
+    const satsPrice = await getCurrentPrice()
     if (satsPrice instanceof Error) throw satsPrice
     const usd = (btc2sat(amountBTC) * satsPrice).toFixed(2)
 

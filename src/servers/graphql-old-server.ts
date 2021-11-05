@@ -11,10 +11,9 @@ import { shield } from "graphql-shield"
 import { makeExecutableSchema } from "graphql-tools"
 import moment from "moment"
 import path from "path"
-
 import { getFeeRates, onboardingEarn, getBuildVersions } from "@config/app"
-
 import * as Wallets from "@app/wallets"
+import * as Prices from "@app/prices"
 import { SettlementMethod, PaymentInitiationMethod, TxStatus } from "@domain/wallets"
 import { setupMongoConnection } from "@services/mongodb"
 import { activateLndHealthCheck } from "@services/lnd/health"
@@ -24,15 +23,9 @@ import { User } from "@services/mongoose/schema"
 import { sendNotification } from "@services/notifications/notification"
 import { login, requestPhoneCode } from "@core/text"
 import { usernameExists } from "@core/user"
-
 import { startApolloServer, isAuthenticated } from "./graphql-server"
 import { ApolloError } from "apollo-server-errors"
 import { addInvoiceForUsername, addInvoiceNoAmountForUsername } from "@core/wallets"
-import {
-  intraledgerPaymentSend,
-  lnInvoicePaymentSend,
-  lnNoAmountInvoicePaymentSend,
-} from "@app/wallets"
 import { decodeInvoice } from "@domain/bitcoin/lightning"
 import { mapError } from "@graphql/error-map"
 import {
@@ -40,7 +33,6 @@ import {
   SemanticAttributes,
   ENDUSER_ALIAS,
 } from "@services/tracing"
-import { PriceService } from "@services/price"
 import { PriceInterval, PriceRange } from "@domain/price"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
@@ -180,14 +172,16 @@ const resolvers = {
       }
     },
     prices: async (_, { length = 365 * 24 * 10 }) => {
-      const service = PriceService()
       let hourly: Tick[] | PriceServiceError = []
       if (length > 1) {
-        hourly = await service.listHistory(PriceRange.OneYear, PriceInterval.OneHour)
+        hourly = await Prices.getPriceHistory({
+          range: PriceRange.OneYear,
+          interval: PriceInterval.OneHour,
+        })
         if (hourly instanceof Error) throw hourly
       }
 
-      const currentPrice = await service.getCurrentPrice()
+      const currentPrice = await Prices.getCurrentPrice()
       if (currentPrice instanceof Error) throw currentPrice
 
       // adding the current price as the lat index array
@@ -336,7 +330,7 @@ const resolvers = {
 
             const { amount: lnInvoiceAmount } = decodedInvoice
             if (lnInvoiceAmount && lnInvoiceAmount > 0) {
-              const status = await lnInvoicePaymentSend({
+              const status = await Wallets.lnInvoicePaymentSend({
                 paymentRequest: invoice,
                 memo,
                 walletId: wallet.user.id as WalletId,
@@ -346,7 +340,7 @@ const resolvers = {
               if (status instanceof Error) throw mapError(status)
               return status.value
             }
-            const status = await lnNoAmountInvoicePaymentSend({
+            const status = await Wallets.lnNoAmountInvoicePaymentSend({
               paymentRequest: invoice,
               memo,
               amount,
@@ -359,7 +353,7 @@ const resolvers = {
           },
         ),
       payKeysendUsername: async ({ username, amount, memo }) => {
-        const status = await intraledgerPaymentSend({
+        const status = await Wallets.intraledgerPaymentSend({
           recipientUsername: username,
           memo,
           amount,
