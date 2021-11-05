@@ -48,11 +48,11 @@ type User = {
 
 interface IUsersRepository {
   findById(userId: UserId): Promise<User | RepositoryError>
+  updateIps(userId: UserId, iPs: IPType[]): Promise<void>
   findByIdAndUpdateLastConnectionDate(
     userId: UserId,
     findByIdAndUpdateLastConnectionDate: Date,
   ): Promise<User | RepositoryError>
-  updateIps(userId: UserId, iPs: IPType[])
   findByUsername(username: Username): Promise<User | RepositoryError>
   findByWalletPublicId(walletPublicId: WalletPublicId): Promise<User | RepositoryError>
   update(user: User): Promise<User | RepositoryError>

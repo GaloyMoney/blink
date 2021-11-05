@@ -5,7 +5,32 @@ import { IpFetcher } from "@services/ipfetcher"
 
 const users = UsersRepository()
 
-export const updateIpInfo = async ({
+export const getUserForLogin = async ({
+  userId,
+  ip,
+}: {
+  userId: UserId
+  ip?: Ip
+}): Promise<User | ApplicationError> =>
+  asyncRunInSpan(
+    "app.getUserForLogin",
+    { [SemanticAttributes.CODE_FUNCTION]: "addIp" },
+    async () => {
+      const lastConnection = new Date()
+
+      const user = await users.findByIdAndUpdateLastConnectionDate(userId, lastConnection)
+
+      if (user instanceof Error) {
+        return user
+      }
+
+      updateIpInfo({ userId, iPs: user.lastIPs, ip, lastConnection })
+
+      return user
+    },
+  )
+
+const updateIpInfo = async ({
   userId,
   iPs,
   ip,

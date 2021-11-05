@@ -29,7 +29,6 @@ import {
   addAttributesToCurrentSpan,
   ENDUSER_ALIAS,
 } from "@services/tracing"
-import { UsersRepository } from "@services/mongoose"
 
 const graphqlLogger = baseLogger.child({
   module: "graphql",
@@ -105,14 +104,9 @@ export const startApolloServer = async ({
         },
         async () => {
           if (userId) {
-            const lastConnection = new Date()
+            const user = await Users.getUserForLogin({ userId, ip })
 
-            const user = await UsersRepository().findByIdAndUpdateLastConnectionDate(
-              userId,
-              lastConnection,
-            )
-
-            if (user instanceof Error)
+            if (user instanceof Error) {
               throw new ApolloError(
                 "Invalid user authentication",
                 "INVALID_AUTHENTICATION",
@@ -120,14 +114,13 @@ export const startApolloServer = async ({
                   reason: user,
                 },
               )
+            }
             domainUser = user
 
             wallet =
               !!domainUser && domainUser.status === "active"
                 ? await WalletFactory({ user: domainUser, logger })
                 : null
-
-            Users.updateIpInfo({ userId, iPs: user.lastIPs, ip, lastConnection })
           }
 
           let account: Account | null = null
