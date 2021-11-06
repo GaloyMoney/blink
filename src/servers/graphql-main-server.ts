@@ -33,7 +33,8 @@ export async function startApolloServerForCoreSchema() {
         twoFASave: isAuthenticated,
         twoFADelete: isAuthenticated,
 
-        deviceNotificationTokenCreate: isAuthenticated,
+        deviceNotificationsEnable: isAuthenticated,
+        deviceNotificationsDisable: isAuthenticated,
 
         accountApiKeyCreate: isAuthenticated,
         accountApiKeyDisable: isAuthenticated,

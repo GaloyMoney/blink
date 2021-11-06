@@ -12,6 +12,7 @@ import Username from "../scalar/username"
 import * as Accounts from "@app/accounts"
 import * as Users from "@app/users"
 import { UnknownClientError } from "@core/error"
+import NotificationKey from "../scalar/notification-key"
 
 const mainUserFields = () => ({
   id: { type: GT.NonNullID },
@@ -46,6 +47,10 @@ const mainUserFields = () => ({
 
   quizQuestions: {
     type: GT.NonNullList(UserQuizQuestion),
+  },
+
+  enabledNotifications: {
+    type: GT.NonNullList(NotificationKey),
   },
 
   twoFAEnabled: {

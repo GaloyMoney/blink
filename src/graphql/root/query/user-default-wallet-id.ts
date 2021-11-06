@@ -7,7 +7,7 @@ import { CouldNotFindError } from "@domain/errors"
 import { NotFoundError, UnknownClientError } from "@core/error"
 
 const UserDefaultWalletIdQuery = GT.Field({
-  type: GT.NonNull(WalletId),
+  type: WalletId,
   args: {
     username: {
       type: GT.NonNull(Username),

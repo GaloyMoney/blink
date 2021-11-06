@@ -1,6 +1,7 @@
 import { GT } from "@graphql/index"
 
-import DeviceNotificationTokenCreateMutation from "@graphql/root/mutation/device-notification-token-create"
+import DeviceNotificationsEnableMutation from "@graphql/root/mutation/device-notifications-enable"
+import DeviceNotificationsDisableMutation from "@graphql/root/mutation/device-notifications-disable"
 import IntraLedgerPaymentSendMutation from "@graphql/root/mutation/intraledger-payment-send"
 import LnInvoiceCreateMutation from "@graphql/root/mutation/ln-invoice-create"
 import LnInvoiceCreateOnBehalfOfRecipientMutation from "@graphql/root/mutation/ln-invoice-create-on-behalf-of-recipient"
@@ -39,7 +40,8 @@ const MutationType = new GT.Object({
     twoFADelete: TwoFADeleteMutation,
 
     userQuizQuestionUpdateCompleted: UserQuizQuestionUpdateCompletedMutation,
-    deviceNotificationTokenCreate: DeviceNotificationTokenCreateMutation,
+    deviceNotificationsEnable: DeviceNotificationsEnableMutation,
+    deviceNotificationsDisable: DeviceNotificationsDisableMutation,
 
     accountApiKeyCreate: AccountApiKeyCreateMutation,
     accountApiKeyDisable: AccountApiKeyDisableMutation,

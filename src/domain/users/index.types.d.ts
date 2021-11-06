@@ -37,6 +37,7 @@ type User = {
   readonly quizQuestions: UserQuizQuestion[]
   readonly defaultAccountId: AccountId
   readonly deviceTokens: DeviceToken[]
+  readonly enabledNotifications: string[]
   readonly lastIPs: IPType[]
   readonly createdAt: Date
   phone: PhoneNumber

@@ -130,6 +130,8 @@ const userFromRaw = (result: UserType): User => {
       ) || [],
     defaultAccountId: result.id as AccountId,
     deviceTokens: (result.deviceToken || []) as DeviceToken[],
+    enabledNotifications:
+      (result.deviceToken || []).length > 0 ? ["ALL_NOTIFICATIONS"] : [],
     lastConnection: result.lastConnection,
     lastIPs: (result.lastIPs || []) as IPType[],
     createdAt: new Date(result.created_at),

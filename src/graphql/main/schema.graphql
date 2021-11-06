@@ -300,7 +300,7 @@ type Query {
   globals: Globals
   me: User
   usernameAvailable(username: Username!): Boolean
-  userDefaultWalletId(username: Username!): WalletId!
+  userDefaultWalletId(username: Username!): WalletId
   businessMapMarkers: [MapMarker]
   mobileVersions: [MobileVersions]
   quizQuestions: [QuizQuestion]
@@ -326,6 +326,7 @@ type User {
   contacts: [UserContact!]!
   contactByUsername(username: Username!): UserContact!
   quizQuestions: [UserQuizQuestion!]!
+  enabledNotifications: [NotificationKey!]!
   twoFAEnabled: Boolean
   createdAt: Timestamp!
   defaultAccount: Account!
@@ -382,6 +383,10 @@ type QuizQuestion {
   The earn reward in Satoshis for the quiz question
   """
   earnAmount: SatAmount!
+}
+
+enum NotificationKey {
+  ALL_NOTIFICATIONS
 }
 
 type MapMarker {
@@ -453,9 +458,8 @@ type Mutation {
   userQuizQuestionUpdateCompleted(
     input: UserQuizQuestionUpdateCompletedInput!
   ): UserQuizQuestionUpdateCompletedPayload!
-  deviceNotificationTokenCreate(
-    input: DeviceNotificationTokenCreateInput!
-  ): SuccessPayload!
+  deviceNotificationsEnable(input: DeviceNotificationsEnableInput!): SuccessPayload!
+  deviceNotificationsDisable(input: DeviceNotificationsDisableInput!): SuccessPayload!
   accountApiKeyCreate(input: AccountApiKeyCreateInput!): AccountApiKeyPayload!
   accountApiKeyDisable(input: AccountApiKeyDisableInput!): SuccessPayload!
   userUpdateLanguage(input: UserUpdateLanguageInput!): UserUpdateLanguagePayload!
@@ -541,8 +545,13 @@ input UserQuizQuestionUpdateCompletedInput {
   id: ID!
 }
 
-input DeviceNotificationTokenCreateInput {
+input DeviceNotificationsEnableInput {
   deviceToken: String!
+  notificationKeys: [NotificationKey!]!
+}
+
+input DeviceNotificationsDisableInput {
+  notificationKeys: [NotificationKey!]!
 }
 
 type AccountApiKeyPayload {
@@ -607,6 +616,7 @@ type UserDetails {
   contacts: [UserContact!]!
   contactByUsername(username: Username!): UserContact!
   quizQuestions: [UserQuizQuestion!]!
+  enabledNotifications: [NotificationKey!]!
   twoFAEnabled: Boolean
   createdAt: Timestamp!
 }
