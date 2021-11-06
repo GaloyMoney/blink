@@ -10,16 +10,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+      with:
+        path: main
+    - uses: actions/checkout@v2
+      with:
+        ref: docs
+        path: docs
     - uses: actions/setup-node@v2
     - run: yarn install
+      working-directory: main
     - name: Build docs
       run: yarn run build-docs
+      working-directory: main
+    - run: cp main/public/index.html docs
     - name: Deploy docs
+      working-directory: docs
       run: |
         git config --local user.name 'github-actions[bot]'
         git config --local user.email 'github-actions[bot]@users.noreply.github.com'
-        git checkout -t origin/docs
-        git add public/
+        git add index.html
         git commit -m "Update docs: $GITHUB_SHA"
         git push
-
