@@ -1,9 +1,13 @@
 import { LndService } from "@services/lnd"
 
-export const lookupInvoiceByHash = async (
-  paymentHash: PaymentHash,
-): Promise<LnInvoiceLookup | ApplicationError> => {
+export const lookupInvoiceByHashAndPubkey = async ({
+  paymentHash,
+  pubkey,
+}: {
+  paymentHash: PaymentHash
+  pubkey: Pubkey
+}): Promise<LnInvoiceLookup | ApplicationError> => {
   const lndService = LndService()
   if (lndService instanceof Error) return lndService
-  return lndService.lookupInvoice({ paymentHash })
+  return lndService.lookupInvoice({ paymentHash, pubkey })
 }
