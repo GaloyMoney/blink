@@ -39,9 +39,15 @@ import {
   lnInvoicePaymentSendWithTwoFA,
   lnNoAmountInvoicePaymentSend,
 } from "@app/wallets"
-import { LightningServiceError, PaymentSendStatus } from "@domain/bitcoin/lightning"
 import { PaymentInitiationMethod } from "@domain/wallets"
 import { getLightningFee } from "@app/wallets/get-lightning-fee"
+import {
+  decodeInvoice,
+  LightningServiceError,
+  PaymentSendStatus,
+} from "@domain/bitcoin/lightning"
+import { LnPaymentsRepository } from "@services/mongoose/ln-payments"
+import { LndService } from "@services/lnd"
 
 const date = Date.now() + 1000 * 60 * 60 * 24 * 8
 // required to avoid oldEnoughForWithdrawal validation
@@ -289,6 +295,8 @@ describe("UserWallet - Lightning Pay", () => {
     })
     if (paymentResult instanceof Error) throw paymentResult
     expect(paymentResult).toBe(PaymentSendStatus.Success)
+
+    testPaymentDataPersisted(request as EncodedPaymentRequest)
 
     const finalBalance = await getBTCBalance(userWallet1.user.walletId)
     expect(finalBalance).toBe(initBalance1 - amountInvoice)
@@ -743,6 +751,8 @@ describe("UserWallet - Lightning Pay", () => {
           initBalance1 - amountInvoice * (1 + initialFee),
         )
 
+        await testPaymentDataPersisted(request as EncodedPaymentRequest)
+
         // FIXME: necessary to not have openHandler ?
         // https://github.com/alexbosworth/ln-service/issues/122
         await waitFor(async () => {
@@ -772,6 +782,8 @@ describe("UserWallet - Lightning Pay", () => {
         })
 
         await waitUntilChannelBalanceSyncAll()
+
+        await testPaymentDataPersisted(request as EncodedPaymentRequest)
 
         const finalBalance = await getBTCBalance(userWallet1.user.walletId)
         expect(finalBalance).toBe(initBalance1 - amountInvoice)
@@ -934,3 +946,44 @@ describe("UserWallet - Lightning Pay", () => {
     // expect(await userWallet1.updatePendingInvoice({ hash: id })).toBeFalsy()
   }, 150000)
 })
+
+const testPaymentDataPersisted = async (request: EncodedPaymentRequest) => {
+  const lnInvoice = decodeInvoice(request)
+  expect(lnInvoice).not.toBeInstanceOf(Error)
+  if (lnInvoice instanceof Error) throw lnInvoice
+  const { paymentHash } = lnInvoice
+
+  const ledger = LedgerService()
+  const txns = await ledger.getTransactionsByHash(paymentHash)
+  expect(txns).not.toBeInstanceOf(Error)
+  if (txns instanceof Error) throw txns
+
+  const paymentIds = [...new Set(txns.map((txn) => txn.paymentId as PaymentId))]
+  expect(paymentIds).toHaveLength(1)
+  const paymentId = paymentIds[0]
+  expect(paymentId).not.toBeUndefined()
+  if (paymentId === undefined) return
+
+  const paymentFromDb = await LnPaymentsRepository().findById(paymentId)
+  expect(paymentFromDb).not.toBeInstanceOf(Error)
+  if (paymentFromDb instanceof Error) throw paymentFromDb
+
+  const lndService = LndService()
+  expect(lndService).not.toBeInstanceOf(Error)
+  if (lndService instanceof Error) throw lndService
+  const paymentFromLnd = await lndService.lookupPayment({ paymentHash })
+  expect(paymentFromLnd).not.toBeInstanceOf(Error)
+  if (paymentFromLnd instanceof Error) return paymentFromLnd
+
+  const propsToCompare = [
+    "status",
+    "paymentHash",
+    "secret",
+    "milliSatsAmount",
+    "milliSatsFee",
+  ]
+  for (const prop of propsToCompare) {
+    expect(paymentFromDb[prop]).toStrictEqual(paymentFromLnd[prop])
+  }
+  expect(paymentFromDb.paths.length).toEqual(paymentFromLnd.paths.length)
+}
