@@ -56,10 +56,7 @@ $ make watch
 
 ### Using GraphiQL
 
-You can load GraphiQL, a web GUI for GraphQL.
-
-First, `apollo.playground` should be set to `true` in `default.yaml`
-Then, restart the server and open the following url:
+You can load GraphiQL, a web GUI for GraphQL. Start the server and open the following url:
 
 - http://localhost:4000/graphql (old API - deprecated)
 - http://localhost:4001/graphql (admin API)
