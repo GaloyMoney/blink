@@ -46,8 +46,8 @@ type IpConfig = {
   proxyCheckingEnabled: boolean
 }
 
-type HelmetConfig = {
-  disableContentPolicy: boolean
+type ApolloConfig = {
+  playground: boolean
 }
 
 type TwoFAConfig = {
