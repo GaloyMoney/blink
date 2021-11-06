@@ -23,6 +23,7 @@ export class CouldNotFindWalletFromUsernameError extends CouldNotFindError {}
 export class CouldNotFindWalletFromOnChainAddressError extends CouldNotFindError {}
 export class CouldNotFindWalletFromPublicIdError extends CouldNotFindError {}
 export class CouldNotFindWalletFromOnChainAddressesError extends CouldNotFindError {}
+export class CouldNotFindLnPaymentFromIdError extends CouldNotFindError {}
 
 export class ValidationError extends DomainError {}
 export class InvalidSatoshiAmount extends ValidationError {}
