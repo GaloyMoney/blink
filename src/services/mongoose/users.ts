@@ -16,29 +16,9 @@ export const caseInsensitiveRegex = (input: string) => {
 export const UsersRepository = (): IUsersRepository => {
   const findById = async (userId: UserId): Promise<User | RepositoryError> => {
     try {
-      const result = await User.findOne({ _id: userId })
-      if (!result) {
-        return new CouldNotFindUserFromIdError(userId)
-      }
-
-      return userFromRaw(result)
-    } catch (err) {
-      return new UnknownRepositoryError(err)
-    }
-  }
-
-  const findByIdAndUpdateLastConnectionDate = async (
-    userId: UserId,
-    lastConnection: Date,
-  ): Promise<User | RepositoryError> => {
-    try {
-      const result = await User.findOneAndUpdate(
-        {
-          _id: userId,
-        },
-        {
-          lastConnection,
-        },
+      const result = await User.findOne(
+        { _id: userId },
+        { lastIPs: 0, lastConnection: 0 },
       )
       if (!result) {
         return new CouldNotFindUserFromIdError(userId)
@@ -52,7 +32,10 @@ export const UsersRepository = (): IUsersRepository => {
 
   const findByUsername = async (username: Username): Promise<User | RepositoryError> => {
     try {
-      const result = await User.findOne({ username: caseInsensitiveRegex(username) })
+      const result = await User.findOne(
+        { username: caseInsensitiveRegex(username) },
+        { lastIPs: 0, lastConnection: 0 },
+      )
       if (!result) {
         return new CouldNotFindUserFromUsernameError(username)
       }
@@ -67,25 +50,15 @@ export const UsersRepository = (): IUsersRepository => {
     walletPublicId: WalletPublicId,
   ): Promise<User | RepositoryError> => {
     try {
-      const result = await User.findOne({ walletPublicId })
+      const result = await User.findOne(
+        { walletPublicId },
+        { lastIPs: 0, lastConnection: 0 },
+      )
       if (!result) {
         return new CouldNotFindUserFromWalletIdError(walletPublicId)
       }
 
       return userFromRaw(result)
-    } catch (err) {
-      return new UnknownRepositoryError(err)
-    }
-  }
-
-  const updateIps = async (id, ips) => {
-    try {
-      const result = await User.updateOne({ _id: id }, { lastIps: ips })
-      if (!result) {
-        return new RepositoryError("Couldn't update lastIps")
-      }
-
-      return null
     } catch (err) {
       return new UnknownRepositoryError(err)
     }
@@ -123,50 +96,44 @@ export const UsersRepository = (): IUsersRepository => {
 
   return {
     findById,
-    findByIdAndUpdateLastConnectionDate,
-    updateIps,
     findByUsername,
     findByWalletPublicId,
     update,
   }
 }
 
-const userFromRaw = (result: UserType): User => {
-  return {
-    id: result.id as UserId,
-    status: result.status as AccountStatus,
-    username: result.username as Username,
-    walletPublicId: result.walletPublicId as WalletPublicId,
-    phone: result.phone as PhoneNumber,
-    language: result.language as UserLanguage,
-    twoFA: result.twoFA as TwoFAForUser,
-    contacts: result.contacts.reduce(
-      (res: UserContact[], contact: ContactObjectForUser): UserContact[] => {
-        if (contact.id) {
-          res.push({
-            username: contact.id as Username,
-            alias: (contact.name || contact.id) as ContactAlias,
-            transactionsCount: contact.transactionsCount,
-          })
-        }
-        return res
-      },
-      [],
-    ),
-    quizQuestions:
-      result.earn?.map(
-        (questionId: string): UserQuizQuestion => ({
-          question: {
-            id: questionId as QuizQuestionId,
-            earnAmount: toSats(onboardingEarn[questionId]),
-          },
-          completed: true,
-        }),
-      ) || [],
-    defaultAccountId: result.id as AccountId,
-    deviceTokens: (result.deviceToken || []) as DeviceToken[],
-    lastConnection: result.lastConnection,
-    lastIPs: (result.lastIPs || []) as IPType[],
-    createdAt: new Date(result.created_at),
-  }
-}
+const userFromRaw = (result: UserType): User => ({
+  id: result.id as UserId,
+  status: result.status as AccountStatus,
+  username: result.username as Username,
+  walletPublicId: result.walletPublicId as WalletPublicId,
+  phone: result.phone as PhoneNumber,
+  language: result.language as UserLanguage,
+  twoFA: result.twoFA as TwoFAForUser,
+  contacts: result.contacts.reduce(
+    (res: UserContact[], contact: ContactObjectForUser): UserContact[] => {
+      if (contact.id) {
+        res.push({
+          username: contact.id as Username,
+          alias: (contact.name || contact.id) as ContactAlias,
+          transactionsCount: contact.transactionsCount,
+        })
+      }
+      return res
+    },
+    [],
+  ),
+  quizQuestions:
+    result.earn?.map(
+      (questionId: string): UserQuizQuestion => ({
+        question: {
+          id: questionId as QuizQuestionId,
+          earnAmount: toSats(onboardingEarn[questionId]),
+        },
+        completed: true,
+      }),
+    ) || [],
+  defaultAccountId: result.id as AccountId,
+  deviceTokens: (result.deviceToken || []) as DeviceToken[],
+  createdAt: new Date(result.created_at),
+})

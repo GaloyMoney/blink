@@ -95,7 +95,7 @@ export async function onchainTransactionEventHandler(tx) {
       return
     }
 
-    const user = await User.findOne({ _id: userId })
+    const user = await User.findOne({ _id: userId }, { lastIPs: 0, lastConnection: 0 })
     const price = await PriceService().getCurrentPrice()
     const usdPerSat = price instanceof Error ? undefined : price
     await NotificationsService(onchainLogger).onChainTransactionPayment({
@@ -109,7 +109,10 @@ export async function onchainTransactionEventHandler(tx) {
 
     let user
     try {
-      user = await User.findOne({ "onchain.address": { $in: tx.output_addresses } })
+      user = await User.findOne(
+        { "onchain.address": { $in: tx.output_addresses } },
+        { lastIPs: 0, lastConnection: 0 },
+      )
       if (!user) {
         //FIXME: Log the onchain address, need to first find which of the tx.output_addresses belongs to us
         onchainLogger.fatal(`No user associated with the onchain address`)

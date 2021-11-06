@@ -17,6 +17,7 @@ import * as Accounts from "@app/accounts"
 
 import { baseLogger } from "@services/logger"
 import { redis } from "@services/redis"
+import { User } from "@services/mongoose/schema"
 
 import { isProd } from "@core/utils"
 import { WalletFactory } from "@core/wallet-factory"
@@ -91,7 +92,7 @@ export const startApolloServer = async ({
         ip = ips
       }
 
-      let wallet
+      let wallet, user
 
       // TODO move from id: uuidv4() to a Jaeger standard
       const logger = graphqlLogger.child({ token, id: uuidv4(), body: context.req?.body })
@@ -104,22 +105,20 @@ export const startApolloServer = async ({
         },
         async () => {
           if (userId) {
-            const user = await Users.getUserForLogin({ userId, ip, logger })
-
-            if (user instanceof Error) {
+            const loggedInUser = await Users.getUserForLogin({ userId, ip, logger })
+            if (loggedInUser instanceof Error)
               throw new ApolloError(
                 "Invalid user authentication",
                 "INVALID_AUTHENTICATION",
                 {
-                  reason: user,
+                  reason: loggedInUser,
                 },
               )
-            }
-            domainUser = user
-
+            domainUser = loggedInUser
+            user = await User.findOne({ _id: userId })
             wallet =
-              !!domainUser && domainUser.status === "active"
-                ? await WalletFactory({ user: domainUser, logger })
+              !!user && user.status === "active"
+                ? await WalletFactory({ user, logger })
                 : null
           }
 
@@ -145,7 +144,7 @@ export const startApolloServer = async ({
             uid: userId,
             wallet,
             domainUser,
-            user: domainUser,
+            user,
             geetest,
             account,
             ip,

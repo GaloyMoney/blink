@@ -61,9 +61,7 @@ interface UserType {
   contacts: ContactObjectForUser[]
   created_at: string
   currencies: CurrencyObjectForUser[]
-  lastIPs?: IPType[]
   onchain?: OnChainObjectForUser[]
-  lastConnection: Date
   twoFA: TwoFAForUser
   walletPublicId: WalletPublicId
 
@@ -84,4 +82,11 @@ interface UserType {
 
   // mongoose in-built functions
   save: () => Promise<UserType>
+}
+
+// ?: improve this
+interface UserIpType {
+  _id: string
+  id: string
+  lastIPs?: IPType[]
 }

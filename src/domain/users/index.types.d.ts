@@ -37,25 +37,16 @@ type User = {
   readonly quizQuestions: UserQuizQuestion[]
   readonly defaultAccountId: AccountId
   readonly deviceTokens: DeviceToken[]
-  readonly lastIPs: IPType[]
   readonly createdAt: Date
   readonly status: AccountStatus
   phone: PhoneNumber
   language: UserLanguage
-  lastConnection: Date
   twoFA: TwoFAForUser
 }
 
 interface IUsersRepository {
   findById(userId: UserId): Promise<User | RepositoryError>
-  updateIps(userId: UserId, iPs: IPType[]): Promise<null | RepositoryError>
-  findByIdAndUpdateLastConnectionDate(
-    userId: UserId,
-    findByIdAndUpdateLastConnectionDate: Date,
-  ): Promise<User | RepositoryError>
   findByUsername(username: Username): Promise<User | RepositoryError>
   findByWalletPublicId(walletPublicId: WalletPublicId): Promise<User | RepositoryError>
   update(user: User): Promise<User | RepositoryError>
 }
-
-type Ip = string
