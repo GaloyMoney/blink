@@ -19,23 +19,9 @@ src/tool/record_transactions_*.csv
 
 .vscode
 *.DS_Store
-charts/configs/*
-!charts/configs/lnd
-charts/configs/lnd/*
-!charts/configs/lnd/regtest.yaml
-!charts/configs/lnd/regtest-outside.yaml
-!charts/configs/lnd/localdev.yaml
-!charts/configs/lnd/localdev-outside.yaml
 
-!charts/configs/bitcoind
-charts/configs/bitcoind/*
-!charts/configs/bitcoind/regtest.yaml
-!charts/configs/bitcoind/localdev.yaml
-
-!charts/configs/specter
-charts/configs/specter/*
-!charts/configs/specter/regtest.yaml
-!charts/configs/specter/localdev.yaml
+public/*
+!public/galoy-logo.png
 
 coverage
 lib
