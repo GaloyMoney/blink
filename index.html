@@ -519,7 +519,7 @@ https://api.testnet.galoy.io/graphql
                   <h5>Response </h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"data"</span>: {<span class="hljs-attr">"globals"</span>: {<span class="hljs-attr">"nodesIds"</span>: [<span class="hljs-string">"xyz789"</span>]}}}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"data"</span>: {<span class="hljs-attr">"globals"</span>: {<span class="hljs-attr">"nodesIds"</span>: [<span class="hljs-string">"abc123"</span>]}}}
 </code></pre> </body>
                   </html>
                 </section>
@@ -593,7 +593,7 @@ https://api.testnet.galoy.io/graphql
       <span class="hljs-attr">"contacts"</span>: [<span class="hljs-string">UserContact</span>],
       <span class="hljs-attr">"contactByUsername"</span>: <span class="hljs-string">UserContact</span>,
       <span class="hljs-attr">"quizQuestions"</span>: [<span class="hljs-string">UserQuizQuestion</span>],
-      <span class="hljs-attr">"twoFAEnabled"</span>: <span class="hljs-literal">false</span>,
+      <span class="hljs-attr">"twoFAEnabled"</span>: <span class="hljs-literal">true</span>,
       <span class="hljs-attr">"createdAt"</span>: <span class="hljs-string">Timestamp</span>,
       <span class="hljs-attr">"defaultAccount"</span>: <span class="hljs-string">Account</span>
     }
@@ -650,7 +650,7 @@ https://api.testnet.galoy.io/graphql
                   <body><pre><code class="hljs language-json">{
   <span class="hljs-attr">"data"</span>: {
     <span class="hljs-attr">"mobileVersions"</span>: [
-      {<span class="hljs-attr">"platform"</span>: <span class="hljs-string">"abc123"</span>, <span class="hljs-attr">"currentSupported"</span>: <span class="hljs-number">987</span>, <span class="hljs-attr">"minSupported"</span>: <span class="hljs-number">987</span>}
+      {<span class="hljs-attr">"platform"</span>: <span class="hljs-string">"xyz789"</span>, <span class="hljs-attr">"currentSupported"</span>: <span class="hljs-number">987</span>, <span class="hljs-attr">"minSupported"</span>: <span class="hljs-number">123</span>}
     ]
   }
 }
@@ -1089,7 +1089,7 @@ https://api.testnet.galoy.io/graphql
   <span class="hljs-attr">"data"</span>: {
     <span class="hljs-attr">"accountApiKeyDisable"</span>: {
       <span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>],
-      <span class="hljs-attr">"success"</span>: <span class="hljs-literal">true</span>
+      <span class="hljs-attr">"success"</span>: <span class="hljs-literal">false</span>
     }
   }
 }
@@ -1226,7 +1226,7 @@ https://api.testnet.galoy.io/graphql
   <span class="hljs-attr">"data"</span>: {
     <span class="hljs-attr">"captchaRequestAuthCode"</span>: {
       <span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>],
-      <span class="hljs-attr">"success"</span>: <span class="hljs-literal">false</span>
+      <span class="hljs-attr">"success"</span>: <span class="hljs-literal">true</span>
     }
   }
 }
@@ -2536,7 +2536,7 @@ https://api.testnet.galoy.io/graphql
                   <head></head>
                   <body><pre><code class="hljs language-json">{
   <span class="hljs-attr">"data"</span>: {
-    <span class="hljs-attr">"twoFASave"</span>: {<span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>], <span class="hljs-attr">"success"</span>: <span class="hljs-literal">true</span>}
+    <span class="hljs-attr">"twoFASave"</span>: {<span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>], <span class="hljs-attr">"success"</span>: <span class="hljs-literal">false</span>}
   }
 }
 </code></pre> </body>
@@ -2851,7 +2851,7 @@ https://api.testnet.galoy.io/graphql
   <span class="hljs-attr">"data"</span>: {
     <span class="hljs-attr">"userRequestAuthCode"</span>: {
       <span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>],
-      <span class="hljs-attr">"success"</span>: <span class="hljs-literal">false</span>
+      <span class="hljs-attr">"success"</span>: <span class="hljs-literal">true</span>
     }
   }
 }
@@ -3068,7 +3068,7 @@ https://api.testnet.galoy.io/graphql
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"wallets"</span>: [<span class="hljs-string">Wallet</span>], <span class="hljs-attr">"csvTransactions"</span>: <span class="hljs-string">"abc123"</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"wallets"</span>: [<span class="hljs-string">Wallet</span>], <span class="hljs-attr">"csvTransactions"</span>: <span class="hljs-string">"xyz789"</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -3628,9 +3628,9 @@ https://api.testnet.galoy.io/graphql
                   <html>
                   <head></head>
                   <body><pre><code class="hljs language-json">{
-  <span class="hljs-attr">"id"</span>: <span class="hljs-string">"xyz789"</span>,
+  <span class="hljs-attr">"id"</span>: <span class="hljs-string">"abc123"</span>,
   <span class="hljs-attr">"challengeCode"</span>: <span class="hljs-string">"xyz789"</span>,
-  <span class="hljs-attr">"newCaptcha"</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">"newCaptcha"</span>: <span class="hljs-literal">false</span>,
   <span class="hljs-attr">"failbackMode"</span>: <span class="hljs-literal">false</span>
 }
 </code></pre> </body>
@@ -3689,7 +3689,7 @@ https://api.testnet.galoy.io/graphql
                   <head></head>
                   <body><pre><code class="hljs language-json">{
   <span class="hljs-attr">"phone"</span>: <span class="hljs-string">Phone</span>,
-  <span class="hljs-attr">"challengeCode"</span>: <span class="hljs-string">"abc123"</span>,
+  <span class="hljs-attr">"challengeCode"</span>: <span class="hljs-string">"xyz789"</span>,
   <span class="hljs-attr">"validationCode"</span>: <span class="hljs-string">"abc123"</span>,
   <span class="hljs-attr">"secCode"</span>: <span class="hljs-string">"xyz789"</span>
 }
@@ -3816,7 +3816,7 @@ https://api.testnet.galoy.io/graphql
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"longitude"</span>: <span class="hljs-number">987.65</span>, <span class="hljs-attr">"latitude"</span>: <span class="hljs-number">987.65</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"longitude"</span>: <span class="hljs-number">987.65</span>, <span class="hljs-attr">"latitude"</span>: <span class="hljs-number">123.45</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -3853,7 +3853,7 @@ https://api.testnet.galoy.io/graphql
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"deviceToken"</span>: <span class="hljs-string">"xyz789"</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"deviceToken"</span>: <span class="hljs-string">"abc123"</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -3956,7 +3956,7 @@ https://api.testnet.galoy.io/graphql
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-gql"><span class="hljs-symbol">123.45</span>
+                  <body><pre><code class="hljs language-gql"><span class="hljs-symbol">987.65</span>
 </code></pre> </body>
                   </html>
                 </section>
@@ -3993,7 +3993,7 @@ https://api.testnet.galoy.io/graphql
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"nodesIds"</span>: [<span class="hljs-string">"abc123"</span>]}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"nodesIds"</span>: [<span class="hljs-string">"xyz789"</span>]}
 </code></pre> </body>
                   </html>
                 </section>
@@ -4069,7 +4069,7 @@ https://api.testnet.galoy.io/graphql
                   <html>
                   <head></head>
                   <body><pre><code class="hljs language-json">{
-  <span class="hljs-attr">"message"</span>: <span class="hljs-string">"xyz789"</span>,
+  <span class="hljs-attr">"message"</span>: <span class="hljs-string">"abc123"</span>,
   <span class="hljs-attr">"path"</span>: [<span class="hljs-string">"xyz789"</span>],
   <span class="hljs-attr">"code"</span>: <span class="hljs-string">InputErrorCode</span>
 }
@@ -4143,7 +4143,7 @@ https://api.testnet.galoy.io/graphql
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-gql"><span class="hljs-symbol">987</span>
+                  <body><pre><code class="hljs language-gql"><span class="hljs-symbol">123</span>
 </code></pre> </body>
                   </html>
                 </section>
@@ -5330,7 +5330,7 @@ https://api.testnet.galoy.io/graphql
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"platform"</span>: <span class="hljs-string">"xyz789"</span>, <span class="hljs-attr">"currentSupported"</span>: <span class="hljs-number">123</span>, <span class="hljs-attr">"minSupported"</span>: <span class="hljs-number">987</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"platform"</span>: <span class="hljs-string">"xyz789"</span>, <span class="hljs-attr">"currentSupported"</span>: <span class="hljs-number">123</span>, <span class="hljs-attr">"minSupported"</span>: <span class="hljs-number">123</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -5844,9 +5844,9 @@ https://api.testnet.galoy.io/graphql
                   <html>
                   <head></head>
                   <body><pre><code class="hljs language-json">{
-  <span class="hljs-attr">"hasNextPage"</span>: <span class="hljs-literal">true</span>,
-  <span class="hljs-attr">"hasPreviousPage"</span>: <span class="hljs-literal">true</span>,
-  <span class="hljs-attr">"startCursor"</span>: <span class="hljs-string">"xyz789"</span>,
+  <span class="hljs-attr">"hasNextPage"</span>: <span class="hljs-literal">false</span>,
+  <span class="hljs-attr">"hasPreviousPage"</span>: <span class="hljs-literal">false</span>,
+  <span class="hljs-attr">"startCursor"</span>: <span class="hljs-string">"abc123"</span>,
   <span class="hljs-attr">"endCursor"</span>: <span class="hljs-string">"xyz789"</span>
 }
 </code></pre> </body>
@@ -5898,8 +5898,8 @@ https://api.testnet.galoy.io/graphql
                   <html>
                   <head></head>
                   <body><pre><code class="hljs language-json">{
-  <span class="hljs-attr">"message"</span>: <span class="hljs-string">"xyz789"</span>,
-  <span class="hljs-attr">"path"</span>: [<span class="hljs-string">"abc123"</span>],
+  <span class="hljs-attr">"message"</span>: <span class="hljs-string">"abc123"</span>,
+  <span class="hljs-attr">"path"</span>: [<span class="hljs-string">"xyz789"</span>],
   <span class="hljs-attr">"code"</span>: <span class="hljs-string">PaymentErrorCode</span>
 }
 </code></pre> </body>
@@ -6730,7 +6730,7 @@ https://api.testnet.galoy.io/graphql
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>], <span class="hljs-attr">"success"</span>: <span class="hljs-literal">true</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>], <span class="hljs-attr">"success"</span>: <span class="hljs-literal">false</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -7148,7 +7148,7 @@ https://api.testnet.galoy.io/graphql
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"secret"</span>: <span class="hljs-string">"xyz789"</span>, <span class="hljs-attr">"uri"</span>: <span class="hljs-string">"abc123"</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"secret"</span>: <span class="hljs-string">"xyz789"</span>, <span class="hljs-attr">"uri"</span>: <span class="hljs-string">"xyz789"</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -7331,7 +7331,7 @@ https://api.testnet.galoy.io/graphql
   <span class="hljs-attr">"contacts"</span>: [<span class="hljs-string">UserContact</span>],
   <span class="hljs-attr">"contactByUsername"</span>: <span class="hljs-string">UserContact</span>,
   <span class="hljs-attr">"quizQuestions"</span>: [<span class="hljs-string">UserQuizQuestion</span>],
-  <span class="hljs-attr">"twoFAEnabled"</span>: <span class="hljs-literal">false</span>,
+  <span class="hljs-attr">"twoFAEnabled"</span>: <span class="hljs-literal">true</span>,
   <span class="hljs-attr">"createdAt"</span>: <span class="hljs-string">Timestamp</span>,
   <span class="hljs-attr">"defaultAccount"</span>: <span class="hljs-string">Account</span>
 }
@@ -7630,7 +7630,7 @@ https://api.testnet.galoy.io/graphql
   <span class="hljs-attr">"contacts"</span>: [<span class="hljs-string">UserContact</span>],
   <span class="hljs-attr">"contactByUsername"</span>: <span class="hljs-string">UserContact</span>,
   <span class="hljs-attr">"quizQuestions"</span>: [<span class="hljs-string">UserQuizQuestion</span>],
-  <span class="hljs-attr">"twoFAEnabled"</span>: <span class="hljs-literal">false</span>,
+  <span class="hljs-attr">"twoFAEnabled"</span>: <span class="hljs-literal">true</span>,
   <span class="hljs-attr">"createdAt"</span>: <span class="hljs-string">Timestamp</span>
 }
 </code></pre> </body>
