@@ -8,13 +8,13 @@ info:
   title: GraphQL API Reference
   description: Welcome to the Galoy API reference!
   contact:
-    name: API Support
-    email: dev@galoy.io
+    name: Galoy slack developer community
+    url: https://join.slack.com/t/galoymoney-workspace/shared_invite/zt-rvnhsdb5-72AZCD_jzw6_Q05aCs0SgA
   license:
     name: MIT 
     url: https://opensource.org/licenses/MIT
 
 servers:
-  - url: https://api.testnet.galoy.io/graphql
+  - url: https://api.staging.galoy.io/graphql
     description: Testnet
     production: false
