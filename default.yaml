@@ -146,8 +146,8 @@ onChainWallet:
 # TODO
 # carrierRegexFilter: ""
 
-helmet:
-  disableContentPolicy: false
+apollo:
+  playground: false
 
 twoFA:
   threshold: 300000 # sats

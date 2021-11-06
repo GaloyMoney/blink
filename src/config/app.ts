@@ -196,7 +196,7 @@ export const getIpConfig = (config = yamlConfig): IpConfig => ({
   proxyCheckingEnabled: config.ipRecording?.proxyChecking?.enabled,
 })
 
-export const getHelmetConfig = (config = yamlConfig): HelmetConfig => config.helmet
+export const getApolloConfig = (config = yamlConfig): ApolloConfig => config.apollo
 export const getTwoFAConfig = (config = yamlConfig): TwoFAConfig => config.twoFA
 
 export const levels: Levels = [1, 2]

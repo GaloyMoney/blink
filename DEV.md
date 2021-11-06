@@ -54,11 +54,11 @@ Alernatively, to start the GraphQL server in watch mode (with automatic restart 
 $ make watch
 ```
 
-### Using graphiql
+### Using GraphiQL
 
-You can load graphiq, a web GUI for Graphql.
+You can load GraphiQL, a web GUI for GraphQL.
 
-First, helmet.disableContentPolicy should be set to `true` in default.yaml
+First, `apollo.playground` should be set to `true` in `default.yaml`
 Then, restart the server and open the following url:
 
 - http://localhost:4000/graphql (old API - deprecated)

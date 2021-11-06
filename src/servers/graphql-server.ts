@@ -11,7 +11,7 @@ import PinoHttp from "pino-http"
 import { v4 as uuidv4 } from "uuid"
 import helmet from "helmet"
 
-import { getHelmetConfig, getGeeTestConfig, JWT_SECRET } from "@config/app"
+import { getApolloConfig, getGeeTestConfig, JWT_SECRET } from "@config/app"
 import * as Users from "@app/users"
 import * as Accounts from "@app/accounts"
 
@@ -35,7 +35,7 @@ const graphqlLogger = baseLogger.child({
   module: "graphql",
 })
 
-const helmetConfig = getHelmetConfig()
+const apolloConfig = getApolloConfig()
 
 export const isAuthenticated = rule({ cache: "contextual" })((parent, args, ctx) => {
   return ctx.uid !== null ? true : "NOT_AUTHENTICATED"
@@ -72,8 +72,10 @@ export const startApolloServer = async ({
     : []
   const apolloServer = new ApolloServer({
     schema,
-    playground: process.env.NETWORK !== "mainnet",
-    introspection: process.env.NETWORK !== "mainnet",
+    playground: apolloConfig.playground
+      ? { settings: { "schema.polling.enable": false } }
+      : false,
+    introspection: apolloConfig.playground,
     plugins: apolloPulgins,
     context: async (context) => {
       // @ts-expect-error: TODO
@@ -202,7 +204,7 @@ export const startApolloServer = async ({
 
   app.use(
     helmet({
-      contentSecurityPolicy: helmetConfig.disableContentPolicy ? false : undefined,
+      contentSecurityPolicy: apolloConfig.playground ? false : undefined,
     }),
   )
 
