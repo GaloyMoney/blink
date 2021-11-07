@@ -29,5 +29,5 @@ gh pr create \
   --body-file ../body.md \
   --base ${BRANCH} \
   --head ${BOT_BRANCH} \
-  --label galoybot
+  --label galoybot \
   --label galoy
