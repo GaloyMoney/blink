@@ -38,7 +38,6 @@ type User = {
   readonly defaultAccountId: AccountId
   readonly deviceTokens: DeviceToken[]
   readonly createdAt: Date
-  readonly status: AccountStatus
   phone: PhoneNumber
   language: UserLanguage
   twoFA: TwoFAForUser

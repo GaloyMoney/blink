@@ -1,9 +1,15 @@
-import { SemanticAttributes, asyncRunInSpan } from "@services/tracing"
+import {
+  SemanticAttributes,
+  asyncRunInSpan,
+  addAttributesToCurrentSpan,
+  ENDUSER_ALIAS,
+} from "@services/tracing"
 import { UsersRepository } from "@services/mongoose"
 import { getIpConfig } from "@config/app"
 import { IpFetcher } from "@services/ipfetcher"
-import { UsersIpRepository } from "@services/mongoose/users-ip"
+import { UsersIpRepository } from "@services/mongoose/users-ips"
 import { RepositoryError } from "@domain/errors"
+import { IpFetcherServiceError } from "@domain/ipfetcher"
 
 const users = UsersRepository()
 const usersIp = UsersIpRepository()
@@ -26,15 +32,17 @@ export const getUserForLogin = async ({
       if (user instanceof Error) {
         return user
       }
-
+      addAttributesToCurrentSpan({
+        [ENDUSER_ALIAS]: user.username,
+      })
       // this routing run asynchrously, to update metadata on the background
-      updateUserIpInfo({ userId, ip, logger })
+      updateUserIPsInfo({ userId, ip, logger })
 
       return user
     },
   )
 
-const updateUserIpInfo = async ({
+const updateUserIPsInfo = async ({
   userId,
   ip,
   logger,
@@ -42,33 +50,35 @@ const updateUserIpInfo = async ({
   userId: UserId
   ip?: Ip
   logger: Logger
-}): Promise<void> =>
+}): Promise<void | RepositoryError> =>
   asyncRunInSpan(
-    "app.addIp",
-    { [SemanticAttributes.CODE_FUNCTION]: "addIp" },
+    "app.updateUserIPsInfo",
+    { [SemanticAttributes.CODE_FUNCTION]: "app.updateUserIPsInfo" },
     async () => {
       const ipConfig = getIpConfig()
 
       const lastConnection = new Date()
 
-      const userIp = await usersIp.findById(userId)
+      const userIP = await usersIp.findById(userId)
 
-      if (userIp instanceof RepositoryError) throw userIp
+      if (userIP instanceof RepositoryError) return userIP
 
       if (!ip || !ipConfig.ipRecordingEnabled) {
-        const result = await usersIp.update(userId, lastConnection)
+        const result = await usersIp.update(userIP)
 
         if (result instanceof Error) {
           logger.error(
             { result, userId, ip },
             "impossible to update user last connection",
           )
+
+          return result
         }
 
         return
       }
 
-      const lastIP = userIp.lastIPs.find((ipObject) => ipObject.ip === ip)
+      const lastIP = userIP.lastIPs.find((ipObject) => ipObject.ip === ip)
 
       if (lastIP) {
         lastIP.lastConnection = lastConnection
@@ -83,16 +93,20 @@ const updateUserIpInfo = async ({
           const ipFetcher = IpFetcher()
           const ipFetcherInfo = await ipFetcher.fetchIPInfo(ip as IpAddress)
 
-          if (!(ipFetcherInfo instanceof Error)) {
-            ipInfo = { ...ipInfo, ...ipFetcherInfo }
+          if (ipFetcherInfo instanceof IpFetcherServiceError) {
+            logger.error({ userId, ip }, "impossible to get ip detail")
+            return ipFetcherInfo
           }
+
+          ipInfo = { ...ipInfo, ...ipFetcherInfo }
         }
-        userIp.lastIPs.push(ipInfo)
+        userIP.lastIPs.push(ipInfo)
       }
-      const result = await usersIp.update(userId, lastConnection, userIp.lastIPs)
+      const result = await usersIp.update(userIP)
 
       if (result instanceof Error) {
         logger.error({ result, userId, ip }, "impossible to update ip")
+        return result
       }
     },
   )

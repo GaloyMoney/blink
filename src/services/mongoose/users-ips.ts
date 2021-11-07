@@ -7,16 +7,12 @@ import {
   UnknownRepositoryError,
 } from "@domain/errors"
 
-export const UsersIpRepository = (): IUsersIpRepository => {
-  const update = async (
-    userId: UserId,
-    lastConnection: Date,
-    lastIPs?: IPType[],
-  ): Promise<true | RepositoryError> => {
+export const UsersIpRepository = (): IUsersIPsRepository => {
+  const update = async (userIp: UserIPs): Promise<true | RepositoryError> => {
     try {
       const result = await User.updateOne(
-        { _id: userId },
-        { $set: { lastConnection, lastIPs } },
+        { _id: userIp.id },
+        { $set: { lastConnection: new Date(), lastIPs: userIp.lastIPs } },
       )
 
       if (result.n === 0) {
@@ -33,14 +29,14 @@ export const UsersIpRepository = (): IUsersIpRepository => {
     }
   }
 
-  const findById = async (userId: UserId): Promise<UserIp | RepositoryError> => {
+  const findById = async (userId: UserId): Promise<UserIPs | RepositoryError> => {
     try {
       const result = await User.findOne({ _id: userId }, { lastIPs: 1 })
       if (!result) {
         return new CouldNotFindUserFromIdError(userId)
       }
 
-      return userFromRaw(result)
+      return userIPsFromRaw(result)
     } catch (err) {
       return new UnknownRepositoryError(err)
     }
@@ -52,7 +48,7 @@ export const UsersIpRepository = (): IUsersIpRepository => {
   }
 }
 
-const userFromRaw = (result: UserIpType): UserIp => {
+const userIPsFromRaw = (result: UserIPsType): UserIPs => {
   return {
     id: result.id as UserId,
     lastIPs: (result.lastIPs || []) as IPType[],

@@ -85,7 +85,7 @@ interface UserType {
 }
 
 // ?: improve this
-interface UserIpType {
+interface UserIPsType {
   _id: string
   id: string
   lastIPs?: IPType[]

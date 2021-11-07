@@ -104,7 +104,6 @@ export const UsersRepository = (): IUsersRepository => {
 
 const userFromRaw = (result: UserType): User => ({
   id: result.id as UserId,
-  status: result.status as AccountStatus,
   username: result.username as Username,
   walletPublicId: result.walletPublicId as WalletPublicId,
   phone: result.phone as PhoneNumber,
