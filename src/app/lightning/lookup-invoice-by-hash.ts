@@ -2,11 +2,9 @@ import { LndService } from "@services/lnd"
 import { WalletInvoicesRepository } from "@services/mongoose"
 import { RepositoryError } from "@domain/errors"
 
-export const lookupInvoiceByHash = async ({
-  paymentHash,
-}: {
-  paymentHash: PaymentHash
-}): Promise<LnInvoiceLookup | ApplicationError> => {
+export const lookupInvoiceByHash = async (
+  paymentHash: PaymentHash,
+): Promise<LnInvoiceLookup | ApplicationError> => {
   const lndService = LndService()
   if (lndService instanceof Error) return lndService
 
