@@ -16,7 +16,7 @@ const header = [
   { id: "date", title: "date" },
   { id: "datetime", title: "datetime" },
   { id: "currency", title: "currency" },
-  { id: "username", title: "username" },
+  { id: "counterparty", title: "counterparty" },
   { id: "type", title: "type" },
   { id: "hash", title: "hash" },
   { id: "txid", title: "txid" },

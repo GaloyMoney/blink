@@ -42,7 +42,7 @@ type LedgerTransaction = {
 
   // for IntraLedger
   readonly walletPublicId?: WalletPublicId
-  readonly username?: Username
+  readonly counterparty?: Username
   readonly memoFromPayer?: string
 
   // for ln
@@ -111,7 +111,7 @@ type AddOnChainIntraledgerTxSendArgs = AddIntraLedgerTxSendArgs & {
   sendAll: boolean
 }
 
-type AddUsernameIntraledgerTxSendArgs = AddIntraLedgerTxSendArgs & {
+type addCounterpartyIntraledgerTxSendArgs = AddIntraLedgerTxSendArgs & {
   recipientUsername: Username
 }
 
@@ -213,8 +213,8 @@ interface ILedgerService {
     args: AddOnChainIntraledgerTxSendArgs,
   ): Promise<LedgerJournal | LedgerServiceError>
 
-  addUsernameIntraledgerTxSend(
-    args: AddUsernameIntraledgerTxSendArgs,
+  addCounterpartyIntraledgerTxSend(
+    args: addCounterpartyIntraledgerTxSendArgs,
   ): Promise<LedgerJournal | LedgerServiceError>
 
   settlePendingLnPayments(paymentHash: PaymentHash): Promise<boolean | LedgerServiceError>

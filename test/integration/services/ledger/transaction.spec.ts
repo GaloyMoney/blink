@@ -263,7 +263,7 @@ describe("on us payment via Ledger Service", () => {
     const usd = sats * price
     const usdFee = fee * price
 
-    const result = await LedgerService().addUsernameIntraledgerTxSend({
+    const result = await LedgerService().addCounterpartyIntraledgerTxSend({
       liabilitiesAccountId: payer.accountPath,
       description: "desc",
       sats,

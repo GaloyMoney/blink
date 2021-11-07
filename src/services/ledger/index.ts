@@ -481,7 +481,7 @@ export const LedgerService = (): ILedgerService => {
     })
   }
 
-  const addUsernameIntraledgerTxSend = async ({
+  const addCounterpartyIntraledgerTxSend = async ({
     liabilitiesAccountId,
     description,
     sats,
@@ -492,8 +492,8 @@ export const LedgerService = (): ILedgerService => {
     payerUsername,
     recipientUsername,
     memoPayer,
-  }: AddUsernameIntraledgerTxSendArgs): Promise<LedgerJournal | LedgerError> => {
-    const metadata: AddUsernameIntraledgerTxSendMetadata = {
+  }: addCounterpartyIntraledgerTxSendArgs): Promise<LedgerJournal | LedgerError> => {
+    const metadata: addCounterpartyIntraledgerTxSendMetadata = {
       type: LedgerTransactionType.OnchainIntraLedger,
       pending: false,
       fee,
@@ -532,10 +532,10 @@ export const LedgerService = (): ILedgerService => {
     try {
       const creditMetadata = {
         ...metadata,
-        username: payerUsername,
+        counterparty: payerUsername,
         memoPayer: shareMemoWithPayee ? memoPayer : null,
       }
-      const debitMetadata = { ...metadata, username: recipientUsername, memoPayer }
+      const debitMetadata = { ...metadata, counterparty: recipientUsername, memoPayer }
 
       const entry = MainBook.entry(description)
 
@@ -594,7 +594,7 @@ export const LedgerService = (): ILedgerService => {
     addLnTxSend,
     addLnIntraledgerTxSend,
     addOnChainIntraledgerTxSend,
-    addUsernameIntraledgerTxSend,
+    addCounterpartyIntraledgerTxSend,
     settlePendingLnPayments,
     voidLedgerTransactionsForJournal,
   }
@@ -614,7 +614,7 @@ const translateToLedgerTx = (tx): LedgerTransaction => ({
   pendingConfirmation: tx.pending,
   journalId: tx._journal.toString(),
   lnMemo: tx.memo,
-  username: tx.username,
+  counterparty: tx.counterparty,
   walletPublicId: tx.walletPublicId || null,
   memoFromPayer: tx.memoPayer,
   paymentHash: tx.hash,

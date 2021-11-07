@@ -25,7 +25,7 @@ const filterPendingIncoming = (
             feeUsd: 0,
             type: LedgerTransactionType.OnchainReceipt,
           },
-          otherPartyUsername: null,
+          counterpartyUsername: null,
           settlementFee: toSats(0),
           transactionHash: rawTx.id as TxId,
           status: TxStatus.Pending,
@@ -59,7 +59,7 @@ export const fromLedger = (
       paymentHash,
       txId,
       pubkey,
-      username,
+      counterparty,
       address,
       pendingConfirmation,
       timestamp,
@@ -70,7 +70,7 @@ export const fromLedger = (
         memoFromPayer,
         lnMemo,
         credit,
-        username,
+        counterparty,
       })
       const memo = translateMemo({
         memoFromPayer,
@@ -94,7 +94,7 @@ export const fromLedger = (
             feeUsd,
             type,
           },
-          otherPartyUsername: username || null,
+          counterpartyUsername: counterparty || null,
           settlementAmount,
           settlementFee: toSats(fee || 0),
           settlementUsdPerSat: Math.abs(usd / settlementAmount),
@@ -124,7 +124,7 @@ export const fromLedger = (
           settlementUsdPerSat: Math.abs(usd / settlementAmount),
           paymentHash: paymentHash as PaymentHash,
           pubkey: pubkey as Pubkey,
-          otherPartyUsername: username || null,
+          counterpartyUsername: counterparty || null,
           status,
           memo,
           createdAt: timestamp,
@@ -144,7 +144,7 @@ export const fromLedger = (
         settlementAmount,
         settlementFee: toSats(fee || 0),
         settlementUsdPerSat: Math.abs(usd / settlementAmount),
-        otherPartyUsername: username || null,
+        counterpartyUsername: counterparty || null,
         status,
         memo,
         createdAt: timestamp,
@@ -174,13 +174,13 @@ const shouldDisplayMemo = (credit: number) => {
 export const translateDescription = ({
   memoFromPayer,
   lnMemo,
-  username,
+  counterparty,
   type,
   credit,
 }: {
   memoFromPayer?: string
   lnMemo?: string
-  username?: string
+  counterparty?: string
   type: LedgerTransactionType
   credit: number
 }): string => {
@@ -193,15 +193,15 @@ export const translateDescription = ({
     }
   }
 
-  let usernameDescription
-  if (username) {
-    usernameDescription = `to ${username}`
+  let counterpartyDescription
+  if (counterparty) {
+    counterpartyDescription = `to ${counterparty}`
     if (credit > 0) {
-      usernameDescription = `from ${username}`
+      counterpartyDescription = `from ${counterparty}`
     }
   }
 
-  return usernameDescription || type
+  return counterpartyDescription || type
 }
 
 export const translateMemo = ({

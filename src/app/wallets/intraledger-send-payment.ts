@@ -194,7 +194,7 @@ const executePaymentViaIntraledger = async ({
 
     const liabilitiesAccountId = toLiabilitiesAccountId(walletId)
     const journal = await LockService().extendLock({ logger, lock }, async () =>
-      LedgerService().addUsernameIntraledgerTxSend({
+      LedgerService().addCounterpartyIntraledgerTxSend({
         liabilitiesAccountId,
         description: "",
         sats,

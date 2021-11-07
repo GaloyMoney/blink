@@ -13,7 +13,7 @@ const IntraLedgerTransaction = new GT.Object({
     ...transactionInterfaceFields,
 
     // Non-interface fields
-    otherPartyUsername: {
+    counterpartyUsername: {
       type: Username,
       description:
         "Settlement destination: Could be null when originalDestination is OnChain/LN" +

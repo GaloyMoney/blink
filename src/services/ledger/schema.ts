@@ -88,7 +88,7 @@ const transactionSchema = new Schema({
 
   // when transaction with on_us transaction, this is the other party username
   // TODO: refactor, define username as a type so that every property that should be an username can inherit from those parameters
-  username: {
+  counterparty: {
     type: String,
     match: [
       /(?!^(1|3|bc1|lnbc1))^[0-9a-z_]+$/i,

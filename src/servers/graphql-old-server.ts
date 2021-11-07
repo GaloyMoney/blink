@@ -80,8 +80,8 @@ const translateWalletTx = (txs: WalletTransaction[]) => {
       tx.initiationVia === PaymentInitiationMethod.OnChain && tx.address
         ? [tx.address]
         : null,
-    username:
-      tx.settlementVia === SettlementMethod.IntraLedger ? tx.otherPartyUsername : null,
+    counterparty:
+      tx.settlementVia === SettlementMethod.IntraLedger ? tx.counterpartyUsername : null,
   }))
 }
 
