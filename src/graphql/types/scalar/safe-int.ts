@@ -1,4 +1,3 @@
-import dedent from "dedent"
 import { GT } from "@graphql/index"
 
 const MAX_INT = Number.MAX_SAFE_INTEGER
@@ -6,8 +5,8 @@ const MIN_INT = Number.MIN_SAFE_INTEGER
 
 const SafeInt = new GT.Scalar({
   name: "SafeInt",
-  description: dedent`The \`SafeInt\` scalar type represents non-fractional signed whole numeric values.
-    SafeInt can represent values between -(2^53) + 1 and 2^53 - 1`,
+  description:
+    "Non-fractional signed whole numeric value between -(2^53) + 1 and 2^53 - 1",
   serialize: coerceSafeInt,
   parseValue: coerceSafeInt,
   parseLiteral(ast) {

@@ -1,6 +1,7 @@
 import { GT } from "@graphql/index"
+
 import IError from "../abstract/error"
-import { UserDetails } from "../object/user"
+import UserContact from "../object/wallet-contact"
 
 const UserContactUpdateAliasPayload = new GT.Object({
   name: "UserContactUpdateAliasPayload",
@@ -8,8 +9,8 @@ const UserContactUpdateAliasPayload = new GT.Object({
     errors: {
       type: GT.NonNullList(IError),
     },
-    user: {
-      type: UserDetails,
+    contact: {
+      type: UserContact,
     },
   }),
 })

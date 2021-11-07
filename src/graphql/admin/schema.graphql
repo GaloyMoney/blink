@@ -196,7 +196,7 @@ type Price {
 }
 
 """
-The `SafeInt` scalar type represents non-fractional signed whole numeric values. SafeInt can represent values between -(2^53) + 1 and 2^53 - 1
+Non-fractional signed whole numeric value between -(2^53) + 1 and 2^53 - 1
 """
 scalar SafeInt
 
@@ -370,8 +370,8 @@ scalar PaymentHash
 
 type Query {
   allLevels: [AccountLevel!]!
-  userDetailsByPhone(phone: Phone!): UserDetails!
-  userDetailsByUsername(username: Username!): UserDetails!
+  userDetailsByPhone(phone: Phone!): User!
+  userDetailsByUsername(username: Username!): User!
   transactionById(id: ID!): Transaction
   transactionsByHash(hash: PaymentHash!): [Transaction]
   lightningInvoice(hash: PaymentHash!): LightningInvoice!
@@ -383,7 +383,7 @@ enum AccountLevel {
   TWO
 }
 
-type UserDetails {
+type User {
   id: ID!
   phone: Phone!
   username: Username
@@ -488,7 +488,7 @@ scalar OneTimeAuthCode
 
 type UserDetailPayload {
   errors: [Error!]!
-  userDetails: UserDetails
+  userDetails: User
 }
 
 input UserUpdateLevelInput {

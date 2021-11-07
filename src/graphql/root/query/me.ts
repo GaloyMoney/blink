@@ -5,10 +5,10 @@ import {
 } from "@services/tracing"
 import { GT } from "@graphql/index"
 
-import { UserWithAccounts } from "@graphql/types/object/user"
+import GraphQLUser from "@graphql/types/object/graphql-user"
 
 const MeQuery = GT.Field({
-  type: UserWithAccounts,
+  type: GraphQLUser,
   resolve: async (_, __, { ip, domainUser }) =>
     addAttributesToCurrentSpanAndPropagate(
       {

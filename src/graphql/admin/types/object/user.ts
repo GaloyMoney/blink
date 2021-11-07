@@ -9,8 +9,8 @@ import Phone from "@graphql/types/scalar/phone"
 import Timestamp from "@graphql/types/scalar/timestamp"
 import Username from "@graphql/types/scalar/username"
 
-const UserDetails = new GT.Object({
-  name: "UserDetails",
+const User = new GT.Object({
+  name: "User",
   fields: () => ({
     id: { type: GT.NonNullID },
     phone: { type: GT.NonNull(Phone) },
@@ -30,4 +30,4 @@ const UserDetails = new GT.Object({
   }),
 })
 
-export default UserDetails
+export default User

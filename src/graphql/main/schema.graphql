@@ -196,7 +196,7 @@ type Price {
 }
 
 """
-The `SafeInt` scalar type represents non-fractional signed whole numeric values. SafeInt can represent values between -(2^53) + 1 and 2^53 - 1
+Non-fractional signed whole numeric value between -(2^53) + 1 and 2^53 - 1
 """
 scalar SafeInt
 
@@ -417,6 +417,11 @@ type User {
   language: Language!
 
   """
+  List the quiz questions the user may have completed.
+  """
+  quizQuestions: [UserQuizQuestion!]!
+
+  """
   Get full list of contacts.
   Can include the transactions associated with each contact.
   """
@@ -427,11 +432,6 @@ type User {
   Can include the transactions associated with the contact.
   """
   contactByUsername(username: Username!): UserContact!
-
-  """
-  List the quiz questions the user may have completed.
-  """
-  quizQuestions: [UserQuizQuestion!]!
   twoFAEnabled: Boolean
   createdAt: Timestamp!
   defaultAccount: Account!
@@ -444,7 +444,23 @@ scalar Phone
 
 scalar Language
 
+type UserQuizQuestion {
+  question: QuizQuestion!
+  completed: Boolean!
+}
+
+type QuizQuestion {
+  id: ID!
+
+  """
+  The earn reward in Satoshis for the quiz question
+  """
+  earnAmount: SatAmount!
+}
+
 type UserContact {
+  id: Username!
+
   """
   Actual identifier of the contact.
   """
@@ -487,20 +503,6 @@ type UserContact {
 An alias name that a user can set for a wallet (with which they have transactions)
 """
 scalar ContactAlias
-
-type UserQuizQuestion {
-  question: QuizQuestion!
-  completed: Boolean!
-}
-
-type QuizQuestion {
-  id: ID!
-
-  """
-  The earn reward in Satoshis for the quiz question
-  """
-  earnAmount: SatAmount!
-}
 
 type MapMarker {
   username: Username
@@ -686,12 +688,7 @@ input AccountApiKeyDisableInput {
 
 type UserUpdateLanguagePayload {
   errors: [Error!]!
-  user: UserLanguageDetails
-}
-
-type UserLanguageDetails {
-  id: ID!
-  language: Language!
+  user: User
 }
 
 input UserUpdateLanguageInput {
@@ -700,12 +697,7 @@ input UserUpdateLanguageInput {
 
 type UserUpdateUsernamePayload {
   errors: [Error!]!
-  user: UserUsernameDetails
-}
-
-type UserUsernameDetails {
-  id: ID!
-  username: Username!
+  user: User
 }
 
 input UserUpdateUsernameInput {
@@ -714,46 +706,7 @@ input UserUpdateUsernameInput {
 
 type UserContactUpdateAliasPayload {
   errors: [Error!]!
-  user: UserDetails
-}
-
-type UserDetails {
-  id: ID!
-
-  """
-  Phone number with international calling code.
-  """
-  phone: Phone!
-
-  """
-  Optional immutable user friendly identifier.
-  """
-  username: Username
-
-  """
-  Preferred language for user.
-  When value is 'default' the intent is to use preferred language from OS settings.
-  """
-  language: Language!
-
-  """
-  Get full list of contacts.
-  Can include the transactions associated with each contact.
-  """
-  contacts: [UserContact!]!
-
-  """
-  Get single contact details.
-  Can include the transactions associated with the contact.
-  """
-  contactByUsername(username: Username!): UserContact!
-
-  """
-  List the quiz questions the user may have completed.
-  """
-  quizQuestions: [UserQuizQuestion!]!
-  twoFAEnabled: Boolean
-  createdAt: Timestamp!
+  contact: UserContact
 }
 
 input UserContactUpdateAliasInput {
