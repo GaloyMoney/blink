@@ -21,7 +21,7 @@ src/tool/record_transactions_*.csv
 *.DS_Store
 
 public/*
-!public/galoy-logo.png
+!public/logo.png
 
 coverage
 lib
