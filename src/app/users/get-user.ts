@@ -19,15 +19,15 @@ export const getUserForLogin = async ({
   ip,
   logger,
 }: {
-  userId: UserId
-  ip?: Ip
+  userId: string
+  ip?: string
   logger: Logger
 }): Promise<User | ApplicationError> =>
   asyncRunInSpan(
     "app.getUserForLogin",
     { [SemanticAttributes.CODE_FUNCTION]: "getUserForLogin" },
     async () => {
-      const user = await users.findById(userId)
+      const user = await users.findById(userId as UserId)
 
       if (user instanceof Error) {
         return user
@@ -36,7 +36,11 @@ export const getUserForLogin = async ({
         [ENDUSER_ALIAS]: user.username,
       })
       // this routing run asynchrously, to update metadata on the background
-      updateUserIPsInfo({ userId, ip, logger })
+      updateUserIPsInfo({ userId, ip, logger } as {
+        userId: UserId
+        ip: Ip
+        logger: Logger
+      })
 
       return user
     },
