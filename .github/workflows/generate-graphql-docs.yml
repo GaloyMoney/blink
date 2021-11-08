@@ -23,7 +23,7 @@ jobs:
       run: yarn run build-docs
       working-directory: main
     - run: cp main/public/index.html docs
-    - run: mkdir docs/images && cp main/public/logo.png docs/images
+    - run: cp main/public/logo.png docs/images
     - name: Deploy docs
       working-directory: docs
       run: |
