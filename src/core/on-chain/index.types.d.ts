@@ -45,4 +45,5 @@ interface IOnChainPayment {
   memo?: string
   sendAll?: boolean
   twoFAToken?: string
+  targetConfirmations: TargetConfirmations
 }
