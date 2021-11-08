@@ -33,7 +33,6 @@ import { TwoFAError, TransactionRestrictedError } from "@core/error"
 import { getBTCBalance, getRemainingTwoFALimit } from "test/helpers/wallet"
 import { NotificationType } from "@domain/notifications"
 
-jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 jest.mock("@services/notifications/notification")
 

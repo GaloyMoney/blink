@@ -1,3 +1,4 @@
+import { createHttpTerminator } from "http-terminator"
 import { sleep } from "@core/utils"
 import { yamlConfig, JWT_SECRET } from "@config/app"
 import { createTestClient } from "apollo-server-integration-testing"
@@ -18,15 +19,15 @@ import {
   clearAccountLocks,
 } from "test/helpers"
 
-jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
-let apolloServer, httpServer, mutate, setOptions
+let apolloServer, httpServer, httpTerminator, mutate, setOptions
 const { phone, code } = yamlConfig.test_accounts[3]
 
 beforeAll(async () => {
   ;({ apolloServer, httpServer } = await startApolloServerForCoreSchema())
   ;({ mutate, setOptions } = createTestClient({ apolloServer }))
+  httpTerminator = createHttpTerminator({ server: httpServer })
   await sleep(2500)
   const input = { phone, code: `${code}` }
   const result = await mutate(USER_LOGIN, { variables: { input } })
@@ -42,8 +43,7 @@ beforeEach(async () => {
 
 afterAll(async () => {
   setOptions({ request: { token: null } })
-  await sleep(2500)
-  await httpServer.close()
+  await httpTerminator.terminate()
 })
 
 describe("graphql", () => {

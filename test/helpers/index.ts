@@ -8,6 +8,7 @@ export * from "./lightning"
 export * from "./user"
 export * from "./redis"
 export * from "./wallet"
+export * from "./price"
 
 export const amountAfterFeeDeduction = ({ amount, depositFeeRatio }) =>
   Math.round(btc2sat(amount) * (1 - depositFeeRatio))
@@ -54,3 +55,6 @@ export const enable2FA = async ({ wallet }) => {
     await wallet.save2fa({ secret, token })
   }
 }
+
+export const chunk = (a, n) =>
+  [...Array(Math.ceil(a.length / n))].map((_, i) => a.slice(n * i, n + n * i))
