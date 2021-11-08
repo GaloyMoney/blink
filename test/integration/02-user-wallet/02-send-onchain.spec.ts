@@ -32,6 +32,7 @@ import * as Wallets from "@app/wallets"
 import { TwoFAError, TransactionRestrictedError } from "@core/error"
 import { getBTCBalance, getRemainingTwoFALimit } from "test/helpers/wallet"
 import { NotificationType } from "@domain/notifications"
+import { toTargetConfs } from "@domain/bitcoin"
 
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 jest.mock("@services/notifications/notification")
@@ -70,6 +71,7 @@ afterAll(async () => {
 })
 
 const amount = 10040 // sats
+const targetConfirmations = toTargetConfs(1)
 
 describe("UserWallet - onChainPay", () => {
   it("sends a successful payment", async () => {
@@ -80,7 +82,7 @@ describe("UserWallet - onChainPay", () => {
 
     const results = await Promise.all([
       once(sub, "chain_transaction"),
-      userWallet0.onChainPay({ address, amount }),
+      userWallet0.onChainPay({ address, amount, targetConfirmations }),
     ])
 
     expect(results[1]).toBeTruthy()
@@ -173,7 +175,7 @@ describe("UserWallet - onChainPay", () => {
 
     const results = await Promise.all([
       once(sub, "chain_transaction"),
-      userWallet11.onChainPay({ address, amount: 0, sendAll: true }),
+      userWallet11.onChainPay({ address, amount: 0, sendAll: true, targetConfirmations }),
     ])
 
     expect(results[1]).toBeTruthy()
@@ -259,7 +261,12 @@ describe("UserWallet - onChainPay", () => {
   it("sends a successful payment with memo", async () => {
     const memo = "this is my onchain memo"
     const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
-    const paymentResult = await userWallet0.onChainPay({ address, amount, memo })
+    const paymentResult = await userWallet0.onChainPay({
+      address,
+      amount,
+      memo,
+      targetConfirmations,
+    })
     expect(paymentResult).toBe(true)
     const { result: txs, error } = await Wallets.getTransactionsForWalletId({
       walletId: userWallet0.user.id,
@@ -281,7 +288,7 @@ describe("UserWallet - onChainPay", () => {
 
     const initialBalanceUser3 = await getBTCBalance(userWallet3.user.id)
 
-    const paid = await userWallet0.onChainPay({ address, amount })
+    const paid = await userWallet0.onChainPay({ address, amount, targetConfirmations })
 
     const finalBalanceUser0 = await getBTCBalance(userWallet0.user.id)
     const finalBalanceUser3 = await getBTCBalance(userWallet3.user.id)
@@ -307,7 +314,12 @@ describe("UserWallet - onChainPay", () => {
     const address = await Wallets.createOnChainAddress(userWallet3.user.id)
     if (address instanceof Error) throw address
 
-    const paid = await userWallet0.onChainPay({ address, amount, memo })
+    const paid = await userWallet0.onChainPay({
+      address,
+      amount,
+      memo,
+      targetConfirmations,
+    })
 
     expect(paid).toBe(true)
 
@@ -346,7 +358,12 @@ describe("UserWallet - onChainPay", () => {
 
     const initialBalanceUser3 = await getBTCBalance(userWallet3.user.id)
 
-    const paid = await userWallet12.onChainPay({ address, amount: 0, sendAll: true })
+    const paid = await userWallet12.onChainPay({
+      address,
+      amount: 0,
+      sendAll: true,
+      targetConfirmations,
+    })
 
     const finalBalanceUser12 = await getBTCBalance(userWallet12.user.id)
     const finalBalanceUser3 = await getBTCBalance(userWallet3.user.id)
@@ -370,14 +387,20 @@ describe("UserWallet - onChainPay", () => {
     const address = await Wallets.createOnChainAddress(userWallet0.user.id)
     if (address instanceof Error) throw address
 
-    await expect(userWallet0.onChainPay({ address, amount })).rejects.toThrow()
+    await expect(
+      userWallet0.onChainPay({ address, amount, targetConfirmations }),
+    ).rejects.toThrow()
   })
 
   it("fails if an on us payment has insufficient balance", async () => {
     const address = await Wallets.createOnChainAddress(userWallet3.user.id)
     if (address instanceof Error) throw address
     await expect(
-      userWallet0.onChainPay({ address, amount: initialBalanceUser0 + 1 }),
+      userWallet0.onChainPay({
+        address,
+        amount: initialBalanceUser0 + 1,
+        targetConfirmations,
+      }),
     ).rejects.toThrow()
   })
 
@@ -390,7 +413,11 @@ describe("UserWallet - onChainPay", () => {
 
     //should fail because user does not have balance to pay for on-chain fee
     await expect(
-      userWallet3.onChainPay({ address, amount: initialBalanceUser3 }),
+      userWallet3.onChainPay({
+        address,
+        amount: initialBalanceUser3,
+        targetConfirmations,
+      }),
     ).rejects.toThrow()
   })
 
@@ -399,14 +426,16 @@ describe("UserWallet - onChainPay", () => {
     if (address instanceof Error) throw address
 
     await expect(
-      userWallet0.onChainPay({ address, amount, sendAll: true }),
+      userWallet0.onChainPay({ address, amount, sendAll: true, targetConfirmations }),
     ).rejects.toThrow()
   })
 
   it("fails if has negative amount", async () => {
     const amount = -1000
     const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
-    await expect(userWallet0.onChainPay({ address, amount })).rejects.toThrow()
+    await expect(
+      userWallet0.onChainPay({ address, amount, targetConfirmations }),
+    ).rejects.toThrow()
   })
 
   it("fails if withdrawal limit hit", async () => {
@@ -431,9 +460,9 @@ describe("UserWallet - onChainPay", () => {
     const userLimits = getUserLimits({ level: userWallet0.user.level })
     const amount = userLimits.withdrawalLimit - outgoingSats + 1
 
-    await expect(userWallet0.onChainPay({ address, amount })).rejects.toThrow(
-      TransactionRestrictedError,
-    )
+    await expect(
+      userWallet0.onChainPay({ address, amount, targetConfirmations }),
+    ).rejects.toThrow(TransactionRestrictedError)
   })
 
   it("fails if the amount is less than on chain dust amount", async () => {
@@ -443,6 +472,7 @@ describe("UserWallet - onChainPay", () => {
       userWallet0.onChainPay({
         address,
         amount: onChainWalletConfig.dustThreshold - 1,
+        targetConfirmations,
       }),
     ).rejects.toThrow()
   })
@@ -455,7 +485,11 @@ describe("UserWallet - onChainPay", () => {
       if (remainingLimit instanceof Error) return remainingLimit
 
       expect(
-        userWallet0.onChainPay({ address: RANDOM_ADDRESS, amount: remainingLimit + 1 }),
+        userWallet0.onChainPay({
+          address: RANDOM_ADDRESS,
+          amount: remainingLimit + 1,
+          targetConfirmations,
+        }),
       ).rejects.toThrowError(TwoFAError)
     })
 
@@ -472,6 +506,7 @@ describe("UserWallet - onChainPay", () => {
         address,
         amount,
         twoFAToken,
+        targetConfirmations,
       })
 
       expect(paid).toBe(true)
