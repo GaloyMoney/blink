@@ -16,19 +16,19 @@ The basic law of accounting grand that Assets = Liabilities, therefore this mean
 
 This is also referred to in the finance industry as an omnibus account.
 
-Typically, users' accounts are in the `Liablities` subaccount, while BTC holdings, whether in hot or cold wallets, are in the `Assets` account.
+Users' accounts are a `Liablities` sub account, while BTC holdings, whether stored in hot or cold wallets, are in the `Assets` account - keep in mind that Assets and Liabiliries are from the point of the bank here, not the user.
 
 ## Profit/Loss of the wallet, and Equity
 
-In practice, for the account to balance, there is more complexity than what is shown above.
+In practice, for the all accounts to balance, there is more complexity than what is shown above.
 
-Running a Lightning wallet involves ongoing costs:
+Running a bitcoin bank over lightning involves ongoing costs:
 - opening channels
 - closing channels
 
-Because funds are typically stored in a cold wallet, there are also onchain fees to rebalance to and from the cold wallet.
+Also, as funds are stored both in cold and hot wallets with some rebalancing threshhold, there are  onchain fees related to the rebalancing that would not be associated to a single user but to the bank owner.
 
-Also, there are channel escrow. The escrow varies depending on the current market fee on the bitcoin network. This also needs to be handled to have real time reconciliation of all the accounts.
+Additionally, there are escrow funds in channel. The escrow varies depending on the current market fee on the bitcoin network. This also needs to be handled to have real time reconciliation of all the accounts. (note: this is only the case for non anchored channel)
 
 
 Lightning wallet also generate revenues, in the form of routing fees, or capital lending (Pool). 
@@ -37,9 +37,14 @@ Additionally, banks may decide to charge additional fees on top of the layer 1 a
 
 This revenue may or may not offset the fees mentioned above. Basic rules of account makes it that if the fees are cumulatively higher than the revenue, then the bank is operating at a loss. And this loss must be compensated by some Equity.
 
-At the architectural level, the `Equity` account is currently coded in the `Liabilities` book. This is not the standard from an accounting point of view, but makes initial development easier.
+The "bankowner" user is the account from which revenue and expenses are being charges to.
 
-## Real time reconciliation
+Some expenses are not been recorded yet to this account, including:
+- rebalancing from cold storage to the hot wallet
+- usage of loop or pool
+
+
+## Real time dashboard
 
 Data from the assets and liabilities is generated and exported as prometheus metrics to be able to follow in real time the status of the Assets and Liabilities
 
