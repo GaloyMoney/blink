@@ -123,6 +123,7 @@
     "apollo-server-testing": "^2.25.2",
     "eslint": "^7.30.0",
     "eslint-plugin-import": "^2.23.4",
+    "http-terminator": "^3.0.3",
     "jest": "^27.0.6",
     "jest-junit": "^12.2.0",
     "migrate-mongo": "^8.2.2",

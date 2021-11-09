@@ -79,6 +79,7 @@ export const OnChainMixin = (superclass) =>
       memo,
       sendAll = false,
       twoFAToken,
+      targetConfirmations,
     }: IOnChainPayment): Promise<ISuccess> {
       let onchainLogger = this.logger.child({
         topic: "payment",
@@ -262,12 +263,13 @@ export const OnChainMixin = (superclass) =>
         let estimatedFee, id, amountToSend
 
         const sendTo = [{ address, tokens: checksAmount }]
+        const targetConfs = targetConfirmations > 0 ? targetConfirmations : 1
 
         try {
           ;({ fee: estimatedFee } = await getChainFeeEstimate({
             lnd,
             send_to: sendTo,
-            target_confirmations: 1,
+            target_confirmations: targetConfs,
           }))
         } catch (err) {
           const error = `Unable to estimate fee for on-chain transaction`
@@ -329,7 +331,7 @@ export const OnChainMixin = (superclass) =>
               lnd,
               tokens: amountToSend,
               utxo_confirmations: 0,
-              target_confirmations: 1,
+              target_confirmations: targetConfs,
             }))
           } catch (err) {
             onchainLogger.error(

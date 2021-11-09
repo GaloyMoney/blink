@@ -6,8 +6,6 @@ jest.mock("@services/notifications/notification")
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { sendNotification } = require("@services/notifications/notification")
 
-jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
-
 let price
 
 beforeAll(async () => {

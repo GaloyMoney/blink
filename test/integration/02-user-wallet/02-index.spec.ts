@@ -2,7 +2,6 @@ import { getGenericLimits, MS_PER_HOUR } from "@config/app"
 import { generateTokenHelper, getUserWallet } from "test/helpers"
 import { updateUserAccountStatus, usernameExists } from "@core/user"
 
-jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
 let userWallet0, userWallet1, userWallet2

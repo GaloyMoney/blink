@@ -45,7 +45,6 @@ import { LightningServiceError, PaymentSendStatus } from "@domain/bitcoin/lightn
 const date = Date.now() + 1000 * 60 * 60 * 24 * 8
 // required to avoid oldEnoughForWithdrawal validation
 jest.spyOn(global.Date, "now").mockImplementation(() => new Date(date).valueOf())
-jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
 let userWallet0, userWallet1, userWallet2

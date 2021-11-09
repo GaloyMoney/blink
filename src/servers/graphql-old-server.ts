@@ -372,10 +372,16 @@ const resolvers = {
         return address
       },
       pay: ({ address, amount, memo }) => ({
-        success: wallet.onChainPay({ address, amount, memo }),
+        success: wallet.onChainPay({ address, amount, memo, targetConfirmations: 1 }),
       }),
       payAll: ({ address, memo }) => ({
-        success: wallet.onChainPay({ address, amount: 0, memo, sendAll: true }),
+        success: wallet.onChainPay({
+          address,
+          amount: 0,
+          memo,
+          sendAll: true,
+          targetConfirmations: 1,
+        }),
       }),
       getFee: async ({ address, amount }) => {
         const fee = await Wallets.getOnChainFeeByWalletId({

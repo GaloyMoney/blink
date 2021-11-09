@@ -726,11 +726,13 @@ input OnChainPaymentSendInput {
   address: OnChainAddress!
   amount: SatAmount!
   memo: Memo
+  targetConfirmations: TargetConfirmations = 1
 }
 
 input OnChainPaymentSendAllInput {
   address: OnChainAddress!
   memo: Memo
+  targetConfirmations: TargetConfirmations = 1
 }
 
 type CaptchaCreateChallengePayload {
