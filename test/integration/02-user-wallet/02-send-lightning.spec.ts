@@ -958,13 +958,7 @@ const testPaymentDataPersisted = async (request: EncodedPaymentRequest) => {
   expect(txns).not.toBeInstanceOf(Error)
   if (txns instanceof Error) throw txns
 
-  const paymentIds = [...new Set(txns.map((txn) => txn.paymentId as PaymentId))]
-  expect(paymentIds).toHaveLength(1)
-  const paymentId = paymentIds[0]
-  expect(paymentId).not.toBeUndefined()
-  if (paymentId === undefined) return
-
-  const paymentFromDb = await LnPaymentsRepository().findById(paymentId)
+  const paymentFromDb = await LnPaymentsRepository().findByPaymentHash(paymentHash)
   expect(paymentFromDb).not.toBeInstanceOf(Error)
   if (paymentFromDb instanceof Error) throw paymentFromDb
 
@@ -975,13 +969,7 @@ const testPaymentDataPersisted = async (request: EncodedPaymentRequest) => {
   expect(paymentFromLnd).not.toBeInstanceOf(Error)
   if (paymentFromLnd instanceof Error) return paymentFromLnd
 
-  const propsToCompare = [
-    "status",
-    "paymentHash",
-    "secret",
-    "milliSatsAmount",
-    "milliSatsFee",
-  ]
+  const propsToCompare = ["status", "secret", "milliSatsAmount", "milliSatsFee"]
   for (const prop of propsToCompare) {
     expect(paymentFromDb[prop]).toStrictEqual(paymentFromLnd[prop])
   }
