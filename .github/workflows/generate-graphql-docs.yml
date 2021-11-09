@@ -19,6 +19,11 @@ jobs:
     - uses: actions/setup-node@v2
     - run: yarn install
       working-directory: main
+    - uses: vmware-tanzu/carvel-setup-action@v1
+      with:
+        only: ytt
+      working-directory: main
+      run: ytt -f TUTORIAL.md -f spectaql-config.yml.tmpl > spectaql-config.yml
     - name: Build docs
       run: yarn run build-docs
       working-directory: main
