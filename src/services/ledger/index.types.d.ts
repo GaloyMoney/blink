@@ -15,7 +15,6 @@ type AddLnTxReceiveMetadata = TxMetadata & {
 type AddLnTxSendMetadata = TxMetadata & {
   hash: PaymentHash
   pubkey: Pubkey
-  _payment: PaymentId | null
   feeKnownInAdvance: boolean
 }
 

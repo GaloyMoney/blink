@@ -88,10 +88,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "Invoice is missing its 'payment secret' value"
       return new InvoiceDecodeError({ message, logger: baseLogger })
 
-    case "CouldNotFindLnPaymentFromIdError":
-      message = `Ln Payment does not exist for internal payment id ${error.message}`
-      return new ValidationInternalError({ message, logger: baseLogger })
-
     case "SatoshiAmountRequiredError":
       message = "An amount is required to complete payment"
       return new ValidationInternalError({ message, logger: baseLogger })

@@ -86,17 +86,8 @@ const updatePendingPayment = async ({
         return
       }
 
-      const persistedPayment = await LnPaymentsRepository().update(lnPaymentLookup)
-      if (persistedPayment instanceof Error) {
-        paymentLogger.error(
-          { error: lnPaymentLookup },
-          "we couldn't update payment data to our database",
-        )
-        return persistedPayment
-      }
       const settled = await ledgerService.settlePendingLnPayments({
         paymentHash,
-        paymentId: persistedPayment.id,
       })
       if (settled instanceof Error) {
         paymentLogger.error(
@@ -104,6 +95,14 @@ const updatePendingPayment = async ({
           "we didn't have any transaction to update",
         )
         return settled
+      }
+      const persistedPayment = await LnPaymentsRepository().update(lnPaymentLookup)
+      if (persistedPayment instanceof Error) {
+        paymentLogger.error(
+          { error: lnPaymentLookup },
+          "we couldn't update payment data to our database",
+        )
+        return persistedPayment
       }
 
       if (status === PaymentStatus.Settled) {
@@ -116,7 +115,6 @@ const updatePendingPayment = async ({
         return reimburseFee({
           walletId,
           journalId: paymentLiabilityTx.journalId,
-          paymentId: persistedPayment.id,
           paymentHash,
           maxFee: paymentLiabilityTx.fee,
           actualFee: roundedUpFee,
