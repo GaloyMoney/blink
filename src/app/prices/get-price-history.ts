@@ -1,4 +1,5 @@
 import { CacheKeys } from "@domain/cache"
+import { toSeconds } from "@domain/primitives"
 import { PriceService } from "@services/price"
 import { PriceHistoryNotAvailableError } from "@domain/price"
 import { LocalCacheService } from "@services/cache"
@@ -21,7 +22,7 @@ export const getPriceHistory = async ({
 
   if (priceHistory.length > 0) {
     // keep price history in cache for 5 mins
-    await localCache.set<Tick[]>(cacheKey, priceHistory, 300)
+    await localCache.set<Tick[]>(cacheKey, priceHistory, toSeconds(300))
     return priceHistory
   }
 

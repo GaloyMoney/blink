@@ -11,7 +11,7 @@ export const LocalCacheService = (): ILocalCacheService => {
   const set = <T>(
     key: CacheKeys | string,
     value: T,
-    ttlSecs: number,
+    ttlSecs: Seconds,
   ): Promise<T | LocalCacheServiceError> => {
     try {
       const res = localCache.set<T>(key, value, ttlSecs)

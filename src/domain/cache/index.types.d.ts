@@ -7,7 +7,7 @@ interface ILocalCacheService {
   set<T>(
     key: CacheKeys | string,
     value: T,
-    ttlSecs: number,
+    ttlSecs: Seconds,
   ): Promise<T | LocalCacheServiceError>
   get<T>(key: CacheKeys | string): Promise<T | LocalCacheServiceError>
   clear(key: CacheKeys | string): Promise<true | LocalCacheServiceError>
