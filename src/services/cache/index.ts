@@ -8,11 +8,11 @@ import NodeCache from "node-cache"
 const localCache = new NodeCache()
 
 export const LocalCacheService = (): ILocalCacheService => {
-  const set = <T>(
-    key: CacheKeys | string,
-    value: T,
-    ttlSecs: Seconds,
-  ): Promise<T | LocalCacheServiceError> => {
+  const set = <T>({
+    key,
+    value,
+    ttlSecs,
+  }: LocalCacheSetArgs<T>): Promise<T | LocalCacheServiceError> => {
     try {
       const res = localCache.set<T>(key, value, ttlSecs)
       if (res) return Promise.resolve(value)

@@ -35,10 +35,10 @@ export const PriceService = (): IPriceService => {
     }
   }
 
-  const listHistory = async (
-    range: PriceRange,
-    interval: PriceInterval,
-  ): Promise<Tick[] | PriceServiceError> => {
+  const listHistory = async ({
+    range,
+    interval,
+  }: ListHistoryArgs): Promise<Tick[] | PriceServiceError> => {
     const startDate = new Date(getRangeStartDate(range))
     const endDate = new Date(Date.now())
 

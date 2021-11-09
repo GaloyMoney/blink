@@ -11,7 +11,7 @@ describe("Price", () => {
     ]
     rangesIntervalsToTest.forEach(({ range, interval, ticks }) => {
       it(`returns ${range} history with ${interval} interval`, async () => {
-        const prices = await PriceService().listHistory(range, interval)
+        const prices = await PriceService().listHistory({ range, interval })
         if (prices instanceof Error) throw prices
 
         expect(prices.length).toBeGreaterThanOrEqual(ticks)

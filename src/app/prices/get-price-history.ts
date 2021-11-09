@@ -17,12 +17,16 @@ export const getPriceHistory = async ({
   const cachedPriceHistory = await localCache.get<Tick[]>(cacheKey)
   if (!(cachedPriceHistory instanceof Error)) return cachedPriceHistory
 
-  const priceHistory = await PriceService().listHistory(range, interval)
+  const priceHistory = await PriceService().listHistory({ range, interval })
   if (priceHistory instanceof Error) return priceHistory
 
   if (priceHistory.length > 0) {
     // keep price history in cache for 5 mins
-    await localCache.set<Tick[]>(cacheKey, priceHistory, toSeconds(300))
+    await localCache.set<Tick[]>({
+      key: cacheKey,
+      value: priceHistory,
+      ttlSecs: toSeconds(300),
+    })
     return priceHistory
   }
 
