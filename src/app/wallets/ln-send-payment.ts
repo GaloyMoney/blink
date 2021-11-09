@@ -494,7 +494,9 @@ const executePaymentViaLn = async ({
 
     const payment = await lndService.lookupPayment({ pubkey, paymentHash })
     if (payment instanceof Error) return payment
+
     payment.paymentRequest = payment.paymentRequest || paymentRequest
+    payment.paymentHash = payment.paymentHash || paymentHash
     const persistedPayment = await LnPaymentsRepository().update(payment)
     if (persistedPayment instanceof Error) return persistedPayment
 

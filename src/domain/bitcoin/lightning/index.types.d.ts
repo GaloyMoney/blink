@@ -66,7 +66,7 @@ type LnPaymentLookup = {
   readonly createdAt: Date
   readonly destination: Pubkey
   readonly milliSatsFee: MilliSatoshis
-  readonly paymentHash: PaymentHash
+  paymentHash: PaymentHash
   readonly milliSatsAmount: MilliSatoshis
   readonly paths: RawPaths
   paymentRequest: EncodedPaymentRequest | undefined
