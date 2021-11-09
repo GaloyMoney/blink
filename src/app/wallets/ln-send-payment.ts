@@ -491,16 +491,17 @@ const executePaymentViaLn = async ({
           milliSatsAmount: toMilliSatsFromNumber(amount * 1000),
           maxFee,
         })
-    if (payResult instanceof LnPaymentPendingError) return PaymentSendStatus.Pending
 
     const payment = await lndService.lookupPayment({ pubkey, paymentHash })
     if (payment instanceof Error) return payment
     payment.paymentRequest = payment.paymentRequest || paymentRequest
+    const persistedPayment = await LnPaymentsRepository().update(payment)
+    if (persistedPayment instanceof Error) return persistedPayment
+
+    if (payResult instanceof LnPaymentPendingError) return PaymentSendStatus.Pending
 
     const settled = await ledgerService.settlePendingLnPayments({ paymentHash })
     if (settled instanceof Error) return settled
-    const persistedPayment = await LnPaymentsRepository().update(payment)
-    if (persistedPayment instanceof Error) return persistedPayment
 
     if (payResult instanceof Error) {
       const voided = await ledgerService.voidLedgerTransactionsForJournal(journalId)
