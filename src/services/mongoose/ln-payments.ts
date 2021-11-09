@@ -1,21 +1,8 @@
 import { toSats } from "@domain/bitcoin"
-import { CouldNotFindLnPaymentFromIdError, UnknownRepositoryError } from "@domain/errors"
+import { UnknownRepositoryError } from "@domain/errors"
 import { LnPayment } from "@services/lnd/schema"
 
 export const LnPaymentsRepository = (): ILnPaymentsRepository => {
-  const findById = async (paymentId: PaymentId): Promise<LnPayment | RepositoryError> => {
-    try {
-      const result = await LnPayment.findOne({ _id: paymentId })
-      if (!result) {
-        return new CouldNotFindLnPaymentFromIdError(paymentId)
-      }
-
-      return lnPaymentFromRaw(result)
-    } catch (err) {
-      return new UnknownRepositoryError(err)
-    }
-  }
-
   const update = async (
     payment: LnPaymentLookup,
   ): Promise<LnPayment | RepositoryError> => {
@@ -32,7 +19,6 @@ export const LnPaymentsRepository = (): ILnPaymentsRepository => {
   }
 
   return {
-    findById,
     update,
   }
 }

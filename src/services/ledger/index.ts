@@ -336,7 +336,6 @@ export const LedgerService = (): ILedgerService => {
     sats,
     usd,
     journalId,
-    paymentId,
   }: AddLnFeeReeimbursementReceiveArgs): Promise<LedgerJournal | LedgerError> => {
     try {
       const metadata = {
@@ -346,7 +345,6 @@ export const LedgerService = (): ILedgerService => {
         related_journal: journalId,
         pending: false,
         usd,
-        _payment: paymentId,
       }
 
       const description = "fee reimbursement"
@@ -384,7 +382,6 @@ export const LedgerService = (): ILedgerService => {
         sats,
         usd,
         pubkey,
-        _payment: null,
         feeKnownInAdvance,
         currency: "BTC",
       }
@@ -555,15 +552,13 @@ export const LedgerService = (): ILedgerService => {
 
   const settlePendingLnPayments = async ({
     paymentHash,
-    paymentId,
   }: {
     paymentHash: PaymentHash
-    paymentId: PaymentId
   }): Promise<boolean | LedgerServiceError> => {
     try {
       const result = await Transaction.updateMany(
         { hash: paymentHash },
-        { pending: false, _payment: paymentId },
+        { pending: false },
       )
       return result.nModified > 0
     } catch (err) {
@@ -625,7 +620,6 @@ const translateToLedgerTx = (tx): LedgerTransaction => ({
   walletPublicId: tx.walletPublicId || null,
   memoFromPayer: tx.memoPayer,
   paymentHash: tx.hash,
-  paymentId: tx._payment?.toString(),
   pubkey: tx.pubkey,
   address:
     tx.payee_addresses && tx.payee_addresses.length > 0

@@ -48,7 +48,6 @@ type LedgerTransaction = {
   // for ln
   readonly paymentHash?: PaymentHash
   readonly pubkey?: Pubkey
-  readonly paymentId?: PaymentId
   readonly feeKnownInAdvance: boolean
 
   // for onchain
@@ -122,7 +121,6 @@ type AddLnFeeReeimbursementReceiveArgs = {
   sats: Satoshis
   usd: number
   journalId: LedgerJournalId
-  paymentId: PaymentId
 }
 
 type FeeReimbursement = {
@@ -221,10 +219,8 @@ interface ILedgerService {
 
   settlePendingLnPayments({
     paymentHash,
-    paymentId,
   }: {
     paymentHash: PaymentHash
-    paymentId: PaymentId
   }): Promise<boolean | LedgerServiceError>
 
   voidLedgerTransactionsForJournal(
