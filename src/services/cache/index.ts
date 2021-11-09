@@ -16,20 +16,20 @@ export const LocalCacheService = (): ILocalCacheService => {
     try {
       const res = localCache.set<T>(key, value, ttlSecs)
       if (res) return Promise.resolve(value)
+      return Promise.resolve(new LocalCacheNotAvailableError())
     } catch (err) {
       return Promise.resolve(new UnknownLocalCacheServiceError(err))
     }
-    return Promise.resolve(new LocalCacheNotAvailableError())
   }
 
   const get = <T>(key: CacheKeys | string): Promise<T | LocalCacheServiceError> => {
     try {
       const value = localCache.get<T>(key)
-      if (value !== undefined) return Promise.resolve(value)
+      if (value === undefined) return Promise.resolve(new LocalCacheUndefinedError())
+      return Promise.resolve(value)
     } catch (err) {
       return Promise.resolve(new UnknownLocalCacheServiceError(err))
     }
-    return Promise.resolve(new LocalCacheUndefinedError())
   }
 
   const clear = (key: CacheKeys | string): Promise<true | LocalCacheServiceError> => {

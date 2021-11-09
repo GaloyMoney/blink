@@ -9,6 +9,7 @@ import {
 import { baseLogger } from "../logger"
 import { PriceHistory } from "./schema"
 import { PriceProtoDescriptor } from "./grpc"
+import { SATS_PER_BTC } from "@config/app"
 
 const priceUrl = process.env.PRICE_ADDRESS ?? "galoy-price"
 const pricePort = process.env.PRICE_PORT ?? "50051"
@@ -26,12 +27,12 @@ export const PriceService = (): IPriceService => {
   const getRealTimePrice = async (): Promise<UsdPerSat | PriceServiceError> => {
     try {
       const { price } = await getPrice({})
-      if (price > 0) return (price / Math.pow(10, 8)) as UsdPerSat
+      if (price > 0) return (price / SATS_PER_BTC) as UsdPerSat
+      return new PriceNotAvailableError()
     } catch (err) {
       baseLogger.error({ err }, "impossible to fetch most recent price")
       return new UnknownPriceServiceError(err)
     }
-    return new PriceNotAvailableError()
   }
 
   const listHistory = async (

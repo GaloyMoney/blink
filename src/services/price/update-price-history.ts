@@ -3,6 +3,7 @@ import ccxt from "ccxt"
 import moment from "moment"
 import { baseLogger } from "@services/logger"
 import { PriceHistory } from "./schema"
+import { SATS_PER_BTC } from "@config/app"
 
 const pair = "BTC/USD"
 const exchange = "bitfinex"
@@ -60,7 +61,7 @@ export const updatePriceHistory = async (init = false): Promise<boolean | Error>
         }
 
         baseLogger.debug({ value0: value[0] }, "adding entry to our price database")
-        doc.pair.exchange.price.push({ _id: value[0], o: value[1] / Math.pow(10, 8) })
+        doc.pair.exchange.price.push({ _id: value[0], o: value[1] / SATS_PER_BTC })
       }
 
       await doc.save()

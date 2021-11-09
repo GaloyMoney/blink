@@ -6,6 +6,7 @@ import PriceGraphRange, {
 } from "@graphql/types/scalar/price-graph-range"
 import { PriceInterval, PriceRange } from "@domain/price"
 import * as Prices from "@app/prices"
+import { SATS_PER_BTC } from "@config/app"
 
 const parseRange: (string: typeof priceRangeValues[number]) => PriceRange = (range) => {
   switch (range) {
@@ -56,7 +57,7 @@ const BtcPriceListQuery = GT.Field({
     if (hourlyPrices instanceof Error) throw hourlyPrices
 
     const prices: PricePointType[] = hourlyPrices.map(({ date, price }) => {
-      const btcPriceInCents = price * 100 * 10 ** 8
+      const btcPriceInCents = price * 100 * SATS_PER_BTC
       return {
         timestamp: Math.floor(date.getTime() / 1000),
         price: {
@@ -72,7 +73,7 @@ const BtcPriceListQuery = GT.Field({
     // This is used by the mobile app to convert prices
     const currentPrice = await Prices.getCurrentPrice()
     if (!(currentPrice instanceof Error)) {
-      const currentBtcPriceInCents = currentPrice * 100 * 10 ** 8
+      const currentBtcPriceInCents = currentPrice * 100 * SATS_PER_BTC
       prices.push({
         timestamp: moment().unix(),
         price: {

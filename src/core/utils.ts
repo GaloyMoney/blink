@@ -1,3 +1,4 @@
+import { SATS_PER_BTC } from "@config/app"
 import { GraphQLError } from "graphql"
 import { parsePaymentRequest } from "invoices"
 
@@ -24,11 +25,11 @@ export const getAmount = (request): number | undefined => {
 }
 
 export const btc2sat = (btc: number) => {
-  return Math.round(btc * Math.pow(10, 8))
+  return Math.round(btc * SATS_PER_BTC)
 }
 
 export const sat2btc = (sat: number) => {
-  return sat / Math.pow(10, 8)
+  return sat / SATS_PER_BTC
 }
 
 export const satsToUsdCached = (sats, price) => {
