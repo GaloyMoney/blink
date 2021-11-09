@@ -233,14 +233,6 @@ interface ILedgerService {
     paymentHash: PaymentHash
   }): Promise<boolean | LedgerServiceError>
 
-  updatePendingLnPayments({
-    paymentHash,
-    paymentId,
-  }: {
-    paymentHash: PaymentHash
-    paymentId: PaymentId
-  }): Promise<boolean | LedgerServiceError>
-
   voidLedgerTransactionsForJournal(
     journalId: LedgerJournalId,
   ): Promise<void | LedgerServiceError>
