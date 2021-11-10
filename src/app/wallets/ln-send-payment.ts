@@ -421,6 +421,13 @@ const executePaymentViaLn = async ({
   addAttributesToCurrentSpan({
     "payment.settlement_method": SettlementMethod.Lightning,
   })
+  const paymentLogger = logger.child({
+    topic: "payment",
+    protocol: "lightning",
+    transactionType: "payment",
+    onUs: false,
+  })
+
   const { paymentHash } = decodedInvoice
 
   const withdrawalLimitCheck = await checkWithdrawalLimits({
@@ -493,12 +500,19 @@ const executePaymentViaLn = async ({
         })
 
     const payment = await lndService.lookupPayment({ pubkey, paymentHash })
-    if (payment instanceof Error) return payment
-
-    payment.paymentRequest = payment.paymentRequest || paymentRequest
-    payment.paymentHash = payment.paymentHash || paymentHash
-    const persistedPayment = await LnPaymentsRepository().update(payment)
-    if (persistedPayment instanceof Error) return persistedPayment
+    if (payment instanceof Error) {
+      paymentLogger.error({ error: payment }, "we couldn't fetch payment data from lnd")
+    } else {
+      payment.paymentRequest = payment.paymentRequest || paymentRequest
+      payment.paymentHash = payment.paymentHash || paymentHash
+      const persistedPayment = await LnPaymentsRepository().update(payment)
+      if (persistedPayment instanceof Error) {
+        paymentLogger.error(
+          { error: persistedPayment },
+          "we couldn't update payment data to our database",
+        )
+      }
+    }
 
     if (payResult instanceof LnPaymentPendingError) return PaymentSendStatus.Pending
 
