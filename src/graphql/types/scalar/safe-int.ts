@@ -11,6 +11,7 @@ const SafeInt = new GT.Scalar({
   serialize: coerceSafeInt,
   parseValue: coerceSafeInt,
   parseLiteral(ast) {
+    console.warn("parseLiteral", ast)
     if (ast.kind === GT.Kind.INT) {
       const num = parseInt(ast.value, 10)
       if (num <= MAX_INT && num >= MIN_INT) {
@@ -22,6 +23,7 @@ const SafeInt = new GT.Scalar({
 })
 
 function coerceSafeInt(value) {
+  console.warn("coerceSafeInt", value)
   if (value === "") {
     throw new Error(
       "SafeInt cannot represent non 53-bit signed integer value: (empty string)",

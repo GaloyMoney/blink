@@ -35,6 +35,7 @@ export const transactionInterfaceFields = {
     type: GT.NonNull(Price),
     resolve: (source) => {
       const settlementUsdPerSatInCents = source.settlementUsdPerSat * 100
+      console.warn(settlementUsdPerSatInCents, Math.round(settlementUsdPerSatInCents * 10 ** 4))
       return {
         formattedAmount: settlementUsdPerSatInCents.toString(),
         base: Math.round(settlementUsdPerSatInCents * 10 ** 4),
