@@ -38,7 +38,7 @@ export const getUserForLogin = async ({
       // this routing run asynchrously, to update metadata on the background
       updateUserIPsInfo({ userId, ip, logger } as {
         userId: UserId
-        ip: Ip
+        ip: IpAddress
         logger: Logger
       })
 
@@ -52,7 +52,7 @@ const updateUserIPsInfo = async ({
   logger,
 }: {
   userId: UserId
-  ip?: Ip
+  ip?: IpAddress
   logger: Logger
 }): Promise<void | RepositoryError> =>
   asyncRunInSpan(
