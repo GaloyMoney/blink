@@ -63,7 +63,7 @@ type RawPaths = NonNullable<GetPaymentResult["payment"]>["paths"]
 type LnPaymentLookup = {
   readonly status: PaymentStatus
   readonly confirmedAt: Date | undefined
-  readonly createdAt: Date
+  readonly createdAt: Date | undefined
   readonly destination: Pubkey
   readonly milliSatsFee: MilliSatoshis
   paymentHash: PaymentHash

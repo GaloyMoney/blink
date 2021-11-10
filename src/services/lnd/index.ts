@@ -286,7 +286,7 @@ const lookupPaymentByPubkeyAndHash = async ({
     let paymentLookup: LnPaymentLookup = {
       status,
       confirmedAt: undefined,
-      createdAt: new Date(0),
+      createdAt: undefined,
       destination: "" as Pubkey,
       milliSatsFee: toMilliSatsFromNumber(0),
       paymentHash: "" as PaymentHash,
