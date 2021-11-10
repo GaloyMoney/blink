@@ -21,6 +21,7 @@
         <nav id="nav" role="navigation">
           <h5>Introduction</h5>
           <a href="#introduction">Welcome</a>
+          <a href="#intro-item-0">Galoy API Tutorial</a>
           <h5>Operations</h5>
           <section>
             <a href="#tag-Queries">Queries</a>
@@ -285,6 +286,108 @@
                   <h5>API Endpoints</h5> <pre><code>Testnet:
 https://api.staging.galoy.io/graphql
 </code></pre> </section>
+              </div>
+            </div>
+            <div id="intro-item-0" data-traverse-target="intro-item-0">
+              <div class="doc-row">
+                <h5 class="doc-intro-item">Galoy API Tutorial</h5>
+                <div class="doc-copy">
+                  <h1 id="lightning-integration">Lightning Integration</h1>
+                  <h2 id="overview">Overview</h2>
+                  <p>The staging API endpoint is: <code>https://api.testnet.galoy.io/graphql</code></p>
+                  <h2 id="authentication">Authentication</h2>
+                  <p>To get a new JWT:</p>
+                  <ol>
+                    <li>Use <code>userRequestAuthCode</code> to receive an auth code via SMS</li>
+                    <li>Call <code>userLogin</code> using the same phone number and auth code</li>
+                  </ol>
+                  <p>All other methods require a valid JWT set in the header as a bearer token - <code>Authorization: Bearer</code></p>
+                  <h2 id="curl-requests">Curl requests</h2>
+                  <h3 id="userrequestauthcode">userRequestAuthCode</h3>
+                  <h4 id="query">query</h4> <pre><code class="hljs">export URI=https:<span class="hljs-string">//api.testnet.galoy.io/graphql</span>
+            export PHONE='+12025550148'
+            
+            curl <span class="hljs-params">--location</span> <span class="hljs-params">--request</span> POST $URI <span class="hljs-params">--header</span> 'Content-Type: application/json' <span class="hljs-params">--data-raw</span> '{<span class="hljs-string">"query"</span>:<span class="hljs-string">"mutation userRequestAuthCode ($input: UserRequestAuthCodeInput!) {\n    userRequestAuthCode (input: $input) {\n        errors {\n            message\n            path\n        }\n        success\n    }\n}"</span>,<span class="hljs-string">"variables"</span>:{<span class="hljs-string">"input"</span>:{<span class="hljs-string">"phone"</span>:<span class="hljs-string">"'"</span>$PHONE<span class="hljs-string">"'"</span>}}}'
+            </code></pre>
+                  <h4 id="response">response</h4> <pre><code class="hljs">{
+    <span class="hljs-attr">"data"</span>: {
+        <span class="hljs-attr">"userRequestAuthCode"</span>: {
+            <span class="hljs-attr">"errors"</span>: [],
+            <span class="hljs-attr">"success"</span>: <span class="hljs-literal">true</span>
+        }
+    }
+}
+</code></pre>
+                  <h3 id="userlogin">userLogin</h3>
+                  <h4 id="query-1">query</h4> <pre><code class="hljs">export CODE=<span class="hljs-string">'012345'</span>
+            
+            curl --location --request POST $URI --header <span class="hljs-string">'Content-Type: application/json'</span> --data-raw <span class="hljs-string">'{"</span>query<span class="hljs-string">":"</span>mutation userLogin ($input: UserLoginInput!) {\n    userLogin (input: $input) {\n        errors {\n            message\n            path\n        }\n        authToken\n    }\n}<span class="hljs-string">","</span>variables<span class="hljs-string">":{"</span>input<span class="hljs-string">":{"</span>phone<span class="hljs-string">":"</span><span class="hljs-string">'"</span>$PHONE<span class="hljs-string">"'</span><span class="hljs-string">","</span>code<span class="hljs-string">":"</span><span class="hljs-string">'"</span>$CODE<span class="hljs-string">"'</span><span class="hljs-string">"}}}'</span>
+            </code></pre>
+                  <h4 id="response-1">response</h4> <pre><code class="hljs">{
+    <span class="hljs-attr">"data"</span>: {
+        <span class="hljs-attr">"userLogin"</span>: {
+            <span class="hljs-attr">"errors"</span>: [],
+            <span class="hljs-attr">"authToken"</span>: <span class="hljs-string">"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI1ZjkwMTY3ODM2MmZmNjIzMjVkZmFmYjciLCJuZXR3b3JrIjoicmVndGVzdCIsImN1cnJlbmN5IjoiQlRDIiwiaWF0IjoxNjAzMjc4NDU2fQ.-im7fJS_aneM32zNXDVqSDPPoQtCtCE22X-hUclT3u0"</span>
+        }
+    }
+}
+</code></pre>
+                  <h3 id="lninvoicecreate">lnInvoiceCreate</h3>
+                  <h4 id="query-2">query</h4> <pre><code class="hljs"><span class="hljs-keyword">export</span> AUTH_TOKEN=<span class="hljs-string">'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI1ZjkwMTY3ODM2MmZmNjIzMjVkZmFmYjciLCJuZXR3b3JrIjoicmVndGVzdCIsImN1cnJlbmN5IjoiQlRDIiwiaWF0IjoxNjAzMjc4NDU2fQ.-im7fJS_aneM32zNXDVqSDPPoQtCtCE22X-hUclT3u0'</span>
+            <span class="hljs-keyword">export</span> AMOUNT=<span class="hljs-number">12345</span>
+            <span class="hljs-keyword">export</span> MEMO=<span class="hljs-string">'tipping'</span>
+            
+            curl --location --request POST $URI --header <span class="hljs-string">"<span class="hljs-subst">$AUTH_TOKEN<span class="hljs-string">" --header 'Content-Type: application/json' --data-raw '{"</span></span>query"</span>:<span class="hljs-string">"mutation lnInvoiceCreate (<span class="hljs-subst">$input</span>: LnInvoiceCreateInput!) {\n    lnInvoiceCreate (input: <span class="hljs-subst">$input</span>) {\n        errors {\n            message\n            path\n        }\n        invoice {\n            paymentRequest\n            paymentHash\n            paymentSecret\n            satoshis\n        }\n    }\n}"</span>,<span class="hljs-string">"variables"</span>:{<span class="hljs-string">"input"</span>:{<span class="hljs-string">"amount"</span>:<span class="hljs-string">"'"</span>$AMOUNT<span class="hljs-string">"'"</span>,<span class="hljs-string">"memo"</span>:<span class="hljs-string">"'"</span>$MEMO<span class="hljs-string">"'"</span>}}}<span class="hljs-string">'</span>
+            </code></pre>
+                  <h4 id="response-2">response</h4> <pre><code class="hljs">{
+    <span class="hljs-attr">"data"</span>: {
+        <span class="hljs-attr">"lnInvoiceCreate"</span>: {
+            <span class="hljs-attr">"errors"</span>: [],
+            <span class="hljs-attr">"invoice"</span>: {
+                <span class="hljs-attr">"paymentRequest"</span>: <span class="hljs-string">"lntb123450n1pscxulepp59x872uskmr0a4r3wnr3vkmr297zm53smw8j4efevpknuwm8vs5yqdq5w35hqurfdenjq6nsdamscqzpuxqyz5vqsp5yzmznk5z7xszkgfk5xstuh8j5gg4srerelv58pph5wjan2kd8rqs9qyyssqe5l376x893374kqsr5lc8tesudg4jryaqlzmx44mfr87nds83margfa09ggd92sy0rudl6r79sat4rxqml5yfdhmm7yk9jc0ugzw7hgpdfxfzk"</span>,
+                <span class="hljs-attr">"paymentHash"</span>: <span class="hljs-string">"298be57216d8dfda8e2e88e2cb6c6a2f85ba461b71e55ca72c0da7c76cec8508"</span>,
+                <span class="hljs-attr">"paymentSecret"</span>: <span class="hljs-string">"20b629da82f1a02b2136a1a0be5cf2a211580f23cfd8438437a3a5d9aacd38c1"</span>,
+                <span class="hljs-attr">"satoshis"</span>: <span class="hljs-number">12345</span>
+            }
+        }
+    }
+}
+</code></pre>
+                  <h3 id="lninvoicefeeprobe">lnInvoiceFeeProbe</h3>
+                  <h4 id="query-3">query</h4> <pre><code class="hljs"><span class="hljs-keyword">export</span> PAYMENT_REQUEST=<span class="hljs-string">'lntb123450n1pscxulepp59x872uskmr0a4r3wnr3vkmr297zm53smw8j4efevpknuwm8vs5yqdq5w35hqurfdenjq6nsdamscqzpuxqyz5vqsp5yzmznk5z7xszkgfk5xstuh8j5gg4srerelv58pph5wjan2kd8rqs9qyyssqe5l376x893374kqsr5lc8tesudg4jryaqlzmx44mfr87nds83margfa09ggd92sy0rudl6r79sat4rxqml5yfdhmm7yk9jc0ugzw7hgpdfxfzk'</span>
+            
+            curl --location --request POST $URI --header <span class="hljs-string">"<span class="hljs-subst">$AUTH_TOKEN<span class="hljs-string">" --header 'Content-Type: application/json' --data-raw '{"</span></span>query"</span>:<span class="hljs-string">"mutation lnInvoiceFeeProbe (<span class="hljs-subst">$input</span>: LnInvoiceFeeProbeInput!) {\n    lnInvoiceFeeProbe (input: <span class="hljs-subst">$input</span>) {\n        errors {\n            message\n            path\n        }\n        amount\n    }\n}"</span>,<span class="hljs-string">"variables"</span>:{<span class="hljs-string">"input"</span>:{<span class="hljs-string">"paymentRequest"</span>:<span class="hljs-string">"'"</span>$PAYMENT_REQUEST<span class="hljs-string">"'"</span>}}}<span class="hljs-string">'</span>
+            </code></pre>
+                  <h4 id="response-3">response</h4> <pre><code class="hljs">{
+    <span class="hljs-attr">"data"</span>: {
+        <span class="hljs-attr">"lnInvoiceFeeProbe"</span>: {
+            <span class="hljs-attr">"errors"</span>: [],
+            <span class="hljs-attr">"amount"</span>: <span class="hljs-number">0</span>
+        }
+    }
+}
+</code></pre>
+                  <h3 id="lninvoicepaymentsend">lnInvoicePaymentSend</h3>
+                  <h4 id="query-4">query</h4> <pre><code class="hljs">PAYMENT_REQUEST='lntb50u1psc8xeppp5yryt4j8ve0pvyunrp3dr0l5tj0ss4hnkuxz52hldc9nz2njpe2fqdqqxqrrss9qy9qsqsp5xduj0a8u2c7mn959045wnu8xrv63vqye2d2zw3kllahdv47np6qsrzjqwfn3p9278ttzzpe0e00uhyxhned3j5d9acqak5emwfpflp8z2cng85uzyqqqdsqqqqqqqlgqqqqqeqqjqjwcuu47akd6qggafxy403zk9f67xh86huv6r0fkngvkuwrxuadv8dd3u5gfeurshh3q6jr5jvu05z7f63xz5ac8v4pk3tjfv46jt5dcprr9d4z'
+            
+            curl <span class="hljs-params">--location</span> <span class="hljs-params">--request</span> POST $URI <span class="hljs-params">--header</span> <span class="hljs-string">"$AUTH_TOKEN"</span> <span class="hljs-params">--header</span> 'Content-Type: application/json' <span class="hljs-params">--data-raw</span> '{<span class="hljs-string">"query"</span>:<span class="hljs-string">"mutation lnInvoicePaymentSend ($input: LnInvoicePaymentInput!) {\n    lnInvoicePaymentSend (input: $input) {\n        errors {\n            message\n            path\n        }\n        status\n    }\n}"</span>,<span class="hljs-string">"variables"</span>:{<span class="hljs-string">"input"</span>:{<span class="hljs-string">"paymentRequest"</span>:<span class="hljs-string">"'"</span>$PAYMENT_REQUEST<span class="hljs-string">"'"</span>,<span class="hljs-string">"memo"</span>:<span class="hljs-string">"'"</span>$MEMO<span class="hljs-string">"'"</span>}}}'
+            </code></pre>
+                  <h4 id="response-4">response</h4> <pre><code class="hljs">{
+    <span class="hljs-attr">"data"</span>: {
+        <span class="hljs-attr">"lnInvoicePaymentSend"</span>: {
+            <span class="hljs-attr">"errors"</span>: [],
+            <span class="hljs-attr">"status"</span>: <span class="hljs-string">"ALREADY_PAID"</span>
+        }
+    }
+}
+</code></pre>
+                  <h2 id="extra-resources">Extra Resources</h2>
+                  <p>If you use Postman, we have a collection you can import to test the API. </p>
+                  <p>Download it here:
+                    <a href="https://github.com/GaloyMoney/galoy/tree/main/src/graphql/main/docs/Lightning-Integration.postman_collection.json">Lightning Integration.postman_collection.json</a>
+                  </p>
+                </div>
+                <div class="doc-examples"> </div>
               </div>
             </div>
           </div>
@@ -648,7 +751,7 @@ https://api.staging.galoy.io/graphql
                   <body><pre><code class="hljs language-json">{
   <span class="hljs-attr">"data"</span>: {
     <span class="hljs-attr">"mobileVersions"</span>: [
-      {<span class="hljs-attr">"platform"</span>: <span class="hljs-string">"abc123"</span>, <span class="hljs-attr">"currentSupported"</span>: <span class="hljs-number">987</span>, <span class="hljs-attr">"minSupported"</span>: <span class="hljs-number">123</span>}
+      {<span class="hljs-attr">"platform"</span>: <span class="hljs-string">"xyz789"</span>, <span class="hljs-attr">"currentSupported"</span>: <span class="hljs-number">987</span>, <span class="hljs-attr">"minSupported"</span>: <span class="hljs-number">123</span>}
     ]
   }
 }
@@ -1087,7 +1190,7 @@ https://api.staging.galoy.io/graphql
   <span class="hljs-attr">"data"</span>: {
     <span class="hljs-attr">"accountApiKeyDisable"</span>: {
       <span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>],
-      <span class="hljs-attr">"success"</span>: <span class="hljs-literal">true</span>
+      <span class="hljs-attr">"success"</span>: <span class="hljs-literal">false</span>
     }
   }
 }
@@ -2400,7 +2503,7 @@ https://api.staging.galoy.io/graphql
                   <head></head>
                   <body><pre><code class="hljs language-json">{
   <span class="hljs-attr">"data"</span>: {
-    <span class="hljs-attr">"twoFADelete"</span>: {<span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>], <span class="hljs-attr">"success"</span>: <span class="hljs-literal">false</span>}
+    <span class="hljs-attr">"twoFADelete"</span>: {<span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>], <span class="hljs-attr">"success"</span>: <span class="hljs-literal">true</span>}
   }
 }
 </code></pre> </body>
@@ -2534,7 +2637,7 @@ https://api.staging.galoy.io/graphql
                   <head></head>
                   <body><pre><code class="hljs language-json">{
   <span class="hljs-attr">"data"</span>: {
-    <span class="hljs-attr">"twoFASave"</span>: {<span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>], <span class="hljs-attr">"success"</span>: <span class="hljs-literal">false</span>}
+    <span class="hljs-attr">"twoFASave"</span>: {<span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>], <span class="hljs-attr">"success"</span>: <span class="hljs-literal">true</span>}
   }
 }
 </code></pre> </body>
@@ -2849,7 +2952,7 @@ https://api.staging.galoy.io/graphql
   <span class="hljs-attr">"data"</span>: {
     <span class="hljs-attr">"userRequestAuthCode"</span>: {
       <span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>],
-      <span class="hljs-attr">"success"</span>: <span class="hljs-literal">false</span>
+      <span class="hljs-attr">"success"</span>: <span class="hljs-literal">true</span>
     }
   }
 }
@@ -3066,7 +3169,7 @@ https://api.staging.galoy.io/graphql
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"wallets"</span>: [<span class="hljs-string">Wallet</span>], <span class="hljs-attr">"csvTransactions"</span>: <span class="hljs-string">"abc123"</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"wallets"</span>: [<span class="hljs-string">Wallet</span>], <span class="hljs-attr">"csvTransactions"</span>: <span class="hljs-string">"xyz789"</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -3123,8 +3226,8 @@ https://api.staging.galoy.io/graphql
                   <head></head>
                   <body><pre><code class="hljs language-json">{
   <span class="hljs-attr">"label"</span>: <span class="hljs-string">AccountApiKeyLabel</span>,
-  <span class="hljs-attr">"key"</span>: <span class="hljs-string">"xyz789"</span>,
-  <span class="hljs-attr">"secret"</span>: <span class="hljs-string">"xyz789"</span>,
+  <span class="hljs-attr">"key"</span>: <span class="hljs-string">"abc123"</span>,
+  <span class="hljs-attr">"secret"</span>: <span class="hljs-string">"abc123"</span>,
   <span class="hljs-attr">"expireAt"</span>: <span class="hljs-string">Timestamp</span>
 }
 </code></pre> </body>
@@ -3524,7 +3627,7 @@ https://api.staging.galoy.io/graphql
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-gql"><span class="hljs-symbol"><span class="hljs-literal">true</span></span>
+                  <body><pre><code class="hljs language-gql"><span class="hljs-symbol"><span class="hljs-literal">false</span></span>
 </code></pre> </body>
                   </html>
                 </section>
@@ -3628,8 +3731,8 @@ https://api.staging.galoy.io/graphql
                   <body><pre><code class="hljs language-json">{
   <span class="hljs-attr">"id"</span>: <span class="hljs-string">"xyz789"</span>,
   <span class="hljs-attr">"challengeCode"</span>: <span class="hljs-string">"xyz789"</span>,
-  <span class="hljs-attr">"newCaptcha"</span>: <span class="hljs-literal">false</span>,
-  <span class="hljs-attr">"failbackMode"</span>: <span class="hljs-literal">true</span>
+  <span class="hljs-attr">"newCaptcha"</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">"failbackMode"</span>: <span class="hljs-literal">false</span>
 }
 </code></pre> </body>
                   </html>
@@ -3687,9 +3790,9 @@ https://api.staging.galoy.io/graphql
                   <head></head>
                   <body><pre><code class="hljs language-json">{
   <span class="hljs-attr">"phone"</span>: <span class="hljs-string">Phone</span>,
-  <span class="hljs-attr">"challengeCode"</span>: <span class="hljs-string">"abc123"</span>,
+  <span class="hljs-attr">"challengeCode"</span>: <span class="hljs-string">"xyz789"</span>,
   <span class="hljs-attr">"validationCode"</span>: <span class="hljs-string">"xyz789"</span>,
-  <span class="hljs-attr">"secCode"</span>: <span class="hljs-string">"abc123"</span>
+  <span class="hljs-attr">"secCode"</span>: <span class="hljs-string">"xyz789"</span>
 }
 </code></pre> </body>
                   </html>
@@ -3745,7 +3848,7 @@ https://api.staging.galoy.io/graphql
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"wallets"</span>: [<span class="hljs-string">Wallet</span>], <span class="hljs-attr">"csvTransactions"</span>: <span class="hljs-string">"abc123"</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"wallets"</span>: [<span class="hljs-string">Wallet</span>], <span class="hljs-attr">"csvTransactions"</span>: <span class="hljs-string">"xyz789"</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -3814,7 +3917,7 @@ https://api.staging.galoy.io/graphql
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"longitude"</span>: <span class="hljs-number">123.45</span>, <span class="hljs-attr">"latitude"</span>: <span class="hljs-number">987.65</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"longitude"</span>: <span class="hljs-number">987.65</span>, <span class="hljs-attr">"latitude"</span>: <span class="hljs-number">987.65</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -3851,7 +3954,7 @@ https://api.staging.galoy.io/graphql
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"deviceToken"</span>: <span class="hljs-string">"xyz789"</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"deviceToken"</span>: <span class="hljs-string">"abc123"</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -3954,7 +4057,7 @@ https://api.staging.galoy.io/graphql
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-gql"><span class="hljs-symbol">123.45</span>
+                  <body><pre><code class="hljs language-gql"><span class="hljs-symbol">987.65</span>
 </code></pre> </body>
                   </html>
                 </section>
@@ -3994,7 +4097,7 @@ https://api.staging.galoy.io/graphql
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"nodesIds"</span>: [<span class="hljs-string">"abc123"</span>]}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"nodesIds"</span>: [<span class="hljs-string">"xyz789"</span>]}
 </code></pre> </body>
                   </html>
                 </section>
@@ -4070,8 +4173,8 @@ https://api.staging.galoy.io/graphql
                   <html>
                   <head></head>
                   <body><pre><code class="hljs language-json">{
-  <span class="hljs-attr">"message"</span>: <span class="hljs-string">"xyz789"</span>,
-  <span class="hljs-attr">"path"</span>: [<span class="hljs-string">"abc123"</span>],
+  <span class="hljs-attr">"message"</span>: <span class="hljs-string">"abc123"</span>,
+  <span class="hljs-attr">"path"</span>: [<span class="hljs-string">"xyz789"</span>],
   <span class="hljs-attr">"code"</span>: <span class="hljs-string">InputErrorCode</span>
 }
 </code></pre> </body>
@@ -5210,7 +5313,7 @@ https://api.staging.galoy.io/graphql
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"title"</span>: <span class="hljs-string">"abc123"</span>, <span class="hljs-attr">"coordinates"</span>: <span class="hljs-string">Coordinates</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"title"</span>: <span class="hljs-string">"xyz789"</span>, <span class="hljs-attr">"coordinates"</span>: <span class="hljs-string">Coordinates</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -5331,7 +5434,7 @@ https://api.staging.galoy.io/graphql
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"platform"</span>: <span class="hljs-string">"xyz789"</span>, <span class="hljs-attr">"currentSupported"</span>: <span class="hljs-number">987</span>, <span class="hljs-attr">"minSupported"</span>: <span class="hljs-number">987</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"platform"</span>: <span class="hljs-string">"abc123"</span>, <span class="hljs-attr">"currentSupported"</span>: <span class="hljs-number">987</span>, <span class="hljs-attr">"minSupported"</span>: <span class="hljs-number">123</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -5857,10 +5960,10 @@ https://api.staging.galoy.io/graphql
                   <html>
                   <head></head>
                   <body><pre><code class="hljs language-json">{
-  <span class="hljs-attr">"hasNextPage"</span>: <span class="hljs-literal">false</span>,
+  <span class="hljs-attr">"hasNextPage"</span>: <span class="hljs-literal">true</span>,
   <span class="hljs-attr">"hasPreviousPage"</span>: <span class="hljs-literal">false</span>,
-  <span class="hljs-attr">"startCursor"</span>: <span class="hljs-string">"xyz789"</span>,
-  <span class="hljs-attr">"endCursor"</span>: <span class="hljs-string">"xyz789"</span>
+  <span class="hljs-attr">"startCursor"</span>: <span class="hljs-string">"abc123"</span>,
+  <span class="hljs-attr">"endCursor"</span>: <span class="hljs-string">"abc123"</span>
 }
 </code></pre> </body>
                   </html>
@@ -5911,8 +6014,8 @@ https://api.staging.galoy.io/graphql
                   <html>
                   <head></head>
                   <body><pre><code class="hljs language-json">{
-  <span class="hljs-attr">"message"</span>: <span class="hljs-string">"xyz789"</span>,
-  <span class="hljs-attr">"path"</span>: [<span class="hljs-string">"xyz789"</span>],
+  <span class="hljs-attr">"message"</span>: <span class="hljs-string">"abc123"</span>,
+  <span class="hljs-attr">"path"</span>: [<span class="hljs-string">"abc123"</span>],
   <span class="hljs-attr">"code"</span>: <span class="hljs-string">PaymentErrorCode</span>
 }
 </code></pre> </body>
@@ -6209,9 +6312,9 @@ https://api.staging.galoy.io/graphql
                   <head></head>
                   <body><pre><code class="hljs language-json">{
   <span class="hljs-attr">"base"</span>: <span class="hljs-string">SafeInt</span>,
-  <span class="hljs-attr">"offset"</span>: <span class="hljs-number">123</span>,
+  <span class="hljs-attr">"offset"</span>: <span class="hljs-number">987</span>,
   <span class="hljs-attr">"currencyUnit"</span>: <span class="hljs-string">ExchangeCurrencyUnit</span>,
-  <span class="hljs-attr">"formattedAmount"</span>: <span class="hljs-string">"xyz789"</span>
+  <span class="hljs-attr">"formattedAmount"</span>: <span class="hljs-string">"abc123"</span>
 }
 </code></pre> </body>
                   </html>
@@ -7032,7 +7135,7 @@ https://api.staging.galoy.io/graphql
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"token"</span>: <span class="hljs-string">"xyz789"</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"token"</span>: <span class="hljs-string">"abc123"</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -7121,7 +7224,7 @@ https://api.staging.galoy.io/graphql
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"secret"</span>: <span class="hljs-string">"abc123"</span>, <span class="hljs-attr">"token"</span>: <span class="hljs-string">"xyz789"</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"secret"</span>: <span class="hljs-string">"xyz789"</span>, <span class="hljs-attr">"token"</span>: <span class="hljs-string">"abc123"</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -7164,7 +7267,7 @@ https://api.staging.galoy.io/graphql
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"secret"</span>: <span class="hljs-string">"xyz789"</span>, <span class="hljs-attr">"uri"</span>: <span class="hljs-string">"xyz789"</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"secret"</span>: <span class="hljs-string">"abc123"</span>, <span class="hljs-attr">"uri"</span>: <span class="hljs-string">"xyz789"</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -7447,7 +7550,7 @@ https://api.staging.galoy.io/graphql
                   <body><pre><code class="hljs language-json">{
   <span class="hljs-attr">"username"</span>: <span class="hljs-string">Username</span>,
   <span class="hljs-attr">"alias"</span>: <span class="hljs-string">ContactAlias</span>,
-  <span class="hljs-attr">"transactionsCount"</span>: <span class="hljs-number">123</span>,
+  <span class="hljs-attr">"transactionsCount"</span>: <span class="hljs-number">987</span>,
   <span class="hljs-attr">"transactions"</span>: <span class="hljs-string">TransactionConnection</span>
 }
 </code></pre> </body>
@@ -7780,7 +7883,7 @@ https://api.staging.galoy.io/graphql
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"question"</span>: <span class="hljs-string">QuizQuestion</span>, <span class="hljs-attr">"completed"</span>: <span class="hljs-literal">false</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"question"</span>: <span class="hljs-string">QuizQuestion</span>, <span class="hljs-attr">"completed"</span>: <span class="hljs-literal">true</span>}
 </code></pre> </body>
                   </html>
                 </section>
