@@ -9,11 +9,12 @@ import * as Accounts from "@app/accounts"
 import Username from "../scalar/username"
 import { checkedToUsername } from "@domain/users"
 
+//FIXME: Discrepancy with filename
 const UserContact = new GT.Object({
   name: "UserContact",
   fields: () => ({
-    username: { type: GT.NonNull(Username) },
-    alias: { type: ContactAlias },
+    username: { type: GT.NonNull(Username), description: "Actual identifier of the contact." },
+    alias: { type: ContactAlias, description: "Alias the user can set for this contact.\nOnly the user can see the alias attached to their contact." },
     transactionsCount: {
       type: GT.NonNull(GT.Int),
     },
@@ -45,6 +46,7 @@ const UserContact = new GT.Object({
 
         return connectionFromArray(transactions, args)
       },
+      description: "Paginated list of transactions sent to/from this contact."
     },
   }),
 })

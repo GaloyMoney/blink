@@ -132,12 +132,32 @@ type TransactionEdge {
   cursor: String!
 }
 
+"""
+Give details about an individual transaction.
+Galoy have a smart routing system which is automatically settling intraledger when both the payer and payee use the same wallet - therefore it's possible the transactions is being initiated onchain or with lightning but settled intraledger.
+"""
 interface Transaction {
   id: ID!
+
+  """
+  From which protocol the payment has been initiated.
+  """
   initiationVia: PaymentInitiationMethod!
+
+  """
+  To which protocol the payment has settled on.
+  """
   settlementVia: SettlementMethod!
+
+  """
+  Amount of sats paid by the user.
+  """
   settlementAmount: SatAmount!
   settlementFee: SatAmount!
+
+  """
+  Price in USDCENT/SATS at time of settlement.
+  """
   settlementPrice: Price!
   direction: TxDirection!
   status: TxStatus!
@@ -237,10 +257,26 @@ type BTCWallet implements Wallet {
 
 type IntraLedgerTransaction implements Transaction {
   id: ID!
+
+  """
+  From which protocol the payment has been initiated.
+  """
   initiationVia: PaymentInitiationMethod!
+
+  """
+  To which protocol the payment has settled on.
+  """
   settlementVia: SettlementMethod!
+
+  """
+  Amount of sats paid by the user.
+  """
   settlementAmount: SatAmount!
   settlementFee: SatAmount!
+
+  """
+  Price in USDCENT/SATS at time of settlement.
+  """
   settlementPrice: Price!
   direction: TxDirection!
   status: TxStatus!
@@ -260,10 +296,26 @@ scalar Username
 
 type OnChainTransaction implements Transaction {
   id: ID!
+
+  """
+  From which protocol the payment has been initiated.
+  """
   initiationVia: PaymentInitiationMethod!
+
+  """
+  To which protocol the payment has settled on.
+  """
   settlementVia: SettlementMethod!
+
+  """
+  Amount of sats paid by the user.
+  """
   settlementAmount: SatAmount!
   settlementFee: SatAmount!
+
+  """
+  Price in USDCENT/SATS at time of settlement.
+  """
   settlementPrice: Price!
   direction: TxDirection!
   status: TxStatus!
@@ -282,10 +334,26 @@ scalar OnChainTxHash
 
 type LnTransaction implements Transaction {
   id: ID!
+
+  """
+  From which protocol the payment has been initiated.
+  """
   initiationVia: PaymentInitiationMethod!
+
+  """
+  To which protocol the payment has settled on.
+  """
   settlementVia: SettlementMethod!
+
+  """
+  Amount of sats paid by the user.
+  """
   settlementAmount: SatAmount!
   settlementFee: SatAmount!
+
+  """
+  Price in USDCENT/SATS at time of settlement.
+  """
   settlementPrice: Price!
   direction: TxDirection!
   status: TxStatus!
@@ -314,17 +382,51 @@ type Query {
   accountApiKeys: [AccountApiKeyHashed]
 }
 
+"""
+Provides global settings for the application which might have an impact for the user.
+"""
 type Globals {
+  """
+  A list of public keys for the running lightning nodes.
+  This can be used to know if an invoice belongs to one of our nodes.
+  """
   nodesIds: [String!]!
 }
 
 type User {
   id: ID!
+
+  """
+  Phone number with international calling code.
+  """
   phone: Phone!
+
+  """
+  Optional immutable user friendly identifier.
+  """
   username: Username
+
+  """
+  Preferred language for user.
+  When value is 'default' the intent is to use preferred language from OS settings.
+  """
   language: Language!
+
+  """
+  Get full list of contacts.
+  Can include the transactions associated with each contact.
+  """
   contacts: [UserContact!]!
+
+  """
+  Get single contact details.
+  Can include the transactions associated with the contact.
+  """
   contactByUsername(username: Username!): UserContact!
+
+  """
+  List the quiz questions the user may have completed.
+  """
   quizQuestions: [UserQuizQuestion!]!
   twoFAEnabled: Boolean
   createdAt: Timestamp!
@@ -339,9 +441,21 @@ scalar Phone
 scalar Language
 
 type UserContact {
+  """
+  Actual identifier of the contact.
+  """
   username: Username!
+
+  """
+  Alias the user can set for this contact.
+  Only the user can see the alias attached to their contact.
+  """
   alias: ContactAlias
   transactionsCount: Int!
+
+  """
+  Paginated list of transactions sent to/from this contact.
+  """
   transactions(
     """
     Returns the items in the list that come after the specified cursor.
@@ -601,11 +715,38 @@ type UserContactUpdateAliasPayload {
 
 type UserDetails {
   id: ID!
+  
+  """
+  Phone number with international calling code.
+  """
   phone: Phone!
+
+  """
+  Optional immutable user friendly identifier.
+  """
   username: Username
+
+  """
+  Preferred language for user.
+  When value is 'default' the intent is to use preferred language from OS settings.
+  """
   language: Language!
+
+  """
+  Get full list of contacts.
+  Can include the transactions associated with each contact.
+  """
   contacts: [UserContact!]!
+
+  """
+  Get single contact details.
+  Can include the transactions associated with the contact.
+  """
   contactByUsername(username: Username!): UserContact!
+
+  """
+  List the quiz questions the user may have completed.
+  """
   quizQuestions: [UserQuizQuestion!]!
   twoFAEnabled: Boolean
   createdAt: Timestamp!
