@@ -44,7 +44,7 @@ export const LnPaymentsRepository = (): ILnPaymentsRepository => {
 const lnPaymentFromRaw = (result: LnPaymentType): LnPayment => ({
   id: result.id as PaymentId,
   status: result.status as PaymentStatus,
-  confirmedAt: result.confirmedAt as Date | undefined,
+  confirmedAt: (result.confirmedAt as Date) || undefined,
   createdAt: result.createdAt as Date,
   destination: result.destination as Pubkey,
   milliSatsFee: result.milliSatsFee as MilliSatoshis,
@@ -53,6 +53,6 @@ const lnPaymentFromRaw = (result: LnPaymentType): LnPayment => ({
   paths: result.paths as RawPaths,
   paymentRequest: result.paymentRequest as EncodedPaymentRequest | undefined,
   roundedUpFee: toSats(result.roundedUpFee),
-  secret: result.secret as PaymentSecret,
+  secret: (result.secret as PaymentSecret) || undefined,
   amount: toSats(result.amount),
 })

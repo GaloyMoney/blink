@@ -72,7 +72,7 @@ type LnPaymentLookup = {
   readonly paths: RawPaths
   paymentRequest: EncodedPaymentRequest | undefined
   readonly roundedUpFee: Satoshis
-  readonly secret: PaymentSecret
+  readonly secret: PaymentSecret | undefined
   readonly amount: Satoshis
 }
 
