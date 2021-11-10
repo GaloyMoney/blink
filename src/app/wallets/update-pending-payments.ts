@@ -104,7 +104,6 @@ const updatePendingPayment = async ({
           { error: lnPaymentLookup },
           "we couldn't update payment data to our database",
         )
-        return persistedPayment
       }
 
       if (status === PaymentStatus.Settled) {
