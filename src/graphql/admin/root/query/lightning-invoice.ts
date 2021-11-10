@@ -12,6 +12,7 @@ const LightningInvoiceQuery = GT.Field({
     if (hash instanceof Error) throw hash
 
     const lightningInvoice = await lookupInvoiceByHash(hash)
+
     if (lightningInvoice instanceof Error) throw lightningInvoice
 
     return lightningInvoice
