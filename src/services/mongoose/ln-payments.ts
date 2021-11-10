@@ -42,7 +42,7 @@ export const LnPaymentsRepository = (): ILnPaymentsRepository => {
 }
 
 const lnPaymentFromRaw = (result: LnPaymentType): LnPayment => ({
-  id: result.id as PaymentId,
+  id: result.id as PaymentLedgerId,
   status: result.status as PaymentStatus,
   confirmedAt: (result.confirmedAt as Date) || undefined,
   createdAt: result.createdAt as Date,
