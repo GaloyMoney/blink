@@ -68,7 +68,11 @@ const ITransaction = new GT.Interface({
   name: "Transaction",
   fields: () => transactionInterfaceFields,
   description:
-    "Give details about an individual transaction.\nGaloy have a smart routing system which is automatically settling intraledger when both the payer and payee use the same wallet - therefore it's possible the transactions is being initiated onchain or with lightning but settled intraledger.",
+    `Give details about an individual transaction.
+    Galoy have a smart routing system which is automatically 
+    settling intraledger when both the payer and payee use the same wallet 
+    therefore it's possible the transactions is being initiated onchain 
+    or with lightning but settled intraledger.`,
 })
 
 export const { connectionType: TransactionConnection } = connectionDefinitions({

@@ -27,13 +27,15 @@ const mainUserFields = () => ({
     type: GT.NonNull(Language),
     resolve: (source) => source.language,
     description:
-      "Preferred language for user.\nWhen value is 'default' the intent is to use preferred language from OS settings.",
+      `Preferred language for user.
+      When value is 'default' the intent is to use preferred language from OS settings.`,
   },
 
   contacts: {
     type: GT.NonNullList(UserContact), // TODO: Make it a Connection Interface
     description:
-      "Get full list of contacts.\nCan include the transactions associated with each contact.",
+      `Get full list of contacts.
+      Can include the transactions associated with each contact.`,
   },
 
   contactByUsername: {
@@ -56,7 +58,8 @@ const mainUserFields = () => ({
       return contact
     },
     description:
-      "Get single contact details.\nCan include the transactions associated with the contact.",
+      `Get single contact details.
+      Can include the transactions associated with the contact.`,
   },
 
   quizQuestions: {
