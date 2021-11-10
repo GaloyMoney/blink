@@ -1,3 +1,5 @@
+#@ load("@ytt:data", "data")
+
 spectaql:
   logoFile: ./public/logo.png
 
@@ -13,6 +15,10 @@ info:
   license:
     name: MIT 
     url: https://opensource.org/licenses/MIT
+  x-introItems:
+  - title: Galoy API Tutorial
+    description: #@ data.read("TUTORIAL.md")
+
 
 servers:
   - url: https://api.staging.galoy.io/graphql
