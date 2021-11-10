@@ -46,7 +46,11 @@ const pathSchema = new Schema({
 })
 
 const paymentSchema = new Schema<LnPaymentType>({
-  status: { type: String, enum: ["settled", "failed", "pending"], required: true },
+  status: {
+    type: String,
+    enum: ["settled", "failed", "pending"],
+    required: true,
+  },
   confirmedAt: Date,
   createdAt: Date,
   destination: String,
@@ -54,7 +58,12 @@ const paymentSchema = new Schema<LnPaymentType>({
     type: Number,
     default: 0,
   },
-  paymentHash: String,
+  paymentHash: {
+    type: String,
+    index: true,
+    unique: true,
+    required: true,
+  },
   milliSatsAmount: {
     type: Number,
     min: 0,
