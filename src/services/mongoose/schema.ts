@@ -408,7 +408,7 @@ UserSchema.virtual("userIsActive").get(async function (this: typeof UserSchema) 
 })
 
 UserSchema.statics.getUserByPhone = async function (phone: string) {
-  const user = await this.findOne({ phone })
+  const user = await this.findOne({ phone }, { lastIPs: 0, lastConnection: 0 })
 
   if (!user) {
     throw new NotFoundError("User not found", { logger: baseLogger })
@@ -422,7 +422,10 @@ UserSchema.statics.getUserByUsername = async function (username: string) {
     return null
   }
 
-  const user = await this.findOne({ username: caseInsensitiveRegex(username) })
+  const user = await this.findOne(
+    { username: caseInsensitiveRegex(username) },
+    { lastIPs: 0, lastConnection: 0 },
+  )
 
   if (!user) {
     throw new NotFoundError("User not found", { logger: baseLogger })
@@ -432,7 +435,7 @@ UserSchema.statics.getUserByUsername = async function (username: string) {
 }
 
 UserSchema.statics.getUserByAddress = async function ({ address }) {
-  return this.findOne({ "onchain.address": address })
+  return this.findOne({ "onchain.address": address }, { lastIPs: 0, lastConnection: 0 })
 }
 
 UserSchema.statics.getActiveUsers = async function (): Promise<Array<typeof User>> {

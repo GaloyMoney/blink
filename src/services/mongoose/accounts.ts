@@ -9,7 +9,10 @@ import { User } from "@services/mongoose/schema"
 export const AccountsRepository = (): IAccountsRepository => {
   const findById = async (accountId: AccountId): Promise<Account | RepositoryError> => {
     try {
-      const result: UserType = await User.findOne({ _id: accountId })
+      const result: UserType = await User.findOne(
+        { _id: accountId },
+        { lastIPs: 0, lastConnection: 0 },
+      )
       if (!result) return new CouldNotFindError()
       return translateToAccount(result)
     } catch (err) {
@@ -21,7 +24,10 @@ export const AccountsRepository = (): IAccountsRepository => {
     walletId: WalletId,
   ): Promise<Account | RepositoryError> => {
     try {
-      const result: UserType = await User.findOne({ _id: walletId })
+      const result: UserType = await User.findOne(
+        { _id: walletId },
+        { lastIPs: 0, lastConnection: 0 },
+      )
       if (!result) return new CouldNotFindError()
       return translateToAccount(result)
     } catch (err) {

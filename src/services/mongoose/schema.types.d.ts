@@ -1,10 +1,10 @@
 type IPType = {
   ip: string
-  provider: string
-  country: string
-  region: string
-  city: string
-  Type: string
+  provider?: string
+  country?: string
+  region?: string
+  city?: string
+  Type?: string
   firstConnection: Date
   lastConnection: Date
 }
@@ -61,9 +61,7 @@ interface UserType {
   contacts: ContactObjectForUser[]
   created_at: string
   currencies: CurrencyObjectForUser[]
-  lastIPs?: IPType[]
   onchain?: OnChainObjectForUser[]
-  lastConnection: Date
   twoFA: TwoFAForUser
   walletPublicId: WalletPublicId
 
@@ -84,4 +82,11 @@ interface UserType {
 
   // mongoose in-built functions
   save: () => Promise<UserType>
+}
+
+// ?: improve this
+interface UserIPsType {
+  _id: string
+  id: string
+  lastIPs?: IPType[]
 }

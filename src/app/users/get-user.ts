@@ -5,61 +5,113 @@ import {
   ENDUSER_ALIAS,
 } from "@services/tracing"
 import { UsersRepository } from "@services/mongoose"
-import { IpFetcher } from "@services/ipfetcher"
 import { getIpConfig } from "@config/app"
+import { IpFetcher } from "@services/ipfetcher"
+import { UsersIpRepository } from "@services/mongoose/users-ips"
 import { RepositoryError } from "@domain/errors"
+import { IpFetcherServiceError } from "@domain/ipfetcher"
 
 const users = UsersRepository()
+const usersIp = UsersIpRepository()
 
 export const getUserForLogin = async ({
   userId,
   ip,
+  logger,
 }: {
   userId: string
   ip?: string
+  logger: Logger
 }): Promise<User | ApplicationError> =>
   asyncRunInSpan(
     "app.getUserForLogin",
     { [SemanticAttributes.CODE_FUNCTION]: "getUserForLogin" },
     async () => {
       const user = await users.findById(userId as UserId)
+
       if (user instanceof Error) {
         return user
       }
       addAttributesToCurrentSpan({
         [ENDUSER_ALIAS]: user.username,
       })
-      user.lastConnection = new Date()
+      // this routing run asynchrously, to update metadata on the background
+      updateUserIPsInfo({ userId, ip, logger } as {
+        userId: UserId
+        ip: IpAddress
+        logger: Logger
+      })
 
-      // IP tracking logic could be extracted into domain
-      const ipConfig = getIpConfig()
-      if (ip && ipConfig.ipRecordingEnabled) {
-        const lastIP: IPType | undefined = user.lastIPs.find(
-          (ipObject: IPType) => ipObject.ip === ip,
-        )
-        if (lastIP) {
-          lastIP.lastConnection = user.lastConnection
-        } else if (ipConfig.proxyCheckingEnabled) {
-          const ipFetcher = IpFetcher()
-          const ipInfo = await ipFetcher.fetchIPInfo(ip as IpAddress)
-          if (!(ipInfo instanceof Error)) {
-            user.lastIPs.push({
-              ip,
-              ...ipInfo,
-              Type: ipInfo.type,
-              firstConnection: user.lastConnection,
-              lastConnection: user.lastConnection,
-            })
-          }
-        }
-      }
-
-      const updateResult = await users.update(user)
-
-      if (updateResult instanceof RepositoryError) {
-        return updateResult
-      }
       return user
+    },
+  )
+
+const updateUserIPsInfo = async ({
+  userId,
+  ip,
+  logger,
+}: {
+  userId: UserId
+  ip?: IpAddress
+  logger: Logger
+}): Promise<void | RepositoryError> =>
+  asyncRunInSpan(
+    "app.updateUserIPsInfo",
+    { [SemanticAttributes.CODE_FUNCTION]: "app.updateUserIPsInfo" },
+    async () => {
+      const ipConfig = getIpConfig()
+
+      const lastConnection = new Date()
+
+      const userIP = await usersIp.findById(userId)
+
+      if (userIP instanceof RepositoryError) return userIP
+
+      if (!ip || !ipConfig.ipRecordingEnabled) {
+        const result = await usersIp.update(userIP)
+
+        if (result instanceof Error) {
+          logger.error(
+            { result, userId, ip },
+            "impossible to update user last connection",
+          )
+
+          return result
+        }
+
+        return
+      }
+
+      const lastIP = userIP.lastIPs.find((ipObject) => ipObject.ip === ip)
+
+      if (lastIP) {
+        lastIP.lastConnection = lastConnection
+      } else {
+        let ipInfo = {
+          ip,
+          firstConnection: lastConnection,
+          lastConnection: lastConnection,
+        } as IPType
+
+        if (ipConfig.proxyCheckingEnabled) {
+          const ipFetcher = IpFetcher()
+          const ipFetcherInfo = await ipFetcher.fetchIPInfo(ip as IpAddress)
+
+          if (ipFetcherInfo instanceof IpFetcherServiceError) {
+            logger.error({ userId, ip }, "impossible to get ip detail")
+            return ipFetcherInfo
+          }
+
+          ipInfo = { ...ipInfo, ...ipFetcherInfo }
+        }
+        userIP.lastIPs.push(ipInfo)
+      }
+      const result = await usersIp.update(userIP)
+
+      if (result instanceof Error) {
+        logger.error({ result, userId, ip }, "impossible to update ip")
+        return result
+      }
     },
   )
 

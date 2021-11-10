@@ -84,7 +84,7 @@ export const startApolloServer = async ({
       const apiKey = context.req?.apiKey ?? null
       // @ts-expect-error: TODO
       const apiSecret = context.req?.apiSecret ?? null
-      const uid = token?.uid ?? null
+      const userId = token?.uid ?? null
       const ips = context.req?.headers["x-real-ip"]
       let ip: string | undefined
 
@@ -101,10 +101,13 @@ export const startApolloServer = async ({
 
       let domainUser: User | null = null
       return addAttributesToCurrentSpanAndPropagate(
-        { [SemanticAttributes.ENDUSER_ID]: uid, [SemanticAttributes.HTTP_CLIENT_IP]: ip },
+        {
+          [SemanticAttributes.ENDUSER_ID]: userId,
+          [SemanticAttributes.HTTP_CLIENT_IP]: ip,
+        },
         async () => {
-          if (uid) {
-            const loggedInUser = await Users.getUserForLogin({ userId: uid, ip })
+          if (userId) {
+            const loggedInUser = await Users.getUserForLogin({ userId, ip, logger })
             if (loggedInUser instanceof Error)
               throw new ApolloError(
                 "Invalid user authentication",
@@ -114,7 +117,7 @@ export const startApolloServer = async ({
                 },
               )
             domainUser = loggedInUser
-            user = await User.findOne({ _id: uid })
+            user = await User.findOne({ _id: userId })
             wallet =
               !!user && user.status === "active"
                 ? await WalletFactory({ user, logger })
@@ -140,7 +143,7 @@ export const startApolloServer = async ({
           return {
             ...context,
             logger,
-            uid,
+            uid: userId,
             wallet,
             domainUser,
             user,
