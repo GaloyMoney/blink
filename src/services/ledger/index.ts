@@ -550,11 +550,9 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
-  const settlePendingLnPayments = async ({
-    paymentHash,
-  }: {
-    paymentHash: PaymentHash
-  }): Promise<boolean | LedgerServiceError> => {
+  const settlePendingLnPayments = async (
+    paymentHash: PaymentHash,
+  ): Promise<boolean | LedgerServiceError> => {
     try {
       const result = await Transaction.updateMany(
         { hash: paymentHash },
