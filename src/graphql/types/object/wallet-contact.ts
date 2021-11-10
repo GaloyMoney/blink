@@ -9,7 +9,6 @@ import * as Accounts from "@app/accounts"
 import Username from "../scalar/username"
 import { checkedToUsername } from "@domain/users"
 
-//FIXME: Discrepancy with filename
 const UserContact = new GT.Object({
   name: "UserContact",
   fields: () => ({
