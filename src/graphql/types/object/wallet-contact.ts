@@ -18,8 +18,7 @@ const UserContact = new GT.Object({
     },
     alias: {
       type: ContactAlias,
-      description:
-        `Alias the user can set for this contact.
+      description: `Alias the user can set for this contact.
         Only the user can see the alias attached to their contact.`,
     },
     transactionsCount: {
