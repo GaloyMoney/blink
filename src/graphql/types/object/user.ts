@@ -1,3 +1,5 @@
+import dedent from "dedent"
+
 import { GT } from "@graphql/index"
 import Account from "../abstract/account"
 
@@ -15,12 +17,25 @@ import { UnknownClientError } from "@core/error"
 
 const mainUserFields = () => ({
   id: { type: GT.NonNullID },
-  phone: { type: GT.NonNull(Phone) },
-  username: { type: Username },
-  language: { type: GT.NonNull(Language) },
+  phone: {
+    type: GT.NonNull(Phone),
+    description: "Phone number with international calling code.",
+  },
+  username: {
+    type: Username,
+    description: "Optional immutable user friendly identifier.",
+  },
+  language: {
+    type: GT.NonNull(Language),
+    resolve: (source) => source.language,
+    description: dedent`Preferred language for user.
+      When value is 'default' the intent is to use preferred language from OS settings.`,
+  },
 
   contacts: {
     type: GT.NonNullList(UserContact), // TODO: Make it a Connection Interface
+    description: dedent`Get full list of contacts.
+      Can include the transactions associated with each contact.`,
   },
 
   contactByUsername: {
@@ -42,10 +57,13 @@ const mainUserFields = () => ({
       }
       return contact
     },
+    description: dedent`Get single contact details.
+      Can include the transactions associated with the contact.`,
   },
 
   quizQuestions: {
     type: GT.NonNullList(UserQuizQuestion),
+    description: "List the quiz questions the user may have completed.",
   },
 
   twoFAEnabled: {
