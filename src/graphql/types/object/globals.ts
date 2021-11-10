@@ -1,3 +1,4 @@
+import dedent from "dedent"
 import { GT } from "@graphql/index"
 
 const Globals = new GT.Object({
@@ -7,8 +8,8 @@ const Globals = new GT.Object({
   fields: () => ({
     nodesIds: {
       type: GT.NonNullList(GT.String),
-      description:
-        "A list of public keys for the running lightning nodes.\nThis can be used to know if an invoice belongs to one of our nodes.",
+      description: dedent`A list of public keys for the running lightning nodes.
+        This can be used to know if an invoice belongs to one of our nodes.`,
     },
     // TODO: include GlobalSettings
   }),

@@ -1,3 +1,4 @@
+import dedent from "dedent"
 import { GT } from "@graphql/index"
 
 import ITransaction, { transactionInterfaceFields } from "../abstract/transaction"
@@ -15,9 +16,8 @@ const IntraLedgerTransaction = new GT.Object({
     // Non-interface fields
     otherPartyUsername: {
       type: Username,
-      description:
-        "Settlement destination: Could be null when originalDestination is OnChain/LN" +
-        " and the payee does not have a username",
+      description: dedent`Settlement destination: Could be null when originalDestination is OnChain/LN
+        and the payee does not have a username`,
     },
   }),
 })

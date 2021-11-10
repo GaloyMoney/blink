@@ -1,3 +1,4 @@
+import dedent from "dedent"
 import { connectionDefinitions } from "graphql-relay"
 
 import { GT } from "@graphql/index"
@@ -62,10 +63,10 @@ export const transactionInterfaceFields = {
 const ITransaction = new GT.Interface({
   name: "Transaction",
   fields: () => transactionInterfaceFields,
-  description: `Give details about an individual transaction.
-    Galoy have a smart routing system which is automatically 
-    settling intraledger when both the payer and payee use the same wallet 
-    therefore it's possible the transactions is being initiated onchain 
+  description: dedent`Give details about an individual transaction.
+    Galoy have a smart routing system which is automatically
+    settling intraledger when both the payer and payee use the same wallet
+    therefore it's possible the transactions is being initiated onchain
     or with lightning but settled intraledger.`,
 })
 
