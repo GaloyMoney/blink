@@ -715,7 +715,7 @@ type UserContactUpdateAliasPayload {
 
 type UserDetails {
   id: ID!
-  
+
   """
   Phone number with international calling code.
   """
