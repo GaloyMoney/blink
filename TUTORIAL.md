@@ -1,7 +1,7 @@
 # Lightning Integration
 
 ## Overview
-The staging API endpoint is: `https://api.testnet.galoy.io/graphql`
+The staging API endpoint is: `https://api.staging.galoy.io/graphql`
 
 ## Authentication
 To get a new JWT:
@@ -16,7 +16,7 @@ All other methods require a valid JWT set in the header as a bearer token - `Aut
 
 #### query
 ```shell
-export URI=https://api.testnet.galoy.io/graphql
+export URI=https://api.staging.galoy.io/graphql
 export PHONE='+12025550148'
 curl --location --request POST $URI --header 'Content-Type: application/json' --data-raw '{"query":"mutation userRequestAuthCode ($input: UserRequestAuthCodeInput!) {\n    userRequestAuthCode (input: $input) {\n        errors {\n            message\n            path\n        }\n        success\n    }\n}","variables":{"input":{"phone":"'"$PHONE"'"}}}'
 ```
