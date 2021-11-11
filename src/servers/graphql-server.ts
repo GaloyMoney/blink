@@ -182,7 +182,7 @@ export const startApolloServer = async ({
         "NOT_AUTHORIZED",
       ].includes(err.message)
 
-      const reportErrorToCclient =
+      const reportErrorToClient =
         ["GRAPHQL_PARSE_FAILED", "GRAPHQL_VALIDATION_FAILED", "BAD_USER_INPUT"].includes(
           err.extensions?.code,
         ) ||
@@ -197,7 +197,7 @@ export const startApolloServer = async ({
         code: isShieldError ? err.message : err.extensions?.code,
       }
 
-      return reportErrorToCclient
+      return reportErrorToClient
         ? reportedError
         : {
             message: `Error processing GraphQL request ${reportedError.code}`,
