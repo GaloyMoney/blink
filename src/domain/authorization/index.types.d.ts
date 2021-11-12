@@ -2,8 +2,8 @@ type AuthorizationServiceError = import("./errors").AuthorizationServiceError
 
 type Role = typeof import("./primitives").Role[keyof typeof import("./primitives").Role]
 
-type AuthorizationScope =
-  typeof import("./primitives").AuthorizationScope[keyof typeof import("./primitives").AuthorizationScope]
+declare const authorizationScopeSymbol: unique symbol
+type AuthorizationScope = string & { [authorizationScopeSymbol]: never }
 
 type Permission =
   typeof import("./primitives").Permission[keyof typeof import("./primitives").Permission]
@@ -35,5 +35,5 @@ type IAuthorizationService = {
 
   addPermissionToRole(AddPermissionToRoleArgs): Promise<true | AuthorizationError>
 
-  checkPermission(CheckPermissionArgs): Promise<true | AuthorizationError>
+  checkPermission(CheckPermissionArgs): Promise<boolean | AuthorizationError>
 }
