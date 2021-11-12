@@ -17,5 +17,6 @@ const validateWalletId = async (resolve, parent, args, context, info) => {
 export const walletIdMiddleware = {
   Mutation: {
     onChainAddressCreate: validateWalletId,
+    onChainAddressCurrent: validateWalletId,
   },
 }

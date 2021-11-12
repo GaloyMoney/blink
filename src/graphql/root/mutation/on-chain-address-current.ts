@@ -1,9 +1,8 @@
 import { GT } from "@graphql/index"
-import OnChainAddressPayload from "@graphql/types/payload/on-chain-address"
+import { mapError } from "@graphql/error-map"
 import WalletId from "@graphql/types/scalar/wallet-id"
-
+import OnChainAddressPayload from "@graphql/types/payload/on-chain-address"
 import * as Wallets from "@app/wallets"
-import * as Accounts from "@app/accounts"
 
 const OnChainAddressCurrentInput = new GT.Input({
   name: "OnChainAddressCurrentInput",
@@ -17,39 +16,16 @@ const OnChainAddressCurrentMutation = GT.Field({
   args: {
     input: { type: GT.NonNull(OnChainAddressCurrentInput) },
   },
-  resolve: async (_, args, { domainUser }) => {
+  resolve: async (_, args) => {
     const { walletId } = args.input
-    if (walletId && walletId instanceof Error) {
+    if (walletId instanceof Error) {
       return { errors: [{ message: walletId.message }] }
     }
 
-    let address: OnChainAddress | Error | null = null
-    if (walletId) {
-      const hasPermissions = await Accounts.hasPermissions(domainUser.id, walletId)
-      if (hasPermissions instanceof Error) {
-        return { errors: [{ message: hasPermissions.message }] }
-      }
-
-      if (!hasPermissions) {
-        return { errors: [{ message: "Invalid wallet" }] }
-      }
-
-      address = await Wallets.getLastOnChainAddressByWalletPublicId(walletId)
-    }
-
-    const account = await Accounts.getAccount(domainUser.defaultAccountId)
-    if (account instanceof Error) {
-      return { errors: [{ message: account.message }] }
-    }
-
-    if (!account.walletIds.length) {
-      return { errors: [{ message: "Account does not have a default wallet" }] }
-    }
-
-    address = await Wallets.getLastOnChainAddress(account.walletIds[0])
-
+    const address = await Wallets.getLastOnChainAddressByWalletPublicId(walletId)
     if (address instanceof Error) {
-      return { errors: [{ message: address.message }] }
+      const appErr = mapError(address)
+      return { errors: [{ message: appErr.message }] }
     }
 
     return {
