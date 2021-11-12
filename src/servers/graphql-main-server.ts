@@ -11,6 +11,7 @@ import {
   startApolloServer,
 } from "./graphql-server"
 import { gqlMainSchema } from "../graphql"
+import { walletIdMiddleware } from "./graphql-middlewares/wallet-id"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
 
@@ -59,7 +60,7 @@ export async function startApolloServerForCoreSchema() {
     { allowExternalErrors: true },
   )
 
-  const schema = applyMiddleware(gqlMainSchema, permissions)
+  const schema = applyMiddleware(gqlMainSchema, permissions, walletIdMiddleware)
   return startApolloServer({ schema, port: 4002, startSubscriptionServer: true })
 }
 
