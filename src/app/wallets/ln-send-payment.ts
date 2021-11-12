@@ -31,7 +31,6 @@ import {
   WalletsRepository,
 } from "@services/mongoose"
 import { RoutesCache } from "@services/redis/routes"
-import { PriceService } from "@services/price"
 
 import { reimburseFee } from "@app/wallets/reimburse-fee"
 import {
@@ -43,6 +42,7 @@ import { CachedRouteLookupKeyFactory } from "@domain/routes/key-factory"
 import { lnPaymentStatusEvent } from "@config/app"
 import { NotificationsService } from "@services/notifications"
 import pubsub from "@services/pubsub"
+import { getCurrentPrice } from "@app/prices"
 
 export const lnInvoicePaymentSendWithTwoFA = async ({
   paymentRequest,
@@ -259,7 +259,7 @@ const lnSendPayment = async ({
   if (lndService instanceof Error) return lndService
   const isLocal = lndService.isLocal(decodedInvoice.destination)
   if (isLocal instanceof Error) return isLocal
-  const usdPerSat = await PriceService().getCurrentPrice()
+  const usdPerSat = await getCurrentPrice()
   if (usdPerSat instanceof Error) return usdPerSat
 
   if (isLocal) {

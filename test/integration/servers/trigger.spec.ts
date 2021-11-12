@@ -22,10 +22,10 @@ import { addInvoice } from "@app/wallets"
 import { getHash } from "@core/utils"
 import { ledger } from "@services/mongodb"
 import { getTitle } from "@services/notifications/payment"
-import { getCurrentPrice } from "@services/realtime-price"
 import { TxStatus } from "@domain/wallets"
 import { getBTCBalance } from "test/helpers/wallet"
 import { NotificationType } from "@domain/notifications"
+import { getCurrentPrice } from "@app/prices"
 
 jest.mock("@services/notifications/notification")
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
@@ -156,7 +156,8 @@ describe("onchainBlockEventhandler", () => {
     expect(dbTx.sats).toBe(sats)
     expect(dbTx.pending).toBe(false)
 
-    const satsPrice = (await getCurrentPrice()) || 1
+    const satsPrice = await getCurrentPrice()
+    if (satsPrice instanceof Error) throw satsPrice
     const usd = (sats * satsPrice).toFixed(2)
     expect(sendNotification.mock.calls[0][0].title).toBe(
       getTitle[NotificationType.LnInvoicePaid]({ usd, amount: sats }),

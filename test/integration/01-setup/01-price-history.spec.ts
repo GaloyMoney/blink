@@ -1,6 +1,7 @@
 import { Types as MongooseTypes } from "mongoose"
-import { PriceHistory } from "@services/mongoose/schema"
+import { PriceHistory } from "@services/price/schema"
 import { chunk, generateSatoshiPriceHistory } from "test/helpers"
+import { SATS_PER_BTC } from "@config/app"
 
 describe("Price history", () => {
   it("generates 1 year of data", async () => {
@@ -25,7 +26,7 @@ describe("Price history", () => {
         update: {
           $push: {
             "pair.exchange.price": {
-              $each: c.map((d) => ({ _id: d.date, o: d.price / Math.pow(10, 8) })),
+              $each: c.map((d) => ({ _id: d.date, o: d.price / SATS_PER_BTC })),
             },
           },
         },

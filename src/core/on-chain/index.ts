@@ -29,7 +29,6 @@ import { UserWallet } from "../user-wallet"
 import { LoggedError } from "../utils"
 import { ONCHAIN_LOOK_BACK, ONCHAIN_LOOK_BACK_OUTGOING } from "@config/app"
 import * as Wallets from "@app/wallets"
-import { PriceService } from "@services/price"
 import { toSats } from "@domain/bitcoin"
 import { UsersRepository, WalletsRepository } from "@services/mongoose"
 import { CouldNotFindError } from "@domain/errors"
@@ -42,6 +41,7 @@ import {
   checkWithdrawalLimits,
 } from "@app/wallets/check-limit-helpers"
 import { TwoFANewCodeNeededError } from "@domain/twoFA"
+import { getCurrentPrice } from "@app/prices"
 
 export const getOnChainTransactions = async ({
   lnd,
@@ -175,7 +175,7 @@ export const OnChainMixin = (superclass) =>
             sendAll,
           }
 
-          const price = await PriceService().getCurrentPrice()
+          const price = await getCurrentPrice()
           if (price instanceof Error) throw price
           const onChainFee = toSats(0)
           const usd = sats * price

@@ -1,3 +1,4 @@
+import { getCurrentPrice } from "@app/prices"
 import { addNewContact } from "@app/users/add-new-contact"
 import { getBalanceForWallet } from "@app/wallets"
 import {
@@ -20,7 +21,6 @@ import {
   UsersRepository,
   WalletsRepository,
 } from "@services/mongoose"
-import { PriceService } from "@services/price"
 
 export const intraledgerPaymentSend = async ({
   recipientUsername,
@@ -176,7 +176,7 @@ const executePaymentViaIntraledger = async ({
   const recipientWallet = await WalletsRepository().findById(recipientWalletId)
   if (recipientWallet instanceof Error) return recipientWallet
 
-  const price = await PriceService().getCurrentPrice()
+  const price = await getCurrentPrice()
   if (price instanceof Error) return price
   const lnFee = toSats(0)
   const sats = toSats(amount + lnFee)

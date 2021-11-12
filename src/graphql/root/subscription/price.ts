@@ -1,11 +1,10 @@
 import { GT } from "@graphql/index"
-
 import ExchangeCurrencyUnit from "@graphql/types/scalar/exchange-currency-unit"
 import PricePayload from "@graphql/types/payload/price"
-import { getCurrentPrice } from "@services/realtime-price"
 import { SAT_USDCENT_PRICE } from "@config/app"
 import SatAmount from "@graphql/types/scalar/sat-amount"
 import pubsub from "@services/pubsub"
+import { getCurrentPrice } from "@app/prices"
 
 const PriceInput = new GT.Input({
   name: "PriceInput",
@@ -62,7 +61,7 @@ const PriceSubscription = {
       })
     } else {
       const satUsdPrice = await getCurrentPrice()
-      if (satUsdPrice) {
+      if (!(satUsdPrice instanceof Error)) {
         pubsub.publishImmediate(eventName, { satUsdCentPrice: 100 * satUsdPrice })
       }
     }

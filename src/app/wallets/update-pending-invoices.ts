@@ -3,13 +3,13 @@ import { toLiabilitiesAccountId } from "@domain/ledger"
 import { LndService } from "@services/lnd"
 import { LedgerService } from "@services/ledger"
 import { WalletInvoicesRepository } from "@services/mongoose"
-import { PriceService } from "@services/price"
 import { CouldNotFindError } from "@domain/errors"
 import { LockService } from "@services/lock"
 import { NotificationsService } from "@services/notifications"
 import { DepositFeeCalculator } from "@domain/wallets"
 import { lnPaymentStatusEvent } from "@config/app"
 import pubsub from "@services/pubsub"
+import { getCurrentPrice } from "@app/prices"
 
 export const updatePendingInvoices = async ({
   walletId,
@@ -116,7 +116,7 @@ const updatePendingInvoice = async ({
       const updatedWalletInvoice = await walletInvoicesRepo.update(invoiceToUpdate)
       if (updatedWalletInvoice instanceof Error) return updatedWalletInvoice
 
-      const usdPerSat = await PriceService().getCurrentPrice()
+      const usdPerSat = await getCurrentPrice()
       if (usdPerSat instanceof Error) return usdPerSat
 
       const { description, received } = lnInvoiceLookup

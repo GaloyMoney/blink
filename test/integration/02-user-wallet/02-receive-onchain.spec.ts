@@ -2,7 +2,6 @@ import { once } from "events"
 import { filter } from "lodash"
 import { baseLogger } from "@services/logger"
 import { getOnChainAddressCreateAttemptLimits, getUserLimits } from "@config/app"
-import { getCurrentPrice } from "@services/realtime-price"
 import { btc2sat, sat2btc, sleep } from "@core/utils"
 import { getTitle } from "@services/notifications/payment"
 import { onchainTransactionEventHandler } from "@servers/trigger"
@@ -27,7 +26,9 @@ import { resetOnChainAddressWalletIdLimits } from "test/helpers/rate-limit"
 import { OnChainAddressCreateRateLimiterExceededError } from "@domain/rate-limit/errors"
 import { NotificationType } from "@domain/notifications"
 
-jest.mock("@services/realtime-price", () => require("test/mocks/realtime-price"))
+import { getCurrentPrice } from "@app/prices"
+
+jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
 let walletUser0
@@ -221,9 +222,7 @@ describe("UserWallet - On chain", () => {
     )
 
     const satsPrice = await getCurrentPrice()
-    if (!satsPrice) {
-      throw Error(`satsPrice is not set`)
-    }
+    if (satsPrice instanceof Error) throw satsPrice
     const usd = (btc2sat(amountBTC) * satsPrice).toFixed(2)
 
     expect(sendNotification.mock.calls[0][0].title).toBe(

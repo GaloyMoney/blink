@@ -1,6 +1,5 @@
 import { WalletsRepository } from "@services/mongoose"
 import { OnChainService } from "@services/lnd/onchain-service"
-import { PriceService } from "@services/price"
 import { NotificationsService } from "@services/notifications"
 import { LedgerService } from "@services/ledger"
 import { OnChainError, TxDecoder } from "@domain/bitcoin/onchain"
@@ -8,6 +7,7 @@ import { toLiabilitiesAccountId } from "@domain/ledger"
 import { DepositFeeCalculator } from "@domain/wallets"
 import { LockService } from "@services/lock"
 import { ONCHAIN_LOOK_BACK, ONCHAIN_MIN_CONFIRMATIONS, BTC_NETWORK } from "@config/app"
+import { getCurrentPrice } from "@app/prices"
 
 export const updateOnChainReceipt = async ({
   scanDepth = ONCHAIN_LOOK_BACK,
@@ -76,7 +76,7 @@ const processTxForWallet = async (
 
   const walletAddresses = wallet.onChainAddresses()
 
-  const usdPerSat = await PriceService().getCurrentPrice()
+  const usdPerSat = await getCurrentPrice()
   if (usdPerSat instanceof Error) return usdPerSat
 
   const liabilitiesAccountId = toLiabilitiesAccountId(wallet.id)
