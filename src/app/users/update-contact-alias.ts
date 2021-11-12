@@ -9,23 +9,23 @@ export const updateContactAlias = async ({
   userId: UserId
   username: string
   alias: string
-}): Promise<User | ApplicationError> => {
+}): Promise<UserContact | ApplicationError> => {
   const repo = UsersRepository()
   const user = await repo.findById(userId)
   if (user instanceof Error) {
     return user
   }
 
-  const found = user.contacts.find((contact) => contact.username === username)
-  if (!found) {
+  const contact = user.contacts.find((contact) => contact.username === username)
+  if (!contact) {
     return new ValidationError(`User doesn't have contact ${username}`)
   }
-  found.alias = alias as ContactAlias
+  contact.alias = alias as ContactAlias
 
   const result = await repo.update(user)
   if (result instanceof Error) {
     return result
   }
 
-  return user
+  return contact
 }

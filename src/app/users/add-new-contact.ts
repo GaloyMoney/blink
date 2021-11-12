@@ -22,6 +22,7 @@ export const addNewContact = async ({
     user.contacts[idx].transactionsCount++
   } else {
     user.contacts.push({
+      id: contactUsername,
       username: contactUsername,
       alias: "" as ContactAlias,
       transactionsCount: 1,

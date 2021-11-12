@@ -1,12 +1,12 @@
 import { GT } from "@graphql/index"
 
-import { User } from "@services/mongoose/schema"
-
-import UserDetails from "@graphql/admin/types/object/user"
+import GraphQLUser from "@graphql/admin/types/object/user"
 import Username from "@graphql/types/scalar/username"
 
+import { User } from "@services/mongoose/schema"
+
 const UserDetailsByUsernameQuery = GT.Field({
-  type: GT.NonNull(UserDetails),
+  type: GT.NonNull(GraphQLUser),
   args: {
     username: { type: GT.NonNull(Username) },
   },

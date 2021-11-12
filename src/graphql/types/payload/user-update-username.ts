@@ -1,15 +1,7 @@
 import { GT } from "@graphql/index"
 
 import IError from "../abstract/error"
-import Username from "../scalar/username"
-
-const UserUsernameDetails = new GT.Object({
-  name: "UserUsernameDetails",
-  fields: () => ({
-    id: { type: GT.NonNullID },
-    username: { type: GT.NonNull(Username) },
-  }),
-})
+import GraphQLUser from "../object/graphql-user"
 
 const UserUpdateUsernamePayload = new GT.Object({
   name: "UserUpdateUsernamePayload",
@@ -18,7 +10,7 @@ const UserUpdateUsernamePayload = new GT.Object({
       type: GT.NonNullList(IError),
     },
     user: {
-      type: UserUsernameDetails,
+      type: GraphQLUser,
     },
   }),
 })

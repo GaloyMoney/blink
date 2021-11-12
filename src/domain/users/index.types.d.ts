@@ -14,6 +14,7 @@ declare const quizQuestionIdSymbol: unique symbol
 type QuizQuestionId = string & { [quizQuestionIdSymbol]: never }
 
 type UserContact = {
+  readonly id: Username
   readonly username: Username
   alias: ContactAlias
   transactionsCount: number

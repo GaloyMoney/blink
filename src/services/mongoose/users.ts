@@ -113,6 +113,7 @@ const userFromRaw = (result: UserType): User => ({
     (res: UserContact[], contact: ContactObjectForUser): UserContact[] => {
       if (contact.id) {
         res.push({
+          id: contact.id as Username,
           username: contact.id as Username,
           alias: (contact.name || contact.id) as ContactAlias,
           transactionsCount: contact.transactionsCount,

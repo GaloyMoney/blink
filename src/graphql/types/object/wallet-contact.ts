@@ -13,6 +13,7 @@ import { checkedToUsername } from "@domain/users"
 const UserContact = new GT.Object({
   name: "UserContact",
   fields: () => ({
+    id: { type: GT.NonNull(Username) },
     username: {
       type: GT.NonNull(Username),
       description: "Actual identifier of the contact.",

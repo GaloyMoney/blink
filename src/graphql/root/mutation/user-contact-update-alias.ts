@@ -1,9 +1,9 @@
 import { GT } from "@graphql/index"
 import Username from "@graphql/types/scalar/username"
 import ContactAlias from "@graphql/types/scalar/contact-alias"
-import UserContactUpdateAliasPayload from "@graphql/types/payload/user-contact-update-alias"
 
 import * as Users from "@app/users"
+import UserContactUpdateAliasPayload from "@graphql/types/payload/user-contact-update-alias"
 
 const UserContactUpdateAliasInput = new GT.Input({
   name: "UserContactUpdateAliasInput",
@@ -27,19 +27,19 @@ const USerContactUpdateAliasMutation = GT.Field({
       }
     }
 
-    const user = await Users.updateContactAlias({
+    const contact = await Users.updateContactAlias({
       userId: uid as UserId,
       username,
       alias,
     })
 
-    if (user instanceof Error) {
-      return { errors: [{ message: user.message }] }
+    if (contact instanceof Error) {
+      return { errors: [{ message: contact.message }] }
     }
 
     return {
       errors: [],
-      user,
+      contact,
     }
   },
 })
