@@ -54,6 +54,8 @@
     "bitcoin-core": "^3.0.0",
     "bitcoinjs-lib": "^5.2.0",
     "bluebird": "^3.7.2",
+    "casbin": "^5.11.5",
+    "casbin-mongoose-adapter": "^3.1.1",
     "ccxt": "^1.53.54",
     "csv-writer": "^1.6.0",
     "dedent": "^0.7.0",
