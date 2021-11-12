@@ -243,8 +243,6 @@
           <a href="#definition-UserContact"> UserContact </a>
           <a href="#definition-UserContactUpdateAliasInput"> UserContactUpdateAliasInput </a>
           <a href="#definition-UserContactUpdateAliasPayload"> UserContactUpdateAliasPayload </a>
-          <a href="#definition-UserDetails"> UserDetails </a>
-          <a href="#definition-UserLanguageDetails"> UserLanguageDetails </a>
           <a href="#definition-UserLoginInput"> UserLoginInput </a>
           <a href="#definition-UserQuizQuestion"> UserQuizQuestion </a>
           <a href="#definition-UserQuizQuestionUpdateCompletedInput"> UserQuizQuestionUpdateCompletedInput </a>
@@ -254,7 +252,6 @@
           <a href="#definition-UserUpdateLanguagePayload"> UserUpdateLanguagePayload </a>
           <a href="#definition-UserUpdateUsernameInput"> UserUpdateUsernameInput </a>
           <a href="#definition-UserUpdateUsernamePayload"> UserUpdateUsernamePayload </a>
-          <a href="#definition-UserUsernameDetails"> UserUsernameDetails </a>
           <a href="#definition-Username"> Username </a>
           <a href="#definition-Wallet"> Wallet </a>
           <a href="#definition-WalletCurrency"> WalletCurrency </a>
@@ -651,14 +648,14 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
     <span class="hljs-symbol">phone</span>
     <span class="hljs-symbol">username</span>
     <span class="hljs-symbol">language</span>
+    <span class="hljs-symbol">quizQuestions <span class="hljs-tag">{
+      <span class="hljs-type">...UserQuizQuestionFragment</span>
+    }</span></span>
     <span class="hljs-symbol">contacts <span class="hljs-tag">{
       <span class="hljs-type">...UserContactFragment</span>
     }</span></span>
     <span class="hljs-symbol">contactByUsername <span class="hljs-tag">{
       <span class="hljs-type">...UserContactFragment</span>
-    }</span></span>
-    <span class="hljs-symbol">quizQuestions <span class="hljs-tag">{
-      <span class="hljs-type">...UserQuizQuestionFragment</span>
     }</span></span>
     <span class="hljs-symbol">twoFAEnabled</span>
     <span class="hljs-symbol">createdAt</span>
@@ -686,10 +683,10 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
       <span class="hljs-attr">"phone"</span>: <span class="hljs-string">Phone</span>,
       <span class="hljs-attr">"username"</span>: <span class="hljs-string">Username</span>,
       <span class="hljs-attr">"language"</span>: <span class="hljs-string">Language</span>,
+      <span class="hljs-attr">"quizQuestions"</span>: [<span class="hljs-string">UserQuizQuestion</span>],
       <span class="hljs-attr">"contacts"</span>: [<span class="hljs-string">UserContact</span>],
       <span class="hljs-attr">"contactByUsername"</span>: <span class="hljs-string">UserContact</span>,
-      <span class="hljs-attr">"quizQuestions"</span>: [<span class="hljs-string">UserQuizQuestion</span>],
-      <span class="hljs-attr">"twoFAEnabled"</span>: <span class="hljs-literal">true</span>,
+      <span class="hljs-attr">"twoFAEnabled"</span>: <span class="hljs-literal">false</span>,
       <span class="hljs-attr">"createdAt"</span>: <span class="hljs-string">Timestamp</span>,
       <span class="hljs-attr">"defaultAccount"</span>: <span class="hljs-string">Account</span>
     }
@@ -746,7 +743,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                   <body><pre><code class="hljs language-json">{
   <span class="hljs-attr">"data"</span>: {
     <span class="hljs-attr">"mobileVersions"</span>: [
-      {<span class="hljs-attr">"platform"</span>: <span class="hljs-string">"xyz789"</span>, <span class="hljs-attr">"currentSupported"</span>: <span class="hljs-number">123</span>, <span class="hljs-attr">"minSupported"</span>: <span class="hljs-number">123</span>}
+      {<span class="hljs-attr">"platform"</span>: <span class="hljs-string">"abc123"</span>, <span class="hljs-attr">"currentSupported"</span>: <span class="hljs-number">987</span>, <span class="hljs-attr">"minSupported"</span>: <span class="hljs-number">123</span>}
     ]
   }
 }
@@ -1185,7 +1182,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
   <span class="hljs-attr">"data"</span>: {
     <span class="hljs-attr">"accountApiKeyDisable"</span>: {
       <span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>],
-      <span class="hljs-attr">"success"</span>: <span class="hljs-literal">false</span>
+      <span class="hljs-attr">"success"</span>: <span class="hljs-literal">true</span>
     }
   }
 }
@@ -1400,7 +1397,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
   <span class="hljs-attr">"data"</span>: {
     <span class="hljs-attr">"deviceNotificationTokenCreate"</span>: {
       <span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>],
-      <span class="hljs-attr">"success"</span>: <span class="hljs-literal">false</span>
+      <span class="hljs-attr">"success"</span>: <span class="hljs-literal">true</span>
     }
   }
 }
@@ -2498,7 +2495,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                   <head></head>
                   <body><pre><code class="hljs language-json">{
   <span class="hljs-attr">"data"</span>: {
-    <span class="hljs-attr">"twoFADelete"</span>: {<span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>], <span class="hljs-attr">"success"</span>: <span class="hljs-literal">false</span>}
+    <span class="hljs-attr">"twoFADelete"</span>: {<span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>], <span class="hljs-attr">"success"</span>: <span class="hljs-literal">true</span>}
   }
 }
 </code></pre> </body>
@@ -2632,7 +2629,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                   <head></head>
                   <body><pre><code class="hljs language-json">{
   <span class="hljs-attr">"data"</span>: {
-    <span class="hljs-attr">"twoFASave"</span>: {<span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>], <span class="hljs-attr">"success"</span>: <span class="hljs-literal">true</span>}
+    <span class="hljs-attr">"twoFASave"</span>: {<span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>], <span class="hljs-attr">"success"</span>: <span class="hljs-literal">false</span>}
   }
 }
 </code></pre> </body>
@@ -2684,8 +2681,8 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
     <span class="hljs-symbol">errors <span class="hljs-tag">{
       <span class="hljs-type">...ErrorFragment</span>
     }</span></span>
-    <span class="hljs-symbol">user <span class="hljs-tag">{
-      <span class="hljs-type">...UserDetailsFragment</span>
+    <span class="hljs-symbol">contact <span class="hljs-tag">{
+      <span class="hljs-type">...UserContactFragment</span>
     }</span></span>
   }</span></span>
 }</span></span>
@@ -2711,7 +2708,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
   <span class="hljs-attr">"data"</span>: {
     <span class="hljs-attr">"userContactUpdateAlias"</span>: {
       <span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>],
-      <span class="hljs-attr">"user"</span>: <span class="hljs-string">UserDetails</span>
+      <span class="hljs-attr">"contact"</span>: <span class="hljs-string">UserContact</span>
     }
   }
 }
@@ -3001,7 +2998,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
       <span class="hljs-type">...ErrorFragment</span>
     }</span></span>
     <span class="hljs-symbol">user <span class="hljs-tag">{
-      <span class="hljs-type">...UserLanguageDetailsFragment</span>
+      <span class="hljs-type">...UserFragment</span>
     }</span></span>
   }</span></span>
 }</span></span>
@@ -3027,7 +3024,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
   <span class="hljs-attr">"data"</span>: {
     <span class="hljs-attr">"userUpdateLanguage"</span>: {
       <span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>],
-      <span class="hljs-attr">"user"</span>: <span class="hljs-string">UserLanguageDetails</span>
+      <span class="hljs-attr">"user"</span>: <span class="hljs-string">User</span>
     }
   }
 }
@@ -3081,7 +3078,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
       <span class="hljs-type">...ErrorFragment</span>
     }</span></span>
     <span class="hljs-symbol">user <span class="hljs-tag">{
-      <span class="hljs-type">...UserUsernameDetailsFragment</span>
+      <span class="hljs-type">...UserFragment</span>
     }</span></span>
   }</span></span>
 }</span></span>
@@ -3107,7 +3104,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
   <span class="hljs-attr">"data"</span>: {
     <span class="hljs-attr">"userUpdateUsername"</span>: {
       <span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>],
-      <span class="hljs-attr">"user"</span>: <span class="hljs-string">UserUsernameDetails</span>
+      <span class="hljs-attr">"user"</span>: <span class="hljs-string">User</span>
     }
   }
 }
@@ -3222,7 +3219,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                   <body><pre><code class="hljs language-json">{
   <span class="hljs-attr">"label"</span>: <span class="hljs-string">AccountApiKeyLabel</span>,
   <span class="hljs-attr">"key"</span>: <span class="hljs-string">"xyz789"</span>,
-  <span class="hljs-attr">"secret"</span>: <span class="hljs-string">"abc123"</span>,
+  <span class="hljs-attr">"secret"</span>: <span class="hljs-string">"xyz789"</span>,
   <span class="hljs-attr">"expireAt"</span>: <span class="hljs-string">Timestamp</span>
 }
 </code></pre> </body>
@@ -3622,7 +3619,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-gql"><span class="hljs-symbol"><span class="hljs-literal">false</span></span>
+                  <body><pre><code class="hljs language-gql"><span class="hljs-symbol"><span class="hljs-literal">true</span></span>
 </code></pre> </body>
                   </html>
                 </section>
@@ -3724,9 +3721,9 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                   <html>
                   <head></head>
                   <body><pre><code class="hljs language-json">{
-  <span class="hljs-attr">"id"</span>: <span class="hljs-string">"abc123"</span>,
+  <span class="hljs-attr">"id"</span>: <span class="hljs-string">"xyz789"</span>,
   <span class="hljs-attr">"challengeCode"</span>: <span class="hljs-string">"xyz789"</span>,
-  <span class="hljs-attr">"newCaptcha"</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">"newCaptcha"</span>: <span class="hljs-literal">false</span>,
   <span class="hljs-attr">"failbackMode"</span>: <span class="hljs-literal">false</span>
 }
 </code></pre> </body>
@@ -3785,9 +3782,9 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                   <head></head>
                   <body><pre><code class="hljs language-json">{
   <span class="hljs-attr">"phone"</span>: <span class="hljs-string">Phone</span>,
-  <span class="hljs-attr">"challengeCode"</span>: <span class="hljs-string">"xyz789"</span>,
-  <span class="hljs-attr">"validationCode"</span>: <span class="hljs-string">"abc123"</span>,
-  <span class="hljs-attr">"secCode"</span>: <span class="hljs-string">"xyz789"</span>
+  <span class="hljs-attr">"challengeCode"</span>: <span class="hljs-string">"abc123"</span>,
+  <span class="hljs-attr">"validationCode"</span>: <span class="hljs-string">"xyz789"</span>,
+  <span class="hljs-attr">"secCode"</span>: <span class="hljs-string">"abc123"</span>
 }
 </code></pre> </body>
                   </html>
@@ -3843,7 +3840,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"wallets"</span>: [<span class="hljs-string">Wallet</span>], <span class="hljs-attr">"csvTransactions"</span>: <span class="hljs-string">"abc123"</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"wallets"</span>: [<span class="hljs-string">Wallet</span>], <span class="hljs-attr">"csvTransactions"</span>: <span class="hljs-string">"xyz789"</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -3912,7 +3909,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"longitude"</span>: <span class="hljs-number">123.45</span>, <span class="hljs-attr">"latitude"</span>: <span class="hljs-number">123.45</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"longitude"</span>: <span class="hljs-number">987.65</span>, <span class="hljs-attr">"latitude"</span>: <span class="hljs-number">123.45</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -3949,7 +3946,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"deviceToken"</span>: <span class="hljs-string">"abc123"</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"deviceToken"</span>: <span class="hljs-string">"xyz789"</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -3992,7 +3989,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"message"</span>: <span class="hljs-string">"abc123"</span>, <span class="hljs-attr">"path"</span>: [<span class="hljs-string">"xyz789"</span>]}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"message"</span>: <span class="hljs-string">"xyz789"</span>, <span class="hljs-attr">"path"</span>: [<span class="hljs-string">"xyz789"</span>]}
 </code></pre> </body>
                   </html>
                 </section>
@@ -4168,7 +4165,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                   <html>
                   <head></head>
                   <body><pre><code class="hljs language-json">{
-  <span class="hljs-attr">"message"</span>: <span class="hljs-string">"xyz789"</span>,
+  <span class="hljs-attr">"message"</span>: <span class="hljs-string">"abc123"</span>,
   <span class="hljs-attr">"path"</span>: [<span class="hljs-string">"abc123"</span>],
   <span class="hljs-attr">"code"</span>: <span class="hljs-string">InputErrorCode</span>
 }
@@ -5308,7 +5305,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"title"</span>: <span class="hljs-string">"xyz789"</span>, <span class="hljs-attr">"coordinates"</span>: <span class="hljs-string">Coordinates</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"title"</span>: <span class="hljs-string">"abc123"</span>, <span class="hljs-attr">"coordinates"</span>: <span class="hljs-string">Coordinates</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -5429,7 +5426,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"platform"</span>: <span class="hljs-string">"xyz789"</span>, <span class="hljs-attr">"currentSupported"</span>: <span class="hljs-number">987</span>, <span class="hljs-attr">"minSupported"</span>: <span class="hljs-number">987</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"platform"</span>: <span class="hljs-string">"abc123"</span>, <span class="hljs-attr">"currentSupported"</span>: <span class="hljs-number">987</span>, <span class="hljs-attr">"minSupported"</span>: <span class="hljs-number">123</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -5958,7 +5955,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
   <span class="hljs-attr">"hasNextPage"</span>: <span class="hljs-literal">false</span>,
   <span class="hljs-attr">"hasPreviousPage"</span>: <span class="hljs-literal">false</span>,
   <span class="hljs-attr">"startCursor"</span>: <span class="hljs-string">"xyz789"</span>,
-  <span class="hljs-attr">"endCursor"</span>: <span class="hljs-string">"abc123"</span>
+  <span class="hljs-attr">"endCursor"</span>: <span class="hljs-string">"xyz789"</span>
 }
 </code></pre> </body>
                   </html>
@@ -6009,7 +6006,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                   <html>
                   <head></head>
                   <body><pre><code class="hljs language-json">{
-  <span class="hljs-attr">"message"</span>: <span class="hljs-string">"xyz789"</span>,
+  <span class="hljs-attr">"message"</span>: <span class="hljs-string">"abc123"</span>,
   <span class="hljs-attr">"path"</span>: [<span class="hljs-string">"abc123"</span>],
   <span class="hljs-attr">"code"</span>: <span class="hljs-string">PaymentErrorCode</span>
 }
@@ -6309,7 +6306,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
   <span class="hljs-attr">"base"</span>: <span class="hljs-string">SafeInt</span>,
   <span class="hljs-attr">"offset"</span>: <span class="hljs-number">987</span>,
   <span class="hljs-attr">"currencyUnit"</span>: <span class="hljs-string">ExchangeCurrencyUnit</span>,
-  <span class="hljs-attr">"formattedAmount"</span>: <span class="hljs-string">"xyz789"</span>
+  <span class="hljs-attr">"formattedAmount"</span>: <span class="hljs-string">"abc123"</span>
 }
 </code></pre> </body>
                   </html>
@@ -6567,7 +6564,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
             <div class="doc-row">
               <div class="doc-copy">
                 <section class="json-schema-description">
-                  <p>The <code>SafeInt</code> scalar type represents non-fractional signed whole numeric values. SafeInt can represent values between -(2^53) + 1 and 2^53 - 1</p>
+                  <p>Non-fractional signed whole numeric value between -(2^53) + 1 and 2^53 - 1</p>
                 </section>
               </div>
               <div class="doc-examples">
@@ -7093,7 +7090,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"node"</span>: <span class="hljs-string">Transaction</span>, <span class="hljs-attr">"cursor"</span>: <span class="hljs-string">"abc123"</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"node"</span>: <span class="hljs-string">Transaction</span>, <span class="hljs-attr">"cursor"</span>: <span class="hljs-string">"xyz789"</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -7130,7 +7127,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"token"</span>: <span class="hljs-string">"abc123"</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"token"</span>: <span class="hljs-string">"xyz789"</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -7219,7 +7216,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"secret"</span>: <span class="hljs-string">"abc123"</span>, <span class="hljs-attr">"token"</span>: <span class="hljs-string">"xyz789"</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"secret"</span>: <span class="hljs-string">"abc123"</span>, <span class="hljs-attr">"token"</span>: <span class="hljs-string">"abc123"</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -7262,7 +7259,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"secret"</span>: <span class="hljs-string">"abc123"</span>, <span class="hljs-attr">"uri"</span>: <span class="hljs-string">"xyz789"</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"secret"</span>: <span class="hljs-string">"abc123"</span>, <span class="hljs-attr">"uri"</span>: <span class="hljs-string">"abc123"</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -7382,6 +7379,12 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                       <td> Preferred language for user. When value is 'default' the intent is to use preferred language from OS settings. </td>
                     </tr>
                     <tr>
+                      <td data-property-name="quizQuestions"> <code>quizQuestions</code> -
+                        <a href="#definition-UserQuizQuestion"><code>[UserQuizQuestion!]!</code></a>
+                      </td>
+                      <td> List the quiz questions the user may have completed. </td>
+                    </tr>
+                    <tr>
                       <td data-property-name="contacts"> <code>contacts</code> -
                         <a href="#definition-UserContact"><code>[UserContact!]!</code></a>
                       </td>
@@ -7404,12 +7407,6 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                           </div>
                         </div>
                       </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="quizQuestions"> <code>quizQuestions</code> -
-                        <a href="#definition-UserQuizQuestion"><code>[UserQuizQuestion!]!</code></a>
-                      </td>
-                      <td> List the quiz questions the user may have completed. </td>
                     </tr>
                     <tr>
                       <td data-property-name="twoFAEnabled"> <code>twoFAEnabled</code> -
@@ -7442,10 +7439,10 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
   <span class="hljs-attr">"phone"</span>: <span class="hljs-string">Phone</span>,
   <span class="hljs-attr">"username"</span>: <span class="hljs-string">Username</span>,
   <span class="hljs-attr">"language"</span>: <span class="hljs-string">Language</span>,
+  <span class="hljs-attr">"quizQuestions"</span>: [<span class="hljs-string">UserQuizQuestion</span>],
   <span class="hljs-attr">"contacts"</span>: [<span class="hljs-string">UserContact</span>],
   <span class="hljs-attr">"contactByUsername"</span>: <span class="hljs-string">UserContact</span>,
-  <span class="hljs-attr">"quizQuestions"</span>: [<span class="hljs-string">UserQuizQuestion</span>],
-  <span class="hljs-attr">"twoFAEnabled"</span>: <span class="hljs-literal">false</span>,
+  <span class="hljs-attr">"twoFAEnabled"</span>: <span class="hljs-literal">true</span>,
   <span class="hljs-attr">"createdAt"</span>: <span class="hljs-string">Timestamp</span>,
   <span class="hljs-attr">"defaultAccount"</span>: <span class="hljs-string">Account</span>
 }
@@ -7470,6 +7467,12 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                     <tr>
                       <th>Field Name</th>
                       <th>Description</th>
+                    </tr>
+                    <tr>
+                      <td data-property-name="id"> <code>id</code> -
+                        <a href="#definition-Username"><code>Username!</code></a>
+                      </td>
+                      <td> </td>
                     </tr>
                     <tr>
                       <td data-property-name="username"> <code>username</code> -
@@ -7543,9 +7546,10 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                   <html>
                   <head></head>
                   <body><pre><code class="hljs language-json">{
+  <span class="hljs-attr">"id"</span>: <span class="hljs-string">Username</span>,
   <span class="hljs-attr">"username"</span>: <span class="hljs-string">Username</span>,
   <span class="hljs-attr">"alias"</span>: <span class="hljs-string">ContactAlias</span>,
-  <span class="hljs-attr">"transactionsCount"</span>: <span class="hljs-number">987</span>,
+  <span class="hljs-attr">"transactionsCount"</span>: <span class="hljs-number">123</span>,
   <span class="hljs-attr">"transactions"</span>: <span class="hljs-string">TransactionConnection</span>
 }
 </code></pre> </body>
@@ -7623,8 +7627,8 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                       <td> </td>
                     </tr>
                     <tr>
-                      <td data-property-name="user"> <code>user</code> -
-                        <a href="#definition-UserDetails"><code>UserDetails</code></a>
+                      <td data-property-name="contact"> <code>contact</code> -
+                        <a href="#definition-UserContact"><code>UserContact</code></a>
                       </td>
                       <td> </td>
                     </tr>
@@ -7638,158 +7642,8 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                   <head></head>
                   <body><pre><code class="hljs language-json">{
   <span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>],
-  <span class="hljs-attr">"user"</span>: <span class="hljs-string">UserDetails</span>
+  <span class="hljs-attr">"contact"</span>: <span class="hljs-string">UserContact</span>
 }
-</code></pre> </body>
-                  </html>
-                </section>
-              </div>
-            </div>
-          </div>
-          <div id="definition-UserDetails" class="definition panel" data-traverse-target="definition-UserDetails">
-            <div class="definition-tags">
-              <a class="label" href="#tag-types">Types</a>
-            </div>
-            <h2 class="panel-title">
-              <a name="/definitions/UserDetails"></a>
-              <p><code>UserDetails</code></p>
-            </h2>
-            <div class="doc-row">
-              <div class="doc-copy">
-                <section class="json-schema-properties-blank">
-                  <table>
-                    <tr>
-                      <th>Field Name</th>
-                      <th>Description</th>
-                    </tr>
-                    <tr>
-                      <td data-property-name="id"> <code>id</code> -
-                        <a href="#definition-ID"><code>ID!</code></a>
-                      </td>
-                      <td> </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="phone"> <code>phone</code> -
-                        <a href="#definition-Phone"><code>Phone!</code></a>
-                      </td>
-                      <td> Phone number with international calling code. </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="username"> <code>username</code> -
-                        <a href="#definition-Username"><code>Username</code></a>
-                      </td>
-                      <td> Optional immutable user friendly identifier. </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="language"> <code>language</code> -
-                        <a href="#definition-Language"><code>Language!</code></a>
-                      </td>
-                      <td> Preferred language for user. When value is 'default' the intent is to use preferred language from OS settings. </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="contacts"> <code>contacts</code> -
-                        <a href="#definition-UserContact"><code>[UserContact!]!</code></a>
-                      </td>
-                      <td> Get full list of contacts. Can include the transactions associated with each contact. </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="contactByUsername"> <code>contactByUsername</code> -
-                        <a href="#definition-UserContact"><code>UserContact!</code></a>
-                      </td>
-                      <td> Get single contact details. Can include the transactions associated with the contact. </td>
-                    </tr>
-                    <tr>
-                      <td colspan="2" class="no-top-border">
-                        <div class="field-arguments">
-                          <p class="field-arguments-header"> Arguments </p>
-                          <div class="field-argument">
-                            <p class="field-argument-name"><code>username</code> -
-                              <a href="#definition-Username"><code>Username!</code></a>
-                            </p>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="quizQuestions"> <code>quizQuestions</code> -
-                        <a href="#definition-UserQuizQuestion"><code>[UserQuizQuestion!]!</code></a>
-                      </td>
-                      <td> List the quiz questions the user may have completed. </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="twoFAEnabled"> <code>twoFAEnabled</code> -
-                        <a href="#definition-Boolean"><code>Boolean</code></a>
-                      </td>
-                      <td> </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="createdAt"> <code>createdAt</code> -
-                        <a href="#definition-Timestamp"><code>Timestamp!</code></a>
-                      </td>
-                      <td> </td>
-                    </tr>
-                  </table>
-                </section>
-              </div>
-              <div class="doc-examples">
-                <section>
-                  <h5>Example</h5>
-                  <html>
-                  <head></head>
-                  <body><pre><code class="hljs language-json">{
-  <span class="hljs-attr">"id"</span>: <span class="hljs-string">ID</span>,
-  <span class="hljs-attr">"phone"</span>: <span class="hljs-string">Phone</span>,
-  <span class="hljs-attr">"username"</span>: <span class="hljs-string">Username</span>,
-  <span class="hljs-attr">"language"</span>: <span class="hljs-string">Language</span>,
-  <span class="hljs-attr">"contacts"</span>: [<span class="hljs-string">UserContact</span>],
-  <span class="hljs-attr">"contactByUsername"</span>: <span class="hljs-string">UserContact</span>,
-  <span class="hljs-attr">"quizQuestions"</span>: [<span class="hljs-string">UserQuizQuestion</span>],
-  <span class="hljs-attr">"twoFAEnabled"</span>: <span class="hljs-literal">true</span>,
-  <span class="hljs-attr">"createdAt"</span>: <span class="hljs-string">Timestamp</span>
-}
-</code></pre> </body>
-                  </html>
-                </section>
-              </div>
-            </div>
-          </div>
-          <div id="definition-UserLanguageDetails" class="definition panel" data-traverse-target="definition-UserLanguageDetails">
-            <div class="definition-tags">
-              <a class="label" href="#tag-types">Types</a>
-            </div>
-            <h2 class="panel-title">
-              <a name="/definitions/UserLanguageDetails"></a>
-              <p><code>UserLanguageDetails</code></p>
-            </h2>
-            <div class="doc-row">
-              <div class="doc-copy">
-                <section class="json-schema-properties-blank">
-                  <table>
-                    <tr>
-                      <th>Field Name</th>
-                      <th>Description</th>
-                    </tr>
-                    <tr>
-                      <td data-property-name="id"> <code>id</code> -
-                        <a href="#definition-ID"><code>ID!</code></a>
-                      </td>
-                      <td> </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="language"> <code>language</code> -
-                        <a href="#definition-Language"><code>Language!</code></a>
-                      </td>
-                      <td> </td>
-                    </tr>
-                  </table>
-                </section>
-              </div>
-              <div class="doc-examples">
-                <section>
-                  <h5>Example</h5>
-                  <html>
-                  <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"id"</span>: <span class="hljs-string">ID</span>, <span class="hljs-attr">"language"</span>: <span class="hljs-string">Language</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -7878,7 +7732,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"question"</span>: <span class="hljs-string">QuizQuestion</span>, <span class="hljs-attr">"completed"</span>: <span class="hljs-literal">true</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"question"</span>: <span class="hljs-string">QuizQuestion</span>, <span class="hljs-attr">"completed"</span>: <span class="hljs-literal">false</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -8066,7 +7920,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                     </tr>
                     <tr>
                       <td data-property-name="user"> <code>user</code> -
-                        <a href="#definition-UserLanguageDetails"><code>UserLanguageDetails</code></a>
+                        <a href="#definition-User"><code>User</code></a>
                       </td>
                       <td> </td>
                     </tr>
@@ -8078,10 +7932,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{
-  <span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>],
-  <span class="hljs-attr">"user"</span>: <span class="hljs-string">UserLanguageDetails</span>
-}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>], <span class="hljs-attr">"user"</span>: <span class="hljs-string">User</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -8149,7 +8000,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                     </tr>
                     <tr>
                       <td data-property-name="user"> <code>user</code> -
-                        <a href="#definition-UserUsernameDetails"><code>UserUsernameDetails</code></a>
+                        <a href="#definition-User"><code>User</code></a>
                       </td>
                       <td> </td>
                     </tr>
@@ -8161,53 +8012,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{
-  <span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>],
-  <span class="hljs-attr">"user"</span>: <span class="hljs-string">UserUsernameDetails</span>
-}
-</code></pre> </body>
-                  </html>
-                </section>
-              </div>
-            </div>
-          </div>
-          <div id="definition-UserUsernameDetails" class="definition panel" data-traverse-target="definition-UserUsernameDetails">
-            <div class="definition-tags">
-              <a class="label" href="#tag-types">Types</a>
-            </div>
-            <h2 class="panel-title">
-              <a name="/definitions/UserUsernameDetails"></a>
-              <p><code>UserUsernameDetails</code></p>
-            </h2>
-            <div class="doc-row">
-              <div class="doc-copy">
-                <section class="json-schema-properties-blank">
-                  <table>
-                    <tr>
-                      <th>Field Name</th>
-                      <th>Description</th>
-                    </tr>
-                    <tr>
-                      <td data-property-name="id"> <code>id</code> -
-                        <a href="#definition-ID"><code>ID!</code></a>
-                      </td>
-                      <td> </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="username"> <code>username</code> -
-                        <a href="#definition-Username"><code>Username!</code></a>
-                      </td>
-                      <td> </td>
-                    </tr>
-                  </table>
-                </section>
-              </div>
-              <div class="doc-examples">
-                <section>
-                  <h5>Example</h5>
-                  <html>
-                  <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"id"</span>: <span class="hljs-string">ID</span>, <span class="hljs-attr">"username"</span>: <span class="hljs-string">Username</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>], <span class="hljs-attr">"user"</span>: <span class="hljs-string">User</span>}
 </code></pre> </body>
                   </html>
                 </section>
