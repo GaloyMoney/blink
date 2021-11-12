@@ -15,7 +15,7 @@ const filterPendingIncoming = (
     rawTx.outs.forEach(({ sats, address }) => {
       if (address && addresses.includes(address)) {
         walletTransactions.push({
-          id: rawTx.id,
+          id: rawTx.txHash,
           walletId,
           initiationVia: PaymentInitiationMethod.OnChain,
           settlementVia: SettlementMethod.OnChain,
@@ -27,7 +27,7 @@ const filterPendingIncoming = (
           },
           otherPartyUsername: null,
           settlementFee: toSats(0),
-          transactionHash: rawTx.id as TxId,
+          transactionHash: rawTx.txHash,
           status: TxStatus.Pending,
           memo: null,
           createdAt: createdAt,
@@ -57,7 +57,7 @@ export const fromLedger = (
       usd,
       feeUsd,
       paymentHash,
-      txId,
+      txHash,
       pubkey,
       username,
       address,
@@ -98,7 +98,7 @@ export const fromLedger = (
           settlementAmount,
           settlementFee: toSats(fee || 0),
           settlementUsdPerSat: Math.abs(usd / settlementAmount),
-          transactionHash: txId as TxId,
+          transactionHash: txHash as OnChainTxHash,
           status,
           memo,
           createdAt: timestamp,

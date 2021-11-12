@@ -11,7 +11,7 @@ describe("decodeOnChainTransaction", () => {
     expect(result).not.toBeInstanceOf(TransactionDecodeError)
 
     result = result as OnChainTransaction
-    expect(result.id).toEqual(
+    expect(result.txHash).toEqual(
       "88b81eff6bab7070be45640d5ffc95819e671cd7d5f294a448735eb1bb980a20",
     )
     expect(result.outs[0]).toEqual({
@@ -29,7 +29,7 @@ describe("decodeOnChainTransaction", () => {
     expect(result).not.toBeInstanceOf(TransactionDecodeError)
 
     result = result as OnChainTransaction
-    expect(result.id).toEqual(
+    expect(result.txHash).toEqual(
       "0ca352925d6afb2845c369be2f09aa12ffeb765b3dc88db05c865e8c02d642dd",
     )
     expect(result.outs[0]).toEqual({

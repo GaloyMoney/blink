@@ -3,7 +3,7 @@ interface IPaymentNotification {
   type: string
   user: UserType
   logger: Logger
-  hash?: string
-  txid?: string
+  paymentHash?: PaymentHash
+  txHash?: OnChainTxHash
   usdPerSat?: UsdPerSat
 }

@@ -59,7 +59,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
         type: LedgerTransactionType.OnchainIntraLedger,
         address: "address" as OnChainAddress,
         paymentHash: "paymentHash" as PaymentHash,
-        txId: "txId" as TxId,
+        txHash: "txHash" as OnChainTxHash,
         debit: toSats(0),
         fee: toSats(0),
         credit: settlementAmount,
@@ -85,7 +85,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
         journalId: "journalId" as LedgerJournalId,
         timestamp,
         address: "address" as OnChainAddress,
-        txId: "txId" as TxId,
+        txHash: "txHash" as OnChainTxHash,
         feeKnownInAdvance: false,
       },
     ]
@@ -150,7 +150,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
         },
         otherPartyUsername: null,
         address: "address" as OnChainAddress,
-        transactionHash: "txId",
+        transactionHash: "txHash",
         status: TxStatus.Success,
         createdAt: timestamp,
       },
@@ -173,7 +173,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
         status: TxStatus.Success,
         createdAt: timestamp,
         address: "address" as OnChainAddress,
-        transactionHash: "txId",
+        transactionHash: "txHash",
       },
     ]
     expect(result.transactions).toEqual(expected)
@@ -235,7 +235,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         confirmations: 1,
         fee: toSats(1000),
         rawTx: {
-          id: "id" as TxId,
+          txHash: "txHash" as OnChainTxHash,
           outs: [
             {
               sats: toSats(25000),
@@ -264,7 +264,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
     )
     const expected = [
       {
-        id: "id" as TxId,
+        id: "txHash" as OnChainTxHash,
         walletId: "walletId" as WalletId,
         initiationVia: PaymentInitiationMethod.OnChain,
         memo: null,
@@ -281,11 +281,11 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         otherPartyUsername: null,
         status: TxStatus.Pending,
         createdAt: timestamp,
-        transactionHash: "id",
+        transactionHash: "txHash",
         address: "userAddress1" as OnChainAddress,
       },
       {
-        id: "id" as TxId,
+        id: "txHash" as OnChainTxHash,
         walletId: "walletId" as WalletId,
         initiationVia: PaymentInitiationMethod.OnChain,
         settlementVia: "onchain",
@@ -303,7 +303,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         status: TxStatus.Pending,
         createdAt: timestamp,
         address: "userAddress2" as OnChainAddress,
-        transactionHash: "id",
+        transactionHash: "txHash",
       },
     ]
     expect(result.transactions).toEqual(expected)
@@ -315,7 +315,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         confirmations: 1,
         fee: toSats(1000),
         rawTx: {
-          id: "id" as TxId,
+          txHash: "txHash" as OnChainTxHash,
           outs: [
             {
               sats: toSats(25000),
@@ -336,7 +336,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
     )
     const expected = [
       {
-        id: "id" as TxId,
+        id: "txHash" as OnChainTxHash,
         walletId: "walletId" as WalletId,
         initiationVia: PaymentInitiationMethod.OnChain,
         settlementVia: "onchain",
@@ -354,7 +354,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         status: TxStatus.Pending,
         createdAt: timestamp,
         address: "userAddress1" as OnChainAddress,
-        transactionHash: "id",
+        transactionHash: "txHash",
       },
     ]
     expect(result.transactions).toEqual(expected)

@@ -7,13 +7,13 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
     type,
     amount,
     walletId,
-    txId,
+    txHash,
     usdPerSat,
   }: {
     type: NotificationType
     walletId: WalletId
     amount: Satoshis
-    txId: TxId
+    txHash: OnChainTxHash
     usdPerSat?: UsdPerSat
   }): Promise<void | NotificationsServiceError> => {
     try {
@@ -26,7 +26,7 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
         user,
         logger,
         amount,
-        txid: txId,
+        txHash,
         usdPerSat,
       })
       return
@@ -38,42 +38,42 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
   const onChainTransactionReceived = async ({
     amount,
     walletId,
-    txId,
+    txHash,
     usdPerSat,
   }: OnChainTxReceivedArgs) =>
     sendOnChainNotification({
       type: NotificationType.OnchainReceipt,
       amount,
       walletId,
-      txId,
+      txHash,
       usdPerSat,
     })
 
   const onChainTransactionReceivedPending = async ({
     amount,
     walletId,
-    txId,
+    txHash,
     usdPerSat,
   }: OnChainTxReceivedPendingArgs) =>
     sendOnChainNotification({
       type: NotificationType.OnchainReceiptPending,
       amount,
       walletId,
-      txId,
+      txHash,
       usdPerSat,
     })
 
   const onChainTransactionPayment = async ({
     amount,
     walletId,
-    txId,
+    txHash,
     usdPerSat,
   }: OnChainTxPaymentArgs) =>
     sendOnChainNotification({
       type: NotificationType.OnchainPayment,
       amount,
       walletId,
-      txId,
+      txHash,
       usdPerSat,
     })
 
@@ -93,7 +93,7 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
         user,
         logger,
         amount,
-        hash: paymentHash,
+        paymentHash,
         usdPerSat,
       })
       return

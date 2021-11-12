@@ -9,7 +9,7 @@ describe("TxFilter", () => {
         confirmations: 0,
         fee: toSats(1000),
         rawTx: {
-          id: "id1" as TxId,
+          txHash: "txHash1" as OnChainTxHash,
           outs: [
             {
               sats: toSats(1),
@@ -23,7 +23,7 @@ describe("TxFilter", () => {
         confirmations: 2,
         fee: toSats(1000),
         rawTx: {
-          id: "id2" as TxId,
+          txHash: "txHash2" as OnChainTxHash,
           outs: [
             {
               sats: toSats(1),
@@ -45,7 +45,7 @@ describe("TxFilter", () => {
         confirmations: 2,
         fee: toSats(1000),
         rawTx: {
-          id: "id1" as TxId,
+          txHash: "txHash1" as OnChainTxHash,
           outs: [
             {
               sats: toSats(1),
@@ -59,7 +59,7 @@ describe("TxFilter", () => {
         confirmations: 3,
         fee: toSats(1000),
         rawTx: {
-          id: "id2" as TxId,
+          txHash: "txHash2" as OnChainTxHash,
           outs: [
             {
               sats: toSats(1),
@@ -81,7 +81,7 @@ describe("TxFilter", () => {
         confirmations: 2,
         fee: toSats(1000),
         rawTx: {
-          id: "id1" as TxId,
+          txHash: "txHash1" as OnChainTxHash,
           outs: [
             {
               sats: toSats(1),
@@ -95,7 +95,7 @@ describe("TxFilter", () => {
         confirmations: 3,
         fee: toSats(1000),
         rawTx: {
-          id: "id2" as TxId,
+          txHash: "txHash2" as OnChainTxHash,
           outs: [
             {
               sats: toSats(1),
@@ -107,6 +107,6 @@ describe("TxFilter", () => {
       }),
     ])
 
-    expect(filteredTxs[0].rawTx.id).toEqual("id1")
+    expect(filteredTxs[0].rawTx.txHash).toEqual("txHash1")
   })
 })
