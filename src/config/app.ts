@@ -200,6 +200,19 @@ export const getIpConfig = (config = yamlConfig): IpConfig => ({
 export const getApolloConfig = (config = yamlConfig): ApolloConfig => config.apollo
 export const getTwoFAConfig = (config = yamlConfig): TwoFAConfig => config.twoFA
 
+export const getMongoDBConfig = (): MongoDBConfig => {
+  const user = process.env.MONGODB_USER ?? "testGaloy"
+  const password = process.env.MONGODB_PASSWORD
+  const address = process.env.MONGODB_ADDRESS ?? "mongodb"
+  const db = process.env.MONGODB_DATABASE ?? "galoy"
+
+  return {
+    user,
+    address,
+    db,
+    path: `mongodb://${user}:${password}@${address}/${db}`,
+  }
+}
 export const levels: Levels = [1, 2]
 
 // onboarding

@@ -54,6 +54,13 @@ type TwoFAConfig = {
   threshold: number
 }
 
+type MongoDBConfig = {
+  address: string
+  user: string
+  db: string
+  path: string
+}
+
 // Currently unused types
 
 interface IAddBTCInvoiceRequest {

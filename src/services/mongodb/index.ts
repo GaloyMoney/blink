@@ -1,5 +1,6 @@
 import { exit } from "process"
 import { sleep } from "@core/utils"
+import { getMongoDBConfig } from "@config/app"
 import { baseLogger } from "../logger"
 
 import mongoose from "mongoose"
@@ -28,14 +29,8 @@ export const ledger = loadLedger({
 // TODO add an event listenever if we got disconnecter from MongoDb
 // after a first succesful connection
 
-const user = process.env.MONGODB_USER ?? "testGaloy"
-const password = process.env.MONGODB_PASSWORD
-const address = process.env.MONGODB_ADDRESS ?? "mongodb"
-const db = process.env.MONGODB_DATABASE ?? "galoy"
-
-const path = `mongodb://${user}:${password}@${address}/${db}`
-
 export const setupMongoConnection = async () => {
+  const { user, address, db, path } = getMongoDBConfig()
   try {
     await mongoose.connect(path, {
       useNewUrlParser: true,
@@ -63,6 +58,7 @@ export const setupMongoConnection = async () => {
   return mongoose
 }
 export const setupMongoConnectionSecondary = async () => {
+  const { user, address, db, path } = getMongoDBConfig()
   try {
     await mongoose.connect(path, {
       replset: { readPreference: "secondary" },
