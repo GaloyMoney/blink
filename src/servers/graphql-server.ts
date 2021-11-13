@@ -18,6 +18,7 @@ import * as Accounts from "@app/accounts"
 import { baseLogger } from "@services/logger"
 import { redis } from "@services/redis"
 import { User } from "@services/mongoose/schema"
+import { CasbinService } from "@services/casbin"
 
 import { isProd } from "@core/utils"
 import { WalletFactory } from "@core/wallet-factory"
@@ -150,6 +151,7 @@ export const startApolloServer = async ({
             geetest,
             account,
             ip,
+            authorizationService: await CasbinService(),
           }
         },
       )

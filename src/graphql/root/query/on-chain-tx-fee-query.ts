@@ -15,7 +15,7 @@ const OnChainTxFeeQuery = GT.Field({
     amount: { type: GT.NonNull(SatAmount) },
     targetConfirmations: { type: TargetConfirmations, defaultValue: 1 },
   },
-  resolve: async (_, args) => {
+  resolve: async (_, args, { domainUser, authorizationService }) => {
     const { walletId, address, amount, targetConfirmations } = args
 
     for (const input of [walletId, address, amount, targetConfirmations]) {
@@ -23,6 +23,8 @@ const OnChainTxFeeQuery = GT.Field({
     }
 
     const fee = await Wallets.getOnChainFeeByWalletPublicId({
+      authorizationService,
+      userId: domainUser.id,
       walletPublicId: walletId,
       amount,
       address,

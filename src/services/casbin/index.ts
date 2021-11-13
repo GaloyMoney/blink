@@ -22,14 +22,16 @@ export const CasbinService = async (): Promise<IAuthorizationService> => {
     }
   }
 
-  const addPermissionToRole = async ({
+  const addPermissionsToRole = async ({
     role,
     scope,
     resourceId,
-    permission,
-  }: AddPermissionToRoleArgs): Promise<true | AuthorizationError> => {
+    permissions,
+  }: AddPermissionsToRoleArgs): Promise<true | AuthorizationError> => {
     try {
-      await enforcer.addPolicy(role, scope, resourceId, permission)
+      for (const p of permissions) {
+        await enforcer.addPermissionForUser(role, scope, resourceId, p)
+      }
       return true
     } catch (error) {
       return new UnknownAuthorizationServiceError(error.message)
@@ -57,7 +59,7 @@ export const CasbinService = async (): Promise<IAuthorizationService> => {
 
   return {
     addRoleToUser,
-    addPermissionToRole,
+    addPermissionsToRole,
     checkPermission,
   }
 }

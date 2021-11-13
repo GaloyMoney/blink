@@ -1,9 +1,11 @@
 import { OnChainService } from "@services/lnd/onchain-service"
+import { Permission, resourceIdFromWalletPublicId } from "@domain/authorization"
 import { TxDecoder } from "@domain/bitcoin/onchain"
 import { BTC_NETWORK, getOnChainAddressCreateAttemptLimits } from "@config/app"
 import { WalletOnChainAddressesRepository, WalletsRepository } from "@services/mongoose"
 import { RedisRateLimitService } from "@services/rate-limit"
 import { RateLimitPrefix } from "@domain/rate-limit"
+import { AuthorizationError } from "@domain/errors"
 import {
   OnChainAddressCreateRateLimiterExceededError,
   RateLimiterExceededError,
@@ -31,9 +33,23 @@ export const createOnChainAddress = async (
   return savedOnChainAddress.address
 }
 
-export const createOnChainAddressByWalletPublicId = async (
-  walletPublicId: WalletPublicId,
-): Promise<OnChainAddress | ApplicationError> => {
+export const createOnChainAddressByWalletPublicId = async ({
+  authorizationService,
+  userId,
+  walletPublicId,
+}: {
+  authorizationService: IAuthorizationService
+  userId: UserId
+  walletPublicId: WalletPublicId
+}): Promise<OnChainAddress | ApplicationError> => {
+  const authResult = await authorizationService.checkPermission({
+    userId,
+    resourceId: resourceIdFromWalletPublicId(walletPublicId),
+    permission: Permission.WalletOnChainAddressCreate,
+  })
+  if (authResult instanceof Error) return authResult
+  if (!authResult) return new AuthorizationError()
+
   const wallets = WalletsRepository()
   const wallet = await wallets.findByPublicId(walletPublicId)
   if (wallet instanceof Error) return wallet

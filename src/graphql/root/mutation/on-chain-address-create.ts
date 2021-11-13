@@ -16,13 +16,17 @@ const OnChainAddressCreateMutation = GT.Field({
   args: {
     input: { type: GT.NonNull(OnChainAddressCreateInput) },
   },
-  resolve: async (_, args) => {
+  resolve: async (_, args, { domainUser, authorizationService }) => {
     const { walletId } = args.input
     if (walletId instanceof Error) {
       return { errors: [{ message: walletId.message }] }
     }
 
-    const address = await Wallets.createOnChainAddressByWalletPublicId(walletId)
+    const address = await Wallets.createOnChainAddressByWalletPublicId({
+      authorizationService,
+      userId: domainUser.id,
+      walletPublicId: walletId,
+    })
     if (address instanceof Error) {
       const appErr = mapError(address)
       return { errors: [{ message: appErr.message }] }

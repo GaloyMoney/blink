@@ -35,6 +35,8 @@ type GetOnChainFeeByWalletIdArgs = {
 }
 
 type GetOnChainFeeByWalletPublicIdArgs = {
+  authorizationService: IAuthorizationService
+  userId: UserId
   walletPublicId: WalletPublicId
   amount: number
   address: OnChainAddress

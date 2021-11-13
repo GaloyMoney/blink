@@ -7,6 +7,8 @@ import {
   getFailedAttemptPerIpLimits,
 } from "@config/app"
 
+import * as Authorization from "@app/authorization"
+
 import { createToken } from "@services/jwt"
 import { sendTwilioText, getCarrier } from "@services/phone-provider"
 import { PhoneCode, User } from "@services/mongoose/schema"
@@ -179,6 +181,15 @@ export const login = async ({
       subLogger.info({ phone }, "user logged in")
     } else {
       user = await User.findOneAndUpdate({ phone }, {}, { upsert: true, new: true })
+      const res = await Authorization.initAccountPermissions({
+        userId: user.id as UserId,
+        accountId: user.id as AccountId,
+        walletPublicId: user.walletPublicId,
+      })
+      if (res instanceof Error) {
+        subLogger.error({ res }, "impossible to init account permissions")
+        throw res
+      }
       subLogger.info({ phone }, "a new user has register")
     }
 

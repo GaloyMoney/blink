@@ -1,10 +1,12 @@
 import { TxDecoder } from "@domain/bitcoin/onchain"
+import { Permission, resourceIdFromWalletPublicId } from "@domain/authorization"
 import { WalletsRepository } from "@services/mongoose"
 import { WithdrawalFeeCalculator } from "@domain/wallets"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { BTC_NETWORK, getOnChainWalletConfig } from "@config/app"
 import { checkedToSats, checkedToTargetConfs, toSats } from "@domain/bitcoin"
 import {
+  AuthorizationError,
   CouldNotFindError,
   LessThanDustThresholdError,
   InsufficientBalanceError,
@@ -81,11 +83,21 @@ export const getOnChainFeeByWalletId = async ({
 }
 
 export const getOnChainFeeByWalletPublicId = async ({
+  authorizationService,
+  userId,
   walletPublicId,
   amount,
   address,
   targetConfirmations,
 }: GetOnChainFeeByWalletPublicIdArgs): Promise<Satoshis | ApplicationError> => {
+  const authResult = await authorizationService.checkPermission({
+    userId,
+    resourceId: resourceIdFromWalletPublicId(walletPublicId),
+    permission: Permission.WalletView,
+  })
+  if (authResult instanceof Error) return authResult
+  if (!authResult) return new AuthorizationError()
+
   const sats = checkedToSats(amount)
   if (sats instanceof Error) return sats
 

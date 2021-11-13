@@ -17,11 +17,11 @@ type AddRoleToUserArgs = {
   role: Role
 }
 
-type AddPermissionToRoleArgs = {
+type AddPermissionsToRoleArgs = {
   role: Role
   scope: AuthorizationScope
   resourceId: ResourceId
-  permission: Permission
+  permissions: Permission[]
 }
 
 type CheckPermissionArgs = {
@@ -33,7 +33,7 @@ type CheckPermissionArgs = {
 type IAuthorizationService = {
   addRoleToUser(AddRoleToUserArgs): Promise<true | AuthorizationError>
 
-  addPermissionToRole(AddPermissionToRoleArgs): Promise<true | AuthorizationError>
+  addPermissionsToRole(AddPermissionsToRoleArgs): Promise<true | AuthorizationError>
 
   checkPermission(CheckPermissionArgs): Promise<boolean | AuthorizationError>
 }
