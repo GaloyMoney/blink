@@ -821,6 +821,7 @@ input OnChainAddressCurrentInput {
 }
 
 input OnChainPaymentSendInput {
+  walletId: WalletId!
   address: OnChainAddress!
   amount: SatAmount!
   memo: Memo
@@ -828,6 +829,7 @@ input OnChainPaymentSendInput {
 }
 
 input OnChainPaymentSendAllInput {
+  walletId: WalletId!
   address: OnChainAddress!
   memo: Memo
   targetConfirmations: TargetConfirmations = 1
