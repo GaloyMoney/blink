@@ -18,8 +18,8 @@ const assertUnreachable = (x: never): never => {
 }
 
 export const mapError = (error: ApplicationError): CustomApolloError => {
-  let message = ""
   const errorName = error.constructor.name as ApplicationErrorKey
+  let message = error.message || errorName || ""
   switch (errorName) {
     case "WithdrawalLimitsExceededError":
       message = error.message

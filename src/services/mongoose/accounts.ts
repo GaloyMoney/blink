@@ -49,7 +49,7 @@ export const AccountsRepository = (): IAccountsRepository => {
       const result: UserType = await User.findOne({
         walletPublicId,
       })
-      if (!result) return new CouldNotFindError("Invalid walletName")
+      if (!result) return new CouldNotFindError("Invalid wallet")
       return translateToAccount(result)
     } catch (err) {
       return new UnknownRepositoryError(err)
