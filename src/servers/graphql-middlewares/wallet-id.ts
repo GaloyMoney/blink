@@ -18,5 +18,7 @@ export const walletIdMiddleware = {
   Mutation: {
     onChainAddressCreate: validateWalletId,
     onChainAddressCurrent: validateWalletId,
+    onChainPaymentSend: validateWalletId,
+    onChainPaymentSendAll: validateWalletId,
   },
 }
