@@ -99,7 +99,7 @@ jobs:
     - { get: pipeline-tasks }
     - { get: bundled-deps, tags: ["staging"], trigger: true}
   - task: test-integration
-    timeout: 10m
+    timeout: 12m
     tags: ["staging"]
     config:
       platform: linux
