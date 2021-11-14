@@ -855,10 +855,29 @@ input CaptchaRequestAuthCodeInput {
 }
 
 type Subscription {
+  me: MePayload!
   price(input: PriceInput!): PricePayload!
   lnInvoicePaymentStatus(
     input: LnInvoicePaymentStatusInput!
   ): LnInvoicePaymentStatusPayload!
+}
+
+type MePayload {
+  errors: [Error!]!
+  data: MePayloadData
+}
+
+union MePayloadData = Price | InvoiceStatus
+
+type InvoiceStatus {
+  paymentHash: PaymentHash!
+  status: InvoicePaymentStatus!
+  balance: SatAmount!
+}
+
+enum InvoicePaymentStatus {
+  PENDING
+  PAID
 }
 
 type PricePayload {
@@ -875,11 +894,6 @@ input PriceInput {
 type LnInvoicePaymentStatusPayload {
   errors: [Error!]!
   status: InvoicePaymentStatus
-}
-
-enum InvoicePaymentStatus {
-  PENDING
-  PAID
 }
 
 input LnInvoicePaymentStatusInput {

@@ -1,15 +1,16 @@
+import { getCurrentPrice } from "@app/prices"
+import { getBalanceForWallet } from "@app/wallets"
+
 import { InvoiceNotFoundError } from "@domain/bitcoin/lightning"
 import { toLiabilitiesAccountId } from "@domain/ledger"
+import { CouldNotFindError } from "@domain/errors"
+import { DepositFeeCalculator } from "@domain/wallets"
+
 import { LndService } from "@services/lnd"
 import { LedgerService } from "@services/ledger"
 import { WalletInvoicesRepository } from "@services/mongoose"
-import { CouldNotFindError } from "@domain/errors"
 import { LockService } from "@services/lock"
 import { NotificationsService } from "@services/notifications"
-import { DepositFeeCalculator } from "@domain/wallets"
-import { lnPaymentStatusEvent } from "@config/app"
-import pubsub from "@services/pubsub"
-import { getCurrentPrice } from "@app/prices"
 
 export const updatePendingInvoices = async ({
   walletId,
@@ -138,16 +139,22 @@ const updatePendingInvoice = async ({
       })
       if (result instanceof Error) return result
 
-      const notificationsService = NotificationsService(logger)
-      await notificationsService.lnPaymentReceived({
-        amount: received,
-        walletId: walletInvoice.walletId,
-        paymentHash,
-        usdPerSat,
+      const recipientWalletBalance = await getBalanceForWallet({
+        walletId: updatedWalletInvoice.walletId,
+        logger,
       })
 
-      const eventName = lnPaymentStatusEvent(paymentHash)
-      pubsub.publish(eventName, { status: "PAID" })
+      if (recipientWalletBalance instanceof Error) return recipientWalletBalance
+
+      const notificationsService = NotificationsService(logger)
+      notificationsService.lnInvoicePaid({
+        paymentHash,
+        recipientWalletId: updatedWalletInvoice.walletId,
+        recipientWalletBalance,
+        payerWalletId: walletInvoice.walletId,
+        amount: received,
+        usdPerSat,
+      })
 
       return true
     })

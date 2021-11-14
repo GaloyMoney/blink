@@ -1,5 +1,15 @@
+import {
+  lnPaymentStatusEvent,
+  SAT_USDCENT_PRICE,
+  USER_PRICE_UPDATE_EVENT,
+  walletUpdateEvent,
+} from "@config/app"
+
 import { NotificationsServiceError, NotificationType } from "@domain/notifications"
+
 import { User } from "@services/mongoose/schema"
+import pubsub from "@services/pubsub"
+
 import { transactionNotification } from "./payment"
 
 export const NotificationsService = (logger: Logger): INotificationsService => {
@@ -77,15 +87,17 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
       usdPerSat,
     })
 
-  const lnPaymentReceived = async ({
-    amount,
-    walletId,
+  const lnInvoicePaid = async ({
     paymentHash,
+    recipientWalletId,
+    recipientWalletBalance,
+    payerWalletId,
+    amount,
     usdPerSat,
-  }: LnPaymentReceivedArgs) => {
+  }: LnInvoicePaidArgs) => {
     try {
       // work around to move forward before re-wrighting the whole notifications module
-      const user = await User.findOne({ _id: walletId })
+      const user = await User.findOne({ _id: payerWalletId })
 
       // Do not await this call for quicker processing
       transactionNotification({
@@ -96,16 +108,38 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
         paymentHash,
         usdPerSat,
       })
+      // Notify public subscribers (via GraphQL subscription if any)
+      const eventName = lnPaymentStatusEvent(paymentHash)
+      pubsub.publish(eventName, { status: "PAID" })
+
+      // Notify the recipient (via GraphQL subscription if any)
+      const walletUpdatedEventName = walletUpdateEvent(recipientWalletId)
+      pubsub.publish(walletUpdatedEventName, {
+        invoice: {
+          paymentHash,
+          status: "PAID",
+          balance: recipientWalletBalance,
+        },
+      })
       return
     } catch (err) {
       return new NotificationsServiceError(err)
     }
   }
 
+  const priceUpdate = (usdPerSat) => {
+    pubsub.publish(SAT_USDCENT_PRICE, { satUsdCentPrice: 100 * usdPerSat })
+    pubsub.publish(USER_PRICE_UPDATE_EVENT, {
+      price: { satUsdCentPrice: 100 * usdPerSat },
+    })
+  }
+
   return {
     onChainTransactionReceived,
     onChainTransactionReceivedPending,
     onChainTransactionPayment,
-    lnPaymentReceived,
+
+    priceUpdate,
+    lnInvoicePaid,
   }
 }
