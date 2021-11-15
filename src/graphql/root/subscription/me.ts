@@ -39,7 +39,7 @@ const TransactionStatus = new GT.Object({
       type: GT.NonNull(SatAmount),
     },
     usdPerSat: {
-      type: GT.NonNull(GT.Int),
+      type: GT.NonNull(GT.Float),
     },
   }),
 })

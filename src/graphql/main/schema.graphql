@@ -884,7 +884,7 @@ type TransactionStatus {
   txNotificationType: TxNotificationType!
   txHash: OnChainTxHash!
   amount: SatAmount!
-  usdPerSat: Int!
+  usdPerSat: Float!
 }
 
 enum TxNotificationType {
