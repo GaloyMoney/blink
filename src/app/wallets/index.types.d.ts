@@ -1,3 +1,9 @@
+type AddInvoiceByWalletPublicIdArgs = {
+  walletPublicId: WalletPublicId
+  amount: number
+  memo?: string
+}
+
 type AddInvoiceArgs = {
   walletId: WalletId
   amount: number

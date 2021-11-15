@@ -16,6 +16,22 @@ import { LndService } from "@services/lnd"
 import { WalletInvoicesRepository, WalletsRepository } from "@services/mongoose"
 import { RedisRateLimitService } from "@services/rate-limit"
 
+export const addInvoiceByWalletPublicId = async ({
+  walletPublicId,
+  amount,
+  memo = "",
+}: AddInvoiceByWalletPublicIdArgs): Promise<LnInvoice | ApplicationError> => {
+  const wallets = WalletsRepository()
+  const wallet = await wallets.findByPublicId(walletPublicId)
+  if (wallet instanceof Error) return wallet
+
+  return addInvoice({
+    walletId: wallet.id,
+    amount,
+    memo,
+  })
+}
+
 export const addInvoice = async ({
   walletId,
   amount,
