@@ -8,6 +8,8 @@ import Price from "@graphql/types/object/price"
 import PaymentHash from "@graphql/types/scalar/payment-hash"
 import InvoicePaymentStatus from "@graphql/types/scalar/invoice-payment-status"
 import SatAmount from "@graphql/types/scalar/sat-amount"
+import OnChainTxHash from "@graphql/types/scalar/onchain-tx-hash"
+import TxNotificationType from "@graphql/types/scalar/tx-notification-type"
 
 const InvoiceStatus = new GT.Object({
   name: "InvoiceStatus",
@@ -24,9 +26,27 @@ const InvoiceStatus = new GT.Object({
   }),
 })
 
+const TransactionStatus = new GT.Object({
+  name: "TransactionStatus",
+  fields: () => ({
+    txNotificationType: {
+      type: GT.NonNull(TxNotificationType),
+    },
+    txHash: {
+      type: GT.NonNull(OnChainTxHash),
+    },
+    amount: {
+      type: GT.NonNull(SatAmount),
+    },
+    usdPerSat: {
+      type: GT.NonNull(GT.Int),
+    },
+  }),
+})
+
 const MePayloadData = new GT.Union({
   name: "MePayloadData",
-  types: [Price, InvoiceStatus],
+  types: [Price, InvoiceStatus, TransactionStatus],
   resolveType: (obj) => obj.resolveType,
 })
 
@@ -70,6 +90,16 @@ const MeSubscription = {
         data: {
           resolveType: "InvoiceStatus",
           ...source.invoice,
+        },
+      }
+    }
+
+    if (source.transaction) {
+      return {
+        errors: [],
+        data: {
+          resolveType: "TransactionStatus",
+          ...source.transaction,
         },
       }
     }

@@ -39,6 +39,19 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
         txHash,
         usdPerSat,
       })
+
+      // Notify the recipient (via GraphQL subscription if any)
+      const walletUpdatedEventName = walletUpdateEvent(user.id)
+
+      pubsub.publish(walletUpdatedEventName, {
+        transaction: {
+          txNotificationType: type,
+          amount,
+          txHash,
+          usdPerSat,
+        },
+      })
+
       return
     } catch (err) {
       return new NotificationsServiceError(err)
