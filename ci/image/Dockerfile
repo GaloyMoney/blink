@@ -1,7 +1,7 @@
 FROM node:14-alpine
 
 RUN apk update \
-  && apk add bash make git docker curl python jq rsync openssh wget \
+  && apk add bash make git docker curl python3 jq rsync openssh wget \
   && apk add yq --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
 
 # Install gcloud
