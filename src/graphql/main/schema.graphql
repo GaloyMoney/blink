@@ -867,7 +867,7 @@ type MePayload {
   data: MePayloadData
 }
 
-union MePayloadData = Price | InvoiceStatus | TransactionStatus
+union MePayloadData = Price | InvoiceStatus | TransactionStatus | IntraLedgerStatus
 
 type InvoiceStatus {
   paymentHash: PaymentHash!
@@ -892,6 +892,14 @@ enum TxNotificationType {
   OnchainReceiptPending
   OnchainPayment
   LnInvoicePaid
+  IntraLedgerReceipt
+  IntraLedgerPayment
+}
+
+type IntraLedgerStatus {
+  txNotificationType: TxNotificationType!
+  amount: SatAmount!
+  usdPerSat: Float!
 }
 
 type PricePayload {

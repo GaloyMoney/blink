@@ -147,6 +147,56 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
     })
   }
 
+  const intraLedgerPaid = async ({
+    payerWalletId,
+    recipientWalletId,
+    amount,
+    usdPerSat,
+  }: IntraLedgerArgs): Promise<void | NotificationsServiceError> => {
+    try {
+      const publish = async (walletId: WalletId, type: NotificationType) => {
+        // Notify the recipient (via GraphQL subscription if any)
+        const walletUpdatedEventName = walletUpdateEvent(walletId)
+
+        pubsub.publish(walletUpdatedEventName, {
+          intraLedger: {
+            txNotificationType: type,
+            amount,
+            usdPerSat,
+          },
+        })
+      }
+
+      publish(payerWalletId, NotificationType.IntraLedgerPayment)
+      publish(recipientWalletId, NotificationType.IntraLedgerReceipt)
+
+      // work around to move forward before re-wrighting the whole notifications module
+      const payerUser = await User.findOne({ _id: payerWalletId })
+
+      // Do not await this call for quicker processing
+      transactionNotification({
+        type: NotificationType.IntraLedgerPayment,
+        user: payerUser,
+        logger,
+        amount,
+        usdPerSat,
+      })
+
+      const recipientUser = await User.findOne({ _id: recipientWalletId })
+
+      // Do not await this call for quicker processing
+      transactionNotification({
+        type: NotificationType.IntraLedgerReceipt,
+        user: recipientUser,
+        logger,
+        amount,
+        usdPerSat,
+      })
+    } catch (err) {
+      return new NotificationsServiceError(err)
+    }
+  }
+
   return {
     onChainTransactionReceived,
     onChainTransactionReceivedPending,
@@ -154,5 +204,6 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
 
     priceUpdate,
     lnInvoicePaid,
+    intraLedgerPaid,
   }
 }

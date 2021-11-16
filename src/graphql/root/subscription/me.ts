@@ -44,9 +44,24 @@ const TransactionStatus = new GT.Object({
   }),
 })
 
+const IntraLedgerStatus = new GT.Object({
+  name: "IntraLedgerStatus",
+  fields: () => ({
+    txNotificationType: {
+      type: GT.NonNull(TxNotificationType),
+    },
+    amount: {
+      type: GT.NonNull(SatAmount),
+    },
+    usdPerSat: {
+      type: GT.NonNull(GT.Float),
+    },
+  }),
+})
+
 const MePayloadData = new GT.Union({
   name: "MePayloadData",
-  types: [Price, InvoiceStatus, TransactionStatus],
+  types: [Price, InvoiceStatus, TransactionStatus, IntraLedgerStatus],
   resolveType: (obj) => obj.resolveType,
 })
 
@@ -100,6 +115,16 @@ const MeSubscription = {
         data: {
           resolveType: "TransactionStatus",
           ...source.transaction,
+        },
+      }
+    }
+
+    if (source.intraLedger) {
+      return {
+        errors: [],
+        data: {
+          resolveType: "IntraLedgerStatus",
+          ...source.intraLedger,
         },
       }
     }
