@@ -1,5 +1,4 @@
 import { getCurrentPrice } from "@app/prices"
-import { getBalanceForWallet } from "@app/wallets"
 
 import { InvoiceNotFoundError } from "@domain/bitcoin/lightning"
 import { toLiabilitiesAccountId } from "@domain/ledger"
@@ -139,18 +138,10 @@ const updatePendingInvoice = async ({
       })
       if (result instanceof Error) return result
 
-      const recipientWalletBalance = await getBalanceForWallet({
-        walletId: updatedWalletInvoice.walletId,
-        logger,
-      })
-
-      if (recipientWalletBalance instanceof Error) return recipientWalletBalance
-
       const notificationsService = NotificationsService(logger)
       notificationsService.lnInvoicePaid({
         paymentHash,
         recipientWalletId: updatedWalletInvoice.walletId,
-        recipientWalletBalance,
         payerWalletId: walletInvoice.walletId,
         amount: received,
         usdPerSat,

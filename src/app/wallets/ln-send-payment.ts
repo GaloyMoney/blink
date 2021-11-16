@@ -377,18 +377,10 @@ const executePaymentViaIntraledger = async ({
     const updatedWalletInvoice = await invoicesRepo.update(walletInvoice)
     if (updatedWalletInvoice instanceof Error) return updatedWalletInvoice
 
-    const recipientWalletBalance = await getBalanceForWallet({
-      walletId: recipientWalletId,
-      logger,
-    })
-
-    if (recipientWalletBalance instanceof Error) return recipientWalletBalance
-
     const notificationsService = NotificationsService(logger)
     notificationsService.lnInvoicePaid({
       paymentHash,
       recipientWalletId,
-      recipientWalletBalance,
       payerWalletId,
       amount,
       usdPerSat,

@@ -18,7 +18,6 @@ type OnChainTxPaymentArgs = OnChainTxBaseArgs
 type LnInvoicePaidArgs = {
   paymentHash: PaymentHash
   recipientWalletId: WalletId
-  recipientWalletBalance: Satoshis
   payerWalletId: WalletId
   amount: Satoshis
   usdPerSat?: UsdPerSat

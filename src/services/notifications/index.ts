@@ -103,7 +103,6 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
   const lnInvoicePaid = async ({
     paymentHash,
     recipientWalletId,
-    recipientWalletBalance,
     payerWalletId,
     amount,
     usdPerSat,
@@ -131,7 +130,6 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
         invoice: {
           paymentHash,
           status: "PAID",
-          balance: recipientWalletBalance,
         },
       })
       return
