@@ -1,0 +1,885 @@
+{
+	"info": {
+		"_postman_id": "36c8cbc6-1fd8-420b-9748-88a71a271c35",
+		"name": "graphql_demo",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "active",
+			"item": [
+				{
+					"name": "notoken",
+					"item": [
+						{
+							"name": "queries",
+							"item": [
+								{
+									"name": "prices",
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "# Write your query or mutation here\nquery btcPriceList($range: PriceGraphRange!) {\n    btcPriceList(range: $range) {\n    \ttimestamp\n      price {\n        base\n        offset\n        currencyUnit\n        formattedAmount\n      }\n    }\n}\n",
+												"variables": "{\"range\": \"ONE_DAY\"}"
+											}
+										},
+										"url": {
+											"raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+											"protocol": "{{protocol}}",
+											"host": [
+												"{{domain}}"
+											],
+											"port": "{{port}}",
+											"path": [
+												"graphql"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "mobileVersions",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"var moment = require('moment')",
+													"",
+													"pm.test(\"validate build parameters are set\", function () {",
+													"    if (pm.environment.name != \"devnet\") {",
+													"        const jsonData = pm.response.json();",
+													"        const {commitHash, buildTime} = jsonData.data.buildParameters",
+													"        pm.expect(commitHash.length).to.eql(40);",
+													"        pm.expect(buildTime.substring(0,4)).to.eql(\"2020\")",
+													"    }",
+													"});",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "query mobileVersions {\n    mobileVersions {\n        platform\n        currentSupported\n        minSupported\n    }\n}",
+												"variables": "{}"
+											}
+										},
+										"url": {
+											"raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+											"protocol": "{{protocol}}",
+											"host": [
+												"{{domain}}"
+											],
+											"port": "{{port}}",
+											"path": [
+												"graphql"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "nodesIds",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"validate build parameters are set\", function () {",
+													"    if (pm.environment.name != \"devnet\") {",
+													"        const jsonData = pm.response.json();",
+													"        const {peersCount, channelsCount} = jsonData.data.nodeStats",
+													"        pm.expect(peersCount).to.be.above(1);",
+													"        pm.expect(channelsCount).to.be.above(2);",
+													"    }",
+													"});",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "query globals {\n    globals {\n        nodesIds\n    }\n}",
+												"variables": "{}"
+											}
+										},
+										"url": {
+											"raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+											"protocol": "{{protocol}}",
+											"host": [
+												"{{domain}}"
+											],
+											"port": "{{port}}",
+											"path": [
+												"graphql"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "earnList",
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "query earnList {\n    earnList {\n        id\n        value\n        completed\n    }\n}",
+												"variables": "{}"
+											}
+										},
+										"url": {
+											"raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+											"protocol": "{{protocol}}",
+											"host": [
+												"{{domain}}"
+											],
+											"port": "{{port}}",
+											"path": [
+												"graphql"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "usernameExists",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"expect usernameExists to return true for test username\", function () {",
+													"    var jsonData = pm.response.json();",
+													"    pm.expect(jsonData.data.usernameExists).to.be(true);",
+													"});",
+													"",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "query usernameAvailable($username: Username!) {\n    usernameAvailable(username: $username)\n}",
+												"variables": "{\n    \"username\": \"xyz\"\n}"
+											}
+										},
+										"url": {
+											"raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+											"protocol": "{{protocol}}",
+											"host": [
+												"{{domain}}"
+											],
+											"port": "{{port}}",
+											"path": [
+												"graphql"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "mutations",
+							"item": [
+								{
+									"name": "requestPhoneCode",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"requesting a code\", function () {",
+													"    var jsonData = pm.response.json();",
+													"    pm.expect(jsonData.data.requestPhoneCode.success).to.eql(true);",
+													"});",
+													"",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "mutation userRequestAuthCode($input: UserRequestAuthCodeInput!) {\n    userRequestAuthCode(input: $input) {\n        success\n    }\n}",
+												"variables": "{\n    \"input\": {\n        \"phone\": \"{{phone}}\"\n    }\n}"
+											}
+										},
+										"url": {
+											"raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+											"protocol": "{{protocol}}",
+											"host": [
+												"{{domain}}"
+											],
+											"port": "{{port}}",
+											"path": [
+												"graphql"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "addPublicInvoice",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"invoice starts with lnbcrt\", function () {",
+													"    var jsonData = pm.response.json();",
+													"    pm.expect(jsonData.data.publicInvoice.addInvoice.slice(0,6)).to.be('lnbcrt');",
+													"});",
+													"",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "mutation publicInvoice ($username: String) {\n    publicInvoice (username: $username) {\n        addInvoice\n    }\n}",
+												"variables": "{\n  \"username\": \"xyz\"\n}"
+											}
+										},
+										"url": {
+											"raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+											"protocol": "{{protocol}}",
+											"host": [
+												"{{domain}}"
+											],
+											"port": "{{port}}",
+											"path": [
+												"graphql"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "userLogin",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"requesting a token\", function () {",
+													"    const jsonData = pm.response.json();",
+													"    const token = jsonData.data.login.token",
+													"    // token should have two dot \".\"",
+													"    const parts = token.split(\".\")",
+													"    pm.expect(parts.length).to.eql(3);",
+													"    pm.environment.set(\"token\", token)",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "mutation userLogin($input: UserLoginInput!) {\n    userLogin(input: $input) {\n        authToken\n    }\n}",
+												"variables": "{\n    \"input\": {\n        \"phone\": \"{{phone}}\",\n        \"code\": \"{{code}}\"\n    }\n}"
+											}
+										},
+										"url": {
+											"raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+											"protocol": "{{protocol}}",
+											"host": [
+												"{{domain}}"
+											],
+											"port": "{{port}}",
+											"path": [
+												"graphql"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "token",
+					"item": [
+						{
+							"name": "queries",
+							"item": [
+								{
+									"name": "me",
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "query me {\n    me {\n        id\n        phone\n        username\n        language\n        quizQuestions {\n            question {\n                id\n                # earnAmount\n            }\n            completed\n        }\n        contacts {\n            # id\n            username\n            alias\n            transactionsCount\n        }\n        twoFAEnabled\n        createdAt\n        defaultAccount {\n            wallets {\n                id\n                walletCurrency\n                balance\n            }\n        }\n    }\n}",
+												"variables": "{}"
+											}
+										},
+										"url": {
+											"raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+											"protocol": "{{protocol}}",
+											"host": [
+												"{{domain}}"
+											],
+											"port": "{{port}}",
+											"path": [
+												"graphql"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "mutations",
+							"item": [
+								{
+									"name": "onChainAddressCreate",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "mutation onChainAddressCreate($input: OnChainAddressCreateInput!) {\n  onChainAddressCreate(input: $input) {\n    address\n    errors {\n      message\n    }\n  }\n}\n",
+												"variables": "{\n    \"input\": {\n        \"walletId\": \"{{walletId}}\"\n    }\n}\n"
+											}
+										},
+										"url": {
+											"raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+											"protocol": "{{protocol}}",
+											"host": [
+												"{{domain}}"
+											],
+											"port": "{{port}}",
+											"path": [
+												"graphql"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "onChainAddressCurrent",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "mutation onChainAddressCurrent($input: OnChainAddressCurrentInput!) {\n  onChainAddressCurrent(input: $input) {\n    address\n    errors {\n      message\n    }\n  }\n}\n",
+												"variables": "{\n    \"input\": {\n        \"walletId\": \"{{walletId}}\"\n    }\n}\n"
+											}
+										},
+										"url": {
+											"raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+											"protocol": "{{protocol}}",
+											"host": [
+												"{{domain}}"
+											],
+											"port": "{{port}}",
+											"path": [
+												"graphql"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "onChainTxFee",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "query onChainTxFee($walletId: WalletId!, $address: OnChainAddress!, $amount: SatAmount!, $targetConfirmations: TargetConfirmations) {\n  onChainTxFee(walletId: $walletId, address: $address, amount: $amount, targetConfirmations: $targetConfirmations) {\n    amount\n    targetConfirmations\n  }\n}\n",
+												"variables": "{\n    \"walletId\": \"{{walletId}}\",\n    \"address\": \"tb1qg0x7m8z4zuqlg8h7yuu8u732m8dlfg8mlwl3v8\",\n    \"amount\": \"5000\",\n    \"targetConfirmations\": 3\n} "
+											}
+										},
+										"url": {
+											"raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+											"protocol": "{{protocol}}",
+											"host": [
+												"{{domain}}"
+											],
+											"port": "{{port}}",
+											"path": [
+												"graphql"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "onChainPaymentSend",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "mutation onChainPaymentSend($input: OnChainPaymentSendInput!) {\n  onChainPaymentSend(input: $input) {\n    errors {\n      message\n    }\n    status\n  }\n}\n",
+												"variables": "{\n  \"input\": {\n      \"walletId\": \"{{walletId}}\",\n        \"address\": \"tb1qg0x7m8z4zuqlg8h7yuu8u732m8dlfg8mlwl3v8\",\n        \"amount\": 5000,\n        \"memo\": \"\",\n        \"targetConfirmations\": 2\n    }\n}\n"
+											}
+										},
+										"url": {
+											"raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+											"protocol": "{{protocol}}",
+											"host": [
+												"{{domain}}"
+											],
+											"port": "{{port}}",
+											"path": [
+												"graphql"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "lnInvoiceCreate",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"add invoice\", function () {",
+													"    const jsonData = pm.response.json();",
+													"    const invoice = jsonData.data.invoice.addInvoice",
+													"    pm.expect(invoice.substring(0,2)).to.eql(\"ln\")",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "mutation lnInvoiceCreate($input: LnInvoiceCreateInput!) {\n  lnInvoiceCreate(input: $input) {\n    invoice {\n      paymentRequest\n      paymentHash\n      paymentSecret\n      satoshis\n    }\n    errors {\n      message\n    }\n  }\n}\n",
+												"variables": "{\n    \"input\": {\n        \"amount\": 10,\n        \"memo\": \"Test\"\n    }\n}"
+											}
+										},
+										"url": {
+											"raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+											"protocol": "{{protocol}}",
+											"host": [
+												"{{domain}}"
+											],
+											"port": "{{port}}",
+											"path": [
+												"graphql"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "lnInvoiceFeeProbe",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"add invoice\", function () {",
+													"    const jsonData = pm.response.json();",
+													"    const invoice = jsonData.data.invoice.addInvoice",
+													"    pm.expect(invoice.substring(0,2)).to.eql(\"ln\")",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "mutation LnInvoiceFeeProbe($input: LnInvoiceFeeProbeInput!) {\n  lnInvoiceFeeProbe(input: $input) {\n    errors {\n      message\n    }\n    amount\n  }\n}\n",
+												"variables": "{\"input\": {\n    \"paymentRequest\": \"lnbcrt10u1psc2fa8pp5lykg9rl53adclfn75gfsnnrkenwgsd4lnjfhx5jcednvfe9ttj5qdqqcqzpuxqyz5vqsp5tv0qjnnywf5g6zjt2prs524rfe5u95kup53z4svvv78fd9hdm3eq9qyyssqnnfaw0lrktvunw08h0d48cs2f5r8u2qsr8uelrh3j9n7zlmf5twn3csc8hw8mlf28tekljug7ua3cp3agczfxedaew3zg0yjp9c58dqp2nv8ua\"\n    }\n}"
+											}
+										},
+										"url": {
+											"raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+											"protocol": "{{protocol}}",
+											"host": [
+												"{{domain}}"
+											],
+											"port": "{{port}}",
+											"path": [
+												"graphql"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "lnInvoicePaymentSend",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"add invoice\", function () {",
+													"    const jsonData = pm.response.json();",
+													"    const invoice = jsonData.data.invoice.addInvoice",
+													"    pm.expect(invoice.substring(0,2)).to.eql(\"ln\")",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "mutation lnInvoicePaymentSend($input: LnInvoicePaymentInput!) {\n  lnInvoicePaymentSend(input:$input) {\n    status\n    errors {\n      message\n    }\n  }\n}",
+												"variables": "{\n    \"input\": {\n        \"paymentRequest\": \"lnbcrt10u1psc2fa8pp5lykg9rl53adclfn75gfsnnrkenwgsd4lnjfhx5jcednvfe9ttj5qdqqcqzpuxqyz5vqsp5tv0qjnnywf5g6zjt2prs524rfe5u95kup53z4svvv78fd9hdm3eq9qyyssqnnfaw0lrktvunw08h0d48cs2f5r8u2qsr8uelrh3j9n7zlmf5twn3csc8hw8mlf28tekljug7ua3cp3agczfxedaew3zg0yjp9c58dqp2nv8ua\",\n        \"memo\": \"Test\"\n    }\n}\n"
+											}
+										},
+										"url": {
+											"raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+											"protocol": "{{protocol}}",
+											"host": [
+												"{{domain}}"
+											],
+											"port": "{{port}}",
+											"path": [
+												"graphql"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "lnNoAmountInvoiceCreate",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"add invoice\", function () {",
+													"    const jsonData = pm.response.json();",
+													"    const invoice = jsonData.data.invoice.addInvoice",
+													"    pm.expect(invoice.substring(0,2)).to.eql(\"ln\")",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "mutation lnNoAmountInvoiceCreate($input: LnNoAmountInvoiceCreateInput!) {\n  lnNoAmountInvoiceCreate(input: $input) {\n    invoice {\n      paymentRequest\n      paymentHash\n      paymentSecret\n    }\n    errors {\n      message\n    }\n  }\n}\n",
+												"variables": "{\n    \"input\": {\n        \"memo\": \"Test\"\n    }\n}"
+											}
+										},
+										"url": {
+											"raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+											"protocol": "{{protocol}}",
+											"host": [
+												"{{domain}}"
+											],
+											"port": "{{port}}",
+											"path": [
+												"graphql"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "lnNoAmountInvoiceFeeProbe",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"add invoice\", function () {",
+													"    const jsonData = pm.response.json();",
+													"    const invoice = jsonData.data.invoice.addInvoice",
+													"    pm.expect(invoice.substring(0,2)).to.eql(\"ln\")",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "mutation LnNoAmountInvoiceFeeProbe($input: LnNoAmountInvoiceFeeProbeInput!) {\n  lnNoAmountInvoiceFeeProbe(input: $input) {\n    errors {\n      message\n    }\n    amount\n  }\n}\n",
+												"variables": "{\n    \"input\": {\n        \"paymentRequest\": \"lnbcrt1psc220ppp5kz2w9ygejf8vh66vltskzsr7lrwg6f0gehsl4knfvnx5pdywzp0sdqqcqzpuxqyz5vqsp5pc2gyvucjcs9k6dwr9tetu54usa0lqq2y4p8nwnteynq5ac95v3s9qyyssq0duzn0lsz92yqn478f5ktsljd0j4xk9ka4tgmc03ygr2gn0g4yu3htw6uemd5ct5v4vg33hltm8rsnu7fud7pv0vhhl0mu3axs57xfsqfj8dcc\", \"amount\": 10\n    }\n}"
+											}
+										},
+										"url": {
+											"raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+											"protocol": "{{protocol}}",
+											"host": [
+												"{{domain}}"
+											],
+											"port": "{{port}}",
+											"path": [
+												"graphql"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "lnNoAmountInvoicePaymentSend",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"add invoice\", function () {",
+													"    const jsonData = pm.response.json();",
+													"    const invoice = jsonData.data.invoice.addInvoice",
+													"    pm.expect(invoice.substring(0,2)).to.eql(\"ln\")",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "graphql",
+											"graphql": {
+												"query": "mutation lnNoAmountInvoicePaymentSend($input: LnNoAmountInvoicePaymentInput!) {\n  lnNoAmountInvoicePaymentSend(input:$input) {\n    status\n    errors {\n        message\n    }\n  }\n}\n",
+												"variables": "{\n    \"input\": {\n        \"paymentRequest\": \"lnbcrt1psc220ppp5kz2w9ygejf8vh66vltskzsr7lrwg6f0gehsl4knfvnx5pdywzp0sdqqcqzpuxqyz5vqsp5pc2gyvucjcs9k6dwr9tetu54usa0lqq2y4p8nwnteynq5ac95v3s9qyyssq0duzn0lsz92yqn478f5ktsljd0j4xk9ka4tgmc03ygr2gn0g4yu3htw6uemd5ct5v4vg33hltm8rsnu7fud7pv0vhhl0mu3axs57xfsqfj8dcc\",\n        \"amount\": 10,\n        \"memo\": \"Test\"\n    }\n}"
+											}
+										},
+										"url": {
+											"raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+											"protocol": "{{protocol}}",
+											"host": [
+												"{{domain}}"
+											],
+											"port": "{{port}}",
+											"path": [
+												"graphql"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											""
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											""
+										]
+									}
+								}
+							]
+						}
+					],
+					"auth": {
+						"type": "bearer",
+						"bearer": [
+							{
+								"key": "token",
+								"value": "{{token}}",
+								"type": "string"
+							}
+						]
+					},
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					]
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"has no error\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.errors).to.be.undefined",
+							"})"
+						]
+					}
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "protocol",
+			"value": "http"
+		},
+		{
+			"key": "domain",
+			"value": "localhost"
+		},
+		{
+			"key": "port",
+			"value": "4000"
+		}
+	]
+}
