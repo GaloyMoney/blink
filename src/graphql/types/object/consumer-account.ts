@@ -44,6 +44,11 @@ const ConsumerAccount = new GT.Object({
       },
     },
 
+    defaultWalletId: {
+      type: GT.NonNull(WalletId),
+      resolve: (source, args, { domainUser }) => domainUser.walletPublicId,
+    },
+
     csvTransactions: {
       type: GT.NonNull(GT.String),
       args: {
