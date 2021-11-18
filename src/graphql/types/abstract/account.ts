@@ -24,6 +24,9 @@ const IAccount = new GT.Interface({
     wallets: {
       type: GT.NonNullList(Wallet),
     },
+    defaultWalletId: {
+      type: GT.NonNull(WalletId),
+    },
     csvTransactions: {
       type: GT.NonNull(GT.String),
       args: {
