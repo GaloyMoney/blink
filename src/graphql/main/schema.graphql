@@ -802,6 +802,7 @@ input LnNoAmountInvoicePaymentInput {
 }
 
 input IntraLedgerPaymentSendInput {
+  walletId: WalletId!
   recipientWalletId: WalletId!
   amount: SatAmount!
   memo: Memo

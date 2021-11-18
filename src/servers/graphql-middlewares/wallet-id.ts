@@ -30,6 +30,7 @@ export const walletIdMiddleware = {
     onChainTxFee: validateWalletIdQuery,
   },
   Mutation: {
+    intraLedgerPaymentSend: validateWalletIdMutation,
     onChainAddressCreate: validateWalletIdMutation,
     onChainAddressCurrent: validateWalletIdMutation,
     onChainPaymentSend: validateWalletIdMutation,

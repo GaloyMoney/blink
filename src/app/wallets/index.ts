@@ -21,3 +21,10 @@ export const getWallet = async (walletId: WalletId) => {
   const wallets = WalletsRepository()
   return wallets.findById(walletId)
 }
+
+export const getWalletByPublicId = async (
+  walletPublicId: WalletPublicId,
+): Promise<Wallet | ApplicationError> => {
+  const wallets = WalletsRepository()
+  return wallets.findByPublicId(walletPublicId)
+}
