@@ -21,6 +21,7 @@ import {
   UsersRepository,
   WalletsRepository,
 } from "@services/mongoose"
+import { NotificationsService } from "@services/notifications"
 
 export const intraledgerPaymentSend = async ({
   recipientUsername,
@@ -208,6 +209,14 @@ const executePaymentViaIntraledger = async ({
       }),
     )
     if (journal instanceof Error) return journal
+
+    const notificationsService = NotificationsService(logger)
+    notificationsService.intraLedgerPaid({
+      payerWalletId: payerWallet.id,
+      recipientWalletId: recipientWallet.id,
+      amount: sats,
+      usdPerSat: price,
+    })
 
     return PaymentSendStatus.Success
   })

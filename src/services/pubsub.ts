@@ -1,7 +1,7 @@
 import { redisPubSub } from "./redis"
 
 const pubsub = {
-  asyncIterator: (trigger: string) => redisPubSub.asyncIterator(trigger),
+  asyncIterator: (trigger: string | string[]) => redisPubSub.asyncIterator(trigger),
 
   publish: (triger: string, payload: unknown) => redisPubSub.publish(triger, payload),
 

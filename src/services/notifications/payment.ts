@@ -5,6 +5,8 @@ export const getTitle = {
   "onchain_receipt": ({ usd, amount }) => `+$${usd} | ${amount} sats`,
   "onchain_receipt_pending": ({ usd, amount }) => `pending +$${usd} | ${amount} sats`,
   "onchain_payment": ({ amount }) => `Sent onchain payment of ${amount} sats confirmed`,
+  "intra_ledger_receipt": ({ usd, amount }) => `+$${usd} | ${amount} sats`,
+  "intra_ledger_payment": ({ usd, amount }) => `Sent payment of $${usd} | ${amount} sats`,
 }
 
 export const getTitleNoUsd = {
@@ -12,6 +14,8 @@ export const getTitleNoUsd = {
   "onchain_receipt": ({ amount }) => `+${amount} sats`,
   "onchain_receipt_pending": ({ amount }) => `pending +${amount} sats`,
   "onchain_payment": ({ amount }) => `Sent onchain payment of ${amount} sats confirmed`,
+  "intra_ledger_receipt": ({ amount }) => `+${amount} sats`,
+  "intra_ledger_payment": ({ amount }) => `Sent payment of ${amount} sats`,
 }
 
 export const transactionNotification = async ({

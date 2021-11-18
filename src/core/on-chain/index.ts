@@ -42,6 +42,7 @@ import {
 } from "@app/wallets/check-limit-helpers"
 import { TwoFANewCodeNeededError } from "@domain/twoFA"
 import { getCurrentPrice } from "@app/prices"
+import { NotificationsService } from "@services/notifications"
 
 export const getOnChainTransactions = async ({
   lnd,
@@ -207,6 +208,14 @@ export const OnChainMixin = (superclass) =>
               }),
           )
           if (journal instanceof Error) throw journal
+
+          const notificationsService = NotificationsService(onchainLoggerOnUs)
+          notificationsService.intraLedgerPaid({
+            payerWalletId: payerWallet.id,
+            recipientWalletId: recipientWallet.id,
+            amount: toSats(sats),
+            usdPerSat: price,
+          })
 
           onchainLoggerOnUs.info(
             { success: true, ...metadata },

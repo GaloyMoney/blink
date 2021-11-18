@@ -15,9 +15,8 @@ import { baseLogger } from "@services/logger"
 import { ledger, setupMongoConnection } from "@services/mongodb"
 import { User } from "@services/mongoose/schema"
 import { updatePriceHistory } from "@services/price/update-price-history"
-import { ONCHAIN_MIN_CONFIRMATIONS, SAT_USDCENT_PRICE } from "@config/app"
+import { ONCHAIN_MIN_CONFIRMATIONS } from "@config/app"
 import * as Wallets from "@app/wallets"
-import pubsub from "@services/pubsub"
 import { NotificationsService } from "@services/notifications"
 import { toSats } from "@domain/bitcoin"
 import { getCurrentPrice } from "@app/prices"
@@ -167,10 +166,11 @@ export const onInvoiceUpdate = async (invoice) => {
 }
 
 const publishCurrentPrice = async () => {
-  const satsPrice = await getCurrentPrice()
-  if (satsPrice instanceof Error) return
+  const usdPerSat = await getCurrentPrice()
+  if (usdPerSat instanceof Error) return
 
-  pubsub.publish(SAT_USDCENT_PRICE, { satUsdCentPrice: 100 * satsPrice })
+  const notificationsService = NotificationsService(logger)
+  notificationsService.priceUpdate(usdPerSat)
 }
 
 const updatePriceForChart = () => {

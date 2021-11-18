@@ -55,7 +55,6 @@ export async function startApolloServerForCoreSchema() {
         onChainPaymentSend: or(isAuthenticated, isApiKeyAuthenticated),
         onChainPaymentSendAll: or(isAuthenticated, isApiKeyAuthenticated),
       },
-      // Subscription: {},
     },
     { allowExternalErrors: true },
   )

@@ -4,6 +4,7 @@ import { ApolloError, ApolloServer } from "apollo-server-express"
 import { SubscriptionServer } from "subscriptions-transport-ws"
 import express from "express"
 import expressJwt from "express-jwt"
+import * as jwt from "jsonwebtoken"
 import { rule } from "graphql-shield"
 import mongoose from "mongoose"
 import pino from "pino"
@@ -51,13 +52,76 @@ export const isEditor = rule({ cache: "contextual" })((parent, args, ctx) => {
   return ctx.user.role === "editor" ? true : "NOT_AUTHORIZED"
 })
 
+const geeTestConfig = getGeeTestConfig()
+const geetest = GeeTest(geeTestConfig)
+
+const sessionContext = ({ token, ips, body, apiKey, apiSecret }) => {
+  const userId = token?.uid ?? null
+  let ip: string | undefined
+
+  if (ips && Array.isArray(ips) && ips.length) {
+    ip = ips[0]
+  } else if (typeof ips === "string") {
+    ip = ips
+  }
+
+  let wallet, user
+
+  // TODO move from id: uuidv4() to a Jaeger standard
+  const logger = graphqlLogger.child({ token, id: uuidv4(), body })
+
+  let domainUser: User | null = null
+  return addAttributesToCurrentSpanAndPropagate(
+    {
+      [SemanticAttributes.ENDUSER_ID]: userId,
+      [SemanticAttributes.HTTP_CLIENT_IP]: ip,
+    },
+    async () => {
+      if (userId) {
+        const loggedInUser = await Users.getUserForLogin({ userId, ip, logger })
+        if (loggedInUser instanceof Error)
+          throw new ApolloError("Invalid user authentication", "INVALID_AUTHENTICATION", {
+            reason: loggedInUser,
+          })
+        domainUser = loggedInUser
+        user = await User.findOne({ _id: userId })
+        wallet =
+          !!user && user.status === "active"
+            ? await WalletFactory({ user, logger })
+            : null
+      }
+
+      let account: Account | null = null
+      if (apiKey && apiSecret) {
+        const loggedInAccount = await Accounts.getAccountByApiKey(apiKey, apiSecret)
+        if (loggedInAccount instanceof Error)
+          throw new ApolloError("Invalid API authentication", "INVALID_AUTHENTICATION", {
+            reason: loggedInAccount,
+          })
+        account = loggedInAccount
+      }
+
+      addAttributesToCurrentSpan({ [ENDUSER_ALIAS]: domainUser?.username })
+
+      return {
+        logger,
+        uid: userId,
+        wallet,
+        domainUser,
+        user,
+        geetest,
+        account,
+        ip,
+      }
+    },
+  )
+}
+
 export const startApolloServer = async ({
   schema,
   port,
   startSubscriptionServer = false,
 }): Promise<Record<string, unknown>> => {
-  const geeTestConfig = getGeeTestConfig()
-  const geetest = GeeTest(geeTestConfig)
   const app = express()
 
   const apolloPulgins = isProd
@@ -80,79 +144,16 @@ export const startApolloServer = async ({
     context: async (context) => {
       // @ts-expect-error: TODO
       const token = context.req?.token ?? null
+
       // @ts-expect-error: TODO
       const apiKey = context.req?.apiKey ?? null
       // @ts-expect-error: TODO
       const apiSecret = context.req?.apiSecret ?? null
-      const userId = token?.uid ?? null
+
       const ips = context.req?.headers["x-real-ip"]
-      let ip: string | undefined
+      const body = context.req?.body ?? null
 
-      if (ips && Array.isArray(ips) && ips.length) {
-        ip = ips[0]
-      } else if (typeof ips === "string") {
-        ip = ips
-      }
-
-      let wallet, user
-
-      // TODO move from id: uuidv4() to a Jaeger standard
-      const logger = graphqlLogger.child({ token, id: uuidv4(), body: context.req?.body })
-
-      let domainUser: User | null = null
-      return addAttributesToCurrentSpanAndPropagate(
-        {
-          [SemanticAttributes.ENDUSER_ID]: userId,
-          [SemanticAttributes.HTTP_CLIENT_IP]: ip,
-        },
-        async () => {
-          if (userId) {
-            const loggedInUser = await Users.getUserForLogin({ userId, ip, logger })
-            if (loggedInUser instanceof Error)
-              throw new ApolloError(
-                "Invalid user authentication",
-                "INVALID_AUTHENTICATION",
-                {
-                  reason: loggedInUser,
-                },
-              )
-            domainUser = loggedInUser
-            user = await User.findOne({ _id: userId })
-            wallet =
-              !!user && user.status === "active"
-                ? await WalletFactory({ user, logger })
-                : null
-          }
-
-          let account: Account | null = null
-          if (apiKey && apiSecret) {
-            const loggedInAccount = await Accounts.getAccountByApiKey(apiKey, apiSecret)
-            if (loggedInAccount instanceof Error)
-              throw new ApolloError(
-                "Invalid API authentication",
-                "INVALID_AUTHENTICATION",
-                {
-                  reason: loggedInAccount,
-                },
-              )
-            account = loggedInAccount
-          }
-
-          addAttributesToCurrentSpan({ [ENDUSER_ALIAS]: domainUser?.username })
-
-          return {
-            ...context,
-            logger,
-            uid: userId,
-            wallet,
-            domainUser,
-            user,
-            geetest,
-            account,
-            ip,
-          }
-        },
-      )
+      return sessionContext({ token, apiKey, apiSecret, ips, body })
     },
     formatError: (err) => {
       const log = err.extensions?.exception?.log
@@ -267,9 +268,24 @@ export const startApolloServer = async ({
             execute,
             subscribe,
             schema,
-            onOperation: (message, params) => {
-              const logger = graphqlLogger.child({ id: uuidv4() })
-              return { ...params, context: { logger } }
+            async onConnect(connectionParams, webSocket, connectionContext) {
+              const { request } = connectionContext
+
+              let token: string | jwt.JwtPayload | null = null
+              if (connectionParams.authorization) {
+                const rawToken = connectionParams.authorization.slice(7)
+                token = jwt.decode(rawToken)
+              }
+
+              return sessionContext({
+                token,
+                ips: [request?.socket?.remoteAddress],
+
+                // TODO: Resolve what's needed here
+                apiKey: null,
+                apiSecret: null,
+                body: null,
+              })
             },
           },
           {

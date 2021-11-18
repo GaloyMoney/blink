@@ -856,10 +856,51 @@ input CaptchaRequestAuthCodeInput {
 }
 
 type Subscription {
+  myUpdates: MyUpdatesPayload!
   price(input: PriceInput!): PricePayload!
   lnInvoicePaymentStatus(
     input: LnInvoicePaymentStatusInput!
   ): LnInvoicePaymentStatusPayload!
+}
+
+type MyUpdatesPayload {
+  errors: [Error!]!
+  update: UserUpdate
+  me: User
+}
+
+union UserUpdate = Price | LnUpdate | OnChainUpdate | IntraLedgerUpdate
+
+type LnUpdate {
+  paymentHash: PaymentHash!
+  status: InvoicePaymentStatus!
+}
+
+enum InvoicePaymentStatus {
+  PENDING
+  PAID
+}
+
+type OnChainUpdate {
+  txNotificationType: TxNotificationType!
+  txHash: OnChainTxHash!
+  amount: SatAmount!
+  usdPerSat: Float!
+}
+
+enum TxNotificationType {
+  OnchainReceipt
+  OnchainReceiptPending
+  OnchainPayment
+  LnInvoicePaid
+  IntraLedgerReceipt
+  IntraLedgerPayment
+}
+
+type IntraLedgerUpdate {
+  txNotificationType: TxNotificationType!
+  amount: SatAmount!
+  usdPerSat: Float!
 }
 
 type PricePayload {
@@ -876,11 +917,6 @@ input PriceInput {
 type LnInvoicePaymentStatusPayload {
   errors: [Error!]!
   status: InvoicePaymentStatus
-}
-
-enum InvoicePaymentStatus {
-  PENDING
-  PAID
 }
 
 input LnInvoicePaymentStatusInput {
