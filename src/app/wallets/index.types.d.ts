@@ -10,6 +10,11 @@ type AddInvoiceArgs = {
   memo?: string
 }
 
+type AddInvoiceNoAmountByWalletPublicIdArgs = {
+  walletPublicId: WalletPublicId
+  memo?: string
+}
+
 type AddInvoiceNoAmountArgs = {
   walletId: WalletId
   memo?: string

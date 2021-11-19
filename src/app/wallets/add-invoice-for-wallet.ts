@@ -50,6 +50,20 @@ export const addInvoice = async ({
   })
 }
 
+export const addInvoiceNoAmountByWalletPublicId = async ({
+  walletPublicId,
+  memo = "",
+}: AddInvoiceNoAmountByWalletPublicIdArgs): Promise<LnInvoice | ApplicationError> => {
+  const wallets = WalletsRepository()
+  const wallet = await wallets.findByPublicId(walletPublicId)
+  if (wallet instanceof Error) return wallet
+
+  return addInvoiceNoAmount({
+    walletId: wallet.id,
+    memo,
+  })
+}
+
 export const addInvoiceNoAmount = async ({
   walletId,
   memo = "",
