@@ -59,6 +59,14 @@ type PaymentSendArgs = {
   logger: Logger
 }
 
+type PayLnInvoiceByWalletPublicIdArgs = {
+  walletPublicId: WalletPublicId
+  paymentRequest: EncodedPaymentRequest
+  memo: string | null
+  userId: UserId
+  logger: Logger
+}
+
 type LnInvoicePaymentSendArgs = PaymentSendArgs & {
   paymentRequest: EncodedPaymentRequest
 }

@@ -33,6 +33,7 @@ export const walletIdMiddleware = {
     intraLedgerPaymentSend: validateWalletIdMutation,
     lnInvoiceCreate: validateWalletIdMutation,
     lnNoAmountInvoiceCreate: validateWalletIdMutation,
+    lnInvoicePaymentSend: validateWalletIdMutation,
     onChainAddressCreate: validateWalletIdMutation,
     onChainAddressCurrent: validateWalletIdMutation,
     onChainPaymentSend: validateWalletIdMutation,
