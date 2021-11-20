@@ -5,7 +5,7 @@ import {
   ENDUSER_ALIAS,
 } from "@services/tracing"
 import { UsersRepository } from "@services/mongoose"
-import { getIpConfig } from "@config/app"
+import { getIpConfig, getTestAccounts } from "@config/app"
 import { IpFetcher } from "@services/ipfetcher"
 import { UsersIpRepository } from "@services/mongoose/users-ips"
 import { RepositoryError } from "@domain/errors"
@@ -134,3 +134,9 @@ export const getWalletPublicIdFromUsername = async (
 
   return user.walletPublicId
 }
+
+export const isTestAccount = ({ code, phone }: { code: PhoneCode; phone: PhoneNumber }) =>
+  getTestAccounts().findIndex((item) => item.phone === phone) !== -1 &&
+  getTestAccounts()
+    .filter((item) => item.phone === phone)[0]
+    .code.toString() === code.toString()

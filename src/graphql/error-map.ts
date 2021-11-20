@@ -13,7 +13,7 @@ import {
 } from "@graphql/error"
 import { baseLogger } from "@services/logger"
 
-const assertUnreachable = (x: never): never => {
+const assertUnreachable = (x: string): never => {
   throw new Error(`This should never compile with ${x}`)
 }
 
@@ -59,6 +59,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
 
     case "CouldNotFindUserFromUsernameError":
       message = `User does not exist for username ${error.message}`
+      return new NotFoundError({ message, logger: baseLogger })
+
+    case "CouldNotFindUserFromPhoneError":
+      message = `User does not exist for phone ${error.message}`
       return new NotFoundError({ message, logger: baseLogger })
 
     case "CouldNotFindUserFromWalletIdError":

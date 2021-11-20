@@ -3,6 +3,8 @@ import { graphql } from "graphql"
 import { User } from "@services/mongoose/schema"
 import { gqlAdminSchema } from "@graphql/admin"
 
+jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
+
 let user
 
 beforeAll(async () => {

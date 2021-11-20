@@ -13,7 +13,7 @@ import { getHash } from "@core/utils"
 import { toSats } from "@domain/bitcoin"
 import { InvoiceCreateRateLimiterExceededError } from "@domain/rate-limit/errors"
 import { InvoiceUser } from "@services/mongoose/schema"
-import { getUserWallet } from "test/helpers"
+import { getAndCreateUserWallet } from "test/helpers"
 import {
   resetRecipientWalletIdLimits,
   resetSelfWalletIdLimits,
@@ -24,7 +24,7 @@ jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider")
 let userWallet1
 
 beforeAll(async () => {
-  userWallet1 = await getUserWallet(1)
+  userWallet1 = await getAndCreateUserWallet(1)
 })
 
 describe("UserWallet - addInvoice", () => {

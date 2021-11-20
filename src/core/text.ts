@@ -1,25 +1,11 @@
-import moment from "moment"
-
-import {
-  yamlConfig,
-  getGaloyInstanceName,
-  getGaloySMSProvider,
-  getFailedAttemptPerIpLimits,
-} from "@config/app"
-
-import { createToken } from "@services/jwt"
-import { sendTwilioText, getCarrier } from "@services/phone-provider"
-import { PhoneCode, User } from "@services/mongoose/schema"
-
-import { TooManyRequestError } from "./error"
-import {
-  failedAttemptPerIp,
-  limiterLoginAttempt,
-  limiterRequestPhoneCode,
-  limiterRequestPhoneCodeIp,
-} from "./rate-limit"
-import { randomIntFromInterval } from "./utils"
+import { getGaloyInstanceName, getGaloySMSProvider, yamlConfig } from "@config/app"
 import { IpFetcher } from "@services/ipfetcher"
+import { PhoneCode } from "@services/mongoose/schema"
+import { sendTwilioText } from "@services/phone-provider"
+import moment from "moment"
+import { TooManyRequestError } from "./error"
+import { limiterRequestPhoneCode, limiterRequestPhoneCodeIp } from "./rate-limit"
+import { randomIntFromInterval } from "./utils"
 
 export const requestPhoneCode = async ({
   phone,

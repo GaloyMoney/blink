@@ -150,6 +150,7 @@ const UserSchema = new Schema<UserType>({
     unique: true,
   },
   twilio: {
+    // TODO: rename to PhoneMetadata
     carrier: {
       error_code: String, // check this is the right syntax
       mobile_country_code: String,

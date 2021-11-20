@@ -1,5 +1,3 @@
-import { exit } from "process"
-import { sleep } from "@core/utils"
 import { baseLogger } from "../logger"
 
 import mongoose from "mongoose"
@@ -45,8 +43,7 @@ export const setupMongoConnection = async () => {
     })
   } catch (err) {
     baseLogger.fatal({ err, user, address, db }, `error connecting to mongodb`)
-    await sleep(100)
-    exit(99)
+    throw err
   }
 
   try {
@@ -56,8 +53,7 @@ export const setupMongoConnection = async () => {
     await InvoiceUser.syncIndexes()
   } catch (err) {
     baseLogger.fatal({ err, user, address, db }, `error setting the indexes`)
-    await sleep(100)
-    exit(99)
+    throw err
   }
 
   return mongoose
@@ -70,8 +66,7 @@ export const setupMongoConnectionSecondary = async () => {
     mongoose.set("runValidators", true)
   } catch (err) {
     baseLogger.fatal({ err, user, address, db }, `error connecting to secondary mongodb`)
-    await sleep(100)
-    exit(99)
+    throw err
   }
 
   return mongoose

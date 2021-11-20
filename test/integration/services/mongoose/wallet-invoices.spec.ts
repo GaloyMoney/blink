@@ -2,7 +2,7 @@ import { addInvoice } from "@app/wallets"
 import { toSats } from "@domain/bitcoin"
 import { WalletInvoicesRepository } from "@services/mongoose"
 import { InvoiceUser } from "@services/mongoose/schema"
-import { getUserWallet } from "test/helpers"
+import { getAndCreateUserWallet } from "test/helpers"
 
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
@@ -62,7 +62,7 @@ describe("WalletInvoices", () => {
   })
 
   it("find pending invoices by wallet id", async () => {
-    const wallet = await getUserWallet(1)
+    const wallet = await getAndCreateUserWallet(1)
     for (let i = 0; i < 2; i++) {
       await addInvoice({
         walletId: wallet.user.id as WalletId,

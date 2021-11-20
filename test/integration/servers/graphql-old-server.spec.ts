@@ -1,9 +1,14 @@
 import { createHttpTerminator } from "http-terminator"
 import { sleep } from "@core/utils"
-import { yamlConfig, getRequestPhoneCodeLimits, getLoginAttemptLimits } from "@config/app"
+import {
+  yamlConfig,
+  getRequestPhoneCodeLimits,
+  getFailedLoginAttemptPerPhoneLimits,
+} from "@config/app"
 import { createTestClient } from "apollo-server-testing"
 import { startApolloServerForOldSchema } from "@servers/graphql-old-server"
 import { clearAccountLocks, clearLimiters } from "test/helpers"
+import { RateLimiterExceededError } from "@domain/rate-limit/errors"
 
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
@@ -60,7 +65,7 @@ describe("graphql", () => {
 
     // exhaust the limiter
     const requestPhoneCodeLimits = getRequestPhoneCodeLimits()
-    for (let i = 0; i < requestPhoneCodeLimits.points; i++) {
+    for (let i = 0; i < requestPhoneCodeLimits.points - 1; i++) {
       const result = await mutate({ mutation, variables: { phone } })
       expect(result.errors).toBeFalsy()
     }
@@ -99,18 +104,16 @@ describe("graphql", () => {
     expect(token).toBeTruthy()
 
     // exhaust the limiter
-    const loginAttemptLimits = getLoginAttemptLimits()
-    for (let i = 0; i < loginAttemptLimits.points; i++) {
+    const loginAttemptPerPhoneLimits = getFailedLoginAttemptPerPhoneLimits()
+    for (let i = 0; i < loginAttemptPerPhoneLimits.points; i++) {
       const result = await mutate({ mutation, variables: { phone, code: badCode } })
       expect(result.errors).toBeFalsy()
     }
 
     try {
       const result = await mutate({ mutation, variables: { phone, code: correctCode } })
-      expect(result.errors).toEqual(
-        expect.arrayContaining([expect.objectContaining({ code: "TOO_MANY_REQUEST" })]),
-      )
-      expect(result.data.login).toBeFalsy()
+
+      expect(result instanceof RateLimiterExceededError)
     } catch (err) {
       expect(true).toBeFalsy()
     }

@@ -19,8 +19,14 @@ type OnChainObjectForUser = {
   address: string
 }
 
-type TwillioObjectForUser = {
-  carrier: string
+type TwilioObjectForUser = {
+  carrier: {
+    error_code: string // check this is the right syntax
+    mobile_country_code: string
+    mobile_network_code: string
+    name: string
+    type: "landline" | "voip" | "mobile"
+  }
   countryCode: string
 }
 
@@ -52,7 +58,7 @@ interface UserType {
   status?: string // ?: enum ["active", "locked"]
   language?: string // ?: enum ["en", "es"]
 
-  twilio?: TwillioObjectForUser
+  twilio?: TwilioObjectForUser
   depositFeeRatio?: number
   withdrawFee?: number
   earn?: string[]

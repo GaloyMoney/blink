@@ -2,7 +2,7 @@ import * as Wallets from "@app/wallets"
 import { getOnChainWalletConfig } from "@config/app"
 import { toSats, toTargetConfs } from "@domain/bitcoin"
 import { InsufficientBalanceError, LessThanDustThresholdError } from "@domain/errors"
-import { bitcoindClient, bitcoindOutside, getUserWallet } from "test/helpers"
+import { bitcoindClient, bitcoindOutside, getAndCreateUserWallet } from "test/helpers"
 
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
@@ -12,7 +12,7 @@ const { dustThreshold } = getOnChainWalletConfig()
 let userWallet0: Wallet, userWallet1: Wallet
 
 const getWallet = async (testWallet: number): Promise<Wallet> => {
-  const userWallet = await getUserWallet(testWallet)
+  const userWallet = await getAndCreateUserWallet(testWallet)
   const wallet = await Wallets.getWallet(userWallet.user.id)
   if (wallet instanceof Error) throw wallet
   return wallet

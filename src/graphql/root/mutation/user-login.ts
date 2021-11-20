@@ -1,9 +1,9 @@
-import { login } from "@core/text"
 import { GT } from "@graphql/index"
 import OneTimeAuthCode from "@graphql/types/scalar/one-time-auth-code"
 
 import Phone from "@graphql/types/scalar/phone"
 import AuthTokenPayload from "@graphql/types/payload/auth-token"
+import { login } from "@app/users/login"
 
 const UserLoginInput = new GT.Input({
   name: "UserLoginInput",
@@ -35,10 +35,9 @@ const UserLoginMutation = GT.Field({
       }
     }
 
-    // TODO: Make this through a new app use-case
     const authToken = await login({ phone, code, logger, ip })
 
-    if (!authToken) {
+    if (authToken instanceof Error) {
       return { errors: [{ message: "Invalid request" }] }
     }
 

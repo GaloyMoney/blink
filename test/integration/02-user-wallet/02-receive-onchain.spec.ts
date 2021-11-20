@@ -7,7 +7,7 @@ import { getTitle } from "@services/notifications/payment"
 import { onchainTransactionEventHandler } from "@servers/trigger"
 import {
   checkIsBalanced,
-  getUserWallet,
+  getAndCreateUserWallet,
   lndonchain,
   RANDOM_ADDRESS,
   waitUntilBlockHeight,
@@ -44,9 +44,9 @@ jest.mock("@services/notifications/notification")
 const { sendNotification } = require("@services/notifications/notification")
 
 beforeAll(async () => {
-  walletUser0 = await getUserWallet(0)
+  walletUser0 = await getAndCreateUserWallet(0)
   // load funder wallet before use it
-  await getUserWallet(4)
+  await getAndCreateUserWallet(4)
   await bitcoindClient.loadWallet({ filename: "outside" })
 })
 
@@ -115,14 +115,14 @@ describe("UserWallet - On chain", () => {
     /// TODO? add sendAll tests in which the user has more than the limit?
     const level1WithdrawalLimit = userLimits.withdrawalLimit // sats
     amountBTC = sat2btc(level1WithdrawalLimit)
-    walletUser11 = await getUserWallet(11)
+    walletUser11 = await getAndCreateUserWallet(11)
     await sendToWallet({ walletDestination: walletUser11 })
   })
 
   it("receives on-chain transaction with max limit for onUs level1", async () => {
     const level1OnUsLimit = userLimits.onUsLimit // sats
     amountBTC = sat2btc(level1OnUsLimit)
-    walletUser12 = await getUserWallet(12)
+    walletUser12 = await getAndCreateUserWallet(12)
     await sendToWallet({ walletDestination: walletUser12 })
   })
 
@@ -130,7 +130,7 @@ describe("UserWallet - On chain", () => {
     const address0 = await Wallets.createOnChainAddress(walletUser0.user.id)
     if (address0 instanceof Error) throw address0
 
-    const walletUser4 = await getUserWallet(4)
+    const walletUser4 = await getAndCreateUserWallet(4)
     const address4 = await Wallets.createOnChainAddress(walletUser4.user.id)
     if (address4 instanceof Error) throw address4
 
@@ -254,7 +254,7 @@ describe("UserWallet - On chain", () => {
   })
 
   it("allows fee exemption for specific users", async () => {
-    walletUser2 = await getUserWallet(2)
+    walletUser2 = await getAndCreateUserWallet(2)
     walletUser2.user.depositFeeRatio = 0
     await walletUser2.user.save()
     const initBalanceUser2 = await getBTCBalance(walletUser2.user.id)

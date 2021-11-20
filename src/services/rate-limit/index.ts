@@ -33,5 +33,14 @@ export const RedisRateLimitService = ({
     }
   }
 
-  return { consume, reset }
+  const reward = async (key) => {
+    try {
+      await limiter.reward(key)
+      return true
+    } catch (err) {
+      return new UnknownRateLimitServiceError(err)
+    }
+  }
+
+  return { consume, reset, reward }
 }

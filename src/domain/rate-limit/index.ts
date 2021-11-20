@@ -1,8 +1,6 @@
 export const RateLimitPrefix = {
-  requestPhoneCode: "request_phone_code",
-  requestPhoneCodeIp: "request_phone_code_ip",
-  login: "login",
-  failedAttemptIp: "failed_attempt_ip",
+  failedAttemptLoginIp: "failed_attempt_login_ip",
+  failedAttemptLoginPhone: "failed_attempt_login_phone",
   invoiceCreate: "invoice_create",
   invoiceCreateForRecipient: "invoice_create_for_recipient",
   onChainAddressCreate: "onchain_address_create",

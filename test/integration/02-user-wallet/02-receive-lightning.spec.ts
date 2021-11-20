@@ -3,7 +3,7 @@ import { baseLogger } from "@services/logger"
 import { getHash } from "@core/utils"
 import {
   checkIsBalanced,
-  getUserWallet,
+  getAndCreateUserWallet,
   lndOutside1,
   pay,
   getBTCBalance,
@@ -21,7 +21,7 @@ let userWallet1
 let initBalance1
 
 beforeAll(async () => {
-  userWallet1 = await getUserWallet(1)
+  userWallet1 = await getAndCreateUserWallet(1)
 })
 
 beforeEach(async () => {
