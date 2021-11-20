@@ -750,6 +750,7 @@ type LnInvoice {
 scalar LnPaymentSecret
 
 input LnInvoiceCreateInput {
+  walletId: WalletId!
   amount: SatAmount!
   memo: Memo
 }
@@ -766,6 +767,7 @@ type LnNoAmountInvoice {
 }
 
 input LnNoAmountInvoiceCreateInput {
+  walletId: WalletId!
   memo: Memo
 }
 
@@ -793,11 +795,13 @@ enum PaymentSendResult {
 }
 
 input LnInvoicePaymentInput {
+  walletId: WalletId!
   paymentRequest: LnPaymentRequest!
   memo: Memo
 }
 
 input LnNoAmountInvoicePaymentInput {
+  walletId: WalletId!
   paymentRequest: LnPaymentRequest!
   amount: SatAmount!
   memo: Memo

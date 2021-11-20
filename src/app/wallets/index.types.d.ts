@@ -67,6 +67,15 @@ type PayLnInvoiceByWalletPublicIdArgs = {
   logger: Logger
 }
 
+type PayLnNoAmountInvoiceByWalletPublicIdArgs = {
+  walletPublicId: WalletPublicId
+  paymentRequest: EncodedPaymentRequest
+  amount: Satoshis
+  memo: string | null
+  userId: UserId
+  logger: Logger
+}
+
 type LnInvoicePaymentSendArgs = PaymentSendArgs & {
   paymentRequest: EncodedPaymentRequest
 }

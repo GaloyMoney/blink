@@ -34,6 +34,7 @@ export const walletIdMiddleware = {
     lnInvoiceCreate: validateWalletIdMutation,
     lnNoAmountInvoiceCreate: validateWalletIdMutation,
     lnInvoicePaymentSend: validateWalletIdMutation,
+    lnNoAmountInvoicePaymentSend: validateWalletIdMutation,
     onChainAddressCreate: validateWalletIdMutation,
     onChainAddressCurrent: validateWalletIdMutation,
     onChainPaymentSend: validateWalletIdMutation,
