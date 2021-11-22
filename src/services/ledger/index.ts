@@ -494,7 +494,7 @@ export const LedgerService = (): ILedgerService => {
     memoPayer,
   }: AddUsernameIntraledgerTxSendArgs): Promise<LedgerJournal | LedgerError> => {
     const metadata: AddUsernameIntraledgerTxSendMetadata = {
-      type: LedgerTransactionType.OnchainIntraLedger,
+      type: LedgerTransactionType.IntraLedger,
       pending: false,
       fee,
       feeUsd: usdFee,
