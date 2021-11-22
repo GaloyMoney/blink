@@ -8,6 +8,7 @@ import { LedgerService } from "@services/ledger"
 import { toSats } from "@domain/bitcoin"
 import { DepositFeeCalculator } from "@domain/wallets"
 import { getCurrentPrice } from "@app/prices"
+import { LedgerTransactionType } from "@domain/ledger"
 
 let mongoose
 
@@ -273,8 +274,13 @@ describe("on us payment via Ledger Service", () => {
       recipientUsername: "recipientUsername" as Username,
       memoPayer: null,
     })
-    expect(result).not.toBeInstanceOf(Error)
+    if (result instanceof Error) throw result
 
+    for (const txId of result.transactionIds) {
+      const tx = await LedgerService().getTransactionById(txId)
+      if (tx instanceof Error) throw tx
+      expect(tx.type).toBe(LedgerTransactionType.IntraLedger)
+    }
     await expectBalance({ account: payer.accountPath, currency: "BTC", balance: -1000 })
     await expectBalance({ account: payee.accountPath, currency: "BTC", balance: 1000 })
   })
