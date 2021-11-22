@@ -1,9 +1,10 @@
-import { mapError } from "@graphql/error-map"
-import { lnInvoicePaymentSend } from "@app/wallets"
 import { GT } from "@graphql/index"
+import Memo from "@graphql/types/scalar/memo"
+import { mapError } from "@graphql/error-map"
+import WalletId from "@graphql/types/scalar/wallet-id"
+import { payLnInvoiceByWalletPublicId } from "@app/wallets"
 import PaymentSendPayload from "@graphql/types/payload/payment-send"
 import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
-import Memo from "@graphql/types/scalar/memo"
 import {
   addAttributesToCurrentSpanAndPropagate,
   SemanticAttributes,
@@ -13,6 +14,7 @@ import {
 const LnInvoicePaymentInput = new GT.Input({
   name: "LnInvoicePaymentInput",
   fields: () => ({
+    walletId: { type: GT.NonNull(WalletId) },
     paymentRequest: { type: GT.NonNull(LnPaymentRequest) },
     memo: { type: Memo },
   }),
@@ -23,7 +25,7 @@ const LnInvoicePaymentSendMutation = GT.Field({
   args: {
     input: { type: GT.NonNull(LnInvoicePaymentInput) },
   },
-  resolve: async (_, args, { ip, domainUser, wallet, logger }) =>
+  resolve: async (_, args, { ip, domainUser, logger }) =>
     addAttributesToCurrentSpanAndPropagate(
       {
         [SemanticAttributes.ENDUSER_ID]: domainUser?.id,
@@ -31,25 +33,27 @@ const LnInvoicePaymentSendMutation = GT.Field({
         [SemanticAttributes.HTTP_CLIENT_IP]: ip,
       },
       async () => {
-        const { paymentRequest, memo } = args.input
+        const { walletId, paymentRequest, memo } = args.input
 
-        for (const input of [memo, paymentRequest]) {
+        for (const input of [walletId, memo, paymentRequest]) {
           if (input instanceof Error) {
             return { errors: [{ message: input.message }] }
           }
         }
 
-        const status = await lnInvoicePaymentSend({
+        const status = await payLnInvoiceByWalletPublicId({
+          walletPublicId: walletId,
           paymentRequest,
           memo,
-          walletId: wallet.user.id as WalletId,
           userId: domainUser.id,
           logger,
         })
+
         if (status instanceof Error) {
           const appErr = mapError(status)
           return { status: "failed", errors: [{ message: appErr.message }] }
         }
+
         return {
           errors: [],
           status: status.value,

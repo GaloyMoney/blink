@@ -1,14 +1,15 @@
 import { GT } from "@graphql/index"
-
-import LnInvoicePayload from "@graphql/types/payload/ln-invoice"
-import Memo from "@graphql/types/scalar/memo"
-import { addInvoice } from "@app/wallets/add-invoice-for-wallet"
-import SatAmount from "@graphql/types/scalar/sat-amount"
 import { mapError } from "@graphql/error-map"
+import Memo from "@graphql/types/scalar/memo"
+import WalletId from "@graphql/types/scalar/wallet-id"
+import SatAmount from "@graphql/types/scalar/sat-amount"
+import LnInvoicePayload from "@graphql/types/payload/ln-invoice"
+import { addInvoiceByWalletPublicId } from "@app/wallets/add-invoice-for-wallet"
 
 const LnInvoiceCreateInput = new GT.Input({
   name: "LnInvoiceCreateInput",
   fields: () => ({
+    walletId: { type: GT.NonNull(WalletId) },
     amount: { type: GT.NonNull(SatAmount) },
     memo: { type: Memo },
   }),
@@ -19,24 +20,24 @@ const LnInvoiceCreateMutation = GT.Field({
   args: {
     input: { type: GT.NonNull(LnInvoiceCreateInput) },
   },
-  resolve: async (_, args, { user }) => {
-    const { memo, amount } = args.input
+  resolve: async (_, args) => {
+    const { walletId, memo, amount } = args.input
 
-    for (const input of [memo, amount]) {
+    for (const input of [walletId, memo, amount]) {
       if (input instanceof Error) {
         return { errors: [{ message: input.message }] }
       }
     }
 
-    const lnInvoice = await addInvoice({
-      walletId: user.id, // TODO: should this be changed to not depend on context?
+    const lnInvoice = await addInvoiceByWalletPublicId({
+      walletPublicId: walletId,
       amount,
       memo,
     })
 
     if (lnInvoice instanceof Error) {
       const appErr = mapError(lnInvoice)
-      return { errors: [{ message: appErr.message || appErr.name }] } // TODO: refine error
+      return { errors: [{ message: appErr.message }] }
     }
 
     return {

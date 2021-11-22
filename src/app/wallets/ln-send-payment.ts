@@ -94,6 +94,26 @@ export const lnInvoicePaymentSendWithTwoFA = async ({
     },
   )
 
+export const payLnInvoiceByWalletPublicId = async ({
+  walletPublicId,
+  paymentRequest,
+  memo,
+  userId,
+  logger,
+}: PayLnInvoiceByWalletPublicIdArgs): Promise<PaymentSendStatus | ApplicationError> => {
+  const wallets = WalletsRepository()
+  const wallet = await wallets.findByPublicId(walletPublicId)
+  if (wallet instanceof Error) return wallet
+
+  return lnInvoicePaymentSend({
+    walletId: wallet.id,
+    paymentRequest,
+    memo,
+    userId,
+    logger,
+  })
+}
+
 export const lnInvoicePaymentSend = async ({
   paymentRequest,
   memo,
@@ -189,6 +209,30 @@ export const lnNoAmountInvoicePaymentSendWithTwoFA = async ({
       })
     },
   )
+
+export const payLnNoAmountInvoiceByWalletPublicId = async ({
+  walletPublicId,
+  paymentRequest,
+  amount,
+  memo,
+  userId,
+  logger,
+}: PayLnNoAmountInvoiceByWalletPublicIdArgs): Promise<
+  PaymentSendStatus | ApplicationError
+> => {
+  const wallets = WalletsRepository()
+  const wallet = await wallets.findByPublicId(walletPublicId)
+  if (wallet instanceof Error) return wallet
+
+  return lnNoAmountInvoicePaymentSend({
+    walletId: wallet.id,
+    paymentRequest,
+    amount,
+    memo,
+    userId,
+    logger,
+  })
+}
 
 export const lnNoAmountInvoicePaymentSend = async ({
   paymentRequest,

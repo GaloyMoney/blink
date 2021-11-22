@@ -5,6 +5,7 @@ import { createTestClient } from "apollo-server-integration-testing"
 import { startApolloServerForCoreSchema } from "@servers/graphql-main-server"
 import * as jwt from "jsonwebtoken"
 
+import ME from "./queries/me.gql"
 import USER_LOGIN from "./mutations/user-login.gql"
 import LN_NO_AMOUNT_INVOICE_CREATE from "./mutations/ln-no-amount-invoice-create.gql"
 import LN_INVOICE_CREATE from "./mutations/ln-invoice-create.gql"
@@ -21,12 +22,12 @@ import {
 
 jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
-let apolloServer, httpServer, httpTerminator, mutate, setOptions
+let apolloServer, httpServer, httpTerminator, query, mutate, setOptions, walletId
 const { phone, code } = yamlConfig.test_accounts[3]
 
 beforeAll(async () => {
   ;({ apolloServer, httpServer } = await startApolloServerForCoreSchema())
-  ;({ mutate, setOptions } = createTestClient({ apolloServer }))
+  ;({ query, mutate, setOptions } = createTestClient({ apolloServer }))
   httpTerminator = createHttpTerminator({ server: httpServer })
   await sleep(2500)
   const input = { phone, code: `${code}` }
@@ -34,6 +35,8 @@ beforeAll(async () => {
   const token = jwt.verify(result.data.userLogin.authToken, `${JWT_SECRET}`)
   // mock jwt middleware
   setOptions({ request: { token } })
+  const meResult = await query(ME)
+  walletId = meResult.data.me.defaultAccount.defaultWalletId
 })
 
 beforeEach(async () => {
@@ -51,7 +54,7 @@ describe("graphql", () => {
     const mutation = LN_NO_AMOUNT_INVOICE_CREATE
 
     it("returns a valid lightning invoice", async () => {
-      const input = { memo: "This is a lightning invoice" }
+      const input = { walletId, memo: "This is a lightning invoice" }
       const result = await mutate(mutation, { variables: { input } })
       const { invoice, errors } = result.data.lnNoAmountInvoiceCreate
       expect(errors).toHaveLength(0)
@@ -62,7 +65,7 @@ describe("graphql", () => {
     })
 
     it("returns a valid lightning invoice if memo is not passed", async () => {
-      const input = {}
+      const input = { walletId }
       const result = await mutate(mutation, { variables: { input } })
       const { invoice, errors } = result.data.lnNoAmountInvoiceCreate
       expect(errors).toHaveLength(0)
@@ -77,7 +80,7 @@ describe("graphql", () => {
     const mutation = LN_INVOICE_CREATE
 
     it("returns a valid lightning invoice", async () => {
-      const input = { amount: 1000, memo: "This is a lightning invoice" }
+      const input = { walletId, amount: 1000, memo: "This is a lightning invoice" }
       const result = await mutate(mutation, { variables: { input } })
       const { invoice, errors } = result.data.lnInvoiceCreate
       expect(errors).toHaveLength(0)
@@ -88,7 +91,7 @@ describe("graphql", () => {
     })
 
     it("returns a valid lightning invoice if memo is not passed", async () => {
-      const input = { amount: 1000 }
+      const input = { walletId, amount: 1000 }
       const result = await mutate(mutation, { variables: { input } })
       const { invoice, errors } = result.data.lnInvoiceCreate
       expect(errors).toHaveLength(0)
@@ -100,7 +103,7 @@ describe("graphql", () => {
 
     it("returns an error if amount is negative", async () => {
       const message = "Invalid value for SatAmount"
-      const input = { amount: -1, memo: "This is a lightning invoice" }
+      const input = { walletId, amount: -1, memo: "This is a lightning invoice" }
       const result = await mutate(mutation, { variables: { input } })
       const { invoice, errors } = result.data.lnInvoiceCreate
 
@@ -113,7 +116,7 @@ describe("graphql", () => {
 
     it("returns an error if amount is zero", async () => {
       const message = "A valid satoshi amount is required"
-      const input = { amount: 0, memo: "This is a lightning invoice" }
+      const input = { walletId, amount: 0, memo: "This is a lightning invoice" }
       const result = await mutate(mutation, { variables: { input } })
       const { invoice, errors } = result.data.lnInvoiceCreate
 
@@ -209,7 +212,7 @@ describe("graphql", () => {
         tokens: 1,
       })
 
-      const input = { paymentRequest }
+      const input = { walletId, paymentRequest }
       const result = await mutate(mutation, { variables: { input } })
       const { status, errors } = result.data.lnInvoicePaymentSend
       expect(errors).toHaveLength(0)
@@ -218,13 +221,13 @@ describe("graphql", () => {
 
     it("returns error when sends a payment to self", async () => {
       const message = "User tried to pay themselves"
-      const input = { amount: 1, memo: "This is a lightning invoice" }
+      const input = { walletId, amount: 1, memo: "This is a lightning invoice" }
       const res = await mutate(LN_INVOICE_CREATE, { variables: { input } })
       const {
         invoice: { paymentRequest },
       } = res.data.lnInvoiceCreate
 
-      const query = { variables: { input: { paymentRequest } } }
+      const query = { variables: { input: { walletId, paymentRequest } } }
       const result = await mutate(mutation, query)
       const { status, errors } = result.data.lnInvoicePaymentSend
       expect(errors).toHaveLength(1)
@@ -253,7 +256,7 @@ describe("graphql", () => {
         tokens: 0,
       })
 
-      const input = { paymentRequest, amount: 1 }
+      const input = { walletId, paymentRequest, amount: 1 }
       const result = await mutate(mutation, { variables: { input } })
       const { status, errors } = result.data.lnNoAmountInvoicePaymentSend
       expect(errors).toHaveLength(0)
@@ -262,13 +265,13 @@ describe("graphql", () => {
 
     it("returns error when sends a payment to self", async () => {
       const message = "User tried to pay themselves"
-      const input = { memo: "This is a lightning invoice" }
+      const input = { walletId, memo: "This is a lightning invoice" }
       const res = await mutate(LN_NO_AMOUNT_INVOICE_CREATE, { variables: { input } })
       const {
         invoice: { paymentRequest },
       } = res.data.lnNoAmountInvoiceCreate
 
-      const query = { variables: { input: { paymentRequest, amount: 1 } } }
+      const query = { variables: { input: { walletId, paymentRequest, amount: 1 } } }
       const result = await mutate(mutation, query)
       const { status, errors } = result.data.lnNoAmountInvoicePaymentSend
       expect(errors).toHaveLength(1)
