@@ -13,7 +13,7 @@ import {
 } from "@graphql/error"
 import { baseLogger } from "@services/logger"
 
-const assertUnreachable = (x: string): never => {
+const assertUnreachable = (x: never): never => {
   throw new Error(`This should never compile with ${x}`)
 }
 
