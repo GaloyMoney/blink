@@ -142,7 +142,6 @@ const updatePendingInvoice = async ({
       notificationsService.lnInvoicePaid({
         paymentHash,
         recipientWalletId: updatedWalletInvoice.walletId,
-        payerWalletId: walletInvoice.walletId,
         amount: received,
         usdPerSat,
       })

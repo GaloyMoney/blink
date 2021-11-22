@@ -103,13 +103,12 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
   const lnInvoicePaid = async ({
     paymentHash,
     recipientWalletId,
-    payerWalletId,
     amount,
     usdPerSat,
   }: LnInvoicePaidArgs) => {
     try {
       // work around to move forward before re-wrighting the whole notifications module
-      const user = await User.findOne({ _id: payerWalletId })
+      const user = await User.findOne({ _id: recipientWalletId })
 
       // Do not await this call for quicker processing
       transactionNotification({

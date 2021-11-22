@@ -381,7 +381,6 @@ const executePaymentViaIntraledger = async ({
     notificationsService.lnInvoicePaid({
       paymentHash,
       recipientWalletId,
-      payerWalletId,
       amount,
       usdPerSat,
     })
