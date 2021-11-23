@@ -1,3 +1,5 @@
+import getUuidByString from "uuid-by-string"
+
 import { GT } from "@graphql/index"
 
 import IAccount from "../abstract/account"
@@ -12,7 +14,10 @@ const BusinessAccount = new GT.Object({
   interfaces: () => [IAccount],
   isTypeOf: (source) => source.title || source.coordinate, // TODO: improve
   fields: () => ({
-    id: { type: GT.NonNullID },
+    id: {
+      type: GT.NonNullID,
+      resolve: (source) => getUuidByString(source.id),
+    },
 
     allTransactions: {
       type: GT.NonNullList(Transaction),

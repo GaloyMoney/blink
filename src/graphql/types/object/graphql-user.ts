@@ -1,3 +1,4 @@
+import getUuidByString from "uuid-by-string"
 import dedent from "dedent"
 
 import { GT } from "@graphql/index"
@@ -18,7 +19,10 @@ import { UnknownClientError } from "@core/error"
 const GraphQLUser = new GT.Object({
   name: "User",
   fields: () => ({
-    id: { type: GT.NonNullID },
+    id: {
+      type: GT.NonNullID,
+      resolve: (source) => getUuidByString(source.id),
+    },
 
     phone: {
       type: GT.NonNull(Phone),
