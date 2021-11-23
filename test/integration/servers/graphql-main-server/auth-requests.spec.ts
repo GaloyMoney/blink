@@ -137,7 +137,7 @@ describe("graphql", () => {
         tokens: 1001,
       })
 
-      const input = { paymentRequest }
+      const input = { walletId, paymentRequest }
       const result = await mutate(mutation, { variables: { input } })
       const { amount, errors } = result.data.lnInvoiceFeeProbe
       expect(errors).toHaveLength(0)
@@ -151,7 +151,7 @@ describe("graphql", () => {
         tokens: 10010000000,
       })
 
-      const input = { paymentRequest }
+      const input = { walletId, paymentRequest }
       const result = await mutate(mutation, { variables: { input } })
       const { amount, errors } = result.data.lnInvoiceFeeProbe
       expect(errors).toHaveLength(1)
@@ -170,7 +170,7 @@ describe("graphql", () => {
         lnd: lndOutside2,
       })
 
-      const input = { amount: 1013, paymentRequest }
+      const input = { walletId, amount: 1013, paymentRequest }
       const result = await mutate(mutation, { variables: { input } })
       const { amount, errors } = result.data.lnNoAmountInvoiceFeeProbe
       expect(errors).toHaveLength(0)
@@ -183,7 +183,7 @@ describe("graphql", () => {
         lnd: lndOutside2,
       })
 
-      const input = { amount: 10010000000, paymentRequest }
+      const input = { walletId, amount: 10010000000, paymentRequest }
       const result = await mutate(mutation, { variables: { input } })
       const { amount, errors } = result.data.lnNoAmountInvoiceFeeProbe
       expect(errors).toHaveLength(1)

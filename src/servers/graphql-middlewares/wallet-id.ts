@@ -31,6 +31,8 @@ export const walletIdMiddleware = {
   },
   Mutation: {
     intraLedgerPaymentSend: validateWalletIdMutation,
+    lnInvoiceFeeProbe: validateWalletIdMutation,
+    lnNoAmountInvoiceFeeProbe: validateWalletIdMutation,
     lnInvoiceCreate: validateWalletIdMutation,
     lnNoAmountInvoiceCreate: validateWalletIdMutation,
     lnInvoicePaymentSend: validateWalletIdMutation,

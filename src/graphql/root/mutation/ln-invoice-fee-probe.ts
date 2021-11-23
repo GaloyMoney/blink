@@ -1,11 +1,12 @@
 import { GT } from "@graphql/index"
-
-import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
+import WalletId from "@graphql/types/scalar/wallet-id"
 import SatAmountPayload from "@graphql/types/payload/sat-amount"
+import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
 
 const LnInvoiceFeeProbeInput = new GT.Input({
   name: "LnInvoiceFeeProbeInput",
   fields: () => ({
+    walletId: { type: GT.NonNull(WalletId) },
     paymentRequest: { type: GT.NonNull(LnPaymentRequest) },
   }),
 })
@@ -16,10 +17,12 @@ const LnInvoiceFeeProbeMutation = GT.Field({
     input: { type: GT.NonNull(LnInvoiceFeeProbeInput) },
   },
   resolve: async (_, args, { wallet }) => {
-    const { paymentRequest } = args.input
+    const { walletId, paymentRequest } = args.input
 
-    if (paymentRequest instanceof Error) {
-      return { errors: [{ message: paymentRequest.message }] }
+    for (const input of [walletId, paymentRequest]) {
+      if (input instanceof Error) {
+        return { errors: [{ message: input.message }] }
+      }
     }
 
     try {

@@ -722,6 +722,7 @@ type SatAmountPayload {
 }
 
 input LnInvoiceFeeProbeInput {
+  walletId: WalletId!
   paymentRequest: LnPaymentRequest!
 }
 
@@ -731,6 +732,7 @@ BOLT11 lightning invoice payment request with the amount included
 scalar LnPaymentRequest
 
 input LnNoAmountInvoiceFeeProbeInput {
+  walletId: WalletId!
   paymentRequest: LnPaymentRequest!
   amount: SatAmount!
 }
