@@ -16,11 +16,17 @@ const OnChainAddress = new GT.Scalar({
 })
 
 function validOnChainAddressValue(value) {
-  // TODO: verify/improve. Use bc1/tb1 prefixes?
-  if (value.match(/^[A-Z0-9]+$/i)) {
-    return value.toLowerCase()
-  }
-  return new UserInputError("Invalid value for OnChainAddress")
+  // Regex patterns: https://regexland.com/regex-bitcoin-addresses/
+  const regexes = [
+    /^[13]{1}[a-km-zA-HJ-NP-Z1-9]{26,34}$/, // mainnet non-segwit
+    /^bc1[a-z0-9]{39,59}$/i, // mainnet segwit
+    /^[mn2]{1}[a-km-zA-HJ-NP-Z1-9]{26,34}$/, // testnet non-segwit
+    /^tb1[a-z0-9]{39,59}$/i, // testnet segwit
+  ]
+
+  return regexes.some((r) => value.match(r))
+    ? value
+    : new UserInputError("Invalid value for OnChainAddress")
 }
 
 export default OnChainAddress
