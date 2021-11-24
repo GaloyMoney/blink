@@ -32,12 +32,14 @@ enum PaymentErrorCode {
 }
 
 type ConsumerAccount implements Account {
+  id: ID!
   wallets: [Wallet!]!
   defaultWalletId: WalletId!
   csvTransactions(walletIds: [WalletId!]!): String!
 }
 
 interface Account {
+  id: ID!
   wallets: [Wallet!]!
   defaultWalletId: WalletId!
   csvTransactions(walletIds: [WalletId!]!): String!

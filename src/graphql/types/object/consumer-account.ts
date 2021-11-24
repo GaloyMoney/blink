@@ -1,3 +1,5 @@
+import getUuidByString from "uuid-by-string"
+
 import { GT } from "@graphql/index"
 
 import IAccount from "../abstract/account"
@@ -7,28 +9,16 @@ import WalletId from "../scalar/wallet-id"
 import * as Wallets from "@app/wallets"
 import * as Accounts from "@app/accounts"
 
-// import Transaction from "../abstract/transaction"
-// import AccountLevel from "../scalar/account-level"
-// import AccountStatus from "../scalar/account-status"
-// import Limits from "./limits"
-
 const ConsumerAccount = new GT.Object({
   name: "ConsumerAccount",
   interfaces: () => [IAccount],
   isTypeOf: (source) => !source.title && !source.coordinate, // TODO: improve
+
   fields: () => ({
-    // level: {
-    //   type: GT.NonNull(AccountLevel),
-    // },
-    // status: {
-    //   type: GT.NonNull(AccountStatus),
-    // },
-    // canWithdraw: {
-    //   type: GT.NonNull(GT.Boolean),
-    // },
-    // limits: {
-    //   type: GT.NonNull(Limits),
-    // },
+    id: {
+      type: GT.NonNullID,
+      resolve: (source) => getUuidByString(source.id),
+    },
 
     wallets: {
       type: GT.NonNullList(Wallet),
