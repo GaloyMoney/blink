@@ -11,20 +11,20 @@ import { baseLogger } from "@services/logger"
 const defaultContent = fs.readFileSync("./default.yaml", "utf8")
 export const defaultConfig = yaml.load(defaultContent)
 
-const jwt_secret = process.env.JWT_SECRET
-if (!jwt_secret) {
+const jwtToken = process.env.JWT_SECRET
+if (!jwtToken) {
   throw new ConfigError("missing JWT_SECRET")
 }
 
-export const JWT_SECRET = jwt_secret
+export const JWT_SECRET = jwtToken
 
-const btc_network = process.env.NETWORK
+const btwNetwork = process.env.NETWORK
 const networks = ["mainnet", "testnet", "regtest"]
-if (!!btc_network && !networks.includes(btc_network)) {
-  throw new ConfigError(`missing or invalid NETWORK: ${btc_network}`)
+if (!!btwNetwork && !networks.includes(btwNetwork)) {
+  throw new ConfigError(`missing or invalid NETWORK: ${btwNetwork}`)
 }
 
-export const BTC_NETWORK = btc_network as BtcNetwork
+export const BTC_NETWORK = btwNetwork as BtcNetwork
 
 export const MS_PER_HOUR = 60 * 60 * 1000
 export const MS_PER_DAY = 24 * MS_PER_HOUR

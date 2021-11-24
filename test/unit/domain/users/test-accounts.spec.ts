@@ -4,8 +4,6 @@ import { getTestAccounts } from "@config/app"
 describe("test-accounts", () => {
   const testAccounts = getTestAccounts()
 
-  console.log({ testAccounts })
-
   it("valid user account", () =>
     expect(
       isTestAccount({ code: testAccounts[0].code, phone: testAccounts[0].phone }),

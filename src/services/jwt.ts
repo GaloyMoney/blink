@@ -4,7 +4,7 @@ import * as jwt from "jsonwebtoken"
 // TODO: replace network by uri of the server
 // the uri will embed the network, ie: graphql.mainnet.server.io
 // and provide more information than just the network
-export const createToken = ({ uid }: { uid: UserId }) => {
+export const createToken = ({ uid }: { uid: UserId }): JwtToken => {
   const network = BTC_NETWORK
   return jwt.sign({ uid, network }, JWT_SECRET, {
     // TODO use asymetric signature
@@ -18,5 +18,5 @@ export const createToken = ({ uid }: { uid: UserId }) => {
     //
     // see: https://www.theregister.com/2018/04/24/myetherwallet_dns_hijack/
     algorithm: "HS256",
-  }) as JWTToken
+  }) as JwtToken
 }

@@ -1,7 +1,7 @@
 import { getGaloyInstanceName, getGaloySMSProvider, yamlConfig } from "@config/app"
 import { IpFetcher } from "@services/ipfetcher"
 import { PhoneCode } from "@services/mongoose/schema"
-import { sendTwilioText } from "@services/phone-provider"
+import { TwilioClient } from "@services/phone-provider"
 import moment from "moment"
 import { TooManyRequestError } from "./error"
 import { limiterRequestPhoneCode, limiterRequestPhoneCodeIp } from "./rate-limit"
@@ -73,7 +73,7 @@ export const requestPhoneCode = async ({
     const sendTextArguments = { body, to: phone, logger }
 
     if (sms_provider === "twilio") {
-      const smsOk = await sendTwilioText(sendTextArguments)
+      const smsOk = await new TwilioClient().sendText(sendTextArguments)
       return smsOk
     } else {
       // sms provider in yaml did not match any sms implementation

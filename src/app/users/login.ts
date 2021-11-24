@@ -12,7 +12,7 @@ import {
 import { createToken } from "@services/jwt"
 import { UsersRepository } from "@services/mongoose"
 import { PhoneCodesRepository } from "@services/mongoose/phone-code"
-import { getCarrier } from "@services/phone-provider"
+import { TwilioClient } from "@services/phone-provider"
 import { RedisRateLimitService } from "@services/rate-limit"
 import { isTestAccount } from "."
 
@@ -26,7 +26,7 @@ export const login = async ({
   code: PhoneCode
   logger: Logger
   ip: IpAddress
-}): Promise<JWTToken | ApplicationError> => {
+}): Promise<JwtToken | ApplicationError> => {
   const subLogger = logger.child({ topic: "login" })
 
   {
@@ -46,10 +46,7 @@ export const login = async ({
   const validCode = await isCodeValid({ phone, code })
   if (validCode instanceof Error) return validCode
 
-  // reseting the limiter for this phone
-  // limiterLoginAttempt.delete(phone) // no need to await the promise
-
-  rewardFailedLoginAttemptPerIpLimits(ip)
+  await rewardFailedLoginAttemptPerIpLimits(ip)
 
   const userRepo = UsersRepository()
   let user: RepositoryError | User = await userRepo.findByPhone(phone)
@@ -59,7 +56,7 @@ export const login = async ({
 
     const userRaw = { phone } as NewUserInfo
 
-    const carrierInfo = await getCarrier(phone)
+    const carrierInfo = await new TwilioClient().getCarrier(phone)
     if (carrierInfo instanceof Error) {
       // non fatal error
       subLogger.warn({ phone }, "impossible to fetch carrier")

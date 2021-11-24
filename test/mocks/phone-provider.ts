@@ -1,7 +1,9 @@
-export const sendTwilioText = async () => {
-  return new Promise((resolve) => resolve(true))
-}
+export class TwilioClient {
+  async sendText() {
+    return new Promise((resolve) => resolve(true))
+  }
 
-export const getCarrier = async () => {
-  return new Promise((resolve) => resolve(null))
+  async getCarrier() {
+    return new Promise((resolve) => resolve(null))
+  }
 }
