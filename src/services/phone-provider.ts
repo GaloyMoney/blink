@@ -2,7 +2,7 @@ import twilio from "twilio"
 
 import { baseLogger } from "@services/logger"
 import { getTwilioConfig } from "@config/app"
-import { TwilioError } from "@domain/errors"
+import { UnknownPhoneProviderServiceError } from "@domain/errors"
 
 export class TwilioClient {
   readonly client
@@ -38,7 +38,7 @@ export class TwilioClient {
       baseLogger.info({ result }, "result carrier info")
       return result
     } catch (err) {
-      return new TwilioError(err)
+      return new UnknownPhoneProviderServiceError(err)
     }
   }
 }

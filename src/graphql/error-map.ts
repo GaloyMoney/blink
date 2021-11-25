@@ -190,7 +190,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "UnknownLocalCacheServiceError":
     case "UserLoginIpRateLimiterExceededError":
     case "UserLoginPhoneRateLimiterExceededError":
-    case "TwilioError":
+    case "UnknownPhoneProviderServiceError":
     case "CouldNotFindPhoneCodeError":
       return new UnknownClientError({ message, logger: baseLogger })
 

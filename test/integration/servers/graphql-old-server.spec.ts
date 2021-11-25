@@ -8,9 +8,6 @@ import {
 import { createTestClient } from "apollo-server-testing"
 import { startApolloServerForOldSchema } from "@servers/graphql-old-server"
 import { clearAccountLocks, clearLimiters } from "test/helpers"
-import { RateLimiterExceededError } from "@domain/rate-limit/errors"
-
-jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
 let apolloServer, httpServer, httpTerminator
 const { phone, code: correctCode } = yamlConfig.test_accounts[9]
@@ -80,7 +77,7 @@ describe("graphql", () => {
     }
   })
 
-  it("rate limit login", async () => {
+  it.only("rate limit login", async () => {
     const { mutate } = createTestClient(apolloServer)
 
     const mutation = `mutation login ($phone: String, $code: Int) {
@@ -96,26 +93,34 @@ describe("graphql", () => {
     } = await mutate({ mutation, variables: { phone, code: badCode } })
     expect(tokenNull).toBeFalsy()
 
-    const {
-      data: {
-        login: { token },
-      },
-    } = await mutate({ mutation, variables: { phone, code: correctCode } })
-    expect(token).toBeTruthy()
+    {
+      const {
+        data: {
+          login: { token },
+        },
+      } = await mutate({ mutation, variables: { phone, code: correctCode } })
+      expect(token).toBeTruthy()
+    }
 
     // exhaust the limiter
     const loginAttemptPerPhoneLimits = getFailedLoginAttemptPerPhoneLimits()
+
     for (let i = 0; i < loginAttemptPerPhoneLimits.points; i++) {
-      const result = await mutate({ mutation, variables: { phone, code: badCode } })
-      expect(result.errors).toBeFalsy()
+      const {
+        data: {
+          login: { token },
+        },
+      } = await mutate({ mutation, variables: { phone, code: badCode } })
+      expect(token).toBeFalsy()
     }
 
-    try {
-      const result = await mutate({ mutation, variables: { phone, code: correctCode } })
-
-      expect(result instanceof RateLimiterExceededError)
-    } catch (err) {
-      expect(true).toBeFalsy()
+    {
+      const {
+        data: {
+          login: { token },
+        },
+      } = await mutate({ mutation, variables: { phone, code: correctCode } })
+      expect(token).toBeFalsy()
     }
   })
 })
