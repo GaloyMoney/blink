@@ -24,6 +24,7 @@ type AddInvoiceForRecipientArgs = {
   recipientWalletPublicId: WalletPublicId
   amount: number
   memo?: string
+  descriptionHash?: string
 }
 
 type AddInvoiceNoAmountForRecipientArgs = {

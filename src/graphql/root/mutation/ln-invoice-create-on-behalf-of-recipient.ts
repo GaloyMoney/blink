@@ -4,6 +4,7 @@ import { GT } from "@graphql/index"
 
 import LnInvoicePayload from "@graphql/types/payload/ln-invoice"
 import Memo from "@graphql/types/scalar/memo"
+import Hex32Bytes from "@graphql/types/scalar/hex32bytes"
 import SatAmount from "@graphql/types/scalar/sat-amount"
 import WalletId from "@graphql/types/scalar/wallet-id"
 
@@ -13,6 +14,7 @@ const LnInvoiceCreateOnBehalfOfRecipientInput = new GT.Input({
     recipientWalletId: { type: GT.NonNull(WalletId) },
     amount: { type: GT.NonNull(SatAmount) },
     memo: { type: Memo },
+    descriptionHash: { type: Hex32Bytes },
   }),
 })
 
@@ -22,8 +24,8 @@ const LnInvoiceCreateOnBehalfOfRecipientMutation = GT.Field({
     input: { type: GT.NonNull(LnInvoiceCreateOnBehalfOfRecipientInput) },
   },
   resolve: async (_, args) => {
-    const { recipientWalletId, amount, memo } = args.input
-    for (const input of [recipientWalletId, amount, memo]) {
+    const { recipientWalletId, amount, memo, descriptionHash } = args.input
+    for (const input of [recipientWalletId, amount, memo, descriptionHash]) {
       if (input instanceof Error) {
         return { errors: [{ message: input.message }] }
       }
@@ -33,6 +35,7 @@ const LnInvoiceCreateOnBehalfOfRecipientMutation = GT.Field({
       recipientWalletPublicId: recipientWalletId,
       amount,
       memo,
+      descriptionHash,
     })
 
     if (result instanceof Error) {
