@@ -61,7 +61,7 @@ export const login = async ({
       // non fatal error
       subLogger.warn({ phone }, "impossible to fetch carrier")
     } else {
-      userRaw.twilio = carrierInfo
+      userRaw.phoneMetadata = carrierInfo
     }
 
     user = await userRepo.persistNew(userRaw)

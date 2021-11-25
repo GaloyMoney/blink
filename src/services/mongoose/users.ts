@@ -62,12 +62,12 @@ export const UsersRepository = (): IUsersRepository => {
 
   const persistNew = async ({
     phone,
-    twilio,
+    phoneMetadata,
   }: NewUserInfo): Promise<User | RepositoryError> => {
     try {
       const user = new User()
       user.phone = phone
-      user.twilio = twilio
+      user.twilio = phoneMetadata
       await user.save()
       return userFromRaw(user)
     } catch (err) {

@@ -33,6 +33,18 @@ type UserQuizQuestion = {
   completed: boolean
 }
 
+// TODO: move to camelCase base // migration needed
+// type PhoneMetadata = {
+//   carrier: {
+//     errorCode: string | undefined // check this is the right syntax
+//     mobileCountryCode: string | undefined
+//     mobileNetworkCode: string | undefined
+//     name: string | undefined
+//     type: "landline" | "voip" | "mobile"
+//   }
+//   countryCode: string | undefined
+// }
+
 type PhoneMetadata = {
   // from twilio
   carrier: {
@@ -62,14 +74,14 @@ type User = {
 
 type NewUserInfo = {
   phone: PhoneNumber
-  twilio?: PhoneMetadata
+  phoneMetadata?: PhoneMetadata
 }
 
 interface IUsersRepository {
   findById(userId: UserId): Promise<User | RepositoryError>
   findByUsername(username: Username): Promise<User | RepositoryError>
   findByPhone(phone: PhoneNumber): Promise<User | RepositoryError>
-  persistNew({ phone, twilio }: NewUserInfo): Promise<User | RepositoryError>
+  persistNew({ phone, phoneMetadata }: NewUserInfo): Promise<User | RepositoryError>
   findByWalletPublicId(walletPublicId: WalletPublicId): Promise<User | RepositoryError>
   update(user: User): Promise<User | RepositoryError>
 }
