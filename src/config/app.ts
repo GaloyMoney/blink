@@ -77,8 +77,6 @@ export const USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD =
 
 export const getGaloyInstanceName = (): string => yamlConfig.name
 
-export const getGaloySMSProvider = (): string => yamlConfig.sms_provider
-
 export const getGeeTestConfig = () => {
   const config = {
     id: process.env.GEETEST_ID,
@@ -151,6 +149,9 @@ const getRateLimits = (config): RateLimitOptions => {
     blockDuration: config.blockDuration,
   }
 }
+
+export const getRequestPhoneCodeMinInterval = () =>
+  getRateLimits(yamlConfig.limits.minIntervalPhoneRequest)
 
 export const getRequestPhoneCodeLimits = () =>
   getRateLimits(yamlConfig.limits.requestPhoneCode)

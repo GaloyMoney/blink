@@ -13,6 +13,8 @@ let apolloServer, httpServer, httpTerminator
 const { phone, code: correctCode } = yamlConfig.test_accounts[9]
 const badCode = 123456
 
+jest.mock("@services/twilio", () => require("test/mocks/twilio"))
+
 beforeAll(async () => {
   ;({ apolloServer, httpServer } = await startApolloServerForOldSchema())
   httpTerminator = createHttpTerminator({ server: httpServer })
@@ -62,22 +64,20 @@ describe("graphql", () => {
 
     // exhaust the limiter
     const requestPhoneCodeLimits = getRequestPhoneCodeLimits()
-    for (let i = 0; i < requestPhoneCodeLimits.points - 1; i++) {
+    for (let i = 0; i < requestPhoneCodeLimits.points; i++) {
       const result = await mutate({ mutation, variables: { phone } })
       expect(result.errors).toBeFalsy()
     }
 
-    try {
-      const result = await mutate({ mutation, variables: { phone } })
-      expect(result.errors).toEqual(
-        expect.arrayContaining([expect.objectContaining({ code: "TOO_MANY_REQUEST" })]),
-      )
-    } catch (err) {
-      expect(true).toBeFalsy()
-    }
+    const {
+      data: {
+        requestPhoneCode: { success: value },
+      },
+    } = await mutate({ mutation, variables: { phone } })
+    expect(value).toBeFalsy()
   })
 
-  it.only("rate limit login", async () => {
+  it("rate limit login", async () => {
     const { mutate } = createTestClient(apolloServer)
 
     const mutation = `mutation login ($phone: String, $code: Int) {

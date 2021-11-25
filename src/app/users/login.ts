@@ -2,7 +2,7 @@ import {
   getFailedLoginAttemptPerIpLimits,
   getFailedLoginAttemptPerPhoneLimits,
 } from "@config/app"
-import { CouldNotFindUserFromPhoneError } from "@domain/errors"
+import { CouldNotFindUserFromPhoneError, UnknownRepositoryError } from "@domain/errors"
 import { RateLimitPrefix } from "@domain/rate-limit"
 import {
   RateLimiterExceededError,
@@ -14,7 +14,7 @@ import { UsersRepository } from "@services/mongoose"
 import { PhoneCodesRepository } from "@services/mongoose/phone-code"
 import { TwilioClient } from "@services/twilio"
 import { RedisRateLimitService } from "@services/rate-limit"
-import { isTestAccount } from "."
+import { isTestAccountPhoneAndCode } from "."
 
 export const login = async ({
   phone,
@@ -96,8 +96,7 @@ const rewardFailedLoginAttemptPerIpLimits = async (
     limitOptions: getFailedLoginAttemptPerIpLimits(),
   })
   const limitOk = await limiter.reward(ip)
-  if (limitOk instanceof RateLimiterExceededError)
-    return new UserLoginIpRateLimiterExceededError()
+  if (limitOk instanceof Error) return new UnknownRepositoryError()
   return limitOk
 }
 
@@ -115,7 +114,7 @@ const checkFailedLoginAttemptPerPhoneLimits = async (
 }
 
 const isCodeValid = async ({ code, phone }: { phone: PhoneNumber; code: PhoneCode }) => {
-  const validTestCode = isTestAccount({ code, phone })
+  const validTestCode = isTestAccountPhoneAndCode({ code, phone })
 
   if (!validTestCode) {
     const validCode = await PhoneCodesRepository().findRecent({ code, phone })

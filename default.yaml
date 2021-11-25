@@ -73,9 +73,11 @@ test_accounts:
   code: 321321
   role: "bankowner"
 
-sms_provider: "twilio"
-
 limits:
+  minIntervalPhoneRequest:
+    points: 1
+    duration: 30
+    blockDuration: 30
   requestPhoneCode:
     points: 4
     duration: 3600 # 60 * 60 s

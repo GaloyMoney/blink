@@ -32,7 +32,23 @@ export const PhoneCodesRepository = (): IPhoneCodesRepository => {
     }
   }
 
+  const persistNew = async ({
+    phone,
+    code,
+  }: {
+    phone: PhoneNumber
+    code: PhoneCode
+  }): Promise<true | RepositoryError> => {
+    try {
+      await PhoneCode.create({ phone, code })
+      return true
+    } catch (err) {
+      return new UnknownRepositoryError(err)
+    }
+  }
+
   return {
     findRecent,
+    persistNew,
   }
 }

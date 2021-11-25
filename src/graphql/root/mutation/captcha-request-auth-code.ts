@@ -1,8 +1,8 @@
 import { GT } from "@graphql/index"
-import verifyCaptchaAndReturnOTP from "@core/auth-code-request"
 
 import Phone from "@graphql/types/scalar/phone"
 import SuccessPayload from "@graphql/types/payload/success-payload"
+import { requestPhoneCodeWithCaptcha } from "@app/users/request-phone-code"
 
 const CaptchaRequestAuthCodeInput = new GT.Input({
   name: "CaptchaRequestAuthCodeInput",
@@ -33,26 +33,26 @@ const CaptchaRequestAuthCodeMutation = GT.Field({
       }
     }
 
-    try {
-      // TODO: redo this with use-case and errors pattern
-      await verifyCaptchaAndReturnOTP({
-        phone,
-        geetest,
-        geetestChallenge,
-        geetestValidate,
-        geetestSeccode,
-        logger,
-        ip,
-      })
+    const result = await requestPhoneCodeWithCaptcha({
+      phone,
+      geetest,
+      geetestChallenge,
+      geetestValidate,
+      geetestSeccode,
+      logger,
+      ip,
+    })
+
+    if (result instanceof Error) {
       return {
-        errors: [],
-        success: true,
-      }
-    } catch (err) {
-      return {
-        errors: [{ message: err.message }],
+        errors: [{ message: result.message }],
         success: false,
       }
+    }
+
+    return {
+      errors: [],
+      success: true,
     }
   },
 })

@@ -1,3 +1,5 @@
+import { GeetestError } from "@domain/geetest/error"
+
 type GeeTestRegister = {
   success: number
   gt: string
@@ -7,5 +9,9 @@ type GeeTestRegister = {
 
 type GeeTestType = {
   register: () => Promise<GeeTestRegister>
-  validate: (challenge: unknown, validate: unknown, seccode: unknown) => Promise<boolean>
+  validate: (
+    challenge: string,
+    validate: string,
+    seccode: string,
+  ) => Promise<boolean | GeetestError>
 }

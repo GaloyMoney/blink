@@ -135,7 +135,16 @@ export const getWalletPublicIdFromUsername = async (
   return user.walletPublicId
 }
 
-export const isTestAccount = ({ code, phone }: { code: PhoneCode; phone: PhoneNumber }) =>
+export const isTestAccountPhone = (phone: PhoneNumber) =>
+  getTestAccounts().findIndex((item) => item.phone === phone) !== -1
+
+export const isTestAccountPhoneAndCode = ({
+  code,
+  phone,
+}: {
+  code: PhoneCode
+  phone: PhoneNumber
+}) =>
   getTestAccounts().findIndex((item) => item.phone === phone) !== -1 &&
   getTestAccounts()
     .filter((item) => item.phone === phone)[0]

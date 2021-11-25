@@ -1,3 +1,5 @@
+import { GeeTestType } from "@services/geetest.types"
+
 export const RegisterCaptchaGeetest = async ({
   geetest,
   logger,

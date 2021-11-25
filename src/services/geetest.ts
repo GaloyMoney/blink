@@ -3,8 +3,14 @@
 // https://docs.geetest.com/captcha/apirefer/api/server
 // doing this: "If the storage space is not sufficient: Send request to check bypass status before starting the verfication process."
 
+import {
+  GeetestError,
+  GeetestUserFailToPassError,
+  UnknownGeetestError,
+} from "@domain/geetest/error"
 import axios from "axios"
 import GeetestLib from "gt3-server-node-express-sdk/sdk/geetest_lib" // galoy fork
+import { GeeTestType } from "./geetest.types"
 
 async function sendRequest(params) {
   const requestUrl = "https://bypass.geetest.com/v1/bypass_status.php"
@@ -46,17 +52,28 @@ const GeeTest = (config): GeeTestType => {
     return JSON.parse(result.data)
   }
 
-  const validate = async (challenge, validate, seccode) => {
-    const gtLib = new GeetestLib(config.id, config.key)
-    const bypasscache = await getBypassStatus() // not a cache
-    let result
-    const params = []
-    if (bypasscache === "success") {
-      result = await gtLib.successValidate(challenge, validate, seccode, params)
-    } else {
-      result = gtLib.failValidate(challenge, validate, seccode)
+  const validate = async (
+    challenge,
+    validate,
+    seccode,
+  ): Promise<boolean | GeetestError> => {
+    try {
+      const gtLib = new GeetestLib(config.id, config.key)
+      const bypasscache = await getBypassStatus() // not a cache
+      let result
+      const params = []
+      if (bypasscache === "success") {
+        result = await gtLib.successValidate(challenge, validate, seccode, params)
+      } else {
+        result = gtLib.failValidate(challenge, validate, seccode)
+      }
+      if (result.status !== 1) {
+        return new GeetestUserFailToPassError()
+      }
+      return true
+    } catch (err) {
+      return new UnknownGeetestError()
     }
-    return result.status === 1
   }
 
   return { register, validate }

@@ -1,9 +1,8 @@
-import twilio from "twilio"
-
-import { baseLogger } from "@services/logger"
 import { getTwilioConfig } from "@config/app"
 import { UnknownPhoneProviderServiceError } from "@domain/errors"
 import { IPhoneProviderService } from "@domain/phone-provider/index.types"
+import { baseLogger } from "@services/logger"
+import twilio from "twilio"
 
 export const TwilioClient = (): IPhoneProviderService => {
   const client = twilio(getTwilioConfig().apiKey, getTwilioConfig().apiSecret, {
