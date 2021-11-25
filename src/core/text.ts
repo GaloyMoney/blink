@@ -178,7 +178,11 @@ export const login = async ({
     if (user) {
       subLogger.info({ phone }, "user logged in")
     } else {
-      user = await User.findOneAndUpdate({ phone }, {}, { upsert: true, new: true })
+      user = await User.findOneAndUpdate(
+        { phone },
+        {},
+        { upsert: true, new: true, setDefaultsOnInsert: true },
+      )
       subLogger.info({ phone }, "a new user has register")
     }
 
