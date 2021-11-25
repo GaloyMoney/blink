@@ -3,42 +3,39 @@ import twilio from "twilio"
 import { baseLogger } from "@services/logger"
 import { getTwilioConfig } from "@config/app"
 import { UnknownPhoneProviderServiceError } from "@domain/errors"
+import { IPhoneProviderService } from "@domain/phone-provider/index.types"
 
-export class TwilioClient {
-  readonly client
+export const TwilioClient = (): IPhoneProviderService => {
+  const client = twilio(getTwilioConfig().apiKey, getTwilioConfig().apiSecret, {
+    accountSid: getTwilioConfig().accountSid,
+  })
 
-  constructor() {
-    this.client = twilio(getTwilioConfig().apiKey, getTwilioConfig().apiSecret, {
-      accountSid: getTwilioConfig().accountSid,
-    })
-  }
-
-  async sendText({ body, to, logger }) {
+  const sendText = async ({ body, to, logger }) => {
     const twilioPhoneNumber = getTwilioConfig().twilioPhoneNumber
     try {
-      await this.client.messages.create({
+      await client.messages.create({
         from: twilioPhoneNumber,
         to,
         body,
       })
     } catch (err) {
       logger.error({ err }, "impossible to send text")
-      return false
+      return new UnknownPhoneProviderServiceError(err)
     }
 
     logger.info({ to }, "sent text successfully")
     return true
   }
 
-  async getCarrier(phone: string) {
+  const getCarrier = async (phone: PhoneNumber) => {
     try {
-      const result = await this.client.lookups
-        .phoneNumbers(phone)
-        .fetch({ type: ["carrier"] })
+      const result = await client.lookups.phoneNumbers(phone).fetch({ type: ["carrier"] })
       baseLogger.info({ result }, "result carrier info")
       return result
     } catch (err) {
       return new UnknownPhoneProviderServiceError(err)
     }
   }
+
+  return { getCarrier, sendText }
 }

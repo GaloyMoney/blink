@@ -12,7 +12,7 @@ import {
 import { createToken } from "@services/jwt"
 import { UsersRepository } from "@services/mongoose"
 import { PhoneCodesRepository } from "@services/mongoose/phone-code"
-import { TwilioClient } from "@services/phone-provider"
+import { TwilioClient } from "@services/twilio"
 import { RedisRateLimitService } from "@services/rate-limit"
 import { isTestAccount } from "."
 
@@ -56,7 +56,7 @@ export const login = async ({
 
     const userRaw = { phone } as NewUserInfo
 
-    const carrierInfo = await new TwilioClient().getCarrier(phone)
+    const carrierInfo = await TwilioClient().getCarrier(phone)
     if (carrierInfo instanceof Error) {
       // non fatal error
       subLogger.warn({ phone }, "impossible to fetch carrier")
