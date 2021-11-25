@@ -1,5 +1,9 @@
 import { toSats } from "@domain/bitcoin"
-import { isOnChainTransaction, LedgerTransactionType } from "@domain/ledger"
+import {
+  ExtendedLedgerTransactionType,
+  isOnChainTransaction,
+  LedgerTransactionType,
+} from "@domain/ledger"
 import { MEMO_SHARING_SATS_THRESHOLD } from "@config/app"
 import { SettlementMethod, PaymentInitiationMethod } from "./tx-methods"
 import { TxStatus } from "./tx-status"
@@ -99,38 +103,106 @@ export const fromLedger = (
         },
       }
 
-      if (isOnChainTransaction(type)) {
-        return {
-          ...baseTransaction,
-          initiationVia: PaymentInitiationMethod.OnChain,
-          settlementVia:
-            type === LedgerTransactionType.OnchainIntraLedger
-              ? SettlementMethod.IntraLedger
-              : SettlementMethod.OnChain,
-          address,
-          otherPartyUsername: username || null,
-          transactionHash: txHash as OnChainTxHash,
-        }
+      let txType: ExtendedLedgerTransactionType = type
+      if (type == LedgerTransactionType.IntraLedger && paymentHash) {
+        txType = ExtendedLedgerTransactionType.LnIntraLedger
       }
-      if (paymentHash) {
-        return {
-          ...baseTransaction,
-          initiationVia: PaymentInitiationMethod.Lightning,
-          settlementVia:
-            type === LedgerTransactionType.IntraLedger
-              ? SettlementMethod.IntraLedger
-              : SettlementMethod.Lightning,
-          paymentHash: paymentHash as PaymentHash,
-          pubkey: pubkey as Pubkey,
-          otherPartyUsername: username || null,
-        }
+
+      let walletTransaction: WalletTransaction
+      switch (txType) {
+        case ExtendedLedgerTransactionType.IntraLedger:
+          walletTransaction = {
+            ...baseTransaction,
+            initiationVia: {
+              type: PaymentInitiationMethod.IntraLedger,
+              walletId: walletId as WalletId,
+              counterPartyUsername: username as Username,
+            },
+            settlementVia: {
+              type: SettlementMethod.IntraLedger,
+              walletId: walletId as WalletId,
+              counterPartyUsername: username as Username,
+            },
+          }
+          return walletTransaction
+
+        case ExtendedLedgerTransactionType.OnchainIntraLedger:
+          walletTransaction = {
+            ...baseTransaction,
+            initiationVia: {
+              type: PaymentInitiationMethod.OnChain,
+              address,
+            },
+            settlementVia: {
+              type: SettlementMethod.IntraLedger,
+              walletId: walletId as WalletId,
+              counterPartyUsername: username || null,
+            },
+          }
+          return walletTransaction
+
+        case ExtendedLedgerTransactionType.OnchainPayment:
+        case ExtendedLedgerTransactionType.OnchainReceipt:
+          walletTransaction = {
+            ...baseTransaction,
+            initiationVia: {
+              type: PaymentInitiationMethod.OnChain,
+              address,
+            },
+            settlementVia: {
+              type: SettlementMethod.OnChain,
+              transactionHash: txHash as OnChainTxHash,
+            },
+          }
+          return walletTransaction
+
+        case ExtendedLedgerTransactionType.LnIntraLedger:
+          walletTransaction = {
+            ...baseTransaction,
+            initiationVia: {
+              type: PaymentInitiationMethod.Lightning,
+              paymentHash: paymentHash as PaymentHash,
+              pubkey: pubkey as Pubkey,
+            },
+            settlementVia: {
+              type: SettlementMethod.IntraLedger,
+              walletId: walletId as WalletId,
+              counterPartyUsername: username || null,
+            },
+          }
+          return walletTransaction
+
+        case ExtendedLedgerTransactionType.Payment:
+        case ExtendedLedgerTransactionType.Invoice:
+          walletTransaction = {
+            ...baseTransaction,
+            initiationVia: {
+              type: PaymentInitiationMethod.Lightning,
+              paymentHash: paymentHash as PaymentHash,
+              pubkey: pubkey as Pubkey,
+            },
+            settlementVia: {
+              type: SettlementMethod.Lightning,
+              paymentSecret,
+            },
+          }
+          return walletTransaction
       }
-      return {
+
+      walletTransaction = {
         ...baseTransaction,
-        initiationVia: PaymentInitiationMethod.IntraLedger,
-        settlementVia: SettlementMethod.IntraLedger,
-        otherPartyUsername: username || null,
+        initiationVia: {
+          type: PaymentInitiationMethod.IntraLedger,
+          walletId: walletId as WalletId,
+          counterPartyUsername: username as Username,
+        },
+        settlementVia: {
+          type: SettlementMethod.IntraLedger,
+          walletId: walletId as WalletId,
+          counterPartyUsername: username || null,
+        },
       }
+      return walletTransaction
     },
   )
 

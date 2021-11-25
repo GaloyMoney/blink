@@ -11,6 +11,7 @@ export const LedgerTransactionType = {
   Invoice: "invoice",
   Payment: "payment",
   IntraLedger: "on_us",
+  LnIntraLedger: "ln_on_us",
   LnFeeReimbursement: "fee_reimbursement", // lightning
   OnchainReceipt: "onchain_receipt",
   OnchainPayment: "onchain_payment",
