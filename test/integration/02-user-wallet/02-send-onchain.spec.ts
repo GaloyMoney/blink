@@ -34,7 +34,6 @@ import { getBTCBalance, getRemainingTwoFALimit } from "test/helpers/wallet"
 import { NotificationType } from "@domain/notifications"
 import { toTargetConfs } from "@domain/bitcoin"
 
-jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 jest.mock("@services/notifications/notification")
 
 const date = Date.now() + 1000 * 60 * 60 * 24 * 8

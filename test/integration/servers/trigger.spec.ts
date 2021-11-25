@@ -28,7 +28,6 @@ import { NotificationType } from "@domain/notifications"
 import { getCurrentPrice } from "@app/prices"
 
 jest.mock("@services/notifications/notification")
-jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { sendNotification } = require("@services/notifications/notification")

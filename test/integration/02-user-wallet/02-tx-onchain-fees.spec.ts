@@ -4,8 +4,6 @@ import { toSats, toTargetConfs } from "@domain/bitcoin"
 import { InsufficientBalanceError, LessThanDustThresholdError } from "@domain/errors"
 import { bitcoindClient, bitcoindOutside, getAndCreateUserWallet } from "test/helpers"
 
-jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
-
 const defaultAmount = toSats(6000)
 const defaultTarget = toTargetConfs(3)
 const { dustThreshold } = getOnChainWalletConfig()

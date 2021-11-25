@@ -1,8 +1,6 @@
 import { User } from "@services/mongoose/schema"
 import { getAndCreateUserWallet } from "test/helpers"
 
-jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
-
 describe("schema", () => {
   describe("User", () => {
     describe("getActiveUsers", () => {

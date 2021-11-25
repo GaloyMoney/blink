@@ -16,8 +16,6 @@ import {
 import { onChannelUpdated, updateEscrows } from "@services/lnd/utils"
 import { ledger } from "@services/mongodb"
 
-jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
-
 //this is the fixed opening and closing channel fee on devnet
 const channelFee = 7637
 const lnds = [lnd1, lnd2, lndOutside1, lndOutside1]

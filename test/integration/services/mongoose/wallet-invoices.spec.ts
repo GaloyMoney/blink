@@ -4,8 +4,6 @@ import { WalletInvoicesRepository } from "@services/mongoose"
 import { InvoiceUser } from "@services/mongoose/schema"
 import { getAndCreateUserWallet } from "test/helpers"
 
-jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
-
 const createTestWalletInvoice = () => {
   const randomPaymentHash = Math.random().toString(36) as PaymentHash
   return {

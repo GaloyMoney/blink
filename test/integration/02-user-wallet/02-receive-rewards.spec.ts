@@ -4,8 +4,6 @@ import { checkIsBalanced, getAndCreateUserWallet } from "test/helpers"
 import { getBTCBalance } from "test/helpers/wallet"
 import { resetSelfWalletIdLimits } from "test/helpers/rate-limit"
 
-jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
-
 let userWallet1
 
 const earnsToGet = ["whereBitcoinExist", "whyStonesShellGold", "NoCounterfeitMoney"]

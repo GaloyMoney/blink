@@ -2,8 +2,6 @@ import { getGenericLimits, MS_PER_HOUR } from "@config/app"
 import { generateTokenHelper, getAndCreateUserWallet } from "test/helpers"
 import { updateUserAccountStatus, usernameExists } from "@core/user"
 
-jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
-
 let userWallet0, userWallet1, userWallet2
 const username = "user0"
 

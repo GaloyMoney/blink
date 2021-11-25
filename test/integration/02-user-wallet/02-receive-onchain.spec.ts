@@ -29,7 +29,6 @@ import { NotificationType } from "@domain/notifications"
 import { getCurrentPrice } from "@app/prices"
 
 jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
-jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
 let walletUser0
 let walletUser2

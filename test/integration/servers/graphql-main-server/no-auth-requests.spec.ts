@@ -9,8 +9,6 @@ import USER_REQUEST_AUTH_CODE from "./mutations/user-request-auth-code.gql"
 import USER_LOGIN from "./mutations/user-login.gql"
 import { clearAccountLocks, clearLimiters } from "test/helpers"
 
-jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
-
 let apolloServer, httpServer, httpTerminator, mutate, correctCode
 const { phone, code } = yamlConfig.test_accounts[9]
 
