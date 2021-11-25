@@ -2,7 +2,7 @@ import dedent from "dedent"
 import { GT } from "@graphql/index"
 
 import { connectionArgs, connectionFromArray } from "graphql-relay"
-import { TransactionConnection } from "../abstract/transaction"
+import { TransactionConnection } from "./transaction"
 import * as Wallets from "@app/wallets"
 
 import ContactAlias from "../scalar/contact-alias"
