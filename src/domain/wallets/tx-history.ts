@@ -65,6 +65,7 @@ export const fromLedger = (
       timestamp,
     }) => {
       const settlementAmount = toSats(credit - debit)
+
       const description = translateDescription({
         type,
         memoFromPayer,
@@ -72,85 +73,67 @@ export const fromLedger = (
         credit,
         username,
       })
+
       const memo = translateMemo({
         memoFromPayer,
         lnMemo,
         credit,
       })
+
       const status = pendingConfirmation ? TxStatus.Pending : TxStatus.Success
-      if (isOnChainTransaction(type)) {
-        return {
-          id,
-          walletId,
-          initiationVia: PaymentInitiationMethod.OnChain,
-          settlementVia:
-            type === LedgerTransactionType.OnchainIntraLedger
-              ? SettlementMethod.IntraLedger
-              : SettlementMethod.OnChain,
-          address,
-          deprecated: {
-            description,
-            usd,
-            feeUsd,
-            type,
-          },
-          otherPartyUsername: username || null,
-          settlementAmount,
-          settlementFee: toSats(fee || 0),
-          settlementUsdPerSat: Math.abs(usd / settlementAmount),
-          transactionHash: txHash as OnChainTxHash,
-          status,
-          memo,
-          createdAt: timestamp,
-        }
-      }
-      if (paymentHash) {
-        return {
-          id,
-          walletId,
-          initiationVia: PaymentInitiationMethod.Lightning,
-          settlementVia:
-            type === LedgerTransactionType.IntraLedger
-              ? SettlementMethod.IntraLedger
-              : SettlementMethod.Lightning,
-          deprecated: {
-            description,
-            usd,
-            feeUsd,
-            type,
-          },
-          settlementAmount,
-          settlementFee: toSats(fee || 0),
-          settlementUsdPerSat: Math.abs(usd / settlementAmount),
-          paymentHash: paymentHash as PaymentHash,
-          pubkey: pubkey as Pubkey,
-          otherPartyUsername: username || null,
-          status,
-          memo,
-          createdAt: timestamp,
-        }
-      }
-      return {
+
+      const baseTransaction = {
         id,
         walletId,
-        initiationVia: PaymentInitiationMethod.IntraLedger,
-        settlementVia: SettlementMethod.IntraLedger,
+        settlementAmount,
+        settlementFee: toSats(fee || 0),
+        settlementUsdPerSat: Math.abs(usd / settlementAmount),
+        status,
+        memo,
+        createdAt: timestamp,
         deprecated: {
           description,
           usd,
           feeUsd,
           type,
         },
-        settlementAmount,
-        settlementFee: toSats(fee || 0),
-        settlementUsdPerSat: Math.abs(usd / settlementAmount),
+      }
+
+      if (isOnChainTransaction(type)) {
+        return {
+          ...baseTransaction,
+          initiationVia: PaymentInitiationMethod.OnChain,
+          settlementVia:
+            type === LedgerTransactionType.OnchainIntraLedger
+              ? SettlementMethod.IntraLedger
+              : SettlementMethod.OnChain,
+          address,
+          otherPartyUsername: username || null,
+          transactionHash: txHash as OnChainTxHash,
+        }
+      }
+      if (paymentHash) {
+        return {
+          ...baseTransaction,
+          initiationVia: PaymentInitiationMethod.Lightning,
+          settlementVia:
+            type === LedgerTransactionType.IntraLedger
+              ? SettlementMethod.IntraLedger
+              : SettlementMethod.Lightning,
+          paymentHash: paymentHash as PaymentHash,
+          pubkey: pubkey as Pubkey,
+          otherPartyUsername: username || null,
+        }
+      }
+      return {
+        ...baseTransaction,
+        initiationVia: PaymentInitiationMethod.IntraLedger,
+        settlementVia: SettlementMethod.IntraLedger,
         otherPartyUsername: username || null,
-        status,
-        memo,
-        createdAt: timestamp,
       }
     },
   )
+
   return {
     transactions,
     addPendingIncoming: (
