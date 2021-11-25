@@ -1,7 +1,7 @@
 import { connectionArgs, connectionFromArray } from "graphql-relay"
 
 import { GT } from "@graphql/index"
-import { TransactionConnection } from "../abstract/transaction"
+import { TransactionConnection } from "./transaction"
 import IWallet from "../abstract/wallet"
 import WalletCurrency from "../scalar/wallet-currency"
 import SignedAmount from "../scalar/signed-amount"

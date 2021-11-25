@@ -3,7 +3,7 @@ import getUuidByString from "uuid-by-string"
 import { GT } from "@graphql/index"
 
 import IAccount from "../abstract/account"
-import Transaction from "../abstract/transaction"
+import Transaction from "./transaction"
 import WalletId from "../scalar/wallet-id"
 
 import * as Wallets from "@app/wallets"
