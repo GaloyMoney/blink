@@ -54,11 +54,13 @@ export const LndService = (): ILightningService | LightningServiceError => {
   const registerInvoice = async ({
     satoshis,
     description,
+    descriptionHash,
     expiresAt,
   }: RegisterInvoiceArgs): Promise<RegisteredInvoice | LightningServiceError> => {
     const input = {
       lnd: lndAuth,
       description,
+      description_hash: descriptionHash,
       tokens: satoshis as number,
       expires_at: expiresAt.toISOString(),
     }

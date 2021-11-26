@@ -779,7 +779,13 @@ input LnInvoiceCreateOnBehalfOfRecipientInput {
   recipientWalletId: WalletId!
   amount: SatAmount!
   memo: Memo
+  descriptionHash: Hex32Bytes
 }
+
+"""
+Hex-encoded string of 32 bytes
+"""
+scalar Hex32Bytes
 
 input LnNoAmountInvoiceCreateOnBehalfOfRecipientInput {
   recipientWalletId: WalletId!

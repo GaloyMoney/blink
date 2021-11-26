@@ -83,6 +83,7 @@ export const addInvoiceForRecipient = async ({
   recipientWalletPublicId,
   amount,
   memo = "",
+  descriptionHash,
 }: AddInvoiceForRecipientArgs): Promise<LnInvoice | ApplicationError> => {
   const walletPublicId = checkedToWalletPublicId(recipientWalletPublicId)
   if (walletPublicId instanceof Error) return walletPublicId
@@ -98,6 +99,7 @@ export const addInvoiceForRecipient = async ({
   return registerAndPersistInvoice({
     sats,
     memo,
+    descriptionHash,
     walletInvoiceCreateFn: walletInvoiceFactory.createForRecipient,
   })
 }
@@ -125,10 +127,12 @@ export const addInvoiceNoAmountForRecipient = async ({
 export const registerAndPersistInvoice = async ({
   sats,
   memo,
+  descriptionHash,
   walletInvoiceCreateFn,
 }: {
   sats: Satoshis
   memo: string
+  descriptionHash?: string
   walletInvoiceCreateFn: WalletInvoiceFactoryCreateMethod
 }): Promise<LnInvoice | ApplicationError> => {
   const walletInvoicesRepo = WalletInvoicesRepository()
@@ -137,6 +141,7 @@ export const registerAndPersistInvoice = async ({
 
   const registeredInvoice = await lndService.registerInvoice({
     description: memo,
+    descriptionHash,
     satoshis: sats,
     expiresAt: invoiceExpirationForCurrency("BTC", new Date()),
   })
