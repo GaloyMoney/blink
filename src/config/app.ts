@@ -2,14 +2,14 @@ import fs from "fs"
 import yaml from "js-yaml"
 import merge from "lodash.merge"
 
-export class ConfigError extends Error {
-  name = this.constructor.name
-}
-
 import { baseLogger } from "@services/logger"
 
 const defaultContent = fs.readFileSync("./default.yaml", "utf8")
 export const defaultConfig = yaml.load(defaultContent)
+
+export class ConfigError extends Error {
+  name = this.constructor.name
+}
 
 const jwtToken = process.env.JWT_SECRET
 if (!jwtToken) {
@@ -18,13 +18,13 @@ if (!jwtToken) {
 
 export const JWT_SECRET = jwtToken
 
-const btwNetwork = process.env.NETWORK
+const btcNetwork = process.env.NETWORK
 const networks = ["mainnet", "testnet", "regtest"]
-if (!!btwNetwork && !networks.includes(btwNetwork)) {
-  throw new ConfigError(`missing or invalid NETWORK: ${btwNetwork}`)
+if (!!btcNetwork && !networks.includes(btcNetwork)) {
+  throw new ConfigError(`missing or invalid NETWORK: ${btcNetwork}`)
 }
 
-export const BTC_NETWORK = btwNetwork as BtcNetwork
+export const BTC_NETWORK = btcNetwork as BtcNetwork
 
 export const MS_PER_HOUR = 60 * 60 * 1000
 export const MS_PER_DAY = 24 * MS_PER_HOUR
@@ -77,7 +77,7 @@ export const USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD =
 
 export const getGaloyInstanceName = (): string => yamlConfig.name
 
-export const getGeeTestConfig = () => {
+export const getGeetestConfig = () => {
   const config = {
     id: process.env.GEETEST_ID,
     key: process.env.GEETEST_KEY,

@@ -3,6 +3,7 @@ import { GT } from "@graphql/index"
 import Phone from "@graphql/types/scalar/phone"
 import SuccessPayload from "@graphql/types/payload/success-payload"
 import { requestPhoneCodeWithCaptcha } from "@app/users/request-phone-code"
+import { mapError } from "@graphql/error-map"
 
 const CaptchaRequestAuthCodeInput = new GT.Input({
   name: "CaptchaRequestAuthCodeInput",
@@ -44,8 +45,10 @@ const CaptchaRequestAuthCodeMutation = GT.Field({
     })
 
     if (result instanceof Error) {
+      const appErr = mapError(result)
+
       return {
-        errors: [{ message: result.message }],
+        errors: [{ message: appErr.message }],
         success: false,
       }
     }

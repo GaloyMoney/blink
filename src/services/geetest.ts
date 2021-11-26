@@ -10,7 +10,6 @@ import {
 } from "@domain/geetest/error"
 import axios from "axios"
 import GeetestLib from "gt3-server-node-express-sdk/sdk/geetest_lib" // galoy fork
-import { GeeTestType } from "./geetest.types"
 
 async function sendRequest(params) {
   const requestUrl = "https://bypass.geetest.com/v1/bypass_status.php"
@@ -30,26 +29,32 @@ async function sendRequest(params) {
   return bypassRes
 }
 
-const GeeTest = (config): GeeTestType => {
+const Geetest = (config): GeetestType => {
   const getBypassStatus = async () => {
     return sendRequest({ gt: config.id })
   }
 
-  const register = async () => {
-    const gtLib = new GeetestLib(config.id, config.key)
-    const digestmod = "md5"
-    const params = {
-      digestmod,
-      client_type: "native",
+  const register = async (): Promise<UnknownGeetestError | GeetestRegister> => {
+    try {
+      const gtLib = new GeetestLib(config.id, config.key)
+      const digestmod = "md5"
+      const params = {
+        digestmod,
+        client_type: "native",
+      }
+      const bypasscache = await getBypassStatus() // not a cache
+      let result
+      if (bypasscache === "success") {
+        result = await gtLib.register(digestmod, params)
+      } else {
+        result = await gtLib.localRegister()
+      }
+
+      const { success, gt, challenge, new_captcha: newCaptcha } = JSON.parse(result.data)
+      return { success, gt, challenge, newCaptcha }
+    } catch (err) {
+      return new UnknownGeetestError(err)
     }
-    const bypasscache = await getBypassStatus() // not a cache
-    let result
-    if (bypasscache === "success") {
-      result = await gtLib.register(digestmod, params)
-    } else {
-      result = await gtLib.localRegister()
-    }
-    return JSON.parse(result.data)
   }
 
   const validate = async (
@@ -72,11 +77,11 @@ const GeeTest = (config): GeeTestType => {
       }
       return true
     } catch (err) {
-      return new UnknownGeetestError()
+      return new UnknownGeetestError(err)
     }
   }
 
   return { register, validate }
 }
 
-export default GeeTest
+export default Geetest

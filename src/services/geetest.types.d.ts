@@ -1,14 +1,15 @@
-import { GeetestError } from "@domain/geetest/error"
+type GeetestError = import("@domain/geetest/error").GeetestError
+type UnknownGeetestError = import("@domain/geetest/error").UnknownGeetestError
 
-type GeeTestRegister = {
+type GeetestRegister = {
   success: number
   gt: string
   challenge: string
-  new_captcha: boolean
+  newCaptcha: boolean
 }
 
-type GeeTestType = {
-  register: () => Promise<GeeTestRegister>
+type GeetestType = {
+  register: () => Promise<UnknownGeetestError | GeetestRegister>
   validate: (
     challenge: string,
     validate: string,

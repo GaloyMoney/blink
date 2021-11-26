@@ -1,19 +1,9 @@
-import { UnknownPhoneProviderServiceError } from "@domain/errors"
-import { PhoneNumberInstance } from "twilio/lib/rest/lookups/v1/phoneNumber"
+type PhoneNumberInstance =
+  import("twilio/lib/rest/lookups/v1/phoneNumber").PhoneNumberInstance
 
 type PhoneProviderServiceError = import("./errors").PhoneProviderServiceError
-
-declare const ipAddressSymbol: unique symbol
-type IpAddress = string & { [ipAddressSymbol]: never }
-
-type IPInfo = {
-  provider: string
-  country: string
-  region: string
-  city: string
-  type: string
-  status: string
-}
+type UnknownPhoneProviderServiceError =
+  import("@domain/phone-provider").UnknownPhoneProviderServiceError
 
 interface IPhoneProviderService {
   getCarrier(

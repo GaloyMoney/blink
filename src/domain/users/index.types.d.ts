@@ -67,7 +67,7 @@ type User = {
   readonly deviceTokens: DeviceToken[]
   readonly createdAt: Date
   readonly phone: PhoneNumber
-  readonly twilio: PhoneMetadata | null
+  readonly phoneMetadata: PhoneMetadata | null
   language: UserLanguage
   twoFA: TwoFAForUser
 }

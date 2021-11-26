@@ -167,5 +167,5 @@ const userFromRaw = (result: UserType): User => ({
   defaultAccountId: result.id as AccountId,
   deviceTokens: (result.deviceToken || []) as DeviceToken[],
   createdAt: new Date(result.created_at),
-  twilio: result.twilio as PhoneMetadata,
+  phoneMetadata: result.twilio as PhoneMetadata,
 })

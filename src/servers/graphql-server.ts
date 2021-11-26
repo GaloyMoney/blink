@@ -12,7 +12,7 @@ import PinoHttp from "pino-http"
 import { v4 as uuidv4 } from "uuid"
 import helmet from "helmet"
 
-import { getApolloConfig, getGeeTestConfig, JWT_SECRET } from "@config/app"
+import { getApolloConfig, getGeetestConfig, JWT_SECRET } from "@config/app"
 import * as Users from "@app/users"
 import * as Accounts from "@app/accounts"
 
@@ -23,7 +23,7 @@ import { User } from "@services/mongoose/schema"
 import { isProd } from "@core/utils"
 import { WalletFactory } from "@core/wallet-factory"
 import { ApolloServerPluginUsageReporting } from "apollo-server-core"
-import GeeTest from "@services/geetest"
+import Geetest from "@services/geetest"
 import expressApiKeyAuth from "./graphql-middlewares/api-key-auth"
 import {
   SemanticAttributes,
@@ -52,8 +52,8 @@ export const isEditor = rule({ cache: "contextual" })((parent, args, ctx) => {
   return ctx.user.role === "editor" ? true : "NOT_AUTHORIZED"
 })
 
-const geeTestConfig = getGeeTestConfig()
-const geetest = GeeTest(geeTestConfig)
+const geeTestConfig = getGeetestConfig()
+const geetest = Geetest(geeTestConfig)
 
 const sessionContext = ({ token, ips, body, apiKey, apiSecret }) => {
   const userId = token?.uid ?? null

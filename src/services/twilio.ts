@@ -1,6 +1,5 @@
 import { getTwilioConfig } from "@config/app"
-import { UnknownPhoneProviderServiceError } from "@domain/errors"
-import { IPhoneProviderService } from "@domain/phone-provider/index.types"
+import { UnknownPhoneProviderServiceError } from "@domain/phone-provider"
 import { baseLogger } from "@services/logger"
 import twilio from "twilio"
 

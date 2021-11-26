@@ -5,8 +5,8 @@ import {
   getRequestPhoneCodeMinInterval,
 } from "@config/app"
 import { randomIntFromInterval } from "@core/utils"
-import { UnknownPhoneProviderServiceError } from "@domain/errors"
 import { GeetestError } from "@domain/geetest/error"
+import { UnknownPhoneProviderServiceError } from "@domain/phone-provider"
 import { RateLimitPrefix } from "@domain/rate-limit"
 import {
   RateLimiterExceededError,
@@ -14,7 +14,6 @@ import {
   UserPhoneCodeAttemptMinIntervalLimiterExceededError,
   UserPhoneCodeAttemptPhoneRateLimiterExceededError,
 } from "@domain/rate-limit/errors"
-import { GeeTestType } from "@services/geetest.types"
 import { PhoneCodesRepository } from "@services/mongoose/phone-code"
 import { RedisRateLimitService } from "@services/rate-limit"
 import { TwilioClient } from "@services/twilio"
@@ -30,7 +29,7 @@ export const requestPhoneCodeWithCaptcha = async ({
   ip,
 }: {
   phone: PhoneNumber
-  geetest: GeeTestType
+  geetest: GeetestType
   geetestChallenge: string
   geetestValidate: string
   geetestSeccode: string
@@ -92,10 +91,7 @@ export const requestPhoneCode = async ({
 
   const sendTextArguments = { body, to: phone, logger }
 
-  const sentSuccesfully = await TwilioClient().sendText(sendTextArguments)
-  if (sentSuccesfully instanceof Error) return sentSuccesfully
-
-  return true
+  return TwilioClient().sendText(sendTextArguments)
 }
 
 const checkPhoneCodeAttemptPerIpLimits = async (

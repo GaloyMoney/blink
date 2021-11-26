@@ -11,8 +11,6 @@ export class UnknownRepositoryError extends RepositoryError {}
 export class PersistError extends RepositoryError {}
 export class DuplicateError extends RepositoryError {}
 
-export class UnknownPhoneProviderServiceError extends RepositoryError {}
-
 export class CouldNotFindError extends RepositoryError {}
 export class CouldNotFindWalletInvoiceError extends CouldNotFindError {}
 
