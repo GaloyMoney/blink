@@ -16,6 +16,9 @@ type LedgerAccountId = string & { [ledgerAccountIdSymbol]: never }
 type LedgerTransactionType =
   typeof import("./index").LedgerTransactionType[keyof typeof import("./index").LedgerTransactionType]
 
+type ExtendedLedgerTransactionType =
+  typeof import("./index").ExtendedLedgerTransactionType[keyof typeof import("./index").ExtendedLedgerTransactionType]
+
 type LedgerJournal = {
   readonly journalId: LedgerJournalId
   readonly voided: boolean

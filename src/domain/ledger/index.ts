@@ -25,6 +25,11 @@ export const LedgerTransactionType = {
   ToHotWallet: "to_hot_wallet",
 } as const
 
+export const ExtendedLedgerTransactionType = {
+  ...LedgerTransactionType,
+  LnIntraLedger: "ln_on_us",
+} as const
+
 export const toWalletId = (accountId: LiabilitiesAccountId): WalletId | null => {
   const path = accountId.split(":")
 
