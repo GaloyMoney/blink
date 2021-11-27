@@ -150,9 +150,6 @@ const getRateLimits = (config): RateLimitOptions => {
   }
 }
 
-export const getRequestPhoneCodeMinInterval = () =>
-  getRateLimits(yamlConfig.limits.minIntervalPhoneRequest)
-
 export const getRequestPhoneCodeLimits = () =>
   getRateLimits(yamlConfig.limits.requestPhoneCode)
 

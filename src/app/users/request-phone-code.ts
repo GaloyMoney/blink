@@ -2,7 +2,6 @@ import {
   getGaloyInstanceName,
   getRequestPhoneCodeIpLimits,
   getRequestPhoneCodeLimits,
-  getRequestPhoneCodeMinInterval,
 } from "@config/app"
 import { randomIntFromInterval } from "@core/utils"
 import { UnknownPhoneProviderServiceError } from "@domain/phone-provider"
@@ -10,7 +9,6 @@ import { RateLimitPrefix } from "@domain/rate-limit"
 import {
   RateLimiterExceededError,
   UserPhoneCodeAttemptIpRateLimiterExceededError,
-  UserPhoneCodeAttemptMinIntervalLimiterExceededError,
   UserPhoneCodeAttemptPhoneRateLimiterExceededError,
 } from "@domain/rate-limit/errors"
 import { PhoneCodesRepository } from "@services/mongoose/phone-code"
@@ -72,11 +70,6 @@ export const requestPhoneCode = async ({
     if (limitOk instanceof Error) return limitOk
   }
 
-  {
-    const limitOk = await checkPhoneCodeAttemptMinInternal(phone)
-    if (limitOk instanceof Error) return limitOk
-  }
-
   if (isTestAccountPhone(phone)) {
     return true
   }
@@ -116,18 +109,5 @@ const checkPhoneCodeAttemptPerPhoneLimits = async (
   const limitOk = await limiter.consume(phone)
   if (limitOk instanceof RateLimiterExceededError)
     return new UserPhoneCodeAttemptPhoneRateLimiterExceededError()
-  return limitOk
-}
-
-const checkPhoneCodeAttemptMinInternal = async (
-  phone: PhoneNumber,
-): Promise<true | RateLimiterExceededError> => {
-  const limiter = RedisRateLimitService({
-    keyPrefix: RateLimitPrefix.phoneCodeAttemptMinInternal,
-    limitOptions: getRequestPhoneCodeMinInterval(),
-  })
-  const limitOk = await limiter.consume(phone)
-  if (limitOk instanceof RateLimiterExceededError)
-    return new UserPhoneCodeAttemptMinIntervalLimiterExceededError()
   return limitOk
 }

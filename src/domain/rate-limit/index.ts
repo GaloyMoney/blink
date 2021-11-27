@@ -1,5 +1,4 @@
 export const RateLimitPrefix = {
-  phoneCodeAttemptMinInternal: "phone_code_attempt_min_interval",
   failedPhoneCodeAttemptPhoneCode: "failed_phone_code_attempt_phone_code",
   failedAttemptPhoneCodeIp: "failed_attempt_phone_code_ip",
   failedAttemptLoginIp: "failed_attempt_login_ip",

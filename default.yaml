@@ -74,11 +74,8 @@ test_accounts:
   role: "bankowner"
 
 limits:
-  minIntervalPhoneRequest:
-    points: 1
-    duration: 30
-    blockDuration: 30
   requestPhoneCode:
+    msBeforeNext: 30000
     points: 4
     duration: 3600 # 60 * 60 s
     blockDuration: 10800 # 60 * 60 * 3 s
