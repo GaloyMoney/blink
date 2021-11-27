@@ -6,9 +6,11 @@ import WalletId from "../scalar/wallet-id"
 import Username from "../scalar/username"
 import OnChainTxHash from "../scalar/onchain-tx-hash"
 import LnPaymentSecret from "../scalar/ln-payment-secret"
+import { SettlementMethod } from "@domain/wallets"
 
 const SettlementViaIntraLedger = new GT.Object({
   name: "SettlementViaIntraLedger",
+  isTypeOf: (source) => source.type === SettlementMethod.IntraLedger,
   fields: () => ({
     walletId: {
       type: GT.NonNull(WalletId),
@@ -21,16 +23,18 @@ const SettlementViaIntraLedger = new GT.Object({
 })
 
 const SettlementViaLn = new GT.Object({
-  name: "SettlementViaIntraLn",
+  name: "SettlementViaLn",
+  isTypeOf: (source) => source.type === SettlementMethod.Lightning,
   fields: () => ({
     paymentSecret: {
-      type: GT.NonNull(LnPaymentSecret),
+      type: LnPaymentSecret,
     },
   }),
 })
 
 const SettlementViaOnChain = new GT.Object({
   name: "SettlementViaOnChain",
+  isTypeOf: (source) => source.type === SettlementMethod.OnChain,
   fields: () => ({
     transactionHash: {
       type: GT.NonNull(OnChainTxHash),

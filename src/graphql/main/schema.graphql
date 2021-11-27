@@ -172,10 +172,7 @@ type Transaction {
   createdAt: Timestamp!
 }
 
-union InitiationVia =
-    InitiationViaIntraLedger
-  | InitiationViaIntraLn
-  | InitiationViaOnChain
+union InitiationVia = InitiationViaIntraLedger | InitiationViaLn | InitiationViaOnChain
 
 type InitiationViaIntraLedger {
   walletId: WalletId!
@@ -192,14 +189,11 @@ Unique identifier of a user
 """
 scalar Username
 
-type InitiationViaIntraLn {
-  paymentRequest: LnPaymentRequest!
+type InitiationViaLn {
+  paymentHash: PaymentHash!
 }
 
-"""
-BOLT11 lightning invoice payment request with the amount included
-"""
-scalar LnPaymentRequest
+scalar PaymentHash
 
 type InitiationViaOnChain {
   address: OnChainAddress!
@@ -210,10 +204,7 @@ An address for an on-chain bitcoin destination
 """
 scalar OnChainAddress
 
-union SettlementVia =
-    SettlementViaIntraLedger
-  | SettlementViaIntraLn
-  | SettlementViaOnChain
+union SettlementVia = SettlementViaIntraLedger | SettlementViaLn | SettlementViaOnChain
 
 type SettlementViaIntraLedger {
   walletId: WalletId!
@@ -224,8 +215,8 @@ type SettlementViaIntraLedger {
   counterPartyUsername: Username
 }
 
-type SettlementViaIntraLn {
-  paymentSecret: LnPaymentSecret!
+type SettlementViaLn {
+  paymentSecret: LnPaymentSecret
 }
 
 scalar LnPaymentSecret
@@ -665,6 +656,11 @@ input LnInvoiceFeeProbeInput {
   paymentRequest: LnPaymentRequest!
 }
 
+"""
+BOLT11 lightning invoice payment request with the amount included
+"""
+scalar LnPaymentRequest
+
 input LnNoAmountInvoiceFeeProbeInput {
   walletId: WalletId!
   paymentRequest: LnPaymentRequest!
@@ -682,8 +678,6 @@ type LnInvoice {
   paymentSecret: LnPaymentSecret!
   satoshis: SatAmount
 }
-
-scalar PaymentHash
 
 input LnInvoiceCreateInput {
   walletId: WalletId!

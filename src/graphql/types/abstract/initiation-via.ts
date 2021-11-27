@@ -2,11 +2,13 @@ import { GT } from "@graphql/index"
 
 import WalletId from "../scalar/wallet-id"
 import Username from "../scalar/username"
-import LnPaymentRequest from "../scalar/ln-payment-request"
 import OnChainAddress from "../scalar/on-chain-address"
+import { PaymentInitiationMethod } from "@domain/wallets"
+import PaymentHash from "../scalar/payment-hash"
 
 const InitiationViaIntraLedger = new GT.Object({
   name: "InitiationViaIntraLedger",
+  isTypeOf: (source) => source.type === PaymentInitiationMethod.IntraLedger,
   fields: () => ({
     walletId: {
       type: GT.NonNull(WalletId),
@@ -18,16 +20,18 @@ const InitiationViaIntraLedger = new GT.Object({
 })
 
 const InitiationViaLn = new GT.Object({
-  name: "InitiationViaIntraLn",
+  name: "InitiationViaLn",
+  isTypeOf: (source) => source.type === PaymentInitiationMethod.Lightning,
   fields: () => ({
-    paymentRequest: {
-      type: GT.NonNull(LnPaymentRequest),
+    paymentHash: {
+      type: GT.NonNull(PaymentHash),
     },
   }),
 })
 
 const InitiationViaOnChain = new GT.Object({
   name: "InitiationViaOnChain",
+  isTypeOf: (source) => source.type === PaymentInitiationMethod.OnChain,
   fields: () => ({
     address: {
       type: GT.NonNull(OnChainAddress),
