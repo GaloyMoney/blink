@@ -94,36 +94,46 @@ describe("WalletTransactionHistory.fromLedger", () => {
       {
         id: "id" as LedgerTransactionId,
         walletId: "walletId" as WalletId,
-        initiationVia: PaymentInitiationMethod.Lightning,
+        initiationVia: {
+          type: PaymentInitiationMethod.Lightning,
+          paymentHash: "paymentHash" as PaymentHash,
+          pubkey: "pubkey" as Pubkey,
+        },
         memo: "SomeMemo",
-        settlementVia: SettlementMethod.Lightning,
+        settlementVia: {
+          type: SettlementMethod.Lightning,
+          paymentSecret: null,
+        },
         settlementAmount,
         settlementFee: toSats(0),
         settlementUsdPerSat,
-        paymentHash: "paymentHash" as PaymentHash,
-        pubkey: "pubkey" as Pubkey,
         deprecated: {
           description: "SomeMemo",
           usd,
           feeUsd: 0.1,
           type: LedgerTransactionType.Invoice,
         },
-        otherPartyUsername: null,
         status: TxStatus.Success,
         createdAt: timestamp,
       },
       {
         id: "id" as LedgerTransactionId,
         walletId: "walletId" as WalletId,
-        initiationVia: PaymentInitiationMethod.Lightning,
-        settlementVia: SettlementMethod.IntraLedger,
+        initiationVia: {
+          type: PaymentInitiationMethod.Lightning,
+          paymentHash: "paymentHash" as PaymentHash,
+          pubkey: "pubkey" as Pubkey,
+        },
+        settlementVia: {
+          type: SettlementMethod.IntraLedger,
+          walletId: "walletId" as WalletId,
+          counterPartyUsername: "username",
+        },
         memo: null,
-        otherPartyUsername: "username",
         settlementAmount,
         settlementFee: toSats(0),
         settlementUsdPerSat,
-        paymentHash: "paymentHash" as PaymentHash,
-        pubkey: "pubkey" as Pubkey,
+
         deprecated: {
           description: "from username",
           usd,
@@ -136,8 +146,15 @@ describe("WalletTransactionHistory.fromLedger", () => {
       {
         id: "id" as LedgerTransactionId,
         walletId: "walletId" as WalletId,
-        initiationVia: PaymentInitiationMethod.OnChain,
-        settlementVia: SettlementMethod.IntraLedger,
+        initiationVia: {
+          type: PaymentInitiationMethod.OnChain,
+          address: "address" as OnChainAddress,
+        },
+        settlementVia: {
+          type: SettlementMethod.IntraLedger,
+          walletId: "walletId" as WalletId,
+          counterPartyUsername: null,
+        },
         memo: null,
         settlementAmount,
         settlementFee: toSats(0),
@@ -148,17 +165,21 @@ describe("WalletTransactionHistory.fromLedger", () => {
           feeUsd: 0.1,
           type: LedgerTransactionType.OnchainIntraLedger,
         },
-        otherPartyUsername: null,
-        address: "address" as OnChainAddress,
-        transactionHash: "txHash",
+
         status: TxStatus.Success,
         createdAt: timestamp,
       },
       {
         id: "id" as LedgerTransactionId,
         walletId: "walletId" as WalletId,
-        initiationVia: PaymentInitiationMethod.OnChain,
-        settlementVia: SettlementMethod.OnChain,
+        initiationVia: {
+          type: PaymentInitiationMethod.OnChain,
+          address: "address" as OnChainAddress,
+        },
+        settlementVia: {
+          type: SettlementMethod.OnChain,
+          transactionHash: "txHash",
+        },
         memo: null,
         settlementAmount,
         settlementFee: toSats(0),
@@ -169,11 +190,9 @@ describe("WalletTransactionHistory.fromLedger", () => {
           feeUsd: 0.1,
           type: LedgerTransactionType.OnchainReceipt,
         },
-        otherPartyUsername: null,
+
         status: TxStatus.Success,
         createdAt: timestamp,
-        address: "address" as OnChainAddress,
-        transactionHash: "txHash",
       },
     ]
     expect(result.transactions).toEqual(expected)
@@ -266,9 +285,15 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
       {
         id: "txHash" as OnChainTxHash,
         walletId: "walletId" as WalletId,
-        initiationVia: PaymentInitiationMethod.OnChain,
+        initiationVia: {
+          type: PaymentInitiationMethod.OnChain,
+          address: "userAddress1" as OnChainAddress,
+        },
         memo: null,
-        settlementVia: "onchain",
+        settlementVia: {
+          type: SettlementMethod.OnChain,
+          transactionHash: "txHash",
+        },
         settlementAmount: toSats(25000),
         settlementFee: toSats(0),
         settlementUsdPerSat: 1,
@@ -278,17 +303,20 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
           feeUsd: 0,
           type: LedgerTransactionType.OnchainReceipt,
         },
-        otherPartyUsername: null,
         status: TxStatus.Pending,
         createdAt: timestamp,
-        transactionHash: "txHash",
-        address: "userAddress1" as OnChainAddress,
       },
       {
         id: "txHash" as OnChainTxHash,
         walletId: "walletId" as WalletId,
-        initiationVia: PaymentInitiationMethod.OnChain,
-        settlementVia: "onchain",
+        initiationVia: {
+          type: PaymentInitiationMethod.OnChain,
+          address: "userAddress2" as OnChainAddress,
+        },
+        settlementVia: {
+          type: SettlementMethod.OnChain,
+          transactionHash: "txHash",
+        },
         settlementAmount: toSats(50000),
         memo: null,
         settlementFee: toSats(0),
@@ -299,11 +327,9 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
           feeUsd: 0,
           type: LedgerTransactionType.OnchainReceipt,
         },
-        otherPartyUsername: null,
+
         status: TxStatus.Pending,
         createdAt: timestamp,
-        address: "userAddress2" as OnChainAddress,
-        transactionHash: "txHash",
       },
     ]
     expect(result.transactions).toEqual(expected)
@@ -338,8 +364,14 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
       {
         id: "txHash" as OnChainTxHash,
         walletId: "walletId" as WalletId,
-        initiationVia: PaymentInitiationMethod.OnChain,
-        settlementVia: "onchain",
+        initiationVia: {
+          type: PaymentInitiationMethod.OnChain,
+          address: "userAddress1" as OnChainAddress,
+        },
+        settlementVia: {
+          type: SettlementMethod.OnChain,
+          transactionHash: "txHash",
+        },
         memo: null,
         settlementAmount: toSats(25000),
         settlementFee: toSats(0),
@@ -350,11 +382,8 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
           feeUsd: 0,
           type: LedgerTransactionType.OnchainReceipt,
         },
-        otherPartyUsername: null,
         status: TxStatus.Pending,
         createdAt: timestamp,
-        address: "userAddress1" as OnChainAddress,
-        transactionHash: "txHash",
       },
     ]
     expect(result.transactions).toEqual(expected)
