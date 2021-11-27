@@ -12,7 +12,7 @@ export const getAndCreateUserWallet = async (index: number) => {
   const users = UsersRepository()
   let userRepo = await users.findByPhone(phone)
   if (userRepo instanceof CouldNotFindUserFromPhoneError) {
-    userRepo = await users.persistNew({ phone })
+    userRepo = await users.persistNew({ phone, phoneMetadata: null })
   }
 
   if (userRepo instanceof Error) throw userRepo
