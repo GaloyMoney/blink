@@ -1,9 +1,5 @@
 import { toSats } from "@domain/bitcoin"
-import {
-  ExtendedLedgerTransactionType,
-  isOnChainTransaction,
-  LedgerTransactionType,
-} from "@domain/ledger"
+import { ExtendedLedgerTransactionType, LedgerTransactionType } from "@domain/ledger"
 import { MEMO_SHARING_SATS_THRESHOLD } from "@config/app"
 import { SettlementMethod, PaymentInitiationMethod } from "./tx-methods"
 import { TxStatus } from "./tx-status"
@@ -21,23 +17,26 @@ const filterPendingIncoming = (
         walletTransactions.push({
           id: rawTx.txHash,
           walletId,
-          initiationVia: PaymentInitiationMethod.OnChain,
-          settlementVia: SettlementMethod.OnChain,
+          settlementAmount: sats,
+          settlementFee: toSats(0),
+          settlementUsdPerSat: usdPerSat,
+          status: TxStatus.Pending,
+          memo: null,
+          createdAt: createdAt,
           deprecated: {
             description: "pending",
             usd: usdPerSat * sats,
             feeUsd: 0,
             type: LedgerTransactionType.OnchainReceipt,
           },
-          otherPartyUsername: null,
-          settlementFee: toSats(0),
-          transactionHash: rawTx.txHash,
-          status: TxStatus.Pending,
-          memo: null,
-          createdAt: createdAt,
-          settlementAmount: sats,
-          settlementUsdPerSat: usdPerSat,
-          address,
+          initiationVia: {
+            type: PaymentInitiationMethod.OnChain,
+            address,
+          },
+          settlementVia: {
+            type: SettlementMethod.OnChain,
+            transactionHash: rawTx.txHash,
+          },
         })
       }
     })
