@@ -25,7 +25,7 @@ type TwilioObjectForUser = {
     mobile_country_code: string
     mobile_network_code: string
     name: string
-    type: "landline" | "voip" | "mobile"
+    type: CarrierType
   }
   countryCode: string
 }
