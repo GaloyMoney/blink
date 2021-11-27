@@ -117,7 +117,7 @@ const isCodeValid = async ({ code, phone }: { phone: PhoneNumber; code: PhoneCod
   const validTestCode = isTestAccountPhoneAndCode({ code, phone })
 
   if (!validTestCode) {
-    const validCode = await PhoneCodesRepository().findRecent({ code, phone })
+    const validCode = await PhoneCodesRepository().checkRecentEntry({ code, phone })
 
     if (validCode instanceof Error) return validCode
   }

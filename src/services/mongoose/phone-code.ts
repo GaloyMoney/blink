@@ -8,7 +8,7 @@ import moment from "moment"
 import { PhoneCode } from "./schema"
 
 export const PhoneCodesRepository = (): IPhoneCodesRepository => {
-  const findRecent = async ({
+  const checkRecentEntry = async ({
     phone,
     code,
   }: {
@@ -48,7 +48,7 @@ export const PhoneCodesRepository = (): IPhoneCodesRepository => {
   }
 
   return {
-    findRecent,
+    checkRecentEntry,
     persistNew,
   }
 }

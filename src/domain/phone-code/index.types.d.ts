@@ -1,5 +1,5 @@
 interface IPhoneCodesRepository {
-  findRecent: (arg: {
+  checkRecentEntry: (arg: {
     phone: PhoneNumber
     code: PhoneCode
   }) => Promise<true | RepositoryError>
