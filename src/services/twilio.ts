@@ -8,7 +8,7 @@ export const TwilioClient = (): IPhoneProviderService => {
     accountSid: getTwilioConfig().accountSid,
   })
 
-  const sendText = async ({ body, to, logger }) => {
+  const sendText = async ({ body, to, logger }: SendTextArguments) => {
     const twilioPhoneNumber = getTwilioConfig().twilioPhoneNumber
     try {
       await client.messages.create({
