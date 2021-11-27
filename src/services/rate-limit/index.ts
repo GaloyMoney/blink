@@ -15,7 +15,7 @@ export const RedisRateLimitService = ({
 }): IRateLimitService => {
   const limiter = new RateLimiterRedis({ storeClient: redis, keyPrefix, ...limitOptions })
 
-  const consume = async (key) => {
+  const consume = async (key: string) => {
     try {
       await limiter.consume(key)
       return true
@@ -24,7 +24,7 @@ export const RedisRateLimitService = ({
     }
   }
 
-  const reset = async (key) => {
+  const reset = async (key: string) => {
     try {
       await limiter.delete(key)
       return true
@@ -33,7 +33,7 @@ export const RedisRateLimitService = ({
     }
   }
 
-  const reward = async (key) => {
+  const reward = async (key: string) => {
     try {
       await limiter.reward(key)
       return true
