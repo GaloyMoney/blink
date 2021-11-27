@@ -193,6 +193,8 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "UserPhoneCodeAttemptPhoneRateLimiterExceededError":
     case "UserPhoneCodeAttemptIpRateLimiterExceededError":
     case "CouldNotFindPhoneCodeError":
+    case "PhoneProviderServiceError":
+    case "UnknownPhoneProviderServiceError":
       return new UnknownClientError({ message, logger: baseLogger })
 
     default:

@@ -3,6 +3,7 @@ import { GT } from "@graphql/index"
 import Phone from "@graphql/types/scalar/phone"
 import SuccessPayload from "@graphql/types/payload/success-payload"
 import { requestPhoneCode } from "@app/users/request-phone-code"
+import { mapError } from "@graphql/error-map"
 
 const UserRequestAuthCodeInput = new GT.Input({
   name: "UserRequestAuthCodeInput",
@@ -32,7 +33,7 @@ const UserRequestAuthCodeMutation = GT.Field({
     const status = await requestPhoneCode({ phone, logger, ip })
 
     if (status instanceof Error) {
-      return { errors: [{ message: "Could not complete the operation successfully" }] }
+      return { errors: [{ message: mapError(status) }] }
     }
 
     return { errors: [], success: status }
