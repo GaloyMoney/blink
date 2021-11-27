@@ -45,6 +45,9 @@ type UserQuizQuestion = {
 //   countryCode: string | undefined
 // }
 
+type CarrierType =
+  typeof import("../phone-provider/index").CarrierType[keyof typeof import("../phone-provider/index").CarrierType]
+
 type PhoneMetadata = {
   // from twilio
   carrier: {
@@ -52,7 +55,7 @@ type PhoneMetadata = {
     mobile_country_code: string
     mobile_network_code: string
     name: string
-    type: "landline" | "voip" | "mobile"
+    type: CarrierType
   }
   countryCode: string
 }
