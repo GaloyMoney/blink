@@ -128,7 +128,9 @@ describe("onchainBlockEventhandler", () => {
         Math.round(lastTransaction.settlementFee),
       )
       expect(lastTransaction.settlementAmount).toBe(finalAmount)
-      expect((lastTransaction as WalletOnChainTransaction).address).toBe(address)
+      expect((lastTransaction as WalletOnChainTransaction).initiationVia.address).toBe(
+        address,
+      )
       expect(balance).toBe(initialState.balance + finalAmount)
     }
 

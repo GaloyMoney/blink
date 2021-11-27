@@ -41,6 +41,7 @@ import {
   lnNoAmountInvoicePaymentSend,
 } from "@app/wallets"
 import { LightningServiceError, PaymentSendStatus } from "@domain/bitcoin/lightning"
+import { PaymentInitiationMethod } from "@domain/wallets"
 
 const date = Date.now() + 1000 * 60 * 60 * 24 * 8
 // required to avoid oldEnoughForWithdrawal validation
@@ -105,7 +106,8 @@ describe("UserWallet - Lightning Pay", () => {
     expect(walletInvoice.paid).toBeTruthy()
 
     const matchTx = (tx) =>
-      tx.settlementVia === "intraledger" && tx.paymentHash === getHash(invoice)
+      tx.settlementVia.type === PaymentInitiationMethod.IntraLedger &&
+      tx.initiationVia.paymentHash === getHash(invoice)
 
     let txResult = await Wallets.getTransactionsForWalletId({
       walletId: userWallet1.user.id,
@@ -115,7 +117,7 @@ describe("UserWallet - Lightning Pay", () => {
     }
     const user1Txn = txResult.result
     expect(user1Txn.filter(matchTx)[0].deprecated.description).toBe(memo)
-    expect(user1Txn.filter(matchTx)[0].settlementVia).toBe("intraledger")
+    expect(user1Txn.filter(matchTx)[0].settlementVia.type).toBe("intraledger")
     // expect(user1Txn.filter(matchTx)[0].recipientUsername).toBe("lily")
 
     txResult = await Wallets.getTransactionsForWalletId({
@@ -126,7 +128,7 @@ describe("UserWallet - Lightning Pay", () => {
     }
     const user2Txn = txResult.result
     expect(user2Txn.filter(matchTx)[0].deprecated.description).toBe(memo)
-    expect(user2Txn.filter(matchTx)[0].settlementVia).toBe("intraledger")
+    expect(user2Txn.filter(matchTx)[0].settlementVia.type).toBe("intraledger")
   })
 
   it("sends to another Galoy user with two different memos", async () => {
@@ -151,7 +153,8 @@ describe("UserWallet - Lightning Pay", () => {
     if (paymentResult instanceof Error) throw paymentResult
 
     const matchTx = (tx) =>
-      tx.settlementVia === "intraledger" && tx.paymentHash === getHash(request)
+      tx.settlementVia.type === PaymentInitiationMethod.IntraLedger &&
+      tx.initiationVia.paymentHash === getHash(request)
 
     let txResult = await Wallets.getTransactionsForWalletId({
       walletId: userWallet2.user.id,
@@ -161,7 +164,7 @@ describe("UserWallet - Lightning Pay", () => {
     }
     const user2Txn = txResult.result
     expect(user2Txn.filter(matchTx)[0].deprecated.description).toBe(memo)
-    expect(user2Txn.filter(matchTx)[0].settlementVia).toBe("intraledger")
+    expect(user2Txn.filter(matchTx)[0].settlementVia.type).toBe("intraledger")
 
     txResult = await Wallets.getTransactionsForWalletId({
       walletId: userWallet1.user.id,
@@ -171,7 +174,7 @@ describe("UserWallet - Lightning Pay", () => {
     }
     const user1Txn = txResult.result
     expect(user1Txn.filter(matchTx)[0].deprecated.description).toBe(memoPayer)
-    expect(user1Txn.filter(matchTx)[0].settlementVia).toBe("intraledger")
+    expect(user1Txn.filter(matchTx)[0].settlementVia.type).toBe("intraledger")
   })
 
   it("sends to another Galoy user a push payment", async () => {
@@ -206,14 +209,14 @@ describe("UserWallet - Lightning Pay", () => {
     expect(finalBalance0).toBe(initBalance0 + amountInvoice)
     expect(finalBalance1).toBe(initBalance1 - amountInvoice)
 
-    expect(userTransaction0[0]).toHaveProperty(
-      "otherPartyUsername",
+    expect(userTransaction0[0].initiationVia).toHaveProperty(
+      "counterPartyUsername",
       userWallet1.user.username,
     )
     const oldFields0 = userTransaction0[0].deprecated
     expect(oldFields0).toHaveProperty("description", `from ${userWallet1.user.username}`)
-    expect(userTransaction1[0]).toHaveProperty(
-      "otherPartyUsername",
+    expect(userTransaction1[0].initiationVia).toHaveProperty(
+      "counterPartyUsername",
       userWallet0.user.username,
     )
     const oldFields1 = userTransaction1[0].deprecated
@@ -343,16 +346,16 @@ describe("UserWallet - Lightning Pay", () => {
     expect(resAboveThreshold).toBe(PaymentSendStatus.Success)
 
     // check below-threshold transaction for recipient was filtered
-    expect(transaction0Below).toHaveProperty(
-      "otherPartyUsername",
+    expect(transaction0Below.initiationVia).toHaveProperty(
+      "counterPartyUsername",
       userWallet1.user.username,
     )
     expect(transaction0Below.deprecated).toHaveProperty(
       "description",
       `from ${userWallet1.user.username}`,
     )
-    expect(transaction1Below).toHaveProperty(
-      "otherPartyUsername",
+    expect(transaction1Below.initiationVia).toHaveProperty(
+      "counterPartyUsername",
       userWallet0.user.username,
     )
     expect(transaction1Below.deprecated).toHaveProperty(
@@ -361,16 +364,16 @@ describe("UserWallet - Lightning Pay", () => {
     )
 
     // check above-threshold transaction for recipient was NOT filtered
-    expect(transaction0Above).toHaveProperty(
-      "otherPartyUsername",
+    expect(transaction0Above.initiationVia).toHaveProperty(
+      "counterPartyUsername",
       userWallet1.user.username,
     )
     expect(transaction0Above.deprecated).toHaveProperty(
       "description",
       memoSpamAboveThreshold,
     )
-    expect(transaction1Above).toHaveProperty(
-      "otherPartyUsername",
+    expect(transaction1Above.initiationVia).toHaveProperty(
+      "counterPartyUsername",
       userWallet0.user.username,
     )
     expect(transaction1Above.deprecated).toHaveProperty(
@@ -618,7 +621,8 @@ describe("UserWallet - Lightning Pay", () => {
 
           const hash = getHash(request)
           const matchTx = (tx) =>
-            tx.settlementVia === "intraledger" && tx.paymentHash === hash
+            tx.settlementVia.type === PaymentInitiationMethod.IntraLedger &&
+            tx.initiationVia.paymentHash === hash
 
           let txResult = await Wallets.getTransactionsForWalletId({
             walletId: walletPayee.user.id,
@@ -628,7 +632,7 @@ describe("UserWallet - Lightning Pay", () => {
           }
           const user2Txn = txResult.result
           const user2OnUsTxn = user2Txn.filter(matchTx)
-          expect(user2OnUsTxn[0].settlementVia).toBe("intraledger")
+          expect(user2OnUsTxn[0].settlementVia.type).toBe("intraledger")
           await checkIsBalanced()
 
           txResult = await Wallets.getTransactionsForWalletId({
@@ -639,7 +643,7 @@ describe("UserWallet - Lightning Pay", () => {
           }
           const user1Txn = txResult.result
           const user1OnUsTxn = user1Txn.filter(matchTx)
-          expect(user1OnUsTxn[0].settlementVia).toBe("intraledger")
+          expect(user1OnUsTxn[0].settlementVia.type).toBe("intraledger")
 
           // making request twice because there is a cancel state, and this should be re-entrant
           expect(
