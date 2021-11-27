@@ -1,5 +1,5 @@
-type GeetestError = import("@domain/geetest/error").GeetestError
-type UnknownGeetestError = import("@domain/geetest/error").UnknownGeetestError
+type GeetestError = import("@domain/captcha/error").GeetestError
+type UnknownGeetestError = import("@domain/captcha/error").UnknownGeetestError
 
 type GeetestRegister = {
   success: number

@@ -3,11 +3,7 @@
 // https://docs.geetest.com/captcha/apirefer/api/server
 // doing this: "If the storage space is not sufficient: Send request to check bypass status before starting the verfication process."
 
-import {
-  GeetestError,
-  GeetestUserFailToPassError,
-  UnknownGeetestError,
-} from "@domain/geetest/error"
+import { CaptchaUserFailToPassError, UnknownCaptchaError } from "@domain/captcha/error"
 import axios from "axios"
 import GeetestLib from "gt3-server-node-express-sdk/sdk/geetest_lib" // galoy fork
 
@@ -53,7 +49,7 @@ const Geetest = (config): GeetestType => {
       const { success, gt, challenge, new_captcha: newCaptcha } = JSON.parse(result.data)
       return { success, gt, challenge, newCaptcha }
     } catch (err) {
-      return new UnknownGeetestError(err)
+      return new UnknownCaptchaError(err)
     }
   }
 
@@ -73,11 +69,11 @@ const Geetest = (config): GeetestType => {
         result = gtLib.failValidate(challenge, validate, seccode)
       }
       if (result.status !== 1) {
-        return new GeetestUserFailToPassError()
+        return new CaptchaUserFailToPassError()
       }
       return true
     } catch (err) {
-      return new UnknownGeetestError(err)
+      return new UnknownCaptchaError(err)
     }
   }
 

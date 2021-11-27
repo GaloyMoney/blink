@@ -5,7 +5,6 @@ import {
   getRequestPhoneCodeMinInterval,
 } from "@config/app"
 import { randomIntFromInterval } from "@core/utils"
-import { GeetestError } from "@domain/geetest/error"
 import { UnknownPhoneProviderServiceError } from "@domain/phone-provider"
 import { RateLimitPrefix } from "@domain/rate-limit"
 import {
