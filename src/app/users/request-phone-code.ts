@@ -93,10 +93,7 @@ const checkPhoneCodeAttemptPerIpLimits = async (
     keyPrefix: RateLimitPrefix.failedAttemptPhoneCodeIp,
     limitOptions: getRequestPhoneCodeIpLimits(),
   })
-  const limitOk = await limiter.consume(ip)
-  if (limitOk instanceof RateLimiterExceededError)
-    return new UserPhoneCodeAttemptIpRateLimiterExceededError()
-  return limitOk
+  return limiter.consume(ip)
 }
 
 const checkPhoneCodeAttemptPerPhoneLimits = async (
@@ -106,8 +103,5 @@ const checkPhoneCodeAttemptPerPhoneLimits = async (
     keyPrefix: RateLimitPrefix.failedPhoneCodeAttemptPhoneCode,
     limitOptions: getRequestPhoneCodeLimits(),
   })
-  const limitOk = await limiter.consume(phone)
-  if (limitOk instanceof RateLimiterExceededError)
-    return new UserPhoneCodeAttemptPhoneRateLimiterExceededError()
-  return limitOk
+  return limiter.consume(phone)
 }

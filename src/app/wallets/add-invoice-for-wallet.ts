@@ -170,10 +170,7 @@ export const checkSelfWalletIdLimits = async (
     keyPrefix: RateLimitPrefix.invoiceCreate,
     limitOptions: invoiceCreateAttemptLimits,
   })
-  const limitOk = await limiter.consume(walletId)
-  if (limitOk instanceof RateLimiterExceededError)
-    return new InvoiceCreateRateLimiterExceededError()
-  return limitOk
+  return limiter.consume(walletId)
 }
 
 export const checkRecipientWalletIdLimits = async (
@@ -184,8 +181,5 @@ export const checkRecipientWalletIdLimits = async (
     keyPrefix: RateLimitPrefix.invoiceCreateForRecipient,
     limitOptions: invoiceCreateForRecipientAttempt,
   })
-  const limitOk = await limiter.consume(walletId)
-  if (limitOk instanceof RateLimiterExceededError)
-    return new InvoiceCreateRateLimiterExceededError()
-  return limitOk
+  return limiter.consume(walletId)
 }

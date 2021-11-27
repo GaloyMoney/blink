@@ -82,10 +82,7 @@ const checkFailedLoginAttemptPerIpLimits = async (
     keyPrefix: RateLimitPrefix.failedAttemptLoginIp,
     limitOptions: getFailedLoginAttemptPerIpLimits(),
   })
-  const limitOk = await limiter.consume(ip)
-  if (limitOk instanceof RateLimiterExceededError)
-    return new UserLoginIpRateLimiterExceededError()
-  return limitOk
+  return limiter.consume(ip)
 }
 
 const rewardFailedLoginAttemptPerIpLimits = async (
@@ -95,9 +92,7 @@ const rewardFailedLoginAttemptPerIpLimits = async (
     keyPrefix: RateLimitPrefix.failedAttemptLoginIp,
     limitOptions: getFailedLoginAttemptPerIpLimits(),
   })
-  const limitOk = await limiter.reward(ip)
-  if (limitOk instanceof Error) return new UnknownRepositoryError()
-  return limitOk
+  return limiter.reward(ip)
 }
 
 const checkFailedLoginAttemptPerPhoneLimits = async (
@@ -107,10 +102,7 @@ const checkFailedLoginAttemptPerPhoneLimits = async (
     keyPrefix: RateLimitPrefix.failedAttemptLoginPhone,
     limitOptions: getFailedLoginAttemptPerPhoneLimits(),
   })
-  const limitOk = await limiter.consume(phone)
-  if (limitOk instanceof RateLimiterExceededError)
-    return new UserLoginPhoneRateLimiterExceededError()
-  return limitOk
+  return limiter.consume(phone)
 }
 
 const isCodeValid = async ({ code, phone }: { phone: PhoneNumber; code: PhoneCode }) => {
