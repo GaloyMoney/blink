@@ -6,11 +6,7 @@ import {
 import { randomIntFromInterval } from "@core/utils"
 import { UnknownPhoneProviderServiceError } from "@domain/phone-provider"
 import { RateLimitPrefix } from "@domain/rate-limit"
-import {
-  RateLimiterExceededError,
-  UserPhoneCodeAttemptIpRateLimiterExceededError,
-  UserPhoneCodeAttemptPhoneRateLimiterExceededError,
-} from "@domain/rate-limit/errors"
+import { RateLimiterExceededError } from "@domain/rate-limit/errors"
 import { PhoneCodesRepository } from "@services/mongoose/phone-code"
 import { RedisRateLimitService } from "@services/rate-limit"
 import { TwilioClient } from "@services/twilio"

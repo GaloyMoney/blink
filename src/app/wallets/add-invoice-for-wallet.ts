@@ -5,13 +5,9 @@ import {
 import { checkedToSats, toSats } from "@domain/bitcoin"
 import { invoiceExpirationForCurrency } from "@domain/bitcoin/lightning"
 import { RateLimitPrefix } from "@domain/rate-limit"
-import {
-  InvoiceCreateRateLimiterExceededError,
-  RateLimiterExceededError,
-} from "@domain/rate-limit/errors"
+import { RateLimiterExceededError } from "@domain/rate-limit/errors"
 import { WalletInvoiceFactory } from "@domain/wallet-invoices/wallet-invoice-factory"
 import { checkedToWalletPublicId } from "@domain/wallets"
-
 import { LndService } from "@services/lnd"
 import { WalletInvoicesRepository, WalletsRepository } from "@services/mongoose"
 import { RedisRateLimitService } from "@services/rate-limit"

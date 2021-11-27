@@ -103,12 +103,20 @@ const checkFailedLoginAttemptPerPhoneLimits = async (
   return limiter.consume(phone)
 }
 
-const isCodeValid = async ({ code, phone }: { phone: PhoneNumber; code: PhoneCode }) => {
+const isCodeValid = async ({
+  code,
+  phone,
+  age,
+}: {
+  phone: PhoneNumber
+  code: PhoneCode
+  age: Seconds
+}) => {
   const validTestCode = isTestAccountPhoneAndCode({ code, phone })
 
   if (validTestCode) {
     return true
   } else {
-    return PhoneCodesRepository().checkRecentEntry({ code, phone })
+    return PhoneCodesRepository().existNewerThan({ code, phone, age })
   }
 }

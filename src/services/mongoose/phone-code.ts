@@ -1,4 +1,3 @@
-import { VALIDITY_TIME_CODE } from "@config/app"
 import {
   CouldNotFindPhoneCodeError,
   RepositoryError,
@@ -8,19 +7,21 @@ import moment from "moment"
 import { PhoneCode } from "./schema"
 
 export const PhoneCodesRepository = (): IPhoneCodesRepository => {
-  const checkRecentEntry = async ({
+  const existNewerThan = async ({
     phone,
     code,
+    age,
   }: {
     phone: PhoneNumber
     code: PhoneCode
+    age: Seconds
   }): Promise<true | RepositoryError> => {
     try {
       const phoneCode = await PhoneCode.findOne({
         phone,
         code,
         created_at: {
-          $gte: moment().subtract(VALIDITY_TIME_CODE, "seconds"),
+          $gte: moment().subtract(age, "seconds"),
         },
       })
       if (!phoneCode) {
@@ -48,7 +49,7 @@ export const PhoneCodesRepository = (): IPhoneCodesRepository => {
   }
 
   return {
-    checkRecentEntry,
+    existNewerThan,
     persistNew,
   }
 }

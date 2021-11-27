@@ -1,7 +1,8 @@
 interface IPhoneCodesRepository {
-  checkRecentEntry: (arg: {
+  existNewerThan: (arg: {
     phone: PhoneNumber
     code: PhoneCode
+    age: Seconds
   }) => Promise<true | RepositoryError>
 
   persistNew: (arg: {
