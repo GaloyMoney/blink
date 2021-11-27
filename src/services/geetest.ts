@@ -30,7 +30,7 @@ const Geetest = (config): GeetestType => {
     return sendRequest({ gt: config.id })
   }
 
-  const register = async (): Promise<UnknownGeetestError | GeetestRegister> => {
+  const register = async (): Promise<UnknownCaptchaError | GeetestRegister> => {
     try {
       const gtLib = new GeetestLib(config.id, config.key)
       const digestmod = "md5"
@@ -57,7 +57,7 @@ const Geetest = (config): GeetestType => {
     challenge,
     validate,
     seccode,
-  ): Promise<boolean | GeetestError> => {
+  ): Promise<boolean | CaptchaError> => {
     try {
       const gtLib = new GeetestLib(config.id, config.key)
       const bypasscache = await getBypassStatus() // not a cache

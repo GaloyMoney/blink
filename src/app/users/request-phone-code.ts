@@ -34,7 +34,7 @@ export const requestPhoneCodeWithCaptcha = async ({
   geetestSeccode: string
   logger: Logger
   ip: IpAddress
-}): Promise<true | GeetestError | UnknownPhoneProviderServiceError> => {
+}): Promise<true | CaptchaError | UnknownPhoneProviderServiceError> => {
   logger.info({ phone, ip }, "RequestPhoneCodeGeetest called")
 
   const verifySuccess = await geetest.validate(
