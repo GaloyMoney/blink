@@ -75,6 +75,12 @@ type User = {
   twoFA: TwoFAForUser
 }
 
+type UserAdmin = {
+  readonly id: UserId
+  readonly level: AccountLevel
+  readonly status: AccountStatus
+}
+
 type NewUserInfo = {
   phone: PhoneNumber
   phoneMetadata: PhoneMetadata | null

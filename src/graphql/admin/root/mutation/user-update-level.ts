@@ -1,9 +1,9 @@
 import { GT } from "@graphql/index"
 
-import { updateUserLevel } from "@core/user"
-
 import AccountLevel from "@graphql/admin/types/scalar/account-level"
 import UserDetailPayload from "@graphql/admin/types/payload/user-detail"
+import { updateUserLevel } from "@app/users/update-user-level"
+import { mapError } from "@graphql/error-map"
 
 const UserUpdateLevelInput = new GT.Input({
   name: "UserUpdateLevelInput",
@@ -33,7 +33,7 @@ const UserUpdateLevelMutation = GT.Field({
 
     const user = await updateUserLevel({ uid, level })
     if (user instanceof Error) {
-      return { errors: [{ message: user.message }] }
+      return { errors: [{ message: mapError(user).message }] }
     }
     return { errors: [], userDetails: user }
   },

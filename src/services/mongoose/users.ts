@@ -113,7 +113,10 @@ export const UsersRepository = (): IUsersRepository => {
         deviceToken: deviceTokens,
         twoFA,
       }
-      const result = await User.findOneAndUpdate({ _id: id }, data)
+      const result = await User.findOneAndUpdate({ _id: id }, data, {
+        lastIPs: 0,
+        lastConnection: 0,
+      })
       if (!result) {
         return new RepositoryError("Couldn't update user")
       }
