@@ -2,6 +2,7 @@ import {
   BTC_NETWORK,
   getFailedLoginAttemptPerIpLimits,
   getFailedLoginAttemptPerPhoneLimits,
+  VALIDITY_TIME_CODE,
 } from "@config/app"
 import { CouldNotFindUserFromPhoneError } from "@domain/errors"
 import { RateLimitPrefix } from "@domain/rate-limit"
@@ -40,7 +41,8 @@ export const login = async ({
   // add fibonachi on failed login
   // https://github.com/animir/node-rate-limiter-flexible/wiki/Overall-example#dynamic-block-duration
 
-  const validCode = await isCodeValid({ phone, code })
+  const age = VALIDITY_TIME_CODE
+  const validCode = await isCodeValid({ phone, code, age })
   if (validCode instanceof Error) return validCode
 
   await rewardFailedLoginAttemptPerIpLimits(ip)
@@ -51,7 +53,7 @@ export const login = async ({
   if (user instanceof CouldNotFindUserFromPhoneError) {
     subLogger.info({ phone }, "new user signup")
 
-    const userRaw = { phone } as NewUserInfo
+    const userRaw: NewUserInfo = { phone, phoneMetadata: null }
 
     const carrierInfo = await TwilioClient().getCarrier(phone)
     if (carrierInfo instanceof Error) {
