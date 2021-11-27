@@ -116,11 +116,9 @@ const checkFailedLoginAttemptPerPhoneLimits = async (
 const isCodeValid = async ({ code, phone }: { phone: PhoneNumber; code: PhoneCode }) => {
   const validTestCode = isTestAccountPhoneAndCode({ code, phone })
 
-  if (!validTestCode) {
-    const validCode = await PhoneCodesRepository().checkRecentEntry({ code, phone })
-
-    if (validCode instanceof Error) return validCode
+  if (validTestCode) {
+    return true
+  } else {
+    return PhoneCodesRepository().checkRecentEntry({ code, phone })
   }
-
-  return true
 }

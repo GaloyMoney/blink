@@ -77,7 +77,7 @@ type User = {
 
 type NewUserInfo = {
   phone: PhoneNumber
-  phoneMetadata?: PhoneMetadata
+  phoneMetadata: PhoneMetadata | null
 }
 
 interface IUsersRepository {
