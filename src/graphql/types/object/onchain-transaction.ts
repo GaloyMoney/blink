@@ -9,7 +9,7 @@ import { SettlementMethod as DomainSettlementMethod } from "@domain/wallets"
 const OnChainTransaction = new GT.Object({
   name: "OnChainTransaction",
   interfaces: () => [ITransaction],
-  isTypeOf: (source) => source.settlementVia === DomainSettlementMethod.OnChain,
+  isTypeOf: (source) => source.settlementVia.type === DomainSettlementMethod.OnChain,
   fields: () => ({
     ...transactionInterfaceFields,
 

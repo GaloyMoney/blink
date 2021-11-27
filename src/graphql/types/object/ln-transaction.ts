@@ -8,7 +8,7 @@ import { SettlementMethod as DomainSettlementMethod } from "@domain/wallets"
 const LnTransaction = new GT.Object({
   name: "LnTransaction",
   interfaces: () => [ITransaction],
-  isTypeOf: (source) => source.settlementVia === DomainSettlementMethod.Lightning,
+  isTypeOf: (source) => source.settlementVia.type === DomainSettlementMethod.Lightning,
   fields: () => ({
     ...transactionInterfaceFields,
 

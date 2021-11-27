@@ -9,7 +9,7 @@ import { SettlementMethod as DomainSettlementMethod } from "@domain/wallets"
 const IntraLedgerTransaction = new GT.Object({
   name: "IntraLedgerTransaction",
   interfaces: () => [ITransaction],
-  isTypeOf: (source) => source.settlementVia === DomainSettlementMethod.IntraLedger,
+  isTypeOf: (source) => source.settlementVia.type === DomainSettlementMethod.IntraLedger,
   fields: () => ({
     ...transactionInterfaceFields,
 
