@@ -182,7 +182,7 @@ export const fromLedger = (
             },
             settlementVia: {
               type: SettlementMethod.Lightning,
-              paymentSecret,
+              paymentSecret: null,
             },
           }
           return walletTransaction
