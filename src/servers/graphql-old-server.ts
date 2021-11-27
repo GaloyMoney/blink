@@ -44,11 +44,11 @@ const buildTime = process.env.BUILDTIME
 const helmRevision = process.env.HELMREVISION
 
 const getHash = (tx: WalletTransaction) => {
-  switch (tx.settlementVia) {
+  switch (tx.settlementVia.type) {
     case SettlementMethod.Lightning:
-      return tx.paymentHash
+      return (tx.initiationVia as InitiationViaLn).paymentHash
     case SettlementMethod.OnChain:
-      return tx.transactionHash
+      return tx.settlementVia.transactionHash
     case SettlementMethod.IntraLedger:
       return null
   }
@@ -69,11 +69,14 @@ const translateWalletTx = (txs: WalletTransaction[]) => {
     feeUsd: tx.deprecated.feeUsd,
     hash: getHash(tx),
     addresses:
-      tx.initiationVia === PaymentInitiationMethod.OnChain && tx.address
-        ? [tx.address]
+      tx.initiationVia.type === PaymentInitiationMethod.OnChain &&
+      tx.initiationVia.address
+        ? [tx.initiationVia.address]
         : null,
     username:
-      tx.settlementVia === SettlementMethod.IntraLedger ? tx.otherPartyUsername : null,
+      tx.settlementVia.type === SettlementMethod.IntraLedger
+        ? tx.settlementVia.counterPartyUsername
+        : null,
   }))
 }
 
