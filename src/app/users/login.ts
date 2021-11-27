@@ -1,19 +1,16 @@
 import {
+  BTC_NETWORK,
   getFailedLoginAttemptPerIpLimits,
   getFailedLoginAttemptPerPhoneLimits,
 } from "@config/app"
-import { CouldNotFindUserFromPhoneError, UnknownRepositoryError } from "@domain/errors"
+import { CouldNotFindUserFromPhoneError } from "@domain/errors"
 import { RateLimitPrefix } from "@domain/rate-limit"
-import {
-  RateLimiterExceededError,
-  UserLoginIpRateLimiterExceededError,
-  UserLoginPhoneRateLimiterExceededError,
-} from "@domain/rate-limit/errors"
+import { RateLimiterExceededError } from "@domain/rate-limit/errors"
 import { createToken } from "@services/jwt"
 import { UsersRepository } from "@services/mongoose"
 import { PhoneCodesRepository } from "@services/mongoose/phone-code"
-import { TwilioClient } from "@services/twilio"
 import { RedisRateLimitService } from "@services/rate-limit"
+import { TwilioClient } from "@services/twilio"
 import { isTestAccountPhoneAndCode } from "."
 
 export const login = async ({
@@ -72,7 +69,8 @@ export const login = async ({
     subLogger.info({ phone }, "user login")
   }
 
-  return createToken({ uid: user.id })
+  const network = BTC_NETWORK
+  return createToken({ uid: user.id, network })
 }
 
 const checkFailedLoginAttemptPerIpLimits = async (

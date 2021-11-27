@@ -1,11 +1,11 @@
-import { BTC_NETWORK, JWT_SECRET } from "@config/app"
+import { JWT_SECRET } from "@config/app"
 import * as jwt from "jsonwebtoken"
+
 
 // TODO: replace network by uri of the server
 // the uri will embed the network, ie: graphql.mainnet.server.io
 // and provide more information than just the network
-export const createToken = ({ uid }: { uid: UserId }): JwtToken => {
-  const network = BTC_NETWORK
+export const createToken = ({ uid, network }: { uid: UserId, network: BtcNetwork }): JwtToken => {
   return jwt.sign({ uid, network }, JWT_SECRET, {
     // TODO use asymetric signature
     // and verify the signature from the client
