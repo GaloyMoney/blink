@@ -151,7 +151,7 @@ It's recommended that you use plugins in your editor to run ESLint checks and pe
 To run all the checks required for the code to pass GitHub actions check:
 
 ```
-$ make check-code
+$ yarn code:check
 (...)
 $ echo $?
 0

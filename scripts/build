@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+
+tsc -p tsconfig-build.json --skipLibCheck && \
+cp -R src/services/price/protos lib/services/price/ && \
+cp src/graphql/old-schema.graphql lib/graphql/ && \
+tscpaths -p tsconfig.json -s ./src -o ./lib

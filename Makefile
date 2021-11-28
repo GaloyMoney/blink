@@ -59,9 +59,3 @@ integration-in-ci:
 unit-in-ci:
 	. ./.envrc && \
 		LOGLEVEL=warn $(BIN_DIR)/jest --config ./test/jest-unit.config.js --ci --bail
-
-check-code:
-	yarn tsc-check
-	yarn eslint-check
-	yarn prettier-check
-	yarn build
