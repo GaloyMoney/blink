@@ -11,9 +11,15 @@ type AccountStatus =
 
 type Account = {
   readonly id: AccountId
-  readonly level: AccountLevel
-  readonly status: AccountStatus
+  readonly createdAt: Date
+  language: UserLanguage
+  username: Username
+  readonly walletPublicId: WalletPublicId
+  level: AccountLevel
+  status: AccountStatus
   readonly walletIds: WalletId[]
+  title: BusinessMapTitle
+  coordinate: Coordinates
 }
 
 type Currencies = {
@@ -62,10 +68,14 @@ type LimitsChecker = {
     walletVolume: TxVolume
   }): true | LimitsExceededError
 }
+
 interface IAccountsRepository {
   findById(accountId: AccountId): Promise<Account | RepositoryError>
   listByUserId(userId: UserId): Promise<Account[] | RepositoryError>
   findByWalletId(walletId: WalletId): Promise<Account | RepositoryError>
   findByWalletPublicId(walletPublicId: WalletPublicId): Promise<Account | RepositoryError>
+  findByPhone(phone: PhoneNumber): Promise<Account | RepositoryError>
+  findByUsername(username: Username): Promise<Account | RepositoryError>
   listBusinessesForMap(): Promise<BusinessMapMarker[] | RepositoryError>
+  update(account: Account): Promise<Account | Error>
 }

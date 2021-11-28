@@ -2,7 +2,6 @@ import { getUserWalletConfig } from "@config/app"
 
 import { User } from "@services/mongoose/schema"
 
-import { NotFoundError } from "./error"
 import { LightningUserWallet } from "./lightning/wallet"
 import { UserWallet } from "./user-wallet"
 import { getCurrentPrice } from "@app/prices"
@@ -22,22 +21,6 @@ export const WalletFactory = async ({
   const userWalletConfig = getUserWalletConfig(user)
 
   return new LightningUserWallet({ user, logger, config: userWalletConfig })
-}
-
-export const getWalletFromUsername = async ({
-  username,
-  logger,
-}: {
-  username: string
-  logger: Logger
-}) => {
-  const user = await User.getUserByUsername(username)
-  if (!user) {
-    const error = `User not found`
-    throw new NotFoundError(error, { logger })
-  }
-
-  return WalletFactory({ user, logger })
 }
 
 export const getWalletFromRole = async ({ logger, role }) => {

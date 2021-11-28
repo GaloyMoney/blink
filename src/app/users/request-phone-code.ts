@@ -8,6 +8,7 @@ import { randomIntFromInterval } from "@core/utils"
 import { UnknownPhoneProviderServiceError } from "@domain/phone-provider"
 import { RateLimitPrefix } from "@domain/rate-limit"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
+import { checkedToPhoneNumber } from "@domain/users"
 import { PhoneCodesRepository } from "@services/mongoose/phone-code"
 import { RedisRateLimitService } from "@services/rate-limit"
 import { TwilioClient } from "@services/twilio"
@@ -22,7 +23,7 @@ export const requestPhoneCodeWithCaptcha = async ({
   logger,
   ip,
 }: {
-  phone: PhoneNumber
+  phone: string
   geetest: GeetestType
   geetestChallenge: string
   geetestValidate: string
@@ -32,6 +33,9 @@ export const requestPhoneCodeWithCaptcha = async ({
 }): Promise<true | CaptchaError | UnknownPhoneProviderServiceError> => {
   logger.info({ phone, ip }, "RequestPhoneCodeGeetest called")
 
+  const phoneNumberValid = checkedToPhoneNumber(phone)
+  if (phoneNumberValid instanceof Error) return phoneNumberValid
+
   const verifySuccess = await geetest.validate(
     geetestChallenge,
     geetestValidate,
@@ -40,7 +44,7 @@ export const requestPhoneCodeWithCaptcha = async ({
   if (verifySuccess instanceof Error) return verifySuccess
 
   return requestPhoneCode({
-    phone,
+    phone: phoneNumberValid,
     logger,
     ip,
   })
@@ -51,11 +55,14 @@ export const requestPhoneCode = async ({
   logger,
   ip,
 }: {
-  phone: PhoneNumber
+  phone: string
   logger: Logger
   ip: IpAddress
 }): Promise<true | UnknownPhoneProviderServiceError> => {
   logger.info({ phone, ip }, "RequestPhoneCode called")
+
+  const phoneNumberValid = checkedToPhoneNumber(phone)
+  if (phoneNumberValid instanceof Error) return phoneNumberValid
 
   {
     const limitOk = await checkPhoneCodeAttemptPerIpLimits(ip)
@@ -63,16 +70,16 @@ export const requestPhoneCode = async ({
   }
 
   {
-    const limitOk = await checkPhoneCodeAttemptPerPhoneLimits(phone)
+    const limitOk = await checkPhoneCodeAttemptPerPhoneLimits(phoneNumberValid)
     if (limitOk instanceof Error) return limitOk
   }
 
   {
-    const limitOk = await checkPhoneCodeAttemptPerPhoneMinIntervalLimits(phone)
+    const limitOk = await checkPhoneCodeAttemptPerPhoneMinIntervalLimits(phoneNumberValid)
     if (limitOk instanceof Error) return limitOk
   }
 
-  if (isTestAccountPhone(phone)) {
+  if (isTestAccountPhone(phoneNumberValid)) {
     return true
   }
 
@@ -80,10 +87,13 @@ export const requestPhoneCode = async ({
   const galoyInstanceName = getGaloyInstanceName()
   const body = `${code} is your verification code for ${galoyInstanceName}`
 
-  const result = await PhoneCodesRepository().persistNew({ phone, code })
+  const result = await PhoneCodesRepository().persistNew({
+    phone: phoneNumberValid,
+    code,
+  })
   if (result instanceof Error) return result
 
-  const sendTextArguments = { body, to: phone, logger }
+  const sendTextArguments = { body, to: phoneNumberValid, logger }
 
   return TwilioClient().sendText(sendTextArguments)
 }

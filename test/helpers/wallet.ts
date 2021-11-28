@@ -19,7 +19,7 @@ export const getRemainingIntraledgerLimit = async ({
   userLevel,
 }: {
   walletId: WalletId
-  userLevel: number
+  userLevel: AccountLevel
 }): Promise<Satoshis | ApplicationError> => {
   const timestamp1Day = new Date(Date.now() - MS_PER_DAY)
   const walletVolume = await LedgerService().intraledgerTxVolumeSince({
@@ -38,7 +38,7 @@ export const getRemainingWithdrawalLimit = async ({
   userLevel,
 }: {
   walletId: WalletId
-  userLevel: number
+  userLevel: AccountLevel
 }): Promise<Satoshis | ApplicationError> => {
   const timestamp1Day = new Date(Date.now() - MS_PER_DAY)
   const walletVolume = await LedgerService().withdrawalTxVolumeSince({

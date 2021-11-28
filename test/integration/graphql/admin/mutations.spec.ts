@@ -14,7 +14,7 @@ beforeAll(async () => {
 
 describe("GraphQLMutationRoot", () => {
   it("exposes userUpdateLevel", async () => {
-    const query = `
+    const mutation = `
       mutation {
         userUpdateLevel(input: { uid: "${user.id}", level: TWO}) {
           errors {
@@ -22,24 +22,37 @@ describe("GraphQLMutationRoot", () => {
           }
           userDetails {
             id
-            phone
             level
             createdAt
           }
         }
       }
     `
-    const result = await graphql(gqlAdminSchema, query, {})
-    const { errors, data } = result
 
-    const updatedUser = await User.getUserByUsername("tester")
-    expect(errors).toBeUndefined()
-    expect(updatedUser.level).toEqual(2)
-    expect(data?.userUpdateLevel.userDetails.level).toEqual("TWO")
+    {
+      const { errors, data } = await graphql(gqlAdminSchema, mutation, {})
+      expect(errors).toBeUndefined()
+      expect(data?.userUpdateLevel.userDetails.level).toEqual("TWO")
+    }
+
+    const query = `
+    query {
+      userDetailsByUsername(username: "tester") {
+        level
+      }
+    }
+    `
+
+    {
+      const { errors, data } = await graphql(gqlAdminSchema, query, {})
+      expect(errors).toBeUndefined()
+      console.log({ data })
+      expect(data?.userDetailsByUsername.level).toEqual("TWO")
+    }
   })
 
   it("exposes userUpdateStatus", async () => {
-    const query = `
+    const mutation = `
       mutation {
         userUpdateStatus(input: { uid: "${user.id}", status: LOCKED}) {
           errors {
@@ -47,23 +60,37 @@ describe("GraphQLMutationRoot", () => {
           }
           userDetails {
             id
-            phone
             level
             createdAt
           }
         }
       }
     `
-    const result = await graphql(gqlAdminSchema, query, {})
-    const { errors, data } = result
-    const updatedUser = await User.getUserByUsername("tester")
+    const result = await graphql(gqlAdminSchema, mutation, {})
+    const { data: dataMutation, errors } = result
     expect(errors).toBeUndefined()
-    expect(data?.userUpdateStatus.userDetails.id).toEqual(updatedUser.id)
-    expect(updatedUser.status).toEqual("locked")
+
+    const query = `
+    query {
+      userDetailsByUsername(username: "tester") {
+        id
+        status
+      }
+    }
+    `
+
+    {
+      const { errors, data } = await graphql(gqlAdminSchema, query, {})
+      expect(errors).toBeUndefined()
+      expect(data?.userDetailsByUsername.id).toEqual(
+        dataMutation?.userUpdateStatus.userDetails.id,
+      )
+      expect(data?.userDetailsByUsername.status).toEqual("LOCKED")
+    }
   })
 
   it("exposes businessUpdateMapInfo", async () => {
-    const query = `
+    const mutation = `
       mutation {
         businessUpdateMapInfo(input: { username: "${user.username}", title: "MapTest", longitude: 1, latitude: -1 }) {
           errors {
@@ -71,19 +98,46 @@ describe("GraphQLMutationRoot", () => {
           }
           userDetails {
             id
-            phone
             level
+            status
+            title
+            coordinates {
+              latitude
+              longitude
+            }
             createdAt
           }
         }
       }
     `
-    const result = await graphql(gqlAdminSchema, query, {})
-    const { errors, data } = result
-    const updatedUser = await User.getUserByUsername("tester")
+
+    const result = await graphql(gqlAdminSchema, mutation, {})
+    const { errors: errorsMutation, data: dataMutation } = result
+    expect(errorsMutation).toBeUndefined()
+
+    const query = `
+    query {
+      userDetailsByUsername(username: "tester") {
+        id
+        title
+        coordinates {
+          latitude
+          longitude
+        }
+      }
+    }
+    `
+
+    const { errors, data } = await graphql(gqlAdminSchema, query, {})
     expect(errors).toBeUndefined()
-    expect(data?.businessUpdateMapInfo.userDetails.id).toEqual(updatedUser.id)
-    expect(updatedUser.title).toEqual("MapTest")
-    expect(updatedUser.coordinate).toEqual({ longitude: 1, latitude: -1 })
+
+    expect(dataMutation?.businessUpdateMapInfo.userDetails.id).toEqual(
+      data?.userDetailsByUsername.id,
+    )
+    expect(data?.userDetailsByUsername.title).toEqual("MapTest")
+    expect(data?.userDetailsByUsername.coordinates).toEqual({
+      longitude: 1,
+      latitude: -1,
+    })
   })
 })

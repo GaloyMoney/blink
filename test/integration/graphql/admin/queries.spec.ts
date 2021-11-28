@@ -40,7 +40,6 @@ describe("GraphQLQueryRoot", () => {
     const query = `
       query Q {
         userDetails: userDetailsByUsername(username: "tester") {
-          phone
           createdAt
         }
       }
@@ -48,6 +47,6 @@ describe("GraphQLQueryRoot", () => {
     const result = await graphql(gqlAdminSchema, query, {})
     const { errors, data } = result
     expect(errors).toBeUndefined()
-    expect(data?.userDetails.phone).toEqual("+19876543210")
+    expect(data?.userDetails.createdAt).toBeDefined()
   })
 })

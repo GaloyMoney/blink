@@ -12,6 +12,7 @@ export class PersistError extends RepositoryError {}
 export class DuplicateError extends RepositoryError {}
 
 export class CouldNotFindError extends RepositoryError {}
+
 export class CouldNotFindWalletInvoiceError extends CouldNotFindError {}
 
 export class CouldNotFindUserError extends CouldNotFindError {}
@@ -26,10 +27,14 @@ export class CouldNotFindWalletFromOnChainAddressError extends CouldNotFindError
 export class CouldNotFindWalletFromPublicIdError extends CouldNotFindError {}
 export class CouldNotFindWalletFromOnChainAddressesError extends CouldNotFindError {}
 
+export class CouldNotFindAccountFromUsernameError extends CouldNotFindError {}
+export class CouldNotFindAccountFromPhoneError extends CouldNotFindError {}
+
 export class ValidationError extends DomainError {}
 export class InvalidSatoshiAmount extends ValidationError {}
 export class SatoshiAmountRequiredError extends ValidationError {}
 export class InvalidUsername extends ValidationError {}
+export class InvalidPhoneNumber extends ValidationError {}
 export class InvalidPublicWalletId extends ValidationError {}
 export class InvalidLedgerTransactionId extends ValidationError {}
 export class AlreadyPaidError extends ValidationError {}

@@ -1,9 +1,10 @@
 import { getGenericLimits, MS_PER_HOUR } from "@config/app"
 import { generateTokenHelper, getAndCreateUserWallet } from "test/helpers"
-import { updateUserAccountStatus, usernameExists } from "@core/user"
+import { updateUserAccountStatus } from "@app/users/update-user-status"
+import { WalletsRepository } from "@services/mongoose"
 
 let userWallet0, userWallet1, userWallet2
-const username = "user0"
+const username = "user0" as Username
 
 describe("UserWallet", () => {
   beforeAll(async () => {
@@ -100,18 +101,31 @@ describe("UserWallet", () => {
 
   describe("usernameExists", () => {
     it("return true if username already exists", async () => {
-      const result = await usernameExists({ username })
-      expect(result).toBe(true)
+      const walletsRepo = WalletsRepository()
+      const wallet = await walletsRepo.findByUsername(username)
+      expect(wallet).toStrictEqual(
+        expect.objectContaining({
+          id: expect.any(String),
+        }),
+      )
     })
 
     it("return true for other capitalization", async () => {
-      const result = await usernameExists({ username: username.toLocaleUpperCase() })
-      expect(result).toBe(true)
+      const walletsRepo = WalletsRepository()
+      const wallet = await walletsRepo.findByUsername(
+        username.toLocaleUpperCase() as Username,
+      )
+      expect(wallet).toStrictEqual(
+        expect.objectContaining({
+          id: expect.any(String),
+        }),
+      )
     })
 
     it("return false if username does not exist", async () => {
-      const result = await usernameExists({ username: "user" })
-      expect(result).toBe(false)
+      const walletsRepo = WalletsRepository()
+      const wallet = await walletsRepo.findByUsername("user" as Username)
+      expect(wallet).toBeInstanceOf(Error)
     })
   })
 
@@ -129,14 +143,15 @@ describe("UserWallet", () => {
   describe("updateUserAccountStatus", () => {
     it("sets account status for given user id", async () => {
       let user = await updateUserAccountStatus({
-        uid: userWallet2.user._id,
+        id: userWallet2.user.id,
         status: "locked",
       })
+      console.log({ user }, "account3")
       if (user instanceof Error) {
         throw user
       }
       expect(user.status).toBe("locked")
-      user = await updateUserAccountStatus({ uid: user._id, status: "active" })
+      user = await updateUserAccountStatus({ id: user.id, status: "active" })
       if (user instanceof Error) {
         throw user
       }

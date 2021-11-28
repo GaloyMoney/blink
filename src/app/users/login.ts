@@ -7,6 +7,7 @@ import {
 import { CouldNotFindUserFromPhoneError } from "@domain/errors"
 import { RateLimitPrefix } from "@domain/rate-limit"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
+import { checkedToPhoneNumber } from "@domain/users"
 import { createToken } from "@services/jwt"
 import { UsersRepository } from "@services/mongoose"
 import { PhoneCodesRepository } from "@services/mongoose/phone-code"
@@ -20,11 +21,14 @@ export const login = async ({
   logger,
   ip,
 }: {
-  phone: PhoneNumber
+  phone: string
   code: PhoneCode
   logger: Logger
   ip: IpAddress
 }): Promise<JwtToken | ApplicationError> => {
+  const phoneNumberValid = checkedToPhoneNumber(phone)
+  if (phoneNumberValid instanceof Error) return phoneNumberValid
+
   const subLogger = logger.child({ topic: "login" })
 
   {
@@ -33,7 +37,7 @@ export const login = async ({
   }
 
   {
-    const limitOk = await checkFailedLoginAttemptPerPhoneLimits(phone)
+    const limitOk = await checkFailedLoginAttemptPerPhoneLimits(phoneNumberValid)
     if (limitOk instanceof Error) return limitOk
   }
 
@@ -42,20 +46,20 @@ export const login = async ({
   // https://github.com/animir/node-rate-limiter-flexible/wiki/Overall-example#dynamic-block-duration
 
   const age = VALIDITY_TIME_CODE
-  const validCode = await isCodeValid({ phone, code, age })
+  const validCode = await isCodeValid({ phone: phoneNumberValid, code, age })
   if (validCode instanceof Error) return validCode
 
   await rewardFailedLoginAttemptPerIpLimits(ip)
 
   const userRepo = UsersRepository()
-  let user: RepositoryError | User = await userRepo.findByPhone(phone)
+  let user = await userRepo.findByPhone(phoneNumberValid)
 
   if (user instanceof CouldNotFindUserFromPhoneError) {
     subLogger.info({ phone }, "new user signup")
 
-    const userRaw: NewUserInfo = { phone, phoneMetadata: null }
+    const userRaw: NewUserInfo = { phone: phoneNumberValid, phoneMetadata: null }
 
-    const carrierInfo = await TwilioClient().getCarrier(phone)
+    const carrierInfo = await TwilioClient().getCarrier(phoneNumberValid)
     if (carrierInfo instanceof Error) {
       // non fatal error
       subLogger.warn({ phone }, "impossible to fetch carrier")

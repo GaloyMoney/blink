@@ -10,6 +10,7 @@ import { IpFetcher } from "@services/ipfetcher"
 import { UsersIpRepository } from "@services/mongoose/users-ips"
 import { RepositoryError } from "@domain/errors"
 import { IpFetcherServiceError } from "@domain/ipfetcher"
+import { checkedToPhoneNumber } from "@domain/users"
 
 const users = UsersRepository()
 const usersIp = UsersIpRepository()
@@ -125,18 +126,12 @@ export const getUsernameFromWalletPublicId = async (
   return user.username
 }
 
-export const getWalletPublicIdFromUsername = async (
-  username: Username,
-): Promise<WalletPublicId | Error> => {
-  const user = await users.findByUsername(username)
+export const isTestAccountPhone = (phone: PhoneNumber) => {
+  const phoneNumberValid = checkedToPhoneNumber(phone)
+  if (phoneNumberValid instanceof Error) return phoneNumberValid
 
-  if (user instanceof Error) return user
-
-  return user.walletPublicId
+  return getTestAccounts().findIndex((item) => item.phone === phone) !== -1
 }
-
-export const isTestAccountPhone = (phone: PhoneNumber) =>
-  getTestAccounts().findIndex((item) => item.phone === phone) !== -1
 
 export const isTestAccountPhoneAndCode = ({
   code,
@@ -144,8 +139,14 @@ export const isTestAccountPhoneAndCode = ({
 }: {
   code: PhoneCode
   phone: PhoneNumber
-}) =>
-  getTestAccounts().findIndex((item) => item.phone === phone) !== -1 &&
-  getTestAccounts()
-    .filter((item) => item.phone === phone)[0]
-    .code.toString() === code.toString()
+}) => {
+  const phoneNumberValid = checkedToPhoneNumber(phone)
+  if (phoneNumberValid instanceof Error) return phoneNumberValid
+
+  return (
+    getTestAccounts().findIndex((item) => item.phone === phone) !== -1 &&
+    getTestAccounts()
+      .filter((item) => item.phone === phone)[0]
+      .code.toString() === code.toString()
+  )
+}
