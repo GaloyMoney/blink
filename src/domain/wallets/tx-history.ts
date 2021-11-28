@@ -9,8 +9,8 @@ const filterPendingIncoming = (
   pendingTransactions: SubmittedTransaction[],
   addresses: OnChainAddress[],
   usdPerSat: UsdPerSat,
-): WalletTransaction[] => {
-  const walletTransactions: WalletTransaction[] = []
+): WalletOnChainTransaction[] => {
+  const walletTransactions: WalletOnChainTransaction[] = []
   pendingTransactions.forEach(({ rawTx, createdAt }) => {
     rawTx.outs.forEach(({ sats, address }) => {
       if (address && addresses.includes(address)) {
