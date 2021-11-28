@@ -172,6 +172,20 @@ export const fromLedger = (
           return walletTransaction
 
         case ExtendedLedgerTransactionType.Payment:
+          walletTransaction = {
+            ...baseTransaction,
+            initiationVia: {
+              type: PaymentInitiationMethod.Lightning,
+              paymentHash: paymentHash as PaymentHash,
+              pubkey: pubkey as Pubkey,
+            },
+            settlementVia: {
+              type: SettlementMethod.Lightning,
+              paymentSecretReceived: null,
+            },
+          }
+          return walletTransaction
+
         case ExtendedLedgerTransactionType.Invoice:
           walletTransaction = {
             ...baseTransaction,
@@ -182,7 +196,7 @@ export const fromLedger = (
             },
             settlementVia: {
               type: SettlementMethod.Lightning,
-              paymentSecret: null,
+              paymentSecretGenerated: null,
             },
           }
           return walletTransaction

@@ -38,9 +38,14 @@ type SettlementViaIntraledger = {
   readonly counterPartyUsername: Username | null
 }
 
-type SettlementViaLn = {
+type SettlementViaLnReceived = {
   readonly type: SettlementMethod["Lightning"]
-  paymentSecret: PaymentSecret | null
+  paymentSecretReceived: PaymentSecret | null
+}
+
+type SettlementViaLnSent = {
+  readonly type: SettlementMethod["Lightning"]
+  paymentSecretGenerated: PaymentSecret | null
 }
 
 type SettlementViaOnChain = {
@@ -91,9 +96,14 @@ type WalletLnIntraledgerTransaction = BaseWalletTransaction & {
   readonly settlementVia: SettlementViaIntraledger
 }
 
-type WalletLnSettledTransaction = BaseWalletTransaction & {
+type WalletLnSettledReceivedTransaction = BaseWalletTransaction & {
   readonly initiationVia: InitiationViaLn
-  readonly settlementVia: SettlementViaLn
+  readonly settlementVia: SettlementViaLnReceived
+}
+
+type WalletLnSettledSentTransaction = BaseWalletTransaction & {
+  readonly initiationVia: InitiationViaLn
+  readonly settlementVia: SettlementViaLnSent
 }
 
 type WalletOnChainTransaction =
@@ -102,7 +112,10 @@ type WalletOnChainTransaction =
   | WalletLegacyOnChainIntraledgerTransaction
   | WalletLegacyOnChainSettledTransaction
 
-type WalletLnTransaction = WalletLnIntraledgerTransaction | WalletLnSettledTransaction
+type WalletLnTransaction =
+  | WalletLnIntraledgerTransaction
+  | WalletLnSettledReceivedTransaction
+  | WalletLnSettledSentTransaction
 
 type WalletTransaction =
   | IntraLedgerTransaction
