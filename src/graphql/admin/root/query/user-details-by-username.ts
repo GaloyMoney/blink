@@ -2,8 +2,7 @@ import { GT } from "@graphql/index"
 
 import GraphQLUser from "@graphql/admin/types/object/user"
 import Username from "@graphql/types/scalar/username"
-
-import { User } from "@services/mongoose/schema"
+import { getUserByUsername } from "@app/admin"
 
 const UserDetailsByUsernameQuery = GT.Field({
   type: GT.NonNull(GraphQLUser),
@@ -15,9 +14,9 @@ const UserDetailsByUsernameQuery = GT.Field({
       throw username
     }
 
-    const user = await User.getUserByUsername(username)
-    if (!user) {
-      throw new Error("User not found")
+    const user = await getUserByUsername(username)
+    if (user instanceof Error) {
+      throw user
     }
 
     return user

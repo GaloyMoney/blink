@@ -1,54 +1,121 @@
-type InputError implements Error {
-  message: String!
-  path: [String]
-  code: InputErrorCode!
+type Query {
+  globals: Globals
+  me: User
+  usernameAvailable(username: Username!): Boolean
+  userDefaultWalletId(username: Username!): WalletId!
+  businessMapMarkers: [MapMarker]
+  mobileVersions: [MobileVersions]
+  quizQuestions: [QuizQuestion]
+  btcPriceList(range: PriceGraphRange!): [PricePoint]
+  onChainTxFee(
+    walletId: WalletId!
+    address: OnChainAddress!
+    amount: SatAmount!
+    targetConfirmations: TargetConfirmations = 1
+  ): OnChainTxFee!
+  accountApiKeys: [AccountApiKeyHashed]
 }
 
-interface Error {
-  message: String!
-  path: [String]
+"""
+Provides global settings for the application which might have an impact for the user.
+"""
+type Globals {
+  """
+  A list of public keys for the running lightning nodes.
+  This can be used to know if an invoice belongs to one of our nodes.
+  """
+  nodesIds: [String!]!
 }
 
-enum InputErrorCode {
-  INVALID_INPUT
-  VALUE_TOO_SHORT
-  VALUE_TOO_LONG
-  VALUE_NOT_ALLOWED
-}
-
-type PaymentError implements Error {
-  message: String!
-  path: [String]
-  code: PaymentErrorCode!
-}
-
-enum PaymentErrorCode {
-  ACCOUNT_LOCKED
-  LIMIT_EXCEEDED
-  INSUFFICENT_BALANCE
-  INVOICE_PAID
-  NO_LIQUIDITY
-  NO_ROUTE
-}
-
-type ConsumerAccount implements Account {
+type User {
   id: ID!
-  wallets: [Wallet!]!
-  defaultWalletId: WalletId!
-  csvTransactions(walletIds: [WalletId!]!): String!
+
+  """
+  Phone number with international calling code.
+  """
+  phone: Phone!
+
+  """
+  Optional immutable user friendly identifier.
+  """
+  username: Username
+
+  """
+  Preferred language for user.
+  When value is 'default' the intent is to use preferred language from OS settings.
+  """
+  language: Language!
+
+  """
+  List the quiz questions the user may have completed.
+  """
+  quizQuestions: [UserQuizQuestion!]!
+
+  """
+  Get full list of contacts.
+  Can include the transactions associated with each contact.
+  """
+  contacts: [UserContact!]!
+
+  """
+  Get single contact details.
+  Can include the transactions associated with the contact.
+  """
+  contactByUsername(username: Username!): UserContact!
+  twoFAEnabled: Boolean
+  createdAt: Timestamp!
+  defaultAccount: Account!
 }
 
-interface Account {
-  id: ID!
-  wallets: [Wallet!]!
-  defaultWalletId: WalletId!
-  csvTransactions(walletIds: [WalletId!]!): String!
+"""
+Phone number which includes country code
+"""
+scalar Phone
+
+"""
+Unique identifier of a user
+"""
+scalar Username
+
+scalar Language
+
+type UserQuizQuestion {
+  question: QuizQuestion!
+  completed: Boolean!
 }
 
-interface Wallet {
+type QuizQuestion {
   id: ID!
-  walletCurrency: WalletCurrency!
-  balance: SignedAmount!
+
+  """
+  The earn reward in Satoshis for the quiz question
+  """
+  earnAmount: SatAmount!
+}
+
+"""
+(Positive) Satoshi amount (i.g. quiz earning)
+"""
+scalar SatAmount
+
+type UserContact {
+  id: Username!
+
+  """
+  Actual identifier of the contact.
+  """
+  username: Username!
+
+  """
+  Alias the user can set for this contact.
+  Only the user can see the alias attached to their contact.
+  """
+  alias: ContactAlias
+  transactionsCount: Int!
+
+  """
+  Paginated list of transactions sent to/from this contact.
+  """
   transactions(
     """
     Returns the items in the list that come after the specified cursor.
@@ -72,14 +139,10 @@ interface Wallet {
   ): TransactionConnection
 }
 
-enum WalletCurrency {
-  BTC
-}
-
 """
-An amount (of a currency) that can be negative (i.g. in a transaction)
+An alias name that a user can set for a wallet (with which they have transactions)
 """
-scalar SignedAmount
+scalar ContactAlias
 
 """
 A connection to a list of items.
@@ -185,11 +248,6 @@ enum SettlementMethod {
 }
 
 """
-(Positive) Satoshi amount (i.g. quiz earning)
-"""
-scalar SatAmount
-
-"""
 Price amount expressed in base/offset. To calculate, use: `base / 10^offset`
 """
 type Price {
@@ -230,12 +288,14 @@ Timestamp field, serialized as Unix time (the number of seconds since the Unix e
 """
 scalar Timestamp
 
-"""
-Unique identifier of a user
-"""
-scalar WalletId
+interface Account {
+  id: ID!
+  wallets: [Wallet!]!
+  defaultWalletId: WalletId!
+  csvTransactions(walletIds: [WalletId!]!): String!
+}
 
-type BTCWallet implements Wallet {
+interface Wallet {
   id: ID!
   walletCurrency: WalletCurrency!
   balance: SignedAmount!
@@ -262,251 +322,19 @@ type BTCWallet implements Wallet {
   ): TransactionConnection
 }
 
-type IntraLedgerTransaction implements Transaction {
-  id: ID!
-
-  """
-  From which protocol the payment has been initiated.
-  """
-  initiationVia: PaymentInitiationMethod!
-
-  """
-  To which protocol the payment has settled on.
-  """
-  settlementVia: SettlementMethod!
-
-  """
-  Amount of sats paid by the user.
-  """
-  settlementAmount: SatAmount!
-  settlementFee: SatAmount!
-
-  """
-  Price in USDCENT/SATS at time of settlement.
-  """
-  settlementPrice: Price!
-  direction: TxDirection!
-  status: TxStatus!
-  memo: Memo
-  createdAt: Timestamp!
-
-  """
-  Settlement destination: Could be null when originalDestination is OnChain/LN
-  and the payee does not have a username
-  """
-  otherPartyUsername: Username
+enum WalletCurrency {
+  BTC
 }
+
+"""
+An amount (of a currency) that can be negative (i.g. in a transaction)
+"""
+scalar SignedAmount
 
 """
 Unique identifier of a user
 """
-scalar Username
-
-type OnChainTransaction implements Transaction {
-  id: ID!
-
-  """
-  From which protocol the payment has been initiated.
-  """
-  initiationVia: PaymentInitiationMethod!
-
-  """
-  To which protocol the payment has settled on.
-  """
-  settlementVia: SettlementMethod!
-
-  """
-  Amount of sats paid by the user.
-  """
-  settlementAmount: SatAmount!
-  settlementFee: SatAmount!
-
-  """
-  Price in USDCENT/SATS at time of settlement.
-  """
-  settlementPrice: Price!
-  direction: TxDirection!
-  status: TxStatus!
-  memo: Memo
-  createdAt: Timestamp!
-  address: OnChainAddress!
-  transactionHash: OnChainTxHash!
-}
-
-"""
-An address for an on-chain bitcoin destination
-"""
-scalar OnChainAddress
-
-scalar OnChainTxHash
-
-type LnTransaction implements Transaction {
-  id: ID!
-
-  """
-  From which protocol the payment has been initiated.
-  """
-  initiationVia: PaymentInitiationMethod!
-
-  """
-  To which protocol the payment has settled on.
-  """
-  settlementVia: SettlementMethod!
-
-  """
-  Amount of sats paid by the user.
-  """
-  settlementAmount: SatAmount!
-  settlementFee: SatAmount!
-
-  """
-  Price in USDCENT/SATS at time of settlement.
-  """
-  settlementPrice: Price!
-  direction: TxDirection!
-  status: TxStatus!
-  memo: Memo
-  createdAt: Timestamp!
-  paymentHash: PaymentHash!
-}
-
-scalar PaymentHash
-
-type Query {
-  globals: Globals
-  me: User
-  usernameAvailable(username: Username!): Boolean
-  userDefaultWalletId(username: Username!): WalletId!
-  businessMapMarkers: [MapMarker]
-  mobileVersions: [MobileVersions]
-  quizQuestions: [QuizQuestion]
-  btcPriceList(range: PriceGraphRange!): [PricePoint]
-  onChainTxFee(
-    walletId: WalletId!
-    address: OnChainAddress!
-    amount: SatAmount!
-    targetConfirmations: TargetConfirmations = 1
-  ): OnChainTxFee!
-  accountApiKeys: [AccountApiKeyHashed]
-}
-
-"""
-Provides global settings for the application which might have an impact for the user.
-"""
-type Globals {
-  """
-  A list of public keys for the running lightning nodes.
-  This can be used to know if an invoice belongs to one of our nodes.
-  """
-  nodesIds: [String!]!
-}
-
-type User {
-  id: ID!
-
-  """
-  Phone number with international calling code.
-  """
-  phone: Phone!
-
-  """
-  Optional immutable user friendly identifier.
-  """
-  username: Username
-
-  """
-  Preferred language for user.
-  When value is 'default' the intent is to use preferred language from OS settings.
-  """
-  language: Language!
-
-  """
-  List the quiz questions the user may have completed.
-  """
-  quizQuestions: [UserQuizQuestion!]!
-
-  """
-  Get full list of contacts.
-  Can include the transactions associated with each contact.
-  """
-  contacts: [UserContact!]!
-
-  """
-  Get single contact details.
-  Can include the transactions associated with the contact.
-  """
-  contactByUsername(username: Username!): UserContact!
-  twoFAEnabled: Boolean
-  createdAt: Timestamp!
-  defaultAccount: Account!
-}
-
-"""
-Phone number which includes country code
-"""
-scalar Phone
-
-scalar Language
-
-type UserQuizQuestion {
-  question: QuizQuestion!
-  completed: Boolean!
-}
-
-type QuizQuestion {
-  id: ID!
-
-  """
-  The earn reward in Satoshis for the quiz question
-  """
-  earnAmount: SatAmount!
-}
-
-type UserContact {
-  id: Username!
-
-  """
-  Actual identifier of the contact.
-  """
-  username: Username!
-
-  """
-  Alias the user can set for this contact.
-  Only the user can see the alias attached to their contact.
-  """
-  alias: ContactAlias
-  transactionsCount: Int!
-
-  """
-  Paginated list of transactions sent to/from this contact.
-  """
-  transactions(
-    """
-    Returns the items in the list that come after the specified cursor.
-    """
-    after: String
-
-    """
-    Returns the first n items from the list.
-    """
-    first: Int
-
-    """
-    Returns the items in the list that come before the specified cursor.
-    """
-    before: String
-
-    """
-    Returns the last n items from the list.
-    """
-    last: Int
-  ): TransactionConnection
-}
-
-"""
-An alias name that a user can set for a wallet (with which they have transactions)
-"""
-scalar ContactAlias
+scalar WalletId
 
 type MapMarker {
   username: Username
@@ -557,6 +385,11 @@ type OnChainTxFee {
 (Positive) Number of blocks in which the transaction is expected to be confirmed
 """
 scalar TargetConfirmations
+
+"""
+An address for an on-chain bitcoin destination
+"""
+scalar OnChainAddress
 
 type AccountApiKeyHashed {
   label: AccountApiKeyLabel!
@@ -611,6 +444,11 @@ type Mutation {
 type SuccessPayload {
   errors: [Error!]!
   success: Boolean
+}
+
+interface Error {
+  message: String!
+  path: [String]
 }
 
 input UserRequestAuthCodeInput {
@@ -750,6 +588,8 @@ type LnInvoice {
   paymentSecret: LnPaymentSecret!
   satoshis: SatAmount
 }
+
+scalar PaymentHash
 
 scalar LnPaymentSecret
 
@@ -912,6 +752,8 @@ enum TxNotificationType {
   IntraLedgerReceipt
   IntraLedgerPayment
 }
+
+scalar OnChainTxHash
 
 type IntraLedgerUpdate {
   txNotificationType: TxNotificationType!
