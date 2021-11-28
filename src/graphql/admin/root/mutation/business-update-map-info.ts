@@ -3,6 +3,8 @@ import AccountDetailPayload from "@graphql/admin/types/payload/account-detail"
 import { mapError } from "@graphql/error-map"
 import { GT } from "@graphql/index"
 import Username from "@graphql/types/scalar/username"
+import { updateBusinessMapInfo } from "@app/accounts/update-business-map-info"
+import { UserInputError } from "apollo-server-errors"
 
 const BusinessUpdateMapInfoInput = new GT.Input({
   name: "BusinessUpdateMapInfoInput",
