@@ -7,10 +7,16 @@ import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
 import { User } from "@services/mongoose/schema"
 
-import { getWalletFromRole } from "@core/wallet-factory"
 import { balanceSheetIsBalanced, getLedgerAccounts } from "@core/balance-sheet"
 
 import * as Wallets from "@app/wallets"
+import {
+  getBankOwnerWalletId,
+  getDealerWalletId,
+  getFunderWalletId,
+} from "@services/ledger/accounts"
+import { WalletsRepository } from "@services/mongoose"
+import { getBalanceForWalletId } from "@app/wallets"
 
 const logger = baseLogger.child({ module: "exporter" })
 
@@ -69,6 +75,7 @@ const business_g = new client.Gauge({
 })
 
 const roles = ["dealer", "funder", "bankowner"]
+const account_roles = [getDealerWalletId(), getFunderWalletId(), getBankOwnerWalletId()]
 const wallet_roles = {}
 
 for (const role of roles) {
@@ -108,19 +115,14 @@ const main = async () => {
     const userCount = await User.countDocuments()
     userCount_g.set(userCount)
 
-    for (const role of roles) {
-      try {
-        const wallet = await getWalletFromRole({ role, logger })
-        const balanceSats = await Wallets.getBalanceForWallet({
-          walletId: wallet.user.id as WalletId,
-          logger,
-        })
-        if (balanceSats instanceof Error) throw balanceSats
+    for (const index in roles) {
+      const role = roles[index]
+      const account = await account_roles[index]
 
-        wallet_roles[role].set(balanceSats)
-      } catch (err) {
-        baseLogger.error({ role }, `can't fetch balance for role`)
-      }
+      const balanceSats = getBalanceForWalletId(account)
+      if (balanceSats instanceof Error) throw balanceSats
+
+      wallet_roles[role].set(balanceSats)
     }
 
     business_g.set(await User.count({ title: { $exists: true } }))

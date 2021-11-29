@@ -1,15 +1,14 @@
 // an accounting reminder:
 // https://en.wikipedia.org/wiki/Double-entry_bookkeeping
 
+import { liabilitiesMainAccount } from "@domain/ledger"
+
 // assets:
 export const assetsMainAccount = "Assets"
 export const bitcoindAccountingPath = `${assetsMainAccount}:Reserve:Bitcoind`
 export const lndAccountingPath = `${assetsMainAccount}:Reserve:Lightning` // TODO: rename to Assets:Lnd
 export const escrowAccountingPath = `${assetsMainAccount}:Reserve:Escrow` // TODO: rename to Assets:Lnd:Escrow
 
-// liabilities
-export const liabilitiesMainAccount = "Liabilities"
-export const accountPath = (uid) => `${liabilitiesMainAccount}:${uid}`
 export const resolveAccountId = (accountPath: string | string[]) => {
   let id: string | null = null
 
@@ -35,37 +34,53 @@ export const resolveAccountId = (accountPath: string | string[]) => {
   return id
 }
 
-let cacheDealerPath: string
-let cachebankOwnerPath: string
+let cacheDealerWalletId: WalletId
+let cacheBankOwnerWalletId: WalletId
+let cacheFunderWalletId: WalletId
 
 const throwError = (account) => Promise.reject(`Invalid ${account}AccountPath`)
-let bankOwnerResolver = (): Promise<string> => throwError("bankOwner")
-let dealerResolver = (): Promise<string> => throwError("dealer")
+let bankOwnerResolver = (): Promise<WalletId> => throwError("bankOwner")
+let dealerResolver = (): Promise<WalletId> => throwError("dealer")
+let funderResolver = (): Promise<WalletId> => throwError("funder")
 
-export function setBankOwnerAccountResolver(resolver: () => Promise<string>) {
+export function setBankOwnerAccountResolver(resolver: () => Promise<WalletId>) {
   bankOwnerResolver = resolver
 }
 
-export function setDealerAccountResolver(resolver: () => Promise<string>) {
+export function setDealerAccountResolver(resolver: () => Promise<WalletId>) {
   dealerResolver = resolver
 }
 
-export const dealerAccountPath = async () => {
-  if (cacheDealerPath) {
-    return cacheDealerPath
+export function setFunderAccountResolver(resolver: () => Promise<WalletId>) {
+  funderResolver = resolver
+}
+
+export const getDealerWalletId = async () => {
+  if (cacheDealerWalletId) {
+    return cacheDealerWalletId
   }
 
   const dealerId = await dealerResolver()
-  cacheDealerPath = accountPath(dealerId)
-  return cacheDealerPath
+  cacheDealerWalletId = dealerId
+  return cacheDealerWalletId
 }
 
-export const bankOwnerAccountPath = async () => {
-  if (cachebankOwnerPath) {
-    return cachebankOwnerPath
+export const getBankOwnerWalletId = async () => {
+  if (cacheBankOwnerWalletId) {
+    return cacheBankOwnerWalletId
   }
 
   const bankOwnerId = await bankOwnerResolver()
-  cachebankOwnerPath = accountPath(bankOwnerId)
-  return cachebankOwnerPath
+  cacheBankOwnerWalletId = bankOwnerId
+  return cacheBankOwnerWalletId
+}
+
+export const getFunderWalletId = async () => {
+  if (cacheFunderWalletId) {
+    return cacheFunderWalletId
+  }
+
+  const funderId = await funderResolver()
+  cacheFunderWalletId = funderId
+  return cacheFunderWalletId
 }

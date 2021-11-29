@@ -3,7 +3,6 @@ import { GT } from "@graphql/index"
 
 import { connectionArgs, connectionFromArray } from "graphql-relay"
 import { TransactionConnection } from "../abstract/transaction"
-import * as Wallets from "@app/wallets"
 
 import ContactAlias from "../scalar/contact-alias"
 import * as Accounts from "@app/accounts"
@@ -43,7 +42,7 @@ const UserContact = new GT.Object({
           throw account
         }
 
-        const transactions = await Wallets.getAccountTransactionsForContact({
+        const transactions = await Accounts.getAccountTransactionsForContact({
           account,
           contactUsername,
         })

@@ -1,14 +1,14 @@
 import {
-  dealerAccountPath,
-  accountPath,
+  getDealerWalletId,
   lndAccountingPath,
-  bankOwnerAccountPath,
+  getBankOwnerWalletId,
   escrowAccountingPath,
   bitcoindAccountingPath,
 } from "./accounts"
 import { MainBook } from "./books"
 import { Transaction } from "./schema"
 import { getLndEscrowBalance } from "./query"
+import { toLiabilitiesAccountId } from "@domain/ledger"
 
 export const addLndReceipt = async ({
   description,
@@ -17,7 +17,7 @@ export const addLndReceipt = async ({
   sats,
   lastPrice,
 }) => {
-  const dealerPath = await dealerAccountPath()
+  const dealerPath = toLiabilitiesAccountId(await getDealerWalletId())
 
   const entry = MainBook.entry(description)
 
@@ -58,7 +58,7 @@ export const addLndPayment = async ({
   payerUser,
   lastPrice,
 }) => {
-  const dealerPath = await dealerAccountPath()
+  const dealerPath = toLiabilitiesAccountId(await getDealerWalletId())
 
   const entry = MainBook.entry(description)
 
@@ -97,7 +97,7 @@ export const addLndChannelFee = async ({ description, amount, metadata }) => {
     ...metadata,
   }
 
-  const bankOwnerPath = await bankOwnerAccountPath()
+  const bankOwnerPath = toLiabilitiesAccountId(await getBankOwnerWalletId())
 
   return MainBook.entry(description)
     .debit(bankOwnerPath, amount, txMetadata)
@@ -113,7 +113,7 @@ export const addLndRoutingFee = async ({ amount, collectedOn }) => {
     pending: false,
   }
 
-  const bankOwnerPath = await bankOwnerAccountPath()
+  const bankOwnerPath = toLiabilitiesAccountId(await getBankOwnerWalletId())
 
   return MainBook.entry("routing fee")
     .credit(bankOwnerPath, amount, metadata)
@@ -166,7 +166,7 @@ export const addOnchainPayment = async ({
     ...metadata,
   }
 
-  const bankOwnerPath = await bankOwnerAccountPath()
+  const bankOwnerPath = toLiabilitiesAccountId(await getBankOwnerWalletId())
 
   // TODO/FIXME refactor. add the transaction first and set the fees in a second tx.
   return MainBook.entry(description)
@@ -186,12 +186,12 @@ export const addOnUsPayment = async ({
   shareMemoWithPayee,
   lastPrice,
 }: IAddTransactionOnUsPayment) => {
-  const dealerPath = await dealerAccountPath()
+  const dealerPath = toLiabilitiesAccountId(await getDealerWalletId())
 
   const entry = MainBook.entry(description)
 
   entry
-    .credit(accountPath(payeeUser._id), sats * payeeUser.ratioBtc, {
+    .credit(payeeUser.accountPath, sats * payeeUser.ratioBtc, {
       ...metadata,
       memoPayer: shareMemoWithPayee ? memoPayer : null,
       username: payerUser.username,
@@ -220,7 +220,7 @@ export const addOnUsPayment = async ({
     const usdEq = sats * lastPrice
 
     entry
-      .credit(accountPath(payeeUser._id), usdEq * payeeUser.ratioUsd, {
+      .credit(payeeUser.accountPath, usdEq * payeeUser.ratioUsd, {
         ...metadata,
         memoPayer: shareMemoWithPayee ? memoPayer : null,
         username: payerUser.username,
@@ -260,7 +260,7 @@ export const addColdStoragePayment = async ({ description, amount, fee, metadata
     ...metadata,
   }
 
-  const bankOwnerPath = await bankOwnerAccountPath()
+  const bankOwnerPath = toLiabilitiesAccountId(await getBankOwnerWalletId())
 
   return MainBook.entry(description)
     .credit(lndAccountingPath, amount + fee, txMetadata)
@@ -278,7 +278,7 @@ export const addHotWalletPayment = async ({ description, amount, fee, hash }) =>
     hash,
   }
 
-  const bankOwnerPath = await bankOwnerAccountPath()
+  const bankOwnerPath = toLiabilitiesAccountId(await getBankOwnerWalletId())
 
   return MainBook.entry(description)
     .debit(lndAccountingPath, amount, txMetadata)
@@ -305,7 +305,7 @@ export const settleOnchainPayment = (hash) => {
 }
 
 export const rebalancePortfolio = async ({ description, metadata, wallet }) => {
-  const dealerPath = await dealerAccountPath()
+  const dealerPath = toLiabilitiesAccountId(await getDealerWalletId())
 
   const balances = await wallet.getBalances()
 

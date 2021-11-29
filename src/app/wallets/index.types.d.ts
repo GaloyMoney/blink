@@ -39,6 +39,7 @@ type GetOnChainFeeArgs = {
   targetConfirmations: TargetConfirmations
 }
 
+// FIXME: only use for v1
 type GetOnChainFeeByWalletIdArgs = {
   walletId: WalletId
   amount: number

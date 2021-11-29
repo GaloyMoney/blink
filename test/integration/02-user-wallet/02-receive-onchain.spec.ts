@@ -18,7 +18,6 @@ import {
   bitcoindOutside,
   amountAfterFeeDeduction,
 } from "test/helpers"
-import { getWalletFromRole } from "@core/wallet-factory"
 import * as Wallets from "@app/wallets"
 import { TxStatus } from "@domain/wallets"
 import { getBTCBalance } from "test/helpers/wallet"
@@ -27,6 +26,9 @@ import { OnChainAddressCreateRateLimiterExceededError } from "@domain/rate-limit
 import { NotificationType } from "@domain/notifications"
 
 import { getCurrentPrice } from "@app/prices"
+import { getFunderWalletId } from "@services/ledger/accounts"
+import { WalletFactory } from "@core/wallet-factory"
+import { User } from "@services/mongoose/schema"
 
 jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
 
@@ -65,7 +67,9 @@ afterAll(async () => {
 
 describe("FunderWallet - On chain", () => {
   it("receives on-chain transaction", async () => {
-    const funderWallet = await getWalletFromRole({ role: "funder", logger: baseLogger })
+    const funderWalletId = await getFunderWalletId()
+    const user = await User.findOne({ _id: funderWalletId })
+    const funderWallet = WalletFactory({ user, logger: baseLogger })
     await sendToWallet({ walletDestination: funderWallet })
   })
 })

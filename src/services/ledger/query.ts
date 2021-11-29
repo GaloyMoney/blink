@@ -2,12 +2,12 @@ import { MainBook } from "./books"
 import { Transaction } from "./schema"
 import {
   assetsMainAccount,
-  bankOwnerAccountPath,
+  getBankOwnerWalletId,
   bitcoindAccountingPath,
   escrowAccountingPath,
-  liabilitiesMainAccount,
   lndAccountingPath,
 } from "./accounts"
+import { liabilitiesMainAccount, toLiabilitiesAccountId } from "@domain/ledger"
 
 export const getAllAccounts = () => {
   return MainBook.listAccounts()
@@ -19,7 +19,7 @@ export const getAccountByTransactionHash = async (hash) => {
 }
 
 export const getTransactionByHash = async (hash) => {
-  const bankOwnerPath = await bankOwnerAccountPath()
+  const bankOwnerPath = toLiabilitiesAccountId(await getBankOwnerWalletId())
   return Transaction.findOne({
     account_path: liabilitiesMainAccount,
     accounts: { $ne: bankOwnerPath },
@@ -27,7 +27,7 @@ export const getTransactionByHash = async (hash) => {
   })
 }
 
-export const getAccountBalance = async (account: string, query = {}) => {
+export const getWalletBalance = async (account: string, query = {}) => {
   const params = { account, currency: "BTC", ...query }
   const { balance } = await MainBook.balance(params)
   return balance
@@ -53,21 +53,21 @@ export async function* getAccountsWithPendingTransactions(query = {}) {
 }
 
 export const getAssetsBalance = (currency = "BTC") =>
-  getAccountBalance(assetsMainAccount, { currency })
+  getWalletBalance(assetsMainAccount, { currency })
 
 export const getLiabilitiesBalance = (currency = "BTC") =>
-  getAccountBalance(liabilitiesMainAccount, { currency })
+  getWalletBalance(liabilitiesMainAccount, { currency })
 
-export const getLndBalance = () => getAccountBalance(lndAccountingPath)
+export const getLndBalance = () => getWalletBalance(lndAccountingPath)
 
-export const getLndEscrowBalance = () => getAccountBalance(escrowAccountingPath)
+export const getLndEscrowBalance = () => getWalletBalance(escrowAccountingPath)
 
-export const getBitcoindBalance = () => getAccountBalance(bitcoindAccountingPath)
+export const getBitcoindBalance = () => getWalletBalance(bitcoindAccountingPath)
 
 export const getBitcoindTransactions = (query = {}) =>
   getAccountTransactions(bitcoindAccountingPath, query)
 
 export const getBankOwnerBalance = async (currency = "BTC") => {
-  const bankOwnerPath = await bankOwnerAccountPath()
-  return getAccountBalance(bankOwnerPath, { currency })
+  const bankOwnerPath = toLiabilitiesAccountId(await getBankOwnerWalletId())
+  return getWalletBalance(bankOwnerPath, { currency })
 }

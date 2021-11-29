@@ -13,8 +13,8 @@ import {
   sendToAddressAndConfirm,
   waitUntilBlockHeight,
 } from "test/helpers"
-import { getWalletFromRole } from "@core/wallet-factory"
 import * as Wallets from "@app/wallets"
+import { getFunderWalletId } from "@services/ledger/accounts"
 
 let bitcoindOutside
 
@@ -77,8 +77,8 @@ describe("Bitcoind", () => {
     // load funder wallet before use it
     await getAndCreateUserWallet(4)
 
-    const funderWallet = await getWalletFromRole({ role: "funder", logger: baseLogger })
-    const address = await Wallets.createOnChainAddress(funderWallet.user.id)
+    const funderWalletId = await getFunderWalletId()
+    const address = await Wallets.createOnChainAddress(funderWalletId)
     if (address instanceof Error) throw address
 
     await sendToAddressAndConfirm({ walletClient: bitcoindOutside, address, amount })

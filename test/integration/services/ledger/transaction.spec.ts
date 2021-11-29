@@ -8,7 +8,7 @@ import { LedgerService } from "@services/ledger"
 import { toSats } from "@domain/bitcoin"
 import { DepositFeeCalculator } from "@domain/wallets"
 import { getCurrentPrice } from "@app/prices"
-import { LedgerTransactionType } from "@domain/ledger"
+import { LedgerTransactionType, toLiabilitiesAccountId } from "@domain/ledger"
 
 let mongoose
 
@@ -18,7 +18,7 @@ let dealerPath, lndAccountingPath
 beforeAll(async () => {
   await clearAccountLocks()
   mongoose = await setupMongoConnection()
-  dealerPath = await ledger.dealerAccountPath()
+  dealerPath = toLiabilitiesAccountId(await ledger.getDealerWalletId())
   lndAccountingPath = ledger.lndAccountingPath
 })
 
@@ -38,7 +38,7 @@ beforeEach(async () => {
 })
 
 const expectBalance = async ({ account, currency, balance }) => {
-  const balanceResult = await ledger.getAccountBalance(account, { currency })
+  const balanceResult = await ledger.getWalletBalance(account, { currency })
   expect(balanceResult).toBe(balance)
 }
 

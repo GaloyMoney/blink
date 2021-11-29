@@ -29,7 +29,7 @@ describe("notification", () => {
       const numActiveUsers = (await User.getActiveUsers()).length
       expect(sendNotification.mock.calls.length).toBe(numActiveUsers)
       for (const [call] of sendNotification.mock.calls) {
-        const balance = await ledger.getAccountBalance(call.user.accountPath)
+        const balance = await ledger.getWalletBalance(call.user.accountPath)
 
         const expectedUsdBalance = (price * balance).toLocaleString("en", {
           maximumFractionDigits: 2,

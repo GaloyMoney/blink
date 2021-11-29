@@ -158,7 +158,7 @@ interface ILedgerService {
     liabilitiesAccountId: LiabilitiesAccountId,
   ): Promise<number | LedgerServiceError>
 
-  getAccountBalance(
+  getWalletBalance(
     liabilitiesAccountId: LiabilitiesAccountId,
   ): Promise<Satoshis | LedgerServiceError>
 
