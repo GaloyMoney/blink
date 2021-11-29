@@ -973,5 +973,7 @@ const testPaymentDataPersisted = async (request: EncodedPaymentRequest) => {
   for (const prop of propsToCompare) {
     expect(paymentFromDb[prop]).toStrictEqual(paymentFromLnd[prop])
   }
-  expect(paymentFromDb.paths.length).toEqual(paymentFromLnd.paths.length)
+  expect(paymentFromDb.paymentDetails.paths.length).toEqual(
+    paymentFromLnd.paymentDetails.paths.length,
+  )
 }
