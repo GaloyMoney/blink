@@ -175,7 +175,7 @@ type Transaction {
 union InitiationVia = InitiationViaIntraLedger | InitiationViaLn | InitiationViaOnChain
 
 type InitiationViaIntraLedger {
-  walletId: WalletId!
+  counterPartyWalletId: WalletId
   counterPartyUsername: Username
 }
 
@@ -207,7 +207,7 @@ scalar OnChainAddress
 union SettlementVia = SettlementViaIntraLedger | SettlementViaLn | SettlementViaOnChain
 
 type SettlementViaIntraLedger {
-  walletId: WalletId!
+  counterPartyWalletId: WalletId
 
   """
   Settlement destination: Could be null the payee does not have a username
